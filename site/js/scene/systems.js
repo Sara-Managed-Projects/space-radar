@@ -230,6 +230,42 @@ export function planetPosition(planet, tMs, basis, out = { x: 0, y: 0, z: 0 }) {
   return out;
 }
 
+/**
+ * TWO SUNS (internal #475; registry/systems-binaries.yaml). Where the companion star is, relative to
+ * the primary, as the two components of the binary's orbit in the plane systemBasis() gives, au:
+ * `along` on +u (toward us) and `across` on +v, plus the separation `r`. Kepler's equation for the
+ * relative orbit, at `tMs`; psi = true anomaly + omega, and in the papers' convention the primary is
+ * eclipsed (the companion in front, on +u) when sin(psi) = 1, so along = r sin(psi); the orbit turns
+ * the way the planets do, so across = -r cos(psi). `omegaRad` or `omegaDeg` as the row has it.
+ * @returns {{along:number, across:number, r:number}}
+ */
+export function binaryRelative(binary, tMs, out = { along: 0, across: 0, r: 0 }) {
+  const o = binary.orbit;
+  const e = o.eccentricity;
+  const w = Number.isFinite(o.omegaRad) ? o.omegaRad : (o.omegaDeg * Math.PI) / 180;
+  const jd = tMs / DAY_MS + JD_UNIX_EPOCH;
+  // The fraction of a lap since periastron, reduced before it becomes an angle (as planetPosition does).
+  let f = (jd - o.periastronJd) / o.periodDays;
+  f -= Math.floor(f);
+  const M = 2 * Math.PI * f;
+  let E = M + e * Math.sin(M);
+  for (let i = 0; i < 12; i += 1) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  const nu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+  const r = o.aAu * (1 - e * Math.cos(E));
+  const psi = nu + w;
+  out.along = r * Math.sin(psi);
+  out.across = -r * Math.cos(psi);
+  out.r = r;
+  return out;
+}
+
+/** The pair's shares of the separation about the barycentre: the primary sits `fB` of it away, the companion `fA`. */
+export function binaryShares(binary) {
+  const a = binary.primary.massSuns;
+  const b = binary.companion.massSuns;
+  return { fA: a / (a + b), fB: b / (a + b) };
+}
+
 /** The star's radius in km; 0 when the table has none (it is then a point of light, and the card says so). */
 export function starRadiusKm(system) {
   const r = system && system.star ? system.star.radiusSuns : null;
@@ -334,6 +370,8 @@ export function createSystems(scene, ctx = {}) {
   let scaleRingOn = false;
   const _v = new THREE.Vector3();
   const _p = new THREE.Vector3();
+  const _q = new THREE.Vector3();
+  const _rel = { along: 0, across: 0, r: 0 };
   const _km = { x: 0, y: 0, z: 0 };
   const _off = { x: 0, y: 0, z: 0 };
 
@@ -361,6 +399,19 @@ export function createSystems(scene, ctx = {}) {
     const halo = coronaSprite();
     if (halo) { halo.material.color = starColour.clone(); starMesh.add(halo); }
     group.add(starMesh);
+    // The second sun of a circumbinary pair: drawn, not picked (it is no record of the catalogue).
+    let companionMesh = null;
+    if (system.binary) {
+      const c = system.binary.companion;
+      const crgb = kelvinToRgb(c.teffK);
+      const ccol = new THREE.Color().setRGB(crgb[0], crgb[1], crgb[2], THREE.SRGBColorSpace);
+      companionMesh = new THREE.Mesh(new THREE.SphereGeometry(1, STAR_SEGMENTS[0], STAR_SEGMENTS[1]), new THREE.MeshBasicMaterial({ color: ccol, toneMapped: false }));
+      companionMesh.name = `systems:companion:${system.hostId}`;
+      companionMesh.userData.trueRadiusUnits = c.radiusSuns * SUN_RADIUS_KM / unit;
+      const chalo = coronaSprite();
+      if (chalo) { chalo.material.color = ccol.clone(); companionMesh.add(chalo); }
+      group.add(companionMesh);
+    }
 
     const ringColour = new THREE.Color(cssColour('--sr-text-dim', '#9aa4b2'));
     const rings = [];
@@ -400,7 +451,7 @@ export function createSystems(scene, ctx = {}) {
     }
     group.add(mercury);
 
-    const built = { system, hostKm, basis, basisScene, starMesh, planets, rings, mercury, extra: null };
+    const built = { system, hostKm, basis, basisScene, starMesh, companionMesh, planets, rings, mercury, extra: null };
     // The habitable-zone band and our own planets' orbits for scale (scene/systemextras.js): only
     // for a generated row, which is the only kind that carries a computed zone.
     if (extras && system.zone !== undefined) built.extra = extras.decorate(built, group, { unit, textSprite, cssColour, ringGeometry });
@@ -539,8 +590,25 @@ export function createSystems(scene, ctx = {}) {
     const viewportH = current.faced && ctx.renderer ? ctx.renderer.domElement.clientHeight || 800 : 800;
     const star = current.starMesh;
     drawnPositionOf(current.system.hostId, _p);
-    star.position.copy(_p);
-    const camStar = cam ? cam.position.distanceTo(_p) : 0;
+    // The origin is the barycentre. With two suns each sits on the far side of it from the other, in
+    // inverse proportion to its mass; the planets' light and the rings are about the barycentre.
+    let camStar;
+    if (current.companionMesh) {
+      const bin = current.system.binary;
+      const { fA, fB } = binaryShares(bin);
+      binaryRelative(bin, stage.tMs, _rel);
+      const k = AU_KM / stage.unitKm;
+      const { u, v } = current.basisScene;
+      _q.set((_rel.along * u.x + _rel.across * v.x) * k, (_rel.along * u.y + _rel.across * v.y) * k, (_rel.along * u.z + _rel.across * v.z) * k);
+      const comp = current.companionMesh;
+      comp.position.copy(_p).addScaledVector(_q, fA);
+      comp.scale.setScalar(floorRadiusUnits(comp.userData.trueRadiusUnits, cam ? cam.position.distanceTo(comp.position) : 0));
+      star.position.copy(_p).addScaledVector(_q, -fB);
+      camStar = cam ? cam.position.distanceTo(star.position) : 0;
+    } else {
+      star.position.copy(_p);
+      camStar = cam ? cam.position.distanceTo(_p) : 0;
+    }
     star.scale.setScalar(floorRadiusUnits(star.userData.trueRadiusUnits, camStar));
     for (const ring of current.rings) ring.position.copy(_p);
     current.mercury.position.copy(_p);

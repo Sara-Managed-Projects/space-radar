@@ -41,6 +41,7 @@ Object.assign(COPY, {
       starMass: 'Mass',
       planets: 'Planets drawn',
       stars: 'Stars in the system',
+      companion: 'Second sun',
     },
     // "Nobody has seen its surface. Its size and year are measured."
     unseen: 'Nobody has seen its surface.',
@@ -93,6 +94,12 @@ Object.assign(COPY, {
     starPoint: 'Not measured: drawn as a point of light',
     starWhite: 'Not measured: drawn white',
     starsOne: '{n} in the catalogue; one is drawn',
+    // A circumbinary system with a typed row for its pair (registry/systems-binaries.yaml, internal #475).
+    starsBoth: 'Two, both drawn',
+    companionValue: '{width} wide, {mass} heavy, {k} K{derived}',
+    companionDerived: ' (a model value; its colour is illustrative)',
+    zoneBoth: '{a} to {b} au, both suns’ light summed',
+    pairLine: 'The two suns circle each other every {days} days, {a} au apart on average, on the orbit the papers measured; the planet goes round both. Their positions are computed from that orbit; the plane they are drawn in, the planets’ plane, is the one the sky view uses.',
     // The card's drawing line on the system's stage. {date} the day the table was read.
     line: 'Sizes and years from the NASA Exoplanet Archive, read {date}. The orbits are drawn as circles{computed}; the colours{phase} and the tilt of the orbits are illustrative{defaults}.',
     lineComputed: ', {n} of them sized from the year and the star’s mass',
@@ -918,19 +925,27 @@ Object.assign(COPY, {
       // Whose sky (internal #355). Each note says whose reading the figures are and under which
       // licence; registry/skycultures.yaml has the full credit, CREDITS.md repeats it.
       culture: 'Whose sky',
-      cultures: { western: 'Western', chinese: 'Chinese', maori: 'Māori', hawaiian: 'Hawaiian' },
+      cultures: { western: 'Western', chinese: 'Chinese', maori: 'Māori', hawaiian: 'Hawaiian', samoan: 'Samoan', tongan: 'Tongan', norse: 'Norse', boorong: 'Boorong' },
       cultureNotes: {
         western: 'The 88 constellations astronomers agreed on in 1922.',
         chinese: 'About 300 small asterisms. One reading of a living sky.',
         maori: 'Six figures. Names differ between iwi; the sky is living.',
         hawaiian: 'A navigator’s star lines, still used to steer by.',
+        samoan: 'Fourteen figures of Samoan lore. A living tradition.',
+        tongan: 'Star paths and figures of Tonga. A living tradition.',
+        norse: 'Six figures, one reconstruction of the Norse sky.',
+        boorong: 'A Boorong family’s sky, as told in 1857. Still living.',
       },
       // Whose work each is, and its licence: owed in full, so these run longer than a line of chrome.
       cultureCredits: {
-        western: 'Pictures: Johan Meuris, for Stellarium, Free Art License.',
+        western: 'Pictures: Johan Meuris, for Stellarium, Free Art License. Carina, Puppis and Vela share one drawing; Serpens has none.',
         chinese: 'Figures: Sun Shuwei and Karrie Berglund, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
         maori: 'Figures: Dan Smale, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
         hawaiian: 'Figures: after Nainoa Thompson, by Kamehameha Schools Kapālama, for Stellarium, CC BY-SA 4.0.',
+        samoan: 'Figures: Jake Fitisemanu with Samoan custodians, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
+        tongan: 'Figures: Dan Smale, for Stellarium, CC BY-SA 4.0. A documented reconstruction from limited sources.',
+        norse: 'Figures: Jonas Persson, for Stellarium, CC BY-SA 4.0. A reconstruction, not a record.',
+        boorong: 'Figures: John Morieson and Alex Cherney, for Stellarium, CC BY-SA 4.0. One reading of a living sky.',
       },
       // Meteors (internal #352): {n} is sky/meteors.js visibleRate() for this sky, rounded.
       meteorNote: '{name}: about {n} an hour in this sky.',

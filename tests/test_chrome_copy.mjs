@@ -190,9 +190,14 @@ const LONG_OK = new Map([
   ['search.notLoadedCount', 'a tooltip\'s second sentence'],
   ['tonight.passLine', 'a pass read out in full for a screen reader; the row draws its parts'],
   ['tonight.arcLabel', 'the sky arc\'s description for a screen reader'],
+  ['tonight.skybar.cultureCredits.western', 'a credit: whose pictures, their licence, and which figures have no picture of their own'],
   ['tonight.skybar.cultureCredits.chinese', 'a credit: whose reconstruction it is and its licence are owed'],
   ['tonight.skybar.cultureCredits.maori', 'a credit: whose record it is and its licence are owed'],
   ['tonight.skybar.cultureCredits.hawaiian', 'a credit: whose teaching, whose work and its licence are owed'],
+  ['tonight.skybar.cultureCredits.samoan', 'a credit: whose work, with whom, and its licence are owed'],
+  ['tonight.skybar.cultureCredits.tongan', 'a credit: whose reconstruction it is and its licence are owed'],
+  ['tonight.skybar.cultureCredits.norse', 'a credit: whose reconstruction it is and its licence are owed'],
+  ['tonight.skybar.cultureCredits.boorong', 'a credit: whose reading it is and its licence are owed'],
 ]);
 // An event's full sentence (ui/next.js): the row draws COPY.nextList.row.*, held above to a width;
 // these are the row's tooltip and the event's card, where a sentence is the point.

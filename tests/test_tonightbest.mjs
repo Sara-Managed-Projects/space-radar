@@ -125,7 +125,7 @@ check(polar.window === null && polar.rows.length === 0, 'where it does not get d
 const ui = readFileSync(join(JS, 'ui/tonight.js'), 'utf8');
 check(/tonightBest\(\{ observer: o, nowMs: ctx\.clock\.now\(\), passes:/.test(ui) && /bestWords\(r\)/.test(ui), 'the view draws tonightBest() with bestWords()');
 check(/sky\.showPass\(track, marks\)/.test(ui) && /ctx\.clock\.goTo\(n\.startMs\)/.test(ui), 'a pass row puts the clock at the pass and draws its arc on the sky');
-check(/sky\(\)\.setOption\('red'/.test(ui) && /sky\(\)\.setOption\('darkness', d\)/.test(ui) && /sky\(\)\.setFov\(FOV\[f\]\)/.test(ui), 'the sky\'s controls: red light, the kind of sky, the field of view');
+check(/sky\(\)\.setOption\('red'/.test(ui) && /sky\(\)\.setOption\('darkness', d\)/.test(ui) && /s\.setFov\(body \? fovFor\(body\.fieldDeg\) : FOV\[f\]\)/.test(ui), 'the sky\'s controls: red light, the kind of sky, the field of view');
 check(/removeEventListener\('sr:sky', onSky\)/.test(ui), 'destroy() stops listening to the sky');
 check(/meta: m === null \? \{\} : \{ stdMag: m \}/.test(ui), 'a record with no standard magnitude sends none to the worker: a null there would be read as magnitude 0');
 const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
