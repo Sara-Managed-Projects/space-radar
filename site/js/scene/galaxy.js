@@ -31,6 +31,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
 import { eclDirection } from './clusters.js';
+import { spread, defaultSchedule } from './spread.js';
 
 export const KPC_KM = 30856775814913670; // one kiloparsec (1 pc = 3.0857e13 km; the first draft wrote the parsec here)
 const HEADER = 12;
@@ -266,18 +267,38 @@ export function createGalaxy(scene, opts = {}) {
   const dustUniforms = { uPixelRatio: uniforms.uPixelRatio, uUnitsPerKpc: uniforms.uUnitsPerKpc, uPatchKpc: uniforms.uPatchKpc, uDust: { value: 0 } };
 
   function ensureGeometry() {
-    if (data) return Promise.resolve(data);
     if (loading) return loading;
     loading = (opts.binBuffer
       ? Promise.resolve(opts.binBuffer)
       // `no-cache` = revalidate: the name never changes, the bytes do; unchanged, the answer is a 304.
       : fetch(String(src), { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error(`${src}: HTTP ${r.status}`); return r.arrayBuffer(); }))
-      .then((buf) => { data = parseGalaxy(buf); build(); rebuild(); return data; })
-      .catch((err) => { console.warn('galaxy: could not load', err); loading = null; return null; });
+      .then((buf) => {
+        data = parseGalaxy(buf);
+        // Built in pieces, one per turn (scene/spread.js): the points, the dust lanes, the Andromeda
+        // twin, then the positions. All in one task was the three-second stall on the galaxy rung.
+        return spread([buildPoints, buildDust, buildTwin, () => { builtFor = null; rebuild(); }], opts.schedule || defaultSchedule).then(() => data);
+      })
+      .catch((err) => { console.warn('galaxy: could not load', err); loading = null; data = null; return null; });
     return loading;
   }
 
-  function build() {
+  /**
+   * Fetch, build and compile ahead of the rung that draws it (main.js calls this on the stellar rung,
+   * in an idle moment). The shaders are compiled with every part shown for one compile and put back,
+   * so the first frame on the galaxy rung finds them ready. `renderer.compileAsync` waits for the
+   * driver's parallel compile where it has one; without it nothing is compiled early and the first
+   * frame pays as before.
+   */
+  function prewarm(renderer, camera) {
+    return ensureGeometry().then((d) => {
+      if (!d || !renderer || !camera || typeof renderer.compileAsync !== 'function' || !scene) return d;
+      const shown = [points, dustPoints, twinPoints].filter(Boolean);
+      for (const p of shown) p.visible = true;
+      return Promise.resolve(renderer.compileAsync(scene, camera)).catch(() => {}).then(() => { applyVisibility(); return d; });
+    });
+  }
+
+  function buildPoints() {
     const n = data.count;
     geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
@@ -297,7 +318,10 @@ export function createGalaxy(scene, opts = {}) {
     points.frustumCulled = false;
     points.renderOrder = -1;
     group.add(points);
+  }
 
+  function buildDust() {
+    const n = data.count;
     let cx = 0, cy = 0, cz = 0, nb = 0;
     for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
     const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
@@ -314,6 +338,13 @@ export function createGalaxy(scene, opts = {}) {
     dustPoints.frustumCulled = false;
     dustPoints.renderOrder = -0.9;
     group.add(dustPoints);
+  }
+
+  function buildTwin() {
+    const n = data.count;
+    let cx = 0, cy = 0, cz = 0, nb = 0;
+    for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
+    const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
     twinKpc = andromedaFromModel(data.posKpc, n, centre);
     twinGeometry = new THREE.BufferGeometry();
     twinGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
@@ -343,10 +374,17 @@ export function createGalaxy(scene, opts = {}) {
     const tMs = stage.tMs;
     const fill = (src, geo, count = data.count) => {
       const pos = geo.getAttribute('position').array;
+      // One matrix for the whole cloud (stage.affineFrom, internal #549), the exact call per point where the stage bends positions.
+      const A = stage.affineFrom(SUN_INERTIAL, tMs);
       for (let i = 0; i < count; i++) {
-        _km.x = src[i * 3] * KPC_KM;
-        _km.y = src[i * 3 + 1] * KPC_KM;
-        _km.z = src[i * 3 + 2] * KPC_KM;
+        const kx = src[i * 3] * KPC_KM, ky = src[i * 3 + 1] * KPC_KM, kz = src[i * 3 + 2] * KPC_KM;
+        if (A) {
+          pos[i * 3] = A.o[0] + A.x[0] * kx + A.y[0] * ky + A.z[0] * kz;
+          pos[i * 3 + 1] = A.o[1] + A.x[1] * kx + A.y[1] * ky + A.z[1] * kz;
+          pos[i * 3 + 2] = A.o[2] + A.x[2] * kx + A.y[2] * ky + A.z[2] * kz;
+          continue;
+        }
+        _km.x = kx; _km.y = ky; _km.z = kz;
         if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
         pos[i * 3] = _v.x; pos[i * 3 + 1] = _v.y; pos[i * 3 + 2] = _v.z;
       }
@@ -401,10 +439,10 @@ export function createGalaxy(scene, opts = {}) {
     dustGeometry = null; dustPoints = null; dustKpc = null;
     twinGeometry = null; twinPoints = null; twinKpc = null;
     if (scene) scene.remove(group);
-    data = null; geometry = null; points = null; builtFor = null;
+    data = null; geometry = null; points = null; builtFor = null; loading = null;
   }
   return {
-    ensureGeometry, setVisible, setOpacity, setExposure, setAndromedaShare, rebuild, update, dispose, group,
+    ensureGeometry, prewarm, setVisible, setOpacity, setExposure, setAndromedaShare, rebuild, update, dispose, group,
     count: () => (data ? data.count : null),
     dustCount: () => (dustKpc ? dustKpc.count : null),
     mode: () => (points && points.visible ? 'drawn' : 'hidden'),

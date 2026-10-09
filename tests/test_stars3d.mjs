@@ -167,5 +167,15 @@ stage.setWorld('earth');
   console.log(`  five stars' colours: ${say}`);
 }
 
+// 6. THE STARS STEP FORWARD WHILE A FIGURE IS UP (internal #387): the cloud the sky sphere hands over to takes the same point scale
+{
+  const sc = createStars3d(new THREE.Scene(), { binBuffer: buffer, namesDoc });
+  check(typeof sc.setPointScale === 'function' && sc.pointScale() === 1, 'a point scale of 1 to begin with');
+  sc.setPointScale(2.5);
+  check(sc.pointScale() === 2.5, 'the figures\' 2.5 is taken');
+  sc.setPointScale(9); check(sc.pointScale() === 3, 'and capped at 3'); sc.setPointScale(0.1); check(sc.pointScale() === 0.5, 'and floored at 0.5'); sc.setPointScale('x'); check(sc.pointScale() === 1, 'and nonsense is 1');
+  const src = readFileSync(join(JS, 'scene/stars3d.js'), 'utf8');
+  check(/float sizePx = size \* uPixelRatio \* uScale;/.test(src), 'the vertex shader multiplies the point size by it');
+}
 if (problems.length) { console.error('stars3d FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`stars3d ok: ${data.count} stars placed and ${data.unplaced} honestly not, Sirius at 8.6 ly, a shell from Earth and true positions on the stellar rung, a tap picks Sirius`);

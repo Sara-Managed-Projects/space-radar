@@ -44,7 +44,7 @@
 // The card says all four (copy/en.js drawing.worldSun; the spots' own line when a list is drawn).
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { MAX_SPOTS, spotDirection, spotRadiusRad, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
+import { MAX_SPOTS, spotDirection, spotRadiusRad, splitRegion, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
 
 /** The IAU's nominal solar effective temperature, kelvin (2015 Resolution B3). */
 export const T_EFF = 5772;
@@ -114,7 +114,63 @@ void main() {
 }
 `;
 
-export const SUN_FRAG = /* glsl */`
+/** Neighbour offsets of the cellular grain: all 27 cells (tier 2), or 8 on the point's near side (tiers 0 and 1). */
+const CELLS_LOOP_FULL = `  for ( int z = -1; z <= 1; z++ ) for ( int y = -1; y <= 1; y++ ) for ( int x = -1; x <= 1; x++ ) {
+    vec3 g = vec3( float( x ), float( y ), float( z ) );`;
+const CELLS_LOOP_NEAR = `  vec3 s = 2.0 * step( vec3( 0.5 ), f ) - 1.0;   // toward the nearer face, per axis
+  for ( int z = 0; z <= 1; z++ ) for ( int y = 0; y <= 1; y++ ) for ( int x = 0; x <= 1; x++ ) {
+    vec3 g = vec3( float( x ), float( y ), float( z ) ) * s;`;
+
+function cellsGlsl( cheap ) {
+  return `// Cellular noise: the gap between the nearest and the second nearest of a jittered lattice's points
+// is small on the borders between cells -- the dark lanes -- and large in a cell's middle.
+// ${cheap ? 'Tiers 0 and 1 read the 8 cells on the near side of the point, not all 27: same lattice, same hash.' : 'Tier 2 reads all 27 neighbouring cells.'}
+float cells( vec3 p, float t ) {
+  vec3 i = floor( p );
+  vec3 f = fract( p );
+  float d1 = 8.0;
+  float d2 = 8.0;
+${cheap ? CELLS_LOOP_NEAR : CELLS_LOOP_FULL}
+    vec3 o = hash3( i + g );
+    o = 0.5 + 0.38 * sin( 6.2831853 * ( o + t ) );
+    vec3 r = g + o - f;
+    float d = dot( r, r );
+    if ( d < d1 ) { d2 = d1; d1 = d; } else if ( d < d2 ) { d2 = d; }
+  }
+  return sqrt( d2 ) - sqrt( d1 );
+}`;
+}
+
+/**
+ * The JS twin of the shader's `cells` (same hash, same jitter, same distances), in doubles, so a node
+ * test can measure what reading 8 cells instead of 27 changes. `near` = tiers 0 and 1.
+ * @param {number[]} p  a point on the lattice (the unit-sphere point times GRAIN_CELLS)
+ * @param {number} t    the churn phase, 0..1
+ */
+export function cellsTwin(p, t, near) {
+  const fract = (x) => x - Math.floor(x);
+  const hash = (a, b, c) => {
+    const x = a * 127.1 + b * 311.7 + c * 74.7, y = a * 269.5 + b * 183.3 + c * 246.1, z = a * 113.5 + b * 271.9 + c * 124.6;
+    return [fract(Math.sin(x) * 43758.5453123), fract(Math.sin(y) * 43758.5453123), fract(Math.sin(z) * 43758.5453123)];
+  };
+  const i = [Math.floor(p[0]), Math.floor(p[1]), Math.floor(p[2])];
+  const f = [p[0] - i[0], p[1] - i[1], p[2] - i[2]];
+  const s = f.map((v) => (near ? (v < 0.5 ? -1 : 1) : 1));
+  let d1 = 8, d2 = 8;
+  const lo = near ? 0 : -1;
+  for (let z = lo; z <= 1; z++) for (let y = lo; y <= 1; y++) for (let x = lo; x <= 1; x++) {
+    const g = near ? [x * s[0], y * s[1], z * s[2]] : [x, y, z];
+    const h = hash(i[0] + g[0], i[1] + g[1], i[2] + g[2]);
+    const o = h.map((v) => 0.5 + 0.38 * Math.sin(6.2831853 * (v + t)));
+    const r = [g[0] + o[0] - f[0], g[1] + o[1] - f[1], g[2] + o[2] - f[2]];
+    const d = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
+    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) { d2 = d; }
+  }
+  return Math.sqrt(d2) - Math.sqrt(d1);
+}
+
+function sunFragment( cheap ) {
+  return `
 #include <common>
 #include <logdepthbuf_pars_fragment>
 uniform sampler2D uMap;
@@ -145,23 +201,7 @@ vec3 hash3( vec3 p ) {
   p = vec3( dot( p, vec3( 127.1, 311.7, 74.7 ) ), dot( p, vec3( 269.5, 183.3, 246.1 ) ), dot( p, vec3( 113.5, 271.9, 124.6 ) ) );
   return fract( sin( p ) * 43758.5453123 );
 }
-// Cellular noise: the gap between the nearest and the second nearest of a jittered lattice's points
-// is small on the borders between cells -- the dark lanes -- and large in a cell's middle.
-float cells( vec3 p, float t ) {
-  vec3 i = floor( p );
-  vec3 f = fract( p );
-  float d1 = 8.0;
-  float d2 = 8.0;
-  for ( int z = -1; z <= 1; z++ ) for ( int y = -1; y <= 1; y++ ) for ( int x = -1; x <= 1; x++ ) {
-    vec3 g = vec3( float( x ), float( y ), float( z ) );
-    vec3 o = hash3( i + g );
-    o = 0.5 + 0.38 * sin( 6.2831853 * ( o + t ) );
-    vec3 r = g + o - f;
-    float d = dot( r, r );
-    if ( d < d1 ) { d2 = d1; d1 = d; } else if ( d < d2 ) { d2 = d; }
-  }
-  return sqrt( d2 ) - sqrt( d1 );
-}
+${cellsGlsl(cheap)}
 
 void main() {
   #include <logdepthbuf_fragment>
@@ -191,6 +231,13 @@ void main() {
   #include <colorspace_fragment>
 }
 `;
+}
+
+/** The photosphere's fragment shader at tier 2: the full 27-cell grain. */
+export const SUN_FRAG = sunFragment( false );
+/** Tiers 0 and 1: the same shader with the 8-cell grain (internal #549: the grain cost 9.5 ms a frame at 1440 x 900 on an Iris Plus 640). */
+export const SUN_FRAG_CHEAP = sunFragment( true );
+
 
 const CORONA_VERT = /* glsl */`
 #include <common>
@@ -265,7 +312,7 @@ export function createSunDetail(opts = {}) {
   const material = new THREE.ShaderMaterial({
     name: 'sun-photosphere',
     vertexShader: SUN_VERT,
-    fragmentShader: SUN_FRAG,
+    fragmentShader: tier >= 2 ? SUN_FRAG : SUN_FRAG_CHEAP,
     uniforms: {
       uMap: { value: plain.map || null },
       uHasMap: { value: plain.map ? 1 : 0 },
@@ -300,6 +347,9 @@ export function createSunDetail(opts = {}) {
   let latched = false;
   let regions = [];
   let drawn = 0;
+  let groups = 0;
+  let pairs = 0;
+  const _part = { observedMs: 0, latDeg: 0, eastDeg: 0 };
   let on = false;
   const _q = new THREE.Quaternion();
   const _v = new THREE.Vector3();
@@ -353,7 +403,7 @@ export function createSunDetail(opts = {}) {
       c.uOpacity.value = Math.min(1, Math.max(0, (share - SUN_DETAIL_AT * 0.8) / (SUN_DETAIL_AT * 0.8)));
 
       // Today's groups, counted from the meridian that faces the Earth, in the Sun's own axes.
-      drawn = 0;
+      drawn = 0; groups = 0; pairs = 0;
       if (regions.length && earthWorld && regionsFresh(regions[0].observedMs, tMs)) {
         _v.copy(earthWorld);
         mesh.worldToLocal(_v);
@@ -361,10 +411,16 @@ export function createSunDetail(opts = {}) {
           _v.normalize();
           _e[0] = _v.x; _e[1] = _v.y; _e[2] = _v.z;
           for (const region of regions) {
-            if (drawn >= MAX_SPOTS) break;
-            if (!spotDirection(region, _e, tMs, _s)) break;
-            spots[drawn].set(_s[0], _s[1], _s[2], spotRadiusRad(region.areaMsh));
-            drawn += 1;
+            const parts = splitRegion(region);
+            if (drawn + parts.length > MAX_SPOTS) break; // a pair is never drawn as half of one
+            for (const part of parts) {
+              _part.observedMs = region.observedMs; _part.latDeg = part.latDeg; _part.eastDeg = part.eastDeg;
+              if (!spotDirection(_part, _e, tMs, _s)) break;
+              spots[drawn].set(_s[0], _s[1], _s[2], spotRadiusRad(part.areaMsh));
+              drawn += 1;
+            }
+            groups += 1;
+            if (parts.length === 2) pairs += 1;
           }
         }
       }
@@ -375,7 +431,7 @@ export function createSunDetail(opts = {}) {
     /** The frame latch tripped: back to the flat disc and the round glow, for good. */
     latch() { latched = true; wear(false); },
     state() {
-      return { on, latched, grain: material.uniforms.uGrain.value, spots: drawn, regions: regions.length,
+      return { on, latched, grain: material.uniforms.uGrain.value, spots: groups, circles: drawn, pairs, regions: regions.length,
         observedMs: regions.length ? regions[0].observedMs : null, corona: corona.material.uniforms.uOpacity.value };
     },
     dispose() {

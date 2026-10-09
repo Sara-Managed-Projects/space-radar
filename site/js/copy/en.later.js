@@ -38,6 +38,7 @@ Object.assign(COPY, {
       zone: 'Habitable zone, computed',
       starTemperature: 'Surface temperature',
       starWidth: 'Width',
+      starGlow: 'Glow',
       starMass: 'Mass',
       planets: 'Planets drawn',
       stars: 'Stars in the system',
@@ -93,6 +94,8 @@ Object.assign(COPY, {
     notMeasured: 'Not measured',
     starPoint: 'Not measured: drawn as a point of light',
     starWhite: 'Not measured: drawn white',
+    // The star is a point at whole-system scale (true size); its glow has a floor so its colour can be seen.
+    starGlowValue: 'Drawn wider than the star, in its colour, so it can be seen from far out',
     starsOne: '{n} in the catalogue; one is drawn',
     // A circumbinary system with a typed row for its pair (registry/systems-binaries.yaml, internal #475).
     starsBoth: 'Two, both drawn',

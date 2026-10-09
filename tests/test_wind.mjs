@@ -194,5 +194,20 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   check(/pae-paha\.pacioos\.hawaii\.edu/.test(credits) && /Global Forecast System/.test(credits), 'CREDITS.md names the model and the server');
 }
 
+// TIER COUNTS (internal #146): the streaks follow the device tier, and data saving halves each.
+{
+  check(JSON.stringify(S.COUNT_BY_TIER) === '[600,1200,2400]' && S.COUNT_BY_TIER[1] === S.COUNT, 'tiers 0, 1 and 2 draw 600, 1200 and 2400 streaks, tier 1 the default');
+  check(S.streakCount(0) === 600 && S.streakCount(1) === 1200 && S.streakCount(2) === 2400 && S.streakCount(undefined) === 1200 && S.streakCount(9) === 2400 && S.streakCount(-3) === 600, 'streakCount clamps and defaults to tier 1');
+  check(S.streakCount(2, true) === 1200 && S.streakCount(0, true) === 300, 'data saving halves whatever the tier gave');
+  const e0 = { children: [], add(o) { this.children.push(o); } };
+  const THREE_ = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const mesh = new THREE_.Mesh(new THREE_.SphereGeometry(1, 8, 8));
+  const w0 = S.createWind({ earth: () => mesh, tier: 0 });
+  w0.set(true);
+  const lines0 = w0.lines ? w0.lines() : null;
+  check(lines0 === null || lines0.geometry.attributes.position.count === 600 * S.TRAIL * 2, 'a tier 0 wind allocates 600 streaks');
+  w0.dispose();
+}
+
 if (problems.length) { console.error('wind FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`wind ok: one request for 37 x 72 points, refused unless whole; 10 m/s for an hour is 0.324 degrees; ${S.COUNT} streaks on the Earth's frame, still under reduced motion; nothing at boot`);

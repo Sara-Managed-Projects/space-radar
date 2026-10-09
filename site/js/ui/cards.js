@@ -2618,6 +2618,7 @@ export function sunSpotsLine(ctx) {
   try { st = ctx.sunDetail.state(); } catch { st = null; }
   if (!st || !(st.spots > 0) || !Number.isFinite(st.observedMs) || !COPY.sun) return null;
   const day = new Date(st.observedMs).toISOString().slice(0, 10);
+  if (st.pairs > 0 && COPY.sun.spotsPaired) return t(st.spots === 1 ? COPY.sun.spotsPairedOne : COPY.sun.spotsPaired, { n: fmt.int(st.spots), pairs: fmt.int(st.pairs), date: day });
   return t(st.spots === 1 ? COPY.sun.spotsOne : COPY.sun.spots, { n: fmt.int(st.spots), date: day });
 }
 

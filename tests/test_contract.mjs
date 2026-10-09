@@ -2950,6 +2950,23 @@ for (const file of allFiles) {
   }
 }
 
+// --- spec 0053 task 4 (internal #146): a streak layer is lines on the Earth's frame, never a screen-covering pass --
+// The wind is a few thousand short lines that turn with the Earth. A wind drawn as one full-screen quad
+// (a fragment shader over the whole frame) costs every pixel of every device, so the particle layers refuse it.
+{
+  const QUAD = [/PlaneGeometry\s*\(\s*2\s*,\s*2/, /OrthographicCamera/, /FullScreenQuad/, /gl_Position\s*=\s*vec4\(\s*position\.xy/, /WebGLRenderTarget/];
+  const quadWords = (src) => QUAD.filter((re) => re.test(src)).map((re) => re.source);
+  // watched to fail on a scratch full-screen quad (the acceptance of the task)
+  const scratch = 'const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: "void main(){ gl_Position = vec4( position.xy, 0.0, 1.0 ); }" }));';
+  if (quadWords(scratch).length < 2) problems.push('QUAD     the full-screen-quad check does not catch a scratch quad: it is not watching');
+  for (const f of ['wind.js']) {
+    const src = readFileSync(join(JS, 'scene', f), 'utf8');
+    const hit = quadWords(src);
+    if (hit.length) problems.push(`QUAD     scene/${f} draws a screen-covering pass (${hit.join(', ')}): a streak layer is LineSegments on the Earth's frame (internal #146)`);
+  }
+  notes.push('quad: scene/wind.js is lines, not a full-screen pass (and the check fails on a scratch quad)');
+}
+
 // --- spec 0034: what stays forbidden, and the cinematic numbers ------------------------------
 // No lens flare, no bloom, no post-processing, ever (docs/design-language.md, "Cinematic language
 // (0034)"). The star-stretch is geometry in two vertex shaders; a pass over the whole frame is the

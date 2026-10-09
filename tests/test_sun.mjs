@@ -125,6 +125,37 @@ const FEED = [
   check(u.uSpotCount.value === 3 && sun.state().spots === 3, 'three groups are drawn');
   const s0 = u.uSpots.value[0]; // region 4549: N10, 10 degrees west
   check(near(s0.y, Math.sin(10 * Math.PI / 180), 1e-6) && s0.z > 0.9 && s0.x > 0 && near(s0.w, R.spotRadiusRad(60), 1e-9), `a group north and west of the centre is up and toward n x earth (+X here): ${s0.toArray().map((v) => v.toFixed(3))}`);
+
+  // A group of several spots with a reported width is drawn as a leading spot to the west and a following spot to the east.
+  {
+    const wide = R.parseSunRegions([
+      { observed_date: '2026-10-06', region: 1, latitude: 10, longitude: -10, area: 290, number_spots: 30, extent: 11 },
+      { observed_date: '2026-10-06', region: 2, latitude: -13, longitude: 20, area: 40, number_spots: 1, extent: 2 },
+      { observed_date: '2026-10-06', region: 3, latitude: 18, longitude: -46, area: 40, number_spots: 8 },
+    ]);
+    check(wide[0].extentDeg === 11 && wide[1].extentDeg === 2 && wide[2].extentDeg === 0, 'the feed\'s extent rides through the parser (0 when absent)');
+    const two = R.splitRegion(wide[0]);
+    check(two.length === 2 && two[0].part === 'leading' && two[1].part === 'following', 'a wide group of many spots is two circles');
+    check(two[0].eastDeg < two[1].eastDeg, 'the leading spot is the western one (smaller east)');
+    check(Math.abs(two[0].areaMsh + two[1].areaMsh - 290) < 1e-9 && two[0].latDeg === 10 && two[1].latDeg === 10, 'the two share the reported area and latitude');
+    const gapDeg = two[1].eastDeg - two[0].eastDeg;
+    check(Math.abs((two[0].eastDeg + two[1].eastDeg) / 2 - (-10)) < 1e-9 && gapDeg >= (R.spotRadiusRad(two[0].areaMsh) + R.spotRadiusRad(two[1].areaMsh)) * 180 / Math.PI, `centred on the reported place, apart by ${gapDeg.toFixed(2)} degrees, the circles do not overlap`);
+    check(R.splitRegion(wide[1]).length === 1 && R.splitRegion(wide[2]).length === 1, 'a single spot, or a group with no width given, stays one circle');
+    sun.setRegions(wide);
+    sun.update(Date.UTC(2026, 9, 6), 1.5, earth);
+    const ws = sun.state();
+    check(u.uSpotCount.value === 4 && ws.spots === 3 && ws.circles === 4 && ws.pairs === 1, `three groups, four circles, one pair (${JSON.stringify({ s: ws.spots, c: ws.circles, p: ws.pairs })})`);
+    check(u.uSpots.value[0].x < u.uSpots.value[1].x || Math.abs(u.uSpots.value[0].x - u.uSpots.value[1].x) > 1e-6, 'the two circles stand at different places');
+    // a pair is never drawn as half of one when the array is nearly full
+    const many = [];
+    for (let k = 0; k < 12; k++) many.push({ observed_date: '2026-10-06', region: 100 + k, latitude: 5 + k, longitude: -50 + 8 * k, area: 500 - 10 * k, number_spots: 10, extent: 8 });
+    sun.setRegions(R.parseSunRegions(many));
+    sun.update(Date.UTC(2026, 9, 6), 1.5, earth);
+    const ms = sun.state();
+    check(ms.circles <= R.MAX_SPOTS && ms.circles === ms.spots + ms.pairs && u.uSpotCount.value === ms.circles, `twelve wide groups fit the array as whole pairs (${ms.spots} groups, ${ms.circles} circles)`);
+    sun.setRegions(R.parseSunRegions(FEED));
+    sun.update(Date.UTC(2026, 9, 6), 1.5, earth);
+  }
   sun.update(Date.UTC(2026, 9, 20), 1.5, earth);
   check(sun.state().spots === 0, 'two weeks from the list\'s day nothing is drawn');
   // Tier 0: no grain. The latch: everything off, for good.
@@ -155,6 +186,7 @@ const FEED = [
   check(fromEarth < S.SUN_DETAIL_AT / 5, `a first visit, at the Earth, is far outside the mark: ${fromEarth.toFixed(4)} against ${S.SUN_DETAIL_AT}`);
   check(/tilesSaveData \|\| tiers\.latched\) return;\s*\n\s*import\('\.\/data\/sunregions\.js'\)/.test(main), 'NOAA\'s list is not fetched on a connection that asked to save data');
   check(typeof COPY.drawing.worldSun === 'string' && /model/.test(COPY.drawing.worldSun) && /illustrative/.test(COPY.drawing.worldSun), 'the card says what is modelled and what is illustrative');
+  check(/\{n\}/.test(COPY.sun.spotsPaired) && /\{pairs\}/.test(COPY.sun.spotsPaired) && /\{date\}/.test(COPY.sun.spotsPaired) && /illustrative/.test(COPY.sun.spotsPaired) && /illustrative/.test(COPY.sun.spotsPairedOne) && /leading/.test(COPY.sun.spotsPaired), 'the card says which groups are drawn as two and that the gap and the split are illustrative');
   check(COPY.sun && /\{n\}/.test(COPY.sun.spots) && /\{date\}/.test(COPY.sun.spots) && /NOAA/.test(COPY.sun.spots) && /NOAA/.test(COPY.sun.regionsCredit), 'and whose list the spots are');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
   check(credits.includes(COPY.sun.regionsCredit) && credits.includes('solar_regions.json'), 'CREDITS.md carries the sunspot list\'s credit line');
@@ -194,6 +226,34 @@ const FEED = [
   }
   const { COPY: C2 } = await import(pathToFileURL(join(ROOT, 'site/js/copy/en.js')).href);
   check(/stars beside it are faded/.test(C2.drawing.worldSun), 'the Sun\'s card says the stars beside it are faded');
+}
+
+// THE GRAIN AT TIERS 0 AND 1 (internal #549): it cost 9.5 ms a frame at 1440 x 900 on an Iris Plus 640. Tiers 0 and 1 read the 8
+// cells on the point's near side instead of 27; tier 2's source is unchanged. The twin measures what that changes.
+{
+  const S2 = await import(pathToFileURL(join(ROOT, 'site/js/scene/sun.js')).href);
+  check(S2.SUN_FRAG.includes('for ( int z = -1; z <= 1; z++ )') && !S2.SUN_FRAG.includes('step( vec3( 0.5 ), f )'), 'tier 2 keeps the full 27-cell loop');
+  check(S2.SUN_FRAG_CHEAP.includes('for ( int z = 0; z <= 1; z++ )') && S2.SUN_FRAG_CHEAP.includes('step( vec3( 0.5 ), f )') && !S2.SUN_FRAG_CHEAP.includes('z = -1'), 'tiers 0 and 1 read 8 cells toward the nearer faces');
+  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/float cells[\s\S]*?\n}\n/, '');
+  check(strip(S2.SUN_FRAG) === strip(S2.SUN_FRAG_CHEAP), 'everything but the cell loop is the same source at every tier');
+  check(!/\bhalf\b|\binput\b|\boutput\b|\bsample\b|\bfilter\b/.test(S2.SUN_FRAG_CHEAP), 'no reserved GLSL word in the cheap source either');
+  let seed = 12345;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  let same = 0, sumAbs = 0, maxLaneDiff = 0, sumFull = 0, sumNear = 0;
+  const N = 4000;
+  const lane = (c) => { const x = Math.min(1, Math.max(0, c / 0.35)); return x * x * (3 - 2 * x); };
+  for (let k = 0; k < N; k++) {
+    const p = [rnd() * 80 - 40, rnd() * 80 - 40, rnd() * 80 - 40];
+    const t = rnd();
+    const a = S2.cellsTwin(p, t, false), b = S2.cellsTwin(p, t, true);
+    if (Math.abs(a - b) < 1e-12) same++;
+    const dl = Math.abs(lane(a) - lane(b));
+    sumAbs += dl; maxLaneDiff = Math.max(maxLaneDiff, dl); sumFull += lane(a); sumNear += lane(b);
+  }
+  check(same / N > 0.8, `the 8 cells give the very same value at ${(100 * same / N).toFixed(1)} % of points (over 80 % wanted)`);
+  check(sumAbs / N < 0.03, `and the lane shade differs by ${(sumAbs / N).toFixed(4)} on average (under 0.03)`);
+  check(Math.abs(sumFull - sumNear) / N < 0.02, `the mean lane shade moves by ${(Math.abs(sumFull - sumNear) / N).toFixed(4)} (the picture's overall brightness holds)`);
+  console.log(`grain at tiers 0-1: ${(100 * same / N).toFixed(1)} % identical points, mean lane shade difference ${(sumAbs / N).toFixed(4)}, worst ${maxLaneDiff.toFixed(2)}`);
 }
 
 if (problems.length) {

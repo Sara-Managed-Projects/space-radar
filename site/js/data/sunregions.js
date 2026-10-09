@@ -15,6 +15,10 @@
 //                  `location` is "S12E24", so POSITIVE IS EAST -- the side turning into view
 //   area           50, millionths of the Sun's visible hemisphere; null for a region with no spots
 //   number_spots   1
+//   extent         11, the group's width in heliographic degrees (NOAA's column 'LL', the second
+//                  number after the class in the text product; MEASURED 2026-10-09 in the feed as
+//                  a whole number from 2 to 11 for the day's groups; NOAA's own definition of the
+//                  column was not readable today, so it is used only to space a pair, and capped)
 // NOAA's products are US Government work (CREDITS.md 4.4); the app already credits SWPC for the
 // aurora and the Kp index.
 //
@@ -71,7 +75,8 @@ export function parseSunRegions(json) {
     // `Number(null)` is 0: a region with no area is a plage with no spots, and is not a spot.
     if (r.latitude === null || r.longitude === null || !Number.isFinite(lat) || !Number.isFinite(east) || !(area > 0)) continue;
     if (Math.abs(lat) > 90 || Math.abs(east) > 180) continue;
-    out.push({ region: Number(r.region) || 0, latDeg: lat, eastDeg: east, areaMsh: area, spots: Number(r.number_spots) || 0, observedMs });
+    const extent = Number(r.extent);
+    out.push({ region: Number(r.region) || 0, latDeg: lat, eastDeg: east, areaMsh: area, spots: Number(r.number_spots) || 0, extentDeg: Number.isFinite(extent) && extent > 0 ? extent : 0, observedMs });
   }
   out.sort((a, b) => (b.areaMsh - a.areaMsh) || (a.region - b.region));
   return out.slice(0, MAX_SPOTS);
@@ -83,6 +88,37 @@ export function parseSunRegions(json) {
  */
 export function spotRadiusRad(areaMsh) {
   return Math.sqrt(2 * Math.max(areaMsh, MIN_AREA_MSH) * 1e-6);
+}
+
+/** A group drawn as two needs at least this many spots and this much width (degrees) in NOAA's list. */
+export const PAIR_MIN_SPOTS = 2;
+export const PAIR_MIN_EXTENT_DEG = 4;
+/** The leading spot's share of the group's area (illustrative: the split is chosen, not measured). */
+export const LEADING_SHARE = 0.6;
+/** The two centres are this share of the reported width apart, never closer than their edges plus a gap. */
+export const PAIR_SPACING = 0.5;
+
+/**
+ * A group as the circles that are drawn for it: one, or for a group of two or more spots and a
+ * reported width of 4 degrees or more, a LEADING spot to the west and a FOLLOWING spot to the east
+ * (the leading part is the one in the leading position by longitude: McClintock, Norton and Li, "Re-examining
+ * Sunspot Tilt Angle to Include Anti-Hale Statistics", arXiv:1412.5094, read 2026-10-09; the Sun turns
+ * toward the west as seen from the Earth, so west leads). Same latitude, same total area. How the area is
+ * split and how far apart the two are is illustrative.
+ * @returns {{ eastDeg: number, latDeg: number, areaMsh: number, part: 'whole'|'leading'|'following' }[]}
+ */
+export function splitRegion(region) {
+  const whole = [{ eastDeg: region.eastDeg, latDeg: region.latDeg, areaMsh: region.areaMsh, part: 'whole' }];
+  if (!(region.spots >= PAIR_MIN_SPOTS) || !(region.extentDeg >= PAIR_MIN_EXTENT_DEG)) return whole;
+  const lead = region.areaMsh * LEADING_SHARE;
+  const follow = region.areaMsh - lead;
+  // The circles' radii in degrees; the centres sit at least that far plus a gap apart, so two spots never merge into one blob.
+  const radii = (spotRadiusRad(lead) + spotRadiusRad(follow)) / RAD;
+  const sep = Math.min(Math.max(region.extentDeg * PAIR_SPACING, radii * 1.2), 20);
+  return [
+    { eastDeg: region.eastDeg - sep / 2, latDeg: region.latDeg, areaMsh: lead, part: 'leading' },
+    { eastDeg: region.eastDeg + sep / 2, latDeg: region.latDeg, areaMsh: follow, part: 'following' },
+  ];
 }
 
 /** How far west of where it was reported a group has been carried by `tMs`, degrees. */

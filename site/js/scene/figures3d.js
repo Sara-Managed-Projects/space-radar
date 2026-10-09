@@ -433,6 +433,8 @@ export function createFigures3d(ctx, opts = {}) {
       const dtMs = Math.min(500, Math.max(0, t - (lastUpdate || t)));
       if (Math.abs(have - want) > 0.002) sf.setPointScale(have + (want - have) * (1 - Math.exp(-dtMs / 500)));
       else if (have !== want) sf.setPointScale(want);
+      // The 3D stars the sphere hands over to step forward by the same factor (internal #387: Orion seen from the side was one-pixel points).
+      if (ctx.stars3d && ctx.stars3d.setPointScale) ctx.stars3d.setPointScale(sf.pointScale());
     }
     lastUpdate = t;
     paintLabels(shown, camera, renderer);

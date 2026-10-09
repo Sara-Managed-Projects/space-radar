@@ -46,11 +46,19 @@ stars:
     name: Alpha Centauri A
     why: "The larger of the nearest pair of stars to the Sun, 1.1 times the Sun's mass. To the eye, it and B are one star, the third-brightest in the sky."
     source: "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)"
+    radius_suns: 1.224
+    radius_err_suns: 0.003
+    physical_source: "https://arxiv.org/abs/astro-ph/0303634 (read 2026-10-09)"
+    physical_note: "Kervella et al. 2003, \"The diameters of Alpha Centauri A and B\": \"linear diameters of D[A] = 1.224 +/- 0.003 Dsun and D[B] = 0.863 +/- 0.005 Dsun\" (diameters in solar diameters, so radii in solar radii; no temperature in the abstract)"
 
   - hip: 71681
     name: Alpha Centauri B
     why: "The orange half of the nearest pair of stars to the Sun. It and Alpha Centauri A go round each other once every 79 years."
     source: "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)"
+    radius_suns: 0.863
+    radius_err_suns: 0.005
+    physical_source: "https://arxiv.org/abs/astro-ph/0303634 (read 2026-10-09)"
+    physical_note: "Kervella et al. 2003, \"The diameters of Alpha Centauri A and B\": \"linear diameters of D[A] = 1.224 +/- 0.003 Dsun and D[B] = 0.863 +/- 0.005 Dsun\" (diameters in solar diameters, so radii in solar radii; no temperature in the abstract)"
 
   - hip: 87937
     name: Barnard's Star
@@ -72,6 +80,12 @@ stars:
     name: Sirius
     why: "The brightest star in the night sky, almost twice as bright as Canopus, the next. A faint white dwarf, Sirius B, circles it."
     source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)"
+    radius_suns: 1.713
+    radius_err_suns: 0.009
+    teff_k: 9845
+    teff_err_k: 64
+    physical_source: "https://arxiv.org/abs/1010.3790 (read 2026-10-09)"
+    physical_note: "Davis et al. 2010, \"The Angular Diameter and Fundamental Parameters of Sirius A\": \"Combination with the Hipparcos parallax gives the radius equal to 1.713 +/- 0.009R_sun\"; \"the effective temperature equal to 9845 +/- 64 K\""
 
   - hip: 16537
     name: Epsilon Eridani
@@ -99,6 +113,10 @@ stars:
     name: Procyon
     why: "Its name means 'before the dog': it crosses the sky just ahead of Sirius, the Dog Star. Like Sirius, it has a white dwarf companion."
     source: "https://en.wikipedia.org/wiki/Procyon (read 2026-09-22)"
+    radius_suns: 2.048
+    radius_err_suns: 0.025
+    physical_source: "https://arxiv.org/abs/astro-ph/0312068 (read 2026-10-09)"
+    physical_note: "Kervella et al. 2003, \"Modeling of Alpha Cen and Procyon using VLTI observations\": \"Using the Hipparcos parallax, we obtain a linear radius of 2.048 +/- 0.025 R_sun\" (no temperature in the abstract, so the disc colour stays the colour-index estimate)"
 
   - hip: 8102
     name: Tau Ceti
@@ -125,6 +143,12 @@ stars:
     name: Arcturus
     why: "The brightest star in the northern half of the sky, a red giant 25 times the Sun's size. Its light opened the 1933 Chicago World's Fair."
     source: "https://en.wikipedia.org/wiki/Arcturus (read 2026-09-22)"
+    radius_suns: 25.4
+    radius_err_suns: 0.2
+    teff_k: 4286
+    teff_err_k: 30
+    physical_source: "https://arxiv.org/abs/1109.4425 (read 2026-10-09)"
+    physical_note: "Ramirez and Allende Prieto 2011, \"Fundamental Parameters and Chemical Composition of Arcturus\": \"R = 25.4+/-0.2 Rsun\", \"Teff = 4286+/-30 K\""
 
   - hip: 91262
     name: Vega
@@ -180,6 +204,12 @@ stars:
     name: Deneb
     why: "The most distant of the thirty brightest stars and one of the most luminous. Estimates of how far away it is differ by nearly two to one."
     source: "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)"
+    radius_suns: 203
+    radius_err_suns: 17
+    teff_k: 8525
+    teff_err_k: 75
+    physical_source: "https://arxiv.org/abs/0712.0040 (read 2026-10-09)"
+    physical_note: "Schiller and Przybilla 2008 (arXiv posting 2007), \"Quantitative spectroscopy of Deneb\": \"R = 203 +/- 17 R_sun\", \"Teff = 8525 +/- 75 K\" (a spectroscopic radius from a model atmosphere fitted to the spectrum and the Hipparcos distance, not an interferometer: it is a measurement of Deneb, with a 8 % error)"
 
   - hip: 49669
     name: Regulus

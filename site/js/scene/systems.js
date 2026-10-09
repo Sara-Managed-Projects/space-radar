@@ -289,6 +289,21 @@ export function floorRadiusUnits(trueUnits, viewUnits) {
   return Math.max(trueUnits, viewUnits * SYSTEM_VIEW.MIN_ANGULAR_RADIUS_RAD);
 }
 
+/**
+ * THE STAR'S GLOW FLOOR (internal #476). At whole-system scale the star is the one-pixel floor, and a red
+ * dwarf's colour cannot be read in a pixel. Its glow (the sprite on the star, in the star's colour) is
+ * therefore never narrower than GLOW_FLOOR_X floors across in radius; the card says it is drawn wider.
+ * Returns the sprite's scale in the star's own radii (the sprite is the star mesh's child), never under
+ * the 4.5 it has always had.
+ */
+export const GLOW_FLOOR_X = 6;
+export const GLOW_BASE_SCALE = 4.5;
+export function glowScale(drawnRadiusUnits, viewUnits) {
+  if (!(drawnRadiusUnits > 0) || !(viewUnits > 0)) return GLOW_BASE_SCALE;
+  const wantRadius = GLOW_FLOOR_X * viewUnits * SYSTEM_VIEW.MIN_ANGULAR_RADIUS_RAD;
+  return Math.max(GLOW_BASE_SCALE, (2 * wantRadius) / drawnRadiusUnits);
+}
+
 /** How far out a camera must sit, in units, to hold a circle of `radiusUnits` seen at co-latitude `polar`. */
 export function fitDistanceUnits(radiusUnits, fovDeg, aspect, polar = 0, fill = 0.85) {
   const halfV = Math.tan((fovDeg * Math.PI) / 360);
@@ -397,7 +412,7 @@ export function createSystems(scene, ctx = {}) {
     starMesh.userData.recordId = system.hostId;
     starMesh.userData.trueRadiusUnits = starRadiusKm(system) / unit;
     const halo = coronaSprite();
-    if (halo) { halo.material.color = starColour.clone(); starMesh.add(halo); }
+    if (halo) { halo.material.color = starColour.clone(); starMesh.add(halo); starMesh.userData.halo = halo; }
     group.add(starMesh);
     // The second sun of a circumbinary pair: drawn, not picked (it is no record of the catalogue).
     let companionMesh = null;
@@ -409,7 +424,7 @@ export function createSystems(scene, ctx = {}) {
       companionMesh.name = `systems:companion:${system.hostId}`;
       companionMesh.userData.trueRadiusUnits = c.radiusSuns * SUN_RADIUS_KM / unit;
       const chalo = coronaSprite();
-      if (chalo) { chalo.material.color = ccol.clone(); companionMesh.add(chalo); }
+      if (chalo) { chalo.material.color = ccol.clone(); companionMesh.add(chalo); companionMesh.userData.halo = chalo; }
       group.add(companionMesh);
     }
 
@@ -603,6 +618,7 @@ export function createSystems(scene, ctx = {}) {
       const comp = current.companionMesh;
       comp.position.copy(_p).addScaledVector(_q, fA);
       comp.scale.setScalar(floorRadiusUnits(comp.userData.trueRadiusUnits, cam ? cam.position.distanceTo(comp.position) : 0));
+      if (comp.userData.halo) comp.userData.halo.scale.setScalar(glowScale(comp.scale.x, cam ? cam.position.distanceTo(comp.position) : 0));
       star.position.copy(_p).addScaledVector(_q, -fB);
       camStar = cam ? cam.position.distanceTo(star.position) : 0;
     } else {
@@ -610,6 +626,7 @@ export function createSystems(scene, ctx = {}) {
       camStar = cam ? cam.position.distanceTo(_p) : 0;
     }
     star.scale.setScalar(floorRadiusUnits(star.userData.trueRadiusUnits, camStar));
+    if (star.userData.halo) star.userData.halo.scale.setScalar(glowScale(star.scale.x, camStar));
     for (const ring of current.rings) ring.position.copy(_p);
     current.mercury.position.copy(_p);
     const label = current.mercury.getObjectByName('systems:mercury-label');

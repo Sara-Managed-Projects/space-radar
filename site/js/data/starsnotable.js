@@ -25,13 +25,19 @@ export const STARS_NOTABLE = [
     "hip": 71683,
     "name": "Alpha Centauri A",
     "why": "The larger of the nearest pair of stars to the Sun, 1.1 times the Sun's mass. To the eye, it and B are one star, the third-brightest in the sky.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)",
+    "radius_suns": 1.224,
+    "radius_err_suns": 0.003,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0303634 (read 2026-10-09)"
   },
   {
     "hip": 71681,
     "name": "Alpha Centauri B",
     "why": "The orange half of the nearest pair of stars to the Sun. It and Alpha Centauri A go round each other once every 79 years.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)",
+    "radius_suns": 0.863,
+    "radius_err_suns": 0.005,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0303634 (read 2026-10-09)"
   },
   {
     "hip": 87937,
@@ -54,7 +60,12 @@ export const STARS_NOTABLE = [
     "hip": 32349,
     "name": "Sirius",
     "why": "The brightest star in the night sky, almost twice as bright as Canopus, the next. A faint white dwarf, Sirius B, circles it.",
-    "source": "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)",
+    "radius_suns": 1.713,
+    "radius_err_suns": 0.009,
+    "teff_k": 9845,
+    "teff_err_k": 64,
+    "physical_source": "https://arxiv.org/abs/1010.3790 (read 2026-10-09)"
   },
   {
     "hip": 16537,
@@ -82,7 +93,10 @@ export const STARS_NOTABLE = [
     "hip": 37279,
     "name": "Procyon",
     "why": "Its name means 'before the dog': it crosses the sky just ahead of Sirius, the Dog Star. Like Sirius, it has a white dwarf companion.",
-    "source": "https://en.wikipedia.org/wiki/Procyon (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Procyon (read 2026-09-22)",
+    "radius_suns": 2.048,
+    "radius_err_suns": 0.025,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0312068 (read 2026-10-09)"
   },
   {
     "hip": 8102,
@@ -112,7 +126,12 @@ export const STARS_NOTABLE = [
     "hip": 69673,
     "name": "Arcturus",
     "why": "The brightest star in the northern half of the sky, a red giant 25 times the Sun's size. Its light opened the 1933 Chicago World's Fair.",
-    "source": "https://en.wikipedia.org/wiki/Arcturus (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Arcturus (read 2026-09-22)",
+    "radius_suns": 25.4,
+    "radius_err_suns": 0.2,
+    "teff_k": 4286,
+    "teff_err_k": 30,
+    "physical_source": "https://arxiv.org/abs/1109.4425 (read 2026-10-09)"
   },
   {
     "hip": 91262,
@@ -178,7 +197,12 @@ export const STARS_NOTABLE = [
     "hip": 102098,
     "name": "Deneb",
     "why": "The most distant of the thirty brightest stars and one of the most luminous. Estimates of how far away it is differ by nearly two to one.",
-    "source": "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)",
+    "radius_suns": 203,
+    "radius_err_suns": 17,
+    "teff_k": 8525,
+    "teff_err_k": 75,
+    "physical_source": "https://arxiv.org/abs/0712.0040 (read 2026-10-09)"
   },
   {
     "hip": 49669,

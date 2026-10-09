@@ -433,7 +433,15 @@ export async function boot({ setStatus } = {}) {
     else if (isLadderStage(id)) ctx.wantNebulae();
     if (isSystemStage(id)) systems.enter(id);
     else systems.leave();
+    // The Milky Way is fetched, built and its shaders compiled while the stellar rung is up (internal
+    // #549: entering the galaxy rung stalled about three seconds), not on the galaxy rung's first frame.
+    // Not on a metered connection, where the 2.2 MB file waits for the rung that draws it.
+    if (id === 'stellar' && !galaxyPrewarm) {
+      const saver = typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData;
+      if (!saver) galaxyPrewarm = setTimeout(() => { galaxy.prewarm(renderer, ctx.camera); }, 2500);
+    }
   });
+  let galaxyPrewarm = 0;
   ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
@@ -526,6 +534,7 @@ export async function boot({ setStatus } = {}) {
       ctx.wind = m.createWind({
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+        tier: ctx.quality ? ctx.quality.tier : 1, // 600, 1200 or 2400 streaks (scene/wind.js COUNT_BY_TIER)
         reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
         onChange: tellOverlay,
       });

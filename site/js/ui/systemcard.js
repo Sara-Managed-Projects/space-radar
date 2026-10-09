@@ -59,6 +59,7 @@ export function starRows(system) {
   const rows = [];
   rows.push([R.starTemperature, Number.isFinite(s.teffK) ? t(C.kelvin, { n: fmt.int(s.teffK) }) : C.starWhite]);
   rows.push([R.starWidth, Number.isFinite(s.radiusSuns) ? t(COPY.card.values.suns, { n: fmt.smart(s.radiusSuns) }) : C.starPoint]);
+  rows.push([R.starGlow, C.starGlowValue]);
   rows.push([R.starMass, Number.isFinite(s.massSuns) ? t(COPY.card.values.suns, { n: fmt.smart(s.massSuns) }) : C.notMeasured]);
   rows.push([R.planets, fmt.int(system.planets.length)]);
   const pair = system.binary || null;

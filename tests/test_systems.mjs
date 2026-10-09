@@ -377,6 +377,25 @@ Date.now = realDateNow;
   void kepler;
 }
 
+// THE STAR'S GLOW FLOOR (internal #476): at whole-system scale the star is a pixel; its glow is not narrower than GLOW_FLOOR_X floors.
+{
+  const min = S.SYSTEM_VIEW.MIN_ANGULAR_RADIUS_RAD;
+  const view = 200;
+  const drawn = S.floorRadiusUnits(0.01, view); // a small red dwarf, far out: at the floor
+  const k = S.glowScale(drawn, view);
+  check(Math.abs(k * drawn / 2 - S.GLOW_FLOOR_X * view * min) < 1e-12 && k > S.GLOW_BASE_SCALE, `far out the glow is ${S.GLOW_FLOOR_X} floors in radius (scale ${k.toFixed(1)} star radii)`);
+  const close = 0.01;
+  check(S.glowScale(close, close * 8) === S.GLOW_BASE_SCALE, 'close to the star the glow is the 4.5 it has always been');
+  check(S.glowScale(0, 5) === S.GLOW_BASE_SCALE && S.glowScale(1, 0) === S.GLOW_BASE_SCALE, 'bad inputs give the plain glow');
+  let prev = 0, mono = true;
+  for (let v = 1; v < 1e4; v *= 1.7) { const g = S.glowScale(S.floorRadiusUnits(0.01, v), v) * S.floorRadiusUnits(0.01, v); if (g < prev - 1e-12) mono = false; prev = g; }
+  check(mono, 'the glow\'s width in the scene never shrinks as the camera moves out');
+  const { starRows } = await import(join(JS, 'ui/systemcard.js'));
+  const { COPY: C0 } = await import(join(JS, 'copy/en.js'));
+  await import(join(JS, 'copy/en.later.js'));
+  const rows = starRows({ star: { teffK: 3000, radiusSuns: 0.1, massSuns: 0.1 }, planets: [], starsInSystem: 1, zone: null });
+  check(rows.some((r) => r[0] === C0.starSystem.rows.starGlow && /wider than the star/.test(r[1])), 'the card says the glow is drawn wider than the star');
+}
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);

@@ -1439,6 +1439,9 @@ export const COPY = {
   sun: {
     spots: '{n} sunspot groups are drawn, from NOAA’s list for {date}: each as one round spot at its reported place and size, carried round by the Sun’s turning since then.',
     spotsOne: 'One sunspot group is drawn, from NOAA’s list for {date}: as one round spot at its reported place and size, carried round by the Sun’s turning since then.',
+    // When some of the groups are drawn as two (scene/sun.js, data/sunregions.js splitRegion): {pairs} of the {n}.
+    spotsPaired: '{n} sunspot groups are drawn, from NOAA’s list for {date}, carried round by the Sun’s turning since then. {pairs} with several spots are drawn as a leading spot to the west and a following spot to the east; the gap and how the area is shared between the two are illustrative. The rest are one round spot.',
+    spotsPairedOne: 'One sunspot group is drawn, from NOAA’s list for {date}, carried round by the Sun’s turning since then: as a leading spot to the west and a following spot to the east. The gap and how the area is shared between the two are illustrative.',
     regionsCredit: 'Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary',
   },
 

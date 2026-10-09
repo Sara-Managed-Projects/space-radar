@@ -2637,10 +2637,13 @@ def check_stars_notable(exotics: list) -> list:
                 fail(where, f"`why:` says {phrase!r}, which is true on a date and not forever")
         if r.get("radius_suns") is not None:
             # A width an interferometer measured (internal #412): the radius, its error, the temperature and the page it was read on.
-            ok = all(isinstance(r.get(k), (int, float)) and not isinstance(r.get(k), bool) and r.get(k) > 0
-                     for k in ("radius_suns", "radius_err_suns", "teff_k", "teff_err_k"))
-            if not ok or r["radius_err_suns"] >= r["radius_suns"] or not (2000 <= r["teff_k"] <= 50000):
-                fail(where, "`radius_suns`, `radius_err_suns`, `teff_k` and `teff_err_k` must all be positive numbers, the error under the radius")
+            # The temperature is optional (a paper that measures a width, not a temperature, leaves it out and the
+            # disc keeps its colour-index estimate), but it comes WITH its error or not at all.
+            pos = lambda k: isinstance(r.get(k), (int, float)) and not isinstance(r.get(k), bool) and r.get(k) > 0  # noqa: E731
+            has_teff = r.get("teff_k") is not None or r.get("teff_err_k") is not None
+            ok = pos("radius_suns") and pos("radius_err_suns") and (not has_teff or (pos("teff_k") and pos("teff_err_k")))
+            if not ok or r["radius_err_suns"] >= r["radius_suns"] or (has_teff and not (2000 <= r["teff_k"] <= 50000)):
+                fail(where, "`radius_suns` and `radius_err_suns` must be positive numbers, the error under the radius; `teff_k` and `teff_err_k`, when given, both")
             if not STAR_SOURCE.match(str(r.get("physical_source") or "")):
                 fail(where, "`physical_source:` must be the page and the day it was read, \"https://... (read YYYY-MM-DD)\"")
         if not STAR_SOURCE.match(str(r.get("source") or "")):
