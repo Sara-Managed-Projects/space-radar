@@ -535,7 +535,11 @@ export function createStars3d(scene, opts = {}) {
   function physicalOf(record) {
     const idx = record && record.meta ? record.meta.starIndex : null;
     if (record && record.meta && record.meta.measuredRadiusSuns > 0) {
-      return { radiusKm: SUN_RADIUS_KM * record.meta.measuredRadiusSuns, teffK: record.meta.measuredTeffK, how: 'measured' };
+      // A paper that gives a radius and no temperature (an interferometer measures the width): the
+      // colour then stays the colour-index estimate, and only the width says "measured".
+      let teffK = record.meta.measuredTeffK;
+      if (!(teffK > 0) && data && Number.isInteger(idx) && idx >= 0 && idx < data.count) teffK = starPhysical(data.absMag[idx], data.ci[idx]).teffK;
+      return { radiusKm: SUN_RADIUS_KM * record.meta.measuredRadiusSuns, teffK, how: 'measured' };
     }
     if (!data || !Number.isInteger(idx) || idx < 0 || idx >= data.count) return null;
     const absMag = idx === hiddenIdx && hiddenMags ? hiddenMags[0] : data.absMag[idx];
