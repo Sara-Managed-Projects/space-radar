@@ -208,7 +208,7 @@ if [ "$WHAT" != "app" ]; then
     # otherwise put the harvester's snapshots back in reach of --delete.
     # `aws s3 sync` compares size and time and cannot see Content-Encoding, so a Brotli copy the same
     # size as the raw object already stored (18 star tiles) would be skipped: precompress.mjs gives
-    # such a copy a fresh time, which is why this sync is by size and time and never --size-only.
+    # such a copy a fresh time, which is why this sync stays by size and time.
     precompress "$SITE" data
     "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*" \
       --exclude "*.bin" --exclude "*.json" --exclude "*.csv" --exclude "*.txt"
