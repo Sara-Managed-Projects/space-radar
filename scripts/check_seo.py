@@ -18,6 +18,12 @@ directory scripts/build_seo.py built (not committed: the object pages, 404.html,
   a noindex page is not in the sitemap.
   JSON-LD      every block parses, and says it is schema.org.
   links        every relative .html link on an object page reaches a file.
+  footer       the home page, the object pages, 404.html, the press page and the embed page each end
+               in the shared footer (templates/sitelinks.html): GitHub, Discussions, Instagram,
+               LinkedIn, YouTube, About, Sources, Accuracy, Teachers, Satellites, Starlink; our
+               accounts as rel="me noopener", no Facebook.
+  key file     the IndexNow <key>.txt is in the built tree and holds the key.
+  A page of the embed gallery (embed/index.html) is judged like any indexable page above.
 
 Run:  python3 scripts/build_seo.py --out /tmp/seo && python3 scripts/check_seo.py --out /tmp/seo
       python3 scripts/check_seo.py --root <dir> --out <dir>   # another site/ (the refusal tests)
@@ -32,6 +38,10 @@ import sys
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import indexnow  # noqa: E402
+from seo_footer import REQUIRED_EXTERNAL, REQUIRED_INTERNAL  # noqa: E402
 
 HOST = "https://www.spaceradar.ai"
 NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -51,6 +61,8 @@ class Head(HTMLParser):
         self.hrefs: list[str] = []
         self.ld: list[str] = []
         self.h1 = 0
+        self.footer_links: list[tuple[str, str]] = []  # (href, rel) of every <a> inside a <footer>
+        self._footer = 0
         self._in: str | None = None
         self._buf: list[str] = []
 
@@ -66,12 +78,18 @@ class Head(HTMLParser):
                 self.meta.setdefault(key.lower(), []).append(a.get("content", ""))
         elif tag == "link" and a.get("rel"):
             self.links.setdefault(a["rel"].lower(), []).append(a.get("href", ""))
+        elif tag == "footer":
+            self._footer += 1
         elif tag == "a" and "href" in a:
             self.hrefs.append(a["href"])
+            if self._footer:
+                self.footer_links.append((a["href"], a.get("rel", "").lower()))
         elif tag == "h1":
             self.h1 += 1
 
     def handle_endtag(self, tag):
+        if tag == "footer" and self._footer:
+            self._footer -= 1
         if self._in == "title" and tag == "title":
             self.titles.append("".join(self._buf).strip())
             self._in = None
@@ -110,6 +128,30 @@ def label(site: Path, built: Path, f: Path) -> str:
 def page_url(base: Path, f: Path) -> str:
     rel = f.relative_to(base).as_posix()
     return f"{HOST}/" if rel == "index.html" else f"{HOST}/{rel}"
+
+
+ACCOUNTS = [u for u in REQUIRED_EXTERNAL if "/discussions" not in u]
+
+
+def check_footer(rel: str, h: Head, say) -> None:
+    """The site footer (templates/sitelinks.html): the five outside links exactly, the six inside pages by
+    their path from the site root, our four accounts as followed links that say they are us, and none
+    of the networks the project is not on."""
+    hrefs = [href for href, _ in h.footer_links]
+    for url in REQUIRED_EXTERNAL:
+        if url not in hrefs:
+            say(f"{rel}: the footer does not link {url}")
+    for path in REQUIRED_INTERNAL:
+        if not any(not x.startswith(("http://", "https://")) and x.split("#")[0].lstrip("./").lstrip("/") == path
+                   for x in hrefs):
+            say(f"{rel}: the footer does not link {path}")
+    for url in ACCOUNTS:
+        mine = [relattr.split() for href, relattr in h.footer_links if href == url]
+        if mine and not any("me" in tokens and "nofollow" not in tokens for tokens in mine):
+            say(f"{rel}: no footer link to {url} is rel=\"me noopener\" without nofollow")
+    for href in h.hrefs:
+        if re.match(r"https?://([a-z0-9-]+\.)*(facebook|fb)\.com", href):
+            say(f"{rel}: links to {href}; the project has no Facebook page")
 
 
 def check(root: Path, built: Path) -> list[str]:
@@ -165,7 +207,8 @@ def check(root: Path, built: Path) -> list[str]:
     # --- the pages --------------------------------------------------------------------------
     files = [(site, site / "index.html"), (built, built / "404.html")] \
         + [(built, f) for f in sorted((built / "o").glob("*.html"))] \
-        + [(site, f) for f in sorted((site / "t").glob("*.html"))]
+        + [(site, f) for f in sorted((site / "t").glob("*.html"))] \
+        + ([(built, built / "embed" / "index.html")] if (built / "embed" / "index.html").is_file() else [])
     if not list((built / "o").glob("*.html")):
         say("built/o/ has no object pages")
     titles: dict[str, str] = {}
@@ -177,6 +220,10 @@ def check(root: Path, built: Path) -> list[str]:
         h = Head()
         h.feed(f.read_text(encoding="utf-8"))
         url = page_url(base, f)
+        # The footer is on the home page, the object pages, the 404 page and the pages built beside
+        # them; a trip page is a redirect stub with nothing to read and has none.
+        if f.parent.name != "t":
+            check_footer(rel, h, say)
 
         if len(h.titles) != 1:
             say(f"{rel}: {len(h.titles)} <title> elements, not one")
@@ -247,6 +294,22 @@ def check(root: Path, built: Path) -> list[str]:
                 target = (f.parent / html.unescape(href).split("#")[0])
                 if href.endswith(".html") and not target.is_file():
                     say(f"{rel}: the link {href} reaches no file")
+
+    # --- pages built beside these that the loop above does not judge as a search result -------------
+    press = built / "press" / "index.html"
+    if press.is_file():
+        h = Head()
+        h.feed(press.read_text(encoding="utf-8"))
+        check_footer(label(site, built, press), h, say)
+
+    # --- the IndexNow key file: <key>.txt at the root, holding the key (scripts/indexnow.py) ----------
+    keyfile = built / indexnow.key_file_name()
+    if not keyfile.is_file():
+        say(f"built/{indexnow.key_file_name()} is missing: IndexNow cannot check that we own the site")
+    elif keyfile.read_text(encoding="utf-8").strip() != indexnow.KEY:
+        say(f"built/{indexnow.key_file_name()} does not hold the key")
+    if f"{HOST}/{indexnow.key_file_name()}" in in_sitemap:
+        say("sitemap.xml lists the IndexNow key file")
 
     return problems
 
