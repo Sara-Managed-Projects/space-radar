@@ -1,10 +1,9 @@
 # Stops whose card has a number and no `read YYYY-MM-DD` comment above it (spec 0043 design section 2,
-# internal #121). Counted on 2026-10-08: 62 of 205; 21 read again on 2026-10-09 and taken off, 41 left; 31 more read on 2026-10-09 (bulk 2) and taken off, 10 left: the ones whose page disagrees with the card or states no figure (see bulk2-mismatches.md, filed in the internal repo's tracker #556). They were written before the rule; each needs its page
+# internal #121). Counted on 2026-10-08: 62 of 205; 21 read again on 2026-10-09 and taken off, 41 left; 31 more read on 2026-10-09 (bulk 2) and taken off, 10 left; Yutu 2 (change-4) read again on 2026-10-10 (bulk 3) and taken off, 9 left: the ones whose page disagrees with the card or states no figure (see bulk2-mismatches.md, filed in the internal repo's tracker #556). They were written before the rule; each needs its page
 # read again and a comment written where it was read, and then its line deleted here. scripts/check_registry.py
 # refuses a stop that is NOT on this list and has no comment, and refuses a line here whose stop has one: the
 # list can only shrink. The words of a stop are never changed to pass (narration is rendered from them).
 stops:
-  - moon-landings.change-4
   - moon-landings.im-1
   - moon-landings.lunokhod-1
   - outer-solar-system.eris
