@@ -5118,7 +5118,8 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   left: 50%;
   width: 10px;
   height: 10px;
-  margin-left: -5px;
+  /* Back to the mark's own time when ui/scrubber.js spreadMarks moved its box aside. */
+  margin-left: calc(-5px + var(--sr-mark-shift, 0px));
   background: var(--sr-text);
   border-radius: 50%;
 }
@@ -5142,7 +5143,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-tape__mark[data-kind='shower'] .sr-tape__glyph {
   width: 4px;
-  margin-left: -2px;
+  margin-left: calc(-2px + var(--sr-mark-shift, 0px));
   background: var(--sr-comet);
   border-radius: var(--sr-radius-sm);
 }

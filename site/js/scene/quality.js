@@ -15,17 +15,30 @@
 //     lines -- once, latched, and said in the panel. It never climbs back by itself: a latch that
 //     flaps is worse than either state.
 
+/** `src` sorted ascending into the reused array `out` (insertion: the window is 20 numbers). */
+function sortedInto(out, src) {
+  out.length = src.length;
+  for (let i = 0; i < src.length; i++) {
+    const v = src[i];
+    let j = i - 1;
+    while (j >= 0 && out[j] > v) { out[j + 1] = out[j]; j--; }
+    out[j + 1] = v;
+  }
+  return out;
+}
+
 export function createFrameLatch(opts = {}) {
   const windowFrames = opts.windowFrames || 20;
   const thresholdMs = opts.thresholdMs || 33;
   const holdMs = opts.holdMs || 3000;
   const frames = [];
+  const scratch = [];
   let overSince = null;
   let latched = false;
 
   function median() {
     if (!frames.length) return 0;
-    const a = frames.slice().sort((p, q) => p - q);
+    const a = sortedInto(scratch, frames);
     const h = a.length >> 1;
     return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
   }
@@ -270,11 +283,12 @@ export function createTierPromoter(opts = {}) {
   let promoted = false;
   let dead = false;
   const frames = [];
+  const scratch = [];
   let underSince = null;
 
   function median() {
     if (!frames.length) return 0;
-    const a = frames.slice().sort((p, q) => p - q);
+    const a = sortedInto(scratch, frames);
     const h = a.length >> 1;
     return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
   }

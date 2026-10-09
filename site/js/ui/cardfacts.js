@@ -12,7 +12,7 @@
 // file alone for a caller that wants only the tag (wantFacts()).
 //
 // NOT IN THE BOOT GRAPH. Like the card, this arrives after the first screen: it imports
-// copy/en.later.js (four of its sections are read here) and sky/passes.js. tests/test_boot_diet.mjs
+// copy/en.facts.js (the four sections of the words it reads; not all of en.later.js) and sky/passes.js. tests/test_boot_diet.mjs
 // holds it out.
 
 import { COPY, t, fmt, timeText, fistsWords, inWords, ageInWords, UNITS } from '../copy/en.js';
@@ -23,7 +23,7 @@ import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf } from '../scene/orbitline.js';
 import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedToSpherical, worldRadiusKm, toStage, spinPeriodHours, moonLapHours, yearDays } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
-import '../copy/en.later.js';
+import '../copy/en.facts.js';
 
 // WHAT A GENERATED STAR SYSTEM ADDS TO A CARD (internal #466), handed in by ui/cards.js and not
 // imported here: this module also serves the light embed, which has no star systems, and

@@ -25,6 +25,11 @@
      Latin. The rest load when text on screen asks for them, and a Latin page never asks for a
      Cyrillic file. `crossorigin` because a font is always fetched in CORS mode. -->
 <link rel="preload" href="fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- And the three others a first visit always draws with (62 548 B of fonts in all, tests/test_first_visit_bytes.mjs): found by the
+     stylesheet they started at 66 to 529 ms, after the first panels, and each landing re-laid the text (internal #533). -->
+<link rel="preload" href="fonts/inter-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-semi-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jetbrains-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/ui.css">

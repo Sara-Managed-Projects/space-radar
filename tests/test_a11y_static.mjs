@@ -230,7 +230,7 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   check(/clip-path:\s*inset\(50%\)/.test(hiddenRule) && !/display:\s*none|visibility:\s*hidden/.test(hiddenRule), 'a skip link without the focus is clipped, not removed: display:none would take it out of the tab order');
   check(/position:\s*fixed/.test(shownRule) && /z-index:\s*var\(--sr-z-toast\)/.test(shownRule) && /background:\s*var\(--sr-glass-strong\)/.test(shownRule) && /color:\s*var\(--sr-text\)/.test(shownRule), 'with the focus it is a glass chip over the chrome, in the text colour');
 
-  // 7b. LANDMARKS: one <main> (the map), the sidebar and the card as <aside> with a name, the rail as
+  // 7b. LANDMARKS: one <main> (the map), the sidebar as <aside> with a name (the card is a named dialog), the rail as
   // <nav> with a name, the phone's top bar and the time pill named regions. A landmark without a name is "navigation".
   check((body.match(/<main\b/g) || []).length === 1, 'index.html has exactly one <main>');
   check(/<h1 class="sr-hidden-text">/.test(body), 'and one h1, inside it');
@@ -239,7 +239,9 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   const rail = code(read('rail.js'));
   check(/const root = document\.createElement\('nav'\);[\s\S]{0,200}root\.setAttribute\('aria-label', COPY\.rail\.label\)/.test(rail), 'the rail is a <nav> named from the copy');
   check(/top\.setAttribute\('role', 'region'\);\s*top\.setAttribute\('aria-label', COPY\.shell\.topLabel\)/.test(shell), 'the phone\'s top bar is a named region (a group is not a landmark: axe `region`, 2026-10-08)');
-  check(/host = el\('aside', 'sr-card'\)/.test(code(read('cards.js'))), 'the card is an <aside>');
+  // The card is a <div role="dialog">, not an <aside role="dialog"> (axe `aria-allowed-role`, internal #472): an aside may not
+  // take that role, and the dialog is the more useful of the two (named, takes focus; axe's `region` rule lets a dialog hold content).
+  check(/host = el\('div', 'sr-card'\)/.test(code(read('cards.js'))) && /cardHost = el\('div', 'sr-card'\)/.test(code(read('shell.js'))) && /setAttribute\('role', 'dialog'\)/.test(code(read('cards.js'))), 'the card is a <div role="dialog">');
   // What axe-core found on 2026-10-08 (tests/probes/axe-probe.js), held so it does not come back:
   // the time pill outside every landmark, a banner inside the trip's region, a second region with
   // the trip frame's own name, and an empty heading on a trip's intro.

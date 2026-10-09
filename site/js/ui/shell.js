@@ -297,7 +297,7 @@ export function createShell(ctx, opts = {}) {
   // The card's host, made here so the shell can seat it (see THE CARD MOVES above).
   let cardHost = document.getElementById('sr-card');
   if (!cardHost) {
-    cardHost = el('aside', 'sr-card');
+    cardHost = el('div', 'sr-card');
     cardHost.id = 'sr-card';
     cardHost.hidden = true;
   }
