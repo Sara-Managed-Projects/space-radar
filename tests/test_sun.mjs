@@ -185,6 +185,34 @@ const FEED = [
   check(/stars beside it are faded/.test(C2.drawing.worldSun), 'the Sun\'s card says the stars beside it are faded');
 }
 
+// THE GRAIN AT TIERS 0 AND 1 (internal #549): it cost 9.5 ms a frame at 1440 x 900 on an Iris Plus 640. Tiers 0 and 1 read the 8
+// cells on the point's near side instead of 27; tier 2's source is unchanged. The twin measures what that changes.
+{
+  const S2 = await import(pathToFileURL(join(ROOT, 'site/js/scene/sun.js')).href);
+  check(S2.SUN_FRAG.includes('for ( int z = -1; z <= 1; z++ )') && !S2.SUN_FRAG.includes('step( vec3( 0.5 ), f )'), 'tier 2 keeps the full 27-cell loop');
+  check(S2.SUN_FRAG_CHEAP.includes('for ( int z = 0; z <= 1; z++ )') && S2.SUN_FRAG_CHEAP.includes('step( vec3( 0.5 ), f )') && !S2.SUN_FRAG_CHEAP.includes('z = -1'), 'tiers 0 and 1 read 8 cells toward the nearer faces');
+  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/float cells[\s\S]*?\n}\n/, '');
+  check(strip(S2.SUN_FRAG) === strip(S2.SUN_FRAG_CHEAP), 'everything but the cell loop is the same source at every tier');
+  check(!/\bhalf\b|\binput\b|\boutput\b|\bsample\b|\bfilter\b/.test(S2.SUN_FRAG_CHEAP), 'no reserved GLSL word in the cheap source either');
+  let seed = 12345;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  let same = 0, sumAbs = 0, maxLaneDiff = 0, sumFull = 0, sumNear = 0;
+  const N = 4000;
+  const lane = (c) => { const x = Math.min(1, Math.max(0, c / 0.35)); return x * x * (3 - 2 * x); };
+  for (let k = 0; k < N; k++) {
+    const p = [rnd() * 80 - 40, rnd() * 80 - 40, rnd() * 80 - 40];
+    const t = rnd();
+    const a = S2.cellsTwin(p, t, false), b = S2.cellsTwin(p, t, true);
+    if (Math.abs(a - b) < 1e-12) same++;
+    const dl = Math.abs(lane(a) - lane(b));
+    sumAbs += dl; maxLaneDiff = Math.max(maxLaneDiff, dl); sumFull += lane(a); sumNear += lane(b);
+  }
+  check(same / N > 0.8, `the 8 cells give the very same value at ${(100 * same / N).toFixed(1)} % of points (over 80 % wanted)`);
+  check(sumAbs / N < 0.03, `and the lane shade differs by ${(sumAbs / N).toFixed(4)} on average (under 0.03)`);
+  check(Math.abs(sumFull - sumNear) / N < 0.02, `the mean lane shade moves by ${(Math.abs(sumFull - sumNear) / N).toFixed(4)} (the picture's overall brightness holds)`);
+  console.log(`grain at tiers 0-1: ${(100 * same / N).toFixed(1)} % identical points, mean lane shade difference ${(sumAbs / N).toFixed(4)}, worst ${maxLaneDiff.toFixed(2)}`);
+}
+
 if (problems.length) {
   console.error('sun FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
