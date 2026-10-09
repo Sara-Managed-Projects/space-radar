@@ -82,6 +82,23 @@ html, body {
   white-space: nowrap;
 }
 
+/* Once shown, in the Sources sheet, the footer's links are targets like any other: 44 px high, the floor
+   the ui gate holds every control to on a phone, and the same on a desktop (one rule, no second size). */
+.sr-sitefoot--shown ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sr-sitefoot--shown a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+}
+
 /* Skip links (public #315): clipped like .sr-hidden-text until one has the focus, then a glass chip
    at the top left, over everything but the boot veil. */
 .sr-skip {
