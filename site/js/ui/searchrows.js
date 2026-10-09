@@ -3,7 +3,8 @@
 //
 // Contract, all pure but runExtra and whereEnv:
 //   describe(record, env) -> { title, kind, also, where }   the row as drawn
-//   whereNow(record, env) -> { up, low, compass } | null
+//   whereNow(record, env) -> { up, low, compass } | null   worlds, stars, satellites, and probes, comets
+//                                                          and asteroids (env.helioAltAz)
 //   mergeSame(hits) -> hits, one row per drawn name (the ISS's modules are one station)
 //   findExtras(query, limit) -> [{ extra, id, name, sub, record? }]   trips, missions, their events,
 //                                                                    and "Near me tonight"
@@ -32,6 +33,9 @@ import { MISSIONS } from '../data/missions.js';
 import { editDistance } from './search.js';
 import { parseFrame } from '../propagate/frames.js';
 import { icon, iconFrom } from './icons.js';
+
+/** The classes found by where they are round the Sun, not round the Earth (whereNow). */
+const WANDERERS = new Set(['probe', 'comet', 'asteroid']);
 
 /** Above this, a thing is "up": the same ten degrees a pass must clear (sky/tonightbest.js MIN_ALT_DEG). */
 export const UP_DEG = 10;
@@ -71,6 +75,10 @@ export function whereNow(record, env) {
     if (record.klass === 'world') at = record.id === 'earth' ? null : env.bodyAltAz(record.id);
     else if (['star', 'dso', 'exoplanet', 'exotic'].includes(record.klass)) at = record.pos ? env.skyAltAz(record.pos) : null;
     else if (record.propagator === 'sgp4') at = env.satAltAz(record);
+    // A probe, a comet or an asteroid (internal #551): the direction from the Earth's centre to where
+    // its elements or its path put it now. A parallax of a degree at the nearest rocks is below what
+    // "up", "low" and "below the horizon" can tell apart, so nobody is told a place it is not.
+    else if (WANDERERS.has(record.klass) && typeof env.helioAltAz === 'function') at = env.helioAltAz(record);
   } catch { at = null; }
   if (!at || !Number.isFinite(at.altDeg) || !Number.isFinite(at.azDeg)) return null;
   return { up: at.altDeg >= UP_DEG, low: at.altDeg >= 0 && at.altDeg < UP_DEG, compass: compassWords(at.azDeg) };
@@ -351,6 +359,25 @@ export async function whereEnv(ctx) {
       const ra = (Math.atan2(eq.y, eq.x) * 180) / Math.PI;
       const dec = (Math.asin(Math.max(-1, Math.min(1, eq.z))) * 180) / Math.PI;
       return look.altAzOfSky(ra, dec, observer, now());
+    },
+    // A position round the Sun (heliocentric ecliptic J2000), as a direction from the Earth's centre.
+    helioAltAz: (record) => {
+      const t = now();
+      const p = prop.propagate(record, t);
+      if (!p || !['sun-inertial', 'earth-inertial'].includes(p.frame)) return null;
+      if (p.frame === 'earth-inertial') {
+        const la = frames.lookAngles(observer, frames.eciToEcef(p, frames.gmst(new Date(t))));
+        return la ? { altDeg: (la.el * 180) / Math.PI, azDeg: (la.az * 180) / Math.PI } : null;
+      }
+      const earth = frames.worldHelioEclKm('earth', t);
+      if (!earth) return null;
+      const d = { x: p.x - earth.x, y: p.y - earth.y, z: p.z - earth.z };
+      const n = Math.hypot(d.x, d.y, d.z);
+      if (!(n > 0)) return null;
+      const eq = frames.eclipticToEquatorial({ x: d.x / n, y: d.y / n, z: d.z / n });
+      const ra = (Math.atan2(eq.y, eq.x) * 180) / Math.PI;
+      const dec = (Math.asin(Math.max(-1, Math.min(1, eq.z))) * 180) / Math.PI;
+      return look.altAzOfSky(ra, dec, observer, t);
     },
     satAltAz: (record) => {
       const p = prop.propagate(record, now());
