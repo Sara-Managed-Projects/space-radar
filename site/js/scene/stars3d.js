@@ -192,7 +192,11 @@ export function recordsFromNames(rows) {
     const name = famous && famous.name ? famous.name : catalogueName;
     const aliases = [...new Set([catalogueName, bayer, flam, hip ? `HIP ${hip}` : null])].filter((a) => a && a !== name);
     const meta = { hip, spect, distLy, mag, lum, aliases, named: true };
-    if (famous) { meta.why = famous.why; meta.whySource = famous.source; }
+    if (famous) {
+      meta.why = famous.why; meta.whySource = famous.source;
+      // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
+      if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
+    }
     out.push(starRecord(idx, name, { x, y, z }, meta));
   }
   return out;
@@ -530,6 +534,9 @@ export function createStars3d(scene, opts = {}) {
   /** A star record's width and temperature (starPhysical), or null before the catalogue has loaded. */
   function physicalOf(record) {
     const idx = record && record.meta ? record.meta.starIndex : null;
+    if (record && record.meta && record.meta.measuredRadiusSuns > 0) {
+      return { radiusKm: SUN_RADIUS_KM * record.meta.measuredRadiusSuns, teffK: record.meta.measuredTeffK, how: 'measured' };
+    }
     if (!data || !Number.isInteger(idx) || idx < 0 || idx >= data.count) return null;
     const absMag = idx === hiddenIdx && hiddenMags ? hiddenMags[0] : data.absMag[idx];
     return starPhysical(absMag, data.ci[idx]);

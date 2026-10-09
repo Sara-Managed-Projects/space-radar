@@ -647,7 +647,9 @@ export function rightNowRows(record, m, passInfo) {
     // Worked out from its brightness and colour (scene/stars3d.js starPhysical), and it says so:
     // the same number the disc on the scene is drawn from.
     const width = pickNumber(md, 'widthSuns');
-    if (width !== null && width > 0) rows.push([R.starWidth, t(V.sunsWide, { n: fmt.smart(width) })]);
+    if (width !== null && width > 0) rows.push([R.starWidth, t(md.widthFrom === 'measured' ? V.sunsWideMeasured : V.sunsWide, { n: fmt.smart(width) })]);
+    const widthSource = pick(md, 'widthSource');
+    if (width !== null && width > 0 && md.widthFrom === 'measured' && widthSource) rows.push([R.widthSource, String(widthSource)]);
     const hip = pick(md, 'hip');
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
     // The host of a generated system (internal #466): the table's numbers for the star, and the

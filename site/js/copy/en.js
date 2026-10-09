@@ -1188,6 +1188,7 @@ export const COPY = {
       // A famous star's one line (registry/stars-notable.yaml) and the page it came from. Not
       // `source`: on a star card every other row is HYG's, and "Read from" would claim them too.
       whySource: 'Why it is known, read from',
+      widthSource: 'Width read from',
       distanceNote: 'About that distance',
       objectType: 'What it is',
       constellation: 'Constellation',
@@ -1272,6 +1273,8 @@ export const COPY = {
       suns: '{n}× the Sun',
       // A star's width worked out from its brightness and colour, not measured (scene/stars3d.js).
       sunsWide: '{n}× the Sun, estimated',
+      // A width an interferometer measured (registry/stars-notable.yaml carries the paper).
+      sunsWideMeasured: '{n}× the Sun, measured',
       earths: '{n}× Earth',
       lightYearsRange: '{lo} to {hi} light-years',
       // Sedna's width is 906 km, +314 / -258: nobody has weighed or resolved it, so the card

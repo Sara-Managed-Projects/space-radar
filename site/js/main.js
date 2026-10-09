@@ -1280,7 +1280,7 @@ export async function boot({ setStatus } = {}) {
     // A star's own width, for its card (ui/cards.js prints it as an estimate) and its disc.
     if (record && record.klass === 'star' && record.meta && !Number.isFinite(record.meta.widthSuns)) {
       const phys = stars3d.physicalOf(record);
-      if (phys) record.meta.widthSuns = phys.radiusKm / SUN_RADIUS_KM;
+      if (phys) { record.meta.widthSuns = phys.radiusKm / SUN_RADIUS_KM; record.meta.widthFrom = phys.how; }
       // The first star chosen from a world's stage is chosen before the catalogue's binary has
       // landed (it is fetched when the ladder first draws). Its width is known once it has: the
       // card is repainted with it and the camera goes on in, if this star is still the selection.
@@ -1289,6 +1289,7 @@ export async function boot({ setStatus } = {}) {
           const late = selected === record ? stars3d.physicalOf(record) : null;
           if (!late) return;
           record.meta.widthSuns = late.radiusKm / SUN_RADIUS_KM;
+          record.meta.widthFrom = late.how;
           wantStarDisc(record);
           showCard(record, ctx);
           if (opts.fly !== false) flyToRecord(record);

@@ -14,7 +14,12 @@ export const STARS_NOTABLE = [
     "hip": 70890,
     "name": "Proxima Centauri",
     "why": "The nearest star to the Sun, a red dwarf too faint to see without a telescope. Its planet Proxima b, found in 2016, orbits in its habitable zone.",
-    "source": "https://en.wikipedia.org/wiki/Proxima_Centauri (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Proxima_Centauri (read 2026-09-22)",
+    "radius_suns": 0.141,
+    "radius_err_suns": 0.007,
+    "teff_k": 3054,
+    "teff_err_k": 79,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "hip": 71683,
@@ -32,7 +37,12 @@ export const STARS_NOTABLE = [
     "hip": 87937,
     "name": "Barnard's Star",
     "why": "It crosses the sky faster than any other star, 10.3 arcseconds a year. Four small planets were found around it in 2024 and 2025.",
-    "source": "https://en.wikipedia.org/wiki/Barnard%27s_Star (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Barnard%27s_Star (read 2026-09-22)",
+    "radius_suns": 0.1869,
+    "radius_err_suns": 0.0012,
+    "teff_k": 3222,
+    "teff_err_k": 10,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "proper": "Wolf 359",
@@ -50,13 +60,23 @@ export const STARS_NOTABLE = [
     "hip": 16537,
     "name": "Epsilon Eridani",
     "why": "The third-closest star you can see with the naked eye, with a giant planet and a dust belt like our Kuiper belt. Project Ozma listened to it in 1960.",
-    "source": "https://en.wikipedia.org/wiki/Epsilon_Eridani (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Epsilon_Eridani (read 2026-09-22)",
+    "radius_suns": 0.735,
+    "radius_err_suns": 0.005,
+    "teff_k": 5077,
+    "teff_err_k": 35,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "hip": 104214,
     "name": "61 Cygni A",
     "why": "The first star after the Sun to have its distance measured, by Friedrich Bessel in 1838. It moves so fast across the sky it was called the Flying Star.",
-    "source": "https://en.wikipedia.org/wiki/61_Cygni (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/61_Cygni (read 2026-09-22)",
+    "radius_suns": 0.6611,
+    "radius_err_suns": 0.0048,
+    "teff_k": 4361,
+    "teff_err_k": 17,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "hip": 37279,
