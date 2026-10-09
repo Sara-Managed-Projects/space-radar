@@ -10,9 +10,11 @@
 // and it was that dot (measured 2026-09-22). The records know how big they are: 202 of 209 carry a
 // major axis (OpenNGC or the hand row's source), and data/parsers.js turns it into `sizeLy`.
 //
-// WHAT IT IS, AND IS NOT. A soft round glow at the measured distance, the measured size across,
-// coloured by what the thing is. It is not the shape: the file has no minor axis or position angle,
-// so an edge-on galaxy glows round, and the card says "its true shape is not drawn". Dark nebulae
+// WHAT IT IS, AND IS NOT. A soft glow at the measured distance, the measured size across,
+// coloured by what the thing is. Round, but for a galaxy whose minor axis and position angle the
+// file carries (OpenNGC, through scripts/build-dso.py from 2026-10-09: 48 rows have a minor axis,
+// 42 an angle) and which is clearly longer than wide: that one is an ellipse, as M32 and M110 are
+// (below). Any other object's card says "its true shape is not drawn". Dark nebulae
 // get no glow (they are dark), and Andromeda has a model of its own (scene/galaxy.js). An object
 // whose photograph is BEING DRAWN (scene/nebulae.js, spec 0067) drops its glow: a pink disc laid over
 // the Orion Nebula's own picture would tint the thing it stood in for. Until 2026-10-08 it dropped
@@ -131,7 +133,13 @@ export function glowFor(record) {
   const kind = KIND_OF[code] || (words.includes('globular') ? 'globular' : words.includes('planetary') ? 'shell' : KIND_OF[fallback]);
   if (OWN_STARS.has(record.id)) return { colour: OWN_STARS_HAZE, sizeKm: sizeLy * LY_KM, kind: 'soft' };
   const row = SHAPED[record.id];
-  const shape = row ? { ratio: row.minArcmin / row.majArcmin, paDeg: row.paDeg, of: row.of } : null;
+  let shape = row ? { ratio: row.minArcmin / row.majArcmin, paDeg: row.paDeg, of: row.of } : null;
+  // Any other galaxy whose catalogue measures it clearly longer than wide, with its angle (OpenNGC through
+  // scripts/build-dso.py, internal #166): the same ellipse, standing alone (no photograph holds it).
+  if (!shape && code === 'G' && md.majAxArcmin > 0 && md.minAxArcmin > 0 && Number.isFinite(md.posAngDeg)) {
+    const r = md.minAxArcmin / md.majAxArcmin;
+    if (r >= 0.05 && r < 0.8) shape = { ratio: r, paDeg: md.posAngDeg, of: null };
+  }
   return shape ? { colour, sizeKm: sizeLy * LY_KM, kind, shape } : { colour, sizeKm: sizeLy * LY_KM, kind };
 }
 
@@ -141,6 +149,7 @@ attribute float aKeep;
 attribute vec3 aColour;
 attribute vec3 aMajor;   // where the major axis ends, as an offset in scene units; zero for a round glow
 attribute float aRatio;  // minor over major; 0 for a round glow
+attribute float aStep;   // 1 for an ellipse that steps back for a photograph (M32, M110), 0 for one that stands alone
 attribute vec2 aKind;    // KINDS, and a seed
 uniform float uMarks;    // 0: every round glow is the plain Gaussian (the frame latch)
 uniform float uPixelRatio;
@@ -169,7 +178,7 @@ void main() {
   // its diameter on screen, in CSS px
   float px = aSize / d * projectionMatrix[1][1] * 0.5 * uViewportH;
   vAlpha = uGain * smoothstep( 4.0, 14.0, px ) * ( 1.0 - smoothstep( 220.0, 420.0, px ) );
-  if ( aRatio > 0.0 ) vAlpha *= uShaped;
+  if ( aRatio > 0.0 ) vAlpha *= mix( 1.0, uShaped, aStep );
   vAlpha *= aKeep;
   gl_PointSize = clamp( px, 1.0, 420.0 ) * uPixelRatio;
   vColour = aColour;
@@ -300,6 +309,7 @@ export function createDsoGlow(scene) {
       geometry.setAttribute('aColour', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
       geometry.setAttribute('aMajor', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
       geometry.setAttribute('aRatio', new THREE.BufferAttribute(new Float32Array(n), 1));
+      geometry.setAttribute('aStep', new THREE.BufferAttribute(new Float32Array(n), 1));
       geometry.setAttribute('aKind', new THREE.BufferAttribute(new Float32Array(n * 2), 2));
       points = new THREE.Points(geometry, new THREE.ShaderMaterial({
         vertexShader: VERT, fragmentShader: FRAG, uniforms,
@@ -316,6 +326,7 @@ export function createDsoGlow(scene) {
     const col = geometry.getAttribute('aColour').array;
     const major = geometry.getAttribute('aMajor').array;
     const ratio = geometry.getAttribute('aRatio').array;
+    const step = geometry.getAttribute('aStep').array;
     const kind = geometry.getAttribute('aKind').array;
     for (let i = 0; i < n; i++) {
       const g = glows[i];
@@ -332,6 +343,7 @@ export function createDsoGlow(scene) {
       }
       major[i * 3] = shaped ? _w.x : 0; major[i * 3 + 1] = shaped ? _w.y : 0; major[i * 3 + 2] = shaped ? _w.z : 0;
       ratio[i] = shaped ? g.shape.ratio : 0;
+      step[i] = shaped && g.shape.of ? 1 : 0;
       pos[i * 3] = ok ? _v.x : 0; pos[i * 3 + 1] = ok ? _v.y : 0; pos[i * 3 + 2] = ok ? _v.z : 0;
       // The mark gives way to its photograph by degrees: a half-drawn picture leaves half the mark.
       keep[i] = glowKeep(pictured.get(g.record.id));
@@ -343,6 +355,7 @@ export function createDsoGlow(scene) {
     geometry.getAttribute('aKeep').needsUpdate = true;
     geometry.getAttribute('aColour').needsUpdate = true;
     geometry.getAttribute('aMajor').needsUpdate = true;
+    geometry.getAttribute('aStep').needsUpdate = true;
     geometry.getAttribute('aRatio').needsUpdate = true;
     geometry.getAttribute('aKind').needsUpdate = true;
   }
