@@ -22,7 +22,7 @@ const check = (ok, what) => { if (!ok) problems.push(what); };
 function loadWorker(source) {
   const listeners = {};
   const self = { addEventListener: (name, fn) => { listeners[name] = fn; }, registration: { scope: 'https://x.test/' } };
-  vm.runInNewContext(source, { self, URL, URLSearchParams, Promise, Set, Array, setTimeout, console, crypto: globalThis.crypto });
+  vm.runInNewContext(source, { self, URL, URLSearchParams, Promise, Set, Array, setTimeout, console, crypto: globalThis.crypto, Uint8Array });
   return { api: self.__srServiceWorker, listeners };
 }
 
@@ -94,6 +94,51 @@ check(api.keepable({ status: 200, type: 'basic' }) && !api.keepable({ status: 20
   && !api.keepable({ status: 0, type: 'opaque' }) && !api.keepable({ status: 404, type: 'basic' }) && !api.keepable(null),
   'keepable: only a whole, successful, same-origin answer is kept');
 check(api.DATA_TIMEOUT_MS > 0 && api.DATA_TIMEOUT_MS <= 3000, 'a saved copy must answer within 3 s when the network does not');
+
+// --- a new build takes the files the last one holds, by their hash (internal #518) --------------
+// WHAT COULD GO WRONG: a stale file kept under a new build is a broken app that survives reloads.
+// So every case below ends in the same question: is each entry's body the file THIS build names?
+{
+  const hex = (text) => createHash('sha256').update(text).digest('hex').slice(0, 16);
+  const body = { 'index.html': '<html>2</html>', 'js/main.js': 'main v2', 'js/a.js': 'a, unchanged', 'js/b.js': 'b, unchanged', 'css/ui.css': 'ui v2' };
+  const shell = Object.entries(body).map(([p, text]) => [p, hex(text)]);
+  const base = 'https://x.test/';
+  const ok = (text) => new Response(text, { status: 200 });
+  const whole = (bodies) => Object.keys(bodies).length === shell.length && shell.every(([p]) => bodies[p] === body[p]);
+  const run = async (old, server = body) => {
+    const asked = [];
+    const held = async (url) => (url.slice(base.length) in old ? old[url.slice(base.length)]() : null);
+    const download = async (url) => { asked.push(url.slice(base.length)); const p = url.slice(base.length); return p in server ? ok(server[p]) : new Response('', { status: 404 }); };
+    const got = await api.gatherShell(shell, base, held, download);
+    const bodies = Object.fromEntries(await Promise.all(got.entries.map(async ([url, r]) => [url.slice(base.length), await r.text()])));
+    return { ...got, asked: asked.sort(), bodies };
+  };
+  // The last build held all five; three are the same file in this one.
+  const last = { 'index.html': () => ok('<html>1</html>'), 'js/main.js': () => ok('main v1'), 'js/a.js': () => ok(body['js/a.js']), 'js/b.js': () => ok(body['js/b.js']), 'css/ui.css': () => ok(body['css/ui.css']) };
+  let r = await run(last);
+  check(r.reused === 3 && r.fetched === 2 && JSON.stringify(r.asked) === JSON.stringify(['index.html', 'js/main.js']),
+    `only the two files the deploy changed are asked for (asked ${r.asked}, reused ${r.reused})`);
+  check(whole(r.bodies), 'and every entry is the file this build was stamped with, copied or downloaded');
+  // A first install: nothing held, everything downloaded, exactly as before.
+  r = await run({});
+  check(r.reused === 0 && r.fetched === 5 && whole(r.bodies), 'a first install downloads the whole shell');
+  // A held copy that is NOT this build's file (same name, other bytes) is never taken.
+  r = await run({ ...last, 'js/a.js': () => ok('a, from two builds ago') });
+  check(r.asked.includes('js/a.js') && r.bodies['js/a.js'] === body['js/a.js'], 'a held file with another hash is downloaded, not copied');
+  // A held copy that is not a whole answer, or a cache that throws, is no copy.
+  r = await run({ ...last, 'js/a.js': () => new Response('a, unchanged', { status: 206 }), 'js/b.js': () => { throw new Error('the cache is gone'); } });
+  check(r.asked.includes('js/a.js') && r.asked.includes('js/b.js') && whole(r.bodies), 'a partial answer or an unreadable cache falls back to the server');
+  // The server holding another release still refuses the whole install: no half of two builds.
+  let refused = '';
+  try { await run(last, { ...body, 'js/main.js': 'main v3, a deploy in progress' }); } catch (e) { refused = e.message; }
+  check(/js\/main\.js: not the file this build was stamped with/.test(refused), `a download that is not the stamped file refuses the install (${refused})`);
+  refused = '';
+  try { await run({}, { 'index.html': body['index.html'] }); } catch (e) { refused = e.message; }
+  check(/the server answered 404/.test(refused), `a missing file refuses the install (${refused})`);
+  check(JSON.stringify(api.donorCaches(['sr-sw-shell-old', 'sr-sw-shell-new', 'sr-sw-assets-v1', 'sr-sw-data-v1', 'sr.v1.bulk'], 'sr-sw-shell-new')) === JSON.stringify(['sr-sw-shell-old']),
+    'only an earlier build\'s shell cache is looked in: never the assets, the saved copies, or this build\'s own');
+  check(/gatherShell\(BUILD\.shell, scope\(\), held, download\)/.test(source) && /cache: 'no-cache'/.test(source), 'precache() uses it, and a download still revalidates with the server');
+}
 
 // --- the stamp ---------------------------------------------------------------------------------
 const out = mkdtempSync(join(tmpdir(), 'sw-stamp-'));
