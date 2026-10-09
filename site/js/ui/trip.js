@@ -749,7 +749,7 @@ export function createTrip(ctx) {
     };
   }
 
-  function resolveTarget(target) {
+  function resolveTarget(target, onStage) {
     if (!target) return null;
     if (target.sky) return skySubject(target);
     if (target.observer === true) return observerSubject();
@@ -758,8 +758,15 @@ export function createTrip(ctx) {
       // A planet with a registry/systems.yaml row, or its host star (spec 0040): flown to where
       // scene/systems.js draws it on the system's stage, framed by its own radius, with the star as
       // the ground the camera keeps out of.
+      //
+      // ONLY ON THAT STAGE. A system's subject has a place on its own stage and nowhere else, so a
+      // stop that shows the planet from among the stars must be the catalogue's record at its star.
+      // When forty systems were given rows, Proxima b got one, and "The nearest one" (stellar
+      // stage, half a light-year out) became a subject with no position: the stop was held with
+      // "We could not find this one just now" on every run (seen 2026-10-09, three of three).
       const inSystem = record && ctx.systems ? ctx.systems.subjectFor(record) : null;
-      return worldRecordSubject(record) || inSystem || recordSubject(record);
+      const there = inSystem && (!onStage || !inSystem.systemStage || inSystem.systemStage === onStage) ? inSystem : null;
+      return worldRecordSubject(record) || there || recordSubject(record);
     }
     if (target.site) return recordSubject(ctx.recordById(target.site));
     if (target.world) return worldSubject(target.world);
@@ -795,7 +802,7 @@ export function createTrip(ctx) {
       // is honest: an event nobody can find is a stop nobody can show. ISO and `now` always
       // resolve and are not asked. data/events.js answers null for one it cannot find in 400 days.
       const eventLost = isEventTime(stop.time) && resolveStopTime(stop.time, ctx.clock.now(), tour.stops) === null;
-      const subject = eventLost ? null : resolveTarget(stop.target);
+      const subject = eventLost ? null : resolveTarget(stop.target, stop.stage || tour.stage || null);
       if (subject) {
         stops.push({ stop, subject, held: false });
       } else if (stop.on_unresolved === 'hold') {

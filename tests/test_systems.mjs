@@ -267,6 +267,11 @@ if (trip) {
   });
   const machine = createTrip(ctx);
   ctx.trip = machine;
+  // AS THE PAGE HAS IT: the forty systems nobody typed are registered by then (loadIndex, after the
+  // exoplanets layer lands), and Proxima Centauri is one of them. Without this the test ran a trip
+  // the page never runs, and stop 2 was held in every browser while this passed (2026-10-09).
+  await S.loadIndex();
+  check(!!S.systemOfRecordId('exo-proxima-cen-b'), 'Proxima b has a system row, as on the page');
   const plan = await machine.plan(TRIP_ID);
   check(plan && plan.count === 11 && plan.dropped.length === 0, `${plan && plan.count} of 11 stops resolved (${plan && JSON.stringify(plan.dropped)})`);
   await machine.start(TRIP_ID);
@@ -281,6 +286,7 @@ if (trip) {
     rig.update(0.016);
     systems.update(clock.now(), camera);
     check(machine.state.index === i && machine.state.stopId === stop.id, `stop ${i + 1}: the trip is at ${machine.state.stopId}`);
+    check(machine.state.phase !== 'held' && !machine.state.held, `${stop.id}: the stop is shown, not held with "We could not find this one" (${machine.state.phase})`);
     check(stage.worldId === (stop.stage || trip.stage), `${stop.id}: on the ${stage.worldId} stage`);
     const rec = stop.target.record ? byId.get(stop.target.record) : null;
     if (rec) check(selected && selected.id === rec.id, `${stop.id}: ${selected && selected.id} is selected`);

@@ -277,7 +277,16 @@ for (const [frameMs, label] of [[333, '3 fps'], [5000, '5 s stalls']]) {
   }
   const roof = TOURS.find((x) => x.id === 'roof-to-the-edge');
   check(roof && roof.return === true && /one flight home/.test(roof.blurb) && roof.blurb.length <= 80, `the roof trip asks for the way home and its blurb says so (${roof && roof.blurb})`);
-  check(TOURS.filter((x) => x.return === true && !x.id.startsWith('fe-')).length === 1, 'and it is the only one that does');
+  // Four more end on the ladder's chain and take the same flight (internal #454, 2026-10-09; each
+  // seen in a browser to end over the Earth, 13 to 31 s after its last stop). No other trip does:
+  // from a planet's own stage or a star system's there is no continuous way home.
+  const home = TOURS.filter((x) => x.return === true && !x.id.startsWith('fe-')).map((x) => x.id).sort();
+  check(home.join() === 'life-of-a-star,roof-to-the-edge,the-constellations,through-a-telescope,to-the-edge', `the trips that fly home are the five that end on the chain (${home.join()})`);
+  for (const id of home) {
+    const tour = TOURS.find((x) => x.id === id);
+    const last = tour.stops[tour.stops.length - 1];
+    check(['earth', 'sun', 'stellar', 'galaxy', 'local-group'].includes(last.stage || tour.stage), `${id} ends on the ${last.stage || tour.stage} stage, which is on the chain`);
+  }
 }
 
 // --- 7. the join a stop asks for (internal #288) ---------------------------------------------------------

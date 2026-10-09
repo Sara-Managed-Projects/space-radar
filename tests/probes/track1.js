@@ -45,17 +45,26 @@ return (async () => {
   const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
   const mix = (a, ka, b, kb) => V(a.x * ka + b.x * kb, a.y * ka + b.y * kb, a.z * ka + b.z * kb);
 
+  // `self=1`: the app is the page itself and there are no frames. A PHONE NEEDS IT: /robots.txt has
+  // no viewport meta, so under --mobile it is laid out 980 px wide and an app framed in it is not on
+  // a phone at all (the first phone run, 2026-10-09: innerWidth 980 where 390 was asked).
+  const SELF = q.has('self');
   await until(() => document.body, 10000);
-  document.body.textContent = '';
-  document.body.style.cssText = 'margin:0;background:#000;overflow:hidden';
+  if (!SELF) {
+    document.body.textContent = '';
+    document.body.style.cssText = 'margin:0;background:#000;overflow:hidden';
+  }
 
   /** An app in frame `i` of `n`, and the helpers a job needs, all on that frame's window. */
   async function open(i, n, hash = '', query = 'sw=0') {
-    const f = document.createElement('iframe');
-    f.style.cssText = `position:fixed;top:0;left:${(i * 100) / n}vw;width:${100 / n}vw;height:100vh;border:0;background:#000`;
-    f.src = new URL(`./?${query}${hash ? '#' + hash : ''}`, location.href).href;
-    document.body.appendChild(f);
-    const w = () => f.contentWindow;
+    let f = null;
+    if (!SELF) {
+      f = document.createElement('iframe');
+      f.style.cssText = `position:fixed;top:0;left:${(i * 100) / n}vw;width:${100 / n}vw;height:100vh;border:0;background:#000`;
+      f.src = new URL(`./?${query}${hash ? '#' + hash : ''}`, location.href).href;
+      document.body.appendChild(f);
+    }
+    const w = () => (f ? f.contentWindow : window);
     await until(() => w().__srLayersReady && w().spaceRadar, 90000, 300);
     const h = { i, w, frame: f, shots: [], errors: [], res: {} };
     live.push(h);
@@ -75,7 +84,7 @@ return (async () => {
       return false;
     };
     h.shot = async (name, settle = 1200) => { await sleep(settle); h.closeHelp(); await sleep(120); await shotTop(`f${i}-${name}`); h.shots.push(name); };
-    w().cdpShot = (name) => shotTop(`f${i}-${name}`);
+    if (f) w().cdpShot = (name) => shotTop(`f${i}-${name}`);
     h.km = () => { try { return Math.round(h.ctx.cameraRig.state.distance * ((h.ctx.stage || {}).unitKm || 1)); } catch { return null; } };
     h.goTo = async (id, capMs = 22000) => {
       const ctx = h.ctx; const rec = ctx.recordById(id);
@@ -265,6 +274,8 @@ return (async () => {
     // `stops=trip:3,trip:4;trip2:1` -- frames are separated by `;`, stops are 1-based.
     const groups = (q.get('stops') || '').split(';');
     return finish(groups.map(async (g, i) => {
+      // `reel!<trip>`: that frame is a reel of one trip, with the renderer's geometries written down.
+      if (g.startsWith('reel!')) { await leakJob(i, groups.length, g.slice(5)); return; }
       const by = new Map();
       // `present!trip:n,...`: that frame in present mode (the caption across the foot of the scene).
       const present = g.startsWith('present!');
@@ -479,6 +490,56 @@ return (async () => {
     return finish(jobs);
   }
 
+  /** One frame, one reel round and round: every geometry the renderer takes up, and what is still held at the end. */
+  async function leakJob(i, frames, reel) {
+    const h = await open(i, frames, `ambient=${reel}&pace=${q.get('pace') || 8}`);
+    {
+      const ctx = h.ctx; const res = h.res;
+      if (!ctx) { done(h, {}); return; }
+      let proto = null;
+      ctx.scene.traverse((o) => {
+        if (proto || !o.geometry) return;
+        let p = Object.getPrototypeOf(o.geometry);
+        while (p && !(Object.prototype.hasOwnProperty.call(p, 'dispose') && Object.prototype.hasOwnProperty.call(p, 'setAttribute'))) p = Object.getPrototypeOf(p);
+        proto = p;
+      });
+      if (!proto) { h.errors.push('no geometry class found'); done(h, res); return; }
+      const alive = new Map(); let pass = 0; let lastTrip = '';
+      const where = () => { const st = ctx.trip.state; return `${st.tourId || '-'}:${st.stopId || st.phase}`; };
+      const listen = proto.addEventListener; const dispose = proto.dispose;
+      proto.addEventListener = function (type, l) { if (type === 'dispose' && !alive.has(this.uuid)) alive.set(this.uuid, { g: new (h.w().WeakRef)(this), at: where(), pass, type: this.type, n: this.attributes && this.attributes.position ? this.attributes.position.count : 0, attrs: Object.keys(this.attributes || {}).join(','), name: this.name || '' }); return listen.call(this, type, l); };
+      proto.dispose = function () { alive.delete(this.uuid); return dispose.call(this); };
+      const info = () => { const m = ctx.renderer.info; return { geo: m.memory.geometries, tex: m.memory.textures, prog: m.programs ? m.programs.length : null }; };
+      res.passes = [];
+      ctx.trip.onChange((st) => {
+        const key = `${st.tourId}:${st.phase}`;
+        if (st.phase === 'intro' && key !== lastTrip) { pass += 1; res.passes.push({ pass, trip: st.tourId, t: Math.round((Date.now() - T0) / 1000), ...info(), tracked: alive.size }); }
+        lastTrip = key;
+        // The caption of the longest stop a reel shows, once: is its note whole?
+        if (st.phase === 'dwell' && st.stopId === 'aurora' && !res.caption) {
+          res.caption = { at: st.stopId };
+          setTimeout(() => {
+            const el = h.w().document.querySelector('.sr-tripsheet.is-present');
+            if (el) { const r = el.getBoundingClientRect(); res.caption.box = [Math.round(r.top), Math.round(r.height)]; res.caption.scroll = [el.scrollHeight, el.clientHeight]; res.caption.window = h.w().innerHeight; }
+            h.shot('reel-aurora-caption', 0);
+          }, 2500);
+        }
+      });
+      await until(() => false, Math.max(1000, CAP - Date.now() - 8000), 2000);
+      // Who wears what is still held.
+      const worn = new Map();
+      ctx.scene.traverse((o) => { if (o.geometry) { const path = []; for (let p = o; p && path.length < 4; p = p.parent) path.push(p.name || p.type); worn.set(o.geometry.uuid, path.join(' < ')); } });
+      const groups = new Map();
+      for (const [id, a] of alive) {
+        if (a.pass <= reel.split(',').length) continue;   // the first lap fills the caches: not a leak
+        const k = `${a.at} | ${a.type} ${a.n}v [${a.attrs}] ${a.name} | ${worn.has(id) ? 'worn by ' + worn.get(id) : (a.g.deref() ? 'in no scene object' : 'collected, never disposed')}`;
+        const gr = groups.get(k) || { n: 0, passes: new Set() }; gr.n += 1; gr.passes.add(a.pass); groups.set(k, gr);
+      }
+      res.end = { ...info(), tracked: alive.size, passes: pass };
+      res.held = [...groups.entries()].map(([k, v]) => ({ k, n: v.n, passes: [...v.passes] })).sort((x, y) => y.n - x.n).slice(0, 40);
+      done(h, res);
+    }
+  }
   // ------------------------------------------------------------------------------------------ leak
   // `probe=leak&reels=strangest-things;moon-landings` -- one frame a reel, each a single trip round
   // and round at pace 8. Every geometry the renderer takes up (it listens for `dispose` on it) is
@@ -500,51 +561,7 @@ return (async () => {
       })());
     }
     return finish(jobs.concat(reels.map(async (reel, i) => {
-      const h = await open(i, frames, `ambient=${reel}&pace=${q.get('pace') || 8}`);
-      const ctx = h.ctx; const res = h.res;
-      if (!ctx) { done(h, {}); return; }
-      let proto = null;
-      ctx.scene.traverse((o) => {
-        if (proto || !o.geometry) return;
-        let p = Object.getPrototypeOf(o.geometry);
-        while (p && !(Object.prototype.hasOwnProperty.call(p, 'dispose') && Object.prototype.hasOwnProperty.call(p, 'setAttribute'))) p = Object.getPrototypeOf(p);
-        proto = p;
-      });
-      if (!proto) { h.errors.push('no geometry class found'); done(h, res); return; }
-      const alive = new Map(); let pass = 0; let lastTrip = '';
-      const where = () => { const st = ctx.trip.state; return `${st.tourId || '-'}:${st.stopId || st.phase}`; };
-      const listen = proto.addEventListener; const dispose = proto.dispose;
-      proto.addEventListener = function (type, l) { if (type === 'dispose' && !alive.has(this.uuid)) alive.set(this.uuid, { g: new (h.w().WeakRef)(this), at: where(), pass, type: this.type, n: this.attributes && this.attributes.position ? this.attributes.position.count : 0, attrs: Object.keys(this.attributes || {}).join(','), name: this.name || '' }); return listen.call(this, type, l); };
-      proto.dispose = function () { alive.delete(this.uuid); return dispose.call(this); };
-      const info = () => { const m = ctx.renderer.info; return { geo: m.memory.geometries, tex: m.memory.textures, prog: m.programs ? m.programs.length : null }; };
-      res.passes = [];
-      ctx.trip.onChange((st) => {
-        const key = `${st.tourId}:${st.phase}`;
-        if (st.phase === 'intro' && key !== lastTrip) { pass += 1; res.passes.push({ pass, t: Math.round((Date.now() - T0) / 1000), ...info(), tracked: alive.size }); }
-        lastTrip = key;
-        // The caption of the longest stop a reel shows, once: is its note whole?
-        if (st.phase === 'dwell' && st.stopId === 'aurora' && !res.caption) {
-          res.caption = { at: st.stopId };
-          setTimeout(() => {
-            const el = h.w().document.querySelector('.sr-tripsheet.is-present');
-            if (el) { const r = el.getBoundingClientRect(); res.caption.box = [Math.round(r.top), Math.round(r.height)]; res.caption.scroll = [el.scrollHeight, el.clientHeight]; res.caption.window = h.w().innerHeight; }
-            h.shot('reel-aurora-caption', 0);
-          }, 2500);
-        }
-      });
-      await until(() => false, Math.max(1000, CAP - Date.now() - 8000), 2000);
-      // Who wears what is still held.
-      const worn = new Map();
-      ctx.scene.traverse((o) => { if (o.geometry) { const path = []; for (let p = o; p && path.length < 4; p = p.parent) path.push(p.name || p.type); worn.set(o.geometry.uuid, path.join(' < ')); } });
-      const groups = new Map();
-      for (const [id, a] of alive) {
-        if (a.pass < 2) continue;
-        const k = `${a.at} | ${a.type} ${a.n}v [${a.attrs}] ${a.name} | ${worn.has(id) ? 'worn by ' + worn.get(id) : (a.g.deref() ? 'in no scene object' : 'collected, never disposed')}`;
-        const gr = groups.get(k) || { n: 0, passes: new Set() }; gr.n += 1; gr.passes.add(a.pass); groups.set(k, gr);
-      }
-      res.end = { ...info(), tracked: alive.size, passes: pass };
-      res.held = [...groups.entries()].map(([k, v]) => ({ k, n: v.n, passes: [...v.passes] })).sort((x, y) => y.n - x.n).slice(0, 40);
-      done(h, res);
+      await leakJob(i, frames, reel);
     })));
   }
 
@@ -602,7 +619,7 @@ return (async () => {
   // ----------------------------------------------------------------------------------------- phone
   if (mode === 'phone') {
     const h = await open(0, 1, q.get('reel') || 'ambient=a-year-in-a-minute,moon-phases&sound=1');
-    const ctx = h.ctx; const res = { width: innerWidth };
+    const ctx = h.ctx; const res = { width: h.w().innerWidth, height: h.w().innerHeight, phone: h.w().document.documentElement.classList.contains('sr-phone') };
     const W = h.w();
     const pilot = await until(() => ctx.autopilot && ctx.autopilot.engaged && ctx.autopilot, 60000);
     const card = (kind) => { const c = h.visible('.sr-ambient__card')[0]; return c && (!kind || c.dataset.kind === kind) ? c : null; };
@@ -631,13 +648,13 @@ return (async () => {
     W.document.documentElement.classList.remove('sr-ambient');
     // "Play on its own", on a phone, with the sheet open.
     try {
-      const sheet = ctx.mobile && ctx.mobile.sheet;
-      if (sheet && sheet.setDetent) sheet.setDetent('full');
+      const sheet = ctx.shell && typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
+      if (sheet && sheet.set) sheet.set('full');
       await sleep(700);
       const own = [...W.document.querySelectorAll('.sr-more')].find((b) => /Play on its own/.test(b.textContent));
       if (own) { own.scrollIntoView({ block: 'center' }); await sleep(300); res.ownRow = { text: text(own), box: box(own) }; await h.shot('phone-4-play-on-its-own', 300); own.click(); await sleep(900); await h.shot('phone-5-just-watch', 300); }
       else res.ownRow = null;
-      if (sheet && sheet.setDetent) sheet.setDetent('peek');
+      if (sheet && sheet.set) sheet.set('peek');
       await sleep(700);
     } catch (e) { h.errors.push('row: ' + e.message); }
     // An Earth overlay with the sheet at its peek: does anything say what the colours are?
@@ -647,11 +664,17 @@ return (async () => {
       await ctx.setOverlay('sea-temperature');
       await until(() => { const s = ctx.overlayState && ctx.overlayState(); return s && (s.shown || s.ready || s.id === 'sea-temperature'); }, 20000);
       await sleep(4000);
-      const sheet = ctx.mobile && ctx.mobile.sheet;
-      if (sheet && sheet.setDetent) sheet.setDetent('peek');
+      const sheet = ctx.shell && typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
+      if (sheet && sheet.set) sheet.set('peek');
       await sleep(900);
-      res.overlay = { state: JSON.parse(JSON.stringify(ctx.overlayState ? ctx.overlayState() : null)), key: h.visible('.sr-overlaykey, [class*="overlaykey"], [class*="overlay-key"]').map((n) => ({ cls: n.className, text: text(n).slice(0, 120), box: box(n) })), bar: text(W.document.querySelector('.sr-topbar, header')).slice(0, 160) };
+      await until(() => ctx.overlayState().status === 'shown', 20000, 300);
+      await sleep(1500);
+      const keyOf = () => h.visible('.sr-overlaykey__top').map((n) => ({ text: text(n).slice(0, 120), box: box(n), font: W.getComputedStyle(n).fontFamily.slice(0, 40) }));
+      res.overlay = { status: ctx.overlayState().status, legend: ctx.overlayState().legend, sheet: sheet && sheet.detent ? sheet.detent() : W.document.documentElement.dataset.sheet || null, keyed: W.document.documentElement.classList.contains('sr-overlay-keyed'), key: keyOf(), top: box(W.document.querySelector('#sr-top')), overflowX: W.document.documentElement.scrollWidth > W.innerWidth };
       await h.shot('phone-6-overlay-at-peek', 500);
+      if (sheet && sheet.set) { sheet.set('half'); await sleep(900); res.overlay.atHalf = keyOf().length; await h.shot('phone-7-overlay-at-half', 300); sheet.set('full'); await sleep(900); res.overlay.atFull = keyOf().length; await h.shot('phone-8-overlay-at-full', 300); sheet.set('peek'); await sleep(700); }
+      await ctx.setOverlay(null); await sleep(900);
+      res.overlay.afterOff = { keyed: W.document.documentElement.classList.contains('sr-overlay-keyed'), key: keyOf().length };
     } catch (e) { h.errors.push('overlay: ' + e.message); }
     done(h, res);
     out.s = Math.round((Date.now() - T0) / 1000);
