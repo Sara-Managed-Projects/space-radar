@@ -34,6 +34,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 // The node tests that import the site's modules and compute, and so mean the same thing against
 // the built tree. Found with --discover on 2026-10-09; add a new behavioural test here.
+// NOT tests/test_trip_og.mjs, though it passes: it copies the tree and deletes a picture from its
+// copy, and in the shadow below the copy's site/og is a LINK to the real one. It deleted
+// site/og/people-in-space.png from the checkout on the day this was written; the guard after the
+// run (`before`/`after`) is there so that the next such test fails this gate instead.
 export const TESTS = [
   'test_air.mjs',
   'test_ascent_attitude.mjs',
@@ -103,7 +107,6 @@ export const TESTS = [
   'test_systems_table.mjs',
   'test_trains.mjs',
   'test_trajectory.mjs',
-  'test_trip_og.mjs',
   'test_trip_scale.mjs',
   'test_trips_panel.mjs',
   'test_whattoshow.mjs',
@@ -248,7 +251,10 @@ if (opt.tests || opt.discover) {
     if (name === 'fixtures' || name === 'vendor') symlinkSync(from, join(shadow, 'tests', name));
     else cpSync(from, join(shadow, 'tests', name), { recursive: true });
   }
-  const list = opt.discover ? readdirSync(join(ROOT, 'tests')).filter((f) => /^test_.*\.mjs$/.test(f)).sort() : TESTS;
+  const list = opt.discover ? readdirSync(join(ROOT, 'tests')).filter((f) => /^test_.*\.mjs$/.test(f) && f !== 'test_trip_og.mjs').sort() : TESTS;
+  // The shadow links to the real site/ for everything that is not code. A test must not write there.
+  const listing = () => walk(opt.site).map((p) => { const st = statSync(p); return `${relative(opt.site, p)} ${st.size} ${st.mtimeMs}`; }).sort().join('\n');
+  const before = listing();
   const passed = [];
   for (const t of list) {
     const r = spawnSync(process.execPath, [join(shadow, 'tests', t)], { cwd: shadow, encoding: 'utf8', timeout: 600000, maxBuffer: 1 << 26 });
@@ -257,6 +263,7 @@ if (opt.tests || opt.discover) {
     else if (!opt.discover) problems.push(`tests/${t} fails against the built tree:\n      ${((r.stderr || '') + (r.stdout || '')).trim().split('\n').slice(-4).join('\n      ')}`);
     if (opt.discover) console.log(`${r.status === 0 ? 'pass' : 'FAIL'} ${t}`);
   }
+  if (listing() !== before) problems.push('a test run against the built tree changed a file of the real site/ through the shadow\'s links: find it (git status) and take it out of TESTS');
   if (opt.discover) console.log(`\n${passed.length} of ${list.length} pass against the built tree:\n${passed.map((t) => `  '${t}',`).join('\n')}`);
 }
 
