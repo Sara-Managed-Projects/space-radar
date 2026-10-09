@@ -14,9 +14,14 @@ on:
   workflow_dispatch:
     inputs:
       sources:
-        description: "Source ids, space-separated (default: the five CelesTrak files)"
+        description: "Source ids, space-separated (default: the CelesTrak files, then the wind and the other saved copies a browser asks for)"
         required: false
-        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat celestrak-last30"
+        # THE LAST FOUR (internal #552, 2026-10-10): the wind grid (every three hours is the cadence in
+        # registry/sources.yaml), the two EONET lists and the sunspot regions are saved copies the
+        # site reads first and the publishers' servers answered from a runner; with them in the
+        # default one run makes every file a browser still asks a third party for, and
+        # scripts/refresh-snapshots.sh --from-run=<id> publishes them with the rest.
+        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat celestrak-last30 wind eonet-fires eonet-volcanoes-ice swpc-solar-regions"
 
 permissions:
   contents: read

@@ -59,6 +59,7 @@ check(GEO_RING.meanMotionMin === 0.99 && GEO_RING.meanMotionMax === 1.01 && GEO_
 const sourcesYaml = src('registry/sources.yaml');
 check(/- id: celestrak-last30\n/.test(sourcesYaml), 'celestrak-last30 has a sources.yaml row');
 check(/celestrak-last30/.test(src('.github/workflows/harvest.yml')), 'and the GitHub harvest run fetches it by default');
+for (const id of ['wind', 'eonet-fires', 'eonet-volcanoes-ice', 'swpc-solar-regions']) check(new RegExp('default: "[^"]* ' + id + '( [^"]*)?"').test(src('.github/workflows/harvest.yml')), `and so does the wind/EONET/sunspot copy ${id} (internal #552)`);
 
 // 6. the panel's three silences are three strings
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
