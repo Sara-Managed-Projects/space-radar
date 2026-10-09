@@ -40,7 +40,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import seo_systems  # noqa: E402
-from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, DEFAULT_HOST, GITHUB, ROOT, Ctx, Page, crumbs, esc, footer_nav,  # noqa: E402
+from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
 
@@ -609,7 +609,7 @@ def accuracy_page(host: str) -> Page:
 LESSONS = [
     ("moon-phases", "Why the Moon changes shape",
      "Ask: where do you think the shadow on the Moon comes from? Then fly the trip and watch the Moon's month from space, then from your street. "
-     "Stop on each phase and ask which way the Sun is. Finish by asking what the Moon would look like from the far side of its orbit."),
+     "Stop on each phase and ask which way the Sun is. Finish by asking what a person standing on the Moon would see of the Earth in each phase."),
     ("a-year-in-a-minute", "How long is a year on another world?",
      "Ask: how long does the Earth take to go round the Sun? Run a year in a minute and count how many times each inner planet laps the Earth. "
      "Ask whose year is shortest and why a planet closer to the Sun moves faster."),

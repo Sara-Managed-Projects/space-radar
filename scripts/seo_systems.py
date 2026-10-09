@@ -36,7 +36,7 @@ from pathlib import Path
 
 import yaml
 
-from seo_common import Page, esc, slug_of, crumbs, webpage, url_of, GITHUB
+from seo_common import Page, esc, slug_of, webpage, url_of
 from seo_share import Spec
 
 ROOT = Path(__file__).resolve().parent.parent

@@ -201,7 +201,9 @@ ok(seo_pages.satellite_counts({"snapshots": {"celestrak-active": {"items": 0}}})
 # --- planets tonight --------------------------------------------------------------------------------
 pt_html = (BUILT / "planets-tonight" / "index.html").read_text(encoding="utf-8")
 pt = parse(BUILT / "planets-tonight" / "index.html")
-ok("9 October 2026" in pt.plain and all(n in pt.plain.split("From London")[0] + pt.plain for n in ("Jupiter", "Saturn", "Mars")), "the static HTML names tonight's planets with the date")
+lead = re.search(r'<p class="lead">(.*?)</p>', pt_html, re.S).group(1)
+ok(lead.startswith("On the evening of 9 October 2026, from London, the planets up in the dark are ") and all(n in lead for n in ("Jupiter", "Saturn", "Mars")),
+   f"the static lead sentence names tonight's planets with the date ({lead[:90]!r})")
 ok(re.search(r'<url><loc>https://www.spaceradar.ai/planets-tonight/index.html</loc><lastmod>2026-10-09</lastmod>', sitemap) is not None, "in the sitemap, with the build's day as lastmod")
 ok("getCurrentPosition" not in pt_html and "geolocation" not in pt_html, "the page's own HTML never asks for a position")
 ok(len(re.search(r"<title>(.*?)</title>", pt_html).group(1)) <= 60 and "../#trip=planets-tonight" in pt.hrefs, "a title under 60 and the link to the sky from the ground")
@@ -229,6 +231,8 @@ for s in sysl:
         problems.append(f"title {len(t)}")
     if "The picture is an artist&#x27;s impression" not in html and "The picture is an artist's impression" not in html:
         problems.append("no artist's impression")
+    if "The picture is an artist's impression. Nobody has seen the surface of a planet of another star" not in pp.plain:
+        problems.append("the imagined box does not say the picture is an artist's impression")
     if not all(w in pp.plain for w in ("measured", "computed", "imagined")):
         problems.append("no measured/computed/imagined")
     if f'<link rel="canonical" href="{HOST}/o/{s["slug"]}.html">' not in html:
