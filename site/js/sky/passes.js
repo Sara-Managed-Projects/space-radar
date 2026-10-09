@@ -91,10 +91,13 @@ function satrecOf(record) {
  * that can only mean one thing. No record supplies one yet, so today this returns null and
  * `magnitude` on every pass is an honest null.
  */
-function standardMagnitudeOf(record) {
+export function standardMagnitudeOf(record) {
   const m = record?.meta;
   if (!m) return null;
   for (const key of ['stdMag', 'standardMagnitude', 'intrinsicMagnitude']) {
+    // `Number(null)` is 0 and `Number('')` is 0: a record that says "no standard magnitude" with a null must
+    // not become a satellite as bright as Vega at 1000 km (internal #391, found in public #468).
+    if (m[key] === null || m[key] === undefined || m[key] === '' || typeof m[key] === 'boolean') continue;
     const v = Number(m[key]);
     if (Number.isFinite(v)) return v;
   }

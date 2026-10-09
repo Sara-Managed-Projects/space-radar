@@ -33,6 +33,20 @@ check(w && w.km === `312${NN}456${NN}789`, `kilometres to the last one, in group
 check(w && w.light === '17 min 22 s', `and its light time (${w && w.light})`);
 check(live.liveDistanceWords(null) === null && live.liveDistanceWords(0) === null, 'nothing to give is null, never a zero');
 
+// --- 1b. another star's planet: light-years, three figures, no ticking (internal #476) ----------------
+{
+  const trappist = 40.7 * live.LIGHT_YEAR_KM;
+  const f = live.liveDistanceWords(trappist);
+  check(f && f.far === true && f.km === '40.7' && f.light === f.km, `TRAPPIST-1 at 40.7 light-years reads 40.7, not a kilometre count (${f && f.km})`);
+  const g = live.liveDistanceWords(trappist + 5e6);
+  check(g.km === f.km, 'five million kilometres later it is the same words: it does not tick');
+  check(live.liveDistanceWords(4.2465 * live.LIGHT_YEAR_KM).km === '4.25', 'under ten, two decimals');
+  check(live.liveDistanceWords(2.5e10).far === undefined, 'Voyager 1 (about 165 au) is still kilometres');
+  check(Math.abs(live.LIGHT_YEAR_KM - 9.4607304725808e12) < 1e3, 'a light-year is 9.4607e12 km');
+  const extras = readFileSync(new URL('../site/js/ui/cardextras.js', import.meta.url), 'utf8');
+  check(/words\.far/.test(extras) && /L\.lightYears/.test(extras) && /L\.noteFar/.test(extras), 'the card block gives the far words one row and its note');
+}
+
 // --- 2. it ticks once a second, and stands still under reduced motion ----------------------------
 const T = Date.UTC(2026, 9, 8, 12, 0, 0);
 check(live.liveKey(T + 999) === T && live.liveKey(T + 1000) === T + 1000, 'the shown instant is the whole second');
@@ -165,6 +179,12 @@ for (const key of ['asOf', 'stale', 'joined', 'unmatched']) check(COPY.crew[key]
   check(down === `From Quito: rises ${timeText.hhmm(NOWMS + 3600e3)} in the east, highest ${timeText.hhmm(NOWMS + 6 * 3600e3)}, about two fists above the horizon; sets ${timeText.hhmm(NOWMS + 11 * 3600e3)} in the west.`, `down now (${down})`);
   check(fromPlaceWords({ upNow: false, never: true, altDeg: -40, azDeg: 0, riseMs: null, riseAzDeg: null, highMs: null, highAltDeg: null, setMs: null, setAzDeg: null }, 'Quito') === 'From Quito it does not rise in the next day and a half.', 'never up');
   check(fromPlaceWords(null, 'Quito') === null, 'no answer, no words');
+}
+
+// --- the ticking distance is for the Solar System only (internal #476) ---------------------------
+{
+  const far = (id, klass) => ({ id, klass, frame: 'sun-inertial', meta: {} });
+  for (const k of ['star', 'exoplanet', 'dso', 'exotic']) check(earthDistanceAt(far('x-' + k, k), {}) === null, `a ${k} has no ticking kilometres`);
 }
 
 if (problems.length) {

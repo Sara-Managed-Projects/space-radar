@@ -190,6 +190,19 @@ export function openPhotoMode(ctx, opts = {}) {
     paint();
   };
   lensInput.addEventListener('input', () => setLens(lensInput.value));
+  // The clock, inside the frame (internal #397): the time pill is hidden with the rest of the chrome,
+  // so two steps of the pill's own unit are here. The picture's strip carries the instant it shows.
+  const pill = ctx && ctx.timePill && typeof ctx.timePill.step === 'function' ? ctx.timePill : null;
+  const timeBox = el('div', 'sr-photo__time');
+  timeBox.setAttribute('role', 'group');
+  timeBox.setAttribute('aria-label', P.timeLabel);
+  const stepTitle = (dir) => t(P.timeTitle, { dir: dir < 0 ? P.earlier : P.later, unit: pill && typeof pill.unit === 'function' ? (COPY.timePill.unitWords[pill.unit()] || '') : '' }).trim();
+  const earlierBtn = button('sr-photo__btn', P.earlier, '', '');
+  const laterBtn = button('sr-photo__btn', P.later, '', '');
+  earlierBtn.addEventListener('click', () => { pill.step(-1); setTimeout(paint, 60); });
+  laterBtn.addEventListener('click', () => { pill.step(1); setTimeout(paint, 60); });
+  timeBox.append(earlierBtn, laterBtn);
+  timeBox.hidden = !pill;
   const captionBtn = button('sr-photo__btn', P.caption, P.captionTitle, '');
   captionBtn.addEventListener('click', () => { withCaption = !withCaption; paint(); });
   // PNG: the same picture without JPEG's loss, for somebody who will edit it. Off by default: it is several times the bytes.
@@ -201,7 +214,7 @@ export function openPhotoMode(ctx, opts = {}) {
   // The device's own share, straight from the frame (internal #397): built only where the browser
   // can hand a file on (navigator.canShare), so a desktop without it has no dead button.
   const shareBtn = canShareFiles(typeof navigator !== 'undefined' ? navigator : null) ? button('sr-photo__btn sr-photo__share', P.share, P.shareTitle, '') : null;
-  bar.append(shapes, lens, captionBtn, pngBtn, ...(shareBtn ? [shareBtn] : []), saveBtn, closeBtn);
+  bar.append(shapes, lens, timeBox, captionBtn, pngBtn, ...(shareBtn ? [shareBtn] : []), saveBtn, closeBtn);
   root.append(...mattes, frame, bar);
   document.body.appendChild(root);
 
@@ -221,6 +234,10 @@ export function openPhotoMode(ctx, opts = {}) {
     rect = frameRect(vw, vh, shape, { x: 16, y: Math.max(16, Math.round(foot) + 16) });
     for (const [k, v] of [['x', rect.x], ['y', rect.y], ['w', rect.w], ['h', rect.h]]) root.style.setProperty(`--sr-photo-${k}`, `${v}px`);
     for (const b of shapeBtns) b.setAttribute('aria-pressed', b.dataset.shape === shape ? 'true' : 'false');
+    if (pill) {
+      earlierBtn.title = stepTitle(-1);
+      laterBtn.title = stepTitle(1);
+    }
     captionBtn.setAttribute('aria-pressed', withCaption ? 'true' : 'false');
     pngBtn.setAttribute('aria-pressed', asPng ? 'true' : 'false');
     saveBtn.title = asPng ? P.saveTitlePng : P.saveTitle;

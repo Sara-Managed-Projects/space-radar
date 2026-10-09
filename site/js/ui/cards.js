@@ -143,7 +143,7 @@ function ensureHost() {
   if (host && host.isConnected) return host;
   host = document.getElementById(HOST_ID);
   if (!host) {
-    host = el('aside', 'sr-card');
+    host = el('div', 'sr-card');
     host.id = HOST_ID;
     document.body.appendChild(host);
   }
@@ -172,6 +172,9 @@ function clear(node) {
 export function earthDistanceAt(record, ctx) {
   if (!record || record.id === 'earth' || isEarthFrame(record.frame)) return null;
   if (pickNumber(meta(record), 'earthRangeKm') !== null) return null;
+  // Beyond the Solar System the answer is in light-years, once, in the card's lead; a count of
+  // kilometres with ticking last digits is true arithmetic and no use to a person (internal #476).
+  if (record.id !== 'sun' && ['star', 'exoplanet', 'dso', 'exotic'].includes(klassOf(record))) return null;
   return (tMs) => {
     const p = positionAt(record, tMs);
     if (!p) return null;

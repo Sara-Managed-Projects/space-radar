@@ -29,7 +29,12 @@ SEARCH (spec 0061 task 9). The `<title>` is the trip's title and the site's name
 60 characters, and the title alone when they do not; the description is the blurb, cut at a
 sentence when it is over 160 characters and followed by one plain line when it is under 70, because
 a search result shows those lengths and no others well. scripts/check_seo.py holds every page to
-them. The JSON-LD names the page as part of the site the home page declares.
+them. The JSON-LD names the page as part of the site the home page declares, and as a LearningResource:
+`teaches` is the trip's own stop titles (registry/tours.yaml `card.title`, in order), `timeRequired`
+the trip's stated length as an ISO 8601 duration (the same sum scripts/gen_tours_js.py prints as "about
+two minutes": each stop's dwell, a flight and a settle, plus the way home), and `educationalLevel` is
+"General audience", the one value that is not read from the registry, because it has no field there.
+No FAQPage: Google limits that rich result to government and health sites.
 
 Same rule as the other generators: the page is a mirror of the registry, in HTML, and CI refuses
 a stale one. A stale page is a share that says the wrong thing about the trip it opens.
@@ -48,6 +53,9 @@ import sys
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gen_tours_js import FLIGHT_ESTIMATE_MS, RETURN_ESTIMATE_MS, SETTLE_MS, dwell_ms  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "registry" / "tours.yaml"
@@ -169,6 +177,25 @@ def description_for(blurb: str) -> str:
     return text
 
 
+def duration_for(trip: dict) -> str:
+    """The trip's stated length (scripts/gen_tours_js.py trip_of), to the nearest half minute, as ISO 8601."""
+    ms = sum(dwell_ms((s.get("card") or {}).get("body")) + FLIGHT_ESTIMATE_MS + SETTLE_MS for s in trip.get("stops") or [])
+    if trip.get("return") is True:
+        ms += RETURN_ESTIMATE_MS
+    seconds = max(1, round(ms / 30000)) * 30
+    minutes, rest = divmod(seconds, 60)
+    return "PT" + (f"{minutes}M" if minutes else "") + (f"{rest}S" if rest else "")
+
+
+def teaches_for(trip: dict) -> list[str]:
+    seen: list[str] = []
+    for s in trip.get("stops") or []:
+        title = str((s.get("card") or {}).get("title") or "").strip()
+        if title and title not in seen:
+            seen.append(title)
+    return seen[:12]
+
+
 def page_for(trip: dict, host: str) -> str:
     trip_id = str(trip.get("id") or "")
     if not SAFE_ID.match(trip_id):
@@ -179,8 +206,11 @@ def page_for(trip: dict, host: str) -> str:
         raise SystemExit(f"gen_trip_pages: trip {trip_id} has no title or no blurb")
     esc = lambda s: html.escape(s, quote=True)  # noqa: E731
     url = f"{host}/t/{trip_id}.html"
-    ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title,
-          "description": description_for(blurb), "isPartOf": {"@id": f"{host}/#website"}}
+    ld = {"@context": "https://schema.org", "@type": ["WebPage", "LearningResource"], "url": url, "name": title,
+          "description": description_for(blurb), "isPartOf": {"@id": f"{host}/#website"},
+          "learningResourceType": "Interactive guided tour", "educationalLevel": "General audience",
+          "teaches": teaches_for(trip), "timeRequired": duration_for(trip), "isAccessibleForFree": True,
+          "inLanguage": "en"}
     return PAGE.format(
         id=trip_id,
         site=SITE_NAME,

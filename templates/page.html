@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Built by scripts/seo_pages.py from templates/page.html at deploy time. Not in git; do not edit
+     the built copy. The header and the footer are templates/partials/. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+{{robots}}<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="canonical" href="{{canonical}}">
+<meta property="og:type" content="{{og_type}}">
+<meta property="og:site_name" content="Space Radar">
+<meta property="og:title" content="{{og_title}}">
+<meta property="og:description" content="{{description}}">
+<meta property="og:url" content="{{url}}">
+<meta property="og:image" content="{{image}}">
+<meta property="og:image:width" content="{{image_w}}">
+<meta property="og:image:height" content="{{image_h}}">
+<meta property="og:image:alt" content="{{image_alt}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{og_title}}">
+<meta name="twitter:description" content="{{description}}">
+<meta name="twitter:image" content="{{image}}">
+<meta name="twitter:image:alt" content="{{image_alt}}">
+<link rel="icon" href="{{icon}}">
+<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/fonts.css">
+<style>
+{{style}}</style>
+<script type="application/ld+json">{{jsonld}}</script>
+</head>
+<body>
+{{header}}<main{{live_attr}}>
+{{body}}</main>
+{{footer}}{{script}}</body>
+</html>

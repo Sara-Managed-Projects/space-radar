@@ -1,0 +1,20 @@
+# What GitHub sorts into a release's notes when it generates them ("Generate release notes").
+# Label a merged pull request with one of these and it lands under the heading; the release notes are
+# otherwise written by hand (docs/RELEASING.md). `Thanks to` lists the people who sent the changes.
+changelog:
+  exclude:
+    labels:
+      - no-auto-merge
+      - invalid
+      - duplicate
+  categories:
+    - title: New trips
+      labels: [trip, "area:product"]
+    - title: Worlds and data
+      labels: ["area:space-accuracy", "area:3d-visuals", data]
+    - title: Fixes
+      labels: [bug, accessibility]
+    - title: Words and documentation
+      labels: [documentation, translation]
+    - title: Everything else
+      labels: ["*"]

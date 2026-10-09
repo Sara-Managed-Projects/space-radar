@@ -563,6 +563,9 @@ export function createHud(ctx, host) {
     const p = ctx.positionOfRecord ? ctx.positionOfRecord(sel) : null;
     if (!p || !Number.isFinite(p.x)) { hideAll(); return; }
     _p.copy(p);
+    // From the ground the air lifts the dot (scene/glyphs.js); the ring and the tag go with it, as the
+    // name does (ui/labels.js; internal #418). One helper for all three: skyView.apparent.
+    if (ctx.skyView && ctx.skyView.ownsSky && typeof ctx.skyView.apparent === 'function') ctx.skyView.apparent(_p);
     if (wall - lastSlow >= READOUT_MS) { lastSlow = wall; slow(tMs); }
 
     // One projection, in two halves so the sign of w is known: behind the eye is view-space z >= 0.

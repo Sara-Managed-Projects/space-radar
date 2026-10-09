@@ -22,6 +22,14 @@ import urllib.request
 
 DEFAULT_FROM = "https://www.spaceradar.ai"
 
+# NOT OURS TO COPY: the sources registry/sources.yaml switches off because their publisher does not
+# let a third party pass the data on (ESA's NEOCC list; Space-Track's reentry predictions). The live
+# site stopped publishing the first on 2026-10-09 (internal #370); a mirror or an old folder might
+# still hold it, so it is never saved and a copy already on disk is removed. Written out here, not
+# read from the registry, because this file travels alone in the release zip;
+# tests/test_not_ours_to_copy.py holds the list to the registry.
+NOT_OURS_TO_COPY = ("esa-neocc-close", "space-track-tip")
+
 
 def arg(name, default):
     for a in sys.argv[1:]:
@@ -61,6 +69,17 @@ def main():
     index = json.loads(raw)
     rows = index.get("snapshots") or {}
     saved, missing, total = 0, [], len(raw)
+    for rid in NOT_OURS_TO_COPY:
+        if rid in rows and rows[rid].get("fetched_at"):
+            # A mirror that still lists it as data: the manifest that is saved says `skipped`, as the
+            # live site's does, so the copy never claims a file it does not hold.
+            rows[rid] = {"status": "skipped", "last_error": "not ours to copy: its publisher does not allow redistribution"}
+            index["snapshots"] = rows
+            raw = json.dumps(index, indent=1).encode("utf-8")
+        for name in (rid + ".json", rid + ".cols.json"):
+            if os.path.isfile(os.path.join(dest, name)):
+                os.remove(os.path.join(dest, name))
+                print("  removed %s: its publisher does not allow copies to be passed on" % name)
     for rid in sorted(rows):
         if not rows[rid].get("fetched_at"):
             continue  # the site has never had this one; there is nothing to copy

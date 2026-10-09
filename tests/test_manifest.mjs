@@ -61,8 +61,9 @@ check(/OVERLAY=\(--overlay "\$BUILT\/min"\)/.test(deploy) && /stamp_sw\.py" --si
 check(/"\$BUILT\/sw\.js:text\/javascript; charset=utf-8"/.test(deploy), 'deploy.sh must upload the stamped sw.js as JavaScript');
 check(/"\$SITE\/manifest\.webmanifest:application\/manifest\+json; charset=utf-8"/.test(deploy), 'deploy.sh must upload the manifest with its own type');
 const rootLoop = deploy.slice(deploy.indexOf('for f in "$SITE/index.html'));
-check(/--cache-control "no-cache" --content-type "\$type"/.test(rootLoop.slice(0, rootLoop.indexOf('\n  done'))),
-  'the root files, sw.js among them, are uploaded no-cache: a worker a browser cannot re-read cannot be replaced');
+check(/--cache-control "\$REVALIDATE" --content-type "\$type"/.test(rootLoop.slice(0, rootLoop.indexOf('\n  done')))
+  && /REVALIDATE="public, max-age=0, must-revalidate, s-maxage=\d+"/.test(deploy) && /\|\| REVALIDATE="no-cache"/.test(deploy),
+  'the root files, sw.js among them, are uploaded so that a browser revalidates them on every load (max-age=0, must-revalidate; tests/test_edge_cache.mjs): a worker a browser cannot re-read cannot be replaced');
 check(rootLoop.indexOf('sw.js') > rootLoop.indexOf('index.html') && deploy.indexOf('"$SITE/js"') < deploy.indexOf('stamp_sw.py'),
   'sw.js is uploaded after the files it names');
 check(/"\/sw\.js"/.test(deploy) && /"\/manifest\.webmanifest"/.test(deploy), 'deploy.sh must invalidate /sw.js and /manifest.webmanifest');

@@ -47,6 +47,10 @@ check(JSON.stringify(E.embedState({ at: 'x' }, 'to-the-edge')) === JSON.stringif
 check(E.embedUrl({ at: 'sat-25544' }) === 'https://www.spaceradar.ai/?embed=1&at=sat-25544', `the embed's address (${E.embedUrl({ at: 'sat-25544' })})`);
 check(E.embedUrl({}, 'http://127.0.0.1:8000/site') === 'http://127.0.0.1:8000/site/?embed=1', 'the home view, on any base');
 check(E.fullUrl({ at: 'sat-25544', exp: 'deep' }) === 'https://www.spaceradar.ai/#at=sat-25544&exp=deep' && E.fullUrl({}) === 'https://www.spaceradar.ai/', 'Open in Space Radar is the app\'s own link for the view');
+// The link back (growth: a followed link to https://www.spaceradar.ai/?from=embed, a plain anchor): the tag is
+// a query before the hash, the view survives it, and the frame's own link is built with it.
+check(E.fullUrl({ at: 'sat-25544' }, undefined, { from: 'embed' }) === 'https://www.spaceradar.ai/?from=embed#at=sat-25544' && E.fullUrl({}, undefined, { from: 'embed' }) === 'https://www.spaceradar.ai/?from=embed', 'the link back carries ?from=embed before the view');
+check(/open\.href = fullUrl\(st, base, \{ from: 'embed' \}\)/.test(read('site/js/ui/embed.js')) && !/open\.rel\s*=[^;]*nofollow/.test(read('site/js/ui/embed.js')), 'the frame\'s link back is built with from=embed and is not nofollow');
 const snip = E.embedSnippet({ at: 'sat-25544' }, { title: 'A "station" <live>' });
 check(/^<iframe src="https:\/\/www\.spaceradar\.ai\/\?embed=1&amp;at=sat-25544" title="A &quot;station&quot; &lt;live&gt;" width="600" height="400" loading="lazy" allow="fullscreen" style="border:0;max-width:100%"><\/iframe>$/.test(snip), `the snippet (${snip})`);
 check(!/allow="[^"]*(camera|microphone|geolocation|autoplay)/.test(snip) && !/sandbox|referrerpolicy="unsafe/.test(snip), 'the frame asks for fullscreen and nothing else');
@@ -160,6 +164,16 @@ check(P.LENS.min === 15 && P.LENS.max === 75 && P.clampLens(45) === 45 && P.clam
   const compose = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
   check(/format === 'png'\) blob = await blobOf\(picture, 'image\/png'\)/.test(compose) && /format === 'png' \? 'png' : 'jpg'/.test(compose), 'a PNG is the composed picture as image/png, named .png');
   check(/CAMERA_FOV_DEG = 45\b/.test(readFileSync(join(ROOT, 'site/js/scene/renderer.js'), 'utf8')), 'and 45 degrees is the map\'s own lens');
+}
+
+// A station whose list could not be read shows the Earth, and the frame says why (internal #429).
+{
+  const lite = readFileSync(join(ROOT, 'site/js/embedlite.js'), 'utf8');
+  const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
+  check(/note = COPY\.embed\.stationUnread/.test(lite) && /embed\.attach\(ctx, note\)/.test(lite), 'the light embed passes the frame a note when it falls back to the Earth');
+  check(typeof COPY.embed.stationUnread === 'string' && COPY.embed.stationUnread.length < 60, 'and the note is chrome copy under 60 characters');
+  const emb = readFileSync(join(ROOT, 'site/js/ui/embed.js'), 'utf8');
+  check(/function attach\(ctx, note = ''\)/.test(emb) && /what\.hidden = !on && !note/.test(emb), 'ui/embed.js shows it in the same line a trip uses, and a trip replaces it while it runs');
 }
 
 if (problems.length) { console.error('embed FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

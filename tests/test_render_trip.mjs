@@ -111,7 +111,7 @@ function fakeWindow() {
   check(/\[\?&\]render=1/.test(main), 'and only when the address says render=1');
   const index = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
   check(!index.includes('rendermode'), 'index.html does not preload it');
-  check(/!ctx\.renderMode && latch\.push/.test(main), 'the frame latch is not fed while filming');
+  check(/!ctx\.renderMode && !capped && latch\.push/.test(main), 'the frame latch is not fed while filming (nor by a frame the idle cap spaced out: tests/test_idle.mjs)');
   const mod = readFileSync(join(ROOT, 'site/js/ui/rendermode.js'), 'utf8');
   check(!/from '\.\/tripframe\.js'/.test(mod), 'render mode does not pull the trip frame in');
 }

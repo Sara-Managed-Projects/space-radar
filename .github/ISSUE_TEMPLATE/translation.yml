@@ -1,0 +1,46 @@
+name: I can translate Space Radar
+description: Offer a language. We keep a list of who is working on what, so nobody does the same work twice.
+labels: [documentation, translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Please read [docs/TRANSLATING.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/TRANSLATING.md)
+        first: it says what a translation is, how the strings are kept, and what is translated first.
+        You do not need to be a programmer; a pull request is the only technical step and we will help with it.
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: "For example: Spanish, Brazilian Portuguese, Hebrew (right to left)."
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region or variety
+      description: "For example: Latin American Spanish, Brazil, Taiwan (Traditional Chinese). Leave empty if one form is used everywhere."
+  - type: dropdown
+    id: amount
+    attributes:
+      label: How much could you do?
+      options:
+        - The buttons and menus only (the interface)
+        - The interface and the trips' words (the 26 trips)
+        - Everything, including checking a voice later
+        - "I am not sure yet: tell me what is needed"
+    validations:
+      required: true
+  - type: dropdown
+    id: pr
+    attributes:
+      label: Can you send a pull request?
+      options:
+        - "Yes"
+        - "No, I will write the text in this issue and someone can add it"
+        - "I would like to learn how"
+  - type: textarea
+    id: about
+    attributes:
+      label: Anything else we should know?
+      description: "Your background (teacher, astronomer, translator), a glossary you already use, a second person who could review."

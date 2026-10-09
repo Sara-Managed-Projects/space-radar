@@ -135,6 +135,17 @@ await import(join(JS, 'copy/en.later.js'));
   }
 }
 
+// --- 4b. photo mode steps the clock (internal #397) -----------------------------------------------
+{
+  const src = read('site/js/ui/photomode.js');
+  check(/ctx\.timePill\.step === 'function'|typeof ctx\.timePill\.step === 'function'/.test(src) && /pill\.step\(-1\)/.test(src) && /pill\.step\(1\)/.test(src), 'photo mode steps the clock by the time pill\'s own unit, both ways');
+  check(/timeBox\.hidden = !pill/.test(src), 'and shows no step where there is no pill');
+  const { COPY } = await import(join(JS, 'copy/en.js'));
+  await import(join(JS, 'copy/en.later.js'));
+  const P = COPY.photo;
+  check(P.earlier === 'Earlier' && P.later === 'Later' && [P.timeLabel, P.earlier, P.later, P.timeTitle].every((x) => [...x].length <= 60), 'its words are short');
+}
+
 // --- 5. Kp under the aurora stop; the Messier pages ------------------------------------------------
 {
   const trip = read('site/js/ui/trip.js');

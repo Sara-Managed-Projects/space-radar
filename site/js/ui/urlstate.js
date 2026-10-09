@@ -141,6 +141,27 @@ export function write(patch) {
   }
 }
 
+/**
+ * `?from=<channel>` is a tag on a link we hand out ("?from=ig" on a profile, "?from=embed" on an
+ * embed's link back). It is read ONCE and into nothing: no variable keeps it, nothing is stored,
+ * no request carries it, and no link the app makes can contain it (ui/share.js builds its links
+ * from origin + path + the keys in KEYS, never from the query). All this does is take it, and only
+ * it, off the address bar with replaceState, so that `/?from=ig` reads `/` and a copied address is
+ * the address of the view. The other query keys (`?sw=0`, `?tier=`, `?embed=1`) and the hash stay.
+ * The canonical link of every page ignores the query already (scripts/check_seo.py holds it).
+ * Returns whether the address bar was changed. tests/test_from_tag.mjs holds all of this.
+ */
+export function dropFrom(loc = typeof location !== 'undefined' ? location : null, hist = typeof history !== 'undefined' ? history : null) {
+  if (!loc || !hist || !/[?&]from=/.test(String(loc.search || ''))) return false;
+  const rest = String(loc.search).slice(1).split('&').filter((part) => part && part.split('=')[0] !== 'from');
+  try {
+    hist.replaceState(hist.state, '', `${loc.pathname}${rest.length ? `?${rest.join('&')}` : ''}${loc.hash || ''}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Remove these keys, keeping every other. */
 export function clear(keys) {
   write(Object.fromEntries((keys || []).map((key) => [key, null])));
@@ -259,8 +280,9 @@ export function linkChange(link, now = {}) {
   // visit began at, with no keys at all, changed nothing: the station stayed selected, on the
   // Moon's map, over an address that says "the default view". An address with no keys IS a view,
   // the one a first visit opens on: nothing selected, the Earth's map, now. (A link that names an
-  // object and no `stage=` is NOT read as "the Earth's map": the app itself never writes `stage=`,
-  // so its absence says nothing. That case is left as it was, and has its own issue.)
+  // object and no `stage=` IS read as the Earth's map since #485: the app writes `stage=` on every
+  // stage change off the Earth (main.js), so its absence says the Earth -- except in a link to a
+  // trip or an event, which pick their own stage.)
   // `now.stage` is the map's centre now; a caller that does not say is asked for nothing new.
   const elsewhere = typeof now.stage === 'string' && now.stage !== DEFAULT_STAGE;
   const named = ['trip', 'stop', 'at', 'event', 't', 'rate', 'stage', 'cam'].some((k) => link[k] !== undefined);
@@ -269,7 +291,7 @@ export function linkChange(link, now = {}) {
     if (!bare || !(elsewhere || now.at || now.trip || now.live === false)) return null;
     return { clock: now.live === false ? { live: true } : null, stage: elsewhere ? DEFAULT_STAGE : null, trip: now.trip ? { stop: true } : null, event: null, at: now.at ? { none: true } : null };
   }
-  const out = { clock: null, stage: link.stage || null, trip: null, event: null, at: null };
+  const out = { clock: null, stage: link.stage || (elsewhere && !link.trip && !link.event ? DEFAULT_STAGE : null), trip: null, event: null, at: null };
   const ms = link.t && link.t !== 'now' ? Date.parse(link.t) : NaN;
   const rate = Number(link.rate) > 0 ? Number(link.rate) : 1;
   if (Number.isFinite(ms)) out.clock = { goTo: ms, rate };

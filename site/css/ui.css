@@ -4456,6 +4456,20 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-mark--foot:hover { color: var(--sr-text); }
 .sr-status__press { margin-left: auto; }
+
+/* The site's links (index.html's #sr-sitefoot, moved here by ui/status.js): small, dim, a finger tall. */
+.sr-sitefoot--shown { margin-top: var(--sp-2); }
+.sr-sitefoot--shown ul { display: flex; flex-wrap: wrap; gap: 0 var(--sp-2); margin: 0; padding: 0; list-style: none; }
+.sr-sitefoot--shown a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  text-decoration: none;
+}
+.sr-sitefoot--shown a:hover { color: var(--sr-text); }
 @media (pointer: coarse) { .sr-status__press { min-height: 44px; } }
 
 /* --- the tool rail -------------------------------------------------------------------- */
@@ -5008,6 +5022,13 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-tape.is-dragging { cursor: grabbing; }
 
+/* The slider fills the tape and sits under the marks (they are its siblings, internal #472). */
+.sr-tape__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--sr-radius);
+}
+
 .sr-tape__ticks {
   position: absolute;
   right: 0;
@@ -5097,7 +5118,8 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   left: 50%;
   width: 10px;
   height: 10px;
-  margin-left: -5px;
+  /* Back to the mark's own time when ui/scrubber.js spreadMarks moved its box aside. */
+  margin-left: calc(-5px + var(--sr-mark-shift, 0px));
   background: var(--sr-text);
   border-radius: 50%;
 }
@@ -5121,7 +5143,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-tape__mark[data-kind='shower'] .sr-tape__glyph {
   width: 4px;
-  margin-left: -2px;
+  margin-left: calc(-2px + var(--sr-mark-shift, 0px));
   background: var(--sr-comet);
   border-radius: var(--sr-radius-sm);
 }
@@ -6667,6 +6689,18 @@ html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 4
   cursor: pointer;
 }
 .sr-trip__vol[hidden] { display: none; }
+
+/* The same slider in What to show (ui/sound.js volumeSlider): the full width of its row. */
+.sr-show__vol {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: var(--sp-1) 0 0;
+  accent-color: var(--sr-ember);
+  background: transparent;
+  cursor: pointer;
+}
+.sr-show__vol[hidden] { display: none; }
 html.sr-phone .sr-trip__vol { width: 56px; }
 .sr-tripsheet__voiceoffer[hidden] { display: none; }
 

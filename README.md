@@ -2,22 +2,58 @@
 
 # Space Radar
 
-**A free, open planetarium in your browser.**<br>
-Every satellite at its real position right now, the planets and their moons, 109 389 stars,
-and 25 narrated trips that fly you there.
+**A live 3D map of space in your browser.**<br>
+Free, open source, no account, no build step, works offline.
 
-### [Open it: www.spaceradar.ai](https://www.spaceradar.ai)
+### [Open it: www.spaceradar.ai](https://www.spaceradar.ai/?from=gh)
 
 [![CI](https://github.com/Sara-Managed-Projects/space-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/Sara-Managed-Projects/space-radar/actions/workflows/ci.yml)
 [![Code: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
-[![No build step](https://img.shields.io/badge/build%20step-none-brightgreen.svg)](#run-it-locally)
+[![No build step](https://img.shields.io/badge/build%20step-none-brightgreen.svg)](#run-it-in-30-seconds)
 [![Runs offline](https://img.shields.io/badge/runs-offline-brightgreen.svg)](docs/RUN_LOCALLY.md)
-[![Live site](https://img.shields.io/website?url=https%3A%2F%2Fwww.spaceradar.ai&label=spaceradar.ai)](https://www.spaceradar.ai)
+[![Live site](https://img.shields.io/website?url=https%3A%2F%2Fwww.spaceradar.ai&label=spaceradar.ai)](https://www.spaceradar.ai/?from=gh)
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
+[![Help wanted](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/help%20wanted?label=help%20wanted&color=008672)](https://github.com/Sara-Managed-Projects/space-radar/labels/help%20wanted)
+[![Discussions](https://img.shields.io/badge/discussions-open-blue.svg)](https://github.com/Sara-Managed-Projects/space-radar/discussions)
 
-[![Space Radar: the Earth with today's clouds, the aurora and the satellites around it](assets/screenshots/hero.webp)](https://www.spaceradar.ai)
+<a href="https://www.spaceradar.ai/?from=gh"><img src="assets/screenshots/zoom-to-earth.webp" width="340" alt="A twelve-second zoom from the planets down to the Earth, with the clouds of 8 October 2026, ending on the address spaceradar.ai"></a>
 
 </div>
+
+## Run it in 30 seconds
+
+Nothing to install, nothing to compile. Python's built-in server is the whole toolchain:
+
+```bash
+git clone https://github.com/Sara-Managed-Projects/space-radar.git
+cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
+```
+
+26 narrated trips (205 stops), 109 389 stars in 3D, 40 star systems to fly into, about 17 000
+satellites at their real positions, and every picture labelled as measured, modelled or an
+artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
+museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
+
+**Follow:** [YouTube](https://www.youtube.com/@SpaceRadar_ai) ·
+[Instagram](https://www.instagram.com/spaceradar.ai/) ·
+[LinkedIn](https://www.linkedin.com/company/spaceradar-ai) ·
+[Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions) ·
+[Roadmap](ROADMAP.md)
+
+## You can help without writing code
+
+- **Report a wrong number or name**, with a source: a
+  [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml).
+- **Try it in a class or on a museum screen** and tell us what broke or worked: a
+  [classroom report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=classroom.yml).
+- **Translate it:** [docs/TRANSLATING.md](docs/TRANSLATING.md), or
+  [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
+- **Suggest or review a trip.** Astronomers: read one trip's narration for errors.
+- **Edit a word on GitHub**, with no tools at all: [CONTRIBUTING.md](CONTRIBUTING.md) shows how.
+- Want a first task? Pick a [good first issue](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue).
+  Every first comment gets an answer within 48 hours.
+
+If Space Radar is useful to you, a star helps other people find it.
 
 ## What it is
 
@@ -25,9 +61,11 @@ Space Radar is a living 3D map of space. It draws the Earth with today's clouds,
 satellites where they are this minute, the space stations and who is aboard, rockets about to
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae as telescopes photographed them, and the Milky Way from outside. Step
-down to the ground and it is tonight's sky from your own street. Twenty-five guided trips, read
-aloud, fly the camera for you. It is a static website: the physics runs in your browser, on public
+down to the ground and it is tonight's sky from your own street. Twenty-six guided trips, read
+aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
+
+![Space Radar: the Earth with today's clouds, the aurora and the satellites around it](assets/screenshots/hero.webp)
 
 ## Why
 
@@ -46,7 +84,7 @@ data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 25 trips and 195 stops, with 65 minutes of narration, captions and music. | **Stand where we have been.** Twenty places on the Moon and eleven on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 26 trips and 205 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
 | ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
 | **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
@@ -54,7 +92,7 @@ data, and every number on screen says where it came from.
 
 - **Follow anything in orbit.** The ISS, Hubble, Starlink trains, debris: where it is, how fast,
   whether it is in sunlight, and when it passes over you.
-- **See the deep sky.** Real photographs of 27 nebulae and galaxies in their true places, with an
+- **See the deep sky.** Real photographs of 30 nebulae and galaxies in their true places, with an
   exposure control, and the whole sky in other light: infrared, microwaves, gamma rays.
 - **Go anywhere, at any time.** Fly from a rooftop to the edge of the Milky Way; drag the time
   scrubber to the next eclipse; follow eight missions along their own timelines.
@@ -65,8 +103,11 @@ data, and every number on screen says where it came from.
 - **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
-the Moon and Mars · today's sunspot groups · eclipses computed for any date · 54 spacecraft and
-shape models · shareable links, postcards and a photo mode · full keyboard control.
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · 70 spacecraft and
+shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
+"Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
+reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled
+so, of planets nobody has seen · shareable links, postcards and a photo mode · full keyboard control.
 
 ### Links
 
@@ -79,7 +120,7 @@ browser's history: Back is not "previous stop", it leaves the trip for the page 
 trip has its own Previous). Back and Forward between two links you opened put the whole view back
 each time: the selection, the clock, the map and the stop.
 
-## Run it locally
+## Run it locally (the long version)
 
 ```bash
 git clone https://github.com/Sara-Managed-Projects/space-radar.git
@@ -98,7 +139,7 @@ is a zip that already contains a saved copy of the data and starts offline.
 site/        the whole app, served as it is: plain ES modules, three.js, no bundler, no framework
 registry/    YAML files that say what exists: worlds, layers, data sources, trips, models, budgets
 scripts/     generators that turn a registry into the JavaScript the browser reads, and the checks
-tests/       130 node and python test files; no browser needed
+tests/       more than 150 node and python test files; no browser needed
 harvest/     a small scheduled job that saves each public data source for the site to read
 docs/        running it, embedding it, design principles, releasing
 ```
@@ -140,7 +181,6 @@ Space Radar stands on data and work that other people publish for free. Thank yo
 [![GDACS](https://img.shields.io/badge/storms-GDACS-1f6feb)](https://www.gdacs.org)
 [![NASA Exoplanet Archive](https://img.shields.io/badge/exoplanets-NASA%20Exoplanet%20Archive-1f6feb)](https://exoplanetarchive.ipac.caltech.edu)
 [![NASA DSN Now](https://img.shields.io/badge/deep%20space%20network-NASA%20DSN%20Now-1f6feb)](https://eyes.nasa.gov/dsn/)
-[![ESA NEOCC](https://img.shields.io/badge/close%20approaches-ESA%20NEOCC-1f6feb)](https://neo.ssa.esa.int)
 [![Wikidata](https://img.shields.io/badge/observatories-Wikidata-1f6feb)](https://www.wikidata.org)
 [![Open Notify](https://img.shields.io/badge/crews-Open%20Notify-1f6feb)](http://open-notify.org)
 
@@ -148,7 +188,7 @@ Space Radar stands on data and work that other people publish for free. Thank yo
 
 [![HYG](https://img.shields.io/badge/stars-HYG%20v4.4%20%C2%B7%20d3--celestial-8250df)](https://codeberg.org/astronexus/hyg)
 [![OpenNGC](https://img.shields.io/badge/deep%20sky-OpenNGC%20%C2%B7%20Wikipedia-8250df)](https://github.com/mattiaverga/OpenNGC)
-[![NASA 3D Resources](https://img.shields.io/badge/54%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
+[![NASA 3D Resources](https://img.shields.io/badge/70%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
 [![Solar System Scope](https://img.shields.io/badge/planet%20maps-Solar%20System%20Scope%20%C2%B7%20NASA%20%C2%B7%20USGS-8250df)](https://www.solarsystemscope.com/textures/)
 [![Natural Earth](https://img.shields.io/badge/countries-Natural%20Earth-8250df)](https://www.naturalearthdata.com)
 [![Other light](https://img.shields.io/badge/other%20light-WISE%20%C2%B7%20WMAP%20%C2%B7%20Fermi%20via%20CDS-8250df)](CREDITS.md#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips)

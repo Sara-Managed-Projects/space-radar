@@ -35,7 +35,29 @@ budgets:
   # publisher's JPEG, 463 087 B; at WebP quality 84 (luma SSIM 0.9811 against it, same pixels) it is
   # 148 312 B. Measured on the pull request that did it, in CI, one commit apart: 3 366 543 B before,
   # 3 052 513 B after, 139 requests both times.
-  - {id: first_visit_bytes, value: 3205000, unit: bytes, since: 2026-10-08, reason: "3 052 513 B + 5 %, measured 2026-10-08 by CI (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads), 139 requests. It was 3 517 000 (3 366 543 B measured on the same pull request one commit earlier, with the day map still a JPEG), 4 008 000 before the second diet and 5 773 324 B before the first"}
+  # THE MINIFIER (2026-10-09, internal #515, public #559): a deploy now runs the ES modules through
+  # esbuild after the comment stripper, and screens.yml builds the same tree. Measured in CI on that
+  # pull request: 2 719 025 B in 141 requests, where main was 3 142 846 B the day before (the head of
+  # public #518, same method). Lowered to that with the usual 5 %.
+  - {id: first_visit_bytes, value: 2855000, unit: bytes, since: 2026-10-09, reason: "2 719 025 B + 5 %, measured 2026-10-09 by CI on public #559 (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads: comments stripped and the ES modules through esbuild); 3 052 513 B before the minifier"}
+  # THE JAVASCRIPT A DEPLOY SERVES FOR THE BOOT (internal #515, 2026-10-09). Not a browser's number: the
+  # sum of the files of the static graph from js/main.js in the tree a deploy uploads, counted by
+  # scripts/check_built_tree.mjs in the deploy itself and in CI. MEASURED that day on main: 2 175 514 B
+  # in 115 modules after the comment stripper alone, 1 778 733 B after esbuild's `--minify` over the modules (no
+  # bundling, no property renaming). The row holds the minified number with 5 % of room, so a deploy
+  # that fell back to the stripper, or a module that grew by a library, is seen before it is served.
+  - {id: deployed_boot_js_bytes, value: 1868000, unit: bytes, since: 2026-10-09, reason: "internal #515: the static graph from js/main.js in the minified tree, 1 778 733 B in 115 modules measured 2026-10-09 by scripts/check_built_tree.mjs (2 175 514 B after the comment stripper alone), plus 5 %"}
+  # THE FIRST MINUTE (internal #527, 2026-10-09). first_visit_bytes above stops two seconds after the
+  # layers are ready. This is what the same visit goes on to fetch from OUR OWN host in the next 60
+  # seconds, with nobody touching the page: the named stars, the exoplanets, the deep sky and their
+  # modules, the trip pictures and the panels' code. Same boot, same tree, same runner
+  # (tests/test_first_visit_bytes.mjs --minute; a phone, so no 4k maps; CelesTrak and Launch Library
+  # refused; uncompressed). Other hosts' bytes (NASA's clouds) are printed beside it and not held:
+  # they are not ours to bound. Not in it: the service worker's precache, which an automated browser
+  # does not get. MEASURED 2026-10-09 in CI on public #559: 1 581 495 B of our own files in 57 requests
+  # (the largest: exoplanets.csv 583 527, stars3d.names.json 288 436, the trips' data 116 529, dso.json
+  # 116 070), and 684 552 B from other hosts, which is NASA's picture of today's clouds.
+  - {id: after_first_visit_bytes, value: 1661000, unit: bytes, since: 2026-10-09, reason: "internal #527: 1 581 495 B + 5 %, our own files fetched in the 60 s after the first-visit window, measured 2026-10-09 by CI on public #559 (tests/test_first_visit_bytes.mjs --minute in screens.yml; other hosts sent 684 552 B more, not held)"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
@@ -45,7 +67,9 @@ budgets:
   # the 22 modules only it brings (261 137 B stripped) for the tag's three lines. Those lines' own
   # code is ui/cardfacts.js now, fetched alone: 19 requests fewer. Measured in CI on the pull
   # request, one commit apart: at=moon 2 321 730 -> 2 149 573 B, at=25544 2 217 222 -> 2 045 065 B.
-  - {id: embed_first_visit_bytes, value: 2257000, unit: bytes, since: 2026-10-08, reason: "internal #429: 2 149 573 B in 70 requests for at=moon and 2 045 065 B in 69 for at=25544, measured 2026-10-08 by CI (tests/test_first_visit_bytes.mjs --embed=, a phone at 390x844 on the stripped tree, uncompressed), the larger + 5 %. It was 2 342 000 with 20 270 B to spare after public #506 (at=moon 2 321 730 B in 89 requests), and 2 500 000 before that"}
+  # With the minifier (2026-10-09, public #559), measured in CI: at=moon 1 962 243 B in 71 requests,
+  # at=25544 1 857 735 B in 70.
+  - {id: embed_first_visit_bytes, value: 2060000, unit: bytes, since: 2026-10-09, reason: "1 962 243 B for at=moon (71 requests) and 1 857 735 B for at=25544 (70), measured 2026-10-09 by CI on public #559 with the ES modules minified, plus 5 %; 2 149 573 B and 2 045 065 B before (internal #429)"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.

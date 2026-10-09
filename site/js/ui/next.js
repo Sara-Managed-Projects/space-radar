@@ -18,7 +18,7 @@
 // day. Eight rows, nearest in time first, each a tap to the record. When a layer that would feed
 // the list has not loaded, the note says which, rather than the list pretending to be complete.
 
-import { COPY, t, fmt, timeText, ageInWords } from '../copy/en.js';
+import { COPY, t, fmt, timeText, ageInWords, compassWords } from '../copy/en.js';
 import { labelName } from './labels.js';
 import { SHOWERS } from '../data/showers.js';
 import { kpWords } from './spaceweather.js';
@@ -123,6 +123,12 @@ export function buildNextItems(records, nowMs, opts = {}) {
     }
     items.push(it);
   }
+  // From the visitor's own place (internal #359): worked out in a worker, handed in whole.
+  if (Array.isArray(opts.fromPlace)) {
+    for (const f of opts.fromPlace) {
+      if (f && f.kind === 'conjunction' && f.tMs > nowMs && f.tMs - nowMs < horizonMs) items.push(f);
+    }
+  }
   // Perihelia stay here: the record walk's third branch, for what is neither a launch nor an approach.
   for (const r of Array.isArray(records) ? records : []) {
     if (!r || !r.meta || launchItem(r, nowMs, horizonMs) || approachItem(r, nowMs, horizonMs)) continue;
@@ -168,7 +174,10 @@ export function balance(items) {
   const take = (it) => { if (chosen.length < NEXT_CAP && !chosen.includes(it)) chosen.push(it); };
   // An eclipse is guaranteed its row right after the soonest launch: rare enough that a ninth launch
   // must not push it off the list (spec 0031 req 5), never ahead of a storm happening now.
-  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'approach', 'perihelion', 'shower']) {
+  // A pair from the visitor's own place comes next: a month has one or none, and at the end of this
+  // line a full list never showed it (seen 2026-10-09: three passes, a launch, two eclipses, an
+  // approach and a perihelion made eight, and Mars beside Jupiter had no row).
+  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'conjunction', 'approach', 'perihelion', 'shower']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -200,6 +209,13 @@ function shownName(record) {
 }
 
 /** One row's words. Pure. */
+/** "low in the south-east": how high and which way, from the finder's altitude and azimuth. */
+function whereWords(item) {
+  const R = COPY.nextList.row;
+  const height = item.altDeg < 15 ? R.low : item.altDeg < 45 ? R.mid : R.high;
+  return { height, dir: compassWords(item.azDeg) };
+}
+
 export function rowText(item, nowMs) {
   const T = COPY.nextList;
   const name = item.label || shownName(item.record) || COPY.card.unknownName;
@@ -254,6 +270,8 @@ export function rowText(item, nowMs) {
     case 'season':
       // The date, never a countdown, as an eclipse: computed, and it does not slip.
       return item.say || item.label;
+    case 'conjunction':
+      return `${t(COPY.nextList.row.conjunctionTitle, { a: item.a, b: item.b })}: ${t(COPY.nextList.row.conjunction, { when, sep: fmt.num(item.sepDeg, 1), ...whereWords(item) })}`;
     default:
       return `${name} ${when}`;
   }
@@ -324,6 +342,7 @@ export function classText(item, wallMs = Date.now()) {
     case 'solar-eclipse':
     case 'lunar-eclipse': return C.eclipse;
     case 'season': return C.season;
+    case 'conjunction': return C.conjunction;
     default: return null;
   }
 }
@@ -374,6 +393,8 @@ export function rowParts(item, nowMs) {
     }
     case 'season':
       return { title: name, detail: t(R.eclipse, { date: timeText.longDate(item.tMs) }) };
+    case 'conjunction':
+      return { title: t(R.conjunctionTitle, { a: item.a, b: item.b }), detail: t(R.conjunction, { when, sep: fmt.num(item.sepDeg, 1), ...whereWords(item) }), value: t(R.conjunctionValue, { sep: fmt.num(item.sepDeg, 1) }) };
     default:
       return { title: name, detail: when };
   }
@@ -482,6 +503,30 @@ export function createNext(ctx, opts = {}) {
   let timer = null;
   let lastItems = [];
 
+  // FROM YOUR PLACE (internal #359): two bright things within two degrees, worked out in a worker
+  // the first time a place is set and the list is on screen. Lazy: nothing of it is on a first visit,
+  // and nothing is fetched. Asked again when the place moves by a tenth of a degree or the day turns.
+  let found = [];
+  let foundKey = '';
+  function askFinder(observer, now) {
+    if (!observer) { found = []; foundKey = ''; return; }
+    const key = `${(observer.latRad * 180 / Math.PI).toFixed(1)}:${(observer.lonRad * 180 / Math.PI).toFixed(1)}:${Math.floor(now / 864e5)}`;
+    if (key === foundKey) return;
+    foundKey = key;
+    import('../sky/findclient.js').then((m) => m.findFromPlace({
+      latDeg: observer.latRad * 180 / Math.PI,
+      lonDeg: observer.lonRad * 180 / Math.PI,
+      altKm: Number(observer.altKm) || 0,
+    }, now)).then((rows) => {
+      // An answer with no rows is an answer too: the rows of the place or the day before it go.
+      if (foundKey !== key) return;
+      const next = rows || [];
+      if (!next.length && !found.length) return;
+      found = next;
+      refresh();
+    }).catch(() => { /* the list is as it was: no place-made rows */ });
+  }
+
   function loadedIds() {
     const out = new Set();
     for (const id of FEEDS) if ((ctx.recordsFor(id) || []).length) out.add(id);
@@ -492,7 +537,8 @@ export function createNext(ctx, opts = {}) {
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     const observer = ctx.observer && Number.isFinite(ctx.observer.latRad) ? ctx.observer : null;
-    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather, eclipses: true });
+    askFinder(observer, now);
+    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather, eclipses: true, fromPlace: found });
     lastItems = items;
     const shown = expanded ? items : items.slice(0, limit);
     more.hidden = items.length <= limit;

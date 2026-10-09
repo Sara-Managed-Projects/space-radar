@@ -143,6 +143,20 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   check(P.placesSeen(p) === 5, 'but it is still counted');
 }
 
+// --- the wonder shows to those who come back (public #240, internal #472) ----------------------------
+{
+  const day = P.dayNumberOf(now);
+  const D1 = 86400000;
+  check(P.isReturning(P.emptyPassport(), day) === false, 'an empty passport is a first visit');
+  check(P.isReturning({ ...P.emptyPassport(), wonder: { day, id: 'moon' } }, day) === false, 'a wonder chosen today, reloaded, is still the first day');
+  check(P.isReturning({ ...P.emptyPassport(), wonder: { day: day - 1, id: 'moon' } }, day) === true, 'a wonder chosen yesterday means somebody came back');
+  check(P.isReturning(P.recordVisit(P.emptyPassport(), 'moon', now - 3 * D1), day) === true, 'a place opened three days ago too');
+  check(P.isReturning(P.recordVisit(P.emptyPassport(), 'moon', now), day) === false, 'a place opened today is not a return');
+  check(P.isReturning(null, day) === false && P.isReturning(P.emptyPassport(), NaN) === false, 'nothing, or no day, is no return');
+  const today = readFileSync(join(JS, 'ui/today.js'), 'utf8');
+  check(/pass\.returning\(day\)/.test(today) && /pass\.wonderSeen\(day, pick\.id\)/.test(today), 'today.js shows the wonder only on a return, and remembers it on the first day too');
+}
+
 // --- the wonder of the day ---------------------------------------------------------------------------
 {
   const day = P.dayNumberOf(now);
@@ -179,8 +193,8 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   ];
   const we = T.wonderEvents(items, now);
   check(we.map((c) => c.id.split(':')[0]).join() === 'shower,approach', `the events a wonder may be: a shower before a close approach; a pass and a launch are daily bread; an eclipse 300 days off is not this month's (${we.map((c) => c.id)})`);
-  const fam = T.famousThings([{ id: 'mars', name: 'Mars', klass: 'world' }, { id: 'exotic-m87-star', name: 'M87*', klass: 'exotic' }, { id: 'sat-1', name: 'A satellite', klass: 'satellite' }, { id: 'earth', name: 'Earth', klass: 'world' }]);
-  check(fam.map((c) => c.id).join() === 'earth,exotic-m87-star,mars' && fam.every((c) => c.act === 'select' && c.record), 'the famous things: the extremes and the worlds, in a fixed order, each a place to go');
+  const fam = T.famousThings([{ id: 'mars', name: 'Mars', klass: 'world' }, { id: 'exotic-m87-star', name: 'M87*', klass: 'exotic' }, { id: 'sat-1', name: 'A satellite', klass: 'satellite' }, { id: 'earth', name: 'Earth', klass: 'world' }, { id: 'hip-70890', name: 'Proxima Centauri', klass: 'star', meta: { why: 'The nearest star to the Sun' } }, { id: 'hip-1', name: 'A star nobody wrote about', klass: 'star', meta: {} }]);
+  check(fam.map((c) => c.id).join() === 'earth,exotic-m87-star,hip-70890,mars' && fam.every((c) => c.act === 'select' && c.record), 'the famous things: the extremes, the worlds and the stars registry/stars-notable.yaml wrote a line for, in a fixed order, each a place to go (internal #437)');
   const cards = T.todayCards({ items, nowMs: now, skipId: we[0].id });
   check(!cards.some((c) => c.id === we[0].id), 'the wonder is not said again on the shelf under it');
 }
@@ -211,6 +225,9 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   const { COPY } = await import(join(JS, 'copy/en.js'));
   check(/only/.test(COPY.passport.kept) && /browser/.test(COPY.passport.kept) && [...COPY.passport.kept].length <= 60, 'the view says once, in one line, that this lives only in this browser');
   check(src.split('P.kept').length === 2, 'and says it in one place');
+  // internal #448 item 9: the three sessionStorage keys a screen playing on its own keeps are listed.
+  const auto = readFileSync(join(JS, 'ui/autopilot.js'), 'utf8');
+  check(['sr:ambient:log', 'sr:ambient:reloads', 'sr:ambient:sound'].every((k) => auto.includes(k)) && COPY.kept.lines.some((l) => /plays on its own/.test(l) && /this tab only/.test(l)), 'the Sources panel says what a screen playing on its own keeps (the three sr:ambient keys, this tab only)');
   check(/P\.forgetConfirm/.test(src) && /CONFIRM_MS/.test(src), 'Forget me asks once before it forgets');
 }
 

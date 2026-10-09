@@ -44,6 +44,7 @@ import { createLabels } from './ui/labels.js';
 import { createHud } from './ui/hud.js';
 import { wantFacts } from './ui/cardgate.js';
 import { installEmbed, embedLink } from './ui/embed.js';
+import { COPY } from './copy/en.js';
 
 /** The light maps (registry/textures.yaml tier -1), by the tier-0 file each stands in for. `null`: not drawn. */
 export const EMBED_MAPS = {
@@ -97,7 +98,9 @@ export async function bootLite() {
   // whole app could not find the station either, and would cost four megabytes to say so. The frame
   // shows the Earth, which is where the station is. A list that WAS read and does not hold the
   // number is another matter: the object may be in another catalogue, and that is the full app's.
+  let note = '';
   if (!record && target.kind === 'station' && !(layerRecords.get('stations') || []).length) {
+    note = COPY.embed.stationUnread; // and the frame says why it shows the Earth (internal #429)
     record = (layerRecords.get('worlds') || []).find((r) => r.id === 'earth') || null;
   }
   if (!record) return false;
@@ -184,7 +187,7 @@ export async function bootLite() {
   ctx.labels = createLabels(ctx, document.getElementById('labels'));
   ctx.hud = createHud(ctx, document.body);
   ctx.hud.select(record);
-  embed.attach(ctx);
+  embed.attach(ctx, note);
   if (typeof window !== 'undefined') window.spaceRadar = ctx;
 
   let last = performance.now();

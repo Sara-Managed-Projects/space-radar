@@ -99,11 +99,14 @@ jobs:
       # comments and indentation (scripts/minify_site.py); the byte gate below is on that tree, so
       # it is built here exactly as the deploy builds it -- `node --check` on every module -- and
       # served beside the source. Everything but js/ and css/ is a link to site/.
+      # Since internal #515 (2026-10-09) the deploy also runs the ES modules through esbuild, pinned
+      # by version and hash and fetched by scripts/get_esbuild.py; so does this, with the same flag,
+      # and the first-visit gate boots the minified modules.
       - name: Build and serve what a deploy uploads
         if: steps.page.outputs.found == '1'
         run: |
           set -euo pipefail
-          python3 scripts/minify_site.py --out "$RUNNER_TEMP/served" --tree --node node
+          python3 scripts/minify_site.py --out "$RUNNER_TEMP/served" --tree --esbuild auto --node node
           nohup python3 -m http.server 8178 --directory "$RUNNER_TEMP/served" --bind 127.0.0.1 >/tmp/serve-built.log 2>&1 &
           for _ in $(seq 1 40); do
             if curl -fsS -o /dev/null http://127.0.0.1:8178/js/main.js; then
@@ -157,7 +160,13 @@ jobs:
               node scripts/check-drawn.mjs --base=http://127.0.0.1:8177
               # And the phone, which no review could measure until tools/cdp.mjs could boot one.
               # The same pixels, plus: no label may run off the edge of a 375 px window.
-              node scripts/check-drawn.mjs --base=http://127.0.0.1:8177 --width=375 --height=812 --mobile'
+              node scripts/check-drawn.mjs --base=http://127.0.0.1:8177 --width=375 --height=812 --mobile
+              # And once more on the tree a deploy uploads (8178): the same modules through the
+              # minifier (internal #515) must draw the same world, or the deploy would be the
+              # first to find out. --idle then loads it once more with the idle frame cap asked for
+              # (internal #520; an automated browser does not get it otherwise) and prints what the
+              # loop drew and skipped at rest.
+              node scripts/check-drawn.mjs --base=http://127.0.0.1:8178 --idle'
 
       # SPEC 0044: WHAT A FIRST VISIT COSTS IS A NUMBER, not a hope. A phone boots the app with
       # CelesTrak and Launch Library blocked, waits for the layers and two seconds more, and every
@@ -179,7 +188,7 @@ jobs:
             mcr.microsoft.com/playwright:v1.49.1-jammy \
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
-              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/first-visit.json
+              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/first-visit.json --minute
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --embed=moon --out=.ci-screens/first-visit-embed-moon.json
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --embed=25544 --out=.ci-screens/first-visit-embed-25544.json
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --info --out=.ci-screens/first-visit-source.json'

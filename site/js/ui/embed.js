@@ -89,10 +89,15 @@ export function embedUrl(st, base = 'https://www.spaceradar.ai/') {
   return `${rootOf(base)}?${['embed=1', ...pairs(st)].join('&')}`;
 }
 
-/** The same view in the whole app, for "Open in Space Radar". */
-export function fullUrl(st, base = 'https://www.spaceradar.ai/') {
+/**
+ * The same view in the whole app, for "Open in Space Radar". `opts.from` tags the way in
+ * (`https://www.spaceradar.ai/?from=embed#at=sat-25544`): a plain query the app reads once and takes
+ * off the address bar (ui/urlstate.js dropFrom). A normal followed link: no tracker, no cookie.
+ */
+export function fullUrl(st, base = 'https://www.spaceradar.ai/', opts = {}) {
   const keys = pairs(st);
-  return keys.length ? `${rootOf(base)}#${keys.join('&')}` : rootOf(base);
+  const root = rootOf(base) + (opts.from ? `?from=${encodeURIComponent(opts.from)}` : '');
+  return keys.length ? `${root}#${keys.join('&')}` : root;
 }
 
 const attr = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -151,7 +156,8 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
     if (!CAMERA_KEYS.has(e.key)) e.stopImmediatePropagation();
   }, true);
 
-  function attach(ctx) {
+  /** `note`: one line for the frame when the page shows less than it was asked for (embedlite.js). */
+  function attach(ctx, note = '') {
     const E = COPY.embed;
     const bar = document.createElement('nav');
     bar.id = 'sr-embed';
@@ -173,9 +179,10 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
     document.body.appendChild(bar);
     const say = (st) => {
       const on = !!(st && st.phase !== 'idle' && st.tourTitle);
-      what.hidden = !on;
-      what.textContent = on ? [st.tourTitle, st.stopTitle].filter(Boolean).join(COPY.punctuation.separator) : '';
+      what.hidden = !on && !note;
+      what.textContent = on ? [st.tourTitle, st.stopTitle].filter(Boolean).join(COPY.punctuation.separator) : note;
     };
+    if (note) say(null);
     if (ctx && ctx.trip && typeof ctx.trip.onChange === 'function') ctx.trip.onChange(say);
     // The link follows the view: the selection the visitor ends up on, at the moment shown.
     const base = location.origin + location.pathname.replace(/[^/]*$/, '');
@@ -185,7 +192,7 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
       const trip = ctx && ctx.trip && ctx.trip.state;
       if (trip && trip.phase !== 'idle' && trip.tourId) { st.trip = trip.tourId; delete st.at; }
       else if (sel && sel.id) { st.at = sel.id; delete st.trip; delete st.stop; }
-      open.href = fullUrl(st, base);
+      open.href = fullUrl(st, base, { from: 'embed' });
     };
     paint();
     open.addEventListener('pointerdown', paint);

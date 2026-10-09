@@ -68,6 +68,37 @@ html, body {
   white-space: nowrap;
 }
 
+/* The page footer's links (templates/sitelinks.html, written into index.html by scripts/gen_home_seo.py).
+   A full-screen map has no room for a page footer, so until ui/status.js moves it into the Sources
+   sheet it is clipped like .sr-hidden-text: in the markup for a crawler and a link list, never in the way. */
+.sr-sitefoot:not(.sr-sitefoot--shown) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Shown in the Sources sheet or clipped out of sight, the footer's links are targets like any other: 44 px high, the floor
+   the ui gate holds every control to on a phone, and the same on a desktop (one rule, no second size). */
+.sr-sitefoot ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sr-sitefoot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+}
+
 /* Skip links (public #315): clipped like .sr-hidden-text until one has the focus, then a glass chip
    at the top left, over everything but the boot veil. */
 .sr-skip {

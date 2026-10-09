@@ -161,6 +161,9 @@ function descriptionFor(lead, why, live) {
   return cut(`${lead} ${why || live}`, DESC_MAX);
 }
 
+// The ten bodies site/js/objectnow.js can place with the vendored Astronomy Engine, by record id (internal #294).
+const NOW_BODIES = { sun: 'Sun', moon: 'Moon', mercury: 'Mercury', venus: 'Venus', mars: 'Mars', jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptune', pluto: 'Pluto' };
+
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 /** Two significant figures: a size worked out from an angle and a distance is not good to more. */
 const sig2 = (v) => { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v))) - 1)); return Math.round(v / p) * p; };
@@ -307,6 +310,7 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
     title: titleFor(name, klass, r.id),
     description: descriptionFor(lead, why, liveLineFor(klass, r.id)),
     liveLine: liveLineFor(klass, r.id),
+    nowBody: klass === 'world' && Object.prototype.hasOwnProperty.call(NOW_BODIES, r.id) ? NOW_BODIES[r.id] : null,
     lead,
     why,
     see: seeLine(r, klass, m),

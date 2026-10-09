@@ -146,5 +146,16 @@ check(/Emulation\.setTimezoneOverride/.test(cdp) && /arg\('timezone'/.test(cdp),
   check(tn.nextVisible([mk('X', undefined, 1)], setObs, T0) !== null, 'a pass without a class counts as a satellite');
 }
 
+// Internal #391 (found in public #468): "no standard magnitude" arrives as null, and Number(null) is 0, which is a
+// satellite as bright as Vega at 1000 km. standardMagnitudeOf must read null, '', undefined and booleans as none.
+{
+  const { standardMagnitudeOf } = await import(join(JS, 'sky/passes.js'));
+  const of = (meta) => standardMagnitudeOf({ meta });
+  check(of({ stdMag: null }) === null && of({ stdMag: '' }) === null && of({}) === null && of(undefined) === null, 'no standard magnitude reads as none, never as 0');
+  check(of({ stdMag: false }) === null && of({ stdMag: 'bright' }) === null, 'a boolean or a word is none');
+  check(of({ stdMag: 0 }) === 0 && of({ stdMag: -1.8 }) === -1.8 && of({ standardMagnitude: '3.5' }) === 3.5, 'a real number, zero included, is kept');
+  check(of({ stdMag: null, standardMagnitude: 2 }) === 2, 'a null in the first key does not hide a value in the next');
+}
+
 if (problems.length) { console.error('tonight FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`tonight ok: next pass and words, the 40 degree rule (${table}), Up now, 72 h search, darkness against Astronomy Engine and a polar summer, the worker's message`);
