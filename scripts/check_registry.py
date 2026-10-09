@@ -193,7 +193,7 @@ SITE_SHAPES = {"lander", "rover", "lunar-module"}
 # ship. When one of these is matched to a reference, its id comes out of this set -- the check
 # below refuses a set member that has started citing something, so the set cannot go stale.
 SITE_UNCITED = "uncited"
-UNCITED_SITES = frozenset({"apollo-11", "apollo-17", "change-4", "jezero", "elysium", "utopia"})
+UNCITED_SITES = frozenset({"apollo-11", "apollo-17", "change-4", "jezero", "utopia"})
 # Luna 2 hit the Moon on 13 September 1959. A landing date before it is a typo, not a landing.
 FIRST_ARRIVAL = datetime.date(1959, 9, 13)
 
