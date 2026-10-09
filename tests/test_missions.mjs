@@ -64,7 +64,8 @@ for (const m of M.MISSIONS) {
     check(e.source === undefined || (/^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(e.source.url) && e.source.name.length > 3), `${where}: an event read on another page names that NASA page`);
   }
   // A landing site's events on the ground are placeable; nothing else claims to be a site.
-  for (const e of m.events) if (e.place === 'site') check(SITES.some((s) => s.id === m.record), `${m.id}.${e.id}: only a landing site is a site`);
+  for (const e of m.events) if (e.place === 'site') check(SITES.some((s) => s.id === (e.record || m.record)), `${m.id}.${e.id}: only a landing site or a pad is a site`);
+  for (const e of m.events) if (e.record) check(known.has(e.record), `${m.id}.${e.id}: its own record exists`);
 }
 check(M.findEvent('voyager-1') === null && M.findEvent('nobody.launch') === null && M.findEvent('voyager-1.nothing') === null && M.findEvent('') === null, 'a link that names no event finds none');
 check(M.eventMs({ date: '1990-02-14', precision: 'day' }) === Date.parse('1990-02-14T12:00:00Z'), 'an event known to the day sits at noon UTC');
@@ -84,7 +85,10 @@ check(M.placement(jupiter, rec('deep-voyager-1'), M.eventMs(jupiter)).kind === '
 const apollo = M.MISSIONS.find((m) => m.id === 'apollo-11');
 const landing = apollo.events.find((e) => e.id === 'landing');
 check(M.placement(landing, { id: 'apollo-11' }, M.eventMs(landing)).kind === 'site' && M.placement(landing, { id: 'apollo-11' }, M.eventMs(landing)).moves, 'the Apollo 11 landing is a place on the Moon: the clock goes to 1969');
-check(M.placement(apollo.events[0], { id: 'apollo-11' }, M.eventMs(apollo.events[0])).moves === false, 'its launch is not: the craft in flight has no path');
+const launch = apollo.events[0];
+check(launch.record === 'saturn-v-lc-39a' && M.subjectId(apollo, launch) === 'saturn-v-lc-39a' && M.subjectId(apollo, landing) === 'apollo-11', 'Apollo 11\'s launch is shown on the Saturn V\'s pad, its landing on the lander');
+check(M.placement(launch, { id: 'saturn-v-lc-39a' }, M.eventMs(launch)).kind === 'site', 'and the clock goes to that morning, the pad drawing the rocket only then (liftoffs)');
+check(SITES.find((s) => s.id === 'saturn-v-lc-39a').liftoffs.includes(launch.date), 'on a date the pad lists as a liftoff');
 const interstellar = { ...v1.events.find((e) => e.id === 'interstellar'), place: 'cruise' };
 {
   // The straight line, for a craft with no file: no row uses it today, and the rule stands.

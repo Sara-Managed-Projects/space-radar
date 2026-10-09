@@ -696,7 +696,8 @@ export const MISSIONS = [
         "date": "1969-07-16T13:32:00Z",
         "title": "Launch",
         "text": "Armstrong, Aldrin and Collins leave Cape Kennedy on a Saturn V.",
-        "place": "none",
+        "place": "site",
+        "record": "saturn-v-lc-39a",
         "world": "earth"
       },
       {

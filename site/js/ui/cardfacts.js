@@ -470,6 +470,21 @@ export function endedWords(record, m) {
   return tMs >= ms ? timeText.utcLong(ms) : null;
 }
 
+/**
+ * A craft whose path file stops BEFORE its mission did (Stardust: JPL's file ends 12 March 2011, the
+ * transmitter went off on 25 March), at a clock after the path's end: the day the path ends, in words;
+ * else null. Not "ended": the mission had not, and "could not work this out" said the sum failed
+ * when the truth is that no path exists (internal #478, #550).
+ */
+export function pathEndedWords(record, m) {
+  const end = pick(meta(record), 'pathEndDate');
+  if (!end || (m && m.ok) || endedWords(record, m)) return null;
+  const ms = Date.parse(`${end}T00:00:00Z`);
+  if (!Number.isFinite(ms)) return null;
+  const tMs = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+  return tMs >= ms ? timeText.utcLong(ms) : null;
+}
+
 export function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
   const V = COPY.card.values;
@@ -488,6 +503,8 @@ export function rightNowRows(record, m, passInfo) {
     // A craft whose mission is over (internal #424): the day it ended, not a failed sum.
     const ended = endedWords(record, m);
     if (ended) { rows.push([R.ended, ended]); return rows; }
+    const pathEnds = pathEndedWords(record, m);
+    if (pathEnds) { rows.push([R.pathEnds, pathEnds]); return rows; }
     rows.push([R.altitude, COPY.card.couldNotLook]);
     return rows;
   }

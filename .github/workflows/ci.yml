@@ -316,6 +316,10 @@ jobs:
         run: node tests/test_far_bodies.mjs
       - name: The Now moment guesses a place and says so
         run: node tests/test_guessplace.mjs
+      # A merge marker in a tool (tools/cdp.mjs on 2026-10-08 carried one and no probe could start) is a
+      # syntax error; `node --check` finds it without running anything (internal #472, #550).
+      - name: Every tool under tools/ parses
+        run: for f in tools/*.mjs; do node --check "$f" || exit 1; done
       - name: Visiting-vehicle shapes build inside budget and match the right names
         run: node tests/test_station_shapes.mjs
       # A fast device earns more models, one at a time while the camera is still, and gives them

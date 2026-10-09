@@ -567,9 +567,20 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     check(C.endedWords(cassini, after) === '15 September 2017' && C.endedWords(cassini, { ok: true, tMs: Date.UTC(2010, 0, 1) }) === null && C.endedWords(cassini, { ok: false, tMs: Date.UTC(1990, 0, 1) }) === null, 'ended is said only after the end, and never while the craft is drawn');
     const rows = C.rightNowFor(cassini, { clock: { now: () => Date.UTC(2026, 9, 7) } });
     check(rows.length === 1 && rows[0][0] === COPY.card.rows.ended && rows[0][1] === '15 September 2017', `its rows are one line, Ended and the day, not "could not work this out" (${JSON.stringify(rows)})`);
-    check(/ended \? \[\] : heroNumbers\(record, m, rows\)/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')) && COPY.card.endedLine.includes('{date}'), 'and one line stands where its three numbers would be dashes');
+    check(/ended || pathEnds \? \[\] : heroNumbers\(record, m, rows\)/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')) && COPY.card.endedLine.includes('{date}'), 'and one line stands where its three numbers would be dashes');
     const a6 = C.actionButtons({ id: 'x', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: false, frame: 'sun-inertial' });
     check(a6[0].disabled === true && a6[0].title === A.flyNowhere, 'any other switched-off Fly to it says why');
+  }
+  // Stardust's path stops 13 days before its mission (internal #478): in the gap the card says so, not "could not work this out".
+  {
+    const sd = { id: 'deep-stardust', name: 'Stardust', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { endDate: '2011-03-25', pathEndDate: '2011-03-12' } };
+    const gap = { ok: false, frame: 'sun-inertial', tMs: Date.UTC(2011, 2, 18) };
+    check(C.pathEndedWords(sd, gap) === '12 March 2011' && C.endedWords(sd, gap) === null, 'between the path\'s end and the mission\'s: the path has ended, the mission has not');
+    check(C.pathEndedWords(sd, { ok: true, tMs: Date.UTC(2011, 2, 18) }) === null && C.pathEndedWords(sd, { ok: false, tMs: Date.UTC(2011, 2, 1) }) === null && C.pathEndedWords(sd, { ok: false, tMs: Date.UTC(2026, 9, 7) }) === null, 'not while it is drawn, not before the path ends, not after the mission (that is "Ended")');
+    const rows = C.rightNowFor(sd, { clock: { now: () => gap.tMs } });
+    check(rows.length === 1 && rows[0][0] === COPY.card.rows.pathEnds && rows[0][1] === '12 March 2011', `its row is "Its path ends" and the day (${JSON.stringify(rows)})`);
+    const aa = C.actionButtons(sd, ride, gap);
+    check(aa[0].disabled === true && /^Its path ends on 12 March 2011/.test(aa[0].title), `Fly to it is off and says why (${aa[0].title})`);
   }
   check(a1.every((b) => b.title && b.children[0].getAttribute('aria-hidden') === 'true'), 'every action has its words in a tooltip and an icon hidden from a screen reader');
   // The flood light (internal #272): one quiet switch on the card of anything drawn as a model,

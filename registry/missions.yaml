@@ -199,13 +199,16 @@ missions:
       - {id: l2, date: "2022-01-24", precision: day, title: "Arrival at L2", text: "It arrives at L2, 1.5 million km from Earth.", place: path, world: earth}
       - {id: first-images, date: "2022-07-12", precision: day, title: "The first pictures", text: "The first full-colour images are shown, a deep field and the edge of the Carina Nebula among them.", place: path, world: earth, source: {name: "NASA, Webb's first images", url: "https://www.nasa.gov/news-release/nasa-reveals-webb-telescopes-first-images-of-unseen-universe/"}}
 
+  # The launch is on pad 39A, a record of its own (saturn-v-lc-39a, three launch mornings): `record:` on an
+  # event names the record the event is shown on, so choosing it moves the clock and the camera there
+  # (internal #478, #550). The Saturn V mission below is the same pad.
   - id: apollo-11
     record: apollo-11
     display: Apollo 11
     read: 2026-10-06
     source: {name: "NASA, Apollo 11 mission overview", url: "https://www.nasa.gov/history/apollo-11-mission-overview/"}
     events:
-      - {id: launch, date: "1969-07-16T13:32:00Z", title: "Launch", text: "Armstrong, Aldrin and Collins leave Cape Kennedy on a Saturn V.", place: none, world: earth}
+      - {id: launch, date: "1969-07-16T13:32:00Z", title: "Launch", text: "Armstrong, Aldrin and Collins leave Cape Kennedy on a Saturn V.", place: site, record: saturn-v-lc-39a, world: earth}
       - {id: lunar-orbit, date: "1969-07-19T17:22:00Z", title: "Into orbit round the Moon", text: "Behind the Moon and out of contact with Earth, the engine fires to put the spacecraft in lunar orbit.", place: none, world: moon}
       - {id: landing, date: "1969-07-20T20:17:00Z", title: "The Eagle has landed", text: "Eagle lands in the Sea of Tranquility, flown partly by hand by Armstrong.", place: site}
       - {id: first-step, date: "1969-07-21T02:56:00Z", title: "One small step", text: "Armstrong steps onto the surface. Aldrin follows 19 minutes later.", place: site, source: {name: "NASA NSSDCA, Apollo 11 Lunar Module", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"}}

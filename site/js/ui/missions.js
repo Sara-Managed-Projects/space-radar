@@ -52,10 +52,12 @@ export function missionOf(recordId) {
 }
 
 /**
- * The id of the record an event is shown on: the mission's own, or its `path_record` for an event
+ * The id of the record an event is shown on: the event's own `record`, the mission's own, or its `path_record` for an event
  * drawn from a path file (Perseverance's launch is Mars 2020's cruise; its landing is the site).
  */
 export function subjectId(mission, event) {
+  // An event on a record of its own (Apollo 11's launch is on the Saturn V's pad, internal #478).
+  if (event && typeof event.record === 'string' && event.record) return event.record;
   return event && event.place === 'path' && mission.path_record ? mission.path_record : mission.record;
 }
 
