@@ -39,6 +39,15 @@ check(mesh.material.uniforms.uWidth.value === 6 && mesh.material.uniforms.uResol
 check(mesh.material.depthTest === true && mesh.material.depthWrite === false && mesh.material.transparent === true, 'depth-tested and not written, as the line it replaces was');
 check(/logdepthbuf_vertex/.test(mesh.material.vertexShader) && /logdepthbuf_fragment/.test(mesh.material.fragmentShader), 'the shader keeps the scene\'s logarithmic depth');
 check(mesh.material.uniforms.uOpacity.value === 0.55, 'the path keeps the line\'s opacity');
+// A NAME THE LANGUAGE KEEPS. A variable called `half` was in the vertex shader for an hour on
+// 2026-10-09: it does not compile, and two frames of "A year in a minute" had no paths at all.
+// Node cannot compile a shader, so the names are checked, and the renderer's verdict is read.
+check(fat.reservedWordsIn('float half = 1.0; vec2 ok = vec2(0.0);').join() === 'half', 'the check itself finds a reserved name');
+check(fat.reservedWordsIn(mesh.material.vertexShader + mesh.material.fragmentShader).length === 0, `no variable of either shader has a reserved name (${fat.reservedWordsIn(mesh.material.vertexShader + mesh.material.fragmentShader).join()})`);
+check(/varying float vDist;/.test(mesh.material.vertexShader) && /varying float vDist;/.test(mesh.material.fragmentShader), 'the varying is declared in both shaders');
+check(mesh.broken(null) === null, 'before the renderer has tried the shader nothing is known');
+check(mesh.broken({ properties: { get: () => ({ currentProgram: { diagnostics: { runnable: false } } }) } }) === true, 'a program that did not link is broken');
+check(mesh.broken({ properties: { get: () => ({ currentProgram: { diagnostics: { runnable: true } } }) } }) === false, 'a program that linked is not');
 // A 240-segment path 2 px wide across a 1200 x 504 picture: the share lit, against one pixel.
 const one = fat.coveredShare(2000, 1, 1200, 504);
 const wide = fat.coveredShare(2000, rings.PATH_PX, 1200, 504);
@@ -60,6 +69,7 @@ check(drawn.length === 2 && drawn.every((l) => l.by === 'line' && l.points === r
 // 3. The width.
 check(Number.isFinite(rings.PATH_PX) && rings.PATH_PX >= 2 && rings.PATH_PX <= 3, `PATH_PX is ${rings.PATH_PX}: wide enough to see, not a ribbon`);
 check(/PATH_PX \* lineScale \* dpr/.test(src), 'the width is in CSS pixels: multiplied by the device pixel ratio');
+check(/r\.fat\.broken\(renderer\) === true/.test(src) && /group\.remove\(r\.fat\)/.test(src), 'a wide path whose shader did not compile is taken away and the line shown again');
 
 // 4. The picture.
 const probe = readFileSync(join(ROOT, 'tools', 'trip-frames.probe.js'), 'utf8');

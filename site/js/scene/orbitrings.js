@@ -244,6 +244,7 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
   // The wide paths (PATH_PX above): scene/fatline.js, never at boot.
   let fatMod = null;
   let fatAsked = false;
+  let fatWarned = false;
   let lineScale = 1;
   function fatten(r) {
     if (r.fat || !fatMod) return;
@@ -267,6 +268,12 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     const h = el ? el.height : 1;
     for (const r of rings.values()) {
       if (!r.fat) continue;
+      // A shader this GPU will not compile draws nothing: the one-pixel line comes back for good.
+      if (r.fat.broken(renderer) === true) {
+        group.remove(r.fat); r.fat.dispose(); r.fat = null; fatMod = null;
+        if (!fatWarned) { fatWarned = true; console.warn('the wide paths did not compile here; the one-pixel lines stay'); }
+        continue;
+      }
       r.fat.visible = r.line.visible;
       if (r.fat.visible) { r.fat.setWidth(PATH_PX * lineScale * dpr, w, h); r.line.visible = false; }
     }

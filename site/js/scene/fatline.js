@@ -4,7 +4,9 @@
 //   .setCount(points)             how many points of `positions` are the path (0: nothing)
 //   .touch()                      `positions` was rewritten
 //   .setWidth(px, widthPx, heightPx)   the line's width in device pixels, and the drawing buffer's size
-// Pure and exported for the test: segmentCount(points), coveredShare(lengthPx, widthPx, w, h)
+//   .broken(renderer)             true once the renderer has tried the shader and it did not compile
+// Pure and exported for the test: segmentCount(points), coveredShare(lengthPx, widthPx, w, h),
+// reservedWordsIn(glsl)
 //
 // WHY (internal #444, #454). THREE.Line is one device pixel wide on every WebGL there is
 // (`lineWidth` is ignored), and "A year in a minute" is five such lines on black: 1.1 % of its
@@ -36,8 +38,10 @@ void main() {
   // A pixel wider on each side than the line, so the edge can be a coverage ramp one pixel deep:
   // a quad exactly as wide as the line is one pixel wide where it lies on a pixel row and two where
   // it lies between rows, and the path beads (seen in the first frame, 2026-10-09).
-  float half = uWidth * 0.5 + 1.0;
-  vDist = position.y * half;
+  // (The word for one of two equal parts is reserved by the shading language: a variable of that
+  // name does not compile, and a path whose shader does not compile is not drawn. Seen 2026-10-09.)
+  float reach = uWidth * 0.5 + 1.0;
+  vDist = position.y * reach;
   float near = 1e-6;
   if ( a.w <= near && b.w <= near ) { gl_Position = vec4( 2.0, 2.0, 2.0, 1.0 ); return; }
   // One end behind the camera: bring it to the near side along the segment.
@@ -71,6 +75,18 @@ void main() {
 }
 `;
 
+/**
+ * Words the shading language keeps for itself and that read like ordinary names (GLSL ES 3.00,
+ * section 3.7, reserved for future use). A declaration that uses one does not compile. Returns the
+ * ones `glsl` declares as a variable, for the test that reads both shaders.
+ */
+const RESERVED = ['half', 'fixed', 'input', 'output', 'filter', 'common', 'partition', 'active', 'sample', 'resource', 'template', 'this', 'packed', 'interface', 'long', 'short', 'double', 'unsigned', 'superp', 'external', 'namespace', 'using', 'cast', 'sizeof', 'union', 'enum', 'typedef', 'class', 'goto', 'inline', 'noinline', 'public', 'static', 'extern', 'volatile', 'asm'];
+export function reservedWordsIn(glsl) {
+  const found = [];
+  for (const m of String(glsl).matchAll(/\b(?:float|int|bool|vec[234]|mat[234])\s+([A-Za-z_]\w*)/g)) if (RESERVED.includes(m[1])) found.push(m[1]);
+  return found;
+}
+
 export function createFatLine(positions, { colour = 0xffffff, opacity = 1, renderOrder = 0 } = {}) {
   const geometry = new THREE.InstancedBufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, -1, 0, 1, -1, 0, 0, 1, 0, 1, 1, 0]), 3));
@@ -101,5 +117,14 @@ export function createFatLine(positions, { colour = 0xffffff, opacity = 1, rende
   mesh.touch = () => { buffer.needsUpdate = true; };
   mesh.setWidth = (px, w, h) => { material.uniforms.uWidth.value = px; material.uniforms.uResolution.value.set(w, h); };
   mesh.dispose = () => { geometry.dispose(); material.dispose(); };
+  // Did the shader compile? Null until the renderer has tried it (the first frame it is drawn in).
+  // three.js keeps the answer with the program when it checks shaders, which it does by default.
+  mesh.broken = (renderer) => {
+    try {
+      const program = renderer && renderer.properties ? renderer.properties.get(material).currentProgram : null;
+      const d = program && program.diagnostics;
+      return d ? d.runnable === false : null;
+    } catch { return null; }
+  };
   return mesh;
 }
