@@ -345,6 +345,22 @@ export function wantsSearch(event, activeElement) {
   return !(isTypingIn(activeElement) || isTypingIn(sentTo));
 }
 
+/**
+ * The generated star systems (data/systems-index.js, internal #473) as the Stars tab lists them:
+ * the two groups of registry/systems-list.yaml's `why`, each nearest first, TRAPPIST-1 (typed, the
+ * list's own first row) left out. Pure.
+ */
+export function systemGroups(index) {
+  const groups = { temperate: [], extreme: [] };
+  for (const s of Array.isArray(index) ? index : []) {
+    if (!s || !s.hostId || !(s.why in groups)) continue;
+    const pc = s.hostSky && Number(s.hostSky.distPc);
+    groups[s.why].push({ id: s.id, name: s.display || s.host, hostId: s.hostId, distPc: Number.isFinite(pc) ? pc : Infinity });
+  }
+  for (const k of Object.keys(groups)) groups[k].sort((a, b) => a.distPc - b.distPc || (a.name < b.name ? -1 : 1));
+  return groups;
+}
+
 export function createExplore(ctx, host) {
   const root = el('div', 'sr-explore');
   (host || document.body).appendChild(root);
@@ -611,6 +627,30 @@ export function createExplore(ctx, host) {
     exoRow.b.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
   sysList.insertBefore(exoRow.li, sysList.firstChild);
+  // The thirty-nine more systems, once the exoplanet layer's later data has landed (internal #473).
+  let moreSystems = false;
+  const addSystems = () => {
+    if (moreSystems) return;
+    moreSystems = true;
+    import('../data/systems-index.js').then((m) => {
+      const groups = systemGroups(m.SYSTEM_INDEX);
+      for (const [key, title] of [['temperate', COPY.explore.systemsMild], ['extreme', COPY.explore.systemsExtreme]]) {
+        if (!groups[key].length) continue;
+        sysSect.appendChild(el('h3', 'sr-micro', title));
+        const list = el('ul', 'sr-list');
+        for (const s of groups[key]) {
+          const value = Number.isFinite(s.distPc) ? t(COPY.explore.lightYears, { n: fmt.int(Math.round(s.distPc * LY_PER_PC)) }) : '';
+          const r = rowButton(s.name, value, () => {
+            const rec = ctx.recordById(s.hostId);
+            if (rec) ctx.select(rec);
+          });
+          list.appendChild(r.li);
+        }
+        sysSect.appendChild(list);
+      }
+    }).catch(() => { moreSystems = false; });
+  };
+  window.addEventListener('sr:later-layers', addSystems, { once: true });
   document.addEventListener('sr:layer-toggle', (e) => { if (e.detail && e.detail.id === 'exoplanets') paintExo(); });
   window.addEventListener('sr:moment', () => paintExo());
   stars.appendChild(sysSect);

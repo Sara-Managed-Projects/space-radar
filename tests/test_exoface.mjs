@@ -148,6 +148,57 @@ check(earth.star.light.every((v) => v > 0.85), 'a Sun-like star lights them near
   check(X.seaLevelFor(0) === 0 && X.seaLevelFor(0.7) > 0.5 && X.seaLevelFor(1) < 1, 'the sea level follows the share of the globe under water');
 }
 
+// --- 5b. the close-up: fine octaves that fade in with the disc, a high deck, a snowball's frost ----
+{
+  // A small preprocessor for the shader's own `#if TIER >= n` blocks, to read what each tier compiles.
+  const compile = (frag, tier) => {
+    const out = []; const stack = [];
+    for (const line of frag.split('\n')) {
+      const m = /^\s*#if TIER >= (\d)/.exec(line);
+      if (m) { stack.push(tier >= Number(m[1])); continue; }
+      if (/^\s*#endif/.test(line)) { stack.pop(); continue; }
+      if (stack.every(Boolean)) out.push(line);
+    }
+    check(stack.length === 0, 'every #if TIER has its #endif');
+    return out.join('\n');
+  };
+  const balanced = (src) => { let b = 0, p = 0; for (const ch of src) { if (ch === '{') b++; if (ch === '}') b--; if (ch === '(') p++; if (ch === ')') p--; if (b < 0 || p < 0) return false; } return b === 0 && p === 0; };
+  for (const [name, frag] of [['rocky', X.ROCKY_FRAG], ['giant', X.GIANT_FRAG]]) {
+    for (const t of [0, 1, 2]) check(balanced(compile(frag, t)), `${name} tier ${t}: braces and brackets balance`);
+  }
+  const t0 = compile(X.ROCKY_FRAG, 0); const t1 = compile(X.ROCKY_FRAG, 1); const t2 = compile(X.ROCKY_FRAG, 2);
+  check(!/uDetail >|uFrost >|uHigh >|highDeck\(/.test(t0), 'tier 0 compiles none of the close-up, the frost or the high deck: the phone path is as it was');
+  check(/uDetail >/.test(t1) && /uFrost >/.test(t1) && !/highDeck|uHigh >/.test(t1), 'tier 1 has the fine octaves and the frost, not the high deck');
+  check(/highDeck\(/.test(t2) && /uHigh >/.test(t2), 'tier 2 adds the high deck');
+  check(/if \( uDetail > 0\.001 \)/.test(X.ROCKY_FRAG) && /if \( uFrost > 0\.001 \)/.test(X.ROCKY_FRAG) && /if \( uHigh > 0\.001 \)/.test(X.ROCKY_FRAG), 'each is a branch on a uniform: unpaid for when off');
+  check(/vnoise\( vec3\( q\.x \* 30\.0/.test(X.GIANT_FRAG), 'the giants get fine streaks too');
+  // The JS twin of the fade.
+  check(X.detailFor(0) === 0 && X.detailFor(X.DETAIL_FROM_PX) === 0 && X.detailFor(X.DETAIL_FULL_PX) === 1 && X.detailFor(5000) === 1, 'detail is 0 for a small disc and 1 for one filling the frame');
+  let prev = -1; let mono = true;
+  for (let r = 0; r <= 700; r += 10) { const d = X.detailFor(r); if (d < prev || d < 0 || d > 1) mono = false; prev = d; }
+  check(mono, 'detail only grows with the size');
+  check(X.detailFor(NaN) === 0 && X.detailFor('x') === 0, 'a bad radius is no detail');
+  check(X.detailFor(X.DETAIL_FROM_PX + 1) < 0.01 && X.NEAR_RADIUS_PX < X.DETAIL_FROM_PX, 'it starts only after the near sphere is on');
+  // The looks.
+  let snow = 0; let mildHigh = 0;
+  for (let n = 1; n <= 300; n++) {
+    const f = X.imaginedWorld(n).face;
+    if (f.kind === 'giant') continue;
+    const k = f.look;
+    check(k.high >= 0 && k.high <= 1 && k.frost >= 0 && k.frost <= 1, `no. ${n}: high deck and frost in range`);
+    check((f.climate === 'snowball') === (k.frost > 0), `no. ${n}: frost is a snowball's alone`);
+    if (f.climate === 'snowball') snow += 1;
+    if (f.climate === 'temperate' && k.high > 0.3) mildHigh += 1;
+    if (f.climate === 'lava') check(k.high === 0, 'no high deck over lava');
+  }
+  check(snow > 0 && mildHigh > 0, 'the generator reaches snowballs and mild worlds with a high deck');
+  const sameA = JSON.stringify(X.faceFor(rowOf('LHS 1140 b')).look); const sameB = JSON.stringify(X.faceFor(rowOf('LHS 1140 b')).look);
+  check(sameA === sameB, 'the same row, the same look, new fields included');
+  const uu = X.faceUniforms(X.faceFor(rowOf('LHS 1140 b')));
+  check(uu.uDetail.value === 0 && 'uCloudFrame2' in uu && 'uHigh' in uu && 'uFrost' in uu, 'rocky faces fill the new uniforms; detail starts at 0');
+  check(X.HIGH_DRIFT_SECONDS < X.CLOUD_DRIFT_SECONDS, 'the high deck drifts faster than the low one');
+}
+
 // --- 6. the wiring -------------------------------------------------------------------------------
 {
   const main = read('site/js/main.js');

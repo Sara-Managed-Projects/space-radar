@@ -167,5 +167,31 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
   check(moonLapHours('moon', t) === null && moonLapHours('mars', t) === null && moonLapHours('nothing', t) === null, 'only a planet\'s moon has a lap here');
 }
 
+// --- Iapetus turns about its orbit's normal, not Saturn's pole (internal #436) ---------------------
+{
+  const { orbitPole } = await import(join(JS, 'scene/worlds.js'));
+  // A circular orbit tilted 15 degrees from the x-y plane, seen at two times a day apart.
+  const tilt = (15 * Math.PI) / 180; const R = 3.5e6;
+  const at = (th) => ({ x: R * Math.cos(th), y: R * Math.sin(th) * Math.cos(tilt), z: R * Math.sin(th) * Math.sin(tilt) });
+  const north = new THREE.Vector3(0, 1, 0); // scene axes: sun-inertial z is scene y
+  const pole = orbitPole(at(0.3), at(0.35), north);
+  // sun-inertial normal is (0, -sin t, cos t); in scene axes (x, z, -y) that is (0, cos t, sin t).
+  check(Math.abs(pole.x) < 1e-9 && Math.abs(pole.y - Math.cos(tilt)) < 1e-9 && Math.abs(pole.z - Math.sin(tilt)) < 1e-9, 'the orbit normal of a tilted circle, in scene axes');
+  check(orbitPole(at(0.3), at(0.35), new THREE.Vector3(0, -1, 0)).y < 0, 'turned to the planet\'s north side whichever way the orbit runs');
+  check(orbitPole(at(0.3), at(0.3), north) === null, 'two times the same: no normal');
+  const w = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: (url, onLoad) => { const tex = new THREE.Texture(); if (onLoad) onLoad(tex); return tex; } });
+  w.update(Date.parse('2026-10-08T12:00:00Z'));
+  const up = (id) => new THREE.Vector3(0, 1, 0).applyQuaternion(w.meshFor(id).quaternion);
+  const deg = (a, b) => (Math.acos(Math.min(1, Math.max(-1, a.dot(b)))) * 180) / Math.PI;
+  const ia = deg(up('iapetus'), up('saturn'));
+  check(ia > 8 && ia < 25, `Iapetus's axis is tens of degrees off Saturn's, along its orbit (${ia.toFixed(1)} degrees)`);
+  check(deg(up('titan'), up('saturn')) < 2 && deg(up('rhea'), up('saturn')) < 2, 'the others keep the planet\'s pole');
+}
+
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check(/record\.klass === 'asteroid'\) \{\s+const sunAt = worlds\.drawnPositionOf\('sun'\);/.test(main), 'a small body is met on its sunlit side');
+}
+
 if (problems.length) { console.error('moon shapes FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('moon shapes ok: Phobos is 27 x 22 x 18 km with its long axis at Mars and Deimos is smaller every way; the sphere is bent along its own radii with its map coordinates, seam and poles intact; nothing is fetched at boot; and twenty flat worlds wear one map each of at most 250 kB that says what kind of picture it is and which side nobody has seen');

@@ -761,5 +761,40 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   }
 }
 
+// A spent stage's tumble does not strobe at a fast clock (internal #425).
+{
+  const { tumblePhase, TUMBLE_MAX_RATE } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const P = 120000; const TAU = Math.PI * 2;
+  const st = {};
+  const a0 = tumblePhase(st, 1e9, 1000, P);
+  check(Math.abs(a0 - ((1e9 % P) / P) * TAU) < 1e-9, 'the first call is the exact function of the drawn time');
+  // 1x: exact.
+  const a1 = tumblePhase(st, 1e9 + 16, 1016, P);
+  check(Math.abs(a1 - ((((1e9 + 16) % P) / P) * TAU)) < 1e-9, 'at the real rate it is exact');
+  // An hour a second, drawn 60 times: each step is capped, so a frame turns no more than the cap allows.
+  let prev = a1; let worst = 0; let t = 1e9 + 16; let real = 1016;
+  for (let i = 0; i < 120; i++) { t += 60000 * (1000 / 60); real += 1000 / 60; const a = tumblePhase(st, t, real, P); worst = Math.max(worst, Math.abs(a - prev)); prev = a; }
+  const cap = (TUMBLE_MAX_RATE * (1000 / 60) / P) * TAU;
+  check(worst <= cap + 1e-9 && worst > 0, `at an hour a second a frame turns by the cap, ${(worst * 57.3).toFixed(1)} degrees, not a random angle`);
+  check(worst < Math.PI / 2, 'and well under a quarter turn: no strobe');
+  // Slowing back down: exact again.
+  const aSlow = tumblePhase(st, t + 16, real + 16, P);
+  check(Math.abs(aSlow - ((((t + 16) % P) / P) * TAU)) < 1e-9, 'when the clock slows it is exact again');
+  // Backwards at speed turns the other way.
+  const st2 = {}; tumblePhase(st2, 5e9, 2000, P); const b1 = tumblePhase(st2, 5e9 - 3.6e6, 2016, P); const b2 = tumblePhase(st2, 5e9 - 7.2e6, 2032, P);
+  check(b2 < b1, 'a clock running backwards turns it backwards');
+  check(tumblePhase({}, 1e9, NaN, P) === ((1e9 % P) / P) * TAU, 'without a wall clock it is the exact function');
+  const st3 = {}; tumblePhase(st3, 1e9, 10, P);
+  check(tumblePhase(st3, 1e9 + 10, 10, P) === tumblePhase(st3, 1e9 + 10, 10, P), 'the same frame asked twice gives one answer');
+}
+
+// The lander's footing has a soft edge, and the oddities' discs do not pay for one (public #267).
+{
+  const src = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  check(/regolith\(0\.5, '#55544F', 28, true\)/.test(src), 'the lander\'s ground patch asks for the feathered edge');
+  check(/function regolith\(r, colour, seg, soft = false\)/.test(src) && /if \(soft\) \{\s+g\.add\(featherRing/.test(src), 'and nothing else does by default');
+  check(/mat\.transparent = true;\s+mat\.opacity = opacity;\s+mat\.depthWrite = false;/.test(src), 'the feather is a transparent toon material that does not write depth');
+}
+
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
 console.log('station shapes ok: Soyuz and Progress build inside budget at 10.7 m, and the name route picks them for stations-layer vehicles only');

@@ -43,6 +43,11 @@ assert.ok(M.glintStrength(10) < 1e-6 * M.GLINT_GAIN, 'ten degrees off there is n
 assert.ok(M.GLINT_POWER > 1000 && M.GLINT_POWER < 1300, `the lobe for a 2 degree half-width (${M.GLINT_POWER})`);
 assert.ok(src.includes('`    if ( uGlint > 0.0 && uSpec > 0.3 )'), 'panels only: the foil and the body have no glint');
 
+// The rim's edge is broader than the material's own, so it can be told from it (internal #484 item 2).
+assert.ok(M.SUN_RIM_EXPONENT < 2.5 && M.SUN_RIM_EXPONENT >= 1, 'the Sun\'s rim reaches further in than the Fresnel rim');
+assert.ok(src.includes('${SUN_RIM_EXPONENT.toFixed(1)}') && src.includes('uRimSun * fr * back * back'), 'the shader uses it');
+assert.ok(Math.pow(1 - Math.cos(Math.PI / 4), M.SUN_RIM_EXPONENT) > 3 * Math.pow(1 - Math.cos(Math.PI / 4), 2.5), 'at 45 degrees off the eye the Sun\'s rim is over three times the old one');
+
 // Tiers: none, the rim, the rim and the glint; an out-of-range tier is clamped.
 assert.deepEqual(M.setLightTier(0), { rim: 0, glint: 0 });
 assert.deepEqual(M.setLightTier(1), { rim: M.SUN_RIM, glint: 0 });

@@ -664,6 +664,8 @@ export const COPY = {
     worldsDrawn: 'Planets drawn as dots, larger than they are.',
     farTitle: 'Far places',
     systemsTitle: 'Star systems',
+    systemsMild: 'Planets near the habitable zone',
+    systemsExtreme: 'Extreme systems',
     // The Stars tab's switch for the marks of planets round other stars (public #271).
     exoRow: 'Planets of other stars',
     exoShow: 'show',
