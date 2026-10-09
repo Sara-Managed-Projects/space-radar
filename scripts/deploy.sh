@@ -477,8 +477,15 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
   else
     echo "==> invalidating the app (assets keep their cache)"
   fi
+  # CloudFront allows 15 wildcard paths in progress at once, and the list above is longer than that
+  # once the growth pages are in it (a deploy on 2026-10-09 was answered TooManyInvalidationsInProgress).
+  # So the whole list is kept above as the record of what must be refreshed, and when it holds more
+  # than 14 wildcards one path stands for all of them: "/*" counts as a single wildcard.
+  SEND=("${PATHS[@]}")
+  WILD=0; for p in "${PATHS[@]}"; do case "$p" in *\**) WILD=$((WILD + 1)) ;; esac; done
+  [ "$WILD" -gt 14 ] && SEND=("/*")
   INVALIDATION=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" \
-    --paths "${PATHS[@]}" \
+    --paths "${SEND[@]}" \
     --output text --query 'Invalidation.Id')
   echo "    $INVALIDATION"
   if [ "$EDGE_CACHE" = "1" ] && [ "$WHAT" != "assets" ]; then
