@@ -197,7 +197,12 @@ export const STARS_NOTABLE = [
     "hip": 102098,
     "name": "Deneb",
     "why": "The most distant of the thirty brightest stars and one of the most luminous. Estimates of how far away it is differ by nearly two to one.",
-    "source": "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)",
+    "radius_suns": 203,
+    "radius_err_suns": 17,
+    "teff_k": 8525,
+    "teff_err_k": 75,
+    "physical_source": "https://arxiv.org/abs/0712.0040 (read 2026-10-09)"
   },
   {
     "hip": 49669,
