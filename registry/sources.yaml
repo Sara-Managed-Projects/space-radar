@@ -13,6 +13,13 @@
 #                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- the CORS column
 #                 of docs/data-sources.md -- never assumed. For a `false` row the snapshot is
 #                 the only route and the app says "could not look" rather than inventing.
+# licence         the publisher's terms in one honest line, as CREDITS.md section 4 records them
+#                 ("no licence stated" is an answer; a licence nobody wrote down is not).
+# terms_url       the page that states them (https), or the publisher's home where it has none.
+# terms_recorded  the day those terms were first written into CREDITS.md. It is NOT the day the
+#                 harvester last read the source. The /sources/ page (scripts/seo_pages.py) prints
+#                 all three beside the row, equal to this file, and the browser adds the day the
+#                 saved copy was last read (data/v1/index.json).
 version: 1
 
 sources:
@@ -33,6 +40,9 @@ sources:
     parser: celestrak_gp
     outputs: [visual.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   - id: celestrak-stations
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json
@@ -43,6 +53,9 @@ sources:
     parser: celestrak_gp
     outputs: [stations.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   - id: celestrak-active
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json
@@ -53,6 +66,9 @@ sources:
     parser: celestrak_gp
     outputs: [active.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   # The "Launched in the last two weeks" layer read this file live on every visit, because it
   # had no row here and so no saved copy: from a refused connection it showed nothing (2026-09-22).
@@ -65,6 +81,9 @@ sources:
     parser: celestrak_gp
     outputs: [last30.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   # Supplemental files are the OPERATORS' own ephemerides and are hours fresher than the
   # tracked catalogue -- which is exactly what a three-day-old Starlink train needs.
@@ -77,6 +96,9 @@ sources:
     parser: celestrak_gp
     outputs: [starlink-sup.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   - id: celestrak-satcat
     url: https://celestrak.org/pub/satcat.csv
@@ -87,6 +109,9 @@ sources:
     parser: celestrak_satcat
     outputs: [satcat.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   # --- Who is aboard --------------------------------------------------------------------
   # MEASURED 2026-10-02: `Access-Control-Allow-Origin: *`, so CORS itself allows a page to read
@@ -104,6 +129,9 @@ sources:
     parser: open_notify
     outputs: [astros.json]
     attribution: "Who is in space: Open Notify"
+    licence: "No licence stated by the publisher (an open-source project); a handful of names and facts"
+    terms_url: https://open-notify.org/
+    terms_recorded: 2026-10-05
 
   # --- Launches and events -----------------------------------------------------------
   # MEASURED live from the API's own throttle endpoint: 15 requests per hour per IP. A
@@ -118,6 +146,9 @@ sources:
     parser: ll2
     outputs: [launches.json, sites-pads.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   - id: ll2-events
     url: https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=30
@@ -128,6 +159,9 @@ sources:
     parser: ll2_events
     outputs: [events-ll2.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   # WHO IS ABOARD, AND WHAT IS DOCKED (internal #133, spec 0050; read 2026-10-08).
   # TERMS, as the publisher states them today on https://thespacedevs.com/llapi : "all the API data
@@ -149,6 +183,9 @@ sources:
     parser: ll2_stations
     outputs: [stations-docked.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   - id: ll2-astronauts
     url: https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30
@@ -159,6 +196,9 @@ sources:
     parser: ll2_crew
     outputs: [crew.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   # The launches of the last days, for "Just happened" (internal #134). Same terms and budget.
   - id: ll2-previous
@@ -170,6 +210,9 @@ sources:
     parser: ll2_previous
     outputs: [launches-previous.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   # --- Small bodies --------------------------------------------------------------------
   # MEASURED: no Access-Control-Allow-Origin on any JPL endpoint, so these could not be
@@ -183,6 +226,9 @@ sources:
     parser: jpl_sbdb
     outputs: [neo-elements.json]
     attribution: "Orbits: NASA/JPL Small-Body Database"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   # Comets, same database and the same query shape as the asteroids above (sb-kind=c instead of
   # a, no sb-group: a comet is not a NEO filter). Replaces the Minor Planet Center's CometEls.txt
@@ -199,6 +245,9 @@ sources:
     parser: jpl_sbdb
     outputs: [comets.json]
     attribution: "Orbits: NASA/JPL Small-Body Database"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   # Every confirmed planet around another star (spec 0028 step 4). TAP sync, CSV, the composite
   # parameters table so every planet has one best value per column. No CORS header (measured
@@ -213,6 +262,9 @@ sources:
     parser: nasa_exoplanet_archive
     outputs: [exoplanets.json]
     attribution: "Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13"
+    licence: "Publicly available; the archive asks to cite its table (DOI 10.26133/NEA13); no licence text"
+    terms_url: https://exoplanetarchive.ipac.caltech.edu/
+    terms_recorded: 2026-09-08
 
   - id: jpl-cad
     url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
@@ -223,6 +275,9 @@ sources:
     parser: jpl_cad
     outputs: [close-approaches.json]
     attribution: "Close approaches: NASA/JPL CNEOS"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   - id: esa-neocc-close
     url: https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app
@@ -235,6 +290,9 @@ sources:
     # The second opinion. Where ESA and JPL disagree by more than 10% the card shows both
     # and names them; two sources disagreeing is information, not an error to hide.
     attribution: "Close approaches: ESA NEOCC"
+    licence: "All rights reserved by ESA; no reuse licence found, so the saved copy is not cleared for redistribution"
+    terms_url: https://neo.ssa.esa.int/
+    terms_recorded: 2026-10-05
 
   # --- Deep space ----------------------------------------------------------------------
   - id: horizons-deep-space
@@ -248,6 +306,9 @@ sources:
     list: harvest/lists/horizons-ids.yaml
     outputs: [deep-space.json]
     attribution: "Ephemerides: JPL Horizons"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   # MEASURED: this feed's `spacecraftID` is the same negative id Horizons uses, so the
   # dish-to-spacecraft line needs no name matching. Unofficial feed behind a public page:
@@ -261,6 +322,9 @@ sources:
     parser: dsn_now
     outputs: [dsn.json]
     attribution: "NASA Deep Space Network"
+    licence: "NASA content, generally not copyrighted in the United States; the endpoint is undocumented"
+    terms_url: https://eyes.nasa.gov/dsn/
+    terms_recorded: 2026-09-07
 
   # --- Sky and weather -------------------------------------------------------------------
   - id: swpc-kp
@@ -272,6 +336,9 @@ sources:
     parser: swpc
     outputs: [space-weather.json]
     attribution: "Space weather: NOAA SWPC"
+    licence: "US Government work, public domain"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-09-07
 
   # ~900 kB of JSON for what the app needs as one small texture; the parser downsamples.
   - id: swpc-ovation
@@ -283,6 +350,9 @@ sources:
     parser: swpc_ovation
     outputs: [aurora.png, aurora-summary.json]
     attribution: "Aurora forecast: NOAA SWPC"
+    licence: "US Government work, public domain"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-10-05
 
   # Tropical cyclones, worldwide, from GDACS (the UN / European Commission disaster alert system,
   # run by the EC Joint Research Centre). MEASURED 2026-09-28: `Access-Control-Allow-Origin: *`,
@@ -302,6 +372,9 @@ sources:
     parser: gdacs_tc
     outputs: [storms.json]
     attribution: "Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)"
+    licence: "CC BY 4.0 by the European Commission's reuse decision; GDACS calls it purely indicative"
+    terms_url: https://www.gdacs.org/
+    terms_recorded: 2026-09-29
 
   # --- Ground ------------------------------------------------------------------------------
   # A descriptive User-Agent is REQUIRED here; anonymous scripts are refused. Everything
@@ -316,6 +389,9 @@ sources:
     query: harvest/queries/observatories.rq
     outputs: [sites-observatories.json]
     attribution: "Observatory locations: Wikidata (CC0)"
+    licence: "CC0 1.0: Wikidata's structured data is dedicated to the public domain"
+    terms_url: https://www.wikidata.org/wiki/Wikidata:Licensing
+    terms_recorded: 2026-10-05
 
   # --- Registration-gated, and skipped until the secret exists -------------------------------
   # The ONLY public source of reentry windows. Absent the secret this source is `skipped`
@@ -330,3 +406,6 @@ sources:
     outputs: [reentries.json]
     enabled: false
     attribution: "Reentry predictions: 18 SDS via Space-Track.org"
+    licence: "Switched off: Space-Track needs an account and its user agreement restricts passing the data on; nothing is fetched"
+    terms_url: https://www.space-track.org/
+    terms_recorded: 2026-10-05
