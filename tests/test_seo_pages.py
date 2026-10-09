@@ -277,7 +277,7 @@ for sid, row in reg.items():
     if row["attribution"] not in got[0]:
         miss.append(f"{sid}: attribution")
 sources_html = (BUILT / "sources" / "index.html").read_text(encoding="utf-8")
-ok(not miss and len(rows) == len(reg) == 24, f"/sources/ equals registry/sources.yaml: {len(rows)} rows, each licence, terms date and credit ({miss[:3]})")
+ok(not miss and len(rows) == len(reg) >= 25, f"/sources/ equals registry/sources.yaml: {len(rows)} rows, each licence, terms date and credit ({miss[:3]})")
 ok(all(f'href="{r["terms_url"]}"' in sources_html for r in reg.values()), "each row links the page that states its terms")
 acc = parse(BUILT / "accuracy" / "index.html")
 ok(all(w in acc.plain for w in ("measured", "modelled", "illustrative")) and "the picture is an artist's impression" in acc.plain
