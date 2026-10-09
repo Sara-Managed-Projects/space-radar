@@ -24,7 +24,7 @@ import { SHOWERS } from '../data/showers.js';
 import { kpWords } from './spaceweather.js';
 import { load } from '../data/sources.js';
 import { parseSpaceWeather } from '../data/parsers.js';
-import { buildEvents, launchItem, approachItem, eclipseSentence } from '../data/events.js';
+import { buildEvents, launchItem, approachItem, eclipseSentence, usePassRunner, onPassesReady } from '../data/events.js';
 import { epochMs } from '../propagate/sgp4.js';
 import { shareUrl, toast } from './share.js';
 
@@ -611,6 +611,9 @@ export function createNext(ctx, opts = {}) {
 
   const onLayer = () => refresh();
   const onObserver = () => refresh();
+  // The day of passes is worked out in a worker (internal #562); the list is rebuilt when it arrives.
+  usePassRunner((msg) => import('../sky/passclient.js').then((m) => m.runPasses(msg))); // lazy: not in the boot graph
+  const offPasses = onPassesReady(() => refresh());
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:observer', onObserver);
   timer = window.setInterval(refresh, 60e3);
@@ -629,6 +632,8 @@ export function createNext(ctx, opts = {}) {
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:observer', onObserver);
       window.clearInterval(timer);
+      offPasses();
+      usePassRunner(null);
       root.remove();
     },
   };
