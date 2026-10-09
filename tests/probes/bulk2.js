@@ -243,7 +243,7 @@ return (async () => {
   async function windJob(h, res, name) {
     const ctx = h.ctx;
     ctx.frameEarth(0); await sleep(3000);
-    res.off = await h.cost(90, 10000);
+    res.framesOff = (await h.frames(5000)).frame;
     ctx.setOverlay('wind');
     await until(() => ctx.wind, 20000);
     await until(() => { const s = ctx.overlayState(); return s && s.status && !/loading/.test(s.status); }, 25000, 400);
@@ -253,7 +253,7 @@ return (async () => {
     ctx.scene.traverse((o) => { if (/wind/i.test(o.name || '') && o.geometry) { const g = o.geometry; streaks = { name: o.name, instances: g.instanceCount, pos: g.attributes.position ? g.attributes.position.count : null, draw: g.drawRange ? g.drawRange.count : null, type: o.type }; } });
     res.streaks = streaks;
     res.quality = ctx.quality.describe ? ctx.quality.describe() : null;
-    res.on = await h.cost(90, 10000);
+    res.framesOn = (await h.frames(5000)).frame;
     await h.shot(`${name}-wind`, 500);
     ctx.setOverlay(null);
   }
@@ -288,6 +288,8 @@ return (async () => {
       await job('debris-inpage', './?sw=0&tier=1&worker=0', (h, r) => debrisJob(h, r, 'inpage'));
       for (const t of [2, 1, 0]) await job(`wind-t${t}`, `./?sw=0&tier=${t}`, (h, r) => windJob(h, r, `t${t}`));
   };
+
+  MODES.wind = async () => { for (const t of [2, 1, 0]) await job(`wind-t${t}`, `./?sw=0&tier=${t}`, (h, r) => windJob(h, r, `t${t}`)); };
 
   // -------------------------------------------------------------------------------------------- deep
   MODES.deep = async () => {
@@ -450,12 +452,22 @@ return (async () => {
     const STAR = /(Regulus|Spica|Antares|Aldebaran|Pollux)/;
     const rows = () => [...doc.querySelectorAll('.sr-next__row')];
     const open = () => { const m = doc.querySelector('.sr-next [aria-expanded="false"]'); if (m && !m.hidden) m.click(); };
-    const got = await until(() => { open(); return rows().some((r) => STAR.test(r.textContent || '')); }, 40000, 1000);
+    let got = await until(() => { open(); return rows().some((r) => STAR.test(r.textContent || '')); }, 12000, 1000);
+    if (!got) {
+      // None is due in the thirty days from today (node: sky/findworker.js runFind): a clock on 1 December 2026 has two.
+      res.nextToday = { rows: rows().length, kinds: [...new Set(rows().map((r) => r.dataset.kind))].join(',') };
+      h.ctx.clock.goTo(Date.parse('2026-12-01T12:00:00Z'));
+      await sleep(500);
+      h.ctx.setObserver({ ...PLACE });
+      got = await until(() => { open(); return rows().some((r) => STAR.test(r.textContent || '')); }, 40000, 1000);
+      res.clockAt = new Date(h.ctx.clock.now()).toISOString().slice(0, 16);
+    }
     const all = rows();
     res.next = { rows: all.length, kinds: [...new Set(all.map((r) => r.dataset.kind))].join(','), pairs: all.filter((r) => / and /.test(r.textContent || '') && r.dataset.kind !== 'pass').map((r) => text(r).slice(0, 110)).slice(0, 6), star: !!got };
     const row = all.find((r) => STAR.test(r.textContent || ''));
     if (row) { row.scrollIntoView({ block: 'center' }); const b = row.getBoundingClientRect(); res.next.starRow = { text: (row.textContent || '').replace(/\s+/g, ' ').slice(0, 140), box: [Math.round(b.left), Math.round(b.width)], overflow: row.scrollWidth > row.clientWidth + 1 }; }
     await h.shot(`${tag}-coming-up-pair`, 500);
+    if (res.clockAt) { h.ctx.clock.live(); await sleep(800); }
   }
   MODES.fin = async () => {
     await job('fin', './?sw=0&tier=1', async (h, res) => {
