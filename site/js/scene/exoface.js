@@ -13,7 +13,9 @@
 // NO TELESCOPE HAS RESOLVED THE SURFACE OF ANY EXOPLANET. Everything this file draws is an
 // illustration, and the label is part of the object: createFace() carries an on-canvas tag that
 // says "Artist's impression", and faceLabel() gives the card its line, generated from the row:
-// "Measured: 1.7 Earth radii, a 25-day year. The surface is imagined." No moons are invented and no
+// "Measured: 1.7 Earth radii, a 25-day year. The surface is imagined." (an estimated radius is
+// "Estimated: 1.0 Earth radii. Measured: an 11-day year.", a minimum mass "At least 1.1 Earth
+// masses. Measured: an 11-day year."; internal #538). No moons are invented and no
 // rings are drawn (none is reported for any planet in the table).
 //
 // WHAT IS MEASURED, WHAT IS WORKED OUT, WHAT IS IMAGINED.
@@ -142,6 +144,11 @@ export function rowOf(planet, star) {
     massEarths: planet.massEarths,
     periodDays: planet.periodDays,
     aAu: planet.aAu,
+    // How the table knows each number (measured / estimated / least): the label says "Measured"
+    // only of a measured one (internal #538). `method` is read when there is no `*From`.
+    method: planet.method,
+    radiusFrom: planet.radiusFrom,
+    massFrom: planet.massFrom,
     starTeffK: star ? star.teffK : null,
     starRadiusSuns: star ? star.radiusSuns : null,
     starMassSuns: star ? star.massSuns : null,
@@ -165,16 +172,29 @@ export function faceFor(row) {
   const seed = seedOf(r.seedName || name);
   let massEarths = num(r.massEarths);
   let measuredRadius = num(r.radiusEarths);
+  // WHEN THE ROW SAYS HOW EACH NUMBER IS KNOWN (`radiusFrom`, `massFrom`, as the generated systems
+  // table carries them) THE ROW DECIDES, and the guess below is not made. An estimated radius is
+  // kept apart (`radiusGuess`) so it can be drawn and said as "Estimated"; an estimated mass is a
+  // forecast from the radius and is dropped; a least mass (`massFrom: least`) is a measured
+  // minimum and is said as "at least".
+  const known = r.radiusFrom !== undefined || r.massFrom !== undefined;
+  let radiusGuess = null;
+  let massKind = massEarths ? 'measured' : null;
+  if (known) {
+    if (r.radiusFrom !== undefined && r.radiusFrom !== 'measured') { radiusGuess = measuredRadius; measuredRadius = null; }
+    if (r.massFrom === 'estimated') { massEarths = null; massKind = null; }
+    else if (r.massFrom === 'least' && massEarths) massKind = 'least';
+  }
   // THE ARCHIVE'S COMPOSITE TABLE FILLS A MISSING MASS OR RADIUS FROM THE OTHER (Chen and Kipping's
   // relation) and the slimmed table carries no flag for it. A pair that sits on that relation to
   // 3 % is one number and its forecast: the forecast is dropped, so it is neither printed as
   // measured nor allowed to decide the class. Found by radial velocity, the mass is the measured
   // one; otherwise the radius is.
-  if (massEarths && measuredRadius && Math.abs(radiusFromMass(massEarths) / measuredRadius - 1) < 0.03) {
+  if (!known && massEarths && measuredRadius && Math.abs(radiusFromMass(massEarths) / measuredRadius - 1) < 0.03) {
     if (/radial velocity/i.test(String(r.method || ''))) measuredRadius = null;
     else massEarths = null;
   }
-  const radiusEarths = measuredRadius || (massEarths ? radiusFromMass(massEarths) : 1);
+  const radiusEarths = measuredRadius || (massEarths ? radiusFromMass(massEarths) : radiusGuess || 1);
   const periodDays = num(r.periodDays);
   const teffK = num(r.starTeffK) || SUN_TEFF_K;
   const starRadiusSuns = num(r.starRadiusSuns) || 1;
@@ -225,7 +245,8 @@ export function faceFor(row) {
     teqK, substellarK, fluxEarths, warmth, albedo: ALBEDO,
     density, packing,
     estimated: { radius: !measuredRadius, orbit: !measuredA },
-    measured: { radiusEarths: measuredRadius, massEarths, periodDays },
+    measured: { radiusEarths: measuredRadius, massEarths, massKind, periodDays },
+    radiusGuess,
     radiusEarths, aAu,
     star: { teffK, radiusSuns: starRadiusSuns, rgb, light },
     imagined: false,
@@ -502,12 +523,20 @@ function yearWords(periodDays) {
 export function faceLabel(face) {
   const E = COPY.exoface;
   if (face.imagined) return { tag: E.tag, measured: E.nothingMeasured, imagined: E.whole, line: [E.tag + COPY.punctuation.dot, E.nothingMeasured, E.whole].join(' ') };
-  const parts = [];
+  // Only a measured number is printed after "Measured". A measured minimum mass is "At least N
+  // Earth masses"; a number the Archive only estimated is "Estimated: ...". The year is measured
+  // either way, so it keeps its own "Measured" sentence (internal #538).
   const m = face.measured;
-  if (m.radiusEarths) parts.push(t(E.radius, { n: twoFigures(m.radiusEarths) }));
-  else if (m.massEarths) parts.push(t(E.mass, { n: twoFigures(m.massEarths) }));
-  if (m.periodDays) parts.push(yearWords(m.periodDays));
-  const measured = parts.length ? t(E.measured, { parts: parts.join(E.join) }) : E.nothingMeasured;
+  const year = m.periodDays ? yearWords(m.periodDays) : null;
+  let lead = null;
+  if (m.radiusEarths) lead = { measured: true, text: t(E.radius, { n: twoFigures(m.radiusEarths) }) };
+  else if (m.massEarths && m.massKind !== 'least') lead = { measured: true, text: t(E.mass, { n: twoFigures(m.massEarths) }) };
+  else if (m.massEarths) lead = { text: t(E.least, { n: twoFigures(m.massEarths) }) };
+  else if (face.radiusGuess) lead = { text: t(E.estimated, { parts: t(E.radius, { n: twoFigures(face.radiusGuess) }) }) };
+  let measured;
+  if (lead && lead.measured) measured = t(E.measured, { parts: [lead.text, year].filter(Boolean).join(E.join) });
+  else if (lead) measured = year ? [lead.text, t(E.measured, { parts: year })].join(' ') : lead.text;
+  else measured = year ? t(E.measured, { parts: year }) : E.nothingMeasured;
   const imagined = face.kind === 'giant' ? E.clouds : E.surface;
   return { tag: E.tag, measured, imagined, line: [E.tag + COPY.punctuation.dot, measured, imagined].join(' ') };
 }

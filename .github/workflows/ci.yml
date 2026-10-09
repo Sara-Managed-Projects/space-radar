@@ -450,6 +450,8 @@ jobs:
       # tiers with one draw call on a phone, no texture, no post-processing, nothing at boot.
       - name: "Planet faces: classed from the row, labelled as an artist's impression"
         run: node tests/test_exoface.mjs
+      - name: "the planet-face label: Measured only of a measured number, every planet of the table walked (internal #538)"
+        run: node tests/test_exoface_truth.mjs
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read

@@ -1580,6 +1580,8 @@ Object.assign(COPY, {
   exoface: {
     tag: 'Artist’s impression',
     measured: 'Measured: {parts}.',
+    estimated: 'Estimated: {parts}.',
+    least: 'At least {n} Earth masses.',
     radius: '{n} Earth radii',
     mass: '{n} Earth masses',
     a: 'a',
