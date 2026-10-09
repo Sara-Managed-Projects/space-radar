@@ -393,6 +393,21 @@ function starColour(bv, out, i) {
 const _c = new THREE.Color();
 
 /** How many of an ascending magnitude list are at or under `mag`. */
+/**
+ * How many constellation pictures (the western figures) and deep-sky pictures the sky from the ground
+ * keeps on the GPU at once, by the device's tier and the window (internal #447 / #345). A 512 to 768 px
+ * picture with its mipmaps is 1.4 to 3 MiB: a tier-0 phone holds 4 of each (about 12 MiB at most), a
+ * laptop 8 (24), a capable desktop 12 and 10 (36 and 30). A window narrower than 900 px never holds more
+ * than 6, whatever its tier. Pure; an unknown tier is read as a laptop.
+ */
+export const GROUND_PICTURE_TIERS = [{ art: 4, pictures: 4 }, { art: 8, pictures: 8 }, { art: 12, pictures: 10 }];
+export function groundPictureCaps(tier, width) {
+  const t = Number(tier);
+  const row = GROUND_PICTURE_TIERS[Number.isFinite(t) ? Math.min(2, Math.max(0, Math.trunc(t))) : 1];
+  const narrow = Number.isFinite(width) && width < 900;
+  return { art: narrow ? Math.min(6, row.art) : row.art, pictures: narrow ? Math.min(6, row.pictures) : row.pictures };
+}
+
 export function countBrighter(mags, mag) {
   let lo = 0;
   let hi = mags.length;
@@ -824,7 +839,7 @@ export function createGroundSky(ctx, env) {
     withCulture().then((m) => {
       if (disposed) return;
       // A phone holds fewer: a 512 px picture with its mipmaps is 1.4 MiB of GPU memory.
-      art = m.createSkyArt({ root, radius: R * 0.987, eqToLocal, renderOrder: RO.art, cap: typeof innerWidth === 'number' && innerWidth < 900 ? 6 : 12 });
+      art = m.createSkyArt({ root, radius: R * 0.987, eqToLocal, renderOrder: RO.art, cap: groundPictureCaps(ctx.quality && ctx.quality.tier, typeof innerWidth === 'number' ? innerWidth : NaN).art });
     }).catch((e) => { artAsked = false; cultureModAsked = null; console.warn('ground sky: the constellation pictures did not load', e); });
   }
 
@@ -1042,7 +1057,7 @@ export function createGroundSky(ctx, env) {
       pictures = m.createGroundPictures({
         root, radius: R * 0.986, eqToLocal, renderOrder: RO.pictures, saveData: saving,
         // A phone holds fewer: 27 pictures at 512 to 768 px would be 40 MiB of GPU memory (#345).
-        cap: typeof innerWidth === 'number' && innerWidth < 900 ? 6 : 10,
+        cap: groundPictureCaps(ctx.quality && ctx.quality.tier, typeof innerWidth === 'number' ? innerWidth : NaN).pictures,
         exposure: () => (ctx.exposure && typeof ctx.exposure.look === 'function' ? ctx.exposure.look() : null),
         nameOf: (id) => { const r = dsoRecord(id); return (r && r.name) || plainName(id); },
         magOf: (id) => { const r = dsoRecord(id); return r && r.meta && Number.isFinite(r.meta.mag) ? r.meta.mag : NaN; },
