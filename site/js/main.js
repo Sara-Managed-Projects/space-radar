@@ -135,6 +135,20 @@ function weatherStandIn(off, layerOn) {
 // DEEP SKY TOO (2026-10-06, internal #405): data/dso.json is 116 kB and its layer is `ladderOnly`,
 // drawn from the ladder's rungs like the other two; the ground sky's pictures look their record up
 // when it has landed (sky/groundsky.js), and a trip, a link and the search box already wait here.
+/**
+ * A layer record by id, without the frame loop allocating a closure to find it (internal #529).
+ * The index is rebuilt only when the table's length changes (addSystemRows appends rows).
+ */
+const layerIndex = new Map();
+let layerIndexLen = -1;
+function layerRec(id) {
+  if (layerIndexLen !== LAYERS.length) {
+    layerIndex.clear();
+    for (const l of LAYERS) if (!layerIndex.has(l.id)) layerIndex.set(l.id, l);
+    layerIndexLen = LAYERS.length;
+  }
+  return layerIndex.get(id);
+}
 const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky']);
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
@@ -733,14 +747,14 @@ export async function boot({ setStatus } = {}) {
   // layer, never loaded, and the box did nothing. "Everything active", the geostationary ring,
   // the famous debris and the reentries read "nothing loaded" on every visit for that reason.
   function isLayerOn(id) {
-    const layer = LAYERS.find((l) => l.id === id);
+    const layer = layerRec(id);
     if (!layer) return false;
     if (layer.forcedOff) return false;
     return layer.on !== undefined ? layer.on : !!(layer.moments && layer.moments[moment]);
   }
   ctx.isLayerOn = isLayerOn;
   ctx.setLayerOn = (id, on) => {
-    const layer = LAYERS.find((l) => l.id === id);
+    const layer = layerRec(id);
     if (layer) layer.on = on;
     if (layer && on && layer.deferred && typeof ctx.loadLayerNow === 'function') ctx.loadLayerNow(layer);
     const gl = glyphLayers.get(id);
@@ -810,7 +824,7 @@ export async function boot({ setStatus } = {}) {
   }
   if (!embed) window.addEventListener('sr:layers-ready', loadAuroraLater, { once: true });
   {
-    const layer = LAYERS.find((l) => l.id === 'aurora');
+    const layer = layerRec('aurora');
     if (layer) {
       // The panel's number for this layer is the forecast's peak probability (copy/en.js
       // controls.layerCountParts.auroraPeak), not a count of records: it has none.
@@ -855,7 +869,7 @@ export async function boot({ setStatus } = {}) {
   }
   if (!embed) window.addEventListener('sr:layers-ready', loadWeatherLater, { once: true });
   {
-    const layer = LAYERS.find((l) => l.id === 'lightning');
+    const layer = layerRec('lightning');
     if (layer) {
       // The panel's number for this layer is strikes a minute in NOAA's latest map (copy/en.js
       // controls.layerCountParts.lightningPerMin), not a count of records: it has none.
@@ -1610,7 +1624,7 @@ export async function boot({ setStatus } = {}) {
       const cv = ctx.renderer && ctx.renderer.domElement;
       return groundDistanceKm(cv && cv.clientHeight > 0 ? cv.clientHeight : window.innerHeight, camera.fov) / stage.unitKm;
     }
-    const layer = LAYERS.find((l) => l.id === record.layer);
+    const layer = layerRec(record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     // No farther than the selected model can be drawn at full size (scene/heroes.js
     // closeUpDistance): at 35 % of the stations layer's nearKm the camera parked 7 000 km from
@@ -1663,7 +1677,7 @@ export async function boot({ setStatus } = {}) {
     const upDot = ((pos.x - centre.x) * up.x + (pos.y - centre.y) * up.y + (pos.z - centre.z) * up.z) / (r * upLen);
     const el = ctx.renderer && ctx.renderer.domElement;
     const h = el && el.clientHeight > 0 ? el.clientHeight : window.innerHeight;
-    const layer = LAYERS.find((l) => l.id === record.layer);
+    const layer = layerRec(record.layer);
     // A model's bounding circle is drawn MODEL_SPAN times SELECTED_PX across: MEASURED 2026-10-02,
     // the ISS's reticle 356 px at 1440x900 and 351 at 390x844, which is the drawn diameter + 12
     // (ui/hud.js reticleBox). A thing with no model is its dot inside the reticle.
@@ -2340,7 +2354,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
     // that has just moved. After the worlds, so a world's place is this frame's; the camera's own
     // update comes round again next frame.
-    if (ctx.afterUpdate && ctx.afterUpdate.length) for (const fn of ctx.afterUpdate.splice(0)) fn();
+    if (ctx.afterUpdate && ctx.afterUpdate.length) {
+      // Run what is queued now; a callback that queues another waits for the next frame. In place
+      // (no splice(0) array per frame, #529).
+      const q = ctx.afterUpdate;
+      const n = q.length;
+      try { for (let i = 0; i < n; i++) q[i](); } finally { q.copyWithin(0, n); q.length -= n; }
+    }
     // The Sun close up, after the worlds have moved: its grain, its corona's plane and today's
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
@@ -2384,7 +2404,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (sinceLayerUpdate >= interval) {
       sinceLayerUpdate = 0;
       for (const [id, gl] of glyphLayers) {
-        const layer = LAYERS.find((l) => l.id === id);
+        const layer = layerRec(id);
         const drawable = ctx.isLayerDrawable ? ctx.isLayerDrawable(layer) : ctx.isLayerOn(id);
         // EVERY layer, not only the ladder's. This used to be `ladderOnly &&`, which was enough
         // when the ladder was the only reason a layer that is ON is not drawn. It is the only
@@ -2438,7 +2458,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.figures) ctx.figures.update(ctx.camera, ctx.renderer);
     if (ctx.portraits) ctx.portraits.update(ctx.camera, t, frameMs);
     {
-      const exoticsOn = isLadderStage(stage.worldId) && ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'exotics'));
+      const exoticsOn = isLadderStage(stage.worldId) && ctx.isLayerDrawable(layerRec('exotics'));
       if (ctx.pulsars) ctx.pulsars.update(ctx.camera, ctx.renderer, exoticsOn, nowReal);
       else if (exoticsOn) ctx.wantPulsars(); // asks once: the promise is kept
     }
@@ -2450,9 +2470,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.shells) ctx.shells.update(ctx.camera, t);
-    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
+    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
     if (ctx.nebulae) {
-      ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
+      ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(layerRec('deep-sky')));
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
       // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
@@ -2598,7 +2618,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
       const moreSystems = () => loadSystemIndex().then((rows) => {
         if (!rows.length) return null;
         addSystemRows(rows);
-        const layer = LAYERS.find((l) => l.id === 'systems');
+        const layer = layerRec('systems');
         return layer ? one(layer) : null;
       });
       laterLoad = Promise.all(later.map((l) => one(l))).then(moreSystems).then(() => {
