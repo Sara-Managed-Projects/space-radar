@@ -2500,6 +2500,9 @@ tours:
     group: solar-system
     next: planets-tonight
     requires: [worlds, aurora]
+    # The launch pads' names are not this trip's subject, and three of its stops are over the Earth:
+    # the walk of 2026-10-09 read "Soyuz 2.1b · Progress MS-36" and three more over the aurora stop.
+    hides: [launches, just-launched, starlink-trains]
     stage: sun
     clock: as-found
     orbits: [mercury, venus, earth, mars]

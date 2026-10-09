@@ -2819,6 +2819,11 @@ export const TOURS = [
 "earth",
 "mars"
 ],
+"hides": [
+"launches",
+"just-launched",
+"starlink-trains"
+],
 "pacing": "auto",
 "min_stops": 3,
 "stops": [

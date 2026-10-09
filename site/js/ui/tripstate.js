@@ -72,3 +72,12 @@ export function idleTripState() {
     stopNote: null,
   };
 }
+
+/**
+ * Is the card on screen a trip's stop card? True from the moment a stop is flown to until the
+ * trip leaves it (ui/trip.js STOP_PHASES): main.js asks before it repaints the selection's card,
+ * because a repaint without the stop's own title and words is the object's whole card.
+ */
+export function tripOwnsCard(state) {
+  return !!state && state.index >= 0 && ['veil', 'flight', 'settle', 'dwell', 'held', 'paused'].includes(state.phase);
+}

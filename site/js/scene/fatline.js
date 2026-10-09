@@ -29,11 +29,15 @@ attribute vec3 iA;
 attribute vec3 iB;
 uniform vec2 uResolution;
 uniform float uWidth;
-varying float vSide;
+varying float vDist;
 void main() {
   vec4 a = projectionMatrix * modelViewMatrix * vec4( iA, 1.0 );
   vec4 b = projectionMatrix * modelViewMatrix * vec4( iB, 1.0 );
-  vSide = position.y;
+  // A pixel wider on each side than the line, so the edge can be a coverage ramp one pixel deep:
+  // a quad exactly as wide as the line is one pixel wide where it lies on a pixel row and two where
+  // it lies between rows, and the path beads (seen in the first frame, 2026-10-09).
+  float half = uWidth * 0.5 + 1.0;
+  vDist = position.y * half;
   float near = 1e-6;
   if ( a.w <= near && b.w <= near ) { gl_Position = vec4( 2.0, 2.0, 2.0, 1.0 ); return; }
   // One end behind the camera: bring it to the near side along the segment.
@@ -45,7 +49,7 @@ void main() {
   vec2 nrm = vec2( -dir.y, dir.x );
   vec4 c = mix( a, b, position.x );
   // Half the width across, and half the width past each end so two segments meet without a notch.
-  vec2 px = nrm * position.y * uWidth * 0.5 + dir * ( position.x * 2.0 - 1.0 ) * uWidth * 0.5;
+  vec2 px = nrm * vDist + dir * ( position.x * 2.0 - 1.0 ) * uWidth * 0.5;
   c.xy += px / uResolution * 2.0 * c.w;
   gl_Position = c;
   #include <logdepthbuf_vertex>
@@ -55,10 +59,12 @@ const FRAG = /* glsl */`
 #include <logdepthbuf_pars_fragment>
 uniform vec3 uColour;
 uniform float uOpacity;
-varying float vSide;
+uniform float uWidth;
+varying float vDist;
 void main() {
   #include <logdepthbuf_fragment>
-  float a = uOpacity * ( 1.0 - smoothstep( 0.55, 1.0, abs( vSide ) ) );
+  // Coverage: full inside the line, a ramp one pixel deep across its edge.
+  float a = uOpacity * clamp( uWidth * 0.5 + 0.5 - abs( vDist ), 0.0, 1.0 );
   if ( a <= 0.003 ) discard;
   gl_FragColor = vec4( uColour, a );
   #include <colorspace_fragment>

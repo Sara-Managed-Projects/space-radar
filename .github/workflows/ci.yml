@@ -435,6 +435,10 @@ jobs:
         run: node tests/test_touch_targets.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
+      - name: "An Earth data map's key is one line in a phone's top bar while the sheet is at its peek (internal #386)"
+        run: node tests/test_overlay_key_phone.mjs
+      - name: "A trip's stop card is not repainted as the object's own card when a mission lands late"
+        run: node tests/test_stop_card_kept.mjs
       - name: "The planets' paths are drawn two pixels wide by a module fetched on demand (internal #444, #454)"
         run: node tests/test_fat_paths.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the
