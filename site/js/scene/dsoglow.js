@@ -436,5 +436,5 @@ export function createDsoGlow(scene) {
   /** The frame latch (main.js): the per-kind profiles go back to the one plain glow. */
   function setMarks(on) { uniforms.uMarks.value = on ? 1 : 0; }
 
-  return { dotYield, setRecords, setPictured, setShapedShare, setExposure, setMarks, rebuild, update, dispose, group, count: () => glows.length, kinds: () => glows.map((g) => g.kind), shaped: () => glows.filter((g) => g.shape).map((g) => g.record.id) };
+  return { dotYield, widthPx: (id) => widthPx.get(id), setRecords, setPictured, setShapedShare, setExposure, setMarks, rebuild, update, dispose, group, count: () => glows.length, kinds: () => glows.map((g) => g.kind), shaped: () => glows.filter((g) => g.shape).map((g) => g.record.id) };
 }
