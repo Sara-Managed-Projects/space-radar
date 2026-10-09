@@ -82,6 +82,9 @@ def mutate(path: Path, text: str) -> None:
 # whatever order they finish in.
 JOBS = os.cpu_count() or 2
 ENV: dict = dict(os.environ)
+# The work trees below hold the registry and the SEO pages, not site/js/main.js, so the hand-kept list check
+# (scripts/check_registry.py) is opted out of out loud, as tests/test_growth.py does.
+ENV["CHECK_REGISTRY_NO_SITE"] = "1"
 
 
 def run_cases(fn, cases, tmp: Path) -> int:

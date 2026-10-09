@@ -1,47 +1,16 @@
 # Stops whose card has a number and no `read YYYY-MM-DD` comment above it (spec 0043 design section 2,
-# internal #121). Counted on 2026-10-08: 62 of 205; 21 read again on 2026-10-09 and taken off, 41 left. They were written before the rule; each needs its page
+# internal #121). Counted on 2026-10-08: 62 of 205; 21 read again on 2026-10-09 and taken off, 41 left; 31 more read on 2026-10-09 (bulk 2) and taken off, 10 left: the ones whose page disagrees with the card or states no figure (see bulk2-mismatches.md, filed in the internal repo's tracker #556). They were written before the rule; each needs its page
 # read again and a comment written where it was read, and then its line deleted here. scripts/check_registry.py
 # refuses a stop that is NOT on this list and has no comment, and refuses a line here whose stop has one: the
 # list can only shrink. The words of a stop are never changed to pass (narration is rendered from them).
 stops:
-  - asteroids-that-come-close.hera
-  - back-to-the-moon.far-side
-  - black-holes.m87
-  - black-holes.swan
-  - moon-landings.apollo-11
-  - moon-landings.apollo-17
-  - moon-landings.blue-ghost-1
-  - moon-landings.chandrayaan-3
   - moon-landings.change-4
   - moon-landings.im-1
   - moon-landings.lunokhod-1
-  - moon-landings.surveyor-1
-  - moon-landings.whole-moon
   - outer-solar-system.eris
-  - outer-solar-system.io
   - outer-solar-system.sedna
   - outer-solar-system.titan
-  - outer-solar-system.triton
-  - outer-solar-system.voyager-1
-  - roof-to-the-edge.earth
-  - roof-to-the-edge.edge
   - roof-to-the-edge.local-group
-  - roof-to-the-edge.milky-way
-  - roof-to-the-edge.moon-orbit
-  - roof-to-the-edge.nearest-stars
-  - roof-to-the-edge.oort
-  - roof-to-the-edge.radio
   - satellites-and-junk.dead
-  - strangest-things.roadster
-  - through-a-telescope.trifid
-  - through-a-telescope.webb
   - to-the-edge.edge
-  - to-the-edge.sun
-  - travel-to-exoplanets.b
-  - travel-to-exoplanets.c
-  - travel-to-exoplanets.d
-  - travel-to-exoplanets.e
-  - travel-to-exoplanets.f
   - travel-to-exoplanets.g
-  - travel-to-exoplanets.h
-  - travel-to-exoplanets.trappist
