@@ -112,7 +112,7 @@ check(cultureLabel({ name: 'Net', native: '毕宿' }) === '毕宿 Net', 'a name 
 check(cultureLabel({ name: 'The Great Boat of Tama Rereti', native: 'Te-Waka-o-Tama-Rereti' }) === 'Te-Waka-o-Tama-Rereti', 'a name in Latin letters is drawn as the people write it');
 check(cultureLabel({ name: 'Orion' }) === 'Orion', 'a figure with one name keeps it');
 // A living tradition, said so: every culture but the western one says whose reading it is.
-for (const id of CULTURE_IDS.slice(1)) check(/living|still/.test(K.cultureNotes[id]), `${id}: the note does not say the tradition is a living one`);
+for (const id of CULTURE_IDS.slice(1)) check(/living|still|reconstruction/.test(K.cultureNotes[id]), `${id}: the note does not say whose reading it is, or that the tradition is a living one`);
 
 // --- meteors ----------------------------------------------------------------------------------------
 check(near(visibleRate({ zhr: 100, radiantAltDeg: 90, limitMag: 6.5 }), 100, 1e-9), 'the ZHR is what is seen with the radiant overhead under a 6.5 sky');

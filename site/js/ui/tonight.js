@@ -50,7 +50,7 @@ export const SAT_FAR_MS = 30 * 24 * 3600e3;
 export const STRIP_KEY_MIN = 10;
 /** Three eyepieces: the width of the round field each shows, in degrees. */
 export const EYEPIECES = { low: 1, medium: 0.5, high: 0.2 };
-const SKY_CULTURES = ['western', 'chinese', 'maori', 'hawaiian'];
+const SKY_CULTURES = ['western', 'chinese', 'maori', 'hawaiian', 'samoan', 'tongan', 'norse', 'boorong'];
 /** Where the "My view" choice is kept: { facing: 'any' | 'n' | 'e' | 's' | 'w', minAltDeg: 0 | 15 | 30 }. */
 export const VIEW_KEY = 'sr.tonight.view';
 

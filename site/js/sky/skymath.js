@@ -44,7 +44,7 @@ export function glowOfLights(lights) {
   return x * x;
 }
 /** The sky cultures a visitor can choose (registry/skycultures.yaml; scripts/build-skycultures.py --check holds the two together). */
-export const CULTURE_IDS = ['western', 'chinese', 'maori', 'hawaiian'];
+export const CULTURE_IDS = ['western', 'chinese', 'maori', 'hawaiian', 'samoan', 'tongan', 'norse', 'boorong'];
 export const DEFAULT_DARKNESS = 'dark';
 
 /**

@@ -869,6 +869,10 @@ files, the budgets and these lines together.
 - Constellation pictures: Johan Meuris, for Stellarium, Free Art License 1.3
 - Chinese sky culture: Karrie Berglund (Digitalis Education Solutions) and Sun Shuwei, for Stellarium, CC BY-SA 4.0
 - Māori sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0
+- Samoan sky culture: Jake Fitisemanu, with Samoan cultural custodians and published sources; programming by Dan Smale, for Stellarium, CC BY-SA 4.0
+- Tongan sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0
+- Norse sky culture: Jonas Persson, for Stellarium, CC BY-SA 4.0
+- Boorong sky culture: John Morieson and Alex Cherney, for Stellarium, CC BY-SA 4.0
 - Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0
 - Constellation borders: Davenhall and Leggett 1989, CDS catalogue VI/49
 
