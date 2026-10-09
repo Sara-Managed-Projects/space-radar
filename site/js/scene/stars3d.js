@@ -33,6 +33,7 @@ import { bvToKelvin, kelvinToRgb, starTint } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
 import { drawnPositions } from './clusters.js';
+import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
 import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 // Spec 0034: the star-stretch's length lives in scene/stretch.js (both star draws read it) and is
@@ -57,6 +58,7 @@ const PICK_PX = 24;
 const SUN_INERTIAL = 'sun-inertial';
 
 const VERT = /* glsl */ `
+${HOLES_GLSL_HEAD}
 attribute float aAbsMag;
 attribute float aAppMag;
 attribute vec3 aColour;
@@ -107,6 +109,8 @@ ${STRETCH_VERT}
   vGlare = glare;
   vGlow = glow;
   vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
+  // Where a photograph is drawn our stars step aside (scene/starholes.js); no hole, no change.
+  if ( uHoleCount > 0 ) vAlpha *= starHole( normalize( mv.xyz ) );
   vColour = aColour;
 }
 `;
@@ -282,6 +286,7 @@ export function createStars3d(scene, opts = {}) {
   let builtFor = null; // `${stage.worldId}:${mode}`
   let loadingBin = null;
   const uniforms = {
+    ...holeUniforms(),
     uPixelRatio: { value: 1 },
     uScale: { value: 1 },
     uGain: { value: 0 },
@@ -443,6 +448,8 @@ export function createStars3d(scene, opts = {}) {
    * How large the 3D stars' points are drawn, 1 = as ever: the sky sphere's stars step forward while a constellation
    * figure is up (scene/figures3d.js STAR_SCALE), and the cloud they hand over to does the same (internal #387).
    */
+  /** The photographs on screen this frame (scene/nebulae.js holes()): our stars step aside inside them. */
+  function setHoles(list) { return setHoleUniforms(uniforms, list); }
   function setPointScale(k) { uniforms.uScale.value = Math.min(3, Math.max(0.5, Number(k) || 1)); }
 
   /** The faintest star drawn, in apparent magnitude: the shutter's (scene/exposure.js starLimit). Capped at the file's 7.5. */
@@ -574,6 +581,8 @@ export function createStars3d(scene, opts = {}) {
     setOpacity,
     setPointScale,
     pointScale: () => uniforms.uScale.value,
+    setHoles,
+    holeCount: () => uniforms.uHoleCount.value,
     setMagLimit,
     setStretch,
     /** What the shader is drawing: tests and the browser check read it. */

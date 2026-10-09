@@ -770,6 +770,8 @@ jobs:
         run: node tests/test_propagate_worker.mjs
       - name: "the constellation figures as strokes, with the stars at their corners"
         run: node tests/test_figures.mjs
+      - name: "our stars step aside inside a drawn nebula picture"
+        run: node tests/test_starholes.mjs
       - name: "the nebulae's photographs in the sky from the ground"
         run: node tests/test_groundpictures.mjs
       - name: "the HEALPix tile addressing a HiPS sky is read with"
