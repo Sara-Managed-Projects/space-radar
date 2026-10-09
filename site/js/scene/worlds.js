@@ -2616,15 +2616,26 @@ export function orbitPole(rel0, rel1, north) {
 const _poleNorth = new THREE.Vector3();
 /** A moon's orbit pole at this time, cached for six hours (a pole turns over years), or null. */
 function orbitPoleOf(w, mesh, tMs, parentMesh) {
-  const key = Math.floor(tMs / 2.16e7);
+  // IN THE STAGE'S AXES. The two positions come in their own frame (sun-inertial, the ecliptic's
+  // axes) and the remap in orbitPole() is the stage's: on a stage whose frame is the Earth's (the
+  // equator's axes) the normal came out turned by the obliquity. Measured 2026-10-09 in a browser
+  // frame and in node: Iapetus's axis 15.6 degrees off its own orbit's normal on the Earth's
+  // stage, 0.0 on Saturn's. So the two vectors are turned into the stage's frame first, as
+  // applyIauOrientation turns a body's axes, and the cache is per frame.
+  const to = stageFrame(stage);
+  const key = `${Math.floor(tMs / 2.16e7)}|${to}`;
   const c = mesh.userData.orbitPole;
   if (c && c.key === key) return c.v;
   let v = null;
   const a0 = positionOf(w.id, tMs), b0 = positionOf(w.parent, tMs);
   const a1 = positionOf(w.id, tMs + 864e5), b1 = positionOf(w.parent, tMs + 864e5);
   if (a0 && b0 && a1 && b1 && a0.frame === b0.frame && a1.frame === b1.frame && parentMesh) {
-    _poleNorth.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
-    v = orbitPole({ x: a0.x - b0.x, y: a0.y - b0.y, z: a0.z - b0.z }, { x: a1.x - b1.x, y: a1.y - b1.y, z: a1.z - b1.z }, _poleNorth);
+    const r0 = rotateDir({ x: a0.x - b0.x, y: a0.y - b0.y, z: a0.z - b0.z }, a0.frame, to, tMs);
+    const r1 = rotateDir({ x: a1.x - b1.x, y: a1.y - b1.y, z: a1.z - b1.z }, a1.frame, to, tMs);
+    if (r0 && r1) {
+      _poleNorth.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
+      v = orbitPole(r0, r1, _poleNorth);
+    }
   }
   mesh.userData.orbitPole = { key, v };
   return v;

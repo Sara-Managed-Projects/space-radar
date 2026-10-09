@@ -151,11 +151,23 @@ return (async () => {
           await h.shot(name, 900);
         }
         const labels = h.visible('#labels .label').map(text).filter(Boolean);
+        // A stop that was held ("We could not find this one just now"): what the page knows of its subject.
+        let held = null;
+        if (ctx.trip.state.phase === 'held' || ctx.trip.state.held) {
+          held = { state: ctx.trip.state.held || null };
+          for (const rid of (q.get('debug') || 'exo-proxima-cen-b').split(',')) {
+            try {
+              const rec = ctx.recordById(rid);
+              const pos = rec ? ctx.positionOfRecord(rec) : null;
+              held[rid] = rec ? { layer: rec.layer, frame: rec.frame, propagator: rec.propagator, keys: Object.keys(rec).slice(0, 24), pos: pos ? [pos.x, pos.y, pos.z].map((v) => Number(v.toPrecision(4))) : null, layerOn: ctx.isLayerOn(rec.layer), drawable: ctx.isLayerDrawable ? ctx.isLayerDrawable(rec.layer) : null, n: ctx.recordsFor(rec.layer).length } : { missing: true, exoplanets: ctx.recordsFor('exoplanets').length, like: ctx.records().filter((r) => /proxima/i.test(r.id)).map((r) => r.id).slice(0, 6) };
+            } catch (e) { held[rid] = { error: String(e && e.message) }; }
+          }
+        }
         rows.push({
           trip: id, n: n + 1, id: ctx.trip.state.stopId, ok: !!ok && ctx.trip.state.index === n, again, fly_ms: Date.now() - t1 - settle, phase: st.phase,
-          caption: text(h.w().document.querySelector('.sr-tripsheet')).slice(0, 260),
+          caption: text(h.w().document.querySelector('.sr-tripsheet')).slice(0, 520),
           labels: labels.length, names: labels.slice(0, 10), clock: new Date(ctx.clock.now()).toISOString().slice(0, 16),
-          stage: (ctx.stage || {}).worldId || (ctx.stage || {}).id || null, km: h.km(),
+          stage: (ctx.stage || {}).worldId || (ctx.stage || {}).id || null, km: h.km(), ...(held ? { held } : {}),
         });
       }
     }
@@ -173,15 +185,51 @@ return (async () => {
       done(h, { rows });
     }));
   }
+  /** A trip's last stop left to end by itself: the flight home (`return: true`), then the end card. */
+  async function homeOf(h, id) {
+    const ctx = h.ctx; const row = { trip: id };
+    h.res.home = h.res.home || []; h.res.home.push(row);
+    try { ctx.trip.stop('leave'); } catch { /* nothing ran */ }
+    await sleep(500);
+    const plan = await ctx.trip.start(id);
+    if (!plan || plan.offerable === false) { row.error = (plan && plan.reason) || 'no plan'; return; }
+    await until(() => ctx.trip.state.phase === 'intro', 20000);
+    ctx.trip.jumpTo(plan.count - 1); ctx.trip.play();
+    await until(() => ctx.trip.state.phase === 'dwell' && ctx.trip.state.index === plan.count - 1, 60000, 100);
+    row.lastStop = ctx.trip.state.stopId; row.lastKm = h.km(); row.lastStage = (ctx.stage || {}).worldId;
+    const t0 = Date.now();
+    const began = await until(() => ctx.trip.state.returning === true || ctx.trip.state.phase === 'outro', Math.max(1000, Math.min(150000, CAP - Date.now())), 50);
+    row.dwell_ms = Date.now() - t0; row.returning = ctx.trip.state.returning === true; row.shots = [];
+    if (!began) { row.error = 'the last stop never ended'; return; }
+    const t1 = Date.now();
+    for (const at of [1500, 6000, 11000]) {
+      await sleep(Math.max(0, at - (Date.now() - t1)));
+      if (!ctx.trip.state.returning) break;
+      await h.shot(`home-${id}-${row.shots.length + 1}`, 0);
+      row.shots.push({ at_ms: Date.now() - t1, stage: (ctx.stage || {}).worldId, km: h.km(), sheet: h.visible('.sr-tripsheet').length });
+    }
+    await until(() => ctx.trip.state.phase === 'outro', 45000, 50);
+    row.flight_ms = Date.now() - t1;
+    await sleep(900);
+    row.end = { phase: ctx.trip.state.phase, stage: (ctx.stage || {}).worldId, km: h.km(), card: text(h.w().document.querySelector('.sr-tripsheet')).slice(0, 220) };
+    await h.shot(`home-${id}-end`, 200);
+    try { ctx.trip.stop('leave'); } catch { /* gone */ }
+  }
   if (mode === 'relook') {
     // `stops=trip:3,trip:4;trip2:1` -- frames are separated by `;`, stops are 1-based.
-    const groups = (q.get('stops') || '').split(';').filter(Boolean);
+    const groups = (q.get('stops') || '').split(';');
     return finish(groups.map(async (g, i) => {
       const by = new Map();
-      for (const s of g.split(',')) { const [id, n] = s.split(':'); if (!by.has(id)) by.set(id, []); by.get(id).push(Number(n) - 1); }
-      const h = await open(i, groups.length);
-      const rows = h.ctx ? await walk(h, [...by.entries()], Number(q.get('settle') || 2500)) : [];
-      done(h, { rows });
+      // `present!trip:n,...`: that frame in present mode (the caption across the foot of the scene).
+      const present = g.startsWith('present!');
+      if (present) g = g.slice(8);
+      for (const s of g.split(',').filter(Boolean)) { const [id, n] = s.split(':'); if (!by.has(id)) by.set(id, []); by.get(id).push(Number(n) - 1); }
+      const h = await open(i, groups.length, present ? 'present=1' : '');
+      // `home=a,b;c` (frames by `;`, as `stops`): after the stops, those trips' flights home.
+      const homes = ((q.get('home') || '').split(';')[i] || '').split(',').filter(Boolean);
+      const rows = h.ctx && by.size ? await walk(h, [...by.entries()], Number(q.get('settle') || 2500)) : [];
+      if (h.ctx && homes.length) { try { h.ctx.setObserver(PLACE); } catch { /* no place */ } for (const id of homes) { if (Date.now() < CAP - 60000) await homeOf(h, id); } }
+      done(h, { rows, home: h.res.home });
     }));
   }
 
@@ -334,7 +382,20 @@ return (async () => {
         const st = h.ctx.trip.state;
         if (st.tourId === 'the-living-earth' && st.phase === 'dwell' && st.stopId !== last) {
           last = st.stopId;
-          seen.push({ id: st.stopId, names: h.visible('#labels .label').map(text).slice(0, 6), caption: text(h.w().document.querySelector('.sr-tripsheet.is-present, .sr-tripsheet')).slice(0, 200) });
+          const row = { id: st.stopId, names: h.visible('#labels .label').map(text).slice(0, 6), caption: text(h.w().document.querySelector('.sr-tripsheet.is-present, .sr-tripsheet')).slice(0, 200) };
+          seen.push(row);
+          // The aurora stop's note: the forecast's sentence, then today's Kp (internal #385). Read two
+          // seconds in, when the note has been painted, with what the page holds of NOAA's reading.
+          if (st.stopId === 'aurora') {
+            setTimeout(() => {
+              try {
+                row.note = st.stopNote || null;
+                row.kpLine = typeof h.ctx.spaceWeatherLine === 'function' ? h.ctx.spaceWeatherLine() : 'no function';
+                row.kpHeld = h.ctx.spaceWeather ? { kp: h.ctx.spaceWeather.parsed && h.ctx.spaceWeather.parsed.kp, observed: h.ctx.spaceWeather.parsed && h.ctx.spaceWeather.parsed.observedKp, via: h.ctx.spaceWeather.result && h.ctx.spaceWeather.result.via } : null;
+                row.sheet = text(h.w().document.querySelector('.sr-tripsheet.is-present, .sr-tripsheet')).slice(0, 900);
+              } catch (e) { row.noteError = String(e && e.message); }
+            }, 2000);
+          }
           if (['aurora', 'weather', 'plankton'].includes(st.stopId)) h.shot(`reel-living-earth-${st.stopId}`, 900);
         }
         const c = h.visible('.sr-ambient__card')[0];

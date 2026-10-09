@@ -186,6 +186,30 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
   const ia = deg(up('iapetus'), up('saturn'));
   check(ia > 8 && ia < 25, `Iapetus's axis is tens of degrees off Saturn's, along its orbit (${ia.toFixed(1)} degrees)`);
   check(deg(up('titan'), up('saturn')) < 2 && deg(up('rhea'), up('saturn')) < 2, 'the others keep the planet\'s pole');
+  // ON EVERY STAGE (found in a browser frame, 2026-10-09): the axis is the orbit's normal as the
+  // stage draws the orbit. The positions are sun-inertial and the Earth's stage has the equator's
+  // axes: before the two were reconciled the axis was 15.6 degrees off the normal there and 0.0 on
+  // Saturn's own stage. The normal here is taken from the positions through stage.toScene, five
+  // days apart, which is how a frame of the scene would show it.
+  const { positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const t0 = Date.parse('2026-10-09T15:00:00Z');
+  const was = stage.worldId;
+  for (const on of ['earth', 'saturn']) {
+    stage.setWorld(on);
+    stage.setOrigin(null);
+    w.update(t0);
+    const rel = (t) => { const a = positionOf('iapetus', t); const b = positionOf('saturn', t); return stage.toScene(a, a.frame, t0).clone().sub(stage.toScene(b, b.frame, t0)); };
+    const normal = rel(t0).cross(rel(t0 + 5 * 864e5)).normalize();
+    if (normal.dot(up('saturn')) < 0) normal.negate();
+    const off = deg(up('iapetus'), normal);
+    check(off < 0.5, `on the ${on} stage Iapetus's axis is its orbit's normal (${off.toFixed(2)} degrees off)`);
+    const tilt = deg(normal, up('saturn'));
+    check(tilt > 14 && tilt < 17, `and that orbit is tilted from Saturn's equator as the ephemeris has it (${tilt.toFixed(1)} degrees)`);
+  }
+  stage.setWorld(was);
+  stage.setOrigin(null);
+  w.update(Date.parse('2026-10-08T12:00:00Z'));
 }
 
 {
