@@ -36,6 +36,12 @@ def camel(key: str) -> str:
     return head + "".join(w.capitalize() for w in rest)
 
 
+def camel_deep(v):
+    if isinstance(v, dict):
+        return {camel(k): camel_deep(x) for k, x in v.items()}
+    return v
+
+
 def base(s: dict) -> dict:
     sky = s["sky"]
     star = s["star"]
@@ -80,6 +86,9 @@ def render_table(doc: dict) -> list:
         hz = s.get("habitable_zone")
         row["zone"] = {camel(k): v for k, v in hz.items()} if hz else None
         row["zoneMissing"] = s.get("habitable_zone_missing")
+        if s.get("binary"):
+            # Two suns (registry/systems-binaries.yaml): what scene/systems.js draws and the card says. The sources stay in the YAML.
+            row["binary"] = camel_deep({k: v for k, v in s["binary"].items() if k not in ("sources", "zone_why")})
         row["colourNote"] = s.get("colour_note")
         row["asOf"] = s.get("as_of")
         planets = []

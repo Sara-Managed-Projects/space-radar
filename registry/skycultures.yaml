@@ -42,3 +42,31 @@ cultures:
     source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/hawaiian_starlines
     credit: "Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0"
     note: "The star lines Nainoa Thompson taught for steering Hōkūle‘a without instruments, as a class at Kamehameha Schools Kapālama put them into Stellarium in 2017. A navigator's working sky, still in use."
+  - id: samoan
+    display: Samoan
+    stellarium: samoan
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/samoan
+    credit: "Samoan sky culture: Jake Fitisemanu, with Samoan cultural custodians and published sources; programming by Dan Smale, for Stellarium, CC BY-SA 4.0"
+    note: "Figures from Samoan voyaging and festival lore, as Jake Fitisemanu put them into Stellarium with Samoan custodians. Names and stories differ between islands; the tradition is a living one."
+  - id: tongan
+    display: Tongan
+    stellarium: tongan
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/tongan
+    credit: "Tongan sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0"
+    note: "Tongan star paths and figures as Dan Smale put them into Stellarium from the limited sources there are. A star may carry several names between island groups; the tradition is a living one."
+  - id: norse
+    display: Norse
+    stellarium: norse
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/norse
+    credit: "Norse sky culture: Jonas Persson, for Stellarium, CC BY-SA 4.0"
+    note: "Six figures of the Norse sky, a reconstruction one Stellarium contributor made from Digital Education Solutions' Norse constellations page; not a record of what Norse people saw."
+  - id: boorong
+    display: Boorong
+    stellarium: boorong
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/boorong
+    credit: "Boorong sky culture: John Morieson and Alex Cherney, for Stellarium, CC BY-SA 4.0"
+    note: "About thirty stars and figures a Boorong family at Lake Tyrrell told William Stanbridge in 1857, read by John Morieson and drawn for Stellarium. The sky of a living people, here by one reading."

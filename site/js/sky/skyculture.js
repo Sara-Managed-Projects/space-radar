@@ -164,6 +164,16 @@ void main() {
 
 const FADE_MS = 500;
 
+/**
+ * Which of the pictures in view are drawn when more than `cap` are: the `cap` whose centres lie nearest the
+ * middle of the view (internal #417: a phone at a 70 degree field held 17 at once, 116 kB of textures; the cap
+ * only ever released pictures that had left the view). `items` is [{ id, angle }]; returns a Set of ids. Pure.
+ */
+export function nearestInView(items, cap) {
+  const ranked = [...items].sort((a, b) => a.angle - b.angle || (a.id < b.id ? -1 : 1));
+  return new Set(ranked.slice(0, Math.max(0, cap)).map((x) => x.id));
+}
+
 export function createSkyArt(env) {
   const here = import.meta.url;
   const cap = Math.max(2, env.cap || 10);
@@ -267,10 +277,18 @@ export function createSkyArt(env) {
     const reach = Math.atan(Math.tan(half) * Math.hypot(1, view.aspect || 1));
     let shown = 0;
     let held = 0;
+    const seen = [];
     for (const f of figures) {
       const c = f.quad.centre;
       const cos = c[0] * view.dirEq[0] + c[1] * view.dirEq[1] + c[2] * view.dirEq[2];
-      const inView = Math.acos(Math.max(-1, Math.min(1, cos))) < reach + f.quad.radiusRad;
+      const angle = Math.acos(Math.max(-1, Math.min(1, cos)));
+      f.inView = angle < reach + f.quad.radiusRad;
+      if (f.inView) seen.push({ id: f.id, angle });
+    }
+    // More pictures in view than a device holds: the nearest the middle, and no more.
+    const allowed = seen.length > cap ? nearestInView(seen, cap) : null;
+    for (const f of figures) {
+      const inView = f.inView && (!allowed || allowed.has(f.id));
       if (inView) {
         f.seenAt = now;
         if (f.state === 'idle') build(f);

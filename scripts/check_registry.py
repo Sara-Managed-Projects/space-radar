@@ -193,7 +193,7 @@ SITE_SHAPES = {"lander", "rover", "lunar-module"}
 # ship. When one of these is matched to a reference, its id comes out of this set -- the check
 # below refuses a set member that has started citing something, so the set cannot go stale.
 SITE_UNCITED = "uncited"
-UNCITED_SITES = frozenset({"apollo-11", "apollo-17", "change-4", "jezero", "elysium", "utopia"})
+UNCITED_SITES = frozenset({"apollo-11", "apollo-17", "change-4", "jezero", "utopia"})
 # Luna 2 hit the Moon on 13 September 1959. A landing date before it is a typo, not a landing.
 FIRST_ARRIVAL = datetime.date(1959, 9, 13)
 
@@ -2635,6 +2635,14 @@ def check_stars_notable(exotics: list) -> list:
             phrase = time_relative(why)
             if phrase:
                 fail(where, f"`why:` says {phrase!r}, which is true on a date and not forever")
+        if r.get("radius_suns") is not None:
+            # A width an interferometer measured (internal #412): the radius, its error, the temperature and the page it was read on.
+            ok = all(isinstance(r.get(k), (int, float)) and not isinstance(r.get(k), bool) and r.get(k) > 0
+                     for k in ("radius_suns", "radius_err_suns", "teff_k", "teff_err_k"))
+            if not ok or r["radius_err_suns"] >= r["radius_suns"] or not (2000 <= r["teff_k"] <= 50000):
+                fail(where, "`radius_suns`, `radius_err_suns`, `teff_k` and `teff_err_k` must all be positive numbers, the error under the radius")
+            if not STAR_SOURCE.match(str(r.get("physical_source") or "")):
+                fail(where, "`physical_source:` must be the page and the day it was read, \"https://... (read YYYY-MM-DD)\"")
         if not STAR_SOURCE.match(str(r.get("source") or "")):
             fail(where, "`source:` must be the page and the day it was read: "
                         "\"https://... (read YYYY-MM-DD)\" -- a line with no source is a rumour")

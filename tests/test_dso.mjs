@@ -201,5 +201,25 @@ if (said) {
   check(/setPictured\(now\)/.test(readFileSync(join(ROOT, 'site/js/main.js'), 'utf8')) && /now\.set\(id, share\)/.test(readFileSync(join(ROOT, 'site/js/main.js'), 'utf8')), 'main.js hands over shares, not a yes or no');
 }
 
+// OPENNGC'S MINOR AXIS AND POSITION ANGLE (internal #166, read 2026-10-09): an edge-on galaxy stops glowing round.
+{
+  const { ellipseRatio } = await import(join(JS, 'data/parsers.js'));
+  const raw = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
+  const withAxis = raw.filter((o) => Number.isFinite(o.minAxArcmin)).length;
+  const withAngle = raw.filter((o) => Number.isFinite(o.posAngDeg)).length;
+  check(withAxis >= 40 && withAngle >= 40 && raw.every((o) => !Number.isFinite(o.minAxArcmin) || (o.minAxArcmin <= o.majAxArcmin + 1e-9)), `dso.json carries OpenNGC's minor axis (${withAxis}) and position angle (${withAngle}), never wider than the major axis`);
+  const m104 = raw.find((o) => o.id === 'm104');
+  const rec = recs.find((r) => r.id === 'dso-m104');
+  const g = glowFor(rec);
+  check(m104 && g && g.shape && g.shape.of === null && Math.abs(g.shape.ratio - m104.minAxArcmin / m104.majAxArcmin) < 1e-12 && g.shape.paDeg === m104.posAngDeg, `the Sombrero glows as an ellipse of OpenNGC's axes (${g && g.shape && g.shape.ratio.toFixed(2)})`);
+  const line = drawingLine(rec);
+  check(/ellipse/.test(rec.meta.drawnName) && /OpenNGC/.test(line) && /not a picture/.test(line) && line.includes(String(m104.minAxArcmin)), `its card says what is drawn: ${line}`);
+  const round = raw.filter((o) => o.typeCode === 'G' && o.majAxArcmin > 0 && o.minAxArcmin / o.majAxArcmin >= 0.8 && o.id !== 'm31');
+  check(round.length > 0 && round.every((o) => { const r = recs.find((x) => x.id === `dso-${o.id}`); const q = glowFor(r); return !q || !q.shape; }), `${round.length} galaxies that are nearly round stay round`);
+  check(ellipseRatio({ typeCode: 'OCl', majAxArcmin: 10, minAxArcmin: 4, posAngDeg: 3 }) === null && ellipseRatio({ typeCode: 'G', majAxArcmin: 10, minAxArcmin: 4 }) === null, 'only a galaxy with both its minor axis and its angle is shaped');
+  const src = readFileSync(join(ROOT, 'site/js/scene/dsoglow.js'), 'utf8');
+  check(/mix\( 1\.0, uShaped, aStep \)/.test(src), 'only the ellipses that a photograph holds step back for it');
+}
+
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('dso ok: 110 Messier objects and the LMC at sourced distances, Andromeda 2.54 Mly on the stellar rung, found by name, M-number and NGC number');

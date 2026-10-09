@@ -1575,6 +1575,8 @@ export function createSkyView(ctx, options = {}) {
       return fovName(fovWant);
     },
     setFov,
+    /** The planet or the Moon at the centre and the width of the round field that frames it, or null (#351). */
+    bodyAtCentre: () => (ground && typeof ground.bodyNear === 'function' ? ground.bodyNear(azRad * RAD2DEG, altRad * RAD2DEG) : null),
     zoomBy: (factor) => setFov(zoomFov(fovWant, factor)),
     get options() {
       return { ...skyOptions };

@@ -90,7 +90,8 @@ check(near(Math.sqrt(1 / 1.0512), 0.97, 0.006) && near(Math.sqrt(1 / 0.3438), 1.
 }
 let banded = 0, inside = 0;
 for (const s of SYSTEMS_TABLE) {
-  const t = s.star.teffK, l = s.star.lumSuns;
+  // Two suns (registry/systems-binaries.yaml): the summed luminosity at the luminosity-weighted temperature.
+  const t = s.binary ? s.binary.teffWeightedK : s.star.teffK, l = s.binary ? s.binary.lumTotalSuns : s.star.lumSuns;
   const covered = Number.isFinite(t) && Number.isFinite(l) && t >= 2600 && t <= 7200;
   check(!!s.zone === covered, `${s.id}: a band exactly when the formula covers the star (${t} K, ${l} Suns)`);
   if (!s.zone) { check(typeof s.zoneMissing === 'string' && !!COPY.starSystem.zoneNone[s.zoneMissing], `${s.id} says why it has no band (${s.zoneMissing})`); continue; }
@@ -237,7 +238,9 @@ check(findMatches(index, 'Kepler-90').hits[0]?.record.id === 'star-kepler-90' &&
   const psr = SYSTEMS_TABLE.find((s) => s.id === 'psr-b1257-12');
   const star = C.starRows(psr);
   check(row(R.starWidth, star) === COPY.starSystem.starPoint && row(R.starTemperature, star) === COPY.starSystem.starWhite && row(R.zone, star) === COPY.starSystem.zoneNone['no-temperature'], 'the pulsar\'s card says what is not measured and how it is drawn');
-  check(/2 in the catalogue/.test(row(R.stars, C.starRows(k16.s))), 'Kepler-16\'s star card says the catalogue lists two stars and one is drawn');
+  const kelt = SYSTEMS_TABLE.find((x) => x.id === 'kelt-9');
+  check(kelt && !kelt.binary && /2 in the catalogue/.test(row(R.stars, C.starRows(kelt))), 'KELT-9\'s star card says the catalogue lists two stars and one is drawn');
+  check(row(R.stars, C.starRows(k16.s)) === COPY.starSystem.starsBoth, 'Kepler-16\'s star card says both suns are drawn (tests/test_systems_binaries.mjs holds the rest)');
   const line = C.generatedLine(f.s);
   check(line.includes(SYSTEMS_AS_OF) && /5 of them sized from the year/.test(line) && /illustrative/.test(line), `the drawing line: ${line}`);
 }

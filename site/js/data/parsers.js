@@ -1500,6 +1500,13 @@ const DSO_DRAWN = {
   'ic-2602': { departure: GATHERED },
 };
 
+/** Minor over major, for a galaxy the catalogue measures as clearly longer than wide (under 0.8) with its angle; else null. */
+export function ellipseRatio(o) {
+  if (!o || o.typeCode !== 'G' || !(o.majAxArcmin > 0) || !(o.minAxArcmin > 0) || !Number.isFinite(o.posAngDeg)) return null;
+  const r = o.minAxArcmin / o.majAxArcmin;
+  return r >= 0.05 && r < 0.8 ? r : null;
+}
+
 export function parseDso(doc) {
   const list = doc && Array.isArray(doc.objects) ? doc.objects : [];
   const out = [];
@@ -1512,6 +1519,14 @@ export function parseDso(doc) {
     if (o.common && o.name !== o.common) aliases.push(o.common);
     // A row drawn as a shape may also say what it is called (DSO_DRAWN): the table's name stays an alias.
     const { name: ownName, ...drawn } = DSO_DRAWN[o.id] || {};
+    // A galaxy whose catalogue gives a minor axis and a position angle and is visibly not round is drawn as the
+    // ellipse it measures (scene/dsoglow.js glowFor, internal #166); the card says so in the words M32's does.
+    const shapeRatio = ellipseRatio(o);
+    if (shapeRatio && !DSO_DRAWN[o.id]) {
+      drawn.drawsAs = 'variant';
+      drawn.drawnName = `${o.common || o.name}, as an ellipse`;
+      drawn.departure = `a soft glow ${o.majAxArcmin}\u2032 by ${o.minAxArcmin}\u2032 turned ${o.posAngDeg}\u00b0 east of north, as OpenNGC lists it, seen flat from our side; not a picture of it`;
+    }
     out.push({
       id: `dso-${o.id}`,
       name: ownName || o.common || o.name,
@@ -1534,6 +1549,8 @@ export function parseDso(doc) {
         distLyHigh: o.distLyHigh ?? null,
         sizeLy,
         majAxArcmin: o.majAxArcmin ?? null,
+        minAxArcmin: o.minAxArcmin ?? null,
+        posAngDeg: Number.isFinite(o.posAngDeg) ? o.posAngDeg : null,
         mag: o.vmag ?? null,
         why: o.why || null,
         distanceSource: o.distanceSource || null,

@@ -1892,12 +1892,36 @@ export const SYSTEMS_TABLE = [
 },
 "starsInSystem": 2,
 "zone": {
-"innerAu": 0.3587,
-"outerAu": 0.6649,
-"wideInnerAu": 0.2832,
-"wideOuterAu": 0.7014
+"innerAu": 0.3991,
+"outerAu": 0.7412,
+"wideInnerAu": 0.3151,
+"wideOuterAu": 0.7818
 },
 "zoneMissing": null,
+"binary": {
+"primary": {
+"massSuns": 0.704,
+"radiusSuns": 0.6489,
+"teffK": 4450
+},
+"companion": {
+"massSuns": 0.2054,
+"radiusSuns": 0.22623,
+"teffK": 3311,
+"teffFrom": "derived"
+},
+"orbit": {
+"periodDays": 41.077777,
+"aAu": 0.2257,
+"eccentricity": 0.15962,
+"omegaRad": 4.60184,
+"periastronJd": 2457573.0995
+},
+"lumPrimarySuns": 0.1488,
+"lumCompanionSuns": 0.005542,
+"lumTotalSuns": 0.1543,
+"teffWeightedK": 4409
+},
 "colourNote": "illustrative",
 "asOf": "2026-10-08",
 "planets": [
@@ -2959,12 +2983,35 @@ export const SYSTEMS_TABLE = [
 },
 "starsInSystem": 2,
 "zone": {
-"innerAu": 1.944,
-"outerAu": 3.394,
-"wideInnerAu": 1.535,
-"wideOuterAu": 3.58
+"innerAu": 2.127,
+"outerAu": 3.72,
+"wideInnerAu": 1.679,
+"wideOuterAu": 3.923
 },
 "zoneMissing": null,
+"binary": {
+"primary": {
+"massSuns": 1.2207,
+"radiusSuns": 1.7903,
+"teffK": 6210
+},
+"companion": {
+"massSuns": 0.9678,
+"radiusSuns": 0.9663,
+"teffK": 5770
+},
+"orbit": {
+"periodDays": 11.2588179,
+"aAu": 0.1276,
+"eccentricity": 0.1593,
+"omegaDeg": 300.85,
+"periastronJd": 2454952.13097
+},
+"lumPrimarySuns": 4.295,
+"lumCompanionSuns": 0.9324,
+"lumTotalSuns": 5.227,
+"teffWeightedK": 6132
+},
 "colourNote": "illustrative",
 "asOf": "2026-10-08",
 "planets": [

@@ -38,6 +38,7 @@ check(arcSvg(null) === '' && arcSvg({}) === '', 'no pass, no arc');
 check(renderTonight(null, {}).root === null, 'without a document or a host, inert');
 const src = readFileSync(join(JS, 'ui/tonight.js'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 check(/export function renderTonight\(host, ctx\)/.test(src), 'renderTonight(host, ctx), for the Tonight tab to mount');
+check(/import \{ SCRUB_BACK_MS, SCRUB_FORWARD_MS \} from '\.\/timepill\.js'/.test(src) && /aria-valuemin', String\(-Math\.round\(SCRUB_BACK_MS \/ 60e3\)\)/.test(src) && /aria-valuemax', String\(Math\.round\(SCRUB_FORWARD_MS \/ 60e3\)\)/.test(src) && /aria-valuenow', String\(Math\.round\(\(nowMs - Date\.now\(\)\) \/ 60e3\)\)/.test(src), 'the Tonight time slider reports its range and minutes from real time');
 check(/new Worker\(new URL\('\.\.\/sky\/passworker\.js', import\.meta\.url\), \{ type: 'module' \}\)/.test(src), 'passes are worked out in the module worker');
 check(/setInterval\(tick, 1000\)/.test(src) && /visibilitychange/.test(src) && /sr:clean/.test(src), 'one ticker, stopped while hidden or cleared');
 const destroy = src.slice(src.indexOf('function destroy()'), src.indexOf('const api = {'));

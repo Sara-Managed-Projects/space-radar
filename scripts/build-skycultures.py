@@ -254,6 +254,8 @@ def build_culture(row: dict, stellarium: Path, hip: dict) -> dict:
         cx = [sum(s[i] for s in stars) / len(stars) for i in range(3)]
         ra, dec = radec(cx)
         name = con.get("common_name") or {}
+        if not (name.get("english") or name.get("native")):
+            continue  # Stellarium's Boorong file has a figure with no name and one star: nothing to label, so nothing is drawn
         fig = {"name": name.get("english") or name.get("native") or "", "at": [round(ra, 2), round(dec, 2)], "lines": lines}
         native = name.get("native") or ""
         if native and native != fig["name"]:

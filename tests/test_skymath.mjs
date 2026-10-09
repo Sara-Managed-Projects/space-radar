@@ -149,5 +149,13 @@ const jm = B.jupiterMoons(date, obs);
 check(jm.length === 4 && jm.every((x) => Number.isFinite(x.mag) && x.offsetRadii >= 0 && x.offsetRadii < 30), 'four moons of Jupiter, each within 30 radii of it');
 check(B.bodyView('pluto', date, obs) === null && B.bodyView('moon', date, null) === null, 'an unknown body or no observer is null, not a throw');
 
+// The Telescope button frames a planet with what rides with it (internal #351): never wider than the telescope's field.
+{
+  const j = M.bodyFieldDeg('jupiter', 45 / 3600, 26);
+  check(j > 0.3 && j <= M.FOV.telescope, `Jupiter's field holds Callisto at 26 radii (${j.toFixed(3)} degrees)`);
+  const sat = M.bodyFieldDeg('saturn', 18 / 3600);
+  check(sat === 0.1, `Saturn's field is twice its rings, but not under the 0.1 degree a drifting planet needs (${sat.toFixed(3)} degrees)`);
+  check(M.bodyFieldDeg('moon', 0.52) === M.FOV.telescope && M.bodyFieldDeg('mars', 1e-6) === 0.1 && M.bodyFieldDeg('venus', 0) === M.FOV.telescope, 'the Moon stops at the telescope field, a speck at 0.1 degree, no size gives the telescope field');
+}
 if (problems.length) { console.error('skymath FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`skymath ok: refraction ${(M.refractionDeg(0) * 60).toFixed(1)}' on the horizon as Astronomy Engine has it, ${M.airmass(0).toFixed(0)} air masses there, limits 6.5 / ${lim({ fovDeg: 7 }).toFixed(1)} / ${lim({ fovDeg: 1 }).toFixed(1)} for the eye, binoculars and a telescope, six twilight phases, nine bodies with Astronomy Engine's positions, sizes and phases, the Moon's face by its libration, Saturn's rings at ${sat.ringTiltDeg.toFixed(1)} degrees`);

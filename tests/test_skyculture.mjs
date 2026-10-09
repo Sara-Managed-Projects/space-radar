@@ -112,7 +112,17 @@ check(cultureLabel({ name: 'Net', native: '毕宿' }) === '毕宿 Net', 'a name 
 check(cultureLabel({ name: 'The Great Boat of Tama Rereti', native: 'Te-Waka-o-Tama-Rereti' }) === 'Te-Waka-o-Tama-Rereti', 'a name in Latin letters is drawn as the people write it');
 check(cultureLabel({ name: 'Orion' }) === 'Orion', 'a figure with one name keeps it');
 // A living tradition, said so: every culture but the western one says whose reading it is.
-for (const id of CULTURE_IDS.slice(1)) check(/living|still/.test(K.cultureNotes[id]), `${id}: the note does not say the tradition is a living one`);
+for (const id of CULTURE_IDS.slice(1)) check(/living|still|reconstruction/.test(K.cultureNotes[id]), `${id}: the note does not say whose reading it is, or that the tradition is a living one`);
+
+// --- a phone holds at most its cap of pictures at once, the ones nearest the middle (internal #417) ---------------
+{
+  const { nearestInView } = await import(join(ROOT, 'site/js/sky/skyculture.js'));
+  const seventeen = Array.from({ length: 17 }, (_, i) => ({ id: `c${i}`, angle: (i * 7) % 17 / 10 }));
+  const six = nearestInView(seventeen, 6);
+  check(six.size === 6 && [...six].every((id) => seventeen.find((x) => x.id === id).angle <= 0.5), 'of seventeen pictures in view a phone keeps the six nearest the middle');
+  check(nearestInView(seventeen.slice(0, 4), 6).size === 4 && nearestInView([], 6).size === 0, 'fewer than the cap are all kept');
+  check(JSON.stringify([...nearestInView([{ id: 'b', angle: 1 }, { id: 'a', angle: 1 }], 1)]) === '["a"]', 'ties break by name, so the choice does not flicker');
+}
 
 // --- meteors ----------------------------------------------------------------------------------------
 check(near(visibleRate({ zhr: 100, radiantAltDeg: 90, limitMag: 6.5 }), 100, 1e-9), 'the ZHR is what is seen with the radiant overhead under a 6.5 sky');
