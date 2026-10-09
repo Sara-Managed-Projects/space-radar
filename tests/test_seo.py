@@ -98,8 +98,8 @@ with tempfile.TemporaryDirectory() as tmp:
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     o_sync = [c for c in calls if c.startswith("s3 sync") and "s3://example-bucket/o" in c]
     ok(r.returncode == 0, "deploy.sh --app-only --dry-run runs against a fake aws")
-    ok(len(o_sync) == 1 and "text/html" in o_sync[0] and "--delete" in o_sync[0] and "no-cache" in o_sync[0],
-       f"the built o/ is synced as no-cache HTML with --delete ({o_sync})")
+    ok(len(o_sync) == 1 and "text/html" in o_sync[0] and "--delete" in o_sync[0] and "max-age=0, must-revalidate" in o_sync[0],
+       f"the built o/ is synced as HTML a browser revalidates on every load, with --delete ({o_sync})")
     # Stored compressed or negotiated (internal #514): the code goes up as Brotli with a gzip copy
     # under _gz/, and every page a crawler reads goes up as written.
     def sync(prefix):

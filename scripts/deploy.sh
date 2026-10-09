@@ -29,6 +29,11 @@
 #                         compress per request, as every deploy before 2026-10-09 did. By default
 #                         they are stored at Brotli 11 with `Content-Encoding: br`, and a gzip 9
 #                         copy goes under _gz/ (scripts/precompress.mjs; internal #514).
+#   --no-edge-cache       upload the app files with plain `Cache-Control: no-cache`, as every deploy
+#                         before 2026-10-09 did: CloudFront then asks S3 again on every request.
+#                         By default they carry `s-maxage` (see THE EDGE KEEPS THE APP below), and
+#                         a deploy of the app without --distribution is refused, because nothing
+#                         would tell the edge that its year-long copy is old.
 #   --dry-run             print what would be uploaded and change nothing.
 #
 # WHY THIS IS A SCRIPT AND NOT ONE `aws s3 sync`
@@ -48,6 +53,24 @@
 # desktops after the first frame (registry/textures.yaml). A new file under a new name needs no
 # invalidation -- nothing was cached under it -- so adding a tier or a month is a plain deploy.
 # Replacing a file under the SAME name is the case above: invalidate /textures/* by hand.
+#
+# THE EDGE KEEPS THE APP BETWEEN DEPLOYS (internal #513, 2026-10-09). The app files were stored with
+# `Cache-Control: no-cache`, which a browser needs (a deploy must be seen on the next load) and which
+# made CloudFront ask S3 again on EVERY request: MEASURED on the live site on 2026-10-08, 116 of a
+# first visit's 132 files answered `x-cache: RefreshHit`, 211 ms to the first byte against 44 ms
+# for the 16 the edge answered by itself. They are now stored with
+#     Cache-Control: public, max-age=0, must-revalidate, s-maxage=31536000
+#   - a BROWSER reads max-age=0, must-revalidate: stale at once, so it revalidates on every load,
+#     exactly as with no-cache. HTML and sw.js included; nothing changes for a visitor.
+#   - CLOUDFRONT reads s-maxage (a shared cache prefers it to max-age; the managed CachingOptimized
+#     policy allows up to a year) and answers from the edge until told otherwise.
+#   - NOT `no-cache, s-maxage=...`, which is what was first proposed: CloudFront documents what it
+#     does with max-age and s-maxage together, and documents `no-cache` as "cache for the minimum
+#     TTL" with no word on s-maxage beside it. The pair above is the documented one.
+#   - "Told otherwise" is this script's own invalidation, which already names every one of these
+#     paths. So the invalidation is now what makes a deploy visible, not a courtesy: the script
+#     waits for it to complete and then asks the edge for index.html and js/main.js and compares
+#     their ETags with what it uploaded; and it refuses to deploy the app with no --distribution.
 
 set -euo pipefail
 
@@ -60,9 +83,10 @@ DRY_RUN=0
 MINIFY=1
 REAL=(--esbuild auto)
 PRECOMPRESS=1
+EDGE_CACHE=1
 
 die() { echo "error: $*" >&2; exit 1; }
-usage() { sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,/^# WHY THIS IS A SCRIPT/p' "$0" | sed -e '$d' -e 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -75,6 +99,7 @@ while [ $# -gt 0 ]; do
     --no-minify)    MINIFY=0; shift ;;
     --strip-only)   REAL=(); shift ;;
     --no-precompress) PRECOMPRESS=0; shift ;;
+    --no-edge-cache) EDGE_CACHE=0; shift ;;
     --dry-run)      DRY_RUN=1; shift ;;
     -h|--help)      usage 0 ;;
     *)              die "unknown option: $1 (try --help)" ;;
@@ -84,6 +109,13 @@ done
 [ -n "$BUCKET" ] || die "--bucket is required (try --help)"
 command -v aws >/dev/null || die "the aws CLI is not installed"
 [ -n "$PROFILE" ] && export AWS_PROFILE="$PROFILE"
+
+# What the app files are stored with (THE EDGE KEEPS THE APP, above).
+REVALIDATE="public, max-age=0, must-revalidate, s-maxage=31536000"
+[ "$EDGE_CACHE" = "1" ] || REVALIDATE="no-cache"
+if [ "$EDGE_CACHE" = "1" ] && [ "$WHAT" != "assets" ] && [ "$DRY_RUN" != "1" ] && [ -z "$DISTRIBUTION" ]; then
+  die "the app files are stored with s-maxage=31536000, so the edge keeps them until an invalidation: pass --distribution ID, or --no-edge-cache to store them as plain no-cache"
+fi
 
 SITE="$(cd "$(dirname "$0")/.." && pwd)/site"
 [ -d "$SITE" ] || die "no site/ directory next to this script"
@@ -278,14 +310,14 @@ if [ "$WHAT" != "assets" ]; then
     APP="$BUILT/br"
   fi
   "${SYNC[@]}" "$APP/css" "s3://$BUCKET/css" \
-    --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete ${ENC[@]+"${ENC[@]}"}
+    --cache-control "$REVALIDATE" --content-type "text/css; charset=utf-8" --delete ${ENC[@]+"${ENC[@]}"}
   # --exclude '*.md': the module contract documents the modules for whoever edits them. It is not code
   # and has no business being served as JavaScript.
   "${SYNC[@]}" "$APP/js"  "s3://$BUCKET/js" \
-    --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
+    --cache-control "$REVALIDATE" --content-type "text/javascript; charset=utf-8" \
     --exclude "*.md" --exclude "*.map" --delete ${ENC[@]+"${ENC[@]}"}
   "${SYNC[@]}" "$MAPS/js"  "s3://$BUCKET/js" \
-    --cache-control "no-cache" --content-type "application/json; charset=utf-8" \
+    --cache-control "$REVALIDATE" --content-type "application/json; charset=utf-8" \
     --exclude "*" --include "*.map" --delete
   # THE VENDORED LIBRARIES GO UP WITH THE APP, FROM THE SAME COPY (internal #415, 2026-10-07).
   # vendor/astronomy.js is 412 kB as its author ships it and 177 kB without its documentation (the
@@ -301,7 +333,7 @@ if [ "$WHAT" != "assets" ]; then
   # The Basis transcoder's WebAssembly (vendor/basis/, spec 0056 task 1) is not JavaScript: it is
   # left out of this sync, so that --delete here does not remove it, and sent on its own below.
   "${SYNC[@]}" "$MAPS/vendor" "s3://$BUCKET/vendor" \
-    --cache-control "no-cache" --content-type "application/json; charset=utf-8" \
+    --cache-control "$REVALIDATE" --content-type "application/json; charset=utf-8" \
     --exclude "*" --include "*.map" --delete
   "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
     --exclude "*.wasm" --exclude "*.md" --exclude "*.map" \
@@ -312,9 +344,9 @@ if [ "$WHAT" != "assets" ]; then
   # The gzip copies, for a client without Brotli (the note at the top). Same types, same lifetimes.
   if [ "$PRECOMPRESS" = "1" ]; then
     "${SYNC[@]}" "$BUILT/gz/css" "s3://$BUCKET/_gz/css" \
-      --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete "${GZ[@]}"
+      --cache-control "$REVALIDATE" --content-type "text/css; charset=utf-8" --delete "${GZ[@]}"
     "${SYNC[@]}" "$BUILT/gz/js"  "s3://$BUCKET/_gz/js" \
-      --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" --delete "${GZ[@]}"
+      --cache-control "$REVALIDATE" --content-type "text/javascript; charset=utf-8" --delete "${GZ[@]}"
     "${SYNC[@]}" "$BUILT/gz/vendor" "s3://$BUCKET/_gz/vendor" --exclude "*.wasm" \
       --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete "${GZ[@]}"
     "${SYNC[@]}" "$BUILT/gz/vendor" "s3://$BUCKET/_gz/vendor" --exclude "*" --include "*.wasm" \
@@ -325,7 +357,7 @@ if [ "$WHAT" != "assets" ]; then
   # trip for a cache lifetime is a share that lies. --delete, because a trip that left the
   # registry must not keep a page that opens the app on nothing.
   "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
-    --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
+    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
   # The pages a search engine reads that are not kept in git (spec 0061 task 9): one per notable
   # object, the sitemap and the 404 page, built here from the records and the card's own words
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
@@ -335,15 +367,15 @@ if [ "$WHAT" != "assets" ]; then
   python3 "$HERE/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
   python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
-    --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
+    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
   # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
   # the other pages; the pictures and the SVGs each by their own type, as the textures are.
-  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "$REVALIDATE" \
     --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
-  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "$REVALIDATE" \
     --exclude "*" --include "*.webp" --content-type "image/webp" --delete
-  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "$REVALIDATE" \
     --exclude "*" --include "*.svg" --content-type "image/svg+xml" --delete
   # The root files, each with its own type: the CLI guesses from the extension, and a sitemap
   # served as binary/octet-stream is one a crawler may refuse. No-cache like index.html, so a new
@@ -368,7 +400,7 @@ if [ "$WHAT" != "assets" ]; then
       echo "  would upload $name ($type)"
     else
       aws s3 cp "$path" "s3://$BUCKET/$name" --region "$REGION" \
-        --cache-control "no-cache" --content-type "$type"
+        --cache-control "$REVALIDATE" --content-type "$type"
     fi
   done
 fi
@@ -384,9 +416,29 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
   else
     echo "==> invalidating the app (assets keep their cache)"
   fi
-  aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" \
+  INVALIDATION=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" \
     --paths "${PATHS[@]}" \
-    --output text --query 'Invalidation.Id'
+    --output text --query 'Invalidation.Id')
+  echo "    $INVALIDATION"
+  if [ "$EDGE_CACHE" = "1" ] && [ "$WHAT" != "assets" ]; then
+    # The edge holds the last build for a year unless this invalidation lands, so it is waited for
+    # and then CHECKED: the page and the entry module, asked of the edge, must carry the ETag of
+    # the bytes just uploaded (S3's ETag for these is the MD5 of the object; CloudFront passes it
+    # on, weak when it compressed the body itself). Asked for as a browser asks, with Brotli, so
+    # the answer is the object at this path and not its gzip copy under _gz/.
+    echo "==> waiting for the invalidation to complete"
+    aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION" --id "$INVALIDATION"
+    DOMAIN=$(aws cloudfront get-distribution --id "$DISTRIBUTION" --query 'Distribution.DomainName' --output text)
+    edge_check() {
+      local path="$1" file="$2" want got
+      want=$(python3 -c 'import hashlib,sys; print(hashlib.md5(open(sys.argv[1],"rb").read()).hexdigest())' "$file")
+      got=$(curl -sI --max-time 30 -H 'Accept-Encoding: br' "https://$DOMAIN/$path" | tr -d '\r' | awk 'tolower($1)=="etag:"{print $2}' | sed -e 's/^W\///' -e 's/"//g')
+      [ "$want" = "$got" ] || die "the edge answers $path with ETag '$got', and the file just uploaded is '$want': the old build is still being served. Run the invalidation again: aws cloudfront create-invalidation --distribution-id $DISTRIBUTION --paths '/*'"
+      echo "    the edge serves the new $path"
+    }
+    edge_check index.html "$SITE/index.html"
+    edge_check js/main.js "$APP/js/main.js"
+  fi
   if [ "$WHAT" != "app" ]; then
     echo "    NOTE: textures, models, images, og and audio were uploaded but NOT invalidated --"
     echo "    their names are not content-hashed, so nothing expires them early. If you changed one, run:"
