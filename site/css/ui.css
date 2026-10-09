@@ -6157,8 +6157,13 @@ html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
   align-items: center;
 }
 
-.sr-tripsheet__present {
+.sr-tripsheet__present,
+.sr-tripsheet__keep {
   gap: var(--sp-2);
+}
+
+.sr-tripsheet__keep[aria-busy='true'] {
+  color: var(--sr-text-dim);
 }
 
 .sr-tripsheet__present[aria-pressed='true'] {

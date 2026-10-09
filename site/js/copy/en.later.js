@@ -151,6 +151,18 @@ Object.assign(COPY, {
     updateReady: 'A newer version is ready',
     reload: 'Reload',
   },
+  // "Keep for offline" on a trip's intro (ui/keeptrip.js, internal #551): one action that fetches the
+  // trip's voice, models, maps and music so the service worker has them. Live data is not kept.
+  keepTrip: {
+    keep: 'Keep for offline',
+    keepTitle: 'Save this trip’s voice, models and maps on this device so it plays with no connection',
+    keeping: 'Keeping {done} of {total}',
+    kept: 'Kept for offline',
+    keptTitle: 'Kept on this device. Press to fetch it again.',
+    keptNote: '{n} files, {size}, saved on this device. Live data (weather, storms, satellites) is not kept.',
+    again: 'Try again',
+    failedNote: 'Kept {done} of {total} files. Check the connection and try again.',
+  },
   // ui/autopilot.js (spec 0036): a screen that plays the trips on its own. The mark is the only
   // chrome besides the captions; the gate is the one question it ever asks.
   autopilot: {

@@ -935,6 +935,15 @@ export function createTripFrame(ctx) {
     presentBtn.setAttribute('aria-pressed', present ? 'true' : 'false');
     quiet.appendChild(presentBtn);
     p.appendChild(quiet);
+    // Keep for offline (internal #551): where a service worker keeps what is fetched, one more
+    // quiet button and the line it writes under itself. Fetched late: nothing of it is at boot.
+    if (tour && ctx.net && ctx.net.worker === 'register') {
+      import('./keeptrip.js').then((m) => m.keptRowFor(ctx, tour)).then((k) => {
+        if (!k || !quiet.isConnected) return;
+        quiet.appendChild(k.button);
+        quiet.insertAdjacentElement('afterend', k.note);
+      }).catch(() => { /* no row: the trip is the same without it */ });
+    }
 
     // The stops, as a list a visitor can start from: a row starts the trip at that stop (the same
     // jumpTo a deep link into a later stop uses).
