@@ -183,6 +183,7 @@ check(hint.AUTO_HIDE_MS >= 8000 && hint.AUTO_HIDE_MS <= 15000, `it goes by itsel
 const css = read('site/css/keyhint.css');
 check(!/infinite/.test(css), 'nothing in keyhint.css loops');
 check(/@media \(pointer: coarse\)\s*\{\s*\.sr-keyhint__close\s*\{[^}]*width: 44px;[^}]*height: 44px;/.test(css), 'the close button is a 44 px target on a coarse pointer');
+check(/html\.sr-phone \.sr-keyhint \{[^}]*transition: bottom var\(--sr-slow\)/.test(css), 'on a phone the hint rises with the sheet, not ahead of it (its Close was 44 x 26, #543)');
 check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.sr-keyhint\.is-playing \.sr-keyhint__cap,[\s\S]*?animation: none;/.test(css), 'reduced motion stills every keycap');
 check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition: opacity 120ms linear;/.test(css), 'reduced motion is a 120 ms fade');
 check(/\.sr-keyhint \{[^}]*right: var\(--sr-inset\);[^}]*bottom: var\(--sr-inset\);/.test(css), 'bottom-right, 20 px in');

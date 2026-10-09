@@ -1958,6 +1958,14 @@ export async function boot({ setStatus } = {}) {
     if (ctx.trip && ctx.trip.currentRecordId() === record.id) return;
     writeUrlState({ at: record.id });
   });
+  // `stage` is the map's centre when it is not the Earth's (internal #485): written on every
+  // stage change, cleared on the Earth, so an address without it can be read as the Earth's map
+  // (ui/urlstate.js linkChange). Not during a trip: the trip owns its stages, as it owns `at`.
+  window.addEventListener('sr:stage', (e) => {
+    if (ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle') return;
+    const id = e && e.detail ? e.detail.worldId : stage.worldId;
+    if (id === 'earth') clearUrlState(['stage']); else writeUrlState({ stage: id });
+  });
   // `t` and `rate`, only when the clock is not live (req 5): a link never carries `t=now`, and
   // `t` absent means now. Trailing-edge throttle at one write a second, because a scrub is a
   // goTo() per pointer event and replaceState a hundred times a second is what browsers rate-limit.
