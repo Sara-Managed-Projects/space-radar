@@ -253,6 +253,16 @@ const { idleTripState } = await import(join(JS, 'ui/tripstate.js'));
   check(warm && Number(warm[1]) >= 3000, 'main.js warms the deferred modules at least 3 s after sr:layers-ready');
 }
 
+// 6. THE FONTS the first screen always draws with are preloaded, not found by the stylesheet at
+//    66 to 529 ms (internal #533): the four files tests/test_first_visit_bytes.mjs counts.
+{
+  const html = readFileSync(join(SITE, 'index.html'), 'utf8');
+  for (const f of ['inter-400-latin', 'inter-600-latin', 'barlow-semi-condensed-600-latin', 'jetbrains-mono-400-latin']) {
+    check(new RegExp(`<link rel="preload" href="fonts/${f}\\.woff2" as="font" type="font/woff2" crossorigin>`).test(html), `index.html preloads fonts/${f}.woff2`);
+  }
+  check(!/rel="preload"[^>]*cyrillic/.test(html), 'and preloads no Cyrillic face');
+}
+
 if (problems.length) {
   for (const p of problems) console.error(`::error::${p}`);
   process.exit(1);
