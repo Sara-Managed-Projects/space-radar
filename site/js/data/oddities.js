@@ -89,7 +89,7 @@ export const ODDITIES = [
     "position_class": "inferred",
     "shape": {
       "build": "golf-balls",
-      "budget_tris": 520,
+      "budget_tris": 680,
       "stands_for": "family",
       "drawn_name": "two golf balls and the six-iron head",
       "departure": "the two balls came to rest tens of metres apart at most, which is far smaller than one pixel here, so they are drawn side by side"
@@ -126,7 +126,7 @@ export const ODDITIES = [
     "position_class": "inferred",
     "shape": {
       "build": "wrapped-photo",
-      "budget_tris": 130,
+      "budget_tris": 290,
       "stands_for": "family",
       "drawn_name": "a shrink-wrapped family snapshot lying in the dust",
       "departure": "the print is drawn blank. The photograph on it is the Duke family's and this map does not reproduce it"
@@ -164,7 +164,7 @@ export const ODDITIES = [
     "position_class": "inferred",
     "shape": {
       "build": "disc-stack",
-      "budget_tris": 690,
+      "budget_tris": 820,
       "stands_for": "variant",
       "drawn_name": "the stack of nickel discs and a tardigrade beside it",
       "departure": "the 1 mm stack is thickened and laminated in four bands, not twenty-five, and the half-millimetre tardigrade is nothing like to scale"

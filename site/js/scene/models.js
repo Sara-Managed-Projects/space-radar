@@ -3499,7 +3499,7 @@ function buildWrappedPhoto() {
   glint.position.set(-0.13, 0.03, -0.07);
   g.add(glint);
 
-  g.add(regolith(0.45, null, 12));
+  g.add(regolith(0.45, null, 12, true));
   return g;
 }
 
@@ -3572,7 +3572,7 @@ function buildDiscStack() {
   t.scale.setScalar(0.85);
   g.add(t);
 
-  g.add(regolith(0.48));
+  g.add(regolith(0.48, null, 14, true));
   return g;
 }
 
@@ -3627,7 +3627,7 @@ function buildGolfBalls() {
 
   // A SMALL disc: selected in the browser at 260 px, a 0.5 ground read as a grey blob with two
   // dots on it. The dust is context for the objects, not the object.
-  g.add(regolith(0.38));
+  g.add(regolith(0.38, null, 12, true));
   return g;
 }
 
