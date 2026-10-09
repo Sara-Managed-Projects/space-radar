@@ -20,6 +20,7 @@ Run: python3 tests/test_growth.py
 from __future__ import annotations
 
 import copy
+import os
 import re
 import hashlib
 import subprocess
@@ -197,10 +198,20 @@ def main() -> int:
         result = subprocess.run(
             [sys.executable, "scripts/check_registry.py"],
             cwd=work, capture_output=True, text=True,
+            env={**os.environ, "CHECK_REGISTRY_NO_SITE": "1"},  # this copy has no site/js/main.js
         )
         if result.returncode != 0:
             print("FAIL: the registry refuses a legitimate new world.\n")
             print(result.stdout or result.stderr)
+            return 1
+        if "NOT CHECKED, no site/js/main.js" not in result.stdout:
+            print("FAIL: a tree with no site/js/main.js skipped the list-file check without saying so.\n")
+            return 1
+        # ... and without the explicit opt-out the same tree is refused (it used to pass in silence).
+        silent = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=work, capture_output=True, text=True,
+                                env={k: v for k, v in os.environ.items() if k != "CHECK_REGISTRY_NO_SITE"})
+        if silent.returncode == 0 or "site/js/main.js is missing" not in silent.stdout:
+            print("FAIL: a tree with no site/js/main.js passed check_registry.py without CHECK_REGISTRY_NO_SITE=1.\n")
             return 1
 
         # A mirror is a real dependency, so it must NOTICE. A --check that passed here would mean

@@ -76,6 +76,17 @@ const FEED = [
   check(R.spotDirection(list[0], [0, 1, 0], t0) === null, 'the Earth over the pole of the axes: no meridian, no spot');
   check(R.regionsFresh(t0, t0 + 6 * 86400000) && !R.regionsFresh(t0, t0 + 8 * 86400000) && !R.regionsFresh(t0, t0 - 30 * 86400000) && !R.regionsFresh(NaN, t0), `a list is drawn within ${R.MAX_AGE_DAYS} days of its own day and not beyond`);
   check(R.SUN_REGIONS_URL === 'https://services.swpc.noaa.gov/json/solar_regions.json', 'the address is SWPC\'s');
+  // Our saved copy is the first route (internal #525): registry row, sources.js entry and the reader agree.
+  const SRC = await import(join(JS, 'data/sources.js'));
+  const regYaml = readFileSync(join(ROOT, 'registry/sources.yaml'), 'utf8');
+  const row = regYaml.slice(regYaml.indexOf(`  - id: ${R.SUN_REGIONS_SOURCE_ID}\n`));
+  check(SRC.SOURCES[R.SUN_REGIONS_SOURCE_ID] && SRC.SOURCES[R.SUN_REGIONS_SOURCE_ID].url === R.SUN_REGIONS_URL && row.includes(`url: ${R.SUN_REGIONS_URL}\n`) && /parser: swpc_solar_regions/.test(row.slice(0, 500)), 'registry row, sources.js entry and the module name the same address');
+  const asked = [];
+  const copy = await R.readSunRegions({ load: async (id) => { asked.push(id); return { data: [{ observed_date: '2026-10-06', region: 1 }] }; } });
+  check(asked.join() === 'swpc-solar-regions' && Array.isArray(copy), 'the page reads the saved copy through load(), by registry id');
+  let why = null;
+  try { await R.readSunRegions({ load: async () => ({ data: null, error: 'could not look' }) }); } catch (e) { why = e.message; }
+  check(why === 'could not look', 'with neither a copy nor SWPC it rejects with the reason');
 }
 
 // --- 3. the module: the flat disc far away, the detailed Sun close, the flat disc under the latch -----

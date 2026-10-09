@@ -1072,8 +1072,11 @@ export function horizonsTimeScale(text) {
   if (typeof text !== 'string') return 'TDB';
   const s = text.indexOf('$$SOE');
   const head = s < 0 ? text : text.slice(0, s);
-  const col = /^\s*JD[A-Za-z]*,\s*Calendar Date[^\n]*$/m.exec(head); // the column-name line only
-  if (col && /JDUT|\(UT\)/.test(col[0]) && !/JDTDB|\(TDB\)/.test(col[0])) return 'UT';
+  // The column-name line only. Horizons pads the names: the real UT header reads "JDUT ," and
+  // "Calendar Date (UT )" (fetched 2026-10-09, tests/fixtures/horizons/ut-and-tdb.json); the first
+  // version of this line wanted "JDUT," and read every real UT table as TDB, taking 69 s off twice.
+  const col = /^\s*JD[A-Za-z]*\s*,\s*Calendar Date[^\n]*$/m.exec(head);
+  if (col && /JDUT|\(UT~?\s*\)/.test(col[0]) && !/JDTDB|\(TDB\s*\)/.test(col[0])) return 'UT';
   return 'TDB'; // JDTDB, or an older fixture with no header at all: as it always was
 }
 

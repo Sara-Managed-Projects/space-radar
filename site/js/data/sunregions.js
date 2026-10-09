@@ -25,6 +25,20 @@
 // at all: a list for today says nothing about the Sun of another month.
 
 export const SUN_REGIONS_URL = 'https://services.swpc.noaa.gov/json/solar_regions.json';
+/** The registry row (registry/sources.yaml) that holds the same address: our saved copy is read first. */
+export const SUN_REGIONS_SOURCE_ID = 'swpc-solar-regions';
+
+/**
+ * NOAA's list as the page should read it (internal #525): from our saved copy through data/sources.js
+ * load(), which asks SWPC only when there is none. Resolves to the parsed JSON, or rejects with the reason
+ * (a Sun with no spots drawn is what the card then describes). `opts.load` is for tests.
+ */
+export async function readSunRegions(opts = {}) {
+  const loadFn = opts.load || (await import('./sources.js')).load;
+  const r = await loadFn(SUN_REGIONS_SOURCE_ID);
+  if (!r || r.data == null) throw new Error(String((r && r.error) || 'the sunspot list could not be read'));
+  return r.data;
+}
 /** Carrington's synodic rotation period, days: the Sun's turn as seen from the Earth. */
 export const CARRINGTON_SYNODIC_DAYS = 27.2753;
 /** Past this many days from the list's own day the groups are not drawn. */

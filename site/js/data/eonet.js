@@ -31,6 +31,8 @@
 // It is drawn from its first report until three days past the moment it was fetched: scrubbed a
 // month on, nobody knows whether the fire still burns.
 
+import { load } from './sources.js';
+
 const DEG = Math.PI / 180;
 const DAY_MS = 86400e3;
 const BASE = 'https://eonet.gsfc.nasa.gov/api/v3/events';
@@ -144,13 +146,32 @@ async function getText(url, fetchImpl) {
   }
 }
 
+/** The registry rows (registry/sources.yaml) that hold the two lists above, in the same order as EONET_URLS. */
+export const EONET_SOURCE_IDS = ['eonet-fires', 'eonet-volcanoes-ice'];
+
 /**
- * Both lists, read now. One of the two failing still gives the other's events; both failing
- * rejects, and the layer says it could not look (main.js `one`).
+ * Both lists. The page's own path (no `fetch` given) asks OUR saved copy first, through data/sources.js
+ * load(), which reads the publisher only when there is no usable copy (internal #525): one request to our
+ * own host instead of two to NASA's, and the layer draws while NASA is down. A copy is as old as the
+ * harvester's run, so events are kept until three days past WHEN IT WAS FETCHED, not past now: the oldest
+ * copy used sets the clock. With `opts.fetch` the two URLs are read directly, as tests do.
+ * One of the two failing still gives the other's events; both failing rejects, and the layer says it could
+ * not look (main.js `one`).
  */
 export async function fetchEarthEvents(opts = {}) {
-  const fetchImpl = opts.fetch || globalThis.fetch;
   const nowMs = Number.isFinite(opts.nowMs) ? opts.nowMs : Date.now();
+  if (!opts.fetch) {
+    const loadFn = opts.load || load;
+    const got = await Promise.allSettled(EONET_SOURCE_IDS.map((id) => loadFn(id)));
+    const have = got.filter((g) => g.status === 'fulfilled' && g.value && g.value.data != null);
+    if (!have.length) {
+      const bad = got.map((g) => (g.status === 'fulfilled' ? g.value && g.value.error : g.reason && g.reason.message)).find(Boolean);
+      throw new Error(String(bad || 'EONET could not be read'));
+    }
+    const fetchedAt = Math.min(nowMs, ...have.map((g) => (Number.isFinite(g.value.fetchedAt) ? g.value.fetchedAt : nowMs)));
+    return parseEonet(have.map((g) => g.value.data), { nowMs: fetchedAt });
+  }
+  const fetchImpl = opts.fetch;
   const got = await Promise.allSettled(EONET_URLS.map((u) => getText(u, fetchImpl)));
   const bodies = got.filter((g) => g.status === 'fulfilled').map((g) => g.value);
   if (!bodies.length) throw new Error(String((got[0].reason && got[0].reason.message) || 'EONET could not be read'));

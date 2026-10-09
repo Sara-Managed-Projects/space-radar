@@ -39,6 +39,50 @@ for (const r of rows) {
 check(rows.every((r, i) => i === 0 || rows[i - 1].tMs <= r.tMs), 'sorted by time');
 check(F.BODIES.join() === 'Moon,Mercury,Venus,Mars,Jupiter,Saturn', 'the Moon and the five bright planets');
 
+// The bright stars (bulk 2, internal #359): the Moon and the planets are paired with the ones the ecliptic runs
+// near. The star's place here is the table's J2000 place moved to the date with the engine's precession; it is
+// checked against the engine's OWN star path (Astronomy.DefineStar + Equator), which is a different route.
+{
+  const A = await import(join(ROOT, 'site/vendor/astronomy.js'));
+  check(F.PAIR_STARS.map((st) => st.name).sort().join() === 'Aldebaran,Antares,Pollux,Regulus,Spica', `the stars paired are the five the ecliptic runs near (${F.PAIR_STARS.map((st) => st.name)})`);
+  const reg = F.PAIR_STARS.find((st) => st.name === 'Regulus');
+  check(Math.abs(F.eclipticLatDeg(reg.raDeg, reg.decDeg) - 0.46) < 0.05, 'Regulus is within half a degree of the ecliptic, as the registry\'s card for it says');
+  const obs = new A.Observer(London.latDeg, London.lonDeg, 0);
+  const slot = new Map(F.PAIR_STARS.map((st, i) => [st.name, `Star${i + 1}`])); // the engine's own user stars
+  F.PAIR_STARS.forEach((st, i) => A.DefineStar(`Star${i + 1}`, st.raDeg / 15, st.decDeg, 1000));
+  const worst = { v: 0 };
+  for (const iso of ['2026-10-12T04:00:00Z', '2027-03-03T22:00:00Z', '2028-01-20T01:30:00Z']) {
+    const date = new Date(iso);
+    const moon = A.Equator('Moon', date, obs, true, true);
+    for (const st of F.PAIR_STARS) {
+      const eq = A.Equator(slot.get(st.name), date, obs, true, true);
+      const dRa = (moon.ra - eq.ra) * 15 * Math.cos((moon.dec + eq.dec) / 2 / 180 * Math.PI);
+      const want = Math.hypot(dRa, moon.dec - eq.dec);
+      const got = F.findSep('Moon', st.name, date.getTime(), London);
+      if (want < 3) worst.v = Math.max(worst.v, Math.abs(want - got));
+    }
+  }
+  check(worst.v < 0.05, `the Moon's separation from each star agrees with the engine's own star path (worst ${worst.v.toFixed(4)} degrees)`);
+  const starRows = F.findConjunctions({ fromMs: from, days: 400, observer: London, stepMin: 60 }).filter((r) => r.star);
+  check(starRows.length >= 2, `400 days from London hold close pairs with a star (${starRows.length})`);
+  for (const r of starRows) {
+    const tag = `${r.a}+${r.b} ${new Date(r.tMs).toISOString()}`;
+    check(F.BODIES.includes(r.a) && F.PAIR_STARS.some((st) => st.name === r.b) && r.sepDeg <= F.MAX_SEP_DEG, `${tag}: a body and a bright star within two degrees`);
+    check(F.findSep(r.a, r.b, r.tMs - 10 * 60e3, London) >= r.sepDeg - 1e-6 && F.findSep(r.a, r.b, r.tMs + 10 * 60e3, London) >= r.sepDeg - 1e-6, `${tag}: it is the closest`);
+    check(r.altDeg > 0 && r.sunAltDeg < F.SUN_LIMIT_DEG, `${tag}: up, in the dark`);
+    // ...and the separation itself, at the row's instant, from the engine's own star path.
+    const date = new Date(r.tMs);
+    const a1 = A.Equator(r.a, date, obs, true, true);
+    const b1 = A.Equator(slot.get(r.b), date, obs, true, true);
+    const dRa = (a1.ra - b1.ra) * 15 * Math.cos((a1.dec + b1.dec) / 2 / 180 * Math.PI);
+    const want = Math.hypot(dRa, a1.dec - b1.dec);
+    check(Math.abs(want - r.sepDeg) < 0.03, `${tag}: the row's ${r.sepDeg.toFixed(3)} degrees against the engine's own star path ${want.toFixed(3)}`);
+  }
+  check(starRows.some((r) => r.a === 'Moon'), 'the Moon passes a bright star in the dark at least once in 400 days');
+  const sample = { kind: 'conjunction', record: null, star: true, tMs: from + 3 * 864e5, a: 'Moon', b: 'Regulus', sepDeg: 0.9, altDeg: 40, azDeg: 120 };
+  check(N.rowParts(sample, from).title === 'Moon and Regulus', 'a star row reads as the others do: "Moon and Regulus"');
+}
+
 // No place, no rows; the worker's entry answers the same and never throws.
 check(F.findConjunctions({ fromMs: from, observer: null }).length === 0, 'no place, no rows');
 const w = W.runFind({ id: 7, fromMs: from, days: 3, observer: London });

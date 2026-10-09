@@ -471,6 +471,9 @@ tours:
 
       - id: roadster
         target: {record: tesla-roadster}
+        # read 2026-10-09, https://science.nasa.gov/image-article/apod-2018-february-10-roadster-starman-planet-earth:
+        # "Falcon Heavy rocket on February 6" ... "Internationally designated 2018-017A" (NASA APOD, 10 Feb 2018); Wikipedia: "A copy of Douglas Adams' novel The Hitchhiker's Guide to the Galaxy is in the glove box."
+        # (card figure = page figure: 2018 (only number) = launch 6 Feb 2018, designation 2018-017A (NASA APOD page, read today))
         card:
           title: "A car, going round the Sun"
           body: >-
@@ -518,6 +521,9 @@ tours:
         target: {world: sun}
         distance_km: 9460730472580.8
         drift_deg: 15
+        # read 2026-10-09, https://science.nasa.gov/mission/voyager/voyager-1/:
+        # "moving at a velocity of 38,026.79 mph (17.0 km/second) relative to the Sun."
+        # (card figure = page figure: about eighteen thousand years = computed: 1 ly = 9.4607e12 km; 9.4607e12 km / 17.0 km/s = 5.565e11 s = 17,630 years (at 38,026.79 mph, same speed) ; rounded to "about eighteen thousand" (up from 17.6 thousand, 2% high) ; one year for sunlight to reach 1 ly = definition of a light-year (no page needed))
         card:
           title: "The Sun, from one light-year"
           body: >-
@@ -676,6 +682,9 @@ tours:
         frame_radii: 6
         drift_deg: 12
         chapter: "From the ground"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html:
+        # "Volumetric mean radius (km) 6371.000" ... "equatorial diameter of 7,926 miles (12,756 kilometers)"
+        # (card figure = page figure: 12 742 km across = 2 x 6371.0 km NASA volumetric mean radius = 12,742 (exact; computed by doubling, no NASA page prints 12,742) ; NASA Earth facts page gives the equatorial diameter 12,756 km (not the same quantity))
         card:
           title: "The Earth"
           body: >-
@@ -689,6 +698,9 @@ tours:
         climb: true
         drift: none
         chapter: "The Solar System"
+        # read 2026-10-09, https://science.nasa.gov/moon/facts/:
+        # "The Moon is an average of 238,855 miles (384,400 kilometers) away." ... "Between the Earth and the Moon, light takes 1.3 seconds"
+        # (card figure = page figure: 384 400 km = 384,400 km (NASA Moon facts; fact sheet semimajor axis 0.3844e6 km) ; 27.3 days = 27.3217 days (NASA fact sheet "Revolution period"), rounded to one decimal; NASA Moon facts page says "27 Earth days" ; 1.3 seconds = 1.3 seconds (NASA Webb early-universe page))
         card:
           title: "The Moon's orbit"
           body: >-
@@ -715,6 +727,9 @@ tours:
         climb: true
         drift: none
         chapter: "The Solar System"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/oort-cloud/facts/:
+        # "occupies space at a distance between 5,000 and 100,000 astronomical units" ... "NASA doesn't have direct images of the Oort Cloud."
+        # (card figure = page figure: 5 000 to 100 000 times the Earth's distance from the Sun = 5,000 to 100,000 AU (1 AU = Earth-Sun distance, per NASA page) ; "never seen in place" = NASA "doesn't have direct images")
         card:
           title: "The Oort cloud's distance"
           body: >-
@@ -730,6 +745,9 @@ tours:
         climb: true
         drift_deg: 10
         chapter: "The stars"
+        # read 2026-10-09, https://www.eso.org/public/images/potw1604a/:
+        # ESO: "It is our closest neighbour, at a distance of just 4.2 light-years." ... "invisible to the naked eye, is Proxima Centauri"
+        # (card figure = page figure: 4.2 light-years = 4.2 (ESO); NASA Hubble says "just over four light-years" ; two companions = NASA "its two companions, Alpha Centauri A and B" ; A and B visible to naked eye = ESO contrast sentence above, NASA APOD "fourth brightest star in the night sky")
         card:
           title: "The nearest stars"
           body: >-
@@ -745,6 +763,9 @@ tours:
         climb: true
         drift: none
         chapter: "The stars"
+        # read 2026-10-09, https://www.esa.int/Space_in_Member_States/United_Kingdom/From_mobile_phones_to_missions_to_Mars_Marconi_s_wireless_magic_made_it_possible:
+        # "At 12.30 p.m. on that day, 100 years ago, in Saint John's, Newfoundland" (page dates the signal 12 December 1901, from Poldhu, Cornwall)
+        # (card figure = page figure: 12 December 1901 = 12 December 1901 (ESA) ; one light-year a year = definition of light-year/speed of light (no page needed))
         card:
           title: "How far our radio has got"
           body: >-
@@ -760,6 +781,9 @@ tours:
         climb: true
         drift_deg: 10
         chapter: "The galaxies"
+        # read 2026-10-09, https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/:
+        # NASA: "Our galaxy probably contains 100 to 400 billion stars" ... ESO: "fine-tune the distance to Sagittarius A*, finding it to be 27 000 light-years away."
+        # (card figure = page figure: between one and four hundred billion stars = 100 to 400 billion (NASA) ; about 27 000 light-years from the centre = 27 000 (ESO eso2119; NASA Hubble page "center of the Milky Way is located 27,000 light-years away"))
         card:
           title: "The Milky Way"
           body: >-
@@ -789,6 +813,9 @@ tours:
         climb: true
         drift: none
         chapter: "The edge"
+        # read 2026-10-09, https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_and_the_cosmic_microwave_background:
+        # ESA: "It formed about 380,000 years after the Big Bang." ... "the visible Universe is at least 93 billion light years across."
+        # (card figure = page figure: about 380 000 years after the Big Bang = 380,000 (ESA Planck; NASA Physics of the Cosmos page also "just 380,000 years after the Big Bang") ; 46.5 billion light-years = half of ESA's 93 billion across (46.5 exactly); NASA expert says "about 92 billion light-years across" (46 radius))
         card:
           title: "The oldest light"
           body: >-
@@ -869,6 +896,9 @@ tours:
         # stopDistanceKm asks scene/systems.js): on a phone held upright that is about 0.4 au.
         distance_km: 14959787
         drift_deg: 20
+        # read 2026-10-09, https://science.nasa.gov/exoplanets/trappist1/:
+        # The most studied planetary system, aside from our own solar system, lies about 40 light-years away. ... just a bit larger than the planet Jupiter
+        # (card figure = page figure: forty light-years = about 40 light-years ; a little bigger than Jupiter = "just a bit larger than the planet Jupiter" (star's minimum size, NASA) ; seven planets = seven, b through h ; "about the size of the Earth" = radii 0.755-1.129 Earth ; all seven found crossing the star = NASA shows the seven "transiting in front of their red dwarf star" (the page does not state detection method in so many words))
         card:
           title: "Seven worlds round a small red star"
           body: >-
@@ -882,6 +912,9 @@ tours:
         stage: system-trappist-1
         frame_radii: 8
         key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-e/:
+        # Planet Radius 0.92 x Earth ... Planet mass 0.692 Earths ... orbital period 6.1 days
+        # (card figure = page figure: six days = 6.1 days ; nine tenths as wide = 0.92 Earth radii ; seven tenths as heavy = 0.692 Earth masses ; d "as wide as the Moon" = not stated on any page; derived from catalog (d radius 0.788 Re = ~10,040 km; e-d gap at closest 0.02925-0.02227 = 0.00698 AU = ~1.04 million km) gives ~0.55 degrees vs Moon ~0.52 degrees, consistent)
         card:
           title: "TRAPPIST-1 e"
           body: >-
@@ -895,6 +928,9 @@ tours:
         stage: system-trappist-1
         frame_radii: 8
         key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-b/:
+        # 1.116 x Earth ... it takes 1.5 days to complete one orbit of its star ... is 0.01154 AU from its star
+        # (card figure = page figure: 1.7 million km = 0.01154 AU x 149.6 million km = 1.73 million km (rounded down) ; over thirty times closer than Mercury = Mercury semimajor axis 57.909 million km / 1.73 = 33.5 ; a day and a half = 1.5 days ; a tenth wider = 1.116 Earth radii)
         card:
           title: "TRAPPIST-1 b"
           body: >-
@@ -908,6 +944,9 @@ tours:
         stage: system-trappist-1
         frame_radii: 8
         key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-c/:
+        # 1.097 x Earth ... 1.308 Earths ... it takes 2.4 days to complete one orbit of its star
+        # (card figure = page figure: just under two and a half days = 2.4 days ; a little wider than Earth (like b) = 1.097 (b 1.116) ; about a third heavier = 1.308 Earth masses (b 1.374 "like b" fine) ; second out = 0.0158 AU, after b 0.01154)
         card:
           title: "TRAPPIST-1 c"
           body: >-
@@ -920,6 +959,9 @@ tours:
         stage: system-trappist-1
         frame_radii: 8
         key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-d/:
+        # 0.788 x Earth ... 0.388 Earths ... 4 days
+        # (card figure = page figure: four days = 4 days ; four fifths of Earth's width = 0.788 (0.8) ; less than two fifths of mass = 0.388 (<0.4) ; smallest but one = radius 0.788 is second smallest after h 0.755)
         card:
           title: "TRAPPIST-1 d"
           body: >-
@@ -932,6 +974,9 @@ tours:
         stage: system-trappist-1
         frame_radii: 8
         key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-f/:
+        # 1.045 x Earth ... Its mass is 1.039 Earths ... it takes 9.2 days to complete one orbit of its star
+        # (card figure = page figure: nine days = 9.2 days ; a few per cent over on both = +4.5% radius, +3.9% mass ; nearest to Earth's size and mass of the seven = true against the other six catalog entries (b 1.116/1.374, c 1.097/1.308, d 0.788/0.388, e 0.92/0.692, g 1.129/1.321, h 0.755/0.326))
         card:
           title: "TRAPPIST-1 f"
           body: >-
@@ -956,6 +1001,9 @@ tours:
         stage: system-trappist-1
         frame_radii: 8
         key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-h/:
+        # 0.755 x Earth ... it takes 18.8 days to complete one orbit of its star
+        # (card figure = page figure: three quarters of Earth's width = 0.755 ; nineteen days = 18.8 days ; b goes round twelve times = 18.8 / 1.5 = 12.5 from page values (precise 18.77/1.51 = 12.4), "twelve" is the floor ; outermost = 0.06189 AU, largest orbit ; smallest = 0.755 smallest radius)
         card:
           title: "TRAPPIST-1 h"
           body: >-
@@ -1027,6 +1075,9 @@ tours:
         # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
         # a new one lands with the stop's title, which for a new stage is just after the black.
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1966-045A:
+        # Engines were turned off at a height of 3.4 m above the lunar surface and the spacecraft fell freely ... lander site is probably at least 10 km away, direction unknown.
+        # (card figure = page figure: 3 February 1966 = Luna 9 "3 February 1966" (table) ; "four months earlier" = Luna 9 3 Feb 1966 vs Surveyor 1 2 June 1966 (page dates; 4 months computed) ; at least 10 km = "probably at least 10 km away, direction unknown" (table note f) ; 3.4 m = 3.4 m (Surveyor 1 page))
         card:
           title: "The first soft landing anyone can find"
           # NSSDCA 1966-006A: Luna 9 made the first soft landing, "preceding the U.S. Surveyor 1
@@ -1046,6 +1097,9 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C:
+        # after 21 hours, 36 minutes on the lunar surface ... traversed a total distance of about 250 meters, both ranging up to about 100 meters from the LM.
+        # (card figure = page figure: 21 hours 36 minutes = 21 hours, 36 minutes ; about 250 metres = about 250 meters ; about 100 m = up to about 100 meters from the LM)
         card:
           title: "The first people"
           # NSSDCA 1969-059C (the Apollo 11 lunar module): the LM "lifted off from the Moon ...
@@ -1098,6 +1152,9 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A:
+        # after 75 hours on the lunar surface ... covered 30 km using the Lunar Roving Vehicle ... Harrison H. Schmitt, the first scientist on the Moon
+        # (card figure = page figure: 75 hours = 75 hours (Apollo 17 page) ; 30 km = 30 km ; first scientist = "first scientist on the Moon" ; "robots landed three more times" = after Apollo 17 (11 Dec 1972) the table lists Luna 21 (15 Jan 1973), Luna 23 (6 Nov 1974), Luna 24 (18 Aug 1976) as landers = 3 (Lunokhod 2 is a rover riding Luna 21) ; 37 years = Luna 24 18 Aug 1976 to Chang'e 3 14 Dec 2013 = 37.3 years (table dates; the page states no span, computed))
         card:
           title: "Seventy-five hours, then a long quiet"
           # NSSDCA 1972-096C: "Schmitt was the first scientist-astronaut to walk on the Moon"; the
@@ -1135,6 +1192,9 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Chapter two: the long quiet ends"
+        # read 2026-10-09, https://www.isro.gov.in/Chandrayaan3_Details.html:
+        # Mission life (lander and rover): One lunar day (~14 Earth days) [ISRO] ... found the impact site (70.8810°S, 22.7840°E, 834 m elevation) [NASA]
+        # (card figure = page figure: September 2019 = lander contact lost "Sept. 7 in India, Sept. 6 in the United States" (NASA Vikram Found) ; about 110 km = 108 km great-circle between NASA's Chandrayaan-2 impact site (70.8810 S, 22.7840 E) and Chandrayaan-3 (table 69.3741 S, 32.32 E gives 108.2 km; ISRO prime site 69.3676 S, 32.3481 E gives 108.6 km), rounded to "about 110" ; one lunar day about 14 Earth days = "One lunar day (~14 Earth days)" (ISRO) ; 4 September 2023 = ISRO log entry dated September 04, 2023: "The lander and rover are in sleep mode.")
         card:
           title: "Near the south pole"
           # NSSDCA 2019-042A (Chandrayaan-2): "The lander, named Vikram"; contact was lost during
@@ -1169,6 +1229,9 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Chapter three: the first companies"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2025-010A:
+        # captured by Firefly's Blue Ghost Mission 1 lunar lander on March 14, 2025 ... a phenomenon first documented by former NASA astronaut Eugene Cernan on Apollo 17
+        # (card figure = page figure: ten NASA instruments = "10 NASA science and technology instruments" (NASA) and "ten payloads" (NSSDC) ; 14 March 2025 = "March 14, 2025" (NASA blog, "total lunar eclipse from the Moon's surface") ; two days later (16 March) sunset = NSSDC: landed 2 March, "continued 5 hours into lunar night after local sunset. The last communication was received at about 23:15 UT on March 16" and NASA "concluded its mission March 16" (so sunset on 16 March; "two days later" is arithmetic) ; Apollo 17 = Apollo 17 (NASA release))
         card:
           title: "An eclipse, seen from the Moon"
           # NASA, "NASA Science Continues After Firefly's First Moon Mission Concludes" (18 March
@@ -1195,6 +1258,9 @@ tours:
         # sites on it, and the house back light would make it a crescent.
         key_light_deg: 45
         chapter: "Epilogue: the whole Moon"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html:
+        # Last Updated: 13 August 2025, DRW [table header]; the page states no total, it lists 6 rows typed "Crewed Landing" and 32 landing rows
+        # (card figure = page figure: last updated August 2025 = "Last Updated: 13 August 2025" ; six with people aboard = 6 rows typed "Crewed Landing" (Apollo 11, 12, 14, 15, 16, 17) ; 28 landings = my count of the table: 18 "Soft Landing" + 6 "Lander" + 6 "Crewed Landing" = 30, minus the two rover rows typed as soft landings (Yutu Rover, Yutu 2) = 28 landers; the two "Rover" rows (Lunokhod 1, 2) are separate from those 30 ; 19 on this map = site-computed, not checked, as instructed ; "Luna 9 ... nobody knows exactly where it is" = note f: "lander site is probably at least 10 km away, direction unknown")
         card:
           title: "Twenty-eight landings, nineteen on this map"
           # The NSSDCA table, "Last Updated: 13 August 2025", counted 2026-09-22: 28 rows typed
@@ -1252,6 +1318,9 @@ tours:
         # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
         # a new one lands with the stop's title, which for a new stage is just after the black.
         chapter: "Chapter one: Jupiter's moons"
+        # read 2026-10-09, https://science.nasa.gov/jupiter/moons/io/:
+        # "Io is caught in a tug-of-war between Jupiter's massive gravity and the smaller but precisely timed pulls" ... "two neighboring moons that orbit farther from Jupiter—Europa and Ganymede" ... "hundreds of volcanoes"
+        # (card figure = page figure: 42 hours = NSSDC fact sheet orbital period 1.769138 days x 24 = 42.46 h, rounded down to 42 ; two moons further out = Europa and Ganymede (NASA Io page) ; hundreds of volcanoes = "hundreds of volcanoes" (NASA Io page))
         card:
           title: "Io, the moon Jupiter never lets rest"
           # Io's lap is 1.769 days (NASA's Jovian satellite fact sheet, the same table
@@ -1392,6 +1461,9 @@ tours:
         # to yield (the line to Neptune is at most 140 degrees from the Sun's; the cone reaches 16).
         key_light_deg: 100
         chapter: "Chapter three: the last planet"
+        # read 2026-10-09, https://www.nasa.gov/history/30-years-ago-voyager-2-explores-neptune/:
+        # "pass about 25,000 miles from Triton about five hours later." ... "found surface temperatures of -391degrees Fahrenheit (-235 degrees Celsius)."
+        # (card figure = page figure: one spacecraft visited Neptune = NASA Triton page "the only spacecraft to fly past Neptune and Triton" ; 25 August 1989 = JPL "on Aug. 25, 1989, NASA's Voyager 2 spacecraft made a close flyby of Neptune" ; five hours after = NASA history "about five hours later" ; forty thousand km = 25,000 miles = 40,234 km, rounded to 40,000 ; minus 235 degrees = NASA Triton page -235 C (OK) ; geysers = "Voyager 2 also found Triton has active geysers" (OK))
         card:
           title: "Triton, going the wrong way round"
           # Wikipedia, Voyager 2, read 2026-09-22: "Voyager 2's closest approach to Neptune
@@ -1483,6 +1555,9 @@ tours:
         # browser 2026-09-22, and at 172 au the Sun is 0.01 px across, so aiming the camera at it
         # only turned Voyager 1 side on and put nothing in the frame.
         chapter: "Epilogue: looking back"
+        # read 2026-10-09, https://science.nasa.gov/mission/voyager/voyager-1/:
+        # "March 5, 1979: Jupiter flyby" ... "closest approach to Saturn was at 23:46 UT on Nov. 12, 1980" ... "Earth was a crescent only 0.12 pixel in size."
+        # (card figure = page figure: March 1979 Jupiter = NASA "March 5, 1979: Jupiter flyby - closest approach" ; November 1980 Saturn = NASA "Nov. 12, 1980" ; more than 170 times Earth's distance from the Sun = JPL Horizons Voyager 1 range from the Sun 171.995 au on 2026-10-09 (172.005 on 10-10), so "more than 170" is true and the figure is larger than at the NASA page's last figure ; 1990 = NASA Photojournal "Taken on Feb. 14, 1990" ; 0.12 pixel = NASA Photojournal "only 0.12 pixel in size" (OK))
         card:
           title: "Voyager 1, and everything behind it"
           # Wikipedia, Voyager 1, read 2026-09-22: launched "September 5, 1977", Jupiter on
@@ -3313,6 +3388,9 @@ tours:
         drift_deg: 3
         drift_rate_deg_s: 0.25
         chapter: "One you can point to"
+        # read 2026-10-09, https://chandra.harvard.edu/photo/2009/cygx1/:
+        # "Originally discovered in 1964, Cygnus X-1 has been observed intensely since." ... "led to the conclusion that it was a black hole, the first such identification."
+        # (card figure = page figure: found in 1964 = Chandra (NASA) "Originally discovered in 1964" (OK) ; first thing astronomers agreed was a black hole = "the first such identification" (OK))
         card:
           title: "A black hole you can point to"
           body: >-
@@ -3378,6 +3456,9 @@ tours:
         drift_deg: 8
         drift_rate_deg_s: 0.6
         chapter: "The first picture"
+        # read 2026-10-09, https://www.jpl.nasa.gov/news/black-hole-image-makes-history/:
+        # "Catching its shadow involved eight ground-based radio telescopes around the globe" ... "This black hole is 6.5 billion times the mass of the Sun."
+        # (card figure = page figure: six and a half billion Suns = JPL "6.5 billion times the mass of the Sun" (OK; EHT paper (6.5 +/- 0.7) x 10^9 solar masses) ; eight radio telescopes = JPL "eight ground-based radio telescopes" (OK))
         card:
           title: "The first picture of a black hole"
           body: >-
@@ -3518,6 +3599,9 @@ tours:
         drift_deg: 4
         drift_rate_deg_s: 0.3
         chapter: "Clouds where stars form"
+        # read 2026-10-09, https://science.nasa.gov/missions/webb/a-cosmic-tarantula-caught-by-nasas-webb/:
+        # In this mosaic image stretching 340 light-years across ... tens of thousands of never-before-seen young stars
+        # (card figure = page figure: tens of thousands of young stars = "tens of thousands" (NASA caption; ESA/NASA headline text says "Thousands of never-before-seen young stars") ; 340 light-years across = 340 (NASA caption and asset description) ; infrared colours chosen = NASA lists assigned filter colours (F090W blue, F200W green, F335M orange, F444W red))
         card:
           title: "What Webb saw in the Tarantula"
           body: >-
@@ -3535,6 +3619,9 @@ tours:
         drift_deg: 4
         drift_rate_deg_s: 0.3
         chapter: "Clouds where stars form"
+        # read 2026-10-09, https://www6.slac.stanford.edu/news/2025-06-23-ever-changing-universe-revealed-first-imagery-nsf-doe-vera-c-rubin-observatory:
+        # The article is dated June 23, 2025 ... ceaselessly scan the sky nightly for 10 years ... every three to four nights
+        # (card figure = page figure: June 2025 = 23 June 2025 (first-look release) ; ten years = 10 years (LSST) ; every few nights = "every three to four nights" (NOIRLab 2025 release) / "every few nights" (NOIRLab image caption wording) ; Chile = Cerro Pachon, Chile)
         card:
           title: "The Trifid, from the newest telescope"
           body: >-
@@ -3781,6 +3868,9 @@ tours:
         needs_layer: deep-space
         distance_km: 400000
         chapter: "Moving one"
+        # read 2026-10-09, https://www.esa.int/Space_Safety/Hera/ESA_s_Hera_targets_early_arrival_at_Didymos_asteroids:
+        # Hera is on track to arrive at Didymos in November 2026 ... a well-understood and repeatable technique for protecting Earth
+        # (card figure = page figure: November 2026 = November 2026 (rendezvous burns start October 2026, arrival November) ; "measure its mass" = ESA page fetched does not state it (the fetch summaries did not mention mass), no number involved ; survey of the pair = "humankind's first thorough survey of a binary asteroid")
         card:
           title: "Hera, going to check"
           body: >-
@@ -4324,6 +4414,9 @@ tours:
         over: [0, 180]
         drift_deg: 12
         chapter: "Artemis"
+        # read 2026-10-09, https://www.nasa.gov/news-release/nasas-artemis-ii-crew-eclipses-record-for-farthest-human-spaceflight/:
+        # At its farthest point, crew inside the Orion spacecraft will have traveled about 252,756 miles. ... farthest distance previously set by the Apollo 13 mission in 1970
+        # (card figure = page figure: more than 406,000 km = 252,756 miles x 1.609344 = 406,771 km (NASA gives miles only; conversion mine) ; further than Apollo 13 = NASA: surpassed Apollo 13 record (248,655 miles, 400,171 km) ; swung once round the far side = crewed lunar flyby, did not land ("Crewed Lunar Flyby" on nasa.gov/mission/artemis-ii/))
         card:
           title: "Round the far side"
           body: >-

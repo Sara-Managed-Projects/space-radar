@@ -2149,8 +2149,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
       if (tiers.latched) detail.latch();
       ctx.sunDetail = detail;
       if (tilesSaveData || tiers.latched) return;
-      import('./data/sunregions.js').then((r) => fetch(r.SUN_REGIONS_URL, { mode: 'cors', credentials: 'omit' })
-        .then((res) => (res.ok ? res.json() : Promise.reject(new Error('HTTP ' + res.status))))
+      import('./data/sunregions.js').then((r) => r.readSunRegions() // our saved copy first (internal #525)
         .then((json) => {
           const list = r.parseSunRegions(json);
           detail.setRegions(list);
