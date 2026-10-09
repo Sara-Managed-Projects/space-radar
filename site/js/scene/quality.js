@@ -96,7 +96,8 @@ export const IDLE_AFTER_MS = 2000;
  *   climb       a climb between stages, or the opening, is running
  *   selection   something is selected: its pulse, its brackets, its orbit line, a model fading in
  *   camera      the camera's matrices are not last frame's (a drag, a flight, inertia, a zoom, a resize)
- *   layer       a layer that animates by itself is on: the aurora, lightning, the wind, an overlay
+ *   layer       a layer that animates by itself is doing so now: the aurora's folds on screen,
+ *               lightning with strikes in its map, the wind, a data overlay (main.js layerAnimating)
  *   loading     the first visit is not over, or the GPU has a texture or a geometry it did not have
  *               last frame (a map landing with its cross-fade, a model, a new layer)
  * @returns {string[]}

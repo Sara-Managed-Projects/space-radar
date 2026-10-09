@@ -2242,6 +2242,29 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (seenCamera[17] !== p[5]) { seenCamera[17] = p[5]; moved = true; }
     return moved;
   }
+  // A layer that moves by itself, and is doing so NOW. Not "the layer is switched on": the aurora
+  // and the lightning are on for every first visit, and a rule that read the switch kept the loop
+  // at every frame for good (MEASURED in CI on 2026-10-09: the reason at rest was `layer`, always).
+  //   - the aurora moves while it is DRAWN with its folds (a live forecast, the layer on, the
+  //     Earth big enough on screen): with no forecast, or the Earth a dot, there is nothing to move;
+  //   - lightning moves while a map with strikes in it is held: a flash is a third of a second of
+  //     flicker and must have every frame. A phone and a data-saving connection hold none;
+  //   SO THE CAP IS RARE TODAY on a first visit that has a forecast: the oval's folds keep every
+  //   frame. Whether the folds may run at twenty frames a second at rest is a question for an eye,
+  //   not for this file (the internal issue beside #520); until it is answered they get all sixty.
+  //   - the wind and a data overlay, once asked for, are taken to be moving.
+  // (The pulsars' pulses are drawn on the ladder's stages only, which `stage` already answers.)
+  // Asked four times a second: the aurora's state() builds an object.
+  let layerMoving = true;
+  let layerAskedAt = -Infinity;
+  function layerAnimating(nowMs) {
+    if (nowMs - layerAskedAt < 250) return layerMoving;
+    layerAskedAt = nowMs;
+    const aurora = ctx.aurora && typeof ctx.aurora.state === 'function' ? ctx.aurora.state() : null;
+    const flashes = ctx.isLayerOn('lightning') && ctx.weather && typeof ctx.weather.perMinute === 'function' ? ctx.weather.perMinute() : 0;
+    layerMoving = !!(aurora && aurora.visible && aurora.folds) || flashes > 0 || !!ctx.wind || !!ctx.earthOverlay;
+    return layerMoving;
+  }
   function gpuChanged() {
     const info = ctx.renderer && ctx.renderer.info && ctx.renderer.info.memory;
     const now = info ? info.textures * 100000 + info.geometries : 0;
@@ -2451,8 +2474,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         climb: !!((ctx.opening && ctx.opening.live) || (ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) || (ctx.imagine && ctx.imagine.active)),
         selected: !!ctx.selected(),
         cameraMoved: cameraMoved(),
-        // (The pulsars' pulses are drawn on the ladder's stages only, which `stage` already answers.)
-        animatedLayer: ctx.isLayerOn('aurora') || ctx.isLayerOn('lightning') || !!ctx.wind || !!ctx.earthOverlay,
+        animatedLayer: layerAnimating(nowReal),
         loading: !window.__srLayersReady || gpuChanged(),
       }));
     }

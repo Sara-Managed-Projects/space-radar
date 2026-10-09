@@ -66,6 +66,19 @@ check(/heroes\.update\(t, \{ frameMs: capped \? freeFrameMs : frameMs,/.test(loo
 check(/film: !!ctx\.renderMode,/.test(call) && /trip: !!\(st && st\.phase !== 'idle'\),/.test(call) && /autopilot: !!\(ctx\.autopilot && ctx\.autopilot\.engaged\),/.test(call) && /sky: !!\(ctx\.skyView && ctx\.skyView\.active\),/.test(call),
   'the film clock, a trip, the reel and the sky view are each asked by their own flag');
 check(/clockMode: clock\.mode,\s*\n\s*clockRate: clock\.rate,/.test(call), 'and the clock by its mode and its rate');
+// A layer counts while it is MOVING, not while it is switched on: the aurora and the lightning are
+// on for every first visit, and CI's browser showed the switch alone kept the loop at full rate.
+check(/animatedLayer: layerAnimating\(nowReal\),/.test(call), 'the layers are asked whether they are moving now');
+check(/aurora && aurora\.visible && aurora\.folds/.test(loop) && /ctx\.isLayerOn\('lightning'\) && ctx\.weather && typeof ctx\.weather\.perMinute === 'function' \? ctx\.weather\.perMinute\(\) : 0/.test(loop) && /flashes > 0 \|\| !!ctx\.wind \|\| !!ctx\.earthOverlay/.test(loop),
+  'the aurora by its folds on screen, lightning by the strikes in its map, the wind and an overlay by being there');
+check(/let layerMoving = true;/.test(loop), 'and until they have been asked, they are taken to be moving');
+{
+  // The two modules answer in the shape the loop reads.
+  const aurora = readFileSync(join(ROOT, 'site/js/scene/aurora.js'), 'utf8');
+  const lightning = readFileSync(join(ROOT, 'site/js/scene/weather/lightning.js'), 'utf8');
+  check(/visible: drawing\.visible,\s*\n\s*folds: drawing\.folds,/.test(aurora), 'scene/aurora.js state() says whether it is visible and whether its folds are drawn');
+  check(/perMinute: \(\) => \(model \? Math\.round\(st\.perMin\)/.test(lightning) && /perMinute: \(\) => \(off \|\| api\.failed \? 0 : undefined\)/.test(main), 'lightning says how many strikes a minute its map holds, and the stand-in says none');
+}
 const wakes = (/for \(const type of \[([^\]]+)\]\) \{\s*\n\s*window\.addEventListener\(type, wake, \{ passive: true, capture: true \}\)/.exec(loop) || [, ''])[1];
 for (const type of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'touchstart', 'touchmove', 'resize', 'hashchange']) check(wakes.includes(`'${type}'`), `a ${type} wakes the loop`);
 // A capped frame really would have tripped the latch: this is why it is kept away from it.
