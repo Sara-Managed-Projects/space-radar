@@ -189,5 +189,20 @@ check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.
   for (const sel of ['\n.sr-tape {', '\n.sr-today__grid {', '\n.sr-debris {', '\n.sr-mission {']) check(at(sel) === 0, `${sel.trim()} is a top-level rule, not inside a media query`);
 }
 
+// Two marks never cover each other's box, and the glyph goes back to its time (axe target-size, #472).
+{
+  const { spreadMarks } = await import(join(JS, 'ui/scrubber.js'));
+  const gap = (xs, w) => { const sh = spreadMarks(xs, w); const at = xs.map((x, i) => x + sh[i]).sort((a, b) => a - b); return Math.min(...at.slice(1).map((v, i) => v - at[i])); };
+  check(spreadMarks([100], 28)[0] === 0, 'a lone mark does not move');
+  check(spreadMarks([100, 200, 300], 28).every((v) => v === 0), 'marks that are apart do not move');
+  check(gap([100, 107], 28) >= 28 && gap([100, 100, 103], 28) >= 28, 'a sunset beside a pass, and three together, end at least a box apart');
+  const sh = spreadMarks([107, 100], 28);
+  check(sh[1] === 0 && sh[0] === 21, `the order given does not matter and the earlier mark stays on its time (${sh})`);
+  check(Math.max(...spreadMarks([100, 100, 100, 100, 100, 100], 28)) <= 84, 'no mark is pushed more than three boxes from its time');
+  check(spreadMarks([], 28).length === 0, 'no marks, no shifts');
+  const ui = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  check(/margin-left: calc\(-5px \+ var\(--sr-mark-shift, 0px\)\)/.test(ui) && /margin-left: calc\(-2px \+ var\(--sr-mark-shift, 0px\)\)/.test(ui), 'the glyph is drawn back by the shift (both shapes)');
+}
+
 if (problems.length) { console.error('scrubber FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`scrubber ok: an hour is 20 px, labels on round UTC instants, ${marks.length} marks from the Coming up list kept once seen, hatched past a week, the tape a month back and a year on`);

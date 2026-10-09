@@ -71,6 +71,28 @@ const MARK_EDGE_PX = 22;
 const MARKS_KEPT = 40;
 const DAY_MS = 86400e3;
 
+/**
+ * Where each mark's BUTTON stands so that no two overlap (internal #472: axe `target-size` on a
+ * sunset beside a pass, whose 28 px boxes covered each other down to 7 px). The glyph stays on its
+ * time (the caller draws it back by the shift); only the box that takes the press moves. Marks
+ * are swept left to right, each at least `w` px from the one before, and none is pushed further
+ * than `cap` px from its time: past that the cluster is left overlapping rather than lie about
+ * when something happens. Pure. `xs` is the marks' times as pixels, in any order.
+ * @returns {number[]} the shift of each, in the order given
+ */
+export function spreadMarks(xs, w, cap = 3 * w) {
+  const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+  const out = new Array(xs.length).fill(0);
+  let edge = -Infinity;
+  for (const i of order) {
+    const at = Math.max(xs[i], edge + w);
+    const shift = Math.min(at - xs[i], cap);
+    out[i] = shift;
+    edge = xs[i] + shift;
+  }
+  return out;
+}
+
 /** Where an instant sits on a tape `width` wide whose centre is `centreMs`. */
 export function tapeX(tMs, centreMs, unit, width) {
   const s = SCALES[unit] || SCALES.hour;
@@ -359,12 +381,16 @@ export function createScrubber(ctx, pill) {
     root.classList.toggle('is-rough', Math.abs(tMs - anchor) > FINE_MS);
     // The marks: one button each, made once and moved.
     const seen = new Set();
-    for (const m of marks) {
-      const x = tapeX(m.tMs, tMs, unit, width);
+    // The buttons' boxes must not cover each other: a sunset beside a pass. The shift moves the box;
+    // the glyph is drawn back to the mark's own time (css --sr-mark-shift).
+    const boxW = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 44 : 28;
+    const drawn = marks.map((m) => ({ m, x: tapeX(m.tMs, tMs, unit, width) })).filter(({ x }) => x >= MARK_EDGE_PX && x <= width - MARK_EDGE_PX);
+    const shifts = spreadMarks(drawn.map((d) => d.x), boxW);
+    for (let k = 0; k < drawn.length; k++) {
+      const { m, x } = drawn[k];
       // Not in the tape's last MARK_EDGE_PX either side: there the mark's 44 px target is clipped
       // by the tape and shares its pixels with the step button beside it, so a tap on a launch
       // eight hours off was "forward one hour" (internal #419 item 6, seen at 390 px).
-      if (x < MARK_EDGE_PX || x > width - MARK_EDGE_PX) continue;
       seen.add(m.id);
       let b = markNodes.get(m.id);
       if (!b) {
@@ -378,7 +404,8 @@ export function createScrubber(ctx, pill) {
       }
       const label = t(T.markTitle, { what: m.what });
       if (b.title !== label) { b.title = label; b.setAttribute('aria-label', label); }
-      b.style.transform = `translateX(${x}px)`;
+      b.style.transform = `translateX(${x + shifts[k]}px)`;
+      b.style.setProperty('--sr-mark-shift', `${-shifts[k]}px`);
       b.classList.toggle('is-here', Math.abs(x - width * CURSOR_AT) < 1.5);
     }
     for (const [id, b] of markNodes) if (!seen.has(id)) { b.remove(); markNodes.delete(id); }
