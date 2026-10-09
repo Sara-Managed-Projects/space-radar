@@ -158,7 +158,13 @@ export async function run(a) {
           mkdirSync(dirname(target), { recursive: true });
           writeFileSync(target, packed);
           // The source's own time, so `aws s3 sync` (size and time) uploads what changed and not all of it.
-          utimesSync(target, stat.atime, stat.mtime);
+          // EXCEPT A COPY AS BIG AS THE FILE. `aws s3 sync` skips an object of the same size unless
+          // the source is newer, and it cannot see `Content-Encoding`: a small incompressible file
+          // whose Brotli copy is the same number of bytes (18 of the star tiles,
+          // data/startiles/n8/*.bin, internal #514) kept its old time, matched the raw object the
+          // bucket already held, and stayed stored without `Content-Encoding: br`. Such a copy
+          // keeps the time it was written (now), so the sync sends it; it is a few kilobytes.
+          if (packed.length !== bytes.length) utimesSync(target, stat.atime, stat.mtime);
         }
       }
       sum.files++;

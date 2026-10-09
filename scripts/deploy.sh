@@ -206,6 +206,9 @@ if [ "$WHAT" != "app" ]; then
     # deletes what its filter excludes): the pictures as they are, the catalogues compressed. The
     # `--exclude "v1/*"` is LAST in the second, because a later filter wins and `*.json` would
     # otherwise put the harvester's snapshots back in reach of --delete.
+    # `aws s3 sync` compares size and time and cannot see Content-Encoding, so a Brotli copy the same
+    # size as the raw object already stored (18 star tiles) would be skipped: precompress.mjs gives
+    # such a copy a fresh time, which is why this sync is by size and time and never --size-only.
     precompress "$SITE" data
     "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*" \
       --exclude "*.bin" --exclude "*.json" --exclude "*.csv" --exclude "*.txt"

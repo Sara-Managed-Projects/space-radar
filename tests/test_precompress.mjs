@@ -82,6 +82,33 @@ check(Math.abs(statSync(join(tmp, 'br/data/stars.bin')).mtimeMs - when.getTime()
 const again = await run({ from: src, dirs: ['js', 'css', 'data'], out: join(tmp, 'br2'), quality: 11, cache: join(tmp, 'cache') });
 check(again.br === sum.br && readFileSync(join(tmp, 'br2/js/main.js')).equals(readFileSync(join(tmp, 'br/js/main.js'))), 'a second run from the cache writes the same bytes');
 check(readdirSync(join(tmp, 'cache')).length === 10, 'the cache holds one Brotli and one gzip entry per file');
+// A copy as big as its file is sent again (internal #514 leftover, 2026-10-09). `aws s3 sync` skips
+// an object of the same size unless the source is newer, and it cannot see Content-Encoding: 18
+// star tiles (data/startiles/n8/*.bin) compress to exactly their own size, kept the file's old time
+// and stayed stored raw after the deploy that turned Brotli on. Those copies must carry a NEW time;
+// the others keep the file's. Real tiles are used: it is the real bytes that tie in size.
+{
+  const dir = join(SITE, 'data/startiles/n8');
+  const same = readdirSync(dir).filter((f) => f.endsWith('.bin')).filter((f) => {
+    const b = readFileSync(join(dir, f));
+    return zlib.brotliCompressSync(b, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11, [zlib.constants.BROTLI_PARAM_SIZE_HINT]: b.length } }).length === b.length;
+  });
+  check(same.length > 0, 'at least one n8 star tile compresses to its own size (the fixture of this check)');
+  const s2 = join(tmp, 'tie');
+  mkdirSync(join(s2, 'data/startiles/n8'), { recursive: true });
+  const old = new Date('2026-01-02T03:04:05Z');
+  for (const f of [same[0], '0.bin']) {
+    cpSync(join(dir, f), join(s2, 'data/startiles/n8', f));
+    utimesSync(join(s2, 'data/startiles/n8', f), old, old);
+  }
+  await run({ from: s2, dirs: ['data'], out: join(tmp, 'br3'), quality: 11, cache: null });
+  const mt = (f) => statSync(join(tmp, 'br3/data/startiles/n8', f)).mtimeMs;
+  check(statSync(join(tmp, 'br3/data/startiles/n8', same[0])).size === statSync(join(s2, 'data/startiles/n8', same[0])).size, `${same[0]}: the fixture ties in size`);
+  check(Date.now() - mt(same[0]) < 60000, `${same[0]}: a Brotli copy as big as its file gets a new time, or sync skips it and it stays stored raw`);
+  check(Math.abs(mt('0.bin') - old.getTime()) < 2000, '0.bin: a smaller copy keeps its file\'s time, so an unchanged file is not sent again');
+  // And deploy.sh still hands the built copies to sync (the time is only read there).
+  check(/precompress "\$SITE" data/.test(readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8')) && !/--size-only/.test(readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8')), 'deploy.sh syncs the built copies by size and time, never --size-only');
+}
 // --strict: an unknown type in a code folder stops the run; the module contract does not.
 let threw = '';
 writeFileSync(join(src, 'js/shader.glsl'), 'void main(){}');
