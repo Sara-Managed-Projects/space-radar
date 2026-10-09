@@ -937,12 +937,26 @@ export function createTripFrame(ctx) {
     p.appendChild(quiet);
     // Keep for offline (internal #551): where a service worker keeps what is fetched, one more
     // quiet button and the line it writes under itself. Fetched late: nothing of it is at boot.
-    if (tour && ctx.net && ctx.net.worker === 'register') {
-      import('./keeptrip.js').then((m) => m.keptRowFor(ctx, tour)).then((k) => {
-        if (!k || !quiet.isConnected) return;
-        quiet.appendChild(k.button);
-        quiet.insertAdjacentElement('afterend', k.note);
-      }).catch(() => { /* no row: the trip is the same without it */ });
+    // The worker is registered some seconds after the layers (ui/offline.js) and takes the page a moment
+    // later, so an intro drawn before that (a link straight to a trip; seen 2026-10-10, offline, with no
+    // row at all) asks again every second and a half for half a minute, while it is still on screen.
+    if (tour) {
+      let tries = 0;
+      const later = () => { if (typeof setTimeout === 'function') setTimeout(ask, 1500); };
+      const ask = () => {
+        if (tries++ > 20) return;
+        if (!quiet.isConnected) { if (tries < 3) later(); return; } // not in the page yet, or the intro has gone
+        if (ctx.net && ctx.net.worker !== 'register') return; // decided: no worker here
+        if (!ctx.net) { later(); return; }
+        import('./keeptrip.js').then((m) => m.keptRowFor(ctx, tour)).then((k) => {
+          if (!quiet.isConnected || quiet.querySelector('.sr-tripsheet__keep')) return;
+          if (!k) { later(); return; } // registered, not yet in charge of this page
+          quiet.appendChild(k.button);
+          quiet.insertAdjacentElement('afterend', k.note);
+        }).catch(() => { /* no row: the trip is the same without it */ });
+      };
+      // Asked in a later turn: the row is put in the page by whoever called this, after it returns.
+      if (typeof setTimeout === 'function' && (!ctx.net || ctx.net.worker === 'register')) setTimeout(ask, ctx.net ? 0 : 1500);
     }
 
     // The stops, as a list a visitor can start from: a row starts the trip at that stop (the same
