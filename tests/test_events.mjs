@@ -255,6 +255,28 @@ const auckland = place(-36.8485, 174.7633);
   const med = (xs) => xs.slice().sort((a, b) => a - b)[xs.length >> 1];
   notes.push(`predictPasses() for seven days of the ISS: median ${med(cold).toFixed(0)} ms cold, ${med(warm).toFixed(2)} ms reusing the hour's list`);
   check(med(warm) < 5, `a second ask within the hour reuses the list (${med(warm).toFixed(2)} ms)`);
+  // The Coming up list asks every minute (ui/next.js): the day of passes is worked out once a quarter of
+  // an hour for one place and one set of elements, not each time (a 1.5 to 3.4 s frame a minute, 2026-10-10).
+  {
+    const { PASS_MEMO_MS, passWorkCount } = await import(join(JS, 'data/events.js'));
+    const from = Date.parse('2026-09-13T16:00:00Z');
+    const rows = (ms, obs = madridObs, recs = stations) => buildEvents(recs, ms, { observer: obs }).filter((e) => e.type === 'station-pass');
+    const n0 = passWorkCount();
+    let t0 = performance.now(); const first = rows(from); const coldMs = performance.now() - t0;
+    t0 = performance.now(); const again = rows(from + 60e3); const warmMs = performance.now() - t0;
+    check(first.length > 0, 'the list has a pass of the station over Madrid in the day after 13 September 16:00');
+    check(again.length === first.length && again.every((e, i) => e.t === first[i].t), 'a minute later the same passes, at the same times');
+    check(passWorkCount() === n0 + 1, `a minute later the day of passes is not worked out again (${passWorkCount() - n0} time)`);
+    check(PASS_MEMO_MS === 15 * 60e3, 'the passes are kept a quarter of an hour');
+    const moved = rows(from + 120e3, { ...madridObs, latDeg: 60, latRad: 60 * Math.PI / 180 });
+    check(passWorkCount() === n0 + 2 && JSON.stringify(moved.map((e) => e.t)) !== JSON.stringify(first.map((e) => e.t)), 'another place is another list');
+    rows(from + 180e3); rows(from + 180e3 + PASS_MEMO_MS + 1);
+    check(passWorkCount() === n0 + 4, 'back at the first place, and then past the quarter hour: worked out each time');
+    rows(from);
+    check(passWorkCount() === n0 + 5, 'a clock put back works the passes out afresh');
+    check(rows(from + 26 * 3600e3 - 1).length >= 0 && rows(from + 6 * 60e3).every((e) => e.t > from - 3600e3), 'no row of the kept list is from before the list');
+    notes.push(`a day of station passes for the Coming up list: ${coldMs.toFixed(0)} ms, ${warmMs.toFixed(2)} ms a minute later`);
+  }
 }
 
 // 8. The nearest-city helper -------------------------------------------------------------------------

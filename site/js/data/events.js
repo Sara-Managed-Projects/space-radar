@@ -214,14 +214,38 @@ export function approachItem(r, nowMs, horizonMs) {
   return null;
 }
 
+// THE PASSES ARE WORKED OUT ONCE A QUARTER OF AN HOUR, NOT ONCE A MINUTE. ui/next.js rebuilds its list
+// every 60 s, and with a place set that was a day of passes for some 180 satellites each time: MEASURED
+// 2026-10-10 on an Iris Plus 640 laptop as one frame of 1.5 to 3.4 s a minute (the "three-second stall
+// on the galaxy rung" of the roof trip was this, landing wherever the trip happened to be). A day of
+// passes does not change in a minute, so the answer is kept for the same place, the same elements and a
+// clock within PASS_MEMO_MS after the moment it was worked out for; a pass that has ended is left out.
+export const PASS_MEMO_MS = 15 * 60e3;
+let passMemo = null;
+let passWork = 0;
+/** How many times a day of passes has been worked out (tests/test_events.mjs counts, rather than times, the memo). */
+export const passWorkCount = () => passWork;
 function passItems(records, nowMs, observer) {
   const out = [];
   if (!validObserver(observer)) return out;
   const withOrbits = (Array.isArray(records) ? records : []).filter((r) => r && r.satrec && (r.layer === 'stations' || r.layer === 'visual'));
   if (!withOrbits.length) return out;
+  let epochs = 0;
+  for (const r of withOrbits) epochs += Number(r.satrec.jdsatepoch) || 0;
+  const key = [observer.latRad, observer.latDeg, observer.lonRad, observer.lonDeg, observer.altKm, withOrbits.length, withOrbits[0].id, epochs].join('|');
+  if (passMemo && passMemo.key === key && nowMs >= passMemo.atMs && nowMs - passMemo.atMs < PASS_MEMO_MS) {
+    return passMemo.rows.filter((row) => row.endMs > nowMs).map((row) => ({ ...row.item }));
+  }
   try {
+    passWork += 1;
     const passes = predictPasses(withOrbits, observer, nowMs, 24).filter((p) => p.visible === true);
-    for (const p of passes) out.push({ kind: 'pass', record: p.record, tMs: p.startMs, peakEl: p.peakEl });
+    const rows = [];
+    for (const p of passes) {
+      const item = { kind: 'pass', record: p.record, tMs: p.startMs, peakEl: p.peakEl };
+      out.push(item);
+      rows.push({ item: { ...item }, endMs: Number.isFinite(p.endMs) ? p.endMs : p.startMs + 15 * 60e3 });
+    }
+    passMemo = { key, atMs: nowMs, rows };
   } catch { /* a pass we could not compute is a row we do not print */ }
   return out;
 }

@@ -152,6 +152,68 @@ return (async () => {
     });
   }
 
+  // -------------------------------------------------------------------------------------------- edge
+  // The roof trip, every join timed frame by frame, then "Go home" from the end card: each gap over
+  // 300 ms with the stage it fell on and what the renderer held before and after it.
+  async function edgeJob(h, res, name) {
+    const ctx = h.ctx; const W = h.w(); const doc = h.doc;
+    ctx.setObserver(PLACE);
+    if (ctx.loadAfterFirstVisit) await Promise.race([ctx.loadAfterFirstVisit().catch(() => {}), sleep(15000)]);
+    const info = () => { const m = ctx.renderer.info; return `g${m.memory.geometries} t${m.memory.textures} p${m.programs ? m.programs.length : 0}`; };
+    let prev = 0; let cur = null; let go = true; let last = info();
+    const tick = (t) => {
+      if (!go) return;
+      if (prev && cur) {
+        const dt = t - prev; cur.dt.push(dt);
+        const now = info();
+        if (dt > 300) cur.gaps.push({ ms: Math.round(dt), at: Math.round(performance.now() - cur.t0), stage: ctx.stage.worldId, before: last, after: now });
+        last = now;
+      }
+      prev = t; W.requestAnimationFrame(tick);
+    };
+    W.requestAnimationFrame(tick);
+    const begin = (n) => { cur = { name: n, dt: [], gaps: [], t0: performance.now() }; };
+    const end = () => { const j = cur; cur = null; const st = stats(j.dt); return { join: j.name, frames: st.n, p50: st.p50, p95: st.p95, max: st.max, over100: j.dt.filter((x) => x > 100).length, gaps: j.gaps }; };
+    const plan = await ctx.trip.start('roof-to-the-edge');
+    await until(() => ctx.trip.state.phase === 'intro', 20000);
+    res.joins = [];
+    ctx.trip.play();
+    for (let n = 0; n < plan.count; n++) {
+      begin(`to-${n + 1}`);
+      if (n > 0) ctx.trip.next();
+      await until(() => ['dwell', 'held'].includes(ctx.trip.state.phase) && ctx.trip.state.index === n, 60000, 50);
+      await sleep(n === 6 ? 4500 : 1500);   // on the stellar rung long enough for the Milky Way's prewarm
+      const j = end(); j.stop = ctx.trip.state.stopId; j.stage = ctx.stage.worldId; res.joins.push(j);
+      if (['milky-way', 'local-group'].includes(ctx.trip.state.stopId)) { res[`galaxy@${ctx.trip.state.stopId}`] = { visible: ctx.galaxy.group ? ctx.galaxy.group.visible : null, children: ctx.galaxy.group ? ctx.galaxy.group.children.map((c) => `${c.name || c.type}:${c.visible}:${c.geometry && c.geometry.attributes.position ? c.geometry.attributes.position.count : 0}`) : null }; await h.shot(`${name}-${ctx.trip.state.stopId}`, 600); }
+    }
+    ctx.trip.next();
+    await until(() => ctx.trip.state.phase === 'outro', 30000, 50);
+    await sleep(1200);
+    const home = [...doc.querySelectorAll('.sr-tripsheet button')].find((b) => /go home/i.test(b.textContent || ''));
+    res.homeButton = home ? text(home) : [...doc.querySelectorAll('.sr-tripsheet button')].map((b) => text(b)).join(' | ');
+    if (home) {
+      begin('home');
+      home.click();
+      const t0 = Date.now();
+      await until(() => ctx.stage.worldId === 'earth', 40000, 50);
+      const arrived = Date.now() - t0;
+      await sleep(600);
+      await h.shot(`${name}-home-arriving`, 0);
+      await until(() => !ctx.cameraRig.state.flying, 20000, 100);
+      await sleep(4000);
+      const j = end(); j.earthAfterMs = arrived; j.stage = ctx.stage.worldId; j.stars = ctx.stars3d && ctx.stars3d.count ? ctx.stars3d.count() : null; res.joins.push(j);
+      await h.shot(`${name}-home-earth`, 300);
+      // Out again to the stars from the Earth: the 3D stars are where the sky sphere's are.
+      try { ctx.setStage('stellar'); await sleep(3500); await h.shot(`${name}-stellar-again`, 300); } catch { /* stays */ }
+    }
+    go = false;
+  }
+  if (mode === 'edge') {
+    return run(async () => {
+      for (const who of (q.get('who') || 'int,main').split(',')) await job(who, who === 'main' ? '../main/?sw=0&tier=1' : './?sw=0&tier=1', (h, r) => edgeJob(h, r, who));
+    });
+  }
+
   // --------------------------------------------------------------------------------------------- air
   async function windJob(h, res, name) {
     const ctx = h.ctx;
