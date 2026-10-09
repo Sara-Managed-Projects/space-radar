@@ -413,6 +413,10 @@ jobs:
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"
         run: node tests/test_autopilot_holds.mjs
+      - name: "The hero layer gives every geometry back over laps of the strangest-things records (internal #546)"
+        run: node tests/test_hero_dispose.mjs
+      - name: "Keep for offline: every trip's file list is real, in a folder the worker keeps, fetched three at a time (internal #551)"
+        run: node tests/test_keeptrip.mjs
       - name: "Every flight of a trip ends in its own time: slow frames, a taken camera, a lost arrival, the way home (internal #322, #304)"
         run: node tests/test_trip_flight_ends.mjs
       # Spec 0068 task 1: the trip's picture under its card and over its intro, lazy and after the

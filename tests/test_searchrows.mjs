@@ -53,6 +53,34 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   check(R.describe({ id: 'a11', name: 'Apollo 11', klass: 'site', frame: 'moon-fixed', meta: {} }, null).kind === COPY.searchRows.kinds.landing && R.describe({ id: 'ksc', name: 'KSC', klass: 'site', frame: 'earth-fixed', meta: {} }, null).kind === 'Place', 'a site on the Moon is a landing site');
   check(R.whereNow(recs[0], { observer: null }) === null && R.whereNow({ id: 'earth', klass: 'world' }, up) === null, 'no place, or the Earth itself: nothing said');
   check(R.whereNow(recs[0], { ...up, satAltAz: () => { throw new Error('x'); } }) === null, 'a position that cannot be worked out says nothing');
+  // A probe, a comet and an asteroid are found where they are round the Sun (internal #551).
+  {
+    const at = { altDeg: 33, azDeg: 270 };
+    const env = { ...up, helioAltAz: (r) => (r.id === 'gone' ? null : at) };
+    for (const klass of ['probe', 'comet', 'asteroid']) {
+      const r = R.whereNow({ id: klass, klass, name: klass }, env);
+      check(r && r.up === true && r.compass === 'west', `a ${klass} at 33 degrees due west is up, to the west (${JSON.stringify(r)})`);
+    }
+    check(R.whereNow({ id: 'gone', klass: 'probe' }, env) === null, 'a probe with no position says nothing');
+    check(R.whereNow({ id: 'p', klass: 'probe' }, up) === null, 'and with no way to ask, nothing');
+    check(R.whereNow({ id: 'p', klass: 'probe' }, { ...env, helioAltAz: () => ({ altDeg: -5, azDeg: 10 }) }).up === false, 'below the horizon is not up');
+    check(R.describe({ id: 'c', klass: 'comet', name: 'C/2025 X' }, env).where === 'up now, west', `the row says it ("${R.describe({ id: 'c', klass: 'comet', name: 'C/2025 X' }, env).where}")`);
+    // The real conversion (whereEnv's), against a body whose place is known: the Sun is a world, so
+    // compare a heliocentric record placed at the Earth's own position -- nothing to point at.
+    // helioAltAz as the app builds it: a rock 1e7 km from the Earth along the Sun's direction is
+    // where the Sun is (to well within the "up / low / below" a row can tell apart).
+    const t = Date.parse('2026-06-21T12:00:00Z');
+    const place = { latRad: 0.9, lonRad: 0.1 };
+    const real = await R.whereEnv({ observer: place, clock: { now: () => t } });
+    const earth = (await import(join(JS, 'propagate/frames.js'))).worldHelioEclKm('earth', t);
+    const n = Math.hypot(earth.x, earth.y, earth.z);
+    const sunward = { x: earth.x - (earth.x / n) * 1e7, y: earth.y - (earth.y / n) * 1e7, z: earth.z - (earth.z / n) * 1e7 };
+    const rock = { id: 'rock', klass: 'asteroid', name: 'Rock', propagator: 'static', frame: 'sun-inertial', pos: sunward };
+    const there = real.helioAltAz(rock);
+    const sun = real.bodyAltAz('sun');
+    check(there && sun && Math.abs(there.altDeg - sun.altDeg) < 1 && Math.abs(((there.azDeg - sun.azDeg + 540) % 360) - 180) < 1, `a rock sunward of the Earth stands where the Sun does (${JSON.stringify(there)} against ${JSON.stringify(sun)})`);
+    check(real.helioAltAz({ id: 'far', klass: 'probe', propagator: 'static', frame: 'moon-fixed', pos: { x: 1, y: 1, z: 1 } }) === null, 'a position in a frame it cannot turn into a direction says nothing');
+  }
   // One row for the station's modules.
   const hits = findMatches(index, 'iss').hits.map((h) => ({ ...h, row: R.describe(h.record, null) }));
   check(hits.length === 2 && R.mergeSame(hits).length === 1 && R.mergeSame(hits)[0].record.id === 'sat-25544', '"iss" is one row, the hand-picked record standing for its modules');
