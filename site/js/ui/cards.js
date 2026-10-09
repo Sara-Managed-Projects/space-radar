@@ -79,7 +79,7 @@ import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
-import { generatedLine, planetFacts, starRows } from './systemcard.js';
+import { generatedLine, planetFacts, starRows, glowRows } from './systemcard.js';
 import { setSystemRows } from './cardfacts.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
@@ -111,7 +111,13 @@ const generatedMember = (record) => {
 };
 setSystemRows({
   planet: (record) => { const m = generatedMember(record); return m && m.planet ? planetFacts(m.system, m.planet) : null; },
-  star: (record) => { const m = generatedMember(record); return m && !m.planet ? starRows(m.system) : null; },
+  star: (record) => {
+    const m = generatedMember(record);
+    if (m) return m.planet ? null : starRows(m.system);
+    // A hand-listed system's star: not the generated rows, but its glow is drawn wider all the same.
+    const h = record && systemOfRecordId(record.id);
+    return h && !h.planet && h.system.full ? glowRows() : null;
+  },
 });
 
 const HOST_ID = 'sr-card';

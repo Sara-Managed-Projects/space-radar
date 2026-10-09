@@ -395,6 +395,12 @@ Date.now = realDateNow;
   await import(join(JS, 'copy/en.later.js'));
   const rows = starRows({ star: { teffK: 3000, radiusSuns: 0.1, massSuns: 0.1 }, planets: [], starsInSystem: 1, zone: null });
   check(rows.some((r) => r[0] === C0.starSystem.rows.starGlow && /wider than the star/.test(r[1])), 'the card says the glow is drawn wider than the star');
+  // TRAPPIST-1 is a hand-listed system (no computed zone): its star's card has the Glow row too (seen missing 2026-10-10).
+  const { glowRows } = await import(join(JS, 'ui/systemcard.js'));
+  const g = glowRows();
+  check(g.length === 1 && g[0][0] === C0.starSystem.rows.starGlow && /wider than the star/.test(g[0][1]), 'a hand-listed system\'s star has the Glow row alone');
+  const cardsSrc = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  check(/h\.system\.full \? glowRows\(\)/.test(cardsSrc), 'ui/cards.js hands the Glow row to a hand-listed system\'s star');
 }
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));

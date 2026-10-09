@@ -52,6 +52,16 @@ export function planetFacts(system, planet, albedo = 0.3) {
   return { radius, mass, rows };
 }
 
+/**
+ * The one row every drawn system's star has, a hand-listed one (TRAPPIST-1) as much as a generated one: the
+ * glow is drawn wider than the star at whole-system scale in both (scene/systems.js glowScale), and the card
+ * says so. Seen missing on TRAPPIST-1's card, 2026-10-10 (internal #565).
+ */
+export function glowRows() {
+  const C = COPY.starSystem;
+  return [[C.rows.starGlow, C.starGlowValue]];
+}
+
 export function starRows(system) {
   const C = COPY.starSystem;
   const R = C.rows;
