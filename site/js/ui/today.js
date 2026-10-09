@@ -143,7 +143,7 @@ export function wonderEvents(items, nowMs) {
 /** The things worth a day each when nothing is coming: the extremes and the worlds, by id. Pure. */
 export function famousThings(records) {
   return (Array.isArray(records) ? records : [])
-    .filter((r) => r && r.id && r.name && (r.klass === 'exotic' || r.klass === 'world'))
+    .filter((r) => r && r.id && r.name && (r.klass === 'exotic' || r.klass === 'world' || (r.klass === 'star' && r.meta && r.meta.why)))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
     .map((r) => ({ id: r.id, kicker: '', title: r.name, line: '', record: r, act: 'select' }));
 }
@@ -278,10 +278,13 @@ export function createToday(ctx, host) {
     const pass = ctx.passport || null;
     const records = typeof ctx.records === 'function' ? ctx.records() : [];
     const pick = wonderOfTheDay({ events: wonderEvents(items, nowMs), famous: famousThings(records), dayNumber: day, prev: pass ? pass.wonderPrev() : null });
-    wonderCard = pick ? pick.item : null;
+    // Chosen and remembered on a first day too, so the next day is a return; shown only on a return
+    // (public #240). With no passport (a browser that keeps nothing) it is shown: nothing to ask.
+    const back = !pass || typeof pass.returning !== 'function' || pass.available === false || pass.returning(day);
+    if (pick && pass) pass.wonderSeen(day, pick.id);
+    wonderCard = pick && back ? pick.item : null;
     wonder.hidden = !wonderCard;
     if (!wonderCard) return null;
-    if (pass) pass.wonderSeen(day, pick.id);
     wonderKicker.textContent = [COPY.wonder.kicker, wonderCard.kicker].filter(Boolean).join(COPY.punctuation.separator);
     wonderTitle.textContent = wonderCard.title;
     wonderLine.textContent = wonderCard.line || '';

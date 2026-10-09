@@ -321,7 +321,36 @@ if (trip) {
   worlds.dispose();
 }
 
+// internal #476: a plain selection of a system's star arrives looking down on its orbits.
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check(/ctx\.systems\.subjectFor\(record\)/.test(main) && /polar: hostPolar/.test(main), 'flyToRecord gives a system host the overview polar that a trip stop has');
+  const sys = readFileSync(join(ROOT, 'site/js/scene/systems.js'), 'utf8');
+  check(/polar: planet \? null : OVERVIEW_POLAR/.test(sys), 'and that polar is the host subject\'s own, null for a planet');
+}
+
 Date.now = realDateNow;
+// --- the host star is met from over its orbits (internal #476) ---------------------------------
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  const m = /const SYSTEM_OVERVIEW_POLAR = \(([0-9]+) \* Math\.PI\) \/ 180;/.exec(main);
+  check(!!m && Math.abs((Number(m[1]) * Math.PI) / 180 - S.OVERVIEW_POLAR) < 1e-12, 'main.js meets a host star at scene/systems.js OVERVIEW_POLAR');
+  check(/polar: overview/.test(main) && /record\.klass === 'star' && ctx\.systems && ctx\.systems\.active/.test(main), 'flyToRecord passes the overview polar for a system host');
+}
+
+// --- the Explore list names all forty (internal #473) -------------------------------------------
+{
+  const { systemGroups } = await import(join(JS, 'ui/explore.js'));
+  const { SYSTEM_INDEX } = await import(join(JS, 'data/systems-index.js'));
+  const g = systemGroups(SYSTEM_INDEX);
+  check(g.temperate.length + g.extreme.length === SYSTEM_INDEX.length && SYSTEM_INDEX.length >= 39, `every generated system is in a group (${g.temperate.length} + ${g.extreme.length} of ${SYSTEM_INDEX.length})`);
+  check(g.temperate.every((x, i) => i === 0 || g.temperate[i - 1].distPc <= x.distPc), 'each group is nearest first');
+  check(g.temperate[0].name === 'Proxima Centauri', `the nearest mild system first (${g.temperate[0].name})`);
+  check(systemGroups(null).temperate.length === 0 && systemGroups([{ hostId: 'x', why: 'other' }]).extreme.length === 0, 'bad input is an empty list');
+  const ex = readFileSync(join(ROOT, 'site/js/ui/explore.js'), 'utf8');
+  check(/import\('\.\.\/data\/systems-index\.js'\)/.test(ex) && !/from '\.\.\/data\/systems-index\.js'/.test(ex), 'the index is fetched late, never at boot');
+}
+
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);

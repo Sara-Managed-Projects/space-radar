@@ -61,6 +61,37 @@ export function soundButton(ctx, className, kind = 'toggle') {
   return b;
 }
 
+/**
+ * The volume, in What to show as well as in a trip's toolbar (public #298; internal #432): the
+ * same native range, shown while sound is on, kept by the engine. Null where there is no audio.
+ */
+export function volumeSlider(ctx, className) {
+  const audio = ctx && ctx.audio;
+  if (!audio || typeof audio.setVolume !== 'function' || typeof audio.volume !== 'function') return null;
+  const T = COPY.trip;
+  const v = document.createElement('input');
+  v.type = 'range';
+  v.className = className;
+  v.min = '0';
+  v.max = '100';
+  v.step = '5';
+  v.setAttribute('aria-label', T.volume);
+  v.title = T.volumeTitle;
+  v.addEventListener('input', () => audio.setVolume(Number(v.value) / 100));
+  const paint = () => {
+    v.hidden = !audio.isOn();
+    if (!v.hidden && document.activeElement !== v) v.value = String(Math.round(audio.volume() * 100));
+  };
+  paint();
+  let seen = false;
+  const off = audio.onChange(() => {
+    if (v.isConnected) seen = true;
+    else if (seen) { off(); return; }
+    paint();
+  });
+  return v;
+}
+
 export function soundPanel(ctx) {
   const wrap = document.createElement('section');
   wrap.className = 'sr-panel sr-sound';

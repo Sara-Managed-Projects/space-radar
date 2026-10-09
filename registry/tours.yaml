@@ -214,6 +214,9 @@ defaults:
   key_light_deg: 125        # three-quarter back light; 0 would be flat, 180 a silhouette
   ease: auto                # auto = `inout` under 3 s, `cruise` over. Or name one.
   on_unresolved: drop
+  # A stop may also say `transition: cut` (no flight: the camera is there) or `transition: black` (a
+  # fade through black, ui/veil.js), the join the stop before it is left by. `fly`, the default, is
+  # the flight. Not a default for a trip: it is a choice for the one join (internal #288).
 
 tours:
 

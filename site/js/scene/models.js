@@ -179,7 +179,9 @@ export function shineDay(dayDot, radiusOverDistance) {
  * TIERS (scene/quality.js): 0 has neither (a phone that boots low, or the frame-rate latch), 1 the
  * rim, 2 the rim and the glint. The phase term above costs nothing and is on every tier.
  */
-export const SUN_RIM = 0.9;
+export const SUN_RIM = 1.5;
+/** The exponent of the Sun's rim edge: 1.4, broader than the material's own 2.5, because the 0.9 rim at 2.5 could not be told from it on the NASA ISS (internal #484: 342 pixels of 480 000 differed). */
+export const SUN_RIM_EXPONENT = 1.4;
 export const GLINT_GAIN = 2.4;
 export const GLINT_HALF_DEG = 2;
 export const GLINT_POWER = Math.round(Math.log(0.5) / Math.log(Math.cos(GLINT_HALF_DEG * Math.PI / 180)));
@@ -197,7 +199,7 @@ export function setLightTier(tier) {
 }
 /**
  * The rim on one pixel. Pure; the shader's twin.
- * @param {{fresnel:number, intoSun:number, facingSun:number}} o  fresnel = (1 - n.v)^2.5, intoSun =
+ * @param {{fresnel:number, intoSun:number, facingSun:number}} o  fresnel = (1 - n.v)^SUN_RIM_EXPONENT, intoSun =
  *   (camera's line of sight) . (direction to the Sun), facingSun = n . (direction to the Sun)
  */
 export function sunRimStrength({ fresnel, intoSun, facingSun }, rim = SUN_RIM) {
@@ -453,7 +455,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           // The Sun's rim (sunRimStrength above): the Sun behind the craft, on the edges turned to it.
           '  if ( uSunRim > 0.0 ) {',
           '    float back = clamp( dot( -V, L ), 0.0, 1.0 );',
-          '    outgoingLight += uRimSun * f * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
+          `    float fr = pow( 1.0 - clamp( dot( normal, V ), 0.0, 1.0 ), ${SUN_RIM_EXPONENT.toFixed(1)} );`,
+          '    outgoingLight += uRimSun * fr * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
           '  }',
           // The anisotropic glint on panels and the sheen on foil (internal #161), in their own function.
           ...surfaceTermsGLSL(kind),
@@ -3203,7 +3206,7 @@ function buildGroundPatch() {
   // MARE_DUST, not REGOLITH: measured in headless Chrome on 2026-10-08, the oddities' lighter grey
   // drew as a beige plate on the dark map of the Sea of Tranquility. This is the tone of that map
   // in sunlight, so the patch reads as disturbed ground and not as a mat.
-  g.add(regolith(0.5, '#55544F', 28));
+  g.add(regolith(0.5, '#55544F', 28, true));
   return g;
 }
 
@@ -3290,6 +3293,9 @@ function starburst(rays, rMax, colour, name) {
  * Three draw calls. The tangent plane touches the sphere exactly at the origin, hence the lift.
  */
 function ragged(r, n, seed, y, colour, name) {
+  return mesh(raggedGeometry(r, n, seed, y), colour, 'body', name);
+}
+function raggedGeometry(r, n, seed, y) {
   const pos = [];
   const rim = (i) => r * (0.74 + 0.26 * hash01(seed + (i % n) * 31));
   for (let i = 0; i < n; i++) {
@@ -3300,14 +3306,39 @@ function ragged(r, n, seed, y, colour, name) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.computeVertexNormals();
-  return mesh(geo, colour, 'body', name);
+  return geo;
 }
-function regolith(r, colour, seg) {
+/**
+ * One step of a patch's soft edge (public #267: "a hard edge"): the same ragged outline a little
+ * wider, in the patch's own toon colour at a fraction of its opacity, under it. Two or three of
+ * these step the edge down into the map instead of cutting it. Alpha needs its own material; it
+ * lives in the model's pool, so it is let go with the rest.
+ */
+function featherRing(r, n, seed, y, colour, opacity, name) {
+  const pool = modelMaterials || materials;
+  const mat = toonMaterial(colour, `feather-${opacity.toFixed(2)}`, pool);
+  mat.transparent = true;
+  mat.opacity = opacity;
+  mat.depthWrite = false;
+  const m = new THREE.Mesh(raggedGeometry(r, n, seed, y), mat);
+  m.name = name;
+  m.castShadow = false;
+  m.receiveShadow = false;
+  m.renderOrder = -1;
+  return m;
+}
+function regolith(r, colour, seg, soft = false) {
   const col = colour || REGOLITH;
   const dark = `#${new THREE.Color(col).multiplyScalar(0.74).getHexString()}`;
   const g = new THREE.Group();
   g.name = 'ground';
   const n = Math.max(14, seg || 18);
+  // The soft edge: two wider, fainter outlines of the same ground, under it.
+  // Only where asked (the lander's footing): the oddities' discs are held to tight triangle budgets.
+  if (soft) {
+    g.add(featherRing(r * 1.32, n, 17, 0.0008, col, 0.16, 'ground-feather-2'));
+    g.add(featherRing(r * 1.14, n, 13, 0.0014, col, 0.34, 'ground-feather-1'));
+  }
   g.add(ragged(r, n, 11, 0.002, col, 'ground'));
   g.add(ragged(r * 0.56, Math.max(9, n >> 1), 53, 0.0035, dark, 'ground-scuffed'));
   const pos = [];
@@ -4139,6 +4170,29 @@ function orient(obj, zDir, xHint) {
   obj.quaternion.setFromRotationMatrix(_m4);
 }
 
+/** The fastest a spent stage is let to turn, in drawn seconds per wall second: past it the clock outruns the picture (internal #425). */
+export const TUMBLE_MAX_RATE = 240;
+
+/**
+ * A dead stage's tumble angle, radians. At a clock the eye can follow it is exactly the function of
+ * the drawn time it always was (scrub the clock and it turns with it). When the clock runs faster
+ * than `maxRate` drawn seconds a wall second -- a 90 s turn would be a strobe from there on -- the
+ * stage keeps turning at that rate in the clock's direction instead, and is exact again when the
+ * clock slows. `st` is the object's own { t, real, phase }; `realMs` is the wall clock. Pure.
+ */
+export function tumblePhase(st, tMs, realMs, periodMs, maxRate = TUMBLE_MAX_RATE) {
+  const exact = ((tMs % periodMs) / periodMs) * Math.PI * 2;
+  if (!Number.isFinite(realMs)) return exact;
+  if (st.real === undefined) { st.t = tMs; st.real = realMs; st.phase = exact; return exact; }
+  const dReal = realMs - st.real;
+  if (!(dReal > 0)) return st.phase; // the same frame again
+  const dT = tMs - st.t;
+  const limit = maxRate * dReal;
+  const phase = Math.abs(dT) <= limit ? exact : st.phase + Math.sign(dT) * (limit / periodMs) * Math.PI * 2;
+  st.t = tMs; st.real = realMs; st.phase = phase;
+  return phase;
+}
+
 /**
  * Aim a model. Called each frame for the <= 20 models on screen; cheap, and it is the difference
  * between a model that looks placed and one that looks correct.
@@ -4238,7 +4292,7 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
         };
       }
       const tu = obj.userData.tumble;
-      const angle = Number.isFinite(tMs) && !lessMotion() ? ((tMs % tu.periodMs) / tu.periodMs) * Math.PI * 2 : 0;
+      const angle = Number.isFinite(tMs) && !lessMotion() ? tumblePhase(tu.state || (tu.state = {}), tMs, typeof performance !== 'undefined' ? performance.now() : NaN, tu.periodMs) : 0;
       obj.quaternion.copy(tu.base).multiply(_q.setFromAxisAngle(tu.axis, angle));
       break;
     }

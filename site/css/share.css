@@ -519,6 +519,9 @@ html.sr-phone .sr-share__head {
 
 .sr-photo__lens[hidden] { display: none; }
 
+.sr-photo__time { display: flex; flex: 0 0 auto; align-items: center; gap: var(--sp-1); }
+.sr-photo__time[hidden] { display: none; }
+
 .sr-photo__range {
   width: 96px;
   height: 44px;

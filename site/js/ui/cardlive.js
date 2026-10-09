@@ -49,9 +49,24 @@ export function lightTimeText(km) {
   return t(L.hourMinSec, { h: fmt.int(h), min: two(min), s: two(sec) });
 }
 
+/** Light's year, in km: 299 792.458 km/s for a Julian year (the IAU's own definition). */
+export const LIGHT_YEAR_KM = 299792.458 * 365.25 * 86400;
+/**
+ * Past this a distance is given in light-years and does not tick (internal #476): 'From Earth now:
+ * 5 479 978 205 927 646 km' for a planet of another star is true to the arithmetic and useless to
+ * a person. 1e12 km is 6 700 au, 40 times Voyager 1's, so nothing of ours is ever in light-years.
+ */
+export const FAR_KM = 1e12;
+
 /** The two moving values, or null when there is no distance to give. */
 export function liveDistanceWords(km) {
   if (!Number.isFinite(km) || km <= 0) return null;
+  if (km >= FAR_KM) {
+    const ly = km / LIGHT_YEAR_KM;
+    // Three figures: the position is the catalogue's, so the digits below that are not a measurement.
+    const n = fmt.num(Number(ly.toPrecision(3)), ly < 10 ? 2 : ly < 100 ? 1 : 0);
+    return { far: true, km: n, light: n };
+  }
   return { km: fmt.int(Math.round(km)), light: lightTimeText(km) };
 }
 

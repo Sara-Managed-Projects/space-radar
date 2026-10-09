@@ -62,7 +62,7 @@ satellites where they are this minute, the space stations and who is aboard, roc
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae as telescopes photographed them, and the Milky Way from outside. Step
 down to the ground and it is tonight's sky from your own street. Twenty-six guided trips, read
-aloud, fly the camera for you. It is a static website: the physics runs in your browser, on public
+aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
 
 ![Space Radar: the Earth with today's clouds, the aurora and the satellites around it](assets/screenshots/hero.webp)
@@ -103,8 +103,11 @@ data, and every number on screen says where it came from.
 - **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
-the Moon and Mars · today's sunspot groups · eclipses computed for any date · 54 spacecraft and
-shape models · shareable links, postcards and a photo mode · full keyboard control.
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · 70 spacecraft and
+shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
+"Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
+reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled
+so, of planets nobody has seen · shareable links, postcards and a photo mode · full keyboard control.
 
 ### Links
 
@@ -186,7 +189,7 @@ Space Radar stands on data and work that other people publish for free. Thank yo
 
 [![HYG](https://img.shields.io/badge/stars-HYG%20v4.4%20%C2%B7%20d3--celestial-8250df)](https://codeberg.org/astronexus/hyg)
 [![OpenNGC](https://img.shields.io/badge/deep%20sky-OpenNGC%20%C2%B7%20Wikipedia-8250df)](https://github.com/mattiaverga/OpenNGC)
-[![NASA 3D Resources](https://img.shields.io/badge/54%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
+[![NASA 3D Resources](https://img.shields.io/badge/70%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
 [![Solar System Scope](https://img.shields.io/badge/planet%20maps-Solar%20System%20Scope%20%C2%B7%20NASA%20%C2%B7%20USGS-8250df)](https://www.solarsystemscope.com/textures/)
 [![Natural Earth](https://img.shields.io/badge/countries-Natural%20Earth-8250df)](https://www.naturalearthdata.com)
 [![Other light](https://img.shields.io/badge/other%20light-WISE%20%C2%B7%20WMAP%20%C2%B7%20Fermi%20via%20CDS-8250df)](CREDITS.md#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips)

@@ -173,6 +173,8 @@ check(!/import .*scrubber/.test(pill), 'the pill does not import the timeline');
 const scrub = readFileSync(join(JS, 'ui/scrubber.js'), 'utf8');
 check(!/Date\.now\(\)/.test(scrub.replace(/\/\/.*$/gm, '')), 'the timeline never reads the wall clock: now is the pill\'s anchor');
 check(/role', 'slider'/.test(scrub) && /aria-valuetext/.test(scrub) && /'Home'/.test(scrub), 'it is a slider: a value in words, arrows, Home for now');
+// internal #472: axe's nested-interactive: the focusable slider holds no button; the marks are its siblings.
+check(/slider = el\('div', 'sr-tape__slider'\)/.test(scrub) && /root\.append\(slider, /.test(scrub) && !/root\.setAttribute\('role'/.test(scrub), 'the slider is a child of the tape and the marks and Now are its siblings (no nested interactive)');
 check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.roughTitle) && /centuries/.test(COPY.timePill.worlds), 'the copy says where accuracy drops, and what holds');
 
 // --- the stylesheet is whole -------------------------------------------------------------------------

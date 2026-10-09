@@ -55,6 +55,7 @@ def render_index(doc: dict) -> list:
     out = []
     for s in doc.get("systems") or []:
         row = base(s)
+        row["why"] = s.get("why")
         row["planets"] = [{"id": p["id"]} for p in s["planets"]]
         out.append(row)
     return [("Which stars have a stage of their own, and which records are their planets.", "SYSTEM_INDEX", out)]

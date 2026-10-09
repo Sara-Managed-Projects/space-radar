@@ -46,7 +46,7 @@ import '../copy/en.later.js';
 import { tierLine } from '../scene/quality.js';
 import { createColorKey } from './colorkey.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';
-import { soundButton } from './sound.js';
+import { soundButton, volumeSlider } from './sound.js';
 import { densityPanel } from './density.js';
 import { exposurePanel } from './exposure.js';
 import { overlayPanel } from './overlaypanel.js';
@@ -479,6 +479,8 @@ export function createWhatToShow(ctx, opts = {}) {
   const sound = el('section', 'sr-show__section sr-show__setting');
   sound.appendChild(el('h2', 'sr-micro', COPY.audio.panelTitle));
   sound.appendChild(soundButton(ctx, 'sr-show__toggle', 'toggle'));
+  const vol = volumeSlider(ctx, 'sr-show__vol');
+  if (vol) sound.appendChild(vol);
   root.appendChild(sound);
   // The shutter (spec 0067): Eye, Camera, Deep, in the same row shape as Density below it.
   if (ctx && ctx.exposure) {

@@ -281,6 +281,15 @@ console.log('8. the shipped rows');
   check(stingIds.every((id) => ['arrive', 'stage', 'end'].includes(id)), `every sting is one main.js plays (${stingIds.join(', ') || 'none yet'})`);
 }
 
+// The volume is in What to show too (internal #432): the same slider, from ui/sound.js.
+{
+  const { readFileSync } = await import('node:fs');
+  const sound = readFileSync(new URL('../site/js/ui/sound.js', import.meta.url), 'utf8');
+  const show = readFileSync(new URL('../site/js/ui/whattoshow.js', import.meta.url), 'utf8');
+  check(/export function volumeSlider\(ctx, className\)/.test(sound) && /audio\.setVolume\(Number\(v\.value\) \/ 100\)/.test(sound) && /v\.hidden = !audio\.isOn\(\)/.test(sound), 'the volume slider drives the engine and is hidden while sound is off');
+  check(/volumeSlider\(ctx, 'sr-show__vol'\)/.test(show), 'What to show carries it under the sound toggle');
+}
+
 // The volume is the visitor's, kept across visits (public #298).
 {
   const { readVolume, writeVolume, VOLUME_KEY } = await import('../site/js/audio/engine.js');

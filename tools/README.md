@@ -40,6 +40,9 @@ and `walk-phone.json` (every step's measurements), `desktop/` and `phone/` (ever
 `sheet-<size>-NN.png`, twelve pictures to a contact sheet. **Read the sheets**: a black view, a
 label over a card and a blurred close-up pass every measurement. The loads are named at the top
 of `walk.mjs` (`--only=` takes those names or a flow's); the steps are in `walk.probe.js`.
+Two flows are for a quiet machine and a real tab, and have not been run (internal #460): `--only=skip`
+(the skip links and where focus lands, with real keys) and `--only=history` (Back and Forward between an ISS link
+and a dated Moon link, reading the selection, the stage and the clock each time).
 
 On a Mac it uses the GPU (`--gl=gpu`, two minutes a flow); anywhere else software rendering, which
 is ten times slower: the full walk does not fit a CI job, so it is a local tool, run before a
@@ -59,6 +62,7 @@ remove it when done. `cdp.mjs` run by hand does not take it: run one at a time, 
 | `--port=8760` | the port the walk serves `--dir` on; its Chromes use the ports from `--port` + 80 up |
 | `--timeout=840` | seconds one load may take before its Chrome is killed |
 | `--lock-wait=1800` | seconds to wait for the lock before giving up |
+| `--quiet-wait=300` | seconds to wait for another project's headless Chrome (one that takes no lock of ours) to finish before measuring beside it; the walk says so, twice, if it did (internal #460) |
 | `--only=`, `--desktop`, `--phone`, `--out=`, `--gl=`, `--no-offline` | which loads, which sizes, where to write, which GL, skip the second visit |
 
 It exits **0** when nothing measured as broken, **1** with findings, and **2** when a load ran out
