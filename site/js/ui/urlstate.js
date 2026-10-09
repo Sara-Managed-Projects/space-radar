@@ -141,6 +141,27 @@ export function write(patch) {
   }
 }
 
+/**
+ * `?from=<channel>` is a tag on a link we hand out ("?from=ig" on a profile, "?from=embed" on an
+ * embed's link back). It is read ONCE and into nothing: no variable keeps it, nothing is stored,
+ * no request carries it, and no link the app makes can contain it (ui/share.js builds its links
+ * from origin + path + the keys in KEYS, never from the query). All this does is take it, and only
+ * it, off the address bar with replaceState, so that `/?from=ig` reads `/` and a copied address is
+ * the address of the view. The other query keys (`?sw=0`, `?tier=`, `?embed=1`) and the hash stay.
+ * The canonical link of every page ignores the query already (scripts/check_seo.py holds it).
+ * Returns whether the address bar was changed. tests/test_from_tag.mjs holds all of this.
+ */
+export function dropFrom(loc = typeof location !== 'undefined' ? location : null, hist = typeof history !== 'undefined' ? history : null) {
+  if (!loc || !hist || !/[?&]from=/.test(String(loc.search || ''))) return false;
+  const rest = String(loc.search).slice(1).split('&').filter((part) => part && part.split('=')[0] !== 'from');
+  try {
+    hist.replaceState(hist.state, '', `${loc.pathname}${rest.length ? `?${rest.join('&')}` : ''}${loc.hash || ''}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Remove these keys, keeping every other. */
 export function clear(keys) {
   write(Object.fromEntries((keys || []).map((key) => [key, null])));

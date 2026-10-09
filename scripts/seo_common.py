@@ -1,9 +1,9 @@
 """What every page scripts/seo_pages.py and scripts/seo_systems.py build has in common: the chrome, the head, the JSON-LD
 helpers and the place a share picture is named. Imported by those two and by build_seo.py; builds nothing itself.
 
-THE CHROME IS TWO FILES. templates/partials/header.html and templates/partials/footer-nav.html (the
-list of links every page's footer carries; templates/object.html and templates/press.html use the
-same partial). A link added to the footer is one edit there.
+THE CHROME: templates/partials/header.html, and the footer's links, which are templates/sitelinks.html
+(scripts/seo_footer.py): the one partial every page of the site fills, built or committed. A link added
+to the footer is one edit there.
 
 PATHS. Every page built here is one directory below the site's root (`starlink/index.html`,
 `events/leonids-2026.html`, `o/kepler-186.html`), so `../` is the root from all of them, in the
@@ -65,7 +65,9 @@ def fill(template: str, values: dict[str, str]) -> str:
 
 
 def footer_nav() -> str:
-    return (TEMPLATES / "partials" / "footer-nav.html").read_text(encoding="utf-8")
+    """The one shared footer partial (templates/sitelinks.html, scripts/seo_footer.py); every page here is one level below the root."""
+    from seo_footer import sitelinks
+    return sitelinks("../")
 
 
 @dataclasses.dataclass
