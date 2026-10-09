@@ -814,6 +814,8 @@ jobs:
         run: node tests/test_render_ready.mjs
       - name: "the UI guide: spacing grid, loaded weights, numbers in the copy, one primary, no dim grey inside a wash, no stale counts (internal #375, #198)"
         run: node tests/test_guide_rails.mjs
+      - name: "Bulk 3 a: the phone's search list above the launch chip, the sky field line under it (internal #563, #565)"
+        run: node tests/test_bulk3_a.mjs
       - name: "the trips walk, the node half: every stop resolves, has its narration and a picture (spec 0044 task 3, internal #123)"
         run: node tests/test_trips_walk.mjs
       - name: "Back and Forward over shared views, a tracked object that loses its position, old comet links, the launch card's mission (public #331, #348, #367, #378)"
