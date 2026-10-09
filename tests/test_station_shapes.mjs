@@ -788,12 +788,26 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(tumblePhase(st3, 1e9 + 10, 10, P) === tumblePhase(st3, 1e9 + 10, 10, P), 'the same frame asked twice gives one answer');
 }
 
-// The lander's footing has a soft edge, and the oddities' discs do not pay for one (public #267).
+// The lander's footing has a soft edge (a fan with a vertex alpha falling to 0, not stepped plates),
+// and the oddities' discs do not pay for one (public #267, internal #478).
 {
   const src = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
   check(/regolith\(0\.5, '#55544F', 28, true\)/.test(src), 'the lander\'s ground patch asks for the feathered edge');
-  check(/function regolith\(r, colour, seg, soft = false\)/.test(src) && /if \(soft\) \{\s+g\.add\(featherRing/.test(src), 'and nothing else does by default');
-  check(/mat\.transparent = true;\s+mat\.opacity = opacity;\s+mat\.depthWrite = false;/.test(src), 'the feather is a transparent toon material that does not write depth');
+  check(/function regolith\(r, colour, seg, soft = false\)/.test(src) && /if \(soft\) \{\s+g\.add\(softPatch/.test(src), 'and nothing else does by default');
+  const { softPatchGeometry, SOFT_PROFILE } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const geo = softPatchGeometry(0.5, 28, 11, 0.002);
+  const a = geo.attributes.color, pos = geo.attributes.position;
+  check(a.itemSize === 4, 'every vertex carries an alpha');
+  // The outermost ring is fully clear, the centre and the first ring fully opaque, and the alpha
+  // never rises on the way out: a monotone falloff, not a plate.
+  const alphas = SOFT_PROFILE.map((p) => p[1]);
+  check(alphas[0] === 1 && alphas[alphas.length - 1] === 0 && alphas.every((v, i) => i === 0 || v <= alphas[i - 1]), 'the profile falls from 1 to 0 and never rises');
+  let outer = 0, clear = 0;
+  for (let i = 0; i < a.count; i++) { if (a.getW(i) === 0) clear++; if (Math.hypot(pos.getX(i), pos.getZ(i)) > 0.5 * 1.0) outer++; }
+  check(clear === 28 && outer > 0, 'one ring of 28 vertices is fully clear and the patch reaches past its nominal radius');
+  check(geo.index.count / 3 <= 300, `the fan stays small (${geo.index.count / 3} triangles)`);
+  const area = (g) => { let s2 = 0; const ix = g.index.array; for (let i = 0; i < ix.length; i += 3) { const [p0, p1, p2] = [0, 1, 2].map((k) => [pos.getX(ix[i + k]), pos.getZ(ix[i + k])]); s2 += ((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p2[0] - p0[0]) * (p1[1] - p0[1])) / 2; } return s2; };
+  check(Math.abs(area(geo)) > 0.5, 'a real area is covered, all triangles on one side (a signed area that does not cancel)');
 }
 
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }

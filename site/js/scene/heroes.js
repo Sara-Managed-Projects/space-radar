@@ -514,7 +514,7 @@ export function addGroundPatch(obj, record, reach = 0.5) {
   if (!obj || !record || !record.meta || record.meta.world !== 'moon' || obj.getObjectByName(GROUND_NAME)) return null;
   const patch = M.modelFor('site', 'ground-moon');
   patch.name = GROUND_NAME;
-  patch.traverse((n) => { n.userData.noReach = true; n.renderOrder = -2; });
+  patch.traverse((n) => { n.userData.noReach = true; n.renderOrder = -3 + (n.userData.layer || 0); });
   patch.scale.setScalar(Math.max(0.3, reach) * 1.9); // just past the footpads
   patch.position.y = SHADOW_LIFT * 0.3;
   obj.add(patch);
