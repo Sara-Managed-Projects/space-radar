@@ -197,6 +197,13 @@ check(earth.star.light.every((v) => v > 0.85), 'a Sun-like star lights them near
   const uu = X.faceUniforms(X.faceFor(rowOf('LHS 1140 b')));
   check(uu.uDetail.value === 0 && 'uCloudFrame2' in uu && 'uHigh' in uu && 'uFrost' in uu, 'rocky faces fill the new uniforms; detail starts at 0');
   check(X.HIGH_DRIFT_SECONDS < X.CLOUD_DRIFT_SECONDS, 'the high deck drifts faster than the low one');
+  // A locked world's cloud frame has no pole: its high deck must not be drawn out along any axis.
+  const sl = X.highDeckStretch(1); const st = X.highDeckStretch(0);
+  check(sl[0] === sl[1] && sl[1] === sl[2], 'a locked world: the high deck is stretched along no axis (no straight streaks)');
+  check(st[1] > st[0] * 2 && st[0] === st[2], 'a turning world: the high deck is drawn out along the parallels');
+  const locked = X.faceFor(rowOf('LHS 1140 b'));
+  check(locked.locked && locked.look.high > 0, 'LHS 1140 b is locked and has a high deck');
+  check(X.faceUniforms(locked).uHighStretch.value.toArray().join() === sl.join(), 'the locked face carries the even scale to the shader');
 }
 
 // --- 6. the wiring -------------------------------------------------------------------------------
