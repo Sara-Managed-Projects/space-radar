@@ -470,7 +470,7 @@ OpenNGC's 13 372 real objects are not drawn as places, and `dso.json` says how m
 
 ## 3d-2. Measured star widths — Boyajian et al. 2012 (read 2026-10-09)
 
-Proxima Centauri, Barnard's Star, Epsilon Eridani and 61 Cygni A carry an interferometric radius and temperature in `registry/stars-notable.yaml`, read from Table 6 of Boyajian et al. 2012, "Stellar Diameters and Temperatures. III. Main Sequence A, F, G, and K Stars" companion study of K and M dwarfs, ApJ 757, 112 (<https://arxiv.org/abs/1208.2431>): radii 0.1410, 0.1869, 0.7350 and 0.6611 times the Sun's. Facts, cited per row; no text or figure is reproduced.
+Proxima Centauri, Barnard's Star, Epsilon Eridani and 61 Cygni A carry an interferometric radius and temperature in `registry/stars-notable.yaml`, read from Table 6 of Boyajian et al. 2012, "Stellar Diameters and Temperatures. II. Main-Sequence K and M Stars", ApJ 757, 112 (<https://arxiv.org/abs/1208.2431>): radii 0.1410, 0.1869, 0.7350 and 0.6611 times the Sun's. Facts, cited per row; no text or figure is reproduced.
 
 ## 3d-3. Two suns — Sebastian et al. 2025, Kostov et al. 2016, Haghighipour and Kaltenegger 2013 (read 2026-10-09)
 
