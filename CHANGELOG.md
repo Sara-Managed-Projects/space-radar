@@ -11,11 +11,13 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-Two days, thirteen pull requests: the planetarium grew from nine trips to twenty-five, learned to
-look up from the ground, and learned to work with no network.
+Five days, about fifty pull requests: the planetarium grew from nine trips to twenty-six, learned to
+look up from the ground, learned to work with no network, and then, between 6 and 8 October, got
+flybys that move the clock, forty star systems to fly into, a screen that plays on its own and the
+Earth's air.
 
 ### Added
-- **Sixteen new trips, 25 in all** (195 stops, 65 minutes of narration): the constellations and
+- **Sixteen new trips, 25 in all** (195 stops, 65 minutes of narration; a 26th and 205 stops by 8 October, see below): the constellations and
   the living Earth ([#465]); tonight from your street, why the Moon changes shape, the Sun today,
   the planets tonight and where we have driven on Mars ([#473]); the life of a star, black holes,
   through a telescope, a dark sky, asteroids that come close, satellites and junk, comets and
@@ -84,6 +86,59 @@ look up from the ground, and learned to work with no network.
 - A postcard's link now opens the sky at the exposure the picture was taken at ([#462]).
 - Labels keep off the window's edge and rise above their own model; on a small phone the trip
   toolbar keeps the Voice button ([#462]).
+
+### Added, 6 to 8 October ([#481] to [#519])
+- **The sky from the ground, rounds two to four.** Constellation pictures and borders (the 85
+  figures of Stellarium's modern sky culture, Free Art License), other peoples' skies, meteors and
+  satellites in the air ([#481]); the sky's colour worked out from scattering, the land, 435 000
+  more stars, time, and the deep sky tonight ([#497]); **Point your phone** at the sky, stars before
+  lines, and rises and sets on the planets' cards ([#500]).
+- **A flyby moves the clock.** Each craft has a small file of its own path from JPL Horizons;
+  54 of 67 dated events set the clock and frame the craft with the world it passed. Cassini,
+  Galileo, the Pioneers, and Apophis in 2029 ([#483]).
+- **One continuous flight from the Earth to the edge**, and a light embed that boots a world or a
+  crewed station in about 2.2 MB ([#486]).
+- **Finding things and coming back**: ground arrivals that are pictures, search rows that say what a
+  thing is, calendar files and the launch countdown ([#487]).
+- **More models**: the ISS from NASA's full model and seven more NASA spacecraft ([#488]); craft
+  nobody has published a mesh of, rebuilt from published dimensions, and models that go dark in a
+  world's shadow ([#485]); four more NASA probes, MAVEN, Saturn V and the Shuttle on their pads,
+  a shape per navigation constellation, and Surveyor ([#513]).
+- **Worlds**: the giants from Hubble's 2025 maps as a second face ("As Hubble saw it"), Ceres and
+  Vesta mapped on their shapes, Titan without seams ([#490]); Pluto and Charon in colour, Mercury,
+  Venus's ground ([#484]); the eclipse's edges and path, Venus's haze, Saturn's bands, Mercury's
+  relief, stars that glow and a pulsar's pulse ([#510]); the Earth's relief, air and storm tops, and
+  dust, lightning and clouds on the other worlds ([#517]).
+- **Forty star systems to fly into**, generated from the Archive's table, each with a computed
+  habitable zone and cards that say what is measured ([#512]); a drawn, labelled **artist's
+  impression** of a planet nobody has seen, and `#imagine=N` ([#514]).
+- **A passport and one true sentence** on the home ([#491]); a share picture for every trip ([#495]).
+- **The long tail** ([#496]): Earth events (fires, volcanoes, icebergs from NASA's EONET), the wind
+  from NOAA's GFS, step by event on the clock, search icons and the photo mode's lens.
+- **A screen that plays on its own**: reels of trips, a watchdog and kiosk manners ([#498]).
+- **Trips, round five** ([#505]): flights that land on time, Just watch, one flight home.
+- **Cards and live facts** ([#506]): a distance that ticks, a six-year curve, who is aboard, what
+  just happened, the oldest things up there.
+- **The public finishers** ([#509], [#516]): a scale badge and True size, a launch chip, Return to
+  base, `?` for the keys, Andromeda's companions, a calm deep sky, the opening shot, Remind me and
+  Seen it, and this week's story.
+- **A new mark** for the tab, the home screen and the press kit ([#499]).
+- **The narration, heard by a machine**: `scripts/listen_check.py` runs a speech-to-text round trip
+  over every clip and a guard refuses a clip nothing has listened to; titles are said in one pass
+  with the next sentence, and all 205 clips were rendered again ([#492], [#504]).
+
+### Changed, 6 to 8 October
+- **A first visit is 3.34 MB** where it was 3.86 MB (counted uncompressed, on a phone), then
+  tightened again with WebP maps, GPU memory released for maps not on screen, and tighter budgets
+  ([#494], [#511]). SGP4 for a big catalogue runs in a worker ([#507]).
+- A regression walk of the whole product, `tools/walk.mjs`, found nine things where features meet;
+  they are fixed ([#482]). A polish sweep ([#508]) put place-setting inside the Tonight view and
+  made trips start at once.
+
+### Fixed, 6 to 8 October
+- **A privacy fix**: the browser's coordinates were handed to the app at full precision; the app now
+  keeps 0.1 degrees (about 11 km) as the plan always said ([#489]).
+- Search option rows are 48 px on a phone and never shrink ([#519]).
 
 ## [0.5.0] - 2026-10-04
 
@@ -209,3 +264,36 @@ The first public map.
 [#477]: https://github.com/Sara-Managed-Projects/space-radar/pull/477
 [#478]: https://github.com/Sara-Managed-Projects/space-radar/pull/478
 [#480]: https://github.com/Sara-Managed-Projects/space-radar/pull/480
+[#481]: https://github.com/Sara-Managed-Projects/space-radar/pull/481
+[#482]: https://github.com/Sara-Managed-Projects/space-radar/pull/482
+[#483]: https://github.com/Sara-Managed-Projects/space-radar/pull/483
+[#484]: https://github.com/Sara-Managed-Projects/space-radar/pull/484
+[#485]: https://github.com/Sara-Managed-Projects/space-radar/pull/485
+[#486]: https://github.com/Sara-Managed-Projects/space-radar/pull/486
+[#487]: https://github.com/Sara-Managed-Projects/space-radar/pull/487
+[#488]: https://github.com/Sara-Managed-Projects/space-radar/pull/488
+[#489]: https://github.com/Sara-Managed-Projects/space-radar/pull/489
+[#490]: https://github.com/Sara-Managed-Projects/space-radar/pull/490
+[#491]: https://github.com/Sara-Managed-Projects/space-radar/pull/491
+[#492]: https://github.com/Sara-Managed-Projects/space-radar/pull/492
+[#494]: https://github.com/Sara-Managed-Projects/space-radar/pull/494
+[#495]: https://github.com/Sara-Managed-Projects/space-radar/pull/495
+[#496]: https://github.com/Sara-Managed-Projects/space-radar/pull/496
+[#497]: https://github.com/Sara-Managed-Projects/space-radar/pull/497
+[#498]: https://github.com/Sara-Managed-Projects/space-radar/pull/498
+[#499]: https://github.com/Sara-Managed-Projects/space-radar/pull/499
+[#500]: https://github.com/Sara-Managed-Projects/space-radar/pull/500
+[#504]: https://github.com/Sara-Managed-Projects/space-radar/pull/504
+[#505]: https://github.com/Sara-Managed-Projects/space-radar/pull/505
+[#506]: https://github.com/Sara-Managed-Projects/space-radar/pull/506
+[#507]: https://github.com/Sara-Managed-Projects/space-radar/pull/507
+[#508]: https://github.com/Sara-Managed-Projects/space-radar/pull/508
+[#509]: https://github.com/Sara-Managed-Projects/space-radar/pull/509
+[#510]: https://github.com/Sara-Managed-Projects/space-radar/pull/510
+[#511]: https://github.com/Sara-Managed-Projects/space-radar/pull/511
+[#512]: https://github.com/Sara-Managed-Projects/space-radar/pull/512
+[#513]: https://github.com/Sara-Managed-Projects/space-radar/pull/513
+[#514]: https://github.com/Sara-Managed-Projects/space-radar/pull/514
+[#516]: https://github.com/Sara-Managed-Projects/space-radar/pull/516
+[#517]: https://github.com/Sara-Managed-Projects/space-radar/pull/517
+[#519]: https://github.com/Sara-Managed-Projects/space-radar/pull/519

@@ -2918,6 +2918,7 @@ for (const file of allFiles) {
       }
       return null;
     };
+    const picturesYaml = readFileSync(join(ROOT, 'registry/pictures.yaml'), 'utf8');
     const dir = join(ROOT, 'site/og');
     const pngs = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.png')) : [];
     if (!pngs.includes('default.png')) problems.push('OGIMAGE  site/og/default.png is missing: the root and every trip without its own picture use it');
@@ -2929,6 +2930,10 @@ for (const file of allFiles) {
       if (png.slice(1, 4).toString() !== 'PNG' || w !== 1200 || h !== 630) problems.push(`OGIMAGE  site/og/${f} is ${w} x ${h}, not a 1200 x 630 PNG`);
       if (!(png.length > minBytes)) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes: an empty frame, not a picture`);
       if (!known.has(f.replace(/\.png$/, ''))) problems.push(`OGIMAGE  site/og/${f} names no trip in the registry`);
+      // Spec 0043 design section 4: the app's own pictures say so in a `Software` text chunk (scripts/_png_text.mjs);
+      // one pasted in by hand has none and must be a registry/pictures.yaml row.
+      const software = pngText(png, 'Software');
+      if (!(software && software.startsWith('space-radar ')) && !picturesYaml.includes(`file: og/${f}`)) problems.push(`OGIMAGE  site/og/${f} has no "Software: space-radar" text chunk and no registry/pictures.yaml row: a picture pasted in by hand (make it with scripts/shots.mjs or scripts/build_trip_og.py)`);
       const trip = TOURS.find((t) => `${t.id}.png` === f);
       if (!trip) continue;
       if (png.length > maxBytes) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes, over og_png_max_bytes (${maxBytes})`);

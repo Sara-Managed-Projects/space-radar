@@ -168,7 +168,14 @@ def object_page(p: dict, host: str, template: str, style: str) -> str:
         "jsonld": json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
         "colour": esc(p.get("colour") or "#9aa4b2"), "klass": esc(p["klassLabel"]), "lead": esc(p["lead"]),
         "why": f'<p>{esc(p["why"])}</p>\n' if p.get("why") else "", "id": p["id"],
-        "live_line": esc(p["liveLine"]), "figure": figure, "facts": facts, "myths": myths,
+        "live_line": esc(p["liveLine"]),
+        # internal #294: a planet, the Moon or the Sun gets its "where is it now" line worked out in the browser
+        # (site/js/objectnow.js); the static sentence in the paragraph is the fallback and what a crawler reads.
+        "now_attrs": (f' id="now" data-body="{esc(p["nowBody"])}" data-name="{esc(("The " if p["nowBody"] in ("Sun", "Moon") else "") + p["nowBody"])}"'
+                      if p.get("nowBody") else ""),
+        "now_script": '<script type="module" src="../js/objectnow.js"></script>\n' if p.get("nowBody") else "",
+        "now_note": "; the one line under the button is worked out in your browser from your clock" if p.get("nowBody") else "",
+        "figure": figure, "facts": facts, "myths": myths,
         "see": f'<h2>{esc(p["seeLabel"])}</h2>\n<p>{esc(p["see"])}</p>\n' if p.get("see") else "",
         "drawn": section("drawn", f'<p>{esc(p["drawing"])}</p>') if p.get("drawing") else "",
         "related": related,

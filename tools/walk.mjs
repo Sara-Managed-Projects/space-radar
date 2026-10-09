@@ -33,6 +33,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { createChromeLock } from './chromelock.mjs';
+import { waitForQuiet } from './chrome-quiet.lib.mjs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -69,6 +70,8 @@ const LOADS = [
   { flow: 'link', name: 'link-event', url: '?walk=link&walkname=event#event=apollo-11.landing' },
   { flow: 'link', name: 'link-trip', url: '?walk=link&walkname=trip#trip=the-constellations' },
   { flow: 'link', name: 'link-embed', url: '?embed=1&at=moon&walk=link&walkname=embed' },
+  { flow: 'history', url: '?walk=history#at=sat-25544' },
+  { flow: 'skip', url: '?walk=skip' },
   { flow: 'trips', name: 'trips-street', url: '?walk=trips&walktrip=tonight-from-your-street' },
   // The film camera's own link shape (tools/render-trip.mjs): the trip is in the hash.
   { flow: 'link', name: 'link-render', url: '?render=1&fps=30&walk=link&walkname=render#trip=people-in-space' },
@@ -78,6 +81,8 @@ const OFFLINE = !has('no-offline') && (!ONLY.length || ONLY.includes('offline'))
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const TIMEOUT_MS = Number(arg('timeout', '840')) * 1000;
 const LOCK_WAIT_MS = Number(arg('lock-wait', '1800')) * 1000;
+const QUIET_WAIT_MS = Number(arg('quiet-wait', '300')) * 1000;
+let contended = '';
 let timedOut = 0;
 // The machine's one-Chrome lock (tools/chromelock.mjs says when a lock is somebody else's to take).
 const chromeLock = createChromeLock({ waitMs: LOCK_WAIT_MS });
@@ -88,7 +93,13 @@ const LOCK = chromeLock.path;
 const servers = new Set();
 /** Take the lock, waiting for whoever has it; exit 2 when the wait runs out. */
 async function lock() {
-  if (await chromeLock.take()) return;
+  if (await chromeLock.take()) {
+    // The lock covers this project's Chromes. Another project's headless Chrome takes none (2026-10-08), so look
+    // for one too: wait for a quiet machine, then go on and say the timings were taken beside it (internal #460).
+    const others = await waitForQuiet(QUIET_WAIT_MS);
+    if (others.length) { contended = `${others.length} headless Chrome(s) of another project (pid ${others.map((o) => o.pid).join(', ')})`; console.error(`WALK: measuring beside ${contended} after ${QUIET_WAIT_MS / 1000} s of waiting: load times are contended`); }
+    return;
+  }
   console.error(`WALK: another headless Chrome has held ${LOCK} for ${Math.round(chromeLock.waitedMs / 1000)} s; giving up`);
   process.exit(2);
 }
@@ -228,4 +239,5 @@ for (const size of SIZES) {
 }
 console.log(failed ? `${failed} findings: read them, then read the sheets` : 'nothing measured as broken: now read the sheets');
 if (timedOut) console.log(`${timedOut} load(s) ran out of time (--timeout=${TIMEOUT_MS / 1000}): this walk has not passed`);
+if (contended) console.error(`WALK: this walk ran beside ${contended}; a timeout or a slow load above may be theirs`);
 process.exit(timedOut ? 2 : failed ? 1 : 0);

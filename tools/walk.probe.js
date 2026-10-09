@@ -689,6 +689,80 @@ const flows = {
     });
   },
 
+  // The skip links and where focus lands (public #315, internal #460 item 1). The first Tab of a fresh load
+  // reaches "Skip to search", the second "Skip to the map"; Enter on the first puts the focus in the
+  // search box, on the second on <main id="map">, which holds the focus for that moment only. Also: when a
+  // sidebar tab changes, focus must not be left on a control that has gone (document.body).
+  async skip() {
+    await step('skip', async () => {
+      if (!window.cdpInput) { dead.push('skip: this run has no real keys (window.cdpInput): run it through tools/cdp.mjs'); return; }
+      const name = () => { const a = document.activeElement; return a ? `${a.tagName.toLowerCase()}#${a.id || ''}.${(a.className || '').toString().slice(0, 30)}` : 'none'; };
+      document.activeElement && document.activeElement.blur && document.activeElement.blur();
+      await window.cdpInput('key', 'Tab'); await wait(200);
+      const first = document.activeElement && document.activeElement.id;
+      await state('first-tab', { settle: 600, facts: { focus: name() } });
+      if (first !== 'sr-skip-search') dead.push(`skip: the first Tab reached ${name()}, not "Skip to search"`);
+      await window.cdpInput('key', 'Tab'); await wait(200);
+      const second = document.activeElement && document.activeElement.id;
+      if (second !== 'sr-skip-map') dead.push(`skip: the second Tab reached ${name()}, not "Skip to the map"`);
+      await window.cdpInput('key', 'Enter'); await wait(500);
+      const onMap = document.activeElement && document.activeElement.id === 'map';
+      await state('skip-to-map', { settle: 600, facts: { focus: name() } });
+      if (!onMap) dead.push(`skip: Enter on "Skip to the map" left the focus on ${name()}`);
+      document.activeElement.blur && document.activeElement.blur();
+      await window.cdpInput('key', 'Tab'); await wait(200);
+      await window.cdpInput('key', 'Enter'); await wait(500);
+      const input = document.activeElement;
+      await state('skip-to-search', { settle: 600, facts: { focus: name() } });
+      if (!input || !(input.matches('input, [role=combobox]') || input.closest('.sr-search'))) dead.push(`skip: Enter on "Skip to search" left the focus on ${name()}`);
+      // A sidebar tab changed with the keyboard: focus must stay on something real.
+      const tabs = [...document.querySelectorAll('[role=tab]')].filter((t) => t.getBoundingClientRect().width > 0);
+      if (tabs.length > 1) {
+        tabs[1].focus(); await window.cdpInput('key', 'Enter'); await wait(800);
+        const kept = document.activeElement && document.activeElement !== document.body;
+        await state('tab-changed', { settle: 600, facts: { focus: name(), tabs: tabs.length } });
+        if (!kept) dead.push('skip: after a sidebar tab was chosen with the keyboard the focus fell to the page (document.body)');
+      }
+    });
+  },
+
+  // Back and Forward in a real tab (public #331, internal #460 item 2). Arrive on the ISS, follow a link to a
+  // dated Moon view by writing the hash (somebody else's link: the app's own writes use replaceState and
+  // fire nothing), go Back, go Forward, and read the selection, the stage and the clock each time.
+  // The page's history is real, so this is the one flow that needs a real tab; node tests hold the
+  // decision (ui/urlstate.js linkChange), this holds that main.js carries it out.
+  async history() {
+    await step('history', async () => {
+      const A = '#at=sat-25544';
+      const B = '#at=moon&t=2027-08-02T10%3A00%3A00Z&rate=60&stage=moon';
+      const read = () => ({ selected: ctx.selected() ? ctx.selected().id : null, stage: ctx.stage ? (ctx.stage.worldId || null) : null, clockIso: new Date(ctx.clock.now()).toISOString().slice(0, 16), mode: ctx.clock.mode, hash: location.hash.slice(0, 70) });
+      await until(() => ctx.selected(), 25000);
+      await arrive(20000);
+      const a0 = read();
+      await state('on-iss', { settle: 1500, facts: a0 });
+      if (a0.selected !== 'sat-25544') dead.push(`history: #at=sat-25544 selected ${a0.selected}`);
+      location.hash = B;                                   // a link followed, so one more entry
+      await wait(6000);
+      const b0 = read();
+      await state('followed-moon', { settle: 1500, facts: b0 });
+      if (b0.selected !== 'moon') dead.push(`history: the dated Moon link selected ${b0.selected}`);
+      if (!/^2027-08-02T10:0/.test(b0.clockIso) && !/^2027-08-02T10:/.test(b0.clockIso)) dead.push(`history: the dated Moon link left the clock at ${b0.clockIso}`);
+      history.back();
+      await wait(6000);
+      const a1 = read();
+      await state('back', { settle: 1500, facts: a1 });
+      if (a1.selected !== 'sat-25544') dead.push(`history: Back selected ${a1.selected}, not the ISS`);
+      if (a1.hash && !a1.hash.startsWith(A)) dead.push(`history: Back left the address at ${a1.hash}`);
+      history.forward();
+      await wait(6000);
+      const b1 = read();
+      await state('forward', { settle: 1500, facts: b1 });
+      if (b1.selected !== 'moon') dead.push(`history: Forward selected ${b1.selected}, not the Moon`);
+      if (b1.stage !== b0.stage) dead.push(`history: Forward put the stage on ${b1.stage}, the link had it on ${b0.stage}`);
+      if (b1.clockIso !== b0.clockIso && Math.abs(Date.parse(b1.clockIso + 'Z') - Date.parse(b0.clockIso + 'Z')) > 10 * 60e3) dead.push(`history: Forward put the clock at ${b1.clockIso}, the link had ${b0.clockIso}`);
+    });
+  },
+
   // A deep link: arrive, wait for the app to act on it, and say where we are.
   async link() {
     await step('link', async () => {
