@@ -82,9 +82,9 @@ html, body {
   white-space: nowrap;
 }
 
-/* Once shown, in the Sources sheet, the footer's links are targets like any other: 44 px high, the floor
+/* Shown in the Sources sheet or clipped out of sight, the footer's links are targets like any other: 44 px high, the floor
    the ui gate holds every control to on a phone, and the same on a desktop (one rule, no second size). */
-.sr-sitefoot--shown ul {
+.sr-sitefoot ul {
   display: flex;
   flex-wrap: wrap;
   gap: 0 var(--sp-2);
@@ -92,7 +92,7 @@ html, body {
   padding: 0;
   list-style: none;
 }
-.sr-sitefoot--shown a {
+.sr-sitefoot a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
