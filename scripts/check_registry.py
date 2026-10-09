@@ -4705,7 +4705,7 @@ def main() -> int:
             target = ROOT / path
             # A copy of the registry without the site's modules (tests/test_growth.py makes one) has
             # nothing to look the table up in: the form is still held there, the file is not.
-            if name and not (ROOT / "site" / "js").is_dir():
+            if name and not (ROOT / "site" / "js" / "main.js").is_file():
                 continue
             if not name or not target.is_file():
                 fail(where, f"`select: {{{key}: {ref}}}` must be `<file>#<EXPORT>` naming a file that exists")
