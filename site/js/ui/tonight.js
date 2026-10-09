@@ -35,6 +35,7 @@ import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort
 import { passTrack } from '../sky/passes.js';
 import { FOV, DARKNESS_IDS, twilightPhase } from '../sky/skymath.js';
 import { NEBULAE } from '../data/nebulae.js';
+import { SCRUB_BACK_MS, SCRUB_FORWARD_MS } from './timepill.js';
 
 const LAYERS = ['stations', 'visual'];
 const REFRESH_MS = 30 * 60e3;
@@ -732,6 +733,9 @@ export function renderTonight(host, ctx) {
       const phase = s && s.sun && s.active ? twilightPhase(s.sun.elevationDeg) : null;
       setText(stripTime, phase ? t(K.timeAt, { time: timeText.hhmm(nowMs), phase: K.timePhases[phase] || '' }) : timeText.hhmm(nowMs));
       strip.setAttribute('aria-valuetext', stripTime.textContent);
+      strip.setAttribute('aria-valuemin', String(-Math.round(SCRUB_BACK_MS / 60e3)));
+      strip.setAttribute('aria-valuemax', String(Math.round(SCRUB_FORWARD_MS / 60e3)));
+      strip.setAttribute('aria-valuenow', String(Math.round((nowMs - Date.now()) / 60e3)));
       press(timeNow, ctx.clock.mode === 'live');
       paintTicks(nowMs);
       farNote.hidden = !(Math.abs(nowMs - Date.now()) > SAT_FAR_MS);

@@ -112,6 +112,12 @@ references:
     read: 2026-09-22
     says: "PDS Geosciences Node, Analyst's Notebook, MSL mission overview: 'latitude of 4.5895
            degrees South, and longitude of 137.4417 degrees East'."
+  golombek-2020:
+    url: "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020EA001248"
+    read: 2026-10-09
+    says: "Golombek et al., 'Location and Setting of the Mars InSight Lander, Instruments, and
+           Landing Site' (Earth and Space Science, 2020): the lander is at 4.502384°N,
+           135.623447°E in the positive east, planetocentric coordinate system."
   hirise-pathfinder:
     url: "https://www.uahirise.org/PSP_001890_1995"
     read: 2026-09-22
@@ -354,8 +360,7 @@ sites:
   # the place Valinor Hills. 7.4 km west of the rover's landing site on this map.
   - {id: ingenuity, display: "Ingenuity, Valinor Hills", class: surface, world: mars, lat: 18.4973, lon: 77.3225, landed: 2024-01-18, shape: lander, source: m20-heli-waypoints, aliases: ["Mars Helicopter", "Airfield Chi"], doing: "The first aircraft to fly on another world: 72 flights from 2021 to 2024. It stands where the last one ended."}
   - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, landed: 2012-08-06, shape: rover, source: pds-msl, aliases: ["Bradbury Landing"], doing: "Driving up a mountain of layered rock since 2012."}
-  # Uncited: Wikipedia gives the same pair and cites Parker et al. (2019), which was not read here.
-  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: uncited, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
+  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: golombek-2020, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
   # Uncited: Wikipedia gives 25.066 N, 109.925 E, a thousandth of a degree from this row, citing
   # Liu et al. (2021), which was not read here. Landed 14 May UTC; it was 15 May in Beijing.
   - {id: utopia, display: "Zhurong, Utopia Planitia", class: surface, world: mars, lat: 25.066, lon: 109.926, landed: 2021-05-14, shape: rover, source: uncited, doing: "China's first Mars rover, landed in 2021."}
