@@ -166,5 +166,15 @@ check(P.LENS.min === 15 && P.LENS.max === 75 && P.clampLens(45) === 45 && P.clam
   check(/CAMERA_FOV_DEG = 45\b/.test(readFileSync(join(ROOT, 'site/js/scene/renderer.js'), 'utf8')), 'and 45 degrees is the map\'s own lens');
 }
 
+// A station whose list could not be read shows the Earth, and the frame says why (internal #429).
+{
+  const lite = readFileSync(join(ROOT, 'site/js/embedlite.js'), 'utf8');
+  const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
+  check(/note = COPY\.embed\.stationUnread/.test(lite) && /embed\.attach\(ctx, note\)/.test(lite), 'the light embed passes the frame a note when it falls back to the Earth');
+  check(typeof COPY.embed.stationUnread === 'string' && COPY.embed.stationUnread.length < 60, 'and the note is chrome copy under 60 characters');
+  const emb = readFileSync(join(ROOT, 'site/js/ui/embed.js'), 'utf8');
+  check(/function attach\(ctx, note = ''\)/.test(emb) && /what\.hidden = !on && !note/.test(emb), 'ui/embed.js shows it in the same line a trip uses, and a trip replaces it while it runs');
+}
+
 if (problems.length) { console.error('embed FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`embed ok: ?embed=1 read through a whitelist of ${E.EMBED_KEYS.length} keys, the snippet one titled lazy iframe, nothing of it at boot and no service worker in a frame; photo mode's frame centred in ${P.SHAPES.length} shapes`);

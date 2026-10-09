@@ -156,7 +156,8 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
     if (!CAMERA_KEYS.has(e.key)) e.stopImmediatePropagation();
   }, true);
 
-  function attach(ctx) {
+  /** `note`: one line for the frame when the page shows less than it was asked for (embedlite.js). */
+  function attach(ctx, note = '') {
     const E = COPY.embed;
     const bar = document.createElement('nav');
     bar.id = 'sr-embed';
@@ -178,9 +179,10 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
     document.body.appendChild(bar);
     const say = (st) => {
       const on = !!(st && st.phase !== 'idle' && st.tourTitle);
-      what.hidden = !on;
-      what.textContent = on ? [st.tourTitle, st.stopTitle].filter(Boolean).join(COPY.punctuation.separator) : '';
+      what.hidden = !on && !note;
+      what.textContent = on ? [st.tourTitle, st.stopTitle].filter(Boolean).join(COPY.punctuation.separator) : note;
     };
+    if (note) say(null);
     if (ctx && ctx.trip && typeof ctx.trip.onChange === 'function') ctx.trip.onChange(say);
     // The link follows the view: the selection the visitor ends up on, at the moment shown.
     const base = location.origin + location.pathname.replace(/[^/]*$/, '');

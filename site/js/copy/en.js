@@ -936,6 +936,8 @@ export const COPY = {
     open: 'Open in Space Radar',
     openTitle: 'Open this view in the full map, in a new tab',
     barLabel: 'Space Radar, embedded',
+    // The light embed of a station whose list could not be read at all: it shows the Earth and says so.
+    stationUnread: 'Showing the Earth: the station’s place could not be read',
   },
   // Spec 0045 req 10: how tightly the panels are set. Automatic is Compact on a window 800 px tall
   // or less; the note under the row says which one Automatic picked.
