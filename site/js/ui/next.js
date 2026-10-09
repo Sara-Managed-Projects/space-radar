@@ -174,7 +174,10 @@ export function balance(items) {
   const take = (it) => { if (chosen.length < NEXT_CAP && !chosen.includes(it)) chosen.push(it); };
   // An eclipse is guaranteed its row right after the soonest launch: rare enough that a ninth launch
   // must not push it off the list (spec 0031 req 5), never ahead of a storm happening now.
-  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'approach', 'perihelion', 'shower', 'conjunction']) {
+  // A pair from the visitor's own place comes next: a month has one or none, and at the end of this
+  // line a full list never showed it (seen 2026-10-09: three passes, a launch, two eclipses, an
+  // approach and a perihelion made eight, and Mars beside Jupiter had no row).
+  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'conjunction', 'approach', 'perihelion', 'shower']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -515,8 +518,11 @@ export function createNext(ctx, opts = {}) {
       lonDeg: observer.lonRad * 180 / Math.PI,
       altKm: Number(observer.altKm) || 0,
     }, now)).then((rows) => {
-      if (foundKey !== key || !rows || !rows.length) return;
-      found = rows;
+      // An answer with no rows is an answer too: the rows of the place or the day before it go.
+      if (foundKey !== key) return;
+      const next = rows || [];
+      if (!next.length && !found.length) return;
+      found = next;
       refresh();
     }).catch(() => { /* the list is as it was: no place-made rows */ });
   }

@@ -11,13 +11,23 @@ ctx.setObserver(london);
 await run('wonderFirstDay', async () => ({ wonder: !!$('.sr-wonder:not(.sr-story)'), story: !!$('.sr-story'), returning: ctx.passport && ctx.passport.returning ? ctx.passport.returning(Math.floor(Date.now() / 864e5)) : null, cards: $$('.sr-today__card').map((n) => text(n).slice(0, 50)) }));
 await run('comingUp', async () => {
   await homeView();
+  // Nothing pairs within two degrees from London in the thirty days after 2026-10-09 (worked out in
+  // Node with sky/conjunctions.js); Mars and Jupiter do on 2026-11-16 01:51 UTC, 1.2 degrees apart.
+  ctx.clock.setPaused(true); ctx.clock.goTo(Date.UTC(2026, 10, 10, 20, 0)); ctx.setObserver(london);
+  try { ctx.explore.setTab('tonight'); await wait(500); ctx.explore.setTab('earth'); } catch { /* tabs as they are */ }
   const rows = () => $$('.sr-next__row').map((n) => text(n));
-  const found = await until(() => rows().some((r) => /°|degrees apart|close to|near /i.test(r) && /(Moon|Venus|Mars|Jupiter|Saturn|Mercury)/.test(r)), 30000, 500);
-  const list = $('.sr-next');
-  if (list) list.scrollIntoView({ block: 'start' });
+  // The list shows its first few rows; the rest are behind its own Show all.
+  const more = () => $('.sr-next .sr-more:not(.sr-next__past)');
+  await wait(4000); if (more() && !more().hidden && more().getAttribute('aria-expanded') !== 'true') { more().click(); await wait(600); }
+  const found = await until(() => rows().some((r) => /Mars/.test(r) && /Jupiter/.test(r)), 45000, 500);
+  const row = $$('.sr-next__row').find((n) => /Mars/.test(text(n)) && /Jupiter/.test(text(n)));
+  if (row) { row.scrollIntoView({ block: 'center' }); await wait(400); }
   await sheetUp();
+  if (row) row.scrollIntoView({ block: 'center' }); else { const list = $('.sr-next'); if (list) list.scrollIntoView({ block: 'start' }); }
   await shot('u1-coming-up', 1200);
-  return { found, rows: rows().slice(0, 14).map((r) => r.slice(0, 150)) };
+  const o = { found, row: row ? { text: text(row), box: box(row) } : null, rows: rows().slice(0, 14).map((r) => r.slice(0, 150)) };
+  ctx.clock.goTo(Date.now()); ctx.clock.setPaused(false); if (ctx.timePill && ctx.timePill.toLive) ctx.timePill.toLive();
+  return o;
 });
 await run('timeline', async () => {
   const tape = $('.sr-tape'); const slider = $('.sr-tape__slider');
@@ -70,7 +80,7 @@ await run('search', async () => {
     await homeView();
     const input = $('.sr-search__input'); if (!input) return 'no search';
     input.focus(); input.value = q; input.dispatchEvent(new Event('input', { bubbles: true }));
-    await until(() => $$('.sr-search__option').length > 0, 6000);
+    await until(() => $$('.sr-search__option').some((n) => text(n).toLowerCase().startsWith(q.toLowerCase())), 8000);
     const opts = $$('.sr-search__option');
     o[q] = { options: opts.slice(0, 5).map((n) => ({ t: text(n).slice(0, 60), h: Math.round(n.getBoundingClientRect().height) })) };
     if (q === 'Kepler-16') await shot('u7-search-results', 500);
@@ -100,10 +110,13 @@ await run('exoCard', async () => {
 await run('photo', async () => {
   await homeView();
   const rec = ctx.recordById('saturn'); ctx.select(rec, { fly: true }); await wait(7000);
-  const m = await import('/js/ui/photomode.js');
-  const p = m.openPhotoMode(ctx, { record: rec }); await wait(1500);
+  await ctx.share.open({ record: rec }); await wait(1500);
+  const door = $$('button').find((b) => /photo mode/i.test(text(b) || b.title || ''));
+  if (!door) return 'no Photo mode button on the share sheet';
+  door.click(); await until(() => $('#sr-photo'), 8000); await wait(1500);
+  const p = { close: () => { const x = $$('#sr-photo button').pop(); if (x) x.click(); } };
   const btns = $$('.sr-photo__time button');
-  const o = { time: box($('.sr-photo__time')), hidden: $('.sr-photo__time') ? $('.sr-photo__time').hidden : null, btns: btns.map((b) => ({ t: text(b), title: b.title, box: box(b) })), bar: box($('.sr-photo__time') && $('.sr-photo__time').parentNode), barScroll: (() => { const bar = $('.sr-photo__time') && $('.sr-photo__time').parentNode; return bar ? [bar.scrollWidth, bar.clientWidth] : null; })() };
+  const o = { allBtns: $$('#sr-photo button').map((b) => ({ t: text(b).slice(0, 14), box: box(b) })), time: box($('.sr-photo__time')), hidden: $('.sr-photo__time') ? $('.sr-photo__time').hidden : null, btns: btns.map((b) => ({ t: text(b), title: b.title, box: box(b) })), bar: box($('.sr-photo__time') && $('.sr-photo__time').parentNode), barScroll: (() => { const bar = $('.sr-photo__time') && $('.sr-photo__time').parentNode; return bar ? [bar.scrollWidth, bar.clientWidth] : null; })() };
   await shot('u10-photo-bar', 800);
   const t0c = ctx.clock.now();
   if (btns[1]) { btns[1].click(); await wait(900); }
@@ -158,9 +171,51 @@ await run('skyRing', async () => {
   await until(() => ctx.skyView.ownsSky, 25000); await wait(2500);
   ctx.select(best.r, { fly: true }); await wait(6000);
   const tag = $('.sr-tag'); const ringEl = $('[class*="ring"]');
-  await shot('u14-sky-low-satellite', 1500);
-  const o = { id: best.r.id, name: best.r.name, altDeg: +best.alt.toFixed(1), tag: box(tag), ring: ringEl ? { cls: ringEl.className.toString().slice(0, 60), box: box(ringEl) } : null, hud: $$('#hud > *, .sr-hud > *').slice(0, 6).map((n) => ({ c: n.className.toString().slice(0, 40), b: box(n) })) };
+  const hudNow = () => { const p = ctx.positionOfRecord ? ctx.positionOfRecord(best.r) : null; const v = p ? p.clone().project(ctx.camera) : null; const lab = $$('#labels .label, .label').find((n) => text(n) === best.r.name); return { reticle: $('.sr-reticle') ? [$('.sr-reticle').className, box($('.sr-reticle'))] : null, chevron: $('.sr-chevron') ? [$('.sr-chevron').className, box($('.sr-chevron'))] : null, ndc: v ? [+v.x.toFixed(2), +v.y.toFixed(2), +v.z.toFixed(3)] : null, label: box(lab), skyCam: ctx.skyView.camera ? ctx.skyView.camera === ctx.camera : 'no skyView.camera' }; };
+  const hudLog = [hudNow()];
+  await shot('u14-sky-low-satellite', 1500); hudLog.push(hudNow()); await wait(5000); hudLog.push(hudNow());
+  await shot('u15-sky-low-satellite-later', 500);
+  const o = { hudLog, id: best.r.id, name: best.r.name, altDeg: +best.alt.toFixed(1), tag: box(tag), ring: ringEl ? { cls: ringEl.className.toString().slice(0, 60), box: box(ringEl) } : null, hud: $$('#hud > *, .sr-hud > *').slice(0, 6).map((n) => ({ c: n.className.toString().slice(0, 40), b: box(n) })) };
   try { ctx.skyView.leave ? ctx.skyView.leave() : ctx.skyView.exit && ctx.skyView.exit(); } catch { /* stays */ }
+  return o;
+});
+await run('phoneScene', async () => {
+  await homeView(); try { if (ctx.skyView.active) (ctx.skyView.leave || ctx.skyView.exit).call(ctx.skyView); } catch { /* stays */ }
+  const o = { tier: ctx.quality.tier };
+  ctx.clock.setPaused(true); ctx.clock.goTo(Date.UTC(2026, 9, 9, 22, 0));
+  await goTo('earth'); await wait(2500); const d0 = ctx.cameraRig.state.distance;
+  standAt('earth', 165, -25, 1); ctx.cameraRig.flyTo({ distance: d0 * 0.6, ms: 0 }); await shot('p1-earth-night', 4000);
+  for (const [i, id] of ['dso-m42', 'dso-m1', 'dso-m16', 'dso-m42'].entries()) {
+    if (ctx.deselect) ctx.deselect();
+    if (!(await goTo(id, 40000))) continue;
+    await wait(5000); await shot(`p2-${i}-${id}`, 2000);
+    o[i + '-' + id] = { drawn: ctx.nebulae ? ctx.nebulae.drawn(id) : null, budget: ctx.nebulae && ctx.nebulae.budget ? ctx.nebulae.budget() : null, dist: ctx.cameraRig.state.distance, stage: ctx.stage.worldId, pics: (performance.getEntriesByType('resource') || []).filter((e) => /nebula|dso|pictures/i.test(e.name) && /\.(webp|jpg|png|ktx2)/.test(e.name)).map((e) => e.name.split('/').pop()).slice(-12) };
+  }
+  const st = await ctx.wantImagine('3');
+  if (st) { await until(() => ctx.imagine && ctx.imagine.active, 15000); ctx.imagine.freeze(40); ctx.imagine.setView({ phaseDeg: 52, elevationDeg: 14, fill: 2.4 }); await shot('p3-imagine-limb', 3500); o.imagine = ctx.imagine.state().tier; ctx.imagine.stop(); }
+  return o;
+});
+await run('finder', async () => {
+  // The place-made rows, asked for directly: through the worker (sky/findclient.js) and on this thread.
+  const place = { latDeg: 51.5, lonDeg: -0.1, altKm: 0 }; const from = Date.UTC(2026, 10, 10, 20, 0);
+  const m = await import('/js/sky/findclient.js'); const t = performance.now();
+  const rows = await Promise.race([m.findFromPlace(place, from), wait(40000).then(() => 'no answer in 40 s')]);
+  const workerMs = Math.round(performance.now() - t);
+  const c = await import('/js/sky/conjunctions.js'); const t1 = performance.now();
+  const direct = c.findConjunctions({ fromMs: from, days: 30, observer: place });
+  return { worker: rows, workerMs, direct: direct.length, directMs: Math.round(performance.now() - t1) };
+});
+await run('nebulaDiag', async () => {
+  // The pictures' own account of themselves while a phone flies Orion, the Crab, the Eagle, Orion (internal #345).
+  const o = { tier: ctx.quality.tier, budget: null, log: [] };
+  const brief = (id) => { const st = ctx.nebulae && ctx.nebulae.state ? ctx.nebulae.state() : []; const me = st.find((x) => x.id === id.slice(4)); return { ready: st.filter((x) => x.state === 'ready').map((x) => x.id).join(','), loading: st.filter((x) => x.state === 'loading').length, me }; };
+  for (const [i, id] of ['dso-m42', 'dso-m1', 'dso-m16', 'dso-m42'].entries()) {
+    if (ctx.deselect) ctx.deselect();
+    if (!(await goTo(id, 40000))) continue;
+    for (const ms of [500, 2500, 5000]) { await wait(ms === 500 ? 500 : 2500); o.log.push({ i, id, t: ms, ...brief(id) }); }
+    await shot(`n-${i}-${id}`, 500);
+  }
+  o.budget = ctx.nebulae && ctx.nebulae.budget ? ctx.nebulae.budget() : null;
   return o;
 });
 return out;

@@ -66,5 +66,14 @@ const src = ['sky/conjunctions.js', 'sky/findworker.js', 'sky/findclient.js'].ma
 check(!/\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon/.test(src), 'the finder adds no request');
 check(!/from '\.\.\/ui|from '\.\.\/scene|from '\.\.\/copy/.test(read('site/js/sky/conjunctions.js') + read('site/js/sky/findworker.js')), 'and the worker imports only the engine');
 
+// A full list still has the pair's row: it is guaranteed ahead of approaches, perihelia and showers
+// (seen 2026-10-09 in a browser: eight rows and no Mars beside Jupiter), and an empty answer for a
+// new place or day replaces the rows of the one before.
+{
+  const order = /for \(const kind of \[([^\]]+)\]\)/.exec(next);
+  const kinds = order ? order[1].replace(/['\s]/g, '').split(',') : [];
+  check(kinds.includes('conjunction') && kinds.indexOf('conjunction') < kinds.indexOf('approach') && kinds.indexOf('conjunction') < kinds.indexOf('perihelion') && kinds.indexOf('conjunction') > kinds.indexOf('lunar-eclipse'), 'a pair is guaranteed its row after the eclipses and ahead of approaches and perihelia');
+  check(/found = next;/.test(next) && !/!rows \|\| !rows\.length\) return/.test(next), 'an answer with no rows clears the rows of the place before');
+}
 if (problems.length) { console.error(`conjunctions FAILED (${problems.length}):\n  ` + problems.join('\n  ')); process.exit(1); }
 console.log(`conjunctions ok: ${rows.length} close pairs in 150 days over London, each the closest of its pass, up and in the dark, with the rows as drawn in Coming up`);

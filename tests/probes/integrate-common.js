@@ -7,7 +7,9 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const text = (n) => (n ? (n.innerText || n.textContent || '').replace(/\s+/g, ' ').trim() : null);
 const box = (n) => { if (!n) return null; const r = n.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; };
-const run = async (name, fn) => { const t = Date.now(); try { out[name] = await fn(); } catch (e) { out.errors.push(name + ': ' + String(e && e.stack || e).slice(0, 400)); } (out.ms = out.ms || {})[name] = Date.now() - t; };
+// `&only=a,b` in the address runs those sections alone.
+const ONLY = (new URLSearchParams(location.search).get('only') || '').split(',').filter(Boolean);
+const run = async (name, fn) => { if (ONLY.length && !ONLY.includes(name)) return; const t = Date.now(); try { out[name] = await fn(); } catch (e) { out.errors.push(name + ': ' + String(e && e.stack || e).slice(0, 400)); } (out.ms = out.ms || {})[name] = Date.now() - t; };
 window.addEventListener('unhandledrejection', (e) => out.errors.push('rej: ' + String(e.reason && e.reason.message || e.reason).slice(0, 200)));
 const phone = innerWidth < 600;
 out.vw = innerWidth; out.vh = innerHeight; out.tier = ctx.quality && ctx.quality.tier;

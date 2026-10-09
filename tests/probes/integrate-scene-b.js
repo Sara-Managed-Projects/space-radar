@@ -8,6 +8,21 @@ const { propagate } = await import('/js/propagate/index.js');
 const shadow = await import('/js/scene/shadow.js');
 const sceneOf = (rec, t) => { const p = propagate(rec, t); return p ? stage.toSceneInto(p, p.frame || rec.frame, new THREE.Vector3(), t) : null; };
 const sunNow = () => norm(ctx.worlds.meshFor('earth').material.uniforms.uSunDir.value);
+await run('earthIce', async () => {
+  // Greenland at its noon and Antarctica by day, each with the sheen and without it (public #260).
+  ctx.clock.setPaused(true);
+  await goTo('earth'); await wait(2500);
+  const u = ctx.worlds.meshFor('earth').material.uniforms; const d0 = ctx.cameraRig.state.distance;
+  ctx.clock.goTo(Date.UTC(2026, 9, 9, 14, 40)); await wait(1500);
+  for (const [name, up, k] of [['greenland', -62, 0.55], ['antarctica', 68, 0.6], ['whole-day', -20, 1]]) {
+    standAt('earth', 5, up, 1); ctx.cameraRig.flyTo({ distance: d0 * k, ms: 0 });
+    await shot(`c0-${name}-day`, 5000);
+    if (u.uIceSheen) { const was = u.uIceSheen.value; u.uIceSheen.value = 0; await shot(`c0-${name}-day-sheen-off`, 1500); u.uIceSheen.value = was; }
+  }
+  ctx.cameraRig.flyTo({ distance: d0, ms: 0 });
+  ctx.clock.goTo(Date.now()); ctx.clock.setPaused(false);
+  return { d0, sheen: u.uIceSheen ? u.uIceSheen.value : null };
+});
 await run('iss', async () => {
   const q = ctx.quality; let want = 2;
   ctx.quality = new Proxy(q, { get: (t, k) => (k === 'tier' ? want : t[k]) });
@@ -66,7 +81,8 @@ await run('lander', async () => {
 });
 await run('moons', async () => {
   const o = {};
-  for (const id of ['iapetus', 'vesta', 'ceres']) {
+  const byName = (re) => { const r = ctx.records().find((x) => re.test(x.name || '')); return r ? r.id : null; };
+  for (const id of ['iapetus', byName(/^(4 )?Vesta$/i) || 'vesta', 'dwarf-ceres']) {
     if (ctx.deselect) ctx.deselect();
     if (!(await goTo(id, 30000))) { o[id] = 'no record'; continue; }
     const m = ctx.worlds.meshFor(id);
@@ -89,6 +105,32 @@ await run('exoplanet', async () => {
     await shot(`e-${id}-arrival`, 3000);
     ctx.cameraRig.flyTo({ distance: d0 * 0.3, ms: 0 }); await shot(`e-${id}-limb`, 4000);
     o[id] = { d0, stage: ctx.stage.worldId, card: text($('#sr-card')) ? text($('#sr-card')).slice(0, 500) : null };
+  }
+  return o;
+});
+await run('exoDiag', async () => {
+  // A planet of another star pushed in on its system's stage, step by step, with what its face says.
+  const o = {};
+  const id = new URLSearchParams(location.search).get('exo') || 'exo-kepler-186-f';
+  if (!(await goTo(id, 40000))) return 'no record';
+  await wait(5000);
+  const faces = () => { const a = []; ctx.systems.group.traverse((m) => { if (m.isMesh && m.material && m.material.uniforms && m.material.uniforms.uSeed) a.push(m); }); return a; };
+  const nearest = () => { let best = null; const p = new THREE.Vector3(); for (const m of faces()) { const d = m.getWorldPosition(p).distanceTo(ctx.camera.position); if (!best || d < best.d) best = { m, d }; } return best; };
+  const say = () => { const n = nearest(); if (!n) return null; const u = n.m.material.uniforms; return { dist: n.d, scale: n.m.scale.x, visible: n.m.visible, verts: n.m.geometry.attributes.position.count, detail: u.uDetail ? u.uDetail.value : null, high: u.uHigh ? u.uHigh.value : null, frost: u.uFrost ? u.uFrost.value : null, near: ctx.camera.near, far: ctx.camera.far, rig: ctx.cameraRig.state.distance }; };
+  await until(() => nearest(), 25000); await wait(1500);
+  if (!nearest()) return { faces: faces().length, stage: ctx.stage.worldId, active: ctx.systems.active };
+  const d0 = ctx.cameraRig.state.distance;
+  for (const k of [1, 0.6, 0.45, 0.3]) {
+    // The rig keeps no direction of its own between flights: give it the one it has.
+    const n0 = nearest(); const c = n0.m.getWorldPosition(new THREE.Vector3()); const cam = ctx.camera.position;
+    ctx.cameraRig.flyTo({ offset: norm(V(cam.x - c.x, cam.y - c.y, cam.z - c.z)), distance: d0 * k, ms: 0 }); await shot(`g-push-${k}`, 3000); o['k' + k] = say();
+  }
+  const n = nearest();
+  if (n && n.m.material.uniforms.uDetail) {
+    const u = n.m.material.uniforms; const real = u.uDetail;
+    u.uDetail = { get value() { return 0; }, set value(v) { /* held at none */ } }; n.m.material.uniformsNeedUpdate = true;
+    await shot('g-push-0.3-detail-off', 2500); o.detailOff = say();
+    u.uDetail = real;
   }
   return o;
 });
