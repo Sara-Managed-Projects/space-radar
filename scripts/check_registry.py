@@ -4703,6 +4703,10 @@ def main() -> int:
                 continue
             path, _, name = str(ref).partition("#")
             target = ROOT / path
+            # A copy of the registry without the site's modules (tests/test_growth.py makes one) has
+            # nothing to look the table up in: the form is still held there, the file is not.
+            if name and not (ROOT / "site" / "js").is_dir():
+                continue
             if not name or not target.is_file():
                 fail(where, f"`select: {{{key}: {ref}}}` must be `<file>#<EXPORT>` naming a file that exists")
             elif not re.search(rf"^export const {re.escape(name)}\b", target.read_text(encoding="utf-8"), re.M):
