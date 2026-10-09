@@ -143,7 +143,7 @@ function ensureHost() {
   if (host && host.isConnected) return host;
   host = document.getElementById(HOST_ID);
   if (!host) {
-    host = el('aside', 'sr-card');
+    host = el('div', 'sr-card');
     host.id = HOST_ID;
     document.body.appendChild(host);
   }
