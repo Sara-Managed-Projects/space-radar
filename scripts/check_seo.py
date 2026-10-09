@@ -262,6 +262,9 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         h = Head()
         h.feed(f.read_text(encoding="utf-8"))
         url = page_url(base, f)
+        # The growth rules (own twitter:image and share picture, one H1, the footer's pages) are for the pages scripts/seo_pages.py and
+        # build_seo.py make; the embed gallery (scripts/seo_embed.py) is judged by the rules above it only.
+        growth_page = base == built and f.name != "404.html" and f.parent.name != "embed"
         # The footer is on the home page, the object pages, the 404 page and the pages built beside
         # them; a trip page is a redirect stub with nothing to read and has none.
         if f.parent.name != "t":
@@ -335,11 +338,11 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         if h.one("twitter:card") not in ("summary", "summary_large_image"):
             say(f"{rel}: no twitter:card")
         tw = h.one("twitter:image")
-        if base == built and not tw:
+        if growth_page and not tw:
             say(f"{rel}: no twitter:image")
         elif tw and tw != img:
             say(f"{rel}: twitter:image {tw} is not og:image {img}")
-        if base == built and f.name != "404.html":
+        if growth_page:
             page_images[url] = img or ""
             if drawn:
                 if not (img or "").startswith(f"{HOST}/share/"):
@@ -362,7 +365,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         if url not in in_sitemap:
             say(f"{rel} is an indexable page and the sitemap does not list it")
 
-        if base == built and f.name != "404.html":
+        if growth_page:
             here = f.parent.relative_to(built).as_posix()
             for href in h.hrefs:
                 clean = html.unescape(href).split("#")[0].split("?")[0]
