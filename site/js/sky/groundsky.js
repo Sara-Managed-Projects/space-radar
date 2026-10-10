@@ -285,15 +285,16 @@ void main() {
   vec3 c = texture2D(uMap, vUv).rgb;
   // THE 2k PANORAMA HAS THE STARS BAKED IN (internal #547, 2026-10-10): Sirius, Mirzam and the rest are
   // two or three texels of light, which at a 14 degree field are soft tilted squares beside the true
-  // stars. A morphological opening (the least of the centre and four neighbours two texels away) takes
-  // out what is narrower than four texels and leaves the Milky Way, which is wide. uTexel is zero for
-  // the 4k map, which NASA made without the stars.
+  // stars. A spike is cut to what its four neighbours three texels away say, plus a little (a plain
+  // minimum of the five took the noise of the map with it and the whole faint glow went): what is
+  // narrower than six texels and brighter than its surroundings by more than a hair is not the Milky
+  // Way. uTexel is zero for the 4k map, which NASA made without the stars.
   if (uTexel.x > 0.0) {
-    vec3 cl = texture2D(uMap, vUv - vec2(2.0 * uTexel.x, 0.0)).rgb;
-    vec3 cr = texture2D(uMap, vUv + vec2(2.0 * uTexel.x, 0.0)).rgb;
-    vec3 cu = texture2D(uMap, vUv + vec2(0.0, 2.0 * uTexel.y)).rgb;
-    vec3 cd = texture2D(uMap, vUv - vec2(0.0, 2.0 * uTexel.y)).rgb;
-    c = min(c, min(min(cl, cr), min(cu, cd)));
+    vec3 cl = texture2D(uMap, vUv - vec2(3.0 * uTexel.x, 0.0)).rgb;
+    vec3 cr = texture2D(uMap, vUv + vec2(3.0 * uTexel.x, 0.0)).rgb;
+    vec3 cu = texture2D(uMap, vUv + vec2(0.0, 3.0 * uTexel.y)).rgb;
+    vec3 cd = texture2D(uMap, vUv - vec2(0.0, 3.0 * uTexel.y)).rgb;
+    c = min(c, 0.25 * (cl + cr + cu + cd) + 0.015);
   }
   // The panorama's floor is a dim brown everywhere; only what stands above it is the Milky Way.
   c = max(c - 0.012, 0.0);
