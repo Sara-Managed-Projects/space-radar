@@ -930,6 +930,17 @@ ESA's terms mean for the catalogues inside it, and we are not lawyers. Credit to
 the stars are shown with credits: *Stars: HYG v4.4 and AT-HYG v4.0, David Nash, CC BY-SA 4.0;
 from the Hipparcos and Tycho-2 catalogues (ESA).*
 
+*Read again on 2026-10-10 (for the line "deeper stars", internal #547):* AT-HYG's page on Codeberg
+(<https://codeberg.org/astronexus/athyg>) still says "This work is licensed under a Creative Commons
+Attribution-ShareAlike 4.0 International License" and describes the database as one with "over 2.5
+million stars", built on Tycho-2, whose coverage the same page gives as "essentially complete to V = 11,
+mostly complete to V = 11.5". So the stars between magnitude 10.5 and 11 are available under the licence
+this site already follows; they have not been added (the cut at 10.5 is in `scripts/build-startiles.py`,
+and the reduced subset it reads, `athyg_40_reduced_m11`, already stops at 11). Tycho-2 itself: the
+Copenhagen page (<https://www.astro.ku.dk/~erik/Tycho-2/>) states no licence and the CDS ReadMe for I/259
+(<https://cdsarc.cds.unistra.fr/ftp/I/259/ReadMe>) could not be read through the page fetcher, so Tycho-2
+directly is not adopted. Gaia stays out for the reason above.
+
 **The colour of the sky** (`site/js/sky/skyair.js`) is computed, not a picture: sunlight scattered
 once by air (Rayleigh) and haze (Mie) with ozone's absorption, using the coefficients the graphics
 literature has used since Nishita et al., *Display of the Earth taking into account atmospheric
