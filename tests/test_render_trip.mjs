@@ -199,6 +199,7 @@ const tl = timeline(SHEET);
     spans, duration: tl.duration,
   });
   check(plan.inputs.filter((a) => a === '-i').length === 5 && plan.inputs.indexOf('-stream_loop') === 8, 'four clips, then the bed, looped at its input');
+  check(plan.inputs[plan.inputs.indexOf('-stream_loop') + 2] === '-t' && Number(plan.inputs[plan.inputs.indexOf('-stream_loop') + 3]) > 0, 'the looped bed is bounded at its input: a mix that cannot run for ever');
   check(plan.filter.includes('[0:a]') && plan.filter.includes('adelay=4667:all=1[v0]') && plan.filter.includes('adelay=23333:all=1[v1]'), 'each clip is delayed to its arrival, in ms');
   check(plan.filter.includes('[4:a]') && plan.filter.includes('atrim=0:80,afade=t=in:st=0:d=1.5,afade=t=out:st=78.5:d=1.5'), 'the bed is trimmed to the film and fades in and out');
   check(plan.filter.includes(`[beds]volume='${expr}':eval=frame[music]`), 'the duck is on the music only');
