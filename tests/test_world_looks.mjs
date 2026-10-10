@@ -128,6 +128,11 @@ check(!recs.get('mars').meta.departure && !recs.get('jupiter').meta.departure, '
   const marsR = WORLDS.find((w) => w.id === 'mars').radiusKm;
   check(sagKm(marsR, segmentsFor('mars').width) < 0.5, `Mars's facets sag ${sagKm(marsR, segmentsFor('mars').width).toFixed(3)} km`);
   check(segmentsFor('jupiter').width === 64 && segmentsFor('earth').width === 64, 'every other world keeps its 64 x 48');
+  // The fine cut is worn near only (CI's trips walk, 2026-10-10: two dots cost 61 000 triangles at every stop).
+  const { fineCutWanted, FINE_CUT_AT } = await import(join(JS, 'scene/worlds.js'));
+  check(fineCutWanted(0) === false && fineCutWanted(FINE_CUT_AT / 2) === false && fineCutWanted(FINE_CUT_AT) === true && fineCutWanted(40) === true && fineCutWanted(NaN) === false, 'a dot wears the 64 x 48 sphere, a disc the fine one');
+  // 35 km over the Moon (the nearest the camera goes) is a disc many times the view: the fine cut is on there.
+  check(fineCutWanted(1737.4 / (1737.4 + 35) / Math.tan(22.5 * Math.PI / 180)), 'at a ground site the fine cut is worn');
 }
 
 if (problems.length) { console.error(`world looks: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }

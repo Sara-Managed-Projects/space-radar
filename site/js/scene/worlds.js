@@ -1086,6 +1086,12 @@ export function oblateRadii(f) {
  */
 export const SITE_BODIES = new Set(['moon', 'mars']);
 export function segmentsFor(id) { return SITE_BODIES.has(id) ? { width: 192, height: 96 } : { width: 64, height: 48 }; }
+/**
+ * The fine cut is worn from this disc size up (a share of HALF the view's height, as discShare gives it): 0.05
+ * is a disc 45 px across in a view 900 px tall, where 64 segments are a third of a pixel from round. Pure.
+ */
+export const FINE_CUT_AT = 0.05;
+export function fineCutWanted(share) { return Number.isFinite(share) && share >= FINE_CUT_AT; }
 /** The deepest a facet sags under the sphere, km: the middle of a longitude step on the equator. Pure. */
 export function sagKm(radiusKm, widthSegments) { return radiusKm * (1 - Math.cos(Math.PI / widthSegments)); }
 
@@ -1517,6 +1523,12 @@ export function createWorlds(scene, opts = {}) {
           ? new THREE.MeshBasicMaterial({ map, color: tint, toneMapped: false, fog: false })
           : worldMaterial(map, tint),
       );
+    // The fine cut is for the camera near the ground; from anywhere else the world is drawn with the 64 x 48
+    // sphere it always had (update() swaps them by the disc's size on screen, fineCutWanted).
+    if (!w.look.earth && SITE_BODIES.has(w.id)) {
+      mesh.userData.cut = { fine: mesh.geometry, coarse: w.look.oblate ? oblateGeometry(w.look.oblate, 64, 48) : new THREE.SphereGeometry(1, 64, 48) };
+      mesh.geometry = mesh.userData.cut.coarse;
+    }
     if (!w.look.earth && w.look.map) {
       const material = mesh.material;
       const job = {
@@ -1935,6 +1947,17 @@ export function createWorlds(scene, opts = {}) {
         if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchShape(w.id);
       }
     }
+    // 5b. The two finely cut worlds (the Moon and Mars, for their ground sites) wear the fine sphere only when
+    //     they are a disc on screen. Found by CI's trips walk on 2026-10-10: 61 000 triangles a frame for two
+    //     dots, at every stop of every trip, and nine star-stage stops over triangles_per_stop.
+    for (const id of SITE_BODIES) {
+      const mesh = meshes.get(id);
+      const cut = mesh && mesh.userData.cut;
+      if (!cut) continue;
+      const g = fineCutWanted(discShare(id)) ? cut.fine : cut.coarse;
+      if (mesh.geometry !== g) mesh.geometry = g;
+    }
+
     // 6. Past the count this device may hold, the world that has been a dot the longest gives its
     //    map back (MAPS_HELD).
     trimMaps();
@@ -2297,6 +2320,7 @@ export function createWorlds(scene, opts = {}) {
   function dispose() {
     if (stage.viewAdjust === viewAdjust) stage.setViewAdjust(null);
     for (const mesh of meshes.values()) {
+      if (mesh.userData.cut) { mesh.userData.cut.fine.dispose(); mesh.userData.cut.coarse.dispose(); }
       mesh.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {
