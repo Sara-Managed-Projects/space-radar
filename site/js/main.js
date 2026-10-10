@@ -2068,9 +2068,10 @@ function createQuality(ctx, renderer, starfield, worlds) {
   const aniso = renderer.capabilities && renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 8;
   const loader = new THREE.TextureLoader();
   const earthMesh = () => worlds.meshFor('earth');
+  const deviceOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
   const tiers = createTextureTiers({
     tier: pick.tier,
-    offline: () => typeof navigator !== 'undefined' && navigator.onLine === false,
+    offline: deviceOffline,
     month: () => new Date(clock.now()).getUTCMonth() + 1,
     // decode() before the texture is handed over: Chrome otherwise decodes a 4k image on the main
     // thread inside the upload, in the middle of a frame.
@@ -2131,6 +2132,9 @@ function createQuality(ctx, renderer, starfield, worlds) {
   const tilesSaveData = shouldSaveData(nav.connection);
   function planetTilesWanted() {
     if (planetTilesAsked || tilesSaveData || tiers.latched || tiers.tier < 1) return;
+    // OFFLINE (internal #564, the integration pass of 2026-10-10): a kept trip played with no network asked
+    // NASA's Moon mosaic for six tiles that could only fail. Asked again by the next tick once the network is back.
+    if (deviceOffline()) return;
     if (!worlds.ids().some((id) => id !== 'sun' && worlds.discShare(id) >= (id === 'earth' ? EARTH_TILES_AT : PLANET_TILES_AT))) return;
     planetTilesAsked = true;
     import('./scene/tiles.js').then((m) => {

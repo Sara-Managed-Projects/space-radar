@@ -29,5 +29,9 @@ check(/\.sr-scalebadge\s*\{[^}]*top:\s*calc\(var\(--sr-top-y\)\s*\+\s*var\(--sr-
 const labels = read('site/js/ui/labels.js');
 check(/tooFarForFrame\(pr\.dist, frameDist, r\)/.test(labels) && /stage\.worldId !== 'sun'/.test(labels), 'the notable names pass through tooFarForFrame, on a world stage in a trip only (#546)');
 
+// Offline (#564): the texture tiers and the planet tiles ask the same question, and neither asks the network then.
+const mainJs = read('site/js/main.js');
+check(/offline: deviceOffline,/.test(mainJs) && /tiers\.tier < 1\) return;[\s\S]{0,400}?if \(deviceOffline\(\)\) return;[\s\S]{0,300}?planetTilesAsked = true;/.test(mainJs), 'offline, neither the sharper maps nor the planet tiles are asked for (#564)');
+
 if (problems.length) { console.error('bulk3 a FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('bulk3 a ok: the search list above the launch chip, the sky field line under it');
