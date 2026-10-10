@@ -17,4 +17,5 @@ export const ALIASES = {
   "galactic centre": "sagittarius a",
   "cone nebula": "christmas tree cluster",
   "lobster nebula": "war and peace"
+  "pillars of creation": "eagle nebula",
 };
