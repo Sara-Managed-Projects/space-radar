@@ -5183,6 +5183,17 @@ def main() -> int:
     for t in terms:
         if not t.get("term") or not t.get("say"):
             fail("glossary.yaml", f"incomplete row {t!r}")
+            continue
+        # A glossary entry is defined in the same unit as the sentence that sends the
+        # reader to it: the card prints both at once, so a definition the card cuts off
+        # mid-claim is the same defect as a sentence it cuts off. Checked where the string
+        # is written, like MAX_SENTENCE on a card's first sentence and `why:`.
+        if len(str(t.get("say"))) > MAX_SENTENCE:
+            fail(
+                f"glossary.yaml[{t.get('term')}]",
+                f"say is {len(str(t.get('say')))} characters, over {MAX_SENTENCE}: "
+                f"one sentence a curious fourteen-year-old can hold",
+            )
     for s in showers:
         where = f"showers.yaml[{s.get('id')}]"
         peak = s.get("peak", "")
