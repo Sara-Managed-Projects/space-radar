@@ -2352,7 +2352,7 @@ export const GLOSSARY = {
   'low Earth orbit':
     'The busy shell from about 200 to 2000 km up. The station, most satellites and most of the debris are here.',
   geostationary:
-    'An orbit 35 786 km up where one lap takes as long as the Earth takes to turn once, 23 hours 56 minutes. So it seems to hang over one spot.',
+    'An orbit 35 786 km up where one lap takes as long as the Earth takes to turn once, 23 hours 56 minutes. So the satellite seems to hang over one spot.',
   'polar orbit':
     'An orbit over the poles. The Earth turns underneath, so the satellite eventually sees every part of it.',
   elements:
