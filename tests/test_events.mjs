@@ -277,6 +277,40 @@ const auckland = place(-36.8485, 174.7633);
     check(rows(from + 26 * 3600e3 - 1).length >= 0 && rows(from + 6 * 60e3).every((e) => e.t > from - 3600e3), 'no row of the kept list is from before the list');
     notes.push(`a day of station passes for the Coming up list: ${coldMs.toFixed(0)} ms, ${warmMs.toFixed(2)} ms a minute later`);
   }
+  // 7b. The passes off the main thread (internal #562): a runner is handed in, the list is not blocked ------------
+  {
+  const { usePassRunner, onPassesReady, passWorkCount } = await import(join(JS, 'data/events.js'));
+  const { runPasses } = await import(join(JS, 'sky/passworker.js'));
+  const { runPassesSliced, SLICE } = await import(join(JS, 'sky/passclient.js'));
+  const from = Date.parse('2026-09-13T16:00:00Z');
+  const obs = { ...madridObs, latDeg: 52.2, latRad: 52.2 * Math.PI / 180, lonDeg: 0.1, lonRad: 0.1 * Math.PI / 180 };
+  const rowsOf = (ms) => buildEvents(stations, ms, { observer: obs }).filter((e) => e.type === 'station-pass');
+  const reference = rowsOf(from);                       // worked out in place, no runner
+  const asked = [];
+  usePassRunner((msg) => { asked.push(msg); return Promise.resolve(runPasses(msg)); });
+  const obs2 = { ...obs, latDeg: 52.3, latRad: 52.3 * Math.PI / 180 };
+  let ready = 0;
+  const off = onPassesReady(() => { ready += 1; });
+  const n0 = passWorkCount();
+  const before = buildEvents(stations, from, { observer: obs2 }).filter((e) => e.type === 'station-pass');
+  check(before.length === 0 && asked.length === 1, 'with a runner the first list has no passes yet and the day of passes was asked of it, once');
+  buildEvents(stations, from + 1000, { observer: obs2 });
+  check(asked.length === 1, 'asking again while the answer is on its way does not ask twice');
+  await new Promise((r) => setTimeout(r, 20));
+  check(ready === 1, 'the list is told when the answer is in');
+  const after = buildEvents(stations, from, { observer: obs2 }).filter((e) => e.type === 'station-pass');
+  usePassRunner(null);
+  const inPlace = buildEvents(stations, from + 2000, { observer: { ...obs2, altKm: 0.001 } }).filter((e) => e.type === 'station-pass');
+  check(after.length > 0 && after.length === buildEvents(stations, from, { observer: obs2 }).filter((e) => e.type === 'station-pass').length, 'after the answer the passes are in the list');
+  check(asked[0].records.every((r) => r.satrec && r.id !== undefined) && asked[0].hours === 24, 'the message carries plain records and 24 hours');
+  check(passWorkCount() >= n0 + 1, 'the work is counted');
+  check(reference.length > 0 && inPlace.length > 0, 'without a runner the passes are worked out in place as before');
+  off();
+  const sliced = await runPassesSliced(asked[0], (fn) => fn());
+  const whole = runPasses(asked[0]);
+  const key = (ps) => ps.map((p) => `${p.recordId}@${p.startMs}`).sort().join();
+  check(SLICE >= 1 && key(sliced.passes) === key(whole.passes) && whole.passes.length > 0, `worked out in slices of ${SLICE} records the passes are the same ${whole.passes.length}`);
+  }
 }
 
 // 8. The nearest-city helper -------------------------------------------------------------------------

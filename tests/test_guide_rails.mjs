@@ -118,6 +118,7 @@ const OFF_GRID_KNOWN = { 6: 7, 10: 3, 14: 2, 3: 3, 5: 3, 22: 2, 9: 1, 0.75: 1 };
       if (fam) faces.set(fam, (faces.get(fam) || new Set()).add(String(d.get('font-weight'))));
     }
   }
+  for (const k of [...faces.keys()]) if (/ Fallback$/.test(k)) faces.delete(k); // local() size-adjusted stand-ins (internal #553), not loaded faces
   check(faces.size === 3, `site/css/fonts.css loads three families (${[...faces.keys()]})`);
   const ui = strip(readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8'));
   const familyOf = {};

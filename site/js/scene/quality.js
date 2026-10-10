@@ -73,6 +73,92 @@ export function createFrameLatch(opts = {}) {
   return { push, median, force, get latched() { return latched; } };
 }
 
+// --- the resolution scale before the latch (internal #521, 2026-10-10) -----------------------------------
+//
+// THE MEASURED PROBLEM (docs/performance-research-2026-10-09.md section 4): one stall, another tab loading,
+// tripped the latch for good, and the visit lost relief, earthshine, the tiles and the 4k maps. THE STEP
+// IN BETWEEN: a ladder of pixel ratios, 2, 1.5, 1.25, 1 (never above the device's own, nor above
+// MAX_DPR in scene/renderer.js). The same test that trips the latch (a 20-frame median over 33 ms for
+// three seconds) now takes one step DOWN the ladder, at least three seconds after the last step, and the
+// window starts empty after a step so the new resolution is measured on its own frames. The median under
+// 12 ms (the tier promoter's test) for ten seconds takes one step UP, only while the picture is calm (no
+// trip, no camera move). At the bottom step the latch is fed as before and stays the last resort: it is
+// still one-way, and once it has tripped the ladder is frozen at 1. A device whose ratio is already 1
+// has a ladder of one step, so for it nothing changes: the latch is fed from the first frame.
+
+/** The pixel ratios the scale may take, highest first (the device's own ratio is put on top, capped at 2). */
+export const SCALE_STEPS = [2, 1.5, 1.25, 1];
+
+export function createScaleGovernor(opts = {}) {
+  const dpr = Math.min(2, Number.isFinite(opts.deviceRatio) && opts.deviceRatio > 0 ? opts.deviceRatio : 1);
+  const steps = [dpr, ...SCALE_STEPS.filter((x) => x < dpr)];
+  const windowFrames = opts.windowFrames || 20;
+  const downMs = opts.downMs || 33;
+  const upMs = opts.upMs || 12;
+  const downHoldMs = opts.downHoldMs || 3000;
+  const upHoldMs = opts.upHoldMs || 10000;
+  const minGapMs = opts.minGapMs || 3000;
+  const frames = [];
+  const scratch = [];
+  let i = 0;
+  let overSince = null;
+  let underSince = null;
+  let changedAt = -Infinity;
+  let frozen = false;
+
+  function median() {
+    if (!frames.length) return 0;
+    const a = sortedInto(scratch, frames);
+    const h = a.length >> 1;
+    return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
+  }
+  function stepTo(next, nowMs) {
+    i = next;
+    changedAt = nowMs;
+    frames.length = 0;
+    overSince = null;
+    underSince = null;
+  }
+
+  /**
+   * Feed one frame. `calm` is false while a trip runs or the camera moves (a step UP waits for it;
+   * a step down does not, because a stalling picture is worse than a softer one). Returns true on the
+   * frame that changed the step, and `scale` is then the new ratio.
+   */
+  function push(frameMs, nowMs, calm = true) {
+    if (frozen || !Number.isFinite(frameMs) || frameMs <= 0) return false;
+    frames.push(Math.min(frameMs, 1000));
+    if (frames.length > windowFrames) frames.shift();
+    if (frames.length < windowFrames) return false;
+    const m = median();
+    if (m > downMs) {
+      underSince = null;
+      if (overSince === null) overSince = nowMs;
+      if (i < steps.length - 1 && nowMs - overSince >= downHoldMs && nowMs - changedAt >= minGapMs) { stepTo(i + 1, nowMs); return true; }
+    } else if (m < upMs && i > 0) {
+      overSince = null;
+      if (underSince === null) underSince = nowMs;
+      if (calm && nowMs - underSince >= upHoldMs && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
+    } else {
+      overSince = null;
+      underSince = null;
+    }
+    return false;
+  }
+
+  return {
+    push,
+    median,
+    /** The latch has tripped: the ladder stops where it is (the latch itself takes the ratio to 1). */
+    freeze() { frozen = true; },
+    get scale() { return steps[i]; },
+    get step() { return i; },
+    get steps() { return steps.slice(); },
+    /** On the lowest step: the frame latch is fed from here, and only from here. */
+    get atFloor() { return i === steps.length - 1; },
+  };
+}
+
 // --- the idle frame rate (internal #520, 2026-10-09) ---------------------------------------------
 //
 // The loop in main.js drew every animation frame, sixty a second, whatever was on screen. With the

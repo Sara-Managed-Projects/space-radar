@@ -1173,6 +1173,11 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Chapter two: the long quiet ends"
+        # read 2026-10-10, https://english.news.cn/20230121/644885df0b3b47fda77f0d4061c066c1/c.html
+        # (Xinhua, 21 January 2023, a second page for the same claim): "So far, Yutu-2 has worked
+        # for more than four years"; the rover and lander woke on 15 and 16 January, "ushering in
+        # their 51st lunar day of work". The page says "worked", the card says "driving": the
+        # NSSDCA table note below says "still mobile".
         card:
           title: "The side that never faces us"
           # NSSDCA 2018-103A: "Since the lander is on the far side, the Moon is blocking direct
@@ -1181,6 +1186,11 @@ tours:
           # landing. NSSDCA table note z: "Yutu 2 rover still mobile as of January 2023", four
           # years after the landing on 3 January 2019. At 177.6 E the Earth stays below the
           # horizon whatever the Moon's wobble, which reaches about eight degrees of longitude.
+          # read 2026-10-10, https://english.news.cn/20230121/644885df0b3b47fda77f0d4061c066c1/c.html
+          # (Xinhua, 21 January 2023, a second page for the same claim): "So far, Yutu-2 has worked
+          # for more than four years"; the rover and lander woke on 15 and 16 January, "ushering in
+          # their 51st lunar day of work". The page says "worked", the card says "driving": the
+          # NSSDCA table note above says "still mobile".
           body: >-
             From here the Earth is always below the horizon, so the Moon itself blocks any radio
             link home. China first put a relay satellite, Queqiao, out beyond the Moon, and the

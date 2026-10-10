@@ -102,6 +102,23 @@ def files() -> list[tuple[tuple, str, str]]:
     return [(face, sub, f"{face[1]}-{face[2]}-{sub}.woff2") for face in FACES for sub in face[7]]
 
 
+# THE FALLBACK FACES (internal #553, 2026-10-10). A local system face under its own family name, with
+# size-adjust and the vertical overrides chosen so it takes the web face's width and line height: put
+# after the web face in a font stack (css/ui.css), it is what draws until the web face lands, and the
+# swap moves nothing. The numbers come from scripts/font_fallbacks.py (the average advance of an English
+# letter sample in the subset against the system face; the hhea metrics divided by that ratio). The
+# system face is Arial/Courier New wherever they exist (Mac, Windows); a machine without them goes on to
+# the next name in the stack, as it did before.
+# (family, weight, local faces, size-adjust %, ascent %, descent %, line-gap %)
+FALLBACK_FACES = [
+    ("Inter Fallback", 400, ("Arial",), 107.45, 90.16, 22.45, 0.0),
+    ("Inter Fallback", 600, ("Arial Bold",), 101.27, 95.66, 23.82, 0.0),
+    ("Barlow Semi Condensed Fallback", 500, ("Arial Narrow",), 108.45, 92.21, 18.44, 0.0),
+    ("Barlow Semi Condensed Fallback", 600, ("Arial Narrow Bold",), 101.36, 98.66, 19.73, 0.0),
+    ("JetBrains Mono Fallback", 400, ("Courier New",), 99.98, 102.02, 30.0, 0.0),
+]
+
+
 def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -125,6 +142,25 @@ def css() -> str:
             "  font-display: swap;",
             f"  src: url('../fonts/{name}') format('woff2');",
             f"  unicode-range: {SUBSETS[sub]};",
+            "}",
+            "",
+        ]
+    lines += [
+        "/* The fallback faces (internal #553): a system face scaled to the web face's width and line height,",
+        "   named after it, so the swap does not move a line. scripts/font_fallbacks.py has the numbers. */",
+        "",
+    ]
+    for family, weight, local, size, ascent, descent, gap in FALLBACK_FACES:
+        lines += [
+            "@font-face {",
+            f"  font-family: '{family}';",
+            "  font-style: normal;",
+            f"  font-weight: {weight};",
+            "  src: " + ", ".join(f"local('{n}')" for n in local) + ";",
+            f"  size-adjust: {size:.2f}%;",
+            f"  ascent-override: {ascent:.2f}%;",
+            f"  descent-override: {descent:.2f}%;",
+            f"  line-gap-override: {gap:.2f}%;",
             "}",
             "",
         ]

@@ -47,7 +47,7 @@ globalThis.fetch = async (url) => {
 };
 
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
-const { createGroundSky } = await import(join(JS, 'sky/groundsky.js'));
+const { createGroundSky, groundPictureCaps, GROUND_PICTURE_TIERS, openingTexel } = await import(join(JS, 'sky/groundsky.js'));
 const A = await import(join(ROOT, 'site/vendor/astronomy.js'));
 
 const observer = { latDeg: 35.2, lonDeg: -111.65, altKm: 2.1 };
@@ -182,6 +182,21 @@ ground.dispose();
 check(group.children.length === 0 && labelsHost.children.length === 0 && !wrap.children.some((c) => c.className.includes('sr-skytag')), 'dispose() leaves nothing in the scene or the page');
 void pointed; void pathToFileURL;
 
+// the Milky Way's baked stars (internal #547): the 2k panorama is opened, the star-free 4k one is not
+{
+  const t = openingTexel(2048, 1024);
+  check(Math.abs(t[0] - 1 / 2048) < 1e-12 && Math.abs(t[1] - 1 / 1024) < 1e-12, 'a 2k panorama is opened by its own texel');
+  check(openingTexel(4096, 2048)[0] === 0 && openingTexel(8192, 4096)[1] === 0, 'a 4k panorama is not');
+  check(openingTexel(undefined, undefined)[0] === 0 && openingTexel(0, 0)[0] === 0 && openingTexel(NaN, 5)[1] === 0, 'a missing image is not');
+}
+// the pictures' GPU memory by tier (internal #447 / #345)
+{
+  const w = 1440;
+  check(groundPictureCaps(0, w).art === 4 && groundPictureCaps(1, w).art === 8 && groundPictureCaps(2, w).art === 12 && groundPictureCaps(2, w).pictures === 10, 'caps rise with the tier');
+  check(groundPictureCaps(2, 390).art === 6 && groundPictureCaps(2, 390).pictures === 6 && groundPictureCaps(0, 390).art === 4, 'a narrow window never holds more than six');
+  check(groundPictureCaps(undefined, w).art === 8 && groundPictureCaps(9, w).art === 12 && groundPictureCaps(-3, w).art === 4 && groundPictureCaps(1, NaN).art === 8, 'an unknown tier is a laptop; the tier is clamped');
+  check(GROUND_PICTURE_TIERS.every((r, i, a) => i === 0 || (r.art >= a[i - 1].art && r.pictures >= a[i - 1].pictures)), 'never fewer on a higher tier');
+}
 if (problems.length) { console.error('ground sky smoke FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`ground sky smoke ok: noon, dusk and night run; ${st.drawn} stars in the eye's draw range, ${z.tileStars} more from ${z.tiles.tiles} tiles at 7 degrees; hills, then a city; a tap in Orion says so; trails on and off; nothing left behind`);
 process.exit(0);

@@ -193,6 +193,10 @@ jobs:
         run: node tests/test_objectnow.mjs
       - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
         run: python3 tests/test_ktx2_plan.py
+      - name: "The AVIF trial finds the lowest quality at the SSIM floor, for both codecs (internal #530; skips without Pillow's AVIF)"
+        run: python3 tests/test_avif_trial.py
+      - name: "the Milky Way shader's spike cut takes the baked stars out of the 2k panorama and keeps its glow (internal #547; skips without NumPy)"
+        run: python3 tests/test_milkyway_opening.py
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)
@@ -824,6 +828,12 @@ jobs:
         run: python3 tests/test_release_zip.py
       - name: "the stripped tree: the scanner on its hard cases, every module through it"
         run: python3 tests/test_minify.py
+      - name: "the boot timeline's budget rows, judgement and probe (internal #528)"
+        run: node tests/test_boot_timeline.mjs
+      - name: "the sky from the ground's Milky Way shader opens the 2k panorama, whose stars are baked in (internal #547; reads source text)"
+        run: node tests/test_sky_shaders_src.mjs
+      - name: "shader text in templates loses its comments and indentation, each shader checked, switched off by default (internal #553 / #531)"
+        run: python3 tests/test_strip_shaders.py
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
         run: node tests/test_precompress.mjs
       - name: "the minifier a deploy runs: pinned by hash, licence headers kept, maps true, and the node tests pass against the tree it writes (internal #515)"

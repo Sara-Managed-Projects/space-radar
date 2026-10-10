@@ -225,6 +225,46 @@ let passMemo = null;
 let passWork = 0;
 /** How many times a day of passes has been worked out (tests/test_events.mjs counts, rather than times, the memo). */
 export const passWorkCount = () => passWork;
+
+// OFF THE MAIN THREAD (internal #562, 2026-10-10). Even kept for a quarter of an hour, the first working
+// out after boot, and each one after a jumped clock or a new place, was one task of 1.5 to 3.6 s. A page
+// that hands in a runner (ui/next.js: sky/passclient.js, the worker that already runs predictPasses for
+// the Tonight view) gets the rows it HAS (an expired answer for the same place and elements, with the
+// passes that ended left out; otherwise none) and is told through onPassesReady when the new answer is
+// in. Nothing hands in a runner in node, so the tests and every other caller work as they did.
+let passRunner = null;
+let passPending = '';
+const passListeners = new Set();
+/** `run(message) -> Promise<{passes}>` (sky/passclient.js runPasses), or null to work them out in place again. */
+export function usePassRunner(run) { passRunner = typeof run === 'function' ? run : null; passPending = ''; }
+/** Call `fn` when a day of passes has been worked out off the main thread; returns the way to stop. */
+export function onPassesReady(fn) { passListeners.add(fn); return () => passListeners.delete(fn); }
+
+function askRunner(withOrbits, key, nowMs, observer) {
+  if (passPending === key) return;
+  passPending = key;
+  const byId = new Map(withOrbits.map((r) => [r.id, r]));
+  const msg = {
+    fromMs: nowMs,
+    hours: 24,
+    observer: { latRad: observer.latRad, lonRad: observer.lonRad, latDeg: observer.latDeg, lonDeg: observer.lonDeg, altKm: observer.altKm || 0 },
+    records: withOrbits.map((r) => ({ id: r.id, name: r.name, satrec: r.satrec, meta: {} })),
+  };
+  passWork += 1;
+  new Promise((resolve) => resolve(passRunner(msg))).then((data) => {
+    if (passPending === key) passPending = '';
+    const rows = [];
+    for (const p of (data && data.passes) || []) {
+      const record = byId.get(p.recordId);
+      if (!record || p.visible !== true) continue;
+      const item = { kind: 'pass', record, tMs: p.startMs, peakEl: p.peakEl };
+      rows.push({ item, endMs: Number.isFinite(p.endMs) ? p.endMs : p.startMs + 15 * 60e3 });
+    }
+    passMemo = { key, atMs: nowMs, rows };
+    for (const fn of [...passListeners]) { try { fn(); } catch { /* a listener is its own business */ } }
+  }).catch(() => { if (passPending === key) passPending = ''; });
+}
+
 function passItems(records, nowMs, observer) {
   const out = [];
   if (!validObserver(observer)) return out;
@@ -235,6 +275,11 @@ function passItems(records, nowMs, observer) {
   const key = [observer.latRad, observer.latDeg, observer.lonRad, observer.lonDeg, observer.altKm, withOrbits.length, withOrbits[0].id, epochs].join('|');
   if (passMemo && passMemo.key === key && nowMs >= passMemo.atMs && nowMs - passMemo.atMs < PASS_MEMO_MS) {
     return passMemo.rows.filter((row) => row.endMs > nowMs).map((row) => ({ ...row.item }));
+  }
+  if (passRunner) {
+    askRunner(withOrbits, key, nowMs, observer);
+    // The last answer for the same place and elements is better than a blank while the new one is on its way.
+    return passMemo && passMemo.key === key && nowMs >= passMemo.atMs ? passMemo.rows.filter((row) => row.endMs > nowMs).map((row) => ({ ...row.item })) : [];
   }
   try {
     passWork += 1;

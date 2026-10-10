@@ -60,7 +60,7 @@ for (const f of fields) check(new RegExp(`\\n\\s+${f}: `).test(call), `main.js's
 const at = (needle) => { const i = loop.indexOf(needle); if (i < 0) check(false, `main.js's loop has no \`${needle}\``); return i; };
 check(at('if (idle.skip(nowReal)) return;') < at('clock.tick(dt);') && at('requestAnimationFrame(frame);\n    if (idle.skip(nowReal)) return;') > 0, 'a skipped frame does nothing: the gate is asked first, before the clock ticks');
 check(at('idle.drew(nowReal, movingReasons({') > at('\n    render();'), 'the question is asked after render(), which is what brings the camera up to this frame');
-check(/!capped && latch\.push\(frameMs, nowReal\)/.test(loop) && /if \(!capped\) ctx\.quality\.frame\(frameMs, nowReal, latch\.latched\)/.test(loop), 'a capped frame is not fed to the latch or to the tier promoter');
+check(/!capped && !latch\.latched\) \{[\s\S]*?scaler\.push\(frameMs, nowReal, calm\)[\s\S]*?latch\.push\(frameMs, nowReal\)/.test(loop) && /if \(!capped\) ctx\.quality\.frame\(frameMs, nowReal, latch\.latched\)/.test(loop), 'a capped frame is not fed to the scale, the latch or the tier promoter');
 check(/const capped = idle\.capped\(nowReal\) \|\| wasCapped;/.test(loop), 'nor is the first frame after the cap lifts, whose length was the cap\'s');
 check(/heroes\.update\(t, \{ frameMs: capped \? freeFrameMs : frameMs,/.test(loop), 'the model pool is told the device\'s own frame time, not the cap\'s');
 check(/film: !!ctx\.renderMode,/.test(call) && /trip: !!\(st && st\.phase !== 'idle'\),/.test(call) && /autopilot: !!\(ctx\.autopilot && ctx\.autopilot\.engaged\),/.test(call) && /sky: !!\(ctx\.skyView && ctx\.skyView\.active\),/.test(call),

@@ -193,6 +193,24 @@ jobs:
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --embed=25544 --out=.ci-screens/first-visit-embed-25544.json
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --info --out=.ci-screens/first-visit-source.json'
 
+      # THE BOOT AS A TIMELINE (internal #528): first paint, the main module, the layers, every long task and
+      # the total blocking time of the same boot, on the tree a deploy uploads. REPORT ONLY: the numbers
+      # are in this step's log and in boot-timeline.json, and `--gate` (the two rows in
+      # registry/budgets.yaml) is added here when someone has looked at the first runner's numbers.
+      - name: The boot as a timeline
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/boot-timeline.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/boot-timeline.json'
+
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
       - name: The shots are not empty
@@ -216,6 +234,7 @@ jobs:
             .ci-screens/*.png
             .ci-screens/first-visit.json
             .ci-screens/first-visit-source.json
+            .ci-screens/boot-timeline.json
           if-no-files-found: error
 
   # THE UI GATE (internal #374, spec 0061 task 6; docs/ui-guide.md section 7). tests/probes/ui_probe.js

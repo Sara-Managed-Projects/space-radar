@@ -8,6 +8,9 @@
     python3 scripts/minify_site.py --out /tmp/x --node node      # and `node --check` every output
     python3 scripts/minify_site.py --out /tmp/x --esbuild auto   # then a real minifier over the modules,
                                                                  # with a source map beside each (see below)
+    python3 scripts/minify_site.py --out /tmp/x --shaders        # and strip the comments and indentation of
+                                                                 # shader text in templates (OFF unless asked, or
+                                                                 # SR_STRIP_SHADERS=1; scripts/strip_shaders.py)
 
 WHY (internal #405, 2026-10-06). The source is the project's documentation: every module says why
 it is the way it is, at length, and that is not negotiable. But there is no build step, so every
@@ -388,7 +391,8 @@ def kept_comments(stripped: str) -> list[str]:
     return seen
 
 
-def minify_modules(site: Path, out: Path, esbuild: str, stripped: dict[str, str]) -> tuple[int, int]:
+def minify_modules(site: Path, out: Path, esbuild: str, stripped: dict[str, str],
+                   inputs: dict[str, str] | None = None) -> tuple[int, int]:
     """Run esbuild over the ES modules among `stripped` ({site-relative path: first-pass text}).
 
     Rewrites out/<path> and writes out/<path>.map. Returns (files, bytes written). Raises SystemExit
@@ -400,13 +404,22 @@ def minify_modules(site: Path, out: Path, esbuild: str, stripped: dict[str, str]
     if not todo:
         return 0, 0
     total = 0
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as src:
+        # `inputs` (--shaders): the modules whose shader text was stripped, with the same line numbers as
+        # the source (strip_shaders keep_lines), are what esbuild reads; every other module is read from
+        # the site as it is. The map's sourcesContent is put back to the source as written below.
+        reads = site
+        if inputs:
+            reads = Path(src)
+            for rel in todo:
+                (reads / rel).parent.mkdir(parents=True, exist_ok=True)
+                (reads / rel).write_text(inputs.get(rel, (site / rel).read_text(encoding="utf-8")), encoding="utf-8")
         # One process for all of them; the paths go in a file because there are hundreds.
         done = subprocess.run(
             [esbuild, *todo, f"--outdir={tmp}", "--outbase=.", "--minify", "--format=esm", "--target=es2020",
              "--sourcemap=linked", "--sources-content=true", "--legal-comments=none", "--charset=utf8",
              "--log-level=warning"],
-            cwd=site, capture_output=True, text=True)
+            cwd=reads, capture_output=True, text=True)
         if done.returncode != 0 or done.stderr.strip():
             # A warning is a refusal too: esbuild warns about code that means something else than
             # it says (a duplicate case, an assignment to a constant), and that is not for a deploy
@@ -422,6 +435,8 @@ def minify_modules(site: Path, out: Path, esbuild: str, stripped: dict[str, str]
             # Not this machine's folders: the same map from any checkout.
             smap["sources"] = [f"source:///{rel}"]
             smap["file"] = Path(rel).name
+            if inputs and rel in inputs:
+                smap["sourcesContent"] = [(site / rel).read_text(encoding="utf-8")]
             target = out / rel
             text = f"{banner}{code}\n//# sourceMappingURL={Path(rel).name}.map\n"
             target.write_text(text, encoding="utf-8")
@@ -434,11 +449,15 @@ def minify_modules(site: Path, out: Path, esbuild: str, stripped: dict[str, str]
 
 
 def build(site: Path, out: Path, tree: bool = False, node: str | None = None, quiet: bool = False,
-          esbuild: str | None = None) -> int:
+          esbuild: str | None = None, shaders: bool | None = None) -> int:
     """Write the stripped js/, css/ and vendor/ under `out`. Returns 0, or 1 when --node refuses a file."""
     if out.exists() and any(out.iterdir()):
         raise SystemExit(f"minify_site: {out} is not empty; give it a new folder")
     out.mkdir(parents=True, exist_ok=True)
+    if shaders is None:
+        shaders = os.environ.get("SR_STRIP_SHADERS", "") not in ("", "0")
+    shader_inputs: dict[str, str] = {}
+    shader_saved = 0
     before = after = 0
     kept: list[tuple[str, str]] = []
     written: list[Path] = []
@@ -460,6 +479,19 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
             except Unreadable as why:
                 kept.append((rel.as_posix(), str(why)))
                 small = text
+            if shaders and suffix == ".js" and small is not text:
+                # scripts/strip_shaders.py: only a template that is a shader, each one checked; off unless asked.
+                import strip_shaders
+                try:
+                    plain, st = strip_shaders.strip_shader_templates(small, keep_lines=False)
+                    if st["changed"]:
+                        shader_saved += st["before"] - st["after"]
+                        if esbuild:
+                            # esbuild reads the source as written: give it the same lines, blanked.
+                            shader_inputs[rel.as_posix()] = strip_shaders.strip_shader_templates(text, keep_lines=True)[0]
+                        small = plain
+                except (Unreadable, strip_shaders.Unreadable) as why:
+                    kept.append((rel.as_posix(), f"shader strip refused: {why}"))
             target.write_text(small, encoding="utf-8")
             # The source's own time, so `aws s3 sync` uploads what changed and not all of it.
             stat = path.stat()
@@ -480,9 +512,11 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
             except get_esbuild.Refused as why:
                 raise SystemExit(f"minify_site: {why}")
         was = sum(len(t.encode("utf-8")) for rel, t in first_pass.items() if not rel.endswith(".min.js") and MODULE.search(t))
-        count, now = minify_modules(site, out, esbuild, first_pass)
+        count, now = minify_modules(site, out, esbuild, first_pass, shader_inputs or None)
         after += now - was
         second = f"; esbuild minified {count} modules, {was} B -> {now} B, a source map beside each"
+    if shaders:
+        second += f"; shader text stripped (--shaders), {shader_saved} B less before the minifier"
     if tree:
         # Everything else the bucket serves, as links: the textures and models are hundreds of
         # megabytes and are not changed by this.
@@ -519,9 +553,12 @@ def main() -> int:
     ap.add_argument("--tree", action="store_true", help="also link everything else in site/ into --out, so it can be served whole")
     ap.add_argument("--node", help="a node binary: `node --check` every stripped module, exit 1 if one fails")
     ap.add_argument("--esbuild", help="`auto` (the pinned binary of scripts/get_esbuild.py) or a path: minify the ES modules after stripping them, with source maps")
+    ap.add_argument("--shaders", action="store_true", default=None,
+                    help="also strip comments and indentation from shader text in templates (scripts/strip_shaders.py); off unless given or SR_STRIP_SHADERS=1")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
-    return build(args.site, args.out, tree=args.tree, node=args.node, quiet=args.quiet, esbuild=args.esbuild)
+    return build(args.site, args.out, tree=args.tree, node=args.node, quiet=args.quiet, esbuild=args.esbuild,
+                 shaders=args.shaders)
 
 
 if __name__ == "__main__":

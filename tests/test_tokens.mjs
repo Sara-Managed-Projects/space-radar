@@ -478,7 +478,12 @@ for (const f of FILES) {
 // here first, and so does a font file nobody declares (it would ship, and a preload would fetch it).
 const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
 const css = [...FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')), fontsCss].join('\n');
-const faces = [...strip(css).matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
+const allFaces = [...strip(css).matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
+// The fallback faces (internal #553) are a local system face scaled to a web face: no file, no range.
+const fallbackFaces = allFaces.filter((b) => /font-family:\s*['"][^'"]+ Fallback['"]/.test(b));
+const faces = allFaces.filter((b) => !fallbackFaces.includes(b));
+for (const b of fallbackFaces) check(/src:\s*local\('[^']+'\)/.test(b) && /size-adjust:\s*[\d.]+%/.test(b) && /ascent-override:/.test(b) && /descent-override:/.test(b) && !/url\(/.test(b), `a fallback face is local() with size-adjust and overrides: ${b.trim().slice(0, 60)}`);
+check(fallbackFaces.length === 5, `five fallback faces (${fallbackFaces.length})`);
 const families = new Set(faces.map((b) => (/font-family:\s*["']?([^;"']+)/.exec(b) || [])[1]).filter(Boolean).map((f) => f.trim()));
 const FACES = ['Inter', 'Barlow Semi Condensed', 'JetBrains Mono'];
 check(families.size === 3 && FACES.every((f) => families.has(f)), `@font-face declares ${[...families].join(', ') || 'nothing'}; exactly Inter, Barlow Semi Condensed and JetBrains Mono`);
@@ -490,9 +495,9 @@ for (const b of faces) {
   check(/font-display:\s*swap/.test(b), 'every face swaps: the system face first, never invisible text');
   check(/unicode-range:/.test(b), 'every face names its unicode-range, so a Latin page never fetches Cyrillic');
 }
-check(/^'Inter',/.test(token('--sr-font') || ''), `--sr-font starts with Inter (${token('--sr-font')})`);
-check(/^'JetBrains Mono',/.test(token('--sr-font-mono') || ''), `--sr-font-mono starts with JetBrains Mono (${token('--sr-font-mono')})`);
-check(/^'Barlow Semi Condensed',/.test(token('--sr-font-hud') || ''), `--sr-font-hud starts with Barlow Semi Condensed (${token('--sr-font-hud')})`);
+check(/^'Inter', 'Inter Fallback',/.test(token('--sr-font') || ''), `--sr-font starts with Inter (${token('--sr-font')})`);
+check(/^'JetBrains Mono', 'JetBrains Mono Fallback',/.test(token('--sr-font-mono') || ''), `--sr-font-mono starts with JetBrains Mono (${token('--sr-font-mono')})`);
+check(/^'Barlow Semi Condensed', 'Barlow Semi Condensed Fallback',/.test(token('--sr-font-hud') || ''), `--sr-font-hud starts with Barlow Semi Condensed (${token('--sr-font-hud')})`);
 // No serif anywhere: not a token, not a family in a rule or a builder, not a file, not a preload.
 check(!tokens.has('--sr-font-serif'), '--sr-font-serif is defined; names and titles are sans (Ivan, 2026-10-03)');
 {
