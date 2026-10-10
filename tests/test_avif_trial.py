@@ -22,7 +22,7 @@ import avif_trial  # noqa: E402
 
 rng = np.random.default_rng(7)
 y, x = np.mgrid[0:256, 0:256]
-img = np.stack([(x + y) / 2, 255 - x, (y * 2) % 256], axis=-1) + rng.normal(0, 3, (256, 256, 3))
+img = np.stack([(x + y) / 2 + 40 * np.sin(x / 9.0), 255 - x + 30 * np.cos(y / 7.0), (y * 2) % 256 * 0.6 + 60], axis=-1) + rng.normal(0, 0.8, (256, 256, 3))
 orig = Image.fromarray(np.clip(img, 0, 255).astype("uint8"))
 luma = orig.convert("L")
 bad = []
