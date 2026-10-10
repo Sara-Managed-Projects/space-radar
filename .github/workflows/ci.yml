@@ -640,6 +640,8 @@ jobs:
       # six fetches at once, none on tier 0, on data-saver or after the latch, a failing host left alone.
       - name: a close Moon or Mars is drawn from map tiles, fetched only when the camera is near and never on a first visit
         run: node tests/test_tiles.mjs
+      - name: Shader uniform names (a tile's added uniforms do not collide with the world's)
+        run: node tests/test_shader_uniform_names.mjs
       # Spec 0066 (2026-10-03): weather on every world. A wind profile to an angular rate against the
       # papers' jets, the two-phase clock that lets a still map flow, Mars's season against NASA's
       # dates, NOAA's lightning map (a saved picture) decoded and scheduled, the one-line shader patch,

@@ -912,7 +912,10 @@ uniform float uRingOpacity;
 uniform float uWrap;        // Venus: daylight carried past the terminator by a deep cloud deck; 0 elsewhere
 uniform float uContrast;    // Saturn: the map's departure from its own mean, multiplied; 1 elsewhere
 uniform vec3  uMapMean;     // that mean, in linear light
-uniform sampler2D uRelief;  // Mercury: local relief, 0.5 = level ground (registry/textures.yaml mercury-relief)
+// Named uGlobeRelief, not uRelief: scene/tiles.js builds its shader from this one and declares its
+// own "uniform vec2 uRelief"; two declarations of one name do not compile, and from 2026-10-08 to
+// 2026-10-10 no close-up tile of the Moon or Mars was drawn because of it.
+uniform sampler2D uGlobeRelief;  // Mercury: local relief, 0.5 = level ground (registry/textures.yaml mercury-relief)
 uniform vec3  uReliefK;     // slope per unit of difference between two texels either side; the texel's u; its v
 varying vec2 vUv;
 varying vec3 vNormalW;
@@ -959,8 +962,8 @@ void main() {
   // differences, tips the normal the light is worked out with. The silhouette is still the ball's.
   float dGeo = dot( n, uSunDir );
   if ( uReliefK.x > 0.0 ) {
-    float hE = texture2D( uRelief, vUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uRelief, vUv - vec2( uReliefK.y, 0.0 ) ).r;
-    float hN = texture2D( uRelief, vUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uRelief, vUv - vec2( 0.0, uReliefK.z ) ).r;
+    float hE = texture2D( uGlobeRelief, vUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uGlobeRelief, vUv - vec2( uReliefK.y, 0.0 ) ).r;
+    float hN = texture2D( uGlobeRelief, vUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, vUv - vec2( 0.0, uReliefK.z ) ).r;
     vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
     vec3 north = cross( n, east );
     // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
@@ -1059,7 +1062,7 @@ export function worldMaterial(map, tint) {
       uWrap: { value: 0 },
       uContrast: { value: 1 },
       uMapMean: { value: new THREE.Vector3(0.5, 0.5, 0.5) },
-      uRelief: { value: null },
+      uGlobeRelief: { value: null },
       uReliefK: { value: new THREE.Vector3(0, 0, 0) },
     },
   });
@@ -1444,7 +1447,7 @@ export function createWorlds(scene, opts = {}) {
       tex.needsUpdate = true;
       faceTex.set(key, tex);
       const u = mesh.material.uniforms;
-      u.uRelief.value = tex;
+      u.uGlobeRelief.value = tex;
       u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
     });
     return true;
@@ -1458,7 +1461,7 @@ export function createWorlds(scene, opts = {}) {
       const mesh = meshes.get(w.id);
       const key = `${w.id}/relief`;
       const tex = faceTex.get(key);
-      if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uRelief.value = null; }
+      if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uGlobeRelief.value = null; }
       if (tex && tex.dispose) tex.dispose();
       faceTex.delete(key);
     }
@@ -1989,7 +1992,7 @@ export function createWorlds(scene, opts = {}) {
     bootMap.delete(id);
     current.delete(id);
     if (tex.dispose) tex.dispose();
-    if (m.uniforms && m.uniforms.uReliefK) { m.uniforms.uReliefK.value.set(0, 0, 0); m.uniforms.uRelief.value = null; }
+    if (m.uniforms && m.uniforms.uReliefK) { m.uniforms.uReliefK.value.set(0, 0, 0); m.uniforms.uGlobeRelief.value = null; }
     for (const [key, face] of faceTex) {
       if (!key.startsWith(`${id}/`)) continue;
       if (face && face.dispose) face.dispose();

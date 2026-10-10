@@ -33,7 +33,7 @@ check(byId.get('saturn').look.contrast.gain === SATURN_CONTRAST && SATURN_CONTRA
 // ---- 2. the shader ----------------------------------------------------------------------------
 check(/if \( uContrast != 1\.0 \) base = clamp\( uMapMean \+ \( base - uMapMean \) \* uContrast, 0\.0, 1\.0 \);/.test(WORLD_FRAG), 'the contrast is about the map\'s own mean, and clamped');
 check(/float dLit = uWrap > 0\.0 \? \( d \+ uWrap \) \/ \( 1\.0 \+ uWrap \) : d;/.test(WORLD_FRAG), 'the wrap is (d + w) / (1 + w): full at the sub-solar point, 0 at asin(w) past the terminator');
-check(/if \( uReliefK\.x > 0\.0 \) \{[\s\S]*?texture2D\( uRelief/.test(WORLD_FRAG) && (WORLD_FRAG.match(/texture2D\( uRelief/g) || []).length === 4, 'the relief is four reads behind its uniform: none without it');
+check(/if \( uReliefK\.x > 0\.0 \) \{[\s\S]*?texture2D\( uGlobeRelief/.test(WORLD_FRAG) && (WORLD_FRAG.match(/texture2D\( uGlobeRelief/g) || []).length === 4, 'the relief is four reads behind its uniform: none without it');
 check(/direct \*= smoothstep\( -0\.03, 0\.05, dGeo \)/.test(WORLD_FRAG), 'a slope facing the Sun beyond the ball\'s terminator stays dark');
 check(/varying vec3 vEastW;/.test(WORLD_VERT) && /varying vec3 vEastW;/.test(WORLD_FRAG), 'east on the ground comes from the vertex shader');
 
