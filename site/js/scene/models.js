@@ -4379,10 +4379,13 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
 
   // comet tails: already anti-sunward from the basis above; scale with heliocentric distance
   if (obj.userData.tails) {
-    const au = Number(meta.rAu);
+    // `userData.sunAu` and `userData.selected` are written each frame by heroes.js, as `burn` is. Until the
+    // integration pass of 2026-10-10 NOTHING wrote `meta.rAu` or `meta.selected`, so the distance was never
+    // known and every comet drew its tail wherever it was: 2I/Borisov at 48.8 au was seen with one.
+    const au = cometSunAu(obj.userData, meta);
     const len = Number.isFinite(au) ? Math.min(2.5, Math.max(0.35, 1 / (au * au))) : 1;
     obj.userData.tails.scale.set(len, 1, 1);
-    obj.userData.tails.visible = cometTailVisible(au, !!meta.selected);
+    obj.userData.tails.visible = cometTailVisible(au, obj.userData.selected !== undefined ? !!obj.userData.selected : !!meta.selected);
   }
 }
 
@@ -4394,6 +4397,17 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
  * ours and illustrative; the tail itself is, as the card says. A comet with no known distance keeps its tail. Pure.
  */
 export const COMET_TAIL_SELECTED_AU = 3;
+/** A comet's distance from the Sun in au: the frame's own (heroes.js writes `sunAu` on the object), else the record's, else NaN. Pure. */
+export function cometSunAu(userData, meta) {
+  const live = userData ? userData.sunAu : undefined;
+  if (Number.isFinite(live)) return live;
+  return Number(meta && meta.rAu);
+}
+/** The distance from the Sun of a propagated position, in au, when its frame is the Sun's; NaN otherwise. Pure. */
+export function sunAuOf(p) {
+  if (!p || p.frame !== 'sun-inertial' || !Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) return NaN;
+  return Math.hypot(p.x, p.y, p.z) / 149597870.7;
+}
 export function cometTailVisible(au, selected) {
   if (!Number.isFinite(au)) return true;
   return au < 1.5 || (!!selected && au < COMET_TAIL_SELECTED_AU);

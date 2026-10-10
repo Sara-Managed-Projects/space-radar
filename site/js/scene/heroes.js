@@ -904,6 +904,9 @@ export function createHeroes(scene, ctx) {
       // the origin for anything on or around the stage's own, the drawn disc for a site on
       // another (nadirOf).
       nadirOf(c.record, c.pos, drawnCentre, _v);
+      // A comet's tail goes by its distance from the Sun and by whether it is the selected one
+      // (models.js cometTailVisible): per-frame state on the object, as `burn` is.
+      if (obj.userData.tails) { obj.userData.sunAu = M.sunAuOf(c.p); obj.userData.selected = c.record.id === selectedId; }
       M.updateModelAttitude(obj, c.record, sun, _v, tMs);
 
       // The contact shadow leans away from the Sun, in the model's own frame (groundShadowPose).

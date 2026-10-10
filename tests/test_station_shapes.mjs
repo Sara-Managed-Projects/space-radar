@@ -817,7 +817,15 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(cometTailVisible(2, true) && cometTailVisible(COMET_TAIL_SELECTED_AU - 0.01, true), 'a selected comet keeps it a little further out');
   check(!cometTailVisible(COMET_TAIL_SELECTED_AU, true) && !cometTailVisible(30, true) && !cometTailVisible(51, true), 'a selected comet at 3, 30 or 51 au has none');
   check(cometTailVisible(NaN, false) && cometTailVisible(undefined, true), 'a comet with no distance keeps its tail, as before');
-  check(/cometTailVisible\(au, !!meta\.selected\)/.test(readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8')), 'the model update uses the rule');
+  // The rule needs the distance, and until 2026-10-10 nothing gave it one (every comet kept its tail).
+  const { cometSunAu, sunAuOf } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const AU = 149597870.7;
+  check(Math.abs(sunAuOf({ frame: 'sun-inertial', x: 48.8 * AU, y: 0, z: 0 }) - 48.8) < 1e-9 && Number.isNaN(sunAuOf({ frame: 'earth-inertial', x: 1, y: 2, z: 3 })) && Number.isNaN(sunAuOf(null)), 'a position in the Sun\'s frame gives the distance; any other gives none');
+  check(cometSunAu({ sunAu: 48.8 }, {}) === 48.8 && cometSunAu({}, { rAu: 2 }) === 2 && Number.isNaN(cometSunAu({}, {})), 'the frame\'s own distance first, the record\'s next, else none');
+  check(!cometTailVisible(cometSunAu({ sunAu: sunAuOf({ frame: 'sun-inertial', x: 0, y: 48.8 * AU, z: 0 }) }, {}), true), 'Borisov at 48.8 au, selected, has no tail');
+  const modelsSrc = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  const heroesSrc = readFileSync(join(ROOT, 'site/js/scene/heroes.js'), 'utf8');
+  check(/cometTailVisible\(au, obj\.userData\.selected !== undefined/.test(modelsSrc) && /userData\.sunAu = M\.sunAuOf\(c\.p\); obj\.userData\.selected = c\.record\.id === selectedId/.test(heroesSrc), 'the model update uses the rule, and the frame loop hands it the distance and the selection');
 }
 
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
