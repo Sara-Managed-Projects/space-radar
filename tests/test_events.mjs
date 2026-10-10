@@ -299,6 +299,20 @@ const auckland = place(-36.8485, 174.7633);
   await new Promise((r) => setTimeout(r, 20));
   check(ready === 1, 'the list is told when the answer is in');
   const after = buildEvents(stations, from, { observer: obs2 }).filter((e) => e.type === 'station-pass');
+  // A catalogue that lands a moment later (other elements, the same place): the rows stay while the new answer
+  // is on its way, each with the record the catalogue holds now; a new place starts from nothing.
+  {
+    // The same satellites with elements a breath newer: another key, as when a fresher catalogue lands.
+    const fewer = stations.map((r) => (r.satrec ? { ...r, satrec: { ...r.satrec, jdsatepoch: r.satrec.jdsatepoch + 1e-6 } } : { ...r }));
+    const kept = buildEvents(fewer, from + 3000, { observer: obs2 }).filter((e) => e.type === 'station-pass');
+    const ids = new Set(fewer.map((r) => r.id));
+    const want = after.filter((e) => ids.has(e.record.id)).length;
+    check(asked.length === 2 && kept.length === want && want > 0, `a second catalogue for the same place asks again and keeps the rows meanwhile (${kept.length} of ${want}, asked ${asked.length})`);
+    check(kept.every((e) => fewer.includes(e.record)), 'each kept row holds the record of the catalogue as it is now');
+    const moved = buildEvents(fewer, from + 3500, { observer: { ...obs2, lonDeg: 9, lonRad: 9 * Math.PI / 180 } }).filter((e) => e.type === 'station-pass');
+    check(moved.length === 0, 'another place does not borrow them');
+    await new Promise((r) => setTimeout(r, 20));
+  }
   usePassRunner(null);
   const inPlace = buildEvents(stations, from + 2000, { observer: { ...obs2, altKm: 0.001 } }).filter((e) => e.type === 'station-pass');
   check(after.length > 0 && after.length === buildEvents(stations, from, { observer: obs2 }).filter((e) => e.type === 'station-pass').length, 'after the answer the passes are in the list');

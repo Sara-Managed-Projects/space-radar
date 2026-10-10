@@ -155,8 +155,12 @@ export function createScaleGovernor(opts = {}) {
       if (underSince === null) underSince = nowMs;
       if (calm && nowMs - underSince >= upHold && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
     } else {
+      // Between the two tests (or quick at the top): not slow, so the count toward a step down starts again; not
+      // quick, so this time does not count toward a step up -- but it does not throw the quick seconds away
+      // either. A page has a busy half second now and then (a catalogue landing, a list rebuilt), and ten
+      // UNBROKEN quick seconds were rare enough that the ratio stayed down for a minute in a real browser.
       overSince = null;
-      underSince = null;
+      if (underSince !== null) underSince += frameMs;
     }
     return false;
   }

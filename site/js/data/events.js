@@ -260,11 +260,12 @@ function askRunner(withOrbits, key, nowMs, observer) {
       const item = { kind: 'pass', record, tMs: p.startMs, peakEl: p.peakEl };
       rows.push({ item, endMs: Number.isFinite(p.endMs) ? p.endMs : p.startMs + 15 * 60e3 });
     }
-    passMemo = { key, atMs: nowMs, rows };
+    passMemo = { key, place: key.split('|').slice(0, 5).join('|'), atMs: nowMs, rows };
     for (const fn of [...passListeners]) { try { fn(); } catch { /* a listener is its own business */ } }
   }).catch(() => { if (passPending === key) passPending = ''; });
 }
 
+const placeKey = (o) => [o.latRad, o.latDeg, o.lonRad, o.lonDeg, o.altKm].join('|');
 function passItems(records, nowMs, observer) {
   const out = [];
   if (!validObserver(observer)) return out;
@@ -272,14 +273,21 @@ function passItems(records, nowMs, observer) {
   if (!withOrbits.length) return out;
   let epochs = 0;
   for (const r of withOrbits) epochs += Number(r.satrec.jdsatepoch) || 0;
-  const key = [observer.latRad, observer.latDeg, observer.lonRad, observer.lonDeg, observer.altKm, withOrbits.length, withOrbits[0].id, epochs].join('|');
+  const key = [placeKey(observer), withOrbits.length, withOrbits[0].id, epochs].join('|');
   if (passMemo && passMemo.key === key && nowMs >= passMemo.atMs && nowMs - passMemo.atMs < PASS_MEMO_MS) {
     return passMemo.rows.filter((row) => row.endMs > nowMs).map((row) => ({ ...row.item }));
   }
   if (passRunner) {
     askRunner(withOrbits, key, nowMs, observer);
-    // The last answer for the same place and elements is better than a blank while the new one is on its way.
-    return passMemo && passMemo.key === key && nowMs >= passMemo.atMs ? passMemo.rows.filter((row) => row.endMs > nowMs).map((row) => ({ ...row.item })) : [];
+    // The last answer for the same PLACE is better than a blank while the new one is on its way. Not only for
+    // the same elements (integration pass, 2026-10-10: a second catalogue landing ten seconds after the first
+    // changed the key, and the three passes on the list went away for two seconds and came back): a day-old
+    // prediction is off by seconds, and the row is replaced the moment the worker answers. Each row is handed
+    // the record the catalogue holds NOW under its id; one that has left the catalogue has no row.
+    const place = placeKey(observer);
+    if (!passMemo || passMemo.place !== place || nowMs < passMemo.atMs || nowMs - passMemo.atMs >= 24 * 3600e3) return [];
+    const now = new Map(withOrbits.map((r) => [r.id, r]));
+    return passMemo.rows.filter((row) => row.endMs > nowMs && now.has(row.item.record.id)).map((row) => ({ ...row.item, record: now.get(row.item.record.id) }));
   }
   try {
     passWork += 1;
@@ -290,7 +298,7 @@ function passItems(records, nowMs, observer) {
       out.push(item);
       rows.push({ item: { ...item }, endMs: Number.isFinite(p.endMs) ? p.endMs : p.startMs + 15 * 60e3 });
     }
-    passMemo = { key, atMs: nowMs, rows };
+    passMemo = { key, place: key.split('|').slice(0, 5).join('|'), atMs: nowMs, rows };
   } catch { /* a pass we could not compute is a row we do not print */ }
   return out;
 }

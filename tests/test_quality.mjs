@@ -121,6 +121,21 @@ check(shouldSaveData(undefined) === false && shouldSaveData(null) === false, 'no
   check(g.upHoldMs > 10000 && g.upHoldMs <= 320000, 'the wait has grown, and has a ceiling');
 }
 {
+  // A busy half second now and then (25 ms frames for 0.6 s every 4 s) does not start the ten seconds again.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  let now = 0;
+  for (let n = 0; n < 130; n++) { now += 40; g.push(40, now); }
+  const t0 = now; let upAt = null;
+  while (now - t0 < 40000 && upAt === null) { const ms = ((now - t0) % 4000) < 600 ? 25 : 16.7; now += ms; if (g.push(ms, now)) upAt = now - t0; }
+  check(g.scale === 2 && upAt !== null && upAt < 16000, `quick seconds add up across a busy moment (${upAt} ms)`);
+  // Slow ones (40 ms for a second, every 4 s) are a reason to stay: the count starts again each time.
+  const h = createScaleGovernor({ deviceRatio: 2 });
+  now = 0; for (let n = 0; n < 130; n++) { now += 40; h.push(40, now); }
+  const t1 = now; let moved = false; const was = h.scale;
+  while (now - t1 < 40000) { const ms = ((now - t1) % 4000) < 1000 ? 40 : 16.7; now += ms; if (h.push(ms, now) && h.scale > was) moved = true; }
+  check(!moved, 'a slow second every four keeps the ratio where it is');
+}
+{
   // The resting view (frames capped by choice): rest() counts as quick time, and brings the ratio back.
   const g = createScaleGovernor({ deviceRatio: 2 });
   let now = 0;
