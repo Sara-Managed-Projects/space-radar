@@ -94,5 +94,46 @@ check(shouldSaveData(undefined) === false && shouldSaveData(null) === false, 'no
   check(createScaleGovernor({ deviceRatio: 2 }).push(NaN, 0) === false, 'bad durations are ignored');
 }
 
+{
+  // A 60 Hz screen: frames are never under 16.7 ms, and the ladder still climbs (integration pass, 2026-10-10).
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  let now = 0;
+  for (let n = 0; n < 130; n++) { now += 40; g.push(40, now); }
+  check(g.scale === 1.5, 'a stall takes one step');
+  let upAt = null; const t0 = now;
+  for (let n = 0; n < 900 && upAt === null; n++) { now += 16.7; if (g.push(16.7, now)) upAt = now - t0; }
+  check(g.scale === 2 && upAt > 10000 && upAt < 11500, `sixty frames a second bring the ratio back after ten seconds (${upAt} ms, ratio ${g.scale})`);
+  // 25 ms frames (forty a second) are not quick enough to try a sharper picture.
+  const h = createScaleGovernor({ deviceRatio: 2 });
+  now = 0; for (let n = 0; n < 130; n++) { now += 40; h.push(40, now); }
+  for (let n = 0; n < 2000; n++) { now += 25; h.push(25, now); }
+  check(h.scale === 1.5, 'forty frames a second stay where they are');
+}
+{
+  // A device that cannot hold the higher ratio: quick at 1.5, slow at 2. The step up is tried, fails, and the
+  // wait before the next try doubles each time, so the picture does not pump every thirteen seconds.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  let now = 0; const ups = [];
+  for (let n = 0; n < 130; n++) { now += 40; g.push(40, now); }
+  while (now < 400000) { const ms = g.scale === 2 ? 40 : 16.7; now += ms; const was = g.scale; if (g.push(ms, now) && g.scale > was) ups.push(Math.round(now / 1000)); }
+  const gaps = ups.slice(1).map((t, k) => t - ups[k]);
+  check(ups.length >= 3 && ups.length <= 6 && gaps.every((d, k) => k === 0 || d > gaps[k - 1] * 1.5), `a step up that does not hold is tried less and less often (tries at ${ups.join(', ')} s)`);
+  check(g.upHoldMs > 10000 && g.upHoldMs <= 320000, 'the wait has grown, and has a ceiling');
+}
+{
+  // The resting view (frames capped by choice): rest() counts as quick time, and brings the ratio back.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  let now = 0;
+  for (let n = 0; n < 130; n++) { now += 40; g.push(40, now); }
+  let up = 0;
+  for (let n = 0; n < 250; n++) { now += 50; if (g.rest(now)) up++; }
+  check(up === 1 && g.scale === 2, `ten seconds of rest take one step up (${up}, ratio ${g.scale})`);
+  check(createScaleGovernor({ deviceRatio: 2 }).rest(0) === false, 'at the top there is nothing to climb');
+  const f = createScaleGovernor({ deviceRatio: 2 }); now = 0;
+  for (let n = 0; n < 130; n++) { now += 40; f.push(40, now); }
+  f.freeze(); for (let n = 0; n < 400; n++) { now += 50; f.rest(now); }
+  check(f.scale === 1.5, 'frozen: rest does not climb either');
+}
+
 if (problems.length) { console.error('quality FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('quality ok: the latch trips once after three slow seconds and never on stutters; the resolution scale steps 2, 1.5, 1.25, 1 before the latch and comes back; data-saver follows the connection');

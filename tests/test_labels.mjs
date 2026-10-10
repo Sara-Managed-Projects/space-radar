@@ -331,8 +331,7 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
   check(tooFarForFrame(1.5e8 / 1000, venus, { klass: 'world', id: 'sun' }) === false && tooFarForFrame(384400 / 1000, 0.9, { klass: 'world', id: 'moon' }) === false, 'the Sun and the Moon keep theirs');
   check(tooFarForFrame(384400 / 1000, 0.9, { klass: 'satellite' }) === false && tooFarForFrame(10, 0, { klass: 'probe' }) === false && tooFarForFrame(NaN, 5, {}) === false, 'a Moon-distance name over a 900 km frame stays, and nothing is hidden without a frame');
   check(FAR_FRAME_RATIO === 1000, 'the ratio is a thousand');
-  const src = readFileSync(join(JS, 'ui/labels.js'), 'utf8');
-  check(/tooFarForFrame\(pr\.dist, frameDist, r\)/.test(src) && /stage\.worldId !== 'sun'/.test(src), 'the notable names pass through it, on a world stage in a trip only');
+  // (That ui/labels.js calls it for the notable names is read as text in tests/test_bulk3_a.mjs: this test runs on the built tree too.)
 }
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

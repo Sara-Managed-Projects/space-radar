@@ -111,7 +111,8 @@ function fakeWindow() {
   check(/\[\?&\]render=1/.test(main), 'and only when the address says render=1');
   const index = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
   check(!index.includes('rendermode'), 'index.html does not preload it');
-  check(/!ctx\.renderMode && !capped && latch\.push/.test(main), 'the frame latch is not fed while filming (nor by a frame the idle cap spaced out: tests/test_idle.mjs)');
+  // (Since internal #521 the scale governor stands in front of the latch, inside the same guard.)
+  check(/!ctx\.renderMode && !capped && !latch\.latched\) \{[\s\S]{0,1200}?scaler\.atFloor && latch\.push\(frameMs, nowReal\)/.test(main) && /capped && !document\.hidden && !ctx\.renderMode && !latch\.latched && scaler\.rest\(/.test(main), 'the frame latch is not fed while filming (nor by a frame the idle cap spaced out: tests/test_idle.mjs)');
   const mod = readFileSync(join(ROOT, 'site/js/ui/rendermode.js'), 'utf8');
   check(!/from '\.\/tripframe\.js'/.test(mod), 'render mode does not pull the trip frame in');
 }

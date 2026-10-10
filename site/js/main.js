@@ -2363,6 +2363,11 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
       }
       if (scaler.atFloor && latch.push(frameMs, nowReal)) degrade();
+    } else if (capped && !document.hidden && !ctx.renderMode && !latch.latched && scaler.rest(nowReal)) {
+      // The resting view (the idle cap): its frames are slow by choice and never fed above, so the ladder
+      // would wait for the next thing that moves. Rest counts as quick (scene/quality.js).
+      if (ctx.rendererApi && ctx.rendererApi.setScale) ctx.rendererApi.setScale(scaler.scale);
+      window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
     }
     if (ctx.quality && !document.hidden) {
       if (!capped) ctx.quality.frame(frameMs, nowReal, latch.latched);

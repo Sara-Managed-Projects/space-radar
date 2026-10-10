@@ -85,6 +85,15 @@ export function createFrameLatch(opts = {}) {
 // trip, no camera move). At the bottom step the latch is fed as before and stays the last resort: it is
 // still one-way, and once it has tripped the ladder is frozen at 1. A device whose ratio is already 1
 // has a ladder of one step, so for it nothing changes: the latch is fed from the first frame.
+//
+// THE STEP UP ON A 60 Hz SCREEN (integration pass, 2026-10-10). The frame length fed here is the gap between two
+// animation frames, which a 60 Hz screen never lets under 16.7 ms: with the test at 12 ms the ladder climbed on a
+// 120 Hz screen only, and everyone else kept the soft picture for the visit. The test is 20 ms now (the screen's
+// own rhythm, or better). What that test cannot know is whether the next step up will hold, so a step down that
+// comes within fifteen seconds of a step up DOUBLES the wait before the next try (10 s, 20 s ... 320 s): a
+// device that cannot hold the higher ratio is asked rarely, not every thirteen seconds. And the resting home
+// view draws at twenty frames a second by choice (the idle cap below), frames the loop keeps away from here:
+// rest(now) counts that time as quick, so a visit left alone comes back up too.
 
 /** The pixel ratios the scale may take, highest first (the device's own ratio is put on top, capped at 2). */
 export const SCALE_STEPS = [2, 1.5, 1.25, 1];
@@ -94,7 +103,7 @@ export function createScaleGovernor(opts = {}) {
   const steps = [dpr, ...SCALE_STEPS.filter((x) => x < dpr)];
   const windowFrames = opts.windowFrames || 20;
   const downMs = opts.downMs || 33;
-  const upMs = opts.upMs || 12;
+  const upMs = opts.upMs || 20;
   const downHoldMs = opts.downHoldMs || 3000;
   const upHoldMs = opts.upHoldMs || 10000;
   const minGapMs = opts.minGapMs || 3000;
@@ -105,6 +114,10 @@ export function createScaleGovernor(opts = {}) {
   let underSince = null;
   let changedAt = -Infinity;
   let frozen = false;
+  let upHold = upHoldMs;
+  let lastUpAt = -Infinity;
+  const bounceMs = opts.bounceMs || 15000;
+  const maxUpHoldMs = opts.maxUpHoldMs || 320000;
 
   function median() {
     if (!frames.length) return 0;
@@ -113,6 +126,8 @@ export function createScaleGovernor(opts = {}) {
     return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
   }
   function stepTo(next, nowMs) {
+    if (next < i) lastUpAt = nowMs;
+    else if (nowMs - lastUpAt < bounceMs) upHold = Math.min(maxUpHoldMs, upHold * 2); // the step up did not hold
     i = next;
     changedAt = nowMs;
     frames.length = 0;
@@ -138,7 +153,7 @@ export function createScaleGovernor(opts = {}) {
     } else if (m < upMs && i > 0) {
       overSince = null;
       if (underSince === null) underSince = nowMs;
-      if (calm && nowMs - underSince >= upHoldMs && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
+      if (calm && nowMs - underSince >= upHold && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
     } else {
       overSince = null;
       underSince = null;
@@ -146,9 +161,25 @@ export function createScaleGovernor(opts = {}) {
     return false;
   }
 
+  /**
+   * A frame the loop drew slowly BY CHOICE (the idle cap: nothing is moving). Its length says nothing about
+   * the device, so it is not in the window; the time counts as quick. Returns true on a step up.
+   */
+  function rest(nowMs) {
+    if (frozen || i === 0) return false;
+    overSince = null;
+    frames.length = 0;
+    if (underSince === null) underSince = nowMs;
+    if (nowMs - underSince >= upHold && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
+    return false;
+  }
+
   return {
     push,
+    rest,
     median,
+    /** How long the frames must be quick before a step up, now (it doubles when a step up does not hold). */
+    get upHoldMs() { return upHold; },
     /** The latch has tripped: the ladder stops where it is (the latch itself takes the ratio to 1). */
     freeze() { frozen = true; },
     get scale() { return steps[i]; },

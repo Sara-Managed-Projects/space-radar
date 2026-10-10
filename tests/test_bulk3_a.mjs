@@ -24,5 +24,10 @@ check(/top:\s*calc\(var\(--sr-top-y\)\s*\+\s*var\(--sr-top-bar\)\s*\+\s*var\(--s
 const finish = read('site/css/finishers.css');
 check(/\.sr-scalebadge\s*\{[^}]*top:\s*calc\(var\(--sr-top-y\)\s*\+\s*var\(--sr-top-bar\)\s*\+\s*var\(--sp-2\)\s*\+\s*44px\s*\+\s*var\(--sp-2\)\)/.test(finish), 'the scale badge keeps the same offset under the chip');
 
+// The notable names pass through labels.js's tooFarForFrame (internal #546). Moved here from tests/test_labels.mjs,
+// which also runs against the minified tree (scripts/check_built_tree.mjs TESTS), where the text is other text.
+const labels = read('site/js/ui/labels.js');
+check(/tooFarForFrame\(pr\.dist, frameDist, r\)/.test(labels) && /stage\.worldId !== 'sun'/.test(labels), 'the notable names pass through tooFarForFrame, on a world stage in a trip only (#546)');
+
 if (problems.length) { console.error('bulk3 a FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('bulk3 a ok: the search list above the launch chip, the sky field line under it');
