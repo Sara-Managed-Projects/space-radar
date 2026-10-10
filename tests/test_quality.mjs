@@ -136,6 +136,19 @@ check(shouldSaveData(undefined) === false && shouldSaveData(null) === false, 'no
   check(!moved, 'a slow second every four keeps the ratio where it is');
 }
 {
+  // A camera that follows something is never still: with nothing being shown the step comes after thirty seconds.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  let now = 0;
+  for (let n = 0; n < 130; n++) { now += 40; g.push(40, now); }
+  const t0 = now; let upAt = null;
+  while (now - t0 < 60000 && upAt === null) { now += 16.7; if (g.push(16.7, now, false, true)) upAt = now - t0; }
+  check(g.scale === 2 && upAt > 30000 && upAt < 32000, `a moving camera with nothing shown: the step up comes after thirty seconds (${upAt} ms)`);
+  const h = createScaleGovernor({ deviceRatio: 2 });
+  now = 0; for (let n = 0; n < 130; n++) { now += 40; h.push(40, now); }
+  for (let n = 0; n < 6000; n++) { now += 16.7; h.push(16.7, now, false, false); }
+  check(h.scale === 1.5, 'during a trip there is no step up however long it is quick');
+}
+{
   // The resting view (frames capped by choice): rest() counts as quick time, and brings the ratio back.
   const g = createScaleGovernor({ deviceRatio: 2 });
   let now = 0;

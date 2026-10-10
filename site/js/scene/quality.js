@@ -137,10 +137,11 @@ export function createScaleGovernor(opts = {}) {
 
   /**
    * Feed one frame. `calm` is false while a trip runs or the camera moves (a step UP waits for it;
-   * a step down does not, because a stalling picture is worse than a softer one). Returns true on the
+   * a step down does not, because a stalling picture is worse than a softer one). `patient` is true when
+   * the only thing against calm is a moving camera: the step up then comes, three times later. Returns true on the
    * frame that changed the step, and `scale` is then the new ratio.
    */
-  function push(frameMs, nowMs, calm = true) {
+  function push(frameMs, nowMs, calm = true, patient = false) {
     if (frozen || !Number.isFinite(frameMs) || frameMs <= 0) return false;
     frames.push(Math.min(frameMs, 1000));
     if (frames.length > windowFrames) frames.shift();
@@ -153,7 +154,12 @@ export function createScaleGovernor(opts = {}) {
     } else if (m < upMs && i > 0) {
       overSince = null;
       if (underSince === null) underSince = nowMs;
-      if (calm && nowMs - underSince >= upHold && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
+      // Not calm but `patient` (nothing is being SHOWN -- no trip, no reel, no climb -- yet the camera is not
+      // still: it follows a body, or the stage turns under it): the step comes after three times the wait.
+      // Seen 2026-10-10 on a phone-sized canvas with Saturn followed: seventy quick seconds and no step up,
+      // because a camera that follows something is never still.
+      const wait = calm ? upHold : patient ? upHold * 3 : Infinity;
+      if (nowMs - underSince >= wait && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
     } else {
       // Between the two tests (or quick at the top): not slow, so the count toward a step down starts again; not
       // quick, so this time does not count toward a step up -- but it does not throw the quick seconds away

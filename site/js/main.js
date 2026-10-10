@@ -2357,8 +2357,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (!capped) freeFrameMs = frameMs;
     if (!document.hidden && !ctx.renderMode && !capped && !latch.latched) {
       const st = ctx.trip && ctx.trip.state;
-      const calm = !(st && st.phase !== 'idle') && !(ctx.autopilot && ctx.autopilot.engaged) && !(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) && !cameraMovedLast;
-      if (scaler.push(frameMs, nowReal, calm)) {
+      const shown = !!(st && st.phase !== 'idle') || !!(ctx.autopilot && ctx.autopilot.engaged) || !!(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading));
+      const calm = !shown && !cameraMovedLast;
+      if (scaler.push(frameMs, nowReal, calm, !shown)) {
         if (ctx.rendererApi && ctx.rendererApi.setScale) ctx.rendererApi.setScale(scaler.scale);
         window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
       }
