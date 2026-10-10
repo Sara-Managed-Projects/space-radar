@@ -116,6 +116,19 @@ function hitSize(el, target) {
   return { w: run(-1, 0) + run(1, 0) + 1, h: run(0, -1) + run(0, 1) + 1 };
 }
 
+// What lies over a target whose reachable part is smaller than its box: the elements at its four edges' middles
+// that are not its own (2026-10-10: a search row measured 81 x 30 in CI and the report could not say by what).
+function coveredBy(target) {
+  const r = target.getBoundingClientRect();
+  const at = [[r.left + r.width / 2, r.top + 2, 'top'], [r.left + r.width / 2, r.bottom - 2, 'bottom'], [r.left + 2, r.top + r.height / 2, 'left'], [r.right - 2, r.top + r.height / 2, 'right']];
+  const out = [];
+  for (const [x, y, side] of at) {
+    const hit = document.elementFromPoint(Math.min(Math.max(x, 1), innerWidth - 1), Math.min(Math.max(y, 1), innerHeight - 1));
+    if (hit && hit !== target && !target.contains(hit)) out.push(`${side}: ${say(hit)}`);
+  }
+  return ` [box ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)} x ${Math.round(r.height)}${out.length ? '; over it at ' + out.join(', ') : ''}]`;
+}
+
 function measure() {
   const problems = [];
   const controls = [...document.querySelectorAll('button, a[href], input, select, textarea, [role=tab], [role=switch], [role=menuitem], [role=option], summary')].filter(shown);
@@ -152,7 +165,7 @@ function measure() {
     const hit = hitSize(el, target) || { w: Math.round(r.width), h: Math.round(r.height), box: true };
     targets += 1;
     smallest = Math.min(smallest, hit.w, hit.h);
-    if (hit.w < MIN || hit.h < MIN) problems.push(`target ${hit.w} x ${hit.h}${hit.box ? ' (box)' : ''}, under ${MIN}: ${say(el)} "${name.slice(0, 30)}"`);
+    if (hit.w < MIN || hit.h < MIN) problems.push(`target ${hit.w} x ${hit.h}${hit.box ? ' (box)' : ''}, under ${MIN}: ${say(el)} "${name.slice(0, 30)}"${hit.box ? '' : coveredBy(target)}`);
   }
   // Text: the 13 px floor, and what is drawn on more than one line (information for the audit).
   const wraps = [];
