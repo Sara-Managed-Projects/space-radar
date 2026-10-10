@@ -120,6 +120,9 @@ jobs:
       # cut, and the caption times that come out of the sample counts.
       - name: "A short sentence is never said alone: the passes, the cut and the cue times"
         run: python3 tests/test_narrate_join.py
+      # The star-system builders pick a star's planets by host name; this pins which rows that matches.
+      - name: "the exoplanet rows for a host: spaces around the name ignored, rows with no host skipped (scripts/_exo_ids.py)"
+        run: python3 tests/test_exo_ids.py
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
