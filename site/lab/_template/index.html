@@ -82,21 +82,21 @@ Sources, read on 2026-10-10:
 // Every constant has a source in the "Sources" comment above this script. This example: how high the same jump goes on Earth and on the Moon.
 const K=100,GROUND=1300,SLOW=.5;                           // K = pixels per metre; SLOW = the motion is drawn at half speed
 const WORLDS=[{name:'Earth',g:9.80,x:300,col:'#4f9bff'},{name:'Moon',g:1.62,x:780,col:'#c9ccd4'}]; // g in m/s^2, from the Sources comment
-const top=(v,g)=>v*v/(2*g);                                 // height reached: h = v^2 / (2 g)
+const rise=(v,g)=>v*v/(2*g);                                 // height reached: h = v^2 / (2 g)
 const SIM={
  dur:12,reveal:6,                                          // the loop is `dur` seconds; `reveal` is the second at which the point shows
  hook:'SAME JUMP,|ABOUT SIX TIMES AS HIGH',                // one or two lines, 24 characters each at most, split with |
  honest:'Heights are real, at the same take-off speed. No air, flat ground, motion drawn at half speed.', // what is and is not to scale
  param:{label:'take-off speed (m/s)',min:1,max:5,step:.1,value:3},  // the slider; delete this line if your simulator has none
- line(v){return`Leaving the ground at ${v.toFixed(1)} m/s you rise ${top(v,9.80).toFixed(2)} m on Earth (gravity 9.80 m/s²) and ${top(v,1.62).toFixed(2)} m on the Moon (1.62 m/s²), because height = speed² / (2 × gravity).`}, // the caption under the picture
+ line(v){return`Leaving the ground at ${v.toFixed(1)} m/s you rise ${rise(v,9.80).toFixed(2)} m on Earth (gravity 9.80 m/s²) and ${rise(v,1.62).toFixed(2)} m on the Moon (1.62 m/s²), because height = speed² / (2 × gravity).`}, // the caption under the picture
  draw(c,t,v){                                              // c = the canvas, t = seconds, v = the slider
   stars(c,60);
   for(const w of WORLDS){
-   const period=2*v/w.g,ph=(t*SLOW)%period,h=v*ph-w.g*ph*ph/2,peak=GROUND-22-top(v,w.g)*K;
+   const period=2*v/w.g,ph=(t*SLOW)%period,h=v*ph-w.g*ph*ph/2,peak=GROUND-22-rise(v,w.g)*K;
    c.fillStyle=w.col;c.fillRect(w.x-130,GROUND,260,10);
    c.strokeStyle='rgba(255,159,67,.8)';c.setLineDash([12,10]);c.lineWidth=3;c.beginPath();c.moveTo(w.x-110,peak);c.lineTo(w.x+110,peak);c.stroke();c.setLineDash([]);
    disc(c,w.x,GROUND-22-h*K,22,w.col);
-   text(top(v,w.g).toFixed(2)+' m',w.x,peak-16,40,EMBER,700);
+   text(rise(v,w.g).toFixed(2)+' m',w.x,peak-16,40,EMBER,700);
    text(w.name,w.x,GROUND+70,44,INK,700)}}};
 // ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
 // The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.

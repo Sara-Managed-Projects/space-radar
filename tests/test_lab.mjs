@@ -68,6 +68,7 @@ function smoke(where, simSrc) {
 }
 
 // --- each file -----------------------------------------------------------------------------------
+const WINDOW_NAMES = new Set('top name status parent self length location origin event closed frames opener screen history stop find print open close focus blur scroll document window navigator performance'.split(' '));
 const NETWORK = [[/\bfetch\s*\(/, 'fetch()'], [/XMLHttpRequest/, 'XMLHttpRequest'], [/WebSocket|EventSource|sendBeacon|importScripts|serviceWorker/, 'a network or worker API'], [/\bimport\s*\(|^\s*import\s|\bexport\s/m, 'a module import/export'],
   [/<script[^>]*\ssrc\s*=/i, '<script src>'], [/<(iframe|object|embed|form|video|audio|source|base)\b/i, 'an <iframe>/<object>/<embed>/<form>/<video>/<audio>/<base> element'], [/@import|\burl\(\s*(?!["']?data:)/, 'a CSS @import or a url() that is not a data: URI'],
   [/\s(?:src|href|action|poster)\s*=\s*["']\s*\/\//i, 'a protocol-relative address'], [/<img\b[^>]*\ssrc\s*=\s*["'](?!data:)/i, 'an <img> that is not a data: URI'], [/\bnew\s+Worker\b|Image\s*\(/, 'new Worker / new Image']];
@@ -78,6 +79,9 @@ for (const slug of folders) {
   if (files.length !== 1 || files[0] !== 'index.html') { bad(where, `must hold exactly one file, index.html (found: ${files.join(', ')}): one simulator, one file`); continue; }
   const file = join(dir, 'index.html'), text = readFileSync(file, 'utf8');
   n++;
+  // A top-level const or let named like something the browser window already owns (top, name, status ...) is a
+  // SyntaxError there and the whole page stays blank; node does not mind, so the drawing check below cannot see it.
+  for (const ln of text.split('\n')) if (/^(?:const|let)\s/.test(ln)) for (const m of ln.matchAll(/(?:^(?:const|let)\s+|,\s*)([A-Za-z_$][\w$]*)\s*=(?![=>])/g)) if (WINDOW_NAMES.has(m[1])) bad(where, `declares "${m[1]}" at the top of its script: the browser window already has that name, so the page fails to start. Pick another name`);
   const size = statSync(file).size, lines = text.split('\n').length;
   if (size > MAX_BYTES) bad(where, `${size} bytes, over the ${MAX_BYTES} byte budget`);
   if (lines > MAX_LINES) bad(where, `${lines} lines, over ${MAX_LINES}`);
