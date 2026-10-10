@@ -138,5 +138,6 @@ if (!/def lab_pages\(/.test(seo) || !/\+ lab_pages\(\)/.test(seo)) bad('scripts/
 const sw = readFileSync(join(ROOT, 'site', 'sw.js'), 'utf8');
 if (!/req\.mode === 'navigate'\) return \{ kind: 'pass'/.test(sw)) bad('site/sw.js', "a navigation must pass through the worker untouched (the Lab's pages are navigations)");
 
-if (problems.length) { console.error(`lab FAILED (${problems.length}):\n  ` + problems.join('\n  ')); process.exit(1); }
+const uniq = [...new Set(problems)];
+if (uniq.length) { console.error(`lab FAILED (${uniq.length}):\n  ` + uniq.join('\n  ')); process.exit(1); }
 console.log(`lab ok: ${n} folders (${listed.length} simulators + the starter) are one file each with no request, a dated source, an honesty line, a lesson, a small size and a place in the index; the Lab stays out of the app and into the deploy and the sitemap`);
