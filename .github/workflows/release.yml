@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # to create the release; nothing else here needs to write
+      pull-requests: read # scripts/release_thanks.py reads who was merged since the last release
     steps:
       - uses: actions/checkout@v7
 
@@ -57,6 +58,7 @@ jobs:
         env:
           VERSION: ${{ steps.v.outputs.version }}
           EVENT: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           section() { awk -v want="## [$1]" 'index($0, want) == 1 { on = 1; next } on && /^## \[/ { exit } on { print }' CHANGELOG.md; }
@@ -68,6 +70,10 @@ jobs:
             fi
             section "Unreleased" > notes.md
           fi
+          # The people whose pull requests are in this release, by name (CONTRIBUTING.md promises
+          # it). Never a reason for a release to fail: no answer from the API is no section.
+          python3 scripts/release_thanks.py > thanks.md 2>/dev/null || : > thanks.md
+          if grep -q '[^[:space:]]' thanks.md; then { echo; cat thanks.md; } >> notes.md; fi
           {
             echo
             echo "---"

@@ -8,6 +8,8 @@ body:
         Thank you. Please read [docs/TRANSLATING.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/TRANSLATING.md)
         first: it says what a translation is, how the strings are kept, and what is translated first.
         You do not need to be a programmer; a pull request is the only technical step and we will help with it.
+
+        **Where it stands:** the site shows English only, and the loader that will show your language is not written yet. Your file is `site/js/copy/<code>.js`, and `node scripts/check-translation.mjs site/js/copy/<code>.js` is the check that runs on it: [Four ways in, part B](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/CONTRIBUTE_WITHOUT_CODE.md#b-translate).
   - type: input
     id: language
     attributes:

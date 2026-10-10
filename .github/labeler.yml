@@ -1,0 +1,32 @@
+# Labels a pull request gets from the paths it touches (.github/workflows/community.yml).
+# A label is a hint for whoever reviews, and it sorts the change into the release notes
+# (.github/release.yml). Every label named here exists in the repository; tests/test_contributor_docs.py
+# checks that every path pattern still matches a file.
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['*.md', 'docs/**']
+translation:
+  - changed-files:
+      - any-glob-to-any-file: ['docs/TRANSLATING.md', 'scripts/check-translation.mjs']
+      - all-globs-to-any-file: ['site/js/copy/*.js', '!site/js/copy/en.js', '!site/js/copy/en.*.js']
+trip:
+  - changed-files:
+      - any-glob-to-any-file: ['registry/tours.yaml', 'registry/narration.yaml']
+data:
+  - changed-files:
+      - all-globs-to-any-file: ['registry/**', '!registry/tours.yaml', '!registry/narration.yaml']
+'area:space-accuracy':
+  - changed-files:
+      - any-glob-to-any-file: ['registry/sites.yaml', 'registry/worlds.yaml', 'registry/systems*.yaml', 'registry/stars-notable.yaml', 'registry/missions.yaml']
+'area:ui-ux':
+  - changed-files:
+      - any-glob-to-any-file: ['site/js/ui/**', 'site/css/**', 'site/js/copy/en.js']
+'area:3d-visuals':
+  - changed-files:
+      - any-glob-to-any-file: ['site/js/scene/**', 'site/models/**', 'site/textures/**', 'registry/models.yaml']
+tests:
+  - changed-files:
+      - any-glob-to-any-file: ['tests/**']
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', '.devcontainer/**']

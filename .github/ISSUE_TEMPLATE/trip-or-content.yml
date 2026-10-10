@@ -2,6 +2,10 @@ name: A new trip, object or piece of content
 description: A guided trip, a spacecraft, a landing site, a star, a card that should exist.
 labels: [enhancement]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        An idea alone is welcome. If you would like to add it yourself: a trip stop is a row in `registry/tours.yaml`, a place is a row in `registry/sites.yaml`, a model's credit is in `registry/models.yaml` and `CREDITS.md`. [Four ways in, part C](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/CONTRIBUTE_WITHOUT_CODE.md#c-add-a-sky-culture-a-trip-stop-or-a-model-credit) names the file, an example and the check for each.
   - type: dropdown
     id: kind
     attributes:

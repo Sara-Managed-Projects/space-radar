@@ -7,6 +7,11 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git && cd space-r
 python3 -m http.server 8177 --directory site      # open http://localhost:8177
 ```
 
+**First pull request?** [docs/FIRST_PR.md](docs/FIRST_PR.md) takes you from a fork to an open pull
+request in ten minutes, with the one command that checks your change (`scripts/check.sh`) and what
+happens after you open it. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is a one-page map of the
+code, and [docs/CONTRIBUTE_WITHOUT_CODE.md](docs/CONTRIBUTE_WITHOUT_CODE.md) lists four ways in.
+
 **To change a word or a fact you need no tools at all.** Open the file on GitHub, press the pencil,
 edit, and GitHub opens the pull request for you. Thank you for being here: Space Radar exists so
 that anyone can learn about space freely and simply, and it gets better every time somebody fixes a
@@ -45,8 +50,8 @@ Each of these takes minutes, needs no install, and is named in the release notes
 - **A first reply within 48 hours**, from a person, on every issue and pull request.
 - **A merge, or a reason, within a week.**
 - **You are credited.** Every contributor is named in the release notes for the release that
-  carries the change, and in [CREDITS.md](CREDITS.md) when what you gave is data, a picture or a
-  model.
+  carries the change, in [CONTRIBUTORS.md](CONTRIBUTORS.md), and in [CREDITS.md](CREDITS.md) when
+  what you gave is data, a picture or a model.
 - **AI-assisted contributions are welcome.** Much of this project was written with AI assistants.
   We check the tests and the sources, not who typed. If an assistant wrote it, you still own what
   you send: run `scripts/test.sh`, and keep every fact tied to a source you have read.
@@ -216,6 +221,8 @@ Open an issue before a big one. It is much nicer to agree on the shape first.
 ## Tests
 
 ```bash
+scripts/check.sh                # the checks a first pull request meets, in parallel: under a minute
+scripts/check.sh --fix          # ...after running every registry generator for you
 scripts/test.sh                 # everything CI runs, a few minutes
 scripts/test.sh --quick         # only the checks that touch the files you changed: seconds
 scripts/test.sh --quick main    # ...changed since main, not since your last commit
@@ -270,16 +277,21 @@ with a source is one of the most valuable things you can send.
 
 ## Pull requests
 
-1. Fork, branch from `main`, make the change, run `scripts/test.sh` (`--quick` while you work).
+1. Fork, branch from `main`, make the change, run `scripts/check.sh` (and `scripts/test.sh` for
+   everything, if you changed code).
 2. Open the pull request. **Open it as a draft** while you are still working or want an early look.
-3. CI runs on every push. Read a red check's log; they are written to say what to do.
+3. CI runs on every push. **On your first pull request the run waits for a maintainer to approve
+   it**: GitHub holds workflows from a first-time contributor's fork. That is normal; please do not
+   close the pull request while it waits. Read a red check's log; they are written to say what to
+   do, and [docs/FIRST_PR.md](docs/FIRST_PR.md) lists the common ones.
 4. **A green pull request that is not a draft is merged automatically** (squashed). So "ready for
    review" means "ready to ship". If you want a human to look first, keep it a draft and ask, or
    ask a maintainer to add the `no-auto-merge` label.
 5. One topic per pull request. Small ones are merged fastest. The title becomes the changelog line:
    say what changed for a visitor ("Hubble is found when you type hubble"), not what you did.
 
-Releases are cut about once a month; see [docs/RELEASING.md](docs/RELEASING.md).
+Releases are cut about once a month; see [docs/RELEASING.md](docs/RELEASING.md). Who decides what,
+and how a contributor becomes a reviewer, is in [GOVERNANCE.md](GOVERNANCE.md).
 
 By contributing you agree that your work is released under the project's [MIT licence](LICENSE),
 and you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).

@@ -74,6 +74,7 @@ export function offerUndo(ctx, opts = {}) {
     node.removeEventListener('focusin', hold);
     node.removeEventListener('focusout', run);
     node.removeEventListener('keydown', onKey);
+    document.removeEventListener('input', onType, true);
     if (!still()) return; // another toast has the node now: it is not ours to hide
     delete node.dataset.undo;
     node.hidden = true;
@@ -86,6 +87,10 @@ export function offerUndo(ctx, opts = {}) {
   node.addEventListener('focusin', hold);
   node.addEventListener('focusout', run);
   node.addEventListener('keydown', onKey);
+  // Typing in the search field means the visitor has moved on: on a phone the offer would sit on
+  // a search row for its six seconds, so it gives way.
+  function onType(e) { if (e.target && e.target.closest && e.target.closest('.sr-search__input')) close(); }
+  document.addEventListener('input', onType, true);
   button.addEventListener('click', () => {
     close();
     try { opts.undo(); } catch (e) { console.warn('the view could not be put back', e); }

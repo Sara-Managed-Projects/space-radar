@@ -15,6 +15,7 @@ Free, open source, no account, no build step, works offline.
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
 [![Help wanted](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/help%20wanted?label=help%20wanted&color=008672)](https://github.com/Sara-Managed-Projects/space-radar/labels/help%20wanted)
 [![Discussions](https://img.shields.io/badge/discussions-open-blue.svg)](https://github.com/Sara-Managed-Projects/space-radar/discussions)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
 
 <a href="https://www.spaceradar.ai/?from=gh"><img src="assets/screenshots/zoom-to-earth.webp" width="340" alt="A twelve-second zoom from the planets down to the Earth, with the clouds of 8 October 2026, ending on the address spaceradar.ai"></a>
 
@@ -141,7 +142,7 @@ registry/    YAML files that say what exists: worlds, layers, data sources, trip
 scripts/     generators that turn a registry into the JavaScript the browser reads, and the checks
 tests/       more than 150 node and python test files; no browser needed
 harvest/     a small scheduled job that saves each public data source for the site to read
-docs/        running it, embedding it, design principles, releasing
+docs/        running it, a first pull request, a map of the code, embedding, releasing
 ```
 
 Adding a moon, a landing site, a search alias or a whole trip is a **row in a registry**, not a
@@ -150,9 +151,17 @@ Kepler's equation, the Sun, Moon and planets by an ephemeris library, all in the
 
 ## Contributing
 
-It is meant to be easy and fun. **[CONTRIBUTING.md](CONTRIBUTING.md)** has a ten-minute first
-contribution, recipes for adding a trip, an object or a layer, and one command that runs every
-check (`scripts/test.sh`).
+It is meant to be easy and fun.
+
+- **[Your first pull request, in ten minutes](docs/FIRST_PR.md)**: fork, run, change, check with one
+  command (`scripts/check.sh`), and what happens after you open it. Or press
+  [Open in Codespaces](https://codespaces.new/Sara-Managed-Projects/space-radar) and install nothing.
+- **[A map of the code](docs/ARCHITECTURE.md)**: one page, with the file to edit for the twelve
+  commonest changes.
+- **[Four ways in](docs/CONTRIBUTE_WITHOUT_CODE.md)**: fix a fact, translate, add a sky culture or a
+  trip stop, or write code.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: recipes for a trip, an object or a layer, and the style.
+  [GOVERNANCE.md](GOVERNANCE.md) says who decides; [CONTRIBUTORS.md](CONTRIBUTORS.md) says who has helped.
 
 - Start with a [good first issue](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue),
   or something marked [help wanted](https://github.com/Sara-Managed-Projects/space-radar/labels/help%20wanted).
