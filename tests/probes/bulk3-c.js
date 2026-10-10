@@ -5,7 +5,8 @@
 //        --block=celestrak.org,ll.thespacedevs.com --shot-dir=DIR
 // Jobs (each in its own try, each writes out.<name>): timeline, fonts, passes (internal #562), scale (#521),
 // sky (the haze beside Sirius, the contact sheet), pairs (Coming up, a pairing with a star, #565).
-const step = async (name, fn) => { const t = Date.now(); try { await fn(); } catch (e) { out[name + '_err'] = String(e && e.stack || e).slice(0, 300); } out[name + '_s'] = Math.round((Date.now() - t) / 1000); };
+const JOBS = new URLSearchParams(location.search).get('jobs');
+const step = async (name, fn) => { if (JOBS && !JOBS.split(',').includes(name)) return; const t = Date.now(); try { await fn(); } catch (e) { out[name + '_err'] = String(e && e.stack || e).slice(0, 300); } out[name + '_s'] = Math.round((Date.now() - t) / 1000); };
 const tasks = [];
 try { new PerformanceObserver((l) => { for (const e of l.getEntries()) tasks.push({ at: Math.round(e.startTime), dur: Math.round(e.duration) }); }).observe({ type: 'longtask', buffered: true }); } catch { /* none */ }
 const nowMs = () => Math.round(performance.now());
@@ -36,6 +37,12 @@ await step('fonts', async () => {
   // How far each stand-in is from the web face, on average, over the three strings.
   const mean = (k, fam, wt) => { const r = rows.filter((x) => x.fam === fam && x.weight === wt); return +(r.reduce((s, x) => s + Math.abs(x[k]), 0) / r.length).toFixed(1); };
   out.fonts.meanOffPct = { inter400: [mean('fallbackOff', 'Inter', 400), mean('systemOff', 'Inter', 400)], inter600: [mean('fallbackOff', 'Inter', 600), mean('systemOff', 'Inter', 600)], mono: [mean('fallbackOff', 'JetBrains Mono', 400), mean('systemOff', 'JetBrains Mono', 400)], barlow500: [mean('fallbackOff', 'Barlow Semi Condensed', 500), mean('systemOff', 'Barlow Semi Condensed', 500)] };
+});
+
+await step('idle', async () => {
+  const b = tasks.length; const t0 = nowMs(); await wait(8000);
+  const mine = tasks.slice(b).filter((t) => t.at >= t0 - 50);
+  out.idle = { windowMs: 8000, longTasks: mine.map((t) => t.dur) };
 });
 
 await step('passes', async () => {
@@ -110,10 +117,24 @@ const lum = () => {
   }
   return { sum: Math.round(sum), lit, ring: Math.round(ring) };
 };
+await step('views', async () => {
+  const goTo = async (id, ms) => { const rec = ctx.recordById(id); if (!rec) { out['views_' + id] = 'no record'; return; } ctx.select(rec, { fly: true }); const f0 = Date.now(); await wait(2500); while (ctx.cameraRig.state.flying && Date.now() - f0 < 20000) await wait(300); await wait(ms); };
+  const programs = () => { const ps = ctx.renderer.info.programs || []; return { count: ps.length, failed: ps.filter((p) => p.diagnostics && p.diagnostics.runnable === false).length, sample: ps.filter((p) => p.diagnostics && p.diagnostics.runnable === false).slice(0, 2).map((p) => String(p.diagnostics.fragmentShader && p.diagnostics.fragmentShader.log || p.diagnostics.vertexShader && p.diagnostics.vertexShader.log || p.diagnostics.programLog).slice(0, 200)) }; };
+  out.views = { start: programs() };
+  await goTo('sun', 6000); await window.cdpShot('v1-sun'); out.views.sun = programs();
+  await goTo('jupiter', 5000); await window.cdpShot('v2-jupiter'); out.views.jupiter = programs();
+  await goTo('moon', 5000); out.views.moon = programs();
+  ctx.select(null);
+});
+
 await step('sky', async () => {
   const london = place('London', 51.5, -0.12);
   ctx.setObserver(london);
-  ctx.clock.goTo(Date.UTC(2026, 11, 15, 20, 0));
+  // The first evening hour at which Sirius is 20 to 40 degrees up from London.
+  let when = Date.UTC(2026, 11, 15, 20, 0);
+  const altAt = (ms) => A.Horizon(new Date(ms), new A.Observer(51.5, -0.12, 0), 6.7525, -16.7161, 'normal').altitude;
+  for (let k = 0; k < 14 && !(altAt(when) > 20); k++) when += 3600e3;
+  ctx.clock.goTo(when);
   await stand(london);
   ctx.skyView.setOption('darkness', 'dark');
   await wait(1200);
@@ -141,18 +162,19 @@ await step('sky', async () => {
   ctx.skyView.pointAt({ raDeg: 95.675, decDeg: -17.956 }, { fovDeg: 14, instant: true, mark: false }); await wait(2500); await shot('s3-mirzam-14');
   ctx.skyView.pointAt({ raDeg: 83.0, decDeg: -3.0 }, { fovDeg: 72, instant: true, mark: false }); await wait(3500); await shot('s4-orion-72');
   out.diag.stats72 = stats();
+  { const ps = ctx.renderer.info.programs || []; out.diag.programs = { count: ps.length, failed: ps.filter((p) => p.diagnostics && p.diagnostics.runnable === false).length }; }
 });
 
 await step('pairs', async () => {
   const london = place('London', 51.5, -0.12);
   if (ctx.skyView.active) ctx.skyView.exit();
   await wait(1500);
-  ctx.clock.goTo(Date.UTC(2026, 10, 5, 12, 0));
+  ctx.clock.goTo(Date.UTC(2026, 11, 1, 12, 0));
   ctx.setObserver(london);
   const tab = [...document.querySelectorAll('[role="tab"], button')].find((b) => /^\s*earth\s*$/i.test(b.textContent || '') && b.getBoundingClientRect().width > 0);
   if (tab) tab.click();
   await wait(1500);
-  const STAR = /(Regulus|Spica|Antares|Aldebaran|Pollux)/;
+  const STAR = /Moon and (Regulus|Spica|Antares|Aldebaran|Pollux)/;
   const open = () => { const m = document.querySelector('.sr-next [aria-expanded="false"]'); if (m && !m.hidden) m.click(); };
   const rows = () => [...document.querySelectorAll('.sr-next__row')];
   const t0 = Date.now(); let got = false;
