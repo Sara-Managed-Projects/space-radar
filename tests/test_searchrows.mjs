@@ -146,5 +146,38 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   check(/hit\.extra === 'group'/.test(search) && /m\.groupRows\(/.test(search) && /rows\.splice\(0, rows\.length, \.\.\.grouped\)/.test(search) && !/rows\.length = 0/.test(search) && /state\.more\.rowIcon\(hit\)/.test(search), 'the field folds the rows, opens the group on a press, and draws the icon');
 }
 
+// The star patterns (internal #551): "orion" finds the figure, and pressing it turns the dome to it.
+{
+  const names = JSON.parse(readFileSync(join(ROOT, 'site/data/constellation-names.json'), 'utf8'));
+  const lines = JSON.parse(readFileSync(join(ROOT, 'site/data/constellations.lines.json'), 'utf8'));
+  const n = R.setConstellations(names, lines);
+  check(n >= 85 && n <= 90, `${n} star patterns have a name and lines`);
+  const orion = R.findExtras('orion').find((e) => e.extra === 'constellation');
+  check(orion && orion.name === 'Orion' && orion.sub === COPY.searchRows.starPattern, `"orion" finds the constellation (${JSON.stringify(orion)})`);
+  check(R.findExtras('orion')[0].extra === 'constellation', 'and it is the first extra row, before the trips that mention it');
+  // Orion's belt is at about RA 5h 35m (84 degrees), Dec about 0 to -2; the mean of the whole figure is in that corner of the sky.
+  check(orion && Math.abs(orion.raDeg - 84) < 8 && Math.abs(orion.decDeg - 0) < 8, `Orion's aim is RA ${orion && orion.raDeg.toFixed(1)}, Dec ${orion && orion.decDeg.toFixed(1)}`);
+  const and = R.findExtras('andromeda').find((e) => e.id === 'And');
+  check(and && and.raDeg > 5 && and.raDeg < 30 && and.decDeg > 25 && and.decDeg < 50, `Andromeda's aim is inside the figure, not at the label's end (${and && and.raDeg.toFixed(1)}, ${and && and.decDeg.toFixed(1)})`);
+  check(R.constellationCentre({ geometry: { type: 'MultiLineString', coordinates: [[[350, 0], [10, 0]]] } }).raDeg < 1e-6 + 360 && Math.abs(((R.constellationCentre({ geometry: { type: 'MultiLineString', coordinates: [[[350, 0], [10, 0]]] } }).raDeg + 180) % 360) - 180) < 1e-6, 'a figure across RA 0 is centred on 0, not on 180');
+  check(R.constellationCentre({}) === null && R.constellationCentre(null) === null, 'no lines, no centre');
+  // Pressing the row: the dome is entered (the Now door) and turned; below the horizon the scene says so.
+  const calls = [];
+  const ctx = (aimed, active) => ({
+    skyView: { active, pointAt: (t) => { calls.push(['pointAt', Math.round(t.raDeg)]); return aimed; } },
+    setMoment: (m) => calls.push(['moment', m]),
+    sceneNote: { say: (l) => calls.push(['say', l]) },
+  });
+  check(R.runExtra(ctx(true, false), orion) === true && calls[0][0] === 'moment' && calls[0][1] === 'now' && calls[1][0] === 'pointAt', 'from the map the Now door opens the dome, then it turns');
+  calls.length = 0;
+  check(R.runExtra(ctx(true, true), orion) === true && calls.length === 1 && calls[0][0] === 'pointAt', 'inside the dome it only turns');
+  calls.length = 0;
+  R.runExtra(ctx(false, true), orion);
+  check(calls.some((c) => c[0] === 'say' && c[1] === 'Orion is under the horizon.'), 'a figure under the horizon is said so in the scene\'s one line');
+  check(R.runExtra({}, orion) === false, 'with no sky view the row does nothing and says false');
+  const src = readFileSync(join(ROOT, 'site/js/ui/searchrows.js'), 'utf8');
+  check(/loadConstellations\(\);/.test(src) && !/^import[^\n]*constellation-names/m.test(src), 'the two files are fetched when the module lands, not imported');
+}
+
 if (problems.length) { console.error('searchrows FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('searchrows ok: a planet then its moons, one row for a station, the name people use with what it is and where it is now, and trips, missions, events and Near me tonight found by name');

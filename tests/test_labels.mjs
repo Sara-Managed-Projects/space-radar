@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const { labelLift, LABEL_MODEL_GAP } = await import(join(JS, 'ui/labels.js'));
-const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, tooFarForFrame, FAR_FRAME_RATIO, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -319,6 +319,20 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
     if (!hadDoc) delete globalThis.document;
     if (!hadWin) delete globalThis.window;
   }
+}
+
+// A trip's frame is of one thing: names from a thousand times further away are not part of it (internal #546).
+{
+  const venus = 24207 / 1000;   // the Venus stop: camera 24 207 km from the planet (scene unit = 1000 km here)
+  const vesta = 4.0e8 / 1000;
+  const mro = (24207 + 3600) / 1000;
+  check(tooFarForFrame(vesta, venus, { klass: 'asteroid', id: 'vesta' }) === true, 'Vesta is a thousand times too far for the Venus stop');
+  check(tooFarForFrame(mro, venus, { klass: 'probe' }) === false, 'a spacecraft by the planet keeps its name');
+  check(tooFarForFrame(1.5e8 / 1000, venus, { klass: 'world', id: 'sun' }) === false && tooFarForFrame(384400 / 1000, 0.9, { klass: 'world', id: 'moon' }) === false, 'the Sun and the Moon keep theirs');
+  check(tooFarForFrame(384400 / 1000, 0.9, { klass: 'satellite' }) === false && tooFarForFrame(10, 0, { klass: 'probe' }) === false && tooFarForFrame(NaN, 5, {}) === false, 'a Moon-distance name over a 900 km frame stays, and nothing is hidden without a frame');
+  check(FAR_FRAME_RATIO === 1000, 'the ratio is a thousand');
+  const src = readFileSync(join(JS, 'ui/labels.js'), 'utf8');
+  check(/tooFarForFrame\(pr\.dist, frameDist, r\)/.test(src) && /stage\.worldId !== 'sun'/.test(src), 'the notable names pass through it, on a world stage in a trip only');
 }
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

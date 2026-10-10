@@ -83,7 +83,9 @@ export function offGrid(ruleList) {
 // field and its list, the picker, the colour key, the card's bar, What to show, the place chips);
 // what is left is geometry (a tape mark's half width, the tick, the HUD tag and chevron, the tab
 // track's 3 px inset the guide names) and four paddings that set every section's height.
-const OFF_GRID_KNOWN = { 6: 7, 10: 3, 14: 2, 3: 3, 5: 3, 22: 2, 9: 1, 0.75: 1 };
+// 2026-10-10 (bulk 3, a): 22 -> 18. The four paddings that set every section's height moved by 2 px
+// (.sr-sect 8 20 10 -> 8 20 8, its micro heading 8 0 6 -> 8 0 4, the head 20 20 14 -> 20 20 12, the lead row's 6 -> 4).
+const OFF_GRID_KNOWN = { 6: 5, 10: 2, 14: 1, 3: 3, 5: 3, 22: 2, 9: 1, 0.75: 1 };
 {
   const found = offGrid(all);
   const bySize = new Map();

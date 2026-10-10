@@ -72,6 +72,35 @@ export function frameRect(viewW, viewH, shape, margin = { x: 16, y: 16 }) {
   return { x: Math.round((vw - w) / 2), y: Math.round((vh - h) / 2), w, h, fovScale: h / vh };
 }
 
+/**
+ * The margins the frame keeps from the screen's edge (internal #397, the phone with a notch): 16 px
+ * as ever, more where the device's own safe area (the notch, the rounded corners, the home bar)
+ * takes the edge, and the foot's room given up at the top as well because the frame is centred.
+ * `insets` are env(safe-area-inset-*) in CSS pixels. Pure.
+ */
+export function frameMargin(foot = 0, insets = {}, base = 16) {
+  const n = (v) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : 0);
+  const sideX = Math.max(n(insets.left), n(insets.right));
+  // The foot is the bar's own height, which already stands above the home bar; only the top's notch is added.
+  const sideY = n(insets.top);
+  return { x: Math.max(base, Math.round(sideX) + base), y: Math.max(base, Math.round(n(foot)) + base, Math.round(sideY) + base) };
+}
+
+/** The device's safe-area insets now, read once from a probe the browser fills in (zero where it has none). */
+function readInsets(doc) {
+  const out = { top: 0, right: 0, bottom: 0, left: 0 };
+  try {
+    const probe = doc.createElement('div');
+    probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+    doc.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    out.top = parseFloat(cs.paddingTop) || 0; out.right = parseFloat(cs.paddingRight) || 0;
+    out.bottom = parseFloat(cs.paddingBottom) || 0; out.left = parseFloat(cs.paddingLeft) || 0;
+    probe.remove();
+  } catch { /* no insets: the plain margins */ }
+  return out;
+}
+
 /** Can this browser hand a picture file to the device's share sheet? Pure on what it is given. */
 export function canShareFiles(nav) {
   if (!nav || typeof nav.share !== 'function' || typeof nav.canShare !== 'function' || typeof File === 'undefined') return false;
@@ -225,13 +254,14 @@ export function openPhotoMode(ctx, opts = {}) {
   }
 
   /** The frame where the bar leaves it room, and the strip in it exactly as the picture will carry it. */
+  const insets = readInsets(document);
   function paint() {
     if (!open) return;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     // Centred, so the room the bar takes at the foot is given up at the top as well.
     const foot = vh - bar.getBoundingClientRect().top;
-    rect = frameRect(vw, vh, shape, { x: 16, y: Math.max(16, Math.round(foot) + 16) });
+    rect = frameRect(vw, vh, shape, frameMargin(foot, insets));
     for (const [k, v] of [['x', rect.x], ['y', rect.y], ['w', rect.w], ['h', rect.h]]) root.style.setProperty(`--sr-photo-${k}`, `${v}px`);
     for (const b of shapeBtns) b.setAttribute('aria-pressed', b.dataset.shape === shape ? 'true' : 'false');
     if (pill) {

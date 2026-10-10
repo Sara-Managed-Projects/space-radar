@@ -12,6 +12,8 @@
 //   rowIconName(hit) -> an icon's name | null,  rowIcon(hit) -> SVGElement | null (the dot stays)
 //   groupRows(hits, countOf, open) -> hits, a constellation's satellites folded into one row
 //   runExtra(ctx, hit) -> does it;  whereEnv(ctx) -> a promise of describe()'s env
+//   constellationCentre(lines) -> { raDeg, decDeg } | null    where a figure's lines are, on average
+//   setConstellations(names, lines) / loadConstellations() -> the 88 star patterns as rows ("orion")
 //
 // WHY A SECOND FILE. ui/search.js is in the boot graph: the field is on the first screen. None of
 // this is needed until somebody puts the cursor in it, and the missions' events alone are 30 kB,
@@ -271,6 +273,55 @@ function entries() {
 let cache = null;
 const all = () => cache || (cache = entries());
 
+// --- the star patterns (internal #551, from #432: "'orion' finds the nebula, not the constellation") ---
+// The 88 IAU figures are not records: the sky has no object called Orion. Their names are in
+// data/constellation-names.json and their lines in data/constellations.lines.json (the files the
+// figures and the labels already read); a row's aim is the mean direction of a figure's own line
+// vertices (not the label's anchor, which sits at one end of a long figure such as Andromeda).
+// Fetched when this module is (the first focus of the field), 31 kB, never at boot.
+const DEG = Math.PI / 180;
+let stars = [];
+
+/** The mean direction of a figure's line vertices, J2000, in degrees; null when it has none. Pure. */
+export function constellationCentre(feature) {
+  const g = feature && feature.geometry;
+  const lines = g && g.type === 'MultiLineString' ? g.coordinates : g && g.type === 'LineString' ? [g.coordinates] : [];
+  let x = 0; let y = 0; let z = 0; let n = 0;
+  for (const line of lines) {
+    for (const p of line || []) {
+      const ra = Number(p && p[0]) * DEG; const dec = Number(p && p[1]) * DEG;
+      if (!Number.isFinite(ra) || !Number.isFinite(dec)) continue;
+      x += Math.cos(dec) * Math.cos(ra); y += Math.cos(dec) * Math.sin(ra); z += Math.sin(dec); n += 1;
+    }
+  }
+  const len = Math.hypot(x, y, z);
+  if (!n || !(len > 1e-9)) return null;
+  return { raDeg: ((Math.atan2(y, x) / DEG) + 360) % 360, decDeg: Math.asin(z / len) / DEG };
+}
+
+/** Make the rows from the two files' parsed contents. Figures with no lines are left out (nothing to aim at). */
+export function setConstellations(names, lines) {
+  const byId = new Map(((lines && lines.features) || []).map((f) => [f.id, f]));
+  stars = [];
+  for (const n of Array.isArray(names) ? names : []) {
+    const c = constellationCentre(byId.get(n.id));
+    if (!c || !n.name) continue;
+    stars.push({ extra: 'constellation', id: n.id, name: n.name, sub: COPY.searchRows.starPattern, words: norm(n.name), raDeg: c.raDeg, decDeg: c.decDeg });
+  }
+  return stars.length;
+}
+
+let starsLoading = null;
+/** Fetch the two files once. Never rejects: with no files there are no star-pattern rows. */
+export function loadConstellations(doFetch = typeof fetch === 'function' ? fetch : null) {
+  if (starsLoading || !doFetch) return starsLoading || Promise.resolve(0);
+  const get = (name) => doFetch(new URL(`../../data/${name}`, import.meta.url)).then((r) => (r.ok ? r.json() : null));
+  starsLoading = Promise.all([get('constellation-names.json'), get('constellations.lines.json')])
+    .then(([names, lines]) => setConstellations(names, lines), () => 0);
+  return starsLoading;
+}
+if (typeof document !== 'undefined') loadConstellations();
+
 const NEAR = () => ({ extra: 'suggest', id: 'near-me-tonight', name: COPY.searchRows.nearMe, sub: COPY.searchRows.nearMeSub, words: 'near me tonight what is up in my sky above' });
 
 /** What is offered before anything is typed. */
@@ -297,7 +348,7 @@ function scoreWords(words, q) {
 export function findExtras(query, limit = EXTRA_ROWS) {
   const q = norm(query);
   if (q.length < 3) return [];
-  const pool = all().concat(NEAR());
+  const pool = all().concat(stars, NEAR());
   let found = [];
   for (const e of pool) {
     const s = scoreWords(e.words, q);
@@ -309,7 +360,7 @@ export function findExtras(query, limit = EXTRA_ROWS) {
       if (e.words.split(/[^a-z0-9]+/).some((w) => w.length >= 3 && editDistance(q, w, cap) <= cap)) found.push({ e, s: 1 });
     }
   }
-  const order = { suggest: 0, trip: 1, mission: 2, event: 3 };
+  const order = { suggest: 0, constellation: 1, trip: 2, mission: 3, event: 4 };
   found.sort((a, b) => (order[a.e.extra] - order[b.e.extra]) || (b.s - a.s) || ((b.e.lead || 0) - (a.e.lead || 0)));
   const out = [];
   const eventsOf = new Map();
@@ -320,10 +371,24 @@ export function findExtras(query, limit = EXTRA_ROWS) {
       if (n >= 1 && !named) continue;
       eventsOf.set(e.mission, n + 1);
     }
-    out.push({ extra: e.extra, id: e.id, name: e.name, sub: e.sub, record: e.record || null });
+    out.push({ extra: e.extra, id: e.id, name: e.name, sub: e.sub, record: e.record || null, ...(e.extra === 'constellation' ? { raDeg: e.raDeg, decDeg: e.decDeg } : {}) });
     if (out.length >= limit) break;
   }
   return out;
+}
+
+/**
+ * A star pattern's row: the dome from the visitor's place (the Now door, which guesses a place and
+ * says it is a guess when none is set), turned to the figure; or, if it is under the horizon, the
+ * scene's one line says so. The sky keeps its own ring on what it was turned to (skyView.pointAt).
+ */
+function turnToStars(ctx, hit) {
+  const sky = ctx.skyView;
+  if (!sky || typeof sky.pointAt !== 'function' || !Number.isFinite(hit.raDeg)) return false;
+  if (!sky.active && typeof ctx.setMoment === 'function') ctx.setMoment(COPY.moments.now.id);
+  const aimed = sky.pointAt({ raDeg: hit.raDeg, decDeg: hit.decDeg });
+  if (aimed === false && ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(t(COPY.search.belowHorizon, { name: hit.name }));
+  return true;
 }
 
 /** Do what an extra row offers. Returns false when it could not (the caller leaves the list open). */
@@ -331,6 +396,7 @@ export function runExtra(ctx, hit) {
   if (!ctx || !hit) return false;
   try {
     if (hit.extra === 'trip') { if (ctx.trip && typeof ctx.trip.start === 'function') { ctx.trip.start(hit.id); return true; } return false; }
+    if (hit.extra === 'constellation') return turnToStars(ctx, hit);
     if (hit.extra === 'suggest') { if (ctx.explore && typeof ctx.explore.setTab === 'function') { ctx.explore.setTab('tonight'); return true; } return false; }
     const record = typeof ctx.recordById === 'function' ? ctx.recordById(hit.record) : null;
     if (hit.extra === 'mission') { if (record) { ctx.select(record); return true; } return false; }

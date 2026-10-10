@@ -155,6 +155,20 @@ for (const [vw, vh] of [[1440, 900], [390, 844], [844, 390], [320, 568]]) {
   }
 }
 check(C.pictureSize('7:3').preset === '1:1', 'an unknown shape is the square');
+// The frame's margins with a notch (internal #397): the plain 16 px without one; the notch's top and a landscape side add to it.
+{
+  const m0 = P.frameMargin(80, {});
+  check(m0.x === 16 && m0.y === 96, `no notch: the margins are 16 and the foot's room (${JSON.stringify(m0)})`);
+  const mn = P.frameMargin(80, { top: 47, bottom: 34, left: 0, right: 0 });
+  check(mn.x === 16 && mn.y === 96, `a portrait notch (47 px) is inside the foot's room already (${JSON.stringify(mn)})`);
+  const mt = P.frameMargin(20, { top: 47, bottom: 34 });
+  check(mt.y === 63, `with a short foot the notch decides the top (${mt.y})`);
+  const ml = P.frameMargin(60, { top: 0, bottom: 21, left: 47, right: 47 });
+  check(ml.x === 63 && ml.y === 76, `a landscape notch moves both sides in (${JSON.stringify(ml)})`);
+  const r = P.frameRect(844, 390, '16:9', ml);
+  check(r.x >= 63 && r.x + r.w <= 844 - 63, 'and the frame stays out of it');
+  check(P.frameMargin(undefined, undefined).x === 16, 'no arguments is the plain margin');
+}
 // The lens, and PNG (internal #397).
 check(P.LENS.min === 15 && P.LENS.max === 75 && P.clampLens(45) === 45 && P.clampLens(3) === 15 && P.clampLens(120) === 75 && P.clampLens('30.4') === 30 && P.clampLens('x', 45) === 45, 'the lens is held between 15 and 75 degrees, and a value that is not a number is the map\'s own');
 {

@@ -123,6 +123,10 @@ export function createTextureTiers(opts = {}) {
   const monthNow = opts.month || (() => new Date().getUTCMonth() + 1);
   const idle = opts.idle || defaultIdle;
   const slots = opts.slots || TIER_PLANET_SLOTS;
+  // OFFLINE (internal #564): a page played from the service worker's copy asks for no sharper map the
+  // copy does not hold (a kept trip holds the boot tier's maps, not what a promotion would want).
+  // Asked again, by the next tick, the moment the network is back.
+  const offline = typeof opts.offline === 'function' ? opts.offline : () => false;
   let tier = Number.isFinite(opts.tier) ? opts.tier : 0;
   let latched = false;
   let started = false;
@@ -178,7 +182,7 @@ export function createTextureTiers(opts = {}) {
 
   /** The next row to fetch, or null. */
   function next() {
-    if (latched || tier <= 0) return null;
+    if (latched || tier <= 0 || offline()) return null;
     for (const when of ['idle', 'near']) {
       for (const row of rows) {
         if (row.when !== when) continue;

@@ -202,6 +202,8 @@ Object.assign(COPY, {
     lowNow: 'low in the {compass} now',
     downNow: 'below your horizon now',
     trip: 'Trip',
+    // An IAU figure (Orion), as opposed to a constellation of satellites (the 'group' row below).
+    starPattern: 'Constellation of stars',
     mission: 'Mission',
     eventName: '{mission}: {title}',
     event: 'Mission event · {date}',

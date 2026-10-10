@@ -2070,6 +2070,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
   const earthMesh = () => worlds.meshFor('earth');
   const tiers = createTextureTiers({
     tier: pick.tier,
+    offline: () => typeof navigator !== 'undefined' && navigator.onLine === false,
     month: () => new Date(clock.now()).getUTCMonth() + 1,
     // decode() before the texture is handed over: Chrome otherwise decodes a 4k image on the main
     // thread inside the upload, in the middle of a frame.

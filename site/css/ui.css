@@ -3551,7 +3551,7 @@ html.sr-phone .sr-chevron {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  padding: 20px 20px 14px;
+  padding: 20px 20px var(--sp-3);
 }
 
 .sr-explore__brand {
@@ -3789,13 +3789,13 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-pane[hidden] { display: none; }
 
 .sr-sect {
-  padding: 8px 20px 10px;
+  padding: var(--sp-2) 20px var(--sp-2);
 }
 
 .sr-sect[hidden] { display: none; }
 
 .sr-sect > .sr-micro {
-  padding: 8px 0 6px;
+  padding: var(--sp-2) 0 var(--sp-1);
 }
 
 /* A section's honesty line (principle 7): the Planets tab says its dots are drawn larger. */
@@ -3849,7 +3849,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 /* The lead: Inter at 20 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
 .sr-now__row.is-lead .sr-now__btn {
-  padding-top: 6px;
+  padding-top: var(--sp-1);
   font-size: var(--sr-fs-lead);
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -5344,6 +5344,9 @@ html.sr-phone .sr-top .sr-search__input::placeholder {
 
 html.sr-phone .sr-top .sr-search__pop {
   position: absolute;
+  /* Above the launch chip and the live line, which come later in the bar and carry their own glass
+     (#563: the pill lay over the first result's title). */
+  z-index: 2;
   top: calc(var(--sr-top-bar) + var(--sp-2));
   right: 0;
   left: 0;
@@ -6122,6 +6125,11 @@ html.sr-night-red::after {
 .sr-tonight-view__rowside { flex: 0 0 auto; font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
 /* On a phone the search bar has the top of the screen: the field of view sits under it. */
 html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
+/* With a launch inside a day the line under the search holds the countdown chip (44 px tall): the
+   field line goes under it, or the chip lay over '72° field · eye' (bulk 2 frame, #565). */
+html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
 
 /* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
    back on their old faces (and task 6 removed the face). And the card's name is a
