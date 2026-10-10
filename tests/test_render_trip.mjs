@@ -19,7 +19,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 import {
-  renderOptions, createVirtualTime, truthLine, tripUrl, cardOpacity, lowerThird, TITLE_S, END_S,
+  renderOptions, leaveOut, createVirtualTime, truthLine, tripUrl, cardOpacity, lowerThird, TITLE_S, END_S,
 } from '../site/js/ui/rendermode.js';
 import { VOICE_DUCK, DUCK_IN_S, DUCK_BACK_S, holdFor } from '../site/js/audio/narration.js';
 import { NARRATION } from '../site/js/data/narration.js';
@@ -59,6 +59,11 @@ function fakeWindow() {
   check(renderOptions('') === null && renderOptions('?tier=2') === null && renderOptions('?render=0') === null, 'no render=1, no render mode');
   const o = renderOptions('?render=1&fps=60&at=1791051444000&captions=1&stops=2');
   check(o && o.fps === 60 && o.epochMs === 1791051444000 && o.captions === true && o.maxStops === 2, 'the query is read: fps, the instant, captions, a cut');
+  const big = renderOptions('?render=1&captions=big&skip=g,%20edge');
+  check(big && big.captions === true && big.bigCaptions === true && big.skip.join() === 'g,edge' && o.bigCaptions === false && o.skip.length === 0, 'captions=big and skip are read; neither is on by default');
+  const trips = [{ id: 't', stops: [{ id: 'a' }, { id: 'g' }, { id: 'h' }] }];
+  check(leaveOut(trips, 't', ['g']).join() === 'g' && trips[0].stops.map((s) => s.id).join() === 'a,h', 'a skipped stop is taken out of its trip, in place');
+  check(leaveOut(trips, 't', ['a', 'h']).length === 0 && trips[0].stops.length === 2 && leaveOut(trips, 'x', ['a']).length === 0, 'never the whole trip, never another trip');
   const d = renderOptions('?render=1&fps=17');
   check(d && d.fps === 30 && d.epochMs === null && d.captions === false && d.maxStops === 0, 'defaults: 30 fps, now, no captions, the whole trip');
 

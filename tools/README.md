@@ -110,6 +110,7 @@ node tools/render-trip.mjs people-in-space                 # 1920x1080, 30 fps, 
 node tools/render-trip.mjs people-in-space --fps=60        # the spec's 1080p60: twice the frames
 node tools/render-trip.mjs to-the-edge --captions          # captions burned into the picture too
 node tools/render-trip.mjs moon-landings --stops=2         # a short look: two stops, then the end card
+node tools/render-trip.mjs to-the-edge --captions=big --skip=edge   # for a film joined from trips: captions a phone can read, one stop left out
 for t in people-in-space journey-to-the-station strangest-things moon-landings outer-solar-system \
          a-year-in-a-minute chasing-the-solar-eclipse to-the-edge travel-to-exoplanets; do
   node tools/render-trip.mjs "$t" || break
