@@ -19,6 +19,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as frames from '../propagate/frames.js';
 import * as stageMod from './stage.js';
 import { PALETTE } from './glyphatlas.js';
+import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
 import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 const DEG = Math.PI / 180;
@@ -183,6 +184,7 @@ export function sunGlare(alphaRad) {
 // --------------------------------------------------------------------------------- shaders
 
 const STAR_VERT = /* glsl */ `
+${HOLES_GLSL_HEAD}
 attribute float aSize;
 attribute float aAlpha;
 attribute vec3 aColour;
@@ -203,6 +205,8 @@ void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   // Stars fade near the Sun (sunGlare() above): gone inside the inner angle, whole past the outer.
   vAlpha *= 1.0 - smoothstep( uSunGlare.y, uSunGlare.x, dot( normalize( mv.xyz ), uSunView ) );
+  // Where a photograph is drawn our stars step aside (scene/starholes.js); no hole, no change.
+  if ( uHoleCount > 0 ) vAlpha *= starHole( normalize( mv.xyz ) );
   gl_Position = projectionMatrix * mv;
   // The naked-eye stars the constellations are drawn from (magnitude 2.7 and brighter: aSize over
   // 2.3; magnitude 1.5 until 2026-10-08, public #271) get a soft glow round a core that stays its
@@ -349,6 +353,7 @@ export function createStarfield(scene, opts = {}) {
     opts.pixelRatio || (typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1);
   let dprLocked = false; // true once setPixelRatio() is called by hand
   const starUniforms = {
+    ...holeUniforms(),
     uPixelRatio: { value: pixelRatio },
     uGain: { value: 1 },
     // How large a star's point is drawn, as a factor (setPointScale). 1 everywhere but while
@@ -697,6 +702,9 @@ export function createStarfield(scene, opts = {}) {
       starUniforms.uScale.value = Math.min(3, Math.max(0.5, Number(k) || 1));
     },
     pointScale: () => starUniforms.uScale.value,
+    /** The photographs on screen this frame (scene/nebulae.js holes()): our stars step aside inside them. */
+    setHoles: (list) => setHoleUniforms(starUniforms, list),
+    holeCount: () => starUniforms.uHoleCount.value,
     /** Overall star brightness, 0..1 — the sky view dims them at dawn. */
     setGain(g) {
       gain = Math.min(1, Math.max(0, g));

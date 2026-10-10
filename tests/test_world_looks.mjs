@@ -112,5 +112,23 @@ check(/adjustment of ours/.test(recs.get('saturn').meta.departure || '') && recs
 check(/illustrative/.test(recs.get('venus').meta.departure || ''), 'Venus\'s card says its glow is illustrative');
 check(!recs.get('mars').meta.departure && !recs.get('jupiter').meta.departure, 'no other world gains a sentence');
 
+// The two worlds with ground sites are cut finely: a lander on the true radius must not float over the drawn ground
+// (internal #565, public #406: "stars visible below the horizon", the shell under the surface).
+{
+  const { segmentsFor, sagKm, SITE_BODIES } = await import(join(JS, 'scene/worlds.js'));
+  const sites = readFileSync(join(ROOT, 'registry/sites.yaml'), 'utf8');
+  const bodies = new Set([...sites.matchAll(/\bworld:\s*([a-z]+)/g)].map((m) => m[1]));
+  bodies.delete('earth'); // the Earth's sphere is scene/earth.js's own, cut by its own SEGMENTS
+  check(bodies.has('moon') && bodies.has('mars') && bodies.size === 2, `registry/sites.yaml puts ground sites on the Moon and Mars only (${[...bodies]})`);
+  for (const b of bodies) check(SITE_BODIES.has(b), `${b} has ground sites in registry/sites.yaml, so its sphere is cut finely`);
+  const moonR = WORLDS.find((w) => w.id === 'moon').radiusKm;
+  check(sagKm(moonR, 64) > 2 && sagKm(moonR, 64) < 2.3, `at 64 segments the Moon's facets sag ${sagKm(moonR, 64).toFixed(2)} km (the old shell)`);
+  const seg = segmentsFor('moon');
+  check(sagKm(moonR, seg.width) < 0.25, `the Moon's facets now sag ${sagKm(moonR, seg.width).toFixed(3)} km`);
+  const marsR = WORLDS.find((w) => w.id === 'mars').radiusKm;
+  check(sagKm(marsR, segmentsFor('mars').width) < 0.5, `Mars's facets sag ${sagKm(marsR, segmentsFor('mars').width).toFixed(3)} km`);
+  check(segmentsFor('jupiter').width === 64 && segmentsFor('earth').width === 64, 'every other world keeps its 64 x 48');
+}
+
 if (problems.length) { console.error(`world looks: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
 console.log('world looks ok: Venus\'s soft terminator, Saturn\'s contrast (not on the Hubble face) and Mercury\'s relief (tier 1 up, given back with the map) are each behind their own uniform, and each card says what is adjusted');

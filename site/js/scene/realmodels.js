@@ -451,9 +451,11 @@ export const REAL_MODELS = {
     '-170': { build: 'jwst', file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
     '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
     '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
-    // No NASA model exists for New Horizons, so this names a PROCEDURAL shape instead of a
-    // file: `build:` is drawn immediately and has nothing to upgrade to (scene/heroes.js).
-    '-98': { build: 'new-horizons', colour: 'probe', name: 'New Horizons' },
+    // NASA's printable parts for New Horizons (science.nasa.gov/3d-resources/new-horizons, read 2026-10-10),
+    // assembled and baked into new-horizons.glb (registry/models.yaml says how). Until 2026-10-10 there was
+    // no file and this named only the PROCEDURAL shape; it stays as what is drawn while the file is on its
+    // way, as JWST's does (heroes.js acquire).
+    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons' },
     // Three of the twelve craft added on 2026-09-22 as the generic probe, which NASA publishes a
     // model of (issue #431). OSIRIS-APEX is the OSIRIS-REx spacecraft under its second mission's
     // name -- the same vehicle, so this is its model and not a stand-in. NASA's STEREO model is

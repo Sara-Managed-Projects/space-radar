@@ -1969,7 +1969,7 @@ export async function boot({ setStatus } = {}) {
     }
     if (plan.trip) ctx.trip.stop();
     // A mission's event (ui/missions.js): it selects its own record and sets the clock.
-    if (plan.event) { ctx.wantMissions().then((m) => { if (!m || !m.openEvent(ctx, plan.event)) linkNote(ctx, COPY.mission.unknown, ['event']); }); return; }
+    if (plan.event) { ctx.wantMissions().then((m) => (m ? m.openEventWhenReady(ctx, plan.event) : false)).then((ok) => { if (!ok) linkNote(ctx, COPY.mission.unknown, ['event']); }); return; }
     if (plan.at && plan.at.open) openAt(ctx, plan.at.open);
     else if (plan.at) ctx.deselect();
     if (keys.cam) applyCam(ctx, keys.cam);
@@ -2501,6 +2501,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
     if (ctx.nebulae) {
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(layerRec('deep-sky')));
+      // Our stars step aside inside a drawn photograph, which carries its own (scene/starholes.js, internal #344).
+      { const holes = ctx.nebulae.holes(); if (ctx.starfield && ctx.starfield.setHoles) ctx.starfield.setHoles(holes); if (ctx.stars3d && ctx.stars3d.setHoles) ctx.stars3d.setHoles(holes); }
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
       // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
@@ -2599,7 +2601,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     // One mark per object: the dot fades out as that record's 3D model fades in.
     // Read through ctx at call time: this function has no `heroes` of its own (the first version
     // named one, and the browser check said `heroes is not defined` -- no unit test could).
-    gl.setModelOpacity((id) => (ctx.heroes ? ctx.heroes.drawnOpacity(id) : 0));
+    // A deep-sky dot also gives way to its own glow once that is wider than it (scene/dsoglow.js dotYield).
+    const deepSky = layer.id === 'deep-sky';
+    gl.setModelOpacity((id) => Math.max(ctx.heroes ? ctx.heroes.drawnOpacity(id) : 0, deepSky && ctx.dsoGlow ? ctx.dsoGlow.dotYield(id) : 0));
     gl.setRecords([]);
     // Hidden until its records arrive; one() then sets the real visibility. This loop runs
     // before the first await, and ctx.isLayerOn is attached to ctx after this function is
@@ -2800,8 +2804,9 @@ function applyUrlState(ctx, st) {
   if (st.trip && openTrip(ctx, st)) return;
   // A mission's event (ui/missions.js): it selects its own record, so `at` beside it is not read.
   if (st.event && typeof ctx.wantMissions === 'function') {
-    ctx.wantMissions().then((m) => {
-      if (m && m.openEvent(ctx, st.event)) return;
+    // A known event whose record is in a layer that has not landed is waited for (ui/missions.js openEventWhenReady), not called unknown.
+    ctx.wantMissions().then((m) => (m ? m.openEventWhenReady(ctx, st.event) : false)).then((ok) => {
+      if (ok) return;
       linkNote(ctx, COPY.mission.unknown, ['event']);
       if (st.at) openAt(ctx, st.at);
     });

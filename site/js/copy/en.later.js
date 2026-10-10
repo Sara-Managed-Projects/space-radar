@@ -643,6 +643,9 @@ Object.assign(COPY, {
     line: 'The figures are a tradition, drawn by us; the stars at their corners are at their measured distances.',
     lineSky: 'The figures are a tradition, drawn by us, over the stars as they are seen from Earth.',
     ecliptic: 'The dashed line is the ecliptic, the Sun\u2019s path through the year.',
+    // A corner star's own distance label where the figure is seen from the side (scene/figures3d.js, internal #387).
+    distance: '{n} ly',
+    namedDistance: '{name}, {n} ly',
   },
 
   // Colour keys (spec 0026 req 11).

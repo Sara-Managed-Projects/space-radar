@@ -157,5 +157,31 @@ const yaml = readFileSync(join(ROOT, 'registry/missions.yaml'), 'utf8');
 check(/internal #277/.test(yaml) && /reviewed_on: 2026-/.test(yaml) && /NOTHING HERE IS FROM MEMORY/.test(yaml) && /path_at/.test(yaml), 'the registry says where a craft\'s path comes from, when its dates were read, and that none is from memory');
 check(/event\.source \|\| mission\.source/.test(readFileSync(join(JS, 'ui/missions.js'), 'utf8')), 'the card links to the page the shown event was read on');
 
+// --- `#event=` before the layers land (internal #424, #550) -------------------------------------------------
+{
+  const ev = M.MISSIONS.find((m) => m.id === 'apollo-11') && M.findEvent('apollo-11.landing') ? 'apollo-11.landing' : (() => { const m = M.MISSIONS[0]; return `${m.id}.${m.events[0].id}`; })();
+  const found = M.findEvent(ev);
+  const wantId = found.mission.subject || found.mission.record;
+  let present = false;
+  const rec = { id: null, layer: 'x', pos: { x: 0, y: 0, z: 0 }, frame: 'sun-inertial', klass: 'site', name: 'x' };
+  const noop = () => undefined;
+  const ctx = new Proxy({ recordById: (id) => (present ? { ...rec, id } : null), isLayerOn: () => true, setLayerOn: noop, select: noop, refreshCard: noop }, { get: (t, k) => (k in t ? t[k] : k === 'clock' ? new Proxy({}, { get: () => noop }) : noop) });
+  let fire = null; let unsubscribed = false;
+  const subscribe = (fn) => { fire = fn; return () => { unsubscribed = true; }; };
+  const p1 = M.openEventWhenReady(ctx, ev, { subscribe, timeoutMs: 10, later: () => 1, cancel: noop });
+  let settled = null; p1.then((v) => { settled = v; });
+  await Promise.resolve(); await Promise.resolve();
+  check(settled === null && typeof fire === 'function', 'a known event whose record has not landed waits, and is not called unknown');
+  present = true; fire();
+  check((await p1) === true && unsubscribed, 'it opens when the layer lands, and stops listening');
+  check((await M.openEventWhenReady(ctx, 'no-such.event', { subscribe })) === false, 'an event nobody knows is unknown at once');
+  present = false; let fireLate = null; let timerFn = null;
+  const p3 = M.openEventWhenReady(ctx, ev, { subscribe: (fn) => { fireLate = fn; return () => {}; }, later: (fn) => { timerFn = fn; return 7; }, cancel: noop });
+  timerFn();
+  check((await p3) === false, 'a record that never lands is unknown at the end of the wait');
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check((main.match(/openEventWhenReady\(ctx,/g) || []).length === 2, 'both places main.js opens a link\'s event wait for the layers');
+}
+
 if (problems.length) { console.error('missions FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`missions ok: ${M.MISSIONS.length} missions, ${events} dated events each with a source; a site moves the clock, a flyby with no path does not; the straight line puts Voyager 1 at ${v1Out.toFixed(1)} au in August 2012 (121.6) and New Horizons at ${nhArr.toFixed(1)} at Arrokoth (43.4)`);

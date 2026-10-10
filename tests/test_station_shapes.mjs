@@ -559,7 +559,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
-    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'build:new-horizons',
+    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'new-horizons.glb', // NASA's printable parts, bake 2026-10-10 (bulk 3); build:new-horizons stays as what is drawn while it loads
     'deep-solar-orbiter': 'build:solar-orbiter',
     // 2026-10-05: three of the twelve that NASA publishes a model of (issue #431).
     'deep-lro': 'lro.glb', 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb',
@@ -808,6 +808,16 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(geo.index.count / 3 <= 300, `the fan stays small (${geo.index.count / 3} triangles)`);
   const area = (g) => { let s2 = 0; const ix = g.index.array; for (let i = 0; i < ix.length; i += 3) { const [p0, p1, p2] = [0, 1, 2].map((k) => [pos.getX(ix[i + k]), pos.getZ(ix[i + k])]); s2 += ((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p2[0] - p0[0]) * (p1[1] - p0[1])) / 2; } return s2; };
   check(Math.abs(area(geo)) > 0.5, 'a real area is covered, all triangles on one side (a signed area that does not cancel)');
+}
+
+// A selected comet far from the Sun draws no tail (internal #413, #548, bulk 3).
+{
+  const { cometTailVisible, COMET_TAIL_SELECTED_AU } = await import(join(ROOT, 'site/js/scene/models.js'));
+  check(cometTailVisible(0.5, false) && cometTailVisible(1.4, false) && !cometTailVisible(2, false), 'an unselected comet has its tail inside 1.5 au and not beyond');
+  check(cometTailVisible(2, true) && cometTailVisible(COMET_TAIL_SELECTED_AU - 0.01, true), 'a selected comet keeps it a little further out');
+  check(!cometTailVisible(COMET_TAIL_SELECTED_AU, true) && !cometTailVisible(30, true) && !cometTailVisible(51, true), 'a selected comet at 3, 30 or 51 au has none');
+  check(cometTailVisible(NaN, false) && cometTailVisible(undefined, true), 'a comet with no distance keeps its tail, as before');
+  check(/cometTailVisible\(au, !!meta\.selected\)/.test(readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8')), 'the model update uses the rule');
 }
 
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }

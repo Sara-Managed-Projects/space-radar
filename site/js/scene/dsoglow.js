@@ -270,6 +270,19 @@ export function glowKeep(share) {
   return Math.max(0, Math.min(1, 1 - Math.round(Math.min(1, k) * 10) / 10));
 }
 
+/**
+ * The dot's own fade once its glow is wider than it: 0 with the glow narrower than ~14 px (the dot says it all),
+ * 1 once it is 26 px or more across, and back to 0 as the camera goes into the glow (the vertex shader's own
+ * fade-out, 220 to 420 px). Pure. This is the shader's vAlpha without its gain, so the dot and the glow trade
+ * places instead of drawing a halo round a dot (Andromeda's companions, internal #472).
+ */
+export function dotYieldAt(px, keep = 1) {
+  const e = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  if (!(px > 0)) return 0;
+  const k = Number.isFinite(keep) ? Math.min(1, Math.max(0, keep)) : 1;
+  return e(14, 26, px) * (1 - e(220, 420, px)) * k;
+}
+
 export function createDsoGlow(scene) {
   const group = new THREE.Group();
   group.name = 'dso-glow';
@@ -284,6 +297,9 @@ export function createDsoGlow(scene) {
   const _v = new THREE.Vector3();
   const _w = new THREE.Vector3();
   const _tip = { x: 0, y: 0, z: 0 };
+  // id -> the glow's diameter on the screen this frame, CSS px (update()): what the dot gives way to.
+  const widthPx = new Map();
+  let indexOf = new Map();
 
   function setRecords(records) {
     glows = [];
@@ -328,8 +344,10 @@ export function createDsoGlow(scene) {
     const ratio = geometry.getAttribute('aRatio').array;
     const step = geometry.getAttribute('aStep').array;
     const kind = geometry.getAttribute('aKind').array;
+    indexOf = new Map();
     for (let i = 0; i < n; i++) {
       const g = glows[i];
+      indexOf.set(g.record.id, i);
       kind[i * 2] = KINDS[g.kind] || 0; kind[i * 2 + 1] = (i * 0.6180339887) % 1;
       const ok = stage.toSceneInto(g.record.pos, SUN_INERTIAL, _v, stage.tMs);
       // A shaped galaxy: the end of its major axis, half its length from the centre, in the scene.
@@ -376,6 +394,27 @@ export function createDsoGlow(scene) {
     if (renderer && typeof renderer.getPixelRatio === 'function') uniforms.uPixelRatio.value = Math.min(2, Math.max(0.5, renderer.getPixelRatio()));
     if (renderer && renderer.domElement) uniforms.uViewportH.value = renderer.domElement.clientHeight || uniforms.uViewportH.value;
     if (camera && camera.aspect > 0) uniforms.uAspect.value = camera.aspect;
+    // The width of each glow on the screen, for dotYield(): the shader's own arithmetic, once a frame.
+    widthPx.clear();
+    if (!camera || !geometry) return;
+    const pos = geometry.getAttribute('position').array;
+    const size = geometry.getAttribute('aSize').array;
+    const cp = camera.position;
+    const f = (camera.projectionMatrix.elements[5] || 0) * 0.5 * uniforms.uViewportH.value;
+    for (const [id, i] of indexOf) {
+      if (!(size[i] > 0)) continue;
+      const d = Math.hypot(pos[i * 3] - cp.x, pos[i * 3 + 1] - cp.y, pos[i * 3 + 2] - cp.z);
+      widthPx.set(id, size[i] / Math.max(1e-12, d) * f);
+    }
+  }
+
+  /** How much of a deep-sky object's dot has given way to its glow, 0 to 1 (scene/glyphs.js setModelOpacity). */
+  function dotYield(id) {
+    if (!points || !points.visible) return 0;
+    const px = widthPx.get(id);
+    if (px === undefined) return 0;
+    const i = indexOf.get(id);
+    return dotYieldAt(px, geometry.getAttribute('aKeep').array[i]);
   }
 
   function dispose() {
@@ -397,5 +436,5 @@ export function createDsoGlow(scene) {
   /** The frame latch (main.js): the per-kind profiles go back to the one plain glow. */
   function setMarks(on) { uniforms.uMarks.value = on ? 1 : 0; }
 
-  return { setRecords, setPictured, setShapedShare, setExposure, setMarks, rebuild, update, dispose, group, count: () => glows.length, kinds: () => glows.map((g) => g.kind), shaped: () => glows.filter((g) => g.shape).map((g) => g.record.id) };
+  return { dotYield, widthPx: (id) => widthPx.get(id), setRecords, setPictured, setShapedShare, setExposure, setMarks, rebuild, update, dispose, group, count: () => glows.length, kinds: () => glows.map((g) => g.kind), shaped: () => glows.filter((g) => g.shape).map((g) => g.record.id) };
 }

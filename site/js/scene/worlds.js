@@ -1078,6 +1078,18 @@ export function oblateRadii(f) {
 }
 
 /**
+ * How finely a world's sphere is cut. A facet's middle sags under the true surface by R (1 - cos(half a step)):
+ * 2.1 km on the Moon at 64 segments, which is the height a ground site's lander (placed on the true radius)
+ * floated above the drawn ground, and the shell the stars showed under (public #406, internal #565). The two
+ * worlds that carry ground sites (registry/sites.yaml: the Moon and Mars) are cut finely enough that the sag is
+ * under a quarter of a kilometre; the camera cannot go nearer than ~35 km, so nothing shows it. Pure.
+ */
+export const SITE_BODIES = new Set(['moon', 'mars']);
+export function segmentsFor(id) { return SITE_BODIES.has(id) ? { width: 192, height: 96 } : { width: 64, height: 48 }; }
+/** The deepest a facet sags under the sphere, km: the middle of a longitude step on the equator. Pure. */
+export function sagKm(radiusKm, widthSegments) { return radiusKm * (1 - Math.cos(Math.PI / widthSegments)); }
+
+/**
  * A unit sphere pressed into that spheroid, +Y the pole: SphereGeometry's vertices, faces and
  * texture coordinates (the map lands where it did, in planetocentric latitude), with the spheroid's
  * own normals, so the light and the limb are the flattened body's.
@@ -1498,7 +1510,7 @@ export function createWorlds(scene, opts = {}) {
         clouds: texture(w.look.clouds),
       })
       : new THREE.Mesh(
-        w.look.oblate ? oblateGeometry(w.look.oblate, 64, 48) : new THREE.SphereGeometry(1, 64, 48),
+        w.look.oblate ? oblateGeometry(w.look.oblate, segmentsFor(w.id).width, segmentsFor(w.id).height) : new THREE.SphereGeometry(1, segmentsFor(w.id).width, segmentsFor(w.id).height),
         // The Sun is not lit by anything, so it does not get the world material: a flat disc of
         // its own texture, out of the tone mapper's way so it stays white rather than grey.
         w.look.emissive

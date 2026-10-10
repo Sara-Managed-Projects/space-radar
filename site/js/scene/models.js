@@ -4382,8 +4382,21 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
     const au = Number(meta.rAu);
     const len = Number.isFinite(au) ? Math.min(2.5, Math.max(0.35, 1 / (au * au))) : 1;
     obj.userData.tails.scale.set(len, 1, 1);
-    obj.userData.tails.visible = !Number.isFinite(au) || au < 1.5 || !!meta.selected;
+    obj.userData.tails.visible = cometTailVisible(au, !!meta.selected);
   }
+}
+
+/**
+ * Whether a comet is drawn with its tail. A tail is ice turning to gas in the Sun's heat, so far from the Sun there is
+ * none: the tail is drawn inside 1.5 au (as it always was), and a SELECTED comet keeps it a little further, out to
+ * COMET_TAIL_SELECTED_AU, so the one you are looking at is not a bare dot at the moment it is closest to being a comet.
+ * Past that a selected comet drew a tail at any distance (internal #413, #548: one at 30 au had one). The distances are
+ * ours and illustrative; the tail itself is, as the card says. A comet with no known distance keeps its tail. Pure.
+ */
+export const COMET_TAIL_SELECTED_AU = 3;
+export function cometTailVisible(au, selected) {
+  if (!Number.isFinite(au)) return true;
+  return au < 1.5 || (!!selected && au < COMET_TAIL_SELECTED_AU);
 }
 
 /** Free every geometry and the shared materials. For a page teardown or a test. */

@@ -107,6 +107,29 @@ check(lyOf(0.45) && Math.abs(lyOf(0.45).ly - 498) < 5, 'Betelgeuse (mag 0.45) is
 check(lyOf(1.64) && Math.abs(lyOf(1.64).ly - 252) < 5, 'Bellatrix (mag 1.64) is not at about 252 light-years: the card says two hundred and fifty');
 check(lyOf(1.69) && Math.abs(lyOf(1.69).ly - 1977) < 10, 'Alnilam (mag 1.69) is not at about 1 977 light-years: the card says nearly two thousand');
 check(orion.stars[0].mag <= orion.stars[1].mag, 'a figure\'s stars are brightest first');
+// ---- seen from the side (scene/figures3d.js, internal #387): drop lines to the plane of the sky and a distance on each star
+{
+  const { dropSegments, distanceText } = await import(join(ROOT, 'site/js/scene/figures3d.js'));
+  const c = F.eqToEcl(F.dirOf(orion.centre[0], orion.centre[1]));
+  const drops = dropSegments(orion);
+  check(drops.length === orion.stars.length, `Orion gets one drop line a star (${drops.length} of ${orion.stars.length})`);
+  let worstPlane = 0, worstAlong = 0, signs = 0;
+  for (const d of drops) {
+    // every foot is ON the plane through the median distance...
+    worstPlane = Math.max(worstPlane, Math.abs(d.b[0] * c[0] + d.b[1] * c[1] + d.b[2] * c[2] - orion.medianLy));
+    // ...and the line is along the line of sight, so it is square to the plane: (a - b) is parallel to c
+    const v = [d.a[0] - d.b[0], d.a[1] - d.b[1], d.a[2] - d.b[2]];
+    const l = Math.hypot(...v);
+    if (l > 1e-6) worstAlong = Math.max(worstAlong, Math.hypot(v[1] * c[2] - v[2] * c[1], v[2] * c[0] - v[0] * c[2], v[0] * c[1] - v[1] * c[0]) / l);
+    if (Math.abs(d.depthLy - l) < 1e-6 * Math.max(1, l)) signs++;
+  }
+  check(worstPlane < 1e-6 * orion.medianLy, `every drop line ends on the plane of the sky (worst ${worstPlane.toExponential(1)} ly)`);
+  check(worstAlong < 1e-9, `every drop line is square to the plane, along the line of sight (${worstAlong.toExponential(1)})`);
+  check(drops.some((d) => d.depthLy > 100) && drops.some((d) => d.depthLy < -100), 'Orion has stars well in front of and well behind its median distance (Bellatrix 252, Alnilam 1 977 ly)');
+  check(drops.every((d) => d.t0 === 0.9 && d.t1 === 1), 'the drop lines come after the pen');
+  const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
+  check(distanceText(null, 863.4) === `${(await import(join(ROOT, 'site/js/copy/en.js'))).fmt.int(863)} ly` && /^Betelgeuse, .* ly$/.test(distanceText('Betelgeuse', 498.2)) && COPY.figures.distance === '{n} ly', 'the distance label is "863 ly", or "Betelgeuse, 498 ly" for a named star');
+}
 let corners = 0;
 let unplaced = 0;
 let worst = 0;

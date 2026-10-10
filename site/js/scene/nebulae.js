@@ -354,8 +354,23 @@ export function createNebulae(scene, opts = {}) {
    * is on at all (on a world's stage its marks are not drawn, and the sky's pictures still are),
    * `layerPlace` whether it draws on this stage (main.js isLayerDrawable).
    */
+  // The photographs on screen this frame, as holes our stars step aside for (scene/starholes.js): view-space direction
+  // of the picture's centre, the radius of the circle inside its rectangle, how strongly it is drawn.
+  const holeList = [];
+  const _hv = new THREE.Vector3();
+  function pushHole(p, worldPos, radius, k) {
+    if (!(k > 0.003) || !(radius > 0)) return;
+    _hv.copy(worldPos).applyMatrix4(holeCam.matrixWorldInverse);
+    const l = _hv.length();
+    if (!(l > 0)) return;
+    holeList.push({ dir: [_hv.x / l, _hv.y / l, _hv.z / l], radius, k, id: p.row.id });
+  }
+  let holeCam = null;
+
   function update(camera, renderer, layerSky = true, layerPlace = layerSky) {
     if (!camera || !camera.isCamera) return;
+    holeCam = camera;
+    holeList.length = 0;
     const viewH = renderer && renderer.domElement ? (renderer.domElement.clientHeight || 800) : 800;
     const pxPerRad = camera.projectionMatrix.elements[5] * 0.5 * viewH;
     _pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
@@ -377,6 +392,10 @@ export function createNebulae(scene, opts = {}) {
       }
       p.sky.material.uniforms.uAlpha.value = skyAlpha;
       p.sky.visible = skyAlpha > 0 && p.state === 'ready';
+      if (p.sky.visible) {
+        _sphere.center.set(...p.basis.centre).applyMatrix4(sg.matrixWorld);
+        pushHole(p, _sphere.center, Math.atan(Math.min(p.half.x, p.half.y)), skyAlpha);
+      }
       if (skyAlpha > 0) p.seen = frame;
       // --- the place
       let alpha = 0;
@@ -397,6 +416,10 @@ export function createNebulae(scene, opts = {}) {
       }
       p.place.material.uniforms.uAlpha.value = alpha;
       p.place.visible = alpha > 0.003 && p.state === 'ready';
+      if (p.place.visible && p.px > 0) {
+        const dd = _v.length();
+        pushHole(p, p.centre, Math.atan((p.widthUnits / 2) * (Math.min(p.half.x, p.half.y) / p.half.x) / dd), alpha);
+      }
       if (p.inView) p.seen = frame;
       // A selected object's picture is fetched whatever its size and whatever the connection.
       if (isSelected && p.state === 'idle') fetchPicture(p);
@@ -430,6 +453,8 @@ export function createNebulae(scene, opts = {}) {
 
   return {
     setExposure, setRecords, rebuild, update, dispose, group, skyGroup,
+    /** The photographs on screen after the last update(), for scene/starholes.js: [{ dir, radius, k, id }], the strongest first. */
+    holes: () => holeList.slice().sort((a, b) => b.k * b.radius - a.k * a.radius),
     /** How many pictures may stay on the GPU (residentPictures(tier)); the extra ones are let go when out of view. */
     setBudget(n) { if (Number.isFinite(n) && n >= 1) budget = Math.trunc(n); },
     budget: () => budget,

@@ -587,6 +587,7 @@ than counted by hand.
 | `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) | 96 KB |
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | the Space Shuttle on Launch Complex 39B (`shuttle-lc-39b`) | 130 KB |
 | `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
+| `new-horizons.glb` | New Horizons: NASA's printable body, antenna and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-10; the page names no author), assembled by us, colours ours | Horizons -98 (New Horizons) | 64 KB |
 | `near.glb` | NEAR Shoemaker | Horizons -93 (NEAR Shoemaker, 1996 to 2001) | 88 KB |
 | `stardust.glb` | Stardust (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -29 (Stardust, 1999 to 2011) | 111 KB |
 | `deep-impact.glb` | Deep Impact (EPOXI) (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -140 (Deep Impact, 2005 to 2013) | 73 KB |
