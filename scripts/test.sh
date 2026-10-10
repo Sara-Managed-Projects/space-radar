@@ -58,6 +58,8 @@ site/models/|scripts/check_registry.py tests/test_refusals.py
 site/audio/|scripts/check_registry.py scripts/narrate.py tests/test_listen_check.py
 site/fonts/|scripts/build-fonts.py
 site/t/|scripts/gen_trip_pages.py tests/test_seo.py
+site/lab/|scripts/gen_lab_index.py tests/test_lab.mjs tests/test_seo.py
+docs/ADD_A_SIMULATOR.md|tests/test_lab.mjs
 scripts/check_registry.py|scripts/check_registry.py tests/test_refusals.py
 scripts/check_copy.py|scripts/check_copy.py tests/test_refusals.py
 scripts/stamp_sw.py|tests/test_sw_routes.mjs tests/test_manifest.mjs
@@ -114,7 +116,7 @@ for t in tests/test_*.py; do run "$t" python3 "$t"; done
 run "scripts/check_registry.py" python3 scripts/check_registry.py
 run "scripts/check_copy.py" python3 scripts/check_copy.py
 for g in scripts/gen_*_js.py scripts/gen_trip_pages.py scripts/gen_sources_json.py \
-         scripts/gen_modulepreload.py scripts/gen_home_seo.py scripts/narrate.py \
+         scripts/gen_modulepreload.py scripts/gen_home_seo.py scripts/gen_lab_index.py scripts/narrate.py \
          scripts/build_trip_thumbs.py scripts/build_nebulae.py scripts/build-fonts.py scripts/stamp_sw.py \
          scripts/build_ephemerides.py; do
   [ -f "$g" ] && run "$g --check" python3 "$g" --check

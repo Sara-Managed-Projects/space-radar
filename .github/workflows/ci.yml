@@ -238,6 +238,9 @@ jobs:
       - run: pip install --disable-pip-version-check pyyaml pillow fonttools brotli
       - name: The home page's search tags and JSON-LD match registry/sources.yaml
         run: python3 scripts/gen_home_seo.py --check
+      # The Space Radar Lab (docs/ADD_A_SIMULATOR.md): the list is written from the simulators' own heads, and a stale one is refused.
+      - name: The Lab's list matches the simulators in site/lab/
+        run: python3 scripts/gen_lab_index.py --check
       - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
         run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
@@ -310,6 +313,10 @@ jobs:
       # budget was a comment until this job ran: nothing had ever measured it.
       - name: Modules agree, and every drawn shape fits its budget
         run: node tests/test_contract.mjs
+      # Every simulator in site/lab/ obeys the rules that can be checked by reading its file (one file, no request, a dated source, an
+      # honesty line, a lesson, small, listed), and its draw() runs on a recording canvas with no NaN. This is the contributor's first check.
+      - name: The Lab's simulators obey their rules
+        run: node tests/test_lab.mjs
       # The harvested JPL snapshots become records: Horizons vectors -> measured sampled probes,
       # close approaches joined to the SBDB -> inferred kepler asteroids. Fixtures are cut
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
