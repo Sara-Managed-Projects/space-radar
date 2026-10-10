@@ -40,6 +40,15 @@ budgets:
   # pull request: 2 719 025 B in 141 requests, where main was 3 142 846 B the day before (the head of
   # public #518, same method). Lowered to that with the usual 5 %.
   - {id: first_visit_bytes, value: 2855000, unit: bytes, since: 2026-10-09, reason: "2 719 025 B + 5 %, measured 2026-10-09 by CI on public #559 (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads: comments stripped and the ES modules through esbuild); 3 052 513 B before the minifier"}
+  # THE BOOT AS A TIMELINE (internal #528, 2026-10-10). scripts/boot-timeline.mjs boots the tree a deploy
+  # uploads in Playwright's Chromium (screens.yml), reads every long task from the start of the page and
+  # sums the blocking time. It REPORTS by default; `--gate` holds these two rows. MEASURED once, on a Mac
+  # with an integrated GPU and a real one-minute-old cache of nothing: no task over 50 ms at all in the
+  # boot (tests/probes/bulk3-c.js, 2026-10-10; first paint 960 ms, layers ready at 3.2 s). A CI runner is
+  # software-rendered and slower, so the rows are set far above any number seen and are to be LOWERED
+  # when the first CI runs have shown theirs (a row may be lowered freely).
+  - {id: boot_longest_task_ms, value: 3000, unit: ms, since: 2026-10-10, reason: "internal #528: a first guess for a software-rendered runner, to be lowered from the first CI report; a laptop with a GPU measured no long task at all in the boot on 2026-10-10 (a day of passes in one task was 2 602 ms on the same machine before internal #562 moved it to the worker)"}
+  - {id: boot_blocking_ms, value: 6000, unit: ms, since: 2026-10-10, reason: "internal #528: total blocking time (each long task's time over 50 ms) from the start of the page to two seconds after the layers are ready; a first guess for a runner, to be lowered from the first CI report"}
   # THE JAVASCRIPT A DEPLOY SERVES FOR THE BOOT (internal #515, 2026-10-09). Not a browser's number: the
   # sum of the files of the static graph from js/main.js in the tree a deploy uploads, counted by
   # scripts/check_built_tree.mjs in the deploy itself and in CI. MEASURED that day on main: 2 175 514 B
