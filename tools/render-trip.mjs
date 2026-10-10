@@ -2,7 +2,7 @@
 // voice and the music laid under it, and the files an upload needs (spec 0070).
 //
 //   node tools/render-trip.mjs <trip> [--res=1920x1080] [--fps=30] [--out=out]
-//        [--captions] [--stops=N] [--gl=gpu|swiftshader] [--format=jpeg|png] [--crf=18]
+//        [--captions|--captions=big] [--skip=<stop id>,<stop id>] [--stops=N] [--gl=gpu|swiftshader] [--format=jpeg|png] [--crf=18]
 //        [--at=<ISO time>] [--thumb-stop=<stop id>] [--ui-scale=1.5] [--base=http://127.0.0.1:8830] [--port=8830] [--live]
 //        [--fresh] [--frames-only] [--keep-frames]
 //
@@ -73,7 +73,12 @@ const GL = arg('gl', 'gpu');
 const FORMAT = arg('format', 'jpeg') === 'png' ? 'png' : 'jpeg';
 const EXT = FORMAT === 'png' ? 'png' : 'jpg';
 const CRF = arg('crf', '18');
-const CAPTIONS = flag('captions');
+// --captions=big: captions a phone can read, for a film joined from trips. --skip=a,b: stops left
+// out (the page takes them out of the trip before it starts: ui/rendermode.js leaveOut).
+const BIG = arg('captions', '') === 'big';
+const CAPTIONS = flag('captions') || BIG;
+const SKIP = arg('skip', '').split(',').map((x) => x.trim()).filter(Boolean);
+if (tour && SKIP.length) tour.stops = tour.stops.filter((s) => !SKIP.includes(s.id));
 const STOPS = Number(arg('stops', '0'));
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -92,7 +97,7 @@ const THUMB_STOP = arg('thumb-stop', (closest || tour.stops[0]).id);
 const UI_SCALE = Number(arg('ui-scale', '1.5')) || 1;
 const CSS_W = Math.round(W / UI_SCALE);
 const CSS_H = Math.round(H / UI_SCALE);
-const variant = `${tripId}-${W}x${H}-${FPS}${UI_SCALE !== 1.5 ? '-x' + UI_SCALE : ''}${CAPTIONS ? '-cc' : ''}${STOPS ? '-s' + STOPS : ''}`;
+const variant = `${tripId}-${W}x${H}-${FPS}${UI_SCALE !== 1.5 ? '-x' + UI_SCALE : ''}${CAPTIONS ? '-cc' : ''}${BIG ? '-big' : ''}${SKIP.length ? '-no-' + SKIP.join('-') : ''}${STOPS ? '-s' + STOPS : ''}`;
 const CACHE = join(OUT, '.cache', variant);
 const log = (m) => process.stderr.write(`[render ${new Date().toISOString().slice(11, 19)}] ${m}\n`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -199,7 +204,7 @@ async function render() {
     };
 
     // `tier=2`: the sharpest maps, which headless Chrome would otherwise not be given (main.js).
-    const q = `render=1&fps=${FPS}&at=${epochMs}&tier=2${CAPTIONS ? '&captions=1' : ''}${STOPS ? '&stops=' + STOPS : ''}`;
+    const q = `render=1&fps=${FPS}&at=${epochMs}&tier=2${CAPTIONS ? '&captions=' + (BIG ? 'big' : '1') : ''}${SKIP.length ? '&skip=' + SKIP.join(',') : ''}${STOPS ? '&stops=' + STOPS : ''}`;
     const url = `${base}/?${q}#trip=${tripId}`;
     log(`opening ${url}`);
     await send('Page.navigate', { url });
