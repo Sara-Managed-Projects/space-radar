@@ -6,6 +6,9 @@ name: ci
 on:
   push:
   pull_request:
+  # A push or a pull request made with GITHUB_TOKEN starts no workflow, so the weekly
+  # CONTRIBUTORS.md branch (.github/workflows/contributors.yml) starts this one by hand.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -271,6 +274,17 @@ jobs:
       # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
       - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
         run: python3 tests/test_community_files.py
+      # A guide that names a file which has moved sends a newcomer to nothing on their first day.
+      # Also holds the two community workflows to their own rules: actions pinned to a commit,
+      # no secret but GITHUB_TOKEN, and nothing from a fork checked out under pull_request_target.
+      - name: "The contributor guides: every path they name exists, every CI step they quote is real, the welcome and label workflows are pinned and fork-safe, CONTRIBUTORS.md and the release thanks from a saved list"
+        run: python3 tests/test_contributor_docs.py
+      # docs/FIRST_PR.md promises one command, under a minute. This is that command, timed: a
+      # check added to it that makes it slow fails here, not on a newcomer's laptop.
+      - name: "The one command a newcomer runs (scripts/check.sh) passes, in under 60 seconds"
+        run: scripts/check.sh
+        env:
+          CHECK_MAX_SECONDS: "60"
       # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
       # out of the pages (and each validator is shown to refuse a broken one); the footer, the
       # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator

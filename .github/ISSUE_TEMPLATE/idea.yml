@@ -26,4 +26,4 @@ body:
     attributes:
       label: Would you like to build it?
       options:
-        - label: I would like to try this myself (we will help you get started)
+        - label: I would like to try this myself (we will help you get started; docs/FIRST_PR.md is the ten-minute path)

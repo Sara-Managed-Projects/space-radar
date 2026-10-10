@@ -1,0 +1,65 @@
+name: contributors
+
+# Rewrites CONTRIBUTORS.md from the authors of merged pull requests, once a week, and sends the
+# change through the same door as everyone else's: a pull request that auto-merge.yml merges when
+# the required checks are green.
+#
+# Three things about GITHUB_TOKEN shape this file:
+#   - main is protected (the `registry` and `contract` checks are required), so the job cannot push
+#     to main. It pushes a branch and opens a pull request.
+#   - a push or a pull request made with GITHUB_TOKEN starts no workflow, so ci.yml would never run
+#     on it. A workflow_dispatch made with GITHUB_TOKEN does start one, which is why ci.yml accepts
+#     workflow_dispatch and this job dispatches it on the branch. The check runs land on the
+#     branch's head commit, which is what the required checks look at.
+#   - opening a pull request with GITHUB_TOKEN needs the repository setting "Allow GitHub Actions to
+#     create and approve pull requests" (Settings > Actions > General). Without it the job leaves
+#     the branch pushed and says so in a warning; a maintainer opens the pull request by hand.
+#
+# No fork's code runs here: the triggers are the schedule and a maintainer's button, and the job
+# checks out main. Logins are the only text taken from the API into the file; the script refuses
+# one that is not a plain GitHub login. No secret is used besides GITHUB_TOKEN.
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regenerate:
+    if: github.repository == 'Sara-Managed-Projects/space-radar'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Rewrite CONTRIBUTORS.md from merged pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/gen_contributors.py
+      - name: Open the pull request when the list changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: auto/contributors
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- CONTRIBUTORS.md; then echo "CONTRIBUTORS.md is current"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add CONTRIBUTORS.md
+          git commit -m "CONTRIBUTORS.md: the people whose pull requests were merged, as of this week"
+          git push --force origin "$BRANCH"
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            if ! gh pr create --head "$BRANCH" --base main \
+                --title "CONTRIBUTORS.md names everyone whose pull request was merged" \
+                --body "Rewritten by \`.github/workflows/contributors.yml\` from the authors of merged pull requests (\`scripts/gen_contributors.py\`). Merges on its own when the checks are green."; then
+              echo "::warning::The branch $BRANCH is pushed, but GITHUB_TOKEN may not open a pull request here. Turn on Settings > Actions > General > 'Allow GitHub Actions to create and approve pull requests', or open the pull request by hand."
+              exit 0
+            fi
+          fi
+          # Pushes and pull requests made with GITHUB_TOKEN start no workflow; a dispatch does.
+          gh workflow run ci.yml --ref "$BRANCH"

@@ -6,8 +6,10 @@
 | Report something broken | [a bug report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=bug.yml) |
 | Say a number, a name or a position is wrong | [a data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml) |
 | Suggest a feature, a trip or an object | [an idea](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose) |
-| Ask how to change the code | [CONTRIBUTING.md](CONTRIBUTING.md), or open an issue with the `question` label |
+| Make your first change | [docs/FIRST_PR.md](docs/FIRST_PR.md): ten minutes, one command to check it |
+| Find your way round the code | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), then [CONTRIBUTING.md](CONTRIBUTING.md), or ask in [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions) |
+| Know why your pull request's checks have not started | A first-time contributor's run waits for a maintainer to approve it. Nothing is wrong; comment on the pull request if a day has passed |
 | Report a security problem, privately | [SECURITY.md](SECURITY.md) |
 
-This is a volunteer project. Issues are read; an answer can take a few days. A report that says
+This is a volunteer project. Every issue and pull request gets a first reply within 48 hours. A report that says
 which browser and device you used, and what you expected to see, gets fixed fastest.

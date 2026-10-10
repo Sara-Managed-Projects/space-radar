@@ -4,7 +4,10 @@ labels: [bug, "area:space-accuracy"]
 body:
   - type: markdown
     attributes:
-      value: Thank you. Getting it right matters more to this project than anything else.
+      value: |
+        Thank you. Getting it right matters more to this project than anything else.
+
+        **Would you like to fix it yourself?** Most facts are one row in a file under `registry/` (landing sites are in `registry/sites.yaml`, trip cards in `registry/tours.yaml`). Correct the row, put your source beside it, run `scripts/check.sh`, and open a pull request: [Four ways in, part A](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/CONTRIBUTE_WITHOUT_CODE.md#a-fix-a-fact-or-add-a-source) shows the file, a real example and the check that runs. A report alone is just as welcome.
   - type: input
     id: object
     attributes:

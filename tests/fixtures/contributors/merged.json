@@ -1,0 +1,11 @@
+[
+  {"number": 1, "mergedAt": "2026-09-01T10:00:00Z", "login": "ionesu", "bot": false, "paths": ["site/js/main.js"]},
+  {"number": 2, "mergedAt": "2026-09-02T10:00:00Z", "login": "Sara-Agent", "bot": false, "paths": ["registry/tours.yaml"]},
+  {"number": 3, "mergedAt": "2026-10-02T10:00:00Z", "login": "ada", "bot": false, "paths": ["registry/sites.yaml", "site/js/data/sites.js"]},
+  {"number": 4, "mergedAt": "2026-10-03T10:00:00Z", "login": "ada", "bot": false, "paths": ["site/js/ui/tonight.js", "tests/test_tonightview.mjs"]},
+  {"number": 5, "mergedAt": "2026-10-04T10:00:00Z", "login": "Grace-H", "bot": false, "paths": ["site/js/copy/fr.js"]},
+  {"number": 6, "mergedAt": "2026-10-05T10:00:00Z", "login": "dependabot", "bot": true, "paths": ["site/vendor/three.module.min.js"]},
+  {"number": 7, "mergedAt": "2026-10-06T10:00:00Z", "login": "x](https://evil.example) [y", "bot": false, "paths": ["README.md"]},
+  {"number": 8, "mergedAt": "2026-10-07T10:00:00Z", "login": "caroline", "bot": false, "paths": ["registry/tours.yaml", "site/js/data/tours.js", "docs/RUN_LOCALLY.md"]},
+  {"number": 9, "mergedAt": "2026-08-01T10:00:00Z", "login": "early-bird", "bot": false, "paths": ["site/models/aqua.glb", "CREDITS.md"]}
+]

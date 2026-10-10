@@ -2,6 +2,10 @@ name: Something is broken
 description: The app did something wrong, looked wrong, or did not load.
 labels: [bug]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. A maintainer replies within 48 hours. If you would like to fix it yourself, [docs/FIRST_PR.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/FIRST_PR.md) takes ten minutes and [docs/ARCHITECTURE.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ARCHITECTURE.md) says which file draws what.
   - type: textarea
     id: what
     attributes:
