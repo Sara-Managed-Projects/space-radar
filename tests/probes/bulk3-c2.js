@@ -34,7 +34,7 @@ return (async () => {
     const london = { name: 'London', latDeg: 51.5, lonDeg: -0.12, latRad: 51.5 * DEG, lonRad: -0.12 * DEG, altKm: 0, source: 'manual' };
     ctx.setObserver(london);
     let when = Date.UTC(2026, 11, 15, 20, 0);
-    const altAt = (ms) => A.Horizon(new Date(ms), new A.Observer(51.5, -0.12, 0), 6.7525, -16.7161, 'normal').altitude;
+    const altAt = (ms) => A.Horizon(new w.Date(ms), new A.Observer(51.5, -0.12, 0), 6.7525, -16.7161, 'normal').altitude;
     for (let k = 0; k < 14 && !(altAt(when) > 20); k++) when += 3600e3;
     ctx.clock.goTo(when); await sleep(600);
     ctx.skyView.enter(london);
