@@ -559,7 +559,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
-    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'build:new-horizons',
+    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'new-horizons.glb', // NASA's printable parts, bake 2026-10-10 (bulk 3); build:new-horizons stays as what is drawn while it loads
     'deep-solar-orbiter': 'build:solar-orbiter',
     // 2026-10-05: three of the twelve that NASA publishes a model of (issue #431).
     'deep-lro': 'lro.glb', 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb',
