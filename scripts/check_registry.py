@@ -5183,6 +5183,17 @@ def main() -> int:
     for t in terms:
         if not t.get("term") or not t.get("say"):
             fail("glossary.yaml", f"incomplete row {t!r}")
+            continue
+        # A glossary entry is read on the same card as the sentence that sent the
+        # reader here, so it answers to the same cap the sentence does. Checked
+        # where the string is WRITTEN, like MAX_SENTENCE -- a definition cut off at
+        # the point it is read is how a card ends up explaining half a word.
+        if len(str(t.get("say"))) > MAX_SENTENCE:
+            fail(
+                f"glossary.yaml[{t.get('term')}]",
+                f"say is {len(str(t.get('say')))} characters, over {MAX_SENTENCE}: "
+                f"one sentence a curious fourteen-year-old can hold",
+            )
     for s in showers:
         where = f"showers.yaml[{s.get('id')}]"
         peak = s.get("peak", "")

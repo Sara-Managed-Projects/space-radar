@@ -6,7 +6,7 @@ version: 1
 terms:
   - {term: orbit, say: "A path around something, held by gravity. Fast enough sideways and you keep falling past the Earth instead of into it."}
   - {term: low Earth orbit, say: "The busy shell from about 200 to 2000 km up. The station, most satellites and most of the debris are here."}
-  - {term: geostationary, say: "An orbit 35 786 km up where one lap takes one day — 23 hours 56 minutes of real time, flattened by the Earth's spin — so the satellite seems to hang over one spot."}
+  - {term: geostationary, say: "An orbit 35 786 km up where one lap takes as long as the Earth takes to turn once, 23 hours 56 minutes. So the satellite seems to hang over one spot."}
   - {term: polar orbit, say: "An orbit over the poles. The Earth turns underneath, so the satellite eventually sees every part of it."}
   - {term: elements, say: "Six numbers plus a date that describe an orbit. Feed them to the right maths and you get a position."}
   - {term: epoch, say: "The moment a set of orbital elements was true. The further you are from it, the less exact the answer."}
