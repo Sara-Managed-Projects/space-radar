@@ -126,17 +126,18 @@ const cardOf = (id) => (trip.stops.find((s) => s.id === id) || { card: {} }).car
   for (const t of DATES) {
     const day = new Date(t).toISOString().slice(0, 10);
     const eris = auOf('dwarf-eris', t);
-    check(eris >= 94.5 && eris < 96.5 && /ninety five times as far from the Sun/.test(cardOf('eris')),
-      `${day}: Eris is ${eris.toFixed(1)} au out and its card says ninety five`);
+    check(eris >= 94.5 && eris < 96.5 && /ninety-five times as far from the Sun/.test(cardOf('eris')),
+      `${day}: Eris is ${eris.toFixed(1)} au out and its card says ninety-five`);
     const voyager = auOf('deep-voyager-1', t);
     check(voyager > 170 && /more than 170 times the Earth's distance/.test(cardOf('voyager-1')),
       `${day}: Voyager 1 is ${voyager.toFixed(1)} au out and its card says more than 170`);
   }
-  // Eris near the far end of a 560-year lap: JPL's own elements, through the record.
+  // Eris near the far end of a 557-year lap: NASA's Eris page says 557 Earth years (read 2026-10-10);
+  // JPL's own elements, through the record, give 560, so the card's figure must be within 1 % of them.
   const eris = byId.get('dwarf-eris');
   const lapYears = eris.meta.periodDays / 365.25;
-  check(Math.round(lapYears / 10) * 10 === 560 && /560-year lap/.test(cardOf('eris')),
-    `Eris's lap is ${lapYears.toFixed(0)} years and the card says 560`);
+  check(Math.abs(lapYears - 557) / 557 < 0.01 && /557-year lap/.test(cardOf('eris')),
+    `Eris's lap is ${lapYears.toFixed(0)} years in the record and the card says NASA's 557`);
   check(auOf('dwarf-eris', DATES[0]) / eris.meta.aphelionAu > 0.95, 'Eris is within 5 % of its aphelion, so "near the far end" holds');
   // Sedna: the perihelion distance and the year are the record's; the aphelion the card gives is
   // the BARYCENTRIC 937 au, for the same reason data/sample.js's own line quotes the barycentric

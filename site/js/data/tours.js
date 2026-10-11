@@ -1486,7 +1486,7 @@ export const TOURS = [
 "chapter": "Chapter four: past Neptune",
 "card": {
 "title": "Eris, which made planet a definition",
-"body": "The definition astronomers agreed on in 2006 asks three things of a planet: it goes round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and Pluto fail the third. Eris is near the far end of a 560-year lap, ninety five times as far from the Sun as we are."
+"body": "The definition astronomers agreed on in 2006 asks three things of a planet: it goes round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and Pluto fail the third. Eris is near the far end of a 557-year lap, ninety-five times as far from the Sun as we are."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
