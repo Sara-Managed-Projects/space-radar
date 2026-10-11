@@ -78,6 +78,11 @@ Physics: a ball launched sideways at v from radius r0 follows Kepler's law (leap
 Check (node): from the surface r0 = 6378 km, sqrt(398600.4355/6378) = 7.905 km/s, the textbook ~7.9. The mountain is drawn tall (r0 = R + 604 km), so here vc = 7.56.
 -->
 <script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
 // ============================================ 1. THE SIMULATOR (yours) ============================================
 const GM=398600.435507,R=6378,CX=540,CY=1000,RP=380,K=RP/R,HK=36/K,R0=R+HK,VC=Math.sqrt(GM/R0),TAU=2*Math.PI,PER=TAU*R0/VC;
 const V=[3,5,7,VC],S0=[.2,2.4,4.6,6.8],WIN=[1.9,2,2,3.2],COL=['#ff7a59','#ffb347','#ffe08a','#8fd8e0'];
@@ -104,10 +109,7 @@ const SIM={dur:12.6,reveal:10,hook:"FASTER. UNTIL IT|NEVER LANDS.",
 // The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
 // `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
 // SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
-const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
-const cv=document.getElementById('c'),cx=cv.getContext('2d');
-const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
-const rev=t=>SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9));
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
 let S=1,P=SIM.param?SIM.param.value:0,T=0;
 function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
 function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}

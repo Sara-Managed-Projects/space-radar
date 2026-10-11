@@ -93,8 +93,8 @@ scripts/test.sh aliases registry      # the checks that touch it
 
 Reload the page, type your word, and it is found. Commit both files (the YAML and the generated
 `site/js/data/aliases.js`), open a pull request, and that is a real contribution. Issues labelled
-[good first issue](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
-are about this size.
+[good first issue](docs/FIRST_PR.md#pick-a-task-2-minutes) are about this size; that page sorts them by
+track and leaves out the ones somebody has already started.
 
 ## How the project is put together
 

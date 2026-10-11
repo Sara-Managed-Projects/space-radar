@@ -58,6 +58,7 @@ worlds:
   # The planets are rows from day one so that growing outward is a camera flight rather than a
   # rewrite. They render as textured spheres at true direction and scaled distance until the
   # camera makes one of them the stage.
+  # Mercury: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html, read 2026-10-11.
   - id: mercury
     display: Mercury
     parent: sun
@@ -75,10 +76,12 @@ worlds:
     radius_km: 6051.8
     unit_km: 1000
     ephemeris: {propagator: body, body: Venus}
-    rotation: {kind: sidereal, period_h: -5832.5}
+    # Sidereal rotation period from NASA Venus Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html, read 2026-10-11): -5832.6 hours.
+    rotation: {kind: sidereal, period_h: -5832.6}
     frames: [inertial, fixed]
     look: {textures: venus, atmosphere: thick}
 
+  # Mars: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html, read 2026-10-11.
   - id: mars
     aliases: ["the Red Planet"]
     display: Mars
@@ -90,6 +93,7 @@ worlds:
     frames: [inertial, fixed]
     look: {textures: mars, atmosphere: thin}
 
+  # Jupiter: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html, read 2026-10-11.
   - id: jupiter
     display: Jupiter
     parent: sun
@@ -100,6 +104,7 @@ worlds:
     frames: [inertial, fixed]
     look: {textures: jupiter, atmosphere: thick}
 
+  # Saturn: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html, read 2026-10-11.
   - id: saturn
     display: Saturn
     parent: sun
@@ -110,6 +115,7 @@ worlds:
     frames: [inertial, fixed]
     look: {textures: saturn, ring: {inner_km: 74500, outer_km: 140220, texture: saturn-ring}}
 
+    # Uranus: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html, read 2026-10-11.
   - id: uranus
     display: Uranus
     parent: sun

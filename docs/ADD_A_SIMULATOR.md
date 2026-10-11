@@ -19,8 +19,8 @@ first contribution to Space Radar, and you will be named in the release notes fo
 
    No terminal? On GitHub press Add file, Create new file, type `site/lab/my-idea/index.html` and paste in the starter's text.
    Say so in your pull request and a maintainer regenerates the list for you (see "The index builds itself").
-3. **Change section 1 of the file** (the first half of the `<script>`): the numbers, the words and the drawing. Leave section 2
-   (the page) alone. Change the `<title>`, the lesson (`<meta name="description">`), the category, and the `Sources` comment.
+3. **Change section 1 of the file** (the middle of the `<script>`): the numbers, the words and the drawing. Leave sections 0 (the helpers) and 2
+   (the page) alone. Do not name a top-level constant or function like a browser window property (`top`, `name`, `status`, `length`, `event`, ...): the page would not start. Change the `<title>`, the lesson (`<meta name="description">`), the category, and the `Sources` comment.
 4. **Run the checks** (below), then **open a pull request**. A person answers within 48 hours.
 
 ## The rules

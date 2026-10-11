@@ -70,7 +70,8 @@ main{max-width:1160px}
 .card .micro{margin:0}
 .card h3{margin:0;font:600 20px/24px Inter,system-ui,sans-serif;color:var(--sr-text)}
 .card p{margin:0;font-size:15px;line-height:20px;color:var(--sr-text-dim)}
-.cat{margin:32px 0 12px;padding-top:0;border-top:0}
+.cat{margin:32px 0 12px;padding-top:0;border-top:0;scroll-margin-top:12px}
+.topics{margin:0 0 8px}
 .add{margin-top:32px;padding:16px;border:1px dashed var(--sr-line);border-radius:var(--sr-radius)}
 .add h2{margin:0 0 8px;padding:0;border:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -81,27 +82,106 @@ main{max-width:1160px}
 <main>
 <p class="micro">Space Radar Lab</p>
 <h1>Tiny space simulators</h1>
-<div class="intro"><p class="lead">6 small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p></div>
-<h2 class="cat">Orbits and gravity</h2>
+<div class="intro"><p class="lead">75 small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p></div>
+<nav aria-label="Topics"><ul class="links topics"><li><a href="#cat-orbits-and-gravity">Orbits and gravity (16)</a></li><li><a href="#cat-planets-and-moons">Planets and moons (8)</a></li><li><a href="#cat-scale-and-distance">Scale and distance (13)</a></li><li><a href="#cat-light-and-time">Light and time (7)</a></li><li><a href="#cat-rockets-and-spaceflight">Rockets and spaceflight (10)</a></li><li><a href="#cat-stars-and-their-lives">Stars and their lives (8)</a></li><li><a href="#cat-sky-from-earth">Sky from Earth (7)</a></li><li><a href="#cat-cosmology-and-black-holes">Cosmology and black holes (6)</a></li></ul></nav>
+<h2 class="cat" id="cat-orbits-and-gravity">Orbits and gravity</h2>
 <ul class="grid">
+<li><a class="card" href="binary-dance-barycentre/index.html"><h3>Binary Dance</h3><p>Two stars really orbit a point between them, closer to the heavier one.</p></a></li>
+<li><a class="card" href="comet-tail-compass/index.html"><h3>Comet Tail Compass</h3><p>A comet&#x27;s tail always points away from the Sun, even when the comet is leaving.</p></a></li>
+<li><a class="card" href="five-parking-spots-lagrange-points/index.html"><h3>Five Parking Spots (Lagrange Points)</h3><p>In the rotating frame of two bodies there are five spots where a third thing can stay still.</p></a></li>
+<li><a class="card" href="gravity-slingshot-steal/index.html"><h3>Gravity Slingshot Steal</h3><p>A spacecraft can steal a little of a planet&#x27;s speed by swinging past it.</p></a></li>
+<li><a class="card" href="gravity-well-rubber-sheet/index.html"><h3>Gravity Well Rubber Sheet</h3><p>Mass bends the pattern of space-time like a ball in a stretched sheet, and light or marbles follow the dips.</p></a></li>
+<li><a class="card" href="janus-and-epimetheus-the-horseshoe-swap/index.html"><h3>Janus and Epimetheus</h3><p>Two Saturn moons share nearly one orbit and swap places every four years without colliding.</p></a></li>
 <li><a class="card" href="kepler-equal-areas/index.html"><h3>Kepler Equal Areas</h3><p>A planet sweeps out equal areas in equal times, so it speeds up as it nears the Sun.</p></a></li>
+<li><a class="card" href="mercurys-rosette/index.html"><h3>Mercury Rosette</h3><p>Mercury&#x27;s orbit slowly turns, and Newton alone could not explain all of it.</p></a></li>
+<li><a class="card" href="moons-in-step/index.html"><h3>Moons in Step</h3><p>Io, Europa and Ganymede orbit Jupiter in a 4:2:1 beat, and their tugs keep the pattern locked.</p></a></li>
+<li><a class="card" href="one-launch-four-orbit-shapes/index.html"><h3>One Launch, Four Orbit Shapes</h3><p>Circle, ellipse, parabola and hyperbola are all the same orbit with different speeds.</p></a></li>
+<li><a class="card" href="orbit-painter/index.html"><h3>Orbit Painter</h3><p>Each throw gets one push, then gravity bends the path into an orbit, a plunge into the star or an escape.</p></a></li>
+<li><a class="card" href="orbit-zoo-height-sets-the-lap-time/index.html"><h3>Orbit Zoo</h3><p>The higher a satellite flies, the slower it goes and the longer its lap.</p></a></li>
+<li><a class="card" href="the-iss-always-falls/index.html"><h3>The ISS Always Falls</h3><p>The Space Station is dragged down a little every day and must be pushed back up.</p></a></li>
+<li><a class="card" href="the-moon-spins-to-match/index.html"><h3>The Moon Spins to Match</h3><p>Over time tides slow a moon&#x27;s spin until it faces its planet with one side forever.</p></a></li>
+<li><a class="card" href="three-bodies-on-a-figure-eight/index.html"><h3>Three Bodies on a Figure Eight</h3><p>Three equal stars can chase each other along one figure-eight path forever.</p></a></li>
 <li><a class="card" href="throw-it-faster/index.html"><h3>Throw It Faster</h3><p>Throw a ball faster and it lands farther away; at about 7.9 km/s the ground curves away as fast as the ball falls, and it never lands.</p></a></li>
 </ul>
-<h2 class="cat">Planets and moons</h2>
+<h2 class="cat" id="cat-planets-and-moons">Planets and moons</h2>
 <ul class="grid">
+<li><a class="card" href="greenhouse-dial-why-venus-is-hot/index.html"><h3>Greenhouse Dial: Why Venus Is Hot</h3><p>A thick CO2 blanket can heat a planet far above what its sunlight alone would do.</p></a></li>
+<li><a class="card" href="io-the-squeezed-moon/index.html"><h3>Io: The Squeezed Moon</h3><p>Jupiter&#x27;s tug squeezes Io like a stress ball, heating it enough to power hundreds of volcanoes.</p></a></li>
+<li><a class="card" href="mercurys-double-sunrise/index.html"><h3>Mercury Double Sunrise</h3><p>On Mercury the Sun can rise, stop, retreat and rise again because of its spin and orbit.</p></a></li>
+<li><a class="card" href="roche-limit-shredder/index.html"><h3>Roche Limit Shredder</h3><p>A moon that gets too close to its planet is torn apart by tides, which is how rings can form.</p></a></li>
+<li><a class="card" href="saturns-rings-are-paper-thin/index.html"><h3>Saturn Rings Edge-On</h3><p>Saturn&#x27;s rings are 280,000 km wide yet in places only about ten metres thick.</p></a></li>
+<li><a class="card" href="tilt-makes-the-seasons/index.html"><h3>Tilt Makes the Seasons</h3><p>Earth&#x27;s tilt, not its distance, makes summer and winter.</p></a></li>
+<li><a class="card" href="two-tides-not-one/index.html"><h3>Two Tides, Not One</h3><p>The Moon pulls the oceans into two bulges, so tides come twice a day.</p></a></li>
 <li><a class="card" href="venus-day-race/index.html"><h3>Venus Day Race</h3><p>Venus spins once in 243 Earth days and circles the Sun in 225, so its day is longer than its year.</p></a></li>
 </ul>
-<h2 class="cat">Scale and distance</h2>
+<h2 class="cat" id="cat-scale-and-distance">Scale and distance</h2>
 <ul class="grid">
+<li><a class="card" href="asteroid-belt-is-not-crowded/index.html"><h3>Asteroid Belt Is Not Crowded</h3><p>Despite pictures, the asteroid belt is almost empty between rocks.</p></a></li>
+<li><a class="card" href="earth-from-the-sun-shrinking/index.html"><h3>Earth From the Sun, Shrinking</h3><p>From farther out Earth shrinks from a ball to a single pixel.</p></a></li>
+<li><a class="card" href="earths-in-jupiter/index.html"><h3>Earths in Jupiter</h3><p>More than 1,300 Earths would fit inside Jupiter&#x27;s volume.</p></a></li>
+<li><a class="card" href="from-ground-to-space-in-100-km/index.html"><h3>From Ground to Space in 100 km</h3><p>Space is only about 100 km up: roughly the drive between two cities.</p></a></li>
+<li><a class="card" href="milky-way-address/index.html"><h3>Milky Way Address</h3><p>Earth is about 27,000 light-years from the centre of our galaxy, in a quiet outer arm.</p></a></li>
+<li><a class="card" href="nearest-star-by-voyager/index.html"><h3>Nearest Star by Voyager</h3><p>At Voyager&#x27;s speed the nearest star would take tens of thousands of years.</p></a></li>
 <li><a class="card" href="planets-fit-moon-gap/index.html"><h3>Planets Fit Moon Gap</h3><p>The other seven planets laid side by side almost fit in the gap between Earth and the Moon: not quite at the average distance, yes at the farthest.</p></a></li>
+<li><a class="card" href="powers-of-ten-zoom-out/index.html"><h3>Powers of Ten Zoom Out</h3><p>Zoom out by factors of ten and Earth, solar system, stars and galaxy fall away in seconds.</p></a></li>
+<li><a class="card" href="the-solar-system-is-mostly-empty/index.html"><h3>The Solar System Is Mostly Empty</h3><p>To scale, planets are specks separated by huge gaps.</p></a></li>
+<li><a class="card" href="the-sun-as-a-marble/index.html"><h3>The Sun as a Marble</h3><p>Shrink the Sun to a marble and Earth is a grain of sand several metres away.</p></a></li>
+<li><a class="card" href="voyagers-odometer/index.html"><h3>Voyager Odometer</h3><p>Voyager 1 has been travelling since 1977 and is still the farthest thing humans made, at 17 km/s.</p></a></li>
+<li><a class="card" href="walk-the-solar-system/index.html"><h3>Walk the Solar System</h3><p>If the Sun were at your door, Neptune would be a long walk away.</p></a></li>
+<li><a class="card" href="your-closest-stars/index.html"><h3>Your Closest Stars</h3><p>The nearest stars are enormous distances away and mostly dim red dwarfs.</p></a></li>
 </ul>
-<h2 class="cat">Light and time</h2>
+<h2 class="cat" id="cat-light-and-time">Light and time</h2>
 <ul class="grid">
+<li><a class="card" href="crossing-the-galaxy-at-light-speed/index.html"><h3>Crossing the Galaxy at Light Speed</h3><p>A beam of light needs about 87,000 years to cross the Milky Way&#x27;s disc, longer than human history.</p></a></li>
+<li><a class="card" href="doppler-siren-waves/index.html"><h3>Doppler Siren Waves</h3><p>Waves bunch up in front of a moving source and stretch behind it, changing pitch or colour.</p></a></li>
+<li><a class="card" href="inverse-square-flashlight/index.html"><h3>Inverse Square Flashlight</h3><p>Light spreads as it travels, so at twice the distance it is four times dimmer.</p></a></li>
 <li><a class="card" href="light-speed-road-trip/index.html"><h3>Light Speed Road Trip</h3><p>Sunlight takes about 8 minutes to reach Earth and over four hours to reach Neptune.</p></a></li>
+<li><a class="card" href="redshift-stripes/index.html"><h3>Redshift Stripes</h3><p>The faster a galaxy flies away, the more its light shifts toward red.</p></a></li>
+<li><a class="card" href="stars-bunch-up-ahead/index.html"><h3>Stars Bunch Up Ahead</h3><p>At near light speed the stars crowd into a bright tunnel in front of you.</p></a></li>
+<li><a class="card" href="the-sun-vanishes-eight-minutes-later/index.html"><h3>The Sun Vanishes</h3><p>If the Sun vanished, we would keep seeing it and keep orbiting for 8 minutes 19 seconds.</p></a></li>
 </ul>
-<h2 class="cat">Rockets and spaceflight</h2>
+<h2 class="cat" id="cat-rockets-and-spaceflight">Rockets and spaceflight</h2>
 <ul class="grid">
+<li><a class="card" href="aerobraking-dip/index.html"><h3>Aerobraking Dip</h3><p>A probe can shrink its orbit by dipping into the thin upper air, saving fuel.</p></a></li>
+<li><a class="card" href="delta-v-subway-map/index.html"><h3>Delta-v Subway Map</h3><p>Moving around the solar system is like a metro map where each line costs a number of km/s.</p></a></li>
+<li><a class="card" href="free-return-loop-to-the-moon/index.html"><h3>Free-Return Loop to the Moon</h3><p>A spacecraft can swing around the Moon and come back to Earth without extra fuel.</p></a></li>
+<li><a class="card" href="ion-drive-vs-chemical-rocket/index.html"><h3>Ion Drive vs Chemical Rocket</h3><p>With the same fuel, an ion engine pushes weakly for years and ends up faster than a single chemical burst.</p></a></li>
+<li><a class="card" href="mars-launch-window/index.html"><h3>Mars Launch Window</h3><p>You can only launch to Mars cheaply when the planets line up, once every 26 months.</p></a></li>
+<li><a class="card" href="reentry-heat-speed-squared/index.html"><h3>Reentry Heat: Speed Squared</h3><p>Slowing from orbit turns a huge amount of energy into heat, because it scales with speed squared.</p></a></li>
 <li><a class="card" href="rocket-equation/index.html"><h3>Rocket Equation</h3><p>Each extra km/s of speed costs a fifth of what is left, so a rocket bound for orbit is almost all fuel.</p></a></li>
+<li><a class="card" href="solar-sail-surf/index.html"><h3>Solar Sail Surf</h3><p>Sunlight pushes a thin sail a tiny bit all the time, and that adds up to high speed.</p></a></li>
+<li><a class="card" href="staging-drop-the-dead-weight/index.html"><h3>Staging: Drop the Dead Weight</h3><p>Dropping empty tanks lets the rest of a rocket go much faster than one big tank could.</p></a></li>
+<li><a class="card" href="to-catch-up-slow-down/index.html"><h3>To Catch Up Slow Down</h3><p>In orbit, to catch a craft ahead you drop to a lower orbit, which is faster.</p></a></li>
+</ul>
+<h2 class="cat" id="cat-stars-and-their-lives">Stars and their lives</h2>
+<ul class="grid">
+<li><a class="card" href="cepheid-cosmic-yardstick/index.html"><h3>Cepheid Cosmic Yardstick</h3><p>A pulsing star&#x27;s period tells you its true brightness, so you can tell how far away it is.</p></a></li>
+<li><a class="card" href="element-factory-onion-shells/index.html"><h3>Element Factory</h3><p>Heavier elements are made in stars in layers, ending at iron.</p></a></li>
+<li><a class="card" href="planet-shadow-transit-light-curve/index.html"><h3>Planet Shadow: Transit Light Curve</h3><p>When a planet crosses its star the star dims a little, and that is how we found thousands of worlds.</p></a></li>
+<li><a class="card" href="pulsar-lighthouse/index.html"><h3>Pulsar Lighthouse</h3><p>A pulsar is a spinning dead star that sweeps a beam past Earth like a lighthouse.</p></a></li>
+<li><a class="card" href="sunspot-cycle-counter/index.html"><h3>Sunspot Cycle Counter</h3><p>Sunspots rise and fall every 11 years, with storms at the peak.</p></a></li>
+<li><a class="card" href="supernova-shockwave/index.html"><h3>Supernova Shockwave</h3><p>A massive star&#x27;s core collapses and the outer layers blast away within seconds.</p></a></li>
+<li><a class="card" href="what-happens-to-our-sun/index.html"><h3>What Happens to Our Sun</h3><p>In about five billion years the Sun swells into a red giant and swallows the inner planets.</p></a></li>
+<li><a class="card" href="wobbling-star/index.html"><h3>Wobbling Star</h3><p>A planet pulls its star in a little circle, shifting its light blue and red.</p></a></li>
+</ul>
+<h2 class="cat" id="cat-sky-from-earth">Sky from Earth</h2>
+<ul class="grid">
+<li><a class="card" href="mars-loop-in-the-sky/index.html"><h3>Mars&#x27; Loop in the Sky</h3><p>Planets seem to loop backward as faster Earth overtakes them.</p></a></li>
+<li><a class="card" href="meteor-shower-radiant/index.html"><h3>Meteor Shower Radiant</h3><p>Meteors in a shower look like they come from one point because the streams are parallel.</p></a></li>
+<li><a class="card" href="midnight-sun/index.html"><h3>Midnight Sun</h3><p>Above the Arctic Circle the Sun doesn&#x27;t set for weeks in summer.</p></a></li>
+<li><a class="card" href="moon-phases-from-above/index.html"><h3>Moon Phases From Above</h3><p>The Moon is always half lit; the phase is how much of the lit half faces us.</p></a></li>
+<li><a class="card" href="star-trails-by-latitude/index.html"><h3>Star Trails by Latitude</h3><p>The sky spins around different points depending on where you stand, from the pole to the equator.</p></a></li>
+<li><a class="card" href="two-eclipses-one-geometry/index.html"><h3>Two Eclipses One Geometry</h3><p>Solar eclipses happen when the Moon is between us and the Sun; lunar eclipses when Earth is between.</p></a></li>
+<li><a class="card" href="venus-phases-galileos-proof/index.html"><h3>Venus Phases (Galileo&#x27;s Proof)</h3><p>Venus shows phases like the Moon, proving it circles the Sun, not us.</p></a></li>
+</ul>
+<h2 class="cat" id="cat-cosmology-and-black-holes">Cosmology and black holes</h2>
+<ul class="grid">
+<li><a class="card" href="black-hole-lens-in-2d/index.html"><h3>Black Hole Lens in 2D</h3><p>A black hole bends light around itself, so a background star can show up twice or as a ring.</p></a></li>
+<li><a class="card" href="dark-matter-rotation-curve/index.html"><h3>Dark Matter Rotation Curve</h3><p>Stars at the edge of galaxies orbit nearly as fast as inner ones, which suggests unseen mass holds them.</p></a></li>
+<li><a class="card" href="galaxy-merger-dance/index.html"><h3>Galaxy Merger Dance</h3><p>Galaxies can collide and pass through each other, with their stars rarely touching.</p></a></li>
+<li><a class="card" href="spaghettification/index.html"><h3>Spaghettification</h3><p>Falling feet-first into a black hole, your feet are pulled harder than your head and you are stretched.</p></a></li>
+<li><a class="card" href="time-freezes-at-the-horizon/index.html"><h3>Time Freezes at the Horizon</h3><p>Seen from afar, a clock falling into a black hole ticks slower and slower and never quite crosses.</p></a></li>
+<li><a class="card" href="universe-timeline-scrub/index.html"><h3>Universe Timeline Scrub</h3><p>The universe is 13.8 billion years old, and humans arrived in the last sliver.</p></a></li>
 </ul>
 <section class="add" aria-labelledby="add-h">
 <h2 id="add-h">Add your own simulator</h2>
