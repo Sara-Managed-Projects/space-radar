@@ -1432,7 +1432,7 @@ def check_seo_refusals() -> int:
         site.mkdir(parents=True)
         for name in ("index.html", "robots.txt"):
             link(ROOT / "site" / name, site / name)
-        for d in ("t", "og", "images"):
+        for d in ("t", "og", "images", "lab"):
             shutil.copytree(ROOT / "site" / d, site / d, copy_function=link)
         build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built"), "--no-share"],
                                capture_output=True, text=True)

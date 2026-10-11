@@ -48,10 +48,10 @@ check(old.seconds === 0, 'and plain no-cache, the header of before, gave the edg
 // --- 2. what carries it is what is invalidated ----------------------------------------------------
 const uses = [...code.matchAll(/"s3:\/\/\$BUCKET\/([\w/]+)"[^\n]*(?:\\\n[^\n]*)*?--cache-control "\$(\w+)"/g)].map((m) => [m[1], m[2]]);
 const revalidated = [...new Set(uses.filter(([, v]) => v === 'REVALIDATE').map(([p]) => p))].sort();
-check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'css', 'embed', 'js', 'o', 'press', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
+check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'css', 'embed', 'js', 'lab', 'o', 'press', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
 // The growth pages (scripts/seo_pages.py) are synced by a loop over pages-dirs.txt, share/ among them: the same list is invalidated.
 check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$dir\/\*"\)/.test(code), 'every directory in pages-dirs.txt carries it and is invalidated by the same list');
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 16, 'no upload still says a literal no-cache: all sixteen read $REVALIDATE');
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 17, 'no upload still says a literal no-cache: all seventeen read $REVALIDATE');
 check(/aws s3 cp "\$path" "s3:\/\/\$BUCKET\/\$name" --region "\$REGION" \\\n\s+--cache-control "\$REVALIDATE"/.test(code), 'the root files (index.html, sw.js, the manifest, the sitemap) carry it too');
 const paths = (/PATHS=\(([^)]*)\)/.exec(code) || [])[1] || '';
 const invalidated = [...paths.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
