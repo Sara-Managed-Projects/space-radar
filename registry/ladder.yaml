@@ -22,7 +22,7 @@ rungs:
     label: The Sun
     target: {world: sun}
     distance: "150 million km"
-    distance_source: "one astronomical unit, IAU 2012"
+    distance_source: "one astronomical unit, IAU 2012; NASA NSSDCA Earth Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html (read 2026-10-11)"
     why: "Eight light-minutes. Everything on the Earth stage is lit from here."
 
   - id: neptune
