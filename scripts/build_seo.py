@@ -6,7 +6,7 @@
 writes, under DIR:
     o/<slug>.html   one page per notable object, from templates/object.html
     404.html        from templates/404.html
-    sitemap.xml     the home page, every trip page (site/t/) and every object page
+    sitemap.xml     the home page, every trip page (site/t/), the Lab (site/lab/) and every object page
     object-pages.json  {record id: slug}, for the app's share sheet (spec 0061 task 8)
     + everything scripts/seo_pages.py adds (the question pages, the 40 star systems, /events/, /teachers/ ...)
       and one share picture per page under share/ (scripts/seo_share.py; needs Pillow, else the old pictures stay),
@@ -227,6 +227,15 @@ def sitemap(host: str, slugs: list[str], press: bool = False, dates: dict[str, s
             f"{rows}\n</urlset>\n")
 
 
+def lab_pages() -> list[str]:
+    """The Lab's pages, by path from the root: the list and every simulator (site/lab/, docs/ADD_A_SIMULATOR.md). They are committed
+    files, like the trip pages, not built ones, so they are named here for the sitemap and nowhere else; _template/ is a starter, not a page."""
+    d = SITE / "lab"
+    if not (d / "index.html").is_file():
+        return []
+    return ["lab/index.html"] + [f"lab/{p.parent.name}/index.html" for p in sorted(d.glob("*/index.html")) if not p.parent.name.startswith("_")]
+
+
 def page_dates(host: str, pages: list[dict]) -> dict[str, str]:
     """{url: lastmod}: the home page, every trip's own row, every object page's group of source files,
     and the press page. See scripts/seo_dates.py for what each date is the date of."""
@@ -236,6 +245,8 @@ def page_dates(host: str, pages: list[dict]) -> dict[str, str]:
     trips = [f.stem for f in sorted((SITE / "t").glob("*.html"))]
     for trip, date in seo_dates.trip_dates(trips, ROOT, default).items():
         out[f"{host}/t/{trip}.html"] = date
+    for path in lab_pages():  # each page is dated by its own file
+        out[f"{host}/{path}"] = seo_dates.page_date([f"site/{path}"], ROOT, default)
     for slug, date in seo_dates.object_dates({p["slug"]: p["group"] for p in pages}, ROOT, default).items():
         out[f"{host}/o/{slug}.html"] = date
     return out
@@ -280,7 +291,7 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     dates[f"{host}/embed/index.html"] = seo_dates.page_date(
         ["templates/embed.html", "templates/embed/generate.js", "scripts/seo_embed.py", "registry/embedders.yaml"], ROOT, lastmod())
     (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
-                                             extra=["embed/index.html"], growth=extra["sitemap"]), encoding="utf-8")
+                                             extra=["embed/index.html"] + lab_pages(), growth=extra["sitemap"]), encoding="utf-8")
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
     # preview shows the object's own title and picture. Which records have a page, and under which
     # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.

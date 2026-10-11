@@ -1,0 +1,50 @@
+name: Propose or build a simulator
+description: A tiny space simulator for the Lab (one HTML file, one idea). Propose it, or say you will build it.
+title: "Build simulator: "
+labels: [good first issue, "track:lab"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The [Space Radar Lab](https://www.spaceradar.ai/lab/index.html) is a shelf of small simulators, one idea each, one HTML file each.
+        The guide is [docs/ADD_A_SIMULATOR.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md): about ten minutes, no install.
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: Two to four words, like "Rocket Equation" or "Venus Day Race".
+    validations:
+      required: true
+  - type: textarea
+    id: lesson
+    attributes:
+      label: The lesson, in one sentence a 12-year-old understands
+      description: "For example: A planet sweeps out equal areas in equal times, so it speeds up as it nears the Sun."
+    validations:
+      required: true
+  - type: textarea
+    id: picture
+    attributes:
+      label: What is on the screen, and what does the visitor move?
+      description: One picture and one slider is plenty. A sketch or a link to something that does it well is welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: The formula and the numbers, with the page each comes from
+      description: Page addresses, the table or row, and the value as written there. Nothing from memory.
+    validations:
+      required: true
+  - type: textarea
+    id: honest
+    attributes:
+      label: What is and is not to scale?
+      description: The honesty line, for example "Sizes are to scale, distances are not."
+  - type: checkboxes
+    id: build
+    attributes:
+      label: Who builds it?
+      options:
+        - label: I would like to build this myself (we will help you get started)
+        - label: I am only proposing it

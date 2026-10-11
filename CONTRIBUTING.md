@@ -34,6 +34,8 @@ Each of these takes minutes, needs no install, and is named in the release notes
   [idea](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=idea.yml) or a
   [trip or content](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=trip-or-content.yml)
   form, or a thread in [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions).
+- **Build a tiny space simulator.** One HTML file, no libraries, about ten minutes: [docs/ADD_A_SIMULATOR.md](docs/ADD_A_SIMULATOR.md),
+  or pick a [track:lab task](https://github.com/Sara-Managed-Projects/space-radar/labels/track%3Alab).
 - **Send a translation.** Start with [docs/TRANSLATING.md](docs/TRANSLATING.md), or
   [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
 - **Offer a shape model.** NASA publishes 3D models of spacecraft; if you can slim one for the web

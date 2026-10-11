@@ -21,7 +21,7 @@ hosts:
   - {host: Proxima Cen, display: Proxima Centauri, why: temperate}
   - {host: LHS 1140, why: temperate}
   - {host: Kepler-186, why: temperate}
-  - {host: Kepler-452, why: temperate}
+  - {host: Kepler-452, aliases: [KOI-7016], why: temperate}
   - {host: Kepler-62, why: temperate}
   - {host: Kepler-442, why: temperate}
   - {host: Kepler-22, why: temperate}
