@@ -51,6 +51,7 @@ museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
   [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
 - **Suggest or review a trip.** Astronomers: read one trip's narration for errors.
 - **Edit a word on GitHub**, with no tools at all: [CONTRIBUTING.md](CONTRIBUTING.md) shows how.
+- **Build a tiny space simulator** in one HTML file, in ten minutes: [docs/ADD_A_SIMULATOR.md](docs/ADD_A_SIMULATOR.md), shelf at [spaceradar.ai/lab](https://www.spaceradar.ai/lab/index.html).
 - Want a first task? Pick a [good first issue](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue).
   Every first comment gets an answer within 48 hours.
 
