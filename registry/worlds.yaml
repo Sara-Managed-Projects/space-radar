@@ -110,6 +110,7 @@ worlds:
     frames: [inertial, fixed]
     look: {textures: saturn, ring: {inner_km: 74500, outer_km: 140220, texture: saturn-ring}}
 
+    # Uranus: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html, read 2026-10-11.
   - id: uranus
     display: Uranus
     parent: sun
