@@ -68,12 +68,33 @@ export function renderOptions(search) {
   return {
     fps: fps === 60 || fps === 30 || fps === 24 || fps === 25 ? fps : 30,
     epochMs: Number.isFinite(at) && at > 0 ? at : null,
-    captions: q.get('captions') === '1',
+    captions: q.get('captions') === '1' || q.get('captions') === 'big',
+    // `&captions=big`: captions a phone can read (4.3 % of the height, on two lines at most of
+    // 84 % of the width), with the lower third lifted clear of them. For a film cut from trips.
+    bigCaptions: q.get('captions') === 'big',
+    // `&skip=g,edge`: stops left out of the film (a stop whose card is waiting on a source, say).
+    // The trip flies from the stop before to the stop after, as if the stop were not in the trip.
+    skip: String(q.get('skip') || '').split(',').map((x) => x.trim()).filter(Boolean),
     // `&clock=1`: the film's clock and nothing filmed. A tool that films something other than a
     // trip drives the frames itself through `window.__srRender.film` (advance, settle, time).
     clockOnly: q.get('clock') === '1',
     maxStops: Number.isInteger(stops) && stops > 0 ? stops : 0,
   };
+}
+
+const tripInHash = (hash) => (/(?:^#?|&)trip=([^&]+)/.exec(String(hash || '')) || [])[1] || '';
+/**
+ * `skip`: take those stops out of that trip, in place, before the trip is read (ui/trip.js holds
+ * the same rows). Never the whole trip: a list that would leave no stop is ignored. Returns the ids left out.
+ */
+export function leaveOut(tours, tripId, skip) {
+  const tour = (tours || []).find((t) => t.id === tripId);
+  if (!tour || !skip || !skip.length) return [];
+  const kept = tour.stops.filter((s) => !skip.includes(s.id));
+  if (!kept.length || kept.length === tour.stops.length) return [];
+  const out = tour.stops.filter((s) => skip.includes(s.id)).map((s) => s.id);
+  tour.stops.splice(0, tour.stops.length, ...kept);
+  return out;
 }
 
 /** Where the trip is flown by hand: the link the end card and the description carry. */
@@ -241,6 +262,8 @@ html.sr-render #boot { display: none !important; }
 html.sr-render-thumb #sr-render > *:not(.rm-thumb) { display: none !important; }
 html.sr-render-thumb #sr-render .rm-thumb { display: flex; }
 html.sr-render-thumb #labels, html.sr-render-thumb #sr-hud { visibility: hidden !important; }
+html.sr-render-bigcc #sr-render .rm-third, html.sr-render-bigcc #sr-render .rm-mark { bottom: 21vh; }
+html.sr-render-bigcc #sr-render .rm-caption { left: 0; right: 0; width: fit-content; margin: 0 auto; transform: none; max-width: 84vw; font-size: 4.3vh; line-height: 1.28; font-weight: 600; background: rgba(11,14,20,.78); text-shadow: 0 0 0.6vh rgba(11,14,20,.95); }
 #sr-render .rm-caption { position: absolute; left: 50%; bottom: 3.2vh; transform: translateX(-50%); max-width: 70vw; text-align: center; font-size: 2.9vh; line-height: 1.3; padding: 0.6vh 1.4vh; border-radius: 0.6vh; background: var(--sr-glass-strong, rgba(11,14,20,.90)); opacity: 0; }
 `;
 
@@ -385,6 +408,8 @@ export function createFilmClock(opts, g = window) {
  */
 export function install(opts, g = window) {
   const film = createFilmClock(opts, g);
+  leaveOut(TOURS, tripInHash(g.location && g.location.hash), opts.skip);
+  if (opts.bigCaptions && g.document) g.document.documentElement.classList.add('sr-render-bigcc');
   const { fps, stepMs, epochMs, time, realWait, settle, advance } = film;
 
   // ---------------------------------------------------------------- the film

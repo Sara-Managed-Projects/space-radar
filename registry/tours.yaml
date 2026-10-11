@@ -1540,6 +1540,9 @@ tours:
         needs_layer: far-bodies
         stage: sun
         chapter: "Chapter four: past Neptune"
+        # read 2026-10-10, https://science.nasa.gov/dwarf-planets/eris/ (Orbit and Rotation):
+        # "Eris takes 557 Earth years to make one trip around the Sun."
+        # (card figure = page figure: 557-year lap = NASA's sentence, which replaces the 560 this card had from JPL's own elements (a = 67.93 au gives 560 y) ; ninety-five times as far from the Sun = JPL Horizons, 95.5 au on 2026-09-22, not on that page, which gives about 68 au as Eris's average distance ; 2006 = Wikipedia, IAU definition, read 2026-09-22 (OK))
         card:
           title: "Eris, which made planet a definition"
           # Wikipedia, IAU definition of planet, read 2026-09-22. The resolution of 24 August 2006
@@ -1548,13 +1551,13 @@ tours:
           # (nearly round) shape" and "has cleared the neighbourhood around its orbit"; a dwarf
           # planet meets the first two and not the third. The card gives the year and not the
           # month, because the month pushes its first sentence past the 160 characters ui/cards.js
-          # prints. Eris's lap is 560 years from JPL's own
-          # elements (a = 67.93 au, data/sample.js) and it is 95.5 au from the Sun on 2026-09-22
+          # prints. NASA's page says the lap is 557 years (JPL's elements, a = 67.93 au in
+          # data/sample.js, give 560) and Eris is 95.5 au from the Sun on 2026-09-22
           # against an aphelion of 97.7, so "near the far end" is good for decades.
           body: >-
             The definition astronomers agreed on in 2006 asks three things of a planet: it goes
             round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and
-            Pluto fail the third. Eris is near the far end of a 560-year lap, ninety five times as
+            Pluto fail the third. Eris is near the far end of a 557-year lap, ninety-five times as
             far from the Sun as we are.
 
       - id: voyager-1

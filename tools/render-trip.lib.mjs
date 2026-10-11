@@ -175,8 +175,11 @@ export function audioGraph({ clips, beds, spans, duration }) {
   let n = clips.length;
   beds.forEach((b, i) => {
     // A bed is 72 s cut to loop (registry/audio.yaml): looped at the input, trimmed to its span.
-    inputs.push('-stream_loop', '-1', '-i', b.file);
+    // THE LOOP IS BOUNDED AT THE INPUT (-t). An input that loops for ever is only ended by the
+    // graph's last atrim, and with several beds mixed that never came: a six-minute film's mix
+    // ran for two hours at full CPU and was killed (2026-10-10).
     const len = round3(b.end - b.start);
+    inputs.push('-stream_loop', '-1', '-t', String(round3(len + 1)), '-i', b.file);
     const fade = Math.min(BED_FADE_S, len / 2);
     parts.push(`[${n}:a]${fmt},atrim=0:${len},afade=t=in:st=0:d=${fade},afade=t=out:st=${round3(len - fade)}:d=${fade},adelay=${Math.round(b.start * 1000)}:all=1[b${i}]`);
     music.push(`[b${i}]`);
