@@ -50,7 +50,7 @@ rungs:
     # 440 was not the source's number: 0.39-0.46 kly is 425 at the middle, which is what the M45
     # record itself carries (site/data/dso.json) and prints on its card. 2026 - 425 = 1601.
     distance: "about 425 light-years"
-    distance_source: "Wikipedia, List of Messier objects (0.39-0.46 kly)"
+    distance_source: "Wikipedia, List of Messier objects (0.39-0.46 kly); List of Messier objects, https://en.wikipedia.org/wiki/List_of_Messier_objects (read 2026-10-11)"
     why: "A cluster you can see with your eyes on winter evenings. Its light left around the year 1600."
 
   - id: galactic-centre
