@@ -829,7 +829,6 @@ export const COPY = {
   // A star without a name in any catalogue people use: its HYG row is what we can say.
   stars: {
     unnamed: 'An unnamed star (HYG {n})',
-    notPlaced: '{n} more have no measured distance and are not drawn.',
   },
   // A star system at its own scale (spec 0040, scene/systems.js). The one piece of text drawn IN the
   // scene: the dashed ring on the trip's last stop is not an orbit anything has, and it says so.
