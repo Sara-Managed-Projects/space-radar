@@ -14,7 +14,7 @@
 #                         share pictures (og/) and the sounds (audio/) only.
 #   --app-only            skip the big assets; push HTML, CSS, JS, the vendored libraries (vendor/,
 #                         since 2026-10-07: they are code, stripped and stamped with the app),
-#                         the trip pages (t/), robots.txt
+#                         the trip pages (t/), the Lab's simulators (lab/), robots.txt
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
 #                         object-pages.json, and what scripts/seo_pages.py adds: starlink/, satellites/,
 #                         iss/, planets-tonight/, events/, about/, sources/, accuracy/, teachers/, share/,
@@ -134,7 +134,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models images t og audio fonts"
+KNOWN="textures data vendor js css models images t og audio fonts lab"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -375,6 +375,13 @@ if [ "$WHAT" != "assets" ]; then
   # registry must not keep a page that opens the app on nothing.
   "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
     --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
+  # THE LAB (site/lab/, docs/ADD_A_SIMULATOR.md): small stand-alone simulator pages, each ONE HTML file with no
+  # library and no network request, and the list scripts/gen_lab_index.py writes from them. HTML, revalidated
+  # like t/ and --delete, so a simulator that leaves the repository leaves the site. NOTHING in it is loaded by
+  # the app, the worker does not hold it (a navigation passes), and _template/ is the contributor's starter,
+  # not a page: it is not uploaded.
+  "${SYNC[@]}" "$SITE/lab" "s3://$BUCKET/lab" \
+    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --exclude "_template/*" --delete
   # The pages a search engine reads that are not kept in git (spec 0061 task 9): one per notable
   # object, the sitemap and the 404 page, built here from the records and the card's own words
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
@@ -464,7 +471,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
   # The gzip copies keep their names too.
   [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   # The pages seo_pages.py built, each by its directory, and the pictures (share/) with them: all of
