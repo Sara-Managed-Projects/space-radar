@@ -243,6 +243,8 @@ systems:
     source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-08)
 - id: kepler-452
   host: Kepler-452
+  aliases:
+  - KOI-7016
   why: temperate
   as_of: '2026-10-08'
   sky:
