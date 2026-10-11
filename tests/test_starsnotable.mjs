@@ -146,7 +146,7 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const { createStars3d } = await import(join(JS, 'scene/stars3d.js'));
   const st = createStars3d(null);
   const measured = STARS_NOTABLE.filter((r) => r.radius_suns > 0);
-  check(measured.length === 10 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read 2026-10-09\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `ten rows carry a radius with its error and the paper read today (${measured.length})`);
+  check(measured.length === 11 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read 2026-10-09\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `eleven rows carry a radius with its error and the paper read today (${measured.length})`);
   check(measured.filter((r) => r.teff_k > 0).every((r) => r.teff_err_k > 0), 'a temperature is only given with its error');
   for (const row of measured) {
     const rec = byId.get(`hip-${row.hip}`);
@@ -156,6 +156,10 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const prox = byId.get('hip-70890');
   check(prox && prox.meta.widthSource && /1208\.2431/.test(prox.meta.widthSource), 'Proxima carries where its width was read');
   check(COPY.card.values.sunsWideMeasured.includes('measured') && !COPY.card.values.sunsWideMeasured.includes('estimated'), 'the card words for a measured width say measured');
+  // Capella Aa's measured radius and temperature, asserted by value: the row count alone would
+  // still pass if the numbers landed on the wrong star.
+  const capella = STARS_NOTABLE.find((r) => r.name === 'Capella');
+  check(capella && capella.radius_suns === 11.98 && capella.radius_err_suns === 0.57 && capella.teff_k === 4970 && capella.teff_err_k === 50, `Capella carries the radius and temperature of Capella Aa, 11.98±0.57 Rsun and 4970±50 K (got ${capella && capella.radius_suns}±${capella && capella.radius_err_suns} Rsun, ${capella && capella.teff_k}±${capella && capella.teff_err_k} K)`);
 }
 if (problems.length) { console.error('famous stars FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`famous stars ok: ${famous.length} rows each reach one star record with its line and source, labels name them on the ladder, the card prints the line, search finds renamed stars both ways`);
