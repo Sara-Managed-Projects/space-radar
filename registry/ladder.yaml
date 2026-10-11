@@ -29,7 +29,7 @@ rungs:
     label: Neptune
     target: {world: neptune}
     distance: "4.5 billion km"
-    distance_source: "30 au, mean orbital radius"
+    distance_source: "30 au, mean orbital radius; NASA NSSDCA Neptune Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html (read 2026-10-11)"
     why: "Four light-hours. The last planet, and the edge of the map's true-scale Solar System."
 
   - id: proxima
