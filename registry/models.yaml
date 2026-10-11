@@ -10,7 +10,7 @@
 #   scripts/check-model-ids.sh      does a `norad:` id point at the object its row NAMES?
 #   scripts/check-model-reach.py    does a mapping reach any object the app actually draws?
 #   scripts/check-model-sources.py  does a `source:` name a model NASA actually has?
-# The last one resolves all 44 rows against NASA's own file index. Run it when you add a row: a
+# The last one resolves every `real_models` row against NASA's own file index. Run it when you add a row: a
 # credit nobody can follow is not a credit, and a folder name is easy to mistype and impossible to
 # notice.
 #

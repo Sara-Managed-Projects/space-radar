@@ -52,18 +52,8 @@ import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
-  gmst,
-  eciToEcef,
-  ecefToGeodetic,
-  geodeticToEcef,
-  parseFrame,
-  bodyFixedToSpherical,
-  worldRadiusKm,
   toStage,
   eclipticToEquatorial,
-  spinPeriodHours,
-  moonLapHours,
-  yearDays,
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import { riseHighestSet, RISE_SET_BODIES } from '../sky/riseset.js';
