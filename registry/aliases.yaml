@@ -25,3 +25,4 @@ aliases:
   # one catalogue number for a cluster and a nebula, and NGC 6357 has two nicknames.
   - {say: cone nebula, means: christmas tree cluster, why: "the Cone Nebula sits at the tip of the Christmas Tree Cluster, both NGC 2264; the row is named for the cluster (registry/dso-hand.yaml)"}
   - {say: lobster nebula, means: war and peace, why: "NGC 6357's other name; the row takes the War and Peace name that OpenNGC and the Midcourse Space Experiment team use"}
+  - {say: pillars of creation, means: eagle nebula, why: "Hubble's 1995 picture of the columns inside M16; the catalogue row is named for the nebula"}
