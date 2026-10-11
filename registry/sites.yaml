@@ -31,8 +31,8 @@
 # box does not make anybody type an apostrophe.
 #
 # The rule is keyed on `landed:` rather than on `class: surface` because a surface row need not be
-# a landing: tests/fixtures/europa.yaml grows the registry with Conamara Chaos, a place where
-# nothing has landed. Every surface row in THIS file is a landing, and tests/test_landing_sites.mjs
+# a landing: tests/fixtures/phoebe.yaml adds Jason crater on Phoebe, a place where nothing has
+# landed. Every surface row in THIS file is a landing, and tests/test_landing_sites.mjs
 # fails any of them that would be drawn with the class default -- so the first surface row that
 # is a place rather than a machine will need a shape of its own before it ships.
 #
