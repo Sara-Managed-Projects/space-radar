@@ -1229,7 +1229,7 @@ html.sr-compact .sr-status {
 /* Three states, and the third is not a decoration on the other two. */
 .sr-state {
   flex: 0 0 auto;
-  padding: 2px 9px;
+  padding: 2px 8px;
   font-size: var(--sr-fs-sm);
   font-weight: 600;
   letter-spacing: 0.01em;
