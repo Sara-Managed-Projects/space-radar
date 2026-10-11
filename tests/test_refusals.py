@@ -112,6 +112,14 @@ def validator(work: Path, script: str = "scripts/check_registry.py", env: dict |
     return subprocess.run([sys.executable, script], cwd=work, capture_output=True, text=True, env=env or ENV)
 
 
+# One character past MAX_SENTENCE (160), so the case proves the cap bites at the boundary rather
+# than somewhere well beyond it. Defined before CASES, which uses it.
+GLOSSARY_SAY_OVER_CAP = (
+    "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+    "can keep the Earth and Sun behind it and stay cold. more words here to"
+)
+
+
 CASES: list[tuple[str, str, str, str]] = [
     # --- the dated pages and the sources page (scripts/seo_pages.py): what they print is the registry's, so the registry is held ---
     ("a source with no licence line", "sources.yaml", '    licence: "', '    licence_: "'),
@@ -856,6 +864,14 @@ CASES: list[tuple[str, str, str, str]] = [
      "weather.yaml", "[300, 54]", "[300, 24]"),
     ("a layer the page is said to fetch, from nowhere the registry names",
      "weather.yaml", "    layer: lightning\n", ""),
+    # A glossary say is capped at MAX_SENTENCE the way a card sentence is: the card prints the
+    # definition beside the sentence that sent the reader to it, so a definition past the cap is
+    # the same defect. 161 characters is one past the cap, where 160 must still pass.
+    ("a glossary say longer than the cap allows",
+     "glossary.yaml",
+     "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+     "can keep the Earth and Sun behind it and stay cold.",
+     GLOSSARY_SAY_OVER_CAP),
 ]
 
 
