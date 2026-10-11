@@ -826,6 +826,8 @@ jobs:
         run: node tests/test_pointing.mjs
       - name: "Rises, highest and sets from a place, and the planet's card saying so (internal #299)"
         run: node tests/test_riseset.mjs
+      - name: "Compass words and height in fists: examples, wrapping and every altitude threshold"
+        run: node tests/test_skywords.mjs
       - name: "a star as a disc of its own size"
         run: node tests/test_stardisc.mjs
       - name: "the Sun close up: limb darkening, today's sunspot groups"

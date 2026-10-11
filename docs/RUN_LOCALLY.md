@@ -97,7 +97,7 @@ with the age of the oldest copy on screen.
   open `http://<teacher's computer>:8177` there is no service worker, and they need the teacher's
   server running. That is the browser's rule, not ours.
 - A clone from git is not stamped with a build, so its worker keeps only what was loaded and always
-  asks the server first. Run `python3 scripts/stamp_sw.py` once to make a clone behave like a
+  asks the server first. Run `py scripts\stamp_sw.py` on Windows, or `python3 scripts/stamp_sw.py` on macOS or Linux once to make a clone behave like a
   release (it rewrites `site/sw.js`; `git checkout site/sw.js` undoes it).
 - **To switch it off**, open the app once with `?sw=0` at the end of the address
   (`http://localhost:8177/?sw=0`): the worker is removed and everything it kept is deleted.
@@ -143,6 +143,10 @@ every week or two if you can.
 **One computer serving a whole room.** Start it so other machines can reach it:
 
 ```bash
+# Windows (PowerShell or Command Prompt)
+py -m http.server 8177 --directory site --bind 0.0.0.0
+
+# macOS and Linux
 python3 -m http.server 8177 --directory site --bind 0.0.0.0
 ```
 
@@ -150,6 +154,10 @@ Pupils open `http://<that computer's address>:8177`. This works without internet
 room's own network is up. For a permanent install, point nginx, Apache or Caddy at the `site`
 folder as the root of a host name or port. No database, no server-side code, nothing to update but
 the folder.
+
+On Windows, open Command Prompt or PowerShell and run `ipconfig`. Find the **IPv4 Address** under the network adapter connected to the school's network. Pupils should open `http://<that computer's address>:8177` in their browsers.
+
+The first time Python listens for other computers, Windows may ask whether to allow it through the firewall. Allow Python on the **private (school) network** so pupils on that network can connect.
 
 **A USB stick.** Copy the whole unzipped folder to the stick. On the other computer, open a
 terminal in that folder on the stick and run the command from step 2. The computer still needs
