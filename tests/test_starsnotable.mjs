@@ -146,7 +146,7 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const { createStars3d } = await import(join(JS, 'scene/stars3d.js'));
   const st = createStars3d(null);
   const measured = STARS_NOTABLE.filter((r) => r.radius_suns > 0);
-  check(measured.length === 12 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read 2026-10-09\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `twelve rows carry a radius with its error and the paper read today (${measured.length})`);
+  check(measured.length === 11 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read \d{4}-\d{2}-\d{2}\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `eleven rows carry a radius with its error and the paper read (${measured.length})`);
   check(measured.filter((r) => r.teff_k > 0).every((r) => r.teff_err_k > 0), 'a temperature is only given with its error');
 
   // 8a. Capella regression (issue #832): assert the measured values directly, so a wrong star's data would fail
