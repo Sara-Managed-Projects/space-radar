@@ -66,7 +66,7 @@ rungs:
     target: {record: dso-m31}
     layer: deep-sky
     distance: "2.5 million light-years"
-    distance_source: "Wikipedia, List of Messier objects (2 430-2 650 kly)"
+    distance_source: "Wikipedia, List of Messier objects (2 430-2 650 kly); List of Messier objects, https://en.wikipedia.org/wiki/List_of_Messier_objects (read 2026-10-11)"
     why: "The nearest big galaxy, and the farthest thing most people have seen with their own eyes."
 
   - id: m87
