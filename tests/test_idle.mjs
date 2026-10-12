@@ -69,8 +69,8 @@ check(/clockMode: clock\.mode,\s*\n\s*clockRate: clock\.rate,/.test(call), 'and 
 // A layer counts while it is MOVING, not while it is switched on: the aurora and the lightning are
 // on for every first visit, and CI's browser showed the switch alone kept the loop at full rate.
 check(/animatedLayer: layerAnimating\(nowReal\),/.test(call), 'the layers are asked whether they are moving now');
-check(/aurora && aurora\.visible && aurora\.folds/.test(loop) && /ctx\.isLayerOn\('lightning'\) && ctx\.weather && typeof ctx\.weather\.perMinute === 'function' \? ctx\.weather\.perMinute\(\) : 0/.test(loop) && /flashes > 0 \|\| !!ctx\.wind \|\| !!ctx\.earthOverlay/.test(loop),
-  'the aurora by its folds on screen, lightning by the strikes in its map, the wind and an overlay by being there');
+check(/aurora && aurora\.visible && aurora\.folds/.test(loop) && /ctx\.isLayerOn\('lightning'\) && ctx\.weather && typeof ctx\.weather\.perMinute === 'function' \? ctx\.weather\.perMinute\(\) : 0/.test(loop) && /flashes > 0 \|\| !!ctx\.wind \|\| !!ctx\.currents \|\| !!ctx\.earthOverlay/.test(loop),
+  'the aurora by its folds on screen, lightning by the strikes in its map, the wind, the currents and an overlay by being there');
 check(/let layerMoving = true;/.test(loop), 'and until they have been asked, they are taken to be moving');
 {
   // The two modules answer in the shape the loop reads.
