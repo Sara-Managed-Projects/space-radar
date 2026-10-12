@@ -54,7 +54,9 @@ export function createWeather({ worlds, camera = null, reducedMotion = false, on
       const storms = air.storms(worldId);
       const turning = storms === 'moving' ? COPY.weatherStorms.turning[worldId] : null;
       const poles = storms ? COPY.weatherStorms.poles[worldId] : null;
-      return [line, also, turning, poles, flash && air.flashing(worldId) ? flash : null].filter(Boolean).join(' ');
+      // The generated close-range cloud texture (2026-10-12): said wherever it can be drawn.
+      const detail = air.detail(worldId) ? COPY.weatherDetail : null;
+      return [line, also, turning, poles, detail, flash && air.flashing(worldId) ? flash : null].filter(Boolean).join(' ');
     },
     credit: () => lightning.credit(),
     perMinute: () => lightning.perMinute(),

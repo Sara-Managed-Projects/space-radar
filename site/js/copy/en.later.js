@@ -32,6 +32,10 @@ Object.assign(COPY, {
     },
   },
 
+  // The giants' close-range cloud detail (scene/weather/worldweather.js WX_DETAIL; registry/weather.yaml
+  // kind cloud-detail), one sentence for the four of them, after the storms' on the weather line.
+  weatherDetail: 'Closer than the map is sharp, a fine streaky cloud texture is generated to carry the picture: it moves with the measured winds and keeps the map’s own colours, and not one streak of it is a real cloud. Illustrative.',
+
   // What the Sun is doing, on its card under the spots' line (scene/sun.js, data/sunactivity.js; spec
   // 0073 requirement 2). Each line says what was measured and by whom, and what is only drawn.
   sunAlive: {
