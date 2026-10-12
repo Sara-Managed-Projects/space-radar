@@ -745,6 +745,13 @@ jobs:
       # Cassini's radii, for the ring and for its shadow on the globe alike.
       - name: Saturn's rings, lit both ways, with the Cassini Division where Cassini measured it (spec 0054 task 5)
         run: node tests/test_rings.mjs
+      # Saturn from close (spec 0073 requirement 5): the fine-structure strip decoded and read at the
+      # radii of the Colombo, Maxwell, Huygens, Encke and Keeler gaps (a strip from anything but a
+      # measured profile, or on the wrong radii, fails), the ring shader's one extra read and its
+      # grains without a texture, nothing fetched at boot or on a phone, the latch, and the polar
+      # vortex as a registry row with Cassini's two numbers.
+      - name: Saturn's rings from close are Cassini's profile at Cassini's radii, and the polar vortex is a registry row (spec 0073 req 5)
+        run: node tests/test_ring_detail.mjs
       - name: the eclipse trip's five stops land on the library's eclipses, counted from the visitor's clock (spec 0037)
         run: node tests/test_eclipse_trip.mjs
       - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)

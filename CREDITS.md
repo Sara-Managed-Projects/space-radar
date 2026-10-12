@@ -203,6 +203,7 @@ satisfies that with:
 | `2k_saturn.webp` | Saturn | CC BY 4.0 | Solar System Scope |
 | `2k_saturn_opal_2025.webp` | Saturn, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 29 August 2025](https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32), adapted: calibrated, the strip the rings hid and the poles filled, resampled; 21 186 B |
 | `2k_saturn_ring_alpha.png` | Saturn's rings | CC BY 4.0 | Solar System Scope |
+| `8k_saturn_ring_fine.png` | Saturn's rings, their fine structure from close | Public domain | [Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010), NASA Planetary Data System, Ring-Moon Systems Node](https://pds-rings.seti.org/holdings/volumes/COUVIS_8xxx/COUVIS_8001/data/UVIS_HSP_2008_202_BETCEN_I_TAU01KM.LBL), adapted: the measured optical depth over its own neighbourhood's, 8192 x 1, one grey channel |
 | `2k_uranus.webp` | Uranus | CC BY 4.0 | Solar System Scope |
 | `1k_uranus_opal_2025.webp` | Uranus, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
 | `2k_neptune.webp` | Neptune | CC BY 4.0 | Solar System Scope |
@@ -331,6 +332,7 @@ checked against this list by `scripts/check_registry.py`):
 - Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0
 - Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted
 - Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
+- Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's
 - Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
 - Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory

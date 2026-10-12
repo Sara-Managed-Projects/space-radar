@@ -69,7 +69,7 @@ const dir = join(ROOT, 'tests/probes/look');
 const prelude = read('tests/probes/look/_prelude.js');
 const AsyncFunction = (async () => {}).constructor;
 const probes = readdirSync(dir).filter((f) => f.endsWith('.js') && !f.startsWith('_')).map((f) => f.slice(0, -3)).sort();
-for (const want of ['smoke', 'worlds', 'sun', 'jupiter', 'lights', 'frametime']) ok(probes.includes(want), `tests/probes/look/${want}.js is missing`);
+for (const want of ['smoke', 'worlds', 'sun', 'jupiter', 'saturn', 'lights', 'frametime']) ok(probes.includes(want), `tests/probes/look/${want}.js is missing`);
 for (const name of probes) {
   const body = read(`tests/probes/look/${name}.js`);
   try { new AsyncFunction(prelude + '\n' + body); } catch (e) { problems.push(`${name}.js does not parse behind the prelude: ${e.message}`); }

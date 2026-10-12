@@ -4038,7 +4038,7 @@ WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
 WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches",
-                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail"}
+                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail", "polar-vortex"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4179,6 +4179,20 @@ def check_weather(world_ids: set, layers: list) -> list:
             body = r.get(storm) or {}
             if not (is_number(body.get("from_share")) and 0.015 <= body.get("from_share") <= 1):
                 fail(where, f"{storm}.from_share must be the disc size it starts at, 0.015 (where a map is worn) to 1")
+        # Saturn's polar vortex (2026-10-12, spec 0073 req 5): two measured numbers and a drawn spiral.
+        if r.get("kind") == "polar-vortex":
+            vx = r.get("vortex") or {}
+            if not (is_number(vx.get("eye_diameter_km")) and 500 <= vx.get("eye_diameter_km") <= 5000
+                    and is_number(vx.get("wind_m_s")) and 0 < vx.get("wind_m_s") <= 600
+                    and is_number(vx.get("radius_km")) and vx.get("radius_km") > 0
+                    and is_number(vx.get("reach_eyes")) and 2 <= vx.get("reach_eyes") <= 10):
+                fail(where, "vortex needs eye_diameter_km (500 to 5000), wind_m_s, radius_km and reach_eyes (2 to 10)")
+            if not (is_number(vx.get("from_share")) and 0.015 <= vx.get("from_share") <= 1):
+                fail(where, "vortex.from_share must be the disc size it starts at, 0.015 (where a map is worn) to 1")
+            if cls != "illustrative":
+                fail(where, "the vortex's spiral is drawn, not photographed: illustrative")
+            if not r.get("why"):
+                fail(where, "an illustrative vortex says `why:` it can be no better")
         if r.get("kind") == "shear-eddies":
             ed = r.get("eddies") or {}
             if not (is_number(ed.get("lines")) and 1 <= ed.get("lines") <= 7 and is_number(ed.get("half_deg_max")) and 0 < ed.get("half_deg_max") <= 3
