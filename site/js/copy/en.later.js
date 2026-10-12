@@ -437,6 +437,17 @@ Object.assign(COPY, {
     none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
   },
 
+  // Which commit this site was built from (public #291; ui/status.js `builtFrom`): one line at the
+  // foot of the Sources sheet, a link to that commit on GitHub. Read from /build.json when the sheet
+  // opens (scripts/build_info.py writes it at deploy); a copy run from a folder has none, and then
+  // there is no line. {sha} is seven characters in the line and the whole commit in the address;
+  // {date} is the day of the build, UTC, "12 October 2026".
+  buildInfo: {
+    line: 'Built from {sha}, {date}',
+    title: 'The commit this site was built from, on GitHub',
+    href: 'https://github.com/Sara-Managed-Projects/space-radar/commit/{sha}',
+  },
+
   // "Is this what space looks like?" (internal #250, spec 0067 task 4): the honest answer, once, in
   // the Sources sheet, which is the app's About. Three kinds of picture, and what each is. A
   // nebula's own card says how ITS colours were made (COPY.exposure); this is the general case.

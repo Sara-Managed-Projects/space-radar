@@ -83,7 +83,7 @@ class Fake:
         self.log = tmp / f"aws-{state}.log"
         self.state = state
 
-    def run(self, *cmd: str, cwd: Path = ROOT) -> subprocess.CompletedProcess:
+    def run(self, *cmd: str, cwd: Path = ROOT, more_env: dict | None = None) -> subprocess.CompletedProcess:
         if self.log.exists():
             self.log.unlink()
         env = dict(os.environ, PATH=f"{self.bin}:{os.environ['PATH']}",
@@ -91,6 +91,7 @@ class Fake:
         # Never let a real profile or region leak into what the scripts print.
         for k in ("AWS_PROFILE", "AWS_DEFAULT_REGION", "AWS_REGION"):
             env.pop(k, None)
+        env.update(more_env or {})
         return subprocess.run(list(cmd), cwd=cwd, env=env, capture_output=True, text=True)
 
     def calls(self) -> list[str]:
@@ -355,6 +356,55 @@ def test_site_deploy_keeps_snapshots(tmp: Path) -> int:
     return 0
 
 
+def test_site_deploy_says_what_it_is(tmp: Path) -> int:
+    """build.json (public #291): a dry run of the app prints it and uploads nothing.
+
+    --strip-only: the plan is the same without the minifier, whose binary a test must not fetch.
+    --no-precompress and SR_SHARE=off: nor does it depend on the Brotli copies or the share pictures,
+    which are most of a dry run's minutes and are held by their own tests.
+    Run with --profile, --region and --distribution on purpose: none of them may reach the file.
+    """
+    fake = Fake(tmp, "present")
+    private = ("example-bucket", "example-profile", "eu-example-9", "EEXAMPLE123", "123456789012", "cloudfront", "s3://")
+    proc = fake.run("scripts/deploy.sh", "--bucket", "example-bucket", "--profile", "example-profile", "--region", "eu-example-9",
+                    "--distribution", "EEXAMPLE123", "--app-only", "--strip-only", "--no-precompress", "--dry-run",
+                    more_env={"SR_SHARE": "off"})
+    if proc.returncode != 0:
+        return fail("deploy.sh --app-only --dry-run exited non-zero", proc)
+    found = re.search(r"build\.json would say:\n((?:    .*\n)+)", proc.stdout)
+    if not found:
+        return fail("the dry run did not print build.json", proc)
+    info = json.loads(found.group(1))
+    want = ["schema", "commit", "commit_short", "committed_at", "built_at", "build", "files", "bytes", "dirty"]
+    if list(info) != want:
+        return fail(f"build.json's keys are {list(info)}, not {want}: nothing may be added without a reason written in scripts/build_info.py")
+    head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    stamp = re.search(r"is build ([0-9a-f]{16}): (\d+) files", proc.stdout)
+    utc = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ"
+    if info["schema"] != 1 or info["commit"] != head or info["commit_short"] != head[:7] \
+            or not re.fullmatch(utc, info["committed_at"]) or not re.fullmatch(utc, info["built_at"]) \
+            or not stamp or info["build"] != stamp.group(1) or info["files"] != int(stamp.group(2)) \
+            or not isinstance(info["bytes"], int) or info["bytes"] < 1_000_000 or not isinstance(info["dirty"], bool):
+        return fail(f"build.json does not name HEAD ({head[:7]}) and the worker's stamp: {info}", proc)
+    said = json.dumps(info).lower()
+    leaked = [w for w in private if w.lower() in said]
+    if leaked:
+        return fail(f"build.json says something about the hosting: {leaked}")
+    if "would upload build.json (application/json; charset=utf-8)" not in proc.stdout:
+        return fail("the dry run does not plan build.json as JSON among the root files", proc)
+    if proc.stdout.index("would upload build.json") > proc.stdout.index("would upload sw.js"):
+        return fail("build.json is planned after sw.js; the worker goes last", proc)
+    for call in fake.calls():
+        if call.startswith("s3 cp") or "create-invalidation" in call or ("s3 sync" in call and "--dryrun" not in call):
+            return fail(f"a dry run wrote: {call}", proc)
+    text = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
+    if '"/build.json"' not in text:
+        return fail("deploy.sh does not invalidate /build.json, and the edge keeps the app's files for a year")
+    print(f"PASS: deploy.sh --dry-run prints build.json (commit {info['commit_short']}, build {info['build']}, {info['files']} files), "
+          "with nothing about the hosting in it, and uploads nothing")
+    return 0
+
+
 def test_package(tmp: Path) -> int:
     # A tree with no harvest/ -- whatever the real repo has by now -- so the placeholder path is
     # exercised; then the same tree with a stub harvest/ for the real path.
@@ -493,7 +543,7 @@ def test_cf_render_config(tmp: Path) -> int:
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         for test in (test_provision_dry_run, test_provision_idempotent, test_teardown_dry_run,
-                     test_provision_refuses, test_deploy_dry_run, test_site_deploy_keeps_snapshots,
+                     test_provision_refuses, test_deploy_dry_run, test_site_deploy_keeps_snapshots, test_site_deploy_says_what_it_is,
                      test_package, test_placeholder_handler, test_cf_render_config):
             case = Path(tmp) / test.__name__
             case.mkdir()

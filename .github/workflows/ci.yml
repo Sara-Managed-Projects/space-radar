@@ -218,6 +218,10 @@ jobs:
         run: python3 tests/test_harvester_scripts.py
       - name: A refresh that fails publishes the last good saved copy, never an empty one
         run: python3 tests/test_refresh_keep_good.py
+      # Public #291: .github/workflows/freshness.yml reads the live site's build.json and the saved
+      # datasets' index every six hours; the decision is scripts/freshness.py, held here offline.
+      - name: "The live site is behind: fresh, 30 hours behind, a stale dataset, an unreadable build.json, a switched-off dataset ignored"
+        run: python3 tests/test_freshness.py
 
 
   # Spec 0061 task 9: what a search engine reads. The object pages, the sitemap and the 404 page are
