@@ -274,6 +274,11 @@ jobs:
       # thirty-first trip fails here until the README says so.
       - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"
         run: python3 tests/test_readme_facts.py
+      # The review of 2026-10-12 read "24 public sources" on two pages and "28" on a third. One rule
+      # (scripts/count_facts.py source_counts): sources are the publishers of the enabled rows, feeds
+      # the enabled rows; a template or a sentence with a number of its own fails here.
+      - name: "One number of sources: the pages read one function, a switched-off row is in neither, nobody types a count"
+        run: python3 tests/test_source_counts.py
       # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
       - name: "The translation checker names a missing key, a lost slot and an untouched string"
         run: node tests/test_check_translation.mjs

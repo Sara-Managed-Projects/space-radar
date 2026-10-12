@@ -4738,6 +4738,13 @@ def main() -> int:
             fail(where, "no `outputs:` list")
         if not s.get("attribution"):
             fail(where, "no attribution line -- it goes on the card, not in a footer")
+        # Who publishes it, by a name a visitor would recognise: the number of sources the site
+        # states is the number of distinct publishers among the enabled rows (scripts/count_facts.py
+        # source_counts), so a row without one cannot be counted.
+        publisher = s.get("publisher")
+        if not isinstance(publisher, str) or not publisher.strip() or publisher != publisher.strip():
+            fail(where, "no `publisher:` -- the organisation whose service is read, as a visitor would name it "
+                        "(CelesTrak, NASA JPL, NOAA SWPC); rows of one publisher share the name exactly")
         # The /sources/ page prints these three beside the row (scripts/seo_pages.py), so a row
         # without them would be a source the page cannot describe honestly.
         if not str(s.get("licence") or "").strip():
