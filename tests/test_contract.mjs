@@ -121,6 +121,8 @@ const CONTRACT = {
   'ui/sound.js': ['soundButton', 'soundPanel', 'creditsText'],
   'scene/stretch.js': ['STRETCH_PX', 'stretchUniforms', 'writeStretch'],
   'scene/stars3d.js': ['createStars3d', 'STRETCH_PX'],
+  // Spec 0072 requirement 1: planets and moons as lights at their computed magnitude (tests/test_worldlights.mjs).
+  'scene/worldlights.js': ['createWorldLights', 'planetMagnitude', 'moonMagnitude', 'reflectedMagnitude', 'lambertPhase', 'apparentMagnitude', 'starSprite', 'discFade', 'discCover', 'GEOMETRIC_ALBEDO', 'LIGHT_FADE_PX', 'SUN_APPARENT_MAG', 'WORLDLIGHT_VERT', 'WORLDLIGHT_FRAG'],
   // The device tiers (2026-09-28): the tier is chosen in quality.js, the maps swapped by
   // texturetiers.js from the mirror of registry/textures.yaml.
   'scene/quality.js': ['createFrameLatch', 'shouldSaveData', 'chooseTier', 'createTierPromoter', 'createIdleGate', 'idleCapWanted', 'movingReasons'],

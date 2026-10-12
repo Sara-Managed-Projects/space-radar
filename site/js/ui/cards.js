@@ -1197,6 +1197,8 @@ function derivedDrawingLine(record, T, tMs) {
     // The Sun close up (scene/sun.js): what is modelled, what is illustrative. The spots have their own line.
     if (record.id === 'sun' && T.worldSun) parts.push(T.worldSun);
     if (pick(md, 'exposed') === true && T.worldLit) parts.push(T.worldLit);
+    // Spec 0072: seen small it is a light (scene/worldlights.js), and the glow is not its size.
+    if (pick(md, 'light') === true && T.worldLight) parts.push(T.worldLight);
     const gain = Number(pick(md, 'earthshineGain'));
     if (gain > 0 && T.worldEarthshine) parts.push(t(T.worldEarthshine, { n: fmt.int(gain) }));
     // The narrow rings of Uranus and Neptune: at measured radii, and drawn so that they show.

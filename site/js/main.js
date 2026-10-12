@@ -99,6 +99,9 @@ function auroraStandIn(saveData, layerOn) {
   return api;
 }
 
+/** How long after sr:layers-ready the worlds' lights are fetched (scene/worldlights.js, OFF THE FIRST VISIT, in boot). */
+const WORLDLIGHTS_IMPORT_MS = 5000;
+
 /** How long after sr:layers-ready the weather's modules are fetched (OFF THE FIRST VISIT, in boot). */
 const WEATHER_IMPORT_MS = 4500;
 
@@ -833,6 +836,21 @@ export async function boot({ setStatus } = {}) {
     afterFirstVisit(AURORA_IMPORT_MS, load);
   }
   if (!embed) window.addEventListener('sr:layers-ready', loadAuroraLater, { once: true });
+
+  // PLANETS AND MOONS SHINE BY THEIR REAL BRIGHTNESS (2026-10-12, scene/worldlights.js, spec 0072
+  // requirement 1): one sprite of the stars' own kind on every world whose disc is small, at the
+  // magnitude computed for where the camera is. OFF THE FIRST VISIT like the aurora: nothing on the
+  // first screen needs it, and until it lands a planet is the small lit disc it always was.
+  function loadWorldLightsLater() {
+    afterFirstVisit(WORLDLIGHTS_IMPORT_MS, () => import('./scene/worldlights.js').then((m) => {
+      ctx.worldLights = m.createWorldLights({ scene, worlds, camera, renderer, magLimit: exposure.look().starLimit });
+      exposure.onChange((mode, look) => ctx.worldLights.setMagLimit(look.starLimit));
+    }).catch((e) => console.warn('the worlds\' lights did not load', e)));
+  }
+  if (!embed) {
+    if (window.__srLayersReady) loadWorldLightsLater();
+    else window.addEventListener('sr:layers-ready', loadWorldLightsLater, { once: true });
+  }
   {
     const layer = layerRec('aurora');
     if (layer) {
@@ -2390,6 +2408,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     cameraRig.update(dt, frameMs);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
+    // After the worlds and the camera: each light sits on this frame's disc (scene/worldlights.js).
+    if (ctx.worldLights) ctx.worldLights.update(t);
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
     // that has just moved. After the worlds, so a world's place is this frame's; the camera's own
     // update comes round again next frame.

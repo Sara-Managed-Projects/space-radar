@@ -1663,6 +1663,9 @@ export const COPY = {
     // photograph of it would be, not dimmed by its distance from the Sun (Saturn gets 1/90 of the
     // Earth's sunlight). scene/worlds.js says why; this is the card saying it.
     worldLit: 'lit as a camera exposed for its own sunlight would show it',
+    // Spec 0072 (scene/worldlights.js): a world seen small is a point of light of the stars' own kind, at the
+    // magnitude computed for where the camera is. The glow is brightness, not size.
+    worldLight: 'seen from far off it is a light at its computed brightness: the glow is how a camera records a point too bright to resolve',
     // 2026-10-08 (public #404, #411, #417): where a world is drawn knowingly unlike its data. Each
     // is added after the world's "drawn as" line (scene/worlds.js worldRecords `departure`).
     // 2026-10-08 (public #426): a pulsar's blink and a black hole's picture, on the object's own card.

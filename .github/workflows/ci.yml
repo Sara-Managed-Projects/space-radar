@@ -695,6 +695,11 @@ jobs:
       - name: A star is a peak with a glow, not a disc
         run: node tests/test_star_light.mjs
 
+      # Spec 0072 requirement 1: planets and moons shine at their computed magnitude (Mallama and Hilton 2018),
+      # with the stars' own sprite, and the light is gone once the disc is 16 px across.
+      - name: Venus outshines Sirius, and a planet close up has no glow
+        run: node tests/test_worldlights.mjs
+
       # Public #426: a pulsar blinks at its period times the least power of ten an eye can follow, and
       # the card says by how much; the photographed black holes are drawn while their cards are open.
       - name: A pulsar's pulse is slowed by a power of ten and says so

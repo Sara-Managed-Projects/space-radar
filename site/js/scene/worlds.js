@@ -239,6 +239,9 @@ export function worldRecords() {
       // brightened. The Earth has its own shader and its own sunlight is the reference; the Sun is
       // the light.
       exposed: !w.look.earth && !w.look.emissive,
+      // Spec 0072: seen small, every world but the Sun is a light at its computed brightness
+      // (scene/worldlights.js), and the card says what that glow is.
+      light: !w.look.emissive,
       earthshineGain: w.look.earthshine ? EARTHSHINE_GAIN : 0,
       // Spec 0054 task 3: how much thicker than it is the air is drawn (1 = its measured height), for
       // the card's line that says so and that the haze's colour is chosen.
@@ -2362,6 +2365,8 @@ export function createWorlds(scene, opts = {}) {
     setLatched,
     earthshine,
     drawnPositionOf,
+    /** This frame's TRUE position (update()'s own answer, not a second ephemeris): scene/worldlights.js. */
+    truePositionOf: (id) => truePos.get(id) || null,
     drawnRadiusUnits,
     arrivalRadiusUnits,
     preloadShape,
