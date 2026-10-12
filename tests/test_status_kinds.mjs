@@ -71,6 +71,8 @@ assert.notEqual(COPY.status.layerCatalogue, COPY.status.layerLive);
   const walk = (dir) => { for (const f of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, f.name); if (f.isDirectory()) walk(p); else if (f.name.endsWith('.js') && /['"`]build\.json['"`]/.test(readFileSync(p, 'utf8'))) askers.push(p.slice(JS.length + 1)); } };
   walk(JS);
   assert.deepEqual(askers, ['ui/status.js'], `only the Sources sheet asks for build.json (${askers})`);
-  assert.match(readFileSync(join(JS, 'main.js'), 'utf8'), /loadSources: \(host\) => import\('\.\/ui\/status\.js'\)/, 'and main.js loads the sheet only when it is opened');
+  // Written to hold on the minified tree too (scripts/check_built_tree.mjs runs this file there).
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  assert.ok(/import\(\s*['"`]\.\/ui\/status\.js['"`]\s*\)/.test(main) && !/from\s*['"`]\.\/ui\/status\.js['"`]/.test(main), 'and main.js loads the sheet by a dynamic import, when it is opened');
 }
 console.log('status kinds ok: catalogue, live, bundled sample and drawn are four different claims; the Built-from line is the commit build.json names, or absent');
