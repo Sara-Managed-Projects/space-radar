@@ -14,7 +14,10 @@
 // copy of the table, and the summary says so in `standIn`: the pictures then show the model and say
 // nothing about who wears it.
 //
-// A SECOND VARIANT, WHEN THE SERVED TREE HAS ONE. If `models/<file>-textured.glb` answers, the same
+// THE SHAPE IT REPLACES. When the route has both a build and a file, the same record is photographed
+// again wearing the procedural shape, from the same places.
+//
+// A THIRD VARIANT, WHEN THE SERVED TREE HAS ONE. If `models/<file>-textured.glb` answers, the same
 // record is photographed again wearing it with ITS OWN texture, unlit (the experiment of 2026-10-12:
 // the generator's picture against the app's flat colours). main never ships such a file; a branch
 // kept for looking may.
@@ -122,6 +125,10 @@ if (out.light.litAtFirst === false) {
     if (sunlit()) found = k;
   }
   if (found !== null) { sr.clock.goTo(t0 + (found + 2) * 5 * 60e3); await sleep(4000); out.light.movedMinutes = (found + 2) * 5; }
+  // The camera followed the craft round the Earth from where it stood, which by now is anywhere
+  // (the second run's "as framed" was from inside the clouds). Selected again, it is framed again.
+  sr.select(record, { fly: true, undo: false });
+  await sleep(10000);
   out.light.lit = sunlit();
   out.light.clock = new Date(sr.clock.now()).toISOString();
   if (!out.light.lit) look.warns.push('probe: the craft was still in the Earth\'s shadow after seventy minutes of stepping; the pictures are of its night side');
@@ -163,6 +170,32 @@ const walk = async (tag, what) => {
 };
 await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape'));
 
+/** Put something else on the hero for a set of pictures; returns the way back. */
+const wearInstead = (obj, thing) => {
+  const hidden = obj.children.filter((c) => c.visible);
+  for (const c of hidden) c.visible = false;
+  obj.add(thing);
+  return () => { obj.remove(thing); for (const c of hidden) c.visible = true; };
+};
+
+// WHAT IT REPLACES. A route with both a build and a file (the Cygnus, JWST, New Horizons) draws the
+// procedural shape until the file arrives. The same record wearing that shape, from the same six
+// places, is the comparison a person deciding whether the file is an improvement needs.
+if (entry.build && entry.file) {
+  try {
+    const M = await import(urlOf('./js/scene/models.js'));
+    const built = M.modelFor(M.builderKlass(record.klass, entry.build), entry.build, { record });
+    const obj = heroOf();
+    if (!built || !obj) throw new Error('the procedural shape could not be built, or the hero is gone');
+    const back = wearInstead(obj, built);
+    await sleep(2500);
+    out.procedural = { build: entry.build, model: describe(built) };
+    await walk('procedural', record.name + ' wearing the procedural shape `' + entry.build + '` that the file replaces (put back by the probe for the comparison)');
+    back();
+    await sleep(1500);
+  } catch (e) { out.procedural = { error: String((e && e.message) || e) }; }
+}
+
 // The textured variant, only where the served tree carries one.
 const texturedFile = entry.file ? entry.file.replace(/\.glb$/, '-textured.glb') : null;
 let hasTextured = false;
@@ -181,11 +214,11 @@ if (hasTextured) {
       // UNLIT: the generator's picture exactly as it is, with the light of the photograph in it.
       n.material = new THREE.MeshBasicMaterial({ map: m && m.map ? m.map : null, color: 0xffffff });
     });
-    for (const child of obj.children) child.visible = false;
-    obj.add(wear);
+    const back = wearInstead(obj, wear);
     await sleep(2500);
     out.textured.model = describe(wear);
     await walk('textured', record.name + ' wearing ' + texturedFile + ' with its own texture, unlit (an experiment: the app does not draw this)');
+    back();
   } catch (e) { out.textured.error = String((e && e.message) || e); }
 }
 return finish(out);
