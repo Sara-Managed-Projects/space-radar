@@ -4871,6 +4871,10 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   color: var(--sr-text-dim);
 }
 .sr-quality__note[hidden] { display: none; }
+/* Look (ui/exposure.js lookPanel): "Film" is a short word; on a finger's screen its button is still 44 wide. */
+@media (pointer: coarse) {
+  .sr-look .sr-density__btn { min-width: 44px; }
+}
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */
