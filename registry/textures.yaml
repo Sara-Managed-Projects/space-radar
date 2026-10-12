@@ -873,18 +873,18 @@ textures:
     world: pluto
     slot: map
     when: boot
-    coverage: 0.769
+    coverage: 0.778
     files:
       - tier: 0
         file: site/textures/2k_pluto_nh_colour.webp
         px: [2048, 1024]
-        bytes: 63040
+        bytes: 128920
         format: rgb
         licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
-        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
-        source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl (read 2026-10-06)"
-        original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
-        make: "scripts/build-textures.py moon-pluto: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 11487 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.68; where it has no data and USGS's black-and-white mosaic has (3.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (23 % of the sphere, the south in its winter night) filled with the map's own mean colour, WebP 82; then scripts/soften_fill.py --feather-deg=20 (2026-10-12): across 20 degrees of latitude the picture fades into a blur of itself before the plain colour begins, so the unimaged part still has nothing drawn in it and no longer meets the data along a hard line"
+        credit: "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain"
+        source: "https://science.nasa.gov/image-detail/amf-pia11707 (read 2026-10-12)"
+        original: "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia11/pia11707/PIA11707.jpg (5926 x 2963, 1 423 389 bytes, sha256 e36f3daa1b3b0e911418ff830ddccf8b63e10a082c6ccc96eb7d8170991962d6)"
+        make: "scripts/build_pluto_map.py (2026-10-12): NASA's own global colour map of Pluto, released 2017-01-19, 'based on a series of three color filter images' from Ralph/MVIC: ENHANCED colour, not what an eye would see (the camera had no green filter), and the card says so. 5926 px to 2048 wide, rolled half a turn so longitude 0 is at the centre; the part NASA left black (22 % of the sphere, the south in its winter night in 2015) filled with the covered part's own mean colour and feathered along its true outline on every side, wrapping in longitude: across 12 degrees the picture fades into a blur of itself before the plain colour begins, so nothing is drawn where nobody imaged; then the whole map taken, in linear light, to the luminance of the flat colour by a gain 1.77 (0.12 % of the pixels clip, on Sputnik Planitia), which leaves the colours' strength as NASA published it; WebP 76 (the moons' maps together have a byte budget). It replaces the map built here from the PDS mosaic's red and blue bands with USGS's black-and-white fill, whose image strips and filled patches met along straight and stepped edges"
 
   - id: charon
     world: charon

@@ -943,7 +943,7 @@ export const TEXTURES = [
     "world": "pluto",
     "slot": "map",
     "when": "boot",
-    "coverage": 0.769,
+    "coverage": 0.778,
     "files": [
       {
         "tier": 0,
@@ -952,9 +952,9 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 63040,
+        "bytes": 128920,
         "format": "rgb",
-        "credit": "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        "credit": "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain"
       }
     ]
   },

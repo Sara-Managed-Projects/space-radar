@@ -253,16 +253,17 @@ Center's global mosaics (<https://planetarymaps.usgs.gov/mosaic/>; "USGS-authore
 and information are considered to be in the U.S. Public Domain", usgs.gov, *Copyrights and
 Credits*) and from NASA maps mirrored on Wikimedia Commons, where each file's page says public
 domain. Public-domain works need no credit, but they get one anyway. `scripts/build-textures.py`
-(`--only moons`) remakes every one of them but Triton's from its original, and every map was
-changed:
+(`--only moons`) remakes every one of them but Triton's and Pluto's from its original, and every map
+was changed. (Pluto's, since 2026-10-12, is NASA's own global colour map, Photojournal PIA11707, made
+by `scripts/build_pluto_map.py`: its colours are enhanced, as NASA published them, and its card says
+so. The list below is about the others.)
 
 - resized (the width is in `registry/textures.yaml`; no file is over 250 kB) and, where the original
   is centred on longitude 180, rolled half a turn so longitude 0, the side that faces the planet,
   is at the centre;
 - **the black-and-white mosaics are tinted** with the world's flat colour, which is chosen from
-  published descriptions: Europa, Ganymede, Callisto, Titan, the five moons of Uranus, Pluto,
-  Charon and Phobos. Only the pattern of light and dark is measured. Charon's red polar cap and
-  Pluto's colours are therefore not shown;
+  published descriptions: Europa, Ganymede, Callisto, Titan, the five moons of Uranus and Phobos.
+  Only the pattern of light and dark is measured;
 - **Cassini's colour maps** (Mimas, Enceladus, Tethys, Dione, Rhea, Iapetus; P. Schenk, LPI) are made
   from infrared, green and ultraviolet pictures and are far more colourful than the eye would see:
   35 % of their saturation is kept. Triton's is desaturated the same way. Io keeps USGS's colours;
@@ -297,7 +298,7 @@ changed:
 | `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
 | `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
 | `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
-| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 77 % |
+| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707)](https://science.nasa.gov/image-detail/amf-pia11707): NASA's own map, made from three of the colour camera's filters, none of them green; enhanced colour, not what an eye would see, and the card says so. Resized, rolled, brightness taken to the flat colour's; the unimaged south filled plain and feathered (`scripts/build_pluto_map.py`) | 78 % |
 | `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 74 % |
 | `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
 
@@ -356,7 +357,7 @@ checked against this list by `scripts/check_registry.py`):
 - Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
-- Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
+- Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain
 - Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
 - Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 

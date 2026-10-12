@@ -674,6 +674,10 @@ MOONS = {
     "titania":   ("commons_titania.jpg", "titania_voyager.webp", False, None, 1.0, 6),
     "oberon":    ("commons_oberon.jpg", "oberon_voyager.webp", False, None, 1.0, 6),
     # New Horizons MVIC's colour mosaics (PDS Small Bodies Node, 2026-10-06): see pds_colour() below.
+    # PLUTO'S MAP IS NO LONGER MADE HERE (2026-10-12): scripts/build_pluto_map.py makes it from NASA's
+    # own global colour map, Photojournal PIA11707. Running this row would overwrite that file with
+    # the mosaic whose strips met along straight edges; it is kept as the record of how Charon's
+    # sibling was built, and `--only moons` must be followed by build_pluto_map.py.
     "pluto":     ("nh_pluto_color_mosaic.img", "pluto_nh_colour.webp", True, 1.5, 1.0, 0),
     "charon":    ("nh_charon_color_mosaic.img", "charon_nh_colour.webp", False, 1.5, 1.0, 0),
     # USGS's copy of P. Schenk's Voyager 2 map (PIA18668): orange, green and blue pictures with the
