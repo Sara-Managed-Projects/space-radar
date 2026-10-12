@@ -268,6 +268,24 @@ def _dates(tokens: list) -> list:
     return out
 
 
+def _halves(tokens: list) -> list:
+    """"eight and a half" is 8.5, which is how a recogniser sometimes writes it (2026-10-12)."""
+    out = []
+    i = 0
+    while i < len(tokens):
+        if re.fullmatch(r"\d+", tokens[i]) and tokens[i + 1: i + 4] == ["and", "a", "half"]:
+            value = Decimal(tokens[i] + ".5")
+            i += 4
+            if i < len(tokens) and tokens[i] in SCALES:          # "two and a half million"
+                value *= SCALES[tokens[i]]
+                i += 1
+            out.append(_fmt(value))
+        else:
+            out.append(tokens[i])
+            i += 1
+    return out
+
+
 def canon(text: str) -> list:
     """The words of `text` in the one spelling both sides are compared in. Pure, stdlib only."""
     s = unicodedata.normalize("NFKD", str(text).lower())
@@ -290,7 +308,7 @@ def canon(text: str) -> list:
     # "m87" is "m 87"; "22nd" stays
     s = re.sub(r"\b([a-z]+)(\d+)\b", r"\1 \2", s)
     tokens = [ABBREVIATED.get(t, t) for t in s.split()]
-    tokens = _dates(_numbers(tokens))
+    tokens = _halves(_dates(_numbers(tokens)))
     return [_fold(t) for t in tokens]
 
 

@@ -654,7 +654,19 @@ class Voice:
         british = str(cfg["voice"]["lang"]).lower() == "en-gb"
         self.np = np
         self.g2p = en.G2P(trf=False, british=british, fallback=espeak.EspeakFallback(british=british))
-        self.kokoro = Kokoro(str(models / engine["model"]["file"]), str(models / engine["voices"]["file"]))
+        # NARRATE_THREADS=2 on a machine that is busy with other work: ONNX Runtime's own threads
+        # spin while they wait, and on a crowded CPU that spinning is most of what the render is
+        # given. The same model and the same arithmetic; unset, the session is the library's own.
+        threads = int(os.environ.get("NARRATE_THREADS") or 0)
+        if threads:
+            import onnxruntime as ort
+            options = ort.SessionOptions()
+            options.intra_op_num_threads = threads
+            options.add_session_config_entry("session.intra_op.allow_spinning", "0")
+            session = ort.InferenceSession(str(models / engine["model"]["file"]), options, providers=["CPUExecutionProvider"])
+            self.kokoro = Kokoro.from_session(session, str(models / engine["voices"]["file"]))
+        else:
+            self.kokoro = Kokoro(str(models / engine["model"]["file"]), str(models / engine["voices"]["file"]))
         self.cfg = cfg
 
     def phonemes(self, marked: str) -> str:
