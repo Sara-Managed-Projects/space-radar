@@ -105,6 +105,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `hold_latch` | true | load the page with `?look=1` (below); false looks at what a slow device really gets |
 | `browser` | `chromium` | `chromium` (through `tools/cdp.mjs`), `firefox`, `webkit` (through `tools/look-playwright.mjs`), or `all` |
 | `harvest` | empty | source ids with commas, fetched fresh by `python3 -m harvest --only <id>` and merged into the served `data/v1`: for a feed the live site has no copy of yet, e.g. `swpc-edited-events,donki-cme-analysis` for the Sun's flares and CMEs, `ocean-currents,ocean-temperature` for the currents |
+| `subject` | empty | for a probe that takes one (`model`): a record id, e.g. `sat-25544`; it reaches the page as `?lookSubject=` |
 
 | probe | what it walks |
 |---|---|
@@ -114,6 +115,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `jupiter` | the stage, both poles, close on a belt, the clock sped up |
 | `lights` | each bright planet as a point of light beside a small Earth |
 | `frametime` | three scenes (home; Jupiter filling the view with its weather; the Sun's detail), the median and 95th percentile of 120 frame intervals each |
+| `model` | one craft's model in the app: the record is selected, the probe waits for its file to replace the procedural shape, then four sides at the app's own framing, one from above and one drawn larger. Default: the Cygnus cargo ship on the stations layer (if none is up that day, the model on the ISS's record for the picture only, and the summary says so); `-f subject=<record id>` for any other. Where the served tree has `<file>-textured.glb`, the same again with that file's own texture, unlit |
 
 **The job fails** when the page logged an error (`console.error`, an uncaught error, an unhandled
 rejection), when the probe returned a `fail`, or when it returned nothing. `summary.md` (also the

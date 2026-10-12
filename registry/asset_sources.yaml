@@ -157,3 +157,18 @@ sources:
     account: free
     cost: none
     checked: 2026-10-09
+
+  # 2026-10-12 (internal spec 0064): a GENERATOR, not an archive. What comes from it is a mesh made by
+  # its model from pictures a row names itself (registry/models.yaml, `kind: derived-from-images`), so
+  # this row is about the generator's own terms and the pictures' terms are on the model's row.
+  - id: trellis
+    name: TRELLIS image-to-3D model (Microsoft Research)
+    match: ["https://github.com/microsoft/TRELLIS"]
+    url: https://github.com/microsoft/TRELLIS
+    licence: MIT (code, and the image-large weights on their own page)
+    licence_read: "MIT License Copyright (c) Microsoft Corporation. Permission is hereby granted, free of charge, to any person obtaining a copy"
+    licence_url: https://raw.githubusercontent.com/microsoft/TRELLIS/main/LICENSE
+    licence_note: "The weights' page (https://huggingface.co/microsoft/TRELLIS-image-large) states `license: mit`, read 2026-10-12. Run through the Hugging Face Space trellis-community/TRELLIS, whose page also states `license: mit`; a free Hugging Face account gives the GPU minutes, and that account is Ivan's."
+    account: free
+    cost: none
+    checked: 2026-10-12
