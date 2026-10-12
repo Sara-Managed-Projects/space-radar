@@ -160,13 +160,17 @@ const EARTH_GROUND = 'vec3 ground = dayTex * (';
 // shadow are read there). A tile's vUv is the TILE's; the globe's is vUvGlobe.
 const FRAG_RELIEF_UV = 'vec2 reliefUv = vUv; float slopeShare = 1.0;';
 /**
- * Which of an Earth tile's texels are water: blue more than `blueOverRed` times red, in full `full`
- * past it (linear light). `full` is under the darkest water the layer holds: beside a coast Blue
- * Marble's water is ocean-colour data in blocks of a few kilometres, some a level or two of 255
- * darker than the deep sea's flat colour, and at 0.004 those blocks took a fifth less of the lift
- * and showed as a dark patchwork along the shore (the first look, off Senegal).
+ * Which of an Earth tile's texels are water (linear light). Two tests, the larger wins:
+ *   blue    blue more than `blueOverRed` times red, in full `full` past it: the flat deep sea
+ *           (0.006 past) and every shallow.
+ *   murk    beside a coast Blue Marble's water is ocean-colour data in blocks of a few kilometres,
+ *           nearly black and as often green as blue (sRGB 0, 6, 4; 2, 8, 4; 0, 6, 0 off Dakar): no red
+ *           to speak of (`murkRed`: all of it under the first, none past the second), dark
+ *           (`murkGreen`), and not black (`murkSome` of green or blue: a shadow in a valley is
+ *           black and is land). Without it those blocks kept the land's grade and were a dark
+ *           patchwork along the shore (the first two looks, off Senegal).
  */
-export const TILE_SEA = { blueOverRed: 1.6, full: 0.002 };
+export const TILE_SEA = { blueOverRed: 1.6, full: 0.002, murkRed: [0.0006, 0.0015], murkGreen: [0.004, 0.008], murkSome: [0.0006, 0.0012] };
 const FRAG_BASE = 'vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );';
 const VERT_DEPTH = '#include <logdepthbuf_vertex>';
 const VERT_UV = 'vUv = uv;';
@@ -225,7 +229,8 @@ export function tileFragment(src = WORLD_FRAG) {
 export function earthTileFragment(src = SURFACE_FRAG) {
   if (!src.includes(EARTH_GROUND)) throw new Error('scene/tiles.js: SURFACE_FRAG no longer lights its ground with ' + EARTH_GROUND);
   return src.replace(EARTH_GROUND, `vec3 tile = texture2D( uTile, vUvTile ).rgb;
-  float tileSea = smoothstep( 0.0, ${TILE_SEA.full.toFixed(3)}, tile.b - ${TILE_SEA.blueOverRed.toFixed(1)} * tile.r );
+  float tileSea = max( smoothstep( 0.0, ${TILE_SEA.full.toFixed(3)}, tile.b - ${TILE_SEA.blueOverRed.toFixed(1)} * tile.r ),
+    ( 1.0 - smoothstep( ${TILE_SEA.murkRed[0].toFixed(4)}, ${TILE_SEA.murkRed[1].toFixed(4)}, tile.r ) ) * ( 1.0 - smoothstep( ${TILE_SEA.murkGreen[0].toFixed(3)}, ${TILE_SEA.murkGreen[1].toFixed(3)}, tile.g ) ) * smoothstep( ${TILE_SEA.murkSome[0].toFixed(4)}, ${TILE_SEA.murkSome[1].toFixed(4)}, max( tile.g, tile.b ) ) );
   vec3 ground = mix( dayTex, tile * uTileGrade + uTileSeaLift * tileSea, uFade ) * (`)
     .replace('uniform sampler2D uDay;', 'uniform sampler2D uDay;\nuniform sampler2D uTile;\nuniform vec3 uTileGrade;\nuniform vec3 uTileSeaLift;\nuniform float uFade;\nvarying vec2 vUvTile;');
 }
@@ -236,8 +241,10 @@ export function earthTileFragment(src = SURFACE_FRAG) {
  * @returns {{ rgb: number[], sea: number }}
  */
 export function earthTileColour(rgb, grade, seaLift = [0, 0, 0]) {
-  const k = Math.min(1, Math.max(0, (rgb[2] - TILE_SEA.blueOverRed * rgb[0]) / TILE_SEA.full));
-  const sea = k * k * (3 - 2 * k);
+  const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  const S = TILE_SEA;
+  const sea = Math.max(ss(0, S.full, rgb[2] - S.blueOverRed * rgb[0]),
+    (1 - ss(S.murkRed[0], S.murkRed[1], rgb[0])) * (1 - ss(S.murkGreen[0], S.murkGreen[1], rgb[1])) * ss(S.murkSome[0], S.murkSome[1], Math.max(rgb[1], rgb[2])));
   return { rgb: [0, 1, 2].map((i) => rgb[i] * grade[i] + seaLift[i] * sea), sea };
 }
 

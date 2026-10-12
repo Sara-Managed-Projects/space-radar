@@ -67,6 +67,9 @@ check(/NASA Earth Observatory/.test(EARTH.credit) && /Global Imagery Browse Serv
   for (let b = 0; b <= 0.01; b += 0.0005) { const s = T.earthTileColour([0.001, 0.002, b], G, L).sea; if (s < last) mono = false; last = s; }
   check(mono && last === 1, 'from land to water the lift grows and reaches all of itself');
   // Coastal water a level or two darker than the deep sea's flat colour is still all water: no patchwork along a shore.
+  // ...and so is the murky green water of a shore (read off the tile at Dakar), while a black shadow is land.
+  for (const c of [rgb(0, 6, 4), rgb(2, 8, 4), rgb(0, 6, 0), rgb(0, 4, 0), rgb(0, 0, 4), rgb(2, 12, 4)]) check(T.earthTileColour(c, G, L).sea > 0.99, `murky coastal water (${c.map((v) => v.toFixed(4))}) takes the whole lift`);
+  for (const c of [rgb(0, 0, 0), rgb(1, 1, 1), rgb(8, 9, 8), rgb(14, 26, 12), rgb(10, 40, 12)]) check(T.earthTileColour(c, G, L).sea === 0, `a shadow or a dark forest (${c.map((v) => v.toFixed(4))}) is land`);
   for (const c of [rgb(1, 4, 14), rgb(0, 3, 10), rgb(0, 2, 8)]) check(T.earthTileColour(c, G, L).sea === 1, `dark coastal water (${c.map((v) => v.toFixed(4))}) takes the whole lift`);
   const dark = T.earthTileColour(rgb(0, 2, 8), G, L).rgb;
   const deepSea = T.earthTileColour(rgb(2, 5, 20), G, L).rgb;
@@ -76,7 +79,7 @@ check(/NASA Earth Observatory/.test(EARTH.credit) && /Global Imagery Browse Serv
 // --- 4. the shader is the twin ----------------------------------------------------------------------------
 {
   const f = T.earthTileFragment();
-  check(f.includes(`float tileSea = smoothstep( 0.0, ${T.TILE_SEA.full.toFixed(3)}, tile.b - ${T.TILE_SEA.blueOverRed.toFixed(1)} * tile.r );`), 'the shader finds water as earthTileColour does');
+  check(f.includes(`float tileSea = max( smoothstep( 0.0, ${T.TILE_SEA.full.toFixed(3)}, tile.b - ${T.TILE_SEA.blueOverRed.toFixed(1)} * tile.r ),`) && f.includes(`* smoothstep( ${T.TILE_SEA.murkSome[0].toFixed(4)}, ${T.TILE_SEA.murkSome[1].toFixed(4)}, max( tile.g, tile.b ) ) );`), 'the shader finds water as earthTileColour does, by its blue or by its murk');
   check(f.includes('vec3 ground = mix( dayTex, tile * uTileGrade + uTileSeaLift * tileSea, uFade ) * ('), 'and lifts it after the grade');
   check(!/uTileGradeSea/.test(f) && !/uTileGradeSea|gradeSea/.test(read('site/js/scene/tiles.js')), 'no gain on water is left');
   check(f.includes('uniform vec3 uTileSeaLift;'), 'the lift is a uniform of the patch');

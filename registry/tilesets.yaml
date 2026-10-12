@@ -186,7 +186,8 @@ tilesets:
   # `sea_lift` is our day map's sea (sRGB 30, 59, 117: 0.0130, 0.0437, 0.1779 in linear light) less
   # that deep sea times `grade` (0.00061, 0.00152, 0.00700 times 2.0, 2.3, 2.5). A water texel is
   # one whose blue is more than 1.6 times its red, in full 0.002 past it (the deep sea is 0.006
-  # past, the darkest coastal water read 0.002, every land mean measured is under).
+  # past, every land mean measured is under), or one that is dark with no red in it and not black:
+  # the murky water beside a coast, which is as often green as blue (scene/tiles.js TILE_SEA).
   - id: earth-blue-marble
     world: earth
     title: "Blue Marble with shaded relief (MODIS), 500 m per pixel"
