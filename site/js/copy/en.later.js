@@ -570,7 +570,7 @@ Object.assign(COPY, {
     creditsLine: 'Music and sounds: {credits}',
     // Spec 0069 task 5. The registry's own line (registry/narration.yaml `voice.credit`, carried
     // by CREDITS.md section 9b): tests/test_narration.mjs holds the three to one string.
-    narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0',
+    narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0',
   },
 
   // A world with a second face on its card (scene/worlds.js `faces`, 2026-10-06, public #417).

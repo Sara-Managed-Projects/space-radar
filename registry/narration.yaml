@@ -16,18 +16,52 @@ version: 1
 #   Parler-TTS   Apache-2.0, describable voices; a 2 GB model that wants a GPU. Not tried.
 #   XTTS-v2, F5-TTS   refused: Coqui Public Model Licence and CC BY-NC, both non-commercial.
 #
-# THE VOICE: `bf_emma`, British English. The cards are written in British English ("kilometres",
-# "a football pitch", "the centre"), and of Kokoro's British voices this is the one its makers grade
-# highest (B-, VOICES.md in the model's repository). At 0.8 of its natural speed, about 155 words a
-# minute with the pauses: a planetarium is not in a hurry. NO PERSON HAS HEARD IT YET (a machine has: `listen` below). The agent that
-# rendered these files cannot listen; it checked what can be measured (loudness, peak, words a minute, that no clip is silent, and the
-# phonemes of every name in the lexicon below). The blind listening test of spec 0069 task 1 is
-# still owed: `scripts/narrate.py --audition DIR` writes the same three stops in four voices.
+# THE VOICE: `af_heart`, American English, since 2026-10-12. Ivan: "I want you to rewrite all
+# audios smartly with kokoro voice af_heart. Smartly means it should NOT be just a monotonic voice,
+# it should sound really good, as a person doing a trip." It is the voice the model's makers grade
+# highest (A; VOICES.md in the model's repository, read 2026-10-12: no licence of its own, so the
+# model's Apache-2.0). Until then it was `bf_emma`, British, at 0.8 of its speed. The cards are
+# still spelt the British way ("kilometres", "the centre") and the captions show them so; the
+# voice says the same words with its own accent, and the lexicon below is in American phonemes.
+#
+# WHY THE FIRST 205 CLIPS SOUNDED READ OUT, MEASURED (2026-10-12, @@MEASURED_N@@ clips, a pitch tracker by
+# autocorrelation, tools kept outside the repository). Each long sentence was synthesised on its
+# own, slowed to 0.8, and joined with fixed pauses. So every sentence began on the same note and
+# fell to the same note: the pitch a sentence STARTS at varied by @@OLD_HEAD@@ semitones from sentence
+# to sentence inside a clip and the pitch it ENDS at by @@OLD_TAIL@@, where a person telling you
+# something moves by two or three; and every pause between two sentences was 0.45 s, to the
+# sample. That is a list being read.
+#
+# THE DELIVERY NOW (`timing.join.sentences`, `timing.vary`, `voice.pace`, `phrasing`):
+#   - a stop is said two or three sentences in one pass, so the voice carries its pitch and pace
+#     across the full stops as it does in a paragraph; the pass is cut at the model's own pauses
+#     (narrate.py find_cuts), so the caption times are still sample counts;
+#   - at 0.95 of the voice's speed (about @@NEW_WPM@@ words a minute with the pauses; `af_heart` is
+#     a slower speaker than `bf_emma`, whose 0.8 was @@OLD_WPM@@), and the closing pass of a longer
+#     stop a little slower still;
+#   - the pause after a sentence follows what was said (longer after a long sentence and before
+#     the closing one, shorter after "Nobody rode it.") and is then moved by a seeded amount, so
+#     no two are alike and a render is still reproducible;
+#   - a few commas and dashes for the voice only, where a number should land (`phrasing`).
+# Measured on the same @@MEASURED_N@@ stops: sentence starts now vary by @@NEW_HEAD@@ semitones and ends by
+# @@NEW_TAIL@@, the pitch range of a clip went from @@OLD_RANGE@@ to @@NEW_RANGE@@ semitones, the pauses between
+# sentences spread over @@NEW_GAPSD@@ s (they were all one length), and the recogniser's word error
+# is @@NEW_WER@@ (it was @@OLD_WER@@). A MACHINE CHOSE THIS: three settings were rendered beside the old
+# one (~/space-radar-handoff/narration-heart/audition/, README there) and the numbers picked.
+# Numbers do not hear warmth. NO PERSON HAS HEARD IT YET; Ivan's ears have the last word.
+# Nothing was added that is not the text: no music, no breaths, no hesitation, no second voice.
 #
 #   engine.id      part of every clip's hash. Change it when the model, the G2P or anything else
 #                  that changes how a word is said changes, and every clip is stale until rendered.
 #   packages       the versions the render ran with; narrate.py refuses to render with others.
+#   voice.pace     close: a factor on `speed` for the last pass of a stop said in two or more,
+#                  so the ending is not hurried. The model takes one speed for a whole pass, so
+#                  a title cannot be said slower than the sentence it shares its pass with: it is
+#                  given a long pause after it instead (timing.title_gap_s).
 #   timing         the pauses narrate.py puts between the sentences.
+#     vary         how a pause follows what was just said; narrate.py gaps_for() explains each.
+#                  `jitter` 0.12 moves every pause by up to 12 % either way, by a number drawn
+#                  from the stop's name: the same stop always gets the same pauses.
 #     join         internal #441: a short sentence said alone gains a vowel at each end ("Venus."
 #                  was heard as "a Venusa"), so a title, and any sentence of `words` words or
 #                  fewer, is said in ONE pass with its neighbour and the pass is cut at the model's
@@ -36,6 +70,14 @@ version: 1
 #                  pause is at least `min_pause_s` (a dash lengthens it); the pause is looked for
 #                  between `window` x the short sentence's length when said alone, as the longest
 #                  run under `quiet` (of full scale). A pass over `max_chars` is not made.
+#                  Since 2026-10-12: `sentences` 3 fills a pass with up to three sentences,
+#                  short or not (1 was a long sentence alone, the read-out delivery above). The
+#                  plain joiner is tried first, so the full stops are said as the voice says
+#                  them; the dash only where a pause could not be found. The full stops inside
+#                  a pass are found by find_cuts(): each quiet run scores its length less
+#                  `drift` seconds for every second of speech between it and where the
+#                  sentence was expected to end (by its share of the pass's phonemes), within
+#                  `reach` of the sentence's length and at least `reach_s`.
 #   encode         -16 LUFS is the level spoken word is mastered to for the web (the beds are at
 #                  -23 and duck a further 10 dB under the voice, audio/narration.js); peak_dbfs is
 #                  where narrate.py's limiter holds the few tall peaks a synthetic voice has. Opus
@@ -43,10 +85,16 @@ version: 1
 #   checks         what --check and the render refuse: a clip outside these words a minute is
 #                  silence or was cut short.
 #   lexicon        word -> phonemes, in the model's own alphabet (misaki's: A = "ay", I = "eye",
-#                  W = "ow", Y = "oy", Q = British "oh", ʧ = "ch", ʤ = "j"). ONLY the names the G2P
+#                  W = "ow", Y = "oy", O = American "oh", T = the American flapped t, ʧ = "ch",
+#                  ʤ = "j"). American since 2026-10-12, as the voice is. ONLY the names the G2P
 #                  gets wrong; checked and left alone because it says them right: Io, Uranus,
 #                  Europa, Ganymede, Charon, Sedna, Triton, Titan, Pleiades, Sirius, Andromeda,
-#                  Cassini, TRAPPIST, Vikram, Yutu, Gaia, JUICE, Cernan, Aldrin, NASA's.
+#                  Cassini, TRAPPIST, Vikram, Gaia, JUICE, Cernan, Aldrin, NASA's.
+#   phrasing       trip/stop -> [[the card's words, the same words punctuated for the voice]].
+#                  A comma or a dash the voice is given and the caption is not: a pause before a
+#                  number that should land. NEVER a different word: narrate.py refuses a pair
+#                  whose letters differ, and one that moves a full stop. Few on purpose: the
+#                  cards are already punctuated for the ear, and nobody has heard these yet.
 #   skip_title     stops whose body repeats the title almost word for word: the voice starts at
 #                  the body. Every other stop is read as its card is: title, then body.
 #   say            trip/stop -> words for the ear, replacing the card's (title and body) for the
@@ -69,10 +117,10 @@ version: 1
 #                  accept    trip/stop -> why a clip over the line, or with a voice finding, ships.
 #                  A machine heard them; a person has still not (internal #325).
 engine:
-  id: "kokoro-82m-v1.0/onnx-fp32/misaki-0.9.4"
+  id: "kokoro-82m-v1.0/onnx-fp32/misaki-0.9.4/passes-2"
   name: "Kokoro-82M"
   licence: "Apache-2.0"
-  source: "https://huggingface.co/hexgrad/Kokoro-82M (read 2026-10-03)"
+  source: "https://huggingface.co/hexgrad/Kokoro-82M (read 2026-10-03; VOICES.md read 2026-10-12)"
   model:
     file: kokoro-v1.0.onnx
     url: "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx"
@@ -83,48 +131,57 @@ engine:
     sha256: bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d
   packages: {kokoro-onnx: "0.6.1", misaki: "0.9.4", onnxruntime: "1.23.2"}
 voice:
-  id: bf_emma
-  lang: en-gb
-  speed: 0.8
-  credit: "Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0"
+  id: af_heart
+  lang: en-us
+  speed: 0.95
+  pace: {close: 0.96}
+  credit: "Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0"
 timing:
   lead_s: 0.15
-  title_gap_s: 0.7
-  gap_s: 0.45
-  tail_s: 0.25
-  join: {words: 0, joiners: [" — ", "; — "], window: [0.45, 1.15], quiet: 0.01, min_pause_s: 0.08, max_chars: 420}
+  title_gap_s: 0.72
+  gap_s: 0.4
+  tail_s: 0.3
+  vary: {per_word_s: 0.006, max_extra_s: 0.14, short_words: 5, short: 0.8, before_last_s: 0.12, after_question_s: 0.2, jitter: 0.12}
+  join: {words: 0, sentences: 3, joiners: [" ", " — "], quiet: 0.01, min_pause_s: 0.08, drift: 0.15, reach_s: 0.9, reach: 0.5, max_chars: 420}
 encode: {lufs: -16, peak_dbfs: -1.5, opus_kbps: 32, aac_kbps: 40, aac_rate: 24000}
 checks: {wpm: [110, 200], lufs_tolerance: 1.0, mean_db_floor: -40, max_db_floor: -12}
 lexicon:
   Tiangong: "tjɛnɡˈʊŋ"
-  Shenzhou: "ʃˌɛnʤˈQ"
+  Shenzhou: "ʃˌɛnʤˈO"
   Queqiao: "ʧwˈɛʧjˌW"
-  Chandrayaan: "ʧˌʌndɹəjˈɑːn"
-  Lunokhod: "lˈuːnəkˌɒd"
-  Beresheet: "bəɹˈɛʃiːt"
+  Chandrayaan: "ʧˌʌndɹəjˈɑn"
+  Lunokhod: "lˈunəkˌɑd"
+  Beresheet: "bəɹˈɛʃit"
   Huygens: "hˈYɡənz"
-  Eris: "ˈɪəɹɪs"
+  Eris: "ˈɪɹɪs"
   Enceladus: "ɛnsˈɛlədəs"
   # 2026-10-07, internal #441: found by the listening check ("Valles" heard as "Vols",
   # "marsquakes" as "maskwax") and by reading the G2P's phonemes for every name in the trips:
   # it said "vawlz", "MARR-in-er-iss", "mask-wocks", "OO-ut", "kock", "did-IM-oze", "en-VISS-at",
   # "in-SITE". Christina Koch says her name "cook".
-  Valles: "vˈalɪs"
-  Marineris: "mˌaɹɪnˈɛːɹɪs"
-  marsquakes: "mˈɑːzkwAks"
-  Oort: "ˈɔːt"
+  Valles: "vˈælɪs"
+  Marineris: "mˌɛɹɪnˈɛɹɪs"
+  marsquakes: "mˈɑɹzkwAks"
+  Oort: "ˈɔɹt"
   Koch: "kˈʊk"
-  Didymos: "dˈɪdɪmɒs"
-  Envisat: "ˈɛnvɪsat"
+  Didymos: "dˈɪdɪmOs"
+  Envisat: "ˈɛnvɪsæt"
   InSight: "ˈɪnsIt"
   # Heard as "or fucus", "Matt R icky"; and Theia is "THEE-a", which the G2P said "THAY-a".
-  Ophiuchus: "ˌɒfɪjˈuːkəs"
-  Matariki: "mˈatəɹˌiːki"
-  Theia: "θˈiːə"
+  Ophiuchus: "ˌOfijˈukəs"
+  Matariki: "mˈɑtəɹˌiki"
+  Theia: "θˈiə"
+  # 2026-10-12, the American G2P, read for every name in the trips: "a-POFF-iz" for Apophis,
+  # a doubled r in Subaru, and Yutu with a flapped t ("YOO-doo").
+  Apophis: "əpˈɑfɪs"
+  Subaru: "sˈubəɹu"
+  Yutu: "jˈutu"
 listen:
   # ON since 2026-10-08: all 205 clips were rendered again with the title said in one pass
   # (internal #441) and every one was heard by small.en, the doubtful ones again by medium.en:
   # mean word error 0.4 % (it was 1.6 %), no finding blamed on the voice, nothing to accept.
+  # 2026-10-12: all 205 rendered again in `af_heart`, a paragraph at a time, and heard again:
+  # @@LISTEN_LINE@@
   required: true
   model: small.en
   max_wer: 0.1
@@ -135,6 +192,14 @@ listen:
 # miss." said alone was heard as "It will miss us" by both recognisers.
 join_short:
   asteroids-that-come-close/apophis: 3
+# trip/stop -> [[the card's words, the same words with the voice's punctuation]]. The caption
+# keeps the card's. Each is a pause before the number or the turn the sentence is there for.
+phrasing:
+  moon-landings/chandrayaan-3: [["September 2019 about 110 km", "September 2019, about 110 km"]]
+  moon-landings/lunokhod-1: [["three lunar days and kept going", "three lunar days — and kept going"]]
+  moon-landings/apollo-17: [["on the Moon for 37 years", "on the Moon — for 37 years"]]
+  to-the-edge/andromeda: [["light-years away and coming our way", "light-years away — and coming our way"]]
+  outer-solar-system/voyager-1: [["Earth came out 0.12", "Earth came out — 0.12"]]
 skip_title:
   - strangest-things/golf-balls
 say:

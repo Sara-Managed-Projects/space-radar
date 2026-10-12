@@ -2259,11 +2259,11 @@ the files under `site/audio/narration/` were made offline by `scripts/narrate.py
 own words in `registry/tours.yaml`, and no person recorded them. The app says so on the control
 that turns the voice on and in its Sources panel, which prints this line:
 
-> Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0
+> Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0
 
 | What | Used for | Licence | Source |
 |---|---|---|---|
-| Kokoro-82M, model weights v1.0 and the voice `bf_emma` (British English) | synthesising every clip, at build time; the model itself is not shipped | Apache-2.0 | <https://huggingface.co/hexgrad/Kokoro-82M> (read 2026-10-03); the ONNX export and `voices-v1.0.bin` from <https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0> |
+| Kokoro-82M, model weights v1.0 and the voice `af_heart` (American English; `bf_emma`, British, until 2026-10-12) | synthesising every clip, at build time; the model itself is not shipped | Apache-2.0 | <https://huggingface.co/hexgrad/Kokoro-82M> (read 2026-10-03; the voice's row in `VOICES.md` read 2026-10-12: grade A, the highest of the model's voices, and no separate licence or attribution column for the American English voices, so the model's Apache-2.0 covers it); the ONNX export and `voices-v1.0.bin` from <https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0> |
 
 The model's card reads: "Kokoro is an open-weight TTS model with 82 million parameters … with
 Apache-licensed weights, Kokoro can be deployed anywhere from production environments to personal
@@ -2272,6 +2272,12 @@ tools the render ran with, the pronunciation lexicon, and a hash per clip; `scri
 --check` refuses a stop whose words have changed since its clip was made. Each clip is levelled to
 −16 LUFS and encoded to Opus 32 kbps mono with an AAC twin; the captions beside it (`.vtt`) are the
 card's own sentences. Nothing here is downloaded until a visitor turns sound on.
+
+The voice is American and the cards are spelt the British way ("kilometres", "the centre"): the
+captions show the card, and the voice says the same words with its own accent. Since 2026-10-12 a
+stop is said two or three sentences at a time instead of one, at close to the voice's natural
+speed, with pauses whose length follows what was just said; `registry/narration.yaml` says what
+was measured before and after, and that a machine chose the setting.
 
 Why this model and not another: the spec ordered the choice by licence. XTTS-v2 (Coqui Public Model
 Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice
