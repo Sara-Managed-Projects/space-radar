@@ -785,6 +785,9 @@ jobs:
       # the seam with the static map, the 12-hour rule, and what each storm number means.
       - name: live clouds are GIBS's pictures read back to temperature, seamed onto the static map, live only near the clock
         run: node tests/test_liveclouds.mjs
+      # 2026-10-13: the clouds stand up by parallax inside the surface shader (scene/earth.js CLOUD_PARALLAX).
+      - name: "the Earth's clouds stand up by parallax: zero offset straight down, a lean that grows with the view's angle, the last light's angle, off on tier 0, the latch, saveData and Measured"
+        run: node tests/test_cloud_parallax.mjs
       - name: storms are the ones advised in the last 12 h, drawn only near their advisory, carded with what GDACS's numbers mean
         run: node tests/test_storms.mjs
       # Internal #281: fires, volcanoes and icebergs from NASA's EONET, against nine events of what it
