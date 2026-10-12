@@ -17,6 +17,9 @@
 // THE SHAPE IT REPLACES. When the route has both a build and a file, the same record is photographed
 // again wearing the procedural shape, from the same places.
 //
+// A CANDIDATE. A route that is still procedural, on a tree that has `models/<build>-candidate.glb`, is
+// photographed as it ships and then wearing the candidate.
+//
 // A THIRD VARIANT, WHEN THE SERVED TREE HAS ONE. If `models/<file>-textured.glb` answers, the same
 // record is photographed again wearing it with ITS OWN texture, unlit (the experiment of 2026-10-12:
 // the generator's picture against the app's flat colours). main never ships such a file; a branch
@@ -194,6 +197,30 @@ if (entry.build && entry.file) {
     back();
     await sleep(1500);
   } catch (e) { out.procedural = { error: String((e && e.message) || e) }; }
+}
+
+// A CANDIDATE FOR A SHAPE THAT IS STILL PROCEDURAL. A route with a build and no file, on a served
+// tree that carries `models/<build>-candidate.glb` (a branch kept for looking; main never does): the
+// record is photographed again wearing that file through the app's own toon material. This is how a
+// generated mesh is looked at in the app BEFORE anybody writes it a registry row or a route.
+if (entry.build && !entry.file) {
+  const candidate = entry.build + '-candidate.glb';
+  let served = false;
+  try { served = (await fetch(urlOf('./models/' + candidate), { method: 'HEAD' })).ok; } catch { served = false; }
+  out.candidate = { file: candidate, served };
+  if (served) {
+    try {
+      const loaded = await RM.loadRealModel({ file: candidate, colour: entry.colour || 'station' });
+      const obj = heroOf();
+      if (!loaded || !obj) throw new Error('the candidate did not load, or the hero is gone');
+      const wear = loaded.clone(true);
+      const back = wearInstead(obj, wear);
+      await sleep(2500);
+      out.candidate.model = describe(wear);
+      await walk('candidate', record.name + ' wearing ' + candidate + ', a candidate with no registry row (the app does not draw this)');
+      back();
+    } catch (e) { out.candidate.error = String((e && e.message) || e); }
+  }
 }
 
 // The textured variant, only where the served tree carries one.
