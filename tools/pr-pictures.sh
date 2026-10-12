@@ -7,7 +7,7 @@
 # drags a screenshot into the description on GitHub; a script or an agent cannot. This shrinks each
 # picture to 1400 px (a JPEG of a few hundred kB), keeps it on the branch `screens` of this
 # repository under pr/<number>/, and adds a "## Pictures" section to the description with each one
-# shown and captioned. Run it again to add more: the section is replaced, not doubled.
+# shown and captioned. Run it again with the whole list: the pictures and the section are replaced.
 #
 # The branch `screens` holds pictures and nothing else, is never merged, and has no history worth
 # keeping; raw.githubusercontent.com serves it. Needs: git, gh (signed in, able to push), and
@@ -32,6 +32,7 @@ else
   printf 'Pictures for pull requests (tools/pr-pictures.sh). Never merged.\n' > "$WORK/tree/README.md"
   git -C "$WORK/tree" add README.md
 fi
+rm -rf "$WORK/tree/pr/$PR"   # run again, the pull request's pictures are replaced
 mkdir -p "$WORK/tree/pr/$PR"
 
 shrink() {  # in, out
@@ -46,11 +47,14 @@ shrink() {  # in, out
 
 SECTION="$WORK/section.md"
 printf '## %s\n\n' "$TITLE" > "$SECTION"
+n=0
 for arg in "$@"; do
+  n=$((n + 1))
   file="${arg%%=*}"; caption=""
   [ "$arg" != "$file" ] && caption="${arg#*=}"
   [ -f "$file" ] || { echo "no such picture: $file" >&2; exit 2; }
-  name=$(basename "${file%.*}" | tr -c 'A-Za-z0-9._-' '-' | sed 's/-*$//').jpg
+  # Numbered: a before and an after are usually the same file name from two runs.
+  name=$(printf '%02d' "$n")-$(basename "${file%.*}" | tr -c 'A-Za-z0-9._-' '-' | sed 's/-*$//').jpg
   shrink "$file" "$WORK/tree/pr/$PR/$name"
   url="https://raw.githubusercontent.com/$REPO/screens/pr/$PR/$name"
   [ -n "$caption" ] || caption="${name%.jpg}"
