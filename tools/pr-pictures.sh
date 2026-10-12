@@ -69,7 +69,8 @@ if ! git -C "$WORK/tree" diff --cached --quiet; then
   # Two runs a few seconds apart: the second may have fetched the branch before the first's push
   # was served. Put our commit on top of what is there now and try again.
   for attempt in 1 2 3 4; do
-    if git -C "$WORK/tree" push -q origin HEAD:screens 2>/dev/null; then break; fi
+    # A larger post buffer: a dozen pictures are about 5 MB, and the default answers HTTP 400.
+    if git -C "$WORK/tree" -c http.postBuffer=157286400 push -q origin HEAD:screens 2>/dev/null; then break; fi
     [ "$attempt" = 4 ] && { echo "could not push the pictures to the branch screens" >&2; exit 1; }
     sleep 3
     git -C "$WORK/tree" fetch -q origin screens
