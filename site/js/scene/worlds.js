@@ -1557,6 +1557,7 @@ export function createWorlds(scene, opts = {}) {
   // `fromShare`; both terms come in over RING_NEAR_FADE_S and go out the same way, and the strip
   // is given back when they are out and the disc is under `keptShare`.
   const ringNear = new Map();   // world id -> { tex, asked, fine, grain, wallMs }
+  let lookMeasured = false;     // main.js setLook: Measured or Film
   // Wall time, not the clock's: a held clock still lets the camera come close. `opts.reducedMotion`
   // (a function or a flag): where less motion is asked for the two terms are simply there, no fade.
   const wallNow = typeof opts.now === 'function' ? opts.now : () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -1592,7 +1593,9 @@ export function createWorlds(scene, opts = {}) {
     const stepMax = lessMotion() ? 1 : dt / RING_NEAR_FADE_S;
     const toward = (v, want) => v + Math.max(-stepMax, Math.min(stepMax, want - v));
     st.fine = toward(st.fine, near && st.tex ? 1 : 0);
-    st.grain = toward(st.grain, near ? 1 : 0);
+    // The grains are generated: under the Measured look (spec 0073 req 8) they are not drawn. The
+    // fine structure is Cassini's and stays.
+    st.grain = toward(st.grain, near && !lookMeasured ? 1 : 0);
     const u = ring.material.uniforms;
     u.uFine.value = st.fine;
     u.uGrain.value = st.grain;
@@ -2500,6 +2503,8 @@ export function createWorlds(scene, opts = {}) {
     preload,
     releaseMap,
     setRelief,
+    /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
+    setLook: (mode) => { lookMeasured = mode === 'measured'; },
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     /** For the probes: is this world wearing its relief? */

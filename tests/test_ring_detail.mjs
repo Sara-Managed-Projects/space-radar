@@ -168,6 +168,14 @@ for (const [name, km] of GAPS) {
   check(u.uFine.value === 0 && u.uFineMap.value === null && !worlds.ringDetail('saturn').strip, 'the camera gone, it fades and the strip is given back');
   stand(3); now += 100; worlds.update(t0); now += 3000; worlds.update(t0);
   check(strips() === 2 && u.uFine.value === 1, 'coming back asks again (from the browser\'s cache)');
+  // The Measured look (spec 0073 req 8): the grains are generated and go; Cassini's structure stays.
+  worlds.setLook('measured');
+  now += 3000; worlds.update(t0);
+  check(u.uGrain.value === 0 && u.uFine.value === 1, 'Measured: no grains, and the measured ringlets stay');
+  worlds.setLook('film');
+  now += 3000; worlds.update(t0);
+  check(u.uGrain.value === 1, 'Film: the grains are back');
+  check(/worlds\.setLook\(drawn\.mode\(\)\);/.test(readFileSync(join(JS, 'main.js'), 'utf8')) && /worlds\.setLook\(mode\);/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'main.js tells the worlds which look is on, at the start and at every change');
   worlds.setRelief(false);
   check(u.uFine.value === 0 && u.uGrain.value === 0 && u.uFineMap.value === null, 'the frame latch takes both off at once');
   now += 100; worlds.update(t0);
@@ -221,6 +229,14 @@ for (const [name, km] of GAPS) {
   wx.update(t0 + 3 * 3600 * 1000, 5100);
   const moved = ((v.y - turn0) % 1 + 1) % 1;
   check(near(moved, 3 / (days * 24), 1e-6), `three hours on it has made ${(3 / (days * 24)).toFixed(3)} of a turn, with the planet (${moved.toFixed(3)})`);
+  // The Measured look (spec 0073 req 8): the row is `measured: hidden`, so the drawn spiral goes and its sentence with it.
+  check(row.measured === 'hidden', 'under the Measured look the row says it is hidden');
+  wx.setLook('measured');
+  wx.update(t0 + 3 * 3600 * 1000, 9000);
+  check(v.z === 0 && wx.vortex('saturn') === null, 'Measured: nothing of the vortex is drawn or said');
+  wx.setLook('film');
+  wx.update(t0 + 3 * 3600 * 1000, 12000);
+  check(v.z === 1 && wx.vortex('saturn') === 'moving', 'Film: it is back');
   wx.latch();
   check(sm.fragmentShader === WORLD_FRAG && wx.vortex('saturn') === null, 'the frame latch puts Saturn back in its own shader');
   // Less motion: drawn, and still.
