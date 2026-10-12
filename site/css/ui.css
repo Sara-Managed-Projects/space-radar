@@ -3746,7 +3746,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-status__foot-credit {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--sr-text-dim);
 }
