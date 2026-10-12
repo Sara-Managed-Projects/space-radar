@@ -280,7 +280,7 @@ export async function boot({ setStatus } = {}) {
     selected: () => selected,
     select,
     deselect,
-    flyToRecord: (record, ms) => flyToRecord(record, ms),
+    flyToRecord: (record, ms, flight) => flyToRecord(record, ms, flight),
     get observer() { return observer; },
     // The one door a place comes in by. The browser's own answer is rounded here as well as where it
     // is read (ui/place.js), so no caller can hand the app a precise position (spec 0051 req 3).
@@ -958,6 +958,13 @@ export async function boot({ setStatus } = {}) {
   ctx.wantAutopilot = (keys, from) => (autopilot || (autopilot = import('./ui/autopilot.js').then((m) => (ctx.autopilot = m.createAutopilot(ctx)))))
     .then((a) => { a.start(keys, from); return a; })
     .catch((e) => { autopilot = null; document.documentElement.classList.remove('sr-ambient'); console.warn('the autopilot did not load', e); return null; });
+  // THE DRIFT (ui/drift.js, spec 0071): the camera wanders from one thing to the next with no end
+  // and no route. Fetched when the link says `drift=` or Just watch's row is pressed, never at boot.
+  // `keys` is the link (or `{drift: '0'}` to stop); `from` is 'row' for the button.
+  let drift = null;
+  ctx.wantDrift = (keys, from) => (drift || (drift = import('./ui/drift.js').then((m) => (ctx.drift = m.createDrift(ctx)))))
+    .then((d) => { d.apply(keys, from); return d; })
+    .catch((e) => { drift = null; console.warn('the drift did not load', e); return null; });
   // A DRAWN WORLD ON A PLAIN STAR STAGE (scene/exostage.js, internal #466): `#imagine=N` opens "An
   // imagined world no. N", an invented and labelled planet. Fetched for that link, never at boot;
   // while it is up the map's scene is hidden and the loop below draws the stage's after it.
@@ -1134,9 +1141,15 @@ export async function boot({ setStatus } = {}) {
     applyUrlState(ctx, { ...link, at: undefined, cam: undefined });
     return import('./ui/golink.js').then((m) => m.land(ctx, goId), () => openAt(ctx, goId));
   };
+  // `#drift=…` (ui/drift.js): after the link's own place, so `#at=…&drift=1` starts from there.
+  // Hands back what it was given, the landing, so the caller's line reads as it did.
+  const startDrift = (landed) => {
+    if (!embed && link && link.drift && link.drift !== '0') ctx.wantDrift(link, 'link');
+    return landed;
+  };
   window.addEventListener('sr:layers-ready', () => {
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
-    const apply = () => (ambient ? startReel() : goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning)));
+    const apply = () => (ambient ? startReel() : startDrift(goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning))));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
     // waits only if it does not resolve without them (openAt).
     if (link && link.trip && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit().then(apply, apply);
@@ -1256,7 +1269,9 @@ export async function boot({ setStatus } = {}) {
 
   /**
    * @param {Object} record
-   * @param {{fly?: boolean}} [opts]  `fly: false` keeps everything else -- the card, the glyph
+   * @param {{fly?: boolean, flyMs?: number, flight?: object}} [opts]  `flyMs` and `flight` are the
+   *   drift's (ui/drift.js): a flight of several seconds with the cruise ease, where a tap's is 900 ms.
+   *   `fly: false` keeps everything else -- the card, the glyph
    *   highlight, `follow`, and the real `sr:select` the rest of the page listens for -- and
    *   suppresses only the 900 ms flight. A guided trip is already on its way to
    *   this object with a flight of its own, and two flights fighting over the camera is what
@@ -1320,7 +1335,7 @@ export async function boot({ setStatus } = {}) {
           record.meta.widthFrom = late.how;
           wantStarDisc(record);
           showCard(record, ctx);
-          if (opts.fly !== false) flyToRecord(record);
+          if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
         });
       }
     }
@@ -1333,7 +1348,7 @@ export async function boot({ setStatus } = {}) {
     showCard(record, ctx);
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
     if (ctx.groundTrack) ctx.groundTrack.set(record);
-    if (opts.fly !== false) flyToRecord(record);
+    if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
     else cameraRig.follow(() => positionOfRecord(record));
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
     // A place met on the night side is met from the whole Earth's distance, and the toast says why
@@ -1341,7 +1356,7 @@ export async function boot({ setStatus } = {}) {
     // pointed at the place themselves.
     const night = !!record && nightArrival === record && opts.fly !== false;
     if (offer) offerUndo(opts.undoName || labelName(record) || record.name, night);
-    else if (night && !inTrip()) import('./ui/camundo.js').then((m) => m.sayNight(labelName(record) || record.name)).catch(() => {});
+    else if (night && !inTrip() && opts.from !== 'drift') import('./ui/camundo.js').then((m) => m.sayNight(labelName(record) || record.name)).catch(() => {});
   }
 
   // --- the view before an automatic move, and the way back (internal #274) ------------------------
@@ -1431,8 +1446,15 @@ export async function boot({ setStatus } = {}) {
    * that says "Fly to it" on Mars's own card flew 1.8 au past the disc and stopped there, looking
    * at nothing. positionOfRecord below says why in as many words; the card never asked it.
    */
-  function flyToRecord(record, ms = 900) {
+  function flyToRecord(record, ms = 900, flight = null) {
     if (!record) return false;
+    // `flight`: the rig's own `ease`, `apex` and `targetDelay`, for a caller whose move is a shot
+    // and not a tap (ui/drift.js). Where to stand is still decided here, for every caller.
+    // `apexFor(pos, distance)` is asked once the destination is known, on the stage it is on.
+    const shotTo = (pos, distance) => (flight ? {
+      ease: flight.ease, targetDelay: flight.targetDelay,
+      apex: typeof flight.apexFor === 'function' ? flight.apexFor(pos, distance) || undefined : flight.apex,
+    } : {});
     if (record.klass === 'world') worlds.preload(record.id);
     const on = teachRigWorld(record);
     const pos = positionOfRecord(record);
@@ -1446,7 +1468,8 @@ export async function boot({ setStatus } = {}) {
     if (night) {
       teachRigWorld(record);
       cameraRig.stopFollow();
-      cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect), offset: night.offset, ms });
+      const wide = worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect);
+      cameraRig.flyTo({ ...shotTo({ x: 0, y: 0, z: 0 }, wide), targetScene: { x: 0, y: 0, z: 0 }, distance: wide, offset: night.offset, ms });
       nightArrival = record;
       return true;
     }
@@ -1498,7 +1521,7 @@ export async function boot({ setStatus } = {}) {
       const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined; // polar: overview, unless the stage's own subject names one
       const hostSubject = !limb && record.klass !== 'exoplanet' && ctx.systems && ctx.systems.active && typeof ctx.systems.subjectFor === 'function' ? ctx.systems.subjectFor(record) : null;
       const hostPolar = hostSubject && Number.isFinite(hostSubject.polar) ? hostSubject.polar : overview;
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
+      cameraRig.flyTo({ ...shotTo(pos, limb ? limb.distance : distance), targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
@@ -1969,6 +1992,9 @@ export async function boot({ setStatus } = {}) {
     // `#ambient=…` pasted over a running page starts the reel; taken out of it, stops it.
     const reel = !!(keys.ambient && keys.ambient !== '0');
     if (reel || (ctx.autopilot && ctx.autopilot.engaged)) { ctx.wantAutopilot(keys); if (reel) return; }
+    // `#drift=…` pasted over a running page starts the drift; taken out of it, stops it.
+    const wander = !!(keys.drift && keys.drift !== '0');
+    if (wander || (ctx.drift && ctx.drift.active)) { ctx.wantDrift(keys); if (wander) return; }
     // `#imagine=N` pasted over a running page opens that world; taken out of it, closes it.
     const world = !!(keys.imagine && keys.imagine !== '0');
     if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }

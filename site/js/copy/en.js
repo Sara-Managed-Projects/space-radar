@@ -655,6 +655,10 @@ export const COPY = {
     // The reels the button opens (registry/autopilot.yaml), each with one lap's length.
     justWatch: 'Just watch',
     reelLength: '{m} min a lap',
+    // The first row of Just watch (ui/drift.js, spec 0071): no trips, no words, no end.
+    drift: 'Drift',
+    driftLength: 'no end',
+    driftTitle: 'The camera wanders from one thing to the next',
   },
   // The Planets and Stars tabs' lists.
   explore: {

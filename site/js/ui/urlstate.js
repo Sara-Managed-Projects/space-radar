@@ -41,7 +41,9 @@ export const HASH_KEY = 'm';
 // `at` (a planet's or a star system's id without its `exo-` or `star-` prefix, which main.js
 // resolveAt tries), and write() never produces it, so once the flight has begun the address bar
 // carries the ordinary `at=` and a link copied from there is the ordinary link.
-export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
+// `drift` (spec 0071, ui/drift.js): the camera wanders on its own. `1`, or words with commas:
+// what to travel through, `any`, `notags`, a pace (ui/driftplan.js readOptions).
+export const KEYS = ['m', 'v', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';

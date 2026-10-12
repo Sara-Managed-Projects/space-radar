@@ -434,6 +434,10 @@ jobs:
       # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
       - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
         run: node tests/test_autopilot.mjs
+      # Spec 0071: the camera wanders with no route. The walk never jumps the ladder, a flight that
+      # never lands cannot strand it, and a hand on the map gets everything back as it was.
+      - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
+        run: node tests/test_drift.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"

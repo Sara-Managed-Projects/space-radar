@@ -179,6 +179,31 @@ Object.assign(COPY, {
     takeTitle: 'Stop the trips and move the map yourself',
   },
 
+  // ui/drift.js (spec 0071): the camera wanders from one thing to the next. The bar is the only
+  // chrome, and it goes when the pointer is still.
+  drift: {
+    name: 'Drift',
+    pause: 'Pause (Space)',
+    resume: 'Go on (Space)',
+    next: 'Next place (N)',
+    options: 'Options',
+    optionsTitle: 'What to travel through, names and pace',
+    leave: 'Stop drifting (Escape)',
+    through: 'Travel through',
+    cats: { craft: 'Spacecraft', worlds: 'Worlds', small: 'Small bodies', stars: 'Stars', deep: 'Deep sky' },
+    show: 'Show',
+    real: 'Real models',
+    realTitle: 'Only things with a real model, map or photograph',
+    names: 'Names',
+    namesTitle: 'The name and numbers beside each place',
+    pace: 'Pace',
+    paces: { calm: 'Calm', steady: 'Steady', brisk: 'Brisk' },
+    // Said once, when the row starts it.
+    hint: 'Drifting. Drag the map to take the controls',
+    nothing: 'Nothing to drift through with these choices',
+    notFromGround: 'The drift starts from space, not from the ground',
+  },
+
   // The toast after the app has moved the view for you (ui/camundo.js, internal #274).
   undo: {
     moved: 'Moved to {name}',
