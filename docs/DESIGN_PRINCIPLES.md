@@ -22,7 +22,10 @@ Space Radar is used to learn, so what it shows has to be either true or plainly 
 - **Publishers are treated with respect.** Their rate limits are honoured by a cache (CelesTrak
   allows one download per file per two hours); nothing is hot-linked without CORS and terms that
   allow it.
-- **Nobody is tracked.** No accounts, no analytics cookies, no personal data in any request.
+- **Nobody is tracked.** No accounts, no cookies, no tracking script, no personal data in any
+  request. Visits are counted from the web host's access log, kept 30 days, and a trip that
+  starts asks for one 43-byte file so trips can be counted (`site/js/ui/tripcount.js`): no cookie,
+  no identifier, no third party.
 
 ## 2. The interface, in brief
 

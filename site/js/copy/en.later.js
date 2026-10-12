@@ -384,7 +384,7 @@ Object.assign(COPY, {
       'While a screen plays on its own, a short log of its trips, for this tab only.',
     ],
     place: 'Your place is rounded to a tenth of a degree and held only while this page is open.',
-    none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
+    none: 'No account, no cookies, no tracking script. Our web host keeps an access log of requests (page, time, referring site, browser name, address) for 30 days, and we count visits from it; we do not combine it with anything else. The map also asks for one tiny file when a trip starts, so we can count trips; it sends no cookie and no identifier. Forget me, in the Passport, clears the passport and the sound choice.',
   },
 
   // "Is this what space looks like?" (internal #250, spec 0067 task 4): the honest answer, once, in

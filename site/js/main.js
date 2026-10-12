@@ -35,6 +35,7 @@ import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
 import { createDensity } from './ui/density.js';
 import { createTripGate } from './ui/tripgate.js';
+import { createTripCount } from './ui/tripcount.js';
 import { createVeil } from './ui/veil.js';
 import { createAudio } from './audio/engine.js';
 import { createLoader } from './audio/load.js';
@@ -458,6 +459,12 @@ export async function boot({ setStatus } = {}) {
   });
   // ui/tripgate.js: the trip's own object once a trip is wanted, an idle stand-in until then.
   ctx.trip = createTripGate(ctx);
+  // ui/tripcount.js: one request for a 43-byte file when a PERSON starts a trip, so trips started
+  // can be counted from the host's access log. Not for a reel, not under `present=auto`.
+  const tripCount = createTripCount({
+    automatic: () => !!(ctx.autopilot && ctx.autopilot.active) || readUrlKeys().present === 'auto',
+  });
+  ctx.trip.onChange(() => tripCount.seen(ctx.trip.state));
   // ONE FLIGHT UP THE LADDER (internal #410, public #451; scene/climb.js). Scrolling out from the
   // Earth hands the camera to the Sun's stage, the stellar rung, the galaxy and the Local Group with
   // its place and direction kept, and scrolling back in hands it back. Never at boot: the module is

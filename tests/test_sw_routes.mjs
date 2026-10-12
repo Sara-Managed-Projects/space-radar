@@ -63,6 +63,7 @@ for (const scope of ['https://www.spaceradar.ai/', 'http://school-server:8177/sp
     ['t/moon-landings.html', { mode: 'navigate' }, 'pass', null],
     ['o/europa.html', { mode: 'navigate' }, 'pass', null],
     ['robots.txt', {}, 'pass', null],
+    ['c/t.gif?trip=apollo', {}, 'pass', null], // the trip count (ui/tripcount.js) must reach the host's log
     ['js/main.js', { method: 'POST' }, 'pass', null],
     ['audio/beds/earth.opus', { range: true }, 'pass', null],
     ['?sw=0', { mode: 'navigate' }, 'pass', null],
