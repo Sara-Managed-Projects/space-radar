@@ -71,9 +71,11 @@
 //
 //   CORONAL MASS EJECTIONS -- measured start, direction, width and speed; a modelled flight; an
 //   illustrative look. data/sunactivity.js: NASA DONKI's analyses, read from our saved copy only.
-//   For the hours after its start a CME of 500 km/s or faster is a thin shell, a cap of the reported
-//   half-angle about the reported direction, moving out at the reported speed held constant and
-//   fading by 10 radii. With no saved copy none is drawn.
+//   For the hours after its start a CME of 500 km/s or faster is a thin shell about the Sun, kept to
+//   the cone of the reported half-angle about the reported direction, moving out at the reported
+//   speed held constant and fading by 10 radii; it is drawn in the plane of the sky, as the corona
+//   is, so thrown sideways it is an arc and thrown at the camera a faint round haze. With no saved
+//   copy none is drawn.
 //
 // NO BLOOM, NO PASS (tests/test_contract.mjs): every light here is an additive, soft-edged material
 // of its own. REDUCED MOTION (`still`): the clock's own events (a flare's fading, a CME's flight)
@@ -84,7 +86,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { MAX_SPOTS, spotDirection, spotRadiusRad, splitRegion, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
-import { MAX_FLARES, MAX_CMES, PROM_CAP, FLARE_ERUPTIVE_FLUX, flaresAt, cmesAt, limbOffsetDeg, prominenceFade, prominenceShape } from '../data/sunactivity.js';
+import { MAX_FLARES, MAX_CMES, PROM_CAP, FLARE_ERUPTIVE_FLUX, CME_REACH_RADII, flaresAt, cmesAt, limbOffsetDeg, prominenceFade, prominenceShape } from '../data/sunactivity.js';
 
 /** The IAU's nominal solar effective temperature, kelvin (2015 Resolution B3). */
 export const T_EFF = 5772;
@@ -110,7 +112,7 @@ export const GRAIN_DRIFT = 0.5;
 /** The mean of the shade the grain multiplies by, measured by tests/test_sun.mjs: taken off so the disc's brightness holds. */
 export const GRAIN_MEAN = 0.42;
 /** How much brighter than the photosphere a facula is drawn at its strongest (illustrative). */
-export const FACULA_GAIN = 0.35;
+export const FACULA_GAIN = 0.3;
 /** One sway of a prominence, and one breath of the corona, in app seconds (illustrative). */
 export const PROM_SWAY_S = 24;
 export const CORONA_BREATH_S = 60;
@@ -119,7 +121,7 @@ export const PROM_FROM = 0.1;
 export const PROM_FULL = 0.3;
 /** Peak brightness of a prominence and of a CME's front, against the disc's 1 (illustrative). */
 export const PROM_GAIN = 0.9;
-export const CME_GAIN = 0.5;
+export const CME_GAIN = 0.35;
 /** The phases everything holds under reduced motion: a still picture of the same Sun. */
 export const STILL = { grain: 0.37, sway: 0.2, breath: 0.6 };
 /** The grain fades in between these disc shares: below, a cell is under two pixels. */
@@ -215,7 +217,7 @@ ${cheap ? CELLS_LOOP_NEAR : CELLS_LOOP_FULL}
 
 /** The larger cells' flow at a point of the unit sphere: zero at a cell's middle, outward, zero again on its border. Twin of the GLSL. */
 export function superFlow(p) {
-  const q = [0, 1, 2].map((k) => p[k] * SUPER_CELLS + 0.35 * Math.sin(p[(k + 1) % 3] * SUPER_CELLS * 1.7));
+  const q = [0, 1, 2].map((k) => p[k] * SUPER_CELLS + 0.8 * Math.sin(p[(k + 1) % 3] * SUPER_CELLS * 0.9));
   return { q, flow: q.map((v) => Math.sin(6.2831853 * v)) };
 }
 
@@ -309,13 +311,13 @@ void main() {
   float network = 0.0;
   if ( uGrain > 0.0 ) {
     // The larger cells: q is whole at a cell's middle and midway between two wholes at its border.
-    vec3 q = p * ${SUPER_CELLS.toFixed(1)} + 0.35 * sin( p.yzx * ${(SUPER_CELLS * 1.7).toFixed(1)} );
+    vec3 q = p * ${SUPER_CELLS.toFixed(1)} + 0.8 * sin( p.yzx * ${(SUPER_CELLS * 0.9).toFixed(1)} );   // bent, so the borders are not a grid
     vec2 c = cells( p * ${GRAIN_CELLS.toFixed(1)}, uTime, ${GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q ) );
     lanes = smoothstep( 0.0, 0.35, c.x ) * ( 0.35 + 0.65 * c.y );
     // Foreshortened into the limb the cells run together, as they do in a photograph.
     colour *= 1.0 + ${GRAIN_CONTRAST.toFixed(2)} * uGrain * ( lanes - ${GRAIN_MEAN.toFixed(2)} ) * smoothstep( 0.05, 0.45, mu );
     vec3 k = -cos( 6.2831853 * q );
-    network = smoothstep( 0.55, 0.95, max( k.x, max( k.y, k.z ) ) );
+    network = smoothstep( 0.9, 0.99, max( k.x, max( k.y, k.z ) ) ) * smoothstep( 0.35, 0.75, c.y );   // a thin border, in patches
   }
 
   float plage = 0.0;
@@ -331,7 +333,7 @@ void main() {
 
   // Faculae: toward the limb the lanes of the network, and round a group, are bright, not dark.
   float towardLimb = ( 1.0 - smoothstep( 0.4, 0.72, mu ) ) * smoothstep( 0.03, 0.15, mu );
-  colour *= 1.0 + ${FACULA_GAIN.toFixed(2)} * uGrain * towardLimb * min( 1.0, network + plage ) * ( 1.0 - lanes );
+  colour *= 1.0 + ${FACULA_GAIN.toFixed(2)} * uGrain * towardLimb * min( 1.0, network + plage ) * ( 1.0 - lanes ) * ( 1.0 - lanes );
 
   // Flares: a white kernel and a wider glow at the region, as bright as the clock's time makes it.
   for ( int i = 0; i < ${MAX_FLARES}; i++ ) {
@@ -355,7 +357,7 @@ export const SUN_FRAG = sunFragment( false );
 export const SUN_FRAG_CHEAP = sunFragment( true );
 
 
-const CORONA_VERT = /* glsl */`
+export const CORONA_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
 varying vec2 vP;
@@ -412,7 +414,7 @@ void main() {
 }
 `;
 
-const PROM_VERT = /* glsl */`
+export const PROM_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
 varying vec2 vQ;
@@ -455,10 +457,12 @@ void main() {
   if ( uKind < 0.5 ) {
     q.x += ( 0.05 * sway + 0.2 * ( uSeed - 0.5 ) ) * q.y;             // it leans, and sways about the lean
     float along = atan( q.y, q.x );                                    // 0 at one foot, pi at the other
-    light  = arch( q, 0.80, 0.90, 0.050 ) * ( 0.65 + 0.35 * sin( 7.0 * along - 6.2831853 * 2.0 * uTime + 20.0 * uSeed ) );
-    light += 0.7 * arch( q, 0.58, 0.66, 0.042 ) * ( 0.65 + 0.35 * sin( 5.0 * along + 6.2831853 * 3.0 * uTime ) );
-    light += 0.5 * arch( q, 0.36, 0.42, 0.036 );
-    light += 0.3 * exp( - 9.0 * q.y ) * ( 1.0 - smoothstep( 0.45, 0.95, abs( q.x ) ) );   // the glow at its feet
+    // Three strands that do not share a centre, knots of light sliding along two of them, and a haze between.
+    light  = arch( q, 0.72, 0.90, 0.028 ) * ( 0.6 + 0.4 * sin( 7.0 * along - 6.2831853 * 2.0 * uTime + 20.0 * uSeed ) );
+    light += 0.75 * arch( q - vec2( 0.10, 0.0 ), 0.50, 0.62, 0.024 ) * ( 0.6 + 0.4 * sin( 5.0 * along + 6.2831853 * 3.0 * uTime ) );
+    light += 0.55 * arch( q + vec2( 0.16, 0.0 ), 0.30, 0.36, 0.020 );
+    light += 0.2 * arch( q, 0.66, 0.80, 0.11 );
+    light += 0.3 * exp( - 9.0 * q.y ) * ( 1.0 - smoothstep( 0.45, 0.9, abs( q.x ) ) );   // the glow at its feet
   } else {
     float top = ( 0.45 + 0.5 * wobble1( 3.0 * q.x + 10.0 ) ) * ( 1.0 - 0.6 * q.x * q.x );   // a ragged top, lower at the ends
     float body = 1.0 - smoothstep( 0.5 * top, top, q.y );
@@ -466,49 +470,42 @@ void main() {
     float knots = 0.72 + 0.28 * sin( 11.0 * q.y + 6.2831853 * ( wobble1( 5.0 * q.x ) + uTime ) );   // knots sinking, as the gas rains back
     light = 0.9 * body * threads * knots * ( 1.0 - smoothstep( 0.55, 0.97, abs( q.x ) ) );
   }
-  light *= uOpacity * ( 1.0 + 1.5 * uHot ) * ( 1.0 - smoothstep( 0.9, 1.0, q.y ) );
+  light *= uOpacity * ( 1.0 + 0.8 * uHot ) * ( 1.0 - smoothstep( 0.9, 1.0, vQ.y ) ) * ( 1.0 - smoothstep( 0.85, 1.0, abs( vQ.x ) ) );
   // Hydrogen-alpha red where it is thin, white where it is densest.
-  vec3 colour = mix( vec3( 1.0, 0.22, 0.16 ), vec3( 1.0, 0.92, 0.85 ), smoothstep( 0.55, 1.5, light ) );
+  vec3 colour = mix( vec3( 1.0, 0.22, 0.16 ), vec3( 1.0, 0.92, 0.85 ), smoothstep( 0.9, 2.4, light ) );
   gl_FragColor = vec4( colour * light * ${PROM_GAIN.toFixed(2)}, 1.0 );
   #include <colorspace_fragment>
 }
 `;
 
-/** A CME's front: a cap of a sphere about its direction. The geometry spans one radian from its pole; uHalf stretches that to the reported half-angle. */
-export const CME_VERT = /* glsl */`
-#include <common>
-#include <logdepthbuf_pars_vertex>
-uniform float uHalf;
-varying float vEdge;
-varying vec3 vNormalW;
-varying vec3 vPosW;
-void main() {
-  float across = acos( clamp( position.y, -1.0, 1.0 ) );   // 0 at the cap's pole, 1 at its rim
-  vEdge = across;
-  float lat = across * uHalf;
-  float flatLen = length( position.xz );
-  vec2 azim = flatLen > 1e-5 ? position.xz / flatLen : vec2( 1.0, 0.0 );
-  vec3 pos = vec3( azim.x * sin( lat ), cos( lat ), azim.y * sin( lat ) );
-  vec4 worldPos = modelMatrix * vec4( pos, 1.0 );
-  vPosW = worldPos.xyz;
-  vNormalW = normalize( mat3( modelMatrix ) * pos );
-  gl_Position = projectionMatrix * viewMatrix * worldPos;
-  #include <logdepthbuf_vertex>
-}
-`;
-
-/** Brightest where the line of sight runs along the shell, as a thin shell of gas is; soft at the rim of the cone. */
+/**
+ * A CME's front, drawn in the plane of the sky through the Sun's centre (the corona's own plane and
+ * vertex shader): a thin shell of radius uR about the Sun, kept to the cone of the reported
+ * half-angle about uDir. Along each line of sight the shell is met at two points, toward the camera
+ * and away; where they lie inside the cone the shell shows, and it is brightest where the line
+ * grazes it, so a CME thrown sideways is an arc and one thrown at the camera is a faint round haze.
+ */
 export const CME_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
 uniform float uOpacity;
-varying float vEdge;
-varying vec3 vNormalW;
-varying vec3 vPosW;
+uniform float uR;         // the front's distance from the Sun's centre, radii
+uniform float uCosHalf;   // the cosine of the cone's reported half-angle
+uniform vec3 uDir;        // the reported direction in the plane's own axes: x right, y up, z toward the camera
+varying vec2 vP;
 void main() {
   #include <logdepthbuf_fragment>
-  float grazing = 1.0 - abs( dot( normalize( vNormalW ), normalize( cameraPosition - vPosW ) ) );
-  float light = ( 0.1 + 0.9 * pow( grazing, 2.5 ) ) * ( 1.0 - smoothstep( 0.8, 1.0, vEdge ) ) * uOpacity;
+  float b = length( vP );
+  float depth = sqrt( max( uR * uR - b * b, 0.0 ) );
+  float toward = dot( normalize( vec3( vP, depth ) ), uDir );
+  float away = dot( normalize( vec3( vP, - depth ) ), uDir );
+  float cone = max( smoothstep( uCosHalf - 0.1, uCosHalf + 0.06, toward ), smoothstep( uCosHalf - 0.1, uCosHalf + 0.06, away ) );
+  float width = 0.07 * uR;
+  float edge = ( b - 0.96 * uR ) / width;
+  float front = exp( - edge * edge );                                  // the thin bright front, soft on both sides
+  float haze = 0.08 * ( 1.0 - smoothstep( 0.55 * uR, 0.98 * uR, b ) ) + 0.06 * smoothstep( 0.5 * uR, 0.96 * uR, b ) * step( b, 0.96 * uR );
+  float light = ( front + haze ) * cone * uOpacity * smoothstep( 0.98, 1.02, b );
+  if ( light < 0.002 ) discard;
   gl_FragColor = vec4( vec3( 0.92, 0.94, 1.0 ) * light * ${CME_GAIN.toFixed(2)}, 1.0 );
   #include <colorspace_fragment>
 }
@@ -595,26 +592,24 @@ export function createSunDetail(opts = {}) {
     mesh.add(sheet);
     proms.push(sheet);
   }
-  // CME fronts: caps of a unit sphere, turned to the reported direction and scaled to where the front is.
+  // CME fronts: sheets in the corona's plane, facing the camera, each told where its front is.
   const cmeCap = tier >= 1 ? MAX_CMES : 1;
-  const cmeGeometry = new THREE.SphereGeometry(1, 48, 12, 0, Math.PI * 2, 0, 1);
+  const cmeGeometry = new THREE.PlaneGeometry(CME_REACH_RADII * 2.2, CME_REACH_RADII * 2.2);
   const fronts = [];
   for (let i = 0; i < cmeCap; i++) {
     const front = new THREE.Mesh(cmeGeometry, new THREE.ShaderMaterial({
       name: 'sun-cme',
-      vertexShader: CME_VERT,
+      vertexShader: CORONA_VERT,
       fragmentShader: CME_FRAG,
-      uniforms: { uOpacity: { value: 0 }, uHalf: { value: 0.5 } },
+      uniforms: { uOpacity: { value: 0 }, uR: { value: 1 }, uCosHalf: { value: 0.87 }, uDir: { value: new THREE.Vector3(1, 0, 0) } },
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      side: THREE.DoubleSide,
       toneMapped: false,
     }));
     front.name = 'sun-cme-front';
     front.userData.kind = 'cme';
     front.renderOrder = 2;
-    front.frustumCulled = false;   // the vertex shader reshapes the cap; the geometry's own bounds are not its bounds
     front.visible = false;
     mesh.add(front);
     fronts.push(front);
@@ -632,7 +627,6 @@ export function createSunDetail(opts = {}) {
   const _z = new THREE.Vector3();
   const _cam = [0, 0, 1];
   const _d = [0, 0, 0];
-  const _yAxis = new THREE.Vector3(0, 1, 0);
   const _place = { observedMs: 0, latDeg: 0, eastDeg: 0 };
 
   let latched = false;
@@ -789,10 +783,12 @@ export function createSunDetail(opts = {}) {
         _place.observedMs = tMs; _place.latDeg = now.cme.latDeg; _place.eastDeg = now.cme.eastDeg;
         if (!spotDirection(_place, _e, tMs, _d)) continue;
         const front = fronts[flying];
-        front.quaternion.setFromUnitVectors(_yAxis, _n.set(_d[0], _d[1], _d[2]));
-        front.scale.setScalar(now.radii);
-        front.material.uniforms.uHalf.value = now.cme.halfAngleDeg * Math.PI / 180;
-        front.material.uniforms.uOpacity.value = now.opacity * c.uOpacity.value;
+        const fu = front.material.uniforms;
+        front.quaternion.copy(corona.quaternion);
+        fu.uDir.value.set(_d[0], _d[1], _d[2]).applyQuaternion(_q.copy(corona.quaternion).invert());
+        fu.uR.value = now.radii;
+        fu.uCosHalf.value = Math.cos(now.cme.halfAngleDeg * Math.PI / 180);
+        fu.uOpacity.value = now.opacity * c.uOpacity.value;
         front.visible = true;
         flying += 1;
       }
