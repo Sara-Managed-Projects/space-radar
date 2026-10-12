@@ -4,8 +4,8 @@
 // which is main's flat layer exactly. The whole Earth and straight down (both must be the same
 // picture twice); 420 km up with the day's tallest storm on the horizon and 1 000 km to its side;
 // the tallest cloud in the last light, on the horizon and along the terminator; the same as tier 2
-// steps it; the Measured look (true thickness: the flat layer); following the station itself; the
-// night side. Each picture's note says which it is, the steps, the camera's height and which
+// steps it; the Measured look (true thickness: the flat layer); following the station itself as it
+// crosses the terminator; the night side. Each picture's note says which it is, the steps, the camera's height and which
 // clouds (today's composite or the static map).
 look.probe = 'clouds';
 const out = { views: [] };
@@ -215,7 +215,21 @@ await frames(3);
   if (iss) {
     sr.select(iss, { fly: true, undo: false });
     await sleep(8000);
-    await pair('9-following-the-station', 'following the International Space Station, as a click on it does, where it is now', 6000);
+    // The station crosses the terminator twice a lap: step the clock on, two minutes at a time, to the
+    // first moment the Sun is within a few degrees of its horizon (the camera follows it, so the
+    // camera's own place over the Earth is the station's to within a degree).
+    const t0 = Date.now();
+    const sunHere = () => { const c = centre(); const p = sr.camera.position; return dot(unit({ x: p.x - c.x, y: p.y - c.y, z: p.z - c.z }), sunward(E)); };
+    let crossing = null;
+    for (let m = 0; m <= 96 && crossing === null; m += 2) {
+      sr.clock.goTo(t0 + m * 60000);
+      await frames(2);
+      const mu = sunHere();
+      if (mu > -0.02 && mu < 0.12) crossing = { minutesOn: m, mu: Math.round(mu * 100) / 100 };
+    }
+    out.stationCrossing = crossing;
+    if (!crossing) look.warns.push('probe: the station did not come to the terminator in a lap: the picture is where it is now');
+    await pair('9-following-the-station', `following the International Space Station, as a click on it does, ${crossing ? 'as it crosses the terminator ' + crossing.minutesOn + ' minutes from now (Sun\'s zenith cosine ' + crossing.mu + ')' : 'where it is now'}`, 7000);
     try { sr.deselect(); rig.stopFollow(); } catch { /* the next view sets its own target */ }
   } else look.missing.push('the International Space Station\'s record (the satellite catalogue is not among the saved files this tool serves)');
 }
