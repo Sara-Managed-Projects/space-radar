@@ -64,7 +64,7 @@ import { createFrameLatch, createScaleGovernor, shouldSaveData, chooseTier, crea
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
 import { TEXTURES } from './data/textures.js';
-import { setEarthMap, earthMapsSettled, setEarthAirQuality } from './scene/earth.js';
+import { setEarthMap, earthMapsSettled, setEarthAirQuality, setEarthCloudHeight } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -2227,7 +2227,9 @@ function createQuality(ctx, renderer, starfield, worlds) {
   // The Earth's shell is marched in more steps on a higher tier, and in its fewest for good under the latch.
   // `plan.stripped` is the latch's removals: the latch itself, or Low chosen (which can be left again:
   // `release`). `top`: Ultra marches the shell in the most steps its shader takes.
-  const reliefFor = (tier) => { worlds.setReliefTier(tier); worlds.setRelief(tier >= 1 && !plan.stripped); setEarthAirQuality(earthMesh(), tier, plan.stripped, { top: plan.steps === 'top', release: !tiers.latched }); };
+  // The Earth's clouds stand up (scene/earth.js CLOUD_PARALLAX) on the same permission, and not on a connection that saves data.
+  const cloudsSaveData = shouldSaveData(nav.connection);
+  const reliefFor = (tier) => { worlds.setReliefTier(tier); worlds.setRelief(tier >= 1 && !plan.stripped); setEarthAirQuality(earthMesh(), tier, plan.stripped, { top: plan.steps === 'top', release: !tiers.latched }); setEarthCloudHeight(earthMesh(), { tier, off: plan.stripped || cloudsSaveData }); };
   holdFor(plan.tier);
   reliefFor(plan.tier);
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
@@ -2392,7 +2394,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
       const after = qualityAfterLatch(plan.choice);
       if (after.choice !== plan.choice) writeQualityChoice(undefined, after.choice);
       plan = qualityPlan(after.choice, { tier: autoTier, ceiling: pick.ceiling }, true);
-      worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say();
+      worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); setEarthCloudHeight(earthMesh(), { off: true }); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say();
       return after.told;
     },
     /**
