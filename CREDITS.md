@@ -198,6 +198,7 @@ satisfies that with:
 | `2k_earth_clouds.webp` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
 | `2k_moon.webp` | the Moon | CC BY 4.0 | Solar System Scope |
 | `2k_mars.webp` | Mars | CC BY 4.0 | Solar System Scope |
+| `2k_mars_relief.webp`, `1k_mars_height.webp` | Mars (relief, and the heights its shadows are cast from) | Public domain | [Mars Orbiter Laser Altimeter gridded topography, MGS MOLA MEGDR at 16 pixels per degree (D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node](https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.lbl), adapted: resampled to 1536 x 768 as local relief and to 1024 x 512 as heights from -8200 to 21300 m, one grey channel each |
 | `2k_jupiter.webp` | Jupiter | CC BY 4.0 | Solar System Scope |
 | `2k_jupiter_opal_2025.webp` | Jupiter, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 11 December 2025](https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32), adapted: calibrated, gap-filled at the poles, resampled; 63 500 B |
 | `2k_saturn.webp` | Saturn | CC BY 4.0 | Solar System Scope |
@@ -332,6 +333,7 @@ checked against this list by `scripts/check_registry.py`):
 - Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
 - Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
 - Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
+- Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
 - Earth at night (4k): Black Marble 2016, NASA Earth Observatory
 - Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0

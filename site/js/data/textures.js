@@ -320,6 +320,44 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "mars-relief",
+    "world": "mars",
+    "slot": "relief",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_mars_relief.webp",
+        "px": [
+          1536,
+          768
+        ],
+        "bytes": 76364,
+        "format": "mono",
+        "credit": "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+      }
+    ]
+  },
+  {
+    "id": "mars-height",
+    "world": "mars",
+    "slot": "relief",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_mars_height.webp",
+        "px": [
+          1024,
+          512
+        ],
+        "bytes": 58264,
+        "format": "mono",
+        "credit": "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+      }
+    ]
+  },
+  {
     "id": "jupiter",
     "world": "jupiter",
     "slot": "map",

@@ -110,7 +110,8 @@ const recs = new Map(worldRecords().map((r) => [r.id, r]));
 check(/steeper than measured/.test(recs.get('mercury').meta.departure || '') && recs.get('mercury').meta.departure.includes(`${RELIEF_STEEP} times`), 'Mercury\'s card says its relief is steepened, and by how much');
 check(/adjustment of ours/.test(recs.get('saturn').meta.departure || '') && recs.get('saturn').meta.departure.includes(`${SATURN_CONTRAST} times`), 'Saturn\'s card says its bands are adjusted, and by how much');
 check(/illustrative/.test(recs.get('venus').meta.departure || ''), 'Venus\'s card says its glow is illustrative');
-check(!recs.get('mars').meta.departure && !recs.get('jupiter').meta.departure, 'no other world gains a sentence');
+// Mars has one since 2026-10-12 (its relief from MOLA's heights; tests/test_mars_relief.mjs holds it).
+check(/laser altimeter measured/.test(recs.get('mars').meta.departure || '') && !recs.get('jupiter').meta.departure && !recs.get('moon').meta.departure, 'Mars says its relief is exaggerated, and no other world gains a sentence');
 
 // The two worlds with ground sites are cut finely: a lander on the true radius must not float over the drawn ground
 // (internal #565, public #406: "stars visible below the horizon", the shell under the surface).

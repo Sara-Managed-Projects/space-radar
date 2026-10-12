@@ -252,7 +252,7 @@ export function worldRecords() {
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
-      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain) }) } : {}),
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain) }) } : {}),
     },
   }));
 }
@@ -342,6 +342,63 @@ export function ringBandsStrip(ring, px = RING_BANDS_PX) {
 export const RELIEF_STEEP = 4;
 export const SATURN_CONTRAST = 1.5;
 
+/**
+ * MARS'S RELIEF (2026-10-12, spec 0073 requirement 5): two maps made from the Mars Orbiter Laser
+ * Altimeter's gridded heights (registry/textures.yaml `mars-relief` and `mars-height`;
+ * scripts/build-mars-relief.py). The SLOPE comes from the local-relief map exactly as Mercury's
+ * does; the CAST SHADOW is new: from each sunlit point a short march toward the Sun in the height
+ * map finds the tallest thing standing in the light's way, so Olympus Mons and the walls of Valles
+ * Marineris throw shadows near the terminator.
+ *   exaggeration  slopes and heights alike are drawn this many times what was measured, and the
+ *                 card says so: at true scale Olympus Mons, 21 km high and 600 km wide, shades
+ *                 nothing a 10 km texel can show until the Sun is on the horizon.
+ *   steps         samples of the march by device tier (none on tier 0, which has no relief at all).
+ *   firstRad, reachRad   the first sample is this far toward the Sun (0.007 rad, 23.7 km: just over
+ *                 a texel of the height map) and the last this far (0.15 rad, 510 km); between them the steps grow by
+ *                 a constant ratio, and each is read from a mip as coarse as its own spacing, so a
+ *                 peak between two samples is not missed and nothing sparkles.
+ *   soft, bias    the shadow's edge, and what the horizon must clear, as tangents: the height
+ *                 map's own noise (some 80 m rms after WebP, times the exaggeration, over the
+ *                 first step) is 0.02, and under that a plain must not shade itself.
+ *   depth         how much of the direct light a shadow takes. Not all: Mars's sky is bright.
+ *   maxSun        the cosine of the Sun's zenith angle past which nothing is marched: with the Sun
+ *                 that high nothing on Mars, even exaggerated, reaches it.
+ */
+export const MARS_RELIEF = { exaggeration: 5, steps: [0, 8, 16], firstRad: 0.007, reachRad: 0.15, soft: 0.04, bias: 0.03, depth: 0.88, maxSun: 0.77 };
+/** The ratio between one step of the march and the next, for `steps` of them from firstRad to reachRad. Pure. */
+export function marchGrowth(steps) {
+  return steps > 1 ? Math.pow(MARS_RELIEF.reachRad / MARS_RELIEF.firstRad, 1 / (steps - 1)) : 1;
+}
+/**
+ * The cast-shadow uniforms for a height map whose byte spans `minM` to `maxM` on a world of
+ * `radiusKm`: [the height of a full byte in radii, exaggerated; the steps; the first step in
+ * radians; the growth], and [the map's width in texels; the edge's softness; the bias; the depth].
+ */
+export function terrainUniforms(h, radiusKm, steps, exaggeration = MARS_RELIEF.exaggeration) {
+  return {
+    terrain: [(exaggeration * (h.maxM - h.minM)) / (radiusKm * 1000), steps, MARS_RELIEF.firstRad, marchGrowth(steps)],
+    march: [h.px, MARS_RELIEF.soft, MARS_RELIEF.bias, MARS_RELIEF.depth],
+  };
+}
+/**
+ * How much of the direct light is left at a point: JS twin of WORLD_FRAG's march. `heightAt(rad)`
+ * is the ground's height in radii (already exaggerated) at an arc `rad` toward the Sun, 0 being
+ * the point itself; `tanSun` the tangent of the Sun's elevation. On a ball of radius 1 a ray at
+ * elevation e is s tan(e) + s^2 / 2 above the ground after an arc s. Pure.
+ */
+export function castShadow(heightAt, tanSun, steps) {
+  const g = marchGrowth(steps);
+  const h0 = heightAt(0);
+  let s = MARS_RELIEF.firstRad;
+  let horizon = -1;
+  for (let j = 0; j < steps; j++) {
+    horizon = Math.max(horizon, (heightAt(s) - h0) / s - 0.5 * s);
+    s *= g;
+  }
+  const x = Math.min(1, Math.max(0, (horizon - MARS_RELIEF.bias - (tanSun - MARS_RELIEF.soft)) / (2 * MARS_RELIEF.soft)));
+  return 1 - MARS_RELIEF.depth * x * x * (3 - 2 * x);
+}
+
 export const WORLDS = [
   {
     id: 'sun', display: 'The Sun', parent: '', radiusKm: 696340.0,
@@ -400,7 +457,9 @@ export const WORLDS = [
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.webp', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
+    // `relief` (2026-10-12): MOLA's heights as local relief for the slopes and, under `height`, as
+    // the heights themselves for the cast shadow (MARS_RELIEF). Tier 1 and up, with the map.
+    look: { map: '2k_mars.webp', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 }, relief: { map: '2k_mars_relief.webp', px: 1536, rangeM: 4000, steep: MARS_RELIEF.exaggeration, mono: true, height: { map: '1k_mars_height.webp', px: 1024, minM: -8200, maxM: 21300 } } },
   },
   // `oblate` (2026-10-06) is the giant's flattening, (equatorial - polar) / equatorial, from NASA's
   // planetary fact sheets (nssdc.gsfc.nasa.gov/planetary/factsheet/, "Ellipticity (Flattening)",
@@ -920,6 +979,10 @@ uniform vec3  uMapMean;     // that mean, in linear light
 // 2026-10-10 no close-up tile of the Moon or Mars was drawn because of it.
 uniform sampler2D uGlobeRelief;  // Mercury: local relief, 0.5 = level ground (registry/textures.yaml mercury-relief)
 uniform vec3  uReliefK;     // slope per unit of difference between two texels either side; the texel's u; its v
+// Mars: the heights themselves, for the cast shadow (MARS_RELIEF). uTerrain.x = 0 is none.
+uniform sampler2D uHeightMap;
+uniform vec4  uTerrain;       // a full byte's height in radii (exaggerated); the march's steps; its first step, radians; its growth
+uniform vec4  uTerrainMarch;  // the map's width in texels; the shadow edge's softness and the bias, as tangents; the shadow's depth
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -964,14 +1027,17 @@ void main() {
   // Mercury's relief (look.relief): the ground's slope east and north from the height map, by two
   // differences, tips the normal the light is worked out with. The silhouette is still the ball's.
   float dGeo = dot( n, uSunDir );
+  // Where this fragment is on the world's own map, and how much of the map's slope it takes: a
+  // close-up tile (scene/tiles.js) rewrites this line, its own uv being the tile's.
+  vec2 reliefUv = vUv; float slopeShare = 1.0;
+  vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
+  vec3 north = cross( n, east );
+  // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
+  float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
   if ( uReliefK.x > 0.0 ) {
-    float hE = texture2D( uGlobeRelief, vUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uGlobeRelief, vUv - vec2( uReliefK.y, 0.0 ) ).r;
-    float hN = texture2D( uGlobeRelief, vUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, vUv - vec2( 0.0, uReliefK.z ) ).r;
-    vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
-    vec3 north = cross( n, east );
-    // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
-    float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
-    n = normalize( n - uReliefK.x * ( hE / cosLat * east + hN * north ) );
+    float hE = texture2D( uGlobeRelief, reliefUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( uReliefK.y, 0.0 ) ).r;
+    float hN = texture2D( uGlobeRelief, reliefUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( 0.0, uReliefK.z ) ).r;
+    n = normalize( n - uReliefK.x * slopeShare * ( hE / cosLat * east + hN * north ) );
   }
 
   float d = dot( n, uSunDir );
@@ -982,6 +1048,30 @@ void main() {
     : orenNayar( n, uSunDir, viewDir, uRoughness );
   // A slope facing the Sun just past the ball's own terminator is in the ball's shadow all the same.
   if ( uReliefK.x > 0.0 ) direct *= smoothstep( -0.03, 0.05, dGeo );
+  // Mars's cast shadows (MARS_RELIEF): from here toward the Sun along the ground, the tallest
+  // thing in the height map, as the tangent of its angle above this point's horizon on a ball
+  // (the ground falls away by half the arc squared). One read here and one a step, each step from
+  // a mip as coarse as its spacing. Only where the Sun is up and low enough for anything to reach it.
+  if ( uTerrain.x > 0.0 && dGeo > 0.0 && dGeo < ${MARS_RELIEF.maxSun.toFixed(2)} ) {
+    vec2 sunH = vec2( dot( uSunDir, east ), dot( uSunDir, north ) );
+    float flatLen = length( sunH );
+    if ( flatLen > 1e-4 ) {
+      sunH /= flatLen;
+      float tanSun = dGeo / flatLen;
+      vec2 perRad = vec2( sunH.x / ( 6.2831853 * cosLat ), sunH.y / 3.14159265 );
+      float h0 = textureLod( uHeightMap, reliefUv, 0.0 ).r * uTerrain.x;
+      float s = uTerrain.z;
+      float horizon = -1.0;
+      for ( int j = 0; j < ${MARS_RELIEF.steps[2]}; j++ ) {
+        if ( float( j ) >= uTerrain.y ) break;
+        float lod = max( log2( s * ( uTerrain.w - 1.0 ) * uTerrainMarch.x / 6.2831853 ), 0.0 );
+        float h = textureLod( uHeightMap, reliefUv + perRad * s, lod ).r * uTerrain.x;
+        horizon = max( horizon, ( h - h0 ) / s - 0.5 * s );
+        s *= uTerrain.w;
+      }
+      direct *= 1.0 - uTerrainMarch.w * smoothstep( tanSun - uTerrainMarch.y, tanSun + uTerrainMarch.y, horizon - uTerrainMarch.z );
+    }
+  }
 
   // The ring between this point and the Sun: one ray-plane test, then the ring's own opacity there.
   float ringShade = 1.0;
@@ -1067,6 +1157,9 @@ export function worldMaterial(map, tint) {
       uMapMean: { value: new THREE.Vector3(0.5, 0.5, 0.5) },
       uGlobeRelief: { value: null },
       uReliefK: { value: new THREE.Vector3(0, 0, 0) },
+      uHeightMap: { value: null },
+      uTerrain: { value: new THREE.Vector4(0, 0, 0, 1) },
+      uTerrainMarch: { value: new THREE.Vector4(1, 1, 0, 0) },
     },
   });
 }
@@ -1435,6 +1528,9 @@ export function createWorlds(scene, opts = {}) {
   // frame latch (main.js setRelief): it is three more texture reads a fragment. It is kept with the
   // world's faces, so the map-release rule (MAPS_HELD) gives it back with the map.
   let reliefAllowed = false;
+  // The device's tier, for the steps of Mars's shadow march (setRelief's second word).
+  let reliefTier = 1;
+  const marchSteps = () => MARS_RELIEF.steps[Math.min(Math.max(0, reliefTier), MARS_RELIEF.steps.length - 1)];
   function fetchRelief(id) {
     const w = BY_ID.get(id);
     const r = w && w.look.relief;
@@ -1446,6 +1542,7 @@ export function createWorlds(scene, opts = {}) {
       if (!tex) return;
       if (!faceTex.has(key) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; } // released, or latched, meanwhile
       tex.colorSpace = THREE.NoColorSpace; // heights, not colours
+      if (r.mono) tex.format = THREE.RedFormat; // one channel on the GPU, where the row says so
       tex.wrapS = THREE.RepeatWrapping;
       tex.needsUpdate = true;
       faceTex.set(key, tex);
@@ -1453,7 +1550,43 @@ export function createWorlds(scene, opts = {}) {
       u.uGlobeRelief.value = tex;
       u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
     });
+    // The heights themselves, where the row has them (Mars): the cast shadow's map. Kept and
+    // given back exactly as the relief is.
+    if (r.height && marchSteps() > 0) {
+      const hKey = `${id}/height`;
+      faceTex.set(hKey, null);
+      load(base + r.height.map, (tex) => {
+        if (!tex) return;
+        if (!faceTex.has(hKey) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; }
+        tex.colorSpace = THREE.NoColorSpace;
+        tex.format = THREE.RedFormat;   // one channel on the GPU, which is what the budget counts
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.needsUpdate = true;
+        faceTex.set(hKey, tex);
+        const u = mesh.material.uniforms;
+        const t = terrainUniforms(r.height, w.radiusKm, marchSteps(), r.steep);
+        u.uHeightMap.value = tex;
+        u.uTerrain.value.set(...t.terrain);
+        u.uTerrainMarch.value.set(...t.march);
+      });
+    }
     return true;
+  }
+  function dropTerrain(mesh) {
+    const u = mesh && mesh.material && mesh.material.uniforms;
+    if (u && u.uTerrain) { u.uTerrain.value.set(0, 0, 0, 1); u.uHeightMap.value = null; }
+  }
+  /** main.js, beside setRelief: the device's tier, which sets how many steps Mars's shadow is marched in. */
+  function setReliefTier(tier) {
+    if (!Number.isFinite(tier)) return;
+    reliefTier = tier;
+    for (const w of WORLDS) {
+      const h = w.look.relief && w.look.relief.height;
+      const mesh = meshes.get(w.id);
+      const u = mesh && mesh.material && mesh.material.uniforms;
+      // Worn already: the march's steps follow the tier.
+      if (h && u && u.uTerrain && u.uTerrain.value.x > 0) u.uTerrain.value.set(...terrainUniforms(h, w.radiusKm, marchSteps(), w.look.relief.steep).terrain);
+    }
   }
   /** main.js, when the device's tier is known and when the frame latch trips: may the reliefs be worn? */
   function setRelief(on) {
@@ -1462,11 +1595,13 @@ export function createWorlds(scene, opts = {}) {
       if (!w.look.relief) continue;
       if (reliefAllowed) { fetchRelief(w.id); continue; }
       const mesh = meshes.get(w.id);
-      const key = `${w.id}/relief`;
-      const tex = faceTex.get(key);
       if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uGlobeRelief.value = null; }
-      if (tex && tex.dispose) tex.dispose();
-      faceTex.delete(key);
+      dropTerrain(mesh);
+      for (const key of [`${w.id}/relief`, `${w.id}/height`]) {
+        const tex = faceTex.get(key);
+        if (tex && tex.dispose) tex.dispose();
+        faceTex.delete(key);
+      }
     }
   }
 
@@ -1996,6 +2131,7 @@ export function createWorlds(scene, opts = {}) {
     current.delete(id);
     if (tex.dispose) tex.dispose();
     if (m.uniforms && m.uniforms.uReliefK) { m.uniforms.uReliefK.value.set(0, 0, 0); m.uniforms.uGlobeRelief.value = null; }
+    dropTerrain(mesh);
     for (const [key, face] of faceTex) {
       if (!key.startsWith(`${id}/`)) continue;
       if (face && face.dispose) face.dispose();
@@ -2346,6 +2482,9 @@ export function createWorlds(scene, opts = {}) {
     setRelief,
     /** For the probes: is this world wearing its relief? */
     hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
+    setReliefTier,
+    /** For the probes: is this world throwing shadows from its height map, and in how many steps? */
+    castsShadows: (id) => { const m = meshes.get(id); const u = m && m.material.uniforms; return u && u.uTerrain && u.uTerrain.value.x > 0 ? u.uTerrain.value.y : 0; },
     setMapsHeld,
     mapsHeld,
     waitingMaps,

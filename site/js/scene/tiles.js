@@ -149,6 +149,9 @@ export const EARTH_E2 = 1 - (WGS84_B_KM / WGS84_A_KM) ** 2;
 const FRAG_OUT = 'gl_FragColor = vec4( colour, 1.0 );';
 const FRAG_LIT = 'vec3 colour = base * direct * uSunIrradiance * ringShade;';
 const EARTH_GROUND = 'vec3 ground = dayTex * (';
+// Where WORLD_FRAG says which point of the world's own map a fragment is (its relief and its cast
+// shadow are read there). A tile's vUv is the TILE's; the globe's is vUvGlobe.
+const FRAG_RELIEF_UV = 'vec2 reliefUv = vUv; float slopeShare = 1.0;';
 const FRAG_BASE = 'vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );';
 const VERT_DEPTH = '#include <logdepthbuf_vertex>';
 const VERT_UV = 'vUv = uv;';
@@ -167,7 +170,12 @@ export function tileFragment(src = WORLD_FRAG) {
   if (!src.includes(FRAG_OUT)) throw new Error('scene/tiles.js: WORLD_FRAG no longer ends in ' + FRAG_OUT);
   if (!src.includes(FRAG_BASE)) throw new Error('scene/tiles.js: WORLD_FRAG no longer reads its map with ' + FRAG_BASE);
   if (!src.includes(FRAG_LIT)) throw new Error('scene/tiles.js: WORLD_FRAG no longer lights its ground with ' + FRAG_LIT);
+  if (!src.includes(FRAG_RELIEF_UV)) throw new Error('scene/tiles.js: WORLD_FRAG no longer places its relief with ' + FRAG_RELIEF_UV);
   return src.replace(FRAG_OUT, 'gl_FragColor = vec4( colour, uFade );')
+    // THE GLOBE'S OWN RELIEF UNDER A TILE (Mars, 2026-10-12): read at the globe's uv; its slope
+    // gives way to the tile's finer relief as that fades in (or both would shade the same hill),
+    // while the shadow cast from the globe's height map stays, which no tile brings.
+    .replace(FRAG_RELIEF_UV, 'vec2 reliefUv = vUvGlobe; float slopeShare = 1.0 - uRelief.x;')
     // RELIEF: the shaded-relief picture's slope along its own light, re-lit by the real Sun.
     // uReliefLight is (east, north) of the direction TO the picture's light and its height's sine;
     // h / flat = 1 - slope . light_h / light_up, so the slope toward the light is q x up / |h|.

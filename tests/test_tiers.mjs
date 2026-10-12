@@ -273,7 +273,8 @@ const boot = bootFiles(TEXTURES);
 // first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
 // 35 since 2026-10-06: Venus's ground by radar, fetched when its card asks for it (`when: asked`).
 // 42 since 2026-10-08: Mercury's relief, fetched with its map on a tier-1 device and up (`when: asked`).
-check(boot.length === 42 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-two 1k and 2k files (${boot.length})`);
+// 44 since 2026-10-12: Mars's relief and its heights (MOLA), fetched as Mercury's is.
+check(boot.length === 44 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-four 1k and 2k files (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);

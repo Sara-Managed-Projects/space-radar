@@ -335,6 +335,48 @@ textures:
         original: "https://www.solarsystemscope.com/textures/download/8k_mars.jpg"
         make: "scripts/build-textures.py mars: resampled to 4096 x 2048 (Lanczos), WebP 84"
 
+  # MARS'S RELIEF (2026-10-12, spec 0073 requirement 5). Two maps from the Mars Orbiter Laser
+  # Altimeter's own grid (33 MB at 16 pixels a degree; the 2 GB USGS mosaic is its sibling and was
+  # not fetched), each one grey channel, fetched with Mars's map on a tier-1 device and up and
+  # never by a phone or under the frame latch. scene/worlds.js MARS_RELIEF says how they are drawn:
+  # the slope from `mars-relief` as Mercury's is, and a shadow cast from `mars-height` by a short
+  # march toward the Sun, both five times what was measured. Their sizes are what the GPU budget
+  # left on the day (2.7 MiB of tier 1's 250): 1.5 and 0.67 MiB.
+  - id: mars-relief
+    world: mars
+    slot: relief
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_mars_relief.webp
+        px: [1536, 768]
+        bytes: 76364
+        format: mono
+        licence: 'Public domain: "Data sets archived in the PDS are in the public domain." (NASA Planetary Data System, Geosciences Node FAQ, pds-geosciences.wustl.edu/faq.html, read 2026-10-12); the USGS product made from the same altimetry, Mars MGS MOLA DEM 463m, gives "Access Constraints: CC0 (public domain)" and "Use Constraints: None" (astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m, read 2026-10-12)'
+        credit: "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+        source: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.lbl (read 2026-10-12)"
+        original: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.img"
+        make: "scripts/build-mars-relief.py: the 5760 x 2880 grid (metres above the areoid, big-endian words) rolled to longitude 0 at the centre and resampled to 1536 x 768 (Lanczos), the relief broader than 6 degrees taken out, the rest clipped to +-4000 m (0.34 % of the map is beyond it) and written as one grey channel with 128 as level ground, WebP 80"
+        limits: "LOCAL relief only: Tharsis's bulge and the north-south dichotomy are not in it, by design (the shadows come from mars-height). 13.9 km a texel at the equator: no crater under some 30 km has a rim. MOLA's ground tracks are up to 12 km apart at the equator and the grid interpolates between them. Drawn 5 times steeper than measured."
+  - id: mars-height
+    world: mars
+    slot: relief
+    when: asked
+    min_m: -8200
+    max_m: 21300
+    files:
+      - tier: 0
+        file: site/textures/1k_mars_height.webp
+        px: [1024, 512]
+        bytes: 58264
+        format: mono
+        licence: 'Public domain: "Data sets archived in the PDS are in the public domain." (NASA Planetary Data System, Geosciences Node FAQ, pds-geosciences.wustl.edu/faq.html, read 2026-10-12); the USGS product made from the same altimetry, Mars MGS MOLA DEM 463m, gives "Access Constraints: CC0 (public domain)" and "Use Constraints: None" (astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m, read 2026-10-12)'
+        credit: "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+        source: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.lbl (read 2026-10-12)"
+        original: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.img"
+        make: "scripts/build-mars-relief.py: the same grid, rolled to longitude 0 at the centre, resampled to 1024 x 512 (Lanczos); a byte is the height from -8200 m (0) to 21300 m (255), 115.7 m a step (the label: 'The minimum and maximum topography observations for the entire data set are -8177 and 21171 meters'), one grey channel, WebP 98 (92 m rms from the resampled grid)"
+        limits: "20.8 km a texel at the equator, so a narrow extreme is averaged: the file's deepest texel in Hellas is -7853 m against the grid's -8177 m, and where Coprates Chasma is three texels wide its floor reads 900 m too high (tests/test_mars_heights.py reads it where the floor is wide). Heights are above the areoid (the GMM3 gravity model's equipotential), not above a sphere. The shadows drawn from it are 5 times too long: the heights are exaggerated as the slopes are."
+
   - id: jupiter
     world: jupiter
     slot: map

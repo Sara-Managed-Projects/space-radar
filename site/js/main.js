@@ -2224,7 +2224,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
   // The Earth's shell is marched in more steps on a higher tier, and in its fewest for good under the latch.
   // `plan.stripped` is the latch's removals: the latch itself, or Low chosen (which can be left again:
   // `release`). `top`: Ultra marches the shell in the most steps its shader takes.
-  const reliefFor = (tier) => { worlds.setRelief(tier >= 1 && !plan.stripped); setEarthAirQuality(earthMesh(), tier, plan.stripped, { top: plan.steps === 'top', release: !tiers.latched }); };
+  const reliefFor = (tier) => { worlds.setReliefTier(tier); worlds.setRelief(tier >= 1 && !plan.stripped); setEarthAirQuality(earthMesh(), tier, plan.stripped, { top: plan.steps === 'top', release: !tiers.latched }); };
   holdFor(plan.tier);
   reliefFor(plan.tier);
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));

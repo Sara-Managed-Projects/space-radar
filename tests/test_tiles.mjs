@@ -231,11 +231,13 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
   check(f.includes('gl_FragColor = vec4( colour, uFade );') && f.includes('uniform float uFade;'), 'the fragment shader fades');
   check(f.includes('texture2D( uBaseMap, vUvGlobe ).rgb * clamp( dot( tile, vec3( 0.2126, 0.7152, 0.0722 ) ) * uTint.r,') && f.includes(': tile * uTint;'),
     'a detail tile multiplies the brightness of the world\'s own map; a colour tile is its own picture times the grade');
-  // Everything else is WORLD_FRAG, line for line: only the map read, the output and four declarations differ.
+  // Everything else is WORLD_FRAG, line for line: only the map read, the output, four declarations and
+  // (since 2026-10-12, Mars's relief) the line that says where on the world's own map a fragment is differ.
   const mine = new Set(f.split('\n'));
   const lost = WORLD_FRAG.split('\n').filter((l) => !mine.has(l));
-  check(lost.length === 3 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )'))
-    && lost.some((l) => l.includes('vec3 colour = base * direct * uSunIrradiance * ringShade;')), `the tile shader drops ${lost.length} of the world's lines, want the map read, the lit ground and the output only`);
+  check(lost.length === 4 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )'))
+    && lost.some((l) => l.includes('vec3 colour = base * direct * uSunIrradiance * ringShade;')) && lost.some((l) => l.includes('vec2 reliefUv = vUv; float slopeShare = 1.0;')),
+    `the tile shader drops ${lost.length} of the world's lines, want the map read, the lit ground, the relief's place and the output only`);
   check(f.includes('vec3 colour = base * direct * uSunIrradiance * ringShade * relief;') && f.includes('uniform sampler2D uReliefMap;'), 'the lit ground is the world\'s, times the relief');
   check(!/\bflat\b/.test(f.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')), '`flat` is a reserved word in GLSL ES 3: the shader must not name a variable that');
   const v = T.tileVertex();

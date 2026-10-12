@@ -261,6 +261,12 @@ jobs:
       # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
       - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
         run: python3 tests/test_seo_pages.py
+      # Mars's height map against the laser altimeter's own grid (spec 0073 requirement 5). Here, in the
+      # job that installs Pillow: the map is a WebP and node cannot decode one. Olympus Mons's summit,
+      # Hellas's floor, Coprates Chasma's floor and the north polar cap within 400 m of MOLA's numbers;
+      # the highest texel is Olympus and the lowest is in Hellas (a mirrored or rolled map fails).
+      - name: "Mars's height map says what MOLA measured at Olympus Mons, Hellas, Coprates Chasma and the north polar cap (spec 0073 req 5)"
+        run: python3 tests/test_mars_heights.py
       # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
       - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
         run: node tests/test_pagelive.mjs
@@ -706,6 +712,13 @@ jobs:
       # behind a uniform that is off on every other world, and each card says what is adjusted.
       - name: Three worlds' own looks are off everywhere else, and said on the card
         run: node tests/test_world_looks.mjs
+      # Mars's relief (spec 0073 requirement 5): the shadow march's JS twin (a 21 km mountain shades
+      # the ground behind it at a low Sun, a plain never shades itself, the ball's curve is in it),
+      # the shader's reads counted, a close-up tile reading the globe's relief at the globe's place,
+      # nothing fetched at boot or on a phone, the tier's steps, the latch; and that Mars's only
+      # weather row is still the season: no dust storm is drawn that nobody reported.
+      - name: Mars's relief casts shadows from MOLA's heights at a low Sun, on tier 1 and up, and no storm is invented (spec 0073 req 5)
+        run: node tests/test_mars_relief.mjs
 
       # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
       # measured directions, and nothing else moves.

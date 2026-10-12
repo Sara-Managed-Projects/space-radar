@@ -113,6 +113,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `sun` | the Sun's detail on: arrival, closer, the limb, the corona, then inside a real flare and two hours into a real coronal mass ejection when the two feeds are there |
 | `jupiter` | the stage, both poles, close on a belt, the clock sped up |
 | `lights` | each bright planet as a point of light beside a small Earth |
+| `mars` | the stage and the whole disc at noon; then the clock set so that Olympus Mons is near its evening terminator (three distances) and its morning one, Valles Marineris at a low Sun, the terminator square-on, both poles, noon again over Tharsis. Fails when Mars never wore its relief and its height map |
 | `settings` | the Quality and Look rows of What to show (spec 0073): opened with the key L, photographed and measured (one line each, no label cut), each quality chosen through its own button with what `ctx.quality` then reports, then Measured and Film on Jupiter close with what the weather module says is drawn. Run it at 1440 x 900 and again with `-f mobile=true` |
 | `frametime` | three scenes (home; Jupiter filling the view with its weather; the Sun's detail), the median and 95th percentile of 120 frame intervals each |
 
