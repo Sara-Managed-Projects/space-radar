@@ -24,40 +24,47 @@ version: 1
 # still spelt the British way ("kilometres", "the centre") and the captions show them so; the
 # voice says the same words with its own accent, and the lexicon below is in American phonemes.
 #
-# WHY THE FIRST 205 CLIPS SOUNDED READ OUT, MEASURED (2026-10-12, @@MEASURED_N@@ clips, a pitch tracker by
-# autocorrelation, tools kept outside the repository). Each long sentence was synthesised on its
-# own, slowed to 0.8, and joined with fixed pauses. So every sentence began on the same note and
-# fell to the same note: the pitch a sentence STARTS at varied by @@OLD_HEAD@@ semitones from sentence
-# to sentence inside a clip and the pitch it ENDS at by @@OLD_TAIL@@, where a person telling you
-# something moves by two or three; and every pause between two sentences was 0.45 s, to the
-# sample. That is a list being read.
+# WHY THE FIRST 205 CLIPS SOUNDED READ OUT, MEASURED (2026-10-12, all 205 clips, a pitch tracker by
+# autocorrelation; the tools are kept outside the repository). Each long sentence was synthesised
+# on its own, slowed to 0.8, and joined with fixed pauses. So every sentence began on the same
+# note and fell to the same note: inside a clip the pitch a sentence STARTS at differed from
+# sentence to sentence by 0.4 of a semitone (standard deviation, mean over the clips) and the
+# pitch it ENDS at by 0.5; a clip's whole pitch range was 6.9 semitones; and every pause between
+# two sentences was 0.45 s, to the sample. That is a list being read.
 #
 # THE DELIVERY NOW (`timing.join.sentences`, `timing.vary`, `voice.pace`, `phrasing`):
 #   - a stop is said two or three sentences in one pass, so the voice carries its pitch and pace
 #     across the full stops as it does in a paragraph; the pass is cut at the model's own pauses
 #     (narrate.py find_cuts), so the caption times are still sample counts;
-#   - at 0.95 of the voice's speed (about @@NEW_WPM@@ words a minute with the pauses; `af_heart` is
-#     a slower speaker than `bf_emma`, whose 0.8 was @@OLD_WPM@@), and the closing pass of a longer
-#     stop a little slower still;
+#   - at 0.91 to 0.95 of the voice's speed, not 0.8 (`voice.pace` below says which): 171 words
+#     a minute with the pauses, where the old clips were 154;
 #   - the pause after a sentence follows what was said (longer after a long sentence and before
 #     the closing one, shorter after "Nobody rode it.") and is then moved by a seeded amount, so
 #     no two are alike and a render is still reproducible;
-#   - a few commas and dashes for the voice only, where a number should land (`phrasing`).
-# Measured on the same @@MEASURED_N@@ stops: sentence starts now vary by @@NEW_HEAD@@ semitones and ends by
-# @@NEW_TAIL@@, the pitch range of a clip went from @@OLD_RANGE@@ to @@NEW_RANGE@@ semitones, the pauses between
-# sentences spread over @@NEW_GAPSD@@ s (they were all one length), and the recogniser's word error
-# is @@NEW_WER@@ (it was @@OLD_WER@@). A MACHINE CHOSE THIS: three settings were rendered beside the old
-# one (~/space-radar-handoff/narration-heart/audition/, README there) and the numbers picked.
+#   - a comma or a dash for the voice only, in two places where a number or a turn should
+#     land (`phrasing`); three more were tried and the voice ignored them.
+# Measured the same way on the same 205 stops: sentence starts now differ by 1.2 semitones and
+# ends by 1.2, a clip's pitch range went from 6.9 to 9.3 semitones, the pauses between sentences
+# run from 0.28 to 0.74 s (they were all 0.45), 65.8 minutes became 59.4, and the recogniser's
+# word error is 0.5 % (it was 0.4 %). Most of the wider range is the voice itself (it measured
+# 9.5 even said a sentence at a time); what the paragraph adds is that sentences stop starting
+# alike: 141 of the old clips had starts within half a semitone of each other, 36 of these do.
+# NOT ACHIEVED: the one question in the trips, "Are we safe?", still does not rise. Its last
+# third of a second falls by 2.6 semitones (4.7 in the old voice); the model does not lift it.
+# A MACHINE CHOSE THIS: four settings were rendered beside the live clips on five stops
+# (~/space-radar-handoff/narration-heart/audition/, README there) and the numbers picked.
 # Numbers do not hear warmth. NO PERSON HAS HEARD IT YET; Ivan's ears have the last word.
 # Nothing was added that is not the text: no music, no breaths, no hesitation, no second voice.
 #
 #   engine.id      part of every clip's hash. Change it when the model, the G2P or anything else
 #                  that changes how a word is said changes, and every clip is stale until rendered.
 #   packages       the versions the render ran with; narrate.py refuses to render with others.
-#   voice.pace     close: a factor on `speed` for the last pass of a stop said in two or more,
-#                  so the ending is not hurried. The model takes one speed for a whole pass, so
-#                  a title cannot be said slower than the sentence it shares its pass with: it is
-#                  given a long pause after it instead (timing.title_gap_s).
+#   voice.pace     close: a factor on `speed` for a stop's LAST pass, so the ending is not
+#                  hurried. A stop of three sentences or fewer is one pass, which is then all at
+#                  0.95 x 0.96 = 0.91; only the opening pass of a longer stop is at 0.95. The
+#                  model takes one speed for a whole pass, so a title cannot be said slower than
+#                  the sentence it shares its pass with: it is given a long pause after it
+#                  instead (timing.title_gap_s).
 #   timing         the pauses narrate.py puts between the sentences.
 #     vary         how a pause follows what was just said; narrate.py gaps_for() explains each.
 #                  `jitter` 0.12 moves every pause by up to 12 % either way, by a number drawn
@@ -96,8 +103,9 @@ version: 1
 #   phrasing       trip/stop -> [[the card's words, the same words punctuated for the voice]].
 #                  A comma or a dash the voice is given and the caption is not: a pause before a
 #                  number that should land. NEVER a different word: narrate.py refuses a pair
-#                  whose letters differ, and one that moves a full stop. Few on purpose: the
-#                  cards are already punctuated for the ear, and nobody has heard these yet.
+#                  whose letters differ, and one that moves a full stop. Two, on purpose: the
+#                  cards are already punctuated for the ear, the voice obeys such a mark only
+#                  sometimes (see at `phrasing:` below), and nobody has heard these yet.
 #   skip_title     stops whose body repeats the title almost word for word: the voice starts at
 #                  the body. Every other stop is read as its card is: title, then body.
 #   say            trip/stop -> words for the ear, replacing the card's (title and body) for the
@@ -179,30 +187,46 @@ lexicon:
   Apophis: "əpˈɑfɪs"
   Subaru: "sˈubəɹu"
   Yutu: "jˈutu"
+  # Heard as "out shawn" (2026-10-12): the American G2P's fallback rhymes it with "on".
+  outshone: "ˌWtʃˈOn"
 listen:
   # ON since 2026-10-08: all 205 clips were rendered again with the title said in one pass
   # (internal #441) and every one was heard by small.en, the doubtful ones again by medium.en:
   # mean word error 0.4 % (it was 1.6 %), no finding blamed on the voice, nothing to accept.
   # 2026-10-12: all 205 rendered again in `af_heart`, a paragraph at a time, and heard again:
-  # @@LISTEN_LINE@@
+  # small.en over all of them, medium.en again over the ten it doubted. Mean word error 0.5 %
+  # (it was 0.4 %), 167 clips with none. Three faults were the voice's and were fixed: a title
+  # run into its sentence (join_own), "outshone" (lexicon), a long number broken after its first
+  # "and" (narrate.py now groups it with a comma). One finding is accepted below.
   required: true
   model: small.en
   max_wer: 0.1
-  names: []
-  accept: {}
+  # Betelgeuse: an American says "BEE-tl-jooss" and the recogniser writes the film's title.
+  names: [Betelgeuse]
+  accept:
+    black-holes/sun: "small.en and medium.en both write 'if you swap the Sun' for 'if you swapped the Sun': the t of 'swapped' is not released before 'the', as in fluent speech. Every other word is heard. To be judged by a person."
 # trip/stop -> a sentence of this many words or fewer is said in one pass with its neighbour, for
 # this stop only (timing.join.words is 0: the titles). Found by the listening check: "It will
 # miss." said alone was heard as "It will miss us" by both recognisers.
 join_short:
   asteroids-that-come-close/apophis: 3
+# trip/stop -> join rules of its own (timing.join's names). Found by the listening check on
+# 2026-10-12: with a plain space the voice said "TRAPPIST-1 b the innermost," in one breath; with
+# the dash it pauses after the title, but for less time than at the comma, and the cut went to
+# the comma: the title's caption covered three words of the sentence. `drift` 0.4 looks nearer
+# where the title should end.
+join_own:
+  travel-to-exoplanets/b: {joiners: [" — "], drift: 0.4}
+  travel-to-exoplanets/c: {joiners: [" — "]}
 # trip/stop -> [[the card's words, the same words with the voice's punctuation]]. The caption
 # keeps the card's. Each is a pause before the number or the turn the sentence is there for.
+# Measured by the recogniser's word times (2026-10-12): the comma opened about 0.6 s between
+# "2019" and "about", the dash 0.4 s between "away" and "and". Three more were tried and taken
+# out again, because the voice ignored them, dash or comma: "three lunar days / and kept going",
+# "on the Moon / for 37 years", "Earth came out / 0.12". Punctuation is a request, not a control.
 phrasing:
   moon-landings/chandrayaan-3: [["September 2019 about 110 km", "September 2019, about 110 km"]]
-  moon-landings/lunokhod-1: [["three lunar days and kept going", "three lunar days — and kept going"]]
-  moon-landings/apollo-17: [["on the Moon for 37 years", "on the Moon — for 37 years"]]
   to-the-edge/andromeda: [["light-years away and coming our way", "light-years away — and coming our way"]]
-  outer-solar-system/voyager-1: [["Earth came out 0.12", "Earth came out — 0.12"]]
 skip_title:
   - strangest-things/golf-balls
 say:
@@ -236,8 +260,8 @@ clips:
   - {trip: "to-the-edge", stop: "andromeda", hash: "41d250748640e957", seconds: 10.65, words: 28, lufs: -16.4, opus: 41587, m4a: 55696, vtt: 242, wer: 0.0, heard: "5717f5a75731e777", voice: 0}
   - {trip: "to-the-edge", stop: "edge", hash: "25e885fd309f4109", seconds: 25.21, words: 67, lufs: -16.4, opus: 100152, m4a: 129807, vtt: 541, wer: 0.0, heard: "ff22e1b1d874cd9d", voice: 0}
   - {trip: "roof-to-the-edge", stop: "roof", hash: "2a071e2beca5cb04", seconds: 15.26, words: 47, lufs: -16.4, opus: 59751, m4a: 79168, vtt: 346, wer: 0.0, heard: "877cbd0d20aa60ab", voice: 0}
-  - {trip: "roof-to-the-edge", stop: "earth", hash: "675ba90f9aaa82aa", seconds: 13.22, words: 39, lufs: -16.4, opus: 51444, m4a: 68736, vtt: 290, wer: 0.0, heard: "ed25319239a08a19", voice: 0}
-  - {trip: "roof-to-the-edge", stop: "moon-orbit", hash: "6e0cce14fba2cd60", seconds: 16.59, words: 42, lufs: -16.4, opus: 67154, m4a: 85906, vtt: 293, wer: 0.0938, heard: "9b5d94da61a52416", voice: 1}
+  - {trip: "roof-to-the-edge", stop: "earth", hash: "43aacee9aed59205", seconds: 13.5, words: 39, lufs: -16.5, opus: 52399, m4a: 70258, vtt: 290, wer: 0.0, heard: "ed25319239a08a19", voice: 0}
+  - {trip: "roof-to-the-edge", stop: "moon-orbit", hash: "4a9c60f383e332be", seconds: 16.57, words: 42, lufs: -16.4, opus: 66978, m4a: 85906, vtt: 293, wer: 0.0, heard: "4b12a3a2be146faf", voice: 0}
   - {trip: "roof-to-the-edge", stop: "planets", hash: "069c8dbeac53f03f", seconds: 12.17, words: 37, lufs: -16.5, opus: 47604, m4a: 63520, vtt: 262, wer: 0.0, heard: "b2ef586398a3420e", voice: 0}
   - {trip: "roof-to-the-edge", stop: "oort", hash: "579a8384726f16bf", seconds: 18.47, words: 50, lufs: -16.4, opus: 73536, m4a: 95686, vtt: 365, wer: 0.0, heard: "9ad1529249bd8e19", voice: 0}
   - {trip: "roof-to-the-edge", stop: "nearest-stars", hash: "9ae3a77dacbe965d", seconds: 16.92, words: 45, lufs: -16.4, opus: 66491, m4a: 87644, vtt: 354, wer: 0.0, heard: "f86aadaad5ffdb23", voice: 0}
@@ -245,176 +269,176 @@ clips:
   - {trip: "roof-to-the-edge", stop: "milky-way", hash: "396bdfe3743543f8", seconds: 14.97, words: 39, lufs: -16.5, opus: 58464, m4a: 77647, vtt: 323, wer: 0.0, heard: "9fd2824a7a1e82fe", voice: 0}
   - {trip: "roof-to-the-edge", stop: "local-group", hash: "079389490fe0848a", seconds: 16.4, words: 42, lufs: -16.5, opus: 65177, m4a: 85036, vtt: 318, wer: 0.0, heard: "1632be83f7b29742", voice: 0}
   - {trip: "roof-to-the-edge", stop: "edge", hash: "aa21967328bdc223", seconds: 20.56, words: 57, lufs: -16.4, opus: 81611, m4a: 106118, vtt: 411, wer: 0.0, heard: "b875a3f84ff7795e", voice: 0}
-  - {trip: "travel-to-exoplanets", stop: "all", hash: "1d484c40d627d939", seconds: 19.63, words: 58, lufs: -16.4, opus: 79052, m4a: 101554, vtt: 381}
-  - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "e6b65efc612f8dab", seconds: 12.41, words: 34, lufs: -16.5, opus: 48456, m4a: 64607, vtt: 262}
-  - {trip: "travel-to-exoplanets", stop: "trappist", hash: "5c6e1e960288ec92", seconds: 15.73, words: 45, lufs: -16.4, opus: 62854, m4a: 81559, vtt: 315}
-  - {trip: "travel-to-exoplanets", stop: "e", hash: "ff3db76fb116a0d9", seconds: 14.51, words: 43, lufs: -16.2, opus: 57258, m4a: 75256, vtt: 279}
-  - {trip: "travel-to-exoplanets", stop: "b", hash: "9c941b6eb4241ab9", seconds: 14.34, words: 40, lufs: -16.4, opus: 56509, m4a: 74604, vtt: 272}
-  - {trip: "travel-to-exoplanets", stop: "c", hash: "5f6b5629779de8d8", seconds: 10.37, words: 32, lufs: -16.5, opus: 39869, m4a: 54175, vtt: 232}
-  - {trip: "travel-to-exoplanets", stop: "d", hash: "6d00025701d9ac89", seconds: 8.85, words: 26, lufs: -16.3, opus: 34487, m4a: 46568, vtt: 186}
-  - {trip: "travel-to-exoplanets", stop: "f", hash: "2041e3fa061a81e0", seconds: 9.09, words: 27, lufs: -16.3, opus: 35437, m4a: 47872, vtt: 181}
-  - {trip: "travel-to-exoplanets", stop: "g", hash: "f710aa40ac2ae7c1", seconds: 8.83, words: 23, lufs: -16.4, opus: 33656, m4a: 46568, vtt: 201}
-  - {trip: "travel-to-exoplanets", stop: "h", hash: "35b2c85468ca55fa", seconds: 10.84, words: 30, lufs: -16.2, opus: 42127, m4a: 56783, vtt: 241}
-  - {trip: "travel-to-exoplanets", stop: "mercury", hash: "6b6cec7dcfdd4dd2", seconds: 16.37, words: 47, lufs: -16.5, opus: 66433, m4a: 84819, vtt: 316}
-  - {trip: "moon-landings", stop: "surveyor-1", hash: "ad24c3ba77ad99a2", seconds: 23.98, words: 64, lufs: -16.5, opus: 96617, m4a: 123504, vtt: 416}
-  - {trip: "moon-landings", stop: "apollo-11", hash: "6e392ab68d80215e", seconds: 16.48, words: 43, lufs: -16.5, opus: 65499, m4a: 85471, vtt: 329}
-  - {trip: "moon-landings", stop: "apollo-12", hash: "9c47e764e97079c7", seconds: 16.96, words: 45, lufs: -16.5, opus: 67556, m4a: 87862, vtt: 317}
-  - {trip: "moon-landings", stop: "lunokhod-1", hash: "884f2b53ef90eb82", seconds: 17.85, words: 49, lufs: -16.4, opus: 70989, m4a: 92426, vtt: 345}
-  - {trip: "moon-landings", stop: "apollo-17", hash: "5c5f369f523422c4", seconds: 19.82, words: 47, lufs: -16.4, opus: 79461, m4a: 102423, vtt: 348}
-  - {trip: "moon-landings", stop: "change-4", hash: "87d78575a96c36fb", seconds: 19.63, words: 53, lufs: -16.5, opus: 77876, m4a: 101336, vtt: 395}
-  - {trip: "moon-landings", stop: "chandrayaan-3", hash: "4c6538969d2bbf49", seconds: 21.14, words: 56, lufs: -16.4, opus: 85379, m4a: 109160, vtt: 340}
-  - {trip: "moon-landings", stop: "im-1", hash: "7ce514adab7eed0d", seconds: 21.15, words: 55, lufs: -16.6, opus: 85036, m4a: 109160, vtt: 368}
-  - {trip: "moon-landings", stop: "blue-ghost-1", hash: "03768a6e5f828383", seconds: 20.04, words: 56, lufs: -16.3, opus: 80252, m4a: 103510, vtt: 380}
-  - {trip: "moon-landings", stop: "whole-moon", hash: "6b3f63a608b03906", seconds: 21.59, words: 56, lufs: -16.5, opus: 86330, m4a: 111334, vtt: 405}
-  - {trip: "outer-solar-system", stop: "io", hash: "3314fdf8fa4c80d3", seconds: 16.85, words: 47, lufs: -16.4, opus: 66954, m4a: 87210, vtt: 326}
-  - {trip: "outer-solar-system", stop: "europa", hash: "585f60fa42b8ad0d", seconds: 20.83, words: 56, lufs: -16.5, opus: 85554, m4a: 107639, vtt: 379}
-  - {trip: "outer-solar-system", stop: "saturn", hash: "fff31889c54b6cc5", seconds: 19.05, words: 50, lufs: -16.5, opus: 75534, m4a: 98511, vtt: 386}
-  - {trip: "outer-solar-system", stop: "titan", hash: "ece1d889f7b8354f", seconds: 20.43, words: 58, lufs: -16.5, opus: 81397, m4a: 105466, vtt: 399}
-  - {trip: "outer-solar-system", stop: "enceladus", hash: "ce7821160d82fe94", seconds: 22.03, words: 57, lufs: -16.5, opus: 88483, m4a: 113724, vtt: 406}
-  - {trip: "outer-solar-system", stop: "triton", hash: "efd723b81dc617cb", seconds: 21.86, words: 52, lufs: -16.3, opus: 88337, m4a: 112855, vtt: 344}
-  - {trip: "outer-solar-system", stop: "pluto", hash: "f63a9b1f67266303", seconds: 21.63, words: 56, lufs: -16.5, opus: 86064, m4a: 111551, vtt: 394}
-  - {trip: "outer-solar-system", stop: "sedna", hash: "3a7ccb4e0f3a52b2", seconds: 24.68, words: 71, lufs: -16.4, opus: 99041, m4a: 127199, vtt: 459}
-  - {trip: "outer-solar-system", stop: "eris", hash: "ca20cad406c0142f", seconds: 24.55, words: 69, lufs: -16.5, opus: 98425, m4a: 126547, vtt: 430}
-  - {trip: "outer-solar-system", stop: "voyager-1", hash: "6f24e6ee4b5572d6", seconds: 23.32, words: 63, lufs: -16.5, opus: 93472, m4a: 120244, vtt: 399}
-  - {trip: "a-year-in-a-minute", stop: "inner", hash: "1fe4f13a7636156a", seconds: 15.76, words: 43, lufs: -16.4, opus: 62495, m4a: 81776, vtt: 307}
-  - {trip: "a-year-in-a-minute", stop: "earth", hash: "2cc3882a2e364626", seconds: 17.07, words: 50, lufs: -16.3, opus: 72042, m4a: 88514, vtt: 335}
-  - {trip: "a-year-in-a-minute", stop: "mercury", hash: "0b72c5bb2a3fb6a1", seconds: 15.88, words: 42, lufs: -16.5, opus: 63005, m4a: 82428, vtt: 291}
-  - {trip: "a-year-in-a-minute", stop: "jupiter", hash: "89ca1cb3d1759b7f", seconds: 14.6, words: 44, lufs: -16.5, opus: 57717, m4a: 75908, vtt: 306}
-  - {trip: "chasing-the-solar-eclipse", stop: "arrives", hash: "9457a32964524da7", seconds: 15.19, words: 45, lufs: -16.4, opus: 60012, m4a: 78734, vtt: 321}
-  - {trip: "chasing-the-solar-eclipse", stop: "peak", hash: "5850f3bcb599e8a6", seconds: 13.49, words: 42, lufs: -16.4, opus: 53006, m4a: 70258, vtt: 300}
-  - {trip: "chasing-the-solar-eclipse", stop: "from-the-moon", hash: "c78fc5c56591950b", seconds: 14.54, words: 44, lufs: -16.4, opus: 57603, m4a: 75474, vtt: 305}
-  - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "11b78d321c8253c7", seconds: 15.36, words: 53, lufs: -16.4, opus: 60909, m4a: 79820, vtt: 322}
-  - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "475ed10234cbc54c", seconds: 12.61, words: 41, lufs: -16.4, opus: 49616, m4a: 65694, vtt: 287}
-  - {trip: "the-constellations", stop: "orion", hash: "d79f0b94fe67b855", seconds: 19.17, words: 56, lufs: -16.4, opus: 76092, m4a: 99163, vtt: 390}
-  - {trip: "the-constellations", stop: "orion-from-the-side", hash: "d2eeb4bf19cbc051", seconds: 20.63, words: 56, lufs: -16.5, opus: 81982, m4a: 106552, vtt: 451}
-  - {trip: "the-constellations", stop: "taurus", hash: "d80faf0886182f81", seconds: 22.53, words: 64, lufs: -16.5, opus: 90773, m4a: 116332, vtt: 443}
-  - {trip: "the-constellations", stop: "gemini", hash: "b7bb766fcf595485", seconds: 18.17, words: 46, lufs: -16.3, opus: 71823, m4a: 93947, vtt: 401}
-  - {trip: "the-constellations", stop: "leo", hash: "424e5e6deeb4eddc", seconds: 16.6, words: 47, lufs: -16.3, opus: 64996, m4a: 86123, vtt: 357}
-  - {trip: "the-constellations", stop: "plough", hash: "c9ccbf615bfad462", seconds: 21.72, words: 67, lufs: -16.4, opus: 86467, m4a: 112203, vtt: 449}
-  - {trip: "the-constellations", stop: "cassiopeia", hash: "c343cb73bd06cd21", seconds: 19.85, words: 59, lufs: -16.5, opus: 79516, m4a: 102640, vtt: 374}
-  - {trip: "the-constellations", stop: "summer-triangle", hash: "d76aafcd6790d919", seconds: 21.22, words: 57, lufs: -16.4, opus: 84464, m4a: 109595, vtt: 423}
-  - {trip: "the-constellations", stop: "scorpius", hash: "5107b8884ec22c4b", seconds: 21.1, words: 65, lufs: -16.3, opus: 83295, m4a: 108943, vtt: 449}
-  - {trip: "the-constellations", stop: "sagittarius", hash: "8e19030e564d2db9", seconds: 21.69, words: 62, lufs: -16.5, opus: 86552, m4a: 111986, vtt: 448}
-  - {trip: "the-constellations", stop: "southern-cross", hash: "8b017b025cb37676", seconds: 24.75, words: 68, lufs: -16.5, opus: 98885, m4a: 127634, vtt: 513}
-  - {trip: "the-constellations", stop: "zodiac", hash: "db15b75330b7eff6", seconds: 23.21, words: 62, lufs: -16.4, opus: 92244, m4a: 119810, vtt: 477}
-  - {trip: "the-living-earth", stop: "tilt", hash: "0e9180fecaaa9e80", seconds: 18.52, words: 54, lufs: -16.2, opus: 72978, m4a: 95903, vtt: 404}
-  - {trip: "the-living-earth", stop: "half-a-year-on", hash: "6b796924fe30e69c", seconds: 18.82, words: 58, lufs: -16.5, opus: 74694, m4a: 97424, vtt: 389}
-  - {trip: "the-living-earth", stop: "air", hash: "ed3aae3e03aa0c2e", seconds: 17.63, words: 55, lufs: -16.4, opus: 72455, m4a: 91339, vtt: 381}
-  - {trip: "the-living-earth", stop: "weather", hash: "d8fab0371a69eed4", seconds: 19.86, words: 57, lufs: -16.5, opus: 79144, m4a: 102640, vtt: 432}
-  - {trip: "the-living-earth", stop: "ocean", hash: "3f89446cd0e094fe", seconds: 19.28, words: 62, lufs: -16.4, opus: 75837, m4a: 99598, vtt: 416}
-  - {trip: "the-living-earth", stop: "plankton", hash: "1c29c2fcdddd59ef", seconds: 19.24, words: 61, lufs: -16.4, opus: 76328, m4a: 99380, vtt: 421}
-  - {trip: "the-living-earth", stop: "ice", hash: "5637412df914ed4e", seconds: 18.03, words: 54, lufs: -16.5, opus: 71402, m4a: 93295, vtt: 395}
-  - {trip: "the-living-earth", stop: "haze", hash: "e859cc18474ab553", seconds: 23.33, words: 63, lufs: -16.5, opus: 92827, m4a: 120244, vtt: 472}
-  - {trip: "the-living-earth", stop: "moon", hash: "65e98da8617de96e", seconds: 18.52, words: 58, lufs: -16.5, opus: 73077, m4a: 95686, vtt: 400}
-  - {trip: "the-living-earth", stop: "aurora", hash: "eb917c34345e2a8b", seconds: 19.68, words: 56, lufs: -16.3, opus: 78246, m4a: 101771, vtt: 407}
-  - {trip: "the-living-earth", stop: "jupiter", hash: "21b1017437647315", seconds: 20.14, words: 55, lufs: -16.2, opus: 80105, m4a: 103944, vtt: 408}
-  - {trip: "the-living-earth", stop: "home", hash: "1699966d6e21939b", seconds: 17.35, words: 49, lufs: -16.5, opus: 68399, m4a: 89818, vtt: 370}
-  - {trip: "tonight-from-your-street", stop: "above", hash: "9c059c0e3d4c9409", seconds: 15.12, words: 51, lufs: -16.4, opus: 59535, m4a: 78516, vtt: 360}
-  - {trip: "tonight-from-your-street", stop: "star", hash: "0e61a9034d4ec9a4", seconds: 17.04, words: 48, lufs: -16.4, opus: 67105, m4a: 88296, vtt: 372}
-  - {trip: "tonight-from-your-street", stop: "figure", hash: "be88ba3a13d42366", seconds: 16.8, words: 53, lufs: -16.3, opus: 66282, m4a: 86992, vtt: 373}
-  - {trip: "tonight-from-your-street", stop: "moon", hash: "5b8bfe2bc0c6aea3", seconds: 15.88, words: 46, lufs: -16.4, opus: 62471, m4a: 82428, vtt: 356}
-  - {trip: "tonight-from-your-street", stop: "planet", hash: "8bb1471cb9b85c6e", seconds: 11.83, words: 35, lufs: -16.4, opus: 46754, m4a: 61782, vtt: 264}
-  - {trip: "tonight-from-your-street", stop: "pass", hash: "633fd9e4996e7fd3", seconds: 17.9, words: 53, lufs: -16.3, opus: 70126, m4a: 92643, vtt: 388}
-  - {trip: "tonight-from-your-street", stop: "out", hash: "7e13010e480fc57d", seconds: 16.54, words: 53, lufs: -16.4, opus: 65536, m4a: 85688, vtt: 386}
-  - {trip: "moon-phases", stop: "from-outside", hash: "a130ffbb1ad398ae", seconds: 17.09, words: 56, lufs: -16.4, opus: 67230, m4a: 88514, vtt: 385}
-  - {trip: "moon-phases", stop: "waxing", hash: "8b044e9ff6f46c71", seconds: 18.53, words: 56, lufs: -16.4, opus: 73577, m4a: 95903, vtt: 386}
-  - {trip: "moon-phases", stop: "full", hash: "b3caa3b3c72325c7", seconds: 16.85, words: 56, lufs: -16.5, opus: 65448, m4a: 87210, vtt: 388}
-  - {trip: "moon-phases", stop: "waning", hash: "4d5cf6ffcb69dcee", seconds: 13.47, words: 40, lufs: -16.2, opus: 52389, m4a: 70040, vtt: 310}
-  - {trip: "moon-phases", stop: "far-side", hash: "e62e08399a6177fd", seconds: 15.48, words: 51, lufs: -16.4, opus: 61134, m4a: 80255, vtt: 345}
-  - {trip: "moon-phases", stop: "shadow", hash: "fbb6d2ef1ea16827", seconds: 17.42, words: 54, lufs: -16.2, opus: 69878, m4a: 90252, vtt: 376}
-  - {trip: "moon-phases", stop: "tonight", hash: "cd60808c4c0c6995", seconds: 15.11, words: 48, lufs: -16.4, opus: 59953, m4a: 78516, vtt: 352}
-  - {trip: "the-sun-today", stop: "star", hash: "d2aaff1ba2536087", seconds: 16.44, words: 48, lufs: -16.5, opus: 64479, m4a: 85254, vtt: 346}
-  - {trip: "the-sun-today", stop: "spots", hash: "8a98b46ee39637dc", seconds: 18.15, words: 51, lufs: -16.5, opus: 71610, m4a: 93947, vtt: 383}
-  - {trip: "the-sun-today", stop: "eight-minutes", hash: "24f2f1360f52b712", seconds: 17.81, words: 57, lufs: -16.5, opus: 70190, m4a: 92208, vtt: 394}
-  - {trip: "the-sun-today", stop: "wind", hash: "7edf58321594730d", seconds: 20.53, words: 53, lufs: -16.5, opus: 81152, m4a: 106118, vtt: 431}
-  - {trip: "the-sun-today", stop: "aurora", hash: "0cb893e191a6c1a8", seconds: 17.93, words: 53, lufs: -16.5, opus: 70963, m4a: 92860, vtt: 391}
-  - {trip: "the-sun-today", stop: "scale", hash: "6034c649ece34114", seconds: 14.79, words: 44, lufs: -16.3, opus: 57743, m4a: 76778, vtt: 326}
-  - {trip: "the-sun-today", stop: "home", hash: "13f4dce58cd47e65", seconds: 16.59, words: 51, lufs: -16.3, opus: 65140, m4a: 85906, vtt: 393}
-  - {trip: "planets-tonight", stop: "where", hash: "a67b7b973c858734", seconds: 17.1, words: 57, lufs: -16.5, opus: 67307, m4a: 88514, vtt: 373}
-  - {trip: "planets-tonight", stop: "mercury", hash: "3386572531092327", seconds: 15.53, words: 47, lufs: -16.5, opus: 60761, m4a: 80690, vtt: 337}
-  - {trip: "planets-tonight", stop: "venus", hash: "493b94b8aedfc908", seconds: 16.93, words: 50, lufs: -16.5, opus: 66407, m4a: 87644, vtt: 367}
-  - {trip: "planets-tonight", stop: "mars", hash: "776237b9a5a019af", seconds: 11.86, words: 35, lufs: -16.4, opus: 46525, m4a: 61999, vtt: 257}
-  - {trip: "planets-tonight", stop: "jupiter", hash: "772116e36e1f1794", seconds: 14.85, words: 41, lufs: -16.5, opus: 57642, m4a: 77212, vtt: 331}
-  - {trip: "planets-tonight", stop: "saturn", hash: "0d1ba97d9a0c1ad0", seconds: 15.93, words: 41, lufs: -16.5, opus: 62213, m4a: 82646, vtt: 346}
-  - {trip: "planets-tonight", stop: "uranus", hash: "6b40ba10def9e658", seconds: 20.41, words: 61, lufs: -16.2, opus: 80947, m4a: 105466, vtt: 420}
-  - {trip: "planets-tonight", stop: "neptune", hash: "3da83cdfd674f063", seconds: 14.07, words: 39, lufs: -16.5, opus: 54957, m4a: 73083, vtt: 317}
-  - {trip: "planets-tonight", stop: "your-sky", hash: "0235e0bd34f030af", seconds: 15.58, words: 46, lufs: -16.2, opus: 60732, m4a: 80907, vtt: 346}
-  - {trip: "mars-where-we-have-driven", stop: "planet", hash: "7ff3392031d1c711", seconds: 17.36, words: 50, lufs: -16.4, opus: 68280, m4a: 89818, vtt: 369}
-  - {trip: "mars-where-we-have-driven", stop: "olympus", hash: "edc663a1fb9f8e63", seconds: 15.98, words: 43, lufs: -16.4, opus: 62426, m4a: 82863, vtt: 330}
-  - {trip: "mars-where-we-have-driven", stop: "valles", hash: "9aec19edc59f2681", seconds: 17.29, words: 46, lufs: -16.3, opus: 68233, m4a: 89600, vtt: 366}
-  - {trip: "mars-where-we-have-driven", stop: "viking-1", hash: "205f863c6e476643", seconds: 17.45, words: 51, lufs: -16.4, opus: 68329, m4a: 90470, vtt: 380}
-  - {trip: "mars-where-we-have-driven", stop: "opportunity", hash: "a159ddea0b306f0b", seconds: 17.11, words: 44, lufs: -16.3, opus: 67659, m4a: 88514, vtt: 356}
-  - {trip: "mars-where-we-have-driven", stop: "gale", hash: "6b8c0f778c182118", seconds: 19.26, words: 54, lufs: -16.4, opus: 77312, m4a: 99598, vtt: 358}
-  - {trip: "mars-where-we-have-driven", stop: "elysium", hash: "5a219c182800bdf7", seconds: 17.92, words: 47, lufs: -16.3, opus: 70856, m4a: 92860, vtt: 397}
-  - {trip: "mars-where-we-have-driven", stop: "jezero", hash: "49cf580c348c8ef8", seconds: 20.44, words: 50, lufs: -16.3, opus: 80911, m4a: 105683, vtt: 402}
-  - {trip: "mars-where-we-have-driven", stop: "phobos", hash: "d186d8d2a2b41a75", seconds: 20.87, words: 53, lufs: -16.4, opus: 83568, m4a: 107856, vtt: 427}
-  - {trip: "mars-where-we-have-driven", stop: "seasons", hash: "2853b9748b0ed557", seconds: 18.85, words: 53, lufs: -16.5, opus: 74300, m4a: 97424, vtt: 373}
-  - {trip: "life-of-a-star", stop: "nursery", hash: "eccb0d2af152c931", seconds: 18.54, words: 52, lufs: -16.5, opus: 72707, m4a: 95903, vtt: 418}
-  - {trip: "life-of-a-star", stop: "young", hash: "7f223d20211db399", seconds: 17.86, words: 53, lufs: -16.5, opus: 71381, m4a: 92426, vtt: 386}
-  - {trip: "life-of-a-star", stop: "sun", hash: "b70d7fe6ff7fbe8e", seconds: 19.61, words: 60, lufs: -16.5, opus: 77738, m4a: 101336, vtt: 410}
-  - {trip: "life-of-a-star", stop: "giant", hash: "a37f490105f179d9", seconds: 18.24, words: 54, lufs: -16.5, opus: 71283, m4a: 94382, vtt: 405}
-  - {trip: "life-of-a-star", stop: "supergiant", hash: "90236fcd7570fb6e", seconds: 18.63, words: 53, lufs: -16.4, opus: 73311, m4a: 96338, vtt: 409}
-  - {trip: "life-of-a-star", stop: "letting-go", hash: "7161f7879e4f95bf", seconds: 19.65, words: 56, lufs: -16.4, opus: 77398, m4a: 101554, vtt: 415}
-  - {trip: "life-of-a-star", stop: "white-dwarf", hash: "3059fef79923c670", seconds: 18.5, words: 57, lufs: -16.4, opus: 73159, m4a: 95686, vtt: 384}
-  - {trip: "life-of-a-star", stop: "explosion", hash: "0dd33ed273944cc5", seconds: 20.07, words: 56, lufs: -16.5, opus: 79503, m4a: 103727, vtt: 415}
-  - {trip: "life-of-a-star", stop: "pulsar", hash: "18600b7b87a909b9", seconds: 19.74, words: 62, lufs: -16.4, opus: 77975, m4a: 101988, vtt: 439}
-  - {trip: "black-holes", stop: "swan", hash: "7bc06b3cb6ed4a05", seconds: 20.61, words: 61, lufs: -16.3, opus: 82068, m4a: 106552, vtt: 448}
-  - {trip: "black-holes", stop: "what", hash: "941e113c8feff59c", seconds: 20.22, words: 61, lufs: -16.4, opus: 79184, m4a: 104379, vtt: 466}
-  - {trip: "black-holes", stop: "from-home", hash: "678492e2284a93d1", seconds: 16.65, words: 48, lufs: -16.4, opus: 65956, m4a: 86340, vtt: 365}
-  - {trip: "black-holes", stop: "centre", hash: "dafc0d8ae52f936d", seconds: 22.43, words: 59, lufs: -16.5, opus: 89901, m4a: 115680, vtt: 448}
-  - {trip: "black-holes", stop: "m87", hash: "4c87a724e8044d2c", seconds: 21.92, words: 64, lufs: -16.4, opus: 87628, m4a: 113072, vtt: 429}
-  - {trip: "black-holes", stop: "sun", hash: "d4643686f5e9e3a4", seconds: 19.11, words: 59, lufs: -16.4, opus: 74951, m4a: 98728, vtt: 437}
-  - {trip: "through-a-telescope", stop: "eye", hash: "421f8c7f39656a29", seconds: 15.63, words: 50, lufs: -16.4, opus: 61113, m4a: 81124, vtt: 340}
-  - {trip: "through-a-telescope", stop: "camera", hash: "f716f50fb24e8f7c", seconds: 18.24, words: 55, lufs: -16.4, opus: 71824, m4a: 94382, vtt: 441}
-  - {trip: "through-a-telescope", stop: "deep", hash: "6e90b12a5c8fa4a1", seconds: 13.76, words: 39, lufs: -16.4, opus: 53575, m4a: 71562, vtt: 315}
-  - {trip: "through-a-telescope", stop: "horsehead", hash: "c195f133750a8dbb", seconds: 18.58, words: 54, lufs: -16.4, opus: 73992, m4a: 96120, vtt: 392}
-  - {trip: "through-a-telescope", stop: "carina", hash: "19c13137908fd43d", seconds: 16.57, words: 43, lufs: -16.4, opus: 65301, m4a: 85906, vtt: 356}
-  - {trip: "through-a-telescope", stop: "webb", hash: "2fa2a849125b74cc", seconds: 24.71, words: 66, lufs: -16.4, opus: 99733, m4a: 127416, vtt: 477}
-  - {trip: "through-a-telescope", stop: "trifid", hash: "9fe3d961ccbe1a40", seconds: 19.6, words: 50, lufs: -16.5, opus: 77842, m4a: 101336, vtt: 390}
-  - {trip: "through-a-telescope", stop: "whirlpool", hash: "ecf1bf9a8d016d73", seconds: 19.22, words: 50, lufs: -16.4, opus: 76145, m4a: 99380, vtt: 408}
-  - {trip: "through-a-telescope", stop: "andromeda", hash: "6c0ce87bbf3006fa", seconds: 17.22, words: 50, lufs: -16.4, opus: 68411, m4a: 89166, vtt: 371}
-  - {trip: "a-dark-sky", stop: "lights", hash: "4cac25ee8ec699de", seconds: 15.82, words: 51, lufs: -16.2, opus: 61835, m4a: 81994, vtt: 379}
-  - {trip: "a-dark-sky", stop: "above", hash: "43c9f139542b9a89", seconds: 15.78, words: 48, lufs: -16.5, opus: 61950, m4a: 81776, vtt: 351}
-  - {trip: "a-dark-sky", stop: "city", hash: "8687c48a8092f7ab", seconds: 13.82, words: 39, lufs: -16.5, opus: 53470, m4a: 71996, vtt: 344}
-  - {trip: "a-dark-sky", stop: "town", hash: "ca8c16283cf3cc56", seconds: 13.2, words: 41, lufs: -16.4, opus: 51890, m4a: 68736, vtt: 286}
-  - {trip: "a-dark-sky", stop: "dark", hash: "b6ea95a21e11c484", seconds: 18.7, words: 57, lufs: -16.5, opus: 73617, m4a: 96772, vtt: 390}
-  - {trip: "a-dark-sky", stop: "cost", hash: "e0e7e8c11f10a04f", seconds: 20.48, words: 62, lufs: -16.4, opus: 80635, m4a: 105683, vtt: 462}
-  - {trip: "a-dark-sky", stop: "find", hash: "bc87ba5f9688a4e5", seconds: 14.47, words: 51, lufs: -16.4, opus: 56460, m4a: 75256, vtt: 351}
-  - {trip: "asteroids-that-come-close", stop: "belt", hash: "835575f63a11eebc", seconds: 19.47, words: 59, lufs: -16.4, opus: 77212, m4a: 100684, vtt: 414}
-  - {trip: "asteroids-that-come-close", stop: "ceres", hash: "bba8130468f4d775", seconds: 20.41, words: 56, lufs: -16.4, opus: 81438, m4a: 105466, vtt: 401}
-  - {trip: "asteroids-that-come-close", stop: "near", hash: "a84cb7018ca77107", seconds: 18.74, words: 55, lufs: -16.4, opus: 73351, m4a: 96990, vtt: 432}
-  - {trip: "asteroids-that-come-close", stop: "didymos", hash: "74a1066fdf913e72", seconds: 19.38, words: 51, lufs: -16.3, opus: 76049, m4a: 100250, vtt: 415}
-  - {trip: "asteroids-that-come-close", stop: "hera", hash: "b2be1a559262a196", seconds: 20.6, words: 55, lufs: -16.4, opus: 82633, m4a: 106335, vtt: 371}
-  - {trip: "asteroids-that-come-close", stop: "bennu", hash: "a47468668ca0e6e0", seconds: 20.84, words: 55, lufs: -16.2, opus: 83723, m4a: 107639, vtt: 413}
-  - {trip: "asteroids-that-come-close", stop: "apophis", hash: "6685f4e31f5a1608", seconds: 24.97, words: 61, lufs: -16.4, opus: 99760, m4a: 128720, vtt: 505}
-  - {trip: "asteroids-that-come-close", stop: "home", hash: "0a950f7a956c7a88", seconds: 17.59, words: 52, lufs: -16.4, opus: 69018, m4a: 91122, vtt: 407}
-  - {trip: "satellites-and-junk", stop: "one", hash: "65b4eb8538cff985", seconds: 17.32, words: 45, lufs: -16.3, opus: 67527, m4a: 89600, vtt: 396}
-  - {trip: "satellites-and-junk", stop: "all", hash: "64b007c69c0fe7e4", seconds: 14.5, words: 41, lufs: -16.3, opus: 59850, m4a: 75256, vtt: 314}
-  - {trip: "satellites-and-junk", stop: "low", hash: "2616349682884e0b", seconds: 16.68, words: 46, lufs: -16.4, opus: 65858, m4a: 86340, vtt: 361}
-  - {trip: "satellites-and-junk", stop: "ring", hash: "df954c71c59e6b7b", seconds: 18.64, words: 51, lufs: -16.4, opus: 73551, m4a: 96338, vtt: 391}
-  - {trip: "satellites-and-junk", stop: "hubble", hash: "3753a8acd49fc917", seconds: 15.25, words: 39, lufs: -16.5, opus: 60421, m4a: 79168, vtt: 313}
-  - {trip: "satellites-and-junk", stop: "dead", hash: "e283e7865ebbff0c", seconds: 17.61, words: 44, lufs: -16.4, opus: 69359, m4a: 91122, vtt: 358}
-  - {trip: "satellites-and-junk", stop: "rocket", hash: "3bd25a07eea61926", seconds: 16.71, words: 49, lufs: -16.4, opus: 66209, m4a: 86558, vtt: 369}
-  - {trip: "satellites-and-junk", stop: "down", hash: "922ea1758ea77648", seconds: 17.56, words: 49, lufs: -16.5, opus: 69105, m4a: 90904, vtt: 404}
-  - {trip: "comets-and-meteors", stop: "halley", hash: "7d299bfac0ea7cdf", seconds: 21.17, words: 65, lufs: -16.5, opus: 83993, m4a: 109378, vtt: 435}
-  - {trip: "comets-and-meteors", stop: "comet", hash: "62e972b25c0df5d9", seconds: 21.14, words: 62, lufs: -16.5, opus: 84573, m4a: 109160, vtt: 413}
-  - {trip: "comets-and-meteors", stop: "stranger", hash: "1cf97a191dfe42a4", seconds: 18.37, words: 55, lufs: -16.5, opus: 72583, m4a: 95034, vtt: 407}
-  - {trip: "comets-and-meteors", stop: "dust", hash: "6d285895b63bfa72", seconds: 19.96, words: 62, lufs: -16.5, opus: 78767, m4a: 103075, vtt: 447}
-  - {trip: "comets-and-meteors", stop: "phaethon", hash: "77eea081ee50e49d", seconds: 18.9, words: 58, lufs: -16.4, opus: 74622, m4a: 97642, vtt: 399}
-  - {trip: "comets-and-meteors", stop: "radiant", hash: "96e329b465dfccf2", seconds: 19.89, words: 60, lufs: -16.4, opus: 78117, m4a: 102858, vtt: 438}
-  - {trip: "comets-and-meteors", stop: "tonight", hash: "5f649cd4bc75d8f2", seconds: 17.38, words: 58, lufs: -16.4, opus: 67828, m4a: 90035, vtt: 422}
-  - {trip: "comets-and-meteors", stop: "watch", hash: "9746748a829f8c14", seconds: 14.39, words: 43, lufs: -16.4, opus: 55267, m4a: 74822, vtt: 356}
-  - {trip: "birth-of-the-solar-system", stop: "cloud", hash: "6fb7a899efc0dfaa", seconds: 18.11, words: 53, lufs: -16.4, opus: 71906, m4a: 93730, vtt: 374}
-  - {trip: "birth-of-the-solar-system", stop: "flat", hash: "f0fd88f17a47c0a2", seconds: 13.49, words: 36, lufs: -16.4, opus: 53200, m4a: 70258, vtt: 278}
-  - {trip: "birth-of-the-solar-system", stop: "sun", hash: "73a221f3b5454b87", seconds: 17.93, words: 51, lufs: -16.5, opus: 71627, m4a: 92860, vtt: 354}
-  - {trip: "birth-of-the-solar-system", stop: "rock", hash: "12d4bb2a62d6a491", seconds: 18.19, words: 48, lufs: -16.5, opus: 71494, m4a: 94164, vtt: 376}
-  - {trip: "birth-of-the-solar-system", stop: "giant", hash: "7c5a40c00fa8ee9a", seconds: 17.52, words: 49, lufs: -16.5, opus: 70073, m4a: 90687, vtt: 344}
-  - {trip: "birth-of-the-solar-system", stop: "leftovers", hash: "cc87309d6b81695b", seconds: 17.91, words: 45, lufs: -16.5, opus: 70175, m4a: 92643, vtt: 404}
-  - {trip: "birth-of-the-solar-system", stop: "moon", hash: "220f273a39b32d09", seconds: 20.02, words: 56, lufs: -16.5, opus: 79693, m4a: 103510, vtt: 426}
-  - {trip: "birth-of-the-solar-system", stop: "far", hash: "a8cffc6fb715a07b", seconds: 16.0, words: 42, lufs: -16.2, opus: 62323, m4a: 82863, vtt: 342}
-  - {trip: "birth-of-the-solar-system", stop: "home", hash: "4ba9c863e8a6a21b", seconds: 13.9, words: 42, lufs: -16.5, opus: 54219, m4a: 72214, vtt: 328}
-  - {trip: "back-to-the-moon", stop: "last", hash: "da5127a8f6211ca5", seconds: 21.5, words: 54, lufs: -16.3, opus: 85476, m4a: 110899, vtt: 419}
-  - {trip: "back-to-the-moon", stop: "launch", hash: "8418af134e47d405", seconds: 16.57, words: 42, lufs: -16.5, opus: 65794, m4a: 85906, vtt: 340}
-  - {trip: "back-to-the-moon", stop: "far-side", hash: "9021845cb06b5653", seconds: 18.43, words: 55, lufs: -16.4, opus: 74830, m4a: 95468, vtt: 388}
-  - {trip: "back-to-the-moon", stop: "earth-from-there", hash: "5c7c3c2e2fb358a7", seconds: 14.19, words: 46, lufs: -16.2, opus: 55081, m4a: 73735, vtt: 330}
-  - {trip: "back-to-the-moon", stop: "south-pole", hash: "299f457cf4e26e46", seconds: 19.12, words: 56, lufs: -16.4, opus: 75035, m4a: 98946, vtt: 428}
+  - {trip: "travel-to-exoplanets", stop: "all", hash: "1d484c40d627d939", seconds: 19.63, words: 58, lufs: -16.4, opus: 79052, m4a: 101554, vtt: 381, wer: 0.0, heard: "f9a6010898f891b3", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "e6b65efc612f8dab", seconds: 12.41, words: 34, lufs: -16.5, opus: 48456, m4a: 64607, vtt: 262, wer: 0.0, heard: "0360c1a0116a1c61", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "trappist", hash: "5c6e1e960288ec92", seconds: 15.73, words: 45, lufs: -16.4, opus: 62854, m4a: 81559, vtt: 315, wer: 0.0, heard: "85b57d8e9120dba3", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "e", hash: "ff3db76fb116a0d9", seconds: 14.51, words: 43, lufs: -16.2, opus: 57258, m4a: 75256, vtt: 279, wer: 0.0233, heard: "135bc618558caf90", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "b", hash: "890a77327e1d0240", seconds: 14.62, words: 40, lufs: -16.4, opus: 57409, m4a: 75908, vtt: 272, wer: 0.0, heard: "c0d344bf5024340c", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "c", hash: "37d6f13e2b6c0ae2", seconds: 10.63, words: 32, lufs: -16.4, opus: 40879, m4a: 55696, vtt: 232, wer: 0.0, heard: "b84e97426119695c", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "d", hash: "6d00025701d9ac89", seconds: 8.85, words: 26, lufs: -16.3, opus: 34487, m4a: 46568, vtt: 186, wer: 0.0, heard: "6d1976e3d4fd14b4", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "f", hash: "2041e3fa061a81e0", seconds: 9.09, words: 27, lufs: -16.3, opus: 35437, m4a: 47872, vtt: 181, wer: 0.0, heard: "38def76e3de63b64", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "g", hash: "f710aa40ac2ae7c1", seconds: 8.83, words: 23, lufs: -16.4, opus: 33656, m4a: 46568, vtt: 201, wer: 0.0, heard: "cb8c59fceea9bdd7", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "h", hash: "35b2c85468ca55fa", seconds: 10.84, words: 30, lufs: -16.2, opus: 42127, m4a: 56783, vtt: 241, wer: 0.0, heard: "cf8ee79b31138c25", voice: 0}
+  - {trip: "travel-to-exoplanets", stop: "mercury", hash: "6b6cec7dcfdd4dd2", seconds: 16.37, words: 47, lufs: -16.5, opus: 66433, m4a: 84819, vtt: 316, wer: 0.0, heard: "16c5d2a9e890dd58", voice: 0}
+  - {trip: "moon-landings", stop: "surveyor-1", hash: "ad24c3ba77ad99a2", seconds: 23.98, words: 64, lufs: -16.5, opus: 96617, m4a: 123504, vtt: 416, wer: 0.0, heard: "ca46f4648a841d4a", voice: 0}
+  - {trip: "moon-landings", stop: "apollo-11", hash: "6e392ab68d80215e", seconds: 16.48, words: 43, lufs: -16.5, opus: 65499, m4a: 85471, vtt: 329, wer: 0.0, heard: "574491ab40a21660", voice: 0}
+  - {trip: "moon-landings", stop: "apollo-12", hash: "9c47e764e97079c7", seconds: 16.96, words: 45, lufs: -16.5, opus: 67556, m4a: 87862, vtt: 317, wer: 0.0, heard: "1545de387947849b", voice: 0}
+  - {trip: "moon-landings", stop: "lunokhod-1", hash: "c508d0fe16ccdc67", seconds: 17.65, words: 49, lufs: -16.4, opus: 70176, m4a: 91339, vtt: 345, wer: 0.0, heard: "52a8fb61781c3da7", voice: 0}
+  - {trip: "moon-landings", stop: "apollo-17", hash: "00034e943f3484ad", seconds: 19.67, words: 47, lufs: -16.5, opus: 78849, m4a: 101554, vtt: 348, wer: 0.0426, heard: "e5916e01e0fcc5a4", voice: 0}
+  - {trip: "moon-landings", stop: "change-4", hash: "87d78575a96c36fb", seconds: 19.63, words: 53, lufs: -16.5, opus: 77876, m4a: 101336, vtt: 395, wer: 0.0566, heard: "2ae404c2c23f2176", voice: 0}
+  - {trip: "moon-landings", stop: "chandrayaan-3", hash: "4c6538969d2bbf49", seconds: 21.14, words: 56, lufs: -16.4, opus: 85379, m4a: 109160, vtt: 340, wer: 0.0, heard: "dd81cb77e3e11ed5", voice: 0}
+  - {trip: "moon-landings", stop: "im-1", hash: "7ce514adab7eed0d", seconds: 21.15, words: 55, lufs: -16.6, opus: 85036, m4a: 109160, vtt: 368, wer: 0.0192, heard: "f4b11ca0062162c1", voice: 0}
+  - {trip: "moon-landings", stop: "blue-ghost-1", hash: "03768a6e5f828383", seconds: 20.04, words: 56, lufs: -16.3, opus: 80252, m4a: 103510, vtt: 380, wer: 0.0, heard: "0fe799513ce26e24", voice: 0}
+  - {trip: "moon-landings", stop: "whole-moon", hash: "6b3f63a608b03906", seconds: 21.59, words: 56, lufs: -16.5, opus: 86330, m4a: 111334, vtt: 405, wer: 0.0182, heard: "556aa5ab2c53189f", voice: 0}
+  - {trip: "outer-solar-system", stop: "io", hash: "3314fdf8fa4c80d3", seconds: 16.85, words: 47, lufs: -16.4, opus: 66954, m4a: 87210, vtt: 326, wer: 0.0213, heard: "c1e087a42d08499f", voice: 0}
+  - {trip: "outer-solar-system", stop: "europa", hash: "585f60fa42b8ad0d", seconds: 20.83, words: 56, lufs: -16.5, opus: 85554, m4a: 107639, vtt: 379, wer: 0.0, heard: "5d2ada4d7455abd4", voice: 0}
+  - {trip: "outer-solar-system", stop: "saturn", hash: "fff31889c54b6cc5", seconds: 19.05, words: 50, lufs: -16.5, opus: 75534, m4a: 98511, vtt: 386, wer: 0.0, heard: "a30900ba3c89d6aa", voice: 0}
+  - {trip: "outer-solar-system", stop: "titan", hash: "ece1d889f7b8354f", seconds: 20.43, words: 58, lufs: -16.5, opus: 81397, m4a: 105466, vtt: 399, wer: 0.0, heard: "434ed93493d9915a", voice: 0}
+  - {trip: "outer-solar-system", stop: "enceladus", hash: "ce7821160d82fe94", seconds: 22.03, words: 57, lufs: -16.5, opus: 88483, m4a: 113724, vtt: 406, wer: 0.0, heard: "eaa3649f76d85ec1", voice: 0}
+  - {trip: "outer-solar-system", stop: "triton", hash: "efd723b81dc617cb", seconds: 21.86, words: 52, lufs: -16.3, opus: 88337, m4a: 112855, vtt: 344, wer: 0.0, heard: "86a296c4bb29b735", voice: 0}
+  - {trip: "outer-solar-system", stop: "pluto", hash: "f63a9b1f67266303", seconds: 21.63, words: 56, lufs: -16.5, opus: 86064, m4a: 111551, vtt: 394, wer: 0.0204, heard: "c8b3489507d3f383", voice: 0}
+  - {trip: "outer-solar-system", stop: "sedna", hash: "3a7ccb4e0f3a52b2", seconds: 24.68, words: 71, lufs: -16.4, opus: 99041, m4a: 127199, vtt: 459, wer: 0.0, heard: "739b6ac7c4785871", voice: 0}
+  - {trip: "outer-solar-system", stop: "eris", hash: "ca20cad406c0142f", seconds: 24.55, words: 69, lufs: -16.5, opus: 98425, m4a: 126547, vtt: 430, wer: 0.0, heard: "30b879b5385fbb72", voice: 0}
+  - {trip: "outer-solar-system", stop: "voyager-1", hash: "ce150653ef589b24", seconds: 23.14, words: 63, lufs: -16.5, opus: 92815, m4a: 119375, vtt: 399, wer: 0.0, heard: "d0d9e40e9c2a09f1", voice: 0}
+  - {trip: "a-year-in-a-minute", stop: "inner", hash: "1fe4f13a7636156a", seconds: 15.76, words: 43, lufs: -16.4, opus: 62495, m4a: 81776, vtt: 307, wer: 0.0, heard: "4c9380b0a2be10a6", voice: 0}
+  - {trip: "a-year-in-a-minute", stop: "earth", hash: "2cc3882a2e364626", seconds: 17.07, words: 50, lufs: -16.3, opus: 72042, m4a: 88514, vtt: 335, wer: 0.0, heard: "7ea62972783ab09a", voice: 0}
+  - {trip: "a-year-in-a-minute", stop: "mercury", hash: "0b72c5bb2a3fb6a1", seconds: 15.88, words: 42, lufs: -16.5, opus: 63005, m4a: 82428, vtt: 291, wer: 0.0, heard: "9021670c9b238042", voice: 0}
+  - {trip: "a-year-in-a-minute", stop: "jupiter", hash: "89ca1cb3d1759b7f", seconds: 14.6, words: 44, lufs: -16.5, opus: 57717, m4a: 75908, vtt: 306, wer: 0.0, heard: "dc1c321a0944adff", voice: 0}
+  - {trip: "chasing-the-solar-eclipse", stop: "arrives", hash: "9457a32964524da7", seconds: 15.19, words: 45, lufs: -16.4, opus: 60012, m4a: 78734, vtt: 321, wer: 0.0, heard: "7efb3fe24fe9e5d9", voice: 0}
+  - {trip: "chasing-the-solar-eclipse", stop: "peak", hash: "5850f3bcb599e8a6", seconds: 13.49, words: 42, lufs: -16.4, opus: 53006, m4a: 70258, vtt: 300, wer: 0.0, heard: "27f44cdd0d586bf1", voice: 0}
+  - {trip: "chasing-the-solar-eclipse", stop: "from-the-moon", hash: "c78fc5c56591950b", seconds: 14.54, words: 44, lufs: -16.4, opus: 57603, m4a: 75474, vtt: 305, wer: 0.0, heard: "90bc7a570bfede39", voice: 0}
+  - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "11b78d321c8253c7", seconds: 15.36, words: 53, lufs: -16.4, opus: 60909, m4a: 79820, vtt: 322, wer: 0.0, heard: "6ec4b18ee453450b", voice: 0}
+  - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "475ed10234cbc54c", seconds: 12.61, words: 41, lufs: -16.4, opus: 49616, m4a: 65694, vtt: 287, wer: 0.0, heard: "b2a6ba4dda789de8", voice: 0}
+  - {trip: "the-constellations", stop: "orion", hash: "d79f0b94fe67b855", seconds: 19.17, words: 56, lufs: -16.4, opus: 76092, m4a: 99163, vtt: 390, wer: 0.0, heard: "db14c972212da2db", voice: 0}
+  - {trip: "the-constellations", stop: "orion-from-the-side", hash: "d2eeb4bf19cbc051", seconds: 20.63, words: 56, lufs: -16.5, opus: 81982, m4a: 106552, vtt: 451, wer: 0.0189, heard: "f6a229d26a98843f", voice: 0}
+  - {trip: "the-constellations", stop: "taurus", hash: "d80faf0886182f81", seconds: 22.53, words: 64, lufs: -16.5, opus: 90773, m4a: 116332, vtt: 443, wer: 0.0159, heard: "becdcc61145d56e5", voice: 0}
+  - {trip: "the-constellations", stop: "gemini", hash: "b7bb766fcf595485", seconds: 18.17, words: 46, lufs: -16.3, opus: 71823, m4a: 93947, vtt: 401, wer: 0.0426, heard: "6815d2a8dc62754d", voice: 0}
+  - {trip: "the-constellations", stop: "leo", hash: "424e5e6deeb4eddc", seconds: 16.6, words: 47, lufs: -16.3, opus: 64996, m4a: 86123, vtt: 357, wer: 0.0213, heard: "2dba834006195b2c", voice: 0}
+  - {trip: "the-constellations", stop: "plough", hash: "c9ccbf615bfad462", seconds: 21.72, words: 67, lufs: -16.4, opus: 86467, m4a: 112203, vtt: 449, wer: 0.0, heard: "be2ac2e7451843f0", voice: 0}
+  - {trip: "the-constellations", stop: "cassiopeia", hash: "c343cb73bd06cd21", seconds: 19.85, words: 59, lufs: -16.5, opus: 79516, m4a: 102640, vtt: 374, wer: 0.0, heard: "c45a2abb8dc3f186", voice: 0}
+  - {trip: "the-constellations", stop: "summer-triangle", hash: "d76aafcd6790d919", seconds: 21.22, words: 57, lufs: -16.4, opus: 84464, m4a: 109595, vtt: 423, wer: 0.0702, heard: "8b945b70c671d9a8", voice: 0}
+  - {trip: "the-constellations", stop: "scorpius", hash: "5107b8884ec22c4b", seconds: 21.1, words: 65, lufs: -16.3, opus: 83295, m4a: 108943, vtt: 449, wer: 0.0, heard: "572fe64761f48a6a", voice: 0}
+  - {trip: "the-constellations", stop: "sagittarius", hash: "8e19030e564d2db9", seconds: 21.69, words: 62, lufs: -16.5, opus: 86552, m4a: 111986, vtt: 448, wer: 0.0, heard: "36e245473b2c061f", voice: 0}
+  - {trip: "the-constellations", stop: "southern-cross", hash: "8b017b025cb37676", seconds: 24.75, words: 68, lufs: -16.5, opus: 98885, m4a: 127634, vtt: 513, wer: 0.0, heard: "2f2e9f3ab0a52bdb", voice: 0}
+  - {trip: "the-constellations", stop: "zodiac", hash: "db15b75330b7eff6", seconds: 23.21, words: 62, lufs: -16.4, opus: 92244, m4a: 119810, vtt: 477, wer: 0.0, heard: "61dd7db9598343c7", voice: 0}
+  - {trip: "the-living-earth", stop: "tilt", hash: "0e9180fecaaa9e80", seconds: 18.52, words: 54, lufs: -16.2, opus: 72978, m4a: 95903, vtt: 404, wer: 0.0185, heard: "846c90bc9f8db0fc", voice: 0}
+  - {trip: "the-living-earth", stop: "half-a-year-on", hash: "6b796924fe30e69c", seconds: 18.82, words: 58, lufs: -16.5, opus: 74694, m4a: 97424, vtt: 389, wer: 0.0, heard: "58435586eff5ced8", voice: 0}
+  - {trip: "the-living-earth", stop: "air", hash: "ed3aae3e03aa0c2e", seconds: 17.63, words: 55, lufs: -16.4, opus: 72455, m4a: 91339, vtt: 381, wer: 0.0, heard: "6c8d9c4693cbc1a1", voice: 0}
+  - {trip: "the-living-earth", stop: "weather", hash: "d8fab0371a69eed4", seconds: 19.86, words: 57, lufs: -16.5, opus: 79144, m4a: 102640, vtt: 432, wer: 0.0, heard: "834a626c79be0d65", voice: 0}
+  - {trip: "the-living-earth", stop: "ocean", hash: "3f89446cd0e094fe", seconds: 19.28, words: 62, lufs: -16.4, opus: 75837, m4a: 99598, vtt: 416, wer: 0.0, heard: "7704a004a7001f50", voice: 0}
+  - {trip: "the-living-earth", stop: "plankton", hash: "1c29c2fcdddd59ef", seconds: 19.24, words: 61, lufs: -16.4, opus: 76328, m4a: 99380, vtt: 421, wer: 0.0, heard: "86aa8e3f21df999c", voice: 0}
+  - {trip: "the-living-earth", stop: "ice", hash: "5637412df914ed4e", seconds: 18.03, words: 54, lufs: -16.5, opus: 71402, m4a: 93295, vtt: 395, wer: 0.0, heard: "11b3d003a4183ece", voice: 0}
+  - {trip: "the-living-earth", stop: "haze", hash: "e859cc18474ab553", seconds: 23.33, words: 63, lufs: -16.5, opus: 92827, m4a: 120244, vtt: 472, wer: 0.0, heard: "b0614509d4272f70", voice: 0}
+  - {trip: "the-living-earth", stop: "moon", hash: "65e98da8617de96e", seconds: 18.52, words: 58, lufs: -16.5, opus: 73077, m4a: 95686, vtt: 400, wer: 0.0, heard: "fe4a001ff51c910d", voice: 0}
+  - {trip: "the-living-earth", stop: "aurora", hash: "eb917c34345e2a8b", seconds: 19.68, words: 56, lufs: -16.3, opus: 78246, m4a: 101771, vtt: 407, wer: 0.0, heard: "34006dbc5f21e1fa", voice: 0}
+  - {trip: "the-living-earth", stop: "jupiter", hash: "21b1017437647315", seconds: 20.14, words: 55, lufs: -16.2, opus: 80105, m4a: 103944, vtt: 408, wer: 0.0, heard: "d80ff927a142b115", voice: 0}
+  - {trip: "the-living-earth", stop: "home", hash: "1699966d6e21939b", seconds: 17.35, words: 49, lufs: -16.5, opus: 68399, m4a: 89818, vtt: 370, wer: 0.0, heard: "38121baf580f52e3", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "above", hash: "9c059c0e3d4c9409", seconds: 15.12, words: 51, lufs: -16.4, opus: 59535, m4a: 78516, vtt: 360, wer: 0.0, heard: "57ae23ad54bcc788", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "star", hash: "0e61a9034d4ec9a4", seconds: 17.04, words: 48, lufs: -16.4, opus: 67105, m4a: 88296, vtt: 372, wer: 0.0, heard: "baff5930d6b48087", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "figure", hash: "be88ba3a13d42366", seconds: 16.8, words: 53, lufs: -16.3, opus: 66282, m4a: 86992, vtt: 373, wer: 0.0, heard: "b476f03100fcc1db", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "moon", hash: "5b8bfe2bc0c6aea3", seconds: 15.88, words: 46, lufs: -16.4, opus: 62471, m4a: 82428, vtt: 356, wer: 0.0, heard: "5acde1aa9cd5ee0f", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "planet", hash: "8bb1471cb9b85c6e", seconds: 11.83, words: 35, lufs: -16.4, opus: 46754, m4a: 61782, vtt: 264, wer: 0.0, heard: "bef61e5661e536b4", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "pass", hash: "633fd9e4996e7fd3", seconds: 17.9, words: 53, lufs: -16.3, opus: 70126, m4a: 92643, vtt: 388, wer: 0.0, heard: "bf69450cea21563c", voice: 0}
+  - {trip: "tonight-from-your-street", stop: "out", hash: "7e13010e480fc57d", seconds: 16.54, words: 53, lufs: -16.4, opus: 65536, m4a: 85688, vtt: 386, wer: 0.0, heard: "8e49dd3901ab39c3", voice: 0}
+  - {trip: "moon-phases", stop: "from-outside", hash: "a130ffbb1ad398ae", seconds: 17.09, words: 56, lufs: -16.4, opus: 67230, m4a: 88514, vtt: 385, wer: 0.0179, heard: "b8aa6c4e96347329", voice: 0}
+  - {trip: "moon-phases", stop: "waxing", hash: "8b044e9ff6f46c71", seconds: 18.53, words: 56, lufs: -16.4, opus: 73577, m4a: 95903, vtt: 386, wer: 0.0, heard: "a18bac6a3ec736af", voice: 0}
+  - {trip: "moon-phases", stop: "full", hash: "b3caa3b3c72325c7", seconds: 16.85, words: 56, lufs: -16.5, opus: 65448, m4a: 87210, vtt: 388, wer: 0.0, heard: "a40cd211cba44527", voice: 0}
+  - {trip: "moon-phases", stop: "waning", hash: "4d5cf6ffcb69dcee", seconds: 13.47, words: 40, lufs: -16.2, opus: 52389, m4a: 70040, vtt: 310, wer: 0.0, heard: "85fbc749e8769fc3", voice: 0}
+  - {trip: "moon-phases", stop: "far-side", hash: "e62e08399a6177fd", seconds: 15.48, words: 51, lufs: -16.4, opus: 61134, m4a: 80255, vtt: 345, wer: 0.0196, heard: "fa348d46f9740492", voice: 0}
+  - {trip: "moon-phases", stop: "shadow", hash: "fbb6d2ef1ea16827", seconds: 17.42, words: 54, lufs: -16.2, opus: 69878, m4a: 90252, vtt: 376, wer: 0.0, heard: "3d3660e8513d2517", voice: 0}
+  - {trip: "moon-phases", stop: "tonight", hash: "cd60808c4c0c6995", seconds: 15.11, words: 48, lufs: -16.4, opus: 59953, m4a: 78516, vtt: 352, wer: 0.0, heard: "b264da6cd628d5bc", voice: 0}
+  - {trip: "the-sun-today", stop: "star", hash: "d2aaff1ba2536087", seconds: 16.44, words: 48, lufs: -16.5, opus: 64479, m4a: 85254, vtt: 346, wer: 0.0, heard: "d333784d9a19b53f", voice: 0}
+  - {trip: "the-sun-today", stop: "spots", hash: "8a98b46ee39637dc", seconds: 18.15, words: 51, lufs: -16.5, opus: 71610, m4a: 93947, vtt: 383, wer: 0.0192, heard: "780a3cca5bcf430d", voice: 0}
+  - {trip: "the-sun-today", stop: "eight-minutes", hash: "24f2f1360f52b712", seconds: 17.81, words: 57, lufs: -16.5, opus: 70190, m4a: 92208, vtt: 394, wer: 0.0, heard: "cb336ca3d5f664b7", voice: 0}
+  - {trip: "the-sun-today", stop: "wind", hash: "7edf58321594730d", seconds: 20.53, words: 53, lufs: -16.5, opus: 81152, m4a: 106118, vtt: 431, wer: 0.0, heard: "438c507e47402b01", voice: 0}
+  - {trip: "the-sun-today", stop: "aurora", hash: "0cb893e191a6c1a8", seconds: 17.93, words: 53, lufs: -16.5, opus: 70963, m4a: 92860, vtt: 391, wer: 0.0, heard: "41772c5eb8f80a87", voice: 0}
+  - {trip: "the-sun-today", stop: "scale", hash: "6034c649ece34114", seconds: 14.79, words: 44, lufs: -16.3, opus: 57743, m4a: 76778, vtt: 326, wer: 0.0, heard: "e8bececdb3a0a745", voice: 0}
+  - {trip: "the-sun-today", stop: "home", hash: "13f4dce58cd47e65", seconds: 16.59, words: 51, lufs: -16.3, opus: 65140, m4a: 85906, vtt: 393, wer: 0.0, heard: "dfc6a684efbe0daa", voice: 0}
+  - {trip: "planets-tonight", stop: "where", hash: "a67b7b973c858734", seconds: 17.1, words: 57, lufs: -16.5, opus: 67307, m4a: 88514, vtt: 373, wer: 0.0, heard: "6129da05a14fc994", voice: 0}
+  - {trip: "planets-tonight", stop: "mercury", hash: "3386572531092327", seconds: 15.53, words: 47, lufs: -16.5, opus: 60761, m4a: 80690, vtt: 337, wer: 0.0, heard: "c29e212c1d28d23b", voice: 0}
+  - {trip: "planets-tonight", stop: "venus", hash: "493b94b8aedfc908", seconds: 16.93, words: 50, lufs: -16.5, opus: 66407, m4a: 87644, vtt: 367, wer: 0.0, heard: "ec086e6ac85eea66", voice: 0}
+  - {trip: "planets-tonight", stop: "mars", hash: "776237b9a5a019af", seconds: 11.86, words: 35, lufs: -16.4, opus: 46525, m4a: 61999, vtt: 257, wer: 0.0, heard: "87060a8479ecb878", voice: 0}
+  - {trip: "planets-tonight", stop: "jupiter", hash: "772116e36e1f1794", seconds: 14.85, words: 41, lufs: -16.5, opus: 57642, m4a: 77212, vtt: 331, wer: 0.0, heard: "b18a7a2239052787", voice: 0}
+  - {trip: "planets-tonight", stop: "saturn", hash: "0d1ba97d9a0c1ad0", seconds: 15.93, words: 41, lufs: -16.5, opus: 62213, m4a: 82646, vtt: 346, wer: 0.0, heard: "159353f23feaedd2", voice: 0}
+  - {trip: "planets-tonight", stop: "uranus", hash: "6b40ba10def9e658", seconds: 20.41, words: 61, lufs: -16.2, opus: 80947, m4a: 105466, vtt: 420, wer: 0.0, heard: "7e35c5ed5e22c535", voice: 0}
+  - {trip: "planets-tonight", stop: "neptune", hash: "3da83cdfd674f063", seconds: 14.07, words: 39, lufs: -16.5, opus: 54957, m4a: 73083, vtt: 317, wer: 0.0, heard: "e2c6f05a71a02fdb", voice: 0}
+  - {trip: "planets-tonight", stop: "your-sky", hash: "0235e0bd34f030af", seconds: 15.58, words: 46, lufs: -16.2, opus: 60732, m4a: 80907, vtt: 346, wer: 0.0, heard: "554739554e53a8d0", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "planet", hash: "7ff3392031d1c711", seconds: 17.36, words: 50, lufs: -16.4, opus: 68280, m4a: 89818, vtt: 369, wer: 0.02, heard: "b20633ee8d4f25c3", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "olympus", hash: "edc663a1fb9f8e63", seconds: 15.98, words: 43, lufs: -16.4, opus: 62426, m4a: 82863, vtt: 330, wer: 0.0, heard: "68acc17e2926647b", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "valles", hash: "9aec19edc59f2681", seconds: 17.29, words: 46, lufs: -16.3, opus: 68233, m4a: 89600, vtt: 366, wer: 0.0, heard: "4d5d6973eb04aa0e", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "viking-1", hash: "205f863c6e476643", seconds: 17.45, words: 51, lufs: -16.4, opus: 68329, m4a: 90470, vtt: 380, wer: 0.0, heard: "c6af0c1b541ae795", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "opportunity", hash: "a159ddea0b306f0b", seconds: 17.11, words: 44, lufs: -16.3, opus: 67659, m4a: 88514, vtt: 356, wer: 0.0, heard: "5f865f1b6070c6b6", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "gale", hash: "6b8c0f778c182118", seconds: 19.26, words: 54, lufs: -16.4, opus: 77312, m4a: 99598, vtt: 358, wer: 0.0, heard: "7fd56e845fedc723", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "elysium", hash: "5a219c182800bdf7", seconds: 17.92, words: 47, lufs: -16.3, opus: 70856, m4a: 92860, vtt: 397, wer: 0.0, heard: "43f3bb75e8a375ab", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "jezero", hash: "49cf580c348c8ef8", seconds: 20.44, words: 50, lufs: -16.3, opus: 80911, m4a: 105683, vtt: 402, wer: 0.0, heard: "901717e03eaf3dc4", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "phobos", hash: "d186d8d2a2b41a75", seconds: 20.87, words: 53, lufs: -16.4, opus: 83568, m4a: 107856, vtt: 427, wer: 0.0385, heard: "7b1060c189bc24bf", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "seasons", hash: "2853b9748b0ed557", seconds: 18.85, words: 53, lufs: -16.5, opus: 74300, m4a: 97424, vtt: 373, wer: 0.0185, heard: "897742634ec160ca", voice: 0}
+  - {trip: "life-of-a-star", stop: "nursery", hash: "eccb0d2af152c931", seconds: 18.54, words: 52, lufs: -16.5, opus: 72707, m4a: 95903, vtt: 418, wer: 0.0, heard: "6e2c317ca11a8d74", voice: 0}
+  - {trip: "life-of-a-star", stop: "young", hash: "7f223d20211db399", seconds: 17.86, words: 53, lufs: -16.5, opus: 71381, m4a: 92426, vtt: 386, wer: 0.02, heard: "4992bfc66ff4f819", voice: 0}
+  - {trip: "life-of-a-star", stop: "sun", hash: "b70d7fe6ff7fbe8e", seconds: 19.61, words: 60, lufs: -16.5, opus: 77738, m4a: 101336, vtt: 410, wer: 0.0, heard: "7c1d7bfed9a4d70f", voice: 0}
+  - {trip: "life-of-a-star", stop: "giant", hash: "a37f490105f179d9", seconds: 18.24, words: 54, lufs: -16.5, opus: 71283, m4a: 94382, vtt: 405, wer: 0.0, heard: "3aebc2ebb07df1ca", voice: 0}
+  - {trip: "life-of-a-star", stop: "supergiant", hash: "90236fcd7570fb6e", seconds: 18.63, words: 53, lufs: -16.4, opus: 73311, m4a: 96338, vtt: 409, wer: 0.0, heard: "b3a8aacee9bc83c6", voice: 0}
+  - {trip: "life-of-a-star", stop: "letting-go", hash: "7161f7879e4f95bf", seconds: 19.65, words: 56, lufs: -16.4, opus: 77398, m4a: 101554, vtt: 415, wer: 0.0, heard: "f5b2e77c9f2d8ea9", voice: 0}
+  - {trip: "life-of-a-star", stop: "white-dwarf", hash: "3059fef79923c670", seconds: 18.5, words: 57, lufs: -16.4, opus: 73159, m4a: 95686, vtt: 384, wer: 0.0, heard: "41d018f0f4ab8978", voice: 0}
+  - {trip: "life-of-a-star", stop: "explosion", hash: "0dd33ed273944cc5", seconds: 20.07, words: 56, lufs: -16.5, opus: 79503, m4a: 103727, vtt: 415, wer: 0.0, heard: "d03524e93d7eba94", voice: 0}
+  - {trip: "life-of-a-star", stop: "pulsar", hash: "18600b7b87a909b9", seconds: 19.74, words: 62, lufs: -16.4, opus: 77975, m4a: 101988, vtt: 439, wer: 0.0, heard: "b57a8de01a8603aa", voice: 0}
+  - {trip: "black-holes", stop: "swan", hash: "7bc06b3cb6ed4a05", seconds: 20.61, words: 61, lufs: -16.3, opus: 82068, m4a: 106552, vtt: 448, wer: 0.0164, heard: "4cd95f7bc58793c4", voice: 0}
+  - {trip: "black-holes", stop: "what", hash: "941e113c8feff59c", seconds: 20.22, words: 61, lufs: -16.4, opus: 79184, m4a: 104379, vtt: 466, wer: 0.0, heard: "d4e31852f619dbef", voice: 0}
+  - {trip: "black-holes", stop: "from-home", hash: "678492e2284a93d1", seconds: 16.65, words: 48, lufs: -16.4, opus: 65956, m4a: 86340, vtt: 365, wer: 0.0, heard: "8ec5afa2aa44a391", voice: 0}
+  - {trip: "black-holes", stop: "centre", hash: "dafc0d8ae52f936d", seconds: 22.43, words: 59, lufs: -16.5, opus: 89901, m4a: 115680, vtt: 448, wer: 0.0, heard: "09f67183f5d66e74", voice: 0}
+  - {trip: "black-holes", stop: "m87", hash: "4c87a724e8044d2c", seconds: 21.92, words: 64, lufs: -16.4, opus: 87628, m4a: 113072, vtt: 429, wer: 0.0, heard: "ab3a551d9a8c7581", voice: 0}
+  - {trip: "black-holes", stop: "sun", hash: "d4643686f5e9e3a4", seconds: 19.11, words: 59, lufs: -16.4, opus: 74951, m4a: 98728, vtt: 437, wer: 0.0169, heard: "2a86f05fc0eb00ec", voice: 1}
+  - {trip: "through-a-telescope", stop: "eye", hash: "421f8c7f39656a29", seconds: 15.63, words: 50, lufs: -16.4, opus: 61113, m4a: 81124, vtt: 340, wer: 0.0, heard: "48a171061edcfb3b", voice: 0}
+  - {trip: "through-a-telescope", stop: "camera", hash: "f716f50fb24e8f7c", seconds: 18.24, words: 55, lufs: -16.4, opus: 71824, m4a: 94382, vtt: 441, wer: 0.0, heard: "f797c455a93929e2", voice: 0}
+  - {trip: "through-a-telescope", stop: "deep", hash: "6e90b12a5c8fa4a1", seconds: 13.76, words: 39, lufs: -16.4, opus: 53575, m4a: 71562, vtt: 315, wer: 0.0, heard: "56016ed2a7c1f4d7", voice: 0}
+  - {trip: "through-a-telescope", stop: "horsehead", hash: "c195f133750a8dbb", seconds: 18.58, words: 54, lufs: -16.4, opus: 73992, m4a: 96120, vtt: 392, wer: 0.0, heard: "107ec13d09ade9f2", voice: 0}
+  - {trip: "through-a-telescope", stop: "carina", hash: "19c13137908fd43d", seconds: 16.57, words: 43, lufs: -16.4, opus: 65301, m4a: 85906, vtt: 356, wer: 0.0233, heard: "0a8720884beac52a", voice: 0}
+  - {trip: "through-a-telescope", stop: "webb", hash: "2fa2a849125b74cc", seconds: 24.71, words: 66, lufs: -16.4, opus: 99733, m4a: 127416, vtt: 477, wer: 0.0156, heard: "cec6034f9f925529", voice: 0}
+  - {trip: "through-a-telescope", stop: "trifid", hash: "9fe3d961ccbe1a40", seconds: 19.6, words: 50, lufs: -16.5, opus: 77842, m4a: 101336, vtt: 390, wer: 0.0, heard: "c2660ba7f273253a", voice: 0}
+  - {trip: "through-a-telescope", stop: "whirlpool", hash: "ecf1bf9a8d016d73", seconds: 19.22, words: 50, lufs: -16.4, opus: 76145, m4a: 99380, vtt: 408, wer: 0.0, heard: "4695a64bebf85066", voice: 0}
+  - {trip: "through-a-telescope", stop: "andromeda", hash: "6c0ce87bbf3006fa", seconds: 17.22, words: 50, lufs: -16.4, opus: 68411, m4a: 89166, vtt: 371, wer: 0.0, heard: "d21b8986b9e27528", voice: 0}
+  - {trip: "a-dark-sky", stop: "lights", hash: "4cac25ee8ec699de", seconds: 15.82, words: 51, lufs: -16.2, opus: 61835, m4a: 81994, vtt: 379, wer: 0.0, heard: "8f1421a56a08cdbc", voice: 0}
+  - {trip: "a-dark-sky", stop: "above", hash: "43c9f139542b9a89", seconds: 15.78, words: 48, lufs: -16.5, opus: 61950, m4a: 81776, vtt: 351, wer: 0.0, heard: "d30baed86339201f", voice: 0}
+  - {trip: "a-dark-sky", stop: "city", hash: "d4249a0cd59e71ee", seconds: 13.77, words: 39, lufs: -16.4, opus: 53336, m4a: 71562, vtt: 344, wer: 0.0513, heard: "a7160d1f0661f74a", voice: 0}
+  - {trip: "a-dark-sky", stop: "town", hash: "ca8c16283cf3cc56", seconds: 13.2, words: 41, lufs: -16.4, opus: 51890, m4a: 68736, vtt: 286, wer: 0.0, heard: "c899b839363a895c", voice: 0}
+  - {trip: "a-dark-sky", stop: "dark", hash: "b6ea95a21e11c484", seconds: 18.7, words: 57, lufs: -16.5, opus: 73617, m4a: 96772, vtt: 390, wer: 0.0, heard: "a04b31569eb55740", voice: 0}
+  - {trip: "a-dark-sky", stop: "cost", hash: "e0e7e8c11f10a04f", seconds: 20.48, words: 62, lufs: -16.4, opus: 80635, m4a: 105683, vtt: 462, wer: 0.0, heard: "af091dab1943fb0b", voice: 0}
+  - {trip: "a-dark-sky", stop: "find", hash: "bc87ba5f9688a4e5", seconds: 14.47, words: 51, lufs: -16.4, opus: 56460, m4a: 75256, vtt: 351, wer: 0.0, heard: "84d8b7fb0fd9ea0d", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "belt", hash: "835575f63a11eebc", seconds: 19.47, words: 59, lufs: -16.4, opus: 77212, m4a: 100684, vtt: 414, wer: 0.0185, heard: "cf126cd17c88804a", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "ceres", hash: "bba8130468f4d775", seconds: 20.41, words: 56, lufs: -16.4, opus: 81438, m4a: 105466, vtt: 401, wer: 0.0, heard: "936a663b47521391", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "near", hash: "a84cb7018ca77107", seconds: 18.74, words: 55, lufs: -16.4, opus: 73351, m4a: 96990, vtt: 432, wer: 0.0, heard: "f6301ea24f3d32b2", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "didymos", hash: "74a1066fdf913e72", seconds: 19.38, words: 51, lufs: -16.3, opus: 76049, m4a: 100250, vtt: 415, wer: 0.0, heard: "ef83b9ea3ad53d8f", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "hera", hash: "b2be1a559262a196", seconds: 20.6, words: 55, lufs: -16.4, opus: 82633, m4a: 106335, vtt: 371, wer: 0.0, heard: "db320d49b262ff1f", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "bennu", hash: "a47468668ca0e6e0", seconds: 20.84, words: 55, lufs: -16.2, opus: 83723, m4a: 107639, vtt: 413, wer: 0.0, heard: "8428b15e57662fb0", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "apophis", hash: "6685f4e31f5a1608", seconds: 24.97, words: 61, lufs: -16.4, opus: 99760, m4a: 128720, vtt: 505, wer: 0.0, heard: "81c2867652821d7d", voice: 0}
+  - {trip: "asteroids-that-come-close", stop: "home", hash: "0a950f7a956c7a88", seconds: 17.59, words: 52, lufs: -16.4, opus: 69018, m4a: 91122, vtt: 407, wer: 0.0, heard: "1ab1c0b93f6b194d", voice: 0}
+  - {trip: "satellites-and-junk", stop: "one", hash: "65b4eb8538cff985", seconds: 17.32, words: 45, lufs: -16.3, opus: 67527, m4a: 89600, vtt: 396, wer: 0.0, heard: "2ccba19437ee3a66", voice: 0}
+  - {trip: "satellites-and-junk", stop: "all", hash: "64b007c69c0fe7e4", seconds: 14.5, words: 41, lufs: -16.3, opus: 59850, m4a: 75256, vtt: 314, wer: 0.0, heard: "6e289dfc32b0ab79", voice: 0}
+  - {trip: "satellites-and-junk", stop: "low", hash: "2616349682884e0b", seconds: 16.68, words: 46, lufs: -16.4, opus: 65858, m4a: 86340, vtt: 361, wer: 0.0, heard: "8b70866e46aae53d", voice: 0}
+  - {trip: "satellites-and-junk", stop: "ring", hash: "df954c71c59e6b7b", seconds: 18.64, words: 51, lufs: -16.4, opus: 73551, m4a: 96338, vtt: 391, wer: 0.02, heard: "015258498a2adb96", voice: 0}
+  - {trip: "satellites-and-junk", stop: "hubble", hash: "3753a8acd49fc917", seconds: 15.25, words: 39, lufs: -16.5, opus: 60421, m4a: 79168, vtt: 313, wer: 0.0, heard: "4163b537a2bdb589", voice: 0}
+  - {trip: "satellites-and-junk", stop: "dead", hash: "e283e7865ebbff0c", seconds: 17.61, words: 44, lufs: -16.4, opus: 69359, m4a: 91122, vtt: 358, wer: 0.0244, heard: "440f5b0b804ddc54", voice: 0}
+  - {trip: "satellites-and-junk", stop: "rocket", hash: "3bd25a07eea61926", seconds: 16.71, words: 49, lufs: -16.4, opus: 66209, m4a: 86558, vtt: 369, wer: 0.0, heard: "80dc56d2e96e2ac4", voice: 0}
+  - {trip: "satellites-and-junk", stop: "down", hash: "922ea1758ea77648", seconds: 17.56, words: 49, lufs: -16.5, opus: 69105, m4a: 90904, vtt: 404, wer: 0.0204, heard: "dc1efd692109e339", voice: 0}
+  - {trip: "comets-and-meteors", stop: "halley", hash: "7d299bfac0ea7cdf", seconds: 21.17, words: 65, lufs: -16.5, opus: 83993, m4a: 109378, vtt: 435, wer: 0.0, heard: "a547d664a5ef6a7c", voice: 0}
+  - {trip: "comets-and-meteors", stop: "comet", hash: "62e972b25c0df5d9", seconds: 21.14, words: 62, lufs: -16.5, opus: 84573, m4a: 109160, vtt: 413, wer: 0.0, heard: "6e9392d403f0b1cc", voice: 0}
+  - {trip: "comets-and-meteors", stop: "stranger", hash: "1cf97a191dfe42a4", seconds: 18.37, words: 55, lufs: -16.5, opus: 72583, m4a: 95034, vtt: 407, wer: 0.0185, heard: "2b788a4b3347d5eb", voice: 0}
+  - {trip: "comets-and-meteors", stop: "dust", hash: "6d285895b63bfa72", seconds: 19.96, words: 62, lufs: -16.5, opus: 78767, m4a: 103075, vtt: 447, wer: 0.0, heard: "4fba1b7b116300bb", voice: 0}
+  - {trip: "comets-and-meteors", stop: "phaethon", hash: "77eea081ee50e49d", seconds: 18.9, words: 58, lufs: -16.4, opus: 74622, m4a: 97642, vtt: 399, wer: 0.0, heard: "d941abdbc8afa327", voice: 0}
+  - {trip: "comets-and-meteors", stop: "radiant", hash: "96e329b465dfccf2", seconds: 19.89, words: 60, lufs: -16.4, opus: 78117, m4a: 102858, vtt: 438, wer: 0.0, heard: "1e5f657c3ffdd368", voice: 0}
+  - {trip: "comets-and-meteors", stop: "tonight", hash: "5f649cd4bc75d8f2", seconds: 17.38, words: 58, lufs: -16.4, opus: 67828, m4a: 90035, vtt: 422, wer: 0.0, heard: "d36ab1ba8c0e13ec", voice: 0}
+  - {trip: "comets-and-meteors", stop: "watch", hash: "9746748a829f8c14", seconds: 14.39, words: 43, lufs: -16.4, opus: 55267, m4a: 74822, vtt: 356, wer: 0.0, heard: "62c4803ef310d148", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "cloud", hash: "6fb7a899efc0dfaa", seconds: 18.11, words: 53, lufs: -16.4, opus: 71906, m4a: 93730, vtt: 374, wer: 0.0, heard: "fe98bd433e4a7336", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "flat", hash: "f0fd88f17a47c0a2", seconds: 13.49, words: 36, lufs: -16.4, opus: 53200, m4a: 70258, vtt: 278, wer: 0.0, heard: "86d71ae3e22e0050", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "sun", hash: "73a221f3b5454b87", seconds: 17.93, words: 51, lufs: -16.5, opus: 71627, m4a: 92860, vtt: 354, wer: 0.0, heard: "3425429d0f5ef9fc", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "rock", hash: "12d4bb2a62d6a491", seconds: 18.19, words: 48, lufs: -16.5, opus: 71494, m4a: 94164, vtt: 376, wer: 0.0, heard: "f7becab6155d31fb", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "giant", hash: "7c5a40c00fa8ee9a", seconds: 17.52, words: 49, lufs: -16.5, opus: 70073, m4a: 90687, vtt: 344, wer: 0.0, heard: "77f3f1e60544c37f", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "leftovers", hash: "cc87309d6b81695b", seconds: 17.91, words: 45, lufs: -16.5, opus: 70175, m4a: 92643, vtt: 404, wer: 0.0222, heard: "9d825e751025dd97", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "moon", hash: "220f273a39b32d09", seconds: 20.02, words: 56, lufs: -16.5, opus: 79693, m4a: 103510, vtt: 426, wer: 0.0179, heard: "6d1497c36c240de1", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "far", hash: "a8cffc6fb715a07b", seconds: 16.0, words: 42, lufs: -16.2, opus: 62323, m4a: 82863, vtt: 342, wer: 0.0, heard: "fb33d5ba6bf7f28d", voice: 0}
+  - {trip: "birth-of-the-solar-system", stop: "home", hash: "4ba9c863e8a6a21b", seconds: 13.9, words: 42, lufs: -16.5, opus: 54219, m4a: 72214, vtt: 328, wer: 0.0, heard: "571c4699d828b590", voice: 0}
+  - {trip: "back-to-the-moon", stop: "last", hash: "da5127a8f6211ca5", seconds: 21.5, words: 54, lufs: -16.3, opus: 85476, m4a: 110899, vtt: 419, wer: 0.0189, heard: "926e41aceeb55492", voice: 0}
+  - {trip: "back-to-the-moon", stop: "launch", hash: "8418af134e47d405", seconds: 16.57, words: 42, lufs: -16.5, opus: 65794, m4a: 85906, vtt: 340, wer: 0.0952, heard: "641bba445779d7dd", voice: 0}
+  - {trip: "back-to-the-moon", stop: "far-side", hash: "9021845cb06b5653", seconds: 18.43, words: 55, lufs: -16.4, opus: 74830, m4a: 95468, vtt: 388, wer: 0.0392, heard: "a5d9ee116cbf5d9d", voice: 0}
+  - {trip: "back-to-the-moon", stop: "earth-from-there", hash: "5c7c3c2e2fb358a7", seconds: 14.19, words: 46, lufs: -16.2, opus: 55081, m4a: 73735, vtt: 330, wer: 0.0, heard: "619a76eb8dc6e77c", voice: 0}
+  - {trip: "back-to-the-moon", stop: "south-pole", hash: "299f457cf4e26e46", seconds: 19.12, words: 56, lufs: -16.4, opus: 75035, m4a: 98946, vtt: 428, wer: 0.0, heard: "1eab05e551c05707", voice: 0}

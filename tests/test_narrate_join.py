@@ -227,6 +227,18 @@ check(narrate.clip_hash(some, {**cfg, "voice": {**cfg["voice"], "pace": {"close"
 check(int(rules["sentences"]) >= 2, "a stop is said a paragraph at a time, not a sentence at a time")
 for key, pairs in (cfg.get("phrasing") or {}).items():
     check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"phrasing names a stop that exists ({key})")
+dash = {**cfg, "join_own": {"t/s": {"joiners": [" — "], "drift": 0.4}}}
+got = narrate.join_rules(dash, "t/s")
+check(got["joiners"] == [" — "] and got["drift"] == 0.4 and got["sentences"] == rules["sentences"] and narrate.join_rules(dash, "t/x") == rules,
+      "join_own changes the rules it names for the stop it names, and no other")
+check(narrate.clip_hash(some, dash, "t/s") != narrate.clip_hash(some, cfg, "t/s") and narrate.clip_hash(some, dash, "t/x") == narrate.clip_hash(some, cfg, "t/x"), "...and only that stop's clip goes stale")
+for key, own in (cfg.get("join_own") or {}).items():
+    check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"join_own names a stop that exists ({key})")
+    check(set(own) <= set(narrate.JOIN_DEFAULT), f"join_own {key}: only rules that exist ({sorted(own)})")
+# The comma the voice ran past: a title's 160 ms pause, then a comma's 400 ms a second later.
+e = env((1.0, 600), (0.0, 160), (1.0, 900), (0.0, 400), (1.0, 6000))
+check(near(narrate.find_cuts(e, F, [12, 120], CUT), [(1.66, 2.06)]) and near(narrate.find_cuts(e, F, [12, 120], {**CUT, "drift": 0.4}), [(0.6, 0.76)]),
+      "a title with a shorter pause than the comma after it: the default takes the comma, a stop's own drift takes the title")
 for key in cfg.get("join_short") or {}:
     check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"join_short names a stop that exists ({key})")
 

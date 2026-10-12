@@ -22,20 +22,28 @@ WRITTEN FOR THE EYE, READ FOR THE EAR. spoken() turns what a synthesiser trips o
 REFUSES a digit it does not know how to say, rather than leaving the model to guess. Names the
 grapheme-to-phoneme step gets wrong are in the registry's `lexicon`, as phonemes.
 
-ONE CLIP PER STOP, ONE CUE PER SENTENCE. A long sentence is synthesised on its own and the clip is
-the sentences joined with pauses this script chooses, so the WebVTT timings are sample counts and
-not an aligner's guess.
+ONE CLIP PER STOP, ONE CUE PER SENTENCE. The clip is the stop's sentences with pauses this script
+chooses between them, so the WebVTT timings are sample counts and not an aligner's guess.
+
+A PARAGRAPH AT A TIME (2026-10-12). Until then every long sentence was synthesised alone, slowed,
+and joined with one fixed pause: each began on the same note and fell the same way, which is how
+a list is read (registry/narration.yaml has the measurements). Now the voice is given two or
+three sentences in one pass (passes(), `timing.join.sentences`) and carries its pitch across the
+full stops; the pass is cut where the model itself paused at each full stop (find_cuts()), so
+the cue times are still sample counts. The pause put back between two sentences follows what was
+just said and is moved by a seeded amount (gaps_for(), `timing.vary`): no two alike, and the
+same every render. `phrasing` gives the voice a comma the caption does not have; never a word.
 
 A SHORT SENTENCE IS NEVER SAID ALONE (internal #441). Given two or three words and a full stop,
 the model puts a vowel-like sound before them and another after: "Venus." came out as "a Venusa",
 "Why it is flat." as "why it is flatter", in most of the first 195 clips. So the title (and any
-sentence of `timing.join.words` words or fewer) is said IN ONE PASS with its neighbour (passes()),
-and the pass is cut where the model itself paused (find_pause()): the cue times are still sample
-counts, and the pause between the two is still the registry's, not the model's. Levelled to -16 LUFS (a gain and a peak limiter, encode() says why), then
+sentence of `timing.join.words` words or fewer) is said IN ONE PASS with its neighbour.
+
+Levelled to -16 LUFS (a gain and a peak limiter, encode() says why), then
 Opus at 32 kbps mono and an AAC twin for a Safari that cannot decode Opus (audio/pick.js).
 
-IDEMPOTENT BY HASH. A clip's hash is its spoken script, the voice, the speed, the engine's id and
-the pauses. A stop whose hash is in the manifest and whose files are there is left alone; change a
+IDEMPOTENT BY HASH. A clip's hash is its spoken script, the voice, the speed, the engine's id, the
+pauses and, since they are seeded by it, the stop's name. A stop whose hash is in the manifest and whose files are there is left alone; change a
 card's words and --check fails until that one stop is rendered again.
 
 HEARD BY A MACHINE. Loudness and pace do not notice a name said wrong. scripts/listen_check.py
@@ -85,7 +93,7 @@ SPACES = "\u00a0\u2009\u202f"
 
 
 def int_words(n: int) -> str:
-    """British: "one hundred and nine thousand three hundred and eighty-nine"."""
+    """British: "one hundred and nine thousand, three hundred and eighty-nine"."""
     if n < 0:
         return "minus " + int_words(-n)
     if n < 20:
@@ -100,7 +108,10 @@ def int_words(n: int) -> str:
             head, rest = divmod(n, size)
             if not rest:
                 return f"{int_words(head)} {name}"
-            joiner = " and " if rest < 100 else " "
+            # A comma after the thousands, as a person groups a long number (2026-10-12): without
+            # it the voice broke "three hundred and | eighty-four thousand four hundred" after the
+            # first "and", and two recognisers wrote "300 and 84,400".
+            joiner = " and " if rest < 100 else ", "
             return f"{int_words(head)} {name}{joiner}{int_words(rest)}"
     raise ValueError(n)
 
@@ -271,6 +282,8 @@ def clip_hash(cues: list, cfg: dict, key: str | None = None) -> str:
     own = (cfg.get("join_short") or {}).get(key) if key else None
     if own is not None:            # only the stops it names: nobody else's clip goes stale
         payload.append({"join_short": int(own)})
+    if key and (cfg.get("join_own") or {}).get(key):
+        payload.append({"join_own": cfg["join_own"][key]})
     blob = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()[:16]
 
@@ -299,6 +312,11 @@ def join_rules(cfg: dict, key: str | None = None) -> dict:
     own = (cfg.get("join_short") or {}).get(key) if key else None
     if own is not None:
         rules["words"] = int(own)
+    # `join_own`: the join rules a stop needs for itself. "TRAPPIST-1 b. The innermost, ..." was
+    # said with a longer pause at the comma than at the title's full stop, and the cut went to
+    # the comma: that stop is joined with the dash and looks nearer the expected place.
+    if key and (cfg.get("join_own") or {}).get(key):
+        rules.update(cfg["join_own"][key])
     return rules
 
 
@@ -763,7 +781,9 @@ class Voice:
         groups = passes(marked, has_title, rules)
         pace = self.cfg["voice"].get("pace") or {}
         for g, group in enumerate(groups):
-            # A guide settles in, moves along, and slows to land the last thing said.
+            # The last pass a little slower, so the ending is not hurried (voice.pace.close; a
+            # stop that is one pass is all "last"). `open` does the same for the first pass
+            # and is not used by the registry today.
             factor = min(float(pace.get("open", 1.0)) if g == 0 else 1.0,
                          float(pace.get("close", 1.0)) if g == len(groups) - 1 else 1.0)
             parts, rate, shortest = self.say_pass([marked[i] for i in group], voice_id, rules, factor)

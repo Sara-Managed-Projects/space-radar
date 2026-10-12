@@ -53,6 +53,7 @@ for script, heard in [
     ("nineteen oh five", "1905"),
     ("nought point one two of a pixel", "0.12 of a pixel"),
     ("zero point one two of a pixel", "0.12 of a pixel"),
+    ("Sagittarius A star. Nobody can see it.", "Sagittarius A*. Nobody can see it."),
     ("eight and a half light-years out", "8 .5 light years out"),
     ("four and a half billion years old", "4.5 billion years old"),
     ("two and a half million light-years", "2.5 million light years"),

@@ -296,6 +296,7 @@ def canon(text: str) -> list:
     # what a recogniser writes for numbers: "109 ,389", "10 .8", "1,000"
     s = re.sub(r"(?<=\d)\s?,(?=\d{3}\b)", "", s)            # not "11, 322": that is a list
     s = re.sub(r"(?<=\d)\s\.(?=\d)", ".", s)
+    s = re.sub(r"\ba\*", "a star", s)                      # "Sagittarius A*", as a recogniser writes it
     s = s.replace("%", " percent ").replace("&", " and ").replace("°", " degrees ")
     s = re.sub(r"\$\s?(\d[\d.]*)", r"\1 dollars", s)
     s = re.sub(r"\b(\d+)(?:st|nd|rd|th)\b", lambda m: _ordinal(int(m.group(1))), s)
