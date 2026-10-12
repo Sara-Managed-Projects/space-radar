@@ -49,6 +49,7 @@ import { gmst, geodeticToEcef } from '../propagate/frames.js';
 import { ECLIPSE_GLSL, MOON_RADIUS_KM } from './eclipse.js';
 import { EARTH_DAY_PLACEHOLDER } from './earthplaceholder.js';
 import { EARTH_AIR, EARTH_AERIAL_GLSL, AERIAL, createEarthAir, settleEarthAir, setEarthAirSteps } from './atmosphere.js';
+import { CLEAR_AT_EQUATOR_C, CLEAR_FLAT_TO_DEG, CLEAR_LAPSE_C_PER_DEG, CLEAR_FLOOR_C, CLEAR_SPAN_C, STORM_TOP, clearSkyC } from './cloudcompose.js';
 
 // --- tunables, all named, none buried in the shader -------------------------------------------
 
@@ -176,6 +177,142 @@ export function reliefLight(vE, vW, vN, vS, cosLat, sun, gain, land = 1) {
  */
 export const STORM_TOPS = { dip: 0.069, shadow: 1.9, bright: 0.12 };
 
+/**
+ * CLOUDS WITH HEIGHT (spec 0072 requirement 6, 2026-10-12). From low orbit, on tier 1 and up, the
+ * flat cloud term below gives way to a shell of real thickness (scene/cloudshell.js, fetched when it
+ * is first wanted) WHERE HEIGHT CAN BE SEEN: toward the limb and under a low Sun. Straight down
+ * under a high Sun a cloud's height is invisible, and the flat layer is free and identical, so it
+ * stays. What the two share lives here, because this shader has to throw the shell's shadow:
+ *   baseKm, topKm  the slab a cloud may stand in
+ *   thicker        every height is DRAWN this many times what it is (the Film look; the Measured
+ *                  look draws 1). ADJUSTED, and the Earth's card says so (copy/en.js
+ *                  worldDeparture.earth). From the station's height the horizon is 2 300 km off:
+ *                  a 12 km top is 5 pixels there, and 22 drawn four times.
+ *   lapseCPerKm    a cloud top's height from how much colder it is than clear sky at its latitude:
+ *                  the standard atmosphere's 6.5 C a kilometre
+ *   softKm         the slab's lower and upper edge fade over this much (real km)
+ *   minThickKm     the thinnest column drawn
+ *   shadowTanMax   the shadow's reach stops growing at this tangent of the Sun's zenith angle
+ *                  (76 degrees): the ground is nearly dark by then
+ *   view, sun      WHERE THE SHELL DRAWS (cloudShellShare): all of the cloud where the view's
+ *                  zenith cosine at the ground is under view[0] (looking 70 degrees or more from
+ *                  straight down) or the Sun's is under sun[0] (8.6 degrees up or less); none of
+ *                  it past view[1] AND sun[1], where the flat layer draws it all
+ */
+export const CLOUD_SHELL = {
+  baseKm: 2, topKm: 12, thicker: 4, lapseCPerKm: 6.5, softKm: 0.75, minThickKm: 1.5,
+  shadowTanMax: 4, view: [0.35, 0.6], sun: [0.15, 0.35],
+};
+/** The ground's shadow is marched in three equal steps of height: their edges and their middles, km. */
+const SHADOW_CUTS = [0, 1, 2, 3].map((i) => CLOUD_SHELL.baseKm + ((CLOUD_SHELL.topKm - CLOUD_SHELL.baseKm) * i) / 3);
+const SHADOW_AT = [0, 1, 2].map((i) => (SHADOW_CUTS[i] + SHADOW_CUTS[i + 1]) / 2);
+const clampKm = (h) => Math.min(CLOUD_SHELL.topKm, Math.max(CLOUD_SHELL.baseKm, h));
+
+/** A cloud top's height, km, from its brightness temperature at a latitude. Cold tops are high. */
+export function cloudTopKmFromTemperature(tC, latDeg) {
+  return clampKm((clearSkyC(latDeg) - tC) / CLOUD_SHELL.lapseCPerKm);
+}
+
+/**
+ * The same from what the live picture holds (scene/cloudcompose.js): its opacity is how far the top
+ * is below clear sky's temperature, as a share of CLEAR_SPAN_C, and its third channel how far into
+ * STORM_TOP's range it is. The shader's twin is cloudTopLiveKm() in CLOUD_HEIGHT_GLSL.
+ */
+export function cloudTopKmFromLive(opacity, stormTop, latDeg) {
+  const clear = clearSkyC(latDeg);
+  // The opacity stops at CLEAR_SPAN_C below clear sky; the storm channel carries the top on from
+  // there to STORM_TOP.fullC. Linear in both, so a blurred storm's edge is a slope and not a cliff
+  // (the first version switched to the storm's temperature at its edge, and every anvil stood on a wall).
+  const tC = clear - CLEAR_SPAN_C * opacity - Math.max(0, clear - CLEAR_SPAN_C - STORM_TOP.fullC) * stormTop;
+  return clampKm((clear - tC) / CLOUD_SHELL.lapseCPerKm);
+}
+
+/** Where no temperature is held (the static map): the brighter the cloud, the higher its top. ILLUSTRATIVE. */
+export function cloudTopKmFromBrightness(c) {
+  return clampKm(CLOUD_SHELL.baseKm + (CLOUD_SHELL.topKm - CLOUD_SHELL.baseKm) * c);
+}
+
+/**
+ * How far from a cloud its shadow lands, km along the ground, for a top `hKm` up and the Sun at
+ * zenith cosine `mu`: the DRAWN height (`thicker` times the real one) times the tangent of the
+ * zenith angle, which stops at shadowTanMax. Longer as the Sun lowers, never past thicker x topKm x shadowTanMax.
+ */
+export function cloudShadowOffsetKm(hKm, mu, thicker = CLOUD_SHELL.thicker) {
+  const m = Math.min(1, Math.max(mu, 0.02));
+  return hKm * thicker * Math.min(Math.sqrt(1 - m * m) / m, CLOUD_SHELL.shadowTanMax);
+}
+
+/**
+ * The slab's shape in a column whose top is `topKm`: 1 between the base and the top, falling to 0
+ * over softKm at each (a trapezoid), and its MEAN between two heights, exactly. A step of the march
+ * takes the mean over the heights it crosses, so a cloud thinner than a step is neither missed nor
+ * counted twice, and no number of steps shows as rings (scene/aurora.js integrates its layers the same way).
+ */
+export function cloudSlabMean(haKm, hbKm, topKm) {
+  const C = CLOUD_SHELL;
+  const tk = Math.max(topKm, C.baseKm + C.minThickKm);
+  const lo = Math.min(haKm, hbKm);
+  const hi = Math.max(haKm, hbKm);
+  const c01 = (x) => Math.min(1, Math.max(0, x));
+  if (hi - lo < 0.02) { const h = 0.5 * (lo + hi); return c01((h - C.baseKm) / C.softKm) * c01((tk - h) / C.softKm); }
+  const ramp = (x) => (x <= 0 ? 0 : x < C.softKm ? (x * x) / (2 * C.softKm) : x - C.softKm / 2);
+  return (ramp(hi - C.baseKm) - ramp(hi - tk + C.softKm) - ramp(lo - C.baseKm) + ramp(lo - tk + C.softKm)) / (hi - lo);
+}
+
+/**
+ * A column's optical depth per km of HEIGHT crossed where its slab is whole: `alpha` is the flat
+ * layer's opacity there, and the scale is such that a ray from the top of the slab to its bottom
+ * has optical depth -ln(1 - alpha), at any slant and at any drawn thickness. Seen from anywhere,
+ * the shell is as opaque as the flat layer.
+ */
+export function cloudSigma(alpha, topKm) {
+  const C = CLOUD_SHELL;
+  if (alpha <= 0.003) return 0;
+  const tk = Math.max(topKm, C.baseKm + C.minThickKm);
+  return -Math.log(1 - Math.min(alpha, 0.98)) / (tk - C.baseKm - C.softKm);
+}
+
+/**
+ * WHERE THE SHELL DRAWS, 0..1 of the cloud (the flat layer draws the rest): by the view's zenith
+ * cosine at the place and the Sun's (CLOUD_SHELL.view, .sun). Toward the limb a cloud is seen from
+ * the side and its height is its shape; under a low Sun its height is its light and its shadow.
+ */
+export function cloudShellShare(muV, muS) {
+  const C = CLOUD_SHELL;
+  const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  return Math.max(1 - ss(C.view[0], C.view[1], muV), 1 - ss(C.sun[0], C.sun[1], muS));
+}
+
+/** The heights, the slab's mean and a column's density for a fragment shader: the twins of the functions above. */
+export const CLOUD_HEIGHT_GLSL = /* glsl */`
+float cloudTopLiveKm( float o, float storm, float sinLat ) {
+  float latDeg = degrees( asin( clamp( abs( sinLat ), 0.0, 1.0 ) ) );
+  float clearC = max( ${CLEAR_FLOOR_C.toFixed(1)}, ${CLEAR_AT_EQUATOR_C.toFixed(1)} - ${CLEAR_LAPSE_C_PER_DEG.toFixed(2)} * max( 0.0, latDeg - ${CLEAR_FLAT_TO_DEG.toFixed(1)} ) );
+  float tC = clearC - ${CLEAR_SPAN_C.toFixed(1)} * o - max( 0.0, clearC - ${(CLEAR_SPAN_C + STORM_TOP.fullC).toFixed(1)} ) * storm;
+  return clamp( ( clearC - tC ) / ${CLOUD_SHELL.lapseCPerKm.toFixed(2)}, ${CLOUD_SHELL.baseKm.toFixed(1)}, ${CLOUD_SHELL.topKm.toFixed(1)} );
+}
+float cloudTopMapKm( float c ) { return ${CLOUD_SHELL.baseKm.toFixed(1)} + ${(CLOUD_SHELL.topKm - CLOUD_SHELL.baseKm).toFixed(1)} * clamp( c, 0.0, 1.0 ); }
+float cloudRamp( float x ) { return x <= 0.0 ? 0.0 : ( x < ${CLOUD_SHELL.softKm.toFixed(2)} ? x * x / ${(2 * CLOUD_SHELL.softKm).toFixed(2)} : x - ${(CLOUD_SHELL.softKm / 2).toFixed(3)} ); }
+float cloudSlabMean( float ha, float hb, float topKm ) {
+  float tk = max( topKm, ${(CLOUD_SHELL.baseKm + CLOUD_SHELL.minThickKm).toFixed(2)} );
+  float lo = min( ha, hb );
+  float hi = max( ha, hb );
+  if ( hi - lo < 0.02 ) {
+    float h = 0.5 * ( lo + hi );
+    return clamp( ( h - ${CLOUD_SHELL.baseKm.toFixed(1)} ) / ${CLOUD_SHELL.softKm.toFixed(2)}, 0.0, 1.0 ) * clamp( ( tk - h ) / ${CLOUD_SHELL.softKm.toFixed(2)}, 0.0, 1.0 );
+  }
+  return ( cloudRamp( hi - ${CLOUD_SHELL.baseKm.toFixed(1)} ) - cloudRamp( hi - tk + ${CLOUD_SHELL.softKm.toFixed(2)} ) - cloudRamp( lo - ${CLOUD_SHELL.baseKm.toFixed(1)} ) + cloudRamp( lo - tk + ${CLOUD_SHELL.softKm.toFixed(2)} ) ) / ( hi - lo );
+}
+float cloudSigma( float alpha, float topKm ) {
+  if ( alpha <= 0.003 ) return 0.0;
+  float tk = max( topKm, ${(CLOUD_SHELL.baseKm + CLOUD_SHELL.minThickKm).toFixed(2)} );
+  return -log( 1.0 - min( alpha, 0.98 ) ) / ( tk - ${(CLOUD_SHELL.baseKm + CLOUD_SHELL.softKm).toFixed(2)} );
+}
+float cloudShellShare( float muV, float muS ) {
+  return max( 1.0 - smoothstep( ${CLOUD_SHELL.view[0].toFixed(2)}, ${CLOUD_SHELL.view[1].toFixed(2)}, muV ), 1.0 - smoothstep( ${CLOUD_SHELL.sun[0].toFixed(2)}, ${CLOUD_SHELL.sun[1].toFixed(2)}, muS ) );
+}
+`;
+
 /** Thin haze should not grey the planet: the cloud coverage is raised to this power first. */
 export const CLOUD_GAMMA = 1.35;
 
@@ -286,6 +423,12 @@ uniform float uTwilightWrap;
 uniform float uAmbient;
 uniform float uCloudHOverR;
 uniform float uCloudGamma;
+// 0: the flat cloud term below. 1: scene/cloudshell.js draws the clouds as a shell with height where
+// height can be seen (cloudShellShare), and there this shader draws none and throws the shell's
+// shadow (CLOUD_SHELL). Between: the two cross-fade. uCloudThick: how many times their height the
+// shell's clouds are drawn (CLOUD_SHELL.thicker, or 1 under the Measured look).
+uniform float uShell;
+uniform float uCloudThick;
 
 // Spec 0037, 2026-09-23: the Moon's shadow. uEclipse is 0 except within 1.7 degrees of a new Moon
 // lined up with the Sun (scene/eclipse.js eclipseLikely, once a frame in JS) and never under the
@@ -320,6 +463,30 @@ float cloudCover( vec2 uv ) {
     gTops = l.b * l.g * uLive;
   }
   return c;
+}
+${CLOUD_HEIGHT_GLSL}
+// The shell's shadow on the ground: the cloud a ray from the ground to the Sun crosses in one third of
+// the slab, between two heights, read where the ray is at their middle, blur mip levels coarser.
+// Optical depth per unit of height.
+float shellShade( vec2 uv, float sinLat, float ha, float hb, float blur ) {
+  float c = 0.0;
+  float top = 0.0;
+  float k = 0.0;
+  // One read where the live picture covers, one where it does not; both only across its seam and
+  // while a new picture fades in.
+  if ( uLive > 0.0 ) {
+    vec3 l = texture2D( uLiveB, uv, blur ).rgb;
+    if ( uLiveFade < 1.0 ) l = mix( texture2D( uLiveA, uv, blur ).rgb, l, uLiveFade );
+    k = l.g * uLive;
+    c = pow( l.r, uCloudGamma ) * k;
+    top = cloudTopLiveKm( l.r, l.b, sinLat ) * k;
+  }
+  if ( k < 0.995 ) {
+    float m = texture2D( uClouds, uv + uCloudOffset, blur ).r * uHasClouds;
+    c += pow( m, uCloudGamma ) * ( 1.0 - k );
+    top += cloudTopMapKm( m ) * ( 1.0 - k );
+  }
+  return cloudSigma( c * uCloudGain, top ) * cloudSlabMean( ha, hb, top ) * ( hb - ha );
 }
 // The night map's light at a point, as the lights above read it.
 float nightLumAt( vec2 uv ) {
@@ -407,6 +574,25 @@ void main() {
     vec3 lf = mix( texture2D( uLiveA, far ).rgb, texture2D( uLiveB, far ).rgb, uLiveFade );
     shade = max( shade, lf.b * lf.g * uLive );
   }
+  // The shell's shadow (CLOUD_SHELL): a ray from the ground to the Sun, marched through the same
+  // slab the shell is drawn from in three steps of height, each read as far toward the Sun as the
+  // ray is at that height. Overhead it is the flat layer's shadow; low, it is long and soft.
+  float shellW = uShell > 0.0 ? uShell * cloudShellShare( clamp( dot( n, viewDir ), 0.0, 1.0 ), sunDot ) : 0.0;
+  if ( shellW > 0.0 ) {
+    float sunUp = clamp( dot( uSunDirLocal, nl ), 0.02, 1.0 );
+    float reach = min( sqrt( 1.0 - sunUp * sunUp ) / sunUp, ${CLOUD_SHELL.shadowTanMax.toFixed(1)} );
+    vec2 flatSun = vec2( dot( uSunDirLocal, east ), dot( uSunDirLocal, north ) );
+    vec2 perKm = flatSun / max( length( flatSun ), 1e-4 ) * reach * uCloudThick * ${(1 / 6371).toFixed(8)} / vec2( 6.28318531 * cosLat, 3.14159265 );
+    // The three reads stand apart by a third of the shadow's length. Each is taken that much
+    // coarser (about 2 000 texels round the globe), so three reads are one soft shadow and not three
+    // copies of every cloud's edge.
+    float blur = log2( 2.0 + length( perKm * vec2( 2048.0, 1024.0 ) ) * ${((CLOUD_SHELL.topKm - CLOUD_SHELL.baseKm) / 3).toFixed(3)} );
+    float tauSh = shellShade( vUv + perKm * ${SHADOW_AT[0].toFixed(3)}, nl.y, ${SHADOW_CUTS[0].toFixed(3)}, ${SHADOW_CUTS[1].toFixed(3)}, blur )
+                + shellShade( vUv + perKm * ${SHADOW_AT[1].toFixed(3)}, nl.y, ${SHADOW_CUTS[1].toFixed(3)}, ${SHADOW_CUTS[2].toFixed(3)}, blur )
+                + shellShade( vUv + perKm * ${SHADOW_AT[2].toFixed(3)}, nl.y, ${SHADOW_CUTS[2].toFixed(3)}, ${SHADOW_CUTS[3].toFixed(3)}, blur );
+    // Times the slant: a low Sun's ray crosses more cloud in each kilometre of height.
+    shade = mix( shade, 1.0 - exp( -tauSh * sqrt( 1.0 + reach * reach ) ), shellW );
+  }
   float cloud  = cloudCover( vUv );
   float tops   = gTops;
 
@@ -490,6 +676,9 @@ void main() {
   vec3 cloudSun = aerSunAbove( topDot, mix( ${AERIAL.deckShare.toFixed(3)}, ${AERIAL.topShare.toFixed(3)}, tops ) );
   vec3 cloudLight = cloudSun * lambertTop * ( 0.95 + ${STORM_TOPS.bright.toFixed(2)} * tops ) + uAmbient * 2.0;
   float cloudAlpha = clamp( cloud * ( uCloudGain + 0.05 * tops ) * ( 0.06 + 0.94 * dayTop ), 0.0, 1.0 );
+  // The air over a cloud is the air above it, whichever of the two draws the cloud: kept from before the fade.
+  float cloudAir = cloudAlpha;
+  cloudAlpha *= 1.0 - shellW;   // the shell draws that share instead (scene/cloudshell.js): the two sum to one
   colour = mix( colour, cloudLight, cloudAlpha );
 
   // ---- the air over the disc (aerial perspective, scene/atmosphere.js) ---------------------------
@@ -497,7 +686,7 @@ void main() {
   // little over the middle of the disc, most of what there is to see at the limb. A cloud has
   // only the air above it in the way. This was a rim in one colour.
   float airLit = smoothstep( -0.14, 0.02, sunDot ) * eclLight;
-  colour = aerial( colour, clamp( dot( n, viewDir ), 0.0, 1.0 ), sunDot, dot( -viewDir, uSunDir ), airLit, 1.0 - 0.6 * cloudAlpha );
+  colour = aerial( colour, clamp( dot( n, viewDir ), 0.0, 1.0 ), sunDot, dot( -viewDir, uSunDir ), airLit, 1.0 - 0.6 * cloudAir );
 
   // The shadow's two edges (THE TWO EDGES, DRAWN, above): over the clouds, as a line on a map is.
   colour += uEclipseLines * ( vec3( 1.0, 0.93, 0.8 ) * 0.42 * eclCoreLine + vec3( 0.8, 0.86, 1.0 ) * 0.14 * eclEdgeLine );
@@ -674,6 +863,8 @@ export function createEarth(textures, opts = {}) {
       uAmbient: { value: cfg.ambient },
       uCloudHOverR: { value: CLOUD_H_OVER_R },
       uCloudGamma: { value: cfg.cloudGamma },
+      uShell: { value: 0 },
+      uCloudThick: { value: CLOUD_SHELL.thicker },
       uLiveA: { value: blankLive() },
       uLiveB: { value: blankLive() },
       uLiveFade: { value: 0 },

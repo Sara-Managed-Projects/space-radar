@@ -1692,8 +1692,9 @@ export const COPY = {
     },
     worldDeparture: {
       // The Earth (2026-10-08, scene/earth.js EARTH_RELIEF, scene/atmosphere.js EARTH_AIR): {relief}
-      // is the relief's exaggeration, {air} the shell's height gain.
-      earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is',
+      // is the relief's exaggeration, {air} the shell's height gain, {clouds} how many times thicker than
+      // they are the clouds are drawn from low orbit (scene/earth.js CLOUD_SHELL, scene/cloudshell.js).
+      earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is; seen from low orbit on a larger screen its clouds have height toward the horizon and under a low Sun, drawn {clouds} times thicker than they are so that it can be seen (at their true thickness under the Measured look), each top\u2019s height from its measured temperature where today\u2019s picture covers and from the cloud map\u2019s brightness elsewhere',
       mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
       venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
       saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted; on a larger screen and from close, the ringlets and gaps in its rings are where Cassini measured them through the light of a star in 2008, laid over the map, and in the Film look the sparkle of grains closer still is drawn: no ring particle can be seen from here',

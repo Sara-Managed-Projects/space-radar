@@ -792,6 +792,11 @@ jobs:
       # schedule, and the card's "not a photograph".
       - name: the aurora is NOAA's forecast of the next hour, night side only, coloured by height, carded as a forecast (spec 0053 task 3)
         run: node tests/test_aurora.mjs
+      # 2026-10-12, spec 0072 requirement 6: the Earth's clouds as a shell with height, close up. The
+      # height from temperature, the cross-fade with the flat layer, the steps by tier, the shadow's
+      # reach, the light's colour past the terminator, and the shader's uniforms and refusals.
+      - name: the Earth's clouds have height close up, drawn four times thicker and said so, never at tier 0 or under the latch (spec 0072 req 6)
+        run: node tests/test_cloudshell.mjs
       # 2026-10-05, offline (issues #290, #453; internal 369): the service worker's routing table at the
       # root and in a subfolder, with the stamp scripts/stamp_sw.py writes at deploy and release time;
       # no path in the app starting at the root of the host; and the manifest with icons of the sizes

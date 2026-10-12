@@ -2140,6 +2140,13 @@ const EARTH_TILES_AT = 1.2;
  * Earth the Sun is 0.011 of half the view: a first visit is five times too far.
  */
 const SUN_DETAIL_AT = 0.06;
+/**
+ * The Earth's disc, as a share of half the view's height, at which scene/cloudshell.js is fetched:
+ * the camera about 3 400 km up at the lens the map starts with, a little above where the shell's
+ * fade begins (its own SHELL_FADE.outKm[0], 2 800 km; written here as a disc size because that is
+ * what this file asks of every world, and importing the number would import the module).
+ */
+const CLOUD_SHELL_AT = 1.55;
 
 function createQuality(ctx, renderer, starfield, worlds) {
   const nav = typeof navigator !== 'undefined' ? navigator : {};
@@ -2336,6 +2343,24 @@ function createQuality(ctx, renderer, starfield, worlds) {
     if (ctx.applyQuality) ctx.applyQuality(next);
     say();
   }
+  // The Earth's clouds with height (2026-10-12, spec 0072 requirement 6, scene/cloudshell.js): from
+  // low orbit the flat cloud layer gives way, toward the limb and under a low Sun, to a shell a ray
+  // is marched through. OFF THE FIRST VISIT like the tiles and the Sun's detail: the module is
+  // fetched the first time the Earth's disc is CLOUD_SHELL_AT of half the view AFTER the first visit
+  // is over, and never at tier 0, on a connection that saves data, or after the latch. Until it
+  // lands, and wherever it never does, the clouds are the flat layer they were.
+  let cloudShellAsked = false;
+  function cloudShellWanted() {
+    if (cloudShellAsked || tilesSaveData || tiers.latched || tiers.tier < 1) return;
+    if (typeof window === 'undefined' || !window.__srFirstVisitOver) return;
+    if (worlds.discShare('earth') < CLOUD_SHELL_AT) return;
+    cloudShellAsked = true;
+    import('./scene/cloudshell.js').then((m) => {
+      const shell = m.createCloudShell({ earth: () => worlds.meshFor('earth'), renderer, camera: ctx.camera });
+      if (tiers.latched) shell.latch();
+      ctx.cloudShell = shell;
+    }).catch(() => { cloudShellAsked = false; /* the flat layer is what is on screen; ask again later */ });
+  }
   const api = {
     get tier() { return tiers.tier; },
     // The tier the visit began at: the stored choice's, so a visit that chose Low boots as tier 0.
@@ -2382,7 +2407,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
       if (up !== null) { autoTier = up; autoPromoted = true; plan = { ...plan, tier: up }; tiers.setTier(up); holdFor(up); reliefFor(up); if (planetTiles) planetTiles.setTier(up); say(); }
       if (planetTiles) planetTiles.frame(nowMs);
     },
-    tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); },
+    tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); cloudShellWanted(); },
     /**
      * The frame latch tripped: back to the boot maps, for good. A manual choice above Low goes back
      * to Auto (qualityAfterLatch), stored so; returns true when the visitor is to be told so.
@@ -2392,7 +2417,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
       const after = qualityAfterLatch(plan.choice);
       if (after.choice !== plan.choice) writeQualityChoice(undefined, after.choice);
       plan = qualityPlan(after.choice, { tier: autoTier, ceiling: pick.ceiling }, true);
-      worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say();
+      worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); if (ctx.cloudShell) ctx.cloudShell.latch(); say();
       return after.told;
     },
     /**
@@ -2660,6 +2685,17 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         top: !!(ctx.quality && ctx.quality.ultra),
         reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
+      });
+    }
+    // The clouds' shell after the Earth's update (scene/cloudshell.js): in by the camera's height over
+    // the ground, at the look's thickness; none of it at tier 0 or under the latch.
+    if (ctx.cloudShell) {
+      ctx.cloudShell.tick({
+        tier: ctx.quality ? ctx.quality.tier : 0,
+        latched: latch.latched,
+        saveData,
+        look: ctx.look(),
+        dtMs: frameMs,
       });
     }
     // The weather after the worlds' update too: the clock's time into the bands, and this second's

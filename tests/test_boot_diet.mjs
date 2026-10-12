@@ -109,6 +109,7 @@ const DEFERRED = {
   'js/ui/offline.js': 'the service worker\'s module: OFFLINE_MS after sr:layers-ready',
   'js/scene/aurora.js': 'the aurora: AURORA_IMPORT_MS after sr:layers-ready',
   'js/scene/worldlights.js': 'the worlds\' lights: WORLDLIGHTS_IMPORT_MS after sr:layers-ready',
+  'js/scene/cloudshell.js': 'the clouds with height: main.js fetches it the first time the Earth\'s disc is large, after the first visit (spec 0072 requirement 6)',
   'js/scene/wind.js': 'the wind: main.js fetches it when Wind is chosen under Earth data',
   'js/data/wind.js': 'the wind field\'s request and arithmetic: with scene/wind.js',
   'js/scene/currents.js': 'the ocean currents: main.js fetches it when Ocean currents is chosen under Earth data',
