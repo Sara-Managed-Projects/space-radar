@@ -40,7 +40,6 @@ sources:
   # read it since 2026-09-06 (data/sources.js); the registry row is written 2026-09-08 so the layers
   # mirror can name it (spec 0026 req 8). Same publisher terms as every CelesTrak row.
   - id: celestrak-visual
-    publisher: CelesTrak
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=json
     auth: none
     browser: true
@@ -52,9 +51,9 @@ sources:
     licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
     terms_url: https://celestrak.org/usage-policy.php
     terms_recorded: 2026-09-07
+    publisher: CelesTrak
 
   - id: celestrak-stations
-    publisher: CelesTrak
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json
     auth: none
     browser: true
@@ -66,9 +65,9 @@ sources:
     licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
     terms_url: https://celestrak.org/usage-policy.php
     terms_recorded: 2026-09-07
+    publisher: CelesTrak
 
   - id: celestrak-active
-    publisher: CelesTrak
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json
     auth: none
     browser: true
@@ -80,11 +79,11 @@ sources:
     licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
     terms_url: https://celestrak.org/usage-policy.php
     terms_recorded: 2026-09-07
+    publisher: CelesTrak
 
   # The "Launched in the last two weeks" layer read this file live on every visit, because it
   # had no row here and so no saved copy: from a refused connection it showed nothing (2026-09-22).
   - id: celestrak-last30
-    publisher: CelesTrak
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=last-30-days&FORMAT=json
     auth: none
     browser: true
@@ -96,11 +95,11 @@ sources:
     licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
     terms_url: https://celestrak.org/usage-policy.php
     terms_recorded: 2026-09-07
+    publisher: CelesTrak
 
   # Supplemental files are the OPERATORS' own ephemerides and are hours fresher than the
   # tracked catalogue -- which is exactly what a three-day-old Starlink train needs.
   - id: celestrak-supplemental-starlink
-    publisher: CelesTrak
     url: https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json
     auth: none
     browser: true
@@ -112,9 +111,9 @@ sources:
     licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
     terms_url: https://celestrak.org/usage-policy.php
     terms_recorded: 2026-09-07
+    publisher: CelesTrak
 
   - id: celestrak-satcat
-    publisher: CelesTrak
     url: https://celestrak.org/pub/satcat.csv
     auth: none
     browser: true
@@ -126,6 +125,7 @@ sources:
     licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
     terms_url: https://celestrak.org/usage-policy.php
     terms_recorded: 2026-09-07
+    publisher: CelesTrak
 
   # --- Who is aboard --------------------------------------------------------------------
   # MEASURED 2026-10-02: `Access-Control-Allow-Origin: *`, so CORS itself allows a page to read
@@ -135,7 +135,6 @@ sources:
   # plain HTTP (harvest/fetch.py's urllib has no such restriction) and the browser reads the
   # saved copy. No documented rate limit; the cadence here is a courtesy, not a measured ceiling.
   - id: open-notify-astros
-    publisher: Open Notify
     url: http://api.open-notify.org/astros.json
     auth: none
     browser: false
@@ -147,13 +146,13 @@ sources:
     licence: "No licence stated by the publisher (an open-source project); a handful of names and facts"
     terms_url: https://open-notify.org/
     terms_recorded: 2026-10-05
+    publisher: Open Notify
 
   # --- Launches and events -----------------------------------------------------------
   # MEASURED live from the API's own throttle endpoint: 15 requests per hour per IP. A
   # runner's IP is shared and rotating, so the budget is not even reliably ours. Three
   # calls every two hours is 36 a day against a limit of 360.
   - id: ll2-upcoming
-    publisher: The Space Devs
     url: https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed
     auth: none
     browser: true
@@ -165,9 +164,9 @@ sources:
     licence: "No published licence; free up to 15 requests an hour"
     terms_url: https://thespacedevs.com/llapi
     terms_recorded: 2026-09-07
+    publisher: The Space Devs
 
   - id: ll2-events
-    publisher: The Space Devs
     url: https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=30
     auth: none
     browser: true
@@ -179,6 +178,7 @@ sources:
     licence: "No published licence; free up to 15 requests an hour"
     terms_url: https://thespacedevs.com/llapi
     terms_recorded: 2026-09-07
+    publisher: The Space Devs
 
   # WHO IS ABOARD, AND WHAT IS DOCKED (internal #133, spec 0050; read 2026-10-08).
   # TERMS, as the publisher states them today on https://thespacedevs.com/llapi : "all the API data
@@ -192,7 +192,6 @@ sources:
   # The stations answer has the docked set itself (each port's `currently_docked`), so no hand-kept
   # registry/docked.yaml is needed (spec 0050 requirement 2's first branch).
   - id: ll2-stations
-    publisher: The Space Devs
     url: https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed
     auth: none
     browser: false
@@ -204,9 +203,9 @@ sources:
     licence: "No published licence; free up to 15 requests an hour"
     terms_url: https://thespacedevs.com/llapi
     terms_recorded: 2026-09-07
+    publisher: The Space Devs
 
   - id: ll2-astronauts
-    publisher: The Space Devs
     url: https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30
     auth: none
     browser: false
@@ -218,10 +217,10 @@ sources:
     licence: "No published licence; free up to 15 requests an hour"
     terms_url: https://thespacedevs.com/llapi
     terms_recorded: 2026-09-07
+    publisher: The Space Devs
 
   # The launches of the last days, for "Just happened" (internal #134). Same terms and budget.
   - id: ll2-previous
-    publisher: The Space Devs
     url: https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30
     auth: none
     browser: false
@@ -233,12 +232,12 @@ sources:
     licence: "No published licence; free up to 15 requests an hour"
     terms_url: https://thespacedevs.com/llapi
     terms_recorded: 2026-09-07
+    publisher: The Space Devs
 
   # --- Small bodies --------------------------------------------------------------------
   # MEASURED: no Access-Control-Allow-Origin on any JPL endpoint, so these could not be
   # called from the page even if the rate limits allowed it.
   - id: jpl-sbdb-neo
-    publisher: NASA JPL
     url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo
     auth: none
     browser: false
@@ -250,6 +249,7 @@ sources:
     licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
     terms_url: https://ssd-api.jpl.nasa.gov/
     terms_recorded: 2026-10-05
+    publisher: NASA JPL
 
   # Comets, same database and the same query shape as the asteroids above (sb-kind=c instead of
   # a, no sb-group: a comet is not a NEO filter). Replaces the Minor Planet Center's CometEls.txt
@@ -258,7 +258,6 @@ sources:
   # directly instead of derived. One parser, jpl_sbdb, reads both rows: it only checks for
   # full_name/e/a/q/i/om/w/epoch, which this query carries too.
   - id: jpl-sbdb-comets
-    publisher: NASA JPL
     url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c
     auth: none
     browser: false
@@ -270,13 +269,13 @@ sources:
     licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
     terms_url: https://ssd-api.jpl.nasa.gov/
     terms_recorded: 2026-10-05
+    publisher: NASA JPL
 
   # Every confirmed planet around another star (spec 0028 step 4). TAP sync, CSV, the composite
   # parameters table so every planet has one best value per column. No CORS header (measured
   # 2026-09-08), so the browser reads our snapshot; it falls back to the dated copy in
   # site/data/exoplanets.csv when there is none. Weekly: the table grows by a few planets a week.
   - id: nasa-exoplanet-archive
-    publisher: NASA Exoplanet Archive
     url: https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv
     auth: none
     browser: false
@@ -288,9 +287,9 @@ sources:
     licence: "Publicly available; the archive asks to cite its table (DOI 10.26133/NEA13); no licence text"
     terms_url: https://exoplanetarchive.ipac.caltech.edu/
     terms_recorded: 2026-09-08
+    publisher: NASA Exoplanet Archive
 
   - id: jpl-cad
-    publisher: NASA JPL
     url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
     auth: none
     browser: false
@@ -302,6 +301,7 @@ sources:
     licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
     terms_url: https://ssd-api.jpl.nasa.gov/
     terms_recorded: 2026-10-05
+    publisher: NASA JPL
 
   # SWITCHED OFF 2026-10-09, AND NOT OURS TO COPY. ESA's terms, read that day on
   # https://www.esa.int/Services/Terms_and_conditions (to which neo.ssa.esa.int/terms-conditions
@@ -318,7 +318,6 @@ sources:
   # (scripts/build_release.py refuses one). tests/test_not_ours_to_copy.py holds all four.
   # The row stays so that the reason stays; switch it back on only with ESA's written permission.
   - id: esa-neocc-close
-    publisher: ESA NEOCC
     url: https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app
     auth: none
     browser: false
@@ -331,10 +330,10 @@ sources:
     licence: "All rights reserved by ESA; no reuse licence found, so the saved copy is not cleared for redistribution"
     terms_url: https://neo.ssa.esa.int/
     terms_recorded: 2026-10-05
+    publisher: ESA NEOCC
 
   # --- Deep space ----------------------------------------------------------------------
   - id: horizons-deep-space
-    publisher: NASA JPL
     url: https://ssd.jpl.nasa.gov/api/horizons.api
     auth: none
     browser: false
@@ -348,12 +347,12 @@ sources:
     licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
     terms_url: https://ssd-api.jpl.nasa.gov/
     terms_recorded: 2026-10-05
+    publisher: NASA JPL
 
   # MEASURED: this feed's `spacecraftID` is the same negative id Horizons uses, so the
   # dish-to-spacecraft line needs no name matching. Unofficial feed behind a public page:
   # the parser fails soft and lines older than 30 min are not drawn.
   - id: dsn-now
-    publisher: NASA Deep Space Network
     url: https://eyes.nasa.gov/dsn/data/dsn.xml
     auth: none
     browser: true
@@ -365,10 +364,10 @@ sources:
     licence: "NASA content, generally not copyrighted in the United States; the endpoint is undocumented"
     terms_url: https://eyes.nasa.gov/dsn/
     terms_recorded: 2026-09-07
+    publisher: NASA Deep Space Network
 
   # --- Sky and weather -------------------------------------------------------------------
   - id: swpc-kp
-    publisher: NOAA SWPC
     url: https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json
     auth: none
     browser: true
@@ -380,10 +379,10 @@ sources:
     licence: "US Government work, public domain"
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-09-07
+    publisher: NOAA SWPC
 
   # ~900 kB of JSON for what the app needs as one small texture; the parser downsamples.
   - id: swpc-ovation
-    publisher: NOAA SWPC
     url: https://services.swpc.noaa.gov/json/ovation_aurora_latest.json
     auth: none
     browser: true
@@ -398,6 +397,7 @@ sources:
     licence: "US Government work, public domain"
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-05
+    publisher: NOAA SWPC
 
   # The three feeds a browser used to read straight from the publisher, now with a saved copy (internal #525,
   # #553): the page asks our copy first and the publisher only when there is none (a source with `browser: true`
@@ -408,7 +408,6 @@ sources:
   # (https://www.nasa.gov/nasa-brand-center/images-and-media/); NOAA, "in the public domain ... and may be used
   # without charge for any lawful purpose" (https://www.weather.gov/disclaimer).
   - id: eonet-fires
-    publisher: NASA EONET
     url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30
     auth: none
     browser: true
@@ -420,9 +419,9 @@ sources:
     licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
     terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
     terms_recorded: 2026-10-09
+    publisher: NASA EONET
 
   - id: eonet-volcanoes-ice
-    publisher: NASA EONET
     url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=volcanoes,seaLakeIce
     auth: none
     browser: true
@@ -434,10 +433,10 @@ sources:
     licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
     terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
     terms_recorded: 2026-10-09
+    publisher: NASA EONET
 
   # Today's sunspot groups (data/sunregions.js). Measured by that file's header: CORS open, `max-age=60`.
   - id: swpc-solar-regions
-    publisher: NOAA SWPC
     url: https://services.swpc.noaa.gov/json/solar_regions.json
     auth: none
     browser: true
@@ -449,6 +448,7 @@ sources:
     licence: "US Government work, public domain (read 2026-10-09)"
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-09
+    publisher: NOAA SWPC
 
   # Solar flares, for the Sun close up (data/sunactivity.js; spec 0073 requirement 2). SWPC's edited
   # event list: thirty days of events, the X-ray flares among them with their class, peak time and
@@ -457,7 +457,6 @@ sources:
   # flares, 264 with a region). The GOES flare files beside it (json/goes/primary/xray-flares-*.json)
   # carry no region number and are not used.
   - id: swpc-edited-events
-    publisher: NOAA SWPC
     url: https://services.swpc.noaa.gov/json/edited_events.json
     auth: none
     browser: true
@@ -469,6 +468,7 @@ sources:
     licence: "US Government work, public domain (read 2026-10-12)"
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-12
+    publisher: NOAA SWPC
 
   # Coronal mass ejections, for the Sun close up (data/sunactivity.js). NASA's DONKI: the most accurate
   # analysis of each CME of the last thirty days (start, direction, half-angle, speed). MEASURED
@@ -481,7 +481,6 @@ sources:
   # CCMC asks that event and validation STUDIES be done with the submitters' knowledge. No licence is
   # named; NASA material is generally not copyrighted. The card says whose catalogue it is.
   - id: donki-cme-analysis
-    publisher: NASA DONKI
     url: https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis
     auth: none
     browser: false
@@ -493,6 +492,7 @@ sources:
     licence: "No licence named; provided as is, as a courtesy to the community, prototyping quality (DONKI rules of the road and disclaimer, read 2026-10-12)"
     terms_url: https://ccmc.gsfc.nasa.gov/tools/DONKI/
     terms_recorded: 2026-10-12
+    publisher: NASA DONKI
 
   # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
   # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
@@ -506,7 +506,6 @@ sources:
   # legal use, since it may contain inaccuracies." Creator NOAA National Centers for Environmental
   # Prediction; publisher PacIOOS.
   - id: wind
-    publisher: PacIOOS
     url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D
     auth: none
     browser: false
@@ -518,6 +517,7 @@ sources:
     licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-09)"
     terms_url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html
     terms_recorded: 2026-10-09
+    publisher: PacIOOS
 
   # THE SEA'S SURFACE CURRENTS AND ITS TEMPERATURE, for the "Ocean currents" choice under Earth data
   # (site/js/scene/currents.js, site/js/data/currents.js). Two rows, because they are two datasets on two
@@ -546,7 +546,6 @@ sources:
   # NOT USED, checked the same day: NASA OSCAR (PO.DAAC: an Earthdata login), Copernicus Marine (an
   # account), and a finer grid (every second point is 17 MB to ask for and a megabyte to save).
   - id: ocean-currents
-    publisher: NOAA CoastWatch
     url: https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.json?u_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D,v_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D
     auth: none
     browser: false
@@ -558,9 +557,9 @@ sources:
     licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-12)"
     terms_url: https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html
     terms_recorded: 2026-10-12
+    publisher: NOAA CoastWatch
 
   - id: ocean-temperature
-    publisher: NOAA CoastWatch
     url: https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.json?sst%5B(last)%5D%5B(0.0)%5D%5B(-89.875):4:(89.875)%5D%5B(0.125):4:(359.875)%5D
     auth: none
     browser: false
@@ -572,6 +571,7 @@ sources:
     licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-12); NCEI asks to be cited"
     terms_url: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C01606/html
     terms_recorded: 2026-10-12
+    publisher: NOAA CoastWatch
 
   # Tropical cyclones, worldwide, from GDACS (the UN / European Commission disaster alert system,
   # run by the EC Joint Research Centre). MEASURED 2026-09-28: `Access-Control-Allow-Origin: *`,
@@ -583,7 +583,6 @@ sources:
   # licenses as CC BY 4.0 "unless otherwise indicated" (commission.europa.eu/legal-notice, read
   # 2026-09-28). Credit below; CREDITS.md says the rest.
   - id: gdacs-tc
-    publisher: GDACS
     url: https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20
     auth: none
     browser: true
@@ -595,12 +594,12 @@ sources:
     licence: "CC BY 4.0 by the European Commission's reuse decision; GDACS calls it purely indicative"
     terms_url: https://www.gdacs.org/
     terms_recorded: 2026-09-29
+    publisher: GDACS
 
   # --- Ground ------------------------------------------------------------------------------
   # A descriptive User-Agent is REQUIRED here; anonymous scripts are refused. Everything
   # is CC0, so the attribution below is courtesy rather than law.
   - id: wikidata-observatories
-    publisher: Wikidata
     url: https://query.wikidata.org/sparql
     auth: none
     browser: true
@@ -613,12 +612,12 @@ sources:
     licence: "CC0 1.0: Wikidata's structured data is dedicated to the public domain"
     terms_url: https://www.wikidata.org/wiki/Wikidata:Licensing
     terms_recorded: 2026-10-05
+    publisher: Wikidata
 
   # --- Registration-gated, and skipped until the secret exists -------------------------------
   # The ONLY public source of reentry windows. Absent the secret this source is `skipped`
   # with a reason and the reentry cards say the window is not available -- they do not guess.
   - id: space-track-tip
-    publisher: Space-Track.org
     url: https://www.space-track.org/basicspacedata/query/class/tip/format/json
     auth: secret:SPACE_TRACK_PASSWORD
     browser: false
@@ -631,3 +630,4 @@ sources:
     licence: "Switched off: Space-Track needs an account and its user agreement restricts passing the data on; nothing is fetched"
     terms_url: https://www.space-track.org/
     terms_recorded: 2026-10-05
+    publisher: Space-Track.org
