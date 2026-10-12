@@ -357,14 +357,18 @@ export const SATURN_CONTRAST = 1.5;
  *                 a texel of the height map) and the last this far (0.15 rad, 510 km); between them the steps grow by
  *                 a constant ratio, and each is read from a mip as coarse as its own spacing, so a
  *                 peak between two samples is not missed and nothing sparkles.
- *   soft, bias    the shadow's edge, and what the horizon must clear, as tangents: the height
+ *   soft, bias    the shadow's edge (it begins where the horizon is `bias` over the Sun and is
+ *                 full 2 x `soft` further: one-sided, so level ground is never shaded however
+ *                 low the Sun) and what the horizon must clear, as tangents: the height
  *                 map's own noise (some 80 m rms after WebP, times the exaggeration, over the
  *                 first step) is 0.02, and under that a plain must not shade itself.
  *   depth         how much of the direct light a shadow takes. Not all: Mars's sky is bright.
+ *                 (The first look, 2026-10-12, had an edge centred on the Sun, the sharpest mip and depth 0.88: Olympus Mons's shadow
+ *                 was a black shape with a lumpy edge, the map's own noise drawn sharp.)
  *   maxSun        the cosine of the Sun's zenith angle past which nothing is marched: with the Sun
  *                 that high nothing on Mars, even exaggerated, reaches it.
  */
-export const MARS_RELIEF = { exaggeration: 5, steps: [0, 8, 16], firstRad: 0.007, reachRad: 0.15, soft: 0.04, bias: 0.03, depth: 0.88, maxSun: 0.77 };
+export const MARS_RELIEF = { exaggeration: 5, steps: [0, 8, 16], firstRad: 0.007, reachRad: 0.15, soft: 0.04, bias: 0.03, depth: 0.8, maxSun: 0.77 };
 /** The ratio between one step of the march and the next, for `steps` of them from firstRad to reachRad. Pure. */
 export function marchGrowth(steps) {
   return steps > 1 ? Math.pow(MARS_RELIEF.reachRad / MARS_RELIEF.firstRad, 1 / (steps - 1)) : 1;
@@ -395,7 +399,7 @@ export function castShadow(heightAt, tanSun, steps) {
     horizon = Math.max(horizon, (heightAt(s) - h0) / s - 0.5 * s);
     s *= g;
   }
-  const x = Math.min(1, Math.max(0, (horizon - MARS_RELIEF.bias - (tanSun - MARS_RELIEF.soft)) / (2 * MARS_RELIEF.soft)));
+  const x = Math.min(1, Math.max(0, (horizon - MARS_RELIEF.bias - tanSun) / (2 * MARS_RELIEF.soft)));
   return 1 - MARS_RELIEF.depth * x * x * (3 - 2 * x);
 }
 
@@ -1035,9 +1039,14 @@ void main() {
   // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
   float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
   if ( uReliefK.x > 0.0 ) {
-    float hE = texture2D( uGlobeRelief, reliefUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( uReliefK.y, 0.0 ) ).r;
+    // East and west the two reads are the same distance apart ON THE GROUND at every latitude: a
+    // texel's width in u, over the cosine. (Until 2026-10-12 they were a texel apart in u and the
+    // difference was divided by the cosine instead, which near a pole divides the map's noise by
+    // a twelfth: rays of light and dark round the pole, seen on Mars's cap in the first look.)
+    float duE = uReliefK.y / cosLat;
+    float hE = texture2D( uGlobeRelief, reliefUv + vec2( duE, 0.0 ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( duE, 0.0 ) ).r;
     float hN = texture2D( uGlobeRelief, reliefUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( 0.0, uReliefK.z ) ).r;
-    n = normalize( n - uReliefK.x * slopeShare * ( hE / cosLat * east + hN * north ) );
+    n = normalize( n - uReliefK.x * slopeShare * ( hE * east + hN * north ) );
   }
 
   float d = dot( n, uSunDir );
@@ -1059,17 +1068,17 @@ void main() {
       sunH /= flatLen;
       float tanSun = dGeo / flatLen;
       vec2 perRad = vec2( sunH.x / ( 6.2831853 * cosLat ), sunH.y / 3.14159265 );
-      float h0 = textureLod( uHeightMap, reliefUv, 0.0 ).r * uTerrain.x;
+      float h0 = textureLod( uHeightMap, reliefUv, 0.5 ).r * uTerrain.x;
       float s = uTerrain.z;
       float horizon = -1.0;
       for ( int j = 0; j < ${MARS_RELIEF.steps[2]}; j++ ) {
         if ( float( j ) >= uTerrain.y ) break;
-        float lod = max( log2( s * ( uTerrain.w - 1.0 ) * uTerrainMarch.x / 6.2831853 ), 0.0 );
+        float lod = max( log2( s * ( uTerrain.w - 1.0 ) * uTerrainMarch.x / 6.2831853 ), 0.5 );
         float h = textureLod( uHeightMap, reliefUv + perRad * s, lod ).r * uTerrain.x;
         horizon = max( horizon, ( h - h0 ) / s - 0.5 * s );
         s *= uTerrain.w;
       }
-      direct *= 1.0 - uTerrainMarch.w * smoothstep( tanSun - uTerrainMarch.y, tanSun + uTerrainMarch.y, horizon - uTerrainMarch.z );
+      direct *= 1.0 - uTerrainMarch.w * smoothstep( tanSun, tanSun + 2.0 * uTerrainMarch.y, horizon - uTerrainMarch.z );
     }
   }
 

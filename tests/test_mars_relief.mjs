@@ -46,7 +46,7 @@ const X = MARS_RELIEF.exaggeration;
   for (const steps of [8, 16]) {
     const low = castShadow(cone(behind), Math.tan(5 * DEG), steps);
     const high = castShadow(cone(behind), Math.tan(40 * DEG), steps);
-    check(low < 0.2, `${steps} steps: 400 km behind Olympus Mons with the Sun 5 degrees up the ground is in its shadow (${low.toFixed(2)} of the light left)`);
+    check(low < 0.3, `${steps} steps: 400 km behind Olympus Mons with the Sun 5 degrees up the ground is in its shadow (${low.toFixed(2)} of the light left)`);
     check(high === 1, `${steps} steps: with the Sun 40 degrees up it is not (${high.toFixed(2)})`);
     check(castShadow(() => 0, Math.tan(1 * DEG), steps) === 1, `${steps} steps: a plain does not shade itself, even with the Sun 1 degree up`);
     // The map's own noise, one byte either way at every step (116 m, times the exaggeration): no shadow at 3 degrees.
@@ -58,7 +58,7 @@ const X = MARS_RELIEF.exaggeration;
   const wallAt = MARS_RELIEF.reachRad;
   const drop = 0.5 * wallAt * wallAt;
   check(castShadow((s) => (Math.abs(s - wallAt) < 1e-9 ? drop * 0.9 : 0), Math.tan(0.5 * DEG), 8) === 1, 'a far wall lower than the curve of the ball is under the horizon and shades nothing');
-  check(castShadow((s) => (Math.abs(s - wallAt) < 1e-9 ? drop + wallAt * Math.tan(6 * DEG) : 0), Math.tan(2 * DEG), 8) < 0.2, 'and one that stands 6 degrees over the horizon shades a Sun 2 degrees up');
+  check(castShadow((s) => (Math.abs(s - wallAt) < 1e-9 ? drop + wallAt * Math.tan(10 * DEG) : 0), Math.tan(2 * DEG), 8) < 0.3, 'and one that stands 10 degrees over the horizon shades a Sun 2 degrees up');
   // The shadow's depth: not black.
   check(MARS_RELIEF.depth > 0.7 && MARS_RELIEF.depth < 0.95, `a shadow keeps some light, as under Mars's bright sky (${(1 - MARS_RELIEF.depth).toFixed(2)})`);
   const t = terrainUniforms(r.height, mars.radiusKm, 8);
@@ -74,10 +74,11 @@ const X = MARS_RELIEF.exaggeration;
   check(block.includes(`for ( int j = 0; j < ${MARS_RELIEF.steps[2]}; j++ )`) && block.includes('if ( float( j ) >= uTerrain.y ) break;'), 'at most sixteen steps, as many as the tier is given');
   check(block.split('textureLod( uHeightMap').length - 1 === 2 && !block.includes('texture2D'), 'the heights are read once here and once a step, each from a named mip');
   check(block.includes('horizon = max( horizon, ( h - h0 ) / s - 0.5 * s );'), 'the horizon is the twin\'s: the ball\'s curve taken off');
-  check(block.includes('smoothstep( tanSun - uTerrainMarch.y, tanSun + uTerrainMarch.y, horizon - uTerrainMarch.z )'), 'and the edge, the bias and the depth are the uniforms\'');
-  check(WORLD_FRAG.includes('vec2 reliefUv = vUv; float slopeShare = 1.0;') && WORLD_FRAG.includes('n = normalize( n - uReliefK.x * slopeShare * ( hE / cosLat * east + hN * north ) );'), 'the slope is Mercury\'s term, read at the world\'s own place on its map');
+  check(block.includes('smoothstep( tanSun, tanSun + 2.0 * uTerrainMarch.y, horizon - uTerrainMarch.z )'), 'and the edge, the bias and the depth are the uniforms\'');
+  check(WORLD_FRAG.includes('vec2 reliefUv = vUv; float slopeShare = 1.0;') && WORLD_FRAG.includes('n = normalize( n - uReliefK.x * slopeShare * ( hE * east + hN * north ) );'), 'the slope is Mercury\'s term, read at the world\'s own place on its map');
   check(WORLD_FRAG.split('{').length === WORLD_FRAG.split('}').length && WORLD_FRAG.split('(').length === WORLD_FRAG.split(')').length, 'the shader\'s braces and brackets balance');
   // Fetches a fragment: the slope's four, and for the shadow one and one a step.
+  check(WORLD_FRAG.includes('float duE = uReliefK.y / cosLat;'), 'east and west the slope\'s two reads are the same distance apart on the ground at every latitude: no rays round a pole');
   const slope = WORLD_FRAG.split('texture2D( uGlobeRelief').length - 1;
   check(slope === 4, `the slope is four reads (${slope})`);
   measured.push(`texture reads a fragment of Mars beyond its map: ${slope} for the slope everywhere; where the Sun is up and under ${Math.round(Math.asin(MARS_RELIEF.maxSun) / DEG)} degrees high, 1 + ${MARS_RELIEF.steps[1]} more on tier 1 and 1 + ${MARS_RELIEF.steps[2]} on tier 2`);
