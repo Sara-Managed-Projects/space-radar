@@ -377,6 +377,78 @@ export const WEATHER = [
     "source": "NASA Science, Jupiter: Facts (three cloud layers spanning about 71 km: ammonia ice, ammonium hydrosulfide, water)"
   },
   {
+    "id": "jupiter-detail",
+    "world": "jupiter",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.12,
+      "colour": 0.2,
+      "cells_lat": 192,
+      "stretch": 4
+    },
+    "source": "Tollefson et al. 2017, Icarus 296, 163 (the winds that carry it; see jupiter-bands)"
+  },
+  {
+    "id": "saturn-detail",
+    "world": "saturn",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.09,
+      "colour": 0.15,
+      "cells_lat": 192,
+      "stretch": 6
+    },
+    "source": "García-Melendo et al. 2011, Icarus 215, 62 (the winds that carry it; see saturn-bands)"
+  },
+  {
+    "id": "uranus-detail",
+    "world": "uranus",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.04,
+      "colour": 0.1,
+      "cells_lat": 160,
+      "stretch": 6
+    },
+    "source": "Sromovsky et al. 2015, Icarus 258, 192 (the winds that carry it; see uranus-drift)"
+  },
+  {
+    "id": "neptune-detail",
+    "world": "neptune",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.07,
+      "colour": 0.15,
+      "cells_lat": 160,
+      "stretch": 5
+    },
+    "source": "Sromovsky et al. 1993, Icarus 105, 110 (the winds that carry it; see neptune-drift)"
+  },
+  {
     "id": "saturn-bands",
     "world": "saturn",
     "kind": "zonal-flow",
