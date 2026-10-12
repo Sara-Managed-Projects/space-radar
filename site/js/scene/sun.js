@@ -27,14 +27,30 @@
 //
 //   THE GRANULATION -- illustrative. Real granules are about a thousand kilometres across, 1/700 of
 //   the radius: on a disc 900 pixels tall they are less than a pixel, and each lives some ten
-//   minutes. What is drawn is a cellular pattern GRAIN_CELLS across the radius (cells of some
-//   17 000 km, seventeen times too big), and each cell has a life of its own, GRAIN_LIFE_S seconds of
+//   minutes. What is drawn is a pattern of ROUND cells: two offset lattices of granules, each a dome
+//   bright in its middle and dimmer toward its rim, a place belonging to the granule that is nearest
+//   in its own radii, so that the lanes between them are arcs and never the straight facets of a
+//   Voronoi diagram (a look at the live build on 2026-10-12 read those as "large polygonal cells"). THE SCALE FOLLOWS THE CAMERA: GRAIN_CELLS across the radius from far away (cells
+//   of some 17 000 km, seventeen times too big), doubling as the camera comes closer so that a
+//   cell stays about a hundredth of the view's height, down to GRAIN_CELLS x 2^GRAIN_LEVEL_MAX
+//   across the radius, which is a granule's real size; two neighbouring scales are cross-faded, so
+//   nothing pops. Each cell has a life of its own, GRAIN_LIFE_S seconds of
 //   the app's clock (some fifteen times too fast): it is born small and dim, grows and brightens,
 //   then shrinks and darkens into the lanes round it, and a new one is born somewhere else in its
 //   patch. While it lives it drifts outward from the middle of a larger cell, SUPER_CELLS across the
 //   radius, toward that cell's border, as granules ride the supergranular flow. The larger cells
 //   are a smooth lattice, not today's supergranules. Scale, speed, contrast and drift are chosen.
-//   One octave at every tier that draws it; not drawn at tier 0.
+//   One scale, or two while they cross-fade, at every tier that draws it; not drawn at tier 0.
+//
+//   THE SURFACE FROM VERY CLOSE -- illustrative. The map is 2 048 texels round: from where the disc
+//   is wider than the view a texel is many pixels, and the picture was "flat orange facets". Between
+//   CLOSE_FROM and CLOSE_FULL radii from the centre the map is cross-faded into its own mean
+//   colour (its last mip: no texel of the map is seen any more) and the grain's contrast
+//   rises from GRAIN_CONTRAST to GRAIN_CONTRAST_CLOSE, so the drawn granulation carries the picture
+//   and not a stretched photograph. THE LIGHT IS SHADED FROM THE SPHERE ITSELF: the line of sight
+//   is met with the Sun's own sphere in the fragment shader, so limb darkening does not show the
+//   mesh's facets. NOTHING CLIPS TO WHITE: the map's whitest patches are leaned to yellow-white
+//   before the grain is laid on them, and a soft shoulder above HOT_KNEE holds every colour under 1.
 //
 //   FACULAE -- illustrative. Near the limb the lanes along the larger cells' borders, and round each
 //   drawn sunspot group, are drawn brighter than the granules instead of darker: the bright network
@@ -47,7 +63,8 @@
 //   PENUMBRA) is chosen to look like a white-light photograph.
 //
 //   THE CORONA -- illustrative. The real corona is a millionth as bright as the disc and is seen
-//   only in an eclipse or a coronagraph. It is drawn so it can be seen at all: a pearly light that
+//   only in an eclipse or a coronagraph. It is drawn so it can be seen at all: a pearly light (the
+//   photosphere's own light scattered by electrons, so white, drawn a little warm at the limb) that
 //   falls off steeply from the limb, reaching farther in a few streamers near the equator and
 //   thinning over the poles into fine rays, in the plane of the sky. Where the streamers are is a
 //   pattern seeded by the Carrington rotation number, not today's corona. It breathes: a faint wave
@@ -72,11 +89,15 @@
 //
 //   CORONAL MASS EJECTIONS -- measured start, direction, width and speed; a modelled flight; an
 //   illustrative look. data/sunactivity.js: NASA DONKI's analyses, read from our saved copy only.
-//   For the hours after its start a CME of 500 km/s or faster is a thin shell about the Sun, kept to
-//   the cone of the reported half-angle about the reported direction, moving out at the reported
-//   speed held constant and fading by 10 radii; it is drawn in the plane of the sky, as the corona
-//   is, so thrown sideways it is an arc and thrown at the camera a faint round haze. With no saved
-//   copy none is drawn.
+//   For the hours after its start a CME of 500 km/s or faster is drawn as a coronagraph shows one,
+//   in three parts: a bright loop at the front, a darker cavity behind it, and a bright core (the
+//   erupted prominence) well behind the front; pearly white, because it is sunlight scattered by
+//   electrons. It is kept to the cone of the reported half-angle about the reported direction and
+//   moves out at the reported speed held constant, followed to CME_REACH_RADII (25) radii and never
+//   drawn fainter than can be seen while it is listed (data/sunactivity.js CME_FLOOR); in the plane
+//   of the sky, as the corona is, so thrown sideways it is a loop and thrown at the camera a ring
+//   round the Sun, the halo a coronagraph sees. The three parts and their brightness are the
+//   picture's; the place of the front is the catalogue's. With no saved copy none is drawn.
 //
 // NO BLOOM, NO PASS (tests/test_contract.mjs): every light here is an additive, soft-edged material
 // of its own. REDUCED MOTION (`still`): the clock's own events (a flare's fading, a CME's flight)
@@ -114,17 +135,51 @@ export const LIMB_550 = [0.30, 0.93, -0.23];
 export const SUN_DETAIL_AT = 0.06;
 /** The grain's cells across one radius, and one cell's life in app seconds (illustrative). */
 export const GRAIN_CELLS = 40;
-export const GRAIN_CONTRAST = 0.2;
+export const GRAIN_CONTRAST = 0.26;
+/** The grain's contrast from very close, where it carries the picture (illustrative). */
+export const GRAIN_CONTRAST_CLOSE = 0.5;
+/** A cell's width as a share of half the view's height that the scale aims at: ten pixels in a view 900 tall. */
+export const GRAIN_TARGET = 0.022;
+/** The most doublings of GRAIN_CELLS: 40 x 2^4 = 640 cells across the radius, a granule's real size (1/700). */
+export const GRAIN_LEVEL_MAX = 4;
+/**
+ * THE CELLS ARE TWO OFFSET LATTICES OF ROUND GRANULES. A granule's point stays within GRAIN_JITTER
+ * of its lattice cell's middle (and drifts half of GRAIN_DRIFT each way over its life), and the
+ * granule reaches no farther than GRAIN_REACH from its point. With 0.15, 0.2 and 0.75 a place on the
+ * surface can only be reached by the 8 cells on its near side, so tiers 0 and 1, which read those
+ * 8, draw exactly what tier 2 draws from all 27 (with an unbounded reach the cheap loop left square
+ * seams in the picture: rendered from the twin and looked at, 2026-10-12). One such lattice is a
+ * tidy row of dots; two, the second shifted by GRAIN_SHIFT, fill the surface.
+ */
+export const GRAIN_JITTER = 0.15;
+export const GRAIN_REACH = 0.75;
+export const GRAIN_SHIFT = [0.5, 0.37, 0.71];
+/** How far into its own radius a granule's bright middle goes before it dims toward its rim. */
+export const GRAIN_EDGE = 0.25;
+/** A granule's rim against its middle (a dome, not a plate), and the lanes' half-width, in granule radii. */
+export const GRAIN_DOME = 0.3;
+export const GRAIN_LANE = 0.28;
+/** The share of its life a granule takes to grow, and again to shrink away. */
+export const GRAIN_GROW = 0.25;
+/** The camera's distance from the centre, Sun radii, between which the map gives way to the drawn surface. */
+export const CLOSE_FROM = 2.2;
+export const CLOSE_FULL = 1.35;
+/**
+ * The mip of the map that stands for its colour from very close: past the last one, which is the
+ * whole map's mean, one colour. (A mip that still had texels in it, 32 round, was tried first: at
+ * the poles its texels are wedges, and the look of 2026-10-12 showed a pinwheel there.)
+ */
+export const CLOSE_MIP = 12;
+/** Above this the brightest channel is bent under 1 by a soft shoulder: nothing on the disc clips to white. */
+export const HOT_KNEE = 0.78;
 export const GRAIN_LIFE_S = 45;
 /** The shader's clock counts lives and wraps here; a cell's seed is its birth number modulo this, so the wrap is seamless. */
 export const GRAIN_WRAP = 64;
-/** A cell that is not at the height of its life is pushed back by this much (squared lattice units), so its neighbours take its ground. */
-export const GRAIN_YIELD = 1.5;
 /** The larger cells across one radius, and how far a granule drifts over its life, in its own cell widths (illustrative). */
 export const SUPER_CELLS = 8;
-export const GRAIN_DRIFT = 0.5;
+export const GRAIN_DRIFT = 0.2;
 /** The mean of the shade the grain multiplies by, measured by tests/test_sun.mjs: taken off so the disc's brightness holds. */
-export const GRAIN_MEAN = 0.42;
+export const GRAIN_MEAN = 0.35;
 /** How much brighter than the photosphere a facula is drawn at its strongest (illustrative). */
 export const FACULA_GAIN = 0.3;
 /** One sway of a prominence, and one breath of the corona, in app seconds (illustrative). */
@@ -135,7 +190,13 @@ export const PROM_FROM = 0.1;
 export const PROM_FULL = 0.3;
 /** Peak brightness of a prominence and of a CME's front, against the disc's 1 (illustrative). */
 export const PROM_GAIN = 0.9;
-export const CME_GAIN = 0.35;
+export const CME_GAIN = 1.0;
+/**
+ * A CME's cloud is drawn from this disc share up, full from twice it: far under SUN_DETAIL_AT,
+ * because the camera has to stand well back to have a cloud twenty radii out in the view. At 0.012
+ * the disc is some ten pixels across in a view 900 tall and the cloud's reach is the whole view.
+ */
+export const CME_FROM = 0.012;
 /** The phases everything holds under reduced motion: a still picture of the same Sun. */
 export const STILL = { grain: 0.37, sway: 0.2, breath: 0.6 };
 /** The grain fades in between these disc shares: below, a cell is under two pixels. */
@@ -200,32 +261,39 @@ const CELLS_LOOP_NEAR = `  vec3 s = 2.0 * step( vec3( 0.5 ), f ) - 1.0;   // tow
     vec3 g = vec3( float( x ), float( y ), float( z ) ) * s;`;
 
 function cellsGlsl( cheap ) {
-  return `// Cellular noise whose cells live and die. Each lattice cell holds one granule: born at 't' whole plus
-// its own offset, at the height of its life midway, gone at the next whole. Its point is
-// pushed away by GRAIN_YIELD x (1 - w)^2 while its weight w is low, so a young or an old granule owns
-// little ground and its neighbours close over it; when it is reborn (somewhere else in its own lattice cell,
-// seeded by its birth number) it owns none, so nothing jumps. 'flow' carries the point across its
-// lattice cell over the life: the drift out of a larger cell.
-// x: the gap between the nearest and the second nearest, small on the dark lanes. y: the nearest one's weight.
-// ${cheap ? 'Tiers 0 and 1 read the 8 cells on the near side of the point, not all 27: same lattice, same hash.' : 'Tier 2 reads all 27 neighbouring cells.'}
-vec2 cells( vec3 p, float t, vec3 flow ) {
+  return `// Granules that live and die, as two offset lattices of round cells. Each lattice cell holds one granule:
+// born at 't' whole plus its own offset, grown by GRAIN_GROW of its life, shrinking away over the last
+// GRAIN_GROW, gone at the next whole and born again somewhere else in its lattice cell (seeded by its birth
+// number). Its radius and its light are nothing at birth and at death, so nothing jumps. 'flow' carries its
+// point across its lattice cell over the life: the drift out of a larger cell.
+// ROUND, NOT A POLYGON MESH. A place belongs to the granule whose point is nearest IN THAT GRANULE'S OWN
+// RADII (u = distance / radius), so the border of two granules is an arc of a circle and never a straight
+// facet; a granule is a dome, bright in its middle and dimmer toward its rim; and beyond every granule's
+// radius there is only lane.
+// u1, u2: the nearest and the second nearest, in radii. a1: the nearest one's light.
+// ${cheap ? 'Tiers 0 and 1 read the 8 cells on the near side of the point, not all 27: no other cell can reach it (GRAIN_REACH).' : 'Tier 2 reads all 27 neighbouring cells.'}
+void cellsOf( vec3 p, float t, vec3 flow, float salt, inout float u1, inout float u2, inout float a1 ) {
   vec3 i = floor( p );
   vec3 f = fract( p );
-  float d1 = 8.0;
-  float d2 = 8.0;
-  float w1 = 0.0;
 ${cheap ? CELLS_LOOP_NEAR : CELLS_LOOP_FULL}
-    vec3 h = hash3( i + g );
+    vec3 h = hash3( i + g + salt );
     float age = h.x + t;
     float born = floor( age );
     float ph = age - born;
-    vec3 o = 0.5 + 0.38 * ( 2.0 * hash3( i + g + mod( born, ${GRAIN_WRAP.toFixed(1)} ) * vec3( 0.37, 0.61, 0.83 ) ) - 1.0 ) + flow * ( ph - 0.5 );
-    float w = sin( 3.14159265 * ph );
-    vec3 r = g + o - f;
-    float d = dot( r, r ) + ${GRAIN_YIELD.toFixed(2)} * ( 1.0 - w ) * ( 1.0 - w );
-    if ( d < d1 ) { d2 = d1; d1 = d; w1 = w * ( 0.7 + 0.3 * h.y ); } else if ( d < d2 ) { d2 = d; }
+    vec3 o = 0.5 + ${GRAIN_JITTER.toFixed(2)} * ( 2.0 * hash3( i + g + salt + mod( born, ${GRAIN_WRAP.toFixed(1)} ) * vec3( 0.37, 0.61, 0.83 ) ) - 1.0 ) + flow * ( ph - 0.5 );
+    float w = smoothstep( 0.0, ${GRAIN_GROW.toFixed(2)}, ph ) * smoothstep( 0.0, ${GRAIN_GROW.toFixed(2)}, 1.0 - ph );
+    float u = length( g + o - f ) / max( ${GRAIN_REACH.toFixed(2)} * w * ( 0.75 + 0.25 * h.y ), 1e-4 );
+    if ( u < u1 ) { u2 = u1; u1 = u; a1 = smoothstep( 0.0, 0.4, w ) * ( 0.7 + 0.3 * h.z ); } else if ( u < u2 ) { u2 = u; }
   }
-  return vec2( sqrt( d2 ) - sqrt( d1 ), w1 );
+}
+// x: the nearest granule, in its radii (1 and over: no granule here). y: its light. z: the gap to the next, small on a lane.
+vec3 cells( vec3 p, float t, vec3 flow ) {
+  float u1 = 8.0;
+  float u2 = 8.0;
+  float a1 = 0.0;
+  cellsOf( p, t, flow, 0.0, u1, u2, a1 );
+  cellsOf( p + vec3( ${GRAIN_SHIFT.map((x) => x.toFixed(2)).join(', ')} ), t + 0.5, flow, 31.0, u1, u2, a1 );
+  return vec3( u1, a1, min( u2, 1.0 ) - u1 );
 }`;
 }
 
@@ -236,13 +304,13 @@ export function superFlow(p) {
 }
 
 /**
- * The JS twin of the shader's \`cells\` (same hash, same lives, same distances), in doubles, so a node
- * test can measure what reading 8 cells instead of 27 changes, and watch one cell live and die.
- * @param {number[]} p  a point on the lattice (the unit-sphere point times GRAIN_CELLS)
+ * The JS twin of the shader's \`cells\` (same hash, same lives, same two lattices), in doubles, so a
+ * node test can check that reading 8 cells instead of 27 changes nothing, and watch one cell live and die.
+ * @param {number[]} p  a point on the lattice (the unit-sphere point times the scale)
  * @param {number} t    lives elapsed, 0..GRAIN_WRAP
  * @param {boolean} near  tiers 0 and 1
  * @param {number[]} [flow]  the drift over one life, lattice units
- * @returns {number[]} [gap, weight]
+ * @returns {number[]} [the nearest granule in its own radii, its light, the gap to the next]
  */
 export function cellsTwin(p, t, near, flow = [0, 0, 0]) {
   const fract = (x) => x - Math.floor(x);
@@ -250,32 +318,64 @@ export function cellsTwin(p, t, near, flow = [0, 0, 0]) {
     const x = a * 127.1 + b * 311.7 + c * 74.7, y = a * 269.5 + b * 183.3 + c * 246.1, z = a * 113.5 + b * 271.9 + c * 124.6;
     return [fract(Math.sin(x) * 43758.5453123), fract(Math.sin(y) * 43758.5453123), fract(Math.sin(z) * 43758.5453123)];
   };
-  const i = [Math.floor(p[0]), Math.floor(p[1]), Math.floor(p[2])];
-  const f = [p[0] - i[0], p[1] - i[1], p[2] - i[2]];
-  const s = f.map((v) => (near ? (v < 0.5 ? -1 : 1) : 1));
-  let d1 = 8, d2 = 8, w1 = 0;
-  const lo = near ? 0 : -1;
-  for (let z = lo; z <= 1; z++) for (let y = lo; y <= 1; y++) for (let x = lo; x <= 1; x++) {
-    const g = near ? [x * s[0], y * s[1], z * s[2]] : [x, y, z];
-    const id = [i[0] + g[0], i[1] + g[1], i[2] + g[2]];
-    const h = hash(id[0], id[1], id[2]);
-    const age = h[0] + t;
-    const born = Math.floor(age);
-    const ph = age - born;
-    const m = born % GRAIN_WRAP;
-    const j = hash(id[0] + m * 0.37, id[1] + m * 0.61, id[2] + m * 0.83);
-    const w = Math.sin(Math.PI * ph);
-    const r = [0, 1, 2].map((k) => g[k] + 0.5 + 0.38 * (2 * j[k] - 1) + flow[k] * (ph - 0.5) - f[k]);
-    const d = r[0] * r[0] + r[1] * r[1] + r[2] * r[2] + GRAIN_YIELD * (1 - w) * (1 - w);
-    if (d < d1) { d2 = d1; d1 = d; w1 = w * (0.7 + 0.3 * h[1]); } else if (d < d2) { d2 = d; }
-  }
-  return [Math.sqrt(d2) - Math.sqrt(d1), w1];
+  const step = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  let u1 = 8, u2 = 8, a1 = 0;
+  const lattice = (q, tt, salt) => {
+    const i = [Math.floor(q[0]), Math.floor(q[1]), Math.floor(q[2])];
+    const f = [q[0] - i[0], q[1] - i[1], q[2] - i[2]];
+    const s = f.map((v) => (near ? (v < 0.5 ? -1 : 1) : 1));
+    const lo = near ? 0 : -1;
+    for (let z = lo; z <= 1; z++) for (let y = lo; y <= 1; y++) for (let x = lo; x <= 1; x++) {
+      const g = near ? [x * s[0], y * s[1], z * s[2]] : [x, y, z];
+      const id = [i[0] + g[0] + salt, i[1] + g[1] + salt, i[2] + g[2] + salt];
+      const h = hash(id[0], id[1], id[2]);
+      const age = h[0] + tt;
+      const born = Math.floor(age);
+      const ph = age - born;
+      const m = born % GRAIN_WRAP;
+      const j = hash(id[0] + m * 0.37, id[1] + m * 0.61, id[2] + m * 0.83);
+      const w = step(0, GRAIN_GROW, ph) * step(0, GRAIN_GROW, 1 - ph);
+      const r = [0, 1, 2].map((k) => g[k] + 0.5 + GRAIN_JITTER * (2 * j[k] - 1) + flow[k] * (ph - 0.5) - f[k]);
+      const u = Math.hypot(r[0], r[1], r[2]) / Math.max(GRAIN_REACH * w * (0.75 + 0.25 * h[1]), 1e-4);
+      if (u < u1) { u2 = u1; u1 = u; a1 = step(0, 0.4, w) * (0.7 + 0.3 * h[2]); } else if (u < u2) { u2 = u; }
+    }
+  };
+  lattice(p, t, 0);
+  lattice([p[0] + GRAIN_SHIFT[0], p[1] + GRAIN_SHIFT[1], p[2] + GRAIN_SHIFT[2]], t + 0.5, 31);
+  return [u1, a1, Math.min(u2, 1) - u1];
 }
 
-/** The shade the grain multiplies the photosphere by, 0 in a lane to 1 in a granule at the height of its life. Twin of the GLSL. */
-export function grainShade(gap, weight) {
-  const x = Math.min(1, Math.max(0, gap / 0.35));
-  return x * x * (3 - 2 * x) * (0.35 + 0.65 * weight);
+/** The shade the grain multiplies the photosphere by, 0 in a lane to 1 in the middle of a granule at the height of its life. Twin of the GLSL. */
+export function grainShade(u, light, gap) {
+  if (!(u < 1)) return 0;
+  const x = Math.min(1, Math.max(0, (u - GRAIN_EDGE) / (1 - GRAIN_EDGE)));
+  const y = Math.min(1, Math.max(0, gap / GRAIN_LANE));
+  return y * y * (3 - 2 * y) * (GRAIN_DOME + (1 - GRAIN_DOME) * (1 - x * x * (3 - 2 * x))) * light;
+}
+
+/**
+ * Which scale the grain is drawn at: 0 is GRAIN_CELLS across the radius, each whole number twice as
+ * many, up to GRAIN_LEVEL_MAX. `camRadii` is the camera's distance from the Sun's centre in radii and
+ * `f` the projection's 1 / tan(half the vertical field), so f / (camRadii - 1) is how many half-views
+ * tall one radius of surface is, straight under the camera. Pure; the shader is handed the number.
+ */
+export function grainLevel(camRadii, f) {
+  if (!(camRadii > 1) || !(f > 0)) return GRAIN_LEVEL_MAX;
+  const level = Math.log2(f / ((camRadii - 1) * GRAIN_CELLS * GRAIN_TARGET));
+  return Math.min(GRAIN_LEVEL_MAX, Math.max(0, level));
+}
+
+/** How far the map has given way to the drawn surface, 0..1, at a camera distance in radii. Pure. */
+export function closeShare(camRadii) {
+  if (!Number.isFinite(camRadii)) return 0;
+  const x = Math.min(1, Math.max(0, (CLOSE_FROM - camRadii) / (CLOSE_FROM - CLOSE_FULL)));
+  return x * x * (3 - 2 * x);
+}
+
+/** The soft shoulder: a brightness above HOT_KNEE is bent toward 1 and never reaches it. Twin of the GLSL. */
+export function hotShoulder(m) {
+  if (!(m > HOT_KNEE)) return m;
+  return HOT_KNEE + (1 - HOT_KNEE) * (1 - Math.exp(-(m - HOT_KNEE) / (1 - HOT_KNEE)));
 }
 
 function sunFragment( cheap ) {
@@ -287,6 +387,10 @@ uniform float uHasMap;
 uniform vec3 uTint;
 uniform float uTime;        // granule lives elapsed (app seconds / GRAIN_LIFE_S), wrapped at GRAIN_WRAP
 uniform float uGrain;       // 0 far away and at tier 0, 1 close
+uniform float uLevel;       // the grain's scale: 0 is GRAIN_CELLS across the radius, each whole number twice as many
+uniform float uClose;       // 0 while the map carries the picture, 1 from very close, where the drawn surface does
+uniform vec3 uCentre;       // the Sun's centre and radius in the scene, for the sphere's own normal
+uniform float uRadius;
 uniform vec4 uSpots[ ${MAX_SPOTS} ];   // xyz: the group's place on the unit sphere, body-fixed; w: its radius, radians
 uniform int uSpotCount;
 uniform vec4 uFlares[ ${MAX_FLARES} ]; // xyz: the flaring region's place; w: the flare's brightness now
@@ -313,12 +417,33 @@ vec3 hash3( vec3 p ) {
   return fract( sin( p ) * 43758.5453123 );
 }
 ${cellsGlsl(cheap)}
+// The shade of one scale of the grain: bright in a granule's middle, dark in the lanes, by its weight.
+vec2 grainAt( vec3 p, float scale, float t, vec3 flow ) {
+  vec3 c = cells( p * scale, t, flow );
+  if ( c.x >= 1.0 ) return vec2( 0.0 );
+  float dome = ${GRAIN_DOME.toFixed(2)} + ${(1 - GRAIN_DOME).toFixed(2)} * ( 1.0 - smoothstep( ${GRAIN_EDGE.toFixed(2)}, 1.0, c.x ) );
+  return vec2( smoothstep( 0.0, ${GRAIN_LANE.toFixed(2)}, c.z ) * dome * c.y, c.y );
+}
 
 void main() {
   #include <logdepthbuf_fragment>
+  // The normal of the SPHERE where this line of sight meets it, not the mesh's: a coarse mesh then
+  // shows no facet in the limb darkening. (The mesh lies inside the sphere, so the line always meets it.)
+  vec3 ray = normalize( vPosW - cameraPosition );
   vec3 n = normalize( vNormalW );
-  float mu = clamp( dot( n, normalize( cameraPosition - vPosW ) ), 0.0, 1.0 );
-  vec3 colour = mix( uTint, texture2D( uMap, vUv ).rgb, uHasMap ) * limb( mu );
+  if ( uRadius > 0.0 ) {
+    vec3 oc = cameraPosition - uCentre;
+    float along = dot( oc, ray );
+    float disc = along * along - ( dot( oc, oc ) - uRadius * uRadius );
+    if ( disc > 0.0 ) n = normalize( oc + ray * ( - along - sqrt( disc ) ) );
+  }
+  float mu = clamp( dot( n, - ray ), 0.0, 1.0 );
+  vec3 body = texture2D( uMap, vUv ).rgb;
+  // From very close the map gives way to its own mean colour: no texel of it is on the screen.
+  if ( uClose > 0.0 ) body = mix( body, textureLod( uMap, vec2( 0.5 ), ${CLOSE_MIP.toFixed(1)} ).rgb, uClose );
+  // The map's whitest patches are leaned to yellow-white, so the grain laid on them can still be seen.
+  body = mix( body, body * vec3( 0.95, 0.88, 0.70 ), smoothstep( 0.62, 0.98, min( body.r, min( body.g, body.b ) ) ) );
+  vec3 colour = mix( uTint, body, uHasMap ) * limb( mu );
 
   vec3 p = normalize( vPosL );
   float lanes = 0.5;
@@ -326,12 +451,23 @@ void main() {
   if ( uGrain > 0.0 ) {
     // The larger cells: q is whole at a cell's middle and midway between two wholes at its border.
     vec3 q = p * ${SUPER_CELLS.toFixed(1)} + 0.8 * sin( p.yzx * ${(SUPER_CELLS * 0.9).toFixed(1)} );   // bent, so the borders are not a grid
-    vec2 c = cells( p * ${GRAIN_CELLS.toFixed(1)}, uTime, ${GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q ) );
-    lanes = smoothstep( 0.0, 0.35, c.x ) * ( 0.35 + 0.65 * c.y );
-    // Foreshortened into the limb the cells run together, as they do in a photograph.
-    colour *= 1.0 + ${GRAIN_CONTRAST.toFixed(2)} * uGrain * ( lanes - ${GRAIN_MEAN.toFixed(2)} ) * smoothstep( 0.05, 0.45, mu );
+    vec3 flow = ${GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q );
+    // Two neighbouring scales, cross-faded over the middle of the step between them; one alone at either end.
+    float lower = floor( uLevel );
+    float blend = smoothstep( 0.3, 0.7, uLevel - lower );
+    float scale = ${GRAIN_CELLS.toFixed(1)} * exp2( lower );
+    vec2 g = vec2( 0.0 );
+    if ( blend < 1.0 ) g += ( 1.0 - blend ) * grainAt( p, scale, uTime, flow );
+    if ( blend > 0.0 ) g += blend * grainAt( p, scale * 2.0, uTime + 7.3, flow );
+    lanes = g.x;
+    // Foreshortened into the limb the cells run together, as they do in a photograph. The lanes are
+    // cooler gas: darker, and redder (the blue falls most).
+    float contrast = mix( ${GRAIN_CONTRAST.toFixed(2)}, ${GRAIN_CONTRAST_CLOSE.toFixed(2)}, uClose ) * uGrain * smoothstep( 0.05, 0.45, mu );
+    colour *= 1.0 + contrast * ( lanes - ${GRAIN_MEAN.toFixed(2)} ) * vec3( 0.85, 1.0, 1.3 );
     vec3 k = -cos( 6.2831853 * q );
-    network = smoothstep( 0.9, 0.99, max( k.x, max( k.y, k.z ) ) ) * smoothstep( 0.35, 0.75, c.y );   // a thin border, in patches
+    network = smoothstep( 0.9, 0.99, max( k.x, max( k.y, k.z ) ) ) * smoothstep( 0.35, 0.75, g.y );   // a thin border, in patches
+    // From very close the larger cells show too, faintly: brighter in their middles.
+    colour *= 1.0 - 0.05 * uClose * uGrain * ( k.x + k.y + k.z ) / 3.0;
   }
 
   float plage = 0.0;
@@ -357,6 +493,10 @@ void main() {
     float r = 0.018 + 0.022 * w;
     colour += vec3( 1.0, 0.96, 0.88 ) * w * ( 1.6 * exp( - a * a / ( r * r ) ) + 0.25 * exp( - a / ( r * 4.0 ) ) );
   }
+
+  // Nothing clips to white: above the knee the brightest channel is bent under 1, and the others with it.
+  float top = max( colour.r, max( colour.g, colour.b ) );
+  if ( top > ${HOT_KNEE.toFixed(2)} ) colour *= ( ${HOT_KNEE.toFixed(2)} + ${(1 - HOT_KNEE).toFixed(2)} * ( 1.0 - exp( - ( top - ${HOT_KNEE.toFixed(2)} ) / ${(1 - HOT_KNEE).toFixed(2)} ) ) ) / top;
 
   gl_FragColor = vec4( colour, 1.0 );
   #include <tonemapping_fragment>
@@ -421,8 +561,9 @@ void main() {
   // It breathes: a faint wave of brightness moving outward, each streamer out of step with the next.
   fall *= 1.0 + 0.07 * sin( 6.2831853 * ( 0.45 * r - 2.0 * uTime + 1.3 * broad ) ) * smoothstep( 1.05, 1.6, r );
   float edge = 1.0 - smoothstep( ${(CORONA_RADII * 0.6).toFixed(2)}, ${CORONA_RADII.toFixed(2)}, r );
-  float light = ( 0.45 * inner + 0.4 * fall * rays ) * edge * smoothstep( 0.98, 1.01, r );
-  vec3 pearl = mix( vec3( 1.0, 0.93, 0.82 ), vec3( 0.86, 0.91, 1.0 ), smoothstep( 1.0, 2.5, r ) );
+  float light = ( 0.5 * inner + 0.5 * fall * rays ) * edge * smoothstep( 0.98, 1.01, r );
+  // Pearly: the photosphere's light scattered by electrons is white. A little warm at the limb, never blue or grey.
+  vec3 pearl = mix( vec3( 1.0, 0.94, 0.84 ), vec3( 1.0, 0.975, 0.94 ), smoothstep( 1.0, 2.5, r ) );
   gl_FragColor = vec4( pearl * light * ${CORONA_GAIN.toFixed(2)} * uOpacity, 1.0 );
   #include <colorspace_fragment>
 }
@@ -493,12 +634,18 @@ void main() {
 `;
 
 /**
- * A CME's front, drawn in the plane of the sky through the Sun's centre (the corona's own plane and
- * vertex shader): a thin shell of radius uR about the Sun, kept to the cone of the reported
- * half-angle about uDir. Along each line of sight the shell is met at two points, toward the camera
- * and away; where they lie inside the cone the shell shows, and it is brightest where the line
- * grazes it, so a CME thrown sideways is an arc and one thrown at the camera is a faint round haze.
+ * A CME, drawn in the plane of the sky through the Sun's centre (the corona's own plane and vertex
+ * shader), as a white-light coronagraph shows one, in three parts:
+ *   the FRONT   a shell of radius uR about the Sun, kept to the cone of the reported half-angle about
+ *               uDir. Along each line of sight the shell is met at two points, toward the camera and
+ *               away; where they lie inside the cone it shows, brightest where the line grazes it:
+ *               thrown sideways it is a loop, thrown at the camera a ring round the Sun (a halo);
+ *   the CAVITY  behind the front, much fainter than it and not empty;
+ *   the CORE    a bright knot at CME_CORE_AT of the way out along uDir: the erupted prominence.
+ * And the loop's two legs, faint, back toward the Sun along the cone's edge. Pearly white: this is
+ * sunlight scattered by electrons. The place of the front is the catalogue's; the rest is the picture's.
  */
+export const CME_CORE_AT = 0.42;
 export const CME_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
@@ -510,17 +657,32 @@ varying vec2 vP;
 void main() {
   #include <logdepthbuf_fragment>
   float b = length( vP );
+  float s = b / uR;                                                     // 0 on the Sun's centre line, 1 at the front
+  if ( s > 1.15 || b < 0.97 ) discard;
   float depth = sqrt( max( uR * uR - b * b, 0.0 ) );
   float toward = dot( normalize( vec3( vP, depth ) ), uDir );
   float away = dot( normalize( vec3( vP, - depth ) ), uDir );
-  float cone = max( smoothstep( uCosHalf - 0.1, uCosHalf + 0.06, toward ), smoothstep( uCosHalf - 0.1, uCosHalf + 0.06, away ) );
-  float width = 0.07 * uR;
-  float edge = ( b - 0.96 * uR ) / width;
-  float front = exp( - edge * edge );                                  // the thin bright front, soft on both sides
-  float haze = 0.08 * ( 1.0 - smoothstep( 0.55 * uR, 0.98 * uR, b ) ) + 0.06 * smoothstep( 0.5 * uR, 0.96 * uR, b ) * step( b, 0.96 * uR );
-  float light = ( front + haze ) * cone * uOpacity * smoothstep( 0.98, 1.02, b );
-  if ( light < 0.002 ) discard;
-  gl_FragColor = vec4( vec3( 0.92, 0.94, 1.0 ) * light * ${CME_GAIN.toFixed(2)}, 1.0 );
+  float inside = max( toward, away );
+  float cone = smoothstep( uCosHalf - 0.1, uCosHalf + 0.06, inside );
+  // The front: a bright loop with a sharp leading edge and a softer inner one, finely striated.
+  float lead = ( s - 0.95 ) / ( s > 0.95 ? 0.045 : 0.085 );
+  float ripple = 0.86 + 0.14 * sin( 23.0 * atan( vP.y, vP.x ) + 1.7 * uR ) * sin( 7.0 * atan( vP.y, vP.x ) - uR );
+  float front = exp( - lead * lead ) * ripple;
+  // A thin sheath of compressed corona just ahead of it.
+  float sheath = 0.12 * ( 1.0 - smoothstep( 0.98, 1.15, s ) ) * step( 0.95, s );
+  // The cavity: darker than the front and the core, not empty.
+  float cavity = 0.09 * ( 1.0 - smoothstep( 0.86, 0.95, s ) );
+  // The loop's legs, back toward the Sun along the cone's edge.
+  float leg = ( inside - uCosHalf ) / 0.045;
+  float legs = 0.3 * exp( - leg * leg ) * ( 1.0 - smoothstep( 0.8, 0.95, s ) ) * smoothstep( 0.08, 0.35, s );
+  // The core: the erupted prominence, a ragged bright knot well behind the front.
+  vec2 fromCore = vP - uDir.xy * ${CME_CORE_AT.toFixed(2)} * uR;
+  float knot = dot( fromCore, fromCore ) / ( 0.0169 * uR * uR );         // its radius is 0.13 of the front's
+  float core = 0.85 * exp( - knot ) * ( 0.75 + 0.25 * sin( 9.0 * fromCore.x / uR + 2.0 ) * sin( 11.0 * fromCore.y / uR ) );
+  float light = ( ( front + sheath + cavity ) * cone + legs + core ) * uOpacity * smoothstep( 0.98, 1.02, b );
+  if ( light < 0.003 ) discard;
+  // Pearly white, a touch warm: Thomson-scattered sunlight, not grey.
+  gl_FragColor = vec4( vec3( 1.0, 0.97, 0.93 ) * light * ${CME_GAIN.toFixed(2)}, 1.0 );
   #include <colorspace_fragment>
 }
 `;
@@ -554,6 +716,10 @@ export function createSunDetail(opts = {}) {
       uTint: { value: plain.color ? plain.color.clone() : new THREE.Color(0xf18833) },
       uTime: { value: 0 },
       uGrain: { value: 0 },
+      uLevel: { value: 0 },
+      uClose: { value: 0 },
+      uCentre: { value: new THREE.Vector3() },
+      uRadius: { value: 0 },
       uSpots: { value: spots },
       uSpotCount: { value: 0 },
       uFlares: { value: flareSlots },
@@ -642,6 +808,7 @@ export function createSunDetail(opts = {}) {
   const _cam = [0, 0, 1];
   const _d = [0, 0, 0];
   const _place = { observedMs: 0, latDeg: 0, eastDeg: 0 };
+  const _plane = new THREE.Quaternion();
 
   let latched = false;
   let regions = [];
@@ -671,9 +838,8 @@ export function createSunDetail(opts = {}) {
     corona.visible = detail;
     if (!detail) {
       for (const sheet of proms) sheet.visible = false;
-      for (const front of fronts) front.visible = false;
       material.uniforms.uFlareCount.value = 0;
-      promNow = []; flaresNow = []; cmesNow = []; activityKey = '';
+      promNow = []; flaresNow = [];
     }
     if (sprite && sprite.material) sprite.material.opacity = detail ? 0 : spriteOpacity;
   }
@@ -688,7 +854,42 @@ export function createSunDetail(opts = {}) {
       const still = !!(how && how.still) || stillUnder(look, UNDER_MEASURED.corona);
       const detail = !latched && share >= SUN_DETAIL_AT * 0.8; // a little hysteresis under where it was fetched
       wear(detail);
-      if (!detail) return;
+      // A CME IS SEEN FROM FARTHER BACK THAN THE SURFACE IS. Twenty radii out it is twenty times the
+      // disc: to have it in the view the camera stands where the disc is a few pixels and the detail
+      // above is off. So the clouds have a threshold of their own, CME_FROM, and are drawn with or
+      // without the photosphere's detail (never under the latch).
+      const cmeFade = latched ? 0 : Math.min(1, Math.max(0, (share - CME_FROM) / CME_FROM));
+      // The plane of the sky: it faces the camera; the mesh turns under it, so undo the mesh's own turn.
+      mesh.updateWorldMatrix(true, false);
+      mesh.getWorldQuaternion(_q).invert();
+      _plane.copy(_q).multiply(camera.quaternion);
+      // The meridian that faces the Earth, in the Sun's own axes: the lists are counted from it.
+      let meridian = false;
+      if (earthWorld) {
+        _v.copy(earthWorld);
+        mesh.worldToLocal(_v);
+        if (_v.lengthSq() > 0) { _v.normalize(); _e[0] = _v.x; _e[1] = _v.y; _e[2] = _v.z; meridian = true; }
+      }
+      // CME clouds: the newest in flight, in the frame of the Sun-Earth line as the catalogue gives them.
+      cmesNow = cmeFade > 0 && meridian && cmes.length ? cmesAt(cmes, tMs, cmeCap) : [];
+      let flying = 0;
+      for (const now of cmesNow) {
+        _place.observedMs = tMs; _place.latDeg = now.cme.latDeg; _place.eastDeg = now.cme.eastDeg;
+        if (!spotDirection(_place, _e, tMs, _d)) continue;
+        const front = fronts[flying];
+        const fu = front.material.uniforms;
+        front.quaternion.copy(_plane);
+        fu.uDir.value.set(_d[0], _d[1], _d[2]).applyQuaternion(_q.copy(_plane).invert());
+        fu.uR.value = now.radii;
+        fu.uCosHalf.value = Math.cos(now.cme.halfAngleDeg * Math.PI / 180);
+        fu.uOpacity.value = now.opacity * cmeFade;
+        front.visible = true;
+        flying += 1;
+      }
+      for (let i = flying; i < cmeCap; i++) fronts[i].visible = false;
+      let cmeKey = '';
+      for (const now of cmesNow) cmeKey += 'c' + now.cme.id;
+      if (!detail) { activityKey = cmeKey; return; }
       const u = material.uniforms;
       if (!u.uHasMap.value && plain.map) { u.uMap.value = plain.map; u.uHasMap.value = 1; }
       const secs = tMs / 1000;
@@ -697,11 +898,17 @@ export function createSunDetail(opts = {}) {
       const swayPhase = still ? STILL.sway : wrap(secs / PROM_SWAY_S, 1);
       const g = tier >= 1 && drawnUnder(look, UNDER_MEASURED.grain) ? Math.min(1, Math.max(0, (share - GRAIN_FROM) / (GRAIN_FULL - GRAIN_FROM))) : 0;
       u.uGrain.value = g * g * (3 - 2 * g);
+      // Where the camera is, in Sun radii: the grain's scale, and how far the map has given way.
+      mesh.getWorldPosition(u.uCentre.value);
+      u.uRadius.value = mesh.getWorldScale(_v).x;
+      camera.getWorldPosition(_c);
+      const fromCentre = u.uRadius.value > 0 ? _c.distanceTo(u.uCentre.value) / u.uRadius.value : Infinity;
+      u.uLevel.value = grainLevel(fromCentre, camera.projectionMatrix.elements[5]);
+      // Only where the grain is drawn is there a drawn surface to give way to (never at tier 0).
+      u.uClose.value = closeShare(fromCentre) * u.uGrain.value;
 
-      // The corona's plane faces the camera; the mesh turns under it, so undo the mesh's own turn.
-      mesh.updateWorldMatrix(true, false);
-      mesh.getWorldQuaternion(_q).invert();
-      corona.quaternion.copy(_q).multiply(camera.quaternion);
+      // The corona's plane is the plane of the sky.
+      corona.quaternion.copy(_plane);
       // Where the Sun's north is in that plane: its pole against the camera's right and up.
       _n.set(0, 1, 0).applyQuaternion(mesh.getWorldQuaternion(_q));
       _r.set(1, 0, 0).applyQuaternion(camera.quaternion);
@@ -714,12 +921,6 @@ export function createSunDetail(opts = {}) {
 
       // Today's groups, counted from the meridian that faces the Earth, in the Sun's own axes.
       drawn = 0; groups = 0; pairs = 0;
-      let meridian = false;
-      if (earthWorld) {
-        _v.copy(earthWorld);
-        mesh.worldToLocal(_v);
-        if (_v.lengthSq() > 0) { _v.normalize(); _e[0] = _v.x; _e[1] = _v.y; _e[2] = _v.z; meridian = true; }
-      }
       const listed = regions.length > 0 && meridian && regionsFresh(regions[0].observedMs, tMs);
       if (listed) {
         {
@@ -791,28 +992,9 @@ export function createSunDetail(opts = {}) {
       }
       for (let i = promNow.length; i < before; i++) proms[i].visible = false;
 
-      // CME fronts: the newest in flight, in the frame of the Sun-Earth line as the catalogue gives them.
-      cmesNow = meridian && cmes.length ? cmesAt(cmes, tMs, cmeCap) : [];
-      let flying = 0;
-      for (const now of cmesNow) {
-        _place.observedMs = tMs; _place.latDeg = now.cme.latDeg; _place.eastDeg = now.cme.eastDeg;
-        if (!spotDirection(_place, _e, tMs, _d)) continue;
-        const front = fronts[flying];
-        const fu = front.material.uniforms;
-        front.quaternion.copy(corona.quaternion);
-        fu.uDir.value.set(_d[0], _d[1], _d[2]).applyQuaternion(_q.copy(corona.quaternion).invert());
-        fu.uR.value = now.radii;
-        fu.uCosHalf.value = Math.cos(now.cme.halfAngleDeg * Math.PI / 180);
-        fu.uOpacity.value = now.opacity * c.uOpacity.value;
-        front.visible = true;
-        flying += 1;
-      }
-      for (let i = flying; i < cmeCap; i++) fronts[i].visible = false;
-
       let key = promNow.length ? 'p' + promNow.length : '';
       for (const now of flaresNow) key += 'f' + now.flare.region + now.flare.cls;
-      for (const now of cmesNow) key += 'c' + now.cme.id;
-      activityKey = key;
+      activityKey = key + cmeKey;
     },
     /** data/sunactivity.js parseFlares(): the flare list, or [] to draw none. */
     setFlares(list) { flares = Array.isArray(list) ? list : []; },
@@ -826,9 +1008,9 @@ export function createSunDetail(opts = {}) {
       regionNumbers = new Set(regions.map((r) => r.region));
     },
     /** The frame latch tripped: back to the flat disc and the round glow, for good. */
-    latch() { latched = true; wear(false); },
+    latch() { latched = true; wear(false); for (const front of fronts) front.visible = false; cmesNow = []; activityKey = ''; },
     state() {
-      return { on, latched, grain: material.uniforms.uGrain.value, spots: groups, circles: drawn, pairs, regions: regions.length,
+      return { on, latched, grain: material.uniforms.uGrain.value, level: material.uniforms.uLevel.value, close: material.uniforms.uClose.value, spots: groups, circles: drawn, pairs, regions: regions.length,
         observedMs: regions.length ? regions[0].observedMs : null, corona: corona.material.uniforms.uOpacity.value,
         prominences: promNow.slice(),
         flares: flaresNow.map((f) => ({ region: f.flare.region, cls: f.flare.cls, maxMs: f.flare.maxMs, brightness: f.brightness })),

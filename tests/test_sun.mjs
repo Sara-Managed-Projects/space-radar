@@ -235,7 +235,7 @@ const FEED = [
   const S2 = await import(pathToFileURL(join(ROOT, 'site/js/scene/sun.js')).href);
   check(S2.SUN_FRAG.includes('for ( int z = -1; z <= 1; z++ )') && !S2.SUN_FRAG.includes('step( vec3( 0.5 ), f )'), 'tier 2 keeps the full 27-cell loop');
   check(S2.SUN_FRAG_CHEAP.includes('for ( int z = 0; z <= 1; z++ )') && S2.SUN_FRAG_CHEAP.includes('step( vec3( 0.5 ), f )') && !S2.SUN_FRAG_CHEAP.includes('z = -1'), 'tiers 0 and 1 read 8 cells toward the nearer faces');
-  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/vec2 cells[\s\S]*?\n}\n/, '');
+  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/void cellsOf[\s\S]*?\n}\n/, '');
   check(strip(S2.SUN_FRAG) === strip(S2.SUN_FRAG_CHEAP) && strip(S2.SUN_FRAG) !== S2.SUN_FRAG.replace(/\/\/[^\n]*/g, ''), 'everything but the cell loop is the same source at every tier');
   check(!/\bhalf\b|\binput\b|\boutput\b|\bsample\b|\bfilter\b/.test(S2.SUN_FRAG_CHEAP), 'no reserved GLSL word in the cheap source either');
   let seed = 12345;
@@ -247,12 +247,14 @@ const FEED = [
     const t = rnd() * S2.GRAIN_WRAP;
     const flow = [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5].map((v) => v * 2 * S2.GRAIN_DRIFT);
     const a = S2.cellsTwin(p, t, false, flow), b = S2.cellsTwin(p, t, true, flow);
-    if (Math.abs(a[0] - b[0]) < 1e-12) same++;
-    const la = S2.grainShade(a[0], a[1]), lb = S2.grainShade(b[0], b[1]);
+    const la = S2.grainShade(...a), lb = S2.grainShade(...b);
+    if (Math.abs(la - lb) < 1e-12) same++;
     const dl = Math.abs(la - lb);
     sumAbs += dl; maxLaneDiff = Math.max(maxLaneDiff, dl); sumFull += la; sumNear += lb;
   }
   check(same / N > 0.8, `the 8 cells give the very same value at ${(100 * same / N).toFixed(1)} % of points (over 80 % wanted)`);
+  // Since 2026-10-12 a granule reaches no farther than GRAIN_REACH from its point, which no cell but the near 8 can do: the two loops agree everywhere.
+  check(same === N && S2.GRAIN_JITTER + S2.GRAIN_DRIFT / 2 + S2.GRAIN_REACH <= 1 + 1e-9, `the 8 cells are exact: ${same} of ${N} points the same, because jitter ${S2.GRAIN_JITTER} + drift ${S2.GRAIN_DRIFT / 2} + reach ${S2.GRAIN_REACH} is not over 1`);
   check(sumAbs / N < 0.03, `and the lane shade differs by ${(sumAbs / N).toFixed(4)} on average (under 0.03)`);
   check(Math.abs(sumFull - sumNear) / N < 0.02, `the mean lane shade moves by ${(Math.abs(sumFull - sumNear) / N).toFixed(4)} (the picture's overall brightness holds)`);
   check(Math.abs(sumFull / N - S2.GRAIN_MEAN) < 0.02 && Math.abs(sumNear / N - S2.GRAIN_MEAN) < 0.02, `the shade's mean is the GRAIN_MEAN the shader takes off: ${(sumFull / N).toFixed(3)} and ${(sumNear / N).toFixed(3)} against ${S2.GRAIN_MEAN}`);
@@ -269,19 +271,66 @@ const FEED = [
     const now = S.grainShade(...S.cellsTwin(p, t % S.GRAIN_WRAP, false));
     worst = Math.max(worst, Math.abs(now - last)); lo = Math.min(lo, now); hi = Math.max(hi, now); last = now;
   }
-  check(worst < 0.06, `the shade at a point never jumps, across rebirths and across the clock's wrap: worst step ${worst.toFixed(3)} in 1/500 of a life`);
+  // 0.1: a jump would be a third or more (a cell's whole shade). The granules of 2026-10-12 have a steeper rim than
+  // the old ones, so the largest smooth change in 0.09 s is 0.075 where it was 0.05.
+  check(worst < 0.1, `the shade at a point never jumps, across rebirths and across the clock's wrap: worst step ${worst.toFixed(3)} in 1/500 of a life`);
   check(lo < 0.05 && hi > 0.75, `and over ${S.GRAIN_WRAP} lives the point is both a dark lane and a bright granule: ${lo.toFixed(2)} to ${hi.toFixed(2)}`);
-  // A granule owns no ground when it is reborn: at weight 0 its point is pushed GRAIN_YIELD away, past any second neighbour.
+  // A granule owns no ground when it is reborn: its radius and its light are nothing then, so where a granule is the nearest it is never a newborn one.
   let weak = 0, n = 0, seed = 99;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
-  for (let k = 0; k < 3000; k++) { const w = S.cellsTwin([rnd() * 60, rnd() * 60, rnd() * 60], rnd() * S.GRAIN_WRAP, false)[1]; n++; if (w < 0.07) weak++; }
+  for (let k = 0; k < 3000; k++) { const c = S.cellsTwin([rnd() * 60, rnd() * 60, rnd() * 60], rnd() * S.GRAIN_WRAP, false); if (!(c[0] < 1)) continue; n++; if (c[1] < 0.07) weak++; }
   check(weak / n < 0.002, `a granule at the very start or end of its life is the nearest at ${(100 * weak / n).toFixed(2)} % of points (it has shrunk away)`);
   // The drift: zero at a larger cell's middle and on its border, outward between.
   const mid = S.superFlow([0, 0, 0]);
   check(mid.flow.every((v) => Math.abs(v) < 1e-9), 'at a larger cell\'s middle there is no drift');
   const out = S.superFlow([0.1 / S.SUPER_CELLS, 0, 0]);
   check(out.flow[0] > 0.3, `a little way out along x the drift is outward: ${out.flow[0].toFixed(2)}`);
-  check(S.SUN_FRAG.includes(`cells( p * ${S.GRAIN_CELLS.toFixed(1)}, uTime, ${S.GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q ) )`) && (S.SUN_FRAG.match(/cells\(/g) || []).length === 2, 'the shader advects ONE octave of cells by that flow (the definition and one call)');
+  check(S.SUN_FRAG.includes(`vec3 flow = ${S.GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q );`) && S.SUN_FRAG.includes(`float scale = ${S.GRAIN_CELLS.toFixed(1)} * exp2( lower );`) && (S.SUN_FRAG.match(/cells\(/g) || []).length === 2 && (S.SUN_FRAG.match(/grainAt\(/g) || []).length === 3, 'the shader advects the cells by that flow, at one scale or at two neighbouring ones while they cross-fade');
+  // ROUNDED CELLS, NOT A POLYGON MESH (2026-10-12): the shade is a dome over a smooth minimum of the distances, with lanes of one width.
+  check(/float u = length\( g \+ o - f \) \/ max\(/.test(S.SUN_FRAG) && /return vec3\( u1, a1, min\( u2, 1\.0 \) - u1 \);/.test(S.SUN_FRAG) && (S.SUN_FRAG.match(/cellsOf\( p/g) || []).length === 2 && S.SUN_FRAG.includes(`smoothstep( 0.0, ${S.GRAIN_LANE.toFixed(2)}, c.z )`) && S.SUN_FRAG.includes(`smoothstep( ${S.GRAIN_EDGE.toFixed(2)}, 1.0, c.x )`) && S.SUN_FRAG.includes(`${S.GRAIN_REACH.toFixed(2)} * w`) && S.SUN_FRAG.includes(`vec3( ${S.GRAIN_SHIFT.map((x) => x.toFixed(2)).join(', ')} )`), 'the shader measures each granule in its own radii, over two offset lattices, with this file\'s numbers');
+  {
+    // A granule is a dome: along a straight walk from one point's place outward the shade falls smoothly, with no step.
+    let worstStep = 0, seedR = 7;
+    const rr = () => { seedR = (seedR * 1664525 + 1013904223) % 4294967296; return seedR / 4294967296; };
+    let dark = 0, bright = 0, n2 = 0;
+    for (let k = 0; k < 400; k++) {
+      const p0 = [rr() * 40, rr() * 40, rr() * 40], dir = [rr() - 0.5, rr() - 0.5, rr() - 0.5];
+      const dl = Math.hypot(...dir); const t = rr() * S.GRAIN_WRAP;
+      let before = S.grainShade(...S.cellsTwin(p0, t, false));
+      for (let st = 1; st <= 20; st++) {
+        const q2 = p0.map((v, i) => v + dir[i] / dl * st * 0.01);
+        const now = S.grainShade(...S.cellsTwin(q2, t, false));
+        worstStep = Math.max(worstStep, Math.abs(now - before)); before = now;
+        n2++; if (now < 0.15) dark++; if (now > 0.5) bright++;
+      }
+    }
+    check(worstStep < 0.2, `across the surface the shade has no hard edge: the worst step in a hundredth of a cell is ${worstStep.toFixed(3)}`);
+    check(dark / n2 > 0.2 && dark / n2 < 0.5 && bright / n2 > 0.25, `lanes and granules are both there in quantity: ${(100 * dark / n2).toFixed(0)} % of the surface under 0.15, ${(100 * bright / n2).toFixed(0)} % over 0.5`);
+  }
+  // THE SCALE FOLLOWS THE CAMERA, down to a granule's real size.
+  {
+    const f = 1 / Math.tan(22.5 * Math.PI / 180);
+    check(S.grainLevel(6, f) === 0 && S.grainLevel(1.0005, f) === S.GRAIN_LEVEL_MAX && S.grainLevel(1, f) === S.GRAIN_LEVEL_MAX && S.grainLevel(NaN, f) === S.GRAIN_LEVEL_MAX, 'far away the coarsest scale; skimming the surface the finest');
+    check(Math.abs((S.grainLevel(1.5, f) - S.grainLevel(2, f)) - 1) < 1e-9, 'half the height above the surface is one scale finer');
+    const cells = S.GRAIN_CELLS * 2 ** S.GRAIN_LEVEL_MAX;
+    check(cells >= 600 && cells <= 800, `the finest scale is ${cells} cells across the radius: a granule's real size, a thousand kilometres`);
+    for (const d of [4, 2.5, 1.6, 1.2, 1.08]) {
+      const lv = S.grainLevel(d, f);
+      const cellShare = f / ((d - 1) * S.GRAIN_CELLS * 2 ** lv);   // one cell, as a share of half the view's height, under the camera
+      check(lv === 0 || lv === S.GRAIN_LEVEL_MAX || Math.abs(cellShare - S.GRAIN_TARGET) < 1e-9, `from ${d} radii a cell is ${(cellShare * 450).toFixed(1)} px in a view 900 tall`);
+      check(cellShare * 450 >= 4 && cellShare * 450 <= 40, `from ${d} radii a cell is neither a speck nor a polygon: ${(cellShare * 450).toFixed(1)} px`);
+    }
+    check(S.closeShare(3) === 0 && S.closeShare(S.CLOSE_FROM) === 0 && S.closeShare(S.CLOSE_FULL) === 1 && S.closeShare(1.02) === 1 && S.closeShare(NaN) === 0 && S.closeShare(1.8) > 0.2 && S.closeShare(1.8) < 0.8, 'the map gives way to the drawn surface between CLOSE_FROM and CLOSE_FULL radii, and only there');
+    check(S.SUN_FRAG.includes(`textureLod( uMap, vec2( 0.5 ), ${S.CLOSE_MIP.toFixed(1)} )`) && S.CLOSE_MIP >= 11 && /if \( uClose > 0\.0 \) body = mix\( body,/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`mix( ${S.GRAIN_CONTRAST.toFixed(2)}, ${S.GRAIN_CONTRAST_CLOSE.toFixed(2)}, uClose )`), 'from very close the shader reads the map\'s mean colour only (the mip past its last), and the grain carries the picture');
+    // NOTHING CLIPS TO WHITE.
+    check(S.hotShoulder(0.5) === 0.5 && S.hotShoulder(S.HOT_KNEE) === S.HOT_KNEE && S.hotShoulder(1.0) < 0.93 && S.hotShoulder(3) < 1 && S.hotShoulder(1.3) > S.hotShoulder(1.0), `above the knee a brightness is bent under 1 and still rises: 1.0 is drawn ${S.hotShoulder(1).toFixed(3)}, 1.3 is ${S.hotShoulder(1.3).toFixed(3)}`);
+    check(S.SUN_FRAG.includes(`if ( top > ${S.HOT_KNEE.toFixed(2)} ) colour *=`) && S.SUN_FRAG.indexOf('if ( top >') > S.SUN_FRAG.indexOf('uFlares[ i ].w') && /body \* vec3\( 0\.95, 0\.88, 0\.70 \)/.test(S.SUN_FRAG), 'the shader bends everything, a flare\'s kernel too, and leans the map\'s whitest patches to yellow-white first');
+    // THE SPHERE'S OWN NORMAL.
+    check(/vec3 ray = normalize\( vPosW - cameraPosition \);/.test(S.SUN_FRAG) && /n = normalize\( oc \+ ray \* \( - along - sqrt\( disc \) \) \);/.test(S.SUN_FRAG) && /float mu = clamp\( dot\( n, - ray \), 0\.0, 1\.0 \);/.test(S.SUN_FRAG), 'limb darkening is shaded from where the line of sight meets the sphere, not from the mesh\'s facets');
+    // THE CORONA IS PEARLY, NEVER BLUE OR GREY: in both of its colours red is the most and blue is not under 0.8.
+    const pearl = [...S.CORONA_FRAG.matchAll(/vec3\( (1\.0|0\.\d+), (0\.\d+), (0\.\d+) \)/g)].map((m) => m.slice(1, 4).map(Number));
+    check(pearl.length === 2 && pearl.every(([r, g, b]) => r === 1 && g <= r && b <= g && b >= 0.8), `the corona's two colours are warm whites: ${JSON.stringify(pearl)}`);
+  }
   check(/towardLimb = \( 1\.0 - smoothstep\( 0\.4, 0\.72, mu \) \)/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`${S.FACULA_GAIN.toFixed(2)} * uGrain * towardLimb`), 'faculae are bright only toward the limb and only where the grain is drawn');
   check(S.GRAIN_LIFE_S >= 20 && S.GRAIN_LIFE_S <= 120 && S.CORONA_BREATH_S >= 30 && S.PROM_SWAY_S >= 10, 'lives, breaths and sways are slow');
 }
@@ -348,7 +397,26 @@ const CMES = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/donki_cm
   check(A.cmeShell(one, t0 - 1) === null && near(A.cmeShell(one, t0).radii, 1) && A.cmeShell(one, t0).opacity === 0, 'before its start there is no front; at its start it is on the surface and not yet lit');
   check(near(A.cmeShell(one, t0 + 1000000).radii, 2) && near(A.cmeShell(one, t0 + 4000000).radii, 5), 'the front moves at the reported speed: one radius a thousand seconds at 695.7 km/s');
   check(A.cmeShell(one, t0 + 1000000).opacity > A.cmeShell(one, t0 + 6000000).opacity && A.cmeShell(one, t0 + 6000000).opacity > 0, 'and thins as it goes');
-  check(A.cmeShell(one, t0 + 9000000) === null && near(A.cmeFlightMs(one), 9000000, 1e-6), `it is gone at ${A.CME_REACH_RADII} radii`);
+  check(A.CME_REACH_RADII >= 20 && A.CME_REACH_RADII <= 30 && A.cmeShell(one, t0 + (A.CME_REACH_RADII - 1) * 1e6) === null && near(A.cmeFlightMs(one), (A.CME_REACH_RADII - 1) * 1e6, 1e-6), `it is followed to ${A.CME_REACH_RADII} radii and gone there`);
+  // IT CAN BE SEEN FOR AS LONG AS IT IS SAID TO BE IN FLIGHT (2026-10-12: two hours in, a 741 km/s front was at opacity 0.02 and a 1 586 km/s one was not drawn).
+  check(A.cmeShell(one, t0 + 9e6).opacity >= A.CME_FLOOR && A.cmeShell(one, t0 + 9e6).radii === 10 && A.cmeShell(one, t0 + (A.CME_REACH_RADII - 1 - A.CME_TAIL_RADII) * 1e6).opacity >= A.CME_FLOOR - 1e-9, `at ten radii and until its last ${A.CME_TAIL_RADII} it is drawn at ${A.CME_FLOOR} or more: ${A.cmeShell(one, t0 + 9e6).opacity.toFixed(2)} at ten`);
+  for (const speed of [741, 1586]) {
+    const fast = { ...one, speedKmS: speed };
+    const two = A.cmeShell(fast, t0 + 2 * 3600e3);
+    check(two && two.opacity >= A.CME_FLOOR && A.cmesAt([fast], t0 + 2 * 3600e3).length === 1, `two hours in, a ${speed} km/s CME is at ${two ? two.radii.toFixed(1) : '?'} radii and drawn at ${two ? two.opacity.toFixed(2) : 'nothing'}`);
+    check(A.cmeFlightMs(fast) / 3600e3 > 2.5 && A.cmeFlightMs(fast) / 3600e3 < 10, `and it is followed for ${(A.cmeFlightMs(fast) / 3600e3).toFixed(1)} hours`);
+  }
+  {
+    // What is listed is what can be seen: never a CME on the card with nothing in the picture.
+    let listedFaint = 0, unlistedBright = 0;
+    for (let ms = 0; ms <= 24e6; ms += 20000) {
+      const shell = A.cmeShell(one, t0 + ms); const listed = A.cmesAt([one], t0 + ms).length === 1;
+      if (listed && !(shell && shell.opacity >= A.CME_SEEN)) listedFaint++;
+      if (!listed && shell && shell.opacity >= A.CME_SEEN) unlistedBright++;
+    }
+    check(listedFaint === 0 && unlistedBright === 0 && A.CME_SEEN > 0.04 && A.CME_SEEN < A.CME_FLOOR, 'a CME is listed as in flight exactly while it is drawn bright enough to see');
+    check(A.cmesAt([one], t0 + 5000).length === 0 && A.cmesAt([one], t0 + 200000).length === 1 && A.cmesAt([one], t0 + 23.95e6).length === 0, 'not in its first seconds, when it has not come up, nor in its last moments');
+  }
   check(A.cmesAt([one, { ...one, id: 'y', startMs: t0 + 60000 }, { ...one, id: 'z', startMs: t0 + 120000 }], t0 + 1000000).map((x2) => x2.cme.id).join() === 'z,y', `at most ${A.MAX_CMES} at once, the newest`);
 
   // Registry rows, the page's source entries and the module name the same addresses; NASA is never asked by a browser.
@@ -487,7 +555,37 @@ const CMES = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/donki_cm
   }
   check(fronts[0].material.blending === THREE.AdditiveBlending && fronts[0].material.depthWrite === false && fronts[0].material.uniforms.uOpacity.value > 0 && fronts[0].material.uniforms.uOpacity.value < 1, 'an additive shell that writes no depth');
   sun.update(peak + 9500000, 1.2, earth);
-  check(!fronts[0].visible && sun.state().cmes.length === 0, 'past ten radii it is gone');
+  check(fronts[0].visible && sun.state().cmes.length === 1 && fronts[0].material.uniforms.uOpacity.value >= A.CME_FLOOR * 0.99, 'past ten radii it is still drawn, and bright enough to see');
+  sun.update(peak + (A.CME_REACH_RADII - 0.5) * 1e6, 1.2, earth);
+  check(!fronts[0].visible && sun.state().cmes.length === 0, 'at the end of its reach it is gone');
+  // SEEN FROM WELL BACK: with the disc a few pixels across the surface's detail is off, and the cloud is still drawn.
+  {
+    sun.update(peak + 9500000, 0.03, earth);
+    const far = sun.state();
+    check(!far.on && fronts[0].visible && far.cmes.length === 1 && sun.activity() === 'cc1' && fronts[0].material.uniforms.uOpacity.value >= A.CME_FLOOR * 0.99, `with the disc at 0.03 of half the view the detail is off and the CME is drawn in full (${fronts[0].material.uniforms.uOpacity.value.toFixed(2)})`);
+    sun.update(peak + 9500000, S.CME_FROM * 1.5, earth);
+    check(fronts[0].visible && near(fronts[0].material.uniforms.uOpacity.value, 0.5 * A.cmeShell(cme, peak + 9500000).opacity), 'it fades in between CME_FROM and twice that');
+    sun.update(peak + 9500000, S.CME_FROM * 0.9, earth);
+    check(!fronts[0].visible && sun.state().cmes.length === 0 && sun.activity() === '', 'and under CME_FROM, where the whole cloud is a few pixels, it is not drawn and not listed');
+    check(S.CME_FROM < S.SUN_DETAIL_AT * 0.8 && S.CME_FROM * A.CME_REACH_RADII < 1 && S.CME_FROM * A.CME_REACH_RADII > 0.2, 'where it starts, a cloud at the end of its reach is inside the view');
+    sun.update(peak + 9500000, 1.2, earth);
+  }
+  // The picture a coronagraph shows: a bright front, a darker cavity, a bright core; pearly white.
+  check(/float front = /.test(S.CME_FRAG) && /float cavity = 0\.\d+/.test(S.CME_FRAG) && /float core = 0\.\d+/.test(S.CME_FRAG) && S.CME_FRAG.includes(`uDir.xy * ${S.CME_CORE_AT.toFixed(2)} * uR`) && /vec3\( 1\.0, 0\.97, 0\.93 \)/.test(S.CME_FRAG) && S.CME_GAIN >= 0.8, 'the CME is a bright loop, a darker cavity and a bright core well behind the front, in a warm white');
+  {
+    const cav = Number(S.CME_FRAG.match(/float cavity = (0\.\d+)/)[1]); const cor = Number(S.CME_FRAG.match(/float core = (0\.\d+)/)[1]);
+    check(cav < 0.2 && cor > 0.6 && cor <= 1, `the cavity (${cav}) is much darker than the front (1) and the core (${cor})`);
+  }
+  // The photosphere is told where the camera is: the grain's scale and how far the map has given way.
+  {
+    const pu = mesh.material.uniforms;
+    check(pu.uLevel.value === 0 && pu.uClose.value === 0 && pu.uRadius.value === 1 && pu.uCentre.value.length() === 0, 'from a hundred radii: the coarsest grain, the map whole, the sphere where the mesh is');
+    camera.position.set(0, 0, 1.2); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+    sun.update(peak + 2000000, 4, earth);
+    check(pu.uLevel.value > 2 && pu.uLevel.value <= S.GRAIN_LEVEL_MAX && pu.uClose.value === 1 && sun.state().level === pu.uLevel.value && sun.state().close === 1, `from 1.2 radii: scale ${pu.uLevel.value.toFixed(2)}, and the drawn surface carries the picture`);
+    camera.position.set(0, 0, 100); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+    sun.update(peak + (A.CME_REACH_RADII - 0.5) * 1e6, 1.2, earth);
+  }
 
   // Reduced motion: a still picture of the same Sun.
   const corona = mesh.children.find((c) => c.name === 'sun-corona-plane');
