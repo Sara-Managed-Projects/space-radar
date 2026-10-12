@@ -1,0 +1,159 @@
+/* drift.css -- the drift: the camera wanders on its own (ui/drift.js, spec 0071).
+ *
+ * Linked by ui/drift.js when the mode starts, never at boot: a first visit carries none of it
+ * (registry/budgets.yaml first_visit_bytes). Tokens only, all from css/ui.css :root;
+ * tests/test_tokens.mjs holds this file to the same rules as ui.css.
+ *
+ * WHAT IS ON SCREEN in this mode: the scene, on the clear screen or the HUD screen
+ * (ui/cleanview.js) without its time pill, and one bar, bottom centre, in photo mode's place and glass
+ * (docs/ui-guide.md 3.19 and 3.25). The bar and the pointer go three seconds after the pointer
+ * stops, so a still picture has nothing on it; any movement brings them back.
+ */
+
+.sr-drift__host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-trip);
+  pointer-events: none;
+  transition: opacity var(--sr-slow) var(--sr-ease);
+}
+
+.sr-drift__host.is-idle {
+  opacity: 0;
+}
+
+/* A control that has the keyboard never goes from under it. */
+.sr-drift__host.is-idle:focus-within {
+  opacity: 1;
+}
+
+html.sr-drift--still,
+html.sr-drift--still canvas {
+  cursor: none;
+}
+
+/* The HUD screen keeps the time pill, bottom centre, where this mode's bar is: the bar has the place. */
+html.sr-drift.sr-hud #sr-time {
+  visibility: hidden !important;
+}
+
+.sr-drift__bar {
+  position: absolute;
+  bottom: max(var(--sr-inset), env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-width: calc(100vw - 2 * var(--sp-4));
+  padding: var(--sp-2);
+  box-sizing: border-box;
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius-shell);
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.sr-drift__host.is-idle .sr-drift__bar {
+  pointer-events: none;
+}
+
+.sr-drift__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+
+.sr-drift__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-drift__panel[hidden] {
+  display: none;
+}
+
+.sr-drift__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.sr-drift__label {
+  flex: 0 0 auto;
+  min-width: 112px;
+  margin: 0;
+}
+
+.sr-drift__btn {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  white-space: nowrap;
+  color: var(--sr-text-soft);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-drift__btn--icon {
+  width: 44px;
+  padding: 0;
+}
+
+.sr-drift__btn:hover {
+  color: var(--sr-text);
+  background: var(--sr-wash-strong);
+}
+
+.sr-drift__btn:active {
+  background: var(--sr-wash);
+}
+
+.sr-drift__btn[aria-pressed='true'],
+.sr-drift__btn[aria-expanded='true'] {
+  font-weight: 600;
+  color: var(--sr-text);
+  background: var(--sr-wash-strong);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-drift__bar.sr-float { background: var(--sr-glass-solid); }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-drift__bar.sr-float { background: var(--sr-glass-solid); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-drift__host { transition: none; }
+}
+
+/* A phone: the bar is the screen's width, the groups stack, the label has a row of its own. */
+html.sr-phone .sr-drift__bar {
+  right: var(--sp-4);
+  left: var(--sp-4);
+  max-width: none;
+  transform: none;
+}
+
+html.sr-phone .sr-drift__label {
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+html.sr-phone .sr-drift__group .sr-drift__btn {
+  flex: 1 1 auto;
+}

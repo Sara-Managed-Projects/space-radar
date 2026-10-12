@@ -434,6 +434,10 @@ jobs:
       # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
       - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
         run: node tests/test_autopilot.mjs
+      # Spec 0071: the camera wanders with no route. The walk never jumps the ladder, a flight that
+      # never lands cannot strand it, and a hand on the map gets everything back as it was.
+      - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
+        run: node tests/test_drift.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"
@@ -694,6 +698,11 @@ jobs:
       # Public #271: a star's light is a peak and a glow, the same in all three star draws, never a flat disc.
       - name: A star is a peak with a glow, not a disc
         run: node tests/test_star_light.mjs
+
+      # Spec 0072 requirement 1: planets and moons shine at their computed magnitude (Mallama and Hilton 2018),
+      # with the stars' own sprite, and the light is gone once the disc is 16 px across.
+      - name: Venus outshines Sirius, and a planet close up has no glow
+        run: node tests/test_worldlights.mjs
 
       # Public #426: a pulsar blinks at its period times the least power of ten an eye can follow, and
       # the card says by how much; the photographed black holes are drawn while their cards are open.
