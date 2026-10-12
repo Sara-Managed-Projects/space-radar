@@ -11,6 +11,19 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-12
+
+The first release, and the first zip: the whole site with a saved copy of the data, so a classroom
+copy starts with the network off ([docs/RUN_LOCALLY.md](docs/RUN_LOCALLY.md)). It is 1.0.0 because
+three things are now promises: a shared link (`v=1`), the saved-data format (`/data/v1/`) and the
+registry row formats keep working until a 2.0.0 ([docs/RELEASING.md](docs/RELEASING.md)).
+
+Counted on release day with `python3 scripts/count_facts.py`: 26 trips and 205 stops, 109 389
+stars, 40 star systems, 30 nebula and galaxy photographs, 21 moons (20 with a map), 20 landing
+sites on the Moon and 12 on Mars, 71 spacecraft models, 29 layers, 32 data sources.
+
+The section below was written as the work landed, so some of its numbers are the day's own.
+
 Five days, about fifty pull requests: the planetarium grew from nine trips to twenty-six, learned to
 look up from the ground, learned to work with no network, and then, between 6 and 8 October, got
 flybys that move the clock, forty star systems to fly into, a screen that plays on its own and the
@@ -249,7 +262,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/commits/main
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.0.0
 [#462]: https://github.com/Sara-Managed-Projects/space-radar/pull/462
 [#463]: https://github.com/Sara-Managed-Projects/space-radar/pull/463
 [#464]: https://github.com/Sara-Managed-Projects/space-radar/pull/464
