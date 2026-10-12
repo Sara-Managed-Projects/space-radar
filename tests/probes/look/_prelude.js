@@ -17,6 +17,9 @@ const look = { probe: '', errors: [], warns: [], shots: [], missing: [] };
   window.addEventListener('error', (e) => look.errors.push('uncaught: ' + String(e.message).slice(0, 600)));
   window.addEventListener('unhandledrejection', (e) => look.errors.push('unhandled rejection: ' + String((e.reason && (e.reason.stack || e.reason.message)) || e.reason).slice(0, 600)));
 }
+// The controls hint opens by itself a few seconds into a first visit and sits over the picture:
+// say it has been seen (ui/keyhint.js STORE_KEY), before the page asks.
+try { localStorage.setItem('sr:keyhint', '1'); } catch { /* the hint is then in the second picture */ }
 const until = async (fn, capMs, stepMs = 250) => {
   const t = Date.now();
   while (Date.now() - t < capMs) { try { if (fn()) return true; } catch { /* not yet */ } await sleep(stepMs); }

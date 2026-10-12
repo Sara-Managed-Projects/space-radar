@@ -16,8 +16,10 @@ const d = rig.state.distance;
 rig.flyTo({ distance: d * 0.55, ms: 0 });
 await shot('sun-2-closer', 'closer: granulation and today\'s spot groups', 6000);
 await shot('sun-3-six-seconds-later', 'six seconds on: the granulation should have moved', 6000);
-rig.flyTo({ distance: d * 0.3, azimuth: rig.state.azimuth + 0.5, ms: 0 });
-await shot('sun-4-limb-close', 'close on the limb: prominences', 6000);
+// Not closer than this: the rig stops at 1.02 radii, and from there one granule is the whole window
+// (the first version asked for 0.3 and photographed a flat orange field).
+rig.flyTo({ distance: d * 0.42, azimuth: rig.state.azimuth + 0.5, ms: 0 });
+await shot('sun-4-closest', 'as close as is useful, turned half a radian: cells, spots, the limb at the edge', 6000);
 rig.flyTo({ distance: d * 1.6, ms: 0 });
 await shot('sun-5-wide-corona', 'wide: the corona', 6000);
 // The events. The parsed flares carry `maxMs` (data/sunactivity.js parseFlares), the CMEs `startMs`.
@@ -47,13 +49,19 @@ if (flares.length) {
   if (out.detailLoaded && !now.length) look.warns.push('probe: at the peak of flare ' + f.cls + ' (region ' + f.region + ') the detail draws no flare: its region may not be in today\'s list');
 }
 if (cmes.length) {
-  const c = cmes[cmes.length - 1];
-  sr.clock.goTo(c.startMs + 2 * 3600e3);
-  faceEarth(2.6);
-  await sleep(8000);
-  const now = sr.sunDetail ? sr.sunDetail.state().cmes : [];
-  out.cmeAt = { cme: c, clock: new Date(sr.clock.now()).toISOString(), drawn: now };
-  await shot('sun-7-two-hours-into-a-cme', 'two hours after the start of CME ' + c.id + ' (' + c.speedKmS + ' km/s); drawn now: ' + now.length);
+  // The fastest of the list: its front is the brightest. Forty minutes in it is a few radii out; two
+  // hours in it is near CME_REACH_RADII, where the drawing has let it fade (data/sunactivity.js).
+  const c = cmes.slice().sort((x, y) => y.speedKmS - x.speedKmS)[0];
+  out.cmeAt = { cme: c, at: [] };
+  for (const [name, hours, words] of [['sun-7-forty-minutes-into-a-cme', 2 / 3, 'forty minutes'], ['sun-8-two-hours-into-a-cme', 2, 'two hours']]) {
+    sr.clock.goTo(c.startMs + hours * 3600e3);
+    faceEarth(2.6);
+    await sleep(8000);
+    const now = sr.sunDetail ? sr.sunDetail.state().cmes : [];
+    out.cmeAt.at.push({ hours, clock: new Date(sr.clock.now()).toISOString(), drawn: now });
+    const mine = now.find((x) => x.id === c.id);
+    await shot(name, words + ' after the start of CME ' + c.id + ' (' + c.speedKmS + ' km/s): ' + (mine ? 'front at ' + mine.radii.toFixed(1) + ' Sun radii, opacity ' + mine.opacity.toFixed(2) : 'NOT DRAWN'));
+  }
 }
 out.detailAfter = sr.sunDetail ? sr.sunDetail.state() : null;
 return finish(out);

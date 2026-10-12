@@ -109,7 +109,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | probe | what it walks |
 |---|---|
 | `smoke` | home; a wide view; the Moon, Jupiter, the Sun, Saturn; the Earth with ocean currents when their data is there; four stops of the drift. Runs on every pull request that touches `site/js/scene/`, `site/js/main.js` or `site/textures/` |
-| `worlds` | the eight planets and Pluto, each on its own stage from five sides (three azimuths, both poles): a torn, mirrored or flat-filled map is in a picture |
+| `worlds` | the eight planets and Pluto, each on its own stage in five pictures: as framed, a third and two thirds of a turn later from the sunward side (the clock turns the world, so every longitude is seen in daylight), and over each pole. A torn, mirrored or flat-filled map is in a picture |
 | `sun` | the Sun's detail on: arrival, closer, the limb, the corona, then inside a real flare and two hours into a real coronal mass ejection when the two feeds are there |
 | `jupiter` | the stage, both poles, close on a belt, the clock sped up |
 | `lights` | each bright planet as a point of light beside a small Earth |

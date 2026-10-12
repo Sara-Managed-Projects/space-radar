@@ -75,7 +75,11 @@ export function summarise({ out, errText, pictures = [], probe = '', browser = '
   if (!v.warns.length) L.push('None.');
   for (const w of v.warns.slice(0, 25)) L.push('- `' + one(w).replace(/`/g, "'").slice(0, 300) + '`');
   if (v.warns.length > 25) L.push(`- ... and ${v.warns.length - 25} more in out.json`);
-  if (out && Array.isArray(out.missing) && out.missing.length) L.push('', '## Not there', '', ...out.missing.map((m) => '- ' + one(m)));
+  const lost = String(errText || '').split('\n').filter((l) => l.startsWith('[network] ')).map((l) => l.slice(10));
+  const missing = [...((out && Array.isArray(out.missing) && out.missing) || []), ...lost];
+  if (missing.length) L.push('', '## Not there', '', ...missing.slice(0, 30).map((m) => '- ' + one(m)));
+  const ways = (out && Array.isArray(out.glTried) && out.glTried) || [];
+  if (ways.length > 1 || (ways.length && out.neutral)) L.push('', '## How the browser was started', '', ...ways.map((w) => `- ${one(w.way)}: ${w.ok ? 'WebGL2 from ' + one(w.renderer) : 'no WebGL2: ' + one(w.said)}`));
   if (out && out.frames && Object.keys(out.frames).length) {
     L.push('', '## Frame time', '',
       `Median and 95th percentile of the interval between animation frames, GL \`${one(out.gl || '?')}\`. **On a software renderer the absolute numbers mean nothing**: they are for comparing one run on this kind of runner with another. The same probe on a machine with a GPU gives the absolute ones. No budget is gated on them yet.`, '',

@@ -15,7 +15,8 @@ try {
   sr.setOverlay('currents');
   await until(() => { const s = sr.overlayState(); return s && s.status && s.status !== 'loading'; }, 20000);
   out.currents = sr.overlayState();
-  if (out.currents && out.currents.status === 'on') {
+  if (out.currents && out.currents.status === 'shown') {
+    await until(() => sr.overlayState().opacity > 0.5, 15000);
     await shot('8-currents', 'ocean currents on', 5000);
     rig.flyTo({ azimuth: rig.state.azimuth + 1.6, ms: 0 });
     await shot('9-currents-turned', 'ocean currents, a quarter turn on', 4000);
