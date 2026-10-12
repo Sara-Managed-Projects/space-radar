@@ -289,7 +289,18 @@ with a source is one of the most valuable things you can send.
 4. **A green pull request that is not a draft is merged automatically** (squashed). So "ready for
    review" means "ready to ship". If you want a human to look first, keep it a draft and ask, or
    ask a maintainer to add the `no-auto-merge` label.
-5. One topic per pull request. Small ones are merged fastest. The title becomes the changelog line:
+5. **A change to what is drawn comes with a picture.** If your pull request touches a model
+   (`site/models/`), a map (`site/textures/`), anything under `site/js/scene/`, or the registries
+   that decide what is drawn (models, textures, weather, worlds, nebulae), put at least one picture
+   taken in the app into the description: drag a screenshot into the box. A before and an after
+   from the same place is best. The `pictures` check stays red on a ready pull request without one
+   (`scripts/pr_pictures.py` is the whole rule). No fast machine? `gh workflow run look.yml --ref
+   <your branch> -f probe=smoke` takes the pictures on a GitHub runner
+   ([tools/README.md](tools/README.md)), and `tools/pr-pictures.sh <number> picture.png` puts them
+   in the description. If nothing a visitor sees can have changed, say so and a maintainer sets
+   the label `no-visual-change`. Why so strict: on one day in October 2026 five drawn features were
+   merged unseen, and the first look found a torn Pluto and a Sun made of polygons.
+6. One topic per pull request. Small ones are merged fastest. The title becomes the changelog line:
    say what changed for a visitor ("Hubble is found when you type hubble"), not what you did.
 
 Releases are cut about once a month; see [docs/RELEASING.md](docs/RELEASING.md). Who decides what,

@@ -184,6 +184,11 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # A pull request that changes what is drawn shows a picture (Ivan, 2026-10-12, after five
+      # features were merged unseen). The rule is one small script; this holds it and the documents
+      # that state it. The check itself is .github/workflows/pictures.yml.
+      - name: A drawn change owes a picture, and the rule says what counts as one
+        run: python3 tests/test_pr_pictures.py
       # Spec 0043 task 2 (internal #121): registry/truth.yaml lists every guarded stop field, and a field
       # the validator never mentions or no refusal case breaks is refused here.
       - name: The truth table agrees with the validator and its refusals

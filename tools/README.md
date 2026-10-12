@@ -11,6 +11,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
 | `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
+| `pr-pictures.sh` | put pictures into a pull request's description from the command line: `tools/pr-pictures.sh <number> shot.png="caption" ...` (shrunk, kept on the branch `screens`, shown under "Pictures"). A pull request that changes what is drawn owes one: `scripts/pr_pictures.py` |
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 ## The regression walk
