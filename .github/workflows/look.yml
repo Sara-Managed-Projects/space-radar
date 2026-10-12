@@ -1,0 +1,49 @@
+name: look
+
+# A LOOK FROM A MACHINE THAT HAS TIME. On 2026-10-12 the laptop that builds this could not boot the
+# page in a headless Chrome inside nine minutes (load average 400 to 700 from other work), and four
+# features were merged that no GPU had drawn. A branch named look/<anything> carries a probe at
+# .look/probe.js; this job serves site/ with the live site's saved data, runs the probe through
+# tools/cdp.mjs and keeps the pictures. Such a branch is never merged.
+on:
+  push:
+    branches: ["look/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  look:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: The live site's saved data, the small files
+        run: |
+          set -u
+          mkdir -p site/data/v1 && cd site/data/v1
+          base=https://dus32w6mqcntr.cloudfront.net/data/v1
+          curl -sSf -m 60 -o index.json "$base/index.json"
+          for id in celestrak-visual celestrak-stations celestrak-notable celestrak-last30 jpl-sbdb-neo jpl-cad horizons-deep-space jpl-sbdb-comets swpc-kp gdacs-tc swpc-solar-regions dsn-now; do
+            curl -sSf -m 90 -o "$id.json" "$base/$id.json" || echo "no $id"
+          done
+          ls -la
+      - name: Serve and look
+        run: |
+          set -u
+          nohup python3 tools/serve.py site 8177 >/tmp/serve.log 2>&1 &
+          sleep 2
+          mkdir -p .look/shots
+          export CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium)"
+          echo "chrome: $CHROME"
+          timeout 1200 node tools/cdp.mjs "http://127.0.0.1:8177/?sw=0" .look/probe.js --width=1440 --height=900 --block=celestrak.org,ll.thespacedevs.com --shot-dir=.look/shots > .look/out.json 2> .look/err.txt || echo "probe exit $?"
+          tail -c 3000 .look/out.json; tail -c 1500 .look/err.txt; ls -la .look/shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: look
+          path: .look
+          retention-days: 7
