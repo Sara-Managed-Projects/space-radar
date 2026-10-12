@@ -17,7 +17,12 @@ rig.flyTo({ offset: mix(north(J), -1, sunward(J), 0.6), distance: d0 * 0.5, ms: 
 await shot('4-south-pole', 'over the south pole, leaning to the Sun', 6000);
 // The south equatorial belt is some fifteen degrees south: a quarter of a radian below the Sun's line.
 const belt = () => mix(sunward(J), 1, north(J), -0.27);
-rig.flyTo({ offset: belt(), distance: d0 * 0.3, ms: 0 });
+// A third of a radius above the clouds. Not the rig's closest (1.02 radii, which 0.3 of the stage's
+// distance asks for): from there a few texels of the map are the whole window, a beige blur.
+const radius = sr.worlds.drawnRadiusUnits(J);
+const near = radius > 0 ? radius * 1.35 : d0 * 0.4;
+out.distances = { stage: d0, radius, belt: near };
+rig.flyTo({ offset: belt(), distance: near, ms: 0 });
 await shot('5-close-south-belt', 'close on the south equatorial belt, the clock at its own rate', 6000);
 try {
   const rates = sr.clock.rates();
@@ -25,7 +30,7 @@ try {
   out.rate = sr.clock.rate;
 } catch (e) { look.warns.push('probe: the clock could not be sped up: ' + e); }
 await sleep(6000);
-rig.flyTo({ offset: belt(), distance: d0 * 0.3, ms: 0 });
+rig.flyTo({ offset: belt(), distance: near, ms: 0 });
 await shot('6-belt-clock-fast', 'the same view after six seconds with the clock at ' + out.rate + 'x', 3000);
 rig.flyTo({ offset: sunward(J), distance: d0 * 0.45, ms: 0 });
 await shot('7-disc-clock-fast', 'the disc again, the clock still fast', 5000);

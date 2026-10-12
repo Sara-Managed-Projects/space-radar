@@ -1,5 +1,1 @@
-[
-  {"probe": "jupiter", "browser": "chromium"},
-  {"probe": "frametime", "browser": "chromium"},
-  {"probe": "worlds", "browser": "chromium", "mobile": true}
-]
+[{"probe": "jupiter", "browser": "chromium"}]
