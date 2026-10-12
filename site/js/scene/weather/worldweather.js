@@ -38,12 +38,20 @@
 // handed over as small numbers, so scrubbing forwards or backwards moves the bands the right way at
 // the right speed and a 32-bit float never sees a Unix time.
 //
+// MEASURED OR FILM (spec 0073 requirement 8; scene/exposure.js). Every row of registry/weather.yaml
+// says what it does under the Measured look (`measured: same | still | hidden`), and setLook() is the ONE
+// place that reads it: a row that is `hidden` is taken out through the uniform that already means "none"
+// (a hexagon of no size, a wave of no depth, a cap past the pole, a near-share of nothing), so the
+// shader is not recompiled and Film puts it back as it was. Everything here already runs on the app's
+// clock at its true rate; no row is sped up, so a modelled row is `same`.
+//
 // WHAT A CLOSE MARS DOES. scene/tiles.js draws the missions' mosaic over the globe from close up,
 // with its own materials; the seasonal frost is not painted on those. Up close the picture is the
 // mosaic, as photographed; the season is on the globe seen whole.
 
 import { WORLD_FRAG } from '../worlds.js';
 import { WEATHER } from '../../data/weather.js';
+import { drawnUnder } from '../exposure.js';
 import {
   RATE_ROWS, rateTable, splitFlow, flowPhases, rigidTurn, planetocentricDeg, marsLs, marsSeason,
   nextFlash, flashLight, bodyDirection, wavePhase,
@@ -404,7 +412,8 @@ export function dressStorms(u, fx, still = false) {
   const tint = dp ? dp.tint : [1, 1, 1];
   u.uWxDeepTint = { value: { x: tint[0], y: tint[1], z: tint[2] } };
   const from = [ed ? ed.from_share : Infinity, ov ? ov.from_share : Infinity, cy ? cy.from_share : Infinity, dp ? dp.from_share : Infinity];
-  const state = { face: null, still, periodDays: cy ? cy.period_days : 0, wallMs: NaN, lines, wake: null };
+  // Which of the four the look lets in (eddies, ovals, poles, depth): createWorldWeather's setLook() writes it.
+  const state = { face: null, still, periodDays: cy ? cy.period_days : 0, wallMs: NaN, lines, wake: null, allow: [true, true, true, true] };
   function wear(face) {
     state.face = face;
     oval.fill(0); ovalRate.fill(0);
@@ -422,7 +431,7 @@ export function dressStorms(u, fx, still = false) {
     const near = uniforms.uWxNear.value;
     const k = ['x', 'y', 'z', 'w'];
     for (let i = 0; i < 4; i++) {
-      const want = Number.isFinite(from[i]) ? nearShare(share, from[i]) : 0;
+      const want = state.allow[i] && Number.isFinite(from[i]) ? nearShare(share, from[i]) : 0;
       const stepMax = dt / NEAR_FADE_S;
       near[k[i]] = !(stepMax < 1) ? want : near[k[i]] + Math.max(-stepMax, Math.min(stepMax, want - near[k[i]]));
     }
@@ -455,6 +464,9 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
   const fragment = weatherFragment();
   const worn = [];   // {id, mesh, material, original, flow, mars, defines}
   let latched = false;
+  let look = 'film';
+  /** Is this registry row drawn under the look that is on? No row is not drawn. */
+  const drawn = (row) => !!row && drawnUnder(look, row.measured);
   let lastMs = NaN;
 
   for (const [id, fx] of effectsByWorld()) {
@@ -502,7 +514,33 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
     }
     material.fragmentShader = fragment;
     material.needsUpdate = true;
+    entry.defines = material.defines;
     worn.push(entry);
+  }
+
+  /**
+   * Measured or Film: each row asked once, and what is `hidden` taken out by the uniform that means none.
+   * Returns true when the look changed.
+   */
+  function setLook(next) {
+    const want = next === 'measured' ? 'measured' : 'film';
+    if (want === look) return false;
+    look = want;
+    for (const e of worn) {
+      const u = e.material.uniforms;
+      const fx = e.fx;
+      if (u.uWxHex && fx.hexagon) u.uWxHex.value.x = drawn(fx.hexagon) ? hexagonCornerRad(fx.hexagon.hexagon) : 0;
+      if (u.uWxWave && fx.wave) u.uWxWave.value.x = drawn(fx.wave) ? fx.wave.wave.depth : 0;
+      if (e.storms) e.storms.allow = [drawn(fx.eddies), drawn(fx.ovals), drawn(fx.cyclones), drawn(fx.depth)];
+      if (e.mars && !drawn(e.mars)) { const v = u.uWxCap.value; v.x = 2; v.y = -2; v.z = 0; e.season = null; }
+      if (u.uWxPatch && fx.patches) {
+        if (!e.patchFull) e.patchFull = u.uWxPatch.value.slice();
+        if (drawn(fx.patches)) u.uWxPatch.value.set(e.patchFull); else u.uWxPatch.value.fill(0);
+      }
+      if (e.flash && !drawn(fx.flash)) { e.flash.uniform.fill(0); e.flash.lit = 0; }
+    }
+    lastMs = NaN; // the next update writes the clock's numbers again (Mars's caps, back in Film)
+    return true;
   }
 
   /**
@@ -514,7 +552,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
     for (const e of worn) {
       const f = e.flash;
       if (!f) continue;
-      if (!e.mesh.visible) { if (f.lit) { f.uniform.fill(0); f.lit = 0; } continue; }
+      if (!e.mesh.visible || !drawn(e.fx.flash)) { if (f.lit) { f.uniform.fill(0); f.lit = 0; } continue; }
       let lit = 0;
       f.slots.forEach((s, i) => {
         // The first wait, and every wait after a flash has gone out.
@@ -558,7 +596,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
         if (e.wave) u.uWxWave.value.y = wavePhase(tMs, e.wave.periodDays, e.wave.sense);
         // The cyclones turn on the clock, wrapped to one turn; where less motion is asked for they stand.
         if (e.storms && e.storms.periodDays && !reducedMotion) u.uWxPole.value.y = wavePhase(tMs, e.storms.periodDays, 1);
-      } else if (e.mars) {
+      } else if (e.mars && drawn(e.mars)) {
         const s = marsSeason(e.mars, marsLs(tMs));
         const v = u.uWxCap.value;
         v.x = s.northEdgeDeg * DEG; v.y = s.southEdgeDeg * DEG; v.z = s.dust;
@@ -580,18 +618,46 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
     }
   }
 
+  /**
+   * The quality setting's Low was left (scene/quality.js qualityPlan): the weather is worn again.
+   * The real latch never calls this; main.js keeps the two apart.
+   */
+  function unlatch() {
+    if (!latched) return;
+    latched = false;
+    lastMs = NaN;
+    for (const e of worn) {
+      e.material.fragmentShader = fragment;
+      e.material.defines = { ...(e.material.defines || {}), ...e.defines };
+      e.material.needsUpdate = true;
+    }
+  }
+
   return {
     update,
     latch,
+    unlatch,
+    setLook,
+    look: () => look,
+    /** What of this world's rows is drawn now, by the registry's key (flow, hexagon, mars, flash, wave, patches, eddies, ovals, cyclones, depth). */
+    drawnOf(id) {
+      const e = !latched && worn.find((x) => x.id === id);
+      const out = {};
+      if (e) for (const [k, row] of Object.entries(e.fx)) out[k] = drawn(row);
+      return out;
+    },
+    /** Does the look change anything on this world (has it a row that Measured takes off or holds)? */
+    lookMatters: (id) => worn.some((x) => x.id === id && Object.values(x.fx).some((row) => row.measured === 'hidden' || row.measured === 'still')),
     /** Which worlds wear weather now. Empty after the latch. */
     worn: () => (latched ? [] : worn.map((e) => e.id)),
     /** Does this world show lightning (a row, and motion allowed, and no latch)? */
-    flashing: (id) => !latched && worn.some((e) => e.id === id && !!e.flash),
+    flashing: (id) => !latched && worn.some((e) => e.id === id && !!e.flash && drawn(e.fx.flash)),
     /** Does this world wear the close-range storms: 'moving', 'still' (less motion asked for), or null? */
     storms: (id) => { const e = !latched && worn.find((x) => x.id === id && !!x.storms); return e ? (e.storms.still ? 'still' : 'moving') : null; },
     /** For the probes and the card: the season on Mars, each flow's cycle, the latch. */
     state: () => ({
       latched,
+      look,
       worlds: worn.map((e) => ({
         id: e.id,
         cycleDays: e.flow ? e.flow.cycleDays : null,

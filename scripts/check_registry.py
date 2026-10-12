@@ -4094,6 +4094,15 @@ def check_weather(world_ids: set, layers: list) -> list:
         cls = r.get("class")
         if cls not in WEATHER_CLASSES:
             fail(where, f"class {cls!r} must be one of {list(WEATHER_CLASSES)} -- say how much of this is known")
+        # Measured or Film (spec 0073 requirement 8): every row says what the Measured look does to it.
+        under = r.get("measured")
+        if under not in ("same", "still", "hidden"):
+            fail(where, f"`measured:` must be same, still or hidden, got {under!r}: every effect says what it does "
+                        f"under the Measured look (the header of weather.yaml), so a new one cannot forget")
+        elif cls == "measured" and under != "same":
+            fail(where, f"a measured effect is `measured: same`, got {under!r}: the Measured look takes nothing measured away")
+        elif cls == "illustrative" and under == "same":
+            fail(where, "an illustrative effect cannot be `measured: same`: under the Measured look it is hidden, or held still")
         off = r.get("off_at")
         if not isinstance(off, list) or not WEATHER_OFF <= set(off):
             fail(where, f"`off_at:` must list {sorted(WEATHER_OFF)}: no effect is drawn at the lowest tier "

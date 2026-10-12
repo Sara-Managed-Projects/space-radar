@@ -142,7 +142,7 @@ check(gpuMiB({ px: [2048, 1024], format: 'rgb' }).toFixed(2) === '10.67' && gpuM
 // --- 5. the wiring ----------------------------------------------------------------------------
 {
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
-  check(/holdFor\(pick\.tier\)/.test(main) && /tiers\.setTier\(up\); holdFor\(up\)/.test(main) && /tiers\.latch\(\); holdFor\(0\)/.test(main), 'main.js tells the worlds their count at the pick, on a promotion and at the latch');
+  check(/holdFor\(plan\.tier\)/.test(main) && /tiers\.setTier\(up\); holdFor\(up\)/.test(main) && /tiers\.latch\(\); holdFor\(0\)/.test(main), 'main.js tells the worlds their count at the pick, on a promotion and at the latch');
   check(/ctx\.gpu = \(\) => api\.gpu\(\)/.test(main), 'window.spaceRadar.gpu() answers');
 }
 

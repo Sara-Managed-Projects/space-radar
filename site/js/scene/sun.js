@@ -1,8 +1,9 @@
 // scene/sun.js -- the Sun as a star, when the camera is close to it (spec 0055 task 3, public #412).
 //
 // Contract: createSunDetail({ mesh, camera, sprite?, tier? }) ->
-//             { update(tMs, share, earthWorld, { still }?), setRegions(list), setFlares(list), setCmes(list),
+//             { update(tMs, share, earthWorld, { still, look }?), setRegions(list), setFlares(list), setCmes(list),
 //               activity(), latch(), state(), dispose() }
+//           UNDER_MEASURED   what each generated part does under the Measured look (scene/exposure.js)
 //
 // OFF THE FIRST VISIT. From the Earth, where every visit starts, the Sun is a quarter of a degree
 // across: a few pixels, drawn by scene/worlds.js as a flat disc of its map with a round glow. main.js
@@ -82,11 +83,24 @@
 // still follow the clock, and nothing else moves: one fixed phase of the grain, the loops and the
 // corona. UNDER THE FRAME LATCH everything here is taken off.
 //
+// UNDER THE MEASURED LOOK (`look: 'measured'`, UNDER_MEASURED below): the generated grain and the
+// faculae drawn along it are off, and the corona and the prominences are held still as under reduced
+// motion; the limb darkening, the spots, the flares and the CMEs are as in Film.
+//
 // The card says so (copy/en.js drawing.worldSun; the spots' line and copy/en.later.js sunAlive when a list is drawn).
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { MAX_SPOTS, spotDirection, spotRadiusRad, splitRegion, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
+import { drawnUnder, stillUnder } from './exposure.js';
 import { MAX_FLARES, MAX_CMES, PROM_CAP, FLARE_ERUPTIVE_FLUX, CME_REACH_RADII, flaresAt, cmesAt, limbOffsetDeg, prominenceFade, prominenceShape } from '../data/sunactivity.js';
+
+/**
+ * What each part that is generated here does under the Measured look (scene/exposure.js MEASURED_RULES;
+ * tests/test_look_setting.mjs holds that a module with noise in its shaders says). The grain and its
+ * faculae are a pattern of ours seventeen times too big; the corona's and the prominences' places and
+ * sizes stand for something real, their motion does not.
+ */
+export const UNDER_MEASURED = { grain: 'hidden', faculae: 'hidden', corona: 'still', prominences: 'still' };
 
 /** The IAU's nominal solar effective temperature, kelvin (2015 Resolution B3). */
 export const T_EFF = 5772;
@@ -670,7 +684,8 @@ export function createSunDetail(opts = {}) {
      * `earthWorld` the Earth's place in the scene, for the central meridian the spots are counted from.
      */
     update(tMs, share, earthWorld, how) {
-      const still = !!(how && how.still);
+      const look = how && how.look;
+      const still = !!(how && how.still) || stillUnder(look, UNDER_MEASURED.corona);
       const detail = !latched && share >= SUN_DETAIL_AT * 0.8; // a little hysteresis under where it was fetched
       wear(detail);
       if (!detail) return;
@@ -680,7 +695,7 @@ export function createSunDetail(opts = {}) {
       const wrap = (x, n) => x - Math.floor(x / n) * n;
       u.uTime.value = still ? STILL.grain * GRAIN_WRAP : wrap(secs / GRAIN_LIFE_S, GRAIN_WRAP);
       const swayPhase = still ? STILL.sway : wrap(secs / PROM_SWAY_S, 1);
-      const g = tier >= 1 ? Math.min(1, Math.max(0, (share - GRAIN_FROM) / (GRAIN_FULL - GRAIN_FROM))) : 0;
+      const g = tier >= 1 && drawnUnder(look, UNDER_MEASURED.grain) ? Math.min(1, Math.max(0, (share - GRAIN_FROM) / (GRAIN_FULL - GRAIN_FROM))) : 0;
       u.uGrain.value = g * g * (3 - 2 * g);
 
       // The corona's plane faces the camera; the mesh turns under it, so undo the mesh's own turn.
