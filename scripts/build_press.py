@@ -86,7 +86,9 @@ def counts() -> dict[str, int]:
     return {
         "layers": len(layers),
         "trips": len(doc("tours.yaml").get("tours", [])),
-        "sources": len(doc("sources.yaml").get("sources", [])),
+        # Two named numbers, one rule: scripts/count_facts.py source_counts().
+        "sources": count_facts.source_counts()["sources"],
+        "feeds": count_facts.source_counts()["feeds"],
     }
 
 
@@ -96,7 +98,7 @@ def facts(n: dict[str, int]) -> list[str]:
         "the clock: satellites from their orbital elements, planets and probes from ephemerides. "
         "The clock can be moved, and the sky moves with it.",
         f"It draws {n['layers']} layers, from the space station and the satellites around the Earth "
-        f"to the planets, the nearby stars and the galaxies, and reads {n['sources']} public sources "
+        f"to the planets, the nearby stars and the galaxies, and reads {n['feeds']} feeds from {n['sources']} public sources "
         "to do it.",
         f"There are {n['trips']} guided trips: the camera flies from stop to stop, with a short "
         "text at each, and a visitor can leave at any moment and keep exploring from there.",
@@ -117,7 +119,7 @@ def glance(f: dict[str, int]) -> list[tuple[str, str]]:
         ("Moons, with real maps", f"{f['moons']} ({f['moons_with_maps']})"),
         ("Landing sites", f"{f['moon_sites']} on the Moon, {f['mars_sites']} on Mars"),
         ("Layers in What to show", str(f["layers"])),
-        ("Public data sources", str(f["sources"])),
+        ("Public data sources", f"{f['sources']} publishers, {f['feeds']} feeds read from them"),
         ("Real spacecraft models", str(f["real_models"])),
         ("Licence", "MIT (code); data and pictures keep their owners' licences"),
     ]
@@ -201,7 +203,7 @@ def main(argv: list[str]) -> int:
         return 2
     press = build(out, host)
     n = counts()
-    print(f"build_press: {press}/index.html, {len(PICTURES)} pictures, {len(MARKS)} marks; {n['layers']} layers, {n['trips']} trips, {n['sources']} sources")
+    print(f"build_press: {press}/index.html, {len(PICTURES)} pictures, {len(MARKS)} marks; {n['layers']} layers, {n['trips']} trips, {n['feeds']} feeds from {n['sources']} sources")
     return 0
 
 
