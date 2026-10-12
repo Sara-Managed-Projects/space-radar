@@ -4038,7 +4038,7 @@ WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
 WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches",
-                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth"}
+                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4217,6 +4217,21 @@ def check_weather(world_ids: set, layers: list) -> list:
                 fail(where, "depth needs thickness_radii (at most 0.01), strength and gap_lum.own / gap_lum.hubble as [low, high]")
             if cls != "illustrative":
                 fail(where, "the under-deck is the same picture again: illustrative")
+        # The close-range cloud detail (2026-10-12): generated below the map's resolution, so it is
+        # illustrative, small (what it adds is never the picture), and only on a world whose map
+        # already slides with a measured wind (it is carried by that wind).
+        if r.get("kind") == "cloud-detail":
+            dt = r.get("detail") or {}
+            if not (is_number(dt.get("contrast")) and 0 < dt.get("contrast") <= 0.13 and is_number(dt.get("colour")) and 0 <= dt.get("colour") <= 0.3
+                    and is_number(dt.get("cells_lat")) and 64 <= dt.get("cells_lat") <= 512 and is_number(dt.get("stretch")) and 1 <= dt.get("stretch") <= 8):
+                fail(where, "detail needs contrast (at most 0.13: with the lean in colour no channel moves 15 %), colour (at most 0.3), "
+                            "cells_lat (64 to 512, pole to pole at the coarsest octave) and stretch (1 to 8, along latitude)")
+            if cls != "illustrative":
+                fail(where, "a generated cloud texture is illustrative: not one streak of it was observed")
+            if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):
+                fail(where, f"`{world}` has no zonal-flow row: the detail is carried by the measured wind and has none to follow")
+            if not r.get("why"):
+                fail(where, "no `why:` -- say why it can be no better than generated")
         if r.get("kind") == "hexagon":
             hexa = r.get("hexagon") or {}
             if not is_number(hexa.get("lat_deg")) or hexa.get("sides") != 6:

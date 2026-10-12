@@ -131,9 +131,27 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   check(st.status === 'shown' && st.kind === 'currents' && st.cls === 'analysed' && st.date === flow.timeMs && st.tempDate === temp.timeMs && st.legend === S.CURRENTS_LEGEND && st.speedup === 864000 && st.still === false && st.count === S.COUNT, `shown, with both days and what the legend needs (${JSON.stringify({ ...st, legend: undefined })})`);
   check(asked.length === 2 && asked.map((a) => a.u).sort().join() === 'data/v1/ocean-currents.json,data/v1/ocean-temperature.json' && asked.every((a) => a.init.credentials === 'omit' && a.init.referrerPolicy === 'no-referrer'), `two requests, for our saved copies, with no credentials and no referrer (${asked.map((a) => a.u)})`);
   const lines = sea.lines();
-  const pos = lines.geometry.attributes.position;
-  const col = lines.geometry.attributes.color;
-  check(earth.children[0] === lines && lines.isLineSegments && lines.name === 'earth:currents' && pos.count === S.COUNT * S.TRAIL * 2 && col.itemSize === 4, `${S.COUNT} streaks of ${S.TRAIL} pieces, children of the Earth's mesh so they turn with it`);
+  // The two ends of every piece and their inks, as the CPU writes them and the ribbon's shader reads
+  // them: six numbers and eight numbers a piece. Read here end by end, as the vertices they were.
+  const endsOf = (mesh) => { const array = mesh.geometry.attributes.segA.data.array; return { array, count: array.length / 3, getX: (i) => array[i * 3], getY: (i) => array[i * 3 + 1], getZ: (i) => array[i * 3 + 2] }; };
+  const inksOf = (mesh) => { const array = mesh.geometry.attributes.inkA.data.array; return { array, itemSize: 4, getX: (i) => array[i * 4], getY: (i) => array[i * 4 + 1], getZ: (i) => array[i * 4 + 2], getW: (i) => array[i * 4 + 3] }; };
+  const pos = endsOf(lines);
+  const col = inksOf(lines);
+  const ga = lines.geometry.attributes;
+  check(earth.children[0] === lines && lines.isMesh && lines.geometry.isInstancedBufferGeometry && lines.geometry.instanceCount === S.COUNT * S.TRAIL && lines.name === 'earth:currents' && pos.count === S.COUNT * S.TRAIL * 2 && col.itemSize === 4, `${S.COUNT} streaks of ${S.TRAIL} pieces, one quad drawn once a piece, children of the Earth's mesh so they turn with it`);
+  check(ga.segA.data === ga.segB.data && ga.segA.offset === 0 && ga.segB.offset === 3 && ga.segA.data.stride === 6 && ga.inkA.data === ga.inkB.data && ga.inkB.offset === 4 && ga.inkA.data.stride === 8 && ga.segA.data.isInstancedInterleavedBuffer, 'the ends and the inks are read from the two arrays as they lie, once a piece');
+  {
+    // THE RIBBON: wide enough to be seen on a sunlit sea, cased in dark, and so many PIXELS wide.
+    const u = lines.material.uniforms;
+    check(S.RIBBON_PX >= 1.2 && S.RIBBON_PX <= 2.5 && S.CASING_PX >= 0.75 && S.CASING_PX <= 2 && S.CASING.alpha >= 0.4 && S.CASING.alpha <= 0.8 && Math.max(...S.CASING.rgb) < 0.12, `a core about a pixel and a half wide inside a dark casing (${S.RIBBON_PX} px, ${S.CASING_PX} px a side, ${JSON.stringify(S.CASING)})`);
+    const fake = { getDrawingBufferSize: (v) => v.set(2880, 1800), getPixelRatio: () => 2 };
+    lines.material.opacity = 0.5;
+    lines.onBeforeRender(fake);
+    check(u.uRes.value.x === 2880 && near(u.uCorePx.value, S.RIBBON_PX, 1e-9) && near(u.uHalfPx.value, (S.RIBBON_PX / 2 + S.CASING_PX) * 2, 1e-9) && u.uOpacity.value === 0.5, 'its width follows the canvas and the pixel ratio, and its fade the material\'s opacity');
+    const vs = lines.material.vertexShader; const fs = lines.material.fragmentShader;
+    check(/logdepthbuf_vertex/.test(vs) && /logdepthbuf_fragment/.test(fs) && /colorspace_fragment/.test(fs), 'the shader keeps the logarithmic depth and the output colour space');
+    check(/uHalfPx \/ half_ \* p\.w/.test(vs) && /mix\( uCasing, vInk\.rgb, core \)/.test(fs), 'it widens each piece on the screen, and draws a core inside a casing');
+  }
   // Every vertex that can be seen, back to a place: on the sphere, and over water.
   const placeOf = (i) => ({ lat: Math.asin(Math.max(-1, Math.min(1, pos.getY(i)))) * 180 / Math.PI, lon: Math.atan2(-pos.getZ(i), pos.getX(i)) * 180 / Math.PI });
   const census = () => {
@@ -197,10 +215,10 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   const calm = make({ reducedMotion: true });
   calm.set(true);
   await settled(calm);
-  const cp = Array.from(calm.lines().geometry.attributes.position.array.slice(0, 1200));
+  const cp = Array.from(endsOf(calm.lines()).array.slice(0, 1200));
   await new Promise((r) => setTimeout(r, 40));
   calm.update();
-  check(calm.state().still === true && cp.every((x, i) => x === calm.lines().geometry.attributes.position.array[i]), 'with reduced motion the streaks stand still');
+  check(calm.state().still === true && cp.every((x, i) => x === endsOf(calm.lines()).array[i]), 'with reduced motion the streaks stand still');
   check(/standing still/.test(L.overlayLine(calm.state())) && !/in a second/.test(L.overlayLine(calm.state())), 'and the sentence says so');
   calm.dispose();
 
@@ -208,7 +226,7 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   check(JSON.stringify(S.COUNT_BY_TIER) === '[1200,2500,5000]' && S.COUNT_BY_TIER[1] === S.COUNT && S.streakCount(0) === 1200 && S.streakCount(2) === 5000 && S.streakCount(undefined) === 2500 && S.streakCount(9) === 5000 && S.streakCount(-3) === 1200 && S.streakCount(2, true) === 2500 && S.streakCount(0, true) === 600, 'tiers 0, 1 and 2 draw 1200, 2500 and 5000 streaks, and data saving halves each');
   const small = make({ tier: 0, saveData: true });
   small.set(true);
-  check(small.lines().geometry.attributes.position.count === 600 * S.TRAIL * 2, 'a phone that saves data allocates 600 streaks');
+  check(small.lines().geometry.instanceCount === 600 * S.TRAIL && endsOf(small.lines()).count === 600 * S.TRAIL * 2, 'a phone that saves data allocates 600 streaks');
   small.dispose();
 
   // No copy of one of the two: said, and nothing drawn.
@@ -247,7 +265,12 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   check(!/^import .*scene\/currents\.js/m.test(main) && !/^import .*data\/currents\.js/m.test(main) && /import\('\.\/scene\/currents\.js'\)/.test(main) && /ctx\.currents\.update\(\)/.test(main), 'main.js imports the currents when they are chosen, and steps them each frame');
   check(/id === CURRENTS_OVERLAY\) wantCurrents\(\)/.test(main) && /ctx\.currents\.set\(false\)/.test(main) && /isStreaks\(overlayAsked\) \? null : overlayAsked/.test(main), 'one overlay at a time: a map or the wind takes the currents away, and the currents them');
   const scene = src('site/js/scene/currents.js');
-  check(/LineSegments/.test(scene) && !/WebGLRenderTarget|PlaneGeometry|ShaderMaterial|OrthographicCamera/.test(scene), 'the streaks are line segments: no full-screen pass, no render target, no shader of its own');
+  check(/InstancedBufferGeometry/.test(scene) && !/WebGLRenderTarget|PlaneGeometry|OrthographicCamera|FullScreenQuad/.test(scene) && (scene.match(/new THREE\.Mesh\(/g) || []).length === 1, 'the streaks are thin ribbons on the Earth\'s frame in one draw call: no full-screen pass, no render target');
+  {
+    // Where a streak starts: fast water far oftener than slow, and never never.
+    check(S.spawnChance(1.5) === 1 && S.spawnChance(S.FAST_MS) === 1 && S.spawnChance(0) === S.SLOW_CHANCE && S.spawnChance(NaN) === S.SLOW_CHANCE && S.SLOW_CHANCE > 0, 'water at the fast speed and over always takes a streak; still water seldom, and not never');
+    check(S.spawnChance(0.3) / S.spawnChance(0.13) > 3 && S.spawnChance(0.3) >= 0.4 && S.spawnChance(1) / S.spawnChance(0.13) > 7, `a jet at 0.3 m/s holds over three times the streaks of the median sea, a western boundary current over seven (${S.spawnChance(0.3).toFixed(2)}, ${S.spawnChance(0.13).toFixed(2)})`);
+  }
   check(/TESTED ON 2026-10-12/.test(data) && /GEOSTROPHIC/.test(data) && /may be used and redistributed for free/.test(data.replace(/\n\/\/\s+/g, ' ')) && /Earthdata login/.test(data) && /Copernicus Marine/.test(data) && /NO Access-Control-Allow-Origin/.test(data), 'data/currents.js says what was tested, what the current is and is not, the terms, and what was not used');
   const credits = src('CREDITS.md');
   check(/coastwatch\.noaa\.gov/.test(credits) && /10\.25921\/RE9P-PT57/.test(credits) && /Huang, Boyin/.test(credits) && /AVISO\+/.test(credits) && /ColorBrewer/.test(credits), 'CREDITS.md names both datasets, the citation NCEI asks for, AVISO+ and Copernicus, and the colour ramp');
