@@ -196,6 +196,11 @@ export const STORM_TOPS = { dip: 0.069, shadow: 1.9, bright: 0.12 };
  * points are one and the picture is the flat layer's; toward the limb a tall top leans away from
  * the viewer and hides what is behind it.
  *
+ * WHAT IT READS. Every read in the search is at a stated mip level (the view's own footprint), so
+ * a loop may hold it; the static map is not read where today's picture covers; under solid cloud
+ * the ground's shadow is not looked for. Where today's picture covers that is 4 reads for the
+ * view on tier 1, one where the ray lands and 2 to 4 toward the Sun, beside the flat layer's own.
+ *
  * THE SHADOW. From the ground point, and again from the point on the cloud the ray met, `sunSteps`
  * reads toward the Sun, spaced as the square of the way so that a low deck's short shadow is not
  * stepped over, each read as wide as the gap to the one before it (a far shadow is a soft one): is
@@ -204,8 +209,8 @@ export const STORM_TOPS = { dip: 0.069, shadow: 1.9, bright: 0.12 };
  *
  * THE LAST LIGHT. A top `h` up still sees the Sun when the ground under it does not, until the
  * Sun is acos( R / ( R + h ) ) below that ground's horizon (litTopDip). The DRAWN height is used,
- * here as everywhere else in this, so a top that leans four times too far also keeps the light
- * four times too high: one exaggeration, not two pictures. Its colour is the light's through the
+ * here as everywhere else in this, so a top that leans three times too far also keeps the light
+ * as many times too high: one exaggeration, not two pictures. Its colour is the light's through the
  * air at the ground's own Sun, as the deck's always was.
  *
  *   realKm     the slab a cloud top may stand in, km
@@ -213,7 +218,7 @@ export const STORM_TOPS = { dip: 0.069, shadow: 1.9, bright: 0.12 };
  *              and the Earth's card says so (copy/en.js worldDeparture.earth). Under the Measured
  *              look the clouds are at their true thickness, which from orbit is the flat layer.
  *   nearKm     the camera's height: all of it below nearKm[0], none above nearKm[1] (the whole
- *              Earth is the flat layer exactly; 48 km is a third of a pixel from there)
+ *              Earth is the flat layer exactly; the drawn slab is a quarter of a pixel from there)
  *   view, sun  WHERE: all of it where the view's zenith cosine at the place is under view[0] or
  *              the Sun's under sun[0]; none where both are past [1]. Looking down under a high
  *              Sun the flat layer's picture is today's, bit for bit.
@@ -224,9 +229,9 @@ export const STORM_TOPS = { dip: 0.069, shadow: 1.9, bright: 0.12 };
  *              top adds (at the equator's clear sky; the few degrees a higher latitude's is colder are not drawn)
  */
 export const CLOUD_PARALLAX = {
-  realKm: 12, thicker: 4, steps: [0, 4, 8], sunSteps: [0, 3, 4],
+  realKm: 12, thicker: 3, steps: [0, 4, 8], sunSteps: [0, 2, 4],
   nearKm: [1500, 4000], view: [0.5, 0.85], sun: [0.2, 0.45],
-  tanMax: 5, sunTanMax: 4, soft: 0.12, self: 0.5,
+  tanMax: 4, sunTanMax: 4, soft: 0.12, self: 0.5,
   // scene/cloudcompose.js CLEAR_SPAN_C / 6.5, and ( CLEAR_AT_EQUATOR_C - CLEAR_SPAN_C - STORM_TOP.fullC ) / 6.5: its numbers,
   // written out because that module is not on the first visit and this one is (tests/test_cloud_parallax.mjs holds them equal).
   liveKm: [70 / 6.5, 29 / 6.5],
@@ -252,7 +257,7 @@ export function cloudDrawnKm(altKm, muV, muS, thicker = CLOUD_PARALLAX.thicker) 
  */
 export function cloudSeek(top, x0, lean, steps) {
   let tp = 1;
-  let fp = top(x0 + lean) - 1;
+  let fp = top(x0 + lean * (1 - 1 / steps)) - 1;   // the top of the slab is taken as high as the first read under it
   for (let i = 1; i <= steps; i++) {
     const t = 1 - i / steps;
     const f = top(x0 + lean * t) - t;
@@ -426,26 +431,38 @@ float cloudCover( vec2 uv ) {
   return c;
 }
 // CLOUD_PARALLAX. A place's cloud: x its coverage and y its storm top, as cloudCover() has them,
-// and z its top's height, 0..1 of the slab. Explicit gradients: it is read inside loops.
-vec3 cloudAt( vec2 uv, vec2 gx, vec2 gy ) {
-  float m = textureGrad( uClouds, uv + uCloudOffset, gx, gy ).r;
-  vec3 c = vec3( pow( m, uCloudGamma ), 0.0, m ) * uHasClouds;
+// and z its top's height, 0..1 of the slab. At a stated mip level: it is read inside loops, and
+// a read toward the Sun is as wide as its step. The static map is not read where today's picture covers.
+vec2 gCloudPx;      // today's picture's size in texels
+float gCloudLodS;   // the static map's mip level over today's picture's
+vec3 cloudAt( vec2 uv, float lod ) {
+  vec3 l = vec3( 0.0 );
   if ( uLive > 0.0 ) {
-    vec3 l = textureGrad( uLiveB, uv, gx, gy ).rgb;
-    if ( uLiveFade < 1.0 ) l = mix( textureGrad( uLiveA, uv, gx, gy ).rgb, l, uLiveFade );
-    c = mix( c, vec3( pow( l.r, uCloudGamma ), l.b, min( ${(P.liveKm[0] / P.realKm).toFixed(4)} * l.r + ${(P.liveKm[1] / P.realKm).toFixed(4)} * l.b, 1.0 ) ), l.g * uLive );
+    l = textureLod( uLiveB, uv, lod ).rgb;
+    if ( uLiveFade < 1.0 ) l = mix( textureLod( uLiveA, uv, lod ).rgb, l, uLiveFade );
+    l.g *= uLive;
   }
-  return c;
+  vec3 c = vec3( 0.0 );
+  if ( l.g < 0.999 ) {
+    float m = textureLod( uClouds, uv + uCloudOffset, lod + gCloudLodS ).r;
+    c = vec3( pow( m, uCloudGamma ), 0.0, m ) * uHasClouds;
+  }
+  return mix( c, vec3( pow( l.r, uCloudGamma ), l.b, min( ${(P.liveKm[0] / P.realKm).toFixed(4)} * l.r + ${(P.liveKm[1] / P.realKm).toFixed(4)} * l.b, 1.0 ) ), l.g );
+}
+float cloudLod( vec2 a, vec2 b ) {
+  a *= gCloudPx;
+  b *= gCloudPx;
+  return 0.5 * log2( max( max( dot( a, a ), dot( b, b ) ), 1e-9 ) );
 }
 // How much cloud stands between a point h0 up (0..1 of the slab) and the Sun; lean: the uv the Sun's ray crosses on its way to the top.
-float cloudShadow( vec2 uv, float h0, vec2 lean, vec2 g ) {
+float cloudShadow( vec2 uv, float h0, vec2 lean, float lod ) {
   float s = 0.0;
   vec2 d = lean * ( 1.0 - h0 );
   for ( int i = 0; i < 4; i++ ) {
     if ( float( i ) >= uCloudPar.y ) break;
     float t = ( float( i ) + 0.6 ) / uCloudPar.y;
     t *= t;
-    vec3 c = cloudAt( uv + d * t, d * t * 0.7, g );
+    vec3 c = cloudAt( uv + d * t, max( lod, cloudLod( d * t * 0.7, vec2( 0.0 ) ) ) );
     s = max( s, c.x * smoothstep( 0.0, ${P.soft.toFixed(2)}, c.z - h0 - ( 1.0 - h0 ) * t ) );
   }
   return s;
@@ -545,35 +562,39 @@ void main() {
   float cTop = 0.0;
   float cSelf = 0.0;
   vec3 vL = normalize( vCamL - vPosL );
+  float lod = 0.0;
   if ( uCloudPar.x > 0.0 ) {
+    // The view's footprint on today's picture, taken here: a derivative under a branch on a varying is undefined.
+    gCloudPx = vec2( textureSize( uLiveB, 0 ) );
+    gCloudLodS = log2( float( textureSize( uClouds, 0 ).x ) / gCloudPx.x ) - 1.0;
+    lod = cloudLod( dFdx( vUv ), dFdy( vUv ) );
     cDrawn = uCloudPar.z * ( 1.0 - smoothstep( ${(P.nearKm[0] / WGS84_A_KM).toFixed(4)}, ${(P.nearKm[1] / WGS84_A_KM).toFixed(4)}, length( vCamL ) - 1.0 ) )
            * max( 1.0 - smoothstep( ${P.view[0].toFixed(2)}, ${P.view[1].toFixed(2)}, dot( vL, nl ) ), 1.0 - smoothstep( ${P.sun[0].toFixed(2)}, ${P.sun[1].toFixed(2)}, dot( uSunDirLocal, nl ) ) );
   }
   if ( cDrawn > 0.0 ) {
-    vec2 gx = dFdx( vUv );
-    vec2 gy = dFdy( vUv );
     vec2 perKm = cDrawn * vec2( 1.0 / ( 6.28318531 * cosLat ), 1.0 / 3.14159265 );
     vec2 lean = vec2( dot( vL, east ), dot( vL, north ) ) / max( dot( vL, nl ), ${(1 / Math.hypot(1, P.tanMax)).toFixed(4)} ) * perKm;
     float tp = 1.0;
-    float fp = cloudAt( vUv + lean, gx, gy ).z - 1.0;
+    float fp = 0.0;
     float tHit = 0.0;
     for ( int i = 1; i <= 8; i++ ) {
       float t = max( 1.0 - float( i ) / uCloudPar.x, 0.0 );
-      float f = cloudAt( vUv + lean * t, gx, gy ).z - t;
+      float f = cloudAt( vUv + lean * t, lod ).z - t;
+      if ( i == 1 ) fp = f + t - 1.0;   // the top of the slab is taken as high as the first read under it
       if ( f >= 0.0 ) { tHit = t + ( tp - t ) * clamp( f / max( f - fp, 1e-4 ), 0.0, 1.0 ); break; }
       tp = t;
       fp = f;
     }
     vec2 cUv = vUv + lean * tHit;
-    vec3 c = cloudAt( cUv, gx, gy );
+    vec3 c = cloudAt( cUv, lod );
     float k = cDrawn / uCloudPar.z;
     vec2 sunLean = vec2( dot( uSunDirLocal, east ), dot( uSunDirLocal, north ) ) / max( dot( uSunDirLocal, nl ), ${(1 / Math.hypot(1, P.sunTanMax)).toFixed(4)} ) * perKm;
-    vec2 g = max( abs( gx ), abs( gy ) );
-    shade = mix( shade, cloudShadow( vUv, 0.0, sunLean, g ), k );
+    // Under solid cloud the ground is not seen and its shadow is not looked for.
+    if ( c.x < 0.97 ) shade = mix( shade, cloudShadow( vUv, 0.0, sunLean, lod ), k );
     cloud = c.x;
     tops = c.y;
     cTop = tHit;
-    if ( cloud > 0.02 ) cSelf = k * cloudShadow( cUv, cTop, sunLean, g );
+    if ( cloud > 0.02 ) cSelf = k * cloudShadow( cUv, cTop, sunLean, lod );
   }
 
   // ---- ground ---------------------------------------------------------------------------------

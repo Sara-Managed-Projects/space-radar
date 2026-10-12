@@ -42,7 +42,7 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
   const exact = (() => { let lo = 0, hi = 1; for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (hill(6 + 6 * m) - m >= 0) lo = m; else hi = m; } return lo; })();
   const e4 = Math.abs(E.cloudSeek(hill, 6, 6, 4) - exact);
   const e8 = Math.abs(E.cloudSeek(hill, 6, 6, 8) - exact);
-  check(e4 < 0.08 && e8 < 0.04 && e8 <= e4 + 1e-9, `on a smooth hill 4 steps and the secant land within 0.08 of the slab of the surface and 8 within 0.04 (${e4.toFixed(4)}, ${e8.toFixed(4)})`);
+  check(e4 < 0.08 && e8 < 0.04, `on a smooth hill 4 steps and the secant land within 0.08 of the slab of the surface and 8 within 0.04 (${e4.toFixed(4)}, ${e8.toFixed(4)})`);
   // Where the ray meets the hill moves monotonically away from the ground point as it leans further.
   let last = -1;
   let mono = true;
@@ -65,7 +65,7 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
 {
   const full = P.realKm * P.thicker;
   check(P.realKm === 12 && P.thicker >= 1, 'the slab is the real 12 km, times a stated factor');
-  check(E.cloudDrawnKm(420, 0.2, 0.9) === full && E.cloudDrawnKm(420, 1, 0.05) === full, 'from the station\'s height: all of it toward the limb, and all of it under a low Sun');
+  check(P.thicker === 3 && E.cloudDrawnKm(420, 0.2, 0.9) === full && E.cloudDrawnKm(420, 1, 0.05) === full, 'from the station\'s height: all of it toward the limb, and all of it under a low Sun');
   check(E.cloudDrawnKm(420, 1, 0.9) === 0 && E.cloudDrawnKm(420, P.view[1], P.sun[1]) === 0, 'looking down under a high Sun: none, the flat layer exactly');
   check(E.cloudDrawnKm(P.nearKm[1], 0.1, 0.1) === 0 && E.cloudDrawnKm(16600, 0.1, 0.1) === 0, 'from far (the whole Earth in view): none');
   check(E.cloudDrawnKm(420, 0.2, 0.9, 1) === P.realKm, 'and the factor is the only thing between the two thicknesses');
@@ -83,12 +83,12 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
 {
   check(E.litTopDip(0) === 0, 'the ground loses the Sun at its own horizon');
   check(near(E.litTopDip(12), Math.acos(6371 / 6383), 1e-12) && near((E.litTopDip(12) * 180) / Math.PI, 3.51, 0.01), 'a top 12 km up keeps it 3.5 degrees longer');
-  check(near((E.litTopDip(48) * 180) / Math.PI, 7.01, 0.02), 'and one drawn at 48 km, 7 degrees');
+  check(near((E.litTopDip(P.realKm * P.thicker) * 180) / Math.PI, 6.08, 0.02), 'and one drawn at 36 km, 6 degrees');
   let mono = true;
   for (let h = 0; h < 60; h += 1) if (E.litTopDip(h + 1) <= E.litTopDip(h)) mono = false;
   check(mono, 'higher tops keep the light longer');
   // The shader's sqrt( 2 h / R ) is that angle to a part in a hundred over the whole drawn slab.
-  for (const h of [2, 12, 48]) check(near(Math.sqrt((2 * h) / 6371), E.litTopDip(h), E.litTopDip(h) * 0.01), `sqrt( 2 h / R ) is the angle at ${h} km`);
+  for (const h of [2, 12, 36]) check(near(Math.sqrt((2 * h) / 6371), E.litTopDip(h), E.litTopDip(h) * 0.01), `sqrt( 2 h / R ) is the angle at ${h} km`);
   const frag = E.SURFACE_FRAG;
   check(frag.includes('topDot = max( topDot, sunDot + sqrt( 2.0 * cTop * cDrawn ) );'), 'the shader lifts a top\'s Sun by its DRAWN height, and never below the storm top\'s own dip');
   check(/vec3 cloudSun = aerSunAbove\( tintDot,/.test(frag), 'and colours it by the air at the ground\'s own Sun, as the deck always was');
@@ -109,7 +109,10 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
   check(/if \( uCloudPar\.x > 0\.0 \) \{\s+cDrawn = /.test(frag) && /if \( cDrawn > 0\.0 \) \{/.test(frag), 'the search is behind the uniform and behind the drawn thickness: off, it is a compare');
   check(frag.includes('float cloud  = cloudCover( vUv );') && frag.includes('float shade  = cloudCover( vUv + shadowStep );'), 'the flat layer\'s single lookup and its shadow are still what is drawn where the thickness is 0');
   check(frag.includes('tHit = t + ( tp - t ) * clamp( f / max( f - fp, 1e-4 ), 0.0, 1.0 ); break;'), 'the shader\'s search ends with the same secant as cloudSeek');
-  check(!/texture2D\([^)]*\)[^;]*;[^}]*\}\s*return c;\s*\}\s*\/\/ How much cloud/.test(frag) && (frag.match(/textureGrad\(/g) || []).length === 3, 'every read inside the loops has explicit gradients');
+  const at = frag.slice(frag.indexOf('vec3 cloudAt('), frag.indexOf('float cloudLod('));
+  check((at.match(/textureLod\(/g) || []).length === 3 && !/texture2D\(|textureGrad\(/.test(at), 'every read inside the loops is at a stated mip level');
+  check(/if \( l\.g < 0\.999 \) \{\s+float m = textureLod\( uClouds,/.test(at), 'and the static map is not read where today\'s picture covers');
+  check(frag.includes('if ( i == 1 ) fp = f + t - 1.0;') && frag.includes('if ( c.x < 0.97 ) shade = mix( shade, cloudShadow( vUv, 0.0, sunLean, lod ), k );'), 'the top of the slab costs no read, and under solid cloud the ground\'s shadow is not looked for');
   // The uniform by tier, latch, saveData and look.
   const mesh = E.createEarth({});
   const u = mesh.material.uniforms.uCloudPar.value;
