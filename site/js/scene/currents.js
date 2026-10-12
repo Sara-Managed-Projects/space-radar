@@ -11,7 +11,7 @@
 // in What to show, and only then are the two saved copies of data/currents.js read (262 kB and
 // 184 kB, from our own folder; that file says what they are and whose).
 //
-// WHAT IS DRAWN. The wind's sibling (scene/wind.js, whose frame and shell this borrows): a couple of
+// WHAT IS DRAWN. The wind's sibling (scene/wind.js, whose frame and shell this borrows): a few
 // thousand streaks, each a short tail behind a point that the current carries, where water at the
 // surface would go. COLOUR IS THE SEA'S TEMPERATURE where the streak's head is, on the legend's
 // ramp, cold blue to warm red: the Gulf Stream is warm water leaving Florida and it is drawn warm.
@@ -43,20 +43,30 @@ export const CURRENTS_ID = CURRENTS.id;
  */
 export const SPEEDUP = 10 * 86400;
 /** How many streaks, how many pieces in each tail, and how often a tail gains a piece (seconds). */
-export const COUNT = 1600;
+export const COUNT = 2500;
 /** How many streaks each device tier draws (scene/quality.js): tier 1 is COUNT, the default. Data saving halves it. */
-export const COUNT_BY_TIER = [800, 1600, 3200];
+export const COUNT_BY_TIER = [1200, 2500, 5000];
 export function streakCount(tier, saveData) {
   const t = Number.isFinite(tier) ? Math.min(COUNT_BY_TIER.length - 1, Math.max(0, Math.round(tier))) : 1;
   return saveData ? Math.round(COUNT_BY_TIER[t] / 2) : COUNT_BY_TIER[t];
 }
-export const TRAIL = 10;
-export const TRAIL_DT = 0.16;
+export const TRAIL = 12;
+export const TRAIL_DT = 0.2;
 const LIFE_S = [3, 7];
 const FADE_MS = 900;
 const OPACITY = 0.95;
 /** How many random places a new streak may try before it sits this life out: three in ten are land. */
 const SPAWN_TRIES = 12;
+/**
+ * WHERE A STREAK STARTS IS WEIGHTED TOWARD MOVING WATER. Half the sea drifts at under 0.13 m/s and
+ * a streak there is a dot; spread evenly, two thousand streaks left the Gulf Stream with a handful
+ * and the picture read as specks (drawn and looked at, 2026-10-12). So a place is taken with a
+ * chance that rises with its speed, from SLOW_CHANCE in still water to certain at FAST_MS and over.
+ * The streaks are therefore densest where the sea moves most. A streak's place, direction, length
+ * and colour are the data's; how many there are in a patch of sea is the drawing's choice.
+ */
+const FAST_MS = 0.4;
+const SLOW_CHANCE = 0.12;
 /**
  * The legend's ramp, cold to warm: ColorBrewer's seven-class RdYlBu turned round (Cynthia Brewer,
  * colorbrewer2.org, which marks it colour-blind safe: it runs blue to red through pale yellow and
@@ -92,6 +102,7 @@ export function createCurrents(opts = {}) {
   let flow = null;
   let temp = null;
   let gotAt = -Infinity;
+  let tempGaps = 0; // cells that have a current and no temperature near them: their streaks are grey, and the sentence says so
   let wanted = false;
   let status = 'off';
   let token = 0;
@@ -139,7 +150,8 @@ export function createCurrents(opts = {}) {
     for (let n = 0; n < SPAWN_TRIES && !wet; n += 1) {
       latDeg = Math.asin(2 * rand() - 1) / DEG;
       lonDeg = rand() * 360 - 180;
-      wet = !!sampleCurrent(flow, latDeg, lonDeg);
+      const here = sampleCurrent(flow, latDeg, lonDeg);
+      wet = !!here && rand() < Math.max(SLOW_CHANCE, Math.min(1, here.speed / FAST_MS));
     }
     const base = i * (TRAIL + 1) * 2;
     for (let k = 0; k <= TRAIL; k += 1) { places[base + k * 2] = latDeg; places[base + k * 2 + 1] = lonDeg; }
@@ -164,16 +176,33 @@ export function createCurrents(opts = {}) {
   }
 
   /** The head moves with the current; the tail stays where the water has been. At the shore it stops. */
+  const stepped = {};
   function advance(i, dtS) {
     const base = i * (TRAIL + 1) * 2;
-    const to = stepCurrent(flow, places[base], places[base + 1], dtS * SPEEDUP);
+    const to = stepCurrent(flow, places[base], places[base + 1], dtS * SPEEDUP, stepped);
     if (!to) { aground[i] = 1; return; }
     places[base] = to.latDeg;
     places[base + 1] = to.lonDeg;
   }
 
-  function write(i) {
+  /** Every vertex of a streak, from its places: when it is born and when its tail gains a piece. */
+  function writePlaces(i) {
     const base = i * (TRAIL + 1) * 2;
+    for (let k = 0; k < TRAIL; k += 1) {
+      const o = (i * TRAIL + k) * 6;
+      localOf(places[base + k * 2], places[base + k * 2 + 1], pos, o);
+      localOf(places[base + (k + 1) * 2], places[base + (k + 1) * 2 + 1], pos, o + 3);
+    }
+  }
+
+  /** Between those, only the head has moved: one vertex, not twenty-four (the cost that matters at 5 000 streaks). */
+  function writeHead(i) {
+    const base = i * (TRAIL + 1) * 2;
+    localOf(places[base], places[base + 1], pos, i * TRAIL * 6);
+  }
+
+  /** Its colour, and how much of it shows. */
+  function writeInk(i) {
     const r = rgb[i * 3];
     const g = rgb[i * 3 + 1];
     const b = rgb[i * 3 + 2];
@@ -181,9 +210,6 @@ export function createCurrents(opts = {}) {
     const t = life[i] > 0 ? age[i] / life[i] : 1;
     const breath = hidden[i] ? 0 : still ? 1 : Math.max(0, Math.min(1, t / 0.2, (1 - t) / 0.2));
     for (let k = 0; k < TRAIL; k += 1) {
-      const o = (i * TRAIL + k) * 6;
-      localOf(places[base + k * 2], places[base + k * 2 + 1], pos, o);
-      localOf(places[base + (k + 1) * 2], places[base + (k + 1) * 2 + 1], pos, o + 3);
       const c = (i * TRAIL + k) * 8;
       col[c] = r; col[c + 1] = g; col[c + 2] = b; col[c + 3] = breath * (1 - k / TRAIL);
       col[c + 4] = r; col[c + 5] = g; col[c + 6] = b; col[c + 7] = breath * (1 - (k + 1) / TRAIL);
@@ -191,7 +217,7 @@ export function createCurrents(opts = {}) {
   }
 
   function seed() {
-    for (let i = 0; i < count; i += 1) { spawn(i, true); age[i] = still ? 0 : rand() * life[i]; write(i); }
+    for (let i = 0; i < count; i += 1) { spawn(i, true); age[i] = still ? 0 : rand() * life[i]; writePlaces(i); writeInk(i); }
     lines.geometry.attributes.position.needsUpdate = true;
     lines.geometry.attributes.color.needsUpdate = true;
   }
@@ -212,6 +238,12 @@ export function createCurrents(opts = {}) {
       flow = got.flow;
       temp = got.temp;
       gotAt = nowMs();
+      tempGaps = 0;
+      for (let j = 0; j < flow.nLat; j += 1) {
+        for (let i = 0; i < flow.nLon; i += 1) {
+          if (!Number.isNaN(flow.u_current[j * flow.nLon + i]) && Number.isNaN(sampleTemp(temp, flow.lat0 + j * flow.stepDeg, flow.lon0 + i * flow.stepDeg))) tempGaps += 1;
+        }
+      }
       seed();
       status = 'shown';
       fade = { from: 0, to: OPACITY, at: tick() };
@@ -242,14 +274,15 @@ export function createCurrents(opts = {}) {
     if (piece) tailClock = 0;
     for (let i = 0; i < count; i += 1) {
       age[i] += dtS;
-      if (age[i] >= life[i]) spawn(i, false);
+      if (age[i] >= life[i]) { spawn(i, false); writePlaces(i); }
       else if (!hidden[i] && !aground[i]) {
         if (piece) { grow(i); tint(i); }
         advance(i, dtS);
         // Aground: it goes no further, and is hurried into the fade its life would have ended with.
         if (aground[i]) age[i] = Math.max(age[i], life[i] * 0.8);
+        if (piece) writePlaces(i); else writeHead(i);
       }
-      write(i);
+      writeInk(i);
     }
     lines.geometry.attributes.position.needsUpdate = true;
     lines.geometry.attributes.color.needsUpdate = true;
@@ -272,6 +305,7 @@ export function createCurrents(opts = {}) {
       still,
       speedup: SPEEDUP,
       meanSpeed: flow ? flow.meanSpeed : null,
+      tempGaps,
       count,
       opacity: lines ? lines.material.opacity : 0,
     };

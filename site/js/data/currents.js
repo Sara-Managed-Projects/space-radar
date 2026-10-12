@@ -2,7 +2,7 @@
 //
 // Contract: CURRENTS, parseSeaGrid(json, names) -> grid | null,
 //           sampleCurrent(grid, latDeg, lonDeg) -> {u, v, speed} in m/s | null (land, ice, no data),
-//           stepCurrent(grid, latDeg, lonDeg, seconds) -> {latDeg, lonDeg, speed} | null (it ran aground),
+//           stepCurrent(grid, latDeg, lonDeg, seconds, out?) -> {latDeg, lonDeg, speed} | null (it ran aground),
 //           sampleTemp(grid, latDeg, lonDeg) -> degrees C | NaN, fetchCurrents({fetch}) -> Promise<{flow, temp}>
 //   grid = { nLat, nLon, stepDeg, lat0, lon0, timeMs, cells, [name]: Float32Array (NaN where the
 //            source had no value), and for a flow: meanSpeed }
@@ -57,7 +57,7 @@ export const CURRENTS = {
   keepMs: 24 * 3600e3,
   tempMin: -2,
   tempMax: 30,
-  credit: 'NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products), and NOAA NCEI OISST v2.1 for the temperature',
+  credit: 'NOAA CoastWatch (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) and NOAA NCEI OISST v2.1',
 };
 
 const R_EARTH_M = 6371008.8;
@@ -166,11 +166,18 @@ function mix(a) {
  * corners that are sea, so a coast does not drag the water beside it to a stop.
  */
 export function sampleCurrent(grid, latDeg, lonDeg) {
+  if (!read(grid, latDeg, lonDeg)) return null;
+  return { u: cur.u, v: cur.v, speed: Math.hypot(cur.u, cur.v) };
+}
+
+// The same, into `cur` and with no object made: a streak asks several times a frame.
+const cur = { u: 0, v: 0 };
+function read(grid, latDeg, lonDeg) {
   corners(grid, latDeg, lonDeg);
-  if (Number.isNaN(grid.u_current[q.near])) return null;
-  const u = mix(grid.u_current);
-  const v = mix(grid.v_current);
-  return { u, v, speed: Math.hypot(u, v) };
+  if (Number.isNaN(grid.u_current[q.near])) return false;
+  cur.u = mix(grid.u_current);
+  cur.v = mix(grid.v_current);
+  return true;
 }
 
 /** The sea's temperature at a place: the nearest corners that have one. NaN when none of the four has. */
@@ -184,24 +191,26 @@ export function sampleTemp(grid, latDeg, lonDeg) {
  * there touches a cell with no value: a streak does not cross land. The step is cut into pieces of
  * half a degree at most, each read where it stands, so a fast current cannot leap an isthmus.
  */
-export function stepCurrent(grid, latDeg, lonDeg, seconds) {
+export function stepCurrent(grid, latDeg, lonDeg, seconds, out = {}) {
   let lat = latDeg;
   let lon = lonDeg;
   let left = seconds;
   let speed = 0;
   for (let n = 0; n < 64 && left > 0; n += 1) {
-    const w = sampleCurrent(grid, lat, lon);
-    if (!w) return null;
-    speed = w.speed;
-    const perS = (w.speed / R_EARTH_M) / DEG; // degrees of arc a second
+    if (!read(grid, lat, lon)) return null;
+    speed = Math.hypot(cur.u, cur.v);
+    const perS = (speed / R_EARTH_M) / DEG; // degrees of arc a second
     const dt = perS * left > MAX_PIECE_DEG ? MAX_PIECE_DEG / perS : left;
     const cos = Math.max(0.05, Math.cos(lat * DEG));
-    lat = Math.max(-89.5, Math.min(89.5, lat + ((w.v * dt) / R_EARTH_M) / DEG));
-    lon += ((w.u * dt) / (R_EARTH_M * cos)) / DEG;
+    lat = Math.max(-89.5, Math.min(89.5, lat + ((cur.v * dt) / R_EARTH_M) / DEG));
+    lon += ((cur.u * dt) / (R_EARTH_M * cos)) / DEG;
     left -= dt;
   }
-  if (!sampleCurrent(grid, lat, lon)) return null;
-  return { latDeg: lat, lonDeg: ((((lon + 180) % 360) + 360) % 360) - 180, speed };
+  if (!read(grid, lat, lon)) return null;
+  out.latDeg = lat;
+  out.lonDeg = ((((lon + 180) % 360) + 360) % 360) - 180;
+  out.speed = speed;
+  return out;
 }
 
 // NO COPY, NO CURRENTS. The harvester is not on a schedule yet (2026-10-12): the saved copies are

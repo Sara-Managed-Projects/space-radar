@@ -66,9 +66,8 @@ function currentsLine(state) {
     W.what,
     t(W.dated, { date: timeText.utcLong(state.date) }),
     Number.isFinite(state.tempDate) ? t(W.tempDated, { date: timeText.utcLong(state.tempDate) }) : '',
-    Number.isFinite(state.meanSpeed) ? t(W.mean, { mean: fmt.int(Math.round(state.meanSpeed * 100)) }) : '',
     state.still ? W.still : days >= 1 ? t(W.sped, { n: fmt.int(Math.round(days)) }) : t(W.spedHours, { n: fmt.int(Math.round(state.speedup / 3600)) }),
-    W.tempMissing,
+    state.tempGaps > 0 ? W.tempMissing : '',
     t(W.credit, { credit: state.credit }),
   ].filter(Boolean).join(' ');
 }

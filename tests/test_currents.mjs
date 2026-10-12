@@ -24,6 +24,8 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const near = (a, b, eps) => Math.abs(a - b) <= eps;
 const src = (rel) => readFileSync(join(ROOT, rel), 'utf8');
+// Not a fixed wait: two grids of 64 800 cells are parsed, and a loaded machine takes its time.
+const settled = async (o) => { for (let i = 0; i < 3000 && o.state().status === 'loading'; i += 1) await new Promise((r) => setTimeout(r, 10)); };
 
 // ---- 1. the grid ------------------------------------------------------------------------------------
 // The packed shape harvest/parsers/sea_grid.py writes: a string a latitude, nothing where there is no sea.
@@ -124,7 +126,7 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   check(sea.state().id === null && sea.state().status === 'off' && earth.children.length === 0 && asked.length === 0, 'nothing is drawn or asked for until it is set');
   sea.set(true);
   check(sea.state().status === 'loading' && sea.state().id === 'currents', 'asked for: loading');
-  await new Promise((r) => setTimeout(r, 40));
+  await settled(sea);
   const st = sea.state();
   check(st.status === 'shown' && st.kind === 'currents' && st.cls === 'analysed' && st.date === flow.timeMs && st.tempDate === temp.timeMs && st.legend === S.CURRENTS_LEGEND && st.speedup === 864000 && st.still === false && st.count === S.COUNT, `shown, with both days and what the legend needs (${JSON.stringify({ ...st, legend: undefined })})`);
   check(asked.length === 2 && asked.map((a) => a.u).sort().join() === 'data/v1/ocean-currents.json,data/v1/ocean-temperature.json' && asked.every((a) => a.init.credentials === 'omit' && a.init.referrerPolicy === 'no-referrer'), `two requests, for our saved copies, with no credentials and no referrer (${asked.map((a) => a.u)})`);
@@ -179,7 +181,8 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   check(moved > 200 && lines.visible && lines.material.opacity > 0 && lines.material.transparent && lines.material.depthWrite === false, `the streaks move with the water and fade in (${moved} of 1200 numbers changed)`);
   check(dryLater === 0, `and in twelve frames of motion no visible vertex was ever over land (${dryLater})`);
   const line = L.overlayLine(sea.state());
-  check(/^Currents at the sea’s surface; colour is the water’s temperature\. The currents are worked out from the height of the sea that satellites measured on 10 October 2026: the steady flow, with no tides and no drift pushed by the wind, and least sure on the equator\. The temperature is from satellites, ships and buoys on 10 October 2026, with the gaps filled in\. About \d+ centimetres a second on average\. The streaks move 10 days of drift in a second, so a long streak is fast water\. A grey streak is water whose temperature is not in the data\. Data: NOAA CoastWatch, from satellite altimetry \(Sentinel data courtesy of the Copernicus Programme; generated using AVISO\+ products\), and NOAA NCEI OISST v2\.1 for the temperature\. No streak is drawn where the data has no sea\.$/.test(line), `the sentence says what it is, of which days, what it leaves out, how fast and whose: ${line}`);
+  check(line === 'Currents at the sea’s surface; colour is the water’s temperature. Worked out from the height of the sea that satellites measured on 10 October 2026: the steady flow, with no tides or wind drift, least sure on the equator. Temperature measured on 10 October 2026, gaps filled. The streaks move 10 days of drift in a second; a long streak is fast water. Data: NOAA CoastWatch (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) and NOAA NCEI OISST v2.1.', `the sentence says what it is, of which days, what it leaves out, how fast and whose: ${line}`);
+  check(sea.state().tempGaps === 0 && L.overlayLine({ ...sea.state(), tempGaps: 3 }).includes(COPY.overlay.currents.tempMissing), 'and when some water has no temperature, that its streaks are grey');
   check(L.overlayLine({ id: 'currents', kind: 'currents', status: 'loading' }) === COPY.overlay.currents.loading && L.overlayLine({ id: 'currents', kind: 'currents', status: 'failed' }) === COPY.overlay.currents.failed, 'loading and failed have their own words');
   check(COPY.overlay.currents.title.split(' ').length <= 2, 'its name is two words');
   // Asked for again within the day: the fields here are kept, and nobody is asked.
@@ -193,7 +196,7 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   // Reduced motion: drawn once, and no frame moves it.
   const calm = make({ reducedMotion: true });
   calm.set(true);
-  await new Promise((r) => setTimeout(r, 40));
+  await settled(calm);
   const cp = Array.from(calm.lines().geometry.attributes.position.array.slice(0, 1200));
   await new Promise((r) => setTimeout(r, 40));
   calm.update();
@@ -202,10 +205,10 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   calm.dispose();
 
   // The device tiers, and data saving.
-  check(JSON.stringify(S.COUNT_BY_TIER) === '[800,1600,3200]' && S.COUNT_BY_TIER[1] === S.COUNT && S.streakCount(0) === 800 && S.streakCount(2) === 3200 && S.streakCount(undefined) === 1600 && S.streakCount(9) === 3200 && S.streakCount(-3) === 800 && S.streakCount(2, true) === 1600 && S.streakCount(0, true) === 400, 'tiers 0, 1 and 2 draw 800, 1600 and 3200 streaks, and data saving halves each');
+  check(JSON.stringify(S.COUNT_BY_TIER) === '[1200,2500,5000]' && S.COUNT_BY_TIER[1] === S.COUNT && S.streakCount(0) === 1200 && S.streakCount(2) === 5000 && S.streakCount(undefined) === 2500 && S.streakCount(9) === 5000 && S.streakCount(-3) === 1200 && S.streakCount(2, true) === 2500 && S.streakCount(0, true) === 600, 'tiers 0, 1 and 2 draw 1200, 2500 and 5000 streaks, and data saving halves each');
   const small = make({ tier: 0, saveData: true });
   small.set(true);
-  check(small.lines().geometry.attributes.position.count === 400 * S.TRAIL * 2, 'a phone that saves data allocates 400 streaks');
+  check(small.lines().geometry.attributes.position.count === 600 * S.TRAIL * 2, 'a phone that saves data allocates 600 streaks');
   small.dispose();
 
   // No copy of one of the two: said, and nothing drawn.
@@ -213,7 +216,7 @@ check(Number.isNaN(D.sampleTemp(temp, 0, 45)), 'and is NaN where none of the fou
   const warn = console.warn; console.warn = () => {};
   const half = S.createCurrents({ earth: () => earth, now: () => NOW, retryMs: 5, fetch: async (u) => { tries += 1; return /temperature/.test(u) ? { ok: false, status: 404, text: async () => '' } : { ok: true, status: 200, text: async () => bodies[u] }; } });
   half.set(true);
-  await new Promise((r) => setTimeout(r, 600));
+  await settled(half);
   console.warn = warn;
   check(half.state().status === 'failed' && tries === 4 && L.overlayLine(half.state()) === COPY.overlay.currents.failed && half.lines().visible === false, `with the temperature missing the pair is asked for once more and then said to be not here (${tries} requests)`);
   half.dispose();

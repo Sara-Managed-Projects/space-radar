@@ -552,7 +552,7 @@ export async function boot({ setStatus } = {}) {
       ctx.currents = m.createCurrents({
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
-        tier: ctx.quality ? ctx.quality.tier : 1, // 800, 1600 or 3200 streaks (scene/currents.js COUNT_BY_TIER)
+        tier: ctx.quality ? ctx.quality.tier : 1, // 1200, 2500 or 5000 streaks (scene/currents.js COUNT_BY_TIER)
         reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
         onChange: tellOverlay,
       });
