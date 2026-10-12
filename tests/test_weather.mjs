@@ -268,7 +268,7 @@ function decodePng(buf) {
   for (const [id, line] of Object.entries(COPY.weather.worlds)) {
     const classes = WEATHER.filter((r) => r.world === id).map((r) => r.class);
     // The line, and the sentences that may follow it (what else is drawn; the lightning where it is drawn).
-    const parts = [line, COPY.weather.also[id], COPY.weatherStorms.turning[id], COPY.weatherStorms.poles[id], COPY.weather.flashes[id]].filter(Boolean);
+    const parts = [line, COPY.weather.also[id], COPY.weatherStorms.turning[id], COPY.weatherStorms.poles[id], WEATHER.some((r) => r.world === id && r.kind === 'cloud-detail') ? COPY.weatherDetail : null, COPY.weather.flashes[id]].filter(Boolean);
     for (const c of new Set(classes)) check(parts.join(' ').toLowerCase().includes(c === 'modelled' ? 'modelled' : c), `${id}'s line says "${c}"`);
     for (const part of parts) check(part.length <= 240, `${id}'s line is one line (${part.length} characters)`);
   }
@@ -348,7 +348,7 @@ function decodePng(buf) {
   check(weather.perMinute() === undefined, 'and the panel has no number yet');
   weather.tick(slot, { on: true });
   check(/northern spring/.test(weather.line('mars', slot)) && /illustrative/.test(weather.line('mars', slot)), `Mars's line names the season (${weather.line('mars', slot)})`);
-  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weatherStorms.turning.jupiter, COPY.weatherStorms.poles.jupiter, COPY.weather.flashes.jupiter, COPY.lookSaid.film].join(' '), 'Jupiter\'s line, its storms\', its poles\', its lightning\'s, and which look is on');
+  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weatherStorms.turning.jupiter, COPY.weatherStorms.poles.jupiter, COPY.weatherDetail, COPY.weather.flashes.jupiter, COPY.lookSaid.film].join(' '), 'Jupiter\'s line, its storms\', its poles\', the generated detail\'s and its lightning\'s');
   check(weather.line('venus', slot).endsWith(COPY.weather.also.venus + ' ' + COPY.lookSaid.film) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
   check(/seasonal and illustrative, not today/.test(weather.line('mars', slot)) && /optical depth near 0\.\d/.test(weather.line('mars', slot)), `Mars's line gives the season's dust and says it is not today's (${weather.line('mars', slot)})`);
   check(weather.line('moon', slot) === null && weather.line('io', slot) === null, 'a world with no weather has no line');
@@ -473,7 +473,7 @@ function decodePng(buf) {
   const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
   const fresh = dress();
   const quiet = createWeather({ worlds: { meshFor: (id) => fresh.get(id) || null }, reducedMotion: true, fetchImpl: async () => ({ ok: false }) });
-  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weatherStorms.poles.jupiter + ' ' + COPY.lookSaid.film, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
+  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weatherStorms.poles.jupiter + ' ' + COPY.weatherDetail + ' ' + COPY.lookSaid.film, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
   check(/Webb and Keck/.test(COPY.weather.worlds.titan) && /Illustrative/.test(COPY.weather.worlds.titan) && /2022/.test(COPY.weather.worlds.titan), 'Titan\'s line dates its clouds and says they are illustrative');
 }
 
@@ -689,6 +689,74 @@ function decodePng(buf) {
   // The card: what is generated is said to be, the poles are a reconstruction, and nothing is today's.
   check(/generated/.test(COPY.weatherStorms.turning.jupiter) && /measured/.test(COPY.weatherStorms.turning.jupiter) && /illustrative/.test(COPY.weatherStorms.turning.jupiter), 'the card says the eddies are generated at measured places');
   check(/modelled from Juno’s observations/.test(COPY.weatherStorms.poles.jupiter) && /not a photograph/.test(COPY.weatherStorms.poles.jupiter) && /2017/.test(COPY.weatherStorms.poles.jupiter), 'and that the poles are modelled from Juno\'s observations, dated, not a photograph');
+}
+
+// --- the close-range cloud detail (2026-10-12): generated, small, only below the map's resolution ---
+{
+  const WW = await import(join(JS, 'scene/weather/worldweather.js'));
+  const { WORLDS, worldMaterial, applyLook } = await import(join(JS, 'scene/worlds.js'));
+  const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
+  const GIANTS = ['jupiter', 'saturn', 'uranus', 'neptune'];
+  for (const id of GIANTS) {
+    const r = row(`${id}-detail`);
+    check(r && r.kind === 'cloud-detail' && r.class === 'illustrative' && r.world === id, `${id}: a cloud-detail row, illustrative`);
+    if (!r) continue;
+    const d = r.detail;
+    check(d.contrast > 0 && d.contrast <= 0.13 && F.detailMaxContrast(d) <= 0.15, `${id}: no channel is moved more than 15 % (${(F.detailMaxContrast(d) * 100).toFixed(1)} %)`);
+    check(WEATHER.some((x) => x.world === id && x.kind === 'zonal-flow'), `${id}: there is a measured wind to carry it`);
+  }
+  check(row('jupiter-detail').detail.contrast > row('saturn-detail').detail.contrast && row('saturn-detail').detail.contrast > row('neptune-detail').detail.contrast && row('neptune-detail').detail.contrast > row('uranus-detail').detail.contrast, 'Jupiter\'s is the strongest and Uranus\'s, the blandest world, the faintest');
+  // The two fades. A screen pixel that covers a texel or more: nothing. A texel over three pixels wide: all of it.
+  check(F.detailFade(1) === 0 && F.detailFade(2.5) === 0 && F.detailFade(0.3) === 1 && F.detailFade(0.02) === 1 && F.detailFade(NaN) === 0, 'nothing where the map still has detail to give, all of it where a texel is over three pixels wide');
+  check(F.detailFade(0.65) > 0.4 && F.detailFade(0.65) < 0.6 && F.detailFade(0.5) > F.detailFade(0.8), 'and a smooth way between');
+  check(F.detailOctaveWeight(2) === 0 && F.detailOctaveWeight(1) === 0 && F.detailOctaveWeight(5) === 1 && F.detailOctaveWeight(40) === 1, 'an octave under two pixels long is not drawn (no shimmer); one over five is');
+  check(F.DETAIL_OCTAVES >= 3 && F.DETAIL_OCTAVES <= 8 && F.DETAIL_GAIN > 0.4 && F.DETAIL_GAIN < 0.9, 'a few octaves, each fainter than the last');
+  // WHICH octaves follows the camera: from the rig's closest (a texel seventy pixels wide, a base cell 370) the
+  // finest drawn is still a few pixels wide, and the coarsest about DETAIL_COARSE_PX.
+  {
+    const first = F.detailFirstOctave(370);
+    const finestPx = 370 / 2 ** (Math.floor(first) + F.DETAIL_OCTAVES - 1);
+    check(first > 1 && first < 2 && finestPx >= 4 && finestPx <= 16, `at the closest the octaves start at ${first.toFixed(2)} and the finest is ${finestPx.toFixed(1)} px`);
+    check(F.detailFirstOctave(100) === 0 && F.detailFirstOctave(F.DETAIL_COARSE_PX) === 0 && F.detailFirstOctave(NaN) === 0 && F.detailFirstOctave(F.DETAIL_COARSE_PX * 4) === 2, 'never coarser than the row\'s own octave, and one octave finer each time the view doubles');
+  }
+  // The shader carries those numbers, reads the detail where the map was read, and asks the map its own size.
+  const frag = WW.weatherFragment();
+  const f2 = (x) => Number(x).toFixed(2);
+  check(frag.includes('#ifdef WX_DETAIL') && frag.includes(`smoothstep( ${f2(F.DETAIL_FADE[0])}, ${f2(F.DETAIL_FADE[1])}, tpp )`) && frag.includes(`i < ${F.DETAIL_OCTAVES}; i++`) && frag.includes(`amp *= ${f2(F.DETAIL_GAIN)};`) && frag.includes(`smoothstep( ${f2(F.DETAIL_OCTAVE_PX[0])}, ${f2(F.DETAIL_OCTAVE_PX[1])}, basePx )`) && frag.includes(`log2( basePx / ${F.DETAIL_COARSE_PX.toFixed(1)} )`) && frag.includes('float basePx = size.y / ( cells.y * tpp );'), 'the shader\'s fades and octaves are flow.js\'s numbers');
+  check(/float which = first \+ float\( i \);/.test(frag) && /i == 0 \? 1\.0 - part/.test(frag) && /norm \+= share;/.test(frag), 'an octave keeps its own pattern whichever place it has, and the coarsest and the finest cross-fade');
+  check(/textureSize\( uMap, 0 \)/.test(frag) && /dFdx\( vUv \) \* size/.test(frag) && /texel = wxDetail\( texel, p \);/.test(frag), 'the fade is the footprint of a pixel in the map\'s own texels, and the detail is read where the wind carried the map from');
+  check(/if \( k <= 0\.0 \) return c;/.test(frag) && /if \( uWxDetail\.x <= 0\.0 \) return c;/.test(frag), 'and it costs two derivatives and nothing more where it is not drawn');
+  check(!/WebGLRenderTarget|EffectComposer/.test(readFileSync(join(JS, 'scene/weather/worldweather.js'), 'utf8')), 'no render target and no pass: it is a term of the world\'s own shader');
+  // Worn: the four giants get the define and one uniform; Venus and Mars do not; the latch takes it off.
+  const dress = () => {
+    const out = new Map();
+    for (const w of WORLDS) {
+      if (![...GIANTS, 'venus', 'mars'].includes(w.id)) continue;
+      const material = worldMaterial(null, w.look.tint);
+      applyLook(material, w.look);
+      out.set(w.id, { material, visible: true });
+    }
+    return out;
+  };
+  const meshes = dress();
+  const carded = dress();
+  const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null, discShare: () => 0.6 } });
+  for (const id of GIANTS) {
+    const m = meshes.get(id).material;
+    const d = row(`${id}-detail`).detail;
+    const u = m.uniforms.uWxDetail && m.uniforms.uWxDetail.value;
+    check(m.defines.WX_DETAIL === 1 && u && u.x === d.contrast && u.z === d.cells_lat && u.y === Math.round(d.cells_lat * 2 / d.stretch) && u.w === d.colour && wx.detail(id), `${id} wears the detail with its row's numbers (${JSON.stringify(u)})`);
+    check(u && Number.isInteger(u.y) && Number.isInteger(u.z) && u.y * 32 <= 4096 * 2, `${id}: whole cells round the planet, so the texture has no seam at the map's edge`);
+  }
+  check(!meshes.get('venus').material.defines.WX_DETAIL && !wx.detail('venus') && !wx.detail('mars'), 'Venus and Mars have no such row and wear none');
+  check(wx.state().worlds.find((w) => w.id === 'jupiter').detail.x === row('jupiter-detail').detail.contrast, 'state() says what is worn, for the probes');
+  // The card says it is generated, wherever it is worn.
+  const weather = createWeather({ worlds: { meshFor: (id) => carded.get(id) || null, discShare: () => 0.6 }, fetchImpl: async () => { throw new Error('offline'); } });
+  check(/generated/.test(COPY.weatherDetail) && /not one streak of it is a real cloud/.test(COPY.weatherDetail) && /Illustrative\.$/.test(COPY.weatherDetail), 'the sentence says generated, not real, illustrative');
+  for (const id of GIANTS) check(String(weather.line(id, Date.now())).includes(COPY.weatherDetail), `${id}: its card's weather line says the close-range texture is generated`);
+  check(!String(weather.line('venus', Date.now())).includes(COPY.weatherDetail), 'Venus\'s does not');
+  wx.latch();
+  check(GIANTS.every((id) => !meshes.get(id).material.defines.WX_DETAIL) && !wx.detail('jupiter'), 'the frame latch takes it off with the rest');
 }
 
 if (failed) {

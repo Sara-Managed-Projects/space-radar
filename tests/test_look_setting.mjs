@@ -149,7 +149,8 @@ for (const r of WEATHER) {
   weather.tick(t0, { on: true });
   const S = COPY.lookSaid;
   check(weather.line('jupiter', t0).endsWith(S.film) && weather.line('mars', t0).endsWith(S.film) && weather.line('saturn', t0).endsWith(S.film), 'in Film a world the look changes says Film, last');
-  check(!weather.line('uranus', t0).includes(S.film) && !weather.line('neptune', t0).includes(S.film), 'a world the look does not change says nothing about it');
+  // Since the close-range cloud detail (generated, so hidden under Measured), the look changes all four giants.
+  check(weather.line('uranus', t0).endsWith(S.film) && weather.line('neptune', t0).endsWith(S.film) && weather.line('uranus', t0).includes(COPY.weatherDetail), 'Uranus and Neptune wear the generated detail, so in Film they say so and say Film');
   const before = told;
   weather.setLook('measured');
   check(told === before + 1, 'the card is told when the look changes');
@@ -158,7 +159,7 @@ for (const r of WEATHER) {
   check(weather.line('saturn', t0) === [S.worlds.saturn, S.measured].join(' ') && !/hexagon/.test(weather.line('saturn', t0)), 'Saturn under Measured does not claim the hexagon');
   check(weather.line('venus', t0) === [COPY.weather.worlds.venus, S.also.venus, S.measured].join(' ') && !/dark Y/.test(weather.line('venus', t0)), 'Venus under Measured does not claim the Y');
   check(weather.line('mars', t0) === S.measured && weather.line('titan', t0) === S.measured, 'Mars and Titan, whose whole weather is illustrative, say only that the look is Measured');
-  check(weather.line('uranus', t0) === [COPY.weather.worlds.uranus, COPY.weather.also.uranus].join(' '), 'Uranus reads as it did');
+  check(weather.line('uranus', t0) === [COPY.weather.worlds.uranus, COPY.weather.also.uranus, S.measured].join(' ') && !weather.line('uranus', t0).includes(COPY.weatherDetail), 'Uranus under Measured: its drift, no generated detail claimed, and that the look is Measured');
   check(weather.line('moon', t0) === null, 'a world with no weather still has no line');
 }
 

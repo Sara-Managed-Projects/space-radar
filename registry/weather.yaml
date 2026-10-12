@@ -220,6 +220,66 @@ effects:
       gap_lum: {own: [0.22, 0.31], hubble: [0.38, 0.44]}
     why: "A camera sees one deck's top. That the dark places are gaps onto deeper cloud is known; the under-deck here is the same picture again, shifted and tinted, and its depth is drawn several times too great so that it can be seen."
 
+  # THE CLOSE-RANGE DETAIL (2026-10-12, a look at the live build: "at the rig's closest zoom Jupiter
+  # is a featureless beige field"). One row a world. `contrast` is the most the brightness is
+  # multiplied or divided by, `colour` the share of that again by which the bright streaks lean warm
+  # and the dark ones blue (so no channel ever moves 15 %); `cells_lat` is how many cells of the
+  # coarsest octave lie pole to pole and `stretch` how many times longer each is along latitude.
+  # The shader (scene/weather/worldweather.js WX_DETAIL) fades it in only where one texel of the
+  # map is wider than a pixel, and it rides the same wind as the map (the world's zonal-flow row).
+  - id: jupiter-detail
+    world: jupiter
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Tollefson et al. 2017, Icarus 296, 163 (the winds that carry it; see jupiter-bands)"
+      url: "https://doi.org/10.1016/j.icarus.2017.06.007"
+      read: 2026-10-03
+    detail: {contrast: 0.12, colour: 0.2, cells_lat: 192, stretch: 4}
+    why: "The map is 2 048 or 4 096 texels round and the camera comes within a few per cent of the radius, where a texel is tens of pixels wide: below the map's resolution nothing here is measured. JunoCam's close pictures show filaments and folds at every scale down to tens of kilometres; this is a streaky noise with that grain, not those clouds."
+
+  - id: saturn-detail
+    world: saturn
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "García-Melendo et al. 2011, Icarus 215, 62 (the winds that carry it; see saturn-bands)"
+      url: "https://doi.org/10.1016/j.icarus.2011.07.005"
+      read: 2026-10-03
+    detail: {contrast: 0.09, colour: 0.15, cells_lat: 192, stretch: 6}
+    why: "As Jupiter's: nothing is measured below the map's resolution. Saturn's bands are blander under their haze, so the texture is fainter and longer along latitude."
+
+  - id: uranus-detail
+    world: uranus
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Sromovsky et al. 2015, Icarus 258, 192 (the winds that carry it; see uranus-drift)"
+      url: "https://doi.org/10.1016/j.icarus.2015.05.029"
+      read: 2026-10-03
+    detail: {contrast: 0.04, colour: 0.1, cells_lat: 160, stretch: 6}
+    why: "As Jupiter's. Uranus seen close by Voyager 2 was very nearly featureless, so this is fainter still: enough that the picture is not one flat colour, and no more."
+
+  - id: neptune-detail
+    world: neptune
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Sromovsky et al. 1993, Icarus 105, 110 (the winds that carry it; see neptune-drift)"
+      url: "https://doi.org/10.1006/icar.1993.1114"
+      read: 2026-10-03
+    detail: {contrast: 0.07, colour: 0.15, cells_lat: 160, stretch: 5}
+    why: "As Jupiter's. Voyager 2 saw streaks of bright cloud and little else; the texture is faint and streaky."
+
+
   - id: saturn-bands
     world: saturn
     kind: zonal-flow
