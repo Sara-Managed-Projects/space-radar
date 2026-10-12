@@ -258,6 +258,18 @@ export function movingReasons(s = {}) {
   return why;
 }
 
+/**
+ * `?look=1`: a tool is looking (tools/README.md, "A look from a machine that has time"). The frame
+ * latch and the pixel-ratio governor are then not fed, so a software renderer keeps every effect it
+ * was asked to photograph; every loader, the tier and the clock run as they do for a visitor. A
+ * query key for tools: never in the hash (ui/urlstate.js KEYS), and never beside `embed=1`, whose
+ * address is written by someone else's page. Pure: `{search}` in, a boolean out.
+ */
+export function lookHeld(d = {}) {
+  const search = d.search || '';
+  return /[?&]look=1(?:&|$)/.test(search) && !/[?&]embed=1(?:&|$)/.test(search);
+}
+
 /** Who gets the cap at all. Pure: `{search, webdriver, film}` in, a boolean out. */
 export function idleCapWanted(d = {}) {
   const asked = /[?&]idle=([01])(?:&|$)/.exec(d.search || '');

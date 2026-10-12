@@ -11,6 +11,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
 | `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
+| `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 ## The regression walk
 
@@ -78,6 +79,78 @@ the numbers in `walk-<size>.json` beside the stop's name.
 twelve film seconds of warm-up, measured at 44 real seconds on the served tree with the saved
 catalogues on a throttled line. The `link-render` load waits 150 and, if that is not enough, says
 which stage it stopped in (`__srRender.describe().stage`): `layers`, `warming`, `faces`, `settling`.
+
+## A look from a machine that has time
+
+A laptop that is busy cannot boot the page in a headless Chrome (on 2026-10-12 this one could not
+in nine minutes, and five features were merged that no GPU had drawn). A GitHub runner can, in
+about three. The workflow `look` (`.github/workflows/look.yml`) serves `site/` of any branch with
+the live site's small saved data files, runs a probe from `tests/probes/look/`, and keeps the
+pictures, what the probe returned, the page's errors and a one-page summary:
+
+```sh
+gh workflow run look.yml -f probe=worlds -f ref=<branch>
+gh run list --workflow=look.yml --limit 3            # the run's id, once it has started
+gh run watch <run id>
+gh run download <run id> -n look-worlds-chromium -D /tmp/look     # the PNGs, out.json, err.txt, summary.md
+sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink before reading a picture
+```
+
+| input | default | what it does |
+|---|---|---|
+| `probe` | `smoke` | a file under `tests/probes/look/` (table below) |
+| `ref` | the dispatching ref | the branch or sha that is served; the tool and the probes are the dispatching ref's |
+| `width`, `height` | 1440, 900 | the window |
+| `mobile` | false | a phone: 390 x 844 with the tool's `--mobile` (touch, a phone's pixel ratio and user agent) |
+| `hold_latch` | true | load the page with `?look=1` (below); false looks at what a slow device really gets |
+| `browser` | `chromium` | `chromium` (through `tools/cdp.mjs`), `firefox`, `webkit` (through `tools/look-playwright.mjs`), or `all` |
+| `harvest` | empty | source ids with commas, fetched fresh by `python3 -m harvest --only <id>` and merged into the served `data/v1`: for a feed the live site has no copy of yet, e.g. `swpc-edited-events,donki-cme-analysis` for the Sun's flares and CMEs, `ocean-currents,ocean-temperature` for the currents |
+
+| probe | what it walks |
+|---|---|
+| `smoke` | home; a wide view; the Moon, Jupiter, the Sun, Saturn; the Earth with ocean currents when their data is there; four stops of the drift. Runs on every pull request that touches `site/js/scene/`, `site/js/main.js` or `site/textures/` |
+| `worlds` | the eight planets and Pluto, each on its own stage in five pictures: as framed, a third and two thirds of a turn later from the sunward side (the clock turns the world, so every longitude is seen in daylight), and over each pole. A torn, mirrored or flat-filled map is in a picture |
+| `sun` | the Sun's detail on: arrival, closer, the limb, the corona, then inside a real flare and two hours into a real coronal mass ejection when the two feeds are there |
+| `jupiter` | the stage, both poles, close on a belt, the clock sped up |
+| `lights` | each bright planet as a point of light beside a small Earth |
+| `frametime` | three scenes (home; Jupiter filling the view with its weather; the Sun's detail), the median and 95th percentile of 120 frame intervals each |
+
+**The job fails** when the page logged an error (`console.error`, an uncaught error, an unhandled
+rejection), when the probe returned a `fail`, or when it returned nothing. `summary.md` (also the
+run's summary page) lists the errors, the warnings, the renderer's draw calls, triangles, textures
+and programs, and one line per picture. A browser that cannot make a WebGL2 context in its
+container is **neutral**: the job is green and the summary says exactly what the browser reported.
+
+**The three engines, measured 2026-10-12** on a GitHub runner with the smoke probe: Chromium 154
+(SwiftShader), WebKit 18.2 and Firefox 132 (llvmpipe; both in the Playwright image `screens.yml`
+pins) all make a WebGL2 context, boot in two to five seconds and log no error. Firefox makes no
+context at all when the container has no display, headless or not, which is why its runner is
+started under `xvfb-run`.
+
+**`?look=1`, the frame latch held.** A software renderer draws a frame in a third of a second, so
+after three seconds the frame latch (spec 0026) takes off exactly what a look is for: the Sun's
+detail, the weather, the relief. `?look=1` in the query (`scene/quality.js` `lookHeld`, read once
+by `main.js`) keeps the latch and the pixel-ratio governor from being fed, and does nothing else:
+every loader, the tier and the clock run as they do for a visitor. It is for tools: no deep link
+carries it (it is not in `ui/urlstate.js` `KEYS`) and it is ignored beside `embed=1`.
+`window.spaceRadar.latch.held` says whether it is on. (The first probes pretended the page was
+hidden instead, which also stopped the loader that turns the Sun's detail on.)
+
+**Frame times are relative.** On a runner the GL is SwiftShader or llvmpipe: `frametime`'s numbers
+compare one run with another on the same kind of runner and mean nothing in absolute terms. For
+absolute numbers run the same probe on a machine with a GPU:
+
+```sh
+cat tests/probes/look/_prelude.js tests/probes/look/frametime.js > /tmp/frametime.js
+node tools/cdp.mjs 'http://127.0.0.1:8190/?sw=0&look=1' /tmp/frametime.js --width=1440 --height=900 \
+  --gl=gpu --block=celestrak.org,ll.thespacedevs.com --shot-dir=/tmp/look > /tmp/look/out.json
+node tools/look-summary.mjs --dir=/tmp/look --probe=frametime --browser=chromium --hold=true
+```
+
+**A new probe** is a file `tests/probes/look/<name>.js`: a body that runs behind `_prelude.js`
+(which waits for `window.__srLayersReady`, collects errors and warnings and gives it `sr`, `rig`,
+`shot(name, note)`, `go(id, name)`, `stage(id)`, `until(fn, capMs)`), sets `look.probe = '<name>'`
+and ends with `return finish({...})`. `tests/test_look_tool.mjs` holds the shape.
 
 ## Rendering trip videos (spec 0070)
 

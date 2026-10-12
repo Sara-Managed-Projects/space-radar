@@ -37,6 +37,9 @@ people that no maintainer has answered. Clear that list before any other work.
 
 ## What to check in the change itself
 
+- A change to what is drawn (`site/js/scene/`, `main.js`, a texture) gets the `look` check: open its
+  summary and at least the pictures the change is about. For more than the smoke walk,
+  `gh workflow run look.yml -f probe=worlds -f ref=<branch>` ([tools/README.md](../tools/README.md), "A look from a machine that has time").
 - A new fact has a source and a date in its row. Open the source and read the number.
 - A new asset has a licence that is not non-commercial, and a line in `CREDITS.md`.
 - New words a visitor reads are in `site/js/copy/en.js`, in plain words and sentence case.
