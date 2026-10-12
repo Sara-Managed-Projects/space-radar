@@ -125,6 +125,8 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a source with no licence line", "sources.yaml", '    licence: "', '    licence_: "'),
     ("a source whose terms page is not https", "sources.yaml", "terms_url: https://celestrak.org/usage-policy.php", "terms_url: http://celestrak.org/usage-policy.php"),
     ("a source with no day its terms were recorded", "sources.yaml", "    terms_recorded: 2026-09-07\n", ""),
+    # One number of sources (scripts/count_facts.py source_counts): a row that does not say who publishes it cannot be counted.
+    ("a source that does not say who publishes it", "sources.yaml", "    publisher: CelesTrak\n", ""),
     ("a sky event of a kind no page knows", "sky-events.yaml", "kind: meteor-shower\n    name: \"Leonids 2026\"", "kind: comet\n    name: \"Leonids 2026\""),
     ("a sky event of a shower the registry lacks", "sky-events.yaml", "shower: geminids", "shower: geminidz"),
     ("a sky event whose map link names no world", "sky-events.yaml", "at: mercury}", "at: vulcan}"),

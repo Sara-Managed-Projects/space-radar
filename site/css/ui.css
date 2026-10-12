@@ -4488,7 +4488,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   text-decoration: none;
 }
 .sr-sitefoot--shown a:hover { color: var(--sr-text); }
-@media (pointer: coarse) { .sr-status__press { min-height: 44px; } }
+@media (pointer: coarse) { .sr-status__press, .sr-status__built { min-height: 44px; } }
 
 /* --- the tool rail -------------------------------------------------------------------- */
 
