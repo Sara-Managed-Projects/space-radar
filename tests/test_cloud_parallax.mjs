@@ -106,7 +106,7 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
 {
   const frag = E.SURFACE_FRAG;
   check(frag.includes('uniform vec3  uCloudPar;') && E.SURFACE_VERT.includes('vCamL = ( cameraPosition - modelMatrix[3].xyz ) * mat3( modelMatrix ) / dot( modelMatrix[0].xyz, modelMatrix[0].xyz );'), 'the uniform and the camera in the Earth\'s own axes are there');
-  check(/if \( uCloudPar\.x > 0\.0 \) \{\s+cDrawn = /.test(frag) && /if \( cDrawn > 0\.0 \) \{/.test(frag), 'the search is behind the uniform and behind the drawn thickness: off, it is a compare');
+  check(/if \( uCloudPar\.x > 0\.0 \) \{[^}]*\n    cDrawn = /.test(frag) && /if \( cDrawn > 0\.0 \) \{/.test(frag) && /lod = cloudLod\( dFdx\( vUv \), dFdy\( vUv \) \);\n    cDrawn = /.test(frag), 'the search is behind the uniform and behind the drawn thickness: off, it is a compare');
   check(frag.includes('float cloud  = cloudCover( vUv );') && frag.includes('float shade  = cloudCover( vUv + shadowStep );'), 'the flat layer\'s single lookup and its shadow are still what is drawn where the thickness is 0');
   check(frag.includes('tHit = t + ( tp - t ) * clamp( f / max( f - fp, 1e-4 ), 0.0, 1.0 ); break;'), 'the shader\'s search ends with the same secant as cloudSeek');
   const at = frag.slice(frag.indexOf('vec3 cloudAt('), frag.indexOf('float cloudLod('));
