@@ -4,7 +4,7 @@
 // Exports: createDrift(ctx, env) -> { apply(link, from), start(options, from), stop(reason),
 //          pause(), resume(), skip(), setOptions(patch), state(), active }, and createBar(doc),
 //          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS, DARK_BELOW,
-//          PEEK_MS, SMALL_PX.
+//          PEEK_MS, SMALL_PX, HURRY_MOST.
 //
 // `#drift=1` in the address (or words: `#drift=worlds,stars,calm`, ui/driftplan.js readOptions), or
 // the Drift row at the top of Just watch. Ivan, 2026-10-12: "kind of screensaver, when everything
@@ -67,6 +67,12 @@ export const DARK_BELOW = 0.17;
  */
 export const PEEK_MS = 4000;
 export const SMALL_PX = 24;
+/**
+ * How many stays running may be left early. A dot now and then is a craft whose model is small or
+ * late; this many in a row is the models not being here at all, and the next stay is kept, so the
+ * drift never hurries through everything it has.
+ */
+export const HURRY_MOST = 3;
 /** The kinds the model layer draws: only these can turn out to be a dot. */
 const MODELLED = ['station', 'satellite', 'telescope', 'probe', 'rocket', 'asteroid', 'comet'];
 
@@ -278,7 +284,7 @@ export function createDrift(ctx, env = {}) {
   let opener = null;
   let flightFrom = 0;       // when the flight to `place` began, and how long it was asked to take
   let flightFor = 0;
-  let hurried = false;      // the last stay was left early as a dot (aDot)
+  let hurried = 0;          // how many stays running were left early as a dot (aDot)
   let peekAt = 0;           // when this stay is looked at once (PEEK_MS after arriving); 0: already was
 
   function readStored() {
@@ -472,7 +478,11 @@ export function createDrift(ctx, env = {}) {
     if (!record || !(MODELLED.includes(record.klass) || record.klass === 'site')) return false;
     if (!ctx.heroes || typeof ctx.heroes.drawnPx !== 'function') return false;
     let px = 0;
-    try { px = ctx.heroes.drawnPx(record.id); } catch { return false; }
+    try {
+      px = ctx.heroes.drawnPx(record.id);
+      // A model still fading in, or one the layer has put away, is not on the screen at its size yet.
+      if (typeof ctx.heroes.drawnOpacity === 'function') px *= Math.min(1, Math.max(0, ctx.heroes.drawnOpacity(record.id)));
+    } catch { return false; }
     if (!(px < SMALL_PX)) return false;
     let at = null;
     try { at = ctx.positionOfRecord(record); } catch { at = null; }
@@ -539,10 +549,8 @@ export function createDrift(ctx, env = {}) {
     }
     if (phase === 'dwell' && peekAt && t >= peekAt) {
       peekAt = 0;
-      // One place may be a dot; a second in a row is the models not being here at all, and the
-      // stay is kept: the drift does not hurry through everything it has.
-      if (aDot() && !hurried) { hurried = true; go(); return; }
-      hurried = false;
+      if (aDot() && hurried < HURRY_MOST) { hurried += 1; go(); return; }
+      hurried = 0;
     }
     if (phase === 'dwell' && t >= until) go();
   }

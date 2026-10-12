@@ -384,6 +384,36 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
     check(fromNight.after === 2, `seen from the night side, a small craft over daylight is still a dot in front of black, and is left (selects: ${fromNight.after})`);
     const lookingAway = stay(3, { x: 10, y: 0, z: 1.03 }, moonDay, { x: 10, y: 0, z: 1.02 });
     check(lookingAway.after === 2, `seen from below, looking away from the ground, it is left too (selects: ${lookingAway.after})`);
+    // A model that has not faded in yet is not on the screen: its size counts by how much of it shows.
+    {
+      const seen = [];
+      const d6 = D.createDrift(stubs({
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 50, y: 0, z: 0 }),
+        worlds: farFromAnything,
+        heroes: { drawnPx: () => 260, drawnOpacity: () => 0.05 },
+      }), env());
+      d6.start({ through: ['craft'], realOnly: false, tags: true, pace: 'calm' });
+      run(1500 + D.PEEK_MS + 500);
+      check(seen.length === 2, `a model 260 px tall of which a twentieth shows is a dot still, and is left (selects: ${seen.length})`);
+      d6.stop();
+    }
+    // Every craft a dot (the models never came): HURRY_MOST stays are left early, and the next is kept.
+    {
+      const seen = [];
+      const d7 = D.createDrift(stubs({
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 50, y: 0, z: 0 }),
+        worlds: farFromAnything,
+        heroes: { drawnPx: () => 0 },
+      }), env());
+      d7.start({ through: ['craft'], realOnly: false, tags: true, pace: 'calm' });
+      for (let k = 0; k < D.HURRY_MOST + 1; k++) run(1500 + D.PEEK_MS + 500);
+      const after = seen.length;
+      run(3000);
+      check(after === D.HURRY_MOST + 1 && seen.length === after && d7.state().phase === 'dwell' && D.HURRY_MOST >= 2 && D.HURRY_MOST <= 5, `${D.HURRY_MOST} dots running are left and the next stay is kept (selects: ${after}, then ${seen.length})`);
+      d7.stop();
+    }
     check(D.SMALL_PX >= 12 && D.SMALL_PX <= 60 && D.PEEK_MS >= 2000 && D.PEEK_MS <= 8000, 'the dot is a few tens of pixels and the look a few seconds in');
     const heroes = read('site/js/scene/heroes.js');
     check(/drawnPx\(id\) \{/.test(heroes) && /entry\.px = /.test(heroes), 'scene/heroes.js says how many pixels across it draws a record');
