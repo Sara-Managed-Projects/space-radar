@@ -710,11 +710,20 @@ function decodePng(buf) {
   check(F.detailFade(1) === 0 && F.detailFade(2.5) === 0 && F.detailFade(0.3) === 1 && F.detailFade(0.02) === 1 && F.detailFade(NaN) === 0, 'nothing where the map still has detail to give, all of it where a texel is over three pixels wide');
   check(F.detailFade(0.65) > 0.4 && F.detailFade(0.65) < 0.6 && F.detailFade(0.5) > F.detailFade(0.8), 'and a smooth way between');
   check(F.detailOctaveWeight(2) === 0 && F.detailOctaveWeight(1) === 0 && F.detailOctaveWeight(5) === 1 && F.detailOctaveWeight(40) === 1, 'an octave under two pixels long is not drawn (no shimmer); one over five is');
-  check(F.DETAIL_OCTAVES >= 3 && F.DETAIL_OCTAVES <= 8 && F.DETAIL_GAIN > 0.4 && F.DETAIL_GAIN < 0.8, 'a few octaves, each fainter than the last');
+  check(F.DETAIL_OCTAVES >= 3 && F.DETAIL_OCTAVES <= 8 && F.DETAIL_GAIN > 0.4 && F.DETAIL_GAIN < 0.9, 'a few octaves, each fainter than the last');
+  // WHICH octaves follows the camera: from the rig's closest (a texel seventy pixels wide, a base cell 370) the
+  // finest drawn is still a few pixels wide, and the coarsest about DETAIL_COARSE_PX.
+  {
+    const first = F.detailFirstOctave(370);
+    const finestPx = 370 / 2 ** (Math.floor(first) + F.DETAIL_OCTAVES - 1);
+    check(first > 1 && first < 2 && finestPx >= 4 && finestPx <= 16, `at the closest the octaves start at ${first.toFixed(2)} and the finest is ${finestPx.toFixed(1)} px`);
+    check(F.detailFirstOctave(100) === 0 && F.detailFirstOctave(F.DETAIL_COARSE_PX) === 0 && F.detailFirstOctave(NaN) === 0 && F.detailFirstOctave(F.DETAIL_COARSE_PX * 4) === 2, 'never coarser than the row\'s own octave, and one octave finer each time the view doubles');
+  }
   // The shader carries those numbers, reads the detail where the map was read, and asks the map its own size.
   const frag = WW.weatherFragment();
   const f2 = (x) => Number(x).toFixed(2);
-  check(frag.includes('#ifdef WX_DETAIL') && frag.includes(`smoothstep( ${f2(F.DETAIL_FADE[0])}, ${f2(F.DETAIL_FADE[1])}, tpp )`) && frag.includes(`i < ${F.DETAIL_OCTAVES}; i++`) && frag.includes(`amp *= ${f2(F.DETAIL_GAIN)};`) && frag.includes(`smoothstep( ${f2(F.DETAIL_OCTAVE_PX[0])}, ${f2(F.DETAIL_OCTAVE_PX[1])}, size.y / ( cells.y * tpp ) )`), 'the shader\'s fades and octaves are flow.js\'s numbers');
+  check(frag.includes('#ifdef WX_DETAIL') && frag.includes(`smoothstep( ${f2(F.DETAIL_FADE[0])}, ${f2(F.DETAIL_FADE[1])}, tpp )`) && frag.includes(`i < ${F.DETAIL_OCTAVES}; i++`) && frag.includes(`amp *= ${f2(F.DETAIL_GAIN)};`) && frag.includes(`smoothstep( ${f2(F.DETAIL_OCTAVE_PX[0])}, ${f2(F.DETAIL_OCTAVE_PX[1])}, basePx )`) && frag.includes(`log2( basePx / ${F.DETAIL_COARSE_PX.toFixed(1)} )`) && frag.includes('float basePx = size.y / ( cells.y * tpp );'), 'the shader\'s fades and octaves are flow.js\'s numbers');
+  check(/float which = first \+ float\( i \);/.test(frag) && /i == 0 \? 1\.0 - part/.test(frag) && /norm \+= share;/.test(frag), 'an octave keeps its own pattern whichever place it has, and the coarsest and the finest cross-fade');
   check(/textureSize\( uMap, 0 \)/.test(frag) && /dFdx\( vUv \) \* size/.test(frag) && /texel = wxDetail\( texel, p \);/.test(frag), 'the fade is the footprint of a pixel in the map\'s own texels, and the detail is read where the wind carried the map from');
   check(/if \( k <= 0\.0 \) return c;/.test(frag) && /if \( uWxDetail\.x <= 0\.0 \) return c;/.test(frag), 'and it costs two derivatives and nothing more where it is not drawn');
   check(!/WebGLRenderTarget|EffectComposer/.test(readFileSync(join(JS, 'scene/weather/worldweather.js'), 'utf8')), 'no render target and no pass: it is a term of the world\'s own shader');

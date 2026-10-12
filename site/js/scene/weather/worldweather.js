@@ -54,7 +54,7 @@ import {
   RATE_ROWS, rateTable, splitFlow, flowPhases, rigidTurn, planetocentricDeg, marsLs, marsSeason,
   nextFlash, flashLight, bodyDirection, wavePhase,
   EDDY_SLOTS, OVAL_SLOTS, CYCLONE_NORTH, CYCLONE_SOUTH, CYCLONE_SLOTS, shearLines, eddyRow, wakeLine, polarCyclones, nearShare,
-  DETAIL_OCTAVES, DETAIL_GAIN, DETAIL_FADE, DETAIL_OCTAVE_PX,
+  DETAIL_OCTAVES, DETAIL_GAIN, DETAIL_FADE, DETAIL_OCTAVE_PX, DETAIL_COARSE_PX,
 } from './flow.js';
 
 const DEG = Math.PI / 180;
@@ -219,27 +219,40 @@ vec3 wxDetail( vec3 c, vec2 p ) {
   vec2 cells = uWxDetail.yz;
   // A slow wander, so the streaks are not ruled lines.
   float warp = wxNoise( p * cells * 0.5, cells.x * 0.5 ) - 0.5;
+  // WHICH octaves: the coarsest drawn is about ${DETAIL_COARSE_PX.toFixed(1)} px across latitude on the screen, and never
+  // coarser than the row's own. Its whole part picks the octave; the rest fades that one out and
+  // the finest one in, so nothing pops as the camera closes.
+  float basePx = size.y / ( cells.y * tpp );
+  float lod = max( log2( basePx / ${DETAIL_COARSE_PX.toFixed(1)} ), 0.0 );
+  float first = floor( lod );
+  float part = lod - first;
+  cells *= exp2( first );
+  basePx /= exp2( first );
   float sum = 0.0;
   float low = 0.0;
   float norm = 0.0;
   float amp = 1.0;
   for ( int i = 0; i < ${DETAIL_OCTAVES}; i++ ) {
-    // This octave's wavelength across latitude, in screen pixels: drawn only where it is some pixels wide.
-    float w = amp * smoothstep( ${f1(DETAIL_OCTAVE_PX[0])}, ${f1(DETAIL_OCTAVE_PX[1])}, size.y / ( cells.y * tpp ) );
+    float share = amp * ( i == 0 ? 1.0 - part : ( i == ${DETAIL_OCTAVES - 1} ? part : 1.0 ) );
+    // Drawn only where its wavelength is some pixels wide: no shimmer.
+    float w = share * smoothstep( ${f1(DETAIL_OCTAVE_PX[0])}, ${f1(DETAIL_OCTAVE_PX[1])}, basePx );
     if ( w > 0.0 ) {
-      float n = wxNoise( vec2( p.x * cells.x + warp * 1.7 + float( i ) * 7.31, p.y * cells.y + warp * 0.6 + float( i ) * 3.17 ), cells.x ) - 0.5;
+      float which = first + float( i );   // the octave's own number, whichever place it has in this loop
+      float n = wxNoise( vec2( p.x * cells.x + warp * 1.7 + which * 7.31, p.y * cells.y + warp * 0.6 + which * 3.17 ), cells.x ) - 0.5;
       sum += w * n;
       if ( i < 2 ) low += w * n;
     }
-    norm += amp;
+    norm += share;
     amp *= ${f1(DETAIL_GAIN)};
     cells *= 2.0;
+    basePx *= 0.5;
   }
+  norm = max( norm, 1e-4 );
   float a = uWxDetail.x * k;
   // Brightness first, by at most uWxDetail.x; then a little colour: the brighter streaks a touch
   // warmer, the darker a touch bluer, by at most uWxDetail.x * uWxDetail.w.
-  c *= 1.0 + a * clamp( 3.2 * sum / norm, -1.0, 1.0 );
-  c *= 1.0 + a * uWxDetail.w * clamp( 5.0 * low / norm, -1.0, 1.0 ) * vec3( 1.0, 0.0, -1.0 );
+  c *= 1.0 + a * clamp( 5.0 * sum / norm, -1.0, 1.0 );
+  c *= 1.0 + a * uWxDetail.w * clamp( 7.0 * low / norm, -1.0, 1.0 ) * vec3( 1.0, 0.0, -1.0 );
   return c;
 }
 #endif

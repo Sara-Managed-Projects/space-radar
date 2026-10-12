@@ -395,9 +395,22 @@ export function nearShare(share, from) {
 // so a generated cloud texture carries the picture there and the card says it is generated. These
 // are the shader's numbers and its two fades, as JS twins for tests/test_weather.mjs.
 
-/** How many octaves, each half the wavelength and DETAIL_GAIN the strength of the one before. */
-export const DETAIL_OCTAVES = 6;
-export const DETAIL_GAIN = 0.62;
+/**
+ * How many octaves are drawn at once, each half the wavelength and DETAIL_GAIN the strength of the
+ * one before. WHICH octaves follows the camera: the coarsest drawn is the one whose wavelength
+ * across latitude is about DETAIL_COARSE_PX on the screen (never coarser than the registry row's
+ * `cells_lat`), so from the rig's closest the finest is still a few pixels and the picture is not
+ * a field of soft blobs (the first version's six fixed octaves were, seen on 2026-10-12: at
+ * seventy pixels a texel its finest was twelve pixels and its strongest four hundred). As the
+ * camera closes in, the coarsest fades out while the next finer fades in.
+ */
+export const DETAIL_OCTAVES = 5;
+export const DETAIL_GAIN = 0.75;
+export const DETAIL_COARSE_PX = 160;
+/** Which octave is the coarsest drawn, as a real number: its whole part is the octave, the rest the cross-fade. */
+export function detailFirstOctave(basePx) {
+  return Number.isFinite(basePx) && basePx > 0 ? Math.max(0, Math.log2(basePx / DETAIL_COARSE_PX)) : 0;
+}
 /**
  * The fade by how many TEXELS OF THE MAP one screen pixel covers: all of it where a texel is over
  * three pixels wide (0.3), none of it from one texel a pixel (1.0) up. So it is never drawn over
