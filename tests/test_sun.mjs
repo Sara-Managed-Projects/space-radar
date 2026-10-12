@@ -288,21 +288,22 @@ const FEED = [
 
 // --- NO PASS, NO BLOOM: every shader of the Sun is a material of its own ------------------------------------
 {
-  const all = [S.SUN_VERT, S.SUN_FRAG, S.SUN_FRAG_CHEAP, S.CORONA_FRAG, S.PROM_FRAG, S.CME_VERT, S.CME_FRAG];
+  const all = [S.SUN_VERT, S.SUN_FRAG, S.SUN_FRAG_CHEAP, S.CORONA_FRAG, S.PROM_FRAG, S.CME_FRAG];
   const text = readFileSync(join(JS, 'scene/sun.js'), 'utf8') + readFileSync(join(JS, 'data/sunactivity.js'), 'utf8');
   for (const word of ['EffectComposer', 'RenderPass', 'UnrealBloomPass', 'ShaderPass', 'BloomPass', 'LensflareElement', 'Lensflare', 'WebGLRenderTarget', 'FullScreenQuad', 'OrthographicCamera'])
     check(!text.includes(word) && all.every((g) => !g.includes(word)), `neither module nor any shader names ${word}`);
   check(all.every((g) => !/\b(flat|half|input|output|sample|filter|active|smooth|patch|common|fixed|superp|partition|centroid|noise[1-4])\b/.test(g.replace(/#include <common>/g, '').replace(/\/\/[^\n]*/g, ''))), 'no reserved GLSL word is a name in any of them (comments aside)');
   check([S.PROM_FRAG, S.CME_FRAG].every((g) => g.includes('#include <logdepthbuf_fragment>') && g.includes('#include <colorspace_fragment>')), 'the prominence and the CME write log depth and the output colour space');
   // Every uniform and varying a shader declares it also uses, and braces balance (the least a compiler would say).
-  for (const [name, g] of [['SUN_FRAG', S.SUN_FRAG], ['SUN_FRAG_CHEAP', S.SUN_FRAG_CHEAP], ['CORONA_FRAG', S.CORONA_FRAG], ['PROM_FRAG', S.PROM_FRAG], ['CME_VERT', S.CME_VERT], ['CME_FRAG', S.CME_FRAG]]) {
+  for (const [name, g] of [['SUN_FRAG', S.SUN_FRAG], ['SUN_FRAG_CHEAP', S.SUN_FRAG_CHEAP], ['CORONA_FRAG', S.CORONA_FRAG], ['PROM_FRAG', S.PROM_FRAG], ['CME_FRAG', S.CME_FRAG]]) {
     const code = g.replace(/\/\/[^\n]*/g, '');
     const count = (ch) => code.split(ch).length - 1;
     check(count('{') === count('}') && count('(') === count(')') && count('[') === count(']'), `${name}: braces, brackets and parentheses balance`);
     for (const m of code.matchAll(/^\s*(?:uniform|varying)\s+\w+\s+(\w+)/gm)) check(code.split(new RegExp(`\\b${m[1]}\\b`)).length > 2, `${name} declares ${m[1]} and uses it`);
   }
   const varyings = (g) => [...g.matchAll(/^\s*varying\s+(\w+)\s+(\w+)/gm)].map((m) => `${m[1]} ${m[2]}`).sort().join();
-  check(varyings(S.CME_VERT) === varyings(S.CME_FRAG), 'the CME\'s two shaders declare the same varyings');
+  check(varyings(S.CME_FRAG) === varyings(S.CORONA_FRAG) && varyings(S.CME_FRAG) === 'vec2 vP', 'the CME\'s sheet reads the varying the corona\'s vertex shader writes');
+  check(varyings(S.SUN_VERT) === varyings(S.SUN_FRAG) && varyings(S.SUN_FRAG) === varyings(S.SUN_FRAG_CHEAP), 'the photosphere\'s two shaders declare the same varyings');
 }
 
 // --- THE LISTS: NOAA's flares and NASA's CMEs, each against what was captured from its publisher ------------
@@ -470,9 +471,20 @@ const CMES = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/donki_cm
   const fronts = mesh.children.filter((c) => c.name === 'sun-cme-front');
   st = sun.state();
   check(fronts.length === 2 && fronts[0].visible && !fronts[1].visible && st.cmes.length === 1 && st.cmes[0].id === 'c1', 'two thousand seconds after its start one front is in flight; yesterday\'s is long gone');
-  check(near(fronts[0].scale.x, 3) && near(st.cmes[0].radii, 3) && near(fronts[0].material.uniforms.uHalf.value, 30 * deg), 'three radii out at one radius a thousand seconds, as wide as reported');
-  const heading = new THREE.Vector3(0, 1, 0).applyQuaternion(fronts[0].quaternion);
-  check(heading.distanceTo(new THREE.Vector3(-1, 0, 0)) < 1e-6, `heading ninety degrees east of the Sun-Earth line: ${heading.toArray().map((v) => v.toFixed(3))}`);
+  check(near(fronts[0].material.uniforms.uR.value, 3) && near(st.cmes[0].radii, 3) && near(fronts[0].material.uniforms.uCosHalf.value, Math.cos(30 * deg)), 'three radii out at one radius a thousand seconds, as wide as reported');
+  const heading = fronts[0].material.uniforms.uDir.value;
+  check(heading.distanceTo(new THREE.Vector3(-1, 0, 0)) < 1e-6, `heading ninety degrees east of the Sun-Earth line, which from the Earth's side is to the left in the plane of the sky: ${heading.toArray().map((v) => v.toFixed(3))}`);
+  const faces = new THREE.Vector3(0, 0, 1).applyQuaternion(fronts[0].getWorldQuaternion(new THREE.Quaternion()));
+  check(near(faces.z, 1, 1e-6), 'its sheet faces the camera, as the corona\'s does');
+  {
+    // The same CME seen from over the Sun's north pole is still heading the same way in space.
+    camera.position.set(0, 100, 0); camera.up.set(0, 0, -1); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+    sun.update(peak + 2000000, 1.2, earth);
+    const inSpace = fronts[0].material.uniforms.uDir.value.clone().applyQuaternion(fronts[0].quaternion);
+    check(inSpace.distanceTo(new THREE.Vector3(-1, 0, 0)) < 1e-6 && Math.abs(fronts[0].material.uniforms.uDir.value.z) < 1e-6, `from another side its direction in space is the same: ${inSpace.toArray().map((v) => v.toFixed(3))}`);
+    camera.position.set(0, 0, 100); camera.up.set(0, 1, 0); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+    sun.update(peak + 2000000, 1.2, earth);
+  }
   check(fronts[0].material.blending === THREE.AdditiveBlending && fronts[0].material.depthWrite === false && fronts[0].material.uniforms.uOpacity.value > 0 && fronts[0].material.uniforms.uOpacity.value < 1, 'an additive shell that writes no depth');
   sun.update(peak + 9500000, 1.2, earth);
   check(!fronts[0].visible && sun.state().cmes.length === 0, 'past ten radii it is gone');
