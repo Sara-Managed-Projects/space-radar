@@ -1123,15 +1123,15 @@ export async function boot({ setStatus } = {}) {
     applyUrlState(ctx, { ...link, at: undefined, cam: undefined });
     return import('./ui/golink.js').then((m) => m.land(ctx, goId), () => openAt(ctx, goId));
   };
+  // `#drift=…` (ui/drift.js): after the link's own place, so `#at=…&drift=1` starts from there.
+  // Hands back what it was given, the landing, so the caller's line reads as it did.
+  const startDrift = (landed) => {
+    if (!embed && link && link.drift && link.drift !== '0') ctx.wantDrift(link, 'link');
+    return landed;
+  };
   window.addEventListener('sr:layers-ready', () => {
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
-    const apply = () => {
-      if (ambient) return startReel();
-      const landed = goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning));
-      // `#drift=…` (ui/drift.js): after the link's own place, so `#at=…&drift=1` starts from there.
-      if (!embed && link && link.drift && link.drift !== '0') ctx.wantDrift(link, 'link');
-      return landed;
-    };
+    const apply = () => (ambient ? startReel() : startDrift(goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning))));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
     // waits only if it does not resolve without them (openAt).
     if (link && link.trip && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit().then(apply, apply);
