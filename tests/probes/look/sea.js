@@ -3,7 +3,7 @@
 // 2 000 km and from 600 km: as the app draws it, and with the clouds taken off so that the water
 // itself is in the picture. Then a coast with shallows (the Bahamas) and one with land beside deep
 // water (West Africa), from 600 km, clouds off: the sea must be blue, the shallows not burnt, the
-// land as it was. The same probe on main is the "before" (dispatch it with -f ref=main).
+// land as it was; and the Alps, where a shadowed valley must not be taken for water. The same probe on main is the "before" (dispatch it with -f ref=main).
 // Each picture's note says the tile layer's address, how many tiles were on screen and at what fade.
 look.probe = 'sea';
 const out = { views: [] };
@@ -100,6 +100,11 @@ down(14, -17, 600);
 await picture('4-senegal-600km-no-clouds', 'the coast of Senegal from 600 km, the clouds taken off: land as it was beside deep water');
 down(14, -17, 2000);
 await picture('4-senegal-2000km-no-clouds', 'the same from 2 000 km');
+// Dark land with shaded relief (the Alps; local noon 11:20 UTC): the test that finds water must not find it in a valley's shadow.
+sr.clock.goTo(nearest(11.33));
+await frames(3);
+down(46.3, 9.5, 600);
+await picture('5-alps-600km-no-clouds', 'the Alps from 600 km, the clouds taken off: no blue in the shadows of the valleys');
 clouds(true);
 sr.clock.live();
 out.info = frameCost();

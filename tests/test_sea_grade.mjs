@@ -66,6 +66,11 @@ check(/NASA Earth Observatory/.test(EARTH.credit) && /Global Imagery Browse Serv
   let mono = true;
   for (let b = 0; b <= 0.01; b += 0.0005) { const s = T.earthTileColour([0.001, 0.002, b], G, L).sea; if (s < last) mono = false; last = s; }
   check(mono && last === 1, 'from land to water the lift grows and reaches all of itself');
+  // Coastal water a level or two darker than the deep sea's flat colour is still all water: no patchwork along a shore.
+  for (const c of [rgb(1, 4, 14), rgb(0, 3, 10), rgb(0, 2, 8)]) check(T.earthTileColour(c, G, L).sea === 1, `dark coastal water (${c.map((v) => v.toFixed(4))}) takes the whole lift`);
+  const dark = T.earthTileColour(rgb(0, 2, 8), G, L).rgb;
+  const deepSea = T.earthTileColour(rgb(2, 5, 20), G, L).rgb;
+  check(Math.abs(dark[2] - deepSea[2]) < deepSea[2] * 0.08, 'and is drawn within 8 % of the deep sea\'s blue');
 }
 
 // --- 4. the shader is the twin ----------------------------------------------------------------------------

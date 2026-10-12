@@ -159,8 +159,14 @@ const EARTH_GROUND = 'vec3 ground = dayTex * (';
 // Where WORLD_FRAG says which point of the world's own map a fragment is (its relief and its cast
 // shadow are read there). A tile's vUv is the TILE's; the globe's is vUvGlobe.
 const FRAG_RELIEF_UV = 'vec2 reliefUv = vUv; float slopeShare = 1.0;';
-/** Which of an Earth tile's texels are water: blue more than `blueOverRed` times red, in full `full` past it (linear light). */
-export const TILE_SEA = { blueOverRed: 1.6, full: 0.004 };
+/**
+ * Which of an Earth tile's texels are water: blue more than `blueOverRed` times red, in full `full`
+ * past it (linear light). `full` is under the darkest water the layer holds: beside a coast Blue
+ * Marble's water is ocean-colour data in blocks of a few kilometres, some a level or two of 255
+ * darker than the deep sea's flat colour, and at 0.004 those blocks took a fifth less of the lift
+ * and showed as a dark patchwork along the shore (the first look, off Senegal).
+ */
+export const TILE_SEA = { blueOverRed: 1.6, full: 0.002 };
 const FRAG_BASE = 'vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );';
 const VERT_DEPTH = '#include <logdepthbuf_vertex>';
 const VERT_UV = 'vUv = uv;';
