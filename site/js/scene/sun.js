@@ -1,7 +1,8 @@
 // scene/sun.js -- the Sun as a star, when the camera is close to it (spec 0055 task 3, public #412).
 //
-// Contract: createSunDetail({ mesh, camera, sprite? }) ->
-//             { update(tMs, share, earthWorld), setRegions(list), latch(), state(), dispose() }
+// Contract: createSunDetail({ mesh, camera, sprite?, tier? }) ->
+//             { update(tMs, share, earthWorld, { still }?), setRegions(list), setFlares(list), setCmes(list),
+//               activity(), latch(), state(), dispose() }
 //
 // OFF THE FIRST VISIT. From the Earth, where every visit starts, the Sun is a quarter of a degree
 // across: a few pixels, drawn by scene/worlds.js as a flat disc of its map with a round glow. main.js
@@ -23,11 +24,20 @@
 //   read 2026-10-06); the model's green channel stays within 0.05 of that from the centre to the
 //   limb (tests/test_sun.mjs), 0.33 against 0.30 at the very edge.
 //
-//   THE GRAIN -- illustrative. Real granules are about a thousand kilometres across, 1/700 of the
-//   radius: on a disc 900 pixels tall they are less than a pixel. What is drawn is a cellular
-//   pattern GRAIN_CELLS across the radius (cells of some 17 000 km, nearer the size of
-//   supergranules), bright cells with darker lanes, churning slowly. It says "this surface
-//   convects"; its scale, contrast and speed are chosen. Not drawn at tier 0.
+//   THE GRANULATION -- illustrative. Real granules are about a thousand kilometres across, 1/700 of
+//   the radius: on a disc 900 pixels tall they are less than a pixel, and each lives some ten
+//   minutes. What is drawn is a cellular pattern GRAIN_CELLS across the radius (cells of some
+//   17 000 km, seventeen times too big), and each cell has a life of its own, GRAIN_LIFE_S seconds of
+//   the app's clock (some fifteen times too fast): it is born small and dim, grows and brightens,
+//   then shrinks and darkens into the lanes round it, and a new one is born somewhere else in its
+//   patch. While it lives it drifts outward from the middle of a larger cell, SUPER_CELLS across the
+//   radius, toward that cell's border, as granules ride the supergranular flow. The larger cells
+//   are a smooth lattice, not today's supergranules. Scale, speed, contrast and drift are chosen.
+//   One octave at every tier that draws it; not drawn at tier 0.
+//
+//   FACULAE -- illustrative. Near the limb the lanes along the larger cells' borders, and round each
+//   drawn sunspot group, are drawn brighter than the granules instead of darker: the bright network
+//   a white-light photograph shows toward the edge. Where the borders are is the same chosen lattice.
 //
 //   SUNSPOTS -- measured places and sizes, one drawn spot per group. data/sunregions.js: NOAA's
 //   list of today's numbered groups, each at its reported latitude and distance from the central
@@ -39,12 +49,42 @@
 //   only in an eclipse or a coronagraph. It is drawn so it can be seen at all: a pearly light that
 //   falls off steeply from the limb, reaching farther in a few streamers near the equator and
 //   thinning over the poles into fine rays, in the plane of the sky. Where the streamers are is a
-//   pattern seeded by the Carrington rotation number, not today's corona.
+//   pattern seeded by the Carrington rotation number, not today's corona. It breathes: a faint wave
+//   of brightness moves outward along each streamer once in CORONA_BREATH_S / 2 seconds and the
+//   streamers lean by a quarter of a degree. Chosen to be slow and small; nothing here is a flame.
 //
-// The card says all four (copy/en.js drawing.worldSun; the spots' own line when a list is drawn).
+//   PROMINENCES -- measured places, illustrative shapes. At each of NOAA's numbered regions that is
+//   within 15 degrees of the limb the camera sees (data/sunactivity.js limbOffsetDeg), one small
+//   upright sheet anchored at the region and turned about its own vertical toward the camera: three
+//   nested loops or a ragged hedgerow, hydrogen-alpha red going white where it is densest, 0.02 to
+//   0.15 radii tall by the region's area. The Sun's own sphere hides what is behind the limb. A
+//   region with a flare of class M or X in its decay stands taller, to 0.4 radii: the trigger is
+//   measured, the shape and height are not. Nobody publishes where today's prominences are; these
+//   say "this region is active" and no more. At most 8 at once, 2 at tier 0.
+//
+//   FLARES -- measured time, class, region and decay; illustrative brightness. data/sunactivity.js:
+//   NOAA's edited event list. At the clock's time a flare of class C or above that is rising or
+//   within six of its own half-lives of its peak is a white kernel at its region's place (and, at M
+//   or X, lifts that region's prominence). Real flares of class C are not visible in white light;
+//   the kernel is drawn so the event can be seen. A flare whose region is not on today's list is
+//   not drawn. With no list nothing is drawn: no flare is ever invented.
+//
+//   CORONAL MASS EJECTIONS -- measured start, direction, width and speed; a modelled flight; an
+//   illustrative look. data/sunactivity.js: NASA DONKI's analyses, read from our saved copy only.
+//   For the hours after its start a CME of 500 km/s or faster is a thin shell, a cap of the reported
+//   half-angle about the reported direction, moving out at the reported speed held constant and
+//   fading by 10 radii. With no saved copy none is drawn.
+//
+// NO BLOOM, NO PASS (tests/test_contract.mjs): every light here is an additive, soft-edged material
+// of its own. REDUCED MOTION (`still`): the clock's own events (a flare's fading, a CME's flight)
+// still follow the clock, and nothing else moves: one fixed phase of the grain, the loops and the
+// corona. UNDER THE FRAME LATCH everything here is taken off.
+//
+// The card says so (copy/en.js drawing.worldSun; the spots' line and copy/en.later.js sunAlive when a list is drawn).
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { MAX_SPOTS, spotDirection, spotRadiusRad, splitRegion, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
+import { MAX_FLARES, MAX_CMES, PROM_CAP, FLARE_ERUPTIVE_FLUX, flaresAt, cmesAt, limbOffsetDeg, prominenceFade, prominenceShape } from '../data/sunactivity.js';
 
 /** The IAU's nominal solar effective temperature, kelvin (2015 Resolution B3). */
 export const T_EFF = 5772;
@@ -56,10 +96,32 @@ export const HC_OVER_K = 1.438777e7;
 export const LIMB_550 = [0.30, 0.93, -0.23];
 /** The Sun's disc, as a share of half the view's height, at which main.js fetches this module. */
 export const SUN_DETAIL_AT = 0.06;
-/** The grain's cells across one radius, and how fast it churns in app seconds (illustrative). */
+/** The grain's cells across one radius, and one cell's life in app seconds (illustrative). */
 export const GRAIN_CELLS = 40;
-export const GRAIN_CONTRAST = 0.16;
-export const GRAIN_PER_S = 1 / 600;
+export const GRAIN_CONTRAST = 0.2;
+export const GRAIN_LIFE_S = 45;
+/** The shader's clock counts lives and wraps here; a cell's seed is its birth number modulo this, so the wrap is seamless. */
+export const GRAIN_WRAP = 64;
+/** A cell that is not at the height of its life is pushed back by this much (squared lattice units), so its neighbours take its ground. */
+export const GRAIN_YIELD = 1.5;
+/** The larger cells across one radius, and how far a granule drifts over its life, in its own cell widths (illustrative). */
+export const SUPER_CELLS = 8;
+export const GRAIN_DRIFT = 0.5;
+/** The mean of the shade the grain multiplies by, measured by tests/test_sun.mjs: taken off so the disc's brightness holds. */
+export const GRAIN_MEAN = 0.42;
+/** How much brighter than the photosphere a facula is drawn at its strongest (illustrative). */
+export const FACULA_GAIN = 0.35;
+/** One sway of a prominence, and one breath of the corona, in app seconds (illustrative). */
+export const PROM_SWAY_S = 24;
+export const CORONA_BREATH_S = 60;
+/** Prominences fade in between these disc shares: below, the tallest is a pixel or two. */
+export const PROM_FROM = 0.1;
+export const PROM_FULL = 0.3;
+/** Peak brightness of a prominence and of a CME's front, against the disc's 1 (illustrative). */
+export const PROM_GAIN = 0.9;
+export const CME_GAIN = 0.5;
+/** The phases everything holds under reduced motion: a still picture of the same Sun. */
+export const STILL = { grain: 0.37, sway: 0.2, breath: 0.6 };
 /** The grain fades in between these disc shares: below, a cell is under two pixels. */
 export const GRAIN_FROM = 0.25;
 export const GRAIN_FULL = 0.8;
@@ -122,32 +184,51 @@ const CELLS_LOOP_NEAR = `  vec3 s = 2.0 * step( vec3( 0.5 ), f ) - 1.0;   // tow
     vec3 g = vec3( float( x ), float( y ), float( z ) ) * s;`;
 
 function cellsGlsl( cheap ) {
-  return `// Cellular noise: the gap between the nearest and the second nearest of a jittered lattice's points
-// is small on the borders between cells -- the dark lanes -- and large in a cell's middle.
+  return `// Cellular noise whose cells live and die. Each lattice cell holds one granule: born at 't' whole plus
+// its own offset, at the height of its life midway, gone at the next whole. Its point is
+// pushed away by GRAIN_YIELD x (1 - w)^2 while its weight w is low, so a young or an old granule owns
+// little ground and its neighbours close over it; when it is reborn (somewhere else in its own lattice cell,
+// seeded by its birth number) it owns none, so nothing jumps. 'flow' carries the point across its
+// lattice cell over the life: the drift out of a larger cell.
+// x: the gap between the nearest and the second nearest, small on the dark lanes. y: the nearest one's weight.
 // ${cheap ? 'Tiers 0 and 1 read the 8 cells on the near side of the point, not all 27: same lattice, same hash.' : 'Tier 2 reads all 27 neighbouring cells.'}
-float cells( vec3 p, float t ) {
+vec2 cells( vec3 p, float t, vec3 flow ) {
   vec3 i = floor( p );
   vec3 f = fract( p );
   float d1 = 8.0;
   float d2 = 8.0;
+  float w1 = 0.0;
 ${cheap ? CELLS_LOOP_NEAR : CELLS_LOOP_FULL}
-    vec3 o = hash3( i + g );
-    o = 0.5 + 0.38 * sin( 6.2831853 * ( o + t ) );
+    vec3 h = hash3( i + g );
+    float age = h.x + t;
+    float born = floor( age );
+    float ph = age - born;
+    vec3 o = 0.5 + 0.38 * ( 2.0 * hash3( i + g + mod( born, ${GRAIN_WRAP.toFixed(1)} ) * vec3( 0.37, 0.61, 0.83 ) ) - 1.0 ) + flow * ( ph - 0.5 );
+    float w = sin( 3.14159265 * ph );
     vec3 r = g + o - f;
-    float d = dot( r, r );
-    if ( d < d1 ) { d2 = d1; d1 = d; } else if ( d < d2 ) { d2 = d; }
+    float d = dot( r, r ) + ${GRAIN_YIELD.toFixed(2)} * ( 1.0 - w ) * ( 1.0 - w );
+    if ( d < d1 ) { d2 = d1; d1 = d; w1 = w * ( 0.7 + 0.3 * h.y ); } else if ( d < d2 ) { d2 = d; }
   }
-  return sqrt( d2 ) - sqrt( d1 );
+  return vec2( sqrt( d2 ) - sqrt( d1 ), w1 );
 }`;
 }
 
+/** The larger cells' flow at a point of the unit sphere: zero at a cell's middle, outward, zero again on its border. Twin of the GLSL. */
+export function superFlow(p) {
+  const q = [0, 1, 2].map((k) => p[k] * SUPER_CELLS + 0.35 * Math.sin(p[(k + 1) % 3] * SUPER_CELLS * 1.7));
+  return { q, flow: q.map((v) => Math.sin(6.2831853 * v)) };
+}
+
 /**
- * The JS twin of the shader's `cells` (same hash, same jitter, same distances), in doubles, so a node
- * test can measure what reading 8 cells instead of 27 changes. `near` = tiers 0 and 1.
+ * The JS twin of the shader's \`cells\` (same hash, same lives, same distances), in doubles, so a node
+ * test can measure what reading 8 cells instead of 27 changes, and watch one cell live and die.
  * @param {number[]} p  a point on the lattice (the unit-sphere point times GRAIN_CELLS)
- * @param {number} t    the churn phase, 0..1
+ * @param {number} t    lives elapsed, 0..GRAIN_WRAP
+ * @param {boolean} near  tiers 0 and 1
+ * @param {number[]} [flow]  the drift over one life, lattice units
+ * @returns {number[]} [gap, weight]
  */
-export function cellsTwin(p, t, near) {
+export function cellsTwin(p, t, near, flow = [0, 0, 0]) {
   const fract = (x) => x - Math.floor(x);
   const hash = (a, b, c) => {
     const x = a * 127.1 + b * 311.7 + c * 74.7, y = a * 269.5 + b * 183.3 + c * 246.1, z = a * 113.5 + b * 271.9 + c * 124.6;
@@ -156,17 +237,29 @@ export function cellsTwin(p, t, near) {
   const i = [Math.floor(p[0]), Math.floor(p[1]), Math.floor(p[2])];
   const f = [p[0] - i[0], p[1] - i[1], p[2] - i[2]];
   const s = f.map((v) => (near ? (v < 0.5 ? -1 : 1) : 1));
-  let d1 = 8, d2 = 8;
+  let d1 = 8, d2 = 8, w1 = 0;
   const lo = near ? 0 : -1;
   for (let z = lo; z <= 1; z++) for (let y = lo; y <= 1; y++) for (let x = lo; x <= 1; x++) {
     const g = near ? [x * s[0], y * s[1], z * s[2]] : [x, y, z];
-    const h = hash(i[0] + g[0], i[1] + g[1], i[2] + g[2]);
-    const o = h.map((v) => 0.5 + 0.38 * Math.sin(6.2831853 * (v + t)));
-    const r = [g[0] + o[0] - f[0], g[1] + o[1] - f[1], g[2] + o[2] - f[2]];
-    const d = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
-    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) { d2 = d; }
+    const id = [i[0] + g[0], i[1] + g[1], i[2] + g[2]];
+    const h = hash(id[0], id[1], id[2]);
+    const age = h[0] + t;
+    const born = Math.floor(age);
+    const ph = age - born;
+    const m = born % GRAIN_WRAP;
+    const j = hash(id[0] + m * 0.37, id[1] + m * 0.61, id[2] + m * 0.83);
+    const w = Math.sin(Math.PI * ph);
+    const r = [0, 1, 2].map((k) => g[k] + 0.5 + 0.38 * (2 * j[k] - 1) + flow[k] * (ph - 0.5) - f[k]);
+    const d = r[0] * r[0] + r[1] * r[1] + r[2] * r[2] + GRAIN_YIELD * (1 - w) * (1 - w);
+    if (d < d1) { d2 = d1; d1 = d; w1 = w * (0.7 + 0.3 * h[1]); } else if (d < d2) { d2 = d; }
   }
-  return Math.sqrt(d2) - Math.sqrt(d1);
+  return [Math.sqrt(d2) - Math.sqrt(d1), w1];
+}
+
+/** The shade the grain multiplies the photosphere by, 0 in a lane to 1 in a granule at the height of its life. Twin of the GLSL. */
+export function grainShade(gap, weight) {
+  const x = Math.min(1, Math.max(0, gap / 0.35));
+  return x * x * (3 - 2 * x) * (0.35 + 0.65 * weight);
 }
 
 function sunFragment( cheap ) {
@@ -176,10 +269,12 @@ function sunFragment( cheap ) {
 uniform sampler2D uMap;
 uniform float uHasMap;
 uniform vec3 uTint;
-uniform float uTime;        // app seconds x GRAIN_PER_S, wrapped
+uniform float uTime;        // granule lives elapsed (app seconds / GRAIN_LIFE_S), wrapped at GRAIN_WRAP
 uniform float uGrain;       // 0 far away and at tier 0, 1 close
 uniform vec4 uSpots[ ${MAX_SPOTS} ];   // xyz: the group's place on the unit sphere, body-fixed; w: its radius, radians
 uniform int uSpotCount;
+uniform vec4 uFlares[ ${MAX_FLARES} ]; // xyz: the flaring region's place; w: the flare's brightness now
+uniform int uFlareCount;
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -211,12 +306,19 @@ void main() {
 
   vec3 p = normalize( vPosL );
   float lanes = 0.5;
+  float network = 0.0;
   if ( uGrain > 0.0 ) {
-    lanes = smoothstep( 0.0, 0.35, cells( p * ${GRAIN_CELLS.toFixed(1)}, uTime ) );
+    // The larger cells: q is whole at a cell's middle and midway between two wholes at its border.
+    vec3 q = p * ${SUPER_CELLS.toFixed(1)} + 0.35 * sin( p.yzx * ${(SUPER_CELLS * 1.7).toFixed(1)} );
+    vec2 c = cells( p * ${GRAIN_CELLS.toFixed(1)}, uTime, ${GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q ) );
+    lanes = smoothstep( 0.0, 0.35, c.x ) * ( 0.35 + 0.65 * c.y );
     // Foreshortened into the limb the cells run together, as they do in a photograph.
-    colour *= 1.0 + ${GRAIN_CONTRAST.toFixed(2)} * uGrain * ( lanes - 0.62 ) * smoothstep( 0.05, 0.45, mu );
+    colour *= 1.0 + ${GRAIN_CONTRAST.toFixed(2)} * uGrain * ( lanes - ${GRAIN_MEAN.toFixed(2)} ) * smoothstep( 0.05, 0.45, mu );
+    vec3 k = -cos( 6.2831853 * q );
+    network = smoothstep( 0.55, 0.95, max( k.x, max( k.y, k.z ) ) );
   }
 
+  float plage = 0.0;
   for ( int i = 0; i < ${MAX_SPOTS}; i++ ) {
     if ( i >= uSpotCount ) break;
     float a = acos( clamp( dot( p, uSpots[ i ].xyz ), -1.0, 1.0 ) );
@@ -224,6 +326,20 @@ void main() {
     float pen = 1.0 - smoothstep( r * 0.85, r, a );
     float umb = 1.0 - smoothstep( r * ${(UMBRA_SHARE * 0.8).toFixed(3)}, r * ${UMBRA_SHARE.toFixed(3)}, a );
     colour *= mix( 1.0, ${PENUMBRA.toFixed(2)}, pen ) * mix( 1.0, ${(UMBRA / PENUMBRA).toFixed(4)}, umb );
+    plage = max( plage, ( 1.0 - smoothstep( r * 1.2, r * 3.2, a ) ) * ( 1.0 - pen ) );
+  }
+
+  // Faculae: toward the limb the lanes of the network, and round a group, are bright, not dark.
+  float towardLimb = ( 1.0 - smoothstep( 0.4, 0.72, mu ) ) * smoothstep( 0.03, 0.15, mu );
+  colour *= 1.0 + ${FACULA_GAIN.toFixed(2)} * uGrain * towardLimb * min( 1.0, network + plage ) * ( 1.0 - lanes );
+
+  // Flares: a white kernel and a wider glow at the region, as bright as the clock's time makes it.
+  for ( int i = 0; i < ${MAX_FLARES}; i++ ) {
+    if ( i >= uFlareCount ) break;
+    float a = acos( clamp( dot( p, uFlares[ i ].xyz ), -1.0, 1.0 ) );
+    float w = uFlares[ i ].w;
+    float r = 0.018 + 0.022 * w;
+    colour += vec3( 1.0, 0.96, 0.88 ) * w * ( 1.6 * exp( - a * a / ( r * r ) ) + 0.25 * exp( - a / ( r * 4.0 ) ) );
   }
 
   gl_FragColor = vec4( colour, 1.0 );
@@ -256,6 +372,7 @@ export const CORONA_FRAG = /* glsl */`
 uniform float uOpacity;
 uniform float uNorth;   // the angle from the plane's +Y round to the Sun's north pole, as drawn
 uniform float uSeed;
+uniform float uTime;    // one breath of the corona, 0..1 (app seconds / CORONA_BREATH_S, wrapped)
 varying vec2 vP;
 
 float hash1( float n ) { return fract( sin( n * 91.3458 + uSeed * 7.13 ) * 47453.5453 ); }
@@ -273,7 +390,8 @@ void main() {
   float r = length( vP );
   if ( r < 0.98 ) discard;   // the disc itself; the sphere covers it anyway
   float angle = atan( vP.x, vP.y ) - uNorth;         // 0 toward the Sun's north, as drawn
-  float turn = fract( angle / 6.2831853 );
+  // The streamers lean a quarter of a degree and back, more the farther out; whole breaths, so the wrap is seamless.
+  float turn = fract( angle / 6.2831853 + 0.0007 * sin( 6.2831853 * ( uTime + 0.15 * r ) ) * smoothstep( 1.0, 3.0, r ) );
   float equator = abs( sin( angle ) );               // 1 over the equator's two limbs, 0 over the poles
   // Streamers: a few broad ones, kept to low latitudes, and a finer set that breaks their outline.
   float broad = ring( turn, 5.0 );
@@ -284,10 +402,114 @@ void main() {
   // Steep over a hole, shallow along a streamer; and thinned with distance so the far field is sky, not haze.
   float fall = pow( r, -mix( 6.0, 2.6, reach ) ) / ( 1.0 + 0.15 * r * r );
   float inner = pow( r, -16.0 );                     // the bright ring at the limb
+  // It breathes: a faint wave of brightness moving outward, each streamer out of step with the next.
+  fall *= 1.0 + 0.07 * sin( 6.2831853 * ( 0.45 * r - 2.0 * uTime + 1.3 * broad ) ) * smoothstep( 1.05, 1.6, r );
   float edge = 1.0 - smoothstep( ${(CORONA_RADII * 0.6).toFixed(2)}, ${CORONA_RADII.toFixed(2)}, r );
   float light = ( 0.45 * inner + 0.4 * fall * rays ) * edge * smoothstep( 0.98, 1.01, r );
   vec3 pearl = mix( vec3( 1.0, 0.93, 0.82 ), vec3( 0.86, 0.91, 1.0 ), smoothstep( 1.0, 2.5, r ) );
   gl_FragColor = vec4( pearl * light * ${CORONA_GAIN.toFixed(2)} * uOpacity, 1.0 );
+  #include <colorspace_fragment>
+}
+`;
+
+const PROM_VERT = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_vertex>
+varying vec2 vQ;
+void main() {
+  vQ = vec2( position.x * 2.0, position.y + 0.5 );   // x: -1..1 across the sheet; y: 0 at the surface, 1 at its top
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  #include <logdepthbuf_vertex>
+}
+`;
+
+/** A prominence: one upright sheet, three nested loops (uKind 0) or a hedgerow (uKind 1). Additive; soft on every edge. */
+export const PROM_FRAG = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_fragment>
+uniform float uOpacity;
+uniform float uKind;
+uniform float uSeed;
+uniform float uTime;    // one sway, 0..1 (app seconds / PROM_SWAY_S, wrapped)
+uniform float uHot;     // 0, or the brightness of the flare of class M or X now fading at this region
+varying vec2 vQ;
+
+float hash1( float n ) { return fract( sin( n * 127.1 + uSeed * 311.7 ) * 43758.5453 ); }
+float wobble1( float x ) {
+  float i = floor( x );
+  float f = fract( x );
+  f = f * f * ( 3.0 - 2.0 * f );
+  return mix( hash1( i ), hash1( i + 1.0 ), f );
+}
+// One arch: an ellipse 'a' wide and 'b' tall standing on the surface, soft over 'thick'.
+float arch( vec2 q, float a, float b, float thick ) {
+  float d = abs( length( vec2( q.x / a, q.y / b ) ) - 1.0 ) * min( a, b );
+  return exp( - d * d / ( thick * thick ) );
+}
+
+void main() {
+  #include <logdepthbuf_fragment>
+  vec2 q = vQ;
+  float sway = sin( 6.2831853 * ( uTime + uSeed ) );
+  float light = 0.0;
+  if ( uKind < 0.5 ) {
+    q.x += ( 0.05 * sway + 0.2 * ( uSeed - 0.5 ) ) * q.y;             // it leans, and sways about the lean
+    float along = atan( q.y, q.x );                                    // 0 at one foot, pi at the other
+    light  = arch( q, 0.80, 0.90, 0.050 ) * ( 0.65 + 0.35 * sin( 7.0 * along - 6.2831853 * 2.0 * uTime + 20.0 * uSeed ) );
+    light += 0.7 * arch( q, 0.58, 0.66, 0.042 ) * ( 0.65 + 0.35 * sin( 5.0 * along + 6.2831853 * 3.0 * uTime ) );
+    light += 0.5 * arch( q, 0.36, 0.42, 0.036 );
+    light += 0.3 * exp( - 9.0 * q.y ) * ( 1.0 - smoothstep( 0.45, 0.95, abs( q.x ) ) );   // the glow at its feet
+  } else {
+    float top = ( 0.45 + 0.5 * wobble1( 3.0 * q.x + 10.0 ) ) * ( 1.0 - 0.6 * q.x * q.x );   // a ragged top, lower at the ends
+    float body = 1.0 - smoothstep( 0.5 * top, top, q.y );
+    float threads = 0.5 + 0.5 * wobble1( 22.0 * ( q.x + 0.05 * sway * q.y ) + 40.0 );
+    float knots = 0.72 + 0.28 * sin( 11.0 * q.y + 6.2831853 * ( wobble1( 5.0 * q.x ) + uTime ) );   // knots sinking, as the gas rains back
+    light = 0.9 * body * threads * knots * ( 1.0 - smoothstep( 0.55, 0.97, abs( q.x ) ) );
+  }
+  light *= uOpacity * ( 1.0 + 1.5 * uHot ) * ( 1.0 - smoothstep( 0.9, 1.0, q.y ) );
+  // Hydrogen-alpha red where it is thin, white where it is densest.
+  vec3 colour = mix( vec3( 1.0, 0.22, 0.16 ), vec3( 1.0, 0.92, 0.85 ), smoothstep( 0.55, 1.5, light ) );
+  gl_FragColor = vec4( colour * light * ${PROM_GAIN.toFixed(2)}, 1.0 );
+  #include <colorspace_fragment>
+}
+`;
+
+/** A CME's front: a cap of a sphere about its direction. The geometry spans one radian from its pole; uHalf stretches that to the reported half-angle. */
+export const CME_VERT = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_vertex>
+uniform float uHalf;
+varying float vEdge;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+void main() {
+  float across = acos( clamp( position.y, -1.0, 1.0 ) );   // 0 at the cap's pole, 1 at its rim
+  vEdge = across;
+  float lat = across * uHalf;
+  float flatLen = length( position.xz );
+  vec2 azim = flatLen > 1e-5 ? position.xz / flatLen : vec2( 1.0, 0.0 );
+  vec3 pos = vec3( azim.x * sin( lat ), cos( lat ), azim.y * sin( lat ) );
+  vec4 worldPos = modelMatrix * vec4( pos, 1.0 );
+  vPosW = worldPos.xyz;
+  vNormalW = normalize( mat3( modelMatrix ) * pos );
+  gl_Position = projectionMatrix * viewMatrix * worldPos;
+  #include <logdepthbuf_vertex>
+}
+`;
+
+/** Brightest where the line of sight runs along the shell, as a thin shell of gas is; soft at the rim of the cone. */
+export const CME_FRAG = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_fragment>
+uniform float uOpacity;
+varying float vEdge;
+varying vec3 vNormalW;
+varying vec3 vPosW;
+void main() {
+  #include <logdepthbuf_fragment>
+  float grazing = 1.0 - abs( dot( normalize( vNormalW ), normalize( cameraPosition - vPosW ) ) );
+  float light = ( 0.1 + 0.9 * pow( grazing, 2.5 ) ) * ( 1.0 - smoothstep( 0.8, 1.0, vEdge ) ) * uOpacity;
+  gl_FragColor = vec4( vec3( 0.92, 0.94, 1.0 ) * light * ${CME_GAIN.toFixed(2)}, 1.0 );
   #include <colorspace_fragment>
 }
 `;
@@ -297,7 +519,7 @@ void main() {
  * @param {THREE.Mesh}   opts.mesh    the Sun's own mesh (scene/worlds.js): a unit sphere, +Y its north pole
  * @param {THREE.Camera} opts.camera
  * @param {THREE.Object3D} [opts.sprite]  the round glow it wears far away; faded out while the corona is drawn
- * @param {number} [opts.tier]  0: no grain
+ * @param {number} [opts.tier]  0: no grain, two prominences and one CME at most
  */
 export function createSunDetail(opts = {}) {
   const mesh = opts.mesh;
@@ -309,6 +531,8 @@ export function createSunDetail(opts = {}) {
   const spriteOpacity = sprite && sprite.material ? sprite.material.opacity : 1;
   const spots = [];
   for (let i = 0; i < MAX_SPOTS; i++) spots.push(new THREE.Vector4(0, 1, 0, 0));
+  const flareSlots = [];
+  for (let i = 0; i < MAX_FLARES; i++) flareSlots.push(new THREE.Vector4(0, 1, 0, 0));
   const material = new THREE.ShaderMaterial({
     name: 'sun-photosphere',
     vertexShader: SUN_VERT,
@@ -321,6 +545,8 @@ export function createSunDetail(opts = {}) {
       uGrain: { value: 0 },
       uSpots: { value: spots },
       uSpotCount: { value: 0 },
+      uFlares: { value: flareSlots },
+      uFlareCount: { value: 0 },
     },
     toneMapped: false, // as the flat disc: the Sun stays out of the tone mapper's way
     fog: false,
@@ -331,7 +557,7 @@ export function createSunDetail(opts = {}) {
       name: 'sun-corona',
       vertexShader: CORONA_VERT,
       fragmentShader: CORONA_FRAG,
-      uniforms: { uOpacity: { value: 0 }, uNorth: { value: 0 }, uSeed: { value: 0 } },
+      uniforms: { uOpacity: { value: 0 }, uNorth: { value: 0 }, uSeed: { value: 0 }, uTime: { value: STILL.breath } },
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
@@ -343,6 +569,71 @@ export function createSunDetail(opts = {}) {
   corona.renderOrder = 1;
   corona.visible = false;
   mesh.add(corona);
+
+  // Prominences: a pool of small upright sheets, each placed by hand every frame (its base on the
+  // surface at a region, its height along the radius there, its face toward the camera).
+  const promCap = PROM_CAP[Math.max(0, Math.min(2, tier))];
+  const promGeometry = new THREE.PlaneGeometry(1, 1);
+  const proms = [];
+  for (let i = 0; i < promCap; i++) {
+    const sheet = new THREE.Mesh(promGeometry, new THREE.ShaderMaterial({
+      name: 'sun-prominence',
+      vertexShader: PROM_VERT,
+      fragmentShader: PROM_FRAG,
+      uniforms: { uOpacity: { value: 0 }, uKind: { value: 0 }, uSeed: { value: 0 }, uTime: { value: STILL.sway }, uHot: { value: 0 } },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false,
+    }));
+    sheet.name = 'sun-prominence';
+    sheet.userData.kind = 'prominence';
+    sheet.renderOrder = 2;
+    sheet.matrixAutoUpdate = false;
+    sheet.visible = false;
+    mesh.add(sheet);
+    proms.push(sheet);
+  }
+  // CME fronts: caps of a unit sphere, turned to the reported direction and scaled to where the front is.
+  const cmeCap = tier >= 1 ? MAX_CMES : 1;
+  const cmeGeometry = new THREE.SphereGeometry(1, 48, 12, 0, Math.PI * 2, 0, 1);
+  const fronts = [];
+  for (let i = 0; i < cmeCap; i++) {
+    const front = new THREE.Mesh(cmeGeometry, new THREE.ShaderMaterial({
+      name: 'sun-cme',
+      vertexShader: CME_VERT,
+      fragmentShader: CME_FRAG,
+      uniforms: { uOpacity: { value: 0 }, uHalf: { value: 0.5 } },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false,
+    }));
+    front.name = 'sun-cme-front';
+    front.userData.kind = 'cme';
+    front.renderOrder = 2;
+    front.frustumCulled = false;   // the vertex shader reshapes the cap; the geometry's own bounds are not its bounds
+    front.visible = false;
+    mesh.add(front);
+    fronts.push(front);
+  }
+
+  let flares = [];
+  let cmes = [];
+  let regionNumbers = new Set();
+  let promNow = [];
+  let flaresNow = [];
+  let cmesNow = [];
+  let activityKey = '';
+  const _c = new THREE.Vector3();
+  const _x = new THREE.Vector3();
+  const _z = new THREE.Vector3();
+  const _cam = [0, 0, 1];
+  const _d = [0, 0, 0];
+  const _yAxis = new THREE.Vector3(0, 1, 0);
+  const _place = { observedMs: 0, latDeg: 0, eastDeg: 0 };
 
   let latched = false;
   let regions = [];
@@ -370,6 +661,12 @@ export function createSunDetail(opts = {}) {
     }
     mesh.material = detail ? material : plain;
     corona.visible = detail;
+    if (!detail) {
+      for (const sheet of proms) sheet.visible = false;
+      for (const front of fronts) front.visible = false;
+      material.uniforms.uFlareCount.value = 0;
+      promNow = []; flaresNow = []; cmesNow = []; activityKey = '';
+    }
     if (sprite && sprite.material) sprite.material.opacity = detail ? 0 : spriteOpacity;
   }
 
@@ -378,14 +675,17 @@ export function createSunDetail(opts = {}) {
      * Every frame. `share` is the Sun's disc as a share of half the view's height (worlds.discShare);
      * `earthWorld` the Earth's place in the scene, for the central meridian the spots are counted from.
      */
-    update(tMs, share, earthWorld) {
+    update(tMs, share, earthWorld, how) {
+      const still = !!(how && how.still);
       const detail = !latched && share >= SUN_DETAIL_AT * 0.8; // a little hysteresis under where it was fetched
       wear(detail);
       if (!detail) return;
       const u = material.uniforms;
       if (!u.uHasMap.value && plain.map) { u.uMap.value = plain.map; u.uHasMap.value = 1; }
-      const turn = (tMs / 1000) * GRAIN_PER_S;
-      u.uTime.value = turn - Math.floor(turn);
+      const secs = tMs / 1000;
+      const wrap = (x, n) => x - Math.floor(x / n) * n;
+      u.uTime.value = still ? STILL.grain * GRAIN_WRAP : wrap(secs / GRAIN_LIFE_S, GRAIN_WRAP);
+      const swayPhase = still ? STILL.sway : wrap(secs / PROM_SWAY_S, 1);
       const g = tier >= 1 ? Math.min(1, Math.max(0, (share - GRAIN_FROM) / (GRAIN_FULL - GRAIN_FROM))) : 0;
       u.uGrain.value = g * g * (3 - 2 * g);
 
@@ -400,16 +700,20 @@ export function createSunDetail(opts = {}) {
       const c = corona.material.uniforms;
       c.uNorth.value = Math.atan2(_n.dot(_r), _n.dot(_u));
       c.uSeed.value = carringtonNumber(tMs) % 1000;
+      c.uTime.value = still ? STILL.breath : wrap(secs / CORONA_BREATH_S, 1);
       c.uOpacity.value = Math.min(1, Math.max(0, (share - SUN_DETAIL_AT * 0.8) / (SUN_DETAIL_AT * 0.8)));
 
       // Today's groups, counted from the meridian that faces the Earth, in the Sun's own axes.
       drawn = 0; groups = 0; pairs = 0;
-      if (regions.length && earthWorld && regionsFresh(regions[0].observedMs, tMs)) {
+      let meridian = false;
+      if (earthWorld) {
         _v.copy(earthWorld);
         mesh.worldToLocal(_v);
-        if (_v.lengthSq() > 0) {
-          _v.normalize();
-          _e[0] = _v.x; _e[1] = _v.y; _e[2] = _v.z;
+        if (_v.lengthSq() > 0) { _v.normalize(); _e[0] = _v.x; _e[1] = _v.y; _e[2] = _v.z; meridian = true; }
+      }
+      const listed = regions.length > 0 && meridian && regionsFresh(regions[0].observedMs, tMs);
+      if (listed) {
+        {
           for (const region of regions) {
             const parts = splitRegion(region);
             if (drawn + parts.length > MAX_SPOTS) break; // a pair is never drawn as half of one
@@ -425,20 +729,110 @@ export function createSunDetail(opts = {}) {
         }
       }
       u.uSpotCount.value = drawn;
+
+      // Flares: the strongest now showing at regions that have a place today.
+      flaresNow = listed && flares.length ? flaresAt(flares, tMs, regionNumbers) : [];
+      let lit = 0;
+      for (const now of flaresNow) {
+        const region = regions.find((r) => r.region === now.flare.region);
+        if (!region || !spotDirection(region, _e, tMs, _s)) continue;
+        flareSlots[lit].set(_s[0], _s[1], _s[2], now.brightness);
+        lit += 1;
+      }
+      u.uFlareCount.value = lit;
+
+      // Prominences: the regions near the limb this camera sees, biggest first, up to the tier's cap.
+      camera.getWorldPosition(_c);
+      mesh.worldToLocal(_c);
+      const camRadii = _c.length();
+      const closeness = Math.min(1, Math.max(0, (share - PROM_FROM) / (PROM_FULL - PROM_FROM)));
+      const before = promNow.length;
+      promNow = [];
+      if (listed && camRadii > 1 && closeness > 0) {
+        _cam[0] = _c.x / camRadii; _cam[1] = _c.y / camRadii; _cam[2] = _c.z / camRadii;
+        for (const region of regions) {
+          if (promNow.length >= promCap) break;
+          if (!spotDirection(region, _e, tMs, _s)) continue;
+          const offsetDeg = limbOffsetDeg(_s, _cam, camRadii);
+          const fade = prominenceFade(offsetDeg) * closeness;
+          if (!(fade > 0)) continue;
+          let hot = 0;
+          for (const now of flaresNow) if (now.flare.region === region.region && now.flare.flux >= FLARE_ERUPTIVE_FLUX) hot = Math.max(hot, Math.min(1, now.brightness));
+          const shape = prominenceShape(region, hot);
+          const sheet = proms[promNow.length];
+          // Up is the radius at the region; across is at right angles to it and to the line to the camera.
+          _n.set(_s[0], _s[1], _s[2]);
+          _x.copy(_c).sub(_n).cross(_n).negate();
+          if (_x.lengthSq() < 1e-12) continue;
+          _x.normalize();
+          _z.crossVectors(_x, _n);
+          const tall = shape.height / 0.9 + 0.015;   // the loops reach 0.9 of the sheet; its foot is sunk under the surface
+          sheet.matrix.makeBasis(_r.copy(_x).multiplyScalar(shape.width), _u.copy(_n).multiplyScalar(tall), _z);
+          sheet.matrix.setPosition(_n.x * (0.985 + tall / 2), _n.y * (0.985 + tall / 2), _n.z * (0.985 + tall / 2));
+          sheet.matrixWorldNeedsUpdate = true;
+          const pu = sheet.material.uniforms;
+          pu.uOpacity.value = fade;
+          pu.uKind.value = shape.kind;
+          pu.uSeed.value = shape.seed;
+          pu.uTime.value = swayPhase;
+          pu.uHot.value = hot;
+          sheet.visible = true;
+          promNow.push({ region: region.region, kind: shape.kind, height: shape.height, width: shape.width, fade, offsetDeg, hot });
+        }
+      }
+      for (let i = promNow.length; i < before; i++) proms[i].visible = false;
+
+      // CME fronts: the newest in flight, in the frame of the Sun-Earth line as the catalogue gives them.
+      cmesNow = meridian && cmes.length ? cmesAt(cmes, tMs, cmeCap) : [];
+      let flying = 0;
+      for (const now of cmesNow) {
+        _place.observedMs = tMs; _place.latDeg = now.cme.latDeg; _place.eastDeg = now.cme.eastDeg;
+        if (!spotDirection(_place, _e, tMs, _d)) continue;
+        const front = fronts[flying];
+        front.quaternion.setFromUnitVectors(_yAxis, _n.set(_d[0], _d[1], _d[2]));
+        front.scale.setScalar(now.radii);
+        front.material.uniforms.uHalf.value = now.cme.halfAngleDeg * Math.PI / 180;
+        front.material.uniforms.uOpacity.value = now.opacity * c.uOpacity.value;
+        front.visible = true;
+        flying += 1;
+      }
+      for (let i = flying; i < cmeCap; i++) fronts[i].visible = false;
+
+      let key = promNow.length ? 'p' + promNow.length : '';
+      for (const now of flaresNow) key += 'f' + now.flare.region + now.flare.cls;
+      for (const now of cmesNow) key += 'c' + now.cme.id;
+      activityKey = key;
     },
+    /** data/sunactivity.js parseFlares(): the flare list, or [] to draw none. */
+    setFlares(list) { flares = Array.isArray(list) ? list : []; },
+    /** data/sunactivity.js parseCmes(): the CME list, or [] to draw none. */
+    setCmes(list) { cmes = Array.isArray(list) ? list : []; },
+    /** A short key that changes when what is drawn of the Sun's activity changes: main.js tells the card. */
+    activity() { return activityKey; },
     /** data/sunregions.js parseSunRegions(): today's groups, or [] to draw none. */
-    setRegions(list) { regions = Array.isArray(list) ? list.slice(0, MAX_SPOTS) : []; },
+    setRegions(list) {
+      regions = Array.isArray(list) ? list.slice(0, MAX_SPOTS) : [];
+      regionNumbers = new Set(regions.map((r) => r.region));
+    },
     /** The frame latch tripped: back to the flat disc and the round glow, for good. */
     latch() { latched = true; wear(false); },
     state() {
       return { on, latched, grain: material.uniforms.uGrain.value, spots: groups, circles: drawn, pairs, regions: regions.length,
-        observedMs: regions.length ? regions[0].observedMs : null, corona: corona.material.uniforms.uOpacity.value };
+        observedMs: regions.length ? regions[0].observedMs : null, corona: corona.material.uniforms.uOpacity.value,
+        prominences: promNow.slice(),
+        flares: flaresNow.map((f) => ({ region: f.flare.region, cls: f.flare.cls, maxMs: f.flare.maxMs, brightness: f.brightness })),
+        cmes: cmesNow.map((x) => ({ id: x.cme.id, startMs: x.cme.startMs, speedKmS: x.cme.speedKmS, radii: x.radii, opacity: x.opacity })),
+        flareList: flares.length, cmeList: cmes.length };
     },
     dispose() {
       wear(false);
       mesh.remove(corona);
       corona.geometry.dispose();
       corona.material.dispose();
+      for (const sheet of proms) { mesh.remove(sheet); sheet.material.dispose(); }
+      for (const front of fronts) { mesh.remove(front); front.material.dispose(); }
+      promGeometry.dispose();
+      cmeGeometry.dispose();
       material.dispose();
     },
   };

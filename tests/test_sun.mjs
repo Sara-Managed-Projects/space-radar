@@ -11,6 +11,7 @@ const JS = join(ROOT, 'site/js');
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const S = await import(join(JS, 'scene/sun.js'));
 const R = await import(join(JS, 'data/sunregions.js'));
+const A = await import(join(JS, 'data/sunactivity.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 
 const problems = [];
@@ -234,30 +235,288 @@ const FEED = [
   const S2 = await import(pathToFileURL(join(ROOT, 'site/js/scene/sun.js')).href);
   check(S2.SUN_FRAG.includes('for ( int z = -1; z <= 1; z++ )') && !S2.SUN_FRAG.includes('step( vec3( 0.5 ), f )'), 'tier 2 keeps the full 27-cell loop');
   check(S2.SUN_FRAG_CHEAP.includes('for ( int z = 0; z <= 1; z++ )') && S2.SUN_FRAG_CHEAP.includes('step( vec3( 0.5 ), f )') && !S2.SUN_FRAG_CHEAP.includes('z = -1'), 'tiers 0 and 1 read 8 cells toward the nearer faces');
-  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/float cells[\s\S]*?\n}\n/, '');
-  check(strip(S2.SUN_FRAG) === strip(S2.SUN_FRAG_CHEAP), 'everything but the cell loop is the same source at every tier');
+  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/vec2 cells[\s\S]*?\n}\n/, '');
+  check(strip(S2.SUN_FRAG) === strip(S2.SUN_FRAG_CHEAP) && strip(S2.SUN_FRAG) !== S2.SUN_FRAG.replace(/\/\/[^\n]*/g, ''), 'everything but the cell loop is the same source at every tier');
   check(!/\bhalf\b|\binput\b|\boutput\b|\bsample\b|\bfilter\b/.test(S2.SUN_FRAG_CHEAP), 'no reserved GLSL word in the cheap source either');
   let seed = 12345;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
   let same = 0, sumAbs = 0, maxLaneDiff = 0, sumFull = 0, sumNear = 0;
   const N = 4000;
-  const lane = (c) => { const x = Math.min(1, Math.max(0, c / 0.35)); return x * x * (3 - 2 * x); };
   for (let k = 0; k < N; k++) {
     const p = [rnd() * 80 - 40, rnd() * 80 - 40, rnd() * 80 - 40];
-    const t = rnd();
-    const a = S2.cellsTwin(p, t, false), b = S2.cellsTwin(p, t, true);
-    if (Math.abs(a - b) < 1e-12) same++;
-    const dl = Math.abs(lane(a) - lane(b));
-    sumAbs += dl; maxLaneDiff = Math.max(maxLaneDiff, dl); sumFull += lane(a); sumNear += lane(b);
+    const t = rnd() * S2.GRAIN_WRAP;
+    const flow = [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5].map((v) => v * 2 * S2.GRAIN_DRIFT);
+    const a = S2.cellsTwin(p, t, false, flow), b = S2.cellsTwin(p, t, true, flow);
+    if (Math.abs(a[0] - b[0]) < 1e-12) same++;
+    const la = S2.grainShade(a[0], a[1]), lb = S2.grainShade(b[0], b[1]);
+    const dl = Math.abs(la - lb);
+    sumAbs += dl; maxLaneDiff = Math.max(maxLaneDiff, dl); sumFull += la; sumNear += lb;
   }
   check(same / N > 0.8, `the 8 cells give the very same value at ${(100 * same / N).toFixed(1)} % of points (over 80 % wanted)`);
   check(sumAbs / N < 0.03, `and the lane shade differs by ${(sumAbs / N).toFixed(4)} on average (under 0.03)`);
   check(Math.abs(sumFull - sumNear) / N < 0.02, `the mean lane shade moves by ${(Math.abs(sumFull - sumNear) / N).toFixed(4)} (the picture's overall brightness holds)`);
+  check(Math.abs(sumFull / N - S2.GRAIN_MEAN) < 0.02 && Math.abs(sumNear / N - S2.GRAIN_MEAN) < 0.02, `the shade's mean is the GRAIN_MEAN the shader takes off: ${(sumFull / N).toFixed(3)} and ${(sumNear / N).toFixed(3)} against ${S2.GRAIN_MEAN}`);
   console.log(`grain at tiers 0-1: ${(100 * same / N).toFixed(1)} % identical points, mean lane shade difference ${(sumAbs / N).toFixed(4)}, worst ${maxLaneDiff.toFixed(2)}`);
+}
+
+// --- GRANULES THAT LIVE (spec 0073 requirement 2): born, bright, gone, born again elsewhere; nothing jumps; drifting outward ---
+{
+  // One point of the photosphere over the whole of the shader's clock, in steps of 1/500 of a life (0.09 s at 45 s a life).
+  const p = [3.3, 7.1, -2.4];
+  let worst = 0, lo = 1, hi = 0, last = S.grainShade(...S.cellsTwin(p, 0, false));
+  const dt = 0.002;
+  for (let t = dt; t <= S.GRAIN_WRAP + 1e-9; t += dt) {
+    const now = S.grainShade(...S.cellsTwin(p, t % S.GRAIN_WRAP, false));
+    worst = Math.max(worst, Math.abs(now - last)); lo = Math.min(lo, now); hi = Math.max(hi, now); last = now;
+  }
+  check(worst < 0.06, `the shade at a point never jumps, across rebirths and across the clock's wrap: worst step ${worst.toFixed(3)} in 1/500 of a life`);
+  check(lo < 0.05 && hi > 0.75, `and over ${S.GRAIN_WRAP} lives the point is both a dark lane and a bright granule: ${lo.toFixed(2)} to ${hi.toFixed(2)}`);
+  // A granule owns no ground when it is reborn: at weight 0 its point is pushed GRAIN_YIELD away, past any second neighbour.
+  let weak = 0, n = 0, seed = 99;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  for (let k = 0; k < 3000; k++) { const w = S.cellsTwin([rnd() * 60, rnd() * 60, rnd() * 60], rnd() * S.GRAIN_WRAP, false)[1]; n++; if (w < 0.07) weak++; }
+  check(weak / n < 0.002, `a granule at the very start or end of its life is the nearest at ${(100 * weak / n).toFixed(2)} % of points (it has shrunk away)`);
+  // The drift: zero at a larger cell's middle and on its border, outward between.
+  const mid = S.superFlow([0, 0, 0]);
+  check(mid.flow.every((v) => Math.abs(v) < 1e-9), 'at a larger cell\'s middle there is no drift');
+  const out = S.superFlow([0.1 / S.SUPER_CELLS, 0, 0]);
+  check(out.flow[0] > 0.3, `a little way out along x the drift is outward: ${out.flow[0].toFixed(2)}`);
+  check(S.SUN_FRAG.includes(`cells( p * ${S.GRAIN_CELLS.toFixed(1)}, uTime, ${S.GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q ) )`) && (S.SUN_FRAG.match(/cells\(/g) || []).length === 2, 'the shader advects ONE octave of cells by that flow (the definition and one call)');
+  check(/towardLimb = \( 1\.0 - smoothstep\( 0\.4, 0\.72, mu \) \)/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`${S.FACULA_GAIN.toFixed(2)} * uGrain * towardLimb`), 'faculae are bright only toward the limb and only where the grain is drawn');
+  check(S.GRAIN_LIFE_S >= 20 && S.GRAIN_LIFE_S <= 120 && S.CORONA_BREATH_S >= 30 && S.PROM_SWAY_S >= 10, 'lives, breaths and sways are slow');
+}
+
+// --- NO PASS, NO BLOOM: every shader of the Sun is a material of its own ------------------------------------
+{
+  const all = [S.SUN_VERT, S.SUN_FRAG, S.SUN_FRAG_CHEAP, S.CORONA_FRAG, S.PROM_FRAG, S.CME_VERT, S.CME_FRAG];
+  const text = readFileSync(join(JS, 'scene/sun.js'), 'utf8') + readFileSync(join(JS, 'data/sunactivity.js'), 'utf8');
+  for (const word of ['EffectComposer', 'RenderPass', 'UnrealBloomPass', 'ShaderPass', 'BloomPass', 'LensflareElement', 'Lensflare', 'WebGLRenderTarget', 'FullScreenQuad', 'OrthographicCamera'])
+    check(!text.includes(word) && all.every((g) => !g.includes(word)), `neither module nor any shader names ${word}`);
+  check(all.every((g) => !/\b(flat|half|input|output|sample|filter|active|smooth|patch|common|fixed|superp|partition|centroid|noise[1-4])\b/.test(g.replace(/#include <common>/g, '').replace(/\/\/[^\n]*/g, ''))), 'no reserved GLSL word is a name in any of them (comments aside)');
+  check([S.PROM_FRAG, S.CME_FRAG].every((g) => g.includes('#include <logdepthbuf_fragment>') && g.includes('#include <colorspace_fragment>')), 'the prominence and the CME write log depth and the output colour space');
+  // Every uniform and varying a shader declares it also uses, and braces balance (the least a compiler would say).
+  for (const [name, g] of [['SUN_FRAG', S.SUN_FRAG], ['SUN_FRAG_CHEAP', S.SUN_FRAG_CHEAP], ['CORONA_FRAG', S.CORONA_FRAG], ['PROM_FRAG', S.PROM_FRAG], ['CME_VERT', S.CME_VERT], ['CME_FRAG', S.CME_FRAG]]) {
+    const code = g.replace(/\/\/[^\n]*/g, '');
+    const count = (ch) => code.split(ch).length - 1;
+    check(count('{') === count('}') && count('(') === count(')') && count('[') === count(']'), `${name}: braces, brackets and parentheses balance`);
+    for (const m of code.matchAll(/^\s*(?:uniform|varying)\s+\w+\s+(\w+)/gm)) check(code.split(new RegExp(`\\b${m[1]}\\b`)).length > 2, `${name} declares ${m[1]} and uses it`);
+  }
+  const varyings = (g) => [...g.matchAll(/^\s*varying\s+(\w+)\s+(\w+)/gm)].map((m) => `${m[1]} ${m[2]}`).sort().join();
+  check(varyings(S.CME_VERT) === varyings(S.CME_FRAG), 'the CME\'s two shaders declare the same varyings');
+}
+
+// --- THE LISTS: NOAA's flares and NASA's CMEs, each against what was captured from its publisher ------------
+const EVENTS = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/swpc_edited_events.json'), 'utf8'));
+const CMES = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/donki_cme_analysis.json'), 'utf8'));
+{
+  const flares = A.parseFlares(EVENTS);
+  const xra = EVENTS.filter((r) => r.type === 'XRA');
+  const usable = xra.filter((r) => /^[CMX]/.test(r.particulars1) && r.region);
+  check(EVENTS.length === 16 && xra.length < EVENTS.length && usable.length < xra.length, 'the captured list holds flares with and without a region, smaller ones, and other events');
+  check(flares.length > 0 && flares.length <= usable.length && flares.every((f) => f.flux >= A.FLARE_MIN_FLUX && Number.isInteger(f.region) && f.beginMs <= f.maxMs && f.halfLifeMs >= A.FLARE_MIN_HALF_LIFE_MS), `only X-ray flares of class C and above with a region are kept: ${flares.length} of ${EVENTS.length} rows`);
+  const m64 = flares.filter((f) => f.maxMs === Date.UTC(2026, 9, 10, 15, 10) && f.region === 4549);
+  check(m64.length === 1 && m64[0].cls === 'M6.6' && near(m64[0].flux, 6.6e-5, 1e-12) && m64[0].halfLifeMs === 600000, `two satellites' rows for one flare are one flare, the larger reading, halving in the ten minutes NOAA gives from peak to end: ${JSON.stringify(m64)}`);
+  check(flares.every((f, i) => i === 0 || f.maxMs >= flares[i - 1].maxMs), 'oldest first');
+  check(A.parseFlares('nope').length === 0 && A.parseFlares([{ type: 'XRA', particulars1: 'M1.0', max_datetime: 'soon', region: 1 }, { type: 'XRA', particulars1: 'B9.9', max_datetime: '2026-10-12T02:02:00', region: 1 }, { type: 'RBR', particulars1: 'M1.0', max_datetime: '2026-10-12T02:02:00', region: 1 }, null]).length === 0, 'a feed that is not a list, a bad time, a class B flare and an event that is not an X-ray flare are no flares');
+  check(near(A.flareFlux('C1.1'), 1.1e-6, 1e-15) && near(A.flareFlux('X12'), 1.2e-3, 1e-12) && Number.isNaN(A.flareFlux('Q3')) && Number.isNaN(A.flareFlux(null)), 'a class is a decade and a multiplier');
+  // The curve.
+  const t0 = Date.UTC(2026, 9, 10, 15, 0);
+  const mk = (cls) => A.parseFlares([{ type: 'XRA', particulars1: cls, begin_datetime: '2026-10-10T15:00:00', max_datetime: '2026-10-10T15:10:00', end_datetime: '2026-10-10T15:20:00', region: 4549 }])[0];
+  const c = mk('C1.0'), m = mk('M1.0'), x = mk('X1.0');
+  const peak = t0 + 600000;
+  check(A.flareBrightness(m, t0 - 1) === 0 && A.flareBrightness(m, t0) === 0, 'nothing before it begins');
+  let top = 0, when = 0;
+  for (let t = t0; t <= t0 + 7200000; t += 30000) { const b = A.flareBrightness(m, t); if (b > top) { top = b; when = t; } }
+  check(when === peak && near(top, A.flareGain(1e-5)) && near(top, 0.65), `it is brightest at its peak time, at its class's gain: ${top.toFixed(3)}`);
+  check(A.flareBrightness(m, t0 + 300000) > 0 && A.flareBrightness(m, t0 + 300000) < top, 'and rising before it');
+  check(near(A.flareBrightness(m, peak + 600000), top / 2) && near(A.flareBrightness(m, peak + 1200000), top / 4), 'it halves in the time from peak to NOAA\'s end, and again');
+  check(A.flareBrightness(m, peak + A.FLARE_HALF_LIVES * 600000) === 0 && A.flareBrightness(m, peak + 86400000) === 0, `and is gone after ${A.FLARE_HALF_LIVES} half-lives`);
+  check(A.flareBrightness(x, peak) > A.flareBrightness(m, peak) && A.flareBrightness(m, peak) > A.flareBrightness(c, peak) && A.flareBrightness(c, peak) > 0, 'class X is brighter than M, M than C');
+  check(A.flareGain(1e-2) === A.FLARE_GAIN_MAX && A.flareGain(5e-7) === 0, 'the gain is capped, and nothing under C1 is drawn');
+  const showing = A.flaresAt([c, m, x, mk('C2.0'), mk('C3.0'), { ...m, region: 7 }], peak, new Set([4549]));
+  check(showing.length === A.MAX_FLARES && showing[0].flare.cls === 'X1.0' && showing.every((f) => f.flare.region === 4549), `at most ${A.MAX_FLARES} at once, the brightest first, only at regions that have a place`);
+
+  const cmes = A.parseCmes(CMES);
+  const fast = CMES.filter((r) => r.speed >= A.CME_MIN_SPEED);
+  check(CMES.length === 7 && fast.length === 5 && cmes.length === new Set(fast.map((r) => r.associatedCMEID)).size, `of 7 captured analyses the ${fast.length} of ${A.CME_MIN_SPEED} km/s and faster are kept, one per CME: ${cmes.length}`);
+  const last = cmes[cmes.length - 1];
+  check(last.startMs === Date.UTC(2026, 9, 11, 23, 12) && last.latDeg === -1 && last.eastDeg === 28 && last.halfAngleDeg === 36 && last.speedKmS === 618, `DONKI's longitude -28 (west positive) is 28 degrees EAST here: ${JSON.stringify(last)}`);
+  check(A.parseCmes({}).length === 0 && A.parseCmes([{ associatedCMEstartTime: '2026-10-11T23:12Z', latitude: null, longitude: 3, halfAngle: 20, speed: 900 }, { associatedCMEstartTime: 'x', latitude: 1, longitude: 3, halfAngle: 20, speed: 900 }, { associatedCMEstartTime: '2026-10-11T23:12Z', latitude: 1, longitude: 3, halfAngle: 20, speed: 900, isMostAccurate: false }]).length === 0, 'no direction, no start or a superseded analysis: no CME');
+  // The flight: the reported speed, held; 695.7 km/s is one radius in a thousand seconds.
+  const one = { id: 'x', startMs: t0, latDeg: 0, eastDeg: 90, halfAngleDeg: 30, speedKmS: A.SUN_RADIUS_KM / 1000 };
+  check(A.cmeShell(one, t0 - 1) === null && near(A.cmeShell(one, t0).radii, 1) && A.cmeShell(one, t0).opacity === 0, 'before its start there is no front; at its start it is on the surface and not yet lit');
+  check(near(A.cmeShell(one, t0 + 1000000).radii, 2) && near(A.cmeShell(one, t0 + 4000000).radii, 5), 'the front moves at the reported speed: one radius a thousand seconds at 695.7 km/s');
+  check(A.cmeShell(one, t0 + 1000000).opacity > A.cmeShell(one, t0 + 6000000).opacity && A.cmeShell(one, t0 + 6000000).opacity > 0, 'and thins as it goes');
+  check(A.cmeShell(one, t0 + 9000000) === null && near(A.cmeFlightMs(one), 9000000, 1e-6), `it is gone at ${A.CME_REACH_RADII} radii`);
+  check(A.cmesAt([one, { ...one, id: 'y', startMs: t0 + 60000 }, { ...one, id: 'z', startMs: t0 + 120000 }], t0 + 1000000).map((x2) => x2.cme.id).join() === 'z,y', `at most ${A.MAX_CMES} at once, the newest`);
+
+  // Registry rows, the page's source entries and the module name the same addresses; NASA is never asked by a browser.
+  const SRC = await import(join(JS, 'data/sources.js'));
+  const regYaml = readFileSync(join(ROOT, 'registry/sources.yaml'), 'utf8');
+  for (const [id, url, parser, browser] of [[A.SUN_EVENTS_SOURCE_ID, A.SUN_EVENTS_URL, 'swpc_edited_events', true], [A.CME_SOURCE_ID, A.CME_URL, 'donki_cme_analysis', false]]) {
+    const row = regYaml.slice(regYaml.indexOf(`  - id: ${id}\n`)).slice(0, 700);
+    check(SRC.SOURCES[id] && SRC.SOURCES[id].url === url && SRC.SOURCES[id].browser === browser && row.includes(`url: ${url}\n`) && row.includes(`parser: ${parser}\n`) && row.includes(`browser: ${browser}\n`) && /licence: "/.test(row) && /terms_recorded: 2026-10-12/.test(row), `${id}: registry row, sources.js entry and the module agree, with a licence line`);
+  }
+  const asked = [];
+  await A.readSunEvents({ load: async (id) => { asked.push(id); return { data: [] }; } });
+  await A.readCmes({ load: async (id) => { asked.push(id); return { data: [] }; } });
+  check(asked.join() === 'swpc-edited-events,donki-cme-analysis', 'both lists are read through load(), by registry id');
+  let why = null;
+  try { await A.readCmes({ load: async () => ({ data: null, error: 'could not look' }) }); } catch (e) { why = e.message; }
+  check(why === 'could not look', 'with no saved copy the CME list rejects with the reason, and nothing is drawn');
+}
+
+// --- PROMINENCES, FLARES AND CME FRONTS IN THE SCENE ---------------------------------------------------------
+{
+  const deg = Math.PI / 180;
+  // The limb the camera sees: from far away ninety degrees from the line to the camera, closer in less.
+  check(near(A.limbOffsetDeg([1, 0, 0], [0, 0, 1], 1e9), 0, 1e-6) && near(A.limbOffsetDeg([0, 0, 1], [0, 0, 1], 1e9), 90, 1e-6) && near(A.limbOffsetDeg([0, 0, 1], [0, 0, 1], 2), 60, 1e-9), 'the limb is at acos(1 / distance) from the camera\'s direction');
+  check(A.limbOffsetDeg([Math.cos(100 * deg), 0, Math.sin(100 * deg)].reverse(), [0, 0, 1], 1e9) < 0, 'and a place past it is behind');
+  check(A.prominenceFade(0) === 1 && A.prominenceFade(A.PROM_FULL_DEG) === 1 && A.prominenceFade(-A.PROM_FULL_DEG) === 1 && A.prominenceFade(A.PROM_LIMB_DEG) === 0 && A.prominenceFade(-16) === 0 && A.prominenceFade(40) === 0 && A.prominenceFade(12.5) > 0 && A.prominenceFade(12.5) < 1, `whole within ${A.PROM_FULL_DEG} degrees of the limb, nothing at ${A.PROM_LIMB_DEG} and beyond, on either side`);
+  check(A.PROM_LIMB_DEG === 15 && A.PROM_MIN_RADII === 0.02 && A.PROM_MAX_RADII === 0.15 && A.PROM_ERUPTIVE_RADII === 0.4 && A.PROM_CAP.join() === '2,8,8', 'the stated range and caps');
+  let kinds = new Set();
+  for (let region = 4000; region < 4300; region++) for (const areaMsh of [0, 10, 120, 600, 3000]) for (const hot of [0, 0.3, 1]) {
+    const sh = A.prominenceShape({ region, areaMsh, extentDeg: region % 12 }, hot);
+    kinds.add(sh.kind);
+    const ok = hot === 0 ? sh.height >= A.PROM_MIN_RADII && sh.height <= A.PROM_MAX_RADII : sh.height >= A.PROM_MIN_RADII && sh.height <= A.PROM_ERUPTIVE_RADII;
+    if (!ok || !(sh.width > 0 && sh.width < 0.75) || !(sh.seed >= 0 && sh.seed < 1)) { check(false, `region ${region}, area ${areaMsh}, flare ${hot}: ${JSON.stringify(sh)}`); break; }
+  }
+  check(kinds.size === 2, 'some regions wear loops and some a hedgerow');
+  check(near(A.prominenceShape({ region: 4549, areaMsh: 300 }, 1).height, A.PROM_ERUPTIVE_RADII) && A.prominenceShape({ region: 4549, areaMsh: 300 }, 0).height <= A.PROM_MAX_RADII, 'only a region flaring at M or X stands past 0.15 radii, to 0.4');
+
+  const scene = (tier) => {
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial({ color: 0xf18833 }));
+    const camera = new THREE.PerspectiveCamera(45, 1.6, 0.01, 1e6);
+    camera.position.set(0, 0, 100); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+    return { mesh, camera, sun: S.createSunDetail({ mesh, camera, tier }) };
+  };
+  const earth = new THREE.Vector3(0, 0, 150);
+  const day = Date.UTC(2026, 9, 6);
+  const row = (region, longitude, latitude = 5, area = 200) => ({ observed_date: '2026-10-06', region, latitude, longitude, area, number_spots: 4, extent: 6 });
+  // The camera is on the Earth's side, far off: the limb is 89.4 degrees from the central meridian.
+  const { mesh, camera, sun } = scene(1);
+  sun.setRegions(R.parseSunRegions([row(1, 0), row(2, 60), row(3, 85, 0, 400), row(4, -80, -10, 300), row(5, 77), row(6, -110)]));
+  sun.update(day, 1.2, earth);
+  let st = sun.state();
+  check(st.prominences.map((p) => p.region).join() === '3,4,5', `only the groups within ${A.PROM_LIMB_DEG} degrees of the limb stand a prominence: ${st.prominences.map((p) => p.region)} of 6 groups`);
+  check(st.prominences.every((p) => Math.abs(p.offsetDeg) < A.PROM_LIMB_DEG && p.height >= A.PROM_MIN_RADII && p.height <= A.PROM_MAX_RADII && p.fade > 0 && p.fade <= 1), `each inside the stated range of heights: ${st.prominences.map((p) => p.height.toFixed(3))}`);
+  check(st.prominences[0].fade === 1 && st.prominences[2].fade < 1, 'whole near the limb, fading toward fifteen degrees');
+  const sheets = mesh.children.filter((c) => c.name === 'sun-prominence');
+  check(sheets.length === 8 && sheets.filter((c) => c.visible).length === 3, 'three of the eight sheets are shown');
+  check(sheets.every((c) => c.material.blending === THREE.AdditiveBlending && c.material.depthWrite === false && c.material.transparent && c.material.toneMapped === false && c.material.depthTest === true), 'each an additive sheet that writes no depth and is hidden by the Sun\'s own sphere where it is behind the limb');
+  {
+    // Region 3: on the equator, 85 degrees east; with the Earth along +Z, east is -X.
+    const m4 = sheets[0].matrix.elements;
+    const up = new THREE.Vector3(m4[4], m4[5], m4[6]), across = new THREE.Vector3(m4[0], m4[1], m4[2]), at = new THREE.Vector3(m4[12], m4[13], m4[14]);
+    const want = new THREE.Vector3(-Math.sin(85 * deg), 0, Math.cos(85 * deg));
+    check(up.clone().normalize().distanceTo(want) < 1e-6 && Math.abs(across.dot(up)) < 1e-9, `the sheet stands along the radius at its region: ${up.clone().normalize().toArray().map((v) => v.toFixed(3))}`);
+    check(near(at.length() - up.length() / 2, 0.985, 1e-9) && near(up.length(), st.prominences[0].height / 0.9 + 0.015, 1e-9) && near(across.length(), st.prominences[0].width, 1e-9), 'its foot is just under the surface, its height and width the shape\'s');
+    const toCam = camera.position.clone().sub(at).normalize();
+    const face = new THREE.Vector3(m4[8], m4[9], m4[10]).normalize();
+    check(Math.abs(face.dot(toCam)) > 0.99, `and it faces the camera about that radius: ${Math.abs(face.dot(toCam)).toFixed(4)}`);
+  }
+  // Far away they are not drawn; from the side another set of regions is on the limb.
+  sun.update(day, 0.07, earth);
+  check(sun.state().on && sun.state().prominences.length === 0 && sheets.every((c) => !c.visible), 'with the Sun small on screen no prominence is drawn');
+  camera.position.set(-100, 0, 0); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+  sun.update(day, 1.2, earth);
+  check(sun.state().prominences.map((p) => p.region).join() === '1', `seen from over the east limb it is the group on the central meridian that stands on the edge: ${sun.state().prominences.map((p) => p.region)}`);
+  camera.position.set(0, 0, 100); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true);
+  // The caps.
+  const crowd = R.parseSunRegions(Array.from({ length: 12 }, (_, k) => row(100 + k, k % 2 ? 84 : -84, -33 + 6 * k, 500 - 10 * k)));
+  sun.setRegions(crowd);
+  sun.update(day, 1.2, earth);
+  check(sun.state().prominences.length === 8 && sheets.filter((c) => c.visible).length === 8, `twelve groups on the limb: ${sun.state().prominences.length} prominences, the cap`);
+  const phone = scene(0);
+  phone.sun.setRegions(crowd);
+  phone.sun.update(day, 1.2, earth);
+  check(phone.sun.state().prominences.length === 2 && phone.mesh.children.filter((c) => c.name === 'sun-prominence').length === 2 && phone.mesh.children.filter((c) => c.name === 'sun-cme-front').length === 1, 'at tier 0 two prominences and one CME front at most');
+  check(phone.sun.state().prominences[0].region === 100, 'the biggest groups first');
+  sun.update(day + 20 * 86400000, 1.2, earth);
+  check(sun.state().prominences.length === 0, 'three weeks from the list\'s day no prominence is drawn either');
+
+  // Flares at the regions.
+  const flares = A.parseFlares([
+    { type: 'XRA', particulars1: 'M5.0', begin_datetime: '2026-10-06T10:00:00', max_datetime: '2026-10-06T10:10:00', end_datetime: '2026-10-06T10:20:00', region: 3 },
+    { type: 'XRA', particulars1: 'C2.0', begin_datetime: '2026-10-06T10:05:00', max_datetime: '2026-10-06T10:10:00', end_datetime: '2026-10-06T10:15:00', region: 1 },
+    { type: 'XRA', particulars1: 'X9.0', begin_datetime: '2026-10-06T10:05:00', max_datetime: '2026-10-06T10:10:00', end_datetime: '2026-10-06T10:15:00', region: 999 },
+  ]);
+  sun.setRegions(R.parseSunRegions([row(1, 0), row(2, 60), row(3, 85, 0, 400), row(4, -80, -10, 300)]));
+  const peak = Date.UTC(2026, 9, 6, 10, 10);
+  sun.update(peak, 1.2, earth);
+  const u = mesh.material.uniforms;
+  check(u.uFlareCount.value === 0 && sun.state().flares.length === 0, 'with no list no flare is drawn');
+  sun.setFlares(flares);
+  sun.update(peak, 1.2, earth);
+  st = sun.state();
+  check(u.uFlareCount.value === 2 && st.flares.map((f) => f.region).join() === '3,1', `at their peak two flares show, the M before the C; the X at a region with no place today does not: ${JSON.stringify(st.flares.map((f) => [f.region, f.cls]))}`);
+  check(near(u.uFlares.value[0].w, A.flareGain(5e-5)) && near(u.uFlares.value[1].w, A.flareGain(2e-6)) && u.uFlares.value[0].w > u.uFlares.value[1].w, 'each as bright as its class');
+  {
+    const carried = R.spotDirection({ latDeg: 0, eastDeg: 85, observedMs: day }, [0, 0, 1], peak);
+    check(near(u.uFlares.value[0].x, carried[0], 1e-9) && near(u.uFlares.value[0].z, carried[2], 1e-9), 'at its region\'s place, carried by the turning since the list\'s day');
+  }
+  const tallNow = st.prominences.find((p) => p.region === 3);
+  check(tallNow && tallNow.hot > 0 && tallNow.height > A.PROM_MAX_RADII && tallNow.height <= A.PROM_ERUPTIVE_RADII, `the region flaring at class M stands a taller prominence: ${tallNow && tallNow.height.toFixed(3)} radii`);
+  sun.update(peak - 3600000, 1.2, earth);
+  check(u.uFlareCount.value === 0, 'an hour before, nothing');
+  sun.update(peak + 6 * 600000, 1.2, earth);
+  check(u.uFlareCount.value === 0 && sun.state().prominences.find((p) => p.region === 3).height <= A.PROM_MAX_RADII, 'and after six half-lives the flare is gone and the prominence is its ordinary height');
+  check(sun.activity() !== '' && typeof sun.activity() === 'string', 'activity() names what is drawn');
+
+  // A CME front.
+  const cme = { id: 'c1', startMs: peak, latDeg: 0, eastDeg: 90, halfAngleDeg: 30, speedKmS: A.SUN_RADIUS_KM / 1000 };
+  sun.setCmes([cme, { ...cme, id: 'c0', startMs: peak - 86400000 }]);
+  sun.update(peak + 2000000, 1.2, earth);
+  const fronts = mesh.children.filter((c) => c.name === 'sun-cme-front');
+  st = sun.state();
+  check(fronts.length === 2 && fronts[0].visible && !fronts[1].visible && st.cmes.length === 1 && st.cmes[0].id === 'c1', 'two thousand seconds after its start one front is in flight; yesterday\'s is long gone');
+  check(near(fronts[0].scale.x, 3) && near(st.cmes[0].radii, 3) && near(fronts[0].material.uniforms.uHalf.value, 30 * deg), 'three radii out at one radius a thousand seconds, as wide as reported');
+  const heading = new THREE.Vector3(0, 1, 0).applyQuaternion(fronts[0].quaternion);
+  check(heading.distanceTo(new THREE.Vector3(-1, 0, 0)) < 1e-6, `heading ninety degrees east of the Sun-Earth line: ${heading.toArray().map((v) => v.toFixed(3))}`);
+  check(fronts[0].material.blending === THREE.AdditiveBlending && fronts[0].material.depthWrite === false && fronts[0].material.uniforms.uOpacity.value > 0 && fronts[0].material.uniforms.uOpacity.value < 1, 'an additive shell that writes no depth');
+  sun.update(peak + 9500000, 1.2, earth);
+  check(!fronts[0].visible && sun.state().cmes.length === 0, 'past ten radii it is gone');
+
+  // Reduced motion: a still picture of the same Sun.
+  const corona = mesh.children.find((c) => c.name === 'sun-corona-plane');
+  sun.setRegions(R.parseSunRegions([row(3, 85, 0, 400)]));
+  const read = () => [u.uTime.value, corona.material.uniforms.uTime.value, sheets[0].material.uniforms.uTime.value];
+  sun.update(day + 1000, 1.2, earth); const a1 = read();
+  sun.update(day + 8000, 1.2, earth); const a2 = read();
+  check(a1.every((v, i) => v !== a2[i]) && a1[1] >= 0 && a1[1] < 1 && a2[0] >= 0 && a2[0] < S.GRAIN_WRAP, 'the grain, the corona and a prominence move with the clock');
+  sun.update(day + 1000, 1.2, earth, { still: true }); const b1 = read();
+  sun.update(day + 8000, 1.2, earth, { still: true }); const b2 = read();
+  check(b1.join() === b2.join() && b1.join() === [S.STILL.grain * S.GRAIN_WRAP, S.STILL.breath, S.STILL.sway].join() && sheets[0].visible, 'under reduced motion none of them moves, and the same things are drawn');
+  // The latch takes all of it off.
+  sun.setCmes([{ ...cme, startMs: day }]);
+  sun.setFlares(A.parseFlares([{ type: 'XRA', particulars1: 'M5.0', begin_datetime: '2026-10-06T00:00:00', max_datetime: '2026-10-06T00:10:00', end_datetime: '2026-10-06T00:40:00', region: 3 }]));
+  sun.update(day + 900000, 1.2, earth);
+  check(sun.state().cmes.length === 1 && sun.state().flares.length === 1 && sun.state().prominences.length === 1, 'a prominence, a flare and a CME at once');
+  sun.latch();
+  sun.update(day + 900000, 1.2, earth);
+  st = sun.state();
+  check(sheets.every((c) => !c.visible) && fronts.every((c) => !c.visible) && st.prominences.length === 0 && st.flares.length === 0 && st.cmes.length === 0 && sun.activity() === '', 'under the latch no prominence, flare or front is drawn');
+  sun.dispose();
+  check(!mesh.children.some((c) => /^sun-/.test(c.name)), 'dispose() takes every mesh off the Sun');
+
+  // Off the first visit, fetched after the spots' list, said on the card.
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
+  check(/import\('\.\/data\/sunactivity\.js'\)/.test(main) && !/^\s*import[^;]*from\s*'[^']*sunactivity\.js'/m.test(main) && !html.includes('sunactivity.js'), 'main.js imports data/sunactivity.js dynamically and nothing preloads it');
+  check(main.indexOf("import('./data/sunactivity.js')") > main.indexOf('if (tilesSaveData || tiers.latched) return;\n      import(\'./data/sunregions.js\')'), 'and never on a connection that asked to save data, or under the latch');
+  check(/still: !!\(reducedMotionQuery && reducedMotionQuery\.matches\)/.test(main), 'main.js tells the Sun when the visitor asked for reduced motion');
+  await import(join(JS, 'copy/en.later.js'));
+  const W = COPY.sunAlive;
+  check(W && /\{n\}/.test(W.prominences) && /illustrative/.test(W.prominences) && /illustrative/.test(W.prominencesOne) && /NOAA/.test(W.prominences), 'the card says the prominences\' places are NOAA\'s and their shapes illustrative');
+  check(/\{cls\}/.test(W.flare) && /\{region\}/.test(W.flare) && /\{time\}/.test(W.flare) && /NOAA/.test(W.flare) && /illustrative/.test(W.flare), 'a flare\'s line gives its class, region and time, and says its brightness is illustrative');
+  check(/\{speed\}/.test(W.cme) && /\{time\}/.test(W.cme) && /DONKI/.test(W.cme) && /illustrative/.test(W.cme), 'a CME\'s line gives its start and speed, and whose catalogue it is');
+  check(/prominences|loops/.test(COPY.drawing.worldSun) && /born/.test(COPY.drawing.worldSun), 'the Sun\'s drawing line says the granules live and the loops are illustrative');
+  const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
+  check(credits.includes(COPY.sun.flaresCredit) && credits.includes(COPY.sun.cmeCredit) && credits.includes('edited_events.json') && credits.includes('DONKI-API/get/CMEAnalysis'), 'CREDITS.md carries both lists\' credit lines and addresses');
 }
 
 if (problems.length) {
   console.error('sun FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`sun ok: limb darkening within 0.05 of the 550 nm measurement, ${R.MAX_SPOTS} groups at most from NOAA's list, the flat disc far away and under the latch, nothing at boot`);
+console.log(`sun ok: limb darkening within 0.05 of the 550 nm measurement, ${R.MAX_SPOTS} groups at most from NOAA's list, granules that live, prominences only near the limb (${A.PROM_CAP.join('/')} by tier), flares and CMEs from their lists, the flat disc far away and under the latch, nothing at boot`);

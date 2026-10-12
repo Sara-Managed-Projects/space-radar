@@ -418,6 +418,48 @@ sources:
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-09
 
+  # Solar flares, for the Sun close up (data/sunactivity.js; spec 0073 requirement 2). SWPC's edited
+  # event list: thirty days of events, the X-ray flares among them with their class, peak time and
+  # region number. MEASURED 2026-10-12 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`:
+  # `access-control-allow-origin: *`, `cache-control: max-age=60`, 320 660 bytes, 564 rows (346 X-ray
+  # flares, 264 with a region). The GOES flare files beside it (json/goes/primary/xray-flares-*.json)
+  # carry no region number and are not used.
+  - id: swpc-edited-events
+    url: https://services.swpc.noaa.gov/json/edited_events.json
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: swpc_edited_events
+    outputs: [solar-events.json]
+    attribution: "Solar flares: NOAA SWPC"
+    licence: "US Government work, public domain (read 2026-10-12)"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-10-12
+
+  # Coronal mass ejections, for the Sun close up (data/sunactivity.js). NASA's DONKI: the most accurate
+  # analysis of each CME of the last thirty days (start, direction, half-angle, speed). MEASURED
+  # 2026-10-12: 48 132 bytes, 63 rows, `Access-Control-Allow-Origin: *`, `Cache-Control: no-cache,
+  # no-store`, no key; the old host kauai.ccmc.gsfc.nasa.gov answers 301 to a notice naming this base.
+  # `browser: false`: a visitor's browser does not call NASA for this, the page reads our saved copy
+  # and, with none, draws no CME. Terms, READ 2026-10-12 on ccmc.gsfc.nasa.gov/tools/DONKI/ ("DONKI
+  # Rules-of-the-Road" and "Disclaimer"): the data is provided "as a courtesy to the community", "as
+  # is" without warranty, to "be considered only as prototyping quality and in research context", and
+  # CCMC asks that event and validation STUDIES be done with the submitters' knowledge. No licence is
+  # named; NASA material is generally not copyrighted. The card says whose catalogue it is.
+  - id: donki-cme-analysis
+    url: https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis
+    auth: none
+    browser: false
+    cadence: 3h
+    freshness_max: 24h
+    parser: donki_cme_analysis
+    outputs: [cme-analysis.json]
+    attribution: "Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC)"
+    licence: "No licence named; provided as is, as a courtesy to the community, prototyping quality (DONKI rules of the road and disclaimer, read 2026-10-12)"
+    terms_url: https://ccmc.gsfc.nasa.gov/tools/DONKI/
+    terms_recorded: 2026-10-12
+
   # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
   # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
   # regional association), dataset `ncep_global`: one forecast hour (`{hour3}`, filled by harvest/run.py
