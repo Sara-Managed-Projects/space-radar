@@ -40,7 +40,9 @@ sr.clock.live();
 // is tens of pixels wide and the generated cloud detail (registry/weather.yaml kind cloud-detail)
 // is what carries the picture. Also from a tenth of a radius, where it is fading in.
 out.closest = {};
-for (const [id, tilt] of [[J, -0.27], ['saturn', 0.25], ['uranus', 0.2], ['neptune', -0.3]]) {
+// `up`: how far out, in drawn (mean) radii. Saturn's equator is 3.5 % beyond its mean radius, so 1.03
+// there is under the cloud tops (the first run photographed black from inside the globe): 1.1.
+for (const [id, tilt, up] of [[J, -0.27, 1.03], ['saturn', 0.25, 1.1], ['uranus', 0.2, 1.04], ['neptune', -0.3, 1.04]]) {
   try {
     if (id !== J) await stage(id, 9000);
     const r = sr.worlds.drawnRadiusUnits(id);
@@ -50,8 +52,8 @@ for (const [id, tilt] of [[J, -0.27], ['saturn', 0.25], ['uranus', 0.2], ['neptu
       rig.flyTo({ offset: from(), distance: r * 1.1, ms: 0 });
       await shot('8-' + id + '-a-tenth-of-a-radius-up', id + ' from a tenth of its radius above the clouds', 6000);
     }
-    rig.flyTo({ offset: from(), distance: r * 1.03, ms: 0 });
-    await shot('9-' + id + '-closest', id + ' from three per cent of its radius above the clouds', 6000);
+    rig.flyTo({ offset: from(), distance: r * up, ms: 0 });
+    await shot('9-' + id + '-closest', id + ' from ' + up + ' of its mean radius: just above the clouds', 6000);
     out.closest[id] = { radius: r, distance: rig.state.distance, detail: (() => { try { return sr.weather.state().air.worlds.find((w) => w.id === id).detail; } catch { return null; } })() };
   } catch (e) { look.errors.push('probe: the closest look at ' + id + ' threw: ' + (e && e.stack || e)); }
 }
