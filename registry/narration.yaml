@@ -220,9 +220,9 @@ join_own:
   travel-to-exoplanets/c: {joiners: [" — "]}
 # trip/stop -> [[the card's words, the same words with the voice's punctuation]]. The caption
 # keeps the card's. Each is a pause before the number or the turn the sentence is there for.
-# Measured by the recogniser's word times (2026-10-12): the comma opened about 0.6 s between
-# "2019" and "about", the dash 0.4 s between "away" and "and". Three more were tried and taken
-# out again, because the voice ignored them, dash or comma: "three lunar days / and kept going",
+# Measured in the waveform (2026-10-12): each added one pause the sentence did not have, of
+# about 0.2 to 0.4 s (before "about 110 km") and 0.25 s (before "and coming our way"). Three
+# more were tried and taken out again, because the voice ignored them, dash or comma: "three lunar days / and kept going",
 # "on the Moon / for 37 years", "Earth came out / 0.12". Punctuation is a request, not a control.
 phrasing:
   moon-landings/chandrayaan-3: [["September 2019 about 110 km", "September 2019, about 110 km"]]
