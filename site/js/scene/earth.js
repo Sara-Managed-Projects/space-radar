@@ -905,8 +905,8 @@ export function setEarthMap(mesh, slot, tex, opts = {}) {
  * How finely the shell's air is marched on this tier, and for good at its coarsest once the frame
  * latch has tripped (scene/atmosphere.js setEarthAirSteps).
  */
-export function setEarthAirQuality(mesh, tier, latched = false) {
-  return setEarthAirSteps(mesh && mesh.userData ? mesh.userData.atmosphere : null, tier, latched);
+export function setEarthAirQuality(mesh, tier, latched = false, how = {}) {
+  return setEarthAirSteps(mesh && mesh.userData ? mesh.userData.atmosphere : null, tier, latched, how);
 }
 
 /** True once every boot map has decoded and taken its slot: a tier swap before that would be undone. */

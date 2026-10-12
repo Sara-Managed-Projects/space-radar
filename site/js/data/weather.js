@@ -14,6 +14,7 @@ export const WEATHER = [
     "world": "earth",
     "kind": "lightning",
     "class": "measured",
+    "measured": "same",
     "layer": "lightning",
     "off_at": [
       "tier0",
@@ -27,6 +28,7 @@ export const WEATHER = [
     "world": "earth",
     "kind": "events",
     "class": "measured",
+    "measured": "same",
     "layer": "earth-events",
     "off_at": [
       "tier0",
@@ -39,6 +41,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -212,6 +215,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "shear-eddies",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -235,6 +239,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "ovals",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -309,6 +314,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "polar-cyclones",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -343,6 +349,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "cloud-depth",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -374,6 +381,7 @@ export const WEATHER = [
     "world": "saturn",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -488,6 +496,7 @@ export const WEATHER = [
     "world": "saturn",
     "kind": "hexagon",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -504,6 +513,7 @@ export const WEATHER = [
     "world": "venus",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -538,6 +548,7 @@ export const WEATHER = [
     "world": "uranus",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -608,6 +619,7 @@ export const WEATHER = [
     "world": "neptune",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -702,6 +714,7 @@ export const WEATHER = [
     "world": "mars",
     "kind": "mars-season",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -840,6 +853,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "giant-lightning",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data",
@@ -870,6 +884,7 @@ export const WEATHER = [
     "world": "saturn",
     "kind": "giant-lightning",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data",
@@ -895,6 +910,7 @@ export const WEATHER = [
     "world": "venus",
     "kind": "planetary-wave",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -911,6 +927,7 @@ export const WEATHER = [
     "world": "titan",
     "kind": "cloud-patches",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"

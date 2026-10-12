@@ -37,24 +37,37 @@ export function createWeather({ worlds, camera = null, reducedMotion = false, on
     },
     /** The frame latch: the worlds back in their own shader; the lightning stops in tick(). */
     latch: () => air.latch(),
+    /** The quality setting's Low, on and off again (main.js): the latch's removal, and its return. */
+    setStripped: (on) => (on ? air.latch() : air.unlatch()),
+    /** Measured or Film (scene/exposure.js): every row's own `measured:` rule, asked in worldweather.js. */
+    setLook(look) { if (air.setLook(look)) onChange(); },
     /**
      * A world's one line for its card, or null when nothing is drawn for it. The Earth's is the
-     * lightning's; the rest are the registry's worlds, while they wear the weather.
+     * lightning's; the rest are the registry's worlds, while they wear the weather. Under the
+     * Measured look only what is still drawn is said (COPY.lookSaid has the sentences that differ),
+     * and a world the look changes says which look is on, last.
      */
     line(worldId, clockMs) {
       if (worldId === 'earth') return lightning.line(clockMs);
       const text = COPY.weather.worlds[worldId];
       if (!text || !air.worn().includes(worldId)) return null;
+      const measured = air.look() === 'measured';
+      const M = COPY.lookSaid;
+      const said = air.lookMatters(worldId) ? (measured ? M.measured : M.film) : null;
+      const on = air.drawnOf(worldId);
+      // A world whose whole weather is illustrative (Mars's season, Titan's clouds) has nothing left to say.
+      if (measured && !on.flow && !on.mars && !on.patches) return said;
+      const pick = (film, key) => (measured && M[key] && M[key][worldId] !== undefined ? M[key][worldId] : film);
       const w = air.state().worlds.find((x) => x.id === worldId);
-      const line = t(text, { season: w && w.season ? seasonName(w.season.ls) : '', tau: w && w.season ? w.season.tau.toFixed(1) : '' });
+      const line = t(pick(text, 'worlds'), { season: w && w.season ? seasonName(w.season.ls) : '', tau: w && w.season ? w.season.tau.toFixed(1) : '' });
       // Lightning is said only where it is drawn: not where less motion was asked for.
       const flash = COPY.weather.flashes[worldId];
-      const also = COPY.weather.also[worldId];
+      const also = pick(COPY.weather.also[worldId], 'also');
       // Jupiter's storms (2026-10-12): what turns is said only where it turns; the poles wherever they are drawn.
       const storms = air.storms(worldId);
-      const turning = storms === 'moving' ? COPY.weatherStorms.turning[worldId] : null;
-      const poles = storms ? COPY.weatherStorms.poles[worldId] : null;
-      return [line, also, turning, poles, flash && air.flashing(worldId) ? flash : null].filter(Boolean).join(' ');
+      const turning = storms === 'moving' ? pick(COPY.weatherStorms.turning[worldId], 'turning') : null;
+      const poles = storms && on.cyclones ? pick(COPY.weatherStorms.poles[worldId], 'poles') : null;
+      return [line, also, turning, poles, flash && air.flashing(worldId) ? flash : null, said].filter(Boolean).join(' ');
     },
     credit: () => lightning.credit(),
     perMinute: () => lightning.perMinute(),

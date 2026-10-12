@@ -4,6 +4,9 @@
 //   createFrameLatch(opts) -> { push(frameMs, nowMs) -> boolean, latched, median(), force() }
 //   shouldSaveData(connection) -> boolean
 //   chooseTier(device), createTierPromoter(opts) -- device tiers, at the bottom of this file
+//   QUALITY_CHOICES, offeredQualities(ceiling, latched), qualityPlan(choice, device, latched),
+//   readQualityChoice(storage), writeQualityChoice(storage, choice), qualityAfterLatch(choice),
+//   qualityNote(plan, words) -- the setting a visitor can choose (spec 0073 req 6), at the very bottom
 //
 // satellitemap.space's eighth take. Two decisions the app used to leave to hope:
 //   - On a slow or metered connection the two heavy catalogue files (6.9 MB active, 5.1 MB Starlink)
@@ -114,6 +117,7 @@ export function createScaleGovernor(opts = {}) {
   let underSince = null;
   let changedAt = -Infinity;
   let frozen = false;
+  let held = false;
   let upHold = upHoldMs;
   let lastUpAt = -Infinity;
   const bounceMs = opts.bounceMs || 15000;
@@ -142,7 +146,7 @@ export function createScaleGovernor(opts = {}) {
    * frame that changed the step, and `scale` is then the new ratio.
    */
   function push(frameMs, nowMs, calm = true, patient = false) {
-    if (frozen || !Number.isFinite(frameMs) || frameMs <= 0) return false;
+    if (frozen || held || !Number.isFinite(frameMs) || frameMs <= 0) return false;
     frames.push(Math.min(frameMs, 1000));
     if (frames.length > windowFrames) frames.shift();
     if (frames.length < windowFrames) return false;
@@ -176,7 +180,7 @@ export function createScaleGovernor(opts = {}) {
    * the device, so it is not in the window; the time counts as quick. Returns true on a step up.
    */
   function rest(nowMs) {
-    if (frozen || i === 0) return false;
+    if (frozen || held || i === 0) return false;
     overSince = null;
     frames.length = 0;
     if (underSince === null) underSince = nowMs;
@@ -192,11 +196,29 @@ export function createScaleGovernor(opts = {}) {
     get upHoldMs() { return upHold; },
     /** The latch has tripped: the ladder stops where it is (the latch itself takes the ratio to 1). */
     freeze() { frozen = true; },
+    /**
+     * The quality setting's Ultra (qualityPlan below): the ratio goes to the top of the ladder and stays
+     * there, frames are not counted, and `atFloor` is false so the latch is not fed from here. Let go,
+     * the ladder starts from the top with an empty window. Nothing after the latch. Returns true when
+     * the ratio changed.
+     */
+    hold(on) {
+      const want = !!on;
+      if (frozen || want === held) return false;
+      held = want;
+      const was = i;
+      i = 0;
+      frames.length = 0;
+      overSince = null;
+      underSince = null;
+      return was !== 0;
+    },
+    get held() { return held; },
     get scale() { return steps[i]; },
     get step() { return i; },
     get steps() { return steps.slice(); },
     /** On the lowest step: the frame latch is fed from here, and only from here. */
-    get atFloor() { return i === steps.length - 1; },
+    get atFloor() { return !held && i === steps.length - 1; },
   };
 }
 
@@ -471,10 +493,107 @@ export function tierLine(d, q) {
   const why = (d && d.reasons) || [];
   let line;
   if (d.latched) line = q.tierLatched;
+  else if (d.choice === 'low') line = q.tierLow;
   else if (d.tier >= 2) line = q.tier2;
   else if (d.tier === 1) line = q.tier1;
   else if (why.includes('data-saver')) line = q.tierSaver;
   else if (why.includes('phone')) line = q.tierPhone;
   else line = q.tierSmall;
   return d.promoted && !d.latched ? line + ' ' + q.promoted : line;
+}
+
+// --- the setting a visitor can choose (spec 0073 requirement 6, 2026-10-12) ------------------------
+//
+// Auto is everything above, unchanged, and the default. The other four are a visitor saying what the
+// device should spend:
+//   low     tier 0 WITH EVERYTHING THE FRAME LATCH TAKES OFF ALREADY OFF: one device pixel per CSS
+//           pixel, no Milky Way picture, no relief, no weather shader, the Sun a flat disc. A battery
+//           or old-laptop mode, chosen and not fallen into, so it can be left again.
+//   medium  tier 1.   high  tier 2.
+//   ultra   tier 2 with the close-up effects at their top step counts (`steps: 'top'`) and the pixel
+//           ratio held at the top of its ladder (`scale: 'held'`).
+// THE DEVICE'S CEILING IS NEVER PASSED (chooseTier's `ceiling`: memory, the largest texture, a phone).
+// A choice is offered only where it is what it says: Medium needs a ceiling of 1, High and Ultra of
+// 2, and after the frame latch has tripped only Auto and Low are left, because the latch is one-way
+// for the visit. A stored choice that is not offered here is Auto. The promoter leaves every manual
+// choice alone (`promote` is true for Auto only), so Low is never raised by fast frames.
+//
+// THE LATCH STILL PROTECTS. When it trips under Medium, High or Ultra the setting goes back to Auto
+// (qualityAfterLatch) and main.js says so once. Under Ultra the governor is held, so the latch's own
+// test is run on every frame by a guard (main.js): slow frames for three seconds end Ultra the same
+// way, before anything is taken off for good.
+
+/** The choices, in the order the row shows them. */
+export const QUALITY_CHOICES = ['auto', 'low', 'medium', 'high', 'ultra'];
+export const DEFAULT_QUALITY = 'auto';
+/** One key, read before the first tier pick. It describes the device, so it is never in the address. */
+export const QUALITY_KEY = 'sr.quality';
+/** The tier a manual choice asks for. */
+const CHOICE_TIER = { low: 0, medium: 1, high: 2, ultra: 2 };
+
+/** The choices this device is offered: a choice above its ceiling is absent, not disabled. */
+export function offeredQualities(ceiling, latched = false) {
+  const top = latched ? 0 : Math.max(0, Math.min(2, Number(ceiling) || 0));
+  return QUALITY_CHOICES.filter((c) => c === 'auto' || CHOICE_TIER[c] <= top);
+}
+
+/**
+ * What a choice means on this device, now. Pure.
+ * @param {string} choice               one of QUALITY_CHOICES (anything else, or one not offered, is Auto)
+ * @param {{tier:number, ceiling:number}} device  Auto's tier now (chooseTier's, or the promoted one) and the ceiling
+ * @param {boolean} [latched]           the frame latch has tripped
+ * @returns {{choice:string, tier:number, stripped:boolean, ultra:boolean, promote:boolean, steps:string, scale:string}}
+ *   stripped  the latch's removals are on (the latch itself, or Low)
+ *   steps     'floor' (the latch's counts), 'tier' (the tier's own) or 'top' (each effect's most)
+ *   scale     'one' (one device pixel per CSS pixel), 'governed' (the ladder) or 'held' (its top step)
+ */
+export function qualityPlan(choice, device = {}, latched = false) {
+  const ceiling = Math.max(0, Math.min(2, Number(device.ceiling) || 0));
+  const auto = Math.max(0, Math.min(ceiling, Number(device.tier) || 0));
+  const c = offeredQualities(ceiling, latched).includes(choice) ? choice : DEFAULT_QUALITY;
+  if (latched) return { choice: c, tier: 0, stripped: true, ultra: false, promote: false, steps: 'floor', scale: 'one' };
+  if (c === 'auto') return { choice: c, tier: auto, stripped: false, ultra: false, promote: true, steps: 'tier', scale: 'governed' };
+  if (c === 'low') return { choice: c, tier: 0, stripped: true, ultra: false, promote: false, steps: 'floor', scale: 'one' };
+  const ultra = c === 'ultra';
+  return { choice: c, tier: CHOICE_TIER[c], stripped: false, ultra, promote: false, steps: ultra ? 'top' : 'tier', scale: ultra ? 'held' : 'governed' };
+}
+
+/** The choice after the latch (or Ultra's guard) fired: a choice above Low is Auto again; `told` says whether to say so. */
+export function qualityAfterLatch(choice) {
+  const told = choice === 'medium' || choice === 'high' || choice === 'ultra';
+  return { choice: told ? DEFAULT_QUALITY : choice === 'low' ? 'low' : DEFAULT_QUALITY, told };
+}
+
+/** The stored choice, or Auto: nothing stored, something unknown, or a storage that throws. */
+export function readQualityChoice(storage) {
+  try {
+    const s = storage === undefined ? globalThis.localStorage : storage;
+    if (!s) return DEFAULT_QUALITY;
+    const v = s.getItem(QUALITY_KEY);
+    return QUALITY_CHOICES.includes(v) ? v : DEFAULT_QUALITY;
+  } catch {
+    return DEFAULT_QUALITY;
+  }
+}
+
+export function writeQualityChoice(storage, choice) {
+  try {
+    const s = storage === undefined ? globalThis.localStorage : storage;
+    if (!s) return false;
+    if (choice === DEFAULT_QUALITY || !QUALITY_CHOICES.includes(choice)) s.removeItem(QUALITY_KEY);
+    else s.setItem(QUALITY_KEY, choice);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The short note beside the row: on Auto, what Auto is wearing now ("Auto: High"); on a manual
+ * choice nothing, because the pressed button already says it. `words` is COPY.quality.
+ */
+export function qualityNote(plan, words) {
+  if (!plan || plan.choice !== 'auto') return '';
+  const name = plan.stripped || plan.tier <= 0 ? words.choices.low : plan.tier === 1 ? words.choices.medium : words.choices.high;
+  return words.autoNow.replace('{tier}', name);
 }

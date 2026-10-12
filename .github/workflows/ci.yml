@@ -663,6 +663,14 @@ jobs:
         run: node tests/test_trains.mjs
       - name: the frame-rate latch trips once after three slow seconds; data-saver reads the connection (spec 0026 req 18)
         run: node tests/test_quality.mjs
+      # The settings a visitor can choose (spec 0073 requirements 6 and 8, 2026-10-12). Pure logic, so no
+      # browser: a choice of quality is a tier, the latch's removals, step counts and a pixel ratio, and
+      # is never above the device's ceiling; Measured hides what its registry row or its module says is
+      # generated, and a row or a module that does not say fails here.
+      - name: "the quality a visitor chooses: never above the device's ceiling, Low never promoted, the latch returns a manual choice to Auto once, one stored key (spec 0073 req 6)"
+        run: node tests/test_quality_setting.mjs
+      - name: "Measured or Film: every weather row and every module with noise in a shader says what Measured does, hidden rows are none and the rest move at the clock's rate (spec 0073 req 8)"
+        run: node tests/test_look_setting.mjs
       # The device tiers (2026-09-28): the tier from capability fixtures, one promotion by frames and
       # none past the latch, 4k fetched one at a time after the first frame and never on a phone,
       # and a boot set that is byte for byte what a first visit loaded before tiers existed.

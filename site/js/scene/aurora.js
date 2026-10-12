@@ -56,6 +56,7 @@ import {
   parseOvation, upsampleGrid, auroraMode, nextLookMs, mayLook, percentToByte,
 } from '../data/ovation.js';
 import { WGS84_A_KM } from './earth.js';
+import { drawnUnder } from './exposure.js';
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
 
 // --- tunables: every number the shader uses, named here and passed in -----------------------------
@@ -132,6 +133,12 @@ export const AURORA_GAIN = 0.5;
  * 2026-10-01: the latch tripped mid-probe on SwiftShader, the tier fell to 0, and the oval that had
  * two arcs a second before became a smooth neon disc, which is the look this file exists to avoid).
  */
+/**
+ * Under the Measured look (scene/exposure.js MEASURED_RULES): NOAA's grid is drawn and the folds, which
+ * are ours, are not. The card's sentence already has both forms (COPY.aurora.live, liveNoFolds).
+ */
+export const UNDER_MEASURED = { folds: 'hidden' };
+
 export const TIER_STEPS = [
   { maxSteps: 8, stepKm: 140, folds: true },
   { maxSteps: 16, stepKm: 70, folds: true },
@@ -898,7 +905,7 @@ export function createAurora({
      * Once a frame, after the Earth's update. `on` is the layer's box, `latched` the frame latch,
      * `reducedMotion` the media query, `discShare` the Earth's disc as a share of half the view.
      */
-    tick(clockMs, { on = true, latched = false, reducedMotion = false, discShare = 1 } = {}) {
+    tick(clockMs, { on = true, latched = false, reducedMotion = false, discShare = 1, look = 'film', top = false } = {}) {
       const wall = wallNow();
       const dt = lastTick === null ? 0 : Math.min(100, wall - lastTick);
       lastTick = wall;
@@ -914,18 +921,20 @@ export function createAurora({
       drawing.visible = visible;
       const cheapLatch = latched && !probe.ignoreLatch;
       const cheap = cheapLatch || tier.value <= 0;
-      const cfg = cheap ? TIER_STEPS[0] : TIER_STEPS[Math.min(2, tier.value)];
+      // `top` (the quality setting's Ultra): the most steps the shader takes, whatever the tier.
+      const cfg = cheap ? TIER_STEPS[0] : TIER_STEPS[top ? TIER_STEPS.length - 1 : Math.min(2, tier.value)];
+      const folds = cfg.folds && drawnUnder(look, UNDER_MEASURED.folds);
       const u = mesh.material.uniforms;
       u.uSteps.value = cfg.maxSteps;
       u.uStepKm.value = cfg.stepKm;
-      u.uFolds.value = cfg.folds ? 1 : 0;
-      drawing.folds = cfg.folds;
+      u.uFolds.value = folds ? 1 : 0;
+      if (folds !== drawing.folds) { drawing.folds = folds; onChange(api.state()); }
       drawing.steps = cfg.maxSteps;
       drawing.latched = !!latched;
       // Wall time for the folds, not app time: they are decoration, and a clock scrubbed at 1000x
       // must not whip them round the oval. Held still under reduced motion and the latch.
       if (probe.frozenTime !== null) u.uTime.value = probe.frozenTime;
-      else if (!reducedMotion && !cheapLatch && cfg.folds) u.uTime.value = (wall / 1000) % 100000;
+      else if (!reducedMotion && !cheapLatch && folds) u.uTime.value = (wall / 1000) % 100000;
       u.uGain.value = AURORA_GAIN * shown;
     },
     state() {

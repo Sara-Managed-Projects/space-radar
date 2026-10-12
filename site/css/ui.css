@@ -4860,6 +4860,24 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
 .sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+/* Quality (ui/qualitypanel.js, spec 0073 req 6): the title and a mono note of what Auto wears now on
+   one line, then up to five choices across the row's whole width, one line, never wrapped. */
+.sr-quality .sr-density__choices { flex-basis: 100%; }
+.sr-quality .sr-density__btn { padding: 0 var(--sp-1); white-space: nowrap; }
+.sr-quality__note {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/1.2 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+.sr-quality__note[hidden] { display: none; }
+/* Look (ui/exposure.js lookPanel): "Film" is a short word, 43 px wide as a button. On a finger's screen
+   the row's buttons get more padding, which takes it past 44. Not a min-width: on a flex item with a
+   basis of nothing that replaces the automatic minimum, and "Measured" was then squeezed and cut
+   (seen in a look run, 2026-10-12). */
+@media (pointer: coarse) {
+  .sr-look .sr-density__btn { padding: 0 var(--sp-3); }
+}
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */

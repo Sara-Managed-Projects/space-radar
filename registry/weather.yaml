@@ -13,6 +13,14 @@
 # off_at      where the effect is not drawn. Every row lists `tier0` (the lowest device tier) and
 #             `save_data` (a connection that asks for less): check_registry.py refuses a row
 #             without both (spec 0066 requirement 8).
+# measured    what the effect does under the MEASURED look (spec 0073 requirement 8; the visitor's choice of
+#             Measured or Film, scene/exposure.js). One of three, and scene/weather/worldweather.js setLook()
+#             is the one place that reads it:
+#               same   drawn as in Film. Every `measured` row, and a `modelled` one, whose motion is
+#                      already the app's clock at its true rate: nothing in this file is sped up.
+#               still  drawn and held still: a real thing at a real place whose motion is ours.
+#               hidden not drawn. Every `illustrative` row: check_registry.py refuses `same` there.
+#             A row without it is refused, so a new effect cannot forget to answer.
 # source      name, url and the day it was read. A measured row also carries `cors:` -- the header
 #             as curl printed it with `Origin: https://www.spaceradar.ai`.
 #
@@ -37,6 +45,7 @@ effects:
     class: measured
     layer: lightning
     off_at: [tier0, save_data, reduced_motion]
+    measured: same
     source:
       name: "NOAA nowCOAST, Lightning Strike Density (NWS Ocean Prediction Center; ground networks NLDN and GLD360)"
       url: "https://nowcoast.noaa.gov/geoserver/lightning_detection/wms"
@@ -61,6 +70,7 @@ effects:
     class: measured
     layer: earth-events
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "NASA EONET v3, the Earth Observatory Natural Event Tracker (NASA GSFC ESDIS); events from IRWIN, GDACS, the Smithsonian Global Volcanism Program and the US National Ice Center"
       url: "https://eonet.gsfc.nasa.gov/api/v3/events"
@@ -75,6 +85,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Tollefson et al. 2017, Changes in Jupiter's Zonal Wind Profile preceding and during the Juno mission, Icarus 296, 163"
       url: "https://doi.org/10.1016/j.icarus.2017.06.007"
@@ -111,6 +122,7 @@ effects:
     kind: shear-eddies
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Tollefson et al. 2017, Icarus 296, 163 (the jets whose shear is used; see jupiter-bands)"
       url: "https://doi.org/10.1016/j.icarus.2017.06.007"
@@ -133,6 +145,7 @@ effects:
     kind: ovals
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Rogers 2019, Circulation in oval BA (BAA Jupiter Section, Juno PJ17 report, appendix 1: 9.9 deg/hr in the central part, 109 and 142 m/s in the annulus); Choi, Showman and Vasavada 2010, Icarus 207, 359 (Oval BA's rim at 140 to 150 m/s by New Horizons); NASA photojournal, Jupiter's Stunning Southern Hemisphere (9 November 2017: 'one of eight massive rotating storms at 40 degrees south latitude')"
       url: "https://britastro.org/wp-content/uploads/2019/02/PJ17-Appx1_BA-rotation.pdf"
@@ -166,6 +179,7 @@ effects:
     kind: polar-cyclones
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Adriani et al. 2018, Clusters of cyclones encircling Jupiter's poles, Nature 555, 216 (Juno JIRAM and JunoCam); Rogers, Eichstadt, Hansen, Orton et al. 2018, Results from Juno: Jupiter's polar polygons (BAA, 8 March 2018: the latitudes, sizes and turning used); NASA, Juno Navigators Enable Jupiter Cyclone Discovery (12 December 2019: the sixth southern cyclone of 3 November 2019, not drawn)"
       url: "https://doi.org/10.1038/nature25491"
@@ -193,6 +207,7 @@ effects:
     kind: cloud-depth
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "NASA Science, Jupiter: Facts (three cloud layers spanning about 71 km: ammonia ice, ammonium hydrosulfide, water)"
       url: "https://science.nasa.gov/jupiter/jupiter-facts/"
@@ -210,6 +225,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "García-Melendo et al. 2011, Saturn's zonal wind profile in 2004-2009 from Cassini ISS images, Icarus 215, 62"
       url: "https://doi.org/10.1016/j.icarus.2011.07.005"
@@ -227,6 +243,7 @@ effects:
     kind: hexagon
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Sánchez-Lavega et al. 2021, Interaction of Saturn's Hexagon with convective storms, GRL 48 (the jet at 78.1 N planetographic, 104 m/s); Godfrey 1988, Icarus 76, 335 (the discovery)"
       url: "https://doi.org/10.1029/2021GL092461"
@@ -239,6 +256,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Sánchez-Lavega et al. 2008, Variable winds on Venus mapped in three dimensions, GRL 35, L13204 (Venus Express VIRTIS, cloud tops)"
       url: "https://doi.org/10.1029/2008GL033817"
@@ -257,6 +275,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Sromovsky et al. 2015, High S/N Keck and Gemini AO imaging of Uranus during 2012-2014, Icarus 258, 192"
       url: "https://doi.org/10.1016/j.icarus.2015.05.029"
@@ -273,6 +292,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Sromovsky et al. 1993, Dynamics of Neptune's major cloud features, Icarus 105, 110 (Voyager 2; the fit u = -398 + 0.188 lat^2 - 1.2e-5 lat^4 m/s)"
       url: "https://doi.org/10.1006/icar.1993.1114"
@@ -291,6 +311,7 @@ effects:
     kind: mars-season
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Allison and McEwen 2000, Planet. Space Sci. 48, 215 (the season, Ls, from the date); Piqueux et al. 2015, Icarus 251, 164 (the seasonal caps' edges by Ls, MRO MCS); Kass et al. 2016, GRL 43, 6111 (the dusty season)"
       url: "https://doi.org/10.1016/S0032-0633(99)00092-6"
@@ -323,6 +344,7 @@ effects:
     kind: giant-lightning
     class: illustrative
     off_at: [tier0, save_data, reduced_motion]
+    measured: hidden
     source:
       name: "Brown et al. 2018, Prevalent lightning sferics at 600 megahertz near Jupiter's poles, Nature 558, 87 (Juno's microwave radiometer: 377 sferics, 'prevalent in the polar regions, absent near the equator, and most frequent in the northern hemisphere, at latitudes higher than 40 degrees north'); Becker et al. 2020, Nature 584, 55 (Juno's star camera: small flashes on the night side, from above the 2-bar level)"
       url: "https://doi.org/10.1038/s41586-018-0156-5"
@@ -335,6 +357,7 @@ effects:
     kind: giant-lightning
     class: illustrative
     off_at: [tier0, save_data, reduced_motion]
+    measured: hidden
     source:
       name: "Dyudina et al. 2010, Detection of visible lightning on Saturn, GRL 37, L09205 (Cassini's camera, 17 August 2009, night side: 'at -36.4 +- 0.1 degrees planetocentric latitude', one flash a minute, each lighting a spot about 200 km across); Dyudina et al. 2013, Icarus 226, 1020 (the great storm of 2010-2011 at about 35 N)"
       url: "https://doi.org/10.1029/2010GL043188"
@@ -349,6 +372,7 @@ effects:
     kind: planetary-wave
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Imai et al. 2019, Planetary-scale variations in winds and UV brightness at the Venusian cloud top, JGR Planets 124 (Akatsuki's ultraviolet imager at 365 nm, 2017: 'the 4-day Kelvin wave and 5-day Rossby wave with zonal wavenumber 1'); JAXA, Akatsuki's UVI pictures ('a vast darker region which has a shape of laid V or Y ... flows westward')"
       url: "https://arxiv.org/abs/1908.08220"
@@ -363,6 +387,7 @@ effects:
     kind: cloud-patches
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "NASA, Webb and Keck telescopes team up to track clouds on Titan (1 December 2022: Webb on 4 November 2022 and Keck two days later, one cloud 'over the northern polar region near Kraken Mare'); Nixon et al. 2025, Nature Astronomy (November 2022 and July 2023: 'northern hemisphere tropospheric clouds evolving in altitude')"
       url: "https://science.nasa.gov/blogs/webb/2022/12/01/webb-keck-telescopes-team-up-to-track-clouds-on-saturns-moon-titan/"
