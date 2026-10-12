@@ -47,6 +47,7 @@ texture_tiers:
 
 sources:
   - id: horizons-phoebe-orbiters
+    publisher: NASA JPL
     url: https://ssd.jpl.nasa.gov/api/horizons.api
     auth: none
     browser: false
