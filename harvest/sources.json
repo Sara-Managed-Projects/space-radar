@@ -444,6 +444,28 @@
       ]
     },
     {
+      "id": "ocean-currents",
+      "url": "https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.json?u_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D,v_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "96h",
+      "parser": "sea_grid",
+      "outputs": [
+        "ocean-currents.json"
+      ]
+    },
+    {
+      "id": "ocean-temperature",
+      "url": "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.json?sst%5B(last)%5D%5B(0.0)%5D%5B(-89.875):4:(89.875)%5D%5B(0.125):4:(359.875)%5D",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "96h",
+      "parser": "sea_grid",
+      "outputs": [
+        "ocean-temperature.json"
+      ]
+    },
+    {
       "id": "gdacs-tc",
       "url": "https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20",
       "auth": "none",

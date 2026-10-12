@@ -85,6 +85,10 @@
     "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m[(2026-10-09T15:00:00Z)][(-90):10:(90)][(0):10:(355)],vgrd10m[...same...]",
     "note": "read 2026-10-09; header keys verbatim, `rows` cut from 2 664 to the first 12"
   },
+  "sea_grid.json": {
+    "url": "https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.json?u_current[(2026-10-10T00:00:00Z)][(24.125):4:(30.125)][(-82.875):4:(-75.875)],v_current[...same...]",
+    "note": "read 2026-10-12, whole and verbatim: the 7 x 8 points round Florida and the Bahamas, from the day the harvester's own request (the same over the whole globe: 64 800 rows, 4.4 MB) answered with. `null` is land"
+  },
   "eonet.json": {
     "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30",
     "note": "captured 2026-10-07 (the same file as tests/fixtures/eonet/wildfires.json), whole"

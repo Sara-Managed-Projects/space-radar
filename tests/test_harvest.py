@@ -57,6 +57,7 @@ EXPECTED_COUNTS = {
     "swpc": 81,
     "swpc_ovation": 10,
     "wind": 12,
+    "sea_grid": 48,       # 56 points round Florida, 8 of them land: cells with a value are counted
     "eonet": 4,
     "swpc_solar_regions": 11,
     "wikidata": 3,
@@ -170,6 +171,59 @@ class Parsers(unittest.TestCase):
         self.assertTrue(gp_mod.not_modified(CELESTRAK_TEXT))
         self.assertFalse(gp_mod.not_modified("[]"))
         self.assertFalse(gp_mod.not_modified("Forbidden"))
+
+
+# --- 1b. the one parser that packs (the ocean currents overlay) ----------------------------------------
+
+
+class SeaGrid(unittest.TestCase):
+    """MEASURED 2026-10-12: the currents' table is 4.4 MB for 64 800 rows, nearly all of it coordinates."""
+
+    def test_the_florida_current_is_packed_as_the_source_gave_it(self):
+        body, _, _ = fixture("sea_grid")
+        g = parsers.load("sea_grid").pack(body)
+        self.assertEqual((g["grid"], g["time"], g["lat0"], g["lon0"], g["stepDeg"], g["nLat"], g["nLon"], g["cells"]),
+                         ("sea-grid/1", "2026-10-10T00:00:00Z", 24.125, -82.875, 1.0, 7, 8, 48))
+        v = [row.split(",") for row in g["fields"]["v_current"]["rows"]]
+        u = [row.split(",") for row in g["fields"]["u_current"]["rows"]]
+        self.assertEqual(g["fields"]["v_current"]["scale"], 100)
+        # Row 0 is the southernmost latitude whatever order the server sent; column 3 is 79.875 W,
+        # where the Florida Current runs north at more than a metre a second between Florida and the Bahamas.
+        self.assertEqual([v[j][3] for j in (3, 4, 5, 6)], ["125", "122", "129", "124"])
+        # Land is nothing at all, in both components, and never a zero.
+        self.assertEqual((u[3][1], v[3][1], u[3][2], v[3][2]), ("", "", "", ""))
+        self.assertEqual(sum(1 for row in u for x in row if x != ""), 48)
+        by_place = {(r[1], r[2]): r for r in body["table"]["rows"]}
+        self.assertEqual(int(u[0][2]), round(by_place[(24.125, -80.875)][3] * 100))
+
+    def test_a_grid_that_is_not_whole_or_not_one_day_is_refused(self):
+        mod = parsers.load("sea_grid")
+        body, _, _ = fixture("sea_grid")
+        short = json.loads(json.dumps(body)); short["table"]["rows"].pop()
+        two = json.loads(json.dumps(body)); two["table"]["rows"][0][0] = "2026-10-09T00:00:00Z"
+        twice = json.loads(json.dumps(body)); twice["table"]["rows"][1] = list(twice["table"]["rows"][0])
+        other = json.loads(json.dumps(body)); other["table"]["columnNames"][3] = "chlorophyll"
+        for bad in (short, two, twice, other):
+            with self.assertRaises(ValueError):
+                mod.pack(bad)
+        # One component alone has no direction: the cell is no data, and is not counted.
+        half = json.loads(json.dumps(body)); half["table"]["rows"][0][4] = None
+        self.assertEqual(mod.count(half), 47)
+        self.assertEqual(mod.pack(half)["cells"], 47)
+
+    def test_the_run_saves_the_packed_grid_and_counts_what_the_source_sent(self):
+        _, text, ct = fixture("sea_grid")
+        with tempfile.TemporaryDirectory() as tmp:
+            store = snap.DirStore(tmp)
+            src = source(id="ocean-currents", parser="sea_grid", refresh="24h", outputs=("ocean-currents.json",))
+            doc = run(store, [src], now=NOW, fetcher=Fetcher(lambda url, *_: response(url, text=text, content_type=ct)), log=lambda _l: None)
+            e = doc["snapshots"]["ocean-currents"]
+            self.assertEqual((e["status"], e["items"], e["bytes"]), ("ok", 48, len(text.encode("utf-8"))))
+            saved = snap.read_snapshot(store, "ocean-currents")
+            self.assertEqual(saved["source"], "ocean-currents")
+            self.assertEqual(saved["body"]["grid"], "sea-grid/1")
+            self.assertNotIn("table", saved["body"])
+            self.assertLess(len(json.dumps(saved["body"])), len(text) // 4)
 
 
 # --- 2. the guard ---------------------------------------------------------------------------------

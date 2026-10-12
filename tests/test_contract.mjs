@@ -2959,12 +2959,12 @@ for (const file of allFiles) {
   // watched to fail on a scratch full-screen quad (the acceptance of the task)
   const scratch = 'const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: "void main(){ gl_Position = vec4( position.xy, 0.0, 1.0 ); }" }));';
   if (quadWords(scratch).length < 2) problems.push('QUAD     the full-screen-quad check does not catch a scratch quad: it is not watching');
-  for (const f of ['wind.js']) {
+  for (const f of ['wind.js', 'currents.js']) {
     const src = readFileSync(join(JS, 'scene', f), 'utf8');
     const hit = quadWords(src);
     if (hit.length) problems.push(`QUAD     scene/${f} draws a screen-covering pass (${hit.join(', ')}): a streak layer is LineSegments on the Earth's frame (internal #146)`);
   }
-  notes.push('quad: scene/wind.js is lines, not a full-screen pass (and the check fails on a scratch quad)');
+  notes.push('quad: scene/wind.js and scene/currents.js are lines, not a full-screen pass (and the check fails on a scratch quad)');
 }
 
 // --- spec 0034: what stays forbidden, and the cinematic numbers ------------------------------

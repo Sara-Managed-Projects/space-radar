@@ -21,7 +21,9 @@ on:
         # site reads first and the publishers' servers answered from a runner; with them in the
         # default one run makes every file a browser still asks a third party for, and
         # scripts/refresh-snapshots.sh --from-run=<id> publishes them with the rest.
-        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat celestrak-last30 wind eonet-fires eonet-volcanoes-ice swpc-solar-regions"
+        # THE LAST TWO (2026-10-12): the sea's currents and its temperature, a day each, packed by
+        # harvest/parsers/sea_grid.py; the "Ocean currents" choice under Earth data needs both.
+        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat celestrak-last30 wind eonet-fires eonet-volcanoes-ice swpc-solar-regions ocean-currents ocean-temperature"
 
 permissions:
   contents: read

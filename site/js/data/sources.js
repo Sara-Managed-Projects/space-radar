@@ -413,6 +413,37 @@ export const SOURCES = {
     note: '168.8 kB, 37 x 72 points for one forecast hour, measured 2026-10-09.',
   },
 
+  // The ocean currents overlay's two fields (scene/currents.js, data/currents.js). Read only from our
+  // saved copies: `browser: false`, registry/sources.yaml says why (no CORS header, megabytes unpacked).
+  // Nothing calls load() for them; the Earth data panel asks snapshotAvailable() for both and offers
+  // "Ocean currents" only when both exist.
+  'ocean-currents': {
+    id: 'ocean-currents',
+    registryId: 'ocean-currents',
+    label: 'Ocean currents — NOAA CoastWatch, from satellite altimetry',
+    publisher: 'NOAA CoastWatch',
+    url: 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 96 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products)',
+    note: '262 kB saved (4.4 MB asked for), 180 x 360 points for one day, measured 2026-10-12.',
+  },
+  'ocean-temperature': {
+    id: 'ocean-temperature',
+    registryId: 'ocean-temperature',
+    label: 'Sea temperature — NOAA OISST v2.1',
+    publisher: 'NOAA NCEI, through NOAA CoastWatch West Coast',
+    url: 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.html',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 96 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP',
+    note: '184 kB saved (3.8 MB asked for), 180 x 360 points for one day, measured 2026-10-12.',
+  },
+
   // --- Sources a browser cannot reach -------------------------------------------------------
   // Present so the status panel can say "could not look" about them by name, which is a
   // different answer from "stale" and a very different answer from "fine". Every one of these

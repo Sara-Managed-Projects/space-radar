@@ -442,6 +442,58 @@ sources:
     terms_url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html
     terms_recorded: 2026-10-09
 
+  # THE SEA'S SURFACE CURRENTS AND ITS TEMPERATURE, for the "Ocean currents" choice under Earth data
+  # (site/js/scene/currents.js, site/js/data/currents.js). Two rows, because they are two datasets on two
+  # servers and the harvester asks one address a row; the page needs both and offers the choice only
+  # when both are saved. MEASURED 2026-10-12 with curl and `Origin: https://www.spaceradar.ai`:
+  #   * each answered 200 in 2 to 3 s with NO Access-Control-Allow-Origin header, so `browser: false`:
+  #     only our saved copy is read, as with the wind;
+  #   * each is one day, every fourth point of a quarter-degree grid (180 x 360), as ERDDAP's table:
+  #     4 441 424 bytes for the currents and 3 792 789 for the temperature, nearly all of it the
+  #     coordinates repeated on 64 800 rows. So harvest/parsers/sea_grid.py PACKS what is saved (the
+  #     one parser that does; it says how): 262 kB and 184 kB, 72 kB and 37 kB gzipped;
+  #   * `(last)` is the newest day each server holds: 10 October for both that day, two days behind.
+  # CURRENTS: NOAA CoastWatch, "Sea Surface Currents (Geostrophic), Altimetry (S-3A/B, CryoSat2,
+  # Jason-2/3, SARAL), Near Real-Time, Global 0.25 deg, Daily": worked out from the slope of the sea's
+  # height that radar altimeters measure (NOAA's Laboratory for Satellite Altimetry, from RADS), with
+  # the mean dynamic topography CNES/CLS 2013. Geostrophic means the steady part of the flow: no
+  # tides, no wind-driven drift. Its licence attribute (noaacwBLENDEDNRTcurrentsDaily.das): "Data
+  # courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products.
+  # The data may be used and redistributed for free but is not intended for legal use, since it may
+  # contain inaccuracies."
+  # TEMPERATURE: NOAA NCEI's Daily Optimum Interpolation Sea Surface Temperature (OISST) v2.1, the
+  # near-real-time files, served by the CoastWatch West Coast node (NOAA NMFS SWFSC ERD): satellites
+  # (AVHRR), ships, buoys and Argo floats, the gaps filled by interpolation. The same licence
+  # attribute ("may be used and redistributed for free ..."). NCEI asks for the citation that
+  # CREDITS.md 4.22 carries in full (doi:10.25921/RE9P-PT57).
+  # NOT USED, checked the same day: NASA OSCAR (PO.DAAC: an Earthdata login), Copernicus Marine (an
+  # account), and a finer grid (every second point is 17 MB to ask for and a megabyte to save).
+  - id: ocean-currents
+    url: https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.json?u_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D,v_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D
+    auth: none
+    browser: false
+    cadence: 24h
+    freshness_max: 96h
+    parser: sea_grid
+    outputs: [ocean-currents.json]
+    attribution: "Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products)"
+    licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-12)"
+    terms_url: https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html
+    terms_recorded: 2026-10-12
+
+  - id: ocean-temperature
+    url: https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.json?sst%5B(last)%5D%5B(0.0)%5D%5B(-89.875):4:(89.875)%5D%5B(0.125):4:(359.875)%5D
+    auth: none
+    browser: false
+    cadence: 24h
+    freshness_max: 96h
+    parser: sea_grid
+    outputs: [ocean-temperature.json]
+    attribution: "Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP"
+    licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-12); NCEI asks to be cited"
+    terms_url: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C01606/html
+    terms_recorded: 2026-10-12
+
   # Tropical cyclones, worldwide, from GDACS (the UN / European Commission disaster alert system,
   # run by the EC Joint Research Centre). MEASURED 2026-09-28: `Access-Control-Allow-Origin: *`,
   # 27 646 bytes for the newest 20 storms in about 1-4 s. `pageSize=20` because the list is newest

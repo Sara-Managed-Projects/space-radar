@@ -108,6 +108,8 @@ const DEFERRED = {
   'js/scene/aurora.js': 'the aurora: AURORA_IMPORT_MS after sr:layers-ready',
   'js/scene/wind.js': 'the wind: main.js fetches it when Wind is chosen under Earth data',
   'js/data/wind.js': 'the wind field\'s request and arithmetic: with scene/wind.js',
+  'js/scene/currents.js': 'the ocean currents: main.js fetches it when Ocean currents is chosen under Earth data',
+  'js/data/currents.js': 'the currents\' and the sea temperature\'s saved copies and arithmetic: with scene/currents.js',
   'js/data/eonet.js': 'fires, volcanoes and icebergs: data/layers.js fetches it when the layer is ticked',
   'js/data/systems-index.js': 'which stars have a stage: main.js fetches it with the exoplanet table, after the first visit',
   'js/data/systems-table.js': 'thirty-nine star systems in full: scene/systems.js fetches them the first time one is asked for',

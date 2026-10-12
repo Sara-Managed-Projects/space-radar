@@ -744,6 +744,11 @@ jobs:
       # the one request, a grid refused unless whole, the step along the wind, the drawing, nothing at boot.
       - name: the wind is one request for a whole grid, drawn as streaks that move with it, or stand still when asked
         run: node tests/test_wind.mjs
+      # The wind's sibling: the sea's currents from NOAA CoastWatch's altimetry, coloured by NOAA's OISST
+      # sea temperature (no network here): two packed saved copies refused unless whole, the step that
+      # stops at a shore, streaks never over land, the ramp, the sentence, nothing at boot.
+      - name: ocean currents are two saved grids, drawn as streaks coloured by the sea's temperature that never cross land
+        run: node tests/test_currents.mjs
       # Spec 0053 task 3: the aurora, NOAA's OVATION forecast on the night side, against the answer NOAA
       # really gave on 2026-09-30 (saved): the decode, the night mask and colour ramp twins, the
       # schedule, and the card's "not a photograph".

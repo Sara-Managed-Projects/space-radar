@@ -41,6 +41,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
 | Fires, volcanoes and icebergs | NASA EONET | NASA service; its disclaimer | [4.20](#420-nasa-eonet--fires-volcanoes-and-icebergs-2026-10-07) |
 | The wind | NOAA/NCEP GFS, through PacIOOS ERDDAP | free to use and redistribute | [4.21](#421-noaa-gfs-through-pacioos--the-wind-2026-10-07) |
+| Ocean currents, and the sea temperature that colours them | NOAA CoastWatch (altimetry; Copernicus Sentinel, AVISO+); NOAA NCEI OISST v2.1 | free to use and redistribute; citation asked | [4.22](#422-noaa-coastwatch-and-noaa-oisst--ocean-currents-2026-10-12) |
 | Moon and Mars close-up tiles and relief; the Earth close up | NASA Solar System Treks; USGS Astrogeology; NASA GIBS | NASA content; HRSC's share of Mars's relief CC BY-SA 3.0 IGO | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
 | Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
@@ -1436,6 +1437,8 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `eonet-fires`, `eonet-volcanoes-ice` | NASA Earth Observatory Natural Event Tracker (EONET) | open fires, volcanoes and sea-ice events, saved hourly (internal #525) | §4.20: no licence beyond EONET's disclaimer; NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09). The events are reported by IRWIN, GDACS, the Smithsonian's Global Volcanism Program and the US National Ice Center; the Smithsonian's terms page answered 403 to our reader on 2026-10-09 and has NOT been read. | Fires, volcanoes and sea ice: NASA EONET | `eonet.gsfc.nasa.gov` |
 | `swpc-solar-regions` | NOAA Space Weather Prediction Center | today's sunspot groups (the solar region summary), saved hourly | US Government work, public domain (§4.4; "may be used without charge for any lawful purpose", <https://www.weather.gov/disclaimer>, read 2026-10-09) | Sunspot groups: NOAA SWPC | `services.swpc.noaa.gov` |
 | `wind` | NOAA/NCEP Global Forecast System, through PacIOOS (University of Hawaii) | the wind ten metres up, one forecast hour | §4.21: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-09) | Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii) | `pae-paha.pacioos.hawaii.edu` |
+| `ocean-currents` | NOAA CoastWatch (NOAA NESDIS, Laboratory for Satellite Altimetry) | the sea's surface current worked out from satellite altimetry, one day, every fourth point of a quarter-degree grid | §4.22: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products. The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12) | Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) | `coastwatch.noaa.gov` |
+| `ocean-temperature` | NOAA National Centers for Environmental Information, through the CoastWatch West Coast node (NOAA NMFS SWFSC ERD) | the sea surface temperature (OISST v2.1, near real time), one day, every fourth point | §4.22: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12); NCEI asks for the citation in §4.22 | Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP | `coastwatch.pfeg.noaa.gov` |
 | `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
 | `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
 | `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
@@ -1518,6 +1521,61 @@ copied into this repository except four rows in `tests/fixtures/wind/head.json`.
 Tested the same day and not used: NOAA CoastWatch's ERDDAP copy of the dataset (no
 `Access-Control-Allow-Origin` header), NOAA NOMADS (GRIB2 files; its filter script did not
 answer), and Open-Meteo (its free API is for non-commercial use only).
+
+### 4.22 NOAA CoastWatch and NOAA OISST — ocean currents (2026-10-12)
+
+"Ocean currents" under Earth data draws moving streaks that follow the sea's surface current and
+are coloured by the sea's temperature (`site/js/scene/currents.js`, `site/js/data/currents.js`). It is
+made from two datasets, each read by our harvester (`harvest/parsers/sea_grid.py`) and saved as a
+packed copy under `/data/v1/`; a visitor's browser reads those copies, when the choice is made and
+never at boot, and never calls either server (each answered with no `Access-Control-Allow-Origin`
+header on 2026-10-12). The choice is offered only while the manifest lists both copies.
+
+**The currents** (`registry/sources.yaml` row `ocean-currents`): NOAA CoastWatch's "Sea Surface
+Currents (Geostrophic), Altimetry (S-3A/B, CryoSat2, Jason-2/3, SARAL), Near Real-Time, Global
+0.25°, 2017-present, Daily", dataset `noaacwBLENDEDNRTcurrentsDaily`
+(<https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html>, read 2026-10-12),
+institution NOAA NESDIS CoastWatch, made by NOAA's Laboratory for Satellite Altimetry from the Radar
+Altimeter Database System (RADS) with the mean dynamic topography MDT CNES/CLS 2013. Its licence
+attribute, in full: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated
+using AVISO+ products. The data may be used and redistributed for free but is not intended for legal
+use, since it may contain inaccuracies. Neither the data Contributor, ERD, NOAA, nor the United
+States Government, nor any of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a particular purpose, or assumes
+any legal liability for the accuracy, completeness, or usefulness, of this information." The three
+credits that sentence asks for are in the line the legend prints. No page asking for a particular
+citation of this product was found that day (the product pages tried on coastwatch.noaa.gov answered
+404); the dataset names Eric.Leuliette@noaa.gov as its creator.
+
+**The temperature** (row `ocean-temperature`): NOAA's 1/4° Daily Optimum Interpolation Sea Surface
+Temperature (OISST), version 2.1, the near-real-time files, dataset `ncdcOisst21NrtAgg` on the
+CoastWatch West Coast node's ERDDAP
+(<https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.html>, read 2026-10-12). Its
+licence attribute is the same sentence: "The data may be used and redistributed for free but is not
+intended for legal use, since it may contain inaccuracies. [...]". NCEI's record for the dataset
+(<https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C01606/html>, read
+2026-10-12) asks: "Cite as: Huang, Boyin; Liu, Chunying; Banzon, Viva F.; Freeman, Eric; Graham,
+Garrett; Hankins, William; Smith, Thomas M.; Zhang, Huai-Min. (2020): NOAA 0.25-degree Daily Optimum
+Interpolation Sea Surface Temperature (OISST), Version 2.1. [indicate subset used]. NOAA National
+Centers for Environmental Information. https://doi.org/10.25921/RE9P-PT57. Accessed [date]." The
+subset used is the sea surface temperature of the newest near-real-time day, every fourth point;
+accessed daily by the harvester, first on 2026-10-12.
+
+**What is changed.** Each is one day at every fourth point of the quarter-degree grid (180 × 360),
+rounded to a centimetre a second and a tenth of a degree and packed (262 kB and 184 kB, from 4.4 MB
+and 3.8 MB of JSON). Nothing is smoothed, filled or interpolated before it is saved. The legend's
+sentence gives the day of each, says the current is the steady (geostrophic) flow with no tides and
+no wind drift, that it is least sure on the equator, and by how much the motion is sped up. Nothing
+of either is in this repository except the 56 points of `tests/fixtures/harvest/sea_grid.json`.
+
+**The colours** are ColorBrewer's seven-class RdYlBu scheme, reversed (Cynthia A. Brewer, Geography,
+Pennsylvania State University, <https://colorbrewer2.org>, which marks it colour-blind safe).
+ColorBrewer's colour schemes are © Cynthia Brewer, Mark Harrower and The Pennsylvania State
+University, under the Apache License 2.0 (<https://github.com/axismaps/colorbrewer>, `LICENCE.txt`,
+read 2026-10-12).
+
+Checked the same day and not used: NASA OSCAR (PO.DAAC asks for an Earthdata login), Copernicus
+Marine (asks for an account), and NOAA's RTOFS model on NOMADS (files of hundreds of megabytes).
 
 ## 4.6 Third-party trademarks the app names or draws
 
