@@ -30,6 +30,7 @@ import { showCard, hideCard, wantCards } from './ui/cardgate.js';
 import { createShell } from './ui/shell.js';
 import { createExplore } from './ui/explore.js';
 import { createRail } from './ui/rail.js';
+import { toast } from './ui/share.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
@@ -47,7 +48,7 @@ import { createLod } from './scene/lod.js';
 import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
-import { createExposure, DEFAULT_EXPOSURE } from './scene/exposure.js';
+import { createExposure, DEFAULT_EXPOSURE, createDrawn, DEFAULT_DRAWN } from './scene/exposure.js';
 import { isLadderStage, isSystemStage } from './scene/stage.js';
 import { createSystems, loadIndex as loadSystemIndex } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
@@ -59,7 +60,7 @@ import { createGroundTrack } from './scene/groundtrack.js';
 import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings, periodMsOfWorld, MARKER_PX } from './scene/orbitrings.js';
 import { tripOwnsCard } from './ui/tripstate.js';
-import { createFrameLatch, createScaleGovernor, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, lookHeld, movingReasons } from './scene/quality.js';
+import { createFrameLatch, createScaleGovernor, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, lookHeld, movingReasons, qualityPlan, qualityAfterLatch, readQualityChoice, writeQualityChoice, offeredQualities } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
 import { TEXTURES } from './data/textures.js';
@@ -360,6 +361,20 @@ export async function boot({ setStatus } = {}) {
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
+  });
+  // MEASURED OR FILM (spec 0073 requirement 8, scene/exposure.js): the second word on the same control.
+  // ONE question on the context, `ctx.look()`, which the loop hands to the three places that draw
+  // generated detail (the weather, the Sun close up, the aurora's folds); each answers from its own
+  // declared rule. A shared link carries it as `drawn` when it is not Film, exactly as `exp`.
+  const drawn = createDrawn({ initial: link && !link.unknownVersion ? link.drawn : undefined });
+  ctx.drawn = drawn;
+  ctx.look = () => drawn.mode();
+  drawn.onChange((mode) => {
+    if (ctx.weather && ctx.weather.setLook) ctx.weather.setLook(mode);
+    writeUrlState({ drawn: mode === DEFAULT_DRAWN ? null : mode });
+    window.dispatchEvent(new CustomEvent('sr:look', { detail: { mode } }));
+    // The cards' lines say which look is on: the weather tells its own (setLook above), and the Sun's listens to sr:tier.
+    if (ctx.quality) window.dispatchEvent(new CustomEvent('sr:tier', { detail: ctx.quality.describe() }));
   });
   // The canvas says what is selected (public #315): its name is the page's own sentence until then.
   const stageEl = document.getElementById('stage');
@@ -892,6 +907,7 @@ export async function boot({ setStatus } = {}) {
   // scene/worlds.js's own shader and nothing is fetched. The tier is the boot tier (ctx.quality is
   // made below, before the layers land); a device promoted later keeps what it booted with.
   ctx.weather = weatherStandIn(auroraSaveData, () => isLayerOn('lightning'));
+  let weatherAsked = false;
   function loadWeatherLater() {
     const off = auroraSaveData || !ctx.quality || ctx.quality.bootTier < 1;
     if (off) {
@@ -899,6 +915,11 @@ export async function boot({ setStatus } = {}) {
       window.dispatchEvent(new CustomEvent('sr:weather'));
       return;
     }
+    loadWeather(false);
+  }
+  function loadWeather(now) {
+    if (weatherAsked) return;
+    weatherAsked = true;
     const readyAt = performance.now();
     const load = () => import('./scene/weather/index.js').then((m) => {
       const weather = m.createWeather({
@@ -909,6 +930,7 @@ export async function boot({ setStatus } = {}) {
         onChange: () => window.dispatchEvent(new CustomEvent('sr:weather')),
       });
       if (ctx.latch && ctx.latch.latched) weather.latch();
+      weather.setLook(ctx.look());
       ctx.weather = weather;
       weather.start({ elapsedMs: performance.now() - readyAt });
       window.dispatchEvent(new CustomEvent('sr:weather'));
@@ -917,8 +939,15 @@ export async function boot({ setStatus } = {}) {
       console.warn('the weather modules did not load', e);
       window.dispatchEvent(new CustomEvent('sr:weather'));
     });
-    afterFirstVisit(WEATHER_IMPORT_MS, load);
+    if (now) load(); else afterFirstVisit(WEATHER_IMPORT_MS, load);
   }
+  // The quality setting was raised from Low after the boot (createQuality's setChoice): a device that
+  // booted without the weather fetches it now, unless the connection asked to save data.
+  ctx.wantWeather = () => {
+    if (embed || weatherAsked || auroraSaveData || !ctx.quality || ctx.quality.tier < 1) return;
+    ctx.weather = weatherStandIn(false, () => isLayerOn('lightning'));
+    loadWeather(true);
+  };
   if (!embed) window.addEventListener('sr:layers-ready', loadWeatherLater, { once: true });
   {
     const layer = layerRec('lightning');
@@ -2132,13 +2161,22 @@ function createQuality(ctx, renderer, starfield, worlds) {
     pick.ceiling = pick.tier;
     pick.reasons = ['pinned by ?tier=' + forced];
   }
-  const promoter = createTierPromoter({ tier: pick.tier, ceiling: pick.ceiling });
+  // THE VISITOR'S OWN CHOICE (spec 0073 requirement 6; scene/quality.js qualityPlan): Auto, Low, Medium,
+  // High, Ultra, remembered in this browser and READ HERE, before the tier is acted on, so a visit
+  // that chose Low never fetches or draws a frame of anything higher. Auto is the pick above, as it
+  // always was. `autoTier` is what Auto wears: the pick, or the pick after its one promotion.
+  let autoTier = pick.tier;
+  let autoPromoted = false;
+  let plan = qualityPlan(readQualityChoice(), { tier: autoTier, ceiling: pick.ceiling }, false);
+  // A manual choice is not promoted: its promoter's ceiling is its own tier.
+  const promoterFor = (p) => createTierPromoter({ tier: p.tier, ceiling: p.promote && !autoPromoted ? pick.ceiling : p.tier });
+  let promoter = promoterFor(plan);
   const aniso = renderer.capabilities && renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 8;
   const loader = new THREE.TextureLoader();
   const earthMesh = () => worlds.meshFor('earth');
   const deviceOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
   const tiers = createTextureTiers({
-    tier: pick.tier,
+    tier: plan.tier,
     offline: deviceOffline,
     month: () => new Date(clock.now()).getUTCMonth() + 1,
     // decode() before the texture is handed over: Chrome otherwise decodes a 4k image on the main
@@ -2184,9 +2222,11 @@ function createQuality(ctx, renderer, starfield, worlds) {
   const holdFor = (tier) => worlds.setMapsHeld(MAPS_HELD[Math.min(Math.max(0, tier), MAPS_HELD.length - 1)]);
   // Mercury's relief (scene/worlds.js THE RELIEF): tier 1 and up, and never under the frame latch.
   // The Earth's shell is marched in more steps on a higher tier, and in its fewest for good under the latch.
-  const reliefFor = (tier) => { worlds.setRelief(tier >= 1 && !tiers.latched); setEarthAirQuality(earthMesh(), tier, tiers.latched); };
-  holdFor(pick.tier);
-  reliefFor(pick.tier);
+  // `plan.stripped` is the latch's removals: the latch itself, or Low chosen (which can be left again:
+  // `release`). `top`: Ultra marches the shell in the most steps its shader takes.
+  const reliefFor = (tier) => { worlds.setRelief(tier >= 1 && !plan.stripped); setEarthAirQuality(earthMesh(), tier, plan.stripped, { top: plan.steps === 'top', release: !tiers.latched }); };
+  holdFor(plan.tier);
+  reliefFor(plan.tier);
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
   // Spec 0065: a close world drawn from the missions' own map tiles. OFF THE FIRST VISIT, like the
   // aurora: scene/tiles.js and its two helpers are imported only once a world is PLANET_TILES_AT of
@@ -2199,7 +2239,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
   // went with the estimate would be the flapping the latch exists to prevent.
   const tilesSaveData = shouldSaveData(nav.connection);
   function planetTilesWanted() {
-    if (planetTilesAsked || tilesSaveData || tiers.latched || tiers.tier < 1) return;
+    if (planetTilesAsked || tilesSaveData || plan.stripped || tiers.tier < 1) return;
     // OFFLINE (internal #564, the integration pass of 2026-10-10): a kept trip played with no network asked
     // NASA's Moon mosaic for six tiles that could only fail. Asked again by the next tick once the network is back.
     if (deviceOffline()) return;
@@ -2215,6 +2255,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
         onChange: say, // the Sources panel prints the mosaic's credit while its tiles are on screen
       });
       if (tiers.latched) planetTiles.latch();
+      else planetTiles.setQuality(tiers.tier, plan.stripped); // the choice may have changed while the module was on its way
     }).catch(() => { /* the globe's own map is what is on screen; nothing else depends on this */ });
   }
   // The Sun as a star (2026-10-06, spec 0055 task 3, scene/sun.js): limb darkening, grain, today's
@@ -2222,36 +2263,105 @@ function createQuality(ctx, renderer, starfield, worlds) {
   // time the Sun's disc is SUN_DETAIL_AT of half the view, and NOAA's list of today's groups once,
   // then, unless the connection asked to save data. Under the latch the flat disc comes back.
   let sunAsked = false;
+  // The Sun's detail reads its tier when it is made (its shader, how many prominences it holds), so a
+  // changed quality makes it again (remakeSun below). The three lists are read once and kept here.
+  let sunMade = 0;
+  const sunLists = { regions: null, flares: null, cmes: null, asked: false };
   function sunWanted() {
-    if (sunAsked || tiers.latched || worlds.discShare('sun') < SUN_DETAIL_AT) return;
+    if (sunAsked || plan.stripped || worlds.discShare('sun') < SUN_DETAIL_AT) return;
     sunAsked = true;
+    const made = sunMade;
     import('./scene/sun.js').then((m) => {
+      if (made !== sunMade || plan.stripped) { sunAsked = false; return; } // the quality changed on the way
       const detail = m.createSunDetail({ mesh: worlds.meshFor('sun'), camera: ctx.camera, tier: tiers.tier });
       if (!detail) return;
       if (tiers.latched) detail.latch();
       ctx.sunDetail = detail;
+      if (sunLists.regions) detail.setRegions(sunLists.regions);
+      if (sunLists.flares) detail.setFlares(sunLists.flares);
+      if (sunLists.cmes) detail.setCmes(sunLists.cmes);
+      // The lists are asked for once a visit, whoever is drawn when they land: `ctx.sunDetail`, not
+      // `detail`, so one that arrives after the quality changed goes to the Sun drawn now.
+      if (sunLists.asked) return;
+      sunLists.asked = true;
+      const now = () => ctx.sunDetail;
       if (tilesSaveData || tiers.latched) return;
       import('./data/sunregions.js').then((r) => r.readSunRegions() // our saved copy first (internal #525)
         .then((json) => {
           const list = r.parseSunRegions(json);
-          detail.setRegions(list);
+          sunLists.regions = list;
+          if (now()) now().setRegions(list);
           ctx.sunRegions = list;
           say(); // the Sun's card and the Sources panel read it
         })).catch(() => { /* a Sun with no spots drawn is what the card then describes */ });
       // What the Sun is doing (spec 0073 requirement 2, data/sunactivity.js): NOAA's flares and NASA's
       // coronal mass ejections, each read once, each on its own: a list that cannot be read draws nothing.
       import('./data/sunactivity.js').then((a) => {
-        a.readSunEvents().then((json) => { detail.setFlares(a.parseFlares(json)); say(); }).catch(() => { /* no flare is drawn */ });
-        a.readCmes().then((json) => { detail.setCmes(a.parseCmes(json)); say(); }).catch(() => { /* no CME is drawn */ });
+        a.readSunEvents().then((json) => { sunLists.flares = a.parseFlares(json); if (now()) now().setFlares(sunLists.flares); say(); }).catch(() => { /* no flare is drawn */ });
+        a.readCmes().then((json) => { sunLists.cmes = a.parseCmes(json); if (now()) now().setCmes(sunLists.cmes); say(); }).catch(() => { /* no CME is drawn */ });
       }).catch(() => { /* the Sun without its flares is what the card then describes */ });
     }).catch(() => { sunAsked = false; /* the flat disc is what is on screen; ask again later */ });
   }
+  function remakeSun() {
+    sunMade += 1;
+    if (ctx.sunDetail) { ctx.sunDetail.dispose(); ctx.sunDetail = null; }
+    sunAsked = false;
+  }
+  /**
+   * A CHOSEN QUALITY, APPLIED WITH NO RELOAD. Everything that reads the tier follows here:
+   *   at once     the maps (up: fetched when idle; down: given back), how many worlds hold one, relief,
+   *               the Earth's air steps, the map tiles, the weather shader, the aurora's steps and the
+   *               models' light (both ask every frame), the pixel ratio and the sky (ctx.applyQuality)
+   *   made again  the Sun's detail (its shader and pools are sized when it is made)
+   *   next time   the wind's and the currents' streak counts (read when the layer is switched on), a
+   *               star system's faces (when it is next entered) and how many nebula pictures are kept
+   *               (when that module first loads)
+   * The real latch is not here: after it, qualityPlan answers Low whatever is asked.
+   */
+  function apply(next) {
+    const was = plan;
+    plan = next;
+    promoter = promoterFor(next);
+    tiers.setTier(next.tier);
+    holdFor(next.tier);
+    reliefFor(next.tier);
+    if (planetTiles && !tiers.latched) planetTiles.setQuality(next.tier, next.stripped);
+    if (was.tier !== next.tier || was.stripped !== next.stripped) remakeSun();
+    if (ctx.dsoGlow) ctx.dsoGlow.setMarks(!next.stripped);
+    if (ctx.weather && ctx.weather.setStripped && !tiers.latched) ctx.weather.setStripped(next.stripped);
+    if (!next.stripped && ctx.wantWeather) ctx.wantWeather();
+    if (ctx.applyQuality) ctx.applyQuality(next);
+    say();
+  }
   const api = {
     get tier() { return tiers.tier; },
-    bootTier: pick.tier,
+    // The tier the visit began at: the stored choice's, so a visit that chose Low boots as tier 0.
+    bootTier: plan.tier,
     ceiling: pick.ceiling,
     reasons: pick.reasons,
-    get promoted() { return promoter.promoted; },
+    get promoted() { return plan.promote && autoPromoted; },
+    /** The setting: what is chosen, what this device is offered, and what the choice means now (qualityPlan). */
+    get choice() { return plan.choice; },
+    get ultra() { return plan.ultra; },
+    get stripped() { return plan.stripped; },
+    offered: () => offeredQualities(pick.ceiling, tiers.latched),
+    plan: () => ({ ...plan }),
+    /** From the row in What to show. Stored unless `how.keep` is false; returns the choice now on. */
+    setChoice(next, how = {}) {
+      const want = qualityPlan(next, { tier: autoTier, ceiling: pick.ceiling }, tiers.latched);
+      if (how.keep !== false) writeQualityChoice(undefined, want.choice);
+      if (want.choice !== plan.choice) apply(want);
+      return plan.choice;
+    },
+    /**
+     * Slow frames under Ultra (the loop's guard; the governor is held there, so the latch is not fed):
+     * back to Auto before anything is taken off for good. True when the visitor is to be told.
+     */
+    fellBack() {
+      const after = qualityAfterLatch(plan.choice);
+      if (after.choice !== plan.choice) api.setChoice(after.choice);
+      return after.told;
+    },
     textures: () => tiers.state(),
     tiles: () => (planetTiles ? planetTiles.state() : null),
     /** The mosaics on screen now, for a world's card (ui/cards.js): scene/tiles.js mosaics(). */
@@ -2260,18 +2370,28 @@ function createQuality(ctx, renderer, starfield, worlds) {
       ctx.sunDetail && ctx.sunDetail.state().spots > 0 ? [COPY.sun.regionsCredit] : [],
       ctx.sunDetail && ctx.sunDetail.state().flareList > 0 ? [COPY.sun.flaresCredit] : [],
       ctx.sunDetail && ctx.sunDetail.state().cmeList > 0 ? [COPY.sun.cmeCredit] : []),
-    describe: () => ({ tier: tiers.tier, bootTier: pick.tier, promoted: promoter.promoted, latched: tiers.latched, reasons: pick.reasons }),
+    describe: () => ({ tier: tiers.tier, bootTier: api.bootTier, promoted: api.promoted, latched: tiers.latched, reasons: pick.reasons, choice: plan.choice, plan: { ...plan }, offered: api.offered() }),
     /** After the first frame (startLoop). */
     start() { tiers.start(); say(); },
     /** Every frame, from startLoop, after the latch has been fed. */
     frame(frameMs, nowMs, latched) {
       const up = promoter.push(frameMs, nowMs, latched);
-      if (up !== null) { tiers.setTier(up); holdFor(up); reliefFor(up); if (planetTiles) planetTiles.setTier(up); say(); }
+      if (up !== null) { autoTier = up; autoPromoted = true; plan = { ...plan, tier: up }; tiers.setTier(up); holdFor(up); reliefFor(up); if (planetTiles) planetTiles.setTier(up); say(); }
       if (planetTiles) planetTiles.frame(nowMs);
     },
     tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); },
-    /** The frame latch tripped: back to the boot maps, for good. */
-    latch() { tiers.latch(); holdFor(0); worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
+    /**
+     * The frame latch tripped: back to the boot maps, for good. A manual choice above Low goes back
+     * to Auto (qualityAfterLatch), stored so; returns true when the visitor is to be told so.
+     */
+    latch() {
+      tiers.latch(); holdFor(0);
+      const after = qualityAfterLatch(plan.choice);
+      if (after.choice !== plan.choice) writeQualityChoice(undefined, after.choice);
+      plan = qualityPlan(after.choice, { tier: autoTier, ceiling: pick.ceiling }, true);
+      worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say();
+      return after.told;
+    },
     /**
      * What the maps hold on the GPU now, by arithmetic from registry/textures.yaml (gpuMiB: pixels,
      * four bytes, a third for mipmaps), beside the renderer's own count of textures. `window.spaceRadar.gpu()`.
@@ -2327,7 +2447,30 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // Read every frame by the aurora's folds; one query object, not a matchMedia call a frame.
   const reducedMotionQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   let sunDoing = ''; // scene/sun.js activity(): what of the Sun's activity is drawn, as last told to the card
+  // THE QUALITY SETTING'S HALF OF THE LOOP (createQuality's apply calls it; once here for a stored choice).
+  // Low puts on what degrade() below puts on, by the same calls, and can take it off again; Ultra holds
+  // the pixel ratio at the top of its ladder and, because the latch is then not fed, runs the latch's
+  // own test in a guard of its own. After the real latch nothing here does anything.
+  let lowChosen = false;
+  let ultraGuard = null;
+  const sayFellBack = () => toast(COPY.quality.fellBack, 6000);
+  ctx.applyQuality = (plan) => {
+    if (latch.latched) return;
+    lowChosen = !!plan.stripped;
+    if (ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality(lowChosen ? 'low' : 'full');
+    if (starfield && starfield.setDetail) starfield.setDetail(lowChosen ? 'low' : 'full');
+    if (ctx.nebulae) ctx.nebulae.setSkyVisible(!lowChosen);
+    if (worlds && worlds.setLatched) worlds.setLatched(lowChosen);
+    const held = plan.scale === 'held';
+    if (held !== scaler.held) {
+      scaler.hold(held);
+      if (ctx.rendererApi && ctx.rendererApi.setScale) ctx.rendererApi.setScale(scaler.scale);
+      window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
+    }
+    ultraGuard = held ? createFrameLatch() : null;
+  };
   function degrade() {
+    ultraGuard = null;
     scaler.freeze();
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
     if (starfield && starfield.setDetail) starfield.setDetail('low');
@@ -2335,13 +2478,17 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Spec 0054: earthshine goes off with the latch (scene/worlds.js setLatched).
     if (worlds && worlds.setLatched) worlds.setLatched(true);
     // The tier falls with the latch and only with it: every world back on its boot map.
-    if (ctx.quality) ctx.quality.latch();
+    if (ctx.quality && ctx.quality.latch()) sayFellBack();
     window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));
   }
   // Read by ui/trip.js, which keeps the star-stretch at 0 on a latched device (spec 0034 req 6),
   // and forced from a console or a browser check the way a slow device would trip it.
+  // `latched` is true under the setting's Low too, because Low is the latch's removals: every reader
+  // (the star stretch, a star system's faces, the nebula pictures) then does what it does under the
+  // latch. `tripped` is the latch alone.
   ctx.latch = {
-    get latched() { return latch.latched; },
+    get latched() { return latch.latched || lowChosen; },
+    get tripped() { return latch.latched; },
     held: looking,
     force() { if (latch.force()) degrade(); return latch.latched; },
   };
@@ -2356,9 +2503,11 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // Moon is within 1.7 degrees of the Sun from the Earth, i.e. only at an eclipse. So the shadow
   // draws whatever the latch says. ctx.eclipseOverride (true / false / null) stays for probes and
   // tests; nothing in the app sets it, and the "not drawn here" line is reached only through it.
-  ctx.latched = () => latch.latched;
+  ctx.latched = () => latch.latched || lowChosen;
   ctx.eclipseOverride = null;
   ctx.eclipseDrawn = () => ctx.eclipseOverride !== false;
+  // A stored Low or Ultra is worn from the first frame. Auto, Medium and High ask nothing of the loop.
+  if (ctx.quality && (ctx.quality.stripped || ctx.quality.ultra)) ctx.applyQuality(ctx.quality.plan());
 
   // THE IDLE FRAME RATE (internal #520; scene/quality.js has the whole rule). With nothing moving
   // the loop draws twenty frames a second instead of every one. What "moving" means is ONE list,
@@ -2444,6 +2593,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       const st = ctx.trip && ctx.trip.state;
       const shown = !!(st && st.phase !== 'idle') || !!(ctx.autopilot && ctx.autopilot.engaged) || !!(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading));
       const calm = !shown && !cameraMovedLast;
+      // Ultra: the ladder is held, so its own guard runs the latch's test and ends Ultra, not the visit's picture.
+      if (ultraGuard && ultraGuard.push(frameMs, nowReal)) { ultraGuard = null; if (ctx.quality && ctx.quality.fellBack()) sayFellBack(); }
       if (scaler.push(frameMs, nowReal, calm, !shown)) {
         if (ctx.rendererApi && ctx.rendererApi.setScale) ctx.rendererApi.setScale(scaler.scale);
         window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
@@ -2487,7 +2638,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
       const earth = worlds.meshFor('earth');
-      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches) });
+      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches), look: ctx.look() });
       // A prominence came over the limb, a flare began or faded, a CME left: the Sun's card says so.
       const doing = ctx.sunDetail.activity();
       if (doing !== sunDoing) { sunDoing = doing; if (ctx.quality) window.dispatchEvent(new CustomEvent('sr:tier', { detail: ctx.quality.describe() })); }
@@ -2501,7 +2652,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.aurora.setTier(ctx.quality ? ctx.quality.tier : 1);
       ctx.aurora.tick(t, {
         on: ctx.isLayerOn('aurora'),
-        latched: latch.latched,
+        latched: latch.latched || lowChosen,
+        look: ctx.look(),
+        top: !!(ctx.quality && ctx.quality.ultra),
         reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
       });
@@ -2511,7 +2664,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.weather) {
       ctx.weather.tick(t, {
         on: ctx.isLayerOn('lightning'),
-        latched: latch.latched,
+        latched: latch.latched || lowChosen,
         reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
         viewportH: ctx.renderer && ctx.renderer.domElement ? ctx.renderer.domElement.height : 800,
@@ -2564,7 +2717,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
 
     // What the frame cost and what the device has already admitted about itself: scene/heroes.js
     // spends a fast machine's headroom on more models and gives it back when the frames say so.
-    if (heroes) heroes.update(t, { frameMs: capped ? freeFrameMs : frameMs, latched: latch.latched, saveData, bandPx: ctx.viewShift ? ctx.viewShift.bandHeightPx() : 0 });
+    if (heroes) heroes.update(t, { frameMs: capped ? freeFrameMs : frameMs, latched: latch.latched || lowChosen, saveData, bandPx: ctx.viewShift ? ctx.viewShift.bandHeightPx() : 0 });
     // Stars fade near the Sun's disc (scene/starfield.js sunGlare), wherever the camera is.
     if (starfield && starfield.setSun) starfield.setSun(worlds.drawnPositionOf('sun'), worlds.drawnRadiusUnits('sun'), ctx.camera);
     if (starfield && starfield.update) starfield.update(ctx.camera);

@@ -638,6 +638,42 @@ Object.assign(COPY, {
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
   },
 
+  // Measured or Film (spec 0073 requirement 8; scene/exposure.js createDrawn, ui/exposure.js lookPanel):
+  // two words in a row beside Exposure. No line under the row: each word's tooltip says what it does,
+  // in under 60 characters. The postcard's word is COPY.print.look (copy/en.js).
+  look: {
+    panelTitle: 'Look',
+    modes: { measured: 'Measured', film: 'Film' },
+    titles: {
+      measured: 'Only what is measured or modelled, at true rate',
+      film: 'Adds generated detail and illustrative weather',
+    },
+  },
+  // What a world's card says about the look, at the end of its weather line (scene/weather/index.js),
+  // only on a world the look changes; and the sentences of that line that differ under Measured,
+  // because what they describe in Film is not drawn (registry/weather.yaml `measured: hidden`).
+  lookSaid: {
+    measured: 'Measured look: nothing generated or illustrative is drawn on it.',
+    film: 'Film look: generated detail and illustrative weather are drawn.',
+    worlds: {
+      saturn: 'Weather: the bands move at the wind speeds Cassini measured. Modelled motion, not today’s clouds.',
+    },
+    also: {
+      venus: 'Lightning on Venus has been reported and is still debated; none is drawn.',
+    },
+    turning: {
+      jupiter: 'Seen close, Oval BA and three white ovals turn where the map has them.',
+    },
+    poles: {
+      jupiter: 'The cyclones round each pole are modelled from Juno’s observations of 2017, eight round one in the north and five in the south: a reconstruction, not a photograph.',
+    },
+    // The Sun's card (ui/cards.js sunLine), while its detail is drawn.
+    sun: {
+      measured: 'Measured look: the generated grain is off, and the corona and the prominences are held still.',
+      film: 'Film look: the grain is generated, and the corona and the prominences move as drawn, not as measured.',
+    },
+  },
+
   // The sky in other light (registry/otherlight.yaml, scene/otherlight.js): the chooser in What to
   // show. Each note is the honest line: which light, and that its colours are not an eye's.
   otherLight: {

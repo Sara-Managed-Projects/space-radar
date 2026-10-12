@@ -2613,7 +2613,16 @@ function paintOverlayBlock(box, ctx) {
 
 /** The spots' line and, after it, what the Sun is doing now. */
 export function sunLine(ctx) {
-  return [sunSpotsLine(ctx), sunActivityLine(ctx)].filter(Boolean).join(' ') || null;
+  return [sunSpotsLine(ctx), sunActivityLine(ctx), sunLookLine(ctx)].filter(Boolean).join(' ') || null;
+}
+
+/** Which look is on, said while the Sun's detail is drawn: the look changes its grain, corona and prominences (scene/sun.js UNDER_MEASURED). */
+export function sunLookLine(ctx) {
+  let st = null;
+  try { st = ctx.sunDetail.state(); } catch { st = null; }
+  const words = COPY.lookSaid && COPY.lookSaid.sun;
+  if (!st || !st.on || !words || typeof ctx.look !== 'function') return null;
+  return words[ctx.look()] || null;
 }
 
 /** Prominences on the limb, a flare showing, a CME in flight: one sentence each, only for what is drawn (copy sunAlive). */
