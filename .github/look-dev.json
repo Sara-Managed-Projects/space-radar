@@ -1,7 +1,5 @@
 [
-  {"probe": "sun", "browser": "chromium", "harvest": "swpc-edited-events,donki-cme-analysis"},
   {"probe": "jupiter", "browser": "chromium"},
-  {"probe": "lights", "browser": "chromium"},
-  {"probe": "smoke", "browser": "firefox"},
-  {"probe": "smoke", "browser": "webkit"}
+  {"probe": "frametime", "browser": "chromium"},
+  {"probe": "worlds", "browser": "chromium", "mobile": true}
 ]

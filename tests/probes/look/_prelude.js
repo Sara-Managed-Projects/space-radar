@@ -4,7 +4,8 @@
 // same `window.cdpShot(name)`. tools/README.md, "A look from a machine that has time".
 //
 // What a probe has after this: `sr` (window.spaceRadar), `rig` (its camera), sleep(ms),
-// until(fn, capMs), shot(name, note), go(id, name, waitMs, note), stage(id, waitMs), finish(extra).
+// until(fn, capMs), shot(name, note), go(id, name, waitMs, note), stage(id, waitMs), finish(extra),
+// and sunward(id), north(id), unit, mix, cross for standing on a world's lit side.
 // A probe ends with `return finish({...})`. A field named `fail` in what it returns fails the job.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const look = { probe: '', errors: [], warns: [], shots: [], missing: [] };
@@ -71,5 +72,15 @@ const go = async (id, name, waitMs = 6000, note = '') => {
 };
 /** A world's own stage, as "Go there" does. */
 const stage = async (id, waitMs = 9000) => { sr.setStage(id); await sleep(waitMs); };
+// A WORLD IS LIT BY THE SUN AND NOTHING ELSE: a camera sent round one by azimuth photographs its night
+// (the first worlds probe did, and so did the first close look at Jupiter's belt: a black frame).
+// So a probe stands where the light is: `rig.flyTo({ offset: mix(sunward(id), 1, north(id), 0.3) })`.
+const unit = (v) => { const n = Math.hypot(v.x, v.y, v.z) || 1; return { x: v.x / n, y: v.y / n, z: v.z / n }; };
+const mix = (a, ka, b, kb) => ({ x: a.x * ka + b.x * kb, y: a.y * ka + b.y * kb, z: a.z * ka + b.z * kb });
+const cross = (a, b) => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x });
+/** From a world to the Sun, in the scene, now. */
+const sunward = (id) => { const m = sr.worlds.meshFor(id); const s = sr.worlds.meshFor('sun'); return unit({ x: s.position.x - m.position.x, y: s.position.y - m.position.y, z: s.position.z - m.position.z }); };
+/** A world's own north: its mesh's y axis in the scene. */
+const north = (id) => { const m = sr.worlds.meshFor(id); m.updateMatrixWorld(); const e = m.matrixWorld.elements; return unit({ x: e[4], y: e[5], z: e[6] }); };
 // The layers are ready; the later ones (weather, the aurora, the planets as lights) come a few seconds after.
 await sleep(6000);

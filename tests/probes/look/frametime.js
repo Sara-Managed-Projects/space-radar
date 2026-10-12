@@ -29,7 +29,7 @@ await shot('ft-1-home', 'scene 1, home');
 // 2. Jupiter filling the view, its weather on.
 out.weatherLoaded = await until(() => sr.weather && typeof sr.weather.state === 'function', 30000);
 await stage('jupiter', 12000);
-rig.flyTo({ distance: rig.state.distance * 0.45, ms: 0 });
+rig.flyTo({ offset: sunward('jupiter'), distance: rig.state.distance * 0.45, ms: 0 }); // its day side, not its night
 await sleep(6000);
 await measure('jupiter-weather');
 await shot('ft-2-jupiter', 'scene 2, Jupiter filling the view, weather ' + (out.weatherLoaded ? 'on' : 'OFF'));
