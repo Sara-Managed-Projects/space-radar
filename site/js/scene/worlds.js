@@ -459,7 +459,8 @@ export const WORLDS = [
   // and says how; registry/textures.yaml has each one's source and how much of the sphere it
   // covers. `mapKind` is what kind of picture it is, for the card: `tinted` (a black-and-white
   // mosaic in the flat colour), `toned` (Cassini's infrared-to-ultraviolet colours at 35 %),
-  // `infrared` (Titan's ground through the haze) or `colour`. Every mapped moon is `locked`:
+  // `infrared` (Titan's ground through the haze), `redblue` (Charon), `enhanced` (Pluto: NASA's own
+  // enhanced-colour map, scripts/build_pluto_map.py) or `colour`. Every mapped moon is `locked`:
   // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
   // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
   // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes,
@@ -474,7 +475,7 @@ export const WORLDS = [
     // `face` (2026-10-07, internal #426): the heart, the face Pluto is known by, as east longitude and
     // latitude -- the brightest 12-degree patch of the map we ship, measured on it that day (201 E,
     // 21 N: the bright ice of Tombaugh Regio). An arrival prefers the lit side that shows it (faceDirOf).
-    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'redblue', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
+    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'enhanced', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).

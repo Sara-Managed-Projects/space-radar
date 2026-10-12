@@ -1654,8 +1654,12 @@ export const COPY = {
     worldMap: {
       tinted: 'its surface is a black-and-white mosaic, tinted in a colour chosen from published descriptions',
       toned: 'its colours come from infrared, green and ultraviolet pictures, toned down toward what an eye would see',
-      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Pluto, Charon).
+      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Charon; Pluto until 2026-10-12).
       redblue: 'its colours come from New Horizons’ red and blue pictures, with green taken halfway between them and the colour made half as strong again; the parts photographed only in black and white are given the map’s average colour',
+      // 2026-10-12: Pluto's map is NASA's own global colour map (Photojournal PIA11707), whose caption
+      // says it is made from three of the colour camera's filters. The camera had blue, red,
+      // near-infrared and methane filters and no green one, so no three of them are an eye's colours.
+      enhanced: 'its colours are the ones NASA published, put together from three of New Horizons’ colour filters, none of them green: this is enhanced colour, stronger than and not the same as what an eye would see',
       // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
       balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
