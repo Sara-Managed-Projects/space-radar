@@ -22,6 +22,7 @@ const F = await import(join(JS, 'scene/weather/flow.js'));
 const L = await import(join(JS, 'data/lightning.js'));
 const { WEATHER } = await import(join(JS, 'data/weather.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
+await import(join(JS, 'copy/en.later.js'));
 const row = (id) => WEATHER.find((r) => r.id === id);
 
 // --- 1. a wind is an angle ---------------------------------------------------------------------
@@ -267,7 +268,7 @@ function decodePng(buf) {
   for (const [id, line] of Object.entries(COPY.weather.worlds)) {
     const classes = WEATHER.filter((r) => r.world === id).map((r) => r.class);
     // The line, and the sentences that may follow it (what else is drawn; the lightning where it is drawn).
-    const parts = [line, COPY.weather.also[id], COPY.weather.storms[id], COPY.weather.poles[id], COPY.weather.flashes[id]].filter(Boolean);
+    const parts = [line, COPY.weather.also[id], COPY.weatherStorms.turning[id], COPY.weatherStorms.poles[id], COPY.weather.flashes[id]].filter(Boolean);
     for (const c of new Set(classes)) check(parts.join(' ').toLowerCase().includes(c === 'modelled' ? 'modelled' : c), `${id}'s line says "${c}"`);
     for (const part of parts) check(part.length <= 240, `${id}'s line is one line (${part.length} characters)`);
   }
@@ -347,7 +348,7 @@ function decodePng(buf) {
   check(weather.perMinute() === undefined, 'and the panel has no number yet');
   weather.tick(slot, { on: true });
   check(/northern spring/.test(weather.line('mars', slot)) && /illustrative/.test(weather.line('mars', slot)), `Mars's line names the season (${weather.line('mars', slot)})`);
-  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weather.storms.jupiter, COPY.weather.poles.jupiter, COPY.weather.flashes.jupiter].join(' '), 'Jupiter\'s line, its storms\', its poles\' and its lightning\'s');
+  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weatherStorms.turning.jupiter, COPY.weatherStorms.poles.jupiter, COPY.weather.flashes.jupiter].join(' '), 'Jupiter\'s line, its storms\', its poles\' and its lightning\'s');
   check(weather.line('venus', slot).endsWith(COPY.weather.also.venus) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
   check(/seasonal and illustrative, not today/.test(weather.line('mars', slot)) && /optical depth near 0\.\d/.test(weather.line('mars', slot)), `Mars's line gives the season's dust and says it is not today's (${weather.line('mars', slot)})`);
   check(weather.line('moon', slot) === null && weather.line('io', slot) === null, 'a world with no weather has no line');
@@ -472,7 +473,7 @@ function decodePng(buf) {
   const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
   const fresh = dress();
   const quiet = createWeather({ worlds: { meshFor: (id) => fresh.get(id) || null }, reducedMotion: true, fetchImpl: async () => ({ ok: false }) });
-  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weather.poles.jupiter, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
+  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weatherStorms.poles.jupiter, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
   check(/Webb and Keck/.test(COPY.weather.worlds.titan) && /Illustrative/.test(COPY.weather.worlds.titan) && /2022/.test(COPY.weather.worlds.titan), 'Titan\'s line dates its clouds and says they are illustrative');
 }
 
@@ -686,8 +687,8 @@ function decodePng(buf) {
   check(su.uWxPole.value.y === 0 && su.uWxNear.value.z === 1 && calm.storms('jupiter') === 'still', 'and the cyclones stand still, drawn');
 
   // The card: what is generated is said to be, the poles are a reconstruction, and nothing is today's.
-  check(/generated/.test(COPY.weather.storms.jupiter) && /measured/.test(COPY.weather.storms.jupiter) && /illustrative/.test(COPY.weather.storms.jupiter), 'the card says the eddies are generated at measured places');
-  check(/modelled from Juno’s observations/.test(COPY.weather.poles.jupiter) && /not a photograph/.test(COPY.weather.poles.jupiter) && /2017/.test(COPY.weather.poles.jupiter), 'and that the poles are modelled from Juno\'s observations, dated, not a photograph');
+  check(/generated/.test(COPY.weatherStorms.turning.jupiter) && /measured/.test(COPY.weatherStorms.turning.jupiter) && /illustrative/.test(COPY.weatherStorms.turning.jupiter), 'the card says the eddies are generated at measured places');
+  check(/modelled from Juno’s observations/.test(COPY.weatherStorms.poles.jupiter) && /not a photograph/.test(COPY.weatherStorms.poles.jupiter) && /2017/.test(COPY.weatherStorms.poles.jupiter), 'and that the poles are modelled from Juno\'s observations, dated, not a photograph');
 }
 
 if (failed) {

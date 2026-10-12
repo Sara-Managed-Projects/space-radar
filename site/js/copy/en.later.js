@@ -18,6 +18,19 @@ import { COPY, article } from './en.js';
 import './en.facts.js';
 
 Object.assign(COPY, {
+  // Jupiter's storms (2026-10-12, spec 0073 req 4; registry/weather.yaml jupiter-eddies, -ovals,
+  // -polar-cyclones, -depth), two sentences added to the world's weather line (COPY.weather.worlds,
+  // in copy/en.js) where they are worn; scene/weather/index.js reads them. `turning` is said only
+  // where things turn (not where less motion is asked for); `poles` wherever the cap is drawn.
+  // Here and not beside the line they extend, so a first visit does not carry them.
+  weatherStorms: {
+    turning: {
+      jupiter: 'Seen close, small eddies roll where the measured winds shear and in the Great Red Spot’s wake, and Oval BA and three white ovals turn. Where the shear is, is measured; each eddy is generated, finer than the map: illustrative.',
+    },
+    poles: {
+      jupiter: 'The cyclones round each pole are modelled from Juno’s observations of 2017, eight round one in the north and five in the south: a reconstruction, not a photograph. The darker deck in the gaps is illustrative.',
+    },
+  },
   // A star system from the NASA Exoplanet Archive's table, drawn at its own scale (internal #466;
   // scene/systemextras.js draws the labels, ui/systemcard.js prints the rows). The rule every line
   // here keeps: a number the table measured is given plainly; a number the Archive estimated, or

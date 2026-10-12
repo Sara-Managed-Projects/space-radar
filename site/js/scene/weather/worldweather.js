@@ -160,7 +160,7 @@ vec3 wxPoles( vec3 c ) {
   // The folded, mottled cloud between the cyclones: two slow waves, not a picture of anything.
   float mottle = sin( q.x * 37.0 + 2.0 * sin( q.z * 29.0 ) ) * sin( q.z * 41.0 + 2.0 * sin( q.x * 23.0 ) );
   float lum = dot( c, vec3( 0.3, 0.5, 0.2 ) );
-  vec3 polar = mix( c, lum * vec3( ${POLAR.blue.join(', ')} ), ${POLAR.lean.toFixed(2)} );
+  vec3 polar = mix( c, lum * vec3( ${POLAR.blue.map((x) => x.toFixed(2)).join(', ')} ), ${POLAR.lean.toFixed(2)} );
   polar *= ${POLAR.base.toFixed(2)} + ${POLAR.lift.toFixed(2)} * cloud - 0.22 * eye + 0.035 * mottle * ( 1.0 - cloud );
   return mix( c, polar, cap );
 }
@@ -175,7 +175,7 @@ vec3 wxDeep( vec3 c, vec2 uv ) {
   vec3 nth = cross( nrm, east );
   vec3 q = normalize( vPosL );
   float slant = uWxDeep.z / max( dot( nrm, vd ), 0.35 );
-  vec2 off = vec2( -dot( vd, east ) * slant / ( 6.2831853 * max( sqrt( 1.0 - q.y * q.y ), 0.2 ) ), -dot( vd, nth ) * slant / 3.14159265 );
+  vec2 off = vec2( -dot( vd, east ) * slant / ( 6.2831853 * max( sqrt( max( 1.0 - q.y * q.y, 0.0 ) ), 0.2 ) ), -dot( vd, nth ) * slant / 3.14159265 );
   vec3 deep = textureGrad( uMap, vec2( fract( uv.x + off.x ), clamp( uv.y + off.y, 0.0, 1.0 ) ), dFdx( vUv ) * 2.0, dFdy( vUv ) * 2.0 ).rgb;
   return mix( c, deep * uWxDeepTint, gap );
 }
