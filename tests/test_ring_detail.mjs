@@ -238,7 +238,7 @@ for (const [name, km] of GAPS) {
   await import(join(JS, 'copy/en.later.js'));
   const dep = COPY.drawing.worldDeparture.saturn;
   check(/Cassini measured/.test(dep) && /grains[^.]*is drawn/.test(dep), 'Saturn\'s card says the ringlets are measured and the grains are drawn');
-  check(/2,000 km/.test(COPY.weatherVortex.turning.saturn) && /150 metres a second/.test(COPY.weatherVortex.turning.saturn) && /illustrative/.test(COPY.weatherVortex.turning.saturn), 'and the vortex\'s line gives Cassini\'s numbers and says the spiral is illustrative');
+  check(/2\u202F000 km/.test(COPY.weatherVortex.turning.saturn) && /150 metres a second/.test(COPY.weatherVortex.turning.saturn) && /illustrative/.test(COPY.weatherVortex.turning.saturn), 'and the vortex\'s line gives Cassini\'s numbers and says the spiral is illustrative');
   check(/illustrative/.test(COPY.weatherVortex.still.saturn) && !/turns/.test(COPY.weatherVortex.still.saturn), 'the still line does not say it turns');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
   check(credits.includes('8k_saturn_ring_fine.png') && credits.includes('Cassini UVIS stellar occultation of Beta Centauri'), 'CREDITS.md carries the strip');

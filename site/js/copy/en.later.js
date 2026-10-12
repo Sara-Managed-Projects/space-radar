@@ -41,10 +41,10 @@ Object.assign(COPY, {
   // PIA14944); the spiral is ours, and the card says so.
   weatherVortex: {
     turning: {
-      saturn: 'Seen close, a small cyclone turns inside the hexagon: its eye is 2,000 km across and its wall goes round at 150 metres a second, as Cassini measured in 2012. The spiral drawn round it is illustrative, and nothing is watching it now.',
+      saturn: 'Seen close, a small cyclone turns inside the hexagon: its eye is 2\u202F000 km across and its wall goes round at 150 metres a second, as Cassini measured in 2012. The spiral drawn round it is illustrative, and nothing is watching it now.',
     },
     still: {
-      saturn: 'Seen close, a small cyclone sits inside the hexagon: its eye is 2,000 km across, as Cassini measured in 2012, when its wall went round at 150 metres a second. The spiral drawn round it is illustrative, and nothing is watching it now.',
+      saturn: 'Seen close, a small cyclone sits inside the hexagon: its eye is 2\u202F000 km across, as Cassini measured in 2012, when its wall went round at 150 metres a second. The spiral drawn round it is illustrative, and nothing is watching it now.',
     },
   },
 
