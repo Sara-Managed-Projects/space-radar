@@ -66,7 +66,15 @@ if ! git -C "$WORK/tree" diff --cached --quiet; then
   git -C "$WORK/tree" -c user.name="${GIT_AUTHOR_NAME:-$(git -C "$ROOT" config user.name)}" \
       -c user.email="${GIT_AUTHOR_EMAIL:-$(git -C "$ROOT" config user.email)}" \
       commit -q -m "Pictures for #$PR"
-  git -C "$WORK/tree" push -q origin HEAD:screens
+  # Two runs a few seconds apart: the second may have fetched the branch before the first's push
+  # was served. Put our commit on top of what is there now and try again.
+  for attempt in 1 2 3 4; do
+    if git -C "$WORK/tree" push -q origin HEAD:screens 2>/dev/null; then break; fi
+    [ "$attempt" = 4 ] && { echo "could not push the pictures to the branch screens" >&2; exit 1; }
+    sleep 3
+    git -C "$WORK/tree" fetch -q origin screens
+    git -C "$WORK/tree" rebase -q FETCH_HEAD
+  done
 fi
 
 # The description: everything before an earlier "## Pictures"-style section of ours, then the new one.
