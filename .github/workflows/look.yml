@@ -66,9 +66,6 @@ on:
       - "tools/look-playwright.mjs"
       - "tools/look-summary.mjs"
       - "tools/cdp.mjs"
-  # TEMPORARY(look-tool): while this file is not on the default branch a dispatch cannot reach it.
-  push:
-    branches: [look-tool]
 
 permissions:
   contents: read
@@ -84,7 +81,6 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v7  # TEMPORARY(look-tool)
       - name: One job per probe and engine
         id: plan
         env:
@@ -110,8 +106,6 @@ jobs:
           if e["EVENT"] == "workflow_dispatch":
               browsers = ["chromium", "firefox", "webkit"] if e["BROWSER"] == "all" else [e["BROWSER"]]
               rows = [row(e["PROBE"].strip(), b, e["HARVEST"].replace(" ", ""), e["MOBILE"] == "true", e["HOLD"] != "false", e["WIDTH"].strip(), e["HEIGHT"].strip()) for b in browsers]
-          elif e["EVENT"] == "push":  # TEMPORARY(look-tool)
-              rows = [row(**r) for r in json.load(open(".github/look-dev.json"))]
           else:
               rows = [row("smoke", "chromium")]
           print("matrix=" + json.dumps({"include": rows}))
