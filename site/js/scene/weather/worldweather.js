@@ -85,7 +85,7 @@ export const DUST = [0.62, 0.36, 0.20];
  * colour leans to a blue-grey, as JunoCam's pictures of the poles do against the belts; how many
  * arms a cyclone's spiral has and how tightly they wind; how bright its cloud is against the cap.
  */
-export const POLAR = { blue: [0.80, 0.88, 1.0], lean: 0.4, arms: 3, wind: 4.5, lift: 0.34, blendRad: 0.05 };
+export const POLAR = { blue: [0.80, 0.88, 1.0], lean: 0.3, base: 0.93, arms: 3, wind: 4.5, lift: 0.3, blendRad: 0.09 };
 /** Seconds a close-range effect takes to come in or go out once the disc crosses its size. */
 export const NEAR_FADE_S = 1;
 
@@ -114,12 +114,14 @@ vec2 wxEddies( vec2 p, float tau, float keep ) {
     float cell = floor( p.x * e.w );
     float h1 = wxHash( cell + float( i ) * 17.3 );
     float h2 = wxHash( cell * 1.7 + float( i ) * 5.1 + 3.0 );
+    // Not a row of them: two cells in five are empty.
+    if ( wxHash( cell * 2.3 + float( i ) * 9.7 + 1.0 ) < 0.4 ) continue;
     vec2 c = vec2( ( cell + 0.5 + 0.2 * ( h1 - 0.5 ) ) / e.w, e.x + ( h2 - 0.5 ) * 0.2 * e.y );
     float R = e.y * ( 0.5 + 0.4 * h2 );
     vec2 d = vec2( ( p.x - c.x ) * win.z, p.y - c.y );
     float r = length( d ) / R;
     if ( r >= 1.0 ) continue;
-    float a = -6.2831853 * e.z * ( 0.6 + 0.8 * h1 ) * tau * gate * uWxNear.x * ( 1.0 - smoothstep( 0.25, 1.0, r ) );
+    float a = -6.2831853 * e.z * ( 0.6 + 0.8 * h1 ) * tau * gate * uWxNear.x * ( 1.0 - smoothstep( 0.0, 1.0, r ) );
     float cs = cos( a ), sn = sin( a );
     p = c + vec2( ( cs * d.x - sn * d.y ) / win.z, sn * d.x + cs * d.y );
   }
@@ -151,14 +153,15 @@ vec3 wxPoles( vec3 c ) {
     // Anticlockwise from above in the north, clockwise in the south; the arms trail.
     float arm = cos( ${POLAR.arms.toFixed(1)} * ( phi - north * 6.2831853 * uWxPole.y ) + north * ${POLAR.wind.toFixed(1)} * log( a + 0.12 ) + float( i ) * 1.7 );
     float body = 1.0 - smoothstep( 0.55, 1.5, a );
-    cloud = max( cloud, body * ( 0.62 + 0.38 * arm * smoothstep( 0.1, 0.5, a ) ) );
+    // No two alike: each a little brighter or fainter than the next.
+    cloud = max( cloud, body * ( 0.62 + 0.38 * arm * smoothstep( 0.1, 0.5, a ) ) * ( 0.85 + 0.15 * sin( float( i ) * 2.4 ) ) );
     eye = max( eye, 1.0 - smoothstep( 0.0, 0.22, a ) );
   }
   // The folded, mottled cloud between the cyclones: two slow waves, not a picture of anything.
   float mottle = sin( q.x * 37.0 + 2.0 * sin( q.z * 29.0 ) ) * sin( q.z * 41.0 + 2.0 * sin( q.x * 23.0 ) );
   float lum = dot( c, vec3( 0.3, 0.5, 0.2 ) );
   vec3 polar = mix( c, lum * vec3( ${POLAR.blue.join(', ')} ), ${POLAR.lean.toFixed(2)} );
-  polar *= 0.84 + ${POLAR.lift.toFixed(2)} * cloud - 0.22 * eye + 0.035 * mottle * ( 1.0 - cloud );
+  polar *= ${POLAR.base.toFixed(2)} + ${POLAR.lift.toFixed(2)} * cloud - 0.22 * eye + 0.035 * mottle * ( 1.0 - cloud );
   return mix( c, polar, cap );
 }
 // Depth: through the darkest gaps of the top deck, the same map again, softer, darker and bluer,

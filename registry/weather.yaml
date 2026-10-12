@@ -98,7 +98,9 @@ effects:
   # THE EDDIES. Where two jets pass each other the air between them is sheared, and small vortices
   # roll there. `lines` of them are drawn, at the steepest gradients of the `jupiter-bands` profile
   # (scene/weather/flow.js shearLines picks them), each turning at half the measured shear (the rate
-  # at which a sheared fluid turns on itself) and in its sense. Their places along the band, their
+  # at which a sheared fluid turns on itself) and in its sense, but never faster than
+  # `max_turns_per_day`: at the full rate of the 24 N jet's flanks (0.3) a still picture is wound into
+  # commas, seen in the stills of 2026-10-12. Their places along the band, their
   # sizes (at most `half_deg_max` of latitude) and their number are GENERATED. `wake` is the Great
   # Red Spot's: the churned air downstream of it, on its poleward-of-equator side, which is WEST of
   # the spot because the jet on that side blows west (the profile's -50 m/s at 20 S planetographic);
@@ -113,7 +115,7 @@ effects:
       name: "Tollefson et al. 2017, Icarus 296, 163 (the jets whose shear is used; see jupiter-bands)"
       url: "https://doi.org/10.1016/j.icarus.2017.06.007"
       read: 2026-10-03
-    eddies: {from_share: 0.2, lines: 7, lat_max_deg: 62, half_deg_max: 1.5, max_turns_per_day: 0.3, wake: {reach: 5, half_deg: 1.3, turns_per_day: 0.25}}
+    eddies: {from_share: 0.2, lines: 7, lat_max_deg: 62, half_deg_max: 1.5, max_turns_per_day: 0.1, wake: {reach: 5, half_deg: 1.3, turns_per_day: 0.1}}
     why: "The map is one picture at 0.18 degrees a pixel and nothing re-forms in it. Where the shear is, how strong it is and which way it turns the air are measured; every eddy drawn there is generated, below the map's resolution in time, and stands still where less motion is asked for."
 
   # THE OVALS. [u, v, half_u, half_v, period_days] in the map's own coordinates (v from the south),

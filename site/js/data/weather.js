@@ -221,11 +221,11 @@ export const WEATHER = [
       "lines": 7,
       "lat_max_deg": 62,
       "half_deg_max": 1.5,
-      "max_turns_per_day": 0.3,
+      "max_turns_per_day": 0.1,
       "wake": {
         "reach": 5,
         "half_deg": 1.3,
-        "turns_per_day": 0.25
+        "turns_per_day": 0.1
       }
     },
     "source": "Tollefson et al. 2017, Icarus 296, 163 (the jets whose shear is used; see jupiter-bands)"

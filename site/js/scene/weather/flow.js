@@ -328,6 +328,7 @@ export function eddyDisplace(u, v, tau, rows, near = 1) {
     const cell = Math.floor(pu * cells);
     const h1 = hash1(cell + i * 17.3);
     const h2 = hash1(cell * 1.7 + i * 5.1 + 3);
+    if (hash1(cell * 2.3 + i * 9.7 + 1) < 0.4) return;
     const cu = (cell + 0.5 + 0.2 * (h1 - 0.5)) / cells;
     const cv = v0 + (h2 - 0.5) * 0.2 * halfV;
     const R = halfV * (0.5 + 0.4 * h2);
@@ -335,7 +336,7 @@ export function eddyDisplace(u, v, tau, rows, near = 1) {
     const dy = pv - cv;
     const r = Math.hypot(dx, dy) / R;
     if (r >= 1) return;
-    const x = Math.max(0, Math.min(1, (r - 0.25) / 0.75));
+    const x = Math.max(0, Math.min(1, r));
     const a = -2 * Math.PI * rate * (0.6 + 0.8 * h1) * tau * gate * near * (1 - x * x * (3 - 2 * x));
     const c = Math.cos(a);
     const s = Math.sin(a);
