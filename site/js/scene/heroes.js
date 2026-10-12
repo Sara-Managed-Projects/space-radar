@@ -880,6 +880,7 @@ export function createHeroes(scene, ctx) {
       const px = heroPixels(c.record, c.record.id === selectedId, selectedPx);
       const size = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, entry.reach, nearAlt(c));
       obj.scale.setScalar(size);
+      entry.px = c.d > 0 ? (2 * (entry.reach || 0.5) * size / c.d) * (h / 2) * f : 0;
 
       // The burn signal. propagate() already returned `phase` and `f` for this record a few
       // lines ago in candidates(); ascent() has computed both since it was written and nothing
@@ -974,6 +975,17 @@ export function createHeroes(scene, ctx) {
       const entry = live.get(id);
       if (!entry || !entry.obj || !entry.obj.visible || !root.visible) return 0;
       return (entry.reach || 0.5) * entry.obj.scale.x;
+    },
+    /**
+     * How many CSS pixels across this record's model is on screen this frame (its longest reach,
+     * both ways); 0 when no model is drawn for it, which is also the answer while its shape is
+     * still on the way. The drift asks a few seconds into a stay (ui/drift.js aDot) and does not
+     * dwell on a dot.
+     */
+    drawnPx(id) {
+      const entry = live.get(id);
+      if (!entry || !entry.obj || !entry.obj.visible || !root.visible) return 0;
+      return entry.px || 0;
     },
     setVisible(b) { root.visible = !!b; },
     dispose() {
