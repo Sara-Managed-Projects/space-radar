@@ -45,6 +45,9 @@ const AU_EDGES = [
   [7.5, 'jupiter'], [14, 'saturn'], [25, 'uranus'], [35, 'neptune'],
 ];
 
+/** How far from the Earth its own neighbourhood reaches, au: past L1 and L2 (0.01), short of anything else. */
+export const EARTH_REACH_AU = 0.05;
+
 /**
  * Three paces. `dwell` is seconds at a place (a range, drawn from evenly), `turn` the slow turn
  * round it in degrees a second, `flight` a multiplier on the flight's length.
@@ -98,6 +101,7 @@ export function hoodByAu(au) {
  *   onWorld   the world a site stands on
  *   nearEarth true for anything in the Earth's own sky: propagated in an Earth frame
  *   sunAu     its distance from the Sun now, for everything else in the Solar System
+ *   earthAu   and from the Earth, when that is known
  *   farLy     a deep-sky object's distance in light-years
  */
 export function hoodOf(record, facts = {}) {
@@ -114,7 +118,11 @@ export function hoodOf(record, facts = {}) {
   }
   if (facts.onWorld && HOODS.includes(facts.onWorld)) return facts.onWorld;
   if (facts.nearEarth) return 'earth';
-  return hoodByAu(facts.sunAu);
+  const hood = hoodByAu(facts.sunAu);
+  // At the Earth's distance from the Sun and nowhere near the Earth (a telescope trailing it by a
+  // third of its orbit, a car): the next neighbourhood along, not the Earth's own sky.
+  if (hood === 'earth' && Number.isFinite(facts.earthAu) && facts.earthAu > EARTH_REACH_AU) return facts.sunAu < 1 ? 'venus' : 'mars';
+  return hood;
 }
 
 /**

@@ -3,7 +3,7 @@
 //
 // Exports: createDrift(ctx, env) -> { apply(link, from), start(options, from), stop(reason),
 //          pause(), resume(), skip(), setOptions(patch), state(), active }, and createBar(doc),
-//          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS.
+//          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS, DARK_BELOW.
 //
 // `#drift=1` in the address (or words: `#drift=worlds,stars,calm`, ui/driftplan.js readOptions), or
 // the Drift row at the top of Just watch. Ivan, 2026-10-12: "kind of screensaver, when everything
@@ -33,7 +33,7 @@
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { realModelFor } from '../scene/realmodels.js';
-import { systemOf } from '../scene/worlds.js';
+import { systemOf, positionOf } from '../scene/worlds.js';
 import { parseFrame } from '../propagate/frames.js';
 import { propagate } from '../propagate/index.js';
 import { icon } from './icons.js';
@@ -54,6 +54,8 @@ const EMPTY_WAIT_MS = 12000;
 /** A flight that has not ended this long after it should have is treated as arrived. */
 const FLIGHT_GRACE_MS = 5000;
 const AU_KM = 149597870.7;
+/** The sine of the Sun's height below which a place on the ground is passed over: ten degrees. */
+export const DARK_BELOW = 0.17;
 
 /**
  * The layers each category is made of. The drift switches on the ones that are off, and puts them
@@ -96,7 +98,8 @@ export function factsOf(record, deps = {}) {
   if (record.klass === 'world') {
     const planetOf = (deps.planetOf || systemOf)(record.id);
     // The Moon's planet is the Earth, and the Moon is a neighbourhood of its own.
-    return { planetOf: record.id === 'moon' ? 'moon' : planetOf, sunAu: deps.sunAu ? deps.sunAu(record) : NaN };
+    const at = deps.sunAu ? deps.sunAu(record) : NaN;
+    return { planetOf: record.id === 'moon' ? 'moon' : planetOf, sunAu: at && typeof at === 'object' ? at.sunAu : at };
   }
   if (record.klass === 'dso' || record.klass === 'exotic') return { farLy: Number(meta.distLy) };
   if (record.klass === 'star' || record.klass === 'exoplanet') return {};
@@ -106,7 +109,9 @@ export function factsOf(record, deps = {}) {
     const w = frame.world === 'moon' ? 'moon' : (deps.planetOf || systemOf)(frame.world);
     return { onWorld: w };
   }
-  return { sunAu: deps.sunAu ? deps.sunAu(record) : NaN };
+  const at = deps.sunAu ? deps.sunAu(record) : NaN;
+  // `sunAu` may answer with both distances at once ({sunAu, earthAu}); a bare number is the Sun's.
+  return at && typeof at === 'object' ? { sunAu: at.sunAu, earthAu: at.earthAu } : { sunAu: at };
 }
 
 function el(doc, tag, className, text) {
@@ -279,7 +284,10 @@ export function createDrift(ctx, env = {}) {
         if (!p) return NaN;
         const f = parseFrame(p.frame);
         // Only a heliocentric position says how far from the Sun a thing is without more work.
-        return f && f.world === 'sun' ? Math.hypot(p.x, p.y, p.z) / AU_KM : NaN;
+        if (!f || f.world !== 'sun') return NaN;
+        const e = positionOf('earth', ctx.clock.now());
+        const same = e && e.frame === p.frame;
+        return { sunAu: Math.hypot(p.x, p.y, p.z) / AU_KM, earthAu: same ? Math.hypot(p.x - e.x, p.y - e.y, p.z - e.z) / AU_KM : NaN };
       } catch { return NaN; }
     },
   };
@@ -368,6 +376,23 @@ export function createDrift(ctx, env = {}) {
     } catch { return null; }
   }
 
+  /**
+   * Something standing on a world's night side is a black picture (seen 2026-10-12: Apollo 12 under
+   * a waning Moon). It is passed over until the Sun is up there: ten degrees, so the ground has light.
+   */
+  function inTheDark(record, at) {
+    if (record.klass !== 'site' || !ctx.worlds) return false;
+    try {
+      const f = parseFrame(record.frame);
+      const centre = f && f.world ? ctx.worlds.drawnPositionOf(f.world) : null;
+      const sun = centre ? ctx.worlds.sunDirOf(f.world) : null;
+      if (!centre || !sun || !at) return false;
+      const n = { x: at.x - centre.x, y: at.y - centre.y, z: at.z - centre.z };
+      const dot = (n.x * sun.x + n.y * sun.y + n.z * sun.z) / (Math.hypot(n.x, n.y, n.z) * Math.hypot(sun.x, sun.y, sun.z) || 1);
+      return dot < DARK_BELOW;
+    } catch { return false; }
+  }
+
   function go() {
     rebuild(false);
     let next = null;
@@ -377,7 +402,7 @@ export function createDrift(ctx, env = {}) {
       // A record with no place right now (a probe before its launch, a layer that went) is passed.
       let at = null;
       try { at = ctx.positionOfRecord(cand.record); } catch { at = null; }
-      if (at || deps.systemOf(cand.record)) { next = cand; break; }
+      if ((at && !inTheDark(cand.record, at)) || (!at && deps.systemOf(cand.record))) { next = cand; break; }
     }
     if (!next) {
       if (phase !== 'waiting') { phase = 'waiting'; waitingSince = now(); }

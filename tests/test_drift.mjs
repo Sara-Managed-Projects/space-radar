@@ -73,6 +73,8 @@ const RECORDS = [
   world('flat-moon', { flat: true }),
   { id: 'rock', name: 'A rock', klass: 'asteroid', frame: 'sun-inertial', meta: {}, au: 2.7 },
   { id: 'far-probe', name: 'A far probe', klass: 'probe', frame: 'sun-inertial', meta: {}, au: 160 },
+  { id: 'trailing', name: 'A telescope trailing the Earth', klass: 'telescope', frame: 'sun-inertial', meta: {}, au: 1.02, earthAu: 0.9 },
+  { id: 'at-l2', name: 'A telescope at L2', klass: 'telescope', frame: 'sun-inertial', meta: {}, au: 1.01, earthAu: 0.01 },
   { id: 'sirius', name: 'Sirius', klass: 'star', meta: { why: 'the brightest star in the night sky' } },
   { id: 'hip-1', name: 'HIP 1', klass: 'star', meta: {} },
   { id: 'dso-m42', name: 'Orion Nebula', klass: 'dso', meta: { messier: 42, distLy: 1344 } },
@@ -84,7 +86,7 @@ const deps = {
   pictures: new Map([['dso-m42', {}]]),
   systemOf: () => null,
   planetOf: (id) => PLANET_OF[id] || id,
-  sunAu: (r) => (Number.isFinite(r.au) ? r.au : NaN),
+  sunAu: (r) => (Number.isFinite(r.earthAu) ? { sunAu: r.au, earthAu: r.earthAu } : Number.isFinite(r.au) ? r.au : NaN),
 };
 const look = (r) => D.lookOf(r, deps);
 const facts = (r) => D.factsOf(r, deps);
@@ -102,6 +104,7 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   const hood = (id) => P.hoodOf(RECORDS.find((r) => r.id === id), facts(RECORDS.find((r) => r.id === id)));
   eq(['iss', 'moon', 'mars', 'io', 'pluto', 'rock', 'far-probe', 'sirius', 'dso-m42', 'dso-m31'].map(hood),
     ['earth', 'moon', 'mars', 'jupiter', 'kuiper', 'belt', 'kuiper', 'stellar', 'galaxy', 'beyond'], 'every record has the neighbourhood it is in');
+  check(hood('at-l2') === 'earth' && hood('trailing') === 'mars', 'at L2 is the Earth\'s sky; a third of an orbit behind the Earth is not');
   eq([0.1, 0.4, 0.72, 1, 1.52, 2.7, 5.2, 9.5, 19, 30, 40].map(P.hoodByAu),
     ['sun', 'mercury', 'venus', 'earth', 'mars', 'belt', 'jupiter', 'saturn', 'uranus', 'neptune', 'kuiper'], 'a distance from the Sun names its neighbourhood');
   for (const h of P.HOODS) check(P.HOODS.indexOf(h) === P.HOODS.lastIndexOf(h), `${h} is on the ladder once`);
@@ -274,6 +277,33 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   check(empty.active && empty.state().phase === 'waiting', 'with nothing landed yet it waits');
   run(20000);
   check(!empty.active, 'and stops when nothing ever does');
+
+  // Something standing on a world's night side is passed over; by day it is a place.
+  {
+    // `jezero` is the one site id scene/realmodels.js gives a model of its own (the rover).
+    const lander = { id: 'jezero', name: 'Perseverance', klass: 'site', frame: 'mars-fixed', meta: {} };
+    for (const [sunSide, wanted] of [[-1, 0], [1, 1]]) {
+      const seen = [];
+      const moonCtx = {
+        ...ctx,
+        layers: [{ id: 'sites' }],
+        isLayerOn: () => true,
+        recordsFor: () => [lander],
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 10, y: 0, z: 1 }),
+        worlds: { drawnPositionOf: () => ({ x: 10, y: 0, z: 0 }), sunDirOf: () => ({ x: 0, y: 0, z: sunSide }) },
+        cameraRig: { ...rig, onUserInput: () => () => {} },
+      };
+      const d2 = D.createDrift(moonCtx, {
+        document: null, window: null, navigator: {}, storage: null, now: () => t, rng: seeded(5),
+        setInterval: (fn) => { fire = fn; return 1; }, clearInterval: () => { fire = null; },
+      });
+      d2.start({ through: ['craft'], realOnly: true, tags: true, pace: 'steady' });
+      check(d2.state().pool === 1 && d2.state().walk.hoods[0] === 'mars', 'a rover on Mars is in the pool, in Mars\'s neighbourhood');
+      check(seen.length === wanted, sunSide < 0 ? 'in the dark it is passed over' : 'with the Sun up it is visited');
+      d2.stop();
+    }
+  }
 
   // From the ground, and under a reel, it does not start.
   const ground = D.createDrift({ ...ctx, skyView: { active: true } }, { document: null, window: null, navigator: {}, storage: null });
