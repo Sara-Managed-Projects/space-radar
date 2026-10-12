@@ -353,16 +353,18 @@ export const RING_NEAR_FADE_S = 1;
 /**
  * THE GRAINS (illustrative, and the card says they are drawn). From very close the ring is not a
  * smooth sheet. No particle is resolved from where the camera may stand -- a pixel is kilometres of
- * ring and the particles are centimetres to metres -- so what is drawn is a sparkle: a stable hash
+ * ring and the particles are centimetres to metres -- so what is drawn is a texture: a stable hash
  * of the place in the ring plane, in cells `px` screen pixels across at whatever the distance is
- * (two sizes cross-faded, so nothing pops and nothing is finer than a pixel), which scales what
- * the slab already sends by 1 + `gain` x (grain - `mean`): a seventh dimmer between the grains, the
- * brightest grain nearly three times brighter, and no brighter on average (`mean` is the grains' own).
- * The backscattered light and the forward-thrown light each keep their own phase, so the sparkle is
- * strongest where those are. It is only there
- * when one pixel covers less than `farRadii` of the planet's radius (30 km of ring), full by half that.
+ * (two sizes cross-faded, so nothing pops and nothing is finer than a pixel). One cell in five
+ * holds a glint, most of them faint; and a soft mottling `mottleCells` cells across stands for
+ * clumps. Together they scale what the slab already sends by
+ * 1 + `gain` x (glint - `mean`) + `mottle` x (clump - 0.5): no brighter on average (`mean` is the
+ * glints' own). The backscattered light and the forward-thrown light each keep their own phase,
+ * so the sparkle is strongest where those are. It is only there when one pixel covers less than
+ * `farRadii` of the planet's radius (30 km of ring), full by half that. (The first version put a
+ * glint in every cell: a lattice of dots, television static. Seen in the look of 2026-10-12.)
  */
-export const RING_GRAIN = { px: 2.5, gain: 2, mean: 0.07, farRadii: 5e-4 };
+export const RING_GRAIN = { px: 3.5, gain: 3, mean: 0.0116, mottle: 0.3, mottleCells: 4, farRadii: 5e-4 };
 /** How much of the grain is drawn where a pixel covers `radiiPerPx` of ring. JS twin of RING_FRAG's gate. Pure. */
 export function ringGrainGate(radiiPerPx) {
   const x = Math.min(1, Math.max(0, (radiiPerPx - RING_GRAIN.farRadii * 0.5) / (RING_GRAIN.farRadii * 0.5)));
@@ -1255,14 +1257,26 @@ float ringHash( vec2 p ) {
   p3 += dot( p3, p3.yzx + 33.33 );
   return fract( ( p3.x + p3.y ) * p3.z );
 }
-// One size of grain: a soft point somewhere in each cell, most of them faint and a few bright.
+// One size of grain: one cell in five holds a soft glint, most of them faint and a few bright.
 float ringGrains( vec2 p, float cell ) {
   vec2 q = p / cell;
   vec2 id = floor( q );
   float h = ringHash( id + cell * 4096.0 );
-  vec2 at = vec2( ringHash( id + 17.0 ), ringHash( id + 59.0 ) ) * 0.5 + 0.25;
+  if ( h < 0.8 ) return 0.0;
+  vec2 at = vec2( ringHash( id + 17.0 ), ringHash( id + 59.0 ) ) * 0.4 + 0.3;
   vec2 d = q - id - at;
-  return h * h * exp( -dot( d, d ) * 14.0 );
+  float s = ( h - 0.8 ) * 5.0;
+  return s * s * exp( -dot( d, d ) * 18.0 );
+}
+// Clumps: the same hash, smooth between the corners of cells several grains across. 0..1, mean 0.5.
+float ringMottle( vec2 p, float cell ) {
+  vec2 q = p / cell;
+  vec2 i = floor( q );
+  vec2 f = q - i;
+  f = f * f * ( 3.0 - 2.0 * f );
+  float o = cell * 1024.0 + 7.0;
+  return mix( mix( ringHash( i + o ), ringHash( i + vec2( 1.0, 0.0 ) + o ), f.x ),
+              mix( ringHash( i + vec2( 0.0, 1.0 ) + o ), ringHash( i + vec2( 1.0, 1.0 ) + o ), f.x ), f.y );
 }
 // The phase of a Lambert sphere: the ring's particles, centimetres to metres, throw light back.
 float lambertSpherePhase( float cosAlpha ) {
@@ -1321,9 +1335,11 @@ void main() {
     if ( gate > 0.0 ) {
       float lg = log2( max( perPx, 1e-9 ) * ${RING_GRAIN.px.toFixed(1)} );
       float lv = floor( lg );
-      float g = mix( ringGrains( vPosL.xy, exp2( lv ) ), ringGrains( vPosL.xy, exp2( lv + 1.0 ) ), lg - lv );
-      // Less the grains' own mean, so the ring is no brighter on average with them than without.
-      float k = max( 1.0 + gate * ${RING_GRAIN.gain.toFixed(1)} * ( g - ${RING_GRAIN.mean.toFixed(2)} ), 0.0 );
+      float c0 = exp2( lv );
+      float g = mix( ringGrains( vPosL.xy, c0 ), ringGrains( vPosL.xy, c0 * 2.0 ), lg - lv );
+      float clump = mix( ringMottle( vPosL.xy, c0 * ${RING_GRAIN.mottleCells.toFixed(1)} ), ringMottle( vPosL.xy, c0 * ${(RING_GRAIN.mottleCells * 2).toFixed(1)} ), lg - lv );
+      // Less the glints' own mean, so the ring is no brighter on average with them than without.
+      float k = max( 1.0 + gate * ( ${RING_GRAIN.gain.toFixed(1)} * ( g - ${RING_GRAIN.mean.toFixed(4)} ) + ${RING_GRAIN.mottle.toFixed(2)} * ( clump - 0.5 ) ), 0.0 );
       body *= k;
       fine *= k;
     }

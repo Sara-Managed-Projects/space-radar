@@ -123,11 +123,12 @@ for (const [name, km] of GAPS) {
   // The grains: no texture, gated by how much ring a pixel covers, their mean taken off.
   const grain = RING_FRAG.slice(RING_FRAG.indexOf('if ( uGrain > 0.0 )'));
   check(grain.includes('dFdx( vPosL.xy )') && grain.includes('dFdy( vPosL.xy )') && !grain.slice(0, grain.indexOf('float cover')).includes('texture2D'), 'the grains are sized by their screen footprint and read no texture');
-  check(grain.includes(`( g - ${RING_GRAIN.mean.toFixed(2)} )`) && grain.includes('body *= k;') && grain.includes('fine *= k;'), 'they scale the backscattered and the forward-thrown light alike, less their own mean');
+  check(grain.includes(`( g - ${RING_GRAIN.mean.toFixed(4)} )`) && grain.includes('( clump - 0.5 )') && grain.includes('body *= k;') && grain.includes('fine *= k;'), 'they scale the backscattered and the forward-thrown light alike, less their own mean');
   check(!/uTime|uClock/.test(RING_FRAG), 'nothing in the ring moves by itself: the grains are a stable hash (less motion is kept for free)');
   check(ringGrainGate(RING_GRAIN.farRadii) === 0 && ringGrainGate(RING_GRAIN.farRadii * 0.5) === 1 && ringGrainGate(RING_GRAIN.farRadii * 10) === 0, 'no grain where a pixel covers more than 30 km of ring, all of it by 15 km');
-  // The grains' own mean: h squared (1/3) times a Gaussian's share of its cell (pi / 14).
-  check(near((1 / 3) * (Math.PI / 14), RING_GRAIN.mean, 0.01), `the mean taken off is the grains' own (${((1 / 3) * (Math.PI / 14)).toFixed(3)})`);
+  // The glints' own mean: one cell in five, a squared ramp (1/3), a Gaussian's share of its cell (pi / 18).
+  check(near(0.2 * (1 / 3) * (Math.PI / 18), RING_GRAIN.mean, 0.0005), `the mean taken off is the glints' own (${(0.2 * (1 / 3) * (Math.PI / 18)).toFixed(4)})`);
+  check(/if \( h < 0\.8 \) return 0\.0;/.test(RING_FRAG), 'four cells in five hold no glint: not a lattice of dots');
   check(RING_GRAIN.farRadii * saturn.radiusKm < 40, 'and the gate is tens of kilometres a pixel: extreme close range');
   check(RING_FRAG.split('{').length === RING_FRAG.split('}').length && RING_FRAG.split('(').length === RING_FRAG.split(')').length, 'the ring shader\'s braces and brackets balance');
 }

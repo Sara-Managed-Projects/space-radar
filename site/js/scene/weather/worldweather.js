@@ -96,7 +96,7 @@ export const HEXAGON = { cornerShare: 0.75, halfWidthRad: 0.012, depth: 0.22 };
  * The polar vortex as drawn (its size and speed are the registry's): how tightly the arms wind, how
  * how many arms, how bright the wall of cloud round the eye and the arms are against the cap, how dark the eye is.
  */
-export const VORTEX = { arms: 2, wind: 5, wall: 0.3, lift: 0.16, eye: 0.4 };
+export const VORTEX = { arms: 2, wind: 5, wall: 0.4, lift: 0.28, eye: 0.4 };
 /** Days the vortex's wall takes to go once round: the eye's rim at the measured speed. Pure. */
 export function vortexPeriodDays(v) {
   return (Math.PI * v.eye_diameter_km * 1000) / v.wind_m_s / 86400;
