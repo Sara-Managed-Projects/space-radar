@@ -1530,6 +1530,7 @@ export const COPY = {
       uranus: 'On “As Hubble saw it” the bright cap over the north pole is real: Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
       neptune: 'Its bright streaks are methane ice. Hubble saw them fade after 2019 and its last dark spot dissolve, so no spot is drawn.',
     },
+    // Jupiter's storms (2026-10-12) add two sentences to its line: copy/en.later.js `weatherStorms`.
     // Lightning on the giants (2026-10-08, internal #244), added to the world's line where it is drawn.
     flashes: {
       jupiter: 'On its night side, rare flashes stand for the lightning Juno found, most of it far in the north: the latitudes are measured, each flash is illustrative and drawn larger than life.',

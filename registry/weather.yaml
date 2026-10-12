@@ -90,6 +90,121 @@ effects:
     spot: {u: 0.3635, v: 0.398, half_u: 0.036, half_v: 0.040, period_days: 6}
     note: "The bands slide past one another at the published jet speeds. The Great Red Spot stays where the map has it; its drift is not modelled."
 
+  # JUPITER'S STORMS (2026-10-12, spec 0073 requirement 4). Four rows, all drawn inside the flow's own
+  # shader term (scene/weather/worldweather.js WX_STORMS), each from the disc size its `from_share`
+  # names (a share of half the view's height, as scene/worlds.js discShare gives it) and full at one
+  # and a half times that. None is a photograph of today.
+  #
+  # THE EDDIES. Where two jets pass each other the air between them is sheared, and small vortices
+  # roll there. `lines` of them are drawn, at the steepest gradients of the `jupiter-bands` profile
+  # (scene/weather/flow.js shearLines picks them), each turning at half the measured shear (the rate
+  # at which a sheared fluid turns on itself) and in its sense, but never faster than
+  # `max_turns_per_day`: at the full rate of the 24 N jet's flanks (0.3) a still picture is wound into
+  # commas, seen in the stills of 2026-10-12. Their places along the band, their
+  # sizes (at most `half_deg_max` of latitude) and their number are GENERATED. `wake` is the Great
+  # Red Spot's: the churned air downstream of it, on its poleward-of-equator side, which is WEST of
+  # the spot because the jet on that side blows west (the profile's -50 m/s at 20 S planetographic);
+  # `reach` is in spot half-widths. A displacement of the map's lookup, never more than one eddy's
+  # diameter, so the picture is never smeared however long the clock runs.
+  - id: jupiter-eddies
+    world: jupiter
+    kind: shear-eddies
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Tollefson et al. 2017, Icarus 296, 163 (the jets whose shear is used; see jupiter-bands)"
+      url: "https://doi.org/10.1016/j.icarus.2017.06.007"
+      read: 2026-10-03
+    eddies: {from_share: 0.2, lines: 7, lat_max_deg: 62, half_deg_max: 1.5, max_turns_per_day: 0.1, wake: {reach: 5, half_deg: 1.3, turns_per_day: 0.1}}
+    why: "The map is one picture at 0.18 degrees a pixel and nothing re-forms in it. Where the shear is, how strong it is and which way it turns the air are measured; every eddy drawn there is generated, below the map's resolution in time, and stands still where less motion is asked for."
+
+  # THE OVALS. [u, v, half_u, half_v, period_days] in the map's own coordinates (v from the south),
+  # MEASURED ON THE PICTURES on 2026-10-12 (the brightest compact ovals between 25 S and 48 S, their
+  # half-brightness extents). `own` is site/textures/2k_jupiter.webp, `hubble` the OPAL map of 2025
+  # (2k_jupiter_opal_2025.webp). The first of each is Oval BA (28.7 S planetocentric in the first map,
+  # 30.1 S in Hubble's, which is 33 S planetographic); the rest are the three largest white ovals of
+  # the chain at 40 S planetographic (36.8 S planetocentric in Hubble's map).
+  # THE TURNING. Oval BA: its central part turned 4.5 degrees in 1 640 s, "9.9 deg/hr", anticyclonic,
+  # on Juno's PJ17 maps (J. Rogers, BAA, 2019 February 17): once in 36 hours, 1.5 days. THE WHITE
+  # OVALS' PERIOD IS OURS: NASA's caption calls them "massive rotating storms" and nothing read for
+  # this row gives their rate; 3 days is BA's outer rim (2.2 to 2.8 degrees in the same 1 640 s).
+  - id: jupiter-ovals
+    world: jupiter
+    kind: ovals
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "Rogers 2019, Circulation in oval BA (BAA Jupiter Section, Juno PJ17 report, appendix 1: 9.9 deg/hr in the central part, 109 and 142 m/s in the annulus); Choi, Showman and Vasavada 2010, Icarus 207, 359 (Oval BA's rim at 140 to 150 m/s by New Horizons); NASA photojournal, Jupiter's Stunning Southern Hemisphere (9 November 2017: 'one of eight massive rotating storms at 40 degrees south latitude')"
+      url: "https://britastro.org/wp-content/uploads/2019/02/PJ17-Appx1_BA-rotation.pdf"
+      read: 2026-10-12
+    ovals:
+      from_share: 0.12
+      own: [[0.8323, 0.3403, 0.0112, 0.0171, 1.5], [0.1999, 0.2674, 0.0066, 0.0107, 3], [0.2917, 0.2693, 0.0056, 0.0107, 3], [0.5750, 0.2721, 0.0049, 0.0112, 3]]
+      hubble: [[0.9094, 0.3325, 0.0127, 0.0137, 1.5], [0.5469, 0.2956, 0.0049, 0.0068, 3], [0.0380, 0.2949, 0.0044, 0.0073, 3], [0.4876, 0.2947, 0.0046, 0.0063, 3]]
+    note: "Each oval turns within itself, anticlockwise as an anticyclone in the south does, where the map has it. Oval BA's rate is measured; the white ovals' is taken from BA's rim. Their drift is not modelled."
+
+  # THE POLES JUNO SAW. No map made from the Earth holds Jupiter's poles. What Juno found there, as
+  # read on 2026-10-12 in Rogers, Eichstadt, Hansen, Orton et al., "Results from Juno: Jupiter's polar
+  # polygons" (BAA, 8 March 2018, JunoCam, perijoves 1 to 11):
+  #   north  "eight cyclones form a modified octagon or 'double square' around a central one"; mean
+  #          latitudes "chaotic CPC, 83.4 (+-0.5)" and filled, 82.7 (+-0.5), alternately; diameters
+  #          "4.5-6 deg latitude (5200-7000 km)".
+  #   south  "five cyclones form a pentagon around a central cyclone", which is "offset from the pole
+  #          by 1.0 to 2.5 deg latitude", "towards L3 ~218"; the pentagon "~18 deg (21,000 km) in
+  #          diameter" at its outer edge, so its cyclones' centres are about 6 degrees from the
+  #          central one; diameters "5.5-7 deg latitude (6400-8200 km)".
+  #   turning "0.1 to 0.3 deg/min": at 0.2, once in 30 hours.
+  # Adriani et al. 2018 (Nature 555, 216; its abstract read the same day) is the discovery and gives
+  # the same counts. THE STATE DRAWN IS 2017: on 3 November 2019 Juno found a sixth, smaller cyclone
+  # in the southern ring (NASA, 12 December 2019, "from a pentagon ... to a hexagonal arrangement"),
+  # which is not drawn. `north.ring` and `south.ring` are [latitude or distance, count]; the
+  # LONGITUDES ARE OURS: the cyclones are spaced evenly (the real octagon is not quite even), and the
+  # shipped map's meridian is not tied to System III, so `toward_lon_w` only fixes which side the
+  # southern cluster leans to against our own longitudes.
+  - id: jupiter-polar-cyclones
+    world: jupiter
+    kind: polar-cyclones
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "Adriani et al. 2018, Clusters of cyclones encircling Jupiter's poles, Nature 555, 216 (Juno JIRAM and JunoCam); Rogers, Eichstadt, Hansen, Orton et al. 2018, Results from Juno: Jupiter's polar polygons (BAA, 8 March 2018: the latitudes, sizes and turning used); NASA, Juno Navigators Enable Jupiter Cyclone Discovery (12 December 2019: the sixth southern cyclone of 3 November 2019, not drawn)"
+      url: "https://doi.org/10.1038/nature25491"
+      read: 2026-10-12
+    cyclones:
+      from_share: 0.1
+      state: "2017 (Juno's perijoves 1 to 11)"
+      cap_lat_deg: 75
+      period_days: 1.25
+      north: {centre_lat_deg: 90, centre_diameter_deg: 5.5, ring_lats_deg: [83.4, 82.7], count: 8, diameter_deg: 5.2}
+      south: {centre_offset_deg: 1.75, toward_lon_w: 218, ring_from_centre_deg: 6, count: 5, diameter_deg: 6.2}
+    note: "A reconstruction from Juno's published counts, latitudes, sizes and turning, not a photograph: each cyclone's spiral, its longitude and the colour of the cap are ours."
+
+  # DEPTH. NASA's page (read 2026-10-12): Jupiter "likely has three distinct cloud layers" that
+  # together span about 71 km, ammonia ice on top, ammonium hydrosulfide under it, water below. That
+  # the dark places of the picture are where the top deck is thin is the usual reading and is OURS
+  # here, not that page's. Drawn: in the darkest places of the map (`gap_lum`, linear luminance,
+  # [fully a gap, not a gap], the 5th and 30th percentiles MEASURED on each picture between 63 S and
+  # 63 N on 2026-10-12) a second lookup of the same map, softer, darker and bluer (`tint`), is seen at
+  # an offset that follows the view: ONE more texture fetch. `thickness_radii` is the layer's depth
+  # as drawn: 0.004 of the radius, 290 km, four times the 71 km of the real decks, or nothing
+  # would be seen to move.
+  - id: jupiter-depth
+    world: jupiter
+    kind: cloud-depth
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "NASA Science, Jupiter: Facts (three cloud layers spanning about 71 km: ammonia ice, ammonium hydrosulfide, water)"
+      url: "https://science.nasa.gov/jupiter/jupiter-facts/"
+      read: 2026-10-12
+    depth:
+      from_share: 0.4
+      thickness_radii: 0.004
+      strength: 0.6
+      tint: [0.70, 0.80, 0.96]
+      gap_lum: {own: [0.22, 0.31], hubble: [0.38, 0.44]}
+    why: "A camera sees one deck's top. That the dark places are gaps onto deeper cloud is known; the under-deck here is the same picture again, shifted and tinted, and its depth is drawn several times too great so that it can be seen."
+
   - id: saturn-bands
     world: saturn
     kind: zonal-flow

@@ -4037,7 +4037,8 @@ TILESET_CORS = re.compile(r"^Access-Control-Allow-Origin: \S+ \(measured \d{4}-\
 WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
-WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches"}
+WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches",
+                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4162,6 +4163,51 @@ def check_weather(world_ids: set, layers: list) -> list:
                 fail(where, "patches must be 1 to 4 rows of [latitude, east longitude, half-height, half-width] in degrees")
             if cls != "illustrative":
                 fail(where, "drawn clouds at chosen places are illustrative")
+        # Jupiter's storms (2026-10-12, spec 0073 req 4): each starts at a disc size, and what is
+        # generated is never called modelled.
+        storm = {"shear-eddies": "eddies", "ovals": "ovals", "polar-cyclones": "cyclones", "cloud-depth": "depth"}.get(r.get("kind"))
+        if storm:
+            body = r.get(storm) or {}
+            if not (is_number(body.get("from_share")) and 0.015 <= body.get("from_share") <= 1):
+                fail(where, f"{storm}.from_share must be the disc size it starts at, 0.015 (where a map is worn) to 1")
+        if r.get("kind") == "shear-eddies":
+            ed = r.get("eddies") or {}
+            if not (is_number(ed.get("lines")) and 1 <= ed.get("lines") <= 7 and is_number(ed.get("half_deg_max")) and 0 < ed.get("half_deg_max") <= 3
+                    and is_number(ed.get("max_turns_per_day")) and 0 < ed.get("max_turns_per_day") <= 1 and is_number(ed.get("lat_max_deg"))):
+                fail(where, "eddies needs lines (1 to 7), half_deg_max (at most 3 degrees: small eddies), max_turns_per_day and lat_max_deg")
+            if cls != "illustrative":
+                fail(where, "generated eddies are illustrative: where each one is, nobody measured")
+        if r.get("kind") == "ovals":
+            ov = r.get("ovals") or {}
+            for face in ("own", "hubble"):
+                tab = ov.get(face)
+                if not (isinstance(tab, list) and 0 < len(tab) <= 4 and all(
+                        isinstance(q, list) and len(q) == 5 and all(is_number(x) for x in q)
+                        and 0 <= q[0] <= 1 and 0.05 < q[1] < 0.95 and 0 < q[2] <= 0.05 and 0 < q[3] <= 0.05 and q[4] > 0 for q in tab)):
+                    fail(where, f"ovals.{face} must be 1 to 4 rows of [u, v, half_u, half_v, period_days] inside the map")
+        if r.get("kind") == "polar-cyclones":
+            cy = r.get("cyclones") or {}
+            n, s_ = cy.get("north") or {}, cy.get("south") or {}
+            if not (n.get("count") == 8 and s_.get("count") == 5):
+                fail(where, "cyclones: eight round one in the north and five round one in the south is the state cited (2017)")
+            if not cy.get("state"):
+                fail(where, "cyclones has no `state:` -- the southern ring gained a sixth in 2019; say which is drawn")
+            if not (is_number(cy.get("cap_lat_deg")) and 70 <= cy.get("cap_lat_deg") <= 80 and is_number(cy.get("period_days")) and cy.get("period_days") > 0):
+                fail(where, "cyclones needs cap_lat_deg (70 to 80) and period_days")
+            lats = n.get("ring_lats_deg")
+            if not (isinstance(lats, list) and lats and all(is_number(x) and 80 <= x <= 86 for x in lats)):
+                fail(where, "cyclones.north.ring_lats_deg must be latitudes between 80 and 86: where Juno found them")
+            if not (is_number(s_.get("centre_offset_deg")) and 1.0 <= s_.get("centre_offset_deg") <= 2.5
+                    and is_number(s_.get("ring_from_centre_deg")) and 4 <= s_.get("ring_from_centre_deg") <= 8):
+                fail(where, "cyclones.south: the central cyclone is 1.0 to 2.5 degrees off the pole and the ring 4 to 8 degrees from it")
+        if r.get("kind") == "cloud-depth":
+            dp = r.get("depth") or {}
+            gl = dp.get("gap_lum") or {}
+            if not (is_number(dp.get("thickness_radii")) and 0 < dp.get("thickness_radii") <= 0.01 and is_number(dp.get("strength")) and 0 < dp.get("strength") <= 1
+                    and all(isinstance(gl.get(f), list) and len(gl.get(f)) == 2 and 0 < gl[f][0] < gl[f][1] < 1 for f in ("own", "hubble"))):
+                fail(where, "depth needs thickness_radii (at most 0.01), strength and gap_lum.own / gap_lum.hubble as [low, high]")
+            if cls != "illustrative":
+                fail(where, "the under-deck is the same picture again: illustrative")
         if r.get("kind") == "hexagon":
             hexa = r.get("hexagon") or {}
             if not is_number(hexa.get("lat_deg")) or hexa.get("sides") != 6:

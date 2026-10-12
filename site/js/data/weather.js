@@ -208,6 +208,168 @@ export const WEATHER = [
     "source": "Tollefson et al. 2017, Changes in Jupiter's Zonal Wind Profile preceding and during the Juno mission, Icarus 296, 163"
   },
   {
+    "id": "jupiter-eddies",
+    "world": "jupiter",
+    "kind": "shear-eddies",
+    "class": "illustrative",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "eddies": {
+      "from_share": 0.2,
+      "lines": 7,
+      "lat_max_deg": 62,
+      "half_deg_max": 1.5,
+      "max_turns_per_day": 0.1,
+      "wake": {
+        "reach": 5,
+        "half_deg": 1.3,
+        "turns_per_day": 0.1
+      }
+    },
+    "source": "Tollefson et al. 2017, Icarus 296, 163 (the jets whose shear is used; see jupiter-bands)"
+  },
+  {
+    "id": "jupiter-ovals",
+    "world": "jupiter",
+    "kind": "ovals",
+    "class": "modelled",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "ovals": {
+      "from_share": 0.12,
+      "own": [
+        [
+          0.8323,
+          0.3403,
+          0.0112,
+          0.0171,
+          1.5
+        ],
+        [
+          0.1999,
+          0.2674,
+          0.0066,
+          0.0107,
+          3
+        ],
+        [
+          0.2917,
+          0.2693,
+          0.0056,
+          0.0107,
+          3
+        ],
+        [
+          0.575,
+          0.2721,
+          0.0049,
+          0.0112,
+          3
+        ]
+      ],
+      "hubble": [
+        [
+          0.9094,
+          0.3325,
+          0.0127,
+          0.0137,
+          1.5
+        ],
+        [
+          0.5469,
+          0.2956,
+          0.0049,
+          0.0068,
+          3
+        ],
+        [
+          0.038,
+          0.2949,
+          0.0044,
+          0.0073,
+          3
+        ],
+        [
+          0.4876,
+          0.2947,
+          0.0046,
+          0.0063,
+          3
+        ]
+      ]
+    },
+    "source": "Rogers 2019, Circulation in oval BA (BAA Jupiter Section, Juno PJ17 report, appendix 1: 9.9 deg/hr in the central part, 109 and 142 m/s in the annulus); Choi, Showman and Vasavada 2010, Icarus 207, 359 (Oval BA's rim at 140 to 150 m/s by New Horizons); NASA photojournal, Jupiter's Stunning Southern Hemisphere (9 November 2017: 'one of eight massive rotating storms at 40 degrees south latitude')"
+  },
+  {
+    "id": "jupiter-polar-cyclones",
+    "world": "jupiter",
+    "kind": "polar-cyclones",
+    "class": "modelled",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "cyclones": {
+      "from_share": 0.1,
+      "state": "2017 (Juno's perijoves 1 to 11)",
+      "cap_lat_deg": 75,
+      "period_days": 1.25,
+      "north": {
+        "centre_lat_deg": 90,
+        "centre_diameter_deg": 5.5,
+        "ring_lats_deg": [
+          83.4,
+          82.7
+        ],
+        "count": 8,
+        "diameter_deg": 5.2
+      },
+      "south": {
+        "centre_offset_deg": 1.75,
+        "toward_lon_w": 218,
+        "ring_from_centre_deg": 6,
+        "count": 5,
+        "diameter_deg": 6.2
+      }
+    },
+    "source": "Adriani et al. 2018, Clusters of cyclones encircling Jupiter's poles, Nature 555, 216 (Juno JIRAM and JunoCam); Rogers, Eichstadt, Hansen, Orton et al. 2018, Results from Juno: Jupiter's polar polygons (BAA, 8 March 2018: the latitudes, sizes and turning used); NASA, Juno Navigators Enable Jupiter Cyclone Discovery (12 December 2019: the sixth southern cyclone of 3 November 2019, not drawn)"
+  },
+  {
+    "id": "jupiter-depth",
+    "world": "jupiter",
+    "kind": "cloud-depth",
+    "class": "illustrative",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "depth": {
+      "from_share": 0.4,
+      "thickness_radii": 0.004,
+      "strength": 0.6,
+      "tint": [
+        0.7,
+        0.8,
+        0.96
+      ],
+      "gap_lum": {
+        "own": [
+          0.22,
+          0.31
+        ],
+        "hubble": [
+          0.38,
+          0.44
+        ]
+      }
+    },
+    "source": "NASA Science, Jupiter: Facts (three cloud layers spanning about 71 km: ammonia ice, ammonium hydrosulfide, water)"
+  },
+  {
     "id": "saturn-bands",
     "world": "saturn",
     "kind": "zonal-flow",

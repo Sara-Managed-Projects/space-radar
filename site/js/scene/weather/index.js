@@ -12,6 +12,7 @@
 import { createWorldWeather } from './worldweather.js';
 import { createLightning } from './lightning.js';
 import { COPY, t } from '../../copy/en.js';
+import '../../copy/en.later.js';
 
 /** Mars's season in words: Ls 0-90 is northern spring, and so on round the year. */
 export function seasonName(ls) {
@@ -49,7 +50,11 @@ export function createWeather({ worlds, camera = null, reducedMotion = false, on
       // Lightning is said only where it is drawn: not where less motion was asked for.
       const flash = COPY.weather.flashes[worldId];
       const also = COPY.weather.also[worldId];
-      return [line, also, flash && air.flashing(worldId) ? flash : null].filter(Boolean).join(' ');
+      // Jupiter's storms (2026-10-12): what turns is said only where it turns; the poles wherever they are drawn.
+      const storms = air.storms(worldId);
+      const turning = storms === 'moving' ? COPY.weatherStorms.turning[worldId] : null;
+      const poles = storms ? COPY.weatherStorms.poles[worldId] : null;
+      return [line, also, turning, poles, flash && air.flashing(worldId) ? flash : null].filter(Boolean).join(' ');
     },
     credit: () => lightning.credit(),
     perMinute: () => lightning.perMinute(),
