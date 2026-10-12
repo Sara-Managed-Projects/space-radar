@@ -27,10 +27,27 @@ jobs:
           mkdir -p site/data/v1 && cd site/data/v1
           base=https://dus32w6mqcntr.cloudfront.net/data/v1
           curl -sSf -m 60 -o index.json "$base/index.json"
-          for id in celestrak-visual celestrak-stations celestrak-notable celestrak-last30 jpl-sbdb-neo jpl-cad horizons-deep-space jpl-sbdb-comets swpc-kp gdacs-tc swpc-solar-regions dsn-now swpc-xray-flares donki-cme swpc-flares; do
+          for id in celestrak-visual celestrak-stations celestrak-notable celestrak-last30 jpl-sbdb-neo jpl-cad horizons-deep-space jpl-sbdb-comets swpc-kp gdacs-tc swpc-solar-regions dsn-now; do
             curl -sSf -m 90 -o "$id.json" "$base/$id.json" || echo "no $id"
           done
           ls -la
+      - name: Today's flares and coronal mass ejections, as the harvester saves them
+        run: |
+          set -u
+          python3 -m harvest --dest /tmp/h --only swpc-edited-events || echo "flares: harvest failed"
+          python3 -m harvest --dest /tmp/h --only donki-cme-analysis || echo "cme: harvest failed"
+          find /tmp/h -type f | head -20
+          python3 - <<'PY'
+          import json, glob, os, shutil
+          idx = json.load(open('site/data/v1/index.json'))
+          for cand in glob.glob('/tmp/h/**/index.json', recursive=True):
+              got = json.load(open(cand)).get('snapshots', {})
+              for k, v in got.items():
+                  f = os.path.join(os.path.dirname(cand), k + '.json')
+                  if os.path.exists(f):
+                      shutil.copy(f, 'site/data/v1/' + k + '.json'); idx['snapshots'][k] = v; print('added', k, os.path.getsize(f))
+          json.dump(idx, open('site/data/v1/index.json', 'w'))
+          PY
       - name: Serve and look
         run: |
           set -u
