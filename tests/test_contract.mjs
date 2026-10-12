@@ -2964,7 +2964,7 @@ for (const file of allFiles) {
   for (const f of ['wind.js', 'currents.js']) {
     const src = readFileSync(join(JS, 'scene', f), 'utf8');
     const hit = quadWords(src);
-    if (hit.length) problems.push(`QUAD     scene/${f} draws a screen-covering pass (${hit.join(', ')}): a streak layer is LineSegments on the Earth's frame (internal #146)`);
+    if (hit.length) problems.push(`QUAD     scene/${f} draws a screen-covering pass (${hit.join(', ')}): a streak layer is lines or thin ribbons on the Earth's frame (internal #146)`);
   }
   notes.push('quad: scene/wind.js and scene/currents.js are lines, not a full-screen pass (and the check fails on a scratch quad)');
 }

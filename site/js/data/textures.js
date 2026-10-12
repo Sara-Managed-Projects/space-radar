@@ -521,6 +521,25 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "saturn-ring-fine",
+    "world": "saturn",
+    "slot": "ring",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/8k_saturn_ring_fine.png",
+        "px": [
+          8192,
+          1
+        ],
+        "bytes": 5061,
+        "format": "mono",
+        "credit": "Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's"
+      }
+    ]
+  },
+  {
     "id": "uranus",
     "world": "uranus",
     "slot": "map",
@@ -981,7 +1000,7 @@ export const TEXTURES = [
     "world": "pluto",
     "slot": "map",
     "when": "boot",
-    "coverage": 0.769,
+    "coverage": 0.778,
     "files": [
       {
         "tier": 0,
@@ -990,9 +1009,9 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 63040,
+        "bytes": 128920,
         "format": "rgb",
-        "credit": "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        "credit": "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain"
       }
     ]
   },

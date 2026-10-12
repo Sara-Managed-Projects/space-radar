@@ -387,3 +387,48 @@ export function nearShare(share, from) {
   const x = Math.max(0, Math.min(1, (share - from) / (0.5 * from)));
   return x * x * (3 - 2 * x);
 }
+
+// ---- the close-range cloud detail (2026-10-12; registry/weather.yaml kind cloud-detail) ----------
+// A look at the live build: "at the rig's closest zoom Jupiter is a featureless beige field". The
+// map is 2 048 or 4 096 texels round and the camera comes within a few percent of the radius, where
+// one texel is tens of pixels wide. Below the map's resolution there is nothing measured to draw,
+// so a generated cloud texture carries the picture there and the card says it is generated. These
+// are the shader's numbers and its two fades, as JS twins for tests/test_weather.mjs.
+
+/**
+ * How many octaves are drawn at once, each half the wavelength and DETAIL_GAIN the strength of the
+ * one before. WHICH octaves follows the camera: the coarsest drawn is the one whose wavelength
+ * across latitude is about DETAIL_COARSE_PX on the screen (never coarser than the registry row's
+ * `cells_lat`), so from the rig's closest the finest is still a few pixels and the picture is not
+ * a field of soft blobs (the first version's six fixed octaves were, seen on 2026-10-12: at
+ * seventy pixels a texel its finest was twelve pixels and its strongest four hundred). As the
+ * camera closes in, the coarsest fades out while the next finer fades in.
+ */
+export const DETAIL_OCTAVES = 5;
+export const DETAIL_GAIN = 0.75;
+export const DETAIL_COARSE_PX = 160;
+/** Which octave is the coarsest drawn, as a real number: its whole part is the octave, the rest the cross-fade. */
+export function detailFirstOctave(basePx) {
+  return Number.isFinite(basePx) && basePx > 0 ? Math.max(0, Math.log2(basePx / DETAIL_COARSE_PX)) : 0;
+}
+/**
+ * The fade by how many TEXELS OF THE MAP one screen pixel covers: all of it where a texel is over
+ * three pixels wide (0.3), none of it from one texel a pixel (1.0) up. So it is never drawn over
+ * detail the map has.
+ */
+export const DETAIL_FADE = [0.3, 1.0];
+export function detailFade(texelsPerPixel) {
+  if (!Number.isFinite(texelsPerPixel)) return 0;
+  const x = Math.max(0, Math.min(1, (texelsPerPixel - DETAIL_FADE[0]) / (DETAIL_FADE[1] - DETAIL_FADE[0])));
+  return 1 - x * x * (3 - 2 * x);
+}
+/** An octave is drawn only where its wavelength is some pixels wide: none at 2 px, all at 5 (no shimmer). */
+export const DETAIL_OCTAVE_PX = [2, 5];
+export function detailOctaveWeight(wavelengthPx) {
+  const x = Math.max(0, Math.min(1, (wavelengthPx - DETAIL_OCTAVE_PX[0]) / (DETAIL_OCTAVE_PX[1] - DETAIL_OCTAVE_PX[0])));
+  return x * x * (3 - 2 * x);
+}
+/** The most any channel is multiplied by at full strength: brightness, then the little lean in colour. */
+export function detailMaxContrast(row) {
+  return (1 + row.contrast) * (1 + row.contrast * row.colour) - 1;
+}

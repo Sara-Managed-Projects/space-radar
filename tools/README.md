@@ -11,6 +11,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
 | `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
+| `pr-pictures.sh` | put pictures into a pull request's description from the command line: `tools/pr-pictures.sh <number> shot.png="caption" ...` (shrunk, kept on the branch `screens`, shown under "Pictures"). A pull request that changes what is drawn owes one: `scripts/pr_pictures.py` |
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 ## The regression walk
@@ -112,6 +113,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `worlds` | the eight planets and Pluto, each on its own stage in five pictures: as framed, a third and two thirds of a turn later from the sunward side (the clock turns the world, so every longitude is seen in daylight), and over each pole. A torn, mirrored or flat-filled map is in a picture |
 | `sun` | the Sun's detail on: arrival, closer, the limb, the corona, then inside a real flare and two hours into a real coronal mass ejection when the two feeds are there |
 | `jupiter` | the stage, both poles, close on a belt, the clock sped up |
+| `saturn` | the stage, the rings wide, edge-on and from the unlit side at today's Sun; then at the solstice of May 2017, when the north was lit: the rings large, over the A ring's outer edge at three heights (the Encke and Keeler gaps, the grains), the C ring, the Cassini Division, the north pole and its vortex. Fails when the fine structure never came in |
 | `lights` | each bright planet as a point of light beside a small Earth |
 | `mars` | the stage and the whole disc at noon; then the clock set so that Olympus Mons is near its evening terminator (three distances) and its morning one, Valles Marineris at a low Sun, the terminator square-on, both poles, noon again over Tharsis. Fails when Mars never wore its relief and its height map |
 | `settings` | the Quality and Look rows of What to show (spec 0073): opened with the key L, photographed and measured (one line each, no label cut), each quality chosen through its own button with what `ctx.quality` then reports, then Measured and Film on Jupiter close with what the weather module says is drawn. Run it at 1440 x 900 and again with `-f mobile=true` |

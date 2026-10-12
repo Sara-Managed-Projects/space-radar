@@ -1654,8 +1654,12 @@ export const COPY = {
     worldMap: {
       tinted: 'its surface is a black-and-white mosaic, tinted in a colour chosen from published descriptions',
       toned: 'its colours come from infrared, green and ultraviolet pictures, toned down toward what an eye would see',
-      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Pluto, Charon).
+      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Charon; Pluto until 2026-10-12).
       redblue: 'its colours come from New Horizons’ red and blue pictures, with green taken halfway between them and the colour made half as strong again; the parts photographed only in black and white are given the map’s average colour',
+      // 2026-10-12: Pluto's map is NASA's own global colour map (Photojournal PIA11707), whose caption
+      // says it is made from three of the colour camera's filters. The camera had blue, red,
+      // near-infrared and methane filters and no green one, so no three of them are an eye's colours.
+      enhanced: 'its colours are the ones NASA published, put together from three of New Horizons’ colour filters, none of them green: this is enhanced colour, stronger than and not the same as what an eye would see',
       // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
       balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
@@ -1694,7 +1698,7 @@ export const COPY = {
       // Mars (2026-10-12, scene/worlds.js MARS_RELIEF): {mola} is the exaggeration of slopes and heights alike.
       mars: 'on a larger screen its relief is from the heights Mars Global Surveyor\u2019s laser altimeter measured, drawn {mola} times steeper and taller than they are so that a low Sun shows them: the shadows Olympus Mons and the canyon walls throw are that many times too long.',
       venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
-      saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted',
+      saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted; on a larger screen and from close, the ringlets and gaps in its rings are where Cassini measured them through the light of a star in 2008, laid over the map, and in the Film look the sparkle of grains closer still is drawn: no ring particle can be seen from here',
     },
     // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
     // brighter than that camera would catch it. {n} is EARTHSHINE_GAIN.

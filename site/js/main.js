@@ -369,7 +369,10 @@ export async function boot({ setStatus } = {}) {
   const drawn = createDrawn({ initial: link && !link.unknownVersion ? link.drawn : undefined });
   ctx.drawn = drawn;
   ctx.look = () => drawn.mode();
+  // Saturn's ring grains are generated (scene/worlds.js RING_GRAIN): not under the Measured look.
+  worlds.setLook(drawn.mode());
   drawn.onChange((mode) => {
+    worlds.setLook(mode);
     if (ctx.weather && ctx.weather.setLook) ctx.weather.setLook(mode);
     writeUrlState({ drawn: mode === DEFAULT_DRAWN ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:look', { detail: { mode } }));
