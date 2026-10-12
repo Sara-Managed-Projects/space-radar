@@ -4871,9 +4871,12 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   color: var(--sr-text-dim);
 }
 .sr-quality__note[hidden] { display: none; }
-/* Look (ui/exposure.js lookPanel): "Film" is a short word; on a finger's screen its button is still 44 wide. */
+/* Look (ui/exposure.js lookPanel): "Film" is a short word, 43 px wide as a button. On a finger's screen
+   the row's buttons get more padding, which takes it past 44. Not a min-width: on a flex item with a
+   basis of nothing that replaces the automatic minimum, and "Measured" was then squeezed and cut
+   (seen in a look run, 2026-10-12). */
 @media (pointer: coarse) {
-  .sr-look .sr-density__btn { min-width: 44px; }
+  .sr-look .sr-density__btn { padding: 0 var(--sp-3); }
 }
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
