@@ -395,6 +395,33 @@ export const SOURCES = {
     kind: 'json',
     attribution: 'Sunspot groups: NOAA SWPC',
   },
+  // Flares and coronal mass ejections for the Sun close up (data/sunactivity.js, spec 0073). The
+  // flare list falls back to SWPC when we hold no copy; NASA's CME list is read from our copy only.
+  'swpc-edited-events': {
+    id: 'swpc-edited-events',
+    registryId: 'swpc-edited-events',
+    label: 'NOAA SWPC — solar flares',
+    publisher: 'NOAA Space Weather Prediction Center',
+    url: 'https://services.swpc.noaa.gov/json/edited_events.json',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Solar flares: NOAA SWPC',
+  },
+  'donki-cme-analysis': {
+    id: 'donki-cme-analysis',
+    registryId: 'donki-cme-analysis',
+    label: 'NASA DONKI — coronal mass ejections',
+    publisher: 'NASA M2M Space Weather Analysis Office and CCMC',
+    url: 'https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 24 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC)',
+    note: '48.1 kB, the analyses of the last thirty days, measured 2026-10-12.',
+  },
 
   // The wind overlay's field (scene/wind.js, data/wind.js; internal #552). Read only from our saved copy:
   // `browser: false`, registry/sources.yaml `wind` says why. Nothing calls load() for it; the Earth data

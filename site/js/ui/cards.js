@@ -2328,7 +2328,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     }
     // The Sun's spots, when NOAA's list for today is drawn (main.js ctx.sunRegions, scene/sun.js).
     if (record.id === 'sun' && ctx && ctx.sunDetail && typeof ctx.sunDetail.state === 'function') {
-      const words = sunSpotsLine(ctx);
+      const words = sunLine(ctx);
       const line = el('p', 'sr-card__note sr-card__sunspots', words || '');
       line.hidden = !words;
       aboutNodes.push(line);
@@ -2611,6 +2611,28 @@ function paintOverlayBlock(box, ctx) {
   box.hidden = !on;
 }
 
+/** The spots' line and, after it, what the Sun is doing now. */
+export function sunLine(ctx) {
+  return [sunSpotsLine(ctx), sunActivityLine(ctx)].filter(Boolean).join(' ') || null;
+}
+
+/** Prominences on the limb, a flare showing, a CME in flight: one sentence each, only for what is drawn (copy sunAlive). */
+export function sunActivityLine(ctx) {
+  let st = null;
+  try { st = ctx.sunDetail.state(); } catch { st = null; }
+  const words = COPY.sunAlive;
+  if (!st || !words) return null;
+  const out = [];
+  const stamp = (ms) => { const iso = new Date(ms).toISOString(); return { date: iso.slice(0, 10), time: iso.slice(11, 16) }; };
+  const proms = Array.isArray(st.prominences) ? st.prominences.length : 0;
+  if (proms > 0) out.push(t(proms === 1 ? words.prominencesOne : words.prominences, { n: fmt.int(proms) }));
+  const flare = Array.isArray(st.flares) ? st.flares[0] : null;
+  if (flare && Number.isFinite(flare.maxMs)) out.push(t(words.flare, { cls: flare.cls, region: String(flare.region), ...stamp(flare.maxMs) }));
+  const cme = Array.isArray(st.cmes) ? st.cmes[0] : null;
+  if (cme && Number.isFinite(cme.startMs)) out.push(t(words.cme, { speed: fmt.int(Math.round(cme.speedKmS)), ...stamp(cme.startMs) }));
+  return out.length ? out.join(' ') : null;
+}
+
 export function sunSpotsLine(ctx) {
   let st = null;
   try { st = ctx.sunDetail.state(); } catch { st = null; }
@@ -2677,7 +2699,7 @@ function subscribe(ctx) {
       const c = current && current.ctx;
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__sunspots');
       if (!line || !c || !c.sunDetail) return;
-      try { const words = sunSpotsLine(c); line.textContent = words || ''; line.hidden = !words; } catch { /* keep the last line */ }
+      try { const words = sunLine(c); line.textContent = words || ''; line.hidden = !words; } catch { /* keep the last line */ }
     });
     // The mosaic line: map tiles came on screen, changed or left (main.js `say`, from scene/tiles.js).
     window.addEventListener('sr:tier', () => {

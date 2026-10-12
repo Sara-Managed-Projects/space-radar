@@ -120,6 +120,9 @@ const DEFERRED = {
   'js/ui/systemcard.js': 'what a generated system\'s card says: it arrives with the card',
   'js/scene/ktx2.js': 'compressed maps: imported by whoever loads a map that has a .ktx2 twin (spec 0056)',
   'vendor/basis/KTX2Loader.js': 'the KTX2 loader and, through it, the Basis transcoder: scene/ktx2.js fetches it for the first such map',
+  'js/scene/sun.js': 'the Sun close up: main.js fetches it the first time its disc is large (spec 0055 task 3)',
+  'js/data/sunregions.js': 'NOAA\'s sunspot groups: with scene/sun.js',
+  'js/data/sunactivity.js': 'flares, coronal mass ejections and where a prominence stands: with scene/sun.js (spec 0073 requirement 2)',
   'js/ui/truthline.js': 'the one line of truth: with the trip frame, or the film camera',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.

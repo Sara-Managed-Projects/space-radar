@@ -96,5 +96,13 @@
   "swpc_solar_regions.json": {
     "url": "https://services.swpc.noaa.gov/json/solar_regions.json",
     "note": "read 2026-10-09; the 8 rows of the newest day and 3 of the oldest kept, of 208"
+  },
+  "swpc_edited_events.json": {
+    "url": "https://services.swpc.noaa.gov/json/edited_events.json",
+    "note": "read 2026-10-12; 16 rows kept of 564: the newest 6, four flares of class M, two X-ray rows with no region, two rows that are not X-ray, the oldest 2"
+  },
+  "donki_cme_analysis.json": {
+    "url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis",
+    "note": "read 2026-10-12; 7 rows kept of 63: the oldest 3, one more past 1000 km/s and the newest 4 (two of them under 500 km/s)"
   }
 }

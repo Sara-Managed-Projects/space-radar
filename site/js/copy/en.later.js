@@ -31,6 +31,18 @@ Object.assign(COPY, {
       jupiter: 'The cyclones round each pole are modelled from Juno’s observations of 2017, eight round one in the north and five in the south: a reconstruction, not a photograph. The darker deck in the gaps is illustrative.',
     },
   },
+
+  // What the Sun is doing, on its card under the spots' line (scene/sun.js, data/sunactivity.js; spec
+  // 0073 requirement 2). Each line says what was measured and by whom, and what is only drawn.
+  sunAlive: {
+    prominences: '{n} prominences stand on its edge, at the active regions NOAA lists within fifteen degrees of the limb. The places are measured; the shapes, heights and motion are illustrative.',
+    prominencesOne: 'One prominence stands on its edge, at an active region NOAA lists within fifteen degrees of the limb. The place is measured; the shape, height and motion are illustrative.',
+    // {cls} "M2.3"; {region} NOAA's number; {time} "02:02"; {date} "2026-10-12".
+    flare: 'A class {cls} flare is showing at region {region}: it peaked at {time} UTC on {date}, by NOAA’s event list. Its time, class, region and fading are measured; how bright it is drawn is illustrative.',
+    // {speed} km/s, a whole number.
+    cme: 'A coronal mass ejection that left at {time} UTC on {date} at {speed} km/s is drawn as a thin arc moving outward. Its start, direction, width and speed are from NASA’s DONKI catalogue; the arc keeps that speed, which real ones do not, and its look is illustrative.',
+  },
+
   // A star system from the NASA Exoplanet Archive's table, drawn at its own scale (internal #466;
   // scene/systemextras.js draws the labels, ui/systemcard.js prints the rows). The rule every line
   // here keeps: a number the table measured is given plainly; a number the Archive estimated, or

@@ -1446,6 +1446,9 @@ export const COPY = {
     spotsPaired: '{n} sunspot groups are drawn, from NOAA’s list for {date}, carried round by the Sun’s turning since then. {pairs} with several spots are drawn as a leading spot to the west and a following spot to the east; the gap and how the area is shared between the two are illustrative. The rest are one round spot.',
     spotsPairedOne: 'One sunspot group is drawn, from NOAA’s list for {date}, carried round by the Sun’s turning since then: as a leading spot to the west and a following spot to the east. The gap and how the area is shared between the two are illustrative.',
     regionsCredit: 'Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary',
+    // The lists behind the flares and the coronal mass ejections (data/sunactivity.js); the card's own lines are in copy/en.later.js sunAlive.
+    flaresCredit: 'Solar flares: NOAA Space Weather Prediction Center, edited events list',
+    cmeCredit: 'Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC)',
   },
 
   clouds: {
@@ -1701,7 +1704,7 @@ export const COPY = {
     worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal',
     // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
     // which are there to be seen.
-    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface and is drawn far coarser than the real granules; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the stars beside it are faded, as its glare hides them from any camera',
+    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn far coarser and faster than they are, and the bright network toward the edge is illustrative; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera',
     // Spec 0065 requirement 4 (internal #337): while a close world is drawn from map tiles, the card
     // names the mosaic under the camera. {title} is the registry row's (registry/tilesets.yaml), {res}
     // the metres one pixel of the finest tiles on screen covers. `Detail`: Mars, where the mosaic is

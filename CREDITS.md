@@ -990,6 +990,8 @@ services from their own IP.** Read §4.1 before you deploy.
 | NASA — DSN Now | live Deep Space Network dish↔spacecraft links | NASA content is generally not copyrighted; this endpoint is undocumented (§4.3) | NASA Deep Space Network | <https://eyes.nasa.gov/dsn/> |
 | NOAA SWPC | planetary K-index forecast | US Government work, public domain (§4.4) | Space weather: NOAA SWPC | <https://www.swpc.noaa.gov> |
 | NOAA SWPC | today's sunspot groups (the solar region summary as JSON), fetched once when the camera is close to the Sun | US Government work, public domain (§4.4) | Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary | <https://services.swpc.noaa.gov/json/solar_regions.json> |
+| NOAA SWPC | solar flares (the edited events list as JSON: class, peak time and region of each X-ray flare), fetched once when the camera is close to the Sun | US Government work, public domain (§4.4) | Solar flares: NOAA Space Weather Prediction Center, edited events list | <https://services.swpc.noaa.gov/json/edited_events.json> |
+| NASA DONKI | coronal mass ejections (start, direction, half-angle and speed of each analysed CME), read only from our saved copy | No licence named; "as is", "as a courtesy to the community" (§4.4, the note on the Sun's activity) | Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC) | <https://ccmc.gsfc.nasa.gov/tools/DONKI/> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | NASA GIBS | the Earth close up: Blue Marble with shaded relief and bathymetry, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
@@ -1095,6 +1097,28 @@ group is drawn as ONE round spot at its reported latitude, distance from the cen
 area, and is carried west by the Sun's turning (13.2 degrees a day) from the list's day to the
 clock's; the spots' darkness is chosen. The Sun's card says so, and the Sources panel prints
 "Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary" while they are drawn.
+
+**The Sun's activity (2026-10-12).** `site/js/data/sunactivity.js` reads two more lists the first
+time the camera is close to the Sun, never on a connection that asked to save data.
+*Flares*: `https://services.swpc.noaa.gov/json/edited_events.json`, NOAA SWPC's edited events
+(US Government work, as above). Measured 2026-10-12 with `curl -s -D - -H "Origin:
+https://www.spaceradar.ai"`: `access-control-allow-origin: *`, `cache-control: max-age=60`,
+320 660 bytes. What is changed: of its rows only the X-ray flares of class C and above that carry a
+region number are used; each is drawn as a bright kernel at that region's place, rising to its
+peak and halving in the time NOAA gives from peak to end; how bright a class is drawn is chosen.
+*Coronal mass ejections*: `https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis`, NASA's DONKI
+(Space Weather Database Of Notifications, Knowledge, Information; Moon to Mars Space Weather
+Analysis Office and the Community Coordinated Modeling Center, NASA Goddard). Measured the same day:
+`Access-Control-Allow-Origin: *`, no key, 48 132 bytes. DONKI names no licence; its page
+(<https://ccmc.gsfc.nasa.gov/tools/DONKI/>, read 2026-10-12) says the data is provided "as a
+courtesy to the community" and "as is", should "be considered only as prototyping quality and in
+research context", and asks that event and validation studies be done with the submitters'
+knowledge. This map makes no study of it: it draws each analysed CME of 500 km/s or faster as a thin
+arc leaving in the reported direction at the reported speed, held constant, and says so on the Sun's
+card. Only our harvester asks NASA for the list; a visitor's browser reads our saved copy. The
+Sources panel prints "Solar flares: NOAA Space Weather Prediction Center, edited events list" and
+"Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC)" while the
+lists are held.
 
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 
@@ -1436,6 +1460,8 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
 | `eonet-fires`, `eonet-volcanoes-ice` | NASA Earth Observatory Natural Event Tracker (EONET) | open fires, volcanoes and sea-ice events, saved hourly (internal #525) | §4.20: no licence beyond EONET's disclaimer; NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09). The events are reported by IRWIN, GDACS, the Smithsonian's Global Volcanism Program and the US National Ice Center; the Smithsonian's terms page answered 403 to our reader on 2026-10-09 and has NOT been read. | Fires, volcanoes and sea ice: NASA EONET | `eonet.gsfc.nasa.gov` |
 | `swpc-solar-regions` | NOAA Space Weather Prediction Center | today's sunspot groups (the solar region summary), saved hourly | US Government work, public domain (§4.4; "may be used without charge for any lawful purpose", <https://www.weather.gov/disclaimer>, read 2026-10-09) | Sunspot groups: NOAA SWPC | `services.swpc.noaa.gov` |
+| `swpc-edited-events` | NOAA Space Weather Prediction Center | solar flares of the last thirty days (the edited events list), saved hourly | US Government work, public domain (§4.4; <https://www.weather.gov/disclaimer>, read 2026-10-12) | Solar flares: NOAA SWPC | `services.swpc.noaa.gov` |
+| `donki-cme-analysis` | NASA Moon to Mars Space Weather Analysis Office and CCMC, DONKI | the analysed coronal mass ejections of the last thirty days, saved every three hours; never asked for by a visitor's browser | No licence named. DONKI's rules of the road and disclaimer (<https://ccmc.gsfc.nasa.gov/tools/DONKI/>, read 2026-10-12): provided "as a courtesy to the community", "as is", "only as prototyping quality and in research context" | Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC) | `ccmc.gsfc.nasa.gov` |
 | `wind` | NOAA/NCEP Global Forecast System, through PacIOOS (University of Hawaii) | the wind ten metres up, one forecast hour | §4.21: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-09) | Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii) | `pae-paha.pacioos.hawaii.edu` |
 | `ocean-currents` | NOAA CoastWatch (NOAA NESDIS, Laboratory for Satellite Altimetry) | the sea's surface current worked out from satellite altimetry, one day, every fourth point of a quarter-degree grid | §4.22: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products. The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12) | Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) | `coastwatch.noaa.gov` |
 | `ocean-temperature` | NOAA National Centers for Environmental Information, through the CoastWatch West Coast node (NOAA NMFS SWFSC ERD) | the sea surface temperature (OISST v2.1, near real time), one day, every fourth point | §4.22: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12); NCEI asks for the citation in §4.22 | Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP | `coastwatch.pfeg.noaa.gov` |

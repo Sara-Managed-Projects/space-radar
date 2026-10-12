@@ -2238,6 +2238,12 @@ function createQuality(ctx, renderer, starfield, worlds) {
           ctx.sunRegions = list;
           say(); // the Sun's card and the Sources panel read it
         })).catch(() => { /* a Sun with no spots drawn is what the card then describes */ });
+      // What the Sun is doing (spec 0073 requirement 2, data/sunactivity.js): NOAA's flares and NASA's
+      // coronal mass ejections, each read once, each on its own: a list that cannot be read draws nothing.
+      import('./data/sunactivity.js').then((a) => {
+        a.readSunEvents().then((json) => { detail.setFlares(a.parseFlares(json)); say(); }).catch(() => { /* no flare is drawn */ });
+        a.readCmes().then((json) => { detail.setCmes(a.parseCmes(json)); say(); }).catch(() => { /* no CME is drawn */ });
+      }).catch(() => { /* the Sun without its flares is what the card then describes */ });
     }).catch(() => { sunAsked = false; /* the flat disc is what is on screen; ask again later */ });
   }
   const api = {
@@ -2251,7 +2257,9 @@ function createQuality(ctx, renderer, starfield, worlds) {
     /** The mosaics on screen now, for a world's card (ui/cards.js): scene/tiles.js mosaics(). */
     mosaics: () => (planetTiles ? planetTiles.mosaics() : []),
     credits: () => tiers.credits().concat(planetTiles ? planetTiles.credits() : [],
-      ctx.sunDetail && ctx.sunDetail.state().spots > 0 ? [COPY.sun.regionsCredit] : []),
+      ctx.sunDetail && ctx.sunDetail.state().spots > 0 ? [COPY.sun.regionsCredit] : [],
+      ctx.sunDetail && ctx.sunDetail.state().flareList > 0 ? [COPY.sun.flaresCredit] : [],
+      ctx.sunDetail && ctx.sunDetail.state().cmeList > 0 ? [COPY.sun.cmeCredit] : []),
     describe: () => ({ tier: tiers.tier, bootTier: pick.tier, promoted: promoter.promoted, latched: tiers.latched, reasons: pick.reasons }),
     /** After the first frame (startLoop). */
     start() { tiers.start(); say(); },
@@ -2315,6 +2323,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   ctx.scaler = scaler;
   // Read every frame by the aurora's folds; one query object, not a matchMedia call a frame.
   const reducedMotionQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  let sunDoing = ''; // scene/sun.js activity(): what of the Sun's activity is drawn, as last told to the card
   function degrade() {
     scaler.freeze();
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
@@ -2474,7 +2483,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
       const earth = worlds.meshFor('earth');
-      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null);
+      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches) });
+      // A prominence came over the limb, a flare began or faded, a CME left: the Sun's card says so.
+      const doing = ctx.sunDetail.activity();
+      if (doing !== sunDoing) { sunDoing = doing; if (ctx.quality) window.dispatchEvent(new CustomEvent('sr:tier', { detail: ctx.quality.describe() })); }
     }
     // Live or static clouds, by how far the clock is from the picture (data/gibs.js cloudMode).
     if (ctx.liveClouds) ctx.liveClouds.tick(t);
