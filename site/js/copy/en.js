@@ -1530,6 +1530,15 @@ export const COPY = {
       uranus: 'On “As Hubble saw it” the bright cap over the north pole is real: Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
       neptune: 'Its bright streaks are methane ice. Hubble saw them fade after 2019 and its last dark spot dissolve, so no spot is drawn.',
     },
+    // Jupiter's storms (2026-10-12, spec 0073 req 4; registry/weather.yaml jupiter-eddies, -ovals,
+    // -polar-cyclones, -depth), added to the world's line where they are worn. `storms` is said
+    // only where things turn (not where less motion is asked for); `poles` wherever the cap is drawn.
+    storms: {
+      jupiter: 'Seen close, small eddies roll where the measured winds shear and in the Great Red Spot’s wake, and Oval BA and three white ovals turn. Where the shear is, is measured; each eddy is generated, finer than the map: illustrative.',
+    },
+    poles: {
+      jupiter: 'The cyclones round each pole are modelled from Juno’s observations of 2017, eight round one in the north and five in the south: a reconstruction, not a photograph. The darker deck in the gaps is illustrative.',
+    },
     // Lightning on the giants (2026-10-08, internal #244), added to the world's line where it is drawn.
     flashes: {
       jupiter: 'On its night side, rare flashes stand for the lightning Juno found, most of it far in the north: the latitudes are measured, each flash is illustrative and drawn larger than life.',
