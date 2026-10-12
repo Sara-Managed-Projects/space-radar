@@ -878,13 +878,13 @@ textures:
       - tier: 0
         file: site/textures/2k_pluto_nh_colour.webp
         px: [2048, 1024]
-        bytes: 75378
+        bytes: 63040
         format: rgb
         licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
         credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
         source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl (read 2026-10-06)"
         original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
-        make: "scripts/build-textures.py moon-pluto: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 11487 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.68; where it has no data and USGS's black-and-white mosaic has (3.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (23 % of the sphere, the south in its winter night) filled with the map's own mean colour, WebP 82"
+        make: "scripts/build-textures.py moon-pluto: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 11487 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.68; where it has no data and USGS's black-and-white mosaic has (3.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (23 % of the sphere, the south in its winter night) filled with the map's own mean colour, WebP 82; then scripts/soften_fill.py --feather-deg=20 (2026-10-12): across 20 degrees of latitude the picture fades into a blur of itself before the plain colour begins, so the unimaged part still has nothing drawn in it and no longer meets the data along a hard line"
 
   - id: charon
     world: charon
@@ -895,13 +895,13 @@ textures:
       - tier: 0
         file: site/textures/2k_charon_nh_colour.webp
         px: [2048, 1024]
-        bytes: 45378
+        bytes: 37012
         format: rgb
         licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
         credit: "Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
         source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl (read 2026-10-06)"
         original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
-        make: "scripts/build-textures.py moon-charon: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 3808 px to 2048 wide, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.46; where it has no data and USGS's black-and-white mosaic has (9.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (26 % of the sphere) filled with the map's own mean colour, WebP 82"
+        make: "scripts/build-textures.py moon-charon: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 3808 px to 2048 wide, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.46; where it has no data and USGS's black-and-white mosaic has (9.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (26 % of the sphere) filled with the map's own mean colour, WebP 82; then scripts/soften_fill.py --feather-deg=20 (2026-10-12): across 20 degrees of latitude the picture fades into a blur of itself before the plain colour begins, so the unimaged part still has nothing drawn in it and no longer meets the data along a hard line"
 
   - id: phobos
     world: phobos
