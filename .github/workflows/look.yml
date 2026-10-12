@@ -55,7 +55,7 @@ on:
         description: "Source ids to fetch fresh and merge into the served data/v1, with commas (e.g. swpc-edited-events,donki-cme-analysis)"
         default: ""
       subject:
-        description: "For a probe that takes one (model): a record id, e.g. sat-25544. Empty: the probe's own default"
+        description: "For a probe that takes one (model): a record id (sat-25544) or a name on the stations layer with dashes (crew-dragon). Empty: the probe's own default"
         default: ""
   # The smoke probe, Chromium only, on a pull request that changes what is drawn.
   pull_request:

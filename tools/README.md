@@ -105,7 +105,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `hold_latch` | true | load the page with `?look=1` (below); false looks at what a slow device really gets |
 | `browser` | `chromium` | `chromium` (through `tools/cdp.mjs`), `firefox`, `webkit` (through `tools/look-playwright.mjs`), or `all` |
 | `harvest` | empty | source ids with commas, fetched fresh by `python3 -m harvest --only <id>` and merged into the served `data/v1`: for a feed the live site has no copy of yet, e.g. `swpc-edited-events,donki-cme-analysis` for the Sun's flares and CMEs, `ocean-currents,ocean-temperature` for the currents |
-| `subject` | empty | for a probe that takes one (`model`): a record id, e.g. `sat-25544`; it reaches the page as `?lookSubject=` |
+| `subject` | empty | for a probe that takes one (`model`): a record id, e.g. `sat-25544`, or a name on the stations layer with dashes for spaces (`crew-dragon`); it reaches the page as `?lookSubject=` |
 
 | probe | what it walks |
 |---|---|

@@ -6,6 +6,7 @@
 //
 //   gh workflow run look.yml -f probe=model                      # the Cygnus cargo ship in orbit today
 //   gh workflow run look.yml -f probe=model -f subject=sat-25544  # any record id
+//   gh workflow run look.yml -f probe=model -f subject=crew-dragon # or a name on the stations layer
 //
 // WHICH RECORD. `subject` (the workflow passes it as ?lookSubject=) when given. Otherwise the first
 // record on the stations layer whose name has the word CYGNUS: the model this probe was written for
@@ -40,8 +41,11 @@ const stations = sr.recordsFor('stations') || [];
 out.stations = stations.length;
 
 const asked = new URLSearchParams(location.search).get('lookSubject');
-let record = asked ? sr.recordById(asked) : stations.find((r) => wordIn(r.name, 'cygnus') && RM.realModelFor(r)) || null;
-if (asked && !record) return finish({ ...out, fail: 'no record with the id ' + asked + ' on this page' });
+// A subject is a record id, or failing that the words of a name with dashes for spaces
+// (`crew-dragon`: a visiting vehicle's id changes every flight, and its name does not).
+const byName = (words) => stations.find((r) => String(r.name || '').toLowerCase().includes(String(words).toLowerCase().replace(/-/g, ' '))) || null;
+let record = asked ? (sr.recordById(asked) || byName(asked)) : stations.find((r) => wordIn(r.name, 'cygnus') && RM.realModelFor(r)) || null;
+if (asked && !record) return finish({ ...out, fail: 'no record with the id or the name ' + asked + ' on this page; the stations layer has ' + stations.map((r) => r.id + ' ' + r.name).join(', ') });
 if (!record) {
   // No Cygnus in orbit today: the ISS's record wears the file for the picture, and says so.
   record = sr.recordById('sat-25544') || stations[0];
