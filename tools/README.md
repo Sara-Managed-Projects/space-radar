@@ -121,6 +121,12 @@ run's summary page) lists the errors, the warnings, the renderer's draw calls, t
 and programs, and one line per picture. A browser that cannot make a WebGL2 context in its
 container is **neutral**: the job is green and the summary says exactly what the browser reported.
 
+**The three engines, measured 2026-10-12** on a GitHub runner with the smoke probe: Chromium 154
+(SwiftShader), WebKit 18.2 and Firefox 132 (llvmpipe; both in the Playwright image `screens.yml`
+pins) all make a WebGL2 context, boot in two to five seconds and log no error. Firefox makes no
+context at all when the container has no display, headless or not, which is why its runner is
+started under `xvfb-run`.
+
 **`?look=1`, the frame latch held.** A software renderer draws a frame in a third of a second, so
 after three seconds the frame latch (spec 0026) takes off exactly what a look is for: the Sun's
 detail, the weather, the relief. `?look=1` in the query (`scene/quality.js` `lookHeld`, read once
