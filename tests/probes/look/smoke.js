@@ -27,16 +27,23 @@ try {
   const d = await sr.wantDrift({ drift: 'craft,worlds,brisk' }, 'link');
   out.drift = [];
   let last = null;
-  for (let i = 0; i < 90 && out.drift.length < 4; i++) {
+  // A stop is photographed five and a half seconds in: the drift looks at what it has arrived at
+  // four seconds in (ui/drift.js PEEK_MS) and leaves a dot in black, and the picture is of what it
+  // stays with. A stop it left by then is written down as left, with no picture.
+  out.driftLeft = [];
+  for (let i = 0; i < 150 && out.drift.length < 4; i++) {
     await sleep(1000);
     const st = d.state();
     if (st.phase === 'dwell' && st.place !== last) {
       last = st.place;
+      await sleep(5500);
+      const now = d.state();
+      if (now.place !== st.place) { out.driftLeft.push([st.place, st.hood]); continue; }
       out.drift.push([st.place, st.hood]);
-      await shot('drift-' + out.drift.length + '-' + st.place, 'the drift dwelling at ' + st.place, 2500);
+      await shot('drift-' + out.drift.length + '-' + st.place, 'the drift staying at ' + st.place + ', five and a half seconds in');
     }
   }
   d.stop();
-  if (out.drift.length < 4) out.fail = 'the drift reached ' + out.drift.length + ' of 4 stops in 90 s';
+  if (out.drift.length < 4) out.fail = 'the drift stayed at ' + out.drift.length + ' of 4 stops in 150 s (left early: ' + out.driftLeft.length + ')';
 } catch (e) { look.errors.push('probe: the drift step threw: ' + (e && e.stack || e)); }
 return finish(out);
