@@ -1,6 +1,7 @@
 // ui/status.js -- what the app could and could not read.
 //
 // Contract export: createStatus(ctx): void
+//                  builtFrom(doc) -> {text, href, title} | null   the "Built from" line, pure
 //
 // Spec 0018 requirement 9: the site says its own state. Every source, its age in words and
 // one of three states:
@@ -353,6 +354,54 @@ function renderMaps(ctx, into) {
 }
 
 // ---------------------------------------------------------------------------------------
+// Which commit this site is (public #291)
+// ---------------------------------------------------------------------------------------
+
+const BUILD_INFO = 'build.json';
+const BUILD_TIMEOUT_MS = 8000;
+const buildDayFmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+/**
+ * The line at the sheet's foot, from what /build.json says (scripts/build_info.py): its words and
+ * the commit's address on GitHub, or null when the file does not name a commit and a day. Pure.
+ * The file is read off the network, so the commit is held to forty hex characters before it goes
+ * into an address, and nothing else of the file is shown.
+ * @returns {{text: string, href: string, title: string}|null}
+ */
+export function builtFrom(doc) {
+  const B = COPY.buildInfo;
+  const commit = doc && typeof doc.commit === 'string' ? doc.commit : '';
+  const at = doc && typeof doc.built_at === 'string' ? Date.parse(doc.built_at) : NaN;
+  if (!/^[0-9a-f]{40}$/.test(commit) || !Number.isFinite(at)) return null;
+  return { text: t(B.line, { sha: commit.slice(0, 7), date: buildDayFmt.format(new Date(at)) }), href: t(B.href, { sha: commit }), title: B.title };
+}
+
+/**
+ * Ask for build.json and add the line when it answers. Called when the sheet is built, which is
+ * when a visitor first opens it: never at boot. No file (a local checkout, a release zip, a deploy
+ * from before the file existed), no network, a file that is not ours: no line, and nothing said.
+ */
+function showBuiltFrom(into) {
+  if (typeof fetch !== 'function') return;
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = setTimeout(() => ctl && ctl.abort(), BUILD_TIMEOUT_MS);
+  fetch(BUILD_INFO, { credentials: 'same-origin', cache: 'no-cache', signal: ctl ? ctl.signal : undefined })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((doc) => {
+      const built = builtFrom(doc);
+      if (!built) return;
+      const a = el('a', 'sr-mark sr-mark--foot sr-status__built', built.text);
+      a.href = built.href;
+      a.title = built.title;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      into.appendChild(a);
+    })
+    .catch(() => {})
+    .finally(() => clearTimeout(timer));
+}
+
+// ---------------------------------------------------------------------------------------
 // Contract export
 // ---------------------------------------------------------------------------------------
 
@@ -496,6 +545,10 @@ export function createStatus(ctx, parent) {
     for (const a of site.querySelectorAll('a[tabindex="-1"]')) a.removeAttribute('tabindex');
     node.appendChild(site);
   }
+  // Which commit this is (public #291): one more line of the footer, when the site says so.
+  const builtRow = el('div', 'sr-status__builtrow');
+  node.appendChild(builtRow);
+  showBuiltFrom(builtRow);
 
   const paint = () => {
     try {

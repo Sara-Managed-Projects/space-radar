@@ -595,8 +595,12 @@ export const COPY = {
   // The one line at the sidebar's foot: how the sources are, and how old the oldest reading is.
   statusLine: {
     reading: 'Reading the sources',
-    read: '{n} sources read',
-    readOne: 'One source read',
+    // HOW MANY ANSWERED THIS VISIT, not how many there are: the rows this page asked for that it holds
+    // a reading of. The total is another number with another rule (the /sources/ page's "feeds from
+    // N public sources", scripts/count_facts.py source_counts), so this line says "this visit" and names no total. Short on purpose: with "· 2 stale · oldest 6 days ago" after it,
+    // it is one line of the sidebar's foot.
+    read: '{n} read this visit',
+    readOne: 'One read this visit',
     stale: '{n} stale',
     failed: '{n} could not be read',
     oldest: 'oldest {age}',
@@ -2242,7 +2246,7 @@ export const COPY = {
     harvestUnchecked: 'Our snapshots: not checked yet.',
     harvestUnavailable:
       'Our snapshots are not available right now, so every source below is read live from its publisher, or not at all.',
-    harvestLine: 'Our snapshots: written {age} · {ok} sources ok · {refused} refused · {error} failed',
+    harvestLine: 'Our snapshots: written {age} · {ok} feeds ok · {refused} refused · {error} failed',
     errorLabel: 'Last error',
     attributionTitle: 'Credits',
     attributionIntro: 'The data on this map is other people’s work.',

@@ -59,6 +59,7 @@ sources:
     licence: "NASA/JPL data, free to use with credit"
     terms_url: https://ssd.jpl.nasa.gov/about/terms.html
     terms_recorded: 2026-10-09
+    publisher: NASA JPL
 
 layers:
   - id: phoebe-orbiters

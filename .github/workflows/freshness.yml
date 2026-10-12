@@ -1,0 +1,104 @@
+name: freshness
+
+# Is the live site behind? (public #291, the review of 2026-10-12)
+#
+# Deploys and snapshot refreshes are done by hand, and nothing said when one had not happened.
+# Every six hours this reads two PUBLIC files of the live site,
+#     /build.json           which commit is deployed (scripts/build_info.py writes it at deploy)
+#     /data/v1/index.json   each saved dataset's fetched_at and valid_until (the harvester's)
+# asks GitHub how far main has moved since that commit, and hands the three answers to
+# scripts/freshness.py, which decides (tests/test_freshness.py holds the rule): more than 24 hours
+# behind main, a dataset more than 24 hours past its valid-until, or a file that cannot be read.
+#
+# What it does with the answer:
+#   - always: a table in the job summary;
+#   - not fresh: ONE open issue titled "The live site is behind". It is looked for by its title
+#     first and a second is never opened; when it is already open, a comment is added only when
+#     WHAT is wrong has changed (the script's `key`), so a long outage is not a comment every six
+#     hours;
+#   - fresh again: a comment, and the issue is closed.
+#
+# NO SECRET AND NO CLOUD CREDENTIAL: this repository holds none by design, and a monitor that needed
+# one could not live here. Everything read is what any visitor can read; GITHUB_TOKEN is used for
+# the compare call and the issue, with `issues: write` and nothing else to write with.
+#
+# No fork's code runs here: the triggers are the schedule and a maintainer's button, and the job
+# checks out main. The only text taken from the site into a command is the commit, and only after
+# scripts/freshness.py has vouched that it is forty hex characters.
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: freshness
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: github.repository == 'Sara-Managed-Projects/space-radar'
+    runs-on: ubuntu-latest
+    env:
+      SITE: https://www.spaceradar.ai
+      TITLE: "The live site is behind"
+      LABEL: ci
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Read the live site's two public files
+        run: |
+          # A file that cannot be fetched is left out, and the script calls it unreadable.
+          curl -fsS --max-time 30 --retry 2 "$SITE/build.json" -o build.json || rm -f build.json
+          curl -fsS --max-time 30 --retry 2 "$SITE/data/v1/index.json" -o index.json || rm -f index.json
+      - name: Decide
+        id: verdict
+        run: |
+          set -euo pipefail
+          HEAD_SHA=$(gh api "repos/$GH_REPO/commits/main" --jq .sha)
+          LIVE=$(python3 scripts/freshness.py --commit-of build.json)
+          BEHIND=""; SINCE=""
+          if [ -n "$LIVE" ] && [ "$LIVE" != "$HEAD_SHA" ]; then
+            # The commits main has that the deployed one does not, oldest first: one is enough.
+            if gh api "repos/$GH_REPO/compare/$LIVE...$HEAD_SHA?per_page=1" > compare.json 2>/dev/null; then
+              BEHIND=$(jq -r '.ahead_by' compare.json)
+              SINCE=$(jq -r '.commits[0].commit.committer.date // ""' compare.json)
+            fi
+          fi
+          python3 scripts/freshness.py --build build.json --index index.json --site "$SITE" \
+            --main-head "$HEAD_SHA" --behind-by "$BEHIND" --waiting-since "$SINCE" \
+            --summary report.md --github-output "$GITHUB_OUTPUT" > verdict.json
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep one issue
+        env:
+          FRESH: ${{ steps.verdict.outputs.fresh }}
+          KEY: ${{ steps.verdict.outputs.key }}
+        run: |
+          set -euo pipefail
+          RUN="$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+          MARK="<!-- freshness: $KEY -->"
+          # By its exact title, among the open issues: the search is only a filter.
+          NUMBER=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number,title --limit 50 \
+            | jq -r --arg t "$TITLE" '[.[] | select(.title == $t) | .number] | min // empty')
+          if [ "$FRESH" = "true" ]; then
+            if [ -n "$NUMBER" ]; then
+              { cat report.md; echo "Fresh again, so this is closed. [The run]($RUN)."; } > comment.md
+              gh issue comment "$NUMBER" --body-file comment.md
+              gh issue close "$NUMBER"
+            fi
+            exit 0
+          fi
+          { cat report.md; echo "$MARK"; echo "[The run]($RUN). This issue is kept by \`.github/workflows/freshness.yml\`: it is commented on when what is wrong changes, and closed when the site is fresh again."; } > comment.md
+          if [ -z "$NUMBER" ]; then
+            gh issue create --title "$TITLE" --label "$LABEL" --body-file comment.md
+          else
+            LAST=$(gh issue view "$NUMBER" --json body,comments --jq '[.body, .comments[].body] | map(select(contains("<!-- freshness: "))) | last // ""')
+            case "$LAST" in
+              *"$MARK"*) echo "Issue #$NUMBER already says this; no new comment." ;;
+              *) gh issue comment "$NUMBER" --body-file comment.md ;;
+            esac
+          fi

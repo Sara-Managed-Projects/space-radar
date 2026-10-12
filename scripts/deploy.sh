@@ -16,7 +16,8 @@
 #                         since 2026-10-07: they are code, stripped and stamped with the app),
 #                         the trip pages (t/), the Lab's simulators (lab/), robots.txt
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
-#                         object-pages.json, and what scripts/seo_pages.py adds: starlink/, satellites/,
+#                         object-pages.json, build.json (the commit this deploy is:
+#                         scripts/build_info.py), and what scripts/seo_pages.py adds: starlink/, satellites/,
 #                         iss/, planets-tonight/, events/, about/, sources/, accuracy/, teachers/, share/,
 #                         sitemap-images.xml)
 #                         only. The usual case.
@@ -448,6 +449,15 @@ if [ "$WHAT" != "assets" ]; then
   # index.html: a worker a browser cannot re-read is a release nobody can be moved off. The
   # manifest is no-cache too (a name or an icon list that changed must not wait a month).
   python3 "$HERE/stamp_sw.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
+  # WHAT THIS DEPLOY IS (public #291, scripts/build_info.py): build.json at the root says the commit,
+  # its time, the time of this build and the worker's stamp just made. It is given nothing about
+  # the hosting and holds nothing about it. The datasets' ages are not copied into it: they are at
+  # data/v1/index.json already. Stored like the HTML (a browser revalidates, the edge keeps it until
+  # the invalidation below, which names it); uploaded just before sw.js, so it never names a build
+  # whose files are not up yet. A dry run prints it. An --assets-only deploy leaves the last one:
+  # the commit it names is the app's.
+  python3 "$HERE/build_info.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --sw "$BUILT/sw.js" --out "$BUILT/build.json" || die "scripts/build_info.py failed"
+  if [ "$DRY_RUN" = "1" ]; then echo "  build.json would say:"; sed 's/^/    /' "$BUILT/build.json"; fi
   # The IndexNow key file (scripts/indexnow.py): <key>.txt at the root holding the key. The key is
   # public by design and the file is always uploaded; it is how Bing and the others check that we own
   # the site. Asking them to look at changed pages is a separate, opt-in step below.
@@ -458,6 +468,7 @@ if [ "$WHAT" != "assets" ]; then
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
            "$BUILT/$KEYFILE:text/plain; charset=utf-8" \
            "$SITE/manifest.webmanifest:application/manifest+json; charset=utf-8" \
+           "$BUILT/build.json:application/json; charset=utf-8" \
            "$BUILT/sw.js:text/javascript; charset=utf-8"; do
     path="${f%%:*}"; type="${f#*:}"; name="$(basename "$path")"
     [ -f "$path" ] || die "$name is missing"
@@ -471,7 +482,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/lab/*" "/o/*" "/press/*" "/embed/*" "/robots.txt" "/sitemap.xml" "/sitemap-images.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/build.json" "/sw.js")
   # The gzip copies keep their names too.
   [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   # The pages seo_pages.py built, each by its directory, and the pictures (share/) with them: all of

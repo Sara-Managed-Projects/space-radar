@@ -43,6 +43,7 @@ import seo_systems  # noqa: E402
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
 from seo_share import Spec  # noqa: E402
+import count_facts  # noqa: E402  (how many sources and feeds: ONE rule, count_facts.source_counts)
 
 REG = ROOT / "registry"
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -486,7 +487,10 @@ def events_index(events: list[dict], host: str) -> Page:
 
 def counts_of_registries() -> dict:
     layers = [r for r in yml("layers.yaml").get("layers", []) if r.get("enabled", True) is not False]
-    return {"layers": len(layers), "trips": len(yml("tours.yaml")["tours"]), "sources": len(yml("sources.yaml")["sources"])}
+    # "sources" are the publishers of the enabled rows and "feeds" the enabled rows: the rule is written
+    # where the numbers are made, scripts/count_facts.py source_counts(). Never len() of the registry here.
+    src = count_facts.source_counts()
+    return {"layers": len(layers), "trips": len(yml("tours.yaml")["tours"]), "sources": src["sources"], "feeds": src["feeds"]}
 
 
 def licence_name() -> str:
@@ -504,7 +508,7 @@ def about_page(host: str) -> Page:
         '<p class="lead">Space Radar is a free 3D map of space in a web browser: the satellites and the space station, launches, probes, the planets, '
         "the nearest stars and the galaxies, each drawn where it really is, with where the numbers come from.</p>\n"
         "<h2>What it is</h2>\n"
-        f"<p>It draws {n['layers']} layers and reads {n['sources']} public sources to do it, and offers {n['trips']} guided trips that fly the camera from stop to stop. "
+        f"<p>It draws {n['layers']} layers and reads {n['feeds']} feeds from {n['sources']} public sources to do it, and offers {n['trips']} guided trips that fly the camera from stop to stop. "
         "Every position is worked out in the visitor's own browser from public data, for the instant on the clock: satellites from their orbital elements, planets "
         "and probes from ephemerides. The clock can be moved, and the sky moves with it.</p>\n"
         "<h2>Why it exists</h2>\n"
@@ -536,35 +540,64 @@ def sources_rows() -> list[dict]:
     return yml("sources.yaml")["sources"]
 
 
+def plural(n: int, one: str, many: str) -> str:
+    return f"{n} {one if n == 1 else many}"
+
+
 def sources_page(host: str, snapshot_index: dict | None) -> Page:
+    """/sources/: every row of the registry, and the two numbers the site states about them.
+
+    The numbers are count_facts.source_counts()'s: "sources" are the publishers of the rows in use,
+    "feeds" those rows. The rows that are switched off are in neither, and in a table of their own.
+    """
     rows = sources_rows()
+    n = count_facts.source_counts()
+    in_use = [r for r in rows if r.get("enabled", True) is not False]
+    off = [r for r in rows if r.get("enabled", True) is False]
     snaps = (snapshot_index or {}).get("snapshots") or {}
     short = "Sources: where every number in Space Radar comes from"
-    desc = f"All {len(rows)} public sources Space Radar reads, each with its licence, the page that states it, and the day the terms were recorded."
-    tr = []
-    for r in rows:
-        saved = (snaps.get(r["id"]) or {}).get("fetched_at")
-        saved_txt = date_words(saved[:10]) if saved else "when the page opens"
-        off = " (switched off: nothing is fetched)" if r.get("enabled") is False else ""
-        tr.append(
-            f'<tr id="{esc(r["id"])}"><td><strong>{esc(r["id"])}</strong>{esc(off)}<br><span class="dim">{esc(r["attribution"])}</span></td>'
-            f'<td>{esc(r["licence"])}</td><td><a href="{esc(r["terms_url"])}" rel="nofollow">terms</a></td>'
-            f'<td>{esc(date_words(r["terms_recorded"]))}</td><td data-slot="source-read" data-source="{esc(r["id"])}">{esc(saved_txt)}</td></tr>')
+    desc = (f"The {n['sources']} public sources Space Radar reads and their {plural(n['feeds'], 'feed', 'feeds')}, each with its licence, "
+            "the page that states it, and the day the terms were recorded.")
+
+    def row_html(r: dict, used: bool) -> str:
+        saved = (snaps.get(r["id"]) or {}).get("fetched_at") if used else None
+        if used:
+            last = f'<td data-slot="source-read" data-source="{esc(r["id"])}">{esc(date_words(saved[:10]) if saved else "when the page opens")}</td>'
+        else:
+            last = "<td>Not read: switched off</td>"
+        return (f'<tr id="{esc(r["id"])}"><td><strong>{esc(r["id"])}</strong><br><span class="dim">{esc(r["attribution"])}</span><br><span class="dim">Source: {esc(r["publisher"])}</span></td>'
+                f'<td>{esc(r["licence"])}</td><td><a href="{esc(r["terms_url"])}" rel="nofollow">terms</a></td>'
+                f'<td>{esc(date_words(r["terms_recorded"]))}</td>{last}</tr>')
+
+    head = "<thead><tr><th>Source</th><th>Licence</th><th>Terms</th><th>Terms recorded</th><th>Saved copy last read</th></tr></thead>"
+    named = ", ".join(f"{esc(name)} ({plural(k, 'feed', 'feeds')})" for name, k in n["publishers"].items())
+    not_in_use = ""
+    if off:
+        not_in_use = (
+            "<h2>Not in use</h2>\n"
+            f"<p>{plural(len(off), 'more row of the registry is', 'more rows of the registry are')} switched off: nothing is fetched from "
+            f"{'it' if len(off) == 1 else 'them'}, nothing of {'its' if len(off) == 1 else 'theirs'} is saved or served, and "
+            f"{'it is' if len(off) == 1 else 'they are'} counted in neither number above. "
+            f"{'It stays' if len(off) == 1 else 'They stay'} listed so that the reason stays readable in the registry.</p>\n"
+            f'<div class="tablewrap"><table>\n{head}\n<tbody>\n{chr(10).join(row_html(r, False) for r in off)}\n</tbody></table></div>\n')
     body = (
         '<p class="micro">Sources</p>\n<h1>Where every number comes from</h1>\n'
-        f'<p class="lead">Space Radar reads {len(rows)} public sources. Each row below is a row of the registry this page is built from '
+        f'<p class="lead">Space Radar reads {plural(n["feeds"], "feed", "feeds")} from {n["sources"]} public sources. A source is a publisher; '
+        "a feed is one address of theirs that is read. Each row below is a feed, a row of the registry this page is built from "
         "(<code>registry/sources.yaml</code>): the licence is the publisher's terms as the project recorded them, and the date is the day they were first written into "
         f'<a href="{GITHUB}/blob/main/CREDITS.md">CREDITS.md</a>.</p>\n'
-        '<div class="tablewrap"><table>\n<thead><tr><th>Source</th><th>Licence</th><th>Terms</th><th>Terms recorded</th><th>Saved copy last read</th></tr></thead>\n'
-        f"<tbody>\n{chr(10).join(tr)}\n</tbody></table></div>\n"
+        f"<p>The sources: {named}.</p>\n"
+        f'<div class="tablewrap"><table>\n{head}\n'
+        f"<tbody>\n{chr(10).join(row_html(r, True) for r in in_use)}\n</tbody></table></div>\n"
         '<p class="dim">"Saved copy last read" is the day this site\'s harvester last fetched the source, taken from the saved copy\'s index when the page opens; '
         "it is not the day the terms were read. Where a licence says \"no licence stated\", that is the answer, and the project treats it as no permission to redistribute beyond what the credits say.</p>\n"
+        f"{not_in_use}"
         "<h2>Everything else</h2>\n"
         f'<p>The libraries, textures, 3D models, photographs, sounds and fonts, each with its licence, are in <a href="{GITHUB}/blob/main/CREDITS.md">CREDITS.md</a>, '
         "which a test holds to the registries line by line.</p>\n")
     page = Page(path="sources/index.html", title=short, description=desc, body=body, og_title=short, live="sources")
     page.jsonld = [webpage(host, page, [("Sources", "")], page_type="CollectionPage")]
-    page.share = Spec(key="sources/index", name="Where every number comes from", number=f"{len(rows)} public sources", caption="Sources", kind="plain",
+    page.share = Spec(key="sources/index", name="Where every number comes from", number=f"{n['sources']} public sources", caption="Sources", kind="plain",
                       colour="#9ec3ff", alt="Rings and a dot, captioned Where every number comes from.")
     return page
 
