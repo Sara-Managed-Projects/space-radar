@@ -1222,14 +1222,18 @@ function derivedDrawingLine(record, T, tMs) {
     // A pad whose vehicle is put away at this instant (realmodels.js padVehicleShown): nothing of
     // the model is on the screen, so the line may not say it is drawn (internal #478).
     if (Number.isFinite(tMs) && !padVehicleShown(record, tMs) && T.padEmpty) return t(T.padEmpty, { name: String(entry.name) });
-    if (entry.generic) return t(T.objectFamily, { name: String(entry.name) });
+    // 2026-10-12 (public #938): a shape nobody published, generated from photographs and cleaned
+    // here (realmodels.js `made`), says so after whatever else its line says.
+    const made = entry.made && T.objectMade ? T.objectMade[entry.made] : null;
+    const said = (line) => (made ? line + COPY.punctuation.separator + made : line);
+    if (entry.generic) return said(t(T.objectFamily, { name: String(entry.name) }));
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
     // of one of them. See COPY.drawing.objectModel.
     const line = t(entry.file ? T.objectModel : T.objectVariant, { name: String(entry.name) });
     // 2026-10-07: a small body that wears a map on its shape (Ceres, Vesta) names the mosaic.
     const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
-    return mapped ? line + COPY.punctuation.separator + mapped : line;
+    return said(mapped ? line + COPY.punctuation.separator + mapped : line);
   }
   // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is
   // different: it has a shape, it is just a point at this scale.
