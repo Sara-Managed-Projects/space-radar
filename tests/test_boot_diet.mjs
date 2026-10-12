@@ -60,6 +60,8 @@ const DEFERRED = {
   'js/ui/autopilot.js': 'a screen that plays on its own: main.js fetches it for `#ambient=` or the Trips section\'s row',
   'js/ui/autopilotplan.js': 'the reel\'s arithmetic: with ui/autopilot.js',
   'js/data/autopilot.js': 'the reels: with ui/autopilot.js',
+  'js/ui/drift.js': 'the drift, a camera that wanders on its own: main.js fetches it for `#drift=` or Just watch\'s row',
+  'js/ui/driftplan.js': 'the drift\'s arithmetic: with ui/drift.js',
   'js/scene/models.js': 'the model shapes: scene/heroes.js fetches them when a record wants geometry',
   'js/scene/exoface.js': 'a drawn face for a planet nobody has seen: scene/systems.js fetches it when a system\'s stage is entered',
   'js/scene/exostage.js': 'the plain star stage of an imagined world: main.js fetches it for `#imagine=`',
