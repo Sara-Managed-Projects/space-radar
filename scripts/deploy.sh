@@ -134,7 +134,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models images t og audio fonts lab"
+KNOWN="textures data vendor js css models images t og audio fonts lab c"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -239,6 +239,10 @@ if [ "$WHAT" != "app" ]; then
   # og/default.png today, one per trip when spec 0033 renders them. Long-lived like the images,
   # and for the same reason not invalidated by this script -- see the note at the end.
   "${SYNC[@]}" "$SITE/og"       "s3://$BUCKET/og"       --cache-control "$LONG" --delete
+  # The trip count (c/t.gif, site/js/ui/tripcount.js): 43 bytes asked for once when a person starts
+  # a trip, so the access log can count trips. Never kept by a browser, or a second start of the
+  # same trip would not be asked for at all.
+  "${SYNC[@]}" "$SITE/c"        "s3://$BUCKET/c"        --cache-control "no-store" --content-type "image/gif" --delete
   # The music and sounds (spec 0035, 2026-09-23): fetched only after a visitor turns sound on, and
   # long-lived like the models, because a bed is up to 600 kB that a returning visitor should not
   # download twice. Each type by its own sync: the CLI guesses from the extension, `.opus` is not
