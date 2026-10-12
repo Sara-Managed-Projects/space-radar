@@ -999,7 +999,7 @@ services from their own IP.** Read §4.1 before you deploy.
 | NASA DONKI | coronal mass ejections (start, direction, half-angle and speed of each analysed CME), read only from our saved copy | No licence named; "as is", "as a courtesy to the community" (§4.4, the note on the Sun's activity) | Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC) | <https://ccmc.gsfc.nasa.gov/tools/DONKI/> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
-| NASA GIBS | the Earth close up: Blue Marble with shaded relief and bathymetry, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| NASA GIBS | the Earth close up: Blue Marble with shaded relief, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | NASA GIBS | Earth data overlays: sea temperature, sea ice, chlorophyll, vegetation, rain, aerosol, water vapour; one picture when a visitor or a trip asks | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, and each data set's makers in §4.19 | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
 | NOAA nowCOAST | lightning now: strike density over the last fifteen minutes, from the ground networks NLDN and GLD360, 25° S to 80° N and 110° E eastward to 0° W | US Government work, public domain; a "Level 5" derived product "appropriate for public distribution" (§4.17) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | <https://nowcoast.noaa.gov> |
@@ -1388,7 +1388,7 @@ fetched under the same rules: never on a first visit, on a phone, with Save-Data
 |---|---|---|---|---|
 | The Moon, relief | `LRO_LOLA_Shade_Global_256ppd_v06`: shaded relief from the Lunar Orbiter Laser Altimeter, 118 m per pixel | LOLA Science Team, NASA / Goddard Space Flight Center | USGS Astrogeology: "Access Constraints public domain", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m), read 2026-10-06) | 6 (333 m per pixel; level 7 is a 404) |
 | Mars, relief | `Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw`: shaded relief from the MOLA and HRSC blended elevation model, 200 m per pixel | USGS Astrogeology; MOLA: NASA / Goddard Space Flight Center; HRSC: ESA / DLR / FU Berlin | USGS Astrogeology: "Access Constraints MOLA (CC0) and HRSC (CC BY-SA 3.0 IGO)", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/mars_mgs_mola_mex_hrsc_blended_dem_global_200m), read 2026-10-06) | 7 (325 m per pixel) |
-| The Earth | `BlueMarble_ShadedRelief_Bathymetry` from NASA GIBS: MODIS Blue Marble, cloud-free, with shaded relief and the sea floor, 500 m per pixel | NASA Earth Observatory; served by NASA GIBS / ESDIS | "NASA promotes full and open sharing of data"; the acknowledgement of §4.13 is asked for | 7 (489 m per pixel; level 8 is a 400) |
+| The Earth | `BlueMarble_ShadedRelief` from NASA GIBS: MODIS Blue Marble, cloud-free, with shaded relief and no sea floor (until 2026-10-13 the layer with shaded bathymetry, `BlueMarble_ShadedRelief_Bathymetry`), 500 m per pixel | NASA Earth Observatory; served by NASA GIBS / ESDIS | "NASA promotes full and open sharing of data"; the acknowledgement of §4.13 is asked for | 7 (489 m per pixel; level 8 is a 400) |
 
 MEASURED 2026-10-06 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`: `Access-Control-Allow-Origin: *`
 on all three. GIBS's grid is not Trek's: a level-0 tile is 288 degrees on a side and 512 pixels, level 0
@@ -1398,7 +1398,7 @@ Sources panel prints, while they are on screen:
 
 - The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks
 - Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks
-- The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).
+- The Earth close up: Blue Marble with shaded relief, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).
 
 **What is changed.** The two relief mosaics are never shown as pictures. Each is a drawing of slopes
 under one fixed light; the direction of that light was measured against the host's elevation tiles
@@ -1408,9 +1408,11 @@ really is, as steep as the mosaic has it, clamped to 0.3 to 2.2 of the ground's
 brightness. The slope across that direction is not in the mosaic and is not drawn, and the world's
 card says both. HRSC's share of Mars's relief is CC BY-SA 3.0 IGO: it is fetched by the visitor's
 browser from NASA's server, not copied, changed into another file or redistributed by us. The
-Earth's tiles are multiplied by two sets of three numbers, land (2.0, 2.3, 2.5) and sea (8.3, 5.7,
-4.7), chosen per pixel from the tile's own colour, so Blue Marble sits at the tone of the day map
-under it; they replace the day map's colour only where the ground is lit, and the night lights, the
+Earth's tiles are multiplied by three numbers (2.0, 2.3, 2.5) and their water, chosen per pixel
+from the tile's own colour, is then lifted by three more (0.0118, 0.0402, 0.1604 in linear light),
+so Blue Marble's land and its one flat deep-sea colour both sit at the tone of the day map under
+it (until 2026-10-13 the layer carried the shaded sea floor and its water was multiplied 8.3, 5.7,
+4.7 times, which drew fracture zones and survey edges as streaks and rectangles on open ocean); they replace the day map's colour only where the ground is lit, and the night lights, the
 clouds, the glint and the Moon's shadow are drawn over them as before. Blue Marble's hills are
 shaded into the picture under a fixed light, not by our Sun, and it is one picture for every month.
 Nothing from Treks or GIBS is stored in this repository or on our site.
