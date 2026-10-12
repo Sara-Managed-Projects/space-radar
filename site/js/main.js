@@ -59,7 +59,7 @@ import { createGroundTrack } from './scene/groundtrack.js';
 import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings, periodMsOfWorld, MARKER_PX } from './scene/orbitrings.js';
 import { tripOwnsCard } from './ui/tripstate.js';
-import { createFrameLatch, createScaleGovernor, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, movingReasons } from './scene/quality.js';
+import { createFrameLatch, createScaleGovernor, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, lookHeld, movingReasons } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
 import { TEXTURES } from './data/textures.js';
@@ -2317,6 +2317,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  // `?look=1` (scene/quality.js lookHeld), read once: a tool is looking, and neither the latch nor the
+  // governor below is fed. Nothing else asks: the loaders, the tier and the clock run as for a visitor.
+  const looking = lookHeld({ search: location.search });
   // The step before it (internal #521): 2, 1.5, 1.25, 1 of the device's pixel ratio; the latch is fed
   // only from the lowest step, and stays the last resort.
   const scaler = createScaleGovernor({ deviceRatio: typeof devicePixelRatio === 'number' ? devicePixelRatio : 1 });
@@ -2339,6 +2342,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // and forced from a console or a browser check the way a slow device would trip it.
   ctx.latch = {
     get latched() { return latch.latched; },
+    held: looking,
     force() { if (latch.force()) degrade(); return latch.latched; },
   };
   // Read once: every extra hero model is a file to fetch, so a metered or slow connection keeps
@@ -2436,7 +2440,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Not while filming: a film's frames are all one step long (33 ms at 30 fps), which the latch
     // would read as a slow device and answer by throwing the picture's quality away.
     if (!capped) freeFrameMs = frameMs;
-    if (!document.hidden && !ctx.renderMode && !capped && !latch.latched) {
+    if (!looking && !document.hidden && !ctx.renderMode && !capped && !latch.latched) {
       const st = ctx.trip && ctx.trip.state;
       const shown = !!(st && st.phase !== 'idle') || !!(ctx.autopilot && ctx.autopilot.engaged) || !!(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading));
       const calm = !shown && !cameraMovedLast;
@@ -2445,7 +2449,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
       }
       if (scaler.atFloor && latch.push(frameMs, nowReal)) degrade();
-    } else if (capped && !document.hidden && !ctx.renderMode && !latch.latched && scaler.rest(nowReal)) {
+    } else if (!looking && capped && !document.hidden && !ctx.renderMode && !latch.latched && scaler.rest(nowReal)) {
       // The resting view (the idle cap): its frames are slow by choice and never fed above, so the ladder
       // would wait for the next thing that moves. Rest counts as quick (scene/quality.js).
       if (ctx.rendererApi && ctx.rendererApi.setScale) ctx.rendererApi.setScale(scaler.scale);

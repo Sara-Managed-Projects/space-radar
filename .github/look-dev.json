@@ -1,0 +1,8 @@
+[
+  {"probe": "smoke", "browser": "chromium", "harvest": "ocean-currents,ocean-temperature"},
+  {"probe": "worlds", "browser": "chromium"},
+  {"probe": "sun", "browser": "chromium", "harvest": "swpc-edited-events,donki-cme-analysis"},
+  {"probe": "frametime", "browser": "chromium"},
+  {"probe": "smoke", "browser": "firefox"},
+  {"probe": "smoke", "browser": "webkit"}
+]
