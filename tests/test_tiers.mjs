@@ -121,6 +121,7 @@ function rig(opts = {}) {
   const tiers = createTextureTiers({
     tier: opts.tier,
     month: () => month,
+    offline: opts.offline,
     idle: (cb) => idleQ.push(cb),
     load: (url) => new Promise((resolve, reject) => { log.push(url); pending.push([url, resolve, reject]); }),
     targets: { earth, sky, worlds },
@@ -136,6 +137,19 @@ function rig(opts = {}) {
   return { tiers, log, pending, idleQ, earth, sky, worlds, px, settle, setMonth: (m) => { month = m; }, select: (id) => { selected = id; } };
 }
 
+{
+  // OFFLINE (internal #564): a page played from a kept trip asks for no sharper map, and asks again once the network is back.
+  let off = true;
+  const r = rig({ tier: 1, offline: () => off });
+  r.tiers.start();
+  for (let t = 0; t < 30000; t += 1000) r.tiers.tick(t);
+  await r.settle();
+  check(r.log.length === 0, `offline, T1 asks for no texture (${r.log.join(', ')})`);
+  off = false;
+  r.tiers.tick(31000);
+  await r.settle();
+  check(r.log.length === 5, `back online, the sharper maps are asked for (${r.log.length})`);
+}
 {
   // A phone: nothing, ever.
   const r = rig({ tier: 0, px: { moon: 900 } });
@@ -154,7 +168,7 @@ function rig(opts = {}) {
   r.idleQ.shift()();
   check(r.log.length === 1 && r.pending.length === 1, `one fetch at a time (${r.log.length} in flight)`);
   await r.settle();
-  const want = ['textures/4k/earth_day_09.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/4k/milky_way.webp'];
+  const want = ['textures/4k/earth_day_09.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/1k_earth_relief.webp', 'textures/4k/milky_way.webp'];
   check(JSON.stringify(r.log) === JSON.stringify(want), `T1 fetches the Earth, then the sky, in that order, and nothing else while the planets are small: ${r.log.join(', ')}`);
   check(r.earth.slots.day && r.earth.slots.day.url === want[0] && r.earth.slots.water && r.sky.map, 'and each landed in its slot');
   check(r.tiers.state().fetchedBytes > 0, 'and counts what it fetched');
@@ -163,14 +177,14 @@ function rig(opts = {}) {
   r.setMonth(12);
   r.tiers.tick(10000);
   await r.settle();
-  check(r.log.length === 4, 'a new month is not fetched at once (a scrub through the year is not twelve downloads)');
+  check(r.log.length === 5, 'a new month is not fetched at once (a scrub through the year is not twelve downloads)');
   r.tiers.tick(10000 + MONTH_HOLD_MS - 100);
   await r.settle();
-  check(r.log.length === 4, 'nor just before the hold is up');
+  check(r.log.length === 5, 'nor just before the hold is up');
   const sept = r.earth.slots.day;
   r.tiers.tick(10000 + MONTH_HOLD_MS + 100);
   await r.settle();
-  check(r.log[4] === 'textures/4k/earth_day_12.webp' && r.earth.slots.day.url === 'textures/4k/earth_day_12.webp', `December's Earth after the hold (${r.log[4]})`);
+  check(r.log[5] === 'textures/4k/earth_day_12.webp' && r.earth.slots.day.url === 'textures/4k/earth_day_12.webp', `December's Earth after the hold (${r.log[5]})`);
   check(sept.disposed === 1, 'and September\'s 4k texture is freed');
 
   // Planets: the Moon small, then big. T1 holds ONE planet at 4k (its GPU budget, spec 0056).
@@ -244,13 +258,22 @@ function rig(opts = {}) {
 // on screen from the first frame), byte for byte what origin/main shipped on 2026-09-28. The 2.5 MB
 // first-visit gate had ~140 KB to spare; a tier must never be paid for out of it.
 const BOOT_2026_09_28 = {
-  'textures/2k_earth_daymap.jpg': 463087,
+  // 148 312 since 2026-10-08 (spec 0056 req 8, public #286): the publisher's 463 087 B JPEG as WebP,
+  // same pixels, luma SSIM 0.9811 against it. Smaller is the one direction this file may move in.
+  'textures/2k_earth_daymap.webp': 148312,
   'textures/2k_earth_nightmap.webp': 84590,
-  'textures/2k_earth_clouds.webp': 575032,
+  // 282 674 since 2026-10-07 (internal #415 item 2): the same 2048 x 1024 mask at WebP quality 50,
+  // from the source JPEG. It was 575 032 B, the largest request of a first visit. Smaller is the one
+  // direction this file may move in.
+  'textures/2k_earth_clouds.webp': 282674,
   'textures/2k_stars_milky_way.webp': 60004,
 };
 const boot = bootFiles(TEXTURES);
-check(boot.length === 19 && boot.every((f) => /^textures\/[12]k_[a-z_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the nineteen 1k and 2k files (${boot.length})`);
+// 34 since 2026-10-05: fifteen more moons wear a map. A moon's tier-0 file is fetched when the moon is
+// first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
+// 35 since 2026-10-06: Venus's ground by radar, fetched when its card asks for it (`when: asked`).
+// 42 since 2026-10-08: Mercury's relief, fetched with its map on a tier-1 device and up (`when: asked`).
+check(boot.length === 42 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-two 1k and 2k files (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);
@@ -258,7 +281,7 @@ for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(real === bytes, `${f} is ${real} bytes, not the ${bytes} it was: the boot set changed`);
   firstVisit += real;
 }
-check(firstVisit === 1182713, `the first visit's textures are ${firstVisit} bytes, as before tiers (1 182 713)`);
+check(firstVisit === 575580, `the first visit's textures are ${firstVisit} bytes (575 580 since the day map became a WebP on 2026-10-08; 890 355 since the cloud mask's re-encode of 2026-10-07; 1 182 713 before it)`);
 // The code that loads the boot set names the same files the manifest calls tier 0.
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(main.includes("milkyWayTexture: 'textures/2k_stars_milky_way.webp'"), 'main.js boots the Milky Way from the tier-0 file');
@@ -266,10 +289,12 @@ for (const w of WORLDS) {
   const names = [w.look.map, w.look.day, w.look.night, w.look.clouds, w.look.ring && w.look.ring.map].filter(Boolean);
   for (const n of names) check(boot.includes('textures/' + n), `worlds.js boots ${w.id} from ${n}, which is not a tier-0 file`);
 }
-// Every tier-1 file is 4096 x 2048 and nothing larger ships: 8k waits for KTX2.
+// Every tier-1 file is 4096 x 2048 and nothing larger ships: 8k waits for KTX2. The Earth's relief
+// is the one that is smaller on purpose (a height map read for its slopes: 1024 and 2048 wide).
 for (const row of TEXTURES) {
   for (const f of row.files) {
-    if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
+    if (f.tier > 0 && row.slot === 'relief') check(row.id === 'earth-relief' && f.px[0] === 1024 * f.tier && f.px[1] * 2 === f.px[0] && f.format === 'mono', `${row.id} tier ${f.tier} is ${f.px} ${f.format}, not one grey channel ${1024 * f.tier} wide`);
+    else if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
     check(f.px[0] <= 4096, `${row.id}: ${f.px[0]} wide is over what any tier may ship without KTX2`);
   }
 }

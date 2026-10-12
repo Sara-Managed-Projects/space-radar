@@ -30,7 +30,7 @@ check(fx[0].meta.asOf === null, 'a snapshot body carries no as-of date');
 const bundled = readFileSync(join(ROOT, 'site/data/exoplanets.csv'), 'utf8');
 const all = parseExoplanets(bundled);
 check(all.length > 6000 && all.length < 7000, `the bundled copy gives a few thousand planets (${all.length})`);
-check(all[0].meta.asOf === '2026-09-08', `the bundled copy's records say as of 2026-09-08 (${all[0].meta.asOf})`);
+check(all[0].meta.asOf === '2026-10-08', `the bundled copy's records say as of 2026-10-08 (${all[0].meta.asOf})`);
 check(all.every((r) => Number.isFinite(r.pos.x) && r.meta.distLy > 0), 'every record has a position and a distance');
 const ids = new Set(all.map((r) => r.id));
 check(ids.size === all.length, `ids are unique (${ids.size} of ${all.length})`);

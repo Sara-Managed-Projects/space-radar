@@ -72,6 +72,12 @@ params:
   CENTER: "'500@10'"        # heliocentric, the frame the deep-space layer draws in
   STEP_SIZE: "'6 h'"
   VEC_TABLE: "'2'"          # position and velocity, which cubic Hermite needs
+  # Times in UT, not TDB (internal #424, #552). Horizons' default for a vector table is TDB, 69.184 s
+  # ahead of UTC, which the app read as UTC (1 644 km along Mars's path for MRO). JPL's API page
+  # (ssd-api.jpl.nasa.gov/doc/horizons.html, read 2026-10-09) lists TIME_TYPE as "UT , TT , TDB ...
+  # observer tables: UT or TT; vector tables: TDB or UT". The table's header then reads JDUT and
+  # data/parsers.js horizonsTimeScale() takes no 69 s off: a saved TDB snapshot is read as before.
+  TIME_TYPE: "'UT'"
   OUT_UNITS: "'KM-S'"
   CSV_FORMAT: "'YES'"
   COMMAND: "'{id}'"
@@ -89,6 +95,11 @@ ids:
   - {id: "-31",  name: "Voyager 1",                  app_id: deep-voyager-1}
   - {id: "-32",  name: "Voyager 2",                  app_id: deep-voyager-2}
   - {id: "-98",  name: "New Horizons",               app_id: deep-new-horizons}
+  # The two Pioneers (2026-10-06): Horizons holds both trajectories to 2050. Cassini (-82) and
+  # Galileo (-77) are NOT here and must not be: their trajectories end in 2017 and 2003, so a
+  # request for today is refused. They are drawn from their path files only (site/data/eph).
+  - {id: "-23",  name: "Pioneer 10",                 app_id: deep-pioneer-10}
+  - {id: "-24",  name: "Pioneer 11",                 app_id: deep-pioneer-11}
   - {id: "-96",  name: "Parker Solar Probe",         app_id: deep-parker}
   - {id: "-255", name: "Psyche",                     app_id: deep-psyche}
   - {id: "-49",  name: "Lucy",                       app_id: deep-lucy}
@@ -103,3 +114,11 @@ ids:
   - {id: "-41",  name: "Mars Express",               app_id: deep-mars-express, center: "'500@499'"}
   - {id: "-85",  name: "Lunar Reconnaissance Orbiter", app_id: deep-lro, center: "'500@301'"}
   - {id: "-139479", name: "Gaia",                    app_id: deep-gaia}
+  # Added 2026-10-07 with their models (internal #389). Each header was read that day: Roman's
+  # file is a flight-dynamics prediction that ends 2026-10-26 (the anchor stays the stand-in
+  # after it), Odyssey's is fitted to 2026-09-23, Spitzer's and Kepler's are long predictions for
+  # two craft that are switched off. THE HARVESTER NEEDS A REDEPLOY to fetch these.
+  - {id: "-211", name: "Nancy Grace Roman Space Telescope", app_id: deep-roman}
+  - {id: "-53",  name: "Mars Odyssey",               app_id: deep-mars-odyssey, center: "'500@499'"}
+  - {id: "-79",  name: "Spitzer Space Telescope",    app_id: deep-spitzer}
+  - {id: "-227", name: "Kepler",                     app_id: deep-kepler}

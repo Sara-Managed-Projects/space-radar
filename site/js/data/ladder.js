@@ -94,7 +94,7 @@ export const WE_SHOW = [
   },
   {
     "what": "planets around other stars",
-    "n": 6332,
+    "n": 6347,
     "of": "every confirmed one, as of the catalogue copy's date",
     "source": "NASA Exoplanet Archive pscomppars",
     "layer": "exoplanets"

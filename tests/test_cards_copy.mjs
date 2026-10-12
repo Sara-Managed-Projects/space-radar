@@ -2,6 +2,7 @@
 // lies the 2026-09-08 review measured, each now asserted so it cannot come back.
 //
 //   node tests/test_cards_copy.mjs
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -526,7 +527,87 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(a3[1].disabled !== true, 'See it is on for a star: the sky from your place shows it');
   const a4 = C.actionButtons({ id: 'deep-voyager-1', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
   check(a4[1].disabled === true && a4[1].title === COPY.sky.notVisibleFromGround, `See it is off for a craft beyond Earth, and its tooltip says why: ${a4[1].title}`);
+  // The Earth's card carries the legend of the map over the globe (internal #386 item 1).
+  {
+    const earth = { id: 'earth', klass: 'world', meta: {} };
+    const shown = { id: 'sea-temperature', status: 'shown', title: 'Sea surface temperature', what: 'The temperature of the sea.', cls: 'analysed', rule: 'daily', dateWords: '5 October 2026', credit: 'GHRSST', legend: { unit: '°C', low: '0', high: '32', stops: ['#2b001a', '#6b0200'] } };
+    let st = shown;
+    const octx = { overlayState: () => st };
+    const box = C.overlayBlock(earth, octx);
+    check(box && box.hidden === false && box.children[0].children[0].textContent === 'Sea surface temperature' && box.children[0].children[3].textContent === '32 °C', `with a map up, the Earth's card shows its legend (${box && box.children[0].children[0].textContent})`);
+    check(/The picture is of 5 October 2026\./.test(box.children[1].textContent) && /GHRSST/.test(box.children[1].textContent), `and its sentence: the day and whose data (${box.children[1].textContent})`);
+    st = { id: null, status: 'off' };
+    const off = C.overlayBlock(earth, octx);
+    check(off && off.hidden === true && off.children[1].textContent === '', 'with none, the block is there and hidden, for the next one to fill');
+    st = { id: 'wind', kind: 'wind', status: 'shown', cls: 'modelled', date: Date.UTC(2026, 9, 7, 12), speedup: 86400, meanSpeed: 7.2, maxSpeed: 28, still: false, credit: 'NOAA', legend: { unit: 'm/s', low: '0', high: '25', stops: ['#5E78C8', '#FFD166'] } };
+    const wind = C.overlayBlock(earth, octx);
+    check(wind.children[0].children[0].textContent === 'Wind' && /a day of wind in a second/.test(wind.children[1].textContent), 'the wind is keyed the same way');
+    check(C.overlayBlock({ id: 'mars', klass: 'world', meta: {} }, octx) === null && C.overlayBlock(earth, {}) === null, 'no other card has it');
+    check(/addEventListener\('sr:overlay'/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')), 'and it is repainted when the overlay changes');
+  }
+  // A rock on its ellipse close to the Earth says its place is approximate (internal #298).
+  {
+    const rock = { id: 'asteroid-x', name: '2026 XX', klass: 'asteroid', propagator: 'kepler', frame: 'sun-inertial', cls: 'inferred', meta: {} };
+    const close = { ok: true, frame: 'sun-inertial', tMs: Date.UTC(2026, 9, 7), distEarthKm: 0.01 * 149597870.7 };
+    const far = { ...close, distEarthKm: 0.4 * 149597870.7 };
+    check(C.nearEarthOnEllipse(rock, close) === true && C.nearEarthOnEllipse(rock, far) === false && C.NEAR_EARTH_KM === 0.05 * 149597870.7, 'inside 0.05 au of the Earth a two-body rock is flagged, and not beyond');
+    check(C.honestyClause(rock, close) === COPY.cls.nearEarthApprox && /approximate/.test(COPY.cls.nearEarthApprox) && /Earth’s pull/.test(COPY.cls.nearEarthApprox) && C.honestyClause(rock, far) !== COPY.cls.nearEarthApprox, `its card says so, and why: ${C.honestyClause(rock, close)}`);
+    check(C.nearEarthOnEllipse({ ...rock, klass: 'probe' }, close) === false && C.nearEarthOnEllipse({ ...rock, propagator: 'sampled' }, close) === false && C.nearEarthOnEllipse({ ...rock, frame: 'earth-inertial' }, close) === false, 'not a spacecraft, not a sampled track, not an Earth orbit');
+    const { EPHEMERIS_OF } = await import(join(JS, 'propagate/index.js'));
+    EPHEMERIS_OF.set('asteroid-x', (tMs) => (tMs > Date.UTC(2026, 0, 1) ? { x: 1, y: 2, z: 3, frame: 'sun-inertial' } : null));
+    check(C.nearEarthOnEllipse(rock, close) === false && C.nearEarthOnEllipse(rock, { ...close, tMs: Date.UTC(2020, 0, 1) }) === true, 'a rock drawn from its own path file at that moment is not flagged: the pull is in the path');
+    EPHEMERIS_OF.delete('asteroid-x');
+  }
+  // An ended craft after its end (internal #424): Fly to it is off and says the day; the row is "Ended".
+  {
+    const cassini = { id: 'deep-cassini', name: 'Cassini', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { endDate: '2017-09-15' } };
+    const after = { ok: false, frame: 'sun-inertial', tMs: Date.UTC(2026, 9, 7) };
+    const a5 = C.actionButtons(cassini, ride, after);
+    check(a5[0].disabled === true && a5[0].title === 'It ended on 15 September 2017. Choose an event of its mission to go there', `an ended craft: Fly to it is off and says when it ended (${a5[0].title})`);
+    check(C.endedWords(cassini, after) === '15 September 2017' && C.endedWords(cassini, { ok: true, tMs: Date.UTC(2010, 0, 1) }) === null && C.endedWords(cassini, { ok: false, tMs: Date.UTC(1990, 0, 1) }) === null, 'ended is said only after the end, and never while the craft is drawn');
+    const rows = C.rightNowFor(cassini, { clock: { now: () => Date.UTC(2026, 9, 7) } });
+    check(rows.length === 1 && rows[0][0] === COPY.card.rows.ended && rows[0][1] === '15 September 2017', `its rows are one line, Ended and the day, not "could not work this out" (${JSON.stringify(rows)})`);
+    check(/ended || pathEnds \? \[\] : heroNumbers\(record, m, rows\)/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')) && COPY.card.endedLine.includes('{date}'), 'and one line stands where its three numbers would be dashes');
+    const a6 = C.actionButtons({ id: 'x', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: false, frame: 'sun-inertial' });
+    check(a6[0].disabled === true && a6[0].title === A.flyNowhere, 'any other switched-off Fly to it says why');
+  }
+  // Stardust's path stops 13 days before its mission (internal #478): in the gap the card says so, not "could not work this out".
+  {
+    const sd = { id: 'deep-stardust', name: 'Stardust', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { endDate: '2011-03-25', pathEndDate: '2011-03-12' } };
+    const gap = { ok: false, frame: 'sun-inertial', tMs: Date.UTC(2011, 2, 18) };
+    check(C.pathEndedWords(sd, gap) === '12 March 2011' && C.endedWords(sd, gap) === null, 'between the path\'s end and the mission\'s: the path has ended, the mission has not');
+    check(C.pathEndedWords(sd, { ok: true, tMs: Date.UTC(2011, 2, 18) }) === null && C.pathEndedWords(sd, { ok: false, tMs: Date.UTC(2011, 2, 1) }) === null && C.pathEndedWords(sd, { ok: false, tMs: Date.UTC(2026, 9, 7) }) === null, 'not while it is drawn, not before the path ends, not after the mission (that is "Ended")');
+    const rows = C.rightNowFor(sd, { clock: { now: () => gap.tMs } });
+    check(rows.length === 1 && rows[0][0] === COPY.card.rows.pathEnds && rows[0][1] === '12 March 2011', `its row is "Its path ends" and the day (${JSON.stringify(rows)})`);
+    const aa = C.actionButtons(sd, ride, gap);
+    check(aa[0].disabled === true && /^Its path ends on 12 March 2011/.test(aa[0].title), `Fly to it is off and says why (${aa[0].title})`);
+  }
   check(a1.every((b) => b.title && b.children[0].getAttribute('aria-hidden') === 'true'), 'every action has its words in a tooltip and an icon hidden from a screen reader');
+  // The flood light (internal #272): one quiet switch on the card of anything drawn as a model,
+  // its note on screen for as long as the lamp is, remembered for the session.
+  {
+    const F = COPY.flood;
+    const store = new Map();
+    const hadStore = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)) } });
+    const calls = [];
+    const fctx = { setFloodLight: (on) => { calls.push(on); return on; } };
+    check(C.offersFlood(orbiting) && C.offersFlood({ id: 'deep-dawn', klass: 'probe', meta: {} }) && C.offersFlood({ id: 'apollo-11', klass: 'site', meta: {} }), 'a station, a probe and a lander on the Moon offer the lamp');
+    check(!C.offersFlood({ id: 'mars', klass: 'world', meta: {} }) && !C.offersFlood({ id: 'hip-1', klass: 'star', meta: {} }) && !C.offersFlood(null), 'a planet and a star do not: their light is not a model\'s');
+    check(C.floodControls({ id: 'mars', klass: 'world', meta: {} }, fctx).length === 0, 'and their cards carry no switch');
+    const [btn, note] = C.floodControls(orbiting, fctx);
+    check(btn.tagName === 'BUTTON' && btn.type === 'button' && btn.textContent === F.on && btn.getAttribute('aria-pressed') === 'false' && btn.title === F.title, `the switch starts off and says "${F.on}"`);
+    check(note.hidden === true && calls.length === 0, 'in the real light there is no note and nothing is switched');
+    btn.click();
+    check(btn.getAttribute('aria-pressed') === 'true' && btn.textContent === F.off && note.hidden === false && note.textContent === F.note && calls.join() === 'true', 'pressed, the lamp is on and the card says it is not the real light');
+    check(store.get('sr.flood') === '1' && C.floodWantedNow() === true, 'and the session remembers');
+    const [btn2, note2] = C.floodControls({ id: 'deep-dawn', klass: 'probe', meta: {} }, fctx);
+    check(btn2.getAttribute('aria-pressed') === 'true' && note2.hidden === false && calls.join() === 'true,true', 'the next card opens lit, with its note');
+    btn2.click();
+    check(btn2.getAttribute('aria-pressed') === 'false' && note2.hidden === true && calls.join() === 'true,true,false' && store.get('sr.flood') === '0', 'pressed again, the real light is back');
+    check(F.on.split(' ').length <= 2 && F.off.split(' ').length <= 2 && /not the real light/.test(F.note) && F.note.length <= 40, 'two words a button, and a note of one line that says whose light it is');
+    if (hadStore) Object.defineProperty(globalThis, 'sessionStorage', hadStore); else delete globalThis.sessionStorage;
+  }
   globalThis.document = before;
 }
 

@@ -35,7 +35,7 @@ export function createSceneNote(ctx) {
   if (typeof document === 'undefined') return { check() {}, say() {}, destroy() {} };
   const T = COPY.sceneNote;
   const root = document.createElement('aside');
-  root.className = 'sr-scenenote';
+  root.className = 'sr-scenenote sr-float';
   root.setAttribute('role', 'status');
   root.hidden = true;
   const text = document.createElement('p');
@@ -43,13 +43,14 @@ export function createSceneNote(ctx) {
   text.textContent = T.refused;
   const why = document.createElement('button');
   why.type = 'button';
-  why.className = 'sr-btn sr-scenenote__why';
+  why.className = 'sr-scenenote__why';
   why.textContent = T.why;
   const close = document.createElement('button');
   close.type = 'button';
   close.className = 'sr-scenenote__close';
   close.textContent = T.close;
   close.title = T.closeTitle;
+  close.setAttribute('aria-label', T.closeTitle);
   root.append(text, why, close);
   document.body.appendChild(root);
 
@@ -60,11 +61,13 @@ export function createSceneNote(ctx) {
   function check() {
     if (said) {
       text.textContent = said;
+      text.title = '';
       why.hidden = true;
       root.hidden = false;
       return;
     }
     text.textContent = T.refused;
+    text.title = T.refusedTitle;
     why.hidden = false;
     if (!settled || dismissed) { root.hidden = true; return; }
     const counts = new Map(SATELLITE_LAYERS.map((id) => [id, (ctx.recordsFor(id) || []).length]));

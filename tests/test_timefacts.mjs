@@ -107,7 +107,8 @@ const minsTo = Math.floor((next.from - T0) / 60e3);
 check(w1.light === `${next.sunlit ? 'Comes out into sunlight' : 'Enters Earth’s shadow'} in ${minsTo} min`, `at 1x the next change counts down in minutes (${w1.light})`);
 check(w1.lap === `Completes this lap in ${mmss(node - T0)}` && /^\d+:\d\d$/.test(mmss(node - T0)), `the lap counts down in m:ss (${w1.lap})`);
 check(/^Orbit 58 453 since launch$/.test(w1.orbit) && /Inferred/.test(w1.orbitNote), `the orbit number says it is inferred (${w1.orbit}; ${w1.orbitNote})`);
-check(w1.launched === 'Launched in 1998', `launched (${w1.launched})`);
+// Without the catalogue the year is the designator's, and the years up are said as "about" (internal #127).
+check(new RegExp(`^Launched in 1998: about ${new Date(T0).getUTCFullYear() - 1998} years up$`).test(w1.launched), `launched (${w1.launched})`);
 check(Math.abs(w1.bar.reduce((a, b) => a + b.share, 0) - 1) < 1e-9 && w1.bar.length === windows.length, 'the bar\'s runs fill it exactly');
 check(/Sunlight and shadow over the next 90 minutes: /.test(w1.barLabel), `the bar has words for a screen reader (${w1.barLabel})`);
 // Thirty seconds later on the same facts: the countdowns moved, and nothing was worked out again.

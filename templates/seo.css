@@ -35,3 +35,6 @@ figure img{display:block;max-width:100%;height:auto;border-radius:var(--sr-radiu
 .dim,figcaption{color:var(--sr-text-dim);font-size:13px;line-height:18px}
 footer{padding-top:16px;padding-bottom:32px;border-top:1px solid var(--sr-line)}
 footer p{color:var(--sr-text-dim);font-size:13px;line-height:18px;overflow-wrap:anywhere}
+.sitelinks ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:0 4px}
+.sitelinks a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--sr-text-dim);font-size:13px;line-height:18px;text-decoration:none}
+.sitelinks a:hover{color:var(--sr-text)}

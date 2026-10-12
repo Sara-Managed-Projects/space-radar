@@ -24,6 +24,7 @@
 // says what the manifest said: when it was generated and how many sources it covers.
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
+import '../copy/en.later.js';
 import { createSpaceWeather } from './spaceweather.js';
 import { creditsText } from './sound.js';
 import { AUDIO } from '../data/audio.js';
@@ -127,7 +128,7 @@ function stateTitle(state) {
  *   could not look: ...                          nothing, and we know why
  *   no good copy in this browser yet             nothing, and the error line says why
  */
-function provenanceLine(row) {
+export function provenanceLine(row) {
   if (stateOf(row) === STATE_UNKNOWN) {
     const why = couldNotLookWhy(row);
     return why ? t(COPY.status.couldNotLookLine, { reason: why }) : COPY.status.ageNeverLine;
@@ -137,6 +138,8 @@ function provenanceLine(row) {
   if (row.via === 'snapshot') {
     const line = t(COPY.status.viaSnapshotLine, { age });
     // Past its valid_until: the harvester promised a fresher copy by now. Said, never hidden.
+    // The publisher is being asked behind it right now: said while it is true (spec 0060 task 3).
+    if (row.pendingLive) return line + ' ' + COPY.status.snapshotChecking;
     return row.overdue ? line + COPY.punctuation.separator + COPY.status.snapshotOverdue : line;
   }
   if (row.via === 'live') {
@@ -390,6 +393,8 @@ export function createStatus(ctx, parent) {
   // From the registry mirror, so it lists what ships whether or not anybody turned sound on.
   const soundCredits = creditsText(AUDIO);
   if (soundCredits) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__sound', soundCredits));
+  // Spec 0069 task 5: the trips' voice is synthetic, and the place that names every source says so.
+  creditBlock.appendChild(el('p', 'sr-status__intro sr-status__sound', COPY.audio.narrationCredit));
   // The live clouds (2026-09-28, scene/liveclouds.js) are not a layer or a source row: they are part
   // of the Earth. Their credits are here all the same -- NASA's acknowledgement, verbatim, and the
   // operators of the three satellites -- with one line saying what the clouds are right now.
@@ -409,11 +414,48 @@ export function createStatus(ctx, parent) {
     creditBlock.appendChild(auroraLine);
     for (const line of ctx.aurora.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__aurora-credit', line));
   }
+  // The lightning (spec 0066, scene/weather/lightning.js) is NOAA's map fetched by the browser, the
+  // same way: its credit and one line saying what the flashes on the night side are right now.
+  let weatherLine = null;
+  if (ctx.weather) {
+    creditBlock.appendChild(el('h4', 'sr-status__subtitle sr-status__weather-title', COPY.status.weatherTitle));
+    weatherLine = el('p', 'sr-status__intro sr-status__weather', '');
+    creditBlock.appendChild(weatherLine);
+    for (const line of ctx.weather.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__weather-credit', line));
+  }
   // The device tier and the maps it is wearing (scene/texturetiers.js, 2026-09-28): the 4k maps are
   // other people's pictures too, and which ones are on screen depends on the device.
   const maps = el('p', 'sr-status__intro sr-status__maps');
   creditBlock.appendChild(maps);
   node.appendChild(creditBlock);
+
+  // What the site keeps in this browser (spec 0041 task 4): the words only; Forget me is the
+  // Passport's, where what it clears can be seen.
+  // "Is this what space looks like?" (internal #250): the three kinds of picture, said once, here
+  // in the sheet that says where everything comes from. A definition list: the kind, then what it is.
+  const R = COPY.realLook;
+  if (R) {
+    const lookBlock = el('section', 'sr-status__block sr-status__look');
+    lookBlock.appendChild(el('h3', 'sr-status__subtitle', R.title));
+    lookBlock.appendChild(el('p', 'sr-status__intro', R.lead));
+    const kinds = el('dl', 'sr-status__lookkinds');
+    for (const [kind, what] of R.kinds) {
+      kinds.appendChild(el('dt', 'sr-status__lookkind', kind));
+      kinds.appendChild(el('dd', 'sr-status__intro', what));
+    }
+    lookBlock.appendChild(kinds);
+    lookBlock.appendChild(el('p', 'sr-status__intro', R.foot));
+    node.appendChild(lookBlock);
+  }
+
+  const keptBlock = el('section', 'sr-status__block sr-status__kept');
+  keptBlock.appendChild(el('h3', 'sr-status__subtitle', COPY.kept.title));
+  const keptList = el('ul', 'sr-status__credits');
+  for (const line of COPY.kept.lines) keptList.appendChild(el('li', 'sr-status__credit', line));
+  keptBlock.appendChild(keptList);
+  keptBlock.appendChild(el('p', 'sr-status__intro', COPY.kept.place));
+  keptBlock.appendChild(el('p', 'sr-status__intro', COPY.kept.none));
+  node.appendChild(keptBlock);
 
   // The footer (spec 0061 design §6): the GitHub mark, which used to sit alone in the top corner of
   // the first screen, and what it links to in words. ui/github.js keeps the mark's rules.
@@ -439,7 +481,21 @@ export function createStatus(ctx, parent) {
   ));
   foot.appendChild(footCredit);
   createGitHubMark(foot);
+  // The press kit (public #293): built at deploy beside the object pages, linked from here in words.
+  const press = el('a', 'sr-mark sr-mark--foot sr-status__press', COPY.mark.press);
+  press.href = COPY.mark.pressHref;
+  press.title = COPY.mark.pressTitle;
+  foot.appendChild(press);
   node.appendChild(foot);
+  // The site's own links (index.html #sr-sitefoot, written by scripts/gen_home_seo.py from
+  // templates/sitelinks.html): in the markup for a crawler from the first byte, and here, under the
+  // GitHub mark, for a person. Moved, not copied: one footer, and the same words as every other page.
+  const site = document.getElementById('sr-sitefoot');
+  if (site) {
+    site.classList.add('sr-sitefoot--shown');
+    for (const a of site.querySelectorAll('a[tabindex="-1"]')) a.removeAttribute('tabindex');
+    node.appendChild(site);
+  }
 
   const paint = () => {
     try {
@@ -449,12 +505,15 @@ export function createStatus(ctx, parent) {
       renderAttribution(ctx, creditList);
       if (cloudsLine) cloudsLine.textContent = ctx.liveClouds.line(ctx.clock ? ctx.clock.now() : Date.now());
       if (auroraLine) auroraLine.textContent = ctx.aurora.line(ctx.clock ? ctx.clock.now() : Date.now());
+      if (weatherLine) weatherLine.textContent = ctx.weather.line('earth', ctx.clock ? ctx.clock.now() : Date.now()) || '';
       renderMaps(ctx, maps);
     } catch {
       /* keep the last good panel rather than blanking the one page that says what is wrong */
     }
   };
   paint();
+  // "Checking for a newer one" leaves the row the moment the publisher has answered.
+  if (ctx.sources && typeof ctx.sources.onPendingSettled === 'function') ctx.sources.onPendingSettled(paint);
 
   // A slow repaint so ages stay true. It reads nothing that is drawn in the scene, and
   // it stops when the tab is hidden because it rides the animation frame.

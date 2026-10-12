@@ -1,0 +1,320 @@
+# Missions as places in time (public #452, internal #269). A handful of flagship missions, each a
+# short list of dated events: the launch, the flybys, the arrival, the moments people remember.
+# The card of the record named by `record` lists them with Prev and Next (ui/missions.js), and
+# `#event=<mission>.<event>` is a link to one.
+#
+# EVERY ROW HAS A SOURCE, AND NOTHING HERE IS FROM MEMORY. Each mission names the page its
+# events were read on (`source`), and the day they were read (`read`). An event whose date, time
+# or figure is on a different NASA page names that page itself (`source` on the event), and the
+# card links to it. On 2026-10-06 every event was checked against its page: the date, the time
+# where one is given, and every number in its sentence. What a page did not say was taken out:
+# a clock time became `precision: day`, a figure left the sentence, and three events whose date
+# no cited page gave were removed (Webb's mirror unfolding, Zarya's launch, the first commercial
+# crew). Two things worth knowing: NASA's Voyager 2 page lists "Nov 25, 2018" for interstellar
+# space in its key dates, and the agency's own release, cited on that row, says Nov. 5; and
+# NASA's Apollo 11 overview puts Armstrong's first step at "about 109 hours, 42 minutes", while
+# NSSDCA, cited on that row, gives 02:56:15 UT on 21 July. Times are UTC. `precision: day` means
+# the page gives a date and no time; the clock is then set to noon UTC of that day.
+#
+# `place` SAYS WHETHER THE MAP CAN SHOW THE CRAFT THERE ON THAT DAY, which is the honest part:
+#   site     the record is a place on a world (a landing site): it is where it is on any date,
+#            and the Moon and Mars are worked out for any date. The clock moves, the camera frames it.
+#   cruise   a craft coasting out of the Solar System in a straight line at a steady speed. When
+#            the map holds no path for that date it draws the craft on the line back from its
+#            measured position today, and the card says so. Good to about an astronomical unit
+#            since 1990 for the Voyagers and since 2019 for New Horizons (checked against the
+#            distances NASA gives for these very events: 40.4 au drawn for 40.5 on 1990-02-14).
+#   path     the map holds a file of the craft's own path, from JPL Horizons, that spans the date
+#            (registry/ephemerides.yaml, site/data/eph; internal #277, #406). The file is fetched,
+#            the clock moves, and the map goes to the world the craft was at and frames the two.
+#            scripts/build_ephemerides.py --check refuses a `path` event outside its file's span.
+#            No row says `cruise` any more: every coasting craft here has a file. The straight
+#            line stays in ui/missions.js for a craft that has none.
+#   none     the map has no path for the craft on that date. The event is told on the card and
+#            THE CLOCK DOES NOT MOVE.
+# `world` names the world an event happened at. For a `none` event the card offers that world on
+# that day, which is true, with the craft not drawn; for a `path` event it is checked against the
+# file (tests/test_ephemerides.mjs: the craft is kept relative to that world on that date).
+# `path_at` is where the clock goes instead of the event's own instant, in two cases, and the card
+# says which:
+#   a launch   JPL's track begins when the craft separates or later, some minutes after liftoff;
+#              `path_at` is the first minute the file holds (registry/ephemerides.yaml `from`).
+#   a day      where NASA's page gives a day and no time, `path_at` is the closest pass to the
+#              world in JPL's track on that UTC day, read from the file to the minute. It is a
+#              reading of the track, not a time NASA states, and the card says so.
+#
+# `path_record` on a mission names another record for its `path` events: Perseverance's record is
+# the Jezero site, a place on Mars, and its launch is shown on Mars 2020's cruise, a spacecraft.
+#
+# ADDED 2026-10-06 with the path files: Cassini, Galileo, Pioneer 10 and Pioneer 11, each read
+# that day on the page its row names. Three things worth knowing. NASA Science's Pioneer 10 page
+# writes the launch as "March 2, 1972 / 01:49:04 UT": 01:49 UT is the evening of 2 March in
+# Florida and 3 March in UTC, which is the date the NSSDCA catalogue and JPL give, and the one
+# here. Cassini's quick facts give its first Venus flyby as "176 miles (234 km)", which do not
+# agree with each other, so that row carries no distance. And "5:12 a.m. EST" for its Jupiter
+# flyby is written here as 10:12 UTC.
+#
+# Not here: any future event whose date is a plan (those are the launches list's business, from
+# Launch Library).
+#
+# `predicted: true` (2026-10-07, internal #424) IS THE ONE EXCEPTION, and it is not a plan: a pass
+# that celestial mechanics has already fixed and NASA publishes as a date. The card writes
+# "(predicted)" after the date, the event must be `place: path` (so the path file's own "this is a
+# prediction" line is under it), and tests/test_missions.mjs refuses a future date on any other
+# row. One row today: Apophis on 13 April 2029.
+version: 1
+reviewed_on: 2026-10-07
+
+missions:
+  - id: voyager-1
+    record: deep-voyager-1
+    display: Voyager 1
+    read: 2026-10-06
+    source: {name: "NASA Science, Voyager 1", url: "https://science.nasa.gov/mission/voyager/voyager-1/"}
+    events:
+      - {id: launch, date: "1977-09-05T12:56:00Z", title: "Launch", text: "Voyager 1 leaves Cape Canaveral on a Titan IIIE-Centaur, after its twin and on a faster route.", place: path, path_at: "1977-09-05T13:59:00Z", world: earth}
+      - {id: jupiter, date: "1979-03-05T12:05:00Z", title: "Closest to Jupiter", text: "It passes 280 000 km from Jupiter, having found a faint ring around the planet.", place: path, world: jupiter}
+      - {id: saturn, date: "1980-11-12T23:46:00Z", title: "Closest to Saturn", text: "It passes 126 000 km from Saturn, and after Saturn heads north out of the plane of the planets.", place: path, world: saturn}
+      - {id: pale-blue-dot, date: "1990-02-14", precision: day, title: "The Pale Blue Dot", text: "From 6 billion km it photographs Earth as a point of light about a pixel in size.", place: path, source: {name: "NASA Science, Voyager 1's Pale Blue Dot", url: "https://science.nasa.gov/mission/voyager/voyager-1s-pale-blue-dot/"}}
+      - {id: most-distant, date: "1998-02-17", precision: day, title: "The most distant thing we made", text: "At 69.4 astronomical units from the Sun it overtakes Pioneer 10 as the most distant human-made object.", place: path}
+      - {id: termination-shock, date: "2004-12-16", precision: day, title: "The termination shock", text: "It reaches the termination shock and enters the heliosheath.", place: path}
+      - {id: interstellar, date: "2012-08-25", precision: day, title: "Into interstellar space", text: "It becomes the first spacecraft to leave the heliosphere and begins measuring the interstellar environment.", place: path}
+
+  - id: voyager-2
+    record: deep-voyager-2
+    display: Voyager 2
+    read: 2026-10-06
+    source: {name: "NASA Science, Voyager 2", url: "https://science.nasa.gov/mission/voyager/voyager-2/"}
+    events:
+      - {id: launch, date: "1977-08-20T14:29:00Z", title: "Launch", text: "Voyager 2 leaves Cape Canaveral on a Titan IIIE-Centaur.", place: path, path_at: "1977-08-20T15:32:00Z", world: earth}
+      - {id: jupiter, date: "1979-07-09T22:29:00Z", title: "Closest to Jupiter", text: "It passes 645 000 km from Jupiter and sends back 17 000 new pictures of the planet, its moons and its ring.", place: path, world: jupiter}
+      - {id: saturn, date: "1981-08-26T01:21:00Z", title: "Closest to Saturn", text: "It passes 101 000 km from Saturn and photographs the spokes and kinks in its rings.", place: path, world: saturn}
+      - {id: uranus, date: "1986-01-24T17:59:00Z", title: "Closest to Uranus", text: "It passes 81 500 km from Uranus, still the only spacecraft to have been there, and finds ten new moons.", place: path, world: uranus}
+      - {id: neptune, date: "1989-08-25T03:56:00Z", title: "Closest to Neptune", text: "It flies 4 800 km over Neptune's cloud tops, the closest of its four flybys, and photographs Triton.", place: path, world: neptune}
+      - {id: termination-shock, date: "2007-08-30", precision: day, title: "The termination shock", text: "It passes the termination shock and enters the heliosheath.", place: path}
+      - {id: interstellar, date: "2018-11-05", precision: day, title: "Into interstellar space", text: "It crosses the edge of the heliosphere with a working plasma instrument; Voyager 1's had stopped in 1980.", place: path, source: {name: "NASA, Voyager 2 probe enters interstellar space", url: "https://science.nasa.gov/missions/voyager-program/voyager-2/nasas-voyager-2-probe-enters-interstellar-space/"}}
+
+  - id: new-horizons
+    record: deep-new-horizons
+    display: New Horizons
+    read: 2026-10-06
+    source: {name: "NASA Science, New Horizons", url: "https://science.nasa.gov/mission/new-horizons/"}
+    events:
+      - {id: launch, date: "2006-01-19T19:00:00Z", title: "Launch", text: "New Horizons leaves Cape Canaveral on an Atlas V 551.", place: path, path_at: "2006-01-19T19:51:00Z", world: earth}
+      - {id: jupiter, date: "2007-02-28T05:43:00Z", title: "Jupiter's push", text: "It swings past Jupiter for a gravity assist that shortens the trip to Pluto by three years.", place: path, world: jupiter}
+      - {id: pluto, date: "2015-07-14", precision: day, title: "Closest to Pluto", text: "It comes within 12 500 km of Pluto and photographs a vast heart-shaped glacier of nitrogen ice.", place: path, path_at: "2015-07-14T11:48:00Z", world: pluto}
+      - {id: arrokoth, date: "2019-01-01T05:33:00Z", title: "Arrokoth", text: "It flies 3 500 km from Arrokoth, an object of the Kuiper belt.", place: path, source: {name: "NASA NSSDCA, New Horizons", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2006-001A"}}
+
+  - id: juno
+    record: deep-juno
+    display: Juno
+    read: 2026-10-06
+    source: {name: "NASA NSSDCA, Juno", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2011-040A"}
+    events:
+      - {id: launch, date: "2011-08-05T16:25:00Z", title: "Launch", text: "Juno leaves Cape Canaveral on an Atlas V 551.", place: path, path_at: "2011-08-05T17:19:00Z", world: earth}
+      - {id: earth-flyby, date: "2013-10-09T19:21:00Z", title: "Back past Earth", text: "It flies past Earth, about 559 km up at its closest.", place: path, world: earth}
+      - {id: arrival, date: "2016-07-05T03:53:00Z", title: "Into orbit round Jupiter", text: "Word reaches Earth that a 35-minute engine burn has put it into a polar orbit of Jupiter.", place: path, world: jupiter}
+
+  - id: cassini
+    record: deep-cassini
+    display: Cassini
+    read: 2026-10-06
+    source: {name: "NASA Science, Cassini quick facts", url: "https://science.nasa.gov/mission/cassini/quick-facts/"}
+    events:
+      - {id: launch, date: "1997-10-15", precision: day, title: "Launch", text: "Cassini leaves Cape Canaveral on a Titan IVB/Centaur, carrying the Huygens probe.", place: path, world: earth}
+      - {id: venus-1, date: "1998-04-26", precision: day, title: "Past Venus", text: "The first of its two passes of Venus on the way out.", place: path, path_at: "1998-04-26T13:45:00Z", world: venus}
+      - {id: venus-2, date: "1999-06-24", precision: day, title: "Past Venus again", text: "It passes Venus a second time, 600 km from the planet.", place: path, path_at: "1999-06-24T20:30:00Z", world: venus}
+      - {id: earth-flyby, date: "1999-08-18", precision: day, title: "Back past Earth", text: "It flies past Earth, 1 171 km up at its closest.", place: path, path_at: "1999-08-18T03:28:00Z", world: earth}
+      - {id: jupiter, date: "2000-12-30T10:12:00Z", title: "Past Jupiter", text: "It passes Jupiter at about 10 million km, on its way to Saturn.", place: path, world: jupiter}
+      - {id: arrival, date: "2004-07-01", precision: day, title: "Arrival at Saturn", text: "It arrives at Saturn after a journey of nearly seven years.", place: path, path_at: "2004-07-01T02:39:00Z", world: saturn}
+      - {id: huygens-release, date: "2004-12-24", precision: day, title: "Huygens let go", text: "The Huygens probe is released towards Titan, Saturn's largest moon.", place: path, world: saturn}
+      - {id: huygens, date: "2005-01-14T11:30:00Z", title: "Huygens lands on Titan", text: "Huygens lands on Titan after a descent of 2 hours and 27 minutes, the first landing in the outer Solar System.", place: path, world: saturn, source: {name: "NASA Science, Huygens probe", url: "https://science.nasa.gov/mission/cassini/spacecraft/huygens-probe/"}}
+      - {id: earth-from-saturn, date: "2013-07-19", precision: day, title: "Earth, seen from Saturn", text: "From Saturn's shadow it photographs the planet, its rings and, in the background, Earth.", place: path, world: saturn, source: {name: "NASA Science, Cassini-Huygens", url: "https://science.nasa.gov/mission/cassini/"}}
+      - {id: grand-finale, date: "2017-04-22", precision: day, title: "The Grand Finale begins", text: "A last close pass of Titan bends its path to dive between Saturn and its rings, 22 times.", place: path, world: saturn, source: {name: "NASA Science, Cassini's Grand Finale", url: "https://science.nasa.gov/mission/cassini/grand-finale/overview/"}}
+      - {id: end, date: "2017-09-15", precision: day, title: "Into Saturn", text: "It plunges into Saturn's atmosphere, sending data for as long as its thrusters can hold the antenna on Earth.", place: path, path_at: "2017-09-15T10:30:00Z", world: saturn, source: {name: "NASA Science, Cassini's Grand Finale", url: "https://science.nasa.gov/mission/cassini/grand-finale/overview/"}}
+
+  - id: galileo
+    record: deep-galileo
+    display: Galileo
+    read: 2026-10-06
+    source: {name: "NASA Science, Galileo", url: "https://science.nasa.gov/mission/galileo/"}
+    events:
+      - {id: launch, date: "1989-10-18", precision: day, title: "Launch", text: "Galileo leaves the ground in the cargo bay of the space shuttle Atlantis.", place: none, world: earth}
+      - {id: deployed, date: "1989-10-18T23:15:00Z", title: "Out of the shuttle", text: "Atlantis lets Galileo and its upper stage go from the cargo bay, bound first for Venus.", place: path, path_at: "1989-10-19T01:29:00Z", world: earth}
+      - {id: venus, date: "1990-02-10", precision: day, title: "Past Venus", text: "It passes Venus 16 000 km up, the first of three gravity assists.", place: path, path_at: "1990-02-10T05:59:00Z", world: venus}
+      - {id: earth-1, date: "1990-12-08", precision: day, title: "Back past Earth", text: "It swings past Earth 960 km up, onto a two-year orbit of the Sun.", place: path, path_at: "1990-12-08T20:34:00Z", world: earth}
+      - {id: gaspra, date: "1991-10-29", precision: day, title: "The first asteroid visit", text: "It passes 1 601 km from Gaspra, the first spacecraft to meet an asteroid.", place: path}
+      - {id: earth-2, date: "1992-12-08", precision: day, title: "Past Earth a second time", text: "A second pass of Earth, 303 km up, sends it on towards Jupiter.", place: path, path_at: "1992-12-08T15:10:00Z", world: earth}
+      - {id: ida, date: "1993-08-28", precision: day, title: "Ida and its moon", text: "It passes the asteroid Ida and finds it has a moon, Dactyl, the first seen round an asteroid.", place: path}
+      - {id: arrival, date: "1995-12-07", precision: day, title: "Into orbit round Jupiter", text: "It enters orbit round Jupiter on the day its probe dives into the planet's atmosphere.", place: path, path_at: "1995-12-07T21:54:00Z", world: jupiter}
+      - {id: end, date: "2003-09-21", precision: day, title: "Into Jupiter", text: "After 34 orbits it is flown into Jupiter, to keep it from ever striking Europa.", place: path, world: jupiter}
+
+  # Added 2026-10-07 with Dawn's path file. Every date, time and figure is on the NSSDCA page
+  # named here, read that day. Vesta and Ceres carry no `world`: the file keeps those years
+  # relative to the Sun (registry/ephemerides.yaml says why), so the map goes to the craft.
+  - id: dawn
+    record: deep-dawn
+    display: Dawn
+    read: 2026-10-07
+    source: {name: "NASA NSSDCA, Dawn", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-043A"}
+    events:
+      - {id: launch, date: "2007-09-27T11:34:00Z", title: "Launch", text: "Dawn leaves Cape Canaveral on a Delta II, bound for the asteroid belt.", place: path, path_at: "2007-09-27T12:40:00Z", world: earth}
+      - {id: mars, date: "2009-02-18T00:28:00Z", title: "Past Mars", text: "It passes within 542 km of the surface of Mars, which bends its path outwards.", place: path, world: mars}
+      - {id: vesta, date: "2011-07-16", precision: day, title: "Into orbit round Vesta", text: "Dawn reaches the asteroid Vesta and uses its thrusters to go into orbit.", place: path}
+      - {id: leaves-vesta, date: "2012-09-05T06:26:00Z", title: "Leaving Vesta", text: "It departs Vesta for Ceres.", place: path}
+      - {id: ceres, date: "2015-03-06T12:29:00Z", title: "Into orbit round Ceres", text: "It enters its first orbit round the dwarf planet Ceres.", place: path}
+      - {id: end, date: "2018-10-31", precision: day, title: "The last contact", text: "Communications end. Dawn stays in orbit round Ceres.", place: path, path_at: "2018-10-31T00:00:00Z"}
+
+  - id: pioneer-10
+    record: deep-pioneer-10
+    display: Pioneer 10
+    read: 2026-10-06
+    source: {name: "NASA Science, Pioneer 10", url: "https://science.nasa.gov/mission/pioneer-10/"}
+    events:
+      - {id: launch, date: "1972-03-03T01:49:00Z", title: "Launch", text: "Pioneer 10 leaves Cape Canaveral on an Atlas-Centaur, the first spacecraft sent to the outer Solar System.", place: path, path_at: "1972-03-03T02:04:00Z", world: earth, source: {name: "NASA NSSDCA, Pioneer 10", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-012A"}}
+      - {id: asteroid-belt, date: "1972-07-15", precision: day, title: "Into the asteroid belt", text: "It enters the asteroid belt, and comes out the far side in February 1973.", place: path}
+      - {id: jupiter, date: "1973-12-04T02:26:00Z", title: "Closest to Jupiter", text: "It races past Jupiter at a range of 130 354 km.", place: path, world: jupiter}
+      - {id: neptune-orbit, date: "1983-06-13", precision: day, title: "Past the farthest planet", text: "It crosses the orbit of Neptune, the first human-made object to go beyond the planets.", place: path}
+      - {id: last-signal, date: "2003-01-23", precision: day, title: "The last signal", text: "Its last signal is received, sent from 12.23 billion km away.", place: path}
+
+  - id: pioneer-11
+    record: deep-pioneer-11
+    display: Pioneer 11
+    read: 2026-10-06
+    source: {name: "NASA Science, Pioneer 11", url: "https://science.nasa.gov/mission/pioneer-11/"}
+    events:
+      - {id: launch, date: "1973-04-06T02:11:00Z", title: "Launch", text: "Pioneer 11, the sister craft of Pioneer 10, leaves Earth.", place: path, path_at: "1973-04-06T02:25:00Z", world: earth}
+      - {id: jupiter, date: "1974-12-03T05:22:00Z", title: "Closest to Jupiter", text: "It passes 42 500 km over Jupiter's cloud tops, three times closer than Pioneer 10.", place: path, world: jupiter}
+      - {id: saturn, date: "1979-09-01T16:31:00Z", title: "The first craft at Saturn", text: "It passes Saturn at a range of about 20 900 km, the first spacecraft to study the planet up close.", place: path, world: saturn}
+      - {id: neptune-orbit, date: "1990-02-23", precision: day, title: "Past the orbit of Neptune", text: "It crosses the orbit of Neptune, the fourth spacecraft to do so.", place: path}
+      - {id: last-contact, date: "1995-09-30", precision: day, title: "The last contact", text: "The last contact with Pioneer 11, then 44.1 astronomical units from Earth.", place: path}
+
+  - id: webb
+    record: deep-jwst
+    display: James Webb Space Telescope
+    read: 2026-10-06
+    source: {name: "NASA Science, Webb", url: "https://science.nasa.gov/mission/webb/"}
+    events:
+      - {id: launch, date: "2021-12-25T12:20:00Z", title: "Launch", text: "Webb leaves Kourou, French Guiana, on an Ariane 5.", place: path, path_at: "2021-12-25T13:01:00Z", world: earth, source: {name: "NASA NSSDCA, James Webb Space Telescope", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2021-130A"}}
+      - {id: l2, date: "2022-01-24", precision: day, title: "Arrival at L2", text: "It arrives at L2, 1.5 million km from Earth.", place: path, world: earth}
+      - {id: first-images, date: "2022-07-12", precision: day, title: "The first pictures", text: "The first full-colour images are shown, a deep field and the edge of the Carina Nebula among them.", place: path, world: earth, source: {name: "NASA, Webb's first images", url: "https://www.nasa.gov/news-release/nasa-reveals-webb-telescopes-first-images-of-unseen-universe/"}}
+
+  # The launch is on pad 39A, a record of its own (saturn-v-lc-39a, three launch mornings): `record:` on an
+  # event names the record the event is shown on, so choosing it moves the clock and the camera there
+  # (internal #478, #550). The Saturn V mission below is the same pad.
+  - id: apollo-11
+    record: apollo-11
+    display: Apollo 11
+    read: 2026-10-06
+    source: {name: "NASA, Apollo 11 mission overview", url: "https://www.nasa.gov/history/apollo-11-mission-overview/"}
+    events:
+      - {id: launch, date: "1969-07-16T13:32:00Z", title: "Launch", text: "Armstrong, Aldrin and Collins leave Cape Kennedy on a Saturn V.", place: site, record: saturn-v-lc-39a, world: earth}
+      - {id: lunar-orbit, date: "1969-07-19T17:22:00Z", title: "Into orbit round the Moon", text: "Behind the Moon and out of contact with Earth, the engine fires to put the spacecraft in lunar orbit.", place: none, world: moon}
+      - {id: landing, date: "1969-07-20T20:17:00Z", title: "The Eagle has landed", text: "Eagle lands in the Sea of Tranquility, flown partly by hand by Armstrong.", place: site}
+      - {id: first-step, date: "1969-07-21T02:56:00Z", title: "One small step", text: "Armstrong steps onto the surface. Aldrin follows 19 minutes later.", place: site, source: {name: "NASA NSSDCA, Apollo 11 Lunar Module", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C"}}
+      - {id: liftoff, date: "1969-07-21T17:54:00Z", title: "Leaving the Moon", text: "After 21 hours and 36 minutes on the surface, Eagle's ascent stage lifts off.", place: site}
+      - {id: splashdown, date: "1969-07-24T16:50:00Z", title: "Splashdown", text: "Columbia splashes down in the Pacific after a flight of 8 days and 3 hours.", place: none, world: earth}
+
+  # Two launch vehicles on their pads (public #427, 2026-10-08). The record is the pad, a place on
+  # Earth (registry/sites.yaml), so every event is `site`: the clock moves and the camera frames
+  # the pad with NASA's model of the vehicle standing on it. Times read 2026-10-08 on the NSSDCA
+  # page each event names: "launched on December 21, 1968 at 12:51:00 UT"; "After launch on Saturn V
+  # ... on 16 July 1969 at 13:32 UT (9:32 a.m. EDT) from pad 39A"; "Apollo 17 lifted off at
+  # 05:33:00 UT ... Launch was on Saturn V SA-512 from Pad 39A ... the first nighttime launch of an
+  # Apollo". That Apollo 8 left from 39A is Wikipedia's Saturn V table, read the same day.
+  - id: saturn-v
+    record: saturn-v-lc-39a
+    display: Saturn V
+    read: 2026-10-08
+    source: {name: "NASA NSSDCA, Apollo 11 Command and Service Module", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059A"}
+    events:
+      - {id: apollo-8, date: "1968-12-21T12:51:00Z", title: "Apollo 8 leaves for the Moon", text: "The first Saturn V to carry people sends Borman, Lovell and Anders to orbit the Moon.", place: site, source: {name: "NASA NSSDCA, Apollo 8", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1968-118A"}}
+      - {id: apollo-11, date: "1969-07-16T13:32:00Z", title: "Apollo 11 leaves for the Moon", text: "Armstrong, Aldrin and Collins lift off from pad 39A. Four days later two of them land.", place: site}
+      - {id: apollo-17, date: "1972-12-07T05:33:00Z", title: "Apollo 17, at night", text: "The last crew to the Moon leaves after a delay of 2 hours 40 minutes: the first night launch of an Apollo.", place: site, source: {name: "NASA NSSDCA, Apollo 17 Command and Service Module", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A"}}
+
+  # NSSDCA gives each of these a launch date and no time ("Launch Date: 1988-09-29", "1990-04-24",
+  # "2006-12-10"), so each is `precision: day`. That all three left from 39B, and that STS-116 was
+  # the last Shuttle from it, is Wikipedia's Launch Complex 39B table, read 2026-10-08.
+  - id: space-shuttle
+    record: shuttle-lc-39b
+    display: Space Shuttle
+    read: 2026-10-08
+    source: {name: "NASA NSSDCA, STS 31", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1990-037A"}
+    events:
+      - {id: sts-26, date: "1988-09-29", precision: day, title: "Flying again", text: "Discovery launches on STS-26, the first Shuttle flight after the loss of Challenger.", place: site, source: {name: "NASA NSSDCA, STS 26", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1988-091A"}}
+      - {id: sts-31, date: "1990-04-24", precision: day, title: "Hubble goes up", text: "Discovery launches on STS-31 with the Hubble Space Telescope in its payload bay.", place: site}
+      - {id: sts-116, date: "2006-12-10", precision: day, title: "The last Shuttle from 39B", text: "Discovery launches at night on STS-116, the last Space Shuttle to leave from this pad.", place: site, source: {name: "NASA NSSDCA, STS 116", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2006-055A"}}
+
+  # Three ended missions that got a path file and NASA's mesh on 2026-10-08 (public #431). Every
+  # date is the day NSSDCA's page gives, read that day, with no time: `precision: day`. NEAR's
+  # path file begins two days after its launch, so that event is `none`; the other two launches
+  # go to the first minute their file holds. Rosetta has a record and no row here: NSSDCA's page
+  # for it returned an error that day, and JPL's header alone gives two dates, not three.
+  - id: near-shoemaker
+    record: deep-near
+    display: NEAR Shoemaker
+    read: 2026-10-08
+    source: {name: "NASA NSSDCA, NEAR Shoemaker", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1996-008A"}
+    events:
+      - {id: launch, date: "1996-02-17", precision: day, title: "Launch", text: "NEAR leaves Earth for the asteroid Eros.", place: none, world: earth}
+      - {id: eros-orbit, date: "2000-02-14", precision: day, title: "Into orbit round Eros", text: "NEAR goes into orbit round the asteroid Eros.", place: path}
+      - {id: touchdown, date: "2001-02-12", precision: day, title: "Down on Eros", text: "At the end of its mission it is set down on the surface of Eros, and goes on sending for two weeks.", place: path}
+
+  - id: stardust
+    record: deep-stardust
+    display: Stardust
+    read: 2026-10-08
+    source: {name: "NASA NSSDCA, Stardust", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1999-003A"}
+    events:
+      - {id: launch, date: "1999-02-07", precision: day, title: "Launch", text: "Stardust leaves Earth for comet Wild 2.", place: path, path_at: "1999-02-07T21:32:00Z"}
+      - {id: wild-2, date: "2004-01-02", precision: day, title: "Through the coma of Wild 2", text: "It makes its closest pass of comet Wild 2.", place: path}
+      - {id: capsule, date: "2006-01-15", precision: day, title: "The capsule lands", text: "The sample capsule comes down on Earth while the spacecraft flies on.", place: path}
+      - {id: tempel-1, date: "2011-02-15", precision: day, title: "Past Tempel 1", text: "On a second mission it passes comet Tempel 1, the comet Deep Impact struck.", place: path}
+
+  - id: deep-impact
+    record: deep-deep-impact
+    display: Deep Impact
+    read: 2026-10-08
+    source: {name: "NASA NSSDCA, Deep Impact", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2005-001A"}
+    events:
+      - {id: launch, date: "2005-01-12", precision: day, title: "Launch", text: "Deep Impact leaves Earth carrying an impactor for comet Tempel 1.", place: path, path_at: "2005-01-12T19:23:00Z"}
+      - {id: impact, date: "2005-07-04", precision: day, title: "The impact", text: "Its impactor strikes comet Tempel 1 while the spacecraft watches from a distance.", place: path}
+      - {id: hartley-2, date: "2010-11-04", precision: day, title: "Past Hartley 2", text: "On an extended mission it flies past a second comet, Hartley 2.", place: path}
+
+  - id: perseverance
+    record: jezero
+    path_record: deep-mars-2020
+    display: Perseverance
+    read: 2026-10-06
+    source: {name: "NASA NSSDCA, Mars 2020 Perseverance", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2020-052A"}
+    events:
+      - {id: launch, date: "2020-07-30T11:50:00Z", title: "Launch", text: "Perseverance leaves Cape Canaveral on an Atlas V, carrying the Ingenuity helicopter.", place: path, path_at: "2020-07-30T12:52:00Z", world: earth}
+      - {id: landing, date: "2021-02-18T20:55:00Z", title: "Landing in Jezero", text: "The rover lands in Jezero crater after a seven-month cruise. The time is when the signal reached Earth.", place: site}
+      - {id: first-flight, date: "2021-04-19T07:34:00Z", title: "The first flight", text: "Ingenuity flies for 39.1 seconds, hovering 3 metres up for 30 of them.", place: site}
+      - {id: first-core, date: "2021-09-06", precision: day, title: "The first rock core", text: "The rover seals Montdenier, its first core of rock and its second sample, in a tube.", place: site, source: {name: "NASA Science, Mars rock samples", url: "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/"}}
+
+  - id: iss
+    record: sat-25544
+    display: International Space Station
+    read: 2026-10-06
+    source: {name: "NASA, International Space Station reference", url: "https://www.nasa.gov/reference/international-space-station/"}
+    events:
+      - {id: unity, date: "1998-12-06", precision: day, title: "Two become one", text: "The shuttle Endeavour's robot arm captures Zarya and mates it to Unity: the first two modules are joined.", place: none, source: {name: "NASA, STS-88", url: "https://www.nasa.gov/mission/sts-88/"}}
+      - {id: first-crew, date: "2000-11-02", precision: day, title: "People move in", text: "Expedition 1 docks. The station has been continuously inhabited since.", place: none}
+      - {id: last-shuttle, date: "2011-07-08", precision: day, title: "The last shuttle sets off", text: "Atlantis launches on STS-135, the final Space Shuttle mission, with supplies and spare parts for the station.", place: none, source: {name: "NASA, STS-135", url: "https://www.nasa.gov/mission/sts-135/"}}
+
+  # Apophis has no spacecraft and one date everybody asks about (internal #424). Read 2026-10-07 on
+  # NASA's page: "will safely pass close to Earth on April 13, 2029", "about 20,000 miles (32,000
+  # kilometers) from our planet's surface -- closer than the distance of many satellites in
+  # geosynchronous orbit". NASA gives the day; `path_at` is the closest minute in JPL's track
+  # (registry/ephemerides.yaml asteroid-99942, solution JPL#220), as the asteroid trip's stop uses.
+  - id: apophis
+    record: asteroid-99942
+    display: Apophis
+    read: 2026-10-07
+    source: {name: "NASA Science, Apophis", url: "https://science.nasa.gov/solar-system/asteroids/apophis/"}
+    events:
+      # "discovered on June 19, 2004, by astronomers Roy Tucker, David Tholen, and Fabrizio Bernardi
+      # at the Kitt Peak National Observatory in Tucson, Arizona" (the same page, the same day).
+      - {id: discovery, date: "2004-06-19", precision: day, title: "Discovered", text: "Roy Tucker, David Tholen and Fabrizio Bernardi find it from Kitt Peak National Observatory in Arizona.", place: none}
+      - {id: earth-2029, date: "2029-04-13", precision: day, predicted: true, title: "Past Earth", text: "Apophis passes about 32 000 km above the ground, closer than many satellites in geosynchronous orbit. It will miss.", place: path, path_at: "2029-04-13T21:45:00Z", world: earth}

@@ -57,6 +57,8 @@ export const LABEL_POOL = 12;
 /** Members of the selection's train named beside it: enough to say which is which, not the line. */
 export const TRAIN_CAP = 3;
 export const DEDUPE_PX = 24;
+/** Names this layer may show in the sky from the ground, where the sky names itself (internal #393). */
+export const SKY_VIEW_CAP = 4;
 /** A name shown on the last tick ranks as though it were this share of its distance (HYSTERESIS). */
 export const HYSTERESIS = 0.7;
 /**
@@ -120,6 +122,29 @@ export function labelName(record) {
   name = launchLabel(name);
   if (name.length > MAX_NAME) name = name.slice(0, MAX_NAME - 1).trimEnd() + '…';
   return name;
+}
+
+/**
+ * The names a list of records is labelled with, none twice (internal #372: "GOES weather
+ * satellite" stood twice on the Tonight sky, 100 px apart). Records that share a display name are
+ * told apart by the catalogue's own name ("GOES 16", "GOES 18") when that differs; where even that
+ * is the same, the later one gets null and is not labelled. Pure.
+ */
+export function distinctNames(records) {
+  const names = records.map((r) => labelName(r));
+  const seen = new Map();
+  names.forEach((n, i) => seen.set(n, (seen.get(n) || []).concat(i)));
+  for (const idx of seen.values()) {
+    if (idx.length < 2) continue;
+    const used = new Set();
+    for (const i of idx) {
+      let own = launchLabel(String((records[i] && records[i].name) || '').trim());
+      if (own.length > MAX_NAME) own = own.slice(0, MAX_NAME - 1).trimEnd() + '…';
+      names[i] = own && !used.has(own) && (own === names[i] || !seen.has(own)) ? own : null;
+      if (names[i] !== null) used.add(own);
+    }
+  }
+  return names;
 }
 
 // Classes that are places on the ladder's own scale. On a ladder stage everything else -- the
@@ -319,8 +344,26 @@ export function labelParentId(record) {
   return sys === record.id ? null : sys;
 }
 
-/** How far a label keeps off the edge of the window, in CSS pixels. */
-export const LABEL_EDGE_PAD = 4;
+/** How far a label keeps off the edge of the window, in CSS pixels. 12, not 4 (internal #334): at
+ * 4 px a name's first letter sat against the glass of a phone, which read as a name cut off. */
+export const LABEL_EDGE_PAD = 12;
+
+/** Air between a model's silhouette and the name above it, in CSS pixels. */
+export const LABEL_MODEL_GAP = 6;
+
+/**
+ * How far to raise a label so it clears its own MODEL. Pure. A label hangs from 0.4 to 1.4 of its
+ * height above the anchor, which clears a dot and nothing bigger: at the ISS arrival "Terra" was
+ * printed across Terra's own model, 84 px of spacecraft under a name 20 px above its centre
+ * (internal #334). `radiusPx` is the model's reach on screen (scene/heroes.js drawnReach); with no
+ * model it is 0 and the label stays where it always was.
+ */
+export function labelLift(radiusPx, boxHeight, gap = LABEL_MODEL_GAP) {
+  const r = Number.isFinite(radiusPx) && radiusPx > 0 ? Math.min(radiusPx, 200) : 0;
+  if (!r) return 0;
+  const clear = 0.4 * (Number.isFinite(boxHeight) ? boxHeight : 0);
+  return Math.max(0, Math.round(r + gap - clear));
+}
 
 /**
  * Where to centre a label of `boxWidth` anchored at `x`, so the whole box stays on screen.
@@ -401,6 +444,21 @@ export function capKept(keep, cap = LABEL_CAP) {
 export const OCCLUDER_SHRINK = 0.998;
 
 /**
+ * A stop of a trip frames one thing, and a name from a thousand times further away than the frame
+ * is of is not part of that picture: Sedna, Eris and Vesta were printed at the edge of the Venus
+ * stop, 1P/Halley beside Mars, Voyager 2 over a city (the 195-stop walk, 2026-10-09 and 10; internal
+ * #546). `frameDist` is the camera's distance from what it looks at, `dist` the name's from the
+ * camera, both in scene units. The Sun and the Moon are the sky's own landmarks and keep their
+ * names; the selection is never asked (it is not a "notable"). Pure.
+ */
+export const FAR_FRAME_RATIO = 1000;
+export function tooFarForFrame(dist, frameDist, record) {
+  if (!(frameDist > 0) || !(dist > 0)) return false;
+  if (record && record.klass === 'world' && (record.id === 'sun' || record.id === 'moon')) return false;
+  return dist > FAR_FRAME_RATIO * frameDist;
+}
+
+/**
  * Is `pos` hidden from `eye` behind one of these spheres? Pure; `spheres` are {x, y, z, r, id} in
  * scene units, and the sphere whose `id` is `skipId` is ignored -- a world's label sits on its own
  * centre, which its own surface would otherwise always hide.
@@ -472,6 +530,8 @@ export function createLabels(ctx, host) {
   let lastAllPlanets = false;
 
   /** The drawn worlds, as spheres a label can be behind, once per update. */
+  let lastBoxes = [];
+
   function occluders() {
     const out = [];
     const worlds = ctx.worlds;
@@ -485,6 +545,10 @@ export function createLabels(ctx, host) {
   }
 
   function project(record, tMs, camera, w, h) {
+    // From the ground the sky view names the Sun, the Moon, the planets and the stars itself, where
+    // the air puts them (sky/groundsky.js); a second name at the orbital scene's place for the same
+    // thing would sit beside it, up to half a degree off on the horizon.
+    if ((record.klass === 'world' || record.klass === 'star') && ctx.skyView && ctx.skyView.ownsSky) return null;
     const p = propagate(record, tMs);
     if (!p) return null;
     // A world's DISC may sit nearer than its true position (scene/worlds.js compresses the planets
@@ -496,13 +560,19 @@ export function createLabels(ctx, host) {
     if (!pos) pos = stage.toSceneInto(p, p.frame, _v, tMs);
     if (!pos) return null;
     if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
+    // From the ground the air lifts a satellite's dot (scene/glyphs.js); its name goes with it (internal #418).
+    if (ctx.skyView && ctx.skyView.ownsSky && ctx.skyView.apparent) ctx.skyView.apparent(pos);
     const dist = pos.distanceTo(camera.position);
+    // Its model's reach on screen, when it is drawn as one (labelLift raises the name over it).
+    let r = 0;
+    const reach = ctx.heroes && typeof ctx.heroes.drawnReach === 'function' ? ctx.heroes.drawnReach(record.id) : 0;
+    if (reach > 0 && dist > 0 && camera.isPerspectiveCamera) r = (reach / dist) / Math.tan((camera.fov * Math.PI) / 360) * (h / 2);
     pos.project(camera);
     if (pos.z > 1 || pos.z < -1) return null;
     const x = (pos.x + 1) * 0.5 * w;
     const y = (1 - pos.y) * 0.5 * h;
     if (x < -20 || y < -20 || x > w + 20 || y > h + 20) return null;
-    return { x, y, dist };
+    return { x, y, dist, r };
   }
 
   /**
@@ -538,6 +608,9 @@ export function createLabels(ctx, host) {
 
     const ladder = isLadderStage(stage.worldId);
     lastAllPlanets = stage.worldId === 'sun';
+    // A trip's stop on a world's stage (not the Sun's, where every planet is the picture, and not the
+    // ladder): how far the camera stands from what it frames, for tooFarForFrame.
+    const frameDist = inTrip && !ladder && stage.worldId !== 'sun' && ctx.cameraRig && ctx.cameraRig.state ? ctx.cameraRig.state.distance : 0;
     const isGround = (r) => r.klass === 'world' && r.id === stage.worldId;
     // The tracked object's tag (ui/hud.js, spec 0047) names the selection beside its brackets; a
     // label as well would be the same name twice, 30 px apart.
@@ -581,6 +654,7 @@ export function createLabels(ctx, host) {
         if (isGround(r)) continue; // the ground has no label
         if (!mayNameHere(r, layer)) continue; // a dead stage on a layer about light, not derelicts
         const pr = project(r, tMs, camera, w, h);
+        if (pr && tooFarForFrame(pr.dist, frameDist, r)) continue;
         // A moon says which world it goes round, so chooseLabels can rank it behind that world.
         if (pr) { out.push({ record: r, kind: 'notable', parentId: labelParentId(r), colour: dotColour(r, layer), ...pr }); seen.add(r.id); }
       }
@@ -610,15 +684,26 @@ export function createLabels(ctx, host) {
    * being centred on nothing.
    */
   function update(tMs) {
-    if (host.hidden) return;
+    if (host.hidden) { lastBoxes = []; return; }
     const inTrip = document.documentElement.classList.contains('sr-trip-mode');
-    const cands = candidatesNow(tMs);
-    const chosen = chooseLabels(cands, {
+    // While constellation figures are up they name their own stars (scene/figures3d.js), and a
+    // second name beside one of them would be the wall of text the cap exists to prevent.
+    const cands = ctx.figures && ctx.figures.namesTheSky() ? [] : candidatesNow(tMs);
+    let chosen = chooseLabels(cands, {
       cap: LABEL_POOL,
       incumbents: shownIds,
       allPlanets: lastAllPlanets,
       worldsFirst: inTrip && stage.worldId === 'sun',
     });
+    // FROM THE GROUND THE SKY NAMES ITSELF (sky/groundsky.js: figures, stars, planets, nebulae), and
+    // these names were a second layer that knew nothing of that one: "GRACE-FO" sat on "SERPENS
+    // CAUDA" (internal #393). There this layer names only what was asked for, the selection and its
+    // train, and the crewed stations; the ground sky reads boxes() and keeps its own names clear.
+    if (ctx.skyView && ctx.skyView.ownsSky) chosen = chosen.filter((c) => labelTier(c) <= TIER.station).slice(0, SKY_VIEW_CAP);
+    // Two things with one name read as a bug (internal #372): each says what tells it apart, or the second goes.
+    const names = distinctNames(chosen.map((c) => c.record));
+    chosen = chosen.filter((c, i) => names[i] !== null);
+    const shown = names.filter((n) => n !== null);
     // Pass one: contents. Pass two: measure and place. Reading offsetWidth invalidates layout, so
     // interleaving it with the writes would re-layout the whole list once per label.
     for (let i = 0; i < pool.length; i++) {
@@ -626,7 +711,7 @@ export function createLabels(ctx, host) {
       const c = chosen[i];
       if (!c) { if (!slot.node.hidden) slot.node.hidden = true; continue; }
       slot.node.hidden = false;
-      const name = labelName(c.record);
+      const name = shown[i];
       if (slot.text.textContent !== name) slot.text.textContent = name;
       const klass = c.record.klass || 'satellite';
       if (slot.klass !== klass) {
@@ -654,9 +739,11 @@ export function createLabels(ctx, host) {
       const bw = pool[i].node.offsetWidth;
       const bh = pool[i].node.offsetHeight;
       const x = clampLabelX(c.x, bw, w);
-      placed.push({ x, y: c.y, left: x - bw / 2, right: x + bw / 2, top: c.y - 1.4 * bh, bottom: c.y - 0.4 * bh });
+      const y = c.y - labelLift(c.r, bh);
+      placed.push({ x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh });
     }
     const keep = capKept(keepClearOf(placed, LABEL_GAP_PX, panelRects()), LABEL_CAP);
+    lastBoxes = placed.filter((_, i) => keep[i]);
     const now = new Set();
     for (let i = 0; i < placed.length; i++) {
       const slot = pool[i];
@@ -718,5 +805,5 @@ export function createLabels(ctx, host) {
     }
   }
 
-  return { update, destroy, emphasise, clearEmphasis, subject: () => subjectId };
+  return { update, destroy, emphasise, clearEmphasis, subject: () => subjectId, boxes: () => lastBoxes };
 }

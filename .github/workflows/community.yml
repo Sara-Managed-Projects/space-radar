@@ -1,0 +1,62 @@
+name: community
+
+# Labels a pull request by the paths it touches, and welcomes a person's first issue and first
+# pull request with the two things a newcomer most needs to hear: where the ten-minute guide is,
+# and that their first CI run waits for a maintainer (one first pull request was closed by its
+# author on 2026-10-09 while it waited, with nobody having said so).
+#
+# WHY pull_request_target AND NOT pull_request. A workflow started by `pull_request` from a fork
+# gets a read-only token, so it can neither label nor comment, and a first-time contributor's run
+# of it waits for approval, which is the very wait the welcome is there to explain.
+# `pull_request_target` runs this file as it is on main, with a token that may write.
+# That is safe here only because of what the two jobs do NOT do:
+#   - there is no checkout step, and nothing from the fork is fetched, built or run;
+#   - actions/labeler reads the list of changed file NAMES through the API and .github/labeler.yml
+#     from the base branch; actions/first-interaction reads the author's history through the API;
+#   - no value from the pull request (title, body, branch name) is put into a shell command;
+#   - the token is scoped per job to labels and comments. It cannot push, merge or read a secret,
+#     and this repository's workflows use none besides GITHUB_TOKEN.
+# tests/test_contributor_docs.py refuses a checkout or a `run:` step in this file.
+#
+# Both actions are GitHub's own and are pinned to a commit, so a moved tag cannot change what runs.
+# There is no stale bot: an issue that is still true stays open, and a quiet pull request gets a
+# person's comment (docs/REVIEWING.md), not a timer.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  issues:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  label:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        with:
+          sync-labels: false
+
+  welcome:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
+        with:
+          issue_message: |
+            Thank you for your first issue here. A maintainer replies within 48 hours.
+
+            If you would like to fix it yourself, you are welcome to, and you do not need to ask first: [docs/FIRST_PR.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/FIRST_PR.md) takes about ten minutes, and [docs/CONTRIBUTE_WITHOUT_CODE.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/CONTRIBUTE_WITHOUT_CODE.md) lists the ways in that need no code.
+          pr_message: |
+            Thank you for your first pull request here.
+
+            **Your first CI run waits for a maintainer.** GitHub does not run workflows from a first-time contributor's fork until a maintainer approves them, so you will see "workflows awaiting approval" for a while. That is normal, it says nothing about your change, and there is nothing you need to do. Please do not close the pull request while it waits. We aim to approve within a day.
+
+            While you wait: `scripts/check.sh` runs the checks a first pull request meets, and [docs/FIRST_PR.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/FIRST_PR.md) lists the common red checks and their fixes. If you changed a trip card's words, the narration check will be red: leave it, a maintainer renders the voice. When every check is green and this is not a draft, it merges on its own, and you are named in the release notes and in CONTRIBUTORS.md.

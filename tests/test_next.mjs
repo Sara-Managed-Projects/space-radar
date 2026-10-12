@@ -3,6 +3,34 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
+
+// THE ZONE IS PINNED (internal #378). A shower's "that night" is the visitor's own night, so the
+// rows below are local on purpose: the Moon at 23:00 on 21 October 2026 is 80 % lit in UTC, 79 % in
+// Jerusalem, 75 % on Kiritimati and 84 % in Pago Pago. This test once asked for one figure and read
+// the machine's zone: green in CI (UTC), red on a laptop the day its zone changed. Now the file runs
+// itself once per zone below, each in its own process (copy/en.js fixes its formatters' zone when it
+// is imported, so the zone cannot be changed half way), and each asks for that zone's exact figure.
+// The machine's own zone and today's date are read nowhere.
+const ZONES = {
+  'UTC': { orionidsMoon: 80 },
+  'Asia/Jerusalem': { orionidsMoon: 79 },
+  'Pacific/Kiritimati': { orionidsMoon: 75 },   // UTC+14, the first night on Earth
+  'Pacific/Pago_Pago': { orionidsMoon: 84 },    // UTC-11, nearly the last
+  'America/Los_Angeles': { orionidsMoon: 82 },
+};
+const ZONE = process.env.SR_NEXT_ZONE;
+if (!ZONE) {
+  const { spawnSync } = await import('node:child_process');
+  const bad = [];
+  for (const zone of Object.keys(ZONES)) {
+    const r = spawnSync(process.execPath, [fileURLToPath(import.meta.url)], { env: { ...process.env, TZ: zone, SR_NEXT_ZONE: zone }, encoding: 'utf8' });
+    if (r.status !== 0) bad.push(`under TZ=${zone}:\n${(r.stderr || r.stdout || '').trim()}`);
+  }
+  if (bad.length) { console.error(bad.join('\n')); process.exit(1); }
+  console.log(`next ok in ${Object.keys(ZONES).length} time zones (${Object.keys(ZONES).join(', ')}): launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates; a shower's Moon is that zone's own night`);
+  process.exit(0);
+}
+if (Intl.DateTimeFormat().resolvedOptions().timeZone !== ZONE) { console.error(`next FAILED: asked for ${ZONE}, running in ${Intl.DateTimeFormat().resolvedOptions().timeZone}`); process.exit(1); }
 const { buildNextItems, rowText, whenText, NEXT_CAP, balance, PASS_ROWS } = await import(join(JS, 'ui/next.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -16,6 +44,18 @@ const comet = (id, dt) => ({ id, name: id, layer: 'comets', klass: 'comet', meta
 const items = buildNextItems([launch('Falcon 9', 5 * H), neo('2026 AB', 2 * H, 3.2), comet('C/2026 X', 10 * D), launch('Past', -2 * H), launch('Far', 60 * D)], now);
 check(items.map((i) => i.record.id).join(',') === '2026 AB,Falcon 9,C/2026 X', `nearest first, past and beyond-horizon dropped (${items.map((i) => i.record.id)})`);
 check(items[0].kind === 'approach' && items[1].kind === 'launch' && items[2].kind === 'perihelion', 'kinds are recognised');
+{
+  // Public #313: the live parser's own field names carry the distance, and the size is said.
+  const live = { id: 'neo-x', name: '2026 SA8', layer: 'asteroids', klass: 'asteroid', meta: { closeApproachMs: now + 3 * 3600e3, closeApproachLunarDistances: 0.99, closeApproachDistanceKm: 380000, absoluteMagnitude: 28.634, diameterKm: null } };
+  const [it] = buildNextItems([live], now);
+  check(it && Math.abs(it.ld - 0.99) < 1e-9, `a close approach parsed from JPL's table carries its distance (${it && it.ld})`);
+  const line = rowText(it, now);
+  check(/the Moon’s distance away\. About 5 to 11 m across, judged from its brightness$/.test(line), `and its size as the range its brightness allows: ${line}`);
+  const { sizeText, sizeShort, rowParts } = await import(join(JS, 'ui/next.js'));
+  check(rowParts(it, now).detail === 'Passes Earth in 3 hours · about 5 to 11 m' && rowParts(it, now).value === '0.990× Moon', `the row as drawn says when, how big and how close (${rowParts(it, now).detail} / ${rowParts(it, now).value})`);
+  check(sizeShort({ loM: 340, hiM: 340, measured: true }) === '340 m' && sizeShort({ loM: 700, hiM: 1560, measured: false }) === 'about 0.7 to 1.6 km' && sizeShort(null) === null, 'the short size: measured, a range across a kilometre in kilometres, or nothing');
+  check(sizeText({ loM: 340, hiM: 340, measured: true }) === 'It is 340 m across' && sizeText({ loM: 700, hiM: 1560, measured: false }) === 'About 700 m to 1.6 km across, judged from its brightness' && sizeText(null) === null, 'a measured size is stated; a range that crosses a kilometre says both units; no number, no line');
+}
 check(rowText(items[0], now).startsWith('2026 AB passes Earth in 2 hours, 3.2') && rowText(items[0], now).endsWith('the Moon’s distance away'), `an approach row reads right: ${rowText(items[0], now)}`);
 check(rowText(items[1], now) === 'Falcon 9 lifts off in 5 hours', `a launch row reads right: ${rowText(items[1], now)}`);
 check(rowText({ kind: 'launch', record: { name: 'Vague' }, tMs: now + 3 * D, precision: 'Month' }, now).includes('not fixed yet'), 'a launch with a rough date says so');
@@ -67,7 +107,9 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(/The Orionids meteor shower peaks around .*21 Oct/.test(text) && /up to 20 an hour/.test(text) && !/\d\d:\d\d/.test(text), `a shower row gives a date, never a time: "${text}"`);
   // The Moon that night (Astronomy Engine): 2026's Orionids fall under a bright Moon, the Perseids
   // under a new one. The fraction is the same wherever you stand, so it needs no place.
-  check(/with the Moon 8\d% lit that night/.test(text), `the Orionids row says the Moon will be bright: "${text}"`);
+  // Exact, for the zone this process was started in (see ZONES above).
+  const wantMoon = ZONES[ZONE].orionidsMoon;
+  check(new RegExp(`with the Moon ${wantMoon}% lit that night`).test(text), `in ${ZONE} the Orionids row says the Moon is ${wantMoon}% lit: "${text}"`);
   const pers = showerItems(new Date(2026, 7, 1).getTime(), 30 * D, SHOWERS).find((x) => x.showerId === 'perseids');
   check(pers && /the Moon is nearly new/.test(rt(pers, new Date(2026, 7, 1).getTime())), `and the 2026 Perseids row says the Moon is out of the way: "${pers && rt(pers, new Date(2026, 7, 1).getTime())}"`);
   const onTheDay = showerItems(new Date(2026, 11, 14, 23, 0).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
@@ -92,7 +134,7 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(urs && urs.altDeg < 0, `the Ursids' radiant (dec +76) never rises from Sydney (${urs && urs.altDeg.toFixed(0)} deg)`);
   const withPlace = rt(showerItems(sept22, 30 * D, SHOWERS, london)[0], sept22);
   check(/From where you are its radiant is highest around \d\d:\d\d/.test(withPlace), `with a place the row says when the radiant is highest: "${withPlace}"`);
-  if (savedTz === undefined) delete process.env.TZ; else process.env.TZ = savedTz;
+  process.env.TZ = savedTz;
   const withShowers = buildNextItems([], sept22, { showers: SHOWERS });
   check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
 }
@@ -134,6 +176,51 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(ecl.every((r) => /to the minute/.test(classText(r))), 'and the line under each says it is worked out to the minute');
   check(rows.filter((r) => r.kind === 'launch').length === NEXT_CAP - 2, 'the launches fill the rest');
   check(buildNextItems([], sept22).length === 0, 'without eclipses asked for, an empty list stays empty (the cases above)');
+}
+
+// --- "Just happened": the last seven days (spec 0050 requirements 5 and 6, internal #134) -------
+{
+  const { readFileSync } = await import('node:fs');
+  const J = await import(join(JS, 'ui/justhappened.js'));
+  const { decayedRows } = await import(join(JS, 'data/satcat.js'));
+  const body = JSON.parse(readFileSync(join(JS, '../../tests/fixtures/harvest/ll2_previous.json'), 'utf8'));
+  const launches = J.parsePrevious(body);
+  check(launches.length === 6 && launches[0].name === 'Nuri | NeonSat-2 to 6' && launches[0].outcome === 'reached', `LL2's previous launches parse (${launches.length}; ${launches[0] && launches[0].name})`);
+  check(launches[0].padId && /^pad-ll2-\d+$/.test(launches[0].padId) && /Naro Space Center/.test(launches[0].place), `a launch knows its pad and its place (${launches[0].padId}; ${launches[0].place})`);
+  const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
+  const DAYMS = 864e5;
+  const decays = [
+    { id: 1, name: 'COSMOS 1', kind: 'dead', decayMs: NOW - 2 * DAYMS },
+    { id: 2, name: 'CZ-2C R/B', kind: 'rocket', decayMs: NOW - 5 * DAYMS },
+    { id: 3, name: 'FENGYUN 1C DEB', kind: 'debris', decayMs: NOW - 1 * DAYMS },
+    { id: 4, name: 'FENGYUN 1C DEB', kind: 'debris', decayMs: NOW - 3 * DAYMS },
+    { id: 5, name: 'OLD ONE', kind: 'working', decayMs: NOW - 8 * DAYMS },
+    { id: 6, name: 'TOMORROW', kind: 'dead', decayMs: NOW + DAYMS },
+  ];
+  const built = J.buildJustHappened(decays, launches, NOW);
+  const inWindow = launches.filter((l) => l.netMs >= NOW - 7 * DAYMS && l.netMs <= NOW).length;
+  check(inWindow === 4, `four of the fixture's six launches are inside seven days of 8 October (${inWindow})`);
+  check(built.items.length === inWindow + 2, `the window: ${inWindow} launches and two whole things that came down, nothing older than seven days or after now (${built.items.length})`);
+  check(built.items.every((it, i) => i === 0 || it.tMs <= built.items[i - 1].tMs), 'newest first, launches and re-entries together');
+  check(built.debrisCount === 2 && !built.items.some((it) => it.decay && it.decay.kind === 'debris'), `debris is counted, not listed (${built.debrisCount})`);
+  check(J.buildJustHappened(null, null, NOW).items.length === 0, 'no sources, an empty list, no throw');
+  const first = J.justRow(built.items[0], NOW);
+  check(first.title === 'NeonSat-2 to 6' && first.detail === 'Nuri: reached orbit, from Naro Space Center, South Korea', `a launch row: the payload, then the rocket and the outcome first (${first.title}: ${first.detail})`);
+  check(/ago$/.test(first.value), `and how long ago (${first.value})`);
+  const down = J.justRow(built.items.find((it) => it.kind === 'decay'), NOW);
+  check(down.detail === 'Came down on 6 October 2026 (catalogue decay date)', `the words for the past name the day and where the date is from (${down.detail})`);
+  const failed = J.justRow({ kind: 'launch', tMs: NOW, launch: { name: 'X', netMs: NOW - 3600e3, outcome: 'failed', place: 'Somewhere' } }, NOW);
+  check(/did not reach orbit/.test(failed.detail), `a failure is listed in plain words, not hidden (${failed.detail})`);
+  const odd = J.justRow({ kind: 'launch', tMs: NOW, launch: { name: 'X', netMs: NOW - 3600e3, outcome: null, statusName: 'Launch was a Partial Success', place: '' } }, NOW);
+  check(odd.detail === 'Launch was a Partial Success', 'a status this page has no words for is the publisher\'s own');
+  const all = JSON.stringify(Object.values((await import(join(JS, 'copy/en.js'))).COPY.happened7));
+  check(!/crash|burned up/i.test(all), 'never "crashed" or "burned up over"');
+  // The catalogue's own decays feed it: the fixture SATCAT has decayed rows.
+  const csv = readFileSync(join(JS, '../../tests/fixtures/harvest/celestrak_satcat.csv'), 'utf8');
+  check(Array.isArray(decayedRows(csv, 0)), 'data/satcat.js decayedRows gives the rows it lists');
+  // Zero cost at boot: the list imports the module only inside the press.
+  const nextSrc = readFileSync(join(JS, 'ui/next.js'), 'utf8');
+  check(/import\('\.\/justhappened\.js'\)/.test(nextSrc) && !/^import .*justhappened/m.test(nextSrc), 'ui/next.js fetches ui/justhappened.js on the press, never at boot');
 }
 
 if (problems.length) { console.error('next FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

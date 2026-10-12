@@ -63,7 +63,7 @@ export const LAYER_ROWS = [
     "group": "beyond",
     "enabled": true,
     "moments": {
-      "wonder": true,
+      "wonder": false,
       "now": false,
       "next": false
     },
@@ -221,7 +221,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "just-launched",
-    "display": "Launched in the last two weeks",
+    "display": "Just launched",
     "group": "around-earth",
     "enabled": true,
     "moments": {
@@ -300,6 +300,26 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "debris-field",
+    "display": "All tracked debris",
+    "group": "around-earth",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "celestrak-satcat",
+    "sources": null,
+    "propagator": "kepler",
+    "frame": "earth-inertial",
+    "card": "debris",
+    "glyph": "debris",
+    "colour": "debris",
+    "maxItems": 20000,
+    "train": null
+  },
+  {
     "id": "launches",
     "display": "Rockets on their way up",
     "group": "around-earth",
@@ -341,7 +361,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "far-bodies",
-    "display": "Dwarf planets and far travellers",
+    "display": "Dwarf planets, far travellers",
     "group": "solar-system",
     "enabled": true,
     "moments": {
@@ -497,6 +517,46 @@ export const LAYER_ROWS = [
     "glyph": "storm",
     "colour": "aurora",
     "maxItems": 1,
+    "train": null
+  },
+  {
+    "id": "lightning",
+    "display": "Lightning",
+    "group": "earth",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": true,
+      "next": false
+    },
+    "source": "weather",
+    "sources": null,
+    "propagator": "static",
+    "frame": "earth-fixed",
+    "card": "world",
+    "glyph": "storm",
+    "colour": "lightning",
+    "maxItems": 1,
+    "train": null
+  },
+  {
+    "id": "earth-events",
+    "display": "Fires, volcanoes and icebergs",
+    "group": "earth",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "weather",
+    "sources": null,
+    "propagator": "fixed",
+    "frame": "earth-fixed",
+    "card": "earthevent",
+    "glyph": "site",
+    "colour": "site",
+    "maxItems": 200,
     "train": null
   },
   {

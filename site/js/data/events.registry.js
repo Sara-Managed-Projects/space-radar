@@ -49,6 +49,22 @@ export const EVENT_TYPES = [
     "source": "computed"
   },
   {
+    "id": "solstice",
+    "display": "Solstice",
+    "prominence": 3,
+    "locationDependent": false,
+    "enabled": true,
+    "source": "computed"
+  },
+  {
+    "id": "equinox",
+    "display": "Equinox",
+    "prominence": 3,
+    "locationDependent": false,
+    "enabled": true,
+    "source": "computed"
+  },
+  {
     "id": "station-pass",
     "display": "The station passes over you",
     "prominence": 2,

@@ -19,11 +19,15 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as frames from '../propagate/frames.js';
 import * as stageMod from './stage.js';
 import { PALETTE } from './glyphatlas.js';
-import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stretchUniforms, writeStretch } from './stretch.js';
+import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
+import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 const DEG = Math.PI / 180;
 const DEFAULT_RADIUS = 1e5; // scene units; update(camera) clamps this under camera.far
 
+// The panorama's tint at the Camera exposure: what the sky has always been drawn at. setExposure()
+// scales it (scene/exposure.js): dimmer for the eye, lifted for a deep exposure.
+const MILKY_WAY_TINT = [0.42, 0.42, 0.46];
 const RENDER_ORDER_MILKYWAY = -3;
 const RENDER_ORDER_SKY = -2;
 
@@ -57,6 +61,22 @@ export function kelvinToRgb(kelvin) {
   }
   const clamp = (v) => Math.min(255, Math.max(0, v)) / 255;
   const out = [clamp(r), clamp(g), clamp(b)];
+  const max = Math.max(out[0], out[1], out[2]) || 1;
+  return [out[0] / max, out[1] / max, out[2] / max];
+}
+
+/**
+ * A STAR'S COLOUR ON THE SCREEN (public #271). The black-body colour above is right and, as a
+ * 4 px light on a dark screen, reads as white: Betelgeuse and Rigel looked the same. Its chroma is
+ * stretched by STAR_CHROMA about the star's own mean, the way a long exposure shows colour the
+ * dark-adapted eye loses. The hue and the order are the measured ones; the strength is a display
+ * choice, and the Sun (B-V 0.65) stays the cream it was. Pure.
+ */
+export const STAR_CHROMA = 2.0;
+export function starTint(bv, chroma = STAR_CHROMA) {
+  const rgb = kelvinToRgb(bvToKelvin(Number.isFinite(bv) ? bv : 0.65));
+  const mean = (rgb[0] + rgb[1] + rgb[2]) / 3;
+  const out = rgb.map((v) => Math.min(1, Math.max(0, mean + (v - mean) * chroma)));
   const max = Math.max(out[0], out[1], out[2]) || 1;
   return [out[0] / max, out[1] / max, out[2] / max];
 }
@@ -116,10 +136,18 @@ function skyQuaternion(out = new THREE.Quaternion()) {
     };
     // stage.js returns null for a frame it cannot express. earth-inertial always converts, but
     // asserting that here rather than assuming it is the difference between a wrong sky and none.
+    // A MILLION KM IS NOTHING ON A RUNG OF THE LADDER (2026-10-05). There one unit is a
+    // light-year or more, the three arms below came out 1e-7 units long, the length check under
+    // them took that for "no stage", and the sky sphere was drawn with no rotation at all:
+    // measured on the stellar rung, Orion a quarter of the sky from where its 3D stars are. Nobody
+    // saw it, because registry/lod.yaml has faded the sphere out by 5 000 au and no camera had
+    // stood nearer on a rung. So the arm is as long as the stage's own unit asks for; on a world's
+    // stage (a unit of a thousand km or less) it is the million km it always was.
+    const big = BIG_KM * Math.max(1, (Number(st.unitKm) || 1) / 1000);
     const oKm = st.toScene({ x: 0, y: 0, z: 0 }, EQUATORIAL);
-    const axKm = st.toScene(toTeme({ x: BIG_KM, y: 0, z: 0 }), EQUATORIAL);
-    const ayKm = st.toScene(toTeme({ x: 0, y: BIG_KM, z: 0 }), EQUATORIAL);
-    const azKm = st.toScene(toTeme({ x: 0, y: 0, z: BIG_KM }), EQUATORIAL);
+    const axKm = st.toScene(toTeme({ x: big, y: 0, z: 0 }), EQUATORIAL);
+    const ayKm = st.toScene(toTeme({ x: 0, y: big, z: 0 }), EQUATORIAL);
+    const azKm = st.toScene(toTeme({ x: 0, y: 0, z: big }), EQUATORIAL);
     if (!oKm || !axKm || !ayKm || !azKm) return out.identity();
     const o = new THREE.Vector3().copy(oKm);
     const ax = new THREE.Vector3().copy(axKm).sub(o);
@@ -134,23 +162,58 @@ function skyQuaternion(out = new THREE.Quaternion()) {
   }
 }
 
+// ------------------------------------------------------------------------ glare round the Sun
+
+/**
+ * STARS FADE NEAR THE SUN (public #412, internal #404, 2026-10-08). No camera that can show the
+ * Sun's disc shows a star beside it: the disc's light, spread by the optics, drowns them. So the
+ * stars are gone within `inner` of the Sun's centre and come back to full by `outer`, both set
+ * by how big the disc is in the sky (its angular radius, `alphaRad`): gone to twice its radius
+ * and never closer than a degree and a half, back by six radii and never before six degrees.
+ * From the Earth that is nothing inside 1.5 degrees; from where the Sun's disc fills a quarter of
+ * the view, nothing in the same field as the disc. ILLUSTRATIVE: the numbers are a camera's
+ * habit, chosen, and the Sun's card says the stars near it are hidden by its glare.
+ * @returns {{innerRad: number, outerRad: number}}
+ */
+export function sunGlare(alphaRad) {
+  const a = Math.max(0, Math.min(Math.PI / 2, Number(alphaRad) || 0));
+  const DEG = Math.PI / 180;
+  return { innerRad: Math.min(Math.PI, Math.max(2 * a, 1.5 * DEG)), outerRad: Math.min(Math.PI, Math.max(6 * a, 6 * DEG)) };
+}
+
 // --------------------------------------------------------------------------------- shaders
 
 const STAR_VERT = /* glsl */ `
+${HOLES_GLSL_HEAD}
 attribute float aSize;
 attribute float aAlpha;
 attribute vec3 aColour;
 uniform float uPixelRatio;
 uniform float uGain;
+uniform float uScale;
+uniform float uGlow;
+uniform vec3 uSunView;    // the Sun's direction from the camera, in view space; zero: no glare
+uniform vec2 uSunGlare;   // cosines of sunGlare()'s inner and outer angles
 varying vec3 vColour;
 varying float vAlpha;
+varying float vCore;
+varying float vGlow;
 ${STRETCH_VERT_HEAD}
 void main() {
   vColour = aColour;
   vAlpha = aAlpha * uGain;
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  // Stars fade near the Sun (sunGlare() above): gone inside the inner angle, whole past the outer.
+  vAlpha *= 1.0 - smoothstep( uSunGlare.y, uSunGlare.x, dot( normalize( mv.xyz ), uSunView ) );
+  // Where a photograph is drawn our stars step aside (scene/starholes.js); no hole, no change.
+  if ( uHoleCount > 0 ) vAlpha *= starHole( normalize( mv.xyz ) );
   gl_Position = projectionMatrix * mv;
-  float sizePx = aSize * uPixelRatio;
+  // The naked-eye stars the constellations are drawn from (magnitude 2.7 and brighter: aSize over
+  // 2.3; magnitude 1.5 until 2026-10-08, public #271) get a soft glow round a core that stays its
+  // size (scene/stretch.js, A STAR'S LIGHT): up to five times the sprite at Sirius.
+  vGlow = uGlow * smoothstep( 2.3, 6.0, aSize );
+  float sizePx = aSize * ( 1.0 + 4.0 * vGlow ) * uPixelRatio * uScale;
+  vCore = 1.0 / ( 1.0 + 4.0 * vGlow );
   // Spec 0034: the same stretch as scene/stars3d.js; at uStretch == 0, gl_PointSize = sizePx.
 ${STRETCH_VERT}
 }
@@ -159,13 +222,18 @@ ${STRETCH_VERT}
 const STAR_FRAG = /* glsl */ `
 varying vec3 vColour;
 varying float vAlpha;
+varying float vCore;
+varying float vGlow;
 ${STRETCH_FRAG_HEAD}
 #include <common>
+${STAR_LIGHT_GLSL}
 void main() {
 ${STRETCH_FRAG}
-  float a = 1.0 - smoothstep( 0.12, 0.5, d );
-  if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha * taper );
+  vec2 light = starLight( d, vCore, vGlow );
+  float a = light.x + light.y;
+  if ( a <= 0.003 ) discard;
+  // The peak of a bright star goes to white, as any light too bright for its colour does; the glow keeps the colour.
+  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.4 * light.x * vGlow ), a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -219,7 +287,7 @@ function asTexture(src) {
  *   Each source may be a URL string, already-loaded data (ArrayBuffer / parsed JSON /
  *   THREE.Texture), or omitted to use the bundled default path. Loading is fault-tolerant: each
  *   piece appears when it lands and a failure leaves the others drawing.
- * @returns {{setVisible, update, dispose, names, group, ready, setPixelRatio, setFrame, setGain}}
+ * @returns {{setVisible, update, dispose, names, group, ready, setPixelRatio, setFrame, setGain, setExposure}}
  */
 export function createStarfield(scene, opts = {}) {
   const here = import.meta.url;
@@ -276,6 +344,7 @@ export function createStarfield(scene, opts = {}) {
   const state = { stars: null, lines: null, milkyway: null, errors: [] };
   let gain = 1; // setGain's own value; setSkyOpacity multiplies it rather than overwriting it
   let skyOpacity = 1;
+  let milkyWayExposure = 1; // setExposure's factor, kept so a panorama that lands later wears it
   let detailLow = false; // the frame-rate latch hides the picture and the lines, never the stars
   // The figures are a way to read the sky from the ground. From orbit they crossed the whole Earth
   // view like scratches on the glass (#272), so they are drawn only while sky/skyview.js is up.
@@ -284,10 +353,20 @@ export function createStarfield(scene, opts = {}) {
     opts.pixelRatio || (typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1);
   let dprLocked = false; // true once setPixelRatio() is called by hand
   const starUniforms = {
+    ...holeUniforms(),
     uPixelRatio: { value: pixelRatio },
     uGain: { value: 1 },
+    // How large a star's point is drawn, as a factor (setPointScale). 1 everywhere but while
+    // constellation figures are up (scene/figures3d.js), where the stars are the subject.
+    uScale: { value: 1 },
+    // The glow round the brightest stars (scene/stretch.js, A STAR'S LIGHT); 0 under the frame latch.
+    uGlow: { value: 1 },
+    uSunView: { value: new THREE.Vector3(0, 0, 0) },
+    uSunGlare: { value: new THREE.Vector2(2, 3) },   // cosines no direction reaches: no fade
     ...stretchUniforms(),
   };
+  const sunWorld = new THREE.Vector3();
+  let sunAlpha = -1;
 
   // ---- Milky Way ----------------------------------------------------------------------------
   function buildMilkyWay(texture) {
@@ -325,7 +404,7 @@ export function createStarfield(scene, opts = {}) {
       blendSrcAlpha: THREE.OneFactor,
       blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
       opacity: 1,
-      color: new THREE.Color(0.42, 0.42, 0.46), // a whisper, not a wallpaper
+      color: new THREE.Color(MILKY_WAY_TINT[0], MILKY_WAY_TINT[1], MILKY_WAY_TINT[2]).multiplyScalar(milkyWayExposure), // a whisper, not a wallpaper
     });
     const m = new THREE.Mesh(geo, mat);
     m.name = 'milkyway';
@@ -375,7 +454,7 @@ export function createStarfield(scene, opts = {}) {
       pos[i * 3] = _v.x;
       pos[i * 3 + 1] = _v.y;
       pos[i * 3 + 2] = _v.z;
-      const rgb = kelvinToRgb(bvToKelvin(bv));
+      const rgb = starTint(bv);
       c.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
@@ -525,6 +604,24 @@ export function createStarfield(scene, opts = {}) {
      */
     update(camera) {
       syncToCamera(camera && camera.isCamera ? camera : null, null);
+      // The Sun's direction in the camera's own axes, for the glare (setSun below).
+      if (sunAlpha >= 0 && camera && camera.isCamera) {
+        const v = starUniforms.uSunView.value.copy(sunWorld).sub(camera.position);
+        if (v.lengthSq() > 0) v.transformDirection(camera.matrixWorldInverse); else v.set(0, 0, 0);
+      }
+    },
+    /**
+     * Where the Sun is and how big, for the stars' fade near it (sunGlare). `position`: its place
+     * in the scene; `radius`: its drawn radius, same units. Call before update(camera). null: no fade.
+     */
+    setSun(position, radius, camera) {
+      if (!position || !(radius > 0) || !camera) { sunAlpha = -1; starUniforms.uSunView.value.set(0, 0, 0); starUniforms.uSunGlare.value.set(2, 3); return null; }
+      sunWorld.copy(position);
+      const d = sunWorld.distanceTo(camera.position);
+      sunAlpha = d > radius ? Math.asin(radius / d) : Math.PI / 2;
+      const g = sunGlare(sunAlpha);
+      starUniforms.uSunGlare.value.set(Math.cos(g.innerRad), Math.cos(g.outerRad));
+      return g;
     },
     /**
      * Device pixel ratio, so a star is the same apparent size on a retina screen. Not normally
@@ -569,9 +666,20 @@ export function createStarfield(scene, opts = {}) {
       mw.material.map = tex || mw.userData.bootMap;
       return old;
     },
+    /**
+     * Spec 0067: how long the shutter is open, as a factor on the Milky Way's tint (1 = Camera, the
+     * sky as it always was). The stars are left alone: they are the measured layer, and a sixth-
+     * magnitude limit is already what an eye sees.
+     */
+    setExposure(k) {
+      milkyWayExposure = Math.min(2.2, Math.max(0, Number(k) || 0));
+      const mw = state.milkyway;
+      if (mw && mw.material) mw.material.color.setRGB(MILKY_WAY_TINT[0], MILKY_WAY_TINT[1], MILKY_WAY_TINT[2]).multiplyScalar(milkyWayExposure);
+    },
     /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
     setDetail(level) {
       detailLow = level === 'low';
+      starUniforms.uGlow.value = detailLow ? 0 : 1;
       this.setSkyOpacity(skyOpacity);
     },
     /**
@@ -585,6 +693,18 @@ export function createStarfield(scene, opts = {}) {
     stretch() {
       return starUniforms.uStretch.value;
     },
+    /**
+     * How large the stars' points are drawn, 1 = as ever. A point's size was always a drawing
+     * choice (magToSize: a sixth-magnitude star one pixel, Sirius six); when the sky itself is
+     * the subject the same stars are drawn larger, so a first-magnitude star reads as one.
+     */
+    setPointScale(k) {
+      starUniforms.uScale.value = Math.min(3, Math.max(0.5, Number(k) || 1));
+    },
+    pointScale: () => starUniforms.uScale.value,
+    /** The photographs on screen this frame (scene/nebulae.js holes()): our stars step aside inside them. */
+    setHoles: (list) => setHoleUniforms(starUniforms, list),
+    holeCount: () => starUniforms.uHoleCount.value,
     /** Overall star brightness, 0..1 — the sky view dims them at dawn. */
     setGain(g) {
       gain = Math.min(1, Math.max(0, g));

@@ -60,9 +60,13 @@ const NO_CORS_REASON =
   'This publisher does not let a page on another website read it (it sends no CORS header), so a ' +
   'browser cannot. Bundled sample data stands in for it.';
 
-// Where the harvester puts its files (amendment 1 §3). Absolute on purpose: the contract is a
-// path on the site's own origin, and a same-origin read needs CORS from nobody.
-const SNAPSHOT_BASE = '/data/v1/';
+// Where the harvester puts its files (amendment 1 §3): beside the page, on the site's own origin,
+// so the read needs CORS from nobody. RELATIVE TO THE PAGE, like every other path the app uses
+// (2026-10-05, internal issue 369): it was the absolute `/data/v1/`, and a school that served the
+// folder at http://server/space-radar/ got an app that never found its saved copy. The app only
+// ever runs at its index, so the page's folder is the site's folder.
+// tests/test_relative_urls.mjs refuses an absolute site path anywhere under site/.
+const SNAPSHOT_BASE = 'data/v1/';
 const SNAPSHOT_INDEX_URL = SNAPSHOT_BASE + 'index.json';
 const SNAPSHOT_SCHEMA = 1;
 // The manifest is re-read at most this often, and only when a source is due or the page is new.
@@ -231,6 +235,22 @@ export const SOURCES = {
     note: '264 objects, 112 kB measured 2026-09-06.',
   },
 
+  // The whole catalogue: one line for everything ever tracked in orbit, with the shape of its
+  // orbit and no elements (data/satcat.js). Read only when the debris view is opened.
+  'celestrak-satcat': {
+    id: 'celestrak-satcat',
+    registryId: 'celestrak-satcat',
+    label: 'CelesTrak — the satellite catalogue',
+    publisher: 'CelesTrak',
+    url: 'https://celestrak.org/pub/satcat.csv',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 168 * HOUR,
+    browser: true,
+    kind: 'text',
+    attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
+    note: '70 813 lines, 6 751 364 bytes measured 2026-09-28. Load only when asked.',
+  },
+
   // --- Launches ---------------------------------------------------------------------------
   'll2-upcoming': {
     id: 'll2-upcoming',
@@ -298,6 +318,27 @@ export const SOURCES = {
       'even though it sends Access-Control-Allow-Origin `*`. Read from our snapshot only.',
   },
 
+  // Launch Library 2's stations, crew and past launches (registry/sources.yaml says the terms and
+  // the budget). Snapshot-only on purpose: a visitor never spends the publisher's 15 calls an hour.
+  'll2-stations': {
+    id: 'll2-stations', registryId: 'll2-stations', label: 'Launch Library 2 — stations and docked vehicles', publisher: 'The Space Devs',
+    url: 'https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed',
+    cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    attribution: 'Launch data by The Space Devs',
+  },
+  'll2-astronauts': {
+    id: 'll2-astronauts', registryId: 'll2-astronauts', label: 'Launch Library 2 — people in space', publisher: 'The Space Devs',
+    url: 'https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30',
+    cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    attribution: 'Launch data by The Space Devs',
+  },
+  'll2-previous': {
+    id: 'll2-previous', registryId: 'll2-previous', label: 'Launch Library 2 — launches that happened', publisher: 'The Space Devs',
+    url: 'https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30',
+    cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    attribution: 'Launch data by The Space Devs',
+  },
+
   // --- Weather on Earth ---------------------------------------------------------------------
   // registry/sources.yaml gdacs-tc says why this URL, this cadence and this licence.
   'gdacs-tc': {
@@ -312,6 +353,122 @@ export const SOURCES = {
     kind: 'json',
     attribution: 'Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)',
     note: '27.6 kB, the newest 20 storms, measured 2026-09-28. GDACS calls its information "purely indicative".',
+  },
+
+  // Three feeds the page used to read straight from their publishers (internal #525, #553). Each has a saved
+  // copy now, which load() reads first; the publisher is the fallback (`browser: true`). registry/sources.yaml
+  // says why these URLs, cadences and terms. data/eonet.js and data/sunregions.js name the same URLs.
+  'eonet-fires': {
+    id: 'eonet-fires',
+    registryId: 'eonet-fires',
+    label: 'NASA EONET — fires, last 30 days',
+    publisher: 'NASA Earth Observatory',
+    url: 'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Fires, volcanoes and sea ice: NASA EONET',
+    note: '69 kB for both lists before they were ours, measured 2026-10-09.',
+  },
+  'eonet-volcanoes-ice': {
+    id: 'eonet-volcanoes-ice',
+    registryId: 'eonet-volcanoes-ice',
+    label: 'NASA EONET — volcanoes and sea ice',
+    publisher: 'NASA Earth Observatory',
+    url: 'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=volcanoes,seaLakeIce',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Fires, volcanoes and sea ice: NASA EONET',
+  },
+  'swpc-solar-regions': {
+    id: 'swpc-solar-regions',
+    registryId: 'swpc-solar-regions',
+    label: 'NOAA SWPC — sunspot groups',
+    publisher: 'NOAA Space Weather Prediction Center',
+    url: 'https://services.swpc.noaa.gov/json/solar_regions.json',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Sunspot groups: NOAA SWPC',
+  },
+  // Flares and coronal mass ejections for the Sun close up (data/sunactivity.js, spec 0073). The
+  // flare list falls back to SWPC when we hold no copy; NASA's CME list is read from our copy only.
+  'swpc-edited-events': {
+    id: 'swpc-edited-events',
+    registryId: 'swpc-edited-events',
+    label: 'NOAA SWPC — solar flares',
+    publisher: 'NOAA Space Weather Prediction Center',
+    url: 'https://services.swpc.noaa.gov/json/edited_events.json',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Solar flares: NOAA SWPC',
+  },
+  'donki-cme-analysis': {
+    id: 'donki-cme-analysis',
+    registryId: 'donki-cme-analysis',
+    label: 'NASA DONKI — coronal mass ejections',
+    publisher: 'NASA M2M Space Weather Analysis Office and CCMC',
+    url: 'https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 24 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC)',
+    note: '48.1 kB, the analyses of the last thirty days, measured 2026-10-12.',
+  },
+
+  // The wind overlay's field (scene/wind.js, data/wind.js; internal #552). Read only from our saved copy:
+  // `browser: false`, registry/sources.yaml `wind` says why. Nothing calls load() for it; the Earth data
+  // panel asks snapshotAvailable('wind') and offers the wind only when a copy exists.
+  wind: {
+    id: 'wind',
+    registryId: 'wind',
+    label: 'Wind — NOAA GFS, ten metres up',
+    publisher: 'PacIOOS (University of Hawaii)',
+    url: 'https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii)',
+    note: '168.8 kB, 37 x 72 points for one forecast hour, measured 2026-10-09.',
+  },
+
+  // The ocean currents overlay's two fields (scene/currents.js, data/currents.js). Read only from our
+  // saved copies: `browser: false`, registry/sources.yaml says why (no CORS header, megabytes unpacked).
+  // Nothing calls load() for them; the Earth data panel asks snapshotAvailable() for both and offers
+  // "Ocean currents" only when both exist.
+  'ocean-currents': {
+    id: 'ocean-currents',
+    registryId: 'ocean-currents',
+    label: 'Ocean currents — NOAA CoastWatch, from satellite altimetry',
+    publisher: 'NOAA CoastWatch',
+    url: 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 96 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products)',
+    note: '262 kB saved (4.4 MB asked for), 180 x 360 points for one day, measured 2026-10-12.',
+  },
+  'ocean-temperature': {
+    id: 'ocean-temperature',
+    registryId: 'ocean-temperature',
+    label: 'Sea temperature — NOAA OISST v2.1',
+    publisher: 'NOAA NCEI, through NOAA CoastWatch West Coast',
+    url: 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.html',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 96 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP',
+    note: '184 kB saved (3.8 MB asked for), 180 x 360 points for one day, measured 2026-10-12.',
   },
 
   // --- Sources a browser cannot reach -------------------------------------------------------
@@ -822,8 +979,18 @@ export function status() {
       overdue: has && entry.via === 'snapshot' && entry.validUntil != null && now > entry.validUntil,
       reason: entry.reason,
       snapshot: entry.snapshot,
+      // The saved copy is the answer on screen and the publisher is still being asked behind it
+      // (spec 0060 task 3): the list says so, and stops saying so when the question is settled.
+      pendingLive: has && entry.via === 'snapshot' && askingBehind.has(src.id),
     };
   });
+}
+
+const pendingListeners = new Set();
+/** Called with (id) when a question asked behind a saved copy has been answered or given up. */
+export function onPendingSettled(fn) {
+  pendingListeners.add(fn);
+  return () => pendingListeners.delete(fn);
 }
 
 /**
@@ -1002,8 +1169,16 @@ function notify(id, result) {
  * copy and is announced; anything else -- a refusal, a timeout, the same file -- leaves the copy
  * exactly as it was, with no second error on the panel for a source that is showing data.
  */
+// The sources whose publisher is being asked behind a saved copy right now (status().pendingLive).
+const askingBehind = new Set();
+
 function liveBehind(id, src, shown) {
+  askingBehind.add(id);
+  // Told once the copy is on screen and again when the publisher has answered or given up, so the
+  // list's "checking for a newer one" never outlives the question (spec 0060 task 3).
+  const settle = () => { askingBehind.delete(id); for (const fn of pendingListeners) { try { fn(id); } catch { /* a listener cannot break the data layer */ } } };
   fetchLive(src, shown, wallNow())
+    .finally(settle)
     .then((live) => {
       if (live.via !== 'live' || !(live.fetchedAt > (shown.fetchedAt || 0))) return;
       const entry = { ...live, failures: 0 };
@@ -1150,6 +1325,14 @@ async function readSnapshot(src) {
     return { ok: false, httpStatus: null, why };
   }
 
+  // AS COLUMNS FIRST, WHEN THE MANIFEST NAMES SUCH A FILE (internal #523; scripts/columnar.py,
+  // data/columnar.js). The big catalogues repeat 17 keys in each of 16 000 rows; the column file
+  // holds the same rows in about a third of the text. It is an extra: anything wrong with it (not
+  // there, not JSON, a column that does not add up) and the verbatim file below is read exactly as
+  // before. The decoded rows are the verbatim rows, so nothing after this line can tell.
+  const viaColumns = await readColumns(src, row);
+  if (viaColumns) return viaColumns;
+
   let httpStatus = null;
   try {
     const response = await fetch(SNAPSHOT_BASE + encodeURIComponent(rid) + '.json', {
@@ -1181,6 +1364,29 @@ async function readSnapshot(src) {
     };
   } catch {
     return { ok: false, httpStatus, why: 'unreadable' };
+  }
+}
+
+/** The column twin of a saved copy, decoded to its rows; null for "read the verbatim file". */
+async function readColumns(src, row) {
+  const twin = row.columns;
+  if (src.kind !== 'json' || !twin || typeof twin.path !== 'string' || !/^[\w.-]+\.cols\.json$/.test(twin.path)) return null;
+  try {
+    const response = await fetch(SNAPSHOT_BASE + encodeURIComponent(twin.path), { credentials: 'omit' });
+    if (!response.ok) return null;
+    const file = JSON.parse(await response.text());
+    if (!file || file.schema !== SNAPSHOT_SCHEMA) return null;
+    // The twin of THIS publish, not a file an edge kept from the last one: the manifest row and
+    // the file must agree on when the publisher was read and on how many rows there are.
+    if ((file.fetched_at || null) !== (row.fetched_at || null) || file.rows !== twin.rows) return null;
+    const { decodeColumns } = await import('./columnar.js');
+    const body = decodeColumns(file);
+    const fetchedAt = Date.parse(file.fetched_at);
+    if (!Number.isFinite(fetchedAt)) return null;
+    const validUntil = Date.parse(file.valid_until || row.valid_until);
+    return { ok: true, body, fetchedAt, validUntil: Number.isFinite(validUntil) ? validUntil : null, httpStatus: response.status, why: null };
+  } catch {
+    return null;
   }
 }
 

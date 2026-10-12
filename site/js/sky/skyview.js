@@ -8,6 +8,15 @@
 // adds the four things a beginner needs to read a sky — a horizon, the cardinal points, altitude
 // ticks and a sky whose colour is the real Sun's.
 //
+// THE SKY ITSELF (2026-10-05, pub #454, internal #351 to #357). The first time the view opens it
+// imports sky/groundsky.js, which draws the stars, the Milky Way, the Sun, the Moon and the planets
+// as they look from the ground: lifted and dimmed by the air, limited by how dark the sky is, and
+// at their true size, so the field of view can close from 120 degrees to a telescope's. While that
+// layer is up the dome here is an opaque veil over the orbital scene's own sky (5 044 stars with
+// no air, and planets drawn 0.4 degrees wide so they can be found from orbit). Until it has
+// loaded, and wherever it cannot (a test with no DOM), the view is what it was: the scene's sky
+// under a dome that hides more of it as the Sun comes up.
+//
 // Units: kilometres, radians. Degrees appear only in the two *InWords helpers, which are the UI
 // boundary.
 //
@@ -20,7 +29,8 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { SHOWERS } from '../data/showers.js';
 import { activeShowers, radiantAltAz } from './radiants.js';
-import { COPY, t } from '../copy/en.js';
+import { COPY, t, fmt } from '../copy/en.js';
+import { twilightPhase, glowOfLights, DARKNESS, DARKNESS_IDS, CULTURE_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName, refractionDeg } from './skymath.js';
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -34,10 +44,19 @@ const SKY_FOV_DEG = 72;
 // How often the Sun is re-solved, in clock milliseconds. It moves 15 arcseconds a second.
 const SUN_REFRESH_MS = 5000;
 
-const HORIZON_SEGMENTS = 256;
+// One press of + or - : the field closes or opens by this ratio (four presses halve it).
+const KEY_ZOOM = 1.19;
+// J2000 mean obliquity, as scene/galaxy.js: `sun-inertial` (ecliptic) to the sky's equatorial frame.
+const COS_OBLIQUITY = Math.cos(23.4392911 * DEG2RAD);
+const SIN_OBLIQUITY = Math.sin(23.4392911 * DEG2RAD);
+// The bodies sky/skybodies.js solves; the other worlds have no place in the sky from the ground.
+const SKY_BODIES = new Set(['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
+
+const HORIZON_SEGMENTS = 720;
 const DOME_SEGMENTS = 64;
 
-// docs/design-language.md palette. Nothing here is invented and there is no red.
+// docs/design-language.md palette, for the marks drawn on the sky. The sky's own colours are
+// below: they are a picture of the air, not chrome.
 const TOKENS = {
   space: 0x0b0e14,
   spaceEdge: 0x05070a,
@@ -50,108 +69,67 @@ const TOKENS = {
 };
 
 /**
- * The five stops the design asks for, keyed on the REAL Sun elevation. Twilight is the moment
- * worth designing for, so three of the five stops live in the 12 degrees around the horizon.
- * `alpha` is how much of the star field the sky hides.
+ * The five stops, keyed on the REAL Sun elevation. Twilight is the moment worth designing for, so
+ * three of the five live in the 12 degrees around the horizon. `horizon` and `zenith` are the
+ * air's colours away from the Sun; `warm` is the colour of the band on the Sun's side and `glow`
+ * how strong it is; `alpha` is how much of the orbital scene's star field the dome hides while the
+ * ground sky has not loaded. Drawn, not measured: the colours are a painter's, read off twilight
+ * photographs, and the copy says the sky's colour follows the Sun rather than the weather.
  */
 const SKY_STOPS = [
-  { sunElDeg: -18, name: 'night', horizon: TOKENS.space, zenith: TOKENS.spaceEdge, alpha: 0.14, glow: 0.0 },
-  { sunElDeg: -12, name: 'nautical', horizon: TOKENS.earthOcean, zenith: TOKENS.space, alpha: 0.45, glow: 0.25 },
-  { sunElDeg: -6, name: 'civil', horizon: TOKENS.nightLights, zenith: TOKENS.earthOcean, alpha: 0.8, glow: 0.85 },
-  { sunElDeg: 0, name: 'golden', horizon: TOKENS.nightLights, zenith: TOKENS.atmosphere, alpha: 0.98, glow: 1.0 },
-  { sunElDeg: 6, name: 'day', horizon: TOKENS.atmosphere, zenith: TOKENS.earthOcean, alpha: 1.0, glow: 0.15 },
+  { sunElDeg: -18, name: 'night', horizon: 0x0a0e17, zenith: 0x04060b, warm: 0x3a2a22, alpha: 0.14, glow: 0.0 },
+  { sunElDeg: -12, name: 'nautical', horizon: 0x13233f, zenith: 0x070c18, warm: 0x8a4a2a, alpha: 0.45, glow: 0.3 },
+  { sunElDeg: -6, name: 'civil', horizon: 0x3d5c8c, zenith: 0x12284e, warm: 0xe8894a, alpha: 0.8, glow: 0.8 },
+  { sunElDeg: 0, name: 'golden', horizon: 0x9db2cc, zenith: 0x2e5c9c, warm: 0xffb45e, alpha: 0.98, glow: 1.0 },
+  { sunElDeg: 6, name: 'day', horizon: 0xa8cdee, zenith: 0x2b6cc4, warm: 0xfff1d6, alpha: 1.0, glow: 0.2 },
 ];
 
-const COMPASS_16 = [
-  'north',
-  'north-north-east',
-  'north-east',
-  'east-north-east',
-  'east',
-  'east-south-east',
-  'south-east',
-  'south-south-east',
-  'south',
-  'south-south-west',
-  'south-west',
-  'west-south-west',
-  'west',
-  'west-north-west',
-  'north-west',
-  'north-north-west',
-];
+/** Where the sky view keeps what the visitor chose: lines, names, how dark the sky is, red light. */
+export const SKY_OPTIONS_KEY = 'sr.sky';
+export const SKY_OPTION_DEFAULTS = Object.freeze({
+  figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false,
+  art: false, bounds: false, meteors: true, trails: false, culture: 'western',
+  // The land drawn see-through, so what is under the horizon can be found (internal #450 req 8).
+  seeThrough: false,
+  // `darknessBy`: 'place' reads the kind of sky off the night lights at the place (sky/skyglow.js);
+  // 'you' is the visitor's own pick of `darkness`, which always wins once made.
+  darkness: DEFAULT_DARKNESS, darknessBy: 'place', red: false,
+});
+const DARKNESS_BY = ['place', 'you'];
 
-const COMPASS_16_SHORT = [
-  'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-  'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW',
-];
-
-// ---------------------------------------------------------------------------- words
-
-/**
- * Azimuth in degrees (0 = north, clockwise) to a 16-point compass name in words.
- * `azimuthInWords(292.5) === 'west-north-west'`.
- * @param {number} azDeg
- * @param {{short?: boolean}} [opts] short:true gives 'WNW'
- */
-export function azimuthInWords(azDeg, opts = {}) {
-  if (!Number.isFinite(azDeg)) return null;
-  const a = ((azDeg % 360) + 360) % 360;
-  const i = Math.round(a / 22.5) % 16;
-  return opts.short ? COMPASS_16_SHORT[i] : COMPASS_16[i];
+/** The stored choices over the defaults; anything unknown or unreadable is the default. Pure. */
+export function readSkyOptions(storage) {
+  const out = { ...SKY_OPTION_DEFAULTS };
+  try {
+    const raw = storage && storage.getItem(SKY_OPTIONS_KEY);
+    const got = raw ? JSON.parse(raw) : null;
+    if (got && typeof got === 'object') {
+      for (const k of Object.keys(SKY_OPTION_DEFAULTS)) {
+        if (k === 'darkness') { if (DARKNESS_IDS.includes(got[k])) out[k] = got[k]; }
+        else if (k === 'culture') { if (CULTURE_IDS.includes(got[k])) out[k] = got[k]; }
+        else if (k === 'darknessBy') { if (DARKNESS_BY.includes(got[k])) out[k] = got[k]; }
+        else if (typeof got[k] === 'boolean') out[k] = got[k];
+      }
+      // Stored before there was a map to read: a kind of sky other than the default was a choice.
+      if (!DARKNESS_BY.includes(got.darknessBy) && out.darkness !== DEFAULT_DARKNESS) out.darknessBy = 'you';
+    }
+  } catch { /* a storage that throws, or a value that is not JSON: the defaults */ }
+  return out;
 }
 
-const FIST_WORDS = new Map([
-  [0.5, 'half a fist'],
-  [1, 'one fist'],
-  [1.5, 'one and a half fists'],
-  [2, 'two fists'],
-  [2.5, 'two and a half fists'],
-  [3, 'three fists'],
-  [3.5, 'three and a half fists'],
-  [4, 'four fists'],
-  [5, 'five fists'],
-  [6, 'six fists'],
-  [7, 'seven fists'],
-  [8, 'eight fists'],
-]);
-
-/**
- * Altitude in degrees to the one sentence that makes a sky chart usable by someone who has never
- * used one. A closed fist at arm's length covers about ten degrees; that is the whole trick.
- * `altitudeInWords(23)  === 'about two and a half fists above the horizon'`
- * `altitudeInWords(85)  === 'almost straight overhead'`
- * @param {number} altDeg
- * @returns {string|null}
- */
-export function altitudeInWords(altDeg) {
-  if (!Number.isFinite(altDeg)) return null;
-  if (altDeg < -0.5) return 'below the horizon';
-  if (altDeg < 2.5) return 'right down on the horizon';
-  // Under half a fist there is nothing useful to count: "a third of a fist" helps nobody.
-  if (altDeg < 5) return 'just above the horizon';
-  if (altDeg >= 87) return 'straight overhead';
-  if (altDeg >= 78) return 'almost straight overhead';
-  const fists = altDeg / 10;
-  // Half-fist precision while a fist is still a big share of the answer; whole fists above that.
-  const rounded = fists < 4 ? Math.round(fists * 2) / 2 : Math.round(fists);
-  const words = FIST_WORDS.get(rounded);
-  if (!words) return `about ${Math.round(fists)} fists above the horizon`;
-  return `about ${words} above the horizon`;
+export function writeSkyOptions(storage, options) {
+  try { if (storage) storage.setItem(SKY_OPTIONS_KEY, JSON.stringify(options)); } catch { /* private mode */ }
 }
+
+import { azimuthInWords, altitudeInWords } from './skywords.js';
+export { azimuthInWords, altitudeInWords };
 
 /**
  * Where the Sun is, in the words the twilight definitions actually use (spec 0014 requirement 7).
  * 'golden' is the only non-standard one and it is the design's, not astronomy's.
  */
 export function sunPhaseName(sunElDeg) {
-  if (!Number.isFinite(sunElDeg)) return null;
-  if (sunElDeg >= 6) return 'day';
-  if (sunElDeg >= 0) return 'golden';
-  if (sunElDeg >= -6) return 'civil';
-  if (sunElDeg >= -12) return 'nautical';
-  if (sunElDeg >= -18) return 'astronomical';
-  return 'night';
+  return twilightPhase(sunElDeg);
 }
 
 // ---------------------------------------------------------------------------- helpers
@@ -231,6 +209,7 @@ function skyAt(sunElDeg, out) {
   out.hiHorizon.setHex(hi.horizon);
   out.loZenith.setHex(lo.zenith);
   out.hiZenith.setHex(hi.zenith);
+  out.warm.setHex(lo.warm).lerp(out.hiWarm.setHex(hi.warm), t);
   lerpColour(out.loHorizon, out.hiHorizon, t, out.horizon);
   lerpColour(out.loZenith, out.hiZenith, t, out.zenith);
   out.alpha = lo.alpha + (hi.alpha - lo.alpha) * t;
@@ -245,12 +224,18 @@ function skyAt(sunElDeg, out) {
  * its azimuth) takes over as it climbs back toward the horizon, so this fades out by sunset/dawn
  * rather than stacking with it.
  * `horizonGlowStrength(-18) === 0.3`, `horizonGlowStrength(0) === 0`.
+ *
+ * With a kind of sky (sky/skymath.js DARKNESS: 'city', 'town', 'dark') the band is that sky's:
+ * strong over a city, a trace in a dark place. Without one it is the 0.3 it was drawn at first.
  */
-export function horizonGlowStrength(sunElDeg) {
+export function horizonGlowStrength(sunElDeg, darkness, lights) {
   if (!Number.isFinite(sunElDeg)) return 0;
-  if (sunElDeg <= -10) return 0.3;
+  // With the place's own night-lights reading (sky/skyglow.js, 0 to 1) the band is that place's,
+  // not its word's: a dark-sky town like Flagstaff reads 'town' and has next to no glow.
+  const full = Number.isFinite(lights) ? 0.5 * glowOfLights(lights) : DARKNESS[darkness] ? 0.5 * DARKNESS[darkness].glow : 0.3;
+  if (sunElDeg <= -10) return full;
   if (sunElDeg >= 0) return 0;
-  return 0.3 * (-sunElDeg / 10);
+  return full * (-sunElDeg / 10);
 }
 
 /**
@@ -272,11 +257,11 @@ export function moonBrightness(moonAltDeg, illumFrac) {
  */
 function skylineAlt(azRad) {
   const a = azRad;
-  const rolling =
-    0.45 * Math.sin(a * 3 + 0.7) + 0.28 * Math.sin(a * 7 + 2.1) + 0.16 * Math.sin(a * 13 + 4.4);
-  // A few flat-topped blocks, so it does not read as pure hills.
-  const block = Math.max(0, Math.sin(a * 23 + 1.3)) > 0.86 ? 0.9 : 0;
-  return (0.9 + rolling + block) * DEG2RAD;
+  // Far hills, a tree line on them, and a few flat roofs: the far edge of a town, anywhere.
+  const hills = 1.1 + 0.9 * Math.sin(a * 2 + 0.7) + 0.5 * Math.sin(a * 5 + 2.1) + 0.25 * Math.sin(a * 11 + 4.4);
+  const trees = 0.35 * Math.abs(Math.sin(a * 37 + 1.1)) * (0.5 + 0.5 * Math.sin(a * 3 + 0.4)) + 0.1 * Math.sin(a * 97 + 0.3);
+  const block = Math.max(0, Math.sin(a * 23 + 1.3)) > 0.93 ? 0.7 : 0;
+  return Math.max(0.3, hills + trees + block) * DEG2RAD;
 }
 
 function makeLetterTexture(letter) {
@@ -346,6 +331,41 @@ export function createSkyView(ctx, options = {}) {
   if (!camera || !scene) throw new Error('createSkyView needs ctx.camera and ctx.scene');
 
   const fovDeg = Number(options.fovDeg) || SKY_FOV_DEG;
+  // The field of view: where it is, and where the wheel or a pinch has asked it to go.
+  let fov = fovDeg;
+  let fovWant = fovDeg;
+  let fovTold = NaN;
+  const storage = options.storage !== undefined ? options.storage : (typeof localStorage !== 'undefined' ? localStorage : null);
+  const skyOptions = readSkyOptions(storage);
+  // WHAT A TRIP STOP HOLDS OVER THE VISITOR'S OWN CHOICES (2026-10-06, hold() below): a kind of
+  // sky for "the same patch from a city, a town and a dark place", and one shower's radiant to
+  // mark whatever the date. Never stored: letting go puts back exactly what they chose.
+  let held = null;
+  // The kind of sky the night lights at this place suggest, once read: { key, id, lights } or null.
+  let placeSky = null;
+  let placeSkyAsked = '';
+  const darknessNow = () => {
+    if (held && held.darkness) return { id: held.darkness, by: 'trip' };
+    if (skyOptions.darknessBy === 'place') return placeSky && placeSky.id ? { id: placeSky.id, by: 'place', lights: placeSky.lights } : { id: skyOptions.darkness, by: placeSky ? 'unread' : 'reading' };
+    return { id: skyOptions.darkness, by: 'you' };
+  };
+  const worn = () => { const d = darknessNow(); return { ...skyOptions, darkness: d.id, lights: d.by === 'place' && Number.isFinite(d.lights) ? d.lights : null }; };
+  // "Point your phone" (internal #450): sky/pointing.js once the switch has been pressed, or null.
+  let pointing = null;
+  let pointAsked = 0;
+  let pointWhy = '';
+  let reticle = null;
+  let centreAt = 0;
+  const _q = new THREE.Quaternion();
+  // The showers whose meteors may be drawn now, with where each radiant is (placeRadiants()).
+  let showersNow = [];
+  const _upView = new THREE.Vector3();
+  const _viewInv = new THREE.Matrix4();
+  // sky/groundsky.js, once it has loaded; null before that and in a test with no DOM.
+  let ground = null;
+  let groundAsked = 0;
+  let groundKey = '';
+  let pendingPass = null;
   const domElement =
     options.domElement || ctx.domElement || ctx.renderer?.domElement || null;
 
@@ -366,6 +386,7 @@ export function createSkyView(ctx, options = {}) {
   let sunSolvedAtMs = -Infinity;
 
   let moonElDeg = -90;
+  let moonAzDeg = 0;
   let moonIllumFrac = 0;
   let moonSolvedAtMs = -Infinity;
 
@@ -376,6 +397,8 @@ export function createSkyView(ctx, options = {}) {
     hiHorizon: new THREE.Color(),
     loZenith: new THREE.Color(),
     hiZenith: new THREE.Color(),
+    warm: new THREE.Color(),
+    hiWarm: new THREE.Color(),
     alpha: 0.14,
     glow: 0,
     horizonGlow: 0,
@@ -393,6 +416,7 @@ export function createSkyView(ctx, options = {}) {
   const _basis = new THREE.Matrix4();
   const _groundColour = new THREE.Color();
   const _nightLights = new THREE.Color(TOKENS.nightLights);
+  const _dayGround = new THREE.Color(0x1c261a);
 
   let parts = null;
 
@@ -458,15 +482,18 @@ export function createSkyView(ctx, options = {}) {
     const geo = new THREE.SphereGeometry(R, DOME_SEGMENTS, DOME_SEGMENTS / 2);
     const mat = new THREE.ShaderMaterial({
       uniforms: {
-        uHorizon: { value: new THREE.Color(TOKENS.space) },
-        uZenith: { value: new THREE.Color(TOKENS.spaceEdge) },
-        uGlow: { value: new THREE.Color(TOKENS.nightLights) },
+        uHorizon: { value: new THREE.Color(SKY_STOPS[0].horizon) },
+        uZenith: { value: new THREE.Color(SKY_STOPS[0].zenith) },
+        uGlow: { value: new THREE.Color(SKY_STOPS[0].warm) },
+        uPollution: { value: new THREE.Color(TOKENS.nightLights) },
         uGlowStrength: { value: 0 },
         uHorizonGlowStrength: { value: 0 },
         uMoonGlow: { value: new THREE.Color(TOKENS.moonGlow) },
         uMoonBrightness: { value: 0 },
         uAlpha: { value: 0.14 },
         uSunDir: { value: new THREE.Vector3(0, -1, 0) },
+        uMoonDir: { value: new THREE.Vector3(0, -1, 0) },
+        uSunHalo: { value: 0 },
       },
       vertexShader: `
         varying vec3 vLocal;
@@ -476,25 +503,36 @@ export function createSkyView(ctx, options = {}) {
         }
       `,
       fragmentShader: `
-        uniform vec3 uHorizon; uniform vec3 uZenith; uniform vec3 uGlow;
-        uniform float uGlowStrength; uniform float uAlpha; uniform vec3 uSunDir;
+        uniform vec3 uHorizon; uniform vec3 uZenith; uniform vec3 uGlow; uniform vec3 uPollution;
+        uniform float uGlowStrength; uniform float uAlpha; uniform vec3 uSunDir; uniform vec3 uMoonDir;
         uniform float uHorizonGlowStrength; uniform vec3 uMoonGlow; uniform float uMoonBrightness;
+        uniform float uSunHalo;
         varying vec3 vLocal;
         void main() {
           vec3 d = normalize(vLocal);
           float t = clamp(d.y, 0.0, 1.0);
           // pow < 1 keeps the horizon band wide, which is where all the colour is at twilight
-          vec3 c = mix(uHorizon, uZenith, pow(t, 0.55));
-          float toSun = max(dot(d, normalize(uSunDir)), 0.0);
-          float sunGlow = uGlowStrength * pow(toSun, 5.0) * (1.0 - t * 0.8);
+          vec3 c = mix(uHorizon, uZenith, pow(t, 0.5));
+          // Twilight's band: on the Sun's side of the sky, lying along the horizon.
+          vec3 sun = normalize(uSunDir);
+          float side = 0.5 + 0.5 * dot(normalize(d.xz + vec2(1e-5)), normalize(sun.xz + vec2(1e-5)));
+          float band = uGlowStrength * (0.25 + 0.75 * pow(side, 2.5)) * exp(-t * (3.0 + 5.0 * (1.0 - side)));
+          c = mix(c, uGlow, clamp(band, 0.0, 0.92));
+          // The Sun's own aureole: tight, then wide, only while it is near or above the horizon.
+          float toSun = max(dot(d, sun), 0.0);
+          c += uGlow * uSunHalo * (0.9 * pow(toSun, 900.0) + 0.3 * pow(toSun, 90.0) + 0.12 * pow(toSun, 10.0));
           // Light pollution hugs the whole horizon, not just the sun's own bearing.
-          float pollution = uHorizonGlowStrength * pow(1.0 - t, 4.0);
-          c = mix(c, uGlow, clamp(max(sunGlow, pollution), 0.0, 0.85));
-          // Moonlight lifts the whole dome evenly, brightest once the Moon is well clear of the horizon.
-          c = mix(c, uMoonGlow, uMoonBrightness * 0.35);
+          // The mix is of light, not of screen values: two per cent here is already a visible band.
+          float pollution = uHorizonGlowStrength * pow(1.0 - t, 8.0);
+          c = mix(c, uPollution, clamp(pollution, 0.0, 0.85));
+          // Moonlight lifts the whole dome a little and most of all around the Moon itself.
+          float toMoon = max(dot(d, normalize(uMoonDir)), 0.0);
+          c = mix(c, uMoonGlow, uMoonBrightness * (0.05 + 0.06 * pow(toMoon, 6.0) + 0.1 * pow(toMoon, 300.0)));
           float a = uAlpha * mix(1.0, 0.86, t);
           a = clamp(a + uMoonBrightness * 0.25, 0.0, 1.0);
-          gl_FragColor = vec4(c, clamp(a, 0.0, 1.0));
+          if (uAlpha >= 0.999) a = 1.0;
+          gl_FragColor = vec4(c, a);
+          #include <colorspace_fragment>
         }
       `,
       side: THREE.BackSide,
@@ -512,8 +550,8 @@ export function createSkyView(ctx, options = {}) {
   function buildGround(R) {
     const seg = HORIZON_SEGMENTS;
     const rings = [
-      { d: 1.4 * DEG2RAD, alpha: 0.0 }, // above the silhouette: fades out
-      { d: 0.0, alpha: 0.72 },
+      { d: 0.1 * DEG2RAD, alpha: 0.0 }, // a tenth of a degree of soft edge, so it is a skyline and not a haze
+      { d: 0.0, alpha: 1.0 },
       { d: -1.6 * DEG2RAD, alpha: 1.0 },
     ];
     const pos = [];
@@ -707,10 +745,14 @@ export function createSkyView(ctx, options = {}) {
   let radiantsAt = -Infinity;
   function placeRadiants(tMs) {
     if (!parts || !parts.radiants || !observer) return;
-    const day = new Date(tMs).toDateString();
+    const day = `${new Date(tMs).toDateString()}|${(held && held.radiant) || ''}`;
     if (radiantsFor !== day) {
       for (const s of [...parts.radiants.children]) { s.material.map?.dispose?.(); s.material.dispose(); parts.radiants.remove(s); }
-      for (const sh of activeShowers(tMs, SHOWERS)) {
+      // The showers near their peak, and the one a trip stop is about (hold()) whatever the date.
+      const marked = activeShowers(tMs, SHOWERS);
+      const asked = held && held.radiant ? SHOWERS.find((sh) => sh.id === held.radiant) : null;
+      if (asked && !marked.includes(asked)) marked.push(asked);
+      for (const sh of marked) {
         const tex = makeRadiantTexture(t(COPY.sky.radiant, { name: sh.display }));
         if (!tex) continue;
         const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
@@ -728,10 +770,13 @@ export function createSkyView(ctx, options = {}) {
     if (tMs - radiantsAt < 60e3 && tMs >= radiantsAt) return;
     radiantsAt = tMs;
     const where = { latRad: observer.latDeg * DEG2RAD, lonRad: observer.lonDeg * DEG2RAD };
+    showersNow = [];
     for (const sprite of parts.radiants.children) {
-      const aa = radiantAltAz(sprite.userData.shower, tMs, where);
+      const sh = sprite.userData.shower;
+      const aa = radiantAltAz(sh, tMs, where);
       sprite.visible = !!aa && aa.altDeg > 0;
       if (!aa) continue;
+      showersNow.push({ id: sh.id, display: sh.display, zhr: sh.zhr, vKms: sh.v_kms, altDeg: aa.altDeg, azDeg: aa.azDeg, held: !!held && held.radiant === sh.id });
       localDir(aa.azDeg * DEG2RAD, aa.altDeg * DEG2RAD, _dir).multiplyScalar(parts.R * 0.94);
       sprite.position.copy(_dir);
     }
@@ -748,6 +793,10 @@ export function createSkyView(ctx, options = {}) {
         m?.dispose?.();
       }
     });
+    if (ground) { try { ground.dispose(); } catch { /* already gone */ } ground = null; }
+    lastTap = null;
+    veilWorlds(false);
+    groundAsked += 1; // an import still in flight belongs to a view that has closed
     group.parent?.remove(group);
     group = null;
     parts = null;
@@ -777,47 +826,264 @@ export function createSkyView(ctx, options = {}) {
     const eq = Astronomy.Equator(Astronomy.Body.Moon, date, observerA, true, true);
     const hor = Astronomy.Horizon(date, observerA, eq.ra, eq.dec, 'normal');
     moonElDeg = hor.altitude;
+    moonAzDeg = hor.azimuth;
     moonIllumFrac = Astronomy.Illumination(Astronomy.Body.Moon, date).phase_fraction;
   }
 
   function applySky() {
     skyAt(sunElDeg, sky);
-    sky.horizonGlow = horizonGlowStrength(sunElDeg);
+    sky.horizonGlow = horizonGlowStrength(sunElDeg, ground ? worn().darkness : undefined);
     sky.moonBright = moonBrightness(moonElDeg, moonIllumFrac);
     const u = parts?.dome?.material?.uniforms;
     if (u) {
       u.uHorizon.value.copy(sky.horizon);
       u.uZenith.value.copy(sky.zenith);
-      u.uAlpha.value = sky.alpha;
+      u.uGlow.value.copy(sky.warm);
+      // With the ground sky up the dome is the whole background: it hides the orbital scene's sky.
+      u.uAlpha.value = ground ? 1 : sky.alpha;
       u.uGlowStrength.value = sky.glow;
       u.uHorizonGlowStrength.value = sky.horizonGlow;
       u.uMoonBrightness.value = sky.moonBright;
+      // The aureole: full from the horizon up, gone by the end of civil twilight.
+      u.uSunHalo.value = Math.max(0, Math.min(1, (sunElDeg + 6) / 6));
       localDir(sunAzDeg * DEG2RAD, sunElDeg * DEG2RAD, u.uSunDir.value);
+      localDir(moonAzDeg * DEG2RAD, moonElDeg * DEG2RAD, u.uMoonDir.value);
     }
     // The skyline silhouette picks up the same warmth as the horizon it sits against, so the
-    // ground reads as a lit skyline rather than a flat cut-out at night.
+    // ground reads as a lit skyline rather than a flat cut-out at night; by day it is land.
     const gu = parts?.ground?.material?.uniforms?.uColor;
     if (gu) {
-      _groundColour.setHex(TOKENS.spaceEdge).lerp(_nightLights, sky.horizonGlow * 0.5);
+      const day = Math.max(0, Math.min(1, (sunElDeg + 8) / 14));
+      _groundColour.setHex(TOKENS.spaceEdge).lerp(_dayGround, day * 0.9).lerp(_nightLights, sky.horizonGlow * 0.5);
       gu.value.copy(_groundColour);
     }
+    if (parts) {
+      // The ground sky brings its own air and land (sky/skyair.js, sky/landscape.js).
+      parts.dome.visible = !ground;
+      parts.ground.visible = !ground;
+      // The 30 and 60 degree arcs were the only grid there was; the ground sky has its own.
+      parts.ticks.visible = !ground;
+      parts.arcs.visible = !ground;
+    }
+  }
+
+  // ------------------------------------------------------------------ the ground sky
+
+  /** Import and build sky/groundsky.js for this place, once per entry. Nothing without a DOM. */
+  function askGround() {
+    if (ground || typeof document === 'undefined' || options.ground === false) return;
+    const mine = ++groundAsked;
+    const forObserver = observer;
+    import('./groundsky.js').then((m) => {
+      if (mine !== groundAsked || !isActive || !group || !parts || observer !== forObserver) return;
+      ground = m.createGroundSky(ctx, { group, radius: parts.R, observer, domElement, options: worn(), pointAt });
+      veilWorlds(true);
+      if (pendingPass) { ground.showPass(pendingPass.track, pendingPass.marks); }
+      tell();
+    }).catch((e) => console.warn('the ground sky did not load', e));
+  }
+
+  /**
+   * The orbital scene's worlds, out of the way while the ground sky draws its own. The dome hides
+   * what is opaque; Saturn's ring, the atmospheres and the Sun's glow are transparent and draw
+   * after it, so the whole group is switched off and back on (scene/worlds.js never touches its
+   * root's visibility).
+   */
+  function veilWorlds(on) {
+    const root = ctx.worlds && ctx.worlds.root;
+    if (root) root.visible = !on;
+  }
+
+  /**
+   * The satellites' dots in the same air as the stars (internal #393): scene/glyphs.js lifts and
+   * dims them in its shader once it knows which way is up for the eye. `null` hands them back.
+   */
+  function skyGlyphs(on) {
+    const layers = ctx.glyphLayers;
+    if (!layers || typeof layers.values !== 'function') return;
+    if (on) {
+      _viewInv.copy(camera.matrixWorld).invert();
+      _upView.copy(_up).transformDirection(_viewInv);
+    }
+    for (const gl of layers.values()) if (gl && typeof gl.setSky === 'function') gl.setSky(on ? _upView : null);
+  }
+
+  /**
+   * ONE APPARENT PLACE (internal #418): where the air puts something. `apparent(p)` lifts a scene
+   * position in place, as scene/glyphs.js's shader lifts a satellite's dot, so its name (ui/labels.js)
+   * sits on the dot; `trueNdc(x, y)` takes a tap the other way, to where the thing under it is
+   * before the air, so the pick (main.js) finds what the eye was on.
+   */
+  function airShift(p, sign) {
+    const d = _dir.copy(p).sub(_o);
+    const dist = d.length();
+    if (!(dist > 0)) return p;
+    d.divideScalar(dist);
+    const sinAlt = THREE.MathUtils.clamp(d.dot(_up), -1, 1);
+    const alt = Math.asin(sinAlt);
+    const to = alt + sign * refractionDeg(alt * RAD2DEG) * DEG2RAD;
+    const level = d.addScaledVector(_up, -sinAlt);
+    const n = level.length();
+    if (n < 1e-6) return p;
+    return p.copy(level).multiplyScalar(Math.cos(to) / n).addScaledVector(_up, Math.sin(to)).multiplyScalar(dist).add(_o);
+  }
+  function trueNdc(x, y) {
+    airShift(_p.set(x, y, 0.5).unproject(camera), -1).project(camera);
+    return [_p.x, _p.y];
+  }
+
+  /**
+   * How dark the sky of this place is likely to be, from the night lights of the Earth
+   * (sky/skyglow.js), asked once per place and only while the visitor has not chosen for themselves.
+   * Nothing is sent anywhere: the map is one of the site's own textures.
+   */
+  function askPlaceSky() {
+    if (typeof document === 'undefined' || !observer || skyOptions.darknessBy !== 'place' || options.glow === false) return;
+    const key = `${observer.latDeg.toFixed(3)},${observer.lonDeg.toFixed(3)}`;
+    if (placeSkyAsked === key) return;
+    placeSkyAsked = key;
+    placeSky = null;
+    const saving = typeof navigator !== 'undefined' && !!(navigator.connection && navigator.connection.saveData);
+    if (saving) { placeSky = { key, id: null, lights: null }; tell(); return; }
+    const at = observer;
+    import('./skyglow.js').then(async (m) => {
+      const lights = await m.sampleNightLights(String(new URL('../../textures/4k/earth_night.webp', import.meta.url)), at.latDeg, at.lonDeg);
+      if (placeSkyAsked !== key) return;
+      placeSky = { key, id: m.darknessFromLights(lights), lights };
+      if (ground) ground.setOptions(worn());
+      tell();
+    }).catch(() => { if (placeSkyAsked === key) { placeSky = { key, id: null, lights: null }; tell(); } });
+  }
+
+  /** Say what changed, to whoever draws the controls (ui/tonight.js): the field and the choices. */
+  function tell() {
+    fovTold = fov;
+    if (typeof window === 'undefined' || typeof CustomEvent === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('sr:sky', { detail: { fovDeg: fovWant, field: fovName(fovWant), options: { ...skyOptions }, darkness: darknessNow(), active: isActive, pointing: pointingNow() } }));
+  }
+
+  function applyRed() {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('sr-night-red', isActive && !!skyOptions.red);
+  }
+
+  function setOption(key, value) {
+    if (!(key in SKY_OPTION_DEFAULTS)) return false;
+    if (key === 'darkness') { if (!DARKNESS_IDS.includes(value)) return false; }
+    else if (key === 'culture') { if (!CULTURE_IDS.includes(value)) return false; }
+    else if (key === 'darknessBy') { if (!DARKNESS_BY.includes(value)) return false; }
+    else value = !!value;
+    // Picking a kind of sky is the visitor overruling the map, even when it is the one the map chose.
+    const overrule = key === 'darkness' && skyOptions.darknessBy !== 'you';
+    if (skyOptions[key] === value && !overrule) return false;
+    skyOptions[key] = value;
+    if (key === 'darkness') skyOptions.darknessBy = 'you';
+    if (key === 'darknessBy' && value === 'place' && isActive) askPlaceSky();
+    writeSkyOptions(storage, skyOptions);
+    if (ground) ground.setOptions(worn());
+    applyRed();
+    tell();
+    return true;
+  }
+
+  /**
+   * Hold a kind of sky and a shower's radiant for a trip stop, or let both go with `null`:
+   * `{ darkness: 'city' | 'town' | 'dark', radiant: <registry/showers.yaml id> }`, either or
+   * neither. The visitor's stored choices are not touched and the panel still shows them.
+   */
+  function hold(over) {
+    const darkness = over && DARKNESS_IDS.includes(over.darkness) ? over.darkness : null;
+    const radiant = over && typeof over.radiant === 'string' && SHOWERS.some((sh) => sh.id === over.radiant) ? over.radiant : null;
+    const next = darkness || radiant ? { darkness, radiant } : null;
+    if ((held && held.darkness) === (next && next.darkness) && (held && held.radiant) === (next && next.radiant)) return false;
+    held = next;
+    radiantsFor = null;
+    if (ground) ground.setOptions(worn());
+    return true;
+  }
+
+  function setFov(deg, { instant = false } = {}) {
+    fovWant = clampFov(deg);
+    if (instant) fov = fovWant;
+    tell();
   }
 
   // ------------------------------------------------------------------ looking around
 
   function lookBy(dAzRad, dAltRad) {
+    // The visitor's own hand on the view ends a follow: they asked to look elsewhere.
+    if (following && (dAzRad || dAltRad)) stopFollow('moved');
     dAz += dAzRad;
     dAlt += dAltRad;
   }
 
+  // ------------------------------------------------------------------ following a body (internal #547)
+  // At a 0.1 degree field the sky turns 15 arcseconds a second and Saturn left the view in under half a
+  // minute. A follow keeps the middle of the view on a planet, the Moon or the Sun: every frame the view is
+  // turned to where Astronomy Engine puts it, with the air's refraction, the same maths pointAt() uses for a
+  // body. It ends when the visitor turns the view by hand, when the body sets, when the view is left, or
+  // when asked. `followEnded` says which, for the line the interface shows ('moved' | 'set' | 'left' |
+  // 'asked'); null while following. No clock of its own: it is as live as the view's.
+  let following = null; // { body: 'saturn' }
+  let followEnded = null;
+
+  /** Where a body is in this place's sky at `tMs`, in degrees, with refraction; null when it cannot be worked out. */
+  function bodyAltAz(body, tMs) {
+    if (!observerA) return null;
+    try {
+      const date = new Date(tMs);
+      const name = String(body).charAt(0).toUpperCase() + String(body).slice(1);
+      const eq = Astronomy.Equator(name, date, observerA, true, true);
+      const hor = Astronomy.Horizon(date, observerA, eq.ra, eq.dec, 'normal');
+      return { azDeg: hor.azimuth, altDeg: hor.altitude };
+    } catch { return null; }
+  }
+
+  function stopFollow(why) {
+    if (!following) return;
+    following = null;
+    followEnded = why;
+    tell();
+  }
+
+  /**
+   * Keep the middle of the view on `body` (the Sun, the Moon or a planet, lower case), or stop with null.
+   * Returns false, and follows nothing, when the body is under the horizon or unknown now.
+   */
+  function follow(body) {
+    if (body == null) { stopFollow('asked'); return true; }
+    const where = bodyAltAz(body, ctx.clock?.now?.() ?? Date.now());
+    if (!where || where.altDeg < 0) return false;
+    following = { body: String(body).toLowerCase() };
+    followEnded = null;
+    lookAtDeg(where.azDeg, where.altDeg);
+    tell();
+    return true;
+  }
+
+  /** Called each frame from update(): turn to the body, or let go of it once it is below the horizon. */
+  function followStep(tMs) {
+    if (!following || pointing) return; // the phone, when it is the view, turns it
+    const where = bodyAltAz(following.body, tMs);
+    // A body a degree under the horizon is as far as the sky goes (the view may look 20 degrees down, but a
+    // planet there is not a thing to watch); letting go is said, not silent.
+    if (!where || where.altDeg < -1) { stopFollow('set'); return; }
+    azRad = where.azDeg * DEG2RAD;
+    altRad = THREE.MathUtils.clamp(where.altDeg * DEG2RAD, -20 * DEG2RAD, 89 * DEG2RAD);
+    dAz = 0;
+    dAlt = 0;
+  }
+
   function lookAtAngles(azR, altR) {
+    // While the phone is the view, the visitor turns to a thing; the ring still marks it.
+    if (pointing) return;
     if (Number.isFinite(azR)) {
       dAz = 0;
       azRad = azR;
     }
     if (Number.isFinite(altR)) {
       dAlt = 0;
-      altRad = THREE.MathUtils.clamp(altR, -20 * DEG2RAD, 85 * DEG2RAD);
+      altRad = THREE.MathUtils.clamp(altR, -20 * DEG2RAD, 89 * DEG2RAD);
     }
   }
 
@@ -826,22 +1092,336 @@ export function createSkyView(ctx, options = {}) {
     lookAtAngles(azDeg * DEG2RAD, altDeg * DEG2RAD);
   }
 
+  /**
+   * Turn to something and ring it: `{azDeg, altDeg}`, or `{body: 'saturn'}` for the Sun, the Moon
+   * or a planet (where the air puts it now). `fovDeg` closes or opens the field on the way.
+   * Returns false when the body is under the horizon or unknown.
+   */
+  function pointAt(target, opts = {}) {
+    if (!target) return false;
+    let where = null;
+    let dirOf = null;
+    if (target.body) {
+      const read = () => (ground ? ground.apparentOf(target.body) : null);
+      // Worked out here and now, not read from the last frame: the clock may just have jumped.
+      if (observerA) {
+        try {
+          const date = new Date(ctx.clock?.now?.() ?? Date.now());
+          const name = String(target.body).charAt(0).toUpperCase() + String(target.body).slice(1);
+          const eq = Astronomy.Equator(name, date, observerA, true, true);
+          const hor = Astronomy.Horizon(date, observerA, eq.ra, eq.dec, 'normal');
+          where = { azDeg: hor.azimuth, altDeg: hor.altitude };
+        } catch { where = null; }
+      }
+      if (!where || where.altDeg < 0) return false;
+      dirOf = () => { const w = read() || where; const v = new THREE.Vector3(); localDir(w.azDeg * DEG2RAD, w.altDeg * DEG2RAD, v); return [v.x, v.y, v.z]; };
+    } else if (Array.isArray(target.dirEq) || (Number.isFinite(target.raDeg) && Number.isFinite(target.decDeg))) {
+      // A place among the stars (J2000): a star, a nebula, a galaxy. The ground sky knows where the
+      // air puts it; before it has loaded, Astronomy Engine's horizon is within a degree of that.
+      let d = target.dirEq;
+      if (!d) {
+        const a = target.raDeg * DEG2RAD;
+        const c = Math.cos(target.decDeg * DEG2RAD);
+        d = [c * Math.cos(a), c * Math.sin(a), Math.sin(target.decDeg * DEG2RAD)];
+      }
+      // Worked out here and now, as for a body: the clock may just have jumped, and the ground
+      // sky's own matrix is the last frame's. The ring that follows it reads the ground sky.
+      const now = () => {
+        if (!observerA) return null;
+        try {
+          const date = new Date(ctx.clock?.now?.() ?? Date.now());
+          const v = Astronomy.RotateVector(Astronomy.Rotation_EQJ_HOR(date, observerA), new Astronomy.Vector(d[0], d[1], d[2], Astronomy.MakeTime(date)));
+          const hor = Astronomy.HorizonFromVector(v, 'normal');
+          return { azDeg: hor.lon, altDeg: hor.lat };
+        } catch { return null; }
+      };
+      const read = () => (ground && typeof ground.apparentOfEq === 'function' ? ground.apparentOfEq(d) : now());
+      where = now() || read();
+      if (!where || where.altDeg < 0) return false;
+      dirOf = () => { const w = read() || where; const v = new THREE.Vector3(); localDir(w.azDeg * DEG2RAD, w.altDeg * DEG2RAD, v); return [v.x, v.y, v.z]; };
+    } else if (Number.isFinite(target.azDeg) && Number.isFinite(target.altDeg)) {
+      where = target;
+      const v = new THREE.Vector3();
+      localDir(where.azDeg * DEG2RAD, where.altDeg * DEG2RAD, v);
+      dirOf = () => [v.x, v.y, v.z];
+    } else return false;
+    lookAtDeg(where.azDeg, where.altDeg);
+    // `follow: true` on a body keeps it in the middle (follow() above); on anything else it is ignored.
+    if (opts.follow === true && target.body) follow(target.body);
+    else if (following) stopFollow('moved'); // turning to something else is turning by hand
+    if (Number.isFinite(opts.fovDeg)) setFov(opts.fovDeg, { instant: opts.instant === true });
+    if (ground && opts.mark !== false) ground.mark(dirOf);
+    return true;
+  }
+
+  /**
+   * Turn the sky to a record (the search box, internal #393 finding 7): the Sun, the Moon or a
+   * planet where it is now; a star, a nebula, a galaxy or a planet of another star at its place
+   * among the stars. Returns 'shown', 'below' (it is under the horizon now) or null (not a thing
+   * with a place in this sky: a satellite, whose own glyph is already there).
+   */
+  function pointAtRecord(record, opts = {}) {
+    if (!record || !isActive) return null;
+    if (record.klass === 'world') {
+      if (record.id === 'earth') return null;
+      if (!SKY_BODIES.has(record.id)) return null;
+      return pointAt({ body: record.id }, opts) ? 'shown' : 'below';
+    }
+    if (!['star', 'dso', 'exoplanet', 'exotic'].includes(record.klass)) return null;
+    const p = record.pos;
+    if (!p || !(Math.hypot(p.x, p.y, p.z) > 0)) return null;
+    // `sun-inertial` is ecliptic J2000; the sky's catalogue frame is equatorial J2000.
+    const n = Math.hypot(p.x, p.y, p.z);
+    const dirEq = [p.x / n, (p.y * COS_OBLIQUITY - p.z * SIN_OBLIQUITY) / n, (p.y * SIN_OBLIQUITY + p.z * COS_OBLIQUITY) / n];
+    return pointAt({ dirEq }, opts) ? 'shown' : 'below';
+  }
+
+  /**
+   * WHAT IS THAT (check 6 against Stellarium). A tap on the sky names the nearest star, planet or
+   * deep-sky object in a small tag under it; the same thing tapped again, or the tag pressed, opens
+   * its card. Returns true when the tap was answered here (main.js then leaves the selection alone).
+   * A star has a card when it is one of the 3 390 with a name; the rest are named by their magnitude.
+   */
+  let lastTap = null;
+  let starDirs = null;
+  function recordOf(what) {
+    if (what.kind === 'body' || what.kind === 'dso') return typeof ctx.recordById === 'function' ? ctx.recordById(what.id) : null;
+    const list = ctx.stars3d && typeof ctx.stars3d.records === 'function' ? ctx.stars3d.records() : [];
+    if (!list || !list.length) return null;
+    if (!starDirs || starDirs.n !== list.length) {
+      const dirs = new Float32Array(list.length * 3);
+      list.forEach((r, i) => {
+        const p = r.pos || {};
+        const n = Math.hypot(p.x, p.y, p.z) || 1;
+        // `sun-inertial` is ecliptic J2000; the sky's catalogue frame is equatorial J2000.
+        dirs[i * 3] = p.x / n;
+        dirs[i * 3 + 1] = (p.y * COS_OBLIQUITY - p.z * SIN_OBLIQUITY) / n;
+        dirs[i * 3 + 2] = (p.y * SIN_OBLIQUITY + p.z * COS_OBLIQUITY) / n;
+      });
+      starDirs = { n: list.length, dirs };
+    }
+    let best = -1;
+    let bestCos = Math.cos(0.05 * DEG2RAD);
+    const d = what.dirEq;
+    for (let i = 0; i < starDirs.n; i += 1) {
+      const c = starDirs.dirs[i * 3] * d[0] + starDirs.dirs[i * 3 + 1] * d[1] + starDirs.dirs[i * 3 + 2] * d[2];
+      if (c > bestCos) { bestCos = c; best = i; }
+    }
+    return best >= 0 ? list[best] : null;
+  }
+  function tagWords(what, record) {
+    if (what.words) return what.words; // a tap on empty sky: the constellation (sky/groundsky.js)
+    const W = COPY.sky.what;
+    const mag = Number.isFinite(what.mag) ? fmt.num(what.mag, 1) : null;
+    const name = what.name || (record && record.name) || W.star;
+    let sub;
+    if (what.kind === 'body') sub = what.id === 'sun' ? W.sun : what.id === 'moon' ? W.moon : t(W.planet, { mag });
+    else if (what.kind === 'star') sub = t(W.starMag, { mag });
+    else sub = mag ? t(W.dsoMag, { kind: (record && record.meta && record.meta.typeText) || W.dso, mag }) : ((record && record.meta && record.meta.typeText) || W.dso);
+    return { name, sub, label: t(record ? W.open : W.plain, { name, sub }), title: record ? W.openTitle : '' };
+  }
+  function openTagged(what) {
+    const record = what && what.record;
+    if (record && typeof ctx.select === 'function') ctx.select(record, { from: 'pick' });
+    if (ground) ground.hideTag();
+    lastTap = null;
+  }
+  function tapSky(clientX, clientY) {
+    if (!isActive || !ground || typeof ground.whatAt !== 'function' || !domElement?.getBoundingClientRect) return false;
+    const what = ground.whatAt(clientX, clientY, camera, domElement.getBoundingClientRect());
+    if (!what) { ground.hideTag(); lastTap = null; return false; }
+    const key = what.kind === 'star' ? `star:${what.dirEq.map((v) => v.toFixed(5)).join(',')}` : `${what.kind}:${what.id}`;
+    if (lastTap && lastTap.key === key && ground.tagged()) {
+      const again = lastTap.what;
+      if (again.record) { openTagged(again); return true; }
+      return true; // no card to open: the tag stays, and says all there is
+    }
+    what.record = recordOf(what);
+    ground.showTag(what, tagWords(what, what.record), openTagged);
+    lastTap = { key, what };
+    return what.kind !== 'sky'; // empty sky is named, and still deselects (main.js)
+  }
+
+  /**
+   * POINT YOUR PHONE (internal #450). `pointPhone(true)` must be called from the tap itself: iOS
+   * gives its permission prompt only to a user gesture, so the request is made here and now, before
+   * the module (sky/pointing.js, with the magnetic model) has even been fetched. Resolves to
+   * { ok: true } or { ok: false, why: 'denied' | 'none' | 'unsupported' | 'place' }; a refusal
+   * leaves the drag view exactly as it was. `pointPhone(false)` lets go of the sensor and the wake lock.
+   */
+  function pointingNow() {
+    const s = pointing ? pointing.state : null;
+    return s ? { ...s, why: '' } : { on: false, why: pointWhy };
+  }
+  function showReticle(on) {
+    if (typeof document === 'undefined' || !document.createElement) return;
+    if (on && !reticle) {
+      reticle = document.createElement('div');
+      reticle.className = 'sr-skyreticle';
+      reticle.setAttribute('aria-hidden', 'true');
+      (domElement && domElement.parentNode ? domElement.parentNode : document.body).appendChild(reticle);
+    }
+    if (reticle) reticle.hidden = !on;
+    if (document.documentElement && document.documentElement.classList) document.documentElement.classList.toggle('sr-pointing', !!on);
+  }
+  function pointPhone(want) {
+    if (!want) {
+      pointAsked += 1;
+      const was = pointing;
+      pointing = null;
+      if (was) { try { was.stop(); } catch { /* gone */ } }
+      showReticle(false);
+      if (was && lastTap && lastTap.auto && ground) { ground.hideTag(); lastTap = null; }
+      if (was) tell();
+      return Promise.resolve({ ok: true });
+    }
+    if (pointing) return Promise.resolve({ ok: true });
+    const fail = (why) => { pointWhy = why; tell(); return { ok: false, why }; };
+    if (!isActive || !observer) return Promise.resolve(fail('place'));
+    const D = typeof window !== 'undefined' ? window.DeviceOrientationEvent : undefined;
+    if (typeof D === 'undefined') return Promise.resolve(fail('unsupported'));
+    let permission = null;
+    if (typeof D.requestPermission === 'function') {
+      try { permission = Promise.resolve(D.requestPermission()).catch(() => 'denied'); } catch { permission = Promise.resolve('denied'); }
+    }
+    const mine = ++pointAsked;
+    const forObserver = observer;
+    const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return import('./pointing.js').then(async (m) => {
+      const src = m.createPointing({
+        observer: forObserver, permission, reduced,
+        startLook: { azDeg: azRad * RAD2DEG, altDeg: altRad * RAD2DEG },
+        onChange: () => { if (pointing === src) tell(); },
+      });
+      const got = await src.start();
+      if (!got.ok) return mine === pointAsked ? fail(got.why) : got;
+      if (mine !== pointAsked || !isActive || observer !== forObserver) { src.stop(); return { ok: false, why: 'stopped' }; }
+      pointing = src;
+      pointWhy = '';
+      showReticle(true);
+      tell();
+      return got;
+    }).catch(() => fail('unsupported'));
+  }
+  /**
+   * What the phone is pointing at, named in the tag without a tap, twice a second: the same tag a
+   * tap makes, so pressing it opens the card. Empty sky takes an automatic tag away again.
+   */
+  /**
+   * Where the phone points, on the canvas (CSS px from its corner). Not its middle: on a phone the
+   * picture is moved up into the band the sheet and the time pill leave free (scene/viewshift.js),
+   * so the line of sight is drawn above the middle and the reticle belongs there.
+   */
+  const aimPx = { x: NaN, y: NaN };
+  function placeReticle() {
+    const w = domElement?.clientWidth || 0;
+    const h = domElement?.clientHeight || 0;
+    if (!w || !h) return;
+    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    _p.set(0, 0, -1).applyQuaternion(camera.quaternion).multiplyScalar(parts?.R ?? 1).add(camera.position).project(camera);
+    const x = (_p.x * 0.5 + 0.5) * w;
+    const y = (-_p.y * 0.5 + 0.5) * h;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    if (reticle && (Math.abs(x - aimPx.x) > 0.5 || Math.abs(y - aimPx.y) > 0.5)) {
+      reticle.style.left = `${x.toFixed(1)}px`;
+      reticle.style.top = `${y.toFixed(1)}px`;
+    }
+    aimPx.x = x;
+    aimPx.y = y;
+  }
+  function nameCentre() {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - centreAt < 500 || !ground || typeof ground.whatAt !== 'function' || !domElement?.getBoundingClientRect) return;
+    centreAt = now;
+    const r = domElement.getBoundingClientRect();
+    const what = Number.isFinite(aimPx.x) ? ground.whatAt(r.left + aimPx.x, r.top + aimPx.y, camera, r) : null;
+    if (!what || what.kind === 'sky') {
+      if (lastTap && lastTap.auto) { ground.hideTag(); lastTap = null; }
+      return;
+    }
+    const key = what.kind === 'star' ? `star:${what.dirEq.map((v) => v.toFixed(5)).join(',')}` : `${what.kind}:${what.id}`;
+    if (lastTap && lastTap.key === key && ground.tagged()) return;
+    what.record = recordOf(what);
+    ground.showTag(what, tagWords(what, what.record), openTagged);
+    lastTap = { key, what, auto: true };
+  }
+
+  /** A deep-sky picture under a tap, as a record id (`dso-m42`), or null: main.js opens its card. */
+  function pickSky(clientX, clientY) {
+    if (!isActive || !ground || typeof ground.pickAt !== 'function' || !domElement?.getBoundingClientRect) return null;
+    return ground.pickAt(clientX, clientY, camera, domElement.getBoundingClientRect());
+  }
+
+  /**
+   * + and - zoom the sky, as the wheel does (internal #393 finding 7). The orbital camera reads the
+   * same keys as "nearer" and "farther" (scene/camera.js); here the camera has no distance, so the
+   * keys close and open the field instead. Not while typing, and not with a modifier (the
+   * browser's own zoom).
+   */
+  function onKeyDown(e) {
+    if (!isActive || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+    const tag = e.target && e.target.tagName ? String(e.target.tagName).toUpperCase() : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+    if (e.key === '+' || e.key === '=') setFov(zoomFov(fovWant, 1 / KEY_ZOOM));
+    else if (e.key === '-' || e.key === '_') setFov(zoomFov(fovWant, KEY_ZOOM));
+    else return;
+    e.preventDefault?.();
+  }
+
+  /** A pass drawn across the sky (ui/tonight.js works the track out): see groundsky.showPass. */
+  function showPass(track, marks) {
+    pendingPass = track ? { track, marks } : null;
+    if (!ground) return;
+    if (track) ground.showPass(track, marks);
+    else ground.clearPass();
+  }
+
   let drag = null;
+  const touches = new Map();
+  let pinch = null;
   function onPointerDown(e) {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2) {
+      const [a, b] = [...touches.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, fov: fovWant };
+      drag = null;
+      return;
+    }
     drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
     domElement?.setPointerCapture?.(e.pointerId);
   }
   function onPointerMove(e) {
-    if (!isActive || !drag || drag.id !== e.pointerId) return;
+    if (!isActive) return;
+    if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && touches.size >= 2) {
+      const [a, b] = [...touches.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      setFov(pinch.fov * (pinch.d / d));
+      return;
+    }
+    if (!drag || drag.id !== e.pointerId) return;
     const h = domElement?.clientHeight || 800;
-    const perPx = (fovDeg * DEG2RAD) / h;
-    lookBy(-(e.clientX - drag.x) * perPx, (e.clientY - drag.y) * perPx);
+    // The sky follows the finger: a pixel is the same angle whatever the field is.
+    const perPx = (fov * DEG2RAD) / h;
+    // With the phone as the view a drag is "Line it up": the offset between its compass and the sky.
+    if (pointing) pointing.dragBy(-(e.clientX - drag.x) * perPx * RAD2DEG, (e.clientY - drag.y) * perPx * RAD2DEG);
+    else lookBy(-(e.clientX - drag.x) * perPx, (e.clientY - drag.y) * perPx);
     drag.x = e.clientX;
     drag.y = e.clientY;
   }
   function onPointerUp(e) {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pinch = null;
     if (drag && drag.id === e.pointerId) drag = null;
     domElement?.releasePointerCapture?.(e.pointerId);
+  }
+  function onWheel(e) {
+    if (!isActive) return;
+    // The wheel is this view's zoom here, not the orbital camera's distance.
+    e.preventDefault?.();
+    e.stopImmediatePropagation?.();
+    const dy = Math.max(-240, Math.min(240, Number(e.deltaY) || 0)) * (e.deltaMode === 1 ? 16 : 1);
+    setFov(zoomFov(fovWant, Math.exp(dy * 0.0016)));
   }
 
   function attachInput() {
@@ -850,6 +1430,8 @@ export function createSkyView(ctx, options = {}) {
     domElement.addEventListener('pointermove', onPointerMove);
     domElement.addEventListener('pointerup', onPointerUp);
     domElement.addEventListener('pointercancel', onPointerUp);
+    domElement.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('keydown', onKeyDown);
   }
   function detachInput() {
     if (!domElement?.removeEventListener) return;
@@ -857,6 +1439,11 @@ export function createSkyView(ctx, options = {}) {
     domElement.removeEventListener('pointermove', onPointerMove);
     domElement.removeEventListener('pointerup', onPointerUp);
     domElement.removeEventListener('pointercancel', onPointerUp);
+    domElement.removeEventListener('wheel', onWheel, { capture: true });
+    if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('keydown', onKeyDown);
+    touches.clear();
+    pinch = null;
+    drag = null;
   }
 
   // ------------------------------------------------------------------ enter / update / exit
@@ -881,10 +1468,17 @@ export function createSkyView(ctx, options = {}) {
       attachInput();
     }
 
+    // A new place is a new sky: the ground layer is built for one observer.
+    const key = `${observer.latDeg.toFixed(4)},${observer.lonDeg.toFixed(4)}`;
+    if (ground && groundKey !== key) { try { ground.dispose(); } catch { /* gone */ } ground = null; veilWorlds(false); }
+    // The declination was this place's: a new place switches the phone off rather than point wrong.
+    if (pointing && groundKey !== key) pointPhone(false);
+    groundKey = key;
     if (!group) build();
     if (group.parent !== scene) scene.add(group);
 
-    camera.fov = fovDeg;
+    if (!isActive) { fov = fovDeg; fovWant = fovDeg; }
+    camera.fov = fov;
     camera.updateProjectionMatrix?.();
 
     // Open facing the equator. Low-orbit traffic is inclined at 50-100 degrees, so from a
@@ -898,7 +1492,11 @@ export function createSkyView(ctx, options = {}) {
 
     isActive = true;
     ctx.starfield?.setLines?.(true);
+    askGround();
+    askPlaceSky();
+    applyRed();
     update(ctx.clock?.now?.() ?? 0);
+    tell();
     return true;
   }
 
@@ -915,10 +1513,21 @@ export function createSkyView(ctx, options = {}) {
     // Damped look. No dt is passed in by the contract, so this is a fixed per-frame fraction --
     // it is a head turn, not scene state, so it does not need to be frame-rate exact.
     const k = 0.25;
+    followStep(t);
     azRad += dAz * k;
     dAz *= 1 - k;
-    altRad = THREE.MathUtils.clamp(altRad + dAlt * k, -20 * DEG2RAD, 85 * DEG2RAD);
+    altRad = THREE.MathUtils.clamp(altRad + dAlt * k, -20 * DEG2RAD, 89 * DEG2RAD);
     dAlt *= 1 - k;
+
+    // The field eases to where the wheel left it, in ratio: zoom is multiplicative.
+    if (fov !== fovWant) {
+      fov = Math.abs(Math.log(fovWant / fov)) < 0.002 ? fovWant : fov * Math.pow(fovWant / fov, k);
+      camera.fov = fov;
+      camera.updateProjectionMatrix?.();
+    } else if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix?.();
+    }
 
     // Local basis into scene space: +X east, +Y up, +Z south.
     _basis.makeBasis(_east, _up, _south);
@@ -928,16 +1537,49 @@ export function createSkyView(ctx, options = {}) {
 
     camera.position.copy(_o);
     camera.up.copy(_up);
-    localDir(azRad, altRad, _dir).applyQuaternion(group.quaternion);
-    camera.lookAt(_p.copy(_o).addScaledVector(_dir, parts?.R ?? 1));
+    const aimed = pointing ? pointing.sample(typeof performance !== 'undefined' ? performance.now() : Date.now()) : null;
+    if (aimed) {
+      // The phone's attitude in the local frame (east, up, south), roll and all; the angles are
+      // read back from it so `look`, the labels and switching off all carry on from where it points.
+      _q.set(aimed[0], aimed[1], aimed[2], aimed[3]);
+      _dir.set(0, 0, -1).applyQuaternion(_q);
+      altRad = Math.asin(THREE.MathUtils.clamp(_dir.y, -1, 1));
+      if (Math.hypot(_dir.x, _dir.z) > 1e-4) azRad = Math.atan2(_dir.x, -_dir.z);
+      dAz = 0;
+      dAlt = 0;
+      camera.quaternion.copy(group.quaternion).multiply(_q);
+    } else {
+      localDir(azRad, altRad, _dir).applyQuaternion(group.quaternion);
+      camera.lookAt(_p.copy(_o).addScaledVector(_dir, parts?.R ?? 1));
+    }
+    camera.updateMatrixWorld?.(true);
+    if (aimed) { placeReticle(); nameCentre(); }
+
+    // A radiant's name keeps its size on the screen as the field closes (it is a mark, not a thing).
+    if (parts && parts.radiants.children.length) {
+      const k = parts.R * 0.05 * Math.min(1, fov / SKY_FOV_DEG);
+      for (const sprite of parts.radiants.children) sprite.scale.set(k * 8, k, 1);
+    }
+    skyGlyphs(true);
+    if (ground) {
+      ground.update({ tMs: t, fovDeg: fov, sunAltDeg: sunElDeg, sunAzDeg, moonBright: sky.moonBright, camera, renderer: ctx.renderer, showers: showersNow });
+    }
   }
 
   function exit() {
     if (!isActive) return;
+    pointPhone(false);
     isActive = false;
+    if (following) { following = null; followEnded = 'left'; }
+    held = null;
+    showersNow = [];
+    skyGlyphs(false);
     ctx.starfield?.setLines?.(false);
     detachInput();
     disposeGroup();
+    pendingPass = null;
+    applyRed();
+    tell();
     if (saved) {
       camera.up.copy(saved.up);
       camera.fov = saved.fov;
@@ -972,6 +1614,84 @@ export function createSkyView(ctx, options = {}) {
     },
     lookBy,
     lookAtDeg,
+    pointPhone,
+    /** The phone as the view: { on, kind, accuracyDeg, declinationDeg, offsetAzDeg, offsetTiltDeg, why }. */
+    get pointing() {
+      return pointingNow();
+    },
+    /** Forget "Line it up": the compass's own north again. */
+    resetPointing: () => { if (pointing) pointing.resetOffset(); },
+    /** The brightest of the Moon and the planets well up now, to line the compass up on: an id, or null. */
+    lineUpTarget() {
+      if (!ground) return null;
+      let best = null;
+      for (const id of ['moon', 'venus', 'jupiter', 'mars', 'saturn']) {
+        const a = ground.apparentOf(id);
+        if (a && a.altDeg > 8 && (id === 'moon' || a.mag < 1.5) && (!best || a.mag < best.mag)) best = { id, mag: a.mag };
+      }
+      return best ? best.id : null;
+    },
+    // the field of view, the choices, and what the Tonight list asks for (2026-10-05)
+    get fovDeg() {
+      return fovWant;
+    },
+    get field() {
+      return fovName(fovWant);
+    },
+    setFov,
+    /** The planet or the Moon at the centre and the width of the round field that frames it, or null (#351). */
+    bodyAtCentre: () => (ground && typeof ground.bodyNear === 'function' ? ground.bodyNear(azRad * RAD2DEG, altRad * RAD2DEG) : null),
+    zoomBy: (factor) => setFov(zoomFov(fovWant, factor)),
+    get options() {
+      return { ...skyOptions };
+    },
+    setOption,
+    hold,
+    /** What a trip stop is holding over the stored choices, or null: for the test and a probe. */
+    get held() {
+      return held ? { ...held } : null;
+    },
+    pointAt,
+    pointAtRecord,
+    follow,
+    /** The body the middle of the view is kept on, or null. */
+    get following() {
+      return following ? following.body : null;
+    },
+    /** Why the last follow ended: 'moved', 'set', 'left' or 'asked'; null while following or before one. */
+    get followEnded() {
+      return followEnded;
+    },
+    apparent: (p) => (isActive && ground ? airShift(p, 1) : p),
+    trueNdc: (x, y) => (isActive && ground ? trueNdc(x, y) : [x, y]),
+    pickSky,
+    tapSky,
+    /** The kind of sky drawn now and who chose it: { id, by: 'place' | 'you' | 'trip' | 'reading' | 'unread', lights }. */
+    get darkness() {
+      return darknessNow();
+    },
+    /** The showers whose meteors are being drawn and how many an hour this sky would show, or null. */
+    get meteors() {
+      // The ground sky's own count of every source active tonight (sky/meteors.js), once it is up.
+      const note = ground ? ground.stats().meteorNote : null;
+      if (note) return note;
+      if (!showersNow.length) return null;
+      const m = ground ? ground.stats().meteors : null;
+      const up = showersNow.filter((s) => s.altDeg > 0);
+      return { showers: (up.length ? up : showersNow).map((s) => s.display), down: !up.length, perHour: m ? m.perHour : null, drawn: m ? m.drawn : 0, last: m ? m.last : null };
+    },
+    /** Draw one meteor now: for the probe and a trip stop. */
+    meteorNow: (i, opts) => (ground ? ground.meteorNow(i, opts) : null),
+    showPass,
+    /** True while the ground sky is drawing the stars and planets itself (ui/labels.js asks). */
+    get ownsSky() {
+      return isActive && !!ground;
+    },
+    /** What the ground sky has drawn and fetched, or null before it loads: for the probes. */
+    groundStats: () => (ground ? ground.stats() : null),
+    /** The deep-sky pictures and the other-light layer as the ground sky draws them, for the probes. */
+    groundPictures: () => (ground && ground.pictures ? ground.pictures() : null),
+    groundOtherLight: () => (ground && ground.otherLight ? ground.otherLight() : null),
     dispose() {
       exit();
       detachInput();
@@ -980,4 +1700,4 @@ export function createSkyView(ctx, options = {}) {
   };
 }
 
-export { SKY_STOPS, EYE_HEIGHT_KM, SKY_FOV_DEG };
+export { SKY_STOPS, EYE_HEIGHT_KM, SKY_FOV_DEG, FOV };

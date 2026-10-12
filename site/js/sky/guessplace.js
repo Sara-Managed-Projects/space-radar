@@ -107,3 +107,14 @@ export function guessObserver(cities, hints = {}) {
   const best = nearestMeridian(local.length ? local : same.length ? same : cities, offset);
   return best ? observerFrom(best, 'offset') : null;
 }
+
+/**
+ * The browser's own answer, rounded to 0.1 degree (about 11 km) BEFORE anything keeps, shows or uses
+ * it (spec 0051 req 3). Pure; returns a new observer with radians derived from the rounded degrees.
+ */
+export function roundPlace(o) {
+  const r = (v) => Math.round(Number(v) * 10) / 10;
+  const latDeg = r(o.latDeg);
+  const lonDeg = r(o.lonDeg);
+  return { ...o, latDeg, lonDeg, latRad: latDeg * Math.PI / 180, lonRad: lonDeg * Math.PI / 180 };
+}

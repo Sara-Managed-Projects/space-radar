@@ -1,6 +1,7 @@
 // Does the app actually DRAW the world it says it is drawing?
 //
 //   node scripts/check-drawn.mjs --base=http://127.0.0.1:8177
+//   node scripts/check-drawn.mjs --base=http://127.0.0.1:8178 --idle     # and the idle frame rate, read from the loop itself
 //
 // WHY THIS EXISTS. On 2026-09-08 one flag -- `transparent: true` on the Milky Way panorama, added
 // so the scale ladder could fade it -- put the sky in three's transparent render list. A
@@ -180,6 +181,30 @@ try {
       `these draw after every opaque object and paint over them -- transparent with depthTest off: ` +
         `${[...new Set(seen.offenders)].join(', ')}. See the Milky Way in scene/starfield.js.`
     );
+  }
+  // THE IDLE FRAME RATE, IN A REAL BROWSER (internal #520; `--idle`, on the run against the tree a
+  // deploy uploads). An automated browser does not get the cap, so nothing above ran under it; this
+  // loads the page once more with `?idle=1`, leaves it alone, and reads the loop's own counts
+  // (scene/quality.js createIdleGate().state()). What must hold: the loop is alive and still
+  // drawing; and when it reports nothing moving, it is in fact drawing less often. What is printed,
+  // for whoever reads the log: frames drawn and skipped a second at rest, and why the last frame
+  // was not idle if it was not (on a runner with no GPU a frame can take longer than the cap's
+  // 50 ms, and then there is nothing to skip: the line says so rather than failing).
+  if (process.argv.includes('--idle')) {
+    await page.goto(`${BASE}/index.html?idle=1`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.waitForFunction(() => window.spaceRadar && window.spaceRadar.idle && window.__srLayersReady === true, null, { timeout: 240_000 });
+    await page.waitForTimeout(8000);
+    const a = await page.evaluate(() => ({ ...window.spaceRadar.idle.state(), frame: window.spaceRadar.renderer.info.render.frame, t: performance.now() }));
+    await page.waitForTimeout(5000);
+    const b = await page.evaluate(() => ({ ...window.spaceRadar.idle.state(), frame: window.spaceRadar.renderer.info.render.frame, t: performance.now() }));
+    const s = (b.t - a.t) / 1000;
+    const per = (k) => ((b[k] - a[k]) / s).toFixed(1);
+    console.log(`idle: asked for with ?idle=1 (enabled ${b.enabled}); at rest ${per('drawn')} frames drawn and ${per('skipped')} skipped a second, ${per('capped')} of the drawn under the cap; ` +
+      `${b.reasons.length ? `the last frame was not idle because: ${b.reasons.join(', ')}` : 'nothing was moving'}`);
+    if (!b.enabled) fail('?idle=1 did not switch the idle cap on in an automated browser (scene/quality.js idleCapWanted)');
+    if (!(b.drawn > a.drawn) || !(b.frame > a.frame)) fail('with the idle cap on the loop stopped drawing: it is a cap, never a stop');
+    if (!b.reasons.length && !(b.capped > a.capped)) fail('the loop says nothing is moving and is not drawing under the cap');
+    if (b.reasons.length && b.capped > a.capped && !['camera', 'loading'].some((r) => b.reasons.includes(r))) fail(`frames were drawn under the cap while the loop gave a standing reason not to idle: ${b.reasons.join(', ')}`);
   }
   for (const p of problems) fail(p);
   if (!process.exitCode) console.log(`drawn ok at ${VIEWPORT.width}x${VIEWPORT.height}${MOBILE ? ' (phone)' : ''}: the world and the sky are both on screen, nothing draws over them, and ${seen.labelCount} label(s) stay inside the window`);

@@ -29,7 +29,12 @@ SEARCH (spec 0061 task 9). The `<title>` is the trip's title and the site's name
 60 characters, and the title alone when they do not; the description is the blurb, cut at a
 sentence when it is over 160 characters and followed by one plain line when it is under 70, because
 a search result shows those lengths and no others well. scripts/check_seo.py holds every page to
-them. The JSON-LD names the page as part of the site the home page declares.
+them. The JSON-LD names the page as part of the site the home page declares, and as a LearningResource:
+`teaches` is the trip's own stop titles (registry/tours.yaml `card.title`, in order), `timeRequired`
+the trip's stated length as an ISO 8601 duration (the same sum scripts/gen_tours_js.py prints as "about
+two minutes": each stop's dwell, a flight and a settle, plus the way home), and `educationalLevel` is
+"General audience", the one value that is not read from the registry, because it has no field there.
+No FAQPage: Google limits that rich result to government and health sites.
 
 Same rule as the other generators: the page is a mirror of the registry, in HTML, and CI refuses
 a stale one. A stale page is a share that says the wrong thing about the trip it opens.
@@ -48,6 +53,9 @@ import sys
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gen_tours_js import FLIGHT_ESTIMATE_MS, RETURN_ESTIMATE_MS, SETTLE_MS, dwell_ms  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "registry" / "tours.yaml"
@@ -90,9 +98,40 @@ PAGE = """<!doctype html>
 <body>
 <script>location.replace('../#trip={id}');</script>
 <p><a href="../#trip={id}">Open the trip: {title}</a></p>
+<p>{truth}</p>
 </body>
 </html>
 """
+
+
+# THE ONE LINE OF TRUTH (internal #307), on the share page too: what the trip's positions are
+# computed from. The sentence and the table are site/js/ui/truthline.js's (the form with no
+# instant: a static page has none), kept here in Python because this generator runs without node;
+# tests/test_small_issues.mjs holds every page's sentence to that function's.
+LAYER_SOURCES = {
+    "stations": "CelesTrak orbital elements",
+    "active": "CelesTrak orbital elements",
+    "visual": "CelesTrak orbital elements",
+    "starlink": "CelesTrak orbital elements",
+    "stars": "the HYG star database",
+    "exoplanets": "the NASA Exoplanet Archive",
+    "deep-sky": "OpenNGC",
+}
+
+
+def truth_line(trip: dict, default_stage: str = "earth") -> str:
+    sources: list[str] = []
+    for layer in trip.get("requires") or []:
+        s = LAYER_SOURCES.get(layer)
+        if s and s not in sources:
+            sources.append(s)
+    stage = trip.get("stage") or default_stage
+    if stage not in ("earth", "moon", "sun") and not sources:
+        sources.append("published star and galaxy catalogues")
+    else:
+        sources.append("the planets\u2019 own orbits (astronomy-engine)")
+    said = sources[0] if len(sources) == 1 else f"{', '.join(sources[:-1])} and {sources[-1]}"
+    return f"Everything is drawn where it really is, from {said}."
 
 
 def read_trips() -> list[dict]:
@@ -138,6 +177,25 @@ def description_for(blurb: str) -> str:
     return text
 
 
+def duration_for(trip: dict) -> str:
+    """The trip's stated length (scripts/gen_tours_js.py trip_of), to the nearest half minute, as ISO 8601."""
+    ms = sum(dwell_ms((s.get("card") or {}).get("body")) + FLIGHT_ESTIMATE_MS + SETTLE_MS for s in trip.get("stops") or [])
+    if trip.get("return") is True:
+        ms += RETURN_ESTIMATE_MS
+    seconds = max(1, round(ms / 30000)) * 30
+    minutes, rest = divmod(seconds, 60)
+    return "PT" + (f"{minutes}M" if minutes else "") + (f"{rest}S" if rest else "")
+
+
+def teaches_for(trip: dict) -> list[str]:
+    seen: list[str] = []
+    for s in trip.get("stops") or []:
+        title = str((s.get("card") or {}).get("title") or "").strip()
+        if title and title not in seen:
+            seen.append(title)
+    return seen[:12]
+
+
 def page_for(trip: dict, host: str) -> str:
     trip_id = str(trip.get("id") or "")
     if not SAFE_ID.match(trip_id):
@@ -148,14 +206,18 @@ def page_for(trip: dict, host: str) -> str:
         raise SystemExit(f"gen_trip_pages: trip {trip_id} has no title or no blurb")
     esc = lambda s: html.escape(s, quote=True)  # noqa: E731
     url = f"{host}/t/{trip_id}.html"
-    ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title,
-          "description": description_for(blurb), "isPartOf": {"@id": f"{host}/#website"}}
+    ld = {"@context": "https://schema.org", "@type": ["WebPage", "LearningResource"], "url": url, "name": title,
+          "description": description_for(blurb), "isPartOf": {"@id": f"{host}/#website"},
+          "learningResourceType": "Interactive guided tour", "educationalLevel": "General audience",
+          "teaches": teaches_for(trip), "timeRequired": duration_for(trip), "isAccessibleForFree": True,
+          "inLanguage": "en"}
     return PAGE.format(
         id=trip_id,
         site=SITE_NAME,
         title=esc(title),
         page_title=esc(page_title_for(title)),
         blurb=esc(blurb),
+        truth=esc(truth_line(trip)),
         description=esc(description_for(blurb)),
         image=esc(image_for(trip_id, host)),
         image_alt=esc(image_alt_for(trip_id, title)),
@@ -199,6 +261,17 @@ def main(argv: list[str]) -> int:
     if check:
         stale = sorted(n for n in want if have.get(n) != want[n])
         extra = sorted(n for n in have if n not in want)
+        # EVERY TRIP'S PAGE NAMES ITS OWN PICTURE (2026-10-07). Until then a trip without
+        # site/og/<id>.png fell back to default.png and passed: twenty of twenty-six did, so a
+        # shared trip showed the home page's picture. The fallback stays in image_for() for a
+        # local run; the check refuses it, and scripts/build_trip_og.py says how to make one.
+        generic = sorted(n for n, text in want.items()
+                         if f'property="og:image" content="{host}/og/{n[:-5]}.png"' not in text)
+        for n in generic:
+            print(f"{rel}/{n} would show og/default.png: site/og/{n[:-5]}.png does not exist "
+                  f"(tools/trip-frames.probe.js, then scripts/build_trip_og.py --from=).")
+        if generic:
+            return 1
         if not stale and not extra:
             print(f"trip pages are current ({len(want)} pages under {rel}/, one per trip in {SOURCE.relative_to(ROOT)})")
             return 0

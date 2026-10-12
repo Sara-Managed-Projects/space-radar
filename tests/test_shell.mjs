@@ -22,7 +22,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const { createViewStack, readCollapsed, writeCollapsed, SIDE_KEY, VIEWS } = await import(join(JS, 'ui/shell.js'));
-const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta } = await import(join(JS, 'ui/explore.js'));
+const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch, homeTripOrder, offNote } = await import(join(JS, 'ui/explore.js'));
 const { nextRate, stepMs, clampToWindow, pillText, PILL_RATES } = await import(join(JS, 'ui/timepill.js'));
 const { railKey } = await import(join(JS, 'ui/rail.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
@@ -42,6 +42,8 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(!s.remove('home') && s.list()[0] === 'home', 'home cannot be removed');
   check(!s.push('nowhere') && !s.push('home'), 'an unknown view, or home, is not pushed');
   check(['home', 'card', 'sources', 'trip'].every((v) => VIEWS.includes(v)), 'the four views of design §1 exist');
+  check(VIEWS.includes('passport') && s.push('passport') && s.current() === 'passport', 'the passport is a pushed view too (spec 0041)');
+  s.pop();
 }
 
 // --- 2. collapse, remembered ------------------------------------------------------------------------
@@ -128,6 +130,12 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const fresh = [{ fetchedAt: 1, ageMs: 60e3 }, { fetchedAt: 1, ageMs: 2 * day }, { attempted: false }];
   const a = statusSummary(fresh);
   check(a.state === 'ok' && a.text === '2 sources read · oldest 2 days ago', `all fresh: count and the oldest (${a.text})`);
+  // No network (ui/offline.js): the line says so, with the age of the oldest copy on screen.
+  const off = statusSummary([{ fetchedAt: 1, ageMs: 3 * 86400e3 }, { fetchedAt: 1, ageMs: 60e3 }, { attempted: true, fetchedAt: null }], { offline: true });
+  check(off.state === 'stale' && off.text === 'Offline: showing saved copies from 3 days ago' && off.text.length <= 60,
+    `offline, the status line names the oldest saved copy; got ${JSON.stringify(off)}`);
+  const offNone = statusSummary([{ attempted: true, fetchedAt: null }], { offline: true });
+  check(offNone.state === 'failed' && offNone.text === COPY.statusLine.offlineNone, 'offline with nothing kept, it says there are no saved copies');
   const b = statusSummary([{ fetchedAt: 1, ageMs: 60e3 }, { fetchedAt: 1, ageMs: 7 * day, stale: true }]);
   check(b.state === 'stale' && b.text === '2 sources read · 1 stale · oldest 7 days ago', `something stale: amber and says how many (${b.text})`);
   const c = statusSummary([{ fetchedAt: 1, ageMs: 60e3 }, { attempted: true, fetchedAt: null }]);
@@ -139,6 +147,19 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(tripMeta({ planned: true, off: false, count: 4, estimateMs: 125e3 }) === '4 stops · 2 min', 'a trip card says its stops and minutes');
   check(tripMeta({ planned: false }) === COPY.tripCard.planning, 'before the plan lands it says it is working it out');
   check(tripMeta({ planned: true, off: true, reason: 'Needs a place' }) === 'Needs a place', 'a trip that cannot run says why, never hidden');
+  // THE HOME'S ORDER AND ITS FOLD (public #241): a trip left yesterday is the first card; the ones
+  // that cannot run come last; and while they are folded away one line says how many and why.
+  {
+    const rows = [{ id: 'a' }, { id: 'b', off: true, reason: 'Needs a place. Set where you are first.' }, { id: 'c' }, { id: 'd' }, { id: 'e', off: true, reason: 'Needs a place. Set where you are first.' }];
+    check(homeTripOrder(rows, (r) => (r.id === 'd' ? { index: 3 } : null)).map((r) => r.id).join('') === 'dacbe', 'the trip left in the last day leads, then the ones that can run, then the rest');
+    check(homeTripOrder(rows, null).map((r) => r.id).join('') === 'acdbe' && homeTripOrder(null).length === 0, 'with no passport: the ones that can run, then the rest');
+    check(homeTripOrder([{ id: 'x', off: true }], () => ({ index: 1 }))[0].id === 'x' && homeTripOrder([{ id: 'x', off: true }, { id: 'y' }], () => ({ index: 1 }))[0].id === 'y', 'a trip that cannot run is not moved up by having been left');
+    const hidden = homeTripOrder(rows, null).slice(3);
+    check(offNote(hidden) === '2 trips cannot run now: Needs a place. Set where you are first.', `the fold says how many cannot run, and why when they agree: "${offNote(hidden)}"`);
+    check(offNote([{ off: true, reason: 'A' }, { off: true, reason: 'B' }]) === '2 trips cannot run now', 'two reasons: the count alone, the cards say the rest');
+    check(offNote([{ off: true, reason: '' }]) === COPY.tripCard.offOne, 'one, with no reason given');
+    check(offNote([{ id: 'a' }]) === '' && offNote([]) === '' && offNote(null) === '', 'none folded away, nothing said');
+  }
   check(tripMeta({ planned: true, off: false, count: 3, estimateMs: 60e3 }, 'Next: 12 August 2026') === 'Next: 12 August 2026', 'an event trip says when its event is');
 }
 
@@ -148,8 +169,9 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(nextRate(1) === 60 && nextRate(3600) === 1 && nextRate(10) === 1 && nextRate(0) === 1, 'the cycle wraps, and a rate off it (an old link\'s 10×) goes to 1×');
   check(stepMs(1) === 600e3 && stepMs(3600) === 86400e3 && stepMs(36000) === 86400e3 && stepMs(10) === 600e3, 'a step is ten minutes at 1× and a day at 3600×; a rate between takes the step below');
   const anchor = Date.UTC(2026, 8, 29);
-  check(clampToWindow(anchor - 30 * 86400e3, anchor) === anchor - 7 * 86400e3, 'a scrub stops a week back (spec 0005)');
-  check(clampToWindow(anchor + 90 * 86400e3, anchor) === anchor + 30 * 86400e3, 'and thirty days on');
+  check(clampToWindow(anchor - 90 * 86400e3, anchor) === anchor - 30 * 86400e3, 'a scrub stops a month back (spec 0005 had a week; ui/timepill.js says why it is wider)');
+  check(clampToWindow(anchor + 900 * 86400e3, anchor) === anchor + 365 * 86400e3, 'and a year on');
+  check(clampToWindow(Date.parse('1979-03-05T13:00:00Z'), anchor, Date.parse('1979-03-05T12:00:00Z')) === Date.parse('1979-03-05T13:00:00Z'), 'a clock already outside the window (a mission\'s event) steps freely');
   check(clampToWindow(anchor + 3600e3, anchor) === anchor + 3600e3, 'inside the window it is left alone');
   const t = Date.UTC(2026, 8, 29, 21, 14, 30);
   check(pillText({ tMs: t, live: true }) === 'LIVE · 29 SEP 21:14 UTC', `live reads as row D draws it (${pillText({ tMs: t, live: true })})`);
@@ -165,6 +187,27 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(railKey({ key: 'p' }, body) === 'share' && railKey({ key: 'P' }, body) === 'share', 'P opens the share sheet (S moves the camera)');
   check(railKey({ key: 's' }, body) === null, 'S stays the camera\'s');
   check(railKey({ key: 'l' }, { tagName: 'INPUT' }) === null, 'typing an l in search is typing');
+  // Spec 0061 task 5: `/` focuses the search, and every key is named where its control is.
+  check(wantsSearch({ key: '/' }, body) === true, '/ asks for the search field');
+  check(wantsSearch({ key: '/' }, { tagName: 'INPUT' }) === false && wantsSearch({ key: '/' }, { tagName: 'TEXTAREA' }) === false, 'a / typed into a field is a /');
+  // Public #459: every way of typing, by the focused element or by where the key was sent.
+  const attrs = (o) => ({ tagName: 'DIV', getAttribute: (n) => (n in o ? o[n] : null) });
+  check(wantsSearch({ key: '/' }, { tagName: 'SELECT' }) === false && wantsSearch({ key: '/' }, { tagName: 'DIV', isContentEditable: true }) === false, 'nor in a select or an editable region');
+  check(wantsSearch({ key: '/' }, attrs({ contenteditable: '' })) === false && wantsSearch({ key: '/' }, attrs({ contenteditable: 'plaintext-only' })) === false && wantsSearch({ key: '/' }, attrs({ contenteditable: 'false' })) === true, 'contenteditable as an attribute counts, and "false" does not');
+  for (const role of ['textbox', 'searchbox', 'combobox', 'spinbutton']) check(wantsSearch({ key: '/' }, attrs({ role })) === false, `a role=${role} is a text field`);
+  check(wantsSearch({ key: '/' }, attrs({ role: 'button' })) === true, 'a focused button is not');
+  check(wantsSearch({ key: '/', target: { tagName: 'INPUT' } }, body) === false, 'a / sent to a field the document does not report as focused (a frame, a shadow root) is a /');
+  check(wantsSearch({ key: '/', composedPath: () => [{ tagName: 'TEXTAREA' }, { tagName: 'X-HOST' }] }, { tagName: 'X-HOST' }) === false, 'the composed path\'s first element is asked, inside a shadow root');
+  check(wantsSearch({ key: '/', isComposing: true }, body) === false && wantsSearch({ key: '/', keyCode: 229 }, body) === false, 'never mid-composition (an input method)');
+  check(wantsSearch({ key: '/', shiftKey: true }, body) === true, 'Shift stays allowed: on a German keyboard / is Shift+7');
+  check(wantsSearch({ key: '/', ctrlKey: true }, body) === false && wantsSearch({ key: '/', metaKey: true }, body) === false, 'Ctrl+/ and Cmd+/ stay the browser\'s');
+  check(wantsSearch({ key: '/', defaultPrevented: true }, body) === false && wantsSearch({ key: '?' }, body) === false, 'a key somebody else took, or another key, is not it');
+  const exploreKeys = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
+  check(/const toSearch = \(e\) => \{[\s\S]{0,900}search\.focus\(\);\s*\};\s*document\.addEventListener\('keydown', \(e\) => \{ if \(wantsSearch\(e, document\.activeElement\)\) toSearch\(e\); \}\);/.test(exploreKeys), 'the explore view listens for it and focuses the field');
+  check(/cls\.contains\('sr-clean'\) \|\| cls\.contains\('sr-trip-mode'\)/.test(exploreKeys), 'never over a clear screen or in a trip');
+  check(/\(L\)/.test(COPY.rail.show) && /\(P\)/.test(COPY.rail.share) && /\(H\)/.test(COPY.clean.hide) && /H or Escape/.test(COPY.clean.show) && /\(\/\)/.test(COPY.search.inputTitle),
+    'the tooltips name their keys: L, P, H, / and Escape');
+  check(/\(Escape\)/.test(COPY.card.closeTitle), 'and the card\'s close names Escape');
   check(railKey({ key: 'p', metaKey: true }, body) === null && railKey({ key: 'l', ctrlKey: true }, body) === null, 'browser shortcuts are the browser\'s');
   check(railKey({ key: 'h' }, body) === null, 'H is the clear screen\'s own (ui/cleanview.js)');
 
@@ -182,7 +225,12 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const railSrc = readFileSync(join(JS, 'ui/rail.js'), 'utf8');
   const exploreSrc = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
   check(/import\('\.\/whattoshow\.js'\)/.test(railSrc) && !/^import[^\n]*whattoshow/m.test(railSrc), 'What to show loads when first opened');
-  check(/import\('\.\/place\.js'\)/.test(exploreSrc) && !/^import[^\n]*place\.js/m.test(exploreSrc), 'the Tonight tab loads when first shown');
+  // The Tonight view is fetched by main.js inside the tab's mount (so the first time the tab is shown)
+  // and brings the place controls with it (ui/tonight.js imports ui/place.js; internal #455): the
+  // explore view names neither, and neither is a first visit's module.
+  const tonightSrc = readFileSync(join(JS, 'ui/tonight.js'), 'utf8');
+  check(/mountTab\('tonight', \(host\) => \{\s*import\('\.\/ui\/tonight\.js'\)/.test(main) && !/^import[^\n]*ui\/(tonight|place)\.js/m.test(main)
+    && !/place\.js|tonight\.js'/.test(exploreSrc) && /^import \{ createPlace \} from '\.\/place\.js';/m.test(tonightSrc), 'the Tonight tab, and the place controls in it, load when the tab is first shown');
   // The Tonight tab's mount point (spec 0051's ui/tonight.js plugs in here without editing explore.js).
   check(/function mountTab\(id, render, opts = \{\}\)/.test(exploreSrc) && /mountTab \}/.test(exploreSrc), 'the explore view offers mountTab(id, render) for a tab\'s content');
   const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
@@ -192,7 +240,8 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   // Spec 0061 task 7: a trip hides the rail and the pill; the sidebar stays and is the trip's own
   // view. Task 3: on a phone too, where the sidebar is the sheet, and the top bar goes with the rail.
   check(/const CHROME = \['sr-rail', 'sr-time', 'sr-top'\]/.test(frame), 'a trip hides the rail, the pill and the phone\'s top bar');
-  check(/const sideHost = shell && typeof shell\.host === 'function' \? shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && !/side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view at every width (one sheet on a phone), the card in its slot');
+  // (Except in present mode, public #441, where the sidebar is gone and the sheet is the room's caption.)
+  check(/const sideHost = (!present && )?shell && typeof shell\.host === 'function' \? shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && !/side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view at every width (one sheet on a phone), the card in its slot');
   check(/#sr-side \[data-trip=/.test(frame), 'and Leave gives focus back to the trip card it was started from');
 }
 

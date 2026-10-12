@@ -90,7 +90,11 @@ check(wikiTitleOf({ id: 'mercury' }) === 'Mercury_(planet)', 'Mercury is the pla
 check(wikiTitleOf({ id: 'hip-32349', meta: { whySource: 'https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)' } }) === 'Sirius', 'a star names its article in its own source line');
 check(wikiTitleOf({ id: 'x', meta: { source: 'https://en.wikipedia.org/wiki/Io_(moon) (infobox)' } }) === 'Io_(moon)', 'a title\'s own brackets are kept, the note\'s are not');
 check(wikiTitleOf({ id: 'x', meta: { source: 'https://en.wikipedia.org/wiki/PSR_B1919%2B21 (infobox)' } }) === 'PSR_B1919+21', 'an encoded title is decoded');
-check(wikiTitleOf({ id: 'dso-m42', meta: { cite: 'distance: https://en.wikipedia.org/wiki/List_of_Messier_objects' } }) === null, 'a list is a source for a number, not the thing\'s article');
+check(wikiTitleOf({ id: 'dso-unlisted', meta: { cite: 'distance: https://en.wikipedia.org/wiki/List_of_Messier_objects' } }) === null, 'a list is a source for a number, not the thing\'s article');
+// The Messier rows whose only source line is that list name their own article in the table
+// (internal #202; each title read from en.wikipedia.org's API on 2026-10-08).
+check(wikiTitleOf({ id: 'dso-m42', meta: { cite: 'distance: https://en.wikipedia.org/wiki/List_of_Messier_objects' } }) === 'Orion_Nebula', 'M42 is the Orion Nebula, not the list');
+check(wikiTitleOf({ id: 'dso-m31' }) === 'Andromeda_Galaxy' && wikiTitleOf({ id: 'dso-m13' }) === 'Messier_13', 'M31 and M13 name their articles');
 check(wikiTitleOf({ id: 'sat-99999', name: 'Juno' }) === null, 'no article named, no excerpt: never a guess from the name');
 check(wikiTitleOf(null) === null, 'no record, no article');
 
@@ -110,7 +114,7 @@ check(objectPageUrl({ id: 'mars' }, index, 'http://127.0.0.1:8416/site/') === 'h
 {
   const out = mkdtempSync(join(tmpdir(), 'sr-share-seo-'));
   try {
-    execFileSync('python3', [join(ROOT, 'scripts/build_seo.py'), '--out', out], { cwd: ROOT, stdio: 'pipe' });
+    execFileSync('python3', [join(ROOT, 'scripts/build_seo.py'), '--out', out, '--no-share'], { cwd: ROOT, stdio: 'pipe' });
     const built = JSON.parse(readFileSync(join(out, 'object-pages.json'), 'utf8'));
     check(JSON.stringify(Object.entries(built).sort()) === JSON.stringify(Object.entries(index).sort()), 'build_seo.py writes object-pages.json, the same id-to-slug map');
     for (const [id, slug] of Object.entries(built).slice(0, 400)) check(existsSync(join(out, 'o', `${slug}.html`)), `object-pages.json names o/${slug}.html (${id}), which was built`);
@@ -160,7 +164,15 @@ for (const f of ['main.js', 'ui/cards.js', 'ui/rail.js', 'ui/shell.js']) check(!
 // The only fetch in the sheet is fetchJson, and its only callers are the two look-ups, which only
 // lookUp() calls, which only open() calls.
 check((sheetSrc.match(/\bfetch\(/g) || []).length === 1 && /return fetch\(url, \{ \.\.\.opts, signal/.test(sheetSrc), 'one fetch in the sheet, in fetchJson');
-check((sheetSrc.match(/fetchJson\(/g) || []).length === 3, 'fetchJson is called twice (the summary, the index)');
+check((sheetSrc.match(/fetchJson\(/g) || []).length === 2, 'fetchJson is called once (the summary)');
+// The index of object pages is ui/objectpage.js's (internal #199: a card's About it asks it too):
+// one fetch there, of object-pages.json, made when asked and never at import.
+{
+  const pageSrc = readFileSync(join(ROOT, 'site/js/ui/objectpage.js'), 'utf8');
+  check((pageSrc.match(/\bfetch\(/g) || []).length === 1 && /pagesIndex = fetch\(`\$\{base\}\$\{PAGES_INDEX\}`/.test(pageSrc), 'one fetch in ui/objectpage.js, of the index, inside objectPages()');
+  for (const f of ['main.js', 'ui/rail.js', 'ui/shell.js', 'ui/share.js']) check(!/objectpage\.js/.test(src(f)), `${f} does not import ui/objectpage.js`);
+  check(/import\('\.\/objectpage\.js'\)/.test(src('ui/cards.js')) && !/from '\.\/objectpage\.js'/.test(src('ui/cards.js')), 'the card asks for its page by a dynamic import, when About it opens');
+}
 check((sheetSrc.match(/\blookUp\(/g) || []).length === 2 && /const looked = w\.record \? lookUp\(/.test(sheetSrc), 'the look-ups run from open() only');
 check(/credentials: 'omit'/.test(sheetSrc) && /referrerPolicy: 'no-referrer'/.test(sheetSrc), 'Wikipedia is asked with no cookies and no referrer');
 check(/rest_v1\/page\/summary\//.test(sheetSrc), 'the REST summary endpoint');
@@ -173,6 +185,34 @@ const ctx = {};
 const api = installShare(ctx);
 check(ctx.share === api && typeof api.open === 'function' && typeof api.close === 'function' && typeof api.isOpen === 'function' && api.isOpen() === false, 'installShare puts open, close and isOpen on ctx.share, closed');
 check(fetched.length === 0, `nothing was fetched by any of this: ${fetched.join(', ')}`);
+
+// Internal #371: the phone sheet's half ends on a whole row, never through one.
+{
+  const { wholeRowHeight, HALF_CAP, HALF_FLOOR } = await import(join(ROOT, 'site/js/ui/sharesheet.js'));
+  const feet = [282, 338, 394, 446, 498, 550];
+  const opts = { cap: Math.round(844 * HALF_CAP), floor: Math.round(844 * HALF_FLOOR), pad: 16, fallback: 405 };
+  const h = wholeRowHeight(feet, opts);
+  check(feet.some((f) => f + 16 === h) && h <= opts.cap, `half is a row's foot plus the padding, inside the cap (${h})`);
+  check(wholeRowHeight(feet, { ...opts, cap: 300 }) === 405, 'when no row ends inside the band, the plain half');
+  check(wholeRowHeight([], opts) === 405 && wholeRowHeight([NaN, 9999], opts) === 405, 'nothing measured is the plain half');
+  check(HALF_CAP <= 0.62 && HALF_FLOOR >= 0.3, 'the selection keeps a third of the screen above the sheet');
+  const src = readFileSync(join(ROOT, 'site/js/ui/sharesheet.js'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/share.css'), 'utf8');
+  check(/classList\.add\('sr-sharing'\)/.test(src) && /classList\.remove\('sr-sharing'\)/.test(src) && /html\.sr-phone\.sr-sharing #sr-side \{\s*visibility: hidden;/.test(css), 'on a phone the card\'s sheet is off while the share sheet is up: one ember, nothing glowing through');
+  check(/textPanel\.hidden = true/.test(src) && /setAttribute\('aria-expanded', on \? 'true' : 'false'\)/.test(src), 'the post\'s words open in place, closed at first (internal #202)');
+}
+
+// The camera's place in a view's link (internal #397).
+{
+  const pose = { camPose: () => ({ azimuthDeg: 40.04, polarDeg: 61.96, distanceKm: 26543.21 }) };
+  const B = 'https://www.spaceradar.ai/';
+  check(sheet.withCam(`${B}#at=europa`, pose) === `${B}#at=europa&cam=40,62,26540`, `a view's link carries where the camera stood: ${sheet.withCam(`${B}#at=europa`, pose)}`);
+  check(sheet.withCam(B, pose) === `${B}#cam=40,62,26540`, 'the bare app link too');
+  check(sheet.withCam(`${B}t/moon-landings.html`, pose) === `${B}t/moon-landings.html` && sheet.withCam(`${B}#trip=moon-landings&stop=3`, pose) === `${B}#trip=moon-landings&stop=3`, 'a trip\'s page and a trip\'s stop frame themselves');
+  check(sheet.withCam(`${B}#at=mars`, { camPose: () => { throw new Error('no rig'); } }) === `${B}#at=mars` && sheet.withCam(`${B}#at=mars`, {}) === `${B}#at=mars` && sheet.withCam(`${B}#at=mars&cam=1,2,3`, pose) === `${B}#at=mars&cam=1,2,3`, 'a camera that cannot be read leaves the link as it was, and it is never added twice');
+  const src = readFileSync(join(JS, 'ui/sharesheet.js'), 'utf8');
+  check((src.match(/withCam\(shareUrl\(/g) || []).length === 2, 'the sheet\'s own links for a record and for the bare view go through it');
+}
 
 if (problems.length) {
   console.error(`sharesheet: ${problems.length} problem(s)`);

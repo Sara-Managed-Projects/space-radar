@@ -1,0 +1,96 @@
+// ui/overlaypanel.js -- "Earth data" in What to show: pick one measured map to lay over the globe.
+//
+// Contract: overlayPanel(ctx) -> HTMLElement (with .destroy())
+//
+// A settings row like "Colour by" above it (ui/colorkey.js), and for the same reason it prints its
+// own legend: the colours on the globe mean nothing without one. The list is registry/overlays.yaml
+// (data/overlays.js); choosing one calls ctx.setOverlay(id), which is where the scene module and
+// the one picture are fetched (main.js). Nothing is remembered between visits: an overlay asks
+// another host for half a megabyte, and that is the visitor's choice each time.
+
+import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
+import { OVERLAYS } from '../data/overlays.js';
+import { legendNode, paintLegend, overlayLine } from './overlaylegend.js';
+
+/** The overlay id main.js hands to scene/wind.js instead of scene/earthoverlay.js. */
+export const WIND_OPTION = 'wind';
+/** Whether the panel MAY list the wind: only when the harvester has saved a copy (see where the option is built). */
+export const WIND_OFFERED = true;
+/** The overlay id main.js hands to scene/currents.js: the sea's currents, coloured by its temperature. */
+export const CURRENTS_OPTION = 'currents';
+
+export function overlayPanel(ctx) {
+  const C = COPY.overlay;
+  const wrap = document.createElement('section');
+  wrap.className = 'sr-panel sr-colourkey sr-overlay';
+  const title = document.createElement('h2');
+  title.className = 'sr-panel__title';
+  title.textContent = C.panelTitle;
+  wrap.appendChild(title);
+  const select = document.createElement('select');
+  select.className = 'sr-colourkey__select';
+  select.setAttribute('aria-label', C.panelTitle);
+  const none = document.createElement('option');
+  none.value = '';
+  none.textContent = C.none;
+  select.appendChild(none);
+  for (const row of OVERLAYS) {
+    const o = document.createElement('option');
+    o.value = row.id;
+    o.textContent = row.title;
+    select.appendChild(o);
+  }
+  // The wind is not a GIBS picture: scene/wind.js draws it from NOAA's model (ctx.setOverlay knows the id).
+  // OFFERED ONLY WITH A SAVED COPY (internal #552). The field used to come from one university server
+  // that, the day it was measured, answered in 2 s twice and then took 35 s, returned 404 and timed
+  // out, and a row that fails half the time is worse than no row. The harvester now writes
+  // /data/v1/wind.json every three hours; the row appears once the manifest lists a usable copy, and
+  // a visitor's browser never calls that server. scene/wind.js and ctx.setOverlay('wind') answer a
+  // link or a trip stop whether or not the row is shown.
+  if (WIND_OFFERED) {
+    import('../data/sources.js').then((m) => m.snapshotAvailable('wind')).then((ok) => {
+      if (!ok || wrap.destroyed) return;
+      const wind = document.createElement('option');
+      wind.value = WIND_OPTION;
+      wind.textContent = C.wind.title;
+      select.appendChild(wind);
+      paint();
+    }).catch(() => { /* no manifest: no wind row */ });
+  }
+  // OCEAN CURRENTS are scene/currents.js's streaks, from TWO saved copies (the current and the sea's
+  // temperature, registry/sources.yaml `ocean-currents` and `ocean-temperature`). Offered only when
+  // the manifest lists both: no server but ours is ever asked, and without the copies there is
+  // nothing to draw. A link or a trip stop that asks anyway gets the one sentence that says so.
+  import('../data/sources.js').then((m) => Promise.all([m.snapshotAvailable('ocean-currents'), m.snapshotAvailable('ocean-temperature')])).then(([flow, temp]) => {
+    if (!flow || !temp || wrap.destroyed) return;
+    const o = document.createElement('option');
+    o.value = CURRENTS_OPTION;
+    o.textContent = C.currents.title;
+    select.appendChild(o);
+    paint();
+  }).catch(() => { /* no manifest: no currents row */ });
+  wrap.appendChild(select);
+  const legend = legendNode(null);
+  wrap.appendChild(legend);
+  const why = document.createElement('p');
+  why.className = 'sr-colourkey__why';
+  wrap.appendChild(why);
+
+  const paint = () => {
+    const st = typeof ctx.overlayState === 'function' ? ctx.overlayState() : null;
+    const id = st && st.id ? st.id : '';
+    if (select.value !== id) select.value = id;
+    paintLegend(legend, st && st.id ? st : null);
+    const text = overlayLine(st);
+    if (why.textContent !== text) why.textContent = text;
+  };
+  select.addEventListener('change', () => {
+    if (typeof ctx.setOverlay === 'function') ctx.setOverlay(select.value || null);
+    paint();
+  });
+  window.addEventListener('sr:overlay', paint);
+  paint();
+  wrap.destroy = () => { wrap.destroyed = true; window.removeEventListener('sr:overlay', paint); };
+  return wrap;
+}

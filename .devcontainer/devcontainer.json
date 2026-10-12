@@ -1,0 +1,18 @@
+{
+  // Open in Codespaces (or VS Code Dev Containers) and you have everything the checks need.
+  // A stock image and two features, so there is nothing here for us to maintain: no Dockerfile,
+  // no pinned tool versions beyond "Python 3.12" and "Node 22", no extensions.
+  "name": "Space Radar",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  // PyYAML is the only dependency of the checks. There is no npm install and no build step.
+  "postCreateCommand": "python3 -m pip install --disable-pip-version-check pyyaml",
+  "postAttachCommand": "printf '\\nSpace Radar is ready.\\n\\n  Run it:    python3 -m http.server 8177 --directory site     (then open the forwarded port 8177)\\n  Check it:  scripts/check.sh\\n  First PR:  docs/FIRST_PR.md\\n\\n'",
+  "forwardPorts": [8177],
+  "portsAttributes": {
+    "8177": { "label": "Space Radar", "onAutoForward": "openPreview" }
+  }
+}

@@ -508,7 +508,12 @@ const FAR_BODIES = [
  * @returns {Array<Object>} 10 records
  */
 export function farBodies() {
-  return FAR_BODIES.map((b) => {
+  return FAR_BODIES.map((b) => sbdbBody(b, 'far-bodies'));
+}
+
+/** One JPL small-body row (FAR_BODIES, NAMED_ASTEROIDS) as a record of `layer`, with its phase. */
+function sbdbBody(b, layer) {
+  {
     const aKm = b.aAu * AU_KM; // negative on a hyperbola, which kepler.js expects
     const qKm = aKm * (1 - b.e);
     const epochMs = jdToMs(b.epochJd);
@@ -517,7 +522,7 @@ export function farBodies() {
     return {
       id: b.id,
       name: b.name,
-      layer: 'far-bodies',
+      layer,
       klass: b.klass,
       propagator: 'kepler',
       frame: 'sun-inertial',
@@ -558,7 +563,7 @@ export function farBodies() {
         diameterHighKm: b.diameterHighKm ?? null,
         moons: Array.isArray(b.moons) ? b.moons.slice() : null,
         // Never near Earth: the asteroid card's near-Earth sentence reads this, as for Vesta.
-        neo: false,
+        neo: b.neo === true,
         why: b.why,
         whySource: b.whySource,
         // Noon UTC, so "6 June 2026" is 6 June in every time zone a visitor reads it from.
@@ -574,7 +579,166 @@ export function farBodies() {
         wholePath: true,
       },
     };
-  });
+  }
+}
+
+// =================================================================================================
+// The asteroids a visitor asks for by name (2026-10-06)
+// =================================================================================================
+//
+// Apophis, Bennu, Didymos, Vesta and Phaethon, each on JPL's orbit WITH ITS PHASE, so each is drawn
+// where it is today: the same construction as the dwarf planets above, cls 'inferred'. They are
+// rows of the `asteroids` layer ALWAYS, beside whatever JPL's close-approach table holds that
+// week (data/layers.js `always:`). Until now they existed only as the stand-ins at the top of
+// this file, parked at a placeholder perihelion and shown only when the snapshot was missing,
+// which on the live site is never: a trip about Apophis flew to nothing (public #239).
+//
+//   Elements   https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=<number>&phys-par=1&full-prec=1, read
+//              2026-10-06, heliocentric ecliptic J2000, kept to ten significant figures. Bennu's
+//              row says why it is Horizons' instead.
+//   Checked    against JPL Horizons heliocentric vectors for 2026-10-06 00:00 TDB: two-body motion
+//              from these elements lands within 0.0001 au for all five (each row has its number),
+//              and tests/test_remaining_trips.mjs holds them there.
+//   NOT        a close approach. Two-body motion knows nothing of the Earth's pull, so Apophis's
+//              pass of 13 April 2029 cannot be flown from this ROW. Since 2026-10-06 the record
+//              also has a file of its path from JPL Horizons, 2026 to 2029, kept relative to the
+//              Earth round the pass (registry/ephemerides.yaml); once that file is here it
+//              answers instead of the row (propagate/index.js EPHEMERIS_OF), and the trip
+//              `asteroids-that-come-close` flies the pass from it.
+/** @type {Array<Object>} the same columns as FAR_BODIES, with `neo` */
+export const NAMED_ASTEROIDS = [
+  {
+    id: 'asteroid-99942',
+    name: 'Apophis',
+    designation: '99942 Apophis',
+    aliases: ['99942 Apophis', '2004 MN4'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=99942. Orbit 220, solved 2024-06-25, observations 2004-03-15 to 2022-04-09.
+    // Against Horizons on 2026-10-06 00:00 TDB: 5e-05 au off, at 0.839 au from the Sun.
+    aAu: 0.9223592207, e: 0.191149228, iDeg: 3.34099688, nodeDeg: 203.8936514, argpDeg: 126.6795707,
+    maDeg: 175.3304027, epochJd: 2461200.5, tpJd: 2461042.9192,
+    solution: '2024-06-25', lastObs: '2022-04-09',
+    hMag: 19.09,
+    diameterKm: 0.34,
+    moons: null,
+    why: "A rock about 340 metres across that will pass about 32 000 km above the ground on 13 April 2029, closer than the geostationary satellites. It will miss. Set the clock to that evening and it is drawn on JPL's predicted path.",
+    whySource: "NASA Science, Apophis (science.nasa.gov/solar-system/asteroids/apophis) and the JPL Small-Body Database (size), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-101955',
+    name: 'Bennu',
+    designation: '101955 Bennu',
+    aliases: ['101955 Bennu', '1999 RQ36'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=101955. Orbit 118, solved 2021-01-07, observations 1999-09-11 to 2020-10-03.
+    // The SBDB states this orbit at a 2011 epoch (two-body motion from there misses Horizons by 0.042 au
+    // today), so these are JPL HORIZONS' osculating elements of the same solution at JD 2461200.5
+    // (EPHEM_TYPE=ELEMENTS, CENTER=500@10, ecliptic J2000).
+    // Against Horizons on 2026-10-06 00:00 TDB: 5e-05 au off, at 1.353 au from the Sun.
+    aAu: 1.125950726, e: 0.2036821439, iDeg: 6.032966275, nodeDeg: 1.966574037, argpDeg: 66.41055452,
+    maDeg: 72.45176655, epochJd: 2461200.5, tpJd: 2461112.67382,
+    solution: '2021-01-07', lastObs: '2020-10-03',
+    hMag: 20.21,
+    diameterKm: 0.484,
+    moons: null,
+    why: "About half a kilometre wide. NASA’s OSIRIS-REx collected 121.6 grams of it and brought them back to the Utah desert on 24 September 2023, the largest asteroid sample ever collected in space.",
+    whySource: "NASA Science, OSIRIS-REx (science.nasa.gov/mission/osiris-rex) and the JPL Small-Body Database (size, Daly et al. 2020), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-65803',
+    name: 'Didymos',
+    designation: '65803 Didymos',
+    aliases: ['65803 Didymos', '1996 GT', 'Dimorphos'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=65803. Orbit 240, solved 2026-03-01, observations 2022-09-27 to 2025-03-11.
+    // Against Horizons on 2026-10-06 00:00 TDB: 3e-05 au off, at 1.357 au from the Sun.
+    aAu: 1.642709609, e: 0.3831233243, iDeg: 3.413876519, nodeDeg: 72.98582362, argpDeg: 319.5807001,
+    maDeg: 260.8612886, epochJd: 2461200.5, tpJd: 2461412.27778,
+    solution: '2026-03-01', lastObs: '2025-03-11',
+    hMag: 18.11,
+    diameterKm: 0.78,
+    moons: null,
+    why: "An asteroid 780 metres across with a small moon, Dimorphos. NASA’s DART was flown into the moon in September 2022 and shortened its orbit by 32 minutes. ESA’s Hera is due there in November 2026.",
+    whySource: "NASA Science, DART (science.nasa.gov/planetary-defense-dart), ESA, Hera (esa.int/Space_Safety/Hera) and the JPL Small-Body Database (size, Naidu et al. 2020), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-4',
+    name: 'Vesta',
+    designation: '4 Vesta',
+    aliases: ['4 Vesta', 'A807 FA'],
+    klass: 'asteroid',
+    neo: false,
+    // sstr=4. Orbit 36, solved 2021-04-13, observations 1950-09-23 to 2021-03-17.
+    // Against Horizons on 2026-10-06 00:00 TDB: 2e-05 au off, at 2.462 au from the Sun.
+    aAu: 2.361365965, e: 0.09020374383, iDeg: 7.143925545, nodeDeg: 103.7012933, argpDeg: 151.4686478,
+    maDeg: 81.19015608, epochJd: 2461200.5, tpJd: 2460901.58738,
+    solution: '2021-04-13', lastObs: '2021-03-17',
+    hMag: 3.25,
+    diameterKm: 522.8,
+    moons: null,
+    why: "The second most massive body in the asteroid belt, 523 km across. NASA’s Dawn orbited it from July 2011 to September 2012, and three groups of meteorites found on Earth appear to come from it.",
+    whySource: "NASA Science, 4 Vesta (science.nasa.gov/solar-system/asteroids/4-vesta) and the JPL Small-Body Database (size, Park et al. 2025), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-3200',
+    name: 'Phaethon',
+    designation: '3200 Phaethon',
+    aliases: ['3200 Phaethon', '1983 TB'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=3200. Orbit 1007, solved 2026-10-05, observations 1983-10-27 to 2026-10-04.
+    // Against Horizons on 2026-10-06 00:00 TDB: 4e-05 au off, at 0.916 au from the Sun.
+    aAu: 1.271464621, e: 0.8896722844, iDeg: 22.31052728, nodeDeg: 265.098806, argpDeg: 322.3001685,
+    maDeg: 301.4858235, epochJd: 2461200.5, tpJd: 2461285.61644,
+    solution: '2026-10-05', lastObs: '2026-10-04',
+    hMag: 14.38,
+    diameterKm: 6.25,
+    moons: null,
+    why: "The Geminid meteors of December come from this one. Its path takes it closer to the Sun than Mercury’s does, and nobody is sure whether it is a rock or a dead comet.",
+    whySource: "NASA Science, Geminids (science.nasa.gov/solar-system/meteors-meteorites/geminids) and the JPL Small-Body Database (orbit, and the size, Taylor et al. 2019), read 6 October 2026",
+  },
+];
+
+// HALLEY, for the same reason: the comets layer is JPL's snapshot or nothing, and the one comet
+// everybody knows is far outside what that table selects (it is 35 au out, past Neptune, and
+// will not be back until 2061). JPL Horizons' osculating elements of solution JPL#75 at
+// JD 2461200.5 (COMMAND='DES=1P;CAP', EPHEM_TYPE=ELEMENTS, CENTER=500@10, ecliptic J2000; read
+// 2026-10-06); two-body motion from them is within 0.0001 au of Horizons' own vector for
+// 2026-10-06 (tests/test_remaining_trips.mjs). JPL's solution 75 was made on 2025-11-21 from
+// observations of 1835 to 1994. The nucleus: 11 km across (Lamy et al. 2004, Comets II), 14.9 x
+// 8.2 km as Giotto saw it (Keller et al. 1987, A&A 187, 807), both from the SBDB. The tail scene/models.js gives every selected comet is a
+// drawing; at this distance the real one has none, and the row's `departure` line says so.
+const NAMED_COMETS = [
+  {
+    id: 'comet-1P',
+    name: '1P/Halley',
+    designation: '1P',
+    aliases: ['Halley', 'Halley\u2019s Comet', 'Comet Halley', '1P'],
+    klass: 'comet',
+    neo: false,
+    aAu: 17.85907724, e: 0.9680203461, iDeg: 162.1787514, nodeDeg: 59.36033415, argpDeg: 112.2600251,
+    maDeg: 192.2751783, epochJd: 2461200.5, tpJd: 2474043.95264,
+    solution: '2025-11-21', lastObs: '1994-01-11',
+    hMag: 5.5,
+    diameterKm: 11,
+    moons: null,
+    why: "The comet everybody has heard of. It comes round every 76 years on average, was last near the Sun in 1986, and is now out past Neptune. It returns in 2061. Its dust makes two meteor showers a year, in May and in October.",
+    whySource: "NASA Science, 1P/Halley (science.nasa.gov/solar-system/comets/1p-halley), and JPL Horizons for where it is, read 6 October 2026",
+    departure: 'the tail is part of the drawing: this far from the Sun the comet is a dark, frozen lump with no tail at all',
+  },
+];
+
+/** The comets layer's always-present row: Halley, where it is today. */
+export function namedComets() {
+  return NAMED_COMETS.map((b) => sbdbBody(b, 'comets'));
+}
+
+/** The asteroids layer's always-present rows: five famous ones, each where it is today. */
+export function namedAsteroids() {
+  return NAMED_ASTEROIDS.map((b) => sbdbBody(b, 'asteroids'));
 }
 
 // =================================================================================================
@@ -674,6 +838,26 @@ const ANCHORED_CRAFT = [
     offset: 'It orbits the Sun–Earth L1 point, 1.5 million km SUNWARD of Earth. Drawn on ' +
       "Earth's orbit; the offset is smaller than the dot.",
   },
+  // Added 2026-10-07 (internal #389, public #438). Horizons -211 header (revised 2026-09-30): "It
+  // launched 2026-Aug-30 11:26:04 UTC on a Falcon Heavy from Kennedy Space Center (LC-39A) and
+  // will orbit the Earth-Sun L2 point", a 2.4 m primary mirror. Horizons, VECTORS, CENTER='500@399':
+  // 1 271 353 km from Earth on 2026-09-22 and 1 457 793 km on 2026-10-07. Its trajectory file is
+  // the flight dynamics team's prediction and ends 2026-10-26; the harvester asks for it and the
+  // anchor stays the stand-in when Horizons has nothing.
+  {
+    id: 'deep-roman',
+    name: 'Nancy Grace Roman Space Telescope',
+    launched: '2026-08-30',
+    klass: 'telescope',
+    horizonsId: -211,
+    anchor: 'earth',
+    earthRangeKm: 1.5e6,
+    note: 'Launched in August 2026 with a mirror as wide as Hubble’s, 2.4 metres, to survey ' +
+      'the sky in infrared light from beyond the Moon.',
+    offset: 'It is on its way into an orbit of the Sun–Earth L2 point, 1.5 million km beyond Earth ' +
+      '(JPL Horizons had it 1.46 million km out on 7 October 2026). It is drawn here on ' +
+      "Earth's orbit; the offset is smaller than the dot.",
+  },
 ];
 
 /**
@@ -754,6 +938,32 @@ const PLANET_ORBITERS = [
       'day, and after two days where it is on that orbit is not known.',
     // 88 km (2026-10-08 02:50).
     arc: 'within about 90 km of JPL’s own track',
+  },
+  // Added 2026-10-07 (internal #389). Horizons -53 header (revised 2026-09-30): launched
+  // 2001-04-07 15:02 UTC on a Delta II, Mars arrival 2001-10-24, "has supported ongoing exploration
+  // of Mars by relaying 95% of the data from the Mars rovers"; trajectory "fit to data through
+  // 2026-Sep-23, prediction after that". Same queries as the rows above, on 2026-10-07.
+  {
+    id: 'deep-mars-odyssey',
+    name: 'Mars Odyssey',
+    launched: '2001-04-07',
+    klass: 'probe',
+    horizonsId: -53,
+    world: 'mars',
+    aliases: ['2001 Mars Odyssey'],
+    note: 'In orbit since October 2001, longer than any other craft at another planet. It found ' +
+      'water ice under the ground and relays what the rovers say.',
+    rKm: [3664.181, -1037.886, -178.823],
+    vKmS: [-0.293632, -0.372025, -3.312939],
+    periodMin: 118.6,
+    // 3 762..3 834 km from Mars's centre over 2026-09-22..10-22; 97.5 degrees to the ecliptic.
+    orbit: 'circles Mars over the poles every 119 minutes, about 370 to 445 km up',
+    // Worst within a day 63 km, within a week 362, within two weeks 690, within 30 days 1 533.
+    drift: 'Checked against JPL’s own forecast, the dot stays within 100 km of it for a day and ' +
+      'is about 700 km off after two weeks.',
+    // 227 km (2026-10-04 15:00) from the nearer six-hourly state alone; the blend of the two is
+    // no worse than that.
+    arc: 'within about 250 km of JPL’s own track',
   },
   {
     id: 'deep-hope',
@@ -893,6 +1103,217 @@ const CRUISING_CRAFT = [
     // tests/test_deep_space.mjs now holds every note in this layer to.
     note: 'It crossed Pluto in nine hours in 2015 after a nine-year fall towards it, and ' +
       'in 2019 flew past Arrokoth, a Kuiper belt rock, the farthest thing ever visited.',
+  },
+  // The two Pioneers (2026-10-06): silent since 2003 and 1995, still coasting out, and drawn here
+  // because each has a file of its whole path (registry/ephemerides.yaml). The three numbers are
+  // read from that file, which is JPL Horizons' trajectory for -23 and -24, at 2026-10-06 00:00
+  // UTC: Pioneer 10 at 141.96 au, 11.85 km/s, ecliptic longitude 80.2 and latitude +3.0 degrees;
+  // Pioneer 11 at 117.98 au, 11.14 km/s, 284.7 and +13.9. JPL's header says of both
+  // trajectories that they suit "general historical purposes", and the card of each says so.
+  {
+    id: 'deep-pioneer-10',
+    name: 'Pioneer 10',
+    launched: '1972-03-03',
+    klass: 'probe',
+    horizonsId: -23,
+    distanceAu: 142.0,
+    distanceMeasured: true,
+    checkedWords: '6 October 2026',
+    speedKmS: 11.9,
+    lonDeg: 80,
+    latDeg: 3,
+    note: 'The first spacecraft through the asteroid belt and past Jupiter, in 1973. Its last ' +
+      'signal was heard in January 2003.',
+  },
+  {
+    id: 'deep-pioneer-11',
+    name: 'Pioneer 11',
+    launched: '1973-04-06',
+    klass: 'probe',
+    horizonsId: -24,
+    distanceAu: 118.0,
+    distanceMeasured: true,
+    checkedWords: '6 October 2026',
+    speedKmS: 11.1,
+    lonDeg: 285,
+    latDeg: 14,
+    note: 'The first spacecraft to study Saturn up close, in 1979, after passing Jupiter. ' +
+      'Last heard from in 1995.',
+  },
+];
+
+/**
+ * A CRAFT NOBODY HAS HEARD FROM (2026-10-08, internal #433, public #431): MAVEN. JPL Horizons'
+ * header for -202 (revised Feb 13, 2026, read 2026-10-08): "There has been no contact with the
+ * MAVEN spacecraft since December 6, 2025 with some evidence it experienced an unplanned delta-V
+ * Dec. 4 and is spinning in an altered trajectory. Therefore predicts after December 4, 2025 may
+ * be inaccurate."; trajectory "Fit to data through 2025-Dec-04, prediction thereafter"; launch
+ * "Nov 18, 2013 @ 18:28 UTC", Mars arrival "September 22, 2014". Horizons answers nothing for it
+ * after 2026-MAR-01, so the harvester cannot ask and this row is never replaced by a snapshot.
+ * The state is Horizons' for 2025-12-04 00:00 UT (COMMAND='-202', CENTER='500@499', ecliptic
+ * J2000, TIME_TYPE=UT), the last midnight inside the fit. From it: 5 726 km semi-major axis,
+ * eccentricity 0.372, so 207 to 4 466 km above a 3 389.5 km Mars, a lap of 219.2 minutes.
+ * It is classed `sample` and its `why` says what is and is not known, which is the line the card
+ * prints (ui/cardfacts.js classLine).
+ */
+const LOST_ORBITER_EPOCH_MS = Date.UTC(2025, 11, 4);
+const LOST_ORBITERS = [
+  {
+    id: 'deep-maven',
+    name: 'MAVEN',
+    launched: '2013-11-18',
+    klass: 'probe',
+    horizonsId: -202,
+    world: 'mars',
+    aliases: ['Mars Atmosphere and Volatile EvolutioN'],
+    note: 'In orbit round Mars since September 2014 to study how the planet loses its air to ' +
+      'space. NASA has not heard from it since 6 December 2025.',
+    rKm: [1249.946451, 3646.897367, -6566.122126],
+    vKmS: [1.106146210, 1.471414496, 0.617508591],
+    periodMin: 219.2,
+    orbit: 'swung round Mars every 3 hours 39 minutes, from about 200 km up out to about 4 500 km',
+    why: 'NASA has had no contact with MAVEN since 6 December 2025. The orbit drawn is its last ' +
+      'tracked one: when last tracked it swung round Mars every 3 hours 39 minutes, from about ' +
+      '200 km up out to about 4 500 km. The dot starts from JPL Horizons’ position for it ' +
+      'relative to Mars on 4 December 2025, the last day JPL’s track is fitted to tracking, and ' +
+      'is carried round Mars by Mars’s pull alone. JPL says there is some evidence the craft was ' +
+      'pushed onto an altered path that day. Where MAVEN is along that orbit today, and whether ' +
+      'it is still on it, is not known.',
+  },
+];
+
+/**
+ * Construction E: ENDED MISSIONS (2026-10-06, internal #406, #389). Cassini was flown into Saturn
+ * and Galileo into Jupiter, so today there is nowhere to draw them and this row draws nothing:
+ * its own propagator has no samples and answers null. What it has instead is a file of its whole
+ * path from JPL Horizons (registry/ephemerides.yaml, site/data/eph/<id>.bin), fetched when its
+ * card opens; inside those years propagate/index.js draws it from the file, and its card lists
+ * the dated events of its mission (registry/missions.yaml), each of which sets the clock.
+ * `launched` and `ended` were read on NASA Science's page for each mission on 2026-10-06
+ * (science.nasa.gov/mission/cassini, .../galileo), the pages registry/missions.yaml cites.
+ */
+const PAST_CRAFT = [
+  {
+    id: 'deep-cassini',
+    name: 'Cassini',
+    launched: '1997-10-15',
+    ended: '2017-09-15',
+    klass: 'probe',
+    horizonsId: -82,
+    aliases: ['Cassini-Huygens'],
+    note: 'The first spacecraft to orbit Saturn, from 2004 to 2017. It carried the Huygens probe ' +
+      'that landed on Titan, and ended by diving into the planet.',
+    end: 'It was flown into Saturn on 15 September 2017',
+  },
+  {
+    id: 'deep-galileo',
+    name: 'Galileo',
+    launched: '1989-10-18',
+    ended: '2003-09-21',
+    klass: 'probe',
+    horizonsId: -77,
+    note: 'It circled Jupiter 34 times from 1995 to 2003, dropped a probe into its atmosphere, ' +
+      'and found signs of salt water under the ice of Europa.',
+    end: 'It was flown into Jupiter on 21 September 2003',
+  },
+  // Mars 2020 in flight: the cruise that ended when Perseverance landed. The rover is the Jezero
+  // site's record (registry/sites.yaml); this one exists so the months between the planets have
+  // a spacecraft's card and not a place's. Dates: NSSDCA 2020-052A, read 2026-10-06, the page
+  // registry/missions.yaml cites for Perseverance. No model: NASA's file is the rover, and the
+  // rover flew folded inside an aeroshell, so the craft is drawn as the class's own shape.
+  {
+    id: 'deep-mars-2020',
+    name: 'Mars 2020',
+    launched: '2020-07-30',
+    ended: '2021-02-18',
+    klass: 'probe',
+    horizonsId: -168,
+    aliases: ['Perseverance cruise'],
+    note: 'The spacecraft that carried the Perseverance rover and the Ingenuity helicopter from ' +
+      'Florida to Mars, in seven months.',
+    end: 'It reached Mars on 18 February 2021, and its rover is the Jezero site on this map',
+  },
+  // Dawn (2026-10-07, internal #389, public #431). NSSDCA 2007-043A, read 2026-10-07: launched
+  // 27 September 2007 at 11:34 UT; "communications ended on 31 October 2018", and "after the end
+  // of the mission Dawn remained in orbit around Ceres". JPL's reconstruction ends that day
+  // (Horizons -203 header); what it prints after is a prediction it says does not model the
+  // last events, so the craft is drawn only inside its tracked years.
+  {
+    id: 'deep-dawn',
+    name: 'Dawn',
+    launched: '2007-09-27',
+    ended: '2018-10-31',
+    klass: 'probe',
+    horizonsId: -203,
+    note: 'The first spacecraft to orbit two worlds beyond Earth: the asteroid Vesta in 2011 and ' +
+      '2012, then the dwarf planet Ceres from 2015.',
+    end: 'It fell silent on 31 October 2018, out of fuel, in an orbit of Ceres nobody has tracked since',
+  },
+  // Four more ended missions with their NASA meshes (2026-10-08, public #431). Dates as read that
+  // day. Rosetta: JPL Horizons' header for -226 ("Launch (Ariane-5G)= Mar 2, 2004 07:17:51 UTC";
+  // "On 2016-September-30 @ 10:39:28 UTC, the Rosetta spacecraft ended its mission by landing on
+  // the comet"; orbit from 2014-Aug-6, Philae released November 12); NSSDCA's page for it did not
+  // load. NEAR: NSSDCA 1996-008A (launch date 1996-02-17; "the mission ended with a touchdown in
+  // the saddle region of Eros on 12 February 2001"; "the final contact was made on 28 February";
+  // orbit insertion 14 February 2000). Stardust: NSSDCA 1999-003A (launch date 1999-02-07; coma of
+  // Wild 2 entered 31 December 2003, closest 2 January 2004; capsule landed 15 January 2006; past
+  // Tempel 1 on 15 February 2011 UT; "commanded into safe mode with its transmitter off on 25
+  // March 2011 at 00:30 UT"). Deep Impact: NSSDCA 2005-001A (launched 12 January 2005; the
+  // impactor struck on 4 July; Hartley 2 on 4 November 2010; "end of mission was announced on 19
+  // September" 2013) and Horizons' header for -140 ("Contact was lost Aug 11-14, 2013";
+  // "w/data to 2012-Jan-24").
+  {
+    id: 'deep-rosetta',
+    name: 'Rosetta',
+    launched: '2004-03-02',
+    ended: '2016-09-30',
+    klass: 'probe',
+    horizonsId: -226,
+    note: 'A European Space Agency mission. It went into orbit round comet 67P/Churyumov-Gerasimenko ' +
+      'in 2014 and released the lander Philae onto it.',
+    end: 'It ended its mission by landing on the comet on 30 September 2016',
+  },
+  {
+    id: 'deep-near',
+    name: 'NEAR Shoemaker',
+    launched: '1996-02-17',
+    ended: '2001-02-12',
+    klass: 'probe',
+    horizonsId: -93,
+    aliases: ['NEAR', 'Near Earth Asteroid Rendezvous'],
+    note: 'The first spacecraft to orbit an asteroid and the first to touch down on one: 433 Eros, ' +
+      'which it circled for a year from February 2000.',
+    end: 'It touched down on Eros on 12 February 2001 and was last heard from on 28 February',
+  },
+  // `pathEnds`: JPL's file for the Stardust bus stops on 12 March 2011 (Horizons: "No ephemeris
+  // ... after A.D. 2011-MAR-12 23:58:53"), twelve days before the end, so the path does too.
+  {
+    id: 'deep-stardust',
+    name: 'Stardust',
+    launched: '1999-02-07',
+    ended: '2011-03-25',
+    pathEnds: '2011-03-12',
+    pathEndsWhy: 'The path JPL holds for it stops on 12 March 2011, and stretches of it are ' +
+      'JPL’s predictions, not tracking.',
+    klass: 'probe',
+    horizonsId: -29,
+    aliases: ['Stardust-NExT'],
+    note: 'It flew through the coma of comet Wild 2 in January 2004, sent a capsule of comet dust ' +
+      'back to Earth in 2006, then flew past comet Tempel 1 in 2011.',
+    end: 'Its transmitter was switched off on 25 March 2011',
+  },
+  {
+    id: 'deep-deep-impact',
+    name: 'Deep Impact',
+    launched: '2005-01-12',
+    ended: '2013-09-19',
+    klass: 'probe',
+    horizonsId: -140,
+    aliases: ['EPOXI'],
+    note: 'It released an impactor that struck comet Tempel 1 on 4 July 2005, then flew past comet ' +
+      'Hartley 2 in November 2010.',
+    end: 'Contact was lost in August 2013 and NASA declared the mission over on 19 September 2013 ' +
+      '(its path after January 2012 is JPL’s prediction, not tracking)',
   },
 ];
 
@@ -1122,6 +1543,42 @@ const OSCULATING_CRAFT = [
     drift: 'Checked against JPL’s own forecast, it stays within 2 000 km for two months and ' +
       '20 000 km for six.',
   },
+  // Two telescopes that are switched off and still there (2026-10-07; internal #389, public #438).
+  // Same query as the rows above, fetched 2026-10-07.
+  {
+    id: 'deep-spitzer',
+    name: 'Spitzer Space Telescope',
+    launched: '2003-08-25',
+    klass: 'telescope',
+    horizonsId: -79,
+    // Horizons -79 header (revised 2021-09-13): launched Aug 25, 2003; "On 2020-Jan-30, the
+    // mission was completed, the spacecraft decommissioned"; it "will drift in its Earth trailing
+    // orbit until eventually returning to the vicinity of Earth in ~2051". The trajectory after
+    // 2020-01-30 is "a nominal long-term prediction". 2.00 au from Earth on 2026-09-22.
+    note: 'An infrared telescope that worked from 2003 to 2020. Switched off, it still circles ' +
+      'the Sun on Earth’s track, now on the far side of the Sun from us.',
+    aAu: 1.014174, e: 0.01128, iDeg: 1.1331, nodeDeg: 316.2451, argpDeg: 195.7813, maDeg: 35.5983,
+    // Nothing steers it: 531 km at 90 days, 6 928 at 180, 32 513 at a year.
+    drift: 'Checked against JPL’s own forecast, which is itself a prediction since 2020, it stays ' +
+      'within 1 000 km for three months and 7 000 km for six.',
+  },
+  {
+    id: 'deep-kepler',
+    name: 'Kepler',
+    launched: '2009-03-07',
+    klass: 'telescope',
+    horizonsId: -227,
+    aliases: ['Kepler space telescope', 'K2'],
+    // Horizons -227 header (revised 2019-02-22): launched 2009-Mar-7 03:49 UTC to an
+    // "Earth-trailing heliocentric orbit"; "Mission completed 2018-Oct-30 due to depletion of
+    // fuel"; "Kepler reported detections of 2662 planets". 1.76 au from Earth on 2026-09-22.
+    note: 'It found more than 2 600 planets round other stars before its fuel ran out in 2018. ' +
+      'It still follows Earth round the Sun, falling further behind.',
+    aAu: 1.013113, e: 0.03609, iDeg: 0.4483, nodeDeg: 154.1122, argpDeg: 294.1403, maDeg: 150.3521,
+    // 2 494 km at 90 days, 15 456 at 180.
+    drift: 'Checked against JPL’s own forecast, which is a prediction since 2018, it stays ' +
+      'within 3 000 km for three months and 16 000 km for six.',
+  },
 ];
 
 /** @returns {Array<Object>} */
@@ -1277,12 +1734,73 @@ export function sampleDeepSpace() {
           c.distanceAu +
           ' au from the Sun' +
           (c.distanceMeasured
-            ? ' (checked against JPL Horizons on 7 September 2026)'
+            ? ' (checked against JPL Horizons on ' + (c.checkedWords || '7 September 2026') + ')'
             : ' (the published figure, rounded)') +
           ', ' +
           c.speedKmS +
           ' km/s, and an escape direction good to a few degrees. It then moves in a straight ' +
           'line, which at this distance is what it really does.',
+      },
+    });
+  }
+
+  for (const c of LOST_ORBITERS) {
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      propagator: 'orbiter',
+      frame: c.world + '-inertial',
+      cls: 'sample',
+      epoch: LOST_ORBITER_EPOCH_MS,
+      source: 'horizons-deep-space',
+      muKm3S2: WORLD_GM[c.world],
+      samples: [{ tMs: LOST_ORBITER_EPOCH_MS, rKm: c.rKm, vKmS: c.vKmS }],
+      // A bound orbit repeats, so the craft stays on the map; `why` says the place is not known.
+      extrapolateMs: Infinity,
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'last-tracked-orbit',
+        orbits: c.world,
+        periodMin: c.periodMin,
+        note: c.note,
+        launchDate: c.launched,
+        lastContact: '2025-12-06',
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        approx: true,
+        approxFields: ['the whole position: no contact since 6 December 2025'],
+        why: c.why,
+      },
+    });
+  }
+
+  for (const c of PAST_CRAFT) {
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      // No samples: this row answers null at every instant, and its path file answers inside its
+      // years once it is here (propagate/index.js EPHEMERIS_OF).
+      propagator: 'sampled',
+      frame: 'sun-inertial',
+      cls: 'inferred',
+      epoch: Date.parse(c.ended + 'T00:00:00Z'),
+      source: 'horizons-deep-space',
+      samples: [],
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'own-path',
+        note: c.note,
+        launchDate: c.launched,
+        endDate: c.ended,
+        ...(c.pathEnds ? { pathEndDate: c.pathEnds } : {}),
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        why: c.end + ', so there is nowhere to draw it today. Between ' + c.launched.slice(0, 4) +
+          ' and ' + c.ended.slice(0, 4) + ' it is drawn from its own path: positions from JPL ' +
+          'Horizons, shipped with the app and fetched when this card opens. Choose an event ' +
+          'of its mission to go there.' + (c.pathEndsWhy ? ' ' + c.pathEndsWhy : ''),
       },
     });
   }
@@ -1548,6 +2066,8 @@ function siteRecord(row) {
   // procedural stand-in and the card says so. `siteKind` stays the row's class, because that is
   // what it has always meant to the card and to the pad and dish routes.
   if (row.shape) meta.siteShape = row.shape;
+  // A hand-kept pad's vehicle is drawn only around these instants (scene/realmodels.js padVehicleShown).
+  if (Array.isArray(row.liftoffs)) meta.liftoffs = row.liftoffs.slice();
   // Other names search matches (ui/search.js reads meta.aliases): Sojourner, Tranquility Base.
   if (Array.isArray(row.aliases) && row.aliases.length) meta.aliases = row.aliases.slice();
   meta.latDeg = row.lat;

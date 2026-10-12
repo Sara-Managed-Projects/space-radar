@@ -23,6 +23,11 @@
 #   boosters.dia_m  REQUIRED for every shape but `none`. It is the dominant discriminator:
 #                   Ariane's 3.4 m against a 5.4 m core is the whole silhouette.
 #   boosters.len_m  optional -- absent draws a booster 62% of the core's length.
+#   stage1_len_m    optional (public #427, 2026-10-08) -- the published length of the first stage,
+#                   which is where the interstage band is drawn. Absent: 62% of the body.
+#   recovery        optional -- `{legs: n, grid_fins: n}` on a booster that flies back. The counts
+#                   are sourced in the row; their sizes are published nowhere reached and are the
+#                   builder's (scene/models.js addRecovery says so).
 #
 # `engines.count` is the nozzles on the CORE, and only the core -- the same body `engines.pattern`
 # arranges. Strap-on bells come from `boosters.count`, so a whole-vehicle total here would be
@@ -79,9 +84,11 @@ rockets:
     top: {kind: fairing, dia_m: 5.2, len_m: 13.2}
     boosters: {shape: none, count: 0}
     engines: {count: 9, pattern: octaweb}
+    stage1_len_m: 41.2
+    recovery: {legs: 4, grid_fins: 4}
     livery: {body: "#EEF2F7", interstage: "#1B1D21", class: measured}
     class: measured
-    source: "SpaceX Falcon User's Guide rev. 8, May 2025, Table 2-1: 70.0 m, 3.66 m, 5.2 x 13.2 m fairing, 'eight engines surrounding a center engine'"
+    source: "SpaceX Falcon User's Guide rev. 8, May 2025, Table 2-1: 70.0 m, 3.66 m, 5.2 x 13.2 m fairing, 'eight engines surrounding a center engine'. Read 2026-10-08 on Wikipedia, Falcon 9 and Falcon 9 Block 5: first stage 41.2 m; 'Recoverable boosters include four extensible landing legs attached around the base'; 'a black thermal protection layer on the landing legs, raceway, and interstage'; and, quoted from SpaceX (16 Dec 2014) in Wikipedia's Falcon 9 first-stage landing tests, 'four hypersonic grid fins placed in an X-wing configuration around the vehicle, stowed on ascent'"
     note: "the black interstage is carbon composite. Flown boosters are soot-streaked; that is a decal claim per flight and is not drawn."
 
   - id: falcon-heavy
@@ -158,9 +165,10 @@ rockets:
     top: {kind: fairing, dia_m: 1.2, len_m: 2.5}
     boosters: {shape: none, count: 0}
     engines: {count: 9, pattern: octaweb}
+    stage1_len_m: 12.1
     livery: {body: "#22262B", class: inferred}
     class: measured
-    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user's guide (the PUG itself returns 403): 18 m, 1.2 m, 'eight engines surrounding a central ninth'"
+    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user's guide (the PUG itself returns 403): 18 m, 1.2 m, 'eight engines surrounding a central ninth'. Read again 2026-10-08: first stage 12.1 m, second stage 2.4 m, 'The Electron payload Fairing is 2.5 m ... in length with a 1.2 m ... diameter'"
     note: "black is INFERRED from the carbon-composite airframe, which is sourced. Recovery is by parachute and ship retrieval, and most flights are expendable; nothing about recovery is drawn."
 
   - id: neutron
@@ -501,9 +509,10 @@ rockets:
     top: {kind: fairing}
     boosters: {shape: none, count: 0}
     engines: {count: 4, pattern: unknown}
+    stage1_len_m: 27.91
     livery: unknown
     class: measured
-    source: "Wikipedia Long March 2D: 41.056 m, 3.35 m, YF-21C (four YF-20C chambers)"
+    source: "Wikipedia Long March 2D: 41.056 m, 3.35 m, YF-21C (four YF-20C chambers). Read again 2026-10-08: first stage 27.91 m, second stage 10.9 m"
     note: "the fairing diameter could not be sourced. LM-2D is widely reported with a fairing NARROWER than its body, which would be a real silhouette feature; without a source it is drawn flush."
 
   - id: long-march-2f
@@ -531,9 +540,10 @@ rockets:
     top: {kind: fairing}
     boosters: {shape: liquid_cylindrical, count: 4, dia_m: 3.35, len_m: 27.6}
     engines: {count: 2, pattern: twin}
+    stage1_len_m: 33.16
     livery: unknown
     class: measured
-    source: "Wikipedia Long March 5: 56.97 m, 5 m core, four 3.35 m x 27.6 m boosters, two YF-77"
+    source: "Wikipedia Long March 5: 56.97 m, 5 m core, four 3.35 m x 27.6 m boosters, two YF-77. Read again 2026-10-08: core stage 33.16 m, second stage 11.54 m"
 
   - id: long-march-5b
     display: "Long March 5B"

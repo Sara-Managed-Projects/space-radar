@@ -1,22 +1,22 @@
-// ui/place.js -- where you are, and what comes over it tonight: the Tonight tab (spec 0061 req 3).
+// ui/place.js -- where you are: the city box, "Use my location", Remember and Share this place.
 //
-// Contract: createPlace(ctx) -> { root, refresh() }
-// Also exported, pure: findCity(query, cities), observerFor(city)
+// Contract: createPlace(ctx) -> { root, refresh(), focus() }
+// Also exported, pure: findCity(query, cities), observerFor(city), placeFromPosition, placeLink
 //
-// Moved out of ui/controls.js (its section 4, "Where you are", and the Now moment's first screen)
-// when the left panel was taken apart. The behaviour is the panel's, line for line: a city from the
-// bundled list or the browser's own answer -- which it cannot give over plain http, and says so --
-// the current place rendered from the observer the app HOLDS (so a guess reads as a guess), the next
-// twelve hours of bright passes, and a meteor shower peaking tonight. What changed is the setting:
-// this is the Tonight tab now, the old Now door, and the page it opens is the sky from here (0051).
+// The controls that set a place, and nothing else. They live INSIDE the Tonight view (ui/tonight.js
+// builds them under its place line, behind "Change place"; internal #455, spec 0051 task 3). Until
+// 2026-10-08 this file was a panel of its own with a second list of passes: the Tonight view took
+// the tab, the panel was hidden, and for a while nobody could set a place at all. The list of
+// passes is the view's now, and the line that says which place is in use is the view's too
+// (sky/tonight.js placeWords), so a guess reads as a guess in one place only.
 
-import { COPY, CITIES, t, fmt, timeText, compassWords, fistsWords } from '../copy/en.js';
-import { predictPasses } from '../sky/passes.js';
-import { showerItems, rowText as nextRowText } from './next.js';
-import { SHOWERS } from '../data/showers.js';
+import { COPY, CITIES } from '../copy/en.js';
+import { roundPlace } from '../sky/guessplace.js';
+import { placeValue, keepPlace, keptPlace, forgetPlace, browserStorage } from '../sky/placelink.js';
+import { appBase, toast } from './share.js';
+import '../copy/en.later.js';
 
 const DEG_TO_RAD = Math.PI / 180;
-const DEG = 180 / Math.PI;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -32,6 +32,18 @@ function button(className, text, title) {
   return b;
 }
 
+/**
+ * The place the browser answered with, rounded to 0.1 degree before it becomes anything else. This
+ * is the ONLY function that reads `position.coords` (tests/test_place_privacy.mjs holds that), and
+ * it keeps neither the accuracy nor the altitude, heading or speed the browser may also send.
+ */
+export function placeFromPosition(position, name) {
+  const c = (position && position.coords) || {};
+  const { latDeg, lonDeg } = roundPlace({ latDeg: c.latitude, lonDeg: c.longitude });
+  if (!Number.isFinite(latDeg) || !Number.isFinite(lonDeg)) return null;
+  return { name, country: '', latDeg, lonDeg, source: 'geolocation' };
+}
+
 export function observerFor(city) {
   return {
     latRad: city.latDeg * DEG_TO_RAD,
@@ -42,6 +54,17 @@ export function observerFor(city) {
     name: city.name,
     source: city.source || 'city',
   };
+}
+
+/**
+ * The link "Share this place" copies: the app's address with `p` and nothing else; '' without a
+ * value. Built here and not by ui/share.js shareUrl, which has no place key at all: an ordinary
+ * share can never carry a place, even from a tab that was opened on somebody's place link.
+ */
+export function placeLink(value, base = appBase()) {
+  if (!value) return '';
+  const root = String(base).endsWith('/') ? String(base) : `${base}/`;
+  return `${root}#p=${encodeURIComponent(value)}`;
 }
 
 /** A city from the bundled list: exact, then prefix, then "name, country", then contains. Pure. */
@@ -61,11 +84,9 @@ export function findCity(query, cities = CITIES) {
 }
 
 export function createPlace(ctx) {
-  const root = el('section', 'sr-place');
-  root.appendChild(el('h2', 'sr-micro', COPY.controls.locationTitle));
-
-  const current = el('p', 'sr-place__current', COPY.controls.locationNone);
-  root.appendChild(current);
+  const root = el('div', 'sr-place');
+  root.setAttribute('role', 'group');
+  root.setAttribute('aria-label', COPY.placeKeep.group);
 
   const row = el('div', 'sr-place__row');
   const input = document.createElement('input');
@@ -87,8 +108,13 @@ export function createPlace(ctx) {
   const clearBtn = button('sr-chip sr-chip--quiet', COPY.controls.locationClear);
   row.append(input, datalist);
   root.appendChild(row);
+  // Remember this place, and share it (internal #137). Both act on the place in use, rounded to
+  // 0.1 degree by sky/placelink.js, and neither is offered for a place that was only guessed.
+  const K = COPY.placeKeep;
+  const keepBtn = button('sr-chip sr-chip--quiet', K.remember, K.rememberTitle);
+  const shareBtn = button('sr-chip sr-chip--quiet', K.share, K.shareTitle);
   const chips = el('div', 'sr-place__chips');
-  chips.append(useMine, clearBtn);
+  chips.append(useMine, clearBtn, keepBtn, shareBtn);
   root.appendChild(chips);
   const note = el('p', 'sr-place__note', '');
   note.hidden = true;
@@ -117,98 +143,50 @@ export function createPlace(ctx) {
     note.classList.remove('is-warning');
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const place = placeFromPosition(position, COPY.controls.locationUseMine);
+        if (!place) { warn(COPY.controls.locationFailed); return; }
         warn('');
-        setPlace({ name: COPY.controls.locationUseMine, country: '', latDeg: position.coords.latitude, lonDeg: position.coords.longitude, source: 'geolocation' });
+        setPlace(place);
       },
       (error) => warn(error && error.code === 1 ? COPY.controls.locationDenied : COPY.controls.locationFailed),
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
     );
+  });
+  const isKept = () => { const k = keptPlace(browserStorage()); const o = ctx && ctx.observer; return !!k && !!o && placeValue(k) === placeValue(o); };
+  const renderKeep = () => {
+    const value = placeValue(ctx && ctx.observer);
+    const kept = !!value && isKept();
+    keepBtn.hidden = !value;
+    shareBtn.hidden = !value;
+    keepBtn.textContent = kept ? K.forget : K.remember;
+    keepBtn.title = kept ? K.forgetTitle : K.rememberTitle;
+    keepBtn.setAttribute('aria-pressed', kept ? 'true' : 'false');
+  };
+  keepBtn.addEventListener('click', () => {
+    if (isKept()) { forgetPlace(browserStorage()); warn(''); }
+    else if (keepPlace(browserStorage(), ctx.observer)) { warn(K.kept); note.classList.remove('is-warning'); }
+    renderKeep();
+  });
+  shareBtn.addEventListener('click', () => {
+    const url = placeLink(placeValue(ctx && ctx.observer));
+    if (!url) return;
+    const done = (ok) => toast(ok ? K.copied : K.copyFailed, 3000);
+    try { navigator.clipboard.writeText(url).then(() => done(true), () => done(false)); } catch { done(false); }
   });
   clearBtn.addEventListener('click', () => {
     input.value = '';
     try { if (ctx && typeof ctx.setObserver === 'function') ctx.setObserver(null); } catch { /* nothing else to try */ }
   });
 
-  // --- tonight ----------------------------------------------------------------------------------
-  const tonight = el('section', 'sr-tonight');
-  tonight.appendChild(el('h2', 'sr-micro', COPY.controls.tonightTitle));
-  const shower = el('p', 'sr-tonight__shower');
-  shower.hidden = true;
-  const list = el('ul', 'sr-list sr-tonight__list');
-  const empty = el('p', 'sr-tonight__note', COPY.controls.tonightNoObserver);
-  tonight.append(shower, list, empty);
-  root.appendChild(tonight);
-
-  const observerNow = () => (ctx && ctx.observer ? ctx.observer : null);
-  const withRad = (o) => (Number.isFinite(o.latRad) ? o : { ...o, latRad: o.latDeg * DEG_TO_RAD, lonRad: o.lonDeg * DEG_TO_RAD });
-  const nowMs = () => (ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now());
-
-  // Rendered from the observer the app holds, whoever set it -- these buttons, the Tonight tab's
-  // guess, a shared link -- so the line can never describe a place no longer in use (measured:
-  // setting London after a guess used to leave "We guessed Tehran" on screen).
-  function renderCurrent() {
-    const o = observerNow();
-    if (!o) { current.textContent = COPY.controls.locationNone; current.classList.remove('is-guess', 'is-set'); return; }
-    const name = o.name || t(COPY.controls.locationCoords, { lat: fmt.num(o.latDeg, 1), lon: fmt.num(o.lonDeg, 1) });
-    if (o.source === 'guess') {
-      current.textContent = t(o.how === 'timezone' ? COPY.controls.locationGuessed : COPY.controls.locationGuessedByOffset, { name });
-      current.classList.add('is-guess');
-      current.classList.remove('is-set');
-    } else {
-      current.textContent = t(COPY.controls.locationSet, { name });
-      current.classList.remove('is-guess');
-      current.classList.add('is-set');
-    }
-  }
-
-  function renderShower(o) {
-    shower.hidden = true;
-    if (!o) return;
-    let item = null;
-    try { item = showerItems(nowMs(), 36 * 3600e3, SHOWERS, withRad(o))[0] || null; } catch { item = null; }
-    if (!item) return;
-    shower.textContent = nextRowText(item, nowMs()) + COPY.punctuation.sentenceJoin + COPY.controls.tonightShowerTail;
-    shower.hidden = false;
-  }
-
-  function renderTonight() {
-    while (list.firstChild) list.removeChild(list.firstChild);
-    const o = observerNow();
-    renderShower(o);
-    if (!o) { empty.textContent = COPY.controls.tonightNoObserver; empty.hidden = false; return; }
-    const records = []
-      .concat(typeof ctx.recordsFor === 'function' ? ctx.recordsFor('stations') : [])
-      .concat(typeof ctx.recordsFor === 'function' ? ctx.recordsFor('visual') : [])
-      .filter((r) => r && r.satrec);
-    if (!records.length) { empty.textContent = COPY.controls.tonightCouldNotLook; empty.hidden = false; return; }
-    let passes = [];
-    try { passes = predictPasses(records, withRad(o), nowMs(), 12).filter((p) => p.visible === true).slice(0, 5); } catch { passes = []; }
-    if (!passes.length) { empty.textContent = COPY.controls.tonightNone; empty.hidden = false; return; }
-    empty.hidden = true;
-    for (const p of passes) {
-      const li = el('li', 'sr-list__row');
-      const b = button('sr-list__btn');
-      b.appendChild(el('span', 'sr-list__name', (p.record && p.record.name) || COPY.card.unknownName));
-      b.appendChild(el('span', 'sr-list__value', timeText.hhmm(p.startMs)));
-      b.setAttribute('aria-label', t(COPY.controls.tonightRow, {
-        name: (p.record && p.record.name) || COPY.card.unknownName,
-        time: timeText.hhmm(p.startMs),
-        dir: compassWords(p.startAz * DEG),
-        fists: fistsWords(p.peakEl * DEG),
-      }));
-      b.title = b.getAttribute('aria-label');
-      b.addEventListener('click', () => { if (p.record && typeof ctx.select === 'function') ctx.select(p.record); });
-      li.appendChild(b);
-      list.appendChild(li);
-    }
-  }
-
-  const refresh = () => { renderCurrent(); renderTonight(); };
+  // Clear is offered only when there is a place to clear; the field empties when the place is one
+  // somebody else set (a shared link, the guess), so it never shows a city that is not in use.
+  const refresh = () => {
+    const o = ctx && ctx.observer;
+    clearBtn.hidden = !o || o.source === 'guess';
+    if (!o || (o.source !== 'city' && input.value)) input.value = '';
+    renderKeep();
+  };
   window.addEventListener('sr:observer', refresh);
-  window.addEventListener('sr:layer', (e) => {
-    const id = e.detail && e.detail.id;
-    if (id === 'stations' || id === 'visual') renderTonight();
-  });
   refresh();
-  return { root, refresh };
+  return { root, refresh, focus() { try { input.focus(); } catch { /* not in the page yet */ } } };
 }

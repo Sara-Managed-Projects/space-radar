@@ -16,11 +16,13 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
 import * as stageMod from './stage.js';
-import { inEarthShadow, sunAndEarthScene, orbitsEarth } from './shadow.js';
+import { earthShadowLit, sunAndEarthScene, orbitsEarth, standsOn, groundLit, worldCentreScene } from './shadow.js';
+import { GLSL_AIR } from '../sky/skymath.js';
 import { dotOpacity } from './onemark.js';
 import {
   getGlyphAtlas,
   glyphCell,
+  glyphFor,
   cellUV,
   ATLAS_GRID,
   CELL_PX,
@@ -46,6 +48,11 @@ export const GLYPH_SIZE_PX = {
   // the satellite's 8 px, and on the stellar rung 150 green marks outdrew the stars they belong to
   // -- one sat on top of Sirius from a light-year out (measured 2026-09-22).
   exoplanet: 5,
+  // Shapes that are not classes (glyphatlas.js glyphFor). A crew vehicle is the thing people look
+  // for beside a station, so it is a little larger than the satellites it is filed among; a
+  // constellation's dot is the size the satellite disc was before satellites had wings.
+  crewed: 11,
+  dot: 7,
 };
 
 const DEBRIS_SIZE = 0.6; // 60 % size
@@ -55,6 +62,8 @@ const RENDER_ORDER_GLYPH = 10;
 const PAD = 1.7; // the quad is 1.7x the glyph, leaving room for the sample halo
 const PICK_PX = 24; // the contract's forgiveness rule
 const DEBRIS_PICK_PENALTY = 1.6; // a satellite beats a speck at the same distance
+/** How much of a dot is left in the Earth's shadow, seen from space. Ours, illustrative. */
+export const SHADOW_OPACITY = 0.6;
 const PROVISIONAL_OPACITY = 0.7; // not yet in the public catalogue (spec 0026 req 15)
 
 const VERT = /* glsl */ `
@@ -69,6 +78,9 @@ attribute float iRing;     // the sample halo's own opacity: what iOpacity was b
 uniform float uPxScale;   // world units per CSS pixel, per unit of view depth
 uniform float uGrid;
 uniform float uPad;
+uniform float uSky;       // 1 while the camera stands on the ground (sky/skyview.js), else 0
+uniform float uSkyScale;  // how big this layer's marks are from the ground, of their size in space
+uniform vec3 uSkyUp;      // the observer's zenith, in view space
 
 varying vec2 vUv;
 varying vec3 vColour;
@@ -80,6 +92,7 @@ varying vec2 vCell0;
 
 #include <common>
 #include <logdepthbuf_pars_vertex>
+${GLSL_AIR}
 
 void main() {
   vUv = uv;
@@ -97,7 +110,25 @@ void main() {
   vCell0 = vec2( col / uGrid, 1.0 - ( row + 1.0 ) / uGrid );
 
   vec4 mv = modelViewMatrix * vec4( iOffset, 1.0 );
-  float px = clamp( iSize, 4.0, 14.0 ) * uPad;
+  // FROM THE GROUND a satellite is in the same air as the stars (internal #393): lifted by
+  // refraction, half a degree on the horizon, and dimmed by the air it is seen through. The dot is
+  // a mark, not a magnitude, so the air takes it down to a third and no further; and one the Earth's
+  // shadow has taken is a ghost of itself, because in the sky that is when it goes out.
+  if ( uSky > 0.5 ) {
+    float dist = length( mv.xyz );
+    vec3 d = mv.xyz / max( dist, 1e-9 );
+    float sinAlt = clamp( dot( d, uSkyUp ), -1.0, 1.0 );
+    float altDeg = degrees( asin( sinAlt ) );
+    float lifted = radians( altDeg + airRefractionDeg( altDeg ) );
+    vec3 level = d - sinAlt * uSkyUp;
+    float ll = length( level );
+    if ( ll > 1e-6 ) mv.xyz = ( level / ll * cos( lifted ) + uSkyUp * sin( lifted ) ) * dist;
+    float air = pow( 10.0, -0.4 * 0.2 * ( airMass( sin( lifted ) ) - 1.0 ) );
+    float seen = max( 0.33, air ) * mix( 0.16, 1.0, iLit );
+    vOpacity *= seen;
+    vRing *= seen;
+  }
+  float px = clamp( iSize, 4.0, 14.0 ) * uPad * mix( 1.0, uSkyScale, uSky );
   float s = px * uPxScale * max( -mv.z, 1e-6 );
   mv.xy += position.xy * s;
   gl_Position = projectionMatrix * mv;
@@ -111,6 +142,8 @@ uniform sampler2D uAtlas;
 uniform vec3 uOutline;
 uniform float uGrid;
 uniform float uInset;
+uniform float uSky;
+uniform float uShadeFade;
 
 varying vec2 vUv;
 varying vec3 vColour;
@@ -133,7 +166,10 @@ void main() {
   // In Earth's shadow the dot goes to a dim version of its colour: still there, still its class,
   // visibly not catching the Sun (spec 0026 req 12). The keyline is untouched so it stays readable.
   vec3 rgb = mix( uOutline, mix( vColour * 0.38, vColour, vLit ), t.r );
-  float a = t.a * vOpacity;
+  // ...and it FADES as well as dims (issue #394): the dim colour alone left a shadowed dot as
+  // solid as a sunlit one over the dark side of the globe. From the ground the vertex shader has
+  // already taken it down much further (uSky), and this is not applied twice.
+  float a = t.a * vOpacity * mix( mix( uShadeFade, 1.0, vLit ), 1.0, uSky );
 
   if ( vHalo > 0.5 ) {
     vec2 d = vUv - 0.5;
@@ -171,7 +207,8 @@ function colourOf(record, layer) {
 }
 
 function sizeOf(record, layer) {
-  const base = record.sizePx || layer.sizePx || GLYPH_SIZE_PX[record.klass] || GLYPH_SIZE_PX.satellite;
+  const shape = glyphFor(record, layer);
+  const base = record.sizePx || layer.sizePx || GLYPH_SIZE_PX[shape] || GLYPH_SIZE_PX[record.klass] || GLYPH_SIZE_PX.satellite;
   return record.klass === 'debris' ? base * DEBRIS_SIZE : base;
 }
 
@@ -181,6 +218,15 @@ function sizeOf(record, layer) {
  * @returns {{setRecords, update, pick, dispose, setVisible, setSelected, setViewport,
  *            setPositionSource, mesh, count():number}}
  */
+/**
+ * FROM THE GROUND THE STARS COME FIRST (public #271). A deep-sky object's mark says where a thing
+ * is that the eye mostly cannot see; in the ground sky those marks were 8 px discs among stars
+ * whose cores are 3 to 7 px, and the sky read as a chart of marks (seen 2026-10-08 over Cairo:
+ * Orion behind eleven purple dots). There they are drawn at this share of their size. A satellite's
+ * dot is a thing the eye does see, and keeps its size.
+ */
+export const SKY_MARK_SCALE = { 'deep-sky': 0.5, exotics: 0.5 };
+
 export function createGlyphLayer(scene, layer = {}) {
   const propagate = typeof propagateMod.propagate === 'function' ? propagateMod.propagate : null;
   const stage = stageMod.stage || null;
@@ -211,6 +257,10 @@ export function createGlyphLayer(scene, layer = {}) {
       uPad: { value: PAD },
       uInset: { value: 0.5 / CELL_PX },
       uPxScale: { value: 2 / (1.5 * 720) },
+      uSky: { value: 0 },
+      uSkyScale: { value: SKY_MARK_SCALE[layer.id] || 1 },
+      uShadeFade: { value: SHADOW_OPACITY },
+      uSkyUp: { value: new THREE.Vector3(0, 1, 0) },
     },
     transparent: true,
     depthTest: true,
@@ -250,10 +300,15 @@ export function createGlyphLayer(scene, layer = {}) {
   let attrCell = null;
 
   let selectedId = null;
+  const uploads = { ticks: 0, bytes: 0, all: 0 };
   let lastCamera = null;
   let viewport = viewportCss();
   let viewportLocked = false; // true once setViewport() is called by hand
   let positionSource = null;
+  // A big SGP4 catalogue propagated in a worker (propagate/pool.js), or null: see setPool().
+  let pool = null;
+  const pooled = { x: 0, y: 0, z: 0, frame: 'earth-inertial' };
+  const ephemerisOf = propagateMod.EPHEMERIS_OF || null;
   const emberColour = new THREE.Color(PALETTE.ember);
   const scratch = { x: 0, y: 0, z: 0 };
   const _scene = new THREE.Vector3();
@@ -351,10 +406,11 @@ export function createGlyphLayer(scene, layer = {}) {
       recSize[i] = sizeOf(r, layer);
       // A provisional object (spec 0026 req 15) is drawn at 70%: there, but visibly not yet a catalogued thing.
       recOpacity[i] = r.klass === 'debris' ? DEBRIS_OPACITY : r.meta && r.meta.provisional ? PROVISIONAL_OPACITY : 1;
-      recCell[i] = glyphCell(r.klass || layer.klass || layer.glyph) + (r.cls === 'sample' ? HALO_BIAS : 0);
+      recCell[i] = glyphCell(glyphFor(r, layer)) + (r.cls === 'sample' ? HALO_BIAS : 0);
     }
     live = [];
     if (geometry) geometry.instanceCount = 0;
+    if (pool) pool.setRecords(records);
   }
 
   function positionOf(record, tMs) {
@@ -383,17 +439,66 @@ export function createGlyphLayer(scene, layer = {}) {
     if (!mesh.visible) return;
 
     let k = 0;
-    const emberR = emberColour.r;
-    const emberG = emberColour.g;
-    const emberB = emberColour.b;
+    // WRITE ONLY WHAT CHANGED, AND SEND ONLY WHAT WAS WRITTEN (internal #519, 2026-10-09). This loop
+    // used to mark all seven instanced attributes for upload on every tick: 44 bytes an instance,
+    // 734 kB a tick with the whole catalogue on, ten ticks a second at the live clock and sixty at
+    // a fast one. But a dot's colour, size, opacity, glyph and halo change when the records, the
+    // selection, a recolour or a model's fade change, not with time; and its sunlit flag only as
+    // it crosses the Earth's shadow. So each value is compared with the one already in the array,
+    // which IS what the GPU holds (an attribute is uploaded whole whenever it is marked), and an
+    // attribute is marked only when one of its values differed. There is no list of reasons to
+    // keep right: a selection, a filter, a record that drops out and shifts every index after it,
+    // a new array from setRecords() all change a value, and a changed value marks its attribute.
+    // The comparisons are in float32 (Math.fround), because that is what the arrays hold.
+    // tests/test_glyph_uploads.mjs keeps a copy of each array as a GPU would and fails if one ever
+    // differs from its array without having been marked.
+    let dOffset = false;
+    let dColour = false;
+    let dSize = false;
+    let dOpacity = false;
+    let dCell = false;
+    let dLit = false;
+    let dRing = false;
+    const aColour = attrColour.array;
+    const aSize = attrSize.array;
+    const aOpacity = attrOpacity.array;
+    const aCell = attrCell.array;
+    const aLit = attrLit.array;
+    const aRing = attrRing.array;
+    const emberR = Math.fround(emberColour.r);
+    const emberG = Math.fround(emberColour.g);
+    const emberB = Math.fround(emberColour.b);
     live.length = 0;
+    // The worker's answer, when there is one (propagate/pool.js): the same SGP4 numbers, computed
+    // off this thread for this tick or the one before. Until the first answer lands, with a
+    // position source set by hand, or once the worker has failed, every record is asked here as
+    // before. The selection is always asked here, at this instant exactly; so is a craft that has
+    // its own path file.
+    let workerPos = null;
+    let workerMask = null;
+    if (pool && pool.ok && !positionSource) {
+      pool.request(tMs);
+      const answer = pool.latest;
+      if (answer && answer.pos.length === records.length * 3) { workerPos = answer.pos; workerMask = pool.mask; }
+    }
+    const ownPaths = ephemerisOf && ephemerisOf.size ? ephemerisOf : null;
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       let p = null;
-      try {
-        p = positionOf(rec, tMs);
-      } catch {
-        p = null;
+      if (workerPos && workerMask[i] === 1 && rec.id !== selectedId && !(ownPaths && ownPaths.has(rec.id))) {
+        const x = workerPos[i * 3];
+        if (x !== x) continue; // NaN: SGP4 had no answer for it
+        pooled.x = x;
+        pooled.y = workerPos[i * 3 + 1];
+        pooled.z = workerPos[i * 3 + 2];
+        pooled.frame = rec.frame || 'earth-inertial';
+        p = pooled;
+      } else {
+        try {
+          p = positionOf(rec, tMs);
+        } catch {
+          p = null;
+        }
       }
       if (!p) continue;
       let v = p;
@@ -405,45 +510,67 @@ export function createGlyphLayer(scene, layer = {}) {
         if (!v) continue;
       }
       const o = k * 3;
-      livePos[o] = v.x;
-      livePos[o + 1] = v.y;
-      livePos[o + 2] = v.z;
+      const px = Math.fround(v.x);
+      const py = Math.fround(v.y);
+      const pz = Math.fround(v.z);
+      if (livePos[o] !== px || livePos[o + 1] !== py || livePos[o + 2] !== pz) {
+        livePos[o] = px;
+        livePos[o + 1] = py;
+        livePos[o + 2] = pz;
+        dOffset = true;
+      }
       const selected = selectedId !== null && rec.id === selectedId;
-      if (selected) {
-        attrColour.array[o] = emberR;
-        attrColour.array[o + 1] = emberG;
-        attrColour.array[o + 2] = emberB;
-      } else {
-        attrColour.array[o] = recColour[i * 3];
-        attrColour.array[o + 1] = recColour[i * 3 + 1];
-        attrColour.array[o + 2] = recColour[i * 3 + 2];
+      const cr = selected ? emberR : recColour[i * 3];
+      const cg = selected ? emberG : recColour[i * 3 + 1];
+      const cb = selected ? emberB : recColour[i * 3 + 2];
+      if (aColour[o] !== cr || aColour[o + 1] !== cg || aColour[o + 2] !== cb) {
+        aColour[o] = cr;
+        aColour[o + 1] = cg;
+        aColour[o + 2] = cb;
+        dColour = true;
       }
       // Sunlit or in Earth's shadow, for the things that go round the Earth; everything else is lit.
-      attrLit.array[k] = shadowRef && orbitsEarth(rec) && inEarthShadow(v, shadowRef.earth, shadowRef.sun, shadowRef.radius) ? 0 : 1;
-      attrSize.array[k] = selected ? recSize[i] * 1.35 : recSize[i];
+      // A lander on another world's night side dims the same way (scene/shadow.js, public #403).
+      let lit = 1;
+      if (shadowRef) {
+        if (orbitsEarth(rec)) lit = earthShadowLit(v, shadowRef.earth, shadowRef.sun, shadowRef.radius);
+        else {
+          const world = standsOn(rec);
+          const centre = world ? worldCentreScene(world, tMs) : null;
+          if (centre) lit = groundLit(v, centre, shadowRef.sun);
+        }
+      }
+      lit = Math.fround(lit);
+      if (aLit[k] !== lit) { aLit[k] = lit; dLit = true; }
+      const size = selected ? Math.fround(recSize[i] * 1.35) : recSize[i];
+      if (aSize[k] !== size) { aSize[k] = size; dSize = true; }
       // An object is drawn once. While its model is on screen the dot yields to it -- by the
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
       // tap. No model, a hidden model, or the hero layer off: the dot, as before.
       const yieldTo = modelOpacityOf ? modelOpacityOf(rec.id) : 0;
       const own = selected ? 1 : recOpacity[i];
-      attrOpacity.array[k] = dotOpacity(own, yieldTo);
+      const opacity = Math.fround(dotOpacity(own, yieldTo));
+      if (aOpacity[k] !== opacity) { aOpacity[k] = opacity; dOpacity = true; }
       // The sample halo does NOT yield: see the note in the fragment shader. It is drawn at the
       // record's own opacity, which is what the dot's was before the model took it.
-      attrRing.array[k] = own;
-      attrCell.array[k] = recCell[i];
+      if (aRing[k] !== own) { aRing[k] = own; dRing = true; }
+      if (aCell[k] !== recCell[i]) { aCell[k] = recCell[i]; dCell = true; }
       live.push(rec);
       k++;
       if (k >= capacity) break;
     }
 
     geometry.instanceCount = k;
-    attrOffset.needsUpdate = true;
-    attrColour.needsUpdate = true;
-    attrSize.needsUpdate = true;
-    attrOpacity.needsUpdate = true;
-    attrCell.needsUpdate = true;
-    attrLit.needsUpdate = true;
-    attrRing.needsUpdate = true;
+    if (dOffset) attrOffset.needsUpdate = true;
+    if (dColour) attrColour.needsUpdate = true;
+    if (dSize) attrSize.needsUpdate = true;
+    if (dOpacity) attrOpacity.needsUpdate = true;
+    if (dCell) attrCell.needsUpdate = true;
+    if (dLit) attrLit.needsUpdate = true;
+    if (dRing) attrRing.needsUpdate = true;
+    uploads.ticks += 1;
+    uploads.bytes += 4 * k * ((dOffset ? 3 : 0) + (dColour ? 3 : 0) + (dSize ? 1 : 0) + (dOpacity ? 1 : 0) + (dCell ? 1 : 0) + (dLit ? 1 : 0) + (dRing ? 1 : 0));
+    uploads.all += 4 * k * 11;
     if (!material.uniforms.uAtlas.value) {
       const a = getGlyphAtlas();
       if (a) material.uniforms.uAtlas.value = a;
@@ -549,7 +676,17 @@ export function createGlyphLayer(scene, layer = {}) {
     setVisible(b) {
       if (mesh) mesh.visible = !!b;
     },
+    /**
+     * The view from the ground (sky/skyview.js): `up` is the observer's zenith in VIEW space, and
+     * the shader then lifts and dims every dot as the air does a star. `null` is the orbital view.
+     */
+    setSky(up) {
+      material.uniforms.uSky.value = up ? 1 : 0;
+      if (up) material.uniforms.uSkyUp.value.copy(up);
+    },
     dispose() {
+      if (pool) pool.dispose();
+      pool = null;
       if (mesh) scene.remove(mesh);
       if (geometry) geometry.dispose();
       material.dispose();
@@ -574,6 +711,27 @@ export function createGlyphLayer(scene, layer = {}) {
     /** Replace propagate() as the position source, e.g. a table filled by a worker. */
     setPositionSource(fn) {
       positionSource = typeof fn === 'function' ? fn : null;
+    },
+    /**
+     * Hand the layer's SGP4 to a worker (propagate/pool.js `createPropagationPool()`), or take it
+     * back with null. The layer gives the pool its records now and on every setRecords().
+     */
+    setPool(next) {
+      if (pool && pool !== next) pool.dispose();
+      pool = next || null;
+      if (pool) pool.setRecords(records);
+    },
+    /**
+     * What this layer has marked for upload since it was made: `bytes` of live instances in the
+     * attributes it marked, beside `all`, what marking every attribute on every tick would have
+     * been (the behaviour before internal #519). For probes and tests; nothing reads it per frame.
+     */
+    uploadStats() {
+      return { ...uploads };
+    },
+    /** The pool's own account of itself, or null: for probes and `spaceRadar.perf()`. */
+    poolStats() {
+      return pool ? { ok: pool.ok, ...pool.stats } : null;
     },
     get mesh() {
       return mesh;

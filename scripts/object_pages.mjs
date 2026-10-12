@@ -40,6 +40,7 @@ const SRC = await import(join(JS, 'data/sources.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
 const { COPY, fmt } = await import(join(JS, 'copy/en.js'));
 const { SYSTEMS } = await import(join(JS, 'data/systems.js'));
+const { WIKI_TITLES } = await import(join(JS, 'data/wikititles.js'));
 
 // The card's path for "no position": measure() catches the throw and returns its empty readings.
 const CTX = { clock: { now() { throw new Error('a static page has no clock'); } }, layers: L.LAYERS, sources: SRC };
@@ -59,11 +60,10 @@ const readJson = (rel) => JSON.parse(readFileSync(join(ROOT, rel), 'utf8'));
 // out of date. The card never prints a satellite's `why` for this reason ("a count that changes
 // with every crew", ui/cards.js WHY_KLASSES); a page that does must leave these out until the rows
 // are fixed at their source. Each entry says why.
-const DATED_WHY = new Map([
-  [25544, 'a crew count, which changes with every crew'],
-  [20580, 'an age in years ("Thirty-five years"), which is one more every April'],
-  [41866, 'GOES 16 handed the Atlantic watch to GOES 19 in April 2025'],
-]);
+// Empty since 2026-10-07 (internal #198): the three lines it held back -- the ISS's crew count,
+// Hubble's age in years, GOES 16 as the Atlantic watch -- were rewritten in data/layers.js to say
+// dates instead of counts, which do not go stale. A `why` that does goes here, with the reason.
+const DATED_WHY = new Map([]);
 
 function satelliteRecords() {
   const out = [];
@@ -161,6 +161,9 @@ function descriptionFor(lead, why, live) {
   return cut(`${lead} ${why || live}`, DESC_MAX);
 }
 
+// The ten bodies site/js/objectnow.js can place with the vendored Astronomy Engine, by record id (internal #294).
+const NOW_BODIES = { sun: 'Sun', moon: 'Moon', mercury: 'Mercury', venus: 'Venus', mars: 'Mars', jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptune', pluto: 'Pluto' };
+
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 /** Two significant figures: a size worked out from an angle and a distance is not good to more. */
 const sig2 = (v) => { const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v))) - 1)); return Math.round(v / p) * p; };
@@ -228,10 +231,16 @@ function seeLine(r, klass, m) {
   return line === COPY.sky.worldNoRise ? `${line.split('. ')[0]}.` : line;
 }
 
-/** The URL in a source line, for JSON-LD sameAs; Wikipedia's only, which names the thing itself. */
-function sameAsOf(text) {
+/**
+ * JSON-LD sameAs: the Wikipedia article ABOUT the thing. The hand-checked table the share sheet
+ * quotes from first (data/wikititles.js), then the URL in the record's own source line, unless
+ * that is a list: 40 Messier pages said they were the same thing as `List_of_Messier_objects`,
+ * which is where their distance was read and not what they are (internal #202). None is honest.
+ */
+function sameAsOf(id, text) {
+  if (Object.prototype.hasOwnProperty.call(WIKI_TITLES, String(id))) return `https://en.wikipedia.org/wiki/${WIKI_TITLES[String(id)]}`;
   const m = /https:\/\/en\.wikipedia\.org\/wiki\/[^\s,;)]+/.exec(String(text || ''));
-  return m ? m[0] : null;
+  return m && !/\/wiki\/List_of_/i.test(m[0]) ? m[0] : null;
 }
 
 // --- build --------------------------------------------------------------------------------------
@@ -301,6 +310,7 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
     title: titleFor(name, klass, r.id),
     description: descriptionFor(lead, why, liveLineFor(klass, r.id)),
     liveLine: liveLineFor(klass, r.id),
+    nowBody: klass === 'world' && Object.prototype.hasOwnProperty.call(NOW_BODIES, r.id) ? NOW_BODIES[r.id] : null,
     lead,
     why,
     see: seeLine(r, klass, m),
@@ -313,7 +323,7 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
     image,
     og: (r.klass === 'site' && md.world === 'moon') || (klass === 'oddity' && md.whereKind !== 'in_orbit' && /moon|lunar/i.test(`${md.cite} ${md.fact} ${r.name}`)) ? 'moon-landings'
       : klass === 'station' ? 'people-in-space' : 'default',
-    sameAs: sameAsOf(md.source || md.cite || md.whySource),
+    sameAs: sameAsOf(r.id, md.source || md.cite || md.whySource),
     place: klass === 'site',
   };
 });

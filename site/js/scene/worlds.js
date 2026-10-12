@@ -100,9 +100,9 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage, isSystemStage, systemOriginOf } from './stage.js';
 import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
-import { createEarth, updateEarth, updateEarthEclipse } from './earth.js';
+import { createEarth, updateEarth, updateEarthEclipse, EARTH_RELIEF } from './earth.js';
 import { ECLIPSE_GLSL, eclipseLikely, MOON_RADIUS_KM } from './eclipse.js';
-import { createAirShell, ATMO_PARAMS } from './atmosphere.js';
+import { createAirShell, ATMO_PARAMS, EARTH_AIR } from './atmosphere.js';
 import { COPY, t, fmt } from '../copy/en.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
@@ -226,15 +226,33 @@ export function worldRecords() {
       // not round says the ball is not its shape.
       flat: !!w.look.flat && !w.look.map,
       irregular: !!w.look.irregular,
+      // 2026-10-05: what kind of map it wears (`tinted`: a black-and-white mosaic in a chosen colour;
+      // `toned`: Cassini's infrared-to-ultraviolet colours, toned down; `infrared`: Titan's ground,
+      // seen through the haze at 938 nm; `colour`: the mosaic's own), and whether its shape is the
+      // measured one (Phobos, Deimos). The card says each (ui/cards.js derivedDrawingLine).
+      // A moon drawn keeping one face to its planet: its card's turn is its lap (ui/cards.js).
+      locked: w.rotation === 'locked',
+      mapKind: w.look.map && w.look.mapKind ? w.look.mapKind : '',
+      shaped: !!w.look.shape,
       // Spec 0054: every world drawn with the world material is exposed for its own sunlight, and
       // the card says so (ui/cards.js drawingLine); the Moon's also says how much its earthshine is
       // brightened. The Earth has its own shader and its own sunlight is the reference; the Sun is
       // the light.
       exposed: !w.look.earth && !w.look.emissive,
+      // Spec 0072: seen small, every world but the Sun is a light at its computed brightness
+      // (scene/worldlights.js), and the card says what that glow is.
+      light: !w.look.emissive,
       earthshineGain: w.look.earthshine ? EARTHSHINE_GAIN : 0,
       // Spec 0054 task 3: how much thicker than it is the air is drawn (1 = its measured height), for
       // the card's line that says so and that the haze's colour is chosen.
       airGain: w.look.air && ATMO_PARAMS[w.look.air] ? ATMO_PARAMS[w.look.air].heightGain : 0,
+      // 2026-10-06: narrow rings at measured radii, drawn wider (and for Neptune denser) than they
+      // are so that they show; the card says by how much (ui/cards.js derivedDrawingLine).
+      ringsWiden: w.look.ring && w.look.ring.bands ? w.look.ring.widen || 1 : 0,
+      ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
+      // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
+      // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain) }) } : {}),
     },
   }));
 }
@@ -266,11 +284,71 @@ export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
 // sRGB average would draw the flat disc darker than the textured one it stands in for. Re-measure
 // it if a texture changes; a Mars dot the wrong red is exactly the kind of thing nobody notices.
 
+// THE NARROW RINGS (2026-10-06, public #416 and #407). Uranus's and Neptune's rings are not Saturn's
+// sheet: they are a handful of threads, each at a radius measured to the kilometre and a few
+// kilometres wide, as dark as charcoal. The radii, widths and optical depths below are NASA's ring
+// fact sheets' (nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html and nepringfact.html,
+// read 2026-10-06); a width or depth given as a range is its middle. `bands` is [radius km, width
+// km, normal optical depth].
+//
+// WHAT IS NOT MEASURED, and the card says so (copy/en.js drawing.worldRings): drawn at their real
+// width and darkness nobody would see them -- Uranus's epsilon ring, the widest, is under a pixel
+// with the planet 600 pixels across, and all of them reflect 1.5 % of the light that reaches them.
+// So each is drawn `widen` times wider, `dense` times more opaque (Neptune's are also nearly
+// transparent), and in `colour`, far brighter than charcoal. The RADII are the measurement. They
+// cast no shadow on the globe: a shadow ten times too wide would be a second untruth. Neptune's
+// two broad sheets, Galle and Lassell, have an optical depth of 0.0001 and are left out, and so
+// are the arcs in the Adams ring.
+export const URANUS_RINGS = {
+  innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x8f9da3,
+  bands: [
+    [41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3],      // 6, 5, 4
+    [44718, 7, 0.4], [45661, 8, 0.3],                          // alpha, beta
+    [47176, 1.6, 0.4], [47627, 2.5, 0.3], [48300, 5, 0.5],     // eta, gamma, delta
+    [50024, 2, 0.1], [51149, 58, 1.4],                         // lambda, epsilon
+  ],
+};
+export const NEPTUNE_RINGS = {
+  innerKm: 52000, outerKm: 64000, widen: 20, dense: 10, colour: 0x8f9da3,
+  bands: [
+    [53200, 50, 0.01],   // Le Verrier ("< 100" km wide)
+    [57200, 50, 0.005],  // Arago ("< 100" km; the sheet gives no depth: half Le Verrier's, chosen)
+    [62933, 15, 0.05],   // Adams (0.01 to 0.1)
+  ],
+};
+/** The narrow rings' strip, texels from the inner edge to the outer. */
+export const RING_BANDS_PX = 1024;
+
+/**
+ * The strip a narrow ring set is drawn from: RING_BANDS_PX RGBA texels, white, alpha the opacity
+ * seen face-on, 1 - exp(-tau), which is how RING_FRAG reads a ring map's alpha back into an optical
+ * depth. A band covers its widened width, and at least one texel. Pure but for the array.
+ */
+export function ringBandsStrip(ring, px = RING_BANDS_PX) {
+  const data = new Uint8Array(px * 4);
+  for (let i = 0; i < px; i++) { data[i * 4] = 255; data[i * 4 + 1] = 255; data[i * 4 + 2] = 255; }
+  const kmPerPx = (ring.outerKm - ring.innerKm) / px;
+  for (const [rKm, widthKm, tau] of ring.bands) {
+    const half = Math.max(kmPerPx, widthKm * (ring.widen || 1)) / 2;
+    const a = 1 - Math.exp(-tau * (ring.dense || 1));
+    const from = Math.max(0, Math.floor((rKm - half - ring.innerKm) / kmPerPx));
+    const to = Math.min(px - 1, Math.ceil((rKm + half - ring.innerKm) / kmPerPx) - 1);
+    for (let i = from; i <= Math.max(from, to); i++) data[i * 4 + 3] = Math.max(data[i * 4 + 3], Math.round(a * 255));
+  }
+  return data;
+}
+
+/** How many times steeper than measured Mercury's relief is drawn, and how far Saturn's bands are pushed from the map's mean. */
+export const RELIEF_STEEP = 4;
+export const SATURN_CONTRAST = 1.5;
+
 export const WORLDS = [
   {
     id: 'sun', display: 'The Sun', parent: '', radiusKm: 696340.0,
-    body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE,
-    look: { map: '2k_sun.jpg', tint: 0xf18833, emissive: true, corona: true },
+    // `rotation: 'iau'` since 2026-10-06: the Sun's mesh has its north pole and turns once in 25.38
+    // days (astronomy-engine's IAU axis), which scene/sun.js counts today's sunspots from.
+    body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
+    look: { map: '2k_sun.webp', tint: 0xf18833, emissive: true, corona: true },
   },
   {
     id: 'earth', display: 'Earth', parent: 'sun', radiusKm: 6371.0,
@@ -279,17 +357,21 @@ export const WORLDS = [
     // as brightness, and lossy WebP keeps brightness at full resolution; the day map is also read
     // as COLOUR -- the ocean mask is blue minus red (earth.js OCEAN_MASK) -- and WebP halves colour
     // resolution. Measured: 1.6 % of the map's pixels changed between sea and land.
-    look: { earth: true, day: '2k_earth_daymap.jpg', night: '2k_earth_nightmap.webp', clouds: '2k_earth_clouds.webp' },
+    look: { earth: true, day: '2k_earth_daymap.webp', night: '2k_earth_nightmap.webp', clouds: '2k_earth_clouds.webp' },
   },
   {
     id: 'moon', display: 'The Moon', parent: 'earth', radiusKm: 1737.4,
     body: 'Moon', frame: EARTH_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_moon.jpg', tint: 0x9b9796, rough: 0.5, earthshine: true },
+    look: { map: '2k_moon.webp', tint: 0x9b9796, rough: 0.5, earthshine: true },
   },
   {
     id: 'mercury', display: 'Mercury', parent: 'sun', radiusKm: 2439.7,
     body: 'Mercury', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mercury.jpg', tint: 0x848383, rough: 0.45 },
+    // `relief` (2026-10-08, public #404): MESSENGER's elevation model as local relief (registry/textures.yaml
+    // `mercury-relief` says how it was made), fetched with the map on a tier-1 device and up, and
+    // drawn RELIEF_STEEP times steeper than measured: at 7.5 km a texel a crater wall's slope is
+    // averaged down to a few degrees, which lights nothing. The card says the factor.
+    look: { map: '2k_mercury_messenger.webp', tint: 0x848383, rough: 0.45, relief: { map: '2k_mercury_relief.webp', px: 2048, rangeM: 2500, steep: RELIEF_STEEP } },
   },
   // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb
   // (#318). `air` names a scene/atmosphere.js ATMO_PARAMS row (spec 0054 task 3): Mars, Venus and
@@ -306,32 +388,55 @@ export const WORLDS = [
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 } },
+    // `faces`: a second map the visitor may ask for on the card (setFace, 2026-10-06, public #417):
+    // the ground under the clouds, as Magellan's radar mapped it. Fetched when asked and not before.
+    // `wrap` (2026-10-08, public #417): the cloud deck is tens of kilometres of scattering droplets,
+    // and sunlight diffuses through it past the geometric terminator, so the day side has no edge.
+    // 0.18 puts the last light about 10 degrees past it (asin 0.18): CHOSEN, to match Akatsuki's and
+    // Mariner 10's pictures, not computed. The air shell's own twilight (scene/atmosphere.js) is
+    // the glow above it. Not worn with the radar face: bare rock has a terminator (setMap).
+    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.jpg', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
+    look: { map: '2k_mars.webp', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
   },
+  // `oblate` (2026-10-06) is the giant's flattening, (equatorial - polar) / equatorial, from NASA's
+  // planetary fact sheets (nssdc.gsfc.nasa.gov/planetary/factsheet/, "Ellipticity (Flattening)",
+  // read 2026-10-06): Jupiter 0.06487, Saturn 0.09796, Uranus 0.02293, Neptune 0.01708. They spin
+  // in ten to seventeen hours and bulge: Saturn is a tenth wider than it is tall, which anyone can
+  // see in a photograph and a sphere cannot show. oblateRadii() makes the mesh that shape.
+  // A SECOND FACE (2026-10-07, public #401, #407, #411): `faces.hubble` is Hubble's OPAL map of 2025,
+  // built from the calibrated FITS files by scripts/build-textures.py (`--only giants`), offered on
+  // the card as "As Hubble saw it" and fetched only then (setFace). It is not the first face: the
+  // true maps are plain beside the artist's. Its rows are planetocentric latitude, the one
+  // scene/weather/flow.js moves its winds by; `faceSpot` is where the Great Red Spot is in THAT
+  // map (measured on it), so the flow goes round the right oval whichever face is worn.
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05 },
+    look: { map: '2k_jupiter.webp', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487, faces: { hubble: '2k_jupiter_opal_2025.webp' }, faceSpot: { hubble: { u: 0.6058, v: 0.3878, half_u: 0.019, half_v: 0.024 } } },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 1.05, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    // `contrast` (2026-10-08, public #411): the map's bands are faint (its rows' luminance runs 0.29
+    // to 0.88 round a mean of 0.62, most of that the poles), and no sharper map of Saturn is free
+    // to host. So the shader draws each texel 1.5 times as far from the map's own mean colour
+    // (`mean`: linear light, weighted by area, measured on the file 2026-10-08) -- an ADJUSTMENT of
+    // ours, which the card states -- and not on the Hubble face, which is shown as measured.
+    look: { map: '2k_saturn.webp', tint: 0xdfcca8, contrast: { gain: SATURN_CONTRAST, mean: [0.7405, 0.6024, 0.3928] }, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 1.2, rim: { colour: 0xc8f4ff, gain: 0.35 } },
+    look: { map: '2k_uranus.webp', tint: 0x9eced5, faces: { hubble: '1k_uranus_opal_2025.webp' }, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 1.15, rim: { colour: 0x9cc0ff, gain: 0.35 } },
+    look: { map: '2k_neptune.webp', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
@@ -349,37 +454,51 @@ export const WORLDS = [
   // 1.5 degrees of Charon (tests/test_worlds_layer.mjs measures both). Titan is a
   // trip stop too and stays one colour on purpose: in visible light its haze is all anyone has seen.
   //
+  // TWENTY OF THE TWENTY-ONE CARRY A MAP SINCE 2026-10-05 (issues #387 to #415): all but Deimos, for
+  // which no public-domain mosaic was found. scripts/build-textures.py `--only moons` makes them
+  // and says how; registry/textures.yaml has each one's source and how much of the sphere it
+  // covers. `mapKind` is what kind of picture it is, for the card: `tinted` (a black-and-white
+  // mosaic in the flat colour), `toned` (Cassini's infrared-to-ultraviolet colours at 35 %),
+  // `infrared` (Titan's ground through the haze) or `colour`. Every mapped moon is `locked`:
+  // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
+  // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
+  // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes,
+  // and `reach` is that shape's longest radius over the mean one (tests/test_moon_shapes.mjs).
+  //
   // The moons come AFTER Jupiter on purpose: update() places a moon from its planet's drawn disc,
   // so the planet has to have been placed first in the same frame.
   {
     // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
     body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { flat: true, tint: 0xb4926f, albedo: 0.52, map: '2k_pluto_newhorizons.jpg', rough: 0.3 },
+    // `face` (2026-10-07, internal #426): the heart, the face Pluto is known by, as east longitude and
+    // latitude -- the brightest 12-degree patch of the map we ship, measured on it that day (201 E,
+    // 21 N: the bright ice of Tombaugh Regio). An arrival prefers the lit side that shows it (faceDirOf).
+    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'redblue', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
     id: 'io', display: 'Io', parent: 'jupiter', radiusKm: 1821.5,
     body: 'Io', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0xc9b061, albedo: 0.62, map: '1k_io_usgs.jpg', rough: 0.35 },
+    look: { flat: true, tint: 0xc9b061, map: '2k_io_usgs.webp', mapKind: 'colour', albedo: 0.62, rough: 0.35 },
   },
   {
     // "a pale ... surface striated by light tan cracks and streaks" (Wikipedia).
     id: 'europa', display: 'Europa', parent: 'jupiter', radiusKm: 1560.8,
     body: 'Europa', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0xd6cfc0, albedo: 0.68, map: '1k_europa_usgs.jpg' },
+    look: { flat: true, tint: 0xd6cfc0, map: '2k_europa_usgs.webp', mapKind: 'tinted', albedo: 0.68 },
   },
   {
     // "very old, highly cratered, dark regions and somewhat younger ... lighter regions" (Wikipedia).
     id: 'ganymede', display: 'Ganymede', parent: 'jupiter', radiusKm: 2631.2,
-    body: 'Ganymede', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x958b7e, albedo: 0.44, rough: 0.3 },
+    body: 'Ganymede', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x958b7e, map: '2k_ganymede_usgs.webp', mapKind: 'tinted', albedo: 0.44, rough: 0.3 },
   },
   {
     // "Callisto's surface has an albedo of about 20%" (Wikipedia): the darkest of the four.
     id: 'callisto', display: 'Callisto', parent: 'jupiter', radiusKm: 2410.3,
-    body: 'Callisto', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x5e564c, albedo: 0.19, rough: 0.4 },
+    body: 'Callisto', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x5e564c, map: '2k_callisto_usgs.webp', mapKind: 'tinted', albedo: 0.19, rough: 0.4 },
   },
   // SIXTEEN MORE MOONS (six on 2026-09-22, ten more the same day), flat like the five above and in
   // the same one light-to-dark order: their albedos are NASA's fact sheets' too (the Saturnian,
@@ -402,70 +521,70 @@ export const WORLDS = [
     // "the most reflective body in the solar system ... bright white all over" (NASA Science).
     id: 'enceladus', display: 'Enceladus', parent: 'saturn', radiusKm: 252.1,
     body: 'Enceladus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0xeff1f1, albedo: 1.0, map: '1k_enceladus_cassini.jpg' },
+    look: { flat: true, tint: 0xeff1f1, map: '2k_enceladus_cassini.webp', mapKind: 'toned', albedo: 1.0 },
   },
   {
     // "Titan's orange color comes from a thick atmospheric haze" (Wikipedia): the haze, not the
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
-    body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 } },
+    body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x8f5e26, map: '2k_titan_cassini_2018.webp', mapKind: 'infrared', albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 } },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
     id: 'triton', display: 'Triton', parent: 'neptune', radiusKm: 1352.6,
     body: 'Triton', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0xe3d4cc, albedo: 0.72, map: '1k_triton_voyager.jpg' },
+    look: { flat: true, tint: 0xe3d4cc, map: '2k_triton_voyager.webp', mapKind: 'balanced', albedo: 0.72 },
   },
   {
     // "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north
     // (top) polar region" (NASA Science): a grey, faintly warm.
     id: 'charon', display: 'Charon', parent: 'pluto', radiusKm: 606.0,
-    body: 'Charon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8e8a86, albedo: 0.42, rough: 0.3 },
+    body: 'Charon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x8e8a86, map: '2k_charon_nh_colour.webp', mapKind: 'redblue', albedo: 0.42, rough: 0.3 },
   },
   {
     // "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids" (NASA
-    // Science, of both moons of Mars). `irregular`: a lumpy rock drawn as a ball of its mean
-    // radius, and its card says the true shape is not drawn.
+    // Science, of both moons of Mars). A lumpy rock: `shape` bends the ball of its mean radius
+    // to Gaskell's model the first time it is looked at, and its card says so.
     id: 'phobos', display: 'Phobos', parent: 'mars', radiusKm: 11.08,
-    body: 'Phobos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x4a4540, albedo: 0.07, irregular: true, rough: 0.5 },
+    body: 'Phobos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x4a4540, map: '2k_phobos_viking.webp', mapKind: 'tinted', albedo: 0.07, shape: 'phobos', reach: 1.25, rough: 0.5 },
   },
   {
     // The same NASA sentence; a shade lighter than Phobos for its 0.08 against 0.07.
     id: 'deimos', display: 'Deimos', parent: 'mars', radiusKm: 6.2,
-    body: 'Deimos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x524d47, albedo: 0.08, irregular: true, rough: 0.5 },
+    body: 'Deimos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x524d47, albedo: 0.08, shape: 'deimos', reach: 1.41, rough: 0.5 },
   },
   // The other five round moons of Saturn, then all five of Uranus's (2026-09-22).
   {
     // "very bright, the second-brightest of the moons of Saturn after Enceladus, and neutral in
     // color" (Wikipedia): a near-white with no hue to speak of.
     id: 'tethys', display: 'Tethys', parent: 'saturn', radiusKm: 531.1,
-    body: 'Tethys', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xe3e5e7, albedo: 0.8 },
+    body: 'Tethys', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xe3e5e7, map: '2k_tethys_cassini.webp', mapKind: 'toned', albedo: 0.8 },
   },
   {
     // "a network of bright ice cliffs" on ice over "a dense core (probably silicate rock)" (NASA
     // Science, Wikipedia): white ice, faintly warm.
     id: 'dione', display: 'Dione', parent: 'saturn', radiusKm: 561.4,
-    body: 'Dione', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xd4d5d3, albedo: 0.7 },
+    body: 'Dione', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xd4d5d3, map: '2k_dione_cassini.webp', mapKind: 'toned', albedo: 0.7 },
   },
   {
     // "a frozen dirty snowball" (NASA Science): Dione's albedo to the fact sheet's one figure, and
     // the same white a shade dirtier.
     id: 'rhea', display: 'Rhea', parent: 'saturn', radiusKm: 763.5,
-    body: 'Rhea', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xd5d3cc, albedo: 0.7 },
+    body: 'Rhea', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xd5d3cc, map: '2k_rhea_cassini.webp', mapKind: 'toned', albedo: 0.7 },
   },
   {
     // "consists almost entirely of water ice, which is the only substance ever detected on Mimas"
     // (NASA Science): grey ice.
     id: 'mimas', display: 'Mimas', parent: 'saturn', radiusKm: 198.2,
-    body: 'Mimas', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xa7aaac, albedo: 0.6 },
+    body: 'Mimas', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xa7aaac, map: '2k_mimas_cassini.webp', mapKind: 'toned', albedo: 0.6 },
   },
   {
     // The two-faced one: "as dark as coal (albedo 0.03-0.05 with a slight reddish tinge)" on the
@@ -473,45 +592,45 @@ export const WORLDS = [
     // cannot be both, so it is drawn at the mean of the fact sheet's 0.05 and 0.5, in the reddish
     // tinge the dark side is described by, and copy/en.js says on the card that it has two faces.
     id: 'iapetus', display: 'Iapetus', parent: 'saturn', radiusKm: 734.3,
-    body: 'Iapetus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x89735f, albedo: 0.275, rough: 0.35 },
+    body: 'Iapetus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked', pole: 'orbit',
+    look: { flat: true, tint: 0x89735f, map: '2k_iapetus_cassini.webp', mapKind: 'toned', albedo: 0.275, rough: 0.35 },
   },
   {
     // "the brightest surface of the five largest Uranian moons, but none of them reflect more than
     // about a third of the sunlight that strikes them ... darkened by a carbonaceous material"
     // (NASA Science): a light neutral grey, and the lightest of Uranus's five.
     id: 'ariel', display: 'Ariel', parent: 'uranus', radiusKm: 578.9,
-    body: 'Ariel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x868786, albedo: 0.39, rough: 0.3 },
+    body: 'Ariel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x868786, map: '1k_ariel_voyager.webp', mapKind: 'tinted', albedo: 0.39, rough: 0.3 },
   },
   {
     // "fairly uniformly dark. However, the cliffs bordering certain impact craters reveal, at
     // depth, the presence of much more luminous material" (Wikipedia): mid grey.
     id: 'miranda', display: 'Miranda', parent: 'uranus', radiusKm: 235.8,
-    body: 'Miranda', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x7d7f81, albedo: 0.32, rough: 0.3 },
+    body: 'Miranda', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x7d7f81, map: '1k_miranda_voyager.webp', mapKind: 'tinted', albedo: 0.32, rough: 0.3 },
   },
   {
     // "The neutral gray color of Titania is typical of most of the significant Uranian moons"
     // (NASA Science), against Wikipedia's "relatively dark and slightly red": NASA's grey, since
     // it is the one describing what the colour IS.
     id: 'titania', display: 'Titania', parent: 'uranus', radiusKm: 788.9,
-    body: 'Titania', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x767573, albedo: 0.27, rough: 0.3 },
+    body: 'Titania', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x767573, map: '1k_titania_voyager.webp', mapKind: 'tinted', albedo: 0.27, rough: 0.3 },
   },
   {
     // "dark and slightly red in color" (Wikipedia): a dark warm grey.
     id: 'oberon', display: 'Oberon', parent: 'uranus', radiusKm: 761.4,
-    body: 'Oberon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x7a6a62, albedo: 0.23, rough: 0.3 },
+    body: 'Oberon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x7a6a62, map: '1k_oberon_voyager.webp', mapKind: 'tinted', albedo: 0.23, rough: 0.3 },
   },
   {
     // "the darkest among Uranian moons" (Wikipedia), "reflects only 16 percent of the light that
     // strikes its surface" (NASA Science): a dark neutral grey, darker than all four of its
     // sisters and than Titan.
     id: 'umbriel', display: 'Umbriel', parent: 'uranus', radiusKm: 584.7,
-    body: 'Umbriel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x616060, albedo: 0.21, rough: 0.3 },
+    body: 'Umbriel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0x616060, map: '1k_umbriel_voyager.webp', mapKind: 'tinted', albedo: 0.21, rough: 0.3 },
   },
 ];
 
@@ -549,20 +668,26 @@ const BY_ID = new Map(WORLDS.map((w) => [w.id, w]));
 // NO AMBIENT. A night side is black, as it is in a photograph -- except the Moon's, which is lit by
 // the Earth (earthshine, below).
 
-const WORLD_VERT = /* glsl */`
+// Exported with WORLD_FRAG: scene/tiles.js draws a close world's map tiles with this same pair, so a
+// tile is lit exactly as the globe under it (spec 0065).
+export const WORLD_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
 uniform vec3 uSunDir;
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
-varying vec3 vPosL;   // on the unit sphere, body-fixed: +Y is the pole, the ring plane is y = 0
+varying vec3 vPosL;   // on the body (a unit sphere, or a giant's spheroid), body-fixed: +Y is the pole, the ring plane is y = 0
 varying vec3 vSunL;
+varying vec3 vEastW;  // the direction of east on the ground, in the world: the relief's slopes are east and north
 void main() {
   vUv = uv;
   vec4 worldPos = modelMatrix * vec4( position, 1.0 );
   vPosW = worldPos.xyz;
   vNormalW = normalize( mat3( modelMatrix ) * normal );
+  // East is the pole crossed with the way up; at the pole itself there is none, and any will do.
+  vec3 eastL = cross( vec3( 0.0, 1.0, 0.0 ), position );
+  vEastW = mat3( modelMatrix ) * ( dot( eastL, eastL ) > 1e-8 ? eastL : vec3( 0.0, 0.0, -1.0 ) );
   vPosL = position;
   // The mesh is scaled uniformly, so the transpose is the inverse rotation up to a length.
   vSunL = normalize( transpose( mat3( modelMatrix ) ) * uSunDir );
@@ -786,11 +911,21 @@ uniform vec4  uRingWarp;      // the Cassini Division's radii and their map coor
 uniform sampler2D uRingMap;
 uniform float uHasRingMap;
 uniform float uRingOpacity;
+// 2026-10-08, three worlds' own looks (the block above WORLDS' Venus row says what each is):
+uniform float uWrap;        // Venus: daylight carried past the terminator by a deep cloud deck; 0 elsewhere
+uniform float uContrast;    // Saturn: the map's departure from its own mean, multiplied; 1 elsewhere
+uniform vec3  uMapMean;     // that mean, in linear light
+// Named uGlobeRelief, not uRelief: scene/tiles.js builds its shader from this one and declares its
+// own "uniform vec2 uRelief"; two declarations of one name do not compile, and from 2026-10-08 to
+// 2026-10-10 no close-up tile of the Moon or Mars was drawn because of it.
+uniform sampler2D uGlobeRelief;  // Mercury: local relief, 0.5 = level ground (registry/textures.yaml mercury-relief)
+uniform vec3  uReliefK;     // slope per unit of difference between two texels either side; the texel's u; its v
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
 varying vec3 vPosL;
 varying vec3 vSunL;
+varying vec3 vEastW;
 ${ECLIPSE_GLSL}
 const float MU_FLOOR = ${MU_FLOOR};
 ${RING_U_GLSL}
@@ -823,11 +958,30 @@ void main() {
   vec3 n = normalize( vNormalW );
   vec3 viewDir = normalize( cameraPosition - vPosW );
   vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );
+  // Saturn's bands (look.contrast): what the map says, further from its own mean. 1 leaves it alone.
+  if ( uContrast != 1.0 ) base = clamp( uMapMean + ( base - uMapMean ) * uContrast, 0.0, 1.0 );
+
+  // Mercury's relief (look.relief): the ground's slope east and north from the height map, by two
+  // differences, tips the normal the light is worked out with. The silhouette is still the ball's.
+  float dGeo = dot( n, uSunDir );
+  if ( uReliefK.x > 0.0 ) {
+    float hE = texture2D( uGlobeRelief, vUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uGlobeRelief, vUv - vec2( uReliefK.y, 0.0 ) ).r;
+    float hN = texture2D( uGlobeRelief, vUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, vUv - vec2( 0.0, uReliefK.z ) ).r;
+    vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
+    vec3 north = cross( n, east );
+    // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
+    float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
+    n = normalize( n - uReliefK.x * ( hE / cosLat * east + hN * north ) );
+  }
 
   float d = dot( n, uSunDir );
+  // Venus's deep cloud (look.wrap): the terminator is not an edge, light diffuses a way past it.
+  float dLit = uWrap > 0.0 ? ( d + uWrap ) / ( 1.0 + uWrap ) : d;
   float direct = uLimb > 0.0
-    ? minnaert( d, dot( n, viewDir ), uLimb )
+    ? minnaert( dLit, dot( n, viewDir ), uLimb )
     : orenNayar( n, uSunDir, viewDir, uRoughness );
+  // A slope facing the Sun just past the ball's own terminator is in the ball's shadow all the same.
+  if ( uReliefK.x > 0.0 ) direct *= smoothstep( -0.03, 0.05, dGeo );
 
   // The ring between this point and the Sun: one ray-plane test, then the ring's own opacity there.
   float ringShade = 1.0;
@@ -908,8 +1062,71 @@ export function worldMaterial(map, tint) {
       uRingMap: { value: null },
       uHasRingMap: { value: 0 },
       uRingOpacity: { value: RING_OPACITY },
+      uWrap: { value: 0 },
+      uContrast: { value: 1 },
+      uMapMean: { value: new THREE.Vector3(0.5, 0.5, 0.5) },
+      uGlobeRelief: { value: null },
+      uReliefK: { value: new THREE.Vector3(0, 0, 0) },
     },
   });
+}
+
+/**
+ * A spheroid's equatorial and polar radii in units of its MEAN radius (the radius of the sphere of
+ * the same volume, which is what a row's `radiusKm` is and what the mesh is scaled by): with
+ * flattening f, polar = equatorial x (1 - f) and equatorial^2 x polar = 1. Jupiter: 1.0226 and
+ * 0.9563, which times 69 911 km are the fact sheet's 71 492 and 66 854. Pure.
+ */
+export function oblateRadii(f) {
+  const k = Math.min(0.5, Math.max(0, Number(f) || 0));
+  const eq = Math.pow(1 - k, -1 / 3);
+  return { eq, pol: eq * (1 - k) };
+}
+
+/**
+ * How finely a world's sphere is cut. A facet's middle sags under the true surface by R (1 - cos(half a step)):
+ * 2.1 km on the Moon at 64 segments, which is the height a ground site's lander (placed on the true radius)
+ * floated above the drawn ground, and the shell the stars showed under (public #406, internal #565). The two
+ * worlds that carry ground sites (registry/sites.yaml: the Moon and Mars) are cut finely enough that the sag is
+ * under a quarter of a kilometre; the camera cannot go nearer than ~35 km, so nothing shows it. Pure.
+ */
+export const SITE_BODIES = new Set(['moon', 'mars']);
+export function segmentsFor(id) { return SITE_BODIES.has(id) ? { width: 192, height: 96 } : { width: 64, height: 48 }; }
+/**
+ * The fine cut is worn from this disc size up (a share of HALF the view's height, as discShare gives it): 0.05
+ * is a disc 45 px across in a view 900 px tall, where 64 segments are a third of a pixel from round. Pure.
+ */
+export const FINE_CUT_AT = 0.05;
+export function fineCutWanted(share) { return Number.isFinite(share) && share >= FINE_CUT_AT; }
+/** The deepest a facet sags under the sphere, km: the middle of a longitude step on the equator. Pure. */
+export function sagKm(radiusKm, widthSegments) { return radiusKm * (1 - Math.cos(Math.PI / widthSegments)); }
+
+/**
+ * A unit sphere pressed into that spheroid, +Y the pole: SphereGeometry's vertices, faces and
+ * texture coordinates (the map lands where it did, in planetocentric latitude), with the spheroid's
+ * own normals, so the light and the limb are the flattened body's.
+ */
+export function oblateGeometry(f, widthSegments = 64, heightSegments = 48) {
+  const { eq, pol } = oblateRadii(f);
+  const geo = new THREE.SphereGeometry(1, widthSegments, heightSegments);
+  const pos = geo.attributes.position;
+  const nrm = geo.attributes.normal;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i) * eq;
+    const y = pos.getY(i) * pol;
+    const z = pos.getZ(i) * eq;
+    pos.setXYZ(i, x, y, z);
+    // The gradient of x^2/a^2 + y^2/c^2 + z^2/a^2.
+    const nx = x / (eq * eq);
+    const ny = y / (pol * pol);
+    const nz = z / (eq * eq);
+    const len = Math.hypot(nx, ny, nz) || 1;
+    nrm.setXYZ(i, nx / len, ny / len, nz / len);
+  }
+  pos.needsUpdate = true;
+  nrm.needsUpdate = true;
+  geo.computeBoundingSphere();
+  return geo;
 }
 
 /** Opacity of a ring at full alpha: the ring's own material and its shadow on the globe share it. */
@@ -981,6 +1198,7 @@ uniform vec3 uColour;
 uniform float uOpacity;
 uniform vec2 uRingRadii;
 uniform vec4 uRingWarp;
+uniform vec2 uGlobe;          // the globe's equatorial and polar radii (oblateRadii); 1, 1 for a sphere
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1004,10 +1222,14 @@ void main() {
   #include <logdepthbuf_fragment>
   // The map through the warp that puts its Cassini Division on Cassini's radii.
   vec4 tex = mix( vec4( 1.0 ), texture2D( uMap, vec2( ringMapU( length( vPosL.xy ) ), 0.5 ) ), uHasMap );
-  // The globe (radius 1 here) between this point and the Sun: the ray's closest approach to the
-  // centre, only on the Sun-facing half of the ray. A 2 % soft edge stands in for the penumbra.
-  float b = dot( vPosL, vSunL );
-  float closest = sqrt( max( dot( vPosL, vPosL ) - b * b, 0.0 ) );
+  // The globe between this point and the Sun: the ray's closest approach to the centre, only on the
+  // Sun-facing half of the ray. The globe is a spheroid (uGlobe), so the test is made in the space
+  // where it is a unit sphere: the ring's plane divided by the equatorial radius, its normal by the
+  // polar one. A 2 % soft edge stands in for the penumbra.
+  vec3 gp = vec3( vPosL.xy / uGlobe.x, vPosL.z / uGlobe.y );
+  vec3 gs = normalize( vec3( vSunL.xy / uGlobe.x, vSunL.z / uGlobe.y ) );
+  float b = dot( gp, gs );
+  float closest = sqrt( max( dot( gp, gp ) - b * b, 0.0 ) );
   float shade = b < 0.0 ? smoothstep( 0.98, 1.02, closest ) : 1.0;
 
   // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
@@ -1060,6 +1282,7 @@ function ringMaterial(map, inner, outer, warp) {
       uRadii: { value: new THREE.Vector2(inner, outer) },
       uRingRadii: { value: new THREE.Vector2(inner, outer) },
       uRingWarp: { value: new THREE.Vector4(...warp) },
+      uGlobe: { value: new THREE.Vector2(1, 1) },
     },
   });
 }
@@ -1078,6 +1301,24 @@ export function applyLook(material, look) {
   }
   if (look.limb) u.uLimb.value = look.limb;
   if (look.rough !== undefined) u.uRoughness.value = look.rough;
+  if (look.wrap && u.uWrap) u.uWrap.value = look.wrap;
+  if (look.contrast && u.uContrast) {
+    u.uContrast.value = look.contrast.gain;
+    u.uMapMean.value.set(...look.contrast.mean);
+  }
+}
+
+/**
+ * The relief uniform for a height map `px` wide whose byte spans +-`rangeM` metres on a world of
+ * `radiusKm`, drawn `steep` times steeper than measured: (the slope one unit of difference between
+ * the texels either side of a point stands for, a texel's width in u, its height in v).
+ *
+ * The two samples are two texels apart: 2 x 2 pi R / px on the equator. One unit of difference is the
+ * whole byte, 2 x rangeM. So the slope is difference x rangeM x px / (2 pi R), and north-south the
+ * same, the map being twice as wide as it is tall. Pure; tests/test_world_looks.mjs holds it.
+ */
+export function reliefUniform(px, rangeM, radiusKm, steep = 1) {
+  return [(steep * rangeM * px) / (2 * Math.PI * radiusKm * 1000), 1 / px, 2 / px];
 }
 
 // --- construction --------------------------------------------------------------------------------
@@ -1117,6 +1358,25 @@ export const TEXTURE_AT_HALF_VIEW = 0.015;
  * so the air costs no draw call there (planets-air PR: 0 calls added at boot).
  */
 export const AIR_AT_HALF_VIEW = TEXTURE_AT_HALF_VIEW;
+
+/** A world that has its map counts as on screen down to this share of half the view (see MAPS_HELD). */
+export const MAP_KEPT_AT = TEXTURE_AT_HALF_VIEW * 0.8;
+
+/**
+ * How many worlds other than the Earth may keep their boot map on the GPU at once, by device tier
+ * (scene/quality.js): [T0, T1, T2]. Spec 0056 requirement 4, internal #157.
+ *
+ * A map used to load once and stay. That was written when there were fourteen maps; there are
+ * thirty-seven now, a 2048 x 1024 map is 10.7 MiB of GPU memory with its mipmaps, and a visitor
+ * who flew to every world held 364 MiB on a phone whose budget for everything is 150 (computed
+ * 2026-10-08, tests/test_texture_budget.mjs). So a world that has gone back to being a dot gives its
+ * map up -- the one that has been small the longest, and only past this count -- and wears its
+ * measured mean colour again, exactly as before the map first came. Coming back fetches the map
+ * again, from the browser's cache. A world that is big on screen now, or wearing a sharper map or
+ * another face, is never asked: so more than this many are held only while more than this many
+ * are big at once. The numbers are what registry/budgets.yaml's three GPU rows leave room for.
+ */
+export const MAPS_HELD = [5, 5, 12];
 
 export function createWorlds(scene, opts = {}) {
   const base = opts.textureBase === undefined ? 'textures/' : opts.textureBase;
@@ -1159,10 +1419,56 @@ export function createWorlds(scene, opts = {}) {
   // once and stays. Earth's three maps and the Milky Way are still fetched at once: they are on
   // screen from the first frame.
   const waiting = new Map(); // world id -> { name, apply(tex) }
+  // Every world's job, kept: a map that is released (MAPS_HELD) goes back to `waiting` from here.
+  const jobs = new Map();
+  // The frame each world's disc was last big enough to show a surface, and the count of frames.
+  const lastBig = new Map();
+  let frameNo = 0;
+  let mapsHeldMax = MAPS_HELD[0];
   // The map each world is wearing now, and the one it booted with (scene/texturetiers.js swaps a
   // 4k map in over the 2k one, and a latched device goes back to the 2k one). id -> THREE.Texture.
   const current = new Map();
   const bootMap = new Map();
+
+  // THE RELIEF (2026-10-08, public #404): a world whose row has `look.relief` wears a height map
+  // under its colour map once that has arrived -- on a tier-1 device and up, and never under the
+  // frame latch (main.js setRelief): it is three more texture reads a fragment. It is kept with the
+  // world's faces, so the map-release rule (MAPS_HELD) gives it back with the map.
+  let reliefAllowed = false;
+  function fetchRelief(id) {
+    const w = BY_ID.get(id);
+    const r = w && w.look.relief;
+    const mesh = meshes.get(id);
+    const key = `${id}/relief`;
+    if (!r || !reliefAllowed || !load || !mesh || !bootMap.has(id) || faceTex.has(key)) return false;
+    faceTex.set(key, null); // asked for
+    load(base + r.map, (tex) => {
+      if (!tex) return;
+      if (!faceTex.has(key) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; } // released, or latched, meanwhile
+      tex.colorSpace = THREE.NoColorSpace; // heights, not colours
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.needsUpdate = true;
+      faceTex.set(key, tex);
+      const u = mesh.material.uniforms;
+      u.uGlobeRelief.value = tex;
+      u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
+    });
+    return true;
+  }
+  /** main.js, when the device's tier is known and when the frame latch trips: may the reliefs be worn? */
+  function setRelief(on) {
+    reliefAllowed = !!on;
+    for (const w of WORLDS) {
+      if (!w.look.relief) continue;
+      if (reliefAllowed) { fetchRelief(w.id); continue; }
+      const mesh = meshes.get(w.id);
+      const key = `${w.id}/relief`;
+      const tex = faceTex.get(key);
+      if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uGlobeRelief.value = null; }
+      if (tex && tex.dispose) tex.dispose();
+      faceTex.delete(key);
+    }
+  }
 
   function fetchMap(id) {
     const job = waiting.get(id);
@@ -1171,6 +1477,26 @@ export function createWorlds(scene, opts = {}) {
     if (!load) return false;
     load(base + job.name, (tex) => job.apply(configure(tex)));
     return true;
+  }
+
+  // THE MEASURED SHAPES (2026-10-05). Phobos and Deimos are not balls, and their shapes are
+  // published (data/moonshapes.js names the models). The radius grids and the code that bends a
+  // sphere to one are fetched together, by dynamic import, the first time the moon is big enough to
+  // show a shape or is selected: the same moment as its map, and never at boot.
+  const shapeWaiting = new Set(WORLDS.filter((w) => w.look.shape).map((w) => w.id));
+  const shaped = new Set();
+  function fetchShape(id) {
+    if (!shapeWaiting.has(id)) return null;
+    shapeWaiting.delete(id);
+    const w = BY_ID.get(id);
+    return Promise.all([import('./moonshape.js'), import('../data/moonshapes.js')]).then(([code, data]) => {
+      const mesh = meshes.get(id);
+      const shape = data.MOON_SHAPES[w.look.shape];
+      if (!mesh || !shape) return false;
+      code.applyMoonShape(mesh.geometry, shape, data.MOON_SHAPE_STEP_DEG);
+      shaped.add(id);
+      return true;
+    }).catch(() => false); // a ball of its mean radius is what it was, and still true to size
   }
 
   const root = new THREE.Group();
@@ -1196,21 +1522,29 @@ export function createWorlds(scene, opts = {}) {
         clouds: texture(w.look.clouds),
       })
       : new THREE.Mesh(
-        new THREE.SphereGeometry(1, 64, 48),
+        w.look.oblate ? oblateGeometry(w.look.oblate, segmentsFor(w.id).width, segmentsFor(w.id).height) : new THREE.SphereGeometry(1, segmentsFor(w.id).width, segmentsFor(w.id).height),
         // The Sun is not lit by anything, so it does not get the world material: a flat disc of
         // its own texture, out of the tone mapper's way so it stays white rather than grey.
         w.look.emissive
           ? new THREE.MeshBasicMaterial({ map, color: tint, toneMapped: false, fog: false })
           : worldMaterial(map, tint),
       );
+    // The fine cut is for the camera near the ground; from anywhere else the world is drawn with the 64 x 48
+    // sphere it always had (update() swaps them by the disc's size on screen, fineCutWanted).
+    if (!w.look.earth && SITE_BODIES.has(w.id)) {
+      mesh.userData.cut = { fine: mesh.geometry, coarse: w.look.oblate ? oblateGeometry(w.look.oblate, 64, 48) : new THREE.SphereGeometry(1, 64, 48) };
+      mesh.geometry = mesh.userData.cut.coarse;
+    }
     if (!w.look.earth && w.look.map) {
       const material = mesh.material;
-      waiting.set(w.id, {
+      const job = {
         name: w.look.map,
         apply(tex) {
           if (!tex) return;
           bootMap.set(w.id, tex);
           current.set(w.id, tex);
+          // A face asked for before the map it replaces had arrived: now it can be worn.
+          if (faceWanted.get(w.id)) Promise.resolve().then(() => setFace(w.id, faceWanted.get(w.id)));
           if (material.uniforms) {
             material.uniforms.uMap.value = tex;
             material.uniforms.uHasMap.value = 1;
@@ -1220,8 +1554,12 @@ export function createWorlds(scene, opts = {}) {
             material.color.set(0xffffff);
             material.needsUpdate = true; // a map where there was none is a different shader
           }
+          lastBig.set(w.id, frameNo); // newly arrived: not the first to go
+          fetchRelief(w.id);
         },
-      });
+      };
+      jobs.set(w.id, job);
+      waiting.set(w.id, job);
     }
 
     mesh.name = w.id;
@@ -1247,11 +1585,12 @@ export function createWorlds(scene, opts = {}) {
     }
 
     if (w.look.ring) {
-      const ringMap = texture(w.look.ring.map);
+      const ringMap = w.look.ring.bands ? bandsTexture(w.look.ring) : texture(w.look.ring.map);
       const ring = ringMesh(w, ringMap);
       mesh.add(ring);
       mesh.userData.ring = ring;
-      const u = mesh.material.uniforms;
+      // The narrow rings (Uranus, Neptune) are drawn wider than they are and cast no shadow on the globe.
+      const u = w.look.ring.bands ? null : mesh.material.uniforms;
       if (u) {
         u.uRingOn.value = 1;
         u.uRingRadii.value.copy(ring.material.uniforms.uRadii.value);
@@ -1281,6 +1620,8 @@ export function createWorlds(scene, opts = {}) {
   // cheap test (scene/eclipse.js eclipseLikely) from the Earth's centre; the shaders draw when both.
   let eclipseAllowed = true;
   const eclipseState = { solar: false, lunar: false, drawnSolar: false, drawnLunar: false };
+  let eclipsePath = null;        // scene/eclipsepath.js, once an eclipse has been drawn
+  let eclipsePathImport = null;
   // Spec 0054: earthshine is off under the frame latch (main.js degrade() calls setLatched).
   let latched = false;
   // The Earth's light on the Moon this frame, as a share of full sunlight before the drawing gain.
@@ -1299,6 +1640,9 @@ export function createWorlds(scene, opts = {}) {
   // this instant, the unit directions of the ones the compression is about to move, and how close
   // each of those comes to another.
   const truePos = new Map();
+  // A moon's radius at its planet's enlargement, scene units, WITHOUT the one-pixel floor: the size
+  // it is drawn once the camera is near enough for that to be more than a pixel (arrivalRadiusUnits).
+  const systemRadius = new Map();
   const crowd = [];
   const crowdSlot = [];
   const nearest = new Map();
@@ -1309,6 +1653,7 @@ export function createWorlds(scene, opts = {}) {
    * is not drawn this frame or is not enlarged, which leaves nothing to be drawn around.
    */
   function drawWithParent(w, mesh, trueDistKm) {
+    systemRadius.delete(w.id);
     const parentMesh = meshes.get(w.parent);
     const ps = viewState.get(w.parent);
     if (!parentMesh || !parentMesh.visible || !ps || !ps.exaggerated) return false;
@@ -1333,6 +1678,7 @@ export function createWorlds(scene, opts = {}) {
     }
     const floorKm = viewKm * MOON_VIEW.MIN_ANGULAR_RADIUS_RAD;
     const drawnRadiusKm = Math.max(scaledKm, floorKm);
+    systemRadius.set(w.id, scaledKm / stage.unitKm);
     mesh.position.copy(_pos);
     mesh.scale.setScalar(drawnRadiusKm / stage.unitKm);
     viewState.set(w.id, describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, { parent: ps, floored: floorKm > scaledKm }));
@@ -1360,6 +1706,7 @@ export function createWorlds(scene, opts = {}) {
 
   function update(tMs) {
     stage.setTime(tMs);
+    frameNo += 1;
 
     // 0. Every world's TRUE position, once. The crowding pre-pass in step 2b and the loop in step 3
     //    both want them, and an ephemeris is the expensive thing in this function -- asking twice
@@ -1524,11 +1871,19 @@ export function createWorlds(scene, opts = {}) {
       if (w.look.earth) {
         updateEarth(mesh, sunDirHere, tMs);
         updateEarthEclipse(mesh, eclipseState.drawnSolar, _moonGeoScene, Math.hypot(_sunGeo.x, _sunGeo.y, _sunGeo.z));
+        // The path the shadow's core draws across the ground (scene/eclipsepath.js, public #273):
+        // the module is asked for the first time an eclipse is drawn, never at boot.
+        if (eclipsePath) eclipsePath.update(tMs, eclipseState.drawnSolar);
+        else if (eclipseState.drawnSolar && !eclipsePathImport) {
+          eclipsePathImport = import('./eclipsepath.js')
+            .then((m) => { eclipsePath = m.createEclipsePath(THREE, mesh); })
+            .catch((e) => { console.warn('the eclipse path did not load', e); });
+        }
       } else {
         if (w.rotation === 'iau') {
           applyIauOrientation(mesh, w.body, tMs, w.id);
         } else if (w.rotation === 'locked') {
-          applyLockedOrientation(mesh, pKm, stageKm.get(w.parent), meshes.get(w.parent));
+          applyLockedOrientation(mesh, pKm, stageKm.get(w.parent), meshes.get(w.parent), w.pole === 'orbit' ? orbitPoleOf(w, mesh, tMs, meshes.get(w.parent)) : null);
         }
         stageKm.set(w.id, pKm);
         if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir) {
@@ -1580,18 +1935,187 @@ export function createWorlds(scene, opts = {}) {
         const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
         if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchMap(w.id);
       }
+      // 5b. ...and a world that HAS its map and is still big enough to show it is marked, so the
+      //     trim below never takes a map that is on screen. A little under the fetch threshold
+      //     (MAP_KEPT_AT), so a disc hovering at it does not fetch and release in turn -- and not
+      //     much under: a planet seen from the Earth is held at 0.0035 rad, which is 0.0085 of half
+      //     the view, and a dot that size must count as a dot.
+      if (camera && mesh.visible && bootMap.has(w.id)) {
+        camera.getWorldPosition(_camPosU);
+        const dist = mesh.position.distanceTo(_camPosU);
+        const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+        if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= MAP_KEPT_AT) lastBig.set(w.id, frameNo);
+      }
+      if (camera && mesh.visible && shapeWaiting.has(w.id)) {
+        camera.getWorldPosition(_camPosU);
+        const dist = mesh.position.distanceTo(_camPosU);
+        const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+        if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchShape(w.id);
+      }
     }
+    // 5b. The two finely cut worlds (the Moon and Mars, for their ground sites) wear the fine sphere only when
+    //     they are a disc on screen. Found by CI's trips walk on 2026-10-10: 61 000 triangles a frame for two
+    //     dots, at every stop of every trip, and nine star-stage stops over triangles_per_stop.
+    for (const id of SITE_BODIES) {
+      const mesh = meshes.get(id);
+      const cut = mesh && mesh.userData.cut;
+      if (!cut) continue;
+      const g = fineCutWanted(discShare(id)) ? cut.fine : cut.coarse;
+      if (mesh.geometry !== g) mesh.geometry = g;
+    }
+
+    // 6. Past the count this device may hold, the world that has been a dot the longest gives its
+    //    map back (MAPS_HELD).
+    trimMaps();
   }
+
+  /**
+   * Give one world's map back: its GPU memory freed, the world in its mean colour again and
+   * waiting, as it was before the map first came. Its other faces go with it. False when the world
+   * has no map of its own to give, or is wearing something else (a sharper map, another face).
+   */
+  function releaseMap(id) {
+    const tex = bootMap.get(id);
+    const mesh = meshes.get(id);
+    const w = BY_ID.get(id);
+    const job = jobs.get(id);
+    if (!tex || !mesh || !w || !job) return false;
+    if (current.get(id) !== tex || tierMap.get(id)) return false;
+    const m = mesh.material;
+    const tint = w.look.tint === undefined ? 0xffffff : w.look.tint;
+    if (m.uniforms && m.uniforms.uMap) {
+      m.uniforms.uMap.value = null;
+      m.uniforms.uHasMap.value = 0;
+      m.uniforms.uTint.value.set(tint);
+    } else {
+      m.map = null;
+      m.color.set(tint);
+      m.needsUpdate = true;
+    }
+    bootMap.delete(id);
+    current.delete(id);
+    if (tex.dispose) tex.dispose();
+    if (m.uniforms && m.uniforms.uReliefK) { m.uniforms.uReliefK.value.set(0, 0, 0); m.uniforms.uGlobeRelief.value = null; }
+    for (const [key, face] of faceTex) {
+      if (!key.startsWith(`${id}/`)) continue;
+      if (face && face.dispose) face.dispose();
+      faceTex.delete(key);
+    }
+    waiting.set(id, job);
+    return true;
+  }
+
+  /** Past MAPS_HELD: the held world that has been small the longest gives its map up. One a frame. */
+  function trimMaps() {
+    if (bootMap.size <= mapsHeldMax) return;
+    let victim = null;
+    let oldest = Infinity;
+    for (const id of bootMap.keys()) {
+      const seen = lastBig.has(id) ? lastBig.get(id) : -1;
+      if (seen >= frameNo) continue; // big on screen this frame
+      if (current.get(id) !== bootMap.get(id) || tierMap.get(id)) continue;
+      if (seen < oldest) { oldest = seen; victim = id; }
+    }
+    if (victim) releaseMap(victim);
+  }
+
+  /** main.js, when the device's tier is known or changes: how many worlds may keep a map (MAPS_HELD). */
+  function setMapsHeld(n) { if (Number.isFinite(n) && n >= 1) mapsHeldMax = Math.floor(n); }
+
+  /** The worlds holding their own map now, for the probes and `spaceRadar.gpu()`. */
+  function mapsHeld() { return [...bootMap.keys()]; }
 
   /**
    * Fetch a world's map now, whatever size it is drawn. main.js calls this when a world is
    * selected, so a flight toward Saturn spends its 900 ms downloading Saturn rather than arriving
    * at a flat tan ball and waiting. Returns true if this call started a fetch.
    */
-  function preload(id) { return fetchMap(id); }
+  function preload(id) { fetchShape(id); return fetchMap(id); }
+
+  /**
+   * The unit vector from a world toward the Sun, in scene axes, as its own shader is lit this frame
+   * (true positions, not the drawn ones). main.js arrives on that side (scene/framing.js litOffset).
+   * Null for the Sun, and for a world that has not been placed yet.
+   */
+  function sunDirOf(id) {
+    const mesh = meshes.get(id);
+    const u = mesh && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir;
+    if (!u || !u.value || !(u.value.lengthSq() > 0)) return null;
+    return u.value.clone();
+  }
+
+  /**
+   * The unit vector from a world's centre to the face it is known by (`look.face`), in scene axes,
+   * as the world is turned this frame; null for a world that names none or has not been placed.
+   * The mesh has longitude 0 on its +X and north on its +Y, east toward -Z (SphereGeometry's u).
+   */
+  function faceDirOf(id) {
+    const w = BY_ID.get(id);
+    const mesh = meshes.get(id);
+    if (!w || !w.look.face || !mesh) return null;
+    return faceVector(w.look.face.lonDeg, w.look.face.latDeg).applyQuaternion(mesh.quaternion);
+  }
+
+  /** Bend a moon to its measured shape now. A promise of true once it is; null if it has none waiting. */
+  function preloadShape(id) { return fetchShape(id); }
+  /** True once a world wears its measured shape rather than a ball. */
+  function hasShape(id) { return shaped.has(id); }
 
   /** The worlds still drawn in their mean colour, for the test and the status panel. */
   function waitingMaps() { return [...waiting.keys()]; }
+
+  // --- a world's second face (2026-10-06, public #417) -------------------------------------------
+  //
+  // Venus is its cloud tops to every eye and telescope, and its ground only to radar. A world row
+  // with `look.faces` has a second map that its card offers (ui/cards.js): `setFace(id, 'surface')`
+  // fetches it the first time and swaps it in with setMap, `setFace(id, null)` puts the world's own
+  // map back. Nothing is fetched until somebody asks. The air shell and the limb stay as they are:
+  // the picture is "the ground, if the clouds were not there", not a world without air.
+  const faceWanted = new Map(); // id -> face name, or null
+  const faceTex = new Map();    // `${id}/${face}` -> THREE.Texture
+  function facesOf(id) {
+    const w = BY_ID.get(id);
+    return w && w.look.faces ? Object.keys(w.look.faces) : [];
+  }
+  function faceOf(id) { return faceWanted.get(id) || null; }
+  // A sharper copy of a world's OWN map (scene/texturetiers.js, through main.js) must not replace a
+  // second face the visitor chose: it is kept, and worn when they go back to the world's own face.
+  const tierMap = new Map();   // id -> THREE.Texture | null
+  function setTierMap(id, tex) {
+    tierMap.set(id, tex || null);
+    return faceWanted.get(id) ? null : setMap(id, tex);
+  }
+  // The weather's pinned oval (scene/weather/worldweather.js uWxSpot) is a place in a map: a face
+  // whose spot is elsewhere (`look.faceSpot`) moves it, and the world's own face puts it back.
+  const ownSpot = new Map();
+  function faceSpot(id, face) {
+    const w = BY_ID.get(id);
+    const mesh = meshes.get(id);
+    const u = mesh && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uWxSpot;
+    if (!w || !w.look.faceSpot || !u || !u.value) return;
+    if (!ownSpot.has(id)) ownSpot.set(id, { ...u.value });
+    const s = face && w.look.faceSpot[face];
+    const to = s ? { x: s.u, y: s.v, z: s.half_u, w: s.half_v } : ownSpot.get(id);
+    u.value.x = to.x; u.value.y = to.y; u.value.z = to.z; u.value.w = to.w;
+  }
+  function setFace(id, face) {
+    const w = BY_ID.get(id);
+    const name = face && w && w.look.faces ? w.look.faces[face] : null;
+    faceWanted.set(id, name ? face : null);
+    faceSpot(id, name ? face : null);
+    if (!name) { setMap(id, tierMap.get(id) || null); return true; }
+    if (!bootMap.has(id)) { fetchMap(id); return false; } // its own map first; apply() calls back
+    const key = `${id}/${face}`;
+    const have = faceTex.get(key);
+    if (have) { setMap(id, have); return true; }
+    if (!load || faceTex.has(key)) return false;
+    faceTex.set(key, null); // asked for: a second press does not fetch it twice
+    load(base + name, (tex) => {
+      faceTex.set(key, configure(tex));
+      if (faceWanted.get(id) === face) setMap(id, tex);
+    });
+    return false;
+  }
 
   // --- the texture tiers (scene/texturetiers.js, 2026-09-28) ------------------------------------
 
@@ -1611,6 +2135,15 @@ export function createWorlds(scene, opts = {}) {
     if (m.uniforms && m.uniforms.uMap) m.uniforms.uMap.value = next;
     else if ('map' in m) m.map = next;
     current.set(id, next);
+    // A second face is worn as it was measured: Saturn's Hubble map without the contrast its own
+    // map is given, Venus's radar ground without the cloud deck's soft terminator.
+    const look = BY_ID.get(id).look;
+    if (m.uniforms && m.uniforms.uContrast && (look.contrast || look.wrap)) {
+      let isFace = false;
+      for (const [key, face] of faceTex) if (face === next && key.startsWith(`${id}/`)) isFace = true;
+      if (look.contrast) m.uniforms.uContrast.value = isFace ? 1 : look.contrast.gain;
+      if (look.wrap) m.uniforms.uWrap.value = isFace ? 0 : look.wrap;
+    }
     return old;
   }
 
@@ -1638,7 +2171,7 @@ export function createWorlds(scene, opts = {}) {
   function setEclipseAllowed(on) { eclipseAllowed = on !== false; }
 
   /** This frame's eclipse test and whether each shader drew it: {solar, lunar, drawnSolar, drawnLunar}. */
-  function eclipse() { return { ...eclipseState }; }
+  function eclipse() { return { ...eclipseState, path: eclipsePath ? eclipsePath.state() : null }; }
 
   /** main.js: the frame latch tripped. Earthshine goes off (spec 0054 req 3); one-way, like the latch. */
   function setLatched(on) { latched = on !== false; }
@@ -1657,6 +2190,26 @@ export function createWorlds(scene, opts = {}) {
   function drawnRadiusUnits(id) {
     const mesh = meshes.get(id);
     return mesh ? mesh.scale.x : 0;
+  }
+
+  /**
+   * The radius a world will have when the camera has ARRIVED at it, scene units (issue #419).
+   *
+   * A moon of a squeezed planet is never drawn under a pixel: its radius is floored at 0.001 rad AS
+   * SEEN FROM THE CAMERA (drawWithParent), so from the Earth a selected Ganymede is 7.6 times the
+   * size its system's scale gives it. main.js framed the arrival on that -- 3.5 of those radii out --
+   * and the floor shrank with every kilometre of the approach until the moon was its scaled size:
+   * a disc 0.037 rad in radius, 36 pixels of an 800-pixel screen, "a small crescent in a lot of
+   * empty sky" (the issue; the arithmetic is in tests/test_arrival.mjs). This is the radius without
+   * the floor, which is what the camera finds when it gets there. Every other world is as drawn.
+   */
+  function arrivalRadiusUnits(id) {
+    const r = systemRadius.get(id);
+    // A lumpy moon reaches farther than its mean radius (`look.reach`, the model's longest radius
+    // over the mean: Deimos 1.41), and the arrival has to hold all of it: framed on the mean,
+    // Deimos's long axis ran off the screen (seen 2026-10-06).
+    const w = BY_ID.get(id);
+    return (r > 0 ? r : drawnRadiusUnits(id)) * ((w && w.look.reach) || 1);
   }
 
   const _proj = new THREE.Vector3();
@@ -1773,6 +2326,7 @@ export function createWorlds(scene, opts = {}) {
   function dispose() {
     if (stage.viewAdjust === viewAdjust) stage.setViewAdjust(null);
     for (const mesh of meshes.values()) {
+      if (mesh.userData.cut) { mesh.userData.cut.fine.dispose(); mesh.userData.cut.coarse.dispose(); }
       mesh.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {
@@ -1788,9 +2342,19 @@ export function createWorlds(scene, opts = {}) {
   return {
     update,
     preload,
+    releaseMap,
+    setRelief,
+    /** For the probes: is this world wearing its relief? */
+    hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
+    setMapsHeld,
+    mapsHeld,
     waitingMaps,
     hasMap,
     setMap,
+    facesOf,
+    faceOf,
+    setFace,
+    setTierMap,
     discShare,
     meshFor,
     positionOf,
@@ -1801,7 +2365,14 @@ export function createWorlds(scene, opts = {}) {
     setLatched,
     earthshine,
     drawnPositionOf,
+    /** This frame's TRUE position (update()'s own answer, not a second ephemeris): scene/worldlights.js. */
+    truePositionOf: (id) => truePos.get(id) || null,
     drawnRadiusUnits,
+    arrivalRadiusUnits,
+    preloadShape,
+    hasShape,
+    sunDirOf,
+    faceDirOf,
     pick,
     pickAll,
     dispose,
@@ -1851,6 +2422,17 @@ export function createWorlds(scene, opts = {}) {
     };
   }
 
+  /** The narrow rings' strip as a texture: mipmapped, so a thread thinner than a pixel fades and does not shimmer. */
+  function bandsTexture(ring) {
+    const tex = new THREE.DataTexture(ringBandsStrip(ring), RING_BANDS_PX, 1, THREE.RGBAFormat);
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.magFilter = THREE.LinearFilter;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.generateMipmaps = true;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
   function ringMesh(w, map) {
     const r = w.look.ring;
     const inner = r.innerKm / w.radiusKm;   // the ring is a child, so radii are in planet radii
@@ -1865,7 +2447,14 @@ export function createWorlds(scene, opts = {}) {
       uv.setXY(i, (d - inner) / (outer - inner), 0.5);
     }
     uv.needsUpdate = true;
-    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, ringWarpUniform(w.radiusKm)));
+    // Saturn's map is warped onto Cassini's radii; a strip made from measured radii needs no warp,
+    // which for RING_U_GLSL's three straight pieces is the two thirds laid where they already are.
+    const warp = r.bands
+      ? [inner + (outer - inner) / 3, inner + (2 * (outer - inner)) / 3, 1 / 3, 2 / 3]
+      : ringWarpUniform(w.radiusKm);
+    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, warp));
+    if (r.bands && r.colour !== undefined) mesh.material.uniforms.uColour.value.set(r.colour);
+    if (w.look.oblate) { const g = oblateRadii(w.look.oblate); mesh.material.uniforms.uGlobe.value.set(g.eq, g.pol); }
     mesh.rotation.x = -Math.PI / 2;  // RingGeometry lies in XY; the ring is the planet's equator
     mesh.renderOrder = 1;
     mesh.name = `${w.id}-ring`;
@@ -2045,6 +2634,57 @@ function applyIauOrientation(mesh, bodyName, tMs, worldId) {
   return true;
 }
 
+/** A point of a world's map, east longitude and latitude in degrees, as a unit vector in its mesh's own axes. */
+export function faceVector(lonDeg, latDeg) {
+  const lon = (lonDeg * Math.PI) / 180;
+  const lat = (latDeg * Math.PI) / 180;
+  return new THREE.Vector3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), -Math.cos(lat) * Math.sin(lon));
+}
+
+/**
+ * A moon's orbit normal, in scene axes (the stage's remap (x, y, z) -> (x, z, -y)), from its position
+ * relative to its planet at two times (km, sun-inertial axes), turned to the planet's north side:
+ * `north` is the planet's pole in scene axes. Null when the two are the same line. Pure.
+ */
+export function orbitPole(rel0, rel1, north) {
+  const nx = rel0.y * rel1.z - rel0.z * rel1.y;
+  const ny = rel0.z * rel1.x - rel0.x * rel1.z;
+  const nz = rel0.x * rel1.y - rel0.y * rel1.x;
+  const n = new THREE.Vector3(nx, nz, -ny); // the remap, as the basis above
+  if (n.lengthSq() < 1e-12 * Math.max(1, rel0.x * rel0.x + rel0.y * rel0.y + rel0.z * rel0.z) ** 2) return null;
+  n.normalize();
+  if (north && n.dot(north) < 0) n.negate();
+  return n;
+}
+
+const _poleNorth = new THREE.Vector3();
+/** A moon's orbit pole at this time, cached for six hours (a pole turns over years), or null. */
+function orbitPoleOf(w, mesh, tMs, parentMesh) {
+  // IN THE STAGE'S AXES. The two positions come in their own frame (sun-inertial, the ecliptic's
+  // axes) and the remap in orbitPole() is the stage's: on a stage whose frame is the Earth's (the
+  // equator's axes) the normal came out turned by the obliquity. Measured 2026-10-09 in a browser
+  // frame and in node: Iapetus's axis 15.6 degrees off its own orbit's normal on the Earth's
+  // stage, 0.0 on Saturn's. So the two vectors are turned into the stage's frame first, as
+  // applyIauOrientation turns a body's axes, and the cache is per frame.
+  const to = stageFrame(stage);
+  const key = `${Math.floor(tMs / 2.16e7)}|${to}`;
+  const c = mesh.userData.orbitPole;
+  if (c && c.key === key) return c.v;
+  let v = null;
+  const a0 = positionOf(w.id, tMs), b0 = positionOf(w.parent, tMs);
+  const a1 = positionOf(w.id, tMs + 864e5), b1 = positionOf(w.parent, tMs + 864e5);
+  if (a0 && b0 && a1 && b1 && a0.frame === b0.frame && a1.frame === b1.frame && parentMesh) {
+    const r0 = rotateDir({ x: a0.x - b0.x, y: a0.y - b0.y, z: a0.z - b0.z }, a0.frame, to, tMs);
+    const r1 = rotateDir({ x: a1.x - b1.x, y: a1.y - b1.y, z: a1.z - b1.z }, a1.frame, to, tMs);
+    if (r0 && r1) {
+      _poleNorth.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
+      v = orbitPole(r0, r1, _poleNorth);
+    }
+  }
+  mesh.userData.orbitPole = { key, v };
+  return v;
+}
+
 /**
  * Orient a synchronously rotating moon: longitude 0 toward its planet, the pole along the planet's.
  * astronomy-engine has no rotation model for them, and tidal locking is the model -- the IAU's own
@@ -2053,12 +2693,14 @@ function applyIauOrientation(mesh, bodyName, tMs, worldId) {
  * 20 degrees from Neptune's, which on a 1K map of a moon seen from millions of km is not visible.
  * @returns {boolean} false when either position or the planet's mesh is missing.
  */
-function applyLockedOrientation(mesh, pKm, parentKm, parentMesh) {
+function applyLockedOrientation(mesh, pKm, parentKm, parentMesh, pole = null) {
   if (!pKm || !parentKm || !parentMesh) return false;
   _bx.set(parentKm.x - pKm.x, parentKm.z - pKm.z, -(parentKm.y - pKm.y));
   if (_bx.lengthSq() === 0) return false;
   _bx.normalize();
-  _by.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
+  // A moon whose orbit is well off its planet's equator (Iapetus, 15 degrees) turns about its orbit's
+  // normal, which is what a tidally locked spin axis is; the others take the planet's pole.
+  if (pole) _by.copy(pole); else _by.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
   _by.addScaledVector(_bx, -_by.dot(_bx));
   if (_by.lengthSq() < 1e-12) return false;
   _by.normalize();

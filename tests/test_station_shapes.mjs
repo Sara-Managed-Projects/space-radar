@@ -14,14 +14,14 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const tris = (obj) => { let n = 0; obj.traverse((o) => { if (o.isMesh && o.geometry) { const g = o.geometry; n += g.index ? g.index.count / 3 : g.attributes.position.count / 3; } }); return n; };
 const budgetOf = (id) => Number(((yaml.split('\n').find((l) => l.includes(`id: ${id},`)) || '').match(/budget_tris:\s*(\d+)/) || [])[1] || 0);
 
-for (const v of ['soyuz', 'progress', 'cygnus', 'tiangong', 'tiangong-module', 'shenzhou', 'tianzhou', 'dragon']) {
+for (const v of ['soyuz', 'progress', 'cygnus', 'tiangong', 'tiangong-module', 'shenzhou', 'tianzhou', 'dragon', 'dragon-cargo']) {
   check(modelVariants().station.includes(v), `station variant ${v} is registered`);
   const obj = modelFor('station', v);
   check(!obj.userData.generic, `${v} is a real variant, not a fallback`);
   const n = tris(obj); const b = budgetOf(`station-${v}`);
   check(b > 0, `models.yaml has a budget for station-${v}`);
   check(n > 0 && n <= b, `${v} builds ${n} triangles within its budget of ${b}`);
-  const expect = v.startsWith('tiangong') ? [50, 60] : v === 'shenzhou' ? [16, 18] : v === 'tianzhou' ? [14, 16] : v === 'dragon' ? [7, 9] : [10, 12];
+  const expect = v.startsWith('tiangong') ? [50, 60] : v === 'shenzhou' ? [16, 18] : v === 'tianzhou' ? [14, 16] : v.startsWith('dragon') ? [7, 9] : [10, 12];
   check(obj.userData.realSizeM > expect[0] && obj.userData.realSizeM < expect[1], `${v} size ${obj.userData.realSizeM} m is within ${expect}`);
   disposeModels(obj);
 }
@@ -87,10 +87,27 @@ check(realModelFor({ id: 'm-elara', name: 'ELARASAT MMS-1', klass: 'satellite', 
 { const o = modelFor('satellite', 'navigation'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-navigation') && Math.abs(o.userData.realSizeM - 13) < 0.01, `navigation builds inside budget at Galileo's 13 m span (${tris(o)} tris)`); disposeModels(o); }
 for (const n of ['BEIDOU-3 M1', 'GSAT0210 (GALILEO 15)', 'GPS BIIR-5  (PRN 22)', 'NAVSTAR 81 (USA 319)', 'IRNSS-1A', 'QZS-2 (QZSS/PRN 194)']) {
   const e = realModelFor({ id: `g-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 90100 } });
-  check(e?.build === 'navigation', `${n} is drawn as a navigation satellite: ${JSON.stringify(e)}`);
+  check(String(e?.build).startsWith('navigation') && e.generic === true, `${n} is drawn as a navigation satellite: ${JSON.stringify(e)}`);
 }
+// 2026-10-08 (public #429): a shape per constellation, each at the span its source gives.
+for (const [v, span] of [['navigation-gps-iif', 18], ['navigation-gps-iii', 14], ['navigation-glonass-m', 7.8], ['navigation-glonass-k', 5], ['navigation-beidou-meo', 10]]) {
+  const o = modelFor('satellite', v);
+  check(!o.userData.generic && tris(o) <= budgetOf(`satellite-${v}`) && Math.abs(o.userData.realSizeM - span) < 0.01, `${v} builds inside budget at a ${span} m span (${tris(o)} tris)`);
+  disposeModels(o);
+}
+{ const nav = (name, launchYear, noradId = 90100) => realModelFor({ id: `n-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId, launchYear } })?.build;
+  check(nav('NAVSTAR 81 (USA 319)', 2020) === 'navigation-gps-iii' && nav('NAVSTAR 66 (USA 232)', 2011) === 'navigation-gps-iif' && nav('NAVSTAR 43 (USA 132)', 1997) === 'navigation', 'a GPS satellite gets its block by launch year: III, IIF, and the family box before them');
+  check(nav('BEIDOU-3 M18', 2018) === 'navigation-beidou-meo' && nav('BEIDOU-3 G2', 2020) === 'navigation' && nav('BEIDOU-2 IGSO-1', 2010) === 'navigation', 'only BeiDou-3 medium-orbit craft get the medium-orbit shape');
+  check(nav('COSMOS 2433 (720)', 2007, 32275) === 'navigation-glonass-m' && nav('COSMOS 2501', 2014, 40315) === 'navigation-glonass-k' && nav('COSMOS 2569', 2023, 57517) === 'navigation', 'GLONASS-M is the drum, GLONASS-K the box, and K2 keeps the family shape'); }
+// 2026-10-08 (public #422): the specification's own 1U and 2U; (#267) Surveyor from NSSDCA's paragraph.
+for (const [k, v, size] of [['satellite', 'cubesat-1u', 0.1135], ['satellite', 'cubesat-2u', 0.227], ['site', 'surveyor', 4.3]]) {
+  const o = modelFor(k, v);
+  check(!o.userData.generic && tris(o) <= budgetOf(`${k}-${v}`) && Math.abs(o.userData.realSizeM - size) < 1e-6, `${k}:${v} builds inside budget at ${size} m (${tris(o)} tris)`);
+  disposeModels(o);
+}
+check(realModelFor({ id: 'surveyor-1', name: 'Surveyor 1', klass: 'site', layer: 'hand-kept-sites', meta: { siteShape: 'lander' } })?.build === 'surveyor', 'Surveyor 1 is drawn as a Surveyor');
 // GLONASS by id, because a `cosmos` name key would also catch Tselina-2, Tselina-D and Etalon.
-check(realModelFor({ id: 'g-32275', name: 'COSMOS 2433 (720)', klass: 'satellite', layer: 'active', meta: { noradId: 32275 } })?.build === 'navigation', 'a GLONASS catalogued as COSMOS gets the navigation shape by id');
+check(realModelFor({ id: 'g-32275', name: 'COSMOS 2433 (720)', klass: 'satellite', layer: 'active', meta: { noradId: 32275 } })?.build === 'navigation-glonass-m', 'a GLONASS catalogued as COSMOS gets the navigation shape by id');
 check(realModelFor({ id: 'g-22219', name: 'COSMOS 2219', klass: 'satellite', layer: 'visual', meta: { noradId: 22219 } })?.file === 'tselina2.glb', 'and a Tselina-2 catalogued as COSMOS still gets its own model, not the navigation shape');
 // The augmentation payloads: communications satellites with dishes that carry a navigation
 // payload. GSAT-8 is the trap a `gsat` key would have fallen into.
@@ -106,7 +123,7 @@ for (const n of ['FLOCK 4Q-16', 'FLOCK 4V-1', 'LEMUR-2-GREENBERG', 'LEMUR-1']) {
   check(e?.build === 'cubesat' && e.generic === true, `${n} is drawn as the 3U CubeSat it is`);
 }
 check(realModelFor({ id: 'c-deb', name: 'FLOCK 2E-1 DEB', klass: 'debris', layer: 'active', meta: { noradId: 90002 } }) === null, 'Flock debris keeps the debris shape');
-check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'active', meta: { noradId: 90003 } })?.file === 'rocket-body.glb', 'the stage that launched them is still a rocket body');
+check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'active', meta: { noradId: 90003 } })?.build === 'stage', 'the stage that launched them is still a rocket body');
 // ACS3 and the nine laser-ranging spheres, both procedural, both `norad:` rows.
 { const o = modelFor('satellite', 'solarsail'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-solarsail') && Math.abs(o.userData.realSizeM - 9 * Math.SQRT2) < 0.01, `solarsail builds inside budget at the 9 m sail's diagonal (${tris(o)} tris)`); disposeModels(o); }
 { const o = modelFor('satellite', 'sphere'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-sphere') && Math.abs(o.userData.realSizeM - 2.15) < 0.01, `sphere builds inside budget at AJISAI's 2.15 m (${tris(o)} tris)`); disposeModels(o); }
@@ -118,7 +135,7 @@ for (const [id, name] of [[16908, 'AJISAI (EGS)'], [8820, 'LAGEOS 1'], [19751, '
 }
 // The radar imagers: one shape, twenty-two spacecraft, thirty years and four continents apart.
 { const o = modelFor('satellite', 'radar'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar') && Math.abs(o.userData.realSizeM - 12.3) < 0.01, `radar builds inside budget at Sentinel-1's 12.3 m antenna (${tris(o)} tris)`); disposeModels(o); }
-for (const [id, name] of [[39634, 'SENTINEL-1A'], [23710, 'RADARSAT-1'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
+for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.generic === true, `${name} is a radar imager, and says it is the kind of thing`);
 }
@@ -169,10 +186,10 @@ for (const n of ['SPACEMOBILE-001', 'SPACEMOBILE-006', 'SPACEMOBILE-010']) {
   check(realModelFor({ id: `sm-${n}`, name: n, klass: 'satellite', layer: 'visual', meta: { noradId: 16 } })?.build === 'spacemobile', `${n} gets the BlueBird shape`);
 }
 check(realModelFor({ id: 'smd', name: 'SPACEMOBILE-001 DEB', klass: 'debris', layer: 'active', meta: { noradId: 17 } }) === null, 'SpaceMobile debris keeps the debris shape');
-check(realModelFor({ id: 'smr', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'visual', meta: { noradId: 18 } })?.file === 'rocket-body.glb', 'the BlueBird launcher stage stays a rocket body');
+check(realModelFor({ id: 'smr', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'visual', meta: { noradId: 18 } })?.build === 'stage', 'the BlueBird launcher stage stays a rocket body');
 check(realModelFor({ id: 'i2', name: 'IRIDIUM 33 DEB', klass: 'debris', layer: 'active', meta: { noradId: 15 } }) === null, 'Iridium 33 debris keeps the debris shape');
 check(realModelFor({ id: 'd1', name: 'CREW DRAGON 12', klass: 'satellite', layer: 'stations', meta: { noradId: 11 } })?.build === 'dragon', 'a Crew Dragon gets its shape');
-check(realModelFor({ id: 'd2', name: 'DRAGON CRS-33', klass: 'satellite', layer: 'stations', meta: { noradId: 12 } })?.build === 'dragon', 'a cargo Dragon gets its shape');
+check(realModelFor({ id: 'd2', name: 'DRAGON CRS-33', klass: 'satellite', layer: 'stations', meta: { noradId: 12 } })?.build === 'dragon-cargo', 'a cargo Dragon gets its own shape, without the crew vehicle\'s pods and fins');
 check(realModelFor({ id: 's6', name: 'SENTINEL-6A', klass: 'satellite', layer: 'notable', meta: { noradId: 46984 } })?.file === 'sentinel6.glb', 'Sentinel-6A gets its own file by id');
 check(realModelFor({ id: 'oco', name: 'OCO 2', klass: 'satellite', layer: 'active', meta: { noradId: 21 } })?.file === 'oco2.glb', 'OCO 2 gets its model by name');
 check(realModelFor({ id: 'ocod', name: 'OCO 2 DEB', klass: 'debris', layer: 'active', meta: { noradId: 22 } }) === null, 'OCO 2 debris keeps the debris shape');
@@ -200,6 +217,9 @@ for (const [id, name, file] of [
   [44628, 'ICON', 'icon.glb'],
   [39574, 'GPM-CORE', 'gpm.glb'],
   [24883, 'ORBVIEW 2 (SEASTAR)', 'seastar.glb'],
+  // NASA's own RADARSAT-1 since 2026-10-08 (public #430), no longer the family blade; RADARSAT-2,
+  // a different spacecraft, keeps the blade (asserted with the radar imagers above).
+  [23710, 'RADARSAT-1', 'radarsat1.glb'],
   [41884, 'CYGFM05', 'cygnss.glb'],
   [41891, 'CYGFM03', 'cygnss.glb'],
 ]) {
@@ -214,7 +234,7 @@ check(realModelFor({ id: 'n-41889', name: 'CYGFM06', klass: 'satellite', layer: 
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
 check(realModelFor({ id: 'z1', name: 'SHENZHOU-21 (SZ-21)', klass: 'satellite', layer: 'stations', meta: { noradId: 8 } })?.build === 'shenzhou', 'a Shenzhou gets its shape');
 check(realModelFor({ id: 'z2', name: 'TIANZHOU-9', klass: 'satellite', layer: 'stations', meta: { noradId: 9 } })?.build === 'tianzhou', 'a Tianzhou gets its shape');
-check(realModelFor({ id: 'z3', name: 'CZ-2F R/B', klass: 'rocket', layer: 'active', meta: { noradId: 10 } })?.file === 'rocket-body.glb', 'the Shenzhou launcher stage is a rocket body, not a Shenzhou');
+check(realModelFor({ id: 'z3', name: 'CZ-2F R/B', klass: 'rocket', layer: 'active', meta: { noradId: 10 } })?.build === 'stage', 'the Shenzhou launcher stage is a rocket body, not a Shenzhou');
 check(realModelFor(wentian)?.build === 'tiangong-module', 'CSS (WENTIAN) draws a single lab module');
 const e5 = realModelFor(cyg);
 check(e5 && e5.build === 'cygnus' && e5.generic === true, `CYGNUS NG-24 -> build cygnus: ${JSON.stringify(e5)}`);
@@ -438,6 +458,84 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   if (!problems.length) console.log(`  each of ${checked} shapes is ONE connected object; the loosest joint is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
 }
 
+// ------------------------------------------------- BUILT TO THE METRES ITS BUILDER PUBLISHES
+//
+// The art pass of 2026-10-07 rebuilt the craft nobody has published a mesh of from their published
+// dimensions. "One unit" above says the longest dimension is right; this says the OTHER two are,
+// which is what a silhouette is. Each row is the overall span, and the hull's own width, height
+// and length -- the group every builder names `hull` -- in metres, as the builder's comment cites
+// them. Six per cent, because a sixteen-sided cylinder is 2 % narrower across its flats than the
+// circle it stands for and a docking port or a seam ring is a real thing that sticks out.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const DIMS = {
+    // id: [span X, hull X, hull Y, hull Z]   (null = not a published number, not asserted)
+    'station:soyuz': [10.7, 2.72, 2.72, 7.48],
+    'station:progress': [10.6, 2.72, 2.72, 7.23],
+    'station:shenzhou': [17, 2.8, 2.8, 9.25],
+    'station:tianzhou': [14.9, 3.35, 3.35, 10.6],
+    'station:dragon': [4.0, 4.0, 4.0, 8.1],
+    'station:dragon-cargo': [4.0, 4.0, 4.0, 8.1],
+    'station:cygnus': [11.5, 3.07, 3.07, 6.39],
+    'station:tiangong-module': [55.6, 4.2, 4.2, 17.9],
+    'satellite:starlink-v1': [9, 1.4, 2.8, null],
+    'satellite:starlink-v2': [30, 2.7, 4.1, null],
+    'satellite:cubesat': [0.5, 0.1, 0.1, 0.3],
+    'satellite:cubesat-6u': [0.6, 0.2, 0.1, 0.3],
+    'satellite:iridium': [9.4, 2.4, 3.1, 1.5],
+    'rocket:stage': [3.05, 3.05, 12.68, 3.05],
+  };
+  const within = (got, want) => Math.abs(got - want) <= want * 0.06;
+  const sizeOf = (o) => new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3());
+  for (const [id, [span, hx, hy, hz]] of Object.entries(DIMS)) {
+    const [klass, variant] = id.split(':');
+    const obj = modelFor(klass, variant);
+    obj.updateMatrixWorld(true);
+    const m = obj.userData.realSizeM;
+    const hull = obj.getObjectByName('hull');
+    check(!!hull, `${id} names its hull, so its proportions can be measured`);
+    if (hull) {
+      const all = sizeOf(obj);
+      const h = sizeOf(hull);
+      check(within(all.x * m, span), `${id} spans ${(all.x * m).toFixed(2)} m where ${span} m is published`);
+      for (const [axis, got, want] of [['wide', h.x * m, hx], ['high', h.y * m, hy], ['long', h.z * m, hz]]) {
+        if (want != null) check(within(got, want), `${id}: the hull is ${got.toFixed(2)} m ${axis} where ${want} m is published`);
+      }
+      check(tris(obj) <= 3000, `${id} is ${tris(obj)} triangles, over the 3 000 an art-pass shape may cost`);
+    }
+    disposeModels(obj);
+  }
+  // Tiangong is three hulls. 55.6 m across the laboratories' wings, about 39 m across the two
+  // laboratories and the hub, and each module its published length and 4.2 m.
+  {
+    const obj = modelFor('station', 'tiangong');
+    obj.updateMatrixWorld(true);
+    const m = obj.userData.realSizeM;
+    const all = sizeOf(obj);
+    check(within(all.z * m, 55.6), `tiangong is ${(all.z * m).toFixed(1)} m across the laboratories' wings, published 55.6`);
+    check(within(all.x * m, 39), `tiangong is ${(all.x * m).toFixed(1)} m across the two laboratories, published about 39`);
+    const core = sizeOf(obj.getObjectByName('hull'));
+    check(within(core.z * m, 16.6) && within(core.x * m, 4.2), `Tianhe is ${(core.z * m).toFixed(1)} x ${(core.x * m).toFixed(1)} m, published 16.6 x 4.2`);
+    for (const name of ['wentian', 'mengtian']) {
+      const lab = sizeOf(obj.getObjectByName(name));
+      check(within(lab.x * m, 17.9) && within(lab.z * m, 4.2), `${name} is ${(lab.x * m).toFixed(1)} x ${(lab.z * m).toFixed(1)} m, published 17.9 x 4.2`);
+    }
+    check(obj.userData.panelPivots.length === 2, 'both of Tiangong\'s wing sets turn to the Sun');
+    disposeModels(obj);
+  }
+  // The crew Dragon carries what the cargo one does not, and a Shenzhou has ONE pair of wings.
+  const names = (o) => { const s = new Set(); o.traverse((n) => { if (n.name) s.add(n.name); }); return s; };
+  const crew = names(modelFor('station', 'dragon')); const cargo = names(modelFor('station', 'dragon-cargo'));
+  check(crew.has('superdraco-pod') && crew.has('fin') && crew.has('window'), 'a Crew Dragon has its engine pods, windows and fins');
+  check(!cargo.has('superdraco-pod') && !cargo.has('fin') && !cargo.has('window'), 'a Cargo Dragon has none of them');
+  check(![...names(modelFor('station', 'shenzhou'))].some((n) => n.startsWith('fwdwing')), 'a Shenzhou since 2011 has one pair of wings, not two');
+  // A spent stage tumbles, and a rocket on the way up does not.
+  check(modelFor('rocket', 'stage').userData.attitude === 'tumble', 'a spent stage tumbles');
+  check(modelFor('rocket', 'default').userData.attitude === 'ascent', 'a launching rocket still flies its arc');
+  check(realModelFor({ id: 'st1', name: 'STARLING-2', klass: 'satellite', layer: 'active', meta: { noradId: 91001 } })?.build === 'cubesat-6u', 'a Starling is drawn as the 6U CubeSat it is');
+  if (!problems.length) console.log(`  ${Object.keys(DIMS).length + 1} art-pass shapes are within 6 % of their published width, height and length`);
+}
+
 // THE DEEP-SPACE LAYER'S OWN SPACECRAFT.
 //
 // `deep-space` held ten records. Seven have a NASA model; Gaia, Solar Orbiter and New Horizons had
@@ -457,16 +555,29 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 22, `the deep-space layer holds twenty-two records (found ${rows.length})`);
+  check(rows.length === 37, `the deep-space layer holds thirty-seven records (found ${rows.length})`);
   const want = {
-    'deep-jwst': 'build:jwst', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
+    'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
-    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'build:new-horizons',
+    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'new-horizons.glb', // NASA's printable parts, bake 2026-10-10 (bulk 3); build:new-horizons stays as what is drawn while it loads
     'deep-solar-orbiter': 'build:solar-orbiter',
+    // 2026-10-05: three of the twelve that NASA publishes a model of (issue #431).
+    'deep-lro': 'lro.glb', 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb',
+    // 2026-10-06: the craft that came with the path files (site/data/eph). One Pioneer model for
+    // the two sister craft, which is what NASA publishes.
+    'deep-cassini': 'cassini.glb', 'deep-galileo': 'galileo.glb',
+    'deep-pioneer-10': 'pioneer.glb', 'deep-pioneer-11': 'pioneer.glb',
+    // 2026-10-07: five that got a record with their NASA mesh, and Mars 2020's cruise, whose
+    // mesh NASA does not publish (its file is the rover), as a shape from the published 4.5 m.
+    'deep-spitzer': 'spitzer.glb', 'deep-kepler': 'kepler.glb', 'deep-roman': 'roman.glb',
+    'deep-mars-odyssey': 'odyssey.glb', 'deep-dawn': 'dawn.glb', 'deep-mars-2020': 'build:mars-2020-cruise',
+    // 2026-10-08: four more ended missions with NASA's mesh (public #431).
+    'deep-maven': 'maven.glb',
+    'deep-rosetta': 'rosetta.glb', 'deep-near': 'near.glb', 'deep-stardust': 'stardust.glb', 'deep-deep-impact': 'deep-impact.glb',
   };
-  // The 2026-09-22 twelve: generic on purpose, and never another craft's shape.
+  // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
   const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',
-    'deep-hera', 'deep-osiris-apex', 'deep-hayabusa2', 'deep-hope', 'deep-stereo-a', 'deep-mars-express', 'deep-lro']);
+    'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;
@@ -474,7 +585,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     else if (generic.has(r.id)) check(got === null, `${r.name} (${r.id}) has no model of its own, yet a route gives it ${got}`);
     else check(got !== null, `${r.name} (${r.id}) has no shape at all -- it would fall back to the generic one`);
   }
-  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all twelve generic-probe craft are in the layer');
+  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all nine generic-probe craft are in the layer');
   // 1279 Gaia is a main-belt asteroid. Without the klass gate on the name route it would be drawn
   // with a ten-metre sunshield, which is the TESS mistake -- a comet wearing a telescope -- exactly.
   const rock = realModelFor({ id: 'a-1279', name: '1279 Gaia', klass: 'asteroid', layer: 'asteroids', meta: {} });
@@ -484,7 +595,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(!comet || comet.build !== 'solar-orbiter', `a comet named Solar Orbiter must not get the spacecraft: ${JSON.stringify(comet)}`);
   // The three new shapes are real variants, inside budget, at the size their sources publish.
   for (const [klass, variant, sizeM] of [['telescope', 'gaia', 10.2], ['probe', 'solar-orbiter', 18],
-                                         ['probe', 'new-horizons', 3.2], ['telescope', 'jwst', 21.197]]) {
+                                         ['probe', 'new-horizons', 3.2], ['telescope', 'jwst', 21.197],
+                                         ['probe', 'mars-2020-cruise', 4.5]]) {
     const o = modelFor(klass, variant);
     const b = budgetOf(`${klass}-${variant}`);
     check(!o.userData.generic, `${klass}:${variant} is a real variant, not a fallback`);
@@ -492,7 +604,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(Math.abs(o.userData.realSizeM - sizeM) < 0.01, `${klass}:${variant} is drawn at its published ${sizeM} m, not ${o.userData.realSizeM}`);
     disposeModels(o);
   }
-  if (!problems.length) console.log('  the ten original deep-space spacecraft have their own shape, the twelve added 2026-09-22 are the generic probe and nobody else; 1279 Gaia the asteroid does not get one');
+  if (!problems.length) console.log('  the ten original deep-space spacecraft have their own shape, nine of the twelve added 2026-09-22 are the generic probe and nobody else; 1279 Gaia the asteroid does not get one');
 }
 
 // THE RIGHT KIND OF THING. Measured against the live stations and visual catalogues on 2026-09-18:
@@ -508,7 +620,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(e?.file === 'iss.glb' && !e.generic, `${name} is part of the ISS and is drawn as it: ${JSON.stringify(e)}`);
   }
   const stage = realModelFor(rec(694, 'ATLAS CENTAUR 2', 'satellite', 'visual'));
-  check(stage?.file === 'rocket-body.glb' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
+  check(stage?.build === 'stage' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
   for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [41337, 'ASTRO-H (HITOMI)'], [42758, 'HXMT (HUIYAN)'], [57800, 'XRISM']]) {
     const e = realModelFor(rec(id, name, 'satellite', 'visual'));
     check(e?.build === 'space-telescope' && e.generic === true, `${name} is drawn as a space telescope: ${JSON.stringify(e)}`);
@@ -647,6 +759,73 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   if (!problems.some((p) => p.startsWith('ROCKS'))) {
     console.log(`  ${rocks.length} asteroids, ${seen.size} distinct shapes; Ceres ${got[0] ? got[0].roundness.toFixed(3) : '?'} round, Itokawa ${got[3] ? got[3].roundness.toFixed(3) : '?'}`);
   }
+}
+
+// A spent stage's tumble does not strobe at a fast clock (internal #425).
+{
+  const { tumblePhase, TUMBLE_MAX_RATE } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const P = 120000; const TAU = Math.PI * 2;
+  const st = {};
+  const a0 = tumblePhase(st, 1e9, 1000, P);
+  check(Math.abs(a0 - ((1e9 % P) / P) * TAU) < 1e-9, 'the first call is the exact function of the drawn time');
+  // 1x: exact.
+  const a1 = tumblePhase(st, 1e9 + 16, 1016, P);
+  check(Math.abs(a1 - ((((1e9 + 16) % P) / P) * TAU)) < 1e-9, 'at the real rate it is exact');
+  // An hour a second, drawn 60 times: each step is capped, so a frame turns no more than the cap allows.
+  let prev = a1; let worst = 0; let t = 1e9 + 16; let real = 1016;
+  for (let i = 0; i < 120; i++) { t += 60000 * (1000 / 60); real += 1000 / 60; const a = tumblePhase(st, t, real, P); worst = Math.max(worst, Math.abs(a - prev)); prev = a; }
+  const cap = (TUMBLE_MAX_RATE * (1000 / 60) / P) * TAU;
+  check(worst <= cap + 1e-9 && worst > 0, `at an hour a second a frame turns by the cap, ${(worst * 57.3).toFixed(1)} degrees, not a random angle`);
+  check(worst < Math.PI / 2, 'and well under a quarter turn: no strobe');
+  // Slowing back down: exact again.
+  const aSlow = tumblePhase(st, t + 16, real + 16, P);
+  check(Math.abs(aSlow - ((((t + 16) % P) / P) * TAU)) < 1e-9, 'when the clock slows it is exact again');
+  // Backwards at speed turns the other way.
+  const st2 = {}; tumblePhase(st2, 5e9, 2000, P); const b1 = tumblePhase(st2, 5e9 - 3.6e6, 2016, P); const b2 = tumblePhase(st2, 5e9 - 7.2e6, 2032, P);
+  check(b2 < b1, 'a clock running backwards turns it backwards');
+  check(tumblePhase({}, 1e9, NaN, P) === ((1e9 % P) / P) * TAU, 'without a wall clock it is the exact function');
+  const st3 = {}; tumblePhase(st3, 1e9, 10, P);
+  check(tumblePhase(st3, 1e9 + 10, 10, P) === tumblePhase(st3, 1e9 + 10, 10, P), 'the same frame asked twice gives one answer');
+}
+
+// The lander's footing has a soft edge (a fan with a vertex alpha falling to 0, not stepped plates),
+// and the oddities' discs do not pay for one (public #267, internal #478).
+{
+  const src = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  check(/regolith\(0\.5, '#55544F', 28, true\)/.test(src), 'the lander\'s ground patch asks for the feathered edge');
+  check(/function regolith\(r, colour, seg, soft = false\)/.test(src) && /if \(soft\) \{\s+g\.add\(softPatch/.test(src), 'and nothing else does by default');
+  const { softPatchGeometry, SOFT_PROFILE } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const geo = softPatchGeometry(0.5, 28, 11, 0.002);
+  const a = geo.attributes.color, pos = geo.attributes.position;
+  check(a.itemSize === 4, 'every vertex carries an alpha');
+  // The outermost ring is fully clear, the centre and the first ring fully opaque, and the alpha
+  // never rises on the way out: a monotone falloff, not a plate.
+  const alphas = SOFT_PROFILE.map((p) => p[1]);
+  check(alphas[0] === 1 && alphas[alphas.length - 1] === 0 && alphas.every((v, i) => i === 0 || v <= alphas[i - 1]), 'the profile falls from 1 to 0 and never rises');
+  let outer = 0, clear = 0;
+  for (let i = 0; i < a.count; i++) { if (a.getW(i) === 0) clear++; if (Math.hypot(pos.getX(i), pos.getZ(i)) > 0.5 * 1.0) outer++; }
+  check(clear === 28 && outer > 0, 'one ring of 28 vertices is fully clear and the patch reaches past its nominal radius');
+  check(geo.index.count / 3 <= 300, `the fan stays small (${geo.index.count / 3} triangles)`);
+  const area = (g) => { let s2 = 0; const ix = g.index.array; for (let i = 0; i < ix.length; i += 3) { const [p0, p1, p2] = [0, 1, 2].map((k) => [pos.getX(ix[i + k]), pos.getZ(ix[i + k])]); s2 += ((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p2[0] - p0[0]) * (p1[1] - p0[1])) / 2; } return s2; };
+  check(Math.abs(area(geo)) > 0.5, 'a real area is covered, all triangles on one side (a signed area that does not cancel)');
+}
+
+// A selected comet far from the Sun draws no tail (internal #413, #548, bulk 3).
+{
+  const { cometTailVisible, COMET_TAIL_SELECTED_AU } = await import(join(ROOT, 'site/js/scene/models.js'));
+  check(cometTailVisible(0.5, false) && cometTailVisible(1.4, false) && !cometTailVisible(2, false), 'an unselected comet has its tail inside 1.5 au and not beyond');
+  check(cometTailVisible(2, true) && cometTailVisible(COMET_TAIL_SELECTED_AU - 0.01, true), 'a selected comet keeps it a little further out');
+  check(!cometTailVisible(COMET_TAIL_SELECTED_AU, true) && !cometTailVisible(30, true) && !cometTailVisible(51, true), 'a selected comet at 3, 30 or 51 au has none');
+  check(cometTailVisible(NaN, false) && cometTailVisible(undefined, true), 'a comet with no distance keeps its tail, as before');
+  // The rule needs the distance, and until 2026-10-10 nothing gave it one (every comet kept its tail).
+  const { cometSunAu, sunAuOf } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const AU = 149597870.7;
+  check(Math.abs(sunAuOf({ frame: 'sun-inertial', x: 48.8 * AU, y: 0, z: 0 }) - 48.8) < 1e-9 && Number.isNaN(sunAuOf({ frame: 'earth-inertial', x: 1, y: 2, z: 3 })) && Number.isNaN(sunAuOf(null)), 'a position in the Sun\'s frame gives the distance; any other gives none');
+  check(cometSunAu({ sunAu: 48.8 }, {}) === 48.8 && cometSunAu({}, { rAu: 2 }) === 2 && Number.isNaN(cometSunAu({}, {})), 'the frame\'s own distance first, the record\'s next, else none');
+  check(!cometTailVisible(cometSunAu({ sunAu: sunAuOf({ frame: 'sun-inertial', x: 0, y: 48.8 * AU, z: 0 }) }, {}), true), 'Borisov at 48.8 au, selected, has no tail');
+  const modelsSrc = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  const heroesSrc = readFileSync(join(ROOT, 'site/js/scene/heroes.js'), 'utf8');
+  check(/cometTailVisible\(au, obj\.userData\.selected !== undefined/.test(modelsSrc) && /userData\.sunAu = M\.sunAuOf\(c\.p\); obj\.userData\.selected = c\.record\.id === selectedId/.test(heroesSrc), 'the model update uses the rule, and the frame loop hands it the distance and the selection');
 }
 
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }

@@ -3,11 +3,12 @@
 // Contract: createSystems(scene, ctx) -> { enter(stageId), leave(), update(tMs, camera), active,
 //   records(), drawnPositionOf(id, out), pickAll(ndcX, ndcY, camera, viewport, limit),
 //   subjectFor(record), stageOfRecord(record), framingDistanceUnits(stageId), lightScene(out),
-//   setScaleRing(on), stats(), dispose() }
+//   setScaleRing(on), hostRecordFor(record), pending(record), load(), stats(), dispose() }
+// and, for the systems nobody typed (internal #466): registerSystems(), loadIndex(), loadTable().
 // and the pure parts, exported for tests/test_systems.mjs: planetPosition(), systemBasis(),
 // hostPositionKm(), illustrativePhase(), keplerMismatch(), floorRadiusUnits(), systemOfRecordId().
 //
-// WHY A STAGE OF ITS OWN. The map places 6 332 planets around other stars AT their stars (spec 0028
+// WHY A STAGE OF ITS OWN. The map places six thousand planets around other stars AT their stars (spec 0028
 // step 4): 1 au at 10 parsecs is a tenth of an arcsecond, so on the stellar rung a planet and its star
 // are one point and the card says so. A tour of a system needs the one thing the ladder cannot give:
 // the star and its planets drawn at the system's own scale. One unit is 100 000 km here
@@ -33,14 +34,21 @@
 //     turned about that line (its position angle on the sky) nobody has measured, and it is drawn
 //     level with the ecliptic. The card says the tilt is illustrative;
 //   - colours: the star's from its temperature (starfield.js kelvinToRgb, the path the stars use),
-//     the planets' one neutral tint. Nothing is known of their surfaces.
+//     the planets' one neutral tint. Nothing is known of their surfaces;
+//   - A FACE, where the device can draw one (internal #466, 2026-10-08): scene/exoface.js gives
+//     each planet a drawn surface worked out from its row -- its class from radius and mass, its
+//     climate from its star's light -- with every feature imagined and the planet LABELLED so:
+//     an on-canvas tag "Artist's impression" under the disc, and the card's line from
+//     faceLineOf(). The module is fetched when a system's stage is entered, never at boot; the
+//     neutral ball above is what is drawn until it lands, on a connection that saves data, and
+//     for good once the frame latch has tripped.
 //
 // COST. Nothing at boot but the origin registration below. Geometry is built when a system stage is
 // entered and disposed when it is left: one star sphere, one corona sprite, seven planet spheres and
 // seven rings, 8 928 triangles for TRAPPIST-1 (stats(), under spec 0040's 10 000).
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { stage, STAGES, setSystemOrigin, SUN_INERTIAL } from './stage.js';
+import { stage, STAGES, setSystemOrigin, registerSystemStage, SUN_INERTIAL } from './stage.js';
 import { worldMaterial, coronaSprite, MOON_VIEW } from './worlds.js';
 import { kelvinToRgb } from './starfield.js';
 import { skyToSunInertialKm } from '../data/parsers.js';
@@ -74,12 +82,79 @@ const PICK_PX = 24;
 
 // --- the pure parts ------------------------------------------------------------------------------
 
-const BY_ID = new Map(SYSTEMS.map((s) => [s.id, s]));
-const BY_STAGE = new Map(SYSTEMS.map((s) => [s.stage, s]));
+const BY_ID = new Map();
+const BY_STAGE = new Map();
 const MEMBER = new Map();
-for (const s of SYSTEMS) {
-  MEMBER.set(s.hostId, { system: s, planet: null });
-  for (const p of s.planets) MEMBER.set(p.id, { system: s, planet: p });
+const BY_NAME = new Map();
+const nameKey = (text) => String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+/**
+ * Make these rows the systems the map knows. Called three times at most: with data/systems.js at
+ * import (TRAPPIST-1, typed, on the first visit), with data/systems-index.js when the exoplanet table
+ * lands (who has a stage, loadIndex below), and with data/systems-table.js the first time one of
+ * them is asked for (the rows in full, loadTable). A later row of the same id replaces the earlier.
+ * `full: false` is an index row: it has a stage, an origin and members, and nothing to draw yet.
+ */
+export function registerSystems(rows, full = true) {
+  for (const s of rows || []) {
+    if (!s || !s.id) continue;
+    s.full = full;
+    registerSystemStage(s.id);
+    BY_ID.set(s.id, s);
+    BY_STAGE.set(s.stage, s);
+    MEMBER.set(s.hostId, { system: s, planet: null });
+    for (const p of s.planets) MEMBER.set(p.id, { system: s, planet: p });
+    for (const n of [s.host, s.display, ...(s.aliases || [])]) if (n) BY_NAME.set(nameKey(n), s);
+    setSystemOrigin(s.stage, hostPositionKm(s));
+  }
+}
+
+let indexLoad = null;
+let tableLoad = null;
+/** Who has a stage (data/systems-index.js). Resolves to the index rows; [] when it cannot be had. */
+export function loadIndex() {
+  if (!indexLoad) {
+    indexLoad = import('../data/systems-index.js')
+      .then((m) => {
+        const rows = m.SYSTEM_INDEX.filter((s) => !BY_ID.has(s.id));
+        registerSystems(rows, false);
+        return rows;
+      })
+      .catch((err) => { console.warn('the star systems\' index did not load', err); indexLoad = null; return []; });
+  }
+  return indexLoad;
+}
+
+/** The rows in full, and what is drawn from them beyond a star and its planets (scene/systemextras.js). */
+let extras = null;
+export function loadTable() {
+  if (!tableLoad) {
+    tableLoad = Promise.all([import('../data/systems-table.js'), import('./systemextras.js')])
+      .then(([m, x]) => { registerSystems(m.SYSTEMS_TABLE, true); extras = x; return true; })
+      .catch((err) => { console.warn('the star systems did not load', err); tableLoad = null; return false; });
+  }
+  return tableLoad;
+}
+
+/** Does this record's system still wait for its rows? (main.js select() loads them, then selects.) */
+export function systemPending(record) {
+  const m = record && systemOfRecordId(record.id);
+  return !!(m && !m.system.full);
+}
+
+/** The system a plain star record IS the host of, by its name ("Proxima Centauri" in HYG), or null. */
+export function systemOfStarName(record) {
+  if (!record || record.klass !== 'star' || MEMBER.has(record.id)) return null;
+  return BY_NAME.get(nameKey(record.name)) || null;
+}
+
+// The card's words for a planet that is drawn with a face RIGHT NOW (scene/exoface.js faceLabel):
+// filled when faces go on, emptied when they come off, so the card never calls a neutral ball an
+// artist's impression. ui/cards.js systemLine() reads it.
+const FACE_LINES = new Map();
+/** "Artist's impression. Measured: 1.1 Earth radii, a 6.1-day year. The surface is imagined.", or null. */
+export function faceLineOf(id) {
+  return FACE_LINES.get(id) || null;
 }
 
 /** {system, planet} for a record id that belongs to a system (planet null for the host), else null. */
@@ -155,6 +230,54 @@ export function planetPosition(planet, tMs, basis, out = { x: 0, y: 0, z: 0 }) {
   return out;
 }
 
+/**
+ * TWO SUNS (internal #475; registry/systems-binaries.yaml). Where the companion star is, relative to
+ * the primary, as the two components of the binary's orbit in the plane systemBasis() gives, au:
+ * `along` on +u (toward us) and `across` on +v, plus the separation `r`. Kepler's equation for the
+ * relative orbit, at `tMs`; psi = true anomaly + omega, and in the papers' convention the primary is
+ * eclipsed (the companion in front, on +u) when sin(psi) = 1, so along = r sin(psi); the orbit turns
+ * the way the planets do, so across = -r cos(psi). `omegaRad` or `omegaDeg` as the row has it.
+ * @returns {{along:number, across:number, r:number}}
+ */
+export function binaryRelative(binary, tMs, out = { along: 0, across: 0, r: 0 }) {
+  const o = binary.orbit;
+  const e = o.eccentricity;
+  const w = Number.isFinite(o.omegaRad) ? o.omegaRad : (o.omegaDeg * Math.PI) / 180;
+  const jd = tMs / DAY_MS + JD_UNIX_EPOCH;
+  // The fraction of a lap since periastron, reduced before it becomes an angle (as planetPosition does).
+  let f = (jd - o.periastronJd) / o.periodDays;
+  f -= Math.floor(f);
+  const M = 2 * Math.PI * f;
+  let E = M + e * Math.sin(M);
+  for (let i = 0; i < 12; i += 1) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  const nu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+  const r = o.aAu * (1 - e * Math.cos(E));
+  const psi = nu + w;
+  out.along = r * Math.sin(psi);
+  out.across = -r * Math.cos(psi);
+  out.r = r;
+  return out;
+}
+
+/** The pair's shares of the separation about the barycentre: the primary sits `fB` of it away, the companion `fA`. */
+export function binaryShares(binary) {
+  const a = binary.primary.massSuns;
+  const b = binary.companion.massSuns;
+  return { fA: a / (a + b), fB: b / (a + b) };
+}
+
+/** The star's radius in km; 0 when the table has none (it is then a point of light, and the card says so). */
+export function starRadiusKm(system) {
+  const r = system && system.star ? system.star.radiusSuns : null;
+  return Number.isFinite(r) && r > 0 ? r * SUN_RADIUS_KM : 0;
+}
+
+/** A planet's radius in km, and whether it is a default: the size of the Earth, when none is known. */
+export function planetRadiusKm(planet) {
+  const r = planet ? planet.radiusEarths : null;
+  return Number.isFinite(r) && r > 0 ? r * EARTH_RADIUS_KM : EARTH_RADIUS_KM;
+}
+
 /** Kepler's third law: a^3 / P^2 (au, years) against the star's mass, as a signed fraction. */
 export function keplerMismatch(planet, massSuns) {
   const pYr = planet.periodDays / 365.25;
@@ -164,6 +287,21 @@ export function keplerMismatch(planet, massSuns) {
 /** A radius in units, never under the one-pixel floor from a camera `viewUnits` away. */
 export function floorRadiusUnits(trueUnits, viewUnits) {
   return Math.max(trueUnits, viewUnits * SYSTEM_VIEW.MIN_ANGULAR_RADIUS_RAD);
+}
+
+/**
+ * THE STAR'S GLOW FLOOR (internal #476). At whole-system scale the star is the one-pixel floor, and a red
+ * dwarf's colour cannot be read in a pixel. Its glow (the sprite on the star, in the star's colour) is
+ * therefore never narrower than GLOW_FLOOR_X floors across in radius; the card says it is drawn wider.
+ * Returns the sprite's scale in the star's own radii (the sprite is the star mesh's child), never under
+ * the 4.5 it has always had.
+ */
+export const GLOW_FLOOR_X = 6;
+export const GLOW_BASE_SCALE = 4.5;
+export function glowScale(drawnRadiusUnits, viewUnits) {
+  if (!(drawnRadiusUnits > 0) || !(viewUnits > 0)) return GLOW_BASE_SCALE;
+  const wantRadius = GLOW_FLOOR_X * viewUnits * SYSTEM_VIEW.MIN_ANGULAR_RADIUS_RAD;
+  return Math.max(GLOW_BASE_SCALE, (2 * wantRadius) / drawnRadiusUnits);
 }
 
 /** How far out a camera must sit, in units, to hold a circle of `radiusUnits` seen at co-latitude `polar`. */
@@ -180,9 +318,9 @@ export function fitDistanceUnits(radiusUnits, fovDeg, aspect, polar = 0, fill = 
   return Math.max(needH, needV);
 }
 
-// Every system's origin, registered once at import: a star forty light-years away does not move at
-// any clock rate this app runs (scene/stage.js setSystemOrigin says why this is not per tick).
-for (const s of SYSTEMS) setSystemOrigin(s.stage, hostPositionKm(s));
+// Every system's origin, registered once: a star forty light-years away does not move at any clock
+// rate this app runs (scene/stage.js setSystemOrigin says why this is not per tick).
+registerSystems(SYSTEMS, true);
 
 // --- the drawing ---------------------------------------------------------------------------------
 
@@ -247,6 +385,8 @@ export function createSystems(scene, ctx = {}) {
   let scaleRingOn = false;
   const _v = new THREE.Vector3();
   const _p = new THREE.Vector3();
+  const _q = new THREE.Vector3();
+  const _rel = { along: 0, across: 0, r: 0 };
   const _km = { x: 0, y: 0, z: 0 };
   const _off = { x: 0, y: 0, z: 0 };
 
@@ -260,7 +400,8 @@ export function createSystems(scene, ctx = {}) {
     const basis = systemBasis(hostKm);
     const basisScene = { u: sceneDir(basis.u), v: sceneDir(basis.v) };
     const unit = stage.unitKm;
-    const rgb = kelvinToRgb(system.star.teffK);
+    // A star with no temperature in the table (a pulsar) is drawn white, and its card says so.
+    const rgb = Number.isFinite(system.star.teffK) ? kelvinToRgb(system.star.teffK) : [1, 1, 1];
     const starColour = new THREE.Color().setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
 
     const starMesh = new THREE.Mesh(
@@ -269,10 +410,23 @@ export function createSystems(scene, ctx = {}) {
     );
     starMesh.name = `systems:${system.hostId}`;
     starMesh.userData.recordId = system.hostId;
-    starMesh.userData.trueRadiusUnits = (system.star.radiusSuns * SUN_RADIUS_KM) / unit;
+    starMesh.userData.trueRadiusUnits = starRadiusKm(system) / unit;
     const halo = coronaSprite();
-    if (halo) { halo.material.color = starColour.clone(); starMesh.add(halo); }
+    if (halo) { halo.material.color = starColour.clone(); starMesh.add(halo); starMesh.userData.halo = halo; }
     group.add(starMesh);
+    // The second sun of a circumbinary pair: drawn, not picked (it is no record of the catalogue).
+    let companionMesh = null;
+    if (system.binary) {
+      const c = system.binary.companion;
+      const crgb = kelvinToRgb(c.teffK);
+      const ccol = new THREE.Color().setRGB(crgb[0], crgb[1], crgb[2], THREE.SRGBColorSpace);
+      companionMesh = new THREE.Mesh(new THREE.SphereGeometry(1, STAR_SEGMENTS[0], STAR_SEGMENTS[1]), new THREE.MeshBasicMaterial({ color: ccol, toneMapped: false }));
+      companionMesh.name = `systems:companion:${system.hostId}`;
+      companionMesh.userData.trueRadiusUnits = c.radiusSuns * SUN_RADIUS_KM / unit;
+      const chalo = coronaSprite();
+      if (chalo) { chalo.material.color = ccol.clone(); companionMesh.add(chalo); companionMesh.userData.halo = chalo; }
+      group.add(companionMesh);
+    }
 
     const ringColour = new THREE.Color(cssColour('--sr-text-dim', '#9aa4b2'));
     const rings = [];
@@ -281,7 +435,7 @@ export function createSystems(scene, ctx = {}) {
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, PLANET_SEGMENTS[0], PLANET_SEGMENTS[1]), worldMaterial(null, PLANET_TINT));
       mesh.name = `systems:${planet.id}`;
       mesh.userData.recordId = planet.id;
-      mesh.userData.trueRadiusUnits = (planet.radiusEarths * EARTH_RADIUS_KM) / unit;
+      mesh.userData.trueRadiusUnits = planetRadiusKm(planet) / unit;
       group.add(mesh);
       planets.push({ planet, mesh });
       const ring = new THREE.LineLoop(
@@ -312,11 +466,57 @@ export function createSystems(scene, ctx = {}) {
     }
     group.add(mercury);
 
-    return { system, hostKm, basis, basisScene, starMesh, planets, rings, mercury };
+    const built = { system, hostKm, basis, basisScene, starMesh, companionMesh, planets, rings, mercury, extra: null };
+    // The habitable-zone band and our own planets' orbits for scale (scene/systemextras.js): only
+    // for a generated row, which is the only kind that carries a computed zone.
+    if (extras && system.zone !== undefined) built.extra = extras.decorate(built, group, { unit, textSprite, cssColour, ringGeometry });
+    return built;
+  }
+
+  // --- faces (scene/exoface.js) -------------------------------------------------------------------
+  // Fetched when a system is built; each planet's mesh is dressed in place, so its position, its
+  // scale, the picking and the one-pixel floor are all untouched. `toon` keeps what it wore.
+  let facesAsked = null;
+  const facesWanted = () => typeof document !== 'undefined' && !!ctx.renderer
+    && !(ctx.latch && ctx.latch.latched)
+    && !(typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData === true);
+  function wantFaces(built) {
+    if (!facesWanted() || built.faced) return;
+    (facesAsked || (facesAsked = import('./exoface.js'))).then((m) => {
+      if (current !== built || built.faced || !facesWanted()) return;
+      const tier = ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 1;
+      const n = built.basisScene;
+      built.north = new THREE.Vector3().crossVectors(new THREE.Vector3(n.u.x, n.u.y, n.u.z), new THREE.Vector3(n.v.x, n.v.y, n.v.z)).normalize();
+      for (const entry of built.planets) {
+        // A generated row knows how the planet was found (internal #466): the face then tells a
+        // radius forecast from a mass apart from a mass forecast from a radius.
+        const row = m.rowOf(entry.planet, built.system.star);
+        if (entry.planet.method) row.method = entry.planet.method;
+        const face = m.faceFor(row);
+        entry.toon = { geometry: entry.mesh.geometry, material: entry.mesh.material };
+        entry.face = m.applyFace(entry.mesh, face, { tier });
+        FACE_LINES.set(entry.planet.id, entry.face.label.line);
+      }
+      built.faced = true;
+      window.dispatchEvent(new CustomEvent('sr:faces', { detail: { system: built.system.id, tier } }));
+    }).catch((e) => { facesAsked = null; console.warn('the planets keep their neutral look', e); });
+  }
+  function dropFaces(built, restore) {
+    if (!built || !built.faced) return;
+    for (const entry of built.planets) {
+      if (!entry.face) continue;
+      entry.face.dispose();
+      entry.face = null;
+      if (restore) { entry.mesh.geometry = entry.toon.geometry; entry.mesh.material = entry.toon.material; } else { entry.toon.geometry.dispose(); entry.toon.material.dispose(); }
+      entry.toon = null;
+      FACE_LINES.delete(entry.planet.id);
+    }
+    built.faced = false;
   }
 
   function disposeCurrent() {
     if (!current) return;
+    dropFaces(current, false);
     group.traverse((o) => {
       if (o.geometry) o.geometry.dispose();
       if (o.material) {
@@ -333,7 +533,14 @@ export function createSystems(scene, ctx = {}) {
     if (!system) { leave(); return false; }
     if (current && current.system === system) return true;
     disposeCurrent();
+    // An index row has nothing to draw yet: its rows are fetched, and it is built when they land
+    // if this is still its stage (a link straight to the stage, or a Back, gets here before select()).
+    if (!system.full) {
+      loadTable().then((ok) => { if (ok && stage.worldId === stageId) enter(stageId); });
+      return false;
+    }
     current = build(system);
+    wantFaces(current);
     applyVisibility();
     return true;
   }
@@ -392,11 +599,34 @@ export function createSystems(scene, ctx = {}) {
     applyVisibility();
     if (!group.visible || !current) return;
     const cam = camera || ctx.camera;
+    // The frame latch is the one way down (scene/quality.js): the neutral balls come back, for good.
+    if (current.faced && ctx.latch && ctx.latch.latched) dropFaces(current, true);
+    const faceTime = current.faced ? performance.now() / 1000 : 0;
+    const viewportH = current.faced && ctx.renderer ? ctx.renderer.domElement.clientHeight || 800 : 800;
     const star = current.starMesh;
     drawnPositionOf(current.system.hostId, _p);
-    star.position.copy(_p);
-    const camStar = cam ? cam.position.distanceTo(_p) : 0;
+    // The origin is the barycentre. With two suns each sits on the far side of it from the other, in
+    // inverse proportion to its mass; the planets' light and the rings are about the barycentre.
+    let camStar;
+    if (current.companionMesh) {
+      const bin = current.system.binary;
+      const { fA, fB } = binaryShares(bin);
+      binaryRelative(bin, stage.tMs, _rel);
+      const k = AU_KM / stage.unitKm;
+      const { u, v } = current.basisScene;
+      _q.set((_rel.along * u.x + _rel.across * v.x) * k, (_rel.along * u.y + _rel.across * v.y) * k, (_rel.along * u.z + _rel.across * v.z) * k);
+      const comp = current.companionMesh;
+      comp.position.copy(_p).addScaledVector(_q, fA);
+      comp.scale.setScalar(floorRadiusUnits(comp.userData.trueRadiusUnits, cam ? cam.position.distanceTo(comp.position) : 0));
+      if (comp.userData.halo) comp.userData.halo.scale.setScalar(glowScale(comp.scale.x, cam ? cam.position.distanceTo(comp.position) : 0));
+      star.position.copy(_p).addScaledVector(_q, -fB);
+      camStar = cam ? cam.position.distanceTo(star.position) : 0;
+    } else {
+      star.position.copy(_p);
+      camStar = cam ? cam.position.distanceTo(_p) : 0;
+    }
     star.scale.setScalar(floorRadiusUnits(star.userData.trueRadiusUnits, camStar));
+    if (star.userData.halo) star.userData.halo.scale.setScalar(glowScale(star.scale.x, camStar));
     for (const ring of current.rings) ring.position.copy(_p);
     current.mercury.position.copy(_p);
     const label = current.mercury.getObjectByName('systems:mercury-label');
@@ -413,6 +643,7 @@ export function createSystems(scene, ctx = {}) {
       const r = (MERCURY_A_AU * AU_KM) / stage.unitKm;
       label.position.set(-(a * u.x + b * v.x) / l * r, -(a * u.y + b * v.y) / l * r, -(a * u.z + b * v.z) / l * r);
     }
+    if (current.extra) extras.update(current, cam, _p, overlay);
     for (const { planet, mesh } of current.planets) {
       if (!drawnPositionOf(planet.id, _v)) { mesh.visible = false; continue; }
       mesh.visible = true;
@@ -422,6 +653,12 @@ export function createSystems(scene, ctx = {}) {
       // Lit by its own star: the direction from the planet to the star, in scene axes.
       const u = mesh.material.uniforms && mesh.material.uniforms.uSunDir;
       if (u) u.value.copy(_p).sub(_v).normalize();
+    }
+    if (current.faced) {
+      const still = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      for (const entry of current.planets) {
+        if (entry.face && entry.mesh.visible) entry.face.update({ camera: cam, north: current.north, timeS: faceTime, viewportH, still });
+      }
     }
   }
 
@@ -469,16 +706,30 @@ export function createSystems(scene, ctx = {}) {
 
   /** The system stage a record is drawn on, or null: a planet with a system row, or its host. */
   function stageOfRecord(record) {
+    // A system whose rows have not landed has no stage to go to yet (main.js select() fetches them).
     const m = record && systemOfRecordId(record.id);
-    return m ? m.system.stage : null;
+    return m && m.system.full ? m.system.stage : null;
+  }
+
+  /**
+   * The record to select in place of this one, or null. A star of the catalogue that IS a system's
+   * host ("Proxima Centauri" from HYG) stands for that system's own star record, so choosing the
+   * star anywhere flies into its system (spec 0040 req 6, one step further).
+   */
+  function hostRecordFor(record) {
+    const s = systemOfStarName(record);
+    const byId = typeof ctx.recordById === 'function' ? ctx.recordById : () => null;
+    return s ? byId(s.hostId) : null;
   }
 
   /** How far out a camera sits to hold every orbit of the system, on this screen. */
   function framingDistanceUnits(stageId, opts = {}) {
     const system = systemForStage(stageId);
-    if (!system) return 5;
+    if (!system || !system.full) return 5;
     const unitKm = STAGES[stageId].unitKm;
-    const outer = Math.max(...system.planets.map((p) => p.aAu)) * AU_KM;
+    // A generated system's shot also holds its habitable zone and the ring of ours that holds the
+    // system, when either is near (scene/systemextras.js frameAu).
+    const outer = (extras && system.zone !== undefined ? extras.frameAu(system) : Math.max(...system.planets.map((p) => p.aAu))) * AU_KM;
     const radiusKm = opts.mercury ? Math.max(outer, MERCURY_A_AU * AU_KM) : outer;
     const cam = ctx.camera;
     const fov = cam && cam.fov ? cam.fov : 45;
@@ -496,7 +747,7 @@ export function createSystems(scene, ctx = {}) {
     const m = record && systemOfRecordId(record.id);
     if (!m) return null;
     const { system, planet } = m;
-    const starRadiusKm = system.star.radiusSuns * SUN_RADIUS_KM;
+    const starKm = starRadiusKm(system);
     return {
       kind: 'record',
       id: record.id,
@@ -505,14 +756,14 @@ export function createSystems(scene, ctx = {}) {
       layerId: record.layer,
       worldId: null,
       systemStage: system.stage,
-      radiusKm: planet ? planet.radiusEarths * EARTH_RADIUS_KM : starRadiusKm,
+      radiusKm: planet ? planetRadiusKm(planet) : starKm,
       position(tMs) {
         if (stage.worldId !== system.stage) return null;
         const out = drawnPositionOf(record.id, new THREE.Vector3());
         return out || null;
       },
       ground: {
-        radiusKm: starRadiusKm,
+        radiusKm: starKm,
         centre: () => (stage.worldId === system.stage ? stage.toScene(hostPositionKm(system), SUN_INERTIAL) : null),
       },
       // The host's stops are overviews: from 40 degrees off the orbits' axis the rings read as rings.
@@ -536,14 +787,37 @@ export function createSystems(scene, ctx = {}) {
   function arrivalDistanceUnits(record) {
     const m = record && systemOfRecordId(record.id);
     if (!m) return 5;
-    if (!m.planet) return framingDistanceUnits(m.system.stage);
-    return ((m.planet.radiusEarths * EARTH_RADIUS_KM) / STAGES[m.system.stage].unitKm) * 8;
+    if (!m.planet || !m.system.full) return framingDistanceUnits(m.system.stage);
+    return (planetRadiusKm(m.planet) / STAGES[m.system.stage].unitKm) * 8;
   }
 
   /** The light on a system stage: the host star's scene position. Null elsewhere. */
   function lightScene(out = new THREE.Vector3()) {
     if (!isActive()) return null;
     return drawnPositionOf(current.system.hostId, out);
+  }
+
+  /**
+   * What is laid over a generated system's view on demand (internal #280): `zone`, the computed
+   * habitable-zone band, and `orbits`, our own planets' orbits for scale. Both off until asked for,
+   * and kept for the session, so a visitor comparing systems does not press twice. `available`
+   * says which of the two a system (the one on screen, or the one named) can show.
+   */
+  const overlay = { zone: false, orbits: false };
+  function setOverlay(part, on) {
+    if (part !== 'zone' && part !== 'orbits') return false;
+    overlay[part] = !!on;
+    if (ctx.requestRender) ctx.requestRender();
+    return overlay[part];
+  }
+  function overlayState(system = current ? current.system : null) {
+    // From the row, not from what happens to be built: a card is painted while its system loads.
+    const generated = !!(extras && system && system.zone !== undefined);
+    return {
+      zone: overlay.zone,
+      orbits: overlay.orbits,
+      available: { zone: generated && !!system.zone, orbits: generated && extras.scaleOrbits(system).length > 0 },
+    };
   }
 
   function stats() {
@@ -556,7 +830,7 @@ export function createSystems(scene, ctx = {}) {
         triangles += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
       }
     });
-    return { active: isActive(), system: current ? current.system.id : null, meshes, triangles, rings: current ? current.rings.length : 0, scaleRing: scaleRingOn };
+    return { active: isActive(), system: current ? current.system.id : null, meshes, triangles, rings: current ? current.rings.length : 0, scaleRing: scaleRingOn, faced: !!(current && current.faced) };
   }
 
   function dispose() {
@@ -571,11 +845,16 @@ export function createSystems(scene, ctx = {}) {
     get active() { return isActive(); },
     setVisible,
     setScaleRing,
+    setOverlay,
+    overlay: overlayState,
     records,
     drawnPositionOf,
     pickAll,
     subjectFor,
     stageOfRecord,
+    hostRecordFor,
+    pending: systemPending,
+    load: loadTable,
     framingDistanceUnits,
     arrivalDistanceUnits,
     starRadiusUnits,

@@ -14,25 +14,41 @@ export const STARS_NOTABLE = [
     "hip": 70890,
     "name": "Proxima Centauri",
     "why": "The nearest star to the Sun, a red dwarf too faint to see without a telescope. Its planet Proxima b, found in 2016, orbits in its habitable zone.",
-    "source": "https://en.wikipedia.org/wiki/Proxima_Centauri (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Proxima_Centauri (read 2026-09-22)",
+    "radius_suns": 0.141,
+    "radius_err_suns": 0.007,
+    "teff_k": 3054,
+    "teff_err_k": 79,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "hip": 71683,
     "name": "Alpha Centauri A",
     "why": "The larger of the nearest pair of stars to the Sun, 1.1 times the Sun's mass. To the eye, it and B are one star, the third-brightest in the sky.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)",
+    "radius_suns": 1.224,
+    "radius_err_suns": 0.003,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0303634 (read 2026-10-09)"
   },
   {
     "hip": 71681,
     "name": "Alpha Centauri B",
     "why": "The orange half of the nearest pair of stars to the Sun. It and Alpha Centauri A go round each other once every 79 years.",
-    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Alpha_Centauri (read 2026-09-22)",
+    "radius_suns": 0.863,
+    "radius_err_suns": 0.005,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0303634 (read 2026-10-09)"
   },
   {
     "hip": 87937,
     "name": "Barnard's Star",
     "why": "It crosses the sky faster than any other star, 10.3 arcseconds a year. Four small planets were found around it in 2024 and 2025.",
-    "source": "https://en.wikipedia.org/wiki/Barnard%27s_Star (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Barnard%27s_Star (read 2026-09-22)",
+    "radius_suns": 0.1869,
+    "radius_err_suns": 0.0012,
+    "teff_k": 3222,
+    "teff_err_k": 10,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "proper": "Wolf 359",
@@ -44,25 +60,43 @@ export const STARS_NOTABLE = [
     "hip": 32349,
     "name": "Sirius",
     "why": "The brightest star in the night sky, almost twice as bright as Canopus, the next. A faint white dwarf, Sirius B, circles it.",
-    "source": "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)",
+    "radius_suns": 1.713,
+    "radius_err_suns": 0.009,
+    "teff_k": 9845,
+    "teff_err_k": 64,
+    "physical_source": "https://arxiv.org/abs/1010.3790 (read 2026-10-09)"
   },
   {
     "hip": 16537,
     "name": "Epsilon Eridani",
     "why": "The third-closest star you can see with the naked eye, with a giant planet and a dust belt like our Kuiper belt. Project Ozma listened to it in 1960.",
-    "source": "https://en.wikipedia.org/wiki/Epsilon_Eridani (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Epsilon_Eridani (read 2026-09-22)",
+    "radius_suns": 0.735,
+    "radius_err_suns": 0.005,
+    "teff_k": 5077,
+    "teff_err_k": 35,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "hip": 104214,
     "name": "61 Cygni A",
     "why": "The first star after the Sun to have its distance measured, by Friedrich Bessel in 1838. It moves so fast across the sky it was called the Flying Star.",
-    "source": "https://en.wikipedia.org/wiki/61_Cygni (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/61_Cygni (read 2026-09-22)",
+    "radius_suns": 0.6611,
+    "radius_err_suns": 0.0048,
+    "teff_k": 4361,
+    "teff_err_k": 17,
+    "physical_source": "https://arxiv.org/abs/1208.2431 (read 2026-10-09)"
   },
   {
     "hip": 37279,
     "name": "Procyon",
     "why": "Its name means 'before the dog': it crosses the sky just ahead of Sirius, the Dog Star. Like Sirius, it has a white dwarf companion.",
-    "source": "https://en.wikipedia.org/wiki/Procyon (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Procyon (read 2026-09-22)",
+    "radius_suns": 2.048,
+    "radius_err_suns": 0.025,
+    "physical_source": "https://arxiv.org/abs/astro-ph/0312068 (read 2026-10-09)"
   },
   {
     "hip": 8102,
@@ -92,7 +126,12 @@ export const STARS_NOTABLE = [
     "hip": 69673,
     "name": "Arcturus",
     "why": "The brightest star in the northern half of the sky, a red giant 25 times the Sun's size. Its light opened the 1933 Chicago World's Fair.",
-    "source": "https://en.wikipedia.org/wiki/Arcturus (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Arcturus (read 2026-09-22)",
+    "radius_suns": 25.4,
+    "radius_err_suns": 0.2,
+    "teff_k": 4286,
+    "teff_err_k": 30,
+    "physical_source": "https://arxiv.org/abs/1109.4425 (read 2026-10-09)"
   },
   {
     "hip": 91262,
@@ -158,7 +197,12 @@ export const STARS_NOTABLE = [
     "hip": 102098,
     "name": "Deneb",
     "why": "The most distant of the thirty brightest stars and one of the most luminous. Estimates of how far away it is differ by nearly two to one.",
-    "source": "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Deneb (read 2026-09-22)",
+    "radius_suns": 203,
+    "radius_err_suns": 17,
+    "teff_k": 8525,
+    "teff_err_k": 75,
+    "physical_source": "https://arxiv.org/abs/0712.0040 (read 2026-10-09)"
   },
   {
     "hip": 49669,

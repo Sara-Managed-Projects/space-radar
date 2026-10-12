@@ -11,6 +11,47 @@ be verified that way, it says so in plain words. Checked 2026-09-07.
 
 ---
 
+## At a glance
+
+Every row is a section below, with the licence text read from its publisher, what was changed, and
+the credit line to keep. `tests/test_credits.py` and `scripts/check_registry.py` refuse a data
+source, 3D model, texture, picture, tile set, sound or font that ships without its line here.
+
+| What | From | Licence or terms | Section |
+|---|---|---|---|
+| Rendering, orbits, astronomy | three.js, satellite.js, astronomy-engine | MIT | [1](#1-code-libraries) |
+| Icons | Lucide (nine, inlined) | ISC, MIT | [1](#1-code-libraries) |
+| Planet, moon and sky maps | Solar System Scope; NASA, USGS and mission teams | CC BY 4.0; public domain | [2](#2-textures) |
+| Stars and constellations | d3-celestial; HYG v4.4 | BSD-3-Clause; CC BY-SA 4.0 | [3](#3-star-and-constellation-data), [3c](#3c-stars-in-three-dimensions--hyg-cc-by-sa-40) |
+| Fainter stars, which constellation, meteor activity | AT-HYG v4.0; CDS VI/42; the IMO's 2027 calendar | CC BY-SA 4.0; a catalogue; facts, cited | [3j](#3j-the-sky-from-the-ground-round-three--at-hyg-cds-vi42-the-imos-working-list-and-a-model-of-the-air) |
+| Magnetic declination, for "Point your phone" | World Magnetic Model 2025 (NOAA NCEI, BGS) | public domain (US government) | [3k](#3k-point-your-phone--the-world-magnetic-model-2025-noaa-ncei-and-the-british-geological-survey-public-domain) |
+| Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
+| The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
+| 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
+| Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
+| Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
+| The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
+| Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
+| Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
+| Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
+| Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
+| Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
+| Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
+| Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
+| Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
+| Fires, volcanoes and icebergs | NASA EONET | NASA service; its disclaimer | [4.20](#420-nasa-eonet--fires-volcanoes-and-icebergs-2026-10-07) |
+| The wind | NOAA/NCEP GFS, through PacIOOS ERDDAP | free to use and redistribute | [4.21](#421-noaa-gfs-through-pacioos--the-wind-2026-10-07) |
+| Ocean currents, and the sea temperature that colours them | NOAA CoastWatch (altimetry; Copernicus Sentinel, AVISO+); NOAA NCEI OISST v2.1 | free to use and redistribute; citation asked | [4.22](#422-noaa-coastwatch-and-noaa-oisst--ocean-currents-2026-10-12) |
+| Moon and Mars close-up tiles and relief; the Earth close up | NASA Solar System Treks; USGS Astrogeology; NASA GIBS | NASA content; HRSC's share of Mars's relief CC BY-SA 3.0 IGO | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
+| Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
+| Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
+| Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
+| The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
+| Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono | SIL OFL 1.1 | [10](#10-fonts) |
+| The GitHub mark | GitHub, Inc. | a trademark, used under GitHub's logo rules | [4.6](#46-third-party-trademarks-the-app-names-or-draws) |
+
+---
+
 ## 1. Code libraries
 
 All three are vendored in `site/vendor/`. There is no `package.json` and no build step: what is in
@@ -21,9 +62,13 @@ the tree is what the browser runs.
 | three.js | 0.185.1 | MIT | © 2010–2026 three.js authors | <https://threejs.org> |
 | three.js addons | r185 | MIT | GLTFLoader, BufferGeometryUtils, SkeletonUtils — vendored from the same release |
 | meshopt decoder | r185 bundle | MIT | `meshopt_decoder.module.js`, © 2016-2024 Arseny Kapoulkine |
+| three.js KTX2 loader | r185 | MIT | `vendor/basis/KTX2Loader.js`, `WorkerPool.js`, `ColorSpaces.js`, © 2010–2026 three.js authors | <https://github.com/mrdoob/three.js/tree/r185/examples/jsm> |
+| ktx-parse | r185 bundle | MIT | `vendor/basis/ktx-parse.module.js`, © 2020 Don McCurdy | <https://github.com/donmccurdy/ktx-parse> |
+| zstddec | r185 bundle | MIT, and BSD for the Zstandard it carries | `vendor/basis/zstddec.module.js`, © 2020 Don McCurdy; Zstandard © Meta Platforms, Inc. and affiliates | <https://github.com/donmccurdy/zstddec> |
+| Basis Universal transcoder | r185 bundle | Apache-2.0 | `vendor/basis/basis_transcoder.js` and `.wasm`, © 2019–2026 Binomial LLC | <https://github.com/BinomialLLC/basis_universal> |
 | satellite.js | 7.1.0 | MIT | © 2013 Shashwat Kandadai, UCSC Jack Baskin School of Engineering | <https://github.com/shashwatak/satellite-js> |
 | astronomy-engine | 2.1.17–2.1.19 (see note) | MIT | © 2019–2023 Don Cross <cosinekitty@gmail.com> | <https://github.com/cosinekitty/astronomy> |
-| Lucide icons (eight, inlined) | `main`, read 2026-10-01 | ISC; the Feather-derived ones MIT | © Lucide Icons and Contributors; Feather © 2013-present Cole Bemis | <https://lucide.dev> |
+| Lucide icons (inlined; the list is below) | `main`, read 2026-10-01 to 2026-10-05 | ISC; the Feather-derived ones MIT | © Lucide Icons and Contributors; Feather © 2013-present Cole Bemis | <https://lucide.dev> |
 
 MIT requires that its copyright notice **and** its permission notice travel with every copy. They
 are reproduced in full in [§6](#6-full-licence-notices).
@@ -33,6 +78,24 @@ byte-identical to `build/three.core.min.js` and `build/three.module.min.js` in t
 `three@0.185.1`. Unmodified. (The `@license` banner inside the files reads
 `Copyright 2010-2026 Three.js Authors / SPDX-License-Identifier: MIT`; the repository's own LICENSE
 spells the holder `three.js authors`, and that is the spelling used above.)
+
+**The KTX2 loader and the Basis transcoder** (`site/vendor/basis/`, spec 0056 task 1, 2026-10-08).
+Seven files from tag `r185` of <https://github.com/mrdoob/three.js>, under `examples/jsm/`, the
+release the two three.js bundles are: `loaders/KTX2Loader.js` (36 535 B here), `utils/WorkerPool.js`
+(3 110 B), `math/ColorSpaces.js` (4 307 B), `libs/ktx-parse.module.js` (19 932 B),
+`libs/zstddec.module.js` (39 754 B), `libs/basis/basis_transcoder.js` (57 529 B) and
+`libs/basis/basis_transcoder.wasm` (527 333 B). **Changed: import lines only.** There is no bundler
+and no import map, so `'three'` became `'../three.module.min.js'` (in `KTX2Loader.js` and
+`ColorSpaces.js`), the four relative imports of `KTX2Loader.js` became the same names beside it,
+and its two `new URL('../libs/basis/basis_transcoder.*', import.meta.url)` became
+`./basis_transcoder.*`. The other five files are byte-identical to the release, and
+`tests/test_ktx2.mjs` holds them to their SHA-256. **Not on a first visit and not in the offline
+shell:** `site/js/scene/ktx2.js` imports the loader the first time a map that has a `.ktx2` twin is
+asked for, and no map ships one yet. Licences read on 2026-10-08: three.js's `LICENSE` at the tag
+(MIT); `LICENSE` of ktx-parse and of zstddec (MIT, © 2020 Don McCurdy; zstddec's goes on to
+reproduce Zstandard's BSD licence); `LICENSE` of Basis Universal (Apache License 2.0, "Copyright
+2019-2026 Binomial LLC"), which three.js's own `libs/basis/README.md` names as the transcoder's.
+The notices are in [§6](#6-full-licence-notices).
 
 **satellite.js** — `site/vendor/satellite.esm.js` is byte-identical to
 `https://cdn.jsdelivr.net/npm/satellite.js@7.1.0/+esm`, a jsDelivr-generated ESM bundle of
@@ -48,14 +111,39 @@ ESM build, so the file alone cannot distinguish them. The project's now-removed 
 recorded 2.1.19. The copyright line above is the one **inside the shipped file**, which is the one
 MIT obliges us to carry. Upstream's current `LICENSE` on `master` reads `2019-2025`; that is a later
 edit to a file we do not ship, and does not change the notice attached to this copy.
+Since 2026-10-07 a deploy uploads this file without its documentation comments
+(`scripts/minify_site.py`); the licence header above is kept word for word, and the file in git is
+still the published one.
 
-**Lucide** — eight icons, copied element for element from `icons/<name>.svg` on Lucide's `main` branch
-(<https://github.com/lucide-icons/lucide>, read 2026-10-01) into `site/js/ui/cards.js` (`ICONS`):
-`x`, `crosshair`, `orbit`, `camera`, `share-2`, `chevron-right`, `navigation`, `telescope`. The
-only change is the stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets
-for every icon in the app; Lucide draws at any stroke width by design. Four of the eight (`x`,
-`crosshair`, `chevron-right`, `navigation`) are on Lucide's own list of icons derived from Feather,
-which are MIT, © Cole Bemis; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
+**Lucide** — the app's one icon family, copied element for element from `icons/<name>.svg` on
+Lucide's `main` branch (<https://github.com/lucide-icons/lucide>, read 2026-10-01 to 2026-10-03).
+In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`): `x`, `crosshair`,
+`orbit`, `camera`, `share`, `chevron-right`, `chevron-left`, `navigation`, `telescope`, `play`,
+`pause`, `rotate-ccw`, `volume-2`, `volume-x`, `speech`, `panel-left-close`, `panel-left-open`,
+`panel-bottom-close`, `panel-bottom-open`, `compass`, and for present mode (read 2026-10-06)
+`presentation`, `maximize`, `minimize`, `timer`, `house`. In `site/js/ui/sharesheet.js`: `x`, `share`,
+`copy`, `download`, `file-text` (its `file`), `mail`, `crop`, `code`, `chevron-down`. In
+`site/js/ui/photomode.js`: `x`, `download`. In `site/js/ui/searchrows.js` (`ROW_ICONS`, from
+`lucide-static` 0.544.0, read 2026-10-07): `satellite`, `rocket`, `globe`, `moon`, `star`, `sun`,
+`sparkles`, `map-pin`, `tornado`, `flag`. In `site/js/ui/embed.js`: `external-link`. In
+`site/js/ui/rail.js`: `share`, `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`,
+`mouse`. In `site/js/ui/launchchip.js`: `rocket`, the same shapes as the search row's. The only change is the
+stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
+the app (`tests/test_a11y_static.mjs` holds it); Lucide draws at any stroke width by design. These
+are on Lucide's own list of icons derived from Feather (its `LICENSE`, read 2026-10-05), which are
+MIT, © Cole Bemis: `x`, `crosshair`, `chevron-right`, `chevron-left`, `navigation`, `share`,
+`compass`, `copy`, `download`, `move`, `crop`, `code`, `chevron-down`, `external-link`, and
+`ellipsis-vertical` under its Feather name
+`more-vertical`; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
+`tests/test_a11y_static.mjs` refuses an `ICONS` name this paragraph does not list.
+
+**axe-core, for a test only** — `tests/vendor/axe.min.js` is axe-core 4.10.3 (© 2015-2025 Deque
+Systems, Inc., Mozilla Public License 2.0), the file `axe.min.js` of the npm package `axe-core@4.10.3`,
+unmodified, copied 2026-10-08 (sha256 `880970c081707360e64f34cea25ff91892f5bc95675b0776925b9709dd8a68bb`).
+It is not part of the site: nothing under `site/` loads it and a deploy does not upload `tests/`.
+`tests/probes/axe-probe.js` is concatenated after it and run inside a headless browser by
+`tools/cdp.mjs`, so the accessibility check loads no script from anybody's server. The file keeps
+its own licence header, as the MPL asks; its source is <https://github.com/dequelabs/axe-core>.
 
 ## 2. Textures
 
@@ -100,45 +188,120 @@ satisfies that with:
 
 | File | Used for | Licence | Source |
 |---|---|---|---|
-| `2k_sun.jpg` | the Sun | CC BY 4.0 | Solar System Scope |
-| `2k_mercury.jpg` | Mercury | CC BY 4.0 | Solar System Scope |
-| `2k_venus_atmosphere.jpg` | Venus | CC BY 4.0 | Solar System Scope |
-| `2k_earth_daymap.jpg` | Earth, day side | CC BY 4.0 | Solar System Scope |
+| `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
+| `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
+| `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
+| `2k_venus_magellan.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), tinted |
+| `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
+| `2k_earth_daymap.webp` | Earth, day side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_nightmap.webp` | Earth, night side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_clouds.webp` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
-| `2k_moon.jpg` | the Moon | CC BY 4.0 | Solar System Scope |
-| `2k_mars.jpg` | Mars | CC BY 4.0 | Solar System Scope |
-| `2k_jupiter.jpg` | Jupiter | CC BY 4.0 | Solar System Scope |
-| `2k_saturn.jpg` | Saturn | CC BY 4.0 | Solar System Scope |
+| `2k_moon.webp` | the Moon | CC BY 4.0 | Solar System Scope |
+| `2k_mars.webp` | Mars | CC BY 4.0 | Solar System Scope |
+| `2k_jupiter.webp` | Jupiter | CC BY 4.0 | Solar System Scope |
+| `2k_jupiter_opal_2025.webp` | Jupiter, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 11 December 2025](https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32), adapted: calibrated, gap-filled at the poles, resampled; 63 500 B |
+| `2k_saturn.webp` | Saturn | CC BY 4.0 | Solar System Scope |
+| `2k_saturn_opal_2025.webp` | Saturn, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 29 August 2025](https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32), adapted: calibrated, the strip the rings hid and the poles filled, resampled; 21 186 B |
 | `2k_saturn_ring_alpha.png` | Saturn's rings | CC BY 4.0 | Solar System Scope |
-| `2k_uranus.jpg` | Uranus | CC BY 4.0 | Solar System Scope |
-| `2k_neptune.jpg` | Neptune | CC BY 4.0 | Solar System Scope |
+| `2k_uranus.webp` | Uranus | CC BY 4.0 | Solar System Scope |
+| `1k_uranus_opal_2025.webp` | Uranus, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
+| `2k_neptune.webp` | Neptune | CC BY 4.0 | Solar System Scope |
+| `1k_neptune_opal_2025.webp` | Neptune, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 24 August 2025](https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32), adapted: calibrated, the unseen far north filled; 4 766 B |
 | `2k_stars_milky_way.webp` | the Milky Way sky sphere | CC BY 4.0 | Solar System Scope |
 
 **What could not be verified, stated plainly.** solarsystemscope.com answers HTTP 403 to scripted
 downloads, so these files could not be byte-compared against the origin. Provenance rests on the
-exact filename match to the published pack (all 14 appear on their download list), the matching
-2048 × 1024 dimensions, and the shared XMP fingerprint. `2k_uranus.jpg` and `2k_neptune.jpg` carry
-no XMP block at all — the other twelve do — so those two are the weakest links in the chain. If you
-want certainty, re-download the pack by hand and diff.
+exact filename match to the published pack (all 14 appear on their download list as `2k_*.jpg`),
+the matching 2048 × 1024 dimensions, and the shared XMP fingerprint of the JPEGs as they were
+received. `2k_uranus.jpg` and `2k_neptune.jpg` carried no XMP block at all — the other twelve did —
+so those two are the weakest links in the chain. If you want certainty, re-download the pack by
+hand and diff.
 
-**Five moon maps are public domain (issue #262, 2026-09-28).** The moons a trip flies to, from
-NASA / USGS mosaics mirrored on Wikimedia Commons. Public-domain works need no credit, but they
-get one anyway. Every map was changed: resized, scaled so its mean has the world's albedo-ordered
-tint (`scene/worlds.js`), and its unimaged areas (black in the source) filled with that tint
-(Pluto's south, Triton's north). Europa and Pluto were greyscale and are tinted. Enceladus and
-Triton are desaturated (Cassini's colour is enhanced with IR/UV filters). Pluto is rolled half a
-turn so longitude 0, the Charon-facing side, is at the centre.
+**Adapted on 2026-10-08: nine of them re-encoded.** The Sun, Venus, the Earth by day, the Moon,
+Mars, Jupiter, Saturn, Uranus and Neptune were shipped as the publisher's JPEGs (4 337 849 B in all)
+until that day. They are now WebP files of the same 2048 × 1024 pixels (1 877 120 B), each at the
+lowest quality whose luma SSIM against its JPEG is at least 0.98 (`scripts/build-textures.py
+--webp-2k`; each file's quality and score are in `registry/textures.yaml`). No resampling, no
+grading. The licence allows it and was read again on the publisher's page that day: *"Distributed
+under Attribution 4.0 International license: You may use, adapt, and share these textures for any
+purpose, even commercially."* The JPEGs are in this repository's history before that date.
 
-| File | Used for | Licence | Source |
-|---|---|---|---|
-| `1k_io_usgs.jpg` | Io | Public domain | [USGS Astrogeology, Galileo SSI](https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg) |
-| `1k_europa_usgs.jpg` | Europa | Public domain | [USGS / PDS, Voyager + Galileo SSI](https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg) |
-| `1k_enceladus_cassini.jpg` | Enceladus | Public domain | [NASA/JPL-Caltech/SSI/LPI, Cassini](https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg) |
-| `1k_triton_voyager.jpg` | Triton | Public domain | [NASA/JPL-Caltech/LPI, Voyager 2](https://commons.wikimedia.org/wiki/File:Triton_Map.jpg) |
-| `2k_pluto_newhorizons.jpg` | Pluto | Public domain | [NASA/JHUAPL/SwRI, New Horizons PIA20658](https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg) |
+**The four giants have a second face, Hubble's (2026-10-07).** They are met in the Solar System Scope maps
+above; on the card, "As Hubble saw it" fetches and puts on the global maps of
+the Outer Planet Atmospheres Legacy programme (OPAL; PI Amy Simon; Simon et al. 2015, Wong et al. 2020),
+a High-Level Science Product at MAST, <https://archive.stsci.edu/hlsp/opal>, doi:10.17909/T9G593, read
+2026-10-07. Licence: MAST's data-use page says "Some data products, such as high-level science products
+(HLSPs) which are created by the community and are made available through MAST, are covered under a
+Creative Commons Attribution license (CC BY 4.0)" (<https://archive.stsci.edu/publishing/data-use>), and
+the 2025 FITS files of Jupiter and Uranus carry `LICENSE = 'CC BY 4.0'` and `LIC_ATTR = 'NASA, ESA, A.A.
+Simon, M.H. Wong'` in their headers. The programme asks for this acknowledgement, given here in full:
+"This work used data acquired from the NASA/ESA HST Space Telescope, associated with OPAL program (PI:
+Simon, GO13937), and archived by the Space Telescope Science Institute, which is operated by the
+Association of Universities for Research in Astronomy, Inc., under NASA contract NAS 5-26555. All maps
+are available at http://dx.doi.org/10.17909/T9G593." **Changes made** (CC BY 4.0 asks that they be
+said; `scripts/build-textures.py` GIANTS has the arithmetic): three filters' calibrated maps combined as
+red, green and blue (631, 502 and 395 nm for Jupiter and Saturn; 657, 547 and 467 nm for Uranus and
+Neptune) on one albedo scale; the latitudes Hubble could not see from the Earth, and the strip Saturn's
+rings hid, filled from the rows beside them; rows resampled from planetographic to planetocentric
+latitude; rolled half a turn; resized; WebP. Nothing by Björn Jónsson or any other author whose terms
+forbid hosting is in them.
 
-**Beyond these five, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
+**Twenty moon and dwarf-planet maps are public domain (issue #262, 2026-09-28; issues #387 to #415,
+2026-10-05).** Every world in `registry/worlds.yaml` that was one flat colour now wears a map, except
+Deimos, for which no public-domain mosaic was found. They come from the USGS Astrogeology Science
+Center's global mosaics (<https://planetarymaps.usgs.gov/mosaic/>; "USGS-authored or produced data
+and information are considered to be in the U.S. Public Domain", usgs.gov, *Copyrights and
+Credits*) and from NASA maps mirrored on Wikimedia Commons, where each file's page says public
+domain. Public-domain works need no credit, but they get one anyway. `scripts/build-textures.py`
+(`--only moons`) remakes every one of them but Triton's from its original, and every map was
+changed:
+
+- resized (the width is in `registry/textures.yaml`; no file is over 250 kB) and, where the original
+  is centred on longitude 180, rolled half a turn so longitude 0, the side that faces the planet,
+  is at the centre;
+- **the black-and-white mosaics are tinted** with the world's flat colour, which is chosen from
+  published descriptions: Europa, Ganymede, Callisto, Titan, the five moons of Uranus, Pluto,
+  Charon and Phobos. Only the pattern of light and dark is measured. Charon's red polar cap and
+  Pluto's colours are therefore not shown;
+- **Cassini's colour maps** (Mimas, Enceladus, Tethys, Dione, Rhea, Iapetus; P. Schenk, LPI) are made
+  from infrared, green and ultraviolet pictures and are far more colourful than the eye would see:
+  35 % of their saturation is kept. Triton's is desaturated the same way. Io keeps USGS's colours;
+- **Titan's** is Cassini's 938 nm map, made through the haze, at half its contrast. In visible light
+  nobody has seen Titan's ground, and the card says so;
+- the brightness is taken to the flat colour's luminance, so the light-to-dark order of the worlds
+  still follows their measured albedos (the bright ice moons come out up to 11 % under it: the
+  build prints the figure and `registry/textures.yaml` carries it under `make:`);
+- **where nobody has looked, nothing is drawn.** The areas with no data in the original (the last
+  column below is the share of the sphere that has data) are filled with the world's flat colour:
+  the northern halves of Uranus's moons, which were in darkness when Voyager 2 passed in 1986, the
+  far south of Pluto and Charon, part of Triton. The card of each says so.
+
+| File | Used for | Licence | Source | Mapped |
+|---|---|---|---|---|
+| `2k_io_usgs.webp` | Io | Public domain | [USGS Astrogeology Science Center (Galileo SSI and Voyager)](https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.lbl): Galileo SSI and Voyager colour mosaic | 100 % |
+| `2k_europa_usgs.webp` | Europa | Public domain | [USGS Astrogeology Science Center (Voyager and Galileo SSI)](https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.lbl): Voyager and Galileo SSI mosaic, greyscale | 100 % |
+| `2k_ganymede_usgs.webp` | Ganymede | Public domain | [USGS Astrogeology Science Center (Voyager and Galileo SSI)](https://planetarymaps.usgs.gov/mosaic/Ganymede_Voyager_GalileoSSI_global_mosaic_1km.lbl): Voyager and Galileo SSI mosaic, greyscale | 100 % |
+| `2k_callisto_usgs.webp` | Callisto | Public domain | [USGS Astrogeology Science Center (Voyager and Galileo SSI)](https://planetarymaps.usgs.gov/mosaic/Callisto_Voyager_GalileoSSI_global_mosaic_1km.lbl): Voyager and Galileo SSI mosaic, greyscale | 99 % |
+| `2k_enceladus_cassini.webp` | Enceladus | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute](https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg): Cassini colour map (PIA18435; infrared, green, ultraviolet) | 100 % |
+| `2k_mimas_cassini.webp` | Mimas | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437)](https://commons.wikimedia.org/wiki/File:Map_of_Mimas_colorized_2014-04_PIA18437.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_tethys_cassini.webp` | Tethys | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439)](https://commons.wikimedia.org/wiki/File:Tethys_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_dione_cassini.webp` | Dione | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434)](https://commons.wikimedia.org/wiki/File:Dione_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_rhea_cassini.webp` | Rhea | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438)](https://commons.wikimedia.org/wiki/File:Rhea_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_iapetus_cassini.webp` | Iapetus | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436)](https://commons.wikimedia.org/wiki/File:Iapetus_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_titan_cassini_2018.webp` | Titan | Public domain | [NASA/JPL-Caltech/Univ. Arizona (Cassini ISS, 938 nm, PIA22770)](https://photojournal.jpl.nasa.gov/catalog/PIA22770): the 2018 global mosaic of 9 873 pictures, made without image seams (it replaces USGS's copy of the 2015 mosaic, PIA19658, whose seams showed); near-infrared, tinted, contrast halved; 43 396 B | 100 % |
+| `2k_triton_voyager.webp` | Triton | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668)](https://planetarymaps.usgs.gov/mosaic/Triton_Voyager2_ClrMosaic_GlobalFill_600m.lbl): Voyager 2 colour map (orange, green, blue), colour balanced and toned down; the north is unseen | 67 % |
+| `2k_ceres_dawn.webp` | Ceres, on its shape model | NASA media guidelines (not subject to copyright in the US); made by DLR for the Dawn mission | [NASA/JPL-Caltech/UCLA/MPS/DLR/IDA, hosted by USGS Astrogeology](https://planetarymaps.usgs.gov/mosaic/Ceres_Dawn_FC_DLR_global_20ppd_Oct2015.lbl): Dawn Framing Camera global mosaic of 2015, black and white, tinted in a grey we chose, rolled half a turn; 227 830 B | 99.6 % |
+| `2k_vesta_dawn.webp` | Vesta, on its shape model | NASA media guidelines (not subject to copyright in the US); made by DLR for the Dawn mission | [NASA/JPL-Caltech/UCLA/MPS/DLR/IDA, hosted by USGS Astrogeology](https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd.lbl): Dawn Framing Camera HAMO mosaic of 2011 to 2012, black and white, tinted in a grey we chose; the far north was in winter shadow; 230 890 B | 100 % |
+| `1k_miranda_voyager.webp` | Miranda | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Miranda_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 39 % |
+| `1k_ariel_voyager.webp` | Ariel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Ariel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
+| `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
+| `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
+| `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
+| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 77 % |
+| `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 74 % |
+| `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
+
+**Beyond these twenty, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
 the night-side texture comes from NASA Earth Observatory's Night Lights and the starfield from NASA
 SVS 4851. Neither is what shipped: `2k_earth_nightmap.webp` and `2k_stars_milky_way.webp` are Solar
 System Scope files, by name, size and fingerprint. The registry is wrong and the table above is
@@ -156,22 +319,46 @@ original by `scripts/build-textures.py --originals DIR`; the originals are not c
 | `4k/earth_day_01.webp` … `4k/earth_day_12.webp` | Earth by day, the clock's month | Blue Marble: Next Generation, base map, 2004, 5400 × 2700 (<https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/>) | "Anyone using or republishing Blue Marble: Next Generation please credit “NASA Earth Observatory.”" | resampled to 4096 × 2048; colour-graded to the 2k Solar System Scope map (a 32-cube table per surface fitted on June), WebP 86 |
 | `4k/earth_night.webp` | Earth's night lights | Black Marble 2016, greyscale, 13500 × 6750 (<https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/>) | NASA Images and Media Usage Guidelines: texture maps "generally are not subject to copyright in the United States" | resampled to 4096 × 2048, levels matched to the 2k map, one grey channel, WebP 80 |
 | `4k/earth_water.webp` | the ocean glint's land/water mask | Solar System Scope `8k_earth_specular_map.tif` | CC BY 4.0, as tier 0 | box-filtered to 4096 × 2048, lossless WebP |
+| `1k_earth_relief.webp`, `2k_earth_relief.webp` | the Earth's relief under a low Sun (tier 1, tier 2) | NOAA National Centers for Environmental Information, ETOPO 2022 15 Arc-Second Global Relief Model, the 60 arc-second ice-surface grid (<https://doi.org/10.25921/fd45-gt74>, read 2026-10-08) | CC0 1.0: "NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication" | heights above the sea only, area-averaged to 1024 × 512 and 2048 × 1024, one grey channel holding sqrt(height / 9000 m), lossless WebP; drawn five times steeper than the ground is |
 | `4k/milky_way.webp` | the Milky Way sky sphere | NASA SVS Deep Star Maps 2020, `milkyway_2020_4k_gal.exr`, the background without the Hipparcos and Tycho stars (<https://svs.gsfc.nasa.gov/4851/>) | "Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." | flipped top to bottom, brightness matched to the 2k map, 60 % saturation, sRGB, WebP 90 |
-| `4k/moon.webp`, `4k/mercury.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mercury.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon and Mercury, 84 otherwise) |
+| `4k/moon.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon, 84 otherwise) |
+| `4k/mercury.webp` | Mercury, close up | USGS MESSENGER MDIS three-colour mosaic, 665 m (<https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl>) | Public domain (USGS) | 4096 × 2048, 35 % of the saturation kept, WebP 40 |
 
 **Credit lines printed in the app** (the Sources panel lists the ones in use on the device; each is
 checked against this list by `scripts/check_registry.py`):
 
 - Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0
+- Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted
+- Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
+- Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
+- Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
 - Earth at night (4k): Black Marble 2016, NASA Earth Observatory
 - Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0
+- Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0
 - Milky Way (4k): NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC
-- Io map: USGS Astrogeology Science Center (Galileo SSI), public domain
-- Europa map: USGS / PDS (Voyager and Galileo SSI), public domain
+- Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain
+- Europa map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain
+- Ganymede map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain
+- Callisto map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain
 - Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain
-- Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain
-- Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain
+- Mimas map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437), public domain
+- Tethys map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439), public domain
+- Dione map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434), public domain
+- Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain
+- Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain
+- Titan map: NASA/JPL-Caltech/Univ. Arizona (Cassini ISS, 938 nm, PIA22770), public domain
+- Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain
+- Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, global mosaic by DLR), hosted by USGS Astrogeology Science Center
+- Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center
+- Miranda map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Ariel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
+- Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
+- Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 
 **Refused by name**, because their terms forbid hosting copies: Björn Jónsson's maps ("please do
 not place a copy of the maps on your website") and Steve Albers' ("intended for personal
@@ -186,6 +373,10 @@ non-commercial use only").
 | Star catalogue (repacked) | `stars.bin` | BSD-3-Clause | Star data from d3-celestial, © 2015 Olaf Frohn | <https://github.com/ofrohn/d3-celestial> |
 | Constellation lines | `constellations.lines.json` | BSD-3-Clause | Constellation lines from d3-celestial, © 2015 Olaf Frohn | <https://github.com/ofrohn/d3-celestial> |
 | Constellation names | `constellation-names.json` | BSD-3-Clause | Constellation names and label positions from d3-celestial, © 2015 Olaf Frohn | <https://github.com/ofrohn/d3-celestial> |
+
+`registry/models.yaml` (`data:`) carries the same three credits in the short form the app prints:
+"Star catalogue: d3-celestial (Olaf Frohn)", "Constellation lines: d3-celestial (Olaf Frohn)" and
+"Constellation names: d3-celestial (Olaf Frohn)".
 
 Verified against upstream `master`:
 
@@ -243,6 +434,22 @@ sky sphere uses (§3).
 code that reads them. HYG's own upstream: Hipparcos (ESA 1997), Yale Bright Star Catalog 5th ed.,
 Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 
+
+## 3d. The sky from the ground — the same files, and three formulas
+
+The sky view (`site/js/sky/groundsky.js`) ships no new source. Its stars are §3's `stars.bin` and
+`skystars-1.bin`, `skystars-2.bin` and `skystars.names.json`, which `scripts/build-skystars.py`
+cuts from §3c's `stars3d.bin` (HYG v4.4, CC BY-SA 4.0: the same stars, as a direction, a magnitude
+and a colour each; the same licence); its nebulae and galaxies are §3g's photographs; its Milky Way, Moon, Mars, Jupiter and Saturn maps are
+the textures already credited above; the positions, sizes and phases of the Sun, the Moon and the
+planets, the Moon's libration and the tilt of Saturn's rings are computed by Astronomy Engine (MIT).
+Refraction is Sæmundsson's formula (Sky & Telescope 72, 1986); air mass is Kasten and Young (Applied
+Optics 28, 1989); a star's colour is §3's two formulas. The standard magnitudes of the two crewed
+stations (ISS −1.8, Tiangong 0.0, at 1 000 km and half lit) are the "intrinsic brightness" on their
+Heavens-Above pages (<https://www.heavens-above.com/SatInfo.aspx?satid=25544>, `satid=48274`), read
+2026-10-05: two numbers, cited in `site/js/sky/tonightbest.js`; nothing is fetched from that site.
+The skyline is generated, not a photograph of anywhere.
+
 ## 3d. Deep-sky objects — OpenNGC, CC BY-SA 4.0, and the distances Wikipedia's editors collected
 
 `site/data/dso.json` is built by `scripts/build-dso.py` from two inputs:
@@ -259,6 +466,16 @@ shell, so the app places only the 209 objects whose distance a source wrote down
 OpenNGC's 13 372 real objects are not drawn as places, and `dso.json` says how many they are.
 
 **ShareAlike.** `dso.json` is a derivative of OpenNGC and is offered under CC BY-SA 4.0 (§6).
+
+**The ellipses (read 2026-10-09).** `dso.json` also carries OpenNGC's minor axis (`MinAx`) and position angle (`PosAng`) for the galaxies that have them, from the same `NGC.csv` and `addendum.csv` of the repository's `master` (last commit 2026-09-27; its README says "OpenNGC is released under CC-BY-SA-4.0 license"). A galaxy clearly longer than wide is drawn as the ellipse OpenNGC measures; the rest stay round.
+
+## 3d-2. Measured star widths — Boyajian et al. 2012 (read 2026-10-09)
+
+Proxima Centauri, Barnard's Star, Epsilon Eridani and 61 Cygni A carry an interferometric radius and temperature in `registry/stars-notable.yaml`, read from Table 6 of Boyajian et al. 2012, "Stellar Diameters and Temperatures. II. Main-Sequence K and M Stars", ApJ 757, 112 (<https://arxiv.org/abs/1208.2431>): radii 0.1410, 0.1869, 0.7350 and 0.6611 times the Sun's. Facts, cited per row; no text or figure is reproduced.
+
+## 3d-3. Two suns — Sebastian et al. 2025, Kostov et al. 2016, Haghighipour and Kaltenegger 2013 (read 2026-10-09)
+
+The masses, radii, temperatures and orbits of the pairs Kepler-16 and Kepler-1647 in `registry/systems-binaries.yaml` are facts read from <https://arxiv.org/abs/2505.19718> (Kepler-16: masses, orbit), <https://arxiv.org/abs/1512.00189> (Kepler-1647) and <https://arxiv.org/abs/1306.2890> (the companion's modelled temperature); each row quotes its sentence. No text or figure is reproduced.
 
 ## 3e. The Milky Way model — an illustration built from published measurements
 
@@ -281,9 +498,9 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 ## 3b. 3D models — NASA, public domain
 
-Forty-four spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Sixty-three spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 6.7 MB in total.
+<https://science.nasa.gov/3d-resources/>), 8.1 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -301,32 +518,35 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `iss.glb` | International Space Station (ISS) (A) | NORAD 25544 | 34 KB |
+| `iss.glb` | International Space Station (ISS) (D) (IGOAL) | NORAD 25544 | 280 KB |
 
 **Weather satellites**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `poes.glb` | Polar Operational Environmental Satellite (POES) | NOAA 15, NOAA 18, NOAA 19 — the bus they share | 221 KB |
+| `poes.glb` | Polar Operational Environmental Satellite (POES) | NOAA 15, NOAA 18, NOAA 19 — the bus they share | 162 KB |
 
 **Rocket bodies**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `rocket-body.glb` | Space Shuttle Parts / Solid Rocket Booster | every spent stage (catalogue names with R/B, ROCKET BODY, UPPER STAGE), as a class default the card names | 41 KB |
 
 **Telescopes and observatories**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 118 KB |
-| `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
+| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 148 KB |
+| `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 142 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 47 KB |
-| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 124 KB |
+| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 76 KB |
+| `kepler.glb` | Kepler (A) | Horizons -227 (Kepler) | 96 KB |
+| `roman.glb` | Nancy Grace Roman Space Telescope (B) | Horizons -211 (Nancy Grace Roman Space Telescope) | 162 KB |
+| `spitzer.glb` | Spitzer Space Telescope | Horizons -79 (Spitzer) | 166 KB |
+| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 113 KB |
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
-| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 152 KB |
+| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 147 KB |
 | `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
+| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 (James Webb Space Telescope) | 211 KB |
 
 **Satellites**
 
@@ -338,39 +558,67 @@ than counted by hand.
 | `calipso.glb` | Cloud-Aerosol Lidar and Infrared Pathfinder Satellite (CALIPSO) | catalogue name CALIPSO | 267 KB |
 | `cloudsat.glb` | CloudSat (A) | catalogue name CLOUDSAT | 206 KB |
 | `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 96 KB |
-| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 141 KB |
+| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 124 KB |
 | `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 17 KB |
 | `icesat2.glb` | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A) | NORAD 43613 (ICESAT-2) | 290 KB |
-| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 59 KB |
-| `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 69 KB |
-| `mms.glb` | Magnetospheric Multiscale (MMS) (A) | NORAD 40482-40485 (MMS 1 to MMS 4) | 121 KB |
+| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 123 KB |
+| `landsat.glb` | Landsat 7 | NORAD 25682 (Landsat 7) | 69 KB |
+| `landsat8.glb` | Landsat 8 | NORAD 39084, 49260 (Landsat 8, 9) | 177 KB |
+| `mms.glb` | Magnetospheric Multiscale (MMS) (B) | NORAD 40482-40485 (MMS 1 to MMS 4) | 177 KB |
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 11 KB |
 | `cygnss.glb` | Cyclone Global Navigation Satellite System (CYGNSS) | NORAD 41884-41891, the seven CYGNSS microsatellites still in the catalogue | 34 KB |
-| `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 222 KB |
-| `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 244 KB |
+| `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 162 KB |
+| `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 207 KB |
 | `seastar.glb` | SeaStar | NORAD 24883 (ORBVIEW 2 (SEASTAR)) | 12 KB |
+| `radarsat1.glb` | Radar Satellite-1 (RADARSAT-1), by NASA/Christopher R. Meaney | NORAD 23710 (RADARSAT-1); in no layer the app loads today | 57 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
-| `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 122 KB |
+| `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 113 KB |
 
 **Probes**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `juno.glb` | Juno (B) | Horizons -61 | 111 KB |
-| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (B) | Horizons -74 | 12 KB |
+| `cassini.glb` | Cassini-Huygens (A) | Horizons -82 (Cassini, 1997 to 2017) | 171 KB |
+| `dawn.glb` | Dawn | Horizons -203 (Dawn, 2007 to 2018) | 116 KB |
+| `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | Horizons -202 (MAVEN, on its last tracked orbit of Mars; no contact since 6 December 2025) | 179 KB |
+| `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
+| `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) | 96 KB |
+| `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | the Space Shuttle on Launch Complex 39B (`shuttle-lc-39b`) | 130 KB |
+| `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
+| `new-horizons.glb` | New Horizons: NASA's printable body, antenna and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-10; the page names no author), assembled by us, colours ours | Horizons -98 (New Horizons) | 64 KB |
+| `near.glb` | NEAR Shoemaker | Horizons -93 (NEAR Shoemaker, 1996 to 2001) | 88 KB |
+| `stardust.glb` | Stardust (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -29 (Stardust, 1999 to 2011) | 111 KB |
+| `deep-impact.glb` | Deep Impact (EPOXI) (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -140 (Deep Impact, 2005 to 2013) | 73 KB |
+| `galileo.glb` | Galileo | Horizons -77 (Galileo, 1989 to 2003) | 76 KB |
+| `juno.glb` | Juno (B) | Horizons -61 | 146 KB |
+| `lro.glb` | Lunar Reconnaissance Orbiter (A) | Horizons -85 | 187 KB |
+| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (C) | Horizons -74 | 121 KB |
+| `osiris-rex.glb` | Origins, Spectral Interpretation, Resource Identification, and Security - Regolith Explorer (OSIRIS-REx) | Horizons -64 (OSIRIS-APEX, the same spacecraft on its second mission) | 171 KB |
 | `parker.glb` | Parker Solar Probe | Horizons -96 | 180 KB |
-| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 139 KB |
+| `pioneer.glb` | Pioneer 10 | Horizons -23 and -24 (Pioneer 10, and Pioneer 11, its sister craft) | 89 KB |
+| `stereo.glb` | Solar TErrestrial RElations Observatory (STEREO) | Horizons -234 (STEREO-A) | 138 KB |
+| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 143 KB |
 
 **Small bodies**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
 | `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 24 KB |
-| `asteroid-vesta.glb` | Asteroid 4 Vesta (A), from NASA's 3D Printing collection | 4 Vesta | 23 KB |
+| `asteroid-vesta.glb` | NOT from NASA 3D Resources since 2026-10-07: DLR's stereo height model of Vesta from Dawn's Framing Camera pictures (`Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd`, hosted by USGS Astrogeology, <https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd.lbl>), credit NASA/JPL-Caltech/UCLA/MPS/DLR/IDA; thinned to 3 072 triangles and given texture coordinates by `scripts/shape-to-glb.py`, so that it can wear DLR's mosaic on the same grid of longitudes. Licence as the mosaic's (section 2): NASA's media guidelines; the height model was made at DLR | 4 Vesta | 50 KB |
 | `asteroid-eros.glb` | Gaskell Eros Shape Model V1.1 (NASA PDS, not NASA 3D Resources): Gaskell, R. (2021), doi:10.26033/d0gq-9427. CC0 under NASA's science data policy | 433 Eros | 22 KB |
+| `dwarf-ceres.glb` | Ceres SPC Shape Model Dataset V1.0 (NASA PDS, not NASA 3D Resources): Park, R.S. and Buccino, D.R. (2018), DAWN-A-FC2-5-CERESSHAPESPC-V1.0. CC0 under NASA's science data policy. Since 2026-10-07 with texture coordinates (longitude and latitude of each vertex), for the map in section 2 | 1 Ceres | 50 KB |
+
+**The shapes of Phobos and Deimos** are not `.glb` files: `site/js/data/moonshapes.js` holds a radius
+every 5 degrees for each, which `site/js/scene/moonshape.js` bends the moon's sphere to
+(`scripts/build-moon-shapes.py`, 2026-10-05). Phobos: Gaskell, R.W. (2020), *Gaskell Phobos Shape
+Model V1.0*, NASA Planetary Data System, the Q=64 vertex model, binned to the grid. Deimos: Thomas,
+P.C. et al. (2021), *Small Body Optical Shape Models V1.0*, NASA Planetary Data System,
+doi:10.26033/g5e0-kh52, which is already a 5 degree grid; its label does not say which way longitude
+runs and it is taken as west, the convention of the paper it cites (Thomas 1993). Both are CC0 under
+NASA's science data policy, as for Eros.
 
 **Places on a surface**
 
@@ -378,9 +626,13 @@ than counted by hand.
 |---|---|---|---|
 | `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 151 KB |
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 473 KB |
+| `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
+| `ingenuity.glb` | Ingenuity Mars Helicopter | the Ingenuity site at Valinor Hills | 86 KB |
+| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 203 KB |
+| `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
-| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 412 KB |
+| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars; and Gale crater, where Curiosity is drawn with it as the kind of thing | 256 KB |
+| `viking-lander.glb` | Viking Lander | the Viking 1 and Viking 2 landing sites | 163 KB |
 
 **Credit line:** `3D model: NASA`
 
@@ -424,7 +676,41 @@ credit:
    2 480 KB to 1 211 KB, and `tests/test_model_colour.mjs` fails if a shipped model carries an
    image that is not a palette strip.
 
-They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 45; the largest single download is `lunar-module.glb` at 473 KB.
+7. **Rebuilt in their own colours**, for twenty-four files, with `scripts/bake-own-colours.mjs`
+   (2026-10-05). Steps 3 to 6 threw the colour away whenever it lived in a texture, and the app
+   then painted the whole spacecraft in one colour for its class: the Apollo lunar module was
+   salmon and Voyager lavender. This pass starts again from NASA's file: it welds and decimates
+   the geometry, then gives every surviving triangle the **flat** colour NASA's own material shows
+   at that place (its stated base colour, times its texture averaged over a 48 px raster), and
+   keeps at most fourteen colours per model. Two things are changed on purpose and are ours, not
+   NASA's: the brightness of each colour is held between 12 % and 93 %, so a stated pure black
+   does not draw as a hole in the sky and a pure white does not glare; and parts smaller than
+   0.4 % of the model are dropped. The photographs, normal maps and metalness are still not
+   shipped, and the toon shading of step 5 is unchanged — the colours are NASA's, the light is
+   ours. Three of the twenty-four (`gpm.glb`, `icon.glb`, `tselina2.glb`) had a palette strip and
+   no texture coordinates to read it with, so each was drawn in the strip's first colour; they are
+   rebuilt the same way. `mms.glb` was not rebuilt then: NASA's (A) file states no colours at all.
+
+8. **Twelve more, the same way** (2026-10-07): `iss.glb` from NASA's IGOAL model of the whole
+   station, `hubble.glb`, `lunar-module.glb`, `galileo.glb` and `mms.glb` rebuilt, and `spitzer.glb`,
+   `kepler.glb`, `roman.glb`, `dawn.glb`, `maven.glb`, `odyssey.glb` and `ingenuity.glb` new. Five
+   of them depart from NASA's file on purpose, and each departure is ours, not NASA's:
+   - `iss.glb` leaves out the nodes the file names details, handrails and payload sites (bolts,
+     cables, grab bars), all but the radiators: 592 thousand of its 2.7 million triangles go into
+     the bake.
+   - `hubble.glb` is 1.5 times brighter than the average of NASA's textures, which are photographs
+     of crinkled foil and average to dark grey.
+   - `galileo.glb`: the material the file names `bus:black` is stated blue-violet in the file and
+     is drawn charcoal.
+   - `dawn.glb`: the cell face of the solar wings is an untextured light grey in the file and is
+     drawn the dark blue of the cells in NASA's photographs.
+   - `mms.glb` is NASA's (B) file, which has colours, with the outer lengths of its booms cut
+     off so that the body can be seen.
+   `maven.glb` was drawn nowhere until 2026-10-08. Since then it is drawn on MAVEN's last tracked
+   orbit of Mars (JPL Horizons, 4 December 2025); its card says NASA has not heard from it since
+   6 December 2025 and that where it is on that orbit is not known.
+
+They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 63; the largest single download is `icesat2.glb` at 290 KB.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
@@ -448,6 +734,249 @@ its credit, its licence and where it came from.
 **What was changed:** nothing but the choice of size. Both are ESO's own "Screensize JPEG"
 downloads, shipped byte for byte.
 
+**In the scene (2026-10-06):** the trip "Black holes" also draws each picture at its black hole's
+place while the stop about it is up (`site/js/scene/portraits.js`). The file is the same one; in
+the browser its dark sky is taken to black and its edge is faded, so that adding it to the sky
+adds the ring and not a rectangle, and it is drawn far larger than it would look from the camera.
+The line under the stop says all three and carries the credit and the licence
+(`copy/en.js` `trip.portraitLine`).
+
+## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESA/Webb, ESO and NOIRLab, CC BY 4.0
+
+`site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067), laid
+on the sky where its object is by `site/js/scene/nebulae.js`. They come from four outreach
+archives whose terms release their images under the Creative Commons Attribution 4.0 International
+licence (each terms page, the sentence that grants it and the day it was read are in the registry's
+`archives:`; read 2026-10-03, ESA/Webb's on 2026-10-06):
+
+- ESA/Hubble: <https://esahubble.org/copyright/>
+- ESA/Webb: <https://esawebb.org/copyright/> (the three James Webb Space Telescope pictures)
+- ESO: <https://www.eso.org/public/copyright/>
+- NOIRLab: <https://noirlab.edu/public/copyright/>
+
+The terms ask for the credit "in a clear and readable manner to all users, with the wording
+unaltered" and not "hidden or disassociated from the image". So each object's card prints its
+picture's credit under "About it", linked to the archive's page for that picture, and every credit
+is listed here word for word (`scripts/check_registry.py` refuses a row whose credit is not).
+No picture is a Digitized Sky Survey composite or from Mellinger's panorama: neither is ours to
+redistribute, and the same check refuses a credit that names either.
+
+**What was changed** (CC BY 4.0 asks that changes be indicated): each picture is the archive's own
+"screen" JPEG, resized so its longer side is 512 to 768 px, its sky background subtracted to
+black, and re-encoded as WebP (`scripts/build_nebulae.py`). In the app its edges are faded, its
+brightness follows the exposure control (Eye, Camera, Deep), and it is drawn over our own star
+field. The pictures' positions on the sky are measured by us against 2MASS (the archives'
+published centres are up to 43 arcminutes off); 2MASS cut-outs are fetched for that comparison by
+the build script and are not shipped. This use does not imply endorsement by ESA/Hubble, ESA/Webb,
+ESO or NOIRLab.
+
+| file | credit | licence | source | size |
+|---|---|---|---|---|
+| `m42.webp` | **ESO/G. Beccari** | CC BY 4.0 | [eso1723a](https://www.eso.org/public/images/eso1723a/) | 30 574 B |
+| `horsehead-nebula.webp` | **T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)** | CC BY 4.0 | [noao0126a](https://noirlab.edu/public/images/noao0126a/) | 19 066 B |
+| `m1.webp` | **NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)** | CC BY 4.0 | [heic0515a](https://esahubble.org/images/heic0515a/) | 59 714 B |
+| `m45.webp` | **NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN** | CC BY 4.0 | [noao-m45](https://noirlab.edu/public/images/noao-m45/) | 23 120 B |
+| `california-nebula.webp` | **KPNO/NOIRLab/NSF/AURA/Adam Block** | CC BY 4.0 | [noao-n1499block](https://noirlab.edu/public/images/noao-n1499block/) | 46 354 B |
+| `rosette-nebula.webp` | **KPNO/NOIRLab/NSF/AURA/N. A. Sharp** | CC BY 4.0 | [noao-rosette](https://noirlab.edu/public/images/noao-rosette/) | 82 326 B |
+| `m8.webp` | **ESO** | CC BY 4.0 | [eso0936a](https://www.eso.org/public/images/eso0936a/) | 75 026 B |
+| `m20.webp` | **NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA** | CC BY 4.0 | [noirlab2521ah](https://noirlab.edu/public/images/noirlab2521ah/) | 83 114 B |
+| `m16.webp` | **ESO** | CC BY 4.0 | [eso0926a](https://www.eso.org/public/images/eso0926a/) | 56 138 B |
+| `m17.webp` | **ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute** | CC BY 4.0 | [eso1119a](https://www.eso.org/public/images/eso1119a/) | 89 874 B |
+| `cats-paw-nebula.webp` | **ESO** | CC BY 4.0 | [eso1003a](https://www.eso.org/public/images/eso1003a/) | 46 740 B |
+| `carina-nebula.webp` | **ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit** | CC BY 4.0 | [eso1250a](https://www.eso.org/public/images/eso1250a/) | 81 256 B |
+| `north-america-nebula.webp` | **KPNO/NOIRLab/NSF/AURA/Adam Block** | CC BY 4.0 | [noao-n7000mosblock](https://noirlab.edu/public/images/noao-n7000mosblock/) | 87 104 B |
+| `veil-nebula.webp` | **T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA** | CC BY 4.0 | [noao1209a](https://noirlab.edu/public/images/noao1209a/) | 89 752 B |
+| `helix-nebula.webp` | **ESO** | CC BY 4.0 | [eso0907a](https://www.eso.org/public/images/eso0907a/) | 17 794 B |
+| `m27.webp` | **T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA)** | CC BY 4.0 | [noao-m27-kpno-mayall-4-m](https://noirlab.edu/public/images/noao-m27-kpno-mayall-4-m/) | 81 292 B |
+| `m57.webp` | **NASA, ESA, and C. Robert O’Dell (Vanderbilt University).** | CC BY 4.0 | [heic1310a](https://esahubble.org/images/heic1310a/) | 13 848 B |
+| `m31.webp` | **Bill Schoening, Vanessa Harvey/REU program/NOIRLab/NSF/AURA** | CC BY 4.0 | [noao0001a](https://noirlab.edu/public/images/noao0001a/) | 75 680 B |
+| `m33.webp` | **ESO** | CC BY 4.0 | [eso1424a](https://www.eso.org/public/images/eso1424a/) | 31 986 B |
+| `lmc.webp` | **CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin** | CC BY 4.0 | [noirlab2030a](https://noirlab.edu/public/images/noirlab2030a/) | 87 756 B |
+| `smc.webp` | **CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin** | CC BY 4.0 | [noirlab2030b](https://noirlab.edu/public/images/noirlab2030b/) | 62 348 B |
+| `centaurus-a.webp` | **ESO** | CC BY 4.0 | [eso1221a](https://www.eso.org/public/images/eso1221a/) | 45 944 B |
+| `m83.webp` | **ESO** | CC BY 4.0 | [eso0825a](https://www.eso.org/public/images/eso0825a/) | 28 778 B |
+| `m104.webp` | **NASA/ESA and The Hubble Heritage Team (STScI/AURA)** | CC BY 4.0 | [opo0328a](https://esahubble.org/images/opo0328a/) | 8 388 B |
+| `m51.webp` | **NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)** | CC BY 4.0 | [heic0506a](https://esahubble.org/images/heic0506a/) | 20 318 B |
+| `m101.webp` | **Image: European Space Agency & NASA** | CC BY 4.0 | [heic0602a](https://esahubble.org/images/heic0602a/) | 32 054 B |
+| `m81.webp` | **NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)** | CC BY 4.0 | [heic0710a](https://esahubble.org/images/heic0710a/) | 8 680 B |
+| `southern-ring-nebula.webp` | **NASA, ESA, CSA, STScI, and the Webb ERO Production Team** | CC BY 4.0 | [weic2207b](https://esawebb.org/images/weic2207b/) | 26 942 B |
+| `ngc-1300.webp` | **NASA, ESA, CSA, STScI, J. Lee (STScI), T. Williams (Oxford), PHANGS Team** | CC BY 4.0 | [weic2403e](https://esawebb.org/images/weic2403e/) | 30 646 B |
+| `tarantula-nebula.webp` | **NASA, ESA, CSA, and STScI** | CC BY 4.0 | [weic2212a](https://esawebb.org/images/weic2212a/) | 74 048 B |
+
+## 3h. The sky in other light — NASA's WISE, WMAP and Fermi, through CDS HiPS
+
+"Other light" in What to show (`site/js/scene/otherlight.js`, `registry/otherlight.yaml`) draws the
+whole sky as three space telescopes mapped it, in false colour. Each band is one picture of the
+whole sky shipped from our bucket (`site/images/otherlight/`, baked by
+`scripts/build_otherlight.py` from the survey's order-3 HiPS tiles), and, for a survey that goes
+deeper, the survey's own tiles streamed from CDS when the field of view is narrow
+(`site/js/sky/hips.js`).
+
+| band | survey (HiPS id) | mission and credit | terms | what the colours are | baked file |
+|---|---|---|---|---|---|
+| Infrared | `CDS/P/allWISE/color` | **NASA/JPL-Caltech/UCLA (WISE)** | [AllWISE release](https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/) | red 22 µm, green 4.6 µm, blue 3.4 µm | `infrared.webp`, 62 570 B; tiles streamed to order 8 |
+| Microwave | `CDS/P/WMAP/W/9yr` | **NASA/WMAP Science Team (LAMBDA)** | [WMAP nine-year maps](https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html) | one band, 94 GHz, as brightness | `microwave.webp`, 186 852 B |
+| Gamma rays | `CDS/P/Fermi/color` | **NASA/DOE/Fermi LAT Collaboration** | [Fermi data policy](https://fermi.gsfc.nasa.gov/ssc/data/policy/) | red 0.3 to 1 GeV, green 1 to 3 GeV, blue 3 to 300 GeV | `gamma.webp`, 222 396 B |
+
+**The data** are NASA's: each survey's HiPS `properties` file names NASA's archive as its origin
+(`obs_copyright` / `prov_progenitor`: IPAC/NASA, HEASARC/LAMBDA, NASA/HEASARC; read 2026-10-06 and
+quoted per band in the registry), and NASA does not claim copyright on its missions' data. NASA
+asks to be acknowledged, so the chooser prints the mission's credit under the band, linked to the
+mission's page. WISE: "This publication makes use of data products from the Wide-field Infrared
+Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet
+Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and
+Space Administration." WMAP: "We acknowledge the use of the Legacy Archive for Microwave Background
+Data Analysis (LAMBDA), part of the High Energy Astrophysics Science Archive Center (HEASARC)."
+
+**The tiles** are the work of the Centre de Données astronomiques de Strasbourg: every `properties`
+file says `hips_copyright = CNRS/Unistra` and `hips_license = ODbL-1.0`. The Open Database License
+allows using the tiles and making pictures from them ("Produced Works") with a notice of where they
+came from, which is this one: the baked skies **contain information from the HiPS surveys
+`CDS/P/allWISE/color`, `CDS/P/WMAP/W/9yr` and `CDS/P/Fermi/color`, made available by CDS under the
+ODbL 1.0** (<https://opendatacommons.org/licenses/odbl/1-0/>). This work has made use of CDS HiPS
+(Aladin, <https://aladin.cds.unistra.fr/hips/>; Fernique et al. 2015, A&A 578, A114), CDS,
+Strasbourg Astronomical Observatory, France. Every tile URL answered `200` with
+`Access-Control-Allow-Origin: *` to a request carrying this site's `Origin` on 2026-10-06.
+
+**What was changed.** The order-3 tiles were re-projected from HEALPix to a 2048 × 1024
+equirectangular picture in equatorial J2000 and saved as WebP; the shader applies a display stretch
+(`gain`). The square patches in the infrared sky near the Galactic centre and its long faint
+stripes are the survey's own: WISE's 1.56-degree atlas frames and its scan pattern.
+
+**Not used, and why** (so nobody adds them without new evidence; the list is in the registry's
+header): the Digitized Sky Survey and Mellinger's panorama (not ours to use); Planck (`obs_copyright`
+"EUROPEAN SPACE AGENCY. ALL RIGHTS RESERVED" on release 3, no licence text found for release 2:
+WMAP is NASA's microwave sky); Finkbeiner's H-alpha composite and ROSAT (no licence text found);
+GALEX (NASA's, but its order-3 sky is 4.9 MB of survey masks along the Galactic plane).
+
+## 3i. Constellation pictures, borders and other peoples' skies — Stellarium and CDS
+
+Everything here is drawn only in the sky from the ground, and fetched only when a visitor asks for
+it (`site/js/sky/skyculture.js`). `scripts/build-skycultures.py` writes every file from sources
+read on 2026-10-06; `registry/skycultures.yaml` pins the Stellarium commit
+(`a8469197a65de582f6b0ebd82b85173145241b79`) and carries each credit line; `--check` holds the
+files, the budgets and these lines together.
+
+| Files | What | Source | Licence, as the source states it | Changes |
+|---|---|---|---|---|
+| `site/data/skyart/*.webp` (85) | the western constellation figures as drawings | Stellarium, `skycultures/modern/illustrations/` (<https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/modern>), drawn by Johan Meuris (<http://www.johanmeuris.eu/>) | `description.md`: "Illustrations: Free Art License"; Stellarium's `CREDITS.md`: "Constellation art ... created by Johan Meuris ... License: released under the Free Art License" | each PNG re-encoded as a WebP at its original 128, 256 or 512 px; nothing redrawn, cropped or recoloured |
+| `site/data/skyart/index.json` | which constellation each picture belongs to and the three stars that pin it | the same folder's `index.json` ("Text and data: CC BY-SA 4.0"); star places from HYG v4.4 (§3c) | CC BY-SA 4.0 | Hipparcos numbers replaced by J2000 places; pixel positions as fractions |
+| `site/data/constellation-bounds.bin` | the IAU constellation borders (Delporte 1930) | CDS catalogue VI/49, *Constellation Boundary Data*, Davenhall A.C., Leggett S.K., Royal Observatory Edinburgh 1989 (<https://cdsarc.cds.unistra.fr/ftp/VI/49/>), file `constbnd.dat` (prepared in 2007 by Bill J. Gray, Project Pluto) | a catalogue CDS distributes for scientific use, with no licence text of its own; the borders themselves are the IAU's definition. Cited, as CDS asks of its catalogues | each border kept once, cut into steps of a degree or less along its B1875 meridian or parallel, precessed to J2000 (IAU 1976), packed as 16-bit pairs. Checked against the catalogue's own J2000 file `bound_20.dat`: every corner within 0.003° |
+| `site/data/skycultures/chinese.json` | the traditional Chinese asterisms: lines and names | Stellarium, `skycultures/chinese/` | `description.md`: "CC BY-SA 4.0" | Hipparcos numbers replaced by J2000 places (HYG v4.4); a line through a star HYG does not have is cut there (10 such ends); one name place per figure; no pictures |
+| `site/data/skycultures/maori.json` | six Māori figures: lines and names | Stellarium, `skycultures/maori/` | `description.md`: "CC BY-SA 4.0" | the same |
+| `site/data/skycultures/hawaiian.json` | the Hawaiian star lines: lines and names | Stellarium, `skycultures/hawaiian_starlines/` | `description.md`: "CC BY-SA 4.0" | the same |
+
+**Credit lines to keep** (the controls show a short form of each beside the culture's name):
+
+- Constellation pictures: Johan Meuris, for Stellarium, Free Art License 1.3
+- Chinese sky culture: Karrie Berglund (Digitalis Education Solutions) and Sun Shuwei, for Stellarium, CC BY-SA 4.0
+- Māori sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0
+- Samoan sky culture: Jake Fitisemanu, with Samoan cultural custodians and published sources; programming by Dan Smale, for Stellarium, CC BY-SA 4.0
+- Tongan sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0
+- Norse sky culture: Jonas Persson, for Stellarium, CC BY-SA 4.0
+- Boorong sky culture: John Morieson and Alex Cherney, for Stellarium, CC BY-SA 4.0
+- Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0
+- Constellation borders: Davenhall and Leggett 1989, CDS catalogue VI/49
+
+**The Free Art License and this repository.** The pictures are free works under a copyleft licence:
+they may be copied, distributed and modified provided the licence travels with them, the authors
+are named, the originals can be found, and what is made from them stays under the same licence
+(articles 2.2 and 2.3, read at <https://artlibre.org/licence/lal/en/> on 2026-10-06). Article 4
+allows a work to be part of a larger one that is not under the licence as long as it can still be
+got at on its own: here each picture is its own file. So the WebP files are under the Free Art
+License and nothing else in the repository is; the notice is `site/data/skyart/LICENSE.txt`, served
+beside the pictures, and §6 below. Stellarium's files name the licence without a version; article 9
+lets a recipient use the version a work came under or any later one, and 1.3 is the current text.
+
+**The sky cultures are living traditions and documented reconstructions.** Each file is one
+contributor's reading, named above: Sun Shuwei's of the Chinese sky after Yi Shitong's catalogue,
+Dan Smale's of the better-known Māori names (which differ between iwi), and a class's record of the
+star lines Nainoa Thompson taught for sailing Hōkūle‘a. The controls say so in a line under each.
+Read on the same day and **not** shipped, because their licences do not allow it alongside the
+rest or are missing: `navajo` and `egyptian` (GNU GPL v2.0), `arabic_indigenous` (CC BY-NC-ND 4.0),
+`babylonian_mulapin` (CC BY-ND 4.0), `lokono` (no licence section).
+
+**Two more things the sky view reads, and one it could not.** The kind of sky a place is given by
+default (City, Town or Dark place) is read off one pixel and its ring in `4k/earth_night.webp`, §2's
+Black Marble 2016 map: an estimate from upward light, said as one, and overruled by any choice the
+visitor makes (`site/js/sky/skyglow.js`); nothing is sent anywhere. A meteor shower's streaks are
+drawn at the rate the observers' formula gives, ZHR × sin(radiant altitude) × r^(limiting magnitude
+− 6.5) (Wikipedia, "Zenithal hourly rate", read 2026-10-06), with each shower's entry speed from the
+table in Wikipedia's "List of meteor showers" (read the same day; `registry/showers.yaml` `v_kms`).
+The International Meteor Organization's own table of population indices could not be read that day
+(imo.net was being rebuilt), so one value, r = 2.5, stood in for every shower until §3j.
+
+## 3j. The sky from the ground, round three — AT-HYG, CDS VI/42, the IMO's working list, and a model of the air
+
+Everything here is drawn only in the sky from the ground and fetched only there
+(`site/js/sky/`); none of it is on a first visit. Sources read on 2026-10-07.
+
+| Files | What | Source | Licence or terms, as the source states them | Changes |
+|---|---|---|---|---|
+| `site/data/startiles/n2/*.bin` (48), `n8/*.bin` (768), `index.json` | 435 144 stars to magnitude 10.5 that the HYG files (§3c) do not have, drawn when the field of view has closed far enough to show them | **AT-HYG v4.0**, "Augmented Tycho - HYG", by David Nash (<https://codeberg.org/astronexus/athyg>), subset `data/subsets/athyg_40_reduced_m11.csv.gz`. Its own sources, from its `ACKNOWLEDGMENTS.md`: the Hipparcos and Tycho-2 catalogues (ESA 1997, SP-1200), Gaia DR3 (ESA/Gaia/DPAC), the Yale Bright Star Catalogue, the Gliese-Jahreiss catalogue | README: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License" (v3.0 and later) | `scripts/build-startiles.py`: cut at magnitude 10.5; every star within 20 arcseconds and 1.5 magnitudes of one already in `stars.bin` or `skystars-*.bin` left out (104 709); a direction, a magnitude and a B-V each, six bytes, by HEALPix tile (RING, nside 2 and 8) |
+| `site/js/sky/constellation.js` (the table inside it) | which of the 88 constellations a point of the sky is in | CDS catalogue VI/42, *Identification of a Constellation From Position*, Nancy G. Roman, PASP 99, 695 (1987) (<https://cdsarc.cds.unistra.fr/ftp/VI/42/>, file `data.dat`): the IAU's borders (Delporte 1930) as 357 rows | a catalogue CDS distributes for scientific use, with no licence text of its own; the borders are a definition, as §3i says of VI/49 | the 357 rows kept as they are, numbers shortened; precession to 1875.0 by the IAU 1976 rotation, as Roman's own program |
+| `registry/showers.yaml` (`r`, `active_from`, `active_to`, `sol`, `antihelion`), mirrored to `site/js/data/showers-activity.js` | each shower's population index, activity period and the Sun's longitude at its maximum; the antihelion source | International Meteor Organization, *2027 Meteor Shower Calendar* (IMO INFO(3-26), edited by Jürgen Rendtel), Table 5, "Working List of Visual Meteor Showers" (<https://www.imo.net/ShCal27s.pdf>) | facts, cited; no text or table layout is reproduced | eight of the table's rows and its first (the antihelion source) |
+
+**AT-HYG and Gaia, and what was refused.** The brief for this round named ESA's Gaia archive as
+the source for fainter stars. Its terms were read on 2026-10-07
+(<https://www.cosmos.esa.int/web/gaia-users/license>,
+<https://www.cosmos.esa.int/web/esdc/terms-and-conditions>): data from ESA's science archives are
+distributed under **CC BY-NC 3.0 IGO**, with commercial use only by request to ESA. This site ships
+nothing under a non-commercial licence (the same rule that left out one sky culture in §3i and two
+voices in §9), so nothing was downloaded from the Gaia archive and nothing here is a cut of it.
+AT-HYG is a compilation its author publishes under CC BY-SA 4.0, as he does the HYG database of
+§3c; its positions and magnitudes for these stars are Tycho-2's and Hipparcos's, and it uses Gaia
+DR3 for distances, which these files do not carry. **If you build something commercial on this
+repository, read both sets of terms yourself**: a share-alike compilation does not settle what
+ESA's terms mean for the catalogues inside it, and we are not lawyers. Credit to keep wherever
+the stars are shown with credits: *Stars: HYG v4.4 and AT-HYG v4.0, David Nash, CC BY-SA 4.0;
+from the Hipparcos and Tycho-2 catalogues (ESA).*
+
+*Read again on 2026-10-10 (for the line "deeper stars", internal #547):* AT-HYG's page on Codeberg
+(<https://codeberg.org/astronexus/athyg>) still says "This work is licensed under a Creative Commons
+Attribution-ShareAlike 4.0 International License" and describes the database as one with "over 2.5
+million stars", built on Tycho-2, whose coverage the same page gives as "essentially complete to V = 11,
+mostly complete to V = 11.5". So the stars between magnitude 10.5 and 11 are available under the licence
+this site already follows; they have not been added (the cut at 10.5 is in `scripts/build-startiles.py`,
+and the reduced subset it reads, `athyg_40_reduced_m11`, already stops at 11). Tycho-2 itself: the
+Copenhagen page (<https://www.astro.ku.dk/~erik/Tycho-2/>) states no licence and the CDS ReadMe for I/259
+(<https://cdsarc.cds.unistra.fr/ftp/I/259/ReadMe>) could not be read through the page fetcher, so Tycho-2
+directly is not adopted. Gaia stays out for the reason above.
+
+**The colour of the sky** (`site/js/sky/skyair.js`) is computed, not a picture: sunlight scattered
+once by air (Rayleigh) and haze (Mie) with ozone's absorption, using the coefficients the graphics
+literature has used since Nishita et al., *Display of the Earth taking into account atmospheric
+scattering* (SIGGRAPH 1993), Bruneton and Neyret, *Precomputed atmospheric scattering* (EGSR 2008)
+and Hillaire, *A scalable and production ready sky and atmosphere rendering technique* (EGSR 2020),
+and Schüler's closed form of the Chapman function (*GPU Pro 3*, 2012). No code of theirs is used.
+What that model cannot give (the blue of late twilight, which is light scattered twice) is a drawn
+stand-in and the file says where. **The land** (`site/js/sky/landscape.js`) is drawn: hills and
+roofs generated from the place's coordinates. Two things in it are read from maps this file
+already credits: whether the place is a city (§2's night lights, through the kind of sky) and in
+which directions there is open water within 25 km (§2's Earth water mask, Solar System Scope,
+CC BY 4.0, read in the visitor's browser; the place is never sent anywhere). **A shower's rate
+away from its peak** (`site/js/sky/meteors.js`) is a model: the IMO lists no slopes, so the curve
+is a two-sided exponential from the peak's ZHR to one an hour on the activity period's first and
+last day (the form is Jenniskens, *Meteor stream activity I*, A&A 287, 990, 1994; the slopes are
+ours). The antihelion source is drawn as the IMO lists it; the random background is not drawn.
+
+## 3k. Point your phone — the World Magnetic Model 2025, NOAA NCEI and the British Geological Survey, public domain
+
+"Point your phone" (`site/js/sky/pointing.js`, internal #450) turns a phone's compass heading,
+which is from magnetic north, into one from true north with the magnetic declination at the
+visitor's place.
+
+| | |
+|---|---|
+| What | The World Magnetic Model WMM2025: 90 rows of Gauss coefficients and their yearly change, degree and order 1 to 12, valid 2025.0 to 2030.0 |
+| Who | Produced for the US National Geospatial-Intelligence Agency and the UK Defence Geographic Centre; developed jointly by NOAA's National Centers for Environmental Information (NCEI) and the British Geological Survey (BGS) |
+| Files | `registry/wmm/WMM2025.COF` (NOAA's `WMM.COF`, unchanged, header `2025.0 WMM-2025 11/13/2024`) and `registry/wmm/WMM2025_TEST_VALUES.txt` (NOAA's test values); `site/js/data/wmm2025.js` is generated from the first by `scripts/gen_wmm_js.py` |
+| From | <https://www.ncei.noaa.gov/products/world-magnetic-model> (the coefficient file `WMM2025COF.zip` and `WMM2025_TEST_VALUES.txt`), fetched 2026-10-08 |
+| Licence, as read on that page on 2026-10-08 | "The WMM source code is in the public domain and not licensed or under copyright. The information and software may be used freely by the public." The page asks that works made predominantly of US government material say so (17 U.S.C. 403): this section is that notice. The coefficients are US government material and are not subject to copyright protection. |
+| Cite, as the page asks | Chulliat, A., W. Brown, M. Nair, N. Gomez Perez, L.-Y. Young, C. Watson, N. Boneh, C. Beggan, B. Meyer and M. Paniccia, 2025. The US/UK World Magnetic Model for 2025-2030: Technical Report, National Centers for Environmental Information, NOAA. <https://doi.org/10.25923/prbc-s316>. The model itself: NOAA NCEI and the British Geological Survey, 2024, World Magnetic Model 2025, <https://doi.org/10.25921/aqfd-sd83>. |
+| What we do with it | Sum the series ourselves (`declinationDeg`, the model's own recipe) for one place and today's date. `tests/test_pointing.mjs` holds the result to 0.011 degree of all twelve published test values. Nothing is fetched at run time and the place is sent nowhere. |
+| What it is not | A measurement at the visitor's spot. The model is the Earth's main field: it knows nothing of the steel in a building, a car or a phone case, which indoors can turn a compass by tens of degrees. The switch says so, and "Line it up" is the remedy. After 2030.0 the last year's value is held; the next model replaces the file. |
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —
@@ -456,18 +985,43 @@ services from their own IP.** Read §4.1 before you deploy.
 
 | Service | What it provides | Terms | Credit line | Link |
 |---|---|---|---|---|
-| CelesTrak | GP/OMM orbital elements: stations, visual, active, last-30-days, Starlink supplemental | Free; a published usage policy with enforced rate limits (§4.1) | Orbital data: CelesTrak (T. S. Kelso) | <https://celestrak.org> |
-| The Space Devs — Launch Library 2 | upcoming launches, pads, providers | Free to 15 requests/hour/IP; **no published licence** (§4.2) | Launch data by The Space Devs | <https://thespacedevs.com/llapi> |
+| CelesTrak | GP/OMM orbital elements: stations, visual, active, last-30-days, Starlink supplemental; and the satellite catalogue (`satcat.csv`), read only when the debris view is opened, for its count by height and the orbit each piece of debris is drawn on | Free; a published usage policy with enforced rate limits (§4.1) | Orbital data: CelesTrak (T. S. Kelso) | <https://celestrak.org> |
+| The Space Devs — Launch Library 2 | upcoming launches, pads, providers; since 2026-10-08 also the launches of the last days, the active stations with the vehicles docked to them, and the people flagged as in space (names, agency and launch date only: no portraits, no biographies) | Free to 15 requests/hour/IP; **no published licence** (§4.2) | Launch data by The Space Devs | <https://thespacedevs.com/llapi> |
 | NASA — DSN Now | live Deep Space Network dish↔spacecraft links | NASA content is generally not copyrighted; this endpoint is undocumented (§4.3) | NASA Deep Space Network | <https://eyes.nasa.gov/dsn/> |
 | NOAA SWPC | planetary K-index forecast | US Government work, public domain (§4.4) | Space weather: NOAA SWPC | <https://www.swpc.noaa.gov> |
+| NOAA SWPC | today's sunspot groups (the solar region summary as JSON), fetched once when the camera is close to the Sun | US Government work, public domain (§4.4) | Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary | <https://services.swpc.noaa.gov/json/solar_regions.json> |
+| NOAA SWPC | solar flares (the edited events list as JSON: class, peak time and region of each X-ray flare), fetched once when the camera is close to the Sun | US Government work, public domain (§4.4) | Solar flares: NOAA Space Weather Prediction Center, edited events list | <https://services.swpc.noaa.gov/json/edited_events.json> |
+| NASA DONKI | coronal mass ejections (start, direction, half-angle and speed of each analysed CME), read only from our saved copy | No licence named; "as is", "as a courtesy to the community" (§4.4, the note on the Sun's activity) | Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC) | <https://ccmc.gsfc.nasa.gov/tools/DONKI/> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| NASA GIBS | the Earth close up: Blue Marble with shaded relief and bathymetry, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| NASA GIBS | Earth data overlays: sea temperature, sea ice, chlorophyll, vegetation, rain, aerosol, water vapour; one picture when a visitor or a trip asks | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, and each data set's makers in §4.19 | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
+| NOAA nowCOAST | lightning now: strike density over the last fifteen minutes, from the ground networks NLDN and GLD360, 25° S to 80° N and 110° E eastward to 0° W | US Government work, public domain; a "Level 5" derived product "appropriate for public distribution" (§4.17) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | <https://nowcoast.noaa.gov> |
+| NASA Solar System Treks | map tiles of the Moon and Mars, fetched when the camera is close: LRO WAC mosaic (to 83 m per pixel), THEMIS daytime infrared mosaic (to 162 m) as detail over our colour map, and the LOLA and MOLA-HRSC shaded relief re-lit by the Sun | NASA content; HRSC CC BY-SA 3.0 IGO, "generally are not subject to copyright in the United States" (§4.16) | the two lines in §4.16, in the Sources panel while those tiles are on screen | <https://trek.nasa.gov> |
 
 Also named in `site/js/data/sources.js` so the status panel can say "could not look" about them by
 name, but **not reachable from a browser** (no `Access-Control-Allow-Origin`) and therefore never
 actually fetched by the app: NASA/JPL Small-Body Database, JPL Horizons, and Space-Track (which also
 needs a login). Their credit lines are carried in the same file.
+
+**Mission events (not a runtime source).** The dated events on a mission's card
+(`registry/missions.yaml`: the Voyagers, New Horizons, Juno, Webb, Apollo 11, Perseverance, the
+International Space Station) are facts read from NASA's own pages (NASA Science, nasa.gov and the NSSDCA catalogue) on the
+date in that file, the page named on the mission's row or on the event's own and linked from the card ("Dates and figures: NASA
+Science, Voyager 1"). The sentences are ours. NASA content is generally not subject to copyright
+in the United States; nothing of those pages is copied here but dates and distances.
+
+**Mission paths (bundled data, not a runtime source).** The files in `site/data/eph/`
+(`registry/ephemerides.yaml`, built by `scripts/build_ephemerides.py`) are state vectors from the
+**JPL Horizons On-Line Ephemeris System** (NASA/JPL-Caltech, Solar System Dynamics Group;
+<https://ssd.jpl.nasa.gov/horizons/>), asked for through its public API on the day in
+`site/data/eph/manifest.json`, thinned and packed by this project: the Voyagers, the Pioneers, New
+Horizons, Juno, Cassini, Galileo, Webb, Mars 2020's cruise, OSIRIS-APEX and the asteroid Apophis.
+The manifest names, for each craft, the Horizons id, the trajectory solution Horizons printed, the
+span, and how far the packed file strays from Horizons' own positions. A work of the US
+government, free to use with credit; the card of a craft drawn from its file says "Drawn from JPL
+Horizons". Between samples the curve is ours (cubic Hermite), and the card says how good it is.
 
 ### 4.1 CelesTrak — read this before you deploy a fork
 
@@ -534,6 +1088,38 @@ Per the [NWS disclaimer](https://www.weather.gov/disclaimer):
 
 The NWS name and visual identifier are trademarks and are not used here beyond naming the source.
 
+**Today's sunspot groups (2026-10-06).** `site/js/scene/sun.js` draws the Sun's numbered active
+regions from `https://services.swpc.noaa.gov/json/solar_regions.json`, which the visitor's browser
+fetches once, the first time the camera is close to the Sun, and never on a connection that asked to
+save data. Measured 2026-10-06 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`:
+`access-control-allow-origin: *`, `cache-control: max-age=60`, 126 108 bytes. What is changed: each
+group is drawn as ONE round spot at its reported latitude, distance from the central meridian and
+area, and is carried west by the Sun's turning (13.2 degrees a day) from the list's day to the
+clock's; the spots' darkness is chosen. The Sun's card says so, and the Sources panel prints
+"Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary" while they are drawn.
+
+**The Sun's activity (2026-10-12).** `site/js/data/sunactivity.js` reads two more lists the first
+time the camera is close to the Sun, never on a connection that asked to save data.
+*Flares*: `https://services.swpc.noaa.gov/json/edited_events.json`, NOAA SWPC's edited events
+(US Government work, as above). Measured 2026-10-12 with `curl -s -D - -H "Origin:
+https://www.spaceradar.ai"`: `access-control-allow-origin: *`, `cache-control: max-age=60`,
+320 660 bytes. What is changed: of its rows only the X-ray flares of class C and above that carry a
+region number are used; each is drawn as a bright kernel at that region's place, rising to its
+peak and halving in the time NOAA gives from peak to end; how bright a class is drawn is chosen.
+*Coronal mass ejections*: `https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis`, NASA's DONKI
+(Space Weather Database Of Notifications, Knowledge, Information; Moon to Mars Space Weather
+Analysis Office and the Community Coordinated Modeling Center, NASA Goddard). Measured the same day:
+`Access-Control-Allow-Origin: *`, no key, 48 132 bytes. DONKI names no licence; its page
+(<https://ccmc.gsfc.nasa.gov/tools/DONKI/>, read 2026-10-12) says the data is provided "as a
+courtesy to the community" and "as is", should "be considered only as prototyping quality and in
+research context", and asks that event and validation studies be done with the submitters'
+knowledge. This map makes no study of it: it draws each analysed CME of 500 km/s or faster as a thin
+arc leaving in the reported direction at the reported speed, held constant, and says so on the Sun's
+card. Only our harvester asks NASA for the list; a visitor's browser reads our saved copy. The
+Sources panel prints "Solar flares: NOAA Space Weather Prediction Center, edited events list" and
+"Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC)" while the
+lists are held.
+
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 
 The MPC's [World-Wide Web Policy](https://www.minorplanetcenter.net/iau/WWWPolicy.html) is explicit
@@ -568,6 +1154,24 @@ that stands in until the first snapshot lands, every record saying *as of* its d
   which this file and the `attribution:` on the row do. No licence text is asserted by the archive.
 - Used unmodified in the snapshot; in the bundled copy, columns reduced to thirteen and numbers
   rounded to the precision the card prints (`scripts/build-exoplanets.py` says which).
+- The bundled copy was read from the archive's TAP service on **2026-10-08** (6 347 planets with a
+  position and a distance; it was 6 332 on 2026-09-08).
+- **The star systems drawn at their own scale** (`registry/systems-list.yaml`, thirty-nine hosts beside
+  TRAPPIST-1): the same pull, the same day. `registry/systems-columns.csv` keeps, for those hosts only,
+  the semi-major axis, the star's mass and luminosity, the eccentricity, the transit time, the
+  circumbinary flag, and which radii and masses the archive calculated rather than measured;
+  `scripts/build-systems.py` writes `registry/systems-generated.yaml` from the two files. Computed
+  there, and labelled as computed wherever it is shown: the orbit's size where the table's own does not
+  satisfy Kepler's third law with its period and star mass; the equilibrium temperature (Bond albedo
+  0.3; the Earth's is 0.294, NASA Earth Fact Sheet,
+  https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, read 2026-10-08); and the
+  habitable zone: **Kopparapu et al. 2014**, *Habitable Zones around Main-sequence Stars: Dependence
+  on Planetary Mass*, ApJ Letters 787, L29 (https://arxiv.org/abs/1404.5292, equations 4 and 5 and
+  their coefficient table, read 2026-10-08), runaway greenhouse to maximum greenhouse, valid for
+  stars of 2 600 to 7 200 K; its 2013 predecessor (ApJ 765, 131, https://arxiv.org/abs/1301.6674)
+  was read the same day for the method. The dashed "for scale" rings are Mercury's, Earth's,
+  Jupiter's and Neptune's mean distances from the NASA Planetary Fact Sheet
+  (https://nssdc.gsfc.nasa.gov/planetary/factsheet/, read 2026-10-08).
 
 ### 4.8 Black holes and other extremes — `registry/exotics.yaml`
 
@@ -722,6 +1326,283 @@ form, and areas Natural Earth marks *Disputed* or *Indeterminate* (Antarctica ap
 plain land, so the card says "land" there and never names a claim. The raster is fetched on the
 first card for an Earth orbiter, never at boot.
 
+### 4.16 NASA Solar System Treks — the Moon and Mars close up (2026-10-03)
+
+`site/js/scene/tiles.js` asks NASA's [Solar System Treks](https://trek.nasa.gov) for map tiles of the
+ground under the camera, straight from the visitor's browser, when the camera is close enough to the
+Moon or Mars for our own 4k map to run out of texels — and never on a first visit, on a phone, on a
+connection that asked to save data, or after the frame-rate latch (spec 0065). The sets are rows in
+`registry/tilesets.yaml`:
+
+| World | Mosaic | Made by | Finest level asked for |
+|---|---|---|---|
+| The Moon | `LRO_WAC_Mosaic_Global_303ppd_v02`: Lunar Reconnaissance Orbiter Wide Angle Camera, 643 nm, 100 m per pixel | NASA / Goddard Space Flight Center / Arizona State University | 8 (83 m per pixel on the equator) |
+| Mars | `Mars_MO_THEMIS-IR-Day_mosaic_global_100m_v12_clon0_ly`: Mars Odyssey THEMIS daytime infrared, 100 m per pixel, grey | NASA / JPL-Caltech / Arizona State University | 8 (162 m per pixel) |
+
+Endpoint: the WMTS RESTful template `https://trek.nasa.gov/tiles/{body}/EQ/{mosaic}/1.0.0/default/default028mm/{level}/{row}/{column}.jpg`,
+256-pixel tiles of 10 to 65 KB (JPEG for the Moon, PNG for Mars) in plain longitude and latitude; the
+[Trek API page](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon) (read 2026-10-03) describes
+fetching tiles "without using a WMTS client library". MEASURED 2026-10-03 with
+`curl -sI -H "Origin: https://www.spaceradar.ai"`: `Access-Control-Allow-Origin: *` on tiles and on
+the capabilities files; level 0 is two tiles (`0/0/0`, `0/0/1`; `0/0/2` and `0/1/0` are 404), both
+sets answer to level 8, and level 9 is a 404. A view from a few hundred
+kilometres is 60 to 100 tiles, 2 to 3 MB; the cache holds 160 on a laptop and 384 on a desktop.
+
+NASA's [media usage guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/) (read
+2026-10-03) say NASA content, "media files used in the rendition of 3-dimensional models, such as
+texture maps and polygon data in any format", is "generally ... not subject to copyright in the
+United States" and ask that NASA be acknowledged as the source. The Sources panel prints, while the
+tiles are on screen:
+
+- The Moon close up: Lunar Reconnaissance Orbiter WAC mosaic, NASA/GSFC/Arizona State University, from NASA Solar System Treks
+- Mars close up: THEMIS daytime infrared mosaic, NASA/JPL-Caltech/Arizona State University, from NASA Solar System Treks, as detail over the colour map
+
+**What is changed.** The Moon's tiles are multiplied by three numbers (`grade` in the registry: 3.67,
+3.48, 3.45) so the mosaic sits at the tone of the Solar System Scope map it replaces and the ground
+does not change colour as the tiles fade in; the WAC mosaic is a reflectance map and far darker than
+a picture. Mars's tiles are not shown as a picture at all: THEMIS's mosaic is infrared and grey, so
+each tile only multiplies the BRIGHTNESS of our own colour map (its luminance over the mosaic's mean,
+clamped to 0.35 to 2.2), and the colour stays Solar System Scope's. What reads as shading is how warm
+the ground was in the afternoon, which follows slopes much as sunlight does; it is not a photograph
+in visible light, and the mosaic's shading does not turn with our Sun. Nothing from Treks is stored
+in this repository or on our site.
+
+Measured and rejected for Mars the same day: `Mars_Viking_MDIM21_ClrMosaic_global_232m` (Viking
+MDIM 2.1 colour, CORS `*`, levels 0 to 7). Its frames meet in hard straight edges with a tone step
+across them, visible from 400 km.
+
+Also measured the same day and not used: `LRO_LOLA_ClrShade_Global_128ppd_v04` and
+`Mars_MGS_MOLA_ClrShade_merge_global_463m` (elevation as shaded colour), CORS `*`.
+
+#### Relief on the Moon and Mars, and the Earth close up (2026-10-06)
+
+Three more pyramids are rows in `registry/tilesets.yaml` since 2026-10-06 (spec 0065 tasks 3 and 4),
+fetched under the same rules: never on a first visit, on a phone, with Save-Data, or after the latch.
+
+| World | Mosaic | Made by | Terms | Finest level asked for |
+|---|---|---|---|---|
+| The Moon, relief | `LRO_LOLA_Shade_Global_256ppd_v06`: shaded relief from the Lunar Orbiter Laser Altimeter, 118 m per pixel | LOLA Science Team, NASA / Goddard Space Flight Center | USGS Astrogeology: "Access Constraints public domain", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m), read 2026-10-06) | 6 (333 m per pixel; level 7 is a 404) |
+| Mars, relief | `Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw`: shaded relief from the MOLA and HRSC blended elevation model, 200 m per pixel | USGS Astrogeology; MOLA: NASA / Goddard Space Flight Center; HRSC: ESA / DLR / FU Berlin | USGS Astrogeology: "Access Constraints MOLA (CC0) and HRSC (CC BY-SA 3.0 IGO)", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/mars_mgs_mola_mex_hrsc_blended_dem_global_200m), read 2026-10-06) | 7 (325 m per pixel) |
+| The Earth | `BlueMarble_ShadedRelief_Bathymetry` from NASA GIBS: MODIS Blue Marble, cloud-free, with shaded relief and the sea floor, 500 m per pixel | NASA Earth Observatory; served by NASA GIBS / ESDIS | "NASA promotes full and open sharing of data"; the acknowledgement of §4.13 is asked for | 7 (489 m per pixel; level 8 is a 400) |
+
+MEASURED 2026-10-06 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`: `Access-Control-Allow-Origin: *`
+on all three. GIBS's grid is not Trek's: a level-0 tile is 288 degrees on a side and 512 pixels, level 0
+is two tiles (`0/0/2` and `0/1/0` are 400), level 1 is three by two, and `7/79/159` is the last tile.
+Relief tiles are 24 to 65 KB (PNG for the Moon, JPEG for Mars), the Earth's 12 to 54 KB (JPEG). The
+Sources panel prints, while they are on screen:
+
+- The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks
+- Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks
+- The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).
+
+**What is changed.** The two relief mosaics are never shown as pictures. Each is a drawing of slopes
+under one fixed light; the direction of that light was measured against the host's elevation tiles
+(from the west on the Moon's, from the north-west on Mars's: the numbers are in the registry rows).
+`scene/tiles.js` takes the slope along that one direction and re-lights it with the Sun where it
+really is, as steep as the mosaic has it, clamped to 0.3 to 2.2 of the ground's
+brightness. The slope across that direction is not in the mosaic and is not drawn, and the world's
+card says both. HRSC's share of Mars's relief is CC BY-SA 3.0 IGO: it is fetched by the visitor's
+browser from NASA's server, not copied, changed into another file or redistributed by us. The
+Earth's tiles are multiplied by two sets of three numbers, land (2.0, 2.3, 2.5) and sea (8.3, 5.7,
+4.7), chosen per pixel from the tile's own colour, so Blue Marble sits at the tone of the day map
+under it; they replace the day map's colour only where the ground is lit, and the night lights, the
+clouds, the glint and the Moon's shadow are drawn over them as before. Blue Marble's hills are
+shaded into the picture under a fixed light, not by our Sun, and it is one picture for every month.
+Nothing from Treks or GIBS is stored in this repository or on our site.
+
+### 4.17 NOAA nowCOAST — lightning (2026-10-03)
+
+`https://nowcoast.noaa.gov/geoserver/lightning_detection/wms`, layer `ldn_lightning_strike_density`,
+read by each visitor's browser (never by the harvester, and never at the lowest device tier, on a
+connection that saves data, or with reduced motion asked for): the 10.6 kB capabilities document for
+the newest slot's time, then one 1440 × 420 PNG of about 7 kB, every fifteen minutes while the tab is
+visible. Measured 2026-10-03 with `Origin: https://www.spaceradar.ai`: both answer
+`access-control-allow-origin: *` and `cache-control: max-age=600, public`.
+
+The layer's own abstract (read the same day) says what it is: "the density of lightning strikes …
+during a 15-minute time period at an 8 x 8 km … horizontal resolution observed by ground-based
+lightning detection networks", the U.S. National Lightning Detection Network (NLDN) and the Global
+Lightning Detection Network (GLD360), in "strikes per square km per minute multiplied by a scaling
+factor of 10^3", obtained from the NWS/NCEP Ocean Prediction Center. The networks are Vaisala's and
+their stroke data is not public; this is what NOAA publishes from it: "a derived product or Level 5
+product (NOAA-generated products using lightning data as input but not displaying the contractor
+(Vaisala) transmitted provided lightning data) and is appropriate for public distribution". As a NOAA
+product it is a US Government work (§4.4 has the NWS terms). Credited in the Sources panel all the same.
+
+It covers 25° S to 80° N from 110° E eastward across the Pacific and the Americas to 0° W. Europe,
+Africa east of Greenwich and most of Asia are not in it, and no lightning is drawn there: the Earth's
+card says where the map reaches. Blitzortung's network covers them, but its data may not be reused
+without permission and is not used; GOES's own lightning mapper (GLM) is not served by NASA GIBS,
+which has only the LIS and OTD climatologies. Nothing from nowCOAST is stored in this repository
+beyond one saved picture the test decodes (`tests/fixtures/weather/`).
+
+The winds the other worlds' bands move at, and Mars's seasonal tables, are numbers from published
+papers, each named with its DOI in `registry/weather.yaml`; no data file of theirs is shipped.
+
+### 4.18 The sources the harvester reads
+
+Added 2026-10-05, when `tests/test_credits.py` first compared `registry/sources.yaml` with this
+file and found nine credit lines missing. The harvester (`harvest/`) reads these on a schedule and
+writes each answer, unchanged, to `/data/v1/<id>.json`; the browser reads that saved copy. **That
+makes spaceradar.ai, and any release zip that includes `site/data/v1/`, a redistributor of them**
+(of every row but the two that are switched off: a source with `enabled: false` is not fetched, not
+published, not saved by `scripts/save_offline_data.py` and refused by `scripts/build_release.py`),
+which the table in §4 (written when the browser fetched everything itself) does not say. The rows
+already covered above (CelesTrak §4.1, Launch Library 2 §4.2, DSN Now §4.3, SWPC's Kp §4.4, the
+Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line differs.
+
+| `sources.yaml` id | Publisher | What it gives | Terms, and how far they were checked | Credit line | Host |
+|---|---|---|---|---|---|
+| `jpl-sbdb-neo`, `jpl-sbdb-comets` | NASA/JPL Solar System Dynamics | orbits of near-Earth asteroids and of comets | NASA/JPL-Caltech; the API's documentation gives no licence text. NASA content is generally not copyrighted in the United States. **Terms page not found in this pass.** | Orbits: NASA/JPL Small-Body Database | `ssd-api.jpl.nasa.gov` |
+| `jpl-cad` | NASA/JPL Center for Near Earth Object Studies | close approaches to the Earth | as above | Close approaches: NASA/JPL CNEOS | `ssd-api.jpl.nasa.gov` |
+| `horizons-deep-space` | NASA/JPL Solar System Dynamics, Horizons | where each deep-space craft is, as vectors | as above | Ephemerides: JPL Horizons | `ssd.jpl.nasa.gov` |
+| `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | **Switched off on 2026-10-09** (`enabled: false`) and no longer fetched, saved, published or shipped. ESA's terms (read that day at `www.esa.int/Services/Terms_and_conditions`, to which the NEOCC portal defers) say: "ESA does not grant the right to resell or redistribute any information, documents, images or material from its website". The harvester had saved this list and the site had served it as `/data/v1/esa-neocc-close.json` since September 2026, before those terms were read in full; no card ever showed it. The close approaches the app draws are JPL's CNEOS, the row above. The row stays here so the reason does. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
+| `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
+| `eonet-fires`, `eonet-volcanoes-ice` | NASA Earth Observatory Natural Event Tracker (EONET) | open fires, volcanoes and sea-ice events, saved hourly (internal #525) | §4.20: no licence beyond EONET's disclaimer; NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09). The events are reported by IRWIN, GDACS, the Smithsonian's Global Volcanism Program and the US National Ice Center; the Smithsonian's terms page answered 403 to our reader on 2026-10-09 and has NOT been read. | Fires, volcanoes and sea ice: NASA EONET | `eonet.gsfc.nasa.gov` |
+| `swpc-solar-regions` | NOAA Space Weather Prediction Center | today's sunspot groups (the solar region summary), saved hourly | US Government work, public domain (§4.4; "may be used without charge for any lawful purpose", <https://www.weather.gov/disclaimer>, read 2026-10-09) | Sunspot groups: NOAA SWPC | `services.swpc.noaa.gov` |
+| `swpc-edited-events` | NOAA Space Weather Prediction Center | solar flares of the last thirty days (the edited events list), saved hourly | US Government work, public domain (§4.4; <https://www.weather.gov/disclaimer>, read 2026-10-12) | Solar flares: NOAA SWPC | `services.swpc.noaa.gov` |
+| `donki-cme-analysis` | NASA Moon to Mars Space Weather Analysis Office and CCMC, DONKI | the analysed coronal mass ejections of the last thirty days, saved every three hours; never asked for by a visitor's browser | No licence named. DONKI's rules of the road and disclaimer (<https://ccmc.gsfc.nasa.gov/tools/DONKI/>, read 2026-10-12): provided "as a courtesy to the community", "as is", "only as prototyping quality and in research context" | Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC) | `ccmc.gsfc.nasa.gov` |
+| `wind` | NOAA/NCEP Global Forecast System, through PacIOOS (University of Hawaii) | the wind ten metres up, one forecast hour | §4.21: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-09) | Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii) | `pae-paha.pacioos.hawaii.edu` |
+| `ocean-currents` | NOAA CoastWatch (NOAA NESDIS, Laboratory for Satellite Altimetry) | the sea's surface current worked out from satellite altimetry, one day, every fourth point of a quarter-degree grid | §4.22: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products. The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12) | Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products) | `coastwatch.noaa.gov` |
+| `ocean-temperature` | NOAA National Centers for Environmental Information, through the CoastWatch West Coast node (NOAA NMFS SWFSC ERD) | the sea surface temperature (OISST v2.1, near real time), one day, every fourth point | §4.22: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-12); NCEI asks for the citation in §4.22 | Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP | `coastwatch.pfeg.noaa.gov` |
+| `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
+| `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
+| `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
+| `space-track-tip` | 18th Space Defense Squadron, through Space-Track.org | reentry predictions | **Switched off** (`enabled: false`). Space-Track needs an account and its user agreement restricts passing the data on; nothing from it is fetched, saved or shipped. The row exists so the app can say "could not look" about it by name. | Reentry predictions: 18 SDS via Space-Track.org | `www.space-track.org` |
+
+Comets came from the Minor Planet Center (§4.5) until 2026-10-01 and come from JPL's Small-Body
+Database since; the site's saved copy may still hold an `mpc-comets` file from before, and §4.5's
+condition (name the source) attaches to it for as long as it is served.
+
+### 4.19 NASA GIBS — Earth data overlays (2026-10-05)
+
+`site/js/scene/earthoverlay.js` asks GIBS for ONE picture of the whole globe (WMS GetMap, 2048 × 1024
+PNG, transparent where there is no data) when a trip stop or a visitor in What to show asks for an
+overlay, and never at boot. The rows are `registry/overlays.yaml`. Measured 2026-10-05 with
+`Origin: https://www.spaceradar.ai`: every layer answered `access-control-allow-origin: *` and
+`cache-control: max-age=0, no-store`, 94 to 694 kB, in 1.2 to 2.5 s; a date not made yet returns an
+empty 8 221-byte picture, which the code steps back from. The acknowledgement GIBS asks for is in
+§4.13 and covers these too. The colours are GIBS's own colormaps (v1.3), and each legend in the
+registry is seven stops or fewer read from them; no colormap is copied into the site.
+
+| Overlay | GIBS layer | Whose data | Kind |
+|---|---|---|---|
+| Sea surface temperature | `GHRSST_L4_MUR25_Sea_Surface_Temperature` | GHRSST MUR sea surface temperature, NASA JPL PO.DAAC | daily analysis, gaps filled |
+| Sea ice | `GHRSST_L4_MUR25_Sea_Ice_Concentration` | GHRSST MUR sea ice concentration, NASA JPL PO.DAAC | daily analysis, gaps filled |
+| Plankton (chlorophyll) | `OCI_PACE_Chlorophyll_a` | Chlorophyll a from the Ocean Color Instrument on PACE, NASA Ocean Biology Processing Group | daily, measured where clear |
+| Green land (vegetation) | `MODIS_Terra_NDVI_8Day` | MODIS vegetation index (Terra), NASA LANCE and LP DAAC | rolling eight days, measured |
+| Rain and snow | `IMERG_Precipitation_Rate` | IMERG precipitation, NASA Global Precipitation Measurement mission | daily, merged satellite estimate |
+| Dust, smoke and haze | `MERRA2_Total_Aerosol_Optical_Thickness_550nm_Extinction_Monthly` | MERRA-2 aerosol optical thickness, NASA Global Modeling and Assimilation Office | monthly mean, reanalysis |
+| Water in the air | `MERRA2_Total_Precipitable_Water_Vapor_Monthly` | MERRA-2 total precipitable water vapour, NASA Global Modeling and Assimilation Office | monthly mean, reanalysis |
+
+All are NASA data products. NASA's data use guidance
+(<https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance>,
+read 2026-10-05) says data from a NASA-led mission are CC0 unless marked otherwise, with "no
+restrictions on the use of these data", and asks that the data sets be cited, which this table does. The stop card and the panel print the legend, the day the picture is of, how it
+was made and this credit.
+
+### 4.20 NASA EONET — fires, volcanoes and icebergs (2026-10-07)
+
+`site/js/data/eonet.js` asks NASA's Earth Observatory Natural Event Tracker
+(<https://eonet.gsfc.nasa.gov/docs/v3>, read 2026-10-07) for its open wildfires with a report in
+the last thirty days, and its open volcanoes and sea-ice events, when a visitor ticks "Fires,
+volcanoes and icebergs" in What to show, and never at boot. Two requests, no key, no credentials,
+no referrer. Measured 2026-10-07 with `Origin: https://www.spaceradar.ai`: both answered
+`Access-Control-Allow-Origin: *`, 130 kB (50 fires) and 158 kB (32 volcanoes, 33 icebergs), in 1
+to 4 s. The row is `registry/weather.yaml` `earth-events`.
+
+EONET publishes no licence beyond its disclaimer (<https://eonet.gsfc.nasa.gov/what-is-eonet>, read
+the same day): "All EONET metadata and services are intended to be used for visualization and
+general information purposes only and should not be construed as 'official' with regards to
+spatial or temporal extent." Each card says so in its own words, with the date of the event's
+last report and the day it was read. The events themselves are reported by others, whom EONET
+names on each one and the card repeats: IRWIN (the US Integrated Reporting of Wildland Fire
+Information), GDACS, the Smithsonian Institution's Global Volcanism Program, and the US National
+Ice Center. Only an event's title, place, date and reported size are shown; nothing is copied
+into this repository except nine events in `tests/fixtures/eonet/` for the tests.
+
+### 4.21 NOAA GFS through PacIOOS — the wind (2026-10-07)
+
+Our harvester (`registry/sources.yaml` row `wind`, `harvest/parsers/wind.py`; internal #552) asks the
+PacIOOS ERDDAP server (<https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html>, read
+2026-10-07 and 2026-10-09) for one forecast hour of the wind ten metres above the ground, every fifth
+degree over the whole globe (37 × 72 points, two components, 168 818 bytes of JSON on 2026-10-09), and
+saves it as `/data/v1/wind.json`. `site/js/data/wind.js` reads that saved copy, when a visitor chooses
+"Wind" under Earth data in What to show and never at boot, and the choice is offered only while the
+manifest lists a copy. A visitor's browser never calls the university's server (it answered in 2 s,
+then took 35 s and returned 404, on 2026-10-07). `site/js/scene/wind.js` draws it as moving streaks.
+
+The data is the NOAA/NCEP Global Forecast System, a numerical weather model ("8-day, 3-hourly
+forecast for the globe at approximately 50-km or 0.5-deg resolution"), served by the Pacific
+Islands Ocean Observing System at the University of Hawaii, which NOAA funds through IOOS. The
+dataset's licence attribute, in full: "The data may be used and redistributed for free but is not
+intended for legal use, since it may contain inaccuracies. Neither the data Contributor,
+University of Hawaii, PacIOOS, NOAA, State of Hawaii nor the United States Government, nor any of
+their employees or contractors, makes any warranty, express or implied, including warranties of
+merchantability and fitness for a particular purpose, or assumes any legal liability for the
+accuracy, completeness, or usefulness, of this information." The legend's sentence names the
+model, the forecast hour and the server, and says it is a model and not a measurement. Nothing is
+copied into this repository except four rows in `tests/fixtures/wind/head.json`.
+
+Tested the same day and not used: NOAA CoastWatch's ERDDAP copy of the dataset (no
+`Access-Control-Allow-Origin` header), NOAA NOMADS (GRIB2 files; its filter script did not
+answer), and Open-Meteo (its free API is for non-commercial use only).
+
+### 4.22 NOAA CoastWatch and NOAA OISST — ocean currents (2026-10-12)
+
+"Ocean currents" under Earth data draws moving streaks that follow the sea's surface current and
+are coloured by the sea's temperature (`site/js/scene/currents.js`, `site/js/data/currents.js`). It is
+made from two datasets, each read by our harvester (`harvest/parsers/sea_grid.py`) and saved as a
+packed copy under `/data/v1/`; a visitor's browser reads those copies, when the choice is made and
+never at boot, and never calls either server (each answered with no `Access-Control-Allow-Origin`
+header on 2026-10-12). The choice is offered only while the manifest lists both copies.
+
+**The currents** (`registry/sources.yaml` row `ocean-currents`): NOAA CoastWatch's "Sea Surface
+Currents (Geostrophic), Altimetry (S-3A/B, CryoSat2, Jason-2/3, SARAL), Near Real-Time, Global
+0.25°, 2017-present, Daily", dataset `noaacwBLENDEDNRTcurrentsDaily`
+(<https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html>, read 2026-10-12),
+institution NOAA NESDIS CoastWatch, made by NOAA's Laboratory for Satellite Altimetry from the Radar
+Altimeter Database System (RADS) with the mean dynamic topography MDT CNES/CLS 2013. Its licence
+attribute, in full: "Data courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated
+using AVISO+ products. The data may be used and redistributed for free but is not intended for legal
+use, since it may contain inaccuracies. Neither the data Contributor, ERD, NOAA, nor the United
+States Government, nor any of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a particular purpose, or assumes
+any legal liability for the accuracy, completeness, or usefulness, of this information." The three
+credits that sentence asks for are in the line the legend prints. No page asking for a particular
+citation of this product was found that day (the product pages tried on coastwatch.noaa.gov answered
+404); the dataset names Eric.Leuliette@noaa.gov as its creator.
+
+**The temperature** (row `ocean-temperature`): NOAA's 1/4° Daily Optimum Interpolation Sea Surface
+Temperature (OISST), version 2.1, the near-real-time files, dataset `ncdcOisst21NrtAgg` on the
+CoastWatch West Coast node's ERDDAP
+(<https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.html>, read 2026-10-12). Its
+licence attribute is the same sentence: "The data may be used and redistributed for free but is not
+intended for legal use, since it may contain inaccuracies. [...]". NCEI's record for the dataset
+(<https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C01606/html>, read
+2026-10-12) asks: "Cite as: Huang, Boyin; Liu, Chunying; Banzon, Viva F.; Freeman, Eric; Graham,
+Garrett; Hankins, William; Smith, Thomas M.; Zhang, Huai-Min. (2020): NOAA 0.25-degree Daily Optimum
+Interpolation Sea Surface Temperature (OISST), Version 2.1. [indicate subset used]. NOAA National
+Centers for Environmental Information. https://doi.org/10.25921/RE9P-PT57. Accessed [date]." The
+subset used is the sea surface temperature of the newest near-real-time day, every fourth point;
+accessed daily by the harvester, first on 2026-10-12.
+
+**What is changed.** Each is one day at every fourth point of the quarter-degree grid (180 × 360),
+rounded to a centimetre a second and a tenth of a degree and packed (262 kB and 184 kB, from 4.4 MB
+and 3.8 MB of JSON). Nothing is smoothed, filled or interpolated before it is saved. The legend's
+sentence gives the day of each, says the current is the steady (geostrophic) flow with no tides and
+no wind drift, that it is least sure on the equator, and by how much the motion is sped up. Nothing
+of either is in this repository except the 56 points of `tests/fixtures/harvest/sea_grid.json`.
+
+**The colours** are ColorBrewer's seven-class RdYlBu scheme, reversed (Cynthia A. Brewer, Geography,
+Pennsylvania State University, <https://colorbrewer2.org>, which marks it colour-blind safe).
+ColorBrewer's colour schemes are © Cynthia Brewer, Mark Harrower and The Pennsylvania State
+University, under the Apache License 2.0 (<https://github.com/axismaps/colorbrewer>, `LICENCE.txt`,
+read 2026-10-12).
+
+Checked the same day and not used: NASA OSCAR (PO.DAAC asks for an Earthdata login), Copernicus
+Marine (asks for an account), and NOAA's RTOFS model on NOMADS (files of hundreds of megabytes).
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are
@@ -854,7 +1735,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 The following Lucide icons are derived from the Feather project:
 
-[...] crosshair, [...] chevron-right, [...] navigation, [...] x, [...]
+[...] chevron-down, chevron-left, chevron-right, [...] code, [...] compass, copy, [...] crop, crosshair, [...] download, [...] external-link, [...] maximize, [...] minimize, [...] more-vertical, move, navigation, [...] share, [...] x, [...]
 
 The MIT License (MIT) (for the icons listed above)
 
@@ -938,6 +1819,278 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+### ktx-parse and zstddec — MIT, with Zstandard's BSD licence
+
+Applies to `site/vendor/basis/ktx-parse.module.js` and `site/vendor/basis/zstddec.module.js`. The
+two projects carry the same MIT notice (© 2020 Don McCurdy); this is zstddec's `LICENSE` in full,
+which adds the licence of the Zstandard decoder compiled into it.
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2020 Don McCurdy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+***
+
+BSD License
+
+For Zstandard software
+
+Copyright (c) 2016-present, Yann Collet, Facebook, Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+
+ * Neither the name Facebook nor the names of its contributors may be used to
+ endorse or promote products derived from this software without specific
+ prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+### Basis Universal — Apache License 2.0
+
+Applies to `site/vendor/basis/basis_transcoder.js` and `site/vendor/basis/basis_transcoder.wasm`,
+unmodified from three.js r185's `examples/jsm/libs/basis/`. Copyright 2019-2026 Binomial LLC.
+
+```
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright 2019-2026 Binomial LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```
+
 ### d3-celestial — BSD-3-Clause
 
 Applies to `site/data/stars.bin`, `site/data/constellations.lines.json`,
@@ -961,8 +2114,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ### Solar System Scope textures — CC BY 4.0
 
-Applies to the 14 files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`,
-`4k/mercury.webp`, `4k/mars.webp` and `4k/jupiter.webp`.
+Applies to the 13 Solar System Scope files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`,
+`4k/mars.webp` and `4k/jupiter.webp`.
 
 ```
 Planet and star textures © Solar System Scope — https://www.solarsystemscope.com/textures/
@@ -1005,6 +2158,34 @@ Modified: reduced to the 110 Messier objects; coordinates converted to degrees a
 light-years using distances from the sources each row names; fields reduced to those the card prints.
 ```
 
+### Constellation figures by Johan Meuris — Free Art License 1.3
+
+Applies to `site/data/skyart/*.webp`, and to nothing else in this repository.
+
+```
+Constellation figures, drawn for Stellarium by Johan Meuris (http://www.johanmeuris.eu/).
+Originals: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/modern/illustrations
+Modified by the Space Radar contributors, 2026-10-06: each PNG re-encoded as a WebP at its
+original pixel size; nothing redrawn, cropped or recoloured.
+
+Copyleft: these are free works, you can copy, distribute, and modify them under the terms of the
+Free Art License https://artlibre.org/licence/lal/en/
+```
+
+### Stellarium sky cultures — CC BY-SA 4.0
+
+Applies to `site/data/skyart/index.json`, `site/data/skycultures/chinese.json`,
+`site/data/skycultures/maori.json`, `site/data/skycultures/hawaiian.json`.
+
+```
+Sky-culture data from Stellarium (https://github.com/Stellarium/stellarium, skycultures/), by the
+contributors named in §3i, adapted by the Space Radar contributors (2026-10-06): star numbers
+replaced by sky coordinates, lines only.
+
+Licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.
+https://creativecommons.org/licenses/by-sa/4.0/
+```
+
 ## 7. Build and CI only
 
 Not shipped to the browser, listed for completeness. These are pulled at CI time and none of them
@@ -1015,7 +2196,10 @@ is vendored in the tree.
 | PyYAML | `scripts/check_registry.py`, `tests/` — installed by `ci.yml` | MIT |
 | Playwright | `scripts/shots.mjs`, `screens.yml`, `readme-shots.yml` — from the `mcr.microsoft.com/playwright` image | Apache-2.0 |
 | `actions/checkout`, `actions/setup-python`, `actions/upload-artifact` | `.github/workflows/` | MIT |
-| FFmpeg (with libopus) | `scripts/build-audio.py`, run by hand to make `site/audio/`; not in the tree | LGPL-2.1+ / GPL builds |
+| esbuild 0.25.9 (Evan Wallace) | `scripts/minify_site.py --esbuild`, run by a deploy and by `screens.yml` over the ES modules; one binary fetched from the npm registry by `scripts/get_esbuild.py` and refused unless it matches the SHA-512 npm published and the SHA-256 recorded there; never in the tree and never on the site (its output is our own code, minified) | MIT |
+| FFmpeg (with libopus) | `scripts/build-audio.py` and `scripts/narrate.py`, run by hand to make `site/audio/`; not in the tree | LGPL-2.1+ / GPL builds |
+| kokoro-onnx 0.6.1, ONNX Runtime 1.23.2 | `scripts/narrate.py`, run by hand to make `site/audio/narration/`; not in the tree | MIT |
+| misaki 0.9.4 (grapheme-to-phoneme), with spaCy `en_core_web_sm` and espeak-ng as its fallback | the same; words to phonemes, at build time only | Apache-2.0; MIT; GPL-3.0-or-later (espeak-ng: a tool that is run, never linked into or shipped with the app) |
 
 ## 8. Acknowledgements
 
@@ -1029,8 +2213,8 @@ code. No licence attaches; the credit is owed anyway.
 - **SGP4/SDP4**: Hoots & Roehrich, *Spacetrack Report #3*; David Vallado et al., *Revisiting
   Spacetrack Report #3* (AIAA 2006-6753). Reaches this project through satellite.js.
 
-No third-party fonts are used: `site/css/` specifies system font stacks only. No file in the tree
-embeds a base64 asset.
+Fonts are in [§10](#10-fonts). (This paragraph said "no third-party fonts are used" until
+2026-10-05; that stopped being true on 2026-09-28.)
 
 ## 9. Audio — music and sounds
 
@@ -1062,6 +2246,31 @@ Modified: each bed is a 72 s cut of a 4:04 piece with its last 4 s cross-faded i
 it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade and levelled to
 −21 LUFS; all are re-encoded to Opus 64 kbps and AAC 64 kbps. The stings are made from Freesound's
 HQ previews, not the uploaded originals.
+
+## 9b. Audio — the trips' narration (a synthetic voice)
+
+Spec 0069 (2026-10-03). Each stop of a guided trip can be read aloud. **The voice is synthetic**:
+the files under `site/audio/narration/` were made offline by `scripts/narrate.py` from the stops'
+own words in `registry/tours.yaml`, and no person recorded them. The app says so on the control
+that turns the voice on and in its Sources panel, which prints this line:
+
+> Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0
+
+| What | Used for | Licence | Source |
+|---|---|---|---|
+| Kokoro-82M, model weights v1.0 and the voice `bf_emma` (British English) | synthesising every clip, at build time; the model itself is not shipped | Apache-2.0 | <https://huggingface.co/hexgrad/Kokoro-82M> (read 2026-10-03); the ONNX export and `voices-v1.0.bin` from <https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0> |
+
+The model's card reads: "Kokoro is an open-weight TTS model with 82 million parameters … with
+Apache-licensed weights, Kokoro can be deployed anywhere from production environments to personal
+projects." `registry/narration.yaml` records the SHA-256 of both model files, the versions of the
+tools the render ran with, the pronunciation lexicon, and a hash per clip; `scripts/narrate.py
+--check` refuses a stop whose words have changed since its clip was made. Each clip is levelled to
+−16 LUFS and encoded to Opus 32 kbps mono with an AAC twin; the captions beside it (`.vtt`) are the
+card's own sentences. Nothing here is downloaded until a visitor turns sound on.
+
+Why this model and not another: the spec ordered the choice by licence. XTTS-v2 (Coqui Public Model
+Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice
+licences) was the fallback and was not needed.
 
 ## 10. Fonts
 

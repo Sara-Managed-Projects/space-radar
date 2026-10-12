@@ -35,8 +35,10 @@ for (const f of ['site/js/ui/whattoshow.js', 'site/js/ui/explore.js']) {
 check(/l\.load === 'on-demand'/.test(main), 'main.js defers a layer whose registry row says load: on-demand');
 const { LAYERS } = await import(join(ROOT, 'site/js/data/layers.js'));
 const onDemand = LAYERS.filter((l) => l.load === 'on-demand');
-check(onDemand.map((l) => l.id).join(',') === 'active', `only the active catalogue loads on demand (${onDemand.map((l) => l.id)})`);
-for (const l of onDemand) check(l.budget && l.budget.maxItems >= 5000, `${l.id} is catalogue-sized`);
+// ... and a layer the page fetches from another host for itself (`source: 'weather'`, 2026-10-07):
+// a request to somebody else's server waits for the visitor to ask, whatever its size.
+check(onDemand.map((l) => l.id).join(',') === 'active,debris-field,earth-events', `only the two catalogues and the Earth's events load on demand (${onDemand.map((l) => l.id)})`);
+for (const l of onDemand) check((l.budget && l.budget.maxItems >= 5000) || (l.source === 'weather' && typeof l.fetchLazy === 'function'), `${l.id} is catalogue-sized, or fetched by the page for itself`);
 for (const id of ['geo-ring', 'debris-notable', 'reentries']) {
   const l = LAYERS.find((x) => x.id === id);
   check(l && l.enabled !== false && !l.load, `${id} loads at boot like everything else`);
@@ -57,6 +59,7 @@ check(GEO_RING.meanMotionMin === 0.99 && GEO_RING.meanMotionMax === 1.01 && GEO_
 const sourcesYaml = src('registry/sources.yaml');
 check(/- id: celestrak-last30\n/.test(sourcesYaml), 'celestrak-last30 has a sources.yaml row');
 check(/celestrak-last30/.test(src('.github/workflows/harvest.yml')), 'and the GitHub harvest run fetches it by default');
+for (const id of ['wind', 'eonet-fires', 'eonet-volcanoes-ice', 'swpc-solar-regions', 'swpc-edited-events', 'donki-cme-analysis']) check(new RegExp('default: "[^"]* ' + id + '( [^"]*)?"').test(src('.github/workflows/harvest.yml')), `and so does the wind/EONET/sunspot copy ${id} (internal #552)`);
 
 // 6. the panel's three silences are three strings
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));

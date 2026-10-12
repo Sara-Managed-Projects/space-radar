@@ -1,0 +1,33 @@
+# Links out to live pictures (spec 0050 requirement 8, internal #136).
+#
+# A LINK, NEVER AN EMBED. The card shows a plain <a target="_blank" rel="noopener"> to the
+# publisher's own page, with the publisher named. No iframe, no thumbnail fetched from their
+# server, no player script: the page makes no request to any host in this file.
+#
+# Every row was opened on its `checked` date, and `saw` is what was on the page that day.
+# scripts/check_registry.py refuses a row without `checked`, without `publisher`, without `saw`,
+# with a URL that is not https, or for a record nobody can open; and reports (does not refuse) a
+# row whose `checked` is more than 180 days old.
+version: 1
+links:
+  - id: iss-live
+    for: sat-25544
+    words: "Watch it live"
+    publisher: NASA
+    url: "https://www.nasa.gov/live/"
+    checked: 2026-10-08
+    saw: "NASA Live; under 'Space Station Views': 'Live video from the International Space Station'"
+  - id: earth-today
+    for: earth
+    words: "See today's Earth"
+    publisher: NASA EPIC
+    url: "https://epic.gsfc.nasa.gov/"
+    checked: 2026-10-08
+    saw: "DSCOVR: EPIC, NASA Goddard; the newest picture of the whole Earth was dated 2026-10-05 22:26:56"
+  - id: sun-today
+    for: sun
+    words: "See the Sun today"
+    publisher: NASA SDO
+    url: "https://sdo.gsfc.nasa.gov/data/"
+    checked: 2026-10-08
+    saw: "SDO, Solar Dynamics Observatory; the Data page links the newest pictures of the Sun by wavelength (AIA 193 and others)"

@@ -1,0 +1,27 @@
+# One sourced line for some of the things that have been in orbit the longest (spec 0050
+# requirement 7, internal #135). The LIST is computed in the browser from the catalogue
+# (site/js/data/satcat.js oldestRows): which things, their launch dates and their years are never
+# typed here. A row here only adds a line to the thing with that catalogue number, and every line
+# was read on its page on the `read` date; `quote` is the page's own words that day.
+# scripts/check_registry.py refuses a row with no `source`, no `read` date, no `quote`, a source
+# that is not https, or a line over 120 characters.
+version: 1
+notes:
+  - norad: 5
+    name: Vanguard 1
+    line: "A 1.46 kg aluminium sphere 15 cm across, the first satellite with solar power. Last heard in May 1964."
+    source: "https://en.wikipedia.org/wiki/Vanguard_1"
+    read: 2026-10-08
+    quote: "The spacecraft is a 1.46 kg (3.2 lb) aluminum sphere six inches (150 mm) in diameter. / Vanguard 1 was the first satellite to have solar electric power. / Signals ... were last received at the Minitrack station in Quito, Ecuador, in May 1964."
+  - norad: 11
+    name: Vanguard 2
+    line: "A 10.75 kg sphere built to measure cloud cover. Its telemetry transmitter worked for 23 days."
+    source: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1959-001A"
+    read: 2026-10-08
+    quote: "10.75 kg (23.7 lb) / designed to measure cloud-cover distribution over the daylight portion of its orbit / The telemetry transmitter functioned for 23 days"
+  - norad: 20
+    name: Vanguard 3
+    line: "Sent up to measure the Earth's magnetic field. Its batteries lasted 85 days, until 11 December 1959."
+    source: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1959-007A"
+    read: 2026-10-08
+    quote: "to measure the Earth's magnetic field / The batteries lasted for 85 days, until 11 December 1959"

@@ -128,7 +128,9 @@ check(uncoveredBand(844, 0, 0).shift === 0, 'nothing covering, nothing moved');
   const shell = readFileSync(join(JS, 'ui/shell.js'), 'utf8');
   const sheet = readFileSync(join(JS, 'ui/sheet.js'), 'utf8');
   const share = readFileSync(join(JS, 'ui/sharesheet.js'), 'utf8');
-  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  // Sizes and layers are tokens since spec 0061 task 6; read with them written out, so 16 px is 16 px.
+  const { resolveTokens } = await import(join(ROOT, 'tests/helpers/css_tokens.mjs'));
+  const css = resolveTokens(readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8'));
   const shareCss = readFileSync(join(ROOT, 'site/css/share.css'), 'utf8');
   const site = readFileSync(join(ROOT, 'site/css/site.css'), 'utf8');
   const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');

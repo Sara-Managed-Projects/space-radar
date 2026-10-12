@@ -30,6 +30,7 @@ import { EVENT_TYPES } from './events.registry.js';
 import { SHOWERS } from './showers.js';
 import { trainsFrom } from './trains.js';
 import { predictPasses } from '../sky/passes.js';
+import { peakInstant } from '../sky/radiants.js';
 import { COPY, CITIES, t, fmt, timeText, UNITS } from '../copy/en.js';
 
 const HOUR = 3600e3;
@@ -57,6 +58,14 @@ export const ECLIPSE_KINDS = {
   'solar-eclipse': ['total', 'annular', 'partial', 'hybrid'],
   'lunar-eclipse': ['total', 'partial', 'penumbral'],
 };
+
+/** The turns of the year and the month each falls in (internal #384): a `kind:` a reference may name. */
+export const SEASON_KINDS = {
+  'solstice': ['june', 'december'],
+  'equinox': ['march', 'september'],
+};
+/** Every type that has kinds, and the words a `{event:, kind:}` reference may use for each. */
+export const EVENT_KINDS = { ...ECLIPSE_KINDS, ...SEASON_KINDS };
 
 function startOfDay(ms) {
   const d = new Date(ms);
@@ -121,7 +130,12 @@ export function showerItems(nowMs, horizonMs, showers, observer = null) {
     if (!m) continue;
     const year = new Date(nowMs).getFullYear();
     for (const y of [year, year + 1]) {
-      const at = new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
+      // The year's own date, from the Sun's longitude at the maximum (sky/radiants.js peakInstant):
+      // the registry's `peak` is the IMO's date for one year and is a day off in another.
+      const inst = peakInstant(sh, y);
+      const day = inst !== null ? new Date(inst) : null;
+      // The calendar's date is the maximum's date in UT, as the IMO prints it, read as the visitor's own.
+      const at = day ? new Date(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 12, 0, 0, 0).getTime() : new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
       if (startOfDay(at) < today) continue;
       if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id, moonLit: moonLitThatNight(at), radiant: radiantThatNight(sh, at, observer) });
       break;
@@ -163,25 +177,128 @@ export function launchItem(r, nowMs, horizonMs) {
   return null;
 }
 
+/**
+ * How big a passing asteroid is, in metres, as the range its brightness allows: `{loM, hiM,
+ * measured}`. A measured diameter is used when the catalogue has one. Otherwise it is worked out
+ * from the absolute magnitude H for a surface that reflects between a quarter and a twentieth of
+ * the light on it (the usual bounds for near-Earth asteroids): D = 1329 km / sqrt(albedo) x
+ * 10^(-H/5). An estimate, and the row says so. Null with neither number.
+ */
+export function approachSize(m) {
+  if (!m) return null;
+  const d = Number(m.diameterKm);
+  if (m.diameterKm !== null && m.diameterKm !== undefined && d > 0) return { loM: d * 1000, hiM: d * 1000, measured: true };
+  const H = Number(m.absoluteMagnitude);
+  if (m.absoluteMagnitude === null || m.absoluteMagnitude === undefined || !Number.isFinite(H)) return null;
+  const base = 1329e3 * 10 ** (-H / 5);
+  return { loM: base / Math.sqrt(0.25), hiM: base / Math.sqrt(0.05), measured: false };
+}
+
 /** A close approach's row: the walk's second branch, so a launch record never becomes one. */
 export function approachItem(r, nowMs, horizonMs) {
   if (!r || !r.meta || launchItem(r, nowMs, horizonMs)) return null;
   const m = r.meta;
   if (Number.isFinite(m.closeApproachMs) && m.closeApproachMs > nowMs && m.closeApproachMs - nowMs < horizonMs) {
-    const ld = Number.isFinite(m.missDistanceLd) ? m.missDistanceLd : Number.isFinite(m.missDistanceKm) ? m.missDistanceKm / UNITS.LUNAR_DISTANCE_KM : null;
-    return { kind: 'approach', record: r, tMs: m.closeApproachMs, ld };
+    // THE DISTANCE WAS NEVER SHOWN (public #313, found 2026-10-06): data/parsers.js
+    // parseNeoApproaches writes `closeApproachLunarDistances` and `closeApproachDistanceKm`, and
+    // this read `missDistanceLd` and `missDistanceKm`, which only the test's fixtures carried. So
+    // every live row said "passes Earth" and never how close. Both spellings are read now.
+    const firstNumber = (...vs) => { for (const v of vs) if (v !== null && v !== undefined && Number.isFinite(Number(v))) return Number(v); return null; };
+    const km = firstNumber(m.missDistanceKm, m.closeApproachDistanceKm);
+    const ld = firstNumber(m.missDistanceLd, m.closeApproachLunarDistances) ?? (km !== null ? km / UNITS.LUNAR_DISTANCE_KM : null);
+    const item = { kind: 'approach', record: r, tMs: m.closeApproachMs, ld };
+    const size = approachSize(m);
+    if (size) item.size = size;
+    return item;
   }
   return null;
 }
 
+// THE PASSES ARE WORKED OUT ONCE A QUARTER OF AN HOUR, NOT ONCE A MINUTE. ui/next.js rebuilds its list
+// every 60 s, and with a place set that was a day of passes for some 180 satellites each time: MEASURED
+// 2026-10-10 on an Iris Plus 640 laptop as one frame of 1.5 to 3.4 s a minute (the "three-second stall
+// on the galaxy rung" of the roof trip was this, landing wherever the trip happened to be). A day of
+// passes does not change in a minute, so the answer is kept for the same place, the same elements and a
+// clock within PASS_MEMO_MS after the moment it was worked out for; a pass that has ended is left out.
+export const PASS_MEMO_MS = 15 * 60e3;
+let passMemo = null;
+let passWork = 0;
+/** How many times a day of passes has been worked out (tests/test_events.mjs counts, rather than times, the memo). */
+export const passWorkCount = () => passWork;
+
+// OFF THE MAIN THREAD (internal #562, 2026-10-10). Even kept for a quarter of an hour, the first working
+// out after boot, and each one after a jumped clock or a new place, was one task of 1.5 to 3.6 s. A page
+// that hands in a runner (ui/next.js: sky/passclient.js, the worker that already runs predictPasses for
+// the Tonight view) gets the rows it HAS (an expired answer for the same place and elements, with the
+// passes that ended left out; otherwise none) and is told through onPassesReady when the new answer is
+// in. Nothing hands in a runner in node, so the tests and every other caller work as they did.
+let passRunner = null;
+let passPending = '';
+const passListeners = new Set();
+/** `run(message) -> Promise<{passes}>` (sky/passclient.js runPasses), or null to work them out in place again. */
+export function usePassRunner(run) { passRunner = typeof run === 'function' ? run : null; passPending = ''; }
+/** Call `fn` when a day of passes has been worked out off the main thread; returns the way to stop. */
+export function onPassesReady(fn) { passListeners.add(fn); return () => passListeners.delete(fn); }
+
+function askRunner(withOrbits, key, nowMs, observer) {
+  if (passPending === key) return;
+  passPending = key;
+  const byId = new Map(withOrbits.map((r) => [r.id, r]));
+  const msg = {
+    fromMs: nowMs,
+    hours: 24,
+    observer: { latRad: observer.latRad, lonRad: observer.lonRad, latDeg: observer.latDeg, lonDeg: observer.lonDeg, altKm: observer.altKm || 0 },
+    records: withOrbits.map((r) => ({ id: r.id, name: r.name, satrec: r.satrec, meta: {} })),
+  };
+  passWork += 1;
+  new Promise((resolve) => resolve(passRunner(msg))).then((data) => {
+    if (passPending === key) passPending = '';
+    const rows = [];
+    for (const p of (data && data.passes) || []) {
+      const record = byId.get(p.recordId);
+      if (!record || p.visible !== true) continue;
+      const item = { kind: 'pass', record, tMs: p.startMs, peakEl: p.peakEl };
+      rows.push({ item, endMs: Number.isFinite(p.endMs) ? p.endMs : p.startMs + 15 * 60e3 });
+    }
+    passMemo = { key, place: key.split('|').slice(0, 5).join('|'), atMs: nowMs, rows };
+    for (const fn of [...passListeners]) { try { fn(); } catch { /* a listener is its own business */ } }
+  }).catch(() => { if (passPending === key) passPending = ''; });
+}
+
+const placeKey = (o) => [o.latRad, o.latDeg, o.lonRad, o.lonDeg, o.altKm].join('|');
 function passItems(records, nowMs, observer) {
   const out = [];
   if (!validObserver(observer)) return out;
   const withOrbits = (Array.isArray(records) ? records : []).filter((r) => r && r.satrec && (r.layer === 'stations' || r.layer === 'visual'));
   if (!withOrbits.length) return out;
+  let epochs = 0;
+  for (const r of withOrbits) epochs += Number(r.satrec.jdsatepoch) || 0;
+  const key = [placeKey(observer), withOrbits.length, withOrbits[0].id, epochs].join('|');
+  if (passMemo && passMemo.key === key && nowMs >= passMemo.atMs && nowMs - passMemo.atMs < PASS_MEMO_MS) {
+    return passMemo.rows.filter((row) => row.endMs > nowMs).map((row) => ({ ...row.item }));
+  }
+  if (passRunner) {
+    askRunner(withOrbits, key, nowMs, observer);
+    // The last answer for the same PLACE is better than a blank while the new one is on its way. Not only for
+    // the same elements (integration pass, 2026-10-10: a second catalogue landing ten seconds after the first
+    // changed the key, and the three passes on the list went away for two seconds and came back): a day-old
+    // prediction is off by seconds, and the row is replaced the moment the worker answers. Each row is handed
+    // the record the catalogue holds NOW under its id; one that has left the catalogue has no row.
+    const place = placeKey(observer);
+    if (!passMemo || passMemo.place !== place || nowMs < passMemo.atMs || nowMs - passMemo.atMs >= 24 * 3600e3) return [];
+    const now = new Map(withOrbits.map((r) => [r.id, r]));
+    return passMemo.rows.filter((row) => row.endMs > nowMs && now.has(row.item.record.id)).map((row) => ({ ...row.item, record: now.get(row.item.record.id) }));
+  }
   try {
+    passWork += 1;
     const passes = predictPasses(withOrbits, observer, nowMs, 24).filter((p) => p.visible === true);
-    for (const p of passes) out.push({ kind: 'pass', record: p.record, tMs: p.startMs, peakEl: p.peakEl });
+    const rows = [];
+    for (const p of passes) {
+      const item = { kind: 'pass', record: p.record, tMs: p.startMs, peakEl: p.peakEl };
+      out.push(item);
+      rows.push({ item: { ...item }, endMs: Number.isFinite(p.endMs) ? p.endMs : p.startMs + 15 * 60e3 });
+    }
+    passMemo = { key, place: key.split('|').slice(0, 5).join('|'), atMs: nowMs, rows };
   } catch { /* a pass we could not compute is a row we do not print */ }
   return out;
 }
@@ -512,6 +629,57 @@ export function localCircumstances(ev, observer) {
 }
 
 // ---------------------------------------------------------------------------------------
+// Solstices and equinoxes (internal #384)
+// ---------------------------------------------------------------------------------------
+
+const SEASON_FIELDS = { march: 'mar_equinox', june: 'jun_solstice', september: 'sep_equinox', december: 'dec_solstice' };
+
+/**
+ * The solstices (`type.id` 'solstice') or equinoxes ('equinox') after `nowMs`, inside `horizonMs`:
+ * the instants the Sun's apparent ecliptic longitude is 90 and 270 degrees, or 0 and 180
+ * (astronomy-engine Seasons(year), good to well under a minute for these centuries; tests/
+ * test_events.mjs holds 2026 to 2030 to the published table). `kind` is the month it falls in.
+ * The same instant everywhere, so nothing about the visitor goes in. A year is four numbers and
+ * about a millisecond: not cached.
+ */
+function seasons(records, nowMs, { horizonMs, type }) {
+  const out = [];
+  const kinds = SEASON_KINDS[type.id] || [];
+  const T = COPY.nextList;
+  const y0 = new Date(nowMs).getUTCFullYear();
+  const y1 = new Date(nowMs + horizonMs).getUTCFullYear();
+  for (let y = y0; y <= y1; y += 1) {
+    let s = null;
+    try { s = Astronomy.Seasons(y); } catch { s = null; }
+    if (!s) continue;
+    for (const kind of kinds) {
+      const at = s[SEASON_FIELDS[kind]];
+      const tMs = at && at.date ? at.date.getTime() : NaN;
+      if (!(tMs > nowMs) || tMs - nowMs >= horizonMs) continue;
+      out.push({
+        id: `${type.id}:${new Date(tMs).toISOString().slice(0, 10)}`,
+        type: type.id,
+        t: tMs,
+        t_precision: 'minute',
+        t_window: [tMs, tMs],
+        title: T.seasonTitles[kind],
+        say: t(T.seasons[kind], { date: timeText.longDate(tMs) }),
+        where: null,
+        location_dependent: type.locationDependent,
+        class: 'measured',
+        prominence: type.prominence,
+        source: 'computed',
+        links: [],
+        record: null,
+        kind,
+        detail: {},
+      });
+    }
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+
+// ---------------------------------------------------------------------------------------
 // The stream
 // ---------------------------------------------------------------------------------------
 
@@ -534,10 +702,12 @@ const BUILDERS = {
   },
   'solar-eclipse': solarEclipses,
   'lunar-eclipse': lunarEclipses,
+  'solstice': seasons,
+  'equinox': seasons,
 };
 
 /** The types worked out here with no data at all (scripts/check_registry.py COMPUTED_EVENT_TYPES). */
-const COMPUTED = new Set(['solar-eclipse', 'lunar-eclipse']);
+const COMPUTED = new Set(['solar-eclipse', 'lunar-eclipse', 'solstice', 'equinox']);
 
 /** The types the browser builds: enabled in the registry and with a builder here. */
 export const BUILT_TYPES = EVENT_TYPES.filter((ty) => ty.enabled && BUILDERS[ty.id]).map((ty) => ty.id);
@@ -585,12 +755,13 @@ export function buildEvents(records, nowMs, {
 export function nextEvent(type, fromMs, observer = null, records = [], { kind = null } = {}) {
   const ty = EVENT_TYPES.find((x) => x.id === type);
   if (!ty || !ty.enabled || !BUILDERS[type] || !Number.isFinite(fromMs)) return null;
-  if (kind !== null && kind !== undefined && !(ECLIPSE_KINDS[type] || []).includes(kind)) return null;
+  if (kind !== null && kind !== undefined && !(EVENT_KINDS[type] || []).includes(kind)) return null;
   const obs = validObserver(observer) ? observer : null;
   // A stop's `station-pass.next` is the ISS over this place within a week (fromPasses, spec 0038),
   // not the Next list's 24 hours of anything visible.
   if (type === 'station-pass') return fromPasses(records, fromMs, { observer: obs, type: ty })[0] || null;
-  const horizon = kind ? ECLIPSE_KIND_HORIZON_MS : ECLIPSE_HORIZON_MS;
+  // A kind of eclipse is rarer than its type; a turn of the year comes round every year.
+  const horizon = kind && ECLIPSE_KINDS[type] ? ECLIPSE_KIND_HORIZON_MS : ECLIPSE_HORIZON_MS;
   const found = BUILDERS[type](records, fromMs, {
     observer: obs, horizonMs: horizon, eclipseHorizonMs: horizon, showers: SHOWERS, spaceWeather: null, type: ty,
   }).filter((e) => e.t > fromMs && (!kind || e.kind === kind)).sort((a, b) => a.t - b.t);

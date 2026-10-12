@@ -31,8 +31,8 @@
 # box does not make anybody type an apostrophe.
 #
 # The rule is keyed on `landed:` rather than on `class: surface` because a surface row need not be
-# a landing: tests/fixtures/europa.yaml grows the registry with Conamara Chaos, a place where
-# nothing has landed. Every surface row in THIS file is a landing, and tests/test_landing_sites.mjs
+# a landing: tests/fixtures/phoebe.yaml adds Jason crater on Phoebe, a place where nothing has
+# landed. Every surface row in THIS file is a landing, and tests/test_landing_sites.mjs
 # fails any of them that would be drawn with the class default -- so the first surface row that
 # is a place rather than a machine will need a shape of its own before it ships.
 #
@@ -99,11 +99,25 @@ references:
     read: 2026-09-22
     says: "PDS Geosciences Node, Analyst's Notebook, Phoenix mission overview: '68.22 degrees N,
            234.25 degrees East Areocentric'. JPL's PIA13804 caption gives the same two numbers."
+  m20-heli-waypoints:
+    url: "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/m20_heli_waypoints.json"
+    read: 2026-10-07
+    says: "NASA/JPL-Caltech, the helicopter waypoints layer of the Mars 2020 mission map ('Where
+           is Perseverance?'): one point a flight, 0 to 72. The last, flight 72, Earth date 'Jan.
+           18, 2024', from and to 'Airfield Chi', is Lon 77.32253449, Lat 18.49726866 (planetocentric,
+           east-positive, the convention of the rover's own waypoints), total 18.139 km and
+           128.92 minutes over all flights."
   pds-msl:
     url: "https://an.rsl.wustl.edu/help/Content/About%20the%20mission/MSL/MSL%20mission.htm"
     read: 2026-09-22
     says: "PDS Geosciences Node, Analyst's Notebook, MSL mission overview: 'latitude of 4.5895
            degrees South, and longitude of 137.4417 degrees East'."
+  golombek-2020:
+    url: "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020EA001248"
+    read: 2026-10-09
+    says: "Golombek et al., 'Location and Setting of the Mars InSight Lander, Instruments, and
+           Landing Site' (Earth and Space Science, 2020): the lander is at 4.502384°N,
+           135.623447°E in the positive east, planetocentric coordinate system."
   hirise-pathfinder:
     url: "https://www.uahirise.org/PSP_001890_1995"
     read: 2026-09-22
@@ -129,6 +143,20 @@ sites:
   - {id: dss-25, display: "Goldstone DSS-25", class: dish, world: earth, lat: 35.3376, lon: -116.8747, alt_m: 960, diameter_m: 34, doing: "A 34-metre dish at Goldstone."}
   - {id: dss-43, display: "Canberra DSS-43", class: dish, world: earth, lat: -35.4022, lon: 148.9812, alt_m: 689, diameter_m: 70, doing: "The only dish that can still send commands to Voyager 2."}
   - {id: dss-63, display: "Madrid DSS-63", class: dish, world: earth, lat: 40.2414, lon: -4.2480, alt_m: 865, diameter_m: 70, doing: "The 70-metre dish outside Madrid."}
+
+  # --- Two pads, and the vehicles that left from them (public #427, 2026-10-08) ------------------
+  # `class: pad` is a hand-kept pad: Launch Library's pads are the ones something is about to
+  # leave from, and these two rows are here for what left long ago. scene/realmodels.js `bySite`
+  # stands NASA's Saturn V and Space Shuttle models on them, and registry/missions.yaml moves the
+  # clock to their launch mornings. Coordinates read 2026-10-08 on Wikipedia's articles for the
+  # two pads: 28 36 30 N, 80 36 16 W and 28 37 38 N, 80 37 15 W. Only Apollo 10's Saturn V left
+  # from 39B (Wikipedia, Saturn V, read the same day), so twelve of the thirteen left from 39A.
+  # `liftoffs:` IS THE GATE (scene/realmodels.js padVehicleShown): the vehicle is drawn from 24 hours
+  # before a liftoff given to the minute until the end of that minute, or for the UTC day of one
+  # given as a date, and at no other time. tests/test_pad_vehicles.mjs holds the list equal to the
+  # mission's events.
+  - {id: saturn-v-lc-39a, display: "Saturn V, Launch Complex 39A", class: pad, world: earth, lat: 28.6083, lon: -80.6044, alt_m: 0, aliases: ["Saturn 5", "LC-39A", "Apollo launch pad"], liftoffs: ["1968-12-21T12:51:00Z", "1969-07-16T13:32:00Z", "1972-12-07T05:33:00Z"], doing: "The pad twelve Saturn V rockets left from, 1967 to 1973. The rocket is drawn only in the day before each launch listed here: choose one to go there."}
+  - {id: shuttle-lc-39b, display: "Space Shuttle, Launch Complex 39B", class: pad, world: earth, lat: 28.6272, lon: -80.6208, alt_m: 0, aliases: ["Space Shuttle", "LC-39B", "STS"], liftoffs: ["1988-09-29", "1990-04-24", "2006-12-10"], doing: "A pad 53 Space Shuttle flights left from, the last in 2006. The stack is drawn only on the day of each launch listed here: choose one to go there."}
 
   # --- On the Moon --------------------------------------------------------------------
   # Uncited: LROC's 2016 table has the lunar module at 0.67416, 23.47314 (+/- 0.3 m), about 5 m
@@ -327,9 +355,12 @@ sites:
   # --- On Mars ------------------------------------------------------------------------
   # Uncited: NASA's landing announcement numbers, not matched to a reference in this change.
   - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4447, lon: 77.4508, landed: 2021-02-18, shape: rover, source: uncited, aliases: ["Octavia E. Butler Landing"], doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}
+  # Ingenuity where it stopped (2026-10-07; public #437, internal #389): the last row of NASA's own
+  # waypoint file for the helicopter, flight 72 on 18 January 2024, at Airfield Chi. NASA named
+  # the place Valinor Hills. 7.4 km west of the rover's landing site on this map.
+  - {id: ingenuity, display: "Ingenuity, Valinor Hills", class: surface, world: mars, lat: 18.4973, lon: 77.3225, landed: 2024-01-18, shape: lander, source: m20-heli-waypoints, aliases: ["Mars Helicopter", "Airfield Chi"], doing: "The first aircraft to fly on another world: 72 flights from 2021 to 2024. It stands where the last one ended."}
   - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, landed: 2012-08-06, shape: rover, source: pds-msl, aliases: ["Bradbury Landing"], doing: "Driving up a mountain of layered rock since 2012."}
-  # Uncited: Wikipedia gives the same pair and cites Parker et al. (2019), which was not read here.
-  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: uncited, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
+  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: golombek-2020, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
   # Uncited: Wikipedia gives 25.066 N, 109.925 E, a thousandth of a degree from this row, citing
   # Liu et al. (2021), which was not read here. Landed 14 May UTC; it was 15 May in Beijing.
   - {id: utopia, display: "Zhurong, Utopia Planitia", class: surface, world: mars, lat: 25.066, lon: 109.926, landed: 2021-05-14, shape: rover, source: uncited, doing: "China's first Mars rover, landed in 2021."}

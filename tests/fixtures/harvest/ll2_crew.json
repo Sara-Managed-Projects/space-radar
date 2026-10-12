@@ -1,0 +1,547 @@
+{
+ "count": 15,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "id": 573,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/573/",
+   "name": "Jessica Meir",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 44,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/44/",
+    "name": "National Aeronautics and Space Administration",
+    "abbrev": "NASA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P441DT6H24M54S",
+   "eva_time": "P1DT18H29M",
+   "age": 49,
+   "date_of_birth": "1977-07-01",
+   "date_of_death": null,
+   "last_flight": "2026-02-13T10:15:56Z",
+   "first_flight": "2019-09-25T13:57:42Z",
+   "flights_count": 2,
+   "landings_count": 1,
+   "spacewalks_count": 6
+  },
+  {
+   "id": 582,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/582/",
+   "name": "Jessica Watkins",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 44,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/44/",
+    "name": "National Aeronautics and Space Administration",
+    "abbrev": "NASA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P176DT23H13M56S",
+   "eva_time": "P0D",
+   "age": 38,
+   "date_of_birth": "1988-05-14",
+   "date_of_death": null,
+   "last_flight": "2026-10-01T15:10:06Z",
+   "first_flight": "2022-04-27T07:52:55Z",
+   "flights_count": 2,
+   "landings_count": 1,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 638,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/638/",
+   "name": "Starman",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 121,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/121/",
+    "name": "SpaceX",
+    "abbrev": "SpX",
+    "type": {
+     "id": 3,
+     "name": "Commercial"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 6,
+    "name": "Non-Human"
+   },
+   "in_space": true,
+   "time_in_space": "P3165DT4H37M17S",
+   "eva_time": "P0D",
+   "age": null,
+   "date_of_birth": null,
+   "date_of_death": null,
+   "last_flight": "2018-02-06T20:45:00Z",
+   "first_flight": "2018-02-06T20:45:00Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 642,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/642/",
+   "name": "Joshua Kutryk",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 16,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/16/",
+    "name": "Canadian Space Agency",
+    "abbrev": "CSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P6DT10H12M13S",
+   "eva_time": "P0D",
+   "age": 44,
+   "date_of_birth": "1982-03-21",
+   "date_of_death": null,
+   "last_flight": "2026-10-01T15:10:06Z",
+   "first_flight": "2026-10-01T15:10:06Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 649,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/649/",
+   "name": "Anna Kikina",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 63,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/63/",
+    "name": "Russian Federal Space Agency (ROSCOSMOS)",
+    "abbrev": "RFSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P242DT20H35M42S",
+   "eva_time": "P0D",
+   "age": 42,
+   "date_of_birth": "1984-08-27",
+   "date_of_death": null,
+   "last_flight": "2026-07-14T14:47:43Z",
+   "first_flight": "2022-10-05T16:00:57Z",
+   "flights_count": 2,
+   "landings_count": 1,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 650,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/650/",
+   "name": "Pyotr Dubrov",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 63,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/63/",
+    "name": "Russian Federal Space Agency (ROSCOSMOS)",
+    "abbrev": "RFSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P440DT14H19M59S",
+   "eva_time": "P1DT5H49M",
+   "age": 48,
+   "date_of_birth": "1978-01-30",
+   "date_of_death": null,
+   "last_flight": "2026-07-14T14:47:43Z",
+   "first_flight": "2021-04-09T07:42:41Z",
+   "flights_count": 2,
+   "landings_count": 1,
+   "spacewalks_count": 4
+  },
+  {
+   "id": 710,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/710/",
+   "name": "Luke Delaney",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 44,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/44/",
+    "name": "National Aeronautics and Space Administration",
+    "abbrev": "NASA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P6DT10H12M50S",
+   "eva_time": "P0D",
+   "age": 47,
+   "date_of_birth": "1979-01-01",
+   "date_of_death": null,
+   "last_flight": "2026-10-01T15:10:06Z",
+   "first_flight": "2026-10-01T15:10:06Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 712,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/712/",
+   "name": "Jack Hathaway",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 44,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/44/",
+    "name": "National Aeronautics and Space Administration",
+    "abbrev": "NASA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P236DT15H7M",
+   "eva_time": "P0D",
+   "age": 44,
+   "date_of_birth": "1982-01-01",
+   "date_of_death": null,
+   "last_flight": "2026-02-13T10:15:56Z",
+   "first_flight": "2026-02-13T10:15:56Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 713,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/713/",
+   "name": "Anil Menon",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 44,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/44/",
+    "name": "National Aeronautics and Space Administration",
+    "abbrev": "NASA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P85DT10H35M14S",
+   "eva_time": "PT19H29M",
+   "age": 50,
+   "date_of_birth": "1976-01-01",
+   "date_of_death": null,
+   "last_flight": "2026-07-14T14:47:43Z",
+   "first_flight": "2026-07-14T14:47:43Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 3
+  },
+  {
+   "id": 732,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/732/",
+   "name": "Andrei Fedyaev",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 63,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/63/",
+    "name": "Russian Federal Space Agency (ROSCOSMOS)",
+    "abbrev": "RFSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P422DT13H50M20S",
+   "eva_time": "P0D",
+   "age": 45,
+   "date_of_birth": "1981-02-26",
+   "date_of_death": null,
+   "last_flight": "2026-02-13T10:15:56Z",
+   "first_flight": "2023-03-02T05:34:14Z",
+   "flights_count": 2,
+   "landings_count": 1,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 747,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/747/",
+   "name": "Sophie Adenot",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 27,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/27/",
+    "name": "European Space Agency",
+    "abbrev": "ESA",
+    "type": {
+     "id": 2,
+     "name": "Multinational"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P236DT15H7M19S",
+   "eva_time": "PT19H42M",
+   "age": 44,
+   "date_of_birth": "1982-07-05",
+   "date_of_death": null,
+   "last_flight": "2026-02-13T10:15:56Z",
+   "first_flight": "2026-02-13T10:15:56Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 3
+  },
+  {
+   "id": 764,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/764/",
+   "name": "Zhu Yangzhu",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 17,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/17/",
+    "name": "China National Space Administration",
+    "abbrev": "CNSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P290DT8H55M37S",
+   "eva_time": "PT13H24M",
+   "age": 40,
+   "date_of_birth": "1986-09-01",
+   "date_of_death": null,
+   "last_flight": "2026-05-24T15:08:36Z",
+   "first_flight": "2023-05-30T01:31:10Z",
+   "flights_count": 2,
+   "landings_count": 1,
+   "spacewalks_count": 2
+  },
+  {
+   "id": 915,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/915/",
+   "name": "Sergey Teteryatnikov",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 63,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/63/",
+    "name": "Russian Federal Space Agency (ROSCOSMOS)",
+    "abbrev": "RFSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P6DT10H14M12S",
+   "eva_time": "P0D",
+   "age": 37,
+   "date_of_birth": "1988-12-19",
+   "date_of_death": null,
+   "last_flight": "2026-10-01T15:10:06Z",
+   "first_flight": "2026-10-01T15:10:06Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 0
+  },
+  {
+   "id": 916,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/916/",
+   "name": "Zhang Zhiyuan",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 17,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/17/",
+    "name": "China National Space Administration",
+    "abbrev": "CNSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P136DT10H15M42S",
+   "eva_time": "PT5H29M",
+   "age": 40,
+   "date_of_birth": "1986-06-01",
+   "date_of_death": null,
+   "last_flight": "2026-05-24T15:08:36Z",
+   "first_flight": "2026-05-24T15:08:36Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 1
+  },
+  {
+   "id": 917,
+   "url": "https://ll.thespacedevs.com/2.3.0/astronauts/917/",
+   "name": "Lai Ka-ying",
+   "status": {
+    "id": 1,
+    "name": "Active"
+   },
+   "agency": {
+    "response_mode": "list",
+    "id": 17,
+    "url": "https://ll.thespacedevs.com/2.3.0/agencies/17/",
+    "name": "China National Space Administration",
+    "abbrev": "CNSA",
+    "type": {
+     "id": 1,
+     "name": "Government"
+    }
+   },
+   "response_mode": "normal",
+   "type": {
+    "id": 2,
+    "name": "Government"
+   },
+   "in_space": true,
+   "time_in_space": "P136DT10H15M43S",
+   "eva_time": "P0D",
+   "age": 43,
+   "date_of_birth": "1982-11-01",
+   "date_of_death": null,
+   "last_flight": "2026-05-24T15:08:36Z",
+   "first_flight": "2026-05-24T15:08:36Z",
+   "flights_count": 1,
+   "landings_count": 0,
+   "spacewalks_count": 0
+  }
+ ]
+}

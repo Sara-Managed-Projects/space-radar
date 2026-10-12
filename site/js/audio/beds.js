@@ -1,6 +1,6 @@
 // audio/beds.js -- one ambient bed per rung of the map, cross-faded (spec 0035 req 4).
 //
-// Contract export: createBeds(engine, AUDIO, opts) -> { enter(rung), stop(), bus, current, state }
+// Contract export: createBeds(engine, AUDIO, opts) -> { enter(rung), stop(), bus, under, current, state }
 //                  XFADE_S
 //
 // A PLANETARIUM IS SCORED, NOT SOUND-EFFECTED. Four beds, keyed by where the camera is: the Earth
@@ -16,6 +16,11 @@
 // sting asks for, stings.js), which feeds the engine's master. One gain doing both jobs meant a
 // sting landing in the middle of a cross-fade cancelled the fade (cancelScheduledValues is per
 // parameter), and the old bed was left playing at 40 % under the new one.
+//
+// AND A THIRD, FOR THE SAME REASON (spec 0069): the bus feeds `under`, which is the duck the
+// narration asks for (audio/narration.js: 10 dB down while a stop is read). A sting lands at the
+// moment a stop's voice begins; on one gain the sting's "back to 1 in a second" would have
+// cancelled the voice's duck, and the music would have come up under the second sentence.
 
 import { createLoader } from './load.js';
 
@@ -32,13 +37,17 @@ export function createBeds(engine, AUDIO, opts = {}) {
   let token = 0;
   let loading = null;
   let bus = null;
+  let under = null;
 
   function ensureBus() {
     const c = engine.context;
     if (!bus && c && engine.master) {
+      under = c.createGain();
+      under.gain.value = 1;
+      under.connect(engine.master);
       bus = c.createGain();
       bus.gain.value = 1;
-      bus.connect(engine.master);
+      bus.connect(under);
     }
     return bus;
   }
@@ -111,6 +120,7 @@ export function createBeds(engine, AUDIO, opts = {}) {
     enter,
     stop,
     get bus() { return ensureBus(); },
+    get under() { ensureBus(); return under; },
     get current() { return current; },
     get state() { return { bed: current, rung: want, loading }; },
     rows: () => rows.slice(),

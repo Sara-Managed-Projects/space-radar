@@ -7,8 +7,13 @@ A parser module exposes:
     not_modified(text) -> bool    optional; True when a 200/403 TEXT answer means "nothing new"
                                   (CelesTrak says it in words rather than with a 304)
 
+    pack(body) -> body            optional, and one parser has it (sea_grid): the body to SAVE in
+                                  place of the upstream's, when that is megabytes of repeated
+                                  coordinates. Called after count() and the never-worse guard.
+
 `body` is the parsed JSON when the upstream sent JSON, otherwise the text. A parser never
-normalises: the browser does that, once, in site/js/data/parsers.js.
+normalises: the browser does that, once, in site/js/data/parsers.js. (`pack` drops repetition and
+rounds; it does not rename, fill or reinterpret.)
 """
 
 from __future__ import annotations

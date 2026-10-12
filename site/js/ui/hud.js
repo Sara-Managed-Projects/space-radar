@@ -30,15 +30,18 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { COPY, t, fmt, UNITS } from '../copy/en.js';
-import { tagLines } from './cards.js';
+import { tagLines } from './cardgate.js';
 import { behindWorld } from './labels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from '../scene/stage.js';
 import { WORLDS } from '../scene/worlds.js';
 import { GLYPH_SIZE_PX } from '../scene/glyphs.js';
 
-// Spec 0047 req 1: box side = max(28 px, drawn diameter + 12 px).
-export const RETICLE_MIN_PX = 28;
+// Spec 0047 req 1: box side = max(minimum, drawn diameter + 12 px). The minimum was 28 px; it is
+// the guide's 40 (docs/ui-guide.md section 3.12, row D draws 44) since internal issue #318 found
+// the two documents disagreeing: four 10 px ticks around 28 px left 8 px of gap a side, a box that
+// read as a blob around a dot, and 40 is nearer a finger's target on a phone.
+export const RETICLE_MIN_PX = 40;
 export const RETICLE_PAD_PX = 12;
 // Req 3: the leader runs 24 px out and 24 px up (or down) from the box's corner, at 45 degrees.
 export const LEADER_PX = 24;
@@ -53,6 +56,8 @@ export const CHEVRON_INSET_PX = 16;
 // Req 5: readouts at most four times a second.
 export const READOUT_MS = 250;
 // The selected dot is drawn 1.35x its class size (scene/glyphs.js setSelected).
+/** The tag's units as drawn: the card's short forms, for the one unit that is three words long. */
+const TAG_SHORT = { 'astronomical units': COPY.card.hero.units['astronomical units'] };
 const SELECTED_DOT = 1.35;
 // A box nearly as big as the view (a selected world filling the screen) frames nothing; the
 // brackets and the tick go, and the tag stays, slid inside the edges.
@@ -130,13 +135,23 @@ export function tagPlacement(px, box, tag, vw, vh, leader = LEADER_PX, margin = 
 /**
  * The part of the view the panels leave open, from their boxes: a panel wholly in the left half is
  * a left rail, wholly in the right half a right rail, and otherwise a sheet at the top or bottom.
+ *
+ * A RAIL STANDS, OR HUGS ITS EDGE. Since spec 0061 the time pill is centred on the scene area, so
+ * with the sidebar open it sits wholly in the right half: 726 to 1094 px at 1440. Read as a right
+ * rail it closed the area to 346 px, under the third of the view the last line asks for, and the
+ * whole view came back as "open": at the Moon's arrival the tag went up and right, under the tool
+ * rail (internal issue #319, measured 2026-10-03). So a panel in one half is that side's rail only
+ * if it is taller than wide or within RAIL_EDGE of that edge; a wide bar away from the edge is a
+ * bar, at the top or the bottom.
  */
+const RAIL_EDGE = 0.05;
 export function openArea(rects, vw, vh) {
   const a = { left: 0, top: 0, right: vw, bottom: vh };
   for (const r of rects || []) {
     if (!r || !(r.right > r.left) || !(r.bottom > r.top)) continue;
-    if (r.right <= vw / 2) a.left = Math.max(a.left, r.right);
-    else if (r.left >= vw / 2) a.right = Math.min(a.right, r.left);
+    const stands = r.bottom - r.top >= r.right - r.left;
+    if (r.right <= vw / 2 && (stands || r.left <= vw * RAIL_EDGE)) a.left = Math.max(a.left, r.right);
+    else if (r.left >= vw / 2 && (stands || vw - r.right <= vw * RAIL_EDGE)) a.right = Math.min(a.right, r.left);
     else if (r.top >= vh / 2) a.bottom = Math.min(a.bottom, r.top);
     else if (r.bottom <= vh / 2) a.top = Math.max(a.top, r.bottom);
   }
@@ -462,8 +477,8 @@ export function createHud(ctx, host) {
 
   // What the tag may not sit under. Since spec 0061: the sidebar (which holds the card; on a phone
   // it is the sheet), the rail, the pill, the What-to-show popover while it is open, and the
-  // phone's top bar (task 3).
-  const PANELS = '#sr-side, #sr-rail, #sr-time, #sr-card, #sr-show, #sr-top';
+  // phone's top bar (task 3), and an embed's one link (ui/embed.js).
+  const PANELS = '#sr-side, #sr-rail, #sr-time, #sr-card, #sr-show, #sr-top, #sr-embed';
   function panelRects() {
     const out = [];
     if (document.documentElement.classList.contains('sr-clean')) return out;
@@ -506,7 +521,11 @@ export function createHud(ctx, host) {
         if (s.num.textContent.length !== r.num.length) measureTag = true;
         s.num.textContent = r.num;
       }
-      if (s.unit.textContent !== r.unit) { s.unit.textContent = r.unit; measureTag = true; }
+      // Drawn short where the card's own numbers are (COPY.card.hero.units): two distances in
+      // "astronomical units" made a line wider than a phone, cut at its right edge (SEEN
+      // 2026-10-06 at 390 px, Jupiter). The accessible name below keeps the words.
+      const unit = TAG_SHORT[r.unit] || r.unit;
+      if (s.unit.textContent !== unit) { s.unit.textContent = unit; measureTag = true; }
       if (s.suffix.textContent !== r.suffix) { s.suffix.textContent = r.suffix; measureTag = true; }
     }
     if (honesty.textContent !== L.honesty) { honesty.textContent = L.honesty; measureTag = true; }
@@ -544,6 +563,9 @@ export function createHud(ctx, host) {
     const p = ctx.positionOfRecord ? ctx.positionOfRecord(sel) : null;
     if (!p || !Number.isFinite(p.x)) { hideAll(); return; }
     _p.copy(p);
+    // From the ground the air lifts the dot (scene/glyphs.js); the ring and the tag go with it, as the
+    // name does (ui/labels.js; internal #418). One helper for all three: skyView.apparent.
+    if (ctx.skyView && ctx.skyView.ownsSky && typeof ctx.skyView.apparent === 'function') ctx.skyView.apparent(_p);
     if (wall - lastSlow >= READOUT_MS) { lastSlow = wall; slow(tMs); }
 
     // One projection, in two halves so the sign of w is known: behind the eye is view-space z >= 0.

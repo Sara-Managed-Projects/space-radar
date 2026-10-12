@@ -4,3 +4,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://www.spaceradar.ai/sitemap.xml
+Sitemap: https://www.spaceradar.ai/sitemap-images.xml

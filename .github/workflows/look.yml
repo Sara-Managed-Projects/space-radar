@@ -1,0 +1,268 @@
+name: look
+
+# A LOOK FROM A MACHINE THAT HAS TIME (tools/README.md has the manual).
+#
+# On 2026-10-12 the laptop this project is built on could not boot the page in a headless Chrome
+# inside nine minutes (other work had it at a load average of 400 to 700), and five features were
+# merged that no GPU had drawn. What worked was a workflow on never-merged branches `look/<name>`:
+# serve site/ on a runner with the live site's small saved data files, run a probe through
+# tools/cdp.mjs, keep the pictures and the page's errors. In three minutes it showed a flat-filled
+# Pluto map, and that the frame latch takes the new effects off on a software renderer, so that a
+# naive look sees nothing. This file is that workaround kept as a tool:
+#
+#   gh workflow run look.yml -f probe=worlds -f ref=<branch>
+#   gh run watch; gh run download <run id> -n look-worlds-chromium
+#
+# THE JOB FAILS when the page logged an error (console.error, an uncaught error, an unhandled
+# rejection) or the probe returned a `fail`: tools/look-summary.mjs decides, and writes the same
+# page to the step summary and to summary.md in the artefact. A broken shader is a red check and
+# not a picture nobody opened. A browser that cannot make a WebGL2 context in its container is
+# NEUTRAL: green, with what the browser reported written down, because that is a fact about the
+# container and not about the change.
+#
+# TWO CHECKOUTS. The tool (this file, tools/, tests/probes/look/) is the ref the workflow runs from;
+# what is looked at is `ref`, checked out under subject/ and served from there. So a branch that was
+# cut before a probe existed can still be looked at with it.
+on:
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, lights, frametime)"
+        default: smoke
+      ref:
+        description: "Branch or sha to look at (empty: the ref this was dispatched from)"
+        default: ""
+      width:
+        description: "Window width, CSS px"
+        default: "1440"
+      height:
+        description: "Window height, CSS px"
+        default: "900"
+      mobile:
+        description: "A phone instead: 390 x 844, with the tool's --mobile"
+        type: boolean
+        default: false
+      hold_latch:
+        description: "Hold the frame latch and the pixel-ratio governor off (?look=1). Off: what a slow device really gets"
+        type: boolean
+        default: true
+      browser:
+        description: "Which engine"
+        type: choice
+        options: [chromium, firefox, webkit, all]
+        default: chromium
+      harvest:
+        description: "Source ids to fetch fresh and merge into the served data/v1, with commas (e.g. swpc-edited-events,donki-cme-analysis)"
+        default: ""
+  # The smoke probe, Chromium only, on a pull request that changes what is drawn.
+  pull_request:
+    paths:
+      - "site/js/scene/**"
+      - "site/js/main.js"
+      - "site/textures/**"
+      # A change to this job must run this job (screens.yml says why).
+      - ".github/workflows/look.yml"
+      - "tests/probes/look/**"
+      - "tools/look-playwright.mjs"
+      - "tools/look-summary.mjs"
+      - "tools/cdp.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: look-${{ github.event_name }}-${{ github.ref }}-${{ inputs.probe }}-${{ inputs.browser }}-${{ inputs.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Which looks to take: one job per probe and engine.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - name: One job per probe and engine
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          PROBE: ${{ inputs.probe }}
+          BROWSER: ${{ inputs.browser }}
+          HARVEST: ${{ inputs.harvest }}
+          MOBILE: ${{ inputs.mobile }}
+          HOLD: ${{ inputs.hold_latch }}
+          WIDTH: ${{ inputs.width }}
+          HEIGHT: ${{ inputs.height }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >>"$GITHUB_OUTPUT"
+          import json, os, re, sys
+          e = os.environ
+          def row(probe, browser, harvest="", mobile=False, hold=True, width="1440", height="900"):
+              if not re.fullmatch(r"[a-z0-9-]+", probe): sys.exit(f"probe {probe!r}: a name under tests/probes/look/, lower case")
+              if not re.fullmatch(r"[a-z0-9,-]*", harvest): sys.exit(f"harvest {harvest!r}: source ids with commas")
+              if not (re.fullmatch(r"\d{3,4}", width) and re.fullmatch(r"\d{3,4}", height)): sys.exit("width and height: three or four digits")
+              if mobile: width, height = "390", "844"
+              return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height}
+          if e["EVENT"] == "workflow_dispatch":
+              browsers = ["chromium", "firefox", "webkit"] if e["BROWSER"] == "all" else [e["BROWSER"]]
+              rows = [row(e["PROBE"].strip(), b, e["HARVEST"].replace(" ", ""), e["MOBILE"] == "true", e["HOLD"] != "false", e["WIDTH"].strip(), e["HEIGHT"].strip()) for b in browsers]
+          else:
+              rows = [row("smoke", "chromium")]
+          print("matrix=" + json.dumps({"include": rows}))
+          PY
+
+  look:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: ${{ matrix.probe }} in ${{ matrix.browser }}
+    env:
+      PROBE: ${{ matrix.probe }}
+      BROWSER: ${{ matrix.browser }}
+      HARVEST: ${{ matrix.harvest }}
+      MOBILE: ${{ matrix.mobile }}
+      HOLD: ${{ matrix.hold }}
+      WIDTH: ${{ matrix.width }}
+      HEIGHT: ${{ matrix.height }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: What is looked at
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          path: subject
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: The probe exists
+        run: |
+          set -euo pipefail
+          [ -f "tests/probes/look/$PROBE.js" ] || { echo "::error::no probe tests/probes/look/$PROBE.js; there are: $(ls tests/probes/look | grep -v '^_' | sed 's/\.js$//' | tr '\n' ' ')"; exit 1; }
+          [ -f subject/site/index.html ] || { echo "::error::the ref looked at has no site/index.html"; exit 1; }
+          echo "looking at $(git -C subject rev-parse HEAD) with the tool at $(git rev-parse HEAD)"
+
+      # The saved copies a visitor's page reads first (site/data/v1 is not in the repository: the
+      # harvester writes it to the bucket). Every one the live index lists up to 1.2 MB: the
+      # catalogues of every satellite and every launch are megabytes each and no probe here reads them.
+      - name: The live site's saved data, the small files
+        run: |
+          set -euo pipefail
+          mkdir -p subject/site/data/v1
+          python3 - <<'PY'
+          import json, urllib.request
+          base = "https://dus32w6mqcntr.cloudfront.net/data/v1/"
+          dest = "subject/site/data/v1/"
+          def get(name, cap):
+              with urllib.request.urlopen(urllib.request.Request(base + name, headers={"User-Agent": "space-radar look workflow"}), timeout=cap) as r:
+                  return r.read()
+          try:
+              raw = get("index.json", 60)
+          except Exception as e:
+              print(f"::warning::the live index could not be read ({e}); the page will ask each source itself")
+              raise SystemExit(0)
+          open(dest + "index.json", "wb").write(raw)
+          for sid, row in sorted(json.loads(raw).get("snapshots", {}).items()):
+              size = row.get("bytes") if isinstance(row, dict) else None
+              if not isinstance(size, int) or size > 1_200_000:
+                  print(f"left   {sid} ({size} B)"); continue
+              try:
+                  open(dest + sid + ".json", "wb").write(get(sid + ".json", 90)); print(f"saved  {sid} ({size} B)")
+              except Exception as e:
+                  print(f"no     {sid}: {e}")
+          PY
+
+      # `harvest`: a source the live site has no copy of yet (a feature merged and not deployed), or
+      # one wanted fresh. The harvester of the ref looked at, which runs on the standard library.
+      - name: Fresh copies of the sources asked for
+        if: matrix.harvest != ''
+        run: |
+          set -uo pipefail
+          for id in $(echo "$HARVEST" | tr ',' ' '); do
+            (cd subject && python3 -m harvest --dest "$RUNNER_TEMP/harvest" --only "$id") || echo "::warning::harvest of $id failed; the page will ask the source itself, or draw without it"
+          done
+          python3 - <<'PY'
+          import json, os, shutil
+          src = os.path.join(os.environ["RUNNER_TEMP"], "harvest")
+          dest = "subject/site/data/v1"
+          wanted = [x for x in os.environ["HARVEST"].split(",") if x]
+          try: idx = json.load(open(os.path.join(dest, "index.json")))
+          except Exception: idx = {"snapshots": {}}
+          try: got = json.load(open(os.path.join(src, "index.json"))).get("snapshots", {})
+          except Exception: got = {}
+          for sid in wanted:
+              f = os.path.join(src, sid + ".json")
+              if sid in got and os.path.exists(f):
+                  shutil.copy(f, os.path.join(dest, sid + ".json")); idx.setdefault("snapshots", {})[sid] = got[sid]
+                  print(f"merged {sid} ({os.path.getsize(f)} B, status {got[sid].get('status')})")
+              else:
+                  print(f"::warning::{sid}: the harvester wrote no copy")
+          json.dump(idx, open(os.path.join(dest, "index.json"), "w"))
+          PY
+
+      - name: Serve the site looked at
+        run: |
+          set -euo pipefail
+          nohup python3 tools/serve.py subject/site 8177 >/tmp/serve.log 2>&1 &
+          for _ in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8177/index.html; then echo "serving"; exit 0; fi
+            sleep 0.25
+          done
+          echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+
+      # Chromium through tools/cdp.mjs and the runner's own Chrome, as a laptop does it. Firefox and
+      # WebKit through Playwright in the image screens.yml pins, with tools/look-playwright.mjs,
+      # which runs the same probe file and offers the same window.cdpShot. UNDER xvfb-run: measured
+      # 2026-10-12, Firefox 132 headless makes no WebGL context in this image with no display
+      # ("Exhausted GL driver options") and makes one on llvmpipe the moment there is a display, though
+      # it opens no window on it. The redirects are inside xvfb-run's command because xvfb-run sends
+      # the command's stderr to its stdout, which put the console into out.json. This step does not judge:
+      # whatever happened, the next one reads what was left and decides.
+      - name: Look
+        run: |
+          set -uo pipefail
+          mkdir -p look-out
+          cat tests/probes/look/_prelude.js "tests/probes/look/$PROBE.js" > look-out/probe.js
+          url="http://127.0.0.1:8177/?sw=0"
+          [ "$HOLD" = "true" ] && url="$url&look=1"
+          flags="--width=$WIDTH --height=$HEIGHT --block=celestrak.org,ll.thespacedevs.com --shot-dir=look-out"
+          [ "$MOBILE" = "true" ] && flags="$flags --mobile"
+          echo "$url  $flags"
+          if [ "$BROWSER" = "chromium" ]; then
+            export CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium)"
+            echo "chrome: $CHROME $("$CHROME" --version)"
+            CDP_LOGS=1 timeout 2700 node tools/cdp.mjs "$url" look-out/probe.js $flags >look-out/out.json 2>look-out/err.txt
+          else
+            docker run --rm --network host \
+              -u "$(id -u):$(id -g)" -e HOME=/tmp \
+              -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+              -v "$PWD:/work" -w /work \
+              mcr.microsoft.com/playwright:v1.49.1-jammy \
+              bash -c "set -uo pipefail
+                npm install --no-save --no-audit --no-fund playwright@1.49.1 >/tmp/npm.log 2>&1 || { cat /tmp/npm.log; exit 3; }
+                timeout 2700 xvfb-run -a bash -c \"node tools/look-playwright.mjs '$url' look-out/probe.js --browser=$BROWSER $flags >look-out/out.json 2>look-out/err.txt\""
+          fi
+          echo "the tool exited $?"
+          tail -c 2000 look-out/err.txt || true
+          ls -la look-out
+
+      - name: What it found, and the verdict
+        if: always()
+        run: |
+          set -euo pipefail
+          node tools/look-summary.mjs --dir=look-out --probe="$PROBE" --browser="$BROWSER" --hold="$HOLD" --ref="$(git -C subject rev-parse HEAD)" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: look-${{ matrix.probe }}-${{ matrix.browser }}
+          path: |
+            look-out/*.png
+            look-out/out.json
+            look-out/err.txt
+            look-out/summary.md
+          retention-days: 14
+          if-no-files-found: warn

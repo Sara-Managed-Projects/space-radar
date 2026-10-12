@@ -2,6 +2,8 @@
 //
 // Contract (pure, no DOM, no three.js, importable in node):
 //   obscuration(pKm, sunKm, occluderKm, {sunRadiusKm, moonRadiusKm}) -> 0..1
+//   discGeometry(pKm, sunKm, occluderKm, radii) -> {x, r} | null: the two discs, in the Sun's radii
+//   shadowRadiiKm(u, radii) -> {umbraKm, penumbraKm}: the shadow's two radii across its axis
 //   discOverlap(x, r)                     -> 0..1, the overlap of two discs in the Sun's radii
 //   surfaceObscuration(pKm, centreKm, sunKm, occluderKm, radii) -> 0 where the Sun is set
 //   eclipseLikely(sunKm, moonKm, kind)    -> boolean, from the Earth's centre: worth the shader?
@@ -114,6 +116,42 @@ export function obscuration(pKm, sunKm, occluderKm, { sunRadiusKm = SUN_RADIUS_K
 }
 
 /**
+ * The two discs as seen from pKm, in the Sun's angular radii: `x` their centres' separation, `r`
+ * the occluder's radius. It is what obscuration() hands to discOverlap(), exposed because the two
+ * EDGES of a shadow are lines in it: the whole shadow ends where x = 1 + r (the discs touch), and
+ * the core -- the umbra where r > 1, the ring of an annular eclipse where r < 1 -- where
+ * x = |1 - r| (one disc wholly inside the other). scene/earth.js draws both lines (public #273).
+ */
+export function discGeometry(pKm, sunKm, occluderKm, { sunRadiusKm = SUN_RADIUS_KM, moonRadiusKm = MOON_RADIUS_KM } = {}) {
+  if (!pKm || !sunKm || !occluderKm) return null;
+  const toS = sub(sunKm, pKm);
+  const toM = sub(occluderKm, pKm);
+  const ds = len(toS);
+  const dm = len(toM);
+  if (!(ds > sunRadiusKm) || !(dm > moonRadiusKm)) return null;
+  const angS = Math.asin(sunRadiusKm / ds);
+  const angM = Math.asin(moonRadiusKm / dm);
+  const theta = Math.atan2(len(cross(toS, toM)), dot(toS, toM));
+  return { x: theta / angS, r: angM / angS };
+}
+
+/**
+ * The shadow's two radii in the plane across its axis, in km, at a point `u` Sun-to-Moon distances
+ * beyond the Moon (the Earth's surface is at u = 0.0025 or so). Similar triangles, the same two
+ * lines as Astronomy Engine's CalcShadow (astronomy.js, read 2026-10-08):
+ *   umbraKm    = Rsun - (1 + u)(Rsun - Rmoon)    positive: a total eclipse there; negative: the
+ *                                                 cone has closed and the eclipse is annular, the
+ *                                                 ring's radius being its absolute value
+ *   penumbraKm = -Rsun + (1 + u)(Rsun + Rmoon)   about 3 500 km at the Earth
+ */
+export function shadowRadiiKm(u, { sunRadiusKm = SUN_RADIUS_KM, moonRadiusKm = MOON_RADIUS_KM } = {}) {
+  return {
+    umbraKm: sunRadiusKm - (1 + u) * (sunRadiusKm - moonRadiusKm),
+    penumbraKm: -sunRadiusKm + (1 + u) * (sunRadiusKm + moonRadiusKm),
+  };
+}
+
+/**
  * obscuration() for a point on a body's surface, 0 where the Sun is below its horizon: the pure
  * twin of the shaders' day-side test (`sunDot > 0.0`). Without it the geometry alone answers for
  * the far side too -- at the 2027-08-02 peak the antipode of Luxor has the Sun and the Moon lined
@@ -176,12 +214,18 @@ float eclDiscOverlap( float x, float r ) {
   return clamp( lens / 3.14159265, 0.0, 1.0 );
 }
 
-float eclObscuration( vec3 p, vec3 s, vec3 m, float rs, float rm ) {
+// discGeometry() above: the separation and the occluder's radius, in the Sun's radii.
+vec2 eclGeometry( vec3 p, vec3 s, vec3 m, float rs, float rm ) {
   vec3 toS = s - p;
   vec3 toM = m - p;
   float angS = asin( clamp( rs / length( toS ), 0.0, 1.0 ) );
   float angM = asin( clamp( rm / length( toM ), 0.0, 1.0 ) );
   float theta = atan( length( cross( toS, toM ) ), dot( toS, toM ) );
-  return eclDiscOverlap( theta / angS, angM / angS );
+  return vec2( theta / angS, angM / angS );
+}
+
+float eclObscuration( vec3 p, vec3 s, vec3 m, float rs, float rm ) {
+  vec2 g = eclGeometry( p, s, m, rs, rm );
+  return eclDiscOverlap( g.x, g.y );
 }
 `;

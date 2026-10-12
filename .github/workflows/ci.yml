@@ -6,6 +6,9 @@ name: ci
 on:
   push:
   pull_request:
+  # A push or a pull request made with GITHUB_TOKEN starts no workflow, so the weekly
+  # CONTRIBUTORS.md branch (.github/workflows/contributors.yml) starts this one by hand.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -64,6 +67,24 @@ jobs:
         run: python3 scripts/gen_aliases_js.py --check
       - name: The showers mirror matches the registry
         run: python3 scripts/gen_showers_js.py --check
+      - name: The links-out mirror matches the registry (spec 0050 req 8)
+        run: python3 scripts/gen_links_js.py --check
+      - name: The oldest-things notes mirror matches the registry (spec 0050 req 7)
+        run: python3 scripts/gen_oldest_notes_js.py --check
+      - name: "The showers' activity mirror matches the registry (internal #416)"
+        run: python3 scripts/gen_showers_activity_js.py --check
+      - name: The reels mirror matches the registry (spec 0036)
+        run: python3 scripts/gen_autopilot_js.py --check
+      - name: "The World Magnetic Model's coefficients match NOAA's file (internal #450)"
+        run: python3 scripts/gen_wmm_js.py --check
+      - name: The missions mirror matches the registry (public #452)
+        run: python3 scripts/gen_missions_js.py --check
+      # The path files (site/data/eph): the registry, the manifest, each .bin, the browser's mirror
+      # and the held-out Horizons positions agree, with no network (internal #277).
+      - name: The mission path files are the ones their manifest describes
+        run: python3 scripts/build_ephemerides.py --check
+      - name: The path-file guard refuses what it should (tests/test_ephemerides.py)
+        run: python3 tests/test_ephemerides.py
       # Spec 0031: registry/events.yaml had twelve types and no reader until 2026-09-23; the browser
       # now builds its event stream from this mirror, so a stale one is a type switched off in the
       # YAML and still built, or the other way round.
@@ -74,7 +95,7 @@ jobs:
       - name: The exotics mirror matches the registry (spec 0028 step 7)
         run: python3 scripts/gen_exotics_js.py --check
       - name: The star systems mirror matches the registry (spec 0040)
-        run: python3 scripts/gen_systems_js.py --check
+        run: python3 scripts/gen_systems_js.py --check && python3 scripts/gen_systems_more_js.py --check
       - name: The famous-stars mirror matches the registry
         run: python3 scripts/gen_stars_notable_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)
@@ -82,6 +103,23 @@ jobs:
       # Spec 0035: the browser reads which file is which bed, and the credit it prints, from this.
       - name: The audio mirror matches the registry (spec 0035)
         run: python3 scripts/gen_audio_js.py --check
+      # Spec 0069: the trips' narration. No TTS here: the clips are rendered by hand and committed;
+      # this refuses a stop whose words changed since its clip was made, a missing file or twin,
+      # captions that are not the card's sentences, and a trip or a total over its budget.
+      - name: Every trip stop has its narration, made from the words it has now (spec 0069)
+        run: python3 scripts/narrate.py --check
+      - name: The narration mirror matches the registry (spec 0069)
+        run: python3 scripts/gen_narration_js.py --check
+      # Internal #326: every clip went through a speech recogniser and came back as its script.
+      # No model here: narrate.py --check above already refuses a clip with no listening record;
+      # this holds the parts that decide what counts as the same words.
+      - name: "The listening check: numbers and spellings compared as words, the word error rate, the guard"
+        run: python3 tests/test_listen_check.py
+      # Internal #441: a title said alone gained a vowel at each end, so it is said in one pass
+      # with the sentence after it. No TTS here: which sentences go together, where the pass is
+      # cut, and the caption times that come out of the sample counts.
+      - name: "A short sentence is never said alone: the passes, the cut and the cue times"
+        run: python3 tests/test_narrate_join.py
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
@@ -89,7 +127,19 @@ jobs:
       # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
       - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
         run: python3 scripts/build_trip_thumbs.py --check
-      # Spec 0045: the ten font subsets are the ones build-fonts.py recorded, fonts.css is what it
+      # 2026-10-07: one share picture per trip (site/og/<id>.png, 1200 x 630), inside its byte budget
+      # and printing the title and blurb the registry has today (a text chunk in the PNG says what
+      # was printed). Stdlib only, like the card pictures above.
+      - name: Every trip has its share picture, printing today's blurb
+        run: python3 scripts/build_trip_og.py --check
+      # Spec 0067: the photographs of the nebulae. The mirror the browser reads, then the files:
+      # one WebP per registry row, its longer side the row's `px`, each inside nebula_picture_bytes
+      # and all of them inside nebulae_total_bytes. Stdlib only, like the trip pictures above.
+      - name: The nebulae mirror matches the registry (spec 0067)
+        run: python3 scripts/gen_nebulae_js.py --check
+      - name: Every nebula has its picture, the right size and inside its budget (spec 0067)
+        run: python3 scripts/build_nebulae.py --check
+      # Spec 0045: the eleven font subsets are the ones build-fonts.py recorded, fonts.css is what it
       # writes, and the OFL text and a CREDITS.md row travel with each family. Stdlib only.
       - name: The self-hosted faces are the recorded subsets, with their licences (spec 0045)
         run: python3 scripts/build-fonts.py --check
@@ -103,6 +153,14 @@ jobs:
       # so a stale one is a laptop fetching a 4k map that is not there, or never fetching one that is.
       - name: The texture-tier mirror matches the registry
         run: python3 scripts/gen_textures_js.py --check
+      # 2026-10-03, spec 0065: the browser builds every tile URL from this mirror, so a stale one is a
+      # close-up of the Moon asking a host for a level it does not serve.
+      - name: The tile-set mirror matches the registry
+        run: python3 scripts/gen_tilesets_js.py --check
+      # 2026-10-03, spec 0066: the wind profiles, Mars's seasonal tables and each effect's class reach
+      # the shader from this mirror, so a stale one is a planet whose weather is not what the registry says.
+      - name: The weather mirror matches the registry
+        run: python3 scripts/gen_weather_js.py --check
       # Every parser against what its source really sends (captured fixtures), the never-worse
       # guard at 0 / 49 % / 50 %, CelesTrak's "has not updated since" as not-modified, a missing
       # secret as a skip, and one whole run into a directory. No network: CelesTrak allows one
@@ -116,12 +174,38 @@ jobs:
         run: python3 scripts/check_copy.py
       - name: A new world is a registry row
         run: python3 tests/test_growth.py
+      # 2026-10-05: nine of the fourteen credit lines in registry/sources.yaml were not in CREDITS.md,
+      # because nothing compared the two. The models, textures and sounds were already held to it.
+      - name: Every data source and model the registries name is credited in CREDITS.md
+        run: python3 tests/test_credits.py
       # Node for the SEO cases, which start from a fresh build of the object pages (card words are JS).
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # Spec 0043 task 2 (internal #121): registry/truth.yaml lists every guarded stop field, and a field
+      # the validator never mentions or no refusal case breaks is refused here.
+      - name: The truth table agrees with the validator and its refusals
+        run: python3 scripts/check_truth.py
+      - name: The truth check refuses a row for a field nothing guards
+        run: python3 tests/test_check_truth.py
+      - name: A picture's text chunk is written and read back (spec 0043 req 6)
+        run: node tests/test_png_text.mjs
+      - name: The object pages' where-is-it-now line (internal #294)
+        run: node tests/test_objectnow.mjs
+      - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
+        run: python3 tests/test_ktx2_plan.py
+      - name: "The AVIF trial finds the lowest quality at the SSIM floor, for both codecs (internal #530; skips without Pillow's AVIF)"
+        run: python3 tests/test_avif_trial.py
+      - name: "the Milky Way shader's spike cut takes the baked stars out of the 2k panorama and keeps its glow (internal #547; skips without NumPy)"
+        run: python3 tests/test_milkyway_opening.py
+      - name: The walk notices another project's headless Chrome (internal #460)
+        run: node tests/test_chrome_quiet.mjs
+      - name: The prepared cloud workflow stays minimal (internal #139)
+        run: python3 tests/test_clouds_workflow.py
+      - name: No merge conflict markers, and every tool script parses (internal #472)
+        run: python3 tests/test_no_conflict_markers.py
       # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
       # amendment 1): a parser change is proven to package before it is ever deployed, and the
       # placeholder path is exercised until harvest/ lands. Deterministic, so the hash is a fact.
@@ -149,17 +233,73 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: pip install --disable-pip-version-check pyyaml
+      # Pillow, fontTools and brotli draw the share pictures (scripts/seo_share.py): a deploy host without them keeps the old
+      # pictures and says so, but CI is where a broken picture is refused, so it installs them and builds with --require-share.
+      - run: pip install --disable-pip-version-check pyyaml pillow fonttools brotli
       - name: The home page's search tags and JSON-LD match registry/sources.yaml
         run: python3 scripts/gen_home_seo.py --check
-      - name: The object pages build, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt and the sitemap hold
-        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo"
+      # The Space Radar Lab (docs/ADD_A_SIMULATOR.md): the list is written from the simulators' own heads, and a stale one is refused.
+      - name: The Lab's list matches the simulators in site/lab/
+        run: python3 scripts/gen_lab_index.py --check
+      - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
+        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
         run: python3 tests/test_seo.py
       # Spec 0061 task 8: the share sheet links an object to the page built above, by the map
       # build_seo.py writes (object-pages.json); its post fits each network with the link last.
       - name: "The share sheet: the post per network (X 280, link 23), the excerpt with its attribution, the object page's link, nothing fetched before it opens"
         run: node tests/test_sharesheet.mjs
+      # Public #439 and #288: the embed's address, its snippet and its manual; nothing of it at
+      # boot and no service worker in a frame; photo mode's frame.
+      - name: "The embed and photo mode: ?embed=1 through a whitelist, the snippet, nothing at boot, the frame centred"
+        run: node tests/test_embed.mjs
+      # The growth pages: the ISS answer, Starlink and the satellite hub, planets tonight, the 40 star systems, the trust pages,
+      # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
+      - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
+        run: python3 tests/test_seo_pages.py
+      # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
+      - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
+        run: node tests/test_pagelive.mjs
+      # registry/sky-events.yaml types a calendar's facts; every instant, phase and elongation is computed and held against what the page says.
+      - name: "The dated events recomputed: stated dates inside the computed ones, the Moon's words, and each #t= link read by the app's own parser"
+        run: node tests/test_sky_events.mjs
+      # Public #293: the press page builds from the registry's own counts, with no personal data.
+      - name: "The press page: five counted facts, the README's pictures, every link resolving"
+        run: python3 tests/test_press.py
+      # Growth pull request: the README's numbers are counted by scripts/count_facts.py, and a
+      # thirty-first trip fails here until the README says so.
+      - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"
+        run: python3 tests/test_readme_facts.py
+      # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
+      - name: "The translation checker names a missing key, a lost slot and an untouched string"
+        run: node tests/test_check_translation.mjs
+      # The first files a newcomer meets: the issue chooser (6 forms, 3 contact links), CITATION.cff,
+      # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
+      - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
+        run: python3 tests/test_community_files.py
+      # A guide that names a file which has moved sends a newcomer to nothing on their first day.
+      # Also holds the two community workflows to their own rules: actions pinned to a commit,
+      # no secret but GITHUB_TOKEN, and nothing from a fork checked out under pull_request_target.
+      - name: "The contributor guides: every path they name exists, every CI step they quote is real, the welcome and label workflows are pinned and fork-safe, CONTRIBUTORS.md and the release thanks from a saved list"
+        run: python3 tests/test_contributor_docs.py
+      # docs/FIRST_PR.md promises one command, under a minute. This is that command, timed: a
+      # check added to it that makes it slow fails here, not on a newcomer's laptop.
+      - name: "The one command a newcomer runs (scripts/check.sh) passes, in under 60 seconds"
+        run: scripts/check.sh
+        env:
+          CHECK_MAX_SECONDS: "60"
+      # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
+      # out of the pages (and each validator is shown to refuse a broken one); the footer, the
+      # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator
+      # is run for every object and trip against the app's own Embed snippet; ?from= is read once.
+      - name: "Structured data: the home page's WebApplication, Organization and sameAs, every trip's LearningResource, no FAQPage or SearchAction"
+        run: python3 tests/test_structured_data.py
+      - name: "The footer on every built page, lastmod per page from git, the IndexNow key file and a ping that cannot fail a deploy"
+        run: python3 tests/test_seo_growth.py
+      - name: "The embed page: the generator writes the app's own snippet for every object and trip, and the list of embedders starts empty and honest"
+        run: python3 tests/test_seo_embed.py
+      - name: "?from=ig is harmless: dropped from the address bar, read into nothing, in no share link or embed address"
+        run: node tests/test_from_tag.mjs
 
   contract:
     runs-on: ubuntu-latest
@@ -173,6 +313,10 @@ jobs:
       # budget was a comment until this job ran: nothing had ever measured it.
       - name: Modules agree, and every drawn shape fits its budget
         run: node tests/test_contract.mjs
+      # Every simulator in site/lab/ obeys the rules that can be checked by reading its file (one file, no request, a dated source, an
+      # honesty line, a lesson, small, listed), and its draw() runs on a recording canvas with no NaN. This is the contributor's first check.
+      - name: The Lab's simulators obey their rules
+        run: node tests/test_lab.mjs
       # The harvested JPL snapshots become records: Horizons vectors -> measured sampled probes,
       # close approaches joined to the SBDB -> inferred kepler asteroids. Fixtures are cut
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
@@ -197,6 +341,10 @@ jobs:
         run: node tests/test_far_bodies.mjs
       - name: The Now moment guesses a place and says so
         run: node tests/test_guessplace.mjs
+      # A merge marker in a tool (tools/cdp.mjs on 2026-10-08 carried one and no probe could start) is a
+      # syntax error; `node --check` finds it without running anything (internal #472, #550).
+      - name: Every tool under tools/ parses
+        run: for f in tools/*.mjs; do node --check "$f" || exit 1; done
       - name: Visiting-vehicle shapes build inside budget and match the right names
         run: node tests/test_station_shapes.mjs
       # A fast device earns more models, one at a time while the camera is still, and gives them
@@ -229,6 +377,11 @@ jobs:
       # Spec 0048 task 1: shadow edges and the lap's end to 1 s against a scan a second at a time.
       - name: "Time facts on the card: the next 90 minutes of light, the lap countdown, the orbit number"
         run: node tests/test_timefacts.mjs
+      # Cards and live facts (2026-10-08): the pure pieces behind the card's newer blocks.
+      - name: "The ticking distance, the six-year curve, Up for N years, the crew joined to docked vehicles"
+        run: node tests/test_cardlive.mjs
+      - name: "Rises, highest and sets for a comet or an asteroid agree with the astronomy library"
+        run: node tests/test_riseany.mjs
       # Spec 0048 task 4: the ticks at the chart's sub-satellite points; the ride's pose and its way out.
       - name: "The ground track on the globe and ride along: 5-minute ticks, rebuilds, 60 km behind"
         run: node tests/test_groundtrack.mjs
@@ -244,7 +397,7 @@ jobs:
         run: node tests/test_tonightview.mjs
       # Spec 0045: the instrument's look as numbers. The contrast table is recomputed from the
       # tokens, so the study's 0.62 glass (2.16:1 for dim text over a white cloud) cannot come back.
-      - name: "The instrument's tokens: glass that passes AA over a cloud, 6 px corners, a lit edge, ember brackets (spec 0045)"
+      - name: "The instrument's tokens: AA over a cloud, 6 px corners, ember brackets, three faces, no serif, motion from the tokens (spec 0045, 0061)"
         run: node tests/test_tokens.mjs
       - name: "Regular and Compact: Compact below 800 px of height unless chosen, the choice remembered (spec 0045)"
         run: node tests/test_density.mjs
@@ -277,29 +430,90 @@ jobs:
       # Start and sound as a toggle, the end with one next trip, the top bar of title and Leave.
       - name: "Trips in the new language: the toolbar, the keyboard, the intro and the end (spec 0061 task 7)"
         run: node tests/test_tripframe.mjs
+      # Spec 0036: the reel's order, the dwell with and without the voice, the watchdog's decisions,
+      # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
+      - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
+        run: node tests/test_autopilot.mjs
+      # Spec 0071: the camera wanders with no route. The walk never jumps the ladder, a flight that
+      # never lands cannot strand it, and a hand on the map gets everything back as it was.
+      - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
+        run: node tests/test_drift.mjs
+      - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
+        run: node tests/test_autopilot_trip.mjs
+      - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"
+        run: node tests/test_autopilot_holds.mjs
+      - name: "The hero layer gives every geometry back over laps of the strangest-things records (internal #546)"
+        run: node tests/test_hero_dispose.mjs
+      - name: "Keep for offline: every trip's file list is real, in a folder the worker keeps, fetched three at a time (internal #551)"
+        run: node tests/test_keeptrip.mjs
+      - name: "Every flight of a trip ends in its own time: slow frames, a taken camera, a lost arrival, the way home (internal #322, #304)"
+        run: node tests/test_trip_flight_ends.mjs
       # Spec 0068 task 1: the trip's picture under its card and over its intro, lazy and after the
       # first visit; task 2: the controls hint, once, with keycaps the camera and the chrome answer.
       - name: "Trip cards with pictures: the files, the fade into glass, nothing before the first visit settles (spec 0068)"
         run: node tests/test_trip_pictures.mjs
+      - name: "Trip share pictures: one per trip, today's title and blurb printed, each page naming its own"
+        run: node tests/test_trip_og.mjs
       - name: "The controls hint: once, never on a link or a trip, every keycap a key the app answers (spec 0068)"
         run: node tests/test_keyhint.mjs
       - name: What to show, grouped, and its Keys row (spec 0068 task 3, issue 321)
         run: node tests/test_whattoshow.mjs
+      # Spec 0061 task 5, req 11: every line of chrome fits one line with its longest values, in
+      # the sidebar's 320 px and the popover's 280 px; no browser, the widths are worked out.
+      - name: "A line of chrome is one line, and every chrome string is swept: 60 characters drawn, 90 as a tooltip (spec 0061)"
+        run: node tests/test_chrome_copy.mjs
+      # Spec 0061 task 6, docs/ui-guide.md section 7: the guard rails a machine can hold without a
+      # browser. Every control a builder makes has a name, an icon-only one an aria-label and a
+      # tooltip, every icon is the one family's; and every control class resolves to 44 px on the
+      # phone profile, so a new button cannot arrive at 36.
+      - name: "Every control has a name, icon-only buttons an aria-label and a tooltip, one icon family, no focus ring removed (spec 0061 task 6)"
+        run: node tests/test_a11y_static.mjs
+      - name: "A finger's target is 44 px: every control class on the phone profile (spec 0061 task 6)"
+        run: node tests/test_touch_targets.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
+      - name: "An Earth data map's key is one line in a phone's top bar while the sheet is at its peek (internal #386)"
+        run: node tests/test_overlay_key_phone.mjs
+      - name: "A trip's stop card is not repainted as the object's own card when a mission lands late"
+        run: node tests/test_stop_card_kept.mjs
+      - name: "A reel's caption has room for its honesty note at 1440 x 900"
+        run: node tests/test_reel_caption.mjs
+      - name: "The planets' paths are drawn two pixels wide by a module fetched on demand (internal #444, #454)"
+        run: node tests/test_fat_paths.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the
       # exoplanet table's own records on a 100 000 km stage, each at its transit toward us, and the
       # eleven-stop "Travel to exoplanets" run end to end by the real trip machine.
       - name: "Star systems: TRAPPIST-1 at its own scale, and the trip Travel to exoplanets"
         run: node tests/test_systems.mjs
+      # Internal #466 phase A: thirty-nine systems generated from the Archive's table. Kepler's
+      # third law on every row, the habitable zone against a second implementation of Kopparapu
+      # et al. 2014, search, the `#go=` link, and the card's lines about what is measured.
+      - name: "Star systems: the generated forty obey Kepler, their zones are the paper's, the cards say what is measured"
+        run: node tests/test_systems_table.mjs
+      # Internal #475: two suns for Kepler-16 and Kepler-1647, their orbit against the papers' own eclipse times.
+      - name: "Star systems: the two suns are in front at the papers' eclipse times"
+        run: node tests/test_systems_binaries.mjs
+      # Internal #466 phase B: a drawn face for a planet nobody has seen. The classifier on the
+      # table's own rows, the label made from the row, imagined worlds named as imagined, three
+      # tiers with one draw call on a phone, no texture, no post-processing, nothing at boot.
+      - name: "Planet faces: classed from the row, labelled as an artist's impression"
+        run: node tests/test_exoface.mjs
+      - name: "the planet-face label: Measured only of a measured number, every planet of the table walked (internal #538)"
+        run: node tests/test_exoface_truth.mjs
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
         run: node tests/test_scenenote.mjs
+      - name: "The passing chrome stands clear: the toast above the pill, the hint off the card, a pressed trip card says so"
+        run: node tests/test_chrome_places.mjs
       - name: A shower's radiant is where the sky view marks it
         run: node tests/test_radiants.mjs
       - name: "The sky from here: a light-pollution glow at night, a risen Moon lifting the dome, neither a flat black slab"
         run: node tests/test_skyview.mjs
+      - name: The air and the eye as numbers; the planets against Astronomy Engine (pub 454)
+        run: node tests/test_skymath.mjs
+      - name: Tonight's best and a pass as a row (pub 448)
+        run: node tests/test_tonightbest.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use
@@ -322,6 +536,10 @@ jobs:
         run: node tests/test_pickrank.mjs
       - name: the scale ladder's rungs and the sky-from-here fade (spec 0028 step 2)
         run: node tests/test_ladder.mjs
+      - name: The stage hand-off keeps the pose (internal #410)
+        run: node tests/test_handoff.mjs
+      - name: The continuous flight, flown frame by frame
+        run: node tests/test_climb.mjs
       - name: the stars are places (spec 0028 step 3)
         run: node tests/test_stars3d.mjs
       # registry/stars-notable.yaml: before it, no star record carried a `why`, so on the ladder a
@@ -335,6 +553,12 @@ jobs:
         run: node tests/test_dso.mjs
       - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
         run: node tests/test_galaxy.mjs
+      - name: heavy builds run a step a turn; the Milky Way is built in pieces and prewarmed (internal 549)
+        run: node tests/test_spread.mjs
+      - name: the sky sphere and the 3D stars lie in one frame (internal 549, #387)
+        run: node tests/test_one_star_frame.mjs
+      - name: the nebulae's photographs sit where their objects are, and nothing of them loads at boot (spec 0067)
+        run: node tests/test_nebulae.mjs
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)
@@ -347,6 +571,25 @@ jobs:
         run: node tests/test_framing.mjs
       - name: the Next list is built from records already held, nearest in time first (spec 0026 req 6)
         run: node tests/test_next.mjs
+      # Package 9 (2026-10-06): the time pill's timeline, a mission's dated events, the home's
+      # dated cards with the undo toast, and debris counted from the whole catalogue.
+      - name: The timeline in the time pill (public #455)
+        run: node tests/test_scrubber.mjs
+      - name: A mission as a place in time (public #452)
+        run: node tests/test_missions.mjs
+      - name: A craft's own path holds the bound its card states, and loads nothing at boot (internal #277)
+        run: node tests/test_ephemerides.mjs
+      - name: The home's dated cards and the way back from an automatic move (internal #270, #274)
+        run: node tests/test_today.mjs
+      - name: Debris as a problem, from the whole catalogue (public #449)
+        run: node tests/test_debris.mjs
+      # Round three, package 5 (2026-10-07): the passport and the home's first line.
+      - name: The passport, kept in this browser only (spec 0041, public #240)
+        run: node tests/test_passport.mjs
+      - name: Two bright things close together in your sky, worked out in a worker (internal #359)
+        run: node tests/test_conjunctions.mjs
+      - name: One true sentence on the home (public #395, #450)
+        run: node tests/test_sentence.mjs
       # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the
       # library gives, which a reviewer checked against NASA GSFC's tables (2026-09-23).
       - name: eclipses are computed in the browser, and one event stream feeds the Next list (spec 0031)
@@ -355,6 +598,8 @@ jobs:
         run: node tests/test_search.mjs
       - name: every landing site is a record on its own world, drawn as what landed, and findable
         run: node tests/test_landing_sites.mjs
+      - name: A rocket on a hand-kept pad is drawn only around its listed liftoffs
+        run: node tests/test_pad_vehicles.mjs
       # The trip's camera runs through the real trip machine at four instants: a key light chosen
       # without the ground's horizon looked at Surveyor 1 through 500 km of Moon (2026-09-22).
       - name: the Moon trip visits real landing sites in order, and sees each from above its horizon
@@ -381,6 +626,20 @@ jobs:
       # failure when a file is missing.
       - name: sound is off until chosen, cross-fades per stage, ducks under a sting, fails quietly (spec 0035)
         run: node tests/test_audio.mjs
+      # Spec 0069: the voice with a stub AudioContext. Nothing fetched with sound off or the voice
+      # off, the bed 10 dB down under a clip and back after, the stop held for the clip and a
+      # second, pause and resume at the same word, a missing clip that stops nothing.
+      - name: a stop is read aloud only when asked, ducks the music, holds the stop, fails quietly (spec 0069)
+        run: node tests/test_narration.mjs
+      # Spec 0070: trips as videos, with no Chrome and no ffmpeg. The film's clock moves only when
+      # stepped and is the same twice; the camera module is not in the boot graph; clips are laid
+      # where the camera arrives; the bed is 10 dB down under each; chapters, captions and the
+      # description are what YouTube reads.
+      - name: a trip's video has a clock of its own, a cue sheet, a ducked bed and YouTube's sidecars (spec 0070)
+        run: node tests/test_render_trip.mjs
+      # Internal #466: the landing's move, and the film clock handed to a tool, with no browser.
+      - name: "#go= lands with one interruptible push-in, and the film's clock can be had without a trip (internal #466)"
+        run: node tests/test_golink.mjs
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a
@@ -400,12 +659,55 @@ jobs:
       # and a boot set that is byte for byte what a first visit loaded before tiers existed.
       - name: a phone keeps the 2k maps, a laptop gets 4k after the first frame, and the latch is the only way down
         run: node tests/test_tiers.mjs
+      # Spec 0065 (2026-10-03): a close world drawn from NASA Treks map tiles. The addressing against
+      # the pyramid the host really serves, the level a pixel's footprint asks for, a cover with no
+      # hole and no overlap, what is drawn while tiles arrive, the LRU, and the module on a fake clock:
+      # six fetches at once, none on tier 0, on data-saver or after the latch, a failing host left alone.
+      - name: a close Moon or Mars is drawn from map tiles, fetched only when the camera is near and never on a first visit
+        run: node tests/test_tiles.mjs
+      - name: Shader uniform names (a tile's added uniforms do not collide with the world's)
+        run: node tests/test_shader_uniform_names.mjs
+      # Spec 0066 (2026-10-03): weather on every world. A wind profile to an angular rate against the
+      # papers' jets, the two-phase clock that lets a still map flow, Mars's season against NASA's
+      # dates, NOAA's lightning map (a saved picture) decoded and scheduled, the one-line shader patch,
+      # each world's card line and its class, and none of it at tier 0, on data-saver or on a first visit.
+      - name: weather on every world is measured, modelled or illustrative and says which, and is never on a first visit
+        run: node tests/test_weather.mjs
       - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
         run: node tests/test_colorkeys.mjs
       - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)
         run: node tests/test_shadow.mjs
       - name: the Moon's shadow lands on the library's greatest-eclipse point, and the GLSL is the JS formula (spec 0037)
         run: node tests/test_eclipse.mjs
+
+      # Public #273: where the shadow's axis meets the ground, held to Astronomy Engine's own point at
+      # greatest eclipse, the shadow's two radii, and the ribbon drawn across the globe.
+      - name: The eclipse's path lands where the library says, and the ribbon is as wide as the core
+        run: node tests/test_eclipse_path.mjs
+
+      # Public #404, #411, #417: Mercury's relief, Saturn's contrast and Venus's soft terminator are each
+      # behind a uniform that is off on every other world, and each card says what is adjusted.
+      - name: Three worlds' own looks are off everywhere else, and said on the card
+        run: node tests/test_world_looks.mjs
+
+      # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
+      # measured directions, and nothing else moves.
+      - name: The Pleiades are gathered from their catalogue stars
+        run: node tests/test_clusters.mjs
+
+      # Public #271: a star's light is a peak and a glow, the same in all three star draws, never a flat disc.
+      - name: A star is a peak with a glow, not a disc
+        run: node tests/test_star_light.mjs
+
+      # Spec 0072 requirement 1: planets and moons shine at their computed magnitude (Mallama and Hilton 2018),
+      # with the stars' own sprite, and the light is gone once the disc is 16 px across.
+      - name: Venus outshines Sirius, and a planet close up has no glow
+        run: node tests/test_worldlights.mjs
+
+      # Public #426: a pulsar blinks at its period times the least power of ten an eye can follow, and
+      # the card says by how much; the photographed black holes are drawn while their cards are open.
+      - name: A pulsar's pulse is slowed by a power of ten and says so
+        run: node tests/test_pulse.mjs
       # Spec 0054 task 1: the worlds are physically lit. No cel bands left in the shader, the JS twins
       # of Oren-Nayar and Minnaert hold their physics, every world is exposed for its own sunlight,
       # and the Moon's earthshine is NASA's geometric albedo worked through the Lambert phase law.
@@ -416,6 +718,11 @@ jobs:
       # twin, and when a shell is drawn (never from the default view, never under the latch).
       - name: the air on Mars, Venus and Titan (spec 0054 task 3)
         run: node tests/test_air.mjs
+      # Spec 0053 tasks 1, 2 and 5 and spec 0066 task 2: the Earth's air in scene/atmosphere.js (the table
+      # of the light's path against a 20 000-step integration, the shell the same from 8 steps to
+      # 400), aerial perspective, relief from ETOPO 2022 and the storm tops, each against its JS twin.
+      - name: "the Earth's air, relief and storm tops (spec 0053 tasks 1, 2, 5; spec 0066 task 2)"
+        run: node tests/test_atmo_lut.mjs
       # Spec 0054 task 5: Saturn's rings lit both ways. The slab formula on both faces, forward
       # scattering from behind, and the ring map's Cassini Division read from the PNG and warped onto
       # Cassini's radii, for the ring and for its shadow on the globe alike.
@@ -438,8 +745,198 @@ jobs:
         run: node tests/test_liveclouds.mjs
       - name: storms are the ones advised in the last 12 h, drawn only near their advisory, carded with what GDACS's numbers mean
         run: node tests/test_storms.mjs
+      # Internal #281: fires, volcanoes and icebergs from NASA's EONET, against nine events of what it
+      # answered on 2026-10-07 (no network here): the records, the card, the two requests, nothing at boot.
+      - name: fires, volcanoes and icebergs are EONET's points with their dates, fetched only when asked
+        run: node tests/test_eonet.mjs
+      # Internal #362: the wind, NOAA's GFS through PacIOOS ERDDAP, as moving streaks (no network here):
+      # the one request, a grid refused unless whole, the step along the wind, the drawing, nothing at boot.
+      - name: the wind is one request for a whole grid, drawn as streaks that move with it, or stand still when asked
+        run: node tests/test_wind.mjs
+      # The wind's sibling: the sea's currents from NOAA CoastWatch's altimetry, coloured by NOAA's OISST
+      # sea temperature (no network here): two packed saved copies refused unless whole, the step that
+      # stops at a shore, streaks never over land, the ramp, the sentence, nothing at boot.
+      - name: ocean currents are two saved grids, drawn as streaks coloured by the sea's temperature that never cross land
+        run: node tests/test_currents.mjs
       # Spec 0053 task 3: the aurora, NOAA's OVATION forecast on the night side, against the answer NOAA
       # really gave on 2026-09-30 (saved): the decode, the night mask and colour ramp twins, the
       # schedule, and the card's "not a photograph".
       - name: the aurora is NOAA's forecast of the next hour, night side only, coloured by height, carded as a forecast (spec 0053 task 3)
         run: node tests/test_aurora.mjs
+      # 2026-10-05, offline (issues #290, #453; internal 369): the service worker's routing table at the
+      # root and in a subfolder, with the stamp scripts/stamp_sw.py writes at deploy and release time;
+      # no path in the app starting at the root of the host; and the manifest with icons of the sizes
+      # they claim. The committed sw.js stays unstamped.
+      - name: the service worker routes shell, assets and saved data as documented, and the stamp names the app and only the app
+        run: node tests/test_sw_routes.mjs
+      - name: nothing under site/ asks for a path from the root of the host, so a copy in a subfolder works
+        run: node tests/test_relative_urls.mjs
+      - name: the manifest is installable, its icons are the sizes they claim, and the deploy carries it and the worker no-cache
+        run: node tests/test_manifest.mjs
+      - name: the committed sw.js is unstamped
+        run: python3 scripts/stamp_sw.py --check
+
+  # THE TESTS NO JOB RAN (2026-10-07, round three package 8). Fourteen test files, tests/test_minify.py
+  # and tests/test_notify.py were in the repository and in the local gate and in no workflow: they
+  # were green on a laptop and unknown here. This job runs them, with the guard rails that landed the
+  # same day, and its last step refuses a test file that no step of this workflow names -- so the
+  # list cannot fall behind again. Node and Python both: two of these call a script of the other.
+  rails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --disable-pip-version-check pyyaml
+      - name: "what must stay out of the first visit stays out, and its stand-ins hold the door (internal #405)"
+        run: node tests/test_boot_diet.mjs
+      # Spec 0056 req 4 and 9 (internal #157): what the maps can hold on the GPU per tier against
+      # registry/budgets.yaml, watched to fail three ways; the rule that makes it true (a world that
+      # has been a dot the longest gives its map back) in a real createWorlds; the repository row.
+      - name: "The maps a device can hold stay inside its GPU budget, and a world that is a dot again gives its map back"
+        run: node tests/test_texture_budget.mjs
+      # Internal #374 and #123: the UI gate and the trips walk run in screens.yml (a browser); this is
+      # what node can hold of them: a known finding needs an issue and cannot go stale, the probe
+      # measures a control cut by the fold by its box, the walk reads both budget rows at every stop.
+      - name: "The UI gate's known findings, the probe's three fixes, and the trips walk's wiring"
+        run: node tests/test_ui_gate.mjs
+      # Spec 0049 task 1 (public #285): 1 000 element sets through propagate/worker.js in a real worker
+      # thread, every number compared with the in-thread path by Object.is; the pool's one question
+      # in flight; the fallback when there is no Worker.
+      - name: "SGP4 in a worker gives the page's own numbers to the last bit, and the page falls back without one"
+        run: node tests/test_propagate_worker.mjs
+      - name: "the constellation figures as strokes, with the stars at their corners"
+        run: node tests/test_figures.mjs
+      - name: "our stars step aside inside a drawn nebula picture"
+        run: node tests/test_starholes.mjs
+      - name: "the nebulae's photographs in the sky from the ground"
+        run: node tests/test_groundpictures.mjs
+      - name: "the HEALPix tile addressing a HiPS sky is read with"
+        run: node tests/test_hips.mjs
+      - name: "Phobos and Deimos in their measured shapes, and every moon's map"
+        run: node tests/test_moon_shapes.mjs
+      - name: "the sky in other light: the registry, the baked skies, the chooser, none of it on a first visit"
+        run: node tests/test_otherlight.mjs
+      - name: "Earth data overlays: which day's picture, the address, the sentence under it"
+        run: node tests/test_overlays.mjs
+      - name: "the five trips of 2026-10-06, flown by the real machine"
+        run: node tests/test_planetarium_trips.mjs
+      - name: "the eight shows of 2026-10-06 and the stop grammar they brought"
+        run: node tests/test_remaining_trips.mjs
+      - name: "The constellations and The living Earth, flown by the real machine"
+        run: node tests/test_sky_trips.mjs
+      - name: "the sky from the ground, round two: other peoples' figures, the borders, the pictures"
+        run: node tests/test_skyculture.mjs
+      - name: "the compact star files of the sky from the ground"
+        run: node tests/test_skystars.mjs
+      - name: "The sky's colour from the air, and the land under it: the model's limits (sky round three)"
+        run: node tests/test_skyair.mjs
+      - name: "Star tiles, which constellation, star trails (internal #353, #417)"
+        run: node tests/test_startiles.mjs
+      - name: "A shower over its whole activity period, each with its own r (internal #416)"
+        run: node tests/test_meteors.mjs
+      - name: "The deep sky tonight, the night's moments, my view, one apparent place, no label twice (internal #358, #300, #418, #372)"
+        run: node tests/test_sky_round3.mjs
+      - name: "The sky from the ground built and run for a night without a browser"
+        run: node tests/test_groundsky_smoke.mjs
+      - name: "Point your phone: attitudes in portrait and both landscapes, declination against NOAA's test values, the filter's lag, the offset, a refused sensor (internal #450)"
+        run: node tests/test_pointing.mjs
+      - name: "Rises, highest and sets from a place, and the planet's card saying so (internal #299)"
+        run: node tests/test_riseset.mjs
+      - name: "Compass words and height in fists: examples, wrapping and every altitude threshold"
+        run: node tests/test_skywords.mjs
+      - name: "a star as a disc of its own size"
+        run: node tests/test_stardisc.mjs
+      - name: "the Sun close up: limb darkening, today's sunspot groups"
+        run: node tests/test_sun.mjs
+      - name: "Use my location is rounded to 0.1 degree before anything keeps, shows or uses it (spec 0051 req 3, internal #137)"
+        run: node tests/test_place_privacy.mjs
+      - name: "?render=1 becomes ready on the sources and on the stripped tree, in the same frames; a link with no trip is refused at once (internal #423)"
+        run: node tests/test_render_ready.mjs
+      - name: "the UI guide: spacing grid, loaded weights, numbers in the copy, one primary, no dim grey inside a wash, no stale counts (internal #375, #198)"
+        run: node tests/test_guide_rails.mjs
+      - name: "Bulk 3 a: the phone's search list above the launch chip, the sky field line under it (internal #563, #565)"
+        run: node tests/test_bulk3_a.mjs
+      - name: "the trips walk, the node half: every stop resolves, has its narration and a picture (spec 0044 task 3, internal #123)"
+        run: node tests/test_trips_walk.mjs
+      - name: "Back and Forward over shared views, a tracked object that loses its position, old comet links, the launch card's mission (public #331, #348, #367, #378)"
+        run: node tests/test_regressions.mjs
+      - name: "no spacecraft falls back to a placeholder: every model is on disc, worn, and reached by its own route (public #472)"
+        run: node tests/test_real_models.mjs
+      - name: "the release zip builds, unpacks and holds what it promises (public #471)"
+        run: python3 tests/test_release_zip.py
+      - name: "the stripped tree: the scanner on its hard cases, every module through it"
+        run: python3 tests/test_minify.py
+      - name: "the boot timeline's budget rows, judgement and probe (internal #528)"
+        run: node tests/test_boot_timeline.mjs
+      - name: "the sky from the ground's Milky Way shader opens the 2k panorama, whose stars are baked in (internal #547; reads source text)"
+        run: node tests/test_sky_shaders_src.mjs
+      - name: "shader text in templates loses its comments and indentation, each shader checked, switched off by default (internal #553 / #531)"
+        run: python3 tests/test_strip_shaders.py
+      - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
+        run: node tests/test_precompress.mjs
+      - name: "the minifier a deploy runs: pinned by hash, licence headers kept, maps true, and the node tests pass against the tree it writes (internal #515)"
+        run: node tests/test_minify_real.mjs
+      - name: "the edge keeps the app between deploys and a browser still revalidates: the header, the invalidation that covers it, and the check after (internal #513)"
+        run: node tests/test_edge_cache.mjs
+      - name: "a glyph layer uploads only the attributes whose values changed, and a stand-in GPU never holds a stale one (internal #519)"
+        run: node tests/test_glyph_uploads.mjs
+      - name: "a saved catalogue published as columns decodes to the verbatim rows, and the browser falls back to the verbatim file on any doubt (internal #523)"
+        run: node tests/test_columnar.mjs
+      - name: "a publisher who forbids redistribution (ESA NEOCC) is not fetched, published, saved or zipped, and JPL's APIs are never called from a browser (internal #370)"
+        run: python3 tests/test_not_ours_to_copy.py
+      - name: "the copy checker covers the page scripts under site/js/pages/: a new one that writes words must be listed with its test (internal #556)"
+        run: python3 tests/test_check_copy_pages.py
+      - name: "a real Horizons table asked in UT and a real one asked in TDB land on the same UTC instants, and nothing is corrected twice (internal #552)"
+        run: node tests/test_horizons_time.mjs
+      - name: "the telescope field follows a planet while the sky turns, and lets go at a hand, at its setting or on request (internal #547)"
+        run: node tests/test_sky_follow.mjs
+      - name: "with nothing moving the loop draws twenty frames a second: the eleven reasons it must not, each held, and a capped frame kept from the frame latch (internal #520)"
+        run: node tests/test_idle.mjs
+      - name: "the look tool: ?look=1 holds the frame latch and nothing else and no embed or deep link can set it, a logged error fails the job, no WebGL2 is neutral, every probe parses behind the prelude"
+        run: node tests/test_look_tool.mjs
+      - name: "the notifier: digests, showers, subscriptions and tokens"
+        run: python3 tests/test_notify.py
+      # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.
+      - name: "a launch within a day counts down, in Launch Library's own words for its state (public #289)"
+        run: node tests/test_countdown.mjs
+      - name: "one row of Coming up as an RFC 5545 calendar file (public #235)"
+        run: node tests/test_ics.mjs
+      - name: "what a search row says: one row for a station's modules, a planet's moons after it (public #312)"
+        run: node tests/test_searchrows.mjs
+      - name: "a trip does not wait 8 s for a layer that landed before its machine was imported (internal #454)"
+        run: node tests/test_trip_layer_wait.mjs
+      - name: "the polish sweep: the place inside the Tonight view, a model in its band, the overlay key, photo mode's share (internal #455, #421, #386, #397)"
+        run: node tests/test_polish_sweep.mjs
+      # The public finishers (2026-10-08): each is the missing part of an open issue.
+      - name: "the scale badge: the factor computed from the dot and the camera, True size, the dots obey (public #296)"
+        run: node tests/test_scalebadge.mjs
+      # The small internal issues closed together (2026-10-08): what a node process can decide of each.
+      - name: "small issues: the living Earth names no year, a sunrise framing, True size as a reveal, one truth line, the pad's title, a nebula's photograph, overlays on demand, the honest answer, glint and sheen, the phone's note"
+        run: node tests/test_small_issues.mjs
+      - name: "KTX2: the transcoder vendored byte for byte, out of the boot graph and the offline shell; every failure ends in the WebP (internal #155)"
+        run: node tests/test_ktx2.mjs
+      - name: "the one-Chrome lock: a live owner is not robbed, a dead one is, the walk stops its servers (internal #460)"
+        run: node tests/test_chromelock.mjs
+      - name: "the launch chip: which launch, what it says, the Starlink train's pass, no chase camera (public #289)"
+        run: node tests/test_launchchip.mjs
+      - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"
+        run: node tests/test_welcome.mjs
+      - name: "the opening shot: six to ten seconds, never twice, any input lands it, the words are the home's (public #287)"
+        run: node tests/test_opening.mjs
+      - name: "a calm deep sky: exoplanet marks off until asked for, a star's colour reads (public #271)"
+        run: node tests/test_calm_sky.mjs
+      - name: "model light: the world's phase as the craft sees it, the Sun's rim, the panels' glint, by tier (public #266)"
+        run: node tests/test_model_light.mjs
+      - name: "a reason to come back: Remind me as a calendar file, a Seen it tick in the passport (public #395)"
+        run: node tests/test_comeback.mjs
+      - name: "this week's story out of the catalogue: four rules, their numbers, nothing typed (public #450)"
+        run: node tests/test_story.mjs
+      - name: "Return to base: what away is, what coming home does, where the house lives (public #241)"
+        run: node tests/test_base.mjs
+      - name: "every test file in tests/ is run by this workflow"
+        run: node tests/test_ci_runs_every_test.mjs

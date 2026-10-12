@@ -13,6 +13,13 @@
 #                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- the CORS column
 #                 of docs/data-sources.md -- never assumed. For a `false` row the snapshot is
 #                 the only route and the app says "could not look" rather than inventing.
+# licence         the publisher's terms in one honest line, as CREDITS.md section 4 records them
+#                 ("no licence stated" is an answer; a licence nobody wrote down is not).
+# terms_url       the page that states them (https), or the publisher's home where it has none.
+# terms_recorded  the day those terms were first written into CREDITS.md. It is NOT the day the
+#                 harvester last read the source. The /sources/ page (scripts/seo_pages.py) prints
+#                 all three beside the row, equal to this file, and the browser adds the day the
+#                 saved copy was last read (data/v1/index.json).
 version: 1
 
 sources:
@@ -33,6 +40,9 @@ sources:
     parser: celestrak_gp
     outputs: [visual.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   - id: celestrak-stations
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json
@@ -43,6 +53,9 @@ sources:
     parser: celestrak_gp
     outputs: [stations.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   - id: celestrak-active
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json
@@ -53,6 +66,9 @@ sources:
     parser: celestrak_gp
     outputs: [active.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   # The "Launched in the last two weeks" layer read this file live on every visit, because it
   # had no row here and so no saved copy: from a refused connection it showed nothing (2026-09-22).
@@ -65,6 +81,9 @@ sources:
     parser: celestrak_gp
     outputs: [last30.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   # Supplemental files are the OPERATORS' own ephemerides and are hours fresher than the
   # tracked catalogue -- which is exactly what a three-day-old Starlink train needs.
@@ -77,6 +96,9 @@ sources:
     parser: celestrak_gp
     outputs: [starlink-sup.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   - id: celestrak-satcat
     url: https://celestrak.org/pub/satcat.csv
@@ -87,6 +109,9 @@ sources:
     parser: celestrak_satcat
     outputs: [satcat.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+    licence: "Free to use under CelesTrak's usage policy (no licence text; the rate limits are enforced)"
+    terms_url: https://celestrak.org/usage-policy.php
+    terms_recorded: 2026-09-07
 
   # --- Who is aboard --------------------------------------------------------------------
   # MEASURED 2026-10-02: `Access-Control-Allow-Origin: *`, so CORS itself allows a page to read
@@ -104,6 +129,9 @@ sources:
     parser: open_notify
     outputs: [astros.json]
     attribution: "Who is in space: Open Notify"
+    licence: "No licence stated by the publisher (an open-source project); a handful of names and facts"
+    terms_url: https://open-notify.org/
+    terms_recorded: 2026-10-05
 
   # --- Launches and events -----------------------------------------------------------
   # MEASURED live from the API's own throttle endpoint: 15 requests per hour per IP. A
@@ -118,6 +146,9 @@ sources:
     parser: ll2
     outputs: [launches.json, sites-pads.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   - id: ll2-events
     url: https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=30
@@ -128,6 +159,60 @@ sources:
     parser: ll2_events
     outputs: [events-ll2.json]
     attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
+
+  # WHO IS ABOARD, AND WHAT IS DOCKED (internal #133, spec 0050; read 2026-10-08).
+  # TERMS, as the publisher states them today on https://thespacedevs.com/llapi : "all the API data
+  # is available at no cost for up to 15 non-authenticated requests per hour", and "the entire
+  # database is accessible to everyone, for free". That page states no licence and no attribution
+  # wording; the credit below is the one this registry already gives Launch Library.
+  # BUDGET: these three rows are one call each every 6 h; with the two rows above (one each every
+  # 2 h) that is 1.5 calls an hour against 15. `browser: false`: a visitor's browser never calls
+  # LL2 for these, so a busy day here cannot spend the publisher's limit; the page reads our saved
+  # copy, says its age, and says so when it is more than 48 h old.
+  # The stations answer has the docked set itself (each port's `currently_docked`), so no hand-kept
+  # registry/docked.yaml is needed (spec 0050 requirement 2's first branch).
+  - id: ll2-stations
+    url: https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed
+    auth: none
+    browser: false
+    cadence: 6h
+    freshness_max: 48h
+    parser: ll2_stations
+    outputs: [stations-docked.json]
+    attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
+
+  - id: ll2-astronauts
+    url: https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30
+    auth: none
+    browser: false
+    cadence: 6h
+    freshness_max: 48h
+    parser: ll2_crew
+    outputs: [crew.json]
+    attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
+
+  # The launches of the last days, for "Just happened" (internal #134). Same terms and budget.
+  - id: ll2-previous
+    url: https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30
+    auth: none
+    browser: false
+    cadence: 6h
+    freshness_max: 48h
+    parser: ll2_previous
+    outputs: [launches-previous.json]
+    attribution: "Launch data by The Space Devs"
+    licence: "No published licence; free up to 15 requests an hour"
+    terms_url: https://thespacedevs.com/llapi
+    terms_recorded: 2026-09-07
 
   # --- Small bodies --------------------------------------------------------------------
   # MEASURED: no Access-Control-Allow-Origin on any JPL endpoint, so these could not be
@@ -141,6 +226,9 @@ sources:
     parser: jpl_sbdb
     outputs: [neo-elements.json]
     attribution: "Orbits: NASA/JPL Small-Body Database"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   # Comets, same database and the same query shape as the asteroids above (sb-kind=c instead of
   # a, no sb-group: a comet is not a NEO filter). Replaces the Minor Planet Center's CometEls.txt
@@ -157,6 +245,9 @@ sources:
     parser: jpl_sbdb
     outputs: [comets.json]
     attribution: "Orbits: NASA/JPL Small-Body Database"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   # Every confirmed planet around another star (spec 0028 step 4). TAP sync, CSV, the composite
   # parameters table so every planet has one best value per column. No CORS header (measured
@@ -171,6 +262,9 @@ sources:
     parser: nasa_exoplanet_archive
     outputs: [exoplanets.json]
     attribution: "Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13"
+    licence: "Publicly available; the archive asks to cite its table (DOI 10.26133/NEA13); no licence text"
+    terms_url: https://exoplanetarchive.ipac.caltech.edu/
+    terms_recorded: 2026-09-08
 
   - id: jpl-cad
     url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
@@ -181,7 +275,24 @@ sources:
     parser: jpl_cad
     outputs: [close-approaches.json]
     attribution: "Close approaches: NASA/JPL CNEOS"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
+  # SWITCHED OFF 2026-10-09, AND NOT OURS TO COPY. ESA's terms, read that day on
+  # https://www.esa.int/Services/Terms_and_conditions (to which neo.ssa.esa.int/terms-conditions
+  # defers): "ESA does not grant the right to resell or redistribute any information, documents,
+  # images or material from its website or to compile or create derivative works from material on
+  # its website." The harvester saved this list and the site served it as
+  # /data/v1/esa-neocc-close.json from 2026-09 until that day (internal #370). No card ever read it:
+  # the "second opinion" below was a plan, and the close approaches the app draws are JPL's CNEOS
+  # (jpl-cad above), which NASA lets us keep a copy of and which the card credits by name.
+  # `enabled: false` means, everywhere: not fetched (harvest/run.py), not published
+  # (scripts/refresh-snapshots.sh drops a disabled source's file and publishes its manifest row
+  # as `skipped`, with no stamps), not saved
+  # for offline use (scripts/save_offline_data.py) and not in a release zip
+  # (scripts/build_release.py refuses one). tests/test_not_ours_to_copy.py holds all four.
+  # The row stays so that the reason stays; switch it back on only with ESA's written permission.
   - id: esa-neocc-close
     url: https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app
     auth: none
@@ -190,9 +301,11 @@ sources:
     freshness_max: 168h
     parser: esa_neocc
     outputs: [close-approaches-esa.json]
-    # The second opinion. Where ESA and JPL disagree by more than 10% the card shows both
-    # and names them; two sources disagreeing is information, not an error to hide.
+    enabled: false
     attribution: "Close approaches: ESA NEOCC"
+    licence: "All rights reserved by ESA; no reuse licence found, so the saved copy is not cleared for redistribution"
+    terms_url: https://neo.ssa.esa.int/
+    terms_recorded: 2026-10-05
 
   # --- Deep space ----------------------------------------------------------------------
   - id: horizons-deep-space
@@ -206,6 +319,9 @@ sources:
     list: harvest/lists/horizons-ids.yaml
     outputs: [deep-space.json]
     attribution: "Ephemerides: JPL Horizons"
+    licence: "NASA/JPL content, generally not copyrighted in the United States; the API publishes no licence text"
+    terms_url: https://ssd-api.jpl.nasa.gov/
+    terms_recorded: 2026-10-05
 
   # MEASURED: this feed's `spacecraftID` is the same negative id Horizons uses, so the
   # dish-to-spacecraft line needs no name matching. Unofficial feed behind a public page:
@@ -219,6 +335,9 @@ sources:
     parser: dsn_now
     outputs: [dsn.json]
     attribution: "NASA Deep Space Network"
+    licence: "NASA content, generally not copyrighted in the United States; the endpoint is undocumented"
+    terms_url: https://eyes.nasa.gov/dsn/
+    terms_recorded: 2026-09-07
 
   # --- Sky and weather -------------------------------------------------------------------
   - id: swpc-kp
@@ -230,6 +349,9 @@ sources:
     parser: swpc
     outputs: [space-weather.json]
     attribution: "Space weather: NOAA SWPC"
+    licence: "US Government work, public domain"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-09-07
 
   # ~900 kB of JSON for what the app needs as one small texture; the parser downsamples.
   - id: swpc-ovation
@@ -239,8 +361,180 @@ sources:
     cadence: 15m
     freshness_max: 3h
     parser: swpc_ovation
-    outputs: [aurora.png, aurora-summary.json]
+    # `aurora.png` was listed first until 2026-10-09 and nothing ever wrote it: the parser passes NOAA's
+    # grid through whole (the saved copy is swpc-ovation.json, 726 kB on 2026-10-09). The harvester reads
+    # this row at deploy, so the change reaches it with the next redeploy (internal #192 item 5, #552).
+    outputs: [aurora-summary.json]
     attribution: "Aurora forecast: NOAA SWPC"
+    licence: "US Government work, public domain"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-10-05
+
+  # The three feeds a browser used to read straight from the publisher, now with a saved copy (internal #525,
+  # #553): the page asks our copy first and the publisher only when there is none (a source with `browser: true`
+  # is read live as a fallback; data/sources.js load()). One request per visitor to our own host instead of to
+  # NASA's and NOAA's, and the layers draw when the publisher is down. Two EONET rows because the page asks
+  # two questions (data/eonet.js EONET_URLS, the same URLs: tests/test_eonet.mjs holds them together).
+  # Terms, READ 2026-10-09: NASA, "generally are not subject to copyright in the United States"
+  # (https://www.nasa.gov/nasa-brand-center/images-and-media/); NOAA, "in the public domain ... and may be used
+  # without charge for any lawful purpose" (https://www.weather.gov/disclaimer).
+  - id: eonet-fires
+    url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: eonet
+    outputs: [eonet-fires.json]
+    attribution: "Fires, volcanoes and sea ice: NASA EONET"
+    licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
+    terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    terms_recorded: 2026-10-09
+
+  - id: eonet-volcanoes-ice
+    url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=volcanoes,seaLakeIce
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: eonet
+    outputs: [eonet-volcanoes-ice.json]
+    attribution: "Fires, volcanoes and sea ice: NASA EONET"
+    licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
+    terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    terms_recorded: 2026-10-09
+
+  # Today's sunspot groups (data/sunregions.js). Measured by that file's header: CORS open, `max-age=60`.
+  - id: swpc-solar-regions
+    url: https://services.swpc.noaa.gov/json/solar_regions.json
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: swpc_solar_regions
+    outputs: [solar-regions.json]
+    attribution: "Sunspot groups: NOAA SWPC"
+    licence: "US Government work, public domain (read 2026-10-09)"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-10-09
+
+  # Solar flares, for the Sun close up (data/sunactivity.js; spec 0073 requirement 2). SWPC's edited
+  # event list: thirty days of events, the X-ray flares among them with their class, peak time and
+  # region number. MEASURED 2026-10-12 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`:
+  # `access-control-allow-origin: *`, `cache-control: max-age=60`, 320 660 bytes, 564 rows (346 X-ray
+  # flares, 264 with a region). The GOES flare files beside it (json/goes/primary/xray-flares-*.json)
+  # carry no region number and are not used.
+  - id: swpc-edited-events
+    url: https://services.swpc.noaa.gov/json/edited_events.json
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: swpc_edited_events
+    outputs: [solar-events.json]
+    attribution: "Solar flares: NOAA SWPC"
+    licence: "US Government work, public domain (read 2026-10-12)"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-10-12
+
+  # Coronal mass ejections, for the Sun close up (data/sunactivity.js). NASA's DONKI: the most accurate
+  # analysis of each CME of the last thirty days (start, direction, half-angle, speed). MEASURED
+  # 2026-10-12: 48 132 bytes, 63 rows, `Access-Control-Allow-Origin: *`, `Cache-Control: no-cache,
+  # no-store`, no key; the old host kauai.ccmc.gsfc.nasa.gov answers 301 to a notice naming this base.
+  # `browser: false`: a visitor's browser does not call NASA for this, the page reads our saved copy
+  # and, with none, draws no CME. Terms, READ 2026-10-12 on ccmc.gsfc.nasa.gov/tools/DONKI/ ("DONKI
+  # Rules-of-the-Road" and "Disclaimer"): the data is provided "as a courtesy to the community", "as
+  # is" without warranty, to "be considered only as prototyping quality and in research context", and
+  # CCMC asks that event and validation STUDIES be done with the submitters' knowledge. No licence is
+  # named; NASA material is generally not copyrighted. The card says whose catalogue it is.
+  - id: donki-cme-analysis
+    url: https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis
+    auth: none
+    browser: false
+    cadence: 3h
+    freshness_max: 24h
+    parser: donki_cme_analysis
+    outputs: [cme-analysis.json]
+    attribution: "Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC)"
+    licence: "No licence named; provided as is, as a courtesy to the community, prototyping quality (DONKI rules of the road and disclaimer, read 2026-10-12)"
+    terms_url: https://ccmc.gsfc.nasa.gov/tools/DONKI/
+    terms_recorded: 2026-10-12
+
+  # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
+  # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
+  # regional association), dataset `ncep_global`: one forecast hour (`{hour3}`, filled by harvest/run.py
+  # expand_url with the three-hourly hour at or before the run), every fifth degree, 37 x 72 points, 168 818 B
+  # of JSON on 2026-10-09. The server answers `Access-Control-Allow-Origin: *`, but it is one university
+  # server that took 35 s and returned 404 on 2026-10-07 (data/wind.js), so a visitor's browser does not
+  # call it: `browser: false`, the page reads this saved copy and, with no copy, offers no wind.
+  # Terms, READ 2026-10-09 in the dataset's own attributes (pae-paha.pacioos.hawaii.edu/erddap/griddap/
+  # ncep_global.das, `license`): "The data may be used and redistributed for free but is not intended for
+  # legal use, since it may contain inaccuracies." Creator NOAA National Centers for Environmental
+  # Prediction; publisher PacIOOS.
+  - id: wind
+    url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D
+    auth: none
+    browser: false
+    cadence: 3h
+    freshness_max: 12h
+    parser: wind
+    outputs: [wind.json]
+    attribution: "Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii)"
+    licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-09)"
+    terms_url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html
+    terms_recorded: 2026-10-09
+
+  # THE SEA'S SURFACE CURRENTS AND ITS TEMPERATURE, for the "Ocean currents" choice under Earth data
+  # (site/js/scene/currents.js, site/js/data/currents.js). Two rows, because they are two datasets on two
+  # servers and the harvester asks one address a row; the page needs both and offers the choice only
+  # when both are saved. MEASURED 2026-10-12 with curl and `Origin: https://www.spaceradar.ai`:
+  #   * each answered 200 in 2 to 3 s with NO Access-Control-Allow-Origin header, so `browser: false`:
+  #     only our saved copy is read, as with the wind;
+  #   * each is one day, every fourth point of a quarter-degree grid (180 x 360), as ERDDAP's table:
+  #     4 441 424 bytes for the currents and 3 792 789 for the temperature, nearly all of it the
+  #     coordinates repeated on 64 800 rows. So harvest/parsers/sea_grid.py PACKS what is saved (the
+  #     one parser that does; it says how): 262 kB and 184 kB, 72 kB and 37 kB gzipped;
+  #   * `(last)` is the newest day each server holds: 10 October for both that day, two days behind.
+  # CURRENTS: NOAA CoastWatch, "Sea Surface Currents (Geostrophic), Altimetry (S-3A/B, CryoSat2,
+  # Jason-2/3, SARAL), Near Real-Time, Global 0.25 deg, Daily": worked out from the slope of the sea's
+  # height that radar altimeters measure (NOAA's Laboratory for Satellite Altimetry, from RADS), with
+  # the mean dynamic topography CNES/CLS 2013. Geostrophic means the steady part of the flow: no
+  # tides, no wind-driven drift. Its licence attribute (noaacwBLENDEDNRTcurrentsDaily.das): "Data
+  # courtesy of NOAA; Sentinel data courtesy of Copernicus Program; Generated using AVISO+ products.
+  # The data may be used and redistributed for free but is not intended for legal use, since it may
+  # contain inaccuracies."
+  # TEMPERATURE: NOAA NCEI's Daily Optimum Interpolation Sea Surface Temperature (OISST) v2.1, the
+  # near-real-time files, served by the CoastWatch West Coast node (NOAA NMFS SWFSC ERD): satellites
+  # (AVHRR), ships, buoys and Argo floats, the gaps filled by interpolation. The same licence
+  # attribute ("may be used and redistributed for free ..."). NCEI asks for the citation that
+  # CREDITS.md 4.22 carries in full (doi:10.25921/RE9P-PT57).
+  # NOT USED, checked the same day: NASA OSCAR (PO.DAAC: an Earthdata login), Copernicus Marine (an
+  # account), and a finer grid (every second point is 17 MB to ask for and a megabyte to save).
+  - id: ocean-currents
+    url: https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.json?u_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D,v_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D
+    auth: none
+    browser: false
+    cadence: 24h
+    freshness_max: 96h
+    parser: sea_grid
+    outputs: [ocean-currents.json]
+    attribution: "Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products)"
+    licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-12)"
+    terms_url: https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html
+    terms_recorded: 2026-10-12
+
+  - id: ocean-temperature
+    url: https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.json?sst%5B(last)%5D%5B(0.0)%5D%5B(-89.875):4:(89.875)%5D%5B(0.125):4:(359.875)%5D
+    auth: none
+    browser: false
+    cadence: 24h
+    freshness_max: 96h
+    parser: sea_grid
+    outputs: [ocean-temperature.json]
+    attribution: "Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP"
+    licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-12); NCEI asks to be cited"
+    terms_url: https://www.ncei.noaa.gov/metadata/geoportal/rest/metadata/item/gov.noaa.ncdc:C01606/html
+    terms_recorded: 2026-10-12
 
   # Tropical cyclones, worldwide, from GDACS (the UN / European Commission disaster alert system,
   # run by the EC Joint Research Centre). MEASURED 2026-09-28: `Access-Control-Allow-Origin: *`,
@@ -260,6 +554,9 @@ sources:
     parser: gdacs_tc
     outputs: [storms.json]
     attribution: "Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)"
+    licence: "CC BY 4.0 by the European Commission's reuse decision; GDACS calls it purely indicative"
+    terms_url: https://www.gdacs.org/
+    terms_recorded: 2026-09-29
 
   # --- Ground ------------------------------------------------------------------------------
   # A descriptive User-Agent is REQUIRED here; anonymous scripts are refused. Everything
@@ -274,6 +571,9 @@ sources:
     query: harvest/queries/observatories.rq
     outputs: [sites-observatories.json]
     attribution: "Observatory locations: Wikidata (CC0)"
+    licence: "CC0 1.0: Wikidata's structured data is dedicated to the public domain"
+    terms_url: https://www.wikidata.org/wiki/Wikidata:Licensing
+    terms_recorded: 2026-10-05
 
   # --- Registration-gated, and skipped until the secret exists -------------------------------
   # The ONLY public source of reentry windows. Absent the secret this source is `skipped`
@@ -288,3 +588,6 @@ sources:
     outputs: [reentries.json]
     enabled: false
     attribution: "Reentry predictions: 18 SDS via Space-Track.org"
+    licence: "Switched off: Space-Track needs an account and its user agreement restricts passing the data on; nothing is fetched"
+    terms_url: https://www.space-track.org/
+    terms_recorded: 2026-10-05

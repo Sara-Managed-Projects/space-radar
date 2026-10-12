@@ -57,12 +57,16 @@ class Mirror:
     -- is the same for every generator and lives here.
     """
 
-    def __init__(self, *, source: str, target: str, header: str, render, what: str) -> None:
+    def __init__(self, *, source: str, target: str, header: str, render, what: str, indent: int = 2) -> None:
         self.source = ROOT / source
         self.target = ROOT / target
         self.header = header
         self.render = render
         self.what = what  # "oddities.js", for the messages
+        # Two spaces a level, for a mirror somebody may read. A mirror that rides the first visit
+        # and is large (tours.js: 25 trips, 196 stops) says 0: still one value a line, so a diff
+        # is still a diff of rows, and a quarter of its bytes were leading spaces.
+        self.indent = indent
 
     def doc(self) -> dict:
         return yaml.safe_load(self.source.read_text(encoding="utf-8")) or {}
@@ -72,7 +76,7 @@ class Mirror:
         for comment, name, value in self.render(self.doc()):
             # `default=str` so a YAML date -- which PyYAML hands back as a datetime.date -- is
             # written as the ISO string the browser reads, rather than raising here.
-            body = json.dumps(value, indent=2, ensure_ascii=False, default=str)
+            body = json.dumps(value, indent=self.indent, ensure_ascii=False, default=str)
             parts.append(f"/** {comment} */\nexport const {name} = {body};\n")
         return "\n".join(parts)
 

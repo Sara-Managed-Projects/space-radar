@@ -38,15 +38,19 @@
 // layers starts open, so the first look is one screen. Which groups a visitor opened is remembered
 // (localStorage `sr:wts-open`; a storage that throws just means the default every time). Past
 // FILTER_MIN_ROWS rows a small field finds a layer by name across every group, the way a settings
-// search does. The settings (Colour by, sound, density) stay rows at the foot, and the last row,
+// search does. The settings (Colour by, sound, exposure, density) stay rows at the foot, and the last row,
 // "Keys" (issue #321), reopens the controls hint (ui/keyhint.js through ctx.keyhint.show()).
 
 import { COPY, t, fmt } from '../copy/en.js';
+import '../copy/en.later.js';
 import { tierLine } from '../scene/quality.js';
 import { createColorKey } from './colorkey.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';
-import { soundButton } from './sound.js';
+import { soundButton, volumeSlider } from './sound.js';
 import { densityPanel } from './density.js';
+import { exposurePanel } from './exposure.js';
+import { overlayPanel } from './overlaypanel.js';
+import { otherLightPanel } from './otherlight.js';
 import { LAYER_GROUPS } from '../data/layers.registry.js';
 
 const REFRESH_MS = 1000;
@@ -117,6 +121,12 @@ export function countText(layer, records, n) {
     if (text) return text;
   }
   return t(COPY.controls.layerCount, { n: fmt.int(n) });
+}
+
+/** The sentence under a row that is off by default on purpose, or ''. Pure. */
+export function layerHint(id, C = COPY.controls) {
+  const hints = (C && C.layerHint) || {};
+  return typeof hints[id] === 'string' ? hints[id] : '';
 }
 
 /** Switch a layer through main.js, and say so once so anything else can follow (sr:layer-toggle). */
@@ -218,6 +228,26 @@ function defaultStorage() {
 }
 
 /** A touch screen is told "Gestures", a keyboard "Keys" -- the same test ui/keyhint.js uses. */
+/**
+ * ONE TAB STOP (public #315). The layer list was a tab stop per group heading, per All and None
+ * and per checkbox: twenty-odd presses of Tab between the filter and Colour by. It is now one
+ * composite with a roving tabindex, as the tabs and the rail's menu are: Tab enters it at the item
+ * last used and Tab again leaves it; the arrows move inside.
+ *
+ * Which item an arrow key moves to. `count` items in a column, `index` the one that has focus.
+ * Down and Up step and stop at the ends (a list, not a ring: the end is information); Home and
+ * End jump. Null for any other key, and for an empty list. Pure.
+ */
+export function rovingTarget(count, index, key) {
+  if (!(count > 0)) return null;
+  const i = Number.isInteger(index) && index >= 0 && index < count ? index : 0;
+  if (key === 'ArrowDown') return Math.min(count - 1, i + 1);
+  if (key === 'ArrowUp') return Math.max(0, i - 1);
+  if (key === 'Home') return 0;
+  if (key === 'End') return count - 1;
+  return null;
+}
+
 function isTouch() {
   try { return !!(typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches); } catch { return false; }
 }
@@ -251,11 +281,25 @@ export function createWhatToShow(ctx, opts = {}) {
   }
   const noMatch = el('p', 'sr-show__note sr-show__nomatch', C.layerFilterEmpty);
   noMatch.hidden = true;
+  // A layer that failed (docs/ui-guide.md section 3, the error state): one line saying how many
+  // layers that are ON came back with nothing, and the one action, the sources sheet, where each
+  // source says what happened to it. The row itself says "empty"; this is where to go about it.
+  const failed = el('p', 'sr-show__note sr-show__failed');
+  const failedText = el('span', 'sr-show__failedtext');
+  const failedWhy = el('button', 'sr-show__failedwhy', C.layersFailedWhy);
+  failedWhy.type = 'button';
+  failedWhy.addEventListener('click', () => {
+    if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
+    if (ctx.shell && typeof ctx.shell.openSources === 'function') ctx.shell.openSources();
+  });
+  failed.append(failedText, failedWhy);
+  failed.hidden = true;
 
   // A list per group, all inside one wrapper the keyed note's ring rule (.is-keyed) hangs off.
   const list = el('div', 'sr-show__list');
   root.appendChild(list);
   root.appendChild(noMatch);
+  root.appendChild(failed);
   const rows = new Map();
   const heads = new Map();
   const remembered = readOpen(storage);
@@ -299,8 +343,9 @@ export function createWhatToShow(ctx, opts = {}) {
       if (open.has(group.id)) open.delete(group.id); else open.add(group.id);
       writeOpen(storage, open);
       layout();
+      syncRoving();
     });
-    heads.set(group.id, { sec, head, body, bulk, tally, group });
+    heads.set(group.id, { sec, head, body, bulk, tally, group, bulkButtons: [allBtn, noneBtn] });
 
     for (const layer of group.layers) {
       const li = el('li', 'sr-show__row');
@@ -314,12 +359,17 @@ export function createWhatToShow(ctx, opts = {}) {
       swatch.setAttribute('aria-hidden', 'true');
       if (mixed) swatch.title = C.swatchMixed;
       const lname = el('span', 'sr-show__name', layer.display || layer.id);
+      lname.title = layer.display || layer.id; // one line, so a long name ends in an ellipsis
       const count = el('span', 'sr-show__count', C.layerCountLoading);
       label.append(box, swatch, lname, count);
       li.appendChild(label);
       ul.appendChild(li);
+      // A row that is off on purpose says how to show it, while it is off (public #271).
+      const hintText = layerHint(layer.id, C);
+      const hint = hintText ? el('p', 'sr-show__hint', hintText) : null;
+      if (hint) { hint.id = `sr-show-hint-${layer.id}`; box.setAttribute('aria-describedby', hint.id); li.appendChild(hint); }
       box.addEventListener('change', () => { applyLayerOn(ctx, layer, box.checked); paint(); });
-      rows.set(layer.id, { box, count, label, layer, swatch, hex, mixed, li, group: group.id });
+      rows.set(layer.id, { box, count, label, layer, swatch, hex, mixed, li, hint, group: group.id });
     }
   });
   if (!rows.size) list.appendChild(el('p', 'sr-show__empty', C.layersEmpty));
@@ -345,8 +395,59 @@ export function createWhatToShow(ctx, opts = {}) {
     }
     noMatch.hidden = !q || any;
   }
-  if (filter) filter.addEventListener('input', layout);
+  // --- one tab stop for the whole list (rovingTarget above) ---------------------------------------
+  // The items: every heading, and inside an open group its All, its None and its rows, in the
+  // order they are on screen. What is hidden (a shut group, a row the filter left out) is not one.
+  const rovingAll = [];
+  for (const h of heads.values()) {
+    rovingAll.push({ node: h.head, shown: () => !h.sec.hidden });
+    const inBody = () => !h.sec.hidden && !h.body.hidden;
+    for (const b of h.bulkButtons) rovingAll.push({ node: b, shown: () => inBody() && !h.bulk.hidden });
+    for (const layer of h.group.layers) {
+      const row = rows.get(layer.id);
+      rovingAll.push({ node: row.box, shown: () => inBody() && !row.li.hidden });
+    }
+  }
+  const rovingItems = () => rovingAll.filter((it) => it.shown()).map((it) => it.node);
+  let rovingAt = null;
+  /** Exactly one item takes Tab: the one last used if it is still on screen, else the first. */
+  function syncRoving() {
+    const items = rovingItems();
+    if (!items.includes(rovingAt)) rovingAt = items[0] || null;
+    for (const it of rovingAll) it.node.tabIndex = it.node === rovingAt ? 0 : -1;
+  }
+  list.addEventListener('focusin', (e) => {
+    if (!e.target || !rovingAll.some((it) => it.node === e.target)) return;
+    rovingAt = e.target;
+    syncRoving();
+  });
+  list.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const items = rovingItems();
+    const i = items.indexOf(document.activeElement);
+    if (i < 0) return;
+    // On a heading, Right opens its group and Left shuts it (the tree pattern's two keys).
+    const head = document.activeElement.classList.contains('sr-show__head') ? document.activeElement : null;
+    if (head && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+      const isOpen = head.getAttribute('aria-expanded') === 'true';
+      if ((e.key === 'ArrowRight') !== isOpen) head.click();
+      e.preventDefault();
+      return;
+    }
+    const to = rovingTarget(items.length, i, e.key);
+    if (to === null) return;
+    e.preventDefault();
+    if (to === i) return;
+    rovingAt = items[to];
+    syncRoving();
+    rovingAt.focus();
+  });
+  list.setAttribute('role', 'group');
+  list.setAttribute('aria-label', C.layersKeys);
+
+  if (filter) filter.addEventListener('input', () => { layout(); syncRoving(); });
   layout();
+  syncRoving();
 
   // Data-saver, the frame-rate latch and the device tier say what they decided (spec 0026 req 18).
   const quality = el('p', 'sr-show__note');
@@ -378,7 +479,29 @@ export function createWhatToShow(ctx, opts = {}) {
   const sound = el('section', 'sr-show__section sr-show__setting');
   sound.appendChild(el('h2', 'sr-micro', COPY.audio.panelTitle));
   sound.appendChild(soundButton(ctx, 'sr-show__toggle', 'toggle'));
+  const vol = volumeSlider(ctx, 'sr-show__vol');
+  if (vol) sound.appendChild(vol);
   root.appendChild(sound);
+  // The shutter (spec 0067): Eye, Camera, Deep, in the same row shape as Density below it.
+  if (ctx && ctx.exposure) {
+    const exposure = exposurePanel(ctx.exposure);
+    exposure.classList.add('sr-show__section', 'sr-show__setting');
+    root.appendChild(exposure);
+  }
+  // Other light (registry/otherlight.yaml): the sky in infrared, microwaves or gamma rays.
+  let otherLight = null;
+  if (ctx && ctx.otherLight) {
+    otherLight = otherLightPanel(ctx);
+    otherLight.classList.add('sr-show__section', 'sr-show__setting');
+    root.appendChild(otherLight);
+  }
+  // Earth data (registry/overlays.yaml): one measured map over the globe, and its legend.
+  let overlay = null;
+  if (ctx && typeof ctx.setOverlay === 'function') {
+    overlay = overlayPanel(ctx);
+    overlay.classList.add('sr-show__section');
+    root.appendChild(overlay);
+  }
   if (ctx && ctx.density) {
     const density = densityPanel(ctx.density);
     density.classList.add('sr-show__section', 'sr-show__setting');
@@ -395,7 +518,7 @@ export function createWhatToShow(ctx, opts = {}) {
     // The popover closes first: the hint sits bottom-right and the popover would hide nothing of
     // it, but two floating panels at once is the clutter the rail was made to end.
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
-    if (ctx && ctx.keyhint && typeof ctx.keyhint.show === 'function') ctx.keyhint.show();
+    if (ctx && ctx.keyhint && typeof ctx.keyhint.show === 'function') ctx.keyhint.show({ all: true });
   });
   root.appendChild(keys);
 
@@ -416,6 +539,7 @@ export function createWhatToShow(ctx, opts = {}) {
 
   function paint() {
     paintKey();
+    let empties = 0;
     const counted = new Map();
     let all = [];
     try { all = typeof ctx.records === 'function' ? ctx.records() : []; } catch { all = []; }
@@ -423,6 +547,7 @@ export function createWhatToShow(ctx, opts = {}) {
     for (const [id, row] of rows) {
       const on = isOn(id);
       if (row.box.checked !== on) row.box.checked = on;
+      if (row.hint) row.hint.hidden = on;
       // A layer whose marks are not its records (the stars: 109 389 drawn, ~3 400 named) states its
       // own number; everything else is counted from the records it loaded.
       const own = typeof row.layer.count === 'function' ? row.layer.count() : undefined;
@@ -434,11 +559,17 @@ export function createWhatToShow(ctx, opts = {}) {
           : n === 0 ? COPY.controls.layerCountEmpty : countText(row.layer, recordsFor(ctx, id), n);
       if (row.count.textContent !== text) row.count.textContent = text;
       row.count.classList.toggle('is-empty', !n);
+      const why = waits ? COPY.controls.layerWaitsTitle : n === 0 ? COPY.controls.layerCountEmptyTitle : '';
+      if (row.count.title !== why) row.count.title = why;
+      if (n === 0 && on) empties += 1;
       // A count that is a sentence wraps under the name instead of pushing the row off the edge
       // (measured: the oddities line is 360 px in a 335 px column).
       const split = text.includes(COPY.punctuation.separator.trim());
       row.label.classList.toggle('is-split', split);
     }
+    const failText = !empties ? '' : empties === 1 ? C.layersFailedOne : t(C.layersFailed, { n: fmt.int(empties) });
+    if (failedText.textContent !== failText) failedText.textContent = failText;
+    failed.hidden = !empties;
     for (const h of heads.values()) {
       const { on, n } = groupTally(h.group.layers, isOn);
       const text = t(C.groupCount, { on: fmt.int(on), n: fmt.int(n) });
@@ -471,6 +602,8 @@ export function createWhatToShow(ctx, opts = {}) {
       window.removeEventListener('sr:colour-key', onAny);
       document.removeEventListener('sr:layer-toggle', onAny);
       key.destroy();
+      if (overlay) overlay.destroy();
+      if (otherLight) otherLight.destroy();
       root.remove();
     },
   };

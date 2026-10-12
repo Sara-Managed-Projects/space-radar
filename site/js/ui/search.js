@@ -4,6 +4,7 @@
 // Also exported, and pure, so the ranking can be measured without a DOM:
 //   buildIndex(records, layers) -> Index
 //   findMatches(index, query, limit) -> { hits, total, query }
+//   closest(index, query, limit) -> hits      the nearest names, for a query that found nothing
 //
 // This module finds a record and hands it to ctx.select(). It does NOT fly the camera and does
 // NOT open the card: main.js's select() already does both, and a second implementation of either
@@ -34,6 +35,7 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 import { ALIASES } from '../data/aliases.js';
+import { labelParentId } from './labels.js';
 
 // Ids are per instance, not per module. aria-controls and aria-activedescendant are id
 // REFERENCES, so two panels sharing one id silently point a screen reader at the other panel's
@@ -46,6 +48,7 @@ const MIN_QUERY = 2; // one letter matches thousands of things and helps nobody
 /** Added to an alias's own score so the canonical object outranks anything merely named alike. */
 const ALIAS_BONUS = 10000;
 const MAX_RESULTS = 8; // spec 0021 requirement 7: a list of twelve was still a scroll
+const MISS_QUOTE = 18; // how much of a query that found nothing is quoted back, so the line stays one line
 const INPUT_DEBOUNCE_MS = 120;
 // `sr:layer` fires once per layer, ~15 times over several seconds. Rebuilding 17 000 entries on
 // each is waste; this is the trailing edge of the burst. A query that arrives before it fires
@@ -64,6 +67,8 @@ const OTHER_CONTAINS = 500; // designator or operator
 // digit at a time. Without it "2554" finds nothing at all and "25544" finds the station, which
 // reads as the search being broken rather than as the number being incomplete.
 const CAT_PREFIX = 400;
+/** How many of a planet's moons follow it when it is named exactly. */
+export const MOONS_AFTER = 4;
 /** The weakest hit a `#at=` link will fly to (main.js resolveAt): the start of a word or better. */
 export const LINK_MIN_SCORE = WORD_PREFIX;
 
@@ -175,6 +180,10 @@ export function buildIndex(records, layers) {
     picked: [], // on the hand-kept list; a tie-break, see below
     mag: [], // apparent magnitude where the record has one, else Infinity; brighter first, see below
     where: [], // the layer's display name, for the quiet right-hand label
+    pop: [], // a world or a station: what people mean by a name before anything that shares it
+    kind: [], // 0 a working thing, 1 a rocket body, 2 debris: spec 0049 req 9
+    norad: [], // catalogue number, Infinity without one
+    kids: new Map(), // a world's id -> the entries of its moons, in the registry's order
     layers: displayOf,
   };
 
@@ -211,6 +220,16 @@ export function buildIndex(records, layers) {
     const mag = Number.isFinite(meta.vmag) ? meta.vmag : Number.isFinite(meta.mag) ? meta.mag : Infinity;
     index.mag.push(mag);
     index.where.push(displayOf.get(record.layer) || '');
+    index.pop.push(record.klass === 'world' || record.klass === 'station' ? 1 : 0);
+    // What it IS, for the tie-break of spec 0049 req 9: a working thing before a spent rocket body
+    // before a fragment. With the debris clouds or the whole catalogue loaded, "iss" matches
+    // hundreds of `ISS DEB` pieces exactly as well as it matches a payload.
+    index.kind.push(record.klass === 'debris' ? 2 : record.klass === 'rocket' ? 1 : 0);
+    // The catalogue number, for the last tie-break but one: among equals, the older object (the
+    // first module of a station, the first of a series) is the one a bare name means.
+    index.norad.push(Number.isFinite(meta.noradId) ? meta.noradId : Infinity);
+    const parent = labelParentId(record);
+    if (parent) { if (!index.kids.has(parent)) index.kids.set(parent, []); index.kids.get(parent).push(index.n); }
     index.n += 1;
   }
   return index;
@@ -321,6 +340,19 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
     }
     if (score > 0) found.push({ i, score });
   }
+  // A PLANET'S MOONS COME AFTER IT (internal #419 item 10): "jupiter" offered JUPITER 3 (ECHOSTAR
+  // 24), a television satellite, second, above Io and Europa. A world named exactly brings its
+  // first MOONS_AFTER moons in one point under it, which is above anything that merely starts with
+  // the word.
+  for (const hit of found.slice()) {
+    if (hit.score !== NAME_EXACT || index.record[hit.i].klass !== 'world') continue;
+    const kids = index.kids.get(index.record[hit.i].id) || [];
+    for (const k of kids.slice(0, MOONS_AFTER)) {
+      const had = found.find((f) => f.i === k);
+      if (had) had.score = Math.max(had.score, NAME_EXACT - 1);
+      else found.push({ i: k, score: NAME_EXACT - 1, kid: true });
+    }
+  }
   if (!found.length && buried.length) { found.push(...buried); out.fallback = true; }
   buried = null;
   out.total = found.length;
@@ -330,6 +362,14 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   // "ISS DEB (CZ-4 R/B)" when both merely contain the letters.
   found.sort((a, b) => {
     if (a.score !== b.score) return b.score - a.score;
+    // A moon brought in by its planet keeps the registry's order: Io, Europa, Ganymede, Callisto.
+    if (a.kid && b.kid) return a.i - b.i;
+    // A world or a station before anything else that matched as well: the popular thing first.
+    if (index.pop[a.i] !== index.pop[b.i]) return index.pop[b.i] - index.pop[a.i];
+    // A payload before a rocket body before a fragment (spec 0049 req 9), BEFORE the layer ladder:
+    // a debris layer that sits above "Everything active" in the registry must not put four hundred
+    // pieces of a station's debris above a satellite that matched as well.
+    if (index.kind[a.i] !== index.kind[b.i]) return index.kind[a.i] - index.kind[b.i];
     if (index.rank[a.i] !== index.rank[b.i]) return index.rank[a.i] - index.rank[b.i];
     // Brighter first: "andromeda" means the galaxy, not Andromeda II. A record with no magnitude
     // (Infinity) sorts after one that has a magnitude -- MEASURED live: "carina" put the Carina
@@ -342,6 +382,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
     if (index.picked[a.i] !== index.picked[b.i]) return index.picked[b.i] - index.picked[a.i];
     if (index.len[a.i] !== index.len[b.i]) return index.len[a.i] - index.len[b.i];
     if (index.name[a.i] !== index.name[b.i]) return index.name[a.i] < index.name[b.i] ? -1 : 1;
+    if (index.norad[a.i] !== index.norad[b.i]) return index.norad[a.i] < index.norad[b.i] ? -1 : 1;
     return a.i - b.i; // total order, so the list never reshuffles between identical keystrokes
   });
 
@@ -395,6 +436,77 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 }
 
 // ---------------------------------------------------------------------------------------
+// Nothing matched: the nearest names (spec 0061 task 5, docs/ui-guide.md section 3.2)
+// ---------------------------------------------------------------------------------------
+
+/** Optimal-string-alignment distance, capped: letters swapped, dropped, added or mistyped. */
+export function editDistance(a, b, cap) {
+  const n = a.length;
+  const m = b.length;
+  if (Math.abs(n - m) > cap) return cap + 1;
+  let prev2 = null;
+  let prev = new Array(m + 1);
+  for (let j = 0; j <= m; j += 1) prev[j] = j;
+  for (let i = 1; i <= n; i += 1) {
+    const cur = new Array(m + 1);
+    cur[0] = i;
+    let best = cur[0];
+    for (let j = 1; j <= m; j += 1) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+      let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      if (prev2 && i > 1 && j > 1 && a.charCodeAt(i - 1) === b.charCodeAt(j - 2) && a.charCodeAt(i - 2) === b.charCodeAt(j - 1)) v = Math.min(v, prev2[j - 2] + 1);
+      cur[j] = v;
+      if (v < best) best = v;
+    }
+    if (best > cap) return cap + 1;
+    prev2 = prev;
+    prev = cur;
+  }
+  return prev[m];
+}
+
+/**
+ * The names nearest a query that matched nothing: "jupitr" offers Jupiter, "satrun" Saturn. Pure.
+ *
+ * A whole name or one whole word of it, within one slip for a short query and two for a longer
+ * one; never a number (a wrong catalogue number has no neighbour worth offering) and never a
+ * two-letter query, where everything is one slip away. Ordered as the results are: the fewest
+ * slips, then the layer ladder, the brighter, the shorter name. Runs only when the list is empty,
+ * so its cost (one small table per word of the index) is paid on a miss, not on a keystroke.
+ */
+export function closest(index, query, limit = 3) {
+  const q = norm(query);
+  if (!index || !index.n || q.length < 4 || /^[0-9\s]+$/.test(q)) return [];
+  const cap = q.length <= 5 ? 1 : 2;
+  const found = [];
+  for (let i = 0; i < index.n; i += 1) {
+    const name = index.name[i];
+    if (!name) continue;
+    let best = editDistance(q, name, cap);
+    if (best > cap && name.indexOf(' ') >= 0) {
+      for (const word of name.split(/[^a-z0-9]+/)) {
+        if (word.length < 3) continue;
+        const d = editDistance(q, word, cap);
+        if (d < best) best = d;
+      }
+    }
+    if (best <= cap) found.push({ i, d: best });
+  }
+  found.sort((a, b) => (a.d - b.d) || (index.pop[b.i] - index.pop[a.i]) || (index.rank[a.i] - index.rank[b.i]) || (index.mag[a.i] - index.mag[b.i])
+    || (index.len[a.i] - index.len[b.i]) || (a.i - b.i));
+  const seen = new Set();
+  const out = [];
+  for (const hit of found) {
+    const record = index.record[hit.i];
+    const id = record && record.id;
+    if (id != null) { if (seen.has(id)) continue; seen.add(id); }
+    out.push({ record, name: record.name || COPY.card.unknownName, where: index.where[hit.i], klass: record.klass || 'unknown', score: 0, at: -1, length: 0 });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------------------
 // The component
 // ---------------------------------------------------------------------------------------
 
@@ -433,12 +545,38 @@ export function createSearch(ctx, host) {
     dirty: true,
     open: false,
     active: -1, // the highlighted row, and what "Fly to it" acts on
+    missed: '', // the query that matched nothing, as typed; the hits are then the nearest names
     hits: [],
     total: 0,
     reported: new Set(), // layer ids that have fired sr:layer, whatever count they carried
     inputTimer: 0,
     rebuildTimer: 0,
+    more: null, // ui/searchrows.js, once the field has been focused: what a row says, and the extras
+    env: null, // where things are in the visitor's sky, for the rows
+    group: null, // {id, q}: a constellation's row the visitor pressed, listed while the query stands
   };
+
+  // WHAT A ROW SAYS, AND TRIPS, MISSIONS AND EVENTS (public #312): fetched on the first focus, never
+  // at boot (ui/searchrows.js says why). Until it lands the list is a name and its layer.
+  let moreImport = null;
+  const refreshEnv = () => {
+    if (!state.more) return;
+    state.more.whereEnv(ctx).then((env) => { state.env = env; if (state.open && input.value) run(input.value); }).catch(() => { state.env = null; });
+  };
+  function wantMore() {
+    if (moreImport) return moreImport;
+    moreImport = import('./searchrows.js').then((m) => {
+      state.more = m;
+      refreshEnv();
+      // The 88 star patterns arrive a moment after the module (two small files): a query typed in
+      // that moment is asked again when they land, so "orion" is not missing its constellation.
+      if (typeof m.loadConstellations === 'function') m.loadConstellations().then((n) => { if (n && state.open && input.value) run(input.value); });
+      if (state.open && input.value) run(input.value);
+      else if (document.activeElement === input && !input.value) suggest();
+      return m;
+    }).catch((e) => { moreImport = null; console.warn('the search rows did not load', e); return null; });
+    return moreImport;
+  }
 
   // --- structure ------------------------------------------------------------------------
 
@@ -484,6 +622,17 @@ export function createSearch(ctx, host) {
   const foot = el('p', 'sr-search__foot');
   foot.setAttribute('role', 'status');
   foot.setAttribute('aria-live', 'polite');
+  // The empty state (docs/ui-guide.md section 3.2): what was not found, in one line, and under a
+  // microlabel the nearest names as ordinary options. It sits ABOVE the list, where the first
+  // result would have been; a status, so the miss is heard as well as seen.
+  const empty = el('div', 'sr-search__empty');
+  empty.setAttribute('role', 'status');
+  empty.setAttribute('aria-live', 'polite');
+  empty.hidden = true;
+  const emptyLine = el('p', 'sr-search__emptyline');
+  const emptyHint = el('p', 'sr-search__emptyhint');
+  empty.append(emptyLine, emptyHint);
+  pop.appendChild(empty);
   pop.appendChild(list);
   pop.appendChild(foot);
   wrap.appendChild(pop);
@@ -528,20 +677,24 @@ export function createSearch(ctx, host) {
   function paintNote() {
     const split = missingLayers();
     const missing = split.all;
-    const parts = [];
-    parts.push(
-      state.index.n === 0
-        ? COPY.search.empty
-        : t(state.index.n === 1 ? COPY.search.searchingOne : COPY.search.searching, {
-            n: fmt.int(state.index.n),
-          }),
-    );
-    if (split.loading.length) parts.push(t(COPY.search.stillLoading, { layers: split.loading.join(COPY.punctuation.listJoin) }));
-    if (split.deferred.length) parts.push(t(COPY.search.loadsWhenOn, { layers: split.deferred.join(COPY.punctuation.listJoin) }));
-    if (split.unread.length) parts.push(t(COPY.search.couldNotRead, { layers: split.unread.join(COPY.punctuation.listJoin) }));
-    if (missing.length) parts.push(COPY.search.notLoadedCount);
-    if (state.switchedOn) parts.push(t(COPY.search.switchedOn, { layer: state.switchedOn }));
-    note.textContent = parts.join(' ');
+    // ONE LINE in the chrome (spec 0061 req 11): how much is searched and how many layers are not.
+    // Which layers, and which of the three reasons each has, is the same honesty as before, in the
+    // line's tooltip and in What to show, where every one of them has its own row and state.
+    const S = COPY.search;
+    const n = fmt.int(state.index.n);
+    const line = state.skyNote ? state.skyNote
+      : state.switchedOn ? t(S.switchedOn, { layer: state.switchedOn })
+      : state.index.n === 0 ? S.empty
+        : !missing.length ? t(state.index.n === 1 ? S.searchingOne : S.searching, { n })
+          : missing.length === 1 ? t(S.searchingButOne, { n })
+            : t(S.searchingBut, { n, m: fmt.int(missing.length) });
+    const why = [];
+    if (split.loading.length) why.push(t(S.stillLoading, { layers: split.loading.join(COPY.punctuation.listJoin) }));
+    if (split.deferred.length) why.push(t(S.loadsWhenOn, { layers: split.deferred.join(COPY.punctuation.listJoin) }));
+    if (split.unread.length) why.push(t(S.couldNotRead, { layers: split.unread.join(COPY.punctuation.listJoin) }));
+    if (missing.length) why.push(S.notLoadedCount);
+    note.textContent = line;
+    note.title = why.join(' ');
     note.classList.toggle('is-warning', missing.length > 0);
   }
 
@@ -577,11 +730,35 @@ export function createSearch(ctx, host) {
       // The class dot. The swatch tokens in ui.css are scene/glyphatlas.js's CLASS_COLOURS
       // verbatim, so the dot is the colour the object is drawn in without this panel importing
       // the atlas -- and with it, three.js.
-      const dot = el('span', `sr-swatch sr-swatch--${hit.klass}`);
-      dot.setAttribute('aria-hidden', 'true');
-      item.appendChild(dot);
-      item.appendChild(nameNode(hit));
-      if (hit.where) item.appendChild(el('span', 'sr-search__where', hit.where));
+      const klass = hit.extra && hit.extra !== 'group' ? 'oddity' : hit.klass;
+      // An icon in the class colour where the family has an honest one (searchrows.js rowIcon),
+      // else the dot as before; and the dot until that module has landed.
+      const glyph = state.more && typeof state.more.rowIcon === 'function' ? state.more.rowIcon(hit) : null;
+      if (glyph) {
+        const mark = el('span', `sr-search__icon sr-ink--${klass}`);
+        mark.setAttribute('aria-hidden', 'true');
+        mark.appendChild(glyph);
+        item.appendChild(mark);
+      } else {
+        const dot = el('span', `sr-swatch sr-swatch--${klass}`);
+        dot.setAttribute('aria-hidden', 'true');
+        item.appendChild(dot);
+      }
+      if (hit.row || hit.extra) {
+        // Two lines: the name people use, and under it what it is, the catalogue's own string
+        // when that differs, and where it is in the visitor's sky now.
+        item.classList.add('sr-search__option--rich');
+        if (hit.extra) item.dataset.extra = hit.extra;
+        const text = el('span', 'sr-search__text');
+        text.appendChild(nameNode(hit));
+        const sub = hit.extra ? [hit.sub] : [hit.row.kind, hit.row.also, hit.row.where];
+        const line = sub.filter(Boolean).join(COPY.punctuation.separator);
+        if (line) text.appendChild(el('span', 'sr-search__what', line));
+        item.appendChild(text);
+      } else {
+        item.appendChild(nameNode(hit));
+        if (hit.where) item.appendChild(el('span', 'sr-search__where', hit.where));
+      }
       // pointerdown would blur the input before the click lands, closing the list under the
       // finger. Suppressing the default keeps focus where the ARIA state says it is.
       item.addEventListener('pointerdown', (event) => event.preventDefault());
@@ -593,25 +770,33 @@ export function createSearch(ctx, host) {
       item.addEventListener('pointerup', (event) => {
         if (event.button !== undefined && event.button !== 0) return;
         state.pickedAt = performance.now();
-        pick(hit.record);
+        pickHit(hit);
       });
       item.addEventListener('click', () => {
         if (state.pickedAt && performance.now() - state.pickedAt < 700) return; // pointerup did it
         setActive(i);
-        pick(hit.record);
+        pickHit(hit);
       });
       list.appendChild(item);
     }
 
     const hidden = state.total - state.hits.length;
     const lines = [];
-    if (!state.hits.length) lines.push(COPY.search.noMatch);
-    else {
+    if (!state.missed) {
       if (state.fallback) lines.push(COPY.search.fallback);
       if (hidden > 0) lines.push(t(COPY.search.more, { n: fmt.int(hidden) }));
     }
     foot.textContent = lines.join(' ');
     foot.hidden = foot.textContent === '';
+    // The miss: the query quoted back (cut, so a pasted paragraph stays one line), and whether
+    // anything is near it. With an empty index the line says that instead: nothing was searched.
+    empty.hidden = !state.missed;
+    if (state.missed) {
+      const shown = state.missed.length > MISS_QUOTE ? `${state.missed.slice(0, MISS_QUOTE)}${COPY.punctuation.ellipsis}` : state.missed;
+      emptyLine.textContent = state.index.n === 0 ? COPY.search.empty : t(COPY.search.noMatch, { q: shown });
+      emptyHint.textContent = state.hits.length ? COPY.search.closest : '';
+      emptyHint.hidden = !state.hits.length;
+    }
   }
 
   function paintActive() {
@@ -637,7 +822,7 @@ export function createSearch(ctx, host) {
   }
 
   function setOpen(open) {
-    state.open = open && state.hits.length > 0;
+    state.open = open && (state.hits.length > 0 || !!state.missed);
     pop.hidden = !state.open;
     input.setAttribute('aria-expanded', state.open ? 'true' : 'false');
     if (!state.open) {
@@ -653,6 +838,7 @@ export function createSearch(ctx, host) {
       input.value = '';
       state.hits = [];
       state.total = 0;
+      state.missed = '';
     }
   }
 
@@ -663,8 +849,10 @@ export function createSearch(ctx, host) {
     if (q.length < MIN_QUERY) {
       state.hits = [];
       state.total = 0;
+      state.missed = '';
       close(false);
       paintList();
+      if (!q && document.activeElement === input) suggest();
       return;
     }
     ensureIndex();
@@ -673,6 +861,33 @@ export function createSearch(ctx, host) {
     state.total = result.total;
     state.fallback = result.fallback === true;
     state.switchedOn = null;
+    state.skyNote = '';
+    // Nothing matched: say so, and offer the nearest names as the options (closest() above).
+    state.missed = result.hits.length ? '' : String(text).trim();
+    if (state.missed) { state.hits = closest(state.index, q); state.total = state.hits.length; }
+    if (state.more) {
+      // The rows' words, one row per drawn name, and under the objects the trips, missions and
+      // events the query names. A query that names only those is not a miss.
+      const m = state.more;
+      const rows = m.mergeSame(state.hits.map((h) => ({ ...h, name: undefined, row: m.describe(h.record, state.env) })).map((h) => {
+        const at = h.row.title.toLowerCase().indexOf(q);
+        return { ...h, name: h.row.title, at, length: q.length };
+      }));
+      // A constellation is one row until it is pressed (searchrows.js groupRows).
+      if (state.group && state.group.q !== q) state.group = null;
+      const before = rows.length;
+      const grouped = m.groupRows(rows, (g) => recordsOf(ctx).filter((r) => r && g.test.test(String(r.name || ''))).length, state.group && state.group.id);
+      // groupRows hands back a new list; emptying `rows` first would empty an alias of it
+      // (seen 2026-10-07: "mars" found three trips and no planet).
+      rows.splice(0, rows.length, ...grouped);
+      state.total = Math.max(0, state.total - (before - rows.length));
+      const merged = state.hits.length - before;
+      const extras = m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
+      if (extras.length && state.missed && !rows.length) state.missed = '';
+      state.total = Math.max(0, state.total - merged);
+      state.hits = rows.slice(0, MAX_RESULTS - Math.min(extras.length, rows.length ? extras.length : 0)).concat(state.missed ? [] : extras);
+      state.total += state.missed ? 0 : extras.length;
+    }
     paintList();
     // Always open on a real query, even with nothing to show: the footer's "nothing matches" is
     // an answer, and a dropdown that simply does not appear is indistinguishable from a bug.
@@ -680,7 +895,9 @@ export function createSearch(ctx, host) {
     pop.hidden = false;
     input.setAttribute('aria-expanded', 'true');
     // The top row is highlighted for you, so Enter and "Fly to it" both work without an arrow key.
-    setActive(state.hits.length ? 0 : -1);
+    // Not a guess, though: a nearest name is offered, and flying to it on Enter would be answering
+    // a question that was not asked. An arrow key reaches it.
+    setActive(state.hits.length && !state.missed ? 0 : -1);
   }
 
   /**
@@ -693,6 +910,27 @@ export function createSearch(ctx, host) {
    * off until controls.js listens for this event. That is the integrator's one line, not a
    * reason to reach into another module's DOM from here.
    */
+  /** A row is an object, or one of ui/searchrows.js's extras: a trip, a mission, an event, a suggestion. */
+  function pickHit(hit) {
+    if (!hit) return;
+    if (!hit.extra) { pick(hit.record); return; }
+    // A constellation's row: list its satellites in place, and stay open.
+    if (hit.extra === 'group') { state.group = { id: hit.id, q: norm(input.value) }; run(input.value); return; }
+    if (state.more && state.more.runExtra(ctx, hit)) { close(true); paintList(); input.blur(); }
+  }
+
+  /** Before anything is typed: what the field can do that a name cannot ask for ("Near me tonight"). */
+  function suggest() {
+    if (!state.more || input.value) return;
+    state.hits = state.more.suggestions();
+    state.total = state.hits.length;
+    state.missed = '';
+    state.fallback = false;
+    paintList();
+    setOpen(true);
+    setActive(-1);
+  }
+
   function pick(record) {
     if (!record) return;
     try {
@@ -711,6 +949,16 @@ export function createSearch(ctx, host) {
       }
     } catch {
       /* a layer that refuses to switch on still gets the camera and the card below */
+    }
+    // From the ground the search box turns the sky to what it found (internal #393 finding 7), or
+    // says that it is under the horizon; main.js's select() opens the card and flies nowhere.
+    try {
+      const sky = ctx.skyView;
+      const shown = sky && sky.active && typeof sky.pointAtRecord === 'function' ? sky.pointAtRecord(record) : null;
+      state.skyNote = shown === 'below' ? t(COPY.search.belowHorizon, { name: record.name || '' }) : '';
+      if (state.skyNote) paintNote();
+    } catch {
+      /* the card still opens */
     }
     try {
       if (typeof ctx.select === 'function') ctx.select(record);
@@ -747,7 +995,7 @@ export function createSearch(ctx, host) {
       case 'Enter': {
         if (state.open && state.active >= 0 && state.hits[state.active]) {
           event.preventDefault();
-          pick(state.hits[state.active].record);
+          pickHit(state.hits[state.active]);
         }
         return;
       }
@@ -782,12 +1030,15 @@ export function createSearch(ctx, host) {
   };
 
   const onFocusIn = () => {
-    if (!state.open && state.hits.length) setOpen(true);
+    wantMore();
+    refreshEnv();
+    if (!state.open && state.hits.length && input.value) setOpen(true);
+    else if (!input.value) suggest();
   };
 
   const onFly = () => {
     if (state.active < 0 || !state.hits[state.active]) return;
-    pick(state.hits[state.active].record);
+    pickHit(state.hits[state.active]);
   };
 
   const onLayer = (event) => {
@@ -807,6 +1058,7 @@ export function createSearch(ctx, host) {
   fly.addEventListener('click', onFly);
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:layers-ready', onLayer);
+  window.addEventListener('sr:observer', refreshEnv);
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotion);
 
   rebuild();
@@ -832,6 +1084,7 @@ export function createSearch(ctx, host) {
       fly.removeEventListener('click', onFly);
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:layers-ready', onLayer);
+      window.removeEventListener('sr:observer', refreshEnv);
       if (reduceMotion.removeEventListener) reduceMotion.removeEventListener('change', onMotion);
       if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
     },

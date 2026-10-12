@@ -12,6 +12,7 @@
 // the same frame code the card's rows use.
 
 import { COPY, t, fmt } from '../copy/en.js';
+import '../copy/en.later.js';
 import { propagate } from '../propagate/index.js';
 import { eciToEcef, ecefToGeodetic, gmst } from '../propagate/frames.js';
 

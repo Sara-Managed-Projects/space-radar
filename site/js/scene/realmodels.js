@@ -13,19 +13,49 @@
 //    a tube with a door and a real Voyager is a dish with a boom, and no amount of shading makes a
 //    procedural box read as either. Pass `keepMaterials: true` to opt out.
 //
+//    THE COLOURS ARE REAL TOO, SINCE 2026-10-05, AND THEY ARE FLAT. Shading and colour are two
+//    things, and only the first was ever the brief. Painting a whole spacecraft in its class
+//    colour is what made the Apollo lunar module salmon and Voyager lavender (issues #265, #386,
+//    #418): the gold foil, the white dish and the black blankets ARE the recognition up close, as
+//    much as the outline is. So a file now ships a flat colour per part, baked from NASA's own
+//    materials and textures by scripts/bake-own-colours.mjs, and each goes through the same toon
+//    ramp, the same rim and the same planet-shine as everything else on screen. ONE LOOK: flat
+//    tones, three steps of light, no photographs, no normal maps, no metalness -- a real model
+//    and a procedural one beside it are drawn by the same hand. The class colour is now only what
+//    a file with no colours of its own falls back to (colourRoute, below).
+//
 // 2. NOTHING BLOCKS. A hero appears as procedural geometry immediately and upgrades in place when
 //    its file arrives. A visitor on a slow connection sees a satellite now and a better satellite
 //    a second later, rather than an empty orbit and a spinner. A file that fails to load is simply
 //    never upgraded, and the card is unaffected -- the model is a drawing, never the data.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { GLTFLoader } from '../../vendor/GLTFLoader.js';
-import { MeshoptDecoder } from '../../vendor/meshopt_decoder.module.js';
-import { toonMaterial } from './models.js';
+// THE LOADER IS NOT IN THE BOOT GRAPH (2026-10-06, internal #405). This file is imported at boot for
+// its TABLE: the card, the labels and the hero layer all ask realModelFor() which drawing a record
+// gets. The glTF loader, its geometry helpers and the meshopt decoder (190 kB together) and
+// scene/models.js (155 kB, for toonMaterial) are needed only when a FILE is actually fetched, so
+// loadRealModel() imports them then (loadKit, below). MEASURED that day: a first visit fetched all
+// of it and loaded no model.
+let kit = null;
+let kitAsked = null;
+function loadKit() {
+  if (!kitAsked) {
+    kitAsked = Promise.all([
+      import('../../vendor/GLTFLoader.js'),
+      import('../../vendor/meshopt_decoder.module.js'),
+      import('./models.js'),
+    ]).then(([g, m, models]) => {
+      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial };
+      return kit;
+    }).catch((err) => { kitAsked = null; throw err; });
+  }
+  return kitAsked;
+}
 import { CLASS_COLOURS } from './glyphatlas.js';
 import { isGeostationary } from '../data/parsers.js';
 
 const BASE = new URL('../../models/', import.meta.url);
+const TEXTURES = new URL('../../textures/', import.meta.url);
 
 /**
  * Which record gets which file. Keyed by the identifier that is stable for that object:
@@ -74,6 +104,13 @@ const BASE = new URL('../../models/', import.meta.url);
  * The shape still carries a comms payload's dishes, which is the "not this exact one" half. It is
  * wrong in SILHOUETTE for exactly two of the 400: Fengyun 2G and 2H are spin-stabilised drums.
  */
+function gpsBlock(record) {
+  const year = record && record.meta ? record.meta.launchYear : null;
+  if (!Number.isFinite(year)) return {};
+  if (year >= 2018) return { build: 'navigation-gps-iii' };
+  return year >= 2010 && year <= 2016 ? { build: 'navigation-gps-iif' } : {};
+}
+
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
 export const REAL_MODELS = {
@@ -102,7 +139,7 @@ export const REAL_MODELS = {
     // into orbit -- the first hydrogen engine fired in space -- so the catalogue calls the stage the
     // payload and its name carries no R/B. It was drawn, and its card described it, as "a generic
     // satellite". It is a spent upper stage and is drawn as one.
-    694: { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
+    694: { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
     // SPACE TELESCOPES WITH NO MODEL OF THEIR OWN, drawn as the generic telescope rather than as a
     // communications satellite with a dish, which is what the satellite default is. The card says
     // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
@@ -113,8 +150,11 @@ export const REAL_MODELS = {
     57800: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'XRISM', generic: true },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
-    39084: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 8', catalogue: 'LANDSAT 8' },
-    49260: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 9', catalogue: 'LANDSAT 9', generic: true },
+    // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
+    // different spacecraft: a boxy 1999 bus, where 8 and 9 are the same Orbital/Northrop bus with
+    // one long wing. Landsat 9 is a near-copy of 8 and stays `generic`, as it was.
+    39084: { file: 'landsat8.glb', colour: 'satellite', name: 'Landsat 8', catalogue: 'LANDSAT 8' },
+    49260: { file: 'landsat8.glb', colour: 'satellite', name: 'Landsat 9', catalogue: 'LANDSAT 9', generic: true },
     25867: { file: 'chandra.glb', colour: 'telescope', name: 'Chandra X-ray Observatory', catalogue: 'CXO' },
     28485: { file: 'swift.glb', colour: 'telescope', name: 'Swift', catalogue: 'SWIFT' },
     43435: { file: 'tess.glb', colour: 'telescope', name: 'TESS', catalogue: 'TESS' },
@@ -175,35 +215,38 @@ export const REAL_MODELS = {
     //
     // The `catalogue:` field must come from the endpoint the CHECKER uses (CATNR), and that is
     // also the one the app sees, because registry/sources.yaml fetches GROUP=active.
-    32275: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
-    32276: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
-    32393: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
-    32395: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
-    36111: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
-    36112: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
-    36402: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
-    37867: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
-    37868: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
-    37869: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
-    39155: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
-    39620: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
-    40001: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
-    40315: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
-    41330: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
-    42939: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
-    43508: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
-    43687: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
-    44299: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
-    44850: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
-    45358: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
-    46805: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
-    52984: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
-    54031: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
-    54377: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
+    // 2026-10-08 (public #429): the shape by the block the catalogue's own label states. GLONASS-M is
+    // the pressurised drum, GLONASS-K (and K1) the small box; K2 is a larger craft with no row in
+    // scene/models.js NAV_SHAPES and keeps the family box.
+    32275: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
+    32276: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
+    32393: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
+    32395: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
+    36111: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
+    36112: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
+    36402: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
+    37867: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
+    37868: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
+    37869: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
+    39155: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
+    39620: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
+    40001: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
+    40315: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
+    41330: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
+    42939: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
+    43508: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
+    43687: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
+    44299: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
+    44850: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
+    45358: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
+    46805: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
+    52984: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
+    54031: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
+    54377: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
     57517: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2569 [GLONASS-K2]', generic: true },
     63130: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2584 [GLONASS-K2]', generic: true },
-    65590: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
-    100460: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
+    65590: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
+    100460: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
 
     // ---------------------------------------------------------------------------------------
     // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
@@ -257,7 +300,10 @@ export const REAL_MODELS = {
     41456: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1B', generic: true },
     62261: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1C', generic: true },
     66315: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1D', generic: true },
-    23710: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-1', generic: true },
+    // RADARSAT-1 has NASA's own model since 2026-10-08 (public #430): its real bus, wings and 15 m
+    // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
+    // the element groups the app loads (registry/models.yaml says so on its row).
+    23710: { file: 'radarsat1.glb', colour: 'satellite', name: 'RADARSAT-1', catalogue: 'RADARSAT-1' },
     32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
     31698: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TERRASAR-X', generic: true },
     36605: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TANDEM-X', generic: true },
@@ -387,16 +433,56 @@ export const REAL_MODELS = {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
     '-32': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 2' },
     '-61': { file: 'juno.glb', colour: 'probe', name: 'Juno' },
+    // Ended missions and the two Pioneers (2026-10-06, issue #431): each has a record now because
+    // each has a file of its own path (site/data/eph, propagate/ephemeris.js). NASA publishes one
+    // Pioneer model, of Pioneer 10; Pioneer 11 is its sister craft of the same design.
+    '-82': { file: 'cassini.glb', colour: 'probe', name: 'Cassini' },
+    '-77': { file: 'galileo.glb', colour: 'probe', name: 'Galileo' },
+    '-23': { file: 'pioneer.glb', colour: 'probe', name: 'Pioneer 10' },
+    '-24': { file: 'pioneer.glb', colour: 'probe', name: 'Pioneer 11' },
     '-96': { file: 'parker.glb', colour: 'probe', name: 'Parker Solar Probe' },
-    // Procedural, not NASA's file: see buildJwst in scene/models.js. A loaded model is retextured
-    // in one colour for its class, and JWST without the contrast between gold, silver and dark
-    // is a brown lump -- which is what shipped until 2026-09-20.
-    '-170': { build: 'jwst', colour: 'telescope', name: 'James Webb Space Telescope' },
+    // BOTH a build and a file, and this is the one row that has both. Until 2026-10-05 it was the
+    // procedural shape alone (buildJwst in scene/models.js), because a loaded model was painted in
+    // one colour for its class and JWST without the contrast between gold, silver and dark is a
+    // brown lump -- which is what shipped until 2026-09-20. A file now keeps its own colours
+    // (scripts/bake-own-colours.mjs), so NASA's mesh is the picture: eighteen gold segments, the
+    // tripod, the five-layer shield. The build stays as what is drawn while the file is in flight
+    // (heroes.js acquire), so a slow connection sees a Webb-shaped thing and then a better one.
+    '-170': { build: 'jwst', file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
     '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
     '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
-    // No NASA model exists for New Horizons, so this names a PROCEDURAL shape instead of a
-    // file: `build:` is drawn immediately and has nothing to upgrade to (scene/heroes.js).
-    '-98': { build: 'new-horizons', colour: 'probe', name: 'New Horizons' },
+    // NASA's printable parts for New Horizons (science.nasa.gov/3d-resources/new-horizons, read 2026-10-10),
+    // assembled and baked into new-horizons.glb (registry/models.yaml says how). Until 2026-10-10 there was
+    // no file and this named only the PROCEDURAL shape; it stays as what is drawn while the file is on its
+    // way, as JWST's does (heroes.js acquire).
+    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons' },
+    // Three of the twelve craft added on 2026-09-22 as the generic probe, which NASA publishes a
+    // model of (issue #431). OSIRIS-APEX is the OSIRIS-REx spacecraft under its second mission's
+    // name -- the same vehicle, so this is its model and not a stand-in. NASA's STEREO model is
+    // one drawing for two near-identical craft; STEREO-A is the one still flying.
+    '-85': { file: 'lro.glb', colour: 'probe', name: 'Lunar Reconnaissance Orbiter' },
+    '-64': { file: 'osiris-rex.glb', colour: 'probe', name: 'OSIRIS-APEX' },
+    '-234': { file: 'stereo.glb', colour: 'probe', name: 'STEREO-A' },
+    // 2026-10-07 (internal #389, public #438 and #431): five craft that each got a record the day
+    // their NASA mesh did. Spitzer and Kepler are switched off and still in their orbits of the
+    // Sun; Roman launched on 30 August 2026; Mars Odyssey circles Mars; Dawn is drawn inside
+    // the years of its own path (site/data/eph), like Cassini.
+    '-79': { file: 'spitzer.glb', colour: 'telescope', name: 'Spitzer Space Telescope' },
+    '-227': { file: 'kepler.glb', colour: 'telescope', name: 'Kepler' },
+    '-211': { file: 'roman.glb', colour: 'telescope', name: 'Nancy Grace Roman Space Telescope' },
+    '-53': { file: 'odyssey.glb', colour: 'probe', name: 'Mars Odyssey' },
+    '-203': { file: 'dawn.glb', colour: 'probe', name: 'Dawn' },
+    // 2026-10-08 (public #431): four more ended missions, each drawn inside the years of its path.
+    // MAVEN: on its last tracked orbit of Mars; its row says nobody knows where on it (data/sample.js LOST_ORBITERS).
+    '-202': { file: 'maven.glb', colour: 'probe', name: 'MAVEN' },
+    '-226': { file: 'rosetta.glb', colour: 'probe', name: 'Rosetta' },
+    '-93': { file: 'near.glb', colour: 'probe', name: 'NEAR Shoemaker' },
+    '-29': { file: 'stardust.glb', colour: 'probe', name: 'Stardust' },
+    '-140': { file: 'deep-impact.glb', colour: 'probe', name: 'Deep Impact' },
+    // Mars 2020 in cruise: NASA's file is the rover, and what flew between the planets was a
+    // closed capsule under a ring of solar cells. A procedural shape from the one published
+    // length (scene/models.js buildMars2020Cruise), with nothing to upgrade to.
+    '-168': { build: 'mars-2020-cruise', colour: 'probe', name: 'Mars 2020 in cruise' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -409,13 +495,15 @@ export const REAL_MODELS = {
   named: {
     // Every spent stage on the visible layer -- SL-16, CZ-2C, Centaur, Delta, H10 -- was drawn as
     // a LAUNCHING rocket: fairing, nose, plume. A spent stage is a tube with a nozzle, tumbling.
-    // NASA's Shuttle solid rocket booster is public-domain geometry with exactly that
-    // silhouette, so it stands in for the class; `generic: true` is what makes the card say
+    // NASA's Shuttle solid rocket booster stood in for the class until 2026-10-07 (issue #410): a
+    // booster is a segmented tube with a nose cone, and a spent upper stage is a tank and a bell.
+    // models.js buildUpperStage draws that now, from one real stage's published dimensions, and
+    // it tumbles. `generic: true` is what makes the card say
     // "drawn as a spent rocket stage -- the kind of thing, not this exact one". parsers.js
     // classifies R/B, ROCKET BODY, AKM, PKM and UPPER STAGE as klass `rocket`, and only those.
-    'r/b': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
-    'rocket body': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
-    'upper stage': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'r/b': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'rocket body': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'upper stage': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     // NOAA 15, 18 and 19 are the Advanced TIROS-N / POES bus and among the brightest things a
     // person can see pass over. Matched on the full name, whole words, klass satellite: "NOAA 15"
     // yes, "NOAA 15 DEB" no (klass debris), NOAA 20 no (a JPSS bus, already mapped by id to the
@@ -504,7 +592,13 @@ export const REAL_MODELS = {
     //     communications satellites with dishes, and they correctly match nothing here.
     // Result: 130 of the 172 in the group matched, and the 42 that did not are the 29 GLONASS
     // (mapped by id above) plus exactly those 13.
-    beidou: { build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true },
+    // 2026-10-08 (public #429): a shape per constellation where one was sourced (scene/models.js
+    // NAV_SHAPES). BeiDou's medium-orbit craft are named `BEIDOU-3 M<n>`; the geostationary and
+    // inclined ones (G, IGSO) and BeiDou-2 are larger buses with no row, and keep the family box.
+    beidou: {
+      build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/beidou-3\s+m\d/i.test(String(record && record.name)) ? { build: 'navigation-beidou-meo' } : {}),
+    },
     galileo: { build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true },
     // TWO KEYS FOR ONE CONSTELLATION, and this is the endpoint trap again rather than belt and
     // braces. GROUP=active -- the file sources.yaml actually fetches -- calls them
@@ -513,9 +607,13 @@ export const REAL_MODELS = {
     // NOTHING and `navstar` matches all forty; the spec's rule is that a key which never matches
     // is a wasted file, and `gps` is kept anyway BECAUSE the other spelling is one source change
     // away and this comment is cheaper than rediscovering it.
-    gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true },
-    navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true },
-    glonass: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
+    // GPS BY LAUNCH YEAR, because `NAVSTAR 81 (USA 319)` does not say its block. Read 2026-10-08 on
+    // Wikipedia: Block IIF flew from 28 May 2010 to 5 February 2016, twelve of them, and Block III
+    // from 23 December 2018; no other GPS block was launched in those years. Earlier craft (IIR,
+    // IIR-M) are a different bus with no row, and keep the family box, as does a record with no year.
+    gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
+    navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
+    glonass: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
     irnss: { build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true },
     qzs: { build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
@@ -579,6 +677,9 @@ export const REAL_MODELS = {
     },
     flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },
     lemur: { build: 'cubesat', colour: 'satellite', name: 'a Lemur, a 3U CubeSat', klass: ['satellite'], generic: true },
+    // NASA's Starling: four 6U CubeSats flying as a swarm since 2023 (nasa.gov/smallspacecraft/starling).
+    // The one 6U route, because it is the one constellation whose size its operator states plainly.
+    starling: { build: 'cubesat-6u', colour: 'satellite', name: 'a Starling, a 6U CubeSat', klass: ['satellite'], generic: true },
     // AST SpaceMobile's BlueBirds: nine of them on the `visual` layer as of 2026-09-12, which is
     // more objects than any other unshaped thing on it, and they are among the brightest things
     // in the sky because the array is a sheet the size of a studio apartment. The catalogue calls
@@ -587,7 +688,8 @@ export const REAL_MODELS = {
     // the launch's debris and spent stage keep their own shapes.
     spacemobile: { build: 'spacemobile', colour: 'satellite', name: 'a BlueBird direct-to-phone satellite', klass: ['satellite'], generic: true },
     'crew dragon': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
-    'dragon crs': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
+    // The cargo vehicle flies without the escape engines, so without their pods and the trunk's fins.
+    'dragon crs': { build: 'dragon-cargo', colour: 'station', name: 'a Cargo Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
     // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
     // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.
@@ -597,11 +699,22 @@ export const REAL_MODELS = {
     // Dawn's shape model, from NASA's 3D Printing collection. The same collection has Eros and
     // Itokawa, and neither is used: both are cut in half for printing and laid out as two pieces.
     // Klass-gated like Bennu, so nothing but the asteroid called Vesta can wear it.
-    vesta: { file: 'asteroid-vesta.glb', colour: 'asteroid', name: '4 Vesta', klass: ['asteroid'] },
+    // 2026-10-07 (internal #382): remade from DLR's height model of Vesta (Dawn's stereo pictures), on
+    // the grid of longitudes of DLR's mosaic, which it now wears: `map` is a file of site/textures/
+    // (registry/textures.yaml), fetched with the shape and never before, and laid on by the texture
+    // coordinates scripts/shape-to-glb.py --uv writes. NASA's 3D-printing model it replaces had no
+    // stated axes to lay a map by.
+    vesta: { file: 'asteroid-vesta.glb', colour: 'asteroid', name: '4 Vesta', klass: ['asteroid'], map: '2k_vesta_dawn.webp', mapped: 'dawn' },
     // Gaskell's shape model from the PDS archive, in ONE piece -- NASA's 3D Printing Eros is cut in
     // half. The klass gate is load-bearing here: EROS A and EROS B are Israeli imaging satellites,
     // and without it they would be drawn as a 33 km asteroid.
     eros: { file: 'asteroid-eros.glb', colour: 'asteroid', name: '433 Eros', klass: ['asteroid'] },
+    // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
+    // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
+    // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.
+    // Itokawa still waits: Gaskell's model of it has JAXA co-authors (tests/test_station_shapes.mjs).
+    // 2026-10-07: and it wears Dawn's mosaic (`map`, as Vesta above).
+    ceres: { file: 'dwarf-ceres.glb', colour: 'asteroid', name: '1 Ceres', klass: ['asteroid'], map: '2k_ceres_dawn.webp', mapped: 'dawn' },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
     tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },
@@ -661,9 +774,42 @@ export const REAL_MODELS = {
   /** Named surface sites, where the thing that landed is the thing worth drawing. */
   bySite: {
     jezero: { file: 'perseverance.glb', colour: 'site', name: 'Perseverance' },
+    // THE REST OF NASA'S LANDED VEHICLES THAT IT PUBLISHES AS glTF (issue #437, 2026-10-05). Each
+    // was the procedural lander or rover: a few boxes under a real name.
+    //
+    // Curiosity is the one that is NOT its own model, and the row says so with `generic`. NASA
+    // publishes Curiosity as a .blend file only, which this pipeline cannot read; Perseverance was
+    // built on Curiosity's chassis -- the same rocker-bogie, deck, mast and RTG -- and differs in
+    // the turret, the wheels and the sample tubes, none of which survive at this size. So the card
+    // reads "drawn as ... the kind of thing, not this exact one", which is the true sentence.
+    // Ingenuity, where its last flight ended (registry/sites.yaml, from NASA's waypoint file).
+    ingenuity: { file: 'ingenuity.glb', colour: 'site', name: 'Ingenuity' },
+    gale: { file: 'perseverance.glb', colour: 'site', name: 'a rover of the design Curiosity and Perseverance share', generic: true },
+    // NASA's Mars Exploration Rover model is Opportunity (MER-B). Spirit was its twin, built to the
+    // same drawings, so it wears the same file and says it is the kind of thing.
+    opportunity: { file: 'mer.glb', colour: 'site', name: 'Opportunity' },
+    spirit: { file: 'mer.glb', colour: 'site', name: 'a Mars Exploration Rover, the twin of Opportunity', generic: true },
+    // InSight as it stood on Elysium Planitia: NASA's "arm deployed" variant, both fans open.
+    elysium: { file: 'insight.glb', colour: 'site', name: 'InSight' },
+    'viking-1': { file: 'viking-lander.glb', colour: 'site', name: 'Viking 1 lander' },
+    'viking-2': { file: 'viking-lander.glb', colour: 'site', name: 'Viking 2 lander' },
     // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
+    // Surveyor from NSSDCA's own description (scene/models.js buildSurveyor; public #267). A shape
+    // built from a paragraph, so the card still says the kind of thing.
+    'surveyor-1': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    'surveyor-3': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
+    // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
+    // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the
+    // mornings they left. The pad is a place on any date; the vehicle on it is a picture of those days,
+    // and the row's sentence says so.
+    // THE RECORD IS THE PAD (internal #478): `displayName` titles its card and its label by the
+    // place, on every date; `name` is the vehicle the model is of, for the line that says what is
+    // drawn, and the row's own sentence names the rocket.
+    'saturn-v-lc-39a': { file: 'saturn-v.glb', colour: 'rocket', name: 'Saturn V', displayName: 'Launch Complex 39A' },
+    'shuttle-lc-39b': { file: 'shuttle-stack.glb', colour: 'rocket', name: 'Space Shuttle', displayName: 'Launch Complex 39B' },
     'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
     // 14 and 16 arrived with the odd-things layer -- registry/oddities.yaml anchors the golf
     // balls and Duke's photograph on them -- and fell through to BUILDERS.site.default, which is
@@ -704,14 +850,45 @@ let loader = null;
 
 function gltfLoader() {
   if (!loader) {
-    loader = new GLTFLoader();
+    loader = new kit.GLTFLoader();
     // The models ship meshopt-compressed. NASA publishes them with Draco, which needs a ~300 kB
     // WebAssembly decoder at runtime; re-encoding to meshopt at asset-prep time needs a 29 kB one
     // and made the files SMALLER anyway (Hubble: 1 655 kB of Draco became 163 kB of meshopt).
     // Paying 29 kB once beats 300 kB on a phone.
-    loader.setMeshoptDecoder(MeshoptDecoder);
+    loader.setMeshoptDecoder(kit.MeshoptDecoder);
   }
   return loader;
+}
+
+/**
+ * Files whose nose is not +Y, and the turn that stands them up. glTF says +Y is up and every
+ * other file here obeys; NASA's Space Shuttle (A) lies along Z with its nose at -Z (measured by
+ * the bake, registry/models.yaml), and a rocket on a pad has to stand.
+ */
+const NOSE_UP = { 'shuttle-stack.glb': [Math.PI / 2, 0, 0] };
+
+/**
+ * IS THE VEHICLE ON THIS PAD AT THIS MOMENT? (2026-10-08, public #427.) A Saturn V on Launch
+ * Complex 39A in 2026 would be a false picture, so a hand-kept pad lists its `liftoffs`
+ * (registry/sites.yaml, the same instants as its events in registry/missions.yaml) and the vehicle
+ * is drawn only around them: from 24 hours before a liftoff given to the minute until the end of
+ * that minute, or for the whole UTC day of one given only as a date. Outside those windows
+ * scene/heroes.js draws nothing there; the pad's mark and card stay. A record with no `liftoffs`
+ * is not a gated pad and is always shown. Pure.
+ */
+export const PAD_LEAD_MS = 24 * 3600e3;
+export function padVehicleShown(record, tMs) {
+  const list = record && record.meta && record.meta.liftoffs;
+  if (!Array.isArray(list) || !list.length) return true;
+  if (!Number.isFinite(tMs)) return false;
+  for (const when of list) {
+    const text = String(when);
+    const timed = text.includes('T');
+    const t = Date.parse(timed ? text : `${text}T00:00:00Z`);
+    if (!Number.isFinite(t)) continue;
+    if (timed ? tMs >= t - PAD_LEAD_MS && tMs < t + 60e3 : tMs >= t && tMs < t + 24 * 3600e3) return true;
+  }
+  return false;
 }
 
 /** The entry in REAL_MODELS this record matches, or null. */
@@ -901,7 +1078,7 @@ export function colourRoute(root) {
   return stated.size >= 2 ? 'own' : 'class';
 }
 
-function applyToon(root, colourToken) {
+function applyToon(root, colourToken, surface = null) {
   const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
   // Measured once per model, not per mesh: the question is whether the FILE carries variation.
   const route = colourRoute(root);
@@ -913,7 +1090,11 @@ function applyToon(root, colourToken) {
     if (!n.isMesh) return;
     n.castShadow = false;
     n.receiveShadow = false;
-    const kind = /panel|solar|array/i.test(n.name || '') ? 'panel' : 'body';
+    // The specular family, from the mesh's NAME: a sharp glint on solar cells, a broad soft one
+    // on foil, none on painted structure (models.js SPECULAR). scripts/bake-own-colours.mjs names
+    // its meshes `solar-panel`, `foil` and `body` for exactly this line to read.
+    const name = n.name || '';
+    const kind = /panel|solar|array/i.test(name) ? 'panel' : /foil|mli|kapton|blanket/i.test(name) ? 'foil' : 'body';
     // A model that still carries its baked palette keeps it, and is tinted white so the palette's
     // own colours come through the toon ramp unchanged. Without one, the whole model is the class
     // colour, as before -- which is what makes a decimated mesh read as a single blob.
@@ -933,7 +1114,10 @@ function applyToon(root, colourToken) {
       const own = `#${first.color.getHexString()}`;
       tint = own === '#ffffff' ? UNPAINTED : own;
     }
-    const replacement = toonMaterial(tint, kind, pool, palette);
+    // A body with a map of its surface (Ceres, Vesta): the map is the colour, on the smooth ramp.
+    const replacement = surface && n.geometry && n.geometry.attributes.uv
+      ? kit.toonMaterial('#ffffff', 'world', pool, surface)
+      : kit.toonMaterial(tint, kind, pool, palette);
     if (replacement) {
       // Dispose what NASA shipped: the textures on these can be several megabytes of GPU memory
       // that nothing will ever sample once the material is replaced.
@@ -965,7 +1149,9 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
   if (cache.has(key)) return cache.get(key);
 
   const url = new URL(entry.file, BASE).href;
-  const promise = new Promise((resolve) => {
+  // The loader first (loadKit, at the top): a kit that cannot be fetched is a file that cannot be,
+  // and resolves to null like one. The entry is forgotten then, so the next approach asks again.
+  const promise = loadKit().then(() => new Promise((resolve) => {
     gltfLoader().load(
       url,
       (gltf) => {
@@ -976,8 +1162,25 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           // this guards -- and before normalise(), which only moves the result around.
           const fixed = ensureNormals(scene);
           if (fixed) console.info(`real model ${entry.file}: computed normals for ${fixed} mesh(es)`);
-          if (!keepMaterials) applyToon(scene, entry.colour);
-          resolve(normalise(scene));
+          // A file whose nose is not +Y is stood up before it is measured (NOSE_UP, above).
+          const turn = NOSE_UP[entry.file];
+          let top = scene;
+          if (turn) { top = new THREE.Group(); scene.rotation.set(turn[0], turn[1], turn[2]); top.add(scene); }
+          if (keepMaterials) return resolve(normalise(top));
+          if (!entry.map) { applyToon(scene, entry.colour); return resolve(normalise(top)); }
+          // The map first, then the material: a body shown plain and then repainted would flash.
+          // A map that does not arrive leaves the body in its class colour, as it was before.
+          const done = (tex) => {
+            try { applyToon(scene, entry.colour, tex); resolve(normalise(scene)); }
+            catch (err) { console.warn(`real model ${entry.file}: ${err.message}`); resolve(null); }
+          };
+          new THREE.TextureLoader().load(new URL(entry.map, TEXTURES).href, (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.flipY = false;                     // glTF's v runs down the picture, as the file's does
+            tex.wrapS = THREE.RepeatWrapping;      // the seam's vertices are written at u and u + 1
+            tex.anisotropy = 4;
+            done(tex);
+          }, undefined, () => done(null));
         } catch (err) {
           console.warn(`real model ${entry.file}: ${err.message}`);
           resolve(null);
@@ -989,6 +1192,10 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
         resolve(null);
       }
     );
+  })).catch((err) => {
+    console.warn(`real model ${entry.file}: the loader did not load`, err && err.message);
+    cache.delete(key);
+    return null;
   });
   cache.set(key, promise);
   return promise;

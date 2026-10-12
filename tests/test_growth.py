@@ -20,6 +20,8 @@ Run: python3 tests/test_growth.py
 from __future__ import annotations
 
 import copy
+import os
+import re
 import hashlib
 import subprocess
 import sys
@@ -60,6 +62,13 @@ GENERATED_TOURS = "site/js/data/tours.js"
 GENERATED_SOURCES = "harvest/sources.json"
 GENERATED_SITES = "site/js/data/sites.js"
 GENERATED_TRIP_PAGES = "site/t"
+# The trips' index (internal #405): scripts/gen_tours_js.py writes it in the same run as tours.js,
+# so it is not a row of MIRRORS (its --check is the same command, already asserted stale and then
+# current). It is the file a first visit reads, so a new trip must be in it too: checked below.
+GENERATED_TOURS_INDEX = "site/js/data/tours-index.js"
+# And the words a trip is found by (public #312): the third file of that same run, read by the
+# search box when it is first focused.
+GENERATED_TOURS_WORDS = "site/js/data/tours-words.js"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
            (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
@@ -91,6 +100,12 @@ def snapshot(root: Path) -> dict[str, str]:
     return out
 
 
+class _Indented(yaml.SafeDumper):
+    """Sequences indented under their key, the way registry/tours.yaml is written."""
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow, False)
+
+
 def apply_fixture(registry: Path, fixture: dict) -> None:
     """Merge the fixture's rows into the registry files, by section."""
     targets = {
@@ -116,6 +131,16 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
     for section, rows in fixture.items():
         filename, key = targets[section]
         path = registry / filename
+        if section == "tours":
+            # As a person adds a trip: rows written at the end of the file, in the file's own
+            # layout, with every comment above them left where it is. Dumping the whole document
+            # dropped the comments, and the validator reads the `read YYYY-MM-DD` beside a card's
+            # number from the text (spec 0043; registry/tours-read-pending.yaml).
+            text = path.read_text(encoding="utf-8")
+            assert re.findall(r"(?m)^[a-z_]+:", text)[-1] == "tours:", "tours: is no longer the file's last section"
+            added = yaml.dump(copy.deepcopy(rows), Dumper=_Indented, sort_keys=False, allow_unicode=True, width=1000)
+            path.write_text(text.rstrip("\n") + "\n" + "".join("  " + line + "\n" for line in added.splitlines()), encoding="utf-8")
+            continue
         doc = yaml.safe_load(path.read_text(encoding="utf-8"))
         doc[key] = list(doc.get(key) or []) + copy.deepcopy(rows)
         path.write_text(yaml.safe_dump(doc, sort_keys=False), encoding="utf-8")
@@ -164,16 +189,29 @@ def main() -> int:
             else:
                 shutil.copy2(ROOT / mirror, work / mirror)
 
+        shutil.copy2(ROOT / GENERATED_TOURS_INDEX, work / GENERATED_TOURS_INDEX)
+        shutil.copy2(ROOT / GENERATED_TOURS_WORDS, work / GENERATED_TOURS_WORDS)
+
         before = snapshot(work)
         apply_fixture(work / "registry", fixture)
 
         result = subprocess.run(
             [sys.executable, "scripts/check_registry.py"],
             cwd=work, capture_output=True, text=True,
+            env={**os.environ, "CHECK_REGISTRY_NO_SITE": "1"},  # this copy has no site/js/main.js
         )
         if result.returncode != 0:
             print("FAIL: the registry refuses a legitimate new world.\n")
             print(result.stdout or result.stderr)
+            return 1
+        if "NOT CHECKED, no site/js/main.js" not in result.stdout:
+            print("FAIL: a tree with no site/js/main.js skipped the list-file check without saying so.\n")
+            return 1
+        # ... and without the explicit opt-out the same tree is refused (it used to pass in silence).
+        silent = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=work, capture_output=True, text=True,
+                                env={k: v for k, v in os.environ.items() if k != "CHECK_REGISTRY_NO_SITE"})
+        if silent.returncode == 0 or "site/js/main.js is missing" not in silent.stdout:
+            print("FAIL: a tree with no site/js/main.js passed check_registry.py without CHECK_REGISTRY_NO_SITE=1.\n")
             return 1
 
         # A mirror is a real dependency, so it must NOTICE. A --check that passed here would mean
@@ -200,7 +238,7 @@ def main() -> int:
         # now measured against the tree rather than against the fixture's own key names.
         after = snapshot(work)
         changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
-        generated = {m for m, _, _ in MIRRORS}
+        generated = {m for m, _, _ in MIRRORS} | {GENERATED_TOURS_INDEX, GENERATED_TOURS_WORDS}
         outside = [f for f in changed
                    if not f.startswith(ALLOWED_PREFIXES) and not any(under(f, m) for m in generated)]
         if outside:
@@ -216,6 +254,12 @@ def main() -> int:
                     print(f"FAIL: {section} row {rid!r} validates but is not in the mirror the "
                           f"browser loads, so nothing would ever draw it.")
                     return 1
+
+        for rid in [r["id"] for r in fixture.get("tours", [])]:
+            if not mirror_has(work, GENERATED_TOURS_INDEX, rid):
+                print(f"FAIL: trip {rid!r} is in tours.js and not in {GENERATED_TOURS_INDEX}, the "
+                      f"file a first visit reads: it would have no card.")
+                return 1
 
         print("registry sections the fixture touched:", ", ".join(sorted(fixture)))
         print("files changed outside registry/:", ", ".join(sorted(generated)),

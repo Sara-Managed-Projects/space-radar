@@ -6,6 +6,8 @@ the grid square". The card (ui/trippics.js, ui.css .sr-tripcard) lays the pictur
 and fades it out under the title; the trip's intro sheet uses the same file as its header.
 
     $PY scripts/build_trip_thumbs.py --from=pictures.json   from tools/trip-pictures.probe.js (PIL)
+    $PY scripts/build_trip_thumbs.py --from=a.json,b.json --pick=trip:stop --only=id,...
+                                                            from tools/trip-frames.probe.js
     $PY scripts/build_trip_thumbs.py --from-og [--only=id]  from site/og/<id>.png's scene band (PIL)
     python3 scripts/build_trip_thumbs.py --check            stdlib only: what CI runs
 
@@ -165,7 +167,22 @@ def build() -> int:
     sources = {}
     probe = arg("from")
     if probe:
-        doc = json.loads(Path(probe).read_text(encoding="utf-8"))
+        doc = {}
+        # One file from tools/trip-pictures.probe.js ({trip: {png, stop}}), or several from
+        # tools/trip-frames.probe.js ({frames: [{trip, stop, number, png}]}), where a trip may have
+        # more than one stop: `--pick=trip:stop` names the one to use, else the first met.
+        pick = dict(p.split(":", 1) for p in arg("pick").split(",") if p)
+        for one in probe.split(","):
+            got = json.loads(Path(one).read_text(encoding="utf-8"))
+            if isinstance(got.get("frames"), list):
+                for row in got["frames"]:
+                    tid, wanted = row.get("trip"), pick.get(row.get("trip"))
+                    if not row.get("png") or (wanted and wanted not in (row.get("stop"), str(row.get("number")))):
+                        continue
+                    if tid not in doc or wanted:
+                        doc[tid] = row
+            else:
+                doc.update(got)
         for tid, row in doc.items():
             if not isinstance(row, dict) or "png" not in row:
                 print(f"  {tid}: skipped ({row.get('error') if isinstance(row, dict) else row})")

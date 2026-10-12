@@ -49,6 +49,9 @@ def main() -> int:
             "celestrak-visual": ({"status": "error", "fetched_at": stamp, "last_error": "403"}, []),
             # a normal good row
             "swpc-kp": ({"status": "ok", "fetched_at": stamp}, [{"kp": 3}]),
+            # a big uniform catalogue: also published as columns (internal #523, scripts/columnar.py)
+            "celestrak-active": ({"status": "ok", "fetched_at": stamp},
+                                 [{"OBJECT_NAME": f"SAT {i}", "NORAD_CAT_ID": i, "MEAN_MOTION": 15.5 + i / 1e6, "BSTAR": 1.5e-5 * i} for i in range(1200)]),
         }
         index = {"schema": 1, "snapshots": {}}
         for sid, (row, body) in rows.items():
@@ -77,6 +80,46 @@ def main() -> int:
                 problems.append("a failed refresh with an empty file is not dressed up as good")
             if snaps.get("swpc-kp", {}).get("status") != "ok":
                 problems.append("a good row stays good")
+            # THE BIG CATALOGUE ALSO AS COLUMNS, the verbatim file untouched beside it.
+            twin_row = snaps.get("celestrak-active", {}).get("columns") or {}
+            twin = out / "celestrak-active.cols.json"
+            verbatim = json.loads((out / "celestrak-active.json").read_text())["body"] if (out / "celestrak-active.json").exists() else None
+            if twin_row.get("path") != "celestrak-active.cols.json" or twin_row.get("rows") != 1200 or not twin.exists():
+                problems.append(f"a catalogue of 1200 uniform rows is published as columns too, and the manifest names the file ({twin_row})")
+            else:
+                doc = json.loads(twin.read_text())
+                cols = doc["columns"]
+                back = [dict(zip(cols["keys"], values)) for values in zip(*cols["cols"])]
+                if back != verbatim or doc.get("fetched_at") != stamp or twin_row.get("bytes") != twin.stat().st_size:
+                    problems.append("the column file decodes to the verbatim rows, carries the same stamp, and the manifest has its size")
+                if twin.stat().st_size >= (out / "celestrak-active.json").stat().st_size * 0.6:
+                    problems.append("the column file is well under the verbatim one")
+            if "columns" in snaps.get("swpc-kp", {}) or (out / "swpc-kp.cols.json").exists() or (out / "celestrak-stations.cols.json").exists():
+                problems.append("a small file is not published as columns")
+        # WHERE IT PUBLISHES (2026-10-08). The site moved accounts on 2026-10-07 and this script
+        # went on naming the old bucket and distribution; and it had no way to name a profile.
+        dry = subprocess.run(
+            ["bash", "scripts/refresh-snapshots.sh", f"--work={work}", "--no-harvest", "--dry-run", "--profile", "some-profile"],
+            cwd=ROOT, env=env, capture_output=True, text=True, timeout=120,
+        )
+        said = dry.stdout + dry.stderr
+        if dry.returncode != 0 or "nothing published" not in said:
+            problems.append(f"--dry-run with --profile NAME runs and publishes nothing ({dry.returncode}: {said[-300:]})")
+        for want in ("s3://sara-site-space-radar-lifehub/data/v1/", "eu-north-1", "E1CGDK1ZPYFKHG", "profile some-profile"):
+            if want not in said:
+                problems.append(f"the default target is the site's home since 2026-10-07 and the profile is taken: `{want}` not in the dry run's line")
+        eq = subprocess.run(
+            ["bash", "scripts/refresh-snapshots.sh", f"--work={work}", "--no-harvest", "--dry-run", "--profile=other", "--bucket=b", "--distribution=D"],
+            cwd=ROOT, env=env, capture_output=True, text=True, timeout=120,
+        )
+        if "s3://b/data/v1/" not in eq.stdout or "distribution D" not in eq.stdout or "profile other" not in eq.stdout:
+            problems.append("--profile=NAME, --bucket= and --distribution= are taken")
+        missing = subprocess.run(["bash", "scripts/refresh-snapshots.sh", "--dry-run", "--profile"], cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
+        if missing.returncode == 0:
+            problems.append("--profile with no name is refused")
+        text = (ROOT / "scripts" / "refresh-snapshots.sh").read_text(encoding="utf-8")
+        if 'BUCKET="sara-site-space-radar"' in text or 'DISTRIBUTION="E1JGFDLBX6HS7B"' in text:
+            problems.append("the old bucket or distribution is a default again")
         work_ix = json.loads((work / "index.json").read_text())["snapshots"]
         if work_ix["celestrak-stations"].get("status") != "error":
             problems.append("the WORK index keeps `error`, so the harvester still retries on its cadence")

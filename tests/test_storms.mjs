@@ -92,6 +92,16 @@ check(w.honesty.startsWith(COPY.cls.measured) && w.honesty.includes('21:00 UTC a
 check(w.sources.includes('GDACS') && w.sources.includes('CC BY 4.0'), `the source line names GDACS and its licence: ${w.sources}`);
 const before = cardWords(polo, { ...ctx, clock: { now: () => adv - 2 * 3600000 } });
 check(new Map(before.rows).get(R.stormAdvisory) === '21:00 UTC, in 2 hours', `a clock just before the advisory says "in", not "ago": ${new Map(before.rows).get(R.stormAdvisory)}`);
+// The advisory's own DATE when the clock stands on another UTC day (public #330): a storm is drawn for
+// twelve hours after its advisory, so at 01:00 the next day "21:00 UTC" alone reads as today's.
+{
+  const { timeText } = await import(join(JS, 'copy/en.js'));
+  const nextDay = cardWords(polo, { ...ctx, clock: { now: () => adv + 4 * 3600000 } });
+  const row = new Map(nextDay.rows).get(R.stormAdvisory);
+  check(row === `${timeText.utcDate(adv)}, 21:00 UTC, 4 hours ago`, `past midnight UTC the advisory row carries its date: ${row}`);
+  check(nextDay.honesty.includes(`21:00 UTC advisory of ${timeText.utcDate(adv)}, 4 hours ago`), `and so does the honesty line: ${nextDay.honesty}`);
+  check(!rows.get(R.stormAdvisory).includes(timeText.utcDate(adv)), 'on the advisory\'s own day the date is not repeated');
+}
 check(before.sentence.startsWith('Polo is a hurricane whose centre reaches here in 2 hours'), `and so does the sentence: ${before.sentence}`);
 const fay = cardWords(byName.get('Fay'), ctx);
 check(fay.sentence.startsWith('Fay is a tropical depression whose centre was here'), `a depression is called one: ${fay.sentence}`);

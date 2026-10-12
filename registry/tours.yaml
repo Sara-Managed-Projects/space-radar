@@ -89,6 +89,9 @@
 #                 the edge" opens on the Sun from a light-year, which as a 1200 x 630 picture is a
 #                 field of star-ladder dots. scripts/shots.mjs reads it; check_registry.py refuses
 #                 a number that is not one of the trip's stops.
+#   hides         layer ids switched OFF while the trip runs and back on when it is left, for a
+#                 trip whose picture their marks would litter. Refused when the trip also needs
+#                 the layer on.
 #   orbits        planets (worlds.yaml rows that go round the Sun) whose paths, and a dot at each
 #                 one's true place, are drawn while the trip runs on the Sun stage
 #                 (scene/orbitrings.js). The dot is the one exaggeration, size only, and the frame
@@ -132,6 +135,21 @@
 #                 point the turn has stopped being a camera move and become a wait. Refused if it
 #                 cannot finish inside its own dwell with the 0.4 s lead and the 1.5 s tail --
 #                 which caps it by what the shot can hold rather than at an arbitrary number.
+#   framing       `sunrise` (2026-10-08, internal #313), and only that: the camera stands on the
+#                 night side of a world with air (worlds.yaml `look.atmosphere`), on the side where
+#                 the Sun's centre is two degrees behind the limb, and the stop's own drift, which
+#                 turns towards the light, brings the Sun out within the dwell. Nothing is moved but
+#                 the camera. It needs `frame_radii:` (the limb's place in the frame is worked out
+#                 from the disc's size), `drift: toward-light` and at least four degrees of
+#                 `drift_deg:`; it is refused with `key_light_deg:`, `over:`, `seen_from:` or
+#                 `behind:` (two answers to where the camera stands), with a `rate:` over 3 600, and
+#                 on an eclipse stop.
+#   true_size     `true` (2026-10-08, internal #290): on a stop flown on the Sun's stage of a trip
+#                 with `orbits:`, the planets' dots are put away a moment after the card is up
+#                 (the scale badge's True size, scene/orbitrings.js setDotScale) and the frame's
+#                 line becomes the widest planet's true width on this screen, computed from the
+#                 camera. Leaving the stop puts the dots back. Refused anywhere there are no dots,
+#                 and under a card that talks about the dots.
 #   on_unresolved `drop` (default) removes the stop before the count is shown. `hold` keeps it,
 #                 flies to the parent world instead, shows the honest failure, and NEVER
 #                 auto-advances: a failure that scrolls past is a failure nobody can report.
@@ -149,6 +167,14 @@
 #                 `solar-eclipse`, `total | partial | penumbral` for `lunar-eclipse`, looked for
 #                 1 200 days ahead. Every reference counts from the clock the visitor had when the
 #                 trip began, not from where an earlier stop has run it to.
+#                 `after: <stop id>` (2026-10-08, internal #384) counts instead from the instant an
+#                 EARLIER stop of the same trip is shown at: `{event: solstice.next, kind: december,
+#                 after: tilt}` is the December solstice that follows the June one stop `tilt`
+#                 found, whatever month the visitor starts in. Refused unless it names an earlier
+#                 stop that has a written instant or an event reference of its own.
+#                 `borrowed: true` says the stop borrows the event's instant for its picture and the
+#                 trip is not about the event: the picker (ui/trippicker.js eventTypeOf) then
+#                 prints no "Next: <date>" under the trip's title.
 #   rate          how fast the clock runs while the stop is up: 60 at most on an Earth-orbit
 #                 target, 36 000 on anything else, and up to 1 000 000 only on the Sun's stage or
 #                 a rung, where a world's own motion is the picture. Once a stop has touched the
@@ -188,6 +214,9 @@ defaults:
   key_light_deg: 125        # three-quarter back light; 0 would be flat, 180 a silhouette
   ease: auto                # auto = `inout` under 3 s, `cruise` over. Or name one.
   on_unresolved: drop
+  # A stop may also say `transition: cut` (no flight: the camera is there) or `transition: black` (a
+  # fade through black, ui/veil.js), the join the stop before it is left by. `fly`, the default, is
+  # the flight. Not a default for a trip: it is a choice for the one join (internal #288).
 
 tours:
 
@@ -283,7 +312,7 @@ tours:
   # =============================================================================================
   - id: journey-to-the-station
     title: "From your ground to the space station"
-    blurb: "Straight up from where you are, out to the station, and on to the minute it next crosses your sky. This trip moves the clock and puts it back when you leave."
+    blurb: "Straight up to the station and its next pass. The clock moves, then goes back."
     group: earth-orbit
     next: people-in-space
     requires: [stations]
@@ -391,6 +420,9 @@ tours:
         target: {record: duke-family-photo}
         # A surface stop: close enough that the Moon is the ground and not a ball.
         distance_km: 900
+        time: daylight
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-031C:
+        # Apollo 16's lunar module "separated from the Command/Service Module ... on 20 April 1972 and landed ... on 21 April (9:23:35 p.m. EST, 20 April)" (the 1972, the day of the card's own inscription).
         card:
           title: "A photograph lying in the dust"
           # THE TRIP CARD ADDS; IT DOES NOT REPEAT. The object's own card opens right under this one
@@ -407,6 +439,7 @@ tours:
       - id: golf-balls
         target: {record: shepard-golf-balls}
         distance_km: 900
+        time: daylight
         card:
           title: "Two golf balls, twenty-four and forty yards out"
           body: >-
@@ -416,6 +449,7 @@ tours:
       - id: beresheet
         target: {record: beresheet-lunar-library}
         distance_km: 900
+        time: daylight
         card:
           title: "Thirty million pages, and some tardigrades"
           body: >-
@@ -425,6 +459,8 @@ tours:
       - id: golden-record
         target: {record: deep-voyager-1}
         needs_layer: deep-space
+        # Back to the present: the three stops on the Moon are shown in their daylight.
+        time: now
         drift_deg: 20
         card:
           title: "A gold record, further away than anything"
@@ -435,6 +471,9 @@ tours:
 
       - id: roadster
         target: {record: tesla-roadster}
+        # read 2026-10-09, https://science.nasa.gov/image-article/apod-2018-february-10-roadster-starman-planet-earth:
+        # "Falcon Heavy rocket on February 6" ... "Internationally designated 2018-017A" (NASA APOD, 10 Feb 2018); Wikipedia: "A copy of Douglas Adams' novel The Hitchhiker's Guide to the Galaxy is in the glove box."
+        # (card figure = page figure: 2018 (only number) = launch 6 Feb 2018, designation 2018-017A (NASA APOD page, read today))
         card:
           title: "A car, going round the Sun"
           body: >-
@@ -463,11 +502,15 @@ tours:
   # =============================================================================================
   - id: to-the-edge
     title: "To the edge of what we know"
-    blurb: "From the Sun to the first black hole anyone photographed, in eight steps. Leaving brings you back to Earth."
+    blurb: "From the Sun to a photographed black hole. Leaving brings you back to Earth."
     group: beyond
+    next: life-of-a-star
     requires: [stars, deep-sky, exotics, galaxy]
     stage: stellar
     clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
     # The preview picture (2026-09-23): the Milky Way from outside, its arms and its bar. The first
     # stop, the Sun from a light-year, rendered at 1200 x 630 as a field of dots; the Pleiades,
     # the centre and Andromeda were rendered too, and read as a smear, a white blot and a small
@@ -478,6 +521,9 @@ tours:
         target: {world: sun}
         distance_km: 9460730472580.8
         drift_deg: 15
+        # read 2026-10-09, https://science.nasa.gov/mission/voyager/voyager-1/:
+        # "moving at a velocity of 38,026.79 mph (17.0 km/second) relative to the Sun."
+        # (card figure = page figure: about eighteen thousand years = computed: 1 ly = 9.4607e12 km; 9.4607e12 km / 17.0 km/s = 5.565e11 s = 17,630 years (at 38,026.79 mph, same speed) ; rounded to "about eighteen thousand" (up from 17.6 thousand, 2% high) ; one year for sunlight to reach 1 ly = definition of a light-year (no page needed))
         card:
           title: "The Sun, from one light-year"
           body: >-
@@ -565,6 +611,219 @@ tours:
             there; we have not drawn what we cannot place.
 
   # =============================================================================================
+  # ONE TAKE, FROM THE GROUND TO THE EDGE (internal #305 and #410, public #451; 2026-10-07). The
+  # films a planetarium shows (AMNH's "The Known Universe") and Mitaka fly from the Earth to the
+  # edge of what can be seen in one camera move. Every stop after the second says `climb: true`:
+  # the camera dollies by ratio from where it is, and scene/climb.js hands it from stage to stage
+  # at the joins of registry/stages.yaml with its place and direction kept. The one cut left is
+  # the first: from the visitor's ground (the sky view, a camera 1.7 m up with a wider lens) to
+  # orbit there is no flight that is not a fall, so that join is still a fade through black, and
+  # the blurb does not promise otherwise.
+  #
+  # THE RUNGS, AND WHERE EACH NUMBER WAS READ (all on 2026-10-07):
+  #   - the Moon: 384 400 km on average, once round in about 27.3 days
+  #     (https://en.wikipedia.org/wiki/Orbit_of_the_Moon); light takes 384 400 / 299 792 = 1.3 s;
+  #   - the planets: Neptune at 30 au (registry/ladder.yaml's 4.5 billion km, already cited there);
+  #     four light-hours is the same row's figure;
+  #   - the Oort cloud: "between 5,000 and 100,000 astronomical units", its inner edge "between
+  #     2,000 and 5,000 AU" (https://science.nasa.gov/solar-system/oort-cloud/facts/); the stop is
+  #     at 50 000 au, 0.79 light-years. Nothing is drawn there because nothing in it has been
+  #     seen in place, and the card says so;
+  #   - the nearest stars: Proxima Centauri 4.2465 light-years, Alpha Centauri A and B "the nearest
+  #     stars visible to the naked eye" (https://en.wikipedia.org/wiki/Alpha_Centauri);
+  #   - radio: Marconi's transatlantic signal, 12 December 1901
+  #     (https://en.wikipedia.org/wiki/Guglielmo_Marconi). The card gives no number of light-years:
+  #     the sphere's own label does, worked out from the clock (scene/shells.js);
+  #   - the Milky Way: 100 to 400 billion stars, the Sun "about 27,000 light-years" from the centre
+  #     (https://en.wikipedia.org/wiki/Milky_Way);
+  #   - the Local Group: Andromeda 2.5 million light-years (registry/ladder.yaml); "134 members ...
+  #     most of which are dwarf galaxies" (https://en.wikipedia.org/wiki/Local_Group), said here as
+  #     "more than a hundred";
+  #   - the microwave background: released "some 380,000 years after the Big Bang"
+  #     (https://en.wikipedia.org/wiki/Cosmic_microwave_background); its surface now "about 14.26
+  #     gigaparsecs (46.5 billion light-years)" away (https://en.wikipedia.org/wiki/Observable_universe).
+  #
+  # EVERY DISTANCE is inside the band the chain holds its stage at (check_registry.py refuses one
+  # that is not): the Earth's stage under 900 000 km, the Sun's from 1.4 million km to 6e11 km, the
+  # stellar rung from 1e12 km to 6 000 light-years, the galaxy's from 10 000 to 200 000
+  # light-years, the Local Group's past 300 000.
+  # =============================================================================================
+  - id: roof-to-the-edge
+    title: "From your roof to the edge"
+    blurb: "One flight out past the Moon, the planets and the stars, and one flight home."
+    group: beyond
+    next: to-the-edge
+    requires: [stars, galaxy]
+    requires_observer: true
+    stage: earth
+    clock: as-found
+    # After the last stop the camera comes home by the same continuous flight, and the end card is
+    # shown over the Earth (internal #304; ui/trip.js flyHome). Every stop is on the ladder's chain.
+    return: true
+    # The Moon's path on the Earth's stage (drawn from outside its orbit), the planets' on the Sun's.
+    orbits: [moon, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
+    og_stop: 8
+    stops:
+      - id: roof
+        target: {observer: true}
+        distance_km: 200
+        look: {best: star}
+        time: tonight
+        chapter: "From the ground"
+        card:
+          title: "Your roof, tonight"
+          body: >-
+            This is the sky over your own place as tonight's dark arrives. Every point of light up
+            there is somewhere. We are going to fly out past all of them, and after the first lift
+            off the ground the camera will not cut once.
+
+      - id: earth
+        target: {world: earth}
+        frame_radii: 6
+        drift_deg: 12
+        chapter: "From the ground"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html:
+        # "Volumetric mean radius (km) 6371.000" ... "equatorial diameter of 7,926 miles (12,756 kilometers)"
+        # (card figure = page figure: 12 742 km across = 2 x 6371.0 km NASA volumetric mean radius = 12,742 (exact; computed by doubling, no NASA page prints 12,742) ; NASA Earth facts page gives the equatorial diameter 12,756 km (not the same quantity))
+        card:
+          title: "The Earth"
+          body: >-
+            Everyone you know is on this ball, 12 742 kilometres across. The satellites round it
+            are where they are right now. From here on, keep your eye on the middle of the screen.
+
+      - id: moon-orbit
+        target: {world: earth}
+        stage: earth
+        distance_km: 850000
+        climb: true
+        drift: none
+        chapter: "The Solar System"
+        # read 2026-10-09, https://science.nasa.gov/moon/facts/:
+        # "The Moon is an average of 238,855 miles (384,400 kilometers) away." ... "Between the Earth and the Moon, light takes 1.3 seconds"
+        # (card figure = page figure: 384 400 km = 384,400 km (NASA Moon facts; fact sheet semimajor axis 0.3844e6 km) ; 27.3 days = 27.3217 days (NASA fact sheet "Revolution period"), rounded to one decimal; NASA Moon facts page says "27 Earth days" ; 1.3 seconds = 1.3 seconds (NASA Webb early-universe page))
+        card:
+          title: "The Moon's orbit"
+          body: >-
+            The Moon goes round the Earth about 384 400 kilometres out, once in 27.3 days. Light
+            crosses that gap in 1.3 seconds. Nobody has travelled further from home than this.
+
+      - id: planets
+        target: {world: sun}
+        stage: sun
+        distance_km: 11000000000
+        climb: true
+        drift: none
+        chapter: "The Solar System"
+        card:
+          title: "The planets"
+          body: >-
+            The Earth has shrunk to a dot on the third ring. Neptune, on the outer ring, is thirty
+            times as far from the Sun as we are, and sunlight takes four hours to reach it.
+
+      - id: oort
+        target: {world: sun}
+        stage: stellar
+        distance_km: 7479893535000
+        climb: true
+        drift: none
+        chapter: "The Solar System"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/oort-cloud/facts/:
+        # "occupies space at a distance between 5,000 and 100,000 astronomical units" ... "NASA doesn't have direct images of the Oort Cloud."
+        # (card figure = page figure: 5 000 to 100 000 times the Earth's distance from the Sun = 5,000 to 100,000 AU (1 AU = Earth-Sun distance, per NASA page) ; "never seen in place" = NASA "doesn't have direct images")
+        card:
+          title: "The Oort cloud's distance"
+          body: >-
+            The planets are now inside one pixel. Comets come from a cloud of icy bodies thought to
+            lie between 5 000 and 100 000 times the Earth's distance from the Sun. Nothing is drawn
+            here because none of them has ever been seen in place.
+
+      - id: nearest-stars
+        target: {world: sun}
+        stage: stellar
+        needs_layer: stars
+        distance_km: 170293148506454
+        climb: true
+        drift_deg: 10
+        chapter: "The stars"
+        # read 2026-10-09, https://www.eso.org/public/images/potw1604a/:
+        # ESO: "It is our closest neighbour, at a distance of just 4.2 light-years." ... "invisible to the naked eye, is Proxima Centauri"
+        # (card figure = page figure: 4.2 light-years = 4.2 (ESO); NASA Hubble says "just over four light-years" ; two companions = NASA "its two companions, Alpha Centauri A and B" ; A and B visible to naked eye = ESO contrast sentence above, NASA APOD "fourth brightest star in the night sky")
+        card:
+          title: "The nearest stars"
+          body: >-
+            The Sun is one star among its neighbours. The nearest, Proxima Centauri, is 4.2
+            light-years away, and its two companions are the nearest stars you can see without a
+            telescope. Each point here is a star at its measured distance.
+
+      - id: radio
+        target: {world: sun}
+        stage: stellar
+        needs_layer: stars
+        distance_km: 4730365236290400
+        climb: true
+        drift: none
+        chapter: "The stars"
+        # read 2026-10-09, https://www.esa.int/Space_in_Member_States/United_Kingdom/From_mobile_phones_to_missions_to_Mars_Marconi_s_wireless_magic_made_it_possible:
+        # "At 12.30 p.m. on that day, 100 years ago, in Saint John's, Newfoundland" (page dates the signal 12 December 1901, from Poldhu, Cornwall)
+        # (card figure = page figure: 12 December 1901 = 12 December 1901 (ESA) ; one light-year a year = definition of light-year/speed of light (no page needed))
+        card:
+          title: "How far our radio has got"
+          body: >-
+            The sphere marks how far radio from the Earth can have travelled since Marconi's signal
+            crossed the Atlantic on 12 December 1901. It grows by one light-year a year. Out here
+            the signal is far too faint to pick up. Everything humans have ever broadcast is inside it.
+
+      - id: milky-way
+        target: {record: dso-milky-way}
+        stage: galaxy
+        needs_layer: galaxy
+        distance_km: 1419109570887120000
+        climb: true
+        drift_deg: 10
+        chapter: "The galaxies"
+        # read 2026-10-09, https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/:
+        # NASA: "Our galaxy probably contains 100 to 400 billion stars" ... ESO: "fine-tune the distance to Sagittarius A*, finding it to be 27 000 light-years away."
+        # (card figure = page figure: between one and four hundred billion stars = 100 to 400 billion (NASA) ; about 27 000 light-years from the centre = 27 000 (ESO eso2119; NASA Hubble page "center of the Milky Way is located 27,000 light-years away"))
+        card:
+          title: "The Milky Way"
+          body: >-
+            Between one and four hundred billion stars, and the Sun is one of them, about 27 000
+            light-years from the centre. The shape is a model built from measurements. Nobody has
+            seen our galaxy from outside.
+
+      - id: local-group
+        target: {world: sun}
+        stage: local-group
+        needs_layer: deep-sky
+        distance_km: 56764382835484800000
+        climb: true
+        drift: none
+        chapter: "The galaxies"
+        card:
+          title: "The Local Group"
+          body: >-
+            Our galaxy and Andromeda, 2.5 million light-years apart, are the two large members of a
+            group of more than a hundred galaxies, most of them small. Gravity holds this group
+            together while the universe around it expands.
+
+      - id: edge
+        target: {world: sun}
+        stage: local-group
+        distance_km: 1500000000000000000000000
+        climb: true
+        drift: none
+        chapter: "The edge"
+        # read 2026-10-09, https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_and_the_cosmic_microwave_background:
+        # ESA: "It formed about 380,000 years after the Big Bang." ... "the visible Universe is at least 93 billion light years across."
+        # (card figure = page figure: about 380 000 years after the Big Bang = 380,000 (ESA Planck; NASA Physics of the Cosmos page also "just 380,000 years after the Big Bang") ; 46.5 billion light-years = half of ESA's 93 billion across (46.5 exactly); NASA expert says "about 92 billion light-years across" (46 radius))
+        card:
+          title: "The oldest light"
+          body: >-
+            The sphere is the edge of what can be seen at all. The microwave background, light
+            released about 380 000 years after the Big Bang, reaches us from this surface, now 46.5
+            billion light-years away. It is a horizon around us, not a wall. Every place has its own.
+
+  # =============================================================================================
   # PLANETS AROUND OTHER STARS, THEN ONE SYSTEM OF THEM UP CLOSE (spec 0040, 2026-09-23): the
   # Miami kiosk's "5005 exoplanets" and "Take a tour of TRAPPIST-1", which Ivan asked for.
   #
@@ -597,7 +856,7 @@ tours:
   # =============================================================================================
   - id: travel-to-exoplanets
     title: "Travel to exoplanets"
-    blurb: "Every planet we know of around another star, then the seven of TRAPPIST-1 one by one, at their own sizes. Leaving brings you back to Earth."
+    blurb: "Other stars' planets, then TRAPPIST-1's seven. Leaving brings you back to Earth."
     group: beyond
     next: to-the-edge
     requires: [stars, exoplanets, systems]
@@ -637,6 +896,9 @@ tours:
         # stopDistanceKm asks scene/systems.js): on a phone held upright that is about 0.4 au.
         distance_km: 14959787
         drift_deg: 20
+        # read 2026-10-09, https://science.nasa.gov/exoplanets/trappist1/:
+        # The most studied planetary system, aside from our own solar system, lies about 40 light-years away. ... just a bit larger than the planet Jupiter
+        # (card figure = page figure: forty light-years = about 40 light-years ; a little bigger than Jupiter = "just a bit larger than the planet Jupiter" (star's minimum size, NASA) ; seven planets = seven, b through h ; "about the size of the Earth" = radii 0.755-1.129 Earth ; all seven found crossing the star = NASA shows the seven "transiting in front of their red dwarf star" (the page does not state detection method in so many words))
         card:
           title: "Seven worlds round a small red star"
           body: >-
@@ -649,6 +911,10 @@ tours:
         target: {record: exo-trappist-1-e}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-e/:
+        # Planet Radius 0.92 x Earth ... Planet mass 0.692 Earths ... orbital period 6.1 days
+        # (card figure = page figure: six days = 6.1 days ; nine tenths as wide = 0.92 Earth radii ; seven tenths as heavy = 0.692 Earth masses ; d "as wide as the Moon" = not stated on any page; derived from catalog (d radius 0.788 Re = ~10,040 km; e-d gap at closest 0.02925-0.02227 = 0.00698 AU = ~1.04 million km) gives ~0.55 degrees vs Moon ~0.52 degrees, consistent)
         card:
           title: "TRAPPIST-1 e"
           body: >-
@@ -661,6 +927,10 @@ tours:
         target: {record: exo-trappist-1-b}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-b/:
+        # 1.116 x Earth ... it takes 1.5 days to complete one orbit of its star ... is 0.01154 AU from its star
+        # (card figure = page figure: 1.7 million km = 0.01154 AU x 149.6 million km = 1.73 million km (rounded down) ; over thirty times closer than Mercury = Mercury semimajor axis 57.909 million km / 1.73 = 33.5 ; a day and a half = 1.5 days ; a tenth wider = 1.116 Earth radii)
         card:
           title: "TRAPPIST-1 b"
           body: >-
@@ -673,6 +943,10 @@ tours:
         target: {record: exo-trappist-1-c}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-c/:
+        # 1.097 x Earth ... 1.308 Earths ... it takes 2.4 days to complete one orbit of its star
+        # (card figure = page figure: just under two and a half days = 2.4 days ; a little wider than Earth (like b) = 1.097 (b 1.116) ; about a third heavier = 1.308 Earth masses (b 1.374 "like b" fine) ; second out = 0.0158 AU, after b 0.01154)
         card:
           title: "TRAPPIST-1 c"
           body: >-
@@ -684,6 +958,10 @@ tours:
         target: {record: exo-trappist-1-d}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-d/:
+        # 0.788 x Earth ... 0.388 Earths ... 4 days
+        # (card figure = page figure: four days = 4 days ; four fifths of Earth's width = 0.788 (0.8) ; less than two fifths of mass = 0.388 (<0.4) ; smallest but one = radius 0.788 is second smallest after h 0.755)
         card:
           title: "TRAPPIST-1 d"
           body: >-
@@ -695,6 +973,10 @@ tours:
         target: {record: exo-trappist-1-f}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-f/:
+        # 1.045 x Earth ... Its mass is 1.039 Earths ... it takes 9.2 days to complete one orbit of its star
+        # (card figure = page figure: nine days = 9.2 days ; a few per cent over on both = +4.5% radius, +3.9% mass ; nearest to Earth's size and mass of the seven = true against the other six catalog entries (b 1.116/1.374, c 1.097/1.308, d 0.788/0.388, e 0.92/0.692, g 1.129/1.321, h 0.755/0.326))
         card:
           title: "TRAPPIST-1 f"
           body: >-
@@ -706,6 +988,7 @@ tours:
         target: {record: exo-trappist-1-g}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 g"
           body: >-
@@ -717,6 +1000,10 @@ tours:
         target: {record: exo-trappist-1-h}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
+        # read 2026-10-09, https://science.nasa.gov/exoplanet-catalog/trappist-1-h/:
+        # 0.755 x Earth ... it takes 18.8 days to complete one orbit of its star
+        # (card figure = page figure: three quarters of Earth's width = 0.755 ; nineteen days = 18.8 days ; b goes round twelve times = 18.8 / 1.5 = 12.5 from page values (precise 18.77/1.51 = 12.4), "twelve" is the floor ; outermost = 0.06189 AU, largest orbit ; smallest = 0.755 smallest radius)
         card:
           title: "TRAPPIST-1 h"
           body: >-
@@ -770,7 +1057,7 @@ tours:
   # =============================================================================================
   - id: moon-landings
     title: "Where we have landed on the Moon"
-    blurb: "The first soft landing, the first people, a rover driven from Earth, the far side, the south pole and the first private landers. Leaving brings you back to Earth."
+    blurb: "Landings from the first to the private ones. Leaving brings you back to Earth."
     group: solar-system
     next: outer-solar-system
     # The worlds switch too: with it off the Moon is not drawn and every lander would stand on
@@ -782,10 +1069,15 @@ tours:
       - id: surveyor-1
         target: {site: surveyor-1}
         distance_km: 900
+        # The next hour the Sun is up here (ui/trip.js daylightMs): a lander in its night is a model on a black disc.
+        time: daylight
         # Spec 0034: the part of the story this stop is in, above the trip's title in the
         # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
         # a new one lands with the stop's title, which for a new stage is just after the black.
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1966-045A:
+        # Engines were turned off at a height of 3.4 m above the lunar surface and the spacecraft fell freely ... lander site is probably at least 10 km away, direction unknown.
+        # (card figure = page figure: 3 February 1966 = Luna 9 "3 February 1966" (table) ; "four months earlier" = Luna 9 3 Feb 1966 vs Surveyor 1 2 June 1966 (page dates; 4 months computed) ; at least 10 km = "probably at least 10 km away, direction unknown" (table note f) ; 3.4 m = 3.4 m (Surveyor 1 page))
         card:
           title: "The first soft landing anyone can find"
           # NSSDCA 1966-006A: Luna 9 made the first soft landing, "preceding the U.S. Surveyor 1
@@ -803,7 +1095,11 @@ tours:
       - id: apollo-11
         target: {site: apollo-11}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C:
+        # after 21 hours, 36 minutes on the lunar surface ... traversed a total distance of about 250 meters, both ranging up to about 100 meters from the LM.
+        # (card figure = page figure: 21 hours 36 minutes = 21 hours, 36 minutes ; about 250 metres = about 250 meters ; about 100 m = up to about 100 meters from the LM)
         card:
           title: "The first people"
           # NSSDCA 1969-059C (the Apollo 11 lunar module): the LM "lifted off from the Moon ...
@@ -818,7 +1114,10 @@ tours:
       - id: apollo-12
         target: {site: apollo-12}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-099C:
+        # "visited the Surveyor 3 spacecraft, bringing back about 10 kg of parts" (the 3 and the 10).
         card:
           title: "A visit to an older robot"
           # NSSDCA 1969-099C: on the second moonwalk they "visited the Surveyor 3 spacecraft,
@@ -835,6 +1134,7 @@ tours:
       - id: lunokhod-1
         target: {site: lunokhod-1}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "A rover driven from Earth"
@@ -850,7 +1150,11 @@ tours:
       - id: apollo-17
         target: {site: apollo-17}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A:
+        # after 75 hours on the lunar surface ... covered 30 km using the Lunar Roving Vehicle ... Harrison H. Schmitt, the first scientist on the Moon
+        # (card figure = page figure: 75 hours = 75 hours (Apollo 17 page) ; 30 km = 30 km ; first scientist = "first scientist on the Moon" ; "robots landed three more times" = after Apollo 17 (11 Dec 1972) the table lists Luna 21 (15 Jan 1973), Luna 23 (6 Nov 1974), Luna 24 (18 Aug 1976) as landers = 3 (Lunokhod 2 is a rover riding Luna 21) ; 37 years = Luna 24 18 Aug 1976 to Chang'e 3 14 Dec 2013 = 37.3 years (table dates; the page states no span, computed))
         card:
           title: "Seventy-five hours, then a long quiet"
           # NSSDCA 1972-096C: "Schmitt was the first scientist-astronaut to walk on the Moon"; the
@@ -867,7 +1171,13 @@ tours:
       - id: change-4
         target: {site: change-4}
         distance_km: 900
+        time: daylight
         chapter: "Chapter two: the long quiet ends"
+        # read 2026-10-10, https://english.news.cn/20230121/644885df0b3b47fda77f0d4061c066c1/c.html
+        # (Xinhua, 21 January 2023, a second page for the same claim): "So far, Yutu-2 has worked
+        # for more than four years"; the rover and lander woke on 15 and 16 January, "ushering in
+        # their 51st lunar day of work". The page says "worked", the card says "driving": the
+        # NSSDCA table note below says "still mobile".
         card:
           title: "The side that never faces us"
           # NSSDCA 2018-103A: "Since the lander is on the far side, the Moon is blocking direct
@@ -876,6 +1186,11 @@ tours:
           # landing. NSSDCA table note z: "Yutu 2 rover still mobile as of January 2023", four
           # years after the landing on 3 January 2019. At 177.6 E the Earth stays below the
           # horizon whatever the Moon's wobble, which reaches about eight degrees of longitude.
+          # read 2026-10-10, https://english.news.cn/20230121/644885df0b3b47fda77f0d4061c066c1/c.html
+          # (Xinhua, 21 January 2023, a second page for the same claim): "So far, Yutu-2 has worked
+          # for more than four years"; the rover and lander woke on 15 and 16 January, "ushering in
+          # their 51st lunar day of work". The page says "worked", the card says "driving": the
+          # NSSDCA table note above says "still mobile".
           body: >-
             From here the Earth is always below the horizon, so the Moon itself blocks any radio
             link home. China first put a relay satellite, Queqiao, out beyond the Moon, and the
@@ -885,7 +1200,11 @@ tours:
       - id: chandrayaan-3
         target: {site: chandrayaan-3}
         distance_km: 900
+        time: daylight
         chapter: "Chapter two: the long quiet ends"
+        # read 2026-10-09, https://www.isro.gov.in/Chandrayaan3_Details.html:
+        # Mission life (lander and rover): One lunar day (~14 Earth days) [ISRO] ... found the impact site (70.8810°S, 22.7840°E, 834 m elevation) [NASA]
+        # (card figure = page figure: September 2019 = lander contact lost "Sept. 7 in India, Sept. 6 in the United States" (NASA Vikram Found) ; about 110 km = 108 km great-circle between NASA's Chandrayaan-2 impact site (70.8810 S, 22.7840 E) and Chandrayaan-3 (table 69.3741 S, 32.32 E gives 108.2 km; ISRO prime site 69.3676 S, 32.3481 E gives 108.6 km), rounded to "about 110" ; one lunar day about 14 Earth days = "One lunar day (~14 Earth days)" (ISRO) ; 4 September 2023 = ISRO log entry dated September 04, 2023: "The lander and rover are in sleep mode.")
         card:
           title: "Near the south pole"
           # NSSDCA 2019-042A (Chandrayaan-2): "The lander, named Vikram"; contact was lost during
@@ -901,6 +1220,7 @@ tours:
       - id: im-1
         target: {site: im-1}
         distance_km: 900
+        time: daylight
         chapter: "Chapter three: the first companies"
         card:
           title: "The first private lander, leaning"
@@ -917,7 +1237,11 @@ tours:
       - id: blue-ghost-1
         target: {site: blue-ghost-1}
         distance_km: 900
+        time: daylight
         chapter: "Chapter three: the first companies"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2025-010A:
+        # captured by Firefly's Blue Ghost Mission 1 lunar lander on March 14, 2025 ... a phenomenon first documented by former NASA astronaut Eugene Cernan on Apollo 17
+        # (card figure = page figure: ten NASA instruments = "10 NASA science and technology instruments" (NASA) and "ten payloads" (NSSDC) ; 14 March 2025 = "March 14, 2025" (NASA blog, "total lunar eclipse from the Moon's surface") ; two days later (16 March) sunset = NSSDC: landed 2 March, "continued 5 hours into lunar night after local sunset. The last communication was received at about 23:15 UT on March 16" and NASA "concluded its mission March 16" (so sunset on 16 March; "two days later" is arithmetic) ; Apollo 17 = Apollo 17 (NASA release))
         card:
           title: "An eclipse, seen from the Moon"
           # NASA, "NASA Science Continues After Firefly's First Moon Mission Concludes" (18 March
@@ -944,6 +1268,9 @@ tours:
         # sites on it, and the house back light would make it a crescent.
         key_light_deg: 45
         chapter: "Epilogue: the whole Moon"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html:
+        # Last Updated: 13 August 2025, DRW [table header]; the page states no total, it lists 6 rows typed "Crewed Landing" and 32 landing rows
+        # (card figure = page figure: last updated August 2025 = "Last Updated: 13 August 2025" ; six with people aboard = 6 rows typed "Crewed Landing" (Apollo 11, 12, 14, 15, 16, 17) ; 28 landings = my count of the table: 18 "Soft Landing" + 6 "Lander" + 6 "Crewed Landing" = 30, minus the two rover rows typed as soft landings (Yutu Rover, Yutu 2) = 28 landers; the two "Rover" rows (Lunokhod 1, 2) are separate from those 30 ; 19 on this map = site-computed, not checked, as instructed ; "Luna 9 ... nobody knows exactly where it is" = note f: "lander site is probably at least 10 km away, direction unknown")
         card:
           title: "Twenty-eight landings, nineteen on this map"
           # The NSSDCA table, "Last Updated: 13 August 2025", counted 2026-09-22: 28 rows typed
@@ -979,7 +1306,7 @@ tours:
   # =============================================================================================
   - id: outer-solar-system
     title: "Out past Jupiter, to the farthest thing we sent"
-    blurb: "Ten stops through the cold half of the Solar System, each world at its true size. Leaving brings you back to Earth."
+    blurb: "Ten stops through the cold outer worlds. Leaving brings you back to Earth."
     group: solar-system
     next: to-the-edge
     requires: [worlds, deep-space, far-bodies]
@@ -990,6 +1317,10 @@ tours:
         target: {record: io}
         behind: jupiter
         stage: jupiter
+        # 60 since 2026-10-06 (internal #400), as Triton and Pluto have: with the default back
+        # light the moon is a crescent at best, and `behind:` could not yield to a light the stop
+        # had itself asked to stand against.
+        key_light_deg: 60
         # 12 Io radii: at 5 the moon fills the frame and Jupiter, 5.9 Jupiter radii away, is
         # whatever the key light leaves behind it. Checked in the browser, 2026-09-22.
         frame_radii: 12
@@ -997,6 +1328,9 @@ tours:
         # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
         # a new one lands with the stop's title, which for a new stage is just after the black.
         chapter: "Chapter one: Jupiter's moons"
+        # read 2026-10-09, https://science.nasa.gov/jupiter/moons/io/:
+        # "Io is caught in a tug-of-war between Jupiter's massive gravity and the smaller but precisely timed pulls" ... "two neighboring moons that orbit farther from Jupiter—Europa and Ganymede" ... "hundreds of volcanoes"
+        # (card figure = page figure: 42 hours = NSSDC fact sheet orbital period 1.769138 days x 24 = 42.46 h, rounded down to 42 ; two moons further out = Europa and Ganymede (NASA Io page) ; hundreds of volcanoes = "hundreds of volcanoes" (NASA Io page))
         card:
           title: "Io, the moon Jupiter never lets rest"
           # Io's lap is 1.769 days (NASA's Jovian satellite fact sheet, the same table
@@ -1014,8 +1348,19 @@ tours:
         target: {record: europa}
         behind: jupiter
         stage: jupiter
+        # 90 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
+        # `behind:` would give the planet up as soon as a third of the moon was dark: that lost
+        # Jupiter on about every third day, and the card is about the two of them. `behind:`
+        # yields 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 90
+        # the planet stays until the moon is under three tenths lit. At 100 it stayed to a fifth,
+        # and the frame of 2026-10-07 was a sliver of Europa before a black Jupiter: the dark
+        # discs #400 was filed for. The days in between still lose the planet; keeping both then
+        # needs a wider search in the engine, not a number here.
+        key_light_deg: 90
         frame_radii: 12
         chapter: "Chapter one: Jupiter's moons"
+        # read 2026-10-09, https://science.nasa.gov/mission/europa-clipper/ and https://www.esa.int/Science_Exploration/Space_Science/Juice/Juice_factsheet:
+        # "reach Jupiter in April 2030 ... 49 close flybys of Europa" (NASA); "It will reach Jupiter in July 2031" (ESA) (the 2030, the 49 and the 2031).
         card:
           title: "Europa, and the two ships on their way"
           # Twice Earth's ocean: NASA Science, Europa, read 2026-09-22, "holding twice as much
@@ -1036,7 +1381,11 @@ tours:
         target: {record: saturn}
         stage: saturn
         frame_radii: 4.5
+        # Lit from the front (public #443): at the default 125 degrees a planet is a fifth lit, a dark disc.
+        key_light_deg: 60
         chapter: "Chapter two: the ringed planet"
+        # read 2026-10-09, https://science.nasa.gov/saturn/facts/:
+        # "the mission ended Sept.15 2017" (the 2017).
         card:
           title: "Saturn, and a ring ten metres thick"
           # Wikipedia, Rings of Saturn, read 2026-09-22: they "extend from 7,000 km (4,300 mi) to
@@ -1076,12 +1425,23 @@ tours:
         target: {record: enceladus}
         behind: saturn
         stage: saturn
+        # 90 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
+        # `behind:` would give the planet up as soon as a third of the moon was dark: that lost
+        # Saturn on about every third day, and the card is about the two of them. `behind:`
+        # yields 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 90
+        # the planet stays until the moon is under three tenths lit. At 100 it stayed to a fifth,
+        # and the frame of 2026-10-07 was a sliver of Europa before a black Jupiter: the dark
+        # discs #400 was filed for. The days in between still lose the planet; keeping both then
+        # needs a wider search in the engine, not a number here.
+        key_light_deg: 90
         # Enceladus is 252 km in radius and 238 000 km from Saturn. MEASURED in the browser,
         # 2026-09-22: at 5 radii the moon came out 193 px across against a Saturn 235 px across,
         # which reads as two bodies of a size. At 12 it is 85 px against the same 250 px, and
         # perspective is doing less of the lying: Saturn really is 231 times the radius.
         frame_radii: 12
         chapter: "Chapter two: the ringed planet"
+        # read 2026-10-09, https://science.nasa.gov/saturn/moons/enceladus/:
+        # "In 2005 NASA's Cassini spacecraft discovered that icy water particles and gas" (the 2005).
         card:
           title: "Enceladus, spraying its ocean into space"
           # NASA Science, Enceladus, read 2026-09-22: "In 2005, NASA's Cassini spacecraft
@@ -1106,7 +1466,14 @@ tours:
         # radii drew the moon twice the width of the planet it goes round (browser, 2026-09-22).
         # At 14 they are 69 and 65 px, which is at least the right way round.
         frame_radii: 14
+        # 100 since 2026-10-07 (internal #426), as Europa above: Neptune stays in the picture.
+        # Triton's path is tipped so far from the Sun's direction that at 100 `behind:` never has
+        # to yield (the line to Neptune is at most 140 degrees from the Sun's; the cone reaches 16).
+        key_light_deg: 100
         chapter: "Chapter three: the last planet"
+        # read 2026-10-09, https://www.nasa.gov/history/30-years-ago-voyager-2-explores-neptune/:
+        # "pass about 25,000 miles from Triton about five hours later." ... "found surface temperatures of -391degrees Fahrenheit (-235 degrees Celsius)."
+        # (card figure = page figure: one spacecraft visited Neptune = NASA Triton page "the only spacecraft to fly past Neptune and Triton" ; 25 August 1989 = JPL "on Aug. 25, 1989, NASA's Voyager 2 spacecraft made a close flyby of Neptune" ; five hours after = NASA history "about five hours later" ; forty thousand km = 25,000 miles = 40,234 km, rounded to 40,000 ; minus 235 degrees = NASA Triton page -235 C (OK) ; geysers = "Voyager 2 also found Triton has active geysers" (OK))
         card:
           title: "Triton, going the wrong way round"
           # Wikipedia, Voyager 2, read 2026-09-22: "Voyager 2's closest approach to Neptune
@@ -1127,7 +1494,10 @@ tours:
         # Charon is 19 600 km from Pluto and 606 km in radius. At 9 Pluto radii (10 700 km) the
         # pair is the shot; the moon's own card is one tap away.
         frame_radii: 9
+        key_light_deg: 60
         chapter: "Chapter four: past Neptune"
+        # read 2026-10-09, https://science.nasa.gov/mission/new-horizons/:
+        # "flying by the dwarf planet and its moons on July 14 2015" and "officially completed at 21:48 UT on Oct. 25 2016" (the 14, the 2015 and the 2016).
         card:
           title: "Pluto and Charon, going round each other"
           # Wikipedia, New Horizons, read 2026-09-22: launch "January 19, 2006", closest approach
@@ -1170,6 +1540,9 @@ tours:
         needs_layer: far-bodies
         stage: sun
         chapter: "Chapter four: past Neptune"
+        # read 2026-10-10, https://science.nasa.gov/dwarf-planets/eris/ (Orbit and Rotation):
+        # "Eris takes 557 Earth years to make one trip around the Sun."
+        # (card figure = page figure: 557-year lap = NASA's sentence, which replaces the 560 this card had from JPL's own elements (a = 67.93 au gives 560 y) ; ninety-five times as far from the Sun = JPL Horizons, 95.5 au on 2026-09-22, not on that page, which gives about 68 au as Eris's average distance ; 2006 = Wikipedia, IAU definition, read 2026-09-22 (OK))
         card:
           title: "Eris, which made planet a definition"
           # Wikipedia, IAU definition of planet, read 2026-09-22. The resolution of 24 August 2006
@@ -1178,13 +1551,13 @@ tours:
           # (nearly round) shape" and "has cleared the neighbourhood around its orbit"; a dwarf
           # planet meets the first two and not the third. The card gives the year and not the
           # month, because the month pushes its first sentence past the 160 characters ui/cards.js
-          # prints. Eris's lap is 560 years from JPL's own
-          # elements (a = 67.93 au, data/sample.js) and it is 95.5 au from the Sun on 2026-09-22
+          # prints. NASA's page says the lap is 557 years (JPL's elements, a = 67.93 au in
+          # data/sample.js, give 560) and Eris is 95.5 au from the Sun on 2026-09-22
           # against an aphelion of 97.7, so "near the far end" is good for decades.
           body: >-
             The definition astronomers agreed on in 2006 asks three things of a planet: it goes
             round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and
-            Pluto fail the third. Eris is near the far end of a 560-year lap, ninety five times as
+            Pluto fail the third. Eris is near the far end of a 557-year lap, ninety-five times as
             far from the Sun as we are.
 
       - id: voyager-1
@@ -1195,6 +1568,9 @@ tours:
         # browser 2026-09-22, and at 172 au the Sun is 0.01 px across, so aiming the camera at it
         # only turned Voyager 1 side on and put nothing in the frame.
         chapter: "Epilogue: looking back"
+        # read 2026-10-09, https://science.nasa.gov/mission/voyager/voyager-1/:
+        # "March 5, 1979: Jupiter flyby" ... "closest approach to Saturn was at 23:46 UT on Nov. 12, 1980" ... "Earth was a crescent only 0.12 pixel in size."
+        # (card figure = page figure: March 1979 Jupiter = NASA "March 5, 1979: Jupiter flyby - closest approach" ; November 1980 Saturn = NASA "Nov. 12, 1980" ; more than 170 times Earth's distance from the Sun = JPL Horizons Voyager 1 range from the Sun 171.995 au on 2026-10-09 (172.005 on 10-10), so "more than 170" is true and the figure is larger than at the NASA page's last figure ; 1990 = NASA Photojournal "Taken on Feb. 14, 1990" ; 0.12 pixel = NASA Photojournal "only 0.12 pixel in size" (OK))
         card:
           title: "Voyager 1, and everything behind it"
           # Wikipedia, Voyager 1, read 2026-09-22: launched "September 5, 1977", Jupiter on
@@ -1233,7 +1609,7 @@ tours:
   # =============================================================================================
   - id: a-year-in-a-minute
     title: "A year in a minute"
-    blurb: "The planets going round the Sun, a day every sixth of a second. Leaving puts the clock back and brings you back to Earth."
+    blurb: "A year of orbits in a minute. Leaving puts the clock back and you back to Earth."
     group: solar-system
     next: outer-solar-system
     requires: [worlds]
@@ -1275,6 +1651,8 @@ tours:
         distance_km: 2500000
         rate: 525600
         drift_deg: 0
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html:
+        # "Revolution period (days) 27.3217" (the 27.3 on the card).
         card:
           title: "The Earth, and the Moon going round it"
           body: >-
@@ -1290,6 +1668,8 @@ tours:
         behind: sun
         rate: 525600
         drift_deg: 0
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html:
+        # "Sidereal orbit period (days) 87.969" and "Mean orbital velocity (km/s) 47.36" (the 88 and the 47).
         card:
           title: "Mercury, four laps to our one"
           body: >-
@@ -1344,7 +1724,7 @@ tours:
   # =============================================================================================
   - id: chasing-the-solar-eclipse
     title: "Chasing the solar eclipse"
-    blurb: "The Moon's shadow crossing the Earth at the next total eclipse, to the minute. This trip moves the clock."
+    blurb: "The next total eclipse's shadow crossing the Earth. This trip moves the clock."
     group: events
     requires: [worlds]
     stage: earth
@@ -1426,3 +1806,2661 @@ tours:
             Now it is the Earth that is in the way. The Moon moves into the Earth's shadow, and
             anyone on the night half of the planet can watch it happen, with nothing but their
             eyes.
+
+  # =============================================================================================
+  # THE CONSTELLATIONS (2026-10-05). Ivan: "a cool planetarium trip about all popular
+  # constellations with cool animation, so it will be like a cool movie", and of Stellarium: "I
+  # want to be better than they are when we are looking on the sky from earth".
+  #
+  # WHERE THE CAMERA IS. On the stellar rung, standing where the Sun is (`target: {sky: [ra,
+  # dec]}`, ui/trip.js SKY_NEAR_KM), so the sky on screen is the one seen from Earth: the 5 044
+  # naked-eye stars and the Milky Way of scene/starfield.js. Each stop turns the camera to a
+  # figure and scene/figures3d.js draws it in one stroke, star to star, then names it and its
+  # brightest stars. Stop 2 is the thing a dome cannot do: the same Orion, with the camera flown
+  # hundreds of light-years to one side (`depth_ly`, `aside_deg`) and still turning, where the
+  # lines join the same stars at their measured distances and the hunter comes apart.
+  #
+  # `exposure: deep` on the four stops the Milky Way runs through is the shutter of spec 0067,
+  # held for the stop and never stored; the card says it is a long exposure.
+  #
+  # FACTS. Distances are the map's own (HYG v4.4, site/data/stars3d.names.json, read 2026-10-05):
+  # Bellatrix 252 ly, Betelgeuse 498, Alnilam 1 977; Pollux 33.8, Castor 50.9. Castor's six stars:
+  # the Washington Double Star Catalog's sextuple (IAU WGSN notes). Antares's size: about 680 solar
+  # radii (Ohnaka et al. 2013, A&A 555, A24), 3.2 au against Mars's 1.5. The names other peoples
+  # gave: Osiris (Sah) for Orion, the Pyramid Texts; Las Tres Marias, the belt in Spanish-speaking
+  # America; Subaru and Matariki for the Pleiades (National Astronomical Observatory of Japan; Te
+  # Ara, the Encyclopedia of New Zealand, "Matariki"); the Weaver Girl and the Cowherd (the Qixi
+  # story, in the Shijing's "Da Dong" already); Maui's fish hook, Ka Makau Nui o Maui (Polynesian
+  # Voyaging Society star lines); the Emu in the Sky (Norris and Hamacher 2009, "The astronomy of
+  # Aboriginal Australia", IAU S260). The five flags: each country's own flag law. Thirteen
+  # constellations on the ecliptic: the IAU's 1930 boundaries (Delporte).
+  # =============================================================================================
+  - id: the-constellations
+    title: "The constellations"
+    blurb: "Twelve figures of the night sky, drawn star by star. Leaving goes back to Earth."
+    group: beyond
+    next: to-the-edge
+    requires: [stars]
+    # The marks of other layers are litter across a figure: every planet of another star is a
+    # green dot here, every nebula a lilac one (looked at 2026-10-05, the first render).
+    hides: [exoplanets, systems, exotics, deep-sky, galaxy]
+    stage: stellar
+    clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
+    # The scorpion beside the Milky Way: the one figure with a picture behind it. Orion's own
+    # frame is lines on black, 0.9 % lit against this one's 3.0 % (2026-10-08, internal #444).
+    og_stop: 9
+    stops:
+      - id: orion
+        target: {sky: [83.8, 0.0]}
+        zoom: 0.88
+        figures: [Ori]
+        figure_stars: 4
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern winter sky"
+        card:
+          title: "Orion, the hunter"
+          body: >-
+            Three stars in a row and four more around them: the easiest figure in the sky to find,
+            and one that both halves of the world can see. The Greeks drew a hunter here. In Egypt
+            it was the god Osiris, and across Latin America the three belt stars are the Three
+            Marys.
+
+      - id: orion-from-the-side
+        target: {sky: [83.8, 0.0], depth_ly: 650}
+        # Twenty degrees aside to arrive, where the hunter is bent but still a hunter, then the
+        # drift carries on round to fifty and he is streaks. Arriving at fifty-five (rendered
+        # 2026-10-05) showed only the streaks, with nothing to recognise them by.
+        distance_km: 8514657425322720
+        aside_deg: 20
+        figures: [Ori]
+        figure_stars: 4
+        drift_deg: 30
+        drift_rate_deg_s: 2
+        chapter: "The northern winter sky"
+        card:
+          title: "Orion, seen from the side"
+          body: >-
+            Now leave home. Bellatrix, the hunter's shoulder, is two hundred and fifty light-years
+            from us. Betelgeuse is five hundred, and the middle star of the belt nearly two
+            thousand. The hunter is a line of sight, not a place: from here, hundreds of
+            light-years to one side, nobody would draw him.
+
+      - id: taurus
+        target: {sky: [64.0, 20.0]}
+        figures: [Tau]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern winter sky"
+        card:
+          title: "The bull and the Seven Sisters"
+          body: >-
+            Follow Orion's belt up and to the right and you reach the orange eye of the bull,
+            Aldebaran, and past it a small knot of blue stars. They are the Pleiades, a real
+            family of stars that were born together. Japan calls them Subaru, and for Māori their
+            return before dawn, as Matariki, begins the new year.
+
+      - id: gemini
+        target: {sky: [104.0, 23.0]}
+        figures: [Gem]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern winter sky"
+        card:
+          title: "The twins"
+          body: >-
+            Two bright stars side by side, Castor and Pollux, are the heads of twin brothers
+            standing in the Milky Way. They only look like twins. Pollux is an orange giant
+            thirty-four light-years away. Castor is fifty-one, and is really six stars circling
+            one another.
+
+      - id: leo
+        target: {sky: [160.0, 17.0]}
+        figures: [Leo]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The sky of spring"
+        card:
+          title: "The lion"
+          body: >-
+            A backwards question mark for the mane and a triangle for the hindquarters: the lion is
+            one of the few figures that looks like its name. The bright star at its chest is
+            Regulus, the little king. The Sun passes right beside it every August.
+
+      - id: plough
+        target: {sky: [186.0, 69.0]}
+        zoom: 0.78
+        figures: [UMa, UMi]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Round the pole"
+        card:
+          title: "The Plough, and the way north"
+          body: >-
+            Seven stars that Britain calls the Plough, America the Big Dipper and much of Europe a
+            wagon: they are the back and tail of the Great Bear. Take the two stars at the end of
+            the bowl and follow them up, five times their own gap. That lone star is Polaris, and it
+            sits almost exactly over the Earth's north pole.
+
+      - id: cassiopeia
+        target: {sky: [15.0, 62.0]}
+        figures: [Cas]
+        figure_stars: 3
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Round the pole"
+        card:
+          title: "Cassiopeia, across the pole"
+          body: >-
+            Go straight on past Polaris, as far again, and you meet a letter W of five stars:
+            Cassiopeia, a queen in the Greek story. She and the Plough sit on opposite sides of the
+            pole and swing round it like the two ends of a seesaw, so when one is low the other is
+            high.
+
+      - id: summer-triangle
+        target: {sky: [296.0, 27.0]}
+        zoom: 0.85
+        figures: [Lyr, Cyg, Aql]
+        figure_stars: 1
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern summer sky"
+        card:
+          title: "The Summer Triangle"
+          body: >-
+            Three bright stars from three different figures: Vega in the Lyre, Deneb in the Swan,
+            Altair in the Eagle. The pale band running between them is the Milky Way, shown as a
+            long exposure would catch it. In China it is the Silver River, which parts the Weaver
+            Girl, Vega, from the Cowherd, Altair.
+
+      - id: scorpius
+        target: {sky: [253.0, -32.0]}
+        zoom: 0.9
+        figures: [Sco]
+        figure_stars: 2
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The southern sky"
+        card:
+          title: "The scorpion"
+          body: >-
+            A red heart, and a long curved tail with a sting at the end. The heart is Antares, a
+            star so large that it would swallow the orbit of Mars. In the Greek story this is the
+            scorpion that killed Orion, which is why the two are never in the sky together. In
+            Hawaii the same stars are the fish hook of Maui.
+
+      - id: sagittarius
+        target: {sky: [279.0, -28.0]}
+        figures: [Sgr]
+        figure_stars: 2
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The southern sky"
+        card:
+          title: "The teapot, and the centre of the galaxy"
+          body: >-
+            The archer's brightest stars make a teapot, and the Milky Way rises from its spout like
+            steam. Look just past the spout and you are looking at the centre of our galaxy, about
+            twenty-seven thousand light-years away, hidden behind dust. Every star named on this
+            trip is in our own small corner of it.
+
+      - id: southern-cross
+        target: {sky: [196.0, -52.0]}
+        zoom: 0.82
+        figures: [Cru, Cen]
+        figure_stars: 2
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The southern sky"
+        card:
+          title: "The Southern Cross"
+          body: >-
+            The smallest of the eighty-eight constellations, and the best known south of the
+            equator. Australia, New Zealand, Brazil, Papua New Guinea and Samoa all fly it on their
+            flags. The two bright stars beside it are the Pointers, and the nearer is Alpha Centauri,
+            the closest star system to the Sun. The dark patch at the foot of the Cross is the head
+            of the Emu that Aboriginal Australians see in the Milky Way.
+
+      - id: zodiac
+        target: {sky: [256.0, -20.0]}
+        zoom: 0.7
+        figures: [Sco, Oph, Sgr, Lib]
+        figure_stars: 0
+        ecliptic: true
+        drift_deg: 8
+        drift_rate_deg_s: 0.5
+        chapter: "The Sun's road"
+        card:
+          title: "The zodiac"
+          body: >-
+            The dashed line is the path the Sun takes across the stars in a year. The Moon and the
+            planets never stray far from it, because the Solar System is nearly flat. The figures
+            along it are the zodiac. Babylonian sky watchers counted twelve; the line really crosses
+            thirteen, and the one left out is here: Ophiuchus, the serpent bearer.
+
+  # =============================================================================================
+  # THE LIVING EARTH (2026-10-05). Ivan: "a trip about earth and its weather ... how other planets
+  # and space affect it, how water flows affect it, how nature affects it ... pollution, plankton,
+  # cycles of the world ... real storms with lightning, real northern lights".
+  #
+  # WHAT IS REAL IN IT. Stops 4 and 10 are today's: the clouds (NASA GIBS, three weather
+  # satellites), the named storms (GDACS), the lightning (NOAA) and the aurora forecast (NOAA
+  # OVATION), each under the sentence its own module writes about its age (`live_note:`). Stops 5 to
+  # 8 lay one measured map over the globe (`overlay:`, registry/overlays.yaml), with its legend,
+  # the day it is of and whose data it is, generated under the card. Stops 1 and 2 are computed:
+  # the Sun's true direction at the two solstices of 2027. The rest is the map as it always is.
+  #
+  # THE TWO SOLSTICES ARE WRITTEN DATES (2027-06-21 and 2027-12-22, USNO "Earth's Seasons"), because
+  # registry/events.yaml has no solstice to refer to; the picture is the same at any year's, and
+  # the frame prints the instant. `over: [lat, lon]` puts the camera above the place a stop is about,
+  # and `over: [lat, midnight]` above the meridian that faces away from the Sun.
+  #
+  # FACTS. Tilt 23.44 degrees (IAU). Three quarters of the air's mass below about 11 km (US
+  # Standard Atmosphere 1976); 11 km on a 220 mm football is 0.19 mm, two sheets of paper. GOES
+  # and Himawari full discs every ten minutes (NOAA, JMA). About 86 % of evaporation is from the
+  # sea (Trenberth et al. 2007, J. Hydrometeorology 8, 758). Phytoplankton make about half of the
+  # planet's photosynthesis (Field et al. 1998, Science 281, 237). Arctic sea ice: about 15
+  # million km2 at the March maximum, Europe 10.2; the September minimum has fallen by more than a
+  # third since 1979 (NSIDC Sea Ice Index). Saharan dust and the Amazon: Yu et al. 2015, GRL 42,
+  # 1984. Tides and the slowing day: Stephenson, Morrison and Hohenkerk 2016, Proc. R. Soc. A 472.
+  # The Moon and the tilt: Laskar, Joutel and Robutel 1993, Nature 361, 615, which is why the card
+  # says "is thought to". Jupiter, 318 Earth masses; shield or not: Horner and Jones 2008-2010,
+  # Int. J. Astrobiology, who found it does both, which is what the card says. The farthest people
+  # have been: Apollo 13, 400 171 km (NASA).
+  # =============================================================================================
+  - id: the-living-earth
+    title: "The living Earth"
+    blurb: "One planet's cycles with today's data: storms, sea, ice. It moves the clock."
+    group: earth-orbit
+    next: satellites-and-junk
+    requires: [worlds, storms, lightning, aurora]
+    # The first two stops move the clock to the next June solstice and the December one after it,
+    # and a launch pad's label ("in 3 days") drawn at a date months on is a mark about another day
+    # (internal #400, #426). The satellites'
+    # marks stay: the trip is about one planet with today's sky round it.
+    hides: [launches, just-launched, starlink-trains]
+    stage: earth
+    clock: as-found
+    og_stop: 5
+    stops:
+      - id: tilt
+        target: {world: earth}
+        frame_radii: 3.4
+        key_light_deg: 90
+        # The next June solstice after the visitor's clock (data/events.js, computed), not a
+        # written year (internal #384). Borrowed: the trip is not about the solstice.
+        time: {event: solstice.next, kind: june, borrowed: true}
+        rate: 1800
+        drift_deg: 0
+        chapter: "The Sun and the seasons"
+        card:
+          title: "A tilted world"
+          body: >-
+            The Earth leans over by twenty-three degrees, and keeps leaning the same way all year.
+            Here the north is tipped towards the Sun: the Arctic has daylight round the clock, and
+            the line between day and night crosses the map at a slant. That lean, and nothing else,
+            makes the seasons.
+
+      - id: half-a-year-on
+        target: {world: earth}
+        frame_radii: 3.4
+        key_light_deg: 90
+        # The December solstice that FOLLOWS the one stop `tilt` found, so "six months later" is
+        # true in whatever month the trip is started.
+        time: {event: solstice.next, kind: december, after: tilt, borrowed: true}
+        rate: 1800
+        drift_deg: 0
+        chapter: "The Sun and the seasons"
+        card:
+          title: "Half a year on"
+          body: >-
+            Six months later the Earth is on the far side of the Sun, still leaning the same way,
+            so now it is the south that faces the light. Antarctica has the midnight Sun and the
+            Arctic is dark all day. The Sun sends the same energy as before; the tilt decides who
+            gets it.
+
+      - id: air
+        target: {world: earth}
+        # Side-lit, the whole disc in frame, so the lit limb and its blue line are in the picture.
+        # Rendered 2026-10-05: at 1.45 radii and 150 degrees the camera sat over the night side and
+        # the frame was black; at 2.1 and 115 the disc overflowed the frame and the limb was under
+        # the card.
+        frame_radii: 3.0
+        key_light_deg: 95
+        time: now
+        chapter: "Air and water"
+        card:
+          title: "The thin blue line"
+          body: >-
+            Everything we call weather happens inside that blue line. Three quarters of the air is
+            in the first eleven kilometres, a layer so thin that on a globe the size of a football
+            it would be about as thick as two sheets of paper. It is the only air there is.
+
+      - id: weather
+        target: {world: earth}
+        # Above the meridian that has its noon now (2026-10-06, internal #400). It stood over the
+        # Caribbean, which for half of every day is in the dark: the clouds are there at night but
+        # nothing lights them, and the walk of every stop found city lights under this card.
+        over: [16, noon]
+        frame_radii: 2.6
+        time: now
+        live_note: clouds
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Air and water"
+        card:
+          title: "Today's weather"
+          body: >-
+            These are today's clouds, from weather satellites that take a picture every ten
+            minutes. A tropical storm that has a name today is marked with it. Where thunderstorms
+            are in view over the Americas, the flashes are lightning at the rate it was measured in
+            the last quarter of an hour, drawn larger than life.
+
+      - id: ocean
+        target: {world: earth}
+        over: [32, -48]
+        frame_radii: 2.6
+        overlay: sea-temperature
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Air and water"
+        card:
+          title: "The sea moves the heat"
+          body: >-
+            The colours are the temperature of the sea, measured from orbit. Water warmed in the
+            tropics does not stay there: currents such as the Gulf Stream carry it towards the
+            poles, and it gives up heat and water to the air on the way. Most of the water in the
+            air was lifted off a warm sea.
+
+      - id: plankton
+        target: {world: earth}
+        over: [5, -28]
+        frame_radii: 2.8
+        overlay: chlorophyll
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Life"
+        card:
+          title: "The sea in bloom"
+          body: >-
+            Green and yellow are water rich in plankton, plants too small to see that drift in the
+            sunlit top of the sea. They bloom where currents bring food up from below. Between them
+            they do about half of all the growing on the planet, and with the forests they breathe
+            its carbon in and out every year.
+
+      - id: ice
+        target: {world: earth}
+        over: [80, -20]
+        frame_radii: 2.4
+        overlay: sea-ice
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Life"
+        card:
+          title: "The ice breathes"
+          body: >-
+            The bright colours are sea frozen over. Each winter the ice around the north pole grows
+            until it covers more than the whole of Europe, and each summer about two thirds of it
+            melts again. The summer ice has shrunk by more than a third since satellites began to
+            watch it.
+
+      - id: haze
+        target: {world: earth}
+        over: [18, 15]
+        frame_radii: 2.8
+        overlay: aerosol
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Life"
+        card:
+          title: "Dust, smoke and us"
+          body: >-
+            This is everything fine enough to hang in the air: desert dust, smoke from fires, salt
+            from the sea, and the haze of cities and industry. Dust from the Sahara crosses the
+            Atlantic and feeds the Amazon. The gas that warms the planet most, carbon dioxide, does
+            not show here at all. It is invisible, and it is everywhere.
+
+      - id: moon
+        target: {world: moon}
+        distance_km: 12000
+        behind: earth
+        time: now
+        rate: 60
+        chapter: "From outside"
+        card:
+          title: "The Moon's pull"
+          body: >-
+            The Moon pulls on the sea, and the sea rises towards it and on the far side too, so
+            most coasts have two high tides a day. Over billions of years the same pull has slowed
+            the Earth's spin. And the Moon is thought to hold the Earth's tilt steady, which keeps
+            the seasons mild.
+
+      - id: aurora
+        target: {world: earth}
+        # Above the night side at seventy north, whichever longitude has the night when the
+        # visitor arrives: the whole ring is in the picture. From the equator's side (rendered
+        # 2026-10-05, key light 165) it was a sliver on the limb of a black disc.
+        over: [70, midnight]
+        frame_radii: 2.4
+        time: now
+        needs_layer: aurora
+        live_note: aurora
+        chapter: "From outside"
+        card:
+          title: "The Sun's wind"
+          body: >-
+            The Sun blows a thin wind of charged particles past us all the time. The Earth's
+            magnetic field turns most of it aside and funnels some down around the poles, where it
+            makes the upper air glow. The green rings are where the aurora is expected in the next
+            hour, from today's forecast.
+
+      - id: jupiter
+        target: {world: jupiter}
+        stage: jupiter
+        frame_radii: 4
+        key_light_deg: 60
+        chapter: "From outside"
+        card:
+          title: "Jupiter, bodyguard or not"
+          body: >-
+            Jupiter has three hundred times the mass of the Earth, and its pull rules the traffic
+            of comets and asteroids. It throws many of them out of the Solar System before they can
+            reach us, and it also sends some our way. Bodyguard or troublemaker: the sums are still
+            being done.
+
+      - id: home
+        target: {world: earth}
+        frame_radii: 14
+        behind: moon
+        key_light_deg: 60
+        time: now
+        chapter: "From outside"
+        card:
+          title: "One small world"
+          body: >-
+            From here the storms, the currents, the ice and the forests are one thin skin on one
+            small world. Nothing we know of anywhere else has all of them. The Moon, four hundred
+            thousand kilometres off, is the farthest any person has ever been from it.
+
+  # =============================================================================================
+  # THE FIVE TRIPS A PLANETARIUM HAS AND WE DID NOT (2026-10-06; the review of 2026-10-05 ranked
+  # them: tonight from your street, the Moon's phases, the Sun today, Mars, the planets tonight).
+  # Written for the ear: the voice reads every card, so the sentences are short and a number is
+  # said the way a person says it.
+  #
+  # THE STOP GRAMMAR THEY BROUGHT, all refused where the picture could not keep the promise
+  # (scripts/check_registry.py):
+  #   look:       on a stop at the visitor's place, what the sky view turns to FROM THEIR OWN
+  #               GROUND: {world: moon}, {best: planet | star | figure}, {sky: [ra, dec]},
+  #               {pass: true}. sky/lookfor.js finds it for that place and instant, and the line
+  #               under the card says what was found and where, or that it is not up. The card
+  #               may not name the answer: it is a different one for every visitor.
+  #   time: tonight   the coming dark at the visitor's place, or now when it is dark already.
+  #   seen_from:  the world the camera stands on the side of, kept there while the clock runs.
+  #   over:       now on any world with a ground, not the Earth alone.
+  #   live_note:  season (Mars, by the date on the clock), space-weather (NOAA's reading, with
+  #               its age), tonight (one planet in the visitor's sky in the coming dark).
+  #
+  # EVERY FACT, read 2026-10-06 unless a line says otherwise:
+  #   Mars  https://science.nasa.gov/mars/facts/ : "about half the size of Earth", "one rotation
+  #         every 24.6 hours", "tilted 25 degrees", "687 Earth days", Olympus Mons "the base
+  #         covering an area as large as Arizona", Valles Marineris "about 2,400 miles in length
+  #         ... about 5.8 miles at its deepest" (3 900 km, 9 km), Phobos "will crash into the
+  #         planet or break apart in about 50 million years". The landers' own dates and
+  #         distances are registry/sites.yaml's, each with its source there.
+  #   Sun   https://science.nasa.gov/sun/facts/ : "about 100 times wider than Earth", "1.3
+  #         million Earths", "99.8% of our solar system's mass", "formed about 4.6 billion years
+  #         ago", "another 5 billion years or so", "one rotation in 25 Earth days" at the equator.
+  #   Moon  https://science.nasa.gov/moon/moon-phases/ : "The Sun always illuminates half of the
+  #         Moon", "every 29.5 days", "it spins on its axis exactly once each time it orbits",
+  #         "The 5 degree tilt of the Moon's orbit", "Every day, the Moon rises a little bit later".
+  # THE SEVEN FIGURES THIS BLOCK ONCE LISTED AS NOT RE-READ were read on 2026-10-06, later the same
+  # day, and two cards changed. The slow solar wind, "about 400 kilometers per second"
+  # (https://www.spaceweather.gov/phenomena/solar-wind). A cloud from the Sun: "The fastest
+  # Earth-directed CMEs can reach our planet in as little as 15-18 hours. Slower CMEs can take
+  # several days" (https://www.spaceweather.gov/phenomena/coronal-mass-ejections), so the card's
+  # "one to three days" became "from under a day to several days". InSight "detected 1,319
+  # marsquakes" (https://www.jpl.nasa.gov/news/nasa-retires-insight-mars-lander-mission-after-years-of-science/).
+  # Ingenuity, "72 historic flights" (https://science.nasa.gov/mission/mars-2020-perseverance/ingenuity-mars-helicopter/).
+  # Luna 3, "the first mission to photograph the far side of the Moon", 7 October 1959 (Wikipedia,
+  # Luna 3). Uranus: "the Sun shines directly over each pole, plunging the other half of the planet
+  # into a 21-year-long, dark winter" (https://science.nasa.gov/uranus/facts/), which is what the
+  # card now says in place of "forty-two years of daylight". The Sun's 8 minutes 20 seconds is the
+  # one still not on a page read today: it is the astronomical unit over the speed of light, 499 s.
+  # =============================================================================================
+
+  # ---------------------------------------------------------------------------------------------
+  # TONIGHT FROM YOUR STREET (public #445). Every stop after the first is seen from the ground, so
+  # this trip is as good as sky/skyview.js is, and gets better when that does: nothing here says
+  # where anything is. The first stop names the place and how it was got (ui/trip.js noteFor).
+  # ---------------------------------------------------------------------------------------------
+  - id: tonight-from-your-street
+    title: "Tonight from your street"
+    blurb: "Your own sky tonight: a star, a figure, the Moon, a planet, the station's pass."
+    group: earth-orbit
+    next: planets-tonight
+    requires: [stations]
+    requires_observer: true
+    stage: earth
+    clock: as-found
+    og_stop: 2
+    stops:
+      - id: above
+        target: {observer: true}
+        # 6 000 km up, not 200: the night map is 10 km to a pixel at its best (20 on a small
+        # GPU), and from 200 km the visitor's own town was sixteen blurred squares across the
+        # whole screen (the regression walk of 2026-10-06: the first picture of a trip the home
+        # view offers). From here it is their part of the world with the dark arriving across
+        # it, which is what the card says it is.
+        distance_km: 6000
+        time: tonight
+        drift_deg: 20
+        chapter: "Before you go outside"
+        card:
+          title: "Your street, as tonight begins"
+          body: >-
+            This is your part of the world as tonight's dark arrives. In a moment we go down to the
+            ground and look up. Everything you are about to see is worked out for this place and
+            this night, so you can go outside and check it.
+
+      - id: star
+        target: {observer: true}
+        distance_km: 200
+        look: {best: star}
+        # On every stop, not only the first: a link into stop 3 starts here, and the sky must still be tonight's.
+        time: tonight
+        chapter: "Looking up"
+        card:
+          title: "The first star you will notice"
+          body: >-
+            As the sky darkens, the brightest stars come out first. A star twinkles because its
+            light is a single point, pushed about by moving air. Its colour is its temperature:
+            the bluish ones are hotter than the Sun, the orange ones cooler.
+
+      - id: figure
+        target: {observer: true}
+        distance_km: 200
+        look: {best: figure}
+        time: tonight
+        chapter: "Looking up"
+        card:
+          title: "A figure to find"
+          body: >-
+            The lines join stars into the figures people have told stories about for thousands of
+            years. Learn one and you can find the next from it, the way you learn a town from one
+            street. The line below names the one that is best placed for you right now.
+
+      - id: moon
+        target: {observer: true}
+        distance_km: 200
+        look: {world: moon}
+        time: tonight
+        zoom: 4
+        chapter: "Looking up"
+        card:
+          title: "The Moon"
+          body: >-
+            The Moon rises about fifty minutes later each night, so it is not always in the
+            evening sky. When it is, point any binoculars at the line between its light and its
+            dark. That is where the mountains and craters throw their longest shadows.
+
+      - id: planet
+        target: {observer: true}
+        distance_km: 200
+        look: {best: planet}
+        time: tonight
+        chapter: "Looking up"
+        card:
+          title: "A planet, if one is up"
+          body: >-
+            A planet looks like a bright star that does not twinkle. Planets drift against the
+            stars from month to month, which is what the word first meant: a wanderer.
+
+      - id: pass
+        target: {observer: true}
+        distance_km: 200
+        look: {pass: true}
+        time: {event: station-pass.next, offset_s: -15}
+        needs_layer: stations
+        chapter: "Something that moves"
+        card:
+          title: "The space station, crossing"
+          body: >-
+            This is the next time the space station comes over your place. When it can be seen, it
+            is a bright, steady light gliding across the sky for a few minutes, with no flashing
+            lights. That light is the Sun on its solar panels, and there are people inside.
+
+      - id: out
+        target: {observer: true}
+        # As the first stop, and for the same reason: the end card stays on this view.
+        distance_km: 6000
+        time: now
+        drift_deg: 15
+        chapter: "Something that moves"
+        card:
+          title: "Now go and look"
+          body: >-
+            That is tonight, from where you are. The sky you saw is already turning: come back in
+            an hour and every star has moved a hand's width to the west. None of it needs a
+            telescope. It needs ten minutes for your eyes to get used to the dark.
+
+  # ---------------------------------------------------------------------------------------------
+  # WHY THE MOON CHANGES SHAPE (internal #363). The month is January 2027's, new Moon to new Moon
+  # (astronomy-engine SearchMoonPhase: new 7 Jan 20:25, first quarter 15 Jan 20:35, full 22 Jan
+  # 12:18, last quarter 29 Jan 10:56 UTC), run at ten hours a second, the fastest a world's stage
+  # allows: a stop of twenty seconds is eight days, so three stops carry the Moon round. Each
+  # names its own start, because the voice holds a stop for its clip and the clock would otherwise
+  # arrive at the next one wherever the last one's length left it.
+  #
+  # THE FIRST PICTURE WAS THE HONEST ONE AND IT WAS TWO SPECKS: from far enough to hold the Moon's
+  # whole path the Earth is nine pixels and the Moon two (internal #401). So the trip asks for
+  # `orbits: [moon]`: from outside the Moon's orbit scene/orbitrings.js draws the Moon's computed
+  # path and a dot for each world, larger than life and lit on the side that faces the Sun, which is
+  # what the stop is for. The frame prints that they are drawn larger; the card no longer says "to
+  # scale". The other stops are nearer than that and get the true discs and nothing else.
+  # ---------------------------------------------------------------------------------------------
+  - id: moon-phases
+    title: "Why the Moon changes shape"
+    blurb: "The Moon's month from space, then from your street. This trip moves the clock."
+    group: earth-orbit
+    next: tonight-from-your-street
+    requires: [worlds]
+    requires_observer: true
+    stage: earth
+    clock: as-found
+    og_stop: 3
+    orbits: [moon]
+    stops:
+      - id: from-outside
+        target: {world: earth}
+        over: [90, 0]
+        distance_km: 1000000
+        time: 2027-01-08T12:00:00Z
+        rate: 36000
+        drift_deg: 0
+        chapter: "From outside"
+        card:
+          title: "The Moon's month, from above"
+          body: >-
+            We are far above the north pole. The ring is the path the Moon takes round the Earth,
+            once a month, thirty Earths out. Both worlds are drawn larger than they are here, so
+            you can see that the Sun lights the same half of each of them, all the time.
+
+      - id: waxing
+        target: {world: moon}
+        seen_from: earth
+        frame_radii: 5.2
+        # Five days after new (7 January 2027, 20:24 UTC), 27 % lit. It was three days and 9 %,
+        # then four and 19 %, and each walk still read the first frame as a black disc with a
+        # hairline (internal #400, #426): the lit edge at that phase is ground the Sun only
+        # grazes. A crescent a quarter lit is still a sliver, and the stop still ends near full.
+        time: 2027-01-13T00:00:00Z
+        rate: 36000
+        drift_deg: 0
+        chapter: "The month, as the Earth sees it"
+        card:
+          title: "A sliver that grows"
+          body: >-
+            Now the Moon as the Earth sees it, with ten hours passing every second. Just after new
+            Moon it stands almost between us and the Sun, so its lit half faces away and we see
+            only a thin edge. Each evening it has moved a little further round, and shows us more.
+
+      - id: full
+        target: {world: moon}
+        seen_from: earth
+        frame_radii: 5.2
+        time: 2027-01-15T12:00:00Z
+        rate: 36000
+        drift_deg: 0
+        chapter: "The month, as the Earth sees it"
+        card:
+          title: "Half, then full"
+          body: >-
+            A week after new we see half of the lit side. That is called the first quarter. A week
+            later the Moon is on the far side of the Earth from the Sun, and the whole face we see
+            is in daylight. That is full Moon, and it rises as the Sun sets.
+
+      - id: waning
+        target: {world: moon}
+        seen_from: earth
+        frame_radii: 5.2
+        time: 2027-01-23T12:00:00Z
+        rate: 36000
+        drift_deg: 0
+        chapter: "The month, as the Earth sees it"
+        card:
+          title: "And back again"
+          body: >-
+            After full, the dark comes in from the other edge. The Moon rises later every night,
+            until it is a thin crescent in the dawn. Twenty-nine and a half days after it began,
+            it is new again.
+
+      - id: far-side
+        target: {world: moon}
+        distance_km: 12000
+        behind: earth
+        # The day before the next new Moon, when the far side is the lit one. Written, because the
+        # stops before it run the clock for as long as their words take, which nobody can know here.
+        time: 2027-02-05T12:00:00Z
+        rate: 600
+        chapter: "Two things people get wrong"
+        card:
+          title: "The side we never see"
+          body: >-
+            The Moon turns once for every trip round the Earth, so the same face always looks at
+            us. This is the other one. It gets just as much sunlight as the side we know: there
+            is no dark side of the Moon, only a far side.
+
+      - id: shadow
+        target: {world: moon}
+        seen_from: earth
+        frame_radii: 4
+        key_light_deg: 0
+        time: {event: lunar-eclipse.next, kind: total, offset_s: -3600}
+        rate: 600
+        drift_deg: 0
+        chapter: "Two things people get wrong"
+        card:
+          title: "The phases are not the Earth's shadow"
+          body: >-
+            This is the Earth's shadow on the Moon, and it is rare. The Moon's path is tilted five
+            degrees against ours, so at most full Moons it passes above or below the shadow. A
+            few times a year they line up, and that is a lunar eclipse.
+
+      - id: tonight
+        target: {observer: true}
+        distance_km: 200
+        look: {world: moon}
+        zoom: 5
+        time: tonight
+        chapter: "From your street"
+        card:
+          title: "The Moon over you tonight"
+          body: >-
+            This is the Moon from your own ground tonight. The lit side always points at the Sun,
+            even when the Sun has set. Look again tomorrow at the same hour: it will be a little
+            further east, and a little different in shape.
+
+  # ---------------------------------------------------------------------------------------------
+  # THE SUN TODAY (internal #364). What is TODAY's here is NOAA's reading of the Earth's magnetic
+  # weather and its aurora forecast, both of which the app already fetches. The Sun's face is a
+  # map (registry/textures.yaml), not today's picture, and the first card says so: a dated image
+  # of the Sun and a sunspot count wait for internal #153 and #154.
+  # ---------------------------------------------------------------------------------------------
+  - id: the-sun-today
+    title: "The Sun today"
+    blurb: "Our star, its wind, and tonight's aurora forecast. Leaving goes back to Earth."
+    group: solar-system
+    next: planets-tonight
+    requires: [worlds, aurora]
+    # The launch pads' names are not this trip's subject, and three of its stops are over the Earth:
+    # the walk of 2026-10-09 read "Soyuz 2.1b · Progress MS-36" and three more over the aurora stop.
+    hides: [launches, just-launched, starlink-trains]
+    stage: sun
+    clock: as-found
+    orbits: [mercury, venus, earth, mars]
+    og_stop: 1
+    stops:
+      - id: star
+        target: {world: sun}
+        frame_radii: 3.2
+        time: now
+        rate: 36000
+        chapter: "The star itself"
+        card:
+          title: "Our star"
+          body: >-
+            The Sun is a ball of glowing gas about a hundred Earths wide, and it holds nearly all
+            the mass of the Solar System. It turns once in about twenty-five days. The face drawn
+            here is a map of its surface, not a picture taken today.
+
+      - id: spots
+        target: {world: sun}
+        frame_radii: 1.7
+        rate: 36000
+        drift_deg: 20
+        chapter: "The star itself"
+        card:
+          title: "Spots, and an eleven-year beat"
+          body: >-
+            Dark spots come and go on this surface. Each is a place where the Sun's magnetism is
+            strong enough to hold back the heat, and many are larger than the Earth. Their number
+            rises and falls about every eleven years, and so do the Sun's outbursts.
+
+      - id: eight-minutes
+        target: {world: sun}
+        distance_km: 430000000
+        time: now
+        rate: 36000
+        drift_deg: 0
+        chapter: "What reaches us"
+        card:
+          title: "Eight minutes away"
+          body: >-
+            These are the paths of the four inner planets, and the third dot is home. Sunlight
+            takes eight minutes and twenty seconds to get there, so we always see the Sun as it
+            was eight minutes ago. A cloud of gas thrown out by the Sun takes from under a day to
+            several days.
+
+      - id: wind
+        target: {world: earth}
+        stage: earth
+        frame_radii: 5
+        key_light_deg: 70
+        time: now
+        live_note: space-weather
+        chapter: "What reaches us"
+        card:
+          title: "The wind that never stops"
+          body: >-
+            The Sun blows a thin wind of charged particles in every direction, at about four
+            hundred kilometres a second. The Earth's magnetic field turns most of it aside. When
+            a larger cloud arrives, the field shakes. That is a magnetic storm, and it is
+            measured every three hours.
+
+      - id: aurora
+        target: {world: earth}
+        stage: earth
+        over: [70, midnight]
+        frame_radii: 2.4
+        time: now
+        needs_layer: aurora
+        live_note: aurora
+        chapter: "What reaches us"
+        card:
+          title: "Where it comes down"
+          body: >-
+            Some of the wind is funnelled down around the magnetic poles, where it makes the upper
+            air glow. The green rings are where the aurora is expected in the next hour, from
+            today's forecast. In a strong storm they widen, and people far from the poles see
+            the lights.
+
+      - id: scale
+        target: {world: sun}
+        frame_radii: 6
+        time: now
+        # True size as a reveal (internal #290): a moment after the card is up the planets' dots
+        # are put away, and the frame says how wide the widest really is from here. The card's
+        # last sentence is that picture.
+        true_size: true
+        chapter: "How big, how long"
+        card:
+          title: "A million Earths"
+          body: >-
+            Jupiter, the largest planet, is a tenth as wide as the Sun. More than a million Earths
+            would fit inside it. No screen can show them side by side: with the Sun at this size,
+            the Earth would be a speck.
+
+      - id: home
+        target: {world: earth}
+        stage: earth
+        frame_radii: 14
+        key_light_deg: 60
+        time: now
+        chapter: "How big, how long"
+        card:
+          title: "Living with a star"
+          body: >-
+            Everything alive here runs on that light. The Sun is about halfway through its life:
+            four and a half billion years old, with some five billion to go. Never look straight
+            at it. The safe way to see the Sun is by its light on everything else.
+
+  # ---------------------------------------------------------------------------------------------
+  # THE PLANETS TONIGHT (internal #365). Each planet is visited where it is tonight, on its own
+  # stage and at its true size, and the line under its card says when and where it is in the
+  # visitor's own sky in the coming dark, or why it is not (`live_note: tonight`). The cards are
+  # about how each one LOOKS from a street, which is true on any night; what is true only
+  # tonight is in the generated line. The last stop is the visitor's ground, facing the brightest.
+  # ---------------------------------------------------------------------------------------------
+  - id: planets-tonight
+    title: "The planets tonight"
+    blurb: "Every planet in turn, then where to look tonight. Leaving goes back to Earth."
+    group: solar-system
+    next: mars-where-we-have-driven
+    requires: [worlds]
+    requires_observer: true
+    stage: sun
+    clock: as-found
+    orbits: [mercury, venus, earth, mars, jupiter, saturn]
+    og_stop: 6
+    stops:
+      - id: where
+        target: {world: sun}
+        distance_km: 3800000000
+        time: tonight
+        drift_deg: 0
+        chapter: "From above"
+        card:
+          title: "Where they all are tonight"
+          body: >-
+            This is the Solar System from above, as it is tonight. Each dot is a planet at its
+            true place on its path. Which ones you can see depends on where the Earth is among
+            them: a planet on the far side of the Sun from us is lost in its glare.
+
+      - id: mercury
+        target: {world: mercury}
+        stage: mercury
+        frame_radii: 4
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The inner planets"
+        card:
+          title: "Mercury"
+          body: >-
+            The smallest planet and the closest to the Sun, so it never strays far from the Sun in
+            our sky. It shows only low in the twilight, for a few weeks at a time. One day here,
+            from sunrise to sunrise, lasts two of its years.
+
+      - id: venus
+        target: {world: venus}
+        stage: venus
+        frame_radii: 4
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The inner planets"
+        card:
+          title: "Venus"
+          body: >-
+            The brightest thing in the night sky after the Moon, and the one people call the
+            evening star or the morning star. It is the size of the Earth, wrapped in cloud that
+            throws most of its sunlight back. In a small telescope it shows phases, like the Moon.
+
+      - id: mars
+        target: {world: mars}
+        stage: mars
+        frame_radii: 4
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The inner planets"
+        card:
+          title: "Mars"
+          body: >-
+            A steady orange point. Mars is bright for a few months every two years, when the Earth
+            catches it up and passes it on the inside, and much fainter the rest of the time.
+
+      - id: jupiter
+        target: {world: jupiter}
+        stage: jupiter
+        frame_radii: 4
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The giants"
+        card:
+          title: "Jupiter"
+          body: >-
+            Brighter than any star, and white. Hold binoculars still and you will see up to four
+            small points in a line beside it. They are its largest moons, the ones Galileo found,
+            and they change places from night to night.
+
+      - id: saturn
+        target: {world: saturn}
+        stage: saturn
+        frame_radii: 5
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The giants"
+        card:
+          title: "Saturn"
+          body: >-
+            A calm, yellowish point, about as bright as the brightest stars. The rings need a small
+            telescope. About every fifteen years they turn edge-on to us and almost vanish,
+            because they are thousands of times wider than they are thick.
+
+      - id: uranus
+        target: {world: uranus}
+        stage: uranus
+        frame_radii: 4
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The giants"
+        card:
+          title: "Uranus"
+          body: >-
+            Just too faint for most eyes, though binoculars will find it if you know where to
+            look. It was the first planet discovered with a telescope. It lies on its side, so
+            for a quarter of its long year the Sun shines down on one pole, while the other half
+            of the planet has a dark winter twenty-one years long.
+
+      - id: neptune
+        target: {world: neptune}
+        stage: neptune
+        frame_radii: 4
+        key_light_deg: 55
+        time: tonight
+        live_note: tonight
+        chapter: "The giants"
+        card:
+          title: "Neptune"
+          body: >-
+            Never visible without a telescope. It was found with a pencil first: astronomers
+            worked out where it must be from the way it pulled on Uranus, and there it was. Its
+            light takes four hours to reach us.
+
+      - id: your-sky
+        target: {observer: true}
+        distance_km: 200
+        look: {best: planet}
+        time: tonight
+        chapter: "From your street"
+        card:
+          title: "Your own sky tonight"
+          body: >-
+            This is your sky tonight, facing the brightest planet that is up. The planets all
+            keep close to one line across the sky, the same path the Sun took during the day. Find
+            one, and the others will be somewhere along it.
+
+  # ---------------------------------------------------------------------------------------------
+  # MARS, WHERE WE HAVE DRIVEN (public #445). On Mars's own stage, so the close-up tiles of spec
+  # 0065 (registry/tilesets.yaml mars-themis-day-ir) come in under the two stops that stand over a
+  # landform, and the landers are registry/sites.yaml rows with the models of registry/models.yaml.
+  # The order is the order we went: the first to stay, the rover that outlived its ninety days,
+  # the two that are still driving, the one that listened.
+  # ---------------------------------------------------------------------------------------------
+  - id: mars-where-we-have-driven
+    title: "Mars, where we have driven"
+    blurb: "A volcano, a canyon, five landing sites and a moon. Leaving goes back to Earth."
+    group: solar-system
+    next: asteroids-that-come-close
+    requires: [hand-kept-sites, worlds]
+    stage: mars
+    clock: as-found
+    og_stop: 1
+    stops:
+      - id: planet
+        target: {world: mars}
+        frame_radii: 4
+        key_light_deg: 55
+        chapter: "The planet"
+        card:
+          title: "The red planet"
+          body: >-
+            Mars is half as wide as the Earth, and its day is forty minutes longer than ours. The
+            red is rust: iron in the dust, which the wind spreads over the whole planet. Machines
+            have been landing here for fifty years, and two rovers are still driving.
+
+      - id: olympus
+        target: {world: mars}
+        over: [18.65, -133.8]
+        frame_radii: 1.6
+        time: daylight
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        chapter: "The planet"
+        card:
+          title: "Olympus Mons"
+          body: >-
+            The largest volcano we know of on any planet. It is more than twenty kilometres high,
+            and its base would cover Arizona. Mars has no moving plates, so the lava kept piling up
+            in one place for a very long time.
+
+      - id: valles
+        target: {world: mars}
+        over: [-13.9, -59.2]
+        frame_radii: 1.7
+        time: daylight
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        chapter: "The planet"
+        card:
+          title: "Valles Marineris"
+          body: >-
+            A canyon nearly four thousand kilometres long, which on Earth would reach from one
+            side of the United States to the other. In places it is nine kilometres deep. It began
+            as a crack, when the volcanoes beside it swelled and the ground split.
+
+      - id: viking-1
+        target: {site: viking-1}
+        distance_km: 900
+        time: daylight
+        chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/viking-1/:
+        # "until July 20, 1976, when NASA's Viking 1 lander touched down safely" (the 1 and the 1976).
+        card:
+          title: "The first to stay"
+          body: >-
+            Viking 1 landed here in the summer of 1976 and worked for six years. Its twin came
+            down on the other side of the planet six weeks later. They tested the soil for life,
+            and the answer was unclear. That is why we kept coming back.
+
+      - id: opportunity
+        target: {site: opportunity}
+        distance_km: 900
+        time: daylight
+        chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/mars-exploration-rovers-spirit-and-opportunity/:
+        # "Opportunity last communicated with Earth on June 10 2018 as a planet-wide dust storm" (the 2018).
+        card:
+          title: "Built for ninety days"
+          body: >-
+            Opportunity was built to last ninety Martian days. It drove forty-five kilometres in
+            more than fourteen years, and found rocks that could only have formed in water. A dust
+            storm that covered the whole planet ended it in 2018.
+
+      - id: gale
+        target: {site: gale}
+        distance_km: 900
+        time: daylight
+        chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/msl-curiosity/:
+        # "Launch / Landing Nov. 26 2011 / Aug. 6 2012" (the 2012).
+        card:
+          title: "Curiosity, climbing a mountain"
+          body: >-
+            Curiosity is the size of a small car and runs on the heat of plutonium, so dust on
+            solar panels cannot stop it. Since 2012 it has been climbing a mountain of layered
+            rock in the middle of this crater, reading a wet Mars turning into a dry one.
+
+      - id: elysium
+        target: {site: elysium}
+        distance_km: 900
+        time: daylight
+        chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/insight/:
+        # "End of Mission: Dec. 15 2022" (the 2022).
+        card:
+          title: "InSight, listening"
+          body: >-
+            InSight never moved. It set a seismometer on the ground and listened, and heard more
+            than thirteen hundred marsquakes. From the way they echoed, we know Mars has a core
+            of liquid metal. Dust covered its solar panels, and it fell silent in 2022.
+
+      - id: jezero
+        target: {site: jezero}
+        distance_km: 900
+        time: daylight
+        chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/mars-2020-perseverance/:
+        # "Launch / Landing July 30 2020 / Feb. 18 2021" (the 2021).
+        card:
+          title: "Perseverance, and a helicopter"
+          body: >-
+            Perseverance landed in this crater in 2021, where a river once ran into a lake. It is
+            filling tubes with rock for a later mission to bring home. It carried a small
+            helicopter, Ingenuity, which made seventy-two flights: the first powered flights on
+            another world.
+
+      - id: phobos
+        target: {world: phobos}
+        frame_radii: 5
+        # Not `behind: mars`: with Mars held behind it the camera was on the night side of both,
+        # two black discs (the walk of 2026-10-06). Lit from the front, Mars is in shot when it is.
+        key_light_deg: 50
+        chapter: "Around it"
+        card:
+          title: "Phobos, and Deimos"
+          body: >-
+            Mars has two small moons shaped like potatoes. This is Phobos, about twenty-two
+            kilometres across, so close in that it goes round three times a day. Deimos is half
+            the size and further out. Phobos is slowly falling: in some fifty million years it
+            will break up, or hit Mars.
+
+      - id: seasons
+        target: {world: mars}
+        over: [72, 0]
+        frame_radii: 2.6
+        time: daylight
+        live_note: season
+        chapter: "Around it"
+        card:
+          title: "Ice, and seasons"
+          body: >-
+            Mars is tilted about as much as the Earth, so it has seasons, each nearly twice as
+            long as ours. Every winter part of its thin air freezes onto the pole as dry-ice
+            frost, and every spring it blows away again. Under the frost is a cap of water ice.
+
+  # =============================================================================================
+  # THE SHOWS A PLANETARIUM RUNS AND WE STILL LACKED (2026-10-06). Ivan: "I want make sure we have
+  # all required planetarium trips for today." Eight trips: the life of a star, black holes, the
+  # sky as telescopes see it, a dark sky, asteroids, satellites and junk, comets and meteor
+  # showers, the birth of the Solar System. Written for the ear, 20 to 62 words a stop.
+  #
+  # NO STOP IS WORDS OVER BLACK. Every stop is aimed at something the scene draws: a licensed
+  # photograph standing where its nebula is (scene/nebulae.js), a figure drawn over the measured
+  # stars, a world, a catalogue, the visitor's own sky. Where the thing itself cannot be seen (a
+  # white dwarf beside Sirius, a black hole) the card says so and says what the picture is.
+  #
+  # THE STOP GRAMMAR THEY BROUGHT, each refused where the picture could not keep the promise
+  # (scripts/check_registry.py):
+  #   portrait: true   on a stop at a black hole whose registry/exotics.yaml row carries the Event
+  #                    Horizon Telescope's picture: the picture is drawn at the hole's place, far
+  #                    larger than it would look from the camera, and the line under the card
+  #                    says exactly that and whose picture it is (scene/portraits.js).
+  #   darkness:        on a `look:` stop, the kind of sky the ground view wears for the stop:
+  #                    city | town | dark (sky/skymath.js DARKNESS). Held, never stored.
+  #   time: night      the first full dark of the visitor's coming night (the Sun eighteen degrees
+  #                    down), where `tonight` is its dusk: the Milky Way is not out at dusk anywhere.
+  #   look: {best: milky-way}   the stretch of the Milky Way best placed for the visitor then.
+  #   time: midnight   the middle of that night, when a shower's radiant is high.
+  #   look: {shower: next}      the radiant of the next meteor shower in registry/showers.yaml,
+  #                    marked on the sky view for the stop, with its peak date in the line below.
+  #   live_note:       close-approach (the next pass in JPL's table, as the asteroids layer loaded
+  #                    it), satellites (the count of the catalogue on screen, and how many of them
+  #                    are Starlink), picture is not one: a stop at an object with a photograph
+  #                    prints the photograph's credit by itself (ui/trip.js noteFor).
+  #   names: true      keeps the other objects' names up in present mode, where a stop is
+  #                    otherwise shown with its own subject's name only (internal #400).
+  #
+  # A PHOTOGRAPH IS SEEN FROM THE SIDE IT WAS TAKEN FROM. `key_light_deg: 0` on a stop at a nebula
+  # puts the camera on the line from the Sun to it, which is the one direction scene/nebulae.js
+  # draws the picture from (viewFade); from anywhere else it would be a lie about a volume.
+  #
+  # EVERY NUMBER, DATE AND NAMED CLAIM ON THESE CARDS WAS READ ON THE PAGE NAMED HERE ON
+  # 2026-10-06, before the voice was rendered. Where a page did not give a figure the figure was
+  # dropped and the idea kept (the first drafts had a count of Orion's young stars, the Sun's four
+  # million tonnes a second, Apophis seen from Europe, the five-year deorbit rule: none could be
+  # confirmed quickly, and none is on a card). A distance the map's own record states differently
+  # from NASA's page (Orion 1 344 against "1,500", the Whirlpool 23 against "31 million") is said
+  # in words both agree with. `hubble-messier-catalog/` is
+  # https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/.
+  #   Stars   Orion: "an enormous cloud of dust and gas where vast numbers of new stars are being
+  #           forged", "1,500 light-years" (hubble-messier-catalog/messier-42/). Pleiades: "over a
+  #           thousand stars that are loosely bound by gravity", the wisps are a cloud moving past
+  #           (messier-45/); 75 to 150 million years, "simply passing through a particularly dusty
+  #           region" (Wikipedia, Pleiades). Sun: "4.5 billion-year-old", "a little less than
+  #           halfway through its lifetime", "hydrogen is fused to form helium"
+  #           (https://science.nasa.gov/sun/facts/). "Main sequence stars make up around 90%",
+  #           "The Sun will become a red giant in about 5 billion years", a white dwarf "is usually
+  #           Earth-size", "Heavier stars produce stellar-mass black holes"
+  #           (https://science.nasa.gov/universe/stars/types/). Arcturus: 1.08 solar masses, 25.4
+  #           solar radii, "has used up its core hydrogen" (Wikipedia, Arcturus, citing Ramirez and
+  #           Allende Prieto 2011). Betelgeuse: "around 15 times more massive", "Roughly 10 million
+  #           years old", "it would stretch past Jupiter's orbit", "will, eventually, go supernova"
+  #           (https://science.nasa.gov/universe/what-is-betelgeuse-inside-the-strange-volatile-star/).
+  #           Helix: "650 light-years", "sculpted late in a Sun-like star's life", "a small,
+  #           super-hot white dwarf" (https://science.nasa.gov/missions/hubble/iridescent-glory-of-nearby-helix-nebula/).
+  #           Sirius B: "about 10,000 times fainter than Sirius A", "only 12,000 kilometres in
+  #           diameter", "98 percent that of our Sun" (https://esahubble.org/images/heic0516a/).
+  #           The Crab: "In 1054, Chinese astronomers took notice of a 'guest star' that was, for
+  #           nearly a month, visible in the daytime sky", "pulse 30 times per second", the blue
+  #           light is electrons round the star's magnetic field (messier-1/). A neutron star:
+  #           "about 20 kilometers (12.5 miles) across", "the mass of a sun"
+  #           (https://imagine.gsfc.nasa.gov/science/objects/neutron_stars1.html).
+  #   Black holes   "nothing - not even light - can escape", "Black holes don't suck in other
+  #           matter", "If you replaced the Sun with a black hole of the same mass ... the planets
+  #           would stay in their orbits", "Gaia BH1, is about 1,500 light-years away"
+  #           (https://science.nasa.gov/universe/black-holes/). Cygnus X-1: "discovered in 1964",
+  #           "one of the strongest X-ray sources", "the first such source widely accepted to be a
+  #           black hole", "about 21.2 times the mass of the Sun", "about 7,000 light-years"
+  #           (Wikipedia, Cygnus X-1). S2 "orbits the black hole every 16 years", "in excess of 25
+  #           million kilometres per hour" (https://www.eso.org/public/news/eso1825/). Sagittarius
+  #           A*: "27 000 light-years", "four million times more massive than our Sun", "a dark
+  #           central region (called a shadow) surrounded by a bright ring-like structure", "eight
+  #           existing radio observatories" (https://www.eso.org/public/news/eso2208-eht-mw/). M87:
+  #           "6.5 billion times that of the Sun", "eight ground-based radio telescopes", "an
+  #           Earth-sized virtual telescope", the event horizon "just under 40 billion km across"
+  #           and the shadow 2.5 times that (https://www.eso.org/public/news/eso1907/), against
+  #           Neptune's orbit, 9 billion km across.
+  #   Telescopes    the three exposures and each picture's filters: registry/nebulae.yaml's own
+  #           rows. Carina: "sculpted by the action of outflowing winds and scorching ultraviolet
+  #           radiation from the monster stars" (https://esahubble.org/images/heic0707a/). The
+  #           Pillars: "Hubble ... made the Pillars of Creation famous with its first image in
+  #           1995", Webb's near-infrared view shows "newly formed stars"
+  #           (https://science.nasa.gov/missions/webb/nasas-webb-takes-star-filled-portrait-of-pillars-of-creation/).
+  #           Rubin: "System first light images were released 23 June 2025", "a composite image of
+  #           the Trifid and Lagoon nebulae", "the southern sky every few nights, creating a
+  #           ten-year time-lapse record" (Wikipedia, Vera C. Rubin Observatory). The Whirlpool:
+  #           "31 million light-years", the companion "tugging on the arm", "hydrogen within giant
+  #           star-forming regions" (messier-51/). Andromeda: "2.5 million light-years", "the
+  #           nearest major galaxy", "can be seen with the naked eye" (messier-31/).
+  #   Dark sky      "83% of the world's people live under light-polluted skies", "one third of the
+  #           world's population could no longer see the Milky Way", birds "attracted to tall
+  #           towers", "Sea turtle hatchlings" (Wikipedia, Light pollution, citing Falchi et al.
+  #           2016). "the average night sky got brighter by 9.6% per year from 2011 to 2022",
+  #           "adverse health effects in humans" (https://www.nps.gov/subjects/nightskies/lightpollution.htm).
+  #           "After about 30 minutes in the dark, your eyes will adapt"
+  #           (https://science.nasa.gov/solar-system/meteors-meteorites/geminids/). The three
+  #           skies on the ground are the app's own model (sky/skymath.js DARKNESS), so the cards
+  #           count no stars.
+  #   Asteroids     "rocky remnants left over from the formation of our solar system about 4.6
+  #           billion years ago", "between 1.1 and 1.9 million asteroids larger than 1 kilometer",
+  #           "less than that of Earth's Moon", Jupiter's gravity "brought an end to the formation
+  #           of planetary bodies in this region" (https://science.nasa.gov/solar-system/asteroids/facts/).
+  #           Ceres: "a radius of 296 miles (476 kilometers)", "25% of the asteroid belt's total
+  #           mass", Dawn in 2015 "the first dwarf planet to receive a visit", "large salt
+  #           deposits" (https://science.nasa.gov/dwarf-planets/ceres/facts/). "In November 2025,
+  #           the total number of identified NEAs surpassed 40 000, with around 10 000 of these
+  #           discovered in the last three years", the kilometre-sized ones "the vast majority have
+  #           already been found", "only about 30%" of the mid-sized
+  #           (https://www.esa.int/Space_Safety/Planetary_Defence/40_000_near-Earth_asteroids_discovered);
+  #           "no known significant threat of impact for the next hundred years or more"
+  #           (https://www.jpl.nasa.gov/asteroid-watch/). Apophis: "April 13, 2029", "about 20,000
+  #           miles (32,000 kilometers) from our planet's surface", "no risk ... for at least 100
+  #           years" (https://science.nasa.gov/solar-system/asteroids/apophis/); 0.34 km across (JPL
+  #           SBDB, sstr=99942); geostationary height 35 786 km (ESA, below); 13 April 2029 is a
+  #           Friday. DART: "22,530 kilometers per hour", "11 hours and 55" to "11 hours and 23
+  #           minutes - a difference of 32 minutes", "humanity's first time purposely changing the
+  #           motion of a celestial object" (https://science.nasa.gov/planetary-defense-dart/). Hera:
+  #           launched "7 October 2024", arrival "November 2026", "a well-understood and repeatable
+  #           planetary defence technique" (https://www.esa.int/Space_Safety/Hera). Bennu: "4.29
+  #           ounces (121.6 grams)", "the largest asteroid sample ever collected in space", "Sept.
+  #           24, 2023", Utah, "Sugars essential to life", "Molecules that, on our planet, are key
+  #           to life" (https://science.nasa.gov/mission/osiris-rex/); 0.484 km (JPL SBDB).
+  #   Satellites    the station: "five miles per second", "16 orbits of Earth" in 24 hours
+  #           (https://www.nasa.gov/international-space-station/space-station-facts-and-figures/),
+  #           "an altitude of between 370-460 km", "falls towards Earth continually due to
+  #           atmospheric friction" (https://www.nasa.gov/reference/international-space-station/).
+  #           Low orbit "under altitudes of 2000 km", "about 90 minutes"; geostationary "35 786
+  #           km", "appear 'stationary' over one fixed spot", antennas "stay in a constant
+  #           position", "valuable for weather satellites"
+  #           (https://www.esa.int/Enabling_Support/Space_Transportation/Types_of_orbits). Junk "can
+  #           reach speeds of 18,000 miles per hour, almost seven times faster than a bullet"
+  #           (https://www.nasa.gov/headquarters/library/find/bibliographies/space-debris/). Hubble:
+  #           "Launched on April 24, 1990", "roughly 300 miles (483 km)"
+  #           (https://science.nasa.gov/mission/hubble/observatory/). Envisat: 8 211 kg, "the
+  #           world's largest civilian Earth observation satellite", contact lost 8 April 2012,
+  #           about 150 years in orbit (Wikipedia, Envisat). 2 086 rocket bodies, "About 47140"
+  #           tracked objects, "1.5 million space debris objects from greater than 1 cm to 10 cm"
+  #           (ESA DISCOS, https://sdup.esoc.esa.int/discosweb/statistics/, updated 31 July 2026).
+  #           Point Nemo, "the location in the ocean that is farthest from land"
+  #           (https://oceanservice.noaa.gov/facts/nemo.html); "The defunct space station Mir",
+  #           "The International Space Station is slated to end up in the spacecraft cemetery"
+  #           (Wikipedia, Spacecraft cemetery).
+  #   Comets  Halley: "on average, 76 Earth years", "It will return in 2061", "an albedo of 0.03",
+  #           aphelion "well beyond the distance of Neptune", "the Eta Aquarids in May and the
+  #           Orionids in October" (https://science.nasa.gov/solar-system/comets/1p-halley/).
+  #           "mostly of ice coated with dark organic material", "often a few miles across",
+  #           sunlight and the solar wind "blow the coma dust and gas away from the Sun"
+  #           (https://science.nasa.gov/solar-system/comets/facts/). Borisov: "Crimean amateur
+  #           astronomer Gennady Borisov", "Aug. 30, 2019"
+  #           (https://science.nasa.gov/solar-system/comets/2i-borisov/); 3I/ATLAS, "the third
+  #           known interstellar object" (https://science.nasa.gov/solar-system/comets/3i-atlas/).
+  #           Meteors: "the trail of dusty debris left by a comet", "between the size of a grain of
+  #           sand and a pea", "tens of thousands of miles per hour", "named after a star or
+  #           constellation", the Perseids "a tiny piece of the comet Swift-Tuttle", the Geminids
+  #           and "(3200) Phaethon" (https://science.nasa.gov/solar-system/meteors-meteorites/facts/);
+  #           the Perseids' radiant "is the constellation Perseus", "best viewed ... during the
+  #           pre-dawn hours" (.../meteors-meteorites/perseids/); the Geminids "one of the best
+  #           and most reliable", Phaethon a "dead comet" or a "rock comet", "recline on your back"
+  #           (.../meteors-meteorites/geminids/). Phaethon's perihelion, 0.140 au, inside Mercury's
+  #           0.31: JPL SBDB, sstr=3200.
+  #   The birth     "formed about 4.6 billion years ago from a dense cloud of interstellar gas and
+  #           dust", "a spinning, swirling disk of material", "only rocky material could withstand
+  #           the heat", the asteroid belt "could never quite come together into a planet"
+  #           (https://science.nasa.gov/solar-system/solar-system-facts/); the Sun "accounts for
+  #           99.8% of our solar system's mass" (sun/facts/). Mercury "scarred by many impact
+  #           craters" (https://science.nasa.gov/mercury/facts/). Jupiter "took most of the mass
+  #           left over after the formation of the Sun, ending up with more than twice the combined
+  #           material of the other bodies in the solar system" (https://science.nasa.gov/jupiter/jupiter-facts/).
+  #           Vesta "the second most massive body in the main asteroid belt", "the source of the
+  #           Howardite, Eucrite and Diogenite groups of meteorites"
+  #           (https://science.nasa.gov/solar-system/asteroids/4-vesta/). The Moon: "a massive
+  #           object - named Theia ... - smashed into Earth, flinging material into space that
+  #           became the Moon", the rocks "matched those of Earth rocks too precisely for the
+  #           similarities to be a coincidence" (https://science.nasa.gov/moon/formation/). The
+  #           Kuiper belt: "icy bodies extending far beyond the orbit of Neptune", "Neptune's
+  #           gravity stirred up this region", "a source of comets"
+  #           (https://science.nasa.gov/solar-system/kuiper-belt/facts/).
+  # =============================================================================================
+
+  # ---------------------------------------------------------------------------------------------
+  # THE LIFE OF A STAR (internal #366). One real object for each age. The two red stars are shown
+  # in their figures, where their colour stands out against their neighbours'; Sirius B is told
+  # and not drawn, and the card says why.
+  # ---------------------------------------------------------------------------------------------
+  - id: life-of-a-star
+    title: "The life of a star"
+    blurb: "From a cloud of gas to a pulsar: one real star at each age, then back to Earth."
+    group: beyond
+    next: black-holes
+    requires: [stars, deep-sky]
+    hides: [exoplanets, systems, galaxy, exotics]
+    stage: stellar
+    clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
+    og_stop: 1
+    stops:
+      - id: nursery
+        target: {record: dso-m42}
+        needs_layer: deep-sky
+        distance_km: 302743375122586
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Being born"
+        card:
+          title: "Where stars are born"
+          body: >-
+            This is the Orion Nebula, an enormous cloud of gas and dust more than a
+            thousand light-years away. Gravity pulls its thickest knots together. Where
+            a knot grows hot enough in the middle, a star switches on. Vast numbers of
+            new stars are being made here right now.
+
+      - id: young
+        target: {record: dso-m45}
+        needs_layer: deep-sky
+        distance_km: 122989496143550
+        key_light_deg: 0
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Being born"
+        card:
+          title: "A family of young stars"
+          body: >-
+            The Pleiades are about a hundred million years old, which for a star is
+            childhood. More than a thousand of them are held loosely together by
+            gravity. The brightest are hot and blue, and the blue haze is a cloud of
+            dust they happen to be passing through.
+
+      - id: sun
+        target: {world: sun}
+        stage: sun
+        frame_radii: 3.6
+        drift_deg: 10
+        chapter: "The long middle"
+        card:
+          title: "A star in the middle of its life"
+          body: >-
+            Our Sun is four and a half billion years old, and a little less than half
+            way through its life. Deep inside, it turns hydrogen into helium, and that
+            is what makes it shine. Nine stars in ten are in this steady middle age,
+            which lasts for millions or billions of years.
+
+      - id: giant
+        target: {sky: [213.9, 22.0]}
+        figures: [Boo]
+        figure_stars: 1
+        zoom: 0.9
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Growing old"
+        card:
+          title: "What the Sun will become"
+          body: >-
+            The orange star is Arcturus. It weighs about the same as the Sun, but it is
+            older, and the hydrogen in its core has run out. So it has swollen to
+            twenty-five times the Sun's width. In about five billion years, the Sun will
+            become a red giant too.
+
+      - id: supergiant
+        target: {sky: [84.5, 2.0]}
+        figures: [Ori]
+        figure_stars: 2
+        zoom: 0.9
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Growing old"
+        card:
+          title: "A heavy star, near its end"
+          body: >-
+            Betelgeuse, the red shoulder of Orion, has about fifteen times the Sun's
+            mass. Heavy stars burn fast: it is only about ten million years old and
+            already near its end. Put it where the Sun is and it would reach past
+            Jupiter. One day it will explode.
+
+      - id: letting-go
+        target: {record: dso-helix-nebula}
+        needs_layer: deep-sky
+        distance_km: 85146574253227
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "The end of a star like the Sun"
+        card:
+          title: "A star letting go"
+          body: >-
+            A star like the Sun does not explode. Late in its life it blows its outer
+            layers away into space, and they glow like this. This is the Helix Nebula,
+            six hundred and fifty light-years away. The small, very hot star at its
+            centre is all that is left: a white dwarf.
+
+      - id: white-dwarf
+        target: {sky: [101.3, -18.0]}
+        figures: [CMa]
+        figure_stars: 1
+        zoom: 0.9
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The end of a star like the Sun"
+        card:
+          title: "What is left: a white dwarf"
+          body: >-
+            Sirius, the brightest star in the night sky, has a companion we do not draw:
+            it is ten thousand times fainter. It is a white dwarf, the core of a dead
+            star. It holds nearly the mass of the Sun in a ball about the size of the
+            Earth, slowly cooling.
+
+      - id: explosion
+        target: {record: dso-m1}
+        needs_layer: deep-sky
+        distance_km: 189214609451616
+        key_light_deg: 0
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "The end of a heavy star"
+        # read 2026-10-09, https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-1/:
+        # "In 1054 Chinese astronomers took notice of a guest star" (the 1054).
+        card:
+          title: "A star that blew up"
+          body: >-
+            A heavy star ends differently. Its core collapses and the rest is blown into
+            space. People saw this one happen: in the year 1054 Chinese astronomers
+            recorded a new star that could be seen in daylight for nearly a month. This
+            is the wreck today, the Crab Nebula.
+
+      - id: pulsar
+        target: {record: dso-m1}
+        needs_layer: deep-sky
+        distance_km: 113528765670970
+        key_light_deg: 0
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "The end of a heavy star"
+        card:
+          title: "The heart of the wreck"
+          body: >-
+            At the centre is what remains of the star's core: a ball about twenty
+            kilometres across with the mass of a sun, spinning thirty times a second. It
+            is called a pulsar. It is far too small to see, but the blue glow in the
+            middle is its doing. An even heavier star leaves a black hole.
+
+  # ---------------------------------------------------------------------------------------------
+  # BLACK HOLES (internal #366, public #426). Honest about what each thing on the screen is: a
+  # mark at a measured place (every hole here), the Event Horizon Telescope's two pictures drawn
+  # far larger than they would look (`portrait:`), and the measured stars. The galaxy's model is
+  # switched off: its bulge is a white blot at the centre, over the very thing the stop shows. No bent
+  # light is drawn: nothing in this app knows how to bend it truthfully.
+  # ---------------------------------------------------------------------------------------------
+  - id: black-holes
+    title: "Black holes"
+    blurb: "Three real black holes: where they are and how we know. Then back to Earth."
+    group: beyond
+    next: through-a-telescope
+    requires: [stars, exotics, deep-sky]
+    hides: [exoplanets, systems, galaxy]
+    stage: stellar
+    clock: as-found
+    og_stop: 5
+    stops:
+      - id: swan
+        target: {sky: [300.0, 37.0]}
+        figures: [Cyg]
+        figure_stars: 2
+        zoom: 0.85
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "One you can point to"
+        # read 2026-10-09, https://chandra.harvard.edu/photo/2009/cygx1/:
+        # "Originally discovered in 1964, Cygnus X-1 has been observed intensely since." ... "led to the conclusion that it was a black hole, the first such identification."
+        # (card figure = page figure: found in 1964 = Chandra (NASA) "Originally discovered in 1964" (OK) ; first thing astronomers agreed was a black hole = "the first such identification" (OK))
+        card:
+          title: "A black hole you can point to"
+          body: >-
+            This is the Swan, flying along the Milky Way. In its neck is Cygnus X-1, the
+            first thing in the sky that astronomers agreed was a black hole. You cannot
+            see it. Nobody can. It was found in 1964, because it is one of the strongest
+            sources of X-rays in the sky.
+
+      - id: what
+        target: {record: exotic-cygnus-x-1}
+        needs_layer: exotics
+        distance_km: 132450226616131216
+        key_light_deg: 90
+        drift_deg: 6
+        drift_rate_deg_s: 0.5
+        chapter: "One you can point to"
+        card:
+          title: "What a black hole is"
+          body: >-
+            Seven thousand light-years from home. A black hole is a place where gravity
+            is so strong that nothing gets out, not even light. This one has about
+            twenty times the mass of the Sun. The mark in the middle is ours. The scatter
+            of dots to one side is home: the stars this map has measured.
+
+      - id: from-home
+        target: {sky: [266.4, -27.0]}
+        figures: [Sgr, Sco]
+        figure_stars: 1
+        zoom: 0.85
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The one at the centre"
+        card:
+          title: "The centre of the galaxy, from home"
+          body: >-
+            Look past the spout of the Teapot, where the Milky Way is brightest.
+            Twenty-seven thousand light-years that way is the centre of our galaxy. In
+            the middle of it sits a black hole four million times as massive as the Sun.
+
+      - id: centre
+        target: {record: exotic-sgr-a-star}
+        needs_layer: exotics
+        distance_km: 18921460945161600
+        portrait: true
+        drift_deg: 8
+        drift_rate_deg_s: 0.6
+        chapter: "The one at the centre"
+        card:
+          title: "Sagittarius A star"
+          body: >-
+            Nobody can see this black hole itself. Astronomers watched a star go round
+            it, once every sixteen years, at millions of kilometres an hour, and worked
+            out what it must be circling. Then eight radio observatories, working as one
+            telescope the size of the Earth, made this picture: glowing gas, and a
+            shadow in the middle.
+
+      - id: m87
+        target: {record: exotic-m87-star}
+        needs_layer: exotics
+        distance_km: 1892146094516160000
+        portrait: true
+        drift_deg: 8
+        drift_rate_deg_s: 0.6
+        chapter: "The first picture"
+        # read 2026-10-09, https://www.jpl.nasa.gov/news/black-hole-image-makes-history/:
+        # "Catching its shadow involved eight ground-based radio telescopes around the globe" ... "This black hole is 6.5 billion times the mass of the Sun."
+        # (card figure = page figure: six and a half billion Suns = JPL "6.5 billion times the mass of the Sun" (OK; EHT paper (6.5 +/- 0.7) x 10^9 solar masses) ; eight radio telescopes = JPL "eight ground-based radio telescopes" (OK))
+        card:
+          title: "The first picture of a black hole"
+          body: >-
+            Far beyond our own galaxy, in a galaxy called M87, is a black hole with the
+            mass of six and a half billion Suns. This is the first picture ever made of
+            one, taken by eight radio telescopes working together. The dark middle is
+            its shadow, and it is far wider than our whole Solar System.
+
+      - id: sun
+        target: {world: sun}
+        stage: sun
+        frame_radii: 3.6
+        drift_deg: 10
+        chapter: "What they are not"
+        card:
+          title: "Nothing to fear"
+          body: >-
+            The Sun will never be a black hole: only stars many times heavier end that
+            way. And if you swapped the Sun for a black hole of the same mass, the
+            planets would stay in their orbits. It would only get a lot colder. The
+            nearest black hole we know is about fifteen hundred light-years away.
+
+  # ---------------------------------------------------------------------------------------------
+  # THE SKY AS TELESCOPES SEE IT (internal #366's "What Webb saw", with the pictures we may
+  # ship: ESO's, ESA/Hubble's and NOIRLab's, all CC BY 4.0, registry/nebulae.yaml). The first
+  # three stops are one nebula at the three exposures of spec 0067, which is the whole lesson:
+  # the colours are real and the eye cannot collect them. The credit under each card is
+  # generated from the picture's own row.
+  #
+  # WEBB'S PICTURE (2026-10-06, internal #413). The Tarantula Nebula from ESA/Webb's archive (CC BY
+  # 4.0, registry/nebulae.yaml `esawebb`), plate-solved like the rest. The stop's facts are that
+  # picture's own page, https://esawebb.org/images/weic2212a/, read 2026-10-06: "this mosaic image
+  # stretching 340 light-years across", "tens of thousands of never-before-seen young stars that
+  # were previously shrouded in cosmic dust". The camera stands 350 light-years from it, on the
+  # line back to the Sun, so the picture fills the frame as the Carina stop's does.
+  # ---------------------------------------------------------------------------------------------
+  - id: through-a-telescope
+    title: "The sky as telescopes see it"
+    blurb: "Real photographs, each where it is in the sky. Leaving goes back to Earth."
+    group: beyond
+    next: a-dark-sky
+    requires: [stars, deep-sky]
+    hides: [exoplanets, systems, exotics, galaxy]
+    stage: stellar
+    clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
+    og_stop: 5
+    stops:
+      - id: eye
+        target: {record: dso-m42}
+        needs_layer: deep-sky
+        distance_km: 283821914177424
+        key_light_deg: 0
+        exposure: eye
+        drift_deg: 0
+        chapter: "One nebula, three ways"
+        card:
+          title: "With your own eyes"
+          body: >-
+            This is the Orion Nebula roughly as your eye would see it at a telescope: a
+            faint grey glow. The gas is real, but it is faint, and in the dark the eye
+            sees no colour. It cannot save up light the way a camera can.
+
+      - id: camera
+        target: {record: dso-m42}
+        needs_layer: deep-sky
+        distance_km: 283821914177424
+        key_light_deg: 0
+        exposure: camera
+        drift_deg: 0
+        chapter: "One nebula, three ways"
+        card:
+          title: "With a camera"
+          body: >-
+            A camera can keep its shutter open and let the light pile up. Now the colour
+            is there. It was always there. The red is hydrogen gas. This picture was
+            taken through colour filters with an extra one for glowing hydrogen, so the
+            red is stronger than an eye would find it.
+
+      - id: deep
+        target: {record: dso-m42}
+        needs_layer: deep-sky
+        distance_km: 283821914177424
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.3
+        chapter: "One nebula, three ways"
+        card:
+          title: "A long exposure"
+          body: >-
+            Stretch a long exposure further and the faintest outer parts appear. Every
+            picture on this trip is a real photograph, placed where it is in the sky.
+            The line below each one says who took it.
+
+      - id: horsehead
+        target: {record: dso-horsehead-nebula}
+        needs_layer: deep-sky
+        distance_km: 283821914177424
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Clouds where stars form"
+        card:
+          title: "The Horsehead"
+          body: >-
+            Just beside Orion's belt, a dark cloud of dust stands in front of glowing
+            gas, in the shape of a horse's head. Here the colours are chosen. The camera
+            took the light of single gases through narrow filters, and each gas was
+            given a colour so the eye can tell them apart.
+
+      - id: carina
+        target: {record: dso-carina-nebula}
+        needs_layer: deep-sky
+        distance_km: 2365182618145200
+        key_light_deg: 0
+        exposure: camera
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Clouds where stars form"
+        card:
+          title: "The Carina Nebula"
+          body: >-
+            A great cloud in the southern sky, in the constellation of the Keel. Monster
+            stars live inside it. Their fierce winds and ultraviolet light are carving
+            the gas into the shapes you see: walls, pillars and hollows, lit from
+            within.
+
+      - id: webb
+        target: {record: dso-tarantula-nebula}
+        needs_layer: deep-sky
+        distance_km: 3311255665403280
+        key_light_deg: 0
+        exposure: camera
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Clouds where stars form"
+        # read 2026-10-09, https://science.nasa.gov/missions/webb/a-cosmic-tarantula-caught-by-nasas-webb/:
+        # In this mosaic image stretching 340 light-years across ... tens of thousands of never-before-seen young stars
+        # (card figure = page figure: tens of thousands of young stars = "tens of thousands" (NASA caption; ESA/NASA headline text says "Thousands of never-before-seen young stars") ; 340 light-years across = 340 (NASA caption and asset description) ; infrared colours chosen = NASA lists assigned filter colours (F090W blue, F200W green, F335M orange, F444W red))
+        card:
+          title: "What Webb saw in the Tarantula"
+          body: >-
+            This picture is the Webb telescope's own. It is made in infrared light, which
+            no eye can see, so every colour in it is chosen. Infrared passes through dust,
+            and here it shows tens of thousands of young stars that no telescope had seen
+            before. The picture is 340 light-years across, in a small galaxy beside ours.
+
+      - id: trifid
+        target: {record: dso-m20}
+        needs_layer: deep-sky
+        distance_km: 548722367409686
+        key_light_deg: 0
+        exposure: camera
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Clouds where stars form"
+        # read 2026-10-09, https://www6.slac.stanford.edu/news/2025-06-23-ever-changing-universe-revealed-first-imagery-nsf-doe-vera-c-rubin-observatory:
+        # The article is dated June 23, 2025 ... ceaselessly scan the sky nightly for 10 years ... every three to four nights
+        # (card figure = page figure: June 2025 = 23 June 2025 (first-look release) ; ten years = 10 years (LSST) ; every few nights = "every three to four nights" (NOIRLab 2025 release) / "every few nights" (NOIRLab image caption wording) ; Chile = Cerro Pachon, Chile)
+        card:
+          title: "The Trifid, from the newest telescope"
+          body: >-
+            The Trifid Nebula, with the dark lanes that give it its name. This picture
+            is among the very first from the Vera Rubin Observatory in Chile, released
+            in June 2025. For ten years that telescope will photograph the southern sky
+            every few nights.
+
+      - id: whirlpool
+        target: {record: dso-m51}
+        needs_layer: deep-sky
+        distance_km: 1324502266161312000
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Other galaxies"
+        card:
+          title: "Another galaxy"
+          body: >-
+            Now far beyond our own galaxy. The Whirlpool is a spiral galaxy tens of
+            millions of light-years away, seen face on. A smaller galaxy is passing
+            behind it and tugging on one arm. The pink knots along the arms are clouds
+            of hydrogen where new stars are forming.
+
+      - id: andromeda
+        target: {record: dso-m31}
+        needs_layer: deep-sky
+        distance_km: 1419109570887120128
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Other galaxies"
+        card:
+          title: "A galaxy you can see for yourself"
+          body: >-
+            Andromeda, the nearest large galaxy to our own, two and a half million
+            light-years off. You can see it without any telescope, as a faint smudge.
+            How well you see it, like everything on this trip, depends on how dark your
+            sky is.
+
+  # ---------------------------------------------------------------------------------------------
+  # A DARK SKY (internal #366; the sky view's "Your sky" setting, internal #357). One patch of the
+  # visitor's own sky, three times: under a city, at a town's edge, in a dark place. The three
+  # skies are sky/skymath.js DARKNESS, a model of an average clear night, and the ground view's
+  # own note says so. Nothing here names a place: it is a different one for every visitor.
+  # ---------------------------------------------------------------------------------------------
+  - id: a-dark-sky
+    title: "A dark sky"
+    blurb: "Your sky from a city, a town and a dark place. It moves the clock to tonight."
+    group: earth-orbit
+    next: tonight-from-your-street
+    requires: [worlds]
+    # Spacecraft models and today's aurora are litter over a picture of the night's own lights.
+    hides: [aurora, storms, lightning, visual, notable, just-launched, starlink-trains, launches]
+    requires_observer: true
+    stage: earth
+    clock: as-found
+    og_stop: 6
+    stops:
+      - id: lights
+        target: {world: earth}
+        frame_radii: 2.2
+        over: [38, 20]
+        # A written evening, so the side shown is land in the dark whatever hour the visitor comes:
+        # Europe, Africa and the Middle East at 21:00 UTC in January.
+        time: 2027-01-10T21:00:00Z
+        drift_deg: 14
+        chapter: "The light we make"
+        card:
+          title: "The Earth at night"
+          body: >-
+            This is the night side of the Earth, and every glow on it is a town. Some of
+            that light never reaches a street. It goes up, or sideways, and lights the
+            air. More than eight people in ten now live under a sky polluted by light.
+
+      - id: above
+        target: {observer: true}
+        distance_km: 900
+        time: tonight
+        drift_deg: 16
+        chapter: "The light we make"
+        card:
+          title: "Your own sky, tonight"
+          body: >-
+            Here is your part of the world as tonight's dark arrives. We are going down to the
+            ground to look up at one patch of sky, three times. First as a city shows it, then
+            from a town's edge, then from somewhere properly dark.
+
+      - id: city
+        target: {observer: true}
+        distance_km: 400
+        look: {best: milky-way}
+        darkness: city
+        time: night
+        chapter: "One sky, three ways"
+        card:
+          title: "From a city"
+          body: >-
+            From the middle of a city, only the brightest stars get through, with the
+            planets and the Moon. The sky itself glows. Whatever lies behind that glow
+            is still there, every night. It is only outshone.
+
+      - id: town
+        target: {observer: true}
+        distance_km: 400
+        look: {best: milky-way}
+        darkness: town
+        time: night
+        chapter: "One sky, three ways"
+        card:
+          title: "From the edge of a town"
+          body: >-
+            Away from the centre, the same patch of sky holds many more stars, and the
+            figures of the constellations fill in. Low down there is still a dome of
+            light over the place you left.
+
+      - id: dark
+        target: {observer: true}
+        distance_km: 400
+        look: {best: milky-way}
+        darkness: dark
+        time: night
+        chapter: "One sky, three ways"
+        card:
+          title: "From a dark place"
+          body: >-
+            Far from any town, on a night with no Moon, there are more stars than you can count,
+            and they lie thickest along one band of the sky. That band is the Milky Way: our own
+            galaxy, seen from inside. One person in three alive today cannot see it from where
+            they live.
+
+      - id: cost
+        target: {world: earth}
+        frame_radii: 1.9
+        over: [38, -95]
+        # North America at its midnight, for the same reason as the first stop.
+        time: 2027-01-11T06:00:00Z
+        drift_deg: 12
+        chapter: "What it costs, and what to do"
+        card:
+          title: "What the light costs"
+          body: >-
+            It is not only the stars. Birds that travel at night are drawn towards
+            lights, young turtles crawl towards streets instead of the sea, and it is
+            bad for our own health. The night sky has been getting nearly a tenth
+            brighter every year. But this pollution is gone the moment a lamp is shaded
+            or switched off.
+
+      - id: find
+        target: {observer: true}
+        distance_km: 1500
+        time: tonight
+        drift_deg: 14
+        chapter: "What it costs, and what to do"
+        card:
+          title: "How to find the dark"
+          body: >-
+            Look at the lights around your own place, and pick a gap between them. Go
+            there in the week around new Moon, when the Moon is out of the evening sky.
+            Give your eyes half an hour in the dark, without a screen, and look up.
+
+  # ---------------------------------------------------------------------------------------------
+  # ASTEROIDS, AND THE ONES THAT COME CLOSE (public #239). On the Sun's stage, where every rock is
+  # drawn at its computed place. The asteroids themselves are models at class size, as every
+  # small body in this app is, and their cards say so. APOPHIS IS SHOWN WHERE IT IS TODAY AND ITS
+  # 2029 PASS IS TOLD: the map carries one set of orbit numbers for it and no pull from the Earth,
+  # which is far too little to fly a pass that close truthfully, and the card says that.
+  # ---------------------------------------------------------------------------------------------
+  - id: asteroids-that-come-close
+    title: "Asteroids, and the ones that come close"
+    blurb: "The belt, the rocks that pass us, and how we moved one. Then back to Earth."
+    group: solar-system
+    next: comets-and-meteors
+    requires: [worlds, asteroids, far-bodies, deep-space]
+    stage: sun
+    clock: as-found
+    orbits: [earth, mars, jupiter]
+    og_stop: 4
+    stops:
+      - id: belt
+        target: {world: sun}
+        distance_km: 1500000000
+        drift_deg: 0
+        names: true
+        chapter: "The belt"
+        card:
+          title: "The asteroid belt"
+          body: >-
+            Between the paths of Mars and Jupiter there are more than a million rocks,
+            left over from the making of the planets about four and a half billion years
+            ago. It is mostly empty space: all of them together weigh less than our
+            Moon. The map draws the few it carries, each where it is today.
+
+      - id: ceres
+        target: {record: dwarf-ceres}
+        needs_layer: far-bodies
+        distance_km: 600000
+        chapter: "The belt"
+        # read 2026-10-09, https://science.nasa.gov/dwarf-planets/ceres/facts/:
+        # "When NASA's Dawn arrived in 2015 Ceres became the first dwarf planet to receive a visit" (the 2015).
+        card:
+          title: "Ceres, the largest"
+          body: >-
+            Ceres is about nine hundred and fifty kilometres across and holds a quarter
+            of the belt's whole mass. It is round, so it counts as a dwarf planet. A
+            spacecraft called Dawn reached it in 2015, the first visit to a dwarf
+            planet, and found large deposits of salt in its crust.
+
+      - id: near
+        target: {world: earth}
+        distance_km: 30000000
+        time: now
+        live_note: close-approach
+        names: true
+        drift_deg: 0
+        chapter: "Near the Earth"
+        card:
+          title: "The ones that come close"
+          body: >-
+            Some asteroids have paths that bring them near the Earth's. More than forty
+            thousand have been found, ten thousand of them in the last three years.
+            Telescopes find them, and each one's path is worked out for a hundred years
+            ahead. The line below names the next one to pass.
+
+      - id: didymos
+        target: {record: asteroid-65803}
+        needs_layer: asteroids
+        distance_km: 400000
+        chapter: "Moving one"
+        # read 2026-10-09, https://science.nasa.gov/mission/dart/:
+        # "On Sept. 26 2022 DART impacted the asteroid moonlet Dimorphos" (the 2022).
+        card:
+          title: "The asteroid we moved"
+          body: >-
+            Didymos has a small moon. In 2022 a spacecraft called DART was flown
+            straight into that moon at more than six kilometres a second, on purpose.
+            Its orbit became thirty-two minutes shorter. It was the first time people
+            changed the motion of anything in the sky.
+
+      - id: hera
+        target: {record: deep-hera}
+        needs_layer: deep-space
+        distance_km: 400000
+        chapter: "Moving one"
+        # read 2026-10-09, https://www.esa.int/Space_Safety/Hera/ESA_s_Hera_targets_early_arrival_at_Didymos_asteroids:
+        # Hera is on track to arrive at Didymos in November 2026 ... a well-understood and repeatable technique for protecting Earth
+        # (card figure = page figure: November 2026 = November 2026 (rendezvous burns start October 2026, arrival November) ; "measure its mass" = ESA page fetched does not state it (the fetch summaries did not mention mass), no number involved ; survey of the pair = "humankind's first thorough survey of a binary asteroid")
+        card:
+          title: "Hera, going to check"
+          body: >-
+            This is Hera, a European spacecraft sent to the same pair of asteroids, due
+            there in November 2026. It will survey the little moon after the crash and
+            measure its mass, to turn that one experiment into a method that can be
+            repeated if a dangerous rock is ever found.
+
+      - id: bennu
+        target: {record: asteroid-101955}
+        needs_layer: asteroids
+        distance_km: 400000
+        chapter: "Moving one"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/asteroids/101955-bennu/:
+        # "deliver it to Earth on Sept. 24 2023" (the 2023).
+        card:
+          title: "Bennu, and a handful brought home"
+          body: >-
+            Bennu is about half a kilometre wide. A spacecraft touched it, collected a
+            hundred and twenty grams, and dropped them in the Utah desert in 2023: the
+            largest asteroid sample ever brought home. In that dust were sugars and
+            other molecules that, on Earth, are key to life.
+
+      # THE PASS OF 13 APRIL 2029, FLOWN (public #239, internal #413). Until 2026-10-06 this stop
+      # showed Apophis where it is today and said the map could not fly the pass: the row was
+      # two-body motion, which knows nothing of the Earth's pull. The record now has a file of
+      # its path from JPL Horizons (registry/ephemerides.yaml, solution JPL#220, kept relative to
+      # the Earth for the three weeks round the pass, held to 10 km of Horizons by
+      # tests/test_ephemerides.mjs). ui/trip.js fetches it before the trip is offered. The clock
+      # goes to 21:45 UTC, the closest minute IN THAT FILE: 31 633 km over the ground (38 011 from
+      # the Earth's centre), which is NASA's "about 20,000 miles (32,000 kilometers) from our
+      # planet's surface", read on science.nasa.gov/solar-system/asteroids/apophis on 2026-10-06
+      # with "closer than ... many satellites in geosynchronous orbit" and "no risk ... for at
+      # least 100 years". The size is the JPL Small-Body Database's, as on the record's card.
+      # It is a prediction and the card says so. It is the stop before the last because it moves
+      # the clock to 2029: the last stop is `time: now` and brings it back, and no card after
+      # this one is read in the wrong year. (It was the fourth stop until then.)
+      - id: apophis
+        target: {record: asteroid-99942}
+        needs_layer: asteroids
+        stage: earth
+        time: 2029-04-13T21:45:00Z
+        rate: 60
+        # The Earth in the picture: without `behind` the first frame had the rock alone, the
+        # Earth exactly behind its model (seen 2026-10-06). 30 000 km back, the Earth is about
+        # twelve degrees across beside it.
+        behind: earth
+        distance_km: 30000
+        chapter: "Keeping watch"
+        card:
+          title: "Apophis passes the Earth"
+          body: >-
+            One pass is already in the calendar. This rock, Apophis, is about three
+            hundred and forty metres across, and this is the evening it comes closest:
+            about thirty-two thousand kilometres above the ground, inside the ring of
+            satellites that carry television. It will miss. The path drawn here is the
+            one predicted at NASA's Jet Propulsion Laboratory.
+
+      - id: home
+        target: {world: earth}
+        stage: earth
+        frame_radii: 4
+        key_light_deg: 60
+        time: now
+        chapter: "Keeping watch"
+        card:
+          title: "Are we safe?"
+          body: >-
+            For the large ones, yes. The vast majority of the asteroids bigger than a
+            kilometre have been found, and none of the forty thousand known is a threat
+            in the next hundred years. But only about a third of the middle-sized ones
+            have been found. The search goes on.
+
+  # ---------------------------------------------------------------------------------------------
+  # SATELLITES AND SPACE JUNK (public #449). The count is never typed: the line under the two
+  # catalogue stops is counted from the catalogue on screen (`live_note: satellites`). No stop
+  # moves the clock, because the whole active catalogue is loaded (the validator refuses the
+  # pair). No explosion is simulated; the numbers nobody can track are ESA's estimate, in words.
+  # ---------------------------------------------------------------------------------------------
+  - id: satellites-and-junk
+    title: "Satellites and space junk"
+    blurb: "Everything working in orbit today, the ring that stands still, and the junk."
+    group: earth-orbit
+    next: people-in-space
+    requires: [stations, notable, visual, worlds]
+    stage: earth
+    clock: as-found
+    og_stop: 2
+    stops:
+      - id: one
+        target: {layer: stations, catalog: "25544"}
+        distance_km: 2600
+        chapter: "What is up there"
+        card:
+          title: "Start with one"
+          body: >-
+            This is the International Space Station, about four hundred kilometres up.
+            It moves at eight kilometres every second and circles the Earth sixteen
+            times a day. Hold on to that height and that speed. Nearly everything else
+            on this trip shares them.
+
+      - id: all
+        target: {world: earth}
+        needs_layer: active
+        frame_radii: 3.4
+        live_note: satellites
+        drift_deg: 16
+        chapter: "What is up there"
+        card:
+          title: "Everything that works"
+          body: >-
+            Every dot is a working satellite, at the place it is right now. The line
+            below counts them from the catalogue this page loaded today, and counts how
+            many of them belong to a single internet network, Starlink.
+
+      - id: low
+        target: {world: earth}
+        needs_layer: active
+        frame_radii: 1.7
+        over: [48, 10]
+        live_note: satellites
+        drift_deg: 12
+        chapter: "What is up there"
+        card:
+          title: "The crowded shell"
+          body: >-
+            Nearly all of them fly low, under two thousand kilometres. Down here a
+            satellite circles the Earth in about ninety minutes, and junk can cross its
+            path at almost seven times the speed of a bullet. That is why even small
+            pieces matter.
+
+      - id: ring
+        target: {world: earth}
+        needs_layer: geo-ring
+        frame_radii: 9.5
+        over: [78, 0]
+        drift_deg: 10
+        chapter: "What is up there"
+        card:
+          title: "The ring that stands still"
+          body: >-
+            Much higher, nearly thirty-six thousand kilometres up, a satellite takes one
+            day to go round, so from the ground it hangs over one spot. That is why a
+            television dish never has to move. Weather satellites sit here too, each
+            watching one side of the Earth.
+
+      - id: hubble
+        target: {layer: notable, catalog: "20580"}
+        distance_km: 2600
+        chapter: "What is worth protecting"
+        # read 2026-10-09, https://science.nasa.gov/mission/hubble/:
+        # "Since its 1990 launch, the Hubble Space Telescope has changed our fundamental understanding of the universe" (the 1990).
+        card:
+          title: "Worth protecting"
+          body: >-
+            The Hubble Space Telescope has been up here since 1990, about five hundred
+            kilometres above the ground. Like the weather satellites, and the station
+            with its crew, it depends on the space around it staying clear.
+
+      - id: dead
+        target: {layer: debris-notable, catalog: "27386"}
+        needs_layer: debris-notable
+        distance_km: 2600
+        chapter: "The junk"
+        card:
+          title: "A dead satellite"
+          body: >-
+            This is Envisat, once the world's largest civilian Earth-watching satellite.
+            Contact was lost in 2012 and it has circled since, eight tonnes with nobody
+            at the controls. It is expected to stay up for about a hundred and fifty
+            years.
+
+      - id: rocket
+        target: {layer: visual, query: {name_contains: "R/B"}, pick: first}
+        needs_layer: visual
+        distance_km: 2600
+        chapter: "The junk"
+        card:
+          title: "A spent rocket"
+          body: >-
+            The last stage of a rocket often stays in orbit after its job is done. About
+            two thousand of them are up here now. In all, some forty-seven thousand
+            objects are tracked, and by Europe's estimate more than a million pieces are
+            too small to track.
+
+      - id: down
+        target: {world: earth}
+        frame_radii: 2.4
+        over: [-48.9, -123.4]
+        drift_deg: 12
+        chapter: "The junk"
+        card:
+          title: "Coming down"
+          body: >-
+            Thin air drags on everything in low orbit, and in the end it falls and
+            burns. The largest spacecraft are steered down here, to the part of the
+            Pacific farthest from any land. The Mir space station ended here. The
+            International Space Station is due to follow.
+
+  # ---------------------------------------------------------------------------------------------
+  # COMETS AND METEOR SHOWERS (public #445's third trip). The comet is Halley, a row the comets
+  # layer always has (site/js/data/sample.js NAMED_COMETS, JPL's orbit with its phase), because
+  # JPL's table of comets near the Sun is a snapshot that is often empty. It is 35 au out, where a
+  # comet has no tail; the model draws one on any selected comet, and the second card says so. The shower is the next one in
+  # registry/showers.yaml, found for the visitor's date, and the line under the stop says when it
+  # peaks and where its radiant is in their own sky tonight.
+  # ---------------------------------------------------------------------------------------------
+  - id: comets-and-meteors
+    title: "Comets and meteor showers"
+    blurb: "A comet, its dust and the next shower from your street. Then back to Earth."
+    group: solar-system
+    next: birth-of-the-solar-system
+    requires: [worlds, comets, far-bodies, asteroids, stars]
+    # Passing satellites are drawn as models beside the visitor's place; this trip is not about them.
+    hides: [visual, notable, just-launched, starlink-trains, launches, stations]
+    requires_observer: true
+    stage: sun
+    clock: as-found
+    orbits: [earth, mars, jupiter]
+    og_stop: 1
+    stops:
+      - id: halley
+        target: {record: comet-1P}
+        needs_layer: comets
+        distance_km: 9000000000
+        drift_deg: 0
+        names: true
+        chapter: "Comets"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/comets/1p-halley/:
+        # "It will return in 2061 on its regular 76-year journey around the Sun", and 1986 as the year of the Giotto and international encounters (the 1986 and the 2061).
+        card:
+          title: "Halley's comet, where it is today"
+          body: >-
+            The most famous comet is out past Neptune now, at the far end of the long, thin loop
+            drawn here. It last passed the Sun in 1986, and it will be back in 2061. One thing in
+            this picture is not real: the tail. Out there Halley is a dark, frozen lump with no
+            tail at all.
+
+      - id: comet
+        target: {record: comet-1P}
+        needs_layer: comets
+        distance_km: 3000000
+        chapter: "Comets"
+        card:
+          title: "What a comet is"
+          body: >-
+            A comet is mostly ice, coated with dark dust, a few kilometres across.
+            Halley reflects only three parts in a hundred of the light that falls on it.
+            As a comet nears the Sun its ice turns to gas, and sunlight and the solar
+            wind blow gas and dust away from the Sun into a long, bright tail.
+
+      - id: stranger
+        target: {record: interstellar-2i}
+        needs_layer: far-bodies
+        distance_km: 3000000
+        chapter: "Comets"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/comets/2i-borisov/:
+        # "discovered by Crimean amateur astronomer Gennady Borisov on Aug. 30, 2019" (the 2019).
+        card:
+          title: "A comet from another star"
+          body: >-
+            This one does not belong to the Sun at all. It is called Borisov, after the
+            amateur astronomer who found it in 2019. Its speed and its path show that it
+            came from another star, and it is leaving for good. Three such visitors have
+            been seen so far.
+
+      - id: dust
+        target: {world: earth}
+        distance_km: 400000000
+        drift_deg: 0
+        chapter: "Meteor showers"
+        card:
+          title: "Where shooting stars come from"
+          body: >-
+            A comet leaves a trail of dusty debris along its path. Where the Earth
+            passes through one, the dust hits our air at tens of thousands of kilometres
+            an hour and burns up. Most of the pieces are between a grain of sand and a
+            pea. That is a meteor shower, and it comes back every year.
+
+      - id: phaethon
+        target: {record: asteroid-3200}
+        needs_layer: asteroids
+        distance_km: 400000
+        chapter: "Meteor showers"
+        card:
+          title: "A shower from a rock"
+          body: >-
+            One of the best showers of the year, the Geminids in December, does not come
+            from a comet. It comes from this asteroid, Phaethon, whose path takes it
+            closer to the Sun than Mercury. Nobody is sure whether it is a rock that
+            behaves like a comet or a comet that has died.
+
+      - id: radiant
+        target: {sky: [44.0, 52.0]}
+        stage: stellar
+        figures: [Per, Cas]
+        figure_stars: 1
+        zoom: 0.9
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Meteor showers"
+        card:
+          title: "Why a shower has a name"
+          body: >-
+            The meteors of one shower all seem to come from one point in the sky, and a
+            shower is named for the figure that point is in. The Perseids of August seem
+            to come from here, in Perseus. The figure is only a signpost. The meteors
+            themselves are dust from a comet called Swift-Tuttle.
+
+      - id: tonight
+        target: {observer: true}
+        distance_km: 300
+        look: {shower: next}
+        darkness: dark
+        time: midnight
+        chapter: "From your street"
+        card:
+          title: "The next shower, from where you are"
+          body: >-
+            This is your own sky in the middle of tonight, and the ring marks where the next
+            shower's meteors will seem to come from. You do not need to stare at that point. Meteors appear all over the
+            sky. The line below says which shower it is and when it peaks.
+
+      - id: watch
+        target: {observer: true}
+        distance_km: 1500
+        time: tonight
+        drift_deg: 14
+        chapter: "From your street"
+        card:
+          title: "How to watch one"
+          body: >-
+            Go somewhere away from the lights and lie on your back. After about half an
+            hour in the dark your eyes adapt, and you begin to see meteors. The hours
+            before dawn are usually the best. Bring something warm.
+
+  # ---------------------------------------------------------------------------------------------
+  # THE BIRTH OF THE SOLAR SYSTEM. Nobody watched it, and the app has no pictures of it. So every
+  # stop is a real thing that is evidence for the account, and the first card and the last say
+  # that it is an account: the views are real, the story is the one the evidence supports.
+  # ---------------------------------------------------------------------------------------------
+  - id: birth-of-the-solar-system
+    title: "The birth of the Solar System"
+    blurb: "The story science tells, told over real places. Leaving goes back to Earth."
+    group: solar-system
+    next: outer-solar-system
+    requires: [worlds, deep-sky, asteroids, far-bodies]
+    stage: sun
+    clock: as-found
+    orbits: [mercury, venus, earth, mars, jupiter, saturn]
+    og_stop: 4
+    stops:
+      - id: cloud
+        target: {record: dso-m42}
+        stage: stellar
+        needs_layer: deep-sky
+        distance_km: 302743375122586
+        key_light_deg: 0
+        exposure: deep
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "A cloud falls in"
+        card:
+          title: "It began in a cloud like this"
+          body: >-
+            Nobody saw the Solar System form. This trip is the story the evidence tells,
+            shown over real places. It starts about four and a half billion years ago,
+            in a dense cloud of gas and dust like this one in Orion, when part of it
+            collapsed.
+
+      - id: flat
+        target: {world: jupiter}
+        distance_km: 1500000000
+        behind: sun
+        drift_deg: 0
+        chapter: "A cloud falls in"
+        card:
+          title: "Why it is flat"
+          body: >-
+            The collapsing cloud became a spinning, swirling disc, and the planets grew
+            inside that disc. That is why, seen from the side like this, their paths
+            still lie almost in one sheet.
+
+      - id: sun
+        target: {world: sun}
+        frame_radii: 3.6
+        drift_deg: 10
+        chapter: "A cloud falls in"
+        card:
+          title: "Nearly all of it became the Sun"
+          body: >-
+            At the centre, gravity pulled more and more material in, until it was hot
+            and dense enough to shine. That is the Sun, and it took almost everything:
+            out of every thousand parts of the Solar System, nine hundred and
+            ninety-eight are in it.
+
+      - id: rock
+        target: {world: mercury}
+        stage: mercury
+        frame_radii: 4
+        key_light_deg: 55
+        chapter: "Building worlds"
+        card:
+          title: "Close in, only rock"
+          body: >-
+            Near the young Sun, only rocky material could stand the heat. That is why
+            the four planets closest to the Sun are small and made of rock: Mercury,
+            Venus, the Earth and Mars. Mercury's surface is still scarred with the
+            craters of countless impacts.
+
+      - id: giant
+        target: {world: jupiter}
+        stage: jupiter
+        frame_radii: 4
+        key_light_deg: 55
+        chapter: "Building worlds"
+        card:
+          title: "Far out, giants"
+          body: >-
+            Further out, where it was cold, ice and gas could gather too, and that is
+            where the giant planets formed. Jupiter took most of what was left over
+            after the Sun: more than twice as much material as every other planet, moon
+            and rock put together.
+
+      - id: leftovers
+        target: {record: asteroid-4}
+        needs_layer: asteroids
+        distance_km: 400000
+        chapter: "What was left over"
+        card:
+          title: "The leftovers"
+          body: >-
+            Between Mars and Jupiter the building never finished. The pull of newly
+            formed Jupiter stopped the pieces from coming together and made them collide
+            instead. This is Vesta, the second most massive of them. Meteorites knocked
+            off it still fall on the Earth.
+
+      - id: moon
+        target: {world: moon}
+        stage: moon
+        frame_radii: 3.4
+        key_light_deg: 60
+        chapter: "What was left over"
+        card:
+          title: "How the Earth got its Moon"
+          body: >-
+            The early Solar System was violent. The leading account of the Moon is that
+            a large body, which scientists have named Theia, struck the young Earth, and
+            the Moon formed from the material flung into space. Rocks brought back by
+            the Apollo astronauts match the Earth's too closely for chance.
+
+      - id: far
+        target: {world: pluto}
+        stage: pluto
+        frame_radii: 4
+        key_light_deg: 55
+        chapter: "What was left over"
+        card:
+          title: "The frozen edge"
+          body: >-
+            Beyond Neptune lies a wide belt of icy bodies, Pluto among them, left over
+            from the beginning. Neptune's pull stirred this region so much that they
+            never came together into a planet. Some of our comets come from here.
+
+      - id: home
+        target: {world: earth}
+        stage: earth
+        frame_radii: 4
+        key_light_deg: 60
+        chapter: "What was left over"
+        card:
+          title: "And here we are"
+          body: >-
+            That is the story as the evidence tells it today: from meteorites, from the
+            Moon's rocks, and from the paths of the planets themselves. Parts of it will
+            change as we learn more. The places were all real.
+
+  # ---------------------------------------------------------------------------------------------
+  # BACK TO THE MOON (Artemis; the review of 2026-10-05 found no Artemis stop anywhere). A short
+  # trip and not a stop on "The Moon landings": that trip is ten `site:` rows in landing order, and
+  # Artemis II landed nowhere. registry/sites.yaml has no Artemis row to stand on, so the stops
+  # are the real places the flight is about: the last footprints, the launch coast, the far side,
+  # the Earth from out there, the south pole. No trajectory is drawn, and no card says one is.
+  # FACTS, read 2026-10-06: https://en.wikipedia.org/wiki/Artemis_II (launched 1 April 2026,
+  # splashdown 11 April UTC, "9 days, 1 hour, 32 minutes"; Wiseman, Glover, Koch, Hansen;
+  # "252,756 miles (406,771 km)" from Earth, past Apollo 13's 400 171 km) and
+  # https://en.wikipedia.org/wiki/Artemis_program ("Artemis IV (early 2028) is planned to be the
+  # first American crewed lunar landing since Apollo 17"; Artemis III "a demonstration flight in
+  # low Earth orbit"). NASA's own page gives the launch, "April 1, 2026", "MISSION DURATION 9 Days,
+  # 1 Hour, 32 Minutes" and Kennedy Space Center (https://www.nasa.gov/mission/artemis-ii/).
+  # Apollo 17: "the Taurus-Littrow highlands and valley area", Cernan "the last person to leave his
+  # footprints on the surface of the Moon" (https://www.nasa.gov/mission/apollo-17/). The south
+  # pole: permanently shadowed regions "never receive light from the Sun", LCROSS "showed grains of
+  # water ice", "the intended region of study for NASA's Artemis missions"
+  # (https://science.nasa.gov/moon/moon-water-and-ices/). The plan's dates move, so no card names
+  # the flight that lands or its year.
+  # ---------------------------------------------------------------------------------------------
+  - id: back-to-the-moon
+    title: "Back to the Moon"
+    blurb: "Artemis: round the Moon again, and where they mean to land. Then back to Earth."
+    group: solar-system
+    next: moon-landings
+    requires: [hand-kept-sites, worlds]
+    stage: moon
+    clock: as-found
+    og_stop: 5
+    stops:
+      - id: last
+        target: {site: apollo-17}
+        distance_km: 900
+        time: daylight
+        chapter: "The long gap"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096C:
+        # "The LM separated from the Command/Service Module ... on 11 December 1972 and landed" and "Commander Eugene A. Cernan and LM pilot Harrison H. Schmitt" (the 1972 and the 17).
+        card:
+          title: "The last footprints"
+          body: >-
+            This valley is where people last stood on the Moon. In December 1972 two
+            astronauts of Apollo 17, Gene Cernan and Harrison Schmitt, drove away from
+            here, climbed into their lander, and left. For more than fifty years after
+            that, nobody travelled further from the Earth than a space station.
+
+      - id: launch
+        target: {world: earth}
+        stage: earth
+        frame_radii: 2.4
+        over: [28.6, -80.6]
+        time: now
+        drift_deg: 10
+        chapter: "Artemis"
+        card:
+          title: "Four people leave again"
+          body: >-
+            Then four people left from this coast of Florida, on a flight called Artemis Two:
+            Reid Wiseman, Victor Glover, Christina Koch and, from Canada, Jeremy Hansen. They
+            were the first crew to leave the Earth's neighbourhood since Apollo.
+
+      - id: far-side
+        target: {world: moon}
+        frame_radii: 3.4
+        over: [0, 180]
+        drift_deg: 12
+        chapter: "Artemis"
+        # read 2026-10-09, https://www.nasa.gov/news-release/nasas-artemis-ii-crew-eclipses-record-for-farthest-human-spaceflight/:
+        # At its farthest point, crew inside the Orion spacecraft will have traveled about 252,756 miles. ... farthest distance previously set by the Apollo 13 mission in 1970
+        # (card figure = page figure: more than 406,000 km = 252,756 miles x 1.609344 = 406,771 km (NASA gives miles only; conversion mine) ; further than Apollo 13 = NASA: surpassed Apollo 13 record (248,655 miles, 400,171 km) ; swung once round the far side = crewed lunar flyby, did not land ("Crewed Lunar Flyby" on nasa.gov/mission/artemis-ii/))
+        card:
+          title: "Round the far side"
+          body: >-
+            They did not land. Their ship swung once round the far side of the Moon, the
+            side we never see from home, and at its farthest it was more than four
+            hundred and six thousand kilometres from the Earth, further than Apollo 13.
+            No people had ever been so far away.
+
+      - id: earth-from-there
+        target: {world: earth}
+        distance_km: 90000
+        key_light_deg: 60
+        drift_deg: 8
+        chapter: "Artemis"
+        card:
+          title: "Home, from out there"
+          body: >-
+            From out here the whole Earth is a small, bright ball in the dark. The
+            flight lasted nine days and ended with a splashdown in the sea. It was a
+            test of the ship and of the people, for what comes next.
+
+      - id: south-pole
+        target: {world: moon}
+        frame_radii: 2.2
+        over: [-84, 0]
+        drift_deg: 10
+        chapter: "What comes next"
+        card:
+          title: "Where they mean to land"
+          body: >-
+            This is the Moon's south pole. Some crater floors here never receive light
+            from the Sun, and they have kept water ice for billions of years. Ice is
+            water to drink, air to breathe and fuel for the journey home. This is the
+            region the Artemis flights are meant to explore.

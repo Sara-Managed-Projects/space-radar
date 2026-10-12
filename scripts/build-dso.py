@@ -118,6 +118,9 @@ def main(argv):
             "distLyLow": round(lo * 1000) if lo is not None else None,
             "distLyHigh": round(hi * 1000) if hi is not None else None,
             "majAxArcmin": float(row["MajAx"]) if row.get("MajAx") else None,
+            # The ellipse (internal #166): OpenNGC's minor axis and position angle (degrees east of north), where it has them.
+            "minAxArcmin": float(row["MinAx"]) if row.get("MinAx") else None,
+            "posAngDeg": float(row["PosAng"]) if row.get("PosAng") else None,
             "vmag": float(row["V-Mag"]) if row.get("V-Mag") else None,
             "posLy": ecliptic_ly(ra, dec, dist * 1000),
             "distanceSource": hand["messier_distances"]["source"],
@@ -146,6 +149,8 @@ def main(argv):
             "distLyLow": round(lo * 1000) if lo is not None else None,
             "distLyHigh": round(hi * 1000) if hi is not None else None,
             "majAxArcmin": o.get("maj_ax_arcmin"),
+            "minAxArcmin": o.get("min_ax_arcmin"),
+            "posAngDeg": o.get("pos_ang_deg"),
             "vmag": o.get("vmag"),
             "posLy": ecliptic_ly(o["ra_deg"], o["dec_deg"], dist_kly * 1000),
             "distanceSource": o["source"],

@@ -82,12 +82,13 @@ const table = rows.map((r) => `peak ${r.peak}° here -> lowest ${r.min[300]}° /
 // --- the words, the countdown, Up now ------------------------------------------------------------------
 const dark = tn.darkness(chicagoGuess, T0);
 const w = tn.tonightWords({ observer: chicagoGuess, nowMs: first.startMs - 3725e3, ready: true, pass: first, dark });
-check(/^from near Chicago, estimated from your time zone$/.test(w.place), `the place says it is a guess (${w.place})`);
+check(/^Near Chicago, guessed from your time zone$/.test(w.place), `the place says it is a guess (${w.place})`);
 check(w.line.startsWith('International Space Station · ') && w.line.includes(timeText.hhmm(first.startMs)) && /at its highest \(\d+°\) · \d+ min$/.test(w.line), `the pass line (${w.line})`);
 check(w.countdown === '1:02:05' && w.status === 'Starts in 1:02:05', `the countdown in h:mm:ss (${w.status})`);
-check(w.caveat === 'Times may differ by a few minutes where you are.', 'a guessed place carries the caveat');
+check(w.caveat === 'Times can be a few minutes off where you are.', 'a guessed place carries the caveat');
+check(w.parts && w.parts.name === 'International Space Station' && w.parts.time === timeText.hhmm(first.startMs) && /^\d+°$/.test(w.parts.deg) && /^\d+$/.test(w.parts.mins) && /^From \S.* to \S/.test(w.parts.path), `the pass as its parts (${JSON.stringify(w.parts)})`);
 const wSet = tn.tonightWords({ observer: chicagoSet, nowMs: first.startMs - 60e3, ready: true, pass: first, dark });
-check(wSet.caveat === null && /^from Chicago$/.test(wSet.place), 'a set place has no caveat');
+check(wSet.caveat === null && /^From Chicago$/.test(wSet.place), 'a set place has no caveat');
 const up = tn.tonightWords({ observer: chicagoGuess, nowMs: first.startMs + 30e3, ready: true, pass: first, dark });
 check(/^Up now, look /.test(up.status) && up.countdown === null && up.lookDir, `during the pass it says "Up now" (${up.status})`);
 check(tn.passState(first, first.startMs - 1) === 'coming' && tn.passState(first, first.startMs) === 'up' && tn.passState(first, first.endMs) === 'gone', 'coming, up, gone');
@@ -100,8 +101,8 @@ check(tn.countdown(0) === '0:00' && tn.countdown(-5) === '0:00' && tn.countdown(
 // --- nothing tonight: the 72 h search ----------------------------------------------------------------
 const later = visible.filter((p) => p.peakEl * DEG >= 40).slice(-1)[0];
 const none = tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later, dark });
-check(none.empty === `Nothing bright passes over tonight. Next: ${timeText.dayAndTime(later.startMs)}, International Space Station.`, `nothing tonight names the next one (${none.empty})`);
-check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later: null }).empty === 'Nothing bright passes over in the next three days.', 'nothing in 72 h says so');
+check(none.empty === 'Nothing bright passes over tonight.' && none.next === `Next: ${timeText.dayAndTime(later.startMs)} · International Space Station`, `nothing tonight names the next one, on its own line (${none.empty} / ${none.next})`);
+check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later: null }).empty === 'Nothing bright passes over for three days.', 'nothing in 72 h says so');
 check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: false }).empty === 'Working out tonight’s passes…', 'until the worker answers: working');
 check(/Could not look/.test(tn.tonightWords({ observer: chicagoGuess, couldNotLook: true }).empty), 'no catalogue: could not look, never an empty card');
 check(tn.SEARCH_HOURS === 24 && tn.LONG_SEARCH_HOURS === 72, '24 h, then 72 h');
@@ -143,6 +144,17 @@ check(/Emulation\.setTimezoneOverride/.test(cdp) && /arg\('timezone'/.test(cdp),
   check(tn.nextVisible([sat, late], setObs, T0) === sat, 'a station more than three hours later does not');
   check(tn.nextVisible([rb], setObs, T0) === rb, 'a rocket body is still offered when it is all there is');
   check(tn.nextVisible([mk('X', undefined, 1)], setObs, T0) !== null, 'a pass without a class counts as a satellite');
+}
+
+// Internal #391 (found in public #468): "no standard magnitude" arrives as null, and Number(null) is 0, which is a
+// satellite as bright as Vega at 1000 km. standardMagnitudeOf must read null, '', undefined and booleans as none.
+{
+  const { standardMagnitudeOf } = await import(join(JS, 'sky/passes.js'));
+  const of = (meta) => standardMagnitudeOf({ meta });
+  check(of({ stdMag: null }) === null && of({ stdMag: '' }) === null && of({}) === null && of(undefined) === null, 'no standard magnitude reads as none, never as 0');
+  check(of({ stdMag: false }) === null && of({ stdMag: 'bright' }) === null, 'a boolean or a word is none');
+  check(of({ stdMag: 0 }) === 0 && of({ stdMag: -1.8 }) === -1.8 && of({ standardMagnitude: '3.5' }) === 3.5, 'a real number, zero included, is kept');
+  check(of({ stdMag: null, standardMagnitude: 2 }) === 2, 'a null in the first key does not hide a value in the next');
 }
 
 if (problems.length) { console.error('tonight FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

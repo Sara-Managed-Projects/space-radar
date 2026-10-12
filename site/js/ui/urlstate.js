@@ -11,9 +11,11 @@
 // keyed form is produced.
 //
 // EVERY KEY, since 2026-09-23 (spec 0032, deep links). `m` the moment; `v` the format version;
-// `trip` and `stop` a trip at a stop (a 1-based number, or a stop id); `at` a record id; `t` an
+// `trip` and `stop` a trip at a stop (a 1-based number, or a stop id); `at` a record id; `event` a
+// mission's event, `<mission>.<event>` (registry/missions.yaml, ui/missions.js; 2026-10-06); `t` an
 // ISO UTC instant, or `now`; `rate` the clock's rate; `stage` the world or rung the map is centred
-// on. A key outside KEYS is dropped on read and never written, so a link made by a newer map with
+// on; `exp` the exposure the sky is drawn at when it is not the default (`eye` or `deep`, public
+// #460: a shared postcard and the link beside it show the same sky). A key outside KEYS is dropped on read and never written, so a link made by a newer map with
 // one more key still opens everything this one understands. A `v` other than VERSION marks the
 // whole state unknown: this reader cannot tell what the keys it does recognise mean in that form.
 //
@@ -26,8 +28,48 @@
 // is not Previous Stop -- and the README states it.
 
 export const HASH_KEY = 'm';
-export const KEYS = ['m', 'v', 'trip', 'stop', 'at', 't', 'rate', 'stage'];
+// `present` (2026-10-06, public #441): a trip opened for a room, `1`, or `auto` to advance by itself.
+// `cam` (2026-10-07, internal #397): where the camera stands round what it looks at, so a shared
+// view reopens as it was framed: `<azimuth>,<polar>,<distance in km>`, angles in degrees.
+// `ambient` and the five after it (spec 0036, ui/autopilot.js): a screen that plays on its own.
+// `ambient` is `1`, a reel's id (registry/autopilot.yaml) or trip ids with commas; `autopilot` is
+// the same key under the name people guess, and read() hands it back as `ambient`.
+// `p` (2026-10-08, internal #137): a shared spot on the ground, `<lat>,<lon>` to 0.1 degree. Only
+// sky/placelink.js makes or reads its value, and only "Share this place" puts it in a link.
+// `go` (2026-10-08, internal #466): the short link a reel ends on, `#go=kepler-186-f` or
+// `#go=kepler-186`. It is `at` under the name a person can type and say: read() hands it back as
+// `at` (a planet's or a star system's id without its `exo-` or `star-` prefix, which main.js
+// resolveAt tries), and write() never produces it, so once the flight has begun the address bar
+// carries the ordinary `at=` and a link copied from there is the ordinary link.
+// `drift` (spec 0071, ui/drift.js): the camera wanders on its own. `1`, or words with commas:
+// what to travel through, `any`, `notags`, a pace (ui/driftplan.js readOptions).
+export const KEYS = ['m', 'v', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
+/** The map's centre on a first visit, which an address with no keys at all means. */
+export const DEFAULT_STAGE = 'earth';
+
+/**
+ * A camera pose as the `cam` key's value. Angles in degrees to a tenth, the distance in
+ * kilometres to four figures (so the link means the same on any stage's units). The lens is not
+ * in it: photo mode's lens is put back when photo mode is left, so a link never needs one.
+ * '' when the pose is not one. Pure.
+ */
+export function camValue(pose) {
+  const p = pose || {};
+  if (![p.azimuthDeg, p.polarDeg, p.distanceKm].every(Number.isFinite) || !(p.distanceKm > 0)) return '';
+  const deg = (v) => String(Math.round(v * 10) / 10);
+  const parts = [deg(((p.azimuthDeg % 360) + 360) % 360), deg(Math.min(179.9, Math.max(0.1, p.polarDeg))), String(Number(p.distanceKm.toPrecision(4)))];
+  return parts.join(',');
+}
+
+/** And back: {azimuthDeg, polarDeg, distanceKm}, or null for anything that is not a pose. Pure. */
+export function parseCam(text) {
+  const parts = String(text == null ? '' : text).split(',');
+  if (parts.length !== 3 || parts.some((x) => !/^-?\d+(\.\d+)?(e[+-]?\d+)?$/i.test(x.trim()))) return null;
+  const [az, pol, dist] = parts.map(Number);
+  if (!(pol > 0 && pol < 180) || !(dist > 0) || !Number.isFinite(az)) return null;
+  return { azimuthDeg: ((az % 360) + 360) % 360, polarDeg: pol, distanceKm: dist };
+}
 
 export function hashParts() {
   const raw = (typeof location !== 'undefined' ? location.hash : '') || '';
@@ -62,6 +104,8 @@ export function read() {
     if (KEYS.includes(key)) out[key] = decode(part.slice(eq + 1));
   }
   if (out.m === undefined && bare !== null) out.m = bare;
+  if (out.autopilot !== undefined) { if (out.ambient === undefined) out.ambient = out.autopilot; delete out.autopilot; }
+  if (out.go !== undefined) { if (out.at === undefined) out.at = out.go; delete out.go; }
   if (out.v !== undefined && out.v !== VERSION) out.unknownVersion = true;
   return out;
 }
@@ -79,10 +123,11 @@ export function write(patch) {
     const eq = part.indexOf('=');
     if (eq < 0) continue; // the legacy bare word is never written back
     const key = part.slice(0, eq);
-    if (KEYS.includes(key)) current[key] = part.slice(eq + 1); // raw: already encoded
+    // `go` is read as `at` and never written back (KEYS says why).
+    if (KEYS.includes(key) && key !== 'go') current[key] = part.slice(eq + 1); // raw: already encoded
   }
   for (const key of Object.keys(patch)) {
-    if (!KEYS.includes(key)) continue;
+    if (!KEYS.includes(key) || key === 'go') continue;
     const value = patch[key];
     if (value === null || value === undefined || value === '') delete current[key];
     else current[key] = encodeURIComponent(String(value));
@@ -95,6 +140,27 @@ export function write(patch) {
     history.replaceState(null, '', target || `${location.pathname}${location.search}`);
   } catch {
     location.hash = target;
+  }
+}
+
+/**
+ * `?from=<channel>` is a tag on a link we hand out ("?from=ig" on a profile, "?from=embed" on an
+ * embed's link back). It is read ONCE and into nothing: no variable keeps it, nothing is stored,
+ * no request carries it, and no link the app makes can contain it (ui/share.js builds its links
+ * from origin + path + the keys in KEYS, never from the query). All this does is take it, and only
+ * it, off the address bar with replaceState, so that `/?from=ig` reads `/` and a copied address is
+ * the address of the view. The other query keys (`?sw=0`, `?tier=`, `?embed=1`) and the hash stay.
+ * The canonical link of every page ignores the query already (scripts/check_seo.py holds it).
+ * Returns whether the address bar was changed. tests/test_from_tag.mjs holds all of this.
+ */
+export function dropFrom(loc = typeof location !== 'undefined' ? location : null, hist = typeof history !== 'undefined' ? history : null) {
+  if (!loc || !hist || !/[?&]from=/.test(String(loc.search || ''))) return false;
+  const rest = String(loc.search).slice(1).split('&').filter((part) => part && part.split('=')[0] !== 'from');
+  try {
+    hist.replaceState(hist.state, '', `${loc.pathname}${rest.length ? `?${rest.join('&')}` : ''}${loc.hash || ''}`);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -149,9 +215,14 @@ export function writeMoment(moment) {
  * `clock` is the app clock (clock.js), passed in so a test can hold it. A link in a format this
  * reader does not know applies nothing, here as at layers-ready. The returned object never carries
  * `t` or `rate`, so the later half cannot move the clock.
+ *
+ * AN EMBED (public #439) names its view in the query, `?embed=1&at=<id>`, because a CMS may strip
+ * the fragment from an iframe's src. `embed` is therefore not one of KEYS: the hash never carries
+ * it, write() never produces it, and the app's own links are unchanged by it.
  */
-export function bootLink(clock) {
-  const st = read();
+export function bootLink(clock, extra = null) {
+  // `extra`: the keys an embed's QUERY carries (ui/embed.js embedLink); the hash wins over them.
+  const st = extra ? { ...extra, ...read() } : read();
   if (clock && !st.unknownVersion) {
     if (st.t && st.t !== 'now') {
       const ms = Date.parse(st.t);
@@ -181,6 +252,58 @@ export function bootLink(clock) {
 export function laterLink(link, tripRunning) {
   if (!link || !tripRunning) return link;
   const rest = { ...link };
-  for (const key of ['trip', 'stop', 'at', 'stage']) delete rest[key];
+  for (const key of ['trip', 'stop', 'at', 'event', 'stage', 'cam']) delete rest[key];
   return rest;
+}
+
+/**
+ * A link that arrives in a tab that is ALREADY RUNNING: Back, Forward, or an address pasted over
+ * this one (public #331). The app's own writes are replaceState and fire no hashchange, so a
+ * hashchange is always somebody else's link, and the URL is the state: the whole view it names is
+ * applied, not only the selection (which is all main.js did before: Back from a dated view of the
+ * Moon to a live view of the ISS selected the ISS and left the clock in 2027 on the Moon's map).
+ *
+ * Returns what to do, for main.js to carry out, or null when the link names no view at all (a bare
+ * `#sources`, a moment alone, a format this reader does not know): then nothing is touched.
+ *   clock  { goTo: ms, rate } | { live: true } | null    `t` absent means now (spec 0032 req 5)
+ *   stage  the stage id the link names, or null
+ *   trip   { start: id, stop } | { jump: stop } | { stop: true } | null
+ *   event  the mission event, or null
+ *   at     { open: id } | { none: true } | null
+ * A trip owns its clock and its selection, so a link into a trip sets the clock only when it names
+ * an instant, and never `at`. Pure.
+ *
+ * @param {object} link  read()
+ * @param {{at: string|null, trip: string|null, live: boolean, stage?: string}} now  what the app is showing
+ */
+export function linkChange(link, now = {}) {
+  if (!link || link.unknownVersion) return null;
+  // THE EMPTY ADDRESS (internal #460, seen in a real tab on 2026-10-08). Back to the address the
+  // visit began at, with no keys at all, changed nothing: the station stayed selected, on the
+  // Moon's map, over an address that says "the default view". An address with no keys IS a view,
+  // the one a first visit opens on: nothing selected, the Earth's map, now. (A link that names an
+  // object and no `stage=` IS read as the Earth's map since #485: the app writes `stage=` on every
+  // stage change off the Earth (main.js), so its absence says the Earth -- except in a link to a
+  // trip or an event, which pick their own stage.)
+  // `now.stage` is the map's centre now; a caller that does not say is asked for nothing new.
+  const elsewhere = typeof now.stage === 'string' && now.stage !== DEFAULT_STAGE;
+  const named = ['trip', 'stop', 'at', 'event', 't', 'rate', 'stage', 'cam'].some((k) => link[k] !== undefined);
+  if (!named) {
+    const bare = !KEYS.some((k) => link[k] !== undefined);
+    if (!bare || !(elsewhere || now.at || now.trip || now.live === false)) return null;
+    return { clock: now.live === false ? { live: true } : null, stage: elsewhere ? DEFAULT_STAGE : null, trip: now.trip ? { stop: true } : null, event: null, at: now.at ? { none: true } : null };
+  }
+  const out = { clock: null, stage: link.stage || (elsewhere && !link.trip && !link.event ? DEFAULT_STAGE : null), trip: null, event: null, at: null };
+  const ms = link.t && link.t !== 'now' ? Date.parse(link.t) : NaN;
+  const rate = Number(link.rate) > 0 ? Number(link.rate) : 1;
+  if (Number.isFinite(ms)) out.clock = { goTo: ms, rate };
+  if (link.trip) {
+    out.trip = now.trip === link.trip ? { jump: link.stop || '1' } : { start: link.trip, stop: link.stop || null };
+    return out;
+  }
+  if (!out.clock && now.live === false) out.clock = { live: true };
+  if (now.trip) out.trip = { stop: true };
+  if (link.event) { out.event = link.event; return out; }
+  if (link.at) { if (link.at !== now.at) out.at = { open: link.at }; } else if (now.at) out.at = { none: true };
+  return out;
 }

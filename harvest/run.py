@@ -7,7 +7,7 @@ The loop knows no source names. What varies per row is data on the row:
     list: {...}         -> one request per id, the body maps id -> response text (Horizons);
                            an id row's `center:` replaces the list's CENTER for that id alone
     query: "..."        -> the text is sent as `query=` with a SPARQL Accept header (Wikidata)
-    parser: name        -> harvest/parsers/<name>.py: count(), validate(), not_modified()
+    parser: name        -> harvest/parsers/<name>.py: count(), validate(), not_modified(), pack()
 
 Every outcome is one of six statuses and lands in the manifest; nothing raises out of a source.
 A source that fails keeps its previous stamps and snapshot, so the browser keeps drawing the last
@@ -21,7 +21,7 @@ import re
 import os
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from . import fetch as _fetch
 from . import parsers as _parsers
@@ -129,7 +129,7 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
         elif source.query:
             fetched = _fetch_query(source, prev, fetcher=fetcher)
         else:
-            fetched = _fetch_one(source, prev, fetcher=fetcher)
+            fetched = _fetch_one(source, prev, fetcher=fetcher, now=now)
     except _fetch.FetchError as e:
         return done(_carry(prev, status="error", error=str(e)))
 
@@ -158,6 +158,14 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
     ok, reason = snap.accept(items, prev.items if prev.holds_snapshot() else None)
     if not ok:
         return done(_carry(prev, status="refused", error=reason))
+
+    # ONE parser packs (harvest/parsers/sea_grid.py says why: megabytes of repeated coordinates). It is
+    # asked after the count and the guard, so what was counted is what the upstream sent.
+    if callable(getattr(parser, "pack", None)):
+        try:
+            body = parser.pack(body)
+        except Exception as e:
+            return done(_carry(prev, status="error", error=f"parser {source.parser}: {type(e).__name__}: {e}"))
 
     until = snap.valid_until(now, source.refresh_seconds)
     doc = snap.snapshot_doc(source_id=source.id, fetched_at=now, until=until, upstream_url=source.url,
@@ -196,8 +204,18 @@ def _conditional(prev: snap.Entry) -> dict:
     return {"etag": None, "since": None}
 
 
-def _fetch_one(source: Source, prev: snap.Entry, *, fetcher) -> Fetched:
-    r = fetcher(source.url, **_conditional(prev))
+def expand_url(url: str, now: datetime) -> str:
+    """`{hour3}` in a row's url is the model's three-hourly forecast hour at or before `now`, as ERDDAP
+    writes it (`2026-10-09T15:00:00Z`): the wind's request names one hour (internal #552)."""
+    if "{hour3}" not in url:
+        return url
+    hour = now.astimezone(timezone.utc).replace(minute=0, second=0, microsecond=0)
+    hour = hour.replace(hour=hour.hour - hour.hour % 3)
+    return url.replace("{hour3}", hour.strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+
+def _fetch_one(source: Source, prev: snap.Entry, *, fetcher, now: datetime | None = None) -> Fetched:
+    r = fetcher(expand_url(source.url, now or datetime.now(timezone.utc)), **_conditional(prev))
     return Fetched(status=r.status, text=r.text, content_type=r.content_type, bytes=len(r.body),
                    etag=r.etag, not_modified=(r.status == 304))
 

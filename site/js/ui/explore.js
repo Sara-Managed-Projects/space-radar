@@ -1,6 +1,7 @@
 // ui/explore.js -- the sidebar's home: the explore view (spec 0061 req 2 and 3, design §2).
 //
-// Contract: createExplore(ctx, host) -> { root, tab(), setTab(id), refresh(), mountTab(id, render, opts) }
+// Contract: createExplore(ctx, host) -> { root, tab(), setTab(id), refresh(), mountTab(id, render, opts),
+//           next (ui/next.js's list), todayHost (ui/today.js's seat), crew() }
 // Also exported, pure, for tests/test_shell.mjs:
 //   TABS, tabTarget(tab) -> {stage, moment}, tabFor(stageId, moment) -> tab
 //   rightNowLines({storms, aurora, clouds, crewed, wallMs}) -> at most three {id, text, value, lead}
@@ -32,7 +33,7 @@
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
 import { STAGES, isLadderStage, isSystemStage } from '../scene/stage.js';
-import { TOUR_GROUPS } from '../data/tours.js';
+import { TOUR_GROUPS } from '../data/tours-index.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { SYSTEMS } from '../data/systems.js';
 import { load } from '../data/sources.js';
@@ -41,7 +42,7 @@ import { groupTrips, eventSubtitle } from './trippicker.js';
 import { tripPicture } from './trippics.js';
 import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
-import { tagLines } from './cards.js';
+import { tagLines } from './cardgate.js';
 import { revealInColumn } from './reveal.js';
 
 export const TABS = ['earth', 'planets', 'stars', 'tonight'];
@@ -186,9 +187,21 @@ export function rightNowLines(input = {}) {
  * `rows` are data/sources.js status() rows. Only the sources this page has asked for count, as in
  * the sheet itself (ui/status.js askedRows): a source nothing has asked for has not failed.
  */
-export function statusSummary(rows) {
+export function statusSummary(rows, opts = {}) {
   const S = COPY.statusLine;
   const asked = (Array.isArray(rows) ? rows : []).filter((r) => r && (r.attempted || r.fetchedAt != null));
+  // With no network (ui/offline.js keeps ctx.net) the honest sentence is not "3 could not be read":
+  // it is that nothing can be, and how old the copies on screen are (the oldest, as below).
+  if (opts && opts.offline) {
+    let oldestKept = null;
+    for (const r of asked) {
+      const age = Number(r.ageMs);
+      if (Number(r.fetchedAt) > 0 && Number.isFinite(age) && (oldestKept === null || age > oldestKept)) oldestKept = age;
+    }
+    return oldestKept === null
+      ? { state: 'failed', text: S.offlineNone }
+      : { state: 'stale', text: t(S.offline, { age: ageInWords(oldestKept) }) };
+  }
   if (!asked.length) return { state: 'wait', text: S.reading };
   let read = 0;
   let stale = 0;
@@ -221,6 +234,32 @@ export function tripMeta(row, eventLine) {
   return t(row.count === 1 ? T.metaOne : T.meta, { n: fmt.int(row.count), m: fmt.int(min) });
 }
 
+/**
+ * The order the home shows its trips in (public #241). Pure. First the trip a returning visitor
+ * left in the last day (`resumes(row)`: ui/passport.js says where it can be picked up), so their
+ * way back in is the first card and not the ninth; then the ones that can run; last the ones that
+ * cannot: the first view must not open on a greyed card.
+ */
+export function homeTripOrder(rows, resumes) {
+  const list = Array.isArray(rows) ? rows : [];
+  const mine = (r) => !r.off && typeof resumes === 'function' && !!resumes(r);
+  return list.filter(mine).concat(list.filter((r) => !r.off && !mine(r)), list.filter((r) => r.off));
+}
+
+/**
+ * What the home says about trips that cannot run while their cards are folded away (public #241):
+ * how many, and why when they all give the same reason. '' when none is hidden. Pure.
+ * `hidden` are the rows below the fold. The cards themselves, once shown, each carry their reason.
+ */
+export function offNote(hidden, T = COPY.tripCard) {
+  const off = (Array.isArray(hidden) ? hidden : []).filter((r) => r && r.off);
+  if (!off.length) return '';
+  const line = off.length === 1 ? T.offOne : t(T.offMany, { n: fmt.int(off.length) });
+  const reasons = new Set(off.map((r) => String(r.reason || '').trim()));
+  const reason = reasons.size === 1 ? [...reasons][0] : '';
+  return reason ? t(T.offWhy, { line, reason }) : line;
+}
+
 // ---------------------------------------------------------------------------------------------
 // DOM
 // ---------------------------------------------------------------------------------------------
@@ -251,7 +290,7 @@ function svgIcon(d, size = 18) {
   p.setAttribute('d', d);
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke', 'currentColor');
-  p.setAttribute('stroke-width', '1.7');
+  p.setAttribute('stroke-width', '1.75');
   p.setAttribute('stroke-linecap', 'round');
   svg.appendChild(p);
   return svg;
@@ -273,6 +312,53 @@ function section(title, className) {
   const s = el('section', `sr-sect ${className || ''}`.trim());
   s.appendChild(el('h2', 'sr-micro', title));
   return s;
+}
+
+/** Is this element somewhere a person types? A field, an editable region, or an ARIA text box. Pure. */
+export function isTypingIn(node) {
+  if (!node || typeof node !== 'object') return false;
+  const tag = node.tagName ? String(node.tagName).toUpperCase() : '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (node.isContentEditable) return true;
+  const attr = (name) => (typeof node.getAttribute === 'function' ? node.getAttribute(name) : null);
+  const editable = attr('contenteditable');
+  if (editable !== null && editable !== undefined && String(editable).toLowerCase() !== 'false') return true;
+  const role = String(attr('role') || '').toLowerCase();
+  return role === 'textbox' || role === 'searchbox' || role === 'combobox' || role === 'spinbutton';
+}
+
+/**
+ * Whether a key press asks for the search field. Pure, like ui/rail.js railKey: `/` alone, never
+ * while something is being typed, never with a modifier (Ctrl+/ and Cmd+/ are the browser's).
+ *
+ * "Being typed" (public #459) is asked of BOTH the focused element and the element the key was sent
+ * to: they differ when a field lives in a shadow root (document.activeElement is its host) or in a
+ * frame, and a `/` in an email address must stay a `/`. Never mid-composition either: an input
+ * method's `/` belongs to the word being composed.
+ */
+export function wantsSearch(event, activeElement) {
+  if (!event || event.defaultPrevented || event.key !== '/') return false;
+  if (event.ctrlKey || event.metaKey || event.altKey) return false;
+  if (event.isComposing || event.keyCode === 229) return false;
+  const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+  const sentTo = (path && path[0]) || event.target || null;
+  return !(isTypingIn(activeElement) || isTypingIn(sentTo));
+}
+
+/**
+ * The generated star systems (data/systems-index.js, internal #473) as the Stars tab lists them:
+ * the two groups of registry/systems-list.yaml's `why`, each nearest first, TRAPPIST-1 (typed, the
+ * list's own first row) left out. Pure.
+ */
+export function systemGroups(index) {
+  const groups = { temperate: [], extreme: [] };
+  for (const s of Array.isArray(index) ? index : []) {
+    if (!s || !s.hostId || !(s.why in groups)) continue;
+    const pc = s.hostSky && Number(s.hostSky.distPc);
+    groups[s.why].push({ id: s.id, name: s.display || s.host, hostId: s.hostId, distPc: Number.isFinite(pc) ? pc : Infinity });
+  }
+  for (const k of Object.keys(groups)) groups[k].sort((a, b) => a.distPc - b.distPc || (a.name < b.name ? -1 : 1));
+  return groups;
 }
 
 export function createExplore(ctx, host) {
@@ -297,6 +383,48 @@ export function createExplore(ctx, host) {
   const field = searchHost.querySelector('.sr-search__row');
   if (field) field.prepend(svgIcon('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z m9 16-4-4'));
   const input = searchHost.querySelector('.sr-search__input');
+  // `/` focuses the search (docs/ui-guide.md section 3.1), from anywhere a key is not being typed:
+  // the field's tooltip says so, and on a desktop a small keycap at its end shows it, as the
+  // controls hint draws its keys. The cap is a picture of the key, not a control: hidden from a
+  // screen reader (the tooltip and `aria-keyshortcuts` carry it) and gone while the field is used.
+  if (input) {
+    input.title = COPY.search.inputTitle;
+    input.setAttribute('aria-keyshortcuts', COPY.search.key);
+    const cap = el('kbd', 'sr-search__key', COPY.search.key);
+    cap.setAttribute('aria-hidden', 'true');
+    if (field) field.appendChild(cap);
+  }
+  // To the search field from wherever the visitor is: `/`, and the page's first skip link.
+  const toSearch = (e) => {
+    if (!input) return;
+    const cls = document.documentElement.classList;
+    // Not over a clear screen (H owns it) and not in a trip (its sheet has the sidebar).
+    if (cls.contains('sr-clean') || cls.contains('sr-trip-mode')) return;
+    e.preventDefault();
+    const shell = ctx && ctx.shell;
+    if (shell) {
+      // The field lives in the home view: unfold the sidebar and come back to it. The card is left
+      // by putting the selection down, as its own back row does; the sources sheet by going back.
+      if (typeof shell.collapsed === 'function' && shell.collapsed()) shell.collapse(false);
+      if (shell.view() === 'card' && typeof ctx.deselect === 'function') ctx.deselect();
+      while (shell.view() !== 'home' && shell.stack().length > 1) shell.back();
+    }
+    search.focus();
+  };
+  document.addEventListener('keydown', (e) => { if (wantsSearch(e, document.activeElement)) toSearch(e); });
+  // The skip links of index.html (public #315). "Skip to search" does what `/` does. "Skip to the
+  // map" puts the focus on <main>, which takes it for that moment only: a <main> that kept a
+  // tabindex would take the focus on every click of the map, and the keys would follow it there.
+  const skip = (id, go) => { const a = document.getElementById(id); if (a) a.addEventListener('click', go); };
+  skip('sr-skip-search', toSearch);
+  skip('sr-skip-map', (e) => {
+    const map = document.getElementById('map');
+    if (!map) return;
+    e.preventDefault();
+    map.tabIndex = -1;
+    map.addEventListener('blur', () => map.removeAttribute('tabindex'), { once: true });
+    map.focus({ preventScroll: true });
+  });
   // While a query is typed the results REPLACE the lists (design §2): one column, one answer. On a
   // phone the box is in the top bar and its results drop from it (ui/shell.js seatSearch), so the
   // flag is on the box as well, where the phone's rules read it.
@@ -359,19 +487,73 @@ export function createExplore(ctx, host) {
   const nowList = el('ul', 'sr-now__list');
   now.appendChild(nowList);
   earth.appendChild(now);
+  // TODAY (internal #270, public #450 and #395): dated cards made from what is loaded, by
+  // ui/today.js, which main.js fetches after the first visit has settled. Empty and hidden until
+  // then, and whenever there is nothing true to say.
+  const todayHost = el('section', 'sr-sect sr-today');
+  todayHost.hidden = true;
+  earth.appendChild(todayHost);
   const tripHosts = new Map();
   for (const id of TABS) {
     const s = section(COPY.tripCard.title, 'sr-trips2');
     const grid = el('div', 'sr-tripgrid');
     const more = button('sr-more');
     more.hidden = true;
-    s.append(grid, more);
-    tripHosts.set(id, { s, grid, more, expanded: false });
+    // The trips one after another, hands off: a screen in a corridor (ui/autopilot.js, spec 0036).
+    // "Play on its own" opens JUST WATCH: the reels by name (registry/autopilot.yaml), so a lesson's
+    // worth or tonight's sky can be chosen without typing an address (internal #448). The list is
+    // fetched when it is first opened: a reel is nobody's first visit.
+    const own = button('sr-more', COPY.tripCard.onItsOwn);
+    own.title = COPY.tripCard.onItsOwnTitle;
+    own.setAttribute('aria-expanded', 'false');
+    const reels = el('div', 'sr-reels');
+    reels.hidden = true;
+    reels.id = `sr-reels-${id}`;
+    own.setAttribute('aria-controls', reels.id);
+    own.addEventListener('click', () => {
+      const open = reels.hidden;
+      reels.hidden = !open;
+      own.setAttribute('aria-expanded', String(open));
+      if (!open || reels.childElementCount) return;
+      Promise.all([import('../data/autopilot.js'), import('./autopilotplan.js')]).then(([data, plan]) => {
+        if (reels.childElementCount) return;
+        reels.appendChild(el('h3', 'sr-micro', COPY.tripCard.justWatch));
+        const list = el('ul', 'sr-list');
+        // The drift first (ui/drift.js, spec 0071): the one row that is not a list of trips.
+        if (typeof ctx.wantDrift === 'function') {
+          const { li, b } = rowButton(COPY.tripCard.drift, COPY.tripCard.driftLength, () => ctx.wantDrift({ drift: '1' }, 'row'));
+          b.title = COPY.tripCard.driftTitle;
+          b.dataset.reel = 'drift';
+          list.appendChild(li);
+        }
+        for (const row of plan.reelRows(data.REELS, data.AUTOPILOT.default)) {
+          const { li, b } = rowButton(row.title, t(COPY.tripCard.reelLength, { m: String(row.minutes) }), () => {
+            if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: row.id }, 'row');
+          });
+          b.title = row.blurb;
+          b.dataset.reel = row.id;
+          list.appendChild(li);
+        }
+        reels.appendChild(list);
+      }).catch((err) => {
+        // The list did not arrive: the button does what it always did, the default reel.
+        console.warn('the reels did not load', err);
+        reels.hidden = true;
+        if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: '1' }, 'row');
+      });
+    });
+    const off = el('p', 'sr-sect__note sr-trips2__off');
+    off.hidden = true;
+    s.append(grid, off, more, own, reels);
+    tripHosts.set(id, { s, grid, more, off, expanded: false });
   }
   earth.appendChild(tripHosts.get('earth').s);
   const next = createNext(ctx, { limit: COMING_UP_ROWS });
   next.root.classList.add('sr-sect');
   earth.appendChild(next.root);
+  // Where the email row sits when there is a notifier (ui/subscribe.js): under the list it is about.
+  const subscribeHost = el('div', 'sr-subscribe-host');
+  next.root.appendChild(subscribeHost);
 
   // --- Planets: the worlds, a live distance from the Earth each -----------------------------------
   const planets = panes.get('planets');
@@ -399,6 +581,19 @@ export function createExplore(ctx, host) {
   farSect.appendChild(farList);
   stars.appendChild(farSect);
   const farRows = [];
+  // ONE FLIGHT, BOTH WAYS (internal #410, public #451): from wherever the camera is on the ladder
+  // out to the edge of what the map draws, or back down to the Earth, without a cut. The camera's
+  // module (scene/climb.js) is fetched on the press. Off a stage the flight cannot pass through (a
+  // planet's own, a star system's) the two rows are disabled, and say why.
+  const flightRows = [['edge', 'toEdge'], ['home', 'toHome']].map(([key, method]) => {
+    const r = rowButton(COPY.ladder[key], COPY.ladder[`${key}How`], () => {
+      if (typeof ctx.wantClimb !== 'function') return;
+      if (ctx.selected && ctx.selected() && typeof ctx.deselect === 'function') ctx.deselect();
+      ctx.wantClimb().then((climb) => { if (climb) climb[method](); });
+    });
+    farList.appendChild(r.li);
+    return { key, r };
+  });
   for (const rung of LADDER_RUNGS) {
     if (!rung.target || !rung.target.record) continue; // the worlds are the Planets tab's
     const r = rowButton(rung.label, rung.distance, () => {
@@ -423,6 +618,48 @@ export function createExplore(ctx, host) {
     });
     sysList.appendChild(r.li);
   }
+  // THE MARKS OF PLANETS ROUND OTHER STARS ARE OFF UNTIL ASKED FOR (public #271): this row asks.
+  const exoRow = rowButton(COPY.explore.exoRow, COPY.explore.exoShow, () => {
+    if (typeof ctx.isLayerOn !== 'function' || typeof ctx.setLayerOn !== 'function') return;
+    const on = !ctx.isLayerOn('exoplanets');
+    ctx.setLayerOn('exoplanets', on);
+    document.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: 'exoplanets', on, handled: true, from: 'explore' } }));
+    paintExo();
+  });
+  exoRow.b.title = COPY.explore.exoTitle;
+  exoRow.b.dataset.layer = 'exoplanets';
+  function paintExo() {
+    const on = typeof ctx.isLayerOn === 'function' && !!ctx.isLayerOn('exoplanets');
+    exoRow.v.textContent = on ? COPY.explore.exoHide : COPY.explore.exoShow;
+    exoRow.b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  sysList.insertBefore(exoRow.li, sysList.firstChild);
+  // The thirty-nine more systems, once the exoplanet layer's later data has landed (internal #473).
+  let moreSystems = false;
+  const addSystems = () => {
+    if (moreSystems) return;
+    moreSystems = true;
+    import('../data/systems-index.js').then((m) => {
+      const groups = systemGroups(m.SYSTEM_INDEX);
+      for (const [key, title] of [['temperate', COPY.explore.systemsMild], ['extreme', COPY.explore.systemsExtreme]]) {
+        if (!groups[key].length) continue;
+        sysSect.appendChild(el('h3', 'sr-micro', title));
+        const list = el('ul', 'sr-list');
+        for (const s of groups[key]) {
+          const value = Number.isFinite(s.distPc) ? t(COPY.explore.lightYears, { n: fmt.int(Math.round(s.distPc * LY_PER_PC)) }) : '';
+          const r = rowButton(s.name, value, () => {
+            const rec = ctx.recordById(s.hostId);
+            if (rec) ctx.select(rec);
+          });
+          list.appendChild(r.li);
+        }
+        sysSect.appendChild(list);
+      }
+    }).catch(() => { moreSystems = false; });
+  };
+  window.addEventListener('sr:later-layers', addSystems, { once: true });
+  document.addEventListener('sr:layer-toggle', (e) => { if (e.detail && e.detail.id === 'exoplanets') paintExo(); });
+  window.addEventListener('sr:moment', () => paintExo());
   stars.appendChild(sysSect);
   stars.appendChild(tripHosts.get('stars').s);
   const shows = section(COPY.ladder.weShowTitle, 'sr-weshow');
@@ -440,19 +677,9 @@ export function createExplore(ctx, host) {
   shows.appendChild(showList);
   stars.appendChild(shows);
 
-  // --- Tonight: the place and what comes over it (the old Now moment) ------------------------------
-  // Built the first time the tab is shown: ui/place.js is the old Now moment's page, 10 kB that the
-  // first view does not use (0061 req 14).
+  // --- Tonight: ui/tonight.js mounts its view here (mountTab below); the place is set inside it ------
   const tonight = panes.get('tonight');
-  const placeHost = el('div', 'sr-sect');
-  tonight.appendChild(placeHost);
   tonight.appendChild(tripHosts.get('tonight').s);
-  let placeLoad = null;
-  const loadPlace = () => placeLoad || (placeLoad = import('./place.js').then((m) => {
-    const place = m.createPlace(ctx);
-    placeHost.replaceWith(place.root);
-    place.root.classList.add('sr-sect');
-  }).catch((e) => { placeLoad = null; console.warn('the Tonight tab did not load', e); }));
 
   // --- the status line ----------------------------------------------------------------------------
   const foot = button('sr-statusline');
@@ -502,8 +729,13 @@ export function createExplore(ctx, host) {
       if (ctx.moment !== target.moment && typeof ctx.setMoment === 'function') ctx.setMoment(target.moment);
     };
     const moves = ctx.stage && ctx.stage.worldId !== tabTarget(id).stage;
-    if (moves && ctx.veil && typeof ctx.veil.through === 'function') ctx.veil.through(apply);
-    else apply();
+    // A tab that changes the stage moves the camera for the visitor: the way back is offered
+    // (internal #274; main.js rememberView and offerUndo, ui/camundo.js).
+    const remember = moves && typeof ctx.rememberView === 'function' && typeof ctx.offerUndo === 'function';
+    if (remember) ctx.rememberView();
+    const run = () => { apply(); if (remember) ctx.offerUndo(COPY.tabs[id]); };
+    if (moves && ctx.veil && typeof ctx.veil.through === 'function') ctx.veil.through(run);
+    else run();
   }
 
   /**
@@ -584,8 +816,29 @@ export function createExplore(ctx, host) {
 
   // Trips: the picker's own planning, drawn as cards.
   const trip = ctx.trip;
-  const tours = trip && typeof trip.tours === 'function' ? trip.tours() : [];
+  // The index until ui/trip.js is here, the trips themselves after (ui/tripgate.js): read again
+  // when `sr:trips-loaded` says so, below.
+  const toursNow = () => (trip && typeof trip.tours === 'function' ? trip.tours() : []);
+  let tours = toursNow();
+  // A card whose trip has not been planned yet says what the registry gives it -- its stops and
+  // its minutes -- rather than "working it out": planning waits for ui/trip.js, which is not in the
+  // first visit (internal #405), and the registry's numbers are what most plans come back with.
+  const unplannedShape = (row, tour) => {
+    if (row.planned || !tour) return row;
+    const count = Number.isFinite(tour.count) ? tour.count : Array.isArray(tour.stops) ? tour.stops.length : NaN;
+    return Number.isFinite(count) ? { ...row, planned: true, count, estimateMs: tour.estimate_ms } : row;
+  };
   const plans = new Map();
+  // The trip a card was just pressed for, until it has started or said why not. The first press of
+  // a visit has ui/trip.js to fetch and the trip's stops to find among catalogues that are still
+  // landing: MEASURED 2026-10-06, a card pressed two seconds into a first visit opened its intro
+  // ten seconds later, and for those ten seconds nothing on the screen had changed (the stand-in,
+  // ui/tripgate.js, has no face). So the card says so itself, at once, and through every repaint.
+  let startingId = null;
+  const starting = (id, on) => {
+    if (on) startingId = id; else if (startingId === id) startingId = null; else return;
+    paintTrips(current);
+  };
   function paintTrips(id) {
     const hostT = tripHosts.get(id);
     if (!hostT) return;
@@ -593,8 +846,8 @@ export function createExplore(ctx, host) {
     const drawn = groupTrips(tours, TOUR_GROUPS, plans);
     let rows = [];
     for (const g of drawn) if (!groups || groups.includes(g.group)) for (const r of g.trips) rows.push({ ...r, group: g.group });
-    // The ones that can run first, across groups: the first view must not open on a greyed card.
-    rows = rows.filter((r) => !r.off).concat(rows.filter((r) => r.off));
+    // A trip left in the last day first, then the ones that can run, then the rest (homeTripOrder).
+    rows = homeTripOrder(rows, (r) => (ctx.passport ? ctx.passport.resume(r.id) : null));
     hostT.s.hidden = !rows.length;
     const shown = hostT.expanded ? rows : rows.slice(0, TRIPS_SHOWN);
     // The cards are rebuilt as plans land, and a rebuilt card is a new node: the one a keyboard
@@ -611,20 +864,33 @@ export function createExplore(ctx, host) {
       // Spec 0068: the trip's own picture under the glass, fading out under the title.
       card.appendChild(tripPicture(row.id, 'sr-tripcard__pic'));
       card.appendChild(el('span', 'sr-tripcard__title', row.title));
-      const meta = tripMeta(row, eventSubtitle(tour, nowMs, ctx.observer || null));
+      const isStarting = startingId === row.id && !row.off;
+      // A trip left in the last 24 hours says where it can be picked up (ui/passport.js, once it
+      // is here): the card then starts the trip at that stop.
+      const resume = !row.off && ctx.passport ? ctx.passport.resume(row.id) : null;
+      const meta = isStarting ? COPY.tripCard.starting : resume ? resume.text : tripMeta(unplannedShape(row, tour), eventSubtitle(tour, nowMs, ctx.observer || null));
       card.appendChild(el('span', 'sr-tripcard__meta', meta));
+      if (isStarting) { card.classList.add('is-starting'); card.setAttribute('aria-busy', 'true'); }
       if (row.off) { card.classList.add('is-off'); card.setAttribute('aria-disabled', 'true'); }
       card.title = [row.blurb, row.off ? row.reason : ''].filter(Boolean).join(' ');
       card.addEventListener('click', () => {
         if (row.off) return; // greyed WITH its reason (spec 0025 req 6), never started into a refusal
+        if (startingId === row.id) return; // pressed again while it is on its way: once is enough
+        const go = () => { try { return trip.start(row.id); } catch { return null; /* the trip says why itself */ } };
         // Still waiting for its stars (waitsForLater): they first, then the trip.
-        if (!row.planned && laterPending()) { ctx.loadAfterFirstVisit().then(() => { try { trip.start(row.id); } catch { /* says why itself */ } }); return; }
-        try { trip.start(row.id); } catch { /* the trip says why itself */ }
+        const begun = !row.planned && laterPending() ? ctx.loadAfterFirstVisit().then(go) : go();
+        const done = () => { starting(row.id, false); if (resume && trip.state.tourId === row.id) trip.jumpTo(resume.index); };
+        if (begun && typeof begun.then === 'function') { starting(row.id, true); begun.then(done, done); } else if (resume) done();
       });
       hostT.grid.appendChild(card);
       if (focusedTrip && row.id === focusedTrip) card.focus({ preventScroll: true });
     }
     hostT.more.hidden = rows.length <= TRIPS_SHOWN;
+    // The ones that cannot run are below the fold: say there are some, and why (public #241).
+    const note = hostT.expanded ? '' : offNote(rows.slice(TRIPS_SHOWN));
+    hostT.off.textContent = note;
+    hostT.off.title = note;
+    hostT.off.hidden = !note;
     hostT.more.textContent = hostT.expanded ? COPY.tripCard.fewer : t(COPY.tripCard.all, { n: fmt.int(rows.length) });
     hostT.more.setAttribute('aria-expanded', hostT.expanded ? 'true' : 'false');
   }
@@ -639,6 +905,8 @@ export function createExplore(ctx, host) {
     && (Array.isArray(tour.stops) ? tour.stops : []).some((s) => s && s.record && !ctx.recordById(s.record));
   const waiting = new Set();
   function planAll(only) {
+    // Planning needs the stops and the trip's own resolver: not before ui/trip.js is here.
+    if (trip.loaded === false) return;
     for (const tour of tours) {
       if (only && !only(tour)) continue;
       if (waitsForLater(tour)) { waiting.add(tour.id); continue; }
@@ -651,6 +919,7 @@ export function createExplore(ctx, host) {
   if (tours.length) {
     window.addEventListener('sr:layers-ready', () => planAll(), { once: true });
     if (window.__srLayersReady) planAll();
+    window.addEventListener('sr:trips-loaded', () => { tours = toursNow(); if (window.__srLayersReady) planAll(); });
     window.addEventListener('sr:later-layers', () => { if (waiting.size) planAll((tour) => waiting.has(tour.id)); });
     // A trip from your own place re-plans when the place changes (spec 0038), and only those.
     window.addEventListener('sr:observer', () => { if (plans.size) planAll((tour) => tour.requires_observer); });
@@ -675,11 +944,19 @@ export function createExplore(ctx, host) {
   }
 
   function paintStars() {
+    const id = ctx.stage && ctx.stage.worldId;
+    const onChain = id === 'earth' || id === 'sun' || isLadderStage(id);
+    for (const { key, r } of flightRows) {
+      const ok = onChain && typeof ctx.wantClimb === 'function';
+      r.b.disabled = !ok;
+      r.b.title = ok ? COPY.ladder[`${key}Title`] : COPY.ladder.flightOff;
+    }
     for (const { rung, r } of farRows) {
       const ok = !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record));
       r.b.disabled = !ok;
       r.b.setAttribute('aria-label', ok ? `${rung.label}, ${rung.distance}` : `${rung.label}, ${COPY.ladder.notLoaded}`);
     }
+    paintExo();
     // A row that names its layer prints what that layer holds, so it agrees with What to show.
     for (const { row, v } of showRows) {
       if (!row.layer) continue;
@@ -691,7 +968,8 @@ export function createExplore(ctx, host) {
   function paintStatus() {
     let rows = [];
     try { rows = ctx.sources && typeof ctx.sources.status === 'function' ? ctx.sources.status() : []; } catch { rows = []; }
-    const s = statusSummary(rows);
+    const offline = (typeof navigator !== 'undefined' && navigator.onLine === false) || !!(ctx.net && ctx.net.offline);
+    const s = statusSummary(rows, { offline });
     if (footText.textContent !== s.text) footText.textContent = s.text;
     foot.dataset.state = s.state;
     foot.setAttribute('aria-label', t(COPY.statusLine.label, { text: s.text }));
@@ -701,7 +979,6 @@ export function createExplore(ctx, host) {
 
   function paintPane(id) {
     if (mounts.has(id)) mounts.get(id)();
-    if (id === 'tonight') loadPlace();
     if (id === 'earth') paintNow();
     if (id === 'planets') paintWorlds();
     if (id === 'stars') paintStars();
@@ -724,9 +1001,12 @@ export function createExplore(ctx, host) {
     if (e && e.detail === 'next') revealInColumn(next.root, 8);
   });
   window.addEventListener('sr:layer', () => refresh());
+  window.addEventListener('sr:passport', () => paintTrips(current));
   window.addEventListener('sr:clouds', () => { if (current === 'earth') paintNow(); });
   // The aurora module arrived, or a forecast did: the aurora line can be written.
   window.addEventListener('sr:aurora', () => { if (current === 'earth') paintNow(); });
+  // The network went, or came back (ui/offline.js; the browser's own events before that module lands).
+  for (const name of ['sr:net', 'online', 'offline']) window.addEventListener(name, () => paintStatus());
   setInterval(refresh, REFRESH_MS);
   // The status line settles over the first seconds as the sources answer; a quicker look then.
   let early = 0;
@@ -753,7 +1033,6 @@ export function createExplore(ctx, host) {
       for (const child of [...pane.children]) {
         if (child !== mount && child !== tripHosts.get(id).s) child.hidden = true;
       }
-      if (id === 'tonight') { placeLoad = Promise.resolve(); placeHost.hidden = true; }
     }
     let done = false;
     const run = () => {
@@ -766,7 +1045,8 @@ export function createExplore(ctx, host) {
     return mount;
   }
 
-  const api = { root, tab: () => current, setTab: goTab, refresh, search, mountTab };
+  // `crew` is Open Notify's headcount by craft, or null until it is read (ui/sentence.js).
+  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, crew: () => astrosCounts, mountTab };
   if (ctx) ctx.explore = api;
   return api;
 }

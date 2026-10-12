@@ -1,0 +1,114 @@
+# DATED SKY EVENTS: the pages under /events/ (scripts/seo_pages.py), one per row.
+#
+# NOT registry/events.yaml. That file is the TYPES of event the Next view and the calendar feeds know
+# (a launch, a shower, a close approach). This one is the individual dated occasions that earn a page
+# of their own, because people search them by name as the day nears ("geminids 2026").
+#
+# WHAT IS TYPED AND WHAT IS COMPUTED. A row types only what is a fact of a calendar or of an agency:
+# which shower and year, which body, which eclipse, a mission's date with the page that says it. Every
+# instant, phase, elongation and path that astronomy can work out is COMPUTED when the page is built
+# (scripts/sky_events.mjs, Astronomy Engine in site/vendor/, the library the map itself uses), and
+# tests/test_sky_events.mjs recomputes each row and fails if a typed date has moved off the computed
+# one by more than a day. `checked_on` is the day that was last done by a person reading the output.
+# The moon is asked at `moon_at`, an instant we choose to stand for the night (UT midnight of the
+# peak's date, or the hour the shower is best placed): the page says which, and the percentage is
+# the Moon's lit fraction then, for anywhere on Earth.
+#
+# Row fields (kind says which apply):
+#   id         page address /events/<id>.html; lower-case letters, digits, dashes
+#   kind       meteor-shower | mission | eclipse
+#   name       the event's name in the page's H1
+#   short      the title, at most 54 characters (the checker adds the site name only if it fits in 60)
+#   summary    one sentence for the description and the index; at most 160 characters
+#   shower     (meteor-shower) an id of registry/showers.yaml
+#   year       (meteor-shower) the year of the peak
+#   moon_at    (meteor-shower) the instant the Moon's phase is stated for
+#   mission    (mission) the craft
+#   happens    (mission) the date the agency gives, YYYY-MM-DD
+#   eclipse    (eclipse) annular or total
+#   near       (eclipse) a date within a month before it, where the search starts
+#   also       other computed events the page tells with it: [{body, what}]
+#   link       the app at that moment: {t: ISO UTC instant, at: a world id}; the page links
+#              ../#t=<t>&at=<at> and tests/test_sky_events.mjs reads it with the app's own parser
+#   trip       optional: a trip id of registry/tours.yaml
+#   sources    [{words, url, read}] where `read` is the day the page was opened
+version: 1
+checked_on: 2026-10-09
+checked_with: "Astronomy Engine (site/vendor/astronomy.js), run by scripts/sky_events.mjs"
+
+events:
+  - id: leonids-2026
+    kind: meteor-shower
+    name: "Leonids 2026"
+    short: "Leonids 2026: when and where to look"
+    summary: "The Leonids peak on the night of 16 to 17 November 2026 under a half Moon: what to expect, where the radiant is, and a link into the sky at that hour."
+    shower: leonids
+    year: 2026
+    moon_at: 2026-11-17T00:00:00Z
+    link: {t: "2026-11-17T00:00:00Z", at: moon}
+    trip: tonight-from-your-street
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027 (rates, radiant, activity)", url: "https://imo.net/ShCal27s.pdf", read: 2026-10-07}
+
+  - id: bepicolombo-mercury-2026
+    kind: mission
+    name: "BepiColombo reaches Mercury orbit"
+    short: "BepiColombo reaches Mercury orbit, 21 November 2026"
+    summary: "ESA's BepiColombo is due to enter orbit round Mercury on 21 November 2026, after six flybys: what happens, and where Mercury is that day."
+    mission: BepiColombo
+    happens: 2026-11-21
+    link: {t: "2026-11-21T12:00:00Z", at: mercury}
+    sources:
+      - {words: "ESA, Latest updates: BepiColombo's arrival at Mercury (orbit insertion 21 November 2026; the two orbiters separate on 9 and 10 December)", url: "https://www.esa.int/Science_Exploration/Space_Science/BepiColombo/Latest_updates_BepiColombo_s_arrival_at_Mercury", read: 2026-10-09}
+      - {words: "JPL Horizons, the header of object -121 (orbit insertion in November 2026)", url: "https://ssd.jpl.nasa.gov/horizons/", read: 2026-09-21}
+
+  - id: geminids-2026
+    kind: meteor-shower
+    name: "Geminids 2026"
+    short: "Geminids 2026: when and where to look"
+    summary: "The Geminids, the year's richest shower, peak on 13 to 14 December 2026 with a thin Moon: when to look, where the radiant is, and a link into that sky."
+    shower: geminids
+    year: 2026
+    moon_at: 2026-12-14T02:00:00Z
+    link: {t: "2026-12-14T02:00:00Z", at: moon}
+    trip: comets-and-meteors
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027 (rates, radiant, activity)", url: "https://imo.net/ShCal27s.pdf", read: 2026-10-07}
+
+  - id: quadrantids-2027
+    kind: meteor-shower
+    name: "Quadrantids 2027, and Venus at its greatest elongation"
+    short: "Quadrantids and Venus at its best: 3 to 4 January 2027"
+    summary: "The Quadrantids peak in the early hours of 4 January 2027 under a thin waning Moon, a day after Venus stands farthest west of the Sun."
+    shower: quadrantids
+    year: 2027
+    moon_at: 2027-01-04T03:00:00Z
+    also:
+      - {body: venus, what: greatest-western-elongation}
+    link: {t: "2027-01-04T03:00:00Z", at: venus}
+    trip: tonight-from-your-street
+    sources:
+      - {words: "IMO Meteor Shower Calendar 2027 (rates, radiant, activity)", url: "https://imo.net/ShCal27s.pdf", read: 2026-10-07}
+
+  - id: annular-eclipse-2027
+    kind: eclipse
+    name: "The annular solar eclipse of 6 February 2027"
+    short: "Annular solar eclipse, 6 February 2027: who sees it"
+    summary: "On 6 February 2027 the Moon crosses the Sun without covering it, leaving a ring: the path, the time, and what your own place will see."
+    eclipse: annular
+    near: 2027-01-15
+    link: {t: "2027-02-06T15:30:00Z", at: earth}
+    sources:
+      - {words: "Computed here with Astronomy Engine (the Moon's shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}
+
+  - id: total-eclipse-2027
+    kind: eclipse
+    name: "The total solar eclipse of 2 August 2027"
+    short: "Total solar eclipse, 2 August 2027: where to see it"
+    summary: "On 2 August 2027 the Moon's shadow crosses North Africa and the Middle East in a total solar eclipse: the time, the path, and what your place will see."
+    eclipse: total
+    near: 2027-07-15
+    link: {t: "2027-08-02T09:30:00Z", at: earth}
+    trip: chasing-the-solar-eclipse
+    sources:
+      - {words: "Computed here with Astronomy Engine (the Moon's shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}

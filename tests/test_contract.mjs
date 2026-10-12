@@ -23,6 +23,8 @@ const JS = join(ROOT, 'site/js');
 
 // module path -> exports the contract requires
 const CONTRACT = {
+  'scene/ktx2.js': ['createKtx2', 'ktx2UrlFor'],
+  'ui/truthline.js': ['truthLine', 'LAYER_SOURCES'],
   'clock.js': ['clock'],
   'propagate/frames.js': ['gmst', 'eciToEcef', 'ecefToEci', 'geodeticToEcef', 'ecefToGeodetic', 'lookAngles', 'toStage', 'spinPeriodHours', 'yearDays'],
   'propagate/index.js': ['propagate', 'PROPAGATORS'],
@@ -68,6 +70,7 @@ const CONTRACT = {
   'sky/passworker.js': ['runPasses'],
   // Spec 0051 task 2: the Tonight view the sidebar's Tonight tab mounts (spec 0061), and its arc.
   'ui/tonight.js': ['renderTonight'],
+  'ui/icons.js': ['icon'],
   'ui/skyarc.js': ['arcSvg'],
   // Spec 0048: the next 90 minutes in time, shared by the card and (later) the follow strip.
   'sky/timefacts.js': ['lightWindows', 'nextAscendingNode', 'orbitNumber', 'launchYear', 'timeFacts', 'hasTimeFacts'],
@@ -93,6 +96,7 @@ const CONTRACT = {
     'OPEN_KEY', 'FILTER_MIN_ROWS', 'groupLayers', 'groupTally', 'defaultOpen', 'readOpen', 'writeOpen', 'matchesFilter', 'setGroupOn'],
   'ui/timepill.js': ['createTimePill', 'PILL_RATES', 'nextRate', 'stepMs', 'clampToWindow', 'pillText'],
   'ui/place.js': ['createPlace', 'findCity', 'observerFor'],
+  'ui/overlaykey.js': ['mountOverlayKey', 'keyShown'],
   'ui/trippicker.js': ['groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder', 'eventSubtitle'],
   'ui/trip.js': ['createTrip'],
   // Spec 0061 task 7: what a key does in a trip and the toolbar's counter, pure for test_tripframe.
@@ -103,6 +107,11 @@ const CONTRACT = {
   // construction; beds and stings fetch on first use only.
   'audio/engine.js': ['createAudio', 'readFlag', 'writeFlag', 'STORE_KEY', 'VOLUME'],
   'audio/load.js': ['createLoader'],
+  // Spec 0069: the trips' narration. Loaded with ui/tripframe.js when the first trip starts, never
+  // at boot; tests/test_narration.mjs holds the ducking, the dwell and the toggle.
+  'audio/narration.js': ['createNarration', 'readVoice', 'writeVoice', 'VOICE_KEY', 'DUCK_DB', 'VOICE_DUCK', 'DUCK_IN_S', 'DUCK_BACK_S', 'TAIL_MS', 'KEEP', 'clipKey', 'clipRow', 'holdFor', 'parseVtt', 'cueAt'],
+  'data/narration.js': ['NARRATION'],
+  'ui/voicecue.js': ['cueRange', 'paintCue', 'HIGHLIGHT'],
   'audio/beds.js': ['createBeds', 'XFADE_S'],
   'audio/stings.js': ['createStings', 'DUCK', 'DUCK_IN_S', 'DUCK_BACK_S', 'STING_LEVEL'],
   'audio/pick.js': ['pickFormat', 'rungOf', 'RUNGS', 'OPUS_TYPE', 'AAC_TYPE'],
@@ -112,14 +121,29 @@ const CONTRACT = {
   'ui/sound.js': ['soundButton', 'soundPanel', 'creditsText'],
   'scene/stretch.js': ['STRETCH_PX', 'stretchUniforms', 'writeStretch'],
   'scene/stars3d.js': ['createStars3d', 'STRETCH_PX'],
+  // Spec 0072 requirement 1: planets and moons as lights at their computed magnitude (tests/test_worldlights.mjs).
+  'scene/worldlights.js': ['createWorldLights', 'planetMagnitude', 'moonMagnitude', 'reflectedMagnitude', 'lambertPhase', 'apparentMagnitude', 'starSprite', 'discFade', 'discCover', 'GEOMETRIC_ALBEDO', 'LIGHT_FADE_PX', 'SUN_APPARENT_MAG', 'WORLDLIGHT_VERT', 'WORLDLIGHT_FRAG'],
   // The device tiers (2026-09-28): the tier is chosen in quality.js, the maps swapped by
   // texturetiers.js from the mirror of registry/textures.yaml.
-  'scene/quality.js': ['createFrameLatch', 'shouldSaveData', 'chooseTier', 'createTierPromoter'],
+  'scene/quality.js': ['createFrameLatch', 'shouldSaveData', 'chooseTier', 'createTierPromoter', 'createIdleGate', 'idleCapWanted', 'lookHeld', 'movingReasons'],
   // Spec 0053 task 3: the aurora shell, its JS twins (tests/test_aurora.mjs), and the OVATION decode.
   'scene/aurora.js': ['createAurora', 'auroraRightNow', 'auroraLine', 'AURORA_FRAG', 'nightMask', 'probabilityToEmission', 'auroraColour', 'profile', 'profileIntegral', 'maxDotOnArc', 'gridUv', 'reachLatDeg', 'TIER_STEPS', 'EMISSIONS', 'NIGHT'],
   'data/ovation.js': ['OVATION_URL', 'parseOvation', 'upsampleGrid', 'summarize', 'auroraMode', 'nextLookMs', 'mayLook', 'REFRESH_MS', 'START_DELAY_MS', 'HOLD_MS'],
   'scene/texturetiers.js': ['createTextureTiers', 'variantFor', 'urlFor', 'bootFiles'],
   'data/textures.js': ['TEXTURES'],
+  // Spec 0065: a close world drawn from map tiles. tilemath.js is the pure half (tests/test_tiles.mjs);
+  // tiles.js is fetched by a dynamic import in main.js and is never part of a first visit.
+  'scene/tilemath.js': ['lonLatToTile', 'tileBounds', 'tileKey', 'tileUrl', 'levelForFootprint', 'selectTiles', 'drawSet', 'underlay', 'createLru', 'patchArrays', 'unitFromLonLat', 'lonLatFromUnit'],
+  'scene/tiles.js': ['createPlanetTiles', 'tileFragment', 'tileVertex', 'DRAW_TILES', 'CACHE_TILES', 'MAX_FETCHES'],
+  'data/tilesets.js': ['TILESETS'],
+  // Spec 0066: weather on every world. flow.js and data/lightning.js are the pure halves
+  // (tests/test_weather.mjs); index.js is the one door, fetched by a dynamic import in main.js.
+  'scene/weather/flow.js': ['turnsPerDay', 'planetocentricDeg', 'windAt', 'rateTable', 'splitFlow', 'flowPhases', 'rigidTurn', 'marsLs', 'marsSeason', 'RATE_ROWS', 'MAX_SHIFT_TURNS'],
+  'scene/weather/worldweather.js': ['createWorldWeather', 'weatherFragment', 'MAP_LINE', 'hexagonCornerRad', 'effectsByWorld'],
+  'scene/weather/lightning.js': ['createLightning', 'lightningLine', 'flashPosition', 'FLASH_SLOTS', 'FLASH_LIFE_S'],
+  'scene/weather/index.js': ['createWeather', 'seasonName'],
+  'data/lightning.js': ['CAPS_URL', 'mapUrl', 'parseNewestSlot', 'PALETTE', 'paletteRow', 'decodeGrid', 'flashModel', 'flashesInSecond', 'lightningMode', 'REFRESH_MS', 'START_DELAY_MS', 'LIVE_WINDOW_MS'],
+  'data/weather.js': ['WEATHER'],
   // The one owner of the URL hash (spec 0032): main.js and ui/trip.js write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
@@ -132,13 +156,19 @@ const CONTRACT = {
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
+  // Spec 0070: the film camera. Imported by main.js only for `?render=1` (tools/render-trip.mjs);
+  // its clock, its cards and its line of truth are pure for tests/test_render_trip.mjs.
+  'ui/rendermode.js': ['renderOptions', 'createVirtualTime', 'install', 'truthLine', 'tripUrl', 'cardOpacity', 'lowerThird', 'TITLE_S', 'END_S', 'FADE_S', 'WARM_S'],
+  // Internal #466: `#go=<id>` lands with one push-in; its plan is pure for tests/test_golink.mjs.
+  'ui/golink.js': ['land', 'landingPlan', 'zoomAt', 'LAND_FROM', 'LAND_MS'],
   // Spec 0068: the trip cards' pictures, and the controls hint shown once (imported after the
   // first visit settles); their pure parts for tests/test_trip_pictures.mjs and test_keyhint.mjs.
   'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'PICTURE_DELAY_MS'],
+  'ui/offline.js': ['createOffline', 'swWanted', 'warmList', 'UPDATE_CHECK_MS'],
   'ui/keyhint.js': ['createKeyHint', 'decide', 'whyNot', 'readSeen', 'markSeen', 'hintMode', 'capForKey', 'allCaps', 'KEY_ROWS', 'CHROME_KEYS', 'TOUCH_ROWS', 'STORE_KEY', 'AUTO_HIDE_MS', 'MIN_SHOWN_MS', 'KEY_GRACE_MS'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
-  'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag'],
+  'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag', 'facesReady'],
   'copy/en.js': ['COPY', 'compare'],
 };
 
@@ -653,6 +683,9 @@ for (const file of allFiles) {
       const dflt = builderOf(klass, 'default');
       for (const v of variants[klass] || []) {
         if (v === 'default' || asked.has(v)) continue;
+        // The CubeSat specification's own 1U and 2U (public #422, 2026-10-08): built and on the shape
+        // sheet, and unrouted ON PURPOSE, because no record on the map is a 1U or a 2U today.
+        if (klass === 'satellite' && (v === 'cubesat-1u' || v === 'cubesat-2u')) continue;
         if (dflt && builderOf(klass, v) === dflt) continue; // a second name for the default
         orphans.push(`${klass}:${v}`);
       }
@@ -1235,6 +1268,10 @@ for (const file of allFiles) {
     // the materials are checked in the state they are drawn in, not just the one they start in.
     const worlds = createWorlds(scene, { textureBase: '', loadTexture: (url, onLoad) => { const t = new THREE.Texture(); if (onLoad) onLoad(t); return t; } });
     for (const w of worlds.waitingMaps()) worlds.preload(w);
+    // The nebulae's photographs (spec 0067) are a sky layer built the same way -- depth test off,
+    // additive -- on the sky sphere and at their places; both must stay in the opaque list too.
+    const { createNebulae } = await import(join(JS, 'scene/nebulae.js'));
+    const nebulae = createNebulae(scene, { skyGroup: sky.group, load: () => Promise.resolve(new THREE.Texture()) });
     let checked = 0;
     const named = new Set();
     scene.traverse((o) => {
@@ -1251,10 +1288,11 @@ for (const file of allFiles) {
         }
       }
     });
-    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun'];
+    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun', 'nebula-sky-m42', 'nebula-m42'];
     const missing = want.filter((n) => ![...named].some((x) => x === n || x.startsWith(n)));
     if (missing.length) problems.push(`DRAWORDER the check never saw ${missing.join(', ')}, so it proves nothing about them`);
     else notes.push(`${checked} materials across the sky and the worlds; none draws after the planets with depthTest off`);
+    nebulae.dispose();
     sky.dispose && sky.dispose();
     worlds.dispose();
   } catch (e) {
@@ -1330,8 +1368,10 @@ for (const file of allFiles) {
     }
   }
   // ... and the two must be written from different numbers on the CPU side too.
-  const dotLine = (src.match(/^\s*attrOpacity\.array\[k\] = .*$/m) || [''])[0];
-  const ringLine = (src.match(/^\s*attrRing\.array\[k\] = .*$/m) || [''])[0];
+  // (Since internal #519 a value is written only when it differs from the one in the array, so
+  // the two lines are a comparison and a write: tests/test_glyph_uploads.mjs holds the uploads.)
+  const dotLine = /^\s*if \(aOpacity\[k\] !== opacity\) \{ aOpacity\[k\] = opacity; /m.test(src) ? (src.match(/^\s*const opacity = .*$/m) || [''])[0] : '';
+  const ringLine = (src.match(/^\s*if \(aRing\[k\] !== own\) \{ aRing\[k\] = own; .*$/m) || [''])[0];
   if (!/dotOpacity\(/.test(dotLine)) problems.push(`HALO     the dot is not written through onemark's dotOpacity(): "${dotLine.trim()}"`);
   if (!ringLine) problems.push('HALO     nothing writes iRing, so the halo has no opacity of its own');
   else if (/dotOpacity\(|yieldTo|modelOpacity/.test(ringLine)) {
@@ -2412,6 +2452,9 @@ for (const file of allFiles) {
       // harvester's snapshot is missing, so its planets resolve with no network (spec 0040's trip).
       ...parseExoplanets(readFileSync(join(ROOT, 'site/data/exoplanets.csv'), 'utf8')).map((r) => r.id),
       ...LAYERS.filter((l) => l.source === 'bundled' && typeof l.sample === 'function' && !l.parse).flatMap((l) => l.sample()).map((r) => r.id),
+      // The rows a layer carries whatever its source said (2026-10-06, data/layers.js `always:`): the
+      // five named asteroids and Halley, each on JPL's orbit with its phase (data/sample.js).
+      ...LAYERS.filter((l) => typeof l.always === 'function').flatMap((l) => l.always()).map((r) => r.id),
     ]);
     const layerIds = new Set(LAYERS.map((l) => l.id));
     const worldIds = new Set(WORLDS.map((w) => w.id));
@@ -2443,6 +2486,13 @@ for (const file of allFiles) {
           // have, so the checkable half is that the LAYER exists and is one the app loads.
           if (layerIds.has(target.layer)) resolvable += 1;
           else problems.push(`TOUR     ${tour.id}/${stop.id}: layer '${target.layer}' is not in LAYERS`);
+        } else if (target.sky !== undefined) {
+          // A look at the sky (2026-10-05): a direction, resolved by ui/trip.js skySubject with no
+          // record behind it. Two numbers, and a declination that leaves the camera a sideways.
+          const ok = Array.isArray(target.sky) && target.sky.length === 2 && target.sky.every((v) => Number.isFinite(v))
+            && target.sky[0] >= 0 && target.sky[0] < 360 && Math.abs(target.sky[1]) <= 85;
+          if (ok) resolvable += 1;
+          else problems.push(`TOUR     ${tour.id}/${stop.id}: sky ${JSON.stringify(target.sky)} is not [right ascension, declination] the camera can aim at`);
         } else if (target.observer !== undefined) {
           // The visitor's own place (spec 0038): no record to find, and it needs no network, only a
           // place set or guessed. It is only legal on a trip that says it needs one.
@@ -2605,7 +2655,7 @@ for (const file of allFiles) {
       forgetIndex();
       for (const id of ids) forget(id);
     };
-    const upstreamSeen = () => seen.filter((u) => !u.startsWith('/data/v1/'));
+    const upstreamSeen = () => seen.filter((u) => !u.startsWith('data/v1/'));
 
     // A body shaped like CelesTrak's, a harvester read ten minutes ago, a fresher copy promised
     // in three hours. Real wall-clock times, because `stale` and `overdue` are measured against it.
@@ -2638,8 +2688,8 @@ for (const file of allFiles) {
     // (a) manifest + file -> via snapshot; the upstream is not asked; the age is the harvester's
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
     ]);
     let r = await load('celestrak-stations', { await: true });
     if (r.via !== 'snapshot' || !r.ok) {
@@ -2663,8 +2713,8 @@ for (const file of allFiles) {
     // (a2) past valid_until: said as overdue, and the stale ladder is still the source's own
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('not-due', { valid_until: anHourAgo }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { valid_until: anHourAgo }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('not-due', { valid_until: anHourAgo }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { valid_until: anHourAgo }))],
     ]);
     r = await load('celestrak-stations', { await: true });
     if (r.via !== 'snapshot') problems.push(`SNAPSHOT a not-due row still has its file from the earlier run; got via=${r.via} snapshot=${r.snapshot}`);
@@ -2685,8 +2735,8 @@ for (const file of allFiles) {
     // an OLDER snapshot than the attempt: still inside the gate, still no upstream call
     const older = new Date(t0 - 60 * 1000).toISOString();
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: older }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: older }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: older }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: older }))],
     ]);
     r = await load('celestrak-stations', { await: true, now: t0 + 6 * 60 * 1000 });
     if (r.via === 'snapshot') problems.push('SNAPSHOT (a3) a snapshot OLDER than the failed attempt must not reopen the gate');
@@ -2694,8 +2744,8 @@ for (const file of allFiles) {
     // a NEWER snapshot: taken, within the cadence, with no upstream call
     const newer = new Date(t0 + 3 * 60 * 1000).toISOString();
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: newer }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: newer }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: newer }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: newer }))],
     ]);
     forgetIndex();
     r = await load('celestrak-stations', { await: true, now: t0 + 7 * 60 * 1000 });
@@ -2705,12 +2755,12 @@ for (const file of allFiles) {
     // (b) the manifest is keyed by REGISTRY id, which is not always this module's id
     reset('celestrak-starlink');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-supplemental-starlink': snapRow('ok') }))],
-      ['/data/v1/celestrak-supplemental-starlink.json', json(snapFile('celestrak-supplemental-starlink', gp))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-supplemental-starlink': snapRow('ok') }))],
+      ['data/v1/celestrak-supplemental-starlink.json', json(snapFile('celestrak-supplemental-starlink', gp))],
     ]);
     r = await load('celestrak-starlink', { await: true });
     if (r.via !== 'snapshot') {
-      problems.push(`SNAPSHOT celestrak-starlink must read /data/v1/${SOURCES['celestrak-starlink'].registryId}.json; got via=${r.via} snapshot=${r.snapshot}`);
+      problems.push(`SNAPSHOT celestrak-starlink must read data/v1/${SOURCES['celestrak-starlink'].registryId}.json; got via=${r.via} snapshot=${r.snapshot}`);
     }
 
     // (c) no manifest, browser: true -> live, and it says why the snapshot was not the source
@@ -2737,7 +2787,7 @@ for (const file of allFiles) {
     // (e) a manifest that says skipped (no credentials), browser: false -> could not look, untouched
     reset('space-track-tip');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'space-track-tip': snapRow('skipped', { fetched_at: null, valid_until: null }) }))],
+      ['data/v1/index.json', json(manifest({ 'space-track-tip': snapRow('skipped', { fetched_at: null, valid_until: null }) }))],
       [tip.url, json([{ NORAD_CAT_ID: '1' }])],
     ]);
     r = await load('space-track-tip', { await: true });
@@ -2749,8 +2799,8 @@ for (const file of allFiles) {
     // (f) a snapshot file of unknown schema is a snapshot we do not have: browser:true -> live
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { schema: 2 }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { schema: 2 }))],
       [stations.url, json(gp)],
     ]);
     r = await load('celestrak-stations', { await: true });
@@ -2759,7 +2809,7 @@ for (const file of allFiles) {
     // (g) a manifest of unknown schema is no manifest
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }, 2))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }, 2))],
       [stations.url, json(gp)],
     ]);
     r = await load('celestrak-stations', { await: true });
@@ -2769,13 +2819,13 @@ for (const file of allFiles) {
     // (h) a refused harvest on a browser:true row -> live; the file the guard kept is not read
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('refused', { last_error: 'never-worse: 3 of 22' }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('refused', { last_error: 'never-worse: 3 of 22' }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
       [stations.url, json(gp)],
     ]);
     r = await load('celestrak-stations', { await: true });
     if (r.via !== 'live' || r.snapshot !== 'refused') problems.push(`SNAPSHOT a refused harvest should fall back to live as refused; got via=${r.via} snapshot=${r.snapshot}`);
-    if (seen.includes('/data/v1/celestrak-stations.json')) problems.push('SNAPSHOT a refused snapshot file must not be read');
+    if (seen.includes('data/v1/celestrak-stations.json')) problems.push('SNAPSHOT a refused snapshot file must not be read');
 
     reset('celestrak-stations', 'celestrak-starlink', 'jpl-sbdb-neo', 'space-track-tip');
     notes.push(
@@ -2840,16 +2890,39 @@ for (const file of allFiles) {
 //
 // Every PNG under site/og/ is what a chat or a feed shows for a shared link, so each is held to the
 // size its page's tags claim (1200 x 630, read from the PNG header) and to more than
-// `og_png_min_bytes` of registry/budgets.yaml (50 000 bytes):
+// `og_png_min_bytes` of registry/budgets.yaml:
 // a 1200 x 630 frame of black sky with one world in it is 60-200 kB, and less means an empty frame
-// (the failure #157 taught). A trip with no picture of its own is NOTED, not failed: its page falls
-// back to default.png (scripts/gen_trip_pages.py), and a trip added by another change should not
-// turn this red until the readme-shots workflow has rendered it (2026-09-23).
+// (the failure #157 taught). And since 2026-10-07 EVERY trip has one: a trip without a picture of
+// its own was noted and let through, and twenty of twenty-six shared the home page's. Each is under
+// `og_png_max_bytes`, and each prints today's title and blurb: scripts/build_trip_og.py writes what
+// it printed into the PNG (a text chunk, `sr:caption`), and a blurb edited since is refused here by
+// name (internal #373: seven pictures went on printing blurbs that had been shortened). default.png
+// is the home page's and is composed elsewhere, so it is held to the size and the floor only.
 {
   try {
     const { TOURS } = await import(join(JS, 'data/tours.js'));
     const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
     const minBytes = BUDGETS.og_png_min_bytes;
+    const maxBytes = BUDGETS.og_png_max_bytes;
+    if (!(maxBytes > minBytes)) problems.push('OGIMAGE  registry/budgets.yaml has no og_png_max_bytes above og_png_min_bytes');
+    /** The text chunk a PNG carries under `key` (tEXt is Latin-1, iTXt UTF-8 and uncompressed here), or null. */
+    const pngText = (png, key) => {
+      for (let at = 8; at + 8 <= png.length;) {
+        const len = png.readUInt32BE(at);
+        const kind = png.slice(at + 4, at + 8).toString('latin1');
+        const body = png.slice(at + 8, at + 8 + len);
+        if (kind === 'IDAT') break;
+        if ((kind === 'tEXt' || kind === 'iTXt') && body.slice(0, key.length + 1).toString('latin1') === `${key}\0`) {
+          if (kind === 'tEXt') return body.slice(key.length + 1).toString('latin1');
+          const rest = body.slice(key.length + 3);
+          const lang = rest.indexOf(0);
+          return rest.slice(rest.indexOf(0, lang + 1) + 1).toString('utf8');
+        }
+        at += 12 + len;
+      }
+      return null;
+    };
+    const picturesYaml = readFileSync(join(ROOT, 'registry/pictures.yaml'), 'utf8');
     const dir = join(ROOT, 'site/og');
     const pngs = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.png')) : [];
     if (!pngs.includes('default.png')) problems.push('OGIMAGE  site/og/default.png is missing: the root and every trip without its own picture use it');
@@ -2861,12 +2934,39 @@ for (const file of allFiles) {
       if (png.slice(1, 4).toString() !== 'PNG' || w !== 1200 || h !== 630) problems.push(`OGIMAGE  site/og/${f} is ${w} x ${h}, not a 1200 x 630 PNG`);
       if (!(png.length > minBytes)) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes: an empty frame, not a picture`);
       if (!known.has(f.replace(/\.png$/, ''))) problems.push(`OGIMAGE  site/og/${f} names no trip in the registry`);
+      // Spec 0043 design section 4: the app's own pictures say so in a `Software` text chunk (scripts/_png_text.mjs);
+      // one pasted in by hand has none and must be a registry/pictures.yaml row.
+      const software = pngText(png, 'Software');
+      if (!(software && software.startsWith('space-radar ')) && !picturesYaml.includes(`file: og/${f}`)) problems.push(`OGIMAGE  site/og/${f} has no "Software: space-radar" text chunk and no registry/pictures.yaml row: a picture pasted in by hand (make it with scripts/shots.mjs or scripts/build_trip_og.py)`);
+      const trip = TOURS.find((t) => `${t.id}.png` === f);
+      if (!trip) continue;
+      if (png.length > maxBytes) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes, over og_png_max_bytes (${maxBytes})`);
+      const printed = pngText(png, 'sr:caption');
+      if (printed !== `${trip.title}\n${trip.blurb}`) problems.push(`OGIMAGE  site/og/${f} prints ${JSON.stringify(printed)} and the trip now says ${JSON.stringify(`${trip.title}\n${trip.blurb}`)}: run scripts/build_trip_og.py --reband --only=${trip.id}`);
     }
     const without = TOURS.filter((t) => !pngs.includes(`${t.id}.png`)).map((t) => t.id);
+    for (const id of without) problems.push(`OGIMAGE  site/og/${id}.png is missing: a shared link to the trip would show default.png (tools/trip-frames.probe.js, then scripts/build_trip_og.py --from=)`);
     notes.push(`trip pictures: ${pngs.length} under site/og/, each 1200 x 630 and over ${minBytes / 1000} kB${without.length ? `; still on default.png: ${without.join(', ')}` : '; every trip has its own'}`);
   } catch (e) {
     problems.push(`OGIMAGE  could not check the trip pictures: ${String(e)}`);
   }
+}
+
+// --- spec 0053 task 4 (internal #146): a streak layer is lines on the Earth's frame, never a screen-covering pass --
+// The wind is a few thousand short lines that turn with the Earth. A wind drawn as one full-screen quad
+// (a fragment shader over the whole frame) costs every pixel of every device, so the particle layers refuse it.
+{
+  const QUAD = [/PlaneGeometry\s*\(\s*2\s*,\s*2/, /OrthographicCamera/, /FullScreenQuad/, /gl_Position\s*=\s*vec4\(\s*position\.xy/, /WebGLRenderTarget/];
+  const quadWords = (src) => QUAD.filter((re) => re.test(src)).map((re) => re.source);
+  // watched to fail on a scratch full-screen quad (the acceptance of the task)
+  const scratch = 'const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: "void main(){ gl_Position = vec4( position.xy, 0.0, 1.0 ); }" }));';
+  if (quadWords(scratch).length < 2) problems.push('QUAD     the full-screen-quad check does not catch a scratch quad: it is not watching');
+  for (const f of ['wind.js', 'currents.js']) {
+    const src = readFileSync(join(JS, 'scene', f), 'utf8');
+    const hit = quadWords(src);
+    if (hit.length) problems.push(`QUAD     scene/${f} draws a screen-covering pass (${hit.join(', ')}): a streak layer is LineSegments on the Earth's frame (internal #146)`);
+  }
+  notes.push('quad: scene/wind.js and scene/currents.js are lines, not a full-screen pass (and the check fails on a scratch quad)');
 }
 
 // --- spec 0034: what stays forbidden, and the cinematic numbers ------------------------------

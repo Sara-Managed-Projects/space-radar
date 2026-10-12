@@ -2,494 +2,238 @@
 
 # Space Radar
 
-**A living 3D map of everything in motion around Earth — at its real position, right now.**
+**Everything in the sky, where it really is, and it tells you when it is guessing.**<br>
+A live 3D map of space in your browser. Free, open source, no account.
 
-Satellites, crewed stations, debris, rockets on their way up, probes on their way out,
-telescopes at their stations, asteroids and comets on their orbits, and the pads, dishes and
-observatories on the ground that talk to them.
+### [Open it: www.spaceradar.ai](https://www.spaceradar.ai/?from=gh)
 
-[**Open it →**](https://d3hn5yuejgw4ux.cloudfront.net)  ·  soon at **spaceradar.ai**
+<a href="https://www.spaceradar.ai/?from=gh"><img src="assets/screenshots/zoom-to-earth.webp" width="340" alt="A twelve-second zoom from the planets down to the Earth, with the clouds of 8 October 2026, ending on the address spaceradar.ai"></a>
+
+[![CI](https://github.com/Sara-Managed-Projects/space-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/Sara-Managed-Projects/space-radar/actions/workflows/ci.yml)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+[![Live site](https://img.shields.io/website?url=https%3A%2F%2Fwww.spaceradar.ai&label=spaceradar.ai)](https://www.spaceradar.ai/?from=gh)
+[![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
 
 </div>
 
-![Space Radar](assets/readme/hero.png)
+- **It is real.** Satellites are worked out in your browser from public orbital data, and every
+  picture says whether it is measured, modelled or an artist's impression, with its source.
+- **It is yours to take.** MIT code, no account, no adverts, no tracking, no build step. One
+  command runs your own copy, and it [runs with no internet](docs/RUN_LOCALLY.md) too.
+- **It takes you somewhere.** One map from your own street to the Milky Way seen from outside,
+  with narrated trips that fly the camera for you.
 
----
+## Run it in 30 seconds
 
-## The idea
+Nothing to install, nothing to compile. Python's built-in server is the whole toolchain:
 
-Every satellite tracker that exists is built for someone who already knows what a TLE is. They are
-correct and they are overwhelming. The beautiful ones, meanwhile, are closed and mostly static.
+```bash
+git clone https://github.com/Sara-Managed-Projects/space-radar.git
+cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
+```
 
-Space Radar is the thing in between: **real positions, computed properly, drawn so that a person
-who just got curious understands what they are looking at.** The setting is photographed — real
-Earth textures, a true day–night terminator, real star positions. The things that move are drawn,
-because a photoreal satellite at that distance is a grey smudge that tells a beginner nothing,
-while a friendly one at a *true* position invites the tap.
+26 narrated trips (205 stops), 109 389 stars in 3D, 40 star systems to fly into, about 17 000
+satellites at their real positions, and every picture labelled as measured, modelled or an
+artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
+museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
 
-There are three things you can do, and the interface knows which one you are doing.
+**Follow:** [YouTube](https://www.youtube.com/@SpaceRadar_ai) ·
+[Instagram](https://www.instagram.com/spaceradar.ai/) ·
+[LinkedIn](https://www.linkedin.com/company/spaceradar-ai) ·
+[Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions) ·
+[Roadmap](ROADMAP.md)
 
-| | |
-|---|---|
-| 🌍 **Wonder** | Fly around and tap anything. What is that dot, and why does it matter? |
-| 🔭 **Now** | What is above my head *this minute*, from where I am standing? |
-| 🚀 **Next** | Tell me before the next launch, meteor peak or close approach. |
+## You can help without writing code
 
-And if you would rather not fly it yourself, there are
-**[trips](#trips--the-camera-flies-it-for-you)**: the camera does it, one stop at a time, and
-Escape leaves at any moment without moving the view.
+- **Report a wrong number or name**, with a source: a
+  [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml).
+- **Try it in a class or on a museum screen** and tell us what broke or worked: a
+  [classroom report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=classroom.yml).
+- **Translate it:** [docs/TRANSLATING.md](docs/TRANSLATING.md), or
+  [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
+- **Suggest or review a trip.** Astronomers: read one trip's narration for errors.
+- **Edit a word on GitHub**, with no tools at all: [CONTRIBUTING.md](CONTRIBUTING.md) shows how.
+- **Build a tiny space simulator** in one HTML file, in ten minutes: [docs/ADD_A_SIMULATOR.md](docs/ADD_A_SIMULATOR.md), shelf at [spaceradar.ai/lab](https://www.spaceradar.ai/lab/index.html).
+- Want a first task? [Pick one by what you like doing](docs/FIRST_PR.md#pick-a-task-2-minutes): the list
+  shows only the starter issues nobody has begun. Every first comment gets an answer within 48 hours.
 
----
+If Space Radar is useful to you, a star helps other people find it.
 
-## What it looks like
+## What it is
 
-<table>
-<tr>
-<td width="50%"><img src="assets/readme/card.png" alt="Tapping the space station opens a card in plain language"><br><b>Tap anything.</b> One plain sentence first, then the numbers you can actually feel — the size of a football field, four hours of driving straight up.</td>
-<td width="50%"><img src="assets/readme/sky.png" alt="The sky as seen from a location on the ground"><br><b>Look up from where you are.</b> Real stars, real constellations, a horizon, and heights in fists rather than degrees.</td>
-</tr>
-<tr>
-<td width="50%"><img src="assets/readme/catalogue.png" alt="The full catalogue of 16,000 tracked objects"><br><b>Switch on everything.</b> Around 16,500 tracked objects, each propagated individually in your browser.</td>
-<td width="50%"><img src="assets/readme/sources.png" alt="The sources panel showing what loaded and what did not"><br><b>It tells you what it could not read.</b> Three states, not two — and “could not look” is one of them.</td>
-</tr>
-</table>
+Space Radar is a living 3D map of space. It draws the Earth with today's clouds, about 17 000
+satellites where they are this minute, the space stations and who is aboard, rockets about to
+launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
+in three dimensions, nebulae as telescopes photographed them, and the Milky Way from outside. Step
+down to the ground and it is tonight's sky from your own street. Twenty-six guided trips, read
+aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
+data, and every number on screen says where it came from.
 
-<div align="center">
-<img src="assets/readme/mobile.png" alt="Space Radar on a phone" width="300"><br>
-<sub><b>On a phone the sky is the product.</b> Two buttons; everything else is a drawer, and every
-drawer closes — from its own Close row, from Escape, or by tapping the sky.</sub>
-</div>
+![Space Radar: the Earth with today's clouds, the aurora and the satellites around it](assets/screenshots/hero.webp)
 
----
+## Why
 
-## Every position says where it came from
+- **Learning about space should be free and simple.** No account, no adverts, no tracking, no
+  install. Open a link and you are looking at the sky as it is now.
+- **It should run anywhere.** A school, a university, a kindergarten or a village library can
+  [run its own copy](docs/RUN_LOCALLY.md), on an old laptop, with no internet at all.
+- **It should be honest.** Everything drawn is measured, modelled or illustrative, and says which.
+- **It is built in the open, in the AI era.** Much of this project was written by people working
+  with AI assistants, held to account by tests and by sources. That makes it a good time to join
+  in: an idea, a correction or a fix from you can be on the live site within days.
+  **Issues, fixes and ideas are all welcome.**
 
-This is the rule the whole project is organised around. A friendly drawing of something that is
-not really there is the exact failure a map like this must avoid, so nothing on screen is allowed
-to be ambiguous about how it was obtained.
-
-- **Measured** — a real position from a real fetch.
-- **Propagated** — worked forward from real orbital elements, and the card says how old they are.
-- **Illustrative** — a *drawing*. A rocket's ascent arc is always this: the real trajectory is not
-  published by anyone, so the arc is shaped from the target orbit and labelled as a drawing.
-- **Sample** — bundled demonstration data. Nothing was fetched. Drawn with a dashed halo.
-
-Three object classes are sample data today: asteroids, deep-space probes, and reentries. Not
-because it was easier — because NASA JPL's APIs send **no `Access-Control-Allow-Origin` header at
-all**, so a browser genuinely cannot call them, and Space-Track needs a login. Fixing that means a
-small scheduled job; until then the app says so on the object rather than pretending.
-
----
-
-## The odd things we sent
-
-Between the satellites and the probes there is a third kind of thing: what went up because
-somebody smuggled it aboard, bolted it on, or simply left it where it fell. A family photograph
-lying in the dust at Descartes. Two golf balls. Thirty million pages on nickel discs, at the
-bottom of a crater a lander made. A gold record eight years past Pluto. A car.
-
-![The Tesla Roadster and Starman, with the card open beside them](assets/readme/oddities.png)
-
-They live in `registry/oddities.yaml`, eight rows, and every row has to say **two separate things
-about itself** before it is allowed on the map — because one field cannot say both:
+## What you can do with it
 
 | | |
 |---|---|
-| **where it is** | `in_orbit` · `on_surface` · `attached` to something the app already draws · `came_home` · `unknown` |
-| **how well anyone knows** | `measured` · `inferred` · `illustrative` · `inherit`, which is the carrier's and never better than it |
+| ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 26 trips and 205 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
+| **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
-That split decides everything downstream. **Five get a dot and a model.** **Two are not objects in
-space, they are parts of objects in space** — the Voyager Golden Record, and the three aluminium
-figures riding Juno — so they are drawn as children of their carrier's model, and a trip that
-visits one flies the camera to the carrier, which is where the thing actually is. And **one is
-drawn nowhere at all.** Alan Bean's silver astronaut pin is somewhere near the Apollo 12 site in
-an unidentified crater and nobody knows which; it gets no propagator, no geometry and no dot. It
-is still a record — search finds it, the card opens — and the card says nobody knows. A dot on
-this map is a claim, and for that one there is no claim to make.
+<img src="assets/screenshots/phone.webp" alt="Space Radar on a phone: the Earth, the aurora and the satellites above a bottom sheet" width="230" align="right">
 
-<table>
-<tr>
-<td width="45%"><img src="assets/readme/oddity-card.png" alt="The lightsaber's card: a measured position, a myth corrected with its source, and what the drawing gets wrong"><br><b>The one that came home.</b> The <i>Return of the Jedi</i> prop spent fourteen days on STS-120 sealed in foam and never came out of its box, and it stands in Houston now. Every claim on this card says where it came from — including the last one, which admits that what is drawn is a Graflex flash handle: the kind of thing, not this exact one.</td>
-<td width="55%"><img src="assets/readme/oddities-layer.png" alt="The layer list, with Odd things we sent among the others"><br><b>One row among the others.</b> Adding an odd thing is a row in the registry and nothing at all under <code>site/js/</code>: a generator mirrors the file into the browser copy, and CI refuses a stale mirror.<br><br>They get no tenth colour and no tenth silhouette. They borrow the probe's, because this is not a tenth kind of object — it is a reason for going up.</td>
-</tr>
-</table>
+- **Follow anything in orbit.** The ISS, Hubble, Starlink trains, debris: where it is, how fast,
+  whether it is in sunlight, and when it passes over you.
+- **See the deep sky.** Real photographs of 30 nebulae and galaxies in their true places, with an
+  exposure control, and the whole sky in other light: infrared, microwaves, gamma rays.
+- **Go anywhere, at any time.** Fly from a rooftop to the edge of the Milky Way; drag the time
+  scrubber to the next eclipse; follow eight missions along their own timelines.
+- **Teach with it.** Present mode sets a trip's words large for a room and waits for your
+  clicker. After one visit it works offline, and it installs like an app.
+- **Put it in your page.** One live object or one trip as an
+  [embed](docs/EMBEDDING.md), with no tracker and no cookie.
+- **Use it on a phone.** The same map, one sheet, one thumb.
 
-**“Often said.”** Half of these objects are famous for something that is not true, so the card
-has a block for it, and every correction carries the source of the correction. Shepard's second golf
-ball did not go 200 yards — the film was measured in 2021 and it went 40. The Roadster is not
-heading for the asteroid belt; it crosses Mars's orbit and will never meet the planet. The
-tardigrades on the Moon are not living there. It is the most distinctive thing in the app, and it
-is one twenty-one-line function in `cards.js`.
+Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · 70 spacecraft and
+shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
+"Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
+reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled
+so, of planets nobody has seen · shareable links, postcards and a photo mode · full keyboard control.
 
-**The drawings are drawings, and they say so.** Seven builders, one deliberate detail each: the
-fourteen-ray pulsar map on the record cover, the warp in the wrapped photograph, the tardigrade's
-rearmost pair of legs pointing backwards the way a real one's do, Starman's elbow out of the
-window. Each is measured against a triangle budget written in its own registry row, and each
-carries a line on the card naming what the drawing knowingly gets wrong. The pulsar map is two to
-three times oversized. The nickel stack is laminated in four bands, not twenty-five. Nobody knows
-which way the Roadster points, so it is drawn level, and the red is ours.
+### Links
 
----
+The address bar is the view: what is selected, the moment on the clock, the map and the trip stop
+are all in it, so copying it is sharing what you see. A trip has two link forms. `/t/<trip>.html`
+is a small page of its own with the trip's picture and words, the one to paste into a chat or a
+post so it unfurls; it opens the app at the trip. `#trip=<trip>&stop=<n>` is the app itself at
+that stop, the one the address bar shows while you fly. Moving through a trip does not add to the
+browser's history: Back is not "previous stop", it leaves the trip for the page you came from (the
+trip has its own Previous). Back and Forward between two links you opened put the whole view back
+each time: the selection, the clock, the map and the stop.
 
-## Trips — the camera flies it for you
-
-A **trip** is a chain of shots with a card at each one, and the camera flies between them. Five
-ship today: *Where people are living in space right now*, *The strangest things we have ever sent*,
-which visits the objects above, *To the edge of what we know*, which leaves the Solar System,
-*Where we have landed on the Moon*, which stands on ten landing sites in the order they happened,
-and *Out past Jupiter, to the farthest thing we sent*, which goes from Io to Voyager 1 and centres
-the map on each system it visits, because that is the only place its worlds are drawn where they
-are.
-
-<table>
-<tr>
-<td width="50%"><img src="assets/readme/trip-intro.png" alt="The intro card: six stops, about two minutes"><br><b>It tells you the price first.</b> “6 stops · about 2 minutes” is computed from the flights and the dwells by the generator, not typed in by a person — so the number a visitor is promised and the number the browser runs are the same number.</td>
-<td width="50%"><img src="assets/readme/trip.png" alt="A stop on the trip: Voyager 1, with the Golden Record's card"><br><b>Everything lives in the letterbox.</b> The controls sit inside the two black bars, so they cost nothing from the picture. This stop's card is about the Golden Record; the camera is at Voyager 1, because that is where the record is.</td>
-</tr>
-</table>
-
-A still cannot show the part that matters, so: the camera does not simply teleport. For each stop
-it searches a hundred and eight standing points and takes one where the subject is actually lit,
-times the flight from how far it has to go in log space, arcs out over an apex and back when the
-two stops are far apart sideways, and then **keeps drifting while you read** — one signed arc of
-up to thirty-four degrees, never a lap. How far it drifts is a number in the stop's own row, and
-one stop sets it to zero, because the last shot of that trip wants to be still.
-
-The rule the whole feature is built on is that **a trip may not promise a stop it will not
-deliver.** A stop that cannot be found today is dropped *before* the count is shown. A trip that
-falls below its own minimum is offered greyed out **with its reason**, never quietly hidden —
-a missing feature and a broken one look identical when you hide one.
-
-The other half is that leaving has to be free, or nobody will start:
-
-- **Touching the camera pauses the trip. It never throws you out.** Nudge the view, take your time,
-  press Resume and it flies back to the stop it left.
-- **Escape leaves immediately, with no confirmation, and the camera does not move** — you keep the
-  view you were looking at, and the card stays open on the stop you were on.
-- **`prefers-reduced-motion` turns every flight into a cut**, not into a faster flight —
-  compressing a four-second sweep into one second makes the trigger worse, not better. It also
-  stops the auto-advance, and the reading time comes from the card's own word count, so nothing
-  about the camera can shorten it.
-- The layers a trip switched on, and the clock speed it clamped, are put back exactly as they were.
-
-**Every view has a link, and the address bar is it.** Copy it mid-trip and you have
-`#trip=moon-landings&stop=3`: the same trip's intro, then the same stop. The other keys are
-`#at=europa` (select and fly to a thing, by its id), `#t=2027-08-02T10:00:00Z&rate=60` (the
-clock, absent means now), `#stage=saturn` (what the map is centred on) and `#m=now` (the moment),
-in any combination. For sharing there is a short page per trip, `spaceradar.ai/t/moon-landings.html`,
-which carries the trip's title, blurb and picture for a chat unfurler and opens the same thing.
-Everything is written with `replaceState`, so **Back is not Previous Stop**: it leaves the site
-the way it always did, and a link into a trip is one history entry. A link that names a trip or
-an object this map does not have says so in one line and shows the default view.
-
-Adding a trip is a row in `registry/tours.yaml` and a row per stop, and nothing under `site/js/`.
-Twenty-six refusals guard that file; the one that forbids a trip id from colliding with a layer id
-caught a real collision the first time it ran, and the newest refuses a stop about a world its own
-stage draws nearer and larger than it is, because the camera would fly to where that world really
-is and arrive at empty sky.
-
----
-
-## Beyond the Solar System — the scale ladder
-
-Near the Earth one scene unit is a thousand kilometres, which is right for a satellite and useless
-for a star: Proxima Centauri would be forty billion units away, past what a GPU can hold. So the
-map has **rungs**: stages where one unit is a light-year, a kiloparsec, or a million light-years,
-centred on the Sun. Select a star, a nebula or a black hole and the map climbs to the rung it lives
-on; the sky-sphere you see from Earth — which is only true from inside the Solar System — fades out,
-and the same stars come back as places.
-
-What is out there, and where every number came from:
-
-- **109 389 stars** with a measured distance, from the HYG Stellar Database (Gaia and Hipparcos),
-  sized on the GPU by how bright they would look from wherever the camera is — and past the
-  brightest star in Earth's sky they grow a glare, so Sirius from a light-year out is a blaze, and
-  the Sun, from out here, is one more star. The 10 224 stars whose distance nobody has measured are
-  counted and **not drawn** on an invented shell.
-- **Every confirmed planet around another star** (6 332 as of the catalogue copy's date), from the
-  NASA Exoplanet Archive, drawn *at its star* — the orbit is far below a pixel at any zoom — with
-  its size and mass in Earths, its year, and how it was found.
-- **209 nebulae, clusters and galaxies** at sourced distances: the 110 Messier objects and 99 more
-  placed by hand from the page each row names — the Magellanic Clouds, the Local Group's dwarfs,
-  Omega Centauri, the Carina Nebula, the Heart and Soul, the Antennae. Each glows as wide as it
-  measures (the size, not the shape, and the card says so). OpenNGC has positions for 13 372
-  deep-sky objects and no distances, so the rest are not placed as places, and the file says so.
-- **The Milky Way** as a point cloud built from published measurements — Reid et al. 2019's fitted
-  spiral arms and the distance to the centre, the disc's measured size, the debated bar at the
-  middle of its range — and called an *illustration* everywhere it appears. Nobody has seen our
-  galaxy from outside. The same model, moved to Andromeda, scaled to the size its card prints and
-  tilted as measured (77°, north-west edge nearest), stands in for Andromeda, and says so.
-- **Twenty extremes** — black holes, pulsars, a magnetar, Eta Carinae and Betelgeuse — with a fact sheet each: position, distance, mass or spin exactly
-  as the source prints them, and the page it was read from, on the card.
-
-Picking is fair to the small thing: a tap scores by distance to an object's *edge*, and the smaller
-thing wins when both are within reach — a satellite drawn over Earth is what the finger means. A
-long press on a crowded spot lists what is under it. Planets are objects like everything else:
-searchable (*Luna*, *the Red Planet*), listed with a count, tappable, with a card that says how much
-nearer than true they are drawn and offers to make them the centre of the map.
-
-Under the layers, **How far** is a breadcrumb — Moon, Sun, Neptune, Proxima, the Pleiades, the
-galactic centre, Andromeda, M87's black hole — and under it the honesty line: how much of the known
-sky this map draws, with sources.
-
----
-
-## Finishing the front end — what the studies taught
-
-Three competitors were studied (satellitemap.space, orbitalradar.com, satellitetracker3d.com) and the
-best of each was taken, as data where a registry could hold it:
-
-- **Colour by** — one click recolours every dot by a fact it already carries: height, orbit tilt, or
-  how long it has been up, from `registry/colorkeys.yaml`; the legend counts the dots on screen and
-  says how many have no value rather than guessing one.
-- **Sunlit or in shadow** — every Earth-orbiting dot dims when it is in Earth's shadow, and its card
-  says which; a shadow-cylinder test in scene units, ten times a second, for the whole sky.
-- **The orbit line** — select anything that laps and one closed lap is drawn from the same elements as
-  the dot; the card says so. **The trajectory chart** on the card shows height and the ground track
-  over the next lap and a half, broken at the date line.
-- **Trains** — a fresh launch's satellites are one thing: who leads (by orbital phase), whether it is
-  still climbing as a line (a registry threshold), and when the line comes over you.
-- **Provisional objects** — a launch the public catalogue has not numbered yet is drawn dimmer, classed
-  *inferred* whatever its elements' age, and its card says where the number will come from.
-- **Space weather** — one line at the top of the status panel: NOAA's Kp, the word it means, how old the
-  reading is by NOAA's own stamp, and whether it was read live or from our copy.
-- **Data-saver and a frame-rate latch** — on a slow or metered connection the two heavy catalogues wait
-  until asked for; when frames stay slow for three seconds the picture drops to one pixel per pixel
-  without the Milky Way backdrop — once, and said in the panel.
-- **Labels, the Next list, search to its spec** — names over the selection, its train and the nearest
-  notable things (never the catalogue); a Next moment that lists launches, close approaches, perihelia,
-  meteor-shower peaks (with the Moon that night and, once you set a place, when the radiant is
-  highest — the sky view marks it), storms that bring auroras, and passes, from what is already
-  loaded; eight search rows with whole words first, an announced fallback, and nicknames as a registry.
-
----
-
-## Nine silhouettes, learned once
-
-![The nine object classes and their colours](assets/readme/classes.svg)
-
-Size on screen encodes *class*, never true size — at true scale every one of these is invisible.
-The real size lives on the card as something you can picture instead.
-
-**Inside a class, the big populations get their own shape.** A Starlink is a flat rectangle with an
-array hinged to it; a Dove is a 10 × 30 cm brick between two flaps; a navigation satellite is
-defined by the parabolic dish it does *not* carry; a radar imager squints, because a radar cannot
-image what is directly beneath it. Where a shape stands in for a family rather than for one
-spacecraft, the card says so in those words: *the kind of thing, not this exact one*.
-
-**Rockets are the exception, and they are drawn per family.** Every launch used to be the same
-white tube. `registry/rockets.yaml` now holds **forty-nine launch vehicles**, and four fields carry
-the recognition at forty pixels: the shape of the strap-ons, what sits on top, the nozzle pattern,
-and the taper of the body. A number nobody could source is not written down — the field is left
-out and the builder falls back to a class-typical proportion, or the row is omitted entirely and
-the launch falls through to the generic rocket, which the card says out loud. **Thirty-four of the
-forty-nine have no documented livery**, because colour lives in photography and not in
-specifications; those rows draw in the neutral default and their cards say nothing at all about
-colour. Two widely repeated colour claims that no source supports are called out in the rows that
-would have carried them.
-
----
-
-## How it works
-
-![Public APIs, a static host, and a browser that does the physics](assets/readme/architecture.svg)
-
-There is **no server, no database and no build step.** The browser fetches a handful of public
-APIs, caches them, and does the orbital mechanics itself:
-
-- **SGP4** for every object in Earth orbit, the same model the catalogues are published for.
-- **Kepler** propagation from published elements for asteroids and comets.
-- **Sun, Moon, planets, Pluto, Jupiter's four big moons, eclipses and twilight** computed offline
-  by an ephemeris library — no network call at all for the most-used part of the app. Phobos,
-  Deimos, Enceladus, Titan, Triton and Charon too, from orbits fitted to JPL Horizons and checked
-  against it (`site/js/propagate/moons.js` has the measured error).
-- **Alt-azimuth** from your position for the sky view, including whether a satellite is sunlit
-  while you are in darkness, which is what decides if you can actually see it.
-
-Measured on the live site: **17 555 objects, 11 draw calls, WebGL2, device pixel ratio clamped to
-2.** The whole scene is a handful of instanced meshes.
-
-### Try it in thirty seconds
+## Run it locally (the long version)
 
 ```bash
 git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar
-python3 -m http.server 8177 --directory site
+python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-Then open <http://127.0.0.1:8177>. That is the entire toolchain. `site/` is what gets served, byte
-for byte — there is nothing to compile.
+That is the whole toolchain: there is nothing to install or compile. For Windows, classrooms,
+a school server, a USB stick, and **running with no internet**, see
+**[docs/RUN_LOCALLY.md](docs/RUN_LOCALLY.md)**. Each [release](https://github.com/Sara-Managed-Projects/space-radar/releases)
+is a zip that already contains a saved copy of the data and starts offline.
 
-### Put it on your own bucket
-
-```bash
-./scripts/provision.sh --bucket your-unique-bucket-name
-./scripts/deploy.sh    --bucket your-unique-bucket-name --distribution E1ABCDEF23456
-```
-
-`provision.sh` makes a **private** S3 bucket, an origin access control, and a CloudFront
-distribution whose ARN is the only thing the bucket policy admits. HTTPS matters here beyond good
-manners: geolocation and device orientation only work in a secure context, so a plain HTTP bucket
-cannot run the sky view. Both scripts take `--dry-run`.
-
-### Your own domain
-
-```bash
-# 1. the certificate MUST be in us-east-1, whatever region the bucket is in
-aws acm request-certificate --region us-east-1 \
-  --domain-name example.com --subject-alternative-names www.example.com \
-  --validation-method DNS
-
-# 2. add the CNAME records it asks for at your DNS host, wait for ISSUED, then:
-./scripts/attach-domain.sh --distribution E1ABCDEF23456 \
-  --domain example.com --domain www.example.com
-```
-
-The script refuses to run against a certificate that is not yet issued, and against a name the
-certificate does not cover — both of which otherwise fail deep inside CloudFront with an unhelpful
-message.
-
-**The apex catches everyone once.** A bare domain cannot be a CNAME, and CloudFront has no fixed
-IP for an A record. Either use Route 53 (an ALIAS record at the apex), a DNS host that flattens
-CNAMEs, or forward the apex to `www` and point `www` at the distribution. The script prints the
-right instruction for whichever names you attached.
-
----
-
-## What is in the repository
+## How it is built
 
 ```
-site/                 the entire app, served as-is
-  index.html          the shell; reports a failed boot in words, never a black screen
-  js/propagate/       frames and the six propagators, one signature between them
-  js/data/            fetching, caching, parsing, and the bundled sample data
-  js/scene/           renderer, stage, worlds, Earth shader, starfield, glyphs, models
-  js/sky/             pass prediction and the ground-up view
-  js/ui/              cards, controls, the sources panel, the phone drawers, the trip, and the
-                      GitHub link in the corner
-  vendor/             three.js, satellite.js, astronomy-engine
-  models/             forty-four NASA models, loaded one at a time when you get close
-  textures/ data/     planet textures and the star catalogue
-  t/ og/              one generated page per trip (the share URL a chat unfurler reads) and the
-                      picture it shows
-registry/             eleven YAML files. Adding a world, an object class, a data source, an event
-                      type, a launch vehicle, an odd thing or a whole trip is a ROW here — not a
-                      code change. CI enforces it, and refuses a stale generated mirror.
-scripts/              provision, deploy, the validator, the three mirror generators, and the
-                      README screenshot script
-tests/                registry validation, the module contract, a growth test, and a refusal test
-                      that breaks every rule on purpose to prove the validator still says no
+site/        the whole app, served as it is: plain ES modules, three.js, no bundler, no framework
+registry/    YAML files that say what exists: worlds, layers, data sources, trips, models, budgets
+scripts/     generators that turn a registry into the JavaScript the browser reads, and the checks
+tests/       more than 150 node and python test files; no browser needed
+harvest/     a small scheduled job that saves each public data source for the site to read
+docs/        running it, a first pull request, a map of the code, embedding, releasing
 ```
 
-**The registry is the architecture.** `tests/test_growth.py` adds Phoebe — a moon two levels
-down the world tree, so its frame has to compose through Saturn — and proves it is five registry
-rows and nothing under `site/js/` but the generated mirrors. If that test ever fails, the
-architecture regressed, whatever the feature that caused it. The one registry the browser keeps
-by hand is `worlds.yaml` (a world also carries its texture's measured colour and how it is drawn,
-in `scene/worlds.js`), and `scripts/check_registry.py` refuses any drift between the two.
-
----
-
-## The stack
-
-![three.js r185, satellite.js 7.1.0, astronomy-engine 2.1.19, plain ES modules](assets/readme/stack.svg)
-
-| | |
-|---|---|
-| **Rendering** | [three.js](https://threejs.org) r185, WebGL2, logarithmic depth buffer, instanced glyphs |
-| **Orbital mechanics** | [satellite.js](https://github.com/shashwatak/satellite-js) 7.1.0 — SGP4/SDP4 |
-| **Astronomy** | [astronomy-engine](https://github.com/cosinekitty/astronomy) 2.1.19 — planets, eclipses, rise and set |
-| **Language** | Plain ES modules. No bundler, no npm at runtime, no framework, no CDN. |
-| **Hosting** | S3 behind CloudFront. Private bucket, origin access control, HTTPS. |
-| **CI** | GitHub Actions — registry validation, the module contract, and screenshots of the real app |
-
-Everything is vendored into `site/vendor/`. Nothing is fetched from a third-party CDN at runtime,
-and the only outbound call the page makes to anyone but its own origin is an optional cloud-cover
-forecast for the sky view.
-
----
-
-## Where the data comes from
-
-Everything here is public, free, and used within its stated terms. **[CREDITS.md](CREDITS.md)** has
-the full list with licence texts and required attribution lines.
-
-| Source | What it gives | Attribution |
-|---|---|---|
-| [CelesTrak](https://celestrak.org) | orbital elements for everything in Earth orbit | Orbital data: CelesTrak (T. S. Kelso) |
-| [The Space Devs](https://thespacedevs.com) | launches, pads, agencies, missions | Launch data by The Space Devs |
-| [NASA Deep Space Network](https://eyes.nasa.gov/dsn/) | which dish is talking to which spacecraft, live | NASA/JPL |
-| [NOAA SWPC](https://services.swpc.noaa.gov) | geomagnetic activity and the aurora oval | NOAA Space Weather Prediction Center |
-| [Minor Planet Center](https://minorplanetcenter.net) | comet orbital elements | IAU Minor Planet Center |
-| [Solar System Scope](https://www.solarsystemscope.com/textures/) | planet and Milky Way textures | CC BY 4.0 |
-| [d3-celestial](https://github.com/ofrohn/d3-celestial) | star catalogue and constellation lines | Olaf Frohn, BSD-3-Clause |
-| [HYG Stellar Database](https://codeberg.org/astronexus/hyg) | 119 614 stars with distances, names, colours (v4.4) | David Nash, CC BY-SA 4.0 |
-| [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu) | every confirmed exoplanet (pscomppars) | Caltech/IPAC for NASA, DOI 10.26133/NEA13 |
-| [OpenNGC](https://github.com/mattiaverga/OpenNGC) | positions, types and sizes of the Messier objects | Mattia Verga, CC BY-SA 4.0 |
-| Wikipedia | Messier distances; the Magellanic Clouds; black-hole and pulsar fact sheets | facts, each row cites its page |
-| Reid et al. 2019, ApJ 885:131 | the Milky Way's spiral arms and the distance to its centre | the illustrative galaxy model |
-
-**If you fork this, read CelesTrak's usage policy.** It allows one download per file per two hours
-and firewalls clients that retry a rejection. The app already honours it with a per-source cache;
-please do not remove that.
-
----
+Adding a moon, a landing site, a search alias or a whole trip is a **row in a registry**, not a
+code change, and CI holds the project to that. Satellites move by SGP4, asteroids and comets by
+Kepler's equation, the Sun, Moon and planets by an ephemeris library, all in the browser.
 
 ## Contributing
 
-Issues and pull requests are welcome. The things most worth doing, roughly in order:
+It is meant to be easy and fun.
 
-1. **The scheduled harvester.** Move the API calls out of the browser into a small cron job that
-   writes JSON snapshots. It is what turns the three `sample` classes into live ones, and it is the
-   single biggest improvement available.
-2. **More shapes for the long tail.** Forty-four NASA models ship and they cover the famous
-   objects; nineteen procedural shapes cover the big populations, so about 77 % of the catalogue
-   now reads as *what it is* rather than as a generic satellite. The remaining 3 800 are mostly
-   debris and the constellations nobody publishes dimensions for — Kuiper is blocked on two facts,
-   its bus size and how many solar arrays it has, and that is a research problem rather than a
-   drawing one. `scripts/check-model-reach.py` will tell you what any new mapping would actually
-   reach before you build it.
-3. **More trips.** Five ship. The registry supports four target forms; `group:` (frame several
-   objects at once) and `view:` (“the next time it crosses your sky”) are designed and not built,
-   and each of them unlocks a trip that wants it.
-4. **Frame rate on real phones.** The budgets in the code are targets, not measurements. Numbers
-   from an actual mid-range Android would be genuinely useful.
-5. **Copy.** Every card should be readable by a curious twelve-year-old. Some are not yet.
+- **[Your first pull request, in ten minutes](docs/FIRST_PR.md)**: fork, run, change, check with one
+  command (`scripts/check.sh`), and what happens after you open it. Or press
+  [Open in Codespaces](https://codespaces.new/Sara-Managed-Projects/space-radar) and install nothing.
+- **[A map of the code](docs/ARCHITECTURE.md)**: one page, with the file to edit for the twelve
+  commonest changes.
+- **[Four ways in](docs/CONTRIBUTE_WITHOUT_CODE.md)**: fix a fact, translate, add a sky culture or a
+  trip stop, or write code.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: recipes for a trip, an object or a layer, and the style.
+  [GOVERNANCE.md](GOVERNANCE.md) says who decides; [CONTRIBUTORS.md](CONTRIBUTORS.md) says who has helped.
 
-Before opening a PR, run what CI runs:
+- Start with a good first issue: [pick one by track](docs/FIRST_PR.md#pick-a-task-2-minutes), from the
+  ones nobody has begun. Larger work is marked [help wanted](https://github.com/Sara-Managed-Projects/space-radar/labels/help%20wanted).
+- Found a wrong number or a wrong name? A [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)
+  with a source is gold.
+- Have an idea, or teach with it? [Tell us](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose).
+- Please read the [Code of Conduct](CODE_OF_CONDUCT.md). Security reports go through
+  [SECURITY.md](SECURITY.md); other help is in [SUPPORT.md](SUPPORT.md).
 
-```bash
-python3 scripts/check_registry.py        # the eleven registries validate
-python3 scripts/gen_rockets_js.py --check   # the browser's copy of the registry is current
-python3 scripts/gen_oddities_js.py --check  #   "
-python3 scripts/gen_tours_js.py --check     #   "
-python3 scripts/gen_trip_pages.py --check   # one share page per trip, current
-python3 scripts/check_copy.py            # no user-visible string outside copy/en.js
-python3 tests/test_growth.py             # adding a world is still just a registry row
-python3 tests/test_refusals.py           # the validator still refuses what it claims to
-node     tests/test_contract.mjs         # imports resolve, and every drawn shape fits its budget
-```
+Releases come out about monthly; see the [changelog](CHANGELOG.md) and
+[how we release](docs/RELEASING.md).
 
-Screenshots for this file come from the real app, in a browser, against live data:
+## Data and credits
 
-```bash
-python3 -m http.server 8177 --directory site &
-node scripts/shots.mjs --base=http://127.0.0.1:8177 --out=assets/readme
-#   --only=trip,oddities   to retake one or two rather than all of them
-```
+Space Radar stands on data and work that other people publish for free. Thank you.
 
----
+**Data and APIs**
+
+[![CelesTrak](https://img.shields.io/badge/orbits-CelesTrak-1f6feb)](https://celestrak.org)
+[![JPL Horizons and SBDB](https://img.shields.io/badge/ephemerides-NASA%2FJPL%20Horizons%20%C2%B7%20SBDB%20%C2%B7%20CNEOS-1f6feb)](https://ssd.jpl.nasa.gov)
+[![Launch Library 2](https://img.shields.io/badge/launches-The%20Space%20Devs-1f6feb)](https://thespacedevs.com/llapi)
+[![NASA GIBS](https://img.shields.io/badge/clouds%20%26%20Earth%20data-NASA%20GIBS-1f6feb)](https://nasa-gibs.github.io/gibs-api-docs/)
+[![NASA Treks](https://img.shields.io/badge/Moon%20%26%20Mars%20tiles-NASA%20Treks%20%C2%B7%20USGS-1f6feb)](https://trek.nasa.gov)
+[![NOAA SWPC](https://img.shields.io/badge/space%20weather-NOAA%20SWPC-1f6feb)](https://www.swpc.noaa.gov)
+[![NOAA nowCOAST](https://img.shields.io/badge/lightning-NOAA%20nowCOAST-1f6feb)](https://nowcoast.noaa.gov)
+[![GDACS](https://img.shields.io/badge/storms-GDACS-1f6feb)](https://www.gdacs.org)
+[![NASA Exoplanet Archive](https://img.shields.io/badge/exoplanets-NASA%20Exoplanet%20Archive-1f6feb)](https://exoplanetarchive.ipac.caltech.edu)
+[![NASA DSN Now](https://img.shields.io/badge/deep%20space%20network-NASA%20DSN%20Now-1f6feb)](https://eyes.nasa.gov/dsn/)
+[![Wikidata](https://img.shields.io/badge/observatories-Wikidata-1f6feb)](https://www.wikidata.org)
+[![Open Notify](https://img.shields.io/badge/crews-Open%20Notify-1f6feb)](http://open-notify.org)
+
+**Catalogues, maps, models and pictures**
+
+[![HYG](https://img.shields.io/badge/stars-HYG%20v4.4%20%C2%B7%20d3--celestial-8250df)](https://codeberg.org/astronexus/hyg)
+[![OpenNGC](https://img.shields.io/badge/deep%20sky-OpenNGC%20%C2%B7%20Wikipedia-8250df)](https://github.com/mattiaverga/OpenNGC)
+[![NASA 3D Resources](https://img.shields.io/badge/70%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
+[![Solar System Scope](https://img.shields.io/badge/planet%20maps-Solar%20System%20Scope%20%C2%B7%20NASA%20%C2%B7%20USGS-8250df)](https://www.solarsystemscope.com/textures/)
+[![Natural Earth](https://img.shields.io/badge/countries-Natural%20Earth-8250df)](https://www.naturalearthdata.com)
+[![Other light](https://img.shields.io/badge/other%20light-WISE%20%C2%B7%20WMAP%20%C2%B7%20Fermi%20via%20CDS-8250df)](CREDITS.md#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips)
+[![Nebula photographs](https://img.shields.io/badge/photographs-ESA%2FHubble%20%C2%B7%20ESO%20%C2%B7%20NOIRLab%20%C2%B7%20EHT-8250df)](CREDITS.md)
+
+**Code, type and sound**
+
+[![three.js](https://img.shields.io/badge/rendering-three.js-2da44e)](https://threejs.org)
+[![satellite.js](https://img.shields.io/badge/SGP4-satellite.js-2da44e)](https://github.com/shashwatak/satellite-js)
+[![astronomy-engine](https://img.shields.io/badge/ephemeris-astronomy--engine-2da44e)](https://github.com/cosinekitty/astronomy)
+[![Lucide](https://img.shields.io/badge/icons-Lucide-2da44e)](https://lucide.dev)
+[![Fonts](https://img.shields.io/badge/type-Inter%20%C2%B7%20Barlow%20%C2%B7%20JetBrains%20Mono-2da44e)](CREDITS.md#10-fonts)
+[![Music](https://img.shields.io/badge/music%20%26%20sounds-John%20Bartmann%20%C2%B7%20Freesound%20(CC0)-2da44e)](CREDITS.md#9-audio--music-and-sounds)
+[![Voice](https://img.shields.io/badge/narration-Kokoro--82M%20(synthetic)-2da44e)](CREDITS.md#9b-audio--the-trips-narration-a-synthetic-voice)
+
+**[CREDITS.md](CREDITS.md)** has every one of them with its licence, its required credit line and
+what we changed. None of these organisations endorses Space Radar.
+
+> **Forking it?** Read [CelesTrak's usage policy](CREDITS.md#41-celestrak--read-this-before-you-deploy-a-fork)
+> first: one download per file per two hours. The app's cache honours it; please keep that.
 
 ## Licence
 
-The project's own code is [MIT](LICENSE). Vendored libraries, textures and catalogues keep their
-own licences — all of them are listed in [CREDITS.md](CREDITS.md), and all of them permit this use.
-
-One thing in the page is neither ours nor licensed to us: the **GitHub mark** in the top corner is
-GitHub's trademark, drawn from GitHub's own published file, **unmodified**, because that is the
-condition on which their brand guidelines allow it to link to GitHub. `CREDITS.md` §4.6 says where
-it came from and how that was checked, and `scripts/check_registry.py` refuses a `marks` row that
-claims the glyph was changed.
+- **The code** (everything we wrote: `site/js`, `site/css`, `scripts`, `tests`, `harvest`, `tools`,
+  the registries and these documents) is **[MIT](LICENSE)**.
+- **Data and assets keep their owners' licences**: vendored libraries (MIT, ISC, BSD), planet maps
+  (CC BY 4.0 and public domain), star catalogues (CC BY-SA 4.0, BSD), photographs (CC BY 4.0), the other-light sky tiles (ODbL 1.0),
+  the constellation pictures (Free Art License 1.3, copyleft: `site/data/skyart/LICENSE.txt`), other peoples' sky figures (CC BY-SA 4.0),
+  NASA models (public domain), fonts (SIL OFL 1.1), music (CC0). Data fetched live or saved under
+  `site/data/v1/` belongs to its publisher under the publisher's terms. [CREDITS.md](CREDITS.md)
+  is the full list, including the few terms we have not been able to confirm.
+- The GitHub mark in the app is GitHub's trademark, used unmodified under GitHub's logo rules.
 
 <div align="center">
 <sub>Built with real orbital mechanics and a lot of respect for the people who publish the data for free.</sub>

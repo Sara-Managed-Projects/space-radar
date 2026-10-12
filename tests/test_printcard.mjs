@@ -26,6 +26,17 @@ check(printSize(NaN).w === 1800, 'an unknown aspect is landscape');
 const clock = { now: () => Date.UTC(2027, 7, 2, 10, 6, 35) };
 const a = caption({ clock }, { id: 'europa', name: 'Europa' }, null);
 check(a.title === 'Europa' && a.when === '2027-08-02, 10:06 UTC' && a.mark === 'spaceradar.ai', `a selection names itself and the instant (${JSON.stringify(a)})`);
+// Internal #376: a picture drawn at another shutter than the camera's says so beside the instant.
+{
+  const rec = { id: 'm42', name: 'Orion Nebula' };
+  const at = (mode) => caption({ clock, exposure: { mode: () => mode } }, rec, null);
+  check(at('camera').when === '2027-08-02, 10:06 UTC' && at('camera').exposure === '', 'the default exposure (Camera) adds nothing to the caption');
+  check(/Deep stretch/.test(at('deep').when) && at('deep').when.startsWith('2027-08-02, 10:06 UTC') && at('deep').exposure, `a Deep picture says so (${at('deep').when})`);
+  check(/eye/.test(at('eye').when) && at('eye').exposure, `an Eye picture says so (${at('eye').when})`);
+  check(at('nonsense').when === '2027-08-02, 10:06 UTC', 'an unknown mode adds nothing');
+  const honest = caption({ clock }, rec, null, null, { honesty: true });
+  check(/not a photograph/.test(honest.honesty) && caption({ clock }, rec, null).honesty === undefined, 'photo mode\'s strip says it is a drawing; the postcard\'s band is as it was');
+}
 const b = caption({ clock }, null, { phase: 'dwell', tourTitle: 'Chasing the solar eclipse', stopTitle: 'The shadow on the ground' });
 check(/Chasing the solar eclipse/.test(b.title) && /The shadow on the ground/.test(b.title), `a trip names the trip and its stop (${b.title})`);
 const c = caption({ clock }, null, { phase: 'idle', tourTitle: 'Old trip' });
@@ -54,6 +65,49 @@ const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
 check(/PDF/.test(COPY.share.pdf) && /JPEG/.test(COPY.share.jpeg), 'the share sheet offers both formats');
 const named = caption({ clock }, { id: 'sat-25544', name: 'ISS (ZARYA)' }, null, 'International Space Station');
 check(named.title === 'International Space Station', `the caption is the card's name, not the catalogue's (${named.title})`);
+
+// Public #460: the postcard wears the exposure on screen. It can only fail to if the print frame is
+// drawn from anything but the live scene, or if the print path builds a sky of its own: renderTo()
+// renders the SAME scene and camera, whose materials carry the shutter (starfield.setExposure, the
+// nebulae's shared uniforms), and nothing on the way resets it.
+{
+  const { readFileSync } = await import('node:fs');
+  const compose = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
+  const renderer = readFileSync(join(ROOT, 'site/js/scene/renderer.js'), 'utf8');
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  // Through renderFramed(): photo mode narrows the field of view to its frame (public #288) and
+  // puts it back; with no frame given it is renderTo() and nothing else.
+  check(/const frame = api && typeof api\.renderTo === 'function' \? renderFramed\(ctx, api, size, opts\.fovScale\) : null;/.test(compose), 'the postcard\'s frame is rendererApi.renderTo() of the live scene');
+  const framed = /function renderFramed\(ctx, api, size, fovScale\) \{([\s\S]*?)\n\}\n/.exec(compose);
+  check(!!framed && (framed[1].match(/return api\.renderTo\(size\.w, size\.h\)/g) || []).length === 2 && /finally \{\s*cam\.fov = fov;/.test(framed[1]) && !/new THREE|setExposure|toneMappingExposure/.test(framed[1]), 'renderFramed() is renderTo() of the live scene, with the field of view put back');
+  const body = /function renderTo\(width, height\) \{([\s\S]*?)\n  \}\n/.exec(renderer);
+  check(!!body && (body[1].match(/renderer\.render\(scene, camera\)/g) || []).length === 2 && !/new THREE\.Scene|setExposure|toneMappingExposure/.test(body[1]), 'renderTo() draws the one scene with the one camera and touches no exposure');
+  check(!/setExposure|createExposure|exposureLook|DEFAULT_EXPOSURE/.test(compose), 'the print composer never sets a shutter of its own');
+  check(/exposure\.onChange\(\(mode, look, byVisitor\) => \{\s*starfield\.setExposure\(look\.milkyWay\);\s*if \(ctx\.nebulae\) ctx\.nebulae\.setExposure\(look\);/.test(main), 'a change of shutter is written into the live scene\'s materials, which the print reads');
+}
+
+// THE FACES BEFORE THE DRAWING (spec 0045 task 4, internal #430): a canvas does not wait for a web
+// font. The composer asks for both weights of the band's face and waits at most a second.
+{
+  const { facesReady } = await import(join(ROOT, 'site/js/ui/printcompose.js'));
+  const { readFileSync } = await import('node:fs');
+  const asked = [];
+  const quick = { fonts: { load: (f) => { asked.push(f); return Promise.resolve([]); } } };
+  const t0 = Date.now();
+  check(await facesReady("'Inter', system-ui, sans-serif", quick, 1000) === true && Date.now() - t0 < 200, 'faces that load are waited for, and no longer');
+  check(asked.join(' | ') === "600 16px 'Inter' | 400 16px 'Inter'", `the band's two weights of its first family are asked for: ${asked.join(' | ')}`);
+  const never = { fonts: { load: () => new Promise(() => {}) } };
+  const t1 = Date.now();
+  const late = await facesReady("'Inter'", never, 60);
+  check(late === false && Date.now() - t1 >= 50 && Date.now() - t1 < 500, `a face that never loads holds the picture for the limit and not longer (${Date.now() - t1} ms)`);
+  const broken = { fonts: { load: () => Promise.reject(new Error('no')) } };
+  check(await facesReady("'Inter'", broken, 60) === true, 'a face that fails to load does not throw: the fallback is drawn');
+  check(await facesReady("'Inter'", {}, 60) === false && await facesReady("'Inter'", null, 60) === false, 'no font loader, no wait');
+  const src = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
+  const make = src.slice(src.indexOf('export async function makePostcard'));
+  check(make.indexOf('await facesReady();') > 0 && make.indexOf('await facesReady();') < make.indexOf('const picture = compose(') && make.indexOf('await facesReady();') < make.indexOf('measureText'), 'makePostcard waits for the faces before it measures the tag and before it composes');
+  check(make.indexOf('renderFramed(') < make.indexOf('await facesReady();'), 'and after the frame is taken: the scene is photographed at the press, not a second later');
+}
 
 if (problems.length) { console.error('printcard FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('printcard ok: a 6 x 4 in postcard at 300 dpi in the screen\'s orientation, captioned with what it shows and when, as a JPEG or a well-formed one-page PDF');

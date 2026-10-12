@@ -19,7 +19,7 @@ from _genmirror import Mirror, pick  # noqa: E402
 
 # `source` reaches the phone because the card prints it beside the line: a claim on a card says
 # where it was read, as an exotic's fact sheet does.
-FIELDS = ("hip", "proper", "name", "why", "source")
+FIELDS = ("hip", "proper", "name", "why", "source", "radius_suns", "radius_err_suns", "teff_k", "teff_err_k", "physical_source")
 
 
 def render(doc: dict) -> list:

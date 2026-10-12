@@ -1,0 +1,131 @@
+{
+ "title": "EONET Events",
+ "description": "Natural events from EONET.",
+ "link": "https://eonet.gsfc.nasa.gov/api/v3/events",
+ "events": [
+  {
+   "id": "EONET_25043",
+   "title": "Prescribed Fire D3 Bear RX, Greenlee, Arizona",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_25043",
+   "closed": null,
+   "categories": [
+    {
+     "id": "wildfires",
+     "title": "Wildfires"
+    }
+   ],
+   "sources": [
+    {
+     "id": "IRWIN",
+     "url": "https://irwin.doi.gov/observer/incidents/2026-AZASF-000967"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 5072.0,
+     "magnitudeUnit": "acres",
+     "date": "2026-10-02T17:58:00Z",
+     "type": "Point",
+     "coordinates": [
+      -109.401883,
+      33.447133
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_25042",
+   "title": "Wildfire Bull, Washoe, Nevada",
+   "description": "15 Miles W from Reno, NV",
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_25042",
+   "closed": null,
+   "categories": [
+    {
+     "id": "wildfires",
+     "title": "Wildfires"
+    }
+   ],
+   "sources": [
+    {
+     "id": "IRWIN",
+     "url": "https://irwin.doi.gov/observer/incidents/2026-NVTMFX-030869"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 1529.0,
+     "magnitudeUnit": "acres",
+     "date": "2026-10-02T14:26:00Z",
+     "type": "Point",
+     "coordinates": [
+      -119.987683,
+      39.539067
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_25045",
+   "title": "Prescribed Fire Starvation 11A Rx, Wallowa, Oregon",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_25045",
+   "closed": null,
+   "categories": [
+    {
+     "id": "wildfires",
+     "title": "Wildfires"
+    }
+   ],
+   "sources": [
+    {
+     "id": "IRWIN",
+     "url": "https://irwin.doi.gov/observer/incidents/2026-ORWWF-000669"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 719.0,
+     "magnitudeUnit": "acres",
+     "date": "2026-09-30T15:52:00Z",
+     "type": "Point",
+     "coordinates": [
+      -117.251676,
+      45.701354
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_24964",
+   "title": "Wildfire SAN FRANCISCO 2, Starr, Texas",
+   "description": "2 Miles S from LA CASITA, TX",
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_24964",
+   "closed": null,
+   "categories": [
+    {
+     "id": "wildfires",
+     "title": "Wildfires"
+    }
+   ],
+   "sources": [
+    {
+     "id": "IRWIN",
+     "url": "https://irwin.doi.gov/observer/incidents/2026-TXRGR-000402"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 510.0,
+     "magnitudeUnit": "acres",
+     "date": "2026-09-30T08:56:00Z",
+     "type": "Point",
+     "coordinates": [
+      -98.692222,
+      26.286667
+     ]
+    }
+   ]
+  }
+ ]
+}

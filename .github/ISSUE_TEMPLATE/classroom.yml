@@ -1,0 +1,72 @@
+name: A classroom or museum report
+description: You tried Space Radar with students, on a projector or on a kiosk screen. Tell us what worked and what did not.
+labels: [documentation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Teachers and museum staff find out in an hour what we cannot find out in a year.
+        You need no technical words: say what you saw. How to run a copy in a school is in
+        [docs/RUN_LOCALLY.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/RUN_LOCALLY.md).
+  - type: dropdown
+    id: setting
+    attributes:
+      label: Where did you use it?
+      options:
+        - A classroom (shared screen or projector)
+        - Students on their own devices
+        - A museum, library or planetarium screen (kiosk or autopilot)
+        - A talk or a club
+        - Somewhere else
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: The device
+      description: "For example: a 2016 Windows laptop, a Chromebook, a Raspberry Pi 4, an iPad."
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: The browser and its version
+      description: "For example: Chrome 130, Safari on iPadOS 18. If you do not know, write that."
+    validations:
+      required: true
+  - type: input
+    id: screen
+    attributes:
+      label: The screen
+      description: "A projector at 1024x768? A 4K TV? A phone held up to a class?"
+  - type: dropdown
+    id: offline
+    attributes:
+      label: Online or offline?
+      options:
+        - Online (spaceradar.ai)
+        - Offline copy from a release zip
+        - A copy I serve from my own computer or school server
+  - type: textarea
+    id: tried
+    attributes:
+      label: What did you try?
+      description: "Which trip, which mode (present, autopilot), how many people, how long."
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      description: "What worked, what was slow or broken, what the students asked that it could not answer. A photo of the screen is welcome."
+    validations:
+      required: true
+  - type: dropdown
+    id: quote
+    attributes:
+      label: May we quote you?
+      description: "Optional. We would like to learn from your experience in the open."
+      options:
+        - "Yes, you may quote this (without my name)"
+        - "Yes, with my name and school or museum"
+        - "No, please keep this to yourselves"

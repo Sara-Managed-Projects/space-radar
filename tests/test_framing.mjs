@@ -125,5 +125,81 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   check(fitDistance([], project) === null, 'no points, no distance');
 }
 
+// Issue #419: a world is met on its lit face. litOffset is the direction from the world's centre to
+// the camera; the share of the disc that is lit from there is (1 + cos(angle to the Sun)) / 2.
+{
+  const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const len = (a) => Math.hypot(a.x, a.y, a.z);
+  const up = { x: 0, y: 1, z: 0 };
+  for (const sun of [{ x: 1, y: 0, z: 0 }, { x: -3, y: 0.4, z: 2 }, { x: 0, y: 0, z: -7 }, { x: 0.2, y: 5, z: 0.1 }, { x: 0, y: 1, z: 0 }, { x: 0, y: -2, z: 0 }]) {
+    const o = F.litOffset(sun, up);
+    const lit = (1 + dot(o, sun) / len(sun)) / 2;
+    check(Math.abs(len(o) - 1) < 1e-9, `the offset for a Sun at ${JSON.stringify(sun)} is a unit vector (${len(o)})`);
+    check(lit > 0.88 && lit < 0.94, `the camera sees ${(lit * 100).toFixed(0)} % of the disc lit: gibbous, with the terminator in view`);
+    check(Math.abs(Math.acos(dot(o, sun) / len(sun)) - F.ARRIVAL_PHASE) < 1e-9, 'it stands ARRIVAL_PHASE round from the Sun');
+  }
+  // Turned round the camera's up, so the terminator is upright: the offset is no higher than the Sun.
+  const o = F.litOffset({ x: 1, y: 0, z: 0 }, up);
+  check(Math.abs(o.y) < 1e-12, `with the Sun on the horizon the camera stays on it (${o.y})`);
+  // The old arrival, beyond the subject from the stage's world: for a world farther from the Sun than
+  // the stage that is the night side. Reproduced: a camera on the anti-Sun side sees 0 % lit.
+  const old = { x: -1, y: 0, z: 0 };
+  check((1 + dot(old, { x: 1, y: 0, z: 0 })) / 2 === 0, 'the old arrival, on the far side from the Sun, sees a black disc');
+  check(F.litOffset(null, up) === null && F.litOffset({ x: 0, y: 0, z: 0 }, up) === null, 'no Sun direction, no offset: the rig keeps its own framing');
+  check(Math.abs(len(F.litOffset({ x: 1, y: 2, z: 3 }, null)) - 1) < 1e-9, 'no up is the scene\'s +Y');
+  // 2026-10-07 (internal #426): a world may name the face it is known by. When that face is lit the
+  // camera takes the side of the Sun's direction that sees more of it; a face in the dark changes
+  // nothing, and either way the disc is as lit as before.
+  {
+    const sun = { x: 1, y: 0, z: 0 };
+    const plain = F.litOffset(sun, up);
+    const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+    const near = { x: 0.5, y: 0.1, z: -Math.sign(plain.z) };   // lit, and on the side the plain arrival turns away from
+    const turned = F.litOffset(sun, up, undefined, near);
+    check(Math.sign(turned.z) === -Math.sign(plain.z) && dot(turned, near) > dot(plain, near), 'a lit face on the other side turns the arrival toward it');
+    check(Math.abs(dot(turned, sun) - dot(plain, sun)) < 1e-12 && Math.abs(len(turned) - 1) < 1e-9, 'and the disc is exactly as lit as before');
+    const same = F.litOffset(sun, up, undefined, { x: 0.5, y: 0, z: Math.sign(plain.z) });
+    check(same.z === plain.z, 'a lit face already on the arrival side changes nothing');
+    const dark = F.litOffset(sun, up, undefined, { x: -0.5, y: 0, z: -Math.sign(plain.z) });
+    check(dark.z === plain.z && dark.x === plain.x, 'a face in the dark changes nothing: the lit side is the rule');
+  }
+}
+
+// AN ARRIVAL ON THE EARTH'S GROUND (internal #420): no nearer than the map can bear, and at night
+// the whole Earth turned so the edge of daylight is in the picture.
+{
+  const { groundDistanceKm, nightGroundPose, GROUND_MIN_KM, GROUND_MAX_KM, NIGHT_MAX_LEAN, NIGHT_VIEW_ZENITH, openingPlan, OPENING_MS } = F;
+  const d900 = groundDistanceKm(900, 45);
+  check(Math.abs(d900 - 5432) < 5, `at 900 px one screen pixel is one 5 km map pixel from 5 432 km (${d900.toFixed(0)})`);
+  check(groundDistanceKm(300, 45) === GROUND_MIN_KM && groundDistanceKm(4000, 45) === GROUND_MAX_KM, 'and never nearer than the floor nor farther than the ceiling');
+  check(d900 > 100 * 35, 'a launch pad is met from a hundred times farther than the 35 km it was');
+  const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const at = (zenDeg) => ({ x: Math.cos((zenDeg * Math.PI) / 180), y: 0, z: Math.sin((zenDeg * Math.PI) / 180) });
+  const sun = { x: 150e6, y: 0, z: 0 };
+  check(nightGroundPose(at(40), sun) === null && nightGroundPose(at(92), sun) === null, 'daylight and civil twilight keep the ordinary arrival');
+  const dusk = nightGroundPose(at(105), sun);
+  check(dusk && dusk.lean === 0 && Math.abs(dot(dusk.offset, at(105)) - 1) < 1e-9, 'just past twilight the camera is over the place: the terminator is 15 degrees from it');
+  for (const z of [120, 150, 179, 180]) {
+    const n = nightGroundPose(at(z), sun);
+    const len = n && Math.hypot(n.offset.x, n.offset.y, n.offset.z);
+    check(n && Math.abs(len - 1) < 1e-9, `zenith ${z}: a unit direction`);
+    if (!n) continue;
+    const camZen = Math.acos(dot(n.offset, { x: 1, y: 0, z: 0 }));
+    const fromPlace = Math.acos(Math.max(-1, Math.min(1, dot(n.offset, at(z)))));
+    check(fromPlace <= NIGHT_MAX_LEAN + 1e-9, `zenith ${z}: the place stays on the disc (${deg(fromPlace)} degrees from its middle)`);
+    // From 3.5 radii the limb is 73.4 degrees from the camera's own ground point: the terminator
+    // (90 degrees from the Sun) is on the disc when that point is nearer the Sun than 163 degrees.
+    check(camZen - Math.acos(1 / 3.5) < Math.PI / 2 - 0.3, `zenith ${z}: at least 17 degrees of daylight on the disc (camera over zenith ${deg(camZen)})`);
+    check(z < 170 ? Math.abs(camZen - Math.max(NIGHT_VIEW_ZENITH, (z * Math.PI) / 180 - NIGHT_MAX_LEAN)) < 1e-6 : true, `zenith ${z}: it leans toward the Sun, by no more than it must`);
+  }
+  check(nightGroundPose(null, sun) === null && nightGroundPose(at(150), { x: 0, y: 0, z: 0 }) === null, 'no place, or no Sun, no pose');
+  // The opening (public #287).
+  check(openingPlan({}) && openingPlan({}).ms === OPENING_MS && OPENING_MS >= 6000 && OPENING_MS <= 10000, 'a first visit is one shot of six to ten seconds');
+  check(openingPlan({}).fromKm > 384400 && openingPlan({}).fromKm < 1400000, 'the shot starts past the Moon and short of the hand-off to the Sun stage');
+  for (const no of [{ seen: true }, { link: true }, { reducedMotion: true }, { embed: true }, { automated: true }, { hidden: true }]) {
+    check(openingPlan(no) === null, `no opening when ${Object.keys(no)[0]}`);
+  }
+}
+
 if (problems.length) { console.error('framing FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('framing ok: the ISS, a geostationary satellite, a pad, a thing 50 km up and a site on the Moon all arrive with the limb on screen and clear of the model; small bodies from at least 5 % of a radius; the reticle held at every distance; the Planets tab fitted to its band');

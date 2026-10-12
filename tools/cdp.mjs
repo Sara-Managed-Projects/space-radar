@@ -27,12 +27,12 @@
 // BUDGET YOUR BOOTS. Each boot of the app pulls the live catalogues. About fifteen in an hour got
 // this machine a 403 from CelesTrak on 2026-09-17, which then looks exactly like an empty layer.
 import { spawn } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA] [--profile=dir] [--only-local] [--gl=gpu]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -69,11 +69,19 @@ const REDUCED = process.argv.includes('--reduced-motion');
 // compositor produced in between as name-<n>-<epoch ms>.png -- the frames a visitor would have
 // seen, stamped, to line up with Date.now() read in the page.
 const SHOT_DIR = arg('shot-dir', '');
+// The folder is made here: writing into one that did not exist threw inside the binding's handler,
+// `cdpShot` never resolved and the run died at its cap with no output (internal #454, one run lost).
+if (SHOT_DIR) mkdirSync(SHOT_DIR, { recursive: true });
 // --bytes=out.json: every request the page made, as `{url, status, bytes}` with `bytes` the
 // protocol's encodedDataLength (what crossed the wire, headers included, compressed if the server
 // compressed). Added for spec 0044 (2026-09-28): `node tests/test_first_visit_bytes.mjs
 // --from=out.json` sums it with the same rules CI applies, so the live site and a local server can
 // be measured the way screens.yml measures the CI server.
+// Each row also has `at`, the wall clock (ms) the request started, and `after: true` when that is
+// past `window.__srFirstVisitOver` -- the mark js/main.js writes when the first of its
+// after-the-first-visit timers fires (internal #415 item 3). The test leaves those rows out, so a
+// probe may go on to walk the app after the boot it measures, and a slow machine cannot push the
+// warm-up into the number.
 const BYTES = arg('bytes', '');
 const requests = new Map();
 // --net=4g|3g: a known connection. Headless Chrome's network-quality estimate at boot is whatever it
@@ -86,17 +94,42 @@ const NET = arg('net', '');
 // before the app boots (spec 0051: the Tonight card guesses a place from the time zone, and its
 // acceptance screenshots are taken from Chicago without leaving this machine's own zone).
 const TIMEZONE = arg('timezone', '');
+// --autoplay: let an AudioContext run without a user gesture. A click() from the probe is not one,
+// so without this the app's sound is "on" over a suspended context: every fetch can be watched,
+// but no clip is decoded into sound that plays, nothing ducks and no playhead moves (spec 0069's
+// probe). Still muted: nothing is heard.
+const AUTOPLAY = process.argv.includes('--autoplay');
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
+// --profile=dir: keep the browser's profile in `dir` and leave it there, so a second run is a
+// SECOND VISIT: the same caches, storage and service worker. Without it every run is a first visit
+// in a profile that is deleted afterwards. Added 2026-10-05 for the offline proof (site/sw.js):
+// run once with the server up, stop the server, run again against the same profile.
+// --gl=gpu: the machine's own GPU instead of SwiftShader (tools/render-trip.mjs does the same). On a
+// laptop a step that takes 30 s in software takes two, and anything timed (a six-second toast, a
+// veil) behaves as it does for a visitor. The default stays software: CI has no GPU, and every
+// pixel number in the reviews was measured there.
+const GL = arg('gl', 'swiftshader');
+const PROFILE = arg('profile', '');
+// --only-local: no name but localhost resolves, for the page AND for its service worker (--block
+// is set on the page's session and a worker's fetches are not in it). The app then has no internet
+// at all, whatever host it asks.
+const ONLY_LOCAL = process.argv.includes('--only-local');
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const profile = mkdtempSync(join(tmpdir(), 'cdp-'));
+const profile = PROFILE || mkdtempSync(join(tmpdir(), 'cdp-'));
 const chrome = spawn(CHROME, [
   '--headless=new', '--remote-debugging-port=' + PORT, '--user-data-dir=' + profile,
+  // An automated browser says so (navigator.webdriver), as CI's Playwright does: the app then
+  // skips what is for a person's first visit (the opening shot, the welcome), and a probe meets
+  // the settled home. A probe that wants the opening calls ctx.opening.play().
+  '--enable-automation',
   '--window-size=' + W + ',' + H, '--hide-scrollbars', '--mute-audio',
   // No GPU in headless: SwiftShader is a software GL that still runs the real three.js pipeline.
-  '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
+  ...(GL === 'gpu' ? ['--ignore-gpu-blocklist'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']),
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
   '--disable-backgrounding-occluded-windows', '--no-first-run', '--no-default-browser-check',
+  ...(AUTOPLAY ? ['--autoplay-policy=no-user-gesture-required'] : []),
+  ...(ONLY_LOCAL ? ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1'] : []),
   'about:blank',
 ], { stdio: ['ignore', 'ignore', 'pipe'] });
 let chromeErr = '';
@@ -163,6 +196,27 @@ try {
       }).catch((e) => logs.push('[cdp] cast failed: ' + e.message));
       return;
     }
+    // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', or
+    // `cdpInput('key', 'Tab')`: a REAL pointer or key, from the protocol. Added for the UI audit
+    // (spec 0061 task 6): `:hover` and `:active` answer only to the browser's own pointer, and
+    // `:focus-visible` only after a real key, so a probe that calls el.focus() and dispatches
+    // synthetic events photographs the rest state three times and calls them three states.
+    if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpInputRaw' && SHOT_DIR) {
+      const { type, x, y, key, token } = JSON.parse(m.params.payload);
+      shotQueue = shotQueue.then(async () => {
+        if (type === 'key') {
+          const code = { Tab: 9, Enter: 13, Escape: 27, ' ': 32, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40 }[key] || (key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0);
+          const base = { key, code: key.length === 1 ? 'Key' + key.toUpperCase() : key, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code };
+          await send(ws, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', ...base }, sessionIdRef.id);
+          await send(ws, 'Input.dispatchKeyEvent', { type: 'keyUp', ...base }, sessionIdRef.id);
+        } else {
+          const pressed = type === 'mousePressed' || type === 'mouseReleased';
+          await send(ws, 'Input.dispatchMouseEvent', { type, x, y, button: pressed ? 'left' : 'none', buttons: type === 'mousePressed' ? 1 : 0, clickCount: pressed ? 1 : 0 }, sessionIdRef.id);
+        }
+        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
+      }).catch((e) => logs.push('[cdp] input failed: ' + e.message));
+      return;
+    }
     if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpShotRaw' && SHOT_DIR) {
       const { name, token } = JSON.parse(m.params.payload);
       shotQueue = shotQueue.then(async () => {
@@ -174,7 +228,7 @@ try {
       return;
     }
     if (BYTES && m.method === 'Network.requestWillBeSent') {
-      requests.set(m.params.requestId, { url: m.params.request.url, status: 0, bytes: 0 });
+      requests.set(m.params.requestId, { url: m.params.request.url, status: 0, bytes: 0, at: Math.round((m.params.wallTime || 0) * 1000) });
       return;
     }
     if (BYTES && m.method === 'Network.responseReceived') {
@@ -228,6 +282,7 @@ try {
   if (SHOT_DIR) {
     await send(ws, 'Runtime.addBinding', { name: 'cdpShotRaw' }, sessionId);
     await send(ws, 'Runtime.addBinding', { name: 'cdpCastRaw' }, sessionId);
+    await send(ws, 'Runtime.addBinding', { name: 'cdpInputRaw' }, sessionId);
     await send(ws, 'Page.addScriptToEvaluateOnNewDocument', { source: `
       (() => {
         const waiting = new Map();
@@ -237,6 +292,11 @@ try {
           const token = 't' + (++n);
           waiting.set(token, resolve);
           window.cdpShotRaw(JSON.stringify({ name, token }));
+        });
+        window.cdpInput = (type, x, y) => new Promise((resolve) => {
+          const token = 'i' + (++n);
+          waiting.set(token, resolve);
+          window.cdpInputRaw(JSON.stringify(type === 'key' ? { type, key: x, token } : { type, x, y, token }));
         });
         window.cdpCast = (cmd, name) => new Promise((resolve) => {
           const token = 'c' + (++n);
@@ -289,6 +349,12 @@ try {
     for (const [k, ms] of top) console.error(`${ms.toFixed(0).padStart(7)} ms  ${(100 * ms / total).toFixed(1).padStart(5)} %  ${k}`);
   }
   if (BYTES) {
+    let over = 0;
+    try {
+      const r = await send(ws, 'Runtime.evaluate', { expression: 'Number(window.__srFirstVisitOver) || 0', returnByValue: true }, sessionId);
+      over = Number(r && r.result && r.result.value) || 0;
+    } catch { /* the page is gone: every row is counted, as before */ }
+    if (over) for (const q of requests.values()) if (q.at > over) q.after = true;
     writeFileSync(BYTES, JSON.stringify([...requests.values()], null, 1));
     trace('wrote ' + BYTES + ': ' + requests.size + ' requests');
   }
@@ -310,7 +376,7 @@ try {
   process.exitCode = 1;
 } finally {
   chrome.kill('SIGKILL');
-  try { rmSync(profile, { recursive: true, force: true }); } catch {}
+  if (!PROFILE) { try { rmSync(profile, { recursive: true, force: true }); } catch {} }
   await new Promise((r) => process.stdout.write('', r));
   process.exit(process.exitCode || 0);
 }

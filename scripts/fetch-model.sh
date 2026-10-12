@@ -25,6 +25,12 @@
 #     Ulysses        2 404 kB -> 163 kB      Mars Odyssey 5 665 kB -> 372 kB
 #     Hubble         1 655 kB -> 163 kB      Bennu          321 kB ->  23 kB
 #
+# TO KEEP THE MODEL'S OWN COLOURS (since 2026-10-05, and what every new model should do): run this
+# with --keep-raw, then scripts/bake-own-colours.mjs on the raw file. The optimize step below keeps
+# the geometry and loses the look -- the app then paints the whole spacecraft one class colour,
+# which is how the Apollo lunar module was salmon. The bake starts from NASA's file and writes the
+# flat colour of every part; its header says how.
+#
 # AFTER RUNNING THIS you still have to do two things by hand, deliberately:
 #   1. add a row to registry/models.yaml under `real_models:` -- CI refuses a model file with no
 #      row, and the row must say the licence, the credit AND what was modified;

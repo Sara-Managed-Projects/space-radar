@@ -80,6 +80,24 @@ attachable:
   - {id: deep-voyager-1,     horizons_id: "-31", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
   - {id: deep-voyager-2,     horizons_id: "-32", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
   - {id: deep-new-horizons,  horizons_id: "-98", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
+  # 2026-10-06, with the path files (registry/ephemerides.yaml): the two Pioneers, and two ended
+  # missions that are drawn only inside the years of their own path.
+  - {id: deep-pioneer-10,    horizons_id: "-23", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
+  - {id: deep-pioneer-11,    horizons_id: "-24", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
+  - {id: deep-cassini,       horizons_id: "-82", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-galileo,       horizons_id: "-77", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-mars-2020,     horizons_id: "-168", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  # 2026-10-07, with their NASA models.
+  - {id: deep-dawn,          horizons_id: "-203", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-maven,         horizons_id: "-202", emitted_by: "sample.js sampleDeepSpace(), LOST_ORBITERS"}
+  - {id: deep-rosetta,       horizons_id: "-226", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-near,          horizons_id: "-93", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-stardust,      horizons_id: "-29", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-deep-impact,   horizons_id: "-140", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-roman,         horizons_id: "-211", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-mars-odyssey,  horizons_id: "-53", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
+  - {id: deep-spitzer,       horizons_id: "-79", emitted_by: "sample.js sampleDeepSpace(), OSCULATING_CRAFT"}
+  - {id: deep-kepler,        horizons_id: "-227", emitted_by: "sample.js sampleDeepSpace(), OSCULATING_CRAFT"}
   - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   - {id: deep-parker,        horizons_id: "-96", emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
   - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
@@ -197,7 +215,7 @@ oddities:
     position_class: inferred          # the ANCHOR is measured; the object is not, and the card says both
     shape:
       build: golf-balls
-      budget_tris: 520
+      budget_tris: 680
       stands_for: family
       drawn_name: "two golf balls and the six-iron head"
       departure: "the two balls came to rest tens of metres apart at most, which is far smaller
@@ -245,7 +263,7 @@ oddities:
     position_class: inferred
     shape:
       build: wrapped-photo
-      budget_tris: 70
+      budget_tris: 290
       stands_for: family
       drawn_name: "a shrink-wrapped family snapshot lying in the dust"
       departure: "the print is drawn blank. The photograph on it is the Duke family's and this
@@ -299,7 +317,7 @@ oddities:
     position_class: inferred
     shape:
       build: disc-stack
-      budget_tris: 620
+      budget_tris: 820
       stands_for: variant
       drawn_name: "the stack of nickel discs and a tardigrade beside it"
       departure: "the 1 mm stack is thickened and laminated in four bands, not twenty-five, and

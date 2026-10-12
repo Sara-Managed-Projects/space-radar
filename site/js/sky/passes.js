@@ -91,10 +91,13 @@ function satrecOf(record) {
  * that can only mean one thing. No record supplies one yet, so today this returns null and
  * `magnitude` on every pass is an honest null.
  */
-function standardMagnitudeOf(record) {
+export function standardMagnitudeOf(record) {
   const m = record?.meta;
   if (!m) return null;
   for (const key of ['stdMag', 'standardMagnitude', 'intrinsicMagnitude']) {
+    // `Number(null)` is 0 and `Number('')` is 0: a record that says "no standard magnitude" with a null must
+    // not become a satellite as bright as Vega at 1000 km (internal #391, found in public #468).
+    if (m[key] === null || m[key] === undefined || m[key] === '' || typeof m[key] === 'boolean') continue;
     const v = Number(m[key]);
     if (Number.isFinite(v)) return v;
   }
@@ -356,6 +359,28 @@ export function predictPasses(records, observer, fromMs, hours, options = {}) {
 
   passes.sort((a, b) => a.startMs - b.startMs);
   return passes;
+}
+
+/**
+ * One pass as points across the sky, for drawing its arc on the sky view (pub #448):
+ * `[{ms, azDeg, altDeg, lit}]`, `n` of them from the pass's start to its end, `lit` while the
+ * satellite is in sunlight. Empty when the record cannot be propagated.
+ */
+export function passTrack(record, pass, observer, n = 48) {
+  const satrec = satrecOf(record);
+  const obs = normaliseObserver(observer);
+  if (!satrec || !obs || !pass || !(pass.endMs > pass.startMs)) return [];
+  const out = [];
+  for (let i = 0; i <= n; i += 1) {
+    const ms = pass.startMs + ((pass.endMs - pass.startMs) * i) / n;
+    const look = lookAt(satrec, ms, obs);
+    if (!look) continue;
+    const lit = pass.sunlit !== false
+      && (!Number.isFinite(pass.sunlitStartMs) || ms >= pass.sunlitStartMs - 1)
+      && (!Number.isFinite(pass.sunlitEndMs) || ms <= pass.sunlitEndMs + 1);
+    out.push({ ms, azDeg: look.az * RAD2DEG, altDeg: look.el * RAD2DEG, lit });
+  }
+  return out;
 }
 
 function buildPass(args) {

@@ -1,7 +1,7 @@
 // scene/galaxy.js -- the Milky Way as a place, and honestly a model (spec 0028 step 6).
 //
-// Contract: createGalaxy(scene, opts) -> { ensureGeometry, setVisible, setOpacity, rebuild, update,
-//   count, dispose, mode }
+// Contract: createGalaxy(scene, opts) -> { ensureGeometry, setVisible, setOpacity, setAndromedaShare,
+//   rebuild, update, count, dispose, mode }
 //
 // site/data/galaxy.bin is a point cloud built by scripts/build-galaxy.py from PUBLISHED NUMBERS --
 // Reid et al. 2019's fitted spiral arms and R0, the disc's measured size, the debated bar taken at
@@ -18,6 +18,11 @@
 // mapped star by star. The M31 record's card says so (data/parsers.js), as the Milky Way's does.
 // It shares the colours and weights, and costs one more position buffer and no download.
 //
+// AND IT STEPS BACK FOR THE PHOTOGRAPH (spec 0067, 2026-10-03). Along the line we see Andromeda on
+// there is something truer than our own galaxy's arms standing in for hers: a picture of her
+// (scene/nebulae.js). While that is drawn the stand-in is not -- setAndromedaShare(0) -- and off
+// that line, where a flat photograph would be the lie, the model comes back.
+//
 // Static like the stars: one buffer, rebuilt only when the stage changes (140 292 conversions,
 // float64, no allocation), and registry/lod.yaml fades it in as the camera leaves the stellar
 // neighbourhood (`galaxy-model`). It is never drawn from a world stage: from Earth it would be a
@@ -25,6 +30,8 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
+import { eclDirection } from './clusters.js';
+import { spread, defaultSchedule } from './spread.js';
 
 export const KPC_KM = 30856775814913670; // one kiloparsec (1 pc = 3.0857e13 km; the first draft wrote the parsec here)
 const HEADER = 12;
@@ -144,6 +151,71 @@ void main() {
 }
 `;
 
+// --- the dust lanes (public #428) ------------------------------------------------------------------
+//
+// AN ILLUSTRATION, LABELLED AS ONE (the galaxy's card says so, data/layers.js). Every spiral seen
+// from outside shows dark lanes of dust along the inner edges of its arms and, edge on, one dark
+// line through the middle of its disc. Ours has not been mapped that way from where we sit, so
+// nothing here is a measurement of the Milky Way's dust: the lanes are DERIVED from the model's own
+// arm points, each DUST_EVERY-th one moved DUST_INSET_KPC towards the centre and flattened to
+// DUST_FLATTEN of its height above the plane, and drawn as a patch that dims what is behind it.
+// The plane is the real one: its pole is the IAU's north galactic pole, RA 12h 51.4m, Dec +27.13
+// degrees (J2000; Wikipedia "Galactic coordinate system", read 2026-10-08).
+//
+// The three numbers are ours. No file: the lanes are made from galaxy.bin when it is built, and
+// cost one more draw of a third of the arms' points.
+export const NORTH_GALACTIC_POLE = { raDeg: 192.85, decDeg: 27.13 }; // 12h 51.4m = 192.85 degrees
+export const DUST_EVERY = 3;
+export const DUST_INSET_KPC = 0.35;
+export const DUST_FLATTEN = 0.3;
+export const DUST_DIM = 0.16;
+
+/**
+ * The dust patches' positions, in the model's own kiloparsecs. Pure.
+ * @returns {{ posKpc: Float32Array, count: number, normal: number[] }}
+ */
+export function dustLanes(posKpc, kind, count, centreKpc, every = DUST_EVERY) {
+  const n = eclDirection(NORTH_GALACTIC_POLE.raDeg, NORTH_GALACTIC_POLE.decDeg);
+  const out = [];
+  let seen = 0;
+  for (let i = 0; i < count; i++) {
+    if (kind[i] !== 3) continue;
+    if (seen++ % every) continue;
+    const x = posKpc[i * 3] - centreKpc[0], y = posKpc[i * 3 + 1] - centreKpc[1], z = posKpc[i * 3 + 2] - centreKpc[2];
+    const h = x * n[0] + y * n[1] + z * n[2];
+    const px = x - h * n[0], py = y - h * n[1], pz = z - h * n[2];
+    const r = Math.hypot(px, py, pz);
+    if (r < 1e-6) continue;
+    const k = Math.max(0, r - DUST_INSET_KPC) / r;
+    const hh = h * DUST_FLATTEN;
+    out.push(centreKpc[0] + px * k + hh * n[0], centreKpc[1] + py * k + hh * n[1], centreKpc[2] + pz * k + hh * n[2]);
+  }
+  return { posKpc: new Float32Array(out), count: out.length / 3, normal: n };
+}
+
+const DUST_VERT = /* glsl */ `
+uniform float uPixelRatio;
+uniform float uUnitsPerKpc;
+uniform float uPatchKpc;
+void main() {
+  vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  gl_Position = projectionMatrix * mv;
+  float dKpc = max( 1e-6, -mv.z / uUnitsPerKpc );
+  gl_PointSize = clamp( uPatchKpc / dKpc * 900.0, 2.0, 9.0 ) * uPixelRatio;
+}
+`;
+// Drawn with (0, 1 - alpha): the patch adds no light, it takes a share of what is there.
+const DUST_FRAG = /* glsl */ `
+uniform float uDust;
+void main() {
+  if ( uDust <= 0.0 ) discard;
+  float d = length( gl_PointCoord - vec2( 0.5 ) );
+  float a = 1.0 - smoothstep( 0.05, 0.5, d );
+  if ( a <= 0.0 ) discard;
+  gl_FragColor = vec4( 0.0, 0.0, 0.0, a * uDust );
+}
+`;
+
 /** Parse the binary. Exported for the test. */
 export function parseGalaxy(buffer) {
   const dv = new DataView(buffer);
@@ -185,22 +257,48 @@ export function createGalaxy(scene, opts = {}) {
   let builtFor = null;
   let loading = null;
   const uniforms = { uPixelRatio: { value: 1 }, uGain: { value: 0 }, uUnitsPerKpc: { value: 1 }, uPatchKpc: { value: 0.15 } };
-  // Andromeda shares every uniform but the patch size, which scales with the model.
-  const twinUniforms = { ...uniforms, uPatchKpc: { value: 0.15 * andromedaDiameterLy() / ANDROMEDA.templateDiameterLy } };
+  // Andromeda shares every uniform but the patch size, which scales with the model, and the gain,
+  // which also carries how much of her the photograph has left to the model (setAndromedaShare).
+  const twinUniforms = { ...uniforms, uGain: { value: 0 }, uPatchKpc: { value: 0.15 * andromedaDiameterLy() / ANDROMEDA.templateDiameterLy } };
+  let twinShare = 1;
+  let dustGeometry = null;
+  let dustPoints = null;
+  let dustKpc = null;
+  const dustUniforms = { uPixelRatio: uniforms.uPixelRatio, uUnitsPerKpc: uniforms.uUnitsPerKpc, uPatchKpc: uniforms.uPatchKpc, uDust: { value: 0 } };
 
   function ensureGeometry() {
-    if (data) return Promise.resolve(data);
     if (loading) return loading;
     loading = (opts.binBuffer
       ? Promise.resolve(opts.binBuffer)
       // `no-cache` = revalidate: the name never changes, the bytes do; unchanged, the answer is a 304.
       : fetch(String(src), { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error(`${src}: HTTP ${r.status}`); return r.arrayBuffer(); }))
-      .then((buf) => { data = parseGalaxy(buf); build(); rebuild(); return data; })
-      .catch((err) => { console.warn('galaxy: could not load', err); loading = null; return null; });
+      .then((buf) => {
+        data = parseGalaxy(buf);
+        // Built in pieces, one per turn (scene/spread.js): the points, the dust lanes, the Andromeda
+        // twin, then the positions. All in one task was the three-second stall on the galaxy rung.
+        return spread([buildPoints, buildDust, buildTwin, () => { builtFor = null; rebuild(); }], opts.schedule || defaultSchedule).then(() => data);
+      })
+      .catch((err) => { console.warn('galaxy: could not load', err); loading = null; data = null; return null; });
     return loading;
   }
 
-  function build() {
+  /**
+   * Fetch, build and compile ahead of the rung that draws it (main.js calls this on the stellar rung,
+   * in an idle moment). The shaders are compiled with every part shown for one compile and put back,
+   * so the first frame on the galaxy rung finds them ready. `renderer.compileAsync` waits for the
+   * driver's parallel compile where it has one; without it nothing is compiled early and the first
+   * frame pays as before.
+   */
+  function prewarm(renderer, camera) {
+    return ensureGeometry().then((d) => {
+      if (!d || !renderer || !camera || typeof renderer.compileAsync !== 'function' || !scene) return d;
+      const shown = [points, dustPoints, twinPoints].filter(Boolean);
+      for (const p of shown) p.visible = true;
+      return Promise.resolve(renderer.compileAsync(scene, camera)).catch(() => {}).then(() => { applyVisibility(); return d; });
+    });
+  }
+
+  function buildPoints() {
     const n = data.count;
     geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
@@ -220,10 +318,34 @@ export function createGalaxy(scene, opts = {}) {
     points.frustumCulled = false;
     points.renderOrder = -1;
     group.add(points);
+  }
 
+  function buildDust() {
+    const n = data.count;
     let cx = 0, cy = 0, cz = 0, nb = 0;
     for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
-    twinKpc = andromedaFromModel(data.posKpc, n, nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0]);
+    const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
+    // The dust lanes (dustLanes above): after the galaxy's own points and before everything else.
+    dustKpc = dustLanes(data.posKpc, data.kind, n, centre);
+    dustGeometry = new THREE.BufferGeometry();
+    dustGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(dustKpc.count * 3), 3));
+    dustPoints = new THREE.Points(dustGeometry, new THREE.ShaderMaterial({
+      vertexShader: DUST_VERT, fragmentShader: DUST_FRAG, uniforms: dustUniforms,
+      transparent: false, depthTest: false, depthWrite: false, toneMapped: false,
+      blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.ZeroFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+    }));
+    dustPoints.name = 'galaxy:dust';
+    dustPoints.frustumCulled = false;
+    dustPoints.renderOrder = -0.9;
+    group.add(dustPoints);
+  }
+
+  function buildTwin() {
+    const n = data.count;
+    let cx = 0, cy = 0, cz = 0, nb = 0;
+    for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
+    const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
+    twinKpc = andromedaFromModel(data.posKpc, n, centre);
     twinGeometry = new THREE.BufferGeometry();
     twinGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
     twinGeometry.setAttribute('aWeight', geometry.getAttribute('aWeight'));
@@ -250,12 +372,19 @@ export function createGalaxy(scene, opts = {}) {
     builtFor = key;
     if (!isLadderStage(stage.worldId)) { applyVisibility(); return; }
     const tMs = stage.tMs;
-    const fill = (src, geo) => {
+    const fill = (src, geo, count = data.count) => {
       const pos = geo.getAttribute('position').array;
-      for (let i = 0; i < data.count; i++) {
-        _km.x = src[i * 3] * KPC_KM;
-        _km.y = src[i * 3 + 1] * KPC_KM;
-        _km.z = src[i * 3 + 2] * KPC_KM;
+      // One matrix for the whole cloud (stage.affineFrom, internal #549), the exact call per point where the stage bends positions.
+      const A = stage.affineFrom(SUN_INERTIAL, tMs);
+      for (let i = 0; i < count; i++) {
+        const kx = src[i * 3] * KPC_KM, ky = src[i * 3 + 1] * KPC_KM, kz = src[i * 3 + 2] * KPC_KM;
+        if (A) {
+          pos[i * 3] = A.o[0] + A.x[0] * kx + A.y[0] * ky + A.z[0] * kz;
+          pos[i * 3 + 1] = A.o[1] + A.x[1] * kx + A.y[1] * ky + A.z[1] * kz;
+          pos[i * 3 + 2] = A.o[2] + A.x[2] * kx + A.y[2] * ky + A.z[2] * kz;
+          continue;
+        }
+        _km.x = kx; _km.y = ky; _km.z = kz;
         if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
         pos[i * 3] = _v.x; pos[i * 3 + 1] = _v.y; pos[i * 3 + 2] = _v.z;
       }
@@ -263,22 +392,38 @@ export function createGalaxy(scene, opts = {}) {
     };
     fill(data.posKpc, geometry);
     if (twinGeometry && twinKpc) fill(twinKpc, twinGeometry);
+    if (dustGeometry && dustKpc) fill(dustKpc.posKpc, dustGeometry, dustKpc.count);
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 30 * KPC_KM / stage.unitKm);
     uniforms.uUnitsPerKpc.value = KPC_KM / stage.unitKm;
     applyVisibility();
   }
 
+  let exposure = 1;
   function applyVisibility() {
     if (points) points.visible = layerOn && opacity > 0 && isLadderStage(stage.worldId);
     if (twinPoints) twinPoints.visible = !!(points && points.visible);
-    uniforms.uGain.value = opacity;
+    if (dustPoints) dustPoints.visible = !!(points && points.visible);
+    // By the model's opacity alone: dust is not light, and the shutter does not brighten it.
+    dustUniforms.uDust.value = DUST_DIM * opacity;
+    uniforms.uGain.value = opacity * exposure;
+    twinUniforms.uGain.value = opacity * twinShare * exposure;
   }
+  /**
+   * The shutter (scene/exposure.js `milkyWay`: 0.55 Eye, 1 Camera, 1.7 Deep): the model is the same
+   * faint light as the panorama it takes over from, and wears the same number (internal #343).
+   */
+  function setExposure(k) { exposure = Number.isFinite(k) && k > 0 ? k : 1; applyVisibility(); }
   function setVisible(on) { layerOn = on !== false; applyVisibility(); if (layerOn && opacity > 0 && isLadderStage(stage.worldId)) ensureGeometry(); }
   /** registry/lod.yaml's `galaxy-model` hook, 0..1. */
   function setOpacity(k) {
     opacity = Math.min(1, Math.max(0, Number(k) || 0));
     applyVisibility();
     if (layerOn && opacity > 0 && isLadderStage(stage.worldId)) ensureGeometry();
+  }
+  /** 1 = the model draws Andromeda; 0 = her photograph does (scene/nebulae.js), and the model waits. */
+  function setAndromedaShare(k) {
+    twinShare = Math.min(1, Math.max(0, Number(k)));
+    twinUniforms.uGain.value = opacity * twinShare * exposure;
   }
   function update(camera, renderer) {
     if (!points) return;
@@ -289,13 +434,17 @@ export function createGalaxy(scene, opts = {}) {
     if (points && points.material) points.material.dispose();
     if (twinGeometry) twinGeometry.dispose();
     if (twinPoints && twinPoints.material) twinPoints.material.dispose();
+    if (dustGeometry) dustGeometry.dispose();
+    if (dustPoints && dustPoints.material) dustPoints.material.dispose();
+    dustGeometry = null; dustPoints = null; dustKpc = null;
     twinGeometry = null; twinPoints = null; twinKpc = null;
     if (scene) scene.remove(group);
-    data = null; geometry = null; points = null; builtFor = null;
+    data = null; geometry = null; points = null; builtFor = null; loading = null;
   }
   return {
-    ensureGeometry, setVisible, setOpacity, rebuild, update, dispose, group,
+    ensureGeometry, prewarm, setVisible, setOpacity, setExposure, setAndromedaShare, rebuild, update, dispose, group,
     count: () => (data ? data.count : null),
+    dustCount: () => (dustKpc ? dustKpc.count : null),
     mode: () => (points && points.visible ? 'drawn' : 'hidden'),
   };
 }

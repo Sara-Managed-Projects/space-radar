@@ -141,5 +141,21 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   stage.setWorld('earth');
 }
 
+// 8. A WIDTH READ OFF AN INTERFEROMETER (internal #412): the four reddest and nearest dwarfs carry a sourced radius, and the record's width is then "measured".
+{
+  const { createStars3d } = await import(join(JS, 'scene/stars3d.js'));
+  const st = createStars3d(null);
+  const measured = STARS_NOTABLE.filter((r) => r.radius_suns > 0);
+  check(measured.length === 10 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read 2026-10-09\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `ten rows carry a radius with its error and the paper read today (${measured.length})`);
+  check(measured.filter((r) => r.teff_k > 0).every((r) => r.teff_err_k > 0), 'a temperature is only given with its error');
+  for (const row of measured) {
+    const rec = byId.get(`hip-${row.hip}`);
+    const ph = rec && st.physicalOf(rec);
+    check(ph && ph.how === 'measured' && Math.abs(ph.radiusKm / 695700 - row.radius_suns) < 1e-9 && (row.teff_k === undefined || ph.teffK === row.teff_k), `${row.name}: its width is the paper's, and says measured`);
+  }
+  const prox = byId.get('hip-70890');
+  check(prox && prox.meta.widthSource && /1208\.2431/.test(prox.meta.widthSource), 'Proxima carries where its width was read');
+  check(COPY.card.values.sunsWideMeasured.includes('measured') && !COPY.card.values.sunsWideMeasured.includes('estimated'), 'the card words for a measured width say measured');
+}
 if (problems.length) { console.error('famous stars FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`famous stars ok: ${famous.length} rows each reach one star record with its line and source, labels name them on the ladder, the card prints the line, search finds renamed stars both ways`);

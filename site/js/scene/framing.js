@@ -4,6 +4,7 @@
 // Contract: limbFraming({ r, R, distance, fovDeg, heightPx, subjectPx, upDot, room }) -> { distance, tilt, limb, worldBelow } | null
 //           limbAt(r, R, d, tilt) -> { g, theta, rho, cameraR } | null
 //           fitDistance(points, project, { lo, hi, band, margin }) -> distance
+//           litOffset(sun, up, phase, prefer) -> { x, y, z } | null   (unit, from a world's centre to the camera)
 // Pure: plain numbers in, plain numbers out, no three.js, so tests/test_framing.mjs can hold them.
 //
 // WHY LIMB FRAMING. An arrival used to put the camera on the far side of the object from the world,
@@ -206,4 +207,149 @@ export function discDistance(radius, { fovDeg = 45, aspect = 1, shareV = 1, shar
   const v = Math.atan(tanV * Math.max(0.1, Math.min(1, shareV)) * fill);
   const h = Math.atan(tanH * Math.max(0.1, Math.min(1, shareH)) * fill);
   return radius / Math.sin(Math.min(v, h));
+}
+
+/**
+ * How far round from the Sun's side the camera stands when it arrives at a world, radians: 0.6 is a
+ * gibbous disc, 91 % of it lit ((1 + cos 0.6) / 2), with the terminator on screen so craters and
+ * mountains near it throw shadows. Straight down the sunlight (0) is a full disc with no relief.
+ */
+export const ARRIVAL_PHASE = 0.6;
+
+/**
+ * The direction from a world's centre to the arriving camera, so that it meets the LIT face (issue
+ * #419). MEASURED 2026-10-03 on the live map: flying to Jupiter, Saturn, Mars, Pluto and Ganymede
+ * framed the dark hemisphere -- the rig's default arrival is "beyond the subject, looking back at
+ * the stage's world" (camera.js framingAngles), which for anything farther from the Sun than the
+ * stage is the night side. This is the Sun's direction turned `phase` round the camera's up, so
+ * the terminator is upright on the right of the disc and the picture keeps its horizon. Pure.
+ *
+ * WHICH SIDE OF THE SUN'S DIRECTION (2026-10-07, internal #426). Turning the other way round the
+ * same up is as good a picture -- the terminator upright on the LEFT -- and shows a different
+ * quarter of the world. Pluto arrived with its heart behind the limb, on a day the heart was in
+ * sunlight. So a world may name the face it is known by (`prefer`, from its centre, any length:
+ * scene/worlds.js faceDirOf), and when that face is on the lit hemisphere the camera takes
+ * whichever of the two sides sees more of it. A face in the dark changes nothing: the lit side is
+ * the rule and the face is only the tie-break.
+ *
+ * @param {{x:number,y:number,z:number}} sun  from the world toward the Sun, any length
+ * @param {{x:number,y:number,z:number}} up   the camera's up, any length
+ * @param {number} [phase]
+ * @param {{x:number,y:number,z:number}|null} [prefer]  from the world's centre to the face it is known by
+ * @returns {{x:number,y:number,z:number}|null} unit vector, or null when there is no Sun direction
+ */
+export function litOffset(sun, up, phase = ARRIVAL_PHASE, prefer = null) {
+  if (!sun) return null;
+  const sl = Math.hypot(sun.x, sun.y, sun.z);
+  if (!(sl > 0)) return null;
+  const s = { x: sun.x / sl, y: sun.y / sl, z: sun.z / sl };
+  let u = up && Math.hypot(up.x, up.y, up.z) > 0 ? up : { x: 0, y: 1, z: 0 };
+  // side = up x sun; when the Sun is along up, any perpendicular does.
+  let side = { x: u.y * s.z - u.z * s.y, y: u.z * s.x - u.x * s.z, z: u.x * s.y - u.y * s.x };
+  let l = Math.hypot(side.x, side.y, side.z);
+  if (l < 1e-6) {
+    u = Math.abs(s.x) < 0.9 ? { x: 1, y: 0, z: 0 } : { x: 0, y: 0, z: 1 };
+    side = { x: u.y * s.z - u.z * s.y, y: u.z * s.x - u.x * s.z, z: u.x * s.y - u.y * s.x };
+    l = Math.hypot(side.x, side.y, side.z);
+  }
+  const c = Math.cos(phase);
+  let k = Math.sin(phase) / l;
+  if (prefer && prefer.x * s.x + prefer.y * s.y + prefer.z * s.z > 0
+    && prefer.x * side.x + prefer.y * side.y + prefer.z * side.z < 0) k = -k;
+  return { x: s.x * c + side.x * k, y: s.y * c + side.y * k, z: s.z * c + side.z * k };
+}
+
+// --- an arrival at a point on the Earth's own ground (internal #420) -----------------------------
+//
+// SEEN 2026-10-06 by the regression walk: the home's first line flew to a storm on the night side
+// and showed a black screen with a label on nothing; a launch from Coming up arrived a few tens of
+// kilometres over its pad, where the day map (about 5 km to a pixel at its best) is a blur. Both
+// are the first things a visitor presses. Two rules, pure, and main.js flyToRecord applies them:
+//
+//   1. NO NEARER THAN THE MAP CAN BEAR: the distance at which one screen pixel is one map pixel.
+//   2. AT NIGHT THE WHOLE EARTH, TURNED SO THE EDGE OF DAYLIGHT IS IN THE PICTURE: the camera looks
+//      at the Earth's centre from the home view's distance, over the point when it is in twilight,
+//      and leaning toward the Sun by as much as it takes (and no more than NIGHT_MAX_LEAN, past
+//      which the point is on the limb) when it is deeper in the night. Nothing is lit that the Sun
+//      does not light: the point is where its mark and the city lights say, and the day is beside it.
+
+/** The day map's ground sample at its best, kilometres to a pixel, as internal #420 measured it. */
+export const GROUND_KM_PER_PX = 5;
+/** The floor and the ceiling of a ground arrival, kilometres above the ground. */
+export const GROUND_MIN_KM = 3000;
+export const GROUND_MAX_KM = 8000;
+/** Below this cosine of the Sun's zenith angle (96 degrees: the end of civil twilight) the ground is dark. */
+export const NIGHT_COS = Math.cos((96 * Math.PI) / 180);
+/** Where the camera's own ground point is kept, as a zenith angle of the Sun: the terminator is then 25 degrees from the disc's middle. */
+export const NIGHT_VIEW_ZENITH = (115 * Math.PI) / 180;
+/** The camera never leans farther from the point than this: at 55 degrees it is 82 % of the way to the limb. */
+export const NIGHT_MAX_LEAN = (55 * Math.PI) / 180;
+
+/** How far above the ground the camera stands for one screen pixel to be one map pixel. Pure, kilometres. */
+export function groundDistanceKm(heightPx, fovDeg = 45, kmPerPx = GROUND_KM_PER_PX) {
+  const h = heightPx > 0 ? heightPx : 800;
+  const d = (kmPerPx * h) / (2 * Math.tan(((fovDeg * Math.PI) / 180) / 2));
+  return Math.max(GROUND_MIN_KM, Math.min(GROUND_MAX_KM, d));
+}
+
+/**
+ * The night arrival: null in daylight and twilight, else the unit direction from the Earth's
+ * centre to the camera and how far it leans from the point toward the Sun. Pure.
+ * @param {{x,y,z}} point  from the world's centre to the place, any length
+ * @param {{x,y,z}} sun    from the world toward the Sun, any length
+ * @returns {{offset:{x:number,y:number,z:number}, lean:number, zenith:number}|null}
+ */
+export function nightGroundPose(point, sun) {
+  if (!point || !sun) return null;
+  const pl = Math.hypot(point.x, point.y, point.z);
+  const sl = Math.hypot(sun.x, sun.y, sun.z);
+  if (!(pl > 0) || !(sl > 0)) return null;
+  const p = { x: point.x / pl, y: point.y / pl, z: point.z / pl };
+  const s = { x: sun.x / sl, y: sun.y / sl, z: sun.z / sl };
+  const cosZ = Math.max(-1, Math.min(1, p.x * s.x + p.y * s.y + p.z * s.z));
+  if (cosZ >= NIGHT_COS) return null;
+  const zenith = Math.acos(cosZ);
+  const lean = Math.max(0, Math.min(NIGHT_MAX_LEAN, zenith - NIGHT_VIEW_ZENITH));
+  // The part of the Sun's direction square to the point; at local midnight any perpendicular does.
+  let q = { x: s.x - cosZ * p.x, y: s.y - cosZ * p.y, z: s.z - cosZ * p.z };
+  let ql = Math.hypot(q.x, q.y, q.z);
+  if (ql < 1e-6) {
+    const a = Math.abs(p.y) < 0.9 ? { x: 0, y: 1, z: 0 } : { x: 1, y: 0, z: 0 };
+    q = { x: a.y * p.z - a.z * p.y, y: a.z * p.x - a.x * p.z, z: a.x * p.y - a.y * p.x };
+    ql = Math.hypot(q.x, q.y, q.z);
+  }
+  const c = Math.cos(lean);
+  const k = Math.sin(lean) / ql;
+  return { offset: { x: p.x * c + q.x * k, y: p.y * c + q.y * k, z: p.z * c + q.z * k }, lean, zenith };
+}
+
+// --- the opening (public #287) -------------------------------------------------------------------
+//
+// A first visit used to land on a still Earth, then (2026-10-06) eased in from 2.4 home distances
+// in 2.4 s. It is now one shot of OPENING_MS: the same live scene, from OPENING_FROM_KM out, where
+// the Earth is a blue point among the stars and the Moon's path is inside the frame, turning
+// OPENING_TURN about the Earth on the way in so the Milky Way crosses behind it. The distance is
+// eased in its logarithm (scene/camera.js flyTo), so the approach reads as steady.
+//
+// OPENING_FROM_KM is past the Moon (384 400 km mean) and short of 1 400 000 km, where the Earth's
+// stage hands over to the Sun's (scene/handoff.js JOINS): the shot stays on one stage, with no
+// hand-off and nothing drawn for it that is not drawn for everyone.
+//
+// The words and the two buttons over it are ui/opening.js, fetched only when it plays. ANY input
+// ends it at once, on the home view (main.js). Never under reduced motion, never for a link to
+// somewhere (the link's own flight is the arrival), never in an embed, never for an automated
+// browser, and once per visitor.
+
+export const OPENING_FROM = 2.4;
+export const OPENING_FROM_KM = 900000;
+export const OPENING_MS = 8000;
+export const OPENING_TURN = 1.3;
+export const OPENING_KEY = 'sr:opening';
+
+/** Whether the opening plays, and how: null, or { from, fromKm, ms, turn }. Pure. */
+export function openingPlan({ seen = false, link = false, reducedMotion = false, embed = false, hidden = false, automated = false } = {}) {
+  // `automated`: a browser driven by a test or a screenshot job (navigator.webdriver) wants the settled
+  // home view on its first frame. CI's "is the Earth drawn" check read a globe 3.9 % of the frame mid-opening.
+  if (seen || link || reducedMotion || embed || hidden || automated) return null;
+  return { from: OPENING_FROM, fromKm: OPENING_FROM_KM, ms: OPENING_MS, turn: OPENING_TURN };
 }

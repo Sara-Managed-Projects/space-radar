@@ -37,9 +37,9 @@ texture_tiers:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_moon.jpg
+        file: site/textures/2k_moon.webp
         px: [2048, 1024]
-        bytes: 1053869
+        bytes: 640218
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
@@ -56,6 +56,9 @@ sources:
     list: harvest/lists/horizons-ids.yaml
     outputs: [phoebe-orbiters.json]
     attribution: "Ephemerides: JPL Horizons"
+    licence: "NASA/JPL data, free to use with credit"
+    terms_url: https://ssd.jpl.nasa.gov/about/terms.html
+    terms_recorded: 2026-10-09
 
 layers:
   - id: phoebe-orbiters

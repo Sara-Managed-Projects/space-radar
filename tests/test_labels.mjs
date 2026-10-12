@@ -4,7 +4,8 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
+const { labelLift, LABEL_MODEL_GAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, tooFarForFrame, FAR_FRAME_RATIO, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -67,6 +68,13 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   // Garbage in: the caller has a NaN projection now and then, and this must not turn it into 4.
   check(Number.isNaN(clampLabelX(NaN, box, W)), 'a NaN anchor stays NaN rather than being placed at the edge');
   check(Number.isFinite(clampLabelX(100, undefined, W)), 'a label whose width is not known yet is still placed');
+  // Internal #334: off the glass's edge, and above its own model.
+  check(LABEL_EDGE_PAD >= 12, `a label keeps ${LABEL_EDGE_PAD} px off the edge; 4 put its first letter against a phone's glass`);
+  check(clampLabelX(5, box, W) - box / 2 === LABEL_EDGE_PAD, 'a label anchored at the left edge starts a pad in');
+  check(labelLift(0, 20) === 0 && labelLift(undefined, 20) === 0 && labelLift(NaN, 20) === 0, 'no model, no lift: a dot\'s label is where it was');
+  check(labelLift(6, 20) === Math.max(0, 6 + LABEL_MODEL_GAP - 8), 'a model smaller than the label\'s own clearance barely moves it');
+  { const bh = 20; const r = 42; const lift = labelLift(r, bh); check((0 - lift) - 0.4 * bh <= -(r + LABEL_MODEL_GAP) + 0.5, `an 84 px model's name sits above its silhouette (bottom ${-lift - 0.4 * bh}, model top ${-r})`); }
+  check(labelLift(5000, 20) <= 200 + LABEL_MODEL_GAP, 'a model that fills the screen does not throw its name off it');
 }
 
 // BOXES, NOT ANCHORS. Seen on the live site on a 390 px phone, 2026-09-21: two payloads from one
@@ -311,6 +319,19 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
     if (!hadDoc) delete globalThis.document;
     if (!hadWin) delete globalThis.window;
   }
+}
+
+// A trip's frame is of one thing: names from a thousand times further away are not part of it (internal #546).
+{
+  const venus = 24207 / 1000;   // the Venus stop: camera 24 207 km from the planet (scene unit = 1000 km here)
+  const vesta = 4.0e8 / 1000;
+  const mro = (24207 + 3600) / 1000;
+  check(tooFarForFrame(vesta, venus, { klass: 'asteroid', id: 'vesta' }) === true, 'Vesta is a thousand times too far for the Venus stop');
+  check(tooFarForFrame(mro, venus, { klass: 'probe' }) === false, 'a spacecraft by the planet keeps its name');
+  check(tooFarForFrame(1.5e8 / 1000, venus, { klass: 'world', id: 'sun' }) === false && tooFarForFrame(384400 / 1000, 0.9, { klass: 'world', id: 'moon' }) === false, 'the Sun and the Moon keep theirs');
+  check(tooFarForFrame(384400 / 1000, 0.9, { klass: 'satellite' }) === false && tooFarForFrame(10, 0, { klass: 'probe' }) === false && tooFarForFrame(NaN, 5, {}) === false, 'a Moon-distance name over a 900 km frame stays, and nothing is hidden without a frame');
+  check(FAR_FRAME_RATIO === 1000, 'the ratio is a thousand');
+  // (That ui/labels.js calls it for the notable names is read as text in tests/test_bulk3_a.mjs: this test runs on the built tree too.)
 }
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

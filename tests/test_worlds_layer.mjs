@@ -117,11 +117,11 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   camera.updateMatrixWorld();
   const worlds = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture, camera });
 
-  const EAGER = ['t/2k_earth_daymap.jpg', 't/2k_earth_nightmap.webp', 't/2k_earth_clouds.webp', 't/2k_saturn_ring_alpha.png'];
+  const EAGER = ['t/2k_earth_daymap.webp', 't/2k_earth_nightmap.webp', 't/2k_earth_clouds.webp', 't/2k_saturn_ring_alpha.png'];
   const lazyWorlds = WORLDS.filter((w) => !w.look.earth && w.look.map);
   check(fetched.length === EAGER.length && EAGER.every((u) => fetched.includes(u)),
     `construction fetches Earth's three maps and the ring strip, nothing else (${JSON.stringify(fetched)})`);
-  check(lazyWorlds.length === 14 && worlds.waitingMaps().length === lazyWorlds.length, `fourteen worlds -- the Sun, the Moon, seven planets and the five moons a trip flies to -- wait for their maps (${worlds.waitingMaps().length})`);
+  check(lazyWorlds.length === 29 && worlds.waitingMaps().length === lazyWorlds.length, `twenty-nine worlds -- the Sun, the Moon, seven planets, Pluto and the nineteen mapped moons -- wait for their maps (${worlds.waitingMaps().length})`);
 
   worlds.update(tMs);
   check(fetched.length === EAGER.length,
@@ -145,21 +145,21 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   camera.updateMatrixWorld();
   worlds.update(tMs);
   worlds.update(tMs);
-  const marsFetches = fetched.filter((u) => u.endsWith('2k_mars.jpg')).length;
+  const marsFetches = fetched.filter((u) => u.endsWith('2k_mars.webp')).length;
   check(marsFetches === 1, `Mars's map is fetched once when its disc fills the view, over two frames (${marsFetches})`);
   check(!worlds.waitingMaps().includes('mars'), 'and Mars stops waiting');
   const mars = worlds.meshFor('mars').material.uniforms;
   check(mars.uHasMap.value === 0, 'the map is not used before it has arrived');
-  pending.get('t/2k_mars.jpg')();
+  pending.get('t/2k_mars.webp')();
   check(mars.uHasMap.value === 1 && mars.uTint.value.getHex() === 0xffffff && mars.uMap.value,
     'when it arrives the map replaces the mean colour, untinted');
 
   // Selecting a world starts its map at once, whatever size it is drawn.
-  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn.jpg'), 'preload(saturn) fetches Saturn now');
+  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn.webp'), 'preload(saturn) fetches Saturn now');
   check(worlds.preload('saturn') === false, 'and a second preload does not fetch it again');
-  pending.get('t/2k_sun.jpg');
+  pending.get('t/2k_sun.webp');
   check(worlds.preload('sun') === true, 'the Sun can be preloaded too');
-  pending.get('t/2k_sun.jpg')();
+  pending.get('t/2k_sun.webp')();
   const sunMat = worlds.meshFor('sun').material;
   check(sunMat.map && sunMat.color.getHex() === 0xffffff, 'the Sun, a basic material, takes its map the same way');
   check(worlds.preload('earth') === false, 'Earth never waits: its maps were fetched at construction');
@@ -201,8 +201,13 @@ const SIX = ['phobos', 'deimos', 'enceladus', 'titan', 'triton', 'charon'];
 // ...and the ten more it fits the same way (sections 15 to 18).
 const TEN = ['mimas', 'tethys', 'dione', 'rhea', 'iapetus', 'miranda', 'ariel', 'umbriel', 'titania', 'oberon'];
 const rowOf = (id) => WORLDS.find((w) => w.id === id);
-// Issue #262: the flat worlds a trip flies to carry a public-domain map; the rest stay one colour.
-const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
+// Issue #262: the flat worlds a trip flies to carry a public-domain map. 2026-10-05 (issues #387 to
+// #415): so do all the others but Deimos, for which no public-domain mosaic was found
+// (tests/test_moon_shapes.mjs holds each map's file, size and card line).
+const MAPPED = ['pluto', 'io', 'europa', 'ganymede', 'callisto', 'enceladus', 'titan', 'triton', 'charon', 'phobos',
+  'tethys', 'dione', 'rhea', 'mimas', 'iapetus', 'ariel', 'miranda', 'titania', 'oberon', 'umbriel'];
+// What a mapped world's card says about how it is drawn: never that it is a plain ball, always how it is lit.
+const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (draw || '').includes(COPY.drawing.worldLit);
 {
   const { positionOf } = await import(join(JS, 'scene/worlds.js'));
   const { worldPositionKm } = await import(join(JS, 'propagate/body.js'));
@@ -297,7 +302,7 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
     'Titan, darkened on 2026-09-22 to make room, still sits above Callisto and a clear step below Oberon');
   for (const id of FLAT) {
     const w = rowOf(id);
-    if (MAPPED.includes(id)) check(w.look.flat === true && /\.jpg$/.test(w.look.map || '') && w.rotation, `${id} keeps its flat colour until its map arrives, and turns so the map faces the right way`);
+    if (MAPPED.includes(id)) check(w.look.flat === true && /\.(jpg|webp)$/.test(w.look.map || '') && w.rotation, `${id} keeps its flat colour until its map arrives, and turns so the map faces the right way`);
     else check(w.look.flat === true && !w.look.map, `${id} is flat and names no map`);
   }
   // No world a trip flies to is drawn untextured, except where the haze IS the picture (Titan).
@@ -399,7 +404,7 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
       `${id}'s first sentence says what it is and how big, in 160 characters: "${s}"`);
     check(!s.includes(' -- '), `${id}'s sentence writes no double-hyphen dash`);
     // Spec 0054: a mapped world's only drawing line is how it is lit; a flat one says both.
-    if (MAPPED.includes(id)) check(drawingLine(r) === COPY.drawing.worldLit, `${id} has a map, so its card's drawing line is only the exposure: ${drawingLine(r)}`);
+    if (MAPPED.includes(id)) check(mappedLine(drawingLine(r)), `${id} has a map, so its card does not call it a plain ball, and says how it is lit: ${drawingLine(r)}`);
     else check(/no surface map/.test(drawingLine(r) || '') && drawingLine(r).includes(COPY.drawing.worldLit), `${id}'s card says it is a plain ball, exposed for its own sunlight: ${drawingLine(r)}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite), `${id}'s source line names the ephemeris and the day its facts were read`);
     // "You can see this one with your own eyes" -- every other world's line -- is false of Pluto,
@@ -412,9 +417,26 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
   check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 1\.5 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
     `Mars, which has a map and air, says how it is lit and that its air is drawn thicker than it is: ${marsLine}`);
   check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
-  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit, 'Jupiter, with no shell, says only how it is lit');
+  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit + COPY.punctuation.separator + COPY.drawing.worldLight, 'Jupiter, with no shell, says only how it is lit and what its glow is');
+  // 2026-10-07: each giant offers Hubble's map of 2025 as a second face, with its day and its credit in the note.
+  {
+    await import(join(JS, 'copy/en.later.js'));
+    const FACE = COPY.worldFace || {};
+    for (const id of ['jupiter', 'saturn', 'uranus', 'neptune']) {
+      const row = WORLDS.find((x) => x.id === id);
+      const F = FACE[id];
+      check(row.look.faces && /opal_2025\.webp$/.test(row.look.faces.hubble || '') && new RegExp(`^2k_${id}\\.webp$`).test(row.look.map), `${id} is met in its own map and offers Hubble's`);
+      check(F && /as Hubble mapped it on \d+ [A-Z][a-z]+ 2025/.test(F.notes.hubble) && /CC BY 4\.0/.test(F.notes.hubble) && F.modes.hubble && F.notes.own, `${id}'s card names the day of Hubble's map and its licence`);
+    }
+  }
   // The Earth has its own shader and its own sunlight is the reference; the Sun is the light.
-  check(drawingLine(recs.find((x) => x.id === 'earth')) === null && drawingLine(recs.find((x) => x.id === 'sun')) === null,
+  // 2026-10-06: the Sun says what its close-up picture is (scene/sun.js), and still nothing about exposure.
+  // Spec 0072: the Earth, a light when seen from Mars, says what that glow is; the Sun is not one. Having a
+  // line at all, the Earth now also prints the departure written for it on 2026-10-08 (its relief and its
+  // air's height), which ui/cards.js only appends to a line and so had never shown.
+  const earthLine = drawingLine(recs.find((x) => x.id === 'earth')) || '';
+  check(earthLine.startsWith(COPY.drawing.worldLight) && /ETOPO/.test(earthLine) && !earthLine.includes(COPY.drawing.worldLit) && drawingLine(recs.find((x) => x.id === 'sun')) === COPY.drawing.worldSun
+    && !COPY.drawing.worldSun.includes(COPY.drawing.worldLit),
     'the Earth and the Sun carry no exposure line');
   const moonLine = drawingLine(recs.find((x) => x.id === 'moon')) || '';
   check(moonLine.startsWith(COPY.drawing.worldLit) && /earthshine/.test(moonLine) && /250 times brighter/.test(moonLine),
@@ -650,9 +672,12 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
     const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
     check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
     const draw = drawingLine(r) || '';
+    // Phobos and Deimos are drawn in their measured shapes since 2026-10-05, and say so; Deimos
+    // still has no map and says that too. Nothing claims a ball is the shape of a lumpy rock.
     const lumpy = id === 'phobos' || id === 'deimos';
-    check(MAPPED.includes(id) ? draw === COPY.drawing.worldLit : /no surface map/.test(draw) && /true shape is not drawn/.test(draw) === lumpy && draw.includes(COPY.drawing.worldLit),
-      `${id}'s drawing line${lumpy ? ' says its true shape is not drawn' : ''}: ${draw}`);
+    check(MAPPED.includes(id) ? mappedLine(draw) : /no surface map/.test(draw) && draw.includes(COPY.drawing.worldLit),
+      `${id}'s drawing line: ${draw}`);
+    check(/measured shape/.test(draw) === lumpy && !/true shape is not drawn/.test(draw), `${id}'s drawing line${lumpy ? ' says its shape is the measured one' : ' says nothing about a shape'}: ${draw}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
       `${id}'s source line names the ephemeris, the fit and the day its facts were read`);
   }
@@ -927,7 +952,7 @@ const TEN_PARENT = { mimas: 'saturn', tethys: 'saturn', dione: 'saturn', rhea: '
         const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
         check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
         const draw = drawingLine(r) || '';
-        check(/no surface map/.test(draw) && !/true shape is not drawn/.test(draw), `${id}'s drawing line says it is a plain ball and not that it is lumpy: ${draw}`);
+        check(mappedLine(draw) && !/shape/.test(draw), `${id}'s drawing line says what its map is and nothing about a shape: ${draw}`);
         check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
           `${id}'s source line names the ephemeris, the fit and the day its facts were read`);
       }
@@ -1118,7 +1143,14 @@ if (problems.length) {
   const w = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: () => new THREE.Texture() });
   const at = (tt) => { stage.setTime(tt); w.update(tt); };
   const rel = (a, b) => w.meshFor(a).position.clone().sub(w.meshFor(b).position);
-  for (const [id, to, sign] of [['io', 'jupiter', 1], ['europa', 'jupiter', 1], ['enceladus', 'saturn', 1], ['triton', 'neptune', -1], ['pluto', 'charon', 1]]) {
+  // 2026-10-05: and every moon mapped since. Uranus's five are like Triton for the opposite reason:
+  // their orbits are prograde, and it is Uranus whose IAU north is the pole it spins backwards about.
+  // Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its north is that far off.
+  const LOCKED = [['io', 'jupiter', 1], ['europa', 'jupiter', 1], ['enceladus', 'saturn', 1], ['triton', 'neptune', -1], ['pluto', 'charon', 1],
+    ['ganymede', 'jupiter', 1], ['callisto', 'jupiter', 1], ['titan', 'saturn', 1], ['mimas', 'saturn', 1], ['tethys', 'saturn', 1],
+    ['dione', 'saturn', 1], ['rhea', 'saturn', 1], ['iapetus', 'saturn', 1], ['charon', 'pluto', 1], ['phobos', 'mars', 1], ['deimos', 'mars', 1],
+    ['miranda', 'uranus', -1], ['ariel', 'uranus', -1], ['umbriel', 'uranus', -1], ['titania', 'uranus', -1], ['oberon', 'uranus', -1]];
+  for (const [id, to, sign] of LOCKED) {
     const orbiter = id === 'pluto' ? 'charon' : id;
     const centre = id === 'pluto' ? 'pluto' : to;
     at(t + 3600e3);
@@ -1130,6 +1162,22 @@ if (problems.length) {
     const off = Math.acos(Math.min(1, lon0.dot(w.meshFor(to).position.clone().sub(m.position).normalize()))) * 180 / Math.PI;
     const pole = new THREE.Vector3(0, 1, 0).applyQuaternion(m.quaternion).dot(h) * sign;
     check(off < 2 && pole > 0.9, `${id}'s longitude 0 faces ${to} (${off.toFixed(1)} deg off) and its north is the right pole (${pole.toFixed(2)})`);
+  }
+  // 2026-10-07 (internal #426): Pluto names the face it is known by, the heart, and an arrival prefers
+  // the lit side that shows it (scene/framing.js litOffset). The heart is on the hemisphere that
+  // never sees Charon, in the north; and a point of a map is +X at longitude 0, east toward -Z.
+  {
+    const { faceVector } = await import(join(JS, 'scene/worlds.js'));
+    const v = (lon, lat) => faceVector(lon, lat);
+    check(v(0, 0).distanceTo(new THREE.Vector3(1, 0, 0)) < 1e-9 && v(90, 0).distanceTo(new THREE.Vector3(0, 0, -1)) < 1e-9 && v(0, 90).distanceTo(new THREE.Vector3(0, 1, 0)) < 1e-9,
+      'a point of a map: longitude 0 on +X, 90 east on -Z, the north pole on +Y');
+    at(t);
+    const heart = w.faceDirOf('pluto');
+    const toCharon = w.meshFor('charon').position.clone().sub(w.meshFor('pluto').position).normalize();
+    const north = new THREE.Vector3(0, 1, 0).applyQuaternion(w.meshFor('pluto').quaternion);
+    check(heart && Math.abs(heart.length() - 1) < 1e-9 && heart.dot(toCharon) < -0.8 && heart.dot(north) > 0.2,
+      `Pluto's heart faces away from Charon, in the north (${heart && heart.dot(toCharon).toFixed(2)}, ${heart && heart.dot(north).toFixed(2)})`);
+    check(w.faceDirOf('jupiter') === null && w.faceDirOf('nowhere') === null, 'a world that names no face has none');
   }
 }
 

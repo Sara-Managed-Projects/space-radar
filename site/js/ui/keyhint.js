@@ -26,14 +26,15 @@
 //
 // HONEST KEYS. Every keycap names the KeyboardEvent.key values it stands for, and
 // tests/test_keyhint.mjs holds each one to the module that answers it: scene/camera.js CAMERA_KEYS
-// for turning and zooming, ui/cleanview.js for H, ui/rail.js for L and P. A keycap for a key that
+// for turning and zooming, ui/explore.js for /, ui/cleanview.js for H, ui/rail.js for L and P. A keycap for a key that
 // does nothing is the worst thing a hint can show.
 //
 // MOTION. The panel comes up 8 px and fades in (--sr-mid); each keycap presses once, in turn, a
 // --sr-fast apart (keyhint.css). Nothing loops. Reduced motion: a 120 ms fade, keycaps still.
 
 import { COPY } from '../copy/en.js';
-import { icon } from './cards.js';
+import '../copy/en.later.js';
+import { icon } from './icons.js';
 
 export const STORE_KEY = 'sr:keyhint';
 /** Untouched, it goes by itself (about twelve seconds is two slow reads of it). */
@@ -72,10 +73,28 @@ export const KEY_ROWS = [
 
 /** The chrome's keys, one cap each. */
 export const CHROME_KEYS = [
+  { id: 'slash', keys: ['/'], does: 'search' },
   { id: 'h', keys: ['h', 'H'], does: 'hide' },
   { id: 'l', keys: ['l', 'L'], does: 'show' },
   { id: 'p', keys: ['p', 'P'], does: 'share' },
   { id: 'esc', keys: ['Escape'], does: 'esc', wide: true },
+  // `?` opens this panel with every key on it (public #315; ui/rail.js railKey answers it).
+  { id: 'help', keys: ['?'], does: 'keys' },
+];
+
+/**
+ * ALL THE KEYS (public #315): `?`, or What to show's Keys row, opens the panel with one more
+ * group, the keys a guided trip answers. Not caps that light (a trip closes the hint), so they are
+ * not in allCaps(): each is a KeyboardEvent.key and the action ui/tripframe.js keyAction gives it,
+ * and tests/test_keyhint.mjs holds every row to that function.
+ */
+export const TRIP_KEYS = [
+  { id: 'play', caps: ['space'], keys: [' '], action: 'toggle', does: 'tripPlay', wide: true },
+  { id: 'step', caps: ['left', 'right'], keys: ['ArrowLeft', 'ArrowRight'], action: ['back', 'next'], does: 'tripStep' },
+  { id: 'card', caps: ['c'], keys: ['c'], action: 'collapse', does: 'tripCard' },
+  { id: 'replay', caps: ['r'], keys: ['r'], action: 'replay', does: 'tripReplay' },
+  { id: 'sound', caps: ['m'], keys: ['m'], action: 'sound', does: 'tripSound' },
+  { id: 'leave', caps: ['esc'], keys: ['Escape'], action: 'leave', does: 'tripLeave', wide: true },
 ];
 
 /** The touch version: what each gesture does to the camera (scene/camera.js pointers). */
@@ -258,6 +277,18 @@ export function createKeyHint(ctx, opts = {}) {
       grid.appendChild(item);
     }
     body.appendChild(grid);
+    // The trip's keys: drawn always, shown only when every key was asked for (keyhint.css .is-all).
+    const trip = el('div', 'sr-keyhint__trip');
+    trip.appendChild(el('p', 'sr-keyhint__micro', W.tripTitle));
+    const tgrid = el('div', 'sr-keyhint__chrome sr-keyhint__chrome--trip');
+    for (const row of TRIP_KEYS) {
+      const item = el('div', 'sr-keyhint__item');
+      for (const id of row.caps) item.appendChild(el('kbd', `sr-keyhint__cap${row.wide ? ' sr-keyhint__cap--wide' : ''}`, W.caps[id]));
+      item.appendChild(el('span', 'sr-keyhint__does', W.does[row.does]));
+      tgrid.appendChild(item);
+    }
+    trip.appendChild(tgrid);
+    body.appendChild(trip);
   }
 
   function buildTouch(body) {
@@ -301,7 +332,7 @@ export function createKeyHint(ctx, opts = {}) {
     else buildKeys(body);
     root.appendChild(body);
     const hold = () => { held += 1; clearTimeout(autoTimer); };
-    const release = () => { held = Math.max(0, held - 1); if (!held && open) armAuto(); };
+    const release = () => { held = Math.max(0, held - 1); if (!held && open && !all) armAuto(); };
     root.addEventListener('pointerenter', hold);
     root.addEventListener('pointerleave', release);
     root.addEventListener('focusin', hold);
@@ -314,22 +345,42 @@ export function createKeyHint(ctx, opts = {}) {
     autoTimer = setTimeout(() => { if (!held) hide('timeout'); }, AUTO_HIDE_MS);
   }
 
-  /** Out of the time pill's way: where they would overlap (a narrow scene, a phone), it rises above. */
+  /**
+   * Out of the time pill's way, and a toast's: where they would overlap (a narrow scene, a phone,
+   * the undo toast with a long name: internal #419 item 3), it rises above them.
+   */
   function place() {
     root.style.removeProperty('bottom');
-    const pill = document.querySelector('.sr-time');
-    if (!pill) return;
-    const b = pill.getBoundingClientRect();
-    if (!(b.width > 0)) return; // hidden (a trip, a clear screen): nothing to avoid
-    const a = root.getBoundingClientRect();
-    const overlap = a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-    if (overlap) root.style.bottom = `${Math.round(win.innerHeight - b.top + 12)}px`;
+    let a = root.getBoundingClientRect();
+    for (const sel of ['.sr-time', '.sr-toast']) {
+      const node = document.querySelector(sel);
+      if (!node || node.hidden) continue;
+      const b = node.getBoundingClientRect();
+      if (!(b.width > 0)) continue; // hidden (a trip, a clear screen): nothing to avoid
+      // Eight pixels of air: the toast was 5 px INTO the hint, and touching is no better.
+      const overlap = a.left < b.right + 8 && b.left - 8 < a.right && a.top < b.bottom && b.top < a.bottom;
+      if (!overlap) continue;
+      root.style.bottom = `${Math.round(win.innerHeight - b.top + 12)}px`;
+      a = root.getBoundingClientRect();
+    }
   }
 
-  async function show() {
-    if (open) return true;
+  /**
+   * `all`: every key, the trip's too, and it stays until it is closed (`?` and the Keys row: it was
+   * asked for, so it is not taken away after twelve seconds or by the first turn of the globe).
+   */
+  let all = false;
+  async function show(opts = {}) {
+    const wantAll = !!(opts && opts.all);
+    // Open already: only "every key" changes it. The first visit's own showing, arriving while
+    // every key is up, must not fold the panel back (seen in the probe of 2026-10-08).
+    if (open && (all || !wantAll)) return true;
     await loadCss();
     if (!root) build();
+    all = wantAll;
+    root.classList.toggle('is-all', all);
+    root.setAttribute('aria-label', all ? W.labelAll : mode === 'touch' ? W.labelTouch : W.label);
+    if (open) { clearTimeout(autoTimer); place(); return true; }
     open = true;
     shownAt = Date.now();
     root.classList.remove('is-leaving');
@@ -339,8 +390,14 @@ export function createKeyHint(ctx, opts = {}) {
     void root.offsetWidth;
     root.classList.add('is-playing');
     place();
-    if (!held) armAuto();
+    if (!held && !all) armAuto();
     return true;
+  }
+
+  /** `?` pressed again closes what `?` opened. */
+  function toggleAll() {
+    if (open && all) { hide('key'); return Promise.resolve(false); }
+    return show({ all: true });
   }
 
   function hide() {
@@ -358,7 +415,7 @@ export function createKeyHint(ctx, opts = {}) {
 
   /** A real hand on the camera: gone, after a beat (it has been read). */
   function handled() {
-    if (!open || Date.now() - shownAt < MIN_SHOWN_MS || keyTimer) return;
+    if (!open || all || Date.now() - shownAt < MIN_SHOWN_MS || keyTimer) return;
     keyTimer = setTimeout(() => { keyTimer = 0; hide('used'); }, KEY_GRACE_MS);
   }
 
@@ -407,8 +464,18 @@ export function createKeyHint(ctx, opts = {}) {
     ctx.trip.onChange((st) => { if (st && st.phase !== 'idle') hide('trip'); });
   }
   win.addEventListener('resize', () => { if (open) place(); });
+  win.addEventListener('sr:toast', () => { if (open) place(); });
+  // The phone's sheet moves the pill, and the pill is what the hint stands clear of: placed again
+  // when the shell says it changed, and once more when the pill's own 320 ms move is over.
+  let shellTimer = 0;
+  win.addEventListener('sr:shell', () => {
+    if (!open) return;
+    place();
+    clearTimeout(shellTimer);
+    shellTimer = setTimeout(() => { if (open) place(); }, 380);
+  });
 
-  const api = { isReal: true, show, hide, maybeShow, isOpen: () => open, mode: () => mode, el: () => root };
+  const api = { isReal: true, show, hide, maybeShow, toggleAll, isOpen: () => open, isAll: () => open && all, mode: () => mode, el: () => root };
   if (ctx) ctx.keyhint = api;
   return api;
 }

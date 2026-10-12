@@ -69,7 +69,7 @@ import { COPY } from '../copy/en.js';
 import { createSheet } from './sheet.js';
 
 export const SIDE_KEY = 'sr:side';
-export const VIEWS = ['home', 'card', 'sources', 'trip'];
+export const VIEWS = ['home', 'card', 'sources', 'trip', 'passport'];
 /** The spec's line between the sidebar and the phone's sheet (0061 req 1 and 8). */
 export const DESKTOP_QUERY = '(min-width: 900px)';
 
@@ -88,8 +88,8 @@ const SHEET_SCROLL = '.sr-explore__body, .sr-side__cardslot, .sr-side__sourcesho
 export function sheetFor(view, from) {
   if (view === from) return null;
   if (view === 'card' || view === 'trip') return 'half';
-  if (view === 'sources') return 'full';
-  if (view === 'home') return from === 'sources' ? 'half' : from ? 'peek' : null;
+  if (view === 'sources' || view === 'passport') return 'full';
+  if (view === 'home') return from === 'sources' || from === 'passport' ? 'half' : from ? 'peek' : null;
   return null;
 }
 
@@ -211,6 +211,12 @@ export function createShell(ctx, opts = {}) {
     if (ctx && typeof ctx.deselect === 'function') ctx.deselect();
     else back();
     landFocus();
+    // And once more when everything the deselect set off has run (internal #460, seen in a real
+    // tab on 2026-10-08): the card gives focus back to where the visitor was before it opened, and
+    // when that was nowhere (a card opened from the map, or by a link) the focus this button held
+    // ended on <body>. landFocus leaves a focus that found a home alone.
+    setTimeout(landFocus, 0);
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => landFocus());
   });
   card.appendChild(cardBack.row);
   const cardSlot = el('div', 'sr-side__cardslot');
@@ -235,6 +241,15 @@ export function createShell(ctx, opts = {}) {
   const sourcesHost = el('div', 'sr-side__sourceshost');
   sources.appendChild(sourcesHost);
   views.set('sources', sources);
+
+  // The passport (ui/passport.js, spec 0041): a pushed view like the sources sheet, filled by its
+  // own module when it is opened. Its body scrolls as the sources sheet's does.
+  const passport = el('div', 'sr-side__view sr-side__passport');
+  passport.dataset.view = 'passport';
+  passport.appendChild(backRow(COPY.shell.back, () => { back(); landFocus(); }).row);
+  const passportHost = el('div', 'sr-side__sourceshost');
+  passport.appendChild(passportHost);
+  views.set('passport', passport);
 
   // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
   const tripView = el('div', 'sr-side__view sr-side__trip');
@@ -262,7 +277,9 @@ export function createShell(ctx, opts = {}) {
   // First in the DOM, so the tab order on a phone is the order on screen: top, sheet, pill.
   const top = el('div', 'sr-top');
   top.id = 'sr-top';
-  top.setAttribute('role', 'group');
+  // A named REGION, not a group: the bar is page content outside the sidebar and the map, and axe
+  // found it outside every landmark on a phone (`region`, 2026-10-08), as it found the time pill.
+  top.setAttribute('role', 'region');
   top.setAttribute('aria-label', COPY.shell.topLabel);
   const topRow = el('div', 'sr-top__row');
   const searchSlot = el('div', 'sr-top__search');
@@ -280,7 +297,7 @@ export function createShell(ctx, opts = {}) {
   // The card's host, made here so the shell can seat it (see THE CARD MOVES above).
   let cardHost = document.getElementById('sr-card');
   if (!cardHost) {
-    cardHost = el('aside', 'sr-card');
+    cardHost = el('div', 'sr-card');
     cardHost.id = 'sr-card';
     cardHost.hidden = true;
   }
@@ -386,23 +403,34 @@ export function createShell(ctx, opts = {}) {
     else announce(sheet ? sheet.detent() : null);
   }
 
+  // FOCUS IS NEVER LOST WHEN A VIEW CHANGES (public #315). A view that goes takes the focus inside it
+  // to <body>, and a keyboard visitor starts again from the top of the page. So: was the focus in
+  // the sidebar before the change? Then after it, it lands in the view now showing (landFocus,
+  // which leaves a focus that survived alone). A focus that was NOT in the sidebar -- on the map,
+  // in the time pill -- is never taken: a click on a satellite must not hand Space to a Back button.
+  const heldFocus = () => side.contains(document.activeElement);
+
   function show(view) {
-    if (view === 'home') { stack.reset(); lastDir = 'pop'; paint(); return true; }
+    const held = heldFocus();
+    if (view === 'home') { stack.reset(); lastDir = 'pop'; paint(); if (held) landFocus(); return true; }
     if (view === 'sources') ensureSources();
     if (!stack.push(view)) { paint(); return false; }
     lastDir = 'push';
     // A card or the sources sheet opened on a collapsed sidebar opens it for as long as it is up.
     if (collapsedNow) collapsedNow = false;
     paint();
+    if (held) landFocus();
     return true;
   }
 
   function back() {
+    const held = heldFocus();
     const before = stack.current();
     stack.pop();
     lastDir = 'pop';
     if (stack.current() === 'home') collapsedNow = collapsedChoice;
     paint();
+    if (held) landFocus();
     return before !== stack.current();
   }
 
@@ -453,7 +481,7 @@ export function createShell(ctx, opts = {}) {
   // (ui/cards.js), and a clear screen takes Escape before either (ui/cleanview.js, capture phase).
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    if (stack.current() === 'sources') { back(); }
+    if (stack.current() === 'sources' || stack.current() === 'passport') { back(); landFocus(); }
   });
 
   layout();
@@ -470,7 +498,7 @@ export function createShell(ctx, opts = {}) {
     collapse,
     collapsed: () => collapsedNow,
     isPhone,
-    host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : view === 'trip' ? tripView : null),
+    host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : view === 'trip' ? tripView : view === 'passport' ? passportHost : null),
     /** Where the card sits while a trip runs (ui/tripframe.js): its sheet's slot, or null for <body>. */
     seatTrip(slot) {
       tripSlot = slot || null;

@@ -11,6 +11,8 @@ that does not say where is a refusal somebody will switch off.
 
 from __future__ import annotations
 
+import argparse
+import concurrent.futures
 import os
 import re
 import shutil
@@ -22,18 +24,134 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def link(src, dst):
+    """A hard link where the filesystem allows, a copy where it does not."""
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
+
+
+def whole_dir(src: Path, dst: Path) -> None:
+    """A directory nothing in a case ever changes, given as ONE symbolic link (a copy where the
+    system has none): 280 files of maps, pictures and sound were 280 links to make and 280 to
+    remove per case, and that was most of what a case cost once the parse was shared."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.symlink(src, dst, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        shutil.copytree(src, dst, copy_function=link)
+
+
 def textures_into(work: Path) -> None:
     """site/textures/ with its bytes: registry/textures.yaml states each file's size and pixels and
-    the validator reads both from the file (2026-09-28). Hard links where the filesystem allows,
-    because this runs once per case and the tree is 10 MB."""
-    def link(src, dst):
+    the validator reads both from the file (2026-09-28)."""
+    whole_dir(ROOT / "site" / "textures", work / "site" / "textures")
+
+
+def media_into(work: Path) -> None:
+    """site/images/ and site/audio/. registry/exotics.yaml points at the photographs and
+    registry/audio.yaml at the files it names (spec 0035), and the validator checks they are really
+    in the tree, so the tree needs them or every case fails for a reason that has nothing to do
+    with the case under test.
+
+    EVERY tree a case is given is a link of one kind or the other (see link() and whole_dir()). So
+    NO CASE MAY WRITE INTO A FILE IT WAS GIVEN: a write through a link is a write to the
+    repository. Cases change a file only through mutate() below, which replaces it, and only under
+    registry/, site/js/ui/ and the SEO pages, none of which is a whole_dir()."""
+    whole_dir(ROOT / "site" / "images", work / "site" / "images")
+    if (ROOT / "site" / "audio").is_dir():
+        whole_dir(ROOT / "site" / "audio", work / "site" / "audio")
+
+
+def mutate(path: Path, text: str) -> None:
+    """Replace a file in a work tree with new text, as a NEW file: unlink first, so that even a
+    path that turned out to be a hard link can never write through to the repository."""
+    if ROOT in Path(os.path.realpath(path)).parents:
+        raise RuntimeError(f"{path} is inside a linked directory of the repository: a case may not change it")
+    path.unlink()
+    path.write_text(text, encoding="utf-8")
+
+
+# HOW THIS RUNS IN TWO MINUTES AND NOT FIFTY (2026-10-05). Every case still runs the real validator
+# as its own process in its own tree: nothing about what is proved has changed. What changed is the
+# waiting. Cases run `--jobs` at a time (default: the CPU count), each in a directory of its own;
+# the big media are hard links; and the validator's YAML parses are shared through
+# $REGISTRY_YAML_CACHE (scripts/check_registry.py, keyed by the SHA-256 of the text, so a case that
+# breaks one file parses that one file). Output is printed in the order the cases are written,
+# whatever order they finish in.
+JOBS = os.cpu_count() or 2
+ENV: dict = dict(os.environ)
+# The work trees below hold the registry and the SEO pages, not site/js/main.js, so the hand-kept list check
+# (scripts/check_registry.py) is opted out of out loud, as tests/test_growth.py does.
+ENV["CHECK_REGISTRY_NO_SITE"] = "1"
+
+
+def run_cases(fn, cases, tmp: Path) -> int:
+    """fn(case, work_dir) -> (lines, failures) for each case, JOBS at a time, printed in order."""
+    def one(numbered):
+        i, case = numbered
+        work = tmp / f"case-{i}" / "work"
+        work.mkdir(parents=True)
         try:
-            os.link(src, dst)
-        except OSError:
-            shutil.copy2(src, dst)
-    shutil.copytree(ROOT / "site" / "textures", work / "site" / "textures", copy_function=link)
+            return fn(case, work)
+        except Exception as exc:  # a harness that dies must fail the run, not vanish in a thread
+            return [f"  ** {case[0]}: the harness raised {type(exc).__name__}: {exc}"], 1
+        finally:
+            shutil.rmtree(work.parent, ignore_errors=True)
+    failures = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, JOBS)) as pool:
+        for lines, bad in pool.map(one, list(enumerate(cases))):
+            for line in lines:
+                print(line)
+            failures += bad
+    return failures
+
+
+def validator(work: Path, script: str = "scripts/check_registry.py", env: dict | None = None):
+    return subprocess.run([sys.executable, script], cwd=work, capture_output=True, text=True, env=env or ENV)
+
+
+# One character past MAX_SENTENCE (160), so the case proves the cap bites at the boundary rather
+# than somewhere well beyond it. Defined before CASES, which uses it.
+GLOSSARY_SAY_OVER_CAP = (
+    "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+    "can keep the Earth and Sun behind it and stay cold. more words here to"
+)
+
 
 CASES: list[tuple[str, str, str, str]] = [
+    # --- the dated pages and the sources page (scripts/seo_pages.py): what they print is the registry's, so the registry is held ---
+    ("a source with no licence line", "sources.yaml", '    licence: "', '    licence_: "'),
+    ("a source whose terms page is not https", "sources.yaml", "terms_url: https://celestrak.org/usage-policy.php", "terms_url: http://celestrak.org/usage-policy.php"),
+    ("a source with no day its terms were recorded", "sources.yaml", "    terms_recorded: 2026-09-07\n", ""),
+    ("a sky event of a kind no page knows", "sky-events.yaml", "kind: meteor-shower\n    name: \"Leonids 2026\"", "kind: comet\n    name: \"Leonids 2026\""),
+    ("a sky event of a shower the registry lacks", "sky-events.yaml", "shower: geminids", "shower: geminidz"),
+    ("a sky event whose map link names no world", "sky-events.yaml", "at: mercury}", "at: vulcan}"),
+    ("a sky event with no source", "sky-events.yaml", '    sources:\n      - {words: "Computed here with Astronomy Engine (the Moon\'s shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}\n\n  - id: total-eclipse-2027', '    sources: []\n\n  - id: total-eclipse-2027'),
+    ("a sky event whose trip is not a trip", "sky-events.yaml", "trip: comets-and-meteors", "trip: comets-and-meteorites"),
+    ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-10-09\nchecked_with", "checked_with"),
+    ("satellite counts with no day", "seo-facts.yaml", "  as_of: 2026-09-22\n", ""),
+    ("a line about an old satellite that cites no page",
+     "oldest-notes.yaml", '    source: "https://en.wikipedia.org/wiki/Vanguard_1"\n', ""),
+    ("a line about an old satellite with no day it was read",
+     "oldest-notes.yaml", "    read: 2026-10-08\n    quote: \"The spacecraft", "    quote: \"The spacecraft"),
+    # --- registry/asset_sources.yaml: where every asset comes from (spec 0063 task 1, internal #210) ---
+    ("an asset whose source no row of asset_sources.yaml matches",
+     "models.yaml", "https://github.com/primer/octicons", "https://example.invalid/octicons"),
+    ("a source that quotes a licence and has no day it was read",
+     "asset_sources.yaml", "    cost: none\n    checked: 2026-10-09\n    licence_also:", "    cost: none\n    licence_also:"),
+    ("a source with neither a quoted licence nor a note saying why not",
+     "asset_sources.yaml", 'licence_note: "Drawn from primitives', 'licence_nope: "Drawn from primitives'),
+    ("a source nobody can reach by account type",
+     "asset_sources.yaml", "    account: free\n    cost: none\n    checked: 2026-10-09\n", "    account: sometimes\n    cost: none\n    checked: 2026-10-09\n"),
+    # --- registry/links.yaml, links out (spec 0050 requirement 8, internal #136) --------
+    ("a link out nobody says they opened",
+     "links.yaml", "    url: \"https://www.nasa.gov/live/\"\n    checked: 2026-10-08\n", "    url: \"https://www.nasa.gov/live/\"\n"),
+    ("a link out that does not name whose page it is",
+     "links.yaml", "    publisher: NASA EPIC\n", ""),
+    ("a link out that is not https",
+     "links.yaml", "https://epic.gsfc.nasa.gov/", "http://epic.gsfc.nasa.gov/"),
     # (name, file, find, replace)
     ("layer names a source that does not exist",
      "layers.yaml", "source: celestrak-stations", "source: celestrak-stationz"),
@@ -45,6 +163,21 @@ CASES: list[tuple[str, str, str, str]] = [
      "layers.yaml", "model: station-generic", "model: station-deluxe"),
     ("world's parent does not exist",
      "worlds.yaml", "parent: sun", "parent: nebula"),
+    # --- 2026-10-05: Earth data overlays (registry/overlays.yaml) -------------------------------
+    ("an overlay host with no measured CORS header",
+     "overlays.yaml", 'cors: "access-control-allow-origin: *"', 'cors: "probably fine"'),
+    ("an overlay that asks for today's picture, which is never made yet",
+     "overlays.yaml", "date: {rule: daily, lag_days: 2, tries: 3}", "date: {rule: daily, lag_days: 0, tries: 3}"),
+    ("an overlay with a date rule nothing reads",
+     "overlays.yaml", "date: {rule: monthly, lag_months: 4, tries: 3}", "date: {rule: weekly, lag_weeks: 1, tries: 3}"),
+    ("an overlay whose legend has one colour",
+     "overlays.yaml", 'stops: ["#f800f8", "#0021ff", "#00de9c", "#87d700", "#ff4e00", "#ffffff"]', 'stops: ["#ffffff"]'),
+    ("an overlay with no class, so the legend cannot say how it was made",
+     "overlays.yaml", "    class: modelled\n    bytes: 187307", "    class: guessed\n    bytes: 187307"),
+    ("an overlay whose maker CREDITS.md does not carry",
+     "overlays.yaml", 'credit: "IMERG precipitation, NASA Global Precipitation Measurement mission"', 'credit: "Somebody"'),
+    ("an overlay of a world that does not exist",
+     "overlays.yaml", "  - id: sea-ice\n    world: earth", "  - id: sea-ice\n    world: vulcan"),
     # A WORLD DRAWN FROM FACTS names where each one was read (Pluto and Jupiter's four big moons,
     # 2026-09-22). A radius with no page is a number nobody can check; a page with no day is one
     # nobody can re-check when the page changes.
@@ -55,7 +188,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a world fact with no day it was read",
      "worlds.yaml", 'read: 2026-09-22, says: "radius 1560.8 km"', 'says: "radius 1560.8 km"'),
     ("a flat colour that is not a colour",
-     "worlds.yaml", 'look: {flat: "#958b7e"}', 'look: {flat: "pale"}'),
+     "worlds.yaml", 'look: {flat: "#958b7e", textures: ganymede}', 'look: {flat: "pale", textures: ganymede}'),
     # The browser's copy of worlds.yaml is kept by hand (scene/worlds.js, scene/stage.js), so the
     # two must be refused when they disagree -- which is why this harness copies those two files.
     ("a world whose radius the browser does not draw",
@@ -222,7 +355,7 @@ CASES: list[tuple[str, str, str, str]] = [
      "    stands_for: probably\n    height_m: 46.3\n"),
     ("a shape with no evidence behind it",
      "rockets.yaml",
-     '    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user\'s guide (the PUG itself returns 403): 18 m, 1.2 m, \'eight engines surrounding a central ninth\'"\n',
+     '    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user\'s guide (the PUG itself returns 403): 18 m, 1.2 m, \'eight engines surrounding a central ninth\'. Read again 2026-10-08: first stage 12.1 m, second stage 2.4 m, \'The Electron payload Fairing is 2.5 m ... in length with a 1.2 m ... diameter\'"\n',
      ""),
     ("a livery with a colour but no class",
      "rockets.yaml", '    livery: {body: "#C6CBD1", class: measured}\n',
@@ -328,10 +461,12 @@ CASES: list[tuple[str, str, str, str]] = [
      "oddities.yaml", "      obs_count: 374\n", ""),
 
     # Attached: the position is the carrier's, and the mount is our drawing
+    # The example was `deep-cassini` until 2026-10-06, when Cassini got a record (drawn from its
+    # path file, site/data/eph). Ulysses has none.
     ("an oddity bolted to a spacecraft the app does not draw",
-     "oddities.yaml", "      to: deep-voyager-1", "      to: deep-cassini"),
+     "oddities.yaml", "      to: deep-voyager-1", "      to: deep-ulysses"),
     ("an oddity also drawn on a second carrier the app does not draw",
-     "oddities.yaml", "      also_on: [deep-voyager-2]", "      also_on: [deep-cassini]"),
+     "oddities.yaml", "      also_on: [deep-voyager-2]", "      also_on: [deep-ulysses]"),
     ("an attached row that will not admit the mount point is our arrangement",
      "oddities.yaml", "      mount_class: illustrative\n", ""),
     ("an attached row carrying its own horizons id, which draws a second Voyager",
@@ -489,6 +624,38 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a deep-sky card line changed in the registry and not in the built file the card reads",
      "dso-hand.yaml", "a small galaxy that kept its jewellery", "a small galaxy that kept its rings"),
 
+    # --- registry/nebulae.yaml (spec 0067, 2026-10-03) ------------------------------------
+    # A photograph somebody else took, shipped from our bucket: licence, credit, and that it is
+    # drawn where its object is.
+    ("a nebula's picture with no credit",
+     "nebulae.yaml", '    credit: "ESO/G. Beccari"\n', ""),
+    ("a picture credited to the Digitized Sky Survey, which is not ours to ship",
+     "nebulae.yaml", 'credit: "ESO/G. Beccari"', 'credit: "ESO and Digitized Sky Survey 2"'),
+    ("a picture whose credit CREDITS.md does not carry",
+     "nebulae.yaml", 'credit: "ESO/G. Beccari"', 'credit: "ESO/G. Beccary"'),
+    ("a picture from an archive whose terms are not on file",
+     "nebulae.yaml", "    archive: eso\n    image: eso1723a", "    archive: wikimedia\n    image: eso1723a"),
+    ("an archive under a licence we may not redistribute under",
+     "nebulae.yaml", "    licence: CC BY 4.0\n    terms: https://www.eso.org/public/copyright/", "    licence: CC BY-NC 4.0\n    terms: https://www.eso.org/public/copyright/"),
+    ("an archive's terms with no day they were read",
+     "nebulae.yaml", '    screen: "https://cdn.eso.org/images/screen/{image}.jpg"\n    checked: 2026-10-03\n', '    screen: "https://cdn.eso.org/images/screen/{image}.jpg"\n'),
+    ("Orion's picture ten degrees from Orion",
+     "nebulae.yaml", "    ra_deg: 83.78771", "    ra_deg: 93.78771"),
+    ("a picture a hundred times too wide",
+     "nebulae.yaml", "    width_arcmin: 59.95", "    width_arcmin: 5995"),
+    ("a picture that cannot be told from its mirror image",
+     "nebulae.yaml", "correlation: 27.7, mirror: 4.4}", "correlation: 27.7, mirror: 26.9}"),
+    ("a picture with no evidence of where it is",
+     "nebulae.yaml", "    solved: {moved_arcmin: 0.28, correlation: 27.7, mirror: 4.4}\n", ""),
+    ("a picture of something that is not a deep-sky object on the map",
+     "nebulae.yaml", "  - id: m42\n", "  - id: m4242\n"),
+    ("a picture whose file is not in the tree",
+     "nebulae.yaml", "    file: site/images/nebulae/m42.webp", "    file: site/images/nebulae/m42-missing.webp"),
+    ("a picture that names its filters and says they are unstated",
+     "nebulae.yaml", "    colours: mixed\n    filters: \"g, r and i, with H-alpha\"", "    colours: unstated\n    filters: \"g, r and i, with H-alpha\""),
+    ("a picture whose colours are a word the card has no sentence for",
+     "nebulae.yaml", "    colours: mixed\n    filters: \"g, r and i, with H-alpha\"", "    colours: pretty\n    filters: \"g, r and i, with H-alpha\""),
+
     # --- registry/stars-notable.yaml (2026-09-22) -----------------------------------------
     # The HIP number is the join to a star record. A number the names file does not have is a line
     # no label and no card will ever print, and nothing in the browser would say so.
@@ -526,10 +693,48 @@ CASES: list[tuple[str, str, str, str]] = [
      "systems.yaml", 'TRAPPIST-1 (read 2026-09-23)"\n    colour_note', 'TRAPPIST-1"\n    colour_note'),
     ("a system that does not say its colours are illustrative",
      "systems.yaml", "    colour_note: illustrative\n", ""),
+    # --- the generated systems (internal #466, 2026-10-08) --------------------------------------
+    # Nobody types registry/systems-generated.yaml, so a hand edit is itself the refusal; and the
+    # rules a row keeps are checked apart from the script that wrote it.
+    ("a listed host the exoplanet table does not have",
+     "systems-list.yaml", "  - {host: LHS 1140, why: temperate}", "  - {host: LHS 1141, why: temperate}"),
+    ("a generated orbit edited by hand, which Kepler's third law refuses",
+     "systems-generated.yaml", "  - id: exo-lhs-1140-b\n    period_days: 24.7372\n    a_au: 0.0946", "  - id: exo-lhs-1140-b\n    period_days: 24.7372\n    a_au: 0.1946"),
+    ("a planet called inside the habitable zone whose orbit is outside the computed band",
+     "systems-generated.yaml", "    equilibrium_k: 385\n    zone: hotter", "    equilibrium_k: 385\n    zone: inside"),
+    ("a habitable verdict on a planet of two stars, where none is computed",
+     "systems-generated.yaml", "  - id: exo-kepler-16-b\n    period_days: 228.776\n    a_au: 0.7048\n    a_from: table\n    circumbinary: true\n", "  - id: exo-kepler-16-b\n    period_days: 228.776\n    a_au: 0.7048\n    a_from: table\n    circumbinary: true\n    zone: inside\n"),
+    ("a generated system that is not what the generator writes (a hand-typed radius)",
+     "systems-generated.yaml", "    radius_earths: 1.73\n", "    radius_earths: 1.74\n"),
+    ("a generated planet that is not a record of its host",
+     "systems-generated.yaml", "  - id: exo-lhs-1140-c\n", "  - id: exo-lhs-1140-z\n"),
     ("a system stage centred on something other than its host star",
      "stages.yaml", "centre: star-trappist-1", "centre: sun"),
     ("a system stage in a unit other than 100 000 km, the 1 000-times slip spec 0028 made twice",
      "stages.yaml", "unit_km: 100000              #", "unit_km: 100000000           #"),
+    # --- registry/autopilot.yaml (spec 0036) --------------------------------------------------
+    # A reel is a list of trips, and each case is a way it could promise something the trips do
+    # not hold: a trip that is not there, one twice, a wrong length, a place it does not need.
+    ("a reel naming a trip that does not exist",
+     "autopilot.yaml", "      - back-to-the-moon\n", "      - back-to-the-mooon\n"),
+    ("a reel with the same trip twice",
+     "autopilot.yaml", "      - back-to-the-moon\n", "      - a-year-in-a-minute\n"),
+    ("a reel whose id is a trip's",
+     "autopilot.yaml", "  - id: lobby\n", "  - id: moon-landings\n"),
+    ("a reel whose stated minutes are not its trips'",
+     "autopilot.yaml", "    minutes: 45\n", "    minutes: 15\n"),
+    ("a reel of two trips",
+     "autopilot.yaml", "      - tonight-from-your-street\n      - planets-tonight\n      - moon-phases\n      - a-dark-sky\n      - comets-and-meteors\n", ""),
+    ("a reel marked `place` that does not start from the visitor's ground",
+     "autopilot.yaml", '    sound: "off"\n', '    sound: "off"\n    place: true\n'),
+    ("a default that names no reel",
+     "autopilot.yaml", "default: lobby", "default: foyer"),
+    ("a default reel that needs a place",
+     "autopilot.yaml", "default: lobby", "default: tonight"),
+    ("a reel's sound written bare, which YAML reads as false",
+     "autopilot.yaml", 'sound: "off"', "sound: off"),
+    ("a reload every quarter of an hour",
+     "autopilot.yaml", "reload_h: 12 ", "reload_h: 0.25 "),
     # --- registry/audio.yaml (spec 0035) ------------------------------------------------------
     # Sound is somebody else's recording, and the one asset a visitor cannot see is credited. Each
     # case is a way a row could ship a file with no credit, over the budget, on a rung the engine
@@ -585,7 +790,88 @@ CASES: list[tuple[str, str, str, str]] = [
      "textures.yaml", 'original: "https://www.solarsystemscope.com/textures/download/8k_mars.jpg"',
      'original: "http://bjj.mmedia.is/data/mars/mars_map.jpg"'),
     ("a boot map that is not the one models.yaml credits",
-     "textures.yaml", "file: site/textures/2k_mars.jpg", "file: site/textures/2k_mercury.jpg"),
+     "textures.yaml", "file: site/textures/2k_mars.webp", "file: site/textures/2k_jupiter.webp"),
+    # The moons' maps (2026-10-05): one file per world inside its budget, and the share of the
+    # sphere it covers said as a number, because the card's line about the unseen side rests on it.
+    ("a moon's map over the moon_map_bytes budget",
+     "budgets.yaml", "id: moon_map_bytes, value: 250000,", "id: moon_map_bytes, value: 200000,"),
+    ("the moons' maps over their total budget",
+     "budgets.yaml", "id: moon_maps_total_bytes, value: 3300000,", "id: moon_maps_total_bytes, value: 3000000,"),
+    ("a moon's map that covers more than the whole sphere",
+     "textures.yaml", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 0.394", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 1.394"),
+    ("a flat world's map that does not say how much of the sphere it covers",
+     "textures.yaml", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 0.394\n", "    world: miranda\n    slot: map\n    when: boot\n"),
+    # --- registry/tilesets.yaml (2026-10-03, spec 0065) -----------------------------------------
+    # Map tiles are fetched by every visitor's browser from somebody else's server. No licence, a
+    # credit CREDITS.md does not carry, a host whose CORS header nobody measured, plain http, a
+    # level the host does not serve, or a projection the addressing cannot do: each is refused.
+    ("a tile set with no licence",
+     "tilesets.yaml", """resolution_m: 83
+    grade: [3.67, 3.48, 3.45]
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
+    licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'""",
+     """resolution_m: 83
+    grade: [3.67, 3.48, 3.45]
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
+    licence: ''"""),
+    ("a tile set whose credit CREDITS.md does not carry",
+     "tilesets.yaml", 'credit: "Mars close up: THEMIS daytime infrared mosaic, NASA/JPL-Caltech/Arizona State University, from NASA Solar System Treks, as detail over the colour map"',
+     'credit: "Mars: NASA"'),
+    ("a tile set whose CORS header nobody measured",
+     "tilesets.yaml", 'cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"', 'cors: "should be fine"'),
+    ("a tile set served over plain http",
+     "tilesets.yaml", 'url: "https://trek.nasa.gov/tiles/Moon/', 'url: "http://trek.nasa.gov/tiles/Moon/'),
+    ("a tile set asked for a level its host does not serve",
+     "tilesets.yaml", "max_level: 8\n    resolution_m: 162", "max_level: 9\n    resolution_m: 162"),
+    ("a tile set in a projection the addressing cannot do",
+     "tilesets.yaml", "projection: equirectangular", "projection: polar-stereographic"),
+    ("a tile set in a mode the shader does not have",
+     "tilesets.yaml", "projection: equirectangular\n    mode: detail", "projection: equirectangular\n    mode: overlay"),
+    ("a tile set on a world we do not draw",
+     "tilesets.yaml", "world: mars", "world: vulcan"),
+    ("a tile set whose url is not a template",
+     "tilesets.yaml", "default028mm/{z}/{y}/{x}.jpg", "default028mm/7/50/32.jpg"),
+    # --- registry/weather.yaml (2026-10-03, spec 0066) ------------------------------------------
+    # Weather is where a map is most tempted to make things up. An effect that does not say how much
+    # of it is known, a measured one whose CORS header nobody measured, an illustrative one with no
+    # reason, one that would be drawn on the slowest phones, a wind faster than any measured, a world
+    # with no line on its card, a layer that claims the page fetches it from nowhere: each is refused.
+    ("a weather effect that does not say how much of it is known",
+     "weather.yaml", "    kind: hexagon\n    class: illustrative", "    kind: hexagon\n    class: pretty"),
+    ("a measured weather effect whose CORS header nobody measured",
+     "weather.yaml", 'cors: "access-control-allow-origin: *"', 'cors: "probably"'),
+    ("a measured weather effect that does not say where its data reaches",
+     "weather.yaml", '    covers: "25 S to 80 N, from 110 E eastward across the Pacific and the Americas to 0 W"\n', ""),
+    ("an illustrative weather effect with no reason",
+     "weather.yaml", '    why: "The map we ship has no pole in it.', '    because: "The map we ship has no pole in it.'),
+    ("a weather effect drawn at the lowest tier",
+     "weather.yaml", "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]",
+     "    kind: hexagon\n    class: illustrative\n    off_at: [save_data]"),
+    ("lightning that flashes for a visitor who asked for less motion",
+     "weather.yaml", "off_at: [tier0, save_data, reduced_motion]", "off_at: [tier0, save_data]"),
+    ("a wind profile that calls itself measured",
+     "weather.yaml", "    kind: zonal-flow\n    class: modelled\n    off_at: [tier0, save_data]\n    source:\n      name: \"Tollefson",
+     "    kind: zonal-flow\n    class: measured\n    off_at: [tier0, save_data]\n    source:\n      name: \"Tollefson"),
+    ("a wind faster than any measured on a planet",
+     "weather.yaml", "[0, -398]", "[0, -3980]"),
+    ("a wind profile that does not reach the pole",
+     "weather.yaml", "points: [[-90, 0], [-50, 100], [50, 100], [90, 0]]", "points: [[-80, 0], [-50, 100], [50, 100], [90, 0]]"),
+    ("a weather effect with no paper behind it",
+     "weather.yaml", '      url: "https://doi.org/10.1006/icar.1993.1114"\n', ""),
+    ("a weather effect on a world we do not draw",
+     "weather.yaml", "    world: neptune\n    kind: zonal-flow", "    world: vulcan\n    kind: zonal-flow"),
+    ("a frost cap that reaches the tropics",
+     "weather.yaml", "[300, 54]", "[300, 24]"),
+    ("a layer the page is said to fetch, from nowhere the registry names",
+     "weather.yaml", "    layer: lightning\n", ""),
+    # A glossary say is capped at MAX_SENTENCE the way a card sentence is: the card prints the
+    # definition beside the sentence that sent the reader to it, so a definition past the cap is
+    # the same defect. 161 characters is one past the cap, where 160 must still pass.
+    ("a glossary say longer than the cap allows",
+     "glossary.yaml",
+     "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+     "can keep the Earth and Sun behind it and stay cold.",
+     GLOSSARY_SAY_OVER_CAP),
 ]
 
 
@@ -649,6 +935,10 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        target: {record: tesla-roadster}", "        target: {record: bean-astronaut-pin}"),
     ("a trip id that is also a layer id",
      "  - id: people-in-space", "  - id: stations"),
+    # Spec 0061 task 6, internal #333: a blurb is two lines on the intro, 80 characters at most.
+    ("a blurb that would run to three lines on the intro",
+     '    blurb: "A family photograph, two golf balls, a library, a record and a car."',
+     '    blurb: "A family photograph, two golf balls, a library, a record, a car and a good many more words than fit."'),
     ("a target that names two things at once",
      "        target: {record: duke-family-photo}",
      "        target: {record: duke-family-photo, world: earth}"),
@@ -784,6 +1074,40 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "            Now it is the Earth that is in the way.",
      "            Now it is the Earth that is in the way, and there is no need to protect your eyes."),
 
+    # --- spec 0043 (internal #121): the other word lists, and the source near a number -----------
+    ("an eclipse card that says blinding",
+     "            Now it is the Earth that is in the way.",
+     "            Now it is the Earth that is in the way, and the light is blinding."),
+    ("a card on a station that says it is to scale",
+     "            Right now there are exactly two homes above your head with people inside them.",
+     "            Right now there are two homes above your head with people inside them, drawn to scale."),
+    ("a card on a star system's stage that describes the planet's look",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.",
+     "            TRAPPIST-1 is a cool red star forty light-years away. Its planet looks like an ocean."),
+    ("a card that writes the line the generator writes",
+     "            Right now there are exactly two homes above your head with people inside them.",
+     "            Shown at a time computed for you, there are two homes above your head."),
+    ("a card with a number and no `read` date above it (a stop not on the pending list)",
+     "          title: \"Two places, and only two\"\n          body: >-\n"
+     "            Right now there are exactly two homes above your head with people inside them.",
+     "          title: \"Two places, and only two\"\n          body: >-\n"
+     "            Right now there are exactly 2 homes above your head with people inside them."),
+    ("a stop that has gained its `read` comment but is still on the pending list",
+     "        target: {layer: debris-notable, catalog: \"27386\"}\n",
+     "        # read 2026-10-09 at an ESA page.\n        target: {layer: debris-notable, catalog: \"27386\"}\n"),
+    ("an eclipse card that calls the light blinding",
+     "            Now it is the Earth that is in the way.",
+     "            Now it is the Earth that is in the way, in a blinding light."),
+    ("a stop at a record that calls its picture to scale",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.\n",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter, drawn to scale.\n"),
+    ("a star system's stage that says what a planet looks like",
+     "            Seven planets about the size of the Earth go round it, and all seven were found as\n",
+     "            Seven planets about the size of the Earth go round it, one of them blue, and all seven were found as\n"),
+    ("a hand-written card that says what a generated line says",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.\n",
+     "            TRAPPIST-1 is a cool red star forty light-years away, shown at a little bigger than Jupiter.\n"),
+
     # --- spec 0038: a stop at the visitor's own place --------------------------------------------
     ("a visitor's-place target with a second key beside it",
      "        target: {observer: true}\n        # THE SPEC SAID",
@@ -817,6 +1141,12 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     # --- 2026-09-23: the preview picture's stop, and the Sun stage's paths ----------------------
     ("a preview picture at a stop the trip does not have",
      "    og_stop: 1\n", "    og_stop: 9\n"),
+    # internal #304: the one flight home.
+    ("a way home that is a number, not a yes",
+     "    return: true\n", "    return: 2\n"),
+    ("a way home promised from the Moon's own stage, which no continuous flight leaves",
+     "    requires: [hand-kept-sites, worlds]\n    stage: moon\n    clock: as-found\n",
+     "    requires: [hand-kept-sites, worlds]\n    stage: moon\n    clock: as-found\n    return: true\n"),
     ("a preview picture at stop zero, which is not 1-based",
      "    og_stop: 1\n", "    og_stop: 0\n"),
     ("paths drawn for a moon, which has none round the Sun",
@@ -837,119 +1167,210 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        target: {record: exo-trappist-1-e}\n        stage: stellar"),
     ("a card template nothing fills in",
      "            {exoplanet_count} planets around", "            {planet_count} planets around"),
+    # --- 2026-10-05: what a stop adds to the scene (figures, overlays, a place, a lens) -----------
+    ("a look at the sky aimed at the pole, where the camera has no sideways",
+     "        target: {sky: [64.0, 20.0]}", "        target: {sky: [64.0, 88.0]}"),
+    ("a look at the sky at a right ascension past 360 degrees",
+     "        target: {sky: [104.0, 23.0]}", "        target: {sky: [404.0, 23.0]}"),
+    ("a look at the sky on a stage that does not have the Sun at its centre",
+     "    hides: [exoplanets, systems, exotics, deep-sky, galaxy]\n    stage: stellar",
+     "    hides: [exoplanets, systems, exotics, deep-sky, galaxy]\n    stage: sun"),
+    ("a look at the depth with no angle to stand aside by",
+     "        aside_deg: 20\n", ""),
+    ("a distance on a look at the sky, which would move the camera off the Sun",
+     "        target: {sky: [160.0, 17.0]}\n", "        target: {sky: [160.0, 17.0]}\n        distance_km: 1000\n"),
+    ("a figure the line file does not have",
+     "        figures: [Leo]", "        figures: [Leo, Xyz]"),
+    ("figures on a stop that does not look at the sky",
+     "        over: [18, 15]\n", "        over: [18, 15]\n        figures: [Ori]\n"),
+    ("more star names than the screen holds",
+     "        figure_stars: 3\n", "        figure_stars: 9\n"),
+    ("a shutter mode that does not exist",
+     "        exposure: deep\n", "        exposure: hubble\n"),
+    ("a lens wider than the sky can be stretched",
+     "        zoom: 0.7\n", "        zoom: 0.3\n"),
+    ("a trip that hides a layer it needs on",
+     "    hides: [exoplanets, systems, exotics, deep-sky, galaxy]", "    hides: [stars]"),
+    ("an overlay the registry does not have",
+     "        overlay: aerosol", "        overlay: smog"),
+    ("an overlay of this week under another day's Sun",
+     "        overlay: sea-ice\n", "        overlay: sea-ice\n        time: 2027-01-01T00:00:00Z\n"),
+    ("an overlay after the clock was left at a solstice, with no `time: now` since",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        time: now\n",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        overlay: rain\n"),
+    ("a place to stand over that is not on the globe",
+     "        over: [80, -20]", "        over: [95, -20]"),
+    ("a place to stand over at a longitude that is a word nobody reads",
+     "        over: [70, midnight]", "        over: [70, dusk]"),
+    ("a live sentence no module writes",
+     "        live_note: aurora", "        live_note: comets"),
+    # --- 2026-10-06: stops seen from the ground, tonight, daylight, the side a camera stands on ----
+    ("a look from the ground on a stop that is not the visitor's place",
+     "        over: [18, 15]\n", "        over: [18, 15]\n        look: {world: moon}\n"),
+    ("a look at two things at once",
+     "        look: {best: star}", "        look: {best: star, world: moon}"),
+    ("a look for the best of a kind nobody ranks",
+     "        look: {best: figure}", "        look: {best: comet}"),
+    ("a look at a world the sky finder does not know",
+     "        look: {world: moon}\n        time: tonight\n        zoom: 4", "        look: {world: pluto}\n        time: tonight\n        zoom: 4"),
+    ("a look at the station's pass on a stop not timed to one",
+     "        time: {event: station-pass.next, offset_s: -15}\n", ""),
+    ("a card that names the planet the view will find, which differs for every visitor",
+     "            A planet looks like a bright star that does not twinkle.",
+     "            Jupiter looks like a bright star that does not twinkle."),
+    ("a ground lens long enough to swing the picture off the screen",
+     "        look: {world: moon}\n        time: tonight\n        zoom: 4", "        look: {world: moon}\n        time: tonight\n        zoom: 12"),
+    ("tonight on a trip that has no place to have a night at",
+     "        frame_radii: 3.2\n        time: now\n", "        frame_radii: 3.2\n        time: tonight\n"),
+    ("a planet in the visitor's sky on a trip that never asks for their place",
+     "        live_note: season", "        live_note: tonight"),
+    ("the season's sentence under a world that has none written",
+     "        key_light_deg: 70\n        time: now\n        live_note: space-weather",
+     "        key_light_deg: 70\n        time: now\n        live_note: season"),
+    ("daylight for a stop with no ground under it",
+     "      - id: planet\n        target: {world: mars}\n        frame_radii: 4\n",
+     "      - id: planet\n        target: {world: mars}\n        frame_radii: 4\n        time: daylight\n"),
+    ("a camera asked to stand on the side of the stop's own subject",
+     "        seen_from: earth\n        frame_radii: 5.2\n",
+     "        seen_from: moon\n        frame_radii: 5.2\n"),
+    ("a camera held on one side and told to drift as well",
+     "        time: 2027-01-13T00:00:00Z\n        rate: 36000\n        drift_deg: 0\n",
+     "        time: 2027-01-13T00:00:00Z\n        rate: 36000\n        drift_deg: 20\n"),
+    ("a place to stand over on the Sun, which has no ground",
+     "        target: {world: sun}\n        frame_radii: 6\n", "        target: {world: sun}\n        frame_radii: 6\n        over: [10, 10]\n"),
+    # --- 2026-10-06, the remaining shows: a portrait, a kind of sky, the next shower, counted lines --
+    ("a portrait of a black hole nobody has photographed",
+     "        target: {record: exotic-cygnus-x-1}\n        needs_layer: exotics\n",
+     "        target: {record: exotic-cygnus-x-1}\n        needs_layer: exotics\n        portrait: true\n"),
+    ("a portrait that is not a yes",
+     "        portrait: true\n", "        portrait: big\n"),
+    ("a join between two stops that is not a flight, a cut or a fade through black",
+     "        portrait: true\n", "        portrait: true\n        transition: dissolve\n"),
+    ("a kind of sky the ground view does not have",
+     "        darkness: town\n", "        darkness: village\n"),
+    ("a kind of sky on a stop that is not seen from the ground",
+     "        distance_km: 900\n        time: tonight\n", "        distance_km: 900\n        darkness: dark\n        time: tonight\n"),
+    ("a shower the card picked, when which one is next depends on the visitor's date",
+     "        look: {shower: next}", "        look: {shower: perseids}"),
+    ("a count from a catalogue the trip never loads",
+     "        needs_layer: active\n        frame_radii: 1.7\n", "        frame_radii: 1.7\n"),
+    ("the next close pass under a stop that shows another day",
+     "        time: now\n        live_note: close-approach\n", "        time: 2027-01-01T00:00:00Z\n        live_note: close-approach\n"),
+    ("names kept up by a word that is not a yes",
+     "        names: true\n        chapter: \"The belt\"", "        names: some\n        chapter: \"The belt\""),
+    ("the middle of the night on a trip that has no place to have a night at",
+     "        key_light_deg: 60\n        time: now\n        chapter: \"Keeping watch\"", "        key_light_deg: 60\n        time: midnight\n        chapter: \"Keeping watch\""),
+    ("a shutter on a stop at a world, which wears none",
+     "        target: {world: sun}\n        stage: sun\n        frame_radii: 3.6\n", "        target: {world: sun}\n        stage: sun\n        frame_radii: 3.6\n        exposure: deep\n"),
+    # --- 2026-10-08 (internal #384, #313, #290): `after:`, `borrowed:`, `framing:`, `true_size:` -----
+    ("an event counted from a stop that comes later",
+     "after: tilt, borrowed: true", "after: air, borrowed: true"),
+    ("an event counted from a stop that has no instant of its own",
+     "        time: 2027-01-10T21:00:00Z\n", "        time: {event: solstice.next, kind: june, after: sky}\n"),
+    ("an instant borrowed by a word that is not a yes",
+     "kind: june, borrowed: true", "kind: june, borrowed: maybe"),
+    ("a sunrise with a key light as well, two answers to where the camera stands",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        time: now\n",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        framing: sunrise\n        time: now\n"),
+    ("a sunrise whose drift cannot bring the Sun out",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        time: now\n",
+     "        frame_radii: 3.0\n        framing: sunrise\n        drift_deg: 2\n        time: now\n"),
+    ("a sunrise over a world that has no air",
+     "      - id: far-side\n        target: {world: moon}\n        distance_km: 12000\n        behind: earth\n",
+     "      - id: far-side\n        target: {world: moon}\n        frame_radii: 4\n        framing: sunrise\n"),
+    ("a framing the page does not have",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        time: now\n",
+     "        frame_radii: 3.0\n        framing: sunset\n        time: now\n"),
+    ("true size where no dots are drawn",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        time: now\n",
+     "        frame_radii: 3.0\n        key_light_deg: 95\n        true_size: true\n        time: now\n"),
+    ("true size by a word that is not a yes",
+     "        true_size: true\n", "        true_size: mostly\n"),
+    ("true size under a card that talks about the dots",
+     "      - id: eight-minutes\n        target: {world: sun}\n",
+     "      - id: eight-minutes\n        target: {world: sun}\n        true_size: true\n"),
 ]
 
 
 def check_tour_refusals() -> int:
     """Break each registry/tours.yaml rule on purpose, then assert the real file is accepted."""
-    failures = 0
+    def one(case, work: Path):
+        name, find, replace = case
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        # The bundled cities a visitor can pick (spec 0038): a card on a trip from the visitor's
+        # place may not name one, and the checker reads them from here.
+        (work / "site" / "js" / "copy").mkdir(parents=True, exist_ok=True)
+        link(ROOT / "site" / "js" / "copy" / "en.js", work / "site" / "js" / "copy" / "en.js")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        # A COMPLETE tree, unlike the mutation harness above, because the last case asserts
+        # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
+        # validator already rejects for missing model files. Names, not bytes: the question is
+        # whether a row is refused, not whether a GLB parses.
+        textures_into(work)
+        for src in ("site/models", "site/data"):
+            d = work / src
+            d.mkdir(parents=True, exist_ok=True)
+            for f in (ROOT / src).glob("*"):
+                if f.is_file():
+                    (d / f.name).touch()
+
+        path = work / "registry" / "tours.yaml"
+        want_refused = bool(find)
+        if want_refused:
+            text = path.read_text(encoding="utf-8")
+            if find not in text:
+                return [f"BROKEN TEST: {name!r} -- the string it mutates is not in tours.yaml"], 1
+            mutate(path, text.replace(find, replace, 1))
+
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if want_refused and refused and "tours.yaml" in out:
+            return [f"  refused: {name}"], 0
+        if not want_refused and not refused:
+            return [f"  accepted: {name}"], 0
+        if want_refused:
+            why = "was accepted" if not refused else "refused without naming tours.yaml"
+            return [f"  ** {name}: {why}"], 1
+        return ([f"  ** {name}: the shipped registry/tours.yaml does not validate, so every "
+                 f"case above is a tautology"] + ["     " + line for line in out.strip().splitlines()]), 1
+
     with tempfile.TemporaryDirectory() as tmp:
-        for name, find, replace in TOUR_CASES + [("the file as it stands", "", "")]:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            work.mkdir()
-            shutil.copytree(ROOT / "registry", work / "registry")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            # The bundled cities a visitor can pick (spec 0038): a card on a trip from the visitor's
-            # place may not name one, and the checker reads them from here.
-            (work / "site" / "js" / "copy").mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ROOT / "site" / "js" / "copy" / "en.js", work / "site" / "js" / "copy" / "en.js")
-            shutil.copytree(ROOT / "harvest", work / "harvest",
-                            ignore=shutil.ignore_patterns("__pycache__"))
-            # A COMPLETE tree, unlike the mutation harness above, because the last case asserts
-            # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
-            # validator already rejects for missing model files. Names, not bytes: the question is
-            # whether a row is refused, not whether a GLB parses.
-            textures_into(work)
-            for src in ("site/models", "site/data"):
-                d = work / src
-                d.mkdir(parents=True, exist_ok=True)
-                for f in (ROOT / src).glob("*"):
-                    if f.is_file():
-                        (d / f.name).touch()
-
-            path = work / "registry" / "tours.yaml"
-            want_refused = bool(find)
-            if want_refused:
-                text = path.read_text(encoding="utf-8")
-                if find not in text:
-                    print(f"BROKEN TEST: {name!r} -- the string it mutates is not in tours.yaml")
-                    failures += 1
-                    continue
-                path.write_text(text.replace(find, replace, 1), encoding="utf-8")
-
-            result = subprocess.run(
-                [sys.executable, "scripts/check_registry.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            refused = result.returncode != 0
-            if want_refused and refused and "tours.yaml" in out:
-                print(f"  refused: {name}")
-            elif not want_refused and not refused:
-                print(f"  accepted: {name}")
-            elif want_refused:
-                why = "was accepted" if not refused else "refused without naming tours.yaml"
-                print(f"  ** {name}: {why}")
-                failures += 1
-            else:
-                print(f"  ** {name}: the shipped registry/tours.yaml does not validate, so every "
-                      f"case above is a tautology")
-                for line in out.strip().splitlines():
-                    print("     " + line)
-                failures += 1
-    return failures
+        return run_cases(one, TOUR_CASES + [("the file as it stands", "", "")], Path(tmp))
 
 
 def check_copy_refuses() -> int:
     """Break the no-literals rule, the dash rule and the placeholder rule; assert check_copy.py names the file."""
-    failures = 0
+    def one(case, work: Path):
+        name, filename, find, replace = case
+        (work / "site" / "js").mkdir(parents=True)
+        shutil.copytree(ROOT / "site/js/ui", work / "site/js/ui", copy_function=link)
+        shutil.copytree(ROOT / "site/js/copy", work / "site/js/copy", copy_function=link)
+        shutil.copytree(ROOT / "site/js/data", work / "site/js/data", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+
+        path = work / "site" / "js" / "ui" / filename
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in ui/{filename}"], 1
+        mutate(path, text.replace(find, replace, 1))
+
+        result = validator(work, "scripts/check_copy.py")
+        out = result.stdout + result.stderr
+        if result.returncode != 0 and Path(filename).name in out:
+            return [f"  refused: {name}"], 0
+        why = "was accepted" if result.returncode == 0 else f"refused without naming {filename}"
+        return [f"  ** {name}: {why}"], 1
+
     with tempfile.TemporaryDirectory() as tmp:
-        for name, filename, find, replace in COPY_CASES:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            (work / "site" / "js").mkdir(parents=True)
-            shutil.copytree(ROOT / "site/js/ui", work / "site/js/ui")
-            shutil.copytree(ROOT / "site/js/copy", work / "site/js/copy")
-            shutil.copytree(ROOT / "site/js/data", work / "site/js/data")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-
-            path = work / "site" / "js" / "ui" / filename
-            text = path.read_text(encoding="utf-8")
-            if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in ui/{filename}")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
-
-            result = subprocess.run(
-                [sys.executable, "scripts/check_copy.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            if result.returncode != 0 and Path(filename).name in out:
-                print(f"  refused: {name}")
-            else:
-                why = "was accepted" if result.returncode == 0 else f"refused without naming {filename}"
-                print(f"  ** {name}: {why}")
-                failures += 1
+        failures = run_cases(one, COPY_CASES, Path(tmp))
 
     # And the check must PASS on the tree as it stands, or the mutations above prove nothing.
     clean = subprocess.run(
@@ -966,6 +1387,24 @@ def check_copy_refuses() -> int:
 # copy of the committed pages (site/) or of a fresh scripts/build_seo.py build (built/); the refusal
 # must name the file that broke it. (name, file, find, replace, the name the refusal must carry)
 SEO_CASES: list[tuple[str, str, str, str, str]] = [
+    # --- the growth pages: every built page has its own card, its footer, one H1, and an alias stays out of the sitemap ---
+    ("a built page with no twitter:image", "built/starlink/index.html",
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">\n', "", "starlink/index.html"),
+    ("an object page with no twitter:image", "built/o/europa.html",
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">\n', "", "o/europa.html"),
+    ("a twitter:image that is not the og:image", "built/o/mars.html",
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">',
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/moon-landings.png">', "o/mars.html"),
+    ("a built page whose footer lost the Accuracy link", "built/starlink/index.html",
+     '<li><a href="../accuracy/index.html">Accuracy</a></li>\n', "", "starlink/index.html"),
+    ("a built page with two H1", "built/about/index.html", "<h1>About Space Radar</h1>", "<h1>About Space Radar</h1><h1>Again</h1>", "about/index.html"),
+    ("a link from a built page to a page that is not there", "built/teachers/index.html",
+     '<a class="live" href="../">Open it now</a>', '<a class="live" href="../nowhere/index.html">Open it now</a>', "teachers/index.html"),
+    ("an alias listed in the sitemap", "built/sitemap.xml",
+     "</urlset>", "<url><loc>https://www.spaceradar.ai/iss/index.html</loc><lastmod>2026-10-01</lastmod></url>\n</urlset>", "iss/index.html"),
+    ("an alias whose canonical is a page nobody lists", "built/iss/index.html",
+     '<link rel="canonical" href="https://www.spaceradar.ai/o/international-space-station.html">',
+     '<link rel="canonical" href="https://www.spaceradar.ai/o/nowhere.html">', "iss/index.html"),
     ("a title over 60 characters", "built/o/europa.html",
      "<title>Europa: where it is now | Space Radar</title>",
      "<title>Europa, one of the four big moons of Jupiter: where it is now | Space Radar</title>", "o/europa.html"),
@@ -1003,16 +1442,15 @@ def check_seo_refusals() -> int:
     """Break each rule scripts/check_seo.py holds; assert it refuses and names the file. The object
     pages are built at deploy time and not kept in git, so the cases start from a fresh build (which
     needs Node: the card's words are JavaScript)."""
-    failures = 0
     with tempfile.TemporaryDirectory() as tmp:
         clean_tree = Path(tmp) / "clean"
         site = clean_tree / "site"
         site.mkdir(parents=True)
         for name in ("index.html", "robots.txt"):
-            shutil.copy2(ROOT / "site" / name, site / name)
-        for d in ("t", "og", "images"):
-            shutil.copytree(ROOT / "site" / d, site / d)
-        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built")],
+            link(ROOT / "site" / name, site / name)
+        for d in ("t", "og", "images", "lab"):
+            shutil.copytree(ROOT / "site" / d, site / d, copy_function=link)
+        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built"), "--no-share"],
                                capture_output=True, text=True)
         if build.returncode != 0:
             print("  ** scripts/build_seo.py could not build the pages the SEO cases start from")
@@ -1029,27 +1467,24 @@ def check_seo_refusals() -> int:
             print(clean.stdout or clean.stderr)
             return 1
         print("  accepted: the pages as built")
-        for name, filename, find, replace, names in SEO_CASES:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            shutil.copytree(clean_tree, work)
+
+        def one(case, work: Path):
+            name, filename, find, replace, names = case
+            work.rmdir()
+            shutil.copytree(clean_tree, work, copy_function=link)
             path = work / filename
             text = path.read_text(encoding="utf-8")
             if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
+                return [f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}"], 1
+            mutate(path, text.replace(find, replace, 1))
             result = run_check(work)
             out = result.stdout + result.stderr
             if result.returncode != 0 and names in out:
-                print(f"  refused: {name}")
-            else:
-                why = "was accepted" if result.returncode == 0 else f"refused without naming {names}"
-                print(f"  ** {name}: {why}")
-                failures += 1
-    return failures
+                return [f"  refused: {name}"], 0
+            why = "was accepted" if result.returncode == 0 else f"refused without naming {names}"
+            return [f"  ** {name}: {why}"], 1
+
+        return run_cases(one, SEO_CASES, Path(tmp))
 
 
 def check_models_dir_refuses() -> int:
@@ -1065,7 +1500,6 @@ def check_models_dir_refuses() -> int:
     never opens a file, and writing 6.7 MB of real models into a temporary tree to prove that
     would be testing shutil.
     """
-    failures = 0
     listed = sorted(
         re.findall(r"file: site/models/([A-Za-z0-9_.-]+\.glb)", (ROOT / "registry/models.yaml").read_text(encoding="utf-8"))
     )
@@ -1073,51 +1507,94 @@ def check_models_dir_refuses() -> int:
         print("  ** models directory: no real_models rows found, so this guard was not exercised")
         return 1
 
-    for label, extra in (("the directory as the registry lists it", None),
-                         ("one .glb with no row", "unlisted-and-uncredited.glb")):
-        with tempfile.TemporaryDirectory() as tmp:
-            work = Path(tmp) / "work"
-            work.mkdir()
-            shutil.copytree(ROOT / "registry", work / "registry")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            shutil.copytree(ROOT / "harvest", work / "harvest",
-                            ignore=shutil.ignore_patterns("__pycache__"))
-            textures_into(work)
-            models = work / "site" / "models"
-            models.mkdir(parents=True)
-            for name in listed:
-                (models / name).write_bytes(b"")
-            if extra:
-                (models / extra).write_bytes(b"")
+    def one(case, work: Path):
+        label, extra = case
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        textures_into(work)
+        models = work / "site" / "models"
+        models.mkdir(parents=True)
+        for name in listed:
+            (models / name).write_bytes(b"")
+        if extra:
+            (models / extra).write_bytes(b"")
 
-            result = subprocess.run(
-                [sys.executable, "scripts/check_registry.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            refused = result.returncode != 0
-            if extra is None:
-                if refused:
-                    print(f"  ** models directory: {label} was refused\n{out.strip()[:400]}")
-                    failures += 1
-                else:
-                    print(f"  accepted: {label}")
-            else:
-                if refused and "site/models" in out and extra in out:
-                    print(f"  refused: {label}")
-                else:
-                    why = "was accepted" if not refused else "refused without naming the file"
-                    print(f"  ** models directory: {label} {why}")
-                    failures += 1
-    return failures
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if extra is None:
+            if refused:
+                return [f"  ** models directory: {label} was refused\n{out.strip()[:400]}"], 1
+            return [f"  accepted: {label}"], 0
+        if refused and "site/models" in out and extra in out:
+            return [f"  refused: {label}"], 0
+        why = "was accepted" if not refused else "refused without naming the file"
+        return [f"  ** models directory: {label} {why}"], 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        return run_cases(one, [("the directory as the registry lists it", None),
+                               ("one .glb with no row", "unlisted-and-uncredited.glb")], Path(tmp))
+
+
+def check_pictures_refuse() -> int:
+    """A PNG under site/og/ with no `Software: space-radar` chunk and no registry/pictures.yaml row
+    is a picture pasted in by hand (spec 0043 req 6, internal #121); a row with no credit is refused."""
+    import struct
+    import zlib
+
+    def chunk(kind: bytes, body: bytes) -> bytes:
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
+
+    def png(software: str | None) -> bytes:
+        head = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 0, 0, 0, 0))
+        text = chunk(b"tEXt", b"Software\x00" + software.encode()) if software else b""
+        return head + text + chunk(b"IDAT", zlib.compress(b"\x00\x00")) + chunk(b"IEND", b"")
+
+    row = "pictures:\n  - {file: og/hand.png, source: x, licence: y%s, read: 2026-10-08}\n"
+
+    def one(case, work: Path):
+        label, software, pictures, must_name = case
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        textures_into(work)
+        models = work / "site" / "models"
+        models.mkdir(parents=True)
+        for name in re.findall(r"file: site/models/([A-Za-z0-9_.-]+\.glb)", (ROOT / "registry/models.yaml").read_text(encoding="utf-8")):
+            (models / name).write_bytes(b"")
+        (work / "site" / "og").mkdir(parents=True)
+        (work / "site" / "og" / "hand.png").write_bytes(png(software))
+        if pictures is not None:
+            mutate(work / "registry" / "pictures.yaml", pictures)
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if must_name is None:
+            return ([f"  accepted: {label}"], 0) if not refused else ([f"  ** {label} was refused\n{out.strip()[:400]}"], 1)
+        if refused and must_name in out:
+            return [f"  refused: {label}"], 0
+        return [f"  ** {label}: " + ("was accepted" if not refused else "refused without naming it")], 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        return run_cases(one, [
+            ("a picture the app made (the chunk says so)", "space-radar shots.mjs", None, None),
+            ("a picture pasted in by hand, no chunk, no row", None, None, "site/og/hand.png"),
+            ("a picture with another program's name in the chunk", "Photoshop", None, "site/og/hand.png"),
+            ("a picture from elsewhere with a row and a credit CREDITS.md carries", None,
+             row % ", credit: 'NASA'", None),
+            ("a picture from elsewhere whose row has no credit", None, row % "", "pictures.yaml"),
+            ("a picture from elsewhere whose credit CREDITS.md does not carry", None,
+             row % ", credit: 'A line nobody wrote in CREDITS.md'", "pictures.yaml"),
+        ], Path(tmp))
 
 
 # The raise needs a base to compare with, so these run in a git checkout of their own; and the
@@ -1138,124 +1615,133 @@ BUDGET_CASES: list[tuple[str, str, str, bool]] = [
 
 
 def check_budget_refusals() -> int:
-    failures = 0
     git = ["git", "-c", "user.name=refusals", "-c", "user.email=refusals@example.invalid", "-c", "commit.gpgsign=false"]
-    for name, find, replace, want_refused in BUDGET_CASES:
-        with tempfile.TemporaryDirectory() as tmp:
-            work = Path(tmp) / "work"
-            work.mkdir()
-            for d in ("registry", "scripts", "tests", "harvest", "site/js", "site/images", "site/audio"):
-                if (ROOT / d).is_dir():
-                    shutil.copytree(ROOT / d, work / d, ignore=shutil.ignore_patterns("__pycache__"))
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            (work / "site" / "data").mkdir(parents=True, exist_ok=True)
-            for f in ("dso.json", "stars3d.names.json", "exoplanets.csv"):
-                shutil.copy2(ROOT / "site" / "data" / f, work / "site" / "data" / f)
-            subprocess.run(git[:1] + ["init", "-q"], cwd=work, check=True)
-            subprocess.run(git + ["add", "registry/budgets.yaml"], cwd=work, check=True)
-            subprocess.run(git + ["commit", "-q", "-m", "base"], cwd=work, check=True)
 
-            path = work / "registry" / "budgets.yaml"
-            text = path.read_text(encoding="utf-8")
-            if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in budgets.yaml")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
-            result = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=work,
-                                    capture_output=True, text=True, env={**os.environ, "BUDGETS_BASE": "HEAD"})
-            said = [line for line in (result.stdout + result.stderr).splitlines() if "budgets.yaml" in line]
-            if want_refused and result.returncode != 0 and said:
-                print(f"  refused: {name}")
-            elif not want_refused and not said:
-                print(f"  accepted: {name}")
-            else:
-                print(f"  ** {name}: {'was accepted' if want_refused else 'was refused: ' + '; '.join(said)}")
-                failures += 1
-    return failures
+    def one(case, work: Path):
+        name, find, replace, want_refused = case
+        for d in ("registry", "scripts", "tests", "harvest", "site/js"):
+            if (ROOT / d).is_dir():
+                shutil.copytree(ROOT / d, work / d, ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+        for f in ("dso.json", "stars3d.names.json", "exoplanets.csv"):
+            link(ROOT / "site" / "data" / f, work / "site" / "data" / f)
+        subprocess.run(git[:1] + ["init", "-q"], cwd=work, check=True)
+        subprocess.run(git + ["add", "registry/budgets.yaml"], cwd=work, check=True)
+        subprocess.run(git + ["commit", "-q", "-m", "base"], cwd=work, check=True)
+
+        path = work / "registry" / "budgets.yaml"
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in budgets.yaml"], 1
+        mutate(path, text.replace(find, replace, 1))
+        result = validator(work, env={**ENV, "BUDGETS_BASE": "HEAD"})
+        said = [line for line in (result.stdout + result.stderr).splitlines() if "budgets.yaml" in line]
+        if want_refused and result.returncode != 0 and said:
+            return [f"  refused: {name}"], 0
+        if not want_refused and not said:
+            return [f"  accepted: {name}"], 0
+        return [f"  ** {name}: {'was accepted' if want_refused else 'was refused: ' + '; '.join(said)}"], 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        return run_cases(one, BUDGET_CASES, Path(tmp))
+
+
+def check_registry_refusals(tmp: Path) -> int:
+    pristine = tmp / "pristine"
+    shutil.copytree(ROOT / "registry", pristine, copy_function=link)
+
+    def one(case, work: Path):
+        name, filename, find, replace = case
+        shutil.copytree(pristine, work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
+        # without it fails for a reason that has nothing to do with the case under test.
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        # ...and registry/sources.yaml against harvest/parsers/ and the list/query files.
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        # ...and registry/dso-hand.yaml against the built site/data/dso.json the card reads.
+        (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+        link(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
+        # ...and registry/stars-notable.yaml against the names file the star records come from.
+        link(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
+        # ...and registry/systems.yaml against the exoplanet table its planets are records of.
+        link(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
+        # ...and registry/textures.yaml against the maps it names.
+        textures_into(work)
+        # ...and registry/worlds.yaml against its two hand mirrors in the browser.
+        (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
+        for js in ("worlds.js", "stage.js"):
+            link(ROOT / "site" / "js" / "scene" / js, work / "site" / "js" / "scene" / js)
+
+        path = work / "registry" / filename
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}"], 1
+        mutate(path, text.replace(find, replace, 1))
+
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if refused and filename in out:
+            return [f"  refused: {name}"], 0
+        why = "was accepted" if not refused else f"refused without naming {filename}"
+        return [f"  ** {name}: {why}"], 1
+
+    return run_cases(one, CASES, tmp)
 
 
 def main() -> int:
+    global JOBS
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--jobs", "-j", type=int, default=JOBS,
+                    help="cases to run at once (default: the CPU count, %(default)s here)")
+    JOBS = max(1, ap.parse_args().jobs)
+
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
-        pristine = Path(tmp) / "pristine"
-        shutil.copytree(ROOT / "registry", pristine)
+        # One parse per distinct YAML text for the whole run (scripts/check_registry.py). The
+        # unbroken tree is checked first, alone, so the cache is warm before the pool starts and a
+        # registry that does not validate is said once, here, and not three hundred times.
+        cache = Path(tmp) / "yaml-cache"
+        cache.mkdir()
+        ENV["REGISTRY_YAML_CACHE"] = str(cache)
+        warm = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=ROOT,
+                              capture_output=True, text=True, env=ENV)
+        if warm.returncode != 0:
+            print("  ** scripts/check_registry.py fails on the unbroken tree, so every refusal below "
+                  "would be a tautology")
+            print((warm.stdout + warm.stderr).strip())
+            return 1
 
-        for name, filename, find, replace in CASES:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            work.mkdir()
-            shutil.copytree(pristine, work / "registry")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-            # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
-            # without it fails for a reason that has nothing to do with the case under test.
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            # ...and registry/sources.yaml against harvest/parsers/ and the list/query files.
-            shutil.copytree(ROOT / "harvest", work / "harvest",
-                            ignore=shutil.ignore_patterns("__pycache__"))
-            # ...and registry/dso-hand.yaml against the built site/data/dso.json the card reads.
-            (work / "site" / "data").mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
-            # ...and registry/stars-notable.yaml against the names file the star records come from.
-            shutil.copy2(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
-            # ...and registry/systems.yaml against the exoplanet table its planets are records of.
-            shutil.copy2(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
-            # ...and registry/textures.yaml against the maps it names.
-            textures_into(work)
-            # ...and registry/worlds.yaml against its two hand mirrors in the browser.
-            (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
-            for js in ("worlds.js", "stage.js"):
-                shutil.copy2(ROOT / "site" / "js" / "scene" / js, work / "site" / "js" / "scene" / js)
+        failures += check_registry_refusals(Path(tmp))
 
-            path = work / "registry" / filename
-            text = path.read_text(encoding="utf-8")
-            if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
+        print("")
+        failures += check_tour_refusals()
 
-            result = subprocess.run(
-                [sys.executable, "scripts/check_registry.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            refused = result.returncode != 0
-            names_the_file = filename in out
-            if refused and names_the_file:
-                print(f"  refused: {name}")
-            else:
-                why = "was accepted" if not refused else f"refused without naming {filename}"
-                print(f"  ** {name}: {why}")
-                failures += 1
+        print("")
+        failures += check_copy_refuses()
 
-    print("")
-    failures += check_tour_refusals()
+        print("")
+        failures += check_models_dir_refuses()
 
-    print("")
-    failures += check_copy_refuses()
+        print("")
+        failures += check_pictures_refuse()
 
-    print("")
-    failures += check_models_dir_refuses()
+        print("")
+        failures += check_budget_refusals()
 
-    print("")
-    failures += check_budget_refusals()
-
-    print("")
-    failures += check_seo_refusals()
+        print("")
+        failures += check_seo_refusals()
 
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES)
+    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES) + 4
     print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
           f"and a site/models that matches the registry are both accepted")
     return 0

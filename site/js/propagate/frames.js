@@ -277,6 +277,41 @@ export function spinPeriodHours(world, tMs) {
 }
 
 /**
+ * How long a moon takes to go once round its planet, in hours, measured from the same positions it
+ * is drawn at (moonOffsetKm): the rate it is moving at now gives a first guess, and the angle it
+ * sweeps over that long, in 36 steps, corrects it. A moon that keeps one face to its planet turns
+ * once in exactly this time, which is what its card's "a turn" is (ui/cards.js): Ganymede's card
+ * read "— days a turn" (2026-10-05), because astronomy-engine has no rotation model for it.
+ * Null for anything that is not a planet's moon, or outside the years its orbit is fitted for.
+ */
+export function moonLapHours(world, tMs) {
+  const id = String(world || '').toLowerCase();
+  const t = Number.isFinite(tMs) ? tMs : Date.UTC(2027, 0, 1);
+  const at = (ms) => moonOffsetKm(id, ms);
+  const angle = (a, b) => {
+    const la = Math.hypot(a.x, a.y, a.z);
+    const lb = Math.hypot(b.x, b.y, b.z);
+    return la > 0 && lb > 0 ? Math.acos(Math.max(-1, Math.min(1, (a.x * b.x + a.y * b.y + a.z * b.z) / (la * lb)))) : NaN;
+  };
+  const p0 = at(t);
+  const p1 = at(t + 600e3);
+  if (!p0 || !p1) return null;
+  const rate = angle(p0, p1) / 600e3; // radians per ms, now
+  if (!(rate > 0)) return null;
+  const guess = (2 * Math.PI) / rate;
+  const steps = 36;
+  let swept = 0;
+  let prev = p0;
+  for (let k = 1; k <= steps; k++) {
+    const next = at(t + (guess * k) / steps);
+    if (!next) return null;
+    swept += angle(prev, next);
+    prev = next;
+  }
+  return swept > 0 ? ((guess * 2 * Math.PI) / swept) / 3600e3 : null;
+}
+
+/**
  * A planet's year in days: astronomy-engine's mean sidereal orbital period, the same library that
  * places it. Null for anything that does not go round the Sun on its own (the Sun, the Moon).
  */

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use Space Radar in your work or teaching, please cite it as below. The data it draws belongs to its publishers: see CREDITS.md."
+title: "Space Radar: a live 3D map of space in the browser"
+type: software
+authors:
+  - name: "Space Radar contributors"
+repository-code: "https://github.com/Sara-Managed-Projects/space-radar"
+url: "https://www.spaceradar.ai"
+license: MIT
+abstract: >-
+  Space Radar is a free, open-source, static website that draws the satellites around the Earth, the planets and
+  their moons, the stars, nebulae and narrated trips at their real positions, computed in the visitor's browser
+  from public data. Every drawn thing is labelled as measured, modelled or illustrative, and every fact names its
+  source. It needs no account and no build step, and it runs offline from a downloaded copy.
+keywords:
+  - astronomy
+  - satellite tracking
+  - planetarium
+  - exoplanets
+  - education
+  - open data
+  - three.js

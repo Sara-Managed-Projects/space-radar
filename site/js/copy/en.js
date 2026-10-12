@@ -362,9 +362,14 @@ export function inWords(deltaMs) {
   } else if (minutes < 1440) {
     const n = Math.round(minutes / 60);
     body = n === 1 ? COPY.time.anHour : t(COPY.time.hours, { n });
-  } else {
+  } else if (minutes < 1440 * 90) {
     const n = Math.round(minutes / 1440);
     body = n === 1 ? COPY.time.aDay : t(COPY.time.days, { n });
+  } else if (minutes < 1440 * 730) {
+    // Past three months a count of days is a sum nobody does ("in 300 days"); past two years, months are.
+    body = t(COPY.time.months, { n: Math.round(minutes / (1440 * 30.44)) });
+  } else {
+    body = t(COPY.time.years, { n: Math.round(minutes / (1440 * 365.25)) });
   }
   return t(past ? COPY.time.ago : COPY.time.inFuture, { d: body });
 }
@@ -405,6 +410,12 @@ const longDateFmt = new Intl.DateTimeFormat('en-GB', {
   month: 'long',
   day: 'numeric',
 });
+const utcLongFmt = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
 const clockFmt = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
   minute: '2-digit',
@@ -444,13 +455,31 @@ export const timeText = {
    * "29 SEP 21:14 UTC" -- the time pill's readout (spec 0061 §7). en-US for the month because en-GB
    * now writes "Sept", and the pill is set in capitals where a four-letter month is one too many.
    */
-  pillUtc: (ms) => {
+  pillUtc: (ms, nowMs) => {
     const parts = {};
     for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    // More than half a year from now the year is the point: "05 MAR 12:05" for Voyager at Jupiter
+    // would read as last spring (the Roadster mistake, dateNear above).
+    const far = Number.isFinite(nowMs) && Math.abs(ms - nowMs) > 180 * 86400e3;
+    const day = `${parts.day} ${String(parts.month || '').toUpperCase()}`;
     return t(COPY.timePill.when, {
-      date: `${parts.day} ${String(parts.month || '').toUpperCase()}`,
+      date: far ? `${day} ${new Date(ms).getUTCFullYear()}` : day,
       time: `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`,
     });
+  },
+  /** "5 March 1979", in UTC: a mission's event (ui/missions.js), a dated card (ui/today.js). */
+  utcLong: (ms) => utcLongFmt.format(new Date(ms)),
+  /** "21:30", in UTC: a tick on the timeline (ui/scrubber.js). */
+  utcHm: (ms) => {
+    const parts = {};
+    for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    return `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`;
+  },
+  /** "07 Oct", in UTC: a day on the timeline and on a dated card (set in capitals by their CSS). */
+  utcDay: (ms) => {
+    const parts = {};
+    for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    return `${parts.day} ${parts.month || ''}`;
   },
   timeZoneName: () => {
     try {
@@ -510,24 +539,20 @@ export function formatShownAt(ms, rate) {
 // COPY -- every user-visible string
 // ---------------------------------------------------------------------------------------
 
+// THE WORDS OF WHAT LOADS LATER ARE IN copy/en.later.js (2026-10-06, internal #405): the card's
+// templates and class sentences, the Tonight tab, the debris view, the keys hint and the other
+// sections only a module outside the first visit reads -- 45 kB that every first visit carried.
+// A module that reads one of those sections imports that file beside this one
+// (tests/test_boot_diet.mjs refuses a reader that does not, and a boot module that does).
 export const COPY = {
   app: {
     name: 'Space Radar',
     tagline: 'Everything in motion around Earth, where it really is, right now.',
+    // The canvas's spoken name while something is selected (public #315): one sentence, changed
+    // on selection and never per frame. With nothing selected it is the sentence index.html wrote.
+    sceneSelected: 'A map of space drawn at real positions, with {name} selected: its card, in the panel beside the map, says what it is.',
   },
 
-  // ui/subscribe.js (issue #251): email-only alerts for upcoming launches and meteor shower
-  // peaks -- the same for every subscriber, never a per-location pass alert (that is issue #290).
-  subscribe: {
-    heading: 'Get an email for launches and meteor showers',
-    emailPlaceholder: 'you@example.com',
-    launchesLabel: 'Upcoming launches',
-    showersLabel: 'Meteor shower peaks',
-    submit: 'Subscribe',
-    sending: 'Sending…',
-    pending: 'Check your email to confirm.',
-    couldNotReach: 'Could not reach the subscription service.',
-  },
 
   // "Six storms are turning": a count a person reads as a word (ui/explore.js Right now).
   numberWords: SMALL_WORDS,
@@ -577,6 +602,36 @@ export const COPY = {
     oldest: 'oldest {age}',
     open: 'Open the sources',
     label: '{text}. Open the sources',
+    // No network (ui/offline.js): what is drawn comes from copies kept on this device, and the age
+    // is the oldest of them. Said in words, with the stale dot: an old copy is not a failure.
+    offline: 'Offline: showing saved copies from {age}',
+    offlineNone: 'Offline: no saved copies on this device',
+  },
+  // A mission's events on its card (ui/missions.js; the events and their sentences are
+  // registry/missions.yaml's). The notes are the honest part: what the map did with the clock.
+  mission: {
+    title: 'Its mission',
+    count: '{i} of {n}',
+    navLabel: 'The events of {name}',
+    prev: 'Earlier event',
+    next: 'Later event',
+    when: '{date}, {time} UTC',
+    // An event that has not happened yet (Apophis in 2029): a date somebody worked out.
+    predicted: '{when} (predicted)',
+    go: 'Go to this moment',
+    goTitle: 'Set the clock to this moment and frame it',
+    here: 'The clock is at this moment. Live brings it back.',
+    noteSite: 'The map can show this place on that day, in that day’s light.',
+    notePath: 'The map holds its path for that day.',
+    noteCruise: 'No path of ours for that day: {name} is drawn on the straight line back from where it is measured now, good to about one astronomical unit.',
+    noteNone: 'The map has no path for {name} on that day, so the clock stays where it is.',
+    noteNoneWorld: 'The map has no path for {name} on that day, so the clock stays where it is. The world it met is drawn for any date.',
+    seeWorld: 'See {world} that day',
+    seeWorldTitle: 'Set the clock to that day and go to {world}. {name} itself is not drawn there',
+    all: 'All {n} events',
+    fewer: 'Hide the list',
+    source: 'Dates and figures: ',
+    unknown: 'That link names an event this map does not have.',
   },
   // A trip as a card (0061 design §2): the title and one line under it.
   tripCard: {
@@ -584,9 +639,26 @@ export const COPY = {
     meta: '{n} stops · {m} min',
     metaOne: 'One stop · {m} min',
     planning: 'Working out the stops',
+    // On the card that was just pressed, until its trip opens (ui/explore.js `starting`).
+    starting: 'Starting…',
     cannotRun: 'Cannot run right now',
+    // Under the four cards while the rest are folded away (public #241): the trips that cannot
+    // run, counted, with the reason when they share one. {line} is one of the first two.
+    offOne: 'One trip cannot run now',
+    offMany: '{n} trips cannot run now',
+    offWhy: '{line}: {reason}',
     all: 'All {n} trips',
     fewer: 'Fewer trips',
+    // Under the cards: the trips one after another, hands off (ui/autopilot.js, spec 0036).
+    onItsOwn: 'Play on its own',
+    onItsOwnTitle: 'Trips one after another until you take the controls',
+    // The reels the button opens (registry/autopilot.yaml), each with one lap's length.
+    justWatch: 'Just watch',
+    reelLength: '{m} min a lap',
+    // The first row of Just watch (ui/drift.js, spec 0071): no trips, no words, no end.
+    drift: 'Drift',
+    driftLength: 'no end',
+    driftTitle: 'The camera wanders from one thing to the next',
   },
   // The Planets and Stars tabs' lists.
   explore: {
@@ -596,6 +668,13 @@ export const COPY = {
     worldsDrawn: 'Planets drawn as dots, larger than they are.',
     farTitle: 'Far places',
     systemsTitle: 'Star systems',
+    systemsMild: 'Planets near the habitable zone',
+    systemsExtreme: 'Extreme systems',
+    // The Stars tab's switch for the marks of planets round other stars (public #271).
+    exoRow: 'Planets of other stars',
+    exoShow: 'show',
+    exoHide: 'hide',
+    exoTitle: 'Marks every star known to have planets',
     lightYears: '{n} ly',
     au: '{n} AU',
   },
@@ -632,6 +711,33 @@ export const COPY = {
     run: 'Click to let time run, drag to move through it',
     localTitle: 'Your time {time}, {zone}. {hold}',
     readLabel: '{text}. {hold}',
+    // The step ‹ and › take (ui/timepill.js): a button that cycles a minute, an hour, a day, and
+    // sets how far the timeline shows (ui/scrubber.js: two hours, a day, a month).
+    units: { minute: '1 min', hour: '1 h', day: '1 day', event: 'Event' },
+    unitWords: { minute: 'one minute', hour: 'one hour', day: 'one day', event: 'one event' },
+    // With the step at "Event", ‹ and › go to the mark before and after on the timeline.
+    prevEvent: 'The event before',
+    nextEvent: 'The next event',
+    noEventBack: 'No earlier event on the timeline.',
+    noEventOn: 'No later event on the timeline.',
+    // A mark for one of the Moon's four named phases (ui/scrubber.js moonMarks).
+    moonMark: 'The Moon is {phase}, {date}',
+    // Sunrise and sunset at the visitor's place (ui/scrubber.js sunMarks); a guessed place says so.
+    sunMark: '{what} where you are, {date}',
+    sunMarkGuess: '{what} at the place guessed for you, {date}',
+    sunWords: { sunrise: 'Sunrise', sunset: 'Sunset' },
+    unitTitle: 'Steps of {unit}. Press for {next}',
+    // The timeline (ui/scrubber.js). It is a slider: its value is the readout's words.
+    tapeLabel: 'Timeline. Drag it, or use the arrow keys',
+    tapeTitle: 'Drag to move through time',
+    now: 'now',
+    nowTitle: 'Back to now',
+    rough: 'rougher',
+    roughTitle: 'Past a week from now a satellite’s place on its orbit is rough',
+    roughSay: 'Satellite places are rough this far from now.',
+    worlds: 'Planets and moons hold for centuries.',
+    markTitle: '{what}. Press to go there',
+    endTitle: 'The timeline ends here: a month back, a year on',
   },
 
   punctuation: {
@@ -688,7 +794,7 @@ export const COPY = {
       // worst error measured there over 2000 to 2050, at instants the fit never saw.
       phobos: 'position: Mars from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Mars fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
       deimos: 'position: Mars from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Mars fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
-      enceladus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 480 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is and its colour from NASA Science, how to see it from Wikipedia, all read 2026-09-22',
+      enceladus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 480 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is and its colour from NASA Science, how to see it from Wikipedia, all read 2026-09-22',
       titan: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 840 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, the Huygens landing, its colour and how to see it from Wikipedia, all read 2026-09-22',
       triton: 'position: Neptune from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 10 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       charon: 'position: Pluto from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Pluto fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
@@ -698,12 +804,12 @@ export const COPY = {
       tethys: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       dione: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 240 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, its colour from NASA Science, what it is and its brightness from Wikipedia, all read 2026-09-22',
       rhea: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 200 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
-      iapetus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 800 km over 2000 to 2050, which is 0.19 per cent of its orbit; radius from JPL’s satellite physical parameters, both albedos from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      iapetus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 800 km over 2000 to 2050, which is 0.19 per cent of its orbit; radius from JPL’s satellite physical parameters, both albedos from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
       miranda: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       ariel: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
       umbriel: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 410 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
-      titania: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 000 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
-      oberon: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 230 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
+      titania: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 000 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      oberon: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 230 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
     },
   },
 
@@ -722,59 +828,11 @@ export const COPY = {
     crowded: '{name} is not drawn as wide as that: {near} is only {deg} degrees away in this sky, and a disc that size would cover it.',
   },
 
-  klass: {
-    station: 'Station',
-    satellite: 'Satellite',
-    debris: 'Debris',
-    rocket: 'Rocket',
-    probe: 'Probe',
-    telescope: 'Telescope',
-    asteroid: 'Asteroid',
-    comet: 'Comet',
-    site: 'Ground site',
-    world: 'World',
-    star: 'Star',
-    exoplanet: 'Planet of another star',
-    dso: 'Deep-sky object',
-    exotic: 'Extreme object',
-    storm: 'Tropical cyclone',
-    // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
-    // in common except that somebody sent them and nobody had to.
-    oddity: 'Oddity',
-    unknown: 'Object',
-  },
-
-  // The card's badge for the far-bodies layer, whose records are filed under the asteroid and comet
-  // classes for their glyph and model (ui/cards.js klassLabel).
-  klassFar: {
-    dwarf: 'Dwarf planet',
-    interstellar: 'Interstellar object',
-  },
-
-  moments: {
-    title: 'What are you here for',
-    wonder: {
-      id: 'wonder',
-      label: 'Wonder',
-      hint: 'Fly around and tap anything.',
-    },
-    now: {
-      id: 'now',
-      label: 'Now',
-      hint: 'What is above your head this minute.',
-    },
-    next: {
-      id: 'next',
-      label: 'Next',
-      hint: 'What is coming, and when.',
-    },
-  },
 
   // The long-press list (spec 0028 req 4): what is under a finger when several things are.
   // A star without a name in any catalogue people use: its HYG row is what we can say.
   stars: {
     unnamed: 'An unnamed star (HYG {n})',
-    notPlaced: '{n} more have no measured distance and are not drawn.',
   },
   // A star system at its own scale (spec 0040, scene/systems.js). The one piece of text drawn IN the
   // scene: the dashed ring on the trip's last stop is not an orbit anything has, and it says so.
@@ -788,12 +846,23 @@ export const COPY = {
     notLoaded: 'still loading',
     weShowTitle: 'What this map draws of what is known',
     weShowRow: '{n} {what} — of {of}',
+    // One flight without a cut (scene/climb.js): two rows at the head of the far places.
+    edge: 'The edge of the map',
+    edgeHow: 'fly out',
+    edgeTitle: 'One flight from here out to the edge of what this map draws',
+    home: 'The Earth',
+    homeHow: 'fly home',
+    homeTitle: 'One flight from here back down to the Earth',
+    flightOff: 'Not from this place: go to Earth, Planets or Stars first',
   },
   // The Next moment's list (spec 0026 req 6): what is coming, from records already loaded.
   // ui/scenenote.js: the one line on the scene when no satellite could be read at all.
   sceneNote: {
-    refused: 'No satellites on the map right now: CelesTrak, which publishes their orbits, could not be read from this connection. The Moon, the planets, the stars and the trips that do not need satellites still work.',
-    why: 'What could not be read',
+    // One line and one action, as a toast is (docs/ui-guide.md section 3.14, spec 0061 req 11). Who
+    // publishes the orbits and what still works is the sources sheet's to say; the button goes there.
+    refused: 'Satellites could not be read.',
+    refusedTitle: 'CelesTrak, which publishes the orbits, could not be read from this connection. The Moon, the planets, the stars and the trips that need no satellites still work.',
+    why: 'Sources',
     close: '×',
     closeTitle: 'Close this note',
   },
@@ -801,10 +870,10 @@ export const COPY = {
   // through the same note; the default view is what is shown, and the line says so rather than
   // leaving a visitor to wonder why a link to the Moon opened on the Earth.
   link: {
-    unknownVersion: 'This link was made by a newer version of the map; showing the default view.',
-    unknownTrip: 'That trip is not on this map any more; showing the default view.',
+    unknownVersion: 'This link is from a newer map. Showing the default view.',
+    unknownTrip: 'That trip is gone from this map. Showing the default view.',
     unknownAt: 'That object is not on this map; showing the default view.',
-    unknownStage: 'That place is not a centre this map can take; showing the default view.',
+    unknownStage: 'This map cannot centre on that place. Showing the default.',
   },
   // Sharing (spec 0033, spec 0061 task 8): one sheet, ui/sharesheet.js, with the postcard, the link
   // and the text. The text itself is the card's words and Wikipedia's; only the sheet's own words
@@ -824,6 +893,8 @@ export const COPY = {
     textLabel: 'Text',
     lookingUp: 'Looking it up on Wikipedia…',
     wikiSource: 'The Wikipedia article this quotes',
+    // The empty state: one line where the article's link would be.
+    noWiki: 'No Wikipedia text here: the post is shorter.',
     // CC BY-SA asks for the source and the licence beside a quote; the sheet links the article.
     attribution: 'From Wikipedia, CC BY-SA 4.0',
     native: 'Share…',
@@ -844,26 +915,32 @@ export const COPY = {
     emailNote: 'Email takes no picture: Share… or download it.',
     networksLabel: 'Post to',
     networkTitle: 'Open {network} with this post, in a new tab',
+    // The link's spoken name: "X" alone is one letter to a screen reader (internal #375).
+    networkLabel: 'Post to {network}',
     networks: { x: 'X', facebook: 'Facebook', linkedin: 'LinkedIn', whatsapp: 'WhatsApp', telegram: 'Telegram', reddit: 'Reddit' },
     // The email's subject when something is selected; with nothing, the app's name alone.
     subject: '{name}, on Space Radar',
     failed: 'Sharing could not open just now',
     mark: 'spaceradar.ai',
+    // Photo mode and the embed (public #288, #439), the sheet's last two actions.
+    photo: 'Photo mode',
+    photoTitle: 'Compose a picture: everything hidden, a frame, a caption',
+    embed: 'Embed',
+    embedTitle: 'Copy the code that puts this live view in a web page',
+    embedCopied: 'Embed code copied',
+    embedRefused: 'Copying was refused just now',
+    // {name} is what the frame shows; a screen reader in the host page reads this.
+    embedFrameTitle: '{name}, live on Space Radar',
+    // The disclosure row over the post's words; closed, the sheet fits a laptop without scrolling.
+    textRow: 'Post text',
   },
-  // Sound (spec 0035): off until the visitor turns it on, and remembered once they have. The words
-  // say the state, not the action, on the toggle ("Sound: off"), and the action on the mute in the
-  // bars ("Mute"), because a bar button is pressed mid-trip by somebody who already hears it.
-  audio: {
-    on: 'Sound: on',
-    off: 'Sound: off',
-    toggleTitle: 'Music and sounds. Off until you turn it on; remembered on this device.',
-    mute: 'Mute',
-    unmute: 'Sound',
-    muteTitle: 'Turn the music and sounds off',
-    unmuteTitle: 'Turn the music and sounds on',
-    panelTitle: 'Sound',
-    panelNote: 'A quiet score for the map and its trips. Nothing is downloaded until you turn it on.',
-    creditsLine: 'Music and sounds: {credits}',
+  // The embed (public #439, ui/embed.js): `?embed=1&at=<id>` in someone else's page.
+  embed: {
+    open: 'Open in Space Radar',
+    openTitle: 'Open this view in the full map, in a new tab',
+    barLabel: 'Space Radar, embedded',
+    // The light embed of a station whose list could not be read at all: it shows the Earth and says so.
+    stationUnread: 'Showing the Earth: the station’s place could not be read',
   },
   // Spec 0045 req 10: how tightly the panels are set. Automatic is Compact on a window 800 px tall
   // or less; the note under the row says which one Automatic picked.
@@ -876,6 +953,14 @@ export const COPY = {
     autoRegular: 'Regular now; Compact when the window is 800 px tall or less.',
   },
   nextList: {
+    // The last seven days, asked for by a press (ui/justhappened.js, internal #134).
+    justHappened: 'Just happened',
+    justHappenedTitle: 'Launches and re-entries of the last seven days',
+    // Add to calendar (public #235, data/ics.js): one .ics file for the row, made in the browser.
+    calendar: 'Calendar',
+    calendarTitle: 'Add “{title}” to your calendar: downloads one .ics file',
+    calendarSaved: 'Saved {file}',
+    calendarFailed: 'The calendar file could not be made',
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
     sameName: '{name} ({id})',
@@ -892,6 +977,12 @@ export const COPY = {
     launchRough: '{name} lifts off {when}, give or take — the date is not fixed yet',
     approach: '{name} passes Earth {when}, {ld}× the Moon’s distance away',
     approachNoDistance: '{name} passes Earth {when}',
+    // How big (public #313): measured where the catalogue has it, else the range its brightness allows.
+    sizeM: 'It is {n} m across',
+    sizeKm: 'It is {n} km across',
+    sizeRangeM: 'About {lo} to {hi} m across, judged from its brightness',
+    sizeRangeKm: 'About {lo} to {hi} km across, judged from its brightness',
+    sizeMixed: 'About {lo} m to {hi} km across, judged from its brightness',
     perihelion: '{name} is closest to the Sun {when}',
     pass: '{name} comes over you {when}',
     train: 'A train of {n} satellites comes over you {when}',
@@ -920,6 +1011,17 @@ export const COPY = {
     solarEclipseGrazing: '{kind} solar eclipse on {date}, seen only from far north or far south',
     lunarEclipse: '{kind} lunar eclipse on {date}, the Moon in the Earth’s shadow for everyone who can see it',
     lunarEclipsePenumbral: '{kind} lunar eclipse on {date}: the Moon only dims a little, in the Earth’s outer shadow',
+    // The turns of the year (data/events.js seasons, internal #384): the instant is the same for
+    // everybody; which day is long depends on the hemisphere, so the row says both.
+    seasonTitles: { march: 'March equinox', june: 'June solstice', september: 'September equinox', december: 'December solstice' },
+    seasons: {
+      march: 'March equinox on {date}: day and night are near equal everywhere',
+      june: 'June solstice on {date}: the north’s longest day, the south’s shortest',
+      september: 'September equinox on {date}: day and night are near equal everywhere',
+      december: 'December solstice on {date}: the south’s longest day, the north’s shortest',
+    },
+    solstice: '{title} on {date}',
+    equinox: '{title} on {date}',
     eclipseNear: 'near {city}',
     eclipseFrom: 'about {km} km from {city}',
     // With a place set (spec 0031 req 6). Times are the visitor's own clock, as every row's are.
@@ -939,68 +1041,46 @@ export const COPY = {
       pass: 'Worked out here from orbital elements measured {age}',
       passNoAge: 'Worked out here from orbital elements',
       eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
+      season: 'Worked out here to the minute from where the Sun stands',
+      conjunction: 'Worked out here for your place, at their closest while both are up in the dark',
     },
-    none: 'Nothing is scheduled in what the app has loaded.',
+    // THE ROW AS DRAWN (spec 0061 task 5, ui/next.js rowParts): a title, then one line. The
+    // sentences above are the row's tooltip and its accessible name; these are what fits a 320 px
+    // column on one line each. A launch's line keeps "planned": its time is the one that can move.
+    row: {
+      // From your place (internal #359): two bright things close together, at their closest.
+      conjunctionTitle: '{a} and {b}',
+      conjunction: '{when} · {sep}° apart, {height} in the {dir}',
+      conjunctionValue: '{sep}°',
+      low: 'low',
+      mid: 'halfway up',
+      high: 'high',
+      launch: 'Lifts off {when} · planned',
+      launchRough: 'Around {when} · date not fixed',
+      approach: 'Passes Earth {when}',
+      approachValue: '{ld}× Moon',
+      approachSized: 'Passes Earth {when} · {size}',
+      sizeM: '{n} m',
+      sizeKm: '{n} km',
+      sizeRangeM: 'about {lo} to {hi} m',
+      sizeRangeKm: 'about {lo} to {hi} km',
+      perihelion: 'Closest to the Sun {when}',
+      pass: 'Comes over you {when}',
+      trainTitle: 'Starlink train of {n}',
+      auroraTitle: 'Aurora forecast',
+      auroraNowTitle: 'Geomagnetic storm now',
+      aurora: 'NOAA forecast, from {when}',
+      auroraNow: 'Measured by NOAA in the last hours',
+      kp: 'Kp {kp}',
+      showerTitle: '{name} meteors',
+      shower: 'Peaks around {date} · up to {zhr} an hour',
+      eclipse: '{date} · worked out to the minute',
+      eclipseHere: '{date} · from here {begin} to {end}',
+      eclipseNotHere: '{date} · not visible from here',
+    },
+    // The empty state: one line (docs/ui-guide.md section 3). Which feed is missing is its tooltip.
+    none: 'Nothing coming up in what has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
-  },
-  // Colour keys (spec 0026 req 11).
-  colourKey: {
-    title: 'Colour by',
-    unknown: 'not known for these',
-    scope: 'Counting what is drawn from here, on the layers that are on.',
-    // "What it is": a dot is drawn in its LAYER's colour (a rocket body on "Bright enough to see"
-    // is sky blue), so the class rows are counts, and the layer swatches above are the key.
-    byLayer: 'Each dot is its layer’s colour, as above.',
-  },
-  // The card's trajectory chart (spec 0026 req 14).
-  trajectory: {
-    label: 'Its path, the next lap and a half',
-    ariaLabel: 'Height over time, and the ground track on a flat map',
-    km: '{n} km',
-    now: 'now',
-    laps: '1½ laps later',
-    north: 'N',
-    south: 'S',
-    note: 'Worked out from the same elements as the dot; the map is the ground directly below it.',
-  },
-  // Spec 0048: the next ninety minutes of an Earth orbiter, in time (sky/timefacts.js). Every
-  // number here is worked out from the same elements as the dot, and the orbit count says it is
-  // inferred because it carries a catalogue count forward.
-  timeFacts: {
-    label: 'The next 90 minutes',
-    barLabel: 'Sunlight and shadow over the next 90 minutes: {parts}',
-    barSunlit: '{mins} min in sunlight',
-    barShadow: '{mins} min in Earth’s shadow',
-    now: 'now',
-    end: '+90 min',
-    // Counting down in the clock's own time: at 1x that is yours; scrubbed, it is the time shown.
-    entersShadowIn: 'Enters Earth’s shadow in {mins}',
-    entersSunlightIn: 'Comes out into sunlight in {mins}',
-    // Faster than a minute a second, a countdown is a blur; the clock time of the event is not.
-    entersShadowAt: 'Enters Earth’s shadow at {time}',
-    entersSunlightAt: 'Comes out into sunlight at {time}',
-    allSunlit: 'In sunlight for all of the next 90 minutes',
-    allShadow: 'In Earth’s shadow for all of the next 90 minutes',
-    minutes: '{n} min',
-    underAMinute: 'under a minute',
-    // A lap runs from one northbound equator crossing to the next (sky/timefacts.js).
-    lapIn: 'Completes this lap in {mmss}',
-    lapAt: 'Completes this lap at {time}',
-    orbit: 'Orbit {n} since launch',
-    orbitNote: 'Inferred: the catalogue’s count at the elements’ epoch, plus the laps since.',
-    // The year from the international designator ("1998-067A"); the day comes with SATCAT (task 2).
-    launched: 'Launched in {year}',
-    // The bar's own two lines on the card view (spec 0061 §4, row D): the light now on the left, the
-    // next change on the right, and under the bar where the lap ends. Short, because they sit beside
-    // a bar 320 px wide; the full sentences above stay in "Its path".
-    nowSunlit: 'In sunlight',
-    nowShadow: 'In Earth’s shadow',
-    shadowIn: 'shadow in {mins}',
-    sunlightIn: 'sunlight in {mins}',
-    shadowAt: 'shadow at {time}',
-    sunlightAt: 'sunlight at {time}',
-    lapEndsIn: 'lap ends in {mmss}',
-    lapEndsAt: 'lap ends at {time}',
   },
   // Spec 0048 req 3 and 8: the followed object's track on the globe, and riding along with it.
   groundTrack: {
@@ -1016,15 +1096,6 @@ export const COPY = {
     // Why a high orbit has no track until asked: it barely moves over the ground.
     highNote: 'Its track over the ground is not drawn by itself this high up: it barely moves.',
     trackNote: 'The line on the globe is the ground below it, 45 minutes back (dashed) and 90 ahead, with a tick every 5 minutes.',
-  },
-  // A launch's satellites as one thing (spec 0026 req 17).
-  train: {
-    label: 'In a train',
-    oneOf: 'One of {n} launched together ({designator}).',
-    youLead: 'This one leads.',
-    leads: '{name} leads; this one is {position} in the line.',
-    stillRaising: 'Still climbing as one line, about {alt} km up — the string of lights people report.',
-    spreadOut: 'Spread out now, about {alt} km up; no longer a line in the sky.',
   },
   // One line of space weather (spec 0026 req 16). Kp is NOAA's 0-9 planetary index; the words are
   // NOAA's own scale names made plain, and G1..G5 are its storm grades from Kp 5 upward.
@@ -1070,7 +1141,7 @@ export const COPY = {
     // under the picture and not a tooltip: {credit} is whose it is, {licence} the terms.
     photoCredit: '{credit} · {licence}',
     close: 'Close',
-    closeTitle: 'Close this card',
+    closeTitle: 'Close this card (Escape)',
     // Under a stop title that already named the object, its first sentence does not name it again.
     it: 'It',
     articles: ['The', 'the'],
@@ -1080,6 +1151,9 @@ export const COPY = {
     // The card view's short form, a button inside "About it" (spec 0061 §4: no sentence-long
     // control on the card); the long one is its tooltip.
     centreShort: 'Centre the map here',
+    // Internal #199: the last line of About it, where the deploy built a page for this object.
+    ownPage: 'Its own page',
+    ownPageTitle: 'A page about it you can link to, in a new tab',
     isCentreShort: 'Centred here',
     comparisonsLabel: 'To give you a feel for it',
     rightNowLabel: 'Right now',
@@ -1117,6 +1191,7 @@ export const COPY = {
       // A famous star's one line (registry/stars-notable.yaml) and the page it came from. Not
       // `source`: on a star card every other row is HYG's, and "Read from" would claim them too.
       whySource: 'Why it is known, read from',
+      widthSource: 'Width read from',
       distanceNote: 'About that distance',
       objectType: 'What it is',
       constellation: 'Constellation',
@@ -1129,12 +1204,15 @@ export const COPY = {
       spectralType: 'Type of star',
       brightness: 'How bright it looks',
       luminosity: 'Light output',
+      starWidth: 'Width',
       catalogue: 'Catalogue',
       lightTime: 'Radio time each way',
       nextPass: 'Next pass over you',
       crew: 'People aboard',
       operator: 'Operated by',
       launched: 'Launched',
+      ended: 'Ended',
+      pathEnds: 'Its path ends',
       period: 'One lap takes',
       location: 'Where it stands',
       onWorld: 'Standing on',
@@ -1177,6 +1255,8 @@ export const COPY = {
       stormWind: '{n} km/h, forecast included',
       stormWindCategory: '{n} km/h, Category {cat}, forecast included',
       stormAdvisory: '{time} UTC, {ago}',
+      // The advisory's own date, when the clock stands on another day (public #330).
+      stormAdvisoryDated: '{date}, {time} UTC, {ago}',
       stormStatus: {
         hurricane: 'hurricane strength',
         typhoon: 'typhoon strength',
@@ -1195,6 +1275,10 @@ export const COPY = {
       yearsAgo: '{n} years ago',
       monthsAgo: '{n} months ago',
       suns: '{n}× the Sun',
+      // A star's width worked out from its brightness and colour, not measured (scene/stars3d.js).
+      sunsWide: '{n}× the Sun, estimated',
+      // A width an interferometer measured (registry/stars-notable.yaml carries the paper).
+      sunsWideMeasured: '{n}× the Sun, measured',
       earths: '{n}× Earth',
       lightYearsRange: '{lo} to {hi} light-years',
       // Sedna's width is 906 km, +314 / -258: nobody has weighed or resolved it, so the card
@@ -1233,11 +1317,17 @@ export const COPY = {
     wouldNeed: 'It would take {wouldNeed}.',
     oftenSaidLabel: 'Often said',
     notApplicable: 'Not something this object has',
+    // In place of the three numbers, on the card of a craft whose mission is over.
+    endedLine: 'Its mission ended on {date}. Its events, below, go back to it.',
+    pathEndedLine: 'The path JPL holds for it ends on {date}. Its events, below, go back to it.',
     noPosition: 'There is no position for this object right now.',
 
     actions: {
       flyTo: 'Fly to it',
       flyToTitle: 'Move the camera to this object',
+      flyEnded: 'It ended on {date}. Choose an event of its mission to go there',
+    flyPathEnded: 'Its path ends on {date}. Choose an event of its mission to go there',
+      flyNowhere: 'There is no position for this object at this moment',
       seeFromHere: 'See it from here',
       seeFromHereTitle: 'Look up from your own place on Earth',
       tellMeBefore: 'Tell me before',
@@ -1276,6 +1366,8 @@ export const COPY = {
       heo: 'High Earth orbit',
       inner: 'Inner solar system',
       outer: 'Outer solar system',
+      // A body whose whole orbit lies between Mars's and Jupiter's (ui/cards.js farRegion): Ceres, Vesta.
+      belt: 'Asteroid belt',
       beyondNeptune: 'Beyond Neptune',
       round: 'Round {world}',
       inCon: 'In {con}',
@@ -1337,90 +1429,6 @@ export const COPY = {
     },
   },
 
-  // Spec 0013 requirement 4, and spec 0001 principle 2 made visible.
-  cls: {
-    label: 'How we know where it is',
-    measured: 'measured position',
-    inferred: 'position propagated from elements {n} {unit} old',
-    inferredUnknownAge: 'position propagated from elements of unknown age',
-    // For a record with NO elements at all: a surface object drawn at a surveyed point near it.
-    // "Position propagated from elements of unknown age" was printed under Alan Shepard's golf
-    // balls, which have no elements and were never propagated from anything.
-    inferredNoElements: 'position worked out rather than measured',
-    // A storm's centre is measured, at one moment; this is the half of the line that says which.
-    stormAdvisory: 'its centre at the {time} UTC advisory, {ago}; a storm moves, so it has moved since',
-    illustrative: 'drawn to show where it goes; the real track is not public',
-    sample: 'bundled sample data, not a live position',
-    // spec 0026 req 15: a fresh launch the public catalogue has not numbered yet.
-    provisional: 'not yet in the public catalogue — these are the operator’s own elements, published through CelesTrak; a permanent number comes when Space-Track lists it',
-    unknown: 'we cannot say how this position was worked out',
-    // A record with no position at all -- not a failed calculation, an absent fact. It reads
-    // where the class line reads for everything else, so the card never has an empty honesty slot.
-    unplaced: 'nobody knows where this is, so nothing is drawn for it',
-    // The ADDITION to the inferred line, for a set of elements whose last observation is much
-    // older than the epoch they are integrated from. The Roadster's elements are stated at a 2026
-    // epoch and rest on 374 photographs that stopped in March 2018.
-    inferredArc: 'the last time anybody saw it was {date}, and {caveat}',
-    // Two numbers for two things. "The golf balls are at the Apollo 14 site (+/- 0.4 m)" is
-    // false; this is the sentence that is true.
-    precisionSplit:
-      "{anchorName} is measured to {anchorM} m; this was {how} and is placed to within {objectM} m",
-    precisionSplitUnknown:
-      '{anchorName} is measured to {anchorM} m; this object itself has never been surveyed',
-    // The THIRD case, and the golf balls are the reason. Somebody did find them -- Saunders, in
-    // enhanced film -- and nobody published how closely. "never been surveyed" throws away the
-    // finding; a metre figure invents the error bar. This says both halves and neither more.
-    precisionSplitHowOnly:
-      '{anchorName} is measured to {anchorM} m; this object was {how}, and nobody has published '
-      + 'how closely',
-    precisionOwn: 'located to within {objectM} m, {how}',
-    // For a thing that is bolted to another thing. It has no position of its own and never will:
-    // the class line above already printed the CARRIER's class, because the carrier's fields are
-    // what was propagated. This says whose position that was, so the card is never surer of
-    // itself than the spacecraft it is riding on.
-    aboard: 'this is {carrier}’s own position, because the object is bolted to the outside of it and goes where it goes',
-    how: {
-      surveyed: 'surveyed from orbit',
-      photogrammetric: 'found in photographs',
-      orbital_imaging: 'found in orbital images',
-      unsurveyed: 'never surveyed',
-      map_reference: 'taken from a map',
-    },
-    hourWord: 'hour',
-    hoursWord: 'hours',
-    dayWord: 'day',
-    daysWord: 'days',
-    minuteWord: 'minute',
-    minutesWord: 'minutes',
-    yearWord: 'year',
-    yearsWord: 'years',
-  },
-
-  // Things that ride on other things. Two rows in registry/oddities.yaml are `attached`: they
-  // are not objects in space, they are parts of objects in space, so they have no dot of their
-  // own and are reached from the carrier's card instead. These two blocks are the two ends of
-  // that link -- "also aboard" on the spacecraft, "riding on" on the part.
-  aboard: {
-    label: 'Also aboard',
-    openTitle: 'Open the card for this',
-    // Said once, on the carrier's card, because it is true of every row in the list and the
-    // alternative is a visitor wondering why they cannot tap the thing they can see.
-    note: 'These have no dot of their own. They are exactly where this spacecraft is, because they are bolted to it.',
-    ridingLabel: 'Riding on',
-    backTitle: 'Open the card for the spacecraft carrying this',
-  },
-
-  // The myth block. On this subject the debunk is reliably the better story: Alan Shepard's golf
-  // shot was 40 yards and not 200, the Roadster never goes near the asteroid belt, and the
-  // tardigrades on the Moon are dehydrated tuns in epoxy. Every correction in the registry
-  // carries a source, because a debunk with no source is a rumour going the other way.
-  myth: {
-    label: 'Often said',
-    line: '{claim} — {correction}',
-    // For a myth that is not settled. The Beatles story is disputed by the man who produced the
-    // Golden Record; saying "wrong" would be making the same mistake in the other direction.
-    contested: 'Often said, and genuinely disputed: {claim} — {correction}',
-  },
 
   // For a record with no position. It is reachable from search and it opens a card; what it does
   // not have is a dot, because a dot on this map is a claim and every other layer honours that.
@@ -1429,14 +1437,35 @@ export const COPY = {
   // Nobody knows where this is, so it is not on the map."
   // The Earth's clouds (2026-09-28, scene/liveclouds.js). One line on the Earth's card, and the
   // credits NASA and the satellite operators ask for in the Sources panel.
+  // The Sun close up (scene/sun.js). The spots' line is on the Sun's card while NOAA's list for
+  // today is drawn; {n} groups, {date} the list's own day (UTC). The credit is for the Sources panel.
+  sun: {
+    spots: '{n} sunspot groups are drawn, from NOAA’s list for {date}: each as one round spot at its reported place and size, carried round by the Sun’s turning since then.',
+    spotsOne: 'One sunspot group is drawn, from NOAA’s list for {date}: as one round spot at its reported place and size, carried round by the Sun’s turning since then.',
+    // When some of the groups are drawn as two (scene/sun.js, data/sunregions.js splitRegion): {pairs} of the {n}.
+    spotsPaired: '{n} sunspot groups are drawn, from NOAA’s list for {date}, carried round by the Sun’s turning since then. {pairs} with several spots are drawn as a leading spot to the west and a following spot to the east; the gap and how the area is shared between the two are illustrative. The rest are one round spot.',
+    spotsPairedOne: 'One sunspot group is drawn, from NOAA’s list for {date}, carried round by the Sun’s turning since then: as a leading spot to the west and a following spot to the east. The gap and how the area is shared between the two are illustrative.',
+    regionsCredit: 'Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary',
+    // The lists behind the flares and the coronal mass ejections (data/sunactivity.js); the card's own lines are in copy/en.later.js sunAlive.
+    flaresCredit: 'Solar flares: NOAA Space Weather Prediction Center, edited events list',
+    cmeCredit: 'Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC)',
+  },
+
   clouds: {
-    live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
+    // 2026-10-08 (internal #241): the coldest tops are drawn as storm tops (scene/cloudcompose.js STORM_TOP).
+    live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. The coldest tops, where thunderstorms are, are drawn higher and whiter than the rest. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
     at: 'at {time} UTC',
     between: 'between {from} and {to} UTC',
+    // The picture's own DATE (public #330), said whenever the day on the clock, or today, is not the
+    // day the picture was taken: "seen at 21:20 UTC" beside a clock on another day is a wrong date.
+    atDated: 'on {date} at {time} UTC',
+    betweenDated: 'on {date} between {from} and {to} UTC',
+    // And when the clock is not now: the weather does not follow it. After the live line.
+    clockElsewhere: ' The clock is at {time} UTC on {date}; the clouds stay as that picture saw them.',
     and: ' and ',
     illustrative: 'Clouds: illustrative. This is one picture of a day in the past, drifting slowly; it is not today’s weather.',
     illustrativeSaveData: 'Clouds: illustrative. Today’s satellite pictures are not fetched on a connection that saves data.',
-    illustrativeScrubbed: 'Clouds: illustrative, because the clock is more than 12 hours from the latest satellite picture.',
+    illustrativeScrubbed: 'Clouds: illustrative, because the clock is more than 12 hours from the latest satellite picture, of {date} at {time} UTC.',
     // Verbatim, as NASA asks on the GIBS API page (read 2026-09-28). Do not reword it.
     gibsAcknowledgement: "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
     satelliteCredit: 'Live clouds: GOES-East and GOES-West infrared imagery, NOAA; Himawari infrared imagery, Japan Meteorological Agency (JMA).',
@@ -1466,9 +1495,53 @@ export const COPY = {
     showMe: 'Fly to the aurora on the night side',
   },
 
-  unplaced: {
-    why: '{whyUnknown}',
+  // Weather on every world (spec 0066, scene/weather/). ONE LINE A WORLD, and each says which of
+  // three things it is (registry/weather.yaml `class`): MEASURED today, MODELLED from published
+  // numbers, or ILLUSTRATIVE of the season. The Earth's line is written like its clouds and aurora
+  // lines; the other worlds' sit under the note about how the world is drawn.
+  weather: {
+    lightning: {
+      live: 'Lightning: about {n} strikes a minute where NOAA’s map reaches, the Americas and the Pacific (its count to {time}, {ago}). Where and how often are measured; the instant of each flash is drawn, and larger than life.',
+      quiet: 'Lightning: almost none where NOAA’s map reaches, the Americas and the Pacific (its count to {time}, {ago}).',
+      waiting: 'Lightning: NOAA’s map has not arrived yet.',
+      failed: 'Lightning: NOAA’s map could not be read just now, so none is drawn.',
+      away: 'Lightning: not drawn, because the clock is more than an hour from NOAA’s latest map.',
+      off: 'Lightning: not fetched on this device or connection.',
+      reducedMotion: 'Lightning: not drawn, because this device asks for less motion.',
+      switchedOff: 'Lightning: switched off in the layers.',
+      // NOAA's products are works of the US Government and in the public domain; credited all the same.
+      credit: 'Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center from the ground networks NLDN and GLD360 (public domain).',
+    },
+    // {season} is one of `seasons` below, by Mars's own calendar (scene/weather/flow.js marsLs).
+    worlds: {
+      jupiter: 'Weather: the bands slide past each other at the wind speeds measured from Hubble, and the Great Red Spot turns. Modelled motion: no cloud is drawn where it is today.',
+      saturn: 'Weather: the bands move at the wind speeds Cassini measured. Modelled motion, not today’s clouds. The hexagon at the north pole is drawn at its measured place; its look is illustrative.',
+      // 2026-10-08 (internal #243): the dark Y, and the one honest sentence about lightning.
+      venus: 'Weather: the cloud deck goes round in about four days, as Venus Express measured, sixty times faster than the ground. Modelled motion, not today’s clouds.',
+      // 2026-10-08 (internal #245): what Hubble's own maps show, said; nothing more is drawn.
+      uranus: 'Weather: the air drifts round at the wind speeds measured from Keck and Gemini. Modelled motion, not today’s clouds.',
+      neptune: 'Weather: the air streams round at the wind speeds Voyager 2 measured, the fastest on any planet. Modelled motion, not today’s clouds.',
+      // 2026-10-08 (internal #242): {tau} is the season's typical dust optical depth (registry/weather.yaml dust_tau).
+      mars: 'Weather: it is {season} on Mars. The frost caps and the dust in its air, an optical depth near {tau}, are what that season typically brings: seasonal and illustrative, not today’s weather.',
+      // 2026-10-08 (internal #245).
+      titan: 'Weather: the pale streaks in the north stand for the methane clouds the Webb and Keck telescopes saw there in November 2022 and July 2023. Illustrative: where Titan’s clouds are today is not known.',
+    },
+    // A second sentence for a world's line (2026-10-08, internal #243 and #245): what else is drawn
+    // and how much of it is known, or what its real maps show and we do not draw.
+    also: {
+      venus: 'The dark Y going round with it is what ultraviolet cameras see; to the eye Venus is nearly plain, and its place here is illustrative. Lightning on Venus has been reported and is still debated; none is drawn.',
+      uranus: 'On “As Hubble saw it” the bright cap over the north pole is real: Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
+      neptune: 'Its bright streaks are methane ice. Hubble saw them fade after 2019 and its last dark spot dissolve, so no spot is drawn.',
+    },
+    // Jupiter's storms (2026-10-12) add two sentences to its line: copy/en.later.js `weatherStorms`.
+    // Lightning on the giants (2026-10-08, internal #244), added to the world's line where it is drawn.
+    flashes: {
+      jupiter: 'On its night side, rare flashes stand for the lightning Juno found, most of it far in the north: the latitudes are measured, each flash is illustrative and drawn larger than life.',
+      saturn: 'On its night side, rare flashes at 36 degrees south stand for the lightning Cassini photographed there in 2009: illustrative and larger than life, and nothing is watching for it now.',
+    },
+    seasons: ['northern spring', 'northern summer', 'northern autumn', 'northern winter'],
   },
+
 
   // WHAT YOU ARE LOOKING AT. It sits in the footer beside the position class, because "the
   // shape is a stand-in" is the same category of claim as "the track is a sketch".
@@ -1520,6 +1593,15 @@ export const COPY = {
     // drawing was made. Source-agnostic on purpose: the next one of these may be a CC BY model
     // from somebody else, and CREDITS.md is where whose it is belongs.
     objectModel: 'drawn from a published model of {name}',
+    // A pad on a date its vehicle is put away (internal #478): the place is the record.
+    padEmpty: 'the pad is a measured place; {name} is drawn on it only around the launches listed',
+    // 2026-10-07 (internal #382): a small body whose shape model wears a map (scene/realmodels.js
+    // `mapped`). Dawn's Framing Camera mosaics of Ceres (2015) and Vesta (2011 to 2012), made by DLR:
+    // black-and-white photographs, so the shadows in them are the Sun's on the days of the pictures
+    // and do not move with the Sun drawn here; the grey is chosen (scripts/build-textures.py).
+    objectMapped: {
+      dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
+    },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
@@ -1539,7 +1621,7 @@ export const COPY = {
       site: 'a generic ground site',
       star: 'a point of light, sized by how bright it looks from where you are',
       exoplanet: 'a mark at its star — the orbit itself is far too small to draw',
-      dso: 'a soft glow at its measured distance, as wide as it measures; its true shape is not drawn',
+      dso: 'a soft glow in the manner of its kind at its measured distance, as wide as it measures; the pattern in it is illustrative and its true shape is not drawn',
       exotic: 'a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small',
       exoticStar: 'a ring at its measured distance; the star itself is a point at this scale',
     },
@@ -1559,10 +1641,55 @@ export const COPY = {
     // "small and lumpy" (NASA Science, registry/worlds.yaml `facts.shape`); each is drawn as a ball
     // of its mean radius (JPL), and the card says the shape on screen is not theirs.
     worldFlatIrregular: 'drawn as a plain ball the size of its average radius: there is no surface map of {name} here, its one colour is chosen from published descriptions, not measured, and {name} is really a lumpy rock whose true shape is not drawn',
+    // 2026-10-05: Phobos and Deimos are bent to their published shapes (scene/moonshape.js). Deimos
+    // still has no map here: no public-domain mosaic of it was found.
+    worldFlatShaped: 'drawn in its measured shape and in one colour: there is no surface map of {name} here, and the colour is chosen from published descriptions, not measured',
+    worldShaped: 'drawn in its measured shape',
+    // What kind of picture a moon's map is (scene/worlds.js `mapKind`; CREDITS.md section 2 has
+    // every source). `colour` maps (Io) say nothing: the mosaic's own colours are what is drawn.
+    worldMap: {
+      tinted: 'its surface is a black-and-white mosaic, tinted in a colour chosen from published descriptions',
+      toned: 'its colours come from infrared, green and ultraviolet pictures, toned down toward what an eye would see',
+      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Pluto, Charon).
+      redblue: 'its colours come from New Horizons’ red and blue pictures, with green taken halfway between them and the colour made half as strong again; the parts photographed only in black and white are given the map’s average colour',
+      // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
+      balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
+      infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
+    },
+    // The side nobody has photographed is left one plain colour, and the card says which side.
+    worldCoverage: {
+      miranda: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      ariel: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      umbriel: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      titania: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      oberon: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      triton: 'Voyager 2 photographed part of it in 1989; the rest is left plain, not guessed',
+      pluto: 'the far south was in winter darkness when New Horizons passed in 2015 and is left plain, not guessed',
+      charon: 'the far south was in winter darkness when New Horizons passed in 2015 and is left plain, not guessed',
+    },
     // Spec 0054 requirement 2: every world but the Earth and the Sun is drawn as bright as a
     // photograph of it would be, not dimmed by its distance from the Sun (Saturn gets 1/90 of the
     // Earth's sunlight). scene/worlds.js says why; this is the card saying it.
     worldLit: 'lit as a camera exposed for its own sunlight would show it',
+    // Spec 0072 (scene/worldlights.js): a world seen small is a point of light of the stars' own kind, at the
+    // magnitude computed for where the camera is. The glow is brightness, not size.
+    worldLight: 'seen from far off it is a light at its computed brightness: the glow is how a camera records a point too bright to resolve',
+    // 2026-10-08 (public #404, #411, #417): where a world is drawn knowingly unlike its data. Each
+    // is added after the world's "drawn as" line (scene/worlds.js worldRecords `departure`).
+    // 2026-10-08 (public #426): a pulsar's blink and a black hole's picture, on the object's own card.
+    exoticDeparture: {
+      pulseSlowed: 'its blink is drawn {n} times slower than it turns, so that an eye can follow it',
+      pulseTrue: 'its blink is drawn at the rate it turns',
+      portrait: 'while this card is open its picture is drawn at its place, far larger than it would look from here',
+    },
+    worldDeparture: {
+      // The Earth (2026-10-08, scene/earth.js EARTH_RELIEF, scene/atmosphere.js EARTH_AIR): {relief}
+      // is the relief's exaggeration, {air} the shell's height gain.
+      earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is',
+      mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
+      venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
+      saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted',
+    },
     // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
     // brighter than that camera would catch it. {n} is EARTHSHINE_GAIN.
     worldEarthshine: 'its dark side glows with earthshine, the Earth’s own light, drawn {n} times brighter than that camera would catch it, about as the eye sees it',
@@ -1571,6 +1698,24 @@ export const COPY = {
     // haze, are not, and the card says both. {n} is the row's heightGain.
     worldAir: 'its air is drawn {n} times thicker than it is so that it shows at this size, and the colour of its haze is illustrative',
     worldAirTrue: 'its haze is drawn at its measured height, and its colour is illustrative',
+    // The narrow rings of Uranus and Neptune (scene/worlds.js URANUS_RINGS, NEPTUNE_RINGS): the radii
+    // are measured; {w} times wider, {d} times more opaque and the brightness are so that they show.
+    worldRings: 'its rings are at their measured distances, drawn {w} times wider and far brighter than they are so that they show: the real ones are threads as dark as charcoal',
+    worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal',
+    // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
+    // which are there to be seen.
+    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn far coarser and faster than they are, and the bright network toward the edge is illustrative; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera',
+    // Spec 0065 requirement 4 (internal #337): while a close world is drawn from map tiles, the card
+    // names the mosaic under the camera. {title} is the registry row's (registry/tilesets.yaml), {res}
+    // the metres one pixel of the finest tiles on screen covers. `Detail`: Mars, where the mosaic is
+    // grey and only sharpens our own colour map.
+    worldMosaic: 'Under the camera now: {title}, drawn here at about {res} a pixel.',
+    worldMosaicDetail: 'Under the camera now: {title}, sharpening the colour map at about {res} a pixel.',
+    // ...and what the relief is (spec 0065 task 3). The shaded-relief mosaic has one light; only the
+    // slopes along that light are in it. {n} is the row's `gain`; `True` is for a gain of 1.
+    worldRelief: 'Its relief is from {title}: a drawing of slopes under one fixed light. The slopes along that light are lit again by the Sun where it is now, {n} times steeper than measured; slopes across it are not drawn.',
+    worldReliefTrue: 'Its relief is from {title}: a drawing of slopes under one fixed light. The slopes along that light are lit again by the Sun where it is now; slopes across it are not drawn.',
+    worldReliefBaked: 'Its hills are shaded into this map under a fixed light, not by the Sun where it is now.',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 
@@ -1631,7 +1776,8 @@ export const COPY = {
     // Spec 0037: the eclipse stops' honesty line, under the instant. Generated, never typed in the
     // registry. The first is the shader drawing; the second is the frame latch having turned it off
     // on a slow device (scene/quality.js), where the timing is still right and the picture is not.
-    eclipseLine: "Shadow computed from the Moon's and the Sun's positions; timing from Astronomy Engine, to about a minute.",
+    // 2026-10-08 (public #273): the two thin lines and the band are drawings on computed places, and say so.
+    eclipseLine: "Shadow computed from the Moon's and the Sun's positions; timing from Astronomy Engine, to about a minute. The thin lines and the pale band mark the shadow's edges and its core's path: lines on a map, not light.",
     eclipseLineLatched: 'The shadow is not drawn on this device; the timing is right.',
     // The copper of a totally eclipsed Moon is a constant tint (scene/worlds.js uUmbraTint), not
     // sunlight bent through the Earth's air, and the lunar stop says so.
@@ -1639,6 +1785,8 @@ export const COPY = {
     // A trip with `orbits:` on the Sun stage (scene/orbitrings.js, 2026-09-23): the dots are the one
     // exaggeration, size only. Under the instant on every stop, generated, never typed in a card.
     orbitsLine: 'Planets drawn larger than they are, as dots; their places and paths are computed.',
+    // `orbits: [moon]` on the Earth's stage (2026-10-06): the same exaggeration, and the dots are lit.
+    moonPathLine: 'The Earth and the Moon are drawn larger than they are, as dots, each lit on the side that faces the Sun. The Moon’s place and its path are computed.',
     // Spec 0040 req 8: every card on a star system's own stage says what is measured and what is
     // drawn. Generated (ui/cards.js drawingLine), never typed in the registry. {phase} is empty when
     // every planet's place on its orbit comes from a transit time (scene/systems.js
@@ -1660,7 +1808,7 @@ export const COPY = {
     // set by hand, one the device gave, or a guess from the clock, which says it is one.
     yourPlace: 'Your place',
     observerSet: 'Your place: {place}, set by you.',
-    observerDevice: 'Your place: where your device says you are.',
+    observerDevice: 'Your place: near where your device says you are.',
     observerGuess: 'Your place is a guess from your clock’s time zone: {place}. Set it under Where you are for a better one.',
     needsPlace: 'Needs a place. Set where you are first.',
     // Recomputed while the stop is up: the station moves eight kilometres every second.
@@ -1672,6 +1820,51 @@ export const COPY = {
     // "night" or "day" alone.
     passNight: 'On this pass it is sunlit against a dark sky: you could see it, weather allowing.',
     passDay: 'You would not see this pass: your sky is too light, or the station is in the Earth’s shadow.',
+    // 2026-10-06: a stop seen from the visitor's own ground (`look:` in registry/tours.yaml). What
+    // the view turned to is worked out for their place and the stop's instant (sky/lookfor.js), so
+    // these are GENERATED and the card above them never names a planet or a star. {alt} and {az}
+    // are sky/skyview.js's own words ("about two fists above the horizon", "south-west").
+    lookMoonUp: 'The Moon is {pct}% lit, {alt} in the {az}.',
+    lookMoonDown: 'The Moon is below your horizon at this hour. It rises at {time}.',
+    lookMoonDownNoRise: 'The Moon is below your horizon at this hour.',
+    lookWorldUp: '{name} is {alt} in the {az}.',
+    lookWorldDown: '{name} is below your horizon at this hour.',
+    lookPlanet: 'The brightest planet up at this hour is {name}: {alt} in the {az}.',
+    lookNoPlanet: 'No planet you could see by eye is up at this hour. The view faces where they will pass.',
+    lookStar: 'The brightest star up at this hour is {name}: {alt} in the {az}.',
+    lookFigure: 'Best placed at this hour: {name}, {alt} in the {az}.',
+    lookNoFigure: 'None of the well-known figures is well placed at this hour.',
+    lookNoPass: 'No pass of the station over your place was found in the next week.',
+    lookDaylight: 'Your sky is not dark at this hour, so there is nothing to pick out yet.',
+    // 2026-10-06, the remaining shows. The Milky Way's best-placed stretch (sky/lookfor.js
+    // MILKY_WAY names it), and the next meteor shower (registry/showers.yaml: its name, its peak
+    // date and its best hourly rate, which is under a dark sky with the radiant overhead).
+    lookMilkyWay: 'The view faces the Milky Way where it runs through {name}, {alt} in the {az}. The three skies are a model of an average clear night.',
+    lookNoMilkyWay: 'The Milky Way is low on your horizon at this hour, so the view faces high in the sky instead.',
+    lookShower: 'The next shower is the {name}, at its best around {date}.',
+    lookShowerUp: 'Its radiant is {alt} in the {az} at this hour.',
+    lookShowerDown: 'Its radiant is below your horizon at this hour; the view faces where it will rise.',
+    lookShowerRate: 'At the peak, from a dark place with the radiant high: about {rate} meteors an hour.',
+    // The Moon on the night of the peak (sky/lookfor.js showerMoon): its lit share, and what that does.
+    lookShowerMoon: {
+      dark: 'The Moon is {pct}% lit that night, so the sky stays dark.',
+      some: 'The Moon is {pct}% lit that night and will hide some of the faint ones.',
+      bright: 'The Moon is {pct}% lit that night and will hide all but the bright ones.',
+    },
+    // `live_note: close-approach` and `live_note: satellites`: counted from the records on screen.
+    approachNext: 'Next in NASA JPL\u2019s table: {name}, on {date}, at {ld} times the Moon\u2019s distance.',
+    approachNextFar: 'Next in NASA JPL\u2019s table: {name}, on {date}.',
+    approachNone: 'NASA JPL\u2019s table of close passes has not loaded, so no next pass is named.',
+    satellitesCount: '{n} working satellites in the catalogue this page loaded from CelesTrak, {starlink} of them Starlink.',
+    satellitesLoading: 'The catalogue is still loading; the count appears when it has.',
+    // Under a stop at a nebula or a galaxy with a photograph, and under a black hole's portrait.
+    pictureLine: 'A real photograph, placed where it is in the sky. Picture: {credit} \u00b7 {licence}, edges faded and sky darkened by us.',
+    portraitLine: 'The ring is the Event Horizon Telescope\u2019s picture, made with radio waves. It is drawn far larger than it would look from here; the place is measured. Picture: {credit} \u00b7 {licence}, sky darkened and edges faded by us.',
+    // `live_note: tonight` under a stop about a planet: when and where it is in the visitor's sky
+    // in the coming dark, by their device's clock, or why it is not there.
+    tonightUp: 'From {place} tonight: up from {begin} to {end}, highest at {time}, {alt} in the {az}.',
+    tonightGlare: 'From {place} tonight: {name} is too close to the Sun to be seen.',
+    tonightDown: 'From {place} tonight: {name} is not above the horizon while the sky is dark.',
 
     // --- the frame (spec 0061 task 7) ---------------------------------------------------------
     // A glass toolbar at the foot of the scene with icon buttons, the stop card in the sidebar, and
@@ -1703,8 +1896,30 @@ export const COPY = {
     expand: 'Show card',
     expandTitle: 'Bring the card back (C)',
     soundOn: 'Sound',
-    soundOnTitle: 'Music and sounds are on: turn them off',
-    soundOffTitle: 'Music and sounds are off: turn them on',
+    // The volume beside it (public #298), and the voice offered on a trip's start card (public #446).
+    volume: 'Volume',
+    volumeTitle: 'Volume of the music, the sounds and the voice',
+    volumeValue: '{pct} percent',
+    voiceWill: 'A voice will read this. It is synthetic.',
+    voiceCan: 'A synthetic voice can read this: press Voice.',
+    soundOnTitle: 'Music and sounds are on: turn them off (M)',
+    soundOffTitle: 'Music and sounds are off: turn them on (M)',
+    // Spec 0069: the voice that reads each stop. It is synthetic and the control says so, every
+    // time, because a visitor should know before they wonder (the Sources panel names the model).
+    voice: 'Voice',
+    voiceOnTitle: 'A synthetic voice is reading each stop: turn it off and keep the music (V)',
+    voiceOffTitle: 'Have each stop read aloud by a synthetic voice (V)',
+    // PRESENT MODE (public #441, 2026-10-06): one trip for a room. The sidebar goes, the words are
+    // set large over the scene, and the person with the clicker decides when to go on.
+    present: 'Present',
+    presentTitle: 'Show this trip to a room: large words, no panels, you press Next',
+    presentOffTitle: 'Leave present mode and bring the panels back',
+    presentAuto: 'Autoplay',
+    presentAutoOffTitle: 'Each stop waits for Next: let the trip move on by itself (A)',
+    presentAutoOnTitle: 'The trip moves on by itself: make each stop wait for Next (A)',
+    fullScreen: 'Full screen',
+    fullScreenTitle: 'Fill the whole screen (F)',
+    fullScreenOffTitle: 'Leave the full screen (F)',
     leave: 'Leave',
     leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
     // ...WHICH IS NOT TRUE OF A TRIP THAT MOVED THE MAP'S CENTRE (2026-09-22). A trip may be flown
@@ -1726,10 +1941,17 @@ export const COPY = {
     // An unmarked ending is indistinguishable from a crash. One named next trip, never a menu.
     endMicro: 'End of the trip',
     endBody: 'The camera stays where it is. Nothing here goes back.',
-    endBodyStage: 'Leaving puts the map back on the world it was centred on before the trip, because out here one step of the map is a different distance. Nothing else goes back.',
-    endExplore: 'Explore',
+    endBodyStage: 'Keep flying stays out here. Go home puts the map back on the world it was centred on before the trip.',
+    // "Keep flying" (public #447): the camera stays where the trip ended. After a trip that moved
+    // the map's centre that means staying out there, and the way home is the button beside it.
+    endExplore: 'Keep flying',
     endExploreTitle: 'Keep this view and carry on by yourself',
+    endStayTitleStage: 'Stay out here and fly on from where the trip ended',
+    endHome: 'Go home',
     endExploreTitleStage: 'Carry on by yourself, back on the map you started from',
+    // The picture to send (public #444): the share sheet's postcard of the view the camera holds.
+    endSend: 'Send picture',
+    endSendTitle: 'Make a postcard of where the trip ended, with its words and a link',
     endReplay: 'Watch again',
     endReplayTitle: 'Watch this trip again from the start',
     endShareTitle: 'Share a link to this trip',
@@ -1739,15 +1961,36 @@ export const COPY = {
     docTitle: 'Space Radar — {title} — stop {n} of {count}',
   },
 
-  source: {
-    prefix: 'Source',
-    unknown: 'Source not recorded',
-    fetched: 'read {age}',
-  },
 
   sky: {
     // A shower's radiant, marked in the sky view for the nights around its peak (sky/radiants.js).
     radiant: '{name} radiant',
+    // The sky from the ground (sky/groundsky.js): the names drawn on it.
+    bodies: { sun: 'Sun', moon: 'Moon', mercury: 'Mercury', venus: 'Venus', mars: 'Mars', jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptune' },
+    // The field of view, one mono line over the sky; under a degree it is in arcminutes (U+2032).
+    fov: {
+      degrees: '{deg}° field · {name}',
+      arcmin: '{min}′ field · {name}',
+      names: { eye: 'eye', binoculars: 'binoculars', telescope: 'telescope' },
+    },
+    // A line is named once, in plain words, where it climbs from the horizon (internal #356).
+    lines: { sunPath: 'Path of the Sun', equator: 'Sky equator', poleNorth: 'North pole of the sky', poleSouth: 'South pole of the sky' },
+    // "What is that" (sky/skyview.js tapSky): the tag under what was tapped. `mag` is its
+    // magnitude now; `open` and `plain` are the tag's accessible name, with and without a card.
+    what: {
+      star: 'Star',
+      starMag: 'star · mag {mag}',
+      planet: 'planet · mag {mag}',
+      sun: 'our star',
+      moon: 'Earth’s moon',
+      dso: 'deep sky',
+      dsoMag: '{kind} · mag {mag}',
+      open: '{name}, {sub}. Open its card.',
+      plain: '{name}, {sub}.',
+      openTitle: 'Open its card',
+    },
+    // Sixteen compass points as a pass row spells them (sky/tonightbest.js compassShort).
+    compassShort: ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'],
     // The copy pattern that is the actual feature (docs/design-language.md).
     lookLine: 'Look {dir}, {fists}, at {time}. It moves for about {mins} minutes.',
     lookLineNoDuration: 'Look {dir}, {fists}, at {time}.',
@@ -1770,6 +2013,19 @@ export const COPY = {
     onAnotherWorld:
       'This one is standing on {world}. You will not pick it out by eye from here, however clear the night.',
     worldRise: 'From where you are it comes up at {time}.',
+    // Rises, highest and sets from the visitor's place (internal #299; sky/riseset.js). {place} is
+    // the place's name or `worldHere`; {alt} is altitudeInWords(); directions are compass words.
+    // Longer than a line of chrome: it is the card's see-it sentence, not a label.
+    worldHere: 'where you are',
+    worldFrom: {
+      down: 'From {place}: rises {rise} in the {riseDir}, highest {highTime}, {highAlt}; sets {set} in the {setDir}.',
+      downNoSet: 'From {place}: rises {rise} in the {riseDir}, highest {highTime}, {highAlt}.',
+      up: 'From {place}: up now, {alt}, in the {dir}. Highest {highTime}, {highAlt}; sets {set} in the {setDir}.',
+      upPast: 'From {place}: up now, {alt}, in the {dir}. Past its highest; sets {set} in the {setDir}.',
+      never: 'From {place} it does not rise in the next day and a half.',
+      always: 'From {place}: up now, {alt}, in the {dir}. It does not set today.',
+      honest: 'Worked out for a sea-level horizon; hills and houses are not in it.',
+    },
     // Rise and set for a world needs 0014's sky maths. Say that, rather than imply it is
     // invisible: the Moon and the planets are the easiest things in the sky to find.
     worldNoRise:
@@ -1780,7 +2036,7 @@ export const COPY = {
     // 16.3, mean 15.1 (Wikipedia's infobox) -- 8.6 magnitudes past the 6.5 this file calls the eye's
     // limit, which is 10^(0.4 x 8.6) = 2 750 times fainter.
     worldSee: {
-      pluto: 'Not by eye, and not with binoculars: Pluto is nearly 3 000 times fainter than the faintest star you can see, so it takes a telescope.',
+      pluto: 'Not by eye, and not with binoculars: Pluto is nearly 3 000 times fainter than the faintest star you can see, so it takes a telescope.',
       io: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
       europa: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
       ganymede: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
@@ -1794,7 +2050,7 @@ export const COPY = {
       titan: 'Not by eye: Titan is magnitude 8.2 at its brightest, so it takes a small telescope or strong binoculars, and Saturn’s glare beside it makes even that hard.',
       enceladus: 'Not by eye: Enceladus is magnitude 11.7, and so close to bright Saturn and its rings that it is hard to see even through a small telescope.',
       triton: 'Not by eye or binoculars: Triton is magnitude 13.5, about 600 times fainter than the faintest star you can see, so it takes a telescope.',
-      charon: 'Barely: Charon is magnitude 16.8, 13 000 times fainter than the faintest star you can see, and so close to Pluto that amateurs split the pair in 2008 by photographing them through a 14-inch telescope.',
+      charon: 'Barely: Charon is magnitude 16.8, 13 000 times fainter than the faintest star you can see, and so close to Pluto that amateurs split the pair in 2008 by photographing them through a 14-inch telescope.',
       phobos: 'Not by eye: Phobos is magnitude 11.3 at its best and hugs Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
       deimos: 'Not by eye: Deimos is magnitude 12.4 at its best and close to Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
       neptune: 'Not by eye: Neptune is magnitude 7.7 to 7.9, too faint to see without help. Strong binoculars or a telescope show it as a small blue disc.',
@@ -1822,8 +2078,21 @@ export const COPY = {
     layersTitle: 'What to show',
     layerCount: '{n}',
     layerCountLoading: 'counting',
-    layerCountEmpty: 'nothing loaded',
-    layerWaits: 'loads when switched on',
+    // One sentence under a row that is off on purpose (public #271): how to show it.
+    layerHint: {
+      exoplanets: 'Off by default. Tick to show them.',
+    },
+    // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
+    // 390 and at 1440); each one's tooltip is the sentence it stands for.
+    layerCountEmpty: 'empty',
+    layerCountEmptyTitle: 'This layer came back with nothing: its source could not be read, or holds nothing now.',
+    layerWaits: 'not yet',
+    layerWaitsTitle: 'Loaded when you switch it on, to save data.',
+    // The error state, one line with its one action (docs/ui-guide.md section 3): layers that are
+    // on and came back empty. The button opens the sources sheet, where each source says why.
+    layersFailed: '{n} layers came back empty.',
+    layersFailedOne: 'One layer came back empty.',
+    layersFailedWhy: 'See sources',
     // A layer whose members are in more than one state says so on its own tick. Zero parts are
     // dropped, so a layer that grows out of a state stops mentioning it without a code change.
     layerCountParts: {
@@ -1832,6 +2101,8 @@ export const COPY = {
       unplaceable: '{n} we cannot place',
       // The aurora layer's one number: the highest probability in NOAA's forecast (scene/aurora.js peak()).
       auroraPeak: 'up to {n} % likely',
+      // The lightning layer's one number: strikes a minute in NOAA's latest map (scene/weather/lightning.js).
+      lightningPerMin: '{n} strikes a minute',
     },
     layersEmpty: 'No layers are loaded yet.',
     // The headings What to show folds the layers under (registry/layers.yaml `groups:`, spec 0068
@@ -1849,6 +2120,8 @@ export const COPY = {
     groupAllLabel: 'Show every layer in {group}',
     groupNoneLabel: 'Hide every layer in {group}',
     layerFilter: 'Find a layer',
+    // The list is one tab stop (public #315): its name tells a screen reader which keys move in it.
+    layersKeys: 'Layers. Up and down arrows move; Space switches one.',
     layerFilterEmpty: 'No layer by that name.',
     // The row that reopens the controls hint (ui/keyhint.js, issue #321): keys on a keyboard,
     // gestures on a touch screen.
@@ -1862,7 +2135,6 @@ export const COPY = {
     // While "Colour by" is not "What it is", the dots are the key's colours, not the layers'.
     keyedNote: 'Dots coloured by {key}: the key is below.',
     localTimeFallback: 'local',
-    locationTitle: 'Where you are',
     locationPlaceholder: 'Type a city',
     locationSearchLabel: 'Find a city',
     locationUseMine: 'Use my location',
@@ -1871,25 +2143,12 @@ export const COPY = {
     locationInsecure:
       'The browser only shares your location with pages served over https. This page is on plain http, so the button is switched off. Pick a city instead, or open the https address once there is one.',
     locationUnsupported: 'This browser has no location service. Pick a city instead.',
-    locationDenied: 'The browser said no. Pick a city instead; nothing else changes.',
-    locationFailed: 'The browser could not work out where you are. Pick a city instead.',
+    locationDenied: 'The browser said no. Pick a city instead.',
+    locationFailed: 'The browser could not find you. Pick a city instead.',
     locationAsking: 'Asking the browser',
-    locationNone: 'Not set',
-    locationSet: '{name}',
     locationClear: 'Clear',
-    locationCoords: '{lat}, {lon}',
     locationNoMatch: 'No city in the bundled list matches that.',
-    // The Now moment's first screen guesses a place from the clock and says so, in words that a
-    // person reads, not in a tooltip: a guess about where you are is held to the same rule as a
-    // guess about an orbit.
-    locationGuessed: 'We guessed {name} from your clock’s time zone. Set where you are if that is wrong.',
-    locationGuessedByOffset: 'We guessed {name} from your clock’s offset from UTC, which is rough. Set where you are.',
-    tonightTitle: 'Coming over tonight',
-    tonightRow: '{name} at {time}, {dir}, {fists}',
-    tonightNone: 'Nothing bright comes over in the next twelve hours.',
-    tonightNoObserver: 'Set where you are, or open the Now door, and this will list what comes over.',
-    tonightCouldNotLook: 'Could not look: the satellite catalogue has not loaded.',
-    tonightShowerTail: 'The sky view marks its radiant.',
+    tonightCouldNotLook: 'Could not look: no satellites have loaded.',
   },
 
   // ui/search.js. The footer strings are the honest ones: a layer nobody has read has no size,
@@ -1905,32 +2164,43 @@ export const COPY = {
     fly: 'Fly to it',
     flyTitle: 'Move the camera to the highlighted object and open its card',
     hint: 'Two letters is enough. Enter picks the top one.',
-    noMatch: 'Nothing that has loaded matches that.',
-    more: '{n} more match. Type a little more to narrow it.',
-    searching: 'Searching {n} objects.',
-    searchingOne: 'Searching one object.',
-    empty: 'Nothing has loaded yet, so there is nothing to search.',
+    // The empty state (docs/ui-guide.md section 3.2): the query quoted back, then the nearest names.
+    noMatch: 'Nothing called “{q}” here.',
+    closest: 'Closest names',
+    more: '{n} more match. Type more to narrow it.',
+    // One line under the results (spec 0061 req 11). The layers and their reasons are its tooltip.
+    searching: '{n} objects searched.',
+    searchingOne: 'One object searched.',
+    searchingBut: '{n} objects searched, {m} layers not yet.',
+    searchingButOne: '{n} objects searched, one layer not yet.',
+    empty: 'Nothing has loaded yet to search.',
+    // The field's tooltip names its key, as the rail's buttons do.
+    inputTitle: 'Search (/)',
+    key: '/',
     notLoaded: 'Not loaded, so not searched: {layers}.',
     stillLoading: 'Still loading, so not searched yet: {layers}.',
     loadsWhenOn: 'Loaded only when you switch them on, to save data, so not searched yet: {layers}.',
     couldNotRead: 'Could not be read, so not searched: {layers}.',
-    fallback: 'Nothing starts with that, so these merely contain it.',
-    switchedOn: 'Switched on {layer} so you can see it.',
+    fallback: 'Nothing starts with that. These contain it.',
+    switchedOn: 'Switched on: {layer}.',
+    // From the ground, a thing found that the sky cannot be turned to (ui/search.js).
+    belowHorizon: '{name} is under the horizon.',
     notLoadedCount: 'How many objects that leaves out cannot be known until they load.',
   },
 
   // Data-saver and the frame-rate latch (spec 0026 req 18): two things the app decided for the visitor, said out loud.
   quality: {
-    dataSaver: 'Your connection asked for data-saving, so the two biggest catalogues wait until you switch them on.',
-    lowered: 'Frames were taking {ms} ms, so the picture is drawn at one pixel per pixel without the Milky Way backdrop.',
+    // One line each in the popover (spec 0061 req 11).
+    dataSaver: 'Data saver on: the two biggest lists wait.',
+    lowered: 'Slow frames ({ms} ms): a simpler picture.',
     // The device tier (scene/quality.js, 2026-09-28): which maps this device wears, and why.
-    tierPhone: 'Surface maps at 2k, the size a phone has memory for.',
-    tierSaver: 'Surface maps at 2k, because your connection asked to save data.',
-    tierSmall: 'Surface maps at 2k, sized for this device’s graphics memory.',
-    tierLatched: 'Surface maps back at 2k, because frames were slow.',
-    tier1: 'Surface maps at 4k, fetched after the first picture while nothing else was happening.',
-    tier2: 'Surface maps at 4k, with more worlds kept sharp at once.',
-    promoted: 'Raised one step after three seconds of fast frames.',
+    tierPhone: 'Surface maps at 2k, sized for a phone.',
+    tierSaver: 'Surface maps at 2k, to save data.',
+    tierSmall: 'Surface maps at 2k, sized for this device.',
+    tierLatched: 'Surface maps back at 2k: frames were slow.',
+    tier1: 'Surface maps at 4k, fetched when idle.',
+    tier2: 'Surface maps at 4k, more worlds kept sharp.',
+    promoted: 'Raised a step after fast frames.',
     // The Sources panel's credits: the maps the scene is wearing on this device right now.
     mapsWorn: 'Maps on this device: {credits}.',
   },
@@ -1956,6 +2226,7 @@ export const COPY = {
     viaSnapshotLine: 'from our snapshot, fetched {age}',
     viaLiveLine: 'read live from {publisher} {age}',
     snapshotOverdue: 'a fresher copy is overdue',
+    snapshotChecking: '(checking for a newer one)',
     couldNotLookLine: 'could not look: {reason}',
     reasonNoRoute: '{why}, and a browser cannot read {publisher} directly',
     // Why our snapshot was not the source, keyed by the code data/sources.js reports.
@@ -1987,6 +2258,7 @@ export const COPY = {
     footCreditsSep: ' · ',
     cloudsTitle: 'Clouds',
     auroraTitle: 'Aurora',
+    weatherTitle: 'Lightning',
     layersTitle: 'Live or bundled',
     layersIntro:
       'Live is read from its publisher, or worked out for this moment, as you watch. A catalogue ships with the app: stars, galaxies and the dishes and landing sites on the ground do not move while you look. A bundled sample stands in for a source a browser cannot call at all.',
@@ -2020,6 +2292,8 @@ export const COPY = {
     hours: '{n} hours',
     aDay: 'a day',
     days: '{n} days',
+    months: '{n} months',
+    years: '{n} years',
     inFuture: 'in {d}',
     ago: '{d} ago',
   },
@@ -2052,6 +2326,8 @@ export const COPY = {
     fileName: 'space-radar-postcard-{id}-{date}.{ext}',
     when: '{date}, {time} UTC',
     mark: 'spaceradar.ai',
+    // Internal #376: the caption names the shutter when it is not the default (Camera).
+    exposure: { eye: 'As the eye sees it', deep: 'Deep stretch: faint light lifted' },
   },
   // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
   // Spec 0047: the tracked object's HUD (ui/hud.js). Its numbers and its honesty line are the
@@ -2067,352 +2343,22 @@ export const COPY = {
     // What the polite live region says, and only when a value's first digit changes.
     live: '{name}: {readouts}',
   },
-  // Spec 0051: what you can see tonight (sky/tonight.js tonightWords). The place is a guess from the
-  // device's time zone unless the visitor set one, and says so; the Tonight tab (spec 0061) shows it.
-  tonight: {
-    title: 'Tonight',
-    placeGuess: 'from near {place}, estimated from your time zone',
-    placeSet: 'from {place}',
-    placeShared: 'from {place}, shared with you',
-    noPlace: 'Set where you are to see what passes over.',
-    coords: '{lat}, {lon}',
-    working: 'Working out tonight’s passes…',
-    // "International Space Station · 21:03 · from SW to NE, about five fists above the horizon at
-    // its highest (52°) · 5 min": direction and fist words are the card's own (copy/en.js above).
-    passLine: '{name} · {time} · from {from} to {to}, {fists} at its highest ({deg}°) · {mins} min',
-    startsIn: 'Starts in {countdown}',
-    // Scrubbed, a countdown from a clock that is not now would count to nothing: the clock time.
-    startsAt: 'Starts at {time}',
-    upNow: 'Up now, look {dir}',
-    showMe: 'Show me',
-    showMeTitle: 'Open the sky from your place, facing where it rises',
-    guessCaveat: 'Times may differ by a few minutes where you are.',
-    nothingThenNext: 'Nothing bright passes over tonight. Next: {when}, {name}.',
-    nothingAtAll: 'Nothing bright passes over in the next three days.',
-    darkFrom: 'Dark from {time}',
-    darkUntil: 'Dark until {time}',
-    darkNow: 'Dark now',
-    neverDark: 'It does not get dark tonight',
-    moonRises: 'Moon {pct} %, rises {time}',
-    moonUp: 'Moon {pct} %, up now',
-    moonDown: 'Moon {pct} %, below the horizon',
-    more: 'More passes',
-    fewer: 'Fewer passes',
-    arcLabel: 'Its path across the sky: rises in the {from}, highest {deg}° up, sets in the {to}',
-    // The arc's compass letters (ui/skyarc.js), as the trajectory chart spells its N and S.
-    cardinals: { N: 'N', E: 'E', S: 'S', W: 'W' },
-  },
   clean: {
     hide: 'Hide all panels (H)',
     show: 'Show the panels again (H or Escape)',
-  },
-  // The controls hint (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right. Each
-  // keycap is a key the app really answers (tests/test_keyhint.mjs holds them to the code); what a
-  // row does is one or two words, how else to do it one word under it.
-  keyHint: {
-    title: 'Controls',
-    titleTouch: 'Gestures',
-    label: 'Keys that move the view',
-    labelTouch: 'Gestures that move the view',
-    close: 'Close',
-    closeTitle: 'Close (Escape)',
-    does: {
-      turn: 'Turn',
-      zoom: 'Closer, farther',
-      pan: 'Move sideways',
-      pick: 'Choose a thing',
-      hide: 'Hide all',
-      show: 'What to show',
-      share: 'Share',
-      esc: 'Close',
-    },
-    how: {
-      drag: 'Drag',
-      wheel: 'Scroll',
-      pinch: 'Pinch',
-      two: 'Two fingers',
-      tap: 'Tap',
-    },
-    caps: {
-      up: '↑',
-      left: '←',
-      down: '↓',
-      right: '→',
-      w: 'W',
-      s: 'S',
-      plus: '+',
-      minus: '−',
-      pgUp: 'PgUp',
-      pgDn: 'PgDn',
-      h: 'H',
-      l: 'L',
-      p: 'P',
-      esc: 'Esc',
-    },
+    // Said once a visit, the first time the panels go (ui/cleanview.js).
+    hint: 'H or Escape for the panels. Shift+H keeps labels and time',
   },
   mark: {
     label: 'Source on GitHub',
     title: 'Space Radar source code on GitHub',
     href: 'https://github.com/Sara-Managed-Projects/space-radar',
+    press: 'Press kit',
+    pressTitle: 'What it is, pictures and the mark to use',
+    pressHref: 'press/index.html',
   },
 
-  glossary: {
-    title: 'Words on this page',
-    hint: 'Tap a term for a plain sentence.',
-  },
 
-  // ------------------------------------------------------------------------------------
-  // The ten class templates. Each is a lead plus optional clauses; cards.js adds clauses
-  // in order while the sentence stays under 160 characters, and never invents a number.
-  // The "why now" clause is first in every list, per spec 0013's template table.
-  // ------------------------------------------------------------------------------------
-  templates: {
-    // A tropical cyclone's first sentence (2026-09-28). "whose centre was here" and not "is here":
-    // the point is the latest advisory's, and the card's honesty line says how old that is.
-    storm: {
-      lead: '{name} is {a} {status} whose centre was here {ago}',
-      leadUnknown: '{name} is a tropical cyclone whose centre was here {ago}',
-      // The clock in the six hours before the advisory: "was here in 2 hours" read as nonsense.
-      leadBefore: '{name} is {a} {status} whose centre reaches here {ago}',
-      leadBeforeUnknown: '{name} is a tropical cyclone whose centre reaches here {ago}',
-      wind: 'the strongest winds on its track, forecast included, reach {n} km/h',
-      statuses: {
-        hurricane: 'hurricane',
-        typhoon: 'typhoon',
-        cyclone: 'tropical cyclone',
-        storm: 'tropical storm',
-        depression: 'tropical depression',
-      },
-    },
-    exotic: {
-      leadBlackhole: '{name} is a black hole {dist} light-years away',
-      leadPulsar: '{name} is a pulsar {dist} light-years away',
-      leadMagnetar: '{name} is a magnetar {dist} light-years away',
-      leadStar: '{name} is a star {dist} light-years away',
-      leadRange: '{name} is {a} {kind} somewhere between {lo} and {hi} light-years away',
-      mass: 'weighing {n} Suns',
-      massRange: 'weighing between {lo} and {hi} Suns',
-      massMillions: 'weighing {n} million Suns',
-      massBillions: 'weighing {n} billion Suns',
-      spins: 'turning {n} times a second',
-      spinsSlow: 'turning once every {n} seconds',
-      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star' },
-    },
-    dso: {
-      leadHome: '{name} is the galaxy we live in; its centre is {dist} light-years away',
-      lead: '{name} is {a} {type} {dist} light-years away',
-      leadRange: '{name} is {a} {type} somewhere between {lo} and {hi} light-years away',
-      leadUntyped: '{name} is {dist} light-years away',
-      size: 'about {n} light-years across',
-      // A participle, so it hangs off the sentence: "..., the light you see left it 2.54 million
-      // years ago" was a second sentence joined with a comma.
-      seenAs: 'seen as it was {n} years ago',
-      seenAsMillions: 'seen as it was {n} million years ago',
-      constellation: 'in {con}',
-      // OpenNGC type codes -> words, for the sentence. The card's row prints the source's own words.
-      kinds: { galaxy: 'galaxy', nebula: 'nebula', cluster: 'star cluster', other: 'deep-sky object' },
-    },
-    exoplanet: {
-      lead: '{name} is a planet around the star {host}, {dist} light-years away',
-      leadNoHost: '{name} is a planet around another star, {dist} light-years away',
-      size: 'about {n} times as wide as Earth',
-      sizeSmaller: 'about {n} of Earth’s width',
-      mass: '{n} times Earth’s mass',
-      year: 'its year lasts {n} days',
-      yearHours: 'its year lasts {n} hours',
-      found: 'found in {year} by the {method} method',
-      foundYear: 'found in {year}',
-      asOf: 'from a copy of the catalogue as of {date}',
-    },
-    star: {
-      lead: '{name} is a star {dist} light-years away',
-      // The colour goes in the lead: "Proxima Centauri is a star 4.23 light-years away, one of the
-      // nearest there are, a red star, the light you see left it 4 years ago" said "star" twice
-      // and ran two sentences together with a comma (read on a trip card, 2026-09-22).
-      // {a} is article(colour): "an orange star". A literal 'a' printed "Arcturus is ... a orange star".
-      leadColour: '{name} is {a} {colour} star {dist} light-years away',
-      near: 'one of the nearest there are',
-      seenAs: 'seen as it was {n} years ago',
-      seenAsMonths: 'seen as it was {n} months ago',
-      luminosity: 'shining {n} times as bright as the Sun',
-      dimmer: 'shining at {n} of the Sun’s brightness',
-      // Spectral class letter -> the colour a person would see. The letters are the physics; the
-      // words are what the eye reports, and they are the whole reason to print the class at all.
-      colours: { O: 'blue', B: 'blue-white', A: 'white', F: 'yellow-white', G: 'yellow', K: 'orange', M: 'red' },
-    },
-    station: {
-      lead: '{name} is a crewed space station circling Earth',
-      whyPass: 'crossing your sky at {time}',
-      crew: 'with {crew} people aboard',
-      altitude: '{alt} km up',
-      speed: 'going round once every {period} minutes',
-    },
-    satellite: {
-      lead: '{name} is a satellite going round the Earth',
-      // {kind} is the model route's own name for the type -- "a Dragon spacecraft", "a Starlink V2
-      // Mini", "a GLONASS navigation satellite" -- where the route knows one.
-      leadKind: '{name} is {kind} going round the Earth',
-      // Within DOCKED_KM of a crewed station, right now: measured 2026-09-22, the vehicles at the ISS
-      // and Tiangong sit 0.00 to 0.43 km from them and everything else is over 1 600 km away.
-      leadDocked: '{name} is {kind} docked at the {station}',
-      aSpacecraft: 'a spacecraft',
-      // A route for one named telescope (Hubble, Chandra, TESS) carries a proper name, not a type;
-      // its class says what it is.
-      aTelescope: 'a space telescope',
-      whyLaunchedDays: 'launched {n} days ago',
-      whyLaunchedYear: 'launched in {year}',
-      operator: 'flown by {operator}',
-      purpose: '{purpose}',
-      altitude: '{alt} km up',
-      whyPass: 'crossing your sky at {time}',
-    },
-    debris: {
-      lead: '{name} is a tracked piece of debris',
-      origin: 'left over from {origin}',
-      brokeUp: 'which broke up in {year}',
-      decay: 'expected to fall back into the atmosphere around {date}',
-      altitude: '{alt} km up',
-      burnsUp: 'almost all of it burns up on the way down',
-    },
-    rocket: {
-      lead: '{name} is a rocket launch',
-      leadWithPad: '{name} is a rocket launch from {pad}',
-      // A rocket BODY in orbit is catalogued as klass rocket too -- SL-8 R/B, ATLAS CENTAUR 2 -- and
-      // the card called a 1970s upper stage "a rocket launch". Spent stages are among the brightest
-      // things in the visual layer, so it was one of the commonest cards to be wrong.
-      leadStage: '{name} is a spent rocket stage going round the Earth',
-      stageLaunched: 'launched in {year}',
-      whyCountdown: 'lifting off {when}',
-      whyFlown: 'which lifted off {when}',
-      destination: 'heading for {destination}',
-      missionType: 'a {missionType} mission',
-      illustrative: 'the track drawn here is a sketch of the climb, not a measured path',
-    },
-    probe: {
-      lead: '{name} is a spacecraft out in the solar system',
-      // A craft round another world (#215): "out in the solar system" was all its card said of
-      // where it is, while the rows under it read "In orbit round: Mars" (2026-09-22).
-      leadOrbits: '{name} is a spacecraft circling {world}',
-      destination: 'on its way to {destination}',
-      lightTime: 'far enough that a radio message takes {mins} minutes each way',
-      // Under a minute, seconds: LRO's card said "0.022 minutes each way" (2026-09-22).
-      lightTimeSeconds: 'near enough that a radio message takes {secs} seconds each way',
-      // Past two hours, hours: "1431 minutes each way" was Voyager 1, a day away (2026-09-22).
-      lightTimeHours: 'far enough that a radio message takes {hours} hours each way',
-      distanceSun: '{au} astronomical units from the Sun',
-      milestone: 'with {milestone} due on {date}',
-    },
-    telescope: {
-      lead: '{name} is a space telescope',
-      observing: 'pointed at {target} this week',
-      station: 'parked at {station}',
-      altitude: '{alt} km up',
-      sees: 'it sees in {band}',
-    },
-    asteroid: {
-      lead: '{name} is a near-Earth object on its own orbit around the Sun',
-      // Ceres, Vesta and Pallas are in the layer too, and each carries `neo: false`: perihelia of
-      // 2.1 to 2.5 au, nowhere near Earth. The card called all of them near-Earth objects.
-      leadMainBelt: '{name} is an asteroid in the main belt, between Mars and Jupiter',
-      // The far-bodies layer (2026-09-22). Its first sentence has to be true of a world 95 au out,
-      // and "a near-Earth object" or "in the main belt" is true of none of them but Ceres. Which
-      // of these a card uses is decided from the record's own perihelion and aphelion
-      // (ui/cards.js farRegion), never from a label somebody typed.
-      leadDwarf: '{name} is a dwarf planet on its own orbit around the Sun',
-      leadDwarfBelt: '{name} is a dwarf planet in the asteroid belt, between Mars and Jupiter',
-      leadDwarfBeyond: '{name} is a dwarf planet beyond Neptune',
-      leadDwarfFarBeyond: '{name} is a dwarf planet far beyond Neptune',
-      // 'Oumuamua: not bound to the Sun (e 1.20). Which way it is going is the clock's to say --
-      // a visitor can wind the app back to before 9 September 2017.
-      leadInterstellarOut: '{name} came from another star and is on its way out of the Solar System',
-      leadInterstellarIn: '{name} came from another star and is falling in towards the Sun',
-      distanceSun: '{au} astronomical units from the Sun',
-      whyApproach: "passing Earth on {date} at {ld}× the Moon's distance",
-      size: '{size}',
-      // Only written when a named source says so (spec 0013 requirement 6).
-      willNotHit: 'it will not hit Earth',
-    },
-    comet: {
-      lead: '{name} is a comet on a long loop around the Sun',
-      // A periodic comet -- 123P, Halley's -- comes back every few years or decades. "A long loop"
-      // was right only for the C/ comets, and the card said it of 123P/West-Hartley, period 7.6 years.
-      leadPeriodic: '{name} is a comet that comes round the Sun every {n} years',
-      // 2I/Borisov (e 3.36): "a long loop around the Sun" would be the one thing it is not.
-      leadInterstellarOut: '{name} is a comet from another star, on its way out of the Solar System',
-      leadInterstellarIn: '{name} is a comet from another star, falling in towards the Sun',
-      whyPerihelion: 'closest to the Sun on {date}',
-      nakedEye: 'bright enough to find without a telescope',
-      faint: 'too faint to see without a telescope',
-      distanceSun: '{au} astronomical units out',
-    },
-    // The one plain sentence for an oddity is the registry row's own `fact:`, capped at the
-    // card's 160 characters where it is WRITTEN (scripts/check_registry.py) rather than truncated
-    // here where it is read. `fallback` is for a row with no fact, which the validator refuses --
-    // it exists so the card degrades to a true sentence rather than to an empty one.
-    oddity: {
-      lead: '{fact}',
-      fallback: '{name} is one of the odd things people have sent off the planet',
-    },
-    site: {
-      lead: '{name} is a place on the ground that works with spacecraft',
-      leadKind: '{name} is {a} {kind}', // {a}: "an observatory"
-      where: 'in {where}',
-      whyDsn: 'talking to {spacecraft} right now',
-      whyLaunch: 'with {launch} due {when}',
-      kinds: {
-        pad: 'launch pad',
-        dish: 'radio dish',
-        observatory: 'observatory',
-        tracking: 'tracking station',
-      },
-    },
-    world: {
-      lead: '{name} is a world in the solar system',
-      leadMoon: '{name} is the Earth’s own moon',
-      // The worlds layer holds the Sun too, and "The Sun is a world in the solar system" is wrong.
-      leadSun: '{name} is the star at the centre of the solar system',
-      // The Moon's distance in kilometres: the comparison chooser picks "x the Moon's distance" for
-      // anything in lunar range, and printed "The Moon ... 1.02x the Moon's distance" about itself.
-      distanceKm: '{n} km away',
-      whyPhase: '{phase} tonight',
-      whyRise: 'rising from where you are at {time}',
-      distance: '{distance}',
-      diameter: 'about {n} km across',
-      // What a world IS, where "a world in the solar system" says too little. Only the worlds that
-      // came with sourced facts carry a line (registry/worlds.yaml `facts.what` names the page each
-      // was read from); the rest keep `lead`. Short on purpose: the distance and the size have to
-      // fit after it inside the card's 160 characters.
-      leadWhat: '{name} is {what}',
-      what: {
-        pluto: 'a dwarf planet beyond Neptune, counted as the ninth planet until 2006',
-        io: 'one of Jupiter’s four big moons, and the most volcanic world in the solar system',
-        europa: 'one of Jupiter’s four big moons, with a salt-water ocean under its ice',
-        ganymede: 'Jupiter’s biggest moon and the biggest in the solar system, larger than Mercury',
-        callisto: 'one of Jupiter’s four big moons, and the most heavily cratered object in the solar system',
-        // Six more (2026-09-22), each from its NASA Science page (registry/worlds.yaml `facts.what`;
-        // Titan's landing from `facts.landing`).
-        titan: 'Saturn’s biggest moon, under thick orange haze, with methane lakes; Huygens landed there in 2005',
-        enceladus: 'a small icy moon of Saturn whose geysers spray the ocean under its ice out into space',
-        triton: 'Neptune’s biggest moon; it orbits backwards and is probably a captured Kuiper Belt object',
-        charon: 'Pluto’s biggest moon, half Pluto’s size; the two always turn the same faces to each other',
-        phobos: 'the larger of Mars’s two moons, a lumpy rock spiralling in towards Mars by 1.8 m a century',
-        deimos: 'the smaller of Mars’s two moons, a small lumpy rock covered in craters',
-        // Ten more (2026-09-22), each from its NASA Science page or its Wikipedia article, as
-        // registry/worlds.yaml `facts.what` records. Short, because the distance and the size have
-        // to fit after it: Titania's leaves 60 characters spare at the widest the distance gets.
-        mimas: 'Saturn’s innermost round moon, marked by a crater a third as wide as the moon itself',
-        tethys: 'Saturn’s fifth largest moon, almost pure water ice, split by a chasm and a huge crater',
-        dione: 'an icy moon of Saturn whose trailing side is laced with a network of bright ice cliffs',
-        rhea: 'Saturn’s second largest moon, a frozen dirty snowball of ice and rock',
-        iapetus: 'Saturn’s third largest moon: one side as dark as coal, the other ten times brighter',
-        miranda: 'the smallest of Uranus’s five big moons, with canyons up to 12 times the Grand Canyon’s depth',
-        ariel: 'the brightest and youngest-looking of Uranus’s five big moons, cut across by fault valleys',
-        umbriel: 'the darkest of Uranus’s big moons, reflecting about a fifth of the light that reaches it',
-        titania: 'Uranus’s largest moon, neutral grey, split by fault valleys nearly 1 600 km long',
-        oberon: 'Uranus’s second largest moon, dark, cratered, and carrying a mountain 6 km high',
-      },
-    },
-  },
 };
 
 // ---------------------------------------------------------------------------------------
@@ -2426,7 +2372,7 @@ export const GLOSSARY = {
   'low Earth orbit':
     'The busy shell from about 200 to 2000 km up. The station, most satellites and most of the debris are here.',
   geostationary:
-    'An orbit 35 786 km up where one lap takes exactly one day, so the satellite seems to hang over one spot.',
+    'An orbit 35 786 km up where one lap takes as long as the Earth takes to turn once, 23 hours 56 minutes. So the satellite seems to hang over one spot.',
   'polar orbit':
     'An orbit over the poles. The Earth turns underneath, so the satellite eventually sees every part of it.',
   elements:
@@ -2440,7 +2386,7 @@ export const GLOSSARY = {
     'How tilted an orbit is compared with the equator. Ninety degrees goes over the poles.',
   propagated: 'Worked forward from an older measurement. Not a fresh observation, and it drifts.',
   'lunar distance':
-    'The distance from Earth to the Moon, about 384 000 km. A handy ruler for asteroid passes.',
+    'The distance from Earth to the Moon, about 384 000 km. A handy ruler for asteroid passes.',
   'astronomical unit': 'The distance from Earth to the Sun, about 150 million km.',
   'light-time':
     'How long light takes to cross a distance. It is also how long a radio message takes.',

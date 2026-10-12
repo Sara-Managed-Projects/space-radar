@@ -104,6 +104,39 @@
       ]
     },
     {
+      "id": "ll2-stations",
+      "url": "https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "ll2_stations",
+      "outputs": [
+        "stations-docked.json"
+      ]
+    },
+    {
+      "id": "ll2-astronauts",
+      "url": "https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "ll2_crew",
+      "outputs": [
+        "crew.json"
+      ]
+    },
+    {
+      "id": "ll2-previous",
+      "url": "https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "ll2_previous",
+      "outputs": [
+        "launches-previous.json"
+      ]
+    },
+    {
       "id": "jpl-sbdb-neo",
       "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo",
       "auth": "none",
@@ -156,7 +189,8 @@
       "parser": "esa_neocc",
       "outputs": [
         "close-approaches-esa.json"
-      ]
+      ],
+      "enabled": false
     },
     {
       "id": "horizons-deep-space",
@@ -175,6 +209,7 @@
           "CENTER": "'500@10'",
           "STEP_SIZE": "'6 h'",
           "VEC_TABLE": "'2'",
+          "TIME_TYPE": "'UT'",
           "OUT_UNITS": "'KM-S'",
           "CSV_FORMAT": "'YES'",
           "COMMAND": "'{id}'",
@@ -223,6 +258,16 @@
             "id": "-98",
             "name": "New Horizons",
             "app_id": "deep-new-horizons"
+          },
+          {
+            "id": "-23",
+            "name": "Pioneer 10",
+            "app_id": "deep-pioneer-10"
+          },
+          {
+            "id": "-24",
+            "name": "Pioneer 11",
+            "app_id": "deep-pioneer-11"
           },
           {
             "id": "-96",
@@ -296,6 +341,27 @@
             "id": "-139479",
             "name": "Gaia",
             "app_id": "deep-gaia"
+          },
+          {
+            "id": "-211",
+            "name": "Nancy Grace Roman Space Telescope",
+            "app_id": "deep-roman"
+          },
+          {
+            "id": "-53",
+            "name": "Mars Odyssey",
+            "app_id": "deep-mars-odyssey",
+            "center": "'500@499'"
+          },
+          {
+            "id": "-79",
+            "name": "Spitzer Space Telescope",
+            "app_id": "deep-spitzer"
+          },
+          {
+            "id": "-227",
+            "name": "Kepler",
+            "app_id": "deep-kepler"
           }
         ]
       }
@@ -330,8 +396,95 @@
       "freshness_max": "3h",
       "parser": "swpc_ovation",
       "outputs": [
-        "aurora.png",
         "aurora-summary.json"
+      ]
+    },
+    {
+      "id": "eonet-fires",
+      "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "eonet",
+      "outputs": [
+        "eonet-fires.json"
+      ]
+    },
+    {
+      "id": "eonet-volcanoes-ice",
+      "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=volcanoes,seaLakeIce",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "eonet",
+      "outputs": [
+        "eonet-volcanoes-ice.json"
+      ]
+    },
+    {
+      "id": "swpc-solar-regions",
+      "url": "https://services.swpc.noaa.gov/json/solar_regions.json",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "swpc_solar_regions",
+      "outputs": [
+        "solar-regions.json"
+      ]
+    },
+    {
+      "id": "swpc-edited-events",
+      "url": "https://services.swpc.noaa.gov/json/edited_events.json",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "swpc_edited_events",
+      "outputs": [
+        "solar-events.json"
+      ]
+    },
+    {
+      "id": "donki-cme-analysis",
+      "url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "24h",
+      "parser": "donki_cme_analysis",
+      "outputs": [
+        "cme-analysis.json"
+      ]
+    },
+    {
+      "id": "wind",
+      "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "12h",
+      "parser": "wind",
+      "outputs": [
+        "wind.json"
+      ]
+    },
+    {
+      "id": "ocean-currents",
+      "url": "https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.json?u_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D,v_current%5B(last)%5D%5B(-89.875):4:(89.875)%5D%5B(-179.875):4:(179.875)%5D",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "96h",
+      "parser": "sea_grid",
+      "outputs": [
+        "ocean-currents.json"
+      ]
+    },
+    {
+      "id": "ocean-temperature",
+      "url": "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.json?sst%5B(last)%5D%5B(0.0)%5D%5B(-89.875):4:(89.875)%5D%5B(0.125):4:(359.875)%5D",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "96h",
+      "parser": "sea_grid",
+      "outputs": [
+        "ocean-temperature.json"
       ]
     },
     {

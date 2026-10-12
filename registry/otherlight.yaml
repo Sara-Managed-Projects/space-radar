@@ -1,0 +1,105 @@
+# The sky in other light (public #456, internal #283 to #286): all-sky surveys in wavelengths an eye
+# cannot see, drawn over the stars in the Stars stage and in the sky from the ground.
+# scene/otherlight.js draws them; scripts/build_otherlight.py bakes each band's whole-sky picture;
+# site/js/data/otherlight.js is the mirror the browser reads (scripts/gen_otherlight_js.py).
+#
+# TWO SOURCES PER BAND, AND WHY.
+#   file   one picture of the whole sky, 2048 x 1024, baked from the survey's own order-3 HiPS
+#          tiles and shipped from our bucket. It is what a wide field shows and all a visitor on a
+#          data-saving connection ever fetches. Baking is a "Produced Work" of the HiPS, which CDS
+#          publishes under ODbL 1.0: allowed, with the notice CREDITS.md section 3h carries.
+#   hips   the survey itself at CDS, streamed tile by tile (sky/hips.js) once the field is narrow
+#          enough to need more than the baked picture has. Only for a survey whose tiles go deeper
+#          than order 3 (`stream: true`).
+#
+# WHICH SURVEYS, AND WHICH NOT. A band is here only if (a) the mission's data are NASA's, which
+# does not claim copyright on them, and the HiPS `properties` file read on `checked:` says so in
+# `obs_copyright` / `prov_progenitor`, and (b) the tiles answered 200 with
+# `Access-Control-Allow-Origin: *` to a request carrying our Origin on that day. Refused, with the
+# reason, so nobody adds them back without new evidence:
+#   CDS/P/DSS2/color            plates (c) Caltech/ROE/AAO, terms on request to STScI
+#   CDS/P/Mellinger/color       "(c) 2000-2017 Axel Mellinger. All rights reserved."
+#   CDS/P/PLANCK/R3/HFI/color   obs_copyright "EUROPEAN SPACE AGENCY. ALL RIGHTS RESERVED"
+#   CDS/P/PLANCK/R2/HFI/color   obs_copyright "Planck Legacy Archive": no licence text found; WMAP
+#                               is NASA's microwave sky and is used instead
+#   CDS/P/Finkbeiner            H-alpha composite: "available to the public" is a release, not a
+#                               licence, and WHAM, VTSS and SHASSA each have their own terms; not
+#                               settled (internal #287 stays open)
+#   CDS/P/RASS                  X-ray: "Distributed by MPE", no licence text found
+#   CDS/P/GALEXGR6_7/color      NASA's and free to use, but the order-3 sky is a 4.9 MB PNG whose
+#                               Galactic plane is survey masks and bright-star artefacts: not a
+#                               picture of the ultraviolet sky at this scale. Left for the
+#                               streaming reader at narrow fields (filed).
+#
+# A ROW
+#   id          the band, as the chooser and copy/en.js `otherLight.bands` name it.
+#   hips_id     the survey's IVOA identifier; `base` its tile root at CDS.
+#   frame       `hips_frame`: the axes the tiles are cut in. sky/hips.js turns galactic to J2000.
+#   max_order, tile_width, format   from `properties`.
+#   stream      whether sky/hips.js fetches tiles deeper than the baked picture.
+#   gain        a display stretch for the baked picture (a look, not photometry).
+#   colours     what the three colour channels of the survey's own composite are: the honest line.
+#   credit      as the mission asks to be named; `terms` where that is written.
+#   evidence    the lines of `properties` this rests on, read on `checked`.
+hips_licence:
+  name: ODbL-1.0
+  holder: CNRS/Unistra (CDS)
+  note: "hips_copyright = CNRS/Unistra; hips_license = ODbL-1.0 in every properties file below"
+  ack: "This work has made use of CDS HiPS (Aladin / hips2fits), CDS, Strasbourg Astronomical Observatory, France."
+  page: https://aladin.cds.unistra.fr/hips/
+bands:
+  - id: infrared
+    hips_id: CDS/P/allWISE/color
+    base: https://alasky.cds.unistra.fr/AllWISE/RGB-W4-W2-W1
+    file: site/images/otherlight/infrared.webp
+    frame: equatorial
+    max_order: 8
+    tile_width: 512
+    format: jpg
+    stream: true
+    gain: 2.0
+    colours: "red 22 µm, green 4.6 µm, blue 3.4 µm"
+    mission: WISE
+    credit: NASA/JPL-Caltech/UCLA (WISE)
+    licence: NASA data, no copyright claimed
+    terms: https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/
+    checked: 2026-10-06
+    evidence: "obs_copyright = IPAC/NASA; prov_progenitor = IPAC/NASA - healpixed by CDS; obs_ack: WISE and NEOWISE are funded by the National Aeronautics and Space Administration"
+    cors: "200, Access-Control-Allow-Origin: * (Norder3/Allsky.jpg 733 999 B; Norder5/Dir0/Npix1234.jpg 35 265 B)"
+  - id: microwave
+    hips_id: CDS/P/WMAP/W/9yr
+    base: https://alasky.cds.unistra.fr/WMAP9yr/WMAPW9yr
+    file: site/images/otherlight/microwave.webp
+    frame: galactic
+    max_order: 3
+    tile_width: 64
+    format: jpg
+    stream: false
+    gain: 1.5
+    colours: "one band, 94 GHz (3.2 mm), drawn as brightness"
+    mission: WMAP
+    credit: NASA/WMAP Science Team (LAMBDA)
+    licence: NASA data, no copyright claimed
+    terms: https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html
+    checked: 2026-10-06
+    evidence: "obs_copyright = HEASARC/LAMBDA; prov_progenitor = HEASARC/LAMBDA; obs_ack: LAMBDA is a service of the Astrophysics Science Division at the NASA Goddard Space Flight Center"
+    cors: "200, Access-Control-Allow-Origin: * (Norder3/Allsky.jpg 1 447 337 B)"
+  - id: gamma
+    hips_id: CDS/P/Fermi/color
+    base: https://alasky.cds.unistra.fr/Fermi/Color
+    file: site/images/otherlight/gamma.webp
+    frame: equatorial
+    max_order: 3
+    tile_width: 512
+    format: jpg
+    stream: false
+    gain: 1.1
+    quality: 68
+    colours: "red 0.3 to 1 GeV, green 1 to 3 GeV, blue 3 to 300 GeV"
+    mission: Fermi
+    credit: NASA/DOE/Fermi LAT Collaboration
+    licence: NASA data, no copyright claimed
+    terms: https://fermi.gsfc.nasa.gov/ssc/data/policy/
+    checked: 2026-10-06
+    evidence: "obs_copyright = Distributed by SkyView/HEASARC - HEALPixed by CDS; prov_progenitor = NASA/HEASARC"
+    cors: "200, Access-Control-Allow-Origin: * (Norder3/Allsky.jpg 2 038 057 B)"

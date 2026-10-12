@@ -111,10 +111,18 @@ export function createRenderer(canvas) {
 
   // The frame-rate latch (scene/quality.js) may cap this at 1: one device pixel per CSS pixel.
   let dprCap = MAX_DPR;
+  // The resolution scale (scene/quality.js createScaleGovernor): a ratio between the device's and 1.
+  let scaleCap = MAX_DPR;
 
   function currentDpr() {
     const dpr = typeof devicePixelRatio === 'number' && devicePixelRatio > 0 ? devicePixelRatio : 1;
-    return Math.min(dpr, MAX_DPR, dprCap);
+    return Math.min(dpr, MAX_DPR, dprCap, scaleCap);
+  }
+
+  /** A pixel ratio at most `ratio` (the scale governor's step); the loop's resize() sees the change at once. */
+  function setScale(ratio) {
+    scaleCap = Number.isFinite(ratio) && ratio > 0 ? ratio : MAX_DPR;
+    resize(true);
   }
 
   /** 'low' caps the pixel ratio at 1 and re-sizes at once; 'full' lifts the cap. */
@@ -233,6 +241,7 @@ export function createRenderer(canvas) {
     renderTo,
     dispose,
     setQuality,
+    setScale,
     get contextLost() { return contextLost; },
     get pixelRatio() { return lastDpr; },
     get size() { return { width: lastW, height: lastH }; },

@@ -53,7 +53,6 @@
 
   /* Surfaces derived from the palette, never invented hues */
   --sr-panel-solid: #0b0e14;
-  --sr-raise: rgba(232, 236, 242, 0.06);
   --sr-ink: #14100a; /* text on ember */
   --sr-ember-soft: rgba(255, 159, 67, 0.16); /* the selected row's wash */
   --sr-text-faint: #6b7482; /* rules and ticks ONLY: 4.09:1 on space, under AA for a glyph */
@@ -104,24 +103,78 @@
   --sr-mid: 220ms;
   --sr-slow: 320ms;
 
+  /* The type ladder (docs/ui-guide.md section 2.2): every font-size in the chrome is one of these,
+     and tests/test_tokens.mjs refuses a literal. A size that is not here is a new role: add the
+     row to the guide's table in the same change. The unit (11 px) is for a unit beside its number
+     and nothing else; 13 is the floor for anything a person reads. */
+  --sr-fs-unit: 11px;
+  --sr-fs-sm: 13px; /* secondary lines, captions, microlabels, button labels, mono values in rows */
+  --sr-fs-label: 14px; /* tabs, text buttons, a trip card's title */
+  --sr-fs-body: 15px; /* rows and body text */
+  --sr-fs-input: 16px; /* a phone's inputs: under 16 px iOS Safari zooms the page on focus */
+  --sr-fs-glyph: 20px; /* a chevron or a cross drawn as a character, the size of an icon */
+  --sr-fs-num-sm: 20px; /* a card's numbers on a phone, and a long one on a desktop */
+  --sr-fs-lead: 20px; /* the first Right-now line */
+  --sr-fs-num: 24px; /* a card's three numbers */
+  --sr-fs-name-sm: 22px; /* a card's name on a phone and in a floating sheet, and the collapsed handle's letter */
+  --sr-fs-mark: 27px; /* the wordmark, and the sources sheet's title */
+  --sr-fs-name: 28px; /* a card's name, and a trip's title */
+  /* Present mode (public #441): a trip on a projector, read from the back of a room. About 1/28
+     of a 900 px screen for the words and 1/17 for a title, the sizes a slide is set at; a 1920 px
+     projector takes the next step up (html.sr-present, at the foot of this file). */
+  --sr-fs-present-sm: 22px; /* the microlabel, the generated line, the honesty line */
+  --sr-fs-present: 32px; /* a stop's words */
+  --sr-fs-present-name: 52px; /* a stop's title, and the trip's on its intro */
+
+  /* The z ladder (docs/ui-guide.md section 2.6): one list, bottom to top, and no z-index outside
+     it but 0, 1, 2 and auto for a component's own layers. The labels sit UNDER the HUD and the
+     veil (5, as shipped): the veil covers them between stages. */
+  --sr-z-labels: 5;
+  --sr-z-hud: 6;
+  --sr-z-veil: 8;
   --sr-z-status: 20;
   --sr-z-controls: 30;
+  --sr-z-pill: 35;
   --sr-z-card: 40;
+  --sr-z-rail: 56;
+  --sr-z-pop: 57;
+  --sr-z-trip: 60;
+  --sr-z-modal: 62; /* the share sheet: over a trip's bars, under a toast */
+  --sr-z-toast: 70;
+  --sr-z-boot: 100; /* the boot veil, until the app is up */
+  /* The time pill's height with its two rows (ui/timepill.js): what stands above it clears this. */
+  --sr-time-h: 102px;
 
   /* The three faces (spec 0045), self-hosted in site/fonts/ and declared in css/fonts.css. Each
      stack ends in the system's own, which is what shows until the face lands (`swap`) and what
      draws a character the subset does not carry. */
   --sr-font:
-    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
     sans-serif;
   --sr-font-mono:
-    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
     monospace;
   /* Panel titles and, later, HUD units. No Cyrillic in Barlow: Inter draws it. */
-  --sr-font-hud: 'Barlow Semi Condensed', 'Inter', system-ui, sans-serif;
+  --sr-font-hud: 'Barlow Semi Condensed', 'Barlow Semi Condensed Fallback', 'Inter', 'Inter Fallback', system-ui, sans-serif;
+  /* No serif: Ivan rejected Instrument Serif on names on 2026-10-03 and spec 0061 task 6 removed the
+     face. Names and titles are Inter 600, the wordmark Barlow 600 (docs/ui-guide.md section 2.2). */
 
   /* Old names, kept for one release so no rule breaks in the change */
   --sr-panel: var(--sr-glass-solid);
+}
+
+/* Reduced motion, everywhere at once (spec 0061 req 12, docs/ui-guide.md section 2.5): the three
+   durations become the 120 ms fade and both curves become linear, so a rule written with the
+   tokens is already reduced, and a new one cannot forget. What still MOVES (a slide, a rise, a
+   lean) is taken out by each component's own block below; this is what makes the rest a fade. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sr-fast: 120ms;
+    --sr-mid: 120ms;
+    --sr-slow: 120ms;
+    --sr-ease: linear;
+    --sr-ease-in: linear;
+  }
 }
 
 /* Compact (spec 0045 req 10, ui/density.js): chosen, or automatic on a window 800 px tall or
@@ -134,7 +187,7 @@ html.sr-compact {
 
 html.sr-compact .sr-card,
 html.sr-compact .sr-status {
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
 }
 
@@ -147,7 +200,7 @@ html.sr-compact .sr-status {
 .sr-status {
   box-sizing: border-box;
   font-family: var(--sr-font);
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   line-height: 1.45;
   color: var(--sr-text);
   overflow-y: auto;
@@ -229,6 +282,10 @@ html.sr-compact .sr-status {
 .sr-search__option.is-active::after,
 .sr-reticle__box::before,
 .sr-reticle__box::after,
+.sr-skyreticle::before,
+.sr-skyreticle::after,
+.sr-search__row:has(:focus-visible)::before,
+.sr-search__row:has(:focus-visible)::after,
 :where(button, a[href], [role='option'], summary):focus-visible::before,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   content: '';
@@ -245,8 +302,16 @@ html.sr-compact .sr-status {
 .sr-bracketed::after,
 .sr-search__option.is-active::after,
 .sr-reticle__box::after,
+.sr-skyreticle::after,
+.sr-search__row:has(:focus-visible)::after,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   transform: scaleY(-1);
+}
+
+/* The search field's well wears the brackets while its input has the keyboard (0061 task 5): an
+   input has no pseudo-elements of its own, and the hairline it had was 1.8:1, under SC 2.4.13. */
+.sr-search__row {
+  position: relative;
 }
 
 .sr-card *,
@@ -272,18 +337,18 @@ html.sr-compact .sr-status {
 .sr-panel__title,
 .sr-status__title,
 .sr-status__subtitle {
-  margin: 0 0 6px;
+  margin: 0 0 var(--sp-2);
   /* Panel titles: Barlow Semi Condensed 600 at 13 px, tracked 0.04 em (spec 0045 req 6). A
      condensed face at the old 11 px read smaller than Inter did there. */
   font-family: var(--sr-font-hud);
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--sr-text-dim);
 }
 
 .sr-status__title {
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   color: var(--sr-text);
 }
 
@@ -292,7 +357,7 @@ html.sr-compact .sr-status {
 .sr-btn {
   appearance: none;
   min-height: 40px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: inherit;
   font-weight: 500;
   color: var(--sr-text);
@@ -345,7 +410,7 @@ html.sr-compact .sr-status {
 .sr-glyph {
   width: 13px;
   height: 13px;
-  box-shadow: 0 0 0 3px rgba(232, 236, 242, 0.08);
+  box-shadow: 0 0 0 3px var(--sr-line);
 }
 
 .sr-glyph--station,
@@ -405,6 +470,11 @@ html.sr-compact .sr-status {
 .sr-swatch--exotic {
   background: var(--sr-exotic);
 }
+.sr-glyph--earthevent,
+.sr-swatch--earthevent {
+  background: var(--sr-site);
+}
+
 .sr-glyph--storm,
 .sr-swatch--storm {
   background: var(--sr-storm);
@@ -471,20 +541,21 @@ html.sr-compact .sr-status {
 .sr-card__micro {
   grid-column: 1;
   margin: 0;
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text-dim);
 }
 
-/* The serif of row D waits for the font budget (0061 task 5); until then the guide's fallback,
-   Inter 600 at three quarters of its size. Two lines, then an ellipsis; the name is in `title`. */
+/* The name, in Inter 600 (the serif of 0061 task 5 was rejected on 2026-10-03). Two lines, then an
+   ellipsis; the name is in `title`. The bottom padding is the room a clipped box owes the descenders. */
 .sr-card__name {
   grid-column: 1;
   display: -webkit-box;
   margin: 0;
+  padding-bottom: 2px;
   overflow: hidden;
-  font: 600 22px/1.1 var(--sr-font);
+  font: 600 var(--sr-fs-name-sm)/1.1 var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -537,7 +608,7 @@ html.sr-compact .sr-status {
 
 .sr-hero__num {
   overflow: hidden;
-  font: 400 20px/1.1 var(--sr-font-mono);
+  font: 400 var(--sr-fs-num-sm)/1.1 var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
   white-space: nowrap;
@@ -547,7 +618,7 @@ html.sr-compact .sr-status {
 /* A long value (the Moon's distance, a craft's in millions of km) steps down, never out of its
    column: seven characters fit a 111 px column at 20 px, ten do not. */
 .sr-hero__num[data-long='2'] {
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   line-height: 22px;
 }
 
@@ -557,7 +628,7 @@ html.sr-compact .sr-status {
 
 .sr-hero__unit {
   overflow: hidden;
-  font: 400 13px/16px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
   color: var(--sr-text-dim);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -581,7 +652,7 @@ html.sr-compact .sr-status {
   min-width: 0;
   height: 52px;
   padding: 0 var(--sp-1);
-  font: 400 13px/16px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
   color: var(--sr-text);
   background: var(--sr-wash);
   border: 0;
@@ -651,13 +722,13 @@ html.sr-compact .sr-status {
 }
 
 .sr-light__now {
-  font: 400 15px/20px var(--sr-font);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
   color: var(--sr-text);
 }
 
 .sr-light__next,
 .sr-light__axis {
-  font: 400 13px/16px var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
   white-space: nowrap;
@@ -696,7 +767,7 @@ html.sr-compact .sr-status {
   min-height: 44px;
   margin: 0 calc(-1 * var(--sp-2));
   padding: var(--sp-3) var(--sp-2);
-  font: 400 15px/20px var(--sr-font);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
   color: var(--sr-text);
   text-align: left;
   background: transparent;
@@ -719,7 +790,7 @@ html.sr-compact .sr-status {
 
 .sr-disc__hint {
   flex: 0 0 auto;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 16px;
   color: var(--sr-text-dim);
 }
@@ -797,9 +868,34 @@ html.sr-compact .sr-status {
   border-radius: var(--sr-radius);
 }
 
+/* "Remind me" and "Seen it" (public #395): two quiet buttons side by side on the card. */
+.sr-card__sky {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.sr-card__sky .sr-card__inline[aria-pressed='true'] {
+  color: var(--sr-text);
+  border-color: var(--sr-ember);
+}
+
+/* The object's own page (internal #199): one quiet link at the foot of About it. */
+.sr-card__page {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+
+.sr-card__page[hidden] { display: none; }
+.sr-card__page:hover { color: var(--sr-ember-light); }
+
 /* What goes inside them: today's sections, in the guide's type roles. */
 .sr-card__sentence {
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 22px;
 }
 
@@ -809,13 +905,17 @@ html.sr-compact .sr-status {
 .sr-card__why {
   padding-left: var(--sp-3);
   border-left: 2px solid var(--sr-line-strong);
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 22px;
 }
 
 /* A photograph of the object, where one exists. Two of the exotics have been photographed and the
    pictures ship under CC BY 4.0, which asks for the credit "in a clear and readable manner to all
    users". So the caption is part of the figure, at the 13 px floor, never a tooltip or a hover. */
+.sr-card__figure {
+  margin: 0 0 var(--sp-3);
+}
+
 .sr-card__photo {
   display: block;
   width: 100%;
@@ -826,14 +926,14 @@ html.sr-compact .sr-status {
 
 .sr-card__photo-credit {
   margin: var(--sp-2) 0 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   color: var(--sr-text-dim);
 }
 
 .sr-card__label {
   margin: 0 0 var(--sp-2);
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text-dim);
@@ -848,14 +948,14 @@ html.sr-compact .sr-status {
 
 .sr-rows__key {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   color: var(--sr-text-dim);
 }
 
 .sr-rows__val {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -877,13 +977,13 @@ html.sr-compact .sr-status {
 }
 
 .sr-compare__item {
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   font-variant-numeric: tabular-nums;
 }
 
 .sr-card__seeline {
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 22px;
 }
 
@@ -896,7 +996,7 @@ html.sr-compact .sr-status {
 .sr-card__fact,
 .sr-card__fact-note {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   font-variant-numeric: tabular-nums;
 }
@@ -907,7 +1007,7 @@ html.sr-compact .sr-status {
 
 .sr-card__drawn,
 .sr-card__source {
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
 }
 
@@ -925,7 +1025,7 @@ html.sr-compact .sr-status {
 
 .sr-card__cls {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
@@ -970,13 +1070,13 @@ html.sr-compact .sr-status {
    with no source is a rumour going the other way. */
 .sr-card__myth {
   margin: 0 0 var(--sp-1);
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 22px;
 }
 
 .sr-card__mythsource {
   margin: 0 0 var(--sp-3);
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   color: var(--sr-text-dim);
 }
@@ -996,7 +1096,7 @@ html.sr-compact .sr-status {
   margin: 0 0 var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   font: inherit;
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 20px;
   text-align: left;
   color: var(--sr-text);
@@ -1019,7 +1119,7 @@ html.sr-compact .sr-status {
 
 .sr-card__aboardnote {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   color: var(--sr-text-dim);
 }
@@ -1045,8 +1145,8 @@ html.sr-compact .sr-status {
 /* ------------------------------------------------------------------------------------ */
 
 .sr-status__intro {
-  margin: 0 0 10px;
-  font-size: 13px;
+  margin: 0 0 var(--sp-2);
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1054,18 +1154,15 @@ html.sr-compact .sr-status {
 /* What the harvester's manifest said. Dim like the intro; the slate of "never read" when it
    could not be read at all, because every source below is then live or absent. */
 .sr-status__harvest {
-  margin: -4px 0 10px;
-  font-size: 13px;
+  margin: -4px 0 var(--sp-2);
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
 
-.sr-status__harvest.is-unavailable {
-  color: var(--sr-unread);
-}
 
 .sr-status__block {
-  margin-top: 14px;
+  margin-top: var(--sp-3);
   padding-top: 12px;
   border-top: 1px solid var(--sr-line);
 }
@@ -1078,8 +1175,21 @@ html.sr-compact .sr-status {
   list-style: none;
 }
 
+/* "Is this what space looks like?" (internal #250): a kind of picture, then what it is. */
+.sr-status__lookkinds,
+.sr-status__lookkinds dd {
+  margin: 0;
+}
+
+.sr-status__lookkind {
+  font-size: var(--sr-fs-sm);
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--sr-text);
+}
+
 .sr-source {
-  padding: 7px 0;
+  padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--sr-line);
 }
 
@@ -1096,7 +1206,7 @@ html.sr-compact .sr-status {
 .sr-source__label {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1104,13 +1214,13 @@ html.sr-compact .sr-status {
 
 .sr-source__age {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
 
 .sr-source__error {
-  margin: 3px 0 0;
-  font-size: 13px;
+  margin: var(--sp-1) 0 0;
+  font-size: var(--sr-fs-sm);
   line-height: 1.35;
   color: var(--sr-text-dim);
   overflow-wrap: anywhere;
@@ -1119,8 +1229,8 @@ html.sr-compact .sr-status {
 /* Three states, and the third is not a decoration on the other two. */
 .sr-state {
   flex: 0 0 auto;
-  padding: 2px 9px;
-  font-size: 13px;
+  padding: 2px 8px;
+  font-size: var(--sr-fs-sm);
   font-weight: 600;
   letter-spacing: 0.01em;
   border: 1px solid currentcolor;
@@ -1135,10 +1245,11 @@ html.sr-compact .sr-status {
   color: var(--sr-stale);
 }
 
-/* Never read: slate and dashed, so it reads as absence rather than as health. */
+/* Never read: a slate, dashed outline, so it reads as absence rather than as health. The WORDS
+   are --sr-text-dim: --sr-unread is a graphic's grey, 3.04:1 on glass over a cloud. */
 .sr-state--unknown {
-  color: var(--sr-unread);
-  border-style: dashed;
+  color: var(--sr-text-dim);
+  border: 1px dashed var(--sr-unread);
 }
 
 .sr-source.is-unknown .sr-source__label {
@@ -1149,13 +1260,13 @@ html.sr-compact .sr-status {
   display: flex;
   gap: 8px;
   align-items: baseline;
-  padding: 5px 0;
+  padding: var(--sp-1) 0;
 }
 
 .sr-kind__name {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1163,7 +1274,7 @@ html.sr-compact .sr-status {
 
 .sr-kind__state {
   flex: 0 0 auto;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
 
@@ -1180,14 +1291,14 @@ html.sr-compact .sr-status {
 .sr-kind__count {
   flex: 0 0 auto;
   min-width: 74px;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   text-align: right;
   color: var(--sr-text-dim);
 }
 
 .sr-credit {
-  padding: 3px 0;
-  font-size: 13px;
+  padding: var(--sp-1) 0;
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1248,6 +1359,30 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   pointer-events: none !important;
   transition: none !important;
 }
+
+/* THE OPENING SHOT (public #287, main.js runOpening): for the eight seconds a first visit's camera
+   comes in, the panels are away, as on a clear screen and by the same means; the boot screen keeps
+   its own fade and the shot's words (ui/opening.js) stay. Any input removes the class. */
+html.sr-opening-on body > *:not(.sr-scene):not(.sr-veil):not(.sr-opening):not(#boot) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+/* THE HUD SCREEN (Shift+H, spec 0046 task 3): the panels go as on a clear screen; what is about the
+   scene stays: the labels, the reticle with its tag and chevron (#sr-hud), and the time pill, which
+   is brought back out of the hidden shell below. */
+html.sr-hud body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean):not(#labels):not(#sr-hud) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+html.sr-hud #sr-time {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
 /* ------------------------------------------------------------------------------------ */
 /* prefers-reduced-motion: the scrub stays, because it is a control, not decoration.       */
 /* ------------------------------------------------------------------------------------ */
@@ -1284,7 +1419,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 
 .sr-search__row {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   align-items: stretch;
 }
 
@@ -1292,10 +1427,10 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   flex: 1 1 140px;
   min-width: 0;
   min-height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--sp-3);
   font: inherit;
   color: var(--sr-text);
-  background: var(--sr-raise);
+  background: var(--sr-wash);
   border: 1px solid var(--sr-line-strong);
   border-radius: var(--sr-radius-sm);
 }
@@ -1317,7 +1452,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 
 /* The glass, edge and corners are .sr-float's. */
 .sr-search__pop {
-  margin-top: 6px;
+  margin-top: var(--sp-2);
   overflow: hidden;
 }
 
@@ -1339,20 +1474,61 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   display: flex;
   gap: 8px;
   align-items: center;
-  min-height: 40px; /* a real tap target, the same 40 px as the buttons */
-  padding: 4px 10px;
+  min-height: 44px; /* a list row (docs/ui-guide.md section 3.5): 44 px, 12 px to the side; internal #336 */
+  box-sizing: border-box;
+  flex: 0 0 auto; /* a row never gives up its height to a short list or a scroller */
+  padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
   border-left: 2px solid transparent;
 }
+
+/* A row's class icon (ui/searchrows.js rowIcon): 16 px in the class colour, in the seat the 9 px
+   dot had, so the names still line up under each other. */
+.sr-search__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin: 0 -4px;
+}
+
+/* The ink is the class colour, as the dot's fill was (a stroke, not text: the icon is a mark). */
+.sr-search__icon .sr-icon { stroke: var(--sr-unknown); }
+
+.sr-ink--station .sr-icon { stroke: var(--sr-station); }
+.sr-ink--satellite .sr-icon { stroke: var(--sr-satellite); }
+.sr-ink--rocket .sr-icon { stroke: var(--sr-rocket); }
+.sr-ink--probe .sr-icon { stroke: var(--sr-probe); }
+.sr-ink--telescope .sr-icon { stroke: var(--sr-telescope); }
+.sr-ink--site .sr-icon { stroke: var(--sr-site); }
+.sr-ink--world .sr-icon { stroke: var(--sr-world); }
+.sr-ink--star .sr-icon { stroke: var(--sr-star); }
+.sr-ink--exoplanet .sr-icon { stroke: var(--sr-exoplanet); }
+.sr-ink--dso .sr-icon { stroke: var(--sr-dso); }
+.sr-ink--storm .sr-icon { stroke: var(--sr-storm); }
+.sr-ink--oddity .sr-icon { stroke: var(--sr-probe); }
 
 .sr-search__option + .sr-search__option {
   border-top: 1px solid var(--sr-line);
 }
 
+/* On a phone a finger needs the 44 px INSIDE the row after the 1 px rule between two rows and the
+   rounding of a scrolled list: the ui gate measured Marfik and Marsic B at 42 and 24 (CI, 2026-10-08). */
+html.sr-phone .sr-search__option,
+html.sr-phone .sr-search__option--rich {
+  min-height: 48px;
+}
+
+@media (pointer: coarse) {
+  .sr-search__option {
+    min-height: 48px;
+  }
+}
+
 .sr-search__name {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 13.5px;
+  font-size: var(--sr-fs-body);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1362,7 +1538,24 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 .sr-search__where {
   flex: 0 1 auto;
   max-width: 42%;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A row that says what it is (ui/searchrows.js): the name, and one quiet line under it. */
+.sr-search__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sr-search__what {
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1392,8 +1585,8 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 /* The footer: what the list could not show, and what the index could not see. */
 .sr-search__foot {
   margin: 0;
-  padding: 7px 10px;
-  font-size: 13px;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
   border-top: 1px solid var(--sr-line);
@@ -1405,7 +1598,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 
 .sr-search__note {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1473,11 +1666,10 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 /* ------------------------------------------------------------------------------------ */
 
 :root {
-  --sr-z-trip: 60;
-  /* The veil (ui/veil.js, spec 0034): over the canvas and the labels, under every panel, the card
-     and the trip's bars. It is mounted on <body> beside the canvas, not inside the trip frame: the
-     frame is its own stacking context at 60, and the old fade in it covered the card too. */
-  --sr-z-veil: 8;
+  /* The veil (ui/veil.js, spec 0034) is --sr-z-veil, 8: over the canvas and the labels, under
+     every panel, the card and the trip's bars. It is mounted on <body> beside the canvas, not
+     inside the trip frame: the frame is its own stacking context at --sr-z-trip, and the old fade
+     in it covered the card too. Both are in the ladder at the top of this file. */
   /* The trip toolbar: 56 px over the scene on a desktop (row D's action buttons), and on a phone
      a 60 px foot under the trip's sheet (44 px targets and 8 px around them). */
   --sr-trip-bar: 56px;
@@ -1516,6 +1708,15 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 #labels .label.is-dimmed {
   opacity: 0.6;
   transition: opacity 200ms var(--sr-ease);
+}
+
+/* IN PRESENT MODE A STOP SHOWS ITS OWN NAME AND NO OTHER (internal #400, 2026-10-06). On a wall,
+   under a caption, "Ryugu", "Eros" and "Hubble Space Telescope" floating round a stop about the
+   Moon read as part of the lesson. The stop's subject keeps its name, a figure keeps its own (the
+   sky labels are the stop's picture), and a stop that is ABOUT several things says `names: true`
+   in registry/tours.yaml, which ui/tripframe.js puts on <html> as data-trip-names. */
+html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subject):not(.sr-sky-label):not([data-kind='selection']) {
+  opacity: 0;
 }
 
 @keyframes sr-label-in {
@@ -1631,6 +1832,14 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   background: var(--sr-wash-strong);
 }
 
+/* THE SENTENCE BEING SAID (spec 0069, ui/voicecue.js): the selected row's wash over the card's
+   own words, painted by the browser from a range, so the card's DOM is not touched. Text on
+   ember-soft stays --sr-text (docs/ui-guide.md §2.1: 7.24 over a cloud). */
+::highlight(sr-voice) {
+  color: var(--sr-text);
+  background-color: var(--sr-ember-soft);
+}
+
 /* On: the card folded away, the sound playing. The selected state's fill (docs/ui-guide.md §3). */
 .sr-trip__tb[aria-pressed='true'] {
   background: var(--sr-wash-strong);
@@ -1683,7 +1892,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 }
 
 .sr-trip__count {
-  font: 400 13px/16px var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
 }
@@ -1743,7 +1952,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 
 .sr-trip__stopname {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
 }
 
 /* --- the top bar: the trip's title, its chapter, Leave ------------------------------------ */
@@ -1777,7 +1986,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 .sr-trip__chapter {
   margin: 0;
   overflow: hidden;
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   color: var(--sr-text-dim); /* not ember: ember is the one interactive colour, and this is not */
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1809,7 +2018,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  font: 600 14px/20px var(--sr-font);
+  font: 600 var(--sr-fs-label)/20px var(--sr-font);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1821,7 +2030,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   align-items: center;
   height: 40px;
   padding: 0 var(--sp-4) 0 var(--sp-3);
-  font: 400 14px/20px var(--sr-font);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
   color: var(--sr-text);
   cursor: pointer;
   background: var(--sr-wash);
@@ -1834,8 +2043,29 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   background: var(--sr-wash-strong);
 }
 
+/* Return to base, beside Leave (public #241): the same wash, round, an icon. */
+.sr-trip__home {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--sr-text);
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: 50%;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-trip__home:active {
+  background: var(--sr-wash-strong);
+}
+
 @media (hover: hover) {
-  .sr-trip__leave:hover {
+  .sr-trip__leave:hover,
+  .sr-trip__home:hover {
     background: var(--sr-wash-hover);
   }
 }
@@ -1914,7 +2144,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 
 .sr-tripsheet__micro {
   margin: 0;
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text-dim);
@@ -1924,12 +2154,13 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   margin: var(--sp-6) 0 var(--sp-2);
 }
 
-/* The card's name, and the same fallback until the serif ships (0061 task 5). */
+/* The card's name role: the trip's title on the intro and the end. */
 .sr-tripsheet__name {
   display: -webkit-box;
   margin: 0;
+  padding-bottom: 2px;
   overflow: hidden;
-  font: 600 28px/1.1 var(--sr-font);
+  font: 600 var(--sr-fs-name)/1.1 var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -1943,20 +2174,20 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 
 .sr-tripsheet__meta {
   margin: var(--sp-1) 0 0;
-  font: 400 13px/16px var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
 
 .sr-tripsheet__text {
   margin: 0 0 var(--sp-3);
-  font: 400 15px/22px var(--sr-font);
+  font: 400 var(--sr-fs-body)/22px var(--sr-font);
   color: var(--sr-text);
 }
 
 .sr-tripsheet__note {
   margin: 0 0 var(--sp-3);
-  font: 400 13px/18px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text-dim);
 }
 
@@ -1975,7 +2206,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   justify-content: center;
   height: 48px;
   padding: 0 var(--sp-4);
-  font: 600 14px/20px var(--sr-font);
+  font: 600 var(--sr-fs-label)/20px var(--sr-font);
   color: var(--sr-ink);
   cursor: pointer;
   background: var(--sr-ember);
@@ -2021,7 +2252,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   min-height: 44px;
   margin: var(--sp-1) 0 0 calc(-1 * var(--sp-1));
   padding: 0 var(--sp-1);
-  font: 400 14px/20px var(--sr-font);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
   color: var(--sr-text-soft);
   cursor: pointer;
   background: transparent;
@@ -2049,7 +2280,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   min-height: 44px;
   margin: 0 calc(-1 * var(--sp-2));
   padding: var(--sp-3) var(--sp-2);
-  font: 400 15px/20px var(--sr-font);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
   color: var(--sr-text);
   text-align: left;
   cursor: pointer;
@@ -2062,7 +2293,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 .sr-tripsheet__stopn {
   flex: 0 0 auto;
   min-width: 20px;
-  font: 400 13px/20px var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/20px var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
@@ -2109,9 +2340,19 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
    the home view's own trip card. */
 .sr-tripsheet__actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Three, or four after a trip that moved the map's centre (Keep flying, Go home): equal columns. */
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   gap: var(--sp-2);
   padding: var(--sp-1) 0 0;
+}
+
+/* Four of them are two rows of two. In one row each is 73 px wide in the sidebar, and "Keep
+   flying" and "Watch again" were cut to "Keep fly..." and "Watch a..." on the one screen whose
+   whole job is to say what happens next (SEEN 2026-10-06, after public #447 added the fourth). */
+.sr-tripsheet__actions.is-four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row;
 }
 
 .sr-side .sr-tripsheet .sr-act {
@@ -2139,7 +2380,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   align-items: center;
   min-width: 0;
   margin: var(--sp-1) 0 0;
-  font: 400 15px/20px var(--sr-font);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
   color: var(--sr-text);
 }
 
@@ -2159,7 +2400,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 .sr-card__when,
 .sr-card__tripline {
   margin: var(--sp-1) 0 0;
-  font: 400 13px/18px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
@@ -2173,10 +2414,60 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   margin-top: var(--sp-2);
 }
 
+/* An Earth overlay's legend (ui/overlaylegend.js): the name, GIBS's own colour ramp, its two
+   ends in mono. In the stop card's foot above the honesty line, and in What to show. */
+.sr-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-1) var(--sp-2);
+  margin: var(--sp-2) 0 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-legend[hidden] { display: none; }
+
+/* The same legend on the Earth's card while a map is over the globe (ui/cards.js overlayBlock). */
+.sr-card__overlay {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.sr-card__overlay[hidden] { display: none; }
+
+/* And in the sidebar's Earth tab, when no card and no panel shows it (ui/overlaykey.js). */
+.sr-overlaykey { display: grid; gap: var(--sp-2); }
+.sr-overlaykey[hidden] { display: none; }
+.sr-overlaykey__line { margin: 0; font: 400 var(--sr-fs-sm)/18px var(--sr-font); color: var(--sr-text-dim); }
+.sr-overlaykey__line[hidden] { display: none; }
+.sr-overlaykey > .sr-more { justify-self: start; margin-top: 0; }
+.sr-legend__title { grid-column: 1 / -1; color: var(--sr-text); }
+.sr-legend__ramp { grid-column: 1 / -1; height: 8px; border-radius: var(--sr-radius-sm); }
+
+.sr-legend__low,
+.sr-legend__high {
+  font-family: var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-legend__high { text-align: right; }
+
+/* Constellation figures' names (scene/figures3d.js): the figure in the microlabel role, its
+   stars in the label role, each fading in as the stroke reaches it. */
+#labels .label.sr-sky-label { transition: opacity var(--sr-slow) var(--sr-ease); }
+
+#labels .label.sr-sky-label[data-sky='figure'] {
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
 /* The stop's words: ONE paragraph under the numbers, and the line the trip generates under it. */
 .sr-card__leadbody {
   margin: var(--sp-4) 0 0;
-  font: 400 15px/22px var(--sr-font);
+  font: 400 var(--sr-fs-body)/22px var(--sr-font);
   color: var(--sr-text);
 }
 
@@ -2184,7 +2475,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
    repaints with the clock and it would replay. */
 .sr-card__leadnote {
   margin: var(--sp-2) 0 0;
-  font: 400 13px/18px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text-dim);
 }
 
@@ -2289,6 +2580,11 @@ html.sr-phone .sr-trip__tb {
   .sr-trip__leave {
     height: 44px;
   }
+
+  .sr-trip__home {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 html.sr-phone .sr-trip__leave {
@@ -2304,18 +2600,50 @@ html.sr-phone .sr-trip__progress {
   padding: 0;
 }
 
-/* Seven 44 px targets and the counter need 372 px. A narrower phone keeps the controls a trip
-   cannot do without and drops what has a key or another door: Replay below 380 px (R, or
-   previous and next), Share below 340 (the end card has it). No horizontal scroll at 320 (SC
-   1.4.10). */
-@media (max-width: 379px) {
+/* Nine 44 px targets and the counter need 460 px (Present made nine, public #441; the comment
+   here said eight and 416 until 2026-10-06, and on a 390 px phone the ninth, Present, hung 18 px
+   off the right edge of every stop). A narrower phone keeps the controls a trip cannot do without
+   and drops what has another door, in this order (internal #329): Replay below 460 px (previous
+   then next flies the move again), Share below 416 (the end card has it), Present below 372 (the
+   intro has it), Voice below 328 (the intro has it, and Sound silences both). Voice is LAST: it
+   once went first, and on most phones there was then no way mid-trip to keep the music and drop
+   the voice. No horizontal scroll at 320 (SC 1.4.10): five targets and the counter are 284. */
+@media (max-width: 459px) {
   html.sr-phone .sr-trip__tb--replay {
     display: none;
   }
 }
 
-@media (max-width: 339px) {
+@media (max-width: 415px) {
   html.sr-phone .sr-trip__tb--share {
+    display: none;
+  }
+}
+
+@media (max-width: 371px) {
+  html.sr-phone:not(.sr-present) .sr-trip__tb--present {
+    display: none;
+  }
+}
+
+@media (max-width: 327px) {
+  html.sr-phone .sr-trip__tb--voice {
+    display: none;
+  }
+}
+
+/* Present mode has its own nine less three (no Replay, Share or Hide card; Auto and Full screen
+   instead): eight targets, 416 px. Full screen goes below that (a phone's browser already gives
+   the page the screen, and iOS has no such call for a page), then Auto; Present stays at every
+   width, because it is the way back out. */
+@media (max-width: 415px) {
+  html.sr-phone.sr-present .sr-trip__tb--full {
+    display: none;
+  }
+}
+
+@media (max-width: 371px) {
+  html.sr-phone.sr-present .sr-trip__tb--auto {
     display: none;
   }
 }
@@ -2349,6 +2677,15 @@ html[data-trip-phase] .sr-tripsheet.is-floating {
   padding-bottom: var(--sp-3);
 }
 
+/* THE WAY HOME (`return: true`, internal #304): in present mode the last stop's caption is put
+   down for the one flight back, and the end card comes up at home. The panel's card stays, as it
+   does over any flight (an empty panel for twenty seconds was worse, seen 2026-10-08). */
+html[data-trip-returning] .sr-tripsheet.is-present {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sr-slow) var(--sr-ease);
+}
+
 html[data-trip-phase='intro'] .sr-tripsheet.is-floating,
 html[data-trip-phase='outro'] .sr-tripsheet.is-floating {
   bottom: 0;
@@ -2370,7 +2707,7 @@ html.sr-trip-collapsed .sr-tripsheet.is-floating {
 
 .sr-tripsheet.is-floating .sr-tripsheet__name,
 .sr-tripsheet.is-floating .sr-card__name {
-  font-size: 22px;
+  font-size: var(--sr-fs-name-sm);
 }
 
 /* The phone's sheet and toolbar take glass-strong over .sr-float's glass, so they answer the solid
@@ -2389,6 +2726,22 @@ html.sr-trip-collapsed .sr-tripsheet.is-floating {
   }
 }
 
+/* A screen that plays on its own (ui/autopilot.js, spec 0036; the rest is css/autopilot.css,
+   linked with it). Here because main.js sets the class before the first panel is built. */
+html.sr-ambient {
+  --sr-scene-left: 0px;
+}
+
+html.sr-ambient :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint) {
+  display: none;
+}
+
+/* A drawn world on its plain star stage (scene/exostage.js, `#imagine=N`; the rest is
+   css/exoface.css, linked with it): the map's chrome, labels and reticle stand down. */
+html.sr-imagine-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card) {
+  display: none;
+}
+
 /* A toast during a trip sits over the toolbar on a desktop, under the top bar on a phone. */
 html.sr-trip-mode .sr-toast {
   top: auto;
@@ -2396,7 +2749,9 @@ html.sr-trip-mode .sr-toast {
   left: calc(50% + var(--sr-scene-left) / 2);
 }
 
-html.sr-trip-mode.sr-phone .sr-toast {
+html.sr-trip-mode.sr-phone .sr-toast,
+html.sr-trip-mode.sr-phone.sr-card-open .sr-toast,
+html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
   top: calc(var(--sp-2) + 52px + var(--sp-3) + env(safe-area-inset-top, 0px));
   bottom: auto;
   left: 50%;
@@ -2444,8 +2799,8 @@ html.sr-trip-mode.sr-phone .sr-toast {
 /* A world's note about how it is drawn (spec 0028 step 0) ------------------------------- */
 
 .sr-card__note {
-  margin: 0 0 10px;
-  font-size: 13px;
+  margin: 0 0 var(--sp-2);
+  font-size: var(--sr-fs-sm);
   line-height: 1.45;
   color: var(--sr-text-dim);
 }
@@ -2454,16 +2809,16 @@ html.sr-trip-mode.sr-phone .sr-toast {
 
 .sr-pick {
   position: fixed;
-  z-index: calc(var(--sr-z-card) + 1);
+  z-index: var(--sr-z-pop);
   min-width: 220px;
   max-width: min(320px, calc(100vw - 16px));
   margin: 0;
-  padding: 6px;
+  padding: var(--sp-2);
   list-style: none;
-  background: var(--sr-raise);
+  background: var(--sr-wash);
   border: 1px solid var(--sr-line-strong);
   border-radius: var(--sr-radius-sm);
-  box-shadow: 0 12px 32px rgba(5, 7, 10, 0.55);
+  box-shadow: var(--sr-shadow);
 }
 
 .sr-pick[hidden] { display: none; }
@@ -2486,15 +2841,15 @@ html.sr-trip-mode.sr-phone .sr-toast {
 }
 
 .sr-pick__btn:hover,
-.sr-pick__btn:focus-visible { background: rgba(255, 255, 255, 0.06); }
+.sr-pick__btn:focus-visible { background: var(--sr-wash); }
 
 .sr-pick__name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.sr-pick__where { flex: 0 0 auto; font-size: 13px; color: var(--sr-text-dim); }
+.sr-pick__where { flex: 0 0 auto; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
 
 .sr-pick__hint {
-  padding: 6px 8px 2px;
-  font-size: 13px;
+  padding: var(--sp-2) var(--sp-2) 2px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
 
@@ -2504,7 +2859,8 @@ html.sr-trip-mode.sr-phone .sr-toast {
    Eclipses are computed, not objects in the scene: nothing to fly to either (spec 0031). */
 .sr-next__row[data-kind='shower'],
 .sr-next__row[data-kind='solar-eclipse'],
-.sr-next__row[data-kind='lunar-eclipse'] { cursor: default; }
+.sr-next__row[data-kind='lunar-eclipse'],
+.sr-next__row[data-kind='season'] { cursor: default; }
 
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
@@ -2516,82 +2872,131 @@ html.sr-trip-mode.sr-phone .sr-toast {
   padding: 0 8px;
   font: inherit;
   color: var(--sr-text);
-  background: var(--sr-raise);
+  background: var(--sr-wash);
   border: 1px solid var(--sr-line-strong);
   border-radius: var(--sr-radius-sm);
 }
 
 .sr-colourkey__legend { margin: 0; padding: 0; list-style: none; }
 
-.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; }
+.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: var(--sp-1) 0; font-size: var(--sr-fs-sm); }
 
 .sr-colourkey__label { flex: 1 1 auto; color: var(--sr-text-dim); }
 
 .sr-colourkey__count { flex: 0 0 auto; }
-.sr-colourkey__scope { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
-.sr-colourkey__scope { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__scope { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__scope { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
 
 /* The card's trajectory chart (spec 0026 req 14) ---------------------------------------- */
 
-.sr-traj { display: block; width: 100%; height: auto; margin: 4px 0 6px; }
+.sr-traj { display: block; width: 100%; height: auto; margin: var(--sp-1) 0 var(--sp-2); }
 .sr-traj__axis, .sr-traj__equator { stroke: var(--sr-line); stroke-width: 1; }
-.sr-traj__map { fill: var(--sr-raise); stroke: var(--sr-line); stroke-width: 1; }
+.sr-traj__map { fill: var(--sr-wash); stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__line { fill: none; stroke: var(--sr-satellite); stroke-width: 1.5; }
 .sr-traj__now { fill: var(--sr-ember); }
-.sr-traj__label { fill: var(--sr-text-dim); font-size: 11px; font-family: inherit; }
+.sr-traj__label { fill: var(--sr-text-dim); font-size: var(--sr-fs-unit); font-family: inherit; }
 
 /* Space weather, one line (spec 0026 req 16) ----------------------------------------------- */
 
-.sr-status__weather { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: var(--sr-text); }
+.sr-status__weather { margin: 0 0 var(--sp-2); font-size: var(--sr-fs-sm); line-height: 1.45; color: var(--sr-text); }
 
 /* The note on the scene when no satellite could be read (ui/scenenote.js) ------------------ */
 
 .sr-scenenote {
   position: fixed;
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 30; /* over the scene and its labels, under the panels, the card and the mark */
-  width: min(440px, calc(100vw - 32px));
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px 10px;
-  align-items: start;
-  padding: 10px 12px;
-  background: var(--sr-panel);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
+  top: calc(var(--sr-inset, 20px) + env(safe-area-inset-top, 0px));
+  left: calc(50% + var(--sr-scene-left, 0px) / 2);
+  z-index: var(--sr-z-controls); /* over the scene and its labels, under the card and the rail's popover */
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  /* Its words' own width, up to the cap: a fixed box at `left: 50%` is otherwise fitted to the
+     half of the window to its right, and on a 390 px phone "Satellites could not be read." came
+     out one word to a line, four lines tall, over the HUD tag (SEEN 2026-10-06). */
+  width: max-content;
+  max-width: min(520px, calc(100vw - var(--sr-scene-left, 0px) - 2 * var(--sp-4) - 96px));
+  min-height: 44px;
+  padding: 0 var(--sp-1) 0 var(--sp-4);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text);
-  font-size: 13px;
-  line-height: 1.45;
+  background: var(--sr-glass-strong);
+  transform: translateX(-50%);
 }
+
 .sr-scenenote[hidden] { display: none; }
-.sr-scenenote__text { margin: 0; grid-column: 1; }
+
+/* One line: the satellite line is written to fit; a deep link's own line may run to two. */
+.sr-scenenote__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: var(--sp-2) 0;
+}
+
+.sr-scenenote__why,
 .sr-scenenote__close {
-  grid-column: 2; grid-row: 1;
-  appearance: none; background: none; border: 0; color: var(--sr-text-dim);
-  font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer;
+  flex: 0 0 auto;
+  min-height: 32px;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), background-color var(--sr-fast) var(--sr-ease);
 }
-.sr-scenenote__close:hover { color: var(--sr-ember); }
-.sr-scenenote__why { grid-column: 1; justify-self: start; }
+
+.sr-scenenote__why {
+  padding: 0 var(--sp-1);
+  color: var(--sr-ember);
+}
+
+.sr-scenenote__why[hidden] { display: none; }
+
+.sr-scenenote__close {
+  width: 32px;
+  padding: 0;
+  font-size: var(--sr-fs-glyph);
+  color: var(--sr-text-soft);
+}
+
+@media (hover: hover) {
+  .sr-scenenote__why:hover { color: var(--sr-ember-light); }
+  .sr-scenenote__close:hover { color: var(--sr-text); background-color: var(--sr-wash-hover); }
+}
+
+@media (pointer: coarse) {
+  .sr-scenenote__why,
+  .sr-scenenote__close { min-height: 44px; }
+  .sr-scenenote__close { width: 44px; }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-scenenote { background: var(--sr-glass-solid); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-scenenote { background: var(--sr-glass-solid); }
+}
+
 html.sr-trip-mode .sr-scenenote { display: none; }
-@media (max-width: 600px) {
-  /* Under the GitHub mark, which sits in the top-right corner of a phone. */
-  .sr-scenenote { top: calc(56px + env(safe-area-inset-top, 0px)); }
-}
 
 /* Share and the postcard (spec 0033, 2026-09-23) ------------------------------------------- */
 
 /* One line, one at a time, over everything including the trip frame, and never a control: it
-   says what just happened ("Link copied") and goes. Top centre; during a trip, over its toolbar
-   (the trip section). */
+   says what just happened ("Link copied") and goes. Bottom centre of the scene area, 12 px above
+   the time pill (docs/ui-guide.md §3.14); during a trip, over its toolbar (the trip section).
+   It was top centre until 2026-10-06, which was harmless while a toast was a rare "Link copied":
+   the undo toast (ui/camundo.js) comes with EVERY search result, list row and link, and up there
+   it lay across the HUD tag of the thing just arrived at (SEEN in the walk of that day: "Moved
+   to Mars" over Mars's name and distance). */
 .sr-toast {
   position: fixed;
-  top: calc(56px + env(safe-area-inset-top, 0px));
-  left: 50%;
+  bottom: calc(var(--sp-5) + var(--sr-time-h) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  left: calc(50% + var(--sr-scene-left, 0px) / 2);
   transform: translateX(-50%);
-  z-index: calc(var(--sr-z-trip, 60) + 5);
-  max-width: min(520px, calc(100vw - 32px));
+  z-index: var(--sr-z-toast);
+  width: max-content;
+  max-width: min(520px, calc(100vw - var(--sr-scene-left, 0px) - 32px));
   padding: 10px 16px;
   /* Opaque: it lands on the scene note's spot on a phone, and two lines of text through one
      another read as neither (measured at 390 x 844, 2026-09-23). */
@@ -2599,20 +3004,43 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   border: 1px solid var(--sr-line-strong);
   border-radius: var(--sr-radius-pill);
   color: var(--sr-text);
-  font-size: 13.5px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.35;
   overflow-wrap: anywhere;
   /* Selectable: when the clipboard refuses, the toast carries the link itself for eight seconds. */
   user-select: text;
 }
 .sr-toast[hidden] { display: none; }
+/* The toast's one text action (ui-guide §3.14; ui/offline.js "Reload"): text, not a filled button. */
+.sr-toast__action {
+  margin-left: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
+  min-height: 24px;
+  background: none;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  color: var(--sr-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  /* The action is one phrase: on a narrow screen it goes to the next line whole, never
+     "Back to where you / were" in three lines over the subject. */
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sr-toast__action:hover { color: var(--sr-text-soft); }
+.sr-toast__action:active { color: var(--sr-text-dim); }
+@media (pointer: coarse) {
+  .sr-toast__action { min-height: 44px; min-width: 44px; }
+}
 
 /* Sound (spec 0035, 2026-09-23) ------------------------------------------------------------ */
 
 
 .sr-sound__note {
   margin: 0 0 8px;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
 
@@ -2628,7 +3056,7 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   min-height: 36px;
   padding: 0 var(--sp-2);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
   background: transparent;
   border: 1px solid var(--sr-line);
@@ -2643,8 +3071,31 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 
 .sr-density__note {
   margin: var(--sp-2) 0 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
+}
+
+/* The shutter on a deep-sky card (spec 0067): the density row's own look (ui/exposure.js builds it
+   from the same classes), with air between the picture's credit and it, and a credit link in the
+   card's quiet text colour, underlined so it is a link without colour alone saying so. */
+.sr-card__exposure .sr-exposure {
+  margin: var(--sp-4) 0 var(--sp-3);
+}
+
+.sr-card__exposure .sr-panel__title {
+  margin: 0 0 var(--sp-2);
+}
+
+.sr-card__photo-credit a {
+  color: var(--sr-text-soft);
+  text-decoration: underline;
+}
+
+/* A finger's target (docs/ui-guide.md principle 9): 44 px on a coarse pointer. */
+@media (pointer: coarse) {
+  .sr-exposure .sr-density__btn {
+    min-height: 44px;
+  }
 }
 .sr-sound__btn.is-on {
   color: var(--sr-ember);
@@ -2665,7 +3116,7 @@ html.sr-phone .sr-sound__btn {
 .sr-hud {
   position: fixed;
   inset: 0;
-  z-index: 6;
+  z-index: var(--sr-z-hud);
   pointer-events: none;
   overflow: hidden;
 }
@@ -2685,7 +3136,7 @@ html.sr-phone .sr-sound__btn {
 }
 
 /* The reticle is 0045's corner brackets, the same rule as a focused control (the list above), on a
-   box sized to the thing: max(28 px, its drawn diameter + 12 px). Inside its own corners, because
+   box sized to the thing: max(40 px, its drawn diameter + 12 px). Inside its own corners, because
    the box is already the margin. */
 .sr-reticle__box {
   position: relative;
@@ -2795,7 +3246,7 @@ html.sr-phone .sr-sound__btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  font: 600 15px/1.3 var(--sr-font-hud);
+  font: 600 var(--sr-fs-body)/1.3 var(--sr-font-hud);
 }
 
 .sr-tag__name .sr-glyph {
@@ -2806,7 +3257,7 @@ html.sr-phone .sr-sound__btn {
 
 /* Digits in fixed columns (req 5), units small caps in the dim text. */
 .sr-tag__readouts {
-  font: 400 13px/1.4 var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2820,7 +3271,7 @@ html.sr-phone .sr-sound__btn {
 .sr-tag__unit {
   margin-left: 4px;
   font-family: var(--sr-font);
-  font-size: 11px;
+  font-size: var(--sr-fs-unit);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--sr-text-dim);
@@ -2830,7 +3281,7 @@ html.sr-phone .sr-sound__btn {
 .sr-tag__suffix {
   margin-left: 4px;
   font-family: var(--sr-font);
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
 
@@ -2845,7 +3296,7 @@ html.sr-phone .sr-sound__btn {
 
 /* The honesty line (req 3): the card's own class-and-age words, at the 13 px reading floor. */
 .sr-tag__honesty {
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.35;
   color: var(--sr-text-dim);
 }
@@ -2867,7 +3318,7 @@ html.sr-phone .sr-sound__btn {
   border: 1px solid var(--sr-line);
   border-radius: var(--sr-radius-pill);
   color: var(--sr-text);
-  font: 400 13px/1 var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -2912,10 +3363,8 @@ html.sr-phone .sr-chevron {
   --sr-ember-light: #ffc28a;
   /* Where the scene the sidebar leaves begins: the pill is centred on it. 0 on a phone. */
   --sr-scene-left: 0px;
-  --sr-micro: rgba(232, 236, 242, 0.62);
   --sr-wash: rgba(232, 236, 242, 0.07);
   --sr-wash-strong: rgba(232, 236, 242, 0.14);
-  --sr-hair: rgba(232, 236, 242, 0.08);
   /* docs/ui-guide.md §2.1, for the card view (spec 0061 task 2). The hover step between rest and
      pressed (M3's state layers: 0.08 hover, 0.12 pressed); secondary text ON a wash, where
      --sr-text-dim drops to 3.76:1 over a white cloud and .76 is the lowest alpha that keeps 4.6 on
@@ -2944,10 +3393,10 @@ html.sr-phone .sr-chevron {
 .sr-micro {
   margin: 0;
   padding: 0;
-  font: 600 13px/1.2 var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/1.2 var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--sr-micro);
+  color: var(--sr-text-dim);
 }
 
 /* --- the sidebar ---------------------------------------------------------------------- */
@@ -2964,7 +3413,7 @@ html.sr-phone .sr-chevron {
   box-sizing: border-box;
   overflow: hidden;
   border-radius: var(--sr-radius-shell);
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   line-height: 1.45;
 }
 
@@ -2986,7 +3435,7 @@ html.sr-phone .sr-chevron {
   display: none;
 }
 
-/* The push: 220 ms slide and fade in from the side it came from (0061 req 12). Popping comes from
+/* The push: 220 ms, a 12 px slide and a fade in from the side it came from (0061 req 12, guide 2.5). Popping comes from
    the left. Opacity and transform only: #310 found a visibility fade never advanced at low frame
    rates in headless Chrome. */
 .sr-side__view.is-current {
@@ -2998,12 +3447,12 @@ html.sr-phone .sr-chevron {
 }
 
 @keyframes sr-view-in {
-  from { opacity: 0; transform: translateX(16px); }
+  from { opacity: 0; transform: translateX(12px); }
   to { opacity: 1; transform: none; }
 }
 
 @keyframes sr-view-back {
-  from { opacity: 0; transform: translateX(-16px); }
+  from { opacity: 0; transform: translateX(-12px); }
   to { opacity: 1; transform: none; }
 }
 
@@ -3012,17 +3461,17 @@ html.sr-phone .sr-chevron {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  padding: 14px 16px 0;
+  padding: var(--sp-3) var(--sp-4) 0;
 }
 
 .sr-side__back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   height: 36px;
-  padding: 0 10px 0 4px;
+  padding: 0 var(--sp-3) 0 var(--sp-1);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   color: var(--sr-text-soft);
   background: transparent;
   border: 0;
@@ -3036,7 +3485,7 @@ html.sr-phone .sr-chevron {
 }
 
 .sr-side__chev {
-  font-size: 20px;
+  font-size: var(--sr-fs-glyph);
   line-height: 1;
   transform: translateY(-1px);
 }
@@ -3073,7 +3522,7 @@ html.sr-phone .sr-chevron {
   width: 100%;
   height: 100%;
   padding: 0;
-  font: 600 22px/1 var(--sr-font-hud);
+  font: 600 var(--sr-fs-name-sm)/1 var(--sr-font-hud);
   color: var(--sr-text);
   background: transparent;
   border: 0;
@@ -3083,7 +3532,7 @@ html.sr-phone .sr-chevron {
 .sr-side.is-collapsed .sr-side__handle .sr-side__chev {
   font-family: var(--sr-font);
   font-weight: 400;
-  color: var(--sr-micro);
+  color: var(--sr-text-dim);
 }
 
 .sr-side__handle:hover .sr-side__chev { color: var(--sr-ember); }
@@ -3101,8 +3550,8 @@ html.sr-phone .sr-chevron {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px 20px 14px;
+  gap: var(--sp-3);
+  padding: 20px 20px var(--sp-3);
 }
 
 .sr-explore__brand {
@@ -3111,13 +3560,11 @@ html.sr-phone .sr-chevron {
   justify-content: space-between;
 }
 
-/* The wordmark. Row D sets it in Instrument Serif at 28 px; the serif does not fit the first-visit
-   font budget yet (registry/budgets.yaml fonts_at_boot_bytes, 0061 task 5), so it is Barlow Semi
-   Condensed 600, the instrument's own display face, at the same cap height. */
+/* The wordmark: Barlow Semi Condensed 600 at 27 px. */
 .sr-wordmark {
   margin: 0;
-  font: 600 27px/1 var(--sr-font-hud);
-  letter-spacing: 0.01em;
+  font: 600 var(--sr-fs-mark)/1 var(--sr-font-hud);
+  letter-spacing: 0;
   color: var(--sr-text);
 }
 
@@ -3126,8 +3573,8 @@ html.sr-phone .sr-chevron {
   height: 36px;
   margin: -6px -8px 0 0;
   padding: 0;
-  font: 400 22px/1 var(--sr-font);
-  color: rgba(232, 236, 242, 0.7);
+  font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
+  color: var(--sr-text-soft);
   background: transparent;
   border: 0;
   border-radius: var(--sr-radius);
@@ -3159,19 +3606,19 @@ html.sr-phone .sr-chevron {
 .sr-explore__search .sr-search__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   background: var(--sr-wash);
   border: 1px solid transparent;
   border-radius: var(--sr-radius);
-  color: var(--sr-micro);
+  color: var(--sr-text-soft);
   transition: border-color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
 }
 
 .sr-explore__search .sr-search__row:focus-within {
   border-color: var(--sr-line-strong);
-  background: rgba(232, 236, 242, 0.1);
+  background: var(--sr-wash-hover);
 }
 
 .sr-explore__search .sr-search__row svg {
@@ -3184,7 +3631,7 @@ html.sr-phone .sr-chevron {
   height: 100%;
   padding: 0;
   font: inherit;
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   color: var(--sr-text);
   background: transparent;
   border: 0;
@@ -3193,7 +3640,7 @@ html.sr-phone .sr-chevron {
 }
 
 .sr-explore__search .sr-search__input::placeholder {
-  color: rgba(232, 236, 242, 0.5);
+  color: var(--sr-text-soft);
 }
 
 .sr-explore__search .sr-search__note {
@@ -3205,16 +3652,84 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-tabs {
 }
 
 /* What the search could not look in, said while it is used (spec 0021): quiet, never a boxed
-   warning in the sidebar, where it sits under the results it qualifies. */
+   warning in the sidebar, where it sits under the results it qualifies. One line (0061 req 11):
+   the count of what is and is not searched; which layers, and why, is its tooltip. */
 .sr-explore.is-searching .sr-search__note,
 .sr-explore.is-searching .sr-search__note.is-warning {
   display: block;
-  margin: 10px 2px 0;
-  padding: 0;
-  font-size: 13px;
-  line-height: 1.4;
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-3) 0 0;
+  overflow: hidden;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text-dim);
+  text-overflow: ellipsis;
+  white-space: nowrap;
   border: 0;
+  border-top: 1px solid var(--sr-line);
+}
+
+/* The key that focuses the field, drawn as the controls hint draws its keycaps (keyhint.css): a
+   picture of `/`, at the field's end, on a desktop with a keyboard. Gone while the field is in use. */
+.sr-search__key {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html:not(.sr-phone) .sr-explore__search .sr-search__key {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    font: 500 var(--sr-fs-sm)/1 var(--sr-font-mono);
+    color: var(--sr-text-soft);
+    background: var(--sr-wash);
+    border: 1px solid var(--sr-line);
+    border-top-color: var(--sr-edge-lit);
+    border-bottom-color: var(--sr-line-strong);
+    border-radius: var(--sr-radius-sm);
+  }
+
+  html:not(.sr-phone) .sr-explore__search .sr-search__row:focus-within .sr-search__key,
+  html:not(.sr-phone) .sr-explore__search.is-searching .sr-search__key {
+    display: none;
+  }
+}
+
+/* The search that found nothing (docs/ui-guide.md section 3.2): one line that quotes the query,
+   then, under a microlabel, the nearest names as ordinary rows. Where the first result would be. */
+.sr-search__empty {
+  padding: var(--sp-3) 0 0;
+}
+
+.sr-search__empty[hidden],
+.sr-search__emptyhint[hidden] {
+  display: none;
+}
+
+.sr-search__emptyline {
+  margin: 0;
+  overflow: hidden;
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-search__emptyhint {
+  margin: var(--sp-5) 0 var(--sp-1);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+html.sr-phone .sr-top .sr-search__empty {
+  padding: var(--sp-2) 0;
+}
+
+html.sr-phone .sr-top .sr-search__emptyhint {
+  margin-top: var(--sp-4);
 }
 
 /* The results replace the lists while a query is typed (design §2): in flow, flat, no second glass. */
@@ -3239,7 +3754,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 3px;
-  background: rgba(232, 236, 242, 0.06);
+  background: var(--sr-wash);
   border-radius: var(--sr-radius);
 }
 
@@ -3247,8 +3762,8 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   height: 34px;
   padding: 0;
   font: inherit;
-  font-size: 13px;
-  color: rgba(232, 236, 242, 0.7);
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-soft);
   background: transparent;
   border: 0;
   border-radius: var(--sr-radius-sm);
@@ -3274,22 +3789,32 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-pane[hidden] { display: none; }
 
 .sr-sect {
-  padding: 8px 20px 10px;
+  padding: var(--sp-2) 20px var(--sp-2);
 }
 
 .sr-sect[hidden] { display: none; }
 
 .sr-sect > .sr-micro {
-  padding: 8px 0 6px;
+  padding: var(--sp-2) 0 var(--sp-1);
 }
 
 /* A section's honesty line (principle 7): the Planets tab says its dots are drawn larger. */
 .sr-sect__note {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   color: var(--sr-text-dim);
 }
+
+/* The trips that cannot run, said in one line under the cards (public #241). */
+.sr-trips2__off {
+  overflow: hidden;
+  margin: var(--sp-2) 0 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-trips2__off[hidden] { display: none; }
 
 /* Right now: the first line large, the rest a name and a mono value. */
 .sr-now__list {
@@ -3299,7 +3824,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-now__row + .sr-now__row .sr-now__btn {
-  border-top: 1px solid var(--sr-hair);
+  border-top: 1px solid var(--sr-line);
 }
 
 .sr-now__btn {
@@ -3310,7 +3835,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   width: 100%;
   padding: 12px 0;
   font: inherit;
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 1.35;
   text-align: left;
   color: var(--sr-text);
@@ -3322,16 +3847,17 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-now__btn:hover .sr-now__text { color: var(--sr-ember-light); }
 
+/* The lead: Inter at 20 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
 .sr-now__row.is-lead .sr-now__btn {
-  padding-top: 6px;
-  font-size: 20px;
+  padding-top: var(--sp-1);
+  font-size: var(--sr-fs-lead);
   line-height: 1.25;
   letter-spacing: -0.01em;
 }
 
 .sr-now__value {
   flex: 0 0 auto;
-  font: 400 13px/1.35 var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/1.35 var(--sr-font-mono);
   color: var(--sr-text-dim);
 }
 
@@ -3421,7 +3947,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-tripcard__title {
   display: -webkit-box;
   overflow: hidden;
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   font-weight: 600;
   line-height: 18px;
   -webkit-line-clamp: 3;
@@ -3431,7 +3957,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-tripcard__meta {
   display: -webkit-box;
   overflow: hidden;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 18px;
   color: var(--sr-text-soft);
   -webkit-line-clamp: 2;
@@ -3439,6 +3965,15 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-tripcard__meta:empty { display: none; }
+
+/* Pressed, and on its way (ui/explore.js `starting`): the line under the title says so. */
+.sr-tripcard.is-starting {
+  cursor: progress;
+}
+
+.sr-tripcard.is-starting .sr-tripcard__meta {
+  color: var(--sr-text);
+}
 
 /* Greyed WITH its reason (spec 0025 req 6): readable, not choosable; its picture greyed with it. */
 .sr-tripcard.is-off {
@@ -3448,11 +3983,13 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-tripcard.is-off .sr-tripcard__pic { filter: grayscale(1); opacity: 0.4; }
 
-.sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-dim); }
+/* On the wash an off card is painted with, the dim grey is 3.76:1 over a cloud: the soft one. */
+.sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-soft); }
 
 @media (prefers-reduced-motion: reduce) {
   .sr-tripcard__pic { transition: opacity 120ms linear; }
   .sr-tripcard:hover .sr-tripcard__pic { transform: none; }
+  .sr-tripcard { transition: border-color 120ms linear; }
 }
 
 /* "All 9 trips", "Show all 8": a quiet text button under a list. */
@@ -3463,7 +4000,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   margin-top: 4px;
   padding: 0;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
   background: transparent;
   border: 0;
@@ -3472,6 +4009,13 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-more:hover { color: var(--sr-ember); }
 .sr-more[hidden] { display: none; }
+
+/* JUST WATCH: the reels, under "Play on its own" (ui/explore.js, internal #448). A list like any other. */
+.sr-reels { margin-top: var(--sp-2); }
+.sr-reels[hidden] { display: none; }
+/* Two quiet text buttons side by side ("All 26 trips", "Play on its own") read as one line of text
+   at 16 px apart (seen at 1440 x 900, internal #454): a step further, 24 px. */
+.sr-more + .sr-more { margin-left: var(--sp-5); }
 
 /* A list of rows: a name, a mono value, hairlines between (the Planets and Stars tabs, Tonight). */
 .sr-list {
@@ -3483,7 +4027,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-list__row[hidden] { display: none; }
 
 .sr-list__row + .sr-list__row > * {
-  border-top: 1px solid var(--sr-hair);
+  border-top: 1px solid var(--sr-line);
 }
 
 .sr-list__btn,
@@ -3494,9 +4038,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   gap: 12px;
   width: 100%;
   min-height: 44px;
-  padding: 11px 0;
+  padding: var(--sp-3) 0;
   font: inherit;
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 1.3;
   text-align: left;
   color: var(--sr-text);
@@ -3510,14 +4054,14 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-list__value {
   flex: 0 0 auto;
-  font: 400 13px/1.3 var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono);
   color: var(--sr-text-dim);
 }
 
 .sr-list--quiet .sr-list__static {
   min-height: 0;
-  padding: 7px 0;
-  font-size: 13px;
+  padding: var(--sp-2) 0;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
 
@@ -3530,50 +4074,192 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   list-style: none;
 }
 
+/* A list row (docs/ui-guide.md section 3.5): the title on one line, one line under it, and a close
+   approach's distance as the row's number. Each ends in an ellipsis rather than a second line;
+   the whole sentence is the row's tooltip and its accessible name (ui/next.js rowParts). */
 .sr-next .sr-next__row {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 0;
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--sr-text);
-  border-top: 1px solid var(--sr-hair);
-  cursor: pointer;
+  border-top: 1px solid var(--sr-line);
 }
 
 .sr-next .sr-next__row:first-child { border-top: 0; }
-.sr-next .sr-next__row[role='button']:hover:not([data-kind='shower']) { color: var(--sr-ember-light); }
 
-.sr-next .sr-next__class {
-  font-size: 13px;
+/* The row and, beside it, Add to calendar (ui/next.js): a text action, never a second card. */
+.sr-next .sr-next__row {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.sr-next .sr-next__body { flex: 1 1 auto; min-width: 0; }
+
+.sr-next__cal {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-1);
+  font: inherit;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-next__cal:hover { color: var(--sr-ember); }
+
+.sr-next .sr-next__body {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-3) 0;
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+}
+
+.sr-next button.sr-next__body {
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+@media (hover: hover) {
+  .sr-next button.sr-next__body:hover .sr-next__title { color: var(--sr-ember-light); }
+}
+
+.sr-next .sr-next__head {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.sr-next .sr-next__title,
+.sr-next .sr-next__detail {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-next .sr-next__title {
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+}
+
+.sr-next .sr-next__value {
+  flex: 0 0 auto;
+  font: 400 var(--sr-fs-sm)/20px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
 
+.sr-next .sr-next__detail {
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+/* Email alerts (ui/subscribe.js): a row under the list that opens in place, the card's disclosure
+   row; inside it a field as the search's well, the two boxes as What to show's, one quiet button. */
+.sr-subscribe-host:empty {
+  display: none;
+}
+
+.sr-subscribe__chev {
+  display: inline-block;
+  flex: 0 0 auto;
+  font-size: var(--sr-fs-glyph);
+  line-height: 20px;
+  color: var(--sr-text-dim);
+  transition: transform var(--sr-fast) var(--sr-ease);
+}
+
+.sr-subscribe .sr-disc__head[aria-expanded='true'] .sr-subscribe__chev {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-subscribe__chev { transition: none; }
+}
+
+.sr-subscribe__form {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.sr-subscribe__form[hidden] {
+  display: none;
+}
+
+.sr-subscribe__email {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+}
+
+.sr-subscribe__email::placeholder {
+  color: var(--sr-text-soft);
+}
+
+.sr-subscribe__email:focus-visible {
+  border-color: var(--sr-line-strong);
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+html.sr-phone .sr-subscribe__email {
+  font-size: var(--sr-fs-input);
+}
+
+.sr-subscribe__row {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  min-height: 44px;
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+  cursor: pointer;
+}
+
+.sr-subscribe__submit {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.sr-subscribe__status {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-subscribe__status[hidden] {
+  display: none;
+}
+
+/* Coming up, empty: one line saying what would be here. */
 .sr-next .sr-next__note {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.4;
+  margin: 0;
+  padding: var(--sp-3) 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text-dim);
 }
 
 .sr-next .sr-next__note[hidden] { display: none; }
 
-/* Tonight: the place and its passes. */
-.sr-place__current {
-  margin: 6px 0 10px;
-  font-size: 15px;
-  line-height: 1.35;
-}
-
-.sr-place__current.is-guess { color: var(--sr-text-dim); font-size: 14px; }
-
 .sr-field {
   width: 100%;
   height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: inherit;
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   color: var(--sr-text);
   background: var(--sr-wash);
   border: 1px solid transparent;
@@ -3581,21 +4267,26 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   outline: 0;
 }
 
-.sr-field:focus { border-color: var(--sr-line-strong); }
-.sr-field::placeholder { color: rgba(232, 236, 242, 0.5); }
+/* The focused field: the ember edge What to show's filter wears (a 22 % hairline was no focus state). */
+.sr-field:focus { border-color: var(--sr-ember); }
+/* A phone's input is 16 px (docs/ui-guide.md section 6): the city box read 15 px at 390 x 844
+   (2026-10-08), and under 16 iOS Safari zooms the page when it takes the caret. */
+html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
+@media (pointer: coarse) { .sr-field { font-size: var(--sr-fs-input); } }
+.sr-field::placeholder { color: var(--sr-text-soft); }
 
 .sr-place__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
 }
 
 .sr-chip {
   height: 36px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text);
   background: var(--sr-wash);
   border: 1px solid transparent;
@@ -3607,19 +4298,27 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-chip:disabled { color: var(--sr-text-dim); cursor: not-allowed; }
 .sr-chip--quiet { background: transparent; color: var(--sr-text-dim); }
 
-.sr-place__note,
-.sr-tonight__note,
-.sr-tonight__shower {
-  margin: 8px 0 0;
-  font-size: 13px;
+.sr-place__note {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
 
 .sr-place__note.is-warning { color: var(--sr-stale); }
-.sr-place__note[hidden], .sr-tonight__note[hidden], .sr-tonight__shower[hidden] { display: none; }
-.sr-tonight { margin-top: 18px; }
-.sr-tonight > .sr-micro { padding-bottom: 4px; }
+.sr-place[hidden], .sr-place__note[hidden], .sr-place__chips > [hidden] { display: none; }
+
+/* The place line and "Change place" on one row of the Tonight view; the line gives way first. */
+.sr-tonight-view__where {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* The line wraps here instead of ending in an ellipsis: beside the button it was "Near Moscow,
+   guessed from y…" (seen at 1440 x 900, 2026-10-08), and how the place is known is the honest half. */
+.sr-tonight-view__where > .sr-tonight-view__place { flex: 1 1 auto; min-width: 0; overflow: visible; white-space: normal; }
+.sr-tonight-view__change { flex: none; }
 
 /* The status line: the sidebar's foot, one sentence, a coloured dot. */
 .sr-statusline {
@@ -3631,13 +4330,13 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   min-height: 44px;
   padding: 12px 20px;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.3;
   text-align: left;
-  color: rgba(232, 236, 242, 0.66);
+  color: var(--sr-text-dim);
   background: transparent;
   border: 0;
-  border-top: 1px solid var(--sr-hair);
+  border-top: 1px solid var(--sr-line);
   cursor: pointer;
   transition: color var(--sr-fast) var(--sr-ease);
 }
@@ -3696,19 +4395,19 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-card.is-docked .sr-card__name {
-  font-size: 28px;
+  font-size: var(--sr-fs-name);
 }
 
 .sr-card.is-docked .sr-hero__num {
-  font-size: 24px;
+  font-size: var(--sr-fs-num);
 }
 
 .sr-card.is-docked .sr-hero__num[data-long='1'] {
-  font-size: 20px;
+  font-size: var(--sr-fs-num-sm);
 }
 
 .sr-card.is-docked .sr-hero__num[data-long='2'] {
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 26px;
 }
 
@@ -3718,7 +4417,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 /* --- the sources sheet, as a view ----------------------------------------------------- */
 .sr-side .sr-status {
-  padding: 6px 20px 20px;
+  padding: var(--sp-2) 20px 20px;
   overflow: visible;
 }
 
@@ -3728,7 +4427,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-side .sr-status__title {
   margin: 0 0 8px;
-  font: 600 27px/1.1 var(--sr-font-hud);
+  font: 600 var(--sr-fs-mark)/1.1 var(--sr-font-hud);
   letter-spacing: 0.01em;
   color: var(--sr-text);
 }
@@ -3741,7 +4440,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   gap: 8px 16px;
   margin-top: 20px;
   padding-top: 12px;
-  border-top: 1px solid var(--sr-hair);
+  border-top: 1px solid var(--sr-line);
 }
 
 .sr-status__foot-credit {
@@ -3763,17 +4462,33 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   position: static;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   width: auto;
   height: 44px;
   padding: 0 4px;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
   text-decoration: none;
   border-radius: var(--sr-radius-sm);
 }
 
 .sr-mark--foot:hover { color: var(--sr-text); }
+.sr-status__press { margin-left: auto; }
+
+/* The site's links (index.html's #sr-sitefoot, moved here by ui/status.js): small, dim, a finger tall. */
+.sr-sitefoot--shown { margin-top: var(--sp-2); }
+.sr-sitefoot--shown ul { display: flex; flex-wrap: wrap; gap: 0 var(--sp-2); margin: 0; padding: 0; list-style: none; }
+.sr-sitefoot--shown a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  text-decoration: none;
+}
+.sr-sitefoot--shown a:hover { color: var(--sr-text); }
+@media (pointer: coarse) { .sr-status__press { min-height: 44px; } }
 
 /* --- the tool rail -------------------------------------------------------------------- */
 
@@ -3781,7 +4496,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   position: fixed;
   top: var(--sr-inset);
   right: var(--sr-inset);
-  z-index: 56;
+  z-index: var(--sr-z-rail);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3802,7 +4517,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-hair); }
+.sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-line); }
 .sr-rail__btn:hover { background: var(--sr-wash); }
 
 .sr-rail__btn[aria-expanded='true'],
@@ -3819,14 +4534,14 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   position: fixed;
   top: var(--sr-inset);
   right: calc(var(--sr-inset) + 48px + 12px);
-  z-index: 57;
+  z-index: var(--sr-z-pop);
   width: 340px;
   max-height: calc(100vh - 2 * var(--sr-inset));
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 18px 20px 20px;
+  padding: 20px;
   border-radius: var(--sr-radius-shell);
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   line-height: 1.45;
   color: var(--sr-text);
 }
@@ -3846,10 +4561,10 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   box-sizing: border-box;
   width: 100%;
   height: 36px;
-  margin: 10px 0 2px;
+  margin: var(--sp-2) 0 2px;
   padding: 0 12px;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   color: var(--sr-text);
   background: var(--sr-wash);
   border: 1px solid var(--sr-line);
@@ -3858,7 +4573,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-show__filter::placeholder { color: var(--sr-text-dim); }
 .sr-show__filter:focus-visible { outline: none; border-color: var(--sr-ember); }
 
-.sr-show__group + .sr-show__group { border-top: 1px solid var(--sr-hair); }
+.sr-show__group + .sr-show__group { border-top: 1px solid var(--sr-line); }
 .sr-show__group[hidden] { display: none; }
 
 .sr-show__head {
@@ -3892,7 +4607,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-show__group.is-open .sr-show__chev { transform: rotate(45deg); }
 
 .sr-show__tally {
-  font: 400 13px/1.3 var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
@@ -3913,9 +4628,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   position: relative;
   min-width: 44px;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 var(--sp-2);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text-soft);
   background: none;
   border: 1px solid var(--sr-line);
@@ -3943,12 +4658,12 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   padding-right: 0;
   padding-bottom: 0;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
   color: var(--sr-text);
   text-align: left;
   background: none;
   border: 0;
-  border-top: 1px solid var(--sr-hair);
+  border-top: 1px solid var(--sr-line);
   cursor: pointer;
 }
 /* The chevron is a child span: the button's ::before and ::after are the focus brackets. */
@@ -3968,14 +4683,14 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 @media (pointer: coarse) {
   .sr-show__bulkbtn { height: 44px; }
-  .sr-show__filter { height: 44px; font-size: 16px; }
+  .sr-show__filter { height: 44px; font-size: var(--sr-fs-input); }
 }
 
 .sr-show__label {
   display: grid;
   grid-template-columns: 18px 10px 1fr auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   min-height: 36px;
   padding: 4px 0;
   cursor: pointer;
@@ -3997,6 +4712,17 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   accent-color: var(--sr-ember);
 }
 
+/* The list is walked with the arrow keys (public #315): the box under the keys wears the guide's
+   ring, not the browser's 1 px one, and its row lifts a step so the eye finds the name too. */
+.sr-show__box:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-show__label:has(.sr-show__box:focus-visible) {
+  background: var(--sr-wash);
+}
+
 .sr-show__label .sr-swatch {
   width: 10px;
   height: 10px;
@@ -4013,22 +4739,78 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   background: transparent;
 }
 
-/* "What it is" rows are counts: the layer swatches above are that key (ui/colorkey.js). */
+/* "What it is" rows are counts with the SHAPE each class is drawn as (ui/colorkey.js): the layer
+   swatches above are the key to the colours, so the shape is in the row's own text colour. */
 .sr-colourkey__row .sr-swatch--none { visibility: hidden; }
-.sr-colourkey__why { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-glyphkey {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+.sr-colourkey__row--sub { color: var(--sr-text-dim); }
+.sr-colourkey__why { margin: 0 0 8px; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
 .sr-colourkey__why:empty { display: none; }
 
-.sr-show__name { font-size: 14px; }
+/* One line (spec 0061 req 11): the name gives way with an ellipsis, never the row with a wrap. */
+.sr-show__name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--sr-fs-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Layers that are on and came back empty: one line and the way to the sources sheet. */
+.sr-show__failed {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--sp-2);
+  color: var(--sr-text);
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-show__failedwhy {
+  flex: 0 0 auto;
+  min-height: 24px;
+  padding: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-ember);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .sr-show__failedwhy:hover { color: var(--sr-ember-light); }
+}
+
+@media (pointer: coarse) {
+  .sr-show__failedwhy { min-height: 44px; }
+}
 
 .sr-show__count {
-  font: 400 13px/1.3 var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono);
   color: var(--sr-text-dim);
   white-space: nowrap;
 }
 
+/* Under a row that is off on purpose: how to show it (public #271). In line with the name. */
+.sr-show__hint {
+  margin: 0 0 4px 28px;
+  font-size: var(--sr-fs-sm);
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
 .sr-show__note {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -4037,16 +4819,16 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-show__section {
   margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--sr-hair);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--sr-line);
 }
 
 .sr-show__section .sr-panel__title {
   margin: 0 0 8px;
-  font: 600 13px/1.2 var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/1.2 var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--sr-micro);
+  color: var(--sr-text-dim);
 }
 
 .sr-show__setting {
@@ -4066,7 +4848,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   height: 32px;
   padding: 0 12px;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--sr-text);
   background: var(--sr-wash);
   border: 1px solid transparent;
@@ -4074,10 +4856,37 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   cursor: pointer;
 }
 
-.sr-show__toggle.is-on { color: var(--sr-ember); border-color: rgba(255, 159, 67, 0.4); }
+.sr-show__toggle.is-on { color: var(--sr-ember); border-color: var(--sr-ember); }
 
 .sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
-.sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--sr-text-dim); }
+.sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+/* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
+   the one slider in the app, a native range between two words, and the survey's credit as a link
+   that is underlined so colour alone does not say so. */
+.sr-otherlight .sr-density__choices { flex-basis: 100%; flex-wrap: wrap; }
+.sr-otherlight .sr-density__btn { flex: 1 1 40%; }
+.sr-otherlight__mix {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+.sr-otherlight__mix[hidden], .sr-otherlight__credit[hidden] { display: none; }
+.sr-otherlight__slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--sr-text-soft);
+  cursor: pointer;
+}
+.sr-otherlight__slider:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-otherlight__credit a { color: var(--sr-text-soft); text-decoration: underline; }
+@media (pointer: coarse) {
+  .sr-otherlight__slider { min-height: 44px; }
+}
 
 /* --- the time pill -------------------------------------------------------------------- */
 
@@ -4085,30 +4894,41 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   position: fixed;
   bottom: 24px;
   left: calc(50% + var(--sr-scene-left) / 2);
-  z-index: 35;
+  z-index: var(--sr-z-pill);
   display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 48px;
-  padding: 0 6px;
-  font: 400 13px/1 var(--sr-font-mono);
+  flex-direction: column;
+  gap: var(--sp-1);
+  width: min(560px, calc(100vw - var(--sr-scene-left) - 2 * var(--sp-5)));
+  padding: var(--sp-1) var(--sp-2);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
   color: var(--sr-text);
   white-space: nowrap;
-  border-radius: var(--sr-radius-pill);
   transform: translateX(-50%);
 }
 
-/* .sr-float's own transform transition would slide the pill whenever the sidebar collapses; the
-   move is the sidebar's, so the pill follows it in the same 220 ms. */
+/* Two rows since 2026-10-06 (ui/timepill.js: the timeline over the readout), so the pill is a
+   small panel and takes the panel's corner: 16 px outside, 6 px inside (docs/ui-guide.md §2.3).
+   .sr-float's own transform transition would slide it whenever the sidebar collapses; the move is
+   the sidebar's, so the pill follows it in the same 220 ms. */
 .sr-time.sr-float {
+  border-radius: var(--sr-radius-shell);
   transition: left var(--sr-mid) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
 }
 
+.sr-time__tape-row,
+.sr-time__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
 .sr-time__step {
+  flex: none;
   width: 40px;
   height: 40px;
   padding: 0;
-  font: 400 20px/1 var(--sr-font);
+  font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
   color: var(--sr-text);
   background: transparent;
   border: 0;
@@ -4120,23 +4940,33 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-time__read {
   display: inline-flex;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
+  min-width: 0;
   height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--sp-2);
   font: inherit;
   color: inherit;
   background: transparent;
   border: 0;
-  border-radius: var(--sr-radius-pill);
+  border-radius: var(--sr-radius);
   cursor: ew-resize;
   touch-action: none;
   user-select: none;
 }
 
-.sr-time__read:hover { background: rgba(232, 236, 242, 0.05); }
+.sr-time__read:hover { background: var(--sr-wash); }
+
+.sr-time__words {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
 
 .sr-time__dot {
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -4148,31 +4978,34 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   box-shadow: inset 0 0 0 1.5px var(--sr-ember);
 }
 
-.sr-time__rate {
+.sr-time__rate,
+.sr-time__unit {
+  flex: none;
   height: 36px;
   min-width: 48px;
-  padding: 0 12px;
+  padding: 0 var(--sp-3);
   font: inherit;
   color: var(--sr-text);
-  background: rgba(232, 236, 242, 0.08);
+  background: var(--sr-wash);
   border: 0;
   border-radius: var(--sr-radius-pill);
   cursor: pointer;
 }
 
-.sr-time__rate:hover { background: var(--sr-wash-strong); }
+.sr-time__rate:hover,
+.sr-time__unit:hover { background: var(--sr-wash-strong); }
 
 /* Not live: the pill's border turns ember and says so, and "Live" appears (§7). */
 .sr-time.is-away,
 .sr-time.is-away:hover {
-  border-color: rgba(255, 159, 67, 0.7);
+  border-color: var(--sr-ember);
 }
 
 .sr-time__live {
+  flex: none;
   height: 36px;
-  margin-left: 2px;
-  padding: 0 14px;
-  font: 600 13px/1 var(--sr-font);
+  padding: 0 var(--sp-3);
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font);
   color: var(--sr-ink);
   background: var(--sr-ember);
   border: 0;
@@ -4183,6 +5016,205 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-time__live[hidden] { display: none; }
 .sr-time.is-scrubbing .sr-time__read { background: var(--sr-ember-soft); }
 
+/* The timeline (ui/scrubber.js): a tape dragged under a fixed ember line. Top to bottom in its
+   44 px: the tick labels, the marks for what is coming, the ticks. Until the module lands the
+   seat is a plain well between the two steps. */
+.sr-time__tape {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  overflow: hidden;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+
+.sr-tape {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sr-tape.is-dragging { cursor: grabbing; }
+
+/* The slider fills the tape and sits under the marks (they are its siblings, internal #472). */
+.sr-tape__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--sr-radius);
+}
+
+.sr-tape__ticks {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 8px;
+  background-image: linear-gradient(90deg, var(--sr-line-strong) 1px, transparent 1px);
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+
+.sr-tape__labels,
+.sr-tape__marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A labelled tick: a rule the height of the tape with its hour or its day at the top. */
+.sr-tape__label {
+  position: absolute;
+  text-transform: uppercase;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding: var(--sp-1) 0 0 var(--sp-1);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+  border-left: 1px solid var(--sr-line-strong);
+}
+
+.sr-tape__label.is-day { color: var(--sr-text); }
+.sr-tape__label[hidden] { display: none; }
+
+/* Past a week from now a satellite's place is rough: hatched, with the word at the near edge. */
+.sr-tape__rough {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(135deg, var(--sr-line) 0 2px, transparent 2px 7px);
+}
+
+.sr-tape__roughword {
+  position: absolute;
+  bottom: var(--sp-2);
+  left: var(--sp-1);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tape__rough:first-of-type .sr-tape__roughword { right: var(--sp-1); left: auto; }
+
+/* Past the window's ends there is no tape. */
+.sr-tape__end {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--sr-space);
+}
+
+.sr-tape__rough[hidden],
+.sr-tape__end[hidden],
+.sr-tape__now[hidden] { display: none; }
+
+/* A mark for something coming: a button the height of the tape, its glyph over the ticks. The
+   shape says the kind (a dot is a pass, a triangle a launch, a diamond a close approach, a ring an
+   eclipse, a bar a shower's peak), and its name is its tooltip and its accessible name. */
+.sr-tape__mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 44px;
+  margin-left: -14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.sr-tape__glyph {
+  position: absolute;
+  top: 21px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  /* Back to the mark's own time when ui/scrubber.js spreadMarks moved its box aside. */
+  margin-left: calc(-5px + var(--sr-mark-shift, 0px));
+  background: var(--sr-text);
+  border-radius: 50%;
+}
+
+.sr-tape__mark[data-kind='launch'] .sr-tape__glyph {
+  background: var(--sr-launch);
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.sr-tape__mark[data-kind='approach'] .sr-tape__glyph {
+  background: var(--sr-asteroid);
+  border-radius: 0;
+  transform: rotate(45deg) scale(0.8);
+}
+
+.sr-tape__mark[data-kind='eclipse'] .sr-tape__glyph {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--sr-text);
+}
+
+.sr-tape__mark[data-kind='shower'] .sr-tape__glyph {
+  width: 4px;
+  margin-left: calc(-2px + var(--sr-mark-shift, 0px));
+  background: var(--sr-comet);
+  border-radius: var(--sr-radius-sm);
+}
+
+/* Sunrise and sunset where the visitor is: a half disc on the horizon, the quietest mark. */
+.sr-tape__mark[data-kind='sun'] .sr-tape__glyph {
+  background: var(--sr-text-dim);
+  border-radius: 0;
+  clip-path: circle(50% at 50% 100%);
+}
+
+/* A phase of the Moon: a ring half filled, quieter than a thing that passes. */
+.sr-tape__mark[data-kind='moon'] .sr-tape__glyph {
+  background: linear-gradient(to right, var(--sr-text-dim) 50%, transparent 50%);
+  box-shadow: inset 0 0 0 1px var(--sr-text-dim);
+}
+
+.sr-tape__mark:hover,
+.sr-tape__mark.is-here { background: var(--sr-wash-strong); }
+
+/* Where the real present is, when the tape has been moved off it: a rule and the word. */
+.sr-tape__now {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 44px;
+  padding: 0 var(--sp-2) var(--sp-4) var(--sp-1);
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text);
+  background: none;
+  border: 0;
+  border-left: 2px solid var(--sr-text);
+  cursor: pointer;
+}
+
+.sr-tape__now:hover { color: var(--sr-ember-light); }
+
+/* The fixed line the tape runs under: the shown instant. Ember, as the selection is. */
+.sr-tape__cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 33.333%; /* ui/scrubber.js CURSOR_AT */
+  margin-left: -1px;
+  border-left: 2px solid var(--sr-ember);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .sr-tape__mark { width: 44px; margin-left: -22px; }
+  .sr-tape__now { min-width: 44px; }
+}
+
 /* --- the clear screen, a trip, and the phone ------------------------------------------- */
 
 /* H hides the sidebar, the rail and the pill together (0061 req 12): they are one #sr-shell, and
@@ -4190,18 +5222,30 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
    so the way back is where the way out was; Share stays beside it, for the postcard that is the
    point of a clear screen. */
 html.sr-clean #sr-rail .sr-rail__btn--clean,
-html.sr-clean #sr-rail .sr-rail__btn--share {
+html.sr-clean #sr-rail .sr-rail__btn--share,
+html.sr-hud #sr-rail .sr-rail__btn--clean,
+html.sr-hud #sr-rail .sr-rail__btn--share {
   visibility: visible !important;
   pointer-events: auto !important;
   opacity: 0.4;
   border-top: 0;
+  transition: opacity var(--sr-slow) var(--sr-ease);
 }
 
-html.sr-clean #sr-rail .sr-rail__btn--show { display: none; }
+html.sr-clean #sr-rail .sr-rail__btn--show,
+html.sr-hud #sr-rail .sr-rail__btn--show { display: none; }
+
+/* Three seconds without a pointer or a key and the eye is gone too (ui/cleanview.js wake): a still
+   picture has nothing on it. Any movement, or focus, brings it back. */
+html.sr-clean #sr-rail .sr-rail__btn--clean.is-idle,
+html.sr-hud #sr-rail .sr-rail__btn--clean.is-idle { opacity: 0; }
 
 html.sr-clean #sr-rail .sr-rail__btn--clean:hover,
 html.sr-clean #sr-rail .sr-rail__btn--share:hover,
-html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
+html.sr-clean #sr-rail .sr-rail__btn:focus-visible,
+html.sr-hud #sr-rail .sr-rail__btn--clean:hover,
+html.sr-hud #sr-rail .sr-rail__btn--share:hover,
+html.sr-hud #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
 
 /* A trip takes the rail and the pill away, and on a phone the drawer; on a desktop the sidebar
    stays and shows the trip (the trip section above, spec 0061 task 7). */
@@ -4228,13 +5272,6 @@ html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
    every small dense surface over bright imagery does (§2.1). */
 
 :root {
-  /* The z ladder (docs/ui-guide.md §2.6), as tokens, for the rules written since it was. */
-  --sr-z-hud: 6;
-  --sr-z-labels: 10;
-  --sr-z-pill: 35;
-  --sr-z-rail: 56;
-  --sr-z-pop: 57;
-  --sr-z-toast: 70;
   /* The top bar: 8 px under the notch, 48 px tall (§2.3: row D's 46 rounded to the grid), and the
      two 48 px tools beside the search with a hairline between them. */
   --sr-top-y: calc(env(safe-area-inset-top, 0px) + var(--sp-2));
@@ -4316,7 +5353,7 @@ html.sr-phone .sr-top .sr-search__row:focus-within {
 
 html.sr-phone .sr-top .sr-search__input {
   flex: 1 1 auto;
-  font-size: 16px;
+  font-size: var(--sr-fs-input);
 }
 
 html.sr-phone .sr-top .sr-search__input::placeholder {
@@ -4325,6 +5362,9 @@ html.sr-phone .sr-top .sr-search__input::placeholder {
 
 html.sr-phone .sr-top .sr-search__pop {
   position: absolute;
+  /* Above the launch chip and the live line, which come later in the bar and carry their own glass
+     (#563: the pill lay over the first result's title). */
+  z-index: 2;
   top: calc(var(--sr-top-bar) + var(--sp-2));
   right: 0;
   left: 0;
@@ -4378,11 +5418,14 @@ html.sr-phone .sr-rail__btn--more {
 /* A clear screen on a phone: the eye comes back where More was, and Share beside it, as on a
    desktop (the clear-screen rules above dim them). */
 html.sr-phone.sr-clean .sr-rail__btn--clean,
-html.sr-phone.sr-clean .sr-rail__btn--share {
+html.sr-phone.sr-clean .sr-rail__btn--share,
+html.sr-phone.sr-hud .sr-rail__btn--clean,
+html.sr-phone.sr-hud .sr-rail__btn--share {
   display: grid;
 }
 
-html.sr-phone.sr-clean .sr-rail__btn--more {
+html.sr-phone.sr-clean .sr-rail__btn--more,
+html.sr-phone.sr-hud .sr-rail__btn--more {
   display: none;
 }
 
@@ -4395,7 +5438,7 @@ html.sr-phone.sr-clean .sr-rail__btn--more {
   margin: 0;
   padding: var(--sp-1) var(--sp-3);
   /* 400, as the pill's own readout: the 500 face is 9.6 kB more on a first visit for one line. */
-  font: 400 13px/16px var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
@@ -4436,13 +5479,15 @@ html.sr-phone .sr-pop {
   max-height: calc(100dvh - var(--sr-top-y) - var(--sr-top-bar) - var(--sp-6));
 }
 
-html.sr-phone .sr-more {
+/* The rail's overflow MENU (#sr-more), not the quiet "Show all 8" button under a list, which is
+   also `.sr-more`: scoped by the popover's class, or a phone drew that button as a 240 px block. */
+html.sr-phone .sr-pop.sr-more {
   left: auto;
   width: 240px;
   padding: var(--sp-2);
 }
 
-html.sr-phone .sr-more:not([hidden]) {
+html.sr-phone .sr-pop.sr-more:not([hidden]) {
   display: block;
 }
 
@@ -4453,7 +5498,7 @@ html.sr-phone .sr-more:not([hidden]) {
   width: 100%;
   min-height: 48px;
   padding: 0 var(--sp-3);
-  font: 400 15px/20px var(--sr-font);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
   color: var(--sr-text);
   text-align: left;
   text-decoration: none;
@@ -4589,7 +5634,7 @@ html.sr-phone .sr-tabs {
 
 html.sr-phone .sr-tabs__tab {
   height: 44px;
-  font-size: 14px;
+  font-size: var(--sr-fs-label);
 }
 
 html.sr-phone .sr-sect {
@@ -4622,12 +5667,14 @@ html.sr-phone .sr-card.is-docked .sr-card__close {
   right: var(--sp-2);
 }
 
-html.sr-phone .sr-card.is-docked .sr-card__name {
-  font-size: 22px;
+html.sr-phone .sr-card.is-docked .sr-card__name,
+html.sr-phone .sr-tripsheet__name,
+html.sr-phone .sr-tripsheet .sr-card__name {
+  font-size: var(--sr-fs-name-sm);
 }
 
 html.sr-phone .sr-card.is-docked .sr-hero__num {
-  font-size: 20px;
+  font-size: var(--sr-fs-num-sm);
 }
 
 html.sr-phone .sr-card.is-docked .sr-act {
@@ -4663,7 +5710,7 @@ html.sr-phone.sr-trip-collapsed #sr-side {
 html.sr-phone .sr-time {
   bottom: 0;
   z-index: var(--sr-z-pill);
-  height: 48px;
+  width: calc(100vw - 2 * var(--sp-4));
   transform: translate(-50%, calc(-1 * (var(--sr-sheet-h) + var(--sp-3))));
 }
 
@@ -4691,20 +5738,9 @@ html.sr-phone .sr-time__read {
 /* Every part of the pill is a 44 px target on a phone (docs/ui-guide.md §3.9, measured: the rate
    button was 48 × 36). */
 html.sr-phone .sr-time__rate,
+html.sr-phone .sr-time__unit,
 html.sr-phone .sr-time__live {
   height: 44px;
-}
-
-/* Under 380 px the pill's four parts need 372: the steps go, as the trip's Replay does at that
-   width (ui.css, the trip section). Stepping is still there: drag the readout, or its arrow keys. */
-@media (max-width: 379px) {
-  html.sr-phone .sr-time__step {
-    display: none;
-  }
-
-  html.sr-phone .sr-time {
-    padding: 0 var(--sp-1) 0 var(--sp-2);
-  }
 }
 
 html.sr-phone[data-sheet='full'] .sr-time,
@@ -4717,11 +5753,32 @@ html.sr-phone.sr-card-open .sr-time {
 /* A toast stands above the pill, and so above the sheet; the scene note under the top bar. */
 html.sr-phone .sr-toast {
   top: auto;
-  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + 48px + var(--sp-3));
+  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + var(--sr-time-h) + var(--sp-3));
+  left: 50%;
+  max-width: calc(100vw - 2 * var(--sp-4));
+}
+
+/* No pill while a card is up or the sheet is full (above): the toast then stands on the sheet
+   itself. Counting the missing pill's height put it in the middle of the free band, which is
+   where the subject is: SEEN 2026-10-06 at 390 x 844, "Moved to Jupiter" across Jupiter. At full
+   the sheet is the screen, so the toast stops under the top bar instead of leaving by the top. */
+html.sr-phone[data-sheet='full'] .sr-toast,
+html.sr-phone.sr-card-open .sr-toast {
+  bottom: min(calc(var(--sr-sheet-h) + var(--sp-3)), calc(100dvh - var(--sr-top-end) - 44px));
 }
 
 html.sr-phone .sr-scenenote {
   top: var(--sr-top-end);
+  max-width: calc(100vw - 2 * var(--sp-4));
+}
+
+/* At full the sheet is the page, and its top is 60 px down: the note (88 to 134) lay across the
+   sheet's handle and the "Explore" back row, leaving 27 and 31 px of each under a finger
+   (internal #457, measured 2026-10-08 at 390 x 844). The note is about the scene, which the sheet
+   now covers, so it waits with the pill and the live line; one drag down brings it back. */
+html.sr-phone[data-sheet='full'] .sr-scenenote {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* The glass-strong surfaces answer the solid fallback themselves (.sr-float's would be lighter). */
@@ -4759,26 +5816,166 @@ html.sr-phone .sr-scenenote {
 /* The Tonight view (spec 0051 task 2, ui/tonight.js): mounted by the sidebar's Tonight tab (spec 0061).
    One pass, its arc and its countdown, the darkness line, and More passes. Type at the 13 px floor;
    the countdown in the mono face with fixed-width digits, so it does not jitter as it ticks. */
-.sr-tonight-view { display: flex; flex-direction: column; gap: var(--sp-2); font-size: 13px; color: var(--sr-text); }
-.sr-tonight-view__title { margin: 0; font: 600 15px/1.3 var(--sr-font-hud); letter-spacing: 0.02em; }
-.sr-tonight-view__place { margin: 0; color: var(--sr-text-dim); }
-.sr-tonight-view__body { display: flex; gap: var(--sp-3); align-items: flex-start; }
-.sr-tonight-view__body[hidden] { display: none; }
-.sr-tonight-view__arc { flex: 0 0 96px; }
-.sr-tonight-view__text { flex: 1 1 auto; min-width: 0; }
-.sr-tonight-view__line { margin: 0 0 2px; line-height: 1.4; }
-.sr-tonight-view__status { margin: 0; font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; color: var(--sr-ember); }
+.sr-tonight-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text);
+}
+
+/* A one-line child may not widen the column: it ends in an ellipsis instead. */
+.sr-tonight-view > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The view's heading is the tab's own word: a microlabel, as every section of the sidebar has. */
+.sr-tonight-view__title {
+  margin: 0;
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-tonight-view__place,
 .sr-tonight-view__caveat,
 .sr-tonight-view__dark,
-.sr-tonight-view__empty { margin: 0; color: var(--sr-text-dim); line-height: 1.4; }
-.sr-tonight-view__actions { display: flex; gap: var(--sp-2); }
+.sr-tonight-view__empty,
+.sr-tonight-view__next,
+.sr-tonight-view__line,
+.sr-tonight-view__name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Where the pass goes is the half an ellipsis cut: "From north-north-west to east-south-…" at both
+   widths (the audit of 2026-10-05). Two lines beside the arc, then the ellipsis. */
+.sr-tonight-view__line {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.sr-tonight-view__place,
+.sr-tonight-view__caveat,
+.sr-tonight-view__dark,
+.sr-tonight-view__line {
+  color: var(--sr-text-dim);
+}
+
+.sr-tonight-view__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.sr-tonight-view__body[hidden],
+.sr-tonight-view__next[hidden] { display: none; }
+
+.sr-tonight-view__name {
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+}
+
+/* Three numbers between two hairlines, the card's own row (.sr-hero): mono, the unit dim under it. */
+.sr-tonight-view__nums {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--sr-line);
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-tonight-view__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.sr-tonight-view__num {
+  margin: 0;
+  font: 400 var(--sr-fs-num)/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
+
+.sr-tonight-view__unit {
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tonight-view__way {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+.sr-tonight-view__arc { flex: 0 0 96px; }
+.sr-tonight-view__text { flex: 1 1 auto; min-width: 0; }
+
+.sr-tonight-view__status {
+  margin: 0;
+  overflow: hidden;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-ember);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The empty state: what would be here, and under it the next one. */
+.sr-tonight-view__empty { padding-top: var(--sp-2); font-size: var(--sr-fs-body); line-height: 20px; color: var(--sr-text); }
+.sr-tonight-view__empty[hidden] { display: none; }
+.sr-tonight-view__next { color: var(--sr-text-dim); }
+
+.sr-tonight-view__actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
 .sr-tonight-view__list[hidden] { display: none; }
-.sr-tonight-view__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.sr-tonight-view__row { position: relative; }
-.sr-tonight-view__rowbtn { width: 100%; padding: 6px 8px; text-align: left; font: inherit; color: var(--sr-text); background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
-.sr-tonight-view__rowbtn:hover { border-color: var(--sr-ember); }
+.sr-tonight-view__list { margin: 0; padding: 0; list-style: none; }
+.sr-tonight-view__row { position: relative; border-top: 1px solid var(--sr-line); }
+.sr-tonight-view__row:first-child { border-top: 0; }
+
+.sr-tonight-view__rowbtn {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-3) 0;
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sr-tonight-view__rowname,
+.sr-tonight-view__rowdetail {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-tonight-view__rowname { font: 400 var(--sr-fs-body)/20px var(--sr-font); }
+.sr-tonight-view__rowdetail { font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+
+@media (hover: hover) {
+  .sr-tonight-view__rowbtn:hover .sr-tonight-view__rowname { color: var(--sr-ember-light); }
+}
+
 /* Each row's own small arc, on hover and focus only (spec 0051 req 9). */
-.sr-tonight-view__rowarc { display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.sr-tonight-view__rowarc { display: none; position: absolute; right: 0; top: 50%; transform: translateY(-50%); pointer-events: none; }
 .sr-tonight-view__row:hover .sr-tonight-view__rowarc,
 .sr-tonight-view__row:focus-within .sr-tonight-view__rowarc { display: block; }
 
@@ -4789,4 +5986,1033 @@ html.sr-phone .sr-scenenote {
 .sr-arc__lit { fill: none; stroke: var(--sr-text); stroke-width: 1.5; stroke-linecap: round; }
 .sr-arc__shadow { fill: none; stroke: var(--sr-text-dim); stroke-width: 1.5; stroke-dasharray: 3 3; }
 .sr-arc__peak { fill: var(--sr-ember); }
-.sr-arc__cardinal { fill: var(--sr-text-dim); font-size: 11px; font-family: var(--sr-font); }
+.sr-arc__cardinal { fill: var(--sr-text-dim); font-size: var(--sr-fs-unit); font-family: var(--sr-font); }
+
+/* --- the sky from the ground (sky/groundsky.js, 2026-10-05) ------------------------------
+   Names over the canvas, in the scene labels' own layer (#labels), so every panel is above them.
+   A figure's name wears the microlabel role, as the trips' figures do above; a star's is the
+   label role, a planet's the same at full strength. Nothing here takes a pointer. */
+:root {
+  /* Red light keeps eyes adapted to the dark: one colour, and capped so white is not full red. */
+  --sr-night-red: #c40000;
+  --sr-z-night: 90;
+}
+.sr-skylabels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.sr-skylabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  white-space: nowrap;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-soft);
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
+}
+.sr-skylabel[hidden], .sr-skymark[hidden] { display: none; }
+.sr-skylabel--con {
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+.sr-skylabel--here { color: var(--sr-text); }
+.sr-skylabel--body { color: var(--sr-text); font-weight: 600; }
+.sr-skylabel--pass { color: var(--sr-text); font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
+.sr-skylabel--line { color: var(--sr-text-dim); }
+/* A nebula's or a galaxy's name under its photograph (sky/groundpictures.js). */
+.sr-skylabel--dso { color: var(--sr-text-soft); font-style: italic; }
+/* The field of view: one mono line at the top of the sky, clear of the rail and the pill. */
+.sr-skyfov {
+  position: absolute;
+  left: 50%;
+  top: var(--sp-5);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono);
+  color: var(--sr-text-soft);
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
+}
+/* What "show me" turned to: an ember ring with the halo ember wears over the scene. */
+.sr-skymark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--sr-ember);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--sr-space), inset 0 0 0 1px var(--sr-space);
+}
+/* The eyepiece (internal #351): at a telescope's field the sky is seen through a round stop. The
+   ring is the field's edge; outside it the sky is dimmed, not hidden, so a drag still reads. */
+.sr-skyeyepiece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: 50%;
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--sr-space) 62%, transparent);
+}
+.sr-skyeyepiece[hidden] { display: none; }
+/* "What is that": the name of what was tapped, under it. A button: pressing it opens the card. */
+.sr-skytag {
+  appearance: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--sr-z-labels);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 44px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: var(--sp-1) var(--sp-3);
+  font: inherit;
+  color: var(--sr-text);
+  cursor: pointer;
+  will-change: transform;
+  /* The glass is .sr-float's; it follows a star, so its place is never eased. */
+  transition: border-color var(--sr-fast) var(--sr-ease);
+}
+.sr-skytag:hover, .sr-skytag:active { border-color: var(--sr-line-strong); }
+.sr-skytag[hidden] { display: none; }
+.sr-skytag__name { font: 600 var(--sr-fs-sm)/18px var(--sr-font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sr-skytag__sub { font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono); color: var(--sr-text-dim); white-space: nowrap; }
+/* Red night mode (pub #454): while the sky view is up and the visitor asked for it, everything
+   on the page is multiplied by one red, the canvas included. Chrome keeps its layout, its states
+   and its contrast order; only the colour goes. */
+html.sr-night-red::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-night);
+  pointer-events: none;
+  background: var(--sr-night-red);
+  mix-blend-mode: multiply;
+}
+
+/* Tonight's best and the sky's controls, in the Tonight view (ui/tonight.js): the list rows and the
+   density row's buttons that are already there, a microlabel over each block. */
+.sr-tonight-view__sub { margin-top: var(--sp-4); }
+.sr-tonight-view__sub[hidden], .sr-tonight-view__caveat[hidden] { display: none; }
+.sr-skybar { display: flex; flex-direction: column; gap: var(--sp-2); }
+.sr-skybar .sr-density__note { margin: 0; }
+.sr-skybar__wrap { flex-wrap: wrap; }
+/* The sky's own time: a strip to drag (ui/tonight.js), in the density button's look. */
+.sr-skytime { display: flex; flex: none; justify-content: space-between; align-items: center; cursor: ew-resize; touch-action: none; user-select: none; }
+.sr-skytime__at { color: var(--sr-text); }
+/* Where dusk, the middle of the night and dawn are on the strip: a hairline from the foot and a HUD
+   unit beside it. The strip's middle is now. */
+.sr-skytime { position: relative; overflow: hidden; padding-bottom: var(--sp-4); }
+.sr-skytime__ticks { position: absolute; inset: 0; pointer-events: none; }
+.sr-skytime__tick { position: absolute; bottom: 0; width: 1px; height: var(--sp-3); background: var(--sr-line-strong); }
+.sr-skytime__tick[hidden] { display: none; }
+.sr-skytime__ticklabel {
+  position: absolute;
+  left: var(--sp-1);
+  bottom: 0;
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+}
+/* Point your phone (internal #450): what the phone is pointing at, in the HUD's corner brackets
+   (section 3.12), fixed at the middle of the sky. */
+.sr-skyreticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  pointer-events: none;
+  --sr-bracket-out: 0px;
+}
+.sr-skyreticle[hidden] { display: none; }
+/* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
+.sr-skybar .sr-density__choices[hidden], .sr-skybar .sr-density__btn[hidden] { display: none; }
+.sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
+@media (pointer: coarse) {
+  .sr-skybar .sr-density__btn { min-height: 44px; }
+}
+/* A row's name with its brightness at the right, in mono: the number a row is ranked by. */
+.sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
+.sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
+.sr-tonight-view__rowside { flex: 0 0 auto; font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+/* On a phone the search bar has the top of the screen: the field of view sits under it. */
+html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
+/* With a launch inside a day the line under the search holds the countdown chip (44 px tall): the
+   field line goes under it, or the chip lay over '72° field · eye' (bulk 2 frame, #565). */
+html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+
+/* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
+   back on their old faces (and task 6 removed the face). And the card's name is a
+   heading that takes focus for screen readers, not a field: no ring around it. */
+.sr-card__name:focus { outline: none; }
+
+/* A FINGER'S TARGET IS 44 PX (docs/ui-guide.md principle 9; internal #346). The controls
+   tests/test_touch_targets.mjs found under it on the phone profile, 2026-10-05: the picker's rows
+   and the place chips at 36, the card's back row at 36, "Show all" at 36, a button at 40, What to
+   show's layer rows at 36, and the Right-now rows, which were 44 only by their padding. */
+@media (pointer: coarse) {
+  .sr-btn,
+  .sr-chip,
+  .sr-more,
+  .sr-pick__btn,
+  .sr-side__back,
+  .sr-now__btn,
+  .sr-show__label,
+  .sr-colourkey__select {
+    min-height: 44px;
+  }
+}
+
+/* ==============================================================================================
+   THE TRIPS OF 2026-10-06: the end card's picture to send, the intro's Present, and present mode.
+   ============================================================================================== */
+
+/* "Not now" and "Present", side by side under Start: two quiet text buttons, 44 px tall. */
+.sr-tripsheet__quietrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  align-items: center;
+}
+
+.sr-tripsheet__present,
+.sr-tripsheet__keep {
+  gap: var(--sp-2);
+}
+
+.sr-tripsheet__keep[aria-busy='true'] {
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__present[aria-pressed='true'] {
+  color: var(--sr-text);
+  background: var(--sr-wash-strong);
+}
+
+/* The picture to send (public #444): the trip's own picture as one button, its caption under it. */
+.sr-tripsheet__send {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  overflow: hidden;
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  color: var(--sr-text);
+  text-align: left;
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tripsheet__send:active {
+  background: var(--sr-wash-strong);
+}
+
+@media (hover: hover) {
+  .sr-tripsheet__send:hover {
+    background: var(--sr-wash-hover);
+  }
+}
+
+.sr-tripsheet__sendpic {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.sr-tripsheet__sendcap {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-3);
+}
+
+/* --- present mode: one trip for a room -------------------------------------------------------
+   The sidebar goes (and with it the left inset every centred bar is offset by), the stop's words
+   are a caption across the foot of the scene, and the toolbar's targets grow: the person
+   pressing them is standing, with a clicker or at arm's length from a laptop. */
+html.sr-present {
+  --sr-scene-left: 0px;
+  --sr-trip-bar: 72px;
+}
+
+html.sr-present #sr-side {
+  display: none;
+}
+
+.sr-tripsheet.is-present {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  /* A caption across the foot of the scene, the lower third a film uses. It reaches the window's
+     bottom edge, with the toolbar resting on its foot, because that is what scene/viewshift.js
+     counts as covered: the subject is lifted into the part of the window above the words. */
+  min-height: 0;
+  max-height: 50vh;
+  /* A four-line card ended 6 px above the toolbar (internal #419 item 4): a step more under it. */
+  padding: var(--sp-5) var(--sp-6) calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-6));
+  overflow-y: auto;
+  pointer-events: auto;
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+
+html.sr-present .sr-trip__toolbar {
+  z-index: 1;
+}
+
+.sr-tripsheet.is-present .sr-tripsheet__panel,
+.sr-tripsheet.is-present .sr-card.is-docked {
+  padding: 0;
+}
+
+.sr-tripsheet.is-present .sr-card__name,
+.sr-tripsheet.is-present .sr-tripsheet__name {
+  font: 600 var(--sr-fs-present-name)/1.12 var(--sr-font);
+}
+
+.sr-tripsheet.is-present .sr-card__leadbody,
+.sr-tripsheet.is-present .sr-tripsheet__text {
+  max-width: none;
+  margin-top: var(--sp-4);
+  font: 400 var(--sr-fs-present)/1.38 var(--sr-font);
+}
+
+.sr-tripsheet.is-present .sr-card__micro,
+.sr-tripsheet.is-present .sr-tripsheet__micro,
+.sr-tripsheet.is-present .sr-tripsheet__meta,
+.sr-tripsheet.is-present .sr-tripsheet__note,
+.sr-tripsheet.is-present .sr-card__leadnote,
+.sr-tripsheet.is-present .sr-card__when,
+.sr-tripsheet.is-present .sr-card__tripline,
+.sr-tripsheet.is-present .sr-card__cls,
+.sr-tripsheet.is-present .sr-tripsheet__quiet,
+.sr-tripsheet.is-present .sr-tripsheet__stoptitle,
+.sr-tripsheet.is-present .sr-tripsheet__stopn {
+  font-size: var(--sr-fs-present-sm);
+  line-height: 1.35;
+}
+
+/* A room reads the words, not the instrument: the subject's numbers, its actions and the trip's
+   picture stay in the ordinary view. The honesty lines stay here, at a size that can be read. */
+.sr-tripsheet.is-present .sr-card__subject,
+.sr-tripsheet.is-present .sr-card__nums,
+.sr-tripsheet.is-present .sr-card__actions,
+.sr-tripsheet.is-present .sr-card__more,
+.sr-tripsheet.is-present .sr-card__close,
+.sr-tripsheet.is-present .sr-tripsheet__pic,
+.sr-tripsheet.is-present .sr-tripsheet__send {
+  display: none;
+}
+
+.sr-tripsheet.is-present .sr-tripsheet__start {
+  min-height: 64px;
+  padding: 0 var(--sp-6);
+  font-size: var(--sr-fs-present-sm);
+}
+
+.sr-tripsheet.is-present .sr-tripsheet__sound {
+  width: 64px;
+  height: 64px;
+}
+
+/* The intro lists the stops in two columns here, so Start is not pushed off a 900 px screen. */
+.sr-tripsheet.is-present .sr-tripsheet__stops {
+  columns: 2;
+  column-gap: var(--sp-6);
+}
+
+html.sr-present .sr-trip__tb {
+  width: 56px;
+  height: 56px;
+}
+
+/* Previous and Next are the two a presenter hunts for: wider than the rest, and washed. */
+html.sr-present .sr-trip__tb[class='sr-trip__tb'] {
+  width: 88px;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius-pill);
+}
+
+html.sr-present .sr-trip__tb--replay,
+html.sr-present .sr-trip__tb--share,
+html.sr-present .sr-trip__tb--hide {
+  display: none;
+}
+
+html.sr-present .sr-trip__count {
+  font-size: var(--sr-fs-num);
+}
+
+.sr-trip__tb[hidden] {
+  display: none;
+}
+
+/* A projector, 1920 wide and seen from further back: the ladder's next step. */
+@media (min-width: 1800px) {
+  html.sr-present {
+    --sr-fs-present-sm: 26px;
+    --sr-fs-present: 40px;
+    --sr-fs-present-name: 64px;
+  }
+}
+
+/* A phone held up to a small group: the panel is the width of the screen, above the toolbar. */
+@media (max-width: 899px) {
+  .sr-tripsheet.is-present {
+    max-height: 56vh;
+    padding: var(--sp-4) var(--sp-4) calc(var(--sr-trip-bar-phone) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  }
+
+  html.sr-present {
+    --sr-fs-present-sm: 15px;
+    --sr-fs-present: 20px;
+    --sr-fs-present-name: 28px;
+  }
+
+  html.sr-present .sr-trip__tb,
+  html.sr-present .sr-trip__tb[class='sr-trip__tb'] {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* --- Today: the home's dated cards (ui/today.js, internal #270) --------------------------
+   Two columns, as the trip cards are, but plain glass: a date in mono caps, a title, one line.
+   Generated from what is loaded; a card with nothing true to say is not there. */
+.sr-today[hidden] { display: none; }
+
+.sr-today__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+}
+
+.sr-today__grid[hidden] { display: none; }
+
+.sr-today__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-height: 96px;
+  padding: var(--sp-3);
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-today__card:hover { background: var(--sr-wash-strong); border-color: var(--sr-line-strong); }
+
+.sr-today__kicker {
+  font: 500 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-today__title {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 600 var(--sr-fs-label)/18px var(--sr-font);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.sr-today__line {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* --- Debris, by the numbers (ui/debris.js, public #449): opens in place under Today -------- */
+.sr-debris[hidden] { display: none; }
+
+.sr-debris {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0 var(--sp-3);
+}
+
+.sr-debris .sr-micro { margin: var(--sp-2) 0 0; }
+
+.sr-debris__state,
+.sr-debris__note,
+.sr-debris__honesty,
+.sr-debris__story {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-debris__lead {
+  margin: 0;
+  font: 400 var(--sr-fs-lead)/1.25 var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-debris__nums {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-2);
+  margin: 0;
+}
+
+.sr-debris__num { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.sr-debris__n {
+  margin: 0;
+  font: 400 var(--sr-fs-num-sm)/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+.sr-debris__k {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-debris__swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--sr-radius-sm);
+  background: var(--sr-debris);
+}
+
+.sr-debris__num[data-kind='rocket'] .sr-debris__swatch,
+.sr-debris__seg[data-kind='rocket'] { background: var(--sr-rocket); }
+
+.sr-debris__num[data-kind='dead'] .sr-debris__swatch,
+.sr-debris__seg[data-kind='dead'] { background: var(--sr-text-faint); }
+
+.sr-debris__num[data-kind='working'] .sr-debris__swatch,
+.sr-debris__seg[data-kind='working'] { background: var(--sr-satellite); }
+
+.sr-debris__bands,
+.sr-debris__stories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-debris__bandhead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-debris__bandn {
+  font-family: var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-debris__bar {
+  display: flex;
+  height: 8px;
+  margin-top: var(--sp-1);
+  overflow: hidden;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-debris__seg { flex: none; height: 100%; background: var(--sr-debris); }
+.sr-debris__map { align-self: flex-start; min-height: 44px; padding: 0 var(--sp-4); }
+.sr-debris__map[aria-pressed='true'] { color: var(--sr-text); border-color: var(--sr-line-strong); }
+
+/* --- A mission's events on its card (ui/missions.js, public #452) ---------------------------- */
+.sr-card__mission[hidden] { display: none; }
+
+.sr-mission {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-mission__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sr-mission__head .sr-micro { margin: 0; }
+
+.sr-mission__count {
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sr-mission__what { flex: 1 1 auto; min-width: 0; }
+
+.sr-mission__when {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__title {
+  margin: 0;
+  font: 600 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-mission__step {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sr-mission__step:hover { background: var(--sr-wash-strong); }
+.sr-mission__step:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.sr-mission__text,
+.sr-mission__note,
+.sr-mission__source {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__text { font-size: var(--sr-fs-label); line-height: 20px; color: var(--sr-text); }
+.sr-mission__note.is-here { color: var(--sr-text); }
+
+.sr-mission__acts { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.sr-mission__go { min-height: 44px; padding: 0 var(--sp-4); }
+
+.sr-mission__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-mission__list[hidden] { display: none; }
+
+.sr-mission__event {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-2);
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--sr-line);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.sr-mission__event:hover { background: var(--sr-wash); }
+.sr-mission__event[aria-current='true'] { background: var(--sr-ember-soft); }
+
+.sr-mission__event-when {
+  flex: none;
+  width: 9.5em;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__event[aria-current='true'] .sr-mission__event-when { color: var(--sr-text); }
+.sr-mission__event-title { font: 400 var(--sr-fs-label)/18px var(--sr-font); }
+
+.sr-mission__link {
+  color: var(--sr-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sr-mission__link:hover { color: var(--sr-ember-light); }
+
+@media (pointer: coarse) {
+  .sr-mission__link { display: inline-flex; align-items: center; min-height: 44px; }
+  .sr-today__debris { min-height: 44px; }
+}
+
+/* Two small targets on a phone that were real (internal #419 item 9): "Sound: off" in What to show
+   was 32 px tall, and Eye / Binoculars / Telescope 42 px wide. */
+html.sr-phone .sr-show__toggle { min-height: 44px; }
+html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 44px; }
+
+/* A launch within a day (ui/countdown.js): the number in the mono face, its state beside it. */
+.sr-count {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  align-items: baseline;
+}
+.sr-count[hidden] { display: none; }
+.sr-count__clock {
+  font: 500 var(--sr-fs-body)/1.2 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-ember);
+}
+.sr-count__words {
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+.sr-card__count { margin: 0 0 var(--sp-3); }
+.sr-card__count .sr-count__clock { font-size: var(--sr-fs-num-sm); }
+
+/* The trip's volume (ui/tripframe.js, public #298): a short native slider beside the sound toggle. */
+.sr-trip__vol {
+  width: 72px;
+  height: 44px;
+  margin: 0 var(--sp-1);
+  accent-color: var(--sr-ember);
+  background: transparent;
+  cursor: pointer;
+}
+.sr-trip__vol[hidden] { display: none; }
+
+/* The same slider in What to show (ui/sound.js volumeSlider): the full width of its row. */
+.sr-show__vol {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: var(--sp-1) 0 0;
+  accent-color: var(--sr-ember);
+  background: transparent;
+  cursor: pointer;
+}
+.sr-show__vol[hidden] { display: none; }
+html.sr-phone .sr-trip__vol { width: 56px; }
+.sr-tripsheet__voiceoffer[hidden] { display: none; }
+
+/* ---------------------------------------------------------------------------------------------
+   The daily hook (spec 0041, public #395): the home's first line, the wonder of the day, the
+   passport's row and view, and the stamp on a trip's end card.
+   --------------------------------------------------------------------------------------------- */
+
+/* One true sentence (ui/sentence.js): one line under the wordmark, faded in when it is made. */
+.sr-sentence {
+  display: block;
+  width: 100%;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-size: var(--sr-fs-label);
+  line-height: 1.4;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--sr-slow) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-sentence[hidden] { display: none; }
+.sr-sentence.is-in { opacity: 1; }
+.sr-sentence:hover { color: var(--sr-ember-light); }
+
+.sr-sentence__text {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+html.sr-phone .sr-sentence {
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+}
+
+html.sr-phone .sr-passport {
+  padding-right: var(--sp-4);
+  padding-left: var(--sp-4);
+}
+
+@media (pointer: coarse) {
+  .sr-sentence { min-height: 44px; }
+}
+
+/* The wonder of the day: a dated card, the shelf's full width, over the shelf. */
+.sr-wonder {
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--sp-2);
+}
+
+.sr-wonder[hidden] { display: none; }
+
+/* This week's story (ui/story.js): the rule that produced it, as the card's caption. */
+.sr-story__rule {
+  color: var(--sr-text-dim);
+}
+
+/* The passport's row at the home's foot: a name and what it holds, as a Right-now row. */
+.sr-passport-open {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-3) 0;
+  font: inherit;
+  font-size: var(--sr-fs-body);
+  line-height: 1.35;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--sr-line);
+  cursor: pointer;
+}
+
+.sr-passport-open:hover .sr-passport-open__name { color: var(--sr-ember-light); }
+
+.sr-passport-open__value {
+  font: 400 var(--sr-fs-sm)/1.35 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+}
+
+/* The passport's view (ui/passport.js), in the sidebar's pushed-view body. */
+.sr-passport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  padding: var(--sp-2) 20px var(--sp-5);
+}
+
+.sr-passport__title {
+  margin: 0;
+  font: 600 var(--sr-fs-mark)/1 var(--sr-font-hud);
+  color: var(--sr-text);
+}
+
+.sr-passport__title:focus { outline: none; }
+
+.sr-passport__note,
+.sr-passport__empty,
+.sr-passport__said {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-passport__note { margin-top: calc(-1 * var(--sp-3)); }
+.sr-passport__said:empty { display: none; }
+
+.sr-passport__sect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.sr-passport__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.sr-passport__num {
+  font: 500 var(--sr-fs-num-sm)/1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+.sr-passport__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-passport__place {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  overflow: hidden;
+  font: inherit;
+  font-size: var(--sr-fs-label);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+
+.sr-passport__place:hover { background: var(--sr-wash-strong); border-color: var(--sr-line-strong); }
+
+/* How many of the trips: a quiet line, not a score. */
+.sr-passport__bar {
+  height: 4px;
+  overflow: hidden;
+  background: var(--sr-line);
+  border-radius: var(--sr-radius-pill);
+}
+
+.sr-passport__fill {
+  display: block;
+  height: 100%;
+  background: var(--sr-text-soft);
+  border-radius: var(--sr-radius-pill);
+}
+
+.sr-passport__forget {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  font: inherit;
+  font-size: var(--sr-fs-label);
+  color: var(--sr-text);
+  background: transparent;
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+}
+
+.sr-passport__forget:hover { background: var(--sr-wash); }
+.sr-passport__forget:disabled { color: var(--sr-text-dim); border-color: var(--sr-line); cursor: default; background: transparent; }
+
+/* The stamp on a trip's end card: "Trip 7 of 25 · 7 October 2026". */
+.sr-tripsheet__stamp {
+  align-self: flex-start;
+  width: fit-content;
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-soft);
+  border: 1px dashed var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-tripsheet__stamp[hidden] { display: none; }
+
+/* Under the stamp, the places opened so far (public #240): a caption, not a second stamp. */
+.sr-tripsheet__seen {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__seen[hidden] { display: none; }
+
+/* Cards and live facts (2026-10-08). The distance that ticks: mono, tabular, so no digit moves
+   its neighbours (docs/ui-guide.md 2.2, value numerals). */
+.sr-live__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-live__num {
+  font: 400 var(--sr-fs-num-sm)/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+.sr-live .sr-card__aboardnote,
+.sr-spark .sr-card__aboardnote,
+.sr-crew > .sr-card__aboardnote { margin-top: var(--sp-2); }
+
+/* The six-year curve of distance from the Earth. */
+.sr-spark__svg {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin-bottom: var(--sp-1);
+}
+
+.sr-spark__path { fill: none; stroke: var(--sr-text); stroke-width: 1.5; }
+.sr-spark__base { stroke: var(--sr-line-strong); stroke-width: 1; }
+.sr-spark__now { stroke: var(--sr-text-dim); stroke-width: 1; }
+.sr-spark__min { stroke: var(--sr-ember); stroke-width: 2; }
+.sr-spark__go { margin-top: var(--sp-2); text-align: left; font-size: var(--sr-fs-sm); }
+
+.sr-crew { display: flex; flex-direction: column; gap: var(--sp-3); }
+.sr-crew__people .sr-card__aboardnote { margin-top: var(--sp-2); }
+.sr-next__pastacts { display: flex; flex-wrap: wrap; gap: 0 var(--sp-4); }
+.sr-next__pastbox { margin-bottom: var(--sp-3); }
+.sr-card__out { color: var(--sr-text-soft); }
+.sr-card__aboardnote.is-stale { color: var(--sr-text-soft); }
+
+/* Up the longest, in the debris view. */
+.sr-debris__oldest .sr-debris__story { display: flex; flex-direction: column; }
+.sr-debris__oldname {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+button.sr-debris__oldname { min-height: 24px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--sr-line-strong); }
+button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
+@media (pointer: coarse) {
+  button.sr-debris__oldname { min-height: 44px; }
+}
+.sr-debris__oldyears { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }

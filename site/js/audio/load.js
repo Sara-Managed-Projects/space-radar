@@ -1,6 +1,6 @@
 // audio/load.js -- fetch and decode a sound, once, and never before somebody asked for it.
 //
-// Contract export: createLoader(engine, opts) -> { load(row), warned() }
+// Contract export: createLoader(engine, opts) -> { load(row), forget(id), warned() }
 //
 // Spec 0035 req 8 (2026-09-23): A MISSING ASSET IS SILENT, NOT BROKEN. A fetch that fails, or a
 // file the browser cannot decode, resolves to null: the bed stays off, the trip runs, the console
@@ -62,7 +62,13 @@ export function createLoader(engine, opts = {}) {
     return cache.get(row.id);
   }
 
-  return { load, warned: () => warnedOnce };
+  // Spec 0069: a trip's narration is a clip a stop, each some megabytes decoded; the narration
+  // keeps three and lets the rest go. A bed is never forgotten (four, and each comes back).
+  function forget(id) {
+    return cache.delete(id);
+  }
+
+  return { load, forget, warned: () => warnedOnce };
 }
 
 function defaultCanPlay() {

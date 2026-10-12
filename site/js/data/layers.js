@@ -20,6 +20,8 @@ import { load } from './sources.js';
 import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, parseGdacsCyclones, isGeostationary, skyToSunInertialKm } from './parsers.js';
 import {
   sampleAsteroids,
+  namedAsteroids,
+  namedComets,
   sampleDeepSpace,
   sampleReentries,
   handKeptSites,
@@ -28,6 +30,8 @@ import {
 } from './sample.js';
 import { worldRecords } from '../scene/worlds.js';
 import { EXOTICS } from './exotics.js';
+import { COPY, t, fmt } from '../copy/en.js';
+import { shownPeriod } from '../scene/pulse.js';
 import { SYSTEMS } from './systems.js';
 import { LAYER_ROWS } from './layers.registry.js';
 import { propagate } from '../propagate/index.js';
@@ -54,6 +58,8 @@ const C = {
   // Spec 0053 design section 3: the aurora's green, the 557.7 nm line. Only the layers panel's
   // swatch; the shell's own colours are emission light in scene/aurora.js.
   aurora: '#5CFF8A',
+  // Spec 0066: lightning through cloud, the blue-white scene/weather/lightning.js draws a flash in.
+  lightning: '#B8CCFF',
 };
 
 // =================================================================================================
@@ -67,9 +73,9 @@ const C = {
 
 /** @type {Array<{noradId:number, name:string, why:string}>} */
 export const NOTABLE = [
-  { noradId: 25544, name: 'ISS (Zarya)', why: 'Seven people live here. It is the brightest thing in the sky after the Moon and Venus.' },
+  { noradId: 25544, name: 'ISS (Zarya)', why: 'People have lived here without a break since November 2000. It is the brightest thing in the sky after the Moon and Venus.' },
   { noradId: 48274, name: 'CSS (Tianhe)', why: "The core of China's space station, permanently crewed since 2021." },
-  { noradId: 20580, name: 'Hubble Space Telescope', why: 'Thirty-five years of the pictures everybody has seen. Still working.' },
+  { noradId: 20580, name: 'Hubble Space Telescope', why: 'In orbit since April 1990, and the source of the pictures everybody has seen. Still working.' },
   { noradId: 25867, name: 'Chandra X-ray Observatory', why: 'It sees the X-rays from black holes eating. Its orbit reaches a third of the way to the Moon.' },
   { noradId: 25989, name: 'XMM-Newton', why: "Europe's X-ray telescope, and the largest satellite ESA has ever launched." },
   { noradId: 43435, name: 'TESS', why: 'It found thousands of planets around other stars by watching them dim their own suns.' },
@@ -91,10 +97,10 @@ export const NOTABLE = [
   { noradId: 43613, name: 'ICESat-2', why: 'It fires 10 000 laser pulses a second at the ice sheets and counts the photons that come back.' },
   { noradId: 43476, name: 'GRACE-FO 1', why: 'Two satellites chasing each other, weighing groundwater by how the gap between them changes.' },
   { noradId: 40376, name: 'SMAP', why: 'It measures how wet the soil is, everywhere, every three days.' },
-  { noradId: 41866, name: 'GOES 16', why: 'The hurricane satellite over the Atlantic. It sits still over one spot, 35 786 km up.' },
+  { noradId: 41866, name: 'GOES 16', why: 'A weather satellite that sits still over one spot, 35 786 km up. It kept the Atlantic hurricane watch until GOES 19 took over in April 2025.' },
   { noradId: 43226, name: 'GOES 17', why: 'Its Pacific counterpart, now the on-orbit spare.' },
   { noradId: 51850, name: 'GOES 18', why: 'The one watching the US west coast and the Pacific storms.' },
-  { noradId: 60133, name: 'GOES 19', why: 'The newest of them, and the current Atlantic watch.' },
+  { noradId: 60133, name: 'GOES 19', why: 'The newest of them. It took over the Atlantic hurricane watch in April 2025.' },
   { noradId: 38771, name: 'MetOp-B', why: "Europe's polar weather satellite. Its soundings do more for a 3-day forecast than any other instrument." },
   { noradId: 43689, name: 'MetOp-C', why: 'The last of that series, flying in formation with its sisters.' },
   { noradId: 37846, name: 'GSAT0101 (Galileo-PFM)', why: "The first satellite of Europe's own version of GPS. Your phone probably uses it." },
@@ -294,7 +300,7 @@ function milkyWayRecords() {
       why: 'Everything else on this map is inside it. The Sun sits a little more than halfway out from its centre.',
       drawsAs: 'variant',
       drawnName: 'a point-cloud model of the Milky Way',
-      departure: 'the disc, bar and arms follow published measurements (Reid et al. 2019 for the arms and the distance to the centre); nobody has seen our galaxy from outside, so the picture is an illustration and the stars around you are the measured part',
+      departure: 'the disc, bar and arms follow published measurements (Reid et al. 2019 for the arms and the distance to the centre); nobody has seen our galaxy from outside, so the picture is an illustration and the stars around you are the measured part; the dark lanes are dust drawn along the arms\u2019 inner edges, where other spirals show it, and are not a map of ours',
       distanceSource: 'Reid et al. 2019, ApJ 885:131 (R0 = 8.15 kpc)',
     },
   }];
@@ -303,18 +309,49 @@ function milkyWayRecords() {
 // Black holes and other extremes (spec 0028 step 7): the mirror of registry/exotics.yaml as static
 // records on the sun-inertial axes -- the same sky -> ecliptic rotation the stars and planets use.
 /**
+ * The Archive files some stars under another name than the one people know (Kepler-90 is KOI-351), so
+ * its planets are "KOI-351 b" to "h". Give each the name people type, in its aliases, so that
+ * "Kepler-90 h" finds Kepler-90 h (internal #473). Pure on the rows; it adds to `meta.aliases` of the
+ * planet records it is handed, once. Returns how many it changed.
+ */
+export function addPlanetAliases(rows, planets) {
+  const byId = new Map();
+  for (const r of planets || []) if (r && r.id) byId.set(r.id, r);
+  let n = 0;
+  for (const s of rows || []) {
+    if (!s || !s.host || !s.display || s.display === s.host) continue;
+    for (const p of s.planets || []) {
+      const rec = byId.get(p.id);
+      if (!rec || typeof rec.name !== 'string' || !rec.name.startsWith(s.host + ' ')) continue;
+      const alias = s.display + rec.name.slice(s.host.length);
+      const meta = rec.meta || (rec.meta = {});
+      const have = Array.isArray(meta.aliases) ? meta.aliases : (meta.aliases = []);
+      if (!have.includes(alias)) { have.push(alias); n++; }
+    }
+  }
+  return n;
+}
+
+/**
  * One record per registry/systems.yaml row: the host star, `star-<id>`, klass `star`, placed on the
  * exoplanet table's own row for it (data/systems.js hostSky, joined by the generator) so it sits
  * exactly on the planets' glyphs. Its facts are the row's, with the page they were read from.
  * Exported for tests/test_systems.mjs.
  */
-export function systemHostRecords(systems = SYSTEMS) {
+// The systems that arrive after the first visit (data/systems-index.js, internal #466): main.js
+// hands their rows here when the exoplanet table has landed, and loads this layer again.
+const MORE_SYSTEMS = [];
+export function addSystemRows(rows) {
+  for (const row of rows || []) if (row && !MORE_SYSTEMS.some((s) => s.id === row.id)) MORE_SYSTEMS.push(row);
+}
+
+export function systemHostRecords(systems = [...SYSTEMS, ...MORE_SYSTEMS]) {
   return systems.map((s) => {
     const h = s.hostSky;
     const distLy = Math.round(h.distPc * 3.2615637771674333 * 100) / 100;
     return {
       id: s.hostId,
-      name: s.host,
+      name: s.display || s.host,
       klass: 'star',
       layer: 'systems',
       propagator: 'static',
@@ -330,7 +367,7 @@ export function systemHostRecords(systems = SYSTEMS) {
         system: s.id,
         stageId: s.stage,
         planets: s.planets.length,
-        aliases: [s.host],
+        aliases: [s.host, ...(s.aliases || [])],
         source: s.star.source,
         cite: `NASA Exoplanet Archive: ${s.star.source}`,
       },
@@ -338,7 +375,17 @@ export function systemHostRecords(systems = SYSTEMS) {
   });
 }
 
-function exoticRecords() {
+function exoticDeparture(x) {
+  const T = COPY.drawing.exoticDeparture;
+  const shown = shownPeriod(x.periodS);
+  const parts = [];
+  if (shown) parts.push(shown.slower > 1 ? t(T.pulseSlowed, { n: fmt.int(shown.slower) }) : T.pulseTrue);
+  if (x.image && x.image.file) parts.push(T.portrait);
+  return parts.length ? { departure: parts.join(COPY.punctuation.separator) } : {};
+}
+
+/** Exported for tests/test_pulse.mjs. */
+export function exoticRecords() {
   const LY = 9460730472580.8;
   const e = 23.4392911 * (Math.PI / 180);
   return EXOTICS.map((x) => {
@@ -364,6 +411,11 @@ function exoticRecords() {
         massMsunLow: x.massMsunLow ?? null,
         massMsunHigh: x.massMsunHigh ?? null,
         periodS: x.periodS ?? null,
+        // 2026-10-08 (public #426): what is drawn there that is not the thing as it would look --
+        // a pulsar's blink, slowed by a power of ten (scene/pulse.js), and the Event Horizon
+        // Telescope's picture, far larger than life (scene/portraits.js). The card's "drawn as"
+        // line gains the sentence (ui/cards.js appends a row's `departure`).
+        ...exoticDeparture(x),
         why: x.why,
         source: x.source,
         cite: x.source,
@@ -449,7 +501,7 @@ export const LAYERS = [
     parse: 'exoplanets',
     sample: () => [],
     bundledText: 'data/exoplanets.csv',
-    bundledAsOf: '2026-09-08',
+    bundledAsOf: '2026-10-08',
     propagator: 'static',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: false },
@@ -659,7 +711,7 @@ export const LAYERS = [
   },
   {
     id: 'just-launched',
-    display: 'Launched in the last two weeks',
+    display: 'Just launched',
     klass: 'satellite',
     // registry/layers.yaml says celestrak-active. `last-30-days` is 112 kB against 6.9 MB and
     // is the same rule expressed by the publisher, so this row uses it instead.
@@ -743,6 +795,33 @@ export const LAYERS = [
     nearKm: 4000,
     card: 'debris',
     sentence: 'Dead things with stories, still going round.',
+  },
+  {
+    // THE WHOLE TRACKED POPULATION OF JUNK (public #449): every piece of debris and spent rocket
+    // body in CelesTrak's catalogue, 14 604 of them on 2026-09-28, each on its own orbit's real
+    // height and tilt at an ILLUSTRATIVE place along it (data/satcat.js says why: the catalogue
+    // gives an orbit's shape, not where on it the thing is, and current elements for debris need
+    // an account we do not have). 6.8 MB, so on demand only: ui/debris.js asks for it.
+    id: 'debris-field',
+    display: 'All tracked debris',
+    klass: 'debris',
+    source: 'celestrak-satcat',
+    parseLazy: (data) => import('./satcat.js').then((m) => m.fieldRecords(m.parseSatcat(data))),
+    propagator: 'kepler',
+    frame: 'earth-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 20000 },
+    colour: C.debris,
+    opacity: 0.7,
+    drawUnder: true,
+    glyph: 'debris',
+    nearKm: 0,
+    card: 'debris',
+    heavy: true,
+    load: 'on-demand',
+    sentence: 'Every tracked piece of debris and spent rocket, at its real height and tilt. Where each is along its orbit is illustrative.',
   },
   {
     id: 'launches',
@@ -848,7 +927,7 @@ export const LAYERS = [
     // at a placeholder perihelion, so on a normal day Ceres was on nobody's map. These stand in
     // for nothing, so they load always, like the oddities. `source: bundled`: nothing to fetch.
     id: 'far-bodies',
-    display: 'Dwarf planets and far travellers',
+    display: 'Dwarf planets, far travellers',
     klass: 'asteroid',
     source: 'bundled',
     parse: null,
@@ -881,6 +960,8 @@ export const LAYERS = [
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: true },
     defaultOn: false,
+    // Halley, where it is today, whatever the snapshot holds (and when there is none at all).
+    always: namedComets,
     select: cometsWorthDrawing,
     budget: { maxItems: 60, rank: byBrightNow },
     colour: C.comet,
@@ -899,6 +980,9 @@ export const LAYERS = [
     sources: ['jpl-cad', 'jpl-sbdb-neo'],
     parse: 'neo-approaches',
     sample: sampleAsteroids,
+    // The five a visitor asks for by name (Apophis, Bennu, Didymos, Vesta, Phaethon), each on JPL's
+    // orbit with its phase: rows of this layer whatever the week's close-approach table holds.
+    always: namedAsteroids,
     propagator: 'kepler',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: true },
@@ -983,6 +1067,58 @@ export const LAYERS = [
     sentence: 'The northern and southern lights where NOAA’s model expects them in the next hour, on the night side. A forecast, not a photograph.',
   },
   {
+    // Mirrors registry/layers.yaml `lightning` (2026-10-03, spec 0066 task 1). Like the aurora: no
+    // glyph layer and no records (`draw: 'lightning'`). scene/weather/lightning.js draws brief
+    // flashes on the Earth's night side where NOAA's strike-density map has lightning, and fetches
+    // that map itself, off the boot path and never at tier 0 or on a connection that saves data.
+    // The panel's number is strikes a minute in the map held (`count`, attached by main.js).
+    id: 'lightning',
+    display: 'Lightning',
+    klass: 'lightning',
+    source: 'weather',
+    parse: null,
+    propagator: 'static',
+    frame: 'earth-fixed',
+    moments: { wonder: true, now: true, next: false },
+    defaultOn: true,
+    draw: 'lightning',
+    noModel: true,
+    sample: () => [],
+    select: all,
+    budget: { maxItems: 1 },
+    colour: C.lightning,
+    glyph: 'storm',
+    nearKm: 0,
+    card: 'world',
+    priority: 90,
+    sentence: 'Flashes on the night side where NOAA counted lightning in the last quarter hour: the Americas and the Pacific. Where and how often are measured; each flash’s instant is drawn.',
+  },
+  {
+    // Mirrors registry/layers.yaml `earth-events` (2026-10-07, internal #281): wildfires, erupting
+    // volcanoes and the big icebergs from NASA's EONET. `fetchLazy`: the module that asks NASA and
+    // reads the answer is fetched with the layer (data/eonet.js), so neither it nor the two
+    // requests are a first visit's cost, and `load: 'on-demand'` keeps them until the box is ticked.
+    id: 'earth-events',
+    display: 'Fires, volcanoes and icebergs',
+    klass: 'earthevent',
+    source: 'weather',
+    parse: null,
+    fetchLazy: () => import('./eonet.js').then((m) => m.fetchEarthEvents()),
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 200, rank: (a, b) => (b.epoch || 0) - (a.epoch || 0) },
+    colour: C.site,
+    glyph: 'site',
+    noModel: true,
+    nearKm: 0,
+    card: 'earthevent',
+    load: 'on-demand',
+    sentence: 'Wildfires, erupting volcanoes and the big icebergs NASA’s EONET lists as open, each at its last reported place. Not every fire: the US ones and the large ones.',
+  },
+  {
     // NOT in registry/layers.yaml. Added because sampleReentries() exists and a reentry is one
     // of the three things spec 0011 promises. Off by default: these are historic, not news.
     id: 'reentries',
@@ -1056,6 +1192,27 @@ export async function loadLayer(layer, nowMs) {
 }
 
 /**
+ * The layer's budget, with the layer's OWN rows (`always:`) kept whatever the select and the rank
+ * say. Pure, and exported for tests/test_remaining_trips.mjs.
+ *
+ * `always` meant "whatever the source said" and stopped short of the two filters after it. Halley
+ * is 35 au out: the comets' select keeps it (H 5.5) and the budget's rank, brightest in the sky
+ * now first, puts it last, so with more than sixty comets in the snapshot the one comet a trip
+ * flies to was cut and both of its stops were dropped (internal #444: every headless boot with a
+ * saved copy; the live site showed it only because its comet snapshot was missing).
+ */
+export function withinBudget(selected, own, budget) {
+  const mine = Array.isArray(own) ? own : [];
+  let out = selected.slice();
+  for (const r of mine) if (!out.includes(r)) out.push(r);
+  const max = (budget && budget.maxItems) || Infinity;
+  if (out.length <= max) return out;
+  const rest = out.filter((r) => !mine.includes(r));
+  if (budget && typeof budget.rank === 'function') rest.sort(budget.rank);
+  return rest.slice(0, Math.max(0, max - mine.length)).concat(mine);
+}
+
+/**
  * Not in the module contract. Same work as loadLayer, but hands back the source result too, so the
  * control's count can say "80 of them, from a copy four hours old" instead of just a number.
  * @returns {Promise<{records: Array<Object>, source: Object|null, error: string|null}>}
@@ -1071,7 +1228,13 @@ export async function loadLayerDetailed(layer, nowMs) {
     // `bundled` is the registry's reserved literal for records that live in this repository; it is
     // not a source to fetch, so it is not an id here and the bundledText path below is what runs.
     const ids = (Array.isArray(layer.sources) ? layer.sources : layer.source ? [layer.source] : []).filter((id) => id !== 'bundled');
-    if (typeof layer.sample === 'function') {
+    if (typeof layer.fetchLazy === 'function') {
+      // A layer the page fetches for itself, with a module of its own (`source: 'weather'`,
+      // data/eonet.js): the module asks the publisher and hands back records. A failure is the
+      // catch below: no records, and the reason.
+      parsed = await layer.fetchLazy();
+      result = { id: layer.source, data: true, error: null, fetchedAt: Date.now() };
+    } else if (typeof layer.sample === 'function') {
       // A source a browser cannot call. The harvester (spec 0003 amendment 1 §4) writes it to
       // /data/v1/ and load() reads that snapshot -- for a `browser: false` row it never goes
       // upstream -- so: the real body first, through the layer's parser, and the bundled
@@ -1108,12 +1271,28 @@ export async function loadLayerDetailed(layer, nowMs) {
     } else {
       result = await load(layer.source);
       if (result.data == null) {
-        return { records: [], source: result, error: result.error };
+        // A layer with rows of its own (`always:`) still has those when its source is missing.
+        if (typeof layer.always !== 'function') return { records: [], source: result, error: result.error };
+        parsed = [];
+      } else {
+        // A parser that is a module of its own, fetched with the data it reads (data/satcat.js).
+        parsed = typeof layer.parseLazy === 'function' ? await layer.parseLazy(result.data) : parseFor(layer, result.data);
       }
-      parsed = parseFor(layer, result.data);
     }
   } catch (e) {
     return { records: [], source: result, error: String((e && e.message) || e) };
+  }
+
+  // `always:` rows are the layer's own whatever the source said: they replace a parsed or stand-in
+  // row of the same id (the stand-in Apophis sits at a placeholder; this one is where it is).
+  let own = [];
+  if (typeof layer.always === 'function') {
+    try {
+      own = layer.always();
+      const ids = new Set(own.map((r) => r.id));
+      const names = new Set(own.map((r) => r.name));
+      parsed = parsed.filter((r) => !ids.has(r.id) && !names.has(r.name)).concat(own);
+    } catch { /* the source's rows stand as they are */ }
   }
 
   let selected;
@@ -1124,12 +1303,7 @@ export async function loadLayerDetailed(layer, nowMs) {
   }
   if (!Array.isArray(selected)) selected = [];
 
-  const max = (layer.budget && layer.budget.maxItems) || Infinity;
-  if (selected.length > max) {
-    const rank = layer.budget && layer.budget.rank;
-    if (typeof rank === 'function') selected = selected.slice().sort(rank);
-    selected = selected.slice(0, max);
-  }
+  selected = withinBudget(selected, own, layer.budget);
 
   // Stamp the layer on, and attach the list's reason where there is one -- and its NAME. The rows
   // were written by hand ("Envisat", "Atlas Centaur 2", "Thor Agena D rocket body") and the labels

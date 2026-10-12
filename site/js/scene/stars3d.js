@@ -1,7 +1,7 @@
 // scene/stars3d.js -- the stars as places, not as a picture (spec 0028 step 3).
 //
 // Contract: createStars3d(scene, opts) -> { load, ensureGeometry, records, count, unplaced,
-//   setVisible, setOpacity, setStretch, stretch, rebuild, update, pickAll, dispose }
+//   setVisible, setOpacity, setMagLimit, setStretch, stretch, rebuild, update, pickAll, dispose }
 //
 // 109 389 stars from HYG v4.4 (site/data/stars3d.bin, scripts/build-stars3d.py) as ONE Points
 // cloud. Two things decide how it is drawn, and both are the stage's (spec 0005):
@@ -29,10 +29,12 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
-import { bvToKelvin, kelvinToRgb } from './starfield.js';
+import { bvToKelvin, kelvinToRgb, starTint } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
-import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stretchUniforms, writeStretch } from './stretch.js';
+import { drawnPositions } from './clusters.js';
+import { HOLES_GLSL_HEAD, holeUniforms, setHoles as setHoleUniforms } from './starholes.js';
+import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 // Spec 0034: the star-stretch's length lives in scene/stretch.js (both star draws read it) and is
 // re-exported here, where docs/design-language.md's table says to look for it.
@@ -56,17 +58,21 @@ const PICK_PX = 24;
 const SUN_INERTIAL = 'sun-inertial';
 
 const VERT = /* glsl */ `
+${HOLES_GLSL_HEAD}
 attribute float aAbsMag;
 attribute float aAppMag;
 attribute vec3 aColour;
 uniform float uPixelRatio;
 uniform float uGain;
+uniform float uScale;      // 1; larger while a constellation figure is up (setPointScale)
+uniform float uMagLimit;
 uniform float uShell;
 uniform float uUnitsPerPc;
 varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
 varying float vGlare;
+varying float vGlow;
 ${STRETCH_VERT_HEAD}
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
@@ -89,14 +95,22 @@ void main() {
   // 2026-09-22). So past -1.5 the core stays its size and a glare grows round it, the way the eye
   // reports a light too bright to resolve. At -1.5 and fainter nothing changes: glare is 0.
   float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
-  float size = core + 26.0 * glare;
-  float sizePx = size * uPixelRatio;
+  // A GLOW ROUND THE BRIGHT ONES (public #271, scene/stretch.js A STAR'S LIGHT): from magnitude 2.5
+  // up to -1.5 the sprite grows to five times the core, a magnitude earlier than scene/starfield.js, so
+  // the cluster a camera stands beside is a handful of lights and not a handful of dots.
+  float glow = clamp( ( 2.5 - m ) / 4.0, 0.0, 1.0 );
+  core *= 1.0 + 0.8 * glow;   // and the peak itself a little wider, or a first-magnitude star is still a speck
+  float size = core * ( 1.0 + 4.0 * glow ) + 26.0 * glare;
+  float sizePx = size * uPixelRatio * uScale;
   // Spec 0034: during a ladder flight the point becomes a capsule along its own screen motion;
   // at uStretch == 0 this is gl_PointSize = sizePx, as before.
 ${STRETCH_VERT}
   vCore = core / size;
   vGlare = glare;
-  vAlpha = ( m > 7.5 ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
+  vGlow = glow;
+  vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
+  // Where a photograph is drawn our stars step aside (scene/starholes.js); no hole, no change.
+  if ( uHoleCount > 0 ) vAlpha *= starHole( normalize( mv.xyz ) );
   vColour = aColour;
 }
 `;
@@ -106,20 +120,23 @@ varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
 varying float vGlare;
+varying float vGlow;
 ${STRETCH_FRAG_HEAD}
 #include <common>
+${STAR_LIGHT_GLSL}
 void main() {
   if ( vAlpha <= 0.0 ) discard;
   // The distance to the star's segment (a point when it is not stretched), in the disc's units.
 ${STRETCH_FRAG}
-  // The core in its own units, so it is the same number of pixels with or without a glare.
-  float a = 1.0 - smoothstep( 0.12, 0.5, d / max( vCore, 1e-3 ) );
+  // The core in its own units, so it is the same number of pixels with or without a glow.
+  vec2 light = starLight( d, vCore, vGlow );
+  float a = light.x + light.y;
   if ( vGlare > 0.0 ) {
     float e = 1.0 - clamp( d / 0.5, 0.0, 1.0 );
     a = max( a, vGlare * 0.8 * e * e );
   }
-  if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha * taper );
+  if ( a <= 0.003 ) discard;
+  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.4 * light.x * max( vGlow, vGlare ) ), a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -180,10 +197,52 @@ export function recordsFromNames(rows) {
     const name = famous && famous.name ? famous.name : catalogueName;
     const aliases = [...new Set([catalogueName, bayer, flam, hip ? `HIP ${hip}` : null])].filter((a) => a && a !== name);
     const meta = { hip, spect, distLy, mag, lum, aliases, named: true };
-    if (famous) { meta.why = famous.why; meta.whySource = famous.source; }
+    if (famous) {
+      meta.why = famous.why; meta.whySource = famous.source;
+      // A width read off an interferometer, with its source (registry/stars-notable.yaml): the card then says "measured".
+      if (famous.radius_suns > 0) { meta.measuredRadiusSuns = famous.radius_suns; meta.measuredTeffK = famous.teff_k; meta.widthSource = famous.physical_source; }
+    }
     out.push(starRecord(idx, name, { x, y, z }, meta));
   }
   return out;
+}
+
+// The Sun's nominal radius, effective temperature and absolute bolometric magnitude (IAU 2015 B3, B2).
+export const SUN_RADIUS_KM = 695700;
+export const SUN_TEFF_K = 5772;
+const SUN_ABS_BOL = 4.74;
+
+/**
+ * The bolometric correction in V for a temperature: Flower (1996, ApJ 469, 355) with the
+ * coefficients as Torres (2010, AJ 140, 1158) corrected them. -0.08 for the Sun, -0.25 at
+ * 10 000 K. Under 3 300 K the polynomial runs away, so it is held there.
+ */
+export function bolometricCorrection(teffK) {
+  const l = Math.log10(Math.max(3300, teffK));
+  const a = l < 3.7 ? [-0.190537291496456e5, 0.155144866764412e5, -0.421278819301717e4, 0.381476328422343e3]
+    : l < 3.9 ? [-0.370510203809015e5, 0.385672629965804e5, -0.150651486316025e5, 0.261724637119416e4, -0.170623810323864e3]
+      : [-0.118115450538963e6, 0.137145973583929e6, -0.636233812100225e5, 0.147412923562646e5, -0.170587278406872e4, 0.78873172180499e2];
+  let bc = 0;
+  for (let i = a.length - 1; i >= 0; i -= 1) bc = bc * l + a[i];
+  return bc;
+}
+
+/**
+ * How wide a star is, worked out from the two numbers the catalogue has for it: its absolute
+ * magnitude and its B-V colour. Colour gives a temperature (starfield.js bvToKelvin), the
+ * temperature a bolometric correction, the two a luminosity, and a black body of that luminosity
+ * and temperature has one radius (Stefan-Boltzmann). Pure.
+ *
+ * AN ESTIMATE, and the card says so. Checked 2026-10-06 against measured radii: Sirius 1.69 Suns
+ * (measured 1.71), the Sun 0.99, Vega 2.5 (2.4 to 2.8, it spins), Arcturus 27 (25). For the reddest
+ * stars B-V stops telling temperatures apart and the answer can be off by a factor of two
+ * (Betelgeuse about 1 550 against 640 to 760 measured, Proxima 0.07 against 0.15).
+ */
+export function starPhysical(absMag, bv) {
+  if (!Number.isFinite(absMag)) return null;
+  const teffK = Math.max(3300, bvToKelvin(Number.isFinite(bv) ? bv : 0.65));
+  const lum = 10 ** (0.4 * (SUN_ABS_BOL - (absMag + bolometricCorrection(teffK))));
+  return { radiusKm: SUN_RADIUS_KM * Math.sqrt(lum) * (SUN_TEFF_K / teffK) ** 2, teffK, how: 'estimated' };
 }
 
 function starRecord(idx, name, ly, meta) {
@@ -227,8 +286,11 @@ export function createStars3d(scene, opts = {}) {
   let builtFor = null; // `${stage.worldId}:${mode}`
   let loadingBin = null;
   const uniforms = {
+    ...holeUniforms(),
     uPixelRatio: { value: 1 },
+    uScale: { value: 1 },
     uGain: { value: 0 },
+    uMagLimit: { value: 7.5 },
     uShell: { value: 1 },
     uUnitsPerPc: { value: 1 },
     // Spec 0034: 0 unless ui/trip.js is flying a ladder flight longer than three seconds.
@@ -246,6 +308,7 @@ export function createStars3d(scene, opts = {}) {
     const doc = opts.namesDoc || await fetchJson(src.names);
     namedRows = Array.isArray(doc && doc.rows) ? doc.rows : [];
     records = recordsFromNames(namedRows);
+    regroupRecords();
     return records;
   }
 
@@ -256,12 +319,27 @@ export function createStars3d(scene, opts = {}) {
     loadingBin = (opts.binBuffer ? Promise.resolve(opts.binBuffer) : fetchBin(src.bin))
       .then((buf) => {
         data = parseStars3d(buf);
+        // The Pleiades' stars, gathered at the cluster's distance (scene/clusters.js says why).
+        // data.posLy stays the catalogue's; drawLy is what the buffers and the taps use.
+        Object.assign(data, drawnPositions(data.posLy, data.count));
+        regroupRecords();
         buildPoints();
         rebuild();
         return data;
       })
       .catch((err) => { console.warn('stars3d: could not load', err); loadingBin = null; return null; });
     return loadingBin;
+  }
+
+  /** A named member of a regrouped cluster is marked where it is drawn; its card keeps the catalogue's distance. */
+  function regroupRecords() {
+    if (!data || !data.moved || !data.moved.size) return;
+    for (const rec of records) {
+      const i = rec && rec.meta ? rec.meta.starIndex : -1;
+      if (!data.moved.has(i) || rec.meta.drawnIn) continue;
+      rec.pos = { x: data.drawLy[i * 3] * LY_KM, y: data.drawLy[i * 3 + 1] * LY_KM, z: data.drawLy[i * 3 + 2] * LY_KM };
+      rec.meta.drawnIn = `dso-${data.moved.get(i)}`;
+    }
   }
 
   function buildPoints() {
@@ -274,7 +352,7 @@ export function createStars3d(scene, opts = {}) {
     const c = new THREE.Color();
     for (let i = 0; i < n; i++) {
       const bv = Number.isFinite(data.ci[i]) ? data.ci[i] : 0.65; // no colour index: draw it Sun-like
-      const rgb = kelvinToRgb(bvToKelvin(bv));
+      const rgb = starTint(bv);
       c.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
       col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
     }
@@ -330,11 +408,19 @@ export function createStars3d(scene, opts = {}) {
     const pos = geometry.getAttribute('position').array;
     const n = data.count;
     let bad = 0;
+    // One matrix for all 109 000 stars (stage.affineFrom): the exact call per star composed the frame
+    // each time, 1.1 to 1.7 s on the Earth's stage. Exact calls stay for a stage that bends positions.
+    const A = stage.affineFrom(SUN_INERTIAL, tMs);
     for (let i = 0; i < n; i++) {
-      _km.x = data.posLy[i * 3] * LY_KM;
-      _km.y = data.posLy[i * 3 + 1] * LY_KM;
-      _km.z = data.posLy[i * 3 + 2] * LY_KM;
-      if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { bad++; pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
+      if (A) {
+        const kx = data.drawLy[i * 3] * LY_KM, ky = data.drawLy[i * 3 + 1] * LY_KM, kz = data.drawLy[i * 3 + 2] * LY_KM;
+        _v.set(A.o[0] + A.x[0] * kx + A.y[0] * ky + A.z[0] * kz, A.o[1] + A.x[1] * kx + A.y[1] * ky + A.z[1] * kz, A.o[2] + A.x[2] * kx + A.y[2] * ky + A.z[2] * kz);
+      } else {
+        _km.x = data.drawLy[i * 3] * LY_KM;
+        _km.y = data.drawLy[i * 3 + 1] * LY_KM;
+        _km.z = data.drawLy[i * 3 + 2] * LY_KM;
+        if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { bad++; pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
+      }
       if (mode === 'shell') _v.normalize().multiplyScalar(SHELL_UNITS);
       pos[i * 3] = _v.x; pos[i * 3 + 1] = _v.y; pos[i * 3 + 2] = _v.z;
     }
@@ -357,6 +443,17 @@ export function createStars3d(scene, opts = {}) {
     if (sunPoints) sunPoints.visible = !!(points && points.visible) && mode === 'true';
     uniforms.uGain.value = opacity;
   }
+
+  /**
+   * How large the 3D stars' points are drawn, 1 = as ever: the sky sphere's stars step forward while a constellation
+   * figure is up (scene/figures3d.js STAR_SCALE), and the cloud they hand over to does the same (internal #387).
+   */
+  /** The photographs on screen this frame (scene/nebulae.js holes()): our stars step aside inside them. */
+  function setHoles(list) { return setHoleUniforms(uniforms, list); }
+  function setPointScale(k) { uniforms.uScale.value = Math.min(3, Math.max(0.5, Number(k) || 1)); }
+
+  /** The faintest star drawn, in apparent magnitude: the shutter's (scene/exposure.js starLimit). Capped at the file's 7.5. */
+  function setMagLimit(m) { const x = Number(m); uniforms.uMagLimit.value = Number.isFinite(x) ? Math.min(7.5, Math.max(0, x)) : 7.5; }
 
   /** The layer's checkbox. */
   function setVisible(on) { layerOn = on !== false; applyVisibility(); if (layerOn && opacity > 0) ensureGeometry(); }
@@ -409,7 +506,7 @@ export function createStars3d(scene, opts = {}) {
       const px = Math.sqrt(dx * dx + dy * dy);
       if (px > PICK_PX) continue;
       // Faint stars are not drawn (alpha 0 past magnitude 7.5 in shell mode); do not let them be tapped.
-      if (mode === 'shell' && data.appMag[i] > 7.5) continue;
+      if (mode === 'shell' && data.appMag[i] > uniforms.uMagLimit.value) continue;
       out.push({ i, px });
     }
     out.sort((p, q) => p.px - q.px);
@@ -425,7 +522,9 @@ export function createStars3d(scene, opts = {}) {
     }
     const x = data.posLy[i * 3], y = data.posLy[i * 3 + 1], z = data.posLy[i * 3 + 2];
     const distLy = Math.hypot(x, y, z);
-    return starRecord(i, t(COPY.stars.unnamed, { n: String(i) }), { x, y, z }, {
+    // The card's distance is the catalogue's; the mark goes where the star is drawn (scene/clusters.js).
+    const at = data.moved.has(i) ? { x: data.drawLy[i * 3], y: data.drawLy[i * 3 + 1], z: data.drawLy[i * 3 + 2] } : { x, y, z };
+    return starRecord(i, t(COPY.stars.unnamed, { n: String(i) }), at, {
       distLy: Math.round(distLy * 100) / 100,
       mag: Math.round(data.appMag[i] * 100) / 100,
       named: false,
@@ -440,14 +539,51 @@ export function createStars3d(scene, opts = {}) {
     data = null; geometry = null; points = null; sunPoints = null; builtFor = null;
   }
 
+  // One star's point switched off while scene/stardisc.js draws that star as a disc: the point is a
+  // float32 position a light-year scale away, and beside a disc drawn to the kilometre it sat tens
+  // of degrees off its own star.
+  let hiddenIdx = -1;
+  let hiddenMags = null;
+  function hidePoint(idx) {
+    const next = Number.isInteger(idx) && data && idx >= 0 && idx < data.count ? idx : -1;
+    if (next === hiddenIdx || !geometry) return;
+    if (hiddenIdx >= 0 && hiddenMags) { data.absMag[hiddenIdx] = hiddenMags[0]; data.appMag[hiddenIdx] = hiddenMags[1]; }
+    hiddenIdx = next;
+    hiddenMags = next >= 0 ? [data.absMag[next], data.appMag[next]] : null;
+    if (next >= 0) { data.absMag[next] = 99; data.appMag[next] = 99; }
+    geometry.getAttribute('aAbsMag').needsUpdate = true;
+    geometry.getAttribute('aAppMag').needsUpdate = true;
+  }
+  /** A star record's width and temperature (starPhysical), or null before the catalogue has loaded. */
+  function physicalOf(record) {
+    const idx = record && record.meta ? record.meta.starIndex : null;
+    if (record && record.meta && record.meta.measuredRadiusSuns > 0) {
+      // A paper that gives a radius and no temperature (an interferometer measures the width): the
+      // colour then stays the colour-index estimate, and only the width says "measured".
+      let teffK = record.meta.measuredTeffK;
+      if (!(teffK > 0) && data && Number.isInteger(idx) && idx >= 0 && idx < data.count) teffK = starPhysical(data.absMag[idx], data.ci[idx]).teffK;
+      return { radiusKm: SUN_RADIUS_KM * record.meta.measuredRadiusSuns, teffK, how: 'measured' };
+    }
+    if (!data || !Number.isInteger(idx) || idx < 0 || idx >= data.count) return null;
+    const absMag = idx === hiddenIdx && hiddenMags ? hiddenMags[0] : data.absMag[idx];
+    return starPhysical(absMag, data.ci[idx]);
+  }
+
   return {
     load,
     ensureGeometry,
+    hidePoint,
+    physicalOf,
     records: () => records,
     count: () => (data ? data.count : namedRows ? null : null),
     unplaced: () => (data ? data.unplaced : null),
     setVisible,
     setOpacity,
+    setPointScale,
+    pointScale: () => uniforms.uScale.value,
+    setHoles,
+    holeCount: () => uniforms.uHoleCount.value,
+    setMagLimit,
     setStretch,
     /** What the shader is drawing: tests and the browser check read it. */
     stretch: () => uniforms.uStretch.value,

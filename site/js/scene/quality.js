@@ -15,17 +15,30 @@
 //     lines -- once, latched, and said in the panel. It never climbs back by itself: a latch that
 //     flaps is worse than either state.
 
+/** `src` sorted ascending into the reused array `out` (insertion: the window is 20 numbers). */
+function sortedInto(out, src) {
+  out.length = src.length;
+  for (let i = 0; i < src.length; i++) {
+    const v = src[i];
+    let j = i - 1;
+    while (j >= 0 && out[j] > v) { out[j + 1] = out[j]; j--; }
+    out[j + 1] = v;
+  }
+  return out;
+}
+
 export function createFrameLatch(opts = {}) {
   const windowFrames = opts.windowFrames || 20;
   const thresholdMs = opts.thresholdMs || 33;
   const holdMs = opts.holdMs || 3000;
   const frames = [];
+  const scratch = [];
   let overSince = null;
   let latched = false;
 
   function median() {
     if (!frames.length) return 0;
-    const a = frames.slice().sort((p, q) => p - q);
+    const a = sortedInto(scratch, frames);
     const h = a.length >> 1;
     return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
   }
@@ -58,6 +71,252 @@ export function createFrameLatch(opts = {}) {
   }
 
   return { push, median, force, get latched() { return latched; } };
+}
+
+// --- the resolution scale before the latch (internal #521, 2026-10-10) -----------------------------------
+//
+// THE MEASURED PROBLEM (docs/performance-research-2026-10-09.md section 4): one stall, another tab loading,
+// tripped the latch for good, and the visit lost relief, earthshine, the tiles and the 4k maps. THE STEP
+// IN BETWEEN: a ladder of pixel ratios, 2, 1.5, 1.25, 1 (never above the device's own, nor above
+// MAX_DPR in scene/renderer.js). The same test that trips the latch (a 20-frame median over 33 ms for
+// three seconds) now takes one step DOWN the ladder, at least three seconds after the last step, and the
+// window starts empty after a step so the new resolution is measured on its own frames. The median under
+// 12 ms (the tier promoter's test) for ten seconds takes one step UP, only while the picture is calm (no
+// trip, no camera move). At the bottom step the latch is fed as before and stays the last resort: it is
+// still one-way, and once it has tripped the ladder is frozen at 1. A device whose ratio is already 1
+// has a ladder of one step, so for it nothing changes: the latch is fed from the first frame.
+//
+// THE STEP UP ON A 60 Hz SCREEN (integration pass, 2026-10-10). The frame length fed here is the gap between two
+// animation frames, which a 60 Hz screen never lets under 16.7 ms: with the test at 12 ms the ladder climbed on a
+// 120 Hz screen only, and everyone else kept the soft picture for the visit. The test is 20 ms now (the screen's
+// own rhythm, or better). What that test cannot know is whether the next step up will hold, so a step down that
+// comes within fifteen seconds of a step up DOUBLES the wait before the next try (10 s, 20 s ... 320 s): a
+// device that cannot hold the higher ratio is asked rarely, not every thirteen seconds. And the resting home
+// view draws at twenty frames a second by choice (the idle cap below), frames the loop keeps away from here:
+// rest(now) counts that time as quick, so a visit left alone comes back up too.
+
+/** The pixel ratios the scale may take, highest first (the device's own ratio is put on top, capped at 2). */
+export const SCALE_STEPS = [2, 1.5, 1.25, 1];
+
+export function createScaleGovernor(opts = {}) {
+  const dpr = Math.min(2, Number.isFinite(opts.deviceRatio) && opts.deviceRatio > 0 ? opts.deviceRatio : 1);
+  const steps = [dpr, ...SCALE_STEPS.filter((x) => x < dpr)];
+  const windowFrames = opts.windowFrames || 20;
+  const downMs = opts.downMs || 33;
+  const upMs = opts.upMs || 20;
+  const downHoldMs = opts.downHoldMs || 3000;
+  const upHoldMs = opts.upHoldMs || 10000;
+  const minGapMs = opts.minGapMs || 3000;
+  const frames = [];
+  const scratch = [];
+  let i = 0;
+  let overSince = null;
+  let underSince = null;
+  let changedAt = -Infinity;
+  let frozen = false;
+  let upHold = upHoldMs;
+  let lastUpAt = -Infinity;
+  const bounceMs = opts.bounceMs || 15000;
+  const maxUpHoldMs = opts.maxUpHoldMs || 320000;
+
+  function median() {
+    if (!frames.length) return 0;
+    const a = sortedInto(scratch, frames);
+    const h = a.length >> 1;
+    return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
+  }
+  function stepTo(next, nowMs) {
+    if (next < i) lastUpAt = nowMs;
+    else if (nowMs - lastUpAt < bounceMs) upHold = Math.min(maxUpHoldMs, upHold * 2); // the step up did not hold
+    i = next;
+    changedAt = nowMs;
+    frames.length = 0;
+    overSince = null;
+    underSince = null;
+  }
+
+  /**
+   * Feed one frame. `calm` is false while a trip runs or the camera moves (a step UP waits for it;
+   * a step down does not, because a stalling picture is worse than a softer one). `patient` is true when
+   * the only thing against calm is a moving camera: the step up then comes, three times later. Returns true on the
+   * frame that changed the step, and `scale` is then the new ratio.
+   */
+  function push(frameMs, nowMs, calm = true, patient = false) {
+    if (frozen || !Number.isFinite(frameMs) || frameMs <= 0) return false;
+    frames.push(Math.min(frameMs, 1000));
+    if (frames.length > windowFrames) frames.shift();
+    if (frames.length < windowFrames) return false;
+    const m = median();
+    if (m > downMs) {
+      underSince = null;
+      if (overSince === null) overSince = nowMs;
+      if (i < steps.length - 1 && nowMs - overSince >= downHoldMs && nowMs - changedAt >= minGapMs) { stepTo(i + 1, nowMs); return true; }
+    } else if (m < upMs && i > 0) {
+      overSince = null;
+      if (underSince === null) underSince = nowMs;
+      // Not calm but `patient` (nothing is being SHOWN -- no trip, no reel, no climb -- yet the camera is not
+      // still: it follows a body, or the stage turns under it): the step comes after three times the wait.
+      // Seen 2026-10-10 on a phone-sized canvas with Saturn followed: seventy quick seconds and no step up,
+      // because a camera that follows something is never still.
+      const wait = calm ? upHold : patient ? upHold * 3 : Infinity;
+      if (nowMs - underSince >= wait && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
+    } else {
+      // Between the two tests (or quick at the top): not slow, so the count toward a step down starts again; not
+      // quick, so this time does not count toward a step up -- but it does not throw the quick seconds away
+      // either. A page has a busy half second now and then (a catalogue landing, a list rebuilt), and ten
+      // UNBROKEN quick seconds were rare enough that the ratio stayed down for a minute in a real browser.
+      overSince = null;
+      if (underSince !== null) underSince += frameMs;
+    }
+    return false;
+  }
+
+  /**
+   * A frame the loop drew slowly BY CHOICE (the idle cap: nothing is moving). Its length says nothing about
+   * the device, so it is not in the window; the time counts as quick. Returns true on a step up.
+   */
+  function rest(nowMs) {
+    if (frozen || i === 0) return false;
+    overSince = null;
+    frames.length = 0;
+    if (underSince === null) underSince = nowMs;
+    if (nowMs - underSince >= upHold && nowMs - changedAt >= minGapMs) { stepTo(i - 1, nowMs); return true; }
+    return false;
+  }
+
+  return {
+    push,
+    rest,
+    median,
+    /** How long the frames must be quick before a step up, now (it doubles when a step up does not hold). */
+    get upHoldMs() { return upHold; },
+    /** The latch has tripped: the ladder stops where it is (the latch itself takes the ratio to 1). */
+    freeze() { frozen = true; },
+    get scale() { return steps[i]; },
+    get step() { return i; },
+    get steps() { return steps.slice(); },
+    /** On the lowest step: the frame latch is fed from here, and only from here. */
+    get atFloor() { return i === steps.length - 1; },
+  };
+}
+
+// --- the idle frame rate (internal #520, 2026-10-09) ---------------------------------------------
+//
+// The loop in main.js drew every animation frame, sixty a second, whatever was on screen. With the
+// page left open on the Earth at the live clock, nothing selected and nobody touching it, the dots
+// are recomputed ten times a second and the Earth turns four thousandths of a degree in one: five
+// frames of every six were the same picture, drawn again. So when NOTHING IS MOVING the loop draws
+// at IDLE_FRAME_MS (twenty a second: two frames per glyph tick, so the tick keeps its tenth of a
+// second exactly) and goes back to every frame the moment something does.
+//
+// IT IS A CAP, NOT A STOP, and that is the safety: the picture is never frozen, so the worst a
+// motion this file has not heard of can do is run at twenty frames a second until the next thing
+// wakes the loop. And "nothing is moving" is deliberately narrow. movingReasons() names every
+// state in which the cap must not apply; the cap is for the one state left over, the home view at
+// rest. A film (render mode) is never capped and neither is an automated browser, so a probe that
+// counts frames or waits two of them measures what it always did (`?idle=1` asks for the cap
+// there, `?idle=0` switches it off for anyone).
+
+/** Twenty frames a second while idle: two per glyph tick (100 ms at the live clock). */
+export const IDLE_FRAME_MS = 50;
+/** How long everything must have been still before the cap applies. */
+export const IDLE_AFTER_MS = 2000;
+
+/**
+ * Why the picture is changing right now, as names. Empty means nothing is, and only then may the
+ * loop draw less often. Pure: main.js fills `s` at the end of every drawn frame.
+ *
+ * Every field is a reason NOT to idle, and tests/test_idle.mjs holds each one on its own:
+ *   film        tools/render-trip.mjs is stepping the clock; its frames are its own
+ *   clock       anything but the live clock at rate 1: a scrub, a fast clock, a paused instant
+ *   trip        a trip is running (a flight, a hold, its captions)
+ *   autopilot   the reel has the screen
+ *   sky         the sky from the ground is up
+ *   stage       any stage but the Earth's: the Sun close up, a star system, a drawn world, the ladder
+ *   climb       a climb between stages, or the opening, is running
+ *   selection   something is selected: its pulse, its brackets, its orbit line, a model fading in
+ *   camera      the camera's matrices are not last frame's (a drag, a flight, inertia, a zoom, a resize)
+ *   layer       a layer that animates by itself is doing so now: the aurora's folds on screen,
+ *               lightning with strikes in its map, the wind, a data overlay (main.js layerAnimating)
+ *   loading     the first visit is not over, or the GPU has a texture or a geometry it did not have
+ *               last frame (a map landing with its cross-fade, a model, a new layer)
+ * @returns {string[]}
+ */
+export function movingReasons(s = {}) {
+  const why = [];
+  if (s.film) why.push('film');
+  if (s.clockMode !== 'live' || s.clockRate !== 1) why.push('clock');
+  if (s.trip) why.push('trip');
+  if (s.autopilot) why.push('autopilot');
+  if (s.sky) why.push('sky');
+  if (s.stage !== 'earth') why.push('stage');
+  if (s.climb) why.push('climb');
+  if (s.selected) why.push('selection');
+  if (s.cameraMoved) why.push('camera');
+  if (s.animatedLayer) why.push('layer');
+  if (s.loading) why.push('loading');
+  return why;
+}
+
+/**
+ * `?look=1`: a tool is looking (tools/README.md, "A look from a machine that has time"). The frame
+ * latch and the pixel-ratio governor are then not fed, so a software renderer keeps every effect it
+ * was asked to photograph; every loader, the tier and the clock run as they do for a visitor. A
+ * query key for tools: never in the hash (ui/urlstate.js KEYS), and never beside `embed=1`, whose
+ * address is written by someone else's page. Pure: `{search}` in, a boolean out.
+ */
+export function lookHeld(d = {}) {
+  const search = d.search || '';
+  return /[?&]look=1(?:&|$)/.test(search) && !/[?&]embed=1(?:&|$)/.test(search);
+}
+
+/** Who gets the cap at all. Pure: `{search, webdriver, film}` in, a boolean out. */
+export function idleCapWanted(d = {}) {
+  const asked = /[?&]idle=([01])(?:&|$)/.exec(d.search || '');
+  if (d.film) return false;
+  if (asked) return asked[1] === '1';
+  // An automated browser is a probe or a screenshot: it gets every frame unless it asks.
+  return !d.webdriver;
+}
+
+/**
+ * The gate the loop asks at the top of every animation frame.
+ *   skip(now)            true: do nothing this frame (the cap is on and the last drawn frame is recent)
+ *   capped(now)          the cap is on at this instant (the loop then keeps this frame's length
+ *                        away from the frame latch: fifty milliseconds by choice is not a slow device)
+ *   drew(now, reasons)   after a drawn frame, with movingReasons(): any reason restarts the wait
+ *   wake(now)            something the loop cannot see coming: a key, a pointer, a resize
+ */
+export function createIdleGate(opts = {}) {
+  const frameMs = opts.frameMs || IDLE_FRAME_MS;
+  const afterMs = opts.afterMs || IDLE_AFTER_MS;
+  const enabled = opts.enabled !== false;
+  let lastMoving = null;
+  let lastDrawn = -Infinity;
+  let lastReasons = ['start'];
+  const stats = { drawn: 0, skipped: 0, capped: 0 };
+  const capped = (now) => enabled && lastMoving !== null && now - lastMoving >= afterMs;
+  return {
+    capped,
+    skip(now) {
+      // Two milliseconds of give: a display's frames are 16.67 ms apart, and the third one after a
+      // drawn frame arrives at 50.0 give or take the timer.
+      if (!capped(now) || now - lastDrawn >= frameMs - 2) return false;
+      stats.skipped += 1;
+      return true;
+    },
+    drew(now, reasons) {
+      if (capped(now)) stats.capped += 1;
+      stats.drawn += 1;
+      lastDrawn = now;
+      lastReasons = reasons;
+      if (lastMoving === null || reasons.length) lastMoving = now;
+    },
+    wake(now) { lastMoving = now; },
+    get enabled() { return enabled; },
+    /** For probes and tests: counts since the page began, and why the last drawn frame was not idle. */
+    state() { return { ...stats, enabled, reasons: lastReasons.slice() }; },
+  };
 }
 
 const SLOW = new Set(['slow-2g', '2g', '3g']);
@@ -163,11 +422,12 @@ export function createTierPromoter(opts = {}) {
   let promoted = false;
   let dead = false;
   const frames = [];
+  const scratch = [];
   let underSince = null;
 
   function median() {
     if (!frames.length) return 0;
-    const a = frames.slice().sort((p, q) => p - q);
+    const a = sortedInto(scratch, frames);
     const h = a.length >> 1;
     return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
   }

@@ -192,6 +192,9 @@ export const CAMERA_KEYS = new Set([
   'PageUp', 'PageDown', 'w', 'W', 's', 'S', '+', '=', '-', '_',
 ]);
 
+// The most of one frame a flight will take as its own time (see update()).
+export const FLIGHT_STEP_CAP_MS = 1000;
+
 export function createCameraRig(camera, domElement, options = {}) {
   const target = new THREE.Vector3();
   const pendingPan = new THREE.Vector3();
@@ -667,6 +670,8 @@ export function createCameraRig(camera, domElement, options = {}) {
    *   ms           600-900 is the design range; default 750. **0 means instant** -- the pose is
    *                set, onArrive('done') fires synchronously, and no flight starts.
    *   azimuth/polar radians; either one missing is supplied by framingAngles().
+   *   offset       Vector3-like, scene axes: the direction from the target to the camera. Used when
+   *                neither azimuth nor polar is given; framingAngles() is then not asked.
    *   tilt         radians off the world-to-object radial for framingAngles() (default FRAMING_TILT);
    *                ignored when both azimuth and polar are given.
    *   ease         'ui' (default) | 'inout' | 'cruise' | 'linear', or a function k => k'.
@@ -691,6 +696,14 @@ export function createCameraRig(camera, domElement, options = {}) {
 
     let toAz = opts.azimuth;
     let toPolar = opts.polar;
+    // `offset`: stand on this side of the target (a world's lit face, scene/framing.js litOffset).
+    if (opts.offset && toVector3(opts.offset, _tmp) !== null && _tmp.lengthSq() > 1e-12
+      && !Number.isFinite(toAz) && !Number.isFinite(toPolar)) {
+      syncUpBasis();
+      _tmp.normalize().applyQuaternion(upQuat);
+      toAz = Math.atan2(_tmp.x, _tmp.z);
+      toPolar = Math.acos(THREE.MathUtils.clamp(_tmp.y, -1, 1));
+    }
     if (!Number.isFinite(toAz) || !Number.isFinite(toPolar)) {
       const f = framingAngles(to, Number.isFinite(opts.tilt) ? Number(opts.tilt) : FRAMING_TILT);
       if (!Number.isFinite(toAz)) toAz = f.azimuth;
@@ -1017,13 +1030,23 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   // ---------------------------------------------------------------- frame
 
-  function update(dt) {
+  function update(dt, frameMs) {
     // main.js may hand seconds or milliseconds; a 0.5 s frame is already pathological, so a value
     // above that is milliseconds.
     let dts = Number(dt);
     if (!Number.isFinite(dts) || dts <= 0) dts = 1 / 60;
     if (dts > 0.5) dts /= 1000;
     if (dts > 0.25) dts = 0.25; // a tab that was backgrounded must not fling the camera
+    // A FLIGHT'S `ms` IS WALL TIME (internal #322). The step above is clamped for the damping, which
+    // a long frame would fling; a flight is a path with a parameter and cannot be flung, only be
+    // further along. Fed the clamped step it ran in slow motion on any device under ten frames a
+    // second (main.js caps a step at 100 ms): a 6 s flight is sixty frames whatever they cost, so at
+    // SwiftShader's 3 fps it took 20 s, and through 5 s stalls five minutes, while the trip's title,
+    // its dwell and the reel's watchdog all counted wall time. So a flight is given the frame's real
+    // length when main.js passes it, up to FLIGHT_STEP_CAP_MS (a tab that comes back from the
+    // background goes on from a second further along, not from the end).
+    const real = Number(frameMs);
+    const flightDts = Number.isFinite(real) && real > 0 ? Math.min(FLIGHT_STEP_CAP_MS, real) / 1000 : dts;
 
     // A ride along owns the camera outright: no follow, no damping, no drift under it.
     if (ride) {
@@ -1041,7 +1064,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     applyHeldKeys(dts);
 
     if (flight) {
-      advanceFlight(dts);
+      advanceFlight(flightDts);
     } else {
       const kOrbit = 1 - Math.exp(-dts / TAU_ORBIT);
       const kDolly = 1 - Math.exp(-dts / TAU_DOLLY);
@@ -1138,6 +1161,19 @@ export function createCameraRig(camera, domElement, options = {}) {
     applyToCamera();
   }
 
+  /**
+   * Put the camera on a given side of its target, at once, keeping the target and the distance.
+   * For a caller that re-aims every frame (ui/trip.js `seen_from:`, which keeps the camera between
+   * the Moon and the Earth while a month runs): a flyTo per frame would end a flight per frame.
+   * Refused while a flight is running, which owns both angles. Returns whether it was applied.
+   */
+  function setAngles(az, pol) {
+    if (flight) return false;
+    if (Number.isFinite(az)) azimuth = az;
+    if (Number.isFinite(pol)) polar = Math.min(Math.PI - EPS_POLAR, Math.max(EPS_POLAR, pol));
+    return true;
+  }
+
   /** Point the rig at a new target, keeping the camera where it is. */
   function setTarget(v) {
     if (!toVector3(v, target)) return;
@@ -1214,6 +1250,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     setWorldRadius,
     setWorldCentre,
     setTarget,
+    setAngles,
     sync,
     saveState,
     restoreState,

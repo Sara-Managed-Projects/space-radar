@@ -50,13 +50,237 @@ function gradientMap() {
   rampTexture.needsUpdate = true;
   return rampTexture;
 }
+// A WORLD IS NOT A TOY (2026-10-07, internal #382). A small body that wears a photographic map --
+// Ceres, Vesta -- is shaded by the same material with a smooth ramp instead of the three steps:
+// three flat bands across a mosaic of craters read as a printing fault, and the map's own
+// shadows already say "rock". The same three levels as the steps (RAMP_STEPS: 88, 178, 255 of 255),
+// joined by a smooth curve, so a mapped body is as bright as every other model beside it and its
+// night side is as readable: SEEN 2026-10-07 with a true cosine and a floor of 6 %, Ceres and
+// Vesta arrived as two black discs with a thin lit edge, because a model is met from wherever the
+// camera was and not from its lit side. The night side is lighter than it is, like every model's.
+let worldRampTexture = null;
+function worldRamp() {
+  if (worldRampTexture) return worldRampTexture;
+  const n = 64;
+  const data = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const cos = (2 * (i + 0.5)) / n - 1;   // MeshToonMaterial reads the ramp at dot(N, L) / 2 + 1/2
+    const s = Math.max(0, Math.min(1, (cos + 0.5) / 1.2));   // night's level until 30 degrees past the terminator, full by 45 from the Sun
+    data[i] = Math.round(RAMP_STEPS[0] + (RAMP_STEPS[2] - RAMP_STEPS[0]) * s * s * (3 - 2 * s));
+  }
+  worldRampTexture = new THREE.DataTexture(data, n, 1, THREE.RedFormat);
+  worldRampTexture.minFilter = THREE.LinearFilter;
+  worldRampTexture.magFilter = THREE.LinearFilter;
+  worldRampTexture.generateMipmaps = false;
+  worldRampTexture.needsUpdate = true;
+  return worldRampTexture;
+}
 
 // One shared uniform object, so a single write in updateModelAttitude() reaches every material.
 const SHARED = {
+  uFlood: { value: 0 },
   uSunDir: { value: new THREE.Vector3(1, 0, 0) },
   uRimSun: { value: new THREE.Color('#FFF6EC') },
   uRimShade: { value: new THREE.Color(PALETTE.atmosphere) },
+  // Planet-shine (setPlanetShine below): the world a model is beside, as a second, soft light.
+  uShineCentre: { value: new THREE.Vector3() },
+  uShineRadius: { value: 0 },
+  uShineCol: { value: new THREE.Color(0, 0, 0) },
+  // The same world's shadow (worldShadowLit below): its radius as drawn, 0 for "no world near",
+  // and the little light there is on its night side.
+  uShadeRadius: { value: 0 },
+  uNightCol: { value: new THREE.Color(0, 0, 0) },
+  // The Sun's rim and the panels' glint (setLightTier below): 0 on the tier that has neither.
+  uSunRim: { value: 0 },
+  uGlint: { value: 0 },
+  // The two surface terms (surfaceTermsGLSL below): 1 on a device that can afford them, else 0.
+  uSurface: { value: 0 },
 };
+
+/**
+ * PLANET-SHINE: THE LIGHT A WORLD THROWS BACK AT WHAT FLIES OVER IT (issue #266, spec 0057 task 3).
+ *
+ * WHY. The Sun was the only thing lighting a model, so the side of the ISS that faces the Earth --
+ * the side every photograph of it shows glowing blue-white -- was the toon ramp's shadow step and
+ * nothing else, and a lander stood on sunlit ground that lit nothing. In low orbit the planet is
+ * the second-brightest thing in the sky by a wide margin and it fills almost half of it.
+ *
+ * WHAT IS MEASURED AND WHAT IS OURS. `albedo` is each world's Bond albedo, the fraction of
+ * sunlight it sends back, from the NSSDC planetary fact sheets
+ * (https://nssdc.gsfc.nasa.gov/planetary/factsheet/, each world's own sheet, read 2026-10-05). `colour` is ours: the tint
+ * of that world's daylit face as this app draws it. So is SHINE_GAIN, and so is the shape of the
+ * three terms below -- they are the right KIND of thing (more shine close in, none over the night
+ * side, most on the faces turned to the ground) and not a radiative-transfer result. Illustrative.
+ *
+ * The three terms, which the shader in toonMaterial repeats and tests/test_model_colour.mjs holds:
+ *   cover  = (R / d)^2       how much sky the world fills: 0.88 for the ISS, 0.02 at geostationary
+ *                            height, 1 for a rover -- so a lander is lit by its own ground
+ *   day    = shineDay(up . sun, R / d)   the ground under it in daylight, near; the world's
+ *                            phase as the craft sees it, far (lambertPhase below)
+ *   facing = (0.5 + 0.5 n . down)^2              wrapped, so it fades round the hull, never cuts
+ */
+export const PLANET_SHINE = {
+  mercury: { albedo: 0.068, colour: '#B9B2A8' },
+  venus: { albedo: 0.77, colour: '#F1E3C0' },
+  earth: { albedo: 0.294, colour: '#A9C8FF', night: PALETTE.nightLights },
+  moon: { albedo: 0.11, colour: '#CFCDC8' },
+  mars: { albedo: 0.25, colour: '#E0A070' },
+  jupiter: { albedo: 0.343, colour: '#E3CDA8' },
+  saturn: { albedo: 0.342, colour: '#EBDDB0' },
+  uranus: { albedo: 0.3, colour: '#BFE6EA' },
+  neptune: { albedo: 0.29, colour: '#9DB8F5' },
+};
+/** Ours, not measured: how far the fill is turned up so it reads through a three-step ramp. */
+export const SHINE_GAIN = 1.2;
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+/**
+ * THE WORLD'S PHASE AS THE CRAFT SEES IT (public #266). How much of its full light a diffuse
+ * sphere sends towards a viewer at phase angle a (Sun - world - craft):
+ *
+ *   phase(a) = ( sin a + (pi - a) cos a ) / pi
+ *
+ * 1 at full, 1/pi at quarter phase, 0 at new: Wikipedia "Absolute magnitude", section "Planets as
+ * diffuse spheres" (read 2026-10-08: "A quarter phase has 1/pi as much light as full phase"). It is
+ * the far view: a craft at the Moon's distance looking back at a gibbous Earth. Close in, the
+ * craft sees only the ground under it and the old local term is the right one, so the day term
+ * below is the phase far out and the local one near the ground, blended by how much sky the world
+ * fills (cover squared): 88 % local for the ISS, 2 % at geostationary height.
+ * @param {number} cosA cosine of the phase angle = (world -> craft) . (world -> Sun)
+ */
+export function lambertPhase(cosA) {
+  const c = Math.min(1, Math.max(-1, cosA));
+  if (c <= -1) return 0;
+  if (c >= 1) return 1;
+  const a = Math.acos(c);
+  return Math.max(0, (Math.sin(a) + (Math.PI - a) * c) / Math.PI);
+}
+/** The day term: local near the ground, the world's phase far out. Pure; the shader's twin. */
+export function shineDay(dayDot, radiusOverDistance) {
+  const k = Math.min(1, Math.max(0, radiusOverDistance));
+  const local = smooth(-0.15, 0.55, dayDot);
+  return lambertPhase(dayDot) * (1 - k * k) + local * k * k;
+}
+
+/**
+ * THE SUN'S RIM AND THE PANELS' GLINT (public #266). Two small terms in the model's own material;
+ * there is no environment map and no pass after the frame (tests/test_contract.mjs refuses one).
+ *
+ * RIM. With the Sun behind a craft, the edges turned towards it catch its light: the Fresnel edge
+ * the material already has, times how nearly the camera looks into the Sun (squared), on the faces
+ * the Sun can reach. Nothing with the Sun behind the camera. SUN_RIM is ours, a drawing choice.
+ *
+ * GLINT. A solar array is close to a flat mirror: it flashes when its normal is the half-way
+ * direction between the Sun and the eye, and not otherwise. The Sun is 0.53 degrees across, so a
+ * perfect mirror would flash over about a quarter of a degree; an array is cells, cover glass and
+ * a frame that is not flat, and GLINT_HALF_DEG = 2 is our width for it, illustrative. The lobe is
+ * cos^n with n chosen so the flash is half as bright GLINT_HALF_DEG off the mirror direction.
+ *
+ * TIERS (scene/quality.js): 0 has neither (a phone that boots low, or the frame-rate latch), 1 the
+ * rim, 2 the rim and the glint. The phase term above costs nothing and is on every tier.
+ */
+export const SUN_RIM = 1.5;
+/** The exponent of the Sun's rim edge: 1.4, broader than the material's own 2.5, because the 0.9 rim at 2.5 could not be told from it on the NASA ISS (internal #484: 342 pixels of 480 000 differed). */
+export const SUN_RIM_EXPONENT = 1.4;
+export const GLINT_GAIN = 2.4;
+export const GLINT_HALF_DEG = 2;
+export const GLINT_POWER = Math.round(Math.log(0.5) / Math.log(Math.cos(GLINT_HALF_DEG * Math.PI / 180)));
+export const LIGHT_TIERS = [
+  { rim: 0, glint: 0 },
+  { rim: SUN_RIM, glint: 0 },
+  { rim: SUN_RIM, glint: GLINT_GAIN },
+];
+/** Set what the models' material adds for this device tier. Returns the row used. */
+export function setLightTier(tier) {
+  const row = LIGHT_TIERS[Math.min(LIGHT_TIERS.length - 1, Math.max(0, Math.floor(Number(tier) || 0)))];
+  SHARED.uSunRim.value = row.rim;
+  SHARED.uGlint.value = row.glint;
+  return row;
+}
+/**
+ * The rim on one pixel. Pure; the shader's twin.
+ * @param {{fresnel:number, intoSun:number, facingSun:number}} o  fresnel = (1 - n.v)^SUN_RIM_EXPONENT, intoSun =
+ *   (camera's line of sight) . (direction to the Sun), facingSun = n . (direction to the Sun)
+ */
+export function sunRimStrength({ fresnel, intoSun, facingSun }, rim = SUN_RIM) {
+  const back = Math.min(1, Math.max(0, intoSun));
+  return rim * Math.min(1, Math.max(0, fresnel)) * back * back * smooth(-0.6, 0.1, facingSun);
+}
+/** The glint on a panel whose normal is `offDeg` from the Sun-eye half-way direction. Pure. */
+export function glintStrength(offDeg, gain = GLINT_GAIN) {
+  const c = Math.cos(Math.min(90, Math.abs(offDeg)) * Math.PI / 180);
+  return gain * Math.pow(Math.max(0, c), GLINT_POWER);
+}
+
+/**
+ * The strength of the fill on one face, 0..albedo * SHINE_GAIN. Pure; the same arithmetic as the
+ * shader, kept here so a test can hold the numbers without a GPU.
+ * @param {{albedo:number, radiusOverDistance:number, dayDot:number, facingDot:number}} o
+ *   dayDot = (direction away from the world) . (direction to the Sun); facingDot = normal . (direction to the world)
+ */
+export function planetShineStrength({ albedo, radiusOverDistance, dayDot, facingDot }) {
+  const k = Math.min(1, Math.max(0, radiusOverDistance));
+  const facing = 0.5 + 0.5 * Math.min(1, Math.max(-1, facingDot));
+  return albedo * SHINE_GAIN * k * k * shineDay(dayDot, k) * facing * facing;
+}
+
+const _shineCol = new THREE.Color();
+/**
+ * Which world shines on the models this frame. ONE world for every model on screen, because the
+ * uniforms are shared: the stage's own, or the nearest drawn one on the Sun's stage (heroes.js
+ * chooses). `null`, an unknown id or a zero radius turns it off -- far from everything, a probe is
+ * lit by the Sun alone, which is true.
+ * @param {string|null} worldId
+ * @param {{x:number,y:number,z:number}} [centre] scene space
+ * @param {number} [radius] scene units, as drawn
+ */
+export function setPlanetShine(worldId, centre, radius) {
+  const row = worldId ? PLANET_SHINE[worldId] : null;
+  const there = !!centre && radius > 0;
+  // THE SHADOW NEEDS NO ROW: any world that is drawn can stand between a model and the Sun, whether
+  // or not this file has an albedo for it.
+  SHARED.uShadeRadius.value = there ? radius : 0;
+  if (there) SHARED.uShineCentre.value.set(centre.x, centre.y, centre.z);
+  SHARED.uNightCol.value.setRGB(0, 0, 0);
+  if (!row || !there) { SHARED.uShineRadius.value = 0; return false; }
+  SHARED.uShineRadius.value = radius;
+  SHARED.uShineCol.value.copy(_shineCol.set(row.colour)).multiplyScalar(row.albedo * SHINE_GAIN);
+  if (row.night) SHARED.uNightCol.value.set(row.night).multiplyScalar(NIGHT_GLOW);
+  return true;
+}
+
+/**
+ * A WORLD'S SHADOW ON A MODEL (internal #388).
+ *
+ * A model was lit by the Sun's direction and nothing asked whether a world was in the way: the ISS
+ * in the Earth's shadow was as bright as at noon, and a lander stood sunlit on ground that was
+ * black to the horizon. This is the missing question, asked per fragment, and it is the SAME
+ * geometry scene/shadow.js earthShadowLit already uses for the dots and the pass predictions: a
+ * shadow as wide as the world, running straight back from it, with an edge as soft as the Sun is
+ * wide (its angular radius, 0.00465 rad, seen from 1 au). tests/test_model_colour.mjs holds the
+ * two functions to the same answers, so a dot and the model that replaces it go dark together.
+ *
+ * It covers the night SIDE as well as the shadow behind: a point on the surface past the
+ * terminator is inside the same cylinder.
+ *
+ * WHAT IS LEFT IN THE DARK is ours and illustrative: NIGHT_FLOOR of the surface's own colour, so a
+ * silhouette is still a shape (starlight, and a screen), plus over the Earth a warm glow on the
+ * faces turned to the ground, in the colour this app draws city lights. Other worlds have no row
+ * for that and get the floor alone.
+ * @returns {number} 1 in full sunlight, 0 in the umbra
+ */
+export const SUN_ANGULAR_RADIUS = 0.00465;
+export const NIGHT_FLOOR = 0.012;
+export const NIGHT_GLOW = 0.035;
+export function worldShadowLit(p, centre, sunDir, radius) {
+  if (!(radius > 0)) return 1;
+  const x = p.x - centre.x, y = p.y - centre.y, z = p.z - centre.z;
+  const along = x * sunDir.x + y * sunDir.y + z * sunDir.z;
+  if (along >= 0) return 1; // on the Sun's side of the world
+  const perp = Math.sqrt(Math.max(0, x * x + y * y + z * z - along * along));
+  const pen = Math.max(1e-9, -along * SUN_ANGULAR_RADIUS);
+  return smooth(radius - pen, radius + pen, perp);
+}
 
 // specular family per class of surface: panels sharp, foil and radiators broad and soft, bodies none
 const SPECULAR = {
@@ -65,6 +289,92 @@ const SPECULAR = {
   foil: { spec: 0.14, power: 14.0 },
   radiator: { spec: 0.1, power: 10.0 },
 };
+
+/**
+ * THE TWO SURFACE TERMS (internal #161, spec 0057 task 2): AN ANISOTROPIC GLINT ON PANELS AND A
+ * SHEEN ON FOIL. In their own function, and added to the shader in one line, so the rest of the
+ * model's light (the ramp, the rim, the planet-shine, the shadow) can change without touching them.
+ *
+ * WHY. A solar array is rows of cells under glass with a grid of conductors: its highlight is not a
+ * round spot but a streak, long across the grid and narrow along it. Crinkled multi-layer
+ * insulation is the opposite of a mirror: thousands of small facets, which together throw light
+ * back most strongly near grazing angles, in the foil's own colour. The single round specular this
+ * file had (SPECULAR above) says neither. Voyager's bus and the Apollo lunar module's descent stage
+ * are foil; every array is a panel.
+ *
+ * THE MATHS, both standard and both cheap (one exp or one pow per fragment, no texture, no tangent
+ * attribute):
+ *   - panel: Ward's anisotropic lobe, exp( -( (H.T / ax)^2 + (H.B / ay)^2 ) / (N.H)^2 ), with the
+ *     tangent T taken across the scene's up axis on the panel's own plane (the meshes carry no
+ *     tangents, and a flat array has one direction that stays put as the camera moves round it).
+ *   - foil: the "Charlie" sheen distribution (Estevez and Kulla 2017, the one glTF's
+ *     KHR_materials_sheen names), D = (2 + 1/r) sin(theta_h)^(1/r) / (2 pi), times the foil's own
+ *     colour.
+ * Both are multiplied by the same `lit` the round specular uses and added BEFORE the world's
+ * shadow, which takes away everything that comes from the Sun.
+ *
+ * TIERED. `uSurface` is 0 until setSurfaceTerms(true): scene/heroes.js switches it on for a device
+ * of tier 1 and up that has not latched to the plain look, so a phone on the lowest tier runs the
+ * shader it ran before (the branch is a uniform test). wardLobe() and charlieSheen() are the same
+ * sums in JS, for tests/test_small_issues.mjs.
+ */
+export const SURFACE_TERMS = {
+  panel: { strength: 0.3, along: 0.07, across: 0.45 },
+  foil: { strength: 0.5, roughness: 0.5 },
+};
+export function setSurfaceTerms(on) {
+  SHARED.uSurface.value = on ? 1 : 0;
+  return SHARED.uSurface.value > 0;
+}
+export function surfaceTermsOn() {
+  return SHARED.uSurface.value > 0;
+}
+/** Ward's lobe: `nh`, `th`, `bh` are the half vector against the normal, the tangent and the bitangent. */
+export function wardLobe(nh, th, bh, along = SURFACE_TERMS.panel.along, across = SURFACE_TERMS.panel.across) {
+  if (!(nh > 1e-4)) return 0;
+  return Math.exp(-(((th / along) ** 2) + ((bh / across) ** 2)) / (nh * nh));
+}
+/** The Charlie sheen distribution at a half vector `nh` from the normal. */
+export function charlieSheen(nh, roughness = SURFACE_TERMS.foil.roughness) {
+  const inv = 1 / roughness;
+  const c = Math.min(1, Math.max(0, nh));
+  return ((2 + inv) * (Math.sqrt(1 - c * c) ** inv)) / (2 * Math.PI);
+}
+/** The GLSL for a kind's term, as lines for toonMaterial's patch; empty for a kind that has none. */
+export function surfaceTermsGLSL(kind) {
+  const f = (n) => Number(n).toFixed(4);
+  if (kind === 'panel') {
+    const p = SURFACE_TERMS.panel;
+    return [
+      '  if ( uSurface > 0.0 ) {',
+      '    vec3 Hs = normalize( L + V );',
+      '    vec3 Ts = cross( normal, normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ) );',
+      '    float tl = length( Ts );',
+      '    float nh = dot( normal, Hs );',
+      '    if ( tl > 1e-3 && nh > 1e-4 ) {',
+      '      Ts /= tl;',
+      '      vec3 Bs = cross( normal, Ts );',
+      `      float th = dot( Hs, Ts ) / ${f(p.along)};`,
+      `      float bh = dot( Hs, Bs ) / ${f(p.across)};`,
+      `      outgoingLight += vec3( ${f(p.strength)} ) * exp( -( th * th + bh * bh ) / ( nh * nh ) ) * lit * uSurface;`,
+      '    }',
+      '  }',
+    ];
+  }
+  if (kind === 'foil') {
+    const s = SURFACE_TERMS.foil;
+    const inv = 1 / s.roughness;
+    return [
+      '  if ( uSurface > 0.0 ) {',
+      '    vec3 Hs = normalize( L + V );',
+      '    float nh = clamp( dot( normal, Hs ), 0.0, 1.0 );',
+      `    float Ds = ${f(2 + inv)} * pow( sqrt( max( 1.0 - nh * nh, 0.0 ) ), ${f(inv)} ) * 0.1592;`,
+      `    outgoingLight += diffuseColor.rgb * ${f(s.strength)} * Ds * lit * uSurface;`,
+      '  }',
+    ];
+  }
+  return [];
+}
 
 const materials = new Map();
 
@@ -85,14 +395,24 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
   const hit = pool.get(key);
   if (hit) return hit;
   const s = SPECULAR[kind] || SPECULAR.body;
-  const m = new THREE.MeshToonMaterial({ color: colour, gradientMap: gradientMap(), map });
+  const m = new THREE.MeshToonMaterial({ color: colour, gradientMap: kind === 'world' ? worldRamp() : gradientMap(), map });
   m.userData.kind = kind;
   m.userData.perModel = pool !== materials;
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uSunDir = SHARED.uSunDir;
     shader.uniforms.uRimSun = SHARED.uRimSun;
     shader.uniforms.uRimShade = SHARED.uRimShade;
-    shader.uniforms.uRim = { value: 0.35 };
+    shader.uniforms.uShineCentre = SHARED.uShineCentre;
+    shader.uniforms.uShineRadius = SHARED.uShineRadius;
+    shader.uniforms.uShineCol = SHARED.uShineCol;
+    shader.uniforms.uShadeRadius = SHARED.uShadeRadius;
+    shader.uniforms.uNightCol = SHARED.uNightCol;
+    shader.uniforms.uFlood = SHARED.uFlood;
+    shader.uniforms.uSunRim = SHARED.uSunRim;
+    shader.uniforms.uGlint = SHARED.uGlint;
+    shader.uniforms.uSurface = SHARED.uSurface;
+    // A mapped world has no air to glow at its limb: a third of the models' rim, enough to part it from the sky.
+    shader.uniforms.uRim = { value: kind === 'world' ? 0.12 : 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
     shader.uniforms.uSpecPower = { value: s.power };
     shader.fragmentShader = shader.fragmentShader
@@ -105,6 +425,15 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           'uniform float uRim;',
           'uniform float uSpec;',
           'uniform float uSpecPower;',
+          'uniform vec3 uShineCentre;',
+          'uniform float uShineRadius;',
+          'uniform vec3 uShineCol;',
+          'uniform float uShadeRadius;',
+          'uniform vec3 uNightCol;',
+          'uniform float uFlood;',
+          'uniform float uSunRim;',
+          'uniform float uGlint;',
+          'uniform float uSurface;',
           'void main() {',
         ].join('\n')
       )
@@ -120,6 +449,53 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '  if ( uSpec > 0.0 ) {',
           '    vec3 H = normalize( L + V );',
           '    outgoingLight += vec3( uSpec ) * pow( max( dot( normal, H ), 0.0 ), uSpecPower ) * lit;',
+          // The glint (GLINT above): panels only, a narrow lobe on the mirror direction.
+          `    if ( uGlint > 0.0 && uSpec > 0.3 ) outgoingLight += uRimSun * uGlint * pow( max( dot( normal, H ), 0.0 ), ${GLINT_POWER}.0 ) * step( 0.0, dot( normal, L ) );`,
+          '  }',
+          // The Sun's rim (sunRimStrength above): the Sun behind the craft, on the edges turned to it.
+          '  if ( uSunRim > 0.0 ) {',
+          '    float back = clamp( dot( -V, L ), 0.0, 1.0 );',
+          `    float fr = pow( 1.0 - clamp( dot( normal, V ), 0.0, 1.0 ), ${SUN_RIM_EXPONENT.toFixed(1)} );`,
+          '    outgoingLight += uRimSun * fr * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
+          '  }',
+          // The anisotropic glint on panels and the sheen on foil (internal #161), in their own function.
+          ...surfaceTermsGLSL(kind),
+          // Planet-shine: see PLANET_SHINE above, and planetShineStrength for the same sum in JS.
+          // Halved on a face the Sun already lights, so the day side does not wash out.
+          '  if ( uShineRadius > 0.0 ) {',
+          '    vec3 toC = ( viewMatrix * vec4( uShineCentre, 1.0 ) ).xyz + vViewPosition;',
+          '    float dC = max( length( toC ), 1e-9 );',
+          '    vec3 D = toC / dC;',
+          '    float cover = min( uShineRadius / dC, 1.0 );',
+          '    float cA = clamp( dot( -D, L ), -1.0, 1.0 );',
+          '    float aA = acos( cA );',
+          '    float phase = max( ( sin( aA ) + ( 3.14159265 - aA ) * cA ) / 3.14159265, 0.0 );',
+          '    float day = mix( phase, smoothstep( -0.15, 0.55, cA ), cover * cover );',
+          '    float facing = 0.5 + 0.5 * dot( normal, D );',
+          '    outgoingLight += diffuseColor.rgb * uShineCol * cover * cover * day * facing * facing * ( 1.0 - 0.5 * lit );',
+          '  }',
+          // The world's shadow, LAST, because it takes away everything above -- the lamp, the rim,
+          // the glint and the planet-shine all come from the Sun. worldShadowLit is the same sum.
+          '  if ( uShadeRadius > 0.0 ) {',
+          '    vec3 rel = -( ( viewMatrix * vec4( uShineCentre, 1.0 ) ).xyz + vViewPosition );',
+          '    float along = dot( rel, L );',
+          '    if ( along < 0.0 ) {',
+          '      float perp = sqrt( max( dot( rel, rel ) - along * along, 0.0 ) );',
+          `      float pen = max( -along * ${SUN_ANGULAR_RADIUS}, 1e-9 );`,
+          '      float sunlit = smoothstep( uShadeRadius - pen, uShadeRadius + pen, perp );',
+          '      float dR = max( length( rel ), 1e-9 );',
+          '      float coverN = min( uShadeRadius / dR, 1.0 );',
+          '      float facingN = 0.5 - 0.5 * dot( normal, rel / dR );',
+          `      vec3 night = diffuseColor.rgb * ( vec3( ${NIGHT_FLOOR} ) + uNightCol * coverN * coverN * facingN * facingN );`,
+          '      outgoingLight = mix( night, outgoingLight, sunlit );',
+          '    }',
+          '  }',
+          // The flood light (setFloodLight below), after the shadow, because it is not the Sun's:
+          // an even lamp at the camera, so a craft on a night side or with its back to the Sun
+          // can be looked at. It only ever lifts a pixel, never darkens one.
+          '  if ( uFlood > 0.0 ) {',
+          '    float head = 0.55 + 0.45 * clamp( dot( normal, V ), 0.0, 1.0 );',
+          '    outgoingLight = max( outgoingLight, diffuseColor.rgb * head * uFlood );',
           '  }',
           '}',
           '#include <opaque_fragment>',
@@ -129,6 +505,28 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
   m.customProgramCacheKey = () => `sr-toon-${kind}`;
   pool.set(key, m);
   return m;
+}
+
+/**
+ * THE FLOOD LIGHT (internal #272). NOT THE REAL LIGHT, and the card that switches it on says so.
+ * A craft in a world's shadow is drawn dark because it is dark (worldShadowLit above); this is the
+ * lamp a planetarium turns on to show the model anyway. One shared uniform: every toon material
+ * reads it, so it lights whichever model is on screen and costs nothing when it is 0.
+ * FLOOD_LEVEL is the lamp's strength where the surface faces the camera; 0.9 keeps a white hull
+ * under the bright step of the sunlit ramp, so "lit for viewing" never reads brighter than day.
+ */
+export const FLOOD_LEVEL = 0.9;
+export function setFloodLight(on) {
+  SHARED.uFlood.value = on ? FLOOD_LEVEL : 0;
+  return SHARED.uFlood.value > 0;
+}
+export function floodLightOn() {
+  return SHARED.uFlood.value > 0;
+}
+/** The same sum as the shader's, for the tests: what a pixel of `albedo` facing `facing` shows. */
+export function floodLit(outgoing, albedo, facing, flood = SHARED.uFlood.value) {
+  if (!(flood > 0)) return outgoing;
+  return Math.max(outgoing, albedo * (0.55 + 0.45 * Math.min(1, Math.max(0, facing))) * flood);
 }
 
 /** Update the Sun direction every material's rim and specular use. Scene space, unit, toward the Sun. */
@@ -191,9 +589,114 @@ function panelWing(length, width, colour, name) {
   return g;
 }
 
+/** A cylinder or frustum along Z, centred at `z`: `rFront` is the +Z end. */
+function zcyl(rFront, rBack, len, z, seg, colour, kind, name) {
+  const c = cyl(rFront, rBack, len, seg, colour, kind, name);
+  c.rotation.x = Math.PI / 2;
+  c.position.z = z;
+  return c;
+}
+/**
+ * A hull as a table. Rows are [rAft, rFront, length, colour, kind, name] IN METRES, stacked nose to
+ * tail along +Z from `z0`, so the lengths in a builder add up to the published length on the page
+ * and nowhere else. `S` is the builder's one division. Returns the z reached, in metres.
+ */
+function zstack(g, z0, S, seg, rows) {
+  let z = z0;
+  for (const [rAft, rFront, len, colour, kind, name] of rows) {
+    g.add(zcyl(rFront * S, rAft * S, len * S, (z + len / 2) * S, seg, colour, kind || 'body', name));
+    z += len;
+  }
+  return z;
+}
+/** Several boxes as ONE mesh and one draw call: rows are [w, h, d, x, y, z]. */
+function slabs(rows, colour, kind, name) {
+  const pos = [];
+  const nor = [];
+  for (const [w, h, d, x, y, z] of rows) {
+    const b = new THREE.BoxGeometry(w, h, d).toNonIndexed();
+    b.translate(x, y, z);
+    for (const v of b.attributes.position.array) pos.push(v);
+    for (const v of b.attributes.normal.array) nor.push(v);
+    b.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return mesh(geo, colour, kind, name);
+}
+/** Several struts as ONE mesh and one draw call: rows are [ax, ay, az, bx, by, bz]. */
+function tubes(rows, r, seg, colour, kind, name) {
+  const pos = [];
+  const nor = [];
+  const up = new THREE.Vector3(0, 1, 0);
+  const d = new THREE.Vector3();
+  const q = new THREE.Quaternion();
+  for (const [ax, ay, az, bx, by, bz, rr] of rows) {
+    d.set(bx - ax, by - ay, bz - az);
+    const len = d.length();
+    if (!(len > 0)) continue;
+    const c = new THREE.CylinderGeometry(rr || r, rr || r, len, seg).toNonIndexed();
+    c.applyQuaternion(q.setFromUnitVectors(up, d.normalize()));
+    c.translate((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+    for (const v of c.attributes.position.array) pos.push(v);
+    for (const v of c.attributes.normal.array) nor.push(v);
+    c.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return mesh(geo, colour, kind, name);
+}
+/**
+ * A solar wing drawn as the panels it folds into: `n` slabs along +X from the root with a hair of
+ * gap between them, on a spine, behind a short bare yoke. The outer edge is at exactly `length`,
+ * so a builder can still derive the wing from the published span.
+ */
+function segWing(length, width, n, name, colour = PANEL_BLUE) {
+  const g = new THREE.Group();
+  const yoke = length * 0.06;
+  const cell = (length - yoke) / n;
+  const gap = Math.min(cell * 0.08, width * 0.06);
+  const cells = [];
+  for (let i = 0; i < n; i++) cells.push([cell - gap, 0.004, width, yoke + cell * (i + 0.5) + gap / 2, 0, 0]);
+  g.add(slabs(cells, colour, 'panel', 'panel'));
+  const spine = box(length, 0.007, Math.min(0.007, width * 0.2), METAL, 'foil', 'mast');
+  spine.position.x = length / 2;
+  g.add(spine);
+  g.name = name || 'wing';
+  return g;
+}
+/** Every other gore of a round fanfold array in the XZ plane, both faces: two of these make a fan. */
+function goreFan(r, n, parity, colour, name) {
+  const pos = [];
+  for (let i = parity; i < n; i += 2) {
+    const a0 = (i / n) * Math.PI * 2;
+    const a1 = ((i + 1) / n) * Math.PI * 2;
+    const x0 = Math.cos(a0) * r, z0 = Math.sin(a0) * r, x1 = Math.cos(a1) * r, z1 = Math.sin(a1) * r;
+    pos.push(0, 0, 0, x1, 0, z1, x0, 0, z0, 0, 0, 0, x0, 0, z0, x1, 0, z1);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.computeVertexNormals();
+  return mesh(geo, colour, 'panel', name);
+}
+/** A named group the proportion test measures: the pressure hull or bus, without wings and booms. */
+function hullGroup() {
+  const h = new THREE.Group();
+  h.name = 'hull';
+  return h;
+}
+
 const PANEL_BLUE = '#2E4E8C'; // dark blue cells; not a palette token because it is a material, not a class
 const FOIL = '#C9B27A'; // gold multi-layer insulation
 const METAL = '#B9C2CE';
+const HULL_WHITE = '#E6EAF0'; // painted or beta-cloth white
+const HULL_GREY = '#C3C9D1';
+const BLANKET = '#5E645B'; // the grey-olive thermal blanket a Soyuz and a Progress fly in
+const RADIATOR = '#EEF1F4';
+const CHARRED = '#2B2624'; // a heat shield
+const DARK_GLASS = '#1B2430';
 
 // ------------------------------------------------------------------------------------ station
 
@@ -324,98 +827,102 @@ function buildDebris(variant, opts = {}) {
 // --------------------------------------------------------------------------- soyuz and progress
 
 /**
- * The Soyuz hull, as a family shape. Three modules in a line and two long wings: that silhouette
- * has flown since 1967 and is what a Progress shares with a Soyuz, which is why one builder draws
- * both. Published dimensions (RSC Energia): Soyuz MS 7.48 m long, 10.7 m across the wings, orbital
- * module 2.26 m across, descent module 2.17 m, instrument module 2.72 m. Progress MS 7.23 m long,
- * 10.6 m across, a cargo drum where the crew module is and a tank section where the descent
- * module is. The card says "the kind of thing, not this exact one", because it is.
+ * Soyuz MS, Progress MS, Shenzhou and Tianzhou: four vehicles on one plan -- modules in a line and
+ * one pair of wings on the service module -- each built from its own published metres.
  *
- * The one recognition detail: the descent module is a BELL, not a cylinder -- Soyuz is the only
- * visiting vehicle with that waist -- and the Progress has no bell, which is how the two differ
- * at forty pixels.
+ * WHAT IS PUBLISHED (read 2026-10-06 from each vehicle's Wikipedia infobox, which cites the
+ * operator: RSC Energia for the two Russian craft, CMSA papers for the two Chinese ones):
+ *   Soyuz MS     7.48 m long, 2.72 m across the service module's skirt, 10.7 m across the wings.
+ *                Orbital module 2.26 m, descent module 2.17 m.
+ *   Progress MS  7.23 m long (Energia; the infobox rounds to 7.4), 2.72 m, 10.6 m across.
+ *   Shenzhou     9.25 m long, 2.8 m across, about 17 m across the wings.
+ *   Tianzhou     10.6 m long, 3.35 m across the cargo module, 14.9 m across the wings.
+ * How each length is SHARED between the modules is read off photographs (Wikimedia Commons
+ * categories "Soyuz MS", "Progress MS", "Shenzhou spacecraft", "Tianzhou spacecraft") and is ours:
+ * the rows below add up to the published total, and tests/test_station_shapes.mjs holds the three
+ * overall numbers to 6 %.
+ *
+ * THE RECOGNITION. Soyuz: a ball, a bell and a drum -- the descent module is the only bell-shaped
+ * crew cabin that visits a station, and the white radiator band round the drum is what a
+ * photograph of one shows first. Progress: the same drum and wings with a blunt cargo can and NO
+ * bell. Shenzhou: the same plan a fifth larger, a cylinder where Soyuz has a ball; its orbital
+ * module lost its own pair of wings with Shenzhou 8 (2011), so the two pairs this used to draw
+ * were a spacecraft that last flew in 2008. Tianzhou: one fat white cylinder and a narrower
+ * engine section.
  */
+const SOYUZ_FAMILY = {
+  soyuz: {
+    len: 7.48, span: 10.7, wing: [1.4, 4], wingAt: [1.1, 1.61],
+    rows: [
+      [1.36, 1.1, 0.96, HULL_GREY, 'foil', 'skirt'],
+      [1.1, 1.1, 1.3, RADIATOR, 'radiator', 'service'],
+      [1.085, 1.085, 0.18, CHARRED, 'body', 'heatshield'],
+      [1.085, 0.62, 2.06, '#6F746C', 'body', 'descent'],
+    ],
+    ball: 1.13, // the orbital module, a sphere 2.26 m across
+    nose: [[0.4, 0.4, 0.5, METAL, 'body', 'docking'], [0.1, 0.06, 0.22, METAL, 'body', 'probe']],
+  },
+  progress: {
+    len: 7.23, span: 10.6, wing: [1.4, 4], wingAt: [1.1, 1.83],
+    rows: [
+      [1.36, 1.1, 0.96, HULL_GREY, 'foil', 'skirt'],
+      [1.1, 1.1, 1.75, RADIATOR, 'radiator', 'service'],
+      [1.1, 1.0, 1.5, '#4C514B', 'body', 'tanks'],
+      [1.1, 1.1, 1.6, BLANKET, 'body', 'cargo'],
+      [1.1, 0.75, 0.7, BLANKET, 'body', 'cargo-dome'],
+    ],
+    nose: [[0.4, 0.4, 0.5, METAL, 'body', 'docking'], [0.1, 0.06, 0.22, METAL, 'body', 'probe']],
+  },
+  shenzhou: {
+    len: 9.25, span: 17, wing: [2.0, 4], wingAt: [1.25, 1.92],
+    rows: [
+      [1.4, 1.25, 0.9, HULL_GREY, 'foil', 'skirt'],
+      [1.25, 1.25, 2.04, HULL_WHITE, 'radiator', 'service'],
+      [1.26, 1.26, 0.15, CHARRED, 'body', 'heatshield'],
+      [1.26, 0.75, 2.35, '#8E9196', 'body', 'descent'],
+      [1.125, 1.125, 2.8, HULL_WHITE, 'body', 'orbital'],
+    ],
+    nose: [[0.6, 0.6, 0.7, METAL, 'body', 'docking'], [0.45, 0.4, 0.31, METAL, 'body', 'probe']],
+  },
+  tianzhou: {
+    len: 10.6, span: 14.9, wing: [2.2, 3], wingAt: [1.4, 1.65],
+    rows: [
+      [1.4, 1.4, 3.3, HULL_GREY, 'radiator', 'service'],
+      [1.4, 1.675, 0.6, HULL_WHITE, 'body', 'shoulder'],
+      [1.675, 1.675, 5.7, HULL_WHITE, 'body', 'cargo'],
+      [1.675, 0.8, 0.5, HULL_WHITE, 'body', 'cargo-dome'],
+    ],
+    nose: [[0.6, 0.6, 0.35, METAL, 'body', 'docking'], [0.45, 0.4, 0.15, METAL, 'body', 'probe']],
+  },
+};
 function buildSoyuzFamily(variant) {
+  const f = SOYUZ_FAMILY[variant] || SOYUZ_FAMILY.soyuz;
   const g = new THREE.Group();
-  const progress = variant === 'progress' || variant === 'tianzhou';
-  // Shenzhou: the same three-module plan at 9.25 m, wings on BOTH the orbital and service
-  // modules (CMSA), about 17 m across. Tianzhou: a 10.6 m cargo cylinder 3.35 m across with one
-  // pair of wings, about 14.9 m across -- a Progress at half again the size.
-  const shenzhou = variant === 'shenzhou';
-  const tianzhou = variant === 'tianzhou';
-  const span = shenzhou ? 17 : tianzhou ? 14.9 : progress ? 10.6 : 10.7;
-  g.userData.realSizeM = span; // across the wings, the longest dimension
-  const green = tianzhou ? '#D9DDE3' : shenzhou ? '#C9CCD1' : '#6E7E62'; // Chinese hulls are white-grey
-  const body = 'body';
-  const S = 1 / span; // metres -> unit box along the wingspan
-  const R = tianzhou ? 1.675 : 1.36; // hull radius
-
-  // Instrument and propulsion module, aft: a plain cylinder, both variants.
-  const svc = cyl(R * S, R * S, (tianzhou ? 3.2 : 2.3) * S, 16, green, body, 'service');
-  svc.rotation.x = Math.PI / 2;
-  svc.position.z = -2.4 * S;
-  g.add(svc);
-  const nozzle = cyl(0.3 * S, 0.45 * S, 0.5 * S, 12, '#4A4F57', 'foil', 'nozzle');
-  nozzle.rotation.x = Math.PI / 2;
-  nozzle.position.z = -3.8 * S;
-  g.add(nozzle);
-
-  if (progress) {
-    // Refuelling section where the bell would be, then the cargo drum where the crew would be.
-    const tank = cyl((R - 0.16) * S, R * S, 1.6 * S, 16, green, body, 'tanks');
-    tank.rotation.x = Math.PI / 2;
-    tank.position.z = -0.45 * S;
-    g.add(tank);
-    const cargo = cyl((tianzhou ? R : 1.13) * S, (tianzhou ? R : 1.13) * S, (tianzhou ? 5.4 : 2.6) * S, 16, green, body, 'cargo');
-    cargo.rotation.x = Math.PI / 2;
-    cargo.position.z = (tianzhou ? 3.05 : 1.65) * S;
-    g.add(cargo);
-  } else {
-    // The bell: wide at the heat shield, narrow at the hatch to the orbital module.
-    const bell = cyl(0.8 * S, 1.08 * S, 2.1 * S, 16, '#8C8F93', body, 'descent');
-    bell.rotation.x = Math.PI / 2;
-    bell.position.z = -0.2 * S;
-    g.add(bell);
-    // Soyuz's orbital module is a sphere; Shenzhou's is a cylinder with a docking ring, and it
-    // carries its own pair of wings, which is the one thing that tells the two apart.
-    const orbital = shenzhou
-      ? cyl(1.13 * S, 1.13 * S, 2.8 * S, 16, green, body, 'orbital')
-      : new THREE.Mesh(new THREE.SphereGeometry(1.13 * S, 16, 12), toonMaterial(green, body));
-    orbital.name = 'orbital';
-    if (shenzhou) orbital.rotation.x = Math.PI / 2;
-    orbital.position.z = (shenzhou ? 2.1 : 1.75) * S;
-    g.add(orbital);
-    if (shenzhou) {
-      for (const side of [-1, 1]) {
-        const w = panelWing(2.6 * S, 1.2 * S, METAL, side > 0 ? 'fwdwing+' : 'fwdwing-');
-        if (side < 0) w.rotation.y = Math.PI;
-        w.position.set(side * 1.13 * S, 0, 2.1 * S);
-        g.add(w);
-      }
-    }
+  g.userData.realSizeM = f.span; // across the wings, the longest dimension
+  const S = 1 / f.span; // metres -> the unit box
+  const hull = hullGroup();
+  g.add(hull);
+  const z0 = -f.len / 2;
+  let z = zstack(hull, z0, S, 16, f.rows);
+  if (f.ball) {
+    // Soyuz's orbital module: a ball, and a small dish for the Kurs rendezvous radio on top of it.
+    const ball = mesh(new THREE.SphereGeometry(f.ball * S, 16, 12), BLANKET, 'body', 'orbital');
+    ball.position.z = (z + f.ball) * S;
+    hull.add(ball);
+    const kurs = dish(0.2 * S, 0.07 * S, 10, METAL, 'foil', 'antenna');
+    kurs.position.set(0, (f.ball - 0.02) * S, (z + f.ball + 0.3) * S);
+    hull.add(kurs);
+    z += f.ball * 2;
   }
-  // Docking probe at the front.
-  const probe = cyl(0.12 * S, 0.12 * S, 0.5 * S, 8, METAL, body, 'probe');
-  probe.rotation.x = Math.PI / 2;
-  probe.position.z = (tianzhou ? 6.0 : shenzhou ? 3.7 : progress ? 3.2 : 3.1) * S;
-  g.add(probe);
-
-  // Two wings off the service module, in the plane of the hull, ROOTED ON IT: panelWing() grows
-  // along +X from its group origin, so the position is the root and a side needs nothing but a
-  // yaw of pi. The quarter-turn that used to be here pointed the root along Z, which is why the
-  // position carried a wingLen / 2 correction -- and why the pair only ever spanned 7.8 m of the
-  // 10.7 m the model declares, with 1.15 m of nothing between each wing and the hull. At hero
-  // size a Soyuz was three objects flying in formation.
-  //
-  // The wing length now comes OUT of the published span instead of standing beside it as an
-  // independent number: 2 x (hull radius + wing) is the span, by construction, so the two can
-  // never drift apart again. They had drifted by 27 %.
-  const wingLen = (span / 2 - R) * S;
-  const wingWidth = (tianzhou ? 2.2 : 1.4) * S;
+  zstack(hull, z, S, 12, f.nose);
+  // The wings, rooted ON the service module and derived from the published span: 2 x (hull radius
+  // + wing) is the span by construction, so the two cannot drift apart (they once had, by 27 %).
+  const [rootR, rootZ] = f.wingAt;
+  const [wingW, panels] = f.wing;
   for (const side of [-1, 1]) {
-    const w = panelWing(wingLen, wingWidth, METAL, side > 0 ? 'wing+' : 'wing-');
+    const w = segWing((f.span / 2 - rootR) * S, wingW * S, panels, side > 0 ? 'wing+' : 'wing-');
     if (side < 0) w.rotation.y = Math.PI;
-    w.position.set(side * R * S, 0, -2.4 * S);
+    w.position.set(side * rootR * S, 0, (z0 + rootZ) * S);
     g.add(w);
   }
   return g;
@@ -537,7 +1044,7 @@ function buildOneWeb() {
   const pivot = new THREE.Group();
   pivot.name = 'panelPivot';
   for (const side of [-1, 1]) {
-    const w = panelWing(2.5 * S, 1.0 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    const w = segWing(2.5 * S, 1.0 * S, 3, side > 0 ? 'wing+' : 'wing-');
     if (side < 0) w.rotation.y = Math.PI;
     w.position.set(side * 0.5 * S, 0, 0);
     pivot.add(w);
@@ -575,15 +1082,14 @@ function buildOneWeb() {
  * of spacecraft. The phased-array panels tiling the chassis underside are the only feature on it.
  */
 const STARLINK = {
-  v1: { span: 9, chassis: [2.8, 1.4], arrays: 1, arrayWidth: 2.6 },
-  v2: { span: 30, chassis: [4.1, 2.7], arrays: 2, arrayWidth: 4.2 },
+  // [along the span, along the hinge]. THE ARRAY HANGS OFF THE LONG EDGE: SpaceX's v2 Mini figures
+  // only close that way -- (30 - 2.7) / 2 = 13.65 m of array, and 13.65 x 3.85 m is the 52.5 m^2
+  // Spaceflight Now quotes for each. Drawn off the short edge, as this was, the array came out
+  // 4.2 m wide on a 2.7 m edge and 54 m^2. v1.5's numbers are still this project's own (above).
+  v1: { span: 9, chassis: [1.4, 2.8], arrays: 1, arrayWidth: 2.6, panels: 12 },
+  v2: { span: 30, chassis: [2.7, 4.1], arrays: 2, arrayWidth: 3.85, panels: 10 },
 };
-// THE ARRAY LENGTH IS DERIVED FROM THE SPAN, not written beside it. The span is the sourced
-// number -- SpaceX's 30 m for the v2 Mini, and for v1 the figure the comment above admits this
-// project chose -- so the array is whatever reaches it: (span - chassis) / arrays. Written as two
-// independent numbers they disagreed, and the geometry was the one that lost: v2 built 28.9 m
-// against SpaceX's published 30, and v1 built 8.4 against a comment claiming 9 is "the chassis
-// plus the single array". It was not; 2.8 + 5.6 is 8.4.
+// THE ARRAY LENGTH IS DERIVED FROM THE SPAN, not written beside it: (span - chassis) / arrays.
 for (const s of Object.values(STARLINK)) s.array = [(s.span - s.chassis[0]) / s.arrays, s.arrayWidth];
 function buildStarlink(variant) {
   const g = new THREE.Group();
@@ -591,25 +1097,32 @@ function buildStarlink(variant) {
   g.userData.realSizeM = s.span;
   const S = 1 / s.span;
   const [cw, cd] = s.chassis;
+  const hull = hullGroup();
+  g.add(hull);
 
-  // The chassis: a slab, thin enough that edge-on it nearly disappears, which is true of the object.
-  const chassis = box(cw * S, 0.22 * S, cd * S, '#E7EBF1', 'body', 'chassis');
-  g.add(chassis);
-  // The phased-array panels on the Earth-facing side. Four tiles, dark, and the only thing on it.
+  // The chassis: a slab lying flat to the Earth (+Z), thin enough that edge-on it nearly
+  // disappears, which is true of the object.
+  hull.add(box(cw * S, cd * S, 0.22 * S, '#E7EBF1', 'body', 'chassis'));
+  // The Earth face: four phased-array tiles, and a small steerable gateway dish at each end.
   for (const [i, j] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) {
-    const tile = box(cw * 0.44 * S, 0.03 * S, cd * 0.42 * S, '#242A34', 'panel', 'phased-array');
-    tile.position.set(i * cw * 0.24 * S, -0.13 * S, j * cd * 0.24 * S);
-    g.add(tile);
+    const tile = box(cw * 0.44 * S, cd * 0.34 * S, 0.03 * S, '#242A34', 'panel', 'phased-array');
+    tile.position.set(i * cw * 0.24 * S, j * cd * 0.19 * S, 0.125 * S);
+    hull.add(tile);
+  }
+  for (const j of [-1, 1]) {
+    const gw = dish(cd * 0.055 * S, cd * 0.02 * S, 10, '#C9CFD8', 'foil', 'ka-gateway');
+    gw.position.set(0, j * cd * 0.435 * S, 0.14 * S);
+    hull.add(gw);
   }
 
-  // The array, or arrays. This is the whole difference between the generations and the reason for
-  // the gate in realmodels.js: v1 has one and v2 Mini has two.
+  // The array, or arrays: the whole difference between the generations and the reason for the
+  // gate in realmodels.js. Drawn as the panels it unfolds from, because a Starlink in a
+  // photograph is a ladder of dark rectangles before it is anything else.
   const pivot = new THREE.Group();
   pivot.name = 'panelPivot';
   const [al, aw] = s.array;
-  const sides = s.arrays === 2 ? [-1, 1] : [1];
-  for (const side of sides) {
-    const wing = panelWing(al * S, aw * S, METAL, side > 0 ? 'wing+' : 'wing-');
+  for (const side of s.arrays === 2 ? [-1, 1] : [1]) {
+    const wing = segWing(al * S, aw * S, s.panels, side > 0 ? 'wing+' : 'wing-');
     if (side < 0) wing.rotation.y = Math.PI;
     wing.position.set(side * cw * 0.5 * S, 0, 0);
     pivot.add(wing);
@@ -643,44 +1156,134 @@ function buildStarlink(variant) {
  * Source: ESA, "Galileo satellites" (esa.int).
  */
 const NAV_SPAN_M = 13;
-function buildNavSatellite() {
+/**
+ * ONE BUILDER, SIX SHAPES (public #429, 2026-10-08). The family box above was Galileo's and stood
+ * for every constellation; GLONASS-M is a drum and a GPS IIF is half as big again, which is the
+ * issue. Each row is [x across the wing roots, y, z along the Earth axis] of the body in metres,
+ * the tip-to-tip span, and the wing's width and panel count.
+ *
+ * WHAT WAS READ ON 2026-10-08, AND HOW GOOD EACH NUMBER IS
+ *   Galileo FOC   ESA, "Galileo satellites": "Spacecraft bus dimensions 2.7 x 1.1 x 1.2 m",
+ *                 "Solar array span 13m". The maker's own page. Unchanged from the family shape.
+ *   GPS IIF       body from the US Space Force fact sheet "GPS IIF" (losangeles.spaceforce.mil;
+ *                 the page refuses a plain fetch, so its "Size: 98 in wide, 80 in deep, 88 in high"
+ *                 and "3-Panel ... Solar Arrays" were read in a search engine's extract): 2.49 x
+ *                 2.03 x 2.24 m. SPAN 18 m from keeptrack.space/satellite/37753, a catalogue
+ *                 site and not the maker: "spans 18 meters when its solar arrays are deployed".
+ *   GPS III       body from the same service's "GPS III" fact sheet, read the same way: "97 in
+ *                 wide, 70 in deep, 134 in high", 2.46 x 1.78 x 3.40 m. SPAN 14 m from
+ *                 keeptrack.space/satellite/46826 ("a span of 14 meters"), catalogue again.
+ *   GLONASS-M     a pressurised DRUM. ESA's table of radiating areas (Dilssner et al., IGS
+ *                 Workshop 2018, files.igs.org/pub/resource/pubs/workshop/2018/IGSWS-2018-PY02-03.pdf,
+ *                 slide 4) gives "GLONASS-M 4.20 [x-panel, m2] 1.66 [z-panel, m2]": an end of 1.66
+ *                 m2 is a circle 1.45 m across, and a side of 4.20 m2 is then 2.9 m long. That
+ *                 arithmetic is ours. keeptrack.space/satellite/43687 says "a diameter of 1.5
+ *                 meters and a span of 7.8 meters", which agrees on the drum and gives the span.
+ *   GLONASS-K     an unpressurised box. keeptrack.space/satellite/40315 only: "a length of 2
+ *                 meters, diameter of 1 meter, and span of 5 meters". The weakest row here.
+ *   BeiDou-3 MEO  (the CAST build) the same ESA slide: "BDS-3M CAST 1.22 [x] 2.25 [z]" and
+ *                 "Rectangular shape with a ratio of about 2:1 for main body axes";
+ *                 keeptrack.space/satellite/43707 gives "2.2 meters in length ... a span of 10
+ *                 meters". A 2.2 x 1.02 x 1.19 m box has both of ESA's areas; the split is ours.
+ * The wings' WIDTHS are not on any of these pages and are drawn in proportion. GPS IIR, BeiDou's
+ * geostationary and inclined craft, IRNSS and QZSS have no row and keep the family box. Every
+ * route to these says `generic: true`, so the card still reads "the kind of thing".
+ */
+const NAV_SHAPES = {
+  navigation: { span: NAV_SPAN_M, bus: [1.1, 1.2, 2.7], wingW: 1.4, panels: 0 },
+  'navigation-gps-iif': { span: 18, bus: [2.03, 2.49, 2.24], wingW: 2.0, panels: 3 },
+  'navigation-gps-iii': { span: 14, bus: [1.78, 2.46, 3.4], wingW: 2.1, panels: 4 },
+  'navigation-glonass-m': { span: 7.8, drum: [1.45, 2.9], wingW: 1.5, panels: 3 },
+  'navigation-glonass-k': { span: 5, bus: [1, 1, 2], wingW: 0.95, panels: 2 },
+  'navigation-beidou-meo': { span: 10, bus: [1.02, 2.2, 1.19], wingW: 1.5, panels: 3 },
+};
+function buildNavSatellite(variant) {
+  const row = (typeof variant === 'string' && Object.prototype.hasOwnProperty.call(NAV_SHAPES, variant) && NAV_SHAPES[variant]) || NAV_SHAPES.navigation;
   const g = new THREE.Group();
-  g.userData.realSizeM = NAV_SPAN_M;
-  const S = 1 / NAV_SPAN_M;
+  g.userData.realSizeM = row.span;
+  const S = 1 / row.span;
+  const hull = hullGroup();
+  g.add(hull);
 
-  // The bus: 2.7 x 1.1 x 1.2 m, long axis along Z so the Earth face is where the attitude puts it.
-  const bus = box(1.1 * S, 1.2 * S, 2.7 * S, '#E4E9F0', 'body', 'bus');
-  g.add(bus);
-
-  // The navigation antenna: a plate on the Earth face (+Z) carrying a ring of short helical
-  // elements. Twelve, which is GPS's count; Galileo's array is a different pattern and the same
-  // idea, and neither is legible at hero size: measured against the 84-px silhouette the horns are
-  // 0.9 px and the plate is 11. So the plate is dark, the way an antenna aperture really reads and
-  // the way Starlink's phased-array tiles already are here, and the horns are detail for the
-  // selected view at 260 px. See amendment 3 to spec 0027 for the measurement.
-  const plate = box(1.0 * S, 1.05 * S, 0.12 * S, '#2B313C', 'body', 'l-band');
-  plate.position.z = 1.4 * S;
-  g.add(plate);
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    const ring = i < 4 ? 0.22 : 0.42;
-    const horn = cyl(0.055 * S, 0.055 * S, 0.34 * S, 5, METAL, 'foil', 'element');
-    horn.rotation.x = Math.PI / 2;
-    horn.position.set(Math.cos(a) * ring * S, Math.sin(a) * ring * S, 1.62 * S);
-    g.add(horn);
+  // The body, long axis along Z so the Earth face is where the attitude puts it.
+  const [bx, by, bz] = row.drum ? [row.drum[0], row.drum[0], row.drum[1]] : row.bus;
+  if (row.drum) {
+    hull.add(zcyl(bx / 2 * S, bx / 2 * S, bz * S, 0, 18, '#D9DEE6', 'body', 'drum'));
+    // The band of thermal louvres round a pressurised bus: the one mark a plain drum has.
+    hull.add(zcyl(bx / 2 * 1.02 * S, bx / 2 * 1.02 * S, bz * 0.22 * S, -bz * 0.12 * S, 18, '#9BA6B4', 'foil', 'louvres'));
+  } else {
+    hull.add(box(bx * S, by * S, bz * S, '#E4E9F0', 'body', 'bus'));
   }
 
-  // Two wings to a 13 m span: (13 - 1.1) / 2 = 5.95 m each.
+  // The navigation antenna: a dark plate on the Earth face (+Z) carrying a ring of short helical
+  // elements. Twelve, which is GPS's count; the others' arrays are a different pattern and the
+  // same idea, and neither is legible at hero size (amendment 3 to spec 0027 has the measurement).
+  const pw = Math.min(bx, by) * 0.9;
+  const plate = row.drum
+    ? zcyl(pw / 2 * S, pw / 2 * S, 0.12 * S, (bz / 2 + 0.05) * S, 18, '#2B313C', 'body', 'l-band')
+    : box(bx * 0.91 * S, by * 0.88 * S, 0.12 * S, '#2B313C', 'body', 'l-band');
+  if (!row.drum) plate.position.z = (bz / 2 + 0.05) * S;
+  g.add(plate);
+  const horns = [];
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const ring = (i < 4 ? 0.2 : 0.38) * pw;
+    horns.push([Math.cos(a) * ring * S, Math.sin(a) * ring * S, (bz / 2 + 0.1) * S, Math.cos(a) * ring * S, Math.sin(a) * ring * S, (bz / 2 + 0.44) * S]);
+  }
+  g.add(tubes(horns, 0.05 * pw * S, 5, METAL, 'foil', 'element'));
+
+  // Two wings out to the published span.
+  const each = (row.span - bx) / 2;
   const pivot = new THREE.Group();
   pivot.name = 'panelPivot';
   for (const side of [-1, 1]) {
-    const w = panelWing(5.95 * S, 1.4 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    const w = row.panels
+      ? segWing(each * S, row.wingW * S, row.panels, side > 0 ? 'wing+' : 'wing-')
+      : panelWing(each * S, row.wingW * S, METAL, side > 0 ? 'wing+' : 'wing-');
     if (side < 0) w.rotation.y = Math.PI;
-    w.position.set(side * 0.55 * S, 0, 0);
+    w.position.set(side * (bx / 2) * S, 0, 0);
     pivot.add(w);
   }
   g.add(pivot);
   g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
+ * A 1U and a 2U CubeSat at the specification's own size (public #422, 2026-10-08).
+ *
+ * The CubeSat Design Specification rev. 14.1 (cubesat.org, the PDF of 2022-02-09, read
+ * 2026-10-08) gives the length of a 1U as "113.5 +/-0.1mm" and of a 2U as "227.0 +/-0.2mm" on a
+ * 100 x 100 mm section, and says "Rails shall have a minimum width of 8.5mm". That is the whole
+ * shape: a body, four rails, cells on the four long faces. No wings and no antenna are drawn,
+ * because the standard has none and no operator's 1U is being claimed.
+ *
+ * NASA's "CubeSat - 1 RU Generic" and "2 RU Generic" meshes were asked for. No record on the map
+ * is a 1U or a 2U today (Flock and Lemur are 3U, Starling is 6U), so nothing routes here: these
+ * two are in the builder table for the first record that is one, and on the shape sheet.
+ */
+function buildCubeSatSmall(variant) {
+  const len = variant === 'cubesat-2u' ? 0.227 : 0.1135;
+  const g = new THREE.Group();
+  g.userData.realSizeM = len;
+  const S = 1 / len;
+  const hull = hullGroup();
+  g.add(hull);
+  hull.add(box(0.1 * S, 0.1 * S, len * S, '#DCE2EA', 'body', 'bus'));
+  const rails = [];
+  for (const [x, y] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) rails.push([0.0085 * S, 0.0085 * S, len * S, x * 0.04625 * S, y * 0.04625 * S, 0]);
+  hull.add(slabs(rails.map(([w, h, d, x, y, z]) => [w * 1.08, h * 1.08, d, x, y, z]), METAL, 'foil', 'rail'));
+  // Cells on the four long faces, one pane a unit, set a hair proud of the skin.
+  const cells = [];
+  const units = Math.round(len / 0.1135);
+  for (let u = 0; u < units; u++) {
+    const z = (-len / 2 + 0.1135 * (u + 0.5)) * S;
+    for (const sgn of [-1, 1]) {
+      cells.push([0.074 * S, 0.003 * S, 0.096 * S, 0, sgn * 0.0505 * S, z]);
+      cells.push([0.003 * S, 0.074 * S, 0.096 * S, sgn * 0.0505 * S, 0, z]);
+    }
+  }
+  hull.add(slabs(cells, PANEL_BLUE, 'panel', 'body-cells'));
   return g;
 }
 
@@ -713,48 +1316,57 @@ function buildNavSatellite() {
  * Sources: the CubeSat Design Specification's 100 x 100 x 113.5 mm unit; Planet's Dove and SuperDove
  * and Spire's LEMUR-2 are each published as 3U.
  */
-function buildCubeSat() {
+function buildCubeSat(variant) {
   const g = new THREE.Group();
-  const SPAN_M = 0.5; // the 0.10 m body plus a 0.20 m panel each side, deployed flat
+  // 3U: one unit across. 6U: two 3U stacks side by side, 0.2 m across (the CubeSat Design
+  // Specification rev. 14's 6U is 100 x 226.3 x 366 mm; drawn on the same rounded 10 cm unit as
+  // the 3U beside it, so the pair stay exactly 1 : 2).
+  const six = variant === 'cubesat-6u';
+  const bx = six ? 0.2 : 0.1;
+  const SPAN_M = bx + 0.4; // the body plus a 0.20 m panel each side, deployed flat
   g.userData.realSizeM = SPAN_M;
   const S = 1 / SPAN_M;
+  const hull = hullGroup();
+  g.add(hull);
 
-  // The 3U body: 0.10 x 0.10 x 0.30 m, long axis along Z so `sun-panels` attitude puts its end at
-  // the world -- which is where the camera on a Dove points.
-  const body = box(0.1 * S, 0.1 * S, 0.3 * S, '#DCE2EA', 'body', 'bus');
-  g.add(body);
-  // The two rails that make it a CubeSat rather than a box: the dispenser runs on them.
+  // The body, long axis along Z so `sun-panels` attitude puts its end at the world -- which is
+  // where the camera on a Dove points.
+  hull.add(box(bx * S, 0.1 * S, 0.3 * S, '#DCE2EA', 'body', 'bus'));
+  // The rails that make it a CubeSat rather than a box: the dispenser runs on them.
   for (const [x, y] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-    const rail = box(0.014 * S, 0.014 * S, 0.305 * S, METAL, 'foil', 'rail');
-    rail.position.set(x * 0.045 * S, y * 0.045 * S, 0);
-    g.add(rail);
+    const rail = box(0.014 * S, 0.014 * S, 0.3 * S, METAL, 'foil', 'rail');
+    rail.position.set(x * (bx / 2 - 0.007) * S, y * 0.043 * S, 0);
+    hull.add(rail);
   }
-  // The optic, on one end. A Dove is mostly a telescope, and the end it looks out of is the only
-  // feature on the body worth drawing.
-  const optic = cyl(0.035 * S, 0.035 * S, 0.02 * S, 10, '#2A2E36', 'body', 'boresight');
+  // Body-mounted cells on the two faces the wings do not cover, set a hair into the skin.
+  for (const y of [-1, 1]) {
+    const cells = box((bx - 0.034) * S, 0.004 * S, 0.27 * S, PANEL_BLUE, 'panel', 'body-cells');
+    cells.position.y = y * 0.048 * S;
+    hull.add(cells);
+  }
+  // The optic, on one end: the only feature on the body worth drawing.
+  const optic = cyl(0.035 * S, 0.035 * S, 0.01 * S, 10, '#2A2E36', 'body', 'boresight');
   optic.rotation.x = Math.PI / 2;
-  optic.position.z = 0.155 * S;
-  g.add(optic);
+  optic.position.z = 0.145 * S;
+  hull.add(optic);
 
-  // Two deployed panels, each 1U x 3U, flat out from the long sides. Same size as the body, which
-  // is the ratio that carries the recognition.
+  // Two deployed panels, each 2U x 3U, flat out from the long sides.
   const pivot = new THREE.Group();
   pivot.name = 'panelPivot';
   for (const side of [-1, 1]) {
-    // panelWing already lays a slab `length` along X and `width` along Z, which is exactly the
-    // orientation wanted here -- so the only transform is the flip for the far side. Rotating it
-    // further, as the first version did, folds the panels diagonally and throws the 1:3 away.
-    const wing = panelWing(0.2 * S, 0.3 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    const wing = segWing(0.2 * S, 0.3 * S, 2, side > 0 ? 'wing+' : 'wing-');
     if (side < 0) wing.rotation.y = Math.PI;
-    wing.position.set(side * 0.05 * S, 0, 0);
+    wing.position.set(side * (bx / 2) * S, 0, 0);
     pivot.add(wing);
   }
   g.add(pivot);
   g.userData.panelPivots = [pivot];
 
-  // A whip antenna, because a 3U's radio is a tape measure and it is the only thing sticking out.
-  const whip = cyl(0.004 * S, 0.004 * S, 0.17 * S, 5, METAL, 'body', 'antenna');
-  whip.position.set(0, 0.06 * S, -0.1 * S);
+  // A whip antenna, because a CubeSat's radio is a tape measure and it is the only thing sticking
+  // out. Kept inside the body's own width so the box the test measures is still the body.
+  const whip = cyl(0.004 * S, 0.004 * S, 0.09 * S, 5, METAL, 'body', 'antenna');
+  whip.rotation.z = Math.PI / 2;
+  whip.position.set(0, 0.03 * S, -0.14 * S);
   g.add(whip);
   return g;
 }
@@ -1040,203 +1652,279 @@ function buildSpaceMobile() {
 }
 
 /**
- * An Iridium satellite, as a family shape. The NEXT generation (Thales Alenia ELiTeBus, 66 in
- * service plus spares) is a box bus 3.1 x 2.4 x 1.5 m, two wings across 9.4 m, and the thing that
- * makes it an Iridium: a large flat main mission antenna hung off the Earth-facing side. Published
- * dimensions from Iridium's own fact sheet. The first-generation birds that are still up shared
- * the plan (a triangular bus with two wings), so one shape serves the family and the card says so.
+ * An Iridium NEXT satellite (Thales Alenia Space, 66 in service plus spares). Published by
+ * Iridium's own fact sheet: a bus 3.1 x 2.4 x 1.5 m and 9.4 m across the two wings. What makes it
+ * an Iridium is the main mission antenna, one large flat L-band panel covering the Earth face --
+ * drawn on +Z, which is the face `sun-panels` attitude turns to the world. (It used to hang off
+ * -Y, the side away from the Sun, pointing at nothing.) Which bus edge is which is read off
+ * Thales's renders (Commons, "Iridium NEXT"): the 1.5 m is the depth under the antenna.
+ * The first-generation birds still up shared the plan, so one shape serves the family and the
+ * card says so.
  */
 function buildIridium() {
   const g = new THREE.Group();
   g.userData.realSizeM = 9.4;
   const S = 1 / 9.4;
-  const body = 'body';
-  const bus = box(2.4 * S, 1.5 * S, 3.1 * S, FOIL, 'foil', 'bus');
-  g.add(bus);
-  // The main mission antenna: a broad thin plate angled down toward the Earth (-Y here).
-  const mma = box(1.6 * S, 0.06 * S, 3.0 * S, '#C7CCD3', body, 'antenna');
-  mma.position.set(0, -1.0 * S, 0.2 * S);
-  mma.rotation.x = 0.25;
+  const hull = hullGroup();
+  g.add(hull);
+  hull.add(box(2.4 * S, 3.1 * S, 1.5 * S, FOIL, 'foil', 'bus'));
+  // The main mission antenna, and the two Ka-band feeder dishes beside it.
+  const mma = box(1.9 * S, 2.9 * S, 0.1 * S, '#D5DAE1', 'body', 'antenna');
+  mma.position.z = 0.8 * S;
   g.add(mma);
-  // Rooted on the bus. With the quarter-turn that used to be here the pair spanned 7.4 m against
-  // a declared 9.4 and stood a metre clear of the hull; rooted, 2 x (1.2 + 3.5) is 9.4 m exactly,
-  // which is the tell that the length was always chosen for a wing that starts at the bus.
-  for (const side of [-1, 1]) {
-    const w = panelWing(3.5 * S, 1.5 * S, METAL, side > 0 ? 'wing+' : 'wing-');
-    if (side < 0) w.rotation.y = Math.PI;
-    w.position.set(side * 1.2 * S, 0.2 * S, -0.6 * S);
-    g.add(w);
+  for (const y of [-1, 1]) {
+    const ka = dish(0.22 * S, 0.08 * S, 10, '#C9CFD8', 'foil', 'ka-feeder');
+    ka.position.set(1.05 * S, y * 1.2 * S, 0.83 * S);
+    g.add(ka);
   }
+  // 2 x (1.2 + 3.5) is the published 9.4 m, so the wing is the one that starts at the bus.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  for (const side of [-1, 1]) {
+    const w = segWing(3.5 * S, 1.4 * S, 3, side > 0 ? 'wing+' : 'wing-');
+    if (side < 0) w.rotation.y = Math.PI;
+    w.position.set(side * 1.2 * S, 0, 0);
+    pivot.add(w);
+  }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
   return g;
 }
 
 // --------------------------------------------------------------------------------------- dragon
 
 /**
- * SpaceX's Dragon 2, crew or cargo, as a family shape: a blunt capsule on a trunk, and no wings at
- * all -- the solar cells are on the trunk's skin, which is the one thing that tells it from every
- * other visitor. Published dimensions (SpaceX): 4.0 m across, 8.1 m tall with the trunk, the
- * trunk 3.7 m across. A CC BY model exists on Sketchfab (spec 0027, Ivan's list); this is the honest
- * shape until it is downloaded.
+ * SpaceX's Dragon 2, crew or cargo: a blunt capsule on a trunk, and no wings at all -- the solar
+ * cells are on the trunk's skin, which is the one thing that tells it from every other visitor.
+ *
+ * WHAT IS PUBLISHED. SpaceX (spacex.com/vehicles/dragon): 8.1 m tall with the trunk, 4 m across.
+ * The trunk is 3.7 m long and 3.7 m across, which leaves 4.4 m of capsule (the Dragon 2 infobox on
+ * Wikipedia, read 2026-10-06, gives 4.5 m for the capsule alone). The sidewall's 15 degrees is
+ * read off NASA's photographs of the capsule docked (Commons, "Crew Dragon"), and so is where the
+ * four engine pods and the windows sit.
+ *
+ * CREW AND CARGO DIFFER BY WHAT IS BOLTED ON, and both differences are visible from the station:
+ * the crew vehicle has four SuperDraco pods standing proud of the sidewall, two windows between
+ * them and four fins on the trunk for an abort; the cargo vehicle flies without the escape
+ * engines, and so without the pods and the fins. No logo is drawn on either.
  */
-function buildDragon() {
+function buildDragon(variant) {
+  const cargo = variant === 'dragon-cargo';
   const g = new THREE.Group();
   g.userData.realSizeM = 8.1;
   const S = 1 / 8.1;
-  const body = 'body';
-  // Capsule: a truncated cone, wide at the heat shield, with a rounded nose cap.
-  const capsule = cyl(1.3 * S, 2.0 * S, 3.2 * S, 20, '#F1F3F6', body, 'capsule');
-  capsule.rotation.x = Math.PI / 2;
-  capsule.position.z = 2.4 * S;
-  g.add(capsule);
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(1.3 * S, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), toonMaterial('#F1F3F6', body));
-  nose.name = 'nose';
+  const white = '#F1F3F6';
+  const hull = hullGroup();
+  g.add(hull);
+  const z = zstack(hull, -4.05, S, 20, [
+    [1.85, 1.85, 3.7, '#E9EDF2', 'radiator', 'trunk'],
+    [2.0, 2.0, 0.2, CHARRED, 'body', 'heatshield'],
+    [2.0, 1.22, 2.9, white, 'body', 'capsule'],
+  ]);
+  // The nose cone, closed: a dome 1.3 m tall on the 2.44 m hatch ring.
+  const dome = new THREE.SphereGeometry(1.22 * S, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+  dome.scale(1, 1.3 / 1.22, 1);
+  const nose = mesh(dome, white, 'body', 'nose');
   nose.rotation.x = Math.PI / 2;
-  nose.position.z = 4.0 * S;
-  g.add(nose);
-  const shield = cyl(2.0 * S, 1.9 * S, 0.3 * S, 20, '#3B2F2A', 'foil', 'heatshield');
-  shield.rotation.x = Math.PI / 2;
-  shield.position.z = 0.65 * S;
-  g.add(shield);
-  // Trunk: a cylinder, half white, half dark blue solar cells, with four small fins.
-  const trunk = cyl(1.85 * S, 1.85 * S, 3.7 * S, 20, '#E9EDF2', body, 'trunk');
-  trunk.rotation.x = Math.PI / 2;
-  trunk.position.z = -1.35 * S;
-  g.add(trunk);
-  // Half the trunk's skin is cells: an open half-cylinder, a hair outside the trunk so it reads.
-  const cells = mesh(new THREE.CylinderGeometry(1.87 * S, 1.87 * S, 3.5 * S, 20, 1, true, Math.PI, Math.PI), '#1F3A5F', 'panel', 'solar');
+  nose.position.z = z * S;
+  hull.add(nose);
+  // Half the trunk's skin is solar cells -- the half turned to the Sun (+Y) -- a hair outside it.
+  const cells = mesh(new THREE.CylinderGeometry(1.87 * S, 1.87 * S, 3.4 * S, 20, 1, true, Math.PI / 2, Math.PI), '#1F3A5F', 'panel', 'solar');
   cells.rotation.x = Math.PI / 2;
-  cells.position.z = -1.35 * S;
-  g.add(cells);
+  cells.position.z = -2.2 * S;
+  hull.add(cells);
+  if (cargo) return g;
+  // Things on the sidewall lean with it: a spoke turned to the right angle, and the part tipped
+  // 15 degrees on the spoke.
+  const onWall = (angle, part, r, zc) => {
+    const spoke = new THREE.Group();
+    spoke.rotation.z = angle;
+    part.position.set(r * S, 0, zc * S);
+    part.rotation.y = -0.262;
+    spoke.add(part);
+    g.add(spoke);
+  };
   for (const a of [0.25, 0.75, 1.25, 1.75]) {
-    const fin = box(0.05 * S, 0.9 * S, 1.6 * S, '#B9BFC7', 'foil', 'fin');
-    fin.position.set(Math.cos(a * Math.PI) * 2.2 * S, Math.sin(a * Math.PI) * 2.2 * S, -2.3 * S);
-    fin.rotation.z = a * Math.PI;
-    g.add(fin);
+    onWall(a * Math.PI, box(0.34 * S, 0.7 * S, 1.9 * S, white, 'body', 'superdraco-pod'), 1.66, 1.05);
+    const fin = box(0.45 * S, 0.06 * S, 1.4 * S, '#B9BFC7', 'foil', 'fin');
+    const spoke = new THREE.Group();
+    spoke.rotation.z = a * Math.PI;
+    fin.position.set(2.075 * S, 0, -3.3 * S);
+    spoke.add(fin);
+    g.add(spoke);
   }
+  for (const a of [0.42, 0.58]) onWall(a * Math.PI, box(0.06 * S, 0.3 * S, 0.36 * S, DARK_GLASS, 'panel', 'window'), 1.535, 1.6);
   return g;
 }
 
 // --------------------------------------------------------------------------------------- cygnus
 
 /**
- * Northrop Grumman's Cygnus, as a family shape: a stubby pressurised drum with a boxy service
- * module behind it and two ROUND solar wings -- the UltraFlex fans that nothing else at the
- * station has, which is the whole recognition. Published dimensions (Northrop Grumman fact
- * sheet, enhanced Cygnus): pressurised cargo module 3.07 m across and 6.4 m long including the
- * service module, UltraFlex arrays 3.7 m in diameter each; about 11.5 m tip to tip. No free model
- * with a licence exists (spec 0027 hunt), so the card says "the kind of thing, not this exact one".
+ * Northrop Grumman's Cygnus, the Enhanced vehicle: a pressurised drum, a short service module
+ * behind it and two ROUND solar arrays -- the UltraFlex fans nothing else at the station has,
+ * which is the whole recognition.
+ *
+ * WHAT IS PUBLISHED. Northrop Grumman's Cygnus fact sheet, as the Cygnus infobox on Wikipedia
+ * cites it (read 2026-10-06): 6.39 m long and 3.07 m across for the Enhanced vehicle (the
+ * Standard one was 5.14 m; Cygnus XL, flying since 2025, is 8 m and is NOT what this draws). The
+ * fans are "an accordion fanfold array"; their 3.7 m diameter and the 11.5 m tip to tip are the
+ * figures this file has carried since spec 0027 and are not on the page read today, so they are
+ * the least-sourced numbers here. How the 6.39 m is shared between the modules is read off NASA's
+ * photographs of it berthed (Commons, "Cygnus (spacecraft)").
+ *
+ * THE FANS ARE DRAWN AS GORES. A flat disc reads as a coin; an UltraFlex is twenty pleated
+ * wedges, and alternating two blues is what makes it a fan at forty pixels (issue #423).
  */
 function buildCygnus() {
   const g = new THREE.Group();
-  g.userData.realSizeM = 11.5; // across the wings, the longest dimension
+  g.userData.realSizeM = 11.5; // across the fans, the longest dimension
   const S = 1 / 11.5;
-  const white = '#E9EDF2'; // the cargo module's blankets
-  const body = 'body';
-  const drum = cyl(1.535 * S, 1.535 * S, 4.6 * S, 18, white, body, 'cargo');
-  drum.rotation.x = Math.PI / 2;
-  drum.position.z = 0.9 * S;
-  g.add(drum);
-  const svc = box(2.6 * S, 2.6 * S, 1.8 * S, '#B9BFC7', 'foil', 'service');
-  svc.position.z = -2.3 * S;
-  g.add(svc);
-  const hatch = cyl(0.5 * S, 0.5 * S, 0.3 * S, 12, METAL, body, 'hatch');
-  hatch.rotation.x = Math.PI / 2;
-  hatch.position.z = 3.35 * S;
-  g.add(hatch);
-  // The fans: two thin discs on short booms off the service module, facing +Y like every wing here.
+  const hull = hullGroup();
+  g.add(hull);
+  const z0 = -6.39 / 2;
+  const svcZ = z0 + 0.65;
+  hull.add(zcyl(1.1 * S, 1.1 * S, 1.3 * S, svcZ * S, 8, '#B9BFC7', 'foil', 'service'));
+  zstack(hull, z0 + 1.3, S, 18, [
+    [1.1, 1.535, 0.35, HULL_WHITE, 'body', 'aft-cone'],
+    [1.535, 1.535, 3.89, HULL_WHITE, 'body', 'cargo'],
+    [1.535, 1.0, 0.5, HULL_WHITE, 'body', 'fwd-cone'],
+    [1.0, 1.0, 0.35, METAL, 'body', 'hatch'],
+  ]);
+  // Two seams round the drum: the module is welded from rings, and they are what a photograph shows.
+  for (const dz of [1.3, 2.6]) hull.add(zcyl(1.548 * S, 1.548 * S, 0.07 * S, (z0 + 1.65 + dz) * S, 18, METAL, 'foil', 'seam'));
+  // The fans, on short booms off the service module, turning about the boom to face the Sun.
+  // 2 x (1.1 hull + 0.95 boom + 3.7 fan) is the 11.5 m tip to tip.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  pivot.position.z = svcZ * S;
   for (const side of [-1, 1]) {
-    // 1.3 m of service module, then the boom, then a 3.7 m fan: 2 x (1.3 + 0.75 + 3.7) is the
-    // 11.5 m tip to tip above. The boom used to be 1.6 m and the pair spanned 13.2 m, so the
-    // model was 15 % wider than the number it declares and the number the card reads from.
-    const boom = cyl(0.08 * S, 0.08 * S, 0.75 * S, 6, METAL, body, 'boom');
+    const boom = cyl(0.06 * S, 0.06 * S, 0.95 * S, 6, METAL, 'body', 'boom');
     boom.rotation.z = Math.PI / 2;
-    boom.position.set(side * 1.675 * S, 0, -2.3 * S);
-    g.add(boom);
-    const fan = new THREE.Mesh(new THREE.CylinderGeometry(1.85 * S, 1.85 * S, 0.04 * S, 24), toonMaterial('#1F3A5F', 'panel'));
-    fan.name = side > 0 ? 'wing+' : 'wing-';
-    fan.position.set(side * 3.9 * S, 0, -2.3 * S);
-    g.add(fan);
+    boom.position.x = side * 1.575 * S;
+    pivot.add(boom);
+    for (const parity of [0, 1]) {
+      const fan = goreFan(1.85 * S, 20, parity, parity ? '#2B4C7E' : '#1F3A5F', side > 0 ? 'wing+' : 'wing-');
+      fan.position.x = side * 3.9 * S;
+      pivot.add(fan);
+    }
   }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
   return g;
 }
 
 // ------------------------------------------------------------------------------------- tiangong
 
 /**
- * China's Tiangong, as a family shape: a T of three cylinders. Tianhe, the core, runs fore-aft
- * (16.6 m long, 4.2 m across, CMSA); Wentian and Mengtian, the two laboratory modules (17.9 m,
- * 4.2 m), sit port and starboard at the forward node, each with a pair of long wings; the core
- * carries a shorter pair aft. About 55 m across the labs' wings, which is the longest dimension.
+ * China's Tiangong: a T of three modules. Tianhe, the core, runs fore and aft; Wentian and
+ * Mengtian, the two laboratories, stand out port and starboard from the docking hub at its front,
+ * each carrying a pair of very long wings on a truss at its far end.
+ *
+ * WHAT IS PUBLISHED (the modules' and the station's Wikipedia infoboxes, read 2026-10-06, which
+ * cite CMSA and the 2022 configuration paper in Spacecraft Engineering):
+ *   Tianhe    16.6 m long, 4.2 m across its large section
+ *   Wentian   17.9 m long, 4.2 m across; Mengtian the same
+ *   the laboratories' wings   "a wingspan of over 55 m", 110 m^2 of cells each side
+ *   the station               about 55.6 m one way and about 39 m the other
+ * So 55.6 m is the wings, tip to tip, and the 39 m is two laboratories and the hub between them:
+ * 2 x 17.9 + 2.8 = 38.6. The model is built to those two numbers and the test holds them.
+ *
+ * WHAT IS NOT PUBLISHED AND IS READ OFF PICTURES (Commons, "Tiangong space station" and "Tianhe
+ * core module"; CMSA's own renders are not copied, only looked at): how each module's length is
+ * shared between its sections, the 2.8 m of the narrow sections and the hub, where along the core
+ * its own shorter pair of wings sits, and their 12.6 x 5 m. Those are ours and approximate.
+ *
  * CelesTrak catalogues the three modules as three objects at one position -- CSS (TIANHE),
- * CSS (WENTIAN), CSS (MENGTIAN) -- so the core draws the whole station and a lab, when it is
- * not swallowed by the station's radius, draws as a single module. The card says the family
- * shape either way. A CC BY model of the core exists (spec 0027); this is the honest shape until it
- * is downloaded.
+ * CSS (WENTIAN), CSS (MENGTIAN) -- so the core draws the whole station and a lab, when it is not
+ * swallowed by the station's radius, draws as a single module. Visiting Shenzhou and Tianzhou
+ * are catalogue objects of their own and are not drawn on it twice.
+ *
+ * Every wing is on a pivot about the axis it really turns on: the laboratories' pair swing round
+ * the laboratories' own axis, which is the model's X.
  */
+const TIANGONG_SPAN_M = 55.6;
+/** One laboratory, built outward along +Z from the hub's skin at z = 1.4 m. Metres x S. */
+function tiangongLab(S, name) {
+  const lab = hullGroup();
+  lab.name = name;
+  zstack(lab, 1.4, S, 18, [
+    [1.0, 1.0, 0.5, METAL, 'body', 'docking'],
+    [1.5, 2.1, 0.4, '#DDE1E6', 'body', 'shoulder'],
+    [2.1, 2.1, 9.3, '#DDE1E6', 'body', 'work-cabin'],
+    [2.1, 1.5, 0.4, '#DDE1E6', 'body', 'shoulder'],
+    [1.5, 1.5, 4.0, HULL_GREY, 'radiator', 'airlock'],
+    [0.9, 0.9, 3.3, '#8A9099', 'foil', 'truss'],
+  ]);
+  return lab;
+}
 function buildTiangong(variant) {
   const g = new THREE.Group();
-  const S = 1 / 55;
-  const white = '#E6EAF0';
-  const gold = '#C9A45C'; // the labs' blanket colour reads warm in photographs
-  const body = 'body';
-  const module = (len, colour, name) => {
-    const c = cyl(2.1 * S, 2.1 * S, len * S, 18, colour, body, name);
-    return c;
-  };
-  // A pair of wings rooted ON the hull at +-x0 and growing outward along X. panelWing() puts its
-  // slab at +x from the group origin, so the position IS the root and the only thing a side needs
-  // is a yaw of pi. Rotating the wing a quarter turn instead -- which this did -- left the root
-  // pointing along Z and put the panels ten metres clear of the module with nothing between them:
-  // at 84 px Wentian read as three unconnected objects, and the built span came out 52 m against
-  // the 56 m the model declares. tests/test_station_shapes.mjs now measures both.
-  const wingPair = (span, width, z, x0, name) => {
+  g.userData.realSizeM = TIANGONG_SPAN_M;
+  const S = 1 / TIANGONG_SPAN_M;
+  const TRUSS_Z = 1.4 + 17.9 - 1.65; // the middle of a laboratory's truss, from the hub's centre
+  const WING = TIANGONG_SPAN_M / 2 - 0.9; // from the truss's skin to the published tip
+  if (variant === 'tiangong-module') {
+    // One laboratory on its own, centred, with its wings out along X.
+    const lab = tiangongLab(S, 'hull');
+    lab.position.z = -(1.4 + 17.9 / 2) * S;
+    g.add(lab);
     for (const side of [-1, 1]) {
-      const w = panelWing(span * S, width * S, METAL, `${name}${side > 0 ? '+' : '-'}`);
+      const w = segWing(WING * S, 4.2 * S, 8, side > 0 ? 'wing+' : 'wing-');
       if (side < 0) w.rotation.y = Math.PI;
-      w.position.set(side * x0 * S, 0, z * S);
+      w.position.set(side * 0.9 * S, 0, (TRUSS_Z - 1.4 - 17.9 / 2) * S);
       g.add(w);
     }
-  };
-  if (variant === 'tiangong-module') {
-    g.userData.realSizeM = 56; // one lab across its wings
-    const lab = module(17.9, gold, 'lab');
-    lab.rotation.x = Math.PI / 2;
-    g.add(lab);
-    wingPair(26, 6, -6.5, 2.1, 'wing');
     return g;
   }
-  g.userData.realSizeM = 55;
-  const core = module(16.6, white, 'tianhe');
-  core.rotation.x = Math.PI / 2;
-  core.position.z = -4 * S;
-  g.add(core);
-  const node = new THREE.Mesh(new THREE.SphereGeometry(2.4 * S, 16, 12), toonMaterial(white, body));
-  node.name = 'node';
-  node.position.z = 5.2 * S;
-  g.add(node);
+  const hull = hullGroup();
+  g.add(hull);
+  // Tianhe, from its aft port forward: 13.3 m of sections, the 2.8 m hub and its 0.5 m forward
+  // port are the published 16.6.
+  zstack(hull, 1.9 - 16.6, S, 18, [
+    [1.0, 1.0, 0.6, METAL, 'body', 'aft-port'],
+    [1.4, 1.4, 2.4, HULL_GREY, 'radiator', 'resource'],
+    [1.4, 2.1, 0.6, HULL_WHITE, 'body', 'shoulder'],
+    [2.1, 2.1, 5.9, HULL_WHITE, 'body', 'tianhe'],
+    [2.1, 1.4, 0.6, HULL_WHITE, 'body', 'shoulder'],
+    [1.4, 1.4, 3.2, HULL_WHITE, 'body', 'tianhe-small'],
+  ]);
+  hull.add(mesh(new THREE.SphereGeometry(1.4 * S, 16, 12), HULL_WHITE, 'body', 'node'));
+  hull.add(zcyl(1.0 * S, 1.0 * S, 0.5 * S, 1.65 * S, 12, METAL, 'body', 'forward-port'));
+  for (const y of [-1, 1]) {
+    const port = cyl(1.0 * S, 1.0 * S, 0.5 * S, 12, METAL, 'body', y > 0 ? 'zenith-port' : 'nadir-port');
+    port.position.y = y * 1.65 * S;
+    hull.add(port);
+  }
+  // The station's arm, stowed along the large section.
+  const arm = box(0.22 * S, 0.22 * S, 5.5 * S, METAL, 'foil', 'arm');
+  arm.position.set(0.7 * S, 2.1 * S, -8.15 * S);
+  hull.add(arm);
+  // The laboratories, and their wings on one pivot about the laboratories' axis.
+  const labPivot = new THREE.Group();
+  labPivot.name = 'panelPivot';
   for (const side of [-1, 1]) {
-    const lab = module(17.9, gold, side > 0 ? 'mengtian' : 'wentian');
-    lab.rotation.z = Math.PI / 2; // along X
-    lab.position.set(side * (2.4 + 17.9 / 2) * S, 0, 5.2 * S);
+    const lab = tiangongLab(S, side > 0 ? 'mengtian' : 'wentian');
+    lab.rotation.y = side * Math.PI / 2; // +Z -> +-X
     g.add(lab);
-    // Each lab's wings fold out at its far end, fore and aft of the lab's axis: 27.4 x 4.1 m
-    // each (CMSA), which is where the 55 m in the doc comment above comes from -- one wing
-    // forward and one aft spans the station's longest dimension. They used to be 15 m panels
-    // yawed onto the Y axis, so they stood straight up out of the station's plane, all four on
-    // the same side, and the built span never came near the declared 55 m.
     for (const dz of [-1, 1]) {
-      const w = panelWing(27.4 * S, 4.1 * S, METAL, `labwing${side}${dz}`);
-      w.rotation.y = dz > 0 ? -Math.PI / 2 : Math.PI / 2;
-      // Rooted at the lab's OUTBOARD end and both on the same plane, one forward and one aft,
-      // which is how they are mounted and what makes the tip-to-tip span 2 x 27.4 = 54.8 m --
-      // the published "about 55 m" the size below declares, now measured rather than asserted.
-      w.position.set(side * (2.4 + 17.9 - 4.1 / 2) * S, 0, 5.2 * S);
-      g.add(w);
+      const w = segWing(WING * S, 4.2 * S, 8, `labwing${side}${dz}`);
+      w.rotation.y = -dz * Math.PI / 2; // +X -> +-Z
+      w.position.set(side * TRUSS_Z * S, 0, dz * 0.9 * S);
+      labPivot.add(w);
     }
   }
-  // The core's shorter pair, aft.
-  wingPair(12.6, 4.5, -10, 2.1, 'corewing');
+  // The core's own shorter pair, on its own pivot.
+  const corePivot = new THREE.Group();
+  corePivot.name = 'panelPivot';
+  corePivot.position.z = -4.9 * S;
+  for (const side of [-1, 1]) {
+    const w = segWing(12.6 * S, 5 * S, 4, `corewing${side > 0 ? '+' : '-'}`);
+    if (side < 0) w.rotation.y = Math.PI;
+    w.position.x = side * 1.4 * S;
+    corePivot.add(w);
+  }
+  g.add(labPivot, corePivot);
+  g.userData.panelPivots = [labPivot, corePivot];
   return g;
 }
 
@@ -1374,8 +2062,12 @@ function addCore(m, s, paint, coreLen) {
     // The interstage band. On a Falcon 9 it is black carbon composite and it is the one piece of
     // livery that reads at this size; everywhere else it is the neutral foil ring.
     const band = cyl(r * 1.02, r * 1.02, coreLen * 0.045, CORE_SEG, paint.interstage, 'foil', 'interstage');
-    band.position.y = coreLen * 0.62;
+    // Where the first stage ends, when the row publishes its length (`stage1_len_m`, public
+    // #427): Falcon 9's 41.2 m of 70, Electron's 12.1 of 18. Otherwise the class-typical 62 %.
+    const s1 = Number.isFinite(s.stage1_len_m) ? Math.min(s.stage1_len_m, coreLen * 0.97) : null;
+    band.position.y = s1 != null ? s1 - coreLen * 0.0225 : coreLen * 0.62;
     m.add(band);
+    addRecovery(m, s, paint, s1 != null ? s1 : coreLen * 0.62);
   }
 
   if (paint.tail) {
@@ -1385,6 +2077,39 @@ function addCore(m, s, paint, coreLen) {
     m.add(tail);
   }
   return coreLen;
+}
+
+/**
+ * What a booster that flies back carries (public #427): `recovery: {legs, grid_fins}` on the row.
+ * The COUNTS are the row's and sourced there. The sizes are not published anywhere reached: a
+ * stowed leg is drawn as a slim fairing 0.19 of the first stage long lying against its base, and
+ * a grid fin as a small plate folded flat under the interstage. Both in the interstage's colour,
+ * which on a Block 5 is the black thermal layer its legs wear too. One mesh each.
+ */
+function addRecovery(m, s, paint, stage1Len) {
+  const rec = s.recovery;
+  if (!rec || typeof rec !== 'object') return;
+  const r = s.core_dia_m / 2;
+  const at = (n, fn) => { const rows = []; for (let i = 0; i < n; i++) rows.push(fn(((i + 0.5) / n) * Math.PI * 2)); return rows; };
+  const legs = Math.max(0, Math.min(8, rec.legs | 0));
+  if (legs) {
+    const len = stage1Len * 0.19;
+    const rows = at(legs, (a) => {
+      const x = Math.cos(a), z = Math.sin(a);
+      // A wedge leaning on the body: foot out at the base, tip in against the tank.
+      return [x * (r + r * 0.34), 0, z * (r + r * 0.34), x * (r + r * 0.04), len, z * (r + r * 0.04), r * 0.2];
+    });
+    m.add(tubes(rows, r * 0.2, 5, paint.interstage, 'body', 'landing-legs'));
+  }
+  const fins = Math.max(0, Math.min(8, rec.grid_fins | 0));
+  if (fins) {
+    const y = stage1Len - s.height_m * 0.045;
+    const rows = at(fins, (a) => {
+      const x = Math.cos(a), z = Math.sin(a);
+      return [x * (r + r * 0.03), y - r * 0.55, z * (r + r * 0.03), x * (r + r * 0.03), y, z * (r + r * 0.03), r * 0.26];
+    });
+    m.add(tubes(rows, r * 0.26, 4, paint.interstage, 'body', 'grid-fins'));
+  }
 }
 
 /**
@@ -1593,6 +2318,59 @@ function buildRocket(variant) {
   return g;
 }
 
+// --------------------------------------------------------------------------- a spent upper stage
+
+/**
+ * A spent upper stage, as a class shape: a tank, two domes, one engine bell, and nothing on top --
+ * the payload left. This replaces NASA's Space Shuttle solid rocket booster, which stood in for
+ * every catalogue name with R/B in it (issue #410): a booster is a long segmented tube with a
+ * nose cone, and it is not what is tumbling up there.
+ *
+ * THE NUMBERS ARE ONE REAL STAGE'S, because a class has none of its own: the single-engine
+ * Centaur III, 12.68 m long and 3.05 m across (United Launch Alliance, Atlas V Launch Services
+ * User's Guide, 2010, as the Centaur infobox on Wikipedia cites it; read 2026-10-06). A Falcon 9
+ * second stage is fatter with a far bigger bell, a Long March or SL stage is plainer; the card
+ * says "the kind of thing, not this exact one" for every one of them, and `generic: true` on the
+ * route is what makes it. How the 12.68 m is shared between tank, domes and engine is read off
+ * NASA's photographs of a Centaur (Commons, "Centaur (rocket stage)").
+ *
+ * +Y is the stage's axis, as it is for a rocket, and the engine is at -Y. It TUMBLES
+ * (updateModelAttitude `tumble`): a dead stage has no attitude control, and the slow end-over-end
+ * turn is why one flashes in the sky. The rate is ours and illustrative.
+ */
+const STAGE_LEN_M = 12.68;
+function buildUpperStage() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = STAGE_LEN_M;
+  g.userData.attitude = 'tumble';
+  g.userData.drawsAs = 'class';
+  const S = 1 / STAGE_LEN_M;
+  const hull = hullGroup();
+  g.add(hull);
+  let y = -STAGE_LEN_M / 2;
+  // [rBottom, rTop, length, colour, kind, name], bottom to top, in metres.
+  for (const [rb, rt, len, colour, kind, name] of [
+    [0.6, 0.16, 1.6, '#5A5F66', 'foil', 'nozzle'],
+    [0.35, 0.35, 0.6, METAL, 'body', 'engine'],
+    [0.6, 1.525, 0.9, '#C9CED6', 'foil', 'aft-dome'],
+    [1.525, 1.525, 7.4, ROCKET_BODY, 'body', 'tank'],
+    [1.525, 0.9, 0.9, '#C9CED6', 'foil', 'forward-dome'],
+    [0.9, 0.8, 1.28, ROCKET_FOIL, 'foil', 'adapter'],
+  ]) {
+    const part = cyl(rt * S, rb * S, len * S, 16, colour, kind, name);
+    part.position.y = (y + len / 2) * S;
+    hull.add(part);
+    y += len;
+  }
+  // Two helium bottles tucked beside the engine, inside the tank's own width.
+  for (const side of [-1, 1]) {
+    const bottle = mesh(new THREE.SphereGeometry(0.3 * S, 10, 8), '#D8DCE2', 'foil', 'bottle');
+    bottle.position.set(side * 0.75 * S, (-STAGE_LEN_M / 2 + 2.45) * S, 0);
+    hull.add(bottle);
+  }
+  return g;
+}
+
 /**
  * One BUILDERS key per registry row, so modelFor()'s honesty check keeps working unchanged: a
  * known rocket is correctly not `generic`, and a variant that is not a row -- a typo, or a row
@@ -1601,6 +2379,8 @@ function buildRocket(variant) {
 function rocketVariants() {
   const row = { default: buildRocket };
   for (const id of Object.keys(ROCKET_BY_ID)) row[id] = buildRocket;
+  // Not a launch vehicle and not a registry row: what is left in orbit afterwards (buildUpperStage).
+  row.stage = buildUpperStage;
   return row;
 }
 
@@ -1972,6 +2752,54 @@ function buildNewHorizons() {
   return g;
 }
 
+// Mars 2020 in cruise (internal #424): what flew from Earth to Mars was not a rover but a closed
+// capsule under a ring of solar panels, spinning. NASA publishes the rover as a mesh and not this.
+//
+// ONE LENGTH IS PUBLISHED AND THE REST ARE OURS. The heat shield is 4.5 m across ("the 4.5 m (15 ft)
+// diameter heat shield, which is the largest heat shield ever flown in space": the Mars Science
+// Laboratory aeroshell, which Mars 2020 flew again; Wikipedia's Mars Science Laboratory article,
+// read 2026-10-07). The heights, the slope of the backshell and the 4 m of the cruise stage are
+// read off NASA's pictures of the stacked spacecraft before launch and are this project's.
+function buildMars2020Cruise() {
+  const g = new THREE.Group();
+  const M = 4.5; // the published diameter, and the longest thing on the model
+  g.userData.realSizeM = M;
+  const S = 1 / M;
+  const R = 2.25 * S;
+  // The heat shield: a blunt cone, tan (the colour of its ablator before entry), nose towards -Y.
+  const shield = cyl(R, 0.35 * S, 0.75 * S, 28, '#B58E63', 'body', 'heat-shield');
+  shield.position.y = -0.95 * S;
+  g.add(shield);
+  const nose = cyl(0.35 * S, 0.02 * S, 0.1 * S, 16, '#B58E63', 'body', 'heat-shield-nose');
+  nose.position.y = -1.375 * S;
+  g.add(nose);
+  // The backshell: white, narrowing in two steps to the parachute cone.
+  const back = cyl(1.05 * S, R, 1.35 * S, 28, HULL_WHITE, 'body', 'backshell');
+  back.position.y = 0.1 * S;
+  g.add(back);
+  const cone = cyl(0.45 * S, 1.05 * S, 0.35 * S, 20, HULL_WHITE, 'body', 'parachute-cone');
+  cone.position.y = 0.95 * S;
+  g.add(cone);
+  // The cruise stage: a 4 m ring on top, solar cells on its outward face, radiators round its rim.
+  const ring = cyl(2.0 * S, 2.0 * S, 0.3 * S, 28, HULL_GREY, 'body', 'cruise-stage');
+  ring.position.y = 1.275 * S;
+  g.add(ring);
+  const cells = cyl(1.9 * S, 1.9 * S, 0.02 * S, 28, PANEL_BLUE, 'panel', 'solar-panel');
+  cells.position.y = 1.435 * S;
+  g.add(cells);
+  const hub = cyl(0.6 * S, 0.6 * S, 0.12 * S, 16, FOIL, 'foil', 'hub');
+  hub.position.y = 1.485 * S;
+  g.add(hub);
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    const rad = box(0.5 * S, 0.24 * S, 0.03 * S, RADIATOR, 'radiator', 'radiator');
+    rad.position.set(Math.cos(a) * 2.02 * S, 1.275 * S, Math.sin(a) * 2.02 * S);
+    rad.rotation.y = Math.PI / 2 - a;
+    g.add(rad);
+  }
+  return g;
+}
+
 // ------------------------------------------------------------------------------------ asteroid
 
 /**
@@ -2281,6 +3109,107 @@ function buildSiteLander() {
   return g;
 }
 
+/**
+ * Surveyor, from the one paragraph NASA's catalogue gives it (public #267, 2026-10-08).
+ *
+ * NSSDCA, "Surveyor 1" (nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1966-045A, read
+ * 2026-10-08): "a tripod of thin-walled aluminum tubing and interconnecting braces"; "A central
+ * mast extended about one meter above the apex of the tripod"; "Three hinged landing legs were
+ * attached to the lower corners of the structure ... and terminated in footpads"; "The three
+ * footpads extended out 4.3 meters from the center of the Surveyor. The spacecraft was about 3
+ * meters tall"; "A 0.855 square meter array of 792 solar cells was mounted on a positioner on
+ * top of the mast"; "a movable large planar array high gain antenna mounted near the top of the
+ * central mast"; "two omnidirectional conical antennas mounted on the ends of folding booms";
+ * "Two thermally controlled compartments"; "three throttlable vernier rocket engines"; "The TV
+ * survey camera was mounted near the top of the tripod"; thermal control by "white paint".
+ *
+ * DRAWN FROM THOSE SENTENCES AND NOTHING ELSE. 4.3 m is taken as the circle the footpads stand
+ * on, across, which is how a 3 m craft with those legs has to be read; the planar antenna is
+ * drawn the size of the solar panel (0.92 m square is 0.855 m2) because the page gives it no
+ * size; where each box sits on the frame is ours. The generic lander before this was a foil
+ * drum on four legs, and the header of buildSiteLander says Surveyor was a tripod.
+ */
+function buildSurveyor() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 4.3;
+  const m = new THREE.Group(); // metres
+  m.name = 'metres';
+  const R = 2.15;      // footpads: 4.3 m across
+  const FR = 0.75;     // the frame's lower corners
+  const FY = 0.95;     // and their height
+  const APEX = 2.0;    // mast top is 1 m above this: 3 m tall
+  const struts = [];
+  const corner = [];
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+    const x = Math.cos(a), z = Math.sin(a);
+    corner.push([x * FR, FY, z * FR]);
+    struts.push([x * FR, FY, z * FR, 0, APEX, 0]);                       // the tripod
+    struts.push([x * FR, FY, z * FR, x * R, 0.12, z * R, 0.035]);          // the hinged leg
+    struts.push([x * FR * 0.55, FY + 0.62, z * FR * 0.55, x * R * 0.72, 0.42, z * R * 0.72, 0.03]); // its shock absorber
+    const pad = cyl(0.17, 0.2, 0.12, 10, '#C9CED6', 'foil', 'footpad');
+    pad.position.set(x * R, 0.06, z * R);
+    m.add(pad);
+    const vernier = cyl(0.05, 0.11, 0.2, 6, '#5A5F66', 'foil', 'vernier');
+    vernier.position.set(x * FR * 0.8, FY - 0.14, z * FR * 0.8);
+    m.add(vernier);
+  }
+  for (let i = 0; i < 3; i++) {
+    const [ax, ay, az] = corner[i];
+    const [bx, by, bz] = corner[(i + 1) % 3];
+    struts.push([ax, ay, az, bx, by, bz]);                               // the braces between corners
+  }
+  struts.push([0, APEX - 0.05, 0, 0, 2.9, 0, 0.04]);                     // the mast
+  // The two omnidirectional antennas on their booms.
+  struts.push([corner[0][0], FY + 0.3, corner[0][2], corner[0][0] * 2.1, 2.05, corner[0][2] * 2.1, 0.018]);
+  struts.push([corner[1][0], FY + 0.3, corner[1][2], corner[1][0] * 2.1, 2.05, corner[1][2] * 2.1, 0.018]);
+  m.add(tubes(struts, 0.028, 6, '#D8DCE2', 'body', 'frame'));
+  for (const c of [corner[0], corner[1]]) {
+    const omni = cyl(0.02, 0.08, 0.16, 6, '#E6EAF0', 'body', 'omni');
+    omni.position.set(c[0] * 2.1, 2.13, c[2] * 2.1);
+    m.add(omni);
+  }
+  // Two thermal compartments, white, on two sides of the frame; the fuel and helium as spheres.
+  m.add(slabs([[0.62, 0.5, 0.36, 0, FY + 0.3, 0.52], [0.5, 0.56, 0.34, -0.5, FY + 0.33, -0.3]], HULL_WHITE, 'body', 'compartment'));
+  for (const [x, z] of [[0.42, -0.3], [-0.1, -0.55], [-0.48, 0.2]]) {
+    const tank = mesh(new THREE.SphereGeometry(0.21, 10, 8), '#C9CED6', 'foil', 'tank');
+    tank.position.set(x, FY + 0.1, z);
+    m.add(tank);
+  }
+  // On the mast: the solar panel and the planar antenna, back to back and tilted to the sky.
+  const sun = box(0.92, 0.035, 0.93, PANEL_BLUE, 'panel', 'solar-panel');
+  sun.position.set(0.5, 2.82, 0);
+  sun.rotation.z = -0.5;
+  m.add(sun);
+  const hga = box(0.96, 0.05, 0.96, '#B9C2CE', 'foil', 'planar-antenna');
+  hga.position.set(-0.52, 2.72, 0);
+  hga.rotation.z = 0.62;
+  m.add(hga);
+  // The television camera near the top of the tripod, looking down its mirror at the ground.
+  const cam = cyl(0.075, 0.075, 0.42, 8, HULL_WHITE, 'body', 'tv-camera');
+  cam.position.set(0.3, 1.72, 0.26);
+  cam.rotation.z = 0.28;
+  m.add(cam);
+  m.scale.setScalar(1 / 4.3);
+  g.add(m);
+  return g;
+}
+
+/**
+ * The ground a lander stands on, as a child of its model (public #386: the lunar module "hovers").
+ * scene/heroes.js adds it under a landing site's vehicle on the Moon, with the contact shadow.
+ * Illustrative: the regolith's own grey, a darker patch where the descent engine and the boots
+ * disturbed it, a few stones. One unit across, so heroes.js sizes it from the model's reach.
+ */
+function buildGroundPatch() {
+  const g = new THREE.Group();
+  // MARE_DUST, not REGOLITH: measured in headless Chrome on 2026-10-08, the oddities' lighter grey
+  // drew as a beige plate on the dark map of the Sea of Tranquility. This is the tone of that map
+  // in sunlight, so the patch reads as disturbed ground and not as a mat.
+  g.add(regolith(0.5, '#55544F', 28, true));
+  return g;
+}
+
 // ------------------------------------------------------------------------- odd things we sent
 
 // registry/oddities.yaml gives every row a `shape.build`, and this is where the eight names in
@@ -2357,12 +3286,116 @@ function starburst(rays, rMax, colour, name) {
   return mesh(g, colour, 'panel', name);
 }
 
-/** A disc of ground, so a thing lying on the Moon reads as lying on something. */
-function regolith(r, colour, seg) {
-  const d = discFlat(r, seg || 16, colour || REGOLITH, 'body', 'ground');
-  d.rotation.x = -Math.PI / 2;
-  d.position.y = 0.002; // the tangent plane touches the sphere exactly at the origin
-  return d;
+/**
+ * A patch of ground, so a thing lying on the Moon reads as lying on something. It was one flat
+ * disc with a hard round edge, which public #267 called a decal: now a ragged outline, a darker
+ * scuffed patch inside it and a few stones, each from the same seeded noise on every machine.
+ * Three draw calls. The tangent plane touches the sphere exactly at the origin, hence the lift.
+ */
+function ragged(r, n, seed, y, colour, name) {
+  return mesh(raggedGeometry(r, n, seed, y), colour, 'body', name);
+}
+function raggedGeometry(r, n, seed, y) {
+  const pos = [];
+  const rim = (i) => r * (0.74 + 0.26 * hash01(seed + (i % n) * 31));
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+    const r0 = rim(i), r1 = rim(i + 1);
+    pos.push(0, y, 0, Math.cos(a1) * r1, y, Math.sin(a1) * r1, Math.cos(a0) * r0, y, Math.sin(a0) * r0);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.computeVertexNormals();
+  return geo;
+}
+/**
+ * A patch of ground whose edge FADES (public #267: "a hard edge"; internal #478: three stepped
+ * plates with outlines). One fan of rings round the centre, each ring ragged by the same seeded
+ * noise as the outline, and an alpha on every vertex (a vec4 colour, so the toon material needs no
+ * new shader term): `profile` lists [radius as a fraction of the ragged rim, opacity] from the
+ * centre outward, and the GPU interpolates between rings, so the edge goes down smoothly into the
+ * map instead of stepping. Nothing writes depth. Illustrative, like the patch it softens.
+ */
+export const SOFT_PROFILE = [[0, 1], [0.55, 1], [0.8, 0.86], [1, 0.55], [1.2, 0.2], [1.4, 0]];
+export function softPatchGeometry(r, n, seed, y, profile = SOFT_PROFILE) {
+  const rim = (i) => r * (0.74 + 0.26 * hash01(seed + (i % n) * 31));
+  const pos = [];
+  const col = [];
+  const put = (x, z, a) => { pos.push(x, y, z); col.push(1, 1, 1, a); };
+  const ringCount = profile.length - 1; // profile[0] is the centre
+  put(0, 0, profile[0][1]);
+  for (let k = 1; k <= ringCount; k++) {
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const rr = rim(i) * profile[k][0];
+      put(Math.cos(a) * rr, Math.sin(a) * rr, profile[k][1]);
+    }
+  }
+  const at = (k, i) => 1 + (k - 1) * n + (i % n);
+  const idx = [];
+  for (let i = 0; i < n; i++) idx.push(0, at(1, i + 1), at(1, i));
+  for (let k = 1; k < ringCount; k++) {
+    for (let i = 0; i < n; i++) {
+      idx.push(at(k, i), at(k, i + 1), at(k + 1, i));
+      idx.push(at(k, i + 1), at(k + 1, i + 1), at(k + 1, i));
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 4));
+  geo.setIndex(idx);
+  // Straight up for every vertex: the ground is flat, and a computed normal would depend on winding.
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(new Array(pos.length / 3).fill(0).flatMap(() => [0, 1, 0]), 3));
+  return geo;
+}
+function softPatch(r, n, seed, y, colour, profile, layer, name) {
+  const pool = modelMaterials || materials;
+  const mat = toonMaterial(colour, 'ground-soft', pool);
+  mat.vertexColors = true;
+  mat.transparent = true;
+  mat.depthWrite = false;
+  const m = new THREE.Mesh(softPatchGeometry(r, n, seed, y, profile), mat);
+  m.name = name;
+  m.castShadow = false;
+  m.receiveShadow = false;
+  m.renderOrder = -1;
+  m.userData.layer = layer; // heroes.js addGroundPatch keeps this order when it sets the group's
+  return m;
+}
+function regolith(r, colour, seg, soft = false) {
+  const col = colour || REGOLITH;
+  const dark = `#${new THREE.Color(col).multiplyScalar(0.74).getHexString()}`;
+  const g = new THREE.Group();
+  g.name = 'ground';
+  const n = Math.max(14, seg || 18);
+  // The soft edge (a fan with an alpha falloff, no stepped plates). Only where asked (the lander's
+  // footing): the oddities' discs are held to tight triangle budgets and keep the hard outline.
+  if (soft) {
+    g.add(softPatch(r, n, 11, 0.002, col, SOFT_PROFILE, 0, 'ground'));
+    g.add(softPatch(r * 0.62, Math.max(9, n >> 1), 53, 0.0035, dark, [[0, 0.9], [0.5, 0.8], [0.85, 0.35], [1.1, 0]], 1, 'ground-scuffed'));
+  } else {
+    g.add(ragged(r, n, 11, 0.002, col, 'ground'));
+    g.add(ragged(r * 0.56, Math.max(9, n >> 1), 53, 0.0035, dark, 'ground-scuffed'));
+  }
+  const pos = [];
+  const nor = [];
+  for (let i = 0; i < 6; i++) {
+    const a = hash01(i * 97 + 5) * Math.PI * 2;
+    const d = r * (0.5 + 0.38 * hash01(i * 41 + 3));
+    const stone = new THREE.OctahedronGeometry(r * (0.018 + 0.022 * hash01(i * 13 + 1)), 0).toNonIndexed();
+    stone.scale(1, 0.6, 1.3);
+    stone.rotateY(a * 3);
+    stone.translate(Math.cos(a) * d, r * 0.012, Math.sin(a) * d);
+    stone.computeVertexNormals();
+    for (const v of stone.attributes.position.array) pos.push(v);
+    for (const v of stone.attributes.normal.array) nor.push(v);
+    stone.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.add(mesh(geo, dark, 'body', 'stones'));
+  return g;
 }
 
 // 1. The Voyager Golden Record -- 30 cm gold-plated copper disc, aluminium cover engraved in four
@@ -2466,7 +3499,7 @@ function buildWrappedPhoto() {
   glint.position.set(-0.13, 0.03, -0.07);
   g.add(glint);
 
-  g.add(regolith(0.45, null, 12));
+  g.add(regolith(0.45, null, 12, true));
   return g;
 }
 
@@ -2539,7 +3572,7 @@ function buildDiscStack() {
   t.scale.setScalar(0.85);
   g.add(t);
 
-  g.add(regolith(0.48));
+  g.add(regolith(0.48, null, 14, true));
   return g;
 }
 
@@ -2555,9 +3588,13 @@ function buildGolfBalls() {
   // the size claim is the ball's and only the ball's.
   g.userData.realSizeM = 0.0427;
 
+  // THE BALLS AGAINST THE CLUB (public #267: "the golf balls are bigger than the club"). A ball is
+  // 42.67 mm and the iron's head beside it is 0.26 units, so at 0.07 units of radius the ball is a
+  // little over half the head's length, which is how a ball sits against an iron. The head's own
+  // length is not published for Shepard's club, so this is a proportion and not a measurement.
   for (const [x, z] of [[-0.24, 0.15], [-0.09, -0.19]]) {
-    const ball = mesh(new THREE.SphereGeometry(0.115, 12, 8), BALL_WHITE, 'panel', 'ball');
-    ball.position.set(x, 0.115, z);
+    const ball = mesh(new THREE.SphereGeometry(0.07, 12, 8), BALL_WHITE, 'panel', 'ball');
+    ball.position.set(x, 0.07, z);
     g.add(ball);
   }
 
@@ -2590,7 +3627,7 @@ function buildGolfBalls() {
 
   // A SMALL disc: selected in the browser at 260 px, a 0.5 ground read as a grey blob with two
   // dots on it. The dust is context for the objects, not the object.
-  g.add(regolith(0.38));
+  g.add(regolith(0.38, null, 12, true));
   return g;
 }
 
@@ -2790,6 +3827,29 @@ function buildRoadster() {
   rim.rotateX(-0.95);
   m.add(rim);
 
+  // THE ART PASS (public #432, 2026-10-08). No licensed mesh of this car exists, so the silhouette
+  // has to come from the parts a person knows it by: a glass screen in a body-colour frame, two
+  // high-backed seats, door mirrors, the air scoop cut into each flank behind the door, the dark
+  // mouth under the nose, a lip on the tail. Positions are read off photographs and are ours; the
+  // four published numbers above are unchanged. Three meshes.
+  const glass = box(0.03, 0.44, 1.26, DARK_GLASS, 'panel', 'windscreen');
+  glass.position.set(0.485, 0.845, 0);
+  glass.rotation.z = 0.733; // along the raked face of the profile, a hair proud of it
+  m.add(glass);
+  m.add(slabs([
+    [0.13, 0.5, 0.4, -0.56, 0.9, 0.36], [0.11, 0.16, 0.26, -0.6, 1.2, 0.36],      // the passenger seat
+    [0.13, 0.5, 0.4, -0.56, 0.9, -0.36], [0.11, 0.16, 0.26, -0.6, 1.2, -0.36],    // the driver's, behind him
+    [0.46, 0.15, 0.03, -0.78, 0.47, 0.741], [0.46, 0.15, 0.03, -0.78, 0.47, -0.741], // the side scoops
+    [0.03, 0.11, 0.86, 1.985, 0.3, 0],                                              // the mouth under the nose
+    [0.03, 0.1, 1.0, -1.985, 0.24, 0],                                              // the diffuser
+  ], '#1D1F24', 'body', 'trim'));
+  m.add(slabs([
+    [0.1, 0.07, 0.15, 0.3, 0.99, 0.8], [0.1, 0.07, 0.15, 0.3, 0.99, -0.8],          // door mirrors
+    [0.05, 0.03, 0.1, 0.3, 0.95, 0.72], [0.05, 0.03, 0.1, 0.3, 0.95, -0.72],        // and their stalks
+    [0.14, 0.035, 1.3, -1.9, 0.6, 0],                                               // the lip on the tail
+    [0.035, 0.4, 0.05, 0.47, 0.84, 0.655], [0.035, 0.4, 0.05, 0.47, 0.84, -0.655],  // the screen's pillars
+  ], CHERRY, 'panel', 'brightwork'));
+
   m.add(buildStarman());
 
   m.scale.setScalar(1 / 3.946); // ONE division: the whole car becomes 1 unit
@@ -2930,7 +3990,7 @@ const ODDITY_BUILDERS = {
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
 const BUILDERS = {
-  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, shenzhou: buildSoyuzFamily, tianzhou: buildSoyuzFamily, cygnus: buildCygnus, dragon: buildDragon, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
+  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, shenzhou: buildSoyuzFamily, tianzhou: buildSoyuzFamily, cygnus: buildCygnus, dragon: buildDragon, 'dragon-cargo': buildDragon, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,
@@ -2941,10 +4001,18 @@ const BUILDERS = {
     radar: buildRadarImager,
     'radar-mesh': buildMeshReflector,
     cubesat: buildCubeSat,
+    'cubesat-6u': buildCubeSat,
+    'cubesat-1u': buildCubeSatSmall,
+    'cubesat-2u': buildCubeSatSmall,
     oneweb: buildOneWeb,
     'starlink-v1': buildStarlink,
     'starlink-v2': buildStarlink,
     navigation: buildNavSatellite,
+    'navigation-gps-iif': buildNavSatellite,
+    'navigation-gps-iii': buildNavSatellite,
+    'navigation-glonass-m': buildNavSatellite,
+    'navigation-glonass-k': buildNavSatellite,
+    'navigation-beidou-meo': buildNavSatellite,
     // The telescope tube, for records whose klass is `satellite` -- the catalogue does not call
     // anything a telescope, so an observatory arrives as a satellite and needs a satellite variant
     // to be drawn as one. buildTelescope treats any variant but `hex` as the tube.
@@ -2952,7 +4020,7 @@ const BUILDERS = {
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
-  probe: { default: buildProbe, 'new-horizons': buildNewHorizons, 'solar-orbiter': buildSolarOrbiter },
+  probe: { default: buildProbe, 'new-horizons': buildNewHorizons, 'solar-orbiter': buildSolarOrbiter, 'mars-2020-cruise': buildMars2020Cruise },
   telescope: { default: buildTelescope, tube: buildTelescope, hex: buildJwst, jwst: buildJwst, gaia: buildGaia },
   asteroid: { default: buildAsteroid },
   comet: { default: buildComet },
@@ -2963,6 +4031,8 @@ const BUILDERS = {
     dome: buildSiteDome,
     rover: buildSiteRover,
     lander: buildSiteLander,
+    surveyor: buildSurveyor,
+    'ground-moon': buildGroundPatch,
   },
   oddity: ODDITY_BUILDERS,
   world: { default: () => new THREE.Group() }, // worlds.js owns the worlds; this keeps modelFor total
@@ -3032,7 +4102,8 @@ export function modelFor(klass, variant, opts = {}) {
   // is not generic -- and heroes.js passes no variant for almost every record, so the old
   // `!use[variant]` marked every model in the app generic.
   obj.userData.generic = generic || (variant != null && !named);
-  obj.userData.attitude = DEFAULT_ATTITUDE[klass] || 'fixed';
+  // A builder may say how its object flies (a spent stage tumbles); otherwise the class does.
+  obj.userData.attitude = obj.userData.attitude || DEFAULT_ATTITUDE[klass] || 'fixed';
   return obj;
 }
 
@@ -3112,6 +4183,7 @@ const _m4 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _v = new THREE.Vector3();
 const _fallback = new THREE.Vector3(0, 1, 0);
+const lessMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function toVec(out, v, fallback) {
   if (!v || (v.x === 0 && v.y === 0 && v.z === 0)) return out.copy(fallback);
@@ -3134,6 +4206,29 @@ function orient(obj, zDir, xHint) {
   obj.quaternion.setFromRotationMatrix(_m4);
 }
 
+/** The fastest a spent stage is let to turn, in drawn seconds per wall second: past it the clock outruns the picture (internal #425). */
+export const TUMBLE_MAX_RATE = 240;
+
+/**
+ * A dead stage's tumble angle, radians. At a clock the eye can follow it is exactly the function of
+ * the drawn time it always was (scrub the clock and it turns with it). When the clock runs faster
+ * than `maxRate` drawn seconds a wall second -- a 90 s turn would be a strobe from there on -- the
+ * stage keeps turning at that rate in the clock's direction instead, and is exact again when the
+ * clock slows. `st` is the object's own { t, real, phase }; `realMs` is the wall clock. Pure.
+ */
+export function tumblePhase(st, tMs, realMs, periodMs, maxRate = TUMBLE_MAX_RATE) {
+  const exact = ((tMs % periodMs) / periodMs) * Math.PI * 2;
+  if (!Number.isFinite(realMs)) return exact;
+  if (st.real === undefined) { st.t = tMs; st.real = realMs; st.phase = exact; return exact; }
+  const dReal = realMs - st.real;
+  if (!(dReal > 0)) return st.phase; // the same frame again
+  const dT = tMs - st.t;
+  const limit = maxRate * dReal;
+  const phase = Math.abs(dT) <= limit ? exact : st.phase + Math.sign(dT) * (limit / periodMs) * Math.PI * 2;
+  st.t = tMs; st.real = realMs; st.phase = phase;
+  return phase;
+}
+
 /**
  * Aim a model. Called each frame for the <= 20 models on screen; cheap, and it is the difference
  * between a model that looks placed and one that looks correct.
@@ -3142,8 +4237,9 @@ function orient(obj, zDir, xHint) {
  * @param {object} record         the Record; record.meta.attitude overrides the class default
  * @param {{x,y,z}} sunDirScene   unit vector from the object TOWARD the Sun, scene space
  * @param {{x,y,z}} nadirScene    unit vector from the object TOWARD the world's centre, scene space
+ * @param {number} [tMs]          the time being drawn; only a tumbling object reads it
  */
-export function updateModelAttitude(obj, record, sunDirScene, nadirScene) {
+export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
   if (!obj) return;
   toVec(_sun, sunDirScene, _fallback);
   toVec(_nadir, nadirScene, new THREE.Vector3(0, -1, 0));
@@ -3216,6 +4312,26 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene) {
       obj.quaternion.setFromRotationMatrix(_m4);
       break;
     }
+    case 'tumble': {
+      // A dead stage turns end over end. The axis and the period are seeded by the id, so the
+      // same stage is the same tumble on every machine, and the angle is a function of the time
+      // being DRAWN -- scrub the clock and it turns with it. 90 to 240 s a turn, which is ours:
+      // nobody publishes a tumble rate for a catalogue number. Illustrative, and still without a
+      // clock (any caller that passes no time) or when the visitor asked for less motion.
+      const s = seedOf((record && record.id) || obj.name);
+      if (!obj.userData.tumble) {
+        const a = hash01(s + 5) * Math.PI * 2;
+        obj.userData.tumble = {
+          base: new THREE.Quaternion().setFromEuler(new THREE.Euler(hash01(s) * Math.PI * 2, hash01(s + 1) * Math.PI * 2, 0)),
+          axis: new THREE.Vector3(Math.cos(a), 0, Math.sin(a)), // across the stage's own long axis
+          periodMs: (90 + 150 * hash01(s + 9)) * 1000,
+        };
+      }
+      const tu = obj.userData.tumble;
+      const angle = Number.isFinite(tMs) && !lessMotion() ? tumblePhase(tu.state || (tu.state = {}), tMs, typeof performance !== 'undefined' ? performance.now() : NaN, tu.periodMs) : 0;
+      obj.quaternion.copy(tu.base).multiply(_q.setFromAxisAngle(tu.axis, angle));
+      break;
+    }
     default: {
       // unknown attitude: a pleasant constant, seeded by the id so it never changes or spins.
       // The card says nothing about which way it points, because we do not know.
@@ -3263,11 +4379,38 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene) {
 
   // comet tails: already anti-sunward from the basis above; scale with heliocentric distance
   if (obj.userData.tails) {
-    const au = Number(meta.rAu);
+    // `userData.sunAu` and `userData.selected` are written each frame by heroes.js, as `burn` is. Until the
+    // integration pass of 2026-10-10 NOTHING wrote `meta.rAu` or `meta.selected`, so the distance was never
+    // known and every comet drew its tail wherever it was: 2I/Borisov at 48.8 au was seen with one.
+    const au = cometSunAu(obj.userData, meta);
     const len = Number.isFinite(au) ? Math.min(2.5, Math.max(0.35, 1 / (au * au))) : 1;
     obj.userData.tails.scale.set(len, 1, 1);
-    obj.userData.tails.visible = !Number.isFinite(au) || au < 1.5 || !!meta.selected;
+    obj.userData.tails.visible = cometTailVisible(au, obj.userData.selected !== undefined ? !!obj.userData.selected : !!meta.selected);
   }
+}
+
+/**
+ * Whether a comet is drawn with its tail. A tail is ice turning to gas in the Sun's heat, so far from the Sun there is
+ * none: the tail is drawn inside 1.5 au (as it always was), and a SELECTED comet keeps it a little further, out to
+ * COMET_TAIL_SELECTED_AU, so the one you are looking at is not a bare dot at the moment it is closest to being a comet.
+ * Past that a selected comet drew a tail at any distance (internal #413, #548: one at 30 au had one). The distances are
+ * ours and illustrative; the tail itself is, as the card says. A comet with no known distance keeps its tail. Pure.
+ */
+export const COMET_TAIL_SELECTED_AU = 3;
+/** A comet's distance from the Sun in au: the frame's own (heroes.js writes `sunAu` on the object), else the record's, else NaN. Pure. */
+export function cometSunAu(userData, meta) {
+  const live = userData ? userData.sunAu : undefined;
+  if (Number.isFinite(live)) return live;
+  return Number(meta && meta.rAu);
+}
+/** The distance from the Sun of a propagated position, in au, when its frame is the Sun's; NaN otherwise. Pure. */
+export function sunAuOf(p) {
+  if (!p || p.frame !== 'sun-inertial' || !Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) return NaN;
+  return Math.hypot(p.x, p.y, p.z) / 149597870.7;
+}
+export function cometTailVisible(au, selected) {
+  if (!Number.isFinite(au)) return true;
+  return au < 1.5 || (!!selected && au < COMET_TAIL_SELECTED_AU);
 }
 
 /** Free every geometry and the shared materials. For a page teardown or a test. */

@@ -10,8 +10,9 @@
 //   xLength(text)                    a post's length as X counts it
 //   excerptOf(extract, max)          the "About it": whole sentences, at most `max` characters
 //   wikiTitleOf(record)              the record's English Wikipedia article, or null
-//   objectPageUrl(record, pages, base)  the object's own page, else the app at `#at=<id>`
+//   objectPageUrl(record, pages, base)  the object's own page, else the app at `#at=<id>` (ui/objectpage.js)
 //   networkUrl(network, parts), mailtoUrl(subject, body), NETWORKS, LIMITS
+//   wholeRowHeight(feet, opts)       the phone sheet's half: a height that ends on a whole row
 //
 // WHY. Ivan, 2026-10-01: "share the jpeg image postcard in social medias (with the link to object
 // if selected) and text (wiki information of object) - so full post, postcard, link and full text
@@ -44,23 +45,37 @@
 // them (scene/viewshift.js counts it), a drag or the handle takes it to full, and a drag down
 // from half closes it, as × and Escape do (spec 0061 task 3).
 //
+// On a phone the sheet is the only thing up (internal #371): the card's sheet under it is hidden
+// while it is open (`sr-sharing` on <html>, css/share.css), so its ember action is neither a second
+// primary nor an orange smear through this sheet's glass; and "half" is not 48 % of the window
+// whatever falls there but the nearest height that ends on a whole row (wholeRowHeight), so no
+// row is cut by the sheet's lower edge.
+//
+// TWO MORE ACTIONS, last (public #288, #439): Photo mode hands over to ui/photomode.js, imported on
+// that press, and Embed copies the <iframe> for this view (ui/embed.js embedSnippet). The post's
+// words sit under a row that opens in place, closed at first: with them shut the sheet fits a
+// 1440 x 900 window without scrolling (internal #202).
+//
 // EMAIL is a mailto: link with the subject and the text. A mailto: cannot carry a file, and the
 // sheet says so in one line: the picture goes by Share (where the device can attach it) or by
 // downloading it first.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import { cardWords } from './cards.js';
 import { shareUrl, shareState, tripWords, appBase, toast } from './share.js';
+import { camValue } from './urlstate.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
-import { createSheet } from './sheet.js';
+import { createSheet, sheetHeights } from './sheet.js';
+import { embedSnippet, embedState } from './embed.js';
+import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
+
+export { objectPageUrl, PAGES_INDEX };
 import { WIKI_TITLES } from '../data/wikititles.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const WIKI_REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
 const WIKI_TIMEOUT_MS = 8000;
-const PAGES_TIMEOUT_MS = 3000;
-/** Written by scripts/build_seo.py at deploy time beside sitemap.xml: {record id: page slug}. */
-export const PAGES_INDEX = 'object-pages.json';
 export const EXCERPT_MAX = 280;
 
 // ------------------------------------------------------------------------------- the words
@@ -215,20 +230,6 @@ export function wikiTitleOf(record) {
   return null;
 }
 
-/**
- * The object's own page when the deploy built one (`pages` is object-pages.json, {id: slug}), else
- * the app opened on it. Pure. The slug is scripts/object_pages.mjs's, read from what it built, so
- * a link here can never name a page that does not exist.
- */
-export function objectPageUrl(record, pages, base = 'https://www.spaceradar.ai/') {
-  const root = String(base).endsWith('/') ? String(base) : `${base}/`;
-  const id = record && record.id != null ? String(record.id) : '';
-  if (!id) return root;
-  const slug = pages && Object.prototype.hasOwnProperty.call(pages, id) ? pages[id] : null;
-  if (slug && /^[a-z0-9][a-z0-9-]*$/.test(slug)) return `${root}o/${slug}.html`;
-  return `${root}#at=${encodeURIComponent(id)}`;
-}
-
 /** A network's public share page for this post. No SDK, no tracking parameter. */
 export function networkUrl(network, parts) {
   const e = encodeURIComponent;
@@ -257,10 +258,30 @@ export function mailtoUrl(subject, body) {
   return `mailto:?subject=${e(subject)}&body=${e(body)}`;
 }
 
+// --------------------------------------------------------------------------------- the phone
+
+/**
+ * The phone sheet's half height: the tallest of `feet` (each row's lower edge, measured from the
+ * sheet's top) that, with `pad` under it, is at most `cap`; `fallback` when none reaches `floor`,
+ * so a sheet whose first row is very tall is not opened as a sliver. Pure.
+ */
+export function wholeRowHeight(feet, { cap, floor = 0, pad = 0, fallback = 0 } = {}) {
+  let best = 0;
+  for (const f of feet || []) {
+    const h = Math.round(Number(f) + pad);
+    if (Number.isFinite(h) && h <= cap && h > best) best = h;
+  }
+  return best >= floor && best > 0 ? best : fallback;
+}
+/** The share of the window the half sheet may take: the selection stays in view above it. */
+export const HALF_CAP = 0.6;
+export const HALF_FLOOR = 0.36;
+/** How far under the last whole row the half sheet's body is clipped: inside the gap to the next. */
+const CUT_SLACK_PX = 4;
+
 // ------------------------------------------------------------------------------ the network
 
 const wikiCache = new Map(); // title -> Promise<{extract, url} | null>
-let pagesIndex = null; // Promise<{id: slug} | null>, once a visit
 
 function fetchJson(url, ms, opts = {}) {
   if (typeof fetch !== 'function') return Promise.resolve(null);
@@ -289,14 +310,6 @@ export function wikiSummary(title) {
   return wikiCache.get(title);
 }
 
-function objectPages(base) {
-  if (!pagesIndex) {
-    pagesIndex = fetchJson(`${base}${PAGES_INDEX}`, PAGES_TIMEOUT_MS, { credentials: 'same-origin' })
-      .then((d) => (d && typeof d === 'object' && !Array.isArray(d) ? d : null));
-  }
-  return pagesIndex;
-}
-
 // ------------------------------------------------------------------------------- the DOM
 
 // Lucide (ISC; Feather-derived icons MIT), docs/ui-guide.md §3.16: 24 box, stroke 1.75, round.
@@ -307,6 +320,9 @@ const ICONS = {
   download: ['M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'],
   file: ['M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z', 'M14 2v4a2 2 0 0 0 2 2h4', 'M16 13H8', 'M16 17H8', 'M10 9H8'],
   mail: ['m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7', 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'],
+  crop: ['M6 2v14a2 2 0 0 0 2 2h14', 'M18 22V8a2 2 0 0 0-2-2H2'],
+  code: ['m16 18 6-6-6-6', 'm8 6-6 6 6 6'],
+  'chevron-down': ['m6 9 6 6 6-6'],
 };
 
 function icon(name) {
@@ -359,6 +375,23 @@ const FOCUSABLE = 'button:not([disabled]), a[href], input:not([disabled]), [tabi
 
 // --------------------------------------------------------------------------------- the sheet
 
+/**
+ * A view's link with where the camera stands now (internal #397; ui/urlstate.js `cam`, which
+ * main.js applies once the link's own flight has landed), so the link reopens this framing and
+ * not the default one. Only a link into the app's own hash can carry it: a trip's short page and
+ * a trip's stop frame themselves. The commas stay commas (legal in a fragment), so
+ * `cam=40,62,26540` can be read by a person. Here and not in ui/share.js, which loads with
+ * every card and is held under 6 kB. Pure but for ctx.camPose().
+ */
+export function withCam(link, ctx) {
+  const url = String(link || '');
+  if (!url || /\/t\/[^/#]+\.html/.test(url) || /[#&]trip=/.test(url) || /[#&]cam=/.test(url)) return url;
+  let cam = '';
+  try { cam = ctx && typeof ctx.camPose === 'function' ? camValue(ctx.camPose()) : ''; } catch { cam = ''; }
+  if (!cam) return url;
+  return `${url}${url.includes('#') ? '&' : '#'}cam=${cam}`;
+}
+
 export function createShareSheet(ctx) {
   const S = COPY.share;
   const root = el('div', 'sr-share sr-float sr-over-clean');
@@ -402,7 +435,14 @@ export function createShareSheet(ctx) {
   copyLinkBtn.setAttribute('aria-label', S.copyLink);
   linkRow.append(linkA, copyLinkBtn);
 
-  const textLabel = el('p', 'sr-micro sr-share__micro', S.textLabel);
+  // The post's words under a row that opens in place (docs/ui-guide.md §3.10's disclosure row).
+  const textRow = button('sr-share__row', S.textRow, '', '');
+  textRow.appendChild(icon('chevron-down'));
+  textRow.setAttribute('aria-expanded', 'false');
+  textRow.setAttribute('aria-controls', 'sr-share-text');
+  const textPanel = el('div', 'sr-share__panel');
+  textPanel.id = 'sr-share-text';
+  textPanel.hidden = true;
   const textBox = el('div', 'sr-share__text');
   textBox.tabIndex = 0;
   textBox.setAttribute('role', 'textbox');
@@ -421,7 +461,9 @@ export function createShareSheet(ctx) {
   mailA.appendChild(icon('mail'));
   mailA.appendChild(el('span', 'sr-share__label', S.email));
   mailA.title = S.emailTitle;
-  acts.append(nativeBtn, copyBtn, mailA, jpegBtn, pdfBtn);
+  const photoBtn = button('sr-share__btn', S.photo, S.photoTitle, 'crop');
+  const embedBtn = button('sr-share__btn', S.embed, S.embedTitle, 'code');
+  acts.append(nativeBtn, copyBtn, mailA, jpegBtn, pdfBtn, photoBtn, embedBtn);
   const mailNote = el('p', 'sr-share__note', S.emailNote);
 
   const netLabel = el('p', 'sr-micro sr-share__micro', S.networksLabel);
@@ -433,6 +475,7 @@ export function createShareSheet(ctx) {
     a.rel = 'noopener noreferrer';
     a.referrerPolicy = 'no-referrer';
     a.title = t(S.networkTitle, { network: S.networks[n] });
+    a.setAttribute('aria-label', t(S.networkLabel, { network: S.networks[n] }));
     a.dataset.network = n;
     netLinks[n] = a;
     nets.appendChild(a);
@@ -440,7 +483,8 @@ export function createShareSheet(ctx) {
 
   // The picture and what to do with it first, so the actions are above the fold on a laptop; then
   // the link and the post itself, which is what Copy, Email and the networks carry.
-  body.append(pic, tagRow, acts, mailNote, netLabel, nets, linkLabel, linkRow, textLabel, textBox, wikiLine);
+  textPanel.append(textBox, wikiLine);
+  body.append(pic, tagRow, acts, mailNote, netLabel, nets, linkLabel, linkRow, textRow, textPanel);
   root.append(head, body);
   document.body.appendChild(root);
 
@@ -460,6 +504,7 @@ export function createShareSheet(ctx) {
     for (const n of NETWORKS) netLinks[n].href = networkUrl(n, p);
     const nav = typeof navigator !== 'undefined' ? navigator : {};
     nativeBtn.hidden = typeof nav.share !== 'function';
+    acts.classList.toggle('has-native', !nativeBtn.hidden);
     if (ctx) ctx.lastShare = { link: p.link, text: textBox.textContent, excerpt: !!p.excerpt, picture: cur.made ? cur.made.out : null, wiki: cur.wiki || null };
   }
 
@@ -474,16 +519,16 @@ export function createShareSheet(ctx) {
       if (id && id !== running) {
         const tours = ctx && ctx.trip && typeof ctx.trip.tours === 'function' ? ctx.trip.tours() : [];
         const tour = tours.find((x) => x.id === id);
-        return { name: tour ? tour.title : COPY.app.name, line: tour ? tour.blurb : '', link: shareUrl({ trip: id }), record: null };
+        return { name: tour ? tour.title : COPY.app.name, line: tour ? tour.blurb : '', link: shareUrl({ trip: id }), record: null, trip: id };
       }
       const w = tripWords(ctx);
-      if (w) return { name: w.title, line: w.text, link: shareUrl(st), record: null };
+      if (w) return { name: w.title, line: w.text, link: shareUrl(st), record: null, trip: st.trip || null };
     }
     const record = opts.record !== undefined ? opts.record : ctx && typeof ctx.selected === 'function' ? ctx.selected() : null;
-    if (!record) return { name: COPY.app.name, line: COPY.app.tagline, link: shareUrl(st), record: null };
+    if (!record) return { name: COPY.app.name, line: COPY.app.tagline, link: withCam(shareUrl(st), ctx), record: null };
     let w = null;
     try { w = cardWords(record, ctx); } catch { w = null; }
-    const link = shareUrl(shareState(ctx, record.id));
+    const link = withCam(shareUrl(shareState(ctx, record.id)), ctx);
     return { name: (w && w.name) || String(record.name || record.id), line: (w && w.sentence) || '', link, record, live };
   }
 
@@ -522,7 +567,12 @@ export function createShareSheet(ctx) {
     }
     const [summary, index] = await Promise.all([titleW ? wikiSummary(titleW) : null, pages]);
     if (my !== token || !cur) return;
-    wikiLine.hidden = true;
+    // No Wikipedia text (no article named for this record, or the lookup failed): the line stays
+    // and says so, so the shorter post is explained and not a thing that looks half loaded.
+    // With nothing selected there was never an "About it" to miss, and the line is absent.
+    wikiLine.hidden = !record;
+    wikiLine.textContent = record ? S.noWiki : '';
+    wikiLine.classList.toggle('is-empty', !(summary && summary.extract));
     if (summary && summary.extract) {
       cur.parts.excerpt = summary.extract;
       cur.parts.attribution = S.attribution;
@@ -562,7 +612,9 @@ export function createShareSheet(ctx) {
       opener: opts.opener && opts.opener.focus ? opts.opener : null,
     };
     if (cur.opener && cur.opener.hasAttribute('aria-haspopup')) cur.opener.setAttribute('aria-expanded', 'true');
+    cur.trip = w.trip || null;
     tagRow.hidden = !w.record;
+    setTextOpen(false);
     // The skeleton in the postcard's own orientation (printcompose.js printSize: the screen's).
     const view = ctx && ctx.renderer && ctx.renderer.domElement;
     const aspect = view && view.clientHeight > 0 ? view.clientWidth / view.clientHeight : window.innerWidth / window.innerHeight;
@@ -571,6 +623,7 @@ export function createShareSheet(ctx) {
     jpegBtn.disabled = pdfBtn.disabled = true;
     render();
     root.hidden = false;
+    document.documentElement.classList.add('sr-sharing');
     seatSheet();
     // The rail's What to show is the other popover in that corner: one at a time.
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
@@ -582,6 +635,32 @@ export function createShareSheet(ctx) {
     if (my === token) drawPicture(my);
   }
 
+  /** Half ends on a whole row: under the picture's tag, or under a row of the actions. */
+  function phoneHeights() {
+    const safe = parseFloat(getComputedStyle(root).paddingBottom) || 0;
+    const base = sheetHeights({ viewH: window.innerHeight, fullH: root.offsetHeight, safeBottom: safe });
+    const pad = parseFloat(getComputedStyle(body).paddingBottom) || 0;
+    const rows = [pic, tagRow, ...acts.children].filter((n) => !n.hidden && n.offsetParent !== null);
+    const foot = (n) => { let y = n.offsetHeight; for (let m = n; m && m !== root; m = m.offsetParent) y += m.offsetTop; return y; };
+    const half = wholeRowHeight(rows.map(foot), {
+      cap: Math.min(base.full, Math.round(window.innerHeight * HALF_CAP)),
+      floor: Math.round(window.innerHeight * HALF_FLOOR),
+      pad: pad + safe,
+      fallback: base.half,
+    });
+    // The padding under the last whole row is taller than the gap to the next one, and a safe
+    // area is taller still: at half the body is clipped just under that row (css/share.css), so
+    // what shows below it is glass and not the top of a row that is not there yet.
+    root.style.setProperty('--sr-share-cut', `${Math.max(0, half - pad - safe - body.offsetTop + CUT_SLACK_PX)}px`);
+    return { half, full: base.full };
+  }
+
+  function setTextOpen(on) {
+    textPanel.hidden = !on;
+    textRow.setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  textRow.addEventListener('click', () => setTextOpen(textPanel.hidden));
+
   // The phone's sheet behaviour, made the first time the sheet opens on a phone and dropped on a
   // desktop, where the sheet is the rail's popover.
   let sheet = null;
@@ -591,6 +670,7 @@ export function createShareSheet(ctx) {
       sheet = createSheet(root, {
         detents: ['half', 'full'],
         initial: 'half',
+        heights: phoneHeights,
         grab: '.sr-share__head',
         scrollers: '.sr-share__body',
         dismiss: () => close(),
@@ -612,6 +692,7 @@ export function createShareSheet(ctx) {
   function close() {
     if (root.hidden) return;
     root.hidden = true;
+    document.documentElement.classList.remove('sr-sharing');
     token += 1;
     const back = cur && cur.opener;
     if (back && back.hasAttribute('aria-haspopup')) back.setAttribute('aria-expanded', 'false');
@@ -630,6 +711,7 @@ export function createShareSheet(ctx) {
     } catch {
       // Refused (an unfocused page, no permission): select it, so a copy by hand is one key away.
       try {
+        setTextOpen(true);
         const range = document.createRange();
         range.selectNodeContents(textBox);
         const sel = window.getSelection();
@@ -678,6 +760,34 @@ export function createShareSheet(ctx) {
     const pdf = new Blob([pdfFromJpeg(bytes, m.size.w, m.size.h, m.size.ptW, m.size.ptH)], { type: 'application/pdf' });
     saveBlob(pdf, m.name.replace(/\.jpg$/, '.pdf'));
     toast(COPY.print.saved);
+  });
+
+  // PHOTO MODE (public #288): the sheet steps aside and ui/photomode.js takes the screen; leaving
+  // it puts focus back on whatever opened this sheet.
+  photoBtn.addEventListener('click', async () => {
+    if (!cur) return;
+    const { record, opener } = cur;
+    try {
+      const m = await import('./photomode.js');
+      close();
+      m.openPhotoMode(ctx, { record, opener });
+    } catch (e) {
+      fail(COPY.photo.failed);
+      if (ctx) ctx.lastPhoto = { error: String((e && e.message) || e) };
+    }
+  });
+  // EMBED (public #439): the <iframe> for this view, on the clipboard. The same keys as the link.
+  embedBtn.addEventListener('click', async () => {
+    if (!cur) return;
+    const st = embedState(shareState(ctx, cur.record ? cur.record.id : null), cur.trip);
+    const html = embedSnippet(st, { base: appBase(), title: t(S.embedFrameTitle, { name: cur.parts.name }) });
+    if (ctx) ctx.lastEmbed = html; // for a browser check: the clipboard cannot be read back there
+    try {
+      await navigator.clipboard.writeText(html);
+      toast(S.embedCopied);
+    } catch {
+      fail(S.embedRefused);
+    }
   });
 
   // ------------------------------------------------------------------- keyboard and focus

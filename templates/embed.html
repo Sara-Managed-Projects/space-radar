@@ -1,0 +1,118 @@
+<!doctype html>
+<!-- Built by scripts/seo_embed.py from templates/embed.html at deploy time. Not in git; do not edit
+     the built copy. The code generator is embed/generate.js (templates/embed/generate.js). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embed Space Radar in a web page | Space Radar</title>
+<meta name="description" content="Copy one line of HTML to put a live 3D view of an object, a guided trip or the whole map in your page. Free, no sign-up, nothing stored on a reader's device.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="canonical" href="{{url}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Space Radar">
+<meta property="og:title" content="Embed Space Radar in a web page">
+<meta property="og:description" content="Copy one line of HTML to put a live 3D view of an object, a guided trip or the whole map in your web page.">
+<meta property="og:url" content="{{url}}">
+<meta property="og:image" content="{{host}}/og/default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Earth from space with the satellites around it as points of light, captioned Space Radar.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="{{icon}}">
+<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/fonts.css">
+<style>
+{{style}}
+[hidden]{display:none!important}
+ul.plain{padding-left:20px;margin:0 0 16px;max-width:65ch}
+ul.plain li{margin:0 0 8px}
+.gen{display:grid;gap:16px;margin:0}
+.gen fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 16px}
+.gen legend{padding:0;margin:0 0 8px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.gen label{display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.gen .field{display:grid;gap:4px;max-width:420px}
+.gen .field>span{font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.gen .sizes{display:flex;flex-wrap:wrap;gap:12px 16px}
+.gen .sizes .field{max-width:140px}
+.gen select,.gen input[type=text],.gen input[type=number]{box-sizing:border-box;width:100%;min-height:44px;padding:0 12px;border-radius:var(--sr-radius);border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:400 15px/20px Inter,system-ui,sans-serif}
+.gen select option,.gen select optgroup{background:var(--sr-space);color:var(--sr-text)}
+.gen input:focus-visible,.gen select:focus-visible,.gen textarea:focus-visible,.btn:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px}
+.gen textarea,pre.code{box-sizing:border-box;width:100%;padding:12px;border-radius:var(--sr-radius);border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:400 13px/18px 'JetBrains Mono',ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.gen textarea{min-height:120px;resize:vertical}
+pre.code{margin:0 0 16px}
+.btns{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:var(--sr-radius);border:1px solid var(--sr-line);background:var(--sr-wash);color:var(--sr-text);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.btn.main{background:var(--sr-ember);color:var(--sr-ink);border-color:var(--sr-ember)}
+.btn:hover{background:var(--sr-wash-hover)}
+.btn.main:hover{background:var(--sr-ember-light)}
+#gen-preview iframe{display:block;margin-top:16px}
+.hint{font-size:13px;line-height:18px;color:var(--sr-text-dim);max-width:65ch}
+.examples{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.examples h3{margin:0 0 8px;font-size:15px;line-height:20px}
+</style>
+<script type="module" src="generate.js"></script>
+</head>
+<body>
+<header class="top"><a class="mark" href="../">Space Radar</a><a href="../">Open the live map</a></header>
+<main>
+<p class="micro">Embed</p>
+<h1>Put Space Radar in your page</h1>
+<p class="lead">Copy one line of HTML and a live 3D view of an object, a guided trip or the whole map sits in your page. It is free, it needs no sign-up, and it stores nothing on your reader's device: no cookie, no tracker.</p>
+
+<h2>Make the code</h2>
+<form class="gen" id="gen" autocomplete="off">
+<fieldset><legend>What to show</legend>
+<label><input type="radio" name="kind" value="object" checked> An object</label>
+<label><input type="radio" name="kind" value="trip"> A guided trip</label>
+<label><input type="radio" name="kind" value="map"> The whole map</label>
+</fieldset>
+<div id="gen-row-object">
+<label class="field"><span>Object</span><select id="gen-object">
+{{object_options}}</select></label>
+<label class="field"><span>Or any object by its id, its NORAD number or its name</span><input type="text" id="gen-own" maxlength="80" placeholder="for example 25544 or mars" spellcheck="false"></label>
+</div>
+<div id="gen-row-trip" hidden>
+<label class="field"><span>Trip</span><select id="gen-trip">
+{{trip_options}}</select></label>
+</div>
+<div class="sizes">
+<label class="field"><span>Width in pixels</span><input type="number" id="gen-width" value="600" min="280" max="1600" step="10" inputmode="numeric"></label>
+<label class="field"><span>Height in pixels</span><input type="number" id="gen-height" value="400" min="200" max="1200" step="10" inputmode="numeric"></label>
+</div>
+<div>
+<label><input type="checkbox" id="gen-credit" checked> Add a line under the frame that links back to Space Radar</label>
+<p class="hint">That line is optional. Untick it for a classroom page or anywhere it does not belong. The small "Open in Space Radar" link inside the frame stays: it is how a reader reaches the full map.</p>
+</div>
+<label class="field" style="max-width:none"><span>Paste this into your page's HTML</span><textarea id="gen-code" readonly rows="6" spellcheck="false"></textarea></label>
+<div class="btns"><button class="btn main" type="button" id="gen-copy">Copy the code</button><button class="btn" type="button" id="gen-show" data-show="Show a preview" data-hide="Hide the preview">Show a preview</button><span id="gen-status" role="status" class="hint"></span></div>
+<p class="hint" id="gen-note" role="alert"></p>
+<div id="gen-preview"></div>
+</form>
+<noscript><p class="hint">The generator needs JavaScript. The three examples below are ready to copy without it.</p></noscript>
+
+<h2>Three to start from</h2>
+<div class="examples">
+{{examples}}</div>
+
+<h2>Good to know</h2>
+<ul class="plain">
+<li>Change <code>width</code> and <code>height</code> to suit your column. The view fills whatever box it is given, down to about 280 pixels wide. Keep the <code>title</code>: a frame without one has no name for a screen reader.</li>
+<li><code>loading="lazy"</code> keeps the map from starting until a reader scrolls near it. A world or a crewed station starts a light version (about 2 MB); anything else starts the whole map, which is several megabytes.</li>
+<li>The reader's camera is theirs: drag, scroll, pinch. Nothing in the frame takes a key from your page.</li>
+<li>If your site sets a Content Security Policy, allow the frame with <code>frame-src https://www.spaceradar.ai</code>.</li>
+<li>The full manual, with every parameter, is <a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/EMBEDDING.md">docs/EMBEDDING.md</a>.</li>
+</ul>
+<p>What the frame draws is modelled from public measurements: positions are worked out in the browser from published orbital elements and ephemerides, and the object's tag in the frame says how its numbers were worked out. Where a view is an artist's impression, it says so. The sources are listed on <a href="{{root}}sources/index.html">the Sources page</a> and in <a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md">CREDITS.md</a>.</p>
+
+<h2>Sites that embed it</h2>
+{{embedders}}
+</main>
+<footer>
+<p>Built from the project's registry and the app's own address rules; the code above is the code the app's Embed button writes.</p>
+<p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
+{{sitelinks}}
+</footer>
+</body>
+</html>

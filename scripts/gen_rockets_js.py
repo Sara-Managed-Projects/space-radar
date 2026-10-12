@@ -44,6 +44,8 @@ FIELDS = (
     "top",
     "boosters",
     "engines",
+    "stage1_len_m",
+    "recovery",
     "livery",
     "disputed_height",
     "class",

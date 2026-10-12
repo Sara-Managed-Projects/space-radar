@@ -21,18 +21,113 @@ budgets:
   # from a local server as CI runs it, and 3 068 642 B from the live site (compressed, with the saved
   # copy's 651 kB). The design's 2.5 MB was the live number of 2026-09-21 and the live site is over it
   # now; the gate is the number CI sees, with the 6 % margin the design asked for.
-  - {id: first_visit_bytes, value: 5600000, unit: bytes, since: 2026-10-02, reason: "The bridge (6 450 000, #357) is gone: with the named stars and the exoplanet table off the boot path (main.js OFF THE FIRST VISIT, internal #188) a local boot measured 5 267 127 B at 390x844 as a phone and 5 378 737 B at 1440x900, CelesTrak blocked, 2026-10-02; this is the phone number plus the 6 % margin the design asked for"}
+  # WHICH TREE, SINCE 2026-10-06 (internal #405): the one a deploy uploads. scripts/deploy.sh sends js/
+  # and css/ without their comments (scripts/minify_site.py), screens.yml builds and serves that tree,
+  # and this row is its number. site/ as written is booted beside it for information
+  # (first-visit-source.json: 4 809 696 B that day) and is not held to this row: a comment is free.
+  # THE SECOND DIET (2026-10-07, internal #415): 3 861 587 B on main that morning (seven feature pull
+  # requests after the first diet, each a few kB of boot code, against 4 008 000). Two requests were
+  # a seventh of it: vendor/astronomy.js shipped with its documentation (412 025 -> 177 403 B now
+  # that a deploy strips vendor/ like js/, licence headers kept), and the cloud mask at WebP quality
+  # 90 (575 032 -> 282 674 B at quality 50, same pixels). The number no longer depends on the
+  # runner's clock either: what starts after the app's own end-of-first-visit mark is not counted.
+  # THE DAY MAP AS WEBP (2026-10-08, spec 0056 req 8, public #286): the Earth's 2k day map was the
+  # publisher's JPEG, 463 087 B; at WebP quality 84 (luma SSIM 0.9811 against it, same pixels) it is
+  # 148 312 B. Measured on the pull request that did it, in CI, one commit apart: 3 366 543 B before,
+  # 3 052 513 B after, 139 requests both times.
+  # THE MINIFIER (2026-10-09, internal #515, public #559): a deploy now runs the ES modules through
+  # esbuild after the comment stripper, and screens.yml builds the same tree. Measured in CI on that
+  # pull request: 2 719 025 B in 141 requests, where main was 3 142 846 B the day before (the head of
+  # public #518, same method). Lowered to that with the usual 5 %.
+  - {id: first_visit_bytes, value: 2855000, unit: bytes, since: 2026-10-09, reason: "2 719 025 B + 5 %, measured 2026-10-09 by CI on public #559 (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads: comments stripped and the ES modules through esbuild); 3 052 513 B before the minifier"}
+  # THE BOOT AS A TIMELINE (internal #528, 2026-10-10). scripts/boot-timeline.mjs boots the tree a deploy
+  # uploads in Playwright's Chromium (screens.yml), reads every long task from the start of the page and
+  # sums the blocking time. It REPORTS by default; `--gate` holds these two rows. MEASURED once, on a Mac
+  # with an integrated GPU and a real one-minute-old cache of nothing: no task over 50 ms at all in the
+  # boot (tests/probes/bulk3-c.js, 2026-10-10; first paint 960 ms, layers ready at 3.2 s). A CI runner is
+  # software-rendered and slower, so the rows are set far above any number seen and are to be LOWERED
+  # when the first CI runs have shown theirs (a row may be lowered freely).
+  - {id: boot_longest_task_ms, value: 3000, unit: ms, since: 2026-10-10, reason: "internal #528: a first guess for a software-rendered runner, to be lowered from the first CI report; a laptop with a GPU measured no long task at all in the boot on 2026-10-10 (a day of passes in one task was 2 602 ms on the same machine before internal #562 moved it to the worker)"}
+  - {id: boot_blocking_ms, value: 6000, unit: ms, since: 2026-10-10, reason: "internal #528: total blocking time (each long task's time over 50 ms) from the start of the page to two seconds after the layers are ready; a first guess for a runner, to be lowered from the first CI report"}
+  # THE JAVASCRIPT A DEPLOY SERVES FOR THE BOOT (internal #515, 2026-10-09). Not a browser's number: the
+  # sum of the files of the static graph from js/main.js in the tree a deploy uploads, counted by
+  # scripts/check_built_tree.mjs in the deploy itself and in CI. MEASURED that day on main: 2 175 514 B
+  # in 115 modules after the comment stripper alone, 1 778 733 B after esbuild's `--minify` over the modules (no
+  # bundling, no property renaming). The row holds the minified number with 5 % of room, so a deploy
+  # that fell back to the stripper, or a module that grew by a library, is seen before it is served.
+  - {id: deployed_boot_js_bytes, value: 1868000, unit: bytes, since: 2026-10-09, reason: "internal #515: the static graph from js/main.js in the minified tree, 1 778 733 B in 115 modules measured 2026-10-09 by scripts/check_built_tree.mjs (2 175 514 B after the comment stripper alone), plus 5 %"}
+  # THE FIRST MINUTE (internal #527, 2026-10-09). first_visit_bytes above stops two seconds after the
+  # layers are ready. This is what the same visit goes on to fetch from OUR OWN host in the next 60
+  # seconds, with nobody touching the page: the named stars, the exoplanets, the deep sky and their
+  # modules, the trip pictures and the panels' code. Same boot, same tree, same runner
+  # (tests/test_first_visit_bytes.mjs --minute; a phone, so no 4k maps; CelesTrak and Launch Library
+  # refused; uncompressed). Other hosts' bytes (NASA's clouds) are printed beside it and not held:
+  # they are not ours to bound. Not in it: the service worker's precache, which an automated browser
+  # does not get. MEASURED 2026-10-09 in CI on public #559: 1 581 495 B of our own files in 57 requests
+  # (the largest: exoplanets.csv 583 527, stars3d.names.json 288 436, the trips' data 116 529, dso.json
+  # 116 070), and 684 552 B from other hosts, which is NASA's picture of today's clouds.
+  - {id: after_first_visit_bytes, value: 1661000, unit: bytes, since: 2026-10-09, reason: "internal #527: 1 581 495 B + 5 %, our own files fetched in the 60 s after the first-visit window, measured 2026-10-09 by CI on public #559 (tests/test_first_visit_bytes.mjs --minute in screens.yml; other hosts sent 684 552 B more, not held)"}
+  # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
+  # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
+  # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
+  # the whole first visit and every catalogue, 163 requests and about 9.6 MB with the saved copies
+  # mirrored (internal #396's measurement), 3.9 MB by this method without them.
+  # THE TAG WITHOUT THE CARD (2026-10-08, internal #429): the light embed fetched ui/cards.js and
+  # the 22 modules only it brings (261 137 B stripped) for the tag's three lines. Those lines' own
+  # code is ui/cardfacts.js now, fetched alone: 19 requests fewer. Measured in CI on the pull
+  # request, one commit apart: at=moon 2 321 730 -> 2 149 573 B, at=25544 2 217 222 -> 2 045 065 B.
+  # With the minifier (2026-10-09, public #559), measured in CI: at=moon 1 962 243 B in 71 requests,
+  # at=25544 1 857 735 B in 70.
+  - {id: embed_first_visit_bytes, value: 2060000, unit: bytes, since: 2026-10-09, reason: "1 962 243 B for at=moon (71 requests) and 1 857 735 B for at=25544 (70), measured 2026-10-09 by CI on public #559 with the ES modules minified, plus 5 %; 2 149 573 B and 2 045 065 B before (internal #429)"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.
   - {id: fonts_at_boot_bytes, value: 90000, unit: bytes, since: 2026-09-28, reason: "spec 0045 req 5: the faces the first screen uses, Latin only"}
-  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text", pending: "spec 0044 task 3"}
-  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1)", pending: "spec 0044 task 3"}
+  # MEASURED FOR THE FIRST TIME on 2026-10-08 (internal #435, public #507): the `trips` job of
+  # screens.yml walked 192 stops of 24 trips (two are not offerable without CelesTrak) at 1440 x 900
+  # and as a phone, in Playwright's Chromium on software GL with the frame latch tripped. Both rows
+  # hold; neither was moved.
+  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text. Read at every stop of every trip by tools/trips-cost.probe.js (the trips job of screens.yml) and at five stops a trip by tools/walk.probe.js stopCost, from the renderer's own counters. Measured 2026-10-08: median 14, at most 54 (roof-to-the-edge, The planets) at a desktop's size; median 11, at most 45 as a phone"}
+  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1). Read with draw_calls_per_stop, by the same two probes. Measured 2026-10-08: median 23 016 at a desktop's size and 13 122 as a phone; at most 213 622 at both, on the stops that draw the 3D stars (to-the-edge, roof-to-the-edge, travel-to-exoplanets): 85 % of this row"}
   - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}
   - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
+  # Spec 0069 (2026-10-03): the trips' narration, fetched a clip at a time and only with sound on.
+  # Measured after the first render (62 stops, 18.9 min, Kokoro-82M bf_emma at 0.8, Opus 32 kbps
+  # mono and AAC 40 kbps): scripts/narrate.py --check and tests/test_narration.mjs hold both.
+  - {id: narration_trip_kb, value: 1200, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: the Opus clips of one trip, what a visitor who hears a whole trip downloads; the largest is outer-solar-system at 976 kB (ten stops, 244 s), measured 2026-10-03, with room for two more stops"}
+  # 2026-10-05: two more trips ("The constellations", "The living Earth"), 24 stops, 9.0 min more.
+  # 12 000 was 10 404 kB with room for ONE more trip; with two it measures 15 459 kB. Raised by the
+  # change that added them, in the open: nothing here is fetched before a visitor turns sound on,
+  # and then one clip at a time (narration_trip_kb, unchanged, is what one listener downloads).
+  - {id: narration_total_kb, value: 40000, unit: kB, since: 2026-10-06, reason: "spec 0069 req 5: everything under site/audio/narration/ (195 stops over twenty-five trips: 35 845 kB with the AAC twins and the captions), measured 2026-10-06 after the nine trips of the remaining planetarium shows, with 11 % for the next two. Was 26 000 for sixteen trips and 18 000 for eleven. Nothing of it is fetched before sound is on, and then a clip at a time (narration_trip_kb, unchanged: the largest trip is still the constellations at 1 153 kB)"}
   - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
-  - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
-  - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
+  # Spec 0067: the photographs of the nebulae (scene/nebulae.js), each fetched only when its object
+  # is in view on a rung of the ladder or selected, never on a first visit. scripts/build_nebulae.py
+  # --check holds both rows.
+  - {id: nebula_picture_bytes, value: 90000, unit: bytes, since: 2026-10-03, reason: "spec 0067: one WebP per object, 512 px on its longer side (640 or 768 for the seven widest); a star field is noise to WebP, and the densest (M17 at 89 874 B, the Cygnus Loop at 89 752 B) set this"}
+  - {id: nebulae_total_bytes, value: 1700000, unit: bytes, since: 2026-10-03, reason: "spec 0067: 27 pictures; what a visitor who flew to every one of them would have downloaded"}
+# 2026-10-05: the moons' and dwarf planets' maps (registry/textures.yaml rows with `coverage:`), each
+  # fetched the first time its world is big enough on screen to show a surface, never on a first
+  # visit. scripts/check_registry.py check_textures() holds both rows.
+  - {id: moon_map_bytes, value: 250000, unit: bytes, since: 2026-10-05, reason: "one WebP per world at 2048 wide or less; Cassini's crater fields are the densest (Iapetus 235 060 B at quality 74, Dione 232 500 B at 1792 wide) and set this"}
+  - {id: moon_maps_total_bytes, value: 3300000, unit: bytes, since: 2026-10-07, reason: "twenty-two maps  3 229 098 B measured 2026-10-07: Ceres (227 830 B) and Vesta (230 890 B) wear Dawn's mosaics on their shape models (internal #382), each inside moon_map_bytes and fetched only when that body is approached. It was 3 000 000 for twenty maps, 2 789 768 B; what a visitor who flew to every moon and both of these would have downloaded"}
+  # 2026-10-06: the sky in other light (registry/otherlight.yaml), one whole-sky picture per band,
+  # fetched when a visitor picks the band and never before. scripts/build_otherlight.py --check and
+  # tests/test_otherlight.mjs hold the row.
+  - {id: otherlight_sky_bytes, value: 320000, unit: bytes, since: 2026-10-06, reason: "one 2048 x 1024 WebP per band at quality 78; Fermi's sky of point sources is the densest and sets this"}
+  # 2026-10-06 (internal #392): what the sky from the ground fetches for its stars when it opens, beyond the
+  # naked-eye file the first visit already has. It was stars3d.bin and its names: 2 913 592 B.
+  # scripts/build-skystars.py writes the files; tests/test_skystars.mjs holds the row.
+  - {id: sky_entry_star_bytes, value: 110000, unit: bytes, since: 2026-10-06, reason: "skystars-1.bin (81 624 B: the stars from magnitude 6.0 to 7.0) and skystars.names.json (14 847 B), measured 2026-10-06, with room"}
+  # 2026-10-07 (internal #353): the stars past HYG, in HEALPix tiles a view asks for by where it looks
+  # and only once the field has closed far enough to show one. scripts/build-startiles.py writes them;
+  # tests/test_startiles.mjs holds both rows.
+  - {id: star_tile_bytes, value: 20000, unit: bytes, since: 2026-10-07, reason: "one tile: the densest are 14 462 B (nside 2, to magnitude 9) and 14 480 B (nside 8, 9 to 10.5), both in the Milky Way"}
+  - {id: star_tiles_total_bytes, value: 2700000, unit: bytes, since: 2026-10-07, reason: "816 tiles, 435 144 stars at six bytes each: 2 627 184 B measured 2026-10-07; what a visitor who swept the whole sky with binoculars would have downloaded"}
+  - {id: og_png_min_bytes, value: 25000, unit: bytes, since: 2026-10-07, reason: "under this a 1200x630 frame is empty (#157's lesson). It was 50 000 while a browser's canvas wrote the PNGs; scripts/build_trip_og.py writes them optimised, and one small lit world on black (Didymos, M87's ring) is 33 to 35 kB, where the band's words over an empty frame are about 10"}
+  - {id: og_png_max_bytes, value: 400000, unit: bytes, since: 2026-10-07, reason: "one share picture per trip, 26 of them: a 1200x630 PNG of a world on black is 60 to 300 kB and the heaviest truecolour one is the Moon's ground at 298 kB; a frame of star points that does not fit is written with a 256-colour palette (scripts/build_trip_og.py). Never fetched by the app (og_at_boot_bytes)"}
+  # home_js_kb (8 kB, pending on spec 0042) was removed on 2026-10-07: spec 0042 was superseded by
+  # 0061, whose home is the sidebar itself, so nothing would ever have read the row.
   # The device tiers (2026-09-29): what a T1 laptop downloads AFTER the first frame, when idle, and the
   # GPU memory its maps may hold. Measured in headless Chrome at 1440x900: 1 184 510 B for September
   # (day 586 856 + night 232 346 + water 253 660 + Milky Way 111 648); the largest month is 589 298.
@@ -40,4 +135,23 @@ budgets:
   # recomputes the worst case from registry/textures.yaml against this).
   - {id: tier1_idle_bytes, value: 1300000, unit: bytes, since: 2026-09-29, reason: "1 187 244 B worst month, measured 2026-09-29; ~10 % margin"}
   - {id: tier1_texture_gpu_mib, value: 250, unit: MiB, since: 2026-09-29, reason: "docs/toolkit.md: 150 phone, 400 desktop; T1 between (realism study section 5)"}
+  # Spec 0056 requirement 4 (2026-10-08, internal #157): the same gate for the other two tiers, and
+  # what makes all three TRUE. Until that day a world's map loaded once and stayed, so a visitor who
+  # flew to every world held 364 MiB of maps on a phone, 471 on T1 and 535 on T2, by the arithmetic
+  # these rows are checked with (pixels x 4 bytes x 4/3 for mipmaps; 37 worlds have a map now, not
+  # fourteen). scene/worlds.js MAPS_HELD now lets a tier keep 5, 5 and 12 worlds' own maps and
+  # gives back the one that has been a dot the longest; tests/test_texture_budget.mjs adds up the
+  # worst case each tier can then hold (what is always on screen, today's clouds, the tier's
+  # sharper-planet slots, the worlds held, every other face a card can ask for) against these.
+  - {id: tier0_texture_gpu_mib, value: 150, unit: MiB, since: 2026-10-08, reason: "docs/toolkit.md: 150 MB of GPU textures on a phone. Worst case computed 2026-10-08: 137.3 MiB of maps (always on screen with today's clouds, five worlds' maps, the other faces a card can ask for)"}
+  - {id: tier2_texture_gpu_mib, value: 400, unit: MiB, since: 2026-10-08, reason: "docs/toolkit.md: 400 MB of GPU textures on a desktop. Worst case computed 2026-10-08: 382.6 MiB of maps (always on screen at 4k with today's clouds, three 4k planets, nine more worlds' maps, the other faces). No 8k file is shipped: spec 0056 keeps those for KTX2"}
+  # Spec 0056 requirement 9: the repository stays reasonable. Everything under site/textures/.
+  - {id: repo_textures_mb, value: 80, unit: MB, since: 2026-10-08, reason: "spec 0056 req 9: 18.3 MB on 2026-10-08, after the nine 2k JPEGs became WebP (it was 20.8); the 8k files of that spec are what the room is for, and past this they move to a bucket-only prefix"}
+  # Spec 0065 (2026-10-03): a close world is drawn from map tiles fetched from NASA's Solar System Treks
+  # by the visitor's browser. None of that belongs to a first visit: scene/tiles.js is imported only
+  # when a world other than the Earth is half the view tall, and asks for nothing until the ground
+  # under the camera wants the set's start level. tests/test_tiles.mjs holds the wiring and
+  # tests/test_first_visit_bytes.mjs counts requests to the tile hosts in a real boot. At close range
+  # a view is 55 to 100 tiles: 2.6 MB measured 300 km over the Moon and 3.8 MB 400 km over Mars (PNG) at 1440x900 (headless, 2026-10-03).
+  - {id: planet_tile_requests_first_visit, value: 0, unit: requests, since: 2026-10-03, reason: "spec 0065 req 3: nothing before the first frame, and nothing on a visit that never goes close to a world"}
   - {id: reel_heap_growth_pct, value: 20, unit: percent, since: 2026-09-22, reason: "spec 0036 task 4, one hour on SwiftShader", pending: "spec 0036 task 4"}

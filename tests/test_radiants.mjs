@@ -15,7 +15,22 @@ check(ids(new Date(2026, 9, 21, 22).getTime()) === 'orionids', `on the Orionids'
 check(ids(new Date(2026, 9, 19, 22).getTime()) === 'orionids', 'two nights before the peak, still');
 check(ids(new Date(2026, 9, 25, 22).getTime()) === '', 'four nights after, no longer');
 check(ids(new Date(2026, 8, 22, 22).getTime()) === '', 'and on 22 September nothing is near its peak');
-check(ids(new Date(2027, 0, 1, 22).getTime()).includes('quadrantids'), 'across the new year, the Quadrantids of 3 January');
+check(ids(new Date(2027, 0, 2, 22).getTime()).includes('quadrantids'), 'across the new year, the Quadrantids of 4 January 2027');
+// Each year's date is worked out from the Sun's longitude, not copied from one year's calendar
+// (internal #447): the IMO's 2027 calendar gives the Quadrantids' maximum as 4 January 03:25 UT,
+// the Geminids' "centred around 20 h UT" on 14 December and the Ursids' as 23 December 4 h UT.
+{
+  const { peakInstant } = await import(join(JS, 'sky/radiants.js'));
+  const by = (id) => SHOWERS.find((s) => s.id === id);
+  const minutes = (id, y, iso) => Math.abs(peakInstant(by(id), y) - Date.parse(iso)) / 60e3;
+  check(minutes('quadrantids', 2027, '2027-01-04T03:25Z') < 20, `Quadrantids 2027: ${new Date(peakInstant(by('quadrantids'), 2027)).toISOString()}`);
+  check(minutes('geminids', 2027, '2027-12-14T20:00Z') < 60, `Geminids 2027: ${new Date(peakInstant(by('geminids'), 2027)).toISOString()}`);
+  check(minutes('ursids', 2027, '2027-12-23T04:00Z') < 60, `Ursids 2027: ${new Date(peakInstant(by('ursids'), 2027)).toISOString()}`);
+  // The same longitude is about six hours earlier the year before: the Orionids of 2026 are the 21st.
+  check(new Date(peakInstant(by('orionids'), 2026)).toISOString().startsWith('2026-10-21') && new Date(peakInstant(by('orionids'), 2027)).toISOString().startsWith('2027-10-22'), 'Orionids: 21 October 2026, 22 October 2027');
+  check(peakInstant({ id: 'x', peak: '05-05' }, 2027) === null && activeShowers(new Date(2027, 4, 5, 22).getTime(), [{ id: 'x', peak: '05-05' }]).length === 1, 'a row with no solar longitude keeps its calendar date');
+  check(SHOWERS.every((s) => Number.isFinite(s.sol)), 'every shower carries its solar longitude');
+}
 
 // The two answers agree: when "Coming up" says the radiant is highest, the sky puts it due south.
 const london = { latRad: 51.5 * Math.PI / 180, lonRad: -0.13 * Math.PI / 180 };

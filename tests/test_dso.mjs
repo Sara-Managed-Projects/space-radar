@@ -101,6 +101,42 @@ const pg = glowFor(pleiades);
 check(pg && Math.abs(pg.sizeKm / 9460730472580.8 - pleiades.meta.sizeLy) < 1e-6 && pg.colour[2] > pg.colour[0], `the Pleiades glow as wide as their record says, blue-white (${pg && pg.colour})`);
 check(glowFor(recs.find((r) => r.id === 'dso-coalsack')) === null, 'a dark nebula does not glow');
 check(glowFor(andromeda) === null, 'Andromeda has its own model and no glow');
+// ANDROMEDA'S TWO COMPANIONS (public #385): named by their Messier numbers, worth naming, and drawn
+// as ellipses of OpenNGC's axes, which are the major axes this file's data already holds.
+{
+  const { SHAPED, majorAxisDir } = await import(join(JS, 'scene/dsoglow.js'));
+  const raw = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
+  for (const [id, name] of [['m32', 'M32'], ['m110', 'M110']]) {
+    const rec = recs.find((r) => r.id === `dso-${id}`);
+    const row = raw.find((o) => o.id === id);
+    const shape = SHAPED[`dso-${id}`];
+    check(rec && rec.name === name, `${id} goes by its Messier number, not the table's "${row.common}" (got ${rec && rec.name})`);
+    check(rec.meta.aliases.includes(row.common), 'and the table\'s name still finds it');
+    check(typeof rec.meta.why === 'string' && /Andromeda/.test(rec.meta.why), `${name} says why it is worth naming, so the map names its dot`);
+    check(shape && shape.majArcmin === row.majAxArcmin, `${name}'s major axis is the one the data carries (${shape && shape.majArcmin} and ${row.majAxArcmin})`);
+    check(shape.minArcmin > 0 && shape.minArcmin < shape.majArcmin && shape.of === 'dso-m31', `${name} is longer than it is wide, and steps back for Andromeda's photograph`);
+    const g = glowFor(rec);
+    check(g && g.shape && Math.abs(g.shape.ratio - shape.minArcmin / shape.majArcmin) < 1e-12 && g.shape.paDeg === shape.paDeg, `${name} glows as an ellipse of that shape`);
+    check(Math.abs(g.sizeKm / 9460730472580.8 - rec.meta.sizeLy) < 1e-6, 'as long as its record says');
+    const line = drawingLine(rec);
+    check(/ellipse/.test(line) && /OpenNGC/.test(line) && /not a picture/.test(line) && line.includes(String(shape.majArcmin)) && line.includes(String(shape.minArcmin)), `${name}'s card says what is drawn, with the catalogue's numbers: ${line}`);
+    // The major axis lies on the sky plane (square to the line of sight), and is a unit vector.
+    const d = majorAxisDir(rec.pos, shape.paDeg);
+    const l = Math.hypot(rec.pos.x, rec.pos.y, rec.pos.z);
+    check(Math.abs(Math.hypot(d.x, d.y, d.z) - 1) < 1e-9 && Math.abs((d.x * rec.pos.x + d.y * rec.pos.y + d.z * rec.pos.z) / l) < 1e-9, `${name}'s major axis is a unit vector on the sky plane`);
+  }
+  // Position angle 0 points at the north celestial pole, 90 due east (increasing right ascension).
+  const OBL = 23.4392911 * Math.PI / 180;
+  const toEq = (v) => ({ x: v.x, y: v.y * Math.cos(OBL) - v.z * Math.sin(OBL), z: v.y * Math.sin(OBL) + v.z * Math.cos(OBL) });
+  const m32 = recs.find((r) => r.id === 'dso-m32');
+  const north = toEq(majorAxisDir(m32.pos, 0));
+  const east = toEq(majorAxisDir(m32.pos, 90));
+  const p = toEq(m32.pos);
+  const ra = Math.atan2(p.y, p.x);
+  check(north.z > 0.7, `at Andromeda's declination, north on the sky is mostly toward the pole (z ${north.z.toFixed(3)})`);
+  check(Math.abs(east.z) < 1e-9 && (-Math.sin(ra) * east.x + Math.cos(ra) * east.y) > 0.999, 'and east is the way right ascension grows');
+  check(glowFor(pleiades).shape === undefined, 'every other glow stays round');
+}
 const glowing = recs.filter((r) => glowFor(r)).length;
 check(glowing > 150 && glowing < recs.length, `most deep-sky objects glow at their size (${glowing} of ${recs.length}); those with no size or no light do not`);
 
@@ -138,6 +174,64 @@ if (said) {
   const said = say.match(/to a quasar's black hole ([\d.]+) billion light-years out/);
   check(!!said && Math.abs(Number(said[1]) * 1e9 - farthest) / farthest < 0.01, `the edge card's farthest place (${said && said[1]} billion ly) is the farthest drawn (${farthest} ly)`);
   check(!/as far as this map draws/.test(say), 'the edge card no longer says M87 is the edge of the map');
+}
+
+// ---- a mark per kind (public #271, 2026-10-08): scene/dsoglow.js -----------------------------------
+{
+  const { glowFor, KINDS } = await import(join(JS, 'scene/dsoglow.js'));
+  const kindOf = (id) => { const r = recs.find((x) => x.id === id); const g = r && glowFor(r); return g ? g.kind : null; };
+  check(kindOf('dso-m13') === 'globular', `M13 is marked as a globular cluster (${kindOf('dso-m13')})`);
+  check(kindOf('dso-m7') === 'open', `Ptolemy's Cluster as an open cluster (${kindOf('dso-m7')})`);
+  check(kindOf('dso-m44') === 'soft' && kindOf('dso-ic-2602') === 'soft', 'the Beehive and the Southern Pleiades get the haze alone too (public #424)');
+  check(kindOf('dso-m97') === 'shell', `the Owl as a shell (${kindOf('dso-m97')})`);
+  check(kindOf('dso-m87') === 'galaxy', `M87 as a galaxy (${kindOf('dso-m87')})`);
+  check(kindOf('dso-m45') === 'soft' && kindOf('dso-hyades') === 'soft', 'the Pleiades and the Hyades get the haze alone: their own stars are drawn');
+  const kinds = new Set(recs.map((r) => glowFor(r)).filter(Boolean).map((g) => g.kind));
+  check([...kinds].every((k) => k in KINDS) && kinds.size >= 5, `every glow has a kind the shader knows, and at least five are in use (${[...kinds].join(', ')})`);
+}
+
+// ---- a mark gives way to its photograph by degrees (internal #342) -------------------------------
+{
+  const { glowKeep } = await import(join(JS, 'scene/dsoglow.js'));
+  check(glowKeep(undefined) === 1 && glowKeep(0) === 1 && glowKeep(NaN) === 1, 'no photograph, the whole mark');
+  check(glowKeep(1) === 0 && glowKeep(7) === 0, 'a whole photograph, no mark');
+  check(Math.abs(glowKeep(0.5) - 0.5) < 1e-9 && glowKeep(0.31) < glowKeep(0.2), 'half a photograph, half the mark, and monotone');
+  const src = readFileSync(join(ROOT, 'site/js/scene/dsoglow.js'), 'utf8');
+  check(/vAlpha \*= aKeep;/.test(src) && /setAttribute\('aKeep'/.test(src), 'the shader reads the keep share');
+  check(/setPictured\(now\)/.test(readFileSync(join(ROOT, 'site/js/main.js'), 'utf8')) && /now\.set\(id, share\)/.test(readFileSync(join(ROOT, 'site/js/main.js'), 'utf8')), 'main.js hands over shares, not a yes or no');
+}
+
+// OPENNGC'S MINOR AXIS AND POSITION ANGLE (internal #166, read 2026-10-09): an edge-on galaxy stops glowing round.
+{
+  const { ellipseRatio } = await import(join(JS, 'data/parsers.js'));
+  const raw = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
+  const withAxis = raw.filter((o) => Number.isFinite(o.minAxArcmin)).length;
+  const withAngle = raw.filter((o) => Number.isFinite(o.posAngDeg)).length;
+  check(withAxis >= 40 && withAngle >= 40 && raw.every((o) => !Number.isFinite(o.minAxArcmin) || (o.minAxArcmin <= o.majAxArcmin + 1e-9)), `dso.json carries OpenNGC's minor axis (${withAxis}) and position angle (${withAngle}), never wider than the major axis`);
+  const m104 = raw.find((o) => o.id === 'm104');
+  const rec = recs.find((r) => r.id === 'dso-m104');
+  const g = glowFor(rec);
+  check(m104 && g && g.shape && g.shape.of === null && Math.abs(g.shape.ratio - m104.minAxArcmin / m104.majAxArcmin) < 1e-12 && g.shape.paDeg === m104.posAngDeg, `the Sombrero glows as an ellipse of OpenNGC's axes (${g && g.shape && g.shape.ratio.toFixed(2)})`);
+  const line = drawingLine(rec);
+  check(/ellipse/.test(rec.meta.drawnName) && /OpenNGC/.test(line) && /not a picture/.test(line) && line.includes(String(m104.minAxArcmin)), `its card says what is drawn: ${line}`);
+  const round = raw.filter((o) => o.typeCode === 'G' && o.majAxArcmin > 0 && o.minAxArcmin / o.majAxArcmin >= 0.8 && o.id !== 'm31');
+  check(round.length > 0 && round.every((o) => { const r = recs.find((x) => x.id === `dso-${o.id}`); const q = glowFor(r); return !q || !q.shape; }), `${round.length} galaxies that are nearly round stay round`);
+  check(ellipseRatio({ typeCode: 'OCl', majAxArcmin: 10, minAxArcmin: 4, posAngDeg: 3 }) === null && ellipseRatio({ typeCode: 'G', majAxArcmin: 10, minAxArcmin: 4 }) === null, 'only a galaxy with both its minor axis and its angle is shaped');
+  const src = readFileSync(join(ROOT, 'site/js/scene/dsoglow.js'), 'utf8');
+  check(/mix\( 1\.0, uShaped, aStep \)/.test(src), 'only the ellipses that a photograph holds step back for it');
+}
+
+// ---- the dot gives way to its glow (internal #472, bulk 3): Andromeda's companions read as a halo round a dot ----
+{
+  const { dotYieldAt } = await import(join(JS, 'scene/dsoglow.js'));
+  check(dotYieldAt(8) === 0 && dotYieldAt(14) === 0 && dotYieldAt(0) === 0 && dotYieldAt(NaN) === 0, 'a glow under 14 px leaves its dot alone');
+  check(dotYieldAt(26) === 1 && dotYieldAt(100) === 1, 'a glow of 26 px or more takes its dot');
+  let mono = true; let prev = 0; for (let px = 14; px <= 26; px += 0.5) { const y = dotYieldAt(px); if (y < prev - 1e-12) mono = false; prev = y; }
+  check(mono, 'the dot fades out as the glow widens, never back and forth');
+  check(dotYieldAt(500) === 0 && dotYieldAt(300) > 0 && dotYieldAt(300) < 1, 'inside the glow (shader fade 220 to 420 px) the dot returns');
+  check(dotYieldAt(60, 0) === 0 && Math.abs(dotYieldAt(60, 0.5) - 0.5) < 1e-12, 'a glow a photograph is replacing yields only the share it still draws');
+  const src = readFileSync(join(JS, 'main.js'), 'utf8');
+  check(/dsoGlow\.dotYield\(id\)/.test(src), 'main.js lets the deep-sky layer\'s dots yield to dotYield');
 }
 
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

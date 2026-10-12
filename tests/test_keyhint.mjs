@@ -87,6 +87,33 @@ for (const k of chrome.h.keys) check(wantsToggle({ key: k }, body, false) === 't
 for (const k of chrome.l.keys) check(railKey({ key: k }, body) === 'show', `the L cap's ${k} opens What to show (ui/rail.js)`);
 for (const k of chrome.p.keys) check(railKey({ key: k }, body) === 'share', `the P cap's ${k} opens Share (ui/rail.js)`);
 check(chrome.esc.keys.join() === 'Escape', 'the Esc cap is Escape');
+// `?` opens every key (public #315): the rail answers it, not while typing, and the trip's keys
+// shown there are the ones ui/tripframe.js keyAction answers.
+check(!!chrome.help && chrome.help.keys.join() === '?', 'the hint has a cap for ?');
+check(railKey({ key: '?' }, body) === 'keys', 'the ? cap opens every key (ui/rail.js railKey)');
+check(railKey({ key: '?' }, { tagName: 'INPUT' }) === null && railKey({ key: '?', ctrlKey: true }, body) === null, 'not while typing, and not with a modifier');
+{
+  const { keyAction } = await import(pathToFileURL(join(JS, 'ui/tripframe.js')).href);
+  const running = { phase: 'dwell' };
+  check(Array.isArray(hint.TRIP_KEYS) && hint.TRIP_KEYS.length >= 5, 'the trip\'s keys are listed');
+  for (const row of hint.TRIP_KEYS) {
+    const actions = Array.isArray(row.action) ? row.action : [row.action];
+    row.keys.forEach((k, i) => check(keyAction({ key: k }, running, body) === actions[i], `in a trip ${JSON.stringify(k)} is "${actions[i]}" (ui/tripframe.js keyAction said ${keyAction({ key: k }, running, body)})`));
+    for (const id of row.caps) check(typeof COPY.keyHint.caps[id] === 'string', `the trip cap ${id} has its label`);
+    check(typeof COPY.keyHint.does[row.does] === 'string' && COPY.keyHint.does[row.does].split(/\s+/).length <= 2, `what ${row.id} does is two words at most`);
+  }
+  const src = read('site/js/ui/keyhint.js');
+  check(/toggleAll/.test(src) && /is-all/.test(src) && /!all\) armAuto\(\)/.test(src), 'asked for, it stays: no auto-hide while every key is shown');
+  check(/\.sr-keyhint\.is-all \.sr-keyhint__trip/.test(read('site/css/keyhint.css')), 'the trip\'s keys show only when every key is asked for');
+  check(/keyhint\.toggleAll/.test(read('site/js/ui/rail.js')), 'the rail calls it');
+}
+// Internal #336: `/` focuses the search and the hint did not say so.
+{
+  const { wantsSearch } = await import(pathToFileURL(join(JS, 'ui/explore.js')).href);
+  check(!!chrome.slash && chrome.slash.keys.join() === '/', 'the hint has a cap for /');
+  for (const k of (chrome.slash || { keys: [] }).keys) check(wantsSearch({ key: k }, body) === true, `the / cap's ${k} focuses the search (ui/explore.js wantsSearch)`);
+  check(COPY.keyHint.caps.slash === COPY.search.key && /\(\/\)/.test(COPY.search.inputTitle), 'the cap, the field\'s keycap and its tooltip name the same key');
+}
 check(/\(H\)/.test(COPY.clean.hide) && /\(L\)/.test(COPY.rail.show) && /\(P\)/.test(COPY.rail.share), 'the tooltips name the same letters as the caps');
 for (const row of [...hint.KEY_ROWS, ...hint.CHROME_KEYS, ...hint.TOUCH_ROWS]) {
   check(typeof COPY.keyHint.does[row.does] === 'string', `what ${row.id} does is in COPY.keyHint.does (${row.does})`);
@@ -143,9 +170,9 @@ check(/import\('\.\/ui\/keyhint\.js'\)/.test(main), 'main.js imports ui/keyhint.
 check(!/^\s*import[^(]*['"]\.\/ui\/keyhint\.js['"]/m.test(main), 'and never statically (it is not first-visit code)');
 const delay = /const KEYHINT_MS = (\d+);/.exec(main);
 check(delay && Number(delay[1]) >= 3000, `KEYHINT_MS (${delay && delay[1]}) is past the two seconds the first-visit byte test lets a visit settle, and past the later layers`);
-check(/const hintLater = \(\) => setTimeout\(\(\) => keyHint\(\)\.then\(\(api\) => api\.maybeShow\(\)\)[\s\S]{0,120}KEYHINT_MS\);\s*window\.addEventListener\('sr:layers-ready', hintLater, \{ once: true \}\);/.test(main), 'it decides after sr:layers-ready, by maybeShow()');
+check(/const hintLater = \(\) => afterFirstVisit\(KEYHINT_MS, \(\) => keyHint\(\)\.then\(\(api\) => api\.maybeShow\(\)\)[\s\S]{0,120}\);\s*window\.addEventListener\('sr:layers-ready', hintLater, \{ once: true \}\);/.test(main), 'it decides after sr:layers-ready, by maybeShow()');
 check(/ctx\.keyhint = \{ show:/.test(main), 'ctx.keyhint.show() exists before the module has loaded');
-check(/arrivedByLink = !!\(link && \(link\.trip \|\| link\.at \|\| link\.stage\)\)/.test(main), 'a link with a trip, an object or a stage counts as a deep link');
+check(/arrivedByLink = !!\(link && \(link\.trip \|\| link\.at \|\| link\.event \|\| link\.stage\)\)/.test(main), 'a link with a trip, an object, a mission\'s event or a stage counts as a deep link');
 const html = read('site/index.html');
 check(!/keyhint/.test(html), 'index.html neither preloads keyhint.js nor links keyhint.css');
 const src = read('site/js/ui/keyhint.js');
@@ -156,6 +183,7 @@ check(hint.AUTO_HIDE_MS >= 8000 && hint.AUTO_HIDE_MS <= 15000, `it goes by itsel
 const css = read('site/css/keyhint.css');
 check(!/infinite/.test(css), 'nothing in keyhint.css loops');
 check(/@media \(pointer: coarse\)\s*\{\s*\.sr-keyhint__close\s*\{[^}]*width: 44px;[^}]*height: 44px;/.test(css), 'the close button is a 44 px target on a coarse pointer');
+check(/html\.sr-phone \.sr-keyhint \{[^}]*transition: bottom var\(--sr-slow\)/.test(css), 'on a phone the hint rises with the sheet, not ahead of it (its Close was 44 x 26, #543)');
 check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.sr-keyhint\.is-playing \.sr-keyhint__cap,[\s\S]*?animation: none;/.test(css), 'reduced motion stills every keycap');
 check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition: opacity 120ms linear;/.test(css), 'reduced motion is a 120 ms fade');
 check(/\.sr-keyhint \{[^}]*right: var\(--sr-inset\);[^}]*bottom: var\(--sr-inset\);/.test(css), 'bottom-right, 20 px in');

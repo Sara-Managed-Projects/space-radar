@@ -129,6 +129,35 @@ const T = COPY.trip;
   check(keyAction(key(' '), run, { tagName: 'BUTTON' }) === null, 'Space on a focused button presses the button, not the trip');
   check(keyAction(key('c'), run, body) === 'collapse' && keyAction(key('C'), run, body) === 'collapse', 'C hides the card');
   check(keyAction(key('r'), run, body) === 'replay', 'R replays the stop');
+  // Internal #329: Voice and Sound have a key, named in their tooltips, and a narrow phone keeps Voice.
+  check(keyAction(key('m'), run, body) === 'sound' && keyAction(key('M'), run, body) === 'sound', 'M is Sound');
+  check(keyAction(key('v'), run, body) === 'voice' && keyAction(key('V'), run, body) === 'voice', 'V is Voice');
+  check(keyAction(key('v'), run, { tagName: 'INPUT' }) === null && keyAction({ key: 'v', ctrlKey: true }, run, body) === null, 'not while typing, and Ctrl+V is the browser\'s');
+  {
+    const T2 = COPY.trip;
+    check(/\(M\)/.test(T2.soundOnTitle) && /\(M\)/.test(T2.soundOffTitle) && /\(V\)/.test(T2.voiceOnTitle) && /\(V\)/.test(T2.voiceOffTitle), 'the tooltips name the keys');
+    const { readFileSync: rf } = await import('node:fs');
+    const css = rf(join(JS, '../css/ui.css'), 'utf8');
+    const hiddenAt = (cls, when = '') => { const m = new RegExp(`@media \\(max-width: (\\d+)px\\) \\{\\s*html\\.sr-phone${when} \\.sr-trip__tb--${cls} \\{\\s*display: none;`).exec(css); return m ? Number(m[1]) : -1; };
+    check(hiddenAt('voice') < 360 && hiddenAt('voice') >= 320, `Voice stays on the toolbar on a 360 px phone (hidden at ${hiddenAt('voice')} and under)`);
+    const present = hiddenAt('present', ':not\\(\\.sr-present\\)');
+    check(hiddenAt('replay') > hiddenAt('share') && hiddenAt('share') > present && present > hiddenAt('voice'), 'Replay goes first, then Share, then Present, Voice last');
+    // What is left must fit: n targets of 44, the 48 px counter and 16 px of padding. NINE targets
+    // since Present joined the bar (public #441): the steps were still cut for eight, and on a
+    // 390 px phone the ninth hung off the right edge (the walk of 2026-10-06).
+    const fits = (n, w) => n * 44 + 48 + 16 <= w;
+    check(!fits(9, hiddenAt('replay')) && fits(9, hiddenAt('replay') + 1), `all nine targets show only where they fit (Replay goes at ${hiddenAt('replay')})`);
+    check(fits(8, hiddenAt('share') + 1) && fits(7, present + 1) && fits(6, hiddenAt('voice') + 1) && fits(5, 320), 'what is left fits at the top of each step, down to 320 px');
+    check(fits(7, 390) && hiddenAt('share') >= 390 && present < 390 && fits(6, 360) && present >= 360, 'a 390 px phone shows seven with Present among them, and a 360 px one six');
+    // Present mode: no Replay, Share or Hide card; Auto and Full screen instead. Eight targets.
+    const full = hiddenAt('full', '\\.sr-present'); const auto = hiddenAt('auto', '\\.sr-present');
+    check(fits(8, full + 1) && fits(7, auto + 1) && full > auto && fits(6, hiddenAt('voice') + 1), `present mode fits too: Full screen goes at ${full}, Auto at ${auto}`);
+    check(!/html\.sr-phone \.sr-trip__tb--present \{\s*display: none/.test(css), 'Present is never hidden in present mode: it is the way out');
+    // The end card's four actions (Keep flying, Go home, Watch again, Share) are two rows of two:
+    // in one row "Keep flying" and "Watch again" were cut to "Keep fly..." and "Watch a...".
+    check(/\.sr-tripsheet__actions\.is-four \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[^}]*grid-auto-flow: row;/.test(css), 'four end actions are two rows of two');
+    check(/row\.classList\.toggle\('is-four', !!st\.stageChanged\)/.test(rf(join(JS, 'ui/tripframe.js'), 'utf8')), 'and the end card says when it has four');
+  }
   check(keyAction(key('Escape'), run, body) === 'leave', 'Escape leaves');
   check(keyAction(key('Escape'), run, { tagName: 'INPUT' }) === null, 'Escape in a text field is the field\'s');
   check(keyAction(key('ArrowRight'), run, { tagName: 'INPUT' }) === null, 'arrows in a text field are the field\'s');
@@ -169,7 +198,8 @@ const trip = {
   replay() { calls.push('replay'); },
   play() { calls.push('play'); },
   jumpTo(i) { calls.push(`jumpTo:${i}`); },
-  stop(why) { calls.push(`stop:${why}`); notify({ phase: 'idle' }); },
+  stop(why, opts) { calls.push(`stop:${why}${opts && opts.stay ? ':stay' : ''}`); notify({ phase: 'idle' }); },
+  setPacing(mode) { calls.push(`pacing:${mode}`); },
   start(id) { calls.push(`start:${id}`); },
   plan: async (id) => ({ id, count: 6, estimateMs: 125000, offerable: true }),
   tours: () => TOURS,
@@ -185,7 +215,7 @@ const ctx = {
   audio: {
     isOn: () => soundIsOn,
     toggle() { soundIsOn = !soundIsOn; for (const fn of audioListeners) fn(); },
-    enable() {},
+    enable() { if (!soundIsOn) { soundIsOn = true; for (const fn of audioListeners) fn(); } },
     onChange(fn) { audioListeners.push(fn); return () => {}; },
   },
   mobile: null,
@@ -224,6 +254,20 @@ notify({
   sound.click();
   check(sound.getAttribute('aria-pressed') === 'true' && soundIsOn, 'pressed, sound is on and the toggle says so');
   check(q('.sr-trip__tb--sound').getAttribute('aria-pressed') === 'true', 'and the toolbar\'s sound button agrees');
+  // Spec 0069: the voice, beside sound and inside it (internal #309: music only is a way to watch).
+  const voices = qa('.sr-trip__voicetoggle');
+  const pressed = () => voices.map((b) => b.getAttribute('aria-pressed')).join();
+  check(voices.length === 2 && voices.every((b) => b.getAttribute('aria-label') === T.voice), 'Voice is a toggle on the intro and in the toolbar');
+  check(voices.every((b) => /synthetic/.test(b.title)), `its tooltip says the voice is synthetic: "${voices[0].title}"`);
+  check(pressed() === 'true,true', 'with sound on the voice is on until it is turned off');
+  voices[0].click();
+  check(pressed() === 'false,false' && soundIsOn && voices[0].title === T.voiceOffTitle, 'Voice off leaves the music on: both toggles say so');
+  voices[0].click();
+  check(pressed() === 'true,true' && voices[0].title === T.voiceOnTitle, 'and back on');
+  sound.click();
+  check(pressed() === 'false,false' && !soundIsOn, 'sound off: nothing will be read, and the Voice toggle says so');
+  voices[0].click();
+  check(soundIsOn && pressed() === 'true,true' && sound.getAttribute('aria-pressed') === 'true', 'Voice pressed with sound off turns both on');
   const quiet = q('.sr-tripsheet__quiet');
   check(quiet && quiet.textContent === T.introSkip, '"Not now" is a quiet text button');
   const rows = qa('.sr-tripsheet__stop');
@@ -243,10 +287,12 @@ notify({ phase: 'dwell', index: 0, count: 4, stopTitle: 'Two places, and only tw
   check(toolbar.hidden === false, 'the toolbar is up while a stop is');
   check(toolbar.getAttribute('role') === 'group' && toolbar.getAttribute('aria-label') === T.controlsLabel, 'it is a named group of controls');
   const order = toolbar.children.map((n) => (n.classList.contains('sr-trip__progress') ? 'progress' : n.classList.contains('sr-trip__sep') ? 'sep' : n.getAttribute('aria-label')));
-  const want = [T.pause, T.back, 'progress', T.next, 'sep', T.replay, T.share, T.collapse, T.soundOn];
+  const want = [T.pause, T.back, 'progress', T.next, 'sep', T.replay, T.share, T.collapse, T.soundOn, T.volume, T.voice, T.presentAuto, T.fullScreen, T.present];
   check(order.join('|') === want.join('|'), `the toolbar's order: ${order.join(', ')}`);
+  // The volume (public #298): beside Sound, and hidden while sound is off.
+  check(q('.sr-trip__vol') && q('.sr-trip__vol').hidden === true, 'the volume slider is in the toolbar, hidden until sound is on');
   const buttons = qa('.sr-trip__tb');
-  check(buttons.length === 7, `seven icon buttons (${buttons.length})`);
+  check(buttons.length === 11, `eleven icon buttons: the eight, then present mode's three (public #441) (${buttons.length})`);
   for (const b of buttons) {
     const svg = b.querySelector('svg');
     check(b.tagName === 'BUTTON' && b.type === 'button', `${b.getAttribute('aria-label')} is a real button`);
@@ -272,7 +318,9 @@ notify({ phase: 'dwell', index: 0, count: 4, stopTitle: 'Two places, and only tw
   const top = q('.sr-trip__top');
   check(top.hidden === false && q('.sr-trip__title').textContent === state.tourTitle, 'the top bar shows the trip\'s title');
   check(q('.sr-trip__chapter').textContent === 'Chapter one: the stations', 'with its chapter above it');
-  check(top.querySelectorAll('button').length === 1 && q('.sr-trip__leave').textContent === T.leave, 'and one button, Leave');
+  // Leave, and since public #241 a house beside it: Return to base (ui/base.js), an icon with a name.
+  check(top.querySelectorAll('button').length === 2 && q('.sr-trip__leave').textContent === T.leave, 'and two buttons: Leave, and the way home');
+  check(q('.sr-trip__home').getAttribute('aria-label') === COPY.base.label && q('.sr-trip__home').title === COPY.base.trip, 'the house is named "Return to base" and its tooltip says it leaves the trip');
   check(primaries() === 0, `no ember on screen while a stop plays (${primaries()})`);
 }
 
@@ -367,6 +415,69 @@ frame.dispose();
   late.dispose();
 }
 
+// --- present mode (public #441), and the end of a trip that moved the map's centre (#447, #444)
+{
+  const root = document.documentElement;
+  state = { ...state, phase: 'intro', index: -1, count: 4, estimateMs: 62028, tourId: 'fx-a', stageChanged: true };
+  calls.length = 0;
+  const f = createTripFrame(ctx);
+  const press = (k) => { const e = { key: k, preventDefault() {}, stopPropagation() {} }; for (const fn of docListeners.keydown || []) fn(e); };
+  const intro = q('.sr-tripsheet__present');
+  check(intro && intro.textContent === T.present && intro.getAttribute('aria-pressed') === 'false' && intro.title === T.presentTitle && intro.querySelector('svg'), 'the intro offers Present, a quiet button with an icon, off');
+  check(primaries() === 1, 'Start is still the one ember button on the intro');
+  check(!root.classList.contains('sr-present') && !q('.sr-tripsheet').classList.contains('is-present'), 'nothing is in present mode until it is asked for');
+  intro.click();
+  check(root.classList.contains('sr-present') && q('.sr-tripsheet').classList.contains('is-present') && !q('.sr-tripsheet').classList.contains('is-floating'), 'pressed, the sheet is the room\'s caption panel');
+  check(calls.join() === 'pacing:reader', `and the presenter paces the trip: ${calls.join()}`);
+  check(q('.sr-tripsheet').parentNode === q('#sr-trip'), 'the sheet sits in the frame, not in a sidebar that is gone');
+  calls.length = 0;
+  document.activeElement = document.body;
+  press('PageDown');
+  check(calls.join() === 'play', `the clicker's forward key starts the show from the intro: ${calls.join()}`);
+  calls.length = 0;
+  notify({ phase: 'dwell', index: 0, stopTitle: 'Two places, and only two' });
+  const auto = q('.sr-trip__tb--auto');
+  const present = q('.sr-trip__tb--present');
+  check(auto.hidden === false && auto.getAttribute('aria-pressed') === 'false' && auto.title === T.presentAutoOffTitle, 'the toolbar shows Autoplay in present mode, off');
+  check(present.getAttribute('aria-pressed') === 'true' && present.title === T.presentOffTitle, 'and Present, pressed, is the way out of the mode');
+  // (The frames made earlier in this file still hear the keys, this stub's removeEventListener
+  // being a no-op, and they are not in present mode: they answer Space with a pause. So the checks
+  // are on what THIS frame adds.)
+  press(' ');
+  check(calls.includes('next'), `Space is the clicker's Next in present mode: ${calls.join()}`);
+  calls.length = 0;
+  if (state.phase === 'paused') notify({ phase: 'dwell', pausedBy: null });
+  press('PageUp'); press('PageDown');
+  check(calls.includes('back') && calls.includes('next') && calls.indexOf('back') < calls.lastIndexOf('next'), `Page Up and Page Down step the stops: ${calls.join()}`);
+  calls.length = 0;
+  auto.click();
+  check(calls.join() === 'pacing:auto' && auto.getAttribute('aria-pressed') === 'true' && auto.title === T.presentAutoOnTitle, `Autoplay hands the pacing back to the trip: ${calls.join()}`);
+  press('a');
+  check(calls.filter((c) => c.startsWith('pacing:')).join() === 'pacing:auto,pacing:reader' && auto.getAttribute('aria-pressed') === 'false', 'and A takes it again');
+  calls.length = 0;
+  present.click();
+  check(!root.classList.contains('sr-present') && calls.join() === 'pacing:null' && auto.hidden === true, 'leaving present mode gives the pacing back and puts the panels back');
+  present.click();
+  calls.length = 0;
+
+  notify({ phase: 'outro', index: 3 });
+  await new Promise((r) => setTimeout(r, 0));
+  const acts = q('.sr-tripsheet__actions').querySelectorAll('.sr-act');
+  check(acts.map((a) => a.textContent).join('|') === [T.endExplore, T.endHome, T.endReplay, T.share].join('|'), `after a trip on another world: Keep flying, Go home, Watch again, Share (${acts.map((a) => a.textContent).join(', ')})`);
+  check(acts[0].classList.contains('sr-act--primary') && primaries() === 1 && acts[0].title === T.endStayTitleStage, 'Keep flying is the one ember, and says it stays out there');
+  const send = q('.sr-tripsheet__send');
+  check(send && send.title === T.endSendTitle && send.textContent.includes(T.endSend), 'the end card has a picture to send');
+  acts[0].click();
+  check(calls[0] === 'stop:stayed:stay', `Keep flying leaves and stays: ${calls.join()}`);
+  check(!root.classList.contains('sr-present'), 'present mode ends with the trip');
+  calls.length = 0;
+  notify({ phase: 'outro', index: 3 });
+  q('.sr-tripsheet__actions').querySelectorAll('.sr-act')[1].click();
+  check(calls.includes('stop:left'), `Go home is the ordinary leave: ${calls.join()}`);
+  f.dispose();
+  state = { ...state, stageChanged: false };
+}
+
 // ------------------------------------------------------------------------------ the CSS
 {
   const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
@@ -378,6 +489,9 @@ frame.dispose();
   const reduced = css.slice(css.indexOf('REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE: compressing'));
   check(/\.sr-trip__toolbar\.sr-float,[\s\S]*?transition: opacity 120ms linear;/.test(reduced), 'under reduced motion the trip\'s chrome fades in 120 ms and slides nowhere');
   check(/html\.sr-trip-mode #sr-rail,\s*html\.sr-trip-mode #sr-time,/.test(css), 'a trip takes the rail and the pill away');
+  check(/html\.sr-present #sr-side \{\s*display: none;/.test(css) && /html\.sr-present \{[^}]*--sr-scene-left: 0px;/.test(css), 'present mode takes the sidebar away and centres the bars on the whole window');
+  check(/\.sr-tripsheet\.is-present \.sr-card__leadbody,[^{]*\{[^}]*var\(--sr-fs-present\)/.test(css) && /--sr-fs-present: 32px/.test(css), 'a stop\'s words are 32 px in present mode, from a token');
+  check(/html\.sr-present \.sr-trip__tb \{[^}]*width: 56px;[^}]*height: 56px;/.test(css), 'and its targets are 56 px');
   // The frame is 50 kB that a visitor who never takes a trip does not download: main.js imports it
   // when the first trip starts, and index.html does not preload it (the first-visit budget).
   const main = readFileSync(join(JS, 'main.js'), 'utf8');

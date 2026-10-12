@@ -196,6 +196,66 @@ function decodePng(buf) {
   check(/ringShade = 1\.0 - 0\.85 \* a;/.test(WORLD_FRAG), '#318\'s shadow of the ring on the globe is kept');
 }
 
+// --- the giants' flattening, and the narrow rings of Uranus and Neptune (2026-10-06) ----------------
+{
+  const near = (x, y, eps) => Math.abs(x - y) <= eps;
+  // NASA's fact sheets: Jupiter 71 492 by 66 854 km, mean 69 911; Saturn 60 268 by 54 364, mean 58 232.
+  const j = W.oblateRadii(0.06487);
+  const sat = W.oblateRadii(0.09796);
+  check(near(j.eq * 69911, 71492, 25) && near(j.pol * 69911, 66854, 25), `Jupiter's spheroid is ${(j.eq * 69911).toFixed(0)} by ${(j.pol * 69911).toFixed(0)} km, want 71 492 by 66 854`);
+  check(near(sat.eq * 58232, 60268, 25) && near(sat.pol * 58232, 54364, 25), `Saturn's is ${(sat.eq * 58232).toFixed(0)} by ${(sat.pol * 58232).toFixed(0)} km, want 60 268 by 54 364`);
+  check(near(j.eq * j.eq * j.pol, 1, 1e-12) && W.oblateRadii(0).eq === 1 && W.oblateRadii(0).pol === 1, 'the volume is the mean sphere\'s, and no flattening is a sphere');
+  measured.push(`flattening: Jupiter ${(j.eq * 69911).toFixed(0)} x ${(j.pol * 69911).toFixed(0)} km, Saturn ${(sat.eq * 58232).toFixed(0)} x ${(sat.pol * 58232).toFixed(0)} km`);
+  const want = { jupiter: 0.06487, saturn: 0.09796, uranus: 0.02293, neptune: 0.01708 };
+  for (const [id, f] of Object.entries(want)) check(WORLDS.find((w) => w.id === id).look.oblate === f, `${id} carries the fact sheet's flattening ${f}`);
+  check(WORLDS.filter((w) => w.look.oblate).length === 4, 'and only the four giants are flattened');
+  const g = W.oblateGeometry(0.09796, 16, 12);
+  const pos = g.attributes.position, nrm = g.attributes.normal, uv = g.attributes.uv;
+  let worst = 0, off = 0, bad = 0;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    worst = Math.max(worst, Math.abs((x * x + z * z) / (sat.eq * sat.eq) + (y * y) / (sat.pol * sat.pol) - 1));
+    off = Math.max(off, Math.abs(Math.hypot(nrm.getX(i), nrm.getY(i), nrm.getZ(i)) - 1));
+    // The normal leans toward the pole more than the position does: that is what a flattened body's does.
+    const lat = Math.atan2(y, Math.hypot(x, z)), nlat = Math.atan2(nrm.getY(i), Math.hypot(nrm.getX(i), nrm.getZ(i)));
+    if (Math.abs(lat) > 0.05 && Math.abs(lat) < 1.5 && !(Math.abs(nlat) > Math.abs(lat))) bad += 1;
+  }
+  check(worst < 1e-5 && off < 1e-6 && bad === 0, `every vertex is on the spheroid with its own unit normal (off by ${worst.toExponential(1)}, ${bad} normals not steeper than their latitude)`);
+  check(uv.count === pos.count && near(uv.getY(0), 1, 1e-9), 'and keeps the sphere\'s texture coordinates');
+  check(/uniform vec2 uGlobe;/.test(RING_FRAG) && /vec3 gp = vec3\( vPosL\.xy \/ uGlobe\.x, vPosL\.z \/ uGlobe\.y \);/.test(RING_FRAG), 'the globe\'s shadow on the ring is a spheroid\'s');
+
+  // The narrow rings: every band inside its strip, at its measured radius, its alpha 1 - exp(-tau x dense).
+  for (const [id, ring] of [['uranus', W.URANUS_RINGS], ['neptune', W.NEPTUNE_RINGS]]) {
+    const w = WORLDS.find((x) => x.id === id);
+    check(w.look.ring === ring && !ring.map, `${id} wears its narrow rings`);
+    const strip = W.ringBandsStrip(ring);
+    check(strip.length === W.RING_BANDS_PX * 4, 'the strip is RING_BANDS_PX texels');
+    const kmPerPx = (ring.outerKm - ring.innerKm) / W.RING_BANDS_PX;
+    let lit = 0;
+    for (let i = 0; i < W.RING_BANDS_PX; i++) if (strip[i * 4 + 3] > 0) lit += 1;
+    for (const [rKm, widthKm, tau] of ring.bands) {
+      check(rKm > ring.innerKm && rKm < ring.outerKm && rKm / w.radiusKm > 1.5, `${id}'s band at ${rKm} km is inside the strip and outside the planet`);
+      const at = Math.floor((rKm - ring.innerKm) / kmPerPx);
+      const a = strip[at * 4 + 3] / 255;
+      check(a >= 1 - Math.exp(-tau * ring.dense) - 0.003, `${id}'s band at ${rKm} km is drawn with opacity ${a.toFixed(3)}, want at least ${(1 - Math.exp(-tau * ring.dense)).toFixed(3)}`);
+    }
+    const widest = ring.bands.reduce((m, b) => m + Math.max(kmPerPx, b[1] * ring.widen), 0) / kmPerPx;
+    check(lit >= ring.bands.length && lit <= widest + 2 * ring.bands.length, `${id}: ${lit} texels are ring, the rest is gap`);
+    check(strip[0] === 255 && strip[3] === 0, 'the strip is white with a clear inner edge');
+  }
+  // Epsilon, Uranus's widest: 58 km, ten times wider drawn, at 51 149 km.
+  {
+    const ring = W.URANUS_RINGS;
+    const strip = W.ringBandsStrip(ring);
+    const kmPerPx = (ring.outerKm - ring.innerKm) / W.RING_BANDS_PX;
+    let n = 0;
+    for (let i = Math.floor((50500 - ring.innerKm) / kmPerPx); i < W.RING_BANDS_PX; i++) if (strip[i * 4 + 3] > 0) n += 1;
+    check(near(n * kmPerPx, 580, 2 * kmPerPx), `the epsilon ring is drawn ${(n * kmPerPx).toFixed(0)} km wide, ten times its 58`);
+  }
+  const { COPY } = await import(join(JS, 'copy/en.js'));
+  check(/\{w\}/.test(COPY.drawing.worldRings) && /measured distances/.test(COPY.drawing.worldRings) && /\{d\}/.test(COPY.drawing.worldRingsDense), 'the card says the radii are measured and the width, density and brightness are not');
+}
+
 console.log('measured:');
 for (const m of measured) console.log(`  ${m}`);
 if (problems.length) {

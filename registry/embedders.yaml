@@ -1,0 +1,17 @@
+# Sites that embed Space Radar and have asked to be listed on /embed/ (scripts/seo_embed.py).
+#
+# OPT-IN, and EMPTY ON PURPOSE. A site is listed only after its owner said so, in the Discussions
+# "Show and tell" category or in an issue; nobody is added because we found their page. Nothing
+# here is a claim about the site beyond "it embeds Space Radar and asked to be named".
+#
+#   - {name: "Hill Road Primary, Year 5", url: "https://example.org/space/", note: "a class page"}
+#
+#   name   what the site calls itself, at most 80 characters
+#   url    the page that holds the embed, https only
+#   note   optional, at most 120 characters
+#
+# The list is printed in this order, as links that do not say nofollow; scripts/seo_embed.py refuses
+# a row that is not https, a name over 80 characters or the same address twice, and
+# tests/test_seo_embed.py holds the empty page to its honest line.
+version: 1
+embedders: []

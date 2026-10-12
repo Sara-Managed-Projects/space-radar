@@ -1,0 +1,202 @@
+{
+ "title": "EONET Events",
+ "description": "Natural events from EONET.",
+ "link": "https://eonet.gsfc.nasa.gov/api/v3/events",
+ "events": [
+  {
+   "id": "EONET_20710",
+   "title": "Nevados del Chillan Volcano, Chile",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_20710",
+   "closed": null,
+   "categories": [
+    {
+     "id": "volcanoes",
+     "title": "Volcanoes"
+    }
+   ],
+   "sources": [
+    {
+     "id": "SIVolcano",
+     "url": "https://volcano.si.edu/volcano.cfm?vn=357070"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2026-06-15T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -71.378,
+      -36.868
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_20409",
+   "title": "Telica Volcano, Nicaragua",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_20409",
+   "closed": null,
+   "categories": [
+    {
+     "id": "volcanoes",
+     "title": "Volcanoes"
+    }
+   ],
+   "sources": [
+    {
+     "id": "SIVolcano",
+     "url": "https://volcano.si.edu/volcano.cfm?vn=344040"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2026-05-30T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -86.84,
+      12.606
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_20392",
+   "title": "Ivao Group Volcano, Russia",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_20392",
+   "closed": null,
+   "categories": [
+    {
+     "id": "volcanoes",
+     "title": "Volcanoes"
+    }
+   ],
+   "sources": [
+    {
+     "id": "SIVolcano",
+     "url": "https://volcano.si.edu/volcano.cfm?vn=290111"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2026-05-29T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      149.6762,
+      45.7593
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_15852",
+   "title": "Iceberg C18C",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_15852",
+   "closed": null,
+   "categories": [
+    {
+     "id": "seaLakeIce",
+     "title": "Sea and Lake Ice"
+    }
+   ],
+   "sources": [
+    {
+     "id": "NATICE",
+     "url": "https://usicecenter.gov/pub/Iceberg_Tabular.csv"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 25.93,
+     "magnitudeUnit": "NM^2",
+     "date": "2025-10-31T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      65.58,
+      -66.89
+     ]
+    },
+    {
+     "magnitudeValue": 20.0,
+     "magnitudeUnit": "NM^2",
+     "date": "2026-04-10T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      44.61,
+      -67.16
+     ]
+    },
+    {
+     "magnitudeValue": 20.0,
+     "magnitudeUnit": "NM^2",
+     "date": "2026-04-17T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      41.4,
+      -67.77
+     ]
+    },
+    {
+     "magnitudeValue": 20.0,
+     "magnitudeUnit": "NM^2",
+     "date": "2026-04-24T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      39.08,
+      -68.47
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_20822",
+   "title": "Iceberg D33D",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_20822",
+   "closed": null,
+   "categories": [
+    {
+     "id": "seaLakeIce",
+     "title": "Sea and Lake Ice"
+    }
+   ],
+   "sources": [
+    {
+     "id": "NATICE",
+     "url": "https://usicecenter.gov/pub/Iceberg_Tabular.csv"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 62.73,
+     "magnitudeUnit": "NM^2",
+     "date": "2026-06-25T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -55.51,
+      -64.35
+     ]
+    },
+    {
+     "magnitudeValue": 90.0,
+     "magnitudeUnit": "NM^2",
+     "date": "2026-07-23T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -55.47,
+      -63.78
+     ]
+    }
+   ]
+  }
+ ]
+}

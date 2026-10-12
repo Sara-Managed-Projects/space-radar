@@ -24,6 +24,7 @@
 
 import * as Astronomy from '../../vendor/astronomy.js';
 import { COPY, t, fmt, timeText, compassWords, fistsWords } from '../copy/en.js';
+import '../copy/en.later.js';
 import { labelName } from '../ui/labels.js';
 
 export const GUESS_MIN_PEAK_DEG = 40;
@@ -130,27 +131,30 @@ function placeWords(observer) {
   const T = COPY.tonight;
   if (!observer) return T.noPlace;
   const name = observer.name || t(T.coords, { lat: fmt.num(observer.latDeg, 1), lon: fmt.num(observer.lonDeg, 1) });
+  // The browser's coordinates come with no name of their own (ui/place.js gives them the button's).
+  if (observer.source === 'geolocation') return T.placeMine;
   if (observer.source === 'guess') return t(T.placeGuess, { place: name });
   if (observer.source === 'shared') return t(T.placeShared, { place: name });
   return t(T.placeSet, { place: name });
 }
 
 /**
- * Everything the card says, as strings: {place, line, countdown, status, caveat, dark, empty}.
+ * Everything the card says, as strings: {place, line, countdown, status, caveat, dark, empty},
+ * and the pass as its parts for the layout that draws them apart: `parts` {name, time, deg, mins,
+ * path}, and `next`, the line under an empty tonight.
  * `state`: {observer, nowMs, pass (nextVisible's), later (the next one found within 72 h when none
  * tonight), passes loaded?, couldNotLook, dark (darkness()), scrubbed}.
  */
 export function tonightWords(state) {
   const T = COPY.tonight;
-  const out = { place: placeWords(state.observer), line: null, countdown: null, status: null, caveat: null, dark: null, empty: null, lookDir: null };
+  const out = { place: placeWords(state.observer), line: null, parts: null, countdown: null, status: null, caveat: null, dark: null, empty: null, next: null, lookDir: null };
   if (state.couldNotLook) { out.empty = COPY.controls.tonightCouldNotLook; return out; }
   if (!state.ready) { out.empty = T.working; return out; }
   const p = state.pass;
   if (!p) {
     const later = state.later;
-    out.empty = later
-      ? t(T.nothingThenNext, { when: timeText.dayAndTime(later.startMs), name: nameOf(later) })
-      : T.nothingAtAll;
+    out.empty = later ? T.nothingTonight : T.nothingAtAll;
+    if (later) out.next = t(T.nextPass, { when: timeText.dayAndTime(later.startMs), name: nameOf(later) });
   } else {
     const minutes = Math.max(1, Math.round((p.endMs - p.startMs) / 60000));
     out.line = t(T.passLine, {
@@ -162,6 +166,13 @@ export function tonightWords(state) {
       deg: fmt.int(p.peakEl * DEG),
       mins: fmt.int(minutes),
     });
+    out.parts = {
+      name: nameOf(p),
+      time: timeText.hhmm(p.startMs),
+      deg: t(T.degrees, { deg: fmt.int(p.peakEl * DEG) }),
+      mins: fmt.int(minutes),
+      path: t(T.path, { from: compassWords(p.startAz * DEG), to: compassWords(p.endAz * DEG) }),
+    };
     const st = passState(p, state.nowMs);
     if (st === 'up') {
       out.lookDir = compassWords(p.startAz * DEG);

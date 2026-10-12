@@ -1,0 +1,55 @@
+# The hourly cloud job's workflow (spec 0052 task 2, internal #139), PREPARED AND NOT RUNNING.
+#
+# WHAT IT WILL DO. Run `python3 -m weather.clouds --out live` (the job of internal #138: fetch three GIBS
+# disks, composite, fill from GFS, flow, time-lapse), then copy `live/` to s3://<site bucket>/live/ and
+# nothing else. It reads no credential from the repository: GitHub's OIDC token is exchanged for the role
+# `space-radar-clouds`, whose only permission is s3:PutObject and s3:DeleteObject on that one prefix
+# (docs/ops-2026-10-09-clouds-role.md in the private repo has both policies and the three `aws iam` commands).
+#
+# WHY IT IS DISPATCH-ONLY. The role does not exist (creating it is a person's change, Ivan's) and the job
+# is not written. The hourly `schedule:` below stays commented until both are true; the first step stops the
+# run with the reason while either is not. tests/test_clouds_workflow.py holds the rest: the permissions
+# stay minimal, no step names a path outside live/, and no step touches CloudFront or data/v1/.
+name: clouds
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "20 * * * *"      # switch on after the role exists and one dispatched run has been looked at
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-north-1
+  SITE_BUCKET: sara-site-space-radar-lifehub
+  # Not a secret (spec 0052 design section 1): the account and the role's name.
+  ROLE_ARN: arn:aws:iam::485157611739:role/space-radar-clouds
+
+jobs:
+  clouds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Stop until the job and the role exist
+        run: |
+          if [ ! -f weather/clouds.py ]; then
+            echo "weather/clouds.py is not on this branch: the job is internal #138, not yet built."; exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the job's requirements
+        run: pip install --disable-pip-version-check -r weather/requirements.txt
+      - name: Make the cloud files, to ./live
+        run: python3 -m weather.clouds --out live
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Upload live/ (and only live/)
+        run: |
+          set -euo pipefail
+          aws s3 cp live/ "s3://${SITE_BUCKET}/live/" --recursive --cache-control "public, max-age=300"

@@ -1,7 +1,7 @@
 // ui/rail.js -- the tool rail: three 48 px buttons in one glass column, top right (spec 0061 req 5).
 //
 // Contract: createRail(ctx, host) -> { root, openShow(), closeShow(), toggleShow() }
-// Also exported, pure: railKey(event, activeElement) -> 'show' | 'share' | null
+// Also exported, pure: railKey(event, activeElement) -> 'show' | 'share' | 'keys' | null
 //
 //   [layers]   What to show: the layers with their counts and swatches, colour by, sound, density
 //   [share]    Share: the one share sheet (ui/share.js ctx.share.open, ui/sharesheet.js), with the
@@ -17,7 +17,7 @@
 // it. The GitHub mark is the rail's last button (it spent 2026-09-30 to 10-02 in the sources footer,
 // where Ivan missed it).
 //
-// KEYS. L opens What to show, P the share sheet; H is ui/cleanview.js's own. Not S for share:
+// KEYS. L opens What to show, P the share sheet, ? every key (ui/keyhint.js); H is ui/cleanview.js's own. Not S for share:
 // S is held to move the camera back (scene/camera.js CAMERA_KEYS), and P was the postcard's key,
 // so the hand that knew it still finds the picture there. Not while typing in a field and not with
 // a modifier, so the browser's shortcuts are left alone (the same rule as H). Escape closes an
@@ -39,9 +39,9 @@ import { createGitHubMark } from './github.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Two stacked leaves: the layers mark every map app uses. Ours, drawn on the 24-unit box.
 const LAYERS_PATH = ['M12 3 3 8l9 5 9-5-9-5Z', 'M3 13l9 5 9-5'];
-// Lucide `share` (ISC): the arrow out of the tray, the platform mark for "send this somewhere".
+// Lucide `share` (Feather-derived, MIT: CREDITS.md): the arrow out of the tray, the platform mark for "send this somewhere".
 const SHARE_PATH = ['M12 2v13', 'm16 6-4-4-4 4', 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8'];
-// Lucide `ellipsis-vertical` (ISC): three dots, the circles written as two arcs each.
+// Lucide `ellipsis-vertical` (Feather's `more-vertical`, MIT): three dots, the circles written as two arcs each.
 const MORE_PATH = ['M12 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z', 'M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z', 'M12 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'];
 // Lucide `eye-off` (ISC), for the menu's Hide row.
 const HIDE_PATH = [
@@ -59,6 +59,8 @@ export function railKey(event, activeElement) {
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (activeElement && activeElement.isContentEditable)) return null;
   if (event.key === 'l' || event.key === 'L') return 'show';
   if (event.key === 'p' || event.key === 'P') return 'share';
+  // `?`: every key the app answers, in the controls hint (public #315, ui/keyhint.js).
+  if (event.key === '?') return 'keys';
   return null;
 }
 
@@ -121,6 +123,9 @@ export function createRail(ctx, host) {
   function openShow() {
     if (!pop.hidden) return;
     if (ctx && ctx.share) ctx.share.close();
+    // The controls hint goes, as it does for a trip: its close button showed beside this panel
+    // (internal #419 item 5).
+    if (ctx && ctx.keyhint && typeof ctx.keyhint.hide === 'function') ctx.keyhint.hide('popover');
     if (!menu.hidden) closeMore(false);
     pop.hidden = false;
     showBtn.setAttribute('aria-expanded', 'true');
@@ -257,6 +262,7 @@ export function createRail(ctx, host) {
     if (document.documentElement.classList.contains('sr-trip-mode')) return; // the trip owns the screen
     e.preventDefault();
     if (what === 'show') toggleShow();
+    else if (what === 'keys') { if (ctx && ctx.keyhint && typeof ctx.keyhint.toggleAll === 'function') ctx.keyhint.toggleAll(); }
     else toggleShare();
   }, true);
 

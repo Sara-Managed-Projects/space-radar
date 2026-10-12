@@ -7,6 +7,10 @@ version: 1
 #   T0  phones, data-saver, small GPUs: the tier-0 file of every row, which is exactly the set every
 #       visitor booted with before tiers existed. A first visit is gated at 2.5 MB with ~140 KB spare,
 #       so tier 0 is never changed by a tier PR; a sharper file is a new row entry under a new name.
+#   -1  the light embed (js/embedlite.js, internal #396): a 1024 x 512 copy of the tier-0 file for the
+#       three maps a 600 x 400 frame of the Moon or a station shows. No device tier wears it
+#       (texturetiers.js variantFor picks the highest tier at or below the device's, which is never
+#       under 0); the embed asks for it by name.
 #   T1  laptops and tablets: tier-1 files. T2 wears tier-1 files too until 8k ships as KTX2 (the
 #       study's arithmetic: an 8k RGBA map with mipmaps is ~171 MB of GPU memory on its own).
 #
@@ -18,10 +22,11 @@ version: 1
 #
 #   id        registry/models.yaml's texture id where there is one (worlds.yaml dresses worlds by it)
 #   world     a worlds.yaml id, or `sky` for the Milky Way
-#   slot      what it is on that world: day | night | water | clouds | map | ring
+#   slot      what it is on that world: day | night | water | clouds | map | ring | surface | relief
 #   when      boot  -- nothing sharper; the tier-0 file is all there is
 #             idle  -- on screen from the first frame: fetched after it, when the browser is idle
 #             near  -- fetched when the world's disc is big enough for 4k to show, or it is selected
+#             asked -- a second face of a world (slot `surface`), fetched when its card asks for it
 #   boot      `none` when a phone does without the map altogether (the Earth's water mask)
 #   files     one per tier:
 #     tier      0 | 1 | 2
@@ -35,6 +40,14 @@ version: 1
 #     original  tier 1+: the file downloaded (never committed); scripts/build-textures.py remakes
 #               every tier-1 file from these with `--originals DIR`
 #     make      tier 1+: what the build did to it
+#
+# THE GIANTS' SECOND FACE (2026-10-07): Jupiter, Saturn, Uranus and Neptune keep the Solar System Scope
+# maps as the face they are met with, and each has a row `<id>-hubble` (slot `surface`, `when: asked`):
+# Hubble's OPAL map of 2025, built from the calibrated FITS files (scripts/build-textures.py GIANTS
+# says how), fetched when a visitor presses "As Hubble saw it" on the card (scene/worlds.js setFace)
+# and never before. Hubble's maps are honest and plain -- Saturn's bands are faint, Uranus and Neptune
+# nearly featureless -- which is why they are the second face and not the first. The share of the
+# sphere Hubble saw is in each row's `make:` and in the card's note, not in `coverage:`.
 #
 # NOT HERE, AND WHY. Saturn, Uranus, Neptune, Venus and the Sun keep their 2k maps: the larger Solar
 # System Scope maps of them carry no detail the 2k ones lack (Saturn's "8k" is 4096 wide and differs
@@ -51,13 +64,23 @@ textures:
     when: idle
     files:
       - tier: 0
-        file: site/textures/2k_earth_daymap.jpg
+        file: site/textures/2k_earth_daymap.webp
         px: [2048, 1024]
-        bytes: 463087
+        bytes: 148312
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (463087 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 84: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9811); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
+      - tier: -1
+        file: site/textures/embed/earth_day.webp
+        px: [1024, 512]
+        bytes: 47682
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the tier-0 file resampled to 1024 x 512 (Lanczos), WebP, 2026-10-07: the light embed's map (js/embedlite.js)"
       - tier: 1
         file: site/textures/4k/earth_day_{mm}.webp
         monthly: true
@@ -83,6 +106,15 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: -1
+        file: site/textures/embed/earth_night.webp
+        px: [1024, 512]
+        bytes: 10994
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the tier-0 file resampled to 1024 x 512 (Lanczos), WebP, 2026-10-07: the light embed's map (js/embedlite.js)"
       - tier: 1
         file: site/textures/4k/earth_night.webp
         px: [4096, 2048]
@@ -112,6 +144,37 @@ textures:
         original: "https://www.solarsystemscope.com/textures/download/8k_earth_specular_map.tif"
         make: "scripts/build-textures.py earth-water: 8192 to 4096 wide by box filter (a coast pixel is the share of it that is water), lossless WebP"
 
+  # RELIEF (2026-10-08, spec 0053 task 5, public #260): the height of the land, for the daylight a
+  # low Sun puts on a mountain range (scene/earth.js EARTH_RELIEF). No tier-0 file: a phone draws
+  # none. One grey channel (R8 on the GPU): 0.7 MiB at tier 1 and 2.7 at tier 2. LOSSLESS, because
+  # the shader reads differences between texels and a lossy codec's blocks are slopes to it.
+  - id: earth-relief
+    world: earth
+    slot: relief
+    when: idle
+    boot: none
+    files:
+      - tier: 1
+        file: site/textures/1k_earth_relief.webp
+        px: [1024, 512]
+        bytes: 95330
+        format: mono
+        licence: 'CC0 1.0: "NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication"'
+        credit: "Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0"
+        source: "https://doi.org/10.25921/fd45-gt74 (read 2026-10-08)"
+        original: "https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc"
+        make: "scripts/build-textures.py --only earth-relief: the 60 arc-second ice-surface grid read at every second point, clipped to the heights above the sea, area-averaged to 1024 x 512, written as sqrt(height / 9000 m) in one grey channel, lossless WebP"
+      - tier: 2
+        file: site/textures/2k_earth_relief.webp
+        px: [2048, 1024]
+        bytes: 316318
+        format: mono
+        licence: 'CC0 1.0: "NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication"'
+        credit: "Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0"
+        source: "https://doi.org/10.25921/fd45-gt74 (read 2026-10-08)"
+        original: "https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc"
+        make: "as the tier-1 file, at 2048 x 1024"
+
   - id: earth-clouds
     world: earth
     slot: clouds
@@ -120,8 +183,9 @@ textures:
       - tier: 0
         file: site/textures/2k_earth_clouds.webp
         px: [2048, 1024]
-        bytes: 575032
+        bytes: 282674
         format: mono
+        make: "Solar System Scope's 2k cloud JPEG (943 kB, in git before #157) as one grey channel, WebP quality 50, PIL method 6, 2026-10-07: 31.9 dB against the JPEG. It was quality 90 and 575 kB, the largest request of a first visit, for a mask that drifts and that the day's live clouds replace seconds later (internal #415 item 2)"
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
@@ -151,19 +215,43 @@ textures:
         original: "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_4k_gal.exr"
         make: "scripts/build-textures.py milky-way: the background map (no Hipparcos or Tycho stars), flipped to the 2k map convention, levels matched to it, WebP 90"
 
+  # THE MOON'S BASE MAP IS STILL SOLAR SYSTEM SCOPE'S, AND WHY (public #406, recorded 2026-10-08).
+  # No NASA mosaic of the whole Moon is IN the site: the Lunar Reconnaissance Orbiter WAC mosaic is
+  # streamed tile by tile from NASA Solar System Treks when the camera is close (tilesets.yaml
+  # `moon-lro-wac`), and nothing of it is kept here to build a base map from.
+  # What would replace this row: NASA SVS's CGI Moon Kit (https://svs.gsfc.nasa.gov/4720, read
+  # 2026-10-08, last updated there 9 January 2026), made from the camera team's Hapke Normalized
+  # WAC Mosaic. It lists `lroc_color_2k.jpg` (2048x1024, 447.2 KB) and `lroc_color_poles_` at 2k,
+  # 4k, 8k and 16k as TIFF, with the credit "NASA's Scientific Visualization Studio".
+  # Why it is not swapped here: (1) this row is on a first visit (640 218 B of the 3 205 000 B
+  # budget), so the new file has to be re-encoded and measured, not dropped in; (2) the kit's map
+  # is normalised to one lighting and has a different mean brightness, so the Moon's material and
+  # the earthshine fill have to be re-tuned against it in a frame (scene/worlds.js); (3) the 4k
+  # tier and the embed's copy must change in the same step or the Moon changes face as it sharpens.
+  # One job of its own, tracked in the internal repository.
   - id: moon
     world: moon
     slot: map
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_moon.jpg
+        file: site/textures/2k_moon.webp
         px: [2048, 1024]
-        bytes: 1053869
+        bytes: 640218
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (1053869 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 86: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9819); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
+      - tier: -1
+        file: site/textures/embed/moon.webp
+        px: [1024, 512]
+        bytes: 80854
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the tier-0 file resampled to 1024 x 512 (Lanczos), WebP, 2026-10-07: the light embed's map (js/embedlite.js)"
       - tier: 1
         file: site/textures/4k/moon.webp
         px: [4096, 2048]
@@ -181,23 +269,46 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_mercury.jpg
+        file: site/textures/2k_mercury_messenger.webp
         px: [2048, 1024]
-        bytes: 872555
+        bytes: 560552
         format: rgb
-        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
-        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
-        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.tif"
+        make: "scripts/build-textures.py mercury: USGS's MESSENGER three-colour mosaic (1000, 750 and 430 nm as red, green and blue), 23040 px to 4096 wide in linear light, the 0.1 % with no data filled from its edges, 35 % of the saturation kept, mean taken to the luminance of the planet's plain colour by a gain 1.47, then to 2048 wide (Lanczos), WebP 78"
       - tier: 1
         file: site/textures/4k/mercury.webp
         px: [4096, 2048]
-        bytes: 1389708
+        bytes: 1277368
         format: rgb
-        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
-        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
-        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
-        original: "https://www.solarsystemscope.com/textures/download/8k_mercury.jpg"
-        make: "scripts/build-textures.py mercury: resampled to 4096 x 2048 (Lanczos), WebP 72"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.tif"
+        make: "scripts/build-textures.py mercury: as tier 0, at 4096 x 2048, WebP 40 (the highest quality no heavier than the 4k map it replaces)"
+
+  # MERCURY'S RELIEF (2026-10-08, public #404). Not a second face: a height map worn UNDER the colour
+  # map, from which the shader takes the ground's slope (scene/worlds.js `look.relief`). It is
+  # `when: asked` so that the GPU budget counts it with the faces, all at once (texturetiers.js
+  # worstCaseGpu); it is fetched with Mercury's map on a tier-1 device and up, and a phone never
+  # asks for it. LOCAL relief only: the build takes out everything broader than 6 degrees.
+  - id: mercury-relief
+    world: mercury
+    slot: relief
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_mercury_relief.webp
+        px: [2048, 1024]
+        bytes: 250278
+        format: mono
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits); the product page asks "Please cite authors"'
+        credit: "Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only"
+        source: "https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m (read 2026-10-08)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Mercury_Messenger_USGS_DEM_Global_665m_v2.tif"
+        make: "scripts/build-textures.py mercury-relief: the 23040 x 11520 elevation model (half a metre a count above a 2439.4 km sphere) to 2048 x 1024, rolled to longitude 0 at the centre, the relief broader than 6 degrees taken out, the rest clipped to +-2500 m (0.21 % of the map is beyond it) and written as one grey channel with 128 as level ground, WebP 80"
 
   - id: mars
     world: mars
@@ -205,13 +316,14 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_mars.jpg
+        file: site/textures/2k_mars.webp
         px: [2048, 1024]
-        bytes: 750547
+        bytes: 487924
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (750547 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 93: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9841); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
       - tier: 1
         file: site/textures/4k/mars.webp
         px: [4096, 2048]
@@ -229,13 +341,14 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_jupiter.jpg
+        file: site/textures/2k_jupiter.webp
         px: [2048, 1024]
-        bytes: 498976
+        bytes: 234614
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (498976 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 91: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9810); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
       - tier: 1
         file: site/textures/4k/jupiter.webp
         px: [4096, 2048]
@@ -247,19 +360,37 @@ textures:
         original: "https://www.solarsystemscope.com/textures/download/8k_jupiter.jpg"
         make: "scripts/build-textures.py jupiter: resampled to 4096 x 2048 (Lanczos), WebP 84"
 
+  - id: jupiter-hubble
+    world: jupiter
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_jupiter_opal_2025.webp
+        px: [2048, 1024]
+        bytes: 63500
+        format: rgb
+        licence: 'CC BY 4.0: "Some data products, such as high-level science products (HLSPs) which are created by the community and are made available through MAST, are covered under a Creative Commons Attribution license (CC BY 4.0)" (archive.stsci.edu/publishing/data-use); the 2025 FITS files of Jupiter and Uranus say it themselves: LICENSE = CC BY 4.0, LIC_ATTR = NASA, ESA, A.A. Simon, M.H. Wong'
+        credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
+        source: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/jupiter/hlsp_opal_hst_wfc3-uvis_jupiter-2025_all_v1_readme.txt (read 2026-10-07)"
+        original: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/jupiter/hlsp_opal_hst_wfc3-uvis_jupiter-2025a_<filter>_v1_globalmap.fits for f631n, f502n, f395n (observed 11 December 2025)"
+        make: "scripts/build-textures.py jupiter: Hubble's OPAL maps at 631, 502 and 395 nm as red, green and blue (the filters OPAL's own colour map uses), each FITS value times the README's I/F factor and 2/(2k+1) for its Minnaert k, so the three are one albedo scale (mean 0.49; the fact sheet's geometric albedo is 0.538); data from 79.6 S to 83.2 N, 98.8 % of the sphere, the caps beyond filled with the last row's mean colour; rows resampled from planetographic to planetocentric latitude (f = 0.0649), rolled half a turn so System III longitude 0 is the middle, WebP 90"
+
   - id: sun
     world: sun
     slot: map
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_sun.jpg
+        file: site/textures/2k_sun.webp
         px: [2048, 1024]
-        bytes: 822427
+        bytes: 296062
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (822427 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 87: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9808); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
+
 
   - id: venus
     world: venus
@@ -267,13 +398,32 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_venus_atmosphere.jpg
+        file: site/textures/2k_venus_atmosphere.webp
         px: [2048, 1024]
-        bytes: 229696
+        bytes: 37444
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (229696 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 83: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9801); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
+
+  # The ground under the clouds (2026-10-06, public #417): `when: asked`, fetched when a visitor
+  # presses Ground on Venus's card (scene/worlds.js setFace) and never before.
+  - id: venus-surface
+    world: venus
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_venus_magellan.webp
+        px: [2048, 1024]
+        bytes: 225388
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.tif"
+        make: "scripts/build-textures.py venus-surface: USGS's Magellan radar mosaic, 2025 m to 2048 wide in linear light, the 2.9 % of the sphere Magellan missed filled from its edges, tinted orange (the colour is added: radar has none), WebP 84"
 
   - id: saturn
     world: saturn
@@ -281,18 +431,35 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_saturn.jpg
+        file: site/textures/2k_saturn.webp
         px: [2048, 1024]
-        bytes: 199916
+        bytes: 18270
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (199916 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 64: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9802); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
+
+  - id: saturn-hubble
+    world: saturn
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_saturn_opal_2025.webp
+        px: [2048, 1024]
+        bytes: 21186
+        format: rgb
+        licence: 'CC BY 4.0: "Some data products, such as high-level science products (HLSPs) which are created by the community and are made available through MAST, are covered under a Creative Commons Attribution license (CC BY 4.0)" (archive.stsci.edu/publishing/data-use); the 2025 FITS files of Jupiter and Uranus say it themselves: LICENSE = CC BY 4.0, LIC_ATTR = NASA, ESA, A.A. Simon, M.H. Wong'
+        credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
+        source: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/saturn/hlsp_opal_hst_wfc3-uvis_saturn-2025_all_v1_readme.txt (read 2026-10-07)"
+        original: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/saturn/hlsp_opal_hst_wfc3-uvis_saturn-2025a_<filter>_v1_globalmap.fits for f631n, f502n, f395n (observed 29 August 2025)"
+        make: "scripts/build-textures.py saturn: as Jupiter's, from the 1800 x 900 maps (f = 0.0980; mean 0.41 against the fact sheet's 0.499); data from 82.7 S to 77.1 N; the strip from 0.7 S to 5.3 N that the nearly edge-on rings and their shadow hid is filled from the rows either side; 93.0 % of the sphere is data; resampled to 2048 x 1024 (Lanczos), and Hubble's map is no sharper than 1800, WebP 90"
   - id: saturn-ring
     world: saturn
     slot: ring
-    when: boot
+    when: asked
     files:
       - tier: 0
         file: site/textures/2k_saturn_ring_alpha.png
@@ -309,96 +476,446 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_uranus.jpg
+        file: site/textures/2k_uranus.webp
         px: [2048, 1024]
-        bytes: 77751
+        bytes: 5548
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (77751 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 40: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9970); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
+
+  - id: uranus-hubble
+    world: uranus
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/1k_uranus_opal_2025.webp
+        px: [1024, 512]
+        bytes: 3552
+        format: rgb
+        licence: 'CC BY 4.0: "Some data products, such as high-level science products (HLSPs) which are created by the community and are made available through MAST, are covered under a Creative Commons Attribution license (CC BY 4.0)" (archive.stsci.edu/publishing/data-use); the 2025 FITS files of Jupiter and Uranus say it themselves: LICENSE = CC BY 4.0, LIC_ATTR = NASA, ESA, A.A. Simon, M.H. Wong'
+        credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
+        source: "https://archive.stsci.edu/missions/hlsp/opal/cycle33/uranus/hlsp_opal_hst_wfc3-uvis_uranus-2025_all_v1_readme.txt (read 2026-10-07)"
+        original: "https://archive.stsci.edu/missions/hlsp/opal/cycle33/uranus/hlsp_opal_hst_wfc3-uvis_uranus-2025a_<filter>_v1_globalmap.fits for f657n, f547m, f467m (observed 23 October 2025)"
+        make: "scripts/build-textures.py uranus: as Jupiter's, from the 721 x 361 maps at 657, 547 and 467 nm (f = 0.0229; mean 0.44 against the fact sheet's 0.488); Hubble saw the planet from 3 N to the north pole, 47.6 % of the sphere: the southern half is turned away from the Earth (the planet lies on its side, north pole towards us) and is filled with the colour of the last row seen; the longitudes are as published, WebP 90"
   - id: neptune
     world: neptune
     slot: map
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_neptune.jpg
+        file: site/textures/2k_neptune.webp
         px: [2048, 1024]
-        bytes: 241580
+        bytes: 8728
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (241580 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 40: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9901); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
-  # The moons a trip flies to (#322, 2026-09-28): public-domain NASA/USGS maps, one size for every
-  # device. registry/models.yaml carries the same file, credit and source under the same id.
+
+  - id: neptune-hubble
+    world: neptune
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/1k_neptune_opal_2025.webp
+        px: [1024, 512]
+        bytes: 4766
+        format: rgb
+        licence: 'CC BY 4.0: "Some data products, such as high-level science products (HLSPs) which are created by the community and are made available through MAST, are covered under a Creative Commons Attribution license (CC BY 4.0)" (archive.stsci.edu/publishing/data-use); the 2025 FITS files of Jupiter and Uranus say it themselves: LICENSE = CC BY 4.0, LIC_ATTR = NASA, ESA, A.A. Simon, M.H. Wong'
+        credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
+        source: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/neptune/hlsp_opal_hst_wfc3-uvis_neptune-2025b_all_v1_readme.txt (read 2026-10-07)"
+        original: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/neptune/hlsp_opal_hst_wfc3-uvis_neptune-2025b_<filter>_v1_globalmap.fits for f657n, f547m, f467m (observed 24 August 2025)"
+        make: "scripts/build-textures.py neptune: as Jupiter's, from the 721 x 361 maps at 657, 547 and 467 nm (f = 0.0171; mean 0.39 against the fact sheet's 0.442); data from the south pole to 39.4 N, 81.9 % of the sphere, the north beyond filled with the colour of the last row seen, WebP 90"
+  # THE MOONS AND SMALL WORLDS (2026-10-05, issues #387 to #415): one public-domain NASA / USGS map for
+  # every world that was a flat colour, one size for every device. `when: boot` here means "nothing
+  # sharper to fetch later", NOT "fetched at boot": scene/worlds.js fetches a world's map the first
+  # time its disc is big enough to show a surface, or it is selected. registry/models.yaml carries
+  # the same file, credit and source under the same id. `coverage` is the share of the sphere the
+  # original has data for, measured by the build; the rest of the map is the world's flat colour.
+  # Each file is at most 250 kB (tests/test_moon_shapes.mjs). Deimos has no row: no public-domain
+  # mosaic of it was found.
+
   - id: io
     world: io
     slot: map
     when: boot
+    coverage: 1.000
     files:
       - tier: 0
-        file: site/textures/1k_io_usgs.jpg
-        px: [1224, 612]
-        bytes: 118131
+        file: site/textures/2k_io_usgs.webp
+        px: [2048, 1024]
+        bytes: 178088
         format: rgb
-        licence: "Public domain"
-        credit: "Io map: USGS Astrogeology Science Center (Galileo SSI), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.tif"
+        make: "scripts/build-textures.py moon-io: USGS colour merge, 1 km to 2048 wide, colour kept, mean taken to the flat colour's luminance by a gain 1.69, WebP 82"
 
   - id: europa
     world: europa
     slot: map
     when: boot
+    coverage: 0.995
     files:
       - tier: 0
-        file: site/textures/1k_europa_usgs.jpg
-        px: [1024, 512]
-        bytes: 89436
+        file: site/textures/2k_europa_usgs.webp
+        px: [2048, 1024]
+        bytes: 210708
         format: rgb
-        licence: "Public domain"
-        credit: "Europa map: USGS / PDS (Voyager and Galileo SSI), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Europa map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.tif"
+        make: "scripts/build-textures.py moon-europa: USGS mosaic, 500 m to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a power 0.33 on the broad brightness with 0.6 of the relief, mean 0.98 of the flat colour's, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: ganymede
+    world: ganymede
+    slot: map
+    when: boot
+    coverage: 0.996
+    files:
+      - tier: 0
+        file: site/textures/2k_ganymede_usgs.webp
+        px: [2048, 1024]
+        bytes: 220436
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Ganymede map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Ganymede_Voyager_GalileoSSI_global_mosaic_1km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Ganymede_Voyager_GalileoSSI_global_mosaic_1km.tif"
+        make: "scripts/build-textures.py moon-ganymede: USGS mosaic, 1 km to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 3.97, unimaged areas filled with the flat colour, WebP 66"
+
+  - id: callisto
+    world: callisto
+    slot: map
+    when: boot
+    coverage: 0.991
+    files:
+      - tier: 0
+        file: site/textures/2k_callisto_usgs.webp
+        px: [2048, 1024]
+        bytes: 212040
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Callisto map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Callisto_Voyager_GalileoSSI_global_mosaic_1km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Callisto_Voyager_GalileoSSI_global_mosaic_1km.tif"
+        make: "scripts/build-textures.py moon-callisto: USGS mosaic, 1 km to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 2.26, unimaged areas filled with the flat colour, WebP 74"
 
   - id: enceladus
     world: enceladus
     slot: map
     when: boot
+    coverage: 1.000
     files:
       - tier: 0
-        file: site/textures/1k_enceladus_cassini.jpg
-        px: [1024, 512]
-        bytes: 222843
+        file: site/textures/2k_enceladus_cassini.webp
+        px: [1536, 768]
+        bytes: 227872
         format: rgb
-        licence: "Public domain"
+        licence: 'Public domain'
         credit: "Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg (read 2026-09-28)"
+        source: "https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Enceladus_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-enceladus: 15960 px to 1536 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.09 on the broad brightness with 0.6 of the relief, mean 0.89 of the flat colour's, WebP 74"
+
+  - id: mimas
+    world: mimas
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_mimas_cassini.webp
+        px: [1792, 896]
+        bytes: 231248
+        format: rgb
+        licence: 'Public domain'
+        credit: "Mimas map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Map_of_Mimas_colorized_2014-04_PIA18437.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Map_of_Mimas_colorized_2014-04_PIA18437.jpg"
+        make: "scripts/build-textures.py moon-mimas: 6356 px to 1792 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a gain 1.70, WebP 62"
+
+  - id: tethys
+    world: tethys
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_tethys_cassini.webp
+        px: [1536, 768]
+        bytes: 221400
+        format: rgb
+        licence: 'Public domain'
+        credit: "Tethys map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Tethys_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Tethys_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-tethys: 13467 px to 1536 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.15 on the broad brightness with 0.6 of the relief, mean 0.91 of the flat colour's, WebP 74"
+
+  - id: dione
+    world: dione
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_dione_cassini.webp
+        px: [1792, 896]
+        bytes: 232500
+        format: rgb
+        licence: 'Public domain'
+        credit: "Dione map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Dione_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Dione_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-dione: 14134 px to 1792 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.25 on the broad brightness with 0.6 of the relief, mean 0.94 of the flat colour's, WebP 70"
+
+  - id: rhea
+    world: rhea
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_rhea_cassini.webp
+        px: [1536, 768]
+        bytes: 230008
+        format: rgb
+        licence: 'Public domain'
+        credit: "Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Rhea_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Rhea_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-rhea: 12015 px to 1536 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.25 on the broad brightness with 0.6 of the relief, mean 0.93 of the flat colour's, WebP 70"
+
+  - id: iapetus
+    world: iapetus
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_iapetus_cassini.webp
+        px: [2048, 1024]
+        bytes: 226040
+        format: rgb
+        licence: 'Public domain'
+        credit: "Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Iapetus_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Iapetus_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-iapetus: 11741 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a gain 1.12, WebP 58"
+
+  - id: titan
+    world: titan
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_titan_cassini_2018.webp
+        px: [2048, 1024]
+        bytes: 43396
+        format: rgb
+        licence: "NASA Images and Media Usage Guidelines (nasa.gov/nasa-brand-center/images-and-media, read 2026-10-07): NASA content, including media files used in the rendition of 3-dimensional models such as texture maps, \"generally are not subject to copyright in the United States\""
+        credit: "Titan map: NASA/JPL-Caltech/Univ. Arizona (Cassini ISS, 938 nm, PIA22770), public domain"
+        source: "https://photojournal.jpl.nasa.gov/catalog/PIA22770 (read 2026-10-07)"
+        original: "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia22/pia22770/PIA22770.tif"
+        make: "scripts/build-textures.py moon-titan: the 2018 Cassini ISS mosaic (9 873 pictures averaged, made without image seams: it replaces the 2015 one, whose pictures' outlines showed), 5760 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, contrast about the mean times 0.5, mean taken to the flat colour's luminance by a gain 0.95, WebP 82"
+  # CERES AND VESTA (2026-10-07, internal #382) are not rows of registry/worlds.yaml: they are dots of
+  # the far-bodies and asteroid layers, drawn close up from their shape models by scene/realmodels.js
+  # (site/models/dwarf-ceres.glb, asteroid-vesta.glb), and these maps are laid on those shapes by the
+  # texture coordinates scripts/shape-to-glb.py --uv writes. Fetched with the shape, when one of the
+  # two is approached, never before. scripts/check_registry.py SMALL_BODY_MAPS names the model each
+  # belongs to. They count against the moons' byte budgets like every other small world's map.
+  - id: ceres
+    world: ceres
+    slot: map
+    when: boot
+    coverage: 0.996
+    files:
+      - tier: 0
+        file: site/textures/2k_ceres_dawn.webp
+        px: [1536, 768]
+        bytes: 227830
+        format: rgb
+        licence: "NASA Images and Media Usage Guidelines (nasa.gov/nasa-brand-center/images-and-media, read 2026-10-07): NASA content, including media files used in the rendition of 3-dimensional models such as texture maps, \"generally are not subject to copyright in the United States\". The mosaic was assembled at DLR for the Dawn mission and is hosted by USGS Astrogeology"
+        credit: "Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, global mosaic by DLR), hosted by USGS Astrogeology Science Center"
+        source: "https://planetarymaps.usgs.gov/mosaic/Ceres_Dawn_FC_DLR_global_20ppd_Oct2015.lbl (read 2026-10-07)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Ceres_Dawn_FC_DLR_global_20ppd_Oct2015.tif"
+        make: "scripts/build-textures.py moon-ceres: 7383 px to 1536 wide (the crater field would not fit the byte cap at 2048), rolled half a turn so longitude 0 is at the centre, tinted with the grey scripts/build-textures.py SMALL_BODY_TINT chose, mean taken to that grey's luminance by a gain 1.03, the 0.4 % with no data filled with the grey, WebP 74"
+
+  - id: vesta
+    world: vesta
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_vesta_dawn.webp
+        px: [2048, 1024]
+        bytes: 230890
+        format: rgb
+        licence: "NASA Images and Media Usage Guidelines (nasa.gov/nasa-brand-center/images-and-media, read 2026-10-07): NASA content, including media files used in the rendition of 3-dimensional models such as texture maps, \"generally are not subject to copyright in the United States\". The mosaic was assembled at DLR for the Dawn mission and is hosted by USGS Astrogeology"
+        credit: "Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center"
+        source: "https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd.lbl (read 2026-10-07)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd.tif"
+        make: "scripts/build-textures.py moon-vesta: 26704 px to 2048 wide, longitude 0 already at the centre, tinted with the grey scripts/build-textures.py SMALL_BODY_TINT chose, mean taken to that grey's luminance by a gain 4.61 (the far north was in winter shadow and is nearly black in the mosaic), WebP 58"
 
   - id: triton
     world: triton
     slot: map
     when: boot
+    coverage: 0.669
     files:
       - tier: 0
-        file: site/textures/1k_triton_voyager.jpg
-        px: [1024, 512]
-        bytes: 71547
+        file: site/textures/2k_triton_voyager.webp
+        px: [2048, 1024]
+        bytes: 80414
         format: rgb
-        licence: "Public domain"
-        credit: "Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Triton_Map.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Triton_Voyager2_ClrMosaic_GlobalFill_600m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Triton_Voyager2_ClrMosaic_GlobalFill_600m.tif"
+        make: "scripts/build-textures.py moon-triton: USGS's copy of P. Schenk's map (orange, green and blue pictures, contrast raised), 600 m to 2048 wide, its mean colour taken to the hue of the world's flat colour by a gain per channel (the original's overall cast is green), 30 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.31 on the broad brightness with 0.6 of the relief, mean 0.97 of the flat colour's, unimaged areas (33 % of the sphere, the north Voyager 2 saw in darkness) filled with the flat colour, WebP 82"
+
+  - id: miranda
+    world: miranda
+    slot: map
+    when: boot
+    coverage: 0.394
+    files:
+      - tier: 0
+        file: site/textures/1k_miranda_voyager.webp
+        px: [1440, 720]
+        bytes: 49792
+        format: rgb
+        licence: 'Public domain'
+        credit: "Miranda map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Miranda_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Miranda_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-miranda: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.97, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: ariel
+    world: ariel
+    slot: map
+    when: boot
+    coverage: 0.337
+    files:
+      - tier: 0
+        file: site/textures/1k_ariel_voyager.webp
+        px: [1440, 720]
+        bytes: 28216
+        format: rgb
+        licence: 'Public domain'
+        credit: "Ariel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Ariel_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Ariel_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-ariel: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 1.08, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: umbriel
+    world: umbriel
+    slot: map
+    when: boot
+    coverage: 0.369
+    files:
+      - tier: 0
+        file: site/textures/1k_umbriel_voyager.webp
+        px: [1440, 720]
+        bytes: 12276
+        format: rgb
+        licence: 'Public domain'
+        credit: "Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Umbriel_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-umbriel: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.40, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: titania
+    world: titania
+    slot: map
+    when: boot
+    coverage: 0.318
+    files:
+      - tier: 0
+        file: site/textures/1k_titania_voyager.webp
+        px: [1440, 720]
+        bytes: 27046
+        format: rgb
+        licence: 'Public domain'
+        credit: "Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Titania_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-titania: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.50, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: oberon
+    world: oberon
+    slot: map
+    when: boot
+    coverage: 0.340
+    files:
+      - tier: 0
+        file: site/textures/1k_oberon_voyager.webp
+        px: [1440, 720]
+        bytes: 28288
+        format: rgb
+        licence: 'Public domain'
+        credit: "Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Oberon_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-oberon: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.88, unimaged areas filled with the flat colour, WebP 82"
 
   - id: pluto
     world: pluto
     slot: map
     when: boot
+    coverage: 0.769
     files:
       - tier: 0
-        file: site/textures/2k_pluto_newhorizons.jpg
+        file: site/textures/2k_pluto_nh_colour.webp
         px: [2048, 1024]
-        bytes: 274287
+        bytes: 63040
         format: rgb
-        licence: "Public domain"
-        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg (read 2026-09-28)"
+        licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
+        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl (read 2026-10-06)"
+        original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
+        make: "scripts/build-textures.py moon-pluto: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 11487 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.68; where it has no data and USGS's black-and-white mosaic has (3.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (23 % of the sphere, the south in its winter night) filled with the map's own mean colour, WebP 82; then scripts/soften_fill.py --feather-deg=20 (2026-10-12): across 20 degrees of latitude the picture fades into a blur of itself before the plain colour begins, so the unimaged part still has nothing drawn in it and no longer meets the data along a hard line"
+
+  - id: charon
+    world: charon
+    slot: map
+    when: boot
+    coverage: 0.740
+    files:
+      - tier: 0
+        file: site/textures/2k_charon_nh_colour.webp
+        px: [2048, 1024]
+        bytes: 37012
+        format: rgb
+        licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
+        credit: "Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl (read 2026-10-06)"
+        original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
+        make: "scripts/build-textures.py moon-charon: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 3808 px to 2048 wide, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.46; where it has no data and USGS's black-and-white mosaic has (9.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (26 % of the sphere) filled with the map's own mean colour, WebP 82; then scripts/soften_fill.py --feather-deg=20 (2026-10-12): across 20 degrees of latitude the picture fades into a blur of itself before the plain colour begins, so the unimaged part still has nothing drawn in it and no longer meets the data along a hard line"
+
+  - id: phobos
+    world: phobos
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_phobos_viking.webp
+        px: [2048, 1024]
+        bytes: 189854
+        format: rgb
+        licence: 'Public domain'
+        credit: "Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Phobos_Viking_Mosaic_DLRcontrol_7200.jpg"
+        make: "scripts/build-textures.py moon-phobos: 7200 px to 2048 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.25, WebP 82"

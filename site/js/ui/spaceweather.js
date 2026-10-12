@@ -70,6 +70,23 @@ export function spaceWeatherLine(parsed, result, nowMs) {
   return line;
 }
 
+/**
+ * The reading on its own, for a caller with no panel to put a line in (a trip stop, main.js):
+ * `{ parsed, result }`, or null when NOAA and our copy both failed. The same source row and parser
+ * as the line in the Sources sheet.
+ */
+export async function readSpaceWeather(deps = { load }) {
+  let result = null;
+  try { result = await deps.load(SOURCE_ID); } catch { result = null; }
+  if (!result || result.data == null) return null;
+  try {
+    const parsed = parseSpaceWeather(result.data);
+    return parsed ? { parsed, result } : null;
+  } catch {
+    return null;
+  }
+}
+
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;

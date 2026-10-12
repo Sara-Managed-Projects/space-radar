@@ -7,6 +7,17 @@
 #                                                # (default ~/.cache/spaceradar-v1)
 #   scripts/refresh-snapshots.sh --from-run=ID   # also merge what a GitHub `harvest` workflow run read
 #   scripts/refresh-snapshots.sh --no-harvest    # publish the working copy (and --from-run) only
+#   scripts/refresh-snapshots.sh --profile=NAME  # the AWS CLI profile to publish with (also
+#                                                # --profile NAME). Default: your environment's.
+#   scripts/refresh-snapshots.sh --bucket=B --region=R --distribution=ID
+#                                                # another site. The defaults are the site's home
+#                                                # since 2026-10-07: bucket
+#                                                # sara-site-space-radar-lifehub (eu-north-1),
+#                                                # distribution E1CGDK1ZPYFKHG, which the profile
+#                                                # `life-hub` can write. (Before that day: bucket
+#                                                # sara-site-space-radar, distribution
+#                                                # E1JGFDLBX6HS7B, in another account. Publishing
+#                                                # there now reaches nobody once DNS has moved.)
 #
 # WHY. The harvester (harvest/, public #26) is built to run as a Lambda every few minutes and has
 # never been provisioned, so /data/v1/ was empty and every visitor fetched every source live --
@@ -30,15 +41,21 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-BUCKET="sara-site-space-radar"
+BUCKET="sara-site-space-radar-lifehub"
 REGION="eu-north-1"
-DISTRIBUTION="E1JGFDLBX6HS7B"
+DISTRIBUTION="E1CGDK1ZPYFKHG"
+PROFILE=""
 WORK="${HOME}/.cache/spaceradar-v1"
 DRY=0
 FROM_RUN=""
 HARVEST=1
+PREV=""
 for a in "$@"; do
+  # `--profile NAME`, as scripts/deploy.sh takes it, besides `--profile=NAME`.
+  if [ "$PREV" = "--profile" ]; then PROFILE="$a"; PREV=""; continue; fi
   case "$a" in
+    --profile) PREV="--profile" ;;
+    --profile=*) PROFILE="${a#--profile=}" ;;
     --work=*) WORK="${a#--work=}" ;;
     --bucket=*) BUCKET="${a#--bucket=}" ;;
     --region=*) REGION="${a#--region=}" ;;
@@ -46,10 +63,14 @@ for a in "$@"; do
     --dry-run) DRY=1 ;;
     --from-run=*) FROM_RUN="${a#--from-run=}" ;;
     --no-harvest) HARVEST=0 ;;
-    -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,41p' "$0"; exit 0 ;;
     *) echo "unknown argument: $a" >&2; exit 2 ;;
   esac
 done
+[ "$PREV" = "--profile" ] && { echo "--profile needs a value" >&2; exit 2; }
+# Exported, so every `aws` below (the seed, the uploads, the invalidation) uses it.
+[ -n "$PROFILE" ] && export AWS_PROFILE="$PROFILE"
+[ "$DRY" = 1 ] && echo "==> would publish to s3://$BUCKET/data/v1/ ($REGION), distribution $DISTRIBUTION, profile ${AWS_PROFILE:-<environment>}"
 
 mkdir -p "$WORK"
 if [ ! -f "$WORK/index.json" ]; then
@@ -137,6 +158,27 @@ def keys(fn):
     return out or [fn]
 def body(f):
     b = f["body"]; return (json.loads(b), True) if isinstance(b, str) else (b, False)
+
+# NOT OURS TO COPY (2026-10-09, internal #370). A source the registry switches off is not published:
+# its file is dropped from the PUBLISH copy, whatever an earlier run left in the work folder, and
+# its manifest row is published as `skipped` with no stamps (the row itself stays: it is how the
+# app says "could not look" about a source by name, and a name is not the publisher's data). ESA's NEOCC list is the case: its terms forbid redistribution, the harvester
+# had saved it before anyone read them, and the old file would otherwise have been uploaded again
+# with every refresh. harvest/sources.json is the registry as the harvester reads it.
+_off = sorted(r["id"] for r in json.load(open("harvest/sources.json"))["sources"] if r.get("enabled") is False)
+_ix_p = os.path.join(d, "index.json")
+_ix = json.load(open(_ix_p))
+for _k in _off:
+    _had = False
+    if _k in _ix.get("snapshots", {}):
+        _had = bool(_ix["snapshots"][_k].get("fetched_at"))
+        _ix["snapshots"][_k] = {"status": "skipped", "last_error": "switched off in registry/sources.yaml (enabled: false): not fetched and not published"}
+    for _name in (_k + ".json", _k + ".cols.json"):
+        if os.path.exists(os.path.join(d, _name)):
+            os.remove(os.path.join(d, _name)); _had = True
+    if _had:
+        print(f"    {_k}: switched off in registry/sources.yaml; not published")
+json.dump(_ix, open(_ix_p, "w"), indent=1)
 
 # KEEP THE LAST GOOD COPY. A refresh that fails (CelesTrak answered this machine AND the GitHub
 # runner with 403 on 2026-09-28) leaves the row `status: error` with its old stamps carried
@@ -235,6 +277,16 @@ def recent_starlink(rows, launches=12):
     return [r for r in sl if launch(r) in set(latest)]
 derive("celestrak-supplemental-starlink", "celestrak-starlink-recent", recent_starlink,
        "Starlink's twelve latest launches, which is where a train can be")
+
+# THE BIG CATALOGUES ALSO AS COLUMNS (internal #523, scripts/columnar.py): <id>.cols.json beside the
+# verbatim file, named in the manifest row as `columns`. The same rows in about a third of the
+# text; the browser decodes it back to them and falls back to the verbatim file on any doubt.
+# After the cuts, so a cut that is big enough gets a twin too, and last, so the twin is of the
+# file exactly as it is published.
+sys.path.insert(0, "scripts")
+import columnar
+for _sid, _rows, _before, _after in columnar.publish(d):
+    print(f"    {_sid}: {_rows} rows also as columns, {_before} B -> {_after} B")
 
 ix = json.load(open(os.path.join(d, "index.json")))
 ok = sorted(k for k, v in ix["snapshots"].items() if v.get("status") in ("ok", "not-modified", "not-due") and v.get("fetched_at"))

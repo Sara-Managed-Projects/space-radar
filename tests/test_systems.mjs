@@ -267,6 +267,11 @@ if (trip) {
   });
   const machine = createTrip(ctx);
   ctx.trip = machine;
+  // AS THE PAGE HAS IT: the forty systems nobody typed are registered by then (loadIndex, after the
+  // exoplanets layer lands), and Proxima Centauri is one of them. Without this the test ran a trip
+  // the page never runs, and stop 2 was held in every browser while this passed (2026-10-09).
+  await S.loadIndex();
+  check(!!S.systemOfRecordId('exo-proxima-cen-b'), 'Proxima b has a system row, as on the page');
   const plan = await machine.plan(TRIP_ID);
   check(plan && plan.count === 11 && plan.dropped.length === 0, `${plan && plan.count} of 11 stops resolved (${plan && JSON.stringify(plan.dropped)})`);
   await machine.start(TRIP_ID);
@@ -281,6 +286,7 @@ if (trip) {
     rig.update(0.016);
     systems.update(clock.now(), camera);
     check(machine.state.index === i && machine.state.stopId === stop.id, `stop ${i + 1}: the trip is at ${machine.state.stopId}`);
+    check(machine.state.phase !== 'held' && !machine.state.held, `${stop.id}: the stop is shown, not held with "We could not find this one" (${machine.state.phase})`);
     check(stage.worldId === (stop.stage || trip.stage), `${stop.id}: on the ${stage.worldId} stage`);
     const rec = stop.target.record ? byId.get(stop.target.record) : null;
     if (rec) check(selected && selected.id === rec.id, `${stop.id}: ${selected && selected.id} is selected`);
@@ -321,7 +327,81 @@ if (trip) {
   worlds.dispose();
 }
 
+// internal #476: a plain selection of a system's star arrives looking down on its orbits.
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check(/ctx\.systems\.subjectFor\(record\)/.test(main) && /polar: hostPolar/.test(main), 'flyToRecord gives a system host the overview polar that a trip stop has');
+  const sys = readFileSync(join(ROOT, 'site/js/scene/systems.js'), 'utf8');
+  check(/polar: planet \? null : OVERVIEW_POLAR/.test(sys), 'and that polar is the host subject\'s own, null for a planet');
+}
+
 Date.now = realDateNow;
+// --- the host star is met from over its orbits (internal #476) ---------------------------------
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  const m = /const SYSTEM_OVERVIEW_POLAR = \(([0-9]+) \* Math\.PI\) \/ 180;/.exec(main);
+  check(!!m && Math.abs((Number(m[1]) * Math.PI) / 180 - S.OVERVIEW_POLAR) < 1e-12, 'main.js meets a host star at scene/systems.js OVERVIEW_POLAR');
+  check(/polar: overview/.test(main) && /record\.klass === 'star' && ctx\.systems && ctx\.systems\.active/.test(main), 'flyToRecord passes the overview polar for a system host');
+}
+
+// --- the Explore list names all forty (internal #473) -------------------------------------------
+{
+  const { systemGroups } = await import(join(JS, 'ui/explore.js'));
+  const { SYSTEM_INDEX } = await import(join(JS, 'data/systems-index.js'));
+  const g = systemGroups(SYSTEM_INDEX);
+  check(g.temperate.length + g.extreme.length === SYSTEM_INDEX.length && SYSTEM_INDEX.length >= 39, `every generated system is in a group (${g.temperate.length} + ${g.extreme.length} of ${SYSTEM_INDEX.length})`);
+  check(g.temperate.every((x, i) => i === 0 || g.temperate[i - 1].distPc <= x.distPc), 'each group is nearest first');
+  check(g.temperate[0].name === 'Proxima Centauri', `the nearest mild system first (${g.temperate[0].name})`);
+  check(systemGroups(null).temperate.length === 0 && systemGroups([{ hostId: 'x', why: 'other' }]).extreme.length === 0, 'bad input is an empty list');
+  const ex = readFileSync(join(ROOT, 'site/js/ui/explore.js'), 'utf8');
+  check(/import\('\.\.\/data\/systems-index\.js'\)/.test(ex) && !/from '\.\.\/data\/systems-index\.js'/.test(ex), 'the index is fetched late, never at boot');
+}
+
+// --- a planet answers to its star's usual name (internal #473) ---------------------------------
+{
+  const { SYSTEM_INDEX } = await import(join(JS, 'data/systems-index.js'));
+  const { addPlanetAliases, LAYERS: L2 } = await import(join(JS, 'data/layers.js'));
+  const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
+  const recs = parseExoplanets(csv);
+  const kepler = SYSTEM_INDEX.find((x) => x.id === 'kepler-90');
+  const koiH = recs.find((r) => r.id === 'exo-koi-351-h');
+  check(koiH && koiH.name === 'KOI-351 h', `the table files Kepler-90 h as KOI-351 h (${koiH && koiH.name})`);
+  const before = findMatches(buildIndex(recs, L2), 'kepler-90 h').hits;
+  check(!before.some((m) => m.record.id === 'exo-koi-351-h'), 'before the aliases, "kepler-90 h" does not find it');
+  const n = addPlanetAliases(SYSTEM_INDEX, recs);
+  check(n >= 7 && koiH.meta.aliases.includes('Kepler-90 h'), `${n} planets gained the usual name of their star; KOI-351 h is also Kepler-90 h`);
+  check(addPlanetAliases(SYSTEM_INDEX, recs) === 0, 'and a second call adds nothing');
+  const after = findMatches(buildIndex(recs, L2), 'kepler-90 h').hits;
+  check(after[0] && after[0].record.id === 'exo-koi-351-h', `"kepler-90 h" now finds KOI-351 h first (${after[0] && after[0].record.id})`);
+  check(addPlanetAliases([{ host: 'A', display: 'A', planets: [{ id: 'x' }] }], [{ id: 'x', name: 'A b', meta: {} }]) === 0 && addPlanetAliases(null, null) === 0, 'a star with one name and bad input change nothing');
+  void kepler;
+}
+
+// THE STAR'S GLOW FLOOR (internal #476): at whole-system scale the star is a pixel; its glow is not narrower than GLOW_FLOOR_X floors.
+{
+  const min = S.SYSTEM_VIEW.MIN_ANGULAR_RADIUS_RAD;
+  const view = 200;
+  const drawn = S.floorRadiusUnits(0.01, view); // a small red dwarf, far out: at the floor
+  const k = S.glowScale(drawn, view);
+  check(Math.abs(k * drawn / 2 - S.GLOW_FLOOR_X * view * min) < 1e-12 && k > S.GLOW_BASE_SCALE, `far out the glow is ${S.GLOW_FLOOR_X} floors in radius (scale ${k.toFixed(1)} star radii)`);
+  const close = 0.01;
+  check(S.glowScale(close, close * 8) === S.GLOW_BASE_SCALE, 'close to the star the glow is the 4.5 it has always been');
+  check(S.glowScale(0, 5) === S.GLOW_BASE_SCALE && S.glowScale(1, 0) === S.GLOW_BASE_SCALE, 'bad inputs give the plain glow');
+  let prev = 0, mono = true;
+  for (let v = 1; v < 1e4; v *= 1.7) { const g = S.glowScale(S.floorRadiusUnits(0.01, v), v) * S.floorRadiusUnits(0.01, v); if (g < prev - 1e-12) mono = false; prev = g; }
+  check(mono, 'the glow\'s width in the scene never shrinks as the camera moves out');
+  const { starRows } = await import(join(JS, 'ui/systemcard.js'));
+  const { COPY: C0 } = await import(join(JS, 'copy/en.js'));
+  await import(join(JS, 'copy/en.later.js'));
+  const rows = starRows({ star: { teffK: 3000, radiusSuns: 0.1, massSuns: 0.1 }, planets: [], starsInSystem: 1, zone: null });
+  check(rows.some((r) => r[0] === C0.starSystem.rows.starGlow && /wider than the star/.test(r[1])), 'the card says the glow is drawn wider than the star');
+  // TRAPPIST-1 is a hand-listed system (no computed zone): its star's card has the Glow row too (seen missing 2026-10-10).
+  const { glowRows } = await import(join(JS, 'ui/systemcard.js'));
+  const g = glowRows();
+  check(g.length === 1 && g[0][0] === C0.starSystem.rows.starGlow && /wider than the star/.test(g[0][1]), 'a hand-listed system\'s star has the Glow row alone');
+  const cardsSrc = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  check(/h\.system\.full \? glowRows\(\)/.test(cardsSrc), 'ui/cards.js hands the Glow row to a hand-listed system\'s star');
+}
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);
