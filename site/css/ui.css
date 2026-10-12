@@ -4445,7 +4445,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-status__foot-credit {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   line-height: 1.5;
   color: var(--sr-text-dim);
 }
