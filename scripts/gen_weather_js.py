@@ -18,7 +18,7 @@ from _genmirror import Mirror, pick  # noqa: E402
 
 FIELDS = ("id", "world", "kind", "class", "measured", "layer", "off_at", "profile", "spot", "hexagon",
           "north_cap", "south_cap", "dust_tau", "dust_north", "lightning", "wave", "patches",
-          "eddies", "ovals", "cyclones", "depth", "detail")
+          "eddies", "ovals", "cyclones", "depth", "detail", "vortex")
 
 
 def render(doc: dict) -> list:

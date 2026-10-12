@@ -36,6 +36,18 @@ Object.assign(COPY, {
   // kind cloud-detail), one sentence for the four of them, after the storms' on the weather line.
   weatherDetail: 'Closer than the map is sharp, a fine streaky cloud texture is generated to carry the picture: it moves with the measured winds and keeps the map’s own colours, and not one streak of it is a real cloud. Illustrative.',
 
+  // Saturn's polar vortex (2026-10-12, spec 0073 requirement 5): a sentence added to its weather
+  // line where the vortex can be drawn. The eye's size and the wall's speed are Cassini's (NASA,
+  // PIA14944); the spiral is ours, and the card says so.
+  weatherVortex: {
+    turning: {
+      saturn: 'Seen close, a small cyclone turns inside the hexagon: its eye is 2\u202F000 km across and its wall goes round at 150 metres a second, as Cassini measured in 2012. The spiral drawn round it is illustrative, and nothing is watching it now.',
+    },
+    still: {
+      saturn: 'Seen close, a small cyclone sits inside the hexagon: its eye is 2\u202F000 km across, as Cassini measured in 2012, when its wall went round at 150 metres a second. The spiral drawn round it is illustrative, and nothing is watching it now.',
+    },
+  },
+
   // What the Sun is doing, on its card under the spots' line (scene/sun.js, data/sunactivity.js; spec
   // 0073 requirement 2). Each line says what was measured and by whom, and what is only drawn.
   sunAlive: {

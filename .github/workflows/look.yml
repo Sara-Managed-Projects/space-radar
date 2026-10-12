@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
     inputs:
       probe:
-        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, lights, frametime, settings)"
+        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, frametime, settings)"
         default: smoke
       ref:
         description: "Branch or sha to look at (empty: the ref this was dispatched from)"

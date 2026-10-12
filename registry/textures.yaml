@@ -470,6 +470,30 @@ textures:
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
 
+  # THE RINGS FROM CLOSE (2026-10-12, spec 0073 requirement 5). One row of 8192 texels from the ring
+  # mesh's inner edge (74 500 km) to its outer (140 220 km), 8.02 km each: Cassini's measured normal
+  # optical depth divided by itself smoothed to the sharpness of the map above (a Gaussian of 60 km),
+  # a byte of 255 being a ratio of 4. scene/worlds.js RING_FRAG multiplies the map's optical depth
+  # by it (RING_FINE): one more texture read, on a tier-1 device and up, fetched when Saturn's disc is
+  # 15 % of half the view and never before; not under the frame latch. A phone never asks for it.
+  # tests/test_ring_detail.mjs reads the file at five named gaps' radii.
+  - id: saturn-ring-fine
+    world: saturn
+    slot: ring
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/8k_saturn_ring_fine.png
+        px: [8192, 1]
+        bytes: 5061
+        format: mono
+        licence: 'Public domain: "Data sets archived in the PDS are in the public domain." (NASA Planetary Data System, Geosciences Node FAQ, pds-geosciences.wustl.edu/faq.html, read 2026-10-12); the PDS asks that data sets be cited as published research is'
+        credit: "Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's"
+        source: "https://pds-rings.seti.org/holdings/volumes/COUVIS_8xxx/COUVIS_8001/data/UVIS_HSP_2008_202_BETCEN_I_TAU01KM.LBL (read 2026-10-12)"
+        original: "https://pds-rings.seti.org/holdings/volumes/COUVIS_8xxx/COUVIS_8001/data/UVIS_HSP_2008_202_BETCEN_I_TAU01KM.TAB"
+        make: "scripts/build-ring-profile.py: the table's normal optical depth every kilometre (71 625 rows, 73 267 to 144 890 km; the star Beta Centauri 66.7 degrees above the ring plane, 20 to 21 July 2008), negative values taken as 0 and values above what the star could show held at that; binned to 8192 texels by what gets through; divided by the same profile smoothed with a 60 km Gaussian; clipped at a ratio of 4; one grey channel, PNG"
+        limits: "One star on one day along one line through the rings: structure that varies round the ring (the B ring's outer edge, the ringlets in the Encke gap, density waves' phases) is one cut of it. Where the B ring is opaque to the star (optical depth over about 5) the table is a lower bound and the ratio is noise near 1. 8 km a texel: the Keeler gap (35 km) is four texels, and nothing finer than 16 km is in it. It refines the artist's map and does not replace it: the broad optical depth is still that map's alpha, not Cassini's."
+
   - id: uranus
     world: uranus
     slot: map

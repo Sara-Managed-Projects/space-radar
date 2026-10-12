@@ -295,7 +295,8 @@ effects:
       flattening: 0.0980
       sense: 1
       points: [[-90, 0], [-73, 0], [-70, 80], [-65, 0], [-58, 80], [-52, 0], [-42, 90], [-35, 0], [-28, 60], [-20, 220], [-10, 360], [0, 380], [10, 360], [20, 220], [28, 60], [35, 0], [42, 110], [50, 0], [60, 100], [66, 0], [72, 5], [78.1, 104], [82, 10], [90, 0]]
-    # The two polar vortices (about 150 m/s at 88 degrees) are left out: the map has no pole in it.
+    # The polar vortices are not in this profile (the map has no pole in it); the northern one is
+    # its own row, saturn-polar-vortex.
     note: "The equator's jet is some 400 m/s faster than the interior turns; the other jets are narrower."
 
   - id: saturn-hexagon
@@ -310,6 +311,28 @@ effects:
       read: 2026-10-03
     hexagon: {lat_deg: 78.1, flattening: 0.0980, sides: 6}
     why: "The map we ship has no pole in it. The six sides, the latitude and the fact that it barely moves against the planet's rotation are measured; the line drawn there is ours."
+
+  # THE VORTEX INSIDE THE HEXAGON (2026-10-12, spec 0073 requirement 5). NASA's caption to Cassini's
+  # picture of it, "The Rose" (PIA14944, taken 27 November 2012, published 29 April 2013, read 2026-10-12): "Measurements
+  # have sized the eye at a staggering 1,250 miles (2,000 kilometers) across with cloud speeds as
+  # fast as 330 miles per hour (150 meters per second)." It is a cyclone: it turns the way the planet
+  # does, anticlockwise seen from above the north pole. Those two numbers are the row; the turning
+  # drawn is the wall's -- once round a 2 000 km eye at 150 m/s is 11.6 hours -- as one piece, which
+  # the real storm is not (its speed falls off outward and the clouds shear). The spiral arms, their
+  # number (scene/weather/worldweather.js VORTEX) and their reach (`reach_eyes`, in eye radii) are OURS. Drawn from `from_share` of half the
+  # view: at a distance the eye is under a pixel and the hexagon's own dark eye stands for it.
+  - id: saturn-polar-vortex
+    world: saturn
+    kind: polar-vortex
+    class: illustrative
+    measured: hidden
+    off_at: [tier0, save_data]
+    source:
+      name: "NASA/JPL-Caltech/SSI, The Rose (Cassini ISS, PIA14944, 29 April 2013: the eye 2,000 km across, cloud speeds to 150 m/s); Baines et al. 2009, Saturn's north polar cyclone and hexagon at depth, Planet. Space Sci. 57, 1671"
+      url: "https://science.nasa.gov/resource/the-rose/"
+      read: 2026-10-12
+    vortex: {eye_diameter_km: 2000, wind_m_s: 150, radius_km: 58232, from_share: 0.3, reach_eyes: 6}
+    why: "The map has no pole in it, and no camera is watching Saturn's pole now. The eye's size and the speed of its wall are Cassini's; the spiral drawn round it, and that it turns as one piece, are ours."
 
   - id: venus-superrotation
     world: venus

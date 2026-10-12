@@ -338,6 +338,45 @@ export function ringBandsStrip(ring, px = RING_BANDS_PX) {
   return data;
 }
 
+/**
+ * THE FINE STRUCTURE (2026-10-12, spec 0073 requirement 5): the hundreds of ringlets and gaps the map
+ * is too coarse to hold, from one stellar occultation by Cassini's UVIS (registry/textures.yaml
+ * `saturn-ring-fine`; scripts/build-ring-profile.py says how the strip is made). A texel is the
+ * measured optical depth over its own neighbourhood's: 1 = no change, 0 = a gap, `ratioMax` at 255.
+ * The strip runs from the ring mesh's inner edge to its outer with no warp: its radii are Cassini's.
+ * Fetched when Saturn's disc is `fromShare` of half the view, on tier 1 and up, never under the
+ * frame latch (the rule Mercury's relief keeps); kept until the disc is `keptShare`.
+ */
+export const RING_FINE = { map: '8k_saturn_ring_fine.png', px: 8192, ratioMax: 4, fromShare: 0.15, keptShare: 0.11 };
+/** Seconds the fine structure and the grains take to come in or go out. */
+export const RING_NEAR_FADE_S = 1;
+/**
+ * THE GRAINS (illustrative, and the card says they are drawn). From very close the ring is not a
+ * smooth sheet. No particle is resolved from where the camera may stand -- a pixel is kilometres of
+ * ring and the particles are centimetres to metres -- so what is drawn is a texture: a stable hash
+ * of the place in the ring plane, in cells `px` screen pixels across at whatever the distance is
+ * (two sizes cross-faded, so nothing pops and nothing is finer than a pixel). One cell in five
+ * holds a glint, most of them faint; and a soft mottling `mottleCells` cells across stands for
+ * clumps. Together they scale what the slab already sends by
+ * 1 + `gain` x (glint - `mean`) + `mottle` x (clump - 0.5): no brighter on average (`mean` is the
+ * glints' own). The backscattered light and the forward-thrown light each keep their own phase,
+ * so the sparkle is strongest where those are. It is only there when one pixel covers less than
+ * `farRadii` of the planet's radius (30 km of ring), full by half that. (The first version put a
+ * glint in every cell: a lattice of dots, television static. Seen in the look of 2026-10-12.)
+ */
+export const RING_GRAIN = { px: 3.5, gain: 3, mean: 0.0116, mottle: 0.3, mottleCells: 4, farRadii: 5e-4 };
+/** How much of the grain is drawn where a pixel covers `radiiPerPx` of ring. JS twin of RING_FRAG's gate. Pure. */
+export function ringGrainGate(radiiPerPx) {
+  const x = Math.min(1, Math.max(0, (radiiPerPx - RING_GRAIN.farRadii * 0.5) / (RING_GRAIN.farRadii * 0.5)));
+  return 1 - x * x * (3 - 2 * x);
+}
+/** The slab's optical depth with the fine structure in: tau x (1 + fine x (ratio - 1)). JS twin of RING_FRAG. Pure. */
+export function ringFineTau(tau, ratio, fine) {
+  return Math.max(0, tau * (1 + Math.min(1, Math.max(0, fine)) * (ratio - 1)));
+}
+/** Where a radius is in the fine strip, 0..1 from the ring's inner edge to its outer. Pure. */
+export function ringFineU(rKm, innerKm, outerKm) { return (rKm - innerKm) / (outerKm - innerKm); }
+
 /** How many times steeper than measured Mercury's relief is drawn, and how far Saturn's bands are pushed from the map's mean. */
 export const RELIEF_STEEP = 4;
 export const SATURN_CONTRAST = 1.5;
@@ -426,7 +465,7 @@ export const WORLDS = [
     // to host. So the shader draws each texel 1.5 times as far from the map's own mean colour
     // (`mean`: linear light, weighted by area, measured on the file 2026-10-08) -- an ADJUSTMENT of
     // ours, which the card states -- and not on the Hubble face, which is shown as measured.
-    look: { map: '2k_saturn.webp', tint: 0xdfcca8, contrast: { gain: SATURN_CONTRAST, mean: [0.7405, 0.6024, 0.3928] }, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.webp', tint: 0xdfcca8, contrast: { gain: SATURN_CONTRAST, mean: [0.7405, 0.6024, 0.3928] }, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png', fine: RING_FINE } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
@@ -1200,6 +1239,9 @@ uniform float uOpacity;
 uniform vec2 uRingRadii;
 uniform vec4 uRingWarp;
 uniform vec2 uGlobe;          // the globe's equatorial and polar radii (oblateRadii); 1, 1 for a sphere
+uniform sampler2D uFineMap;   // the fine structure: measured optical depth over its neighbourhood's (RING_FINE)
+uniform float uFine;          // how much of it is in, 0..1; 0 until Saturn is large on screen
+uniform float uGrain;         // how much of the sparkle of unresolved grains is in, 0..1 (RING_GRAIN)
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1209,6 +1251,33 @@ const float RING_DUST_G = ${RING_DUST_G.toFixed(2)};
 const float RING_MU_FLOOR = ${RING_MU_FLOOR.toFixed(2)};
 const vec3 RING_DUST_COLOUR = vec3( ${RING_DUST_COLOUR.map((c) => c.toFixed(3)).join(', ')} );
 ${RING_U_GLSL}
+// A stable number per cell of the ring plane (Hoskins' hash without sine: the same on every GPU).
+float ringHash( vec2 p ) {
+  vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
+  p3 += dot( p3, p3.yzx + 33.33 );
+  return fract( ( p3.x + p3.y ) * p3.z );
+}
+// One size of grain: one cell in five holds a soft glint, most of them faint and a few bright.
+float ringGrains( vec2 p, float cell ) {
+  vec2 q = p / cell;
+  vec2 id = floor( q );
+  float h = ringHash( id + cell * 4096.0 );
+  if ( h < 0.8 ) return 0.0;
+  vec2 at = vec2( ringHash( id + 17.0 ), ringHash( id + 59.0 ) ) * 0.4 + 0.3;
+  vec2 d = q - id - at;
+  float s = ( h - 0.8 ) * 5.0;
+  return s * s * exp( -dot( d, d ) * 18.0 );
+}
+// Clumps: the same hash, smooth between the corners of cells several grains across. 0..1, mean 0.5.
+float ringMottle( vec2 p, float cell ) {
+  vec2 q = p / cell;
+  vec2 i = floor( q );
+  vec2 f = q - i;
+  f = f * f * ( 3.0 - 2.0 * f );
+  float o = cell * 1024.0 + 7.0;
+  return mix( mix( ringHash( i + o ), ringHash( i + vec2( 1.0, 0.0 ) + o ), f.x ),
+              mix( ringHash( i + vec2( 0.0, 1.0 ) + o ), ringHash( i + vec2( 1.0, 1.0 ) + o ), f.x ), f.y );
+}
 // The phase of a Lambert sphere: the ring's particles, centimetres to metres, throw light back.
 float lambertSpherePhase( float cosAlpha ) {
   float a = acos( clamp( cosAlpha, -1.0, 1.0 ) );
@@ -1236,6 +1305,13 @@ void main() {
   // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
   float alpha = clamp( tex.a * uOpacity, 0.0, 0.999 );
   float tau = -log( 1.0 - alpha );
+  // The fine structure, from close: Cassini's ringlets and gaps multiply the map's optical depth.
+  // ONE more texture fetch. A coarse mip of the strip is 1, so at a distance it changes nothing.
+  if ( uFine > 0.0 ) {
+    float ratio = texture2D( uFineMap, vec2( ( length( vPosL.xy ) - uRingRadii.x ) / ( uRingRadii.y - uRingRadii.x ), 0.5 ) ).r * ${RING_FINE.ratioMax.toFixed(1)};
+    tau *= 1.0 + uFine * ( ratio - 1.0 );
+    alpha = min( 1.0 - exp( -tau ), 0.999 );
+  }
   vec3 view = normalize( vCamL );
   float m0 = max( abs( vSunL.z ), RING_MU_FLOOR );
   float m = max( abs( view.z ), RING_MU_FLOOR );
@@ -1251,6 +1327,23 @@ void main() {
   float dust = RING_DUST * ( 1.0 - alpha );
   float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
   float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
+  // The grains, from very close (RING_GRAIN): no fetch. Cells a few pixels across at this distance,
+  // two sizes cross-faded; they scale what the slab sends, so each phase keeps its own sparkle.
+  if ( uGrain > 0.0 ) {
+    float perPx = max( length( dFdx( vPosL.xy ) ), length( dFdy( vPosL.xy ) ) );
+    float gate = uGrain * ( 1.0 - smoothstep( ${(RING_GRAIN.farRadii * 0.5).toExponential(2)}, ${RING_GRAIN.farRadii.toExponential(2)}, perPx ) );
+    if ( gate > 0.0 ) {
+      float lg = log2( max( perPx, 1e-9 ) * ${RING_GRAIN.px.toFixed(1)} );
+      float lv = floor( lg );
+      float c0 = exp2( lv );
+      float g = mix( ringGrains( vPosL.xy, c0 ), ringGrains( vPosL.xy, c0 * 2.0 ), lg - lv );
+      float clump = mix( ringMottle( vPosL.xy, c0 * ${RING_GRAIN.mottleCells.toFixed(1)} ), ringMottle( vPosL.xy, c0 * ${(RING_GRAIN.mottleCells * 2).toFixed(1)} ), lg - lv );
+      // Less the glints' own mean, so the ring is no brighter on average with them than without.
+      float k = max( 1.0 + gate * ( ${RING_GRAIN.gain.toFixed(1)} * ( g - ${RING_GRAIN.mean.toFixed(4)} ) + ${RING_GRAIN.mottle.toFixed(2)} * ( clump - 0.5 ) ), 0.0 );
+      body *= k;
+      fine *= k;
+    }
+  }
   // What the ring hides behind it: its optical depth along the line of sight.
   float cover = 1.0 - exp( -tau / m );
   vec3 light = uColour * ( tex.rgb * body + RING_DUST_COLOUR * fine ) * shade;
@@ -1284,6 +1377,9 @@ function ringMaterial(map, inner, outer, warp) {
       uRingRadii: { value: new THREE.Vector2(inner, outer) },
       uRingWarp: { value: new THREE.Vector4(...warp) },
       uGlobe: { value: new THREE.Vector2(1, 1) },
+      uFineMap: { value: null },
+      uFine: { value: 0 },
+      uGrain: { value: 0 },
     },
   });
 }
@@ -1456,9 +1552,70 @@ export function createWorlds(scene, opts = {}) {
     });
     return true;
   }
+  // THE RINGS FROM CLOSE (RING_FINE, RING_GRAIN): the same permission as the relief -- tier 1 and
+  // up, never under the frame latch. The strip is asked for when the disc first reaches
+  // `fromShare`; both terms come in over RING_NEAR_FADE_S and go out the same way, and the strip
+  // is given back when they are out and the disc is under `keptShare`.
+  const ringNear = new Map();   // world id -> { tex, asked, fine, grain, wallMs }
+  let lookMeasured = false;     // main.js setLook: Measured or Film
+  // Wall time, not the clock's: a held clock still lets the camera come close. `opts.reducedMotion`
+  // (a function or a flag): where less motion is asked for the two terms are simply there, no fade.
+  const wallNow = typeof opts.now === 'function' ? opts.now : () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const motionQuery = opts.reducedMotion === undefined && typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const lessMotion = () => (motionQuery ? !!motionQuery.matches : typeof opts.reducedMotion === 'function' ? !!opts.reducedMotion() : !!opts.reducedMotion);
+  function stepRingDetail(w, mesh, wallMs) {
+    const fineRow = w.look.ring && w.look.ring.fine;
+    const ring = mesh.userData.ring;
+    if (!fineRow || !ring) return;
+    let st = ringNear.get(w.id);
+    if (!st) { st = { tex: null, asked: false, fine: 0, grain: 0, wallMs: NaN }; ringNear.set(w.id, st); }
+    const share = reliefAllowed ? discShare(w.id) : 0;
+    const near = share >= (st.asked ? fineRow.keptShare : fineRow.fromShare);
+    if (near && !st.asked && load) {
+      st.asked = true;
+      load(base + fineRow.map, (tex) => {
+        if (!tex) return;
+        if (!st.asked || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; } // given back, or latched, meanwhile
+        tex.colorSpace = THREE.NoColorSpace;   // ratios, not colours
+        tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.magFilter = THREE.LinearFilter;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.generateMipmaps = true;
+        // One row: anisotropic filtering would read the sharpest mip along the ring and shimmer.
+        tex.anisotropy = 1;
+        tex.needsUpdate = true;
+        st.tex = tex;
+        ring.material.uniforms.uFineMap.value = tex;
+      });
+    }
+    const dt = Number.isFinite(st.wallMs) ? Math.max(0, (wallMs - st.wallMs) / 1000) : 0;
+    st.wallMs = wallMs;
+    const stepMax = lessMotion() ? 1 : dt / RING_NEAR_FADE_S;
+    const toward = (v, want) => v + Math.max(-stepMax, Math.min(stepMax, want - v));
+    st.fine = toward(st.fine, near && st.tex ? 1 : 0);
+    // The grains are generated: under the Measured look (spec 0073 req 8) they are not drawn. The
+    // fine structure is Cassini's and stays.
+    st.grain = toward(st.grain, near && !lookMeasured ? 1 : 0);
+    const u = ring.material.uniforms;
+    u.uFine.value = st.fine;
+    u.uGrain.value = st.grain;
+    if (!near && st.asked && st.fine === 0 && st.grain === 0) dropRingDetail(w.id);
+  }
+  function dropRingDetail(id) {
+    const st = ringNear.get(id);
+    const mesh = meshes.get(id);
+    if (mesh && mesh.userData.ring) {
+      const u = mesh.userData.ring.material.uniforms;
+      u.uFine.value = 0; u.uGrain.value = 0; u.uFineMap.value = null;
+    }
+    if (st && st.tex && st.tex.dispose) st.tex.dispose();
+    ringNear.delete(id);
+  }
+
   /** main.js, when the device's tier is known and when the frame latch trips: may the reliefs be worn? */
   function setRelief(on) {
     reliefAllowed = !!on;
+    if (!reliefAllowed) for (const id of [...ringNear.keys()]) dropRingDetail(id);
     for (const w of WORLDS) {
       if (!w.look.relief) continue;
       if (reliefAllowed) { fetchRelief(w.id); continue; }
@@ -1891,6 +2048,7 @@ export function createWorlds(scene, opts = {}) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
         if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
+        if (mesh.userData.ring && w.look.ring.fine) stepRingDetail(w, mesh, wallNow());
         if (mesh.userData.air) updateAir(w, mesh, sunDirHere);
         if (w.look.earthshine && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEarthshine) {
           // The Sun-Earth-Moon angle and the Earth-Moon distance, from the geocentric vectors step 2a
@@ -2345,6 +2503,10 @@ export function createWorlds(scene, opts = {}) {
     preload,
     releaseMap,
     setRelief,
+    /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
+    setLook: (mode) => { lookMeasured = mode === 'measured'; },
+    /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
+    ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     /** For the probes: is this world wearing its relief? */
     hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
     setMapsHeld,

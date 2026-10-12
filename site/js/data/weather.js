@@ -581,6 +581,25 @@ export const WEATHER = [
     "source": "Sánchez-Lavega et al. 2021, Interaction of Saturn's Hexagon with convective storms, GRL 48 (the jet at 78.1 N planetographic, 104 m/s); Godfrey 1988, Icarus 76, 335 (the discovery)"
   },
   {
+    "id": "saturn-polar-vortex",
+    "world": "saturn",
+    "kind": "polar-vortex",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "vortex": {
+      "eye_diameter_km": 2000,
+      "wind_m_s": 150,
+      "radius_km": 58232,
+      "from_share": 0.3,
+      "reach_eyes": 6
+    },
+    "source": "NASA/JPL-Caltech/SSI, The Rose (Cassini ISS, PIA14944, 29 April 2013: the eye 2,000 km across, cloud speeds to 150 m/s); Baines et al. 2009, Saturn's north polar cyclone and hexagon at depth, Planet. Space Sci. 57, 1671"
+  },
+  {
     "id": "venus-superrotation",
     "world": "venus",
     "kind": "zonal-flow",

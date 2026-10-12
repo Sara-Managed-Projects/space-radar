@@ -18,6 +18,8 @@
 //                within itself. MODELLED (its place is the map's; its drift is not drawn).
 //   the hexagon  Saturn's north pole: a six-sided line at the jet's measured latitude.
 //                ILLUSTRATIVE (the map has no pole in it).
+//   the vortex   inside it, from close: a small cyclone whose eye is as wide and whose wall is as
+//                fast as Cassini measured; the spiral is ours. ILLUSTRATIVE.
 //   Mars         the seasonal frost caps and the season's dust, by Ls: an optical depth typical of
 //                the season, thicker in the south. ILLUSTRATIVE (seasonal, not today's).
 //   the dark Y   Venus: the planet-wide wave ultraviolet cameras see, going round in four days,
@@ -90,6 +92,15 @@ export const PARS_ANCHOR = '// Oren-Nayar, qualitative form';
  * degrees. `depth`: how much darker the line and the cap inside it are than the map, at most.
  */
 export const HEXAGON = { cornerShare: 0.75, halfWidthRad: 0.012, depth: 0.22 };
+/**
+ * The polar vortex as drawn (its size and speed are the registry's): how tightly the arms wind, how
+ * how many arms, how bright the wall of cloud round the eye and the arms are against the cap, how dark the eye is.
+ */
+export const VORTEX = { arms: 2, wind: 5, wall: 0.4, lift: 0.28, eye: 0.4 };
+/** Days the vortex's wall takes to go once round: the eye's rim at the measured speed. Pure. */
+export function vortexPeriodDays(v) {
+  return (Math.PI * v.eye_diameter_km * 1000) / v.wind_m_s / 86400;
+}
 /** Seasonal frost, linear RGB: bright and slightly warm, as CO2 frost over dust photographs. */
 export const FROST = [0.86, 0.84, 0.82];
 /** Airborne dust, linear RGB, and how much of the surface's contrast the haziest season leaves. */
@@ -275,6 +286,7 @@ uniform vec4  uWxSpot;                  // the pinned oval: centre u, v and half
 uniform float uWxSpotRate;              // its own turning, turns per day, anticlockwise positive
 uniform vec3  uWxHex;                   // the hexagon: its corners' colatitude (rad; 0 = none), its depth, its longitude
 uniform vec3  uWxWave;                  // the dark Y: its depth (0 = none), how far round it has gone (turns), its arms' reach (rad)
+uniform vec4  uWxVortex;                // the polar vortex: its eye's radius (rad), its turn (0..1), how much of it is in (0..1), its reach in eye radii
 ${WX_STORM_PARS}${WX_DETAIL_PARS}float wxRate( float v ) {
   float x = clamp( v, 0.0, 1.0 ) * float( ${RATE_ROWS - 1} );
   int i = int( min( floor( x ), float( ${RATE_ROWS - 2} ) ) );
@@ -345,6 +357,20 @@ vec3 wxBase( vec2 uv ) {
     float eye = 1.0 - smoothstep( 0.012, 0.035, rho );
     c *= 1.0 - uWxHex.y * ( line + 0.45 * inside + 0.8 * eye );
     c = mix( c, c * vec3( 0.86, 0.95, 1.08 ), 0.5 * inside * uWxHex.y / ${HEXAGON.depth.toFixed(2)} );
+  }
+  if ( uWxVortex.z > 0.0 && vPosL.y > 0.0 ) {
+    // The cyclone at the pole: a dark eye, a bright wall round it, and arms of cloud that trail
+    // as it turns anticlockwise (with the planet), fading out by uWxVortex.w eye radii.
+    vec3 q = normalize( vPosL );
+    float a = acos( clamp( q.y, -1.0, 1.0 ) ) / uWxVortex.x;
+    if ( a < uWxVortex.w ) {
+      float phi = atan( -q.z, q.x );
+      float arm = cos( ${VORTEX.arms.toFixed(1)} * ( phi - 6.2831853 * uWxVortex.y ) + ${VORTEX.wind.toFixed(1)} * log( a + 0.15 ) );
+      float wall = exp( -( a - 1.15 ) * ( a - 1.15 ) / 0.12 );
+      float reach = ( 1.0 - smoothstep( 1.5, uWxVortex.w, a ) ) * smoothstep( 0.7, 1.3, a );
+      float eye = 1.0 - smoothstep( 0.5, 1.0, a );
+      c *= 1.0 + uWxVortex.z * ( ${VORTEX.wall.toFixed(2)} * wall + ${VORTEX.lift.toFixed(2)} * arm * reach - ${VORTEX.eye.toFixed(2)} * eye );
+    }
   }
   if ( uWxWave.x > 0.0 ) {
     // A Y on its side: a dark stem along the equator for half a turn, opening into two arms that
@@ -520,7 +546,7 @@ export function dressStorms(u, fx, still = false) {
   return state;
 }
 
-const KIND_KEY = { 'cloud-detail': 'detail', 'shear-eddies': 'eddies', ovals: 'ovals', 'polar-cyclones': 'cyclones', 'cloud-depth': 'depth', 'zonal-flow': 'flow', hexagon: 'hexagon', 'mars-season': 'mars', 'giant-lightning': 'flash', 'planetary-wave': 'wave', 'cloud-patches': 'patches' };
+const KIND_KEY = { 'cloud-detail': 'detail', 'polar-vortex': 'vortex', 'shear-eddies': 'eddies', ovals: 'ovals', 'polar-cyclones': 'cyclones', 'cloud-depth': 'depth', 'zonal-flow': 'flow', hexagon: 'hexagon', 'mars-season': 'mars', 'giant-lightning': 'flash', 'planetary-wave': 'wave', 'cloud-patches': 'patches' };
 
 /** The registry's rows by world: {flow, hexagon, mars, flash, wave, patches, eddies, ovals, cyclones, depth, detail}, each a row or undefined. */
 export function effectsByWorld(rows = WEATHER) {
@@ -568,6 +594,10 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
       const wave = fx.wave ? fx.wave.wave : null;
       if (wave) entry.wave = { periodDays: wave.period_days, sense: fx.flow.profile.sense || 1 };
       u.uWxWave = { value: wave ? { x: wave.depth, y: 0, z: wave.arm_deg * DEG } : { x: 0, y: 0, z: 0 } };
+      // The polar vortex: nothing of it is in until the disc reaches its size (update()).
+      const vx = fx.vortex ? fx.vortex.vortex : null;
+      u.uWxVortex = { value: { x: vx ? (vx.eye_diameter_km / 2) / vx.radius_km : 1, y: 0, z: 0, w: vx ? vx.reach_eyes : 1 } };
+      if (vx) entry.vortex = { from: vx.from_share, periodDays: vortexPeriodDays(vx), wallMs: NaN, still: reducedMotion };
       material.defines = { ...(material.defines || {}), WX_ZONAL: 1 };
       if (fx.eddies || fx.ovals || fx.cyclones || fx.depth) {
         entry.storms = dressStorms(u, fx, reducedMotion);
@@ -673,6 +703,17 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
       e.storms.wallMs = wallMs;
       e.storms.step(share, reducedMotion ? Infinity : dt, e.material.uniforms);
     }
+    for (const e of worn) {
+      if (!e.vortex || !e.mesh.visible) continue;
+      const share = worlds && worlds.discShare ? worlds.discShare(e.id) : 0;
+      const dt = Number.isFinite(e.vortex.wallMs) ? Math.max(0, (wallMs - e.vortex.wallMs) / 1000) : Infinity;
+      e.vortex.wallMs = wallMs;
+      const stepMax = reducedMotion ? Infinity : dt / NEAR_FADE_S;
+      const v = e.material.uniforms.uWxVortex.value;
+      // Under the Measured look the drawn spiral is not there (the row's `measured: hidden`).
+      const want = drawn(e.fx.vortex) ? nearShare(share, e.vortex.from) : 0;
+      v.z = !(stepMax < 1) ? want : v.z + Math.max(-stepMax, Math.min(stepMax, want - v.z));
+    }
     if (!Number.isFinite(tMs) || tMs === lastMs) return;
     lastMs = tMs;
     for (const e of worn) {
@@ -684,6 +725,8 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
         const v = u.uWxPhase.value;
         v.x = ph.tau1; v.y = ph.tau2; v.z = ph.w2; v.w = rigidTurn(tMs, e.flow.rigid);
         if (e.wave) u.uWxWave.value.y = wavePhase(tMs, e.wave.periodDays, e.wave.sense);
+        // The vortex turns on the clock, with the planet; where less motion is asked for it stands.
+        if (e.vortex && !reducedMotion) u.uWxVortex.value.y = wavePhase(tMs, e.vortex.periodDays, 1);
         // The cyclones turn on the clock, wrapped to one turn; where less motion is asked for they stand.
         if (e.storms && e.storms.periodDays && !reducedMotion) u.uWxPole.value.y = wavePhase(tMs, e.storms.periodDays, 1);
       } else if (e.mars && drawn(e.mars)) {
@@ -746,6 +789,8 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
     storms: (id) => { const e = !latched && worn.find((x) => x.id === id && !!x.storms); return e ? (e.storms.still ? 'still' : 'moving') : null; },
     /** Does this world wear the generated close-range cloud detail (a row, and no latch)? */
     detail: (id) => !latched && worn.some((e) => e.id === id && !!e.detail && drawn(e.fx.detail)),
+    /** Does this world wear the polar vortex: 'moving', 'still' (less motion asked for), or null? */
+    vortex: (id) => { const e = !latched && worn.find((x) => x.id === id && !!x.vortex && drawn(x.fx.vortex)); return e ? (e.vortex.still ? 'still' : 'moving') : null; },
     /** For the probes and the card: the season on Mars, each flow's cycle, the latch. */
     state: () => ({
       latched,
@@ -759,6 +804,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
         wave: e.wave ? e.material.uniforms.uWxWave.value.y : null,
         flashes: e.flash ? { slots: e.flash.slots.length, lit: e.flash.lit } : null,
         detail: e.detail ? { ...e.material.uniforms.uWxDetail.value } : null,
+        vortex: e.vortex ? { near: e.material.uniforms.uWxVortex.value.z, turn: e.material.uniforms.uWxVortex.value.y, periodDays: e.vortex.periodDays, still: e.vortex.still } : null,
         storms: e.storms ? { near: { ...e.material.uniforms.uWxNear.value }, face: e.storms.face, turn: e.material.uniforms.uWxPole.value.y, still: e.storms.still } : null,
       })),
     }),

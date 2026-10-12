@@ -135,7 +135,7 @@ check(gpuMiB({ px: [2048, 1024], format: 'rgb' }).toFixed(2) === '10.67' && gpuM
   const walk = (dir) => { for (const f of readdirSync(dir)) { const p = join(dir, f); const st = statSync(p); if (st.isDirectory()) walk(p); else bytes += st.size; } };
   walk(join(ROOT, 'site/textures'));
   check(bytes <= BUDGETS.repo_textures_mb * 1e6, `site/textures/ is ${(bytes / 1e6).toFixed(1)} MB, over repo_textures_mb ${BUDGETS.repo_textures_mb}`);
-  for (const row of TEXTURES) for (const f of row.files) check(f.px[0] <= 4096 || /\.ktx2$/.test(f.file), `${row.id}: ${f.px[0]} px wide is over what may ship without KTX2`);
+  for (const row of TEXTURES) for (const f of row.files) check(f.px[0] <= 4096 || /\.ktx2$/.test(f.file) || (f.px[1] === 1 && f.px[0] <= 8192), `${row.id}: ${f.px[0]} px wide is over what may ship without KTX2 (a strip one texel tall, 64 kB on the GPU, is not what the rule is about)`);
   sums.repo = bytes;
 }
 

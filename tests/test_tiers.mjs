@@ -273,7 +273,12 @@ const boot = bootFiles(TEXTURES);
 // first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
 // 35 since 2026-10-06: Venus's ground by radar, fetched when its card asks for it (`when: asked`).
 // 42 since 2026-10-08: Mercury's relief, fetched with its map on a tier-1 device and up (`when: asked`).
-check(boot.length === 42 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-two 1k and 2k files (${boot.length})`);
+// 43 since 2026-10-12: the fine structure of Saturn's rings, one row of 8192 texels (5 kB; 64 kB on the
+// GPU), fetched when Saturn is large on screen on a tier-1 device and up (`when: asked`). It is the
+// one file here that is not 1k or 2k, and the one map that may be wider than 4096 (below): a strip
+// one texel tall is not what the 8k rule is about.
+const STRIP = 'textures/8k_saturn_ring_fine.png';
+check(boot.length === 43 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-two 1k and 2k files and the rings' strip (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);
@@ -295,7 +300,7 @@ for (const row of TEXTURES) {
   for (const f of row.files) {
     if (f.tier > 0 && row.slot === 'relief') check(row.id === 'earth-relief' && f.px[0] === 1024 * f.tier && f.px[1] * 2 === f.px[0] && f.format === 'mono', `${row.id} tier ${f.tier} is ${f.px} ${f.format}, not one grey channel ${1024 * f.tier} wide`);
     else if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
-    check(f.px[0] <= 4096, `${row.id}: ${f.px[0]} wide is over what any tier may ship without KTX2`);
+    check(f.px[0] <= 4096 || (f.px[1] === 1 && f.px[0] <= 8192), `${row.id}: ${f.px[0]} wide is over what any tier may ship without KTX2`);
   }
 }
 // What a T1 laptop fetches after the first frame, worst month, against its budget (registry/budgets.yaml).
