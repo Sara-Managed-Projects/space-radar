@@ -235,7 +235,7 @@ const FEED = [
   const S2 = await import(pathToFileURL(join(ROOT, 'site/js/scene/sun.js')).href);
   check(S2.SUN_FRAG.includes('for ( int z = -1; z <= 1; z++ )') && !S2.SUN_FRAG.includes('step( vec3( 0.5 ), f )'), 'tier 2 keeps the full 27-cell loop');
   check(S2.SUN_FRAG_CHEAP.includes('for ( int z = 0; z <= 1; z++ )') && S2.SUN_FRAG_CHEAP.includes('step( vec3( 0.5 ), f )') && !S2.SUN_FRAG_CHEAP.includes('z = -1'), 'tiers 0 and 1 read 8 cells toward the nearer faces');
-  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/vec3 cells[\s\S]*?\n}\n/, '');
+  const strip = (s) => s.replace(/\/\/[^\n]*/g, '').replace(/void cellsOf[\s\S]*?\n}\n/, '');
   check(strip(S2.SUN_FRAG) === strip(S2.SUN_FRAG_CHEAP) && strip(S2.SUN_FRAG) !== S2.SUN_FRAG.replace(/\/\/[^\n]*/g, ''), 'everything but the cell loop is the same source at every tier');
   check(!/\bhalf\b|\binput\b|\boutput\b|\bsample\b|\bfilter\b/.test(S2.SUN_FRAG_CHEAP), 'no reserved GLSL word in the cheap source either');
   let seed = 12345;
@@ -248,12 +248,13 @@ const FEED = [
     const flow = [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5].map((v) => v * 2 * S2.GRAIN_DRIFT);
     const a = S2.cellsTwin(p, t, false, flow), b = S2.cellsTwin(p, t, true, flow);
     const la = S2.grainShade(...a), lb = S2.grainShade(...b);
-    // The rounded distance is a sum over the cells read, so 8 and 27 are never the very same number: "the same" is within a hundredth of the shade.
-    if (Math.abs(la - lb) < 0.01) same++;
+    if (Math.abs(la - lb) < 1e-12) same++;
     const dl = Math.abs(la - lb);
     sumAbs += dl; maxLaneDiff = Math.max(maxLaneDiff, dl); sumFull += la; sumNear += lb;
   }
-  check(same / N > 0.8, `the 8 cells give the same shade, within a hundredth, at ${(100 * same / N).toFixed(1)} % of points (over 80 % wanted)`);
+  check(same / N > 0.8, `the 8 cells give the very same value at ${(100 * same / N).toFixed(1)} % of points (over 80 % wanted)`);
+  // Since 2026-10-12 a granule reaches no farther than GRAIN_REACH from its point, which no cell but the near 8 can do: the two loops agree everywhere.
+  check(same === N && S2.GRAIN_JITTER + S2.GRAIN_DRIFT / 2 + S2.GRAIN_REACH <= 1 + 1e-9, `the 8 cells are exact: ${same} of ${N} points the same, because jitter ${S2.GRAIN_JITTER} + drift ${S2.GRAIN_DRIFT / 2} + reach ${S2.GRAIN_REACH} is not over 1`);
   check(sumAbs / N < 0.03, `and the lane shade differs by ${(sumAbs / N).toFixed(4)} on average (under 0.03)`);
   check(Math.abs(sumFull - sumNear) / N < 0.02, `the mean lane shade moves by ${(Math.abs(sumFull - sumNear) / N).toFixed(4)} (the picture's overall brightness holds)`);
   check(Math.abs(sumFull / N - S2.GRAIN_MEAN) < 0.02 && Math.abs(sumNear / N - S2.GRAIN_MEAN) < 0.02, `the shade's mean is the GRAIN_MEAN the shader takes off: ${(sumFull / N).toFixed(3)} and ${(sumNear / N).toFixed(3)} against ${S2.GRAIN_MEAN}`);
@@ -270,14 +271,14 @@ const FEED = [
     const now = S.grainShade(...S.cellsTwin(p, t % S.GRAIN_WRAP, false));
     worst = Math.max(worst, Math.abs(now - last)); lo = Math.min(lo, now); hi = Math.max(hi, now); last = now;
   }
-  // 0.08: a jump would be a third or more (a cell's whole shade). The lanes of 2026-10-12 have a steeper side than
-  // the old ones, so the largest smooth change in 0.09 s is 0.06 where it was 0.05.
-  check(worst < 0.08, `the shade at a point never jumps, across rebirths and across the clock's wrap: worst step ${worst.toFixed(3)} in 1/500 of a life`);
+  // 0.1: a jump would be a third or more (a cell's whole shade). The granules of 2026-10-12 have a steeper rim than
+  // the old ones, so the largest smooth change in 0.09 s is 0.075 where it was 0.05.
+  check(worst < 0.1, `the shade at a point never jumps, across rebirths and across the clock's wrap: worst step ${worst.toFixed(3)} in 1/500 of a life`);
   check(lo < 0.05 && hi > 0.75, `and over ${S.GRAIN_WRAP} lives the point is both a dark lane and a bright granule: ${lo.toFixed(2)} to ${hi.toFixed(2)}`);
-  // A granule owns no ground when it is reborn: at weight 0 its point is pushed GRAIN_YIELD away, past any second neighbour.
+  // A granule owns no ground when it is reborn: its radius and its light are nothing then, so where a granule is the nearest it is never a newborn one.
   let weak = 0, n = 0, seed = 99;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
-  for (let k = 0; k < 3000; k++) { const w = S.cellsTwin([rnd() * 60, rnd() * 60, rnd() * 60], rnd() * S.GRAIN_WRAP, false)[1]; n++; if (w < 0.07) weak++; }
+  for (let k = 0; k < 3000; k++) { const c = S.cellsTwin([rnd() * 60, rnd() * 60, rnd() * 60], rnd() * S.GRAIN_WRAP, false); if (!(c[0] < 1)) continue; n++; if (c[1] < 0.07) weak++; }
   check(weak / n < 0.002, `a granule at the very start or end of its life is the nearest at ${(100 * weak / n).toFixed(2)} % of points (it has shrunk away)`);
   // The drift: zero at a larger cell's middle and on its border, outward between.
   const mid = S.superFlow([0, 0, 0]);
@@ -286,7 +287,7 @@ const FEED = [
   check(out.flow[0] > 0.3, `a little way out along x the drift is outward: ${out.flow[0].toFixed(2)}`);
   check(S.SUN_FRAG.includes(`vec3 flow = ${S.GRAIN_DRIFT.toFixed(2)} * sin( 6.2831853 * q );`) && S.SUN_FRAG.includes(`float scale = ${S.GRAIN_CELLS.toFixed(1)} * exp2( lower );`) && (S.SUN_FRAG.match(/cells\(/g) || []).length === 2 && (S.SUN_FRAG.match(/grainAt\(/g) || []).length === 3, 'the shader advects the cells by that flow, at one scale or at two neighbouring ones while they cross-fade');
   // ROUNDED CELLS, NOT A POLYGON MESH (2026-10-12): the shade is a dome over a smooth minimum of the distances, with lanes of one width.
-  check(/float e = exp\( - \d+\.\d \* d \);/.test(S.SUN_FRAG) && /- log\( acc \)/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`smoothstep( 0.0, ${S.GRAIN_LANE.toFixed(2)}, c.z )`) && S.SUN_FRAG.includes(`smoothstep( ${S.GRAIN_EDGE[0].toFixed(2)}, ${S.GRAIN_EDGE[1].toFixed(2)}, c.x )`), 'the shader rounds the cells with a smooth minimum and keeps the lanes one width, with flow.js\'s numbers');
+  check(/float u = length\( g \+ o - f \) \/ max\(/.test(S.SUN_FRAG) && /return vec3\( u1, a1, min\( u2, 1\.0 \) - u1 \);/.test(S.SUN_FRAG) && (S.SUN_FRAG.match(/cellsOf\( p/g) || []).length === 2 && S.SUN_FRAG.includes(`smoothstep( 0.0, ${S.GRAIN_LANE.toFixed(2)}, c.z )`) && S.SUN_FRAG.includes(`smoothstep( ${S.GRAIN_EDGE.toFixed(2)}, 1.0, c.x )`) && S.SUN_FRAG.includes(`${S.GRAIN_REACH.toFixed(2)} * w`) && S.SUN_FRAG.includes(`vec3( ${S.GRAIN_SHIFT.map((x) => x.toFixed(2)).join(', ')} )`), 'the shader measures each granule in its own radii, over two offset lattices, with this file\'s numbers');
   {
     // A granule is a dome: along a straight walk from one point's place outward the shade falls smoothly, with no step.
     let worstStep = 0, seedR = 7;
@@ -304,7 +305,7 @@ const FEED = [
       }
     }
     check(worstStep < 0.2, `across the surface the shade has no hard edge: the worst step in a hundredth of a cell is ${worstStep.toFixed(3)}`);
-    check(dark / n2 > 0.1 && dark / n2 < 0.35 && bright / n2 > 0.4, `dark lanes are the lesser part and bright granules the greater: ${(100 * dark / n2).toFixed(0)} % under 0.15, ${(100 * bright / n2).toFixed(0)} % over 0.5`);
+    check(dark / n2 > 0.2 && dark / n2 < 0.5 && bright / n2 > 0.25, `lanes and granules are both there in quantity: ${(100 * dark / n2).toFixed(0)} % of the surface under 0.15, ${(100 * bright / n2).toFixed(0)} % over 0.5`);
   }
   // THE SCALE FOLLOWS THE CAMERA, down to a granule's real size.
   {
@@ -320,7 +321,7 @@ const FEED = [
       check(cellShare * 450 >= 4 && cellShare * 450 <= 40, `from ${d} radii a cell is neither a speck nor a polygon: ${(cellShare * 450).toFixed(1)} px`);
     }
     check(S.closeShare(3) === 0 && S.closeShare(S.CLOSE_FROM) === 0 && S.closeShare(S.CLOSE_FULL) === 1 && S.closeShare(1.02) === 1 && S.closeShare(NaN) === 0 && S.closeShare(1.8) > 0.2 && S.closeShare(1.8) < 0.8, 'the map gives way to the drawn surface between CLOSE_FROM and CLOSE_FULL radii, and only there');
-    check(S.SUN_FRAG.includes(`textureLod( uMap, vUv, ${S.CLOSE_MIP.toFixed(1)} )`) && /if \( uClose > 0\.0 \) body = mix\( body,/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`mix( ${S.GRAIN_CONTRAST.toFixed(2)}, ${S.GRAIN_CONTRAST_CLOSE.toFixed(2)}, uClose )`), 'from very close the shader reads the map\'s broad colour only, and the grain carries the picture');
+    check(S.SUN_FRAG.includes(`textureLod( uMap, vec2( 0.5 ), ${S.CLOSE_MIP.toFixed(1)} )`) && S.CLOSE_MIP >= 11 && /if \( uClose > 0\.0 \) body = mix\( body,/.test(S.SUN_FRAG) && S.SUN_FRAG.includes(`mix( ${S.GRAIN_CONTRAST.toFixed(2)}, ${S.GRAIN_CONTRAST_CLOSE.toFixed(2)}, uClose )`), 'from very close the shader reads the map\'s mean colour only (the mip past its last), and the grain carries the picture');
     // NOTHING CLIPS TO WHITE.
     check(S.hotShoulder(0.5) === 0.5 && S.hotShoulder(S.HOT_KNEE) === S.HOT_KNEE && S.hotShoulder(1.0) < 0.93 && S.hotShoulder(3) < 1 && S.hotShoulder(1.3) > S.hotShoulder(1.0), `above the knee a brightness is bent under 1 and still rises: 1.0 is drawn ${S.hotShoulder(1).toFixed(3)}, 1.3 is ${S.hotShoulder(1.3).toFixed(3)}`);
     check(S.SUN_FRAG.includes(`if ( top > ${S.HOT_KNEE.toFixed(2)} ) colour *=`) && S.SUN_FRAG.indexOf('if ( top >') > S.SUN_FRAG.indexOf('uFlares[ i ].w') && /body \* vec3\( 0\.95, 0\.88, 0\.70 \)/.test(S.SUN_FRAG), 'the shader bends everything, a flare\'s kernel too, and leans the map\'s whitest patches to yellow-white first');

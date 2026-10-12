@@ -26,10 +26,10 @@
 //
 //   THE GRANULATION -- illustrative. Real granules are about a thousand kilometres across, 1/700 of
 //   the radius: on a disc 900 pixels tall they are less than a pixel, and each lives some ten
-//   minutes. What is drawn is a pattern of ROUNDED cells (a smooth minimum of the distances to the
-//   cells' centres, never the straight facets of a Voronoi diagram: a look at the live build on
-//   2026-10-12 read those as "large polygonal cells"), bright in the middle of each and dark in the
-//   lanes between. THE SCALE FOLLOWS THE CAMERA: GRAIN_CELLS across the radius from far away (cells
+//   minutes. What is drawn is a pattern of ROUND cells: two offset lattices of granules, each a dome
+//   bright in its middle and dimmer toward its rim, a place belonging to the granule that is nearest
+//   in its own radii, so that the lanes between them are arcs and never the straight facets of a
+//   Voronoi diagram (a look at the live build on 2026-10-12 read those as "large polygonal cells"). THE SCALE FOLLOWS THE CAMERA: GRAIN_CELLS across the radius from far away (cells
 //   of some 17 000 km, seventeen times too big), doubling as the camera comes closer so that a
 //   cell stays about a hundredth of the view's height, down to GRAIN_CELLS x 2^GRAIN_LEVEL_MAX
 //   across the radius, which is a granule's real size; two neighbouring scales are cross-faded, so
@@ -43,8 +43,8 @@
 //
 //   THE SURFACE FROM VERY CLOSE -- illustrative. The map is 2 048 texels round: from where the disc
 //   is wider than the view a texel is many pixels, and the picture was "flat orange facets". Between
-//   CLOSE_FROM and CLOSE_FULL radii from the centre the map is cross-faded into its own broad
-//   colour (a small mip of it: no texel of the map is seen any more) and the grain's contrast
+//   CLOSE_FROM and CLOSE_FULL radii from the centre the map is cross-faded into its own mean
+//   colour (its last mip: no texel of the map is seen any more) and the grain's contrast
 //   rises from GRAIN_CONTRAST to GRAIN_CONTRAST_CLOSE, so the drawn granulation carries the picture
 //   and not a stretched photograph. THE LIGHT IS SHADED FROM THE SPHERE ITSELF: the line of sight
 //   is met with the Sun's own sphere in the fragment shader, so limb darkening does not show the
@@ -128,30 +128,44 @@ export const GRAIN_CONTRAST_CLOSE = 0.5;
 export const GRAIN_TARGET = 0.022;
 /** The most doublings of GRAIN_CELLS: 40 x 2^4 = 640 cells across the radius, a granule's real size (1/700). */
 export const GRAIN_LEVEL_MAX = 4;
-/** How sharply the cells' distances are blended into one rounded distance (a smooth minimum), per lattice unit. */
-export const GRAIN_ROUND = 12;
-/** The rounded distance at which a granule's bright middle ends, and at which it is as dim as its rim, lattice units. */
-export const GRAIN_EDGE = [0.4, 0.95];
-/** A granule's rim against its middle (a dome, not a plate), and the lanes' half-width as a gap, lattice units. */
-export const GRAIN_DOME = 0.5;
-export const GRAIN_LANE = 0.2;
+/**
+ * THE CELLS ARE TWO OFFSET LATTICES OF ROUND GRANULES. A granule's point stays within GRAIN_JITTER
+ * of its lattice cell's middle (and drifts half of GRAIN_DRIFT each way over its life), and the
+ * granule reaches no farther than GRAIN_REACH from its point. With 0.15, 0.2 and 0.75 a place on the
+ * surface can only be reached by the 8 cells on its near side, so tiers 0 and 1, which read those
+ * 8, draw exactly what tier 2 draws from all 27 (with an unbounded reach the cheap loop left square
+ * seams in the picture: rendered from the twin and looked at, 2026-10-12). One such lattice is a
+ * tidy row of dots; two, the second shifted by GRAIN_SHIFT, fill the surface.
+ */
+export const GRAIN_JITTER = 0.15;
+export const GRAIN_REACH = 0.75;
+export const GRAIN_SHIFT = [0.5, 0.37, 0.71];
+/** How far into its own radius a granule's bright middle goes before it dims toward its rim. */
+export const GRAIN_EDGE = 0.25;
+/** A granule's rim against its middle (a dome, not a plate), and the lanes' half-width, in granule radii. */
+export const GRAIN_DOME = 0.3;
+export const GRAIN_LANE = 0.28;
+/** The share of its life a granule takes to grow, and again to shrink away. */
+export const GRAIN_GROW = 0.25;
 /** The camera's distance from the centre, Sun radii, between which the map gives way to the drawn surface. */
 export const CLOSE_FROM = 2.2;
 export const CLOSE_FULL = 1.35;
-/** The mip of the map that stands for its broad colour from very close: 2 048 texels round become 32. */
-export const CLOSE_MIP = 6;
+/**
+ * The mip of the map that stands for its colour from very close: past the last one, which is the
+ * whole map's mean, one colour. (A mip that still had texels in it, 32 round, was tried first: at
+ * the poles its texels are wedges, and the look of 2026-10-12 showed a pinwheel there.)
+ */
+export const CLOSE_MIP = 12;
 /** Above this the brightest channel is bent under 1 by a soft shoulder: nothing on the disc clips to white. */
 export const HOT_KNEE = 0.78;
 export const GRAIN_LIFE_S = 45;
 /** The shader's clock counts lives and wraps here; a cell's seed is its birth number modulo this, so the wrap is seamless. */
 export const GRAIN_WRAP = 64;
-/** A cell that is not at the height of its life is pushed back by this much (squared lattice units), so its neighbours take its ground. */
-export const GRAIN_YIELD = 1.5;
 /** The larger cells across one radius, and how far a granule drifts over its life, in its own cell widths (illustrative). */
 export const SUPER_CELLS = 8;
-export const GRAIN_DRIFT = 0.5;
+export const GRAIN_DRIFT = 0.2;
 /** The mean of the shade the grain multiplies by, measured by tests/test_sun.mjs: taken off so the disc's brightness holds. */
-export const GRAIN_MEAN = 0.48;
+export const GRAIN_MEAN = 0.35;
 /** How much brighter than the photosphere a facula is drawn at its strongest (illustrative). */
 export const FACULA_GAIN = 0.3;
 /** One sway of a prominence, and one breath of the corona, in app seconds (illustrative). */
@@ -233,42 +247,39 @@ const CELLS_LOOP_NEAR = `  vec3 s = 2.0 * step( vec3( 0.5 ), f ) - 1.0;   // tow
     vec3 g = vec3( float( x ), float( y ), float( z ) ) * s;`;
 
 function cellsGlsl( cheap ) {
-  return `// Cellular noise whose cells live and die. Each lattice cell holds one granule: born at 't' whole plus
-// its own offset, at the height of its life midway, gone at the next whole. Its point is
-// pushed away by GRAIN_YIELD x (1 - w)^2 while its weight w is low, so a young or an old granule owns
-// little ground and its neighbours close over it; when it is reborn (somewhere else in its own lattice cell,
-// seeded by its birth number) it owns none, so nothing jumps. 'flow' carries the point across its
-// lattice cell over the life: the drift out of a larger cell.
-// ROUNDED: the distances to the cells' points are blended into one by a smooth minimum, and so are their
-// weights. A granule is then a soft round patch and a lane a soft valley; the nearest-and-second-nearest
-// gap this replaced drew the straight edges of a Voronoi diagram, and read as a polygon mesh.
-// And the LANES keep one width: the gap between the nearest point and the second nearest is small all along
-// the border of two granules, and because a young granule's point is pushed away those borders are curved.
-// x: the rounded distance, small in a granule's middle. y: the weight there. z: the gap, small on the lanes.
-// ${cheap ? 'Tiers 0 and 1 read the 8 cells on the near side of the point, not all 27: same lattice, same hash.' : 'Tier 2 reads all 27 neighbouring cells.'}
-vec3 cells( vec3 p, float t, vec3 flow ) {
+  return `// Granules that live and die, as two offset lattices of round cells. Each lattice cell holds one granule:
+// born at 't' whole plus its own offset, grown by GRAIN_GROW of its life, shrinking away over the last
+// GRAIN_GROW, gone at the next whole and born again somewhere else in its lattice cell (seeded by its birth
+// number). Its radius and its light are nothing at birth and at death, so nothing jumps. 'flow' carries its
+// point across its lattice cell over the life: the drift out of a larger cell.
+// ROUND, NOT A POLYGON MESH. A place belongs to the granule whose point is nearest IN THAT GRANULE'S OWN
+// RADII (u = distance / radius), so the border of two granules is an arc of a circle and never a straight
+// facet; a granule is a dome, bright in its middle and dimmer toward its rim; and beyond every granule's
+// radius there is only lane.
+// u1, u2: the nearest and the second nearest, in radii. a1: the nearest one's light.
+// ${cheap ? 'Tiers 0 and 1 read the 8 cells on the near side of the point, not all 27: no other cell can reach it (GRAIN_REACH).' : 'Tier 2 reads all 27 neighbouring cells.'}
+void cellsOf( vec3 p, float t, vec3 flow, float salt, inout float u1, inout float u2, inout float a1 ) {
   vec3 i = floor( p );
   vec3 f = fract( p );
-  float acc = 0.0;
-  float wacc = 0.0;
-  float d1 = 8.0;
-  float d2 = 8.0;
 ${cheap ? CELLS_LOOP_NEAR : CELLS_LOOP_FULL}
-    vec3 h = hash3( i + g );
+    vec3 h = hash3( i + g + salt );
     float age = h.x + t;
     float born = floor( age );
     float ph = age - born;
-    vec3 o = 0.5 + 0.38 * ( 2.0 * hash3( i + g + mod( born, ${GRAIN_WRAP.toFixed(1)} ) * vec3( 0.37, 0.61, 0.83 ) ) - 1.0 ) + flow * ( ph - 0.5 );
-    float w = sin( 3.14159265 * ph );
-    vec3 r = g + o - f;
-    float d = length( r ) + ${GRAIN_YIELD.toFixed(2)} * ( 1.0 - w ) * ( 1.0 - w );
-    float e = exp( - ${GRAIN_ROUND.toFixed(1)} * d );
-    acc += e;
-    wacc += e * w * ( 0.7 + 0.3 * h.y );
-    if ( d < d1 ) { d2 = d1; d1 = d; } else if ( d < d2 ) { d2 = d; }
+    vec3 o = 0.5 + ${GRAIN_JITTER.toFixed(2)} * ( 2.0 * hash3( i + g + salt + mod( born, ${GRAIN_WRAP.toFixed(1)} ) * vec3( 0.37, 0.61, 0.83 ) ) - 1.0 ) + flow * ( ph - 0.5 );
+    float w = smoothstep( 0.0, ${GRAIN_GROW.toFixed(2)}, ph ) * smoothstep( 0.0, ${GRAIN_GROW.toFixed(2)}, 1.0 - ph );
+    float u = length( g + o - f ) / max( ${GRAIN_REACH.toFixed(2)} * w * ( 0.75 + 0.25 * h.y ), 1e-4 );
+    if ( u < u1 ) { u2 = u1; u1 = u; a1 = smoothstep( 0.0, 0.4, w ) * ( 0.7 + 0.3 * h.z ); } else if ( u < u2 ) { u2 = u; }
   }
-  acc = max( acc, 1e-30 );
-  return vec3( - log( acc ) / ${GRAIN_ROUND.toFixed(1)}, wacc / acc, d2 - d1 );
+}
+// x: the nearest granule, in its radii (1 and over: no granule here). y: its light. z: the gap to the next, small on a lane.
+vec3 cells( vec3 p, float t, vec3 flow ) {
+  float u1 = 8.0;
+  float u2 = 8.0;
+  float a1 = 0.0;
+  cellsOf( p, t, flow, 0.0, u1, u2, a1 );
+  cellsOf( p + vec3( ${GRAIN_SHIFT.map((x) => x.toFixed(2)).join(', ')} ), t + 0.5, flow, 31.0, u1, u2, a1 );
+  return vec3( u1, a1, min( u2, 1.0 ) - u1 );
 }`;
 }
 
@@ -279,13 +290,13 @@ export function superFlow(p) {
 }
 
 /**
- * The JS twin of the shader's \`cells\` (same hash, same lives, same distances), in doubles, so a node
- * test can measure what reading 8 cells instead of 27 changes, and watch one cell live and die.
- * @param {number[]} p  a point on the lattice (the unit-sphere point times GRAIN_CELLS)
+ * The JS twin of the shader's \`cells\` (same hash, same lives, same two lattices), in doubles, so a
+ * node test can check that reading 8 cells instead of 27 changes nothing, and watch one cell live and die.
+ * @param {number[]} p  a point on the lattice (the unit-sphere point times the scale)
  * @param {number} t    lives elapsed, 0..GRAIN_WRAP
  * @param {boolean} near  tiers 0 and 1
  * @param {number[]} [flow]  the drift over one life, lattice units
- * @returns {number[]} [the rounded distance to the cells' points, the weight there, the gap to the second nearest]
+ * @returns {number[]} [the nearest granule in its own radii, its light, the gap to the next]
  */
 export function cellsTwin(p, t, near, flow = [0, 0, 0]) {
   const fract = (x) => x - Math.floor(x);
@@ -293,37 +304,39 @@ export function cellsTwin(p, t, near, flow = [0, 0, 0]) {
     const x = a * 127.1 + b * 311.7 + c * 74.7, y = a * 269.5 + b * 183.3 + c * 246.1, z = a * 113.5 + b * 271.9 + c * 124.6;
     return [fract(Math.sin(x) * 43758.5453123), fract(Math.sin(y) * 43758.5453123), fract(Math.sin(z) * 43758.5453123)];
   };
-  const i = [Math.floor(p[0]), Math.floor(p[1]), Math.floor(p[2])];
-  const f = [p[0] - i[0], p[1] - i[1], p[2] - i[2]];
-  const s = f.map((v) => (near ? (v < 0.5 ? -1 : 1) : 1));
-  let acc = 0, wacc = 0, d1 = 8, d2 = 8;
-  const lo = near ? 0 : -1;
-  for (let z = lo; z <= 1; z++) for (let y = lo; y <= 1; y++) for (let x = lo; x <= 1; x++) {
-    const g = near ? [x * s[0], y * s[1], z * s[2]] : [x, y, z];
-    const id = [i[0] + g[0], i[1] + g[1], i[2] + g[2]];
-    const h = hash(id[0], id[1], id[2]);
-    const age = h[0] + t;
-    const born = Math.floor(age);
-    const ph = age - born;
-    const m = born % GRAIN_WRAP;
-    const j = hash(id[0] + m * 0.37, id[1] + m * 0.61, id[2] + m * 0.83);
-    const w = Math.sin(Math.PI * ph);
-    const r = [0, 1, 2].map((k) => g[k] + 0.5 + 0.38 * (2 * j[k] - 1) + flow[k] * (ph - 0.5) - f[k]);
-    const d = Math.hypot(r[0], r[1], r[2]) + GRAIN_YIELD * (1 - w) * (1 - w);
-    const e = Math.exp(-GRAIN_ROUND * d);
-    acc += e;
-    wacc += e * w * (0.7 + 0.3 * h[1]);
-    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) { d2 = d; }
-  }
-  acc = Math.max(acc, 1e-30);
-  return [-Math.log(acc) / GRAIN_ROUND, wacc / acc, d2 - d1];
+  const step = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  let u1 = 8, u2 = 8, a1 = 0;
+  const lattice = (q, tt, salt) => {
+    const i = [Math.floor(q[0]), Math.floor(q[1]), Math.floor(q[2])];
+    const f = [q[0] - i[0], q[1] - i[1], q[2] - i[2]];
+    const s = f.map((v) => (near ? (v < 0.5 ? -1 : 1) : 1));
+    const lo = near ? 0 : -1;
+    for (let z = lo; z <= 1; z++) for (let y = lo; y <= 1; y++) for (let x = lo; x <= 1; x++) {
+      const g = near ? [x * s[0], y * s[1], z * s[2]] : [x, y, z];
+      const id = [i[0] + g[0] + salt, i[1] + g[1] + salt, i[2] + g[2] + salt];
+      const h = hash(id[0], id[1], id[2]);
+      const age = h[0] + tt;
+      const born = Math.floor(age);
+      const ph = age - born;
+      const m = born % GRAIN_WRAP;
+      const j = hash(id[0] + m * 0.37, id[1] + m * 0.61, id[2] + m * 0.83);
+      const w = step(0, GRAIN_GROW, ph) * step(0, GRAIN_GROW, 1 - ph);
+      const r = [0, 1, 2].map((k) => g[k] + 0.5 + GRAIN_JITTER * (2 * j[k] - 1) + flow[k] * (ph - 0.5) - f[k]);
+      const u = Math.hypot(r[0], r[1], r[2]) / Math.max(GRAIN_REACH * w * (0.75 + 0.25 * h[1]), 1e-4);
+      if (u < u1) { u2 = u1; u1 = u; a1 = step(0, 0.4, w) * (0.7 + 0.3 * h[2]); } else if (u < u2) { u2 = u; }
+    }
+  };
+  lattice(p, t, 0);
+  lattice([p[0] + GRAIN_SHIFT[0], p[1] + GRAIN_SHIFT[1], p[2] + GRAIN_SHIFT[2]], t + 0.5, 31);
+  return [u1, a1, Math.min(u2, 1) - u1];
 }
 
-/** The shade the grain multiplies the photosphere by, 0 in a lane to 1 in a granule at the height of its life. Twin of the GLSL. */
-export function grainShade(dist, weight, gap) {
-  const x = Math.min(1, Math.max(0, (dist - GRAIN_EDGE[0]) / (GRAIN_EDGE[1] - GRAIN_EDGE[0])));
+/** The shade the grain multiplies the photosphere by, 0 in a lane to 1 in the middle of a granule at the height of its life. Twin of the GLSL. */
+export function grainShade(u, light, gap) {
+  if (!(u < 1)) return 0;
+  const x = Math.min(1, Math.max(0, (u - GRAIN_EDGE) / (1 - GRAIN_EDGE)));
   const y = Math.min(1, Math.max(0, gap / GRAIN_LANE));
-  return y * y * (3 - 2 * y) * (GRAIN_DOME + (1 - GRAIN_DOME) * (1 - x * x * (3 - 2 * x))) * (0.35 + 0.65 * weight);
+  return y * y * (3 - 2 * y) * (GRAIN_DOME + (1 - GRAIN_DOME) * (1 - x * x * (3 - 2 * x))) * light;
 }
 
 /**
@@ -393,8 +406,9 @@ ${cellsGlsl(cheap)}
 // The shade of one scale of the grain: bright in a granule's middle, dark in the lanes, by its weight.
 vec2 grainAt( vec3 p, float scale, float t, vec3 flow ) {
   vec3 c = cells( p * scale, t, flow );
-  float dome = ${GRAIN_DOME.toFixed(2)} + ${(1 - GRAIN_DOME).toFixed(2)} * ( 1.0 - smoothstep( ${GRAIN_EDGE[0].toFixed(2)}, ${GRAIN_EDGE[1].toFixed(2)}, c.x ) );
-  return vec2( smoothstep( 0.0, ${GRAIN_LANE.toFixed(2)}, c.z ) * dome * ( 0.35 + 0.65 * c.y ), c.y );
+  if ( c.x >= 1.0 ) return vec2( 0.0 );
+  float dome = ${GRAIN_DOME.toFixed(2)} + ${(1 - GRAIN_DOME).toFixed(2)} * ( 1.0 - smoothstep( ${GRAIN_EDGE.toFixed(2)}, 1.0, c.x ) );
+  return vec2( smoothstep( 0.0, ${GRAIN_LANE.toFixed(2)}, c.z ) * dome * c.y, c.y );
 }
 
 void main() {
@@ -411,8 +425,8 @@ void main() {
   }
   float mu = clamp( dot( n, - ray ), 0.0, 1.0 );
   vec3 body = texture2D( uMap, vUv ).rgb;
-  // From very close the map gives way to its own broad colour: no texel of it is on the screen.
-  if ( uClose > 0.0 ) body = mix( body, textureLod( uMap, vUv, ${CLOSE_MIP.toFixed(1)} ).rgb, uClose );
+  // From very close the map gives way to its own mean colour: no texel of it is on the screen.
+  if ( uClose > 0.0 ) body = mix( body, textureLod( uMap, vec2( 0.5 ), ${CLOSE_MIP.toFixed(1)} ).rgb, uClose );
   // The map's whitest patches are leaned to yellow-white, so the grain laid on them can still be seen.
   body = mix( body, body * vec3( 0.95, 0.88, 0.70 ), smoothstep( 0.62, 0.98, min( body.r, min( body.g, body.b ) ) ) );
   vec3 colour = mix( uTint, body, uHasMap ) * limb( mu );
