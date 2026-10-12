@@ -40,7 +40,7 @@ Object.assign(COPY, {
     // {cls} "M2.3"; {region} NOAA's number; {time} "02:02"; {date} "2026-10-12".
     flare: 'A class {cls} flare is showing at region {region}: it peaked at {time} UTC on {date}, by NOAA’s event list. Its time, class, region and fading are measured; how bright it is drawn is illustrative.',
     // {speed} km/s, a whole number.
-    cme: 'A coronal mass ejection that left at {time} UTC on {date} at {speed} km/s is drawn as a thin arc moving outward. Its start, direction, width and speed are from NASA’s DONKI catalogue; the arc keeps that speed, which real ones do not, and its look is illustrative.',
+    cme: 'A coronal mass ejection that left at {time} UTC on {date} at {speed} km/s is drawn as a coronagraph shows one: a bright loop moving outward, a darker hollow behind it and a bright core. Its start, direction, width and speed are from NASA’s DONKI catalogue; the cloud keeps that speed, which real ones do not, and its look is illustrative.',
   },
 
   // A star system from the NASA Exoplanet Archive's table, drawn at its own scale (internal #466;
