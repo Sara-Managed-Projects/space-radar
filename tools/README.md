@@ -113,6 +113,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `sun` | the Sun's detail on: arrival, closer, the limb, the corona, then inside a real flare and two hours into a real coronal mass ejection when the two feeds are there |
 | `jupiter` | the stage, both poles, close on a belt, the clock sped up |
 | `lights` | each bright planet as a point of light beside a small Earth |
+| `settings` | the Quality and Look rows of What to show (spec 0073): opened with the key L, photographed and measured (one line each, no label cut), each quality chosen through its own button with what `ctx.quality` then reports, then Measured and Film on Jupiter close with what the weather module says is drawn. Run it at 1440 x 900 and again with `-f mobile=true` |
 | `frametime` | three scenes (home; Jupiter filling the view with its weather; the Sun's detail), the median and 95th percentile of 120 frame intervals each |
 
 **The job fails** when the page logged an error (`console.error`, an uncaught error, an unhandled
@@ -135,6 +136,12 @@ every loader, the tier and the clock run as they do for a visitor. It is for too
 carries it (it is not in `ui/urlstate.js` `KEYS`) and it is ignored beside `embed=1`.
 `window.spaceRadar.latch.held` says whether it is on. (The first probes pretended the page was
 hidden instead, which also stopped the loader that turns the Sun's detail on.)
+
+**The quality and the look in a probe.** Neither has a query key of its own: the quality is one
+`localStorage` key (`sr.quality`: `low`, `medium`, `high`, `ultra`; absent is Auto) read before the
+tier is acted on, and a probe changes it as a visitor does, through the row's buttons, or with
+`sr.quality.setChoice('high')`; `?tier=0|1|2` still pins what the DEVICE is taken to be (and so what
+is offered). The look is `sr.drawn.set('measured')`, or `#drawn=measured` in the address.
 
 **Frame times are relative.** On a runner the GL is SwiftShader or llvmpipe: `frametime`'s numbers
 compare one run with another on the same kind of runner and mean nothing in absolute terms. For

@@ -4094,6 +4094,15 @@ def check_weather(world_ids: set, layers: list) -> list:
         cls = r.get("class")
         if cls not in WEATHER_CLASSES:
             fail(where, f"class {cls!r} must be one of {list(WEATHER_CLASSES)} -- say how much of this is known")
+        # Measured or Film (spec 0073 requirement 8): every row says what the Measured look does to it.
+        under = r.get("measured")
+        if under not in ("same", "still", "hidden"):
+            fail(where, f"`measured:` must be same, still or hidden, got {under!r}: every effect says what it does "
+                        f"under the Measured look (the header of weather.yaml), so a new one cannot forget")
+        elif cls == "measured" and under != "same":
+            fail(where, f"a measured effect is `measured: same`, got {under!r}: the Measured look takes nothing measured away")
+        elif cls == "illustrative" and under == "same":
+            fail(where, "an illustrative effect cannot be `measured: same`: under the Measured look it is hidden, or held still")
         off = r.get("off_at")
         if not isinstance(off, list) or not WEATHER_OFF <= set(off):
             fail(where, f"`off_at:` must list {sorted(WEATHER_OFF)}: no effect is drawn at the lowest tier "
@@ -4753,6 +4762,13 @@ def main() -> int:
             fail(where, "no `outputs:` list")
         if not s.get("attribution"):
             fail(where, "no attribution line -- it goes on the card, not in a footer")
+        # Who publishes it, by a name a visitor would recognise: the number of sources the site
+        # states is the number of distinct publishers among the enabled rows (scripts/count_facts.py
+        # source_counts), so a row without one cannot be counted.
+        publisher = s.get("publisher")
+        if not isinstance(publisher, str) or not publisher.strip() or publisher != publisher.strip():
+            fail(where, "no `publisher:` -- the organisation whose service is read, as a visitor would name it "
+                        "(CelesTrak, NASA JPL, NOAA SWPC); rows of one publisher share the name exactly")
         # The /sources/ page prints these three beside the row (scripts/seo_pages.py), so a row
         # without them would be a source the page cannot describe honestly.
         if not str(s.get("licence") or "").strip():

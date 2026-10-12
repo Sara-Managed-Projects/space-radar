@@ -595,8 +595,12 @@ export const COPY = {
   // The one line at the sidebar's foot: how the sources are, and how old the oldest reading is.
   statusLine: {
     reading: 'Reading the sources',
-    read: '{n} sources read',
-    readOne: 'One source read',
+    // HOW MANY ANSWERED THIS VISIT, not how many there are: the rows this page asked for that it holds
+    // a reading of. The total is another number with another rule (the /sources/ page's "feeds from
+    // N public sources", scripts/count_facts.py source_counts), so this line says "this visit" and names no total. Short on purpose: with "· 2 stale · oldest 6 days ago" after it,
+    // it is one line of the sidebar's foot.
+    read: '{n} read this visit',
+    readOne: 'One read this visit',
     stale: '{n} stale',
     failed: '{n} could not be read',
     oldest: 'oldest {age}',
@@ -2198,11 +2202,26 @@ export const COPY = {
     tierSaver: 'Surface maps at 2k, to save data.',
     tierSmall: 'Surface maps at 2k, sized for this device.',
     tierLatched: 'Surface maps back at 2k: frames were slow.',
+    tierLow: 'Surface maps at 2k, as Low asks.',
     tier1: 'Surface maps at 4k, fetched when idle.',
     tier2: 'Surface maps at 4k, more worlds kept sharp.',
     promoted: 'Raised a step after fast frames.',
     // The Sources panel's credits: the maps the scene is wearing on this device right now.
     mapsWorn: 'Maps on this device: {credits}.',
+    // The setting (spec 0073 requirement 6; scene/quality.js qualityPlan, ui/qualitypanel.js): one row
+    // in What to show. `autoNow` is the mono note beside it while Auto is on ("Auto: High"); each
+    // word's tooltip says what it spends; `fellBack` is the one toast when slow frames end a manual choice.
+    panelTitle: 'Quality',
+    choices: { auto: 'Auto', low: 'Low', medium: 'Medium', high: 'High', ultra: 'Ultra' },
+    autoNow: 'Auto: {tier}',
+    titles: {
+      auto: 'Chosen from this device and its frame rate',
+      low: 'Lightest picture: for a battery or an old laptop',
+      medium: 'Sharper maps, relief and weather',
+      high: 'More worlds kept sharp at once',
+      ultra: 'Full resolution and the finest steps close up',
+    },
+    fellBack: 'Frames were slow: quality is back on Auto.',
   },
 
   status: {
@@ -2242,10 +2261,20 @@ export const COPY = {
     harvestUnchecked: 'Our snapshots: not checked yet.',
     harvestUnavailable:
       'Our snapshots are not available right now, so every source below is read live from its publisher, or not at all.',
-    harvestLine: 'Our snapshots: written {age} · {ok} sources ok · {refused} refused · {error} failed',
+    harvestLine: 'Our snapshots: written {age} · {ok} feeds ok · {refused} refused · {error} failed',
     errorLabel: 'Last error',
     attributionTitle: 'Credits',
     attributionIntro: 'The data on this map is other people’s work.',
+    // The footer below the full credit list (sr-status__foot): the two biggest providers of what
+    // the planets and the Earth look like, named by license rather than buried in the long list.
+    footCreditsIntro: 'Imagery and textures:',
+    footCreditsTextures: 'Solar System Scope',
+    footCreditsTexturesTitle: 'Planet and star textures, licensed CC BY 4.0',
+    footCreditsTexturesHref: 'https://www.solarsystemscope.com/textures/',
+    footCreditsNasa: 'NASA',
+    footCreditsNasaTitle: 'Cloud, night-side and surface imagery, and the 3D models',
+    footCreditsNasaHref: 'https://www.nasa.gov/',
+    footCreditsSep: ' · ',
     cloudsTitle: 'Clouds',
     auroraTitle: 'Aurora',
     weatherTitle: 'Lightning',
@@ -2318,6 +2347,8 @@ export const COPY = {
     mark: 'spaceradar.ai',
     // Internal #376: the caption names the shutter when it is not the default (Camera).
     exposure: { eye: 'As the eye sees it', deep: 'Deep stretch: faint light lifted' },
+    // Spec 0073 requirement 8: and the look, when it is not the default (Film).
+    look: { measured: 'Measured look' },
   },
   // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
   // Spec 0047: the tracked object's HUD (ui/hud.js). Its numbers and its honesty line are the

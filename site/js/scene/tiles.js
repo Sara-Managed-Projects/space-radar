@@ -1,6 +1,6 @@
 // scene/tiles.js -- a world drawn from map tiles when the camera is close (spec 0065 tasks 1-2).
 //
-// Contract: createPlanetTiles(opts) -> { frame(nowMs), setTier(n), latch(), state(), credits(), dispose() }
+// Contract: createPlanetTiles(opts) -> { frame(nowMs), setTier(n), setQuality(n, stripped), latch(), state(), credits(), dispose() }
 //
 // Ivan, 2026-10-02: "maybe we can load better planet quality on zooming in". A world wears one map,
 // 4096 pixels round the equator on a laptop: 2.7 km a texel on the Moon, 5.2 km on Mars. From a few
@@ -673,6 +673,17 @@ export function createPlanetTiles(opts = {}) {
     }
   }
 
+  /** Every tile off the screen and out of memory (the latch, or a quality that draws none). */
+  function takeOff() {
+    for (const layer of layers.values()) {
+      const was = layer.showing;
+      clear(layer);
+      layer.showing = false;
+      layer.reliefOn = false;
+      if (was) { try { onChange(); } catch { /* a listener's trouble */ } }
+    }
+  }
+
   return {
     /** Every frame, after the camera and the worlds have moved. */
     frame(nowMs) {
@@ -687,13 +698,19 @@ export function createPlanetTiles(opts = {}) {
     latch() {
       if (latched) return;
       latched = true;
-      for (const layer of layers.values()) {
-        const was = layer.showing;
-        clear(layer);
-        layer.showing = false;
-        layer.reliefOn = false;
-        if (was) { try { onChange(); } catch { /* a listener's trouble */ } }
-      }
+      takeOff();
+    },
+    /**
+     * The visitor's own choice of quality (scene/quality.js qualityPlan; main.js keeps the real latch
+     * away from here): any tier, up or down, and the latch's removal put on (`stripped`) or let go.
+     * Below tier 1, or stripped, the tiles on screen are freed as the latch frees them; the caches of a
+     * lower tier are smaller and empty themselves by their own rule.
+     */
+    setQuality(n, stripped = false) {
+      tier = Math.max(0, Number(n) || 0);
+      latched = !!stripped;
+      if (latched || tier < 1) takeOff();
+      return tier;
     },
     /** The credit lines of the mosaics on screen now, for the Sources panel. */
     credits() {

@@ -158,9 +158,12 @@ check(JSON.stringify(APP_EXT) === JSON.stringify(['js', 'css', 'wasm']), 'APP_EX
 // --- 4. verify-deploy.sh against a server that answers as the edge will --------------------------
 const files = ['js/main.js', 'data/stars.bin', 'index.html', 'css/ui.css'];
 let mode = 'good';
+let liveCommit = '';
 const server = createServer((req, res) => {
   const p = decodeURIComponent(req.url.slice(1));
   let body;
+  // build.json is not in site/: scripts/deploy.sh writes it. The server answers with one that names `liveCommit`.
+  if (p === 'build.json' && liveCommit) { res.writeHead(200); res.end(JSON.stringify({ schema: 1, commit: liveCommit })); return; }
   try { body = readFileSync(join(SITE, p)); } catch { res.writeHead(404); res.end(); return; }
   const accept = String(req.headers['accept-encoding'] || '');
   if (mode === 'changed' && p === 'css/ui.css') body = Buffer.concat([body, Buffer.from('/* one more byte */')]);
@@ -176,9 +179,9 @@ const server = createServer((req, res) => {
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
-const verify = (m) => new Promise((resolve) => {
+const verify = (m, ...more) => new Promise((resolve) => {
   mode = m;
-  const child = spawn('bash', [join(ROOT, 'scripts/verify-deploy.sh'), `--base=${base}`, '--source', ...files], { env: process.env });
+  const child = spawn('bash', [join(ROOT, 'scripts/verify-deploy.sh'), `--base=${base}`, '--source', ...more, ...files], { env: process.env });
   let out = '';
   child.stdout.on('data', (d) => { out += d; });
   child.stderr.on('data', (d) => { out += d; });
@@ -192,6 +195,24 @@ v = await verify('plain-stars');
 check(v.status === 1 && /NOT BROTLI {2}data\/stars\.bin/.test(v.out), `a file that should be stored compressed and arrives whole is refused (${v.out.trim()})`);
 v = await verify('changed');
 check(v.status === 1 && /DIFFERS {2}css\/ui\.css/.test(v.out) && !/DIFFERS {2}js\/main\.js/.test(v.out), `one changed byte is still caught (${v.out.trim()})`);
+// Which commit the site says it is (public #291): printed always, and held with --expect.
+const A = 'a1'.repeat(20);
+const B = 'b2'.repeat(20);
+check(/has no readable build\.json/.test(v.out), 'a site with no build.json is said, and is not a failure without --expect');
+v = await verify('good', `--expect=${A}`);
+check(v.status === 1 && /WRONG COMMIT {2}--expect=a1a1[0-9a-f]+, and the site names none/.test(v.out), `--expect fails when the site names no commit (${v.out.trim()})`);
+liveCommit = A;
+v = await verify('good');
+check(v.status === 0 && v.out.includes(`the site says it is built from ${A}`), `the site's commit is printed (${v.out.trim()})`);
+v = await verify('good', `--expect=${A}`);
+check(v.status === 0, `--expect passes on the commit the site names (${v.out.trim()})`);
+v = await verify('good', `--expect=${A.slice(0, 7)}`);
+check(v.status === 0, 'and on its short form');
+v = await verify('good', `--expect=${B}`);
+check(v.status === 1 && v.out.includes(`WRONG COMMIT  the site is built from ${A}, not ${B}`), `--expect fails when the live commit is another (${v.out.trim()})`);
+liveCommit = 'main; echo oops';
+v = await verify('good');
+check(v.status === 0 && !/oops/.test(v.out) && /has no readable build\.json/.test(v.out), 'a build.json that names something that is not a commit is not printed');
 server.close();
 
 rmSync(tmp, { recursive: true, force: true });
