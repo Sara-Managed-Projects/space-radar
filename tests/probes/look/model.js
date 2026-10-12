@@ -1,7 +1,8 @@
 // model: ONE CRAFT'S MODEL, IN THE APP, FROM FOUR SIDES. Select a record as a click on its row does,
 // wait for the file its route names to replace the procedural shape (scene/heroes.js announces it
-// with `sr:model-upgraded`), then photograph it at the app's own framing from four sides (the camera
-// walks a quarter turn round it each time and keeps its distance and its ride), and once drawn larger.
+// with `sr:model-upgraded`), move the clock into sunlight if the craft is in the Earth's shadow, then
+// photograph it as the app frames it, from four sides (a quarter turn round it each time, the camera
+// kept above the craft) and from overhead.
 //
 //   gh workflow run look.yml -f probe=model                      # the Cygnus cargo ship in orbit today
 //   gh workflow run look.yml -f probe=model -f subject=sat-25544  # any record id
@@ -92,31 +93,73 @@ try {
   const lines = [...document.querySelectorAll('[class*="sr-card"]')].map((n) => (n.children.length ? '' : String(n.textContent || '').trim())).filter((t) => /^drawn /.test(t));
   out.cardLine = lines[0] || null;
 } catch { out.cardLine = null; }
-out.riding = !!(rig.state && rig.state.riding);
+out.camera = { riding: !!(rig.state && rig.state.riding), following: !!(rig.state && rig.state.following) };
 
-/** Four sides at the app's framing, then one drawn as large as the hero layer allows. */
+// IN SUNLIGHT. A craft in the Earth's shadow is drawn nearly black, which is right and photographs
+// nothing (the first run of this probe, 2026-10-12, met CYGNUS NG-24 eleven minutes before sunrise).
+// So the clock is stepped forward five minutes at a time until the craft is out of the shadow, and
+// ten minutes more so the Sun is off the horizon. The summary says how far it was moved.
+const earthR = () => { try { return sr.worlds.drawnRadiusUnits('earth') || 0; } catch { return 0; } };
+const sunlit = () => {
+  const obj = heroOf();
+  const sun = sr.worlds.meshFor('sun');
+  const earth = sr.worlds.meshFor('earth');
+  if (!obj || !sun || !earth) return null;
+  const p = obj.getWorldPosition(obj.position.clone()).sub(earth.position);
+  const s = unit({ x: sun.position.x - earth.position.x, y: sun.position.y - earth.position.y, z: sun.position.z - earth.position.z });
+  const along = p.x * s.x + p.y * s.y + p.z * s.z;
+  if (along > 0) return true;
+  const off = Math.hypot(p.x - along * s.x, p.y - along * s.y, p.z - along * s.z);
+  return off > earthR() * 1.01;
+};
+out.light = { litAtFirst: sunlit(), movedMinutes: 0 };
+if (out.light.litAtFirst === false) {
+  const t0 = sr.clock.now();
+  let found = null;
+  for (let k = 1; k <= 14 && found === null; k++) {
+    sr.clock.goTo(t0 + k * 5 * 60e3);
+    await sleep(3500);
+    if (sunlit()) found = k;
+  }
+  if (found !== null) { sr.clock.goTo(t0 + (found + 2) * 5 * 60e3); await sleep(4000); out.light.movedMinutes = (found + 2) * 5; }
+  out.light.lit = sunlit();
+  out.light.clock = new Date(sr.clock.now()).toISOString();
+  if (!out.light.lit) look.warns.push('probe: the craft was still in the Earth\'s shadow after seventy minutes of stepping; the pictures are of its night side');
+}
+
+/** Where the model is in the window and how wide its circle is, for whoever crops the picture. */
+const onScreen = () => {
+  try {
+    const obj = heroOf();
+    const v = obj.getWorldPosition(obj.position.clone()).project(sr.camera);
+    return { x: Math.round((v.x * 0.5 + 0.5) * innerWidth), y: Math.round((-v.y * 0.5 + 0.5) * innerHeight), px: drawnPx() };
+  } catch { return null; }
+};
+/**
+ * The app's own framing, then four sides and one from overhead. THE CAMERA STAYS ABOVE THE CRAFT:
+ * a visiting vehicle flies a few hundred kilometres up, and a camera sent to its far side at the
+ * angle the app frames it from ends up under the ground looking at the inside of the clouds (the
+ * first run did). So the four sides are taken from sixty degrees off the local vertical at most.
+ */
 const walk = async (tag, what) => {
   const a0 = rig.state.azimuth;
   const p0 = rig.state.polar;
-  const sides = [['1-as-framed', 0, p0], ['2-quarter-turn', Math.PI / 2, p0], ['3-half-turn', Math.PI, p0], ['4-three-quarters', 1.5 * Math.PI, p0]];
-  for (const [name, turn, polar] of sides) {
-    rig.setAngles(a0 + turn, polar);
-    await shot(tag + '-' + name, what + ', ' + name.slice(2).replace(/-/g, ' ') + ' (' + Math.round((turn * 180) / Math.PI) + ' degrees round it); drawn ' + drawnPx() + ' px across', 4000);
-    out.views.push(tag + '-' + name);
+  const take = async (name, words) => {
+    await sleep(4000);
+    const at = onScreen();
+    await shot(tag + '-' + name, what + ', ' + words + '; its circle ' + (at && at.px) + ' px across');
+    out.views.push({ name: tag + '-' + name, at });
+  };
+  await take('1-as-framed', 'as the app frames a selected craft');
+  const high = Math.min(p0, 1.05);
+  for (const [name, turn] of [['2-side-a', 0], ['3-side-b', Math.PI / 2], ['4-side-c', Math.PI], ['5-side-d', 1.5 * Math.PI]]) {
+    rig.setAngles(a0 + turn, high);
+    await take(name, Math.round((turn * 180) / Math.PI) + ' degrees round it, from ' + Math.round((high * 180) / Math.PI) + ' degrees off the vertical');
   }
-  // From above its orbit plane as the camera has it, so the top is seen once.
-  rig.setAngles(a0 + Math.PI / 4, Math.max(0.35, p0 - 0.9));
-  await shot(tag + '-5-from-above', what + ', an eighth of a turn on and from higher up', 4000);
+  rig.setAngles(a0 + Math.PI / 4, 0.3);
+  await take('6-overhead', 'from nearly overhead');
   rig.setAngles(a0, p0);
-  // LARGER, for the picture: heroes.js sizes a selected model by record.meta.sizeM up to 1.45 times
-  // its 260 px. The probe says the craft is very large, takes the picture and takes the word back.
-  const meta = record.meta || (record.meta = {});
-  const had = meta.sizeM;
-  meta.sizeM = 1e4;
   await sleep(1500);
-  await shot(tag + '-6-larger', what + ', drawn as large as the hero layer ever draws a selected model (' + drawnPx() + ' px): larger than a visitor sees this craft', 4000);
-  if (had === undefined) delete meta.sizeM; else meta.sizeM = had;
-  await sleep(800);
 };
 await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape'));
 
