@@ -49,11 +49,14 @@ if (flares.length) {
   if (out.detailLoaded && !now.length) look.warns.push('probe: at the peak of flare ' + f.cls + ' (region ' + f.region + ') the detail draws no flare: its region may not be in today\'s list');
 }
 if (cmes.length) {
-  // The fastest of the list: its front is the brightest. Forty minutes in it is a few radii out; two
-  // hours in it is near CME_REACH_RADII, where the drawing has let it fade (data/sunactivity.js).
+  // The fastest of the list: its front is the brightest. First when the front is three Sun radii
+  // from the centre (a quarter of an hour for a fast one), then two hours in, where it is near or past
+  // CME_REACH_RADII and the drawing has let it fade (data/sunactivity.js): measured 2026-10-12, a
+  // 741 km/s front two hours in is at 8.7 radii with opacity 0.02, and a 1586 km/s one is gone.
   const c = cmes.slice().sort((x, y) => y.speedKmS - x.speedKmS)[0];
   out.cmeAt = { cme: c, at: [] };
-  for (const [name, hours, words] of [['sun-7-forty-minutes-into-a-cme', 2 / 3, 'forty minutes'], ['sun-8-two-hours-into-a-cme', 2, 'two hours']]) {
+  const hoursToThreeRadii = (2 * 695700 / c.speedKmS) / 3600;
+  for (const [name, hours, words] of [['sun-7-cme-front-at-three-radii', hoursToThreeRadii, Math.round(hoursToThreeRadii * 60) + ' minutes'], ['sun-8-two-hours-into-a-cme', 2, 'two hours']]) {
     sr.clock.goTo(c.startMs + hours * 3600e3);
     faceEarth(2.6);
     await sleep(8000);

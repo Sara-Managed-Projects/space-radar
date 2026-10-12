@@ -53,8 +53,10 @@ const ASK_WEBGL2 = `(() => {
  * How the engine is started, in the order tried: the first that gives a blank page a WebGL2 context
  * is the one the probe runs in, and what each of the others reported is kept (`glTried`).
  * MEASURED 2026-10-12 in mcr.microsoft.com/playwright:v1.49.1-jammy on a GitHub runner: WebKit 18.2
- * headless makes a context as it comes; Firefox 132 headless makes none ("Exhausted GL driver
- * options", FEATURE_FAILURE_WEBGL_EXHAUSTED_DRIVERS), hence its second and third way.
+ * headless makes a context as it comes (it names its GL "Apple GPU"). Firefox 132 headless with NO
+ * DISPLAY makes none ("Exhausted GL driver options", FEATURE_FAILURE_WEBGL_EXHAUSTED_DRIVERS); under
+ * `xvfb-run` the same headless start makes one on llvmpipe. So run this under xvfb-run, as look.yml
+ * does; the second and third way are for a container where that is still not enough.
  */
 const WAYS = [
   { name: 'headless, as it comes', options: { headless: true } },
@@ -94,7 +96,8 @@ try {
   } else {
     // A resource that did not load is the browser's own line, not the page's console.error (and the
     // DevTools protocol does not put it in the console at all): `[network]`, which fails nothing.
-    const kind = (m) => (/^Failed to load resource/.test(m.text()) ? 'network' : m.type() === 'warning' ? 'warning' : 'error');
+    // WebKit words it "Failed to load resource", Firefox "Cross-Origin Request Blocked" (a --block host).
+    const kind = (m) => (/^Failed to load resource|Cross-Origin Request Blocked/.test(m.text()) ? 'network' : m.type() === 'warning' ? 'warning' : 'error');
     page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') process.stderr.write(`[${kind(m)}] ${m.text()}${kind(m) === 'network' && m.location().url ? ' ' + m.location().url : ''}\n`); });
     page.on('pageerror', (e) => process.stderr.write(`[pageerror] ${(e && (e.stack || e.message)) || e}\n`));
     await page.exposeFunction('cdpShot', async (name) => {

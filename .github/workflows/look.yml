@@ -221,8 +221,11 @@ jobs:
 
       # Chromium through tools/cdp.mjs and the runner's own Chrome, as a laptop does it. Firefox and
       # WebKit through Playwright in the image screens.yml pins, with tools/look-playwright.mjs,
-      # which runs the same probe file and offers the same window.cdpShot (under xvfb-run: Firefox
-      # headless makes no WebGL context in this image, so the runner may need a window). This step does not judge:
+      # which runs the same probe file and offers the same window.cdpShot. UNDER xvfb-run: measured
+      # 2026-10-12, Firefox 132 headless makes no WebGL context in this image with no display
+      # ("Exhausted GL driver options") and makes one on llvmpipe the moment there is a display, though
+      # it opens no window on it. The redirects are inside xvfb-run's command because xvfb-run sends
+      # the command's stderr to its stdout, which put the console into out.json. This step does not judge:
       # whatever happened, the next one reads what was left and decides.
       - name: Look
         run: |
@@ -246,7 +249,7 @@ jobs:
               mcr.microsoft.com/playwright:v1.49.1-jammy \
               bash -c "set -uo pipefail
                 npm install --no-save --no-audit --no-fund playwright@1.49.1 >/tmp/npm.log 2>&1 || { cat /tmp/npm.log; exit 3; }
-                timeout 2700 xvfb-run -a node tools/look-playwright.mjs '$url' look-out/probe.js --browser=$BROWSER $flags >look-out/out.json 2>look-out/err.txt"
+                timeout 2700 xvfb-run -a bash -c \"node tools/look-playwright.mjs '$url' look-out/probe.js --browser=$BROWSER $flags >look-out/out.json 2>look-out/err.txt\""
           fi
           echo "the tool exited $?"
           tail -c 2000 look-out/err.txt || true
