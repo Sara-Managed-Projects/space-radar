@@ -348,8 +348,8 @@ function decodePng(buf) {
   check(weather.perMinute() === undefined, 'and the panel has no number yet');
   weather.tick(slot, { on: true });
   check(/northern spring/.test(weather.line('mars', slot)) && /illustrative/.test(weather.line('mars', slot)), `Mars's line names the season (${weather.line('mars', slot)})`);
-  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weatherStorms.turning.jupiter, COPY.weatherStorms.poles.jupiter, COPY.weather.flashes.jupiter].join(' '), 'Jupiter\'s line, its storms\', its poles\' and its lightning\'s');
-  check(weather.line('venus', slot).endsWith(COPY.weather.also.venus) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
+  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weatherStorms.turning.jupiter, COPY.weatherStorms.poles.jupiter, COPY.weather.flashes.jupiter, COPY.lookSaid.film].join(' '), 'Jupiter\'s line, its storms\', its poles\', its lightning\'s, and which look is on');
+  check(weather.line('venus', slot).endsWith(COPY.weather.also.venus + ' ' + COPY.lookSaid.film) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
   check(/seasonal and illustrative, not today/.test(weather.line('mars', slot)) && /optical depth near 0\.\d/.test(weather.line('mars', slot)), `Mars's line gives the season's dust and says it is not today's (${weather.line('mars', slot)})`);
   check(weather.line('moon', slot) === null && weather.line('io', slot) === null, 'a world with no weather has no line');
   await weather.lookNow();
@@ -473,7 +473,7 @@ function decodePng(buf) {
   const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
   const fresh = dress();
   const quiet = createWeather({ worlds: { meshFor: (id) => fresh.get(id) || null }, reducedMotion: true, fetchImpl: async () => ({ ok: false }) });
-  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weatherStorms.poles.jupiter, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
+  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weatherStorms.poles.jupiter + ' ' + COPY.lookSaid.film, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
   check(/Webb and Keck/.test(COPY.weather.worlds.titan) && /Illustrative/.test(COPY.weather.worlds.titan) && /2022/.test(COPY.weather.worlds.titan), 'Titan\'s line dates its clouds and says they are illustrative');
 }
 
