@@ -117,7 +117,7 @@ says how to run it again.
 
 Measured on 2026-10-05 by serving `site/` locally in headless Chrome with **every** outside host
 blocked: the page was usable in 13 seconds and all layers were in after 29; 166 requests were
-answered from the folder, the Sources line read "12 sources read · 3 could not be read", about
+answered from the folder, the Sources line read "12 read this visit · 3 could not be read", about
 11 000 objects were drawn, and a trip started with its narration and music files loading from disk.
 
 | Works with no internet | Needs the internet |
