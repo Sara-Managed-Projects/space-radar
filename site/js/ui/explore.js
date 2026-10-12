@@ -20,7 +20,7 @@
 //   RIGHT NOW   at most three lines from live state, a missing one left out, never filler
 //   TRIPS       ui/trippicker.js's data as cards, two columns; a tap starts it
 //   COMING UP   ui/next.js, five rows, "Show all"
-//   ● 21 sources read · oldest 6 days ago             the status line; opens the sources sheet
+//   ● 21 read this visit · oldest 6 days ago          the status line; opens the sources sheet
 //
 // TABS ARE PLACES (req 3). Earth is the Earth stage; Planets the Sun's, the worlds as a list; Stars
 // the stellar rung, the ladder's far places and the star systems; Tonight the sky from your place,
