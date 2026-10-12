@@ -952,7 +952,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 75378,
+        "bytes": 63040,
         "format": "rgb",
         "credit": "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
       }
@@ -972,7 +972,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 45378,
+        "bytes": 37012,
         "format": "rgb",
         "credit": "Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
       }
