@@ -2280,10 +2280,12 @@ function createQuality(ctx, renderer, starfield, worlds) {
       if (sunLists.regions) detail.setRegions(sunLists.regions);
       if (sunLists.flares) detail.setFlares(sunLists.flares);
       if (sunLists.cmes) detail.setCmes(sunLists.cmes);
-      if (tilesSaveData || tiers.latched || sunLists.asked) return;
+      // The lists are asked for once a visit, whoever is drawn when they land: `ctx.sunDetail`, not
+      // `detail`, so one that arrives after the quality changed goes to the Sun drawn now.
+      if (sunLists.asked) return;
       sunLists.asked = true;
-      // `ctx.sunDetail`, not `detail`: a list that lands after the quality changed goes to the Sun drawn now.
       const now = () => ctx.sunDetail;
+      if (tilesSaveData || tiers.latched) return;
       import('./data/sunregions.js').then((r) => r.readSunRegions() // our saved copy first (internal #525)
         .then((json) => {
           const list = r.parseSunRegions(json);

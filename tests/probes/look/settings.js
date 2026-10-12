@@ -13,6 +13,9 @@ await sleep(400);
 if (!pop() || pop().hidden) { out.openedBy = 'rail.openShow()'; sr.rail.openShow(); } else out.openedBy = 'the key L';
 const built = await until(() => document.querySelector('.sr-quality') && document.querySelector('.sr-look'), 30000);
 if (!built) return finish({ ...out, fail: 'What to show opened without its Quality and Look rows' });
+// A label's own width against its button's (not scrollWidth: the pressed button's corner brackets
+// stand outside its box and count there; the first run called every pressed label cut).
+const textWidth = (b) => { const r = document.createRange(); r.selectNodeContents(b); return r.getBoundingClientRect().width; };
 const rowOf = (sel) => {
   const wrap = document.querySelector(sel);
   const buttons = [...wrap.querySelectorAll('button')];
@@ -20,7 +23,7 @@ const rowOf = (sel) => {
   const box = wrap.getBoundingClientRect();
   return {
     title: wrap.querySelector('h2').textContent,
-    buttons: buttons.map((b, i) => ({ text: b.textContent, pressed: b.getAttribute('aria-pressed'), tip: b.title, w: Math.round(rects[i].width), h: Math.round(rects[i].height), cut: b.scrollWidth > b.clientWidth + 1 })),
+    buttons: buttons.map((b, i) => ({ text: b.textContent, pressed: b.getAttribute('aria-pressed'), tip: b.title, w: Math.round(rects[i].width), h: Math.round(rects[i].height), cut: textWidth(b) > rects[i].width - 2 })),
     oneLine: new Set(rects.map((r) => Math.round(r.top))).size === 1,
     inside: rects.every((r) => r.left >= box.left - 1 && r.right <= box.right + 1),
     note: (wrap.querySelector('.sr-quality__note') || {}).textContent || '',
