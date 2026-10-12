@@ -5,7 +5,7 @@
  * tests/test_tokens.mjs holds this file to the same rules as ui.css.
  *
  * WHAT IS ON SCREEN in this mode: the scene, on the clear screen or the HUD screen
- * (ui/cleanview.js), and one bar, bottom centre, in photo mode's place and glass
+ * (ui/cleanview.js) without its time pill, and one bar, bottom centre, in photo mode's place and glass
  * (docs/ui-guide.md 3.19 and 3.25). The bar and the pointer go three seconds after the pointer
  * stops, so a still picture has nothing on it; any movement brings them back.
  */
@@ -32,9 +32,9 @@ html.sr-drift--still canvas {
   cursor: none;
 }
 
-/* The clear screen's own eye and the share button are the rail's; the drift has its bar. */
-html.sr-drift #sr-rail {
-  visibility: hidden;
+/* The HUD screen keeps the time pill, bottom centre, where this mode's bar is: the bar has the place. */
+html.sr-drift.sr-hud #sr-time {
+  visibility: hidden !important;
 }
 
 .sr-drift__bar {
