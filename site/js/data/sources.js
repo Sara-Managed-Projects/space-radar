@@ -395,6 +395,33 @@ export const SOURCES = {
     kind: 'json',
     attribution: 'Sunspot groups: NOAA SWPC',
   },
+  // Flares and coronal mass ejections for the Sun close up (data/sunactivity.js, spec 0073). The
+  // flare list falls back to SWPC when we hold no copy; NASA's CME list is read from our copy only.
+  'swpc-edited-events': {
+    id: 'swpc-edited-events',
+    registryId: 'swpc-edited-events',
+    label: 'NOAA SWPC — solar flares',
+    publisher: 'NOAA Space Weather Prediction Center',
+    url: 'https://services.swpc.noaa.gov/json/edited_events.json',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Solar flares: NOAA SWPC',
+  },
+  'donki-cme-analysis': {
+    id: 'donki-cme-analysis',
+    registryId: 'donki-cme-analysis',
+    label: 'NASA DONKI — coronal mass ejections',
+    publisher: 'NASA M2M Space Weather Analysis Office and CCMC',
+    url: 'https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 24 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC)',
+    note: '48.1 kB, the analyses of the last thirty days, measured 2026-10-12.',
+  },
 
   // The wind overlay's field (scene/wind.js, data/wind.js; internal #552). Read only from our saved copy:
   // `browser: false`, registry/sources.yaml `wind` says why. Nothing calls load() for it; the Earth data
@@ -411,6 +438,37 @@ export const SOURCES = {
     kind: 'json',
     attribution: 'Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii)',
     note: '168.8 kB, 37 x 72 points for one forecast hour, measured 2026-10-09.',
+  },
+
+  // The ocean currents overlay's two fields (scene/currents.js, data/currents.js). Read only from our
+  // saved copies: `browser: false`, registry/sources.yaml says why (no CORS header, megabytes unpacked).
+  // Nothing calls load() for them; the Earth data panel asks snapshotAvailable() for both and offers
+  // "Ocean currents" only when both exist.
+  'ocean-currents': {
+    id: 'ocean-currents',
+    registryId: 'ocean-currents',
+    label: 'Ocean currents — NOAA CoastWatch, from satellite altimetry',
+    publisher: 'NOAA CoastWatch',
+    url: 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDNRTcurrentsDaily.html',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 96 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Ocean currents: NOAA CoastWatch, from satellite altimetry (Sentinel data courtesy of the Copernicus Programme; generated using AVISO+ products)',
+    note: '262 kB saved (4.4 MB asked for), 180 x 360 points for one day, measured 2026-10-12.',
+  },
+  'ocean-temperature': {
+    id: 'ocean-temperature',
+    registryId: 'ocean-temperature',
+    label: 'Sea temperature — NOAA OISST v2.1',
+    publisher: 'NOAA NCEI, through NOAA CoastWatch West Coast',
+    url: 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21NrtAgg.html',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 96 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Sea temperature: NOAA NCEI OISST v2.1, through NOAA CoastWatch West Coast ERDDAP',
+    note: '184 kB saved (3.8 MB asked for), 180 x 360 points for one day, measured 2026-10-12.',
   },
 
   // --- Sources a browser cannot reach -------------------------------------------------------

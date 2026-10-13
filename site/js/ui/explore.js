@@ -20,7 +20,7 @@
 //   RIGHT NOW   at most three lines from live state, a missing one left out, never filler
 //   TRIPS       ui/trippicker.js's data as cards, two columns; a tap starts it
 //   COMING UP   ui/next.js, five rows, "Show all"
-//   ● 21 sources read · oldest 6 days ago             the status line; opens the sources sheet
+//   ● 21 read this visit · oldest 6 days ago          the status line; opens the sources sheet
 //
 // TABS ARE PLACES (req 3). Earth is the Earth stage; Planets the Sun's, the worlds as a list; Stars
 // the stellar rung, the ladder's far places and the star systems; Tonight the sky from your place,
@@ -519,6 +519,13 @@ export function createExplore(ctx, host) {
         if (reels.childElementCount) return;
         reels.appendChild(el('h3', 'sr-micro', COPY.tripCard.justWatch));
         const list = el('ul', 'sr-list');
+        // The drift first (ui/drift.js, spec 0071): the one row that is not a list of trips.
+        if (typeof ctx.wantDrift === 'function') {
+          const { li, b } = rowButton(COPY.tripCard.drift, COPY.tripCard.driftLength, () => ctx.wantDrift({ drift: '1' }, 'row'));
+          b.title = COPY.tripCard.driftTitle;
+          b.dataset.reel = 'drift';
+          list.appendChild(li);
+        }
         for (const row of plan.reelRows(data.REELS, data.AUTOPILOT.default)) {
           const { li, b } = rowButton(row.title, t(COPY.tripCard.reelLength, { m: String(row.minutes) }), () => {
             if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: row.id }, 'row');

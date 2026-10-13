@@ -24,6 +24,38 @@ def _yaml(name: str) -> dict:
     return yaml.safe_load((ROOT / "registry" / name).read_text(encoding="utf-8")) or {}
 
 
+def source_counts() -> dict:
+    """HOW MANY SOURCES: the one place the number is made (the review of 2026-10-12 read "24 public
+    sources" on About and Press and "28" on Sources, two builds of one count that also took in the
+    rows that are switched off).
+
+    Two numbers with two names, from registry/sources.yaml:
+
+        sources   the distinct `publisher:` values among the ENABLED rows: who a visitor would
+                  recognise (CelesTrak, NASA JPL, NOAA SWPC and so on)
+        feeds     the enabled rows themselves: each address that is read
+
+    A row with `enabled: false` is counted in neither. It is in `off`, and /sources/ lists it as not
+    in use, so that the reason it was switched off stays readable.
+
+    Every page that states a number reads this: /about/ and /sources/ (scripts/seo_pages.py), the
+    press kit (scripts/build_press.py) and `facts()` below. tests/test_source_counts.py fails when
+    a template or a sentence carries a number of its own. The app's status line ("N read this
+    visit") is NOT this number and does not claim to be: it is how many answered this visit.
+    """
+    rows = _yaml("sources.yaml")["sources"]
+    enabled = [r for r in rows if r.get("enabled", True) is not False]
+    by_publisher: dict[str, int] = {}
+    for r in enabled:
+        by_publisher[r["publisher"]] = by_publisher.get(r["publisher"], 0) + 1
+    return {
+        "sources": len(by_publisher),
+        "feeds": len(enabled),
+        "off": len(rows) - len(enabled),
+        "publishers": by_publisher,          # name -> its feeds, in the registry's order
+    }
+
+
 def facts() -> dict[str, int]:
     tours = _yaml("tours.yaml")["tours"]
     systems = _yaml("systems.yaml")["systems"]
@@ -47,7 +79,8 @@ def facts() -> dict[str, int]:
         "moon_sites": sum(1 for x in sites if x["world"] == "moon" and x["class"] == "surface"),   # registry/sites.yaml
         "mars_sites": sum(1 for x in sites if x["world"] == "mars" and x["class"] == "surface"),
         "layers": len(layers),                                      # registry/layers.yaml
-        "sources": len(_yaml("sources.yaml")["sources"]),           # registry/sources.yaml
+        "sources": source_counts()["sources"],                      # registry/sources.yaml: publishers of the enabled rows
+        "feeds": source_counts()["feeds"],                          # registry/sources.yaml: the enabled rows
         "real_models": len(_yaml("models.yaml")["real_models"]),    # registry/models.yaml
         "test_files": len(list((ROOT / "tests").glob("test_*"))),   # tests/test_*
     }

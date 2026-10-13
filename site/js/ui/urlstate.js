@@ -15,7 +15,9 @@
 // mission's event, `<mission>.<event>` (registry/missions.yaml, ui/missions.js; 2026-10-06); `t` an
 // ISO UTC instant, or `now`; `rate` the clock's rate; `stage` the world or rung the map is centred
 // on; `exp` the exposure the sky is drawn at when it is not the default (`eye` or `deep`, public
-// #460: a shared postcard and the link beside it show the same sky). A key outside KEYS is dropped on read and never written, so a link made by a newer map with
+// #460: a shared postcard and the link beside it show the same sky); `drawn` the look the worlds are
+// drawn in when it is not the default (`measured`, spec 0073 requirement 8: read and written exactly as
+// `exp` is. Not `look`: `?look=1` is a tool's query key, scene/quality.js lookHeld). A key outside KEYS is dropped on read and never written, so a link made by a newer map with
 // one more key still opens everything this one understands. A `v` other than VERSION marks the
 // whole state unknown: this reader cannot tell what the keys it does recognise mean in that form.
 //
@@ -41,7 +43,9 @@ export const HASH_KEY = 'm';
 // `at` (a planet's or a star system's id without its `exo-` or `star-` prefix, which main.js
 // resolveAt tries), and write() never produces it, so once the flight has begun the address bar
 // carries the ordinary `at=` and a link copied from there is the ordinary link.
-export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
+// `drift` (spec 0071, ui/drift.js): the camera wanders on its own. `1`, or words with commas:
+// what to travel through, `any`, `notags`, a pace (ui/driftplan.js readOptions).
+export const KEYS = ['m', 'v', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';

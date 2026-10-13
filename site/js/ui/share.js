@@ -45,6 +45,7 @@ export function shareUrl(st, base = appBase()) {
   if (s.rate && Number(s.rate) !== 1) put('rate', s.rate);
   if (!s.trip) put('stage', s.stage); // a trip picks its own stage at every stop
   if (s.exp === 'eye' || s.exp === 'deep') put('exp', s.exp); // the shutter (#460)
+  if (s.drawn === 'measured') put('drawn', s.drawn);
   return keys.length ? `${root}#${keys.join('&')}` : root;
 }
 
@@ -54,6 +55,7 @@ export function shareState(ctx, atId) {
   delete st.trip;
   delete st.stop;
   st.exp = ctx && ctx.exposure ? ctx.exposure.mode() : null; // as it IS
+  st.drawn = ctx && ctx.look ? ctx.look() : null;
   const trip = ctx && ctx.trip && ctx.trip.state;
   if (trip && trip.phase !== 'idle' && trip.tourId) {
     st.trip = trip.tourId;

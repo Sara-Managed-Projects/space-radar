@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redshift Stripes | Space Radar Lab</title>
+<meta name="description" content="The faster a galaxy flies away, the more its light shifts toward red.">
+<meta name="sr-lab-category" content="Light and time">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="stylesheet" href="../../css/fonts.css">
+<style>
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.12);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+a{color:var(--sr-ember)}a:hover{color:var(--sr-ember-light)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:0 20px;max-width:1160px;margin:0 auto;padding:4px 16px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.top .mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+.top .here{color:var(--sr-text-dim)}
+main{display:grid;grid-template-columns:minmax(0,1fr);max-width:1160px;margin:0 auto;padding:20px 16px 32px;gap:0 32px;align-content:start}
+main>*{min-width:0}
+.micro{margin:0 0 8px;font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+h1{margin:0 0 12px;font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.lead{margin:0 0 20px;font-size:18px;line-height:26px;max-width:60ch}
+.stage{margin:0 0 16px;width:100%}
+canvas{display:block;width:100%;aspect-ratio:1080/1200;background:#05070d;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.line{margin:0 0 16px;font-size:16px;line-height:24px;max-width:60ch;min-height:48px}
+.controls{display:grid;gap:12px;margin:0 0 16px}
+.controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.controls label input{grid-column:1/-1;width:100%;min-height:44px;margin:0;accent-color:var(--sr-ember)}
+.controls output{font:500 13px/18px 'JetBrains Mono',ui-monospace,monospace;color:var(--sr-text);font-variant-numeric:tabular-nums}
+button{min-height:44px;padding:0 20px;border:0;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font:600 15px/1 Inter,system-ui,sans-serif;cursor:pointer;justify-self:start}
+button:hover{background:var(--sr-ember-light)}
+.honest{margin:0 0 16px;padding:12px 14px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text-dim);font-size:13px;line-height:18px;max-width:60ch}
+.honest b{color:var(--sr-text);font-weight:600}
+details{margin:0 0 16px;max-width:60ch;border-top:1px solid var(--sr-line)}
+summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-weight:600}
+.srcl{margin:0 0 6px;font-size:13px;line-height:18px;color:var(--sr-text-dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.more{display:flex;flex-wrap:wrap;gap:0 16px;margin:0;font-size:15px}
+.more a{display:inline-flex;align-items:center;min-height:44px}
+.ns{color:var(--sr-text-dim)}
+@media (min-width:900px){
+ main{grid-template-columns:minmax(0,1fr) 360px;padding-top:24px}
+ main>*{grid-column:2}
+ .stage{grid-column:1;grid-row:1/span 9;width:min(100%,calc((100svh - 130px)*.9));min-width:320px;align-self:start;position:sticky;top:12px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../../index.html">Space Radar</a><a class="here" href="../index.html">Lab</a></header>
+<main>
+<p class="micro" id="cat"></p>
+<h1 id="h">Redshift Stripes</h1>
+<p class="lead" id="lesson">The faster a galaxy flies away, the more its light shifts toward red.</p>
+<div class="stage"><canvas id="c" role="img" aria-label="Redshift Stripes"></canvas></div>
+<p class="line" id="line"></p>
+<noscript><p class="ns">This simulator needs JavaScript. It is one small file, with no libraries and no network requests: read it with View source.</p></noscript>
+<div class="controls">
+<button type="button" id="pb">Pause</button>
+<label>Time <input type="range" id="ts" min="0" value="0" aria-label="Time through the animation"></label>
+<label id="pl">Value <output id="po"></output><input type="range" id="ps"></label>
+</div>
+<p class="honest"><b>What is and is not to scale.</b> <span id="honest"></span></p>
+<details><summary>How this was made and sources</summary>
+<p class="srcl">One HTML file: no libraries, no network requests. Every number below was read on the date shown, from the page named next to it.</p>
+<div id="src"></div>
+</details>
+<p class="more"><a href="../../index.html">Back to the live map</a><a href="../index.html">All simulators</a><a id="add" href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md">Add your own simulator</a><a id="edit" href="https://github.com/Sara-Managed-Projects/space-radar/tree/main/site/lab">Fix a mistake on GitHub</a></p>
+</main>
+<!-- Sources
+Source: https://en.wikipedia.org/wiki/Hydrogen_spectral_series, read 2026-10-10, Balmer series in air: H-alpha 656.3 nm, H-beta 486.1 nm, H-gamma 434.0 nm, H-delta 410.2 nm.
+Source: https://en.wikipedia.org/wiki/Redshift, read 2026-10-10: z = (λobsv − λemit)/λemit and "If the source moves away from the observer with velocity v, which is much less than the speed of light (v ≪ c), the redshift is given by" z ≈ v/c.
+Source: https://en.wikipedia.org/wiki/Hubble%27s_law, read 2026-10-10: "v = H0 D" and "gives the speed of a galaxy 1 megaparsec (3.09×10^19 km) away as 70 km/s" -> H0 = 70 km/s/Mpc.
+Source: https://ssd.jpl.nasa.gov/astro_par.html, read 2026-10-10: "speed of light in vacuum" c = 299792458 m/s.
+Maths: observed wavelength = rest * (1 + z). H-alpha leaves the 400-700 nm drawn band at z = 700/656.3 - 1 = 0.0666 (v = 19,960 km/s); the sweep is timed so that this happens at the reveal (z reaches 0.0814, v = 24,400 km/s, D = v/H0 = 349 Mpc; checked in node).
+-->
+<script>
+// ============================================ 0. HELPERS (shared; do not edit) ====================================
+// Defined first, so a simulator may use them while it loads (top-level tables). Colours: EMBER for the point of the lesson, INK for text, DIM for the quiet.
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>clamp((t-a)/(b-a),0,1),ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,x)=>a+(b-a)*x;
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const EMBER='#ff9f43',INK='#e8ecf4',DIM='#a3adc0',FONT='Inter,system-ui,-apple-system,"Segoe UI",sans-serif',Y0=430,Y1=1440,MINPX=34;
+// ============================================ 1. THE SIMULATOR (yours) ============================================
+const LN=[['Hδ',410.2],['Hγ',434.0],['Hβ',486.1],['Hα',656.3]],C=299792.458,H0=70,ZL=700/656.3-1,RV=9.5,FR=(RV-.5)/11;
+const zOf=t=>ZL*seg(t,.5,11.5)/FR,WX=w=>(w-400)/300*1080;
+const rgb=w=>{let r=0,g=0,b=0;if(w<440){r=(440-w)/60;b=1}else if(w<490){g=(w-440)/50;b=1}else if(w<510){g=1;b=(510-w)/20}else if(w<580){r=(w-510)/70;g=1}else if(w<645){r=1;g=(645-w)/65}else r=1;
+ const f=w<420?.35+.65*(w-400)/20:w>680?.35+.65*(700-w)/20:1;return 'rgb('+Math.round(255*r*f)+','+Math.round(255*g*f)+','+Math.round(255*b*f)+')'};
+const SIM={dur:11.6,reveal:RV,hook:'THE FASTER IT FLIES,|THE REDDER IT GETS',
+ honest:'Simple z = v/c, fine for small speeds. Hubble constant 70 km/s per Mpc. Line widths and colours schematic.',
+ line(){const z=ZL/FR;return`A galaxy receding at z = ${z.toFixed(3)} (${Math.round(z*C).toLocaleString('en-US')} km/s) shows hydrogen-alpha at ${(656.3*(1+z)).toFixed(0)} nm instead of 656.3 nm, beyond the 700 nm red edge drawn here. By Hubble's law it is about ${Math.round(z*C/H0)} Mpc away.`},
+ draw(c,t){
+  const z=zOf(t),v=z*C,r=rev(t),D=v/H0;stars(c,40);
+  for(let i=0;i<108;i++){c.fillStyle=rgb(400+(i+.5)*300/108);c.fillRect(i*10,640,10.5,360)}
+  LN.forEach((l,k)=>{const x0=WX(l[1]),x=WX(l[1]*(1+z));c.fillStyle='rgba(255,255,255,.9)';c.fillRect(x0-2,615,4,25);
+   if(x<1075){c.fillStyle='rgba(5,7,13,.92)';c.fillRect(x-6,640,12,360);text(l[0],Math.min(1000,Math.max(80,x)),1050,40,INK,800)}});
+  text('REDSHIFT z',60,490,34,DIM,600,'left');text(z.toFixed(3),60,565,72,EMBER,800,'left');
+  text('RECEDING AT',1020,490,34,DIM,600,'right');text(Math.round(v).toLocaleString('en-US')+' km/s',1020,565,52,INK,800,'right');
+  const gx=lerp(200,960,z/(ZL/FR));c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=3;c.beginPath();c.moveTo(130,1210);c.lineTo(gx,1210);c.stroke();
+  disc(c,110,1210,32,'#4a90e2');text('EARTH',110,1290,34,INK,700);glow(c,gx,1210,60,'#d9a066',.6);c.fillStyle='#e8d09a';c.beginPath();c.ellipse(gx,1210,34,14,-.4,0,6.3);c.fill();
+  text('GALAXY: '+Math.round(D)+' Mpc',Math.min(900,gx),1290,36,INK,700);
+  text(r<.5?'LINES SLIDE TOWARD RED':'H-ALPHA SLID OFF THE RED EDGE',540,1400,r<.5?40:44,r<.5?DIM:EMBER,800)}};
+// ============================================ 2. THE PAGE (shared; rarely needs a change) =========================
+// The stage is 1080 units wide; the page shows the band y 270..1470 of it. Draw only inside it, and put no text under 34 units.
+// `draw(c, t, P)` gets the 2D context, the time t in seconds (it loops over SIM.dur) and the slider value P. `line(P, t)` is the caption under the picture.
+// SIM.reveal is the second at which the animation shows its point; with a slider (SIM.param) the picture follows the slider, so rev(t) is 1.
+function rev(t){return SIM.param?1:ease(seg(t,SIM.reveal-.3,SIM.reveal+.9))}
+let S=1,P=SIM.param?SIM.param.value:0,T=0;
+function text(s,x,y,size,col,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;cx.fillStyle=col||INK;cx.textAlign=al||'center';cx.textBaseline='alphabetic';cx.fillText(s,x,y)}
+function wrap(s,x,y,size,col,maxW,lh,w,al){cx.font=(w||600)+' '+Math.max(size,MINPX)+'px '+FONT;let ln='';for(const wd of s.split(' ')){const tr=ln?ln+' '+wd:wd;if(cx.measureText(tr).width>maxW&&ln){text(ln,x,y,size,col,w,al);y+=lh;ln=wd}else ln=tr}text(ln,x,y,size,col,w,al);return y+lh}
+function glow(c,x,y,r,col,a){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.globalAlpha=a==null?1:a;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill();c.globalAlpha=1}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,6.2832);c.fill()}
+function stars(c,n){let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;for(let i=0;i<(n||90);i++){c.globalAlpha=.25+.5*r();c.fillStyle='#fff';c.fillRect(r()*1080,r()*1920,2,2)}c.globalAlpha=1} // a fixed starfield
+function draw(t){cx.setTransform(1,0,0,1,0,0);cx.fillStyle='#05070d';cx.fillRect(0,0,cv.width,cv.height);
+  cx.setTransform(S,0,0,S,0,-270*S);cx.save();cx.beginPath();cx.rect(0,0,1080,1920);cx.clip();SIM.draw(cx,t,P);
+  const h=SIM.hook.split('|');text(h[0],540,330,60,EMBER,800);if(h[1])text(h[1],540,396,60,EMBER,800);cx.restore()}
+{
+  const byId=id=>document.getElementById(id),LOOP=SIM.dur,meta=n=>(document.querySelector('meta[name="'+n+'"]')||{}).content||'';
+  byId('cat').textContent=meta('sr-lab-category');byId('honest').textContent=SIM.honest;
+  cv.setAttribute('aria-label',byId('h').textContent+'. '+meta('description'));
+  // "How this was made": the comment that starts with "Sources" in this file, with its web addresses made into links.
+  const walk=document.createTreeWalker(document,NodeFilter.SHOW_COMMENT);let node,src='';
+  while((node=walk.nextNode()))if(/^\s*sources?\b/i.test(node.data)){src=node.data.trim();break}
+  for(const ln of src.split('\n')){if(!ln.trim())continue;const p=document.createElement('p');p.className='srcl';
+    ln.split(/(\w+:\/\/[^\s)]+)/).forEach((part,i)=>{let ok=false;if(i%2)try{ok=new URL(part).protocol==='https:'}catch(e){}
+      if(ok){const a=document.createElement('a');a.href=part;a.rel='noopener';a.textContent=part;p.append(a)}else p.append(part)});byId('src').append(p)}
+  // Where this file lives in the repository, for the "fix a mistake" link.
+  const parts=location.pathname.split('/').filter(Boolean);if(parts[parts.length-1]==='index.html')parts.pop();
+  const slug=parts[parts.length-1]||'',edit=byId('edit');if(slug&&slug!=='lab')edit.href=edit.href.replace('/tree/','/edit/')+'/'+slug+'/index.html';
+  const pb=byId('pb'),ts=byId('ts'),ps=byId('ps'),po=byId('po'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let play=!calm,t0=performance.now(),dirty=true,last='';
+  ts.max=LOOP;ts.step=.01;
+  if(calm){T=Math.min(SIM.reveal+1.2,LOOP-.1);ts.value=T;pb.textContent='Play'}
+  const p=SIM.param;
+  if(p){const dec=(String(p.step).split('.')[1]||'').length,fmt=v=>(+v).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+    ps.min=p.min;ps.max=p.max;ps.step=p.step;ps.value=p.value;ps.setAttribute('aria-label',p.label);byId('pl').firstChild.textContent=p.label+' ';po.textContent=fmt(P);
+    ps.oninput=()=>{P=+ps.value;po.textContent=fmt(P);dirty=true}}
+  else byId('pl').hidden=true;
+  pb.onclick=()=>{play=!play;pb.textContent=play?'Pause':'Play';t0=performance.now()-T*1000};
+  ts.oninput=()=>{play=false;pb.textContent='Play';T=+ts.value;dirty=true};
+  function fit(){const d=Math.min(devicePixelRatio||1,2);cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);S=cv.width/1080;dirty=true}
+  new ResizeObserver(fit).observe(cv);fit();
+  (function frame(){if(play){T=((performance.now()-t0)/1000)%LOOP;ts.value=T;dirty=true}
+    if(dirty){dirty=false;draw(T);const l=SIM.line(P,T);if(l!==last){last=l;byId('line').textContent=l}}
+    requestAnimationFrame(frame)})();
+}
+</script>
+</body>
+</html>

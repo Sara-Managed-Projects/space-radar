@@ -291,7 +291,9 @@ export const SYSTEMS_TABLE = [
 "stage": "system-kepler-452",
 "host": "Kepler-452",
 "display": "Kepler-452",
-"aliases": [],
+"aliases": [
+"KOI-7016"
+],
 "hostId": "star-kepler-452",
 "hostSky": {
 "raDeg": 296.004,

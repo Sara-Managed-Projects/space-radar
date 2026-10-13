@@ -1,6 +1,7 @@
 // ui/exposure.js -- the shutter's control: Eye, Camera, Deep (spec 0067 task 3).
 //
 // Contract: exposurePanel(exposure) -> HTMLElement    a settings row; `exposure` is scene/exposure.js
+//           lookPanel(drawn) -> HTMLElement            Measured or Film; `drawn` is scene/exposure.js createDrawn
 //           pictureNote(row) -> HTMLElement            what a nebula's picture is, with its credit
 //           pictureFigure(row, name) -> HTMLElement    the photograph itself, with its caption (internal #167)
 //
@@ -15,7 +16,7 @@
 // pressed, because both listen to the same object.
 import { COPY, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
-import { EXPOSURES } from '../scene/exposure.js';
+import { EXPOSURES, DRAWN } from '../scene/exposure.js';
 
 /** The settings row: Eye, Camera, Deep; the chosen one wears the brackets. */
 export function exposurePanel(exposure) {
@@ -55,6 +56,48 @@ export function exposurePanel(exposure) {
   };
   const off = exposure.onChange(paint);
   paint(exposure.mode());
+  wrap.destroy = off;
+  return wrap;
+}
+
+/**
+ * Measured or Film (spec 0073 requirement 8): two words in the same row shape, beside Exposure in
+ * What to show. No line under it: each word's tooltip says what it does, and a world's card says
+ * which look is on in its own weather line.
+ */
+export function lookPanel(drawn) {
+  const C = COPY.look;
+  const wrap = document.createElement('section');
+  wrap.className = 'sr-panel sr-density sr-exposure sr-look';
+  const title = document.createElement('h2');
+  title.className = 'sr-panel__title';
+  title.textContent = C.panelTitle;
+  wrap.appendChild(title);
+  const row = document.createElement('div');
+  row.className = 'sr-density__choices';
+  row.setAttribute('role', 'group');
+  row.setAttribute('aria-label', C.panelTitle);
+  const buttons = new Map();
+  for (const mode of DRAWN) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sr-density__btn';
+    b.textContent = C.modes[mode];
+    b.title = C.titles[mode];
+    b.dataset.look = mode;
+    b.addEventListener('click', () => drawn.set(mode));
+    buttons.set(mode, b);
+    row.appendChild(b);
+  }
+  wrap.appendChild(row);
+  const paint = (mode) => {
+    for (const [m, b] of buttons) {
+      b.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+      b.classList.toggle('sr-bracketed', m === mode);
+    }
+  };
+  const off = drawn.onChange(paint);
+  paint(drawn.mode());
   wrap.destroy = off;
   return wrap;
 }

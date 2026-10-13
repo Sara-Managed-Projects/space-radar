@@ -100,7 +100,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage, isSystemStage, systemOriginOf } from './stage.js';
 import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
-import { createEarth, updateEarth, updateEarthEclipse, EARTH_RELIEF } from './earth.js';
+import { createEarth, updateEarth, updateEarthEclipse, setEarthCloudHeight, EARTH_RELIEF, CLOUD_PARALLAX } from './earth.js';
 import { ECLIPSE_GLSL, eclipseLikely, MOON_RADIUS_KM } from './eclipse.js';
 import { createAirShell, ATMO_PARAMS, EARTH_AIR } from './atmosphere.js';
 import { COPY, t, fmt } from '../copy/en.js';
@@ -239,6 +239,9 @@ export function worldRecords() {
       // brightened. The Earth has its own shader and its own sunlight is the reference; the Sun is
       // the light.
       exposed: !w.look.earth && !w.look.emissive,
+      // Spec 0072: seen small, every world but the Sun is a light at its computed brightness
+      // (scene/worldlights.js), and the card says what that glow is.
+      light: !w.look.emissive,
       earthshineGain: w.look.earthshine ? EARTHSHINE_GAIN : 0,
       // Spec 0054 task 3: how much thicker than it is the air is drawn (1 = its measured height), for
       // the card's line that says so and that the haze's colour is chosen.
@@ -249,7 +252,7 @@ export function worldRecords() {
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
-      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain) }) } : {}),
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker) }) } : {}),
     },
   }));
 }
@@ -335,13 +338,113 @@ export function ringBandsStrip(ring, px = RING_BANDS_PX) {
   return data;
 }
 
+/**
+ * THE FINE STRUCTURE (2026-10-12, spec 0073 requirement 5): the hundreds of ringlets and gaps the map
+ * is too coarse to hold, from one stellar occultation by Cassini's UVIS (registry/textures.yaml
+ * `saturn-ring-fine`; scripts/build-ring-profile.py says how the strip is made). A texel is the
+ * measured optical depth over its own neighbourhood's: 1 = no change, 0 = a gap, `ratioMax` at 255.
+ * The strip runs from the ring mesh's inner edge to its outer with no warp: its radii are Cassini's.
+ * Fetched when Saturn's disc is `fromShare` of half the view, on tier 1 and up, never under the
+ * frame latch (the rule Mercury's relief keeps); kept until the disc is `keptShare`.
+ */
+export const RING_FINE = { map: '8k_saturn_ring_fine.png', px: 8192, ratioMax: 4, fromShare: 0.15, keptShare: 0.11 };
+/** Seconds the fine structure and the grains take to come in or go out. */
+export const RING_NEAR_FADE_S = 1;
+/**
+ * THE GRAINS (illustrative, and the card says they are drawn). From very close the ring is not a
+ * smooth sheet. No particle is resolved from where the camera may stand -- a pixel is kilometres of
+ * ring and the particles are centimetres to metres -- so what is drawn is a texture: a stable hash
+ * of the place in the ring plane, in cells `px` screen pixels across at whatever the distance is
+ * (two sizes cross-faded, so nothing pops and nothing is finer than a pixel). One cell in five
+ * holds a glint, most of them faint; and a soft mottling `mottleCells` cells across stands for
+ * clumps. Together they scale what the slab already sends by
+ * 1 + `gain` x (glint - `mean`) + `mottle` x (clump - 0.5): no brighter on average (`mean` is the
+ * glints' own). The backscattered light and the forward-thrown light each keep their own phase,
+ * so the sparkle is strongest where those are. It is only there when one pixel covers less than
+ * `farRadii` of the planet's radius (30 km of ring), full by half that. (The first version put a
+ * glint in every cell: a lattice of dots, television static. Seen in the look of 2026-10-12.)
+ */
+export const RING_GRAIN = { px: 3.5, gain: 3, mean: 0.0116, mottle: 0.3, mottleCells: 4, farRadii: 5e-4 };
+/** How much of the grain is drawn where a pixel covers `radiiPerPx` of ring. JS twin of RING_FRAG's gate. Pure. */
+export function ringGrainGate(radiiPerPx) {
+  const x = Math.min(1, Math.max(0, (radiiPerPx - RING_GRAIN.farRadii * 0.5) / (RING_GRAIN.farRadii * 0.5)));
+  return 1 - x * x * (3 - 2 * x);
+}
+/** The slab's optical depth with the fine structure in: tau x (1 + fine x (ratio - 1)). JS twin of RING_FRAG. Pure. */
+export function ringFineTau(tau, ratio, fine) {
+  return Math.max(0, tau * (1 + Math.min(1, Math.max(0, fine)) * (ratio - 1)));
+}
+/** Where a radius is in the fine strip, 0..1 from the ring's inner edge to its outer. Pure. */
+export function ringFineU(rKm, innerKm, outerKm) { return (rKm - innerKm) / (outerKm - innerKm); }
+
 /** How many times steeper than measured Mercury's relief is drawn, and how far Saturn's bands are pushed from the map's mean. */
 export const RELIEF_STEEP = 4;
 export const SATURN_CONTRAST = 1.5;
 
+/**
+ * MARS'S RELIEF (2026-10-12, spec 0073 requirement 5): two maps made from the Mars Orbiter Laser
+ * Altimeter's gridded heights (registry/textures.yaml `mars-relief` and `mars-height`;
+ * scripts/build-mars-relief.py). The SLOPE comes from the local-relief map exactly as Mercury's
+ * does; the CAST SHADOW is new: from each sunlit point a short march toward the Sun in the height
+ * map finds the tallest thing standing in the light's way, so Olympus Mons and the walls of Valles
+ * Marineris throw shadows near the terminator.
+ *   exaggeration  slopes and heights alike are drawn this many times what was measured, and the
+ *                 card says so: at true scale Olympus Mons, 21 km high and 600 km wide, shades
+ *                 nothing a 10 km texel can show until the Sun is on the horizon.
+ *   steps         samples of the march by device tier (none on tier 0, which has no relief at all).
+ *   firstRad, reachRad   the first sample is this far toward the Sun (0.007 rad, 23.7 km: just over
+ *                 a texel of the height map) and the last this far (0.15 rad, 510 km); between them the steps grow by
+ *                 a constant ratio, and each is read from a mip as coarse as its own spacing, so a
+ *                 peak between two samples is not missed and nothing sparkles.
+ *   soft, bias    the shadow's edge (it begins where the horizon is `bias` over the Sun and is
+ *                 full 2 x `soft` further: one-sided, so level ground is never shaded however
+ *                 low the Sun) and what the horizon must clear, as tangents: the height
+ *                 map's own noise (some 80 m rms after WebP, times the exaggeration, over the
+ *                 first step) is 0.02, and under that a plain must not shade itself.
+ *   depth         how much of the direct light a shadow takes. Not all: Mars's sky is bright.
+ *                 (The first look, 2026-10-12, had an edge centred on the Sun, the sharpest mip and depth 0.88: Olympus Mons's shadow
+ *                 was a black shape with a lumpy edge, the map's own noise drawn sharp.)
+ *   maxSun        the cosine of the Sun's zenith angle past which nothing is marched: with the Sun
+ *                 that high nothing on Mars, even exaggerated, reaches it.
+ */
+export const MARS_RELIEF = { exaggeration: 5, steps: [0, 8, 16], firstRad: 0.007, reachRad: 0.15, soft: 0.04, bias: 0.03, depth: 0.8, maxSun: 0.77 };
+/** The ratio between one step of the march and the next, for `steps` of them from firstRad to reachRad. Pure. */
+export function marchGrowth(steps) {
+  return steps > 1 ? Math.pow(MARS_RELIEF.reachRad / MARS_RELIEF.firstRad, 1 / (steps - 1)) : 1;
+}
+/**
+ * The cast-shadow uniforms for a height map whose byte spans `minM` to `maxM` on a world of
+ * `radiusKm`: [the height of a full byte in radii, exaggerated; the steps; the first step in
+ * radians; the growth], and [the map's width in texels; the edge's softness; the bias; the depth].
+ */
+export function terrainUniforms(h, radiusKm, steps, exaggeration = MARS_RELIEF.exaggeration) {
+  return {
+    terrain: [(exaggeration * (h.maxM - h.minM)) / (radiusKm * 1000), steps, MARS_RELIEF.firstRad, marchGrowth(steps)],
+    march: [h.px, MARS_RELIEF.soft, MARS_RELIEF.bias, MARS_RELIEF.depth],
+  };
+}
+/**
+ * How much of the direct light is left at a point: JS twin of WORLD_FRAG's march. `heightAt(rad)`
+ * is the ground's height in radii (already exaggerated) at an arc `rad` toward the Sun, 0 being
+ * the point itself; `tanSun` the tangent of the Sun's elevation. On a ball of radius 1 a ray at
+ * elevation e is s tan(e) + s^2 / 2 above the ground after an arc s. Pure.
+ */
+export function castShadow(heightAt, tanSun, steps) {
+  const g = marchGrowth(steps);
+  const h0 = heightAt(0);
+  let s = MARS_RELIEF.firstRad;
+  let horizon = -1;
+  for (let j = 0; j < steps; j++) {
+    horizon = Math.max(horizon, (heightAt(s) - h0) / s - 0.5 * s);
+    s *= g;
+  }
+  const x = Math.min(1, Math.max(0, (horizon - MARS_RELIEF.bias - tanSun) / (2 * MARS_RELIEF.soft)));
+  return 1 - MARS_RELIEF.depth * x * x * (3 - 2 * x);
+}
+
 export const WORLDS = [
   {
-    id: 'sun', display: 'The Sun', parent: '', radiusKm: 696340.0,
+    id: 'sun', display: 'The Sun', parent: '', radiusKm: 695700.0,
     // `rotation: 'iau'` since 2026-10-06: the Sun's mesh has its north pole and turns once in 25.38
     // days (astronomy-engine's IAU axis), which scene/sun.js counts today's sunspots from.
     body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
@@ -397,7 +500,9 @@ export const WORLDS = [
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.webp', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
+    // `relief` (2026-10-12): MOLA's heights as local relief for the slopes and, under `height`, as
+    // the heights themselves for the cast shadow (MARS_RELIEF). Tier 1 and up, with the map.
+    look: { map: '2k_mars.webp', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 }, relief: { map: '2k_mars_relief.webp', px: 1536, rangeM: 4000, steep: MARS_RELIEF.exaggeration, mono: true, height: { map: '1k_mars_height.webp', px: 1024, minM: -8200, maxM: 21300 } } },
   },
   // `oblate` (2026-10-06) is the giant's flattening, (equatorial - polar) / equatorial, from NASA's
   // planetary fact sheets (nssdc.gsfc.nasa.gov/planetary/factsheet/, "Ellipticity (Flattening)",
@@ -423,7 +528,7 @@ export const WORLDS = [
     // to host. So the shader draws each texel 1.5 times as far from the map's own mean colour
     // (`mean`: linear light, weighted by area, measured on the file 2026-10-08) -- an ADJUSTMENT of
     // ours, which the card states -- and not on the Hubble face, which is shown as measured.
-    look: { map: '2k_saturn.webp', tint: 0xdfcca8, contrast: { gain: SATURN_CONTRAST, mean: [0.7405, 0.6024, 0.3928] }, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.webp', tint: 0xdfcca8, contrast: { gain: SATURN_CONTRAST, mean: [0.7405, 0.6024, 0.3928] }, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png', fine: RING_FINE } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
@@ -456,7 +561,8 @@ export const WORLDS = [
   // and says how; registry/textures.yaml has each one's source and how much of the sphere it
   // covers. `mapKind` is what kind of picture it is, for the card: `tinted` (a black-and-white
   // mosaic in the flat colour), `toned` (Cassini's infrared-to-ultraviolet colours at 35 %),
-  // `infrared` (Titan's ground through the haze) or `colour`. Every mapped moon is `locked`:
+  // `infrared` (Titan's ground through the haze), `redblue` (Charon), `enhanced` (Pluto: NASA's own
+  // enhanced-colour map, scripts/build_pluto_map.py) or `colour`. Every mapped moon is `locked`:
   // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
   // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
   // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes,
@@ -471,7 +577,7 @@ export const WORLDS = [
     // `face` (2026-10-07, internal #426): the heart, the face Pluto is known by, as east longitude and
     // latitude -- the brightest 12-degree patch of the map we ship, measured on it that day (201 E,
     // 21 N: the bright ice of Tombaugh Regio). An arrival prefers the lit side that shows it (faceDirOf).
-    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'redblue', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
+    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'enhanced', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
@@ -917,6 +1023,10 @@ uniform vec3  uMapMean;     // that mean, in linear light
 // 2026-10-10 no close-up tile of the Moon or Mars was drawn because of it.
 uniform sampler2D uGlobeRelief;  // Mercury: local relief, 0.5 = level ground (registry/textures.yaml mercury-relief)
 uniform vec3  uReliefK;     // slope per unit of difference between two texels either side; the texel's u; its v
+// Mars: the heights themselves, for the cast shadow (MARS_RELIEF). uTerrain.x = 0 is none.
+uniform sampler2D uHeightMap;
+uniform vec4  uTerrain;       // a full byte's height in radii (exaggerated); the march's steps; its first step, radians; its growth
+uniform vec4  uTerrainMarch;  // the map's width in texels; the shadow edge's softness and the bias, as tangents; the shadow's depth
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -961,14 +1071,22 @@ void main() {
   // Mercury's relief (look.relief): the ground's slope east and north from the height map, by two
   // differences, tips the normal the light is worked out with. The silhouette is still the ball's.
   float dGeo = dot( n, uSunDir );
+  // Where this fragment is on the world's own map, and how much of the map's slope it takes: a
+  // close-up tile (scene/tiles.js) rewrites this line, its own uv being the tile's.
+  vec2 reliefUv = vUv; float slopeShare = 1.0;
+  vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
+  vec3 north = cross( n, east );
+  // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
+  float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
   if ( uReliefK.x > 0.0 ) {
-    float hE = texture2D( uGlobeRelief, vUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uGlobeRelief, vUv - vec2( uReliefK.y, 0.0 ) ).r;
-    float hN = texture2D( uGlobeRelief, vUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, vUv - vec2( 0.0, uReliefK.z ) ).r;
-    vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
-    vec3 north = cross( n, east );
-    // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
-    float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
-    n = normalize( n - uReliefK.x * ( hE / cosLat * east + hN * north ) );
+    // East and west the two reads are the same distance apart ON THE GROUND at every latitude: a
+    // texel's width in u, over the cosine. (Until 2026-10-12 they were a texel apart in u and the
+    // difference was divided by the cosine instead, which near a pole divides the map's noise by
+    // a twelfth: rays of light and dark round the pole, seen on Mars's cap in the first look.)
+    float duE = uReliefK.y / cosLat;
+    float hE = texture2D( uGlobeRelief, reliefUv + vec2( duE, 0.0 ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( duE, 0.0 ) ).r;
+    float hN = texture2D( uGlobeRelief, reliefUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uGlobeRelief, reliefUv - vec2( 0.0, uReliefK.z ) ).r;
+    n = normalize( n - uReliefK.x * slopeShare * ( hE * east + hN * north ) );
   }
 
   float d = dot( n, uSunDir );
@@ -979,6 +1097,30 @@ void main() {
     : orenNayar( n, uSunDir, viewDir, uRoughness );
   // A slope facing the Sun just past the ball's own terminator is in the ball's shadow all the same.
   if ( uReliefK.x > 0.0 ) direct *= smoothstep( -0.03, 0.05, dGeo );
+  // Mars's cast shadows (MARS_RELIEF): from here toward the Sun along the ground, the tallest
+  // thing in the height map, as the tangent of its angle above this point's horizon on a ball
+  // (the ground falls away by half the arc squared). One read here and one a step, each step from
+  // a mip as coarse as its spacing. Only where the Sun is up and low enough for anything to reach it.
+  if ( uTerrain.x > 0.0 && dGeo > 0.0 && dGeo < ${MARS_RELIEF.maxSun.toFixed(2)} ) {
+    vec2 sunH = vec2( dot( uSunDir, east ), dot( uSunDir, north ) );
+    float flatLen = length( sunH );
+    if ( flatLen > 1e-4 ) {
+      sunH /= flatLen;
+      float tanSun = dGeo / flatLen;
+      vec2 perRad = vec2( sunH.x / ( 6.2831853 * cosLat ), sunH.y / 3.14159265 );
+      float h0 = textureLod( uHeightMap, reliefUv, 0.5 ).r * uTerrain.x;
+      float s = uTerrain.z;
+      float horizon = -1.0;
+      for ( int j = 0; j < ${MARS_RELIEF.steps[2]}; j++ ) {
+        if ( float( j ) >= uTerrain.y ) break;
+        float lod = max( log2( s * ( uTerrain.w - 1.0 ) * uTerrainMarch.x / 6.2831853 ), 0.5 );
+        float h = textureLod( uHeightMap, reliefUv + perRad * s, lod ).r * uTerrain.x;
+        horizon = max( horizon, ( h - h0 ) / s - 0.5 * s );
+        s *= uTerrain.w;
+      }
+      direct *= 1.0 - uTerrainMarch.w * smoothstep( tanSun, tanSun + 2.0 * uTerrainMarch.y, horizon - uTerrainMarch.z );
+    }
+  }
 
   // The ring between this point and the Sun: one ray-plane test, then the ring's own opacity there.
   float ringShade = 1.0;
@@ -1064,6 +1206,9 @@ export function worldMaterial(map, tint) {
       uMapMean: { value: new THREE.Vector3(0.5, 0.5, 0.5) },
       uGlobeRelief: { value: null },
       uReliefK: { value: new THREE.Vector3(0, 0, 0) },
+      uHeightMap: { value: null },
+      uTerrain: { value: new THREE.Vector4(0, 0, 0, 1) },
+      uTerrainMarch: { value: new THREE.Vector4(1, 1, 0, 0) },
     },
   });
 }
@@ -1196,6 +1341,9 @@ uniform float uOpacity;
 uniform vec2 uRingRadii;
 uniform vec4 uRingWarp;
 uniform vec2 uGlobe;          // the globe's equatorial and polar radii (oblateRadii); 1, 1 for a sphere
+uniform sampler2D uFineMap;   // the fine structure: measured optical depth over its neighbourhood's (RING_FINE)
+uniform float uFine;          // how much of it is in, 0..1; 0 until Saturn is large on screen
+uniform float uGrain;         // how much of the sparkle of unresolved grains is in, 0..1 (RING_GRAIN)
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1205,6 +1353,33 @@ const float RING_DUST_G = ${RING_DUST_G.toFixed(2)};
 const float RING_MU_FLOOR = ${RING_MU_FLOOR.toFixed(2)};
 const vec3 RING_DUST_COLOUR = vec3( ${RING_DUST_COLOUR.map((c) => c.toFixed(3)).join(', ')} );
 ${RING_U_GLSL}
+// A stable number per cell of the ring plane (Hoskins' hash without sine: the same on every GPU).
+float ringHash( vec2 p ) {
+  vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
+  p3 += dot( p3, p3.yzx + 33.33 );
+  return fract( ( p3.x + p3.y ) * p3.z );
+}
+// One size of grain: one cell in five holds a soft glint, most of them faint and a few bright.
+float ringGrains( vec2 p, float cell ) {
+  vec2 q = p / cell;
+  vec2 id = floor( q );
+  float h = ringHash( id + cell * 4096.0 );
+  if ( h < 0.8 ) return 0.0;
+  vec2 at = vec2( ringHash( id + 17.0 ), ringHash( id + 59.0 ) ) * 0.4 + 0.3;
+  vec2 d = q - id - at;
+  float s = ( h - 0.8 ) * 5.0;
+  return s * s * exp( -dot( d, d ) * 18.0 );
+}
+// Clumps: the same hash, smooth between the corners of cells several grains across. 0..1, mean 0.5.
+float ringMottle( vec2 p, float cell ) {
+  vec2 q = p / cell;
+  vec2 i = floor( q );
+  vec2 f = q - i;
+  f = f * f * ( 3.0 - 2.0 * f );
+  float o = cell * 1024.0 + 7.0;
+  return mix( mix( ringHash( i + o ), ringHash( i + vec2( 1.0, 0.0 ) + o ), f.x ),
+              mix( ringHash( i + vec2( 0.0, 1.0 ) + o ), ringHash( i + vec2( 1.0, 1.0 ) + o ), f.x ), f.y );
+}
 // The phase of a Lambert sphere: the ring's particles, centimetres to metres, throw light back.
 float lambertSpherePhase( float cosAlpha ) {
   float a = acos( clamp( cosAlpha, -1.0, 1.0 ) );
@@ -1232,6 +1407,13 @@ void main() {
   // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
   float alpha = clamp( tex.a * uOpacity, 0.0, 0.999 );
   float tau = -log( 1.0 - alpha );
+  // The fine structure, from close: Cassini's ringlets and gaps multiply the map's optical depth.
+  // ONE more texture fetch. A coarse mip of the strip is 1, so at a distance it changes nothing.
+  if ( uFine > 0.0 ) {
+    float ratio = texture2D( uFineMap, vec2( ( length( vPosL.xy ) - uRingRadii.x ) / ( uRingRadii.y - uRingRadii.x ), 0.5 ) ).r * ${RING_FINE.ratioMax.toFixed(1)};
+    tau *= 1.0 + uFine * ( ratio - 1.0 );
+    alpha = min( 1.0 - exp( -tau ), 0.999 );
+  }
   vec3 view = normalize( vCamL );
   float m0 = max( abs( vSunL.z ), RING_MU_FLOOR );
   float m = max( abs( view.z ), RING_MU_FLOOR );
@@ -1247,6 +1429,23 @@ void main() {
   float dust = RING_DUST * ( 1.0 - alpha );
   float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
   float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
+  // The grains, from very close (RING_GRAIN): no fetch. Cells a few pixels across at this distance,
+  // two sizes cross-faded; they scale what the slab sends, so each phase keeps its own sparkle.
+  if ( uGrain > 0.0 ) {
+    float perPx = max( length( dFdx( vPosL.xy ) ), length( dFdy( vPosL.xy ) ) );
+    float gate = uGrain * ( 1.0 - smoothstep( ${(RING_GRAIN.farRadii * 0.5).toExponential(2)}, ${RING_GRAIN.farRadii.toExponential(2)}, perPx ) );
+    if ( gate > 0.0 ) {
+      float lg = log2( max( perPx, 1e-9 ) * ${RING_GRAIN.px.toFixed(1)} );
+      float lv = floor( lg );
+      float c0 = exp2( lv );
+      float g = mix( ringGrains( vPosL.xy, c0 ), ringGrains( vPosL.xy, c0 * 2.0 ), lg - lv );
+      float clump = mix( ringMottle( vPosL.xy, c0 * ${RING_GRAIN.mottleCells.toFixed(1)} ), ringMottle( vPosL.xy, c0 * ${(RING_GRAIN.mottleCells * 2).toFixed(1)} ), lg - lv );
+      // Less the glints' own mean, so the ring is no brighter on average with them than without.
+      float k = max( 1.0 + gate * ( ${RING_GRAIN.gain.toFixed(1)} * ( g - ${RING_GRAIN.mean.toFixed(4)} ) + ${RING_GRAIN.mottle.toFixed(2)} * ( clump - 0.5 ) ), 0.0 );
+      body *= k;
+      fine *= k;
+    }
+  }
   // What the ring hides behind it: its optical depth along the line of sight.
   float cover = 1.0 - exp( -tau / m );
   vec3 light = uColour * ( tex.rgb * body + RING_DUST_COLOUR * fine ) * shade;
@@ -1280,6 +1479,9 @@ function ringMaterial(map, inner, outer, warp) {
       uRingRadii: { value: new THREE.Vector2(inner, outer) },
       uRingWarp: { value: new THREE.Vector4(...warp) },
       uGlobe: { value: new THREE.Vector2(1, 1) },
+      uFineMap: { value: null },
+      uFine: { value: 0 },
+      uGrain: { value: 0 },
     },
   });
 }
@@ -1432,6 +1634,9 @@ export function createWorlds(scene, opts = {}) {
   // frame latch (main.js setRelief): it is three more texture reads a fragment. It is kept with the
   // world's faces, so the map-release rule (MAPS_HELD) gives it back with the map.
   let reliefAllowed = false;
+  // The device's tier, for the steps of Mars's shadow march (setRelief's second word).
+  let reliefTier = 1;
+  const marchSteps = () => MARS_RELIEF.steps[Math.min(Math.max(0, reliefTier), MARS_RELIEF.steps.length - 1)];
   function fetchRelief(id) {
     const w = BY_ID.get(id);
     const r = w && w.look.relief;
@@ -1443,6 +1648,7 @@ export function createWorlds(scene, opts = {}) {
       if (!tex) return;
       if (!faceTex.has(key) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; } // released, or latched, meanwhile
       tex.colorSpace = THREE.NoColorSpace; // heights, not colours
+      if (r.mono) tex.format = THREE.RedFormat; // one channel on the GPU, where the row says so
       tex.wrapS = THREE.RepeatWrapping;
       tex.needsUpdate = true;
       faceTex.set(key, tex);
@@ -1450,20 +1656,119 @@ export function createWorlds(scene, opts = {}) {
       u.uGlobeRelief.value = tex;
       u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
     });
+    // The heights themselves, where the row has them (Mars): the cast shadow's map. Kept and
+    // given back exactly as the relief is.
+    if (r.height && marchSteps() > 0) {
+      const hKey = `${id}/height`;
+      faceTex.set(hKey, null);
+      load(base + r.height.map, (tex) => {
+        if (!tex) return;
+        if (!faceTex.has(hKey) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; }
+        tex.colorSpace = THREE.NoColorSpace;
+        tex.format = THREE.RedFormat;   // one channel on the GPU, which is what the budget counts
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.needsUpdate = true;
+        faceTex.set(hKey, tex);
+        const u = mesh.material.uniforms;
+        const t = terrainUniforms(r.height, w.radiusKm, marchSteps(), r.steep);
+        u.uHeightMap.value = tex;
+        u.uTerrain.value.set(...t.terrain);
+        u.uTerrainMarch.value.set(...t.march);
+      });
+    }
     return true;
   }
+  function dropTerrain(mesh) {
+    const u = mesh && mesh.material && mesh.material.uniforms;
+    if (u && u.uTerrain) { u.uTerrain.value.set(0, 0, 0, 1); u.uHeightMap.value = null; }
+  }
+  /** main.js, beside setRelief: the device's tier, which sets how many steps Mars's shadow is marched in. */
+  function setReliefTier(tier) {
+    if (!Number.isFinite(tier)) return;
+    reliefTier = tier;
+    for (const w of WORLDS) {
+      const h = w.look.relief && w.look.relief.height;
+      const mesh = meshes.get(w.id);
+      const u = mesh && mesh.material && mesh.material.uniforms;
+      // Worn already: the march's steps follow the tier.
+      if (h && u && u.uTerrain && u.uTerrain.value.x > 0) u.uTerrain.value.set(...terrainUniforms(h, w.radiusKm, marchSteps(), w.look.relief.steep).terrain);
+    }
+  }
+  // THE RINGS FROM CLOSE (RING_FINE, RING_GRAIN): the same permission as the relief -- tier 1 and
+  // up, never under the frame latch. The strip is asked for when the disc first reaches
+  // `fromShare`; both terms come in over RING_NEAR_FADE_S and go out the same way, and the strip
+  // is given back when they are out and the disc is under `keptShare`.
+  const ringNear = new Map();   // world id -> { tex, asked, fine, grain, wallMs }
+  let lookMeasured = false;     // main.js setLook: Measured or Film
+  // Wall time, not the clock's: a held clock still lets the camera come close. `opts.reducedMotion`
+  // (a function or a flag): where less motion is asked for the two terms are simply there, no fade.
+  const wallNow = typeof opts.now === 'function' ? opts.now : () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const motionQuery = opts.reducedMotion === undefined && typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const lessMotion = () => (motionQuery ? !!motionQuery.matches : typeof opts.reducedMotion === 'function' ? !!opts.reducedMotion() : !!opts.reducedMotion);
+  function stepRingDetail(w, mesh, wallMs) {
+    const fineRow = w.look.ring && w.look.ring.fine;
+    const ring = mesh.userData.ring;
+    if (!fineRow || !ring) return;
+    let st = ringNear.get(w.id);
+    if (!st) { st = { tex: null, asked: false, fine: 0, grain: 0, wallMs: NaN }; ringNear.set(w.id, st); }
+    const share = reliefAllowed ? discShare(w.id) : 0;
+    const near = share >= (st.asked ? fineRow.keptShare : fineRow.fromShare);
+    if (near && !st.asked && load) {
+      st.asked = true;
+      load(base + fineRow.map, (tex) => {
+        if (!tex) return;
+        if (!st.asked || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; } // given back, or latched, meanwhile
+        tex.colorSpace = THREE.NoColorSpace;   // ratios, not colours
+        tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.magFilter = THREE.LinearFilter;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.generateMipmaps = true;
+        // One row: anisotropic filtering would read the sharpest mip along the ring and shimmer.
+        tex.anisotropy = 1;
+        tex.needsUpdate = true;
+        st.tex = tex;
+        ring.material.uniforms.uFineMap.value = tex;
+      });
+    }
+    const dt = Number.isFinite(st.wallMs) ? Math.max(0, (wallMs - st.wallMs) / 1000) : 0;
+    st.wallMs = wallMs;
+    const stepMax = lessMotion() ? 1 : dt / RING_NEAR_FADE_S;
+    const toward = (v, want) => v + Math.max(-stepMax, Math.min(stepMax, want - v));
+    st.fine = toward(st.fine, near && st.tex ? 1 : 0);
+    // The grains are generated: under the Measured look (spec 0073 req 8) they are not drawn. The
+    // fine structure is Cassini's and stays.
+    st.grain = toward(st.grain, near && !lookMeasured ? 1 : 0);
+    const u = ring.material.uniforms;
+    u.uFine.value = st.fine;
+    u.uGrain.value = st.grain;
+    if (!near && st.asked && st.fine === 0 && st.grain === 0) dropRingDetail(w.id);
+  }
+  function dropRingDetail(id) {
+    const st = ringNear.get(id);
+    const mesh = meshes.get(id);
+    if (mesh && mesh.userData.ring) {
+      const u = mesh.userData.ring.material.uniforms;
+      u.uFine.value = 0; u.uGrain.value = 0; u.uFineMap.value = null;
+    }
+    if (st && st.tex && st.tex.dispose) st.tex.dispose();
+    ringNear.delete(id);
+  }
+
   /** main.js, when the device's tier is known and when the frame latch trips: may the reliefs be worn? */
   function setRelief(on) {
     reliefAllowed = !!on;
+    if (!reliefAllowed) for (const id of [...ringNear.keys()]) dropRingDetail(id);
     for (const w of WORLDS) {
       if (!w.look.relief) continue;
       if (reliefAllowed) { fetchRelief(w.id); continue; }
       const mesh = meshes.get(w.id);
-      const key = `${w.id}/relief`;
-      const tex = faceTex.get(key);
       if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uGlobeRelief.value = null; }
-      if (tex && tex.dispose) tex.dispose();
-      faceTex.delete(key);
+      dropTerrain(mesh);
+      for (const key of [`${w.id}/relief`, `${w.id}/height`]) {
+        const tex = faceTex.get(key);
+        if (tex && tex.dispose) tex.dispose();
+        faceTex.delete(key);
+      }
     }
   }
 
@@ -1887,6 +2192,7 @@ export function createWorlds(scene, opts = {}) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
         if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
+        if (mesh.userData.ring && w.look.ring.fine) stepRingDetail(w, mesh, wallNow());
         if (mesh.userData.air) updateAir(w, mesh, sunDirHere);
         if (w.look.earthshine && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEarthshine) {
           // The Sun-Earth-Moon angle and the Earth-Moon distance, from the geocentric vectors step 2a
@@ -1993,6 +2299,7 @@ export function createWorlds(scene, opts = {}) {
     current.delete(id);
     if (tex.dispose) tex.dispose();
     if (m.uniforms && m.uniforms.uReliefK) { m.uniforms.uReliefK.value.set(0, 0, 0); m.uniforms.uGlobeRelief.value = null; }
+    dropTerrain(mesh);
     for (const [key, face] of faceTex) {
       if (!key.startsWith(`${id}/`)) continue;
       if (face && face.dispose) face.dispose();
@@ -2341,8 +2648,16 @@ export function createWorlds(scene, opts = {}) {
     preload,
     releaseMap,
     setRelief,
+    /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
+    // The Earth's clouds are at their true thickness under Measured (scene/earth.js CLOUD_PARALLAX).
+    setLook: (mode) => { lookMeasured = mode === 'measured'; setEarthCloudHeight(meshes.get('earth'), { look: mode }); },
+    /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
+    ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     /** For the probes: is this world wearing its relief? */
     hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
+    setReliefTier,
+    /** For the probes: is this world throwing shadows from its height map, and in how many steps? */
+    castsShadows: (id) => { const m = meshes.get(id); const u = m && m.material.uniforms; return u && u.uTerrain && u.uTerrain.value.x > 0 ? u.uTerrain.value.y : 0; },
     setMapsHeld,
     mapsHeld,
     waitingMaps,
@@ -2362,6 +2677,8 @@ export function createWorlds(scene, opts = {}) {
     setLatched,
     earthshine,
     drawnPositionOf,
+    /** This frame's TRUE position (update()'s own answer, not a second ephemeris): scene/worldlights.js. */
+    truePositionOf: (id) => truePos.get(id) || null,
     drawnRadiusUnits,
     arrivalRadiusUnits,
     preloadShape,

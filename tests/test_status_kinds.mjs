@@ -10,7 +10,7 @@ import assert from 'node:assert';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { layerKinds, kindWords } = await import(join(JS, 'ui/status.js'));
+const { layerKinds, kindWords, builtFrom } = await import(join(JS, 'ui/status.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 
 const rec = (layer, propagator, cls = 'measured') => ({ id: `${layer}-${Math.random()}`, layer, propagator, cls });
@@ -51,4 +51,28 @@ assert.notEqual(COPY.status.layerCatalogue, COPY.status.layerLive);
   assert.doesNotMatch(provenanceLine({ ...row, pendingLive: false }), /checking/, 'and not after');
   assert.match(provenanceLine({ ...row, pendingLive: false }), /overdue/, 'an overdue copy that is no longer being checked still says it is overdue');
 }
-console.log('status kinds ok: catalogue, live, bundled sample and drawn are four different claims');
+// "Built from 08a7176, 12 October 2026" (public #291): the words and the address from /build.json,
+// and no line at all when the file is not there or does not name a commit and a day.
+{
+  const commit = '08a7176' + 'c'.repeat(33);
+  const doc = { schema: 1, commit, commit_short: '08a7176', committed_at: '2026-10-12T12:28:44Z', built_at: '2026-10-12T23:59:30Z', build: 'd20ed5015dcabc46', files: 296, bytes: 5e6, dirty: false };
+  const b = builtFrom(doc);
+  assert.equal(b.text, 'Built from 08a7176, 12 October 2026', 'the short commit and the day of the build, UTC');
+  assert.equal(b.href, `https://github.com/Sara-Managed-Projects/space-radar/commit/${commit}`, 'the link is that commit on GitHub');
+  assert.ok(b.href.startsWith(`${COPY.mark.href}/commit/`), 'in the repository the GitHub mark names');
+  assert.equal(b.title, COPY.buildInfo.title);
+  for (const bad of [null, undefined, 'x', [], {}, { commit }, { built_at: doc.built_at }, { ...doc, commit: '08a7176' }, { ...doc, commit: `${commit.slice(0, 39)}"` },
+    { ...doc, commit: commit.toUpperCase() }, { ...doc, built_at: 'yesterday' }, { ...doc, commit: 7 }]) {
+    assert.equal(builtFrom(bad), null, `no line for ${JSON.stringify(bad)}`);
+  }
+  // Asked for when the sheet is built, never by a module of the boot graph.
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const askers = [];
+  const walk = (dir) => { for (const f of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, f.name); if (f.isDirectory()) walk(p); else if (f.name.endsWith('.js') && /['"`]build\.json['"`]/.test(readFileSync(p, 'utf8'))) askers.push(p.slice(JS.length + 1)); } };
+  walk(JS);
+  assert.deepEqual(askers, ['ui/status.js'], `only the Sources sheet asks for build.json (${askers})`);
+  // Written to hold on the minified tree too (scripts/check_built_tree.mjs runs this file there).
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  assert.ok(/import\(\s*['"`]\.\/ui\/status\.js['"`]\s*\)/.test(main) && !/from\s*['"`]\.\/ui\/status\.js['"`]/.test(main), 'and main.js loads the sheet by a dynamic import, when it is opened');
+}
+console.log('status kinds ok: catalogue, live, bundled sample and drawn are four different claims; the Built-from line is the commit build.json names, or absent');

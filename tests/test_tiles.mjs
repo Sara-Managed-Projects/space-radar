@@ -231,11 +231,13 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
   check(f.includes('gl_FragColor = vec4( colour, uFade );') && f.includes('uniform float uFade;'), 'the fragment shader fades');
   check(f.includes('texture2D( uBaseMap, vUvGlobe ).rgb * clamp( dot( tile, vec3( 0.2126, 0.7152, 0.0722 ) ) * uTint.r,') && f.includes(': tile * uTint;'),
     'a detail tile multiplies the brightness of the world\'s own map; a colour tile is its own picture times the grade');
-  // Everything else is WORLD_FRAG, line for line: only the map read, the output and four declarations differ.
+  // Everything else is WORLD_FRAG, line for line: only the map read, the output, four declarations and
+  // (since 2026-10-12, Mars's relief) the line that says where on the world's own map a fragment is differ.
   const mine = new Set(f.split('\n'));
   const lost = WORLD_FRAG.split('\n').filter((l) => !mine.has(l));
-  check(lost.length === 3 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )'))
-    && lost.some((l) => l.includes('vec3 colour = base * direct * uSunIrradiance * ringShade;')), `the tile shader drops ${lost.length} of the world's lines, want the map read, the lit ground and the output only`);
+  check(lost.length === 4 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )'))
+    && lost.some((l) => l.includes('vec3 colour = base * direct * uSunIrradiance * ringShade;')) && lost.some((l) => l.includes('vec2 reliefUv = vUv; float slopeShare = 1.0;')),
+    `the tile shader drops ${lost.length} of the world's lines, want the map read, the lit ground, the relief's place and the output only`);
   check(f.includes('vec3 colour = base * direct * uSunIrradiance * ringShade * relief;') && f.includes('uniform sampler2D uReliefMap;'), 'the lit ground is the world\'s, times the relief');
   check(!/\bflat\b/.test(f.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')), '`flat` is a reserved word in GLSL ES 3: the shader must not name a variable that');
   const v = T.tileVertex();
@@ -497,7 +499,7 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   const mine = new Set(f.split('\n'));
   const lost = SURFACE_FRAG.split('\n').filter((l) => !mine.has(l));
   check(lost.length === 1 && lost[0].includes('vec3 ground = dayTex * ('), `the Earth's tile shader drops ${lost.length} of the Earth's lines, want the lit ground only`);
-  check(f.includes('vec3 ground = mix( dayTex, tile * mix( uTileGrade, uTileGradeSea, tileSea ), uFade ) * ('), 'the tile is the DAY term only, mixed in by the fade');
+  check(f.includes('vec3 ground = mix( dayTex, tile * uTileGrade + uTileSeaLift * tileSea, uFade ) * ('), 'the tile is the DAY term only, mixed in by the fade');
   for (const kept of ['vec3 cities = uNightTint', 'float cloud  = cloudCover( vUv );', 'eclObscuration(', 'float oceanReal = texture2D( uWater, vUv ).r', 'colour = mix( colour, cloudLight']) {
     check(f.includes(kept), `night lights, clouds, the water mask and the eclipse are still in the patch: ${kept}`);
   }
@@ -527,7 +529,7 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   await run(3000);
   const st = tiles.state().sets[EARTH.id];
   check(st.showing && st.level === 7 && st.drawn === st.wanted && st.loading === 0, `the Earth's tiles are on screen at level ${st.level}: ${st.drawn} of ${st.wanted}`);
-  check(asked.every((u) => u.startsWith('https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/') && u.endsWith('.jpeg')), 'from GIBS\'s Blue Marble and nowhere else');
+  check(asked.every((u) => u.startsWith('https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief/default/500m/') && u.endsWith('.jpeg')), 'from GIBS\'s Blue Marble and nowhere else');
   check(st.wanted <= T.DRAW_TILES[1] / 4 && near(T.tileShare(EARTH), 0.25), `512-pixel tiles: a quarter of the draw budget, ${st.wanted} of ${T.DRAW_TILES[1] / 4}`);
   const group = earth.children.find((c) => c.name === EARTH.id + '-tiles');
   const p = group.children.find((c) => c.visible);
@@ -535,7 +537,7 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   const U = p.material.uniforms, E = earth.material.uniforms;
   check(U.uSunDir === E.uSunDir && U.uNight === E.uNight && U.uClouds === E.uClouds && U.uLiveA === E.uLiveA && U.uEclipse === E.uEclipse && U.uWater === E.uWater && U.uDay === E.uDay,
     'it shares the globe\'s Sun, night lights, clouds, water and eclipse: the same uniform objects');
-  check(U.uFade.value === 1 && near(U.uTileGrade.value.r, EARTH.grade[0]) && near(U.uTileGradeSea.value.b, EARTH.gradeSea[2]), 'with its own tile, fade and the two grades');
+  check(U.uFade.value === 1 && near(U.uTileGrade.value.r, EARTH.grade[0]) && near(U.uTileSeaLift.value.b, EARTH.seaLift[2]), 'with its own tile, fade, the grade and the sea\'s lift');
   check(!!p.geometry.attributes.uvTile && !p.geometry.attributes.uvGlobe, 'its `uv` is the globe\'s and the tile has its own');
   check(tiles.credits().length === 1 && tiles.credits()[0].includes('Global Imagery Browse Services (GIBS)'), 'the credit carries GIBS\'s acknowledgement');
   const m = tiles.mosaics()[0];

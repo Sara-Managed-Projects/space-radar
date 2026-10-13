@@ -212,3 +212,223 @@ export function wavePhase(tMs, periodDays, sense = 1) {
   const turns = (tMs / DAY_MS / periodDays) * sense;
   return turns - Math.floor(turns);
 }
+
+// --- Jupiter's storms (2026-10-12, spec 0073 requirement 4) ----------------------------------------
+//
+// Four things the flow's shader term draws on Jupiter from close enough, and the arithmetic of each.
+// What is MEASURED: the jets, so where the shear between them is, how strong, and which way it
+// turns the air. What is GENERATED: every eddy drawn there. An eddy is a small turn of the map's
+// lookup about a fixed point of the MAP, by an angle that follows the same bounded two-phase time
+// as the bands, and that is nothing at the eddy's own edge: so no texel is ever read from further
+// than one eddy's diameter away, however long the clock runs, and the picture cannot smear.
+
+/** Shear lines the shader has room for (seven from the profile, and the Great Red Spot's wake). */
+export const EDDY_SLOTS = 8;
+/** Ovals that turn within themselves, besides the Great Red Spot. */
+export const OVAL_SLOTS = 4;
+/** Polar cyclones: nine in the north (slots 0 to 8), six in the south (9 to 14). */
+export const CYCLONE_NORTH = 9;
+export const CYCLONE_SOUTH = 6;
+export const CYCLONE_SLOTS = CYCLONE_NORTH + CYCLONE_SOUTH;
+
+/**
+ * Where the profile's shear is strongest: the `n` steepest stretches between two of its points,
+ * equatorward of `lat_max_deg`. Each is a line of latitude (planetocentric, degrees), a half-height
+ * in degrees, and the rate the air there turns on itself, in turns per day, anticlockwise positive
+ * as the map is seen with north up: half the vorticity -du/dy of the measured winds.
+ * @returns {{latDeg:number, halfDeg:number, turnsPerDay:number, shearPerS:number}[]} south to north
+ */
+export function shearLines(profile, opts = {}) {
+  const f = profile.flattening || 0;
+  const sense = profile.sense === -1 ? -1 : 1;
+  const n = Math.max(0, Math.min(EDDY_SLOTS - 1, opts.lines == null ? 7 : opts.lines | 0));
+  const latMax = opts.lat_max_deg || 62;
+  const halfMax = opts.half_deg_max || 1.5;
+  const cap = opts.max_turns_per_day || 0.3;
+  const pts = profile.points.map(([lat, u]) => [planetocentricDeg(lat, f), u]);
+  const all = [];
+  for (let i = 1; i < pts.length; i++) {
+    const [la0, u0] = pts[i - 1];
+    const [la1, u1] = pts[i];
+    const mid = (la0 + la1) / 2;
+    if (!(la1 > la0) || Math.abs(mid) > latMax) continue;
+    const shearPerS = ((u1 - u0) * sense) / ((la1 - la0) * DEG * profile.radius_km * 1000);   // du/dy
+    const turns = Math.max(-cap, Math.min(cap, ((-shearPerS / 2) * 86400) / (2 * Math.PI)));
+    all.push({ latDeg: mid, halfDeg: Math.min(halfMax, 0.45 * (la1 - la0)), turnsPerDay: turns, shearPerS });
+  }
+  return all.sort((a, b) => Math.abs(b.shearPerS) - Math.abs(a.shearPerS)).slice(0, n).sort((a, b) => a.latDeg - b.latDeg);
+}
+
+/**
+ * A shear line as the shader's two rows. `e`: its v in the map, its half-height in v, its turning
+ * (turns per day), and how many eddies go round the planet, a whole number so the seam is no seam.
+ * `win`: where along the band it is drawn (centre u, half-width in u; 0.5 and more is all round),
+ * and what one unit of u is in units of v at that latitude (so an eddy is round on the globe).
+ */
+export function eddyRow(line, win = null) {
+  const v = 0.5 + line.latDeg / 180;
+  const halfV = line.halfDeg / 180;
+  const xScale = 2 * Math.cos(line.latDeg * DEG);
+  // A cell is 2.4 half-heights long: an eddy of at most 0.9, moved at most 0.24 from its middle.
+  const cells = Math.max(1, Math.floor(xScale / (2.4 * halfV)));
+  return { e: [v, halfV, line.turnsPerDay, cells], win: [win ? win.u : 0, win ? win.half : 1, xScale] };
+}
+
+/**
+ * The Great Red Spot's wake: the churned air downstream of it in the jet that passes its equator
+ * side. Which way is downstream is read from the measured winds, not assumed: the strongest wind
+ * between the spot's centre and its edge nearer the equator (on Jupiter the westward jet at 20 S
+ * planetographic, so the wake lies WEST of the spot and toward the equator: north-west). `spot` is
+ * {u, v, half_u, half_v} in the map. Returns a line and its window, or null when the air is still.
+ */
+export function wakeLine(spot, profile, opts = {}) {
+  const sense = profile.sense === -1 ? -1 : 1;
+  const toEquator = spot.v < 0.5 ? 1 : -1;
+  const centreLat = (spot.v - 0.5) * 180;
+  const halfLat = spot.half_v * 180;
+  let wind = 0;
+  for (let k = 0; k <= 20; k++) {
+    const w = windAt(profile, centreLat + (toEquator * halfLat * k) / 20) * sense;
+    if (Math.abs(w) > Math.abs(wind)) wind = w;
+  }
+  if (!wind) return null;
+  const dir = wind > 0 ? 1 : -1;   // +1: the wake lies east of the spot
+  const reach = opts.reach || 5;
+  const half = 0.5 * reach * spot.half_u;
+  const line = {
+    latDeg: centreLat + toEquator * 0.55 * halfLat,
+    halfDeg: Math.min(opts.half_deg || 1.3, 0.4 * halfLat),
+    // The wake's eddies turn the way the spot's flank shears them: against the spot's own turning.
+    turnsPerDay: -toEquator * (opts.turns_per_day || 0.25),
+  };
+  return { line, win: { u: ((spot.u + dir * (spot.half_u * 1.2 + half)) % 1 + 1) % 1, half }, dir, windMs: wind };
+}
+
+const hash1 = (x) => { const s = Math.sin(x * 12.9898) * 43758.5453; return s - Math.floor(s); };
+
+/**
+ * The JS twin of the shader's wxEddies(): where a point of the map (u, v) is read from once the
+ * eddies of `rows` (eddyRow()s) have turned for `tau` days, at strength `near` (0..1).
+ * tests/test_weather.mjs holds its bound.
+ */
+export function eddyDisplace(u, v, tau, rows, near = 1) {
+  let pu = u;
+  let pv = v;
+  rows.forEach((row, i) => {
+    const [v0, halfV, rate, cells] = row.e;
+    const [uC, uHalf, xScale] = row.win;
+    if (!(halfV > 0) || Math.abs((pv - v0) / halfV) >= 1) return;
+    let gate = 1;
+    if (uHalf < 0.5) {
+      const du = (((pu - uC + 0.5) % 1) + 1) % 1 - 0.5;
+      const x = Math.max(0, Math.min(1, (Math.abs(du) / uHalf - 0.6) / 0.4));
+      gate = 1 - x * x * (3 - 2 * x);
+    }
+    if (gate <= 0) return;
+    const cell = Math.floor(pu * cells);
+    const h1 = hash1(cell + i * 17.3);
+    const h2 = hash1(cell * 1.7 + i * 5.1 + 3);
+    if (hash1(cell * 2.3 + i * 9.7 + 1) < 0.4) return;
+    const cu = (cell + 0.5 + 0.2 * (h1 - 0.5)) / cells;
+    const cv = v0 + (h2 - 0.5) * 0.2 * halfV;
+    const R = halfV * (0.5 + 0.4 * h2);
+    const dx = (pu - cu) * xScale;
+    const dy = pv - cv;
+    const r = Math.hypot(dx, dy) / R;
+    if (r >= 1) return;
+    const x = Math.max(0, Math.min(1, r));
+    const a = -2 * Math.PI * rate * (0.6 + 0.8 * h1) * tau * gate * near * (1 - x * x * (3 - 2 * x));
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    pu = cu + (c * dx - s * dy) / xScale;
+    pv = cv + s * dx + c * dy;
+  });
+  return [pu, pv];
+}
+
+/** A unit vector `distDeg` from the unit vector `c`, at `bearingDeg` round it. Pure. */
+function aroundPoint(c, distDeg, bearingDeg) {
+  // The same frame the shader builds at a cyclone: e1 = c x X, e2 = c x e1.
+  let e1 = [0, c[2], -c[1]];
+  const l = Math.hypot(e1[0], e1[1], e1[2]);
+  e1 = e1.map((x) => x / l);
+  const e2 = [c[1] * e1[2] - c[2] * e1[1], c[2] * e1[0] - c[0] * e1[2], c[0] * e1[1] - c[1] * e1[0]];
+  const d = distDeg * DEG;
+  const b = bearingDeg * DEG;
+  return c.map((x, k) => x * Math.cos(d) + (e1[k] * Math.cos(b) + e2[k] * Math.sin(b)) * Math.sin(d));
+}
+
+/**
+ * The polar cyclones of a registry row (`polar-cyclones`), as places: the central one of each pole
+ * and the ring round it. North: on circles of latitude, the row's latitudes in turn. South: round
+ * the central cyclone, which is itself off the pole. The longitudes are ours and evenly spaced.
+ * @returns {{north: object[], south: object[]}} each {latDeg, lonDeg, radiusDeg, dir:[x,y,z], central}
+ */
+export function polarCyclones(c) {
+  const place = (dir, radiusDeg, central) => ({
+    dir, radiusDeg, central,
+    latDeg: Math.asin(Math.max(-1, Math.min(1, dir[1]))) / DEG,
+    lonDeg: Math.atan2(-dir[2], dir[0]) / DEG,
+  });
+  const n = c.north;
+  const north = [place(bodyDirection(n.centre_lat_deg, 0), n.centre_diameter_deg / 2, true)];
+  for (let i = 0; i < n.count; i++) {
+    north.push(place(bodyDirection(n.ring_lats_deg[i % n.ring_lats_deg.length], (360 * i) / n.count), n.diameter_deg / 2, false));
+  }
+  const s = c.south;
+  const centre = bodyDirection(-(90 - s.centre_offset_deg), -s.toward_lon_w);
+  const south = [place(centre, s.diameter_deg / 2, true)];
+  for (let i = 0; i < s.count; i++) south.push(place(aroundPoint(centre, s.ring_from_centre_deg, (360 * i) / s.count + 36), s.diameter_deg / 2, false));
+  return { north, south };
+}
+
+/** How much of a close-range effect is drawn at a disc size: nothing under `from`, all of it at 1.5 times that. */
+export function nearShare(share, from) {
+  const x = Math.max(0, Math.min(1, (share - from) / (0.5 * from)));
+  return x * x * (3 - 2 * x);
+}
+
+// ---- the close-range cloud detail (2026-10-12; registry/weather.yaml kind cloud-detail) ----------
+// A look at the live build: "at the rig's closest zoom Jupiter is a featureless beige field". The
+// map is 2 048 or 4 096 texels round and the camera comes within a few percent of the radius, where
+// one texel is tens of pixels wide. Below the map's resolution there is nothing measured to draw,
+// so a generated cloud texture carries the picture there and the card says it is generated. These
+// are the shader's numbers and its two fades, as JS twins for tests/test_weather.mjs.
+
+/**
+ * How many octaves are drawn at once, each half the wavelength and DETAIL_GAIN the strength of the
+ * one before. WHICH octaves follows the camera: the coarsest drawn is the one whose wavelength
+ * across latitude is about DETAIL_COARSE_PX on the screen (never coarser than the registry row's
+ * `cells_lat`), so from the rig's closest the finest is still a few pixels and the picture is not
+ * a field of soft blobs (the first version's six fixed octaves were, seen on 2026-10-12: at
+ * seventy pixels a texel its finest was twelve pixels and its strongest four hundred). As the
+ * camera closes in, the coarsest fades out while the next finer fades in.
+ */
+export const DETAIL_OCTAVES = 5;
+export const DETAIL_GAIN = 0.75;
+export const DETAIL_COARSE_PX = 160;
+/** Which octave is the coarsest drawn, as a real number: its whole part is the octave, the rest the cross-fade. */
+export function detailFirstOctave(basePx) {
+  return Number.isFinite(basePx) && basePx > 0 ? Math.max(0, Math.log2(basePx / DETAIL_COARSE_PX)) : 0;
+}
+/**
+ * The fade by how many TEXELS OF THE MAP one screen pixel covers: all of it where a texel is over
+ * three pixels wide (0.3), none of it from one texel a pixel (1.0) up. So it is never drawn over
+ * detail the map has.
+ */
+export const DETAIL_FADE = [0.3, 1.0];
+export function detailFade(texelsPerPixel) {
+  if (!Number.isFinite(texelsPerPixel)) return 0;
+  const x = Math.max(0, Math.min(1, (texelsPerPixel - DETAIL_FADE[0]) / (DETAIL_FADE[1] - DETAIL_FADE[0])));
+  return 1 - x * x * (3 - 2 * x);
+}
+/** An octave is drawn only where its wavelength is some pixels wide: none at 2 px, all at 5 (no shimmer). */
+export const DETAIL_OCTAVE_PX = [2, 5];
+export function detailOctaveWeight(wavelengthPx) {
+  const x = Math.max(0, Math.min(1, (wavelengthPx - DETAIL_OCTAVE_PX[0]) / (DETAIL_OCTAVE_PX[1] - DETAIL_OCTAVE_PX[0])));
+  return x * x * (3 - 2 * x);
+}
+/** The most any channel is multiplied by at full strength: brightness, then the little lean in colour. */
+export function detailMaxContrast(row) {
+  return (1 + row.contrast) * (1 + row.contrast * row.colour) - 1;
+}
