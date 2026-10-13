@@ -263,13 +263,16 @@ export function createOnboarding(ctx, opts = {}) {
     if (!step || !built) return;
     const view = { w: win.innerWidth, h: win.innerHeight };
     const scene = step.look === 'scene';
+    // Done and waiting for Next: the ring and the scrim are gone, so what the press opened is not
+    // dimmed. Done and about to go on by itself: they stay for the beat, or the caption would jump.
+    const waiting = state.phase === 'done' && step.then === 'wait';
     let hole = null;
-    if (!scene && state.phase === 'step') {
+    if (!scene && !waiting) {
       const hit = firstShown(step.hooks);
       target = hit ? hit[0] : null;
       hole = hit ? P.holeFor(hit[1], view) : null;
     }
-    const withInk = state.phase === 'step' && (scene || !!hole);
+    const withInk = !waiting && (scene || !!hole);
     const sig = JSON.stringify([state.phase, state.index, hole, view, card.offsetWidth, card.offsetHeight, band(view)]);
     if (!fresh && sig === lastSig) return;
     lastSig = sig;
