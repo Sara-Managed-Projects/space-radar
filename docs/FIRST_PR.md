@@ -29,9 +29,9 @@ Every one of them names the file, the change, the check to run and a "Done when"
 **You do not need to ask before you start.** Whoever opens the pull request first has the issue.
 So, to save yourself and the next person from doing the same work twice:
 
-- **Ask and it is yours.** A comment saying you would like an issue gets it assigned to you, and
-  nothing else starts on it while it is. If an issue carries `sara:doing`, the maintainers are
-  already building it: pick another.
+- **Reserved means taken.** An issue that carries `sara:doing` is already being built by the
+  maintainers: pick another. A comment saying which issue you are starting is welcome, and the
+  maintainers' own batches leave alone any issue with an outside comment or an assignee.
 - **Look before you start.** On the issue page, the right-hand column has a "Development" box. If
   a pull request is linked there, somebody is on it: go back and pick another. The links above
   already leave those out.
