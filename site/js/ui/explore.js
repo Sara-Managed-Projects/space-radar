@@ -377,6 +377,7 @@ export function createExplore(ctx, host) {
   head.appendChild(brand);
 
   const searchHost = el('div', 'sr-explore__search');
+  searchHost.dataset.tour = 'search'; // the tour's hook (registry/onboarding.yaml): it moves with the element
   head.appendChild(searchHost);
   const search = createSearch(ctx, searchHost);
   // The magnifier inside the field, as every search box has one; the field is the label's target.
@@ -440,6 +441,7 @@ export function createExplore(ctx, host) {
 
   const tabs = el('div', 'sr-tabs');
   tabs.setAttribute('role', 'tablist');
+  tabs.dataset.tour = 'tabs';
   tabs.setAttribute('aria-label', COPY.tabs.label);
   head.appendChild(tabs);
   root.appendChild(head);
@@ -496,6 +498,7 @@ export function createExplore(ctx, host) {
   const tripHosts = new Map();
   for (const id of TABS) {
     const s = section(COPY.tripCard.title, 'sr-trips2');
+    s.dataset.tour = 'trips';
     const grid = el('div', 'sr-tripgrid');
     const more = button('sr-more');
     more.hidden = true;

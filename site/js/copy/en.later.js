@@ -247,6 +247,28 @@ Object.assign(COPY, {
     notFromGround: 'The drift starts from space, not from the ground',
   },
 
+  // ui/onboarding.js (internal spec 0074): the tour's caption and the first visit's line. A step's
+  // own two lines are not here: they are registry/onboarding.yaml's, as a trip stop's are its
+  // registry's, because the trips' voice is rendered from them.
+  tour: {
+    label: 'The tour',
+    micro: 'Tour',
+    count: '{n} / {of}',
+    next: 'Next',
+    nextTitle: 'The next step (N)',
+    done: 'Done',
+    doneTitle: 'End the tour',
+    skip: 'Skip',
+    skipTitle: 'Leave the tour (Escape)',
+    voice: 'Voice',
+    // The voice is synthetic and the app says so (spec 0069).
+    voiceTitle: 'Read each step aloud, in a synthetic voice',
+    // In place of the ask, once the thing asked for was done and the step waits.
+    waited: 'Have a look, then go on.',
+    invite: 'First time here: take the tour',
+    inviteTitle: 'Eight steps round the map',
+  },
+
   // The toast after the app has moved the view for you (ui/camundo.js, internal #274).
   undo: {
     moved: 'Moved to {name}',

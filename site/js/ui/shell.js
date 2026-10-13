@@ -220,6 +220,7 @@ export function createShell(ctx, opts = {}) {
   });
   card.appendChild(cardBack.row);
   const cardSlot = el('div', 'sr-side__cardslot');
+  cardSlot.dataset.tour = 'card'; // the tour's hook (registry/onboarding.yaml)
   card.appendChild(cardSlot);
   views.set('card', card);
 
