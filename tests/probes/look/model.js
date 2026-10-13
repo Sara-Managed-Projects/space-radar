@@ -258,9 +258,35 @@ const walk = async (tag, what) => {
       // The Earth face's normal is +Z: it is in sunlight when the Sun is on its side of the craft's horizon.
       const sunOnFace = f.s.x * f.z.x + f.s.y * f.z.y + f.s.z * f.z.z;
       const deg = (c) => Math.round((Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI);
-      rig.flyTo({ offset: d, distance: d0, ms: 0 });
-      await take(name, words + '; the Sun ' + deg(lit) + ' degrees from the line of sight; the Earth face is ' + (sunOnFace > 0.03 ? 'in sunlight (the Sun ' + (90 - deg(sunOnFace)) + ' degrees below the craft\'s horizon)' : 'in its own shade, the sunward flank lit'),
-        { sunAngleDeg: deg(lit), aboveHorizon: false, fromBelow: true, earthFaceSunlit: sunOnFace > 0.03 });
+      // A LOW CRAFT HAS NO ROOM UNDER IT (the first run, 2026-10-13: MetOp-B at 833 km). The map draws a
+      // craft far larger than it is, so the framing distance of a low one is hundreds of kilometres, and
+      // a camera that far under it is inside the sphere the rig keeps every camera out of (the world's
+      // radius times 1.02, scene/camera.js clearWorld): the rig then puts the camera on the FAR side of
+      // the Earth and the picture is of the ocean. So the place is tried less steeply, and then nearer,
+      // until the camera is outside that sphere; the view's line says what it took.
+      const obj = heroOf();
+      const p = obj.getWorldPosition(obj.position.clone());
+      const e = sr.worlds.meshFor('earth').position;
+      const keepOut = earthR() * 1.02 * 1.02;
+      const clear = (dir, dist) => Math.hypot(p.x + dir.x * dist - e.x, p.y + dir.y * dist - e.y, p.z + dir.z * dist - e.z) > keepOut;
+      const flat = unit(mix(d, 1, f.z, -(d.x * f.z.x + d.y * f.z.y + d.z * f.z.z)));       // the same heading, on the craft's horizon
+      let dist = d0;
+      let found = clear(d, dist) ? d : null;
+      let underDeg = found ? 90 - deg(found.x * f.z.x + found.y * f.z.y + found.z * f.z.z) : null;
+      for (const scale of [1, 0.75, 0.55, 0.4]) {
+        for (const tan of [0.9, 0.7, 0.5, 0.36, 0.25]) {                                    // 42 to 14 degrees under the horizon
+          if (found) break;
+          const tryDir = unit(mix(flat, 1, f.z, tan));
+          if (clear(tryDir, d0 * scale)) { found = tryDir; dist = d0 * scale; underDeg = Math.round((Math.atan(tan) * 180) / Math.PI); }
+        }
+      }
+      if (!found) { look.warns.push('probe: ' + name + ' was not taken: the craft is drawn too low over the Earth for a camera under it at any distance tried'); continue; }
+      d = found;
+      lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
+      rig.flyTo({ offset: d, distance: dist, ms: 0 });
+      await take(name, words + ', ' + underDeg + ' degrees under its horizon' + (dist < d0 ? ' and at ' + Math.round((dist / d0) * 100) + ' % of the framing distance (a low craft: no room under it)' : '')
+        + '; the Sun ' + deg(lit) + ' degrees from the line of sight; the Earth face is ' + (sunOnFace > 0.03 ? 'in sunlight (the Sun ' + (90 - deg(sunOnFace)) + ' degrees below the craft\'s horizon)' : 'in its own shade, the sunward flank lit'),
+        { sunAngleDeg: deg(lit), aboveHorizon: false, fromBelow: true, earthFaceSunlit: sunOnFace > 0.03, underHorizonDeg: underDeg, distanceShare: dist / d0 });
       continue;
     }
     if (above < 0) { d = unit(mix(d, 1, f.z, above)); }                    // never below the craft: flatten onto its horizon
