@@ -2,7 +2,8 @@
 // wait for the file its route names to replace the procedural shape (scene/heroes.js announces it
 // with `sr:model-upgraded`), move the clock into sunlight if the craft is in the Earth's shadow, then
 // photograph it as the app frames it and from five places on its SUNWARD side, at the same distance,
-// the camera never below the craft (see `walk`).
+// the camera never below the craft, and then once from BELOW it, from the Earth's side looking up at
+// its Earth face (see `walk`): seven views.
 //
 //   gh workflow run look.yml -f probe=model                      # the Cygnus cargo ship in orbit today
 //   gh workflow run look.yml -f probe=model -f subject=sat-25544  # any record id
@@ -193,8 +194,8 @@ const onScreen = () => {
  *   X  the Sun crossed with Z (the craft's panel axis);
  *   Y  Z crossed with X: the Sun's direction laid flat on the local horizon (the cells' side).
  *
- * In that frame the Sun is at (0, +, -) whenever the craft is in daylight. Every place below has
- * y > 0 and z <= 0, which makes three promises at once: THE SUN IS BEHIND THE CAMERA (the faces it
+ * In that frame the Sun is at (0, +, -) whenever the craft is in daylight. Every place below but the
+ * last has y > 0 and z <= 0, which makes three promises at once: THE SUN IS BEHIND THE CAMERA (the faces it
  * sees are lit, and there is no glare); THE CAMERA IS NEVER BELOW THE CRAFT (z <= 0 is at or above
  * its altitude, so the line of sight cannot pass through the Earth, and the ground is a backdrop at
  * most); and the cell side of a wing faces it. The distance is the one the app framed the craft at,
@@ -221,6 +222,14 @@ const PLACES = [
   ['4-sun-face', [0.14, 0.93, -0.34], 'square onto the face the Sun lights (a wing\'s cells)'],
   ['5-along-the-panels', [0.9, 0.32, -0.3], 'along the panel axis, the Sun over the camera\'s shoulder'],
   ['6-from-above', [0.3, 0.42, -0.86], 'from above, away from the Earth, leaning sunward'],
+  // THE SEVENTH, FROM THE EARTH'S SIDE (2026-10-13, internal #751). The six above never show a craft's
+  // Earth face, and on a navigation or a radar satellite that is the face with the antennas on it:
+  // batch six's GPS helices showed only at the body's edge. This one stands BELOW the craft (z > 0)
+  // and looks up at it, still on the Sun's side of it, so the sunward flank is lit; the camera is the
+  // framing distance from the craft, tens of metres, so the Earth is behind it and not in the way.
+  // The Earth face itself is in sunlight only when the Sun is below the craft's own horizon (low Sun,
+  // or a high orbit); otherwise it wears the toon ramp's shade tone, and the view's line says which.
+  ['7-from-below', [0.34, 0.5, 0.8], 'from the Earth\'s side, looking up at the Earth face', 'below'],
 ];
 const walk = async (tag, what) => {
   const a0 = rig.state.azimuth;
@@ -233,7 +242,7 @@ const walk = async (tag, what) => {
     out.views.push({ name: prefix + tag + '-' + name, at, ...(extra || {}) });
   };
   await take('1-as-framed', 'as the app frames a selected craft');
-  for (const [name, [lx, ly, lz], words] of PLACES) {
+  for (const [name, [lx, ly, lz], words, side] of PLACES) {
     const f = sunFrame();
     if (!f) { look.warns.push('probe: no Sun or no Earth in the scene; ' + name + ' was not taken'); continue; }
     let d = unit(mix(mix(f.x, lx, f.y, ly), 1, f.z, lz));
@@ -241,6 +250,19 @@ const walk = async (tag, what) => {
     let lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
     if (lit < 0.2) { d = unit(mix(d, 1, f.s, 0.6)); lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z; }
     const above = -(d.x * f.z.x + d.y * f.z.y + d.z * f.z.z);
+    if (side === 'below') {
+      // The lean toward the light may have lifted it: it stays at least 30 degrees under the craft's horizon.
+      const under = d.x * f.z.x + d.y * f.z.y + d.z * f.z.z;
+      if (under < 0.5) d = unit(mix(d, 1, f.z, 0.5 - under + 0.3));
+      lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
+      // The Earth face's normal is +Z: it is in sunlight when the Sun is on its side of the craft's horizon.
+      const sunOnFace = f.s.x * f.z.x + f.s.y * f.z.y + f.s.z * f.z.z;
+      const deg = (c) => Math.round((Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI);
+      rig.flyTo({ offset: d, distance: d0, ms: 0 });
+      await take(name, words + '; the Sun ' + deg(lit) + ' degrees from the line of sight; the Earth face is ' + (sunOnFace > 0.03 ? 'in sunlight (the Sun ' + (90 - deg(sunOnFace)) + ' degrees below the craft\'s horizon)' : 'in its own shade, the sunward flank lit'),
+        { sunAngleDeg: deg(lit), aboveHorizon: false, fromBelow: true, earthFaceSunlit: sunOnFace > 0.03 });
+      continue;
+    }
     if (above < 0) { d = unit(mix(d, 1, f.z, above)); }                    // never below the craft: flatten onto its horizon
     rig.flyTo({ offset: d, distance: d0, ms: 0 });
     await take(name, words + '; the Sun ' + Math.round((Math.acos(Math.max(-1, Math.min(1, lit))) * 180) / Math.PI) + ' degrees from the line of sight',
