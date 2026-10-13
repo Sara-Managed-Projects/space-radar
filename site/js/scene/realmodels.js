@@ -428,18 +428,20 @@ export const REAL_MODELS = {
     // in code from the numbers eoPortal and ESA's facts page give (registry/models.yaml row
     // `sentinel-1`): the 3.4 x 1.3 x 1.3 m bus, the 12.3 m x 0.821 m antenna of fourteen tiles on its
     // Earth face, and two wings of five panels, each 10 m long. WHAT THE FILE CORRECTS: the `radar`
-    // build was drawn after this very craft and puts its two wings ALONG the antenna; the real wings
-    // stand square to it (21 m tip to tip), so from above the craft is a cross. The build stays as
-    // what is drawn while the file is on its way. Not `generic` any more: the file is these craft.
+    // build took this craft's antenna and gave it a bus of 3.9 x 2.2 x 2.2 m and wings of 4.6 m;
+    // the real bus is a third of that across and the real wings reach 21 m tip to tip, further
+    // than the antenna is long. The cross the build draws is right, and so is its sideways look.
+    // The build stays as what is drawn while the file is on its way. Not `generic` any more.
     // BY NUMBER. The live saved data of 2026-10-12 (data/v1/celestrak-active.cols.json) has
     // SENTINEL-1A, SENTINEL-1C and SENTINEL-1D. SENTINEL-1B (41456) is NOT in it: its mission ended
     // in August 2022 and it is in no group the app loads, so its row is dormant; it is the same
     // design and would wear the same file. ESA's facts page (read 2026-10-14) says Sentinel-1A
     // "ended in June 2026"; CelesTrak still lists it as active, and the route does not judge that.
-    // `axes: 'app'`, AND THIS IS HOW THEY FLY BUT FOR THE ROLL: a dawn-dusk orbit, so the Sun is
-    // square to the track; the antenna along the track (the app's X), the wings along the craft's
-    // Y, which "is aligned with the Sun direction" (eoPortal). NOT DRAWN: the real craft is rolled
-    // some thirty degrees to look to its right; the file is level, the antenna's face straight down.
+    // `axes: 'app'`, AND THIS IS HOW THEY FLY: a dawn-dusk orbit, so the Sun is square to the
+    // track; the antenna along the track (the app's X), the wings along the craft's Y, which "is
+    // aligned with the Sun direction" (eoPortal). THE ROLL IS IN THE FILE: 29.45 degrees about X,
+    // the antenna's "mechanical ... off-nadir angle" (cited as 30.25 to 28.65 degrees), its face
+    // down and away from the Sun, the cells up and toward it.
     39634: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1A', catalogue: 'SENTINEL-1A', made: 'dimensions', axes: 'app' },
     41456: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1B', catalogue: 'SENTINEL-1B', made: 'dimensions', axes: 'app' },
     62261: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1C', catalogue: 'SENTINEL-1C', made: 'dimensions', axes: 'app' },
