@@ -669,9 +669,24 @@ export const REAL_MODELS = {
     // imaging is the job; the flat blade and the wrapped-rib umbrella are two ways to do it, and
     // they look nothing alike.
     capella: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
-    umbra: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
+    // UMBRA AND ICEYE HAVE FILES OF THEIR OWN since batch five (2026-10-13; public #983, #998), each
+    // built in code from cited metres (registry/models.yaml rows `umbra`, `iceye`, kind
+    // `built-from-dimensions`). Both stay BY NAME and klass-gated, as before: the fleets grow by the
+    // launch, and the names CelesTrak gives them in the live saved data (data/v1/
+    // celestrak-active.cols.json, read 2026-10-13) are `UMBRA-07` to `UMBRA-12` (5 records) and
+    // `ICEYE-X2` upward (56). `generic` stays on both: one shape for several generations of each.
+    //   umbra.glb  the layout of Umbra's own drawing in its FCC orbital-debris report: a 58 cm bus
+    //              BEHIND THE MIDDLE of a 3.8 m umbrella, the payload's column up its axis (a
+    //              centre-fed dish), a small solar array flat on each side of the bus. The shared
+    //              `radar-mesh` build beside it is Capella's plan (an offset feed on a boom, one wing),
+    //              which Umbra is not. The mesh is a net on 24 ribs, never a filled disc (NISAR's rule).
+    //   iceye.glb  a 3.2 m by 0.4 m antenna of five panels with five solar panels standing in a row on
+    //              its back and the bus behind the middle one. The shared `radar` build is Sentinel-1's
+    //              12 m blade on a bus with wings, which an 85 kg ICEYE is not.
+    // Capella and iQPS keep the shared umbrella: no page opened gives Capella's bus or boom in metres.
+    umbra: { build: 'radar-mesh', file: 'umbra.glb', colour: 'satellite', name: 'an Umbra radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     'qps-sar': { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
-    iceye: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    iceye: { build: 'radar', file: 'iceye.glb', colour: 'satellite', name: 'an ICEYE radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     strix: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     paz: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     novasar: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
@@ -761,17 +776,37 @@ export const REAL_MODELS = {
     // bus has "a more complex prismatic shape" than a Starlink. What is NOT approximate is the
     // silhouette, which is the half that carries recognition and the half that was wrong.
     oneweb: { build: 'oneweb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true },
+    // FILES AS WELL since batch five (2026-10-13; public #999, #1000), one a generation, behind the
+    // SAME launch-year gate, which is untouched: starlink-v1.glb and starlink-v2mini.glb, built in
+    // code from the bus and array sizes of SpaceX's FCC filing of October 2022 as J. McDowell
+    // tabulates it (V1.5: 2.8 x 1.3 m and ONE array 2.8 x 8.1 m; V2 Mini: 4.1 x 2.7 m and TWO
+    // arrays 4.1 x 12.8 m), which a paper in The Astronomical Journal confirms for the first
+    // (registry/models.yaml rows `starlink-v1`, `starlink-v2mini`, kind `built-from-dimensions`).
+    //   WHAT THE FILE CHANGES IN THE FIRST GENERATION: the wing STANDS ON THE CHASSIS, square to it,
+    //   away from the Earth ("the chassis points directly nadir and the solar array is perpendicular
+    //   to the chassis", AJ 166:59): the open L a Starlink flies in. The build laid it flat.
+    //   The V2 Mini's wings are drawn flat, as they unfold; in flight they turn to the Sun.
+    // No logo and no lettering on either. `generic` stays: the 2023 launches are still a guess.
+    // THE POOL, COUNTED (heroes.js POOL 8, POOL_MAX 16): at most sixteen craft are drawn as models at
+    // once, the nearest first, and a file is fetched once and cloned (loadRealModel's cache), so a
+    // train of sixty Starlinks is at most sixteen clones of ONE 31 or 53 kB file: 5 180 or 11 268
+    // triangles each, 180 000 at the very worst. The other forty-four stay glyphs.
+    // In the live saved data on 2026-10-12: 11 129 records named STARLINK-n, of them 2 180 launched
+    // to 2022 (the first generation), 1 792 in 2023, 7 157 from 2024.
     starlink: {
       colour: 'satellite',
       klass: ['satellite'],
       generic: true,
       build: 'starlink-v2',
+      file: 'starlink-v2mini.glb',
+      made: 'dimensions',
+      axes: 'app',
       name: 'a Starlink',
       resolve: (record) => {
         const year = record && record.meta ? record.meta.launchYear : null;
         return Number.isFinite(year) && year <= 2022
-          ? { build: 'starlink-v1', name: 'a first-generation Starlink' }
-          : { build: 'starlink-v2', name: 'a Starlink V2 Mini' };
+          ? { build: 'starlink-v1', file: 'starlink-v1.glb', name: 'a first-generation Starlink' }
+          : { build: 'starlink-v2', file: 'starlink-v2mini.glb', name: 'a Starlink V2 Mini' };
       },
     },
     flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },

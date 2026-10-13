@@ -33,6 +33,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi is XRISM's generated body with its own optical bench built by us | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
 | The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
 | The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
+| The shapes of both Starlink generations, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-four-commercial-craft-built-from-dimensions--both-starlink-generations-umbra-iceye-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -933,6 +934,33 @@ from, with what is NOT cited named beside it.
 
 No logo, lettering, flag or insignia is on any of the four. NASA, JPL, ISRO and CNES do not
 endorse Space Radar.
+
+## 3b-7. Four commercial craft built from dimensions — both Starlink generations, Umbra, ICEYE (2026-10-13)
+
+The fifth batch. No agency or operator publishes a model of any of these under free terms, and no
+image-to-3D model was used: each file was written in code from numbers in public filings, a
+peer-reviewed paper and reference pages, each opened and quoted in its `registry/models.yaml`
+row with what is NOT cited named beside it. Their cards say "shape built from published dimensions
+and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `starlink-v1.glb` (30 KB) | The first Starlink generation (v1.0, v1.5): a 2.8 x 1.3 m flat bus with ONE solar wing 2.8 x 8.1 m standing square to it | The sizes: SpaceX's FCC filing of October 2022 as tabulated by J. McDowell (<https://planet4589.org/astro/starsim/index.html>) and Fankhauser, Tyson and Askari, The Astronomical Journal 166:59, 2023 (arXiv:2305.11123). The layout: SpaceX's drawing in its letter to the FCC of 1 August 2022 (<https://www.planet4589.org/astro/starsim/docs/mitigation/spx2208a.pdf>), read and not reproduced. Compared with "Starlink 01", a render by Wikideas1 of a Sketchfab model (<https://commons.wikimedia.org/wiki/File:Starlink_01.webp>) (all read 2026-10-13) | numbers are facts; the render is CC BY 4.0 and is not in the file |
+| `starlink-v2mini.glb` (52 KB) | The Starlink V2 Mini: a 4.1 x 2.7 m flat bus with TWO wings of 4.1 x 12.8 m | The same table, the same letter (its words on the second generation), Spaceflight Now of 26 February 2023 (<https://spaceflightnow.com/2023/02/26/spacex-unveils-first-batch-of-larger-upgraded-starlink-satellites/>) (read 2026-10-13). No picture of this craft is free, and none was used | numbers are facts |
+| `umbra.glb` (62 KB) | Umbra's radar satellite: a 58 x 58 x 19 cm bus behind a 3.8 m mesh umbrella drawn as ribs and a net, never a filled disc; the payload's column; two small solar arrays | Umbra Lab's Orbital Debris Assessment Report for Umbra SAR, a public filing with the FCC (<https://apps.fcc.gov/els/GetAtt.html?id=252268>): its numbers and its Figure 1, read and not reproduced; eoPortal (<https://www.eoportal.org/satellite-missions/umbra-sar>) (read 2026-10-13) | a public record, read; nothing of it is in the file |
+| `iceye.glb` (30 KB) | ICEYE's radar satellite: a 3.2 x 0.4 m antenna of five panels, five solar panels in a row on its back, the bus behind the middle one | eoPortal (<https://www.eoportal.org/satellite-missions/iceye-constellation>, <https://www.eoportal.org/satellite-missions/iceye-x1>) and ESA (<https://earth.esa.int/eogateway/missions/iceye/description>) for the sizes. Two renders on Wikimedia Commons by Defensie Nederland, CC BY-SA 4.0 (<https://commons.wikimedia.org/wiki/File:ICEYE_SAR_satellite_Netherlands.png>, <https://commons.wikimedia.org/wiki/File:ICEYE_SAR_satellite_Netherlands_2.jpg>), were LOOKED AT for where the parts sit; nothing of them is reproduced or traced (read 2026-10-13) | numbers are facts; the share-alike pictures are not in the file |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `starlink-v1`, `starlink-v2mini`, `umbra`, `iceye` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions; compared with a render by Wikideas1 (Wikimedia Commons, CC BY 4.0)`;
+`3D model: built by Space Radar from published dimensions of the Starlink V2 Mini`;
+`3D model: built by Space Radar from the dimensions and the drawing in Umbra's orbital debris report filed with the FCC`;
+`3D model: built by Space Radar from published dimensions of the ICEYE satellites`
+
+No logo and no lettering is on any of the four: the operators' names and marks are their
+trademarks. Starlink is SpaceX's, Umbra is Umbra Lab's and ICEYE is ICEYE's; none of them
+endorses Space Radar, and none of them made or approved these shapes.
+
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

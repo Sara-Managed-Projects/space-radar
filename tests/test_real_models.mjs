@@ -65,6 +65,11 @@ function readGlb(path) {
 // --- the routes ---------------------------------------------------------------------------------------
 const routes = []; // { table, key, entry }
 for (const [table, map] of Object.entries(REAL_MODELS)) for (const [key, entry] of Object.entries(map)) routes.push({ table, key, entry });
+// A route that picks its file from the record (Starlink, by launch year, batch five): each answer is a
+// route of its own here, or the first generation's file would be worn by nothing this list can see.
+for (const year of [2020, 2025]) {
+  routes.push({ table: 'named', key: `starlink@${year}`, entry: realModelFor({ id: `sl-${year}`, name: 'STARLINK-1007', klass: 'satellite', layer: 'active', meta: { noradId: 99000, launchYear: year } }) });
+}
 check(routes.length > 150, `scene/realmodels.js routes were read (${routes.length})`);
 const routedFiles = new Set(routes.map((r) => r.entry && r.entry.file).filter(Boolean));
 
@@ -193,6 +198,23 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   ]) {
     const got = sat(norad, name, klass || 'satellite');
     check(!got || got.file !== file, `${name} (${norad}) does not wear ${file}`);
+  }
+  // THE FIFTH BATCH (2026-10-13, public #983, #998, #999, #1000): four commercial craft BY NAME, each a
+  // file over the build it replaces, as the kind of thing. The launch-year gate is the same gate.
+  for (const [name, year, file, build] of [['STARLINK-1007', 2019, 'starlink-v1.glb', 'starlink-v1'], ['STARLINK-4321', 2022, 'starlink-v1.glb', 'starlink-v1'],
+    ['STARLINK-5001', 2023, 'starlink-v2mini.glb', 'starlink-v2'], ['STARLINK-33001', 2026, 'starlink-v2mini.glb', 'starlink-v2'], ['STARLINK-9999', undefined, 'starlink-v2mini.glb', 'starlink-v2'],
+    ['UMBRA-07', undefined, 'umbra.glb', 'radar-mesh'], ['ICEYE-X2', undefined, 'iceye.glb', 'radar'], ['ICEYE-X31', undefined, 'iceye.glb', 'radar']]) {
+    const got = realModelFor({ id: `b5-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99100, launchYear: year } });
+    check(got && got.file === file && got.build === build && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (launched ${year}) wears ${file} over the build ${build}, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  for (const [name, klass, file] of [['STARLINK-1007 DEB', 'debris', 'starlink-v1.glb'], ['UMBRA-07 DEB', 'debris', 'umbra.glb'], ['ICEYE-X2 DEB', 'debris', 'iceye.glb'],
+    ['CAPELLA-11 (ACADIA-1)', 'satellite', 'umbra.glb'],          // Capella's dish is offset-fed on a boom: not Umbra's plan
+    ['QPS-SAR-5 (TSUKUYOMI-I)', 'satellite', 'umbra.glb'],
+    ['PENUMBRA-1', 'satellite', 'umbra.glb'],                     // a whole word, not letters inside one
+    ['STRIX-1', 'satellite', 'iceye.glb'], ['SENTINEL-1A', 'satellite', 'iceye.glb'], ['NICEYE-1', 'satellite', 'iceye.glb'],
+    ['ONEWEB-0012', 'satellite', 'starlink-v1.glb'], ['ONEWEB-0012', 'satellite', 'starlink-v2mini.glb'], ['KUIPER-00008', 'satellite', 'starlink-v2mini.glb']]) {
+    const got = realModelFor({ id: `b5n-${name}`, name, klass, layer: 'active', meta: { noradId: 99101, launchYear: 2020 } });
+    check(!got || got.file !== file, `${name} (klass ${klass}) does not wear ${file}`);
   }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
