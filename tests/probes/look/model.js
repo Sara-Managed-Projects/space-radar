@@ -30,7 +30,6 @@
 // What the summary carries besides the pictures: the route (`file`, `build`, `made`), whether the
 // file arrived, the meshes, triangles and colours actually on screen, and the card's "drawn as" line.
 look.probe = 'model';
-const out = { subject: null, standIn: null, views: [] };
 const urlOf = (path) => new URL(path, document.baseURI).href;
 const wordIn = (name, word) => new RegExp('(^|[^a-z0-9])' + word + '([^a-z0-9]|$)', 'i').test(String(name || ''));
 const RM = await import(urlOf('./js/scene/realmodels.js'));
@@ -39,9 +38,15 @@ const RM = await import(urlOf('./js/scene/realmodels.js'));
 try { if (!sr.isLayerOn('stations')) sr.setLayerOn('stations', true); } catch { /* an older ref: it is on by default */ }
 await until(() => (sr.recordsFor('stations') || []).length > 0, 90000, 500);
 const stations = sr.recordsFor('stations') || [];
-out.stations = stations.length;
 
-const asked = new URLSearchParams(location.search).get('lookSubject');
+// SEVERAL SUBJECTS IN ONE RUN (2026-10-13): ids joined by an underscore, `sat-57800_sat-38358`. A
+// batch of four models is then one run and not four, and the four are photographed at the same
+// clock by the same browser. Each subject's pictures carry its id (`sat-57800--flat-1-as-framed`)
+// and the summary carries one entry a subject under `subjects`; any one's `fail` fails the run.
+// No record id and no name on the stations layer has an underscore in it.
+const param = new URLSearchParams(location.search).get('lookSubject');
+const one = async (asked, prefix) => {
+const out = { subject: null, standIn: null, views: [], stations: stations.length };
 // A subject is a record id, or failing that the words of a name with dashes for spaces
 // (`crew-dragon`: a visiting vehicle's id changes every flight, and its name does not).
 const byName = (words) => stations.find((r) => String(r.name || '').toLowerCase().includes(String(words).toLowerCase().replace(/-/g, ' '))) || null;
@@ -49,7 +54,7 @@ const byName = (words) => stations.find((r) => String(r.name || '').toLowerCase(
 // file does, which is after the stations: wait for it before saying it is not there.
 if (asked) await until(() => sr.recordById(asked) || byName(asked), 120000, 500);
 let record = asked ? (sr.recordById(asked) || byName(asked)) : stations.find((r) => wordIn(r.name, 'cygnus') && RM.realModelFor(r)) || null;
-if (asked && !record) return finish({ ...out, fail: 'no record with the id or the name ' + asked + ' on this page; the stations layer has ' + stations.map((r) => r.id + ' ' + r.name).join(', ') });
+if (asked && !record) return ({ ...out, fail: 'no record with the id or the name ' + asked + ' on this page; the stations layer has ' + stations.map((r) => r.id + ' ' + r.name).join(', ') });
 if (!record) {
   // No Cygnus in orbit today: the ISS's record wears the file for the picture, and says so.
   record = sr.recordById('sat-25544') || stations[0];
@@ -165,8 +170,8 @@ const walk = async (tag, what) => {
   const take = async (name, words) => {
     await sleep(4000);
     const at = onScreen();
-    await shot(tag + '-' + name, what + ', ' + words + '; its circle ' + (at && at.px) + ' px across');
-    out.views.push({ name: tag + '-' + name, at });
+    await shot(prefix + tag + '-' + name, what + ', ' + words + '; its circle ' + (at && at.px) + ' px across');
+    out.views.push({ name: prefix + tag + '-' + name, at });
   };
   await take('1-as-framed', 'as the app frames a selected craft');
   const high = Math.min(p0, 1.05);
@@ -263,4 +268,14 @@ if (hasTextured) {
     back();
   } catch (e) { out.textured.error = String((e && e.message) || e); }
 }
-return finish(out);
+return out;
+};
+const subjects = param ? param.split('_').filter(Boolean) : [null];
+const done = [];
+for (const subject of subjects) {
+  try { done.push(await one(subject, subjects.length > 1 ? subject + '--' : '')); }
+  catch (e) { done.push({ subject: { id: subject }, views: [], fail: 'the probe threw on ' + subject + ': ' + String((e && e.message) || e) }); }
+}
+if (done.length === 1) return finish(done[0]);
+const failed = done.filter((d) => d.fail).map((d) => d.fail);
+return finish({ subjects: done, views: done.flatMap((d) => d.views || []), ...(failed.length ? { fail: failed.join(' | ') } : {}) });

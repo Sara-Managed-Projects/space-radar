@@ -763,9 +763,9 @@ not fixed.
 
 | File | What | Whose | Licence | Where |
 |---|---|---|---|---|
-| `xrism.glb` (123 KB, 11 215 triangles) | Generated from two frames of one turntable render, "XRISM 001" and "XRISM 004"; compared with "XRISM 002" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
-| `noaa21.glb` (188 KB, 16 000 triangles) | The body generated from "Artist's rendering of NOAA-21", cut out of it by hand | NOAA | public domain | <https://commons.wikimedia.org/wiki/File:Artist%27s_rendering_of_NOAA-21.png> (read 2026-10-13) |
-| `seasat.glb` (45 KB, 3 610 triangles) | The trunk generated from the artist's concept "Seasat"; compared with "Seasat in orbit" | NASA/JPL | public domain | <https://commons.wikimedia.org/wiki/File:Seasat.jpg>, <https://commons.wikimedia.org/wiki/File:Seasat_in_orbit.jpg> (read 2026-10-13) |
+| `xrism.glb` (141 KB, 13 731 triangles) | Generated from two frames of one turntable render, "XRISM 001" and "XRISM 004"; compared with "XRISM 002" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
+| `noaa21.glb` (184 KB, 14 888 triangles) | The body generated from "Artist's rendering of NOAA-21", cut out of it by hand | NOAA | public domain | <https://commons.wikimedia.org/wiki/File:Artist%27s_rendering_of_NOAA-21.png> (read 2026-10-13) |
+| `seasat.glb` (66 KB, 8 468 triangles) | The trunk generated from the artist's concept "Seasat"; compared with "Seasat in orbit" | NASA/JPL | public domain | <https://commons.wikimedia.org/wiki/File:Seasat.jpg>, <https://commons.wikimedia.org/wiki/File:Seasat_in_orbit.jpg> (read 2026-10-13) |
 | all three | The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights, each read on its own page 2026-10-12) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
 | all three | The cuts, the parts built in code, the proportions, the colours | this project | this repository's licence | `registry/models.yaml`, rows `xrism`, `noaa21`, `seasat`, `modified:` |
 
@@ -776,7 +776,7 @@ not fixed.
 
 **One was built from dimensions, with no generator.** NuSTAR is two small boxes ten metres apart
 on a lattice mast, which no image-to-3D model can draw, and which a few cited metres describe
-almost completely. `nustar.glb` (31 KB, 2 156 triangles) was written in code from them, with two
+almost completely. `nustar.glb` (43 KB, 5 668 triangles) was written in code from them, with two
 NASA/JPL-Caltech artist's concepts looked at for everything the metres do not say; its card says
 "shape built from published dimensions and pictures; details simplified".
 
