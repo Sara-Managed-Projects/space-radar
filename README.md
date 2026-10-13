@@ -11,6 +11,7 @@ A live 3D map of space in your browser. Free, open source, no account.
 
 [![CI](https://github.com/Sara-Managed-Projects/space-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/Sara-Managed-Projects/space-radar/actions/workflows/ci.yml)
 [![Code: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Sara-Managed-Projects/space-radar?label=release)](https://github.com/Sara-Managed-Projects/space-radar/releases/latest)
 [![Live site](https://img.shields.io/website?url=https%3A%2F%2Fwww.spaceradar.ai&label=spaceradar.ai)](https://www.spaceradar.ai/?from=gh)
 [![Good first issues](https://img.shields.io/github/issues/Sara-Managed-Projects/space-radar/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
 [![Open in GitHub Codespaces](https://img.shields.io/badge/open%20in-Codespaces-24292f?logo=github)](https://codespaces.new/Sara-Managed-Projects/space-radar)
