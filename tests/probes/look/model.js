@@ -276,6 +276,7 @@ for (const subject of subjects) {
   try { done.push(await one(subject, subjects.length > 1 ? subject + '--' : '')); }
   catch (e) { done.push({ subject: { id: subject }, views: [], fail: 'the probe threw on ' + subject + ': ' + String((e && e.message) || e) }); }
 }
-if (done.length === 1) return finish(done[0]);
 const failed = done.filter((d) => d.fail).map((d) => d.fail);
-return finish({ subjects: done, views: done.flatMap((d) => d.views || []), ...(failed.length ? { fail: failed.join(' | ') } : {}) });
+// One subject: its own summary, as this probe has always returned it. Several: one entry each.
+const summary = done.length === 1 ? done[0] : { subjects: done, views: done.flatMap((d) => d.views || []), ...(failed.length ? { fail: failed.join(' | ') } : {}) };
+return finish(summary);
