@@ -166,8 +166,7 @@ sites:
   # carry a published uncertainty the oddity rows quote -- 0.4 m and 3.0 m.
   - {id: apollo-14, display: "Apollo 14 landing site", class: surface, world: moon, lat: -3.64589, lon: 342.52806, uncertainty_m: 0.4, landed: 1971-02-05, shape: lunar-module, source: lroc-2016, doing: "Fra Mauro, February 1971. Alan Shepard hit two golf balls here and they are still lying where they stopped."}
   - {id: apollo-16, display: "Apollo 16 landing site", class: surface, world: moon, lat: -8.9734, lon: 15.5011, uncertainty_m: 3.0, landed: 1972-04-21, shape: lunar-module, source: lroc-2016, doing: "Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander."}
-  # Uncited: LROC's 2016 table has 20.1911, 30.7723 (+/- 3.5 m), about 20 m from this row.
-  - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1908, lon: 30.7717, landed: 1972-12-11, shape: lunar-module, source: uncited, doing: "The last place people have stood on another world, in December 1972."}
+  - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1911, lon: 30.7723, uncertainty_m: 3.5, landed: 1972-12-11, shape: lunar-module, source: lroc-2016, doing: "The last place people have stood on another world, in December 1972."}
   # Uncited: these are the numbers LROC announced in February 2019. NSSDCA's table now gives
   # 45.4561 S, 177.5885 E, about 0.4 km away; which is the later measurement is unchecked.
   - {id: change-4, display: "Chang'e 4", class: surface, world: moon, lat: -45.4446, lon: 177.5991, landed: 2019-01-03, shape: lander, source: uncited, aliases: ["Change 4", "Yutu-2"], doing: "The first landing on the far side of the Moon, in 2019."}
