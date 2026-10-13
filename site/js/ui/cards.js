@@ -1230,7 +1230,11 @@ function derivedDrawingLine(record, T, tMs) {
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
     // of one of them. See COPY.drawing.objectModel.
-    const line = t(entry.file ? T.objectModel : T.objectVariant, { name: String(entry.name) });
+    // 2026-10-13: and a file NOBODY published (`made`), worn by the craft itself and not as the
+    // kind of thing (NuSTAR, XRISM), may not say "a published model": the first look at NuSTAR's
+    // card read "drawn from a published model of NuSTAR · shape built from published dimensions".
+    // It is "drawn as NuSTAR", and the sentence after it says how the shape was made.
+    const line = t(entry.file ? (made && T.objectOwn ? T.objectOwn : T.objectModel) : T.objectVariant, { name: String(entry.name) });
     // 2026-10-07: a small body that wears a map on its shape (Ceres, Vesta) names the mosaic.
     const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
     return said(mapped ? line + COPY.punctuation.separator + mapped : line);

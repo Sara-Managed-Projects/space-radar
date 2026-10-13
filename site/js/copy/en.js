@@ -1604,6 +1604,9 @@ export const COPY = {
       dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
     },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
+    // A file made here, worn by the craft it is of (scene/realmodels.js `made`, not `generic`):
+    // not "a published model", which it is not; COPY.drawing.objectMade follows it.
+    objectOwn: 'drawn as {name}',
     // 2026-10-12 (public #938): a model nobody published (scene/realmodels.js `made`). `images`: an
     // image-to-3D model generated the mesh from photographs and we cleaned it. The words are the
     // registry row's own `honesty:` (registry/models.yaml, kind derived-from-images), and
