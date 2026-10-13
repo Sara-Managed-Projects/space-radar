@@ -28,6 +28,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
+| The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -716,6 +717,33 @@ credit:
    6 December 2025 and that where it is on that orbit is not known.
 
 They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 63; the largest single download is `icesat2.glb` at 290 KB.
+
+## 3b-2. A model made from photographs — Cygnus (2026-10-12)
+
+One model in `site/models/` is nobody's published mesh. No free model of Northrop Grumman's Cygnus
+cargo ship exists, so `cygnus.glb` (141 KB, 12 000 triangles) was **generated from a NASA photograph
+by an image-to-3D model and then cleaned, re-proportioned and coloured by this project**. The card
+of a Cygnus says so: "shape built from photographs; proportions approximate".
+
+| What | Whose | Licence | Where |
+|---|---|---|---|
+| The photograph the shape was generated from: "ISS-61 Cygnus NG-12 approaching the ISS (4)" | NASA | public domain | <https://commons.wikimedia.org/wiki/File:ISS-61_Cygnus_NG-12_approaching_the_ISS_(4).jpg> (read 2026-10-12) |
+| Two photographs it was compared with, and corrected against: "ISS-47 Cygnus OA-6 approaching the ISS (1)", "ISS-55 Cygnus OA-9E approaching the ISS (6) (cropped)" | NASA | public domain | <https://commons.wikimedia.org/wiki/File:ISS-47_Cygnus_OA-6_approaching_the_ISS_(1).jpg>, <https://commons.wikimedia.org/wiki/File:ISS-55_Cygnus_OA-9E_approaching_the_ISS_(6)_(cropped).jpg> (read 2026-10-12) |
+| The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights, each read on its own page 2026-10-12) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
+| The cleaning, the proportions, the colours | this project | this repository's licence | `registry/models.yaml`, row `cygnus`, `modified:` |
+
+**Credit line:** `3D model: generated from a NASA photograph with TRELLIS (Microsoft Research, MIT), cleaned and coloured by Space Radar`
+
+What that row's `modified:` says, in short, because a generated shape that reads as a photograph of
+the truth would be a wrong credit: the generator drew the two solar arrays 74 degrees apart and one
+of them cut off, so one was kept and **the other is its mirror image**; the hull was scaled to the
+cited 6.39 m by 3.07 m, which changed its proportions by 31 %; the arrays were made round and 3.7 m
+across; the colours are ours and the generator's texture is not used. The photographs are of an
+Enhanced Cygnus; the longer Cygnus XL flying since 2025 wears the same shape as the kind of thing.
+NASA's photographs carry no NASA insignia into the model, NASA and Northrop Grumman do not endorse
+Space Radar, and "Cygnus" and "UltraFlex" are Northrop Grumman's names for their own products.
+TRELLIS's MIT licence covers its software; it makes no claim on what the model outputs, and its
+notice is not reproduced here because none of its software ships.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

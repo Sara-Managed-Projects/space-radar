@@ -1605,6 +1605,13 @@ export const COPY = {
       dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
     },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
+    // 2026-10-12 (public #938): a model nobody published (scene/realmodels.js `made`). `images`: an
+    // image-to-3D model generated the mesh from photographs and we cleaned it. The words are the
+    // registry row's own `honesty:` (registry/models.yaml, kind derived-from-images), and
+    // tests/test_real_models.mjs fails if the two ever differ.
+    objectMade: {
+      images: 'shape built from photographs; proportions approximate',
+    },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
     // with objectFamily: "drawn as a generic satellite -- the kind of thing, not this exact one".
