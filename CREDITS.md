@@ -31,6 +31,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
 | The shapes of XRISM, Seasat and NuSTAR | two generated from NASA and JPL artist's renders with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
 | The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi is XRISM's generated body with its own optical bench built by us | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
+| The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -805,8 +806,8 @@ lists what is drawn differently from the craft.
 |---|---|---|---|
 | `lageos.glb` (50 KB) | LAGEOS 1 and 2: a 60 cm ball and 426 retroreflector faces, each ring at its published colatitude with its published count | "LAGEOS-NASA", "Sts052-80-030 lrg" (NASA photographs): <https://commons.wikimedia.org/wiki/File:LAGEOS-NASA.jpg>, <https://commons.wikimedia.org/wiki/File:Sts052-80-030_lrg.jpg> (read 2026-10-13) | public domain |
 | `ajisai.glb` (92 KB) | Ajisai: a 2.15 m ball with 318 flat mirrors and 120 reflector panels of 1 436 cubes. **The counts are published; the placement is ours**, because nobody has published it | none ships and none was traced. JAXA's photograph on the ILRS mission page was looked at: <https://ilrs.gsfc.nasa.gov/missions/satellite_missions/current_missions/ajis_general.html> (read 2026-10-13) | **not free** ("Courtesy of JAXA"): looked at only |
-| `soyuz-ms.glb` (58 KB) | The Soyuz: a hull turned on a lathe from its published lengths and diameters, wings, antennas | "Soyuz MS-19 Spacecraft departs the ISS (iss067e000259)" (a NASA photograph), "Soyuz-TM drawing" (NASA RP-1357), "Drawing-Soyuz-TMA-exp12" (NASA): <https://commons.wikimedia.org/wiki/File:Soyuz_MS-19_Spacecraft_departs_the_ISS_(iss067e000259).jpg>, <https://commons.wikimedia.org/wiki/File:Soyuz-TM_drawing.svg>, <https://commons.wikimedia.org/wiki/File:Drawing-Soyuz-TMA-exp12.png> (read 2026-10-13) | public domain |
-| `noaa21.glb` (50 KB) | NOAA-21, **rebuilt**: a box bus with VIIRS, CrIS, ATMS and OMPS as boxes of their cited sizes where NOAA's drawing puts them. It replaces the body generated from NOAA's render earlier the same day | "JPSS-2 Blueprints", "NOAA-21 schematic diagram" (NOAA NESDIS), "Artist's rendering of NOAA-21" (NOAA): <https://www.nesdis.noaa.gov/s3/2022-09/JPSS-2_Blueprints.png>, <https://www.nesdis.noaa.gov/s3/2023-12/noaa-21-schematic-diagram.png>, <https://commons.wikimedia.org/wiki/File:Artist%27s_rendering_of_NOAA-21.png> (read 2026-10-13) | public domain (works of the United States government) |
+| `soyuz-ms.glb` (59 KB) | The Soyuz: a hull turned on a lathe from its published lengths and diameters, wings, antennas | "Soyuz MS-19 Spacecraft departs the ISS (iss067e000259)" (a NASA photograph), "Soyuz-TM drawing" (NASA RP-1357), "Drawing-Soyuz-TMA-exp12" (NASA): <https://commons.wikimedia.org/wiki/File:Soyuz_MS-19_Spacecraft_departs_the_ISS_(iss067e000259).jpg>, <https://commons.wikimedia.org/wiki/File:Soyuz-TM_drawing.svg>, <https://commons.wikimedia.org/wiki/File:Drawing-Soyuz-TMA-exp12.png> (read 2026-10-13) | public domain |
+| `noaa21.glb` (51 KB) | NOAA-21, **rebuilt**: a box bus with VIIRS, CrIS, ATMS and OMPS as boxes of their cited sizes where NOAA's drawing puts them. It replaces the body generated from NOAA's render earlier the same day | "JPSS-2 Blueprints", "NOAA-21 schematic diagram" (NOAA NESDIS), "Artist's rendering of NOAA-21" (NOAA): <https://www.nesdis.noaa.gov/s3/2022-09/JPSS-2_Blueprints.png>, <https://www.nesdis.noaa.gov/s3/2023-12/noaa-21-schematic-diagram.png>, <https://commons.wikimedia.org/wiki/File:Artist%27s_rendering_of_NOAA-21.png> (read 2026-10-13) | public domain (works of the United States government) |
 | all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `lageos`, `ajisai`, `soyuz-ms`, `noaa21` |
 
 **Credit lines:**
@@ -834,6 +835,59 @@ card says that what is tracked today is the main body.
 No agency insignia, flag or maker's mark is on any of the five; NASA, NOAA, JAXA, Roscosmos and
 the craft's builders do not endorse Space Radar. "Soyuz" names the spacecraft and nothing here is
 offered as its maker's.
+
+## 3b-5. Ten more built from dimensions — Progress MS, Crew and Cargo Dragon, Shenzhou, Tianzhou, and five laser-ranging balls (2026-10-13)
+
+The third batch. Every one was written in code from cited metres, with no generator and no
+published mesh; the cards say "shape built from published dimensions and pictures; details
+simplified", and each row's `dimensions:` in `registry/models.yaml` quotes the sentence each
+number came from, with what is NOT cited named beside it.
+
+**Five visiting vehicles**, each hull one profile turned on a lathe. Each card still says "the
+kind of thing, not this exact one": a name in the catalogue matches every ship of its family.
+
+| File | What | Pictures it was drawn from or compared with | Licence of the pictures |
+|---|---|---|---|
+| `progress-ms.glb` (64 KB) | The Progress cargo craft: the Soyuz's hull with a cargo module for its ball and the refuelling module for its bell; no periscope, no window | "The Progress 94 cargo spacecraft from Roscosmos (iss074e0395778)", "Progress MS-17 approaches the ISS (1)" (NASA photographs), "Progress drawing" (a NASA drawing): <https://commons.wikimedia.org/wiki/File:The_Progress_94_cargo_spacecraft_from_Roscosmos_(iss074e0395778).jpg>, <https://commons.wikimedia.org/wiki/File:Progress_MS-17_approaches_the_ISS_(1).jpg>, <https://commons.wikimedia.org/wiki/File:Progress_drawing.svg> (read 2026-10-13) | public domain |
+| `dragon-crew.glb` (58 KB) | The Crew Dragon: a lathed capsule with its nose cone open, four engine pods, the trunk with cells on one half, four fins | "Iss058e027464 The uncrewed SpaceX Crew Dragon spacecraft on approach to the station's Harmony module", "The SpaceX Crew Dragon Endeavour departs the International Space Station 04", "The SpaceX Crew Dragon as it approached the International Space Station (iss063e021563)" (NASA photographs): <https://commons.wikimedia.org/wiki/File:Iss058e027464_The_uncrewed_SpaceX_Crew_Dragon_spacecraft_on_approach_to_the_station%27s_Harmony_module.jpg>, <https://commons.wikimedia.org/wiki/File:The_SpaceX_Crew_Dragon_Endeavour_departs_the_International_Space_Station_04.jpg>, <https://commons.wikimedia.org/wiki/File:The_SpaceX_Crew_Dragon_as_it_approached_the_International_Space_Station_(iss063e021563).jpg> (read 2026-10-13) | public domain |
+| `dragon-cargo.glb` (49 KB) | The Cargo Dragon: the same capsule with a smooth hull, no windows, and two fins | "A SpaceX Dragon cargo spacecraft departs from the International Space Station (iss074e0723944)", "A SpaceX Dragon cargo spacecraft approaches the International Space Station (iss074e0590552)" (NASA photographs): <https://commons.wikimedia.org/wiki/File:A_SpaceX_Dragon_cargo_spacecraft_departs_from_the_International_Space_Station_(iss074e0723944).jpg>, <https://commons.wikimedia.org/wiki/File:A_SpaceX_Dragon_cargo_spacecraft_approaches_the_International_Space_Station_(iss074e0590552).jpg> (read 2026-10-13) | public domain |
+| `shenzhou.glb` (66 KB) | Shenzhou, the generation that flies now: three modules and ONE pair of wings, on the service module | none ships and none was traced. One drawing was looked at for which part is where: "Shenzhou spacecraft vector diagram" (Ilya 'Yadra' Kharlamov, uploader): <https://commons.wikimedia.org/wiki/File:Shenzhou_spacecraft_vector_diagram.svg> (read 2026-10-13) | **CC BY-SA 4.0: looked at only.** CMSA's own pictures are not free |
+| `tianzhou.glb` (59 KB) | Tianzhou: a 3.35 m cargo drum, a cone, a 2.8 m propulsion module with two wings of three panels | none ships and none was traced. One render was looked at for the layout and the colours: "Tianzhou Rendering" (Shujianyang): <https://commons.wikimedia.org/wiki/File:Tianzhou_Rendering.png> (read 2026-10-13) | **CC BY-SA 4.0: looked at only.** CMSA's own pictures are not free |
+
+**Five laser-ranging balls**, each from what the International Laser Ranging Service's mission
+page (NASA-hosted) says of it. No picture of any of them is free; each page's photograph was
+looked at there and nothing of it ships.
+
+| File | What | The page read | Its photograph |
+|---|---|---|---|
+| `starlette.glb` (47 KB) | Starlette and Stella: 24 cm, 60 retroreflectors, three on each of twenty triangular plates | <https://ilrs.gsfc.nasa.gov/missions/satellite_missions/current_missions/star_general.html> (read 2026-10-13) | **not free** ("Courtesy of CNES"): looked at only |
+| `lares.glb` (32 KB) | LARES: 36.4 cm, 92 retroreflectors in the rows of the mission's own table | <https://ilrs.gsfc.nasa.gov/missions/satellite_missions/current_missions/lars_general.html>, <https://ilrs.gsfc.nasa.gov/docs/LARES_MSR_final_version_revCP.pdf> (read 2026-10-13) | **not free** ("Courtesy of ASI"): looked at only |
+| `lares2.glb` (37 KB) | LARES-2: 42.4 cm, 303 retroreflectors. **The count is published; the placement is ours** | <https://ilrs.gsfc.nasa.gov/missions/satellite_missions/current_missions/lrs2_general.html> (read 2026-10-13) | no credit line: looked at only |
+| `etalon.glb` (100 KB) | Etalon 1 and 2: 1.294 m, 2 146 retroreflectors in 306 arrays. **The counts are published; the placement is ours** | <https://ilrs.gsfc.nasa.gov/missions/satellite_missions/current_missions/eta1_general.html> (read 2026-10-13) | no credit line: looked at only |
+| `westpac.glb` (40 KB) | WESTPAC: a ball under sixty baffle tubes, 245 mm over them | <https://ilrs.gsfc.nasa.gov/missions/satellite_missions/current_missions/west_general.html>, <https://ilrs.gsfc.nasa.gov/docs/Westpac_final.pdf> (read 2026-10-13) | **not free** ("Courtesy of EOS"): looked at only |
+| all ten | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions, NASA photographs and a NASA drawing of the Progress`;
+`3D model: built by Space Radar from published dimensions and NASA photographs of the Crew Dragon`;
+`3D model: built by Space Radar from published dimensions and NASA photographs of the Cargo Dragon`;
+`3D model: built by Space Radar from the published dimensions of the Shenzhou spacecraft`;
+`3D model: built by Space Radar from the published dimensions of the Tianzhou cargo ship`;
+`3D model: built by Space Radar from the published description of Starlette and Stella's 60 retroreflectors`;
+`3D model: built by Space Radar from the published arrangement of LARES's 92 retroreflectors`;
+`3D model: built by Space Radar from the published count and size of LARES-2's 303 retroreflectors`;
+`3D model: built by Space Radar from the published counts of Etalon's 2 146 retroreflectors`;
+`3D model: built by Space Radar from the published description of WESTPAC's 60 baffled retroreflectors`
+
+**No logo, lettering, flag or insignia is on any of the ten.** "Dragon", "Crew Dragon" and
+"SpaceX" are marks of Space Exploration Technologies Corp.; the photographs the two Dragons were
+compared with show the maker's wordmark, NASA's insignia and a flag on the hull, and none of the
+three is drawn. "Progress", "Shenzhou" and "Tianzhou" name the spacecraft. Nothing here is
+offered as any maker's or agency's, and none of them endorses Space Radar.
+
+The same day `soyuz-ms.glb` and `noaa21.glb` (section 3b-4) were baked again: the tool had kept one
+part of each pair that shared a name, so the Soyuz had one of its two radiator bands and NOAA-21
+one of its two side radiators. Nothing else about them changed.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
@@ -1770,6 +1824,11 @@ GitHub, which is the use GitHub's brand guidelines permit.
   Lucasfilm Ltd. / The Walt Disney Company. The app names the prop and deliberately does **not**
   draw it: what the `rotj-lightsaber` row draws is the real-world donor part the prop was built
   from, a Graflex 3-cell press-camera flash handle, and the card says exactly that.
+* **SpaceX**, **Dragon** and **Crew Dragon** are trademarks of Space Exploration Technologies
+  Corp. The app names the spacecraft and, since 2026-10-13, draws two shapes built here from
+  published dimensions (`dragon-crew.glb`, `dragon-cargo.glb`, section 3b-5). No wordmark, logo,
+  insignia or flag is on either, and the white, the dark cells and the red seal ring are this
+  project's own flat colours.
 * **Tesla** and **Roadster** are trademarks of Tesla, Inc. The `tesla-roadster` row draws a
   first-generation Roadster in the project's own geometry; no Tesla badge, wordmark or published
   paint colour is reproduced, and the card says the red is ours.

@@ -45,8 +45,12 @@ const stations = sr.recordsFor('stations') || [];
 // and the summary carries one entry a subject under `subjects`; any one's `fail` fails the run.
 // No record id and no name on the stations layer has an underscore in it.
 const param = new URLSearchParams(location.search).get('lookSubject');
-const one = async (asked, prefix) => {
+const one = async (askedAs, prefix) => {
 const out = { subject: null, standIn: null, views: [], stations: stations.length };
+// A ROUTE WITH NO CRAFT UP TODAY (2026-10-13, batch three: no Cargo Dragon is in orbit): the subject
+// `sat-100882.as.dragon-crs` photographs the named route `dragon crs` on that record, FOR THE PICTURE
+// ONLY, as the Cygnus's stand-in below does; the summary says so in `standIn`.
+const [asked, wearAs] = String(askedAs || '').includes('.as.') ? String(askedAs).split('.as.') : [askedAs, null];
 // A subject is a record id, or failing that the words of a name with dashes for spaces
 // (`crew-dragon`: a visiting vehicle's id changes every flight, and its name does not).
 const byName = (words) => stations.find((r) => String(r.name || '').toLowerCase().includes(String(words).toLowerCase().replace(/-/g, ' '))) || null;
@@ -72,6 +76,14 @@ if (!record) {
   const norad = record.meta && (record.meta.noradId ?? record.meta.catalogueNumber);
   RM.REAL_MODELS.norad[norad] = { ...RM.REAL_MODELS.named.cygnus };
   out.standIn = 'NO CYGNUS IS IN THE SAVED DATA TODAY: the model is drawn on ' + record.name + ' (' + record.id + ') for the picture only';
+}
+if (wearAs) {
+  const key = wearAs.replace(/-/g, ' ');
+  const worn = RM.REAL_MODELS.named[key];
+  if (!worn) return ({ ...out, fail: 'no named route `' + key + '` to put on ' + record.name });
+  const norad = record.meta && (record.meta.noradId ?? record.meta.catalogueNumber);
+  RM.REAL_MODELS.norad[norad] = { ...worn };
+  out.standIn = 'THE ROUTE `' + key + '` IS DRAWN ON ' + record.name + ' (' + record.id + ') FOR THE PICTURE ONLY: no craft of that name is in the saved data today';
 }
 const entry = RM.realModelFor(record) || {};
 out.subject = { id: record.id, name: record.name, klass: record.klass, layer: record.layer };

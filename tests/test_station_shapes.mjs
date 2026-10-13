@@ -41,7 +41,7 @@ const e1 = realModelFor(soyuzRec), e2 = realModelFor(progRec), e3 = realModelFor
 // A file over the build since 2026-10-13 (public #939): soyuz-ms.glb, a lathed hull built here from
 // the same metres; the build is what is drawn first (tests/test_real_models.mjs holds the file).
 check(e1 && e1.build === 'soyuz' && e1.generic === true && e1.file === 'soyuz-ms.glb', `SOYUZ-MS -> build soyuz under soyuz-ms.glb, generic: ${JSON.stringify(e1)}`);
-check(e2 && e2.build === 'progress' && e2.generic === true, `PROGRESS-MS -> build progress: ${JSON.stringify(e2)}`);
+check(e2 && e2.build === 'progress' && e2.generic === true && e2.file === 'progress-ms.glb', `PROGRESS-MS -> build progress under progress-ms.glb (batch three, public #940): ${JSON.stringify(e2)}`);
 check(e3 === null, 'Soyuz debris keeps the debris shape');
 check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route wins)');
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
@@ -131,9 +131,11 @@ check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: '
 { const o = modelFor('satellite', 'sphere'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-sphere') && Math.abs(o.userData.realSizeM - 2.15) < 0.01, `sphere builds inside budget at AJISAI's 2.15 m (${tris(o)} tris)`); disposeModels(o); }
 { const e = realModelFor({ id: 'acs3', name: 'ACS3', klass: 'satellite', layer: 'visual', meta: { noradId: 59588 } });
   check(e?.build === 'solarsail' && !e.generic && !e.file, `ACS3 is drawn from its own published numbers, not as a family: ${JSON.stringify(e)}`); }
-for (const [id, name] of [[19751, 'COSMOS 1989 (ETALON 1)'], [25398, 'WESTPAC'], [7646, 'STARLETTE'], [38077, 'LARES']]) {
+// Each of the other balls has its own surface since batch three (2026-10-13): the plain ball is what
+// is drawn while its file is on its way, and none is "the kind of thing" any more.
+for (const [id, name, file] of [[19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb'], [25398, 'WESTPAC', 'westpac.glb'], [7646, 'STARLETTE', 'starlette.glb'], [22824, 'STELLA', 'starlette.glb'], [38077, 'LARES', 'lares.glb'], [53105, 'LARES-2', 'lares2.glb']]) {
   const e = realModelFor({ id: `s-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } });
-  check(e?.build === 'sphere' && e.generic === true && !e.file, `${name} is a sphere, and says it is the kind of thing`);
+  check(e?.build === 'sphere' && e.file === file && !e.generic, `${name} is the plain ball under ${file}, as itself: ${JSON.stringify(e)}`);
 }
 // Ajisai and the two LAGEOS have their own surfaces since 2026-10-13 (public #947): the plain ball
 // is what is drawn while the file is on its way, and they are no longer "the kind of thing".

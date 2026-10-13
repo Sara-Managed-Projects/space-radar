@@ -154,7 +154,10 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   // THE SECOND BATCH (2026-10-13, public #947, #969; NOAA 21 rebuilt from dimensions): Hitomi, Ajisai
   // and the two LAGEOS by number, as themselves.
   for (const [norad, name, file, how] of [[57800, 'XRISM', 'xrism.glb', 'render'], [54234, 'NOAA 21 (JPSS-2)', 'noaa21.glb', 'dimensions'], [10967, 'SEASAT 1', 'seasat.glb', 'render'], [38358, 'NUSTAR', 'nustar.glb', 'dimensions'],
-    [41337, 'ASTRO-H (HITOMI)', 'hitomi.glb', 'render'], [16908, 'AJISAI (EGS)', 'ajisai.glb', 'dimensions'], [8820, 'LAGEOS 1', 'lageos.glb', 'dimensions'], [22195, 'LAGEOS 2', 'lageos.glb', 'dimensions']]) {
+    [41337, 'ASTRO-H (HITOMI)', 'hitomi.glb', 'render'], [16908, 'AJISAI (EGS)', 'ajisai.glb', 'dimensions'], [8820, 'LAGEOS 1', 'lageos.glb', 'dimensions'], [22195, 'LAGEOS 2', 'lageos.glb', 'dimensions'],
+    // THE THIRD BATCH (2026-10-13): the other laser-ranging balls, each from its own ILRS page.
+    [7646, 'STARLETTE', 'starlette.glb', 'dimensions'], [22824, 'STELLA', 'starlette.glb', 'dimensions'], [38077, 'LARES', 'lares.glb', 'dimensions'], [53105, 'LARES-2', 'lares2.glb', 'dimensions'],
+    [19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb', 'dimensions'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb', 'dimensions'], [25398, 'WESTPAC', 'westpac.glb', 'dimensions']]) {
     const got = sat(norad, name);
     check(got && got.file === file && got.made === how && !got.generic, `${name} (${norad}) wears ${file}, made: '${how}', as itself: ${JSON.stringify(got)}`);
   }
@@ -167,9 +170,15 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     [99002, 'NUSTAR DEB', 'nustar.glb', 'debris'],
     [99003, 'XRISM R/B', 'xrism.glb', 'rocket'],
     [57800, 'XRISM', 'hitomi.glb'],              // XRISM has no extensible bench: it keeps its own file
-    [7646, 'STARLETTE', 'lageos.glb'],           // the other laser-ranging balls keep the plain one:
-    [38077, 'LARES', 'lageos.glb'],              // nobody built their surfaces, and LAGEOS's is not theirs
+    [7646, 'STARLETTE', 'lageos.glb'],           // every ball wears its OWN surface (batch three), never another's:
+    [38077, 'LARES', 'lageos.glb'],
+    [38077, 'LARES', 'lares2.glb'],              // LARES and LARES-2 are two balls of two sizes and two arrays
+    [53105, 'LARES-2', 'lares.glb'],
+    [52307, 'STARLINK-3755', 'lares2.glb'],      // the id LARES-2 is often given is a Starlink
     [19751, 'COSMOS 1989 (ETALON 1)', 'ajisai.glb'],
+    [27944, 'LARETS', 'westpac.glb'],            // no page read gives Larets's arrangement: it has no file
+    [27944, 'LARETS', 'starlette.glb'],
+    [60533, 'LEMUR-2-STELLA', 'starlette.glb'],  // a CubeSat with Stella in its name is not the ball
     [99004, 'ASTRO-H DEB', 'hitomi.glb', 'debris'],  // Hitomi's fragments stay fragments
     [99005, 'SOYUZ-MS 29 DEB', 'soyuz-ms.glb', 'debris'],
     [99006, 'SL-4 R/B', 'soyuz-ms.glb', 'rocket'],   // the Soyuz ROCKET's stage is not the ship
@@ -186,8 +195,26 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   // The Soyuz: by name, on the stations layer, over its build, as the kind of thing (the Cygnus's pattern).
   const soyuz = realModelFor({ id: 'sat-100057', name: 'SOYUZ-MS 29', klass: 'station', layer: 'stations', meta: { noradId: 100057 } });
   check(soyuz && soyuz.file === 'soyuz-ms.glb' && soyuz.build === 'soyuz' && soyuz.generic === true && soyuz.made === 'dimensions', `SOYUZ-MS 29 wears soyuz-ms.glb over the procedural Soyuz, as the kind of thing: ${JSON.stringify(soyuz)}`);
+  // THE THIRD BATCH: the Progress has a file of its own, and the two are never swapped.
   const progress = realModelFor({ id: 'sat-68837', name: 'PROGRESS-MS 34', klass: 'station', layer: 'stations', meta: { noradId: 68837 } });
-  check(progress && !progress.file && progress.build === 'progress', `PROGRESS-MS 34 keeps its own procedural shape and does not wear the crewed ship: ${JSON.stringify(progress)}`);
+  check(progress && progress.file === 'progress-ms.glb' && progress.build === 'progress' && progress.generic === true && progress.made === 'dimensions', `PROGRESS-MS 34 wears progress-ms.glb over the procedural Progress, and not the crewed ship: ${JSON.stringify(progress)}`);
+  check(soyuz.file !== 'progress-ms.glb', 'a Soyuz is not drawn as a Progress');
+  // The other visiting vehicles of the batch, each by name on the stations layer, over its own build,
+  // as the kind of thing; and what must NOT wear each.
+  const visit = (name, klass = 'satellite', layer = 'stations') => realModelFor({ id: 'sat-9', name, klass, layer, meta: { noradId: 9 } });
+  for (const [name, file, build] of [['CREW DRAGON 13', 'dragon-crew.glb', 'dragon'], ['DRAGON CRS-33', 'dragon-cargo.glb', 'dragon-cargo'], ['SHENZHOU-23 (SZ-23)', 'shenzhou.glb', 'shenzhou'], ['TIANZHOU-10', 'tianzhou.glb', 'tianzhou'], ['PROGRESS-MS 35', 'progress-ms.glb', 'progress']]) {
+    for (const klass of ['station', 'satellite']) {
+      const got = visit(name, klass);
+      check(got && got.file === file && got.build === build && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (klass ${klass}) wears ${file} over the build ${build}, as the kind of thing: ${JSON.stringify(got)}`);
+    }
+    const deb = visit(name + ' DEB', 'debris', 'active');
+    check(!deb || !deb.file, `${name} DEB is debris and wears no ship's file: ${JSON.stringify(deb)}`);
+  }
+  for (const [name, file, klass] of [['CREW DRAGON 13', 'dragon-cargo.glb'], ['DRAGON CRS-33', 'dragon-crew.glb'], ['SHENZHOU-23 (SZ-23)', 'tianzhou.glb'], ['TIANZHOU-10', 'shenzhou.glb'], ['SHENZHOU-23 (SZ-23)', 'soyuz-ms.glb'],
+    ['CSS (TIANHE)', 'tianzhou.glb', 'station'], ['CZ-2F R/B', 'shenzhou.glb', 'rocket'], ['FALCON 9 R/B', 'dragon-crew.glb', 'rocket'], ['DRAGONFLY', 'dragon-crew.glb'], ['SNAPDRAGON', 'dragon-cargo.glb']]) {
+    const got = visit(name, klass || 'satellite');
+    check(!got || got.file !== file, `${name} does not wear ${file}: ${JSON.stringify(got && got.file)}`);
+  }
   // `axes: 'app'` only on files built to the app's axes HERE (scene/heroes.js then keeps the build's
   // attitude): never on a published mesh, whose axes say nothing about which way the craft points.
   for (const r of routes) if (r.entry && r.entry.axes !== undefined) check(r.entry.axes === 'app' && !!r.entry.made, `${r.table}[${r.key}] says axes: ${JSON.stringify(r.entry.axes)}; only a file made here (made:) may say axes: 'app'`);
