@@ -52,7 +52,17 @@ const out = { subject: null, standIn: null, views: [], stations: stations.length
 const byName = (words) => stations.find((r) => String(r.name || '').toLowerCase().includes(String(words).toLowerCase().replace(/-/g, ' '))) || null;
 // A subject on another layer (a satellite worth knowing, a bright one) arrives when its layer's
 // file does, which is after the stations: wait for it before saying it is not there.
-if (asked) await until(() => sr.recordById(asked) || byName(asked), 120000, 500);
+if (asked) {
+  const there = () => sr.recordById(asked) || byName(asked);
+  await until(there, 60000, 500);
+  // NOT ON A LAYER THAT IS ON BY DEFAULT (2026-10-13: LAGEOS 1 is only in the whole active catalogue).
+  // A visitor reaches it by turning "All active satellites" on, one tap; so does the probe, and the
+  // summary says it did. The run saves that catalogue's column twin for this probe (look.yml).
+  if (!there()) {
+    try { if (!sr.isLayerOn('active')) { sr.setLayerOn('active', true); out.layerTurnedOn = 'active'; } } catch { /* an older ref has no such layer */ }
+    await until(there, 180000, 500);
+  }
+}
 let record = asked ? (sr.recordById(asked) || byName(asked)) : stations.find((r) => wordIn(r.name, 'cygnus') && RM.realModelFor(r)) || null;
 if (asked && !record) return ({ ...out, fail: 'no record with the id or the name ' + asked + ' on this page; the stations layer has ' + stations.map((r) => r.id + ' ' + r.name).join(', ') });
 if (!record) {
