@@ -35,6 +35,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
 | The shapes of the first Starlink generation, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-three-commercial-craft-built-from-dimensions--the-first-starlink-generation-umbra-iceye-2026-10-13) |
 | The shapes of GPS Block IIR, IIF and III, Galileo, Michibiki, NavIC and SAOCOM | built by us in code from published dimensions | public domain, GODL-India or CC BY 4.0 where a picture was used; ours | [3b-8](#3b-8-seven-more-built-from-dimensions--gps-by-block-galileo-michibiki-navic-saocom-2026-10-13) |
+| The shapes of MetOp, XMM-Newton, TerraSAR-X and TanDEM-X, and StriX | built by us in code from published dimensions | public domain, CC BY 3.0 or CC0 where a picture was used; ours | [3b-9](#3b-9-four-more-built-from-dimensions--metop-xmm-newton-terrasar-x-strix-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -995,6 +996,34 @@ No logo, lettering, flag or insignia is on any of the seven. The US Space Force,
 Boeing, the European Union, EUSPA, ESA, OHB, the Cabinet Office of Japan, ISRO, CONAE and INVAP
 do not endorse Space Radar, and none of them made or approved these shapes.
 
+
+## 3b-9. Four more built from dimensions — MetOp, XMM-Newton, TerraSAR-X, StriX (2026-10-13)
+
+The seventh batch: two European craft that had no shape of their own, and two radar satellites
+that wore a blade that is not theirs. No agency publishes a model of any of these under terms
+this project can use: ESA's own model of XMM-Newton exists (scifleet.esa.int) and ESA's terms
+forbid derivative works, so it was not downloaded, and no ESA or EUMETSAT picture was used
+either. No image-to-3D model was used: each file was written in code from numbers in reference
+pages and agencies' own pages, each opened and quoted in its `registry/models.yaml` row with what
+is NOT cited named beside it. Their cards say "shape built from published dimensions and
+pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `metop.glb` (44 KB) | MetOp-B and MetOp-C: a gold body 6.3 m long and 2.5 m square, instruments on the Earth face, ASCAT's two 3 m antenna arms in a V, one wing beyond the service module, 17.6 m from end to tip | eoPortal (<https://www.eoportal.org/satellite-missions/metop>); ESA's page "About ASCAT" (<https://www.esa.int/Applications/Observing_the_Earth/Meteorological_missions/MetOp/About_ASCAT>) and ESA Bulletin 127 (<https://www.esa.int/esapub/bulletin/bulletin127/bul127b_edwards.pdf>), for words and numbers only; NASA's picture of a model, "MetOp-A & -B spacecraft model" (<https://commons.wikimedia.org/wiki/File:MetOp-A_%26_-B_spacecraft_model.png>) (all read 2026-10-13). The wing's own length and the instruments' sizes are ours | numbers are facts; the picture is in the public domain; NO ESA OR EUMETSAT PICTURE WAS USED |
+| `xmm-newton.glb` (44 KB) | XMM-Newton: an eight-sided service module with three 70 cm mirror modules, a 6.8 m black tube, the focal plane with white radiators, two fixed wings of three panels, 16 m tip to tip | eoPortal (<https://www.eoportal.org/satellite-missions/xmm-newton>); NASA's Scientific Visualization Studio's render "XMM-Newton spacecraft animations (SVS20399 - XMM Beauty Still)" (<https://commons.wikimedia.org/wiki/File:XMM-Newton_spacecraft_animations_(SVS20399_-_XMM_Beauty_Still).jpg>) (read 2026-10-13). The tube's and the service module's widths and the focal-plane end are ours | numbers are facts; the render is in the public domain; NEITHER ESA'S MODEL NOR ANY ESA PICTURE WAS USED |
+| `terrasar-x.glb` (52 KB) | TerraSAR-X and TanDEM-X: a six-sided body 5 m long with no wings, the 4.8 m radar antenna on one face 33.8 degrees off the nadir, the solar array fixed on the opposite face, a 3.3 m boom toward the Earth | eoPortal (<https://www.eoportal.org/satellite-missions/terrasar-x>, <https://www.eoportal.org/satellite-missions/tandem-x>) for DLR's numbers; DLR's render "TerraSAR-X and TanDEM-X satellites in formation flight over Europa" (<https://commons.wikimedia.org/wiki/File:TerraSAR-X_and_TanDEM-X_satellites_in_formation_flight_over_Europa.jpg>) (read 2026-10-13) | numbers are facts; the render is CC BY 3.0 and is not in the file |
+| `strix.glb` (26 KB) | StriX: a 5 m by 0.8 m radar antenna of seven panels, the bus behind the middle one, solar cells in orange frames on the back of the other six | eoPortal (<https://www.eoportal.org/satellite-missions/strix>) for Synspective's numbers; a photograph of Synspective's 1/6 model by Blervis, "StriX Satellite Model" (<https://commons.wikimedia.org/wiki/File:StriX_Satellite_Model.jpg>) (read 2026-10-13). The antenna's Earth side is ours: no free picture shows it | numbers are facts; the photograph is CC0 and is not in the file |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `metop`, `xmm-newton`, `terrasar-x`, `strix` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and NASA's picture of a model of MetOp (NASA, public domain)`;
+`3D model: built by Space Radar from published dimensions and a NASA render of XMM-Newton (NASA's Scientific Visualization Studio, public domain)`;
+`3D model: built by Space Radar from published dimensions and DLR's render of TerraSAR-X and TanDEM-X (DLR, CC BY 3.0)`;
+`3D model: built by Space Radar from published dimensions and a photograph of Synspective's model of StriX by Blervis (CC0)`
+
+No logo, lettering, flag or insignia is on any of the four. EUMETSAT, ESA, Airbus, NASA, DLR and
+Synspective do not endorse Space Radar, and none of them made or approved these shapes.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
