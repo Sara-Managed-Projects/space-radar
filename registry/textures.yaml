@@ -335,6 +335,48 @@ textures:
         original: "https://www.solarsystemscope.com/textures/download/8k_mars.jpg"
         make: "scripts/build-textures.py mars: resampled to 4096 x 2048 (Lanczos), WebP 84"
 
+  # MARS'S RELIEF (2026-10-12, spec 0073 requirement 5). Two maps from the Mars Orbiter Laser
+  # Altimeter's own grid (33 MB at 16 pixels a degree; the 2 GB USGS mosaic is its sibling and was
+  # not fetched), each one grey channel, fetched with Mars's map on a tier-1 device and up and
+  # never by a phone or under the frame latch. scene/worlds.js MARS_RELIEF says how they are drawn:
+  # the slope from `mars-relief` as Mercury's is, and a shadow cast from `mars-height` by a short
+  # march toward the Sun, both five times what was measured. Their sizes are what the GPU budget
+  # left on the day (2.7 MiB of tier 1's 250): 1.5 and 0.67 MiB.
+  - id: mars-relief
+    world: mars
+    slot: relief
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_mars_relief.webp
+        px: [1536, 768]
+        bytes: 76364
+        format: mono
+        licence: 'Public domain: "Data sets archived in the PDS are in the public domain." (NASA Planetary Data System, Geosciences Node FAQ, pds-geosciences.wustl.edu/faq.html, read 2026-10-12); the USGS product made from the same altimetry, Mars MGS MOLA DEM 463m, gives "Access Constraints: CC0 (public domain)" and "Use Constraints: None" (astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m, read 2026-10-12)'
+        credit: "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+        source: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.lbl (read 2026-10-12)"
+        original: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.img"
+        make: "scripts/build-mars-relief.py: the 5760 x 2880 grid (metres above the areoid, big-endian words) rolled to longitude 0 at the centre and resampled to 1536 x 768 (Lanczos), the relief broader than 6 degrees taken out, the rest clipped to +-4000 m (0.34 % of the map is beyond it) and written as one grey channel with 128 as level ground, WebP 80"
+        limits: "LOCAL relief only: Tharsis's bulge and the north-south dichotomy are not in it, by design (the shadows come from mars-height). 13.9 km a texel at the equator: no crater under some 30 km has a rim. MOLA's ground tracks are up to 12 km apart at the equator and the grid interpolates between them. Drawn 5 times steeper than measured."
+  - id: mars-height
+    world: mars
+    slot: relief
+    when: asked
+    min_m: -8200
+    max_m: 21300
+    files:
+      - tier: 0
+        file: site/textures/1k_mars_height.webp
+        px: [1024, 512]
+        bytes: 58264
+        format: mono
+        licence: 'Public domain: "Data sets archived in the PDS are in the public domain." (NASA Planetary Data System, Geosciences Node FAQ, pds-geosciences.wustl.edu/faq.html, read 2026-10-12); the USGS product made from the same altimetry, Mars MGS MOLA DEM 463m, gives "Access Constraints: CC0 (public domain)" and "Use Constraints: None" (astrogeology.usgs.gov/search/map/mars_mgs_mola_dem_463m, read 2026-10-12)'
+        credit: "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+        source: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.lbl (read 2026-10-12)"
+        original: "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.img"
+        make: "scripts/build-mars-relief.py: the same grid, rolled to longitude 0 at the centre, resampled to 1024 x 512 (Lanczos); a byte is the height from -8200 m (0) to 21300 m (255), 115.7 m a step (the label: 'The minimum and maximum topography observations for the entire data set are -8177 and 21171 meters'), one grey channel, WebP 98 (92 m rms from the resampled grid)"
+        limits: "20.8 km a texel at the equator, so a narrow extreme is averaged: the file's deepest texel in Hellas is -7853 m against the grid's -8177 m, and where Coprates Chasma is three texels wide its floor reads 900 m too high (tests/test_mars_heights.py reads it where the floor is wide). Heights are above the areoid (the GMM3 gravity model's equipotential), not above a sphere. The shadows drawn from it are 5 times too long: the heights are exaggerated as the slopes are."
+
   - id: jupiter
     world: jupiter
     slot: map
@@ -469,6 +511,30 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  # THE RINGS FROM CLOSE (2026-10-12, spec 0073 requirement 5). One row of 8192 texels from the ring
+  # mesh's inner edge (74 500 km) to its outer (140 220 km), 8.02 km each: Cassini's measured normal
+  # optical depth divided by itself smoothed to the sharpness of the map above (a Gaussian of 60 km),
+  # a byte of 255 being a ratio of 4. scene/worlds.js RING_FRAG multiplies the map's optical depth
+  # by it (RING_FINE): one more texture read, on a tier-1 device and up, fetched when Saturn's disc is
+  # 15 % of half the view and never before; not under the frame latch. A phone never asks for it.
+  # tests/test_ring_detail.mjs reads the file at five named gaps' radii.
+  - id: saturn-ring-fine
+    world: saturn
+    slot: ring
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/8k_saturn_ring_fine.png
+        px: [8192, 1]
+        bytes: 5061
+        format: mono
+        licence: 'Public domain: "Data sets archived in the PDS are in the public domain." (NASA Planetary Data System, Geosciences Node FAQ, pds-geosciences.wustl.edu/faq.html, read 2026-10-12); the PDS asks that data sets be cited as published research is'
+        credit: "Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's"
+        source: "https://pds-rings.seti.org/holdings/volumes/COUVIS_8xxx/COUVIS_8001/data/UVIS_HSP_2008_202_BETCEN_I_TAU01KM.LBL (read 2026-10-12)"
+        original: "https://pds-rings.seti.org/holdings/volumes/COUVIS_8xxx/COUVIS_8001/data/UVIS_HSP_2008_202_BETCEN_I_TAU01KM.TAB"
+        make: "scripts/build-ring-profile.py: the table's normal optical depth every kilometre (71 625 rows, 73 267 to 144 890 km; the star Beta Centauri 66.7 degrees above the ring plane, 20 to 21 July 2008), negative values taken as 0 and values above what the star could show held at that; binned to 8192 texels by what gets through; divided by the same profile smoothed with a 60 km Gaussian; clipped at a ratio of 4; one grey channel, PNG"
+        limits: "One star on one day along one line through the rings: structure that varies round the ring (the B ring's outer edge, the ringlets in the Encke gap, density waves' phases) is one cut of it. Where the B ring is opaque to the star (optical depth over about 5) the table is a lower bound and the ratio is noise near 1. 8 km a texel: the Keeler gap (35 km) is four texels, and nothing finer than 16 km is in it. It refines the artist's map and does not replace it: the broad optical depth is still that map's alpha, not Cassini's."
 
   - id: uranus
     world: uranus
@@ -873,18 +939,18 @@ textures:
     world: pluto
     slot: map
     when: boot
-    coverage: 0.769
+    coverage: 0.778
     files:
       - tier: 0
         file: site/textures/2k_pluto_nh_colour.webp
         px: [2048, 1024]
-        bytes: 63040
+        bytes: 128920
         format: rgb
         licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
-        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
-        source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl (read 2026-10-06)"
-        original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
-        make: "scripts/build-textures.py moon-pluto: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 11487 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.68; where it has no data and USGS's black-and-white mosaic has (3.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (23 % of the sphere, the south in its winter night) filled with the map's own mean colour, WebP 82; then scripts/soften_fill.py --feather-deg=20 (2026-10-12): across 20 degrees of latitude the picture fades into a blur of itself before the plain colour begins, so the unimaged part still has nothing drawn in it and no longer meets the data along a hard line"
+        credit: "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain"
+        source: "https://science.nasa.gov/image-detail/amf-pia11707 (read 2026-10-12)"
+        original: "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia11/pia11707/PIA11707.jpg (5926 x 2963, 1 423 389 bytes, sha256 e36f3daa1b3b0e911418ff830ddccf8b63e10a082c6ccc96eb7d8170991962d6)"
+        make: "scripts/build_pluto_map.py (2026-10-12): NASA's own global colour map of Pluto, released 2017-01-19, 'based on a series of three color filter images' from Ralph/MVIC: ENHANCED colour, not what an eye would see (the camera had no green filter), and the card says so. 5926 px to 2048 wide, rolled half a turn so longitude 0 is at the centre; the part NASA left black (22 % of the sphere, the south in its winter night in 2015) filled with the covered part's own mean colour and feathered along its true outline on every side, wrapping in longitude: across 12 degrees the picture fades into a blur of itself before the plain colour begins, so nothing is drawn where nobody imaged; then the whole map taken, in linear light, to the luminance of the flat colour by a gain 1.77 (0.12 % of the pixels clip, on Sputnik Planitia), which leaves the colours' strength as NASA published it; WebP 76 (the moons' maps together have a byte budget). It replaces the map built here from the PDS mosaic's red and blue bands with USGS's black-and-white fill, whose image strips and filled patches met along straight and stepped edges"
 
   - id: charon
     world: charon

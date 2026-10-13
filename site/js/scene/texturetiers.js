@@ -274,10 +274,16 @@ export function createTextureTiers(opts = {}) {
       }
       schedule();
     },
-    /** A promotion (scene/quality.js createTierPromoter). Up only; the latch is the way down. */
+    /**
+     * A promotion (scene/quality.js createTierPromoter), or the visitor's own choice (qualityPlan):
+     * up, the sharper maps are fetched when idle; down, every map above the new tier is given back
+     * and the boot map is worn again. Never by itself downward: the latch is the only automatic way down.
+     */
     setTier(n) {
-      if (latched || !(n > tier)) return tier;
-      tier = n;
+      if (latched || !Number.isFinite(n) || n === tier) return tier;
+      const down = n < tier;
+      tier = Math.max(0, n);
+      if (down) for (const row of rows) { const have = applied.get(row.id); if (have && have.file.tier > tier) release(row); }
       schedule();
       return tier;
     },

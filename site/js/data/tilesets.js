@@ -69,8 +69,8 @@ export const TILESETS = [
   {
     "id": "earth-blue-marble",
     "world": "earth",
-    "title": "Blue Marble with shaded relief and the sea floor (MODIS), 500 m per pixel",
-    "url": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/{z}/{y}/{x}.jpeg",
+    "title": "Blue Marble with shaded relief (MODIS), 500 m per pixel",
+    "url": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief/default/500m/{z}/{y}/{x}.jpeg",
     "matrix": [
       2,
       1
@@ -85,12 +85,12 @@ export const TILESETS = [
       2.3,
       2.5
     ],
-    "credit": "The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
+    "credit": "The Earth close up: Blue Marble with shaded relief, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
     "span0": 288,
-    "gradeSea": [
-      8.3,
-      5.7,
-      4.7
+    "seaLift": [
+      0.0118,
+      0.0402,
+      0.1604
     ],
     "bakedRelief": true
   }

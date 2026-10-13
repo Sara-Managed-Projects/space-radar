@@ -50,6 +50,14 @@ import '../copy/en.later.js';
 // --- the pure part -------------------------------------------------------------------------------
 
 /** The Bond albedo the equilibrium temperature assumes: the Earth's. Stated on the face. */
+/**
+ * Under the Measured look (scene/exposure.js MEASURED_RULES; tests/test_look_setting.mjs asks every
+ * module with noise in a shader). A face is an artist's impression from the planet's measured numbers
+ * and is labelled so wherever it is drawn (faceLabel): there is no photograph under it to fall back
+ * to, so Measured leaves it, and its label goes on saying what it is.
+ */
+export const UNDER_MEASURED = { face: 'same' };
+
 export const ALBEDO = 0.3;
 /** How far the light is taken from white toward the star's colour (0 = white, 1 = the star's). */
 export const LIGHT_ADAPT = 0.6;

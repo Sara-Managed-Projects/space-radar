@@ -1163,7 +1163,6 @@ export const COPY = {
     rightNowLabel: 'Right now',
     seeItLabel: 'See it from here',
     actionsLabel: 'What you can do',
-    sourceLabel: 'Where this comes from',
     unknownName: 'Unnamed object',
     // A record whose klass matches none of COPY.klass -- a bad feed row, a typo in a registry
     // entry -- has no template to build a sentence from. The card used to borrow the satellite
@@ -1238,7 +1237,6 @@ export const COPY = {
       // would say we tried and failed at arithmetic; the truth is that nobody has ever known.
       whereabouts: 'Where it is',
       lastSeen: 'Last known',
-      toFindOut: 'To find out',
       // A tropical cyclone (2026-09-28, data/parsers.js parseGdacsCyclones says what each number is).
       stormNow: 'At the latest advisory',
       stormWind: 'Strongest wind on its track',
@@ -1661,8 +1659,12 @@ export const COPY = {
     worldMap: {
       tinted: 'its surface is a black-and-white mosaic, tinted in a colour chosen from published descriptions',
       toned: 'its colours come from infrared, green and ultraviolet pictures, toned down toward what an eye would see',
-      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Pluto, Charon).
+      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Charon; Pluto until 2026-10-12).
       redblue: 'its colours come from New Horizons’ red and blue pictures, with green taken halfway between them and the colour made half as strong again; the parts photographed only in black and white are given the map’s average colour',
+      // 2026-10-12: Pluto's map is NASA's own global colour map (Photojournal PIA11707), whose caption
+      // says it is made from three of the colour camera's filters. The camera had blue, red,
+      // near-infrared and methane filters and no green one, so no three of them are an eye's colours.
+      enhanced: 'its colours are the ones NASA published, put together from three of New Horizons’ colour filters, none of them green: this is enhanced colour, stronger than and not the same as what an eye would see',
       // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
       balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
@@ -1695,11 +1697,14 @@ export const COPY = {
     },
     worldDeparture: {
       // The Earth (2026-10-08, scene/earth.js EARTH_RELIEF, scene/atmosphere.js EARTH_AIR): {relief}
-      // is the relief's exaggeration, {air} the shell's height gain.
-      earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is',
+      // is the relief's exaggeration, {air} the shell's height gain, {clouds} how many times thicker than
+      // they are the clouds are drawn from low orbit (scene/earth.js CLOUD_PARALLAX).
+      earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is; from low orbit on a larger screen its clouds stand up toward the horizon and under a low Sun, drawn {clouds} times thicker than they are so that their lean, their long shadows and the last light on their tops can be seen (at their true thickness in the Measured look), each top\u2019s height from its measured temperature where today\u2019s picture covers and from the cloud map\u2019s brightness elsewhere',
       mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
+      // Mars (2026-10-12, scene/worlds.js MARS_RELIEF): {mola} is the exaggeration of slopes and heights alike.
+      mars: 'on a larger screen its relief is from the heights Mars Global Surveyor\u2019s laser altimeter measured, drawn {mola} times steeper and taller than they are so that a low Sun shows them: the shadows Olympus Mons and the canyon walls throw are that many times too long.',
       venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
-      saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted',
+      saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted; on a larger screen and from close, the ringlets and gaps in its rings are where Cassini measured them through the light of a star in 2008, laid over the map, and in the Film look the sparkle of grains closer still is drawn: no ring particle can be seen from here',
     },
     // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
     // brighter than that camera would catch it. {n} is EARTHSHINE_GAIN.
@@ -1715,7 +1720,7 @@ export const COPY = {
     worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal',
     // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
     // which are there to be seen.
-    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn far coarser and faster than they are, and the bright network toward the edge is illustrative; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera',
+    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface: its cells are born, brighten and fade as real granules do, drawn coarser than they are (down to their real size from very close) and far faster, and the bright network toward the edge is illustrative; from very close the photographed map gives way to that drawn surface, which is illustrative too; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the loops and hedgerows on its edge stand where NOAA’s active regions are near the limb, and their shapes and heights are illustrative; the stars beside it are faded, as its glare hides them from any camera',
     // Spec 0065 requirement 4 (internal #337): while a close world is drawn from map tiles, the card
     // names the mosaic under the camera. {title} is the registry row's (registry/tilesets.yaml), {res}
     // the metres one pixel of the finest tiles on screen covers. `Detail`: Mars, where the mosaic is
@@ -2209,11 +2214,26 @@ export const COPY = {
     tierSaver: 'Surface maps at 2k, to save data.',
     tierSmall: 'Surface maps at 2k, sized for this device.',
     tierLatched: 'Surface maps back at 2k: frames were slow.',
+    tierLow: 'Surface maps at 2k, as Low asks.',
     tier1: 'Surface maps at 4k, fetched when idle.',
     tier2: 'Surface maps at 4k, more worlds kept sharp.',
     promoted: 'Raised a step after fast frames.',
     // The Sources panel's credits: the maps the scene is wearing on this device right now.
     mapsWorn: 'Maps on this device: {credits}.',
+    // The setting (spec 0073 requirement 6; scene/quality.js qualityPlan, ui/qualitypanel.js): one row
+    // in What to show. `autoNow` is the mono note beside it while Auto is on ("Auto: High"); each
+    // word's tooltip says what it spends; `fellBack` is the one toast when slow frames end a manual choice.
+    panelTitle: 'Quality',
+    choices: { auto: 'Auto', low: 'Low', medium: 'Medium', high: 'High', ultra: 'Ultra' },
+    autoNow: 'Auto: {tier}',
+    titles: {
+      auto: 'Chosen from this device and its frame rate',
+      low: 'Lightest picture: for a battery or an old laptop',
+      medium: 'Sharper maps, relief and weather',
+      high: 'More worlds kept sharp at once',
+      ultra: 'Full resolution and the finest steps close up',
+    },
+    fellBack: 'Frames were slow: quality is back on Auto.',
   },
 
   status: {
@@ -2284,8 +2304,6 @@ export const COPY = {
     layerCountLabel: '{n} shown',
     sourcesEmpty: 'No sources have been declared.',
     notAsked: '{n} more sources are read only when a layer that needs them is switched on.',
-    refresh: 'Read again',
-    refreshTitle: 'Ask every source that is due for a fresh copy',
   },
 
   time: {
@@ -2339,6 +2357,8 @@ export const COPY = {
     mark: 'spaceradar.ai',
     // Internal #376: the caption names the shutter when it is not the default (Camera).
     exposure: { eye: 'As the eye sees it', deep: 'Deep stretch: faint light lifted' },
+    // Spec 0073 requirement 8: and the look, when it is not the default (Film).
+    look: { measured: 'Measured look' },
   },
   // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
   // Spec 0047: the tracked object's HUD (ui/hud.js). Its numbers and its honesty line are the
@@ -2401,6 +2421,8 @@ export const GLOSSARY = {
   'astronomical unit': 'The distance from Earth to the Sun, about 150 million km.',
   'light-time':
     'How long light takes to cross a distance. It is also how long a radio message takes.',
+  'light-year':
+    'The distance light travels in one Julian year, about 9.46 trillion km. A ruler for the gap between stars.',
   magnitude: 'How bright something looks. The scale runs backwards: smaller numbers are brighter.',
   azimuth: 'A compass direction in degrees. Zero is north, 90 is east.',
   elevation: 'How high something is above the horizon, in degrees. Ninety is straight up.',

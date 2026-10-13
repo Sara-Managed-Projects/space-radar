@@ -184,6 +184,11 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # A pull request that changes what is drawn shows a picture (Ivan, 2026-10-12, after five
+      # features were merged unseen). The rule is one small script; this holds it and the documents
+      # that state it. The check itself is .github/workflows/pictures.yml.
+      - name: A drawn change owes a picture, and the rule says what counts as one
+        run: python3 tests/test_pr_pictures.py
       # Spec 0043 task 2 (internal #121): registry/truth.yaml lists every guarded stop field, and a field
       # the validator never mentions or no refusal case breaks is refused here.
       - name: The truth table agrees with the validator and its refusals
@@ -261,6 +266,12 @@ jobs:
       # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
       - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
         run: python3 tests/test_seo_pages.py
+      # Mars's height map against the laser altimeter's own grid (spec 0073 requirement 5). Here, in the
+      # job that installs Pillow: the map is a WebP and node cannot decode one. Olympus Mons's summit,
+      # Hellas's floor, Coprates Chasma's floor and the north polar cap within 400 m of MOLA's numbers;
+      # the highest texel is Olympus and the lowest is in Hellas (a mirrored or rolled map fails).
+      - name: "Mars's height map says what MOLA measured at Olympus Mons, Hellas, Coprates Chasma and the north polar cap (spec 0073 req 5)"
+        run: python3 tests/test_mars_heights.py
       # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
       - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
         run: node tests/test_pagelive.mjs
@@ -663,6 +674,14 @@ jobs:
         run: node tests/test_trains.mjs
       - name: the frame-rate latch trips once after three slow seconds; data-saver reads the connection (spec 0026 req 18)
         run: node tests/test_quality.mjs
+      # The settings a visitor can choose (spec 0073 requirements 6 and 8, 2026-10-12). Pure logic, so no
+      # browser: a choice of quality is a tier, the latch's removals, step counts and a pixel ratio, and
+      # is never above the device's ceiling; Measured hides what its registry row or its module says is
+      # generated, and a row or a module that does not say fails here.
+      - name: "the quality a visitor chooses: never above the device's ceiling, Low never promoted, the latch returns a manual choice to Auto once, one stored key (spec 0073 req 6)"
+        run: node tests/test_quality_setting.mjs
+      - name: "Measured or Film: every weather row and every module with noise in a shader says what Measured does, hidden rows are none and the rest move at the clock's rate (spec 0073 req 8)"
+        run: node tests/test_look_setting.mjs
       # The device tiers (2026-09-28): the tier from capability fixtures, one promotion by frames and
       # none past the latch, 4k fetched one at a time after the first frame and never on a phone,
       # and a boot set that is byte for byte what a first visit loaded before tiers existed.
@@ -698,6 +717,13 @@ jobs:
       # behind a uniform that is off on every other world, and each card says what is adjusted.
       - name: Three worlds' own looks are off everywhere else, and said on the card
         run: node tests/test_world_looks.mjs
+      # Mars's relief (spec 0073 requirement 5): the shadow march's JS twin (a 21 km mountain shades
+      # the ground behind it at a low Sun, a plain never shades itself, the ball's curve is in it),
+      # the shader's reads counted, a close-up tile reading the globe's relief at the globe's place,
+      # nothing fetched at boot or on a phone, the tier's steps, the latch; and that Mars's only
+      # weather row is still the season: no dust storm is drawn that nobody reported.
+      - name: Mars's relief casts shadows from MOLA's heights at a low Sun, on tier 1 and up, and no storm is invented (spec 0073 req 5)
+        run: node tests/test_mars_relief.mjs
 
       # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
       # measured directions, and nothing else moves.
@@ -737,6 +763,13 @@ jobs:
       # Cassini's radii, for the ring and for its shadow on the globe alike.
       - name: Saturn's rings, lit both ways, with the Cassini Division where Cassini measured it (spec 0054 task 5)
         run: node tests/test_rings.mjs
+      # Saturn from close (spec 0073 requirement 5): the fine-structure strip decoded and read at the
+      # radii of the Colombo, Maxwell, Huygens, Encke and Keeler gaps (a strip from anything but a
+      # measured profile, or on the wrong radii, fails), the ring shader's one extra read and its
+      # grains without a texture, nothing fetched at boot or on a phone, the latch, and the polar
+      # vortex as a registry row with Cassini's two numbers.
+      - name: Saturn's rings from close are Cassini's profile at Cassini's radii, and the polar vortex is a registry row (spec 0073 req 5)
+        run: node tests/test_ring_detail.mjs
       - name: the eclipse trip's five stops land on the library's eclipses, counted from the visitor's clock (spec 0037)
         run: node tests/test_eclipse_trip.mjs
       - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)
@@ -752,6 +785,12 @@ jobs:
       # the seam with the static map, the 12-hour rule, and what each storm number means.
       - name: live clouds are GIBS's pictures read back to temperature, seamed onto the static map, live only near the clock
         run: node tests/test_liveclouds.mjs
+      # 2026-10-13: the Earth's close-up tiles are Blue Marble without the sea floor, and water is lifted, not multiplied.
+      - name: "the open sea reads as water: the tile layer has no bathymetry, the deep sea sits at the day map's blue, shallows are not burnt, land is not lifted"
+        run: node tests/test_sea_grade.mjs
+      # 2026-10-13: the clouds stand up by parallax inside the surface shader (scene/earth.js CLOUD_PARALLAX).
+      - name: "the Earth's clouds stand up by parallax: zero offset straight down, a lean that grows with the view's angle, the last light's angle, off on tier 0, the latch, saveData and Measured"
+        run: node tests/test_cloud_parallax.mjs
       - name: storms are the ones advised in the last 12 h, drawn only near their advisory, carded with what GDACS's numbers mean
         run: node tests/test_storms.mjs
       # Internal #281: fires, volcanoes and icebergs from NASA's EONET, against nine events of what it

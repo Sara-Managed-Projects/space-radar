@@ -21,11 +21,12 @@
 version: 1
 
 worlds:
+  # Sun: radius_km is the volumetric mean radius (IAU 2015 nominal solar radius); NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html, read 2026-10-12.
   - id: sun
     aliases: ["Sol", "our star"]
     display: The Sun
     parent: ""
-    radius_km: 696340.0
+    radius_km: 695700.0
     unit_km: 1000000
     ephemeris: {propagator: body, body: Sun}
     frames: [inertial]
@@ -71,6 +72,7 @@ worlds:
     frames: [inertial, fixed]
     look: {textures: mercury}
 
+  # Venus: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html, read 2026-10-12.
   - id: venus
     aliases: ["the Morning Star", "the Evening Star"]
     display: Venus
@@ -78,7 +80,6 @@ worlds:
     radius_km: 6051.8
     unit_km: 1000
     ephemeris: {propagator: body, body: Venus}
-    # Sidereal rotation period from NASA Venus Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html, read 2026-10-11): -5832.6 hours.
     rotation: {kind: sidereal, period_h: -5832.6}
     frames: [inertial, fixed]
     look: {textures: venus, atmosphere: thick}

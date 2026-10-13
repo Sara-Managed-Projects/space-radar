@@ -52,9 +52,12 @@ version: 1
 #                GIBS cuts the Earth into 288-degree tiles at level 0 (2 x 1, hanging past 180 E and
 #                90 S), 3 x 2 at level 1, 5 x 3, 10 x 5 ... (scene/tilemath.js, A SECOND GRID).
 #                `matrix` stays the host's own level-0 count.
-#   grade_sea    the Earth only: the gain for the tile's WATER texels; `grade` is then the land's.
-#                Blue Marble's sea is a quarter as bright as our day map's and its land half, so
-#                one gain cannot sit both at the map's tone (the numbers are in the row).
+#   sea_lift     the Earth only: what is ADDED, in linear light, to the tile's WATER texels after
+#                `grade` (which is the land's, and the water's too). Blue Marble's deep sea is one
+#                flat near-black blue, a fourteenth as bright as our day map's, where its land is
+#                half: a gain that put the deep sea at the map's tone would burn the shallows white,
+#                so the sea is lifted, not multiplied (the numbers are in the row). It replaced
+#                `grade_sea`, a second gain, on 2026-10-13.
 #   baked_relief true when the mosaic itself carries shaded relief under a fixed light, so the
 #                card can say that its hills are shaded by the map's light and not by today's Sun.
 #   relief       a second pyramid on the same grid: a SHADED-RELIEF mosaic made from a laser
@@ -166,13 +169,29 @@ tilesets:
   # `grade`, land and sea, is mean(our 4k day map) / mean(level-1 mosaic) per channel in linear
   # light between 60 S and 60 N, both reduced to 512 x 256, the sea taken as our map's blue more
   # than 0.06 over its red: land 1.90, 2.20, 2.31 against August's map and 2.10, 2.39, 2.67 against
-  # October's (January's, with its snow, 2.66, 3.18, 4.43, is not fitted); sea 8.3, 5.7, 4.7 against
-  # all three. Start_level 5: the tiles begin when a level-4 texel (3.9 km) is wider than a screen
+  # October's (January's, with its snow, 2.66, 3.18, 4.43, is not fitted). Start_level 5: the tiles begin when a level-4 texel (3.9 km) is wider than a screen
   # pixel, about 4 200 km up at 900 pixels -- far inside where a first visit starts.
+  # WITHOUT THE SEA FLOOR (2026-10-13). The layer was BlueMarble_ShadedRelief_Bathymetry, whose water
+  # is a shaded picture of the sea floor, and `grade_sea` multiplied it 8.3, 5.7, 4.7 times to reach
+  # the day map's blue: fracture zones became long straight streaks across the Atlantic and the
+  # Pacific, and the edges of the surveys behind the bathymetry became rectangles, on what should
+  # read as water (traced on public #1027). GIBS serves the same Blue Marble without it:
+  # BlueMarble_ShadedRelief, "Blue Marble Shaded Relief (MODIS)" in the capabilities document, same
+  # tile matrix set (500m), same levels, same host, same terms. MEASURED 2026-10-13: HEAD on 3/1/4,
+  # 5/7/15, 7/31/60 and 7/40/20 of both layers is 200, image/jpeg, Access-Control-Allow-Origin: *;
+  # an open-ocean tile of the new layer is 4 724 B at every level (one flat colour) where the old
+  # one was 5 to 15 kB of sea floor. Its deep sea is sRGB 2, 5, 20 everywhere (standard deviation of
+  # blue 0.0 to 0.3 of 255 over three open-ocean tiles), its shallows are still drawn (the Bahama
+  # banks are 0.006, 0.093, 0.110 in linear light), and its land is the old layer's.
+  # `sea_lift` is our day map's sea (sRGB 30, 59, 117: 0.0130, 0.0437, 0.1779 in linear light) less
+  # that deep sea times `grade` (0.00061, 0.00152, 0.00700 times 2.0, 2.3, 2.5). A water texel is
+  # one whose blue is more than 1.6 times its red, in full 0.002 past it (the deep sea is 0.006
+  # past, every land mean measured is under), or one that is dark with no red in it and not black:
+  # the murky water beside a coast, which is as often green as blue (scene/tiles.js TILE_SEA).
   - id: earth-blue-marble
     world: earth
-    title: "Blue Marble with shaded relief and the sea floor (MODIS), 500 m per pixel"
-    url: "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/{z}/{y}/{x}.jpeg"
+    title: "Blue Marble with shaded relief (MODIS), 500 m per pixel"
+    url: "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief/default/500m/{z}/{y}/{x}.jpeg"
     capabilities: "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml"
     projection: equirectangular
     matrix: [2, 1]
@@ -184,9 +203,9 @@ tilesets:
     max_level: 7
     resolution_m: 489
     grade: [2.0, 2.3, 2.5]
-    grade_sea: [8.3, 5.7, 4.7]
+    sea_lift: [0.0118, 0.0402, 0.1604]
     baked_relief: true
-    cors: "Access-Control-Allow-Origin: * (measured 2026-10-06)"
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-13)"
     licence: 'GIBS API page: "NASA promotes full and open sharing of data"; an acknowledgement is asked for, and the credit carries it word for word'
-    credit: "The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)."
+    credit: "The Earth close up: Blue Marble with shaded relief, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)."
     source: "https://nasa-gibs.github.io/gibs-api-docs/ (read 2026-10-06)"

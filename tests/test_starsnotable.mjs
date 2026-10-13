@@ -146,8 +146,22 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const { createStars3d } = await import(join(JS, 'scene/stars3d.js'));
   const st = createStars3d(null);
   const measured = STARS_NOTABLE.filter((r) => r.radius_suns > 0);
-  check(measured.length === 10 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read 2026-10-09\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `ten rows carry a radius with its error and the paper read today (${measured.length})`);
+  check(measured.length === 11 && measured.every((r) => r.radius_err_suns > 0 && /^https:\/\/arxiv\.org\/abs\/[a-z0-9.\/-]+ \(read \d{4}-\d{2}-\d{2}\)$/.test(r.physical_source) && (r.teff_k === undefined || r.teff_k > 2500)), `eleven rows carry a radius with its error and the paper read (${measured.length})`);
   check(measured.filter((r) => r.teff_k > 0).every((r) => r.teff_err_k > 0), 'a temperature is only given with its error');
+
+  // 8a. Capella regression (issue #832): assert the measured values directly, so a wrong star's data would fail
+  {
+    const capella = STARS_NOTABLE.find((r) => r.name === 'Capella');
+    check(capella, 'Capella is in the notable stars list');
+    check(capella.radius_suns === 11.98, `Capella radius is 11.98 R_sun (got ${capella.radius_suns})`);
+    check(capella.radius_err_suns === 0.57, `Capella radius error is 0.57 (got ${capella.radius_err_suns})`);
+    check(capella.teff_k === 4970, `Capella Teff is 4970 K (got ${capella.teff_k})`);
+    check(capella.teff_err_k === 50, `Capella Teff error is 50 (got ${capella.teff_err_k})`);
+    const capRec = capella && byId.get(`hip-${capella.hip}`);
+    const capPh = capRec && st.physicalOf(capRec);
+    check(capPh && capPh.how === 'measured' && Math.abs(capPh.radiusKm / 695700 - 11.98) < 1e-9, 'Capella record says measured with radius 11.98 R_sun');
+    check(capPh && capPh.teffK === 4970, `Capella record carries Teff 4970 K (got ${capPh && capPh.teffK})`);
+  }
   for (const row of measured) {
     const rec = byId.get(`hip-${row.hip}`);
     const ph = rec && st.physicalOf(rec);
@@ -156,6 +170,10 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   const prox = byId.get('hip-70890');
   check(prox && prox.meta.widthSource && /1208\.2431/.test(prox.meta.widthSource), 'Proxima carries where its width was read');
   check(COPY.card.values.sunsWideMeasured.includes('measured') && !COPY.card.values.sunsWideMeasured.includes('estimated'), 'the card words for a measured width say measured');
+  // Capella Aa's measured radius and temperature, asserted by value: the row count alone would
+  // still pass if the numbers landed on the wrong star.
+  const capella = STARS_NOTABLE.find((r) => r.name === 'Capella');
+  check(capella && capella.radius_suns === 11.98 && capella.radius_err_suns === 0.57 && capella.teff_k === 4970 && capella.teff_err_k === 50, `Capella carries the radius and temperature of Capella Aa, 11.98±0.57 Rsun and 4970±50 K (got ${capella && capella.radius_suns}±${capella && capella.radius_err_suns} Rsun, ${capella && capella.teff_k}±${capella && capella.teff_err_k} K)`);
 }
 if (problems.length) { console.error('famous stars FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`famous stars ok: ${famous.length} rows each reach one star record with its line and source, labels name them on the ladder, the card prints the line, search finds renamed stars both ways`);

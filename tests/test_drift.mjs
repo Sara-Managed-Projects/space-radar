@@ -305,6 +305,121 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
     }
   }
 
+  // A craft in its world's shadow is passed over; in the Sun it is a place (seen 2026-10-12: the
+  // Lunar Reconnaissance Orbiter as a dot in black).
+  {
+    const lro = { id: 'lro', name: 'LRO', klass: 'probe', frame: 'moon-inertial', meta: {} };
+    const stubs = (extra) => ({
+      ...ctx,
+      layers: [{ id: 'deep-space' }],
+      isLayerOn: () => true,
+      recordsFor: () => [lro, RECORDS[0]],
+      selected: () => null,
+      cameraRig: { ...rig, state: { flying: false }, onUserInput: () => () => {} },
+      ...extra,
+    });
+    const env = () => ({
+      document: null, window: null, navigator: {}, storage: null, now: () => t, rng: seeded(5),
+      setInterval: (fn) => { fire = fn; return 1; }, clearInterval: () => { fire = null; },
+    });
+    // The Moon is drawn at x = 10 with radius 1; the craft is 0.03 above it. The Sun is on +z or on -z.
+    for (const [sunSide, wanted] of [[-1, 0], [1, 1]]) {
+      const seen = [];
+      const d3 = D.createDrift(stubs({
+        recordsFor: () => [lro],
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 10, y: 0, z: 1.03 }),
+        worlds: { drawnPositionOf: () => ({ x: 10, y: 0, z: 0 }), sunDirOf: () => ({ x: 0, y: 0, z: sunSide }), drawnRadiusUnits: () => 1 },
+      }), env());
+      d3.start({ through: ['craft'], realOnly: false, tags: true, pace: 'steady' });
+      check(d3.state().pool === 1, 'an orbiter of the Moon is in the pool');
+      check(seen.length === wanted, sunSide < 0 ? 'a craft in its world\'s shadow is passed over' : 'a craft in the Sun is visited');
+      d3.stop();
+    }
+    // Beside the shadow and not in it (off the Sun line by more than the world's radius): visited.
+    {
+      const seen = [];
+      const d4 = D.createDrift(stubs({
+        recordsFor: () => [lro],
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 11.5, y: 0, z: -3 }),
+        worlds: { drawnPositionOf: () => ({ x: 10, y: 0, z: 0 }), sunDirOf: () => ({ x: 0, y: 0, z: 1 }), drawnRadiusUnits: () => 1 },
+      }), env());
+      d4.start({ through: ['craft'], realOnly: false, tags: true, pace: 'steady' });
+      check(seen.length === 1, 'behind its world and outside the shadow cylinder it is in the Sun, and visited');
+      d4.stop();
+    }
+    // AT ARRIVAL: a selection the model layer draws as a dot, with no sunlit ground behind it, is
+    // left after PEEK_MS; one drawn large is stayed with; so is a dot over daylight.
+    const stay = (px, pos, worlds, camera) => {
+      const seen = [];
+      const r2 = { ...rig, state: { flying: false }, onUserInput: () => () => {} };
+      const d5 = D.createDrift(stubs({
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => pos,
+        worlds,
+        cameraRig: r2,
+        heroes: { drawnPx: () => px },
+        ...(camera ? { camera: { position: camera } } : {}),
+      }), env());
+      d5.start({ through: ['craft'], realOnly: false, tags: true, pace: 'calm' });
+      run(1500);
+      const arrived = d5.state().phase === 'dwell';
+      run(D.PEEK_MS + 500);
+      const after = seen.length;
+      d5.stop();
+      return { arrived, after };
+    };
+    const farFromAnything = { drawnPositionOf: () => null, sunDirOf: () => null, drawnRadiusUnits: () => 0 };
+    const tiny = stay(3, { x: 50, y: 0, z: 0 }, farFromAnything);
+    check(tiny.arrived && tiny.after === 2, `a selection drawn ${3} px across in black is left ${D.PEEK_MS} ms into the stay (selects: ${tiny.after})`);
+    const big = stay(260, { x: 50, y: 0, z: 0 }, farFromAnything);
+    check(big.arrived && big.after === 1, `one drawn 260 px across is stayed with (selects: ${big.after})`);
+    const overDay = stay(3, { x: 10, y: 0, z: 1.03 }, { drawnPositionOf: () => ({ x: 10, y: 0, z: 0 }), sunDirOf: () => ({ x: 0, y: 0, z: 1 }), drawnRadiusUnits: () => 1 });
+    check(overDay.arrived && overDay.after === 1, `a small craft over sunlit ground is a picture, and is stayed with (selects: ${overDay.after})`);
+    const moonDay = { drawnPositionOf: () => ({ x: 10, y: 0, z: 0 }), sunDirOf: () => ({ x: 0, y: 0, z: 1 }), drawnRadiusUnits: () => 1 };
+    const fromDay = stay(3, { x: 10, y: 0, z: 1.03 }, moonDay, { x: 10, y: 0.2, z: 1.5 });
+    check(fromDay.after === 1, `seen from the day side with the ground behind it, it is stayed with (selects: ${fromDay.after})`);
+    const fromNight = stay(3, { x: 10.9, y: 0, z: 0.5 }, moonDay, { x: 12, y: 0, z: -0.6 });
+    check(fromNight.after === 2, `seen from the night side, a small craft over daylight is still a dot in front of black, and is left (selects: ${fromNight.after})`);
+    const lookingAway = stay(3, { x: 10, y: 0, z: 1.03 }, moonDay, { x: 10, y: 0, z: 1.02 });
+    check(lookingAway.after === 2, `seen from below, looking away from the ground, it is left too (selects: ${lookingAway.after})`);
+    // A model that has not faded in yet is not on the screen: its size counts by how much of it shows.
+    {
+      const seen = [];
+      const d6 = D.createDrift(stubs({
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 50, y: 0, z: 0 }),
+        worlds: farFromAnything,
+        heroes: { drawnPx: () => 260, drawnOpacity: () => 0.05 },
+      }), env());
+      d6.start({ through: ['craft'], realOnly: false, tags: true, pace: 'calm' });
+      run(1500 + D.PEEK_MS + 500);
+      check(seen.length === 2, `a model 260 px tall of which a twentieth shows is a dot still, and is left (selects: ${seen.length})`);
+      d6.stop();
+    }
+    // Every craft a dot (the models never came): HURRY_MOST stays are left early, and the next is kept.
+    {
+      const seen = [];
+      const d7 = D.createDrift(stubs({
+        select: (record) => { seen.push(record.id); },
+        positionOfRecord: () => ({ x: 50, y: 0, z: 0 }),
+        worlds: farFromAnything,
+        heroes: { drawnPx: () => 0 },
+      }), env());
+      d7.start({ through: ['craft'], realOnly: false, tags: true, pace: 'calm' });
+      for (let k = 0; k < D.HURRY_MOST + 1; k++) run(1500 + D.PEEK_MS + 500);
+      const after = seen.length;
+      run(3000);
+      check(after === D.HURRY_MOST + 1 && seen.length === after && d7.state().phase === 'dwell' && D.HURRY_MOST >= 2 && D.HURRY_MOST <= 5, `${D.HURRY_MOST} dots running are left and the next stay is kept (selects: ${after}, then ${seen.length})`);
+      d7.stop();
+    }
+    check(D.SMALL_PX >= 12 && D.SMALL_PX <= 60 && D.PEEK_MS >= 2000 && D.PEEK_MS <= 8000, 'the dot is a few tens of pixels and the look a few seconds in');
+    const heroes = read('site/js/scene/heroes.js');
+    check(/drawnPx\(id\) \{/.test(heroes) && /entry\.px = /.test(heroes), 'scene/heroes.js says how many pixels across it draws a record');
+    check(/ctx\.heroes = heroes/.test(read('site/js/main.js')), 'and main.js hands the model layer to the drift');
+  }
+
   // From the ground, and under a reel, it does not start.
   const ground = D.createDrift({ ...ctx, skyView: { active: true } }, { document: null, window: null, navigator: {}, storage: null });
   check(ground.apply({ drift: '1' }) === false && !ground.active, 'from the ground nothing flies');

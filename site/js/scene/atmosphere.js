@@ -949,14 +949,18 @@ export function settleEarthAir(shell, nowMs) {
 /**
  * How finely the shell is marched: EARTH_AIR.steps for a tier, EARTH_AIR.latchedSteps under the
  * frame latch (which is for good: a later tier does not raise it again).
+ * `how.top`: the most steps the shader takes, whatever the tier (the quality setting's Ultra).
+ * `how.release`: `latched` false lets the shell go again (the setting's Low was left; the real latch
+ * never passes it).
  * @param {THREE.Mesh} shell   createEarthAir()'s mesh (the Earth's mesh.userData.atmosphere)
  */
-export function setEarthAirSteps(shell, tier, latched = false) {
+export function setEarthAirSteps(shell, tier, latched = false, how = {}) {
   const u = shell && shell.material && shell.material.uniforms;
   if (!u || !u.uSteps) return 0;
   if (latched) shell.userData.latched = true;
+  else if (how.release) shell.userData.latched = false;
   const t = Math.min(EARTH_AIR.steps.length - 1, Math.max(0, tier | 0));
-  u.uSteps.value = shell.userData.latched ? EARTH_AIR.latchedSteps : EARTH_AIR.steps[t];
+  u.uSteps.value = shell.userData.latched ? EARTH_AIR.latchedSteps : how.top ? EARTH_AIR.maxSteps : EARTH_AIR.steps[t];
   return u.uSteps.value;
 }
 

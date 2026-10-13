@@ -11,6 +11,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
 | `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
+| `pr-pictures.sh` | put pictures into a pull request's description from the command line: `tools/pr-pictures.sh <number> shot.png="caption" ...` (shrunk, kept on the branch `screens`, shown under "Pictures"). A pull request that changes what is drawn owes one: `scripts/pr_pictures.py` |
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 ## The regression walk
@@ -113,7 +114,12 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `worlds` | the eight planets and Pluto, each on its own stage in five pictures: as framed, a third and two thirds of a turn later from the sunward side (the clock turns the world, so every longitude is seen in daylight), and over each pole. A torn, mirrored or flat-filled map is in a picture |
 | `sun` | the Sun's detail on: arrival, closer, the limb, the corona, then inside a real flare and two hours into a real coronal mass ejection when the two feeds are there |
 | `jupiter` | the stage, both poles, close on a belt, the clock sped up |
+| `saturn` | the stage, the rings wide, edge-on and from the unlit side at today's Sun; then at the solstice of May 2017, when the north was lit: the rings large, over the A ring's outer edge at three heights (the Encke and Keeler gaps, the grains), the C ring, the Cassini Division, the north pole and its vortex. Fails when the fine structure never came in |
+| `sea` | open ocean from close, where the Earth's map tiles are on: the mid-Atlantic's and the north-east Pacific's fracture zones straight down from 2 000 km and 600 km by day, as drawn and with the clouds taken off; then the Bahama banks and the coast of Senegal. Each note names the tile layer. Run it with `-f ref=main` for the same places on main |
 | `lights` | each bright planet as a point of light beside a small Earth |
+| `mars` | the stage and the whole disc at noon; then the clock set so that Olympus Mons is near its evening terminator (three distances) and its morning one, Valles Marineris at a low Sun, the terminator square-on, both poles, noon again over Tharsis. Fails when Mars never wore its relief and its height map |
+| `clouds` | the Earth's clouds standing up (scene/earth.js `CLOUD_PARALLAX`), every view twice from the same place at the same clock: with the parallax, and with its steps at 0, which is main's flat layer. The whole Earth and straight down (each pair must be one picture); 420 km up with the day's tallest storm on the horizon and 1 000 km to its side, also as tier 2 steps it; the tallest cloud in the last light on the horizon, along the terminator and from above; the Measured look; following the station; the night side. Fails when the parallax is not on as the app booted, or is still on under Measured |
+| `settings` | the Quality and Look rows of What to show (spec 0073): opened with the key L, photographed and measured (one line each, no label cut), each quality chosen through its own button with what `ctx.quality` then reports, then Measured and Film on Jupiter close with what the weather module says is drawn. Run it at 1440 x 900 and again with `-f mobile=true` |
 | `frametime` | three scenes (home; Jupiter filling the view with its weather; the Sun's detail), the median and 95th percentile of 120 frame intervals each |
 | `model` | one craft's model in the app: the record is selected, the probe waits for its file to replace the procedural shape, moves the clock into sunlight if the craft is in the Earth's shadow, then the app's own framing, four sides and one from overhead (the camera kept above the craft). Default: the Cygnus cargo ship on the stations layer (if none is up that day, the model on the ISS's record for the picture only, and the summary says so); `-f subject=<record id>` for any other. A route with both a build and a file is photographed again wearing the procedural shape the file replaces. A route that is still procedural, on a tree that has `models/<build>-candidate.glb`, is photographed again wearing that candidate. Where the served tree has `<file>-textured.glb`, the same again with that file's own texture, unlit |
 
@@ -137,6 +143,12 @@ every loader, the tier and the clock run as they do for a visitor. It is for too
 carries it (it is not in `ui/urlstate.js` `KEYS`) and it is ignored beside `embed=1`.
 `window.spaceRadar.latch.held` says whether it is on. (The first probes pretended the page was
 hidden instead, which also stopped the loader that turns the Sun's detail on.)
+
+**The quality and the look in a probe.** Neither has a query key of its own: the quality is one
+`localStorage` key (`sr.quality`: `low`, `medium`, `high`, `ultra`; absent is Auto) read before the
+tier is acted on, and a probe changes it as a visitor does, through the row's buttons, or with
+`sr.quality.setChoice('high')`; `?tier=0|1|2` still pins what the DEVICE is taken to be (and so what
+is offered). The look is `sr.drawn.set('measured')`, or `#drawn=measured` in the address.
 
 **Frame times are relative.** On a runner the GL is SwiftShader or llvmpipe: `frametime`'s numbers
 compare one run with another on the same kind of runner and mean nothing in absolute terms. For
