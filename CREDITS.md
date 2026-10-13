@@ -34,6 +34,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
 | The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
 | The shapes of the first Starlink generation, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-three-commercial-craft-built-from-dimensions--the-first-starlink-generation-umbra-iceye-2026-10-13) |
+| The shapes of GPS Block IIR, IIF and III, Galileo, Michibiki, NavIC and SAOCOM | built by us in code from published dimensions | public domain, GODL-India or CC BY 4.0 where a picture was used; ours | [3b-8](#3b-8-seven-more-built-from-dimensions--gps-by-block-galileo-michibiki-navic-saocom-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -959,6 +960,40 @@ not shipped: in the app it was no better than the procedural shape.
 No logo and no lettering is on any of the three: the operators' names and marks are their
 trademarks. Starlink is SpaceX's, Umbra is Umbra Lab's and ICEYE is ICEYE's; none of them
 endorses Space Radar, and none of them made or approved these shapes.
+
+
+## 3b-8. Seven more built from dimensions — GPS by block, Galileo, Michibiki, NavIC, SAOCOM (2026-10-13)
+
+The sixth batch: the navigation satellites and one radar satellite. No agency publishes a model of
+any of these under terms this project can use (the survey of 2026-10-13 looked), and no
+image-to-3D model was used: each file was written in code from numbers in agencies' own pages
+and reference pages, each opened and quoted in its `registry/models.yaml` row with what is NOT
+cited named beside it. Their cards say "shape built from published dimensions and pictures;
+details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `gps-iir.glb` (53 KB) | GPS Block IIR and IIR-M: a 2 m cube, eight helices in a circle round four on the Earth face, two lattice antennas on booms, two wings of two panels, 11.4 m tip to tip | eoPortal's table of the GPS blocks (<https://www.eoportal.org/satellite-missions/gps>); Lockheed Martin's slides on the IIR antenna panel, published by the US Coast Guard Navigation Center (<https://www.navcen.uscg.gov/sites/default/files/pdf/gps/GPS_Block_IIR_IIR_M_Antenna_Panel_Pattern_Marquis_Aug2015_revised.pdf>); the US government's painting "GPS-IIR" (<https://commons.wikimedia.org/wiki/File:GPS-IIR.jpg>) (all read 2026-10-13) | numbers are facts; the picture is in the public domain |
+| `gps-iif.glb` (53 KB) | GPS Block IIF: a gold box, an eight-sided antenna plate with twelve helices in two circles, a boom with a canister, two wings of three panels, 13.11 m tip to tip | the same table; ESA's slides on the GPS antenna assembly (<https://files.igs.org/pub/resource/pubs/workshop/2012/Poland%202012%20-%20P09%20Dilssner%20PR4.pdf>); the US Air Force's painting "Navstar-2F" (<https://commons.wikimedia.org/wiki/File:Navstar-2F.jpg>) (read 2026-10-13) | numbers are facts; the picture is in the public domain |
+| `gps-iii.glb` (64 KB) | GPS III: a tall dark body 3.4 m long, a pale antenna deck wider than it, a long mast, two wings of two broad panels, 15 m tip to tip | the same table; the US Air Force's render "GPS Block IIIA" (<https://commons.wikimedia.org/wiki/File:GPS_Block_IIIA.jpg>) (read 2026-10-13) | numbers are facts; the picture is in the public domain |
+| `galileo-foc.glb` (42 KB) | Galileo, the Full Operational Capability craft: a black slab 2.53 x 1.2 x 1.1 m with its largest face and a 1.4 m antenna to the Earth, two arrays of 5.0 x 1.082 m, 14.67 m tip to tip | EUSPA's Galileo Satellite Metadata (<https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata>); eoPortal (<https://www.eoportal.org/satellite-missions/galileo-foc>); ESA's page on the satellite's parts (<https://www.esa.int/Applications/Satellite_navigation/Galileo/Satellite_anatomy>), for words and numbers only. A visitor's photograph of a model, by Pouyana, CC BY-SA 3.0 (<https://commons.wikimedia.org/wiki/File:GalileoSatModel.jpg>), was LOOKED AT for where the antennas sit; nothing of it is reproduced or traced (read 2026-10-13) | numbers are facts; NO ESA PICTURE WAS USED; the share-alike picture is not in the file |
+| `michibiki.glb` (57 KB) | QZSS Michibiki 2 and 4: a black body 2.4 m square, 6.2 m from nozzle to the top of the cone that covers its antenna, two wings of 8.3 m, 19 m tip to tip | the Cabinet Office of Japan's "QZS-2 Satellite Information" (<https://qzss.go.jp/en/technical/qzssinfo/khp0mf0000000wuf-att/spi-qzs2_c.pdf>): its numbers and its dimension drawing, read and not reproduced. Compared with the render "QZS-1R CG05" from the Quasi-Zenith Satellite System website (<https://commons.wikimedia.org/wiki/File:QZS-1R_CG05.png>) (read 2026-10-13) | numbers are facts; the render is CC BY 4.0 and is not in the file |
+| `irnss.glb` (41 KB) | NavIC's first generation (IRNSS-1A to 1I): a 1.5 m cube, a round antenna plate and two red horns on a yellow Earth face, one panel a wing | ISRO's page of IRNSS-1A (<https://www.isro.gov.in/IRNSS_1A.html>) and eoPortal (<https://www.eoportal.org/satellite-missions/irnss>); ISRO's drawing "IRNSS Series 1" (<https://commons.wikimedia.org/wiki/File:IRNSS_Series_1.jpg>) (read 2026-10-13). The wings' size is our estimate | numbers are facts; the drawing is under the Government Open Data License - India |
+| `saocom.glb` (58 KB) | SAOCOM 1A and 1B: a 10 m by 3.5 m radar antenna of seven panels, the bus lying across its back, a solar wing of three panels standing beside it | eoPortal (<https://www.eoportal.org/satellite-missions/saocom>) for CONAE's numbers; CONAE's render "SAOCOM 3D" (<https://commons.wikimedia.org/wiki/File:SAOCOM_3D.png>) (read 2026-10-13) | numbers are facts; the render is CC BY 4.0 and is not in the file |
+| all seven | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and a US government painting of a GPS Block IIR satellite`;
+`3D model: built by Space Radar from published dimensions and a US Air Force painting of a GPS Block IIF satellite`;
+`3D model: built by Space Radar from published dimensions and a US Air Force render of a GPS III satellite`;
+`3D model: built by Space Radar from the dimensions in EUSPA's Galileo satellite metadata`;
+`3D model: built by Space Radar from the dimensions in the Cabinet Office of Japan's QZS-2 satellite information; compared with a render from the Quasi-Zenith Satellite System website (CC BY 4.0)`;
+`3D model: built by Space Radar from ISRO's published dimensions and drawing of the IRNSS-1 series (ISRO, GODL-India)`;
+`3D model: built by Space Radar from published dimensions and CONAE's render of SAOCOM (CONAE, CC BY 4.0)`
+
+No logo, lettering, flag or insignia is on any of the seven. The US Space Force, Lockheed Martin,
+Boeing, the European Union, EUSPA, ESA, OHB, the Cabinet Office of Japan, ISRO, CONAE and INVAP
+do not endorse Space Radar, and none of them made or approved these shapes.
 
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0

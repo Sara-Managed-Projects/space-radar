@@ -70,6 +70,10 @@ for (const [table, map] of Object.entries(REAL_MODELS)) for (const [key, entry] 
 for (const year of [2020, 2025]) {
   routes.push({ table: 'named', key: `starlink@${year}`, entry: realModelFor({ id: `sl-${year}`, name: 'STARLINK-1007', klass: 'satellite', layer: 'active', meta: { noradId: 99000, launchYear: year } }) });
 }
+// Batch six: the navigation rows pick a file from the record's launch year or name; each answer is a route here.
+for (const [name, year] of [['NAVSTAR 56 (USA 180)', 2004], ['NAVSTAR 71 (USA 256)', 2014], ['NAVSTAR 81 (USA 319)', 2021], ['GSAT0210 (GALILEO 13)', 2016], ['QZS-2 (MICHIBIKI-2)', 2017], ['IRNSS-1B', 2014]]) {
+  routes.push({ table: 'named', key: `${name}@${year}`, entry: realModelFor({ id: `nav-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99200, launchYear: year } }) });
+}
 check(routes.length > 150, `scene/realmodels.js routes were read (${routes.length})`);
 const routedFiles = new Set(routes.map((r) => r.entry && r.entry.file).filter(Boolean));
 
@@ -219,6 +223,44 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     ['ONEWEB-0012', 'satellite', 'starlink-v1.glb'], ['KUIPER-00008', 'satellite', 'starlink-v1.glb']]) {
     const got = realModelFor({ id: `b5n-${name}`, name, klass, layer: 'active', meta: { noradId: 99101, launchYear: 2020 } });
     check(!got || got.file !== file, `${name} (klass ${klass}) does not wear ${file}`);
+  }
+  // THE SIXTH BATCH (2026-10-13, public #985, #986, #989, #990, #978): the navigation constellations keep every
+  // key and gate they had; a file is an answer chosen from the record's own name or launch year.
+  const nav = (name, launchYear, klass = 'satellite', noradId = 99300) => realModelFor({ id: `b6-${name}`, name, klass, layer: 'active', meta: { noradId, launchYear } });
+  for (const [name, year, file, build, called] of [
+    ['NAVSTAR 43 (USA 132)', 1997, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'], ['NAVSTAR 46 (USA 145)', 1999, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'],
+    ['NAVSTAR 64 (USA 206)', 2009, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'], ['GPS BIIR-5  (PRN 22)', 2000, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'],
+    ['NAVSTAR 65 (USA 213)', 2010, 'gps-iif.glb', 'navigation-gps-iif', 'a GPS Block IIF navigation satellite'], ['NAVSTAR 76 (USA 266)', 2016, 'gps-iif.glb', 'navigation-gps-iif', 'a GPS Block IIF navigation satellite'],
+    ['NAVSTAR 77 (USA 289)', 2018, 'gps-iii.glb', 'navigation-gps-iii', 'a GPS III navigation satellite'], ['NAVSTAR 86 (USA 585)', 2026, 'gps-iii.glb', 'navigation-gps-iii', 'a GPS III navigation satellite'],
+    ['GSAT0201 (GALILEO 5)', 2014, 'galileo-foc.glb', 'navigation', 'a Galileo navigation satellite'], ['GSAT0234 (GALILEO 34)', 2025, 'galileo-foc.glb', 'navigation', 'a Galileo navigation satellite'],
+    ['QZS-2 (MICHIBIKI-2)', 2017, 'michibiki.glb', 'navigation', 'a QZSS navigation satellite'], ['QZS-4 (MICHIBIKI-4)', 2017, 'michibiki.glb', 'navigation', 'a QZSS navigation satellite'],
+    ['IRNSS-1A', 2013, 'irnss.glb', 'navigation', 'an IRNSS navigation satellite'], ['IRNSS-1I', 2018, 'irnss.glb', 'navigation', 'an IRNSS navigation satellite']]) {
+    const got = nav(name, year);
+    check(got && got.file === file && got.build === build && got.name === called && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (launched ${year}) wears ${file} over the build ${build}, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  // What no file was built for keeps the family box and wears NO file: another block, another maker's bus, another antenna.
+  for (const [name, year] of [['NAVSTAR 38 (USA 135)', 1997], ['NAVSTAR 30 (USA 100)', 1996], ['NAVSTAR 90 (USA 999)', 2017], ['NAVSTAR 81 (USA 319)', undefined],
+    ['GSAT0101 (GALILEO-PFM)', 2011], ['GSAT0103 (GALILEO-FM3)', 2012], ['GSAT0301 (GALILEO 35)', 2027],
+    ['QZS-1R (MICHIBIKI-1R)', 2021], ['QZS-3 (MICHIBIKI-3)', 2017], ['QZS-6 (MICHIBIKI-6)', 2025], ['QZS-7 (MICHIBIKI-7)', 2026],
+    ['NVS-01 (IRNSS-1J)', 2023], ['IRNSS-1J', 2023], ['BEIDOU-3 M1', 2017], ['BEIDOU-2 G1', 2010]]) {
+    const got = nav(name, year);
+    check(got && String(got.build).startsWith('navigation') && !got.file && !got.made && !got.axes && got.generic === true, `${name} (launched ${year}) keeps a procedural navigation shape and wears no file: ${JSON.stringify(got)}`);
+  }
+  // One constellation's or block's file never reaches another's craft, debris, or a communications satellite that carries a navigation payload.
+  const sixth = ['gps-iir.glb', 'gps-iif.glb', 'gps-iii.glb', 'galileo-foc.glb', 'michibiki.glb', 'irnss.glb', 'saocom.glb'];
+  for (const [name, year, klass, id] of [['NAVSTAR 56 (USA 180) DEB', 2004, 'debris'], ['GSAT0210 (GALILEO 13) DEB', 2016, 'debris'], ['IRNSS-1A DEB', 2013, 'debris'], ['QZS-2 DEB', 2017, 'debris'],
+    ['GSAT-10', 2012, 'satellite'], ['GSAT-15', 2015, 'satellite'], ['GSAT0210', 2016, 'satellite'], ['COSMOS 2433 [GLONASS-M]', 2007, 'satellite', 32275], ['GLONASS 701K', 2011, 'satellite'],
+    ['INMARSAT 4-F2', 2005, 'satellite'], ['SES-5', 2012, 'satellite'], ['QZS-20', 2030, 'satellite'], ['AQZS-2', 2017, 'satellite'],
+    ['SAOCOM 1A DEB', 2018, 'debris'], ['SAOCOM 2A', 2030, 'satellite'], ['SENTINEL-1A', 2014, 'satellite', 39634], ['TERRASAR-X', 2007, 'satellite', 31698], ['PAZ', 2018, 'satellite']]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !sixth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch six's files: ${JSON.stringify(got)}`);
+  }
+  const worn = (name, year, file) => { const g = nav(name, year); return g && g.file === file; };
+  check(!worn('NAVSTAR 65 (USA 213)', 2010, 'gps-iir.glb') && !worn('NAVSTAR 64 (USA 206)', 2009, 'gps-iif.glb') && !worn('NAVSTAR 76 (USA 266)', 2016, 'gps-iii.glb') && !worn('NAVSTAR 77 (USA 289)', 2018, 'gps-iif.glb'), 'the edges of the GPS blocks: 2009 is IIR, 2010 and 2016 are IIF, 2018 is III');
+  // SAOCOM 1A and 1B by number, as themselves; the radar blade is only what is drawn while the file loads.
+  for (const [norad, name] of [[43641, 'SAOCOM 1A'], [46265, 'SAOCOM 1B']]) {
+    const got = sat(norad, name);
+    check(got && got.file === 'saocom.glb' && got.build === 'radar' && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${name} (${norad}) wears saocom.glb as itself: ${JSON.stringify(got)}`);
   }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
