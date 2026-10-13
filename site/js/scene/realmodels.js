@@ -147,7 +147,13 @@ export const REAL_MODELS = {
     6153: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 3 (COPERNICUS)', generic: true },
     41337: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'ASTRO-H (HITOMI)', generic: true },
     42758: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'HXMT (HUIYAN)', generic: true },
-    57800: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'XRISM', generic: true },
+    // XRISM's own shape since 2026-10-13 (public #968): xrism.glb, GENERATED from two frames of NASA
+    // Goddard's turntable render and its two solar paddles then REPLACED by flat ones built in code
+    // (registry/models.yaml row `xrism`). The build stays as what is drawn while the file is on its
+    // way. Not `generic` any more: it is this craft, and `made: 'render'` makes the card say the
+    // shape came from an artist's render. Hitomi (41337) above keeps the generic telescope: the
+    // same bus with a six-metre optical bench this file does not have (public #969).
+    57800: { build: 'space-telescope', file: 'xrism.glb', colour: 'telescope', name: 'XRISM', catalogue: 'XRISM', made: 'render' },
     // THE FIRST BATCH OF THE "3D model:" ISSUES (2026-10-13). NuSTAR had no route at all: on the layer
     // of satellites worth knowing it was the generic satellite, a box with a dish, and it is two small
     // boxes ten metres apart on a lattice mast, which is the whole of what a person recognises
@@ -155,6 +161,11 @@ export const REAL_MODELS = {
     // (registry/models.yaml row `nustar`, kind `built-from-dimensions`; no image-to-3D model can draw
     // a lattice). `made: 'dimensions'` is what makes the card say so. Not `generic`: it is this craft.
     38358: { file: 'nustar.glb', colour: 'telescope', name: 'NuSTAR', catalogue: 'NUSTAR', made: 'dimensions' },
+    // NOAA 21 (JPSS-2), public #994. By NUMBER and only this number: NOAA 20 is a different bus and
+    // wears NASA's Suomi model (43013, below); the name route's comment further down says why NOAA 21
+    // was left on the generic shape until it had one of its own. noaa21.glb: the body generated from
+    // NOAA's render with the body cut out by hand, the five-panel wing built in code.
+    54234: { file: 'noaa21.glb', colour: 'satellite', name: 'NOAA-21 (JPSS-2)', catalogue: 'NOAA 21 (JPSS-2)', made: 'render' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
@@ -351,7 +362,11 @@ export const REAL_MODELS = {
     // because RISAT-1 flew a PLANAR active array and would take the umbrella if it ever returned
     // to the catalogue. A key that is right about every object that exists today and wrong about
     // one that might is a key worth not writing.
-    10967: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SEASAT 1', generic: true },
+    // SEASAT HAS ITS OWN SHAPE since 2026-10-13 (public #946): an Agena stage 21 m long with the first
+    // radar antenna flown in orbit hung off its side, which is nothing like the bus-and-blade the
+    // `radar` build draws for RCM. seasat.glb: the trunk generated from JPL's artist's concept, the
+    // wings, the antenna, the sticks and the dishes built in code. The build is what is drawn first.
+    10967: { build: 'radar', file: 'seasat.glb', colour: 'satellite', name: 'Seasat', catalogue: 'SEASAT 1', made: 'render' },
     44322: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-1', generic: true },
     44323: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-3', generic: true },
     44324: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-2', generic: true },
