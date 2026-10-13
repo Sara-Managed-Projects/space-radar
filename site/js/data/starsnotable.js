@@ -143,7 +143,12 @@ export const STARS_NOTABLE = [
     "hip": 24608,
     "name": "Capella",
     "why": "The sixth-brightest star in the sky looks like one star and is four, in two pairs. The bright pair are yellow giants of about 2.5 Suns each.",
-    "source": "https://en.wikipedia.org/wiki/Capella (read 2026-09-22)"
+    "source": "https://en.wikipedia.org/wiki/Capella (read 2026-10-11)",
+    "radius_suns": 11.98,
+    "radius_err_suns": 0.57,
+    "teff_k": 4970,
+    "teff_err_k": 50,
+    "physical_source": "https://arxiv.org/abs/1505.07461 (read 2026-10-11)"
   },
   {
     "hip": 24436,
