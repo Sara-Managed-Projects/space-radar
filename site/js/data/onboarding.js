@@ -39,7 +39,7 @@ export const STEPS = [
       "card"
     ],
     "say": "Its card says what it is and where it is now.",
-    "ask": "Try an action: fly to it, follow it, ride along.",
+    "ask": "Try an action: follow it, or ride along with it.",
     "awaits": "press",
     "then": "next",
     "prepare": [
@@ -122,7 +122,7 @@ export const VOICE = {
   "clips": {
     "move": 6.72,
     "find": 6.15,
-    "card": 6.17,
+    "card": 6.06,
     "time": 6.75,
     "places": 6.2,
     "layers": 6.01,

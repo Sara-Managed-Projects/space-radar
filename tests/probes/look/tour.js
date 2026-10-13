@@ -21,11 +21,22 @@ const judge = (name) => {
   }
   return m;
 };
+/**
+ * The ink is drawn on by a transition, and a software renderer at a phone's three pixels a pixel
+ * starts it late (the first phone run photographed an arrow a quarter drawn): wait until the
+ * arrow's head, the last stroke, is whole. A head that never is, is a problem.
+ */
+const inkDrawn = async (name) => {
+  const whole = await until(() => { const h = document.querySelector('.sr-tour__line.sr-tour__head'); return h && parseFloat(getComputedStyle(h).strokeDashoffset) < 0.02; }, 10000, 200);
+  if (!whole) out.problems.push(name + ': the ink was not drawn on in ten seconds');
+};
 /** Wait for a step to be up (its caption on the page), give the ink its time, photograph it. */
 const stepShot = async (n, id, note) => {
   const up = await until(() => tour.step() && tour.step().id === id && tour.measure() && tour.measure().card, 12000, 150);
   if (!up) { out.problems.push(id + ': the step never came up (now: ' + (tour.step() ? tour.step().id : 'none') + ')'); return false; }
-  await sleep(2500);
+  await sleep(1500);
+  await inkDrawn(id);
+  await sleep(600);
   const m = judge(id);
   out.steps.push({ id, ...m });
   await shot(n + '-' + id, note);
@@ -34,7 +45,9 @@ const stepShot = async (n, id, note) => {
 
 // --- the first visit's arrow -------------------------------------------------------------------
 await tour.invite();
-await sleep(2500);
+await sleep(1500);
+await inkDrawn('invite');
+await sleep(600);
 out.invite = judge('invite');
 out.inviting = tour.isInviting();
 await shot('0-invite', 'a first visit: the arrow at the tour\'s button and its one line; no scrim, nothing started');

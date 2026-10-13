@@ -67,7 +67,8 @@ steps:
     teaches: card
     hooks: [card-actions, card]
     say: "Its card says what it is and where it is now."
-    ask: "Try an action: fly to it, follow it, ride along."
+    # "ride along" on its own was heard as "right along" (scripts/listen_check.py, 2026-10-14).
+    ask: "Try an action: follow it, or ride along with it."
     awaits: press
     then: next
     prepare: [card, sheet]
