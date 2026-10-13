@@ -262,6 +262,24 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = sat(norad, name);
     check(got && got.file === 'saocom.glb' && got.build === 'radar' && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${name} (${norad}) wears saocom.glb as itself: ${JSON.stringify(got)}`);
   }
+  // BATCH SEVEN (public #992, #966, #979, #984): MetOp-B and -C, XMM-Newton, TerraSAR-X and TanDEM-X by number; StriX by name.
+  for (const [norad, cat, name, file, build] of [[38771, 'METOP-B', 'MetOp-B', 'metop.glb', undefined], [43689, 'METOP-C', 'MetOp-C', 'metop.glb', undefined],
+    [25989, 'XMM-NEWTON', 'XMM-Newton', 'xmm-newton.glb', undefined], [31698, 'TERRASAR-X', 'TerraSAR-X', 'terrasar-x.glb', 'radar'], [36605, 'TANDEM-X', 'TanDEM-X', 'terrasar-x.glb', 'radar']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  for (const name of ['STRIX-1', 'STRIX-3', 'STRIX-12']) {
+    const got = nav(name, 2024);
+    check(got && got.file === 'strix.glb' && got.build === 'radar' && got.generic === true && got.made === 'dimensions' && got.axes === 'app' && got.name === 'a StriX radar satellite', `${name} wears strix.glb over the radar blade, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  // None of the four files reaches another craft: a newer MetOp, debris, a rocket body, the same design under another name, a name that only contains the word.
+  const seventh = ['metop.glb', 'xmm-newton.glb', 'terrasar-x.glb', 'strix.glb'];
+  for (const [name, year, klass, id] of [['METOP-SGA1', 2025, 'satellite', 65140], ['METOP-A', 2006, 'satellite', 29499], ['METOP-B DEB', 2012, 'debris'], ['FREGAT R/B', 2012, 'rocket-body'],
+    ['XMM-NEWTON DEB', 1999, 'debris'], ['ARIANE 5 R/B', 1999, 'rocket-body'], ['PAZ', 2018, 'satellite'], ['TERRASAR-X DEB', 2007, 'debris'], ['STRIX-1 DEB', 2022, 'debris'],
+    ['ASTRIX-1', 2024, 'satellite'], ['ICEYE-X2', 2018, 'satellite'], ['SENTINEL-1A', 2014, 'satellite', 39634], ['NOAA 21 (JPSS-2)', 2022, 'satellite', 54234], ['XRISM', 2023, 'satellite', 57800]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !seventh.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch seven's files: ${JSON.stringify(got)}`);
+  }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');

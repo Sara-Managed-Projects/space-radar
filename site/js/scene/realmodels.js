@@ -226,6 +226,30 @@ export const REAL_MODELS = {
     // of their cited sizes where NOAA's drawing of the nadir deck puts them, so `made: 'dimensions'`.
     // `axes: 'app'`: the instruments are on the file's +Z, and the app turns that face to the Earth.
     54234: { file: 'noaa21.glb', colour: 'satellite', name: 'NOAA-21 (JPSS-2)', catalogue: 'NOAA 21 (JPSS-2)', made: 'dimensions', axes: 'app' },
+    // BATCH SEVEN (2026-10-13; public #992, #966): two craft that had no route at all and so wore the
+    // shape of their class, a box with two wings and a dish. Both by NUMBER, both built in code from
+    // cited metres (registry/models.yaml rows `metop`, `xmm-newton`, kind `built-from-dimensions`);
+    // no ESA or EUMETSAT picture or model was used (their terms do not allow it), the layout is read
+    // off NASA's public-domain pictures.
+    //   metop.glb       MetOp-B and MetOp-C, Europe's polar weather satellites: a gold body 6.3 m long
+    //                   and 2.5 m square, the instruments on its Earth face, ASCAT's two 3 m antenna
+    //                   arms in a V, and ONE wing beyond the service module, 17.6 m from the far end
+    //                   of the body to its tip. MetOp-A (29499) was retired in 2021 and is in no
+    //                   group the app loads; `METOP-SGA1` (a different, newer craft) is NOT these and
+    //                   has no row: it keeps the shape of its class.
+    //                   `axes: 'app'`: the instrument face to the Earth and the wing's axis square to
+    //                   the Sun, the wing turned 45 degrees toward the Sun's side. The real wing turns
+    //                   once an orbit to follow the Sun; the app's does not turn.
+    //   xmm-newton.glb  ESA's X-ray observatory: 10 m from mirrors to cameras (a 6.8 m tube between
+    //                   a service module and the focal plane), three 70 cm mirror modules at one end,
+    //                   two fixed wings of three panels, 16 m tip to tip.
+    //                   `axes: 'app'`: the tube stands on end, mirrors to the zenith, wings square to
+    //                   the Sun with their cells to it. TRUE of the real craft: the wings are fixed
+    //                   with their cells to the Sun and the telescope looks square to the Sun. NOT
+    //                   TRUE: it holds a star for hours wherever that star is, not the zenith.
+    38771: { file: 'metop.glb', colour: 'satellite', name: 'MetOp-B', catalogue: 'METOP-B', made: 'dimensions', axes: 'app' },
+    43689: { file: 'metop.glb', colour: 'satellite', name: 'MetOp-C', catalogue: 'METOP-C', made: 'dimensions', axes: 'app' },
+    25989: { file: 'xmm-newton.glb', colour: 'telescope', name: 'XMM-Newton', catalogue: 'XMM-NEWTON', made: 'dimensions', axes: 'app' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
@@ -383,8 +407,20 @@ export const REAL_MODELS = {
     // the element groups the app loads (registry/models.yaml says so on its row).
     23710: { file: 'radarsat1.glb', colour: 'satellite', name: 'RADARSAT-1', catalogue: 'RADARSAT-1' },
     32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
-    31698: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TERRASAR-X', generic: true },
-    36605: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TANDEM-X', generic: true },
+    // TERRASAR-X AND TANDEM-X HAVE A FILE OF THEIR OWN since batch seven (2026-10-13; public #979):
+    // terrasar-x.glb, built in code from DLR's numbers as eoPortal gives them (registry/models.yaml row
+    // `terrasar-x`). WHAT THE FILE CORRECTS: these two are not a blade under a bus with two wings. The
+    // craft is a six-sided body 5 m long with NO wings: the 4.8 m antenna lies on one face, 33.8
+    // degrees off the nadir, the solar array is fixed on the opposite face, and a 3.3 m boom carries
+    // the downlink antenna toward the Earth. The `radar` build stays as what is drawn while the file
+    // is on its way. Not `generic` any more: the file is these two craft ("TanDEM-X is identical to
+    // its twin", eoPortal). PAZ (by name, below) is the same Airbus design by this file's own comment
+    // further down; no page opened for this batch says so in a sentence, so PAZ keeps the blade.
+    // `axes: 'app'`, AND THIS IS HOW THEY FLY: a dawn-dusk orbit, so the Sun is square to the track;
+    // the long axis along the track (the app's X, square to the Sun), the array up and toward the Sun,
+    // the antenna down and to the side away from it.
+    31698: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'TerraSAR-X', catalogue: 'TERRASAR-X', made: 'dimensions', axes: 'app' },
+    36605: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'TanDEM-X', catalogue: 'TANDEM-X', made: 'dimensions', axes: 'app' },
     31598: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 1', generic: true },
     32376: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 2', generic: true },
     33412: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 3', generic: true },
@@ -716,7 +752,18 @@ export const REAL_MODELS = {
     umbra: { build: 'radar-mesh', file: 'umbra.glb', colour: 'satellite', name: 'an Umbra radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     'qps-sar': { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
     iceye: { build: 'radar', file: 'iceye.glb', colour: 'satellite', name: 'an ICEYE radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
-    strix: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    // STRIX HAS A FILE OF ITS OWN since batch seven (2026-10-13; public #984): strix.glb, built in code
+    // from Synspective's numbers as eoPortal tabulates them (registry/models.yaml row `strix`): a 5 m
+    // by 0.8 m antenna of seven panels with a 0.8 x 1.0 x 0.8 m bus behind the middle one, and solar
+    // cells on the BACK of the antenna's wings. The shared `radar` build is Sentinel-1's 12 m blade on
+    // a bus with two wings of its own, which a 100 kg StriX is not. BY NAME and klass-gated, as before:
+    // the fleet grows by the launch; CelesTrak's names in the live saved data (data/v1/
+    // celestrak-active.cols.json, read 2026-10-13) are `STRIX-1` to `STRIX-12` (11 records). `generic`
+    // stays: one shape for every craft of the series.
+    // `axes: 'app'`: the antenna's face to the Earth, its length along X, the cells to the sky. NOT AS
+    // IT FLIES: the real craft rolls to look to one side of its track and turns its cells to the Sun
+    // between passes; the app's one attitude cannot say either.
+    strix: { build: 'radar', file: 'strix.glb', colour: 'satellite', name: 'a StriX radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     paz: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     novasar: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     'gaofen-3': { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },

@@ -145,7 +145,7 @@ for (const [id, name, file] of [[16908, 'AJISAI (EGS)', 'ajisai.glb'], [8820, 'L
 }
 // The radar imagers: one shape, twenty-two spacecraft, thirty years and four continents apart.
 { const o = modelFor('satellite', 'radar'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar') && Math.abs(o.userData.realSizeM - 12.3) < 0.01, `radar builds inside budget at Sentinel-1's 12.3 m antenna (${tris(o)} tris)`); disposeModels(o); }
-for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
+for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [28931, 'ALOS (DAICHI)'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.generic === true, `${name} is a radar imager, and says it is the kind of thing`);
 }
@@ -153,6 +153,11 @@ for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [31698,
 for (const [id, name] of [[43641, 'SAOCOM 1A'], [46265, 'SAOCOM 1B']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.file === 'saocom.glb' && !e.generic && e.name === name, `${name} wears saocom.glb as itself, over the radar blade: ${JSON.stringify(e)}`);
+}
+// TerraSAR-X and TanDEM-X have a file of their own since batch seven (public #979): a six-sided body with no wings, not the blade.
+for (const [id, cat, name] of [[31698, 'TERRASAR-X', 'TerraSAR-X'], [36605, 'TANDEM-X', 'TanDEM-X']]) {
+  const e = realModelFor({ id: `r-${id}`, name: cat, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(e?.build === 'radar' && e.file === 'terrasar-x.glb' && !e.generic && e.name === name, `${cat} wears terrasar-x.glb as itself, over the radar blade: ${JSON.stringify(e)}`);
 }
 // ALOS DEB is debris from the same spacecraft and must not take the shape: the id route has no
 // class gate, so this is asserted on the id the catalogue actually gives the debris.
