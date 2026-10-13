@@ -776,37 +776,37 @@ export const REAL_MODELS = {
     // bus has "a more complex prismatic shape" than a Starlink. What is NOT approximate is the
     // silhouette, which is the half that carries recognition and the half that was wrong.
     oneweb: { build: 'oneweb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true },
-    // FILES AS WELL since batch five (2026-10-13; public #999, #1000), one a generation, behind the
-    // SAME launch-year gate, which is untouched: starlink-v1.glb and starlink-v2mini.glb, built in
-    // code from the bus and array sizes of SpaceX's FCC filing of October 2022 as J. McDowell
-    // tabulates it (V1.5: 2.8 x 1.3 m and ONE array 2.8 x 8.1 m; V2 Mini: 4.1 x 2.7 m and TWO
-    // arrays 4.1 x 12.8 m), which a paper in The Astronomical Journal confirms for the first
-    // (registry/models.yaml rows `starlink-v1`, `starlink-v2mini`, kind `built-from-dimensions`).
-    //   WHAT THE FILE CHANGES IN THE FIRST GENERATION: the wing STANDS ON THE CHASSIS, square to it,
-    //   away from the Earth ("the chassis points directly nadir and the solar array is perpendicular
-    //   to the chassis", AJ 166:59): the open L a Starlink flies in. The build laid it flat.
-    //   The V2 Mini's wings are drawn flat, as they unfold; in flight they turn to the Sun.
-    // No logo and no lettering on either. `generic` stays: the 2023 launches are still a guess.
+    // A FILE FOR THE FIRST GENERATION since batch five (2026-10-13; public #1000), behind the SAME
+    // launch-year gate, which is untouched: starlink-v1.glb, built in code from the bus and array
+    // sizes of SpaceX's FCC filing of October 2022 as J. McDowell tabulates it (V1.5: 2.8 x 1.3 m
+    // and ONE array 2.8 x 8.1 m), which a paper in The Astronomical Journal confirms to the square
+    // centimetre (registry/models.yaml row `starlink-v1`, kind `built-from-dimensions`).
+    //   WHAT THE FILE CHANGES: the wing STANDS ON THE CHASSIS, square to it, away from the Earth
+    //   ("the chassis points directly nadir and the solar array is perpendicular to the chassis",
+    //   AJ 166:59): the open L a Starlink flies in. The build laid it flat.
+    // THE V2 MINI KEEPS ITS BUILD (public #999 stays open). A file was made from the same filing's
+    // 4.1 x 2.7 m bus and two 4.1 x 12.8 m arrays, photographed in the app and NOT shipped: no page
+    // opened says how its two wings sit in flight, and drawn flat it was a grey plank that told a
+    // visitor less than the build's blue wings do. A file must be clearly better than the build.
+    // No logo and no lettering. `generic` stays: the 2023 launches are still a guess.
     // THE POOL, COUNTED (heroes.js POOL 8, POOL_MAX 16): at most sixteen craft are drawn as models at
     // once, the nearest first, and a file is fetched once and cloned (loadRealModel's cache), so a
-    // train of sixty Starlinks is at most sixteen clones of ONE 31 or 53 kB file: 5 180 or 11 268
-    // triangles each, 180 000 at the very worst. The other forty-four stay glyphs.
+    // train of sixty Starlinks is at most sixteen clones of ONE 30 kB file of 5 180 triangles:
+    // 83 000 at the very worst. The other forty-four stay glyphs.
     // In the live saved data on 2026-10-12: 11 129 records named STARLINK-n, of them 2 180 launched
-    // to 2022 (the first generation), 1 792 in 2023, 7 157 from 2024.
+    // to 2022 (the first generation, which wears the file), 1 792 in 2023, 7 157 from 2024.
+    // `made` and `axes` are on the first generation's answer only: the build has neither.
     starlink: {
       colour: 'satellite',
       klass: ['satellite'],
       generic: true,
       build: 'starlink-v2',
-      file: 'starlink-v2mini.glb',
-      made: 'dimensions',
-      axes: 'app',
       name: 'a Starlink',
       resolve: (record) => {
         const year = record && record.meta ? record.meta.launchYear : null;
         return Number.isFinite(year) && year <= 2022
-          ? { build: 'starlink-v1', file: 'starlink-v1.glb', name: 'a first-generation Starlink' }
-          : { build: 'starlink-v2', file: 'starlink-v2mini.glb', name: 'a Starlink V2 Mini' };
+          ? { build: 'starlink-v1', file: 'starlink-v1.glb', made: 'dimensions', axes: 'app', name: 'a first-generation Starlink' }
+          : { build: 'starlink-v2', name: 'a Starlink V2 Mini' };
       },
     },
     flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },

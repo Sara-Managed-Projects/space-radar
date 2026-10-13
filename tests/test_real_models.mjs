@@ -199,20 +199,24 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = sat(norad, name, klass || 'satellite');
     check(!got || got.file !== file, `${name} (${norad}) does not wear ${file}`);
   }
-  // THE FIFTH BATCH (2026-10-13, public #983, #998, #999, #1000): four commercial craft BY NAME, each a
+  // THE FIFTH BATCH (2026-10-13, public #983, #998, #1000): three commercial craft BY NAME, each a
   // file over the build it replaces, as the kind of thing. The launch-year gate is the same gate.
   for (const [name, year, file, build] of [['STARLINK-1007', 2019, 'starlink-v1.glb', 'starlink-v1'], ['STARLINK-4321', 2022, 'starlink-v1.glb', 'starlink-v1'],
-    ['STARLINK-5001', 2023, 'starlink-v2mini.glb', 'starlink-v2'], ['STARLINK-33001', 2026, 'starlink-v2mini.glb', 'starlink-v2'], ['STARLINK-9999', undefined, 'starlink-v2mini.glb', 'starlink-v2'],
     ['UMBRA-07', undefined, 'umbra.glb', 'radar-mesh'], ['ICEYE-X2', undefined, 'iceye.glb', 'radar'], ['ICEYE-X31', undefined, 'iceye.glb', 'radar']]) {
     const got = realModelFor({ id: `b5-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99100, launchYear: year } });
     check(got && got.file === file && got.build === build && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (launched ${year}) wears ${file} over the build ${build}, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  // The V2 Mini keeps its build and wears NO file (public #999 stays open: its file was not clearly better).
+  for (const [name, year] of [['STARLINK-5001', 2023], ['STARLINK-33001', 2026], ['STARLINK-9999', undefined]]) {
+    const got = realModelFor({ id: `b5v2-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99102, launchYear: year } });
+    check(got && got.build === 'starlink-v2' && !got.file && !got.made && !got.axes && got.generic === true, `${name} (launched ${year}) keeps the procedural V2 Mini: ${JSON.stringify(got)}`);
   }
   for (const [name, klass, file] of [['STARLINK-1007 DEB', 'debris', 'starlink-v1.glb'], ['UMBRA-07 DEB', 'debris', 'umbra.glb'], ['ICEYE-X2 DEB', 'debris', 'iceye.glb'],
     ['CAPELLA-11 (ACADIA-1)', 'satellite', 'umbra.glb'],          // Capella's dish is offset-fed on a boom: not Umbra's plan
     ['QPS-SAR-5 (TSUKUYOMI-I)', 'satellite', 'umbra.glb'],
     ['PENUMBRA-1', 'satellite', 'umbra.glb'],                     // a whole word, not letters inside one
     ['STRIX-1', 'satellite', 'iceye.glb'], ['SENTINEL-1A', 'satellite', 'iceye.glb'], ['NICEYE-1', 'satellite', 'iceye.glb'],
-    ['ONEWEB-0012', 'satellite', 'starlink-v1.glb'], ['ONEWEB-0012', 'satellite', 'starlink-v2mini.glb'], ['KUIPER-00008', 'satellite', 'starlink-v2mini.glb']]) {
+    ['ONEWEB-0012', 'satellite', 'starlink-v1.glb'], ['KUIPER-00008', 'satellite', 'starlink-v1.glb']]) {
     const got = realModelFor({ id: `b5n-${name}`, name, klass, layer: 'active', meta: { noradId: 99101, launchYear: 2020 } });
     check(!got || got.file !== file, `${name} (klass ${klass}) does not wear ${file}`);
   }
