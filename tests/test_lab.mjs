@@ -173,7 +173,13 @@ if (index && !index.includes('docs/ADD_A_SIMULATOR.md')) bad('site/lab/index.htm
 
 // --- the Lab stays out of the app, and into the deploy and the sitemap ---------------------------
 const app = [join(ROOT, 'site', 'index.html'), join(ROOT, 'site', 'sw.js'), ...walk(join(ROOT, 'site', 'js')).filter((f) => /\.(js|html)$/.test(f))];
-for (const f of app) if (/["'`(]\.{0,2}\/?lab\/(?:index\.html|[a-z0-9-]+\/)/.test(readFileSync(f, 'utf8'))) bad(relative(ROOT, f), 'refers to the Lab: nothing in site/lab/ is loaded by the app');
+// One exception, and only this one: the footer every page shares (templates/sitelinks.html) carries a plain link a visitor clicks
+// to the Lab's list. A link loads nothing into the app; a script, an import, a fetch or a link to one simulator is still refused.
+const FOOTER_LINK = '<a href="lab/index.html">';
+for (const f of app) {
+  const text = f.endsWith(join('site', 'index.html')) ? readFileSync(f, 'utf8').replace(FOOTER_LINK, '<a>') : readFileSync(f, 'utf8');
+  if (/["'`(]\.{0,2}\/?lab\/(?:index\.html|[a-z0-9-]+\/)/.test(text)) bad(relative(ROOT, f), 'refers to the Lab: nothing in site/lab/ is loaded by the app');
+}
 const deploy = readFileSync(join(ROOT, 'scripts', 'deploy.sh'), 'utf8');
 if (!/KNOWN="[^"]*\blab\b/.test(deploy)) bad('scripts/deploy.sh', 'KNOWN does not list lab, so a deploy refuses site/lab/');
 if (!/"\$SITE\/lab" "s3:\/\/\$BUCKET\/lab"[^\n]*\\?\n?[^\n]*--delete/.test(deploy) || !/--exclude "_template\/\*"/.test(deploy)) bad('scripts/deploy.sh', 'does not sync site/lab/ (without _template/) to the bucket');
