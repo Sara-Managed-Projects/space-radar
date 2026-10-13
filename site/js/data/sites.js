@@ -128,8 +128,8 @@ export const SITES = [
     "display": "Apollo 17 landing site",
     "class": "surface",
     "world": "moon",
-    "lat": 20.1908,
-    "lon": 30.7717,
+    "lat": 20.1911,
+    "lon": 30.7723,
     "shape": "lunar-module",
     "doing": "The last place people have stood on another world, in December 1972."
   },
