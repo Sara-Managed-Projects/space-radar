@@ -104,11 +104,31 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
  * The shape still carries a comms payload's dishes, which is the "not this exact one" half. It is
  * wrong in SILHOUETTE for exactly two of the 400: Fengyun 2G and 2H are spin-stabilised drums.
  */
+// A FILE A BLOCK since batch six (2026-10-13; public #985). The gate is the same launch-year gate,
+// with one more step: the Block IIR and IIR-M craft (Lockheed Martin, one bus) had no shape of their
+// own and wore the family box; they wear gps-iir.glb now. THE YEARS, read on 2026-10-13 in the
+// Cabinet Office of Japan's list of positioning satellites (qzss.go.jp/en/technical/satellites/,
+// which gives every GPS craft's block and launch day: `GPS 2R-2 1997/7/23` ... `GPS 2R-21M
+// 2009/8/17`, `GPS 2F-1 2010/5/28` ... `GPS 2F-12 2016/2/5`, `GPS 3-1 2018/12/23` onward):
+//     1997 to 2009   IIR and IIR-M   gps-iir.glb   18 records in the live saved data that day
+//     2010 to 2016   IIF             gps-iif.glb   12
+//     2018 onward    III             gps-iii.glb   10
+// 1997 IS THE ONE YEAR TWO BLOCKS FLEW: the last Block IIA (a Rockwell bus, a different shape) went
+// up that November and the first IIR that July. The IIR of 1997 is `NAVSTAR 43`, so in that year
+// the name decides too, and a IIA that came back into the catalogue would keep the family box.
+// No GPS craft was launched in 2017. A record with no year keeps the family box.
+// GPS IIIF (not yet flying) is a changed craft on the same bus; when the first is catalogued its
+// year will pass this gate, and the row's `generic` is what keeps the card honest until it is drawn.
+// Each answer carries its own `made` and `axes`: the family box has neither.
+const GPS_FILE = { made: 'dimensions', axes: 'app' };
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
-  if (year >= 2018) return { build: 'navigation-gps-iii' };
-  return year >= 2010 && year <= 2016 ? { build: 'navigation-gps-iif' } : {};
+  if (year >= 2018) return { build: 'navigation-gps-iii', file: 'gps-iii.glb', name: 'a GPS III navigation satellite', ...GPS_FILE };
+  if (year >= 2010 && year <= 2016) return { build: 'navigation-gps-iif', file: 'gps-iif.glb', name: 'a GPS Block IIF navigation satellite', ...GPS_FILE };
+  const first = year === 1997 && /\bnavstar 43\b/i.test(String(record.name));
+  if ((year >= 1998 && year <= 2009) || first) return { file: 'gps-iir.glb', name: 'a GPS Block IIR navigation satellite', ...GPS_FILE };
+  return {};
 }
 
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
@@ -375,8 +395,17 @@ export const REAL_MODELS = {
     28931: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS (DAICHI)', generic: true },
     39766: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-2', generic: true },
     60182: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-4 (DAICHI-4)', generic: true },
-    43641: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1A', generic: true },
-    46265: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1B', generic: true },
+    // SAOCOM 1A AND 1B HAVE A FILE OF THEIR OWN since batch six (2026-10-13; public #978): saocom.glb,
+    // built in code from CONAE's numbers as eoPortal gives them (a 10 m by 3.5 m antenna of seven
+    // panels, a 15 m2 solar wing, a body 4.4 m long) and laid out as CONAE's own render has it
+    // (CC BY 4.0): the bus lying ACROSS the antenna's back, the wing standing beside it (registry/
+    // models.yaml row `saocom`, kind `built-from-dimensions`). The shared `radar` build stays as what
+    // is drawn while the file is on its way: Sentinel-1's plan, a blade under a bus with two wings,
+    // which SAOCOM is not. Not `generic` any more: the file is these two craft and no other.
+    // `axes: 'app'`: the antenna's face to the Earth. NOT AS IT FLIES: the real craft is rolled so
+    // the antenna looks to one side of its track; the app's one attitude cannot say a roll.
+    43641: { build: 'radar', file: 'saocom.glb', colour: 'satellite', name: 'SAOCOM 1A', catalogue: 'SAOCOM 1A', made: 'dimensions', axes: 'app' },
+    46265: { build: 'radar', file: 'saocom.glb', colour: 'satellite', name: 'SAOCOM 1B', catalogue: 'SAOCOM 1B', made: 'dimensions', axes: 'app' },
     21574: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ERS-1', generic: true },
     27386: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ENVISAT', generic: true },
 
@@ -713,7 +742,38 @@ export const REAL_MODELS = {
       build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true,
       resolve: (record) => (/beidou-3\s+m\d/i.test(String(record && record.name)) ? { build: 'navigation-beidou-meo' } : {}),
     },
-    galileo: { build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true },
+    // FILES FOR THE NAVIGATION CONSTELLATIONS since batch six (2026-10-13; public #985, #986, #989,
+    // #990). EVERY KEY AND EVERY KLASS GATE BELOW IS THE ONE THAT WAS HERE: a file is an ANSWER of the
+    // row's `resolve`, chosen from the record's own name or launch year, so one constellation's or one
+    // block's file can never reach another's craft, and a craft no file was built for keeps the
+    // build it had. The names are CelesTrak's in the live saved data (data/v1/
+    // celestrak-active.cols.json, read 2026-10-13).
+    //   Galileo    galileo-foc.glb is the Full Operational Capability craft (OHB), `GSAT02nn`: 29
+    //              records, `GSAT0201 (GALILEO 5)` to `GSAT0234 (GALILEO 34)`. From EUSPA's own
+    //              satellite metadata: a box 2.530 x 1.200 x 1.100 m, two arrays of 5.000 x 1.082 m,
+    //              14.67 m tip to tip, the 1.4 m navigation antenna on the Earth face. WHAT THE FILE
+    //              CORRECTS: the body is a slab lying ACROSS the wing axis with its largest face to
+    //              the Earth; the family box stood it on end. The three In-Orbit Validation craft
+    //              (`GSAT0101` to `GSAT0103`, another maker's bus) keep the family box, as would a
+    //              second-generation craft under a `GSAT03nn` name.
+    //   QZSS       michibiki.glb is QZS-2 and QZS-4 ONLY (2 records): the Cabinet Office's drawing of
+    //              QZS-2 gives 2.4 m, 6.2 m and two 8.3 m wings, and its L-band antenna as a cone
+    //              1.8 m to 1.5 m across and 0.8 m tall. QZS-1R has a flat antenna deck (the same
+    //              office's drawing), QZS-3 "uses a flat patch antenna" and carries a 3.2 m dish
+    //              (eoPortal), QZS-6 and QZS-7 are later craft: all four keep the family box.
+    //   NavIC      irnss.glb is the first generation on ISRO's I-1K bus, `IRNSS-1A` to `IRNSS-1I`
+    //              (7 records). `NVS-01 (IRNSS-1J)` is the second generation on a larger bus: the
+    //              key matches its name and the answer leaves it the family box.
+    // All four constellations fly as the app's rule turns them (the antenna face to the Earth, the
+    // wing axis square to the Sun: EUSPA's and the Cabinet Office's attitude laws say exactly that);
+    // what the app does not do is turn the wings on their own axis, so a file's cells face the Sun's
+    // side of the sky and not the Sun itself. `generic` stays on every one.
+    // THE POOL (heroes.js POOL 8, POOL_MAX 16): navigation craft are 20 000 km and more apart, so
+    // two are never near the camera together; each file is fetched once and cloned.
+    galileo: {
+      build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/\bgsat02\d\d\b/i.test(String(record && record.name)) ? { file: 'galileo-foc.glb', made: 'dimensions', axes: 'app' } : {}),
+    },
     // TWO KEYS FOR ONE CONSTELLATION, and this is the endpoint trap again rather than belt and
     // braces. GROUP=active -- the file sources.yaml actually fetches -- calls them
     // `NAVSTAR 43 (USA 132)`, and 40 of them match that. GROUP=gnss and a CATNR query call the
@@ -725,11 +785,18 @@ export const REAL_MODELS = {
     // Wikipedia: Block IIF flew from 28 May 2010 to 5 February 2016, twelve of them, and Block III
     // from 23 December 2018; no other GPS block was launched in those years. Earlier craft (IIR,
     // IIR-M) are a different bus with no row, and keep the family box, as does a record with no year.
+    // Since batch six every block has a FILE and the IIR bus a shape of its own: see gpsBlock above.
     gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
     navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
     glonass: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
-    irnss: { build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true },
-    qzs: { build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true },
+    irnss: {
+      build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/^irnss-1[a-i]$/i.test(String(record && record.name).trim()) ? { file: 'irnss.glb', made: 'dimensions', axes: 'app' } : {}),
+    },
+    qzs: {
+      build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/^qzs-[24]\b/i.test(String(record && record.name).trim()) ? { file: 'michibiki.glb', made: 'dimensions', axes: 'app' } : {}),
+    },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
     //
     // Planet's Flock (94 Doves and SuperDoves, imaging the whole land surface daily) and Spire's
