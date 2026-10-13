@@ -4,6 +4,8 @@
 //           exposureLook(mode) -> { nebulaGain, nebulaGamma, nebulaSaturation, milkyWay }   pure
 //           readExposure(storage), writeExposure(storage, mode)
 //           createExposure({ storage }) -> { mode(), look(), set(mode), hold(mode), release(), onChange(f) }
+//           DRAWN, DEFAULT_DRAWN, DRAWN_KEY, MEASURED_RULES, drawnUnder(look, rule), stillUnder(look, rule)
+//           createDrawn({ storage, initial }) -> { mode(), set(mode), onChange(f) }     Measured or Film (below)
 //
 // WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
 // is it real or not?" It is real and it is faint. A nebula's colour in a photograph is minutes or
@@ -112,6 +114,73 @@ export function createExposure(opts = {}) {
       mode = next;
       writeExposure(storage, next);
       if (was !== now()) tell(byVisitor);
+      return true;
+    },
+    onChange(f) { listeners.add(f); return () => listeners.delete(f); },
+  };
+}
+
+// --- Measured or Film (spec 0073 requirement 8, 2026-10-12) -----------------------------------------
+//
+// The second thing this control decides: how much of what is drawn was made up to make it look alive.
+//   film      as the map always was: generated fine detail, illustrative weather. The default.
+//   measured  nothing generated below the data's resolution and nothing illustrative laid over a
+//             world: what is measured, and what is modelled from published numbers, at the clock's
+//             own rate. The exposure and every measured thing are untouched.
+// ONE QUESTION, ASKED BY THE EFFECT. main.js puts `ctx.look()` on the context and hands its answer to
+// the three places that draw such detail (scene/weather/, scene/sun.js, scene/aurora.js); each asks
+// drawnUnder() or stillUnder() with ITS OWN declared rule. A weather effect's rule is its registry row's
+// `measured:` (registry/weather.yaml); a module that draws generated detail in a shader exports
+// `UNDER_MEASURED`, one rule per thing it draws. tests/test_look_setting.mjs refuses a weather row or
+// such a module without one, so a new effect cannot forget to answer.
+//   same   drawn as in Film: it is measured, or modelled and already at the clock's true rate
+//   still  drawn, and held still: its shape stands for something real, its motion is ours
+//   hidden not drawn: it is generated, or illustrative
+// Here because this file is already on the first frame and the two choices are one control.
+
+export const DRAWN = ['measured', 'film'];
+export const DEFAULT_DRAWN = 'film';
+export const DRAWN_KEY = 'sr.look';
+export const MEASURED_RULES = ['same', 'still', 'hidden'];
+
+/** Is a thing with this rule drawn under this look? An unknown rule is drawn: only `hidden` removes. Pure. */
+export function drawnUnder(look, rule) {
+  return look !== 'measured' || rule !== 'hidden';
+}
+
+/** Is it held still under this look? Pure. */
+export function stillUnder(look, rule) {
+  return look === 'measured' && rule === 'still';
+}
+
+function readDrawn(storage) {
+  try {
+    const s = storage === undefined ? globalThis.localStorage : storage;
+    const v = s ? s.getItem(DRAWN_KEY) : null;
+    return DRAWN.includes(v) ? v : DEFAULT_DRAWN;
+  } catch {
+    return DEFAULT_DRAWN;
+  }
+}
+
+/**
+ * The one look the page has, remembered like the shutter. `opts.initial` is a shared link's
+ * (ui/urlstate.js `drawn`): worn from the first frame and not stored, as `exp` is.
+ */
+export function createDrawn(opts = {}) {
+  const storage = opts.storage;
+  let mode = DRAWN.includes(opts.initial) ? opts.initial : readDrawn(storage);
+  const listeners = new Set();
+  return {
+    mode: () => mode,
+    set(next) {
+      if (!DRAWN.includes(next) || next === mode) return false;
+      mode = next;
+      try {
+        const s = storage === undefined ? globalThis.localStorage : storage;
+        if (s) { if (next === DEFAULT_DRAWN) s.removeItem(DRAWN_KEY); else s.setItem(DRAWN_KEY, next); }
+      } catch { /* the choice still holds for the page */ }
+      for (const f of listeners) f(mode);
       return true;
     },
     onChange(f) { listeners.add(f); return () => listeners.delete(f); },

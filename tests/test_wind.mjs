@@ -174,8 +174,9 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   check(seen.length === 1 && seen[0] === 'data/v1/wind.json' && W.WIND_SNAPSHOT_URL === 'data/v1/wind.json', `it asks our own folder, relative to the page, and nobody else (${seen})`);
   check(g && g.nLat === 37 && g.nLon === 72, 'and reads the harvester\'s wrapper as the grid');
   check(!/pae-paha/.test(src('site/js/data/wind.js').split('export async function fetchWind')[1] || ''), 'fetchWind names no other host');
-  const row = src('registry/sources.yaml');
-  check(/- id: wind\n\s+url: https:\/\/pae-paha\.pacioos\.hawaii\.edu\/erddap\/griddap\/ncep_global\.json\?[^\n]*\{hour3\}[^\n]*\n\s+auth: none\n\s+browser: false\n\s+cadence: 3h/.test(row), 'the registry row is the harvester\'s three-hourly, browser: false');
+  const row = src('registry/sources.yaml').match(/^  - id: wind\n(?:(?!  - id:)[^\n]*\n)*/m)?.[0] || '';
+  check(/^\s+url: https:\/\/pae-paha\.pacioos\.hawaii\.edu\/erddap\/griddap\/ncep_global\.json\?[^\n]*\{hour3\}[^\n]*$/m.test(row)
+    && /^\s+auth: none$/m.test(row) && /^\s+browser: false$/m.test(row) && /^\s+cadence: 3h$/m.test(row), 'the registry row is the harvester\'s three-hourly, browser: false');
   const panel = src('site/js/ui/overlaypanel.js');
   check(/snapshotAvailable\('wind'\)/.test(panel), 'the panel offers the wind only when the manifest lists a copy');
 }

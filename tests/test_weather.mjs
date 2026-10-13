@@ -22,6 +22,7 @@ const F = await import(join(JS, 'scene/weather/flow.js'));
 const L = await import(join(JS, 'data/lightning.js'));
 const { WEATHER } = await import(join(JS, 'data/weather.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
+await import(join(JS, 'copy/en.later.js'));
 const row = (id) => WEATHER.find((r) => r.id === id);
 
 // --- 1. a wind is an angle ---------------------------------------------------------------------
@@ -267,7 +268,7 @@ function decodePng(buf) {
   for (const [id, line] of Object.entries(COPY.weather.worlds)) {
     const classes = WEATHER.filter((r) => r.world === id).map((r) => r.class);
     // The line, and the sentences that may follow it (what else is drawn; the lightning where it is drawn).
-    const parts = [line, COPY.weather.also[id], COPY.weather.flashes[id]].filter(Boolean);
+    const parts = [line, COPY.weather.also[id], COPY.weatherStorms.turning[id], COPY.weatherStorms.poles[id], WEATHER.some((r) => r.world === id && r.kind === 'cloud-detail') ? COPY.weatherDetail : null, COPY.weather.flashes[id]].filter(Boolean);
     for (const c of new Set(classes)) check(parts.join(' ').toLowerCase().includes(c === 'modelled' ? 'modelled' : c), `${id}'s line says "${c}"`);
     for (const part of parts) check(part.length <= 240, `${id}'s line is one line (${part.length} characters)`);
   }
@@ -347,8 +348,8 @@ function decodePng(buf) {
   check(weather.perMinute() === undefined, 'and the panel has no number yet');
   weather.tick(slot, { on: true });
   check(/northern spring/.test(weather.line('mars', slot)) && /illustrative/.test(weather.line('mars', slot)), `Mars's line names the season (${weather.line('mars', slot)})`);
-  check(weather.line('jupiter', slot) === COPY.weather.worlds.jupiter + ' ' + COPY.weather.flashes.jupiter, 'Jupiter\'s line, and its lightning\'s');
-  check(weather.line('venus', slot).endsWith(COPY.weather.also.venus) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
+  check(weather.line('jupiter', slot) === [COPY.weather.worlds.jupiter, COPY.weatherStorms.turning.jupiter, COPY.weatherStorms.poles.jupiter, COPY.weatherDetail, COPY.weather.flashes.jupiter, COPY.lookSaid.film].join(' '), 'Jupiter\'s line, its storms\', its poles\', the generated detail\'s and its lightning\'s');
+  check(weather.line('venus', slot).endsWith(COPY.weather.also.venus + ' ' + COPY.lookSaid.film) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
   check(/seasonal and illustrative, not today/.test(weather.line('mars', slot)) && /optical depth near 0\.\d/.test(weather.line('mars', slot)), `Mars's line gives the season's dust and says it is not today's (${weather.line('mars', slot)})`);
   check(weather.line('moon', slot) === null && weather.line('io', slot) === null, 'a world with no weather has no line');
   await weather.lookNow();
@@ -472,12 +473,294 @@ function decodePng(buf) {
   const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
   const fresh = dress();
   const quiet = createWeather({ worlds: { meshFor: (id) => fresh.get(id) || null }, reducedMotion: true, fetchImpl: async () => ({ ok: false }) });
-  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter, `and Jupiter's card does not claim them (${quiet.line('jupiter', t0)})`);
+  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter + ' ' + COPY.weatherStorms.poles.jupiter + ' ' + COPY.weatherDetail + ' ' + COPY.lookSaid.film, `and Jupiter's card claims neither them nor anything that turns (${quiet.line('jupiter', t0)})`);
   check(/Webb and Keck/.test(COPY.weather.worlds.titan) && /Illustrative/.test(COPY.weather.worlds.titan) && /2022/.test(COPY.weather.worlds.titan), 'Titan\'s line dates its clouds and says they are illustrative');
+}
+
+// --- 11. 2026-10-12, spec 0073 requirement 4: Jupiter's storms ----------------------------------------
+// Eddies where the measured shear is, the ovals where the pictures have them, the cyclones Juno
+// counted, a deck with depth: the registry's promises, the pure arithmetic, the shader's text, and
+// that all of it is off until the disc is large, still where less motion is asked for, and gone
+// under the latch.
+{
+  const DEG = Math.PI / 180;
+  const jup = row('jupiter-bands');
+  const ed = row('jupiter-eddies');
+  const ov = row('jupiter-ovals');
+  const cy = row('jupiter-polar-cyclones');
+  const dp = row('jupiter-depth');
+  check(ed && ov && cy && dp, 'four rows: the eddies, the ovals, the polar cyclones, the depth');
+  check(ed.class === 'illustrative' && dp.class === 'illustrative' && ov.class === 'modelled' && cy.class === 'modelled', 'what is generated is illustrative; what is computed from published numbers is modelled');
+  for (const r of [ed, ov, cy, dp]) check(r.off_at.includes('tier0') && r.off_at.includes('save_data'), `${r.id}: off at tier 0 and on save-data`);
+
+  // The shear lines: where the profile is steepest, turning the way the measured winds shear the air.
+  const lines = F.shearLines(jup.profile, ed.eddies);
+  check(lines.length === ed.eddies.lines && lines.length < F.EDDY_SLOTS, `${ed.eddies.lines} shear lines, and a slot left for the wake`);
+  check(lines.every((l) => Math.abs(l.latDeg) <= ed.eddies.lat_max_deg && l.halfDeg > 0 && l.halfDeg <= ed.eddies.half_deg_max && Math.abs(l.turnsPerDay) <= ed.eddies.max_turns_per_day + 1e-12), 'each inside its latitude, its size and its rate');
+  for (const l of lines) {
+    const du = F.windAt(jup.profile, l.latDeg + 0.3) - F.windAt(jup.profile, l.latDeg - 0.3);
+    check(Math.sign(l.turnsPerDay) === -Math.sign(du), `at ${l.latDeg.toFixed(1)} the eddies turn with the shear (wind rising northward turns them clockwise)`);
+  }
+  // The steepest stretch of Tollefson's profile is the flank of the 24 N jet: it is among them.
+  check(lines.some((l) => Math.abs(l.latDeg - F.planetocentricDeg(22.5, jup.profile.flattening)) < 1.5 || Math.abs(l.latDeg - F.planetocentricDeg(25.5, jup.profile.flattening)) < 1.5), 'the 24 N jet\'s flanks are shear lines');
+  const rows = lines.map((l) => F.eddyRow(l));
+  check(rows.every((r) => Number.isInteger(r.e[3]) && r.e[3] >= 1), 'a whole number of eddies goes round the planet: the seam is no seam');
+  check(rows.every((r) => r.win[2] / r.e[3] >= 2.4 * r.e[1] - 1e-12), 'and each has a cell to itself');
+
+  // The wake: downstream of the spot in the jet on its equator side, which the winds say is west.
+  const { WORLDS: W_ } = await import(join(JS, 'scene/worlds.js'));
+  const hubbleSpot = W_.find((x) => x.id === 'jupiter').look.faceSpot.hubble;
+  for (const [name, spot] of [['the first map', jup.spot], ['Hubble\'s map', hubbleSpot]]) {
+    const wake = F.wakeLine(spot, jup.profile, ed.eddies.wake);
+    check(wake && wake.dir === -1 && wake.windMs < -30, `${name}: the jet beside the spot blows west (${wake && wake.windMs.toFixed(0)} m/s), so the wake is west of it`);
+    const dU = ((wake.win.u - spot.u + 1.5) % 1) - 0.5;
+    check(dU < 0 && wake.line.latDeg > (spot.v - 0.5) * 180 && wake.line.turnsPerDay < 0, `${name}: west and toward the equator, north-west, its eddies cyclonic`);
+    check(Math.abs(dU) - wake.win.half >= spot.half_u, `${name}: and it starts outside the spot`);
+    rows.length = lines.length; rows.push(F.eddyRow(wake.line, wake.win));
+  }
+
+  // THE BOUND, FOR ALL TIME. However long the clock has run, no point of the map is read from
+  // further away than one eddy's diameter, and nothing outside a shear line is moved at all.
+  {
+    let seed = 99;
+    const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    let worst = 0; let moved = 0; let outside = 0; let nan = 0;
+    const cycle = F.splitFlow(F.rateTable(jup.profile), true).cycleDays;
+    for (let i = 0; i < 60000; i++) {
+      const u = rand(); const v = 0.1 + 0.8 * rand();
+      // Any clock: from 1970 to the year 5000, and a tau far past the two-phase one for good measure.
+      const tMs = rand() * 9.5e13;
+      const ph = F.flowPhases(tMs, cycle);
+      const tau = i % 7 === 0 ? (rand() - 0.5) * 1e6 : (i % 2 ? ph.tau1 : ph.tau2);
+      const [pu, pv] = F.eddyDisplace(u, v, tau, rows, 1);
+      if (!(Number.isFinite(pu) && Number.isFinite(pv))) { nan++; continue; }
+      const line = rows.find((r) => Math.abs(v - r.e[0]) < r.e[1]);
+      const d = Math.hypot((pu - u) * 2 * Math.cos((v - 0.5) * Math.PI), pv - v);
+      if (d > 1e-12) { moved++; if (!line) outside++; }
+      // In units of v: twice the largest eddy's radius, 0.9 of a line's half-height.
+      const bound = 2 * 0.9 * Math.max(...rows.map((r) => r.e[1])) * 1.06;
+      if (d > worst) worst = d;
+      if (d > bound) outside++;
+    }
+    check(nan === 0 && outside === 0, `60 000 points at any clock: none read from further than an eddy's diameter, none moved outside a shear line (worst ${(worst * 180).toFixed(2)} degrees)`);
+    check(moved > 500, `and inside the lines they do move (${moved})`);
+    check(worst * 180 <= 2 * 0.9 * ed.eddies.half_deg_max * 1.06, 'the bound is the registry\'s largest eddy');
+    // Nothing at time zero, nothing at strength zero, nothing with the rates taken away (reduced motion).
+    let still = 0;
+    const stopped = rows.map((r) => ({ e: [r.e[0], r.e[1], 0, r.e[3]], win: r.win }));
+    for (let i = 0; i < 4000; i++) {
+      const u = rand(); const v = 0.1 + 0.8 * rand(); const tau = (rand() - 0.5) * 6;
+      for (const [pu, pv] of [F.eddyDisplace(u, v, 0, rows, 1), F.eddyDisplace(u, v, tau, rows, 0), F.eddyDisplace(u, v, tau, stopped, 1), F.eddyDisplace(u, v, tau, [], 1)]) {
+        if (Math.abs(pu - u) > 1e-12 || Math.abs(pv - v) > 1e-12) still++;
+      }
+    }
+    check(still === 0, 'no displacement at the instant a copy matches the map, at a small disc, with no rows, or where less motion is asked for');
+    // Smooth across an eddy's edge: the turn is nothing there.
+    const r0 = rows[0];
+    const a = F.eddyDisplace(0.5 / r0.e[3], r0.e[0] + r0.e[1] * 0.999, 2, rows, 1);
+    check(Math.abs(a[1] - (r0.e[0] + r0.e[1] * 0.999)) < 1e-3 * r0.e[1], 'and at a line\'s edge the map is where it was');
+  }
+
+  // The ovals: inside the map, in the southern belts where the pictures have them, anticyclones.
+  for (const face of ['own', 'hubble']) {
+    const tab = ov.ovals[face];
+    check(tab.length >= 3 && tab.length <= F.OVAL_SLOTS, `${face}: Oval BA and the largest white ovals (${tab.length})`);
+    for (const o of tab) {
+      const lat = (o[1] - 0.5) * 180;
+      check(o[0] - o[2] >= 0 && o[0] + o[2] <= 1 && o[1] - o[3] > 0 && o[1] + o[3] < 1, `${face}: the oval at u ${o[0]} is inside the map`);
+      check(lat < -25 && lat > -45 && o[2] * 360 < 8 && o[3] * 180 < 5 && o[4] >= 1 && o[4] <= 6, `${face}: at ${lat.toFixed(1)} in the south temperate belts, a few degrees across, turning in days`);
+    }
+    // Oval BA is at 33 S planetographic; the chain of white ovals at 40 S.
+    check(near(tab[0][1], 0.5 + F.planetocentricDeg(-33, jup.profile.flattening) / 180, 0.012) && tab[0][4] === 1.5, `${face}: the first is Oval BA, at 33 S, once round in 36 hours (9.9 degrees an hour)`);
+  }
+  check(ov.ovals.hubble.slice(1).every((o) => near((o[1] - 0.5) * 180, F.planetocentricDeg(-40, jup.profile.flattening), 1)), 'in Hubble\'s map the white ovals are on 40 S planetographic');
+  // None sits on the Great Red Spot or on another.
+  for (const [face, spot] of [['own', jup.spot], ['hubble', hubbleSpot]]) {
+    const all = [[spot.u, spot.v, spot.half_u, spot.half_v], ...ov.ovals[face]];
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+      const du = Math.abs(((all[i][0] - all[j][0] + 1.5) % 1) - 0.5);
+      const dv = Math.abs(all[i][1] - all[j][1]);
+      check(du > 1.8 * (all[i][2] + all[j][2]) * 0.5 || dv > 1.8 * (all[i][3] + all[j][3]) * 0.5, `${face}: ovals ${i} and ${j} do not share their air`);
+    }
+  }
+
+  // The poles Juno saw: nine in the north, six in the south, at the cited latitudes.
+  const c = cy.cyclones;
+  const P = F.polarCyclones(c);
+  check(P.north.length === 9 && P.south.length === 6 && F.CYCLONE_NORTH === 9 && F.CYCLONE_SOUTH === 6, `nine cyclones in the north and six in the south (${P.north.length}, ${P.south.length})`);
+  check(P.north[0].central && near(P.north[0].latDeg, 90, 1e-9), 'the north\'s central cyclone is at the pole');
+  const ring = P.north.slice(1);
+  check(ring.filter((x) => near(x.latDeg, 83.4, 1e-6)).length === 4 && ring.filter((x) => near(x.latDeg, 82.7, 1e-6)).length === 4, 'eight round it, at 83.4 and 82.7 north in turn (Rogers et al. 2018)');
+  check(ring.every((x, i) => near(((x.lonDeg - ring[(i + 7) % 8].lonDeg) + 360) % 360, 45, 1e-6)), 'an octagon: 45 degrees apart');
+  const sc = P.south[0];
+  check(sc.central && near(sc.latDeg, -(90 - c.south.centre_offset_deg), 1e-6) && c.south.centre_offset_deg >= 1 && c.south.centre_offset_deg <= 2.5, `the south's central cyclone is ${c.south.centre_offset_deg} degrees off the pole (1.0 to 2.5 measured)`);
+  const ang = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) / DEG;
+  const pent = P.south.slice(1);
+  check(pent.every((x) => near(ang(x.dir, sc.dir), c.south.ring_from_centre_deg, 1e-6)), 'five round it, each 6 degrees from it');
+  check(pent.every((x, i) => near(ang(x.dir, pent[(i + 1) % 5].dir), ang(pent[0].dir, pent[1].dir), 1e-6)) && pent.every((x) => x.latDeg < -80 && x.latDeg > -87), 'a pentagon, all of it between 80 and 87 south');
+  for (const x of [...P.north, ...P.south]) {
+    check(near(Math.hypot(...x.dir), 1, 1e-9), 'each place is a unit vector');
+    // 4 000 to 7 000 km across (one degree at the pole is 1 167 km on Jupiter's polar radius of 66 854 km).
+    const km = 2 * x.radiusDeg * (Math.PI / 180) * 66854;
+    check(km >= 4000 && km <= 8200, `a cyclone is ${km.toFixed(0)} km across`);
+  }
+  // None overlaps its neighbour's core, and the cap covers them all.
+  const capColat = 90 - c.cap_lat_deg;
+  for (const set of [P.north, P.south]) {
+    for (let i = 0; i < set.length; i++) {
+      check(90 - Math.abs(set[i].latDeg) + set[i].radiusDeg * 1.5 <= capColat + 0.01, 'every cyclone is inside the cap');
+      for (let j = i + 1; j < set.length; j++) check(ang(set[i].dir, set[j].dir) >= 0.8 * (set[i].radiusDeg + set[j].radiusDeg), `cyclones ${i} and ${j} are apart`);
+    }
+  }
+  check(/2017/.test(c.state) && c.period_days >= 0.8 && c.period_days <= 2.5, 'the state drawn is dated (before the sixth southern cyclone of 2019), and they turn in a day or two (0.1 to 0.3 degrees a minute)');
+
+  // At what disc size each starts.
+  check(F.nearShare(0.05, 0.2) === 0 && F.nearShare(0.2, 0.2) === 0 && near(F.nearShare(0.3, 0.2), 1, 1e-9) && near(F.nearShare(0.25, 0.2), 0.5, 1e-9) && F.nearShare(9, 0.2) === 1, 'nothing under its size, all of it at one and a half times that');
+  check([ed.eddies, ov.ovals, cy.cyclones].every((x) => x.from_share >= 0.1 && x.from_share < 0.4) && dp.depth.from_share >= 0.4, 'the eddies, ovals and poles start in the orbit view (level B); the depth in the close-up (level C)');
+
+  // The shader's text: one more fetch, no refused class.
+  const WW = await import(join(JS, 'scene/weather/worldweather.js'));
+  const { WORLDS, worldMaterial, applyLook, WORLD_FRAG } = await import(join(JS, 'scene/worlds.js'));
+  const frag = WW.weatherFragment();
+  const storms = frag.slice(frag.indexOf('#ifdef WX_STORMS'), frag.indexOf('#endif', frag.indexOf('vec3 wxDeep')));
+  check(storms.length > 2000, 'the storms are one block of the weather\'s own source');
+  const fetches = (text) => (text.match(/\b(texture2D|textureGrad|textureLod|texture)\s*\(/g) || []).length;
+  check(fetches(storms) === 1 && /textureGrad\( uMap,/.test(storms), `the storms read the map once more, for the under-deck (${fetches(storms)})`);
+  const zonal = frag.slice(frag.indexOf('#ifdef WX_ZONAL'), frag.indexOf('#elif defined( WX_MARS )'));
+  check(fetches(zonal) === 2, `and the flow still reads it once per copy: two fetches before, three at most now (${fetches(zonal)} in the source, the under-deck's among them)`);
+  for (const refused of ['EffectComposer', 'RenderPass', 'WebGLRenderTarget', 'ShaderPass', 'BloomPass', 'gl_FragData', 'tDiffuse', 'uPrevFrame', 'sampler3D']) {
+    check(!frag.includes(refused), `the shader has no ${refused}`);
+  }
+  for (const f of ['scene/weather/worldweather.js', 'scene/weather/flow.js']) {
+    const src = readFileSync(join(JS, f), 'utf8');
+    check(!/WebGLRenderTarget|EffectComposer|readPixels|getImageData|new Worker/.test(src), `${f}: no render target, no pass, no pixels read back`);
+  }
+  check((frag.match(/#ifdef WX_STORMS/g) || []).length === 4 && (frag.match(/for \( int i = 0;/g) || []).length >= 3, 'every storm term is behind WX_STORMS, which only Jupiter defines');
+
+  // The controller: off until the disc is large, the face, reduced motion, the latch.
+  const dress = () => {
+    const m = new Map();
+    for (const w of WORLDS) { if (w.look.earth || w.look.emissive) continue; const material = worldMaterial(null, w.look.tint); applyLook(material, w.look); m.set(w.id, { material, visible: true }); }
+    return m;
+  };
+  let share = 0.01;
+  const meshes = dress();
+  const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null, discShare: () => share } });
+  const ju = meshes.get('jupiter').material;
+  check(ju.defines.WX_STORMS === 1 && !meshes.get('saturn').material.defines.WX_STORMS && !meshes.get('venus').material.defines.WX_STORMS, 'only Jupiter wears the storms');
+  const u = ju.uniforms;
+  check(u.uWxEddy.value.length === F.EDDY_SLOTS * 4 && u.uWxEddyWin.value.length === F.EDDY_SLOTS * 3 && u.uWxOval.value.length === F.OVAL_SLOTS * 4 && u.uWxCyc.value.length === F.CYCLONE_SLOTS * 4, 'the tables are the sizes the shader declares');
+  const t0 = Date.parse('2026-10-12T12:00:00Z');
+  wx.update(t0, 0);
+  const nearOf = () => ({ ...u.uWxNear.value });
+  check(Object.values(nearOf()).every((x) => x === 0), 'seen small (level A), nothing of it is drawn: every term is skipped');
+  share = 0.5;
+  wx.update(t0, 16);
+  check(Object.values(nearOf()).every((x) => x > 0 && x < 0.05), 'the disc grown: it starts to come in, not all at once');
+  wx.update(t0, 600);
+  check(nearOf().x > 0.4 && nearOf().x < 0.8, `half way in after half a second (${nearOf().x.toFixed(2)})`);
+  wx.update(t0, 1700);
+  check(nearOf().x === 1 && nearOf().y === 1 && nearOf().z === 1 && nearOf().w > 0.4, 'all in after a second; the depth only as far as its own, larger, size');
+  share = 0.25;
+  wx.update(t0, 5000);
+  check(near(nearOf().x, 0.5, 1e-9) && nearOf().y === 1 && nearOf().z === 1 && nearOf().w === 0, `drawn back (level B): the poles and ovals stay, the eddies are half out, the depth is off (${JSON.stringify(nearOf())})`);
+  check(near(u.uWxPole.value.x, 15 * DEG, 1e-9) && near(u.uWxPole.value.y, F.wavePhase(t0, cy.cyclones.period_days, 1), 1e-9) && u.uWxPole.value.y >= 0 && u.uWxPole.value.y < 1, 'the cap begins at 75 degrees and the cyclones\' turn is the clock\'s, wrapped: a small number');
+  check(near(u.uWxOvalRate.value[0], 1 / 1.5, 1e-6) && near(u.uWxOval.value[0], ov.ovals.own[0][0], 1e-6) && near(u.uWxDeep.value.x, dp.depth.gap_lum.own[0], 1e-9), 'the first map\'s ovals and gaps');
+  check(u.uWxEddy.value[7 * 4 + 1] > 0 && u.uWxEddyWin.value[7 * 3 + 1] < 0.5 && u.uWxEddy.value.slice(0, 28).every(Number.isFinite), 'seven lines all round the planet and the wake in its window');
+  check(wx.storms('jupiter') === 'moving' && wx.storms('saturn') === null && wx.state().worlds.find((w) => w.id === 'jupiter').storms.face === 'own', 'and the state says so');
+  // "As Hubble saw it": scene/worlds.js moves the spot; the ovals, the gaps and the wake follow.
+  Object.assign(u.uWxSpot.value, { x: hubbleSpot.u, y: hubbleSpot.v, z: hubbleSpot.half_u, w: hubbleSpot.half_v });
+  wx.update(t0, 5016);
+  check(near(u.uWxOval.value[0], ov.ovals.hubble[0][0], 1e-6) && near(u.uWxDeep.value.x, dp.depth.gap_lum.hubble[0], 1e-9) && wx.state().worlds.find((w) => w.id === 'jupiter').storms.face === 'hubble', 'Hubble\'s face: its own ovals and gaps');
+  const wakeU = u.uWxEddyWin.value[7 * 3];
+  check(wakeU < hubbleSpot.u && wakeU > hubbleSpot.u - 0.2, 'and the wake is west of the spot where Hubble has it');
+  wx.latch();
+  check(!ju.defines.WX_STORMS && ju.fragmentShader === WORLD_FRAG && wx.storms('jupiter') === null, 'the latch takes the storms off with the rest');
+
+  // Reduced motion: still. Nothing turns; the cap is drawn where it stands.
+  const stillMeshes = dress();
+  const calm = WW.createWorldWeather({ worlds: { meshFor: (id) => stillMeshes.get(id) || null, discShare: () => 0.6 }, reducedMotion: true });
+  const su = stillMeshes.get('jupiter').material.uniforms;
+  calm.update(t0, 0);
+  calm.update(t0 + 86400000, 16);
+  check(su.uWxOvalRate.value.every((x) => x === 0) && [0, 1, 2, 3, 4, 5, 6, 7].every((i) => su.uWxEddy.value[i * 4 + 2] === 0), 'where less motion is asked for no eddy and no oval turns');
+  check(su.uWxPole.value.y === 0 && su.uWxNear.value.z === 1 && calm.storms('jupiter') === 'still', 'and the cyclones stand still, drawn');
+
+  // The card: what is generated is said to be, the poles are a reconstruction, and nothing is today's.
+  check(/generated/.test(COPY.weatherStorms.turning.jupiter) && /measured/.test(COPY.weatherStorms.turning.jupiter) && /illustrative/.test(COPY.weatherStorms.turning.jupiter), 'the card says the eddies are generated at measured places');
+  check(/modelled from Juno’s observations/.test(COPY.weatherStorms.poles.jupiter) && /not a photograph/.test(COPY.weatherStorms.poles.jupiter) && /2017/.test(COPY.weatherStorms.poles.jupiter), 'and that the poles are modelled from Juno\'s observations, dated, not a photograph');
+}
+
+// --- the close-range cloud detail (2026-10-12): generated, small, only below the map's resolution ---
+{
+  const WW = await import(join(JS, 'scene/weather/worldweather.js'));
+  const { WORLDS, worldMaterial, applyLook } = await import(join(JS, 'scene/worlds.js'));
+  const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
+  const GIANTS = ['jupiter', 'saturn', 'uranus', 'neptune'];
+  for (const id of GIANTS) {
+    const r = row(`${id}-detail`);
+    check(r && r.kind === 'cloud-detail' && r.class === 'illustrative' && r.world === id, `${id}: a cloud-detail row, illustrative`);
+    if (!r) continue;
+    const d = r.detail;
+    check(d.contrast > 0 && d.contrast <= 0.13 && F.detailMaxContrast(d) <= 0.15, `${id}: no channel is moved more than 15 % (${(F.detailMaxContrast(d) * 100).toFixed(1)} %)`);
+    check(WEATHER.some((x) => x.world === id && x.kind === 'zonal-flow'), `${id}: there is a measured wind to carry it`);
+  }
+  check(row('jupiter-detail').detail.contrast > row('saturn-detail').detail.contrast && row('saturn-detail').detail.contrast > row('neptune-detail').detail.contrast && row('neptune-detail').detail.contrast > row('uranus-detail').detail.contrast, 'Jupiter\'s is the strongest and Uranus\'s, the blandest world, the faintest');
+  // The two fades. A screen pixel that covers a texel or more: nothing. A texel over three pixels wide: all of it.
+  check(F.detailFade(1) === 0 && F.detailFade(2.5) === 0 && F.detailFade(0.3) === 1 && F.detailFade(0.02) === 1 && F.detailFade(NaN) === 0, 'nothing where the map still has detail to give, all of it where a texel is over three pixels wide');
+  check(F.detailFade(0.65) > 0.4 && F.detailFade(0.65) < 0.6 && F.detailFade(0.5) > F.detailFade(0.8), 'and a smooth way between');
+  check(F.detailOctaveWeight(2) === 0 && F.detailOctaveWeight(1) === 0 && F.detailOctaveWeight(5) === 1 && F.detailOctaveWeight(40) === 1, 'an octave under two pixels long is not drawn (no shimmer); one over five is');
+  check(F.DETAIL_OCTAVES >= 3 && F.DETAIL_OCTAVES <= 8 && F.DETAIL_GAIN > 0.4 && F.DETAIL_GAIN < 0.9, 'a few octaves, each fainter than the last');
+  // WHICH octaves follows the camera: from the rig's closest (a texel seventy pixels wide, a base cell 370) the
+  // finest drawn is still a few pixels wide, and the coarsest about DETAIL_COARSE_PX.
+  {
+    const first = F.detailFirstOctave(370);
+    const finestPx = 370 / 2 ** (Math.floor(first) + F.DETAIL_OCTAVES - 1);
+    check(first > 1 && first < 2 && finestPx >= 4 && finestPx <= 16, `at the closest the octaves start at ${first.toFixed(2)} and the finest is ${finestPx.toFixed(1)} px`);
+    check(F.detailFirstOctave(100) === 0 && F.detailFirstOctave(F.DETAIL_COARSE_PX) === 0 && F.detailFirstOctave(NaN) === 0 && F.detailFirstOctave(F.DETAIL_COARSE_PX * 4) === 2, 'never coarser than the row\'s own octave, and one octave finer each time the view doubles');
+  }
+  // The shader carries those numbers, reads the detail where the map was read, and asks the map its own size.
+  const frag = WW.weatherFragment();
+  const f2 = (x) => Number(x).toFixed(2);
+  check(frag.includes('#ifdef WX_DETAIL') && frag.includes(`smoothstep( ${f2(F.DETAIL_FADE[0])}, ${f2(F.DETAIL_FADE[1])}, tpp )`) && frag.includes(`i < ${F.DETAIL_OCTAVES}; i++`) && frag.includes(`amp *= ${f2(F.DETAIL_GAIN)};`) && frag.includes(`smoothstep( ${f2(F.DETAIL_OCTAVE_PX[0])}, ${f2(F.DETAIL_OCTAVE_PX[1])}, basePx )`) && frag.includes(`log2( basePx / ${F.DETAIL_COARSE_PX.toFixed(1)} )`) && frag.includes('float basePx = size.y / ( cells.y * tpp );'), 'the shader\'s fades and octaves are flow.js\'s numbers');
+  check(/float which = first \+ float\( i \);/.test(frag) && /i == 0 \? 1\.0 - part/.test(frag) && /norm \+= share;/.test(frag), 'an octave keeps its own pattern whichever place it has, and the coarsest and the finest cross-fade');
+  check(/textureSize\( uMap, 0 \)/.test(frag) && /dFdx\( vUv \) \* size/.test(frag) && /texel = wxDetail\( texel, p \);/.test(frag), 'the fade is the footprint of a pixel in the map\'s own texels, and the detail is read where the wind carried the map from');
+  check(/if \( k <= 0\.0 \) return c;/.test(frag) && /if \( uWxDetail\.x <= 0\.0 \) return c;/.test(frag), 'and it costs two derivatives and nothing more where it is not drawn');
+  check(!/WebGLRenderTarget|EffectComposer/.test(readFileSync(join(JS, 'scene/weather/worldweather.js'), 'utf8')), 'no render target and no pass: it is a term of the world\'s own shader');
+  // Worn: the four giants get the define and one uniform; Venus and Mars do not; the latch takes it off.
+  const dress = () => {
+    const out = new Map();
+    for (const w of WORLDS) {
+      if (![...GIANTS, 'venus', 'mars'].includes(w.id)) continue;
+      const material = worldMaterial(null, w.look.tint);
+      applyLook(material, w.look);
+      out.set(w.id, { material, visible: true });
+    }
+    return out;
+  };
+  const meshes = dress();
+  const carded = dress();
+  const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null, discShare: () => 0.6 } });
+  for (const id of GIANTS) {
+    const m = meshes.get(id).material;
+    const d = row(`${id}-detail`).detail;
+    const u = m.uniforms.uWxDetail && m.uniforms.uWxDetail.value;
+    check(m.defines.WX_DETAIL === 1 && u && u.x === d.contrast && u.z === d.cells_lat && u.y === Math.round(d.cells_lat * 2 / d.stretch) && u.w === d.colour && wx.detail(id), `${id} wears the detail with its row's numbers (${JSON.stringify(u)})`);
+    check(u && Number.isInteger(u.y) && Number.isInteger(u.z) && u.y * 32 <= 4096 * 2, `${id}: whole cells round the planet, so the texture has no seam at the map's edge`);
+  }
+  check(!meshes.get('venus').material.defines.WX_DETAIL && !wx.detail('venus') && !wx.detail('mars'), 'Venus and Mars have no such row and wear none');
+  check(wx.state().worlds.find((w) => w.id === 'jupiter').detail.x === row('jupiter-detail').detail.contrast, 'state() says what is worn, for the probes');
+  // The card says it is generated, wherever it is worn.
+  const weather = createWeather({ worlds: { meshFor: (id) => carded.get(id) || null, discShare: () => 0.6 }, fetchImpl: async () => { throw new Error('offline'); } });
+  check(/generated/.test(COPY.weatherDetail) && /not one streak of it is a real cloud/.test(COPY.weatherDetail) && /Illustrative\.$/.test(COPY.weatherDetail), 'the sentence says generated, not real, illustrative');
+  for (const id of GIANTS) check(String(weather.line(id, Date.now())).includes(COPY.weatherDetail), `${id}: its card's weather line says the close-range texture is generated`);
+  check(!String(weather.line('venus', Date.now())).includes(COPY.weatherDetail), 'Venus\'s does not');
+  wx.latch();
+  check(GIANTS.every((id) => !meshes.get(id).material.defines.WX_DETAIL) && !wx.detail('jupiter'), 'the frame latch takes it off with the rest');
 }
 
 if (failed) {
   console.log(`weather FAILED: ${failed} check(s)`);
   process.exit(1);
 }
-console.log('weather ok: winds to angles, the two-phase clock, Mars\'s season and its dust, NOAA\'s lightning map decoded and scheduled, the shader patch, the giants\' flashes, Venus\'s Y, Titan\'s clouds, the card\'s lines, off the first visit');
+console.log('weather ok: winds to angles, the two-phase clock, Mars\'s season and its dust, NOAA\'s lightning map decoded and scheduled, the shader patch, the giants\' flashes, Venus\'s Y, Titan\'s clouds, Jupiter\'s storms (eddies bounded for all time, the ovals, Juno\'s cyclones, the depth), the card\'s lines, off the first visit');

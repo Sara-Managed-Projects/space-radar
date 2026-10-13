@@ -13,6 +13,14 @@
 # off_at      where the effect is not drawn. Every row lists `tier0` (the lowest device tier) and
 #             `save_data` (a connection that asks for less): check_registry.py refuses a row
 #             without both (spec 0066 requirement 8).
+# measured    what the effect does under the MEASURED look (spec 0073 requirement 8; the visitor's choice of
+#             Measured or Film, scene/exposure.js). One of three, and scene/weather/worldweather.js setLook()
+#             is the one place that reads it:
+#               same   drawn as in Film. Every `measured` row, and a `modelled` one, whose motion is
+#                      already the app's clock at its true rate: nothing in this file is sped up.
+#               still  drawn and held still: a real thing at a real place whose motion is ours.
+#               hidden not drawn. Every `illustrative` row: check_registry.py refuses `same` there.
+#             A row without it is refused, so a new effect cannot forget to answer.
 # source      name, url and the day it was read. A measured row also carries `cors:` -- the header
 #             as curl printed it with `Origin: https://www.spaceradar.ai`.
 #
@@ -37,6 +45,7 @@ effects:
     class: measured
     layer: lightning
     off_at: [tier0, save_data, reduced_motion]
+    measured: same
     source:
       name: "NOAA nowCOAST, Lightning Strike Density (NWS Ocean Prediction Center; ground networks NLDN and GLD360)"
       url: "https://nowcoast.noaa.gov/geoserver/lightning_detection/wms"
@@ -61,6 +70,7 @@ effects:
     class: measured
     layer: earth-events
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "NASA EONET v3, the Earth Observatory Natural Event Tracker (NASA GSFC ESDIS); events from IRWIN, GDACS, the Smithsonian Global Volcanism Program and the US National Ice Center"
       url: "https://eonet.gsfc.nasa.gov/api/v3/events"
@@ -75,6 +85,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Tollefson et al. 2017, Changes in Jupiter's Zonal Wind Profile preceding and during the Juno mission, Icarus 296, 163"
       url: "https://doi.org/10.1016/j.icarus.2017.06.007"
@@ -90,11 +101,191 @@ effects:
     spot: {u: 0.3635, v: 0.398, half_u: 0.036, half_v: 0.040, period_days: 6}
     note: "The bands slide past one another at the published jet speeds. The Great Red Spot stays where the map has it; its drift is not modelled."
 
+  # JUPITER'S STORMS (2026-10-12, spec 0073 requirement 4). Four rows, all drawn inside the flow's own
+  # shader term (scene/weather/worldweather.js WX_STORMS), each from the disc size its `from_share`
+  # names (a share of half the view's height, as scene/worlds.js discShare gives it) and full at one
+  # and a half times that. None is a photograph of today.
+  #
+  # THE EDDIES. Where two jets pass each other the air between them is sheared, and small vortices
+  # roll there. `lines` of them are drawn, at the steepest gradients of the `jupiter-bands` profile
+  # (scene/weather/flow.js shearLines picks them), each turning at half the measured shear (the rate
+  # at which a sheared fluid turns on itself) and in its sense, but never faster than
+  # `max_turns_per_day`: at the full rate of the 24 N jet's flanks (0.3) a still picture is wound into
+  # commas, seen in the stills of 2026-10-12. Their places along the band, their
+  # sizes (at most `half_deg_max` of latitude) and their number are GENERATED. `wake` is the Great
+  # Red Spot's: the churned air downstream of it, on its poleward-of-equator side, which is WEST of
+  # the spot because the jet on that side blows west (the profile's -50 m/s at 20 S planetographic);
+  # `reach` is in spot half-widths. A displacement of the map's lookup, never more than one eddy's
+  # diameter, so the picture is never smeared however long the clock runs.
+  - id: jupiter-eddies
+    world: jupiter
+    kind: shear-eddies
+    class: illustrative
+    off_at: [tier0, save_data]
+    measured: hidden
+    source:
+      name: "Tollefson et al. 2017, Icarus 296, 163 (the jets whose shear is used; see jupiter-bands)"
+      url: "https://doi.org/10.1016/j.icarus.2017.06.007"
+      read: 2026-10-03
+    eddies: {from_share: 0.2, lines: 7, lat_max_deg: 62, half_deg_max: 1.5, max_turns_per_day: 0.1, wake: {reach: 5, half_deg: 1.3, turns_per_day: 0.1}}
+    why: "The map is one picture at 0.18 degrees a pixel and nothing re-forms in it. Where the shear is, how strong it is and which way it turns the air are measured; every eddy drawn there is generated, below the map's resolution in time, and stands still where less motion is asked for."
+
+  # THE OVALS. [u, v, half_u, half_v, period_days] in the map's own coordinates (v from the south),
+  # MEASURED ON THE PICTURES on 2026-10-12 (the brightest compact ovals between 25 S and 48 S, their
+  # half-brightness extents). `own` is site/textures/2k_jupiter.webp, `hubble` the OPAL map of 2025
+  # (2k_jupiter_opal_2025.webp). The first of each is Oval BA (28.7 S planetocentric in the first map,
+  # 30.1 S in Hubble's, which is 33 S planetographic); the rest are the three largest white ovals of
+  # the chain at 40 S planetographic (36.8 S planetocentric in Hubble's map).
+  # THE TURNING. Oval BA: its central part turned 4.5 degrees in 1 640 s, "9.9 deg/hr", anticyclonic,
+  # on Juno's PJ17 maps (J. Rogers, BAA, 2019 February 17): once in 36 hours, 1.5 days. THE WHITE
+  # OVALS' PERIOD IS OURS: NASA's caption calls them "massive rotating storms" and nothing read for
+  # this row gives their rate; 3 days is BA's outer rim (2.2 to 2.8 degrees in the same 1 640 s).
+  - id: jupiter-ovals
+    world: jupiter
+    kind: ovals
+    class: modelled
+    off_at: [tier0, save_data]
+    measured: same
+    source:
+      name: "Rogers 2019, Circulation in oval BA (BAA Jupiter Section, Juno PJ17 report, appendix 1: 9.9 deg/hr in the central part, 109 and 142 m/s in the annulus); Choi, Showman and Vasavada 2010, Icarus 207, 359 (Oval BA's rim at 140 to 150 m/s by New Horizons); NASA photojournal, Jupiter's Stunning Southern Hemisphere (9 November 2017: 'one of eight massive rotating storms at 40 degrees south latitude')"
+      url: "https://britastro.org/wp-content/uploads/2019/02/PJ17-Appx1_BA-rotation.pdf"
+      read: 2026-10-12
+    ovals:
+      from_share: 0.12
+      own: [[0.8323, 0.3403, 0.0112, 0.0171, 1.5], [0.1999, 0.2674, 0.0066, 0.0107, 3], [0.2917, 0.2693, 0.0056, 0.0107, 3], [0.5750, 0.2721, 0.0049, 0.0112, 3]]
+      hubble: [[0.9094, 0.3325, 0.0127, 0.0137, 1.5], [0.5469, 0.2956, 0.0049, 0.0068, 3], [0.0380, 0.2949, 0.0044, 0.0073, 3], [0.4876, 0.2947, 0.0046, 0.0063, 3]]
+    note: "Each oval turns within itself, anticlockwise as an anticyclone in the south does, where the map has it. Oval BA's rate is measured; the white ovals' is taken from BA's rim. Their drift is not modelled."
+
+  # THE POLES JUNO SAW. No map made from the Earth holds Jupiter's poles. What Juno found there, as
+  # read on 2026-10-12 in Rogers, Eichstadt, Hansen, Orton et al., "Results from Juno: Jupiter's polar
+  # polygons" (BAA, 8 March 2018, JunoCam, perijoves 1 to 11):
+  #   north  "eight cyclones form a modified octagon or 'double square' around a central one"; mean
+  #          latitudes "chaotic CPC, 83.4 (+-0.5)" and filled, 82.7 (+-0.5), alternately; diameters
+  #          "4.5-6 deg latitude (5200-7000 km)".
+  #   south  "five cyclones form a pentagon around a central cyclone", which is "offset from the pole
+  #          by 1.0 to 2.5 deg latitude", "towards L3 ~218"; the pentagon "~18 deg (21,000 km) in
+  #          diameter" at its outer edge, so its cyclones' centres are about 6 degrees from the
+  #          central one; diameters "5.5-7 deg latitude (6400-8200 km)".
+  #   turning "0.1 to 0.3 deg/min": at 0.2, once in 30 hours.
+  # Adriani et al. 2018 (Nature 555, 216; its abstract read the same day) is the discovery and gives
+  # the same counts. THE STATE DRAWN IS 2017: on 3 November 2019 Juno found a sixth, smaller cyclone
+  # in the southern ring (NASA, 12 December 2019, "from a pentagon ... to a hexagonal arrangement"),
+  # which is not drawn. `north.ring` and `south.ring` are [latitude or distance, count]; the
+  # LONGITUDES ARE OURS: the cyclones are spaced evenly (the real octagon is not quite even), and the
+  # shipped map's meridian is not tied to System III, so `toward_lon_w` only fixes which side the
+  # southern cluster leans to against our own longitudes.
+  - id: jupiter-polar-cyclones
+    world: jupiter
+    kind: polar-cyclones
+    class: modelled
+    off_at: [tier0, save_data]
+    measured: same
+    source:
+      name: "Adriani et al. 2018, Clusters of cyclones encircling Jupiter's poles, Nature 555, 216 (Juno JIRAM and JunoCam); Rogers, Eichstadt, Hansen, Orton et al. 2018, Results from Juno: Jupiter's polar polygons (BAA, 8 March 2018: the latitudes, sizes and turning used); NASA, Juno Navigators Enable Jupiter Cyclone Discovery (12 December 2019: the sixth southern cyclone of 3 November 2019, not drawn)"
+      url: "https://doi.org/10.1038/nature25491"
+      read: 2026-10-12
+    cyclones:
+      from_share: 0.1
+      state: "2017 (Juno's perijoves 1 to 11)"
+      cap_lat_deg: 75
+      period_days: 1.25
+      north: {centre_lat_deg: 90, centre_diameter_deg: 5.5, ring_lats_deg: [83.4, 82.7], count: 8, diameter_deg: 5.2}
+      south: {centre_offset_deg: 1.75, toward_lon_w: 218, ring_from_centre_deg: 6, count: 5, diameter_deg: 6.2}
+    note: "A reconstruction from Juno's published counts, latitudes, sizes and turning, not a photograph: each cyclone's spiral, its longitude and the colour of the cap are ours."
+
+  # DEPTH. NASA's page (read 2026-10-12): Jupiter "likely has three distinct cloud layers" that
+  # together span about 71 km, ammonia ice on top, ammonium hydrosulfide under it, water below. That
+  # the dark places of the picture are where the top deck is thin is the usual reading and is OURS
+  # here, not that page's. Drawn: in the darkest places of the map (`gap_lum`, linear luminance,
+  # [fully a gap, not a gap], the 5th and 30th percentiles MEASURED on each picture between 63 S and
+  # 63 N on 2026-10-12) a second lookup of the same map, softer, darker and bluer (`tint`), is seen at
+  # an offset that follows the view: ONE more texture fetch. `thickness_radii` is the layer's depth
+  # as drawn: 0.004 of the radius, 290 km, four times the 71 km of the real decks, or nothing
+  # would be seen to move.
+  - id: jupiter-depth
+    world: jupiter
+    kind: cloud-depth
+    class: illustrative
+    off_at: [tier0, save_data]
+    measured: hidden
+    source:
+      name: "NASA Science, Jupiter: Facts (three cloud layers spanning about 71 km: ammonia ice, ammonium hydrosulfide, water)"
+      url: "https://science.nasa.gov/jupiter/jupiter-facts/"
+      read: 2026-10-12
+    depth:
+      from_share: 0.4
+      thickness_radii: 0.004
+      strength: 0.6
+      tint: [0.70, 0.80, 0.96]
+      gap_lum: {own: [0.22, 0.31], hubble: [0.38, 0.44]}
+    why: "A camera sees one deck's top. That the dark places are gaps onto deeper cloud is known; the under-deck here is the same picture again, shifted and tinted, and its depth is drawn several times too great so that it can be seen."
+
+  # THE CLOSE-RANGE DETAIL (2026-10-12, a look at the live build: "at the rig's closest zoom Jupiter
+  # is a featureless beige field"). One row a world. `contrast` is the most the brightness is
+  # multiplied or divided by, `colour` the share of that again by which the bright streaks lean warm
+  # and the dark ones blue (so no channel ever moves 15 %); `cells_lat` is how many cells of the
+  # coarsest octave lie pole to pole and `stretch` how many times longer each is along latitude.
+  # The shader (scene/weather/worldweather.js WX_DETAIL) fades it in only where one texel of the
+  # map is wider than a pixel, and it rides the same wind as the map (the world's zonal-flow row).
+  - id: jupiter-detail
+    world: jupiter
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Tollefson et al. 2017, Icarus 296, 163 (the winds that carry it; see jupiter-bands)"
+      url: "https://doi.org/10.1016/j.icarus.2017.06.007"
+      read: 2026-10-03
+    detail: {contrast: 0.12, colour: 0.2, cells_lat: 192, stretch: 4}
+    why: "The map is 2 048 or 4 096 texels round and the camera comes within a few per cent of the radius, where a texel is tens of pixels wide: below the map's resolution nothing here is measured. JunoCam's close pictures show filaments and folds at every scale down to tens of kilometres; this is a streaky noise with that grain, not those clouds."
+
+  - id: saturn-detail
+    world: saturn
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "García-Melendo et al. 2011, Icarus 215, 62 (the winds that carry it; see saturn-bands)"
+      url: "https://doi.org/10.1016/j.icarus.2011.07.005"
+      read: 2026-10-03
+    detail: {contrast: 0.09, colour: 0.15, cells_lat: 192, stretch: 6}
+    why: "As Jupiter's: nothing is measured below the map's resolution. Saturn's bands are blander under their haze, so the texture is fainter and longer along latitude."
+
+  - id: uranus-detail
+    world: uranus
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Sromovsky et al. 2015, Icarus 258, 192 (the winds that carry it; see uranus-drift)"
+      url: "https://doi.org/10.1016/j.icarus.2015.05.029"
+      read: 2026-10-03
+    detail: {contrast: 0.04, colour: 0.1, cells_lat: 160, stretch: 6}
+    why: "As Jupiter's. Uranus seen close by Voyager 2 was very nearly featureless, so this is fainter still: enough that the picture is not one flat colour, and no more."
+
+  - id: neptune-detail
+    world: neptune
+    kind: cloud-detail
+    measured: hidden
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Sromovsky et al. 1993, Icarus 105, 110 (the winds that carry it; see neptune-drift)"
+      url: "https://doi.org/10.1006/icar.1993.1114"
+      read: 2026-10-03
+    detail: {contrast: 0.07, colour: 0.15, cells_lat: 160, stretch: 5}
+    why: "As Jupiter's. Voyager 2 saw streaks of bright cloud and little else; the texture is faint and streaky."
+
+
   - id: saturn-bands
     world: saturn
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "García-Melendo et al. 2011, Saturn's zonal wind profile in 2004-2009 from Cassini ISS images, Icarus 215, 62"
       url: "https://doi.org/10.1016/j.icarus.2011.07.005"
@@ -104,7 +295,8 @@ effects:
       flattening: 0.0980
       sense: 1
       points: [[-90, 0], [-73, 0], [-70, 80], [-65, 0], [-58, 80], [-52, 0], [-42, 90], [-35, 0], [-28, 60], [-20, 220], [-10, 360], [0, 380], [10, 360], [20, 220], [28, 60], [35, 0], [42, 110], [50, 0], [60, 100], [66, 0], [72, 5], [78.1, 104], [82, 10], [90, 0]]
-    # The two polar vortices (about 150 m/s at 88 degrees) are left out: the map has no pole in it.
+    # The polar vortices are not in this profile (the map has no pole in it); the northern one is
+    # its own row, saturn-polar-vortex.
     note: "The equator's jet is some 400 m/s faster than the interior turns; the other jets are narrower."
 
   - id: saturn-hexagon
@@ -112,6 +304,7 @@ effects:
     kind: hexagon
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Sánchez-Lavega et al. 2021, Interaction of Saturn's Hexagon with convective storms, GRL 48 (the jet at 78.1 N planetographic, 104 m/s); Godfrey 1988, Icarus 76, 335 (the discovery)"
       url: "https://doi.org/10.1029/2021GL092461"
@@ -119,11 +312,34 @@ effects:
     hexagon: {lat_deg: 78.1, flattening: 0.0980, sides: 6}
     why: "The map we ship has no pole in it. The six sides, the latitude and the fact that it barely moves against the planet's rotation are measured; the line drawn there is ours."
 
+  # THE VORTEX INSIDE THE HEXAGON (2026-10-12, spec 0073 requirement 5). NASA's caption to Cassini's
+  # picture of it, "The Rose" (PIA14944, taken 27 November 2012, published 29 April 2013, read 2026-10-12): "Measurements
+  # have sized the eye at a staggering 1,250 miles (2,000 kilometers) across with cloud speeds as
+  # fast as 330 miles per hour (150 meters per second)." It is a cyclone: it turns the way the planet
+  # does, anticlockwise seen from above the north pole. Those two numbers are the row; the turning
+  # drawn is the wall's -- once round a 2 000 km eye at 150 m/s is 11.6 hours -- as one piece, which
+  # the real storm is not (its speed falls off outward and the clouds shear). The spiral arms, their
+  # number (scene/weather/worldweather.js VORTEX) and their reach (`reach_eyes`, in eye radii) are OURS. Drawn from `from_share` of half the
+  # view: at a distance the eye is under a pixel and the hexagon's own dark eye stands for it.
+  - id: saturn-polar-vortex
+    world: saturn
+    kind: polar-vortex
+    class: illustrative
+    measured: hidden
+    off_at: [tier0, save_data]
+    source:
+      name: "NASA/JPL-Caltech/SSI, The Rose (Cassini ISS, PIA14944, 29 April 2013: the eye 2,000 km across, cloud speeds to 150 m/s); Baines et al. 2009, Saturn's north polar cyclone and hexagon at depth, Planet. Space Sci. 57, 1671"
+      url: "https://science.nasa.gov/resource/the-rose/"
+      read: 2026-10-12
+    vortex: {eye_diameter_km: 2000, wind_m_s: 150, radius_km: 58232, from_share: 0.3, reach_eyes: 6}
+    why: "The map has no pole in it, and no camera is watching Saturn's pole now. The eye's size and the speed of its wall are Cassini's; the spiral drawn round it, and that it turns as one piece, are ours."
+
   - id: venus-superrotation
     world: venus
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Sánchez-Lavega et al. 2008, Variable winds on Venus mapped in three dimensions, GRL 35, L13204 (Venus Express VIRTIS, cloud tops)"
       url: "https://doi.org/10.1029/2008GL033817"
@@ -142,6 +358,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Sromovsky et al. 2015, High S/N Keck and Gemini AO imaging of Uranus during 2012-2014, Icarus 258, 192"
       url: "https://doi.org/10.1016/j.icarus.2015.05.029"
@@ -158,6 +375,7 @@ effects:
     kind: zonal-flow
     class: modelled
     off_at: [tier0, save_data]
+    measured: same
     source:
       name: "Sromovsky et al. 1993, Dynamics of Neptune's major cloud features, Icarus 105, 110 (Voyager 2; the fit u = -398 + 0.188 lat^2 - 1.2e-5 lat^4 m/s)"
       url: "https://doi.org/10.1006/icar.1993.1114"
@@ -176,6 +394,7 @@ effects:
     kind: mars-season
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Allison and McEwen 2000, Planet. Space Sci. 48, 215 (the season, Ls, from the date); Piqueux et al. 2015, Icarus 251, 164 (the seasonal caps' edges by Ls, MRO MCS); Kass et al. 2016, GRL 43, 6111 (the dusty season)"
       url: "https://doi.org/10.1016/S0032-0633(99)00092-6"
@@ -208,6 +427,7 @@ effects:
     kind: giant-lightning
     class: illustrative
     off_at: [tier0, save_data, reduced_motion]
+    measured: hidden
     source:
       name: "Brown et al. 2018, Prevalent lightning sferics at 600 megahertz near Jupiter's poles, Nature 558, 87 (Juno's microwave radiometer: 377 sferics, 'prevalent in the polar regions, absent near the equator, and most frequent in the northern hemisphere, at latitudes higher than 40 degrees north'); Becker et al. 2020, Nature 584, 55 (Juno's star camera: small flashes on the night side, from above the 2-bar level)"
       url: "https://doi.org/10.1038/s41586-018-0156-5"
@@ -220,6 +440,7 @@ effects:
     kind: giant-lightning
     class: illustrative
     off_at: [tier0, save_data, reduced_motion]
+    measured: hidden
     source:
       name: "Dyudina et al. 2010, Detection of visible lightning on Saturn, GRL 37, L09205 (Cassini's camera, 17 August 2009, night side: 'at -36.4 +- 0.1 degrees planetocentric latitude', one flash a minute, each lighting a spot about 200 km across); Dyudina et al. 2013, Icarus 226, 1020 (the great storm of 2010-2011 at about 35 N)"
       url: "https://doi.org/10.1029/2010GL043188"
@@ -234,6 +455,7 @@ effects:
     kind: planetary-wave
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "Imai et al. 2019, Planetary-scale variations in winds and UV brightness at the Venusian cloud top, JGR Planets 124 (Akatsuki's ultraviolet imager at 365 nm, 2017: 'the 4-day Kelvin wave and 5-day Rossby wave with zonal wavenumber 1'); JAXA, Akatsuki's UVI pictures ('a vast darker region which has a shape of laid V or Y ... flows westward')"
       url: "https://arxiv.org/abs/1908.08220"
@@ -248,6 +470,7 @@ effects:
     kind: cloud-patches
     class: illustrative
     off_at: [tier0, save_data]
+    measured: hidden
     source:
       name: "NASA, Webb and Keck telescopes team up to track clouds on Titan (1 December 2022: Webb on 4 November 2022 and Keck two days later, one cloud 'over the northern polar region near Kraken Mare'); Nixon et al. 2025, Nature Astronomy (November 2022 and July 2023: 'northern hemisphere tropospheric clouds evolving in altitude')"
       url: "https://science.nasa.gov/blogs/webb/2022/12/01/webb-keck-telescopes-team-up-to-track-clouds-on-saturns-moon-titan/"

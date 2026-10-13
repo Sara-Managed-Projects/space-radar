@@ -10,6 +10,8 @@ do not come back to report it. So, each by reading the files:
     docs/CONTRIBUTE_WITHOUT_CODE.md, docs/REVIEWING.md, GOVERNANCE.md and CONTRIBUTORS.md exists,
     every relative link in them resolves, and none of them has an em dash;
   * every CI step a guide quotes by name is a step of .github/workflows/ci.yml;
+  * a link into a section of docs/FIRST_PR.md from the README or CONTRIBUTING.md lands on a heading
+    that is there, and every starter-issue list that page offers leaves out what is already taken;
   * every item scripts/check.sh runs is a file that exists, and the guides name that command;
   * .devcontainer/devcontainer.json parses, forwards the port the guides use and installs PyYAML;
   * every path pattern in .github/labeler.yml matches a file;
@@ -80,6 +82,23 @@ def dead_links(name, text):
     return bad
 
 
+def slug(heading):
+    """The anchor GitHub gives a heading: lower case, punctuation dropped, spaces to hyphens."""
+    return re.sub(r"\s", "-", re.sub(r"[^\w\s-]", "", heading.strip().lower()))
+
+
+def dead_anchors(text, doc, doc_text):
+    """Links in `text` to `doc`#section whose section is not a heading of `doc_text`."""
+    have = {slug(h) for h in re.findall(r"^#{1,6}\s+(.+)$", doc_text, re.M)}
+    return [a for a in re.findall(r"\]\((?:\.\./|docs/)?" + re.escape(doc.split("/")[-1]) + r"#([^)\s]+)\)", text) if a not in have]
+
+
+def unfiltered_lists(text):
+    """Starter-issue searches that would also list an issue somebody is already working on."""
+    urls = re.findall(r"\]\((https://github\.com/[^)\s]+/issues\?q=[^)\s]+)\)", text)
+    return [u for u in urls if "good+first+issue" in u and not ("-linked%3Apr" in u and "no%3Aassignee" in u and "is%3Aopen" in u)]
+
+
 texts = {}
 for name in DOCS:
     p = ROOT / name
@@ -128,6 +147,19 @@ check("codespaces.new/Sara-Managed-Projects/space-radar" in readme, "README lack
 check("docs/FIRST_PR.md" in readme, "README does not link docs/FIRST_PR.md")
 first = texts.get("docs/FIRST_PR.md", "")
 check("waits for a maintainer" in first and "do not close" in first, "docs/FIRST_PR.md must say the first CI run waits for a maintainer, and not to close the pull request")
+
+# --- picking a task: 317 starter issues were open on 2026-10-11 and the README sent a newcomer to
+# all of them at once, seventeen with a pull request already open. The README now promises a list
+# of "the starter issues nobody has begun", so the list must be filtered and the link must land.
+for name in ("README.md", "CONTRIBUTING.md"):
+    for a in dead_anchors((ROOT / name).read_text(encoding="utf-8"), "docs/FIRST_PR.md", first):
+        problems.append(f"{name} links to docs/FIRST_PR.md#{a}, and no heading there has that anchor")
+check("docs/FIRST_PR.md#pick-a-task" in readme, "README must send a newcomer to the 'Pick a task' section of docs/FIRST_PR.md, not to the whole label")
+track_lists = [u for u in re.findall(r"\]\((https://[^)\s]+)\)", first) if "label%3Atrack%3A" in u]
+check(len(track_lists) >= 8, f"docs/FIRST_PR.md should offer the starter issues by track (found {len(track_lists)} track lists)")
+for u in unfiltered_lists(first):
+    problems.append(f"docs/FIRST_PR.md offers a starter-issue list that does not leave out taken issues: {u}")
+check("Whoever opens the pull request first has the issue" in first and "first has it" in (ROOT / "docs/REVIEWING.md").read_text(encoding="utf-8"), "docs/FIRST_PR.md and docs/REVIEWING.md must give the same rule for who has an issue")
 
 # --- the dev container
 raw = (ROOT / ".devcontainer/devcontainer.json").read_text(encoding="utf-8")
@@ -230,6 +262,9 @@ check((ROOT / "CONTRIBUTORS.md").read_text(encoding="utf-8").startswith("# Contr
 assert missing_paths("see `scripts/no_such_file.py` and `registry/*.nothing`") == ["registry/*.nothing", "scripts/no_such_file.py"]
 assert missing_paths("see `scripts/check.sh`, `tests/test_<name>.mjs` and `registry/*.yaml`") == []
 assert dead_links("docs/FIRST_PR.md", "[x](NOPE.md) [y](ARCHITECTURE.md) [z](https://example.org)") == ["NOPE.md"]
+assert dead_anchors("[a](docs/FIRST_PR.md#pick-a-task-2-minutes) [b](docs/FIRST_PR.md#gone)", "docs/FIRST_PR.md", "## Pick a task (2 minutes)\n") == ["gone"]
+assert unfiltered_lists("[x](https://github.com/o/r/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+label%3Atrack%3Adata)") != []
+assert unfiltered_lists("[x](https://github.com/o/r/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee+-linked%3Apr+label%3Atrack%3Adata)") == []
 assert workflow_problems("x.yml", "on: pull_request_target\npermissions: {}\nsteps:\n  - uses: actions/checkout@v7\n") != []
 assert workflow_problems("x.yml", "steps:\n  - uses: someone/thing@" + "a" * 40 + "\n") != []
 assert workflow_problems("x.yml", "env:\n  T: ${{ secrets.AWS_KEY }}\n") != []

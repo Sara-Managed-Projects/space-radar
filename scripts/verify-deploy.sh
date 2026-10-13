@@ -8,6 +8,8 @@
 #   scripts/verify-deploy.sh --source             # the site was deployed with `deploy.sh --no-minify`
 #   scripts/verify-deploy.sh --strip-only         # the site was deployed with `deploy.sh --strip-only`
 #   scripts/verify-deploy.sh --any-encoding       # the site was deployed with `deploy.sh --no-precompress`
+#   scripts/verify-deploy.sh --expect=HEAD        # fail unless the site says it is built from this commit
+#                                                 # (a full sha, a short one, or any name git resolves)
 #
 # js/, css/ and vendor/ are compared with what deploy.sh uploads, which since 2026-10-06 (internal
 # #405) is scripts/minify_site.py's copy without comments, and since 2026-10-09 (internal #515) that
@@ -22,6 +24,12 @@
 # `Accept-Encoding: identity` must come back plain and equal (a crawler's view); and one script
 # asked for with gzip only says whether the gzip fallback is installed (information, not a failure).
 #
+# WHICH COMMIT (public #291). The site says what it is built from in /build.json (scripts/build_info.py,
+# written by deploy.sh). This script reads it and prints the commit, always; with --expect it fails
+# when the site names another commit, or none. Without --expect a site with no build.json (one
+# deployed before 2026-10-12, a local server) is a line of information, because the bytes are what
+# this script compares.
+#
 # WHY. deploy.sh uploads and invalidates, and says "done" -- which is what it did, not what a visitor
 # gets. Every deploy since 2026-09-16 was followed by this check by hand; it caught nothing wrong in
 # the files deploy.sh invalidates, and it is the only way to see a .glb or texture that changed
@@ -34,6 +42,7 @@ BASE="https://www.spaceradar.ai"
 SKIP_LARGE=0
 SOURCE=0
 ANY_ENCODING=0
+EXPECT=""
 REAL=(--esbuild auto)
 PATHS=()
 for a in "$@"; do
@@ -43,7 +52,8 @@ for a in "$@"; do
     --source) SOURCE=1 ;;
     --strip-only) REAL=() ;;
     --any-encoding) ANY_ENCODING=1 ;;
-    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
+    --expect=*) EXPECT="${a#--expect=}" ;;
+    -h|--help) sed -n '2,39p' "$0"; exit 0 ;;
     *) PATHS+=("$a") ;;
   esac
 done
@@ -104,6 +114,24 @@ fi
 # The gzip fallback (scripts/edge/encoding-fallback.js): installed or not, said plainly.
 fallback=$(printf 'js/main.js\n' | node scripts/fetch_hash.mjs --base="$BASE" --accept=gzip | cut -f2)
 case "$fallback" in gzip) note="a client without Brotli is sent gzip" ;; br) note="a client without Brotli is sent Brotli all the same: the gzip fallback is not installed" ;; *) note="a client without Brotli is sent js/main.js as '$fallback'" ;; esac
+
+# Which commit the site says it is (the note at the top). The commit is printed only after
+# scripts/freshness.py has read it as forty hex characters: it is text from the network.
+curl -fsS --max-time 30 "$BASE/build.json" -o "$WORK/build.json" 2>/dev/null || rm -f "$WORK/build.json"
+live=$(python3 scripts/freshness.py --commit-of "$WORK/build.json")
+if [ -n "$live" ]; then
+  echo "verify-deploy: the site says it is built from $live"
+else
+  echo "verify-deploy: the site has no readable build.json, so it does not say which commit it is"
+fi
+if [ -n "$EXPECT" ]; then
+  want=$(git rev-parse --verify --quiet "$EXPECT^{commit}" 2>/dev/null || printf '%s' "$EXPECT")
+  case "$live" in
+    "") echo "WRONG COMMIT  --expect=$EXPECT, and the site names none"; bad=$((bad + 1)) ;;
+    "$want"*) ;;
+    *) echo "WRONG COMMIT  the site is built from $live, not $want (--expect=$EXPECT)"; bad=$((bad + 1)) ;;
+  esac
+fi
 
 echo "verify-deploy: $ok match ($br of them stored as Brotli, $pages trip pages and $sounds sound files among them), $bad differ, $skipped skipped (over 1 MB) -- $BASE"
 echo "verify-deploy: $note"

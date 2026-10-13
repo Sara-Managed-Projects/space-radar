@@ -7,6 +7,7 @@
 // fails here instead of on a visitor's phone. site/lab/_template/ is held to the same rules; it is just not listed.
 //   node tests/test_lab.mjs
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import vm from 'node:vm';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -67,6 +68,44 @@ function smoke(where, simSrc) {
   return SIM;
 }
 
+// --- the whole page, run once in a fake browser ----------------------------------------------------
+// The piece-by-piece check above cannot see a name declared twice, a helper used before it exists, or a throw in the page's own code, and
+// node does not know the window's own names. So the page's script runs here whole, against a fake document and a recording canvas, and is
+// stepped through several frames at three slider values, as a visitor's browser would.
+function runPage(where, slug, html) {
+  const errs = [];
+  const comment = (html.match(/<!--(\s*Sources[\s\S]*?)-->/) || [, ''])[1];
+  const meta = (n) => (html.match(new RegExp('<meta name="' + n + '" content="(.*?)">')) || [, 'x'])[1];
+  let font = 12, raf = null, now = 0;
+  const num = (name, a) => { for (const v of a) if (typeof v === 'number' && !Number.isFinite(v)) errs.push(`the page passed ${v} to ${name}`); };
+  const ctx = new Proxy({}, { get(_, k) {
+    if (k === 'font') return font + 'px x';
+    if (k === 'measureText') return (s) => ({ width: String(s).length * font * 0.55 });
+    if (k === 'createRadialGradient' || k === 'createLinearGradient') return (...a) => { num(k, a); return { addColorStop() {} }; };
+    if (['fillRect', 'strokeRect', 'arc', 'ellipse', 'moveTo', 'lineTo', 'rect', 'translate', 'scale', 'rotate', 'quadraticCurveTo', 'bezierCurveTo', 'arcTo', 'clearRect', 'setTransform', 'drawImage', 'fillText', 'strokeText'].includes(k)) return (...a) => num(k, a.filter((v) => typeof v === 'number'));
+    return () => {};
+  }, set(_, k, v) { if (k === 'font') font = parseFloat((String(v).match(/(\d+(\.\d+)?)px/) || [0, 12])[1]); return true; } });
+  const els = {};
+  const el = (id) => els[id] ??= { id, style: {}, children: [], textContent: '', hidden: false, value: '0', firstChild: { textContent: '' }, clientWidth: 390, clientHeight: 433, href: 'a/tree/b', setAttribute() {}, append(...x) { this.children.push(...x); }, getContext: () => ctx };
+  const document = { getElementById: el, querySelector: (q) => ({ content: meta((q.match(/name="(.*?)"/) || [, ''])[1]) }), createElement: () => el('_' + Math.random()),
+    createTreeWalker: () => { let done = false; return { nextNode: () => (done ? null : (done = true, { data: comment })) }; } };
+  const sandbox = { document, NodeFilter: { SHOW_COMMENT: 128 }, location: { pathname: `/lab/${slug}/index.html` }, matchMedia: () => ({ matches: false }), performance: { now: () => now }, devicePixelRatio: 1,
+    ResizeObserver: class { observe() {} }, requestAnimationFrame: (f) => { raf = f; }, URL };
+  const code = html.slice(html.indexOf('<script>') + 8, html.lastIndexOf('</script>'));
+  const c = vm.createContext(sandbox);
+  try { vm.runInContext(code, c, { filename: slug }); } catch (e) { bad(where, `the page's script throws as it loads: ${e.message}`); return; }
+  if (typeof raf !== 'function') { bad(where, 'the page never asks for an animation frame'); return; }
+  const sim = vm.runInContext('SIM', c), p = sim.param, ps = el('ps'), ts = el('ts');
+  for (const pv of p ? [p.value, p.min, p.max] : [null]) for (const frac of [0.02, 0.3, 0.55, 0.8, 0.98]) {
+    try {
+      if (pv != null) { ps.value = String(pv); ps.oninput(); }
+      ts.value = String(frac * sim.dur); ts.oninput(); now = frac * sim.dur * 1000; raf(now);
+    } catch (e) { errs.push(`a frame (slider ${pv}, time ${(frac * sim.dur).toFixed(1)} s) throws: ${e.message}`); }
+  }
+  if (/NaN|undefined|Infinity/.test(el('line').textContent)) errs.push(`the caption says ${JSON.stringify(el('line').textContent.slice(0, 80))}`);
+  for (const e of new Set(errs)) bad(where, e);
+}
+
 // --- each file -----------------------------------------------------------------------------------
 const WINDOW_NAMES = new Set('top name status parent self length location origin event closed frames opener screen history stop find print open close focus blur scroll document window navigator performance'.split(' '));
 const NETWORK = [[/\bfetch\s*\(/, 'fetch()'], [/XMLHttpRequest/, 'XMLHttpRequest'], [/WebSocket|EventSource|sendBeacon|importScripts|serviceWorker/, 'a network or worker API'], [/\bimport\s*\(|^\s*import\s|\bexport\s/m, 'a module import/export'],
@@ -81,7 +120,8 @@ for (const slug of folders) {
   n++;
   // A top-level const or let named like something the browser window already owns (top, name, status ...) is a
   // SyntaxError there and the whole page stays blank; node does not mind, so the drawing check below cannot see it.
-  for (const ln of text.split('\n')) if (/^(?:const|let)\s/.test(ln)) for (const m of ln.matchAll(/(?:^(?:const|let)\s+|,\s*)([A-Za-z_$][\w$]*)\s*=(?![=>])/g)) if (WINDOW_NAMES.has(m[1])) bad(where, `declares "${m[1]}" at the top of its script: the browser window already has that name, so the page fails to start. Pick another name`);
+  for (const ln of text.split('\n')) if (/^(?:const|let|var|function)\s/.test(ln)) for (const m of ln.matchAll(/(?:^(?:const|let)\s+|,\s*)([A-Za-z_$][\w$]*)\s*=(?![=>])/g)) if (WINDOW_NAMES.has(m[1])) bad(where, `declares "${m[1]}" at the top of its script: the browser window already has that name, so the page fails to start. Pick another name`);
+  for (const m of text.matchAll(/^function\s+([A-Za-z_$][\w$]*)/gm)) if (WINDOW_NAMES.has(m[1])) bad(where, `declares the function "${m[1]}" at the top of its script: the browser window already has that name. Pick another name`);
   const size = statSync(file).size, lines = text.split('\n').length;
   if (size > MAX_BYTES) bad(where, `${size} bytes, over the ${MAX_BYTES} byte budget`);
   if (lines > MAX_LINES) bad(where, `${lines} lines, over ${MAX_LINES}`);
@@ -107,11 +147,12 @@ for (const slug of folders) {
     if (!/\b20\d\d-\d\d-\d\d\b/.test(sources)) bad(where, 'the Sources comment has no date read (YYYY-MM-DD)');
   }
   // the simulator part
-  const open = text.indexOf('<script>'), mark = text.search(/^\/\/ =+ 2\. THE PAGE/m);
-  if (open < 0 || mark < 0 || text.indexOf('<script', open + 8) >= 0) { bad(where, 'needs one <script> with the "// ==== 2. THE PAGE" marker after the simulator part (copy site/lab/_template/)'); continue; }
-  const simSrc = text.slice(open + 8, mark);
+  const open = text.indexOf('<script>'), m1 = text.search(/^\/\/ =+ 1\. THE SIMULATOR/m), mark = text.search(/^\/\/ =+ 2\. THE PAGE/m);
+  if (open < 0 || m1 < 0 || mark < m1 || text.indexOf('<script', open + 8) >= 0) { bad(where, 'needs one <script> with the "// ==== 1. THE SIMULATOR" and "// ==== 2. THE PAGE" markers around the simulator part (copy site/lab/_template/)'); continue; }
+  const simSrc = text.slice(m1, mark);
   if (!/\bconst\s+SIM\s*=/.test(simSrc)) bad(where, 'the simulator part must declare const SIM');
   if (!/honest\s*:\s*["'`]/.test(simSrc)) bad(where, 'no honesty line: SIM.honest says what is and is not to scale');
+  runPage(where, slug, text);
   smoke(where, simSrc);
   // the page: controls by touch and keyboard, the way back, the way in
   if (!/<button\b/.test(text) || !/type="range"/.test(text)) bad(where, 'needs its controls: a <button> and range inputs (they work by touch and keyboard)');
@@ -123,7 +164,7 @@ for (const slug of folders) {
   // the index lists it
   if (!slug.startsWith('_')) {
     if (!index.includes(`href="${slug}/index.html"`)) bad(where, 'is not in site/lab/index.html: run python3 scripts/gen_lab_index.py');
-    if (title && !index.includes(`<h3>${decode(title).replace(/ \| Space Radar Lab$/, '').replace(/&/g, '&amp;')}</h3>`)) bad(where, 'its title in site/lab/index.html is out of date: run python3 scripts/gen_lab_index.py');
+    if (title && !index.includes(`<h3>${decode(title).replace(/ \| Space Radar Lab$/, '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' })[ch])}</h3>`)) bad(where, 'its title in site/lab/index.html is out of date: run python3 scripts/gen_lab_index.py');
   }
 }
 // the index lists only what exists

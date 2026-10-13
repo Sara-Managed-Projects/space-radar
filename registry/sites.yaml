@@ -159,9 +159,7 @@ sites:
   - {id: shuttle-lc-39b, display: "Space Shuttle, Launch Complex 39B", class: pad, world: earth, lat: 28.6272, lon: -80.6208, alt_m: 0, aliases: ["Space Shuttle", "LC-39B", "STS"], liftoffs: ["1988-09-29", "1990-04-24", "2006-12-10"], doing: "A pad 53 Space Shuttle flights left from, the last in 2006. The stack is drawn only on the day of each launch listed here: choose one to go there."}
 
   # --- On the Moon --------------------------------------------------------------------
-  # Uncited: LROC's 2016 table has the lunar module at 0.67416, 23.47314 (+/- 0.3 m), about 5 m
-  # from this row. Where this row's numbers came from is not recorded.
-  - {id: apollo-11, display: "Apollo 11 landing site", class: surface, world: moon, lat: 0.6741, lon: 23.4730, landed: 1969-07-20, shape: lunar-module, source: uncited, aliases: ["Tranquility Base"], doing: "Where people first stood on another world, in July 1969. The descent stage is still there."}
+  - {id: apollo-11, display: "Apollo 11 landing site", class: surface, world: moon, lat: 0.67416, lon: 23.47314, uncertainty_m: 0.3, landed: 1969-07-20, shape: lunar-module, source: lroc-2016, aliases: ["Tranquility Base"], doing: "Where people first stood on another world, in July 1969. The descent stage is still there."}
   # Apollo 14 and 16 are here because registry/oddities.yaml anchors on them BY ID: a surveyed
   # coordinate lives in exactly one place, and an oddity that copied the numbers into its own row
   # would be a second place for them to drift. Both are LROC spacecraft coordinates and both

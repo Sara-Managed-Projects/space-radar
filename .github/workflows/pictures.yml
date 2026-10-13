@@ -1,0 +1,35 @@
+name: pictures
+
+# A pull request that changes what is DRAWN shows it (scripts/pr_pictures.py says the rule and
+# why). Read access only: this runs on pull requests from forks, and needs nothing but the list
+# of changed files, the description and the labels. It runs again when the description is edited,
+# when a draft is made ready and when a label is set, so adding the picture turns the check green
+# without a new commit.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review, converted_to_draft, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pictures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: A drawn change has a picture in its description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Asked of GitHub now, not read from the event: a description edited a second ago is the one that counts.
+          gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename' > /tmp/files.txt
+          gh api "repos/$REPO/pulls/$PR" --jq '.body // ""' > /tmp/body.md
+          LABELS=$(gh api "repos/$REPO/pulls/$PR" --jq '[.labels[].name] | join(",")')
+          DRAFT=$(gh api "repos/$REPO/pulls/$PR" --jq '.draft')
+          ARGS=(--files /tmp/files.txt --body /tmp/body.md --labels "$LABELS")
+          if [ "$DRAFT" = "true" ]; then ARGS+=(--draft); fi
+          python3 scripts/pr_pictures.py "${ARGS[@]}" | tee -a "$GITHUB_STEP_SUMMARY"

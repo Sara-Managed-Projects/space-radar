@@ -5,6 +5,7 @@ version: 1
 
 terms:
   - {term: orbit, say: "A path around something, held by gravity. Fast enough sideways and you keep falling past the Earth instead of into it."}
+  # low Earth orbit: from about 200 to 2000 km up, Types of orbits - ESA, https://www.esa.int/Enabling_Support/Space_Transportation/Types_of_orbits, read 2026-10-12.
   - {term: low Earth orbit, say: "The busy shell from about 200 to 2000 km up. The station, most satellites and most of the debris are here."}
   - {term: geostationary, say: "An orbit 35 786 km up where one lap takes as long as the Earth takes to turn once, 23 hours 56 minutes. So the satellite seems to hang over one spot."}
   - {term: polar orbit, say: "An orbit over the poles. The Earth turns underneath, so the satellite eventually sees every part of it."}
@@ -15,9 +16,12 @@ terms:
   - {term: perihelion, say: "The point where something orbiting the Sun comes closest to it."}
   - {term: inclination, say: "How tilted an orbit is compared with the equator. Ninety degrees goes over the poles."}
   - {term: propagated, say: "Worked forward from an older measurement. Not a fresh observation, and it drifts."}
+  # lunar distance: about 384 000 km, Moon Fact Sheet - NASA NSSDCA, https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html, read 2026-10-12.
   - {term: lunar distance, say: "The distance from Earth to the Moon, about 384 000 km. A handy ruler for asteroid passes."}
+  # astronomical unit: about 150 million km, Earth Fact Sheet - NASA NSSDCA, https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, read 2026-10-12.
   - {term: astronomical unit, say: "The distance from Earth to the Sun, about 150 million km."}
   - {term: light-time, say: "How long light takes to cross a distance. It is also how long a radio message takes."}
+  - {term: light-year, say: "The distance light travels in one Julian year, about 9.46 trillion km. A ruler for the gap between stars."}
   - {term: magnitude, say: "How bright something looks. The scale runs backwards: smaller numbers are brighter."}
   - {term: azimuth, say: "A compass direction in degrees. Zero is north, 90 is east."}
   - {term: elevation, say: "How high something is above the horizon, in degrees. Ninety is straight up."}
@@ -29,9 +33,12 @@ terms:
   - {term: close approach, say: "When an asteroid passes near Earth. Near in astronomy usually means further than the Moon."}
   - {term: near-Earth object, say: "An asteroid or comet whose orbit brings it close to Earth's."}
   - {term: reentry, say: "When something falls back into the atmosphere. Most of it burns up on the way down."}
+  # debris: more than 25,000 objects larger than 10 cm are tracked by the U.S. Space Surveillance Network; NASA Orbital Debris Program Office FAQ, https://orbitaldebris.jsc.nasa.gov/faq/, read 2026-10-11.
   - {term: debris, say: "Dead satellites, spent rocket stages and fragments. Tens of thousands of pieces are tracked."}
   - {term: constellation, say: "A pattern of stars people named long ago. The stars in one are usually nowhere near each other."}
+  # L1: 1.5 million km from Earth towards the Sun, Orbit - NASA Science, https://science.nasa.gov/mission/webb/orbit/, read 2026-10-12.
   - {term: L1, say: "A balance point between the Earth and the Sun, about 1.5 million km sunward. Good for watching the Sun."}
+  # L2: 1.5 million km from Earth, Orbit - NASA Science, https://science.nasa.gov/mission/webb/orbit/, read 2026-10-11.
   - {term: L2, say: "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope can keep the Earth and Sun behind it and stay cold."}
   - {term: transit, say: "When one thing passes in front of another as seen from where you stand."}
   - {term: conjunction, say: "When two things appear close together in the sky. They are not close in space."}

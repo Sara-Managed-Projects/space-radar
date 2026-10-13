@@ -417,7 +417,7 @@ const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (d
   check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 1\.5 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
     `Mars, which has a map and air, says how it is lit and that its air is drawn thicker than it is: ${marsLine}`);
   check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
-  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit, 'Jupiter, with no shell, says only how it is lit');
+  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit + COPY.punctuation.separator + COPY.drawing.worldLight, 'Jupiter, with no shell, says only how it is lit and what its glow is');
   // 2026-10-07: each giant offers Hubble's map of 2025 as a second face, with its day and its credit in the note.
   {
     await import(join(JS, 'copy/en.later.js'));
@@ -431,7 +431,11 @@ const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (d
   }
   // The Earth has its own shader and its own sunlight is the reference; the Sun is the light.
   // 2026-10-06: the Sun says what its close-up picture is (scene/sun.js), and still nothing about exposure.
-  check(drawingLine(recs.find((x) => x.id === 'earth')) === null && drawingLine(recs.find((x) => x.id === 'sun')) === COPY.drawing.worldSun
+  // Spec 0072: the Earth, a light when seen from Mars, says what that glow is; the Sun is not one. Having a
+  // line at all, the Earth now also prints the departure written for it on 2026-10-08 (its relief and its
+  // air's height), which ui/cards.js only appends to a line and so had never shown.
+  const earthLine = drawingLine(recs.find((x) => x.id === 'earth')) || '';
+  check(earthLine.startsWith(COPY.drawing.worldLight) && /ETOPO/.test(earthLine) && !earthLine.includes(COPY.drawing.worldLit) && drawingLine(recs.find((x) => x.id === 'sun')) === COPY.drawing.worldSun
     && !COPY.drawing.worldSun.includes(COPY.drawing.worldLit),
     'the Earth and the Sun carry no exposure line');
   const moonLine = drawingLine(recs.find((x) => x.id === 'moon')) || '';

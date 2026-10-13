@@ -10,7 +10,7 @@ nothing is fetched before they turn sound on (spec 0035 req 1).
     python3 scripts/narrate.py --check                      # CI: no TTS, stdlib + PyYAML
     $VENV/bin/python scripts/narrate.py --models DIR        # render what is stale
     $VENV/bin/python scripts/narrate.py --models DIR --only to-the-edge/sirius --force
-    $VENV/bin/python scripts/narrate.py --models DIR --audition OUT --voices bf_emma,bm_george
+    $VENV/bin/python scripts/narrate.py --models DIR --audition OUT --voices af_heart,bf_emma
 
 WHAT IS SPOKEN. The stop's card, as the visitor reads it: the title, then the body. The bodies are
 written to follow their titles ("A rover driven from Earth" / "Nobody rode it."), so the body
@@ -22,20 +22,28 @@ WRITTEN FOR THE EYE, READ FOR THE EAR. spoken() turns what a synthesiser trips o
 REFUSES a digit it does not know how to say, rather than leaving the model to guess. Names the
 grapheme-to-phoneme step gets wrong are in the registry's `lexicon`, as phonemes.
 
-ONE CLIP PER STOP, ONE CUE PER SENTENCE. A long sentence is synthesised on its own and the clip is
-the sentences joined with pauses this script chooses, so the WebVTT timings are sample counts and
-not an aligner's guess.
+ONE CLIP PER STOP, ONE CUE PER SENTENCE. The clip is the stop's sentences with pauses this script
+chooses between them, so the WebVTT timings are sample counts and not an aligner's guess.
+
+A PARAGRAPH AT A TIME (2026-10-12). Until then every long sentence was synthesised alone, slowed,
+and joined with one fixed pause: each began on the same note and fell the same way, which is how
+a list is read (registry/narration.yaml has the measurements). Now the voice is given two or
+three sentences in one pass (passes(), `timing.join.sentences`) and carries its pitch across the
+full stops; the pass is cut where the model itself paused at each full stop (find_cuts()), so
+the cue times are still sample counts. The pause put back between two sentences follows what was
+just said and is moved by a seeded amount (gaps_for(), `timing.vary`): no two alike, and the
+same every render. `phrasing` gives the voice a comma the caption does not have; never a word.
 
 A SHORT SENTENCE IS NEVER SAID ALONE (internal #441). Given two or three words and a full stop,
 the model puts a vowel-like sound before them and another after: "Venus." came out as "a Venusa",
 "Why it is flat." as "why it is flatter", in most of the first 195 clips. So the title (and any
-sentence of `timing.join.words` words or fewer) is said IN ONE PASS with its neighbour (passes()),
-and the pass is cut where the model itself paused (find_pause()): the cue times are still sample
-counts, and the pause between the two is still the registry's, not the model's. Levelled to -16 LUFS (a gain and a peak limiter, encode() says why), then
+sentence of `timing.join.words` words or fewer) is said IN ONE PASS with its neighbour.
+
+Levelled to -16 LUFS (a gain and a peak limiter, encode() says why), then
 Opus at 32 kbps mono and an AAC twin for a Safari that cannot decode Opus (audio/pick.js).
 
-IDEMPOTENT BY HASH. A clip's hash is its spoken script, the voice, the speed, the engine's id and
-the pauses. A stop whose hash is in the manifest and whose files are there is left alone; change a
+IDEMPOTENT BY HASH. A clip's hash is its spoken script, the voice, the speed, the engine's id, the
+pauses and, since they are seeded by it, the stop's name. A stop whose hash is in the manifest and whose files are there is left alone; change a
 card's words and --check fails until that one stop is rendered again.
 
 HEARD BY A MACHINE. Loudness and pace do not notice a name said wrong. scripts/listen_check.py
@@ -85,7 +93,7 @@ SPACES = "\u00a0\u2009\u202f"
 
 
 def int_words(n: int) -> str:
-    """British: "one hundred and nine thousand three hundred and eighty-nine"."""
+    """British: "one hundred and nine thousand, three hundred and eighty-nine"."""
     if n < 0:
         return "minus " + int_words(-n)
     if n < 20:
@@ -100,7 +108,10 @@ def int_words(n: int) -> str:
             head, rest = divmod(n, size)
             if not rest:
                 return f"{int_words(head)} {name}"
-            joiner = " and " if rest < 100 else " "
+            # A comma after the thousands, as a person groups a long number (2026-10-12): without
+            # it the voice broke "three hundred and | eighty-four thousand four hundred" after the
+            # first "and", and two recognisers wrote "300 and 84,400".
+            joiner = " and " if rest < 100 else ", "
             return f"{int_words(head)} {name}{joiner}{int_words(rest)}"
     raise ValueError(n)
 
@@ -125,7 +136,8 @@ def year_words(y: int) -> str:
 
 def decimal_words(text: str) -> str:
     whole, frac = text.split(".")
-    head = "nought" if int(whole) == 0 else int_words(int(whole))
+    # "zero point one two": it was "nought" while the voice was British (until 2026-10-12).
+    head = "zero" if int(whole) == 0 else int_words(int(whole))
     return head + " point " + " ".join(ONES[int(d)] for d in frac)
 
 
@@ -216,7 +228,35 @@ def cues_for(trip: dict, stop: dict, cfg: dict) -> list:
             shown.append(title if title[-1] in ".!?" else title + ".")
         shown.extend(sentences(card.get("body") or ""))
     lexicon = cfg.get("lexicon") or {}
-    return [(text, apply_lexicon(spoken(text), lexicon)) for text in shown]
+    voiced = phrased(key, shown, cfg)
+    return [(text, apply_lexicon(spoken(said), lexicon)) for text, said in zip(shown, voiced)]
+
+
+def letters(text: str) -> str:
+    """A sentence with its punctuation and spacing taken out: what `phrasing` may not change."""
+    return re.sub(r"[^0-9a-z]+", " ", str(text).lower().replace("'", "").replace("\u2019", "")).strip()
+
+
+def phrased(key: str, shown: list, cfg: dict) -> list:
+    """The sentences as the VOICE is given them: the caption's words, with the commas and dashes
+    the registry's `phrasing` asks for (a pause before a reveal, a comma in a long noun pile).
+    The caption is not touched. Refuses a pair that changes a word, is not found exactly once, or
+    moves a full stop: the cues are one per sentence and must stay so. Pure."""
+    pairs = (cfg.get("phrasing") or {}).get(key) or []
+    out = list(shown)
+    for pair in pairs:
+        if not (isinstance(pair, list) and len(pair) == 2):
+            raise ValueError(f"phrasing {key}: each entry is [the card's words, the same words punctuated for the voice]")
+        old, new = str(pair[0]), str(pair[1])
+        hits = [i for i, text in enumerate(out) if old in text]
+        if len(hits) != 1 or out[hits[0]].count(old) != 1:
+            raise ValueError(f"phrasing {key}: {old!r} is not in exactly one place in the stop's words")
+        if letters(old) != letters(new):
+            raise ValueError(f"phrasing {key}: {new!r} does not have the words of {old!r}; only punctuation may differ")
+        if re.sub(r"[^.!?]", "", old) != re.sub(r"[^.!?]", "", new):
+            raise ValueError(f"phrasing {key}: {new!r} moves a full stop; the cues are one per sentence")
+        out[hits[0]] = out[hits[0]].replace(old, new)
+    return out
 
 
 def titled(key: str, card: dict, cfg: dict, cues: list) -> bool:
@@ -235,9 +275,15 @@ def clip_hash(cues: list, cfg: dict, key: str | None = None) -> str:
         (cfg.get("engine") or {}).get("id"), voice.get("id"), voice.get("lang"), voice.get("speed"),
         cfg.get("timing"), cfg.get("encode"), [spoken_text for _, spoken_text in cues],
     ]
+    if voice.get("pace"):
+        payload.append({"pace": voice["pace"]})
+    if key and (cfg.get("timing") or {}).get("vary"):
+        payload.append({"stop": key})      # the pauses are varied by a seed that is the stop's name
     own = (cfg.get("join_short") or {}).get(key) if key else None
     if own is not None:            # only the stops it names: nobody else's clip goes stale
         payload.append({"join_short": int(own)})
+    if key and (cfg.get("join_own") or {}).get(key):
+        payload.append({"join_own": cfg["join_own"][key]})
     blob = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()[:16]
 
@@ -255,8 +301,8 @@ def every_stop(tours: list):
 
 # ---------------------------------------------------------- one pass for a short sentence (#441)
 
-JOIN_DEFAULT = {"words": 0, "joiners": [" "], "window": [0.45, 1.15], "quiet": 0.01, "min_pause_s": 0.08,
-                "max_chars": 420}
+JOIN_DEFAULT = {"words": 0, "sentences": 1, "joiners": [" "], "quiet": 0.01, "min_pause_s": 0.08,
+                "drift": 0.15, "reach_s": 0.9, "reach": 0.5, "max_chars": 420}
 
 
 def join_rules(cfg: dict, key: str | None = None) -> dict:
@@ -266,6 +312,11 @@ def join_rules(cfg: dict, key: str | None = None) -> dict:
     own = (cfg.get("join_short") or {}).get(key) if key else None
     if own is not None:
         rules["words"] = int(own)
+    # `join_own`: the join rules a stop needs for itself. "TRAPPIST-1 b. The innermost, ..." was
+    # said with a longer pause at the comma than at the title's full stop, and the cut went to
+    # the comma: that stop is joined with the dash and looks nearer the expected place.
+    if key and (cfg.get("join_own") or {}).get(key):
+        rules.update(cfg["join_own"][key])
     return rules
 
 
@@ -280,15 +331,23 @@ def passes(marked: list, has_title: bool, rules: dict) -> list:
     A title, and a sentence of `words` words or fewer, is short. A short sentence goes in one pass
     with the sentence after it; the last sentence, if short, with the one before. A pass that
     would be longer than `max_chars` is not made: the model splits a long input itself, and then
-    the short sentence is alone again."""
+    the short sentence is alone again.
+
+    `sentences` (2026-10-12) is how many sentences a pass is filled to, short or not. At 1 every
+    long sentence is said alone, which is how the first 205 clips were made and why each began on
+    the same note and fell the same way. At 3 a stop is said as a guide says a paragraph: the
+    voice carries its pitch and pace across the full stops. A title counts as one of them. The
+    closing sentence is never left in a pass of its own while the pass before it has more than
+    two: the one before moves across, so the ending is said as the end of something."""
     n = len(marked)
     short = [(has_title and i == 0) or plain_words(m) <= int(rules["words"]) for i, m in enumerate(marked)]
     room = int(rules["max_chars"])
+    fill = max(1, int(rules.get("sentences", 1)))
     out = []
     i = 0
     while i < n:
         group = [i]
-        while short[group[-1]] and group[-1] + 1 < n \
+        while (short[group[-1]] or len(group) < fill) and group[-1] + 1 < n \
                 and sum(len(marked[k]) for k in group) + len(marked[group[-1] + 1]) <= room:
             group.append(group[-1] + 1)
         out.append(group)
@@ -297,6 +356,8 @@ def passes(marked: list, has_title: bool, rules: dict) -> list:
             and sum(len(marked[k]) for k in out[-2]) + len(marked[out[-1][0]]) <= room:
         last = out.pop()
         out[-1] += last
+    if fill > 1 and len(out) >= 2 and len(out[-1]) == 1 and len(out[-2]) > 2:
+        out[-1].insert(0, out[-2].pop())
     return out
 
 
@@ -306,10 +367,9 @@ def pass_text(marked: list, joiner: str) -> str:
     return joiner.join(m.strip() for m in marked)
 
 
-def find_pause(env: list, frame_s: float, lo_s: float, hi_s: float, quiet: float):
-    """The model's own pause: the longest run of quiet frames that starts between lo_s and hi_s.
-    -> (start_s, end_s) or None. `env` is the peak of each frame. Pure."""
-    best = None
+def quiet_runs(env: list, quiet: float) -> list:
+    """Every run of frames under `quiet` that has speech on both sides: [(first, past the last)]. Pure."""
+    runs = []
     i = 0
     n = len(env)
     while i < n:
@@ -317,18 +377,96 @@ def find_pause(env: list, frame_s: float, lo_s: float, hi_s: float, quiet: float
             j = i
             while j < n and env[j] < quiet:
                 j += 1
-            if lo_s <= i * frame_s <= hi_s and (best is None or j - i > best[1] - best[0]):
-                best = (i, j)
+            if i > 0 and j < n:
+                runs.append((i, j))
             i = j
         else:
             i += 1
-    return None if best is None else (best[0] * frame_s, best[1] * frame_s)
+    return runs
 
 
-def gaps_for(n: int, has_title: bool, timing: dict) -> list:
-    """The silence after each of a clip's n sentences, in seconds. Pure."""
-    return [timing["tail_s"] if i == n - 1 else (timing["title_gap_s"] if has_title and i == 0 else timing["gap_s"])
-            for i in range(n)]
+def find_cuts(env: list, frame_s: float, weights: list, rules: dict):
+    """Where the model itself paused between the sentences of one pass. Pure.
+
+    `env` is the peak of each frame of the pass, `weights` how long each sentence is expected to
+    be against the others (its count of phonemes). -> [(start_s, end_s)], one pause for each
+    full stop inside the pass, or None when one of them cannot be found.
+
+    The model has no output that says when a word was said, so the full stops are looked for the
+    way a person looking at the waveform would: a pause, about where the sentence should end.
+    "About where" is counted in frames of SPEECH, not seconds, so that a long pause earlier in
+    the pass does not move it. Each quiet run scores its own length, less `drift` seconds for
+    every second of speech between it and the expected place: a full stop's pause is longer than
+    a comma's, and a comma is rarely nearer the expected place than the full stop by more than
+    the difference. Nothing further than `reach` of the sentence's expected length (and at least
+    `reach_s`) is looked at. After each cut the rest is estimated again from the cut."""
+    quiet = float(rules["quiet"])
+    n = len(env)
+    spoken_before = [0] * (n + 1)
+    for i in range(n):
+        spoken_before[i + 1] = spoken_before[i] + (0 if env[i] < quiet else 1)
+    runs = quiet_runs(env, quiet)
+    cuts = []
+    base = 0            # frames of speech before the sentence now being looked for
+    after = 0           # the frame the last cut ended at
+    for k in range(len(weights) - 1):
+        rest = float(sum(weights[k:])) or 1.0
+        length = (spoken_before[n] - base) * float(weights[k]) / rest
+        reach = max(float(rules["reach_s"]) / frame_s, float(rules["reach"]) * length)
+        best = None
+        for i, j in runs:
+            if i <= after:
+                continue
+            off = abs(spoken_before[i] - base - length)
+            if off > reach:
+                continue
+            score = (j - i) * frame_s - float(rules["drift"]) * off * frame_s
+            if best is None or score > best[0]:
+                best = (score, i, j)
+        if best is None:
+            return None
+        _, i, j = best
+        cuts.append((i * frame_s, j * frame_s))
+        base, after = spoken_before[j], j
+    return cuts
+
+
+def gaps_for(n: int, has_title: bool, timing: dict, texts: list | None = None, key: str | None = None) -> list:
+    """The silence after each of a clip's n sentences, in seconds. Pure.
+
+    With `timing.vary` and the sentences themselves (`texts`), the pause follows what was just
+    said, as a speaker's does, and no two are the same length:
+      per_word_s      a longer sentence is followed by a longer breath, up to max_extra_s
+      short_words     a sentence of this many words or fewer is followed by `short` of the pause:
+                      "Nobody rode it." and the items of a list are not each given a paragraph's rest
+      before_last_s   more before the closing sentence, so that it lands
+      after_question_s  more after a question: the listener is given time to answer it
+      jitter          each pause is then moved by up to this share either way, by a number drawn
+                      from the stop's name and the sentence's place (sha256, so the same stop
+                      always gets the same pauses and a render is still reproducible)."""
+    vary = timing.get("vary") if texts is not None else None
+    out = []
+    for i in range(n):
+        if i == n - 1:
+            out.append(timing["tail_s"])
+            continue
+        gap = float(timing["title_gap_s"] if has_title and i == 0 else timing["gap_s"])
+        if vary:
+            if not (has_title and i == 0):
+                count = len(re.findall(r"[A-Za-z0-9']+", texts[i]))
+                if count <= int(vary.get("short_words", 0)):
+                    gap *= float(vary.get("short", 1.0))
+                else:
+                    gap += min(float(vary.get("max_extra_s", 0)), float(vary.get("per_word_s", 0)) * count)
+                if texts[i].rstrip().endswith("?"):
+                    gap += float(vary.get("after_question_s", 0))
+                if i == n - 2 and n > 2:
+                    gap += float(vary.get("before_last_s", 0))
+            seed = hashlib.sha256(f"{key}|{i}".encode("utf-8")).digest()
+            unit = int.from_bytes(seed[:4], "big") / 0xFFFFFFFF * 2 - 1           # -1 .. 1
+            gap *= 1 + float(vary.get("jitter", 0)) * unit
+        out.append(round(gap, 3))
+    return out
 
 
 def lay_out(lengths: list, gaps: list, lead_s: float, rate: int) -> tuple:
@@ -534,19 +672,37 @@ class Voice:
         british = str(cfg["voice"]["lang"]).lower() == "en-gb"
         self.np = np
         self.g2p = en.G2P(trf=False, british=british, fallback=espeak.EspeakFallback(british=british))
-        self.kokoro = Kokoro(str(models / engine["model"]["file"]), str(models / engine["voices"]["file"]))
+        # NARRATE_THREADS=2 on a machine that is busy with other work: ONNX Runtime's own threads
+        # spin while they wait, and on a crowded CPU that spinning is most of what the render is
+        # given. The same model and the same arithmetic; unset, the session is the library's own.
+        threads = int(os.environ.get("NARRATE_THREADS") or 0)
+        if threads:
+            import onnxruntime as ort
+            options = ort.SessionOptions()
+            options.intra_op_num_threads = threads
+            options.add_session_config_entry("session.intra_op.allow_spinning", "0")
+            session = ort.InferenceSession(str(models / engine["model"]["file"]), options, providers=["CPUExecutionProvider"])
+            self.kokoro = Kokoro.from_session(session, str(models / engine["voices"]["file"]))
+        else:
+            self.kokoro = Kokoro(str(models / engine["model"]["file"]), str(models / engine["voices"]["file"]))
         self.cfg = cfg
 
     def phonemes(self, marked: str) -> str:
         ph, _ = self.g2p(marked)
         return ph
 
-    def raw(self, marked: str, voice_id: str | None = None):
-        """What the model makes of one input, untrimmed: float32 samples at 24 kHz."""
+    def raw(self, marked: str, voice_id: str | None = None, pace: float = 1.0):
+        """What the model makes of one input, untrimmed: float32 samples at 24 kHz. `pace` is a
+        factor on the registry's speed (the opening and the closing pass are said a little slower)."""
         np = self.np
         v = self.cfg["voice"]
+        ph = self.phonemes(marked)
+        if len(ph) > 500:
+            # The model takes 510 symbols; kokoro-onnx would cut a longer input in two itself,
+            # at a place of its choosing, and say the halves apart.
+            raise ValueError(f"{len(ph)} phonemes in one pass: over the model's window. Lower timing.join.max_chars")
         audio, rate = self.kokoro.create(
-            self.phonemes(marked), voice=voice_id or v["id"], speed=float(v["speed"]), lang=v["lang"],
+            ph, voice=voice_id or v["id"], speed=round(float(v["speed"]) * float(pace), 4), lang=v["lang"],
             is_phonemes=True, trim=False, sentence_pause=0, clause_pause=0,
         )
         return np.asarray(audio, dtype=np.float32).reshape(-1), rate
@@ -566,48 +722,35 @@ class Voice:
             audio[-fade:] *= ramp[::-1]
         return audio
 
-    def say(self, marked: str, voice_id: str | None = None):
+    def say(self, marked: str, voice_id: str | None = None, pace: float = 1.0):
         """One sentence -> float32 samples at 24 kHz, trimmed to the speech, edges faded."""
-        audio, rate = self.raw(marked, voice_id)
+        audio, rate = self.raw(marked, voice_id, pace)
         return self.tidy(audio, rate), rate
 
-    def say_pass(self, marked: list, voice_id: str | None = None, rules: dict | None = None) -> tuple:
+    def say_pass(self, marked: list, voice_id: str | None = None, rules: dict | None = None, pace: float = 1.0) -> tuple:
         """Several sentences in one pass, cut apart at the model's own pauses (internal #441).
         -> ([samples for each sentence], rate, the shortest pause that was cut at in seconds, or
         None when a pause was not found and the sentences were said alone after all)."""
         np = self.np
         if len(marked) == 1:
-            audio, rate = self.say(marked[0], voice_id)
+            audio, rate = self.say(marked[0], voice_id, pace)
             return [audio], rate, None
         rules = rules or join_rules(self.cfg)
         frame_s = 0.005
-        alone = [self.say(m, voice_id) for m in marked[:-1]]
-        rate = alone[0][1]
+        rate = 24000
         frame = int(rate * frame_s)
+        # How long each sentence should be against the others: its phonemes, less the marks.
+        weights = [max(1, len(re.sub(r"[^\w]", "", self.phonemes(m)))) for m in marked]
         best = None
         for joiner in rules["joiners"]:
-            audio, rate = self.raw(pass_text(marked, joiner), voice_id)
+            audio, rate = self.raw(pass_text(marked, joiner), voice_id, pace)
             loud = np.flatnonzero(np.abs(audio) > 0.004)
             if not loud.size:
                 continue
             audio = audio[max(0, loud[0] - int(rate * 0.03)): min(audio.size, loud[-1] + int(rate * 0.03))]
             n = audio.size // frame
             env = np.abs(audio[: n * frame]).reshape(n, frame).max(axis=1).tolist()
-            cuts, at = [], 0.0
-            for own, _ in alone:
-                length = own.size / rate
-                lo, hi = rules["window"]
-                found = find_pause(env, frame_s, at + lo * length, at + hi * length, float(rules["quiet"]))
-                if not found:
-                    # "The Moon." said alone is 1.4 s, most of it the fault this pass is here to
-                    # avoid, and in the pass it is 0.65 s: the pause starts just before the
-                    # window does. Look once more from a quarter of the length.
-                    found = find_pause(env, frame_s, at + min(lo, 0.25) * length, at + hi * length, float(rules["quiet"]))
-                if not found:
-                    cuts = None
-                    break
-                cuts.append(found)
-                at = found[1]
+            cuts = find_cuts(env, frame_s, weights, rules)
             if cuts is None:
                 continue
             shortest = min(b - a for a, b in cuts)
@@ -616,7 +759,7 @@ class Voice:
             if shortest >= float(rules["min_pause_s"]):
                 break
         if best is None:
-            return [a for a, _ in alone] + [self.say(marked[-1], voice_id)[0]], rate, None
+            return [self.say(m, voice_id, pace)[0] for m in marked], rate, None
         shortest, audio, cuts = best
         parts, start = [], 0
         for a, b in cuts:
@@ -635,13 +778,20 @@ class Voice:
         marked = [m for _, m in cues]
         spoken_parts, notes = [], []
         rules = join_rules(self.cfg, key)
-        for group in passes(marked, has_title, rules):
-            parts, rate, shortest = self.say_pass([marked[i] for i in group], voice_id, rules)
+        groups = passes(marked, has_title, rules)
+        pace = self.cfg["voice"].get("pace") or {}
+        for g, group in enumerate(groups):
+            # The last pass a little slower, so the ending is not hurried (voice.pace.close; a
+            # stop that is one pass is all "last"). `open` does the same for the first pass
+            # and is not used by the registry today.
+            factor = min(float(pace.get("open", 1.0)) if g == 0 else 1.0,
+                         float(pace.get("close", 1.0)) if g == len(groups) - 1 else 1.0)
+            parts, rate, shortest = self.say_pass([marked[i] for i in group], voice_id, rules, factor)
             spoken_parts += parts
             if len(group) > 1:
                 notes.append((group, shortest))
-        spans, silences, total = lay_out([p.size for p in spoken_parts], gaps_for(len(cues), has_title, t),
-                                         float(t["lead_s"]), rate)
+        gaps = gaps_for(len(cues), has_title, t, [shown for shown, _ in cues], key)
+        spans, silences, total = lay_out([p.size for p in spoken_parts], gaps, float(t["lead_s"]), rate)
         pieces = [np.zeros(silences[0], dtype=np.float32)]
         for part, hush in zip(spoken_parts, silences[1:]):
             pieces += [part, np.zeros(hush, dtype=np.float32)]

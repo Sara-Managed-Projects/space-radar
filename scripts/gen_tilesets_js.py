@@ -22,7 +22,7 @@ from _genmirror import Mirror  # noqa: E402
 FIELDS = (("id", "id"), ("world", "world"), ("title", "title"), ("url", "url"), ("mode", "mode"), ("matrix", "matrix"),
           ("tile_px", "tilePx"), ("min_level", "minLevel"), ("start_level", "startLevel"),
           ("max_level", "maxLevel"), ("resolution_m", "resolutionM"), ("grade", "grade"),
-          ("credit", "credit"), ("level0_span_deg", "span0"), ("grade_sea", "gradeSea"),
+          ("credit", "credit"), ("level0_span_deg", "span0"), ("sea_lift", "seaLift"),
           ("baked_relief", "bakedRelief"))
 # A row's `relief:` block (the shaded-relief pyramid re-lit by the Sun), the same way.
 RELIEF_FIELDS = (("title", "title"), ("url", "url"), ("max_level", "maxLevel"),

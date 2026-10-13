@@ -6,7 +6,11 @@
 
 ## How I checked it
 
-<!-- The tests you ran, what you looked at in the browser, a screenshot for anything visible. -->
+<!-- The tests you ran and what you looked at in the browser.
+     A CHANGE TO WHAT IS DRAWN (a model, a map, a world, a shader) NEEDS A PICTURE HERE: drag a
+     screenshot from the app into this box. A before and an after is best. The `pictures` check is
+     red without one once the pull request is ready (CONTRIBUTING.md, "Pull requests", says why and
+     how to get a picture without a fast machine). -->
 
 ## Checklist
 
@@ -14,7 +18,9 @@
 - [ ] If I edited `registry/*.yaml`, I ran its generator and committed the generated file too
 - [ ] New words a visitor reads are in `site/js/copy/en.js`
 - [ ] New facts carry a source; new assets carry a licence and a line in `CREDITS.md`
-- [ ] For a visible change: I read `docs/DESIGN_PRINCIPLES.md` and attached a screenshot
+- [ ] For a visible change: I read `docs/DESIGN_PRINCIPLES.md` and put a picture from the app above
+      (required when a model, a map or anything under `site/js/scene/` changed; a maintainer may
+      set the label `no-visual-change` when nothing a visitor sees can have changed)
 
 <!-- First pull request here? Your CI run waits for a maintainer to approve it. That is normal:
      please do not close the pull request while it waits. docs/FIRST_PR.md has the details.

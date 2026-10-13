@@ -34,7 +34,7 @@ SUFFIX = " | Space Radar Lab"
 GUIDE = "https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/ADD_A_SIMULATOR.md"
 PROPOSE = "https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=simulator.yml"
 CATEGORIES = ["Orbits and gravity", "Planets and moons", "Scale and distance", "Light and time", "Rockets and spaceflight",
-              "Stars and galaxies", "Earth, Moon and Sun"]
+              "Stars and their lives", "Sky from Earth", "Cosmology and black holes", "Stars and galaxies", "Earth, Moon and Sun"]
 PAGE_TITLE = "Space Radar Lab: tiny space simulators"
 PAGE_DESC = "Small interactive pages, each teaching one idea about space, with every number quoted from its source. Open one, or add your own."
 
@@ -78,23 +78,30 @@ main{max-width:1160px}
 .card .micro{margin:0}
 .card h3{margin:0;font:600 20px/24px Inter,system-ui,sans-serif;color:var(--sr-text)}
 .card p{margin:0;font-size:15px;line-height:20px;color:var(--sr-text-dim)}
-.cat{margin:32px 0 12px;padding-top:0;border-top:0}
+.cat{margin:32px 0 12px;padding-top:0;border-top:0;scroll-margin-top:12px}
+.topics{margin:0 0 8px}
 .add{margin-top:32px;padding:16px;border:1px dashed var(--sr-line);border-radius:var(--sr-radius)}
 .add h2{margin:0 0 8px;padding:0;border:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 """
 
 
+def anchor(cat: str) -> str:
+    return "cat-" + re.sub(r"[^a-z0-9]+", "-", cat.lower()).strip("-")
+
+
 def build() -> str:
     sims = simulators()
     sections = []
+    chips = []
     for cat in CATEGORIES:
         mine = [s for s in sims if s["category"] == cat]
         if not mine:
             continue
         cards = "\n".join(
             f'<li><a class="card" href="{esc(s["slug"])}/index.html"><h3>{esc(s["title"])}</h3><p>{esc(s["lesson"])}</p></a></li>' for s in mine)
-        sections.append(f'<h2 class="cat">{esc(cat)}</h2>\n<ul class="grid">\n{cards}\n</ul>')
+        sections.append(f'<h2 class="cat" id="{anchor(cat)}">{esc(cat)}</h2>\n<ul class="grid">\n{cards}\n</ul>')
+        chips.append(f'<li><a href="#{anchor(cat)}">{esc(cat)} ({len(mine)})</a></li>')
     icon = ("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12.5' fill='%230B0E14'/>"
             "<circle cx='32' cy='32' r='14.38' fill='%232E6FB8'/></svg>")
     return f"""<!doctype html>
@@ -126,6 +133,7 @@ def build() -> str:
 <p class="micro">Space Radar Lab</p>
 <h1>Tiny space simulators</h1>
 <div class="intro"><p class="lead">{len(sims)} small pages, each teaching one idea about space. Every number is quoted from its source, and every page says what is and is not to scale. Open one and move the slider.</p></div>
+<nav aria-label="Topics"><ul class="links topics">{"".join(chips)}</ul></nav>
 {chr(10).join(sections)}
 <section class="add" aria-labelledby="add-h">
 <h2 id="add-h">Add your own simulator</h2>
