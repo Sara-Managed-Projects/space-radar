@@ -209,6 +209,24 @@ export function createOnboarding(ctx, opts = {}) {
     return null;
   }
 
+  /**
+   * A target that is in the page but scrolled out of the sidebar's view (the Trips section sits
+   * under the home's first screen; seen on a runner, 2026-10-14: the last step was passed over):
+   * bring it in. A tall one by its head, where it is ringed.
+   */
+  function reveal(hooks) {
+    for (const hook of hooks || []) {
+      for (const el of doc.querySelectorAll(`[data-tour~="${hook}"]`)) {
+        if (!el.isConnected || el.closest('[hidden], [inert]') || typeof el.scrollIntoView !== 'function') continue;
+        const r = el.getBoundingClientRect();
+        if (!(r.width > 0 && r.height > 0)) continue;
+        try { el.scrollIntoView({ block: r.height > P.HEAD_MAX ? 'start' : 'nearest' }); } catch { /* an old browser */ }
+        return true;
+      }
+    }
+    return false;
+  }
+
   const rectOf = (id) => {
     const el = doc.getElementById(id);
     if (!el || el.closest('[hidden]')) return null;
@@ -228,11 +246,11 @@ export function createOnboarding(ctx, opts = {}) {
   const px = (v) => `${Math.round(v)}px`;
 
   // --- drawing -----------------------------------------------------------------------------------
-  function setInk(hole, cap, side, seedText) {
+  function setInk(hole, cap, side, seedText, view) {
     const seed = P.seedOf(seedText);
-    const ends = P.arrowEnds(cap, hole, side);
+    const ends = P.arrowEnds(cap, hole, side, view);
     const arrow = P.arrowPath(ends.from, ends.to, seed);
-    const d = { ring: hole ? P.ringPath(hole, seed) : '', shaft: arrow.shaft, head: arrow.head };
+    const d = { ring: hole ? P.ringPath(hole, seed, view) : '', shaft: arrow.shaft, head: arrow.head };
     for (const name of Object.keys(paths)) for (const p of paths[name]) p.setAttribute('d', d[name] || 'M0 0');
     ink.classList.toggle('has-ring', !!hole);
   }
@@ -254,7 +272,7 @@ export function createOnboarding(ctx, opts = {}) {
       holeEl.style.width = px(hole.w); holeEl.style.height = px(hole.h);
     }
     ink.style.display = withInk ? '' : 'none';
-    if (withInk) setInk(hole, { x: at.x, y: at.y, w: size.w, h: size.h }, at.side, seedText);
+    if (withInk) setInk(hole, { x: at.x, y: at.y, w: size.w, h: size.h }, at.side, seedText, view);
     return at;
   }
 
@@ -317,6 +335,10 @@ export function createOnboarding(ctx, opts = {}) {
         } else if (what === 'sheet' && ctx.shell) {
           const sheet = typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
           if (sheet && typeof sheet.detent === 'function' && sheet.detent() === 'peek') sheet.set('half');
+        } else if (what === 'peek' && ctx.shell) {
+          // A phone's time pill is hidden under a sheet at full height (ui-guide 5): lower it.
+          const sheet = typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
+          if (sheet && typeof sheet.detent === 'function' && sheet.detent() !== 'peek') sheet.set('peek');
         }
       } catch (e) { console.warn('the tour could not prepare', what, e); }
     }
@@ -385,7 +407,8 @@ export function createOnboarding(ctx, opts = {}) {
     const t0 = now();
     const settle = () => {
       if (mine !== token) return;
-      const hit = step.look === 'scene' ? [doc.body] : firstShown(step.hooks);
+      let hit = step.look === 'scene' ? [doc.body] : firstShown(step.hooks);
+      if (!hit && reveal(step.hooks)) hit = firstShown(step.hooks);
       if (!hit) {
         if (now() - t0 < P.WAIT_TARGET_MS) { win.setTimeout(settle, 120); return; }
         unavailable.add(step.id);
@@ -393,7 +416,8 @@ export function createOnboarding(ctx, opts = {}) {
         return;
       }
       target = step.look === 'scene' ? null : hit[0];
-      if (target && typeof target.scrollIntoView === 'function') { try { target.scrollIntoView({ block: 'nearest' }); } catch { /* an old browser */ } }
+      // On screen, but perhaps only by an edge: all of it (a tall one by its head).
+      if (target) reveal(step.hooks);
       card.hidden = false;
       paintWords(step);
       layout(true);

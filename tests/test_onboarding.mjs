@@ -205,6 +205,15 @@ const numbers = (d) => (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
     check(!overlaps(cap, hole), `360: the caption for ${name} is not over its target (${JSON.stringify(cap)} / ${JSON.stringify(hole)})`);
     check(insideView(cap, phone), `360: the caption for ${name} is on the screen (${JSON.stringify(cap)})`);
   }
+  // The first visit's line is small enough to fit beside the More button: on a phone it goes under it.
+  const line = { w: 220, h: 44 };
+  const moreHole = P.holeFor(hand.more, phone);
+  const lineAt = P.placeCaption(moreHole, phone, line, pband);
+  eq(lineAt.side, 'below', '360: the first visit\'s line is under the More button, not on the search field');
+  check(!overlaps({ x: lineAt.x, y: lineAt.y, ...line }, P.holeFor(hand.search, phone)), '360: and clear of the search field');
+  // A ring never leaves the screen: the search field is 16 px from two edges.
+  const edge = numbers(P.ringPath(P.holeFor(hand.search, phone), P.seedOf('find'), phone));
+  check(edge.filter((_, i) => i % 2 === 0).every((x) => x >= 0 && x <= phone.w) && edge.filter((_, i) => i % 2 === 1).every((y) => y >= 0 && y <= phone.h), '360: the ring round the search field is whole, not cut by the screen\'s edge');
   const pfree = P.placeCaption(null, phone, small, pband);
   check(insideView({ x: pfree.x, y: pfree.y, ...small }, phone), '360: the scene step\'s caption is on the screen');
 
@@ -276,7 +285,7 @@ function world({ width = 1440, height = 900, voice = { base: 'audio/narration/on
     removeEventListener(type, fn) { this.listeners[type] = (this.listeners[type] || []).filter((f) => f !== fn); }
     fire(type, event = {}) { for (const fn of [...(this.listeners[type] || [])]) fn({ type, target: this, detail: 1, preventDefault() { this.defaultPrevented = true; }, stopPropagation() {}, ...event }); }
     focus() { doc.activeElement = this; }
-    scrollIntoView() {}
+    scrollIntoView(o) { this.scrolled = o; if (this.onScroll) this.onScroll(); }
     remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter((k) => k !== this); this.parentNode = null; }
   }
   const doc = {
@@ -468,6 +477,7 @@ const press = (w, el) => w.doc.fire('pointerdown', { target: el });
   part(w, 'sr-tour__next').fire('click');
   await w.pass(0);
   eq(tour.step().id, 'trips', 'the last step is the trips');
+  eq(parts.trips.scrolled, { block: 'start' }, 'a tall target is brought into the sidebar\'s view by its head');
   eq(part(w, 'sr-tour__next').textContent, COPY.tour.done, 'and its Next says Done');
   eq(part(w, 'sr-tour__hole').style.height, `${P.HEAD_MAX + 2 * P.PAD}px`, 'the tall Trips section is ringed at its head');
   press(w, parts.trips.kid);
@@ -551,6 +561,20 @@ const press = (w, el) => w.doc.fire('pointerdown', { target: el });
     await t2.start();
     check(!t2.isOn(), `and it does not start while ${mode} is on`);
   }
+}
+
+{
+  // A TARGET SCROLLED OUT OF THE SIDEBAR'S VIEW is brought in, not passed over.
+  const w = world();
+  globalThis.document = w.doc;
+  const parts = page(w);
+  parts.trips.rect = { x: 20, y: 1400, w: 360, h: 460 };
+  parts.trips.kid.rect = parts.trips.rect;
+  parts.trips.onScroll = () => { parts.trips.rect = { x: 20, y: 180, w: 360, h: 460 }; };
+  const tour = make(w, { steps: STEPS.filter((s) => s.id === 'trips') });
+  await tour.start();
+  await w.pass(0);
+  check(tour.isOn() && tour.step().id === 'trips' && part(w, 'sr-tour__hole').style.top === '174px', 'the Trips section under the fold is scrolled into view and ringed');
 }
 
 {

@@ -56,7 +56,10 @@ export const STEPS = [
     "say": "The clock is live, and the timeline goes to any other day.",
     "ask": "Drag the timeline. Live comes back to now.",
     "awaits": "press",
-    "then": "wait"
+    "then": "wait",
+    "prepare": [
+      "peek"
+    ]
   },
   {
     "id": "places",
@@ -116,5 +119,14 @@ export const STEPS = [
 /** The steps the trips' voice has read: step id -> seconds. Nothing here is fetched before the visitor turns the voice on. */
 export const VOICE = {
   "base": "audio/narration/onboarding",
-  "clips": {}
+  "clips": {
+    "move": 6.72,
+    "find": 6.15,
+    "card": 6.17,
+    "time": 6.75,
+    "places": 6.2,
+    "layers": 6.01,
+    "share": 5.37,
+    "trips": 5.18
+  }
 };

@@ -150,8 +150,12 @@
   gap: var(--sp-1);
 }
 
+/* Two lines of nearly equal length, never one word alone on the second (seen on a runner). */
 .sr-tour__say,
-.sr-tour__ask { margin: 0; }
+.sr-tour__ask {
+  margin: 0;
+  text-wrap: balance;
+}
 
 .sr-tour__say { color: var(--sr-text); }
 

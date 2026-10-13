@@ -42,6 +42,10 @@ export const HEAD_MAX = 220;
 export const GUTTER = 16;
 /** Room for the arrow between the ring and the caption. */
 const REACH = 64;
+/** The ring's own air from the screen's edge: its drift and its wobble fit inside it. */
+const EDGE = 9;
+/** Under this width a caption is never beside its target: a phone. */
+const NARROW = 600;
 
 export const IDLE = Object.freeze({ phase: 'idle', index: -1, dir: 1, why: null });
 
@@ -152,12 +156,25 @@ export function holeFor(rect, view) {
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
-/** The ring's half-axes: a superellipse through the hole's corners, squarer for a wide hole. */
-export function radii(hole) {
+/**
+ * The ring's half-axes: a superellipse through the hole's corners, squarer for a wide hole. With
+ * a `view`, never past the screen's edge: a phone's search field is 16 px from two of them, and a
+ * ring cut off by the glass looks torn (seen on a runner, 2026-10-14). It then crosses the hole's
+ * corners instead, which a pen would do too.
+ */
+export function radii(hole, view) {
   const wide = Math.max(hole.w, hole.h) / Math.max(1, Math.min(hole.w, hole.h));
   const n = wide > 2.2 ? 5 : 3;
   const k = 2 ** (1 / n);
-  return { a: (hole.w / 2) * k + 2, b: (hole.h / 2) * k + 2, n };
+  let a = (hole.w / 2) * k + 2;
+  let b = (hole.h / 2) * k + 2;
+  if (view) {
+    const cx = hole.x + hole.w / 2;
+    const cy = hole.y + hole.h / 2;
+    a = Math.max(hole.w / 2 - 2, Math.min(a, cx - EDGE, view.w - cx - EDGE));
+    b = Math.max(hole.h / 2 - 2, Math.min(b, cy - EDGE, view.h - cy - EDGE));
+  }
+  return { a, b, n };
 }
 
 /**
@@ -192,7 +209,9 @@ export function freeBand(view, avoid = {}) {
 /**
  * Where the caption goes. With a hole: beside it when there is room (right, then left), above or
  * below it when the hole is in the middle of the screen or the screen is narrow; never over the
- * hole unless nothing fits. Without one: the foot of the free band. Returns {x, y, side}.
+ * hole unless nothing fits; on a phone never beside it (the first visit's line is small enough to
+ * fit beside the More button, and sat on the search field). Without one: the foot of the free band.
+ * Returns {x, y, side}.
  */
 export function placeCaption(hole, view, size, band) {
   const minX = GUTTER + inset(view, 'left');
@@ -220,7 +239,7 @@ export function placeCaption(hole, view, size, band) {
   const roomAbove = hole.y;
   const roomBelow = view.h - hole.y - hole.h;
   const vertical = roomAbove >= roomBelow ? ['above', 'below'] : ['below', 'above'];
-  const order = middle ? [...vertical, 'right', 'left'] : ['right', 'left', ...vertical];
+  const order = middle || view.w < NARROW ? [...vertical, 'right', 'left'] : ['right', 'left', ...vertical];
   for (const side of order) if (spot[side].ok) return { x: spot[side].x, y: spot[side].y, side };
   // Nothing fits (a hole as large as the screen): the side with the most room, clamped.
   const side = vertical[0];
@@ -228,12 +247,12 @@ export function placeCaption(hole, view, size, band) {
 }
 
 /** The arrow: from the caption's edge that faces the hole to just outside the ring. */
-export function arrowEnds(cap, hole, side) {
+export function arrowEnds(cap, hole, side, view) {
   if (!hole || side === 'free') {
     const x = cap.x + cap.w / 2;
     return { from: { x: x - 28, y: cap.y - 6 }, to: { x: x + 6, y: cap.y - 104 } };
   }
-  const r = radii(hole);
+  const r = radii(hole, view);
   const cx = hole.x + hole.w / 2;
   const cy = hole.y + hole.h / 2;
   const tail = Math.min(cap.h * 0.4, 44);
@@ -280,8 +299,8 @@ function through(points) {
  * The ring: once round the hole and a little more, as a pen closes a loop. It starts upper left,
  * runs clockwise, drifts outward by a few pixels, and wobbles by a seeded pixel or two.
  */
-export function ringPath(hole, seed) {
-  const { a, b, n } = radii(hole);
+export function ringPath(hole, seed, view) {
+  const { a, b, n } = radii(hole, view);
   const cx = hole.x + hole.w / 2;
   const cy = hole.y + hole.h / 2;
   const rand = rng(seed);
@@ -331,7 +350,7 @@ export function clipFiles(voice, id) {
 }
 
 const AWAITS = ['camera', 'select', 'press', 'type'];
-const PREPARE = ['home', 'card', 'sheet'];
+const PREPARE = ['home', 'card', 'sheet', 'peek'];
 /** What is wrong with a step as data, as sentences. Empty when it is sound. */
 export function wordsProblems(step) {
   const out = [];
