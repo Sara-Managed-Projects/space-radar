@@ -328,6 +328,10 @@ const done = [];
 for (const subject of subjects) {
   try { done.push(await one(subject, subjects.length > 1 ? subject + '--' : '')); }
   catch (e) { done.push({ subject: { id: subject }, views: [], fail: 'the probe threw on ' + subject + ': ' + String((e && e.message) || e) }); }
+  // A layer this subject needed is put back as it was: sixteen thousand dots do not belong in the
+  // next craft's pictures (the third run of batch two photographed Ajisai through them).
+  const last = done[done.length - 1];
+  if (last && last.layerTurnedOn) { try { sr.setLayerOn(last.layerTurnedOn, false); await sleep(1500); } catch { /* it stays on, and the pictures show it */ } }
 }
 const failed = done.filter((d) => d.fail).map((d) => d.fail);
 // One subject: its own summary, as this probe has always returned it. Several: one entry each.
