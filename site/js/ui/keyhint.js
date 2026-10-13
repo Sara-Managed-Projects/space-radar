@@ -420,7 +420,21 @@ export function createKeyHint(ctx, opts = {}) {
   }
 
   /** The first visit's one chance: shown unless whyNot() says otherwise, and remembered. */
+  /** Is somebody typing: the search field, or any other field, has the keyboard. */
+  const typing = () => {
+    const el = document.activeElement;
+    const tag = el && el.tagName ? String(el.tagName).toUpperCase() : '';
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!(el && el.isContentEditable);
+  };
+  // THE HINT YIELDS TO TYPING (2026-10-13). It comes by itself a few seconds into a first visit;
+  // on a phone a visitor who had already opened the search found its Close button under the
+  // search's "nothing found" line (the ui gate, three pull requests running). The keys are no use
+  // to somebody typing, so the uninvited hint goes when a field takes the keyboard, and does not
+  // come while one has it. The one that was asked for (`?`, every key) stays.
+  document.addEventListener('focusin', () => { if (open && !all && typing()) hide('typing'); });
+
   async function maybeShow() {
+    if (typing()) return 'typing';
     const html = document.documentElement;
     const reason = decide(storageOf(win), {
       deepLink: !!opts.deepLink,
