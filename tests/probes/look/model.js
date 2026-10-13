@@ -15,8 +15,9 @@
 // copy of the table, and the summary says so in `standIn`: the pictures then show the model and say
 // nothing about who wears it.
 //
-// THE SHAPE IT REPLACES. When the route has both a build and a file, the same record is photographed
-// again wearing the procedural shape, from the same places.
+// THE SHAPE IT REPLACES. When the route has a file, the same record is photographed again wearing
+// the procedural shape the file replaces (the route's build, or its class shape when the route
+// names none), from the same places.
 //
 // A CANDIDATE. A route that is still procedural, on a tree that has `models/<build>-candidate.glb`, is
 // photographed as it ships and then wearing the candidate.
@@ -44,6 +45,9 @@ const asked = new URLSearchParams(location.search).get('lookSubject');
 // A subject is a record id, or failing that the words of a name with dashes for spaces
 // (`crew-dragon`: a visiting vehicle's id changes every flight, and its name does not).
 const byName = (words) => stations.find((r) => String(r.name || '').toLowerCase().includes(String(words).toLowerCase().replace(/-/g, ' '))) || null;
+// A subject on another layer (a satellite worth knowing, a bright one) arrives when its layer's
+// file does, which is after the stations: wait for it before saying it is not there.
+if (asked) await until(() => sr.recordById(asked) || byName(asked), 120000, 500);
 let record = asked ? (sr.recordById(asked) || byName(asked)) : stations.find((r) => wordIn(r.name, 'cygnus') && RM.realModelFor(r)) || null;
 if (asked && !record) return finish({ ...out, fail: 'no record with the id or the name ' + asked + ' on this page; the stations layer has ' + stations.map((r) => r.id + ' ' + r.name).join(', ') });
 if (!record) {
@@ -188,16 +192,23 @@ const wearInstead = (obj, thing) => {
 // WHAT IT REPLACES. A route with both a build and a file (the Cygnus, JWST, New Horizons) draws the
 // procedural shape until the file arrives. The same record wearing that shape, from the same six
 // places, is the comparison a person deciding whether the file is an improvement needs.
-if (entry.build && entry.file) {
+//
+// A ROUTE WITH A FILE AND NO BUILD (2026-10-13, the first batch of the "3D model:" issues): NuSTAR
+// and NOAA-21 had no route at all before their files, so what the map drew was the record's class
+// shape. That is what main draws on a visitor's screen until the file arrives and what it drew
+// before the file existed, so it is photographed the same way: `modelFor(record.klass, the record's
+// own variant)`, exactly the call scene/heroes.js acquire() makes for a record with no build.
+if (entry.file) {
   try {
     const M = await import(urlOf('./js/scene/models.js'));
-    const built = M.modelFor(M.builderKlass(record.klass, entry.build), entry.build, { record });
+    const variant = entry.build || (record.meta && record.meta.modelVariant) || undefined;
+    const built = M.modelFor(entry.build ? M.builderKlass(record.klass, entry.build) : record.klass, variant, { record });
     const obj = heroOf();
     if (!built || !obj) throw new Error('the procedural shape could not be built, or the hero is gone');
     const back = wearInstead(obj, built);
     await sleep(2500);
-    out.procedural = { build: entry.build, model: describe(built) };
-    await walk('procedural', record.name + ' wearing the procedural shape `' + entry.build + '` that the file replaces (put back by the probe for the comparison)');
+    out.procedural = { build: entry.build || null, klassShape: entry.build ? null : record.klass, model: describe(built) };
+    await walk('procedural', record.name + ' wearing the procedural shape ' + (entry.build ? '`' + entry.build + '`' : 'of its class, `' + record.klass + '`,') + ' that the file replaces (put back by the probe for the comparison)');
     back();
     await sleep(1500);
   } catch (e) { out.procedural = { error: String((e && e.message) || e) }; }

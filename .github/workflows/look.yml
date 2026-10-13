@@ -159,7 +159,7 @@ jobs:
           set -euo pipefail
           mkdir -p subject/site/data/v1
           python3 - <<'PY'
-          import json, urllib.request
+          import json, os, re, urllib.request
           base = "https://dus32w6mqcntr.cloudfront.net/data/v1/"
           dest = "subject/site/data/v1/"
           def get(name, cap):
@@ -174,7 +174,20 @@ jobs:
           for sid, row in sorted(json.loads(raw).get("snapshots", {}).items()):
               size = row.get("bytes") if isinstance(row, dict) else None
               if not isinstance(size, int) or size > 1_200_000:
-                  print(f"left   {sid} ({size} B)"); continue
+                  # THE MODEL PROBE LOOKS AT ONE SATELLITE, and most satellites worth a model are on the
+                  # layer "Satellites worth knowing", which is read from the catalogue of every active
+                  # satellite: 7 MB, left out above, and CelesTrak is blocked in the page. The page reads
+                  # that catalogue's COLUMN TWIN when the index names one (data/sources.js readColumns),
+                  # and the twin is 2.7 MB: saved for this probe, so NuSTAR's record is on the page.
+                  twin = row.get("columns") if isinstance(row, dict) else None
+                  if os.environ.get("PROBE") == "model" and isinstance(twin, dict) and isinstance(twin.get("bytes"), int) and twin["bytes"] <= 4_000_000 and re.fullmatch(r"[\w.-]+\.cols\.json", str(twin.get("path"))):
+                      try:
+                          open(dest + twin["path"], "wb").write(get(twin["path"], 120)); print(f"twin   {sid} ({twin['bytes']} B)")
+                      except Exception as e:
+                          print(f"no     {sid} twin: {e}")
+                  else:
+                      print(f"left   {sid} ({size} B)")
+                  continue
               try:
                   open(dest + sid + ".json", "wb").write(get(sid + ".json", 90)); print(f"saved  {sid} ({size} B)")
               except Exception as e:

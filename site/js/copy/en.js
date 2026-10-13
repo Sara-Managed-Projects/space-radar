@@ -1608,8 +1608,14 @@ export const COPY = {
     // image-to-3D model generated the mesh from photographs and we cleaned it. The words are the
     // registry row's own `honesty:` (registry/models.yaml, kind derived-from-images), and
     // tests/test_real_models.mjs fails if the two ever differ.
+    // 2026-10-13: `render`, the same road from an agency's own artist's render where no photograph
+    // of the craft in orbit exists (Seasat, XRISM, NOAA-21), and `dimensions`, a shape built here
+    // in code from cited metres with pictures looked at for the rest (NuSTAR; registry kind
+    // built-from-dimensions).
     objectMade: {
       images: 'shape built from photographs; proportions approximate',
+      render: 'shape built from an artist’s render; proportions approximate',
+      dimensions: 'shape built from published dimensions and pictures; details simplified',
     },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used

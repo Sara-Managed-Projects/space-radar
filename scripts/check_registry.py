@@ -3467,8 +3467,23 @@ def budget_reader_text() -> str | None:
 #                kind: a visitor is told the same thing about every generated shape.
 # The same fields on a row of another kind are refused too: a published mesh that says it was
 # built from photographs is saying something false about itself.
-MODEL_KINDS = {"derived-from-images"}
+#
+# 2026-10-13, the first batch of the "3D model:" issues (public #946, #964, #968, #994). Two things
+# the first row did not need:
+#   A RENDER IS NOT A PHOTOGRAPH. Nobody photographed Seasat or XRISM in orbit; the clean picture of
+#   each is an agency's own artist's render. A mesh generated from one says "an artist's render" on
+#   the card, so `honesty:` is one of two sentences and each reference of such a row says which it
+#   is in its licence or title. Still one sentence per source: a row cannot word its own.
+#   `built-from-dimensions` is a mesh nobody generated either: built here in code, offline, from
+#   cited metres, with pictures looked at for what the metres do not say (NuSTAR: two boxes on a
+#   ten-metre lattice, which no image-to-3D model can draw). It owes the same pictures, the same
+#   cited dimensions and its own sentence, and it may NOT name a generator.
+MODEL_KINDS = {"derived-from-images", "built-from-dimensions"}
 MODEL_FROM_IMAGES_HONESTY = "shape built from photographs; proportions approximate"
+MODEL_FROM_RENDER_HONESTY = "shape built from an artist’s render; proportions approximate"
+MODEL_FROM_DIMENSIONS_HONESTY = "shape built from published dimensions and pictures; details simplified"
+MODEL_HONESTY = {"derived-from-images": (MODEL_FROM_IMAGES_HONESTY, MODEL_FROM_RENDER_HONESTY),
+                 "built-from-dimensions": (MODEL_FROM_DIMENSIONS_HONESTY,)}
 MODEL_FROM_IMAGES_FIELDS = ("references", "generator", "dimensions", "honesty")
 
 
@@ -3500,7 +3515,10 @@ def check_model_kind(m: dict, where: str) -> None:
             if not isinstance(r.get("read"), datetime.date):
                 fail(at, "no `read: YYYY-MM-DD` -- a licence is a fact about a page on a day")
     gen = m.get("generator")
-    if not isinstance(gen, dict):
+    if kind == "built-from-dimensions":
+        if gen is not None:
+            fail(where, "a model built from dimensions names a `generator:` -- then a model generated it, and its kind is derived-from-images")
+    elif not isinstance(gen, dict):
         fail(where, "a model generated from pictures names no `generator:` (name, url, licence, weights_licence, read)")
     else:
         for key in ("name", "licence", "weights_licence"):
@@ -3515,8 +3533,8 @@ def check_model_kind(m: dict, where: str) -> None:
         fail(where, "no `dimensions:` with a `source:` -- a generated shape has no scale of its own, and the metres it was given are a citation")
     elif not any(isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 for k, v in dims.items() if k.endswith("_m")):
         fail(where, "`dimensions:` cites no length (a field ending in `_m`)")
-    if m.get("honesty") != MODEL_FROM_IMAGES_HONESTY:
-        fail(where, f"`honesty:` must be exactly {MODEL_FROM_IMAGES_HONESTY!r}: it is the sentence the card prints for every shape of this kind")
+    if m.get("honesty") not in MODEL_HONESTY[kind]:
+        fail(where, f"`honesty:` must be exactly {' or '.join(repr(h) for h in MODEL_HONESTY[kind])}: it is the sentence the card prints for every shape of this kind")
     if "mirror" not in str(m.get("modified") or "").lower() and "symmetr" not in str(m.get("modified") or "").lower():
         # Not every generated mesh is mirrored. But the first was, and a cleanup pass that copies one
         # half of a craft onto the other is the change most worth a sentence, so the row says which.

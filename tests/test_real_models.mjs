@@ -124,14 +124,23 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
 {
   const { COPY } = await import(pathToFileURL(join(ROOT, 'site/js/copy/en.js')).href);
   const { drawingLine } = await import(pathToFileURL(join(ROOT, 'site/js/ui/cards.js')).href).catch((e) => ({ drawingLine: null, why: e }));
-  const made = [...section.matchAll(/^ {2}- \{id: ([\w-]+), file: site\/models\/([\w.-]+\.glb),.*kind: derived-from-images,.*honesty: "([^"]*)"/gm)].map((m) => ({ id: m[1], file: m[2], honesty: m[3] }));
-  const copy = COPY.drawing && COPY.drawing.objectMade ? COPY.drawing.objectMade.images : null;
+  // 2026-10-13: three sentences, not one. `images` and `render` are the two a derived-from-images
+  // row may print (a photograph is not an artist's render), `dimensions` is the one a
+  // built-from-dimensions row prints; the route's `made` picks the sentence and the row must agree.
+  const made = [...section.matchAll(/^ {2}- \{id: ([\w-]+), file: site\/models\/([\w.-]+\.glb),.*kind: (derived-from-images|built-from-dimensions),.*honesty: "([^"]*)"/gm)].map((m) => ({ id: m[1], file: m[2], kind: m[3], honesty: m[4] }));
+  const sentences = (COPY.drawing && COPY.drawing.objectMade) || {};
+  const copy = sentences.images || null;
+  check(made.some((row) => row.id === 'cygnus'), 'the Cygnus row is no longer read as a made model: the pattern above has stopped matching models.yaml');
   for (const row of made) {
-    check(row.honesty === copy, `${row.id}: its row's honesty line (${JSON.stringify(row.honesty)}) is not the sentence the card prints (${JSON.stringify(copy)})`);
     const worn = routes.filter((r) => r.entry && r.entry.file === row.file);
-    check(worn.length > 0 && worn.every((r) => r.entry.made === 'images'), `${row.id}: a route to ${row.file} does not say made: 'images', so its card would not say the shape was built from photographs`);
+    check(worn.length > 0, `${row.id}: no route wears ${row.file}`);
+    for (const r of worn) {
+      const how = r.entry.made;
+      check(typeof how === 'string' && sentences[how] === row.honesty, `${row.id}: ${r.table}[${r.key}] says made: ${JSON.stringify(how)}, whose card sentence is ${JSON.stringify(sentences[how])}, and the row's honesty line is ${JSON.stringify(row.honesty)}`);
+      check((how === 'dimensions') === (row.kind === 'built-from-dimensions'), `${row.id}: made: '${how}' on a row of kind ${row.kind}`);
+    }
   }
-  for (const r of routes) if (r.entry && r.entry.made) check(made.some((row) => row.file === r.entry.file), `${r.table}[${r.key}] says made: '${r.entry.made}' and ${r.entry.file} has no derived-from-images row`);
+  for (const r of routes) if (r.entry && r.entry.made) check(made.some((row) => row.file === r.entry.file), `${r.table}[${r.key}] says made: '${r.entry.made}' and ${r.entry.file} has no row of a made kind`);
   // The Cygnus route itself: the ship gets the file, and the Swan's other namesakes do not.
   const ship = realModelFor({ id: 'sat-68689', name: 'CYGNUS NG-24', klass: 'satellite', layer: 'stations', meta: { noradId: 68689 } });
   check(ship && ship.file === 'cygnus.glb' && ship.build === 'cygnus' && ship.generic === true && ship.made === 'images', `CYGNUS NG-24 wears cygnus.glb over the procedural shape, as the kind of thing: ${JSON.stringify(ship)}`);
