@@ -164,7 +164,12 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     [7646, 'STARLETTE', 'starlette.glb', 'dimensions'], [22824, 'STELLA', 'starlette.glb', 'dimensions'], [38077, 'LARES', 'lares.glb', 'dimensions'], [53105, 'LARES-2', 'lares2.glb', 'dimensions'],
     [19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb', 'dimensions'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb', 'dimensions'], [25398, 'WESTPAC', 'westpac.glb', 'dimensions'],
     // THE FOURTH BATCH (2026-10-13, public #953, #954, #965): three NASA craft built from dimensions.
-    [65053, 'NISAR', 'nisar.glb', 'dimensions'], [49954, 'IXPE', 'ixpe.glb', 'dimensions'], [58928, 'PACE', 'pace.glb', 'dimensions']]) {
+    [65053, 'NISAR', 'nisar.glb', 'dimensions'], [49954, 'IXPE', 'ixpe.glb', 'dimensions'], [58928, 'PACE', 'pace.glb', 'dimensions'],
+    // The five that were the generic blade, or had no mesh (public #944, #945, #948, #949, #950).
+    [27386, 'ENVISAT', 'envisat.glb', 'dimensions'], [21574, 'ERS-1', 'ers-1.glb', 'dimensions'],
+    [39634, 'SENTINEL-1A', 'sentinel-1.glb', 'dimensions'], [62261, 'SENTINEL-1C', 'sentinel-1.glb', 'dimensions'], [66315, 'SENTINEL-1D', 'sentinel-1.glb', 'dimensions'],
+    [40697, 'SENTINEL-2A', 'sentinel-2.glb', 'dimensions'], [42063, 'SENTINEL-2B', 'sentinel-2.glb', 'dimensions'], [60989, 'SENTINEL-2C', 'sentinel-2.glb', 'dimensions'],
+    [41335, 'SENTINEL-3A', 'sentinel-3.glb', 'dimensions'], [43437, 'SENTINEL-3B', 'sentinel-3.glb', 'dimensions'], [100690, 'SENTINEL-3C', 'sentinel-3.glb', 'dimensions']]) {
     const got = sat(norad, name);
     check(got && got.file === file && got.made === how && !got.generic, `${name} (${norad}) wears ${file}, made: '${how}', as itself: ${JSON.stringify(got)}`);
   }
@@ -191,7 +196,11 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     [49954, 'IXPE', 'nustar.glb'],
     [99007, 'PACE', 'pace.glb'],                 // a name is not the route: only catalogue number 58928 is NASA's PACE
     [99008, 'SWOT', 'swot.glb'],
-    [39634, 'SENTINEL-1A', 'nisar.glb'],         // a radar satellite with a flat blade is not the mesh reflector
+    [39634, 'SENTINEL-1A', 'nisar.glb'],         // Sentinel-1's blade is not NISAR's mesh reflector
+    [39634, 'SENTINEL-1A', 'sentinel-2.glb'],    // and not the land imager
+    [40697, 'SENTINEL-2A', 'sentinel-1.glb'],
+    [41335, 'SENTINEL-3A', 'sentinel-1.glb'],
+    [41456, 'SENTINEL-1B', 'sentinel-1.glb'],    // 1B is not in the live list and keeps the generic blade
     [46984, 'SENTINEL-6A', 'swot.glb'],          // the other altimeter keeps NASA's model of itself
     [99005, 'SOYUZ-MS 29 DEB', 'soyuz-ms.glb', 'debris'],
     [99006, 'SL-4 R/B', 'soyuz-ms.glb', 'rocket'],   // the Soyuz ROCKET's stage is not the ship

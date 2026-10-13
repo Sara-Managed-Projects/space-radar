@@ -34,6 +34,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
 | The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
 | The shapes of the first Starlink generation, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-three-commercial-craft-built-from-dimensions--the-first-starlink-generation-umbra-iceye-2026-10-13) |
+| The shapes of Envisat, ERS-1, Sentinel-1, Sentinel-2 and Sentinel-3 | built by us in code from published dimensions | ours | [3b-8](#3b-8-five-european-craft-built-from-dimensions--envisat-ers-1-and-the-sentinels-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -960,6 +961,27 @@ No logo and no lettering is on any of the three: the operators' names and marks 
 trademarks. Starlink is SpaceX's, Umbra is Umbra Lab's and ICEYE is ICEYE's; none of them
 endorses Space Radar, and none of them made or approved these shapes.
 
+
+## 3b-8. Five European craft built from dimensions — Envisat, ERS-1 and the Sentinels (2026-10-13)
+
+Built in `scripts/craft-boxes.py` from metres on the pages named in each `registry/models.yaml`
+row. No photograph is on a triangle. Where two pages disagree, the row says which number was built.
+
+| File | What | What the metres were read from | Terms |
+|---|---|---|---|
+| `envisat.glb` (9 KB) | Envisat: a 10.5 m body, a 14 x 5 m panel off one end, a 10 x 1.3 m ASAR, a 2 m mast and a 0.9 m dish. The page's 26 m envelope is 24.5 m in the file | eoPortal, Envisat (<https://www.eoportal.org/satellite-missions/envisat>), table 1 (read 2026-10-13) | numbers are facts; the shape is this project's |
+| `ers-1.glb` (13 KB) | ERS-1: a 2 x 2 x 3 m body, one 11.7 x 2.4 m array of two panels, a 10 x 1 m SAR, a 1.2 m altimeter dish, three scatterometer blades. ERS-2 is not this file | eoPortal, ERS-1 (<https://www.eoportal.org/satellite-missions/ers-1>) (read 2026-10-13) | numbers are facts; the shape is this project's |
+| `sentinel-1.glb` (6 KB) | Sentinel-1A, 1C and 1D: a 3.4 x 1.3 x 1.3 m body, a 12.3 x 0.821 m antenna, two 10 m wings. Sentinel-1B keeps the generic blade | eoPortal (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-1>) and Copernicus SentiWiki (<https://sentiwiki.copernicus.eu/web/s1-mission>) (read 2026-10-13). eoPortal's deployment sentence says a 12 m antenna; the SentiWiki table says 12.3 m x 0.821 m, and the table was built. The 1.5 m wing width is not on either page | numbers are facts; the shape is this project's |
+| `sentinel-2.glb` (8 KB) | Sentinel-2A, 2B and 2C: a 3.4 x 1.8 x 2.35 m body and one wing of 7.1 m². Not Sentinel-1 or Sentinel-3 | ESA facts (<https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2/Facts_and_figures>) and eoPortal (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-2>) (read 2026-10-13). A comparison table on the Sentinel-1 eoPortal page says 3.0 x 1.7 x 2.2 m; the ESA facts page was built | numbers are facts; the shape is this project's |
+| `sentinel-3.glb` (8 KB) | Sentinel-3A, 3B and 3C: a 3.9 x 2.2 x 2.21 m bus, one wing of 10.5 m², OLCI at 1.24 x 0.83 x 1.32 m | eoPortal, Sentinel-3 (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-3>) (read 2026-10-13) | numbers are facts; the shape is this project's |
+| all five | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions of Envisat`;
+`3D model: built by Space Radar from published dimensions of ERS-1`;
+`3D model: built by Space Radar from published dimensions of Sentinel-1`;
+`3D model: built by Space Radar from published dimensions of Sentinel-2`;
+`3D model: built by Space Radar from published dimensions of Sentinel-3`
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

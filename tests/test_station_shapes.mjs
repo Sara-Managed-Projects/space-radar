@@ -143,11 +143,16 @@ for (const [id, name, file] of [[16908, 'AJISAI (EGS)', 'ajisai.glb'], [8820, 'L
   const e = realModelFor({ id: `s-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } });
   check(e?.build === 'sphere' && e.file === file && !e.generic, `${name} is the plain ball under ${file}, as itself: ${JSON.stringify(e)}`);
 }
-// The radar imagers: one shape, twenty-two spacecraft, thirty years and four continents apart.
+// The radar imagers that are still one shape: the ones without a file of their own.
 { const o = modelFor('satellite', 'radar'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar') && Math.abs(o.userData.realSizeM - 12.3) < 0.01, `radar builds inside budget at Sentinel-1's 12.3 m antenna (${tris(o)} tris)`); disposeModels(o); }
-for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
+for (const [id, name] of [[32382, 'RADARSAT-2'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [67304, 'CSG-3'], [41456, 'SENTINEL-1B']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.generic === true, `${name} is a radar imager, and says it is the kind of thing`);
+}
+// Envisat, ERS-1 and Sentinel-1A/C/D have their own files (public #944, #945, #948). 1B stays above.
+for (const [id, name, file] of [[39634, 'SENTINEL-1A', 'sentinel-1.glb'], [62261, 'SENTINEL-1C', 'sentinel-1.glb'], [66315, 'SENTINEL-1D', 'sentinel-1.glb'], [21574, 'ERS-1', 'ers-1.glb'], [27386, 'ENVISAT', 'envisat.glb']]) {
+  const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(e?.file === file && e.made === 'dimensions' && !e.generic, `${name} wears ${file} as itself: ${JSON.stringify(e)}`);
 }
 // ALOS DEB is debris from the same spacecraft and must not take the shape: the id route has no
 // class gate, so this is asserted on the id the catalogue actually gives the debris.

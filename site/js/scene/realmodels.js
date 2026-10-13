@@ -343,21 +343,17 @@ export const REAL_MODELS = {
     // single constraint is why these twenty-two spacecraft, from four continents and thirty years
     // apart, all look alike, and it is the recognition the shape is built on.
     //
-    // `generic: true` and one shape for all of them: they agree about the blade and differ about
-    // how wide it is, so the card says "the kind of thing, not this exact one". Proportions are
+    // `generic: true` on the ones that still share one shape: they agree about the blade and differ
+    // about how wide it is, so the card says "the kind of thing, not this exact one". Proportions are
     // Sentinel-1's published C-SAR, 12.3 m x 0.821 m.
     //
-    // THIS ALSO ANSWERS TASK 9g, which found nothing free for Sentinel-1A, Sentinel-1B and the
-    // rest of the European set and concluded they "stay generic unless Ivan finds a licensed
-    // source". A licence was never the obstacle for a shape this constrained: nobody had drawn it.
-    //
-    // ERS-1 and Envisat carried far more than a radar and are here because the blade is still the
-    // thing you would recognise them by. Envisat's own CC BY model stays on Ivan's list (spec 0027
-    // design.md): this is the family shape until then, which is better than a dish.
-    39634: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1A', generic: true },
+    // Sentinel-1A, 1C and 1D, ERS-1 and Envisat have files of their own (public #944, #945, #948):
+    // the cited bus, antenna and wings, not this family blade. Sentinel-1B is not in the live list
+    // and stays the blade. Sentinel-2 and Sentinel-3 are further down; they were never this shape.
+    39634: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1', catalogue: 'SENTINEL-1A', made: 'dimensions', axes: 'app' },
     41456: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1B', generic: true },
-    62261: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1C', generic: true },
-    66315: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1D', generic: true },
+    62261: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1', catalogue: 'SENTINEL-1C', made: 'dimensions', axes: 'app' },
+    66315: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1', catalogue: 'SENTINEL-1D', made: 'dimensions', axes: 'app' },
     // RADARSAT-1 has NASA's own model since 2026-10-08 (public #430): its real bus, wings and 15 m
     // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
     // the element groups the app loads (registry/models.yaml says so on its row).
@@ -377,8 +373,16 @@ export const REAL_MODELS = {
     60182: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-4 (DAICHI-4)', generic: true },
     43641: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1A', generic: true },
     46265: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1B', generic: true },
-    21574: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ERS-1', generic: true },
-    27386: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ENVISAT', generic: true },
+    21574: { build: 'radar', file: 'ers-1.glb', colour: 'satellite', name: 'ERS-1', catalogue: 'ERS-1', made: 'dimensions', axes: 'app' },
+    27386: { build: 'radar', file: 'envisat.glb', colour: 'satellite', name: 'Envisat', catalogue: 'ENVISAT', made: 'dimensions', axes: 'app' },
+    // Sentinel-2 and Sentinel-3 are not the blade (public #949, #950). One file each, for the
+    // spacecraft the issue lists. Sentinel-2D is not launched and is not here.
+    40697: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2', catalogue: 'SENTINEL-2A', made: 'dimensions', axes: 'app' },
+    42063: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2', catalogue: 'SENTINEL-2B', made: 'dimensions', axes: 'app' },
+    60989: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2', catalogue: 'SENTINEL-2C', made: 'dimensions', axes: 'app' },
+    41335: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3', catalogue: 'SENTINEL-3A', made: 'dimensions', axes: 'app' },
+    43437: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3', catalogue: 'SENTINEL-3B', made: 'dimensions', axes: 'app' },
+    100690: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3', catalogue: 'SENTINEL-3C', made: 'dimensions', axes: 'app' },
 
     // ---------------------------------------------------------------------------------------
     // SEVEN MORE RADAR IMAGERS, BY ID, and they are split between the two shapes -- which is the
