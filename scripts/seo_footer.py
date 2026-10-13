@@ -33,7 +33,7 @@ REQUIRED_EXTERNAL = [
 ]
 REQUIRED_INTERNAL = [
     "about/index.html", "sources/index.html", "accuracy/index.html", "teachers/index.html",
-    "satellites/index.html", "starlink/index.html",
+    "satellites/index.html", "starlink/index.html", "lab/index.html",
 ]
 
 
