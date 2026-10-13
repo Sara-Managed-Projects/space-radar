@@ -316,6 +316,7 @@ export function createOnboarding(ctx, opts = {}) {
 
   function tidy() {
     try { if (ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow(); } catch { /* not built yet */ }
+    try { if (ctx.rail && typeof ctx.rail.closeMore === 'function') ctx.rail.closeMore(); } catch { /* not built yet */ }
     try { if (ctx.share && typeof ctx.share.close === 'function') ctx.share.close(); } catch { /* not built yet */ }
   }
 
@@ -336,9 +337,18 @@ export function createOnboarding(ctx, opts = {}) {
           const sheet = typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
           if (sheet && typeof sheet.detent === 'function' && sheet.detent() === 'peek') sheet.set('half');
         } else if (what === 'peek' && ctx.shell) {
-          // A phone's time pill is hidden under a sheet at full height (ui-guide 5): lower it.
+          // ON A PHONE ONLY (a desktop has no sheet and keeps its card): the time pill is hidden
+          // while a card is open and under a sheet at full height (ui.css, `sr-card-open`; seen on
+          // a runner, 2026-10-14: the clock's step was passed over). The card is put down and
+          // the sheet lowered.
           const sheet = typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
-          if (sheet && typeof sheet.detent === 'function' && sheet.detent() !== 'peek') sheet.set('peek');
+          if (sheet && typeof sheet.detent === 'function') {
+            if (ctx.shell.view() !== 'home') {
+              if (typeof ctx.selected === 'function' && ctx.selected() && typeof ctx.deselect === 'function') ctx.deselect();
+              if (ctx.shell.view() !== 'home') ctx.shell.show('home');
+            }
+            if (sheet.detent() !== 'peek') sheet.set('peek');
+          }
         }
       } catch (e) { console.warn('the tour could not prepare', what, e); }
     }

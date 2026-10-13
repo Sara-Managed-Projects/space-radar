@@ -36,8 +36,9 @@ version: 1
 #   then      next (go on by itself a beat after the action) | wait (take the ring away and wait
 #             for Next: the action opened something worth a look).
 #   prepare   what to make ready first, in order: home (the sidebar's home), card (select the
-#             station if nothing is selected), sheet (raise a phone's sheet to half), peek (lower a
-#             phone's sheet to its peek: the time pill is hidden under a full one).
+#             station if nothing is selected), sheet (raise a phone's sheet to half), peek (on a
+#             phone only: put the card down and lower the sheet, because the time pill is hidden
+#             behind a card and under a full sheet; a desktop keeps its card).
 #
 # The words follow docs' copy rules: calm, plain, no question, no exclamation mark, nothing that
 # sells. They are read aloud by the trips' voice, so no digit a voice would trip on.

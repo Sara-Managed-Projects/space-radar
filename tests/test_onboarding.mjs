@@ -549,6 +549,27 @@ const press = (w, el) => w.doc.fire('pointerdown', { target: el });
   part(w, 'sr-tour__next').fire('click');
   await w.pass(0);
   eq([tour.step().id, part(w, 'sr-tour__hole').style.left], ['share', '322px'], 'on a phone the share step rings the More menu');
+  // The clock on a phone: its pill is hidden behind a card, so the card is put down and the sheet lowered.
+  {
+    const w4 = world({ width: 390, height: 844 });
+    globalThis.document = w4.doc;
+    page(w4);
+    w4.setSelected({ id: 'sat-1' });
+    let detent = 'full';
+    w4.ctx.shell.sheet = () => ({ detent: () => detent, set: (d) => { detent = d; w4.calls.push(['sheet', d]); } });
+    const t4 = make(w4, { steps: STEPS.filter((s) => s.id === 'time') });
+    await t4.start();
+    await w4.pass(0);
+    check(w4.calls.some((c) => c[0] === 'deselect') && detent === 'peek' && t4.step().id === 'time', 'on a phone the clock\'s step puts the card down and lowers the sheet');
+    const w5 = world();
+    globalThis.document = w5.doc;
+    page(w5);
+    w5.setSelected({ id: 'sat-1' });
+    const t5 = make(w5, { steps: STEPS.filter((s) => s.id === 'time') });
+    await t5.start();
+    await w5.pass(0);
+    check(!w5.calls.some((c) => c[0] === 'deselect'), 'on a desktop the card stays for the clock\'s step');
+  }
   for (const mode of MODES) {
     const w2 = world();
     globalThis.document = w2.doc;

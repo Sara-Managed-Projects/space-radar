@@ -1,6 +1,6 @@
 // ui/rail.js -- the tool rail: three 48 px buttons in one glass column, top right (spec 0061 req 5).
 //
-// Contract: createRail(ctx, host) -> { root, openShow(), closeShow(), toggleShow() }
+// Contract: createRail(ctx, host) -> { root, openShow(), closeShow(), closeMore(), toggleShow() }
 // Also exported, pure: railKey(event, activeElement) -> 'show' | 'share' | 'keys' | null
 //
 //   [layers]   What to show: the layers with their counts and swatches, colour by, sound, density
@@ -288,7 +288,7 @@ export function createRail(ctx, host) {
     else toggleShare();
   }, true);
 
-  const api = { root, openShow, closeShow: () => closeShow(false), toggleShow, ready: () => load() };
+  const api = { root, openShow, closeShow: () => closeShow(false), closeMore: () => closeMore(false), toggleShow, ready: () => load() };
   if (ctx) ctx.rail = api;
   return api;
 }
