@@ -52,7 +52,7 @@
 // 1.7 % of the global one -- so there is no tone for it to bring.
 //
 // THE EARTH (2026-10-06, spec 0065 task 4). NASA GIBS serves Blue Marble -- cloud-free, 500 m, with
-// shaded relief and the sea floor -- on its own grid (scene/tilemath.js, A SECOND GRID). The Earth's
+// shaded relief (and, since 2026-10-13, WITHOUT the sea floor: THE SEA, below) -- on its own grid (scene/tilemath.js, A SECOND GRID). The Earth's
 // shader is not the world's: it mixes day and night, water, clouds, the Moon's shadow. So an Earth
 // patch is the EARTH'S OWN shader pair (scene/earth.js SURFACE_VERT / SURFACE_FRAG) with one line
 // changed -- the day map's colour, where the ground is lit -- and the globe's own uniform objects.
@@ -61,8 +61,15 @@
 // patch in three ways: it lies on the WGS84 ellipsoid (the Earth's mesh does), it is OPAQUE and
 // fades by mixing the tile into the day map inside the shader (so it sorts with the globe and every
 // transparent thing -- orbits, the aurora, the overlays of #465 -- draws over it as over the globe),
-// and its grade is two gains, land and sea, chosen per texel from the tile's own colour, because
+// and its grade is a gain and, on water texels chosen from the tile's own colour, a lift, because
 // Blue Marble's sea is far darker than our day map's and its land is not (registry/tilesets.yaml).
+//
+// THE SEA (2026-10-13). The first layer was Blue Marble WITH shaded bathymetry, and its water was
+// multiplied 5 to 8 times to reach the map's blue: the sea floor's fracture zones were long straight
+// streaks and the edges of the surveys behind it were rectangles, over open ocean. The layer is now
+// the same Blue Marble without the sea floor (its deep water is one flat colour), and a water texel
+// is `grade` times the tile plus `sea_lift`, which puts that flat colour at the map's blue and
+// leaves the shallows as bright against the land as NASA drew them (earthTileColour is the twin).
 //
 // RELIEF (2026-10-06, spec 0065 task 3, first step). A row may name a second pyramid, `relief`: a
 // SHADED-RELIEF mosaic made from the laser altimeters (LOLA on the Moon, MOLA and HRSC on Mars).
@@ -152,6 +159,18 @@ const EARTH_GROUND = 'vec3 ground = dayTex * (';
 // Where WORLD_FRAG says which point of the world's own map a fragment is (its relief and its cast
 // shadow are read there). A tile's vUv is the TILE's; the globe's is vUvGlobe.
 const FRAG_RELIEF_UV = 'vec2 reliefUv = vUv; float slopeShare = 1.0;';
+/**
+ * Which of an Earth tile's texels are water (linear light). Two tests, the larger wins:
+ *   blue    blue more than `blueOverRed` times red, in full `full` past it: the flat deep sea
+ *           (0.006 past) and every shallow.
+ *   murk    beside a coast Blue Marble's water is ocean-colour data in blocks of a few kilometres,
+ *           nearly black and as often green as blue (sRGB 0, 6, 4; 2, 8, 4; 0, 6, 0 off Dakar): no red
+ *           to speak of (`murkRed`: all of it under the first, none past the second), dark
+ *           (`murkGreen`), and not black (`murkSome` of green or blue: a shadow in a valley is
+ *           black and is land). Without it those blocks kept the land's grade and were a dark
+ *           patchwork along the shore (the first two looks, off Senegal).
+ */
+export const TILE_SEA = { blueOverRed: 1.6, full: 0.002, murkRed: [0.0006, 0.0015], murkGreen: [0.004, 0.008], murkSome: [0.0006, 0.0012] };
 const FRAG_BASE = 'vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );';
 const VERT_DEPTH = '#include <logdepthbuf_vertex>';
 const VERT_UV = 'vUv = uv;';
@@ -200,18 +219,33 @@ export function tileFragment(src = WORLD_FRAG) {
 
 /**
  * The EARTH'S fragment shader with the daylit ground read from a tile (THE EARTH, above). The tile
- * is graded by two gains, sea and land, chosen per texel from the tile itself: Blue Marble's water
- * is blue well past its red (b - 1.6 r is +0.039 in linear light over open ocean and negative over
- * every land and ice mean measured, registry/tilesets.yaml). Everything else -- the water mask and
+ * is multiplied by the grade and its water texels lifted (THE SEA, above), water chosen per texel
+ * from the tile itself: Blue Marble's water is blue past its red (b - 1.6 r is +0.006 in linear
+ * light over its flat deep sea, more over shallows, and negative over every land and ice mean
+ * measured, registry/tilesets.yaml). Everything else -- the water mask and
  * the glint, night lights, clouds, the eclipse -- still reads the globe's own maps at vUv.
  * Throws if the line it rewrites has moved.
  */
 export function earthTileFragment(src = SURFACE_FRAG) {
   if (!src.includes(EARTH_GROUND)) throw new Error('scene/tiles.js: SURFACE_FRAG no longer lights its ground with ' + EARTH_GROUND);
   return src.replace(EARTH_GROUND, `vec3 tile = texture2D( uTile, vUvTile ).rgb;
-  float tileSea = smoothstep( 0.0, 0.02, tile.b - 1.6 * tile.r );
-  vec3 ground = mix( dayTex, tile * mix( uTileGrade, uTileGradeSea, tileSea ), uFade ) * (`)
-    .replace('uniform sampler2D uDay;', 'uniform sampler2D uDay;\nuniform sampler2D uTile;\nuniform vec3 uTileGrade;\nuniform vec3 uTileGradeSea;\nuniform float uFade;\nvarying vec2 vUvTile;');
+  float tileSea = max( smoothstep( 0.0, ${TILE_SEA.full.toFixed(3)}, tile.b - ${TILE_SEA.blueOverRed.toFixed(1)} * tile.r ),
+    ( 1.0 - smoothstep( ${TILE_SEA.murkRed[0].toFixed(4)}, ${TILE_SEA.murkRed[1].toFixed(4)}, tile.r ) ) * ( 1.0 - smoothstep( ${TILE_SEA.murkGreen[0].toFixed(3)}, ${TILE_SEA.murkGreen[1].toFixed(3)}, tile.g ) ) * smoothstep( ${TILE_SEA.murkSome[0].toFixed(4)}, ${TILE_SEA.murkSome[1].toFixed(4)}, max( tile.g, tile.b ) ) );
+  vec3 ground = mix( dayTex, tile * uTileGrade + uTileSeaLift * tileSea, uFade ) * (`)
+    .replace('uniform sampler2D uDay;', 'uniform sampler2D uDay;\nuniform sampler2D uTile;\nuniform vec3 uTileGrade;\nuniform vec3 uTileSeaLift;\nuniform float uFade;\nvarying vec2 vUvTile;');
+}
+
+/**
+ * The JS twin of the Earth patch's ground colour: a tile's texel (linear light) as it is drawn.
+ * Land is the texel times `grade`; a water texel is that plus `seaLift`.
+ * @returns {{ rgb: number[], sea: number }}
+ */
+export function earthTileColour(rgb, grade, seaLift = [0, 0, 0]) {
+  const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  const S = TILE_SEA;
+  const sea = Math.max(ss(0, S.full, rgb[2] - S.blueOverRed * rgb[0]),
+    (1 - ss(S.murkRed[0], S.murkRed[1], rgb[0])) * (1 - ss(S.murkGreen[0], S.murkGreen[1], rgb[1])) * ss(S.murkSome[0], S.murkSome[1], Math.max(rgb[1], rgb[2])));
+  return { rgb: [0, 1, 2].map((i) => rgb[i] * grade[i] + seaLift[i] * sea), sea };
 }
 
 /** The Earth's vertex shader with the depth pull and the tile's own uv (`uv` stays the globe's). */
@@ -302,13 +336,13 @@ export function createPlanetTiles(opts = {}) {
     // `grade` (registry/tilesets.yaml): the mosaic multiplied to the tone of the map under it, in
     // linear light -- uTint's own job in the world's shader, so it costs nothing. A Color past 1 is fine.
     const g = Array.isArray(set.grade) ? set.grade : [1, 1, 1];
-    const gs = Array.isArray(set.gradeSea) ? set.gradeSea : g;
+    const sl = Array.isArray(set.seaLift) ? set.seaLift : [0, 0, 0];
     const rel = set.relief && set.relief.url ? set.relief : null;
     const az = rel ? (Number(rel.lightAzimuthDeg) || 0) * Math.PI / 180 : 0;
     layers.set(set.id, {
       set, grid: gridOf(set), share: tileShare(set),
       tint: new THREE.Color().setRGB(g[0], g[1], g[2], THREE.LinearSRGBColorSpace),
-      tintSea: new THREE.Color().setRGB(gs[0], gs[1], gs[2], THREE.LinearSRGBColorSpace),
+      seaLift: new THREE.Color().setRGB(sl[0], sl[1], sl[2], THREE.LinearSRGBColorSpace),
       group: null, tiles: new Map(), lru: createLru(1), drawn: new Set(), wanted: [], queue: [],
       on: false, master: 0, lastSelect: -Infinity, detail: 1, level: null, showing: false,
       // RELIEF: the row's second pyramid, its tiles by key (each shared by the patches inside it),
@@ -389,7 +423,7 @@ export function createPlanetTiles(opts = {}) {
         name: 'earth-tile',
         ...earthShaders,
         // The globe's own uniform OBJECTS: its Sun, clouds, night lights, water and eclipse are this patch's.
-        uniforms: { ...base, uTile: { value: tex }, uTileGrade: { value: layer.tint }, uTileGradeSea: { value: layer.tintSea }, uFade: fade },
+        uniforms: { ...base, uTile: { value: tex }, uTileGrade: { value: layer.tint }, uTileSeaLift: { value: layer.seaLift }, uFade: fade },
         // Opaque: the fade is a mix inside the shader (THE EARTH, above). It still never writes depth.
         transparent: false,
         depthWrite: false,

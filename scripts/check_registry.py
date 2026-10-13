@@ -4434,10 +4434,15 @@ def check_tilesets(world_ids: set) -> list:
                 and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 8 for v in grade)):
             fail(where, f"grade {grade!r} must be three gains in (0, 8], measured against the map under the tiles")
         # 2026-10-06: the Earth's second gain, a grid that is not Trek's, and a row's relief pyramid.
-        sea = r.get("grade_sea")
+        # 2026-10-13: the sea is lifted, not multiplied (the Earth's layer has no sea floor in it now).
+        if r.get("grade_sea") is not None:
+            fail(where, "grade_sea is gone: a gain on the water is what drew the sea floor as streaks; say `sea_lift`, what is added to water texels in linear light")
+        sea = r.get("sea_lift")
         if sea is not None and not (isinstance(sea, list) and len(sea) == 3
-                                    and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 10 for v in sea)):
-            fail(where, f"grade_sea {sea!r} must be three gains in (0, 10], measured against the map's water")
+                                    and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 0.5 for v in sea)):
+            fail(where, f"sea_lift {sea!r} must be three linear-light values in [0, 0.5]: the map's sea less the tile's deep sea times `grade`")
+        if "Bathymetry" in str(r.get("url", "")):
+            fail(where, "this layer has the shaded sea floor in it, which reads as streaks and rectangles on open water once graded: use the layer without it")
         span0 = r.get("level0_span_deg")
         if span0 is not None and not (isinstance(span0, (int, float)) and not isinstance(span0, bool) and 180 <= span0 <= 360):
             fail(where, f"level0_span_deg {span0!r} must be a level-0 tile's side in degrees, 180 to 360")

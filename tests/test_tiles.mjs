@@ -499,7 +499,7 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   const mine = new Set(f.split('\n'));
   const lost = SURFACE_FRAG.split('\n').filter((l) => !mine.has(l));
   check(lost.length === 1 && lost[0].includes('vec3 ground = dayTex * ('), `the Earth's tile shader drops ${lost.length} of the Earth's lines, want the lit ground only`);
-  check(f.includes('vec3 ground = mix( dayTex, tile * mix( uTileGrade, uTileGradeSea, tileSea ), uFade ) * ('), 'the tile is the DAY term only, mixed in by the fade');
+  check(f.includes('vec3 ground = mix( dayTex, tile * uTileGrade + uTileSeaLift * tileSea, uFade ) * ('), 'the tile is the DAY term only, mixed in by the fade');
   for (const kept of ['vec3 cities = uNightTint', 'float cloud  = cloudCover( vUv );', 'eclObscuration(', 'float oceanReal = texture2D( uWater, vUv ).r', 'colour = mix( colour, cloudLight']) {
     check(f.includes(kept), `night lights, clouds, the water mask and the eclipse are still in the patch: ${kept}`);
   }
@@ -529,7 +529,7 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   await run(3000);
   const st = tiles.state().sets[EARTH.id];
   check(st.showing && st.level === 7 && st.drawn === st.wanted && st.loading === 0, `the Earth's tiles are on screen at level ${st.level}: ${st.drawn} of ${st.wanted}`);
-  check(asked.every((u) => u.startsWith('https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/') && u.endsWith('.jpeg')), 'from GIBS\'s Blue Marble and nowhere else');
+  check(asked.every((u) => u.startsWith('https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief/default/500m/') && u.endsWith('.jpeg')), 'from GIBS\'s Blue Marble and nowhere else');
   check(st.wanted <= T.DRAW_TILES[1] / 4 && near(T.tileShare(EARTH), 0.25), `512-pixel tiles: a quarter of the draw budget, ${st.wanted} of ${T.DRAW_TILES[1] / 4}`);
   const group = earth.children.find((c) => c.name === EARTH.id + '-tiles');
   const p = group.children.find((c) => c.visible);
@@ -537,7 +537,7 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   const U = p.material.uniforms, E = earth.material.uniforms;
   check(U.uSunDir === E.uSunDir && U.uNight === E.uNight && U.uClouds === E.uClouds && U.uLiveA === E.uLiveA && U.uEclipse === E.uEclipse && U.uWater === E.uWater && U.uDay === E.uDay,
     'it shares the globe\'s Sun, night lights, clouds, water and eclipse: the same uniform objects');
-  check(U.uFade.value === 1 && near(U.uTileGrade.value.r, EARTH.grade[0]) && near(U.uTileGradeSea.value.b, EARTH.gradeSea[2]), 'with its own tile, fade and the two grades');
+  check(U.uFade.value === 1 && near(U.uTileGrade.value.r, EARTH.grade[0]) && near(U.uTileSeaLift.value.b, EARTH.seaLift[2]), 'with its own tile, fade, the grade and the sea\'s lift');
   check(!!p.geometry.attributes.uvTile && !p.geometry.attributes.uvGlobe, 'its `uv` is the globe\'s and the tile has its own');
   check(tiles.credits().length === 1 && tiles.credits()[0].includes('Global Imagery Browse Services (GIBS)'), 'the credit carries GIBS\'s acknowledgement');
   const m = tiles.mosaics()[0];

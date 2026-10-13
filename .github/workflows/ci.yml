@@ -785,6 +785,9 @@ jobs:
       # the seam with the static map, the 12-hour rule, and what each storm number means.
       - name: live clouds are GIBS's pictures read back to temperature, seamed onto the static map, live only near the clock
         run: node tests/test_liveclouds.mjs
+      # 2026-10-13: the Earth's close-up tiles are Blue Marble without the sea floor, and water is lifted, not multiplied.
+      - name: "the open sea reads as water: the tile layer has no bathymetry, the deep sea sits at the day map's blue, shallows are not burnt, land is not lifted"
+        run: node tests/test_sea_grade.mjs
       # 2026-10-13: the clouds stand up by parallax inside the surface shader (scene/earth.js CLOUD_PARALLAX).
       - name: "the Earth's clouds stand up by parallax: zero offset straight down, a lean that grows with the view's angle, the last light's angle, off on tier 0, the latch, saveData and Measured"
         run: node tests/test_cloud_parallax.mjs
