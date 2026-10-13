@@ -175,7 +175,7 @@ if (index && !index.includes('docs/ADD_A_SIMULATOR.md')) bad('site/lab/index.htm
 const app = [join(ROOT, 'site', 'index.html'), join(ROOT, 'site', 'sw.js'), ...walk(join(ROOT, 'site', 'js')).filter((f) => /\.(js|html)$/.test(f))];
 // One exception, and only this one: the footer every page shares (templates/sitelinks.html) carries a plain link a visitor clicks
 // to the Lab's list. A link loads nothing into the app; a script, an import, a fetch or a link to one simulator is still refused.
-const FOOTER_LINK = '<a href="lab/index.html">';
+const FOOTER_LINK = /<a (?:tabindex="-1" )?href="lab\/index\.html">/;
 for (const f of app) {
   const text = f.endsWith(join('site', 'index.html')) ? readFileSync(f, 'utf8').replace(FOOTER_LINK, '<a>') : readFileSync(f, 'utf8');
   if (/["'`(]\.{0,2}\/?lab\/(?:index\.html|[a-z0-9-]+\/)/.test(text)) bad(relative(ROOT, f), 'refers to the Lab: nothing in site/lab/ is loaded by the app');
