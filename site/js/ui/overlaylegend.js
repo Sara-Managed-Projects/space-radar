@@ -4,7 +4,7 @@
 //           legendNode(state) -> HTMLElement | null      the ramp, its two ends and the unit
 //           paintLegend(node, state) -> void             rewrite a legend made by legendNode
 //
-// `state` is scene/earthoverlay.js state(). No registry import here: the stop card
+// `state` is scene/earthoverlay.js state() (or scene/wind.js's, or scene/currents.js's). No registry import here: the stop card
 // (ui/tripframe.js) and What to show (ui/overlaypanel.js) both print from the state they are
 // handed, so the two can never disagree about what is on the globe.
 
@@ -16,6 +16,7 @@ export function overlayLine(state) {
   const C = COPY.overlay;
   if (!state || !state.id) return '';
   if (state.kind === 'wind') return windLine(state);
+  if (state.kind === 'currents') return currentsLine(state);
   if (state.status === 'loading') return C.loading;
   if (state.status === 'failed') return C.failed;
   if (state.status === 'no-earth') return C.noEarth;
@@ -49,9 +50,32 @@ function windLine(state) {
   ].filter(Boolean).join(' ');
 }
 
-/** The legend's title: the registry row's for a GIBS map, the copy's for the wind. */
+/**
+ * The ocean currents' sentence (scene/currents.js): what the streaks and their colours are, the day
+ * each of the two datasets is of, what kind of current it is and is not, how much the motion is
+ * sped up (or that it stands still), and whose the data is.
+ */
+function currentsLine(state) {
+  const W = COPY.overlay.currents;
+  if (state.status === 'loading') return W.loading;
+  if (state.status === 'failed') return W.failed;
+  if (state.status === 'no-earth') return COPY.overlay.noEarth;
+  if (state.status !== 'shown' || !Number.isFinite(state.date)) return '';
+  const days = state.speedup / 86400;
+  return [
+    W.what,
+    t(W.dated, { date: timeText.utcLong(state.date) }),
+    Number.isFinite(state.tempDate) ? t(W.tempDated, { date: timeText.utcLong(state.tempDate) }) : '',
+    state.still ? W.still : days >= 1 ? t(W.sped, { n: fmt.int(Math.round(days)) }) : t(W.spedHours, { n: fmt.int(Math.round(state.speedup / 3600)) }),
+    state.tempGaps > 0 ? W.tempMissing : '',
+    t(W.credit, { credit: state.credit }),
+  ].filter(Boolean).join(' ');
+}
+
+/** The legend's title: the registry row's for a GIBS map, the copy's for the wind and the currents. */
 function titleOf(state) {
-  return state && state.kind === 'wind' ? COPY.overlay.wind.title : state ? state.title : '';
+  if (state && (state.kind === 'wind' || state.kind === 'currents')) return COPY.overlay[state.kind].title;
+  return state ? state.title : '';
 }
 
 function sig(state) {

@@ -1229,7 +1229,7 @@ html.sr-compact .sr-status {
 /* Three states, and the third is not a decoration on the other two. */
 .sr-state {
   flex: 0 0 auto;
-  padding: 2px 9px;
+  padding: 2px 8px;
   font-size: var(--sr-fs-sm);
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -4435,10 +4435,28 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 .sr-status__foot {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   margin-top: 20px;
   padding-top: 12px;
   border-top: 1px solid var(--sr-line);
 }
+
+.sr-status__foot-credit {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 1.5;
+  color: var(--sr-text-dim);
+}
+
+.sr-status__foot-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sr-status__foot-credit a:hover { color: var(--sr-text); }
 
 .sr-mark.sr-mark--foot {
   position: static;
@@ -4470,7 +4488,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   text-decoration: none;
 }
 .sr-sitefoot--shown a:hover { color: var(--sr-text); }
-@media (pointer: coarse) { .sr-status__press { min-height: 44px; } }
+@media (pointer: coarse) { .sr-status__press, .sr-status__built { min-height: 44px; } }
 
 /* --- the tool rail -------------------------------------------------------------------- */
 
@@ -4842,6 +4860,24 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
 .sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+/* Quality (ui/qualitypanel.js, spec 0073 req 6): the title and a mono note of what Auto wears now on
+   one line, then up to five choices across the row's whole width, one line, never wrapped. */
+.sr-quality .sr-density__choices { flex-basis: 100%; }
+.sr-quality .sr-density__btn { padding: 0 var(--sp-1); white-space: nowrap; }
+.sr-quality__note {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/1.2 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+.sr-quality__note[hidden] { display: none; }
+/* Look (ui/exposure.js lookPanel): "Film" is a short word, 43 px wide as a button. On a finger's screen
+   the row's buttons get more padding, which takes it past 44. Not a min-width: on a flex item with a
+   basis of nothing that replaces the automatic minimum, and "Measured" was then squeezed and cut
+   (seen in a look run, 2026-10-12). */
+@media (pointer: coarse) {
+  .sr-look .sr-density__btn { padding: 0 var(--sp-3); }
+}
 /* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
    the one slider in the app, a native range between two words, and the survey's credit as a link
    that is underlined so colour alone does not say so. */

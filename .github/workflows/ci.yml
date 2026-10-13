@@ -184,6 +184,11 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # A pull request that changes what is drawn shows a picture (Ivan, 2026-10-12, after five
+      # features were merged unseen). The rule is one small script; this holds it and the documents
+      # that state it. The check itself is .github/workflows/pictures.yml.
+      - name: A drawn change owes a picture, and the rule says what counts as one
+        run: python3 tests/test_pr_pictures.py
       # Spec 0043 task 2 (internal #121): registry/truth.yaml lists every guarded stop field, and a field
       # the validator never mentions or no refusal case breaks is refused here.
       - name: The truth table agrees with the validator and its refusals
@@ -218,6 +223,10 @@ jobs:
         run: python3 tests/test_harvester_scripts.py
       - name: A refresh that fails publishes the last good saved copy, never an empty one
         run: python3 tests/test_refresh_keep_good.py
+      # Public #291: .github/workflows/freshness.yml reads the live site's build.json and the saved
+      # datasets' index every six hours; the decision is scripts/freshness.py, held here offline.
+      - name: "The live site is behind: fresh, 30 hours behind, a stale dataset, an unreadable build.json, a switched-off dataset ignored"
+        run: python3 tests/test_freshness.py
 
 
   # Spec 0061 task 9: what a search engine reads. The object pages, the sitemap and the 404 page are
@@ -238,6 +247,9 @@ jobs:
       - run: pip install --disable-pip-version-check pyyaml pillow fonttools brotli
       - name: The home page's search tags and JSON-LD match registry/sources.yaml
         run: python3 scripts/gen_home_seo.py --check
+      # The Space Radar Lab (docs/ADD_A_SIMULATOR.md): the list is written from the simulators' own heads, and a stale one is refused.
+      - name: The Lab's list matches the simulators in site/lab/
+        run: python3 scripts/gen_lab_index.py --check
       - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
         run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
@@ -254,6 +266,12 @@ jobs:
       # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
       - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
         run: python3 tests/test_seo_pages.py
+      # Mars's height map against the laser altimeter's own grid (spec 0073 requirement 5). Here, in the
+      # job that installs Pillow: the map is a WebP and node cannot decode one. Olympus Mons's summit,
+      # Hellas's floor, Coprates Chasma's floor and the north polar cap within 400 m of MOLA's numbers;
+      # the highest texel is Olympus and the lowest is in Hellas (a mirrored or rolled map fails).
+      - name: "Mars's height map says what MOLA measured at Olympus Mons, Hellas, Coprates Chasma and the north polar cap (spec 0073 req 5)"
+        run: python3 tests/test_mars_heights.py
       # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
       - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
         run: node tests/test_pagelive.mjs
@@ -267,6 +285,11 @@ jobs:
       # thirty-first trip fails here until the README says so.
       - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"
         run: python3 tests/test_readme_facts.py
+      # The review of 2026-10-12 read "24 public sources" on two pages and "28" on a third. One rule
+      # (scripts/count_facts.py source_counts): sources are the publishers of the enabled rows, feeds
+      # the enabled rows; a template or a sentence with a number of its own fails here.
+      - name: "One number of sources: the pages read one function, a switched-off row is in neither, nobody types a count"
+        run: python3 tests/test_source_counts.py
       # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
       - name: "The translation checker names a missing key, a lost slot and an untouched string"
         run: node tests/test_check_translation.mjs
@@ -310,6 +333,10 @@ jobs:
       # budget was a comment until this job ran: nothing had ever measured it.
       - name: Modules agree, and every drawn shape fits its budget
         run: node tests/test_contract.mjs
+      # Every simulator in site/lab/ obeys the rules that can be checked by reading its file (one file, no request, a dated source, an
+      # honesty line, a lesson, small, listed), and its draw() runs on a recording canvas with no NaN. This is the contributor's first check.
+      - name: The Lab's simulators obey their rules
+        run: node tests/test_lab.mjs
       # The harvested JPL snapshots become records: Horizons vectors -> measured sampled probes,
       # close approaches joined to the SBDB -> inferred kepler asteroids. Fixtures are cut
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
@@ -427,6 +454,10 @@ jobs:
       # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
       - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
         run: node tests/test_autopilot.mjs
+      # Spec 0071: the camera wanders with no route. The walk never jumps the ladder, a flight that
+      # never lands cannot strand it, and a hand on the map gets everything back as it was.
+      - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
+        run: node tests/test_drift.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"
@@ -643,6 +674,14 @@ jobs:
         run: node tests/test_trains.mjs
       - name: the frame-rate latch trips once after three slow seconds; data-saver reads the connection (spec 0026 req 18)
         run: node tests/test_quality.mjs
+      # The settings a visitor can choose (spec 0073 requirements 6 and 8, 2026-10-12). Pure logic, so no
+      # browser: a choice of quality is a tier, the latch's removals, step counts and a pixel ratio, and
+      # is never above the device's ceiling; Measured hides what its registry row or its module says is
+      # generated, and a row or a module that does not say fails here.
+      - name: "the quality a visitor chooses: never above the device's ceiling, Low never promoted, the latch returns a manual choice to Auto once, one stored key (spec 0073 req 6)"
+        run: node tests/test_quality_setting.mjs
+      - name: "Measured or Film: every weather row and every module with noise in a shader says what Measured does, hidden rows are none and the rest move at the clock's rate (spec 0073 req 8)"
+        run: node tests/test_look_setting.mjs
       # The device tiers (2026-09-28): the tier from capability fixtures, one promotion by frames and
       # none past the latch, 4k fetched one at a time after the first frame and never on a phone,
       # and a boot set that is byte for byte what a first visit loaded before tiers existed.
@@ -678,6 +717,13 @@ jobs:
       # behind a uniform that is off on every other world, and each card says what is adjusted.
       - name: Three worlds' own looks are off everywhere else, and said on the card
         run: node tests/test_world_looks.mjs
+      # Mars's relief (spec 0073 requirement 5): the shadow march's JS twin (a 21 km mountain shades
+      # the ground behind it at a low Sun, a plain never shades itself, the ball's curve is in it),
+      # the shader's reads counted, a close-up tile reading the globe's relief at the globe's place,
+      # nothing fetched at boot or on a phone, the tier's steps, the latch; and that Mars's only
+      # weather row is still the season: no dust storm is drawn that nobody reported.
+      - name: Mars's relief casts shadows from MOLA's heights at a low Sun, on tier 1 and up, and no storm is invented (spec 0073 req 5)
+        run: node tests/test_mars_relief.mjs
 
       # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
       # measured directions, and nothing else moves.
@@ -687,6 +733,11 @@ jobs:
       # Public #271: a star's light is a peak and a glow, the same in all three star draws, never a flat disc.
       - name: A star is a peak with a glow, not a disc
         run: node tests/test_star_light.mjs
+
+      # Spec 0072 requirement 1: planets and moons shine at their computed magnitude (Mallama and Hilton 2018),
+      # with the stars' own sprite, and the light is gone once the disc is 16 px across.
+      - name: Venus outshines Sirius, and a planet close up has no glow
+        run: node tests/test_worldlights.mjs
 
       # Public #426: a pulsar blinks at its period times the least power of ten an eye can follow, and
       # the card says by how much; the photographed black holes are drawn while their cards are open.
@@ -712,6 +763,13 @@ jobs:
       # Cassini's radii, for the ring and for its shadow on the globe alike.
       - name: Saturn's rings, lit both ways, with the Cassini Division where Cassini measured it (spec 0054 task 5)
         run: node tests/test_rings.mjs
+      # Saturn from close (spec 0073 requirement 5): the fine-structure strip decoded and read at the
+      # radii of the Colombo, Maxwell, Huygens, Encke and Keeler gaps (a strip from anything but a
+      # measured profile, or on the wrong radii, fails), the ring shader's one extra read and its
+      # grains without a texture, nothing fetched at boot or on a phone, the latch, and the polar
+      # vortex as a registry row with Cassini's two numbers.
+      - name: Saturn's rings from close are Cassini's profile at Cassini's radii, and the polar vortex is a registry row (spec 0073 req 5)
+        run: node tests/test_ring_detail.mjs
       - name: the eclipse trip's five stops land on the library's eclipses, counted from the visitor's clock (spec 0037)
         run: node tests/test_eclipse_trip.mjs
       - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)
@@ -727,6 +785,12 @@ jobs:
       # the seam with the static map, the 12-hour rule, and what each storm number means.
       - name: live clouds are GIBS's pictures read back to temperature, seamed onto the static map, live only near the clock
         run: node tests/test_liveclouds.mjs
+      # 2026-10-13: the Earth's close-up tiles are Blue Marble without the sea floor, and water is lifted, not multiplied.
+      - name: "the open sea reads as water: the tile layer has no bathymetry, the deep sea sits at the day map's blue, shallows are not burnt, land is not lifted"
+        run: node tests/test_sea_grade.mjs
+      # 2026-10-13: the clouds stand up by parallax inside the surface shader (scene/earth.js CLOUD_PARALLAX).
+      - name: "the Earth's clouds stand up by parallax: zero offset straight down, a lean that grows with the view's angle, the last light's angle, off on tier 0, the latch, saveData and Measured"
+        run: node tests/test_cloud_parallax.mjs
       - name: storms are the ones advised in the last 12 h, drawn only near their advisory, carded with what GDACS's numbers mean
         run: node tests/test_storms.mjs
       # Internal #281: fires, volcanoes and icebergs from NASA's EONET, against nine events of what it
@@ -737,6 +801,11 @@ jobs:
       # the one request, a grid refused unless whole, the step along the wind, the drawing, nothing at boot.
       - name: the wind is one request for a whole grid, drawn as streaks that move with it, or stand still when asked
         run: node tests/test_wind.mjs
+      # The wind's sibling: the sea's currents from NOAA CoastWatch's altimetry, coloured by NOAA's OISST
+      # sea temperature (no network here): two packed saved copies refused unless whole, the step that
+      # stops at a shore, streaks never over land, the ramp, the sentence, nothing at boot.
+      - name: ocean currents are two saved grids, drawn as streaks coloured by the sea's temperature that never cross land
+        run: node tests/test_currents.mjs
       # Spec 0053 task 3: the aurora, NOAA's OVATION forecast on the night side, against the answer NOAA
       # really gave on 2026-09-30 (saved): the decode, the night mask and colour ramp twins, the
       # schedule, and the card's "not a photograph".
@@ -876,6 +945,8 @@ jobs:
         run: node tests/test_sky_follow.mjs
       - name: "with nothing moving the loop draws twenty frames a second: the eleven reasons it must not, each held, and a capped frame kept from the frame latch (internal #520)"
         run: node tests/test_idle.mjs
+      - name: "the look tool: ?look=1 holds the frame latch and nothing else and no embed or deep link can set it, a logged error fails the job, no WebGL2 is neutral, every probe parses behind the prelude"
+        run: node tests/test_look_tool.mjs
       - name: "the notifier: digests, showers, subscriptions and tokens"
         run: python3 tests/test_notify.py
       # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.

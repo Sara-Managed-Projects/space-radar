@@ -95,8 +95,8 @@ export const SITES = [
     "display": "Apollo 11 landing site",
     "class": "surface",
     "world": "moon",
-    "lat": 0.6741,
-    "lon": 23.473,
+    "lat": 0.67416,
+    "lon": 23.47314,
     "shape": "lunar-module",
     "aliases": [
       "Tranquility Base"

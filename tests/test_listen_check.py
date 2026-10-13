@@ -52,6 +52,11 @@ for script, heard in [
     ("since twenty eighteen", "since 2018"),
     ("nineteen oh five", "1905"),
     ("nought point one two of a pixel", "0.12 of a pixel"),
+    ("zero point one two of a pixel", "0.12 of a pixel"),
+    ("Sagittarius A star. Nobody can see it.", "Sagittarius A*. Nobody can see it."),
+    ("eight and a half light-years out", "8 .5 light years out"),
+    ("four and a half billion years old", "4.5 billion years old"),
+    ("two and a half million light-years", "2.5 million light years"),
     ("M eighty-seven", "M87"),
     ("twenty kilometres across", "20km across"),
     ("between five thousand and one hundred thousand times", "between 5 ,000 and 100 ,000 times"),
@@ -75,7 +80,7 @@ for script, heard in [
     same(script, heard)
 check(lc.canon("one, two, three") == ["1", "2", "3"], f"a list of numbers stays a list: {lc.canon('one, two, three')}")
 check(lc.canon("one in a million") == ["1", "in", "1000000"], f"'one in a million': {lc.canon('one in a million')}")
-check(lc.canon("six and a half") == ["6", "and", "a", "half"], f"'and' outside a number is a word: {lc.canon('six and a half')}")
+check(lc.canon("six and a half") == ["6.5"] and lc.canon("six and a quarter") == ["6", "and", "a", "quarter"], f"'and a half' is the number's half, and any other 'and' after a number is a word: {lc.canon('six and a half')}")
 check(lc.canon("in March twenty twenty-five") == ["in", "march", "2025"], f"a month and a year: {lc.canon('in March twenty twenty-five')}")
 check(lc.canon("nineteen sixty-nine") != lc.canon("nineteen sixty"), "a wrong year is not the right one")
 check(lc.canon("thirty-one thousand") != lc.canon("three one zero zero zero"), "a number read digit by digit is not the number")

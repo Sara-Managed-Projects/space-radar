@@ -3,7 +3,7 @@
 
     python3 tests/test_community_files.py
 
-Asserted, each by reading the files: the issue chooser offers six forms and three contact links and
+Asserted, each by reading the files: the issue chooser offers seven forms and three contact links and
 every form parses with the fields GitHub needs; CITATION.cff parses and names this repository and
 the MIT licence; every relative link in README, CONTRIBUTING, ROADMAP and docs/TRANSLATING.md goes
 to a file that exists; CONTRIBUTING opens with "no install, no build" and has the no-code section
@@ -31,7 +31,7 @@ def check(ok, msg):
 # --- the issue chooser
 forms = sorted((ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml"))
 forms = [f for f in forms if f.name != "config.yml"]
-check(len(forms) == 6, f"the chooser should show 6 forms, there are {len(forms)}: {[f.name for f in forms]}")
+check(len(forms) == 7, f"the chooser should show 7 forms, there are {len(forms)}: {[f.name for f in forms]}")
 for f in forms:
     d = yaml.safe_load(f.read_text(encoding="utf-8"))
     check(all(k in d for k in ("name", "description", "body", "labels")), f"{f.name} lacks name, description, labels or body")

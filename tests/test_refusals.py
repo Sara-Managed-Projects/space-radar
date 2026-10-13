@@ -112,11 +112,21 @@ def validator(work: Path, script: str = "scripts/check_registry.py", env: dict |
     return subprocess.run([sys.executable, script], cwd=work, capture_output=True, text=True, env=env or ENV)
 
 
+# One character past MAX_SENTENCE (160), so the case proves the cap bites at the boundary rather
+# than somewhere well beyond it. Defined before CASES, which uses it.
+GLOSSARY_SAY_OVER_CAP = (
+    "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+    "can keep the Earth and Sun behind it and stay cold. more words here to"
+)
+
+
 CASES: list[tuple[str, str, str, str]] = [
     # --- the dated pages and the sources page (scripts/seo_pages.py): what they print is the registry's, so the registry is held ---
     ("a source with no licence line", "sources.yaml", '    licence: "', '    licence_: "'),
     ("a source whose terms page is not https", "sources.yaml", "terms_url: https://celestrak.org/usage-policy.php", "terms_url: http://celestrak.org/usage-policy.php"),
     ("a source with no day its terms were recorded", "sources.yaml", "    terms_recorded: 2026-09-07\n", ""),
+    # One number of sources (scripts/count_facts.py source_counts): a row that does not say who publishes it cannot be counted.
+    ("a source that does not say who publishes it", "sources.yaml", "    publisher: CelesTrak\n", ""),
     ("a sky event of a kind no page knows", "sky-events.yaml", "kind: meteor-shower\n    name: \"Leonids 2026\"", "kind: comet\n    name: \"Leonids 2026\""),
     ("a sky event of a shower the registry lacks", "sky-events.yaml", "shower: geminids", "shower: geminidz"),
     ("a sky event whose map link names no world", "sky-events.yaml", "at: mercury}", "at: vulcan}"),
@@ -839,11 +849,17 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a weather effect drawn at the lowest tier",
      "weather.yaml", "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]",
      "    kind: hexagon\n    class: illustrative\n    off_at: [save_data]"),
+    ("a weather effect that does not say what the Measured look does to it",
+     "weather.yaml", "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]\n    measured: hidden\n",
+     "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]\n"),
+    ("an illustrative weather effect the Measured look would still draw",
+     "weather.yaml", "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]\n    measured: hidden\n",
+     "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]\n    measured: same\n"),
     ("lightning that flashes for a visitor who asked for less motion",
      "weather.yaml", "off_at: [tier0, save_data, reduced_motion]", "off_at: [tier0, save_data]"),
     ("a wind profile that calls itself measured",
-     "weather.yaml", "    kind: zonal-flow\n    class: modelled\n    off_at: [tier0, save_data]\n    source:\n      name: \"Tollefson",
-     "    kind: zonal-flow\n    class: measured\n    off_at: [tier0, save_data]\n    source:\n      name: \"Tollefson"),
+     "weather.yaml", "    kind: zonal-flow\n    class: modelled\n    off_at: [tier0, save_data]\n    measured: same\n    source:\n      name: \"Tollefson",
+     "    kind: zonal-flow\n    class: measured\n    off_at: [tier0, save_data]\n    measured: same\n    source:\n      name: \"Tollefson"),
     ("a wind faster than any measured on a planet",
      "weather.yaml", "[0, -398]", "[0, -3980]"),
     ("a wind profile that does not reach the pole",
@@ -856,6 +872,14 @@ CASES: list[tuple[str, str, str, str]] = [
      "weather.yaml", "[300, 54]", "[300, 24]"),
     ("a layer the page is said to fetch, from nowhere the registry names",
      "weather.yaml", "    layer: lightning\n", ""),
+    # A glossary say is capped at MAX_SENTENCE the way a card sentence is: the card prints the
+    # definition beside the sentence that sent the reader to it, so a definition past the cap is
+    # the same defect. 161 characters is one past the cap, where 160 must still pass.
+    ("a glossary say longer than the cap allows",
+     "glossary.yaml",
+     "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+     "can keep the Earth and Sun behind it and stay cold.",
+     GLOSSARY_SAY_OVER_CAP),
 ]
 
 
@@ -1432,7 +1456,7 @@ def check_seo_refusals() -> int:
         site.mkdir(parents=True)
         for name in ("index.html", "robots.txt"):
             link(ROOT / "site" / name, site / name)
-        for d in ("t", "og", "images"):
+        for d in ("t", "og", "images", "lab"):
             shutil.copytree(ROOT / "site" / d, site / d, copy_function=link)
         build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built"), "--no-share"],
                                capture_output=True, text=True)

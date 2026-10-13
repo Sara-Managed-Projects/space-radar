@@ -102,8 +102,11 @@ export function caption(ctx, record, tripState, name = null, opts = {}) {
   // (Camera) is named beside the instant. Camera is the map's plain look and says nothing.
   const mode = ctx && ctx.exposure && typeof ctx.exposure.mode === 'function' ? ctx.exposure.mode() : null;
   const exposure = (mode && mode !== 'camera' && COPY.print.exposure[mode]) || '';
+  // THE LOOK (spec 0073 requirement 8), the same way: Film is the map's plain look and says nothing;
+  // a picture made under Measured says so, so the two are never taken for one another.
+  const look = (ctx && typeof ctx.look === 'function' && COPY.print.look[ctx.look()]) || '';
   const when = whenText(nowMs);
-  const out = { title, when: exposure ? [when, exposure].filter(Boolean).join(COPY.punctuation.separator) : when, mark: COPY.print.mark, exposure };
+  const out = { title, when: [when, exposure, look].filter(Boolean).join(COPY.punctuation.separator), mark: COPY.print.mark, exposure, look };
   // Photo mode's line (public #288): a composed picture with no panel beside it says what it is.
   if (opts.honesty) out.honesty = COPY.photo.honesty;
   return out;

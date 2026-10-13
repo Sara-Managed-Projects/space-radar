@@ -17,6 +17,8 @@ import { legendNode, paintLegend, overlayLine } from './overlaylegend.js';
 export const WIND_OPTION = 'wind';
 /** Whether the panel MAY list the wind: only when the harvester has saved a copy (see where the option is built). */
 export const WIND_OFFERED = true;
+/** The overlay id main.js hands to scene/currents.js: the sea's currents, coloured by its temperature. */
+export const CURRENTS_OPTION = 'currents';
 
 export function overlayPanel(ctx) {
   const C = COPY.overlay;
@@ -56,6 +58,18 @@ export function overlayPanel(ctx) {
       paint();
     }).catch(() => { /* no manifest: no wind row */ });
   }
+  // OCEAN CURRENTS are scene/currents.js's streaks, from TWO saved copies (the current and the sea's
+  // temperature, registry/sources.yaml `ocean-currents` and `ocean-temperature`). Offered only when
+  // the manifest lists both: no server but ours is ever asked, and without the copies there is
+  // nothing to draw. A link or a trip stop that asks anyway gets the one sentence that says so.
+  import('../data/sources.js').then((m) => Promise.all([m.snapshotAvailable('ocean-currents'), m.snapshotAvailable('ocean-temperature')])).then(([flow, temp]) => {
+    if (!flow || !temp || wrap.destroyed) return;
+    const o = document.createElement('option');
+    o.value = CURRENTS_OPTION;
+    o.textContent = C.currents.title;
+    select.appendChild(o);
+    paint();
+  }).catch(() => { /* no manifest: no currents row */ });
   wrap.appendChild(select);
   const legend = legendNode(null);
   wrap.appendChild(legend);

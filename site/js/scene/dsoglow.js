@@ -68,6 +68,14 @@ const COLOURS = {
  * The major axes are the ones site/data/dso.json already carries (tests/test_dso.mjs holds the
  * two to each other). `of`: the object whose photograph holds this one too.
  */
+/**
+ * Under the Measured look (scene/exposure.js MEASURED_RULES; tests/test_look_setting.mjs asks every
+ * module with noise in a shader). A mark here is the whole of what is drawn for an object that has no
+ * photograph: its place, size and kind are the catalogue's, and the card says the rest is illustrative.
+ * It is not detail laid over data, so Measured leaves it.
+ */
+export const UNDER_MEASURED = { marks: 'same' };
+
 export const SHAPED = {
   'dso-m32': { majArcmin: 7.74, minArcmin: 4.86, paDeg: 170, of: 'dso-m31' },
   'dso-m110': { majArcmin: 16.22, minArcmin: 9.59, paDeg: 170, of: 'dso-m31' },
