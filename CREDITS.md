@@ -32,6 +32,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of XRISM, Seasat and NuSTAR | two generated from NASA and JPL artist's renders with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
 | The shapes of LAGEOS, Ajisai, the Soyuz, NOAA-21 and Hitomi | four built by us in code from published dimensions; Hitomi is XRISM's generated body with its own optical bench built by us | public domain; MIT; ours | [3b-4](#3b-4-five-more-made-here--lageos-ajisai-soyuz-ms-noaa-21-rebuilt-hitomi-2026-10-13) |
 | The shapes of the Progress, both Dragons, Shenzhou, Tianzhou, and five more laser-ranging balls | built by us in code from published dimensions | public domain where a picture was used; ours | [3b-5](#3b-5-ten-more-built-from-dimensions--progress-ms-crew-and-cargo-dragon-shenzhou-tianzhou-and-five-laser-ranging-balls-2026-10-13) |
+| The shapes of SWOT, NISAR, IXPE and PACE | SWOT is JPL's own published model; the other three built by us in code from published dimensions | public domain; ours | [3b-6](#3b-6-four-nasa-craft--swot-from-jpls-own-model-nisar-ixpe-and-pace-built-from-dimensions-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -888,6 +889,50 @@ offered as any maker's or agency's, and none of them endorses Space Radar.
 The same day `soyuz-ms.glb` and `noaa21.glb` (section 3b-4) were baked again: the tool had kept one
 part of each pair that shared a name, so the Soyuz had one of its two radiator bands and NOAA-21
 one of its two side radiators. Nothing else about them changed.
+
+
+## 3b-6. Four NASA craft — SWOT from JPL's own model; NISAR, IXPE and PACE built from dimensions (2026-10-13)
+
+The fourth batch. For each craft an agency's own published model was looked for first (NASA's 3D
+Resources on GitHub and on science.nasa.gov, and JPL's mission sites). One exists.
+
+**SWOT is JPL's model.** `swot.glb` (112 KB, 14 807 triangles) is the "SWOT 3D Model" JPL
+published on the mission's own site on 14 January 2020
+(<https://swot.jpl.nasa.gov/resources/86/swot-3d-model/>, the glTF file, read 2026-10-13). The
+page names no author and no contractor and states no terms of its own; its footer's policy is
+JPL's (<https://www.jpl.nasa.gov/jpl-image-use-policy/>): "Unless otherwise noted, images and
+video on JPL public web sites (public sites ending with a jpl.nasa.gov address) may be used for
+any purpose without prior permission, subject to the special cases noted below." That sentence
+names images and video; NASA's media usage guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>) name models: "NASA content – images,
+audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps
+and polygon data in any format – generally are not subject to copyright in the United States."
+What we changed: a helper cube left out, the whole model turned to the app's axes and scaled as
+one piece, flat colours baked from JPL's own materials, the cells' face given a blue of ours
+(`registry/models.yaml`, row `swot`, has every step). The model shows the spacecraft as designed
+in 2020; its proportions are JPL's and were not corrected to the craft as flown.
+
+**Credit line:** `3D model: NASA/JPL-Caltech`
+
+**NISAR, IXPE and PACE have no published model** and were written in code from cited metres, as
+sections 3b-3 to 3b-5 describe; their cards say "shape built from published dimensions and
+pictures; details simplified", and each row's `dimensions:` quotes the sentence each number came
+from, with what is NOT cited named beside it.
+
+| File | What | Pictures it was drawn from or compared with | Licence of the pictures |
+|---|---|---|---|
+| `nisar.glb` (76 KB) | NISAR: a 12 m mesh reflector drawn as a rim truss and a see-through net, never a filled disc, on a 9 m boom; bus, octagonal radar structure, two wings of three panels | "NISAR Spacecraft diagram", "NISAR Side NoTilt 2022", "NISAR in Orbit (Artist's Concept)" PIA26613 (NASA/JPL-Caltech): <https://commons.wikimedia.org/wiki/File:NISAR_Spacecraft_diagram.png>, <https://commons.wikimedia.org/wiki/File:NISAR_Side_NoTilt_2022.png>, <https://commons.wikimedia.org/wiki/File:NISAR_in_Orbit_(Artist%E2%80%99s_Concept)_(PIA26613).jpg> (read 2026-10-13) | public domain |
+| `ixpe.glb` (50 KB) | IXPE: a hexagonal bus, three detector units, a 4 m lattice boom, the tip/tilt/rotate mechanism, three mirror modules with their shields, the fixed array of six strips | "IXPE spacecraft model", "IXPE artist rendition" (NASA): <https://commons.wikimedia.org/wiki/File:IXPE_spacecraft_model.png>, <https://commons.wikimedia.org/wiki/File:IXPE-artist-rendition.jpg> (read 2026-10-13) | public domain |
+| `pace.glb` (38 KB) | PACE: a 1.5 x 1.5 x 3.2 m observatory, the Ocean Color Instrument with its Earth shield, the Ka-band dish, two polarimeters, one wing of three panels | NASA's labelled render of the Ocean Color Instrument, "Beauty Shot of the PACE Spacecraft", "PACE Observatory Diagram (Stowed Solar Panel)" (NASA): <https://pace.oceansciences.org/mission.htm>, <https://pace.oceansciences.org/gallery_more.cgi?id=1739>, <https://pace.oceansciences.org/gallery_more.htm?id=1554> (read 2026-10-13) | public domain |
+| all three | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `nisar`, `ixpe`, `pace` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and NASA/JPL-Caltech drawings and artist's concepts of NISAR`;
+`3D model: built by Space Radar from published dimensions and NASA illustrations of IXPE`;
+`3D model: built by Space Radar from published dimensions and NASA renders and drawings of PACE`
+
+No logo, lettering, flag or insignia is on any of the four. NASA, JPL, ISRO and CNES do not
+endorse Space Radar.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

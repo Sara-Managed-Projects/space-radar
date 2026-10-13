@@ -157,7 +157,9 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     [41337, 'ASTRO-H (HITOMI)', 'hitomi.glb', 'render'], [16908, 'AJISAI (EGS)', 'ajisai.glb', 'dimensions'], [8820, 'LAGEOS 1', 'lageos.glb', 'dimensions'], [22195, 'LAGEOS 2', 'lageos.glb', 'dimensions'],
     // THE THIRD BATCH (2026-10-13): the other laser-ranging balls, each from its own ILRS page.
     [7646, 'STARLETTE', 'starlette.glb', 'dimensions'], [22824, 'STELLA', 'starlette.glb', 'dimensions'], [38077, 'LARES', 'lares.glb', 'dimensions'], [53105, 'LARES-2', 'lares2.glb', 'dimensions'],
-    [19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb', 'dimensions'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb', 'dimensions'], [25398, 'WESTPAC', 'westpac.glb', 'dimensions']]) {
+    [19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb', 'dimensions'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb', 'dimensions'], [25398, 'WESTPAC', 'westpac.glb', 'dimensions'],
+    // THE FOURTH BATCH (2026-10-13, public #953, #954, #965): three NASA craft built from dimensions.
+    [65053, 'NISAR', 'nisar.glb', 'dimensions'], [49954, 'IXPE', 'ixpe.glb', 'dimensions'], [58928, 'PACE', 'pace.glb', 'dimensions']]) {
     const got = sat(norad, name);
     check(got && got.file === file && got.made === how && !got.generic, `${name} (${norad}) wears ${file}, made: '${how}', as itself: ${JSON.stringify(got)}`);
   }
@@ -180,16 +182,32 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     [27944, 'LARETS', 'starlette.glb'],
     [60533, 'LEMUR-2-STELLA', 'starlette.glb'],  // a CubeSat with Stella in its name is not the ball
     [99004, 'ASTRO-H DEB', 'hitomi.glb', 'debris'],  // Hitomi's fragments stay fragments
+    [38358, 'NUSTAR', 'ixpe.glb'],               // two X-ray telescopes on a mast, two files (batch four)
+    [49954, 'IXPE', 'nustar.glb'],
+    [99007, 'PACE', 'pace.glb'],                 // a name is not the route: only catalogue number 58928 is NASA's PACE
+    [99008, 'SWOT', 'swot.glb'],
+    [39634, 'SENTINEL-1A', 'nisar.glb'],         // a radar satellite with a flat blade is not the mesh reflector
+    [46984, 'SENTINEL-6A', 'swot.glb'],          // the other altimeter keeps NASA's model of itself
     [99005, 'SOYUZ-MS 29 DEB', 'soyuz-ms.glb', 'debris'],
     [99006, 'SL-4 R/B', 'soyuz-ms.glb', 'rocket'],   // the Soyuz ROCKET's stage is not the ship
   ]) {
     const got = sat(norad, name, klass || 'satellite');
     check(!got || got.file !== file, `${name} (${norad}) does not wear ${file}`);
   }
+  // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
+  {
+    const swot = sat(54754, 'SWOT');
+    check(swot && swot.file === 'swot.glb' && !swot.made && !swot.generic && swot.axes === 'app', `SWOT (54754) wears swot.glb as a published model of itself, turned to the app's axes: ${JSON.stringify(swot)}`);
+    for (const n of [65053, 49954, 58928]) check(sat(n, 'X').axes === 'app', `${n} flies in the app's axes`);
+  }
   if (typeof drawingLine === 'function') {
     const line = drawingLine({ id: 'sat-57800', name: 'XRISM', klass: 'satellite', layer: 'visual', meta: { noradId: 57800 } }, Date.UTC(2026, 9, 13));
     check(typeof line === 'string' && line.startsWith('drawn as XRISM') && line.includes(sentences.render) && !/published model/.test(line), `XRISM's card says it is drawn as XRISM from an artist's render, and not from a published model: ${JSON.stringify(line)}`);
     const nu = drawingLine({ id: 'sat-38358', name: 'NUSTAR', klass: 'satellite', layer: 'notable', meta: { noradId: 38358 } }, Date.UTC(2026, 9, 13));
+    const sw = drawingLine({ id: 'sat-54754', name: 'SWOT', klass: 'satellite', layer: 'active', meta: { noradId: 54754 } }, Date.UTC(2026, 9, 13));
+    check(typeof sw === 'string' && /published model of SWOT/.test(sw) && !sw.includes(sentences.dimensions), `SWOT's card says it is drawn from a published model, and not that it was built here: ${JSON.stringify(sw)}`);
+    const ni = drawingLine({ id: 'sat-65053', name: 'NISAR', klass: 'satellite', layer: 'active', meta: { noradId: 65053 } }, Date.UTC(2026, 9, 13));
+    check(typeof ni === 'string' && ni.startsWith('drawn as NISAR') && ni.includes(sentences.dimensions) && !/published model/.test(ni), `NISAR's card says it was built from dimensions: ${JSON.stringify(ni)}`);
     check(typeof nu === 'string' && nu.startsWith('drawn as NuSTAR') && nu.includes(sentences.dimensions) && !/published model/.test(nu), `NuSTAR's card says it was built from dimensions, and not that somebody published it: ${JSON.stringify(nu)}`);
   }
   // The Soyuz: by name, on the stations layer, over its build, as the kind of thing (the Cygnus's pattern).
@@ -217,7 +235,12 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   }
   // `axes: 'app'` only on files built to the app's axes HERE (scene/heroes.js then keeps the build's
   // attitude): never on a published mesh, whose axes say nothing about which way the craft points.
-  for (const r of routes) if (r.entry && r.entry.axes !== undefined) check(r.entry.axes === 'app' && !!r.entry.made, `${r.table}[${r.key}] says axes: ${JSON.stringify(r.entry.axes)}; only a file made here (made:) may say axes: 'app'`);
+  // 2026-10-13, batch four: ONE OTHER CASE. A published mesh that was TURNED to the app's axes before its
+  // bake, as one piece, may say it too, and only when its registry row's `modified:` says so in these
+  // words (SWOT, JPL's own model: the altimeter's dish put on +Z, the wings along X).
+  const turnedHere = (file) => yaml.split('\n').some((line) => line.includes(`file: site/models/${file},`) && /turned as one piece so that the file's [-xyz, ]+ are the app's \+X, \+Y, \+Z/.test(line));
+  for (const r of routes) if (r.entry && r.entry.axes !== undefined) check(r.entry.axes === 'app' && (!!r.entry.made || turnedHere(r.entry.file)), `${r.table}[${r.key}] says axes: ${JSON.stringify(r.entry.axes)}; only a file made here (made:), or a published one whose row says it was turned to the app's axes, may say axes: 'app'`);
+  check(!turnedHere('hubble.glb') && turnedHere('swot.glb'), 'the turned-here rule reads the registry: Hubble was not turned, SWOT was');
   if (typeof drawingLine === 'function') {
     // HITOMI IS DRAWN WHOLE AND IS A WRECK: its card must say so, after how the shape was made.
     const h = drawingLine({ id: 'sat-41337', name: 'ASTRO-H (HITOMI)', klass: 'satellite', layer: 'visual', meta: { noradId: 41337 } }, Date.UTC(2026, 9, 13));

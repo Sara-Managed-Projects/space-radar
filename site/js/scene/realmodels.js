@@ -176,6 +176,27 @@ export const REAL_MODELS = {
     // away from the Earth and the bus at +Z. NOT AS IT FLIES: the real craft points its mast at
     // whatever it observes; the app knows no target, and "away from the Earth" is its telescope rule.
     38358: { file: 'nustar.glb', colour: 'telescope', name: 'NuSTAR', catalogue: 'NUSTAR', made: 'dimensions', axes: 'app' },
+    // THE FOURTH BATCH (2026-10-13, public #952, #953, #954, #965): four NASA craft that had no route
+    // and were the generic satellite, a box with a dish. Each BY NUMBER, with the name CelesTrak's
+    // active group gives it (read in the live saved data, data/v1/celestrak-active.cols.json, that
+    // day: `SWOT`, `NISAR`, `IXPE`, `PACE`); none is in the visual group, so each is met in the whole
+    // catalogue. A name route would be wrong for all four: `PACE` is a word inside other names and
+    // was also a 2U CubeSat, and `SWOT` and `IXPE` are short enough to be inside anything.
+    //   SWOT   JPL'S OWN PUBLISHED MODEL (swot.jpl.nasa.gov/resources/86/swot-3d-model/, 2020), so no
+    //          `made`: the card says "drawn from a published model of SWOT". Turned to the app's axes
+    //          before the bake (the altimeter's dish on +Z, the wings along X), hence `axes: 'app'`.
+    //   NISAR  built in code from JPL's cited metres. The 12 m reflector is a rim truss and a net,
+    //          NEVER a filled disc: the real one is a see-through mesh. The boom stands on the side
+    //          away from the Earth; the real craft flies rolled, which the app's one attitude cannot say.
+    //   IXPE   built in code: bus, 4 m lattice boom, three mirror modules at -Z looking away from the
+    //          Earth (the telescope rule, as XRISM and NuSTAR). It is not NuSTAR's mast and does not wear it.
+    //   PACE   built in code: the 1.5 x 1.5 x 3.2 m observatory, the Ocean Color Instrument and its
+    //          Earth shield, one wing.
+    // registry/models.yaml rows `swot`, `nisar`, `ixpe`, `pace` have the sources and what is approximate.
+    54754: { file: 'swot.glb', colour: 'satellite', name: 'SWOT', catalogue: 'SWOT', axes: 'app' },
+    65053: { file: 'nisar.glb', colour: 'satellite', name: 'NISAR', catalogue: 'NISAR', made: 'dimensions', axes: 'app' },
+    49954: { file: 'ixpe.glb', colour: 'telescope', name: 'IXPE', catalogue: 'IXPE', made: 'dimensions', axes: 'app' },
+    58928: { file: 'pace.glb', colour: 'satellite', name: 'PACE', catalogue: 'PACE', made: 'dimensions', axes: 'app' },
     // NOAA 21 (JPSS-2), public #994. By NUMBER and only this number: NOAA 20 is a different bus and
     // wears NASA's Suomi model (43013, below); the name route's comment further down says why NOAA 21
     // was left on the generic shape until it had one of its own. noaa21.glb: the body generated from
