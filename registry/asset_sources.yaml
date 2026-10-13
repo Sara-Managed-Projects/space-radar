@@ -33,7 +33,9 @@ sources:
 
   - id: own-work
     name: Built here (procedural shapes and scripts of this repository)
-    match: ["site/js/scene/models.js", "scripts/"]
+    # 2026-10-13: "built by this project" is a real_models row of kind built-from-dimensions: a mesh
+    # written offline, in code, from cited metres (the first: nustar). Its pictures and its metres are on the row.
+    match: ["site/js/scene/models.js", "scripts/", "built by this project"]
     url: https://github.com/Sara-Managed-Projects/space-radar
     licence: This repository's own licence (LICENSE)
     licence_read: ""

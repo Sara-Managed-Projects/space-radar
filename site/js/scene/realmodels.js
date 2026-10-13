@@ -148,6 +148,13 @@ export const REAL_MODELS = {
     41337: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'ASTRO-H (HITOMI)', generic: true },
     42758: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'HXMT (HUIYAN)', generic: true },
     57800: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'XRISM', generic: true },
+    // THE FIRST BATCH OF THE "3D model:" ISSUES (2026-10-13). NuSTAR had no route at all: on the layer
+    // of satellites worth knowing it was the generic satellite, a box with a dish, and it is two small
+    // boxes ten metres apart on a lattice mast, which is the whole of what a person recognises
+    // (public #964). nustar.glb was BUILT HERE, in code, from the cited metres and NASA/JPL's render
+    // (registry/models.yaml row `nustar`, kind `built-from-dimensions`; no image-to-3D model can draw
+    // a lattice). `made: 'dimensions'` is what makes the card say so. Not `generic`: it is this craft.
+    38358: { file: 'nustar.glb', colour: 'telescope', name: 'NuSTAR', catalogue: 'NUSTAR', made: 'dimensions' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
