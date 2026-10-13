@@ -691,9 +691,20 @@ export const REAL_MODELS = {
     // The cargo vehicle flies without the escape engines, so without their pods and the trunk's fins.
     'dragon crs': { build: 'dragon-cargo', colour: 'station', name: 'a Cargo Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
-    // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
-    // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.
-    cygnus: { build: 'cygnus', colour: 'station', name: 'a Cygnus cargo ship', klass: ['station', 'satellite'], generic: true },
+    // Cygnus: the round UltraFlex fans are the recognition, and nothing free exists (spec 0027,
+    // issue #423). Klass-gated and a whole word, so the Cygnus Loop, Cygnus X-1 and anything else
+    // named for the Swan stay untouched: checked 2026-10-12 against the saved `stations` and
+    // `visual` groups, where the one match is CYGNUS NG-24 (68689).
+    //
+    // BOTH a build and a file since 2026-10-12 (public #938), as JWST is. The file is the first
+    // model here that nobody published: a mesh an image-to-3D model generated from a NASA
+    // photograph, cleaned and re-proportioned by us (registry/models.yaml row `cygnus`, kind
+    // `derived-from-images`, which lists every change including the mirrored array). `made:
+    // 'images'` is what makes the card add "shape built from photographs; proportions approximate"
+    // (ui/cards.js, COPY.drawing.objectMade). `generic` stays: the photographs are of the 6.39 m
+    // Enhanced vehicle and the ship flying today is the 8 m Cygnus XL, so it is the kind of thing.
+    // The build is what is drawn while the file is on its way, and what stays if it never arrives.
+    cygnus: { build: 'cygnus', file: 'cygnus.glb', colour: 'station', name: 'a Cygnus cargo ship', klass: ['station', 'satellite'], generic: true, made: 'images' },
     progress: { build: 'progress', colour: 'station', name: 'a Progress cargo ship', klass: ['station', 'satellite'], generic: true },
     bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu', klass: ['asteroid'] },
     // Dawn's shape model, from NASA's 3D Printing collection. The same collection has Eros and

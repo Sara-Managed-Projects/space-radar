@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
     inputs:
       probe:
-        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, clouds, frametime, settings)"
+        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, clouds, frametime, settings, model)"
         default: smoke
       ref:
         description: "Branch or sha to look at (empty: the ref this was dispatched from)"
@@ -53,6 +53,9 @@ on:
         default: chromium
       harvest:
         description: "Source ids to fetch fresh and merge into the served data/v1, with commas (e.g. swpc-edited-events,donki-cme-analysis)"
+        default: ""
+      subject:
+        description: "For a probe that takes one (model): a record id (sat-25544) or a name on the stations layer with dashes (crew-dragon). Empty: the probe's own default"
         default: ""
   # The smoke probe, Chromium only, on a pull request that changes what is drawn.
   pull_request:
@@ -88,6 +91,7 @@ jobs:
           PROBE: ${{ inputs.probe }}
           BROWSER: ${{ inputs.browser }}
           HARVEST: ${{ inputs.harvest }}
+          SUBJECT: ${{ inputs.subject }}
           MOBILE: ${{ inputs.mobile }}
           HOLD: ${{ inputs.hold_latch }}
           WIDTH: ${{ inputs.width }}
@@ -97,15 +101,16 @@ jobs:
           python3 - <<'PY' >>"$GITHUB_OUTPUT"
           import json, os, re, sys
           e = os.environ
-          def row(probe, browser, harvest="", mobile=False, hold=True, width="1440", height="900"):
+          def row(probe, browser, harvest="", mobile=False, hold=True, width="1440", height="900", subject=""):
               if not re.fullmatch(r"[a-z0-9-]+", probe): sys.exit(f"probe {probe!r}: a name under tests/probes/look/, lower case")
               if not re.fullmatch(r"[a-z0-9,-]*", harvest): sys.exit(f"harvest {harvest!r}: source ids with commas")
               if not (re.fullmatch(r"\d{3,4}", width) and re.fullmatch(r"\d{3,4}", height)): sys.exit("width and height: three or four digits")
+              if not re.fullmatch(r"[A-Za-z0-9_.-]{0,80}", subject): sys.exit(f"subject {subject!r}: a record id (letters, digits, dot, dash, underscore)")
               if mobile: width, height = "390", "844"
-              return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height}
+              return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height, "subject": subject}
           if e["EVENT"] == "workflow_dispatch":
               browsers = ["chromium", "firefox", "webkit"] if e["BROWSER"] == "all" else [e["BROWSER"]]
-              rows = [row(e["PROBE"].strip(), b, e["HARVEST"].replace(" ", ""), e["MOBILE"] == "true", e["HOLD"] != "false", e["WIDTH"].strip(), e["HEIGHT"].strip()) for b in browsers]
+              rows = [row(e["PROBE"].strip(), b, e["HARVEST"].replace(" ", ""), e["MOBILE"] == "true", e["HOLD"] != "false", e["WIDTH"].strip(), e["HEIGHT"].strip(), (e.get("SUBJECT") or "").strip()) for b in browsers]
           else:
               rows = [row("smoke", "chromium")]
           print("matrix=" + json.dumps({"include": rows}))
@@ -123,6 +128,7 @@ jobs:
       PROBE: ${{ matrix.probe }}
       BROWSER: ${{ matrix.browser }}
       HARVEST: ${{ matrix.harvest }}
+      SUBJECT: ${{ matrix.subject }}
       MOBILE: ${{ matrix.mobile }}
       HOLD: ${{ matrix.hold }}
       WIDTH: ${{ matrix.width }}
@@ -228,6 +234,8 @@ jobs:
           cat tests/probes/look/_prelude.js "tests/probes/look/$PROBE.js" > look-out/probe.js
           url="http://127.0.0.1:8177/?sw=0"
           [ "$HOLD" = "true" ] && url="$url&look=1"
+          # A probe's subject rides in the query under a name the app does not read (ui/urlstate.js KEYS).
+          [ -n "$SUBJECT" ] && url="$url&lookSubject=$SUBJECT"
           flags="--width=$WIDTH --height=$HEIGHT --block=celestrak.org,ll.thespacedevs.com --shot-dir=look-out"
           [ "$MOBILE" = "true" ] && flags="$flags --mobile"
           echo "$url  $flags"

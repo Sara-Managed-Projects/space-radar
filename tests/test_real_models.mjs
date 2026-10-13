@@ -118,5 +118,32 @@ check(own >= 60, `the routes of their own were exercised (${own})`);
 const tessComet = realModelFor({ id: 'comet-C/2019M4', name: 'C/2019 M4 (TESS)', klass: 'comet', meta: {} });
 check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4 (TESS), a comet, does not wear the TESS spacecraft');
 
+// A MODEL GENERATED FROM PHOTOGRAPHS SAYS SO ON THE CARD, IN THE ROW'S OWN WORDS (2026-10-12, public #938).
+// registry/models.yaml `kind: derived-from-images` carries `honesty:`; scene/realmodels.js marks the
+// route `made: 'images'`; ui/cards.js adds COPY.drawing.objectMade.images. Three files, one sentence.
+{
+  const { COPY } = await import(pathToFileURL(join(ROOT, 'site/js/copy/en.js')).href);
+  const { drawingLine } = await import(pathToFileURL(join(ROOT, 'site/js/ui/cards.js')).href).catch((e) => ({ drawingLine: null, why: e }));
+  const made = [...section.matchAll(/^ {2}- \{id: ([\w-]+), file: site\/models\/([\w.-]+\.glb),.*kind: derived-from-images,.*honesty: "([^"]*)"/gm)].map((m) => ({ id: m[1], file: m[2], honesty: m[3] }));
+  const copy = COPY.drawing && COPY.drawing.objectMade ? COPY.drawing.objectMade.images : null;
+  for (const row of made) {
+    check(row.honesty === copy, `${row.id}: its row's honesty line (${JSON.stringify(row.honesty)}) is not the sentence the card prints (${JSON.stringify(copy)})`);
+    const worn = routes.filter((r) => r.entry && r.entry.file === row.file);
+    check(worn.length > 0 && worn.every((r) => r.entry.made === 'images'), `${row.id}: a route to ${row.file} does not say made: 'images', so its card would not say the shape was built from photographs`);
+  }
+  for (const r of routes) if (r.entry && r.entry.made) check(made.some((row) => row.file === r.entry.file), `${r.table}[${r.key}] says made: '${r.entry.made}' and ${r.entry.file} has no derived-from-images row`);
+  // The Cygnus route itself: the ship gets the file, and the Swan's other namesakes do not.
+  const ship = realModelFor({ id: 'sat-68689', name: 'CYGNUS NG-24', klass: 'satellite', layer: 'stations', meta: { noradId: 68689 } });
+  check(ship && ship.file === 'cygnus.glb' && ship.build === 'cygnus' && ship.generic === true && ship.made === 'images', `CYGNUS NG-24 wears cygnus.glb over the procedural shape, as the kind of thing: ${JSON.stringify(ship)}`);
+  for (const other of [{ id: 'exotic-cygnus-x-1', name: 'Cygnus X-1', klass: 'exotic' }, { id: 'dso-cygnus-loop', name: 'Cygnus Loop', klass: 'dso' }, { id: 'x', name: 'CYGNUS NG-24 DEB', klass: 'debris' }, { id: 'y', name: 'CYGNUSAT 1', klass: 'satellite' }]) {
+    const got = realModelFor({ ...other, meta: {} });
+    check(!got || got.file !== 'cygnus.glb', `${other.name} (${other.klass}) does not wear the cargo ship`);
+  }
+  if (made.length && typeof drawingLine === 'function') {
+    const line = drawingLine({ id: 'sat-68689', name: 'CYGNUS NG-24', klass: 'satellite', layer: 'stations', meta: { noradId: 68689 } }, Date.UTC(2026, 9, 12));
+    check(typeof line === 'string' && line.includes(copy) && line.includes('the kind of thing'), `the card of a Cygnus says both that it is the kind of thing and how the shape was made: ${JSON.stringify(line)}`);
+  } else if (made.length) problems.push('ui/cards.js could not be imported in node, so the card line of a generated model was not read');
+}
+
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
 console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);

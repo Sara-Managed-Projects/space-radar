@@ -52,6 +52,18 @@ def problems(credits, sources, models):
         name = os.path.basename(row.get("file") or "")
         if name and name not in credits:
             out.append("models.yaml real model `%s` ships %s, and CREDITS.md does not name it" % (row.get("id"), name))
+        # A model generated from pictures (kind: derived-from-images) is nobody's published mesh:
+        # CREDITS.md owes its own credit line word for word, every picture's page, and the generator's.
+        if row.get("kind") == "derived-from-images":
+            line = row.get("credit")
+            if line and line not in credits:
+                out.append("models.yaml generated model `%s` is credited as %r, and CREDITS.md does not carry that line" % (row.get("id"), line))
+            for ref in row.get("references") or []:
+                if ref.get("url") and ref["url"] not in credits:
+                    out.append("models.yaml generated model `%s` was made from %s, and CREDITS.md does not name that page" % (row.get("id"), ref["url"]))
+            gen = (row.get("generator") or {}).get("url")
+            if gen and gen not in credits:
+                out.append("models.yaml generated model `%s` was made with %s, and CREDITS.md does not name it" % (row.get("id"), gen))
     for kind in ("textures", "data", "marks"):
         for row in models.get(kind, []):
             line = row.get("credit")
@@ -77,6 +89,10 @@ def main():
     fake = {"sources": [{"id": "nobody", "url": "https://data.example.invalid/x", "attribution": "Data: Nobody At All"}]}
     if len(problems(credits, fake, {})) != 2:
         found.append("the self-test did not refuse an uncredited source: this check is not checking")
+    fake_model = {"real_models": [{"id": "nobody", "file": "site/models/cygnus.glb", "kind": "derived-from-images", "credit": "3D model: Nobody",
+                                   "references": [{"url": "https://pictures.example.invalid/a"}], "generator": {"url": "https://generator.example.invalid"}}]}
+    if len(problems(credits, {}, fake_model)) != 3:
+        found.append("the self-test did not refuse a generated model with no credit, picture or generator in CREDITS.md")
 
     for p in found:
         print("FAIL " + p)

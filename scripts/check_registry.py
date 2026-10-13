@@ -3453,6 +3453,76 @@ def budget_reader_text() -> str | None:
     return "\n".join(parts)
 
 
+# A REAL MODEL'S `kind:` (2026-10-12, internal spec 0064, public #938). Absent, a row is somebody's
+# published mesh, re-encoded: the first seventy are. `derived-from-images` is a mesh that an
+# image-to-3D model GENERATED from photographs and this project then cleaned: nobody published it,
+# so the row cannot point at a file a person can compare it with, and everything a person would need
+# to judge it has to be on the row itself. Refused unless it carries:
+#   references   the pictures, each with the page it can be opened on (https), its licence, whose
+#                it is, and the day that was read; at least one;
+#   generator    the model that made the mesh: its name, its page (https), the licence of its code
+#                and of its weights (they differ more often than not), and the day they were read;
+#   dimensions   the cited metres it was scaled to, with where they were read;
+#   honesty      the sentence the card prints, word for word, and it is one sentence for the whole
+#                kind: a visitor is told the same thing about every generated shape.
+# The same fields on a row of another kind are refused too: a published mesh that says it was
+# built from photographs is saying something false about itself.
+MODEL_KINDS = {"derived-from-images"}
+MODEL_FROM_IMAGES_HONESTY = "shape built from photographs; proportions approximate"
+MODEL_FROM_IMAGES_FIELDS = ("references", "generator", "dimensions", "honesty")
+
+
+def check_model_kind(m: dict, where: str) -> None:
+    kind = m.get("kind")
+    if kind is None:
+        carried = [k for k in MODEL_FROM_IMAGES_FIELDS if k in m]
+        if carried:
+            fail(where, f"carries {', '.join('`' + k + ':`' for k in carried)} and no `kind: derived-from-images`: "
+                        "those fields describe a generated mesh, and a row without the kind says it is a published one")
+        return
+    if kind not in MODEL_KINDS:
+        fail(where, f"`kind: {kind}` is not a kind of real model ({', '.join(sorted(MODEL_KINDS))}; leave it out for a published mesh)")
+        return
+    refs = m.get("references")
+    if not isinstance(refs, list) or not refs:
+        fail(where, "a model generated from pictures names no `references:` -- the pictures are its only source, and each is somebody's work")
+    else:
+        for i, r in enumerate(refs):
+            at = f"{where}.references[{i}]"
+            if not isinstance(r, dict):
+                fail(at, "must be a mapping with url, licence, credit and read")
+                continue
+            if not str(r.get("url") or "").startswith("https://"):
+                fail(at, "no https `url:` -- the page a person can open the picture on")
+            for key in ("licence", "credit"):
+                if not str(r.get(key) or "").strip():
+                    fail(at, f"no `{key}:` -- a picture with no stated {key} may not be the source of a shipped shape")
+            if not isinstance(r.get("read"), datetime.date):
+                fail(at, "no `read: YYYY-MM-DD` -- a licence is a fact about a page on a day")
+    gen = m.get("generator")
+    if not isinstance(gen, dict):
+        fail(where, "a model generated from pictures names no `generator:` (name, url, licence, weights_licence, read)")
+    else:
+        for key in ("name", "licence", "weights_licence"):
+            if not str(gen.get(key) or "").strip():
+                fail(where, f"generator has no `{key}:` -- the code's licence and the weights' licence are two facts, and both decide whether the output may ship")
+        if not str(gen.get("url") or "").startswith("https://"):
+            fail(where, "generator has no https `url:`")
+        if not isinstance(gen.get("read"), datetime.date):
+            fail(where, "generator has no `read: YYYY-MM-DD`")
+    dims = m.get("dimensions")
+    if not isinstance(dims, dict) or not str(dims.get("source") or "").strip():
+        fail(where, "no `dimensions:` with a `source:` -- a generated shape has no scale of its own, and the metres it was given are a citation")
+    elif not any(isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 for k, v in dims.items() if k.endswith("_m")):
+        fail(where, "`dimensions:` cites no length (a field ending in `_m`)")
+    if m.get("honesty") != MODEL_FROM_IMAGES_HONESTY:
+        fail(where, f"`honesty:` must be exactly {MODEL_FROM_IMAGES_HONESTY!r}: it is the sentence the card prints for every shape of this kind")
+    if "mirror" not in str(m.get("modified") or "").lower() and "symmetr" not in str(m.get("modified") or "").lower():
+        # Not every generated mesh is mirrored. But the first was, and a cleanup pass that copies one
+        # half of a craft onto the other is the change most worth a sentence, so the row says which.
+        fail(where, "`modified:` of a generated model must say whether a mirror or symmetry pass was made (\"no mirror pass\" is an answer)")
+
+
 ASSET_SOURCE_FIELDS = ("id", "name", "match", "url", "licence", "licence_read", "licence_url", "account", "cost")
 
 
@@ -4961,6 +5031,7 @@ def main() -> int:
                 fail(where, f"no {key}; this row redistributes somebody else's work")
         if not m.get("modified"):
             fail(where, "no `modified:` -- say what was changed, or the credit implies it is untouched")
+        check_model_kind(m, where)
 
     # ...and CREDITS.md is the document that actually discharges the obligation, so it has to
     # name the same files. It said "Ten spacecraft models ship" while 29 did, and still listed a

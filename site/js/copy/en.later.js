@@ -863,7 +863,6 @@ Object.assign(COPY, {
     // Said once, on the carrier's card, because it is true of every row in the list and the
     // alternative is a visitor wondering why they cannot tap the thing they can see.
     note: 'These have no dot of their own. They are exactly where this spacecraft is, because they are bolted to it.',
-    ridingLabel: 'Riding on',
     backTitle: 'Open the card for the spacecraft carrying this',
   },
 
