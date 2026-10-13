@@ -151,7 +151,10 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   // THE FIRST BATCH (2026-10-13, public #946, #964, #968, #994): each file is worn by ONE catalogue
   // number, and the craft a careless route would give it to do not get it.
   const sat = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
-  for (const [norad, name, file, how] of [[57800, 'XRISM', 'xrism.glb', 'render'], [54234, 'NOAA 21 (JPSS-2)', 'noaa21.glb', 'render'], [10967, 'SEASAT 1', 'seasat.glb', 'render'], [38358, 'NUSTAR', 'nustar.glb', 'dimensions']]) {
+  // THE SECOND BATCH (2026-10-13, public #947, #969; NOAA 21 rebuilt from dimensions): Hitomi, Ajisai
+  // and the two LAGEOS by number, as themselves.
+  for (const [norad, name, file, how] of [[57800, 'XRISM', 'xrism.glb', 'render'], [54234, 'NOAA 21 (JPSS-2)', 'noaa21.glb', 'dimensions'], [10967, 'SEASAT 1', 'seasat.glb', 'render'], [38358, 'NUSTAR', 'nustar.glb', 'dimensions'],
+    [41337, 'ASTRO-H (HITOMI)', 'hitomi.glb', 'render'], [16908, 'AJISAI (EGS)', 'ajisai.glb', 'dimensions'], [8820, 'LAGEOS 1', 'lageos.glb', 'dimensions'], [22195, 'LAGEOS 2', 'lageos.glb', 'dimensions']]) {
     const got = sat(norad, name);
     check(got && got.file === file && got.made === how && !got.generic, `${name} (${norad}) wears ${file}, made: '${how}', as itself: ${JSON.stringify(got)}`);
   }
@@ -163,6 +166,13 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     [99001, 'SEASAT 1 DEB', 'seasat.glb', 'debris'],
     [99002, 'NUSTAR DEB', 'nustar.glb', 'debris'],
     [99003, 'XRISM R/B', 'xrism.glb', 'rocket'],
+    [57800, 'XRISM', 'hitomi.glb'],              // XRISM has no extensible bench: it keeps its own file
+    [7646, 'STARLETTE', 'lageos.glb'],           // the other laser-ranging balls keep the plain one:
+    [38077, 'LARES', 'lageos.glb'],              // nobody built their surfaces, and LAGEOS's is not theirs
+    [19751, 'COSMOS 1989 (ETALON 1)', 'ajisai.glb'],
+    [99004, 'ASTRO-H DEB', 'hitomi.glb', 'debris'],  // Hitomi's fragments stay fragments
+    [99005, 'SOYUZ-MS 29 DEB', 'soyuz-ms.glb', 'debris'],
+    [99006, 'SL-4 R/B', 'soyuz-ms.glb', 'rocket'],   // the Soyuz ROCKET's stage is not the ship
   ]) {
     const got = sat(norad, name, klass || 'satellite');
     check(!got || got.file !== file, `${name} (${norad}) does not wear ${file}`);
@@ -172,6 +182,24 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     check(typeof line === 'string' && line.startsWith('drawn as XRISM') && line.includes(sentences.render) && !/published model/.test(line), `XRISM's card says it is drawn as XRISM from an artist's render, and not from a published model: ${JSON.stringify(line)}`);
     const nu = drawingLine({ id: 'sat-38358', name: 'NUSTAR', klass: 'satellite', layer: 'notable', meta: { noradId: 38358 } }, Date.UTC(2026, 9, 13));
     check(typeof nu === 'string' && nu.startsWith('drawn as NuSTAR') && nu.includes(sentences.dimensions) && !/published model/.test(nu), `NuSTAR's card says it was built from dimensions, and not that somebody published it: ${JSON.stringify(nu)}`);
+  }
+  // The Soyuz: by name, on the stations layer, over its build, as the kind of thing (the Cygnus's pattern).
+  const soyuz = realModelFor({ id: 'sat-100057', name: 'SOYUZ-MS 29', klass: 'station', layer: 'stations', meta: { noradId: 100057 } });
+  check(soyuz && soyuz.file === 'soyuz-ms.glb' && soyuz.build === 'soyuz' && soyuz.generic === true && soyuz.made === 'dimensions', `SOYUZ-MS 29 wears soyuz-ms.glb over the procedural Soyuz, as the kind of thing: ${JSON.stringify(soyuz)}`);
+  const progress = realModelFor({ id: 'sat-68837', name: 'PROGRESS-MS 34', klass: 'station', layer: 'stations', meta: { noradId: 68837 } });
+  check(progress && !progress.file && progress.build === 'progress', `PROGRESS-MS 34 keeps its own procedural shape and does not wear the crewed ship: ${JSON.stringify(progress)}`);
+  // `axes: 'app'` only on files built to the app's axes HERE (scene/heroes.js then keeps the build's
+  // attitude): never on a published mesh, whose axes say nothing about which way the craft points.
+  for (const r of routes) if (r.entry && r.entry.axes !== undefined) check(r.entry.axes === 'app' && !!r.entry.made, `${r.table}[${r.key}] says axes: ${JSON.stringify(r.entry.axes)}; only a file made here (made:) may say axes: 'app'`);
+  if (typeof drawingLine === 'function') {
+    // HITOMI IS DRAWN WHOLE AND IS A WRECK: its card must say so, after how the shape was made.
+    const h = drawingLine({ id: 'sat-41337', name: 'ASTRO-H (HITOMI)', klass: 'satellite', layer: 'visual', meta: { noradId: 41337 } }, Date.UTC(2026, 9, 13));
+    const was = COPY.drawing.objectWas && COPY.drawing.objectWas.hitomi;
+    check(typeof was === 'string' && /broke apart/.test(was) && /main body/.test(was), `COPY.drawing.objectWas.hitomi says the craft broke apart and what is tracked is its main body: ${JSON.stringify(was)}`);
+    check(typeof h === 'string' && h.startsWith('drawn as Hitomi') && h.includes(sentences.render) && h.endsWith(was), `Hitomi's card says it is drawn as Hitomi, from a render, and that it is shown whole though it broke apart: ${JSON.stringify(h)}`);
+    for (const r of routes) if (r.entry && r.entry.was !== undefined) check(typeof (COPY.drawing.objectWas || {})[r.entry.was] === 'string', `${r.table}[${r.key}] says was: '${r.entry.was}', and COPY.drawing.objectWas has no such sentence`);
+    const lg = drawingLine({ id: 'sat-8820', name: 'LAGEOS 1', klass: 'satellite', layer: 'active', meta: { noradId: 8820 } }, Date.UTC(2026, 9, 13));
+    check(typeof lg === 'string' && lg.startsWith('drawn as LAGEOS') && lg.includes(sentences.dimensions) && !/kind of thing/.test(lg), `LAGEOS 1's card says it is drawn as LAGEOS, built from dimensions: ${JSON.stringify(lg)}`);
   }
   if (made.length && typeof drawingLine === 'function') {
     const line = drawingLine({ id: 'sat-68689', name: 'CYGNUS NG-24', klass: 'satellite', layer: 'stations', meta: { noradId: 68689 } }, Date.UTC(2026, 9, 12));

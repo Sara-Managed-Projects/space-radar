@@ -1620,6 +1620,14 @@ export const COPY = {
       render: 'shape built from an artist’s render; proportions approximate',
       dimensions: 'shape built from published dimensions and pictures; details simplified',
     },
+    // 2026-10-13 (public #969): a craft drawn as it was, not as it is (scene/realmodels.js `was`).
+    // Hitomi spun itself apart on 26 March 2016; catalogue object 41337 is its main body, and JAXA
+    // found it highly likely that both solar paddles had broken off at their bases
+    // (global.jaxa.jp/press/2016/04/20160428_hitomi.html, read 2026-10-13). The model is the craft
+    // as launched, so the card says what is really up there.
+    objectWas: {
+      hitomi: 'shown whole, as launched in February 2016; it broke apart five weeks later, and what is tracked here is its main body without the solar paddles',
+    },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
     // with objectFamily: "drawn as a generic satellite -- the kind of thing, not this exact one".

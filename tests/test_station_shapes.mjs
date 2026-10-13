@@ -623,7 +623,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(stage?.build === 'stage' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
   // XRISM left this list on 2026-10-13 (public #968): it wears xrism.glb, its own shape, and the
   // generic telescope is only what is drawn while that file is on its way (tests/test_real_models.mjs).
-  for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [41337, 'ASTRO-H (HITOMI)'], [42758, 'HXMT (HUIYAN)']]) {
+  // Hitomi left it the same day (public #969): hitomi.glb, XRISM's body with its own optical bench.
+  for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [42758, 'HXMT (HUIYAN)']]) {
     const e = realModelFor(rec(id, name, 'satellite', 'visual'));
     check(e?.build === 'space-telescope' && e.generic === true, `${name} is drawn as a space telescope: ${JSON.stringify(e)}`);
   }

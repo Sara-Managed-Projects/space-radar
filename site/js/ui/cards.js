@@ -1225,7 +1225,10 @@ function derivedDrawingLine(record, T, tMs) {
     // 2026-10-12 (public #938): a shape nobody published, generated from photographs and cleaned
     // here (realmodels.js `made`), says so after whatever else its line says.
     const made = entry.made && T.objectMade ? T.objectMade[entry.made] : null;
-    const said = (line) => (made ? line + COPY.punctuation.separator + made : line);
+    // 2026-10-13 (public #969): a craft drawn as it WAS (realmodels.js `was`), when what the
+    // catalogue tracks is no longer that: Hitomi, intact on the screen and a wreck in orbit.
+    const was = entry.was && T.objectWas ? T.objectWas[entry.was] : null;
+    const said = (line) => [line, made, was].filter(Boolean).join(COPY.punctuation.separator);
     if (entry.generic) return said(t(T.objectFamily, { name: String(entry.name) }));
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
