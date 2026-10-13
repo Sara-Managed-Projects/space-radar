@@ -48,7 +48,8 @@ import { createColorKey } from './colorkey.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';
 import { soundButton, volumeSlider } from './sound.js';
 import { densityPanel } from './density.js';
-import { exposurePanel } from './exposure.js';
+import { exposurePanel, lookPanel } from './exposure.js';
+import { qualityPanel } from './qualitypanel.js';
 import { overlayPanel } from './overlaypanel.js';
 import { otherLightPanel } from './otherlight.js';
 import { LAYER_GROUPS } from '../data/layers.registry.js';
@@ -488,6 +489,13 @@ export function createWhatToShow(ctx, opts = {}) {
     exposure.classList.add('sr-show__section', 'sr-show__setting');
     root.appendChild(exposure);
   }
+  // Measured or Film (spec 0073 requirement 8): two words, in the same row shape, beside it.
+  let look = null;
+  if (ctx && ctx.drawn) {
+    look = lookPanel(ctx.drawn);
+    look.classList.add('sr-show__section', 'sr-show__setting');
+    root.appendChild(look);
+  }
   // Other light (registry/otherlight.yaml): the sky in infrared, microwaves or gamma rays.
   let otherLight = null;
   if (ctx && ctx.otherLight) {
@@ -506,6 +514,13 @@ export function createWhatToShow(ctx, opts = {}) {
     const density = densityPanel(ctx.density);
     density.classList.add('sr-show__section', 'sr-show__setting');
     root.appendChild(density);
+  }
+  // Quality (spec 0073 requirement 6): Auto, or what the visitor says the device should spend.
+  let qualityRow = null;
+  if (ctx && ctx.quality && typeof ctx.quality.setChoice === 'function') {
+    qualityRow = qualityPanel(ctx);
+    qualityRow.classList.add('sr-show__section', 'sr-show__setting');
+    root.appendChild(qualityRow);
   }
 
   // --- Keys: the controls hint again, on request (issue #321) ----------------------------------
@@ -604,6 +619,8 @@ export function createWhatToShow(ctx, opts = {}) {
       key.destroy();
       if (overlay) overlay.destroy();
       if (otherLight) otherLight.destroy();
+      if (look) look.destroy();
+      if (qualityRow) qualityRow.destroy();
       root.remove();
     },
   };

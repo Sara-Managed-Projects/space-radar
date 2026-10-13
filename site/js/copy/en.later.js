@@ -32,6 +32,22 @@ Object.assign(COPY, {
     },
   },
 
+  // The giants' close-range cloud detail (scene/weather/worldweather.js WX_DETAIL; registry/weather.yaml
+  // kind cloud-detail), one sentence for the four of them, after the storms' on the weather line.
+  weatherDetail: 'Closer than the map is sharp, a fine streaky cloud texture is generated to carry the picture: it moves with the measured winds and keeps the map’s own colours, and not one streak of it is a real cloud. Illustrative.',
+
+  // Saturn's polar vortex (2026-10-12, spec 0073 requirement 5): a sentence added to its weather
+  // line where the vortex can be drawn. The eye's size and the wall's speed are Cassini's (NASA,
+  // PIA14944); the spiral is ours, and the card says so.
+  weatherVortex: {
+    turning: {
+      saturn: 'Seen close, a small cyclone turns inside the hexagon: its eye is 2\u202F000 km across and its wall goes round at 150 metres a second, as Cassini measured in 2012. The spiral drawn round it is illustrative, and nothing is watching it now.',
+    },
+    still: {
+      saturn: 'Seen close, a small cyclone sits inside the hexagon: its eye is 2\u202F000 km across, as Cassini measured in 2012, when its wall went round at 150 metres a second. The spiral drawn round it is illustrative, and nothing is watching it now.',
+    },
+  },
+
   // What the Sun is doing, on its card under the spots' line (scene/sun.js, data/sunactivity.js; spec
   // 0073 requirement 2). Each line says what was measured and by whom, and what is only drawn.
   sunAlive: {
@@ -40,7 +56,7 @@ Object.assign(COPY, {
     // {cls} "M2.3"; {region} NOAA's number; {time} "02:02"; {date} "2026-10-12".
     flare: 'A class {cls} flare is showing at region {region}: it peaked at {time} UTC on {date}, by NOAA’s event list. Its time, class, region and fading are measured; how bright it is drawn is illustrative.',
     // {speed} km/s, a whole number.
-    cme: 'A coronal mass ejection that left at {time} UTC on {date} at {speed} km/s is drawn as a thin arc moving outward. Its start, direction, width and speed are from NASA’s DONKI catalogue; the arc keeps that speed, which real ones do not, and its look is illustrative.',
+    cme: 'A coronal mass ejection that left at {time} UTC on {date} at {speed} km/s is drawn as a coronagraph shows one: a bright loop moving outward, a darker hollow behind it and a bright core. Its start, direction, width and speed are from NASA’s DONKI catalogue; the cloud keeps that speed, which real ones do not, and its look is illustrative.',
   },
 
   // A star system from the NASA Exoplanet Archive's table, drawn at its own scale (internal #466;
@@ -437,6 +453,17 @@ Object.assign(COPY, {
     none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
   },
 
+  // Which commit this site was built from (public #291; ui/status.js `builtFrom`): one line at the
+  // foot of the Sources sheet, a link to that commit on GitHub. Read from /build.json when the sheet
+  // opens (scripts/build_info.py writes it at deploy); a copy run from a folder has none, and then
+  // there is no line. {sha} is seven characters in the line and the whole commit in the address;
+  // {date} is the day of the build, UTC, "12 October 2026".
+  buildInfo: {
+    line: 'Built from {sha}, {date}',
+    title: 'The commit this site was built from, on GitHub',
+    href: 'https://github.com/Sara-Managed-Projects/space-radar/commit/{sha}',
+  },
+
   // "Is this what space looks like?" (internal #250, spec 0067 task 4): the honest answer, once, in
   // the Sources sheet, which is the app's About. Three kinds of picture, and what each is. A
   // nebula's own card says how ITS colours were made (COPY.exposure); this is the general case.
@@ -543,7 +570,7 @@ Object.assign(COPY, {
     creditsLine: 'Music and sounds: {credits}',
     // Spec 0069 task 5. The registry's own line (registry/narration.yaml `voice.credit`, carried
     // by CREDITS.md section 9b): tests/test_narration.mjs holds the three to one string.
-    narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0',
+    narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0',
   },
 
   // A world with a second face on its card (scene/worlds.js `faces`, 2026-10-06, public #417).
@@ -625,6 +652,42 @@ Object.assign(COPY, {
     figureCaption: '{name}: {w} by {h} arcminutes of sky.',
     creditLead: 'Picture: ',
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
+  },
+
+  // Measured or Film (spec 0073 requirement 8; scene/exposure.js createDrawn, ui/exposure.js lookPanel):
+  // two words in a row beside Exposure. No line under the row: each word's tooltip says what it does,
+  // in under 60 characters. The postcard's word is COPY.print.look (copy/en.js).
+  look: {
+    panelTitle: 'Look',
+    modes: { measured: 'Measured', film: 'Film' },
+    titles: {
+      measured: 'Only what is measured or modelled, at true rate',
+      film: 'Adds generated detail and illustrative weather',
+    },
+  },
+  // What a world's card says about the look, at the end of its weather line (scene/weather/index.js),
+  // only on a world the look changes; and the sentences of that line that differ under Measured,
+  // because what they describe in Film is not drawn (registry/weather.yaml `measured: hidden`).
+  lookSaid: {
+    measured: 'Measured look: nothing generated or illustrative is drawn on it.',
+    film: 'Film look: generated detail and illustrative weather are drawn.',
+    worlds: {
+      saturn: 'Weather: the bands move at the wind speeds Cassini measured. Modelled motion, not today’s clouds.',
+    },
+    also: {
+      venus: 'Lightning on Venus has been reported and is still debated; none is drawn.',
+    },
+    turning: {
+      jupiter: 'Seen close, Oval BA and three white ovals turn where the map has them.',
+    },
+    poles: {
+      jupiter: 'The cyclones round each pole are modelled from Juno’s observations of 2017, eight round one in the north and five in the south: a reconstruction, not a photograph.',
+    },
+    // The Sun's card (ui/cards.js sunLine), while its detail is drawn.
+    sun: {
+      measured: 'Measured look: the generated grain is off, and the corona and the prominences are held still.',
+      film: 'Film look: the grain is generated, and the corona and the prominences move as drawn, not as measured.',
+    },
   },
 
   // The sky in other light (registry/otherlight.yaml, scene/otherlight.js): the chooser in What to

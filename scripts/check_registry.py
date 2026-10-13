@@ -193,7 +193,7 @@ SITE_SHAPES = {"lander", "rover", "lunar-module"}
 # ship. When one of these is matched to a reference, its id comes out of this set -- the check
 # below refuses a set member that has started citing something, so the set cannot go stale.
 SITE_UNCITED = "uncited"
-UNCITED_SITES = frozenset({"apollo-11", "apollo-17", "change-4", "jezero", "utopia"})
+UNCITED_SITES = frozenset({"change-4", "jezero", "utopia"})
 # Luna 2 hit the Moon on 13 September 1959. A landing date before it is a typo, not a landing.
 FIRST_ARRIVAL = datetime.date(1959, 9, 13)
 
@@ -4038,7 +4038,7 @@ WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
 WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches",
-                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth"}
+                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail", "polar-vortex"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4094,6 +4094,15 @@ def check_weather(world_ids: set, layers: list) -> list:
         cls = r.get("class")
         if cls not in WEATHER_CLASSES:
             fail(where, f"class {cls!r} must be one of {list(WEATHER_CLASSES)} -- say how much of this is known")
+        # Measured or Film (spec 0073 requirement 8): every row says what the Measured look does to it.
+        under = r.get("measured")
+        if under not in ("same", "still", "hidden"):
+            fail(where, f"`measured:` must be same, still or hidden, got {under!r}: every effect says what it does "
+                        f"under the Measured look (the header of weather.yaml), so a new one cannot forget")
+        elif cls == "measured" and under != "same":
+            fail(where, f"a measured effect is `measured: same`, got {under!r}: the Measured look takes nothing measured away")
+        elif cls == "illustrative" and under == "same":
+            fail(where, "an illustrative effect cannot be `measured: same`: under the Measured look it is hidden, or held still")
         off = r.get("off_at")
         if not isinstance(off, list) or not WEATHER_OFF <= set(off):
             fail(where, f"`off_at:` must list {sorted(WEATHER_OFF)}: no effect is drawn at the lowest tier "
@@ -4170,6 +4179,20 @@ def check_weather(world_ids: set, layers: list) -> list:
             body = r.get(storm) or {}
             if not (is_number(body.get("from_share")) and 0.015 <= body.get("from_share") <= 1):
                 fail(where, f"{storm}.from_share must be the disc size it starts at, 0.015 (where a map is worn) to 1")
+        # Saturn's polar vortex (2026-10-12, spec 0073 req 5): two measured numbers and a drawn spiral.
+        if r.get("kind") == "polar-vortex":
+            vx = r.get("vortex") or {}
+            if not (is_number(vx.get("eye_diameter_km")) and 500 <= vx.get("eye_diameter_km") <= 5000
+                    and is_number(vx.get("wind_m_s")) and 0 < vx.get("wind_m_s") <= 600
+                    and is_number(vx.get("radius_km")) and vx.get("radius_km") > 0
+                    and is_number(vx.get("reach_eyes")) and 2 <= vx.get("reach_eyes") <= 10):
+                fail(where, "vortex needs eye_diameter_km (500 to 5000), wind_m_s, radius_km and reach_eyes (2 to 10)")
+            if not (is_number(vx.get("from_share")) and 0.015 <= vx.get("from_share") <= 1):
+                fail(where, "vortex.from_share must be the disc size it starts at, 0.015 (where a map is worn) to 1")
+            if cls != "illustrative":
+                fail(where, "the vortex's spiral is drawn, not photographed: illustrative")
+            if not r.get("why"):
+                fail(where, "an illustrative vortex says `why:` it can be no better")
         if r.get("kind") == "shear-eddies":
             ed = r.get("eddies") or {}
             if not (is_number(ed.get("lines")) and 1 <= ed.get("lines") <= 7 and is_number(ed.get("half_deg_max")) and 0 < ed.get("half_deg_max") <= 3
@@ -4208,6 +4231,21 @@ def check_weather(world_ids: set, layers: list) -> list:
                 fail(where, "depth needs thickness_radii (at most 0.01), strength and gap_lum.own / gap_lum.hubble as [low, high]")
             if cls != "illustrative":
                 fail(where, "the under-deck is the same picture again: illustrative")
+        # The close-range cloud detail (2026-10-12): generated below the map's resolution, so it is
+        # illustrative, small (what it adds is never the picture), and only on a world whose map
+        # already slides with a measured wind (it is carried by that wind).
+        if r.get("kind") == "cloud-detail":
+            dt = r.get("detail") or {}
+            if not (is_number(dt.get("contrast")) and 0 < dt.get("contrast") <= 0.13 and is_number(dt.get("colour")) and 0 <= dt.get("colour") <= 0.3
+                    and is_number(dt.get("cells_lat")) and 64 <= dt.get("cells_lat") <= 512 and is_number(dt.get("stretch")) and 1 <= dt.get("stretch") <= 8):
+                fail(where, "detail needs contrast (at most 0.13: with the lean in colour no channel moves 15 %), colour (at most 0.3), "
+                            "cells_lat (64 to 512, pole to pole at the coarsest octave) and stretch (1 to 8, along latitude)")
+            if cls != "illustrative":
+                fail(where, "a generated cloud texture is illustrative: not one streak of it was observed")
+            if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):
+                fail(where, f"`{world}` has no zonal-flow row: the detail is carried by the measured wind and has none to follow")
+            if not r.get("why"):
+                fail(where, "no `why:` -- say why it can be no better than generated")
         if r.get("kind") == "hexagon":
             hexa = r.get("hexagon") or {}
             if not is_number(hexa.get("lat_deg")) or hexa.get("sides") != 6:
@@ -4396,10 +4434,15 @@ def check_tilesets(world_ids: set) -> list:
                 and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 8 for v in grade)):
             fail(where, f"grade {grade!r} must be three gains in (0, 8], measured against the map under the tiles")
         # 2026-10-06: the Earth's second gain, a grid that is not Trek's, and a row's relief pyramid.
-        sea = r.get("grade_sea")
+        # 2026-10-13: the sea is lifted, not multiplied (the Earth's layer has no sea floor in it now).
+        if r.get("grade_sea") is not None:
+            fail(where, "grade_sea is gone: a gain on the water is what drew the sea floor as streaks; say `sea_lift`, what is added to water texels in linear light")
+        sea = r.get("sea_lift")
         if sea is not None and not (isinstance(sea, list) and len(sea) == 3
-                                    and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 10 for v in sea)):
-            fail(where, f"grade_sea {sea!r} must be three gains in (0, 10], measured against the map's water")
+                                    and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 0.5 for v in sea)):
+            fail(where, f"sea_lift {sea!r} must be three linear-light values in [0, 0.5]: the map's sea less the tile's deep sea times `grade`")
+        if "Bathymetry" in str(r.get("url", "")):
+            fail(where, "this layer has the shaded sea floor in it, which reads as streaks and rectangles on open water once graded: use the layer without it")
         span0 = r.get("level0_span_deg")
         if span0 is not None and not (isinstance(span0, (int, float)) and not isinstance(span0, bool) and 180 <= span0 <= 360):
             fail(where, f"level0_span_deg {span0!r} must be a level-0 tile's side in degrees, 180 to 360")
@@ -4738,6 +4781,13 @@ def main() -> int:
             fail(where, "no `outputs:` list")
         if not s.get("attribution"):
             fail(where, "no attribution line -- it goes on the card, not in a footer")
+        # Who publishes it, by a name a visitor would recognise: the number of sources the site
+        # states is the number of distinct publishers among the enabled rows (scripts/count_facts.py
+        # source_counts), so a row without one cannot be counted.
+        publisher = s.get("publisher")
+        if not isinstance(publisher, str) or not publisher.strip() or publisher != publisher.strip():
+            fail(where, "no `publisher:` -- the organisation whose service is read, as a visitor would name it "
+                        "(CelesTrak, NASA JPL, NOAA SWPC); rows of one publisher share the name exactly")
         # The /sources/ page prints these three beside the row (scripts/seo_pages.py), so a row
         # without them would be a source the page cannot describe honestly.
         if not str(s.get("licence") or "").strip():

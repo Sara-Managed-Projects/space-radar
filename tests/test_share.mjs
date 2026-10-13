@@ -196,7 +196,11 @@ check(!('shareLink' in shareMod) && !('savePicture' in shareMod) && !('pictureBu
 
 // ------------------------------------------------------------------------------------ bytes
 const bytes = statSync(join(JS, 'ui/share.js')).size;
-check(bytes < 6144, `ui/share.js loads with every card and stays under 6 kB: ${bytes} bytes`);
+// 6 kB, and 128 bytes for the two lines that carry the look (`drawn`, spec 0073 requirement 8) beside `exp`.
+check(bytes < 6144 + 128, `ui/share.js loads with every card and stays under 6 kB and 128 bytes: ${bytes} bytes`);
+check(shareUrl({ at: 'jupiter', drawn: 'measured' }, 'https://x.test/') === 'https://x.test/#at=jupiter&drawn=measured', 'a Measured view is in the link');
+check(shareUrl({ at: 'jupiter', drawn: 'film' }, 'https://x.test/') === 'https://x.test/#at=jupiter' && shareUrl({ at: 'jupiter', drawn: 'x' }, 'https://x.test/') === 'https://x.test/#at=jupiter', 'Film, the default, and an unknown look are not');
+check(shareState({ look: () => 'measured' }, 'jupiter').drawn === 'measured' && !shareUrl(shareState({ look: () => 'film' }, 'mars'), 'https://x.test/').includes('drawn='), 'shareState reads the look that is on');
 const src = readFileSync(join(JS, 'ui/share.js'), 'utf8');
 check(!/import\s*\(\s*['"][^.]/.test(src) && !/from\s+['"][^.]/.test(src), 'ui/share.js imports nothing from outside site/js');
 check(/import\('\.\/sharesheet\.js'\)/.test(src) && /import\('\.\/printcompose\.js'\)/.test(src) && !/from\s+'\.\/(sharesheet|printcompose|postcard)\.js'/.test(src), 'the sheet and the picture are dynamic imports on first use, never static ones');

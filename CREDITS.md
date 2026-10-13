@@ -198,11 +198,13 @@ satisfies that with:
 | `2k_earth_clouds.webp` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
 | `2k_moon.webp` | the Moon | CC BY 4.0 | Solar System Scope |
 | `2k_mars.webp` | Mars | CC BY 4.0 | Solar System Scope |
+| `2k_mars_relief.webp`, `1k_mars_height.webp` | Mars (relief, and the heights its shadows are cast from) | Public domain | [Mars Orbiter Laser Altimeter gridded topography, MGS MOLA MEGDR at 16 pixels per degree (D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node](https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg016/megt90n000eb.lbl), adapted: resampled to 1536 x 768 as local relief and to 1024 x 512 as heights from -8200 to 21300 m, one grey channel each |
 | `2k_jupiter.webp` | Jupiter | CC BY 4.0 | Solar System Scope |
 | `2k_jupiter_opal_2025.webp` | Jupiter, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 11 December 2025](https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32), adapted: calibrated, gap-filled at the poles, resampled; 63 500 B |
 | `2k_saturn.webp` | Saturn | CC BY 4.0 | Solar System Scope |
 | `2k_saturn_opal_2025.webp` | Saturn, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 29 August 2025](https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32), adapted: calibrated, the strip the rings hid and the poles filled, resampled; 21 186 B |
 | `2k_saturn_ring_alpha.png` | Saturn's rings | CC BY 4.0 | Solar System Scope |
+| `8k_saturn_ring_fine.png` | Saturn's rings, their fine structure from close | Public domain | [Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010), NASA Planetary Data System, Ring-Moon Systems Node](https://pds-rings.seti.org/holdings/volumes/COUVIS_8xxx/COUVIS_8001/data/UVIS_HSP_2008_202_BETCEN_I_TAU01KM.LBL), adapted: the measured optical depth over its own neighbourhood's, 8192 x 1, one grey channel |
 | `2k_uranus.webp` | Uranus | CC BY 4.0 | Solar System Scope |
 | `1k_uranus_opal_2025.webp` | Uranus, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
 | `2k_neptune.webp` | Neptune | CC BY 4.0 | Solar System Scope |
@@ -253,16 +255,17 @@ Center's global mosaics (<https://planetarymaps.usgs.gov/mosaic/>; "USGS-authore
 and information are considered to be in the U.S. Public Domain", usgs.gov, *Copyrights and
 Credits*) and from NASA maps mirrored on Wikimedia Commons, where each file's page says public
 domain. Public-domain works need no credit, but they get one anyway. `scripts/build-textures.py`
-(`--only moons`) remakes every one of them but Triton's from its original, and every map was
-changed:
+(`--only moons`) remakes every one of them but Triton's and Pluto's from its original, and every map
+was changed. (Pluto's, since 2026-10-12, is NASA's own global colour map, Photojournal PIA11707, made
+by `scripts/build_pluto_map.py`: its colours are enhanced, as NASA published them, and its card says
+so. The list below is about the others.)
 
 - resized (the width is in `registry/textures.yaml`; no file is over 250 kB) and, where the original
   is centred on longitude 180, rolled half a turn so longitude 0, the side that faces the planet,
   is at the centre;
 - **the black-and-white mosaics are tinted** with the world's flat colour, which is chosen from
-  published descriptions: Europa, Ganymede, Callisto, Titan, the five moons of Uranus, Pluto,
-  Charon and Phobos. Only the pattern of light and dark is measured. Charon's red polar cap and
-  Pluto's colours are therefore not shown;
+  published descriptions: Europa, Ganymede, Callisto, Titan, the five moons of Uranus and Phobos.
+  Only the pattern of light and dark is measured;
 - **Cassini's colour maps** (Mimas, Enceladus, Tethys, Dione, Rhea, Iapetus; P. Schenk, LPI) are made
   from infrared, green and ultraviolet pictures and are far more colourful than the eye would see:
   35 % of their saturation is kept. Triton's is desaturated the same way. Io keeps USGS's colours;
@@ -297,7 +300,7 @@ changed:
 | `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
 | `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
 | `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
-| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 77 % |
+| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707)](https://science.nasa.gov/image-detail/amf-pia11707): NASA's own map, made from three of the colour camera's filters, none of them green; enhanced colour, not what an eye would see, and the card says so. Resized, rolled, brightness taken to the flat colour's; the unimaged south filled plain and feathered (`scripts/build_pluto_map.py`) | 78 % |
 | `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 74 % |
 | `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
 
@@ -330,8 +333,10 @@ checked against this list by `scripts/check_registry.py`):
 - Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0
 - Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted
 - Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
+- Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's
 - Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
 - Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
+- Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
 - Earth at night (4k): Black Marble 2016, NASA Earth Observatory
 - Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0
@@ -356,7 +361,7 @@ checked against this list by `scripts/check_registry.py`):
 - Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
-- Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
+- Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain
 - Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
 - Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 
@@ -994,7 +999,7 @@ services from their own IP.** Read §4.1 before you deploy.
 | NASA DONKI | coronal mass ejections (start, direction, half-angle and speed of each analysed CME), read only from our saved copy | No licence named; "as is", "as a courtesy to the community" (§4.4, the note on the Sun's activity) | Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC) | <https://ccmc.gsfc.nasa.gov/tools/DONKI/> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
-| NASA GIBS | the Earth close up: Blue Marble with shaded relief and bathymetry, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| NASA GIBS | the Earth close up: Blue Marble with shaded relief, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | NASA GIBS | Earth data overlays: sea temperature, sea ice, chlorophyll, vegetation, rain, aerosol, water vapour; one picture when a visitor or a trip asks | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, and each data set's makers in §4.19 | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
 | NOAA nowCOAST | lightning now: strike density over the last fifteen minutes, from the ground networks NLDN and GLD360, 25° S to 80° N and 110° E eastward to 0° W | US Government work, public domain; a "Level 5" derived product "appropriate for public distribution" (§4.17) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | <https://nowcoast.noaa.gov> |
@@ -1383,7 +1388,7 @@ fetched under the same rules: never on a first visit, on a phone, with Save-Data
 |---|---|---|---|---|
 | The Moon, relief | `LRO_LOLA_Shade_Global_256ppd_v06`: shaded relief from the Lunar Orbiter Laser Altimeter, 118 m per pixel | LOLA Science Team, NASA / Goddard Space Flight Center | USGS Astrogeology: "Access Constraints public domain", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m), read 2026-10-06) | 6 (333 m per pixel; level 7 is a 404) |
 | Mars, relief | `Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw`: shaded relief from the MOLA and HRSC blended elevation model, 200 m per pixel | USGS Astrogeology; MOLA: NASA / Goddard Space Flight Center; HRSC: ESA / DLR / FU Berlin | USGS Astrogeology: "Access Constraints MOLA (CC0) and HRSC (CC BY-SA 3.0 IGO)", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/mars_mgs_mola_mex_hrsc_blended_dem_global_200m), read 2026-10-06) | 7 (325 m per pixel) |
-| The Earth | `BlueMarble_ShadedRelief_Bathymetry` from NASA GIBS: MODIS Blue Marble, cloud-free, with shaded relief and the sea floor, 500 m per pixel | NASA Earth Observatory; served by NASA GIBS / ESDIS | "NASA promotes full and open sharing of data"; the acknowledgement of §4.13 is asked for | 7 (489 m per pixel; level 8 is a 400) |
+| The Earth | `BlueMarble_ShadedRelief` from NASA GIBS: MODIS Blue Marble, cloud-free, with shaded relief and no sea floor (until 2026-10-13 the layer with shaded bathymetry, `BlueMarble_ShadedRelief_Bathymetry`), 500 m per pixel | NASA Earth Observatory; served by NASA GIBS / ESDIS | "NASA promotes full and open sharing of data"; the acknowledgement of §4.13 is asked for | 7 (489 m per pixel; level 8 is a 400) |
 
 MEASURED 2026-10-06 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`: `Access-Control-Allow-Origin: *`
 on all three. GIBS's grid is not Trek's: a level-0 tile is 288 degrees on a side and 512 pixels, level 0
@@ -1393,7 +1398,7 @@ Sources panel prints, while they are on screen:
 
 - The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks
 - Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks
-- The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).
+- The Earth close up: Blue Marble with shaded relief, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).
 
 **What is changed.** The two relief mosaics are never shown as pictures. Each is a drawing of slopes
 under one fixed light; the direction of that light was measured against the host's elevation tiles
@@ -1403,9 +1408,11 @@ really is, as steep as the mosaic has it, clamped to 0.3 to 2.2 of the ground's
 brightness. The slope across that direction is not in the mosaic and is not drawn, and the world's
 card says both. HRSC's share of Mars's relief is CC BY-SA 3.0 IGO: it is fetched by the visitor's
 browser from NASA's server, not copied, changed into another file or redistributed by us. The
-Earth's tiles are multiplied by two sets of three numbers, land (2.0, 2.3, 2.5) and sea (8.3, 5.7,
-4.7), chosen per pixel from the tile's own colour, so Blue Marble sits at the tone of the day map
-under it; they replace the day map's colour only where the ground is lit, and the night lights, the
+Earth's tiles are multiplied by three numbers (2.0, 2.3, 2.5) and their water, chosen per pixel
+from the tile's own colour, is then lifted by three more (0.0118, 0.0402, 0.1604 in linear light),
+so Blue Marble's land and its one flat deep-sea colour both sit at the tone of the day map under
+it (until 2026-10-13 the layer carried the shaded sea floor and its water was multiplied 8.3, 5.7,
+4.7 times, which drew fracture zones and survey edges as streaks and rectangles on open ocean); they replace the day map's colour only where the ground is lit, and the night lights, the
 clouds, the glint and the Moon's shadow are drawn over them as before. Blue Marble's hills are
 shaded into the picture under a fixed light, not by our Sun, and it is one picture for every month.
 Nothing from Treks or GIBS is stored in this repository or on our site.
@@ -2254,11 +2261,11 @@ the files under `site/audio/narration/` were made offline by `scripts/narrate.py
 own words in `registry/tours.yaml`, and no person recorded them. The app says so on the control
 that turns the voice on and in its Sources panel, which prints this line:
 
-> Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0
+> Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0
 
 | What | Used for | Licence | Source |
 |---|---|---|---|
-| Kokoro-82M, model weights v1.0 and the voice `bf_emma` (British English) | synthesising every clip, at build time; the model itself is not shipped | Apache-2.0 | <https://huggingface.co/hexgrad/Kokoro-82M> (read 2026-10-03); the ONNX export and `voices-v1.0.bin` from <https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0> |
+| Kokoro-82M, model weights v1.0 and the voice `af_heart` (American English; `bf_emma`, British, until 2026-10-12) | synthesising every clip, at build time; the model itself is not shipped | Apache-2.0 | <https://huggingface.co/hexgrad/Kokoro-82M> (read 2026-10-03; the voice's row in `VOICES.md` read 2026-10-12: grade A, the highest of the model's voices, and no separate licence or attribution column for the American English voices, so the model's Apache-2.0 covers it); the ONNX export and `voices-v1.0.bin` from <https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0> |
 
 The model's card reads: "Kokoro is an open-weight TTS model with 82 million parameters … with
 Apache-licensed weights, Kokoro can be deployed anywhere from production environments to personal
@@ -2267,6 +2274,12 @@ tools the render ran with, the pronunciation lexicon, and a hash per clip; `scri
 --check` refuses a stop whose words have changed since its clip was made. Each clip is levelled to
 −16 LUFS and encoded to Opus 32 kbps mono with an AAC twin; the captions beside it (`.vtt`) are the
 card's own sentences. Nothing here is downloaded until a visitor turns sound on.
+
+The voice is American and the cards are spelt the British way ("kilometres", "the centre"): the
+captions show the card, and the voice says the same words with its own accent. Since 2026-10-12 a
+stop is said two or three sentences at a time instead of one, at close to the voice's natural
+speed, with pauses whose length follows what was just said; `registry/narration.yaml` says what
+was measured before and after, and that a machine chose the setting.
 
 Why this model and not another: the spec ordered the choice by licence. XTTS-v2 (Coqui Public Model
 Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice

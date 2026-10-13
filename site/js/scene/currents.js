@@ -5,7 +5,8 @@
 //   state() -> the same shape as scene/wind.js state(), with id 'currents' and kind 'currents', so the
 //   legend and the one honest sentence (ui/overlaylegend.js) print it as they print the wind.
 // Also exported, pure, for tests/test_currents.mjs: CURRENTS_ID, SPEEDUP, COUNT, COUNT_BY_TIER,
-//   streakCount(tier, saveData), TRAIL, TRAIL_DT, rampAt(degC) -> [r, g, b], CURRENTS_LEGEND, NO_TEMP
+//   streakCount(tier, saveData), TRAIL, TRAIL_DT, rampAt(degC) -> [r, g, b], CURRENTS_LEGEND, NO_TEMP,
+//   FAST_MS, SLOW_CHANCE, SPEED_BIAS, spawnChance(speed), RIBBON_PX, CASING_PX, CASING
 //
 // OFF THE FIRST VISIT. main.js imports this file when "Ocean currents" is chosen under Earth data
 // in What to show, and only then are the two saved copies of data/currents.js read (262 kB and
@@ -26,8 +27,16 @@
 // step would touch a cell with none (land, sea ice) stops there and fades: data/currents.js
 // stepCurrent returns null. No coastline of ours is consulted; the mask is the data's.
 //
-// Lines on the Earth's own turning frame, moved on the CPU, hidden behind the globe by the Earth's
+// RIBBONS ON THE EARTH'S OWN TURNING FRAME, moved on the CPU, hidden behind the globe by the Earth's
 // depth: no full-screen pass and no render target (tests/test_contract.mjs holds this file to it).
+//
+// WHY NOT LINES ANY MORE (2026-10-12, a look at the live build: "ocean current streaks are faint").
+// A GL line is one device pixel wide whatever is asked, and a one-pixel pale line on a sunlit sea is
+// not seen from a whole-Earth distance. So each piece of a streak is now a thin quad that the vertex
+// shader widens ON THE SCREEN: a core RIBBON_PX wide in the temperature's colour, inside a darker
+// CASING, as a map maker cases a road so it reads on any ground. The width is in pixels, so a streak
+// is as wide from the Moon's distance as from low orbit. Still one draw call, still the same two
+// arrays written on the CPU (they are now read once per piece instead of once per vertex).
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { localOf, SHELL_SCALE } from './wind.js';
@@ -55,18 +64,37 @@ export const TRAIL_DT = 0.2;
 const LIFE_S = [3, 7];
 const FADE_MS = 900;
 const OPACITY = 0.95;
-/** How many random places a new streak may try before it sits this life out: three in ten are land. */
-const SPAWN_TRIES = 12;
+/** How many random places a new streak may try before it sits this life out: three in ten are land, and slow water mostly refuses. */
+const SPAWN_TRIES = 48;
 /**
  * WHERE A STREAK STARTS IS WEIGHTED TOWARD MOVING WATER. Half the sea drifts at under 0.13 m/s and
  * a streak there is a dot; spread evenly, two thousand streaks left the Gulf Stream with a handful
  * and the picture read as specks (drawn and looked at, 2026-10-12). So a place is taken with a
- * chance that rises with its speed, from SLOW_CHANCE in still water to certain at FAST_MS and over.
- * The streaks are therefore densest where the sea moves most. A streak's place, direction, length
- * and colour are the data's; how many there are in a patch of sea is the drawing's choice.
+ * chance that rises with its speed: spawnChance below. The first weighting was the speed over
+ * 0.4 m/s with a floor of 0.12; looked at again the same day, the great currents still did not read
+ * at a glance, so the chance now rises as the speed to the power SPEED_BIAS and the floor is lower:
+ * water at 0.13 m/s is taken one time in eight where it was one in three, and the Gulf Stream, the
+ * Kuroshio, the Agulhas and the jets of the Antarctic Circumpolar Current (0.3 to 0.5 m/s) hold
+ * several times the streaks of the quiet sea beside them. A streak's place, direction, length and
+ * colour are the data's; how many there are in a patch of sea is the drawing's choice.
  */
-const FAST_MS = 0.4;
-const SLOW_CHANCE = 0.12;
+export const FAST_MS = 0.5;
+export const SLOW_CHANCE = 0.03;
+export const SPEED_BIAS = 1.5;
+/** The chance that a place whose water moves at `speed` m/s is taken as a streak's start. */
+export function spawnChance(speed) {
+  if (!(speed > 0)) return SLOW_CHANCE;
+  return Math.max(SLOW_CHANCE, Math.min(1, Math.pow(speed / FAST_MS, SPEED_BIAS)));
+}
+/**
+ * The ribbon, in CSS pixels: the coloured core's width, and how far the dark casing reaches beyond
+ * it on each side. CASING is its colour (the deep sea's own navy, so over night it adds nothing)
+ * and how opaque it is at the streak's head.
+ */
+export const RIBBON_PX = 1.5;
+export const CASING_PX = 1.25;
+export const CASING = { rgb: [0.012, 0.035, 0.075], alpha: 0.62 };
+
 /**
  * The legend's ramp, cold to warm: ColorBrewer's seven-class RdYlBu turned round (Cynthia Brewer,
  * colorbrewer2.org, which marks it colour-blind safe: it runs blue to red through pale yellow and
@@ -89,6 +117,57 @@ export function rampAt(degC) {
 
 const DEG = Math.PI / 180;
 
+// The logdepthbuf chunks: the renderer is made with a logarithmic depth buffer, and a shader
+// without them z-fights the Earth it lies on (scene/earth.js says the same of its own pair).
+const RIBBON_VERT = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_vertex>
+attribute vec3 segA;   // this piece's newer end, on the unit sphere of the Earth's turning frame
+attribute vec3 segB;   // and its older end
+attribute vec4 inkA;   // the colour and how much of it shows, at each end
+attribute vec4 inkB;
+uniform vec2  uRes;    // the drawing buffer, device pixels
+uniform float uHalfPx; // half the ribbon's width, casing and all, device pixels
+varying vec4  vInk;
+varying float vAcross; // -1 and 1 at the casing's edges
+void main() {
+  vec4 a = projectionMatrix * modelViewMatrix * vec4( segA, 1.0 );
+  vec4 b = projectionMatrix * modelViewMatrix * vec4( segB, 1.0 );
+  vec2 half_ = uRes * 0.5;
+  vec2 along = b.xy / b.w * half_ - a.xy / a.w * half_;
+  float len = length( along );
+  // A piece with no length (a streak just born, or one sitting a life out) is drawn as nothing.
+  vec2 dir = len > 1e-4 ? along / len : vec2( 0.0 );
+  vec4 p = mix( a, b, position.x );
+  p.xy += vec2( -dir.y, dir.x ) * position.y * uHalfPx / half_ * p.w;
+  gl_Position = p;
+  vInk = mix( inkA, inkB, position.x );
+  vAcross = position.y;
+  #include <logdepthbuf_vertex>
+}
+`;
+const RIBBON_FRAG = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_fragment>
+uniform float uOpacity;
+uniform float uHalfPx;
+uniform float uCorePx;      // half the coloured core's width, device pixels
+uniform vec3  uCasing;
+uniform float uCasingAlpha;
+varying vec4  vInk;
+varying float vAcross;
+void main() {
+  #include <logdepthbuf_fragment>
+  float d = abs( vAcross ) * uHalfPx;                                  // device pixels from the centre line
+  float core = 1.0 - smoothstep( uCorePx - 0.5, uCorePx + 0.5, d );    // the temperature's colour
+  float rim = 1.0 - smoothstep( uHalfPx - 1.0, uHalfPx, d );           // the casing dies away at its edge
+  float alpha = vInk.a * uOpacity * mix( uCasingAlpha * rim, 1.0, core );
+  if ( alpha < 0.004 ) discard;
+  gl_FragColor = vec4( mix( uCasing, vInk.rgb, core ), alpha );
+  #include <colorspace_fragment>
+}
+`;
+
 export function createCurrents(opts = {}) {
   const getEarth = typeof opts.earth === 'function' ? opts.earth : () => null;
   const nowMs = typeof opts.now === 'function' ? opts.now : () => Date.now();
@@ -99,6 +178,8 @@ export function createCurrents(opts = {}) {
   const tick = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   let lines = null;
+  let ends = null; // the pieces' two ends, and their two inks, as the GPU reads them
+  let inks = null;
   let flow = null;
   let temp = null;
   let gotAt = -Infinity;
@@ -123,15 +204,52 @@ export function createCurrents(opts = {}) {
     if (lines) return lines;
     const earth = getEarth();
     if (!earth) return null;
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
-    lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+    // One quad, drawn once per piece of tail: `position.x` runs along the piece (0 at its newer end),
+    // `position.y` across it (-1 and 1 at the casing's edges). The two arrays the CPU writes are
+    // the pieces' ends and their inks, read as they lie: six numbers and eight numbers a piece.
+    const geo = new THREE.InstancedBufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, -1, 0, 1, -1, 0, 1, 1, 0, 0, 1, 0]), 3));
+    geo.setIndex([0, 1, 2, 0, 2, 3]);
+    ends = new THREE.InstancedInterleavedBuffer(pos, 6);
+    inks = new THREE.InstancedInterleavedBuffer(col, 8);
+    geo.setAttribute('segA', new THREE.InterleavedBufferAttribute(ends, 3, 0));
+    geo.setAttribute('segB', new THREE.InterleavedBufferAttribute(ends, 3, 3));
+    geo.setAttribute('inkA', new THREE.InterleavedBufferAttribute(inks, 4, 0));
+    geo.setAttribute('inkB', new THREE.InterleavedBufferAttribute(inks, 4, 4));
+    geo.instanceCount = count * TRAIL;
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        uOpacity: { value: 0 },
+        uRes: { value: new THREE.Vector2(1440, 900) },
+        uHalfPx: { value: RIBBON_PX / 2 + CASING_PX },
+        uCorePx: { value: RIBBON_PX / 2 },
+        uCasing: { value: new THREE.Vector3(...CASING.rgb) },
+        uCasingAlpha: { value: CASING.alpha },
+      },
+      vertexShader: RIBBON_VERT,
+      fragmentShader: RIBBON_FRAG,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+      side: THREE.DoubleSide,
+    });
+    material.opacity = 0;
+    lines = new THREE.Mesh(geo, material);
     lines.name = 'earth:currents';
     lines.renderOrder = 2;
     lines.scale.setScalar(SHELL_SCALE);
     lines.frustumCulled = false;
     lines.visible = false;
+    // The ribbon is so many pixels of THIS canvas wide: asked of the renderer as it draws.
+    const size = new THREE.Vector2();
+    lines.onBeforeRender = (renderer) => {
+      renderer.getDrawingBufferSize(size);
+      const ratio = renderer.getPixelRatio();
+      material.uniforms.uRes.value.copy(size);
+      material.uniforms.uHalfPx.value = (RIBBON_PX / 2 + CASING_PX) * ratio;
+      material.uniforms.uCorePx.value = (RIBBON_PX / 2) * ratio;
+      material.uniforms.uOpacity.value = material.opacity;
+    };
     earth.add(lines);
     return lines;
   }
@@ -151,7 +269,7 @@ export function createCurrents(opts = {}) {
       latDeg = Math.asin(2 * rand() - 1) / DEG;
       lonDeg = rand() * 360 - 180;
       const here = sampleCurrent(flow, latDeg, lonDeg);
-      wet = !!here && rand() < Math.max(SLOW_CHANCE, Math.min(1, here.speed / FAST_MS));
+      wet = !!here && rand() < spawnChance(here.speed);
     }
     const base = i * (TRAIL + 1) * 2;
     for (let k = 0; k <= TRAIL; k += 1) { places[base + k * 2] = latDeg; places[base + k * 2 + 1] = lonDeg; }
@@ -218,8 +336,8 @@ export function createCurrents(opts = {}) {
 
   function seed() {
     for (let i = 0; i < count; i += 1) { spawn(i, true); age[i] = still ? 0 : rand() * life[i]; writePlaces(i); writeInk(i); }
-    lines.geometry.attributes.position.needsUpdate = true;
-    lines.geometry.attributes.color.needsUpdate = true;
+    ends.needsUpdate = true;
+    inks.needsUpdate = true;
   }
 
   /** Show the currents, or take them away. */
@@ -284,8 +402,8 @@ export function createCurrents(opts = {}) {
       }
       writeInk(i);
     }
-    lines.geometry.attributes.position.needsUpdate = true;
-    lines.geometry.attributes.color.needsUpdate = true;
+    ends.needsUpdate = true;
+    inks.needsUpdate = true;
   }
 
   function state() {

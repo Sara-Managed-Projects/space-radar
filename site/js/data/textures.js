@@ -320,6 +320,44 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "mars-relief",
+    "world": "mars",
+    "slot": "relief",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_mars_relief.webp",
+        "px": [
+          1536,
+          768
+        ],
+        "bytes": 76364,
+        "format": "mono",
+        "credit": "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+      }
+    ]
+  },
+  {
+    "id": "mars-height",
+    "world": "mars",
+    "slot": "relief",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_mars_height.webp",
+        "px": [
+          1024,
+          512
+        ],
+        "bytes": 58264,
+        "format": "mono",
+        "credit": "Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled"
+      }
+    ]
+  },
+  {
     "id": "jupiter",
     "world": "jupiter",
     "slot": "map",
@@ -479,6 +517,25 @@ export const TEXTURES = [
         "bytes": 12119,
         "format": "rgba",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      }
+    ]
+  },
+  {
+    "id": "saturn-ring-fine",
+    "world": "saturn",
+    "slot": "ring",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/8k_saturn_ring_fine.png",
+        "px": [
+          8192,
+          1
+        ],
+        "bytes": 5061,
+        "format": "mono",
+        "credit": "Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's"
       }
     ]
   },
@@ -943,7 +1000,7 @@ export const TEXTURES = [
     "world": "pluto",
     "slot": "map",
     "when": "boot",
-    "coverage": 0.769,
+    "coverage": 0.778,
     "files": [
       {
         "tier": 0,
@@ -952,9 +1009,9 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 63040,
+        "bytes": 128920,
         "format": "rgb",
-        "credit": "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        "credit": "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain"
       }
     ]
   },

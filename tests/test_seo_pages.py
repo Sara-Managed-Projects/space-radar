@@ -279,6 +279,19 @@ for sid, row in reg.items():
 sources_html = (BUILT / "sources" / "index.html").read_text(encoding="utf-8")
 ok(not miss and len(rows) == len(reg) >= 25, f"/sources/ equals registry/sources.yaml: {len(rows)} rows, each licence, terms date and credit ({miss[:3]})")
 ok(all(f'href="{r["terms_url"]}"' in sources_html for r in reg.values()), "each row links the page that states its terms")
+# One number of sources (the review of 2026-10-12; scripts/count_facts.py source_counts): the publishers of the rows in use, and
+# those rows as feeds; a switched-off row is in neither, and in the page's second table.
+import count_facts  # noqa: E402
+sc = count_facts.source_counts()
+off_ids = [sid for sid, r in reg.items() if r.get("enabled", True) is False]
+ok(f"Space Radar reads {sc['feeds']} feeds from {sc['sources']} public sources." in src.plain and sc["feeds"] + sc["off"] == len(reg),
+   f"/sources/ states the two counted numbers ({sc['feeds']} feeds, {sc['sources']} sources)")
+ok(all(f"{name} ({k} feed{'' if k == 1 else 's'})" in src.plain for name, k in sc["publishers"].items()), "and names each source with its feeds, so the number can be recounted on the page")
+tables = re.findall(r"<tbody>(.*?)</tbody>", sources_html, re.S)
+ok(len(tables) == (2 if off_ids else 1) and tables[0].count("<tr ") == sc["feeds"] and not any(f'<tr id="{i}"' in tables[0] for i in off_ids),
+   "the first table is the feeds in use, and no switched-off row is in it")
+ok(not off_ids or ("<h2>Not in use</h2>" in sources_html and all(f'<tr id="{i}"' in tables[1] for i in off_ids) and "data-slot" not in tables[1]
+                   and tables[1].count("<tr ") == sc["off"]), "the switched-off rows are listed as not in use, with no saved-copy date to fill")
 acc = parse(BUILT / "accuracy" / "index.html")
 ok(all(w in acc.plain for w in ("measured", "modelled", "illustrative")) and "the picture is an artist's impression" in acc.plain
    and "no separate corrections log" in acc.plain.lower(), "/accuracy/: the three words, the exoplanet rule, and the honest word about a corrections log")
@@ -287,7 +300,7 @@ ok(not [f for f in ROOT.rglob("*") if "corrections" in f.name.lower() and ".git"
 about_html = (BUILT / "about" / "index.html").read_text(encoding="utf-8")
 about = parse(BUILT / "about" / "index.html")
 counts = seo_pages.counts_of_registries()
-ok(f"{counts['layers']} layers" in about.plain and f"reads {counts['sources']} public sources" in about.plain and f"{counts['trips']} guided trips" in about.plain,
+ok(f"{counts['layers']} layers" in about.plain and f"reads {counts['feeds']} feeds from {counts['sources']} public sources" in about.plain and f"{counts['trips']} guided trips" in about.plain,
    "/about/ carries the registry's counts")
 ok(all(f'<a href="{u}" rel="me noopener">' in about_html for u in ("https://www.youtube.com/@SpaceRadar_ai", "https://www.instagram.com/spaceradar.ai/",
                                                                   "https://www.linkedin.com/company/spaceradar-ai", "https://github.com/Sara-Managed-Projects/space-radar")),

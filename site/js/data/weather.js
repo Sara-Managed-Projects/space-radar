@@ -14,6 +14,7 @@ export const WEATHER = [
     "world": "earth",
     "kind": "lightning",
     "class": "measured",
+    "measured": "same",
     "layer": "lightning",
     "off_at": [
       "tier0",
@@ -27,6 +28,7 @@ export const WEATHER = [
     "world": "earth",
     "kind": "events",
     "class": "measured",
+    "measured": "same",
     "layer": "earth-events",
     "off_at": [
       "tier0",
@@ -39,6 +41,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -212,6 +215,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "shear-eddies",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -235,6 +239,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "ovals",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -309,6 +314,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "polar-cyclones",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -343,6 +349,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "cloud-depth",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -370,10 +377,83 @@ export const WEATHER = [
     "source": "NASA Science, Jupiter: Facts (three cloud layers spanning about 71 km: ammonia ice, ammonium hydrosulfide, water)"
   },
   {
+    "id": "jupiter-detail",
+    "world": "jupiter",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.12,
+      "colour": 0.2,
+      "cells_lat": 192,
+      "stretch": 4
+    },
+    "source": "Tollefson et al. 2017, Icarus 296, 163 (the winds that carry it; see jupiter-bands)"
+  },
+  {
+    "id": "saturn-detail",
+    "world": "saturn",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.09,
+      "colour": 0.15,
+      "cells_lat": 192,
+      "stretch": 6
+    },
+    "source": "García-Melendo et al. 2011, Icarus 215, 62 (the winds that carry it; see saturn-bands)"
+  },
+  {
+    "id": "uranus-detail",
+    "world": "uranus",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.04,
+      "colour": 0.1,
+      "cells_lat": 160,
+      "stretch": 6
+    },
+    "source": "Sromovsky et al. 2015, Icarus 258, 192 (the winds that carry it; see uranus-drift)"
+  },
+  {
+    "id": "neptune-detail",
+    "world": "neptune",
+    "kind": "cloud-detail",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "detail": {
+      "contrast": 0.07,
+      "colour": 0.15,
+      "cells_lat": 160,
+      "stretch": 5
+    },
+    "source": "Sromovsky et al. 1993, Icarus 105, 110 (the winds that carry it; see neptune-drift)"
+  },
+  {
     "id": "saturn-bands",
     "world": "saturn",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -488,6 +568,7 @@ export const WEATHER = [
     "world": "saturn",
     "kind": "hexagon",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -500,10 +581,30 @@ export const WEATHER = [
     "source": "Sánchez-Lavega et al. 2021, Interaction of Saturn's Hexagon with convective storms, GRL 48 (the jet at 78.1 N planetographic, 104 m/s); Godfrey 1988, Icarus 76, 335 (the discovery)"
   },
   {
+    "id": "saturn-polar-vortex",
+    "world": "saturn",
+    "kind": "polar-vortex",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "vortex": {
+      "eye_diameter_km": 2000,
+      "wind_m_s": 150,
+      "radius_km": 58232,
+      "from_share": 0.3,
+      "reach_eyes": 6
+    },
+    "source": "NASA/JPL-Caltech/SSI, The Rose (Cassini ISS, PIA14944, 29 April 2013: the eye 2,000 km across, cloud speeds to 150 m/s); Baines et al. 2009, Saturn's north polar cyclone and hexagon at depth, Planet. Space Sci. 57, 1671"
+  },
+  {
     "id": "venus-superrotation",
     "world": "venus",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -538,6 +639,7 @@ export const WEATHER = [
     "world": "uranus",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -608,6 +710,7 @@ export const WEATHER = [
     "world": "neptune",
     "kind": "zonal-flow",
     "class": "modelled",
+    "measured": "same",
     "off_at": [
       "tier0",
       "save_data"
@@ -702,6 +805,7 @@ export const WEATHER = [
     "world": "mars",
     "kind": "mars-season",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -840,6 +944,7 @@ export const WEATHER = [
     "world": "jupiter",
     "kind": "giant-lightning",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data",
@@ -870,6 +975,7 @@ export const WEATHER = [
     "world": "saturn",
     "kind": "giant-lightning",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data",
@@ -895,6 +1001,7 @@ export const WEATHER = [
     "world": "venus",
     "kind": "planetary-wave",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"
@@ -911,6 +1018,7 @@ export const WEATHER = [
     "world": "titan",
     "kind": "cloud-patches",
     "class": "illustrative",
+    "measured": "hidden",
     "off_at": [
       "tier0",
       "save_data"

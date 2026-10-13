@@ -11,8 +11,10 @@ cuts the pass at the model's pause. This holds the parts that are arithmetic:
      with the next; a short last sentence with the one before; nothing over the model's window.
   2. WHAT THE VOICE IS GIVEN. pass_text(): every sentence keeps its own full stop and the lexicon's
      markup; the joiner sits between them and nowhere else.
-  3. WHERE THE PASS IS CUT. find_pause(): the longest quiet run that starts inside the window, not
-     a stop consonant's closure before it and not a pause after it.
+  3. WHERE THE PASS IS CUT. find_cuts(): for each full stop inside a pass, the pause about where
+     the sentence should end: not a consonant's closure, not a comma's shorter pause nearby.
+     passes() with `sentences`: a paragraph in one pass. gaps_for() with `vary`: pauses that
+     follow what was said and differ by a seeded amount. phrased(): commas for the voice only.
   4. THE CUE TIMES. lay_out(): sample counts in, caption times out; the title's cue ends where the
      title's samples end, the registry's pause follows, and the clip is as long as the sum.
   5. THE REGISTRY. Every stop with a title gets a first pass of two or more; `say` stops too; and
@@ -79,6 +81,7 @@ check(narrate.pass_text(["Alone."], " — ") == "Alone.", "one sentence is given
 
 # 3. where the pass is cut. Frames of 5 ms; 1.0 is speech, 0.0 is quiet.
 F = 0.005
+CUT = {**narrate.JOIN_DEFAULT}
 
 
 def env(*runs):
@@ -88,18 +91,76 @@ def env(*runs):
     return out
 
 
+def near(got, want):
+    return got is not None and len(got) == len(want) and all(
+        abs(g[0] - w[0]) < 1e-6 and abs(g[1] - w[1]) < 1e-6 for g, w in zip(got, want))
+
+
 # "flat.": speech, the t's closure (70 ms), its burst, the pause (600 ms), then the body.
 e = env((1.0, 1000), (0.0, 70), (1.0, 60), (0.0, 600), (1.0, 2000), (0.0, 500), (1.0, 500))
-a, b = narrate.find_pause(e, F, 0.45 * 1.5, 1.15 * 1.5, 0.01)
-check(abs(a - 1.13) < 1e-6 and abs(b - 1.73) < 1e-6, f"the pause, not the consonant's closure before it ({a}, {b})")
-e = env((1.0, 500), (0.0, 30), (1.0, 2000), (0.0, 800), (1.0, 500))
-a, b = narrate.find_pause(e, F, 0.3, 0.8, 0.01)
-check(abs(a - 0.5) < 1e-6 and abs(b - 0.53) < 1e-6, f"a 30 ms pause is found when it is the only one; the long one outside the window is not taken ({a}, {b})")
-check(narrate.find_pause(env((1.0, 3000)), F, 0.3, 0.8, 0.01) is None, "no quiet frame: no pause")
-check(narrate.find_pause(env((1.0, 200), (0.0, 400), (1.0, 2000)), F, 0.3, 0.8, 0.01) is None, "a run that starts before the window is not it")
-check(narrate.find_pause([], F, 0, 1, 0.01) is None, "no audio: no pause")
-e = env((1.0, 500), (0.005, 100), (1.0, 500))
-check(narrate.find_pause(e, F, 0.4, 0.6, 0.01) is not None and narrate.find_pause(e, F, 0.4, 0.6, 0.004) is None, "quiet is under the threshold, not zero")
+got = narrate.find_cuts(e, F, [10, 25], CUT)
+check(near(got, [(1.13, 1.73)]), f"the pause, not the consonant's closure before it ({got})")
+# A comma 0.5 s after the full stop, and nearer where the sentence was expected to end.
+e = env((1.0, 2000), (0.0, 450), (1.0, 500), (0.0, 180), (1.0, 2500))
+got = narrate.find_cuts(e, F, [25, 25], CUT)
+check(near(got, [(2.0, 2.45)]), f"the full stop's long pause, not the comma's short one nearer the guess ({got})")
+# Three sentences: two cuts, in order, and the second is estimated again from the first.
+e = env((1.0, 1000), (0.0, 400), (1.0, 3000), (0.0, 150), (1.0, 1000), (0.0, 500), (1.0, 2000))
+got = narrate.find_cuts(e, F, [10, 40, 20], CUT)
+check(near(got, [(1.0, 1.4), (5.55, 6.05)]), f"a title, a sentence with a comma in it, a sentence ({got})")
+# A long pause early in the pass does not move the guess for the next: speech is counted, not seconds.
+e = env((1.0, 1000), (0.0, 1500), (1.0, 2000), (0.0, 400), (1.0, 2000))
+got = narrate.find_cuts(e, F, [10, 20, 20], CUT)
+check(near(got, [(1.0, 2.5), (4.5, 4.9)]), f"the second cut is found after a long first pause ({got})")
+check(narrate.find_cuts(env((1.0, 3000)), F, [10, 10], CUT) is None, "no quiet frame: no cut")
+check(narrate.find_cuts(env((1.0, 200), (0.0, 300), (1.0, 6000)), F, [30, 30], CUT) is None, "a pause far from where the sentence should end is not it")
+check(narrate.find_cuts([], F, [1, 1], CUT) is None, "no audio: no cut")
+check(narrate.find_cuts(env((1.0, 3000)), F, [10], CUT) == [], "one sentence: nothing to cut")
+e = env((1.0, 1500), (0.005, 300), (1.0, 1500))
+check(narrate.find_cuts(e, F, [10, 10], CUT) is not None and narrate.find_cuts(e, F, [10, 10], {**CUT, "quiet": 0.004}) is None, "quiet is under the threshold, not zero")
+check(narrate.quiet_runs(env((0.0, 100), (1.0, 100), (0.0, 50), (1.0, 100), (0.0, 100)), 0.01) == [(40, 50)], "the quiet at either end of a pass is not a pause")
+
+# 3b. a paragraph in one pass (2026-10-12): `sentences` fills a pass with long sentences too
+PARA = {**narrate.JOIN_DEFAULT, "sentences": 3}
+got = narrate.passes(["Mars.", LONG, LONG2, LONG, LONG2], True, PARA)
+check(got == [[0, 1, 2], [3, 4]], f"a title and two sentences, then the other two ({got})")
+got = narrate.passes(["Mars.", LONG, LONG2, LONG], True, PARA)
+check(got == [[0, 1], [2, 3]], f"the closing sentence is not left alone: the one before it moves across ({got})")
+got = narrate.passes(["Mars.", LONG, LONG2], True, PARA)
+check(got == [[0, 1, 2]], f"a stop of three is one pass ({got})")
+got = narrate.passes([LONG, LONG2, LONG], False, {**PARA, "max_chars": 170})
+check(got == [[0, 1], [2]], f"never over the model's window, whatever `sentences` says ({got})")
+for case in (["Mars.", LONG, LONG2, LONG, LONG2, LONG, LONG2], [LONG] * 5, ["A.", LONG]):
+    flat = [i for g in narrate.passes(case, True, PARA) for i in g]
+    check(flat == list(range(len(case))), f"every sentence is said once, in order, in a paragraph too ({flat})")
+
+# 3c. pauses that follow what was said, and are never twice the same
+V = {"lead_s": 0.15, "title_gap_s": 0.7, "gap_s": 0.4, "tail_s": 0.3,
+     "vary": {"per_word_s": 0.01, "max_extra_s": 0.1, "short_words": 4, "short": 0.5, "before_last_s": 0.2, "after_question_s": 0.3, "jitter": 0}}
+TEXTS = ["Mars.", "Nobody rode it.", "It drove for fourteen years and found rocks that formed in water.", "Are we safe?", "Yes.", "The end of it."]
+got = narrate.gaps_for(6, True, V, TEXTS, "t/s")
+check(got == [0.7, 0.2, 0.5, 0.5, 0.4, 0.3], f"title; a short sentence; a long one (capped); a question; before the last; the tail ({got})")
+check(narrate.gaps_for(6, True, V) == [0.7, 0.4, 0.4, 0.4, 0.4, 0.3], "without the sentences the pauses are the plain ones")
+J = {**V, "vary": {**V["vary"], "jitter": 0.12}}
+one, again, other = narrate.gaps_for(6, True, J, TEXTS, "t/s"), narrate.gaps_for(6, True, J, TEXTS, "t/s"), narrate.gaps_for(6, True, J, TEXTS, "t/x")
+check(one == again, "the same stop gets the same pauses every time: a render is reproducible")
+check(one != other and one[-1] == other[-1] == 0.3, "another stop gets others; the tail is not varied")
+check(all(abs(a / b - 1) <= 0.12 + 1e-3 for a, b in zip(one[:-1], got[:-1])), f"each within the jitter of its rule ({one})")
+LONGER = ["Mars."] + [LONG] * 4
+check(len(set(narrate.gaps_for(5, True, J, LONGER, "t/s")[1:-1])) == 3, "three sentences of one length: three different pauses")
+
+# 3d. phrasing: the voice's commas and dashes, never its words, never the caption
+SHOWN = ["Venus.", "The brightest thing in the night sky after the Moon."]
+PH = {"phrasing": {"t/s": [["sky after", "sky — after"]]}}
+check(narrate.phrased("t/s", SHOWN, PH) == ["Venus.", "The brightest thing in the night sky — after the Moon."], "a dash for the voice")
+check(narrate.phrased("t/x", SHOWN, PH) == SHOWN, "and for no other stop")
+for bad, why in (([["sky after", "sky, before"]], "a changed word"), ([["the sea", "the, sea"]], "words that are not there"),
+                 ([["sky after", "sky. After"]], "a new full stop"), ([["the", "the,"]], "words found twice"), (["sky"], "not a pair")):
+    try:
+        narrate.phrased("t/s", SHOWN, {"phrasing": {"t/s": bad}})
+        check(False, f"phrasing is refused for {why}")
+    except ValueError:
+        check(True, "")
 
 # 4. the cue times
 T = {"lead_s": 0.15, "title_gap_s": 0.7, "gap_s": 0.45, "tail_s": 0.25}
@@ -158,7 +219,26 @@ check(narrate.clip_hash(some, cfg) != narrate.clip_hash(some, other), "the join 
 own = {**cfg, "join_short": {"t/s": 3}}
 check(narrate.join_rules(own, "t/s")["words"] == 3 and narrate.join_rules(own, "t/x")["words"] == int(rules["words"]), "join_short raises `words` for the stop it names and no other")
 check(narrate.clip_hash(some, own, "t/s") != narrate.clip_hash(some, cfg, "t/s"), "a stop named in join_short gets a new hash")
-check(narrate.clip_hash(some, own, "t/x") == narrate.clip_hash(some, cfg, "t/x") == narrate.clip_hash(some, cfg), "and no other stop's clip goes stale")
+check(narrate.clip_hash(some, own, "t/x") == narrate.clip_hash(some, cfg, "t/x"), "and no other stop's clip goes stale")
+check(narrate.clip_hash(some, cfg, "t/x") != narrate.clip_hash(some, cfg, "t/y"), "the varied pauses are seeded by the stop's name, so the name is in its hash")
+plain = {**cfg, "timing": {k: v for k, v in cfg["timing"].items() if k != "vary"}}
+check(narrate.clip_hash(some, plain, "t/x") == narrate.clip_hash(some, plain, "t/y"), "...and only then")
+check(narrate.clip_hash(some, {**cfg, "voice": {**cfg["voice"], "pace": {"close": 0.5}}}, "t/x") != narrate.clip_hash(some, cfg, "t/x"), "the closing pace is part of a clip's hash")
+check(int(rules["sentences"]) >= 2, "a stop is said a paragraph at a time, not a sentence at a time")
+for key, pairs in (cfg.get("phrasing") or {}).items():
+    check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"phrasing names a stop that exists ({key})")
+dash = {**cfg, "join_own": {"t/s": {"joiners": [" — "], "drift": 0.4}}}
+got = narrate.join_rules(dash, "t/s")
+check(got["joiners"] == [" — "] and got["drift"] == 0.4 and got["sentences"] == rules["sentences"] and narrate.join_rules(dash, "t/x") == rules,
+      "join_own changes the rules it names for the stop it names, and no other")
+check(narrate.clip_hash(some, dash, "t/s") != narrate.clip_hash(some, cfg, "t/s") and narrate.clip_hash(some, dash, "t/x") == narrate.clip_hash(some, cfg, "t/x"), "...and only that stop's clip goes stale")
+for key, own in (cfg.get("join_own") or {}).items():
+    check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"join_own names a stop that exists ({key})")
+    check(set(own) <= set(narrate.JOIN_DEFAULT), f"join_own {key}: only rules that exist ({sorted(own)})")
+# The comma the voice ran past: a title's 160 ms pause, then a comma's 400 ms a second later.
+e = env((1.0, 600), (0.0, 160), (1.0, 900), (0.0, 400), (1.0, 6000))
+check(near(narrate.find_cuts(e, F, [12, 120], CUT), [(1.66, 2.06)]) and near(narrate.find_cuts(e, F, [12, 120], {**CUT, "drift": 0.4}), [(0.6, 0.76)]),
+      "a title with a shorter pause than the comma after it: the default takes the comma, a stop's own drift takes the title")
 for key in cfg.get("join_short") or {}:
     check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"join_short names a stop that exists ({key})")
 

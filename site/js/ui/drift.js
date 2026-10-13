@@ -3,7 +3,8 @@
 //
 // Exports: createDrift(ctx, env) -> { apply(link, from), start(options, from), stop(reason),
 //          pause(), resume(), skip(), setOptions(patch), state(), active }, and createBar(doc),
-//          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS, DARK_BELOW.
+//          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS, DARK_BELOW,
+//          PEEK_MS, SMALL_PX, HURRY_MOST.
 //
 // `#drift=1` in the address (or words: `#drift=worlds,stars,calm`, ui/driftplan.js readOptions), or
 // the Drift row at the top of Just watch. Ivan, 2026-10-12: "kind of screensaver, when everything
@@ -35,6 +36,7 @@ import '../copy/en.later.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { systemOf, positionOf } from '../scene/worlds.js';
 import { parseFrame } from '../propagate/frames.js';
+import { inEarthShadow } from '../scene/shadow.js';
 import { propagate } from '../propagate/index.js';
 import { icon } from './icons.js';
 import {
@@ -56,6 +58,23 @@ const FLIGHT_GRACE_MS = 5000;
 const AU_KM = 149597870.7;
 /** The sine of the Sun's height below which a place on the ground is passed over: ten degrees. */
 export const DARK_BELOW = 0.17;
+/**
+ * A STOP HAS TO BE A PICTURE. Seen 2026-10-12: the drift dwelt on the Lunar Reconnaissance Orbiter
+ * as a dot in black (over the Moon's night, its model capped to a few pixels by its height above
+ * the ground). So, PEEK_MS after arriving, the drift asks the model layer how many pixels across it
+ * is drawing the selection (scene/heroes.js drawnPx); under SMALL_PX, with no sunlit ground behind
+ * it either, it goes on instead of staying.
+ */
+export const PEEK_MS = 4000;
+export const SMALL_PX = 24;
+/**
+ * How many stays running may be left early. A dot now and then is a craft whose model is small or
+ * late; this many in a row is the models not being here at all, and the next stay is kept, so the
+ * drift never hurries through everything it has.
+ */
+export const HURRY_MOST = 3;
+/** The kinds the model layer draws: only these can turn out to be a dot. */
+const MODELLED = ['station', 'satellite', 'telescope', 'probe', 'rocket', 'asteroid', 'comet'];
 
 /**
  * The layers each category is made of. The drift switches on the ones that are off, and puts them
@@ -265,6 +284,8 @@ export function createDrift(ctx, env = {}) {
   let opener = null;
   let flightFrom = 0;       // when the flight to `place` began, and how long it was asked to take
   let flightFor = 0;
+  let hurried = 0;          // how many stays running were left early as a dot (aDot)
+  let peekAt = 0;           // when this stay is looked at once (PEEK_MS after arriving); 0: already was
 
   function readStored() {
     try { return JSON.parse((storage && storage.getItem(STORE_KEY)) || 'null'); } catch { return null; }
@@ -393,6 +414,81 @@ export function createDrift(ctx, env = {}) {
     } catch { return false; }
   }
 
+  /** A craft's world, where that world is drawn, where its Sun is and how big it is; null with any missing. */
+  function worldUnder(record) {
+    if (!ctx.worlds) return null;
+    try {
+      const f = parseFrame(record.frame);
+      if (!f || !f.world || f.world === 'sun') return null;
+      const here = ctx.stage && ctx.stage.worldId === f.world;
+      const centre = ctx.worlds.drawnPositionOf(f.world) || (here ? { x: 0, y: 0, z: 0 } : null);
+      const sun = ctx.worlds.sunDirOf(f.world) || (here && typeof ctx.worlds.sunDirScene === 'function' ? ctx.worlds.sunDirScene() : null);
+      const radius = typeof ctx.worlds.drawnRadiusUnits === 'function' ? ctx.worlds.drawnRadiusUnits(f.world) : 0;
+      if (!centre || !sun || !(radius > 0) || !(Math.hypot(sun.x, sun.y, sun.z) > 0)) return null;
+      return { centre, sun, radius };
+    } catch { return null; }
+  }
+
+  /**
+   * A craft inside its world's shadow is a model nobody can see: the same cylinder the marks dim by
+   * (scene/shadow.js inEarthShadow, which is any world's with that world's radius). Passed over
+   * until it comes round into the Sun. Something round the Sun itself is never in one.
+   */
+  function unlit(record, at) {
+    if (!MODELLED.includes(record.klass) || !at) return false;
+    const w = worldUnder(record);
+    if (!w) return false;
+    const far = { x: w.centre.x + w.sun.x * 1e9, y: w.centre.y + w.sun.y * 1e9, z: w.centre.z + w.sun.z * 1e9 };
+    return inEarthShadow(at, w.centre, far, w.radius);
+  }
+
+  /**
+   * Is there sunlit ground in the picture with it? Then the stop is a picture even with the craft
+   * small in it. The craft has to be close over its world's day side; and, when the camera can be
+   * asked, the camera has to be on the day side too with the world's disc near the middle of the
+   * view (a craft over daylight seen from the night side is a dot in front of black).
+   */
+  function overDaylight(record, at) {
+    if (record.klass === 'site') return true; // it was passed over if its ground was dark (inTheDark)
+    const w = at ? worldUnder(record) : null;
+    if (!w) return false;
+    const sunLen = Math.hypot(w.sun.x, w.sun.y, w.sun.z);
+    const n = { x: at.x - w.centre.x, y: at.y - w.centre.y, z: at.z - w.centre.z };
+    const r = Math.hypot(n.x, n.y, n.z);
+    if (!(r > 0) || r > w.radius * 2) return false;
+    if ((n.x * w.sun.x + n.y * w.sun.y + n.z * w.sun.z) / (r * sunLen) <= DARK_BELOW) return false;
+    const cam = ctx.camera && ctx.camera.position;
+    if (!cam) return true;
+    const c = { x: cam.x - w.centre.x, y: cam.y - w.centre.y, z: cam.z - w.centre.z };
+    const d = Math.hypot(c.x, c.y, c.z);
+    if (!(d > w.radius)) return true;
+    if ((c.x * w.sun.x + c.y * w.sun.y + c.z * w.sun.z) / (d * sunLen) <= 0) return false;
+    // The angle at the camera between the craft (the middle of the view) and the world's centre,
+    // against the disc's own angular radius and a quarter of a radian of grace.
+    const v = { x: at.x - cam.x, y: at.y - cam.y, z: at.z - cam.z };
+    const vl = Math.hypot(v.x, v.y, v.z);
+    if (!(vl > 0)) return true;
+    const cos = (-c.x * v.x - c.y * v.y - c.z * v.z) / (d * vl);
+    return Math.acos(Math.max(-1, Math.min(1, cos))) < Math.asin(w.radius / d) + 0.25;
+  }
+
+  /** PEEK_MS into a stay: is the thing that was flown to a dot in black (see PEEK_MS)? */
+  function aDot() {
+    const record = place && place.record;
+    if (!record || !(MODELLED.includes(record.klass) || record.klass === 'site')) return false;
+    if (!ctx.heroes || typeof ctx.heroes.drawnPx !== 'function') return false;
+    let px = 0;
+    try {
+      px = ctx.heroes.drawnPx(record.id);
+      // A model still fading in, or one the layer has put away, is not on the screen at its size yet.
+      if (typeof ctx.heroes.drawnOpacity === 'function') px *= Math.min(1, Math.max(0, ctx.heroes.drawnOpacity(record.id)));
+    } catch { return false; }
+    if (!(px < SMALL_PX)) return false;
+    let at = null;
+    try { at = ctx.positionOfRecord(record); } catch { at = null; }
+    return !overDaylight(record, at);
+  }
+
   function go() {
     rebuild(false);
     let next = null;
@@ -402,7 +498,7 @@ export function createDrift(ctx, env = {}) {
       // A record with no place right now (a probe before its launch, a layer that went) is passed.
       let at = null;
       try { at = ctx.positionOfRecord(cand.record); } catch { at = null; }
-      if ((at && !inTheDark(cand.record, at)) || (!at && deps.systemOf(cand.record))) { next = cand; break; }
+      if ((at && !inTheDark(cand.record, at) && !unlit(cand.record, at)) || (!at && deps.systemOf(cand.record))) { next = cand; break; }
     }
     if (!next) {
       if (phase !== 'waiting') { phase = 'waiting'; waitingSince = now(); }
@@ -431,6 +527,7 @@ export function createDrift(ctx, env = {}) {
     const d = dwellFor(options.pace, rng);
     phase = 'dwell';
     until = now() + d.ms;
+    peekAt = now() + PEEK_MS;
     // The turn. Under reduced motion the rig refuses it, and the stay is a still picture.
     try { ctx.cameraRig.orbit({ deg: d.deg, degPerSec: d.degPerSec }); } catch { /* a still stay */ }
   }
@@ -449,6 +546,11 @@ export function createDrift(ctx, env = {}) {
       const covered = !!(ctx.veil && typeof ctx.veil.covered === 'function' && ctx.veil.covered());
       if ((!flying && !covered && t - flightFrom >= Math.min(flightFor, 900)) || t >= until) arrive();
       return;
+    }
+    if (phase === 'dwell' && peekAt && t >= peekAt) {
+      peekAt = 0;
+      if (aDot() && hurried < HURRY_MOST) { hurried += 1; go(); return; }
+      hurried = 0;
     }
     if (phase === 'dwell' && t >= until) go();
   }

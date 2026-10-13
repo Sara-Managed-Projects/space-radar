@@ -44,7 +44,11 @@
 // the list is read only from our saved copy, and with no copy no CME is drawn.
 // WHAT IS MODELLED: the front leaves the surface at the start time and keeps the reported speed (real
 // ones accelerate through the first few radii). WHAT IS CHOSEN: only analyses of CME_MIN_SPEED and
-// faster are drawn, the front is a thin shell that fades by CME_REACH_RADII, and how bright it is.
+// faster are drawn, the cloud is followed out to CME_REACH_RADII, and how bright it is: full near the
+// Sun, thinning with distance to CME_FLOOR (never under what can be seen), and over its last
+// CME_TAIL_RADII down to CME_SEEN, under which it is no longer listed as in flight. So the card
+// never says a CME is in flight while the picture shows none (a look at the live build, 2026-10-12:
+// two hours in, a 741 km/s front was drawn at opacity 0.02 and a 1 586 km/s one not at all).
 //
 // PROMINENCES -- MEASURED places, ILLUSTRATIVE everything else. Real prominences hang over the
 // neutral lines of active regions and of quiet filament channels; nobody publishes a free list of
@@ -82,8 +86,16 @@ export const FLARE_ERUPTIVE_FLUX = 1e-5;
 export const MAX_CMES = 2;
 /** Analyses slower than this, km/s, are not drawn (DONKI's own type S is under 500). */
 export const CME_MIN_SPEED = 500;
-/** The front fades out by this many Sun radii from the centre. */
-export const CME_REACH_RADII = 10;
+/**
+ * The cloud is followed this many Sun radii from the centre: about what a wide coronagraph sees
+ * (SOHO's LASCO C3 reaches 30). A 1 500 km/s CME is there in three hours, a 500 km/s one in nine.
+ */
+export const CME_REACH_RADII = 25;
+/** The least a cloud in flight is drawn at, before its last CME_TAIL_RADII (illustrative: chosen to be seen). */
+export const CME_FLOOR = 0.3;
+/** Over its last radii it thins from the floor; under CME_SEEN it is not listed, and so not on the card. */
+export const CME_TAIL_RADII = 3;
+export const CME_SEEN = 0.08;
 
 /** A region this close to the limb, degrees, stands a prominence; inside PROM_FULL_DEG it is whole. */
 export const PROM_LIMB_DEG = 15;
@@ -189,13 +201,14 @@ export function parseCmes(json) {
   return [...seen.values()].sort((a, b) => a.startMs - b.startMs);
 }
 
-/** How long a front is drawn, ms: from the surface to CME_REACH_RADII at its own speed. */
+/** How long a front is followed, ms: from the surface to CME_REACH_RADII at its own speed. */
 export function cmeFlightMs(cme) { return ((CME_REACH_RADII - 1) * SUN_RADIUS_KM / cme.speedKmS) * 1000; }
 
 /**
  * Where a CME's front is at a time: null before it starts and after it has passed CME_REACH_RADII,
  * else { radii, opacity }: the distance from the Sun's centre at the reported speed, and a light that
- * comes up over the first third of a radius and thins to nothing at the reach.
+ * comes up over the first third of a radius, falls with distance to CME_FLOOR and no lower, and
+ * thins to nothing over the last CME_TAIL_RADII before the reach.
  */
 export function cmeShell(cme, tMs) {
   if (!cme || !Number.isFinite(tMs) || tMs < cme.startMs) return null;
@@ -203,7 +216,8 @@ export function cmeShell(cme, tMs) {
   if (radii >= CME_REACH_RADII) return null;
   const up = clamp((radii - 1) / 0.33, 0, 1);
   const out = 1 - (radii - 1) / (CME_REACH_RADII - 1);
-  return { radii, opacity: up * out * out };
+  const tail = clamp((CME_REACH_RADII - radii) / CME_TAIL_RADII, 0, 1);
+  return { radii, opacity: up * (CME_FLOOR + (1 - CME_FLOOR) * out * out) * tail };
 }
 
 /**
@@ -266,13 +280,17 @@ export function flaresAt(flares, tMs, regions = null) {
   return out.slice(0, MAX_FLARES);
 }
 
-/** The CMEs in flight at a time: [{ cme, radii, opacity }], newest first, `cap` at most. */
+/**
+ * The CMEs in flight at a time: [{ cme, radii, opacity }], newest first, `cap` at most. One too
+ * faint to see (its first minutes, its last radius) is not in flight as far as the picture or the
+ * card goes: what is listed is what is drawn.
+ */
 export function cmesAt(cmes, tMs, cap = MAX_CMES) {
   const out = [];
   if (!Array.isArray(cmes)) return out;
   for (let i = cmes.length - 1; i >= 0 && out.length < cap; i--) {
     const shell = cmeShell(cmes[i], tMs);
-    if (shell) out.push({ cme: cmes[i], radii: shell.radii, opacity: shell.opacity });
+    if (shell && shell.opacity >= CME_SEEN) out.push({ cme: cmes[i], radii: shell.radii, opacity: shell.opacity });
   }
   return out;
 }
