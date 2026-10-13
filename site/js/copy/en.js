@@ -1627,6 +1627,12 @@ export const COPY = {
     // as launched, so the card says what is really up there.
     objectWas: {
       hitomi: 'shown whole, as launched in February 2016; it broke apart five weeks later, and what is tracked here is its main body without the solar paddles',
+      // 2026-10-14 (public #944, #945): two craft that are whole and dead. The file is each as it
+      // flew while it worked; nobody steers either now (eoPortal, read 2026-10-14: "April 8, 2012:
+      // Contact with EnviSat was unexpectedly lost"; "The ERS-1 mission ended on March 10, 2000").
+      // "Dead since 2012" is data/layers.js's own wording for Envisat, kept.
+      envisat: 'shown steady, with its instruments to the Earth, as it flew while it worked; it has been dead since 2012 and nobody steers it',
+      ers1: 'shown steady, with its instruments to the Earth, as it flew while it worked; its mission ended in 2000 and nobody steers it',
     },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
