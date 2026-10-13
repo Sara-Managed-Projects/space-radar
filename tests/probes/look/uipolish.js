@@ -45,7 +45,7 @@ else {
   out.rows.rest = row();
   await shot('0-card-row', 'the card of ' + iss.name + ': the quiet row under the four actions, at rest');
   await press(lamp, 1500);
-  await press(seen, 800);
+  await press(seen, 5000); // a software frame is seconds long: the pressed look needs one
   out.rows.pressed = { ...row(), lampPressed: lamp && lamp.getAttribute('aria-pressed'), seenPressed: seen && seen.getAttribute('aria-pressed'), note: (q('#sr-card .sr-card__sky + .sr-card__note') || q('#sr-card .sr-card__note:not([hidden])') || {}).textContent || null };
   await shot('0-card-row-pressed', 'both pressed: the lamp is on (its note under the row) and the tick is set');
   await press(lamp, 600);
