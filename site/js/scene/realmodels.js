@@ -493,8 +493,8 @@ export const REAL_MODELS = {
     //   ers-1.glb    a gold payload module (2 x 2 x 3 m) and a silver SPOT platform; the 10 m x 1 m
     //                radar antenna ACROSS the far end, the wind scatterometer's two 3.6 m antennas
     //                in a V beyond it; the altimeter's 1.2 m dish on the Earth face; one solar array
-    //                of two panels (11.7 m x 2.4 m) across the end of an arm. ERS-2 (23560) came
-    //                down in February 2024 and has no row.
+    //                of two panels (11.7 m x 2.4 m) across the end of an arm. ERS-2 is in none
+    //                of the saved data files of 2026-10-12 and has no row.
     //   envisat.glb  a 10.5 m gold body with its instruments on the Earth face; the 10 m x 1.3 m
     //                ASAR antenna ACROSS it; the Ka-band dish on a 2 m mast on the side away from
     //                the Earth; one 14 m x 5 m wing beyond the service module, 26 m end to tip.
