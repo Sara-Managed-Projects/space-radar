@@ -148,6 +148,31 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = realModelFor({ ...other, meta: {} });
     check(!got || got.file !== 'cygnus.glb', `${other.name} (${other.klass}) does not wear the cargo ship`);
   }
+  // THE FIRST BATCH (2026-10-13, public #946, #964, #968, #994): each file is worn by ONE catalogue
+  // number, and the craft a careless route would give it to do not get it.
+  const sat = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  for (const [norad, name, file, how] of [[57800, 'XRISM', 'xrism.glb', 'render'], [54234, 'NOAA 21 (JPSS-2)', 'noaa21.glb', 'render'], [10967, 'SEASAT 1', 'seasat.glb', 'render'], [38358, 'NUSTAR', 'nustar.glb', 'dimensions']]) {
+    const got = sat(norad, name);
+    check(got && got.file === file && got.made === how && !got.generic, `${name} (${norad}) wears ${file}, made: '${how}', as itself: ${JSON.stringify(got)}`);
+  }
+  for (const [norad, name, file, klass] of [
+    [43013, 'NOAA 20 (JPSS-1)', 'noaa21.glb'],   // a different bus: NASA's Suomi model
+    [33591, 'NOAA 19', 'noaa21.glb'],            // the POES bus
+    [41337, 'ASTRO-H (HITOMI)', 'xrism.glb'],    // the same bus with an optical bench this file lacks
+    [44322, 'RCM-1', 'seasat.glb'],              // the other radar satellites keep the generic build
+    [99001, 'SEASAT 1 DEB', 'seasat.glb', 'debris'],
+    [99002, 'NUSTAR DEB', 'nustar.glb', 'debris'],
+    [99003, 'XRISM R/B', 'xrism.glb', 'rocket'],
+  ]) {
+    const got = sat(norad, name, klass || 'satellite');
+    check(!got || got.file !== file, `${name} (${norad}) does not wear ${file}`);
+  }
+  if (typeof drawingLine === 'function') {
+    const line = drawingLine({ id: 'sat-57800', name: 'XRISM', klass: 'satellite', layer: 'visual', meta: { noradId: 57800 } }, Date.UTC(2026, 9, 13));
+    check(typeof line === 'string' && line.startsWith('drawn as XRISM') && line.includes(sentences.render) && !/published model/.test(line), `XRISM's card says it is drawn as XRISM from an artist's render, and not from a published model: ${JSON.stringify(line)}`);
+    const nu = drawingLine({ id: 'sat-38358', name: 'NUSTAR', klass: 'satellite', layer: 'notable', meta: { noradId: 38358 } }, Date.UTC(2026, 9, 13));
+    check(typeof nu === 'string' && nu.startsWith('drawn as NuSTAR') && nu.includes(sentences.dimensions) && !/published model/.test(nu), `NuSTAR's card says it was built from dimensions, and not that somebody published it: ${JSON.stringify(nu)}`);
+  }
   if (made.length && typeof drawingLine === 'function') {
     const line = drawingLine({ id: 'sat-68689', name: 'CYGNUS NG-24', klass: 'satellite', layer: 'stations', meta: { noradId: 68689 } }, Date.UTC(2026, 9, 12));
     check(typeof line === 'string' && line.includes(copy) && line.includes('the kind of thing'), `the card of a Cygnus says both that it is the kind of thing and how the shape was made: ${JSON.stringify(line)}`);

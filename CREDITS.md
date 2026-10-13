@@ -29,6 +29,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
+| The shapes of XRISM, NOAA-21, Seasat and NuSTAR | three generated from NASA, NOAA and JPL artist's renders with TRELLIS (Microsoft Research) and repaired by us; NuSTAR built by us from published dimensions | public domain; MIT; ours | [3b-3](#3b-3-four-models-made-here--xrism-noaa-21-seasat-nustar-2026-10-13) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -744,6 +745,51 @@ NASA's photographs carry no NASA insignia into the model, NASA and Northrop Grum
 Space Radar, and "Cygnus" and "UltraFlex" are Northrop Grumman's names for their own products.
 TRELLIS's MIT licence covers its software; it makes no claim on what the model outputs, and its
 notice is not reproduced here because none of its software ships.
+
+## 3b-3. Four models made here — XRISM, NOAA-21, Seasat, NuSTAR (2026-10-13)
+
+Four more files in `site/models/` are nobody's published mesh. No model of these four craft was
+found under terms that allow it to be redistributed (NASA's 3D Resources index and NASA Science's
+3D pages were searched on 2026-10-13), so each was made here, and each card says how.
+
+**Three were generated from an artist's render, and then repaired.** Nobody photographed Seasat,
+XRISM or NOAA-21 in orbit; the clean picture of each is an agency's own render, and the card says
+"shape built from an artist’s render; proportions approximate". The image-to-3D model drew the
+bodies; it draws a solar wing as a dented slab and an antenna as a noodle, so **every wing, boom,
+stick antenna and dish in these three files was cut out of the generated mesh and built again in
+code**, flat and straight, at the cited size where one is cited. Each row's `modified:` in
+`registry/models.yaml` lists what was cut, what was built, what is a mirror image, and what was
+not fixed.
+
+| File | What | Whose | Licence | Where |
+|---|---|---|---|---|
+| `xrism.glb` (123 KB, 11 215 triangles) | Generated from two frames of one turntable render, "XRISM 001" and "XRISM 004"; compared with "XRISM 002" | NASA's Goddard Space Flight Center Conceptual Image Lab | public domain | <https://commons.wikimedia.org/wiki/File:XRISM_001.png>, <https://commons.wikimedia.org/wiki/File:XRISM_004.png>, <https://commons.wikimedia.org/wiki/File:XRISM_002.png> (read 2026-10-13; from <https://svs.gsfc.nasa.gov/20374/>) |
+| `noaa21.glb` (188 KB, 16 000 triangles) | The body generated from "Artist's rendering of NOAA-21", cut out of it by hand | NOAA | public domain | <https://commons.wikimedia.org/wiki/File:Artist%27s_rendering_of_NOAA-21.png> (read 2026-10-13) |
+| `seasat.glb` (45 KB, 3 610 triangles) | The trunk generated from the artist's concept "Seasat"; compared with "Seasat in orbit" | NASA/JPL | public domain | <https://commons.wikimedia.org/wiki/File:Seasat.jpg>, <https://commons.wikimedia.org/wiki/File:Seasat_in_orbit.jpg> (read 2026-10-13) |
+| all three | The generator: TRELLIS, image-large weights | Microsoft Research | MIT (code and weights, each read on its own page 2026-10-12) | <https://github.com/microsoft/TRELLIS>, <https://huggingface.co/microsoft/TRELLIS-image-large> |
+| all three | The cuts, the parts built in code, the proportions, the colours | this project | this repository's licence | `registry/models.yaml`, rows `xrism`, `noaa21`, `seasat`, `modified:` |
+
+**Credit lines:**
+`3D model: generated from NASA Goddard renders of XRISM with TRELLIS (Microsoft Research, MIT), repaired and coloured by Space Radar`;
+`3D model: generated from NOAA's render of NOAA-21 with TRELLIS (Microsoft Research, MIT), repaired and coloured by Space Radar`;
+`3D model: generated from a NASA/JPL artist's concept of Seasat with TRELLIS (Microsoft Research, MIT), repaired and coloured by Space Radar`
+
+**One was built from dimensions, with no generator.** NuSTAR is two small boxes ten metres apart
+on a lattice mast, which no image-to-3D model can draw, and which a few cited metres describe
+almost completely. `nustar.glb` (31 KB, 2 156 triangles) was written in code from them, with two
+NASA/JPL-Caltech artist's concepts looked at for everything the metres do not say; its card says
+"shape built from published dimensions and pictures; details simplified".
+
+| What | Whose | Licence | Where |
+|---|---|---|---|
+| The two artist's concepts it was drawn from: "NuSTAR spacecraft model", "NuStar 2" (PIA15265) | NASA/JPL-Caltech | public domain | <https://commons.wikimedia.org/wiki/File:NuSTAR_spacecraft_model.png>, <https://commons.wikimedia.org/wiki/File:NuStar_2.jpg> (read 2026-10-13) |
+| The shape | this project | this repository's licence | `registry/models.yaml`, row `nustar` |
+
+**Credit line:** `3D model: built by Space Radar from published dimensions and NASA/JPL-Caltech artist's concepts of NuSTAR`
+
+The renders carry no agency insignia into the models; NASA, NOAA, JPL, JAXA and the craft's
+builders do not endorse Space Radar. TRELLIS's MIT licence covers its software and makes no claim
+on what the model outputs; its notice is not reproduced here because none of its software ships.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

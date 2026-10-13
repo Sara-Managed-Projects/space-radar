@@ -529,7 +529,7 @@ export const REAL_MODELS = {
     // NOAA 15, 18 and 19 are the Advanced TIROS-N / POES bus and among the brightest things a
     // person can see pass over. Matched on the full name, whole words, klass satellite: "NOAA 15"
     // yes, "NOAA 15 DEB" no (klass debris), NOAA 20 no (a JPSS bus, already mapped by id to the
-    // Suomi model), NOAA 21 no (JPSS-2, a different bus; it keeps the generic shape and says so).
+    // Suomi model), NOAA 21 no (JPSS-2, a different bus; since 2026-10-13 it has a file of its own, by id, above).
     // By name rather than by catalogue number because a number that cannot be checked live today
     // is a number that shipped wrong once before.
     // OCO-2 is on the `active` layer under the catalogue name OCO 2. By name, not id: its id was not
