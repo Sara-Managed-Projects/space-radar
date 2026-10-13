@@ -683,6 +683,16 @@ export function createCameraRig(camera, domElement, options = {}) {
    *                come back down, instead of interpolating log-distance straight through. Two
    *                stops far apart laterally otherwise sweep across at close range: a smear, not
    *                a shot.
+   *   path(info)   a caller's own curve for a move too long for one ease (ui/driftplan.js
+   *                planFlight). Asked once, when the destination is known, with `info` = {sep,
+   *                from, to, fromDir, toDir, along, up}: how far the look-at point travels, the two
+   *                camera distances (scene units), and four unit vectors on the scene's axes:
+   *                from the look-at point to the camera now, the same on arrival, the line of
+   *                travel and the camera's up. It returns {ms, at(raw)} where at(raw) -> {pan, distance, dir}: the
+   *                share of the way the look-at point has gone, the camera's distance, and the
+   *                side the camera is on (a vector as above; null keeps the side it has), each
+   *                on its own clock. `ms`, `ease`, `targetDelay` and `apex` are then not used.
+   *                Null from it means "no curve for this one": the flight is flown as without it.
    *   onArrive(reason)  'done' | 'skipped', and 'cancelled'/'replaced' when no onCancel was given.
    *   onCancel(reason)  'cancelled' | 'replaced'. Optional; see the header.
    */
@@ -756,9 +766,20 @@ export function createCameraRig(camera, domElement, options = {}) {
       apex = { logDist: Math.log(Math.max(clampDistance(Number(opts.apex.distance)), 1e-9)), at };
     }
 
+    let path = null;
+    if (typeof opts.path === 'function') {
+      const side = (az, pol) => new THREE.Vector3(Math.sin(pol) * Math.sin(az), Math.cos(pol), Math.sin(pol) * Math.cos(az)).applyQuaternion(upQuatInv);
+      syncUpBasis();
+      const sep = target.distanceTo(to);
+      const along = sep > 0 ? to.clone().sub(target).divideScalar(sep) : null;
+      path = opts.path({ sep, from: distance, to: toDistance, fromDir: side(azimuth, polar), toDir: side(toAz, toPolar), along, up: camera.up.clone().normalize() });
+      if (!path || typeof path.at !== 'function' || !(path.ms > 0)) path = null;
+    }
+
     flight = {
       elapsed: 0,
-      ms: wantMs,
+      ms: path ? path.ms : wantMs,
+      path,
       ease: easeFor(opts.ease),
       targetDelay: THREE.MathUtils.clamp(
         Number.isFinite(opts.targetDelay) ? Number(opts.targetDelay) : TARGET_DELAY,
@@ -798,6 +819,21 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   /** Put the flight's pose at parameter `raw` (0..1 of its wall clock). */
   function poseAt(f, raw) {
+    if (f.path) {
+      // The caller's curve: the side, the distance and the look-at point each on its own clock.
+      const p = f.path.at(raw);
+      if (raw >= 1 || !p.dir) {
+        if (raw >= 1) { azimuth = f.fromAz + f.dAz; polar = f.fromPolar + f.dPolar; }
+      } else {
+        syncUpBasis();
+        _tmp.set(p.dir.x, p.dir.y, p.dir.z).applyQuaternion(upQuat).normalize();
+        azimuth = Math.atan2(_tmp.x, _tmp.z);
+        polar = Math.acos(THREE.MathUtils.clamp(_tmp.y, -1, 1));
+      }
+      distance = p.distance;
+      target.lerpVectors(f.fromTarget, f.toTarget, p.pan);
+      return;
+    }
     const k = f.ease(raw);
     azimuth = f.fromAz + f.dAz * k;
     polar = f.fromPolar + f.dPolar * k;

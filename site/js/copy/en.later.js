@@ -228,7 +228,7 @@ Object.assign(COPY, {
     resume: 'Go on (Space)',
     next: 'Next place (N)',
     options: 'Options',
-    optionsTitle: 'What to travel through, names and pace',
+    optionsTitle: 'What to travel through, what to show and the pace',
     leave: 'Stop drifting (Escape)',
     through: 'Travel through',
     cats: { craft: 'Spacecraft', worlds: 'Worlds', small: 'Small bodies', stars: 'Stars', deep: 'Deep sky' },
@@ -237,6 +237,8 @@ Object.assign(COPY, {
     realTitle: 'Only things with a real model, map or photograph',
     names: 'Names',
     namesTitle: 'The name and numbers beside each place',
+    bare: 'Only space',
+    bareTitle: 'Nothing but the sky and the things in it: no names, marks, lines or panels',
     pace: 'Pace',
     paces: { calm: 'Calm', steady: 'Steady', brisk: 'Brisk' },
     // Said once, when the row starts it.

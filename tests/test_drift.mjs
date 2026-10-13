@@ -9,6 +9,9 @@
 //   5. THE CONTROLLER on a stub map and a stub clock: one select per stop with a long flight, the
 //      turn on arrival, layers switched on and put back, the screen, pause, next, a hand on the map.
 //   6. THE SEAMS: main.js, the address, the Just watch row, the boot diet.
+//   7. ONLY SPACE: the word in the link, what is a place then, what is hidden each frame and that
+//      every bit of it comes back as it was, the bar's button, the stylesheet.
+//   (How long and how fast a long flight is: tests/test_drift_pace.mjs.)
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -43,7 +46,7 @@ function seeded(seed) {
   const one = P.readOptions('1');
   check(one.on, '`drift=1` is on');
   eq(one.through, P.DEFAULTS.through, '`drift=1` travels through the defaults');
-  check(one.realOnly === true && one.tags === true && one.pace === 'steady', 'real models only, names shown, steady, unless somebody says');
+  check(one.realOnly === true && one.tags === true && one.bare === false && one.pace === 'steady', 'real models only, names shown, not only space, steady, unless somebody says');
   const words = P.readOptions('stars,worlds,any,notags,calm,nope');
   eq(words.through, ['worlds', 'stars'], 'categories are read in the options\' own order');
   check(words.realOnly === false && words.tags === false && words.pace === 'calm', '`any`, `notags` and a pace are read');
@@ -55,7 +58,7 @@ function seeded(seed) {
   eq(P.readOptions('craft', { through: ['deep'] }).through, ['craft'], 'the address outranks what was remembered');
   eq(P.readOptions('1', { through: [] }).through, P.DEFAULTS.through, 'nothing remembered is the defaults, never an empty drift');
   check(P.writeOptions(P.DEFAULTS) === '1', 'the defaults are written as `1`');
-  for (const value of ['worlds,stars,any,notags,calm', 'all', 'deep,brisk', 'craft']) {
+  for (const value of ['worlds,stars,any,notags,calm', 'all', 'deep,brisk', 'craft', 'bare', 'worlds,bare,calm']) {
     const o = P.readOptions(value);
     eq(P.readOptions(P.writeOptions(o)), o, `\`${value}\` survives being written and read back`);
   }
@@ -219,10 +222,16 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   const first = calls.select[0];
   check(first.opts.fly === true && first.opts.undo === false && first.opts.from === 'drift', 'it is the map\'s own select, with no way-back toast');
   check(first.opts.flyMs >= P.FLIGHT_MS[0] && first.opts.flight.ease === 'cruise' && typeof first.opts.flight.apexFor === 'function', 'with a long cruise of a flight');
+  // A long hop: the rig asks for the path once it knows the geometry, and the drift's clock is the plan's.
+  check(typeof first.opts.flight.path === 'function', 'and a path for the rig to ask for');
+  check(first.opts.flight.path({ sep: 8, from: 1, to: 1 }) === null && drift.state().flightMs === first.opts.flyMs, 'a short hop has no plan: the flight is the one it was');
+  const longHop = first.opts.flight.path({ sep: 2200, from: 0.7, to: 27 });
+  check(longHop && longHop.ms > 15000 && drift.state().flightMs === longHop.ms, `a long hop is planned, and the drift waits as long as the plan (${longHop && longHop.ms} ms)`);
+  run(longHop.ms - 1000);
+  check(drift.state().phase === 'flight' && calls.select.length === 1, 'so a flight three times the old length is not taken for one that never landed');
   check(first.opts.flight.apexFor({ x: 1000, y: 0, z: 0 }, 5).distance > 100, 'two places far apart sideways: the flight pulls back');
   check(first.opts.flight.apexFor({ x: 12, y: 0, z: 0 }, 5) === null, 'two places close together: it does not');
   check(drift.state().phase === 'flight', 'it is in flight');
-  run(3000);
   check(calls.orbit.length === 0, 'no turn while the flight is still running');
   rig.state.flying = false;
   run(500);
@@ -451,9 +460,128 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   for (const ids of Object.values(D.LAYERS_FOR)) for (const id of ids) check(new RegExp(`- id: ${id}\\b`).test(layers), `registry/layers.yaml has the layer "${id}"`);
 }
 
+// --- 7. only space -------------------------------------------------------------------------------
+{
+  check(P.readOptions('bare').bare === true && P.readOptions('1', { bare: true }).bare === true && P.readOptions('nobare', { bare: true }).bare === false, 'the link and the remembered choices ask for only space; the link outranks');
+  check(P.writeOptions({ ...P.DEFAULTS, bare: true }) === 'bare', 'and it is written as `bare`');
+  const loose = P.buildPlaces(RECORDS, { through: P.CATEGORIES, realOnly: false, bare: true }, look, facts);
+  check(loose.length > 0 && loose.every((p) => look(p.record) === 2), 'in only space every place is a body, a model or a photograph, whatever "real models" says');
+  check(!loose.some((p) => p.id === 'sat-plain' || p.id === 'dso-m31'), 'a craft drawn as its kind and a glow with no photograph are not flown to: with the marks off there is nothing there');
+
+  let t = 5000;
+  let fire = null;
+  const vis = (name, visible = true) => ({ name, visible });
+  const glyphs = new Map([['stations', { shown: true, setVisible(b) { this.shown = b; } }], ['notable', { shown: false, setVisible(b) { this.shown = b; } }]]);
+  const orbitLine = { line: vis('orbit'), records: [], setRecord(r) { this.records.push(r); } };
+  const scene = { children: [vis('shells'), vis('the-earth')] };
+  const systems = { group: { visible: true, children: [vis('systems:ring:b'), vis('systems:b'), vis('systems:mercury-ring', false), vis('systems:label')] } };
+  const marks = [];
+  const on = new Set(['worlds', 'stations']);
+  const layerCalls = [];
+  let screen = 'full';
+  const selectedNow = { id: 'iss' };
+  const ctx = {
+    layers: [{ id: 'worlds' }, { id: 'stations' }, { id: 'notable' }, { id: 'deep-space' }],
+    isLayerOn: (id) => on.has(id),
+    setLayerOn: (id, v) => { layerCalls.push([id, v]); if (v) on.add(id); else on.delete(id); },
+    recordsFor: (id) => (id === 'worlds' ? RECORDS.filter((r) => r.klass === 'world') : id === 'stations' ? [RECORDS[0], RECORDS[1]] : []),
+    select: () => {}, selected: () => selectedNow, positionOfRecord: () => ({ x: 1, y: 2, z: 3 }),
+    cameraRig: { state: { flying: false }, orbit: () => true, stopOrbit: () => {}, onUserInput: () => () => {}, saveState: () => ({ target: { x: 0, y: 0, z: 0 }, distance: 10 }) },
+    cleanView: { state: () => screen, setState: (s) => { screen = s; } },
+    clock: { now: () => 0 }, stage: { worldId: 'earth' },
+    glyphLayers: glyphs, orbitLine, scene, systems,
+    groundTrack: { group: vis('track') }, orbitRings: { group: vis('rings', false) }, ephPath: null,
+    dsoGlow: { setMarks: (b) => marks.push(b) }, latched: () => false,
+  };
+  const drift = D.createDrift(ctx, {
+    document: null, window: null, navigator: {}, storage: null, now: () => t, rng: seeded(9),
+    setInterval: (fn) => { fire = fn; return 1; }, clearInterval: () => { fire = null; },
+  });
+  const layersBefore = [...on].sort().join();
+  drift.apply({ drift: 'any' }, 'link');
+  check(screen === 'hud' && !ctx.bareFrame && drift.state().bare === false, 'without the option nothing is hidden and the names are on');
+  check(drift.state().pool > P.buildPlaces(ctx.recordsFor('worlds').concat(ctx.recordsFor('stations')), { through: ['craft', 'worlds'], realOnly: true }, look, facts).length, '`any`: things drawn as their kind are places');
+  const poolAny = drift.state().pool;
+
+  drift.setOptions({ bare: true });
+  check(screen === 'clear', 'only space is the clear screen: no panels, no names, no timeline');
+  check(typeof ctx.bareFrame === 'function' && drift.state().bare === true, 'and a frame hook for what is drawn in the scene');
+  check(drift.state().pool < poolAny, 'the pool is rebuilt: only what has a body or a model');
+  const hidden = () => [...glyphs.values()].every((g) => g.shown === false) && !orbitLine.line.visible && !ctx.groundTrack.group.visible && !ctx.orbitRings.group.visible
+    && !scene.children[0].visible && !systems.group.children[0].visible && !systems.group.children[3].visible;
+  check(hidden(), 'the dots and icons, the orbit, the ground track, the planets\' orbits, the shells, a system\'s rings and labels are not drawn');
+  check(scene.children[1].visible && systems.group.children[1].visible && systems.group.visible, 'a body is: the Earth, a planet of a system');
+  eq(marks, [false], 'the deep-sky kind marks are off');
+  // The app says again, every frame or ten times a second, what is drawn. The hook comes after it.
+  glyphs.get('stations').setVisible(true);
+  orbitLine.line.visible = true;
+  ctx.groundTrack.group.visible = true;
+  ctx.ephPath = { line: vis('path') };
+  ctx.bareFrame();
+  check(hidden() && !ctx.ephPath.line.visible, 'whatever the frame switched back on is off again before it is drawn, and so is a path that arrived later');
+  eq(layerCalls.filter(([, v]) => v === false), [], 'no layer was switched off for it');
+  check(P.writeOptions(drift.state().options) === 'any,bare', 'the address says so');
+
+  drift.setOptions({ bare: false });
+  check(!ctx.bareFrame && drift.state().bare === false && screen === 'hud', 'switched off: no hook, and the names are back');
+  check(ctx.marksStale === true, 'the dots are placed and shown again on the next frame, by the app\'s own rule');
+  check(ctx.groundTrack.group.visible && scene.children[0].visible && systems.group.children[0].visible && systems.group.children[3].visible, 'everything that was drawn is drawn');
+  check(ctx.orbitRings.group.visible === false && systems.group.children[2].visible === false, 'and what was not drawn before is still not');
+  check(orbitLine.records.length === 1 && orbitLine.records[0] === selectedNow, 'the selection\'s orbit is built again');
+  eq(marks, [false, true], 'the deep-sky marks follow the quality again');
+
+  // Names pressed in only space leaves it; Shift+H (the HUD screen) does too.
+  drift.setOptions({ bare: true });
+  drift.setOptions({ tags: true, bare: false });
+  check(!ctx.bareFrame && screen === 'hud', 'asking for names leaves only space');
+
+  // The drift ends with the option on: everything is back, and the layers are as they were.
+  drift.setOptions({ bare: true });
+  ctx.bareFrame();
+  drift.stop('button');
+  check(!ctx.bareFrame && screen === 'full' && ctx.groundTrack.group.visible && scene.children[0].visible, 'ending the drift in only space brings everything back');
+  check([...on].sort().join() === layersBefore, `and the visitor's layers are what they were (${[...on].sort().join()})`);
+  check(fire === null, 'nothing is left ticking');
+
+  // The bar: a button with a name, pressed or not, among the options.
+  const made = [];
+  const node = (tag) => {
+    const n = { tag, children: [], attrs: {}, dataset: {}, listeners: {}, classList: { toggle() {}, add() {}, remove() {} }, hidden: false,
+      setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return this.attrs[k]; },
+      append(...c) { this.children.push(...c); }, appendChild(c) { this.children.push(c); return c; }, replaceChildren() {},
+      addEventListener(type, fn) { this.listeners[type] = fn; } };
+    made.push(n);
+    return n;
+  };
+  const sets = [];
+  const bar = D.createBar({ createElement: node }, { set: (patch) => sets.push(patch) });
+  const button = made.find((n) => n.tag === 'button' && n.textContent === COPY.drift.bare);
+  check(button && button.type === 'button' && button.title === COPY.drift.bareTitle, 'the bar has an "Only space" button a keyboard reaches, with its name as its text and a line that says what it does');
+  bar.paint({ ...P.DEFAULTS, bare: false }, false);
+  check(button.attrs['aria-pressed'] === 'false', 'not pressed when it is off');
+  button.listeners.click();
+  eq(sets.pop(), { bare: true }, 'pressing it asks for only space');
+  bar.paint({ ...P.DEFAULTS, bare: true }, false);
+  const names = made.find((n) => n.tag === 'button' && n.textContent === COPY.drift.names);
+  check(button.attrs['aria-pressed'] === 'true' && names.attrs['aria-pressed'] === 'false', 'pressed when it is on, and Names is then not');
+  button.listeners.click();
+  eq(sets.pop(), { bare: false }, 'pressing it again leaves');
+  names.listeners.click();
+  eq(sets.pop(), { tags: true, bare: false }, 'pressing Names in only space asks for the names and leaves it');
+  check(COPY.drift.bare.split(' ').length <= 2 && COPY.drift.bareTitle.length <= 80, 'copy: two words on the button, one line under it');
+
+  const css = read('site/css/drift.css');
+  check(/html\.sr-drift--bare\.sr-drift--still #sr-rail \.sr-rail__btn--clean/.test(css) && /html\.sr-drift--bare\.sr-drift--still \.sr-toast/.test(css), 'css/drift.css: in only space the eye, the share button and a toast go with the bar when the pointer is still');
+  check(D.BARE_CLASS === 'sr-drift--bare', 'on the class ui/drift.js sets');
+  const main = read('site/js/main.js');
+  check(/if \(ctx\.bareFrame\) ctx\.bareFrame\(\);[^\n]*\n\s*render\(\);/.test(main), 'main.js calls the hook after the scene is placed and straight before it is drawn');
+  const driftJs = read('site/js/ui/drift.js');
+  check(!/setLayerOn\([^)]*false\)/.test(driftJs.replace(/function restoreLayers\(\) \{[\s\S]*?\n  \}/, '')), 'ui/drift.js switches a layer off only to put back one it switched on');
+}
+
 if (problems.length) {
   console.error(`test_drift: ${problems.length} problem(s)`);
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-console.log('test_drift: the link, the places, the walk, the timings, the controller and the seams hold');
+console.log('test_drift: the link, the places, the walk, the timings, the controller, the seams and only space hold');

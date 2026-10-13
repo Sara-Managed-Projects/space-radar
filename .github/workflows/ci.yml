@@ -458,6 +458,11 @@ jobs:
       # never lands cannot strand it, and a hand on the map gets everything back as it was.
       - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
         run: node tests/test_drift.mjs
+      # Ivan, 2026-10-14: a long hop was "super fast for this distance, so eyes are tired". The real
+      # camera rig is flown between framed places and read: how fast the picture turns, how fast a
+      # body crosses it, how fast its scale changes. Short hops as they were; the rest inside bounds.
+      - name: "The drift's long flights on the real rig: turn, sweep and scale inside the comfort bounds (spec 0071)"
+        run: node tests/test_drift_pace.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"

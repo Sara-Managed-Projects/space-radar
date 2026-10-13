@@ -32,6 +32,16 @@ html.sr-drift--still canvas {
   cursor: none;
 }
 
+/* ONLY SPACE (ui/drift.js BARE_CLASS). The clear screen leaves its eye and the share button, dim, in
+   the rail's corner, and a toast if one is up: with this option they go with the bar and the
+   pointer when the pointer is still, and come back with them. */
+html.sr-drift--bare.sr-drift--still #sr-rail .sr-rail__btn--clean:not(:focus-visible),
+html.sr-drift--bare.sr-drift--still #sr-rail .sr-rail__btn--share:not(:focus-visible),
+html.sr-drift--bare.sr-drift--still .sr-toast {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* The HUD screen keeps the time pill, bottom centre, where this mode's bar is: the bar has the place. */
 html.sr-drift.sr-hud #sr-time {
   visibility: hidden !important;

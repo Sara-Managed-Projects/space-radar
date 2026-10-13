@@ -1508,7 +1508,7 @@ export async function boot({ setStatus } = {}) {
     // and not a tap (ui/drift.js). Where to stand is still decided here, for every caller.
     // `apexFor(pos, distance)` is asked once the destination is known, on the stage it is on.
     const shotTo = (pos, distance) => (flight ? {
-      ease: flight.ease, targetDelay: flight.targetDelay,
+      ease: flight.ease, targetDelay: flight.targetDelay, path: flight.path,
       apex: typeof flight.apexFor === 'function' ? flight.apexFor(pos, distance) || undefined : flight.apex,
     } : {});
     if (record.klass === 'world') worlds.preload(record.id);
@@ -2783,6 +2783,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.stars3d.hidePoint(rec && rec.klass === 'star' && rec.meta ? rec.meta.starIndex : -1);
     }
     if (ctx.skyView.active) ctx.skyView.update(t);
+    if (ctx.bareFrame) ctx.bareFrame(); // only space (ui/drift.js): marks and lines are not drawn
     render();
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.

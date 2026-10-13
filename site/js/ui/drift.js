@@ -3,8 +3,8 @@
 //
 // Exports: createDrift(ctx, env) -> { apply(link, from), start(options, from), stop(reason),
 //          pause(), resume(), skip(), setOptions(patch), state(), active }, and createBar(doc),
-//          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS, DARK_BELOW,
-//          PEEK_MS, SMALL_PX, HURRY_MOST.
+//          lookOf(record, deps), factsOf(record, deps), LAYERS_FOR, STORE_KEY, ROOT_CLASS, BARE_CLASS,
+//          DARK_BELOW, PEEK_MS, SMALL_PX, HURRY_MOST.
 //
 // `#drift=1` in the address (or words: `#drift=worlds,stars,calm`, ui/driftplan.js readOptions), or
 // the Drift row at the top of Just watch. Ivan, 2026-10-12: "kind of screensaver, when everything
@@ -18,19 +18,34 @@
 // tap on a search result makes, with a longer flight. So the stage changes, the lit side, the limb
 // in the picture, the distance a thing is met from, the 3D model and the reticle's tag are the
 // map's own, and a fix to any of them is a fix here. What this file adds is which thing comes next
-// (ui/driftplan.js), how long the camera stays, and a slow turn while it does.
+// (ui/driftplan.js), how long the camera stays, a slow turn while it does, and, for a hop too long
+// for one ease, the curve the camera flies there on (planFlight: paced by what the eye sees).
 //
 // WHAT IS ON SCREEN. The clear screen (ui/cleanview.js), or the HUD screen when names are wanted:
 // the reticle's tag is the "panel on top of the object", in the card's own words. One small bar,
 // bottom centre, shows while the pointer moves and goes three seconds after it stops.
+//
+// ONLY SPACE (Ivan, 2026-10-14: "an option to hide everything: all planet texts, title
+// descriptions, dots/icons of objects, so it will be really only space, no solar system lines or
+// whatever, space and objects only"). The clear screen takes the panels, the names and the timeline;
+// this option also takes what is drawn in the scene and is not the sky or a body: every layer's
+// dots and icons, the orbit of the selection, its ground track and its path, the planets' orbits,
+// the constellation figures, the shells and marks of the far rungs, the rings and labels of a star
+// system. NOTHING IS SWITCHED OFF: no layer setting is touched. Each frame, after the scene has
+// placed everything and before it is drawn, bareFrame() hides those objects for that frame (main.js
+// calls ctx.bareFrame when there is one), and what each was is kept, so leaving the option, or the
+// drift, puts every one back as it was. The models (scene/heroes.js) ask whether a LAYER is on, not
+// whether its dots are drawn, so they stay. The bar and the pointer go as they always did, three
+// seconds after the pointer stops; here the eye and the share button go with them.
 //
 // LEAVING. A drag or a wheel on the map is taking the controls: the drift stops where the camera
 // is and the panels come back. Escape and H do the same (they are the clear screen's own keys).
 // Space pauses; N goes to the next place (the arrows are the camera's, and so take the controls).
 //
 // LIGHT. One timer, four times a second, on the wall clock (so a starved frame loop cannot strand
-// it); one weighted pick per stop; nothing per frame. The pool is rebuilt only when the number of
-// records on the map changes.
+// it); one weighted pick per stop; nothing per frame, but for a long flight's curve (the rig asks
+// it where the camera is, a few lines of arithmetic) and only space's hook while that option is on.
+// The pool is rebuilt only when the number of records on the map changes.
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { realModelFor } from '../scene/realmodels.js';
@@ -40,11 +55,15 @@ import { inEarthShadow } from '../scene/shadow.js';
 import { propagate } from '../propagate/index.js';
 import { icon } from './icons.js';
 import {
-  CATEGORIES, PACES, URL_KEY, buildPlaces, createWalk, flightMs, dwellFor, readOptions, writeOptions,
+  CATEGORIES, PACES, URL_KEY, buildPlaces, createWalk, flightMs, planFlight, dwellFor, readOptions, writeOptions,
 } from './driftplan.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 
 export const ROOT_CLASS = 'sr-drift';
+/** On <html> while "only space" is on (css/drift.css). */
+export const BARE_CLASS = 'sr-drift--bare';
+/** What a star system's stage draws that is not a body (scene/systems.js, scene/systemextras.js). */
+const SYSTEM_LINES = /^systems:(ring:|mercury|zone|scale:|label)/;
 /** The remembered choices, in this browser only. */
 export const STORE_KEY = 'sr:drift';
 /** The bar goes this long after the pointer last moved, and the pointer with it. */
@@ -209,8 +228,10 @@ export function createBar(doc, handlers = {}) {
   }
   const show = group(D.show);
   const real = textButton(D.real, D.realTitle, () => handlers.set && handlers.set({ realOnly: real.getAttribute('aria-pressed') !== 'true' }));
-  const names = textButton(D.names, D.namesTitle, () => handlers.set && handlers.set({ tags: names.getAttribute('aria-pressed') !== 'true' }));
-  show.append(real, names);
+  // Names and "only space" are one choice of three: pressing Names leaves only space.
+  const names = textButton(D.names, D.namesTitle, () => handlers.set && handlers.set(names.getAttribute('aria-pressed') !== 'true' ? { tags: true, bare: false } : { tags: false }));
+  const bare = textButton(D.bare, D.bareTitle, () => handlers.set && handlers.set({ bare: bare.getAttribute('aria-pressed') !== 'true' }));
+  show.append(real, names, bare);
   const pace = group(D.pace);
   const paces = new Map();
   for (const p of Object.keys(PACES)) {
@@ -231,8 +252,10 @@ export function createBar(doc, handlers = {}) {
   /** Paint the choices and whether it is paused. */
   function paint(o, paused) {
     for (const [c, b] of cats) b.setAttribute('aria-pressed', String(o.through.includes(c)));
-    real.setAttribute('aria-pressed', String(o.realOnly));
-    names.setAttribute('aria-pressed', String(o.tags));
+    // Only space travels through real things only (ui/driftplan.js buildPlaces), and shows no names.
+    real.setAttribute('aria-pressed', String(o.realOnly || !!o.bare));
+    names.setAttribute('aria-pressed', String(o.tags && !o.bare));
+    bare.setAttribute('aria-pressed', String(!!o.bare));
     for (const [p, b] of paces) b.setAttribute('aria-pressed', String(o.pace === p));
     const label = paused ? D.resume : D.pause;
     pause.setAttribute('aria-label', label);
@@ -286,12 +309,13 @@ export function createDrift(ctx, env = {}) {
   let flightFor = 0;
   let hurried = 0;          // how many stays running were left early as a dot (aDot)
   let peekAt = 0;           // when this stay is looked at once (PEEK_MS after arriving); 0: already was
+  let bareWas = null;       // while only space is on: what each hidden object's `visible` was
 
   function readStored() {
     try { return JSON.parse((storage && storage.getItem(STORE_KEY)) || 'null'); } catch { return null; }
   }
   function keep() {
-    try { if (storage) storage.setItem(STORE_KEY, JSON.stringify({ through: options.through, realOnly: options.realOnly, tags: options.tags, pace: options.pace })); } catch { /* private mode */ }
+    try { if (storage) storage.setItem(STORE_KEY, JSON.stringify({ through: options.through, realOnly: options.realOnly, tags: options.tags, bare: options.bare, pace: options.pace })); } catch { /* private mode */ }
   }
 
   // ------------------------------------------------------------------------------- the pool
@@ -507,12 +531,24 @@ export function createDrift(ctx, env = {}) {
     const ms = flightMs(place, next, options.pace);
     place = next;
     visits += 1;
+    // A LONG HOP IS PACED BY ITS OWN GEOMETRY (ui/driftplan.js planFlight): the rig asks for the
+    // curve once it knows where the camera will stand, and the stay's clock is set by the answer.
+    // A short hop gets null back, and flies as it always did: `ms`, the cruise, the apex.
+    const path = (hop) => {
+      const plan = planFlight({ ...hop, pace: options.pace });
+      if (plan && active && place === next) {
+        flightFrom = now();
+        flightFor = plan.ms;
+        until = flightFrom + plan.ms + FLIGHT_GRACE_MS;
+      }
+      return plan;
+    };
     const move = () => {
       if (!active || place !== next) return;
       try { ctx.cameraRig.stopOrbit('replaced'); } catch { /* no turn running */ }
       flightFrom = now();
       until = flightFrom + ms + FLIGHT_GRACE_MS;
-      ctx.select(next.record, { fly: true, undo: false, from: 'drift', flyMs: ms, flight: { ease: 'cruise', targetDelay: 0.2, apexFor } });
+      ctx.select(next.record, { fly: true, undo: false, from: 'drift', flyMs: ms, flight: { ease: 'cruise', targetDelay: 0.2, apexFor, path } });
     };
     phase = 'flight';
     flightFrom = now();
@@ -562,9 +598,57 @@ export function createDrift(ctx, env = {}) {
   }
 
   function setScreen() {
+    setBare(!!options.bare);
     if (!ctx.cleanView) return;
     ownScreen = true;
-    try { ctx.cleanView.setState(options.tags ? 'hud' : 'clear'); } finally { ownScreen = false; }
+    try { ctx.cleanView.setState(options.tags && !options.bare ? 'hud' : 'clear'); } finally { ownScreen = false; }
+  }
+
+  /** Only space, for one frame: called by main.js after the scene is placed and before it is drawn. */
+  function bareFrame() {
+    if (!bareWas) return;
+    const hide = (o) => {
+      if (!o || typeof o.visible !== 'boolean') return;
+      if (!bareWas.has(o)) bareWas.set(o, o.visible);
+      o.visible = false;
+    };
+    try {
+      // The dots and icons. main.js says again, ten times a second, which layers are drawn.
+      if (ctx.glyphLayers) for (const gl of ctx.glyphLayers.values()) if (gl && typeof gl.setVisible === 'function') gl.setVisible(false);
+      hide(ctx.orbitLine && ctx.orbitLine.line);
+      hide(ctx.ephPath && ctx.ephPath.line);
+      hide(ctx.groundTrack && ctx.groundTrack.group);
+      hide(ctx.orbitRings && ctx.orbitRings.group);
+      hide(ctx.figures && ctx.figures.group);
+      hide(ctx.pulsars && ctx.pulsars.group);
+      const top = ctx.scene && ctx.scene.children;
+      if (top) for (const o of top) if (o.name === 'shells') hide(o);
+      const system = ctx.systems && ctx.systems.group;
+      if (system && system.visible) for (const o of system.children) if (SYSTEM_LINES.test(o.name || '')) hide(o);
+    } catch { /* a layer that is not built yet has nothing to hide */ }
+  }
+
+  function setBare(on) {
+    if (on === !!bareWas) return;
+    if (on) {
+      bareWas = new Map();
+      ctx.bareFrame = bareFrame;
+      if (root) root.classList.add(BARE_CLASS);
+      try { if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); } catch { /* no glows here */ }
+      bareFrame();
+      return;
+    }
+    const was = bareWas;
+    bareWas = null;
+    if (ctx.bareFrame === bareFrame) delete ctx.bareFrame;
+    if (root) root.classList.remove(BARE_CLASS);
+    for (const [o, visible] of was) o.visible = visible;
+    // The dots are placed and shown again on the next frame, by the rule that always decided it; the
+    // selection's orbit is built again (its line only knows its own record); the deep-sky marks
+    // follow the quality, as main.js has them.
+    ctx.marksStale = true;
+    try { if (ctx.orbitLine) ctx.orbitLine.setRecord(typeof ctx.selected === 'function' ? ctx.selected() : null); } catch { /* no line */ }
+    try { if (ctx.dsoGlow) ctx.dsoGlow.setMarks(!(typeof ctx.latched === 'function' ? ctx.latched() : ctx.quality && ctx.quality.stripped)); } catch { /* no glows here */ }
   }
 
   function wake() {
@@ -589,7 +673,13 @@ export function createDrift(ctx, env = {}) {
     barTimer = win.setTimeout(() => {
       if (!bar || !active) return;
       // Not while the options are open or a key is on the bar: a control never goes from under a hand.
-      if (bar.isOpen() || (doc.activeElement && bar.host.contains(doc.activeElement) && phase === 'paused')) return;
+      const held = doc.activeElement && bar.host.contains(doc.activeElement);
+      if (bar.isOpen()) return;
+      // Only space: a press on the bar leaves the focus on it, which would keep the bar (css/drift.css
+      // :focus-within, and the pause below) over a picture that is meant to have nothing on it. The
+      // focus is let go; any key or movement brings the bar back.
+      if (held && options.bare) { try { doc.activeElement.blur(); } catch { /* nothing to let go */ } }
+      else if (held && phase === 'paused') return;
       bar.setIdle(true);
       if (root) root.classList.add('sr-drift--still');
     }, BAR_IDLE_MS);
@@ -617,7 +707,8 @@ export function createDrift(ctx, env = {}) {
     const s = e && e.detail ? e.detail.state : null;
     if (s === 'full') { stop('screen'); return; }
     const tags = s === 'hud';
-    if (tags !== options.tags) { options = { ...options, tags }; keep(); paintBar(); writeLink(); }
+    // Shift+H asks for the names: that leaves only space too.
+    if (tags !== options.tags || (tags && options.bare)) { options = { ...options, tags, bare: tags ? false : options.bare }; setBare(!!options.bare); keep(); paintBar(); writeLink(); if (tags) rebuild(true); }
   };
 
   function paintBar() { if (bar) bar.paint(options, phase === 'paused'); }
@@ -707,6 +798,7 @@ export function createDrift(ctx, env = {}) {
     if (bar && bar.host.parentNode) bar.host.parentNode.removeChild(bar.host);
     if (bar) bar.setOpen(false);
     if (root) root.classList.remove(ROOT_CLASS, 'sr-drift--still');
+    setBare(false);
     restoreLayers();
     sleep();
     try { clearUrl([URL_KEY]); } catch { /* no address here */ }
@@ -756,8 +848,10 @@ export function createDrift(ctx, env = {}) {
     paintBar();
     if (!active) return;
     writeLink();
-    if (patch && patch.tags !== undefined) setScreen();
-    if (patch && (patch.through !== undefined || patch.realOnly !== undefined)) {
+    if (patch && (patch.tags !== undefined || patch.bare !== undefined)) setScreen();
+    // Only space chosen on the bar: the options fold away, or the bar would never go.
+    if (patch && patch.bare === true && bar && bar.isOpen()) bar.setOpen(false);
+    if (patch && (patch.through !== undefined || patch.realOnly !== undefined || patch.bare !== undefined)) {
       wantLayers();
       if (!pictures && options.through.includes('deep')) {
         import('../scene/nebulae.js').then((m) => { pictures = m.PICTURE_FOR; poolCount = -1; }).catch(() => {});
@@ -776,7 +870,7 @@ export function createDrift(ctx, env = {}) {
 
   return {
     apply, start, stop, pause, resume, skip, setOptions,
-    state: () => ({ active, phase, options: { ...options, through: options.through.slice() }, place: place ? place.id : null, hood: place ? place.hood : null, visits, pool: pool.length, walk: walk ? walk.state() : null }),
+    state: () => ({ active, phase, options: { ...options, through: options.through.slice() }, place: place ? place.id : null, hood: place ? place.hood : null, visits, pool: pool.length, walk: walk ? walk.state() : null, flightMs: flightFor, bare: !!bareWas }),
     get active() { return active; },
   };
 }
