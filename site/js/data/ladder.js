@@ -107,7 +107,7 @@ export const WE_SHOW = [
     "layer": "deep-sky"
   },
   {
-    "what": "nearby galaxies drawn as points, or as lines where only a range of distance is known",
+    "what": "nearby galaxies drawn as points; the fainter grey-blue ones have only a range of distance, not a measured one",
     "n": 800,
     "of": "the 869 of the Updated Nearby Galaxy Catalog, all within about 36 million light-years; the Milky Way and the 68 in the row above are not drawn twice. Billions more lie farther out and are not drawn",
     "source": "Karachentsev, Makarov & Kaisina 2013, AJ 145, 101 (VizieR J/AJ/145/101)"

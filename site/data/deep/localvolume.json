@@ -123,7 +123,7 @@
  ],
  "uncertainty": {
   "measured": "the catalogue's error of the distance modulus (table6 e_DM); where there is none, 5 % for TRGB and 25 % for any other method (assumed; flag bit 1)",
-  "inferred": "drawn as a line along the sky direction from D - 2 Mpc (not nearer than D / 5) to D + 2 Mpc: the catalogue's section 2, 'their typical distance measurement error is ~2 Mpc'"
+  "inferred": "drawn as a fainter, wider grey-blue point at D; its range, from D - 2 Mpc (not nearer than D / 5) to D + 2 Mpc, is a line shown only for the one galaxy asked for: the catalogue's section 2, 'their typical distance measurement error is ~2 Mpc'"
  },
  "source": {
   "name": "Updated Nearby Galaxy Catalog (Karachentsev, Makarov & Kaisina 2013, AJ 145, 101)",

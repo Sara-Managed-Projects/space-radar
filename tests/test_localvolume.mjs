@@ -8,7 +8,8 @@
 //    only inferred (its group's, its velocity's) is drawn as a LINE over its range, never a point.
 //    No galaxy of the tile is a deep-sky record drawn twice, and nothing the map draws as a measured
 //    place lies past the horizon (data/cosmology.js horizonLy).
-// 2. THE LAYER (scene/deep/localvolume.js), with three.js and no GPU: two draw calls, culled whole by the
+// 2. THE LAYER (scene/deep/localvolume.js), with three.js and no GPU: one draw call (two while one range
+//    is shown), no line of range in a default view, fading as it shrinks, culled whole by the
 //    frustum and by its size on the screen, memory fixed.
 // 3. PRECISION, as tests/test_follow_steady.mjs measures it: what the GPU draws in float32 against what
 //    float64 says, in pixels, over 180 frames of a slow orbit, with the camera 1 million light-years from
@@ -74,7 +75,7 @@ for (let i = 0; i < tile.count; i++) {
   far = Math.max(far, g.hiMly);
 }
 check(bad === 0, `every galaxy has a unit direction, a distance inside its range and a known method (${bad} do not)`);
-check(inferred === T.lines && tile.count - inferred === T.points, `${inferred} galaxies with an inferred distance are lines, the other ${tile.count - inferred} points`);
+check(inferred === T.lines && tile.count - inferred === T.points, `the manifest counts ${inferred} galaxies with an inferred distance and ${tile.count - inferred} measured`);
 check(far < 200 && far < H, `the tile ends at ${far.toFixed(1)} million light-years: nothing near the horizon (${(H / 1000).toFixed(1)} billion)`);
 // Nothing drawn as a measured place past the horizon: the exotics (TON 618 the farthest) and the tile.
 for (const e of EXOTICS) check(!(Number(e.distLy) >= horizonLy()), `${e.name} is not past the horizon (${e.distLy} ly)`);
@@ -106,7 +107,22 @@ const look = (from, at) => { cam.position.set(...from); cam.up.set(0, 1, 0); cam
 look([0, 5, 30], [0, 0, 0]);
 layer.frame({ camera: cam, renderer, stage, gain: 1 });
 let s = layer.stats();
-check(s.culled === null && layer.group.visible && s.calls === BUDGETS.deep_localvolume_draw_calls, `from 30 Mly the tile is drawn in ${BUDGETS.deep_localvolume_draw_calls} calls (${s.calls}, culled ${s.culled}; registry/budgets.yaml deep_localvolume_draw_calls)`);
+check(s.culled === null && layer.group.visible && s.calls === 1 && s.inferred === inferred && s.rangeShown === -1, `from 30 Mly the tile is one draw call with no range drawn (${s.calls} calls, ${s.inferred} inferred as points, range ${s.rangeShown})`);
+{
+  // No line in a default view (review of #1182: 280 ranges read as streaks): every galaxy is a point, the
+  // inferred ones fainter, wider and grey-blue; a range only for the one asked for.
+  const lineObj = layer.group.children.find((o) => o.isLineSegments);
+  check(lineObj && !lineObj.visible, 'the range line is hidden by default');
+  const pts = layer.group.children.find((o) => o.isPoints);
+  check(pts && pts.geometry.getAttribute('position').count === tile.count, `every galaxy is a point (${pts && pts.geometry.getAttribute('position').count})`);
+  check(LV.INFERRED_LIGHT < 1 && LV.INFERRED_SIZE > 1 && LV.INFERRED_COLOUR.join() !== '0.95,0.95,1', 'an inferred galaxy is dimmer, wider and in its own swatch');
+  let k = -1; for (let i = 0; i < tile.count && k < 0; i++) if (LV.rowOf(tile, i).inferred) k = i;
+  check(layer.showRange(k) && lineObj.visible, 'one inferred galaxy\'s range can be shown');
+  layer.frame({ camera: cam, renderer, stage, gain: 1 });
+  check(layer.stats().calls === BUDGETS.deep_localvolume_draw_calls, `with a range shown the tile is ${BUDGETS.deep_localvolume_draw_calls} draw calls at most (registry/budgets.yaml deep_localvolume_draw_calls)`);
+  let m = -1; for (let i = 0; i < tile.count && m < 0; i++) if (!LV.rowOf(tile, i).inferred) m = i;
+  check(!layer.showRange(m) && !lineObj.visible && layer.showRange(-1) === false, 'a measured galaxy has no range line, and -1 clears it');
+}
 check(s.bytes > 0 && s.bytes < 100000, `its GPU attributes are fixed and small (${s.bytes} B)`);
 look([0, 0, 300], [0, 0, 600]);
 layer.frame({ camera: cam, renderer, stage, gain: 1 });
@@ -114,6 +130,16 @@ check(layer.stats().culled === 'frustum' && !layer.group.visible, `looking away 
 look([0, 0, 50000], [0, 0, 0]);
 layer.frame({ camera: cam, renderer, stage, gain: 1 });
 check(layer.stats().culled === 'size' && layer.stats().calls === 0, `from 50 billion light-years it is a speck and is not drawn (${layer.stats().culled}, ${layer.stats().radiusPx} px)`);
+// It fades out as it shrinks, never a pop: full from FADE_PX, none at CULL_PX, monotonic between.
+{
+  let mono = true;
+  for (let r = LV.CULL_PX; r < LV.FADE_PX + 5; r += 0.5) if (LV.tileFade(r + 0.5) < LV.tileFade(r)) mono = false;
+  check(LV.tileFade(LV.CULL_PX) === 0 && LV.tileFade(LV.FADE_PX) === 1 && LV.tileFade(1e6) === 1 && mono && LV.FADE_PX >= 8 * LV.CULL_PX, `the tile fades from ${LV.FADE_PX} px down to ${LV.CULL_PX} px, smoothly`);
+  look([0, 0, 4000], [0, 0, 0]);
+  layer.frame({ camera: cam, renderer, stage, gain: 1 });
+  const f = layer.stats();
+  check(f.culled === null && f.fade > 0 && f.fade < 1, `from 4 billion light-years it is drawn part-faded (${f.radiusPx} px, ${f.fade})`);
+}
 const g0 = layer.galaxy(0);
 check(g0 && g0.name && g0.method && g0.method.code && g0.method.words, 'each galaxy answers its name and its method in words');
 
@@ -198,4 +224,4 @@ if (problems.length) {
   console.error(`localvolume: ${problems.length} problem(s)\n  - ${problems.join('\n  - ')}`);
   process.exit(1);
 }
-console.log(`localvolume ok: ${tile.count} galaxies (${tile.count - inferred} points, ${inferred} lines of range), ${fileBytes} B with the manifest, two draw calls, culled by frustum and size; steady to ${STEADY_PX} px at 1 Mly, 1 Gly and 50 Gly; the wheel stops at 50 billion light-years`);
+console.log(`localvolume ok: ${tile.count} galaxies (${tile.count - inferred} points, ${inferred} inferred as fainter points, a range only on request), ${fileBytes} B with the manifest, one draw call, fading then culled by size, culled by frustum; steady to ${STEADY_PX} px at 1 Mly, 1 Gly and 50 Gly; the wheel stops at 50 billion light-years`);

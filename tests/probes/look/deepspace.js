@@ -261,7 +261,7 @@ const GROUPS = {
       for (const [name, d, note] of [
         ['19-one-gly', 1000, 'a billion light-years from the Sun'],
         ['20-horizon-46gly', 46500, 'at the 46.5 Gly shell'],
-        ['21-edge', 1.6e24 / 9.4607304725808e18, "the climb's edge (EDGE_KM, about 169 Gly)"],
+        ['21-edge', 1.6e24 / 9.4607304725808e18, "asked for the old edge (169 Gly): the wheel stops at the map's edge, 50 Gly (EDGE_KM since stage e)"],
       ]) {
         rig.flyTo({ targetScene: sun, distance: mly(d), ms: 0 });
         await snap(name, note);
@@ -334,10 +334,10 @@ const GROUPS_E = {
       // The local volume from 25 Mly, a little above the Sun's line to the Virgo direction, then from aside.
       const virgo = eqToScene(187.7, 12.4);
       rig.flyTo({ targetScene: sun, offset: unit(mix(neg(virgo), 1, { x: 0, y: 1, z: 0 }, 0.6)), distance: mly(25), ms: 0 });
-      out.e = { lv25: (await snap('23-local-volume-25mly', 'stage e: the local volume from 25 Mly: 520 measured galaxies as points, 280 inferred ones as lines of range')).deep };
+      out.e = { lv25: (await snap('23-local-volume-25mly', 'stage e: the local volume from 25 Mly: 520 measured galaxies as points, 280 inferred ones as fainter grey-blue points')).deep };
       out.e.state25 = cosmicState();
       rig.flyTo({ targetScene: sun, offset: unit(cross(virgo, { x: 0, y: 1, z: 0 })), distance: mly(12), ms: 0 });
-      await snap('24-local-volume-aside', 'stage e: the local volume from 12 Mly, looking across the line of sight: the lines are depth ranges');
+      await snap('24-local-volume-aside', 'stage e: the local volume from 12 Mly, across the line of sight: no streaks; a range only for one asked for');
       out.e.stateAside = cosmicState();
       // TON 618: chosen, as a search result is; met on this stage, a thousandth of its distance out.
       const ton = sr.recordById('exotic-ton-618');
