@@ -179,7 +179,7 @@ varying vec3 vView;
 void main() {
   float dMly = length(vView) / uScale;
   float nearFade = smoothstep(1.5, 5.0, dMly);
-  gl_FragColor = vec4(vColour * (0.16 * vWeight * vWeight * nearFade * uGain), 1.0);
+  gl_FragColor = vec4(vColour * (0.1 * vWeight * vWeight * vWeight * nearFade * uGain), 1.0);
 }`;
 
 async function fetchTile(base) {
