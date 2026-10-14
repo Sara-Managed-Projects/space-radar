@@ -1493,7 +1493,14 @@ const DSO_DRAWN = {
     drawnName: 'Andromeda, as a model of her own measured shape',
     departure: 'tilted as measured, 77\u00b0 with the north-west edge nearest; her bulge, disc, ' +
       'ring and dust rings follow published measurements, her arms\u2019 exact shape and her stars ' +
-      'are ours: points standing for light, not a map of her stars',
+      'are ours: points standing for light, not a map of her stars. Not yet reviewed by an astronomer',
+  },
+  // The Triangulum Galaxy, a model of its own shape since spec 0075 stage d (registry/deepsky-heroes/m33.yaml).
+  m33: {
+    drawsAs: 'variant',
+    drawnName: 'the Triangulum Galaxy, as a model of its measured shape',
+    departure: 'tilted 56\u00b0 as measured, with NGC 604 where it is; its arms and stars are ours. ' +
+      'Not yet reviewed by an astronomer',
   },
   // ANDROMEDA'S TWO BRIGHT COMPANIONS (public #385). They were two unnamed dots beside her: the
   // Messier table calls them "Andromeda Satellite #1" and "#2", which is nobody's name for them,

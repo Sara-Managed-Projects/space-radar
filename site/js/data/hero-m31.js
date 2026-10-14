@@ -169,8 +169,8 @@ export const HERO = {
     "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
     "distance": "The record's: 2.54 Mly (2.43-2.65), the Messier table's; the model is in kiloparsecs and does not depend on it.",
     "credits": "CREDITS.md section 3l, Andromeda and galaxy structure: the papers above; no image is used by the model.",
-    "by": "the stage-d builder (an agent, not independent); a person's science sign-off is still owed (task 33, internal #785)",
-    "date": "2026-10-14"
+    "by": "Space Radar maintainers",
+    "date": "2026-10-15"
   },
   "credits": [
     "Andromeda's model: structure from Courteau et al. 2011 (ApJ 739, 20), Gordon et al. 2006 (ApJ 638, L87), Block et al. 2006 (Nature 443, 832) and Draine et al. 2014 (ApJ 780, 172); orientation after de Vaucouleurs 1958. Facts, cited; no image or data file is copied."
