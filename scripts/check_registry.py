@@ -4126,7 +4126,7 @@ WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
 WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches",
-                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail", "polar-vortex"}
+                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail", "polar-vortex", "cirrus"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4332,6 +4332,23 @@ def check_weather(world_ids: set, layers: list) -> list:
                 fail(where, "a generated cloud texture is illustrative: not one streak of it was observed")
             if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):
                 fail(where, f"`{world}` has no zonal-flow row: the detail is carried by the measured wind and has none to follow")
+            if not r.get("why"):
+                fail(where, "no `why:` -- say why it can be no better than generated")
+        # Neptune's high cirrus (2026-10-14): streaks at measured latitudes, width and height, each
+        # one generated, so illustrative; carried by a measured wind, so only where there is one.
+        if r.get("kind") == "cirrus":
+            ci = r.get("cirrus") or {}
+            bands = ci.get("bands") or []
+            if not (all(is_number(ci.get(k)) and ci.get(k) > 0 for k in ("from_share", "height_km", "width_km", "radius_km"))
+                    and 1 <= len(bands) <= 4 and all(isinstance(b, list) and len(b) == 4 and all(is_number(x) for x in b)
+                                                     and -90 < b[0] < 90 and 0 < b[1] <= 10 and 1 <= b[2] <= 64 and 0 < b[3] <= 1 for b in bands)):
+                fail(where, "cirrus needs from_share, height_km, width_km, radius_km and one to four bands [latitude, half-height up to 10 deg, streaks round 1 to 64, cover 0 to 1]")
+            if "widen" in ci and not (is_number(ci.get("widen")) and 1 <= ci.get("widen") <= 20):
+                fail(where, "cirrus `widen` is how many times wider and higher than measured it is drawn: 1 to 20")
+            if cls != "illustrative":
+                fail(where, "generated streaks are illustrative: not one of them was observed")
+            if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):
+                fail(where, f"`{world}` has no zonal-flow row: the streaks ride the measured wind and have none to follow")
             if not r.get("why"):
                 fail(where, "no `why:` -- say why it can be no better than generated")
         if r.get("kind") == "hexagon":

@@ -441,9 +441,7 @@ export function planFlight(hop) {
   const forTurn = Math.max((1.5 * swings[0] * degS) / (early[1] - early[0]), late ? (1.5 * swings[1] * degS) / (late[1] - late[0]) : 0) * 1000;
   const wanted = Math.max(FLIGHT_MS[0], forZoom, forTurn);
   const ms = Math.round(Math.min(FLIGHT_MOST_MS, wanted) * pace.flight);
-  const at = (raw) => {
-    const x = raw > 0 ? (raw < 1 ? raw : 1) : 0;
-    if (x >= 1) return { pan: 1, distance: w1, dir: d1 };
+  const curve = (x) => {
     const r = travel * glide(x);
     let dir = null;
     if (legs) {
@@ -453,7 +451,152 @@ export function planFlight(hop) {
     }
     return { pan: Math.min(1, panAt(r) / whole), distance: top / Math.cosh(r + r0), dir };
   };
-  return { ms, travel, over: Math.max(forZoom, forTurn) / Math.min(FLIGHT_MOST_MS, wanted), swings, at };
+  const bend = legs && line ? bendRound(hop.body, curve, line, sep, BEND_SHARE * (COMFORT.turnDeg * Math.PI / 180) * (ms / 1000), hop.up) : null;
+  const at = (raw) => {
+    const x = raw > 0 ? (raw < 1 ? raw : 1) : 0;
+    if (x >= 1) return { pan: 1, distance: w1, dir: d1 };
+    const p = curve(x);
+    return bend ? { ...p, dir: bend(x, p) } : p;
+  };
+  return { ms, travel, over: Math.max(forZoom, forTurn) / Math.min(FLIGHT_MOST_MS, wanted), swings, bent: bend ? bend.most : 0, at };
+}
+
+/**
+ * A THIRD BODY ON THE WAY (internal #756; measured 2026-10-14: 3 of 240 random hops put the camera
+ * through the Earth, and the rig's keep-out shoved it round, unpaced). The curve knows the two
+ * places; the rig knows the world it keeps out of (`hop.body`: its centre from the look-at point the
+ * flight leaves, and the keep-out radius). So the plan walks its own curve before the flight, and
+ * wherever the camera would come within BODY_AIR of that sphere it BENDS ROUND IT: the side the
+ * camera looks from is turned away from the body, round one axis, by just enough. The bend
+ * comes on and goes off at a fifth of COMFORT.turn (a tent round each frame that needs it), is
+ * nothing at both ends (the two framings are exact) and leaves the distance and the look-at point
+ * alone, so the pacing of the scale and the pan is the same flight's.
+ *
+ * Why a turn and not a higher apex: the camera crosses the Earth while it pulls back from a craft
+ * on the near side of it, looking down past its limb; raising the top of the curve pulls it back
+ * faster through the same ray. Turning the ray off the globe is the one change that cannot cross.
+ *
+ * Returns null when nothing on the way needs it, else bend(x, point) -> dir, with `most` the
+ * largest turn it adds, radians.
+ */
+export const BODY_AIR = 0.05;
+/**
+ * The bend comes on and goes off at this share of COMFORT.turn: the curve's own swing may be turning
+ * at the bound in the same seconds, and the two add (measured: a bend at the full rate made 44
+ * degrees a second on a hop whose swing was at 24).
+ */
+export const BEND_SHARE = 0.2;
+const BEND_SAMPLES = 1200;
+function bendRound(body, curve, line, sep, perX, up) {
+  const c = body && body.at;
+  const R = Number(body && body.radius);
+  if (!c || !(R > 0) || !(perX > 0)) return null;
+  const N = BEND_SAMPLES;
+  const cross = (a, b) => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x });
+  // Rodrigues: v turned by e round a unit axis.
+  const turn = (v, axis, e) => {
+    const ce = Math.cos(e);
+    const se = Math.sin(e);
+    const ax = cross(axis, v);
+    const ad = dot(axis, v) * (1 - ce);
+    return { x: v.x * ce + ax.x * se + axis.x * ad, y: v.y * ce + ax.y * se + axis.y * ad, z: v.z * ce + ax.z * se + axis.z * ad };
+  };
+  const away = (p) => mix(c, 1, line, -sep * p.pan); // from the look-at point to the body's centre
+  const gap = (p, dir) => { const q = mix(away(p), 1, dir, -p.distance); return Math.hypot(q.x, q.y, q.z); };
+  // The frames that come too near, with the air each wants: none at the two framings (they are where
+  // the app put them), BODY_AIR between, and a step's own length on top (a camera coming down fast
+  // crosses a small sphere between two samples).
+  const near = [];
+  let was = null;
+  let worst = null;
+  for (let i = 1; i < N; i++) {
+    const x = i / N;
+    const p = curve(x);
+    if (!p.dir) { was = null; continue; }
+    const here = mix(line, sep * p.pan, p.dir, p.distance);
+    const step = was ? Math.hypot(here.x - was.x, here.y - was.y, here.z - was.z) : 0;
+    was = here;
+    const S = R * (1 + BODY_AIR * Math.min(1, 10 * x, 10 * (1 - x))) + step;
+    const g = gap(p, p.dir);
+    if (g >= S) continue;
+    near.push({ i, p, S });
+    if (!worst || g / S < worst.g) worst = { g: g / S, p, x };
+  }
+  if (!near.length) return null;
+  // ONE AXIS for the whole bend, chosen where the camera comes nearest: it moves the camera off
+  // the body square to the way the camera is going past it, toward the side it would miss it on
+  // anyway (over it, for a camera headed straight at it). Turned round an axis that follows the body
+  // frame by frame, the side swings round when the camera passes the line to the body's centre
+  // (measured: 47 degrees a second for a bend of one degree); turned along its own way past, the
+  // bend only moves the moment it comes nearest.
+  const k = unit(up) || { x: 0, y: 0, z: 1 };
+  const at = (x) => { const p = curve(Math.max(0, Math.min(1, x))); return p.dir ? mix(line, sep * p.pan, p.dir, p.distance) : null; };
+  const before = at(worst.x - 1 / N);
+  const after = at(worst.x + 1 / N);
+  const here = mix(at(worst.x) || c, 1, c, -1); // from the body's centre to the camera
+  const way = before && after ? unit(mix(after, 1, before, -1)) : null;
+  const square = (v) => (way ? unit(mix(v, 1, way, -dot(v, way))) : unit(v));
+  const miss = square(here) || square(k) || square({ x: 1, y: 0, z: 0 }) || square({ x: 0, y: 1, z: 0 });
+  const dir0 = worst.p.dir;
+  const axis = unit(cross(dir0, miss)) || unit(cross(dir0, k)) || { x: 1, y: 0, z: 0 };
+  // How far round the axis each frame must turn, at least `from`: the least turn that clears it.
+  const clear = (p, S, from) => {
+    if (gap(p, turn(p.dir, axis, from)) >= S) return from;
+    let lo = from;
+    let hi = Math.PI / 2;
+    if (gap(p, turn(p.dir, axis, hi)) < S) return hi;
+    for (let n = 0; n < 40; n++) { const mid = (lo + hi) / 2; if (gap(p, turn(p.dir, axis, mid)) >= S) hi = mid; else lo = mid; }
+    return hi;
+  };
+  const need = new Float64Array(N + 1);
+  for (const f of near) need[f.i] = clear(f.p, f.S, 0);
+  // The tent: on and off at most `perX` radians per unit of the flight, never under what is needed,
+  // and nothing at the two ends. The tent turns frames that were clear as well, and may turn one
+  // into the body: those are asked again, with what they now turn by, until none is.
+  const extra = new Float64Array(N + 1);
+  const air = new Float64Array(N + 1);
+  const frames = [];
+  was = null;
+  for (let i = 0; i <= N; i++) {
+    const p = curve(i / N);
+    const here = p.dir ? mix(line, sep * p.pan, p.dir, p.distance) : null;
+    const step = was && here ? Math.hypot(here.x - was.x, here.y - was.y, here.z - was.z) : 0;
+    was = here;
+    frames.push(p);
+    air[i] = R * (1 + BODY_AIR * Math.min(1, 10 * (i / N), 10 * (1 - i / N))) + step;
+  }
+  let most = 0;
+  for (let round = 0; round < 6; round++) {
+    extra.fill(0);
+    for (let j = 1; j < N; j++) {
+      if (!(need[j] > 0)) continue;
+      const reach = Math.ceil((need[j] / perX) * N);
+      for (let i = Math.max(0, j - reach); i <= Math.min(N, j + reach); i++) extra[i] = Math.max(extra[i], need[j] - (perX * Math.abs(i - j)) / N);
+    }
+    most = 0;
+    for (let i = 0; i <= N; i++) {
+      extra[i] = Math.max(need[i], Math.min(extra[i], perX * (i / N), perX * (1 - i / N)));
+      most = Math.max(most, extra[i]);
+    }
+    let again = false;
+    for (let i = 1; i < N; i++) {
+      const p = frames[i];
+      if (!p.dir || !(extra[i] > need[i])) continue;
+      if (gap(p, turn(p.dir, axis, extra[i])) >= air[i]) continue;
+      need[i] = clear(p, air[i], extra[i]);
+      again = true;
+    }
+    if (!again) break;
+  }
+  const bend = (x, p) => {
+    if (!p.dir) return p.dir;
+    const f = Math.max(0, Math.min(N, x * N));
+    const i = Math.min(N - 1, Math.floor(f));
+    const e = extra[i] + (extra[i + 1] - extra[i]) * (f - i);
+    return e > 0 ? unit(turn(p.dir, axis, e)) || p.dir : p.dir;
+  };
+  bend.most = most;
+  return bend;
 }
 
 /**

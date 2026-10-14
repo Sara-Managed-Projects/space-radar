@@ -280,6 +280,32 @@ effects:
     why: "As Jupiter's. Voyager 2 saw streaks of bright cloud and little else; the texture is faint and streaky."
 
 
+  # NEPTUNE'S HIGH CIRRUS (2026-10-14, spec 0073 requirement 5). Voyager 2 photographed bright streaks
+  # of methane cloud standing over Neptune's deck near the terminator, each with its shadow beside
+  # it: NASA's caption (PIA00058, "Neptune Clouds Showing Vertical Relief", read 2026-10-14) gives
+  # "a latitude of 29 degrees north near Neptune's east terminator", "The width of the cloud streaks
+  # range from 50 to 200 kilometers", shadows "30 to 50 kilometers wide", and "Cloud heights appear
+  # to be of the order of 50 kilometers". `bands` is [latitude, half-height (deg), streaks round,
+  # cover]: 29 N is that picture's; 27 S, 42 S and 70 S are where Voyager's other bright clouds
+  # were (the Great Dark Spot's southern companion, the "Scooter", the south polar features;
+  # Smith et al. 1989). The streaks are drawn `widen` times wider and higher than that width and
+  # height (`width_km`, the middle of the range; `height_km`), so the shadow sits beside its cloud
+  # as in Voyager's picture: at their true width they were 2 px on the whole disc and read as
+  # hairline scratches (the look of 2026-10-14). The card says by how much.
+  # From `from_share` of half the view (scene/weather/flow.js nearShare). Each streak is GENERATED.
+  - id: neptune-cirrus
+    world: neptune
+    kind: cirrus
+    class: illustrative
+    off_at: [tier0, save_data]
+    measured: hidden
+    source:
+      name: "NASA/JPL, Neptune Clouds Showing Vertical Relief (Voyager 2, August 1989; PIA00058: streaks at 29 N, 50 to 200 km wide, about 50 km above the deck); Smith et al. 1989, Voyager 2 at Neptune: imaging science results, Science 246, 1422"
+      url: "https://science.nasa.gov/photojournal/neptune-clouds-showing-vertical-relief"
+      read: 2026-10-14
+    cirrus: {from_share: 0.15, height_km: 50, width_km: 120, widen: 6, radius_km: 24622, bands: [[29, 3, 7, 0.9], [-27, 2.5, 5, 0.6], [-42, 2.5, 4, 0.7], [-70, 2, 5, 0.5]]}
+    why: "Neptune's bright clouds come and go in days and nothing watches them now. Their latitudes are Voyager's and their width and height Voyager's times `widen`; each streak, where it is along its band and its length are ours, and they ride the measured winds."
+
   - id: saturn-bands
     world: saturn
     kind: zonal-flow

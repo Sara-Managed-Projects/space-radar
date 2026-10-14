@@ -214,6 +214,14 @@
   border-color: var(--sr-ember);
 }
 
+/* --- room for a waiting caption under What to show, on a phone (#757) --------------------------
+   The panel drops from the top bar to the foot of the screen; while a step waits beside it, it is
+   shorter by the caption's height (ui/onboarding.js room()), scrolls, and the caption sits under it. */
+
+html.sr-phone.sr-tour-room #sr-show {
+  max-height: calc(100dvh - var(--sr-top-y) - var(--sr-top-bar) - var(--sp-6) - var(--sr-tour-room));
+}
+
 /* --- the first visit's line ------------------------------------------------------------------- */
 
 .sr-tour__invite {

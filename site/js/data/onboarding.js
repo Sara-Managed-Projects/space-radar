@@ -100,6 +100,21 @@ export const STEPS = [
     "then": "wait"
   },
   {
+    "id": "drift",
+    "teaches": "drift",
+    "hooks": [
+      "drift"
+    ],
+    "say": "Play on its own lets the map wander, from thing to thing.",
+    "ask": "Press it to see Drift, which flies until you take over.",
+    "awaits": "press",
+    "then": "wait",
+    "prepare": [
+      "home",
+      "sheet"
+    ]
+  },
+  {
     "id": "trips",
     "teaches": "trips",
     "hooks": [
@@ -127,6 +142,7 @@ export const VOICE = {
     "places": 6.2,
     "layers": 6.01,
     "share": 5.37,
+    "drift": 7.02,
     "trips": 5.18
   }
 };

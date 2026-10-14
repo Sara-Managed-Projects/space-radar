@@ -131,7 +131,8 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
   const main = read('site/js/main.js');
   check(/setEarthCloudHeight\(earthMesh\(\), \{ tier, off: plan\.stripped \|\| cloudsSaveData \}\)/.test(main) && /const cloudsSaveData = shouldSaveData\(nav\.connection\);/.test(main), 'main.js tells it the tier, the latch\'s removals and saveData');
   check(/setEarthAirQuality\(earthMesh\(\), 0, true\); setEarthCloudHeight\(earthMesh\(\), \{ off: true \}\);/.test(main), 'and the latch');
-  check(/setLook: \(mode\) => \{ lookMeasured = mode === 'measured'; setEarthCloudHeight\(meshes\.get\('earth'\), \{ look: mode \}\); \}/.test(read('site/js/scene/worlds.js')), 'scene/worlds.js tells it the look');
+  // setLook also calls dressFace, after it has told the clouds the look.
+  check(/setLook: \(mode\) => \{ lookMeasured = mode === 'measured'; setEarthCloudHeight\(meshes\.get\('earth'\), \{ look: mode \}\);/.test(read('site/js/scene/worlds.js')), 'scene/worlds.js tells it the look');
   // The tiles wear the same shader with the globe's own uniform objects.
   const T = await import(join(ROOT, 'site/js/scene/tiles.js'));
   check(T.earthTileFragment().includes('uCloudPar') && T.earthTileVertex().includes('vCamL'), 'the Earth\'s close-up tiles carry the same search');

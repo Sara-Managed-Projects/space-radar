@@ -31,7 +31,9 @@
 // this option also takes what is drawn in the scene and is not the sky or a body: every layer's
 // dots and icons, the orbit of the selection, its ground track and its path, the planets' orbits,
 // the constellation figures, the shells and marks of the far rungs, the rings and labels of a star
-// system. NOTHING IS SWITCHED OFF: no layer setting is touched. Each frame, after the scene has
+// system, and what is laid on the Earth (a data map, the aurora, the lightning, an eclipse's path on
+// the ground: EARTH_DRAPES; and the lines the Earth's shader draws round the Moon's shadow, while the
+// shadow itself, which is light, stays). NOTHING IS SWITCHED OFF: no layer setting is touched. Each frame, after the scene has
 // placed everything and before it is drawn, bareFrame() hides those objects for that frame (main.js
 // calls ctx.bareFrame when there is one), and what each was is kept, so leaving the option, or the
 // drift, puts every one back as it was. The models (scene/heroes.js) ask whether a LAYER is on, not
@@ -64,6 +66,15 @@ export const ROOT_CLASS = 'sr-drift';
 export const BARE_CLASS = 'sr-drift--bare';
 /** What a star system's stage draws that is not a body (scene/systems.js, scene/systemextras.js). */
 const SYSTEM_LINES = /^systems:(ring:|mercury|zone|scale:|label)/;
+/**
+ * What is laid on the Earth and is not the Earth (internal #756): a data map the visitor chose
+ * (scene/earthoverlay.js, the wind, the currents), the aurora, the lightning and an eclipse's path
+ * on the ground. Their modules decide `visible` themselves, some only when something changes, so
+ * these are not hidden by `visible` (a value kept from the first frame could be stale by the time it
+ * is put back): their layer mask is cleared, which the renderer reads and nothing of ours writes,
+ * and the mask is all that is put back.
+ */
+export const EARTH_DRAPES = /^(earth:(overlay|wind|currents)|earth-aurora|earth-lightning|eclipse-path)$/;
 /** The remembered choices, in this browser only. */
 export const STORE_KEY = 'sr:drift';
 /** The bar goes this long after the pointer last moved, and the pointer with it. */
@@ -310,6 +321,8 @@ export function createDrift(ctx, env = {}) {
   let hurried = 0;          // how many stays running were left early as a dot (aDot)
   let peekAt = 0;           // when this stay is looked at once (PEEK_MS after arriving); 0: already was
   let bareWas = null;       // while only space is on: what each hidden object's `visible` was
+  const masksWas = new Map(); // and what each object laid on the Earth had as its layer mask
+  const uniformsWas = new Map(); // and the eclipse's edge lines on the Earth's shader
 
   function readStored() {
     try { return JSON.parse((storage && storage.getItem(STORE_KEY)) || 'null'); } catch { return null; }
@@ -625,7 +638,23 @@ export function createDrift(ctx, env = {}) {
       if (top) for (const o of top) if (o.name === 'shells') hide(o);
       const system = ctx.systems && ctx.systems.group;
       if (system && system.visible) for (const o of system.children) if (SYSTEM_LINES.test(o.name || '')) hide(o);
+      const earth = ctx.worlds && typeof ctx.worlds.meshFor === 'function' ? ctx.worlds.meshFor('earth') : null;
+      if (earth && earth.children) for (const o of earth.children) if (EARTH_DRAPES.test(o.name || '')) unseen(o);
+      // The Moon's shadow is the Earth's own light and stays; the two lines its shader draws round
+      // the umbra and the penumbra are marks (seen on a runner, 2026-10-15: a ring over Greenland).
+      const lines = earth && earth.material && earth.material.uniforms && earth.material.uniforms.uEclipseLines;
+      if (lines) { if (!uniformsWas.has(lines)) uniformsWas.set(lines, lines.value); lines.value = 0; }
     } catch { /* a layer that is not built yet has nothing to hide */ }
+  }
+
+  /** Not drawn by any camera, `visible` left to its module: every mask in it kept, then cleared. */
+  function unseen(o) {
+    if (!o) return;
+    if (o.layers && typeof o.layers.mask === 'number') {
+      if (!masksWas.has(o)) masksWas.set(o, o.layers.mask);
+      o.layers.mask = 0;
+    }
+    for (const child of o.children || []) unseen(child);
   }
 
   function setBare(on) {
@@ -643,6 +672,10 @@ export function createDrift(ctx, env = {}) {
     if (ctx.bareFrame === bareFrame) delete ctx.bareFrame;
     if (root) root.classList.remove(BARE_CLASS);
     for (const [o, visible] of was) o.visible = visible;
+    for (const [o, mask] of masksWas) o.layers.mask = mask;
+    masksWas.clear();
+    for (const [u, value] of uniformsWas) u.value = value;
+    uniformsWas.clear();
     // The dots are placed and shown again on the next frame, by the rule that always decided it; the
     // selection's orbit is built again (its line only knows its own record); the deep-sky marks
     // follow the quality, as main.js has them.

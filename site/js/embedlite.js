@@ -39,6 +39,7 @@ import { createGlyphLayer } from './scene/glyphs.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { litOffset } from './scene/framing.js';
 import { LAYERS, loadLayer } from './data/layers.js';
+import { satIdOf } from './data/catnum.js';
 import * as sources from './data/sources.js';
 import { createLabels } from './ui/labels.js';
 import { createHud } from './ui/hud.js';
@@ -72,8 +73,8 @@ export function liteTarget(search) {
   if (keys.length !== 1 || keys[0] !== 'at') return null; // a trip, a stage, a moment: the full app
   const at = String(link.at).toLowerCase();
   if (WORLD_IDS.has(at)) return { kind: 'world', id: at };
-  const m = /^(?:sat-)?(\d{1,9})$/.exec(at);
-  return m ? { kind: 'station', id: `sat-${Number(m[1])}` } : null;
+  const id = satIdOf(at); // data/catnum.js: a catalogued number only, Alpha-5 read
+  return id ? { kind: 'station', id } : null;
 }
 
 export async function bootLite() {
