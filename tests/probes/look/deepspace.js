@@ -297,7 +297,7 @@ const BLOCKS = {
   c: ['lmcHeroOn', 'lmc', 'tarantula', 'flight', 'lmcOrbit', 'lmcInside', 'r136', 'lmcFlightFrames', 'lmcHeroOff'],
 
   // d. Andromeda and galaxy structure (#789): face-on-ish, the edge-on approach, M33.
-  d: [],
+  d: ['galaxies'],
 
   // e. cosmic scale (#790): scenes 17-21 again with the local volume, the horizon and the 50 Gly edge.
   e: [],
@@ -504,7 +504,60 @@ const GROUPS_C = {
 };
 
 // d. the galaxies' groups go in this object.
-const GROUPS_D = {};
+// Andromeda from her own model (scene/deep/spiral.js): below the hero's threshold (galaxy.js's far copy),
+// half way through the photograph's hand-over, face-on-ish, edge on far and near, then M33. Each scene
+// writes how much the photograph, the hero and the far copy draw, and Andromeda's radius on screen.
+const andromedaNow = () => {
+  const far = sr.galaxy && sr.galaxy.andromeda ? sr.galaxy.andromeda() : null;
+  const st = sr.deep ? sr.deep.stats() : null;
+  const hero = st ? st.heroes.find((h) => h.id === 'm31') : null;
+  const m33 = st ? st.heroes.find((h) => h.id === 'm33') : null;
+  return { far, hero, m33, rPx: sr.deep ? sr.deep.radiusPx('dso-m31') : null, rPxM33: sr.deep ? sr.deep.radiusPx('dso-m33') : null };
+};
+const discAxesScene = () => {
+  const node = sr.galaxy && sr.galaxy.group ? sr.galaxy.group.children.find((c) => c.name === 'galaxy:andromeda') : null;
+  if (!node) return null;
+  node.updateMatrixWorld();
+  const e = node.matrixWorld.elements;
+  return { major: unit({ x: e[0], y: e[1], z: e[2] }), across: unit({ x: e[4], y: e[5], z: e[6] }), normal: unit({ x: e[8], y: e[9], z: e[10] }) };
+};
+const snapD = async (name, note, settle) => { const row = await snap(name, note, settle); row.andromeda = andromedaNow(); return row; };
+const GROUPS_D = {
+  galaxies: async () => {
+    if (!(await need('dso-m31'))) return;
+    const ly = (n) => n * LY_KM / sr.stage.unitKm;
+    if (sr.galaxy && sr.galaxy.andromedaReady) await sr.galaxy.andromedaReady();
+    const arrival = rig.state.distance;
+    // 1. Off her line and small: the far copy (below the hero's 180 px), her true size at 1.2 Mly.
+    turn(Math.PI / 2);
+    rig.flyTo({ distance: ly(1200000), ms: 0 });
+    await snapD('d1-m31-small-turned90', 'Andromeda 1.2 Mly away, 90 degrees off our line: the far copy of her own model, at her true size');
+    // 2. On our line, close enough that her photograph is half way through handing over to the model.
+    rig.flyTo({ azimuth: rig.state.azimuth - Math.PI / 2, distance: ly(34000), ms: 0 });
+    await snapD('d2-m31-crossover', 'on our line, 34 000 ly from her centre: the photograph half faded, the model taking the rest');
+    rig.flyTo({ distance: arrival, ms: 0 });
+    turn(Math.PI / 6);
+    await snapD('d3-m31-turned30', 'Andromeda turned 30 degrees: photograph and model sharing her, the same pose');
+    const ax = discAxesScene();
+    if (ax) {
+      // 4. Face-on-ish: 20 degrees from her axis, at the arrival distance.
+      rig.flyTo({ offset: unit(mix(ax.normal, Math.cos(20 * Math.PI / 180), ax.major, Math.sin(20 * Math.PI / 180))), distance: arrival, ms: 0 });
+      await snapD('d4-m31-faceonish', 'Andromeda 20 degrees from face on (nobody has seen her so): bulge, ring, arms and dust');
+      // 5. Edge on, then closer along the same line: the dust line across the bulge.
+      rig.flyTo({ offset: ax.across, distance: arrival, ms: 0 });
+      await snapD('d5-m31-edgeon', 'Andromeda exactly edge on: the dust line through the bulge');
+      rig.flyTo({ offset: unit(mix(ax.across, 1, ax.normal, 0.12)), distance: ly(90000), ms: 0 });
+      await snapD('d6-m31-edgeon-near', 'the edge-on approach, 90 000 ly from her centre, a little above the plane');
+    } else out.problems.push('no far copy of Andromeda (scene/galaxy.js) to read her axes from');
+    // 7. M33: arrival (the photograph), turned 60 degrees (the model), close.
+    if (!(await need('dso-m33'))) return;
+    await snapD('d7-m33-arrival', 'the Triangulum Galaxy as the app frames it on arrival (its photograph)');
+    turn(Math.PI / 3);
+    await snapD('d8-m33-turned60', 'M33 turned 60 degrees: the model, looser and more face on than Andromeda');
+    pull(0.35);
+    await snapD('d9-m33-close', 'M33, turned, a third of the distance: flocculent arms, H II regions, NGC 604');
+  },
+};
 
 // e. cosmic scale's groups go in this object.
 const GROUPS_E = {};
@@ -527,6 +580,7 @@ const POSES = {
   'DS-06': ['lmcHeroOn', 'lmc', 'lmcOrbit', 'lmcInside'], 'DS-07': ['lmcHeroOn', 'tarantula', 'r136', 'lmcFlightFrames'],
 
   // d.
+  'DS-09': ['m31', 'galaxies'], 'stage-d': ['m31', 'milkyway', 'galaxies'],
 
   // e.
 

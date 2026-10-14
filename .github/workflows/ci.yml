@@ -589,6 +589,8 @@ jobs:
         run: node tests/test_dso.mjs
       - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
         run: node tests/test_galaxy.mjs
+      - name: galaxies from their own structure - Andromeda and M33 as heroes, the disc foreshortens as the camera circles (spec 0075 stage d)
+        run: node tests/test_hero_spiral.mjs
       - name: heavy builds run a step a turn; the Milky Way is built in pieces and prewarmed (internal 549)
         run: node tests/test_spread.mjs
       - name: the sky sphere and the 3D stars lie in one frame (internal 549, #387)

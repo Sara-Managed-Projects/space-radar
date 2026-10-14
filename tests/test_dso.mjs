@@ -91,7 +91,7 @@ check(findMatches(index, 'ngc 4039').hits.some((h) => h.record.id === 'dso-anten
 check(findMatches(index, 'ring nebula').hits[0]?.record.id === 'dso-m57', `"ring nebula" still finds M57 before the Southern Ring (${findMatches(index, 'ring nebula').hits[0]?.record.id})`);
 check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiades" finds M45');
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
-check(/our own galaxy/.test(drawingLine(andromeda)) && /not been mapped/.test(drawingLine(andromeda)), `Andromeda says it is drawn from our galaxy's model, and that its arms are not its own: ${drawingLine(andromeda)}`);
+check(/her own measured shape/.test(drawingLine(andromeda)) && /not a map of her stars/.test(drawingLine(andromeda)) && !/our own galaxy/.test(drawingLine(andromeda)), `Andromeda says she is drawn from a model of her own shape, not our galaxy's, and that its stars are not hers (spec 0075 stage d): ${drawingLine(andromeda)}`);
 const pleiades = recs.find((r) => r.id === 'dso-m45');
 check(typeof drawingLine(pleiades) === 'string' && drawingLine(pleiades).includes('soft glow'), `every other deep-sky object is a soft glow: ${drawingLine(pleiades)}`);
 

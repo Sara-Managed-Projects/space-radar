@@ -599,7 +599,7 @@ export const LAYERS = [
     nearKm: 0,
     card: 'dso',
     priority: 63,
-    sentence: 'Our own galaxy, drawn as a model of its published measurements, and the same model moved, scaled and tilted to stand in for Andromeda. The shapes are illustrations; the stars around you are measured.',
+    sentence: 'Our own galaxy, drawn as a model of its published measurements; Andromeda beside it is a model of her own. The shapes are illustrations; the stars around you are measured.',
   },
   {
     // Black holes and other extremes (spec 0028 step 7). Mirrors registry/layers.yaml `exotics`;
