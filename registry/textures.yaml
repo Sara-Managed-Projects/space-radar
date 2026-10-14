@@ -488,7 +488,7 @@ textures:
         source: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.lbl (read 2026-10-14)"
         original: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.tif"
         make: "scripts/build-textures.py venus-relief: the 8192 x 4096 grid (metres from a 6051 km sphere; 8.3 % of it no data, filled from its edges) by the mean of 4 x 4 blocks to 2048 x 1024, the relief broader than 12 degrees taken out, the rest clipped to +-3000 m (0.47 % of the map is beyond it) and written as one grey channel with 128 as level ground, WebP 80"
-        limits: "Magellan's altimeter footprint is 10 to 30 km and the grid 4.6 km a pixel; here 18.6 km a texel, so nothing narrower than some 40 km has a slope; drawn 8 times steeper and taller than measured"
+        limits: "Magellan's altimeter footprint is 10 to 30 km and the grid 4.6 km a pixel; here 18.6 km a texel, so nothing narrower than some 40 km has a slope; drawn 6 times steeper and taller than measured"
   - id: saturn
     world: saturn
     slot: map

@@ -482,7 +482,7 @@ export function castShadow(heightAt, tanSun, steps) {
 
 /**
  * A relief row's heights for the cast shadow: its own `height` map (Mars), or, with `height.self`,
- * the local-relief map it already wears read as heights (Mercury, Venus's radar ground: 2026-10-14).
+ * the local-relief map it already wears read as heights (Venus's radar ground, 2026-10-14).
  * A local-relief map is the height less its broad swells, which is what a low Sun's shadow is
  * made of: a crater rim stands over its floor, not over the planet's mean. Null without one. Pure.
  */
@@ -493,27 +493,16 @@ export function heightRowOf(r) {
 }
 
 /**
- * THE WORLDS AS FILMS, the last four (2026-10-14, spec 0073 requirement 5).
- *
- * MERCURY'S SHADOWS. Mercury has no air: what is out of the Sun is black, and every MESSENGER
- * picture near the terminator is crater floors full of night. Its relief map (MESSENGER's elevation
- * model, `mercury-relief`) is marched for cast shadows as Mars's heights are, at the same
- * exaggeration as its slopes (RELIEF_STEEP), and a shadow takes all but `depth` of the direct
- * light. No new file: the march reads the map the slopes already read.
- */
-export const MERCURY_SHADOW = { depth: 0.97 };
-
-/**
  * VENUS'S GROUND, BY RADAR (registry/textures.yaml `venus-surface`, `venus-relief`;
  * scripts/build-venus-ground.py). The radar map is one channel -- a radar echo has no colour --
  * worn with `tint` (linear light: the build's old orange, 0xd8924c, over its own largest channel, so the
  * ground is drawn exactly as the orange map drew it, and the card says the colour is added).
  * Under it, Magellan's altimeter heights as local relief: slopes, and shadows marched as Mercury's,
  * drawn `exaggeration` times what was measured. At 18.6 km a texel the true slopes of even Maxwell
- * Montes light nothing a screen can show. A shadow takes `depth` of the direct light, not all of it: at 0.85
- * the first look (2026-10-14) drew the ground at the terminator as black blots.
+ * Montes light nothing a screen can show. A shadow takes `depth` of the direct light, not all of it: at 0.85 and
+ * eight times, the first look (2026-10-14) drew the ground at the terminator as black blots.
  */
-export const VENUS_GROUND = { tint: [1, 0.419, 0.105], exaggeration: 8, depth: 0.6, rangeM: 3000 };
+export const VENUS_GROUND = { tint: [1, 0.419, 0.105], exaggeration: 6, depth: 0.6, rangeM: 3000 };
 /** The relief row worn under the radar face (scene/worlds.js reliefWanted). */
 export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rangeM: VENUS_GROUND.rangeM, steep: VENUS_GROUND.exaggeration, mono: true, height: { self: true, depth: VENUS_GROUND.depth } };
 
@@ -582,9 +571,7 @@ export const WORLDS = [
     // `mercury-relief` says how it was made), fetched with the map on a tier-1 device and up, and
     // drawn RELIEF_STEEP times steeper than measured: at 7.5 km a texel a crater wall's slope is
     // averaged down to a few degrees, which lights nothing. The card says the factor.
-    // `height.self` (2026-10-14, MERCURY_SHADOW): the same map marched toward the Sun for the shadows
-    // a low Sun throws into its craters. `mono`: one channel on the GPU, as the budget counts it.
-    look: { map: '2k_mercury_messenger.webp', tint: 0x848383, rough: 0.45, relief: { map: '2k_mercury_relief.webp', px: 2048, rangeM: 2500, steep: RELIEF_STEEP, mono: true, height: { self: true, depth: MERCURY_SHADOW.depth } } },
+    look: { map: '2k_mercury_messenger.webp', tint: 0x848383, rough: 0.45, relief: { map: '2k_mercury_relief.webp', px: 2048, rangeM: 2500, steep: RELIEF_STEEP } },
   },
   // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb
   // (#318). `air` names a scene/atmosphere.js ATMO_PARAMS row (spec 0054 task 3): Mars, Venus and

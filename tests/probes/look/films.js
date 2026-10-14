@@ -81,8 +81,10 @@ for (const id of ['mercury', 'venus', 'uranus', 'neptune']) {
       const wx = e[0] * lx + e[4] * ly + e[12], wy = e[1] * lx + e[5] * ly + e[13], wz = e[2] * lx + e[6] * ly + e[14];
       const toArc = unit({ x: wx - mesh.position.x, y: wy - mesh.position.y, z: wz - mesh.position.z });
       const lit2 = Math.sign(nn.x * s.x + nn.y * s.y + nn.z * s.z) || 1;
-      rig.flyTo({ targetScene: centre(), offset: unit(mix(toArc, 1, nn, 0.7 * lit2)), distance: R * 4.5, ms: 0 });
-      await shot('neptune-8-arcs', 'neptune: over the part of the Adams ring where Voyager\'s five arcs are drawn, from the lit face, Film', 9000);
+      // From a quarter turn round the ring and a little above it, so the arcs stand at the side of
+      // the planet and not under the camera (the first try of 2026-10-14 had them out of the frame).
+      rig.flyTo({ targetScene: centre(), offset: unit(mix(unit(cross(nn, toArc)), 1, nn, 0.3 * lit2)), distance: R * 5.5, ms: 0 });
+      await shot('neptune-8-arcs', 'neptune: the part of the Adams ring where Voyager\'s five arcs are drawn, seen from a quarter turn round, Film', 9000);
       setLook('measured');
       await shot('neptune-9-arcs-measured', 'neptune: the same, Measured (the arcs are illustrative in place and not drawn)', 6000);
       setLook('film');

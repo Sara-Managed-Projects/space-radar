@@ -1,5 +1,5 @@
 // tests/test_worlds_films.mjs -- the last four worlds made films (spec 0073 requirement 5, 2026-10-14):
-//   1. MERCURY casts shadows marched in the relief map it already wears: no second file, black.
+//   1. MERCURY is left as it was (its shadows were tried and were not clearer than its slopes).
 //   2. VENUS's radar ground is one channel worn in an added colour, with Magellan's relief under it
 //      (and only under it), and the cloud deck's wind does not carry it; its ultraviolet bands are
 //      the Film look's alone.
@@ -16,7 +16,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const W = await import(join(JS, 'scene/worlds.js'));
-const { WORLDS, WORLD_FRAG, RING_FRAG, createWorlds, worldRecords, heightRowOf, terrainUniforms, MERCURY_SHADOW, VENUS_GROUND, VENUS_UV, URANUS_CAP, NEPTUNE_SPOT, NEPTUNE_ARCS, NEPTUNE_RINGS, arcTurnRad, arcUniform } = W;
+const { WORLDS, WORLD_FRAG, RING_FRAG, createWorlds, worldRecords, heightRowOf, terrainUniforms, VENUS_GROUND, VENUS_GROUND_RELIEF, VENUS_UV, URANUS_CAP, NEPTUNE_SPOT, NEPTUNE_ARCS, NEPTUNE_RINGS, arcTurnRad, arcUniform } = W;
 const WW = await import(join(JS, 'scene/weather/worldweather.js'));
 const { WEATHER } = await import(join(JS, 'data/weather.js'));
 const { TEXTURES } = await import(join(JS, 'data/textures.js'));
@@ -38,20 +38,14 @@ const worlds = createWorlds(new THREE.Scene(), {
 const n = (re) => fetched.filter((u) => re.test(u)).length;
 const U = (id) => worlds.meshFor(id).material.uniforms;
 
-// ---- 1. Mercury --------------------------------------------------------------------------------------
+// ---- 1. Mercury: unchanged (the look of 2026-10-14 found its marched shadows no clearer than its slopes) --
 {
-  const r = row('mercury').look.relief;
-  const h = heightRowOf(r);
-  check(r.height.self && h.px === r.px && h.minM === -r.rangeM && h.maxM === r.rangeM && h.depth === MERCURY_SHADOW.depth, 'Mercury marches its own relief map as heights: +-rangeM, its own width');
-  check(MERCURY_SHADOW.depth >= 0.95, 'and a shadow on an airless world is all but black');
-  check(near(terrainUniforms(h, 2439.7, 8, r.steep).march[3], MERCURY_SHADOW.depth, 1e-9) && terrainUniforms({ px: 1, minM: 0, maxM: 1 }, 1, 8).march[3] === W.MARS_RELIEF.depth, 'the depth is the row\'s, and Mars keeps its own');
-  worlds.preload('mercury');
-  check(n(/mercury/) === 1, 'nothing is fetched for Mercury before a tier is known (a phone gets the map and nothing else)');
+  check(!row('mercury').look.relief.height, 'Mercury marches no shadows: at 7.5 km a texel they were not clearer than its slopes (look of 2026-10-14)');
+  const h = heightRowOf(VENUS_GROUND_RELIEF);
+  check(h.px === 2048 && h.minM === -VENUS_GROUND.rangeM && h.maxM === VENUS_GROUND.rangeM && h.depth === VENUS_GROUND.depth, 'a relief map read as its own heights: +-rangeM, its own width, its row\'s shadow depth');
+  check(near(terrainUniforms(h, 6051.8, 8, 6).march[3], VENUS_GROUND.depth, 1e-9) && terrainUniforms({ px: 1, minM: 0, maxM: 1 }, 1, 8).march[3] === W.MARS_RELIEF.depth, 'the depth is the row\'s, and Mars keeps its own');
   worlds.setReliefTier(1);
   worlds.setRelief(true);
-  check(worlds.castsShadows('mercury') === 8 && U('mercury').uHeightMap.value === U('mercury').uGlobeRelief.value, 'tier 1: eight steps, read from the map the slope reads');
-  check(n(/mercury_relief/) === 1 && n(/mercury.*height/) === 0, 'one relief file, no height file');
-  check(U('mercury').uGlobeRelief.value.format === THREE.RedFormat, 'one channel on the GPU, as the budget counts it');
 }
 
 // ---- 2. Venus ----------------------------------------------------------------------------------------
@@ -155,7 +149,6 @@ const U = (id) => worlds.meshFor(id).material.uniforms;
 {
   const rec = Object.fromEntries(worldRecords().map((r) => [r.id, r]));
   const dep = (id) => (rec[id] && rec[id].meta && rec[id].meta.departure) || '';
-  check(/shadows/.test(dep('mercury')) && /black/.test(dep('mercury')), 'Mercury\'s card says its shadows are drawn, too long and black');
   check(dep('venus').includes(`${VENUS_UV.gain} times the contrast`) && /ultraviolet/.test(dep('venus')) && /Measured look shows the map as it is/.test(dep('venus')) && dep('venus').includes(`${VENUS_GROUND.exaggeration} times steeper`), 'Venus\'s card says the bands are the Film look\'s and how strong, and the ground\'s exaggeration');
   check(/1989/.test(dep('neptune')) && /not computed/.test(dep('neptune')), 'Neptune\'s card says the arcs are as Voyager saw them and not where they are');
   const also = COPY.weather.also;
@@ -175,4 +168,4 @@ if (problems.length) {
   for (const p of problems) console.error('  - ' + p);
   process.exit(1);
 }
-console.log('worlds films ok: Mercury\'s craters throw black shadows from the map they already wear; Venus\'s radar ground is one channel in an added colour, in relief, still under the moving clouds, and its ultraviolet bands are Film\'s alone; Uranus wears Hubble\'s cap of 2025 in the north only; Neptune\'s 1989 spot leaves under Measured, its arcs turn at the measured rate in Film only, and its cirrus is illustrative; every card says so');
+console.log('worlds films ok: Venus\'s radar ground is one channel in an added colour, in relief, still under the moving clouds, and its ultraviolet bands are Film\'s alone; Uranus wears Hubble\'s cap of 2025 in the north only; Neptune\'s 1989 spot leaves under Measured, its arcs turn at the measured rate in Film only, and its cirrus is illustrative; every card says so');

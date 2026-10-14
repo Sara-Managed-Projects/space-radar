@@ -128,10 +128,9 @@ const X = MARS_RELIEF.exaggeration;
   worlds.setRelief(true);
   check(worlds.castsShadows('mars') === 16 && n(r.height.map) === 2, 'a tier that may wears them again');
   check(worlds.releaseMap('mars') && !worlds.hasRelief('mars') && worlds.castsShadows('mars') === 0, 'giving the map back gives both back');
-  // Mercury (2026-10-14, tests/test_worlds_films.mjs): its slope, and shadows marched in the same
-  // map (`height.self`), so no second file is fetched.
+  // Mercury is as it was: a slope and no shadow.
   worlds.preload('mercury');
-  check(worlds.hasRelief('mercury') && worlds.castsShadows('mercury') === 16 && fetched.filter((x) => /mercury/.test(x) && /height/.test(x)).length === 0, 'Mercury keeps its slope and casts shadows from the same map, fetching no height map');
+  check(worlds.hasRelief('mercury') && worlds.castsShadows('mercury') === 0, 'Mercury keeps its slope and casts nothing: it has no height map');
   check(worlds.meshFor('moon').material.uniforms.uTerrain.value.x === 0, 'and the Moon has neither');
 }
 

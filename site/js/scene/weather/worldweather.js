@@ -341,8 +341,22 @@ float wxStreaks( vec2 uv, float tau ) {
 }
 // The streaks over the deck, and their shadows on it: the deck at this point is shaded by whatever
 // streak stands uWxCirrus.x radii up on the line to the Sun, which is h / tan(elevation) sunward.
+// Both copies of the flow only while they cross-fade; one otherwise (the second's weight is 0 most of a cycle).
+float wxStreaks2( vec2 uv ) {
+  float a = uWxPhase.z < 1.0 ? wxStreaks( uv, uWxPhase.x ) : 0.0;
+  float b = uWxPhase.z > 0.0 ? wxStreaks( uv, uWxPhase.y ) : 0.0;
+  return mix( a, b, uWxPhase.z );
+}
 vec3 wxCirrus( vec3 c, vec2 uv ) {
-  float cloud = mix( wxStreaks( uv, uWxPhase.x ), wxStreaks( uv, uWxPhase.y ), uWxPhase.z );
+  // Nothing to do away from every band and the reach of its shadow (at most ${CIRRUS.maxArcRad} rad, 0.02 of v):
+  // the frametime look of 2026-10-14 had Neptune close up half again as slow before this.
+  bool nearBand = false;
+  for ( int i = 0; i < ${CIRRUS_SLOTS}; i++ ) {
+    vec4 b = uWxCirrusBand[ i ];
+    if ( b.w > 0.0 && abs( uv.y - b.x ) < b.y + 0.025 ) nearBand = true;
+  }
+  if ( !nearBand ) return c;
+  float cloud = wxStreaks2( uv );
   vec3 q = normalize( vPosL );
   float mu = dot( q, vSunL );
   float shade = 0.0;
@@ -352,7 +366,7 @@ vec3 wxCirrus( vec3 c, vec2 uv ) {
     if ( l > 1e-4 ) {
       vec3 qs = normalize( q + hz / l * min( uWxCirrus.x * l / mu, ${CIRRUS.maxArcRad.toFixed(3)} ) );
       vec2 us = vec2( 0.5 + atan( -qs.z, qs.x ) / 6.2831853, 0.5 + asin( clamp( qs.y, -1.0, 1.0 ) ) / 3.14159265 );
-      shade = mix( wxStreaks( us, uWxPhase.x ), wxStreaks( us, uWxPhase.y ), uWxPhase.z );
+      shade = wxStreaks2( us );
     }
   }
   c *= 1.0 - uWxCirrus.w * ${CIRRUS.shadow.toFixed(2)} * shade;
