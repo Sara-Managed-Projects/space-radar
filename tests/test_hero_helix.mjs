@@ -212,6 +212,16 @@ const g = H.geometryOf();
   check(!hero.group.parent, 'disposed: out of the scene');
 }
 
+// --- 5b. the card: a shipped hero names its source after "What is drawn" -----------------------------
+{
+  await import(join(JS, 'copy/en.later.js'));
+  const C = await import(join(JS, 'ui/cardfacts.js'));
+  const line = C.honestyClause({ id: 'dso-helix-nebula', klass: 'dso', meta: { kind: 'nebula', drawn: ['photograph'], heroDrawn: ['reconstruction'], heroId: 'helix' } }, {});
+  check(/a 3D reconstruction from a published study/.test(line) && /O’Dell, McCullough and Meixner \(2004\)/.test(line), `the card names the reconstruction and its paper (${line})`);
+  const plain = C.honestyClause({ id: 'dso-helix-nebula', klass: 'dso', meta: { kind: 'nebula', drawn: ['photograph'] } }, {});
+  check(!/O’Dell/.test(plain), 'and an unshipped hero adds nothing to it');
+}
+
 // --- 6. the knots: at their measured radii, seeded --------------------------------------------------
 {
   const n = 2400;
