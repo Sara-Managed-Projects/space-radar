@@ -781,23 +781,25 @@ export function createHero(THREE, env = {}) {
     frame(info = {}) {
       const camera = info.camera;
       if (!camera) return;
-      const q = info.quality || { tier: 1 };
+      // The quality and the selection are env functions (the coordinator's own); the tier, gain and photo come with the frame.
+      const q = (typeof env.quality === 'function' && env.quality()) || info.quality || { tier: Number.isFinite(info.tier) ? info.tier : 1 };
       if (loaded && builtTier === null) build(Number.isFinite(q.tier) ? q.tier : 1);
       if (orientedFor !== stage.worldId) orient();
       group.updateMatrixWorld(true);
       const unit = frameGroup.matrixWorld.getMaxScaleOnAxis();
-      const photoOf = typeof info.photoOf === 'function' ? info.photoOf : () => 0;
-      const photo = Math.min(1, Math.max(0, Number(photoOf('dso-lmc')) || 0));
+      const photoOf = typeof env.pictureShare === 'function' ? env.pictureShare : typeof info.photoOf === 'function' ? info.photoOf : () => 0;
+      const photo = Math.min(1, Math.max(0, Number(Number.isFinite(info.photo) ? info.photo : photoOf('dso-lmc')) || 0));
       const photoT = Math.min(1, Math.max(0, Number(photoOf(TARANTULA)) || 0));
       const look = info.look || 'film';
       const noisy = drawnUnder(look, UNDER_MEASURED.noise) ? 1 : 0;
       const noise = noisy ? noiseTexture(THREE, q.tier >= 1 ? 64 : 32) : null;
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
       // The drawing buffer's height and a pixel's angle (points are sized in device pixels).
-      let hDev = 900;
+      // The drawing buffer: the renderer's when handed in, else the window's (the governor may scale it a little).
+      let hDev = typeof innerHeight === 'number' ? innerHeight * (typeof devicePixelRatio === 'number' ? devicePixelRatio : 1) : 900;
       if (info.renderer && info.renderer.getDrawingBufferSize) hDev = info.renderer.getDrawingBufferSize(_size).y || hDev;
       const fovY = ((camera.fov || 45) * D2R) / (camera.zoom || 1);
-      const dpr = info.renderer && info.renderer.getPixelRatio ? info.renderer.getPixelRatio() : 1;
+      const dpr = info.renderer && info.renderer.getPixelRatio ? info.renderer.getPixelRatio() : typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
       for (const m of mats) { m.uniforms.uPhoto.value = photo; m.uniforms.uGain.value = gain; }
       // The photograph's stretch as nebulae.js applies it, for the exposure the gain says (Eye 0.55, Camera 1, Deep 1.7).
       const ex = exposureLook(gain < 0.8 ? 'eye' : gain > 1.3 ? 'deep' : 'camera');
@@ -834,7 +836,7 @@ export function createHero(THREE, env = {}) {
       camIn(nebMesh, camera, nebMat.uniforms.uCamObj.value);
       const dT = nebMat.uniforms.uCamObj.value.length() * tarR; // object units
       const rT = dT > tarR ? (Math.asin(tarR / dT) / (fovY / 2)) * (hDev / Math.max(1, dpr) / 2) : Infinity;
-      const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: Math.min(rT, 1e4), selected: info.selectedId === TARANTULA });
+      const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: Math.min(rT, 1e4), selected: (typeof env.selectedId === 'function' ? env.selectedId() : info.selectedId) === TARANTULA });
       nebMat.uniforms.uSteps.value = Math.max(8, Math.min(48, rT < 24 ? 8 : own || 8)); // never under 8: fewer showed the noise as grain
       nebMat.uniforms.uNoiseAmp.value = noise ? noisy : 0;
       nebMat.uniforms.uNoise.value = noise || nebMat.uniforms.uNoise.value;

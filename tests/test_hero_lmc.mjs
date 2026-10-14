@@ -209,7 +209,7 @@ const maps = L.readMaps(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.by
   await import(join(JS, 'copy/en.later.js'));
   const w = COPY.deepLmc;
   check(w && w.rows && w.rows['dso-lmc'] && w.rows['dso-tarantula-nebula'], 'the card carries the distance caveats for both');
-  check(w && w.drawnWords && w.drawnWords['dso-lmc'] && w.drawnWords['dso-lmc'].model, 'and says what the model is built from');
+  check(w && w.card && /photograph and Gaia/.test(w.card.lmc), "and says what the model is built from (stage b's card[heroId] sentence)");
   for (const id of ['dso-lmc', 'dso-tarantula-nebula']) check(w.rows[id].some(([k, v]) => /not yet been reviewed by an astronomer/.test(v)), `${id}'s card says the model has not yet been reviewed by an astronomer`);
 }
 

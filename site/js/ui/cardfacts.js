@@ -973,10 +973,10 @@ export function honestyClause(record, m) {
   // the most three-dimensional thing first (spec 0075 task 6, data/deepsky.js drawnOf).
   if (klassOf(record) === 'dso') {
     const F = COPY.deepFacts;
-    // (stage c) A hero may say what its own drawing is (its words block's drawnWords, per record).
-    const own = md.heroCopy && COPY[md.heroCopy] && COPY[md.heroCopy].drawnWords ? COPY[md.heroCopy].drawnWords[record.id] || {} : {};
-    const words = drawnOf(record).slice(0, 2).map((c) => own[c] || F.drawnWords[c]).filter(Boolean);
-    return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) : null;
+    const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
+    // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
+    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 
   // An event from EONET is one point and one date; say both, when it was read, and the publisher's caveat.

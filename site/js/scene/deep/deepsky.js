@@ -194,7 +194,8 @@ export function createDeepSky(THREE, env = {}) {
     h.loading = Promise.resolve().then(() => h.def.build()).then((mod) => {
       h.mod = mod;
       const rec = env.recordById ? env.recordById(h.def.record) : null;
-      h.hero = mod.createHero(THREE, { profile: h.profile, record: rec, gas });
+      // (stage c) quality, selectedId and pictureShare as functions: the LMC reads the Tarantula's photograph and the selection.
+      h.hero = mod.createHero(THREE, { profile: h.profile, record: rec, gas, quality: env.quality, selectedId: env.selectedId, pictureShare: env.pictureShare });
       group.add(h.hero.group);
       placeHero(h);
     }).catch((e) => console.warn('deep: hero', h.def.id, 'did not load', e)).finally(() => { pending.delete(h.loading); h.loading = null; });
@@ -241,7 +242,7 @@ export function createDeepSky(THREE, env = {}) {
       if (h.stamped || !h.profile) continue;
       const rec = env.recordById ? env.recordById(h.def.record) : null;
       if (!rec) continue;
-      if (h.profile.shipped && Array.isArray(h.profile.drawn) && rec.meta) rec.meta.heroDrawn = h.profile.drawn.slice();
+      if (h.profile.shipped && Array.isArray(h.profile.drawn) && rec.meta) { rec.meta.heroDrawn = h.profile.drawn.slice(); rec.meta.heroId = h.def.id; }
       h.stamped = true;
     }
     // Heroes: shipped (or forced), near enough to fetch, at most two drawn.
@@ -262,9 +263,8 @@ export function createDeepSky(THREE, env = {}) {
         const steps = lv >= 3 ? marchSteps({ tier: q.tier, top: q.top, latched: q.latched, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: rp, selected: selectedId === h.def.record }) : 0;
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);
         if (share > 0) {
-          // (stage c) A hero also gets the quality, the exposure's gain, the selection, the renderer and
-          // the photographs' shares, so it can fill what a photograph's frame cuts off (lmc.js).
-          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, quality: q, gain, selectedId, renderer: info.renderer, frameMs: info.frameMs, photoOf: env.pictureShare || null });
+          // photo: its photograph's share now (a hero gives way to it on its line); tier and gain: the device's tier, the exposure.
+          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, photo: env.pictureShare ? env.pictureShare(h.def.record) || 0 : 0, tier: q.tier, gain });
           drawnHeroes += 1;
           heroIds.add(h.def.record);
           // (stage c) Its children are drawn by it (the Tarantula by the LMC): no holder of their own, and
@@ -356,6 +356,8 @@ export function createDeepSky(THREE, env = {}) {
     pathFor,
     drawnOf: (record) => { const h = record ? heroOfRecord(record.id) : null; return drawnClasses(record, h ? h.profile : null); },
     hero: (id) => { const h = heroes.get(id); return h ? { id, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level } : null; },
+    /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
+    heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) m.set(h.def.record, fader.share(`hero:${h.def.id}`)); return m; },
     ready,
     whenReady(ms = 20000) {
       const until = Date.now() + ms;

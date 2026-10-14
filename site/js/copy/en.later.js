@@ -1719,11 +1719,9 @@ Object.assign(COPY, {
 
   // c. The LMC and the Tarantula (stage c, internal #788) writes only inside this block.
   deepLmc: {
-    // What the card says is drawn for the LMC and the Tarantula once their model is drawn (ui/cardfacts.js
-    // honestyClause), in place of the general words for a model.
-    drawnWords: {
-      'dso-lmc': { model: 'a model of it from its photograph and Gaia’s counts of its own stars, tilted as measured' },
-      'dso-tarantula-nebula': { model: 'a model of its glowing gas round the cluster R136, at its catalogue size' },
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause, stage b's `card[heroId]` hook).
+    card: {
+      lmc: 'This model is built from its photograph and Gaia’s counts of its own stars, tilted as measured.',
     },
     // The distance caveats: rows under "Distance found by" on the card.
     rows: {
