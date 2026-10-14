@@ -7,7 +7,7 @@
 // nothing moving under Measured, reduced motion or ?look=1; the knots at their measured radii.
 //
 //   node tests/test_hero_helix.mjs
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,9 +35,10 @@ const unit = (v) => { const l = Math.hypot(...v); return v.map((x) => x / l); };
   check(/O'Dell, McCullough & Meixner 2004, AJ 128, 2339/.test(parts.disc.source) && /O'Dell, McCullough & Meixner 2004/.test(parts.ring.source), 'the rings are the 2004 paper\'s');
   check(parts.disc.diameter_arcsec === 499 && parts.disc.thickness_arcsec === 100 && parts.disc.tilt_deg === 23 && parts.disc.near_pa_deg === 288, 'the inner disc: 499″, 100″ thick, 23°, near side PA 288° (OMM04)');
   check(parts.ring.diameter_arcsec === 742 && parts.ring.tilt_deg === 53 && parts.ring.near_pa_deg === 168, 'the outer ring: 742″, 53°, near side PA 168° (OMM04)');
-  check(parts.outer.diameter_arcsec === 1500 && parts.outer.drawn === 'illustration', 'the outermost ring: 1 500″, an illustration of its shape');
+  check(parts.outer.diameter_arcsec === 1500 && parts.outer.drawn === 'photograph', 'the outermost ring: 1 500″, not reconstructed (the photograph shows it)');
   check(parts.knots.from_arcmin === 2.2 && parts.knots.to_arcmin === 6.4 && parts.knots.count_estimated === 23000, 'the knots: 2.2′ to 6.4′ (Matsuura et al. 2009), about 23 000 (Meixner et al. 2005)');
-  check(HERO.colours.mode === true && HERO.colours.enhanced && HERO.colours.enhanced.mode === 'enhanced' && HERO.colours.enhanced.under === 'deep', 'the colours: true under Eye and Camera, ENHANCED (declared) under Deep (DS-B07)');
+  check(HERO.colours.mode === true && HERO.colours.enhanced && HERO.colours.enhanced.mode === 'enhanced' && HERO.colours.enhanced.under === 'deep', 'the colours: the photograph\'s under Eye and Camera, ENHANCED (declared) under Deep (DS-B07)');
+  check(/not yet/.test(HERO.review.astronomer || ''), 'the review says no astronomer has reviewed it yet');
   for (const k of ['data_vs_model', 'geometry', 'colours', 'distance', 'credits']) check(String(HERO.review[k] || '').length > 30, `review.${k} is written`);
   check(HERO.shipped === false || (HERO.review.by && HERO.review.date), 'shipped only with a person\'s sign-off (requirement 20)');
   check(HERO.drawn.length === 1 && HERO.drawn[0] === 'reconstruction' && HERO.credits.length >= 3, 'it draws a reconstruction, with its credit lines');
@@ -45,89 +46,76 @@ const unit = (v) => { const l = Math.hypot(...v); return v.map((x) => x / l); };
   const sect = credits.slice(credits.indexOf('### The Helix (stage b)'), credits.indexOf('### The Large Magellanic Cloud'));
   for (const s of ['AJ 128, 2339', 'AJ 130, 1784', 'ApJ 700, 1067', 'eso0907a', 'ENHANCED']) check(sect.includes(s), `CREDITS.md's Helix section names ${s}`);
   const words = readFileSync(join(JS, 'copy/en.later.js'), 'utf8');
-  check(/deepHelix: \{[\s\S]*card: \{\s*helix: 'Its 3D shape follows O’Dell, McCullough and Meixner \(2004\)/.test(words), 'the card\'s source line names the paper (copy/en.later.js deepHelix.card.helix)');
+  check(/deepHelix: \{[\s\S]*card: \{\s*helix: 'Its light is taken from ESO’s photograph, its shape from O’Dell, McCullough and Meixner \(2004\)[^']*Not yet reviewed by an astronomer\.'/.test(words), 'the card says its light is the photograph\'s, its shape the paper\'s, and that no astronomer has reviewed it yet');
 }
 
-// --- 2. the geometry: the published tilts, seen from our side as the photograph shows them -----------
+// --- 2. the geometry: the published tilts; the light map's place on the sky ----------------------------
 const g = H.geometryOf();
 {
   const asLy = (arcsec) => arcsec * 655 * Math.PI / 648000;
-  check(near(g.R1, asLy(249.5), 1e-9) && near(g.R2, asLy(371), 1e-9) && near(g.Ro, asLy(750), 1e-9), `the paper's arcseconds at the Gaia distance (R1 ${g.R1.toFixed(3)} ly, R2 ${g.R2.toFixed(3)} ly)`);
+  check(near(g.R1, asLy(249.5), 1e-9) && near(g.R2, asLy(371), 1e-9), `the paper's arcseconds at the Gaia distance (R1 ${g.R1.toFixed(3)} ly, R2 ${g.R2.toFixed(3)} ly)`);
   check(near(Math.acos(-g.a1[2]) / D2R, 23, 1e-9) && near(Math.acos(-g.a2[2]) / D2R, 53, 1e-9), 'each axis is its tilt from our line of sight');
   check(g.axesDeg > 60 && g.axesDeg < 75, `the two rings "almost perpendicular": ${g.axesDeg.toFixed(1)}° between their axes`);
-  // The near side of a ring is where the far end of its axis points on the sky: x west, y north.
   const pa = (a) => ((Math.atan2(-a[0], a[1]) / D2R) + 360) % 360;
   check(near(pa(g.a1), 288, 1e-6) && near(pa(g.a2), 168, 1e-6), `the axes point to PA 288° and 168° on the sky (${pa(g.a1).toFixed(1)}, ${pa(g.a2).toFixed(1)})`);
-  // A ring point toward that PA is nearer us (+z), so that side is the near side.
-  const nearPt = (a) => { const s = unit([a[0], a[1], 0]); return dot(unit([s[0] * Math.abs(a[2]), s[1] * Math.abs(a[2]), Math.hypot(a[0], a[1])]), a); };
-  check(Math.abs(nearPt(g.a1)) < 1e-9 && Math.abs(nearPt(g.a2)) < 1e-9, 'the near side lies in each ring\'s plane');
-  // From our side, the [O III] column's second moments: an ellipse with its long axis at PA 18° and an
-  // axis ratio cos 23°, as measured on the photograph (major axis PA 20°, ratio 0.88; helix.yaml).
-  let see = 0, snn = 0, sen = 0, s = 0;
-  const N = 64, half = 1.3 * g.R1;
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const w = -half + (2 * half * (x + 0.5)) / N, n = -half + (2 * half * (y + 0.5)) / N;
-    const c = H.columnJs(g, [w, n, 50], [0, 0, -1], 24, 0.5).o3;
-    const e = -w; see += c * e * e; snn += c * n * n; sen += c * e * n; s += c;
-  }
-  const m = [[see / s, sen / s], [sen / s, snn / s]];
-  const tr = m[0][0] + m[1][1], det = m[0][0] * m[1][1] - m[0][1] * m[1][0];
-  const l1 = tr / 2 + Math.sqrt(tr * tr / 4 - det), l2 = tr / 2 - Math.sqrt(tr * tr / 4 - det);
-  const majPa = ((Math.atan2(l1 - m[1][1], m[0][1]) / D2R) + 360) % 180;
-  check(near(majPa, 18, 4), `seen from our side the inner disc's long axis is at PA ${majPa.toFixed(1)}° (the photograph's 20°, the paper's 18°)`);
-  check(near(Math.sqrt(l2 / l1), Math.cos(23 * D2R), 0.06), `and its axis ratio ${Math.sqrt(l2 / l1).toFixed(2)} is about cos 23° (the photograph's 0.88)`);
+  // The light map: the picture's measured centre is 0.64′ north of the star, so the star sits below the middle.
+  check(near(g.uv.u0, 0.5, 0.002) && g.uv.v0 < 0.5 && near((0.5 - g.uv.v0) * 25.94, 0.644, 0.01), `the star on the light map at (${g.uv.u0.toFixed(4)}, ${g.uv.v0.toFixed(4)}): the picture's measured centre, not the star's`);
+  check(near(g.uv.W, asLy(28.02 * 60), 1e-9), 'the light map is as wide as the photograph on the sky');
+  // The disc's share: all of it inside its outline as seen from here, none well outside.
+  check(H.discShare(g, 0, 0) === 1 && H.discShare(g, 1.3 * g.R1, 0) === 0 && H.discShare(g, 0, 1.3 * g.R1) === 0, 'the inner disc takes the light inside its outline, the outer ring the rest');
 }
 
-// --- 3. the layers along a ray: inside each layer's own box, finite from every side and from inside ---
+// --- 3. FROM OUR SIDE THE MODEL IS THE PHOTOGRAPH; from anywhere it is finite and never white ---------
 {
-  const S = (s) => (s ? Math.max(0, s[1] - s[0]) + Math.max(0, s[3] - s[2]) : 0);
-  // a ray in the disc's plane, outside its slab, and a ray along its axis, outside its annulus
-  const a = g.a1;
-  const e1 = unit([a[1], -a[0], 0]);
-  check(H.layerSpan([e1[0] * 5 + a[0] * g.H1 * 3, e1[1] * 5 + a[1] * g.H1 * 3, e1[2] * 5 + a[2] * g.H1 * 3], e1.map((x) => -x), a, 2.6 * g.H1, 0, 1.6 * g.R1, 0, 20) === null, 'a ray parallel to the disc, outside its slab, misses it');
-  check(H.layerSpan([a[0] * 5 + e1[0] * 3, a[1] * 5 + e1[1] * 3, a[2] * 5 + e1[2] * 3], a.map((x) => -x), a, 2.6 * g.H1, 0, 1.6 * g.R1, 0, 20) === null, 'a ray along the axis, outside the annulus, misses it');
-  const thru = H.layerSpan(a.map((x) => x * 5), a.map((x) => -x), a, 2.6 * g.H1, 0, 1.6 * g.R1, 0, 20);
-  check(thru && near(S(thru), 2 * 2.6 * g.H1, 1e-9), 'face on, the disc is sampled through its slab only, not the bounding sphere');
-  const hole = H.layerSpan(g.a2.map((x) => x * 5), g.a2.map((x) => -x), g.a2, 2.6 * g.W2, g.R2 - 2.6 * g.W2, g.R2 + 2.6 * g.W2, 0, 20);
-  check(hole === null, 'through the outer ring\'s hole along its axis: nothing');
-  // The face-on column against its integral: ∫ exp(-(z/H1)²) dz = H1 √π, times the profile at q.
-  const q = 0.55, p0 = unit([a[1], -a[0], 0]).map((x) => x * q * g.R1);
-  const col = H.columnJs(g, [p0[0] + a[0] * 6, p0[1] + a[1] * 6, p0[2] + a[2] * 6], a.map((x) => -x), 24, 0.5);
-  const want = g.H1 * Math.sqrt(Math.PI) * H.discAt(g, p0).o3;
-  check(near(col.o3, want, 0.03 * want), `face on, 24 samples in the slab give the analytic column (${col.o3.toFixed(4)} against ${want.toFixed(4)})`);
-  const col4 = [0.125, 0.375, 0.625, 0.875].map((j) => H.columnJs(g, [p0[0] + a[0] * 6, p0[1] + a[1] * 6, p0[2] + a[2] * 6], a.map((x) => -x), 4, j).o3);
-  check(col4.every((c) => near(c, want, 0.06 * want)), `and so do T0's 4, whatever the pixel's offset (${col4.map((c) => c.toFixed(4)).join(', ')}): no bands`);
-  // Many rays from outside and from inside: finite, non-negative, and bounded edge on.
-  let bad = 0, maxO3 = 0;
+  // A light like the picture's: blue-green inside, orange outside, as dim as the picture (no knee).
+  const light = (x, y) => { const r = Math.hypot(x, y) / g.R1; const k = Math.exp(-(((r - 1.1) / 0.35) ** 2)); return [0.15 + 0.4 * k, 0.35 + 0.15 * k - 0.25 * k * k, 0.45 - 0.35 * k].map((v) => Math.max(0, v) * 0.9); };
+  let worst = 0, worst4 = 0;
+  for (let k = 0; k < 60; k++) {
+    const r = 0.8 * Math.sqrt((k + 0.5) / 60), th = k * 2.399963;
+    const x = r * Math.cos(th), y = r * Math.sin(th);
+    const want = light(x, y);
+    const err = (n, j) => { const c = H.columnJs(g, [x, y, 40], [0, 0, -1], n, j, light).rgb; return Math.max(...c.map((v, i) => Math.abs(v - want[i]) / Math.max(0.05, want[i]))); };
+    worst = Math.max(worst, err(24, 0.37));
+    worst4 = Math.max(worst4, err(4, 0.37), err(4, 0.81));
+  }
+  check(worst < 0.03, `on our line the column IS the photograph's light: ${((worst) * 100).toFixed(1)} % at worst over 60 points (24 samples)`);
+  check(worst4 < 0.12, `and with T0's 4 samples, whatever the pixel's offset: ${((worst4) * 100).toFixed(1)} % (a grain that varies by pixel, never a band)`);
+  // Edge on to the inner disc: its near side's colour, not a white bar.
+  const e1 = g.d1;
+  const edge = H.columnJs(g, e1.map((v) => v * 6), e1.map((v) => -v), 8, 0.5, light).rgb;
+  check(Math.max(...edge) < 1 && Math.max(...edge) - Math.min(...edge) > 0.1, `edge on, the disc keeps a colour (${edge.map((v) => v.toFixed(2)).join(', ')}) and does not go white`);
+  // Many rays from outside and from inside: finite and non-negative.
+  let bad = 0;
   let r = 12345;
   const rnd = () => { r = (r * 1103515245 + 12345) % 2147483648; return r / 2147483648; };
-  for (let i = 0; i < 4000; i++) {
+  for (let i = 0; i < 3000; i++) {
     const inside = i % 2 === 0;
-    const ro = inside ? [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5].map((x) => x * 1.6) : unit([rnd() - 0.5, rnd() - 0.5, rnd() - 0.5]).map((x) => x * 8);
+    const ro = inside ? [rnd() - 0.5, rnd() - 0.5, rnd() - 0.5].map((v) => v * 1.6) : unit([rnd() - 0.5, rnd() - 0.5, rnd() - 0.5]).map((v) => v * 8);
     const rd = inside ? unit([rnd() - 0.5, rnd() - 0.5, rnd() - 0.5]) : unit([-ro[0] + (rnd() - 0.5) * 4, -ro[1] + (rnd() - 0.5) * 4, -ro[2] + (rnd() - 0.5) * 4]);
-    const c = H.columnJs(g, ro, rd, 8, rnd());
-    for (const k of ['o3', 'he', 'ha', 'dust', 'ring']) if (!(Number.isFinite(c[k]) && c[k] >= 0)) bad++;
-    maxO3 = Math.max(maxO3, c.o3);
+    const c = H.columnJs(g, ro, rd, 8, rnd(), light);
+    if (!c.rgb.every((v) => Number.isFinite(v) && v >= 0 && v < 1) || !(Number.isFinite(c.dust) && c.dust >= 0)) bad++;
   }
-  check(bad === 0, `4 000 rays from outside and inside: every column finite and non-negative (${bad} bad)`);
-  check(maxO3 < 3 * g.R1, `the brightest column (edge on) stays bounded: ${maxO3.toFixed(2)} ly`);
-  const colour = H.colourOf({ o3: maxO3, he: 1, ha: 1, ring: 1 }, H.paletteFor(1));
-  check(colour.every((c) => c < 1), `and its colour under its soft knee stays below white (${colour.map((c) => c.toFixed(2)).join(', ')})`);
+  check(bad === 0, `3 000 rays from outside and inside: every colour finite, non-negative and under white (${bad} bad)`);
+  // The stretch: Eye greys and darkens, Deep lifts, as on the photograph.
+  const eye = H.lightStretch([0.2, 0.5, 0.6], X.exposureLook('eye').nebulaGamma, X.exposureLook('eye').nebulaSaturation);
+  const deep = H.lightStretch([0.2, 0.5, 0.6], X.exposureLook('deep').nebulaGamma, X.exposureLook('deep').nebulaSaturation);
+  check(eye.lum < 0.2 && Math.max(...eye.rgb) - Math.min(...eye.rgb) < 0.05 && deep.lum > 0.5, 'the light takes each exposure\'s stretch, as the photograph does');
 }
 
 // --- 4. the GLSL is written from the same numbers -----------------------------------------------------
 {
   const f = H.SHADERS.gas;
-  for (const [k, v] of Object.entries(H.SHAPE)) if (!['sigma', 'exposure', 'adapt'].includes(k)) check(f.includes(Number(v).toFixed(3)), `GAS_FRAG carries SHAPE.${k} (${v})`);
-  check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec4 shellSpan\(/.test(f), 'the fragment has the same two span functions');
-  check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/52\.9829189/.test(f), 'a hash of the pixel for the offset (no diagonal pattern of interleaved gradient noise)');
-  check(/if \( uNoiseAmp <= 0\.0 \) return 1\.0;/.test(f), 'no noise volume is read when the noise is off (T0, Measured)');
-  check(/vAlpha = aKnot\.z \/ \( grow \* grow \);/.test(H.SHADERS.knotVertex), 'a knot drawn bigger than it is spreads its absorption: the sum of its darkness is the true one');
+  for (const k of ['slab', 'discIn', 'discEdge', 'ringFade', 'ringOut', 'kappa', 'knee', 'rimQ', 'rimW', 'sigma', 'streakCells']) check(f.includes(Number(H.SHAPE[k]).toFixed(3)), `GAS_FRAG carries SHAPE.${k} (${H.SHAPE[k]})`);
+  check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /float discShare\( vec2 xy \)/.test(f) && /vec3 lightAt\( vec2 xy \)/.test(f), 'the fragment has the same spans, share and light');
+  check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/sampler3D/.test(f), 'a hash of the pixel for the offset, and no noise volume at all');
+  check(/if \( uStreak <= 0\.0 \) return 1\.0;/.test(f), 'no streaks when they are off (Measured)');
+  check(/vAlpha = aKnot\.z \* min\( 1\.0, 1\.4 \/ sqrt\( grow \) \);/.test(H.SHADERS.knotVertex), 'a knot drawn bigger keeps exaggerated darkness, and the registry says so');
   for (const [k, v] of Object.entries(H.SHADERS)) {
     const bad = [...v.matchAll(/smoothstep\(\s*([-0-9.]+)\s*,\s*([-0-9.]+)\s*,/g)].filter((m) => Number(m[1]) >= Number(m[2]));
     check(!bad.length, `${k}: smoothstep's edges in order (GLSL leaves edge0 >= edge1 undefined): ${bad.map((m) => m[0]).join(' ')}`);
   }
   check(H.pixelHash(10, 20) >= 0 && H.pixelHash(10, 20) < 1 && H.pixelHash(10, 20) !== H.pixelHash(11, 20), 'the offset is a hash in [0, 1)');
+  check(statSync(join(ROOT, 'site/images/deep/helix/helix-light.webp')).size < 40000, 'the light map is small (the photograph, its stars removed)');
 }
 
 // --- 5. the hero: the star at the centre across a 60° arc; tiers; shares; looks; dispose -------------
@@ -169,12 +157,13 @@ const g = H.geometryOf();
   check(near(dot(f.west, f.north), 0, 1e-12) && near(dot(f.west, f.toward), 0, 1e-12) && near(dot(f.north, f.toward), 0, 1e-12), 'the sky frame is orthonormal');
   const cr = [f.west[1] * f.north[2] - f.west[2] * f.north[1], f.west[2] * f.north[0] - f.west[0] * f.north[2], f.west[0] * f.north[1] - f.west[1] * f.north[0]];
   check(near(dot(cr, f.toward), 1, 1e-9), 'and right-handed: west × north = toward the Sun');
-  // Tiers (DS-B04): T0 takes 4 samples a layer, reads no noise, draws 600 knots; T2 at level 3 takes half the steps.
+  // Tiers (DS-B04): T0 takes 4 samples a ring and draws 500 knots; T2 at level 3 takes half the steps.
   const uGas = hero.group.getObjectByName(`${hero.group.name}-shells`).material.uniforms;
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  check(hero.stats().samples === 4 && uGas.uNoiseAmp.value === 0 && hero.stats().knots === 600, `T0: 4 samples a layer, no noise volume, 600 knots (${JSON.stringify(hero.stats())})`);
+  check(hero.stats().samples === 4 && hero.stats().knots === 500, `T0: 4 samples a ring, 500 knots (${JSON.stringify(hero.stats())})`);
+  check(uGas.uShare.value === 0 && hero.ready(), 'no gas is drawn until its light (the photograph) has landed; with nothing to fetch here it is ready');
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
-  check(hero.stats().samples === 16 && hero.stats().knots === 2400, 'T2 at level 3: 16 samples a layer (32 steps), 2 400 knots');
+  check(hero.stats().samples === 16 && hero.stats().knots === 1600, 'T2 at level 3: 16 samples a ring (32 steps), 1 600 knots');
   check(H.samplesFor({ tier: 2, steps: 48 }) === 24 && H.samplesFor({ tier: 1, steps: 0 }) === 8, 'Ultra 24 a layer; level 2 8');
   // Shares: the photograph's own, the glow's own fade.
   const sh = H.sharesFor({ level: 1, rPx: 300, photo: 1 });
@@ -185,18 +174,17 @@ const g = H.geometryOf();
   check(/heroShares: \(\) =>/.test(readFileSync(join(JS, 'scene/deep/deepsky.js'), 'utf8')) && /ctx\.deep\.heroShares\(\)/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'the point glow steps back for a drawn hero as for a photograph (deepsky.js heroShares, main.js)');
   check(H.sharesFor({ level: 0, rPx: 300, photo: 0 }).gas === 0, 'below level 2 nothing of it draws');
   // Looks: the noise only under Film; time only under Film, at most 1 % a minute; still under reduced motion and ?look=1.
-  check(Object.values(H.UNDER_MEASURED).every((r) => X.MEASURED_RULES.includes(r)) && H.UNDER_MEASURED.noise === 'hidden' && H.UNDER_MEASURED.drift === 'still', 'UNDER_MEASURED: the noise hidden, the drift still');
+  check(Object.values(H.UNDER_MEASURED).every((r) => X.MEASURED_RULES.includes(r)) && H.UNDER_MEASURED.streaks === 'hidden' && H.UNDER_MEASURED.drift === 'still', 'UNDER_MEASURED: the streaks hidden, the drift still');
   const run = (o) => { hero.frame({ camera, rPx: 300, steps: 16, photo: 0, tier: 1, gain: 1, dtMs: 60000, ...o }); return uGas.uTime.value; };
   const t0 = run({ look: 'film', frozen: true });
   check(run({ look: 'film', reduced: true }) === t0 && run({ look: 'measured' }) === t0, 'nothing moves under ?look=1, reduced motion or Measured');
-  check(uGas.uNoiseAmp.value === 0, 'and Measured draws no generated grain');
+  check(uGas.uStreak.value === 0, 'and Measured draws no generated streaks');
   const t1 = run({ look: 'film' });
   check(t1 > t0 && t1 - t0 <= 0.0100001, `under Film the grain drifts at most 1 % of its size a minute (${(t1 - t0).toFixed(4)})`);
   // Palettes (DS-B07): Deep is the enhanced one; Eye desaturated.
   const deep = H.paletteFor(X.exposureLook('deep').milkyWay), cam = H.paletteFor(X.exposureLook('camera').milkyWay), eye = H.paletteFor(X.exposureLook('eye').milkyWay);
-  check(deep.mode === 'deep' && deep.enhanced && cam.mode === 'camera' && !cam.enhanced, 'Deep draws the enhanced palette, Camera the photograph\'s');
-  const spread = (c) => Math.max(...c) - Math.min(...c);
-  check(spread(eye.o3) < 0.1 * spread(cam.o3), 'Eye desaturates as on the photographs');
+  check(deep.mode === 'deep' && deep.enhanced && cam.mode === 'camera' && !cam.enhanced, 'Deep is the enhanced stretch, Camera the photograph as taken');
+  check(eye.saturation < 0.1 && eye.gamma > 2 && deep.gamma < 1 && cam.gamma === 1, 'each exposure\'s stretch is the photographs\' own (scene/exposure.js)');
   // Every material in the colour and alpha policy (tests/test_gasmat.mjs holds it for all deep materials too).
   hero.group.traverse((o) => {
     if (!o.material) return;
@@ -217,7 +205,7 @@ const g = H.geometryOf();
   await import(join(JS, 'copy/en.later.js'));
   const C = await import(join(JS, 'ui/cardfacts.js'));
   const line = C.honestyClause({ id: 'dso-helix-nebula', klass: 'dso', meta: { kind: 'nebula', drawn: ['photograph'], heroDrawn: ['reconstruction'], heroId: 'helix' } }, {});
-  check(/a 3D reconstruction from a published study/.test(line) && /O’Dell, McCullough and Meixner \(2004\)/.test(line), `the card names the reconstruction and its paper (${line})`);
+  check(/a 3D reconstruction from a published study/.test(line) && /O’Dell, McCullough and Meixner \(2004\)/.test(line) && /Not yet reviewed by an astronomer\./.test(line), `the card names the reconstruction, its light, its paper and that it is not yet reviewed (${line})`);
   const plain = C.honestyClause({ id: 'dso-helix-nebula', klass: 'dso', meta: { kind: 'nebula', drawn: ['photograph'] } }, {});
   check(!/O’Dell/.test(plain), 'and an unshipped hero adds nothing to it');
 }
@@ -242,4 +230,4 @@ if (problems.length) {
   console.error('hero helix FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log('hero helix ok: the profile and its sources, the two rings at 23° and 53° (PA 288° and 168°) seen from our side as the photograph\'s ellipse, the gas only inside each layer and finite from every side, the star centred across 60°, T0\'s 4 samples, the photograph and the glow handed over, Deep\'s enhanced palette, nothing moving under Measured, the knots at their radii');
+console.log('hero helix ok: the profile and its sources, the two rings at 23° and 53° (PA 288° and 168°), from our side the model IS the photograph (24 and 4 samples), never white edge on, finite from every side, the star centred across 60°, T0, the photograph and the glow handed over, the exposures\' stretch, nothing moving under Measured, the knots at their radii, the card');

@@ -601,6 +601,8 @@ jobs:
         run: node tests/test_gasmat.mjs
       - name: the Helix hero - the published rings and tilts, the star centred, T0's samples, the looks (spec 0075 stage b)
         run: node tests/test_hero_helix.mjs
+      - name: the Helix hero's light is the bake of the current photograph (spec 0075 stage b)
+        run: python3 scripts/build_deep_helix.py --check
       - name: the deep-sky heroes' profiles are current and reviewed before they ship (spec 0075 stage a)
         run: python3 scripts/gen_deepsky_heroes_js.py --check
       - name: site/data/dso.json is the registry's (spec 0075 stage a)

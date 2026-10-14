@@ -376,12 +376,16 @@ const GROUPS_B = {
     await atPx(300);
     out.helix.lines.at300 = lineOf();
     await snap('b03-orbit-00', 'level 3, 300 px: on our line of sight (the photograph)');
+    out.helix.lines.b03 = lineOf();
     deg(30);
     await pair('b04-orbit-30', 'turned 30 degrees round the same centre: the photograph hands over to the reconstruction');
+    out.helix.lines.b04 = lineOf();
     deg(15);
     await snap('b05-orbit-45', 'turned 45 degrees: the two rings at their tilts, parallax against the stars behind');
+    out.helix.lines.b05 = lineOf();
     deg(15);
     await pair('b06-orbit-60', 'turned 60 degrees: the inner disc nearly edge on, the outer ring open');
+    out.helix.lines.b06 = lineOf();
     out.helix.at300 = hero();
     try { sr.drawn.set('measured'); await snap('b07-measured-60', 'the same, Measured look: no generated grain, nothing moves'); } finally { sr.drawn.set('film'); }
     const expo = sr.exposure ? sr.exposure.mode() : null;

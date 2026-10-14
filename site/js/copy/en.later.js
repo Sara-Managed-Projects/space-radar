@@ -1719,7 +1719,7 @@ Object.assign(COPY, {
     // The card's honesty line, after "What is drawn: …", once the hero is shipped (ui/cardfacts.js
     // honestyClause reads `card[heroId]`). The numbers are registry/deepsky-heroes/helix.yaml's.
     card: {
-      helix: 'Its 3D shape follows O’Dell, McCullough and Meixner (2004): an inner disc tilted 23° and an outer ring tilted 53°, almost at right angles. The knots are placed at their measured distances, not one by one.',
+      helix: 'Its light is taken from ESO’s photograph, its shape from O’Dell, McCullough and Meixner (2004): an inner disc tilted 23° and an outer ring tilted 53°. The knots are placed at their measured distances. Not yet reviewed by an astronomer.',
     },
     // "How astronomers reconstructed its 3D form" (package section 5.1): two sentences, sourced, for
     // the trip "Into the Helix" (spec 0075 stage f) and a card disclosure when there is one.
