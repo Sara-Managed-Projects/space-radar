@@ -121,10 +121,6 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
 // year will pass this gate, and the row's `generic` is what keeps the card honest until it is drawn.
 // Each answer carries its own `made` and `axes`: the family box has neither.
 const GPS_FILE = { made: 'dimensions', axes: 'app' };
-// The BeiDou-3 medium-orbit craft that CAST builds, by NORAD number: the IGS satellite metadata's
-// `BDS-3M-CAST` rows (files.igs.org/pub/station/general/igs_satellite_metadata.snx, read 2026-10-14),
-// which agree with the China Satellite Navigation Office's own file for every craft it lists (to C46).
-const BEIDOU_CAST = new Set([43001, 43002, 43207, 43208, 43581, 43582, 43622, 43623, 43706, 43707, 44542, 44543, 44864, 44865, 58654, 58655]);
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
@@ -946,24 +942,9 @@ export const REAL_MODELS = {
     // 2026-10-08 (public #429): a shape per constellation where one was sourced (scene/models.js
     // NAV_SHAPES). BeiDou's medium-orbit craft are named `BEIDOU-3 M<n>`; the geostationary and
     // inclined ones (G, IGSO) and BeiDou-2 are larger buses with no row, and keep the family box.
-    // BATCH TEN (2026-10-14; public #987): the medium-orbit craft that CAST builds wear beidou-3-cast.glb,
-    // a box of 1.66 x 1.31 x 2.18 m DERIVED from the face areas in the China Satellite Navigation
-    // Office's own parameter file ('provided by satellite manufacturers'), two wings of 10.22 m2 each
-    // (the same file), its faces coloured by that file's absorption coefficients (registry/models.yaml
-    // row `beidou-3-cast`). NO FREE PICTURE: the array on the Earth face is ours. BY NUMBER, because the
-    // two builds share one name pattern and the catalogue's `M<n>` is not the maker's numbering: the 16
-    // NORAD numbers the IGS satellite metadata gives as `BDS-3M-CAST` (read 2026-10-14). The 12 built by
-    // SECM (`BDS-3M-SECM-A`, `-B`) are another bus and keep the medium-orbit shape. `axes: 'app'`: the
-    // array on +Z, the wings along X, the thruster face (+X in the operator's frame, toward the Sun) on
-    // +Y; HOW IT FLIES, by the operator's attitude law (yaw-steered, the wing axis square to the Sun).
     beidou: {
       build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true,
-      resolve: (record) => {
-        if (!/beidou-3\s+m\d/i.test(String(record && record.name))) return {};
-        const meta = (record && record.meta) || {};
-        const norad = Number(meta.noradId ?? meta.catalogueNumber);
-        return BEIDOU_CAST.has(norad) ? { build: 'navigation-beidou-meo', file: 'beidou-3-cast.glb', made: 'dimensions', axes: 'app' } : { build: 'navigation-beidou-meo' };
-      },
+      resolve: (record) => (/beidou-3\s+m\d/i.test(String(record && record.name)) ? { build: 'navigation-beidou-meo' } : {}),
     },
     // FILES FOR THE NAVIGATION CONSTELLATIONS since batch six (2026-10-13; public #985, #986, #989,
     // #990). EVERY KEY AND EVERY KLASS GATE BELOW IS THE ONE THAT WAS HERE: a file is an ANSWER of the

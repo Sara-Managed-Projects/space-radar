@@ -74,8 +74,6 @@ for (const year of [2020, 2025]) {
 for (const [name, year] of [['NAVSTAR 56 (USA 180)', 2004], ['NAVSTAR 71 (USA 256)', 2014], ['NAVSTAR 81 (USA 319)', 2021], ['GSAT0210 (GALILEO 13)', 2016], ['QZS-2 (MICHIBIKI-2)', 2017], ['IRNSS-1B', 2014]]) {
   routes.push({ table: 'named', key: `${name}@${year}`, entry: realModelFor({ id: `nav-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99200, launchYear: year } }) });
 }
-// Batch ten: BeiDou-3's CAST craft pick their file by number inside the `beidou` row; that answer is a route here.
-routes.push({ table: 'named', key: 'BEIDOU-3 M1@43001', entry: realModelFor({ id: 'nav-beidou-43001', name: 'BEIDOU-3 M1', klass: 'satellite', layer: 'active', meta: { noradId: 43001, launchYear: 2017 } }) });
 check(routes.length > 150, `scene/realmodels.js routes were read (${routes.length})`);
 const routedFiles = new Set(routes.map((r) => r.entry && r.entry.file).filter(Boolean));
 
@@ -324,8 +322,8 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = nav(name, year, klass, id);
     check(!got || !ninth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch nine's files: ${JSON.stringify(got)}`);
   }
-  // BATCH TEN (public #988, #987, #995, #996): GLONASS-M and -K and BeiDou-3's CAST craft wear a file over the build they had,
-  // still `generic` as every navigation file is; Himawari-8 and -9 and Fengyun-3A to 3D wear theirs as themselves.
+  // BATCH TEN (public #988, #995, #996): GLONASS-M and -K wear a file over the build they had, still `generic` as every navigation
+  // file is; Himawari-8 and -9 and Fengyun-3A to 3D wear theirs as themselves. BeiDou-3 was built and did not ship: it keeps its shape.
   for (const [norad, cat, name, file] of [[40267, 'HIMAWARI-8', 'Himawari-8', 'himawari.glb'], [41836, 'HIMAWARI-9', 'Himawari-9', 'himawari.glb'],
     [32958, 'FENGYUN 3A', 'Fengyun-3A', 'fengyun-3.glb'], [37214, 'FENGYUN 3B', 'Fengyun-3B', 'fengyun-3.glb'], [39260, 'FENGYUN 3C', 'Fengyun-3C', 'fengyun-3.glb'], [43010, 'FENGYUN 3D', 'Fengyun-3D', 'fengyun-3.glb']]) {
     const got = sat(norad, cat);
@@ -341,14 +339,10 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = nav(name, 2026, 'satellite', 100744);
     check(got && got.file === file && got.build === build && got.generic === true, `${name} (a placeholder number) is drawn as ${build}${file ? ` wearing ${file}` : ' with no file'}: ${JSON.stringify(got)}`);
   }
-  for (const [norad, name] of [[43001, 'BEIDOU-3 M1'], [44865, 'BEIDOU-3 M20'], [58655, 'BEIDOU-3 M26']]) {
-    const got = nav(name, 2019, 'satellite', norad);
-    check(got && got.file === 'beidou-3-cast.glb' && got.build === 'navigation-beidou-meo' && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (${norad}, CAST) wears beidou-3-cast.glb: ${JSON.stringify(got)}`);
-  }
-  // None of the five files reaches another craft: SECM's BeiDou-3, BeiDou's other orbits, GLONASS-K2, the second Fengyun-3 batch,
+  // None of the four files reaches another craft: BeiDou-3 (CAST's and SECM's), BeiDou's other orbits, GLONASS-K2, the second Fengyun-3 batch,
   // Fengyun-4 and -2, the other geostationary weather craft, debris.
-  const tenth = ['glonass-m.glb', 'glonass-k.glb', 'beidou-3-cast.glb', 'fengyun-3.glb', 'himawari.glb'];
-  for (const [name, year, klass, id] of [['BEIDOU-3 M7', 2018, 'satellite', 43107], ['BEIDOU-3 M28', 2024, 'satellite', 61187], ['BEIDOU-3 G2', 2020, 'satellite', 45344], ['BEIDOU-3 IGSO-1', 2019, 'satellite', 44204],
+  const tenth = ['glonass-m.glb', 'glonass-k.glb', 'fengyun-3.glb', 'himawari.glb'];
+  for (const [name, year, klass, id] of [['BEIDOU-3 M1', 2017, 'satellite', 43001], ['BEIDOU-3 M7', 2018, 'satellite', 43107], ['BEIDOU-3 M28', 2024, 'satellite', 61187], ['BEIDOU-3 G2', 2020, 'satellite', 45344], ['BEIDOU-3 IGSO-1', 2019, 'satellite', 44204],
     ['COSMOS 2569 [GLONASS-K2]', 2023, 'satellite', 57517], ['COSMOS 2219', 1992, 'satellite', 22219], ['FENGYUN 3E', 2021, 'satellite', 49008], ['FENGYUN 3G', 2023, 'satellite', 56232],
     ['FENGYUN 4A', 2016, 'satellite', 41882], ['FENGYUN 2H', 2018, 'satellite', 43491], ['FENGYUN 1C DEB', 1999, 'debris', 29716], ['HIMAWARI-7', 2006, 'satellite', 28937], ['ELEKTRO-L 3', 2019, 'satellite', 44903],
     ['BEIDOU-3 M1 DEB', 2017, 'debris']]) {
