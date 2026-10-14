@@ -41,4 +41,18 @@ rig.flyTo({ distance: rig.state.distance * 0.55, ms: 0 });
 await sleep(6000);
 await measure('sun-detail');
 await shot('ft-3-sun', 'scene 3, the Sun, detail ' + (out.sunDetail ? 'on' : 'OFF'));
+// 4 to 7 (spec 0073, 2026-10-14): Mercury, Venus, Uranus and Neptune from close, over the evening
+// terminator a third of a radius up, where their relief, shadows and generated detail all draw.
+let n = 4;
+for (const id of ['mercury', 'venus', 'uranus', 'neptune']) {
+  await stage(id, 9000);
+  const mesh = sr.worlds.meshFor(id);
+  const s = sunward(id);
+  const side = unit(cross(s, north(id)));
+  rig.flyTo({ targetScene: { x: mesh.position.x, y: mesh.position.y, z: mesh.position.z }, offset: unit(mix(side, 1, s, 0.35)), distance: mesh.scale.x * 1.35, ms: 0 });
+  await sleep(7000);
+  await measure(id + '-close');
+  await shot('ft-' + n + '-' + id, 'scene ' + n + ', ' + id + ' from close over its terminator');
+  n += 1;
+}
 return finish(out);
