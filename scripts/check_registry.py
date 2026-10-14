@@ -4343,6 +4343,8 @@ def check_weather(world_ids: set, layers: list) -> list:
                     and 1 <= len(bands) <= 4 and all(isinstance(b, list) and len(b) == 4 and all(is_number(x) for x in b)
                                                      and -90 < b[0] < 90 and 0 < b[1] <= 10 and 1 <= b[2] <= 64 and 0 < b[3] <= 1 for b in bands)):
                 fail(where, "cirrus needs from_share, height_km, width_km, radius_km and one to four bands [latitude, half-height up to 10 deg, streaks round 1 to 64, cover 0 to 1]")
+            if "widen" in ci and not (is_number(ci.get("widen")) and 1 <= ci.get("widen") <= 20):
+                fail(where, "cirrus `widen` is how many times wider and higher than measured it is drawn: 1 to 20")
             if cls != "illustrative":
                 fail(where, "generated streaks are illustrative: not one of them was observed")
             if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):

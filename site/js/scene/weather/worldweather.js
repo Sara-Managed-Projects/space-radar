@@ -117,7 +117,7 @@ export const POLAR = { blue: [0.80, 0.88, 1.0], lean: 0.3, base: 0.93, arms: 3, 
  * height are the row's): how bright a streak is against the deck it stands over (linear RGB and how
  * much of it), and how much of the direct light its shadow on the deck takes. CIRRUS_SLOTS bands.
  */
-export const CIRRUS = { colour: [0.86, 0.9, 1.0], bright: 0.65, shadow: 0.6, layers: 2, maxArcRad: 0.06 };
+export const CIRRUS = { colour: [0.86, 0.9, 1.0], bright: 0.65, shadow: 0.6, layers: 1, maxArcRad: 0.06 };
 export const CIRRUS_SLOTS = 4;
 /**
  * The cirrus uniforms from the row: per band [v of its latitude, half-height in v, streaks round,
@@ -126,7 +126,11 @@ export const CIRRUS_SLOTS = 4;
 export function cirrusUniforms(c) {
   const bands = new Float32Array(CIRRUS_SLOTS * 4);
   (c.bands || []).slice(0, CIRRUS_SLOTS).forEach(([lat, half, n, cover], i) => bands.set([0.5 + lat / 180, half / 180, n, cover], i * 4));
-  return { bands, cirrus: { x: c.height_km / c.radius_km, y: (c.width_km / 2 / c.radius_km) / Math.PI, z: 0, w: 0 } };
+  // `widen`: drawn that many times wider AND higher than measured, so the shadow keeps the offset to
+  // the cloud's width that Voyager's picture has (2026-10-14: at the measured width, 2 px on the
+  // whole disc, the streaks read as hairline scratches on the glass).
+  const k = c.widen || 1;
+  return { bands, cirrus: { x: (k * c.height_km) / c.radius_km, y: ((k * c.width_km) / 2 / c.radius_km) / Math.PI, z: 0, w: 0 } };
 }
 /** Seconds a close-range effect takes to come in or go out once the disc crosses its size. */
 export const NEAR_FADE_S = 1;
@@ -330,11 +334,15 @@ float wxStreaks( vec2 uv, float tau ) {
       float h1 = wxCirrusHash( cell * 1.37 + 0.5 );
       float h2 = wxCirrusHash( cell * 2.11 + 4.1 );
       float h3 = wxCirrusHash( cell * 3.73 + 9.2 );
-      float len = 0.35 + 0.55 * h1;
+      float len = 0.45 + 0.4 * h1;
       if ( f >= len ) continue;
-      float taper = sqrt( sin( 3.14159265 * f / len ) );
-      float across = ( y - ( h2 - 0.5 ) * 1.3 ) * b.y / max( uWxCirrus.y * ( 0.4 + 0.6 * h3 ) * taper, 1e-5 );
-      cover = max( cover, b.w * ( 0.55 + 0.45 * h3 ) * taper * exp( -across * across ) * ( 1.0 - smoothstep( 0.75, 1.0, abs( y ) ) ) );
+      // A soft band, not a line: it swells and thins along its length and fades out at both ends.
+      float a = f / len;
+      float taper = sin( 3.14159265 * a );
+      float wob = 0.75 + 0.25 * sin( 6.2831853 * ( 1.5 * a + h2 ) );
+      float thick = uWxCirrus.y * ( 0.6 + 0.4 * h3 ) * ( 0.35 + 0.65 * taper ) * wob;
+      float across = ( y - ( h2 - 0.5 ) ) * b.y / max( thick, 1e-5 );
+      cover = max( cover, b.w * ( 0.6 + 0.4 * h3 ) * pow( taper, 1.5 ) * exp( -across * across ) * ( 1.0 - smoothstep( 0.85, 1.0, abs( y ) ) ) );
     }
   }
   return cover;

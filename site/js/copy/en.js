@@ -1537,7 +1537,7 @@ export const COPY = {
       // 2026-10-14 (spec 0073): the cap is now drawn on the artist's map too, from Hubble's own rows.
       uranus: 'The bright cap over the north pole is real: its brightness and colour, latitude by latitude, are taken from Hubble’s map of October 2025, and Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
       // 2026-10-14 (spec 0073): the artist's map carries Voyager's spot, and it was said that none was drawn.
-      neptune: 'The dark oval on the artist’s map is Voyager 2’s Great Dark Spot of 1989, gone by 1994: illustrative, and not drawn in Measured. Close up in Film, methane cirrus stands 50 km over the deck and casts shadows; each streak is drawn.',
+      neptune: 'The dark oval on the artist’s map is Voyager 2’s Great Dark Spot of 1989, gone by 1994: illustrative, not drawn in Measured. In Film, methane cirrus casts shadows, drawn six times wider and higher than measured; each streak is ours.',
     },
     // Jupiter's storms (2026-10-12) add two sentences to its line: copy/en.later.js `weatherStorms`.
     // Lightning on the giants (2026-10-08, internal #244), added to the world's line where it is drawn.

@@ -133,9 +133,9 @@ const U = (id) => worlds.meshFor(id).material.uniforms;
   } catch (e) { check(false, 'worlds.update could not be run here: ' + e.message); }
   // The cirrus.
   const ci = WEATHER.find((r) => r.id === 'neptune-cirrus');
-  check(ci && ci.class === 'illustrative' && ci.measured === 'hidden' && ci.off_at.includes('tier0') && ci.cirrus.height_km === 50, 'the cirrus is illustrative, hidden under Measured, off on tier 0, at Voyager\'s 50 km');
+  check(ci && ci.class === 'illustrative' && ci.measured === 'hidden' && ci.off_at.includes('tier0') && ci.cirrus.height_km === 50 && ci.cirrus.widen === 6, 'the cirrus is illustrative, hidden under Measured, off on tier 0, Voyager\'s 50 km drawn six times higher and wider');
   const cu = WW.cirrusUniforms(ci.cirrus);
-  check(near(cu.bands[0], 0.5 + 29 / 180, 1e-6) && near(cu.cirrus.x, 50 / 24622, 1e-9), 'the first band is Voyager\'s 29 N; the height is in radii');
+  check(near(cu.bands[0], 0.5 + 29 / 180, 1e-6) && near(cu.cirrus.x, (6 * 50) / 24622, 1e-9) && /six times wider and higher/.test(COPY.weather.also.neptune), 'the first band is Voyager\'s 29 N; the drawn height is in radii, and the card says how much it is widened');
   const ww = WW.createWorldWeather({ worlds });
   const nu = U('neptune');
   check(nu.uWxCirrusBand && nu.uWxCirrus && /WX_CIRRUS/.test(Object.keys(worlds.meshFor('neptune').material.defines).join()), 'Neptune wears the cirrus');
