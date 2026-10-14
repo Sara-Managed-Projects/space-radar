@@ -327,6 +327,8 @@ const GROUPS_B = {
       return snap(name, note);
     };
     heroOn(true);
+    // Selected again, so the card is written with the stamps (a shipped hero's are there before any card).
+    sr.select(rec, { fly: false, undo: false });
     await sleep(3000);
     const toLy = (u) => u * sr.stage.unitKm / LY_KM;
     // The camera distance at which the record's radius is `px` on screen (scene/deep/lodsize.js radiusPx).
@@ -344,10 +346,21 @@ const GROUPS_B = {
     const hero = () => { const s = sr.deep.stats(); return (s.heroes || []).find((h) => h.id === 'helix') || null; };
     // On our line of sight: from the Helix toward the Sun, where its photograph was taken from.
     const onLine = () => { const H = pos(id), S = pos('sun') || { x: 0, y: 0, z: 0 }; if (H) rig.flyTo({ targetScene: H, offset: unit(sub(S, H)), distance: rig.state.distance, ms: 0 }); };
-    out.helix = {};
+    // Where the camera is against the line the photograph was taken along, and what the photograph does.
+    const lineOf = () => {
+      const H = pos(id), S = pos('sun') || { x: 0, y: 0, z: 0 }, c = sr.camera.position;
+      const a = unit(sub(c, H)), b = unit(sub(S, H));
+      const deg = Math.acos(Math.max(-1, Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z))) * 180 / Math.PI;
+      let loaded = null; try { loaded = sr.nebulae && sr.nebulae.loaded ? sr.nebulae.loaded().includes(id) : null; } catch { /* older */ }
+      return { offLineDeg: Math.round(deg * 10) / 10, ly: Math.round(toLy(rig.state.distance) * 100) / 100, photoLoaded: loaded, photoDrawn: sr.nebulae ? Math.round(sr.nebulae.drawn(id) * 100) / 100 : null, sunFound: !!pos('sun') };
+    };
+    out.helix = { lines: {} };
     onLine();
-    await sleep(1000);
+    await sleep(1500);
+    out.helix.lines.arrival = lineOf();
+    await snap('b00-on-line', 'on our line of sight at the app\'s own distance, the hero on: the photograph is drawn and the gas gives way to it');
     await atPx(150);
+    out.helix.lines.at150 = lineOf();
     await snap('b01-helix-150px', 'the Helix at 150 px in radius, on our line of sight: the photograph, the star on it');
     deg(60);
     await pair('b02-helix-150px-turned60', 'the same size, 60 degrees round: the reconstruction (and the point glow\'s last share)');
@@ -355,6 +368,7 @@ const GROUPS_B = {
     onLine();
     await sleep(1000);
     await atPx(300);
+    out.helix.lines.at300 = lineOf();
     await snap('b03-orbit-00', 'level 3, 300 px: on our line of sight (the photograph)');
     deg(30);
     await pair('b04-orbit-30', 'turned 30 degrees round the same centre: the photograph hands over to the reconstruction');
