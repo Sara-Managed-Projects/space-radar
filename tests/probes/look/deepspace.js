@@ -371,8 +371,11 @@ const GROUPS_C = {
     out.lmcHeroR136 = lmcHero();
   },
   // LMC -> Tarantula with no teleport: the camera read on every frame of the flight (no pictures taken
-  // during it, which would stall the frames). A teleport is a frame that moves the camera further than the
-  // larger of its two distances to its target, or a flight drawn in fewer than four frames.
+  // during it, which would stall the frames). The flight is camera.js's time-based ease, so how many frames
+  // see it depends on the renderer: on a runner's SwiftShader a frame inside the LMC takes about 0.8 s and
+  // only 2-4 frames fall in the flight (the first look, 2026-10-15). So what is held here does not depend on
+  // the frame rate: the flight is animated (flying on a frame after it starts, and it takes time), the
+  // camera only ever comes nearer (no jump out and back), and the LMC is drawn round it on every frame.
   lmcFlightFrames: async () => {
     if (!(await need('dso-lmc'))) return;
     const r = sr.recordById('dso-tarantula-nebula');
@@ -396,8 +399,11 @@ const GROUPS_C = {
     }
     const flying = samples.filter((x) => x.flying).length;
     const heroAll = samples.every((x) => x.level === null || x.level >= 2);
-    out.lmcFlight = { frames: samples.length, flyingFrames: flying, ms: samples.length ? samples[samples.length - 1].ms : 0, worstJumpOverDistance: Math.round(worst * 1000) / 1000, lmcDrawnThroughout: heroAll, ly: samples.map((x) => Math.round(x.distance * sr.stage.unitKm / LY_KM)) };
-    if (worst > 1 || flying < 4) out.problems.push(`LMC -> Tarantula: ${flying} frames in flight, worst move ${worst.toFixed(2)} of the distance (a teleport)`);
+    let nearer = true;
+    for (let i = 1; i < samples.length; i++) if (samples[i].distance > samples[i - 1].distance * 1.001) nearer = false;
+    const ms = samples.length ? samples[samples.length - 1].ms : 0;
+    out.lmcFlight = { frames: samples.length, flyingFrames: flying, ms, worstJumpOverDistance: Math.round(worst * 1000) / 1000, onlyNearer: nearer, lmcDrawnThroughout: heroAll, ly: samples.map((x) => Math.round(x.distance * sr.stage.unitKm / LY_KM)) };
+    if (flying < 1 || ms < 500 || !nearer) out.problems.push(`LMC -> Tarantula: not an animated flight that only comes nearer (${flying} frames flying, ${ms} ms, nearer ${nearer}): a teleport`);
     if (!heroAll) out.problems.push('LMC -> Tarantula: the LMC was not drawn on every frame of the flight');
     await snap('c9-flight-arrived', 'stage c: LMC -> Tarantula, arrived: the LMC drawn round it on every frame of the way', 3000);
   },
