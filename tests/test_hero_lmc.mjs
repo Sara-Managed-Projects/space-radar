@@ -176,7 +176,7 @@ const maps = L.readMaps(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.by
       camera.position.set(0, 0, 900);
       hero.frame({ camera, quality: { tier: 2 }, look: 'film' });
       const far = hero.stats().tarantulaSteps;
-      check(near > far && far >= 6, `the Tarantula's own march: ${near} steps selected and near, ${far} far`);
+      check(near > far && far >= 8, `the Tarantula's own march: ${near} steps selected and near, ${far} far`);
       const card = hero.card;
       check(card && card.copy === L.COPY_BLOCK && card.drawn['dso-tarantula-nebula'], 'the hero names its words block and what it draws for each record');
     }

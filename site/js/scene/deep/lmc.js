@@ -283,7 +283,7 @@ void main() {
   vec3 dPhys = rd * uRadii;                 // object units per unit of t
   float speed = length( dPhys );
   float dy = dPhys.y / speed;               // the ray's slope against the disc
-  float jitter = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+  float jitter = fract( sin( dot( gl_FragCoord.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); // white, not a lattice: with few steps a structured offset showed as a grid (look, 2026-10-15)
   float dt = ( t1 - t0 ) / float( uSteps );
   vec3 C = vec3( 0.0 );
   float T = 1.0;
@@ -300,8 +300,11 @@ void main() {
     float old = m.r * m.r, young = m.g * m.g;
     float dust = young;
     if ( uNoiseAmp > 0.0 ) {
+      // generated detail below the maps' 350 ly bins (Film only): clumps in the young light, patches of dust
       float n = texture( uNoise, ps * 0.012 + vec3( 0.31, 0.17, 0.53 ) ).r;
-      dust *= mix( 1.0, 0.2 + 1.8 * n * n, uNoiseAmp );
+      float n2 = texture( uNoise, ps * 0.031 + vec3( 0.71, 0.05, 0.29 ) ).r;
+      dust *= mix( 1.0, 0.15 + 1.9 * n * n, uNoiseAmp );
+      young *= mix( 1.0, 0.35 + 1.3 * n2, uNoiseAmp );
     }
     vec3 e = ( uColOld * uK.x * old * wo + uColYoung * uK.y * young * wy ) * ( 1.0 - uPhoto * m.a );
     float tau = uSigma * dust * wy;
@@ -317,7 +320,7 @@ void main() {
 `;
 
 // Stars: points of a fixed small size whose brightness falls as 1 / d^2; past 1 they grow (the area
-// carries the light) up to four times. uSb: the surface brightness at the map's peak density.
+// carries the light) up to 2.2 times. uSb: the surface brightness at the map's peak density.
 const STAR_VERT = /* glsl */ `
 ${COMMON}
 attribute vec4 aStar;      // colour times luminosity; w: the photograph's cover there
@@ -333,9 +336,9 @@ void main() {
   float d = length( mv.xyz ) / uUnit;
   float pix = d * uPixAng;                  // a pixel's side at the star, object units
   // capped: a point stands for many stars, so close up it would otherwise outshine a real one
-  float bright = min( uSb / max( uPeak * pix * pix * uBase * uBase, 1e-12 ), 8.0 );
+  float bright = min( uSb / max( uPeak * pix * pix * uBase * uBase, 1e-12 ), 3.0 );
   bright *= uShare * uGain * ( 1.0 - uPhoto * aStar.w );
-  float grow = clamp( sqrt( max( bright * length( aStar.rgb ), 1.0 ) ), 1.0, 4.0 );
+  float grow = clamp( sqrt( max( bright * length( aStar.rgb ), 1.0 ) ), 1.0, 2.2 );
   gl_PointSize = mv.z < 0.0 ? uBase * grow : 0.0;
   vCol = aStar.rgb * bright / ( grow * grow );
 }
@@ -431,7 +434,7 @@ void main() {
   float t0 = max( 0.0, -b - h );
   float t1 = -b + h;
   if ( t1 <= t0 ) discard;
-  float jitter = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
+  float jitter = fract( sin( dot( gl_FragCoord.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); // white, not a lattice: with few steps a structured offset showed as a grid (look, 2026-10-15)
   float dt = ( t1 - t0 ) / float( uSteps );
   float ds = dt * uRadius;
   vec3 C = vec3( 0.0 );
@@ -449,12 +452,12 @@ void main() {
     rho *= 1.0 - smoothstep( 0.82, 1.0, r );
     float dust = 0.0;
     if ( uNoiseAmp > 0.0 ) {
-      float n1 = texture( uNoise, p * 0.55 + vec3( 0.13, 0.71, 0.37 ) ).r;
-      float n2 = texture( uNoise, p * 1.7 + vec3( 0.59, 0.23, 0.11 ) ).r;
-      rho *= mix( 1.0, 0.1 + 2.2 * n1 * n2, uNoiseAmp );
-      // dark filaments: thin ridges of the noise, in front of R136 (toward the Sun)
+      float n1 = texture( uNoise, p * 0.45 + vec3( 0.13, 0.71, 0.37 ) ).r;
+      float n2 = texture( uNoise, p * 0.9 + vec3( 0.59, 0.23, 0.11 ) ).r;
+      rho *= mix( 1.0, 0.25 + 1.9 * n1 * n2, uNoiseAmp );
+      // dark filaments: broad ridges of the noise, in front of R136 (toward the Sun), inside the shell
       float ridge = 1.0 - abs( 2.0 * n2 - 1.0 );
-      dust = uNoiseAmp * smoothstep( 0.82, 0.97, ridge ) * smoothstep( 0.0, 0.5, -back ) * ( 1.0 - smoothstep( 0.3, 0.95, r ) );
+      dust = uNoiseAmp * smoothstep( 0.55, 0.9, ridge ) * smoothstep( 0.0, 0.6, -back ) * ( 1.0 - smoothstep( 0.25, 0.7, r ) );
     }
     vec3 col = mix( uColO3, uColHa, smoothstep( 0.06, 0.38, rq ) );
     float w = ( 1.0 - uPhotoT * coverT( p ) );
@@ -520,7 +523,7 @@ export function createHero(THREE, env = {}) {
       uCamObj: { value: new THREE.Vector3(0, 0, 3) }, uRadii: { value: new THREE.Vector3(DISC_EXTENT, 4 * z0[0], DISC_EXTENT) },
       uDisc: { value: discTex }, uExtent: { value: DISC_EXTENT }, uZ0: { value: new THREE.Vector2(z0[0], z0[1]) },
       uColOld: { value: new THREE.Vector3(...oldL.colour) }, uColYoung: { value: new THREE.Vector3(...youngL.colour) },
-      uK: { value: new THREE.Vector2(0.55, 0.42) }, uSigma: { value: 1.1 }, uNoiseAmp: { value: 0 },
+      uK: { value: new THREE.Vector2(0.4, 0.5) }, uSigma: { value: 1.6 }, uNoiseAmp: { value: 0 },
       uNoise: { value: null }, uSteps: { value: 6 },
     },
   }), true);
@@ -535,7 +538,7 @@ export function createHero(THREE, env = {}) {
   // ------------------------------------------------------------------------------------- the stars
   const starMat = policy(THREE, new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
-    uniforms: { ...common(THREE), uUnit: { value: 1 }, uPixAng: { value: 0.001 }, uBase: { value: 1.6 }, uPeak: { value: 1 }, uSb: { value: 0.3 } },
+    uniforms: { ...common(THREE), uUnit: { value: 1 }, uPixAng: { value: 0.001 }, uBase: { value: 1.3 }, uPeak: { value: 1 }, uSb: { value: 0.14 } },
   }), false);
   starMat.name = 'deep-lmc-stars';
   const stars = new THREE.Points(new THREE.BufferGeometry(), starMat);
@@ -573,7 +576,7 @@ export function createHero(THREE, env = {}) {
       uAway: { value: new THREE.Vector3(...toGal(g, g.u).map((v) => v * g.unit)).normalize() },
       uShell: { value: new THREE.Vector2(((nebL.shell && nebL.shell.radius_ly) || 300) / g.unit / tarR, ((nebL.shell && nebL.shell.width_ly) || 150) / g.unit / tarR) },
       uColHa: { value: hex(colours.Ha, '#ff6b8c') }, uColO3: { value: hex(colours.OIII, '#73f2e6') },
-      uK: { value: 0.22 }, uSigma: { value: 0.9 }, uNoiseAmp: { value: 0 }, uCover: { value: 1 }, uPhotoT: { value: 0 },
+      uK: { value: 0.22 }, uSigma: { value: 0.35 }, uNoiseAmp: { value: 0 }, uCover: { value: 1 }, uPhotoT: { value: 0 },
       uPicC: { value: new THREE.Vector3(0, 0, 50) }, uPicR: { value: new THREE.Vector3() }, uPicU: { value: new THREE.Vector3() },
       uNoise: { value: null }, uSteps: { value: 10 },
     },
@@ -764,7 +767,7 @@ export function createHero(THREE, env = {}) {
 
       starMat.uniforms.uUnit.value = unit;
       starMat.uniforms.uPixAng.value = (2 * Math.tan(fovY / 2)) / hDev;
-      starMat.uniforms.uBase.value = 1.6 * Math.max(1, dpr);
+      starMat.uniforms.uBase.value = 1.3 * Math.max(1, dpr);
       spriteMat.uniforms.uUnit.value = unit;
       spriteMat.uniforms.uProjPx.value = (hDev / 2) / Math.tan(fovY / 2);
       spriteMat.uniforms.uPhotoT.value = photoT;
@@ -775,7 +778,7 @@ export function createHero(THREE, env = {}) {
       const dT = nebMat.uniforms.uCamObj.value.length() * tarR; // object units
       const rT = dT > tarR ? (Math.asin(tarR / dT) / (fovY / 2)) * (hDev / Math.max(1, dpr) / 2) : Infinity;
       const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: Math.min(rT, 1e4), selected: info.selectedId === TARANTULA });
-      nebMat.uniforms.uSteps.value = Math.max(6, Math.min(48, rT < 24 ? 6 : own || 6));
+      nebMat.uniforms.uSteps.value = Math.max(8, Math.min(48, rT < 24 ? 8 : own || 8)); // never under 8: fewer showed the noise as grain
       nebMat.uniforms.uNoiseAmp.value = noise ? noisy : 0;
       nebMat.uniforms.uNoise.value = noise || nebMat.uniforms.uNoise.value;
       nebMat.uniforms.uPhotoT.value = photoT;
