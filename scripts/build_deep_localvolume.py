@@ -20,9 +20,11 @@ assign a precise Z from a missing number"):
     (the coarsest accuracy section 2 names, "not better than 25%", for the brightest stars): an
     assumption of this map, and the tile says so per galaxy (`rangeAssumed`).
   - INFERRED: no distance of its own. `mem` takes its group's, `h` and `h'` its velocity's through
-    H0 = 73, `txt` its texture's ("likely proximity"). Drawn as a line along its sky direction, never
-    a point: the catalogue's section 2 gives "about 2 Mpc" as the typical error of such distances,
-    so the line runs from D - 2 Mpc (not nearer than a fifth of D) to D + 2 Mpc.
+    H0 = 73, `txt` its texture's ("likely proximity"). Drawn as a fainter, wider point in its own
+    grey-blue at its most likely distance, so it is never taken for a measured one; its range is a line
+    along its sky direction shown only for the one galaxy asked for. The catalogue's section 2 gives
+    "about 2 Mpc" as the typical error of such distances, so the range runs from D - 2 Mpc (not nearer
+    than a fifth of D) to D + 2 Mpc.
   - Not in the tile: the Milky Way's own row, and every galaxy the map already draws as a deep-sky
     record (site/data/dso.json: the LMC, Andromeda, M81...): one galaxy, one mark.
 
@@ -253,7 +255,7 @@ def build(dirpath: Path):
         "methods": [{"code": c, "words": w, "kind": k} for c, w, k in METHODS],
         "uncertainty": {
             "measured": "the catalogue's error of the distance modulus (table6 e_DM); where there is none, 5 % for TRGB and 25 % for any other method (assumed; flag bit 1)",
-            "inferred": "drawn as a line along the sky direction from D - 2 Mpc (not nearer than D / 5) to D + 2 Mpc: the catalogue's section 2, 'their typical distance measurement error is ~2 Mpc'",
+            "inferred": "drawn as a fainter, wider grey-blue point at D; its range, from D - 2 Mpc (not nearer than D / 5) to D + 2 Mpc, is a line shown only for the one galaxy asked for: the catalogue's section 2, 'their typical distance measurement error is ~2 Mpc'",
         },
         "source": {
             "name": "Updated Nearby Galaxy Catalog (Karachentsev, Makarov & Kaisina 2013, AJ 145, 101)",

@@ -13,16 +13,18 @@
 //   - A galaxy with a distance of its own (the tip of the red giant branch, Cepheids, Tully-Fisher...)
 //     is a POINT at that distance, as wide on the screen as its Holmberg diameter is from where the
 //     camera stands (never under MIN_PX), as bright as its B magnitude makes it from there.
-//   - A galaxy whose distance is only inferred (its group's, its velocity's, its look's) is a LINE
-//     along its sky direction over the range the distance may have, brightest at the catalogue's
-//     value: its direction is measured, its depth is not, and a point would claim it was (package
-//     section 6.1). Seen from the Sun the line is end-on and reads as a faint dot, as it should.
-//   - Colours are by type, an illustration: early types warm, spirals white, irregulars blue.
+//   - A galaxy whose distance is only inferred (its group's, its velocity's, its look's) is a FAINTER,
+//     LARGER, SOFTER point in its own grey-blue swatch, at its most likely distance: its direction is
+//     measured, its depth is not, and the different mark says so (the "How far" panel's honesty row
+//     names both; package section 6.1). Its range of distance is drawn as a line along its sky
+//     direction only for the one galaxy asked for (`showRange(i)`: a later selection or hover), never
+//     for all of them: 280 lines read as streaks across the whole view (review of #1182).
+//   - Colours of the measured are by type, an illustration: early types warm, spirals white, irregulars blue.
 //
-// ONE TILE, TWO DRAW CALLS. The points and the lines are one draw call each (the budget is five per
-// class, requirement 18). The tile is culled whole by the view's frustum against its bounding sphere,
-// and by its projected size: smaller than CULL_PX in radius it is a speck inside the deep-sky marks
-// and is not drawn at all. Its memory is fixed: the attributes below, about 70 kB, nothing per frame.
+// ONE TILE, ONE DRAW CALL (two while a range is shown; the budget is five per class, requirement 18).
+// The tile is culled whole by the view's frustum against its bounding sphere, and by its projected
+// size: it fades out between FADE_PX and CULL_PX in radius (a speck inside the deep-sky marks) and is
+// not drawn below that. Its memory is fixed: the attributes below, about 40 kB, nothing per frame.
 //
 // PRECISION (DS-D10). Positions are in million light-years about the Sun, in float32: the farthest is
 // 107, held to a few light-years. The object's matrix carries them into the stage's scene units, and
@@ -38,6 +40,18 @@ export const MAGIC = 'SRLV';
 export const MIN_PX = 3; // CSS px: the smallest a galaxy is drawn, as a point
 export const MAX_PX = 256; // CSS px: past this a galaxy's own light is spread too thin to see
 export const CULL_PX = 3; // CSS px of the whole tile's radius on screen, below which it is not drawn
+export const FADE_PX = 40; // and from which, going smaller, it fades out (no pop)
+/** The inferred galaxies' swatch: a cool grey, apart from the type colours. */
+export const INFERRED_COLOUR = [0.6, 0.66, 0.8];
+/** Their light against a measured galaxy's, and how much wider their soft mark is. */
+export const INFERRED_LIGHT = 0.45;
+export const INFERRED_SIZE = 1.7;
+/** The tile's light as its radius on screen shrinks from FADE_PX to CULL_PX: 1 to 0, smooth. Pure. */
+export function tileFade(radiusPx) {
+  if (!(radiusPx < FADE_PX)) return 1;
+  const t = Math.min(1, Math.max(0, (radiusPx - CULL_PX) / (FADE_PX - CULL_PX)));
+  return t * t * (3 - 2 * t);
+}
 const COLOURS = [
   [1.0, 0.86, 0.7], // early type
   [0.95, 0.95, 1.0], // spiral
@@ -71,40 +85,34 @@ export function rowOf(tile, i) {
 }
 
 /**
- * The geometry's arrays from the tile: measured galaxies as points, inferred ones as lines of two
- * segments (low end, the catalogue's value, high end), in million light-years. Pure.
+ * The geometry's arrays from the tile: every galaxy one point at its catalogue distance, million
+ * light-years; `inferred` 1 for a galaxy whose distance is not its own (fainter, wider, grey-blue). Pure.
  */
 export function arraysOf(tile) {
-  let nPts = 0;
-  let nLines = 0;
-  for (let i = 0; i < tile.count; i++) if (rowOf(tile, i).inferred) nLines += 1; else nPts += 1;
-  const P = { position: new Float32Array(nPts * 3), radius: new Float32Array(nPts), mag: new Float32Array(nPts), colour: new Float32Array(nPts * 3), index: new Uint16Array(nPts) };
-  const L = { position: new Float32Array(nLines * 12), weight: new Float32Array(nLines * 4), colour: new Float32Array(nLines * 12), index: new Uint16Array(nLines) };
-  let p = 0;
-  let l = 0;
+  const n = tile.count;
+  const P = { position: new Float32Array(n * 3), radius: new Float32Array(n), mag: new Float32Array(n), colour: new Float32Array(n * 3), inferred: new Float32Array(n) };
   let far = 0;
-  for (let i = 0; i < tile.count; i++) {
+  let nInferred = 0;
+  for (let i = 0; i < n; i++) {
     const g = rowOf(tile, i);
-    const c = COLOURS[Math.max(0, Math.min(3, Math.round(g.kind)))];
+    const c = g.inferred ? INFERRED_COLOUR : COLOURS[Math.max(0, Math.min(3, Math.round(g.kind)))];
     far = Math.max(far, g.hiMly);
-    if (!g.inferred) {
-      for (let k = 0; k < 3; k++) { P.position[p * 3 + k] = g.dir[k] * g.dMly; P.colour[p * 3 + k] = c[k]; }
-      P.radius[p] = g.radiusMly;
-      P.mag[p] = Number.isFinite(g.absMag) ? g.absMag : 99;
-      P.index[p] = i;
-      p += 1;
-    } else {
-      const at = [g.loMly, g.dMly, g.dMly, g.hiMly];
-      const w = [0, 1, 1, 0];
-      for (let v = 0; v < 4; v++) {
-        for (let k = 0; k < 3; k++) { L.position[(l * 4 + v) * 3 + k] = g.dir[k] * at[v]; L.colour[(l * 4 + v) * 3 + k] = c[k]; }
-        L.weight[l * 4 + v] = w[v];
-      }
-      L.index[l] = i;
-      l += 1;
-    }
+    for (let k = 0; k < 3; k++) { P.position[i * 3 + k] = g.dir[k] * g.dMly; P.colour[i * 3 + k] = c[k]; }
+    P.radius[i] = g.radiusMly;
+    P.mag[i] = Number.isFinite(g.absMag) ? g.absMag : 99;
+    P.inferred[i] = g.inferred ? 1 : 0;
+    if (g.inferred) nInferred += 1;
   }
-  return { points: P, lines: L, nPts, nLines, farMly: far };
+  return { points: P, nPts: n - nInferred, nInferred, farMly: far };
+}
+
+/** One galaxy's range of distance as a line of two segments (low end, the value, high end). Pure. */
+export function rangeOf(tile, i) {
+  const g = rowOf(tile, i);
+  const at = [g.loMly, g.dMly, g.dMly, g.hiMly];
+  const position = new Float32Array(12);
+  for (let v = 0; v < 4; v++) for (let k = 0; k < 3; k++) position[v * 3 + k] = g.dir[k] * at[v];
+  return { position, weight: new Float32Array([0, 1, 1, 0]) };
 }
 
 /** The whole tile's radius on the screen, CSS px; Infinity from inside it. Pure. */
@@ -117,6 +125,7 @@ const VERT_POINTS = /* glsl */ `
 attribute float aRadius;   // half the Holmberg diameter, million light-years
 attribute float aMag;      // absolute B magnitude (99: none catalogued)
 attribute vec3 aColour;
+attribute float aInferred; // 1: the distance is not its own (fainter, wider, softer)
 uniform float uScale;      // scene units per million light-years
 uniform float uPxPerRad;   // CSS px per radian at the centre of the view
 uniform float uPixelRatio;
@@ -124,12 +133,13 @@ uniform float uMinPx;
 uniform float uMaxPx;
 varying vec3 vColour;
 varying float vLight;
+varying float vSoft;
 void main() {
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mv;
   float dMly = max(1e-9, length(mv.xyz) / uScale);
   float wide = 2.0 * aRadius / dMly * uPxPerRad;                       // its true width, CSS px
-  float size = clamp(wide, uMinPx, uMaxPx);
+  float size = clamp(wide, uMinPx * mix(1.0, ${INFERRED_SIZE.toFixed(2)}, aInferred), uMaxPx);
   // Its apparent B magnitude from the camera: M + 5 log10(d / 10 pc).
   float m = aMag + 5.0 * log(dMly * 1.0e6 / 32.6156) / log(10.0);
   float lit = aMag > 90.0 ? 0.3 : clamp((19.0 - m) / 11.0, 0.0, 1.0);
@@ -137,39 +147,43 @@ void main() {
   // it is wide (surface brightness), and past uMaxPx it fades rather than grow.
   float spread = clamp((uMinPx * 2.5) / size, 0.18, 1.0);
   float past = wide > uMaxPx ? uMaxPx / wide : 1.0;
-  vLight = (0.45 + 0.75 * lit) * spread * spread * past;
+  vLight = (0.45 + 0.75 * lit) * spread * spread * past * mix(1.0, ${INFERRED_LIGHT.toFixed(2)}, aInferred);
+  vSoft = aInferred;
   vColour = aColour;
   gl_PointSize = size * uPixelRatio;
 }`;
 
 const FRAG_POINTS = /* glsl */ `
 uniform float uGain;
+uniform float uFade;       // the whole tile, as it shrinks to a speck (tileFade)
 varying vec3 vColour;
 varying float vLight;
+varying float vSoft;
 void main() {
   vec2 p = gl_PointCoord * 2.0 - 1.0;
   float r2 = dot(p, p);
   if (r2 > 1.0) discard;
-  float prof = (exp(-r2 * 2.2) - 0.1108) / 0.8892;                       // a soft disc, 0 at its rim
-  gl_FragColor = vec4(vColour * (vLight * prof * uGain), 1.0);
+  float k = mix(2.2, 3.6, vSoft);                                         // an inferred one: softer
+  float floorK = exp(-k);
+  float prof = (exp(-r2 * k) - floorK) / (1.0 - floorK);                  // a soft disc, 0 at its rim
+  gl_FragColor = vec4(vColour * (vLight * prof * uGain * uFade), 1.0);
 }`;
 
 const VERT_LINES = /* glsl */ `
 attribute float aWeight;  // 1 at the catalogue's distance, 0 at either end of the range
-attribute vec3 aColour;
 varying float vWeight;
 varying vec3 vColour;
 varying vec3 vView;       // view space, interpolated per fragment: how near the camera this bit of line is
 void main() {
   vWeight = aWeight;
-  vColour = aColour;
+  vColour = vec3(${INFERRED_COLOUR.join(', ')});
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
   vView = mv.xyz;
   gl_Position = projectionMatrix * mv;
 }`;
 
-// A range is a faint smudge along the line of sight, brightest at the catalogue's value and gone at
-// its ends; where it passes near the camera it fades, or the few nearest would cross the whole view.
+// The one range shown: along the line of sight, brightest at the catalogue's value, gone at its ends;
+// where it passes near the camera it fades.
 const FRAG_LINES = /* glsl */ `
 uniform float uGain;
 uniform float uScale;
@@ -179,7 +193,7 @@ varying vec3 vView;
 void main() {
   float dMly = length(vView) / uScale;
   float nearFade = smoothstep(1.5, 5.0, dMly);
-  gl_FragColor = vec4(vColour * (0.1 * vWeight * vWeight * vWeight * nearFade * uGain), 1.0);
+  gl_FragColor = vec4(vColour * (0.45 * vWeight * nearFade * uGain * uFade), 1.0);
 }`;
 
 async function fetchTile(base) {
@@ -197,11 +211,12 @@ export function createLayer(THREE, env = {}) {
   group.visible = false;
   const uniforms = {
     uScale: { value: 1 }, uPxPerRad: { value: 1000 }, uPixelRatio: { value: 1 },
-    uMinPx: { value: MIN_PX }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 },
+    uMinPx: { value: MIN_PX }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 }, uFade: { value: 1 },
   };
   const state = { loaded: false, failed: null, manifest: null, tile: null, arrays: null, bytes: 0, fileBytes: 0, placedFor: null, culled: 'not loaded', radiusPx: 0, calls: 0 };
   let points = null;
   let lines = null;
+  let rangeShown = -1;
   const sphere = new THREE.Sphere();
   const frustum = new THREE.Frustum();
   const _m = new THREE.Matrix4();
@@ -228,6 +243,7 @@ export function createLayer(THREE, env = {}) {
     pg.setAttribute('aRadius', new THREE.BufferAttribute(a.points.radius, 1));
     pg.setAttribute('aMag', new THREE.BufferAttribute(a.points.mag, 1));
     pg.setAttribute('aColour', new THREE.BufferAttribute(a.points.colour, 3));
+    pg.setAttribute('aInferred', new THREE.BufferAttribute(a.points.inferred, 1));
     points = new THREE.Points(pg, new THREE.ShaderMaterial({
       vertexShader: VERT_POINTS, fragmentShader: FRAG_POINTS, uniforms,
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
@@ -235,10 +251,10 @@ export function createLayer(THREE, env = {}) {
     points.name = 'deep-localvolume-points';
     points.frustumCulled = false; // the whole tile is culled here, once (frame)
     points.renderOrder = -1;
+    // One range at a time: four vertices, filled by showRange(i), hidden until then.
     const lg = new THREE.BufferGeometry();
-    lg.setAttribute('position', new THREE.BufferAttribute(a.lines.position, 3));
-    lg.setAttribute('aWeight', new THREE.BufferAttribute(a.lines.weight, 1));
-    lg.setAttribute('aColour', new THREE.BufferAttribute(a.lines.colour, 3));
+    lg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3));
+    lg.setAttribute('aWeight', new THREE.BufferAttribute(new Float32Array([0, 1, 1, 0]), 1));
     lines = new THREE.LineSegments(lg, new THREE.ShaderMaterial({
       vertexShader: VERT_LINES, fragmentShader: FRAG_LINES, uniforms,
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
@@ -246,6 +262,7 @@ export function createLayer(THREE, env = {}) {
     lines.name = 'deep-localvolume-ranges';
     lines.frustumCulled = false;
     lines.renderOrder = -1;
+    lines.visible = false;
     group.add(points, lines);
     state.bytes = [pg, lg].reduce((n, g) => n + Object.values(g.attributes).reduce((k, at) => k + at.array.byteLength, 0), 0);
     sphere.radius = a.farMly;
@@ -296,20 +313,36 @@ export function createLayer(THREE, env = {}) {
     state.radiusPx = tileRadiusPx(R, camera.position.distanceTo(_c), fovY, viewH);
     if (!frustum.intersectsSphere(sphere)) { group.visible = false; state.culled = 'frustum'; return; }
     if (state.radiusPx < CULL_PX) { group.visible = false; state.culled = 'size'; return; }
+    uniforms.uFade.value = tileFade(state.radiusPx);
     group.visible = true;
     state.culled = null;
-    state.calls = (state.arrays.nPts ? 1 : 0) + (state.arrays.nLines ? 1 : 0);
+    state.calls = 1 + (lines && lines.visible ? 1 : 0);
+  }
+
+  /** Show one galaxy's range of distance (a selection or a hover will ask), or none (-1). */
+  function showRange(i) {
+    if (!lines || !state.tile) return false;
+    const ok = Number.isInteger(i) && i >= 0 && i < state.tile.count && rowOf(state.tile, i).inferred;
+    rangeShown = ok ? i : -1;
+    lines.visible = ok;
+    if (ok) {
+      lines.geometry.getAttribute('position').array.set(rangeOf(state.tile, i).position);
+      lines.geometry.getAttribute('position').needsUpdate = true;
+    }
+    return ok;
   }
 
   return {
     group,
     frame,
+    showRange,
     whenLoaded: () => loading,
     ready: () => state.loaded || !!state.failed,
     stats: () => ({
       id: 'localvolume', loaded: state.loaded, failed: state.failed,
       galaxies: state.tile ? state.tile.count : 0,
-      points: state.arrays ? state.arrays.nPts : 0, lines: state.arrays ? state.arrays.nLines : 0,
+      points: state.arrays ? state.arrays.nPts : 0, inferred: state.arrays ? state.arrays.nInferred : 0, rangeShown,
+      fade: Math.round(uniforms.uFade.value * 100) / 100,
       bytes: state.bytes, fileBytes: state.fileBytes, calls: state.calls, culled: state.culled,
       radiusPx: Number.isFinite(state.radiusPx) ? Math.round(state.radiusPx) : 'inside',
     }),
