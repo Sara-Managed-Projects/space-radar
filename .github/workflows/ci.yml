@@ -75,6 +75,12 @@ jobs:
         run: python3 scripts/gen_showers_activity_js.py --check
       - name: The reels mirror matches the registry (spec 0036)
         run: python3 scripts/gen_autopilot_js.py --check
+      - name: "The tour's mirror matches the registry (internal spec 0074)"
+        run: python3 scripts/gen_onboarding_js.py --check
+      # The upkeep rule, enforced: a new rail button, sidebar tab or on-demand module fails this
+      # until registry/onboarding.yaml says whether the tour shows it or why it does not.
+      - name: "The tour is kept up: every main feature is in it or left out with a reason (internal spec 0074)"
+        run: python3 tests/test_onboarding_upkeep.py
       - name: "The World Magnetic Model's coefficients match NOAA's file (internal #450)"
         run: python3 scripts/gen_wmm_js.py --check
       - name: The missions mirror matches the registry (public #452)
@@ -463,6 +469,11 @@ jobs:
       # body crosses it, how fast its scale changes. Short hops as they were; the rest inside bounds.
       - name: "The drift's long flights on the real rig: turn, sweep and scale inside the comfort bounds (spec 0071)"
         run: node tests/test_drift_pace.mjs
+      # Internal spec 0074: the tour rings real controls, so it breaks when one moves. Every hook a
+      # step names must be a data-tour some source file sets; the step machine, the caption's
+      # place at 1440 and 360 px and the controller on a stub page are walked here too.
+      - name: "The tour: its steps, its hooks in the source, the machine, the geometry, the controller on a stub page (internal spec 0074)"
+        run: node tests/test_onboarding.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"

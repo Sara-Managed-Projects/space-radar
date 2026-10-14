@@ -5425,6 +5425,7 @@ html.sr-phone .sr-rail__btn + .sr-rail__btn {
 
 html.sr-phone .sr-rail__btn--share,
 html.sr-phone .sr-rail__btn--clean,
+html.sr-phone .sr-rail__btn--tour,
 html.sr-phone .sr-rail__btn--github {
   display: none;
 }

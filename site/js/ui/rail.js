@@ -1,12 +1,14 @@
 // ui/rail.js -- the tool rail: three 48 px buttons in one glass column, top right (spec 0061 req 5).
 //
-// Contract: createRail(ctx, host) -> { root, openShow(), closeShow(), toggleShow() }
+// Contract: createRail(ctx, host) -> { root, openShow(), closeShow(), closeMore(), toggleShow() }
 // Also exported, pure: railKey(event, activeElement) -> 'show' | 'share' | 'keys' | null
 //
 //   [layers]   What to show: the layers with their counts and swatches, colour by, sound, density
 //   [share]    Share: the one share sheet (ui/share.js ctx.share.open, ui/sharesheet.js), with the
 //              postcard, the link and the text (spec 0061 task 8; it was the camera until then)
 //   [eye]      Hide everything: ui/cleanview.js (H)
+//   [tour]     The tour (ui/onboarding.js, internal spec 0074; Ivan, 2026-10-14: "on the right should
+//              appear another icon of onboarding"): fetched on the first press, a row of More on a phone
 //   [github]   The repository, the mark from ui/github.js (Ivan, 2026-10-02: the next icon after the eye)
 //   [more]     The phone only: Share, Hide and the repository, folded into one menu (below)
 //
@@ -50,6 +52,9 @@ const HIDE_PATH = [
   'M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143',
   'm2 2 20 20',
 ];
+
+// Lucide `circle-question-mark` (Feather's `help-circle`, MIT): the mark every app starts its help with. The circle as one path.
+const TOUR_PATH = ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z', 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3', 'M12 17h.01'];
 
 /** What a key press means to the rail, or null. Pure, like ui/cleanview.js wantsToggle. */
 export function railKey(event, activeElement) {
@@ -100,6 +105,7 @@ export function createRail(ctx, host) {
   showBtn.title = COPY.rail.show;
   showBtn.setAttribute('aria-haspopup', 'dialog');
   showBtn.setAttribute('aria-expanded', 'false');
+  showBtn.dataset.tour = 'layers';
   showBtn.appendChild(icon(LAYERS_PATH));
   root.appendChild(showBtn);
 
@@ -158,6 +164,7 @@ export function createRail(ctx, host) {
   shareBtn.setAttribute('aria-label', COPY.rail.share);
   shareBtn.title = COPY.rail.share;
   shareBtn.setAttribute('aria-haspopup', 'dialog');
+  shareBtn.dataset.tour = 'share';
   shareBtn.appendChild(icon(SHARE_PATH));
   root.appendChild(shareBtn);
   const toggleShare = () => {
@@ -169,6 +176,19 @@ export function createRail(ctx, host) {
 
   // --- Hide: the existing module, seated in the rail --------------------------------------------
   createCleanView(ctx, { host: root, className: 'sr-rail__btn sr-rail__btn--clean' });
+
+  // --- The tour: the fourth tool (internal spec 0074), its module fetched on the first press -----
+  const tourBtn = document.createElement('button');
+  tourBtn.type = 'button';
+  tourBtn.className = 'sr-rail__btn sr-rail__btn--tour';
+  tourBtn.setAttribute('aria-label', COPY.rail.tour);
+  tourBtn.title = COPY.rail.tour;
+  tourBtn.setAttribute('aria-pressed', 'false');
+  tourBtn.dataset.tour = 'tour';
+  tourBtn.appendChild(icon(TOUR_PATH));
+  root.appendChild(tourBtn);
+  const toggleTour = () => { closeShow(false); if (ctx && typeof ctx.wantOnboarding === 'function') ctx.wantOnboarding('rail'); };
+  tourBtn.addEventListener('click', toggleTour);
 
   // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
   const gitHub = createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
@@ -182,6 +202,7 @@ export function createRail(ctx, host) {
   moreBtn.setAttribute('aria-haspopup', 'menu');
   moreBtn.setAttribute('aria-expanded', 'false');
   moreBtn.setAttribute('aria-controls', 'sr-more');
+  moreBtn.dataset.tour = 'more';
   moreBtn.appendChild(icon(MORE_PATH));
   root.appendChild(moreBtn);
 
@@ -209,6 +230,7 @@ export function createRail(ctx, host) {
   }
   menuRow('button', icon(SHARE_PATH), COPY.rail.menuShare, () => share.open({ opener: moreBtn }));
   menuRow('button', icon(HIDE_PATH), COPY.rail.menuHide, () => { if (ctx && ctx.cleanView) ctx.cleanView.set(true); });
+  menuRow('button', icon(TOUR_PATH), COPY.rail.menuTour, toggleTour);
   // GitHub's own mark, cloned from the rail's link: the octicon is not redrawn (ui/github.js).
   const mark = gitHub && gitHub.querySelector('svg') ? gitHub.querySelector('svg').cloneNode(true) : icon([]);
   mark.setAttribute('width', '20');
@@ -266,7 +288,7 @@ export function createRail(ctx, host) {
     else toggleShare();
   }, true);
 
-  const api = { root, openShow, closeShow: () => closeShow(false), toggleShow, ready: () => load() };
+  const api = { root, openShow, closeShow: () => closeShow(false), closeMore: () => closeMore(false), toggleShow, ready: () => load() };
   if (ctx) ctx.rail = api;
   return api;
 }

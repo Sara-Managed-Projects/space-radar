@@ -694,6 +694,9 @@ export const COPY = {
     menuShare: 'Share',
     menuHide: 'Hide the panels',
     menuGitHub: 'Source on GitHub',
+    // The tour (ui/onboarding.js, internal spec 0074): the fourth tool, and its row on a phone.
+    tour: 'Take the tour',
+    menuTour: 'Take the tour',
   },
   // The time pill (0061 §7, ui/timepill.js).
   timePill: {
