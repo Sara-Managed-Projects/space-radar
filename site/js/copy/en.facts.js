@@ -127,6 +127,8 @@ Object.assign(COPY, {
   deepFacts: {
     // A row of the card, under the distance.
     methodRow: 'Distance found by',
+    // A far record's distance, comoving, from its redshift (spec 0075 stage e, ui/cardfacts.js exotics).
+    billionLightYears: '{n} billion light-years',
     methods: {
       parallax: 'parallax: the shift of its star against the far sky',
       'eclipsing-binary': 'eclipsing binary stars in it',

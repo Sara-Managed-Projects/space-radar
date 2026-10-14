@@ -81,6 +81,15 @@ check(rel(C.horizonLy() / 1e9, REF.horizon_gly) < 1e-6, `the particle horizon: $
   // The card's "light left" row reads the light-travel time from the redshift, never the distance as years.
   const src = readFileSync(join(JS, 'ui/cardfacts.js'), 'utf8');
   check(/lookbackGyr\(z\)/.test(src) && /import \{ lookbackGyr \} from '\.\.\/data\/cosmology\.js'/.test(src), 'ui/cardfacts.js reads the light-travel time from data/cosmology.js for a row with a redshift');
+  // And the card's three big numbers never turn that time into "N light-years away" (ui/cards.js heroNumbers).
+  const Cards = await import(join(JS, 'ui/cards.js'));
+  const { COPY } = await import(join(JS, 'copy/en.js'));
+  const R = COPY.card.rows;
+  const rows = [[R.distanceFromSun, '18 300 000 000 light-years'], [R.lightLeft, '10.8 billion years ago'], [R.mass, '40.7 billion Suns']];
+  const tiles = Cards.heroNumbers({ id: 'exotic-ton-618', klass: 'exotic', meta: { redshift: 2.219, kind: 'blackhole' } }, {}, rows);
+  check(!tiles.some((x) => x.key === 'lightLeft'), `a far record's big numbers leave out the light-travel time as a distance (${tiles.map((x) => x.key).join(', ')})`);
+  const near = Cards.heroNumbers({ id: 'x', klass: 'exotic', meta: { kind: 'blackhole' } }, {}, rows);
+  check(near.some((x) => x.key === 'lightLeft'), 'a near one keeps it (light-years and years of light agree there)');
 }
 
 // ---- the horizon's words on the scene ------------------------------------------------------------------
@@ -88,8 +97,9 @@ check(rel(C.horizonLy() / 1e9, REF.horizon_gly) < 1e-6, `the particle horizon: $
   const { COPY } = await import(join(JS, 'copy/en.js'));
   await import(join(JS, 'copy/en.later.js'));
   const W = COPY.deepCosmos;
-  check(W && /\{n\} billion light-years away now/.test(W.horizon) && /\{age\} billion years ago/.test(W.horizonWhy), 'the horizon\'s label says the distance now and the time the light took');
-  check(/Nothing measured lies out here/.test(W.edgeWhy) && /\{h\} billion/.test(W.edgeWhy), 'past the horizon the scene says nothing measured lies there');
+  check(W && /observable universe/.test(W.horizon) && /\{n\} billion light-years away now/.test(W.horizonNow) && /\{age\} billion years ago/.test(W.horizonWhy), 'the horizon\'s label says the distance now and the time the light took');
+  check(/Nothing measured lies out here/.test(W.edgeNothing) && /illustration/.test(W.edgeNothing) && /\{h\} billion/.test(W.edgeWhy), 'past the horizon the scene says nothing measured lies there, and that the band is an illustration');
+  for (const k of Object.keys(W)) check(W[k].length <= 72, `deepCosmos.${k} fits a phone's width as one line of the scene (${W[k].length} characters)`);
 }
 
 if (problems.length) {

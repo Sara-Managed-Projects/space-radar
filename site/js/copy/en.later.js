@@ -1746,10 +1746,13 @@ Object.assign(COPY, {
     // scene/shells.js: the edge of the observable universe, two lines on the scene. {n} is
     // data/cosmology.js horizonLy() in billions (46), {age} the universe's age (13.8): the distance now
     // and the time the light took, side by side, so the one is never taken for the other (DS-D08).
-    horizon: 'The edge of the observable universe, about {n} billion light-years away now',
+    // Three lines, each short enough for a phone's width.
+    horizon: 'The edge of the observable universe',
+    horizonNow: 'About {n} billion light-years away now',
     horizonWhy: 'Its light set out {age} billion years ago; space has stretched since',
     // Past the horizon, to the map's edge at 50 billion light-years (DS-D09): what the band is.
     edge: '{n} billion light-years: past everything we can see',
-    edgeWhy: 'The observable universe ends about {h} billion light-years away. Nothing measured lies out here.',
+    edgeWhy: 'The observable universe ends about {h} billion light-years away.',
+    edgeNothing: 'Nothing measured lies out here: this band is an illustration.',
   },
 });

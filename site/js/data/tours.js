@@ -811,7 +811,7 @@ export const TOURS = [
 "climb": true,
 "card": {
 "title": "The oldest light",
-"body": "The sphere is the edge of what can be seen at all. The microwave background, light released about 380 000 years after the Big Bang, reaches us from this surface, now 46.5 billion light-years away. It is a horizon around us, not a wall. Every place has its own."
+"body": "The sphere is the edge of what can be seen at all, about 46 billion light-years away now. No light has travelled for longer than 13.8 billion years: space stretched while it came. The microwave background, released about 380 000 years after the Big Bang, reaches us from just inside it. It is a horizon around us, not a wall. Every place has its own."
 },
 "frame_radii": 5.0,
 "drift_deg": 34,
@@ -819,10 +819,10 @@ export const TOURS = [
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 18817
+"dwell_ms": 20000
 }
 ],
-"estimate_ms": 211701
+"estimate_ms": 212884
 },
 {
 "id": "travel-to-exoplanets",

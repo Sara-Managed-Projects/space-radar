@@ -1836,8 +1836,10 @@ export function heroNumbers(record, m, rows) {
   const slots = HERO_SLOTS[kind];
   if (!slots) {
     const out = [];
+    // A far thing's light-travel time is not a distance (spec 0075 task 15): never "N ly away" for it.
+    const far = record && record.meta && Number.isFinite(record.meta.redshift);
     for (const key of HERO_ANY) {
-      if (out.length === 3 || !byKey.has(key)) continue;
+      if (out.length === 3 || !byKey.has(key) || (far && key === 'lightLeft')) continue;
       const c = cell(key, byKey.get(key));
       if (c) out.push(c);
     }
