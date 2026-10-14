@@ -11,7 +11,7 @@ export const HERO = {
     "2": "the structure: statistical points for the nucleus, disc, flocculent arms and H II regions with NGC 604, and a dust point set",
     "3": "the same, larger on screen",
     "points": [
-      12000,
+      8000,
       25000,
       40000
     ],
@@ -35,7 +35,7 @@ export const HERO = {
       "re_kpc": 0.3,
       "q": 0.9,
       "light": 0.04,
-      "colour": "#ffe3c4",
+      "colour": "#f2efe8",
       "source": "illustrative: whether M33 has a bulge at all is contested (Regan & Vogel 1994, ApJ 434, 536 find light beyond the disc in the centre; later kinematics find no bulge's signature)"
     },
     {
@@ -46,7 +46,8 @@ export const HERO = {
       "r_max_kpc": 9,
       "light": 0.6,
       "arm_contrast": 0.25,
-      "colour": "#dfe0e6",
+      "colour": "#ddd2d8",
+      "colour_outer": "#cfcadc",
       "source": "scale length 1.4 kpc in the K band (Regan & Vogel 1994; Simon et al. 2006 give 1.36 +/- 0.06 kpc), as cited; height assumed; cut at 9 kpc, past the catalogue's 7.5 kpc radius"
     },
     {
@@ -61,7 +62,7 @@ export const HERO = {
       "scale_kpc": 2.5,
       "segments": 0.55,
       "light": 0.28,
-      "colour": "#b0c4ff",
+      "colour": "#b9c4ee",
       "source": "illustrative pitch and segments; the bluer light extends further than the K band's (Regan & Vogel 1994 tabulate scale lengths by band): 2.5 kpc assumed"
     },
     {
@@ -108,7 +109,7 @@ export const HERO = {
   ],
   "colours": {
     "mode": true,
-    "note": "Broad-band colours of the populations, in display values: a pale disc, blue-white arms, pink H II regions; bluer overall than Andromeda, as an Sc galaxy is. Not enhanced."
+    "note": "Matched to its photograph at the hand-over (ESO eso1424a, g and r with H-alpha): mean colours measured 2026-10-15 core #bbb8b2, inner #857073, disc #353037; the model takes them halfway to neutral (nucleus #f2efe8, disc #ddd2d8), arms blue-white, pink H II regions. Not enhanced."
   },
   "drawn": [
     "model"
@@ -122,7 +123,7 @@ export const HERO = {
   "review": {
     "data_vs_model": "A parametric model: the inclination, the disc's scale length and NGC 604's place are published; the arms, the knots, the thickness and the light shares are ours, labelled.",
     "geometry": "pa 23 / incl 56; the near side and so the tilt's sign are not established here and are assumed; the arms' winding is chosen, not measured.",
-    "colours": "True colours of the populations in display values (mode: true); nothing enhanced.",
+    "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
     "distance": "The record's: 2.725 Mly (2.38-3.07), the Messier table's.",
     "credits": "CREDITS.md section 3l, Andromeda and galaxy structure.",
     "by": "the stage-d builder (an agent, not independent); a person's science sign-off is still owed (task 33, internal #785)",

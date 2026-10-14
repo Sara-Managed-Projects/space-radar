@@ -556,6 +556,7 @@ uniform float uViewH;
 uniform float uMinPx;
 uniform float uMaxPx;
 uniform float uOutside;
+uniform float uAlphaCap;
 uniform vec3 uNormalW;
 varying vec3 vCol;
 varying float vA;
@@ -575,7 +576,7 @@ void main() {
   a *= mix( 1.0, pow( max( c, 0.06 ), ${VIEW_POWER.toFixed(2)} ), aMeta.y * uOutside );
   // too faint for the framebuffer's 8 bits: drawn at the floor, by chance in proportion
   if ( a < ${ALPHA_FLOOR.toFixed(3)} ) a = aMeta.z * ${ALPHA_FLOOR.toFixed(3)} < a ? ${ALPHA_FLOOR.toFixed(3)} : 0.0;
-  vA = min( a, 1.0 );
+  vA = min( a, uAlphaCap );
   vCol = aCol.rgb;
   gl_PointSize = s;
   if ( vA <= 0.0 ) gl_Position = vec4( 2.0, 2.0, 2.0, 1.0 );
@@ -627,6 +628,7 @@ void main() {
 }
 `;
 export const SHADERS = { light: LIGHT_VERT + LIGHT_FRAG, dust: DUST_VERT + DUST_FRAG };
+export const SHADERS_LAYER = {};
 
 // scene/galaxy.js's Milky Way points (its head says why): a patch of fixed size, held small it gives up
 // its light, from outside the disc an edge-on view keeps part of its path. Not a deep material: the
@@ -679,6 +681,204 @@ void main() {
 
 export const MW_SHADERS = { vert: MW_VERT, frag: MW_FRAG };
 
+// ------------------------------------------------------------------------- the integrated light
+// THE SMOOTH LAYER (2026-10-15, after the first close-up read as a blotchy carpet). Most of a galaxy's
+// light is unresolved: a disc mesh in the disc's own plane carries it as a surface brightness -- the
+// exponential disc with the arms and the ring as gentle modulation, the dust rings and the lanes on the
+// arms' inner edges as darker bands (stronger in Film than under Measured) -- and a billboard at the
+// centre carries the bulge's projected Sersic profile, round from any side. Both are shaded in display
+// values through the same stretch, S^LAYER_POWER. The points then add only SPARKLE of the light, as
+// small capped dots. Edge on, where a flat layer is a line, the layer gives way to the points and their
+// dust, which carry the edge-on view as before.
+export const LAYER_POWER = 0.45;
+export const LAYER_DISC_AT_RD = 0.2;      // the layer's face-on brightness one scale length out
+export const SPARKLE = 0.2;               // the points' share of the light where the layer is drawn
+const lanczos = (z) => {
+  const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * lanczos(1 - z));
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+  const t = z + g + 0.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+};
+/**
+ * The layer's numbers from the same params the points come from. Pure. Surface brightnesses are in
+ * light per kpc^2 for a galaxy of total light 1 (the layers' `light` shares).
+ */
+export function layerProfile(params) {
+  const L = params.layers;
+  const bulge = L.find((l) => l.kind === 'bulge'), disc = L.find((l) => l.kind === 'disc');
+  const arms = L.find((l) => l.kind === 'arms'), ring = L.find((l) => l.kind === 'ring');
+  const rd = disc ? kpc(disc, 'scale', 5) : 5;
+  const rMax = disc ? kpc(disc, 'r_max', 4 * rd) : 4 * rd;
+  const i0 = disc ? (disc.light || 0.5) / (2 * Math.PI * rd * rd) : 0;
+  let b = null;
+  if (bulge) {
+    const n = Number(bulge.sersic_n) || 2, re = kpc(bulge, 're', 1);
+    const { b: bn } = sersicConstants(n);
+    const ie = (bulge.light || 0.2) / (2 * Math.PI * n * re * re * Math.exp(bn) * Math.pow(bn, -2 * n) * lanczos(2 * n));
+    b = { n, re, b: bn, ie, colour: hexRgb(bulge.colour) };
+  }
+  const r = ring ? { r: kpc(ring, 'radius', 10), w: kpc(ring, 'width', 0.7), i: (ring.light || 0.1) / (2 * Math.PI * kpc(ring, 'radius', 10) * kpc(ring, 'width', 0.7) * Math.sqrt(2 * Math.PI)), off: params.ringOffset || [0, 0], split: Number.isFinite(params.ringSplitPhi) ? params.ringSplitPhi : 99, half: (Number(ring.split_half_deg) || 35) * D2R, sep: kpc(ring, 'split_sep', 1.6), colour: hexRgb(ring.colour) } : null;
+  const a = arms ? { m: Math.max(1, Math.round(arms.count || 2)), tanP: Math.tan(Math.max(2, Number(arms.pitch_deg) || 12) * D2R), r0: kpc(arms, 'r_from', 1), r1: kpc(arms, 'r_to', rMax), phase: Number.isFinite(arms.phase_deg) ? arms.phase_deg * D2R : 0, contrast: Math.min(2, Math.max(0.3, 3 * (arms.light || 0.1) / Math.max(0.05, disc ? disc.light : 0.5))), segments: Number.isFinite(arms.segments) ? arms.segments : 1, colour: hexRgb(arms.colour) } : null;
+  const dl = L.filter((l) => l.kind === 'dust-ring');
+  const radii = [], widths = [], amps = [];
+  for (const l of dl) for (const R of (Array.isArray(l.radius_kpc) ? l.radius_kpc : [kpc(l, 'radius', 10)])) { if (radii.length < 4 && R > 1.5) { radii.push(R); widths.push(kpc(l, 'width', 0.6)); amps.push(Math.min(1, (Number(l.weight) || 0.3) * 1.6)); } }
+  while (radii.length < 4) { radii.push(-100); widths.push(1); amps.push(0); }
+  const lanes = L.find((l) => l.kind === 'dust-lanes');
+  const gain = i0 > 0 ? LAYER_DISC_AT_RD / Math.pow(i0 * Math.exp(-1), LAYER_POWER) : 1;
+  return {
+    rd, rMax, i0, bulge: b, ring: r, arms: a, gain, sense: params.sense || 1,
+    dust: { radii, widths, amps, lane: lanes ? Math.min(1, (Number(lanes.weight) || 0.4) * 1.5) : 0, inset: lanes ? kpc(lanes, 'inset', 0.4) : 0.4 },
+    colours: { inner: hexRgb(disc && disc.colour), outer: hexRgb(disc && (disc.colour_outer || disc.colour)) },
+    segSeed: params.segmentSeed || 0,
+  };
+}
+/** The layer's face-on light (before the stretch) and its dust share at (x, y) kpc: the GLSL mirrored. */
+export function layerAt(prof, x, y, dustK = 1) {
+  const R = Math.hypot(x, y), phi = Math.atan2(y, x);
+  let light = prof.i0 * Math.exp(-R / prof.rd) * Math.min(1, Math.max(0, (prof.rMax - R) / (0.2 * prof.rMax)));
+  let armShape = 0, lane = 0;
+  if (prof.arms) {
+    const A = prof.arms;
+    const win = Math.min(1, Math.max(0, (R - A.r0 * 0.7) / (A.r0 * 0.3))) * Math.min(1, Math.max(0, (A.r1 * 1.1 - R) / (A.r1 * 0.2)));
+    for (let k = 0; k < A.m; k++) {
+      const ph = A.phase + (2 * Math.PI * k) / A.m - prof.sense * Math.log(Math.max(1e-3, R) / A.r0) / A.tanP;
+      const ph2 = A.phase + (2 * Math.PI * k) / A.m - prof.sense * Math.log(Math.max(1e-3, R + prof.dust.inset) / A.r0) / A.tanP;
+      const sv = (((Math.log(Math.max(1e-3, R) / A.r0) * 2.2 + k * 0.37 + prof.segSeed) % 1) + 1) % 1;
+      const seg = A.segments < 1 ? (sv < A.segments ? 1 : 0.35) : 1;
+      armShape += Math.pow(Math.max(0, Math.cos(phi - ph)), 6) * seg;
+      lane += Math.pow(Math.max(0, Math.cos(phi - ph2)), 12) * seg;
+    }
+    armShape *= win; lane *= win;
+    light *= 1 + A.contrast * armShape;
+  }
+  if (prof.ring) {
+    const G = prof.ring;
+    const rx = x - G.off[0], ry = y - G.off[1], Rr = Math.hypot(rx, ry);
+    const dphi = Math.atan2(Math.sin(Math.atan2(ry, rx) - G.split), Math.cos(Math.atan2(ry, rx) - G.split));
+    const open = Math.abs(dphi) < G.half ? Math.cos((dphi / G.half) * Math.PI / 2) : 0;
+    const g = (d) => Math.exp(-(d * d) / (2 * G.w * G.w));
+    light += G.i * (open > 0 ? 0.5 * (g(Rr - G.r - 0.5 * G.sep * open) + g(Rr - G.r + 0.5 * G.sep * open)) : g(Rr - G.r));
+  }
+  let rings = 0;
+  for (let k = 0; k < 4; k++) { const d = R - prof.dust.radii[k]; rings += prof.dust.amps[k] * Math.exp(-(d * d) / (2 * prof.dust.widths[k] * prof.dust.widths[k])); }
+  const dust = Math.min(0.75, dustK * (0.45 * rings + 0.55 * prof.dust.lane * lane));
+  return { light, dust, armShape };
+}
+
+const LAYER_VERT = /* glsl */ `
+varying vec2 vLocal;
+varying vec3 vView;
+void main() {
+  vLocal = position.xy;
+  vec4 wp = modelMatrix * vec4( position, 1.0 );
+  vView = cameraPosition - wp.xyz;
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}
+`;
+const LAYER_FRAG = /* glsl */ `
+uniform float uGain;
+uniform float uI0;
+uniform float uRd;
+uniform float uRMax;
+uniform float uSense;
+uniform float uArmM;
+uniform float uArmTanP;
+uniform float uArmR0;
+uniform float uArmR1;
+uniform float uArmPhase;
+uniform float uArmC;
+uniform float uArmSeg;
+uniform float uSegSeed;
+uniform vec4 uRing;          // radius, width, peak, split half-angle
+uniform vec4 uRing2;         // offset x, y, split azimuth, split separation
+uniform vec4 uDustR;
+uniform vec4 uDustW;
+uniform vec4 uDustA;
+uniform vec2 uLane;          // strength, inset
+uniform float uDustK;
+uniform vec3 uNormalW;
+uniform vec3 uInner;
+uniform vec3 uOuter;
+uniform vec3 uArmCol;
+uniform vec3 uRingCol;
+varying vec2 vLocal;
+varying vec3 vView;
+float armPhi( float R, float k ) { return uArmPhase + 6.2831853 * k / uArmM - uSense * log( max( 1e-3, R ) / uArmR0 ) / uArmTanP; }
+void main() {
+  float R = length( vLocal );
+  if ( R > uRMax ) discard;
+  float phi = atan( vLocal.y, vLocal.x );
+  float light = uI0 * exp( -R / uRd ) * clamp( ( uRMax - R ) / ( 0.2 * uRMax ), 0.0, 1.0 );
+  float arm = 0.0, lane = 0.0;
+  if ( uArmM > 0.0 ) {
+    float win = clamp( ( R - uArmR0 * 0.7 ) / ( uArmR0 * 0.3 ), 0.0, 1.0 ) * clamp( ( uArmR1 * 1.1 - R ) / ( uArmR1 * 0.2 ), 0.0, 1.0 );
+    for ( int k = 0; k < 4; k++ ) {
+      if ( float( k ) >= uArmM ) break;
+      float kf = float( k );
+      float sv = fract( log( max( 1e-3, R ) / uArmR0 ) * 2.2 + kf * 0.37 + uSegSeed );
+      float seg = uArmSeg < 1.0 ? mix( 0.35, 1.0, smoothstep( uArmSeg + 0.06, uArmSeg - 0.06, sv ) ) : 1.0;
+      arm += pow( max( 0.0, cos( phi - armPhi( R, kf ) ) ), 6.0 ) * seg;
+      lane += pow( max( 0.0, cos( phi - armPhi( R + uLane.y, kf ) ) ), 12.0 ) * seg;
+    }
+    arm *= win; lane *= win;
+    light *= 1.0 + uArmC * arm;
+  }
+  float ring = 0.0;
+  if ( uRing.z > 0.0 ) {
+    vec2 q = vLocal - uRing2.xy;
+    float Rr = length( q );
+    float d = atan( sin( atan( q.y, q.x ) - uRing2.z ), cos( atan( q.y, q.x ) - uRing2.z ) );
+    float open = abs( d ) < uRing.w ? cos( d / uRing.w * 1.5707963 ) : 0.0;
+    float w2 = 2.0 * uRing.y * uRing.y;
+    float a = Rr - uRing.x - 0.5 * uRing2.w * open, b = Rr - uRing.x + 0.5 * uRing2.w * open;
+    ring = uRing.z * ( open > 0.0 ? 0.5 * ( exp( -a * a / w2 ) + exp( -b * b / w2 ) ) : exp( -( Rr - uRing.x ) * ( Rr - uRing.x ) / w2 ) );
+    light += ring;
+  }
+  vec4 dr = R - uDustR;
+  float rings = dot( uDustA, exp( -( dr * dr ) / ( 2.0 * uDustW * uDustW ) ) );
+  float dust = min( 0.75, uDustK * ( 0.45 * rings + 0.55 * uLane.x * lane ) );
+  // a flat layer seen edge on is a line: it gives way to the points (the head of this section)
+  float c = abs( dot( normalize( vView ), uNormalW ) );
+  float path = pow( max( c, 0.08 ), ${(VIEW_POWER - 1).toFixed(2)} ) * smoothstep( 0.04, 0.15, c );
+  float v = uGain * pow( max( light, 0.0 ), ${LAYER_POWER.toFixed(2)} ) * ( 1.0 - dust ) * path;
+  float t = clamp( R / ( 2.5 * uRd ), 0.0, 1.0 );
+  vec3 col = mix( uInner, uOuter, t );
+  col = mix( col, uArmCol, clamp( 0.6 * arm, 0.0, 0.6 ) );
+  col = mix( col, uRingCol, clamp( ring / max( 1e-9, light ), 0.0, 0.6 ) );
+  gl_FragColor = vec4( col * v, 1.0 );
+}
+`;
+const BULGE_VERT = /* glsl */ `
+varying vec2 vR;
+void main() {
+  vec4 c = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
+  float scale = length( modelViewMatrix[0].xyz );
+  vR = position.xy;
+  gl_Position = projectionMatrix * ( c + vec4( position.xy * scale, 0.0, 0.0 ) );
+}
+`;
+const BULGE_FRAG = /* glsl */ `
+uniform float uGain;
+uniform float uIe;
+uniform float uRe;
+uniform float uN;
+uniform float uB;
+uniform vec3 uCol;
+varying vec2 vR;
+void main() {
+  float r = length( vR );
+  if ( r > 6.0 * uRe ) discard;
+  float S = uIe * exp( -uB * ( pow( r / uRe, 1.0 / uN ) - 1.0 ) );
+  float v = uGain * pow( S, ${LAYER_POWER.toFixed(2)} ) * smoothstep( 6.0 * uRe, 3.5 * uRe, r );
+  gl_FragColor = vec4( uCol * min( v, 1.2 ), 1.0 );
+}
+`;
+SHADERS_LAYER.layer = LAYER_VERT + LAYER_FRAG;
+SHADERS_LAYER.bulge = BULGE_VERT + BULGE_FRAG;
+
 // ------------------------------------------------------------------------------- placing in the scene
 /** Scene-space unit vectors of sun-inertial directions, on the current stage. */
 function sceneDirs(dirs) {
@@ -698,7 +898,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   group.name = name;
   group.matrixAutoUpdate = false;
   const shared = { uViewH: { value: 900 }, uMinPx: { value: 1.5 }, uMaxPx: { value: 40 } };
-  const lightU = { ...shared, uGain: { value: 0 }, uOutside: { value: 1 }, uNormalW: { value: new THREE.Vector3(0, 0, 1) } };
+  const lightU = { ...shared, uGain: { value: 0 }, uOutside: { value: 1 }, uAlphaCap: { value: 0.9 }, uNormalW: { value: new THREE.Vector3(0, 0, 1) } };
   const dustU = { ...shared, uDust: { value: 0 } };
   const halves = [];
   const L = g.light;
@@ -744,10 +944,47 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     dustPts.renderOrder = -0.85;
     group.add(dustPts);
   }
+  // The integrated light (the section above): a disc in the disc's plane and the bulge facing the camera.
+  const prof = layerProfile(params);
+  const v3 = (c) => new THREE.Vector3(c[0], c[1], c[2]);
+  const ringCol = prof.ring ? prof.ring.colour : prof.colours.outer;
+  const armCol = prof.arms ? prof.arms.colour : prof.colours.outer;
+  const layerU = {
+    uGain: { value: 0 }, uI0: { value: prof.i0 }, uRd: { value: prof.rd }, uRMax: { value: prof.rMax }, uSense: { value: prof.sense },
+    uArmM: { value: prof.arms ? prof.arms.m : 0 }, uArmTanP: { value: prof.arms ? prof.arms.tanP : 1 }, uArmR0: { value: prof.arms ? prof.arms.r0 : 1 },
+    uArmR1: { value: prof.arms ? prof.arms.r1 : 1 }, uArmPhase: { value: prof.arms ? prof.arms.phase : 0 }, uArmC: { value: prof.arms ? prof.arms.contrast : 0 },
+    uArmSeg: { value: prof.arms ? prof.arms.segments : 1 }, uSegSeed: { value: prof.segSeed },
+    uRing: { value: new THREE.Vector4(prof.ring ? prof.ring.r : 0, prof.ring ? prof.ring.w : 1, prof.ring ? prof.ring.i : 0, prof.ring ? prof.ring.half : 0) },
+    uRing2: { value: new THREE.Vector4(prof.ring ? prof.ring.off[0] : 0, prof.ring ? prof.ring.off[1] : 0, prof.ring ? prof.ring.split : 99, prof.ring ? prof.ring.sep : 0) },
+    uDustR: { value: new THREE.Vector4(...prof.dust.radii) }, uDustW: { value: new THREE.Vector4(...prof.dust.widths) }, uDustA: { value: new THREE.Vector4(...prof.dust.amps) },
+    uLane: { value: new THREE.Vector2(prof.dust.lane, prof.dust.inset) }, uDustK: { value: 1 },
+    uNormalW: lightU.uNormalW, uInner: { value: v3(prof.colours.inner) }, uOuter: { value: v3(prof.colours.outer) }, uArmCol: { value: v3(armCol) }, uRingCol: { value: v3(ringCol) },
+  };
+  const layerMesh = new THREE.Mesh(new THREE.CircleGeometry(prof.rMax, 160), new THREE.ShaderMaterial({
+    vertexShader: LAYER_VERT, fragmentShader: LAYER_FRAG, uniforms: layerU, side: THREE.DoubleSide,
+    transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+  }));
+  layerMesh.name = `${name}:layer`;
+  layerMesh.frustumCulled = false;
+  layerMesh.renderOrder = -0.855;
+  group.add(layerMesh);
+  let bulgeMesh = null;
+  const bulgeU = { uGain: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
+  if (prof.bulge) {
+    const R6 = 6 * prof.bulge.re;
+    bulgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * R6, 2 * R6), new THREE.ShaderMaterial({
+      vertexShader: BULGE_VERT, fragmentShader: BULGE_FRAG, uniforms: bulgeU,
+      transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+    }));
+    bulgeMesh.name = `${name}:bulge`;
+    bulgeMesh.frustumCulled = false;
+    bulgeMesh.renderOrder = -0.853;
+    group.add(bulgeMesh);
+  }
   const _m = new THREE.Matrix4();
   const _inv = new THREE.Matrix4();
   const _cam = new THREE.Vector3();
-  let share = 0;
+  let share = 0, exposureNow = 1, faceOn = 1, small = false;
   function place(posKm, axes, mode = 'rotate') {
     const dirs = sceneDirs([axes.major, axes.across, axes.normal]);
     if (!dirs) return false;
@@ -765,18 +1002,35 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     lightU.uNormalW.value.set(z[0], z[1], z[2]);
     return true;
   }
+  // How much the layer is drawn (1 face on, 0 edge on), from the camera's line to the centre; the points
+  // and their dust carry the rest, so the light is the same from every side.
+  function apply() {
+    const lay = smoothstepJs(0.04, 0.15, faceOn);
+    const pts = SPARKLE + (1 - SPARKLE) * (1 - lay);
+    lightU.uGain.value = g.gain * share * exposureNow * pts;
+    dustU.uDust.value = g.dustGain * share * (0.3 + 0.7 * (1 - lay));
+    layerU.uGain.value = prof.gain * share * exposureNow;
+    bulgeU.uGain.value = prof.gain * share * exposureNow * lay;
+    layerU.uDustK.value = lookNow() === 'measured' ? 0.6 : 1;
+    // close up the points are small, capped dots (sparkle), never a carpet; edge on they are patches again
+    const cap = (small ? 1.8 : 2.6) * dprNow;
+    shared.uMaxPx.value = cap + (40 * dprNow - cap) * (1 - lay);
+    shared.uMinPx.value = Math.min(1.2 * dprNow, shared.uMaxPx.value);
+    lightU.uAlphaCap.value = 0.9;
+  }
+  let dprNow = 1;
   function setShare(k, exposure = 1) {
     share = Math.min(1, Math.max(0, Number(k) || 0));
-    lightU.uGain.value = g.gain * share * exposure;
-    dustU.uDust.value = g.dustGain * share;
+    exposureNow = exposure;
+    apply();
     group.visible = share > 0.002;
   }
-  /** Per frame while drawn: the framebuffer's height, the sizes, and which half is in front. */
-  function update(camera, viewH, dpr = 1) {
+  /** Per frame while drawn: the framebuffer's height, the sizes, which half is in front, how face on. */
+  function update(camera, viewH, dpr = 1, tier = 1) {
     if (Number.isFinite(viewH) && viewH > 0) shared.uViewH.value = viewH;
-    shared.uMinPx.value = 1.5 * dpr;
-    shared.uMaxPx.value = 40 * dpr;
-    if (!camera) return;
+    dprNow = dpr;
+    small = tier === 0;
+    if (!camera) { apply(); return; }
     group.updateMatrixWorld();
     // the normal in the world, for the edge-on term
     const e = group.matrixWorld.elements;
@@ -784,9 +1038,13 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     _inv.copy(group.matrixWorld).invert();
     _cam.setFromMatrixPosition(camera.matrixWorld).applyMatrix4(_inv);
     const above = _cam.z >= 0;
+    faceOn = Math.abs(_cam.z) / Math.max(1e-9, _cam.length());
     for (const h of halves) h.pts.renderOrder = (h.sign > 0) === above ? -0.84 : -0.86;
+    apply();
   }
   function dispose() {
+    layerMesh.geometry.dispose(); layerMesh.material.dispose();
+    if (bulgeMesh) { bulgeMesh.geometry.dispose(); bulgeMesh.material.dispose(); }
     for (const h of halves) { h.pts.geometry.dispose(); h.pts.material.dispose(); }
     if (dustPts) { dustPts.geometry.dispose(); dustPts.material.dispose(); }
     if (group.parent) group.parent.remove(group);
@@ -796,7 +1054,8 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     group, place, setShare, update, dispose,
     share: () => share,
     generated: g,
-    stats: () => ({ points: L.count, dust: D.count, meshes: dustPts ? 3 : 2, textures: 0, bytes }),
+    stats: () => ({ points: L.count, dust: D.count, meshes: group.children.length, textures: 0, bytes }),
+    profile: prof,
   };
 }
 
@@ -821,6 +1080,8 @@ export function resolveSky(params, posKm, axes) {
   out.landmarks = params.layers.filter((l) => l.kind === 'landmark' && Number.isFinite(l.ra_deg)).map((l) => ({ name: l.name, xy: inDisc(posKm, axes, l.ra_deg, l.dec_deg) }));
   return out;
 }
+const smoothstepJs = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const lookNow = () => { try { const sr = globalThis.spaceRadar; return sr && typeof sr.look === 'function' ? sr.look() : 'film'; } catch (e) { return 'film'; } };
 const tierNow = () => { try { const q = globalThis.spaceRadar && globalThis.spaceRadar.quality; const d = q && q.describe ? q.describe() : null; return d && Number.isFinite(d.tier) ? d.tier : 1; } catch (e) { return 1; } };
 const viewHNow = () => { try { const r = globalThis.spaceRadar && globalThis.spaceRadar.renderer; return r && r.domElement ? r.domElement.height || 900 : 900; } catch (e) { return 900; } };
 const dprNow = () => { try { const r = globalThis.spaceRadar && globalThis.spaceRadar.renderer; return r && r.getPixelRatio ? r.getPixelRatio() : 1; } catch (e) { return 1; } };
@@ -840,7 +1101,8 @@ export function createHero(THREE, env = {}) {
   const axes = discAxes(posKm, params0.frame);
   const params = resolveSky(params0, posKm, axes);
   const seed = (profile.levels && profile.levels.seed) || 7;
-  const g = createGalaxyPoints(THREE, params, { count: pointsFor(params, tierNow()), dust: profile.levels && Number.isFinite(profile.levels.dust_share) ? profile.levels.dust_share : 0.3, seed, name: group.name });
+  const tier = tierNow();
+  const g = createGalaxyPoints(THREE, params, { count: pointsFor(params, tier), dust: profile.levels && Number.isFinite(profile.levels.dust_share) ? profile.levels.dust_share : 0.3, seed, name: group.name });
   group.add(g.group);
   let placedFor = null;
   const orient = () => { if (placedFor !== stage.worldId && g.place(posKm, axes, 'rotate')) placedFor = stage.worldId; };
@@ -869,7 +1131,7 @@ export function createHero(THREE, env = {}) {
       group.visible = share > 0;
     },
     frame(info = {}) {
-      g.update(info.camera, viewHNow(), dprNow());
+      g.update(info.camera, viewHNow(), dprNow(), tier);
       for (const v of parts) { if (info.camera) v.setCamera(info.camera, 1); v.setLook(info.look, info); }
     },
     ready: () => true,

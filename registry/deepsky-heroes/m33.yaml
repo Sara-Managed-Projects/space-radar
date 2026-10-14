@@ -10,7 +10,7 @@ children: []
 levels:
   2: "the structure: statistical points for the nucleus, disc, flocculent arms and H II regions with NGC 604, and a dust point set"
   3: "the same, larger on screen"
-  points: [12000, 25000, 40000]     # by tier T0, T1, T2 (design section 8: about 25 000 on T1)
+  points: [8000, 25000, 40000]      # by tier T0, T1, T2 (design section 8: about 25 000 on T1)
   dust_share: 0.2
   seed: 33
 frame:
@@ -22,11 +22,11 @@ frame:
   units_ly: 100
   source: "inclination: Zaritsky, Elston & Hill 1989, as cited; position angle: OpenNGC via the M33 row"
 layers:
-  - {kind: bulge, what: "a small central concentration", sersic_n: 1, re_kpc: 0.3, q: 0.9, light: 0.04, colour: "#ffe3c4",
+  - {kind: bulge, what: "a small central concentration", sersic_n: 1, re_kpc: 0.3, q: 0.9, light: 0.04, colour: "#f2efe8",
      source: "illustrative: whether M33 has a bulge at all is contested (Regan & Vogel 1994, ApJ 434, 536 find light beyond the disc in the centre; later kinematics find no bulge's signature)"}
-  - {kind: disc, what: "the stellar disc", scale_kpc: 1.4, height_kpc: 0.3, r_max_kpc: 9, light: 0.6, arm_contrast: 0.25, colour: "#dfe0e6",
+  - {kind: disc, what: "the stellar disc", scale_kpc: 1.4, height_kpc: 0.3, r_max_kpc: 9, light: 0.6, arm_contrast: 0.25, colour: "#ddd2d8", colour_outer: "#cfcadc",
      source: "scale length 1.4 kpc in the K band (Regan & Vogel 1994; Simon et al. 2006 give 1.36 +/- 0.06 kpc), as cited; height assumed; cut at 9 kpc, past the catalogue's 7.5 kpc radius"}
-  - {kind: arms, what: "flocculent arms of young stars", count: 2, pitch_deg: 22, r_from_kpc: 0.8, r_to_kpc: 7.5, width_kpc: 0.45, height_kpc: 0.12, scale_kpc: 2.5, segments: 0.55, light: 0.28, colour: "#b0c4ff",
+  - {kind: arms, what: "flocculent arms of young stars", count: 2, pitch_deg: 22, r_from_kpc: 0.8, r_to_kpc: 7.5, width_kpc: 0.45, height_kpc: 0.12, scale_kpc: 2.5, segments: 0.55, light: 0.28, colour: "#b9c4ee",
      source: "illustrative pitch and segments; the bluer light extends further than the K band's (Regan & Vogel 1994 tabulate scale lengths by band): 2.5 kpc assumed"}
   - {kind: knots, what: "H II regions", count: 600, in_ring: 0, size_kpc: 0.04, height_kpc: 0.06, light: 0.05, colour: "#ff8fa0",
      source: "placed statistically along the arms; not a catalogue of positions"}
@@ -36,7 +36,7 @@ layers:
   - {kind: dust-disc, what: "a thin dust disc", scale_kpc: 2, height_kpc: 0.06, weight: 0.4, source: "assumed"}
 colours:
   mode: true
-  note: "Broad-band colours of the populations, in display values: a pale disc, blue-white arms, pink H II regions; bluer overall than Andromeda, as an Sc galaxy is. Not enhanced."
+  note: "Matched to its photograph at the hand-over (ESO eso1424a, g and r with H-alpha): mean colours measured 2026-10-15 core #bbb8b2, inner #857073, disc #353037; the model takes them halfway to neutral (nucleus #f2efe8, disc #ddd2d8), arms blue-white, pink H II regions. Not enhanced."
 drawn: [model]
 sources:
   - "Zaritsky, Elston & Hill 1989, AJ 97, 97 (inclination 56 degrees; read through the papers that cite it)"
@@ -46,7 +46,7 @@ sources:
 review:
   data_vs_model: "A parametric model: the inclination, the disc's scale length and NGC 604's place are published; the arms, the knots, the thickness and the light shares are ours, labelled."
   geometry: "pa 23 / incl 56; the near side and so the tilt's sign are not established here and are assumed; the arms' winding is chosen, not measured."
-  colours: "True colours of the populations in display values (mode: true); nothing enhanced."
+  colours: "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced."
   distance: "The record's: 2.725 Mly (2.38-3.07), the Messier table's."
   credits: "CREDITS.md section 3l, Andromeda and galaxy structure."
   by: "the stage-d builder (an agent, not independent); a person's science sign-off is still owed (task 33, internal #785)"
