@@ -32,6 +32,7 @@ const { stage } = await import(join(JS, 'scene/stage.js'));
 const { createCameraRig, EDGE_LY, edgeDistance, steadyDistance } = await import(join(JS, 'scene/camera.js'));
 const { EDGE_KM } = await import(join(JS, 'scene/handoff.js'));
 const { EXOTICS } = await import(join(JS, 'data/exotics.js'));
+const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
 
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -47,8 +48,13 @@ const T = MAN.tiles[0];
 check(createHash('sha256').update(BIN).digest('hex') === T.sha256, 'the manifest\'s sha256 is the tile\'s');
 check(T.bytes === BIN.byteLength && T.count === tile.count && MAN.names.length === tile.count, `the manifest counts the tile (${T.count} rows, ${tile.count} read, ${MAN.names.length} names)`);
 const fileBytes = BIN.byteLength + Buffer.byteLength(JSON.stringify(MAN));
-check(fileBytes <= 300000, `the tile and its manifest are at most 300 kB (${fileBytes} B; design section 11)`);
+check(fileBytes <= BUDGETS.deep_localvolume_bytes, `the tile and its manifest are within the budget (${fileBytes} B of ${BUDGETS.deep_localvolume_bytes}; registry/budgets.yaml deep_localvolume_bytes)`);
 check(tile.count >= 700 && tile.count <= 900, `about 800 galaxies of the local volume (${tile.count})`);
+{
+  const { WE_SHOW } = await import(join(JS, 'data/ladder.js'));
+  const row = (WE_SHOW || []).find((r) => /nearby galaxies/.test(r.what));
+  check(row && row.n === tile.count, `the "how far" panel's honesty row counts the tile (${row && row.n} against ${tile.count})`);
+}
 check(/Karachentsev/.test(MAN.source.name) && /J\/AJ\/145\/101/.test(MAN.source.vizier) && MAN.source.terms_read && MAN.source.credit, 'the source, its terms as read and its credit travel with the tile');
 let inferred = 0;
 let bad = 0;
@@ -100,7 +106,7 @@ const look = (from, at) => { cam.position.set(...from); cam.up.set(0, 1, 0); cam
 look([0, 5, 30], [0, 0, 0]);
 layer.frame({ camera: cam, renderer, stage, gain: 1 });
 let s = layer.stats();
-check(s.culled === null && layer.group.visible && s.calls === 2, `from 30 Mly the tile is drawn in two calls (${s.calls}, culled ${s.culled})`);
+check(s.culled === null && layer.group.visible && s.calls === BUDGETS.deep_localvolume_draw_calls, `from 30 Mly the tile is drawn in ${BUDGETS.deep_localvolume_draw_calls} calls (${s.calls}, culled ${s.culled}; registry/budgets.yaml deep_localvolume_draw_calls)`);
 check(s.bytes > 0 && s.bytes < 100000, `its GPU attributes are fixed and small (${s.bytes} B)`);
 look([0, 0, 300], [0, 0, 600]);
 layer.frame({ camera: cam, renderer, stage, gain: 1 });

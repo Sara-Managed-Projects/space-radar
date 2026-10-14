@@ -300,7 +300,7 @@ const BLOCKS = {
   d: ['galaxies'],
 
   // e. cosmic scale (#790): scenes 17-21 again with the local volume, the horizon and the 50 Gly edge.
-  e: [],
+  e: ['cosmic'],
 
   // f. the two journeys (#791): one stop per trip, and the trip frame.
   f: [],
@@ -562,7 +562,60 @@ const GROUPS_D = {
 };
 
 // e. cosmic scale's groups go in this object.
-const GROUPS_E = {};
+// e. (stage e, #790) Scenes 17-21 of block a are the before and after of the edge itself. These add the
+//    local volume seen from aside (its points and its lines of range), TON 618 selected (its card's
+//    comoving distance and light-travel time, met on the Local Group's stage from a steady distance),
+//    the horizon's near wall from the climb's own "edge" (the control, not a pose), and the wheel held
+//    at 50 billion light-years. Each writes the layer's and the shells' state beside its picture.
+const GROUPS_E = {
+  cosmic: async () => {
+    const lyOf = () => Math.round(rig.state.distance * sr.stage.unitKm / LY_KM);
+    const cosmicState = () => ({
+      lv: sr.deep && sr.deep.stats ? (sr.deep.stats().layers || []) : null,
+      shells: sr.shells && sr.shells.state ? sr.shells.state() : null,
+      cameraFromSunLy: Math.round(sr.camera.position.length() * sr.stage.unitKm / LY_KM), // the rung's origin is the Sun
+    });
+    try {
+      sr.deselect();
+      await stage('local-group', 9000);
+      const mly = (n) => n * 9.4607304725808e18 / sr.stage.unitKm;
+      const sun = pos('sun') || { x: 0, y: 0, z: 0 };
+      // The local volume from 25 Mly, a little above the Sun's line to the Virgo direction, then from aside.
+      const virgo = eqToScene(187.7, 12.4);
+      rig.flyTo({ targetScene: sun, offset: unit(mix(neg(virgo), 1, { x: 0, y: 1, z: 0 }, 0.6)), distance: mly(25), ms: 0 });
+      out.e = { lv25: (await snap('23-local-volume-25mly', 'stage e: the local volume from 25 Mly: 520 measured galaxies as points, 280 inferred ones as lines of range')).deep };
+      out.e.state25 = cosmicState();
+      rig.flyTo({ targetScene: sun, offset: unit(cross(virgo, { x: 0, y: 1, z: 0 })), distance: mly(12), ms: 0 });
+      await snap('24-local-volume-aside', 'stage e: the local volume from 12 Mly, looking across the line of sight: the lines are depth ranges');
+      out.e.stateAside = cosmicState();
+      // TON 618: chosen, as a search result is; met on this stage, a thousandth of its distance out.
+      const ton = sr.recordById('exotic-ton-618');
+      if (ton) {
+        if (ton.layer && !sr.isLayerOn(ton.layer)) sr.setLayerOn(ton.layer, true);
+        sr.select(ton, { fly: true, undo: false });
+        await sleep(8000);
+        const row = await snap('25-ton618-selected', 'stage e: TON 618 selected: its card says how far it is now (comoving, Planck 2018) and how long its light took');
+        out.e.ton = { stage: row.stage, distanceLy: lyOf(), card: row.card };
+        sr.deselect();
+      } else out.problems.push('missing record exotic-ton-618');
+      // The climb's own edge, as the Stars tab's "The edge of the map" row flies it.
+      sr.setStage('local-group');
+      rig.flyTo({ targetScene: sun, distance: mly(1000), ms: 0 });
+      await sleep(3000);
+      const climb = sr.wantClimb ? await sr.wantClimb() : null;
+      if (climb) {
+        await new Promise((resolve) => { climb.toEdge({ onArrive: resolve }); setTimeout(resolve, 45000); });
+        await snap('26-edge-by-the-climb', 'stage e: "The edge of the map": 50 billion light-years, the horizon\'s near wall and the words for the band past it');
+        out.e.edge = { distanceLy: lyOf(), state: cosmicState() };
+      } else out.problems.push('no climb to fly to the edge');
+      // A hand on the wheel cannot pass the edge: ask for 169 Gly, as the old edge was.
+      rig.flyTo({ targetScene: sun, distance: mly(169000), ms: 0 });
+      await sleep(1500);
+      out.e.wheel = { askedLy: 169e9, gotLy: lyOf() };
+      if (Math.abs(out.e.wheel.gotLy / 5e10 - 1) > 0.001) out.problems.push(`the wheel was not held at 50 Gly (${out.e.wheel.gotLy} ly)`);
+    } catch (e) { look.errors.push('probe: the cosmic step threw: ' + (e && e.stack || e)); }
+  },
+};
 
 // f. the journeys' groups go in this object.
 const GROUPS_F = {};
@@ -585,6 +638,7 @@ const POSES = {
   'DS-09': ['m31', 'galaxies'], 'stage-d': ['m31', 'milkyway', 'galaxies'],
 
   // e.
+  'DS-10': ['far', 'cosmic'], 'DS-11': ['far', 'cosmic'], 'DS-17': ['far', 'cosmic'], 'DS-18': ['far', 'cosmic'],
 
   // f.
 

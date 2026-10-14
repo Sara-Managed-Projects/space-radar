@@ -140,6 +140,20 @@ sources:
     cost: none
     checked: 2026-10-09
 
+  # 2026-10-14 (internal spec 0075 stage e): a catalogue, read by a build script and pinned by SHA-256
+  # in it (scripts/build_deep_localvolume.py); its terms are the publisher's, through the archive.
+  - id: cds-vizier
+    name: CDS VizieR catalogue archive (Strasbourg)
+    match: ["https://cdsarc.cds.unistra.fr/"]
+    url: https://vizier.cds.unistra.fr/
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Commercial use depends on each catalogue's origin (the same page); Space Radar is free and non-commercial. The package's 'ODbL per the package' is SIMBAD's licence, not VizieR's."
+    account: none
+    cost: none
+    checked: 2026-10-14
+
   - id: github-octicons
     name: GitHub Octicons (the mark in the sources sheet)
     match: ["https://github.com/primer/octicons"]
