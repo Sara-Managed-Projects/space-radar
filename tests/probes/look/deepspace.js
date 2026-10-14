@@ -345,13 +345,18 @@ const GROUPS_B = {
     };
     const deg = (d) => turn(d * Math.PI / 180);
     const hero = () => { const s = sr.deep.stats(); return (s.heroes || []).find((h) => h.id === 'helix') || null; };
+    // On our line of sight: from the Helix toward the Sun, where its photograph was taken from.
+    const onLine = () => { const H = pos(id), S = pos('sun') || { x: 0, y: 0, z: 0 }; if (H) rig.flyTo({ targetScene: H, offset: unit(sub(S, H)), distance: rig.state.distance, ms: 0 }); };
     out.helix = {};
+    onLine();
+    await sleep(1000);
     await atPx(150);
     await snap('b01-helix-150px', 'the Helix at 150 px in radius, on our line of sight: the photograph, the star on it');
     deg(60);
     await pair('b02-helix-150px-turned60', 'the same size, 60 degrees round: the reconstruction (and the point glow\'s last share)');
     out.helix.at150 = hero();
-    deg(-60);
+    onLine();
+    await sleep(1000);
     await atPx(300);
     await snap('b03-orbit-00', 'level 3, 300 px: on our line of sight (the photograph)');
     deg(30);
@@ -364,10 +369,7 @@ const GROUPS_B = {
     try { sr.drawn.set('measured'); await snap('b07-measured-60', 'the same, Measured look: no generated grain, nothing moves'); } finally { sr.drawn.set('film'); }
     const expo = sr.exposure ? sr.exposure.mode() : null;
     if (expo) { try { sr.exposure.set('deep'); await snap('b08-deep-exposure-60', 'the same, Deep exposure: the ENHANCED line colours (declared)'); } finally { sr.exposure.set(expo); } }
-    if (!phone && sr.quality && sr.quality.setChoice) {
-      const before = (sr.quality.describe() || {}).choice || 'auto';
-      try { sr.quality.setChoice('low'); await sleep(2000); await snap('b09-low-tier-60', 'the same at Low (tier 0): 4 samples a layer, no noise volume, fewer knots'); out.helix.low = hero(); } finally { sr.quality.setChoice(before); }
-    }
+    // T0 (4 samples a layer, no noise volume, 600 knots) is the 390 x 844 run's: a phone is tier 0.
     deg(20);
     rig.flyTo({ distance: 2.4 * LY_KM / sr.stage.unitKm, ms: 0 });
     await pair('b10-near', 'near: 2.4 ly from the white dwarf, 80 degrees off our line; the knots on the inner disc\'s rim');

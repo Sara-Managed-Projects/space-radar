@@ -118,7 +118,7 @@ const g = H.geometryOf();
 // --- 4. the GLSL is written from the same numbers -----------------------------------------------------
 {
   const f = H.SHADERS.gas;
-  for (const [k, v] of Object.entries(H.SHAPE)) if (!['sigma'].includes(k)) check(f.includes(Number(v).toFixed(3)), `GAS_FRAG carries SHAPE.${k} (${v})`);
+  for (const [k, v] of Object.entries(H.SHAPE)) if (!['sigma', 'exposure', 'adapt'].includes(k)) check(f.includes(Number(v).toFixed(3)), `GAS_FRAG carries SHAPE.${k} (${v})`);
   check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec4 shellSpan\(/.test(f), 'the fragment has the same two span functions');
   check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/52\.9829189/.test(f), 'a hash of the pixel for the offset (no diagonal pattern of interleaved gradient noise)');
   check(/if \( uNoiseAmp <= 0\.0 \) return 1\.0;/.test(f), 'no noise volume is read when the noise is off (T0, Measured)');
@@ -179,7 +179,10 @@ const g = H.geometryOf();
   // Shares: the photograph's own, the glow's own fade.
   const sh = H.sharesFor({ level: 1, rPx: 300, photo: 1 });
   check(sh.gas === 0 && sh.knots === 0 && sh.star === 0.5, 'on our line, with its photograph drawn, the gas gives way and the star is half');
-  check(H.sharesFor({ level: 1, rPx: 110, photo: 0 }).gas === 0 && H.sharesFor({ level: 1, rPx: 210, photo: 0 }).gas === 1 && H.sharesFor({ level: 1, rPx: Infinity, photo: 0 }).gas === 1, 'off it, the gas takes over from the point glow by the glow\'s own fade (110 to 210 px), and holds inside');
+  check(H.sharesFor({ level: 1, rPx: 150, photo: 0 }).gas === 1 && H.sharesFor({ level: 1, rPx: Infinity, photo: 0 }).gas === 1, 'off it the gas is whole from level 2 (the point glow steps back for it: main.js), and holds inside');
+  const lt = (r) => H.sharesFor({ level: 1, rPx: r, photo: 0, viewH: 900 }).light;
+  check(lt(150) === 1 && lt(300) === 1 && near(lt(Infinity), H.SHAPE.adapt, 1e-12) && lt(700) < 1 && lt(700) > H.SHAPE.adapt, `its light adapts only once it grows past the view: 1 at 150 and 300 px, ${lt(700).toFixed(2)} at 700, ${H.SHAPE.adapt} inside`);
+  check(/heroShares: \(\) =>/.test(readFileSync(join(JS, 'scene/deep/deepsky.js'), 'utf8')) && /ctx\.deep\.heroShares\(\)/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'the point glow steps back for a drawn hero as for a photograph (deepsky.js heroShares, main.js)');
   check(H.sharesFor({ level: 0, rPx: 300, photo: 0 }).gas === 0, 'below level 2 nothing of it draws');
   // Looks: the noise only under Film; time only under Film, at most 1 % a minute; still under reduced motion and ?look=1.
   check(Object.values(H.UNDER_MEASURED).every((r) => X.MEASURED_RULES.includes(r)) && H.UNDER_MEASURED.noise === 'hidden' && H.UNDER_MEASURED.drift === 'still', 'UNDER_MEASURED: the noise hidden, the drift still');

@@ -53,8 +53,8 @@ export const HERO = {
       "diameter_arcsec": 742,
       "tilt_deg": 53,
       "near_pa_deg": 168,
-      "tube_arcsec": 110,
-      "tube_note": "the paper gives the ring's diameter (742″ × 446″ projected) and not its thickness: the tube is drawn 110″ (a third of its radius, so that the ring and the disc's rim overlap as the photograph's orange band does: 250″ to 450″ from the star) as an illustration",
+      "tube_arcsec": 90,
+      "tube_note": "the paper gives the ring's diameter (742″ × 446″ projected) and not its thickness: the tube is drawn 90″ (a quarter of its radius, so that the ring and the disc's rim overlap as the photograph's orange band does, 250″ to 450″ from the star) as an illustration",
       "lines": [
         "Ha",
         "NII"
