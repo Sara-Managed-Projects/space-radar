@@ -268,7 +268,7 @@ clips:
   - {trip: "roof-to-the-edge", stop: "radio", hash: "5c17e9a4ec1d91da", seconds: 20.51, words: 58, lufs: -16.4, opus: 80939, m4a: 105900, vtt: 425, wer: 0.0, heard: "28e87aeed45b0394", voice: 0}
   - {trip: "roof-to-the-edge", stop: "milky-way", hash: "396bdfe3743543f8", seconds: 14.97, words: 39, lufs: -16.5, opus: 58464, m4a: 77647, vtt: 323, wer: 0.0, heard: "9fd2824a7a1e82fe", voice: 0}
   - {trip: "roof-to-the-edge", stop: "local-group", hash: "079389490fe0848a", seconds: 16.4, words: 42, lufs: -16.5, opus: 65177, m4a: 85036, vtt: 318, wer: 0.0, heard: "1632be83f7b29742", voice: 0}
-  - {trip: "roof-to-the-edge", stop: "edge", hash: "8b9a519a0cbd0cbc", seconds: 26.76, words: 73, lufs: -16.4, opus: 106843, m4a: 137848, vtt: 526}
+  - {trip: "roof-to-the-edge", stop: "edge", hash: "8b9a519a0cbd0cbc", seconds: 26.76, words: 73, lufs: -16.4, opus: 106843, m4a: 137848, vtt: 526, wer: 0.0, heard: "fd3a1c2ba5ad3664", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "all", hash: "1d484c40d627d939", seconds: 19.63, words: 58, lufs: -16.4, opus: 79052, m4a: 101554, vtt: 381, wer: 0.0, heard: "f9a6010898f891b3", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "e6b65efc612f8dab", seconds: 12.41, words: 34, lufs: -16.5, opus: 48456, m4a: 64607, vtt: 262, wer: 0.0, heard: "0360c1a0116a1c61", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "trappist", hash: "5c6e1e960288ec92", seconds: 15.73, words: 45, lufs: -16.4, opus: 62854, m4a: 81559, vtt: 315, wer: 0.0, heard: "85b57d8e9120dba3", voice: 0}
