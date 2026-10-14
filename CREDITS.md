@@ -1418,7 +1418,25 @@ illustrations, and the card says so.
 
 ### The Helix (stage b)
 
-Stage b writes this sub-section, and only this one.
+The Helix's reconstruction (`site/js/scene/deep/helix.js`, its numbers in
+`registry/deepsky-heroes/helix.yaml`) is computed here from facts read in each source on 2026-10-15;
+no text, figure, image or model file of any of them is shipped. The sizes are the papers' arcseconds,
+turned into light-years at the registry's distance (655 ly, the Gaia parallax above).
+
+| what | the numbers | from |
+|---|---|---|
+| the inner disc and the outer ring | an inner disc 499″ across and about 100″ thick, tilted 23° out of the plane of the sky, near side toward position angle 288°; an outer ring (a torus) 742″ across, tilted 53°, near side toward 168°, "almost perpendicular to the inner-disk"; an outermost ring 1 500″ across | O'Dell, McCullough & Meixner 2004, AJ 128, 2339 (arXiv:astro-ph/0407556) |
+| the alternative | the outer ring may instead be lobes perpendicular to the inner disc; the card says so | O'Dell 2005, RevMexAA (SC) (arXiv:astro-ph/0505539) |
+| the interpretation | "two gas disks nearly perpendicular to each other"; the animation by NASA, ESA and A. Feild (STScI) is read, not shipped | NASA Science, Helix Nebula with annotated features; NASA, Helix Nebula (both read 2026-10-15) |
+| the knots | about 23 000 (NICMOS); found 2.2′ to 6.4′ from the star; heads at least twice the Solar System, tails about 1 000 au, pointing away from the star. 600 to 2 400 are drawn, at those radii and sizes; their places are seeded, not catalogued | Meixner et al. 2005, AJ 130, 1784 (arXiv:astro-ph/0509887); Matsuura et al. 2009, ApJ 700, 1067 (arXiv:0906.2870); O'Dell & Handron, STScI news release 1996-13 |
+| the white dwarf | about 100 000 K (103 600 ± 5 500 K; later fits 110 000 to 120 000 K): its colour is a blackbody's | Napiwotzki 1999 and Traulsen et al. 2005, as quoted by Marshall et al. 2023, AJ (doi:10.3847/1538-3881/ac9d90, arXiv:2211.02251) |
+| the colours under Eye and Camera | the colour of each zone (blue-green inside 200″, orange 250″ to 350″, red beyond) and the inner disc's projected axis (position angle 290°, axis ratio 0.88), measured here from the photograph the app already shows | ESO eso0907a, credit ESO, CC BY 4.0 (section 3 above) |
+
+Under the Deep exposure the line colours are an ENHANCED narrowband palette ([O III] teal, Hα red,
+[N II] crimson), the convention of Hubble's line images, and the registry says so. The profiles inside
+each layer, the outer ring's thickness, the outermost ring's width and the gas's grain under the Film
+look are illustrations shaped to the sources above; the card names the paper and says the knots are
+placed at their measured distances, not one by one.
 
 ### The Large Magellanic Cloud and the Tarantula (stage c)
 
