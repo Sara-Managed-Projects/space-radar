@@ -148,7 +148,7 @@ export function createDeepSky(THREE, env = {}) {
     const thin = g.kind === 'shell' || g.kind === 'remnant';
     const march = holderSteps({ tier: q.tier, latched: q.latched, cloud, thin }) > 0;
     const v = createGasMesh(THREE, {
-      name: `deep-holder-${record.id}`, kind, colour: g.colour, noisy: cloud, march,
+      name: `deep-holder-${record.id}`, kind, colour: g.colour, noisy: cloud, march, holder: true,
       noise: noiseTexture(THREE, q.tier >= 1 ? 64 : 32), seed: (record.id.length * 0.137) % 1,
     });
     v.mesh.matrixAutoUpdate = false;
@@ -157,7 +157,9 @@ export function createDeepSky(THREE, env = {}) {
     const md = record.meta || {};
     const thick = md.kind === 'galaxy' ? THICK[md.morphology] || 1 : 1;
     // The column through the centre, face on, matches the point glow's centre: the hand-over is level.
-    v.material.uniforms.uNorm.value = peak2d(kind) / Math.max(1e-6, columnJs(kind, thick));
+    // On T0 the column is the soft profile's, in closed form (gasmat.js SOFT_FRAG): normalised as that.
+    const nk = march ? kind : KINDS.soft;
+    v.material.uniforms.uNorm.value = peak2d(nk) / Math.max(1e-6, columnJs(nk, thick));
     v.material.uniforms.uGain.value = gain;
     group.add(v.mesh);
     const steps = march ? holderSteps({ tier: q.tier, cloud, thin }) : 0;

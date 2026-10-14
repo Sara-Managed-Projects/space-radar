@@ -64,6 +64,42 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
   check(!/colorspace_fragment|tonemapping_fragment/.test(frag + G.SHADERS.shell), 'the gas shades in display values: no colour-space or tone-mapping chunk (COLOUR_POLICY)');
 }
 
+// --- T0 has no layers, and a holder never veils the view (internal #845; review of #1178) ---------
+{
+  // The closed form is the soft profile's own column: against a fine numerical integral of densityJs.
+  for (const [b2, s0, s1] of [[0, -1, 1], [0.25, -0.866, 0.866], [0.5, 0, 0.7071], [0.81, -0.2, 0.4359]]) {
+    let num = 0; const n = 4000;
+    for (let i = 0; i < n; i++) { const sx = s0 + ((i + 0.5) / n) * (s1 - s0); num += G.densityJs(0, Math.sqrt(b2 + sx * sx)) * ((s1 - s0) / n); }
+    check(Math.abs(G.softColumnJs(b2, s0, s1) - num) < 2e-4, `the T0 column in closed form matches the integral (b2 ${b2}: ${G.softColumnJs(b2, s0, s1).toFixed(5)} vs ${num.toFixed(5)})`);
+  }
+  // Seen from outside, across the disc, the column falls smoothly from the centre to the rim: no step.
+  let prev = Infinity, smooth = true, maxJump = 0;
+  for (let i = 0; i <= 400; i++) {
+    const b2 = (i / 400) * 0.999, h = Math.sqrt(1 - b2);
+    const c = G.softColumnJs(b2, -h, h);
+    if (c > prev + 1e-9) smooth = false;
+    if (Number.isFinite(prev)) maxJump = Math.max(maxJump, prev - c);
+    prev = c;
+  }
+  check(smooth && maxJump < 0.01, `the T0 column falls monotonically and without a step across the object (largest step ${maxJump.toFixed(4)})`);
+  check(!/uShellDr|Icosahedron/.test(G.SHADERS.soft) && /softColumn\( b2, s0, h \)/.test(G.SHADERS.soft), 'the T0 shader integrates once per pixel: no shells to show');
+  const t0mesh = G.createGasMesh(THREE, { kind: 0, march: false });
+  check(t0mesh.mesh.geometry.getAttribute('position').count <= 1000 && t0mesh.material.side === THREE.BackSide, 'the T0 holder is one bounding sphere drawn by its back faces, not nested spheres');
+  t0mesh.dispose();
+  // From inside, only rays near the centre carry light; from outside, the outskirts fall away (E²).
+  const ro = [0.5, 0, 0];
+  const toCentre = G.holderShapeJs(1, ro, [-1, 0, 0]);
+  const away = G.holderShapeJs(1, ro, [1, 0, 0]);
+  const sideways = G.holderShapeJs(1, ro, [0, 1, 0]);
+  check(toCentre > 0.99 && away < 0.02, `inside, a ray through the centre keeps its light (${toCentre.toFixed(2)}) and one away from it has none (${away.toFixed(3)})`);
+  check(sideways < 0.3, `inside, a ray that misses the centre by half a radius is dim (${sideways.toFixed(2)})`);
+  check(Math.abs(G.holderShapeJs(0.3, [0, 0, 3], [0, 0, -1]) - 0.09) < 1e-9, 'outside, a holder\'s light is the column squared: its outskirts fall away');
+  check(/if \( uHolder > 0\.5 \) E = holderShape\( E, ro, rd \);/.test(G.SHADERS.march) && /holderShape/.test(G.SHADERS.soft), 'both holder shaders shape the light the same way');
+  const h = G.createGasMesh(THREE, { kind: 0, holder: true }), hero = G.createGasMesh(THREE, { kind: 0 });
+  check(h.material.uniforms.uHolder.value === 1 && hero.material.uniforms.uHolder.value === 0, 'a holder is shaped; a hero\'s own gas is not');
+  h.dispose(); hero.dispose();
+}
+
 // --- the noise: baked, seeded, the same every run -----------------------------------------------
 {
   const a = G.noiseVolume(16, 7), b = G.noiseVolume(16, 7), c = G.noiseVolume(16, 8);

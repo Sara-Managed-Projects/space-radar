@@ -22,8 +22,8 @@
 // no temporal state, nothing to accumulate. Noise in the gas is a baked 3D texture (32³ on T0, 64³ on
 // T1 and up), not octaves per ray.
 //
-// TIERS (design section 5). T0 and the frame latch: no march, nested shells of the same colours (one
-// draw call). T1: 12-16 steps; T2: 24-32; Ultra 48, only for the selected hero at 300 px or more; times
+// TIERS (design section 5). T0 and the frame latch: no march; the soft profile's column in closed
+// form (one draw call, no layers: nested shells banded on a phone, internal #845). T1: 12-16 steps; T2: 24-32; Ultra 48, only for the selected hero at 300 px or more; times
 // min(1, r_px / 300). Before the pixel-ratio governor steps down, the steps do (frameMs over 24 ms, or any
 // governor step): the hero rule "lower the march before the pixel ratio" (requirement 18).
 //
@@ -113,6 +113,29 @@ export function marchJs({ rho = [], sigma = 0, ds = 0.1 } = {}) {
   return { C, T };
 }
 
+const erfJs = (x) => {
+  const sg = Math.sign(x); x = Math.abs(x);
+  const t = 1 / (1 + 0.3275911 * x);
+  return sg * (1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x));
+};
+/** The T0 shader's closed-form column of the soft profile from s0 to s1 at impact b2. Pure. */
+export function softColumnJs(b2, s0, s1) {
+  const k = 3.2, sk = Math.sqrt(k);
+  const i0 = 0.5 * Math.sqrt(Math.PI / k) * (erfJs(sk * s1) - erfJs(sk * s0));
+  const i2 = (0.5 / k) * i0 - (0.5 / k) * (s1 * Math.exp(-k * s1 * s1) - s0 * Math.exp(-k * s0 * s0));
+  return Math.exp(-k * b2) * ((1 - b2) * i0 - i2);
+}
+/** A holder's shaping (the GLSL's holderShape): E² outside, and only near-centre rays from inside. Pure. */
+export function holderShapeJs(E, ro, rd) {
+  const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const tc = Math.max(0, -(ro[0] * rd[0] + ro[1] * rd[1] + ro[2] * rd[2]));
+  const dmin = Math.hypot(ro[0] + rd[0] * tc, ro[1] + rd[1] * tc, ro[2] + rd[2] * tc);
+  const inside = 1 - sm(0.85, 1, Math.hypot(...ro));
+  const centre = 1 - sm(0, 0.6, dmin);
+  const shaped = E * E;
+  return shaped + (shaped * centre * centre - shaped) * inside;
+}
+
 /** A tileable value noise baked into size³ bytes, seeded (mulberry32): the same volume every run. Pure. */
 export function noiseVolume(size = 32, seed = 20261015) {
   let a = seed >>> 0;
@@ -170,6 +193,7 @@ uniform float uSigma;     // extinction per unit density per radius; 0 for pure 
 uniform float uNoiseAmp;  // 0 under the Measured look (UNDER_MEASURED.noise)
 uniform float uTime;      // frozen under ?look=1, reduced motion and Measured (UNDER_MEASURED.drift)
 uniform float uSeed;
+uniform float uHolder;    // 1: a holder (holderShape), 0: a hero's own gas
 uniform sampler3D uNoise;
 varying vec3 vObj;
 ${DENSITY_GLSL}
@@ -181,10 +205,25 @@ float rhoAt( vec3 p ) {
   if ( uNoiseAmp > 0.0 && rho > 0.0 ) rho *= mix( 1.0, 0.25 + 1.5 * gasNoise( p ), uNoiseAmp );
   return rho;
 }
-vec4 gasOut( float C, float T ) {
-  C *= uNorm * uGain * uShare;
+// A HOLDER (scene/deep/deepsky.js) is an illustration standing in for an object until its hero
+// exists, and it must not veil the view (review of public #1178, 2026-10-14): its light is the column's
+// SQUARE, so the outskirts fall away and the dense middle stays; and from INSIDE it, only a ray that
+// passes near the centre carries any (the closest approach of the forward ray), so the camera in a
+// galaxy sees its bright middle and no screen-wide haze over the side the panels are on.
+float holderShape( float E, vec3 ro, vec3 rd ) {
+  float tc = max( 0.0, -dot( ro, rd ) );
+  float dmin = length( ro + rd * tc );
+  float inside = 1.0 - smoothstep( 0.85, 1.0, length( ro ) );
+  float centre = 1.0 - smoothstep( 0.0, 0.6, dmin );
+  float shaped = E * E;
+  return mix( shaped, shaped * centre * centre, inside );
+}
+vec4 gasOut( float C, float T, vec3 ro, vec3 rd ) {
+  float E = C * uNorm;
+  if ( uHolder > 0.5 ) E = holderShape( E, ro, rd );
+  E *= uGain * uShare;
   // a soft shoulder, so an edge-on disc is bright and not a white bar (no tone mapping here)
-  vec3 col = uColour * ( C / ( 1.0 + 0.35 * C ) ) * 0.34;
+  vec3 col = uColour * ( E / ( 1.0 + 0.35 * E ) ) * 0.34;
 #ifdef GAS_ABSORB
   return vec4( col, 1.0 - T );   // premultiplied over: what is behind is kept by T
 #else
@@ -236,28 +275,46 @@ void main() {
     T *= exp( -uSigma * rho * ds );
     if ( T < 0.02 ) break;
   }
-  gl_FragColor = gasOut( C, T );
+  gl_FragColor = gasOut( C, T, ro, rd );
 }
 `;
 
-// T0 and the latch: no march. Each fragment is a point on one of the nested shells; it adds the density
-// there times the shell's spacing along the ray (1 / |cos| of the view to the shell, capped).
-const SHELL_FRAG = /* glsl */ `
-uniform float uShellDr;
+// T0 and the latch: no march and NO LAYERS. Nested shells banded on a phone (the look of 2026-10-14,
+// internal #845), so the soft profile exp(-3.2 r²)(1 - r²) is integrated along the ray in closed form,
+// once per pixel on the bounding sphere's back faces: the same smooth column the march approximates, with
+// nothing in it that could show as a ring. (A kind's finer shape, a ring or a nucleus, waits for T1.)
+const SOFT_FRAG = /* glsl */ `
 ${COMMON_GLSL}
 #include <common>
 #include <logdepthbuf_pars_fragment>
+float erfA( float x ) { // Abramowitz and Stegun 7.1.26, |error| < 1.5e-7
+  float s = sign( x );
+  x = abs( x );
+  float t = 1.0 / ( 1.0 + 0.3275911 * x );
+  float y = 1.0 - ( ( ( ( 1.061405429 * t - 1.453152027 ) * t + 1.421413741 ) * t - 0.284496736 ) * t + 0.254829592 ) * t * exp( -x * x );
+  return s * y;
+}
+// The integral of exp(-k (b2 + s²)) (1 - b2 - s²) ds from s0 to s1, k = 3.2: softColumnJs mirrors it.
+float softColumn( float b2, float s0, float s1 ) {
+  float k = 3.2;
+  float sk = sqrt( k );
+  float i0 = 0.5 * sqrt( PI / k ) * ( erfA( sk * s1 ) - erfA( sk * s0 ) );
+  float i2 = 0.5 / k * i0 - 0.5 / k * ( s1 * exp( -k * s1 * s1 ) - s0 * exp( -k * s0 * s0 ) );
+  return exp( -k * b2 ) * ( ( 1.0 - b2 ) * i0 - i2 );
+}
 void main() {
   #include <logdepthbuf_fragment>
   if ( uShare <= 0.0 ) discard;
-  vec3 n = normalize( vObj );
-  vec3 rd = normalize( vObj - uCamObj );
-  // The path through a shell grows as 1 / cos toward its rim; a shell standing for a slab of gas fades
-  // there instead, so no shell's edge is ever a line (the first T0 look, 2026-10-14, drew hard rims).
-  float c = abs( dot( n, rd ) );
-  float slant = smoothstep( 0.0, 0.45, c ) / max( 0.33, c );
-  float ds = uShellDr * slant * length( uObjLen * rd );
-  gl_FragColor = gasOut( density( vObj * 0.999 ) * ds, 1.0 );
+  vec3 ro = uCamObj;
+  vec3 rd = normalize( vObj - ro );
+  float tc = -dot( ro, rd );
+  float b2 = dot( ro, ro ) - tc * tc;
+  if ( b2 >= 1.0 ) discard;
+  float h = sqrt( 1.0 - b2 );
+  float s0 = max( -h, -tc );      // the camera is at s = -tc: nothing behind it counts
+  if ( h <= s0 ) discard;
+  float C = max( 0.0, softColumn( b2, s0, h ) ) * length( uObjLen * rd );
+  gl_FragColor = gasOut( C, 1.0, ro, rd );
 }
 `;
 
@@ -295,6 +352,7 @@ function uniformsFor(THREE, opts) {
     uNoiseAmp: { value: 0 },
     uTime: { value: 0 },
     uSeed: { value: Number(opts.seed) || 0 },
+    uHolder: { value: opts.holder ? 1 : 0 },
     uNoise: { value: opts.noise || null },
   };
 }
@@ -324,18 +382,20 @@ export function createGasMaterial(THREE, opts = {}) {
   return blendingFor(THREE, opts, m);
 }
 
-/** The shells (T0, the latch): the same uniforms, no loop. */
-export function createShellMaterial(THREE, opts = {}) {
+/** T0 and the latch: the soft column in closed form, the same uniforms, no loop and no layers. */
+export function createSoftMaterial(THREE, opts = {}) {
   const m = new THREE.ShaderMaterial({
     vertexShader: VERT,
-    fragmentShader: SHELL_FRAG,
-    uniforms: { ...uniformsFor(THREE, opts), uShellDr: { value: 1 / (opts.shells || 6) } },
+    fragmentShader: SOFT_FRAG,
+    uniforms: uniformsFor(THREE, opts),
     transparent: COLOUR_POLICY.transparent, depthTest: !!opts.depthTest, depthWrite: COLOUR_POLICY.depthWrite,
-    toneMapped: COLOUR_POLICY.toneMapped, side: THREE.DoubleSide,
+    toneMapped: COLOUR_POLICY.toneMapped, side: THREE.BackSide,
   });
-  m.name = 'deep-gas-shells';
+  m.name = 'deep-gas-soft';
   return blendingFor(THREE, opts, m);
 }
+/** The T0 fallback's first name (design §7 called it shells); kept so callers and tests still find it. */
+export const createShellMaterial = createSoftMaterial;
 
 // The bounding sphere: an icosahedron's faces lie inside the sphere through its vertices, so it is
 // drawn a little larger and the fragment's own intersection says where the sphere really is.
@@ -345,30 +405,15 @@ function boundingGeometry(THREE) {
   if (!sphereGeo) sphereGeo = new THREE.IcosahedronGeometry(OUTSET, 2);
   return sphereGeo;
 }
-const shellGeos = new Map();
-function shellGeometry(THREE, n) {
-  if (shellGeos.has(n)) return shellGeos.get(n);
-  // n nested spheres in ONE geometry: one draw call for the whole T0 fallback.
-  const parts = [];
-  // Detail 4 (2 562 vertices a sphere): at detail 2 a phone saw the shells' facets as polygons.
-  for (let i = 1; i <= n; i++) parts.push(new THREE.IcosahedronGeometry((i - 0.5) / n, 4));
-  const pos = [];
-  for (const g of parts) { const ng = g.index ? g.toNonIndexed() : g; pos.push(...ng.getAttribute('position').array); g.dispose(); }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  shellGeos.set(n, geo);
-  return geo;
-}
-
 /**
  * One volume: a mesh whose world matrix maps the unit sphere onto the object's ellipsoid (in scene
- * units). `march` false draws the shells. Returns {mesh, material, setCamera(camera), setLook(look,
+ * units). `march` false draws the soft column in closed form (T0, the latch). Returns {mesh, material, setCamera(camera), setLook(look,
  * reduced, frozen), setSteps(n), dispose()}.
  */
 export function createGasMesh(THREE, opts = {}) {
   const march = opts.march !== false;
-  const material = march ? createGasMaterial(THREE, opts) : createShellMaterial(THREE, opts);
-  const mesh = new THREE.Mesh(march ? boundingGeometry(THREE) : shellGeometry(THREE, opts.shells || 6), material);
+  const material = march ? createGasMaterial(THREE, opts) : createSoftMaterial(THREE, opts);
+  const mesh = new THREE.Mesh(boundingGeometry(THREE), material);
   mesh.name = opts.name || 'deep-gas';
   mesh.frustumCulled = false; // the coordinator decides what is in view; the camera may be inside it
   mesh.renderOrder = Number.isFinite(opts.renderOrder) ? opts.renderOrder : -1; // with the deep-sky glows
@@ -400,4 +445,4 @@ export function createGasMesh(THREE, opts = {}) {
 }
 
 /** The shader sources, for tests/test_gasmat.mjs (the densities above are mirrored from these). */
-export const SHADERS = { vertex: VERT, march: MARCH_FRAG, shell: SHELL_FRAG, density: DENSITY_GLSL };
+export const SHADERS = { vertex: VERT, march: MARCH_FRAG, shell: SOFT_FRAG, soft: SOFT_FRAG, density: DENSITY_GLSL };
