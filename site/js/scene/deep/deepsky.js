@@ -262,9 +262,24 @@ export function createDeepSky(THREE, env = {}) {
         const steps = lv >= 3 ? marchSteps({ tier: q.tier, top: q.top, latched: q.latched, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: rp, selected: selectedId === h.def.record }) : 0;
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);
         if (share > 0) {
-          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0 });
+          // (stage c) A hero also gets the quality, the exposure's gain, the selection, the renderer and
+          // the photographs' shares, so it can fill what a photograph's frame cuts off (lmc.js).
+          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, quality: q, gain, selectedId, renderer: info.renderer, frameMs: info.frameMs, photoOf: env.pictureShare || null });
           drawnHeroes += 1;
           heroIds.add(h.def.record);
+          // (stage c) Its children are drawn by it (the Tarantula by the LMC): no holder of their own, and
+          // the card names what is drawn for them (`card` in a hero's answer: its words block, its classes).
+          for (const c of (h.profile && h.profile.children) || []) heroIds.add(c);
+          if (h.hero.card && !h.carded) {
+            h.carded = true;
+            for (const id of [h.def.record, ...((h.profile && h.profile.children) || [])]) {
+              const r = env.recordById ? env.recordById(id) : null;
+              if (!r || !r.meta) continue;
+              if (h.hero.card.copy) r.meta.heroCopy = h.hero.card.copy;
+              const d = h.hero.card.drawn && h.hero.card.drawn[id];
+              if (Array.isArray(d) && !r.meta.heroDrawn) r.meta.heroDrawn = d.slice();
+            }
+          }
           h.idleSince = 0;
         } else if (!h.idleSince) h.idleSince = now;
         else if (now - h.idleSince > HERO_KEEP_MS && lv === 0) dropHero(h);

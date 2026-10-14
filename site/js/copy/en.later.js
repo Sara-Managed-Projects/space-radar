@@ -1718,7 +1718,19 @@ Object.assign(COPY, {
   deepHelix: {},
 
   // c. The LMC and the Tarantula (stage c, internal #788) writes only inside this block.
-  deepLmc: {},
+  deepLmc: {
+    // What the card says is drawn for the LMC and the Tarantula once their model is drawn (ui/cardfacts.js
+    // honestyClause), in place of the general words for a model.
+    drawnWords: {
+      'dso-lmc': { model: 'a model of it built from Gaia’s counts of its own stars, tilted as measured' },
+      'dso-tarantula-nebula': { model: 'a model of its glowing gas round the cluster R136, at its catalogue size' },
+    },
+    // The distance caveats: rows under "Distance found by" on the card.
+    rows: {
+      'dso-lmc': [['Depth of its stars', 'Not measured star by star: at this distance a star’s parallax is too small. The model spreads its stars through the disc’s known thickness.']],
+      'dso-tarantula-nebula': [['Depth inside the LMC', 'Not measured: it is drawn at the LMC’s distance in its own direction. On the tilted disc it may lie about 2 000 light-years nearer.']],
+    },
+  },
 
   // d. Andromeda and galaxy structure (stage d, internal #789) writes only inside this block.
   deepGalaxy: {},

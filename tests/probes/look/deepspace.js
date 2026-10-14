@@ -290,8 +290,11 @@ const BLOCKS = {
   // b. the Helix (#787): its own scenes (a 150 px still, the 30 and 60 degree orbit, near, inside).
   b: [],
 
-  // c. the LMC and the Tarantula (#788): the 45 degree orbit, inside the disc, R136 near.
-  c: [],
+  // c. the LMC and the Tarantula (#788): the hero switched on (not shipped until a person signs its
+  //    review), a's LMC, Tarantula and flight scenes again with it (their files are replaced), then its
+  //    own: the 45 and 75 degree orbits, inside the disc, R136 near, the Tarantula turned, the Measured
+  //    look, and the LMC -> Tarantula flight measured frame by frame (no teleport).
+  c: ['lmcHeroOn', 'lmc', 'tarantula', 'flight', 'lmcOrbit', 'lmcInside', 'r136', 'lmcFlightFrames', 'lmcHeroOff'],
 
   // d. Andromeda and galaxy structure (#789): face-on-ish, the edge-on approach, M33.
   d: [],
@@ -307,7 +310,86 @@ const BLOCKS = {
 const GROUPS_B = {};
 
 // c. the LMC's and the Tarantula's groups go in this object.
-const GROUPS_C = {};
+const lmcHero = () => { try { const st = sr.deep && sr.deep.stats ? sr.deep.stats() : null; return st ? (st.heroes || []).find((h) => h.id === 'lmc') || null : null; } catch (e) { return { error: String(e) }; } };
+const camPos = () => { const p = sr.camera.position; return { x: p.x, y: p.y, z: p.z }; };
+const GROUPS_C = {
+  // The LMC's hero is not shipped (requirement 20: a person signs its review first): draw it anyway.
+  lmcHeroOn: async () => {
+    if (!sr.deep || !sr.deep.debug) { out.problems.push('no sr.deep.debug: the LMC hero cannot be switched on'); return; }
+    sr.deep.debug({ force: true });
+    out.lmcHeroForced = true;
+  },
+  lmcHeroOff: async () => { if (sr.deep && sr.deep.debug) sr.deep.debug({ force: false }); },
+  // From the arrival framing round the LMC: 45 degrees (the photograph has faded; the model is whole and
+  // its tilt shows), 75 degrees (nearly edge on: the disc's thickness), and close at 45.
+  lmcOrbit: async () => {
+    if (!(await need('dso-lmc'))) return;
+    const arrival = rig.state.distance;
+    turn(Math.PI / 4);
+    await snap('c1-lmc-orbit45', 'stage c: the LMC turned 45 degrees from the arrival framing (the model, tilted as measured)');
+    out.lmcHero45 = lmcHero();
+    turn(Math.PI * 30 / 180);
+    await snap('c2-lmc-orbit75', 'stage c: the LMC turned 75 degrees: nearly edge on, the disc and its thickness');
+    rig.flyTo({ distance: arrival * 0.45, ms: 0 });
+    turn(-Math.PI * 30 / 180);
+    await snap('c3-lmc-close45', 'stage c: the LMC at 0.45 of the arrival distance, turned 45 degrees: stars resolving');
+    if (sr.drawn && sr.drawn.set) {
+      sr.drawn.set('measured');
+      await snap('c4-lmc-measured', 'stage c: the same under the Measured look (no generated dust detail)');
+      sr.drawn.set('film');
+    }
+  },
+  // Inside the disc: 3 000 ly above its middle near the bar, looking along it.
+  lmcInside: async () => {
+    if (!(await need('dso-lmc'))) return;
+    const L = pos('dso-lmc'), T = pos('dso-tarantula-nebula');
+    if (!L || !T) return;
+    const k = 1 / (sr.stage.unitKm / LY_KM);
+    const toT = unit(sub(T, L));
+    const S = pos('sun') || { x: 0, y: 0, z: 0 };
+    rig.flyTo({ targetScene: T, offset: unit(mix(neg(toT), 1, unit(sub(L, S)), -0.25)), distance: 9000 * k, ms: 0 });
+    await snap('c5-lmc-inside', 'stage c: inside the LMC, 9 000 ly from the Tarantula, looking across the bar to it');
+  },
+  // R136 near: the Tarantula selected, 600 ly from it, then turned 60 degrees (the cavity in depth).
+  r136: async () => {
+    if (!(await need('dso-tarantula-nebula'))) return;
+    const k = 1 / (sr.stage.unitKm / LY_KM);
+    rig.flyTo({ distance: 1500 * k, ms: 0 });
+    await snap('c6-tarantula-1500ly', 'stage c: the Tarantula selected, 1 500 ly away: its gas, R136, the LMC round it');
+    rig.flyTo({ distance: 600 * k, ms: 0 });
+    await snap('c7-r136-near', 'stage c: 600 ly from R136, the heart of the Tarantula');
+    turn(Math.PI / 3);
+    await snap('c8-tarantula-turned60', 'stage c: the Tarantula turned 60 degrees: its photograph has faded, the model holds');
+    out.lmcHeroR136 = lmcHero();
+  },
+  // LMC -> Tarantula with no teleport: the camera sampled every 100 ms of the flight; a frame-to-frame
+  // move larger than half the camera's distance to its target would be a jump.
+  lmcFlightFrames: async () => {
+    if (!(await need('dso-lmc'))) return;
+    const r = sr.recordById('dso-tarantula-nebula');
+    if (!r) return;
+    const samples = [];
+    sr.select(r, { fly: true, undo: false });
+    const t0 = Date.now();
+    let shots = 0;
+    while (Date.now() - t0 < 9000) {
+      const st = lmcHero();
+      samples.push({ ms: Date.now() - t0, cam: camPos(), distance: rig.state.distance, flying: !!rig.state.flying, level: st ? st.level : null, share: st ? st.share : null });
+      if (shots < 3 && Date.now() - t0 > [600, 1500, 2600][shots]) { await shot(`c9-flight-${shots + 1}`, `stage c: LMC -> Tarantula, ${Date.now() - t0} ms into the flight`); shots += 1; }
+      if (!rig.state.flying && Date.now() - t0 > 1500) break;
+      await sleep(100);
+    }
+    let worst = 0;
+    for (let i = 1; i < samples.length; i++) {
+      const a = samples[i - 1], b = samples[i];
+      const jump = Math.hypot(b.cam.x - a.cam.x, b.cam.y - a.cam.y, b.cam.z - a.cam.z) / Math.max(1e-9, Math.min(a.distance, b.distance));
+      if (jump > worst) worst = jump;
+    }
+    const heroAll = samples.every((x) => x.level === null || x.level >= 2);
+    out.lmcFlight = { samples: samples.length, worstJumpOverDistance: Math.round(worst * 1000) / 1000, lmcDrawnThroughout: heroAll, levels: samples.map((x) => x.level) };
+    if (worst > 0.5) out.problems.push(`LMC -> Tarantula: a jump of ${worst.toFixed(2)} times the camera's distance in 100 ms (a teleport)`);
+  },
+};
 
 // d. the galaxies' groups go in this object.
 const GROUPS_D = {};
@@ -329,6 +411,7 @@ const POSES = {
   // b.
 
   // c.
+  'DS-06': ['lmcHeroOn', 'lmc', 'lmcOrbit', 'lmcInside'], 'DS-07': ['lmcHeroOn', 'tarantula', 'r136', 'lmcFlightFrames'],
 
   // d.
 

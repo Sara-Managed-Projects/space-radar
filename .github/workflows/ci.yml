@@ -603,6 +603,10 @@ jobs:
         run: python3 scripts/gen_deepsky_heroes_js.py --check
       - name: site/data/dso.json is the registry's (spec 0075 stage a)
         run: python3 scripts/build-dso.py --check
+      - name: the LMC and the Tarantula - tilted as measured, nested, no star at a parallax depth (spec 0075 stage c)
+        run: node tests/test_hero_lmc.mjs
+      - name: the LMC's Gaia maps are the size and hash its profile says (spec 0075 stage c)
+        run: python3 scripts/build_deep_lmc.py --check
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)

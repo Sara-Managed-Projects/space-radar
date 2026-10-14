@@ -619,6 +619,9 @@ export function rightNowRows(record, m, passInfo) {
     // How the distance was found (spec 0075 task 6): where the registry says (registry/dso-hand.yaml).
     const est = distanceEstimate(record);
     if (est.method && COPY.deepFacts.methods[est.method]) rows.push([COPY.deepFacts.methodRow, COPY.deepFacts.methods[est.method]]);
+    // (stage c) A drawn hero's caveats about depth, from its words block (copy/en.later.js deepLmc).
+    const caveats = md.heroCopy && COPY[md.heroCopy] && COPY[md.heroCopy].rows ? COPY[md.heroCopy].rows[record.id] : null;
+    if (Array.isArray(caveats)) for (const [k, v] of caveats) rows.push([k, v]);
     const type = pick(md, 'typeText');
     if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
     const sizeLy = pickNumber(md, 'sizeLy');
@@ -970,7 +973,9 @@ export function honestyClause(record, m) {
   // the most three-dimensional thing first (spec 0075 task 6, data/deepsky.js drawnOf).
   if (klassOf(record) === 'dso') {
     const F = COPY.deepFacts;
-    const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
+    // (stage c) A hero may say what its own drawing is (its words block's drawnWords, per record).
+    const own = md.heroCopy && COPY[md.heroCopy] && COPY[md.heroCopy].drawnWords ? COPY[md.heroCopy].drawnWords[record.id] || {} : {};
+    const words = drawnOf(record).slice(0, 2).map((c) => own[c] || F.drawnWords[c]).filter(Boolean);
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) : null;
   }
 

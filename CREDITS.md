@@ -1422,7 +1422,19 @@ Stage b writes this sub-section, and only this one.
 
 ### The Large Magellanic Cloud and the Tarantula (stage c)
 
-Stage c writes this sub-section, and only this one.
+The LMC's 3D model (`site/js/scene/deep/lmc.js`, profile `registry/deepsky-heroes/lmc.yaml`) is built
+from star counts, catalogued positions and published geometry. No image of any paper is shipped.
+
+| what | from | licence |
+|---|---|---|
+| `site/data/deep/lmc-density.bin`: two maps of the LMC's stars on the sky (all members; young blue stars), counted from Gaia DR3 by `scripts/build_deep_lmc.py` (anonymous queries of the Gaia archive, 2026-10-15) | ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1. The member cuts follow the manner of Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | CC BY-SA 3.0 IGO; the derived map is under the same licence |
+| Positions of 21 H II regions (Henize 1956 numbers) and of the cluster R136 | SIMBAD (Wenger et al. 2000, A&AS 143, 9), CDS, Strasbourg, read 2026-10-15 | facts, credited |
+| The disc's tilt 34.7° and line of nodes 122.5°; the scale length 1.3–1.5 kpc; the outer ellipse | van der Marel & Cioni 2001, AJ 122, 1807; van der Marel 2001, AJ 122, 1827 | facts, cited |
+| The disc's thickness (the old stars' scale height from their V/σ) | van der Marel, Alves, Hardy & Suntzeff 2002, AJ 124, 2639 | facts, cited; the young stars' thickness is illustrative |
+| The Tarantula's shape: R136 in a cavity, warm gas in a shell confined by molecular gas, mapped to 75 pc | Pellegrini, Baldwin & Ferland 2011, ApJ 738, 34; Pellegrini et al. 2010, ApJS 191, 160 | facts, cited; the shell's radius and width are a model |
+
+The stars' depths, their brightness, the dust and the Tarantula's gas in depth are a model, and the card
+says so. The colours of the gas are enhanced (hydrogen-alpha pink, [O III] teal), declared in the profile.
 
 ### Andromeda and the Triangulum Galaxy (stage d)
 
