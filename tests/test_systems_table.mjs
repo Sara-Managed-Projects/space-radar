@@ -172,6 +172,41 @@ for (const s of SYSTEMS_TABLE) {
   check(!!scene.getObjectByName('systems:zone') === !!s.zone, `${s.id}: the band is drawn exactly when one is computed`);
   check(systems.subjectFor(byId.get(s.hostId)).radiusKm >= 0 && Number.isFinite(systems.arrivalDistanceUnits(byId.get(s.planets[0].id))), `${s.id}: finite sizes for the camera, measured or not`);
 }
+// FOLLOWED, A MEMBER OF ANOTHER STAR'S SYSTEM IS AIMED AT WHERE IT IS DRAWN, every frame (public
+// #1073 left this open: "aimed at a frame late"). Played in main.js's order (stage.setTime, the
+// rig's update and refollow, then systems.update), at a trip's rate. A planet was never late: its
+// place is a function of the frame's time alone (0 measured). A circumbinary host was the fault:
+// the camera, the brackets and the label stood on the barycentre while the star went round it.
+{
+  const { createCameraRig } = await import(join(JS, 'scene/camera.js'));
+  const k16 = SYSTEMS_TABLE.find((x) => x.binary);
+  check(!!k16, 'there is a circumbinary system to follow');
+  const host = k16 && byId.get(k16.hostId);
+  for (const [who, id] of k16 ? [['the host of ' + k16.id, k16.hostId], [k16.planets[0].id, k16.planets[0].id]] : []) {
+    let t = Date.parse('2026-10-08T12:00:00Z');
+    stage.setWorld(k16.stage);
+    stage.setTime(t);
+    systems.enter(k16.stage);
+    systems.update(t, camera);
+    const rig = createCameraRig(camera, null, { minDistance: 1e-6 });
+    const at = systems.drawnPositionOf(id);
+    rig.flyTo({ targetScene: at, distance: 20, ms: 0 });
+    rig.follow(() => systems.drawnPositionOf(id));
+    const drawn = () => { let m = null; scene.traverse((o) => { if (o.userData && o.userData.recordId === id) m = o; }); return m; };
+    let worst = 0;
+    for (let i = 0; i < 120; i++) {
+      t += 6 * 3600e3; // six hours a frame: Kepler-16's 41 days in under three seconds
+      stage.setTime(t);
+      rig.update(1 / 60, 16);
+      rig.refollow();
+      systems.update(t, camera);
+      const mesh = drawn();
+      worst = Math.max(worst, mesh ? rig.saveState().target.distanceTo(mesh.position) : Infinity);
+    }
+    check(worst < 1e-6, `${who}, followed for 120 frames at six hours a frame, is aimed at its drawn place (off by at most ${worst.toExponential(1)} units)`);
+  }
+  if (host) check(systems.subjectFor(host) && Number.isFinite(systems.arrivalDistanceUnits(host)), 'and the host still has its framing');
+}
 stage.setWorld('earth'); systems.leave();
 // The rings of ours drawn for scale follow a rule, not a choice per system.
 const ringsOf = (id) => X.scaleOrbits(SYSTEMS_TABLE.find((s) => s.id === id)).map((o) => o.id).join(',');
