@@ -1357,6 +1357,38 @@ visitor's place.
 | What we do with it | Sum the series ourselves (`declinationDeg`, the model's own recipe) for one place and today's date. `tests/test_pointing.mjs` holds the result to 0.011 degree of all twelve published test values. Nothing is fetched at run time and the place is sent nowhere. |
 | What it is not | A measurement at the visitor's spot. The model is the Earth's main field: it knows nothing of the steel in a building, a car or a phone case, which indoors can turn a compass by tens of degrees. The switch says so, and "Line it up" is the remedy. After 2030.0 the last year's value is held; the next model replaces the file. |
 
+## 3l. Deep space heroes — the numbers each object is built from (internal spec 0075)
+
+Deep space is rebuilt in stages (internal spec 0075): a foundation, then one hero at a time. **One
+sub-heading per stage below; each stage writes only under its own.** (Spec 0075's design calls this
+"§3h"; that number was already the other-light skies', so it is 3l.)
+
+### Foundation (stage a): distances, viewing angles and shapes
+
+Facts read from each paper's abstract on 2026-10-14 and written into `registry/dso-hand.yaml` with
+the paper beside them; no text, figure or image of any paper is shipped.
+
+| object | what | from |
+|---|---|---|
+| Large Magellanic Cloud | distance 49.59 ± 0.09 (statistical) ± 0.54 (systematic) kpc, from twenty eclipsing binaries | Pietrzyński et al. 2019, Nature 567, 200 (arXiv:1903.08096) |
+| Large Magellanic Cloud | disc inclination 34.7 ± 6.2°, line of nodes 122.5 ± 8.3° | van der Marel & Cioni 2001, AJ 122, 1807 (arXiv:astro-ph/0105339) |
+| Large Magellanic Cloud | outer isophotes: ellipticity 0.199 ± 0.008 at position angle 189.3 ± 1.4° (the photograph's fade) | van der Marel 2001, AJ 122, 1827 (arXiv:astro-ph/0105340) |
+| Small Magellanic Cloud | distance 62.44 ± 0.47 (statistical) ± 0.81 (systematic) kpc, from eclipsing binaries | Graczyk et al. 2020, ApJ 904, 13 (arXiv:2010.08754) |
+| Helix Nebula | distance 655 ± 13 ly, the central star's parallax | Gaia DR2 (Gaia Collaboration 2018, VizieR I/345), as quoted by the Helix Nebula's Wikipedia page |
+| Tarantula Nebula, M43 | no distance of their own: placed at their parent's (the LMC, M42) | `parent:` in the registry |
+
+The gas of a deep-sky object drawn close up (`site/js/scene/deep/gasmat.js`) is computed here, from the
+same glow profiles and colours as `scene/dsoglow.js`; its noise is generated from a fixed seed. Both are
+illustrations, and the card says so.
+
+### The Helix (stage b)
+
+### The Large Magellanic Cloud and the Tarantula (stage c)
+
+### Andromeda and the Triangulum Galaxy (stage d)
+
+### The cosmos: the local volume and the horizon (stage e)
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

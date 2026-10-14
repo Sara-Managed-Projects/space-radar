@@ -1,0 +1,16 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Triangulum Galaxy (M33), the generator's second sample.
+# Created empty by stage a (the foundation). Stage d fills this file and only this file.
+id: m33
+record: dso-m33
+stage: d
+shipped: false
+children: []
+levels: {}
+frame: null
+layers: []
+colours: null
+drawn: []
+sources: []
+review: {data_vs_model: null, geometry: null, colours: null, distance: null, credits: null, by: null, date: null}
+credits: []

@@ -595,6 +595,14 @@ jobs:
         run: node tests/test_one_star_frame.mjs
       - name: the nebulae's photographs sit where their objects are, and nothing of them loads at boot (spec 0067)
         run: node tests/test_nebulae.mjs
+      - name: the deep sky's foundation - parents, distances, names, level by size, the coordinator (spec 0075 stage a)
+        run: node tests/test_deepsky.mjs
+      - name: the deep sky's gas is marched in its own mesh, by tier, in the colour and alpha policy (spec 0075 stage a)
+        run: node tests/test_gasmat.mjs
+      - name: the deep-sky heroes' profiles are current and reviewed before they ship (spec 0075 stage a)
+        run: python3 scripts/gen_deepsky_heroes_js.py --check
+      - name: site/data/dso.json is the registry's (spec 0075 stage a)
+        run: python3 scripts/build-dso.py --check
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)

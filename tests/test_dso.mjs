@@ -18,7 +18,7 @@ const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
 check(doc.count === 209 && doc.objects.length === 209, `110 Messier objects, forty-one Local Group galaxies and fifty-eight famous non-Messier objects by hand (${doc.count})`);
-check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203700) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
+check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203650) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
 check(doc.objects.some((o) => o.id === 'ursa-major-i' && o.vmag === null && o.majAxArcmin === null) && doc.objects.some((o) => o.id === 'reticulum-ii' && o.distLy === 103100 && o.hubble === null), 'Ursa Major I carries no magnitude or size the infobox did not print; Reticulum II has no Hubble code');
@@ -46,7 +46,8 @@ check(m31 && m31.distLy === 2540000 && m31.distLyLow === 2430000 && m31.kind ===
 const p31 = skyToSunInertialKm(m31.raDeg, m31.decDeg, m31.distLy / 3.2615637771674333);
 check(Math.abs(p31.x / LY_KM - m31.posLy[0]) < 1 && Math.abs(p31.z / LY_KM - m31.posLy[2]) < 1, 'the build script and the browser agree on where the sky is');
 check(doc.objects.every((o) => o.distLy > 0 && o.distanceSource), 'every object has a distance and says where it came from');
-check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 163000), 'the LMC is a hand row at 163 000 ly');
+// Since spec 0075 task 2 the Magellanic Clouds are at their eclipsing-binary distances (Pietrzyński 2019, Graczyk 2020).
+check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 161740 && o.distance && o.distance.method === 'eclipsing-binary'), 'the LMC is a hand row at 161 740 ly, by eclipsing binaries');
 check(doc.objects.find((o) => o.id === 'm45')?.kind === 'cluster', 'the Pleiades (from the addendum) are a cluster');
 
 const recs = parseDso(doc);

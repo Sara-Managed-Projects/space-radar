@@ -15,8 +15,22 @@
 // median and 95th percentile of 20 frame intervals. On a runner the frame times are SwiftShader's:
 // they compare one run with another and mean nothing in absolute terms (tools/README.md).
 //
-// It changes nothing in the app. It fails only when a subject it needs is missing.
+// It changes nothing in the app. It fails only when a subject it needs is missing, or a named scene
+// has overlapping names (spec 0075 task 5).
 // Run it at 1600 x 900 (`-f width=1600 -f height=900`) and again with `-f mobile=true`.
+//
+// STAGES AND BLOCKS (internal spec 0075, design section 11 and its amendment of 2026-10-15). The
+// scenes are GROUPS, each an async function that sets up its own state, and the groups are listed in
+// one BLOCK PER STAGE at the end of this file (BLOCKS.a holds the baseline's 01-21 and the foundation's
+// own scenes; BLOCKS.b to BLOCKS.f are empty slots). A stage adds its groups inside its own block and
+// edits nothing else here. The groups run in block order, a to f.
+//
+// POSES, the bookmark shortcuts for agents (DS-A09): `-f subject=DS-07` (or a group's name, e.g.
+// `-f subject=tarantula`) runs only the groups that pose names. POSES maps the package's DS-01 to
+// DS-18 onto the groups; each stage adds its own rows in its block.
+//
+// Since stage a every scene also waits for `sr.deep.whenReady()` (the photographs and the heroes in
+// flight have landed; ?look=1 has frozen the gas's clock) and writes `sr.deep.stats()` beside it.
 look.probe = 'deepspace';
 const out = { scenes: [], problems: [] };
 const LY_KM = 9.4607304725808e12;
@@ -72,8 +86,11 @@ const drawnNow = () => {
 };
 
 /** A picture with its facts: settle, measure, write down, photograph. */
+const NAMED = new Set(['04-ivan-frame-helix-selected', '05-ivan-frame', '10-tarantula-selected', '11-tarantula-in-lmc']);
 const snap = async (name, note, settleMs = 5000) => {
   await sleep(settleMs);
+  const readyAt = Date.now();
+  const ready = sr.deep && sr.deep.whenReady ? await sr.deep.whenReady(15000) : null;
   const f = await frames();
   const lab = labelsNow();
   const sel = sr.selected ? sr.selected() : null;
@@ -89,9 +106,13 @@ const snap = async (name, note, settleMs = 5000) => {
     card: textOf('#sr-card'),
     hud: textOf('#sr-hud', 160),
     cost: frameCost(),
+    deep: sr.deep ? sr.deep.stats() : null,
+    ready, readyWaitMs: Date.now() - readyAt,
     ...f,
   };
   out.scenes.push(row);
+  // Zero overlapping names in Ivan's frame and the Tarantula's scenes (spec 0075 task 5).
+  if (NAMED.has(name) && lab.overlaps.length) out.problems.push(`${name}: ${lab.overlaps.length} overlapping names (${JSON.stringify(lab.overlaps)})`);
   await shot(name, `${note} | ${row.stage}, ${row.distanceLy} ly from the target, ${lab.boxes.length} names (${lab.overlaps.length} overlapping), ${row.cost ? row.cost.calls : '?'} calls, median ${f.medianMs} ms`);
   return row;
 };
@@ -125,96 +146,179 @@ try {
   out.laterLayers = await until(() => !!sr.recordById('dso-lmc'), 120000);
 } catch (e) { look.warns.push('loadAfterFirstVisit: ' + e); }
 try { if (sr.wantNebulae) await sr.wantNebulae(); } catch (e) { look.warns.push('wantNebulae: ' + e); }
+try { if (sr.wantDeep) await sr.wantDeep(); else look.warns.push('no sr.wantDeep: a ref from before spec 0075 stage a'); } catch (e) { look.warns.push('wantDeep: ' + e); }
 
-// 1. The Helix: the app's own framing, closer, and turned 45 degrees (does it stay a shape, or is
-//    it a card seen from the side?).
-if (await need('dso-helix-nebula')) {
-  await snap('01-helix-arrival', 'the Helix as the app frames it on arrival');
-  pull(0.35);
-  await snap('02-helix-close', 'the Helix, a third of the arrival distance');
-  turn(Math.PI / 4);
-  await snap('03-helix-turned45', 'the Helix, close, turned 45 degrees round it');
-
-  // 2. Ivan's frame: the Helix in front, the LMC and the Tarantula behind it, about 20 degrees apart
-  //    on screen (sideways on a laptop, up and down on a phone), the camera 120 ly from the Helix.
+/** Back to the stellar rung with nothing selected: where every group that is run alone starts. */
+const fresh = async () => { sr.deselect(); if (sr.stage.worldId !== 'stellar') await stage('stellar', 9000); };
+/** Ivan's frame: the Helix in front, the LMC and the Tarantula behind it, the camera 120 ly from the Helix. */
+const ivanFrame = () => {
   const H = pos('dso-helix-nebula'), L = pos('dso-lmc');
-  if (H && L) {
-    const toL = unit(sub(L, H));
-    const side = unit(cross(toL, { x: 0, y: 1, z: 0 }));
-    const across = phone ? unit(cross(toL, side)) : side;
-    rig.flyTo({ offset: unit(mix(neg(toL), 1, across, 0.36)), distance: 120 / (sr.stage.unitKm / LY_KM), ms: 0 });
+  if (!H || !L) { out.problems.push('no position for the Helix or the LMC'); return false; }
+  const toL = unit(sub(L, H));
+  const side = unit(cross(toL, { x: 0, y: 1, z: 0 }));
+  const across = phone ? unit(cross(toL, side)) : side;
+  rig.flyTo({ targetScene: H, offset: unit(mix(neg(toL), 1, across, 0.36)), distance: 120 / (sr.stage.unitKm / LY_KM), ms: 0 });
+  return true;
+};
+
+const GROUPS = {
+  // 1. The Helix: the app's own framing, closer, and turned 45 degrees; then Ivan's frame.
+  helix: async () => {
+    if (!(await need('dso-helix-nebula'))) return;
+    await snap('01-helix-arrival', 'the Helix as the app frames it on arrival');
+    pull(0.35);
+    await snap('02-helix-close', 'the Helix, a third of the arrival distance');
+    turn(Math.PI / 4);
+    await snap('03-helix-turned45', 'the Helix, close, turned 45 degrees round it');
+    if (!ivanFrame()) return;
     await snap('04-ivan-frame-helix-selected', "Ivan's frame: the Helix 120 ly away and selected, the LMC and the Tarantula behind it");
     sr.deselect();
     await snap('05-ivan-frame', "Ivan's frame with nothing selected, as in his screenshot", 3000);
-  } else out.problems.push('no position for the Helix or the LMC');
+  },
+  // 2. (stage a) From Ivan's frame the Tarantula is chosen: the flight goes through the LMC (spec 0075
+  //    task 3), photographed on the way. Never a lone dot.
+  flight: async () => {
+    if (!sr.selected || sr.selected() || !pos('dso-helix-nebula')) { await need('dso-helix-nebula', 6000); sr.deselect(); }
+    if (!ivanFrame()) return;
+    await sleep(2500);
+    const r = sr.recordById('dso-tarantula-nebula');
+    if (!r) { out.problems.push('missing record dso-tarantula-nebula'); return; }
+    if (r.layer && !sr.isLayerOn(r.layer)) sr.setLayerOn(r.layer, true);
+    const t0 = Date.now();
+    sr.select(r, { fly: true, undo: false });
+    await sleep(1400);
+    out.flight = { at1: { ms: Date.now() - t0, ly: Math.round(rig.state.distance * sr.stage.unitKm / LY_KM), flying: !!rig.state.flying } };
+    await shot('10f1-flight-through-lmc', 'choosing the Tarantula from Ivan\'s frame: early in the flight');
+    await sleep(900);
+    out.flight.at2 = { ms: Date.now() - t0, ly: Math.round(rig.state.distance * sr.stage.unitKm / LY_KM), flying: !!rig.state.flying };
+    await shot('10f2-flight-lmc-fills', 'the LMC fills the view on the way to the Tarantula');
+    await snap('10f3-flight-arrived', 'the flight\'s end: the Tarantula, with its LMC round it', 4000);
+  },
+  // 3. The LMC: arrival, wide, close, turned.
+  lmc: async () => {
+    if (!(await need('dso-lmc'))) return;
+    await snap('06-lmc-arrival', 'the LMC as the app frames it on arrival');
+    const arrival = rig.state.distance;
+    pull(4);
+    await snap('07-lmc-wide', 'the LMC, four times the arrival distance: the SMC and the Milky Way round it');
+    rig.flyTo({ distance: arrival * 0.35, ms: 0 });
+    await snap('08-lmc-close', 'the LMC, a third of the arrival distance');
+    turn(Math.PI * 50 / 180);
+    await snap('09-lmc-turned50', 'the LMC, close, turned 50 degrees round it');
+  },
+  // 4. The Tarantula selected, then pulled back so the LMC is round it; then (stage a) Back to the LMC.
+  tarantula: async () => {
+    if (!(await need('dso-tarantula-nebula'))) return;
+    await snap('10-tarantula-selected', 'the Tarantula selected: its card, its framing, the LMC behind');
+    pull(6);
+    await snap('11-tarantula-in-lmc', 'the Tarantula still selected, six times further: where it sits in the LMC');
+    const back = document.querySelector('#sr-card .sr-card__parent');
+    out.backButton = back ? back.textContent.trim() : null;
+    if (back) { back.click(); await snap('11b-back-to-lmc', 'the card\'s "Back to the Large Magellanic Cloud": the LMC selected and flown out to', 7000); }
+    else out.problems.push('the Tarantula\'s card has no way back to its LMC');
+  },
+  // 5. Andromeda: arrival, turned 60 degrees (the photograph gives way to the model), close.
+  m31: async () => {
+    if (!(await need('dso-m31'))) return;
+    await snap('12-m31-arrival', 'Andromeda as the app frames it on arrival');
+    turn(Math.PI / 3);
+    await snap('13-m31-turned60', 'Andromeda turned 60 degrees round it');
+    pull(0.3);
+    await snap('14-m31-close', 'Andromeda, turned, a third of the distance');
+  },
+  // 6. The Milky Way from outside: above the galactic plane, then edge on, 46 kpc out.
+  milkyway: async () => {
+    try {
+      sr.deselect();
+      await stage('galaxy', 9000);
+      if (await need('dso-milky-way')) {
+        const ngp = eqToScene(192.85948, 27.12825);
+        const gc = eqToScene(266.40500, -28.93617);
+        const kpc = 3.0856775814913673e16 / sr.stage.unitKm;
+        rig.flyTo({ offset: unit(mix(ngp, 1, gc, -0.35)), distance: 46 * kpc, ms: 0 });
+        await snap('15-milkyway-above', 'the Milky Way from 46 kpc, above its plane (galactic north)');
+        rig.flyTo({ offset: unit(cross(ngp, gc)), distance: 46 * kpc, ms: 0 });
+        await snap('16-milkyway-edge', 'the Milky Way from 46 kpc, edge on');
+      }
+    } catch (e) { look.errors.push('probe: the Milky Way step threw: ' + (e && e.stack || e)); }
+  },
+  // 7. The farthest the app goes: the Local Group, the Virgo region, a billion light-years, the
+  //    46.5 Gly shell (scene/shells.js) and the climb's "edge" (scene/handoff.js EDGE_KM).
+  far: async () => {
+    try {
+      sr.deselect();
+      await stage('local-group', 9000);
+      const mly = (n) => n * 9.4607304725808e18 / sr.stage.unitKm;
+      const sun = pos('sun') || { x: 0, y: 0, z: 0 };
+      rig.flyTo({ targetScene: sun, distance: mly(5), ms: 0 });
+      await snap('17-local-group', 'the Local Group, 5 Mly from the Sun');
+      if (await need('dso-m87')) {
+        rig.flyTo({ distance: mly(150), ms: 0 });
+        await snap('18-virgo-150mly', 'M87 selected, 150 Mly back: the Virgo region and the farthest catalogue galaxies');
+      }
+      sr.deselect();
+      for (const [name, d, note] of [
+        ['19-one-gly', 1000, 'a billion light-years from the Sun'],
+        ['20-horizon-46gly', 46500, 'at the 46.5 Gly shell'],
+        ['21-edge', 1.6e24 / 9.4607304725808e18, "the climb's edge (EDGE_KM, about 169 Gly)"],
+      ]) {
+        rig.flyTo({ targetScene: sun, distance: mly(d), ms: 0 });
+        await snap(name, note);
+      }
+    } catch (e) { look.errors.push('probe: the far step threw: ' + (e && e.stack || e)); }
+  },
+  // 8. (stage a) DS-01: Alpha Centauri from 4.2 ly, the nearest stars at their magnitudes (task 20 later).
+  alphacen: async () => {
+    await fresh();
+    const sun = pos('sun') || { x: 0, y: 0, z: 0 };
+    const ac = eqToScene(219.9, -60.83);
+    rig.flyTo({ targetScene: sun, offset: unit(neg(ac)), distance: 0.6 * LY_KM / sr.stage.unitKm, ms: 0 });
+    rig.flyTo({ targetScene: { x: sun.x + ac.x * 4.37 * LY_KM / sr.stage.unitKm, y: sun.y + ac.y * 4.37 * LY_KM / sr.stage.unitKm, z: sun.z + ac.z * 4.37 * LY_KM / sr.stage.unitKm }, offset: unit(neg(ac)), distance: 4.2 * LY_KM / sr.stage.unitKm, ms: 0 });
+    await snap('22-alpha-centauri', 'DS-01: Alpha Centauri from the Sun\'s side, 4.2 ly (the stars at their magnitudes)');
+  },
+};
+
+// ================================== THE BLOCKS: one per stage ====================================
+// A stage of spec 0075 adds its groups (above, under its own letter in a comment) and its rows here,
+// inside its own block, and edits nothing else in this file.
+const BLOCKS = {
+  // a. the foundation (#786): the baseline's scenes 01-21, the flight through the LMC, Back to the
+  //    parent, and DS-01.
+  a: ['helix', 'flight', 'lmc', 'tarantula', 'm31', 'milkyway', 'far', 'alphacen'],
+  // b. the Helix (#787): its own scenes (a 150 px still, the 30 and 60 degree orbit, near, inside).
+  b: [],
+  // c. the LMC and the Tarantula (#788): the 45 degree orbit, inside the disc, R136 near.
+  c: [],
+  // d. Andromeda and galaxy structure (#789): face-on-ish, the edge-on approach, M33.
+  d: [],
+  // e. cosmic scale (#790): scenes 17-21 again with the local volume, the horizon and the 50 Gly edge.
+  e: [],
+  // f. the two journeys (#791): one stop per trip, and the trip frame.
+  f: [],
+};
+// The package's DS-01 to DS-18 (its section 3) onto the groups; `-f subject=DS-07` runs that pose alone.
+const POSES = {
+  // a.
+  'DS-01': ['alphacen'], 'DS-02': ['helix'], 'DS-05': ['milkyway'], 'DS-06': ['lmc'], 'DS-07': ['tarantula', 'flight'],
+  'DS-08': ['lmc'], 'DS-09': ['m31'], 'DS-10': ['far'], 'DS-11': ['far'], 'DS-12': ['far'], 'DS-17': ['far'], 'DS-18': ['far'],
+  // b.
+  // c.
+  // d.
+  // e.
+  // f.
+};
+
+const subject = new URLSearchParams(location.search).get('lookSubject');
+const order = [...BLOCKS.a, ...BLOCKS.b, ...BLOCKS.c, ...BLOCKS.d, ...BLOCKS.e, ...BLOCKS.f];
+const pick = subject ? (POSES[subject] || (GROUPS[subject] ? [subject] : [])) : order;
+if (subject && !pick.length) out.problems.push(`no pose or group called ${subject}: ${Object.keys(POSES).concat(Object.keys(GROUPS)).join(', ')}`);
+out.poses = POSES;
+out.ran = pick;
+for (const g of pick) {
+  if (!GROUPS[g]) { out.problems.push('no group ' + g); continue; }
+  if (subject) await fresh();
+  await GROUPS[g]();
 }
-
-// 3. The LMC: arrival, wide, close, turned.
-if (await need('dso-lmc')) {
-  await snap('06-lmc-arrival', 'the LMC as the app frames it on arrival');
-  const arrival = rig.state.distance;
-  pull(4);
-  await snap('07-lmc-wide', 'the LMC, four times the arrival distance: the SMC and the Milky Way round it');
-  rig.flyTo({ distance: arrival * 0.35, ms: 0 });
-  await snap('08-lmc-close', 'the LMC, a third of the arrival distance');
-  turn(Math.PI * 50 / 180);
-  await snap('09-lmc-turned50', 'the LMC, close, turned 50 degrees round it');
-}
-
-// 4. The Tarantula selected, then pulled back so the LMC is round it.
-if (await need('dso-tarantula-nebula')) {
-  await snap('10-tarantula-selected', 'the Tarantula selected: its card, its framing, the LMC behind');
-  pull(6);
-  await snap('11-tarantula-in-lmc', 'the Tarantula still selected, six times further: where it sits in the LMC');
-}
-
-// 5. Andromeda: arrival, turned 60 degrees (the photograph gives way to the model), close.
-if (await need('dso-m31')) {
-  await snap('12-m31-arrival', 'Andromeda as the app frames it on arrival');
-  turn(Math.PI / 3);
-  await snap('13-m31-turned60', 'Andromeda turned 60 degrees round it');
-  pull(0.3);
-  await snap('14-m31-close', 'Andromeda, turned, a third of the distance');
-}
-
-// 6. The Milky Way from outside: above the galactic plane, then edge on, 46 kpc out.
-try {
-  sr.deselect();
-  await stage('galaxy', 9000);
-  if (await need('dso-milky-way')) {
-    const ngp = eqToScene(192.85948, 27.12825);
-    const gc = eqToScene(266.40500, -28.93617);
-    const kpc = 3.0856775814913673e16 / sr.stage.unitKm;
-    rig.flyTo({ offset: unit(mix(ngp, 1, gc, -0.35)), distance: 46 * kpc, ms: 0 });
-    await snap('15-milkyway-above', 'the Milky Way from 46 kpc, above its plane (galactic north)');
-    rig.flyTo({ offset: unit(cross(ngp, gc)), distance: 46 * kpc, ms: 0 });
-    await snap('16-milkyway-edge', 'the Milky Way from 46 kpc, edge on');
-  }
-} catch (e) { look.errors.push('probe: the Milky Way step threw: ' + (e && e.stack || e)); }
-
-// 7. The farthest the app goes: the Local Group, the Virgo region, a billion light-years, the
-//    46.5 Gly shell (scene/shells.js) and the climb's "edge" (scene/handoff.js EDGE_KM).
-try {
-  sr.deselect();
-  await stage('local-group', 9000);
-  const mly = (n) => n * 9.4607304725808e18 / sr.stage.unitKm;
-  const sun = pos('sun') || { x: 0, y: 0, z: 0 };
-  rig.flyTo({ targetScene: sun, distance: mly(5), ms: 0 });
-  await snap('17-local-group', 'the Local Group, 5 Mly from the Sun');
-  if (await need('dso-m87')) {
-    rig.flyTo({ distance: mly(150), ms: 0 });
-    await snap('18-virgo-150mly', 'M87 selected, 150 Mly back: the Virgo region and the farthest catalogue galaxies');
-  }
-  sr.deselect();
-  for (const [name, d, note] of [
-    ['19-one-gly', 1000, 'a billion light-years from the Sun'],
-    ['20-horizon-46gly', 46500, 'at the 46.5 Gly shell'],
-    ['21-edge', 1.6e24 / 9.4607304725808e18, "the climb's edge (EDGE_KM, about 169 Gly)"],
-  ]) {
-    rig.flyTo({ targetScene: sun, distance: mly(d), ms: 0 });
-    await snap(name, note);
-  }
-} catch (e) { look.errors.push('probe: the far step threw: ' + (e && e.stack || e)); }
 
 if (out.problems.length) out.fail = out.problems.join('; ');
 return finish(out);

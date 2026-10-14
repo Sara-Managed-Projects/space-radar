@@ -1,0 +1,16 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Helix Nebula (NGC 7293): the white dwarf and its halo, the inner ionised disc, the outer ring at the published tilt, the cometary knots (O'Dell et al. 2004).
+# Created empty by stage a (the foundation). Stage b fills this file and only this file.
+id: helix
+record: dso-helix-nebula
+stage: b
+shipped: false
+children: []
+levels: {}
+frame: null
+layers: []
+colours: null
+drawn: []
+sources: []
+review: {data_vs_model: null, geometry: null, colours: null, distance: null, credits: null, by: null, date: null}
+credits: []

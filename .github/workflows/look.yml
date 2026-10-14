@@ -73,8 +73,11 @@ on:
 permissions:
   contents: read
 
+# The width, the height and `mobile` are in the key (internal #775): on 2026-10-14 a 1600 x 900 look of
+# `deepspace` was cancelled within seconds by the 390 x 844 look dispatched right after it, because the
+# two shared one group and a pending run is replaced by the next.
 concurrency:
-  group: look-${{ github.event_name }}-${{ github.ref }}-${{ inputs.probe }}-${{ inputs.browser }}-${{ inputs.ref }}
+  group: look-${{ github.event_name }}-${{ github.ref }}-${{ inputs.probe }}-${{ inputs.browser }}-${{ inputs.ref }}-${{ inputs.width }}x${{ inputs.height }}-${{ inputs.mobile }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:

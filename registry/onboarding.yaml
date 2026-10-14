@@ -166,6 +166,11 @@ features:
     files: [site/js/ui/onboarding.js]
     surfaces: ["rail:tour", "want:wantOnboarding"]
     not: "It is what is running; the first-visit arrow points at its button."
+  - id: deep-sky
+    name: Deep space drawn by size on screen (the coordinator, its holders and heroes)
+    files: [site/js/scene/deep/deepsky.js]
+    surfaces: ["want:wantDeep"]
+    not: "Drawn as you arrive on a rung of the ladder; there is nothing to press (internal spec 0075 stage a)."
   - id: drift
     name: The drift, a camera that wanders on its own
     files: [site/js/ui/drift.js]

@@ -71,6 +71,7 @@ import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
 import { generatedLine, planetFacts, starRows, glowRows } from './systemcard.js';
 import { setSystemRows } from './cardfacts.js';
+import { relationOf } from '../data/deepsky.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
@@ -1659,13 +1660,36 @@ function earthOrbitRegime(altKm) {
   return altKm < 35786 ? G.meo : G.heo;
 }
 
+/** A deep-sky record's parent record (spec 0075 task 3), when the context can find it. */
+function parentRecordOf(record, ctx) {
+  const id = record && record.meta && record.meta.parent;
+  if (!id || !ctx || typeof ctx.recordById !== 'function') return null;
+  return ctx.recordById(String(id)) || null;
+}
+
+/**
+ * The way back out of a child (spec 0075 task 3): "Back to the Large Magellanic Cloud", which selects
+ * the parent and flies out to it. Null for anything that is not inside something.
+ */
+function parentButton(record, ctx) {
+  const parent = parentRecordOf(record, ctx);
+  if (!parent || typeof ctx.select !== 'function') return null;
+  const name = displayName(parent);
+  const b = el('button', 'sr-card__parent', t(COPY.deep.back, { parent: name }));
+  b.type = 'button';
+  b.title = t(COPY.deep.backTitle, { parent: name });
+  b.dataset.focus = 'parent';
+  b.addEventListener('click', () => ctx.select(parent, { fly: true }));
+  return b;
+}
+
 /**
  * The line above the name: what it is and where, "STATION · LOW EARTH ORBIT", four words at most.
  * The class word is the card's own badge (klassLabel) except where a finer one is plainer -- a
  * planet is a planet, not "World" -- and the region is worked out from where it is now, never typed.
  * Exported for the test.
  */
-export function microLabel(record, m) {
+export function microLabel(record, m, ctx = null) {
   const C = COPY.card;
   const G = C.regime;
   const md = meta(record);
@@ -1698,9 +1722,14 @@ export function microLabel(record, m) {
     regime = ly !== null && ly < 20 ? G.nearby : con ? t(G.inCon, { con: String(con) }) : null;
   } else if (klass === 'dso') {
     const T = COPY.templates.dso;
-    kind = cap(T.kinds[String(pick(md, 'kind') || 'other')] || T.kinds.other);
+    const D = COPY.deep;
+    kind = cap(D.kinds[String(pick(md, 'typeCode') || '')] || T.kinds[String(pick(md, 'kind') || 'other')] || T.kinds.other);
     const con = pick(md, 'con');
     regime = con ? t(G.inCon, { con: String(con) }) : null;
+    // What it is inside says more than the constellation (spec 0075 task 3): "Emission nebula · Inside
+    // the Large Magellanic Cloud". The parent is a record (registry/dso-hand.yaml `parent:`).
+    const parent = parentRecordOf(record, ctx);
+    if (parent) regime = t(relationOf(record, parent) === 'companion' ? D.companion : D.inside, { parent: displayName(parent) });
   } else if (klass === 'exoplanet') {
     kind = C.microKlass.exoplanet;
     const host = pick(md, 'host');
@@ -2457,7 +2486,7 @@ function render(record, ctx, opts = {}) {
   // 1. the microlabel and the name. (A guided trip's stop is renderStop above.)
   const name = displayName(record);
   const header = el('header', 'sr-card__header');
-  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m)));
+  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m, ctx)));
   const title = el('h2', 'sr-card__name', name);
   // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
   title.id = CARD_TITLE_ID;
@@ -2531,6 +2560,9 @@ function render(record, ctx, opts = {}) {
     actions.appendChild(b);
   }
   body.appendChild(actions);
+  // 3. and, for a deep-sky object inside another, the way back out to it (spec 0075 task 3).
+  const up = record.klass === 'dso' ? parentButton(record, ctx) : null;
+  if (up) body.appendChild(up);
 
   // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One

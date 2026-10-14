@@ -1579,8 +1579,16 @@ export function parseDso(doc) {
         // A Messier row's position is OpenNGC's and its distance the table's; a hand row took both from
         // the one page it names, and must not credit OpenNGC for a position it did not use.
         cite: o.positionSource && o.positionSource !== 'OpenNGC'
-          ? `Position and distance: ${o.positionSource}`
+          ? (o.distanceSource && o.distanceSource !== o.positionSource ? `Position: ${o.positionSource}; distance: ${o.distanceSource}` : `Position and distance: ${o.positionSource}`)
           : `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
+        // The object model (internal spec 0075 task 2; scripts/build-dso.py): what it is inside, how its
+        // distance was found, how it is turned, its shape, and what is drawn for it. `cls` above stays
+        // the class of its POSITION; `drawn` is the class of its PICTURE.
+        parent: o.parent ? `dso-${o.parent}` : null,
+        distance: o.distance && o.distance.method ? { method: o.distance.method, source: o.distance.source || null, read: o.distance.read || null } : null,
+        orientation: o.orientation || null,
+        morphology: o.morphology || null,
+        drawnClasses: Array.isArray(o.drawn) ? o.drawn.slice() : ['illustration'],
         aliases,
         ...drawn,
       },

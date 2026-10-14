@@ -24,6 +24,7 @@ import { periodMsOf } from '../scene/orbitline.js';
 import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedToSpherical, worldRadiusKm, toStage, spinPeriodHours, moonLapHours, yearDays } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import '../copy/en.facts.js';
+import { drawnOf, primaryDrawn, distanceEstimate } from '../data/deepsky.js';
 
 // WHAT A GENERATED STAR SYSTEM ADDS TO A CARD (internal #466), handed in by ui/cards.js and not
 // imported here: this module also serves the light embed, which has no star systems, and
@@ -615,6 +616,9 @@ export function rightNowRows(record, m, passInfo) {
     if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
     else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
     if (distLy !== null) rows.push([R.lightLeft, distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
+    // How the distance was found (spec 0075 task 6): where the registry says (registry/dso-hand.yaml).
+    const est = distanceEstimate(record);
+    if (est.method && COPY.deepFacts.methods[est.method]) rows.push([COPY.deepFacts.methodRow, COPY.deepFacts.methods[est.method]]);
     const type = pick(md, 'typeText');
     if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
     const sizeLy = pickNumber(md, 'sizeLy');
@@ -858,7 +862,9 @@ export function tagLines(record, ctx, m) {
     if (!split) continue;
     const suffix = key === 'range'
       ? (mm.observerGuess && mm.observerName ? t(COPY.hud.fromPlace, { place: mm.observerName }) : COPY.hud.fromYou)
-      : '';
+      // A deep-sky object's distance says what is drawn for it (spec 0075 task 6): "· photograph".
+      : key === 'sun' && klassOf(record) === 'dso' ? COPY.deepFacts.drawnTag[primaryDrawn(drawnOf(record))] || ''
+        : '';
     readouts.push({ key, num: split.num, unit: split.unit, suffix });
   }
   return { name: displayName(record), klass: klassOf(record), readouts, honesty: shortHonesty(record, mm), tMs: mm.tMs };
@@ -959,6 +965,14 @@ export function nearEarthOnEllipse(record, m) {
 export function honestyClause(record, m) {
   const md = meta(record);
   const C = COPY.cls;
+
+  // A deep-sky object: its place is measured (the class line), and what is DRAWN for it is said here,
+  // the most three-dimensional thing first (spec 0075 task 6, data/deepsky.js drawnOf).
+  if (klassOf(record) === 'dso') {
+    const F = COPY.deepFacts;
+    const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
+    return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) : null;
+  }
 
   // An event from EONET is one point and one date; say both, when it was read, and the publisher's caveat.
   if (klassOf(record) === 'earthevent') {

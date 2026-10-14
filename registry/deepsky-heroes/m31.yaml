@@ -1,0 +1,16 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# Andromeda (M31) from the morphology generator, at its measured orientation, with M32 and M110 in place.
+# Created empty by stage a (the foundation). Stage d fills this file and only this file.
+id: m31
+record: dso-m31
+stage: d
+shipped: false
+children: [dso-m32, dso-m110]
+levels: {}
+frame: null
+layers: []
+colours: null
+drawn: []
+sources: []
+review: {data_vs_model: null, geometry: null, colours: null, distance: null, credits: null, by: null, date: null}
+credits: []

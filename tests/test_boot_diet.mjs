@@ -127,6 +127,21 @@ const DEFERRED = {
   'js/data/sunregions.js': 'NOAA\'s sunspot groups: with scene/sun.js',
   'js/data/sunactivity.js': 'flares, coronal mass ejections and where a prominence stands: with scene/sun.js (spec 0073 requirement 2)',
   'js/ui/truthline.js': 'the one line of truth: with the trip frame, or the film camera',
+  // DEEP SPACE (internal spec 0075, stage a): nothing of it at boot. The coordinator is fetched when a
+  // rung of the ladder is first entered (main.js ctx.wantDeep); a hero's profile and module when it is near.
+  'js/scene/deep/deepsky.js': 'the deep-sky coordinator: main.js fetches it on the first rung of the ladder',
+  'js/scene/deep/gasmat.js': 'the gas material: with the coordinator',
+  'js/scene/deep/lodsize.js': 'level by size on screen: with the coordinator or the nebula pictures',
+  'js/scene/deep/heroes.js': 'the hero list: with the coordinator',
+  'js/scene/deep/helix.js': 'the Helix hero: the coordinator fetches it when the Helix is near',
+  'js/scene/deep/lmc.js': 'the LMC hero: the coordinator fetches it when the LMC is near',
+  'js/scene/deep/spiral.js': 'the galaxy heroes: the coordinator fetches it when Andromeda or M33 is near',
+  'js/scene/deep/localvolume.js': 'the local volume: fetched on the local-group stage',
+  'js/data/deepsky.js': 'what contains what in the deep sky: with the coordinator or the card',
+  'js/data/hero-helix.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-lmc.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-m31.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-m33.js': 'a hero\'s profile: with the coordinator',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
@@ -152,10 +167,11 @@ const walk = (dir) => readdirSync(dir).flatMap((f) => {
 });
 const reads = new RegExp(`COPY\\.(${laterKeys.join('|')})\\b`);
 const importsLater = /import\s+'(?:\.\.?\/)+(?:copy\/)?en\.later\.js';/;
-// copy/en.facts.js: the four sections ui/cardfacts.js reads, so the light embed does not fetch the rest
-// (internal #429). en.later.js imports it; a module may import either for these.
+// copy/en.facts.js: the five sections ui/cardfacts.js reads, so the light embed does not fetch the rest
+// (internal #429; `deepFacts` since spec 0075 task 6, the tag's deep-sky words). en.later.js imports
+// it; a module may import either for these.
 const factsKeys = new Set([...readFileSync(join(JS, 'copy/en.facts.js'), 'utf8').matchAll(/^  (\w+): \{/gm)].map((m) => m[1]));
-check(factsKeys.size === 4 && ['klass', 'cls', 'unplaced', 'earthEvent'].every((k) => factsKeys.has(k)), `copy/en.facts.js holds exactly klass, cls, unplaced and earthEvent (has ${[...factsKeys]})`);
+check(factsKeys.size === 5 && ['klass', 'cls', 'unplaced', 'earthEvent', 'deepFacts'].every((k) => factsKeys.has(k)), `copy/en.facts.js holds exactly klass, cls, unplaced, earthEvent and deepFacts (has ${[...factsKeys]})`);
 check(/import '\.\/en\.facts\.js';/.test(laterText), 'copy/en.later.js imports copy/en.facts.js');
 const importsFacts = /import\s+'(?:\.\.?\/)+(?:copy\/)?en\.facts\.js';/;
 const readsAll = new RegExp(`COPY\\.(${laterKeys.join('|')})\\b`, 'g');

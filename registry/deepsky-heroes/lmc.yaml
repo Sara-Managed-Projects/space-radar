@@ -1,0 +1,16 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Large Magellanic Cloud from a survey density map, inclined, with H II nodes; the Tarantula (NGC 2070) and R136 nested in it.
+# Created empty by stage a (the foundation). Stage c fills this file and only this file.
+id: lmc
+record: dso-lmc
+stage: c
+shipped: false
+children: [dso-tarantula-nebula]
+levels: {}
+frame: null
+layers: []
+colours: null
+drawn: []
+sources: []
+review: {data_vs_model: null, geometry: null, colours: null, distance: null, credits: null, by: null, date: null}
+credits: []

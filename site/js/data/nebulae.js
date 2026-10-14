@@ -279,7 +279,8 @@ export const NEBULAE = [
     "filters": "the Dark Energy Camera’s broad survey filters",
     "credit": "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noirlab2030a/"
+    "page": "https://noirlab.edu/public/images/noirlab2030a/",
+    "sky_floor": 0.04
   },
   {
     "id": "smc",
@@ -293,7 +294,8 @@ export const NEBULAE = [
     "filters": "the Dark Energy Camera’s broad survey filters",
     "credit": "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noirlab2030b/"
+    "page": "https://noirlab.edu/public/images/noirlab2030b/",
+    "sky_floor": 0.012
   },
   {
     "id": "centaurus-a",

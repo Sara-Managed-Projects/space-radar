@@ -120,4 +120,40 @@ Object.assign(COPY, {
     // The honesty line: what the point is, whose it is, and the publisher's own caveat in plain words.
     honesty: 'One point from NASA’s EONET, last reported {date} and read {read}. For looking, not an official record of where or when.',
   },
+
+  // DEEP SPACE ON THE CARD AND THE TAG (internal spec 0075 tasks 2 and 6), read by ui/cardfacts.js:
+  // how a distance was found, and what kind of thing is drawn. Here and not in copy/en.later.js
+  // because the tag's line (ui/hud.js through ui/cardfacts.js) is printed without the card.
+  deepFacts: {
+    // A row of the card, under the distance.
+    methodRow: 'Distance found by',
+    methods: {
+      parallax: 'parallax: the shift of its star against the far sky',
+      'eclipsing-binary': 'eclipsing binary stars in it',
+      cepheid: 'Cepheid variable stars in it',
+      TRGB: 'the brightest red giants in it',
+      'standard-candle': 'stars or explosions of known brightness',
+      redshift: 'its redshift, through a cosmology',
+      kinematic: 'how fast it moves with the galaxy’s rotation',
+      'assumed-member-of-parent': 'none of its own: it is placed at its galaxy’s distance',
+    },
+    // The tag's suffix and the honesty line's names for what is drawn (data/deepsky.js DRAWN_CLASSES).
+    drawnTag: {
+      reconstruction: '· reconstructed',
+      model: '· model',
+      photograph: '· photograph',
+      catalogue: '· catalogue',
+      illustration: '· illustration',
+    },
+    drawnWords: {
+      reconstruction: 'a 3D reconstruction from a published study',
+      model: 'a model of its kind, not its own stars',
+      photograph: 'a real photograph, from our side',
+      catalogue: 'catalogue positions',
+      illustration: 'an illustrative glow and mark of its kind',
+    },
+    // The honesty line's second half: {drawn} is one or two of drawnWords, joined.
+    drawnLine: 'What is drawn: {drawn}.',
+    drawnJoin: '; elsewhere, ',
+  },
 });

@@ -353,6 +353,23 @@ export async function boot({ setStatus } = {}) {
     }).catch((e) => { console.warn('the nebula pictures did not load', e); nebulaeImport = null; return null; });
     return nebulaeImport;
   };
+  // DEEP SPACE (internal spec 0075, scene/deep/deepsky.js): the coordinator of the deep sky's levels,
+  // holders and heroes. Fetched the first time a rung of the ladder is entered (sr:stage below), never
+  // at boot; ticked once a frame beside the nebulae. `?deepdebug=1` is for tools, not a visitor's key.
+  let deepImport = null;
+  ctx.wantDeep = () => deepImport || (deepImport = import('./scene/deep/deepsky.js').then((m) => {
+    const reduced = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    ctx.deep = m.createDeepSky(THREE, {
+      scene, records: () => ctx.recordsFor('deep-sky') || [], recordById: (id) => ctx.recordById(id),
+      pictureShare: (id) => (ctx.nebulae ? ctx.nebulae.drawn(id) : 0), picturesBusy: () => !!(ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy()),
+      selectedId: () => (ctx.selected() ? ctx.selected().id : null), subjectId: () => (ctx.labels ? ctx.labels.subject() : null),
+      quality: () => { const d = ctx.quality ? ctx.quality.describe() : {}; return { tier: Number.isFinite(d.tier) ? d.tier : 1, top: !!(d.plan && d.plan.steps === 'top'), latched: !!(ctx.latch && ctx.latch.latched), scaleStep: ctx.scaler ? ctx.scaler.step : 0 }; },
+      look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches), frozen: () => !!(ctx.latch && ctx.latch.held),
+      debug: /[?&]deepdebug=1\b/.test(location.search), glowVisible: (on) => { ctx.deepGlowOff = !on; },
+    });
+    ctx.deep.setExposure(exposure.look().milkyWay);
+    return ctx.deep;
+  }).catch((e) => { console.warn('the deep sky did not load', e); deepImport = null; return null; }));
   exposure.onChange((mode, look, byVisitor) => {
     starfield.setExposure(look.milkyWay);
     if (ctx.nebulae) ctx.nebulae.setExposure(look);
@@ -360,6 +377,7 @@ export async function boot({ setStatus } = {}) {
     // The Milky Way model and the deep-sky glows are the same faint light (internal #343).
     galaxy.setExposure(look.milkyWay);
     dsoGlow.setExposure(look.milkyWay);
+    if (ctx.deep) ctx.deep.setExposure(look.milkyWay);
     stars3d.setMagLimit(look.starLimit);
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
@@ -455,6 +473,8 @@ export async function boot({ setStatus } = {}) {
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if (ctx.nebulae) ctx.nebulae.rebuild();
     else if (isLadderStage(id)) ctx.wantNebulae();
+    if (ctx.deep) ctx.deep.rebuild();
+    else if (isLadderStage(id)) ctx.wantDeep();
     if (isSystemStage(id)) systems.enter(id);
     else systems.leave();
     // The Milky Way is fetched, built and its shaders compiled while the stellar rung is up (internal
@@ -1599,7 +1619,10 @@ export async function boot({ setStatus } = {}) {
       const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined; // polar: overview, unless the stage's own subject names one
       const hostSubject = !limb && record.klass !== 'exoplanet' && ctx.systems && ctx.systems.active && typeof ctx.systems.subjectFor === 'function' ? ctx.systems.subjectFor(record) : null;
       const hostPolar = hostSubject && Number.isFinite(hostSubject.polar) ? hostSubject.polar : overview;
-      cameraRig.flyTo({ ...shotTo(pos, limb ? limb.distance : distance), targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
+      // A child chosen from afar is flown to THROUGH its parent (spec 0075 task 3): the LMC fills the
+      // view, then the Tarantula, never a lone dot (scene/deep/deepsky.js pathFor).
+      const via = !flight && record.klass === 'dso' && ctx.deep && ms > 0 ? ctx.deep.pathFor(record, cameraRig.state.target, camera) : null;
+      cameraRig.flyTo({ ...shotTo(pos, limb ? limb.distance : distance), ...(via ? { path: via } : {}), targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
@@ -2823,7 +2846,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.shells) ctx.shells.update(ctx.camera, t);
-    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
+    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')) && !ctx.deepGlowOff);
+    if (ctx.deep) ctx.deep.frame({ camera: ctx.camera, renderer: ctx.renderer, nowMs: nowReal, dtMs: frameMs, frameMs, visible: ctx.isLayerDrawable(layerRec('deep-sky')) });
     if (ctx.nebulae) {
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(layerRec('deep-sky')));
       // Our stars step aside inside a drawn photograph, which carries its own (scene/starholes.js, internal #344).
