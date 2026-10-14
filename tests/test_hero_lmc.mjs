@@ -49,6 +49,7 @@ const md = lmc.meta;
 
 // --- the frame: tilted as measured, the near side north-east ---------------------------------------
 const g = L.lmcGeometry(HERO, lmc.pos);
+const g0 = L.lmcGeometry(HERO, null);
 {
   check(Math.abs(g.D - md.distLy) < 1, `the disc is centred at the registry's distance (${g.D.toFixed(0)} ly)`);
   const incl = Math.acos(Math.abs(dot(g.Y, g.u))) / D2R;
@@ -178,6 +179,17 @@ const maps = L.readMaps(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.by
       hero.frame({ camera, quality: { tier: 2 }, look: 'film' });
       const far = hero.stats().tarantulaSteps;
       check(near > far && far >= 8, `the Tarantula's own march: ${near} steps selected and near, ${far} far`);
+      // The photograph is the disc's light only near our line and from outside (the second look's fog)
+      {
+        const fg = hero.group.getObjectByName('deep-lmc-frame');
+        hero.group.updateMatrixWorld(true);
+        const toSun = new THREE.Vector3(...L.toGal(g0, g0.u).map((v) => -v * g0.unit)).applyMatrix4(new THREE.Matrix4().extractRotation(fg.matrixWorld)).normalize();
+        const side = new THREE.Vector3(1, 0, 0).cross(toSun).normalize();
+        const at = (deg, d) => { const a = deg * D2R; camera.position.copy(toSun.clone().multiplyScalar(Math.cos(a)).add(side.clone().multiplyScalar(Math.sin(a))).multiplyScalar(d)); hero.frame({ camera, quality: { tier }, look: 'film' }); return hero.stats().photoHonest; };
+        const on = at(0, 760), mid = at(35, 760), offl = at(60, 760), inside = at(0, 100);
+        check(on === 1 && mid > 0 && mid < 1 && offl === 0 && inside === 0, `the photograph lights the disc on our line (${on}), half at 35 degrees (${mid}), not at 60 (${offl}) nor from inside (${inside})`);
+        camera.position.set(0, 0, 900);
+      }
       const card = hero.card;
       check(card && card.copy === L.COPY_BLOCK && card.drawn['dso-tarantula-nebula'], 'the hero names its words block and what it draws for each record');
     }

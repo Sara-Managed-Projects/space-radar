@@ -315,7 +315,7 @@ void main() {
       young *= mix( 1.0, 0.35 + 1.3 * n2, uNoiseAmp );
     }
     vec3 e = uColOld * uK.x * old * wo + uColYoung * uK.y * young * wy;
-    if ( uPicOn > 0.5 && m.a > 0.002 ) {
+    if ( uPicOn > 0.002 && m.a > 0.002 ) {
       // Where the photograph covers the galaxy, ITS light is the disc's emissivity, spread through the old
       // layer: seen along our line the model is the photograph; turned, the same light in the tilted disc.
       vec2 puv = texture2D( uPicUv, ps.xz / ( 2.0 * uExtent ) + 0.5 ).rg;
@@ -323,7 +323,7 @@ void main() {
       vec3 c = pow( t, vec3( uPicLook.y ) ) * uPicLook.x;
       float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
       c = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uPicLook.z );
-      e = mix( e, c * uPicK * wo, m.a );
+      e = mix( e, c * uPicK * wo, m.a * uPicOn );
     }
     e *= 1.0 - uPhoto * m.a;
     // the photograph already holds its own dust: the model's darkens it less
@@ -546,7 +546,7 @@ export function createHero(THREE, env = {}) {
       uColOld: { value: new THREE.Vector3(...oldL.colour) }, uColYoung: { value: new THREE.Vector3(...youngL.colour) },
       uK: { value: new THREE.Vector2(0.4, 0.5) }, uSigma: { value: 2.6 }, uNoiseAmp: { value: 0 },
       uNoise: { value: null }, uSteps: { value: 6 },
-      uPic: { value: null }, uPicUv: { value: null }, uPicOn: { value: 0 }, uPicLook: { value: new THREE.Vector4(1, 1, 1, 0) }, uPicK: { value: 1.3 },
+      uPic: { value: null }, uPicUv: { value: null }, uPicOn: { value: 0 }, uPicLook: { value: new THREE.Vector4(1, 1, 1, 0) }, uPicK: { value: 0.8 },
     },
   }), true);
   discMat.name = 'deep-lmc-disc';
@@ -636,6 +636,7 @@ export function createHero(THREE, env = {}) {
   let bytes = 0;
   let orientedFor = null;
   let tarPx = 0;
+  let honest = 0;
   const _m = new THREE.Matrix4();
   const _inv = new THREE.Matrix4();
   const _v = new THREE.Vector3();
@@ -646,7 +647,7 @@ export function createHero(THREE, env = {}) {
   let picTex = null;
   const picPending = (!lmcRow || !lmcRow.file || typeof location === 'undefined' || env.noFetch) ? null
     : new THREE.TextureLoader().loadAsync(String(new URL(String(lmcRow.file).replace(/^site\//, ''), new URL('../../../', import.meta.url))))
-      .then((t) => { t.colorSpace = THREE.NoColorSpace; picTex = t; discMat.uniforms.uPic.value = t; discMat.uniforms.uPicOn.value = 1; })
+      .then((t) => { t.colorSpace = THREE.NoColorSpace; picTex = t; discMat.uniforms.uPic.value = t; })
       .catch((e) => { if (typeof console !== 'undefined') console.warn('deep: the LMC photograph did not load for the model', e && e.message); });
   let picDone = !picPending;
   if (picPending) picPending.finally(() => { picDone = true; });
@@ -725,7 +726,7 @@ export function createHero(THREE, env = {}) {
       const dir = siDir(nd.ra_deg, nd.dec_deg);
       const p = deproject(g, dir);
       const rad = (g.D * Math.tan(((nd.arcmin || nodeL.default_arcmin) / 60) * D2R / 2)) / g.unit;
-      const k2 = 0.55;
+      const k2 = 0.4;
       sp.push(...p); sa.push(nodeL.colour[0] * k2, nodeL.colour[1] * k2, nodeL.colour[2] * k2, rad);
       sc.push(photoCover(lmcRow, lmcEll, eclToEq(dir)), 0);
     }
@@ -801,6 +802,18 @@ export function createHero(THREE, env = {}) {
       // The photograph's stretch as nebulae.js applies it, for the exposure the gain says (Eye 0.55, Camera 1, Deep 1.7).
       const ex = exposureLook(gain < 0.8 ? 'eye' : gain > 1.3 ? 'deep' : 'camera');
       discMat.uniforms.uPicLook.value.set(ex.nebulaGain / Math.max(0.1, gain), ex.nebulaGamma, ex.nebulaSaturation, discMat.uniforms.uPicLook.value.w);
+      // The photograph is honest only near the line it was taken along, and not from inside: its light is the
+      // disc's within 25 degrees of that line, gone by 45 (the photograph's own fade is 25), and gone when the
+      // camera is nearer than the galaxy's radius. Off that, the Gaia maps carry the disc (the second look:
+      // the photograph spread through the disc read as fog from inside and a white bar at 45 degrees).
+      group.getWorldPosition(_c);
+      const toCam = _v.copy(camera.position).sub(_c);
+      const dist = toCam.length() / unit;                       // object units
+      const sunDir = new THREE.Vector3(...toGal(g, g.u).map((v) => -v * g.unit)).applyMatrix4(_m.extractRotation(frameGroup.matrixWorld)); // centre -> Sun, scene axes
+      const off = Math.acos(Math.max(-1, Math.min(1, toCam.normalize().dot(sunDir.normalize())))) * 180 / Math.PI;
+      const ok = (1 - Math.min(1, Math.max(0, (off - 25) / 20))) * Math.min(1, Math.max(0, (dist - DISC_EXTENT * 0.6) / (DISC_EXTENT * 0.6)));
+      honest = ok;
+      discMat.uniforms.uPicOn.value = picTex ? ok : 0;
 
       // The disc: a few steps (the vertical integral is exact); more at level 3.
       camIn(discMesh, camera, discMat.uniforms.uCamObj.value);
@@ -830,7 +843,7 @@ export function createHero(THREE, env = {}) {
     },
     ready: () => loaded && picDone,
     whenLoaded: () => pending || Promise.resolve(),
-    stats: () => ({ level, share: Math.round(share * 100) / 100, meshes: 4, points: pointCount, textures: 1, bytes, tier: builtTier, maps: !!maps, tarantulaPx: Math.round(Math.min(tarPx, 1e6)), tarantulaSteps: nebMat.uniforms.uSteps.value, discSteps: discMat.uniforms.uSteps.value }),
+    stats: () => ({ level, share: Math.round(share * 100) / 100, meshes: 4, points: pointCount, textures: 1, bytes, tier: builtTier, maps: !!maps, tarantulaPx: Math.round(Math.min(tarPx, 1e6)), tarantulaSteps: nebMat.uniforms.uSteps.value, discSteps: discMat.uniforms.uSteps.value, photoHonest: Math.round(honest * 100) / 100 }),
     // For tests: where things are, in object units.
     layout: () => ({ geometry: g, tarantula: { centre: tarCentre, radius: tarR }, r136, extent: DISC_EXTENT, z0 }),
     dispose() {
