@@ -454,7 +454,7 @@ void main() {
       rho *= mix( 1.0, 0.1 + 2.2 * n1 * n2, uNoiseAmp );
       // dark filaments: thin ridges of the noise, in front of R136 (toward the Sun)
       float ridge = 1.0 - abs( 2.0 * n2 - 1.0 );
-      dust = uNoiseAmp * smoothstep( 0.82, 0.97, ridge ) * smoothstep( 0.0, 0.5, -back ) * smoothstep( 0.95, 0.3, r );
+      dust = uNoiseAmp * smoothstep( 0.82, 0.97, ridge ) * smoothstep( 0.0, 0.5, -back ) * ( 1.0 - smoothstep( 0.3, 0.95, r ) );
     }
     vec3 col = mix( uColO3, uColHa, smoothstep( 0.06, 0.38, rq ) );
     float w = ( 1.0 - uPhotoT * coverT( p ) );
