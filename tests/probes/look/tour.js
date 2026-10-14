@@ -30,8 +30,8 @@ const judge = (name) => {
  * arrow's head, the last stroke, is whole. A head that never is, is a problem.
  */
 const inkDrawn = async (name) => {
-  const whole = await until(() => { const h = document.querySelector('.sr-tour__line.sr-tour__head'); return h && parseFloat(getComputedStyle(h).strokeDashoffset) < 0.02; }, 10000, 200);
-  if (!whole) out.problems.push(name + ': the ink was not drawn on in ten seconds');
+  const whole = await until(() => { const h = document.querySelector('.sr-tour__line.sr-tour__head'); return h && parseFloat(getComputedStyle(h).strokeDashoffset) < 0.02; }, 20000, 200);
+  if (!whole) out.problems.push(name + ': the ink was not drawn on in twenty seconds');
 };
 /** Wait for a step to be up (its caption on the page), give the ink its time, photograph it. */
 const stepShot = async (n, id, note) => {

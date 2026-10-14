@@ -477,7 +477,7 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   const systems = { group: { visible: true, children: [vis('systems:ring:b'), vis('systems:b'), vis('systems:mercury-ring', false), vis('systems:label')] } };
   // What is laid on the Earth (internal #756): its modules own `visible`; the drift clears the layer mask.
   const drape = (name, visible, mask = 1, children = []) => ({ name, visible, layers: { mask }, children });
-  const earthMesh = { name: 'earth', children: [
+  const earthMesh = { name: 'earth', material: { uniforms: { uEclipseLines: { value: 1 }, uEclipse: { value: 1 } } }, children: [
     drape('earth:overlay', true), drape('earth:wind', false), drape('earth:currents', false), drape('earth-aurora', true, 5),
     drape('earth-lightning', false), drape('eclipse-path', true, 1, [drape('', true), drape('', true, 3)]), drape('earth:clouds', true), drape('earth-atmosphere', true),
   ] };
@@ -522,6 +522,7 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   check(scene.children[1].visible && systems.group.children[1].visible && systems.group.visible, 'a body is: the Earth, a planet of a system');
   check(drapes.every((o) => o.layers.mask === 0 && o.children.every((c) => c.layers.mask === 0)), 'a data map, the wind, the currents, the aurora, the lightning and an eclipse\'s path (and its parts) are drawn by no camera');
   check(earthMesh.children[6].layers.mask === 1 && earthMesh.children[7].layers.mask === 1, 'the Earth\'s clouds and air are the Earth: drawn');
+  check(earthMesh.material.uniforms.uEclipseLines.value === 0 && earthMesh.material.uniforms.uEclipse.value === 1, 'the lines round the Moon\'s shadow are not drawn; the shadow is');
   check(drapes.map((o) => o.visible).join() === 'true,false,false,true,false,true', 'and no `visible` of theirs was touched: their modules keep deciding it');
   eq(marks, [false], 'the deep-sky kind marks are off');
   // The app says again, every frame or ten times a second, what is drawn. The hook comes after it.
@@ -547,6 +548,7 @@ const places = (options) => P.buildPlaces(RECORDS, options, look, facts);
   check(ctx.marksStale === true, 'the dots are placed and shown again on the next frame, by the app\'s own rule');
   check(ctx.groundTrack.group.visible && scene.children[0].visible && systems.group.children[0].visible && systems.group.children[3].visible, 'everything that was drawn is drawn');
   check(ctx.orbitRings.group.visible === false && systems.group.children[2].visible === false, 'and what was not drawn before is still not');
+  check(earthMesh.material.uniforms.uEclipseLines.value === 1, 'the shadow\'s lines are back');
   check(masks(earthMesh.children.slice(0, 8)) === masksBefore && late.layers.mask === 1, `what is laid on the Earth has its own masks back (${masks(earthMesh.children.slice(0, 8))})`);
   check(earthMesh.children[4].visible === true && earthMesh.children[3].visible === false, 'and the visible its module gave it in the meantime: lightning on, aurora off, exactly as the app has them now');
   earthMesh.children.pop();

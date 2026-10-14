@@ -15,6 +15,7 @@ const drapes = () => {
   if (!m) return [];
   return m.children.filter((o) => DRAPES.test(o.name || '')).map((o) => { const masks = []; o.traverse((x) => masks.push(x.layers.mask)); return { name: o.name, visible: o.visible, masks: masks.join(',') }; });
 };
+const shadowLines = () => { const m = earth(); const u = m && m.material && m.material.uniforms && m.material.uniforms.uEclipseLines; return u ? u.value : null; };
 const drawnNow = (list) => list.filter((d) => d.visible && !/^0(,0)*$/.test(d.masks)).map((d) => d.name);
 const masksOf = (list) => JSON.stringify(list.map((d) => [d.name, d.masks]));
 
@@ -42,10 +43,13 @@ const trio = async (tag, note) => {
   d.setOptions({ bare: true });
   await sleep(2500);
   const b = drapes();
+  const lines = shadowLines();
+  if (lines) out.problems.push(tag + ': the lines round the Moon\'s shadow are still drawn in only space');
   await shot(tag + '-2-only-space', note + ', only space on: drawn ' + JSON.stringify(drawnNow(b)));
   d.setOptions({ bare: false, tags: true });
   await sleep(2500);
   const c = drapes();
+  if (shadowLines() !== 1) out.problems.push(tag + ': the lines round the Moon\'s shadow did not come back (' + shadowLines() + ')');
   await shot(tag + '-3-off-again', note + ', only space off again: drawn ' + JSON.stringify(drawnNow(c)));
   out.views.push({ tag, off: a, on: b, again: c, active: d.state().active });
   if (drawnNow(b).length) out.problems.push(tag + ': only space left drawn ' + drawnNow(b).join(', '));
@@ -65,7 +69,18 @@ await trio('day', 'live, the day side');
 sr.clock.goTo(Date.UTC(2026, 7, 12, 17, 45));
 await sleep(4000);
 await until(() => drapes().some((d) => d.name === 'eclipse-path' && d.visible), 30000, 500);
-await frameEarth(mix(sunward('earth'), 1, north('earth'), 0.5), 20);
+// Straight over the path: the middle of its ribbon, from the Earth's centre.
+const pathDir = () => {
+  const g = earth().children.find((o) => o.name === 'eclipse-path');
+  const fill = g && g.children[0];
+  if (!fill || !fill.geometry || !fill.geometry.attributes.position) return null;
+  fill.geometry.computeBoundingSphere();
+  earth().updateMatrixWorld();
+  const w = earth().localToWorld(fill.geometry.boundingSphere.center.clone());
+  const e = earth().position;
+  return unit({ x: w.x - e.x, y: w.y - e.y, z: w.z - e.z });
+};
+await frameEarth(pathDir() || mix(sunward('earth'), 1, north('earth'), 0.5), 16);
 out.eclipse = drapes().find((x) => x.name === 'eclipse-path') || null;
 if (!out.eclipse || !out.eclipse.visible) look.missing.push('the eclipse path was not drawn at 2026-08-12 17:45 UTC');
 await trio('eclipse', '12 August 2026, 17:45 UTC, the eclipse\'s path');

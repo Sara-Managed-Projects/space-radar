@@ -32,7 +32,8 @@
 // dots and icons, the orbit of the selection, its ground track and its path, the planets' orbits,
 // the constellation figures, the shells and marks of the far rungs, the rings and labels of a star
 // system, and what is laid on the Earth (a data map, the aurora, the lightning, an eclipse's path on
-// the ground: EARTH_DRAPES). NOTHING IS SWITCHED OFF: no layer setting is touched. Each frame, after the scene has
+// the ground: EARTH_DRAPES; and the lines the Earth's shader draws round the Moon's shadow, while the
+// shadow itself, which is light, stays). NOTHING IS SWITCHED OFF: no layer setting is touched. Each frame, after the scene has
 // placed everything and before it is drawn, bareFrame() hides those objects for that frame (main.js
 // calls ctx.bareFrame when there is one), and what each was is kept, so leaving the option, or the
 // drift, puts every one back as it was. The models (scene/heroes.js) ask whether a LAYER is on, not
@@ -321,6 +322,7 @@ export function createDrift(ctx, env = {}) {
   let peekAt = 0;           // when this stay is looked at once (PEEK_MS after arriving); 0: already was
   let bareWas = null;       // while only space is on: what each hidden object's `visible` was
   const masksWas = new Map(); // and what each object laid on the Earth had as its layer mask
+  const uniformsWas = new Map(); // and the eclipse's edge lines on the Earth's shader
 
   function readStored() {
     try { return JSON.parse((storage && storage.getItem(STORE_KEY)) || 'null'); } catch { return null; }
@@ -638,6 +640,10 @@ export function createDrift(ctx, env = {}) {
       if (system && system.visible) for (const o of system.children) if (SYSTEM_LINES.test(o.name || '')) hide(o);
       const earth = ctx.worlds && typeof ctx.worlds.meshFor === 'function' ? ctx.worlds.meshFor('earth') : null;
       if (earth && earth.children) for (const o of earth.children) if (EARTH_DRAPES.test(o.name || '')) unseen(o);
+      // The Moon's shadow is the Earth's own light and stays; the two lines its shader draws round
+      // the umbra and the penumbra are marks (seen on a runner, 2026-10-15: a ring over Greenland).
+      const lines = earth && earth.material && earth.material.uniforms && earth.material.uniforms.uEclipseLines;
+      if (lines) { if (!uniformsWas.has(lines)) uniformsWas.set(lines, lines.value); lines.value = 0; }
     } catch { /* a layer that is not built yet has nothing to hide */ }
   }
 
@@ -668,6 +674,8 @@ export function createDrift(ctx, env = {}) {
     for (const [o, visible] of was) o.visible = visible;
     for (const [o, mask] of masksWas) o.layers.mask = mask;
     masksWas.clear();
+    for (const [u, value] of uniformsWas) u.value = value;
+    uniformsWas.clear();
     // The dots are placed and shown again on the next frame, by the rule that always decided it; the
     // selection's orbit is built again (its line only knows its own record); the deep-sky marks
     // follow the quality, as main.js has them.

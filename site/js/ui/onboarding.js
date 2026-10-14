@@ -269,7 +269,10 @@ export function createOnboarding(ctx, opts = {}) {
 
   function place(box, hole, view, seedText, withInk) {
     const size = { w: box.offsetWidth, h: box.offsetHeight };
-    const at = P.placeCaption(hole, view, size, band(view));
+    const side = rectOf('sr-side');
+    const inSheet = !!(hole && side && side.w >= view.w * 0.9 && hole.y >= side.y - 1);
+    const inColumn = !!(hole && side && !inSheet && side.x < view.w / 2 && hole.x < side.x + side.w);
+    const at = P.placeCaption(hole, view, size, band(view), { sheet: inSheet, clearRight: inColumn ? side.x + side.w : 0 });
     box.style.left = px(at.x);
     box.style.top = px(at.y);
     if (hole) {
@@ -313,10 +316,9 @@ export function createOnboarding(ctx, opts = {}) {
   function room(waiting, view) {
     const html = doc.documentElement;
     const open = waiting && view.w < 600 && panels().some((p) => p.w >= view.w * 0.9 && p.y < view.h / 3);
-    // The panel's foot is 24 px off the screen's (ui.css); the caption's is 24 px over the free
-    // scene's, which a phone's sheet and time pill end. The panel ends 8 px over the caption.
-    const free = open ? P.freeBand(view, { side: rectOf('sr-side'), top: rectOf('sr-top'), pill: rectOf('sr-time') }) : null;
-    const h = open ? Math.max(0, Math.ceil(view.h - (free.y + free.h) + card.offsetHeight + 8)) : 0;
+    // The panel's foot is 24 px off the screen's (ui.css), and so is the caption's, at the foot of
+    // the free band under the panel (P.freeBand): the panel ends 8 px over the caption.
+    const h = open ? Math.ceil(card.offsetHeight + 8) : 0;
     setRoom(open ? `${h}px` : null);
     html.classList.toggle('sr-tour-room', open);
   }
@@ -484,7 +486,18 @@ export function createOnboarding(ctx, opts = {}) {
   function onDone() {
     const step = current();
     if (offAction) { offAction(); offAction = null; }
-    if (step.then === 'wait') { paintWords(step); layout(true); return; }
+    if (step.then === 'wait') {
+      paintWords(step);
+      layout(true);
+      // What the press opened, when it is a region the control names (`aria-controls`): in view.
+      // Play on its own opens its list under the sidebar's fold (seen on a runner, 2026-10-15).
+      const opened = target && target.getAttribute && doc.getElementById(target.getAttribute('aria-controls') || '');
+      if (opened && typeof opened.scrollIntoView === 'function') {
+        const mine = token;
+        win.setTimeout(() => { if (mine === token && !opened.hidden) { try { opened.scrollIntoView({ block: 'nearest' }); } catch { /* an old browser */ } } }, 500);
+      }
+      return;
+    }
     const mine = token;
     beatTimer = win.setTimeout(() => { if (mine === token) send({ type: 'next' }); }, P.BEAT_MS);
   }
