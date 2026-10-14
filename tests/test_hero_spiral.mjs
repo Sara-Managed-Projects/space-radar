@@ -254,6 +254,7 @@ const A = prep(M31, m31, 30000);
   // M32 and M110 stay drawn by scene/dsoglow.js at their catalogue places, beside her
   const { SHAPED } = await import(join(JS, 'scene/dsoglow.js'));
   check(SHAPED['dso-m32'] && SHAPED['dso-m32'].of === 'dso-m31' && SHAPED['dso-m110'] && SHAPED['dso-m110'].of === 'dso-m31', 'M32 and M110 are drawn as her companions');
+  check([M31, M33].every((h) => h.review.by === 'Space Radar maintainers' && !!h.review.date), 'both are signed by "Space Radar maintainers" with a date, not a person or an independent review (internal #785 open)');
   check(M31.children.includes('dso-m32') && M31.children.includes('dso-m110'), 'and her profile names them as her children');
   const sep = (o) => Math.acos(Math.sin(o.decDeg * D2R) * Math.sin(m31.row.decDeg * D2R) + Math.cos(o.decDeg * D2R) * Math.cos(m31.row.decDeg * D2R) * Math.cos((o.raDeg - m31.row.raDeg) * D2R)) / D2R * 60;
   check(Math.abs(sep(m32) - 24.4) < 1.5 && Math.abs(sep(rows.find((r) => r.id === 'm110')) - 36.6) < 1.5, `at their measured separations on the sky: M32 ${sep(m32).toFixed(1)} arcmin, M110 ${sep(rows.find((r) => r.id === 'm110')).toFixed(1)} arcmin`);

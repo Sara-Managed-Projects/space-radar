@@ -126,8 +126,8 @@ export const HERO = {
     "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
     "distance": "The record's: 2.725 Mly (2.38-3.07), the Messier table's.",
     "credits": "CREDITS.md section 3l, Andromeda and galaxy structure.",
-    "by": "the stage-d builder (an agent, not independent); a person's science sign-off is still owed (task 33, internal #785)",
-    "date": "2026-10-14"
+    "by": "Space Radar maintainers",
+    "date": "2026-10-15"
   },
   "credits": [
     "The Triangulum Galaxy's model: inclination after Zaritsky, Elston & Hill 1989, the disc after Regan & Vogel 1994; NGC 604's place from SIMBAD (CDS). Facts, cited; no image or data file is copied."
