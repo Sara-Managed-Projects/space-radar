@@ -33,8 +33,8 @@
 // random rather than lost in an 8-bit framebuffer). The dynamic range is compressed like a photograph's
 // stretch: each point's light is divided by a power of the face-on density round it, so a bulge a hundred
 // times brighter than its disc draws a few times brighter, not a white disc. A disc seen edge on is
-// brighter by its path length; that is kept in part (the power 0.6 of |cos|), so the dust line still
-// reads. The light is normalised so the brightest face-on patch draws at 0.85 of white, under the
+// brighter by its path length; that is kept in part (the power 0.8 of |cos|), so the dust line still
+// reads. The light is normalised so the brightest face-on patch draws at 0.7 of white, under the
 // shutter's own number (scene/exposure.js `milkyWay`, as the Milky Way model and the glows).
 //
 // DUST IN FRONT, NOT BEHIND. The light is two buffers split by the disc's mid-plane, drawn far half,
@@ -54,14 +54,15 @@ export const KPC_KM = 30856775814913670;
 export const KPC_LY = KPC_KM / LY_KM;
 export const KPC_UNITS = KPC_LY / 100;          // the hero's object units (100 ly) in a kiloparsec
 const OBLIQUITY = 23.4392911 * D2R;
-const PATCH_MAX_KPC = 0.6;                      // aMeta.x is a patch's size as a share of this
+const PATCH_MAX_KPC = 3;                        // aMeta.x is a patch's size as a share of this
+const OVERLAP = 10;                             // patches covering any spot of the disc, about
 const SPRITE_SIGMA = 0.18;
 /** The integral of the sprite's Gaussian over its point, as a share of the point's square. */
 export const SPRITE_AREA = 2 * Math.PI * SPRITE_SIGMA * SPRITE_SIGMA * (1 - Math.exp(-0.25 / (2 * SPRITE_SIGMA * SPRITE_SIGMA)));
-const PEAK = 0.85;                              // the brightest face-on patch, of white
+const PEAK = 0.7;                               // the brightest face-on patch, of white
 const DUST_PEAK = 0.55;                         // the darkest face-on dust patch takes this share
-const STRETCH = 0.6;                            // light divided by (face-on density)^STRETCH
-const VIEW_POWER = 0.6;                         // the edge-on path length kept: |cos|^-(1-VIEW_POWER)
+const STRETCH = 0.6;                            // light above the median divided by its excess^STRETCH
+const VIEW_POWER = 0.8;                         // the edge-on path length kept: |cos|^-(1-VIEW_POWER)
 const ALPHA_FLOOR = 0.02;                       // below this a point is drawn at it with that chance
 const KNOT_KINDS = new Set(['knots', 'landmark']);
 
@@ -391,47 +392,63 @@ export function generateGalaxy(params, { count = 60000, dust = 0.3, seed = 7 } =
     }
   }
 
-  // EXPOSED BY PROJECTED DENSITY: a face-on grid of light x patch area, smoothed, then each point's light
-  // divided by its cell's to the power STRETCH (the knots keep their own light times the local factor).
+  // EXPOSED BY PROJECTED DENSITY (the head of this file). On a face-on grid: how many points stand on
+  // each cell (each point's patch is sized so about OVERLAP patches cover any spot: smooth where the
+  // points are sparse, fine where they crowd), and how much light (its parts above the median divided by
+  // their excess to the power STRETCH, so the bulge is a few times the disc and not a hundred; nothing
+  // fainter is lifted, so the outskirts fade as they do). A point's flux is its light over its patch's
+  // area, since a patch's light on screen is its alpha times its size squared.
   const G = 96, cell = (2 * rMax) / G, area = cell * cell;
   const cellOf = (x, y) => { const cx = Math.floor((x + rMax) / cell), cy = Math.floor((y + rMax) / cell); return cx >= 0 && cy >= 0 && cx < G && cy < G ? cy * G + cx : -1; };
-  const raw = new Float64Array(G * G);
-  for (let j = 0; j < n; j++) { if (isKnot[j]) continue; const c = cellOf(pos[j * 3], pos[j * 3 + 1]); if (c >= 0) raw[c] += f0[j] * patchKpc[j] * patchKpc[j] / area; }
-  const smooth = new Float64Array(G * G);
-  for (let y = 0; y < G; y++) for (let x = 0; x < G; x++) {
-    let s = 0, k = 0;
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= G || yy >= G) continue; s += raw[yy * G + xx]; k++; }
-    smooth[y * G + x] = s / k;
-  }
-  const nz = [...smooth].filter((v) => v > 0).sort((a, b) => a - b);
+  const smooth3 = (raw) => {
+    const out = new Float64Array(G * G);
+    for (let y = 0; y < G; y++) for (let x = 0; x < G; x++) {
+      let t = 0, k = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= G || yy >= G) continue; t += raw[yy * G + xx]; k++; }
+      out[y * G + x] = t / k;
+    }
+    return out;
+  };
+  const counts = new Float64Array(G * G), lightRaw = new Float64Array(G * G);
+  for (let j = 0; j < n; j++) { if (isKnot[j]) continue; const c = cellOf(pos[j * 3], pos[j * 3 + 1]); if (c >= 0) { counts[c] += 1; lightRaw[c] += f0[j] / area; } }
+  const perKpc2 = smooth3(counts).map((v) => v / area);
+  const sb = smooth3(lightRaw);
+  const nz = [...sb].filter((v) => v > 0).sort((x, y) => x - y);
   const ref = nz.length ? nz[Math.floor(nz.length / 2)] : 1;
-  const flux = new Float64Array(n);
+  const pMin = rMax / 200, pMax = PATCH_MAX_KPC;
+  const lum = new Float32Array(n);
+  const fl = new Float32Array(n);
   for (let j = 0; j < n; j++) {
     const c = cellOf(pos[j * 3], pos[j * 3 + 1]);
-    const s = c >= 0 && smooth[c] > 0 ? smooth[c] : ref;
-    flux[j] = f0[j] * Math.min(6, Math.max(0.05, Math.pow(s / ref, -STRETCH)));
+    if (!isKnot[j]) {
+      const dens = c >= 0 && perKpc2[c] > 0 ? perKpc2[c] : 1 / area;
+      patchKpc[j] = Math.min(pMax, Math.max(pMin, Math.sqrt(OVERLAP / dens)));
+    }
+    const k = c >= 0 && sb[c] > ref ? Math.pow(sb[c] / ref, -STRETCH) : 1;
+    lum[j] = f0[j] * k;
+    fl[j] = lum[j] / (patchKpc[j] * patchKpc[j]);
+    meta[j * 4] = Math.max(1, Math.min(255, Math.round((patchKpc[j] / PATCH_MAX_KPC) * 255)));
+    patchKpc[j] = (meta[j * 4] / 255) * PATCH_MAX_KPC;          // as the GPU will read it
+    fl[j] = lum[j] / (patchKpc[j] * patchKpc[j]);
   }
   // The normalisation: the brightest face-on patch (99.5th percentile of the cells) at PEAK.
   const shown = new Float64Array(G * G);
-  for (let j = 0; j < n; j++) { const c = cellOf(pos[j * 3], pos[j * 3 + 1]); if (c >= 0) shown[c] += SPRITE_AREA * flux[j] * patchKpc[j] * patchKpc[j] / area; }
-  const lit = [...shown].filter((v) => v > 0).sort((a, b) => a - b);
+  for (let j = 0; j < n; j++) { const c = cellOf(pos[j * 3], pos[j * 3 + 1]); if (c >= 0) shown[c] += SPRITE_AREA * lum[j] / area; }
+  const lit = [...smooth3(shown)].filter((v) => v > 0).sort((x, y) => x - y);
   const top = lit.length ? lit[Math.min(lit.length - 1, Math.floor(lit.length * 0.995))] : 1;
-  const fmax = flux.reduce((m, v) => Math.max(m, v), 0) || 1;
-  for (let j = 0; j < n; j++) col[j * 4 + 3] = Math.max(1, Math.round((flux[j] / fmax) * 255));
-  const gain = (PEAK / top) * fmax;
+  const gain = PEAK / top;
+  for (let j = 0; j < n; j++) col[j * 4 + 3] = 255;
 
   // DUST: in the mid-plane, along the arms' inner edges, in rings, and a thin disc.
   const dn = dustLayers.length ? Math.round(n * dust) : 0;
-  const dpos = new Float32Array(dn * 3), dmeta = new Uint8Array(dn * 4), dtau = new Uint8Array(dn);
-  const wsumD = dustLayers.reduce((s, l) => s + (Number(l.weight) || 0.3), 0) || 1;
+  const dpos = new Float32Array(dn * 3), dmeta = new Uint8Array(dn * 4), dtau = new Float32Array(dn);
+  const wsumD = dustLayers.reduce((t, l) => t + (Number(l.weight) || 0.3), 0) || 1;
   let di = 0;
-  const dpatch = mean * 1.4;
   const dput = (x, y, z, tau = 1) => {
     if (di >= dn) return;
     dpos[di * 3] = x; dpos[di * 3 + 1] = y; dpos[di * 3 + 2] = z;
-    dmeta[di * 4] = Math.max(1, Math.min(255, Math.round((dpatch / PATCH_MAX_KPC) * 255)));
     dmeta[di * 4 + 1] = 255; dmeta[di * 4 + 2] = Math.floor(rnd() * 256); dmeta[di * 4 + 3] = 0;
-    dtau[di] = Math.max(1, Math.min(255, Math.round(tau * 200)));
+    dtau[di] = tau;
     di += 1;
   };
   for (const l of dustLayers) {
@@ -458,16 +475,28 @@ export function generateGalaxy(params, { count = 60000, dust = 0.3, seed = 7 } =
       }
     }
   }
+  // The dust's patches the same way (sized by its own crowding), its depth over the patch's area, and
+  // the darkest face-on patch (97th percentile) taking DUST_PEAK.
   let dustGain = 0;
   if (di > 0) {
+    const dc = new Float64Array(G * G);
+    for (let j = 0; j < di; j++) { const c = cellOf(dpos[j * 3], dpos[j * 3 + 1]); if (c >= 0) dc[c] += 1; }
+    const dd = smooth3(dc).map((v) => v / area);
     const dcell = new Float64Array(G * G);
-    for (let j = 0; j < di; j++) { const c = cellOf(dpos[j * 3], dpos[j * 3 + 1]); if (c >= 0) dcell[c] += SPRITE_AREA * (dtau[j] / 255) * dpatch * dpatch / area; }
-    const dv = [...dcell].filter((v) => v > 0).sort((a, b) => a - b);
+    for (let j = 0; j < di; j++) {
+      const c = cellOf(dpos[j * 3], dpos[j * 3 + 1]);
+      const pk = Math.min(pMax, Math.max(pMin, Math.sqrt(OVERLAP / (c >= 0 && dd[c] > 0 ? dd[c] : 1 / area))));
+      dmeta[j * 4] = Math.max(1, Math.min(255, Math.round((pk / PATCH_MAX_KPC) * 255)));
+      const p2 = (dmeta[j * 4] / 255) * PATCH_MAX_KPC;
+      if (c >= 0) dcell[c] += SPRITE_AREA * dtau[j] / area;
+      dtau[j] = dtau[j] / (p2 * p2);
+    }
+    const dv = [...smooth3(dcell)].filter((v) => v > 0).sort((x, y) => x - y);
     const dtop = dv.length ? dv[Math.min(dv.length - 1, Math.floor(dv.length * 0.97))] : 1;
     dustGain = DUST_PEAK / dtop;
   }
   return {
-    light: { pos, col, meta, count: n, kinds },
+    light: { pos, col, meta, flux: fl, lum, count: n, kinds },
     dust: { pos: dpos.subarray(0, di * 3), meta: dmeta.subarray(0, di * 4), tau: dtau.subarray(0, di), count: di },
     gain, dustGain, rMaxKpc: rMax,
   };
@@ -521,6 +550,7 @@ export function exposeByDensity(posKpc, weight, count, centreKpc, normal, { stre
 const LIGHT_VERT = /* glsl */ `
 attribute vec4 aCol;
 attribute vec4 aMeta;
+attribute float aFlux;
 uniform float uGain;
 uniform float uViewH;
 uniform float uMinPx;
@@ -538,7 +568,7 @@ void main() {
   float ideal = aMeta.x * ${PATCH_MAX_KPC.toFixed(3)} * scale / d * focal;
   float s = clamp( ideal, uMinPx, uMaxPx );
   // a patch held bigger than it is keeps its light, spread wider; one held smaller does not grow brighter
-  float a = aCol.a * uGain * min( 1.0, ( ideal * ideal ) / ( s * s ) );
+  float a = aFlux * uGain * min( 1.0, ( ideal * ideal ) / ( s * s ) );
   // the edge-on path length, kept in part (the head of scene/deep/spiral.js)
   vec3 nV = normalize( ( viewMatrix * vec4( uNormalW, 0.0 ) ).xyz );
   float c = abs( dot( normalize( mv.xyz ), nV ) );
@@ -675,17 +705,19 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   for (const sign of [1, -1]) {
     let m = 0;
     for (let j = 0; j < L.count; j++) if ((L.pos[j * 3 + 2] >= 0) === (sign > 0)) m++;
-    const p = new Float32Array(m * 3), c = new Uint8Array(m * 4), t = new Uint8Array(m * 4);
+    const p = new Float32Array(m * 3), c = new Uint8Array(m * 4), t = new Uint8Array(m * 4), f = new Float32Array(m);
     let k = 0;
     for (let j = 0; j < L.count; j++) {
       if ((L.pos[j * 3 + 2] >= 0) !== (sign > 0)) continue;
       p.set(L.pos.subarray(j * 3, j * 3 + 3), k * 3); c.set(L.col.subarray(j * 4, j * 4 + 4), k * 4); t.set(L.meta.subarray(j * 4, j * 4 + 4), k * 4);
+      f[k] = L.flux[j];
       k++;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
     geo.setAttribute('aCol', new THREE.BufferAttribute(c, 4, true));
     geo.setAttribute('aMeta', new THREE.BufferAttribute(t, 4, true));
+    geo.setAttribute('aFlux', new THREE.BufferAttribute(f, 1));
     const pts = new THREE.Points(geo, new THREE.ShaderMaterial({
       vertexShader: LIGHT_VERT, fragmentShader: LIGHT_FRAG, uniforms: lightU,
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
@@ -701,7 +733,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(D.pos.slice(), 3));
     geo.setAttribute('aMeta', new THREE.BufferAttribute(D.meta.slice(), 4, true));
-    geo.setAttribute('aTau', new THREE.BufferAttribute(D.tau.slice(), 1, true));
+    geo.setAttribute('aTau', new THREE.BufferAttribute(D.tau.slice(), 1));
     dustPts = new THREE.Points(geo, new THREE.ShaderMaterial({
       vertexShader: DUST_VERT, fragmentShader: DUST_FRAG, uniforms: dustU, defines: { GAS_ABSORB: 1 },
       transparent: false, depthTest: false, depthWrite: false, toneMapped: false,
@@ -759,7 +791,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     if (dustPts) { dustPts.geometry.dispose(); dustPts.material.dispose(); }
     if (group.parent) group.parent.remove(group);
   }
-  const bytes = L.count * 20 + D.count * 21;
+  const bytes = L.count * 24 + D.count * 20;
   return {
     group, place, setShare, update, dispose,
     share: () => share,

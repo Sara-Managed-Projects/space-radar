@@ -334,16 +334,18 @@ const GROUPS_D = {
     const ly = (n) => n * LY_KM / sr.stage.unitKm;
     if (sr.galaxy && sr.galaxy.andromedaReady) await sr.galaxy.andromedaReady();
     const arrival = rig.state.distance;
+    const M = pos('dso-m31'), sun = pos('sun') || { x: 0, y: 0, z: 0 };
+    const home = unit(sub(sun, M));                       // from her toward the Sun: our line of sight
+    const side = unit(cross(home, { x: 0, y: 1, z: 0 }));
+    const off = (deg) => unit(mix(home, Math.cos(deg * Math.PI / 180), side, Math.sin(deg * Math.PI / 180)));
     // 1. Off her line and small: the far copy (below the hero's 180 px), her true size at 1.2 Mly.
-    turn(Math.PI / 2);
-    rig.flyTo({ distance: ly(1200000), ms: 0 });
+    rig.flyTo({ offset: off(90), distance: ly(1200000), ms: 0 });
     await snapD('d1-m31-small-turned90', 'Andromeda 1.2 Mly away, 90 degrees off our line: the far copy of her own model, at her true size');
     // 2. On our line, close enough that her photograph is half way through handing over to the model.
-    rig.flyTo({ azimuth: rig.state.azimuth - Math.PI / 2, distance: ly(34000), ms: 0 });
+    rig.flyTo({ offset: home, distance: ly(34000), ms: 0 });
     await snapD('d2-m31-crossover', 'on our line, 34 000 ly from her centre: the photograph half faded, the model taking the rest');
-    rig.flyTo({ distance: arrival, ms: 0 });
-    turn(Math.PI / 6);
-    await snapD('d3-m31-turned30', 'Andromeda turned 30 degrees: photograph and model sharing her, the same pose');
+    rig.flyTo({ offset: off(35), distance: arrival, ms: 0 });
+    await snapD('d3-m31-turned35', 'Andromeda 35 degrees off our line: photograph and model sharing her, the same pose');
     const ax = discAxesScene();
     if (ax) {
       // 4. Face-on-ish: 20 degrees from her axis, at the arrival distance.

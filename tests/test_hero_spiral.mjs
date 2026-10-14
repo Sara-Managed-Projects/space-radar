@@ -41,7 +41,7 @@ const moments = (g, u, v) => {
   const L = g.light;
   for (let i = 0; i < L.count; i++) {
     const p = [L.pos[i * 3], L.pos[i * 3 + 1], L.pos[i * 3 + 2]];
-    const a = dot(p, u), b = dot(p, v), k = L.col[i * 4 + 3];
+    const a = dot(p, u), b = dot(p, v), k = L.lum[i];
     suu += k * a * a; svv += k * b * b; suv += k * a * b; w += k;
   }
   suu /= w; svv /= w; suv /= w;
@@ -199,8 +199,16 @@ const A = prep(M31, m31, 30000);
   // the stretch: from our side no patch of her disc draws past white, while the bulge is the brightest
   const L = A.g.light;
   let bulge = 0, nb = 0, disc = 0, nd = 0;
-  for (let i = 0; i < L.count; i++) { const a = L.col[i * 4 + 3]; if (L.meta[i * 4 + 1]) { disc += a; nd++; } else { bulge += a; nb++; } }
-  check(bulge / nb < disc / nd, 'a bulge point carries less light than a disc point: the stretch, so the bulge is not a white disc');
+  const f0 = (i) => { const k = L.kinds[L.meta[i * 4 + 3]]; const l = M31.layers.find((x) => x.kind === k); return l.light; };
+  const share = { bulge: 0, disc: 0 }, raw = { bulge: 0, disc: 0 };
+  for (let i = 0; i < L.count; i++) { const k = L.meta[i * 4 + 1] ? 'disc' : 'bulge'; share[k] += L.lum[i]; raw[k] += 1; }
+  const bulgeLayer = M31.layers.find((x) => x.kind === 'bulge');
+  check(share.bulge / (share.bulge + share.disc) < 0.8 * bulgeLayer.light, `the stretch takes light from the crowded bulge, so it is not a white disc (${(share.bulge / (share.bulge + share.disc)).toFixed(2)} of the light against ${bulgeLayer.light} before)`);
+  void f0;
+  // patches sized by crowding: small in the bulge, large in the outskirts
+  let pIn = 0, nIn = 0, pOut = 0, nOut = 0;
+  for (let i = 0; i < L.count; i++) { const R = Math.hypot(L.pos[i * 3], L.pos[i * 3 + 1]); const p = L.meta[i * 4]; if (R < 1.5) { pIn += p; nIn++; } else if (R > 15) { pOut += p; nOut++; } }
+  check(pIn / nIn < 0.5 * pOut / nOut, `each point's patch follows its crowding (${(pIn / nIn).toFixed(0)} inside 1.5 kpc, ${(pOut / nOut).toFixed(0)} past 15 kpc, of 255)`);
 }
 
 // --------------------------------------------------------------------------------- 6. landmarks
