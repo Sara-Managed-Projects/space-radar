@@ -1391,7 +1391,26 @@ Stage c writes this sub-section, and only this one.
 
 ### Andromeda and the Triangulum Galaxy (stage d)
 
-Stage d writes this sub-section, and only this one.
+Andromeda (M31) and the Triangulum Galaxy (M33) close up, and Andromeda off her photograph's line at any
+distance, are a **model** (`site/js/scene/deep/spiral.js`): statistical points generated in the browser from
+a fixed seed and the numbers in `registry/deepsky-heroes/m31.yaml` and `m33.yaml`, where each is marked
+published, `assumed` or `illustrative`. No image or data file is used or copied; the facts are cited.
+
+| what | number | source |
+|---|---|---|
+| M31's bulge and disc | Sersic n = 2.2 ± 0.3, Re = 1.0 ± 0.2 kpc; exponential disc, Rd = 5.3 ± 0.5 kpc | Courteau et al. 2011, ApJ 739, 20 (arXiv:1106.3564) |
+| M31's ring and arms | a ring of star formation of radius about 10 kpc, offset from the nucleus and split near M32; two arms in segments | Gordon et al. 2006, ApJ 638, L87 (arXiv:astro-ph/0601314) |
+| M31's inner dust ring | projected 1.5 × 1 kpc, offset about 0.5 kpc | Block et al. 2006, Nature 443, 832 (arXiv:astro-ph/0610543) |
+| M31's dust rings | R = 5.6 and 15.1 kpc | Draine et al. 2014, ApJ 780, 172 (arXiv:1306.2304) |
+| M31's tilt | position angle 38°, inclination 77° | de Vaucouleurs 1958, ApJ 128, 465, as later work adopts it |
+| M31's rotation | the south-western half approaches (the arms trail) | Rubin & Ford 1970, ApJ 159, 379 |
+| deprojected bulge | the Sersic constants b_n and p | Prugniel & Simien 1997, A&A 321, 111; Lima Neto, Gerbal & Márquez 1999, MNRAS 309, 481 |
+| M33's tilt | inclination 56° (position angle 23° is the OpenNGC row's) | Zaritsky, Elston & Hill 1989, AJ 97, 97, as cited |
+| M33's disc | K-band scale length about 1.4 kpc; a bulge contested | Regan & Vogel 1994, ApJ 434, 536, as cited |
+| NGC 604's place | RA 01h 34m 32.1s, Dec +30° 47′ 01″ (ICRS) | SIMBAD (CDS), read 2026-10-14 |
+
+The pictures of both galaxies along our line of sight stay the photographs credited in section 3 (NOIRLab
+noao0001a, ESO eso1424a).
 
 ### The cosmos: the local volume and the horizon (stage e)
 

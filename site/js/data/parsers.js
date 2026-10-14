@@ -1489,9 +1489,11 @@ const GATHERED = 'its catalogued stars are each drawn in their measured directio
 const DSO_DRAWN = {
   m31: {
     drawsAs: 'variant',
-    drawnName: 'Andromeda, from our own galaxy\u2019s model',
-    departure: 'at the size given here and tilted as measured, 77\u00b0 with the north-west edge ' +
-      'nearest; its own arms have not been mapped star by star, so these are ours',
+    // Her own model since spec 0075 stage d (scene/deep/spiral.js, registry/deepsky-heroes/m31.yaml).
+    drawnName: 'Andromeda, as a model of her own measured shape',
+    departure: 'tilted as measured, 77\u00b0 with the north-west edge nearest; her bulge, disc, ' +
+      'ring and dust rings follow published measurements, her arms\u2019 exact shape and her stars ' +
+      'are ours: points standing for light, not a map of her stars',
   },
   // ANDROMEDA'S TWO BRIGHT COMPANIONS (public #385). They were two unnamed dots beside her: the
   // Messier table calls them "Andromeda Satellite #1" and "#2", which is nobody's name for them,
