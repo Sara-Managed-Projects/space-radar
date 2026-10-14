@@ -16,6 +16,7 @@
 
 import * as satellite from '../../vendor/satellite.esm.js';
 import { rocketRowFor } from './rocketmatch.js';
+import { catalogNumber, isCatalogued } from './catnum.js';
 
 const DEG = Math.PI / 180;
 const AU_KM = 149597870.7;
@@ -75,14 +76,14 @@ export function parseCelestrakGP(json, opts = {}) {
     // satellite.js reports an unusable element set on the satrec itself rather than throwing.
     if (!satrec || satrec.error) continue;
 
-    const norad = Number(row.NORAD_CAT_ID);
+    const norad = catalogNumber(row.NORAD_CAT_ID);
     const intl = typeof row.OBJECT_ID === 'string' ? row.OBJECT_ID.trim() : '';
     const name = (row.OBJECT_NAME || intl || String(norad)).trim();
 
-    // The supplemental files carry placeholder catalogue numbers (100001 and up) for objects
-    // the public catalogue has not numbered yet. Their international designator is real, so
-    // that is what identifies them.
-    const numbered = Number.isFinite(norad) && norad > 0 && norad < 90000;
+    // A stand-in number (an analyst object, a launch nominal: data/catnum.js has the ranges and
+    // their sources) is not the object's own, so its international designator identifies it.
+    // Numbers of 100 000 and up are REAL since the five-digit catalogue ran out on 2026-07-11.
+    const numbered = isCatalogued(norad);
     const id = numbered ? `sat-${norad}` : intl ? `int-${intl}` : `${source}-${out.length}`;
     // PROVISIONAL (spec 0026 req 15): an object the public catalogue has not numbered yet, known only
     // from the operator's own elements. Drawn dimmer, classed `inferred` whatever its epoch age, and
@@ -113,7 +114,7 @@ export function parseCelestrakGP(json, opts = {}) {
       satrec,
       meta: {
         noradId: numbered ? norad : null,
-        catalogueNumber: Number.isFinite(norad) ? norad : null,
+        catalogueNumber: norad,
         provisional,
         intlDesignator: intl || null,
         objectName: name,

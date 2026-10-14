@@ -794,6 +794,8 @@ jobs:
         run: node tests/test_orbitline.mjs
       - name: a not-yet-catalogued object is inferred, dimmer, and says so (spec 0026 req 15)
         run: node tests/test_provisional.mjs
+      - name: "a catalogue number of 100 000 and up is a real one: one helper reads five digits, Alpha-5 and nine digits, keys sat-<n> and survives a share link and the column twin"
+        run: node tests/test_catalog_numbers.mjs
       - name: the space-weather line says the number, the word, the age and the source (spec 0026 req 16)
         run: node tests/test_spaceweather.mjs
       # 2026-09-28: today's clouds from NASA GIBS and the storms from GDACS, against the answers both

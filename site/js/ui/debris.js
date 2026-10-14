@@ -28,6 +28,7 @@ import '../copy/en.later.js';
 import { load } from '../data/sources.js';
 import { parseSatcat, decayedRows, census, stories, KINDS, rememberLaunches, oldestRows } from '../data/satcat.js';
 import { OLDEST_NOTES } from '../data/oldestnotes.js';
+import { satId } from '../data/catnum.js';
 
 const LAYER = 'debris-field';
 const DAY_MS = 86400e3;
@@ -246,7 +247,7 @@ export function createDebris(ctx, host, opts = {}) {
       const list = el('ol', 'sr-debris__stories sr-debris__oldest');
       for (const row of st.data.oldest) {
         const li = el('li', 'sr-debris__story');
-        const rec = typeof ctx.recordById === 'function' ? ctx.recordById(`sat-${row.id}`) : null;
+        const rec = typeof ctx.recordById === 'function' ? satId(row.id) && ctx.recordById(satId(row.id)) : null;
         const name = rec ? el('button', 'sr-debris__oldname') : el('span', 'sr-debris__oldname');
         name.textContent = row.name;
         if (rec) {
