@@ -37,6 +37,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of GPS Block IIR, IIF and III, Galileo, Michibiki, NavIC and SAOCOM | built by us in code from published dimensions | public domain, GODL-India or CC BY 4.0 where a picture was used; ours | [3b-8](#3b-8-seven-more-built-from-dimensions--gps-by-block-galileo-michibiki-navic-saocom-2026-10-13) |
 | The shapes of MetOp, XMM-Newton, TerraSAR-X and TanDEM-X, and StriX | built by us in code from published dimensions | public domain, CC BY 3.0 or CC0 where a picture was used; ours | [3b-9](#3b-9-four-more-built-from-dimensions--metop-xmm-newton-terrasar-x-strix-2026-10-13) |
 | The shapes of Envisat, ERS-1 and Sentinel-1, -2 and -3 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-10](#3b-10-five-european-earth-observation-craft-built-from-dimensions--envisat-ers-1-sentinel-1-sentinel-2-sentinel-3-2026-10-14) |
+| The shapes of Sentinel-5P, CryoSat-2, SMOS and ALOS-2 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 3.0 where a picture was used; ours | [3b-11](#3b-11-four-earth-observation-craft-built-from-dimensions--sentinel-5p-cryosat-2-smos-alos-2-2026-10-14) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1059,6 +1060,37 @@ details simplified", and the two craft that no longer work say so in a sentence 
 No logo, lettering, flag or insignia is on any of the five. ESA, the European Union, EUMETSAT,
 Airbus, Thales Alenia Space and DLR do not endorse Space Radar, and none of them made or approved
 these shapes.
+
+## 3b-11. Four Earth-observation craft built from dimensions — Sentinel-5P, CryoSat-2, SMOS, ALOS-2 (2026-10-14)
+
+The ninth batch. Three are ESA's and one is JAXA's, and neither agency's pictures or models may be
+derived from, so **no ESA picture, no JAXA picture and no agency model is in a file, on a sheet or
+derived from**: ESA's, eoPortal's and JAXA's numbers were read as words and numbers only. The
+layouts were read off pictures that are free: a Commons contributor's own photograph of a model of
+Sentinel-5P (CC BY 3.0); DLR's photographs of a scale model of SMOS (CC BY 2.0); a visitor's own
+photograph of JAXA's 1/50 model of ALOS-2, given to the public domain (CC0). **CryoSat-2 has no free
+picture**: it is laid out from the pages' own sentences, and a visitor's share-alike photograph of the
+flight craft was looked at only. Two pictures were looked at only and are in no file and on no
+sheet; each row in `registry/models.yaml` names them so. No image-to-3D model was used. Their cards
+say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `sentinel-5p.glb` (44 KB) | Sentinel-5P: a gold six-sided body, TROPOMI and its radiator on the Earth floor, three wings folded out flat at the far end, 5.63 m tip to tip and 3.35 m high | ESA's facts page (<https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-5P/Facts_and_figures>), for words and numbers only, and eoPortal (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-5p>); a photograph of a model by SkywalkerPL, "Sentinel 5P model" (<https://commons.wikimedia.org/wiki/File:Sentinel_5P_model.jpg>) (read 2026-10-14). The body's width and height and the places on the Earth floor are ours | numbers are facts; the photograph is CC BY 3.0 and is not in the file; NO ESA PICTURE OR MODEL WAS USED |
+| `cryosat-2.glb` (53 KB) | CryoSat-2: a copper body 4.6 by 2.34 by 2.20 m with no wings, a roof of two fixed panels of cells, the two SIRAL dishes side by side at the nose, pitched 6 degrees nose down | eoPortal (<https://www.eoportal.org/satellite-missions/cryosat-2>) and ESA's pages (<https://www.esa.int/Applications/Observing_the_Earth/FutureEO/CryoSat/Facts_and_figures>, <https://www.esa.int/Applications/Observing_the_Earth/FutureEO/CryoSat/Satellite>), for words and numbers only; NO FREE PICTURE; looked at only, a photograph by AndreasSchepers (<https://commons.wikimedia.org/wiki/File:Cryosat2_test_iabg_ottobrunn.jpg>, CC BY-SA 3.0) (read 2026-10-14). The roof's angle and the places on the Earth face are ours | numbers are facts; nothing of any picture is in the file; NO ESA PICTURE OR MODEL WAS USED |
+| `smos.glb` (53 KB) | SMOS: the Y of MIRAS, three arms 8 m across with 69 gold receivers, over the instrument's hub and the 1 m Proteus bus, two wings of four panels, pitched 32.5 degrees as it flies | eoPortal (<https://www.eoportal.org/satellite-missions/smos>) and ESA's pages (<https://www.esa.int/Applications/Observing_the_Earth/FutureEO/SMOS/Facts_and_figures>, <https://www.esa.int/Applications/Observing_the_Earth/FutureEO/SMOS/Instrument>, <https://www.esa.int/Applications/Observing_the_Earth/FutureEO/SMOS/Satellite>), for words and numbers only; DLR's photographs of a scale model (<https://commons.wikimedia.org/wiki/File:SMOS_scale_model_(7628219434)_(2).jpg>, <https://commons.wikimedia.org/wiki/File:SMOS_scale_model_(7628218776)_(2).jpg>) (read 2026-10-14). The arms' width, the hub's size and the booms are ours | numbers are facts; the photographs are CC BY 2.0 and are not in the file; NO ESA PICTURE OR MODEL WAS USED |
+| `alos-2.glb` (74 KB) | ALOS-2: the 9.9 m by 2.9 m L-band antenna of five panels under a gold body, two solar paddles of three panels across the track, 16.5 m tip to tip | eoPortal (<https://www.eoportal.org/satellite-missions/alos-2>), JAXA's numbers as it gives them; a photograph of JAXA's 1/50 model by Syced, "Inside JAXA Space Dome 8" (<https://commons.wikimedia.org/wiki/File:Inside_JAXA_Space_Dome_8.jpg>, CC0); looked at only, a photograph of the antenna's face by テレストレラッソ (<https://commons.wikimedia.org/wiki/File:ALOS-2-PALSAR-2.jpg>, CC BY-SA 4.0) (read 2026-10-14). The body's size, the paddles' panels and everything on the body's top are ours | numbers are facts; the photograph is in the public domain and is not in the file; NO JAXA PICTURE OR MODEL WAS USED |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `sentinel-5p`, `cryosat-2`, `smos`, `alos-2` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and a photograph of a model of Sentinel-5P by SkywalkerPL (CC BY 3.0)`;
+`3D model: built by Space Radar from published dimensions (no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions and DLR's photographs of a model of SMOS (DLR German Aerospace Center, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and a photograph of JAXA's model of ALOS-2 by Syced (CC0)`
+
+No logo, lettering, flag or insignia is on any of the four. ESA, the European Union, JAXA, Airbus,
+Thales Alenia Space, CNES, DLR and the National Museum of Nature and Science do not endorse Space
+Radar, and none of them made or approved these shapes.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

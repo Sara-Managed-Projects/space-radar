@@ -308,6 +308,20 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = nav(name, year, klass, id);
     check(!got || !eighth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch eight's files: ${JSON.stringify(got)}`);
   }
+  // BATCH NINE (public #951, #957, #958, #977): Sentinel-5P, CryoSat-2, SMOS and ALOS-2, each by number. ALOS-2 keeps the radar blade as what is drawn while its file loads.
+  for (const [norad, cat, name, file, build] of [[42969, 'SENTINEL-5P', 'Sentinel-5P', 'sentinel-5p.glb'], [36508, 'CRYOSAT 2', 'CryoSat-2', 'cryosat-2.glb'],
+    [36036, 'SMOS', 'SMOS', 'smos.glb'], [39766, 'ALOS-2', 'ALOS-2', 'alos-2.glb', 'radar']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app' && !got.was, `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  // None of the four files reaches another craft: ALOS and ALOS-4 (other antennas), the RADARSAT and COSMO-SkyMed radars, debris, names that only contain the word.
+  const ninth = ['sentinel-5p.glb', 'cryosat-2.glb', 'smos.glb', 'alos-2.glb'];
+  for (const [name, year, klass, id] of [['ALOS (DAICHI)', 2006, 'satellite', 28931], ['ALOS-4 (DAICHI-4)', 2024, 'satellite', 60182], ['ALOS-2 DEB', 2014, 'debris'], ['RADARSAT-2', 2007, 'satellite', 32382],
+    ['RCM-1', 2019, 'satellite', 44322], ['COSMO-SKYMED 1', 2007, 'satellite', 31598], ['SENTINEL-6A', 2020, 'satellite', 46984], ['SENTINEL-5P DEB', 2017, 'debris'], ['CRYOSAT 2 DEB', 2010, 'debris'],
+    ['SMOS DEB', 2009, 'debris'], ['PROBA-1', 2001, 'satellite'], ['ROCKOT R/B', 2009, 'rocket-body'], ['SENTINEL-3A', 2016, 'satellite', 41335]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !ninth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch nine's files: ${JSON.stringify(got)}`);
+  }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');
