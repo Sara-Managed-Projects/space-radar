@@ -340,6 +340,8 @@ export function createDeepSky(THREE, env = {}) {
     pathFor,
     drawnOf: (record) => { const h = record ? heroOfRecord(record.id) : null; return drawnClasses(record, h ? h.profile : null); },
     hero: (id) => { const h = heroes.get(id); return h ? { id, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level } : null; },
+    /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
+    heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) m.set(h.def.record, fader.share(`hero:${h.def.id}`)); return m; },
     ready,
     whenReady(ms = 20000) {
       const until = Date.now() + ms;

@@ -2863,6 +2863,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         picturedAt = nowReal;
         const now = new Map();
         for (const id of ctx.nebulae.loaded()) { const share = Math.round(ctx.nebulae.drawn(id) * 10) / 10; if (share > 0) now.set(id, share); }
+        // And to a drawn deep-sky hero (spec 0075 stage b): its own structure stands where the glow stood.
+        if (ctx.deep && ctx.deep.heroShares) for (const [id, k] of ctx.deep.heroShares()) { const share = Math.round(k * 10) / 10; if (share > (now.get(id) || 0)) now.set(id, share); }
         const key = [...now].join(' ');
         if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
       }

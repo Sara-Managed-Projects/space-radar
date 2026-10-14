@@ -45,8 +45,10 @@
 //          It stays at the centre of the frame from every side (DS-B02).
 // The photograph (scene/nebulae.js) is the truth from our side: the gas and the knots give way to it by
 // its own share (info.photo), so on the line of sight the ESO picture is what is drawn, and 25 to 50°
-// off it the reconstruction takes over (design section 8). They also take over from the point glow by
-// its own fade, 110 to 210 px in radius, as the coordinator's holder does.
+// off it the reconstruction takes over (design section 8). The point glow gives way to the hero as it
+// does to a photograph (main.js, deepsky.js heroShares), so at 150 px off the line the 3D form is whole.
+// As the nebula grows past the view its light is scaled down (to 45 % inside): the eye's adaptation, in
+// the material, so a camera inside sees the gas round it and not a washed-out screen.
 //
 // LOOKS. Eye / Camera draw the line colours as the ESO photograph (broadband B, V, R) shows them; Deep
 // draws the ENHANCED narrowband palette, declared as such in the registry (DS-B07). Under the Measured
@@ -75,9 +77,11 @@ export const SHAPE = {
   heW: 0.25,                                // He II: the core, within a fifth of the disc's radius
   rimQ: 1.08, rimIn: 0.12, rimW: 0.26, rimAmp: 0.95, // Hα + [N II] at the rim, the ionisation front (q in disc radii): sharp inside, soft outside
   haFloor: 0.06,                            // and faint through the disc
-  ringAmp: 0.7, outerAmp: 0.012,            // the outer ring and the outermost ring, against the rim
+  ringAmp: 0.55, outerAmp: 0.007,           // the outer ring and the outermost ring, against the rim
   kO3: 2.4, kHe: 1.2, kHa: 2.0, kRing: 2.0, // the shoulders: 1 - exp(-k C), C in light-years
-  knee: 0.7,                                // and one soft knee above this, so an edge-on disc is not a white bar
+  knee: 0.6,                                // and one soft knee above this, so an edge-on disc is not a white bar
+  exposure: 0.75,                           // the whole, set against the photograph's own levels at the hand-over (look 2026-10-15)
+  adapt: 0.45,                              // what is left of its light when it fills the view (the eye's adaptation, below)
   sigma: 1.2,                               // the rim's dust, per light-year of rim
 };
 const f3 = (x) => Number(x).toFixed(3);
@@ -274,16 +278,20 @@ export function samplesFor({ tier = 1, steps = 0 } = {}) {
 
 /**
  * How much of each part draws. `level` is the coordinator's level share (its 300 ms fade), `rPx` the
- * record's radius on screen, `photo` how much of its photograph is drawn now. The gas and the knots
- * take over from the point glow as its own fade goes (110 to 210 px, scene/dsoglow.js) and give way to
- * the photograph; the star stays, at half strength over the photograph, whose star it doubles. Pure.
+ * record's radius on screen and `viewH` the view's height (CSS px), `photo` how much of its photograph
+ * is drawn now. The gas and the knots give way to the photograph (the point glow gives way to the hero:
+ * main.js, deepsky.js heroShares); the star stays, at half strength over the photograph, whose star it
+ * doubles. `light` is the eye's adaptation: as the nebula grows past the view its light is scaled down,
+ * to SHAPE.adapt from inside, so a camera in the gas sees a glow round it and not a white screen (the
+ * package's "subtle exposure adaptation", done in the material). Pure.
  */
-export function sharesFor({ level = 0, rPx = 0, photo = 0 } = {}) {
+export function sharesFor({ level = 0, rPx = 0, photo = 0, viewH = 800 } = {}) {
   const lv = Math.min(1, Math.max(0, Number(level) || 0));
   const ph = Math.min(1, Math.max(0, Number(photo) || 0));
-  const ramp = Number.isFinite(rPx) ? smooth(rPx, 110, 210) : 1;
-  const gas = lv * ramp * (1 - ph);
-  return { gas, knots: gas, star: lv * (1 - 0.5 * ph) };
+  const gas = lv * (1 - ph);
+  const fill = Number.isFinite(rPx) ? Math.max(0, Number(rPx) || 0) / Math.max(1, viewH / 2) : Infinity;
+  const light = 1 - (1 - SHAPE.adapt) * (Number.isFinite(fill) ? smooth(fill, 0.7, 2) : 1);
+  return { gas, knots: gas, star: lv * (1 - 0.5 * ph), light };
 }
 
 /**
@@ -749,7 +757,9 @@ export function createHero(THREE, env = {}) {
       if (basisFor !== stage.worldId) placeSky();
       const tier = Number.isFinite(info.tier) ? info.tier : 1;
       if (tier !== tierNow || !knots) { tierNow = tier; buildKnots(tier); }
-      const sh = sharesFor({ level: levelShare, rPx: info.rPx, photo: info.photo });
+      const vw = (typeof globalThis.innerWidth === 'number' && globalThis.innerWidth) || 1280;
+      const vh = (typeof globalThis.innerHeight === 'number' && globalThis.innerHeight) || 800;
+      const sh = sharesFor({ level: levelShare, rPx: info.rPx, photo: info.photo, viewH: vh });
       last = { ...sh, photo: Number(info.photo) || 0 };
       samples = samplesFor({ tier, steps: info.steps });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
@@ -758,8 +768,9 @@ export function createHero(THREE, env = {}) {
         const u = gasMat.uniforms;
         setColour(u.uColO3, palette.o3); setColour(u.uColHe, palette.he); setColour(u.uColHa, palette.ha); setColour(u.uColNii, palette.nii);
         setColour(knotMat.uniforms.uCusp, palette.ha); setColour(starMat.uniforms.uColour, palette.star);
-        u.uGain.value = palette.gain; knotMat.uniforms.uGain.value = palette.gain;
       }
+      gasMat.uniforms.uGain.value = palette.gain * SHAPE.exposure * sh.light;
+      knotMat.uniforms.uGain.value = palette.gain * sh.light;
       const look = info.look || 'film';
       const still = !!(info.frozen || info.reduced) || stillUnder(look, UNDER_MEASURED.drift);
       // At most 1 % of the noise's size a minute (design section 7): barely perceptible, never under Measured.
@@ -774,8 +785,6 @@ export function createHero(THREE, env = {}) {
       gas.visible = sh.gas > 0.002;
       knots.visible = knotMat.uniforms.uShare.value > 0.002;
       star.visible = sh.star > 0.002;
-      const vw = (typeof globalThis.innerWidth === 'number' && globalThis.innerWidth) || 1280;
-      const vh = (typeof globalThis.innerHeight === 'number' && globalThis.innerHeight) || 800;
       knotMat.uniforms.uViewH.value = vh;
       starMat.uniforms.uView.value.set(vw, vh);
       if (info.camera) {
