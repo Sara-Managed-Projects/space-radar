@@ -1,4 +1,4 @@
-// scene/deep/heroes.js -- THE HERO LIST (internal spec 0075, design section 2 and the 2026-10-15
+// scene/deep/heroes.js -- THE HERO LIST (internal spec 0075, design section 2 and the 2026-10-14
 // amendment of section 11). Read by scene/deep/deepsky.js; nothing here is fetched until a hero is near.
 //
 // ONE LINE PER HERO, AND STAGE A WROTE EVERY LINE. The stages that build the heroes run in parallel, so

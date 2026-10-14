@@ -2982,7 +2982,7 @@ for (const file of allFiles) {
 // thing a future "just add a little bloom" PR would bring, and this is where it is refused.
 {
   const FORBIDDEN = ['EffectComposer', 'RenderPass', 'UnrealBloomPass', 'ShaderPass', 'BloomPass', 'LensflareElement'];
-  // EVERY file under scene/, its folders too (internal #774, spec 0075 task 9): until 2026-10-15 this
+  // EVERY file under scene/, its folders too (internal #774, spec 0075 task 9): until 2026-10-14 this
   // read scene/*.js only, so scene/weather/ was never checked and scene/deep/ would not have been.
   const sceneDir = join(JS, 'scene');
   const sceneFiles = [];

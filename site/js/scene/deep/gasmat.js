@@ -182,7 +182,11 @@ vec4 gasOut( float C, float T ) {
   C *= uNorm * uGain * uShare;
   // a soft shoulder, so an edge-on disc is bright and not a white bar (no tone mapping here)
   vec3 col = uColour * ( C / ( 1.0 + 0.35 * C ) ) * 0.34;
-  return vec4( col, 1.0 - T );
+#ifdef GAS_ABSORB
+  return vec4( col, 1.0 - T );   // premultiplied over: what is behind is kept by T
+#else
+  return vec4( col, 1.0 );       // additive (SrcAlpha, One): alpha 1, or the light is multiplied away
+#endif
 }
 `;
 
@@ -290,6 +294,9 @@ function uniformsFor(THREE, opts) {
 }
 
 function blendingFor(THREE, opts, material) {
+  // The two blends need two alphas (gasOut): 1 - T for "over", 1 for additive. Found by the first
+  // look (2026-10-14): additive with alpha 1 - T = 0 drew every holder black.
+  if (opts.absorbing) material.defines = { ...(material.defines || {}), GAS_ABSORB: '' };
   if (opts.absorbing) {
     material.blending = THREE.CustomBlending;
     material.blendSrc = THREE.OneFactor;

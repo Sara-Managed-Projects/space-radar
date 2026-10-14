@@ -100,6 +100,12 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
     check(add || over, `${name}: additive for emission or premultiplied "over" for absorbing gas, nothing else`);
   }
   check(dust.blending === THREE.CustomBlending, 'absorbing gas is premultiplied over: it darkens what is behind it');
+  // Additive blending multiplies by the source alpha: emission must write alpha 1, absorbing gas 1 - T.
+  check(/#ifdef GAS_ABSORB[\s\S]*1\.0 - T[\s\S]*#else[\s\S]*vec4\( col, 1\.0 \)/.test(G.SHADERS.march), 'the gas writes alpha 1 when it adds light and 1 - T when it absorbs');
+  for (const [name, m] of mats) {
+    const absorbs = m.blending === THREE.CustomBlending;
+    check(absorbs === ('GAS_ABSORB' in (m.defines || {})), `${name}: its alpha matches its blend (GAS_ABSORB ${absorbs ? 'on' : 'off'})`);
+  }
   check(emit.side === THREE.BackSide, 'the march draws back faces, so the camera may be inside');
   emit.dispose(); dust.dispose(); shells.dispose(); mesh.dispose(); shellMesh.dispose(); G.disposeNoise();
 }

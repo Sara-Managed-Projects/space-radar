@@ -2,7 +2,7 @@
 //
 // No binary asset and no build step: the atlas is painted with Canvas2D into a THREE.CanvasTexture
 // the first time it is asked for. Nine class shapes (plus a plain disc for `world`) live in a 4x4
-// grid of 128 px cells inside a 512 px texture; since 2026-10-15 a 5x5 grid inside 640 px, for the four
+// grid of 128 px cells inside a 512 px texture; since 2026-10-14 a 5x5 grid inside 640 px, for the four
 // deep-sky marks of internal spec 0075 task 4 (cells 16-19).
 //
 // Encoding, so the palette survives tinting:
@@ -74,7 +74,7 @@ export const CELL_OF = {
   // Soyuz is a satellite in the catalogue -- so it has no colour of its own and no row in
   // GLYPH_CLASSES' consumers; it is a SHAPE, in whatever colour its layer draws.
   crewed: 15,
-  // A MARK PER KIND IN THE DEEP SKY (internal spec 0075 task 4, DS-A06). Until 2026-10-15 a galaxy, a
+  // A MARK PER KIND IN THE DEEP SKY (internal spec 0075 task 4, DS-A06). Until 2026-10-14 a galaxy, a
   // nebula and a cluster were one lilac disc-in-a-ring (cell 12, still the mark of anything else): at
   // 8 px nothing said which was which. Shapes, not classes: they are all `dso` and its lilac.
   'dso-galaxy': 16,   // a tilted ellipse with a bright middle, turned to its position angle (glyphs.js)

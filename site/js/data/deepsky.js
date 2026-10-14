@@ -15,7 +15,7 @@
 //   parentPath({apex, at, ms}) -> a scene/camera.js `path(info)` that climbs to `apex` while the look-at
 //                                  point enters the parent, then comes down to the child
 //
-// WHY. Until 2026-10-15 the Tarantula was "in the Large Magellanic Cloud" only as English text, and its
+// WHY. Until 2026-10-14 the Tarantula was "in the Large Magellanic Cloud" only as English text, and its
 // place came from a rounded number on another page, 3 000 ly in front of its galaxy. The registry now
 // says `parent:` (registry/dso-hand.yaml, scripts/data/messier-overlay.yaml) and a child with no
 // distance of its own is placed at its parent's (scripts/build-dso.py). This file is the arithmetic the

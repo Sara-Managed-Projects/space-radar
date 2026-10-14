@@ -19,11 +19,12 @@
 // has overlapping names (spec 0075 task 5).
 // Run it at 1600 x 900 (`-f width=1600 -f height=900`) and again with `-f mobile=true`.
 //
-// STAGES AND BLOCKS (internal spec 0075, design section 11 and its amendment of 2026-10-15). The
+// STAGES AND BLOCKS (internal spec 0075, design section 11 and its amendment of 2026-10-14). The
 // scenes are GROUPS, each an async function that sets up its own state, and the groups are listed in
 // one BLOCK PER STAGE at the end of this file (BLOCKS.a holds the baseline's 01-21 and the foundation's
-// own scenes; BLOCKS.b to BLOCKS.f are empty slots). A stage adds its groups inside its own block and
-// edits nothing else here. The groups run in block order, a to f.
+// own scenes; BLOCKS.b to BLOCKS.f are empty slots). A stage writes its groups into its own GROUPS_<X>
+// object, lists them in its own BLOCKS line, adds its POSES rows under its own letter, and edits
+// nothing else here. The groups run in block order, a to f.
 //
 // POSES, the bookmark shortcuts for agents (DS-A09): `-f subject=DS-07` (or a group's name, e.g.
 // `-f subject=tarantula`) runs only the groups that pose names. POSES maps the package's DS-01 to
@@ -285,27 +286,56 @@ const BLOCKS = {
   // a. the foundation (#786): the baseline's scenes 01-21, the flight through the LMC, Back to the
   //    parent, and DS-01.
   a: ['helix', 'flight', 'lmc', 'tarantula', 'm31', 'milkyway', 'far', 'alphacen'],
+
   // b. the Helix (#787): its own scenes (a 150 px still, the 30 and 60 degree orbit, near, inside).
   b: [],
+
   // c. the LMC and the Tarantula (#788): the 45 degree orbit, inside the disc, R136 near.
   c: [],
+
   // d. Andromeda and galaxy structure (#789): face-on-ish, the edge-on approach, M33.
   d: [],
+
   // e. cosmic scale (#790): scenes 17-21 again with the local volume, the horizon and the 50 Gly edge.
   e: [],
+
   // f. the two journeys (#791): one stop per trip, and the trip frame.
   f: [],
 };
+// Each stage's own groups (async functions, as GROUPS above): one object per stage.
+// b. the Helix's groups go in this object.
+const GROUPS_B = {};
+
+// c. the LMC's and the Tarantula's groups go in this object.
+const GROUPS_C = {};
+
+// d. the galaxies' groups go in this object.
+const GROUPS_D = {};
+
+// e. cosmic scale's groups go in this object.
+const GROUPS_E = {};
+
+// f. the journeys' groups go in this object.
+const GROUPS_F = {};
+
+Object.assign(GROUPS, GROUPS_B, GROUPS_C, GROUPS_D, GROUPS_E, GROUPS_F);
 // The package's DS-01 to DS-18 (its section 3) onto the groups; `-f subject=DS-07` runs that pose alone.
+// A later stage that owns a pose writes its row under its own letter (a later row for the same DS id wins).
 const POSES = {
   // a.
   'DS-01': ['alphacen'], 'DS-02': ['helix'], 'DS-05': ['milkyway'], 'DS-06': ['lmc'], 'DS-07': ['tarantula', 'flight'],
   'DS-08': ['lmc'], 'DS-09': ['m31'], 'DS-10': ['far'], 'DS-11': ['far'], 'DS-12': ['far'], 'DS-17': ['far'], 'DS-18': ['far'],
+
   // b.
+
   // c.
+
   // d.
+
   // e.
+
   // f.
+
 };
 
 const subject = new URLSearchParams(location.search).get('lookSubject');

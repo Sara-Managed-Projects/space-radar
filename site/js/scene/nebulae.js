@@ -219,12 +219,14 @@ void main() {
   vec2 q = abs( vUv * 2.0 - 1.0 );
   float f;
   if ( uEll > 0.5 ) {
-    // A galaxy fades along its own ellipse, and the frame only at its very edge: the shape that is
-    // left is the galaxy's, not a rounded square (the LMC, scene 06 of the deepspace probe).
+    // A galaxy fades along its own ellipse as well as at the frame: where the ellipse is inside the
+    // frame the shape left is the galaxy's, not a rounded square (the LMC, scene 06 of the deepspace probe).
     vec2 d = vUv - uEllC;
     float r = length( vec2( dot( uEllX, d ), dot( uEllY, d ) ) );
-    float frame = pow( pow( q.x, 6.0 ) + pow( q.y, 6.0 ), 1.0 / 6.0 );
-    f = ( 1.0 - smoothstep( 0.55, 1.0, r ) ) * ( 1.0 - smoothstep( 0.84, 0.99, frame ) );
+    // The frame is still feathered over its outer half (the LMC's picture is centred 1.94 degrees off
+    // the galaxy and cuts its bar: a narrow feather there read as a hard edge, deepspace look 2026-10-14).
+    float frame = pow( pow( q.x, 4.0 ) + pow( q.y, 4.0 ), 1.0 / 4.0 );
+    f = ( 1.0 - smoothstep( 0.5, 1.0, r ) ) * ( 1.0 - smoothstep( 0.55, 0.98, frame ) );
   } else {
     float e = pow( pow( q.x, 3.0 ) + pow( q.y, 3.0 ), 1.0 / 3.0 );
     f = 1.0 - smoothstep( 0.5, 0.98, e );

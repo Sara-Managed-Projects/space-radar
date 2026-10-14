@@ -46,7 +46,7 @@
 #   px            the baked file's longer side (512 when absent).
 #   sky_floor     a display value (0..1) taken off the whole picture before its stretch, where the bake
 #                 left the sky not quite black: the LMC's faint grey plate (internal spec 0075 task 36,
-#                 measured 2026-10-15 as the median of the outer 6 % of the file, 13 of 255 for the LMC).
+#                 measured 2026-10-14 as the median of the outer 6 % of the file, 13 of 255 for the LMC).
 #   file          the baked WebP. checked: the day the page was read.
 version: 1
 

@@ -1383,11 +1383,19 @@ illustrations, and the card says so.
 
 ### The Helix (stage b)
 
+Stage b writes this sub-section, and only this one.
+
 ### The Large Magellanic Cloud and the Tarantula (stage c)
+
+Stage c writes this sub-section, and only this one.
 
 ### Andromeda and the Triangulum Galaxy (stage d)
 
+Stage d writes this sub-section, and only this one.
+
 ### The cosmos: the local volume and the horizon (stage e)
+
+Stage e writes this sub-section, and only this one.
 
 ## 4. Runtime data sources
 

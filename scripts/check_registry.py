@@ -2325,7 +2325,7 @@ def check_dso_hand() -> list:
     return objects
 
 
-# --- the deep-sky object model (internal spec 0075 task 2, 2026-10-15) ----------------------------
+# --- the deep-sky object model (internal spec 0075 task 2, 2026-10-14) ----------------------------
 # A parent is a record, the chain ends, a distance says how it was found, and a child can be inside
 # its parent: placed by two numbers from two pages, the Tarantula was 3 000 ly in front of the LMC.
 DSO_METHODS = ("parallax", "eclipsing-binary", "cepheid", "TRGB", "standard-candle", "redshift",
