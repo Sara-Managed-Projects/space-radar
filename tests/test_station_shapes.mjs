@@ -145,7 +145,7 @@ for (const [id, name, file] of [[16908, 'AJISAI (EGS)', 'ajisai.glb'], [8820, 'L
 }
 // The radar imagers: one shape, twenty-two spacecraft, thirty years and four continents apart.
 { const o = modelFor('satellite', 'radar'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar') && Math.abs(o.userData.realSizeM - 12.3) < 0.01, `radar builds inside budget at Sentinel-1's 12.3 m antenna (${tris(o)} tris)`); disposeModels(o); }
-for (const [id, name] of [[32382, 'RADARSAT-2'], [28931, 'ALOS (DAICHI)'], [39766, 'ALOS-2'], [67304, 'CSG-3']]) {
+for (const [id, name] of [[32382, 'RADARSAT-2'], [28931, 'ALOS (DAICHI)'], [60182, 'ALOS-4 (DAICHI-4)'], [67304, 'CSG-3']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.generic === true, `${name} is a radar imager, and says it is the kind of thing`);
 }
@@ -159,9 +159,9 @@ for (const [id, cat, name] of [[31698, 'TERRASAR-X', 'TerraSAR-X'], [36605, 'TAN
   const e = realModelFor({ id: `r-${id}`, name: cat, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.file === 'terrasar-x.glb' && !e.generic && e.name === name, `${cat} wears terrasar-x.glb as itself, over the radar blade: ${JSON.stringify(e)}`);
 }
-// Sentinel-1, ERS-1 and Envisat have a file each since batch eight (public #948, #945, #944): the blade is only what is drawn while it loads.
+// Sentinel-1, ERS-1 and Envisat have a file each since batch eight (public #948, #945, #944), ALOS-2 since batch nine (#977): the blade is only what is drawn while it loads.
 for (const [id, cat, name, file] of [[39634, 'SENTINEL-1A', 'Sentinel-1A', 'sentinel-1.glb'], [62261, 'SENTINEL-1C', 'Sentinel-1C', 'sentinel-1.glb'], [66315, 'SENTINEL-1D', 'Sentinel-1D', 'sentinel-1.glb'],
-  [21574, 'ERS-1', 'ERS-1', 'ers-1.glb'], [27386, 'ENVISAT', 'Envisat', 'envisat.glb']]) {
+  [21574, 'ERS-1', 'ERS-1', 'ers-1.glb'], [27386, 'ENVISAT', 'Envisat', 'envisat.glb'], [39766, 'ALOS-2', 'ALOS-2', 'alos-2.glb']]) {
   const e = realModelFor({ id: `r-${id}`, name: cat, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.file === file && !e.generic && e.name === name, `${cat} wears ${file} as itself, over the radar blade: ${JSON.stringify(e)}`);
 }

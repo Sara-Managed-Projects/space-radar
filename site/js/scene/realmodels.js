@@ -267,7 +267,8 @@ export const REAL_MODELS = {
     // reads a number of 90 000 and up as a placeholder the catalogue has not replaced yet. Whether
     // 100690 stays is not something this file can know, and a number that may change is not a
     // key: 3C is routed BY NAME further down (`sentinel-3c`, klass-gated), which holds either way.
-    // SENTINEL-5P and SENTINEL-6 are other craft: 5P has no row, 6A and 6B keep NASA's own file.
+    // SENTINEL-5P and SENTINEL-6 are other craft: 5P has its own file since batch nine (below), 6A and
+    // 6B keep NASA's own file.
     // `axes: 'app'`: the instruments on the file's +Z, which the app turns to the Earth, as they
     // fly; the one wing along X, drawn fixed at 45 degrees toward the Sun's side. The real wing
     // turns once an orbit and the real body keeps one heading to its track; the app's does neither.
@@ -276,6 +277,36 @@ export const REAL_MODELS = {
     60989: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2C', catalogue: 'SENTINEL-2C', made: 'dimensions', axes: 'app' },
     41335: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3A', catalogue: 'SENTINEL-3A', made: 'dimensions', axes: 'app' },
     43437: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3B', catalogue: 'SENTINEL-3B', made: 'dimensions', axes: 'app' },
+    // BATCH NINE (2026-10-14; public #951, #957, #958): three more European craft that had no route
+    // and so wore the shape of their class (a box with two wings and a dish). Each built in code from
+    // cited metres (registry/models.yaml rows `sentinel-5p`, `cryosat-2`, `smos`); no ESA picture or
+    // model was used: the layouts are read off a Commons contributor's photograph of a model of
+    // Sentinel-5P (CC BY 3.0) and DLR's photographs of a model of SMOS (CC BY 2.0); CryoSat-2 has NO
+    // FREE PICTURE and is laid out from the pages' own words.
+    //   sentinel-5p.glb  the atmosphere satellite: a gold six-sided body, TROPOMI (1.4 x 0.65 x 0.75 m)
+    //                    and its radiator on the Earth floor, three wings of 1.8 m2 folded out flat at
+    //                    the far end, 5.63 m tip to tip and 3.35 m high (ESA's numbers).
+    //                    `axes: 'app'`: the body's axis on the Earth's line, the instrument to the
+    //                    Earth, as it flies (nadir-pointing, fixed wings: cited). Three-fold, so the
+    //                    app's turn about the vertical changes nothing a page gives.
+    //   cryosat-2.glb    the ice altimeter: a body 4.6 x 2.34 x 2.20 m with NO wings, a roof of two
+    //                    fixed panels of cells, the two SIRAL dishes side by side at the nose (1.2 m
+    //                    apart, cited), the radiator at the nose tip. PITCHED 6 DEGREES NOSE DOWN in
+    //                    the file, as it flies (cited). `axes: 'app'`: the length along X, the dishes
+    //                    to the Earth. NOT TRUE of the real craft: its orbit is not Sun-synchronous and
+    //                    its nose leads along the track; the app turns it about the vertical to keep
+    //                    X square to the Sun, so its heading on the map is the app's.
+    //   smos.glb         the Y of MIRAS (three arms of three segments, 8 m across, 69 receivers) over
+    //                    the instrument's hub and a Proteus bus, two wings of four panels. PITCHED 32.5
+    //                    DEGREES in the file, the Y's face forward of the nadir, as it flies (cited).
+    //                    `axes: 'app'`: the wings along X with their cells to +Y, the Sun's side; TRUE
+    //                    of the real craft in its dawn-dusk orbit (the Sun square to the track, the
+    //                    wings static: cited). Which end of X leads is the app's, not the craft's.
+    // BY NUMBER, from the live saved data of 2026-10-12: SENTINEL-5P 42969, CRYOSAT 2 36508, SMOS
+    // 36036. No other record in the saved data has these shapes (CryoSat-1 was lost at launch).
+    42969: { file: 'sentinel-5p.glb', colour: 'satellite', name: 'Sentinel-5P', catalogue: 'SENTINEL-5P', made: 'dimensions', axes: 'app' },
+    36508: { file: 'cryosat-2.glb', colour: 'satellite', name: 'CryoSat-2', catalogue: 'CRYOSAT 2', made: 'dimensions', axes: 'app' },
+    36036: { file: 'smos.glb', colour: 'satellite', name: 'SMOS', catalogue: 'SMOS', made: 'dimensions', axes: 'app' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
@@ -473,7 +504,19 @@ export const REAL_MODELS = {
     51444: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-2', generic: true },
     67304: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-3', generic: true },
     28931: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS (DAICHI)', generic: true },
-    39766: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-2', generic: true },
+    // ALOS-2 HAS A FILE OF ITS OWN since batch nine (2026-10-14; public #977): alos-2.glb, built in
+    // code from JAXA's numbers as eoPortal gives them (registry/models.yaml row `alos-2`): PALSAR-2,
+    // 9.9 m by 2.9 m of five panels, UNDER a gold body, two solar paddles of three panels across the
+    // track, 16.5 m tip to tip, laid out after a visitor's photograph (CC0) of JAXA's 1/50 model; no
+    // JAXA picture was used. The `radar` build stays as what is drawn while the file is on its way.
+    // Not `generic`: the file is this craft. ALOS (DAICHI) and ALOS-4 are other craft (ALOS-4's
+    // antenna is another size) and keep the blade. `axes: 'app'`: the antenna's face to the Earth,
+    // its length along Y, the paddles along X. HOW IT FLIES, in part: in its noon orbit the Sun is in
+    // the orbit's plane, so the paddles' axis across the track is square to the Sun, as the app keeps
+    // X; the paddles are held at 45 degrees where the real ones turn. THE FILE IS LEVEL: the craft
+    // rolls up to 30 degrees left or right for a pass from a nominal Earth-pointing attitude (cited),
+    // so no one angle is how it flies.
+    39766: { build: 'radar', file: 'alos-2.glb', colour: 'satellite', name: 'ALOS-2', catalogue: 'ALOS-2', made: 'dimensions', axes: 'app' },
     60182: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-4 (DAICHI-4)', generic: true },
     // SAOCOM 1A AND 1B HAVE A FILE OF THEIR OWN since batch six (2026-10-13; public #978): saocom.glb,
     // built in code from CONAE's numbers as eoPortal gives them (a 10 m by 3.5 m antenna of seven
