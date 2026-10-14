@@ -740,6 +740,12 @@ jobs:
       # weather row is still the season: no dust storm is drawn that nobody reported.
       - name: Mars's relief casts shadows from MOLA's heights at a low Sun, on tier 1 and up, and no storm is invented (spec 0073 req 5)
         run: node tests/test_mars_relief.mjs
+      # The last four worlds (spec 0073 requirement 5, 2026-10-14): Mercury's shadows from the map it
+      # wears, Venus's radar ground (one channel, in relief, still under the moving clouds), Uranus's
+      # measured cap, Neptune's 1989 spot left out under Measured, its arcs and cirrus Film-only, and
+      # what each card says.
+      - name: Mercury, Venus, Uranus and Neptune close up, and their honesty lines (spec 0073 req 5)
+        run: node tests/test_worlds_films.mjs
 
       # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
       # measured directions, and nothing else moves.

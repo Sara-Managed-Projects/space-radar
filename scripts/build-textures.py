@@ -365,6 +365,29 @@ MERCURY_RELIEF_BLUR_DEG = 6.0        # relief broader than this is taken out (se
 MERCURY_RELIEF_RANGE_M = 2500.0      # +-: what the byte spans; scene/worlds.js `look.relief.rangeM`
 
 
+def _local_relief(height, blur_deg: float):
+    """A height map less its relief broader than `blur_deg`: a separable Gaussian of that width,
+    wrapped east-west, its east-west width in pixels growing as 1 / cos(latitude), capped, so it is
+    the same width on the ground at every latitude (Mercury's, 2026-10-08; Venus's, 2026-10-14)."""
+    h, w = height.shape
+    sigma = blur_deg / 360.0 * w
+    def blur_rows(a, s):
+        k = np.arange(-int(3 * s), int(3 * s) + 1)
+        g = np.exp(-0.5 * (k / s) ** 2); g /= g.sum()
+        pad = np.concatenate([a[:, -len(k):], a, a[:, :len(k)]], axis=1)
+        return np.apply_along_axis(lambda r: np.convolve(r, g, mode="same"), 1, pad)[:, len(k):-len(k)]
+    k = np.arange(-int(3 * sigma), int(3 * sigma) + 1)
+    g = np.exp(-0.5 * (k / sigma) ** 2); g /= g.sum()
+    vert = np.apply_along_axis(lambda c: np.convolve(np.pad(c, len(k), mode="edge"), g, mode="same")[len(k):-len(k)], 0, height)
+    lat = (0.5 - (np.arange(h) + 0.5) / h) * np.pi
+    broad = np.empty_like(vert)
+    for band in range(0, h, 32):
+        c = max(float(np.cos(lat[band:band + 32]).mean()), 0.12)
+        # Capped so the kernel never wraps round more than half the world (Venus's poles at 12 degrees).
+        broad[band:band + 32] = blur_rows(vert[band:band + 32], min(sigma / c, w / 6.5))
+    return height - broad
+
+
 def build_mercury_relief(orig: Path, report: dict) -> None:
     """MESSENGER's global elevation model (USGS Astrogeology; Becker et al. 2016) as one grey channel.
 
@@ -389,23 +412,7 @@ def build_mercury_relief(orig: Path, report: dict) -> None:
     w, h = MERCURY_RELIEF_PX
     height = np.asarray(Image.fromarray(mid).resize((w, h), Image.LANCZOS), dtype=np.float32)
     height = np.roll(height, w // 2, axis=1)
-    # The broad relief: a separable Gaussian, wrapped east-west; its east-west width in pixels grows
-    # as 1 / cos(latitude), capped, so it is the same width on the ground at every latitude.
-    sigma = MERCURY_RELIEF_BLUR_DEG / 360.0 * w
-    def blur_rows(a, s):
-        k = np.arange(-int(3 * s), int(3 * s) + 1)
-        g = np.exp(-0.5 * (k / s) ** 2); g /= g.sum()
-        pad = np.concatenate([a[:, -len(k):], a, a[:, :len(k)]], axis=1)
-        return np.apply_along_axis(lambda r: np.convolve(r, g, mode="same"), 1, pad)[:, len(k):-len(k)]
-    k = np.arange(-int(3 * sigma), int(3 * sigma) + 1)
-    g = np.exp(-0.5 * (k / sigma) ** 2); g /= g.sum()
-    vert = np.apply_along_axis(lambda c: np.convolve(np.pad(c, len(k), mode="edge"), g, mode="same")[len(k):-len(k)], 0, height)
-    lat = (0.5 - (np.arange(h) + 0.5) / h) * np.pi
-    broad = np.empty_like(vert)
-    for band in range(0, h, 32):
-        c = max(float(np.cos(lat[band:band + 32]).mean()), 0.12)
-        broad[band:band + 32] = blur_rows(vert[band:band + 32], sigma / c)
-    local = height - broad
+    local = _local_relief(height, MERCURY_RELIEF_BLUR_DEG)
     clipped = float((np.abs(local) > MERCURY_RELIEF_RANGE_M).mean())
     byte = np.clip(np.round(128 + local / MERCURY_RELIEF_RANGE_M * 127), 1, 255).astype(np.uint8)
     out = ROOT / "site" / "textures" / "2k_mercury_relief.webp"
@@ -463,9 +470,11 @@ def build_venus_surface(orig: Path, report: dict) -> None:
     weight = np.cos((np.arange(h) + 0.5) / h * np.pi - np.pi / 2)[:, None] * np.ones((1, w))
     coverage = float((weight * v).sum() / weight.sum())
     y = _fill_gaps(lin, v, 12)[..., 0]
-    tint = _to_linear(np.array(VENUS_SURFACE_TINT) / 255)
     y = y * (0.42 / float((y * weight).sum() / weight.sum()))
-    img = Image.fromarray(_to_srgb8(y[..., None] * (tint / tint.max())[None, None, :]))
+    # ONE CHANNEL since 2026-10-14: the echo, sRGB-encoded grey. The orange is added by the shader
+    # (scene/worlds.js VENUS_GROUND.tint, VENUS_SURFACE_TINT over its largest channel in linear
+    # light), so the ground looks as it did and is a quarter of the GPU memory.
+    img = Image.fromarray(_to_srgb8(y))
     q = 84
     while q > 50:
         buf = io.BytesIO()
@@ -473,8 +482,54 @@ def build_venus_surface(orig: Path, report: dict) -> None:
         if buf.tell() <= VENUS_SURFACE_MAX_BYTES:
             break
         q -= 4
-    report["2k_venus_magellan.webp"] = save_webp(img, ROOT / "site" / "textures" / "2k_venus_magellan.webp", q)
+    report["2k_venus_radar.webp"] = save_webp(img, ROOT / "site" / "textures" / "2k_venus_radar.webp", q)
     print(f"  venus surface: data over {coverage * 100:.1f} % of the sphere, WebP {q}", flush=True)
+
+
+VENUS_TOPO = "Venus_Magellan_Topography_Global_4641m_v02.tif"
+VENUS_TOPO_PX = (8192, 4096)        # the label's Samples and Lines: 22.76 px a degree
+VENUS_TOPO_START = 33416            # the label's StartByte (1-based): the words begin a byte before
+VENUS_RELIEF_BLUR_DEG = 12.0        # relief broader than this is taken out
+VENUS_RELIEF_RANGE_M = 3000.0       # +-: what the byte spans; scene/worlds.js VENUS_GROUND.rangeM
+VENUS_RELIEF_PX = (2048, 1024)
+
+
+def build_venus_relief(orig: Path, report: dict) -> None:
+    """Magellan's altimeter heights under the radar ground (USGS Astrogeology, Venus Magellan Global
+    Topography 4641m, v2: the GTDR heights resampled to 22.76 pixels a degree), as one grey channel.
+
+    The file is an ISIS cube in a .tif name: 8192 x 4096 little-endian signed words from byte
+    VENUS_TOPO_START, metres from the 6051 km sphere, longitude -180 to 180 east (centred on 0,
+    where the colour map has it), rows from 90 N. -32768 is no data (Magellan's altimeter missed
+    a few per cent); it is filled from its edges before anything else.
+
+    WHAT IS KEPT, and why, as Mercury's: the shader takes slopes from differences and shadows from
+    a march, and a byte spent on the plateaus' thousand-kilometre swells leaves the scarps flat.
+    Venus's mountains are broader than Mercury's craters (Maxwell Montes is some 800 km across), so
+    the high-pass is VENUS_RELIEF_BLUR_DEG wide; the rest is clipped to +-VENUS_RELIEF_RANGE_M."""
+    path = orig / VENUS_TOPO
+    w0, h0 = VENUS_TOPO_PX
+    dn = np.fromfile(path, dtype="<i2", count=w0 * h0, offset=VENUS_TOPO_START - 1).reshape(h0, w0).astype(np.float32)
+    valid = dn > -32000
+    # The gaps: from a pyramid of the valid heights' means, each level half the last, so a gap is
+    # the mean of the data round it at the smallest scale that has any. Nothing is invented.
+    def fill(a, ok):
+        if ok.all() or min(a.shape) < 2:
+            return np.where(ok, a, a[ok].mean() if ok.any() else 0.0)
+        hh, ww = a.shape[0] // 2, a.shape[1] // 2
+        s_ = (a * ok)[:hh * 2, :ww * 2].reshape(hh, 2, ww, 2).sum(axis=(1, 3))
+        n_ = ok[:hh * 2, :ww * 2].reshape(hh, 2, ww, 2).sum(axis=(1, 3))
+        coarse = fill(np.where(n_ > 0, s_ / np.maximum(n_, 1), 0.0), n_ > 0)
+        return np.where(ok, a, np.repeat(np.repeat(coarse, 2, axis=0), 2, axis=1))
+    height = fill(dn, valid).astype(np.float32)
+    w, h = VENUS_RELIEF_PX
+    height = np.asarray(Image.fromarray(height.reshape(h, h0 // h, w, w0 // w).mean(axis=(1, 3))), dtype=np.float32)
+    local = _local_relief(height, VENUS_RELIEF_BLUR_DEG)
+    clipped = float((np.abs(local) > VENUS_RELIEF_RANGE_M).mean())
+    byte = np.clip(np.round(128 + local / VENUS_RELIEF_RANGE_M * 127), 1, 255).astype(np.uint8)
+    report["2k_venus_relief.webp"] = save_webp(Image.fromarray(byte), ROOT / "site" / "textures" / "2k_venus_relief.webp", 80)
+    print(f"  venus relief: {(1 - valid.mean()) * 100:.1f} % of the grid filled, heights {height.min():.0f} to {height.max():.0f} m, "
+          f"local relief rms {local.std():.0f} m, {clipped * 100:.2f} % beyond +-{VENUS_RELIEF_RANGE_M:.0f} m, {report['2k_venus_relief.webp']:,d} bytes", flush=True)
 
 
 # --- the moons and small worlds -------------------------------------------------------------------
@@ -925,10 +980,11 @@ STEPS = {
     "mercury-relief": build_mercury_relief,
     "earth-relief": build_earth_relief,
     "venus-surface": build_venus_surface,
+    "venus-relief": build_venus_relief,
     **{k: (lambda o, r, k=k: build_giant(o, k, r)) for k in GIANTS},
     **{f"moon-{k}": (lambda o, r, k=k: build_moon(o, k, r)) for k in MOONS},
 }
-TIER1 = [k for k in STEPS if not k.startswith("moon-") and k not in ("venus-surface", "mercury-relief", "earth-relief") and k not in GIANTS]
+TIER1 = [k for k in STEPS if not k.startswith("moon-") and k not in ("venus-surface", "venus-relief", "mercury-relief", "earth-relief") and k not in GIANTS]
 
 
 # --- the 2k JPEGs as WebP (spec 0056 req 8, public #286) ----------------------------------------

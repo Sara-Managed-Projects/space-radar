@@ -201,7 +201,8 @@ satisfies that with:
 | `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
 | `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
-| `2k_venus_magellan.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), tinted |
+| `2k_venus_radar.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), one grey channel (the orange is added when it is drawn) |
+| `2k_venus_relief.webp` | Venus, the relief under the radar ground | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, Venus Magellan Global Topography 4641 m)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.lbl), local relief only, one grey channel |
 | `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
 | `2k_earth_daymap.webp` | Earth, day side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_nightmap.webp` | Earth, night side | CC BY 4.0 | Solar System Scope |
@@ -345,6 +346,7 @@ checked against this list by `scripts/check_registry.py`):
 - Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
 - Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's
 - Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
+- Venus relief: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, global topography 4641 m), public domain, local relief only
 - Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
 - Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
