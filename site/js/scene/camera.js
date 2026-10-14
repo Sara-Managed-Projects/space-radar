@@ -975,6 +975,21 @@ export function createCameraRig(camera, domElement, options = {}) {
     target.copy(followPos);
   }
 
+  /**
+   * The followed thing AGAIN, after the scene has moved this frame (Ivan, 2026-10-14: a selected
+   * object shook). update() runs first in a frame, so a follow that reads something the frame
+   * moves later -- a world's drawn disc, placed by worlds.update() -- aimed at where it was a
+   * frame ago: the Moon followed at an hour a second stood 60 km, eleven pixels, off the middle,
+   * and by as much more or less as each frame was long or short. main.js calls this once the
+   * worlds are placed; for anything worked out from the clock alone it changes nothing.
+   */
+  function refollow() {
+    if (!followFn || ride) return false;
+    applyFollow();
+    if (!flight) applyToCamera();
+    return true;
+  }
+
   // ---------------------------------------------------------------- ride along
   //
   // Spec 0048 req 8, orbitalradar's shot: the camera behind the object and a little above it,
@@ -1271,6 +1286,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     update,
     flyTo,
     follow,
+    refollow,
     stopFollow,
     onUserInput,
     state,

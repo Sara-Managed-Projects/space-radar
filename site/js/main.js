@@ -283,7 +283,7 @@ export async function boot({ setStatus } = {}) {
     selected: () => selected,
     select,
     deselect,
-    flyToRecord: (record, ms, flight) => flyToRecord(record, ms, flight),
+    flyToRecord: (record, ms, flight) => { leaveGround(); return flyToRecord(record, ms, flight); },
     get observer() { return observer; },
     // The one door a place comes in by. The browser's own answer is rounded here as well as where it
     // is read (ui/place.js), so no caller can hand the app a precise position (spec 0051 req 3).
@@ -1187,6 +1187,7 @@ export async function boot({ setStatus } = {}) {
   // along the velocity, which is the same one-second central difference the card's speed row uses.
   ctx.rideAlong = (record) => {
     if (!record) return false;
+    leaveGround();
     const at = (tMs) => { const p = propagate(record, tMs); return p ? stage.toScene(p, p.frame, tMs) : null; };
     const getVel = () => {
       const t = clock.now();
@@ -1681,9 +1682,16 @@ export async function boot({ setStatus } = {}) {
     // Deliberately NOT asking the glyph layer: it owns a packed position buffer for drawing, and
     // exposing a per-record lookup would make the camera depend on a layer being visible. The
     // contract's propagate + stage.toScene answers this for any record, drawn or not.
-    const p = propagate(record, clock.now());
+    // ONE INSTANT A FRAME (Ivan, 2026-10-14: a selected object shook). The live clock is the wall
+    // clock, read anew by every clock.now(): the camera's follow read it at the top of a frame,
+    // the dot and the model were placed at the frame's own `t`, and the brackets asked again after
+    // the frame was drawn, a whole render later. 16 ms of a low orbit is 120 m and on a slow phone
+    // a render is 60: the brackets led the dot by an amount that changed with every frame's cost.
+    // Inside a frame the answer is for the frame's instant (ctx.frameT, set by the loop).
+    const tMs = clock.mode === 'live' && Number.isFinite(ctx.frameT) ? ctx.frameT : clock.now();
+    const p = propagate(record, tMs);
     if (!p) return null;
-    return stage.toScene(p, p.frame, clock.now());
+    return stage.toScene(p, p.frame, tMs);
   }
 
   /** A star's width and temperature: a catalogue star's worked out, a planet's host from the Archive. */
@@ -2048,14 +2056,46 @@ export async function boot({ setStatus } = {}) {
       const guess = guessObserver(CITIES);
       if (guess) ctx.setObserver(guess);
     }
-    if (moment === 'now' && observer) ctx.skyView.enter(observer);
+    if (moment === 'now' && observer) enterGround();
     else if (ctx.skyView.active) ctx.skyView.exit();
     if (!silent) writeMoment(moment);
     window.dispatchEvent(new CustomEvent('sr:moment', { detail: moment }));
   }
 
+  /**
+   * THE GROUND IS THE EARTH'S, SO ITS STAGE IS (Ivan, 2026-10-14: "sometimes when an object is
+   * selected it is shaking on the screen"). "See it" on a planet's card opened the sky from the
+   * Sun's stage, where a unit is a million kilometres and the Earth is 150 units from the origin.
+   * The eye is then 150 units out and a satellite a few thousandths of a unit from it, and the dots
+   * are float32 on the GPU: one step at 150 is 15 km, so a geostationary dot sat up to 15 km from
+   * where the brackets (float64) put it, a different 15 km every tick as the Earth moved along its
+   * orbit. Through binoculars' field that is a few pixels, through a telescope's tens. On the
+   * Earth's own stage the eye is 6.4 units from the origin and a step is half a metre.
+   */
+  // Asked of the page and not of inTrip(): setMoment runs once at boot, before that const is set
+  // (a declaration, so it is there for that call too).
+  function tripOnScreen() { return document.documentElement.classList.contains('sr-trip-mode'); }
+  function enterGround() {
+    // A trip's own ground stops go in by the sky view's door, on the stage the trip chose.
+    if (stage.worldId !== 'earth' && typeof ctx.setStage === 'function' && !tripOnScreen()) ctx.setStage('earth');
+    return ctx.skyView.enter(observer);
+  }
+
+  /**
+   * "Fly to it", "Follow" and "Ride along" pressed from the ground (Ivan, 2026-10-14: they did
+   * nothing there). They did fly: the rig flew, and the sky view put the camera back on the ground
+   * every frame. The honest thing is what the words say, so the ground is left first, through the
+   * moment's own door (the tab follows), and one line says so. False when there was no ground to leave.
+   */
+  function leaveGround() {
+    if (!ctx.skyView || !ctx.skyView.active || tripOnScreen()) return false;
+    setMoment('wonder');
+    toast(COPY.sky.leftGround, 4000);
+    return true;
+  }
+
   window.addEventListener('sr:observer', () => {
-    if (moment === 'now' && observer) ctx.skyView.enter(observer);
+    if (moment === 'now' && observer) enterGround();
   });
   window.addEventListener('hashchange', () => {
     setMoment(readMomentFromHash(), { silent: true });
@@ -2639,6 +2679,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     clock.tick(dt);
     const t = clock.now();
     stage.setTime(t);   // every frame conversion this tick reads it; set it before anything does
+    ctx.frameT = t;     // and positionOfRecord answers for it until this frame is done (see there)
 
     resize();
     if (ctx.viewShift) ctx.viewShift.update(dt);
@@ -2647,6 +2688,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     cameraRig.update(dt, frameMs);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
+    // A followed WORLD has only now been placed for this frame: the camera aims at it again
+    // (scene/camera.js refollow says what a frame's lag looked like).
+    cameraRig.refollow();
     // After the worlds and the camera: each light sits on this frame's disc (scene/worldlights.js).
     if (ctx.worldLights) ctx.worldLights.update(t);
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
@@ -2716,6 +2760,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         if (gl.setVisible) gl.setVisible(drawable);
         if (drawable) gl.update(t, ctx.camera);
       }
+    } else if (ctx.selected()) {
+      // Between two ticks the selection's own dot is placed again, as the camera that follows it
+      // and the brackets round it are (scene/glyphs.js updateSelected).
+      for (const gl of glyphLayers.values()) if (gl.updateSelected) gl.updateSelected(t);
     }
 
     // Labels ride the same tick as the glyphs they sit over, so the two never drift apart.
@@ -2815,6 +2863,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.hud) ctx.hud.frame(t);
     // The track's minute marks, on this frame's camera (render() brought its matrices up to date).
     if (ctx.trackLabels) ctx.trackLabels.update();
+    ctx.frameT = null;  // the frame is drawn: from here the clock answers for itself again
     // Is anything moving? Asked after the frame is drawn, because render() is what brings the
     // camera's matrices up to it. Any reason and the next frames are drawn one for one.
     {

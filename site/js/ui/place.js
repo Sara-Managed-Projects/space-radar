@@ -1,4 +1,4 @@
-// ui/place.js -- where you are: the city box, "Use my location", Remember and Share this place.
+// ui/place.js -- where you are: the city box with "Use my location" beside it, Remember and Share this place.
 //
 // Contract: createPlace(ctx) -> { root, refresh(), focus() }
 // Also exported, pure: findCity(query, cities), observerFor(city), placeFromPosition, placeLink
@@ -104,9 +104,12 @@ export function createPlace(ctx) {
     option.label = city.country;
     datalist.appendChild(option);
   }
-  const useMine = button('sr-chip', COPY.controls.locationUseMine, COPY.controls.locationUseMineTitle);
+  // The city box and "Use my location" are ONE line (Ivan, 2026-10-14: the box ran the full width
+  // with the button as a pill of another style under it): the box takes the room, the button
+  // stands beside it at the box's own height, fill and radius (ui.css .sr-place__row).
+  const useMine = button('sr-place__mine', COPY.controls.locationUseMine, COPY.controls.locationUseMineTitle);
   const clearBtn = button('sr-chip sr-chip--quiet', COPY.controls.locationClear);
-  row.append(input, datalist);
+  row.append(input, datalist, useMine);
   root.appendChild(row);
   // Remember this place, and share it (internal #137). Both act on the place in use, rounded to
   // 0.1 degree by sky/placelink.js, and neither is offered for a place that was only guessed.
@@ -114,7 +117,7 @@ export function createPlace(ctx) {
   const keepBtn = button('sr-chip sr-chip--quiet', K.remember, K.rememberTitle);
   const shareBtn = button('sr-chip sr-chip--quiet', K.share, K.shareTitle);
   const chips = el('div', 'sr-place__chips');
-  chips.append(useMine, clearBtn, keepBtn, shareBtn);
+  chips.append(clearBtn, keepBtn, shareBtn);
   root.appendChild(chips);
   const note = el('p', 'sr-place__note', '');
   note.hidden = true;
@@ -161,6 +164,8 @@ export function createPlace(ctx) {
     keepBtn.textContent = kept ? K.forget : K.remember;
     keepBtn.title = kept ? K.forgetTitle : K.rememberTitle;
     keepBtn.setAttribute('aria-pressed', kept ? 'true' : 'false');
+    // With a guessed place, or none, the chips are all away: their row takes no room.
+    chips.hidden = clearBtn.hidden && keepBtn.hidden && shareBtn.hidden;
   };
   keepBtn.addEventListener('click', () => {
     if (isKept()) { forgetPlace(browserStorage()); warn(''); }

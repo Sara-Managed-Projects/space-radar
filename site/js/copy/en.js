@@ -2044,6 +2044,8 @@ export const COPY = {
     noObserver: 'Set where you are and this line will tell you where to look.',
     noPass: 'It does not come above your horizon in the next 24 hours.',
     notVisibleFromGround: 'This one is too far away to pick out by eye.',
+    // Fly to it, Follow or Ride along pressed from the ground: the sky view is left first (main.js leaveGround).
+    leftGround: 'Left the ground to fly there. Tonight has the sky.',
     // Stars, nebulae, galaxies: the question is brightness, not distance. Magnitude 6.5 is the
     // usual naked-eye limit from a dark site.
     nakedEye: 'Bright enough to see with your own eyes from a dark place.',

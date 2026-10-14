@@ -443,6 +443,8 @@ Object.assign(COPY, {
     seenTitle: 'Seen with your own eyes',
     noSeen: 'Nothing ticked yet. A card has a Seen it button.',
     seenIt: 'Seen it',
+    // The name of the card's quiet row (ui/cardextras.js skyControls), for a screen reader.
+    toolsLabel: 'More for this object',
     seenOn: 'Seen {date}',
     seenTitleOff: 'Tick when you have seen it with your own eyes',
     seenTitleOn: 'Ticked as seen. Press to take the tick back',

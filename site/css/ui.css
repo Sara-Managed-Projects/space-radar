@@ -868,16 +868,75 @@ html.sr-compact .sr-status {
   border-radius: var(--sr-radius);
 }
 
-/* "Remind me" and "Seen it" (public #395): two quiet buttons side by side on the card. */
-.sr-card__sky {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
+/* The card's quiet row (Ivan, 2026-10-14): "Light it", "Remind me" and "Seen it" as one row of
+   equal tiles straight under the four actions, in the actions' own wash and radius, 44 px high.
+   They were outlined buttons of their own style, stacked at the left edge. The row is 8 px under
+   the four (where :has is not known it is the actions' own 16 px), and closes the block as the
+   four did. A pressed tile is the selected fill with the ember edge the scale badge wears, and
+   its words change with it ("Real light", "Seen 14 Oct"), so the state is not colour alone. No
+   overflow is clipped: the focus brackets stand outside the corners, and a dated tick beside two
+   other tiles takes a second line inside the 44 px. */
+.sr-card__actions:has(+ .sr-card__sky) {
+  padding-bottom: var(--sp-2);
 }
 
-.sr-card__sky .sr-card__inline[aria-pressed='true'] {
+.sr-card__sky {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-4);
+}
+
+.sr-card__sky + .sr-card__note {
+  margin-top: calc(-1 * var(--sp-2));
+  margin-bottom: var(--sp-4);
+}
+
+.sr-card__tool {
+  min-width: 0;
+  height: 44px;
+  padding: 0 var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-soft);
+  text-align: center;
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-card__tool:active:not(:disabled) {
+  background: var(--sr-wash-strong);
+}
+
+.sr-card__tool[aria-pressed='true'] {
   color: var(--sr-text);
+  background: var(--sr-wash-strong);
   border-color: var(--sr-ember);
+}
+
+.sr-card__tool:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .sr-card__tool:hover:not(:disabled) {
+    color: var(--sr-text);
+    background: var(--sr-wash-hover);
+  }
+
+  .sr-card__tool[aria-pressed='true']:hover:not(:disabled) {
+    background: var(--sr-wash-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-card__tool {
+    transition: none;
+  }
 }
 
 /* The object's own page (internal #199): one quiet link at the foot of About it. */
@@ -4275,6 +4334,53 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 @media (pointer: coarse) { .sr-field { font-size: var(--sr-fs-input); } }
 .sr-field::placeholder { color: var(--sr-text-soft); }
 
+/* The city box and "Use my location" on one line (Ivan, 2026-10-14): the box grows, the button
+   keeps its words and stands at the box's height, fill and radius, so the two read as one control.
+   At 320 px the box is still 150 px wide, room for a city's name. */
+.sr-place__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sr-place__input {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
+.sr-place__mine {
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text);
+  white-space: nowrap;
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-place__mine:active:not(:disabled) {
+  background: var(--sr-wash-strong);
+}
+
+.sr-place__mine:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .sr-place__mine:hover:not(:disabled) { background: var(--sr-wash-hover); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-place__mine { transition: none; }
+}
+
 .sr-place__chips {
   display: flex;
   flex-wrap: wrap;
@@ -4306,7 +4412,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 }
 
 .sr-place__note.is-warning { color: var(--sr-stale); }
-.sr-place[hidden], .sr-place__note[hidden], .sr-place__chips > [hidden] { display: none; }
+.sr-place[hidden], .sr-place__note[hidden], .sr-place__chips[hidden], .sr-place__chips > [hidden] { display: none; }
 
 /* The place line and "Change place" on one row of the Tonight view; the line gives way first. */
 .sr-tonight-view__where {

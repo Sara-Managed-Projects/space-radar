@@ -1615,7 +1615,7 @@ export function floodControls(record, ctx) {
   if (!offersFlood(record)) return [];
   const F = COPY.flood;
   const on = floodWantedNow();
-  const toggle = el('button', 'sr-btn sr-btn--quiet sr-card__inline', on ? F.off : F.on);
+  const toggle = el('button', 'sr-card__tool', on ? F.off : F.on);
   toggle.type = 'button';
   toggle.title = F.title;
   toggle.setAttribute('data-action', 'flood');
@@ -2532,6 +2532,15 @@ function render(record, ctx, opts = {}) {
   }
   body.appendChild(actions);
 
+  // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
+  // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One
+  // row of equal tiles in the actions' own wash: the flood light (internal #272), a reminder for
+  // its next dated event and the visitor's own "seen it" tick (public #395). The lamp's note sits
+  // under the row for as long as the lamp is on.
+  const [lamp, lampNote] = floodControls(record, ctx);
+  for (const n of skyControls(record, ctx, lamp)) body.appendChild(n);
+  if (lampNote) body.appendChild(lampNote);
+
   // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
   // registry/missions.yaml; public #452). The module is fetched the first time a card opens
   // (main.js ctx.wantMissions) and fills this box, at once on every later paint so the focus a
@@ -2548,10 +2557,6 @@ function render(record, ctx, opts = {}) {
   const time = timeFactsSection(record, ctx, m);
   if (time) { body.appendChild(time.bar); startTimeFacts(); }
 
-  // 4b. the flood light, under the light it stands in for (internal #272).
-  for (const n of floodControls(record, ctx)) body.appendChild(n);
-  // 4c. a reminder for its next dated event, and the visitor's own "seen it" tick (public #395).
-  for (const n of skyControls(record, ctx)) body.appendChild(n);
   // The Earth's card carries the legend of whatever map is laid over it (internal #386 item 1).
   const over = overlayBlock(record, ctx);
   if (over) body.appendChild(over);

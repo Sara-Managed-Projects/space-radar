@@ -300,6 +300,9 @@ export function createGlyphLayer(scene, layer = {}) {
   let attrCell = null;
 
   let selectedId = null;
+  // Where the selection sits in the live arrays after the last update(), or -1: updateSelected().
+  let selectedAt = -1;
+  let selectedRec = null;
   const uploads = { ticks: 0, bytes: 0, all: 0 };
   let lastCamera = null;
   let viewport = viewportCss();
@@ -345,6 +348,8 @@ export function createGlyphLayer(scene, layer = {}) {
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
 
     livePos = attrOffset.array;
+    selectedAt = -1;
+    selectedRec = null;
 
     if (mesh) {
       mesh.geometry = geometry;
@@ -469,6 +474,8 @@ export function createGlyphLayer(scene, layer = {}) {
     const emberG = Math.fround(emberColour.g);
     const emberB = Math.fround(emberColour.b);
     live.length = 0;
+    selectedAt = -1;
+    selectedRec = null;
     // The worker's answer, when there is one (propagate/pool.js): the same SGP4 numbers, computed
     // off this thread for this tick or the one before. Until the first answer lands, with a
     // position source set by hand, or once the worker has failed, every record is asked here as
@@ -520,6 +527,7 @@ export function createGlyphLayer(scene, layer = {}) {
         dOffset = true;
       }
       const selected = selectedId !== null && rec.id === selectedId;
+      if (selected) { selectedAt = k; selectedRec = rec; }
       const cr = selected ? emberR : recColour[i * 3];
       const cg = selected ? emberG : recColour[i * 3 + 1];
       const cb = selected ? emberB : recColour[i * 3 + 2];
@@ -575,6 +583,44 @@ export function createGlyphLayer(scene, layer = {}) {
       const a = getGlyphAtlas();
       if (a) material.uniforms.uAtlas.value = a;
     }
+  }
+
+  /**
+   * THE SELECTION'S DOT, PLACED AGAIN ON A FRAME BETWEEN TWO TICKS (Ivan, 2026-10-14: "sometimes
+   * when an object is selected it is shaking on the screen"). At the live clock main.js calls
+   * update() ten times a second, which is enough for a dot nobody is watching. The selection is
+   * watched: the camera follows it and the brackets (ui/hud.js) are placed on it EVERY frame, from
+   * the same propagator. So between two ticks the camera and the brackets went on and the dot
+   * stayed, then jumped: 0.1 s of a low orbit is 760 m, which is 1 px from 700 km and 15 px from
+   * 50 km, ten times a second; from the ground through a telescope's field the same sawtooth is
+   * the Earth's turn under a geostationary dot. One record, three floats: the rest of the layer
+   * keeps its tick. False when this layer does not hold the selection (or holds it undrawn).
+   */
+  function updateSelected(tMs) {
+    if (selectedAt < 0 || !selectedRec || !geometry || !mesh.visible || selectedRec.id !== selectedId) return false;
+    if (selectedAt >= geometry.instanceCount || live[selectedAt] !== selectedRec) return false;
+    let p = null;
+    try { p = positionOf(selectedRec, tMs); } catch { p = null; }
+    if (!p) return false;
+    let v = p;
+    if (toSceneInto) {
+      scratch.x = p.x;
+      scratch.y = p.y;
+      scratch.z = p.z;
+      v = toSceneInto(scratch, p.frame || selectedRec.frame, _scene, tMs);
+      if (!v) return false;
+    }
+    const o = selectedAt * 3;
+    const px = Math.fround(v.x);
+    const py = Math.fround(v.y);
+    const pz = Math.fround(v.z);
+    if (livePos[o] === px && livePos[o + 1] === py && livePos[o + 2] === pz) return true;
+    livePos[o] = px;
+    livePos[o + 1] = py;
+    livePos[o + 2] = pz;
+    attrOffset.needsUpdate = true;
+    uploads.bytes += 4 * geometry.instanceCount * 3;
+    return true;
   }
 
   const _m = new THREE.Matrix4();
@@ -667,6 +713,12 @@ export function createGlyphLayer(scene, layer = {}) {
 
   return {
     setRecords,
+    updateSelected,
+    /** Where the selection's dot is drawn, as the GPU holds it ([x, y, z], scene units), or null: for tests and probes. */
+    selectedOffset() {
+      if (selectedAt < 0 || !geometry || selectedAt >= geometry.instanceCount || live[selectedAt] !== selectedRec) return null;
+      return [livePos[selectedAt * 3], livePos[selectedAt * 3 + 1], livePos[selectedAt * 3 + 2]];
+    },
     /** fn(id) -> 0..1: the dot for that record yields to its model by this much. */
     setModelOpacity(fn) { modelOpacityOf = typeof fn === 'function' ? fn : null; },
     update,
@@ -699,6 +751,8 @@ export function createGlyphLayer(scene, layer = {}) {
     /** Highlight one record in ember (the selection colour, and the only interactive colour). */
     setSelected(id) {
       selectedId = id === undefined ? null : id;
+      selectedAt = -1; // found again by the next update()
+      selectedRec = null;
     },
     /**
      * Override the CSS pixel size of the canvas. Not normally needed: the layer measures the

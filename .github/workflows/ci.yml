@@ -949,6 +949,8 @@ jobs:
         run: node tests/test_edge_cache.mjs
       - name: "a glyph layer uploads only the attributes whose values changed, and a stand-in GPU never holds a stale one (internal #519)"
         run: node tests/test_glyph_uploads.mjs
+      - name: "a selected object stands still: its dot, the camera that follows it and its brackets are one instant a frame, a followed world is aimed at after it is placed, and the ground is on the Earth's stage (Ivan, 2026-10-14)"
+        run: node tests/test_follow_steady.mjs
       - name: "a saved catalogue published as columns decodes to the verbatim rows, and the browser falls back to the verbatim file on any doubt (internal #523)"
         run: node tests/test_columnar.mjs
       - name: "a publisher who forbids redistribution (ESA NEOCC) is not fetched, published, saved or zipped, and JPL's APIs are never called from a browser (internal #370)"
