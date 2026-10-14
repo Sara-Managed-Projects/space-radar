@@ -109,12 +109,21 @@ const eqToScene = (raDeg, decDeg) => {
 };
 const turn = (rad) => rig.flyTo({ azimuth: rig.state.azimuth + rad, polar: rig.state.polar, ms: 0 });
 const pull = (k) => rig.flyTo({ distance: rig.state.distance * k, ms: 0 });
+// As a link does it (main.js openAt): the deep-sky catalogue lands after the first visit, and a
+// record whose layer is off is flown to as empty sky, so the layer goes on first.
 const need = async (id, waitMs = 9000) => {
-  const ok = await go(id, null, waitMs);
-  if (!ok) out.problems.push('missing record ' + id);
-  return ok;
+  const r = sr.recordById(id);
+  if (!r) { out.problems.push('missing record ' + id); look.missing.push(id); return false; }
+  if (r.layer && !sr.isLayerOn(r.layer)) sr.setLayerOn(r.layer, true);
+  sr.select(r, { fly: true, undo: false });
+  await sleep(waitMs);
+  return true;
 };
 
+try {
+  if (sr.loadAfterFirstVisit && !sr.laterLayersLoaded()) await sr.loadAfterFirstVisit();
+  out.laterLayers = await until(() => !!sr.recordById('dso-lmc'), 120000);
+} catch (e) { look.warns.push('loadAfterFirstVisit: ' + e); }
 try { if (sr.wantNebulae) await sr.wantNebulae(); } catch (e) { look.warns.push('wantNebulae: ' + e); }
 
 // 1. The Helix: the app's own framing, closer, and turned 45 degrees (does it stay a shape, or is
