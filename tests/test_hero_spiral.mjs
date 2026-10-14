@@ -126,9 +126,9 @@ const A = prep(M31, m31, 30000);
   const R25 = m31.meta.sizeLy / 2 / S.KPC_LY;
   const r99 = r[Math.floor(0.99 * r.length)];
   check(r99 > 0.9 * R25 && r99 < 1.4 * R25, `its light reaches the catalogue's radius and not far past it (99% inside ${r99.toFixed(1)} kpc; R25 ${R25.toFixed(1)} kpc)`);
-  check(S.pointsFor(A.params, 0) === 24000 && S.pointsFor(A.params, 1) === 60000 && S.pointsFor(A.params, 2) === 90000, 'M31: 24 000 / 60 000 / 90 000 points on T0 / T1 / T2');
+  check(S.pointsFor(A.params, 0) === 12000 && S.pointsFor(A.params, 1) === 60000 && S.pointsFor(A.params, 2) === 90000, 'M31: 12 000 / 60 000 / 90 000 points on T0 / T1 / T2 (phones fewer, over the smooth layer)');
   const B = prep(M33, recordOf('m33'), 2000);
-  check(S.pointsFor(B.params, 0) === 12000 && S.pointsFor(B.params, 1) === 25000, 'M33: 12 000 / 25 000 points on T0 / T1');
+  check(S.pointsFor(B.params, 0) === 8000 && S.pointsFor(B.params, 1) === 25000, 'M33: 8 000 / 25 000 points on T0 / T1');
   const g1 = S.generateGalaxy(A.params, { count: 4000, seed: 9 }), g2 = S.generateGalaxy(A.params, { count: 4000, seed: 9 }), g3 = S.generateGalaxy(A.params, { count: 4000, seed: 10 });
   check(g1.light.pos.every((v, i) => v === g2.light.pos[i]) && g1.light.col.every((v, i) => v === g2.light.col[i]), 'the same params and seed give the same bytes');
   check(g1.light.pos.some((v, i) => v !== g3.light.pos[i]), 'another seed, other points');
@@ -169,7 +169,7 @@ const A = prep(M31, m31, 30000);
 {
   const hero = S.createHero(THREE, { profile: M31, record: m31 });
   const st = hero.stats();
-  check(st.points === 60000 && st.meshes === 3, `with no tier to read, T1's 60 000 points in three draws (${st.points}, ${st.meshes})`);
+  check(st.points === 60000 && st.meshes === 5, `with no tier to read, T1's 60 000 points; five draws: two halves, dust, the light layer, the bulge (${st.points}, ${st.meshes})`);
   ANDROMEDA_LINK.photo = 0.6;
   hero.setLevel(2, 1);
   check(Math.abs(hero.stats().share - 0.4) < 0.011 && ANDROMEDA_LINK.heroShare === 1, `with her photograph at 0.6 the model draws the 0.4 left (${hero.stats().share})`);
@@ -182,7 +182,7 @@ const A = prep(M31, m31, 30000);
   hero.frame({ camera: cam });
   const mats = [];
   hero.group.traverse((o) => { if (o.material) mats.push(o); });
-  check(mats.length === 3, 'far half, dust, near half');
+  check(mats.length === 5, 'far half, layer, bulge, dust, near half');
   for (const o of mats) {
     const m = o.material;
     const add = m.blending === THREE.AdditiveBlending;
@@ -190,7 +190,8 @@ const A = prep(M31, m31, 30000);
     check(m.transparent === false && m.toneMapped === false && m.depthWrite === false && (add || over), `${o.name}: opaque list, no tone mapping, additive light or (One, 1 - alpha) dust`);
   }
   const order = mats.map((o) => [o.name, o.renderOrder]).sort((a, b) => a[1] - b[1]).map((x) => x[0]);
-  check(order[1].endsWith(':dust'), `the dust is drawn between the far half and the near half (${order.join(' < ')})`);
+  check(order[0].endsWith(':light-') || order[0].endsWith(':light+'), 'a half of the points first');
+  check(order.indexOf(order.find((n) => n.endsWith(':dust'))) === 3 && order[1].endsWith(':layer') && /:light[+-]$/.test(order[4]), `far half, the light layer, the bulge, the dust, then the near half (${order.join(' < ')})`);
   check(!/colorspace_fragment|tonemapping_fragment/.test(S.SHADERS.light + S.SHADERS.dust), 'display values: no colour-space or tone-mapping chunk');
   check(/min\( 1\.0, \( ideal \* ideal \) \/ \( s \* s \) \)/.test(S.SHADERS.light), 'a patch held small gives up its light (exposed by projected density)');
   check(S.UNDER_MEASURED === 'same', 'under Measured the model is drawn as it is');
@@ -209,6 +210,34 @@ const A = prep(M31, m31, 30000);
   let pIn = 0, nIn = 0, pOut = 0, nOut = 0;
   for (let i = 0; i < L.count; i++) { const R = Math.hypot(L.pos[i * 3], L.pos[i * 3 + 1]); const p = L.meta[i * 4]; if (R < 1.5) { pIn += p; nIn++; } else if (R > 15) { pOut += p; nOut++; } }
   check(pIn / nIn < 0.5 * pOut / nOut, `each point's patch follows its crowding (${(pIn / nIn).toFixed(0)} inside 1.5 kpc, ${(pOut / nOut).toFixed(0)} past 15 kpc, of 255)`);
+}
+
+// ------------------------- 5b. close up: a smooth layer carries the light, the points only sparkle
+{
+  const prof = S.layerProfile(A.params);
+  const Rd = prof.rd;
+  const at = (x, y, k) => S.layerAt(prof, x, y, k);
+  const shown = (x, y) => prof.gain * Math.pow(at(x, y, 1).light, S.LAYER_POWER) * (1 - at(x, y, 1).dust);
+  check(Math.abs(prof.gain * Math.pow(prof.i0 * Math.exp(-1), S.LAYER_POWER) - S.LAYER_DISC_AT_RD) < 1e-9, `the layer draws its disc at ${S.LAYER_DISC_AT_RD} one scale length out, face on`);
+  const ring = shown(10.4, 0), gap = shown(7.6, 0);
+  check(ring > gap, `the 10 kpc ring is brighter than the disc inside it (${ring.toFixed(3)} against ${gap.toFixed(3)})`);
+  let maxDust = 0, armMax = 0;
+  for (let i = 0; i < 400; i++) { const R = 3 + 17 * (i / 400), ph = i * 0.7; const v = at(R * Math.cos(ph), R * Math.sin(ph), 1); maxDust = Math.max(maxDust, v.dust); armMax = Math.max(armMax, v.armShape); }
+  check(maxDust > 0.3 && maxDust <= 0.75, `its dust lanes and rings darken it visibly, never to black (${maxDust.toFixed(2)})`);
+  check(armMax > 0.5, 'the arms modulate it');
+  const d15 = at(15.1, 0, 1).dust, d15m = at(15.1, 0, 0.6).dust;
+  check(d15 > d15m, 'the dust is stronger in Film than under Measured');
+  check(S.SPARKLE <= 0.25, `close up the points carry only ${S.SPARKLE} of the light`);
+  check(/min\( a, uAlphaCap \)/.test(S.SHADERS.light) && !/colorspace_fragment/.test(S.SHADERS_LAYER.layer + S.SHADERS_LAYER.bulge), 'each point is capped; the layer in display values');
+  const hero = S.createHero(THREE, { profile: M31, record: m31 });
+  hero.setLevel(2, 1);
+  const cam = new THREE.PerspectiveCamera(50, 1.6, 1, 1e9);
+  const n = new THREE.Vector3().setFromMatrixColumn(hero.group.children[0].matrix, 2).normalize();
+  cam.position.copy(n.multiplyScalar(300)); cam.updateMatrixWorld();
+  hero.frame({ camera: cam });
+  const lightMat = hero.group.children[0].children.find((o) => o.name.endsWith(':light+')).material;
+  check(lightMat.uniforms.uMaxPx.value <= 2.6 * 1.0001, `face on and close, a point is at most 2.6 px (${lightMat.uniforms.uMaxPx.value})`);
+  hero.dispose();
 }
 
 // --------------------------------------------------------------------------------- 6. landmarks

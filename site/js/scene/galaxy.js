@@ -59,7 +59,7 @@ export const ANDROMEDA = {
   majAxArcmin: 177.83,    // OpenNGC, via the M31 row
 };
 // The far copy: few points, because below the hero's threshold she is at most a few hundred px across.
-export const ANDROMEDA_FAR = { points: [6000, 8000, 8000], dust: 0.3, seed: 31 };
+export const ANDROMEDA_FAR = { points: [5000, 8000, 8000], dust: 0.3, seed: 31 };
 
 /**
  * What Andromeda's three drawings tell each other, every frame: how much her photograph is drawn
@@ -410,7 +410,7 @@ export function createGalaxy(scene, opts = {}) {
     if (far) {
       placeAndromeda();
       applyVisibility();
-      if (far.group.visible) far.update(camera, uniforms.uViewH.value, dpr);
+      if (far.group.visible) far.update(camera, uniforms.uViewH.value, dpr, tier());
     }
   }
   function dispose() {

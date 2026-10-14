@@ -11,10 +11,10 @@ export const HERO = {
     "dso-m110"
   ],
   "levels": {
-    "2": "the structure: statistical points for the bulge, disc, arms, ring and H II knots, and a dust point set",
+    "2": "the structure: a smooth integrated-light layer (disc, arms, ring, dust rings and lanes; the bulge facing the camera) with statistical points as sparkle, and a dust point set that carries the edge-on view",
     "3": "the same, larger on screen (no march: the dust is points; a dust sheet in the material is for later)",
     "points": [
-      24000,
+      12000,
       60000,
       90000
     ],
@@ -37,7 +37,7 @@ export const HERO = {
       "re_kpc": 1.0,
       "q": 0.8,
       "light": 0.3,
-      "colour": "#ffd9b0",
+      "colour": "#f6ecf2",
       "source": "Courteau et al. 2011, ApJ 739, 20 (arXiv:1106.3564): Sersic n = 2.2 +/- 0.3, Re = 1.0 +/- 0.2 kpc; deprojected after Prugniel & Simien 1997; q 0.8 assumed"
     },
     {
@@ -48,7 +48,8 @@ export const HERO = {
       "r_max_kpc": 26,
       "light": 0.45,
       "arm_contrast": 0.15,
-      "colour": "#e6e0d6",
+      "colour": "#d2e4e2",
+      "colour_outer": "#bcd4d4",
       "source": "Courteau et al. 2011: exponential, Rd = 5.3 +/- 0.5 kpc; height 0.6 kpc assumed; cut at 26 kpc, about 1.3 times the catalogue's 177.83 arcmin radius"
     },
     {
@@ -63,7 +64,7 @@ export const HERO = {
       "scale_kpc": 8,
       "segments": 0.6,
       "light": 0.1,
-      "colour": "#b8c8ff",
+      "colour": "#b9cce0",
       "source": "Gordon et al. 2006, ApJ 638, L87 (arXiv:astro-ph/0601314): two arms from the ends of a nuclear bar, out past the ring, 'composed of spiral segments'; pitch, width and the share kept as segments illustrative"
     },
     {
@@ -76,7 +77,7 @@ export const HERO = {
       "split_half_deg": 30,
       "split_sep_kpc": 1.5,
       "light": 0.12,
-      "colour": "#aabfff",
+      "colour": "#b4c8dc",
       "split_toward": {
         "ra_deg": 10.67429,
         "dec_deg": 40.86528
@@ -148,7 +149,7 @@ export const HERO = {
   ],
   "colours": {
     "mode": true,
-    "note": "Broad-band colours of the populations, in display values: a warm bulge of old stars, a pale disc, blue-white arms and ring of young stars, pink H II regions. Not enhanced, not narrowband; no pixel is taken from a photograph."
+    "note": "Matched to her photograph at the hand-over (scene/nebulae.js, NOIRLab noao0001a, whose plates' filters are unstated): its mean colours measured 2026-10-15 are core #e3d7e3, inner disc #526362, outer disc #263839; the model takes their hue halfway to neutral (bulge #f6ecf2, disc #d2e4e2 to #bcd4d4, arms and ring a little bluer), so the cross-fade keeps its colour without copying the plate's green cast. Pink H II regions. Not enhanced; no pixel is taken from the photograph."
   },
   "drawn": [
     "model"
@@ -165,7 +166,7 @@ export const HERO = {
   "review": {
     "data_vs_model": "A parametric model: the bulge's and disc's profiles, the ring's radius and the dust rings' radii are published; the arms' pitch, the knots' places, the thicknesses and the light shares are ours, labelled in each layer. Statistical points, not stars.",
     "geometry": "Orientation pa 38 / incl 77, NW near, SW approaching (trailing arms). Size: the disc's 26 kpc cut against the catalogue's 20.1 kpc radius at 2.54 Mly; the catalogue's 177.83 arcmin major axis, not the photograph's 132 arcmin frame.",
-    "colours": "True colours of the populations in display values (mode: true); nothing enhanced.",
+    "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
     "distance": "The record's: 2.54 Mly (2.43-2.65), the Messier table's; the model is in kiloparsecs and does not depend on it.",
     "credits": "CREDITS.md section 3l, Andromeda and galaxy structure: the papers above; no image is used by the model.",
     "by": "the stage-d builder (an agent, not independent); a person's science sign-off is still owed (task 33, internal #785)",
