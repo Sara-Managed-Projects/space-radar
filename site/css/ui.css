@@ -967,7 +967,8 @@ html.sr-compact .sr-status {
   color: var(--sr-text-dim);
   cursor: pointer;
 }
-.sr-card__parent::before { content: '\2191'; margin-right: var(--sp-1, 4px); }
+.sr-card__parent { gap: var(--sp-1); }
+.sr-card__parent svg { width: 16px; height: 16px; flex: none; }
 .sr-card__parent:hover, .sr-card__parent:focus-visible { color: var(--sr-ember-light); }
 
 /* What goes inside them: today's sections, in the guide's type roles. */

@@ -64,10 +64,13 @@ export function marchSteps({ tier = 1, top = false, latched = false, scaleStep =
   return Math.min(MAX_STEPS, n);
 }
 
-/** A level-1 glow (the coordinator's holder) is a smooth profile: a few steps carry it. Pure. */
-export function holderSteps({ tier = 1, latched = false, cloud = false } = {}) {
+/**
+ * A level-1 glow (the coordinator's holder): a smooth profile takes 10 steps; a broken cloud 12; a thin
+ * shell (a planetary nebula's ring, a remnant's) 16, or its rings band (the first look, 2026-10-14). Pure.
+ */
+export function holderSteps({ tier = 1, latched = false, cloud = false, thin = false } = {}) {
   if (latched || !(tier >= 1)) return 0;
-  return cloud ? 12 : 8;
+  return thin ? 16 : cloud ? 12 : 10;
 }
 
 // ------------------------------------------------------------------------- the densities, mirrored
@@ -249,7 +252,10 @@ void main() {
   if ( uShare <= 0.0 ) discard;
   vec3 n = normalize( vObj );
   vec3 rd = normalize( vObj - uCamObj );
-  float slant = 1.0 / max( 0.33, abs( dot( n, rd ) ) );
+  // The path through a shell grows as 1 / cos toward its rim; a shell standing for a slab of gas fades
+  // there instead, so no shell's edge is ever a line (the first T0 look, 2026-10-14, drew hard rims).
+  float c = abs( dot( n, rd ) );
+  float slant = smoothstep( 0.0, 0.45, c ) / max( 0.33, c );
   float ds = uShellDr * slant * length( uObjLen * rd );
   gl_FragColor = gasOut( density( vObj * 0.999 ) * ds, 1.0 );
 }
@@ -323,7 +329,7 @@ export function createShellMaterial(THREE, opts = {}) {
   const m = new THREE.ShaderMaterial({
     vertexShader: VERT,
     fragmentShader: SHELL_FRAG,
-    uniforms: { ...uniformsFor(THREE, opts), uShellDr: { value: 1 / (opts.shells || 4) } },
+    uniforms: { ...uniformsFor(THREE, opts), uShellDr: { value: 1 / (opts.shells || 6) } },
     transparent: COLOUR_POLICY.transparent, depthTest: !!opts.depthTest, depthWrite: COLOUR_POLICY.depthWrite,
     toneMapped: COLOUR_POLICY.toneMapped, side: THREE.DoubleSide,
   });
@@ -344,7 +350,8 @@ function shellGeometry(THREE, n) {
   if (shellGeos.has(n)) return shellGeos.get(n);
   // n nested spheres in ONE geometry: one draw call for the whole T0 fallback.
   const parts = [];
-  for (let i = 1; i <= n; i++) parts.push(new THREE.IcosahedronGeometry((i - 0.5) / n, 2));
+  // Detail 4 (2 562 vertices a sphere): at detail 2 a phone saw the shells' facets as polygons.
+  for (let i = 1; i <= n; i++) parts.push(new THREE.IcosahedronGeometry((i - 0.5) / n, 4));
   const pos = [];
   for (const g of parts) { const ng = g.index ? g.toNonIndexed() : g; pos.push(...ng.getAttribute('position').array); g.dispose(); }
   const geo = new THREE.BufferGeometry();
@@ -361,7 +368,7 @@ function shellGeometry(THREE, n) {
 export function createGasMesh(THREE, opts = {}) {
   const march = opts.march !== false;
   const material = march ? createGasMaterial(THREE, opts) : createShellMaterial(THREE, opts);
-  const mesh = new THREE.Mesh(march ? boundingGeometry(THREE) : shellGeometry(THREE, opts.shells || 4), material);
+  const mesh = new THREE.Mesh(march ? boundingGeometry(THREE) : shellGeometry(THREE, opts.shells || 6), material);
   mesh.name = opts.name || 'deep-gas';
   mesh.frustumCulled = false; // the coordinator decides what is in view; the camera may be inside it
   mesh.renderOrder = Number.isFinite(opts.renderOrder) ? opts.renderOrder : -1; // with the deep-sky glows

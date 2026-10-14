@@ -141,9 +141,12 @@ export function createDeepSky(THREE, env = {}) {
     const g = glowFor(record);
     if (!g || !HERO_KINDS.has(g.kind)) return null;
     const q = env.quality ? env.quality() : { tier: 1 };
-    const kind = KINDS[g.kind] || 0;
+    // An irregular or a dwarf spheroidal galaxy has no bright nucleus: the soft profile, not the spiral's.
+    const morph = record.meta && record.meta.morphology;
+    const kind = g.kind === 'galaxy' && /irregular|spheroidal/.test(String(morph || '')) ? KINDS.soft : KINDS[g.kind] || 0;
     const cloud = g.kind === 'cloud';
-    const march = holderSteps({ tier: q.tier, latched: q.latched, cloud }) > 0;
+    const thin = g.kind === 'shell' || g.kind === 'remnant';
+    const march = holderSteps({ tier: q.tier, latched: q.latched, cloud, thin }) > 0;
     const v = createGasMesh(THREE, {
       name: `deep-holder-${record.id}`, kind, colour: g.colour, noisy: cloud, march,
       noise: noiseTexture(THREE, q.tier >= 1 ? 64 : 32), seed: (record.id.length * 0.137) % 1,
@@ -157,7 +160,9 @@ export function createDeepSky(THREE, env = {}) {
     v.material.uniforms.uNorm.value = peak2d(kind) / Math.max(1e-6, columnJs(kind, thick));
     v.material.uniforms.uGain.value = gain;
     group.add(v.mesh);
-    return { id: record.id, record, glow: g, v, R, march, steps: march ? holderSteps({ tier: q.tier, cloud }) : 0, usedAt: 0, share: 0 };
+    const steps = march ? holderSteps({ tier: q.tier, cloud, thin }) : 0;
+    if (march) v.setSteps(steps);
+    return { id: record.id, record, glow: g, v, R, march, steps, usedAt: 0, share: 0 };
   }
 
   function rebuild() {

@@ -1675,7 +1675,9 @@ function parentButton(record, ctx) {
   const parent = parentRecordOf(record, ctx);
   if (!parent || typeof ctx.select !== 'function') return null;
   const name = displayName(parent);
-  const b = el('button', 'sr-card__parent', t(COPY.deep.back, { parent: name }));
+  const b = el('button', 'sr-card__parent');
+  b.appendChild(icon('chevron-left'));
+  b.appendChild(el('span', '', t(COPY.deep.back, { parent: name })));
   b.type = 'button';
   b.title = t(COPY.deep.backTitle, { parent: name });
   b.dataset.focus = 'parent';
