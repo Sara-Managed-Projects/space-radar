@@ -288,7 +288,7 @@ const BLOCKS = {
   a: ['helix', 'flight', 'lmc', 'tarantula', 'm31', 'milkyway', 'far', 'alphacen'],
 
   // b. the Helix (#787): its own scenes (a 150 px still, the 30 and 60 degree orbit, near, inside).
-  b: [],
+  b: ['helixHero'],
 
   // c. the LMC and the Tarantula (#788): the 45 degree orbit, inside the disc, R136 near.
   c: [],
@@ -304,7 +304,78 @@ const BLOCKS = {
 };
 // Each stage's own groups (async functions, as GROUPS above): one object per stage.
 // b. the Helix's groups go in this object.
-const GROUPS_B = {};
+const GROUPS_B = {
+  // The Helix as a hero (stage b, #787), drawn as it will be once its review is signed: the registry
+  // says `shipped: false` until a person signs it, so the block forces it (`sr.deep.debug`) and gives
+  // the record the two stamps a shipped hero gets (scene/deep/deepsky.js), then takes all three back.
+  // Every scene is the same target, so the 30, 45 and 60 degree pictures show the parallax.
+  helixHero: async () => {
+    if (!(await need('dso-helix-nebula'))) return;
+    const id = 'dso-helix-nebula';
+    const rec = sr.recordById(id);
+    if (!sr.deep || !sr.deep.debug) { out.problems.push('helixHero: no sr.deep.debug'); return; }
+    const heroOn = (on) => {
+      sr.deep.debug({ force: on });
+      if (rec && rec.meta) { if (on) { rec.meta.heroDrawn = ['reconstruction']; rec.meta.heroId = 'helix'; } else { delete rec.meta.heroDrawn; delete rec.meta.heroId; } }
+    };
+    // The same pose twice: first as the foundation draws it (no hero: the photograph, the glow, the
+    // holder), then with the hero. One run is then the stage's before and after.
+    const pair = async (name, note) => {
+      heroOn(false);
+      await shot(`${name}-before`, `BEFORE (the foundation, no hero): ${note}`, 4000);
+      heroOn(true);
+      return snap(name, note);
+    };
+    heroOn(true);
+    await sleep(3000);
+    const toLy = (u) => u * sr.stage.unitKm / LY_KM;
+    // The camera distance at which the record's radius is `px` on screen (scene/deep/lodsize.js radiusPx).
+    const atPx = async (px) => {
+      for (let k = 0; k < 2; k++) {
+        const r = sr.deep.radiusPx(id);
+        const fov = (sr.camera ? sr.camera.fov : 45) * Math.PI / 180;
+        if (!(r > 0) || !Number.isFinite(r)) break;
+        const R = rig.state.distance * Math.sin(r / (innerHeight / 2) * fov / 2);
+        rig.flyTo({ distance: R / Math.sin(px / (innerHeight / 2) * fov / 2), ms: 0 });
+        await sleep(1500);
+      }
+    };
+    const deg = (d) => turn(d * Math.PI / 180);
+    const hero = () => { const s = sr.deep.stats(); return (s.heroes || []).find((h) => h.id === 'helix') || null; };
+    out.helix = {};
+    await atPx(150);
+    await snap('b01-helix-150px', 'the Helix at 150 px in radius, on our line of sight: the photograph, the star on it');
+    deg(60);
+    await pair('b02-helix-150px-turned60', 'the same size, 60 degrees round: the reconstruction (and the point glow\'s last share)');
+    out.helix.at150 = hero();
+    deg(-60);
+    await atPx(300);
+    await snap('b03-orbit-00', 'level 3, 300 px: on our line of sight (the photograph)');
+    deg(30);
+    await pair('b04-orbit-30', 'turned 30 degrees round the same centre: the photograph hands over to the reconstruction');
+    deg(15);
+    await snap('b05-orbit-45', 'turned 45 degrees: the two rings at their tilts, parallax against the stars behind');
+    deg(15);
+    await pair('b06-orbit-60', 'turned 60 degrees: the inner disc nearly edge on, the outer ring open');
+    out.helix.at300 = hero();
+    try { sr.drawn.set('measured'); await snap('b07-measured-60', 'the same, Measured look: no generated grain, nothing moves'); } finally { sr.drawn.set('film'); }
+    const expo = sr.exposure ? sr.exposure.mode() : null;
+    if (expo) { try { sr.exposure.set('deep'); await snap('b08-deep-exposure-60', 'the same, Deep exposure: the ENHANCED line colours (declared)'); } finally { sr.exposure.set(expo); } }
+    if (!phone && sr.quality && sr.quality.setChoice) {
+      const before = (sr.quality.describe() || {}).choice || 'auto';
+      try { sr.quality.setChoice('low'); await sleep(2000); await snap('b09-low-tier-60', 'the same at Low (tier 0): 4 samples a layer, no noise volume, fewer knots'); out.helix.low = hero(); } finally { sr.quality.setChoice(before); }
+    }
+    deg(20);
+    rig.flyTo({ distance: 2.4 * LY_KM / sr.stage.unitKm, ms: 0 });
+    await pair('b10-near', 'near: 2.4 ly from the white dwarf, 80 degrees off our line; the knots on the inner disc\'s rim');
+    rig.flyTo({ distance: 0.5 * LY_KM / sr.stage.unitKm, ms: 0 });
+    await pair('b11-inside', 'inside the inner disc, 0.5 ly from the white dwarf: the gas round the camera, the knots against it');
+    out.helix.inside = hero();
+    out.helix.distanceLy = Math.round(toLy(rig.state.distance) * 100) / 100;
+    heroOn(false);
+    sr.deselect();
+  },
+};
 
 // c. the LMC's and the Tarantula's groups go in this object.
 const GROUPS_C = {};
@@ -327,6 +398,7 @@ const POSES = {
   'DS-08': ['lmc'], 'DS-09': ['m31'], 'DS-10': ['far'], 'DS-11': ['far'], 'DS-12': ['far'], 'DS-17': ['far'], 'DS-18': ['far'],
 
   // b.
+  'DS-02': ['helix', 'helixHero'],
 
   // c.
 

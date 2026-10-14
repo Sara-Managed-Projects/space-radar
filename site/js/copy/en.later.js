@@ -1715,7 +1715,16 @@ Object.assign(COPY, {
   },
 
   // b. The Helix (stage b, internal #787) writes only inside this block.
-  deepHelix: {},
+  deepHelix: {
+    // The card's honesty line, after "What is drawn: …", once the hero is shipped (ui/cardfacts.js
+    // honestyClause reads `card[heroId]`). The numbers are registry/deepsky-heroes/helix.yaml's.
+    card: {
+      helix: 'Its 3D shape follows O’Dell, McCullough and Meixner (2004): an inner disc tilted 23° and an outer ring tilted 53°, almost at right angles. The knots are placed at their measured distances, not one by one.',
+    },
+    // "How astronomers reconstructed its 3D form" (package section 5.1): two sentences, sourced, for
+    // the trip "Into the Helix" (spec 0075 stage f) and a card disclosure when there is one.
+    how: 'Hubble and telescopes on the ground show two ellipses, 499″ by 459″ and 742″ by 446″. Read as circles seen at a slant they are two rings tilted 23° and 53°, and the knots’ speeds toward and away from us say which side of each is nearer (O’Dell, McCullough and Meixner 2004).',
+  },
 
   // c. The LMC and the Tarantula (stage c, internal #788) writes only inside this block.
   deepLmc: {},

@@ -239,7 +239,7 @@ export function createDeepSky(THREE, env = {}) {
       if (h.stamped || !h.profile) continue;
       const rec = env.recordById ? env.recordById(h.def.record) : null;
       if (!rec) continue;
-      if (h.profile.shipped && Array.isArray(h.profile.drawn) && rec.meta) rec.meta.heroDrawn = h.profile.drawn.slice();
+      if (h.profile.shipped && Array.isArray(h.profile.drawn) && rec.meta) { rec.meta.heroDrawn = h.profile.drawn.slice(); rec.meta.heroId = h.def.id; }
       h.stamped = true;
     }
     // Heroes: shipped (or forced), near enough to fetch, at most two drawn.
@@ -260,7 +260,8 @@ export function createDeepSky(THREE, env = {}) {
         const steps = lv >= 3 ? marchSteps({ tier: q.tier, top: q.top, latched: q.latched, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: rp, selected: selectedId === h.def.record }) : 0;
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);
         if (share > 0) {
-          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0 });
+          // photo: its photograph's share now (a hero gives way to it on its line); tier and gain: the device's tier, the exposure.
+          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, photo: env.pictureShare ? env.pictureShare(h.def.record) || 0 : 0, tier: q.tier, gain });
           drawnHeroes += 1;
           heroIds.add(h.def.record);
           h.idleSince = 0;

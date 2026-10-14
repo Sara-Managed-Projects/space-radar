@@ -971,7 +971,9 @@ export function honestyClause(record, m) {
   if (klassOf(record) === 'dso') {
     const F = COPY.deepFacts;
     const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
-    return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) : null;
+    // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
+    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 
   // An event from EONET is one point and one date; say both, when it was read, and the publisher's caveat.
