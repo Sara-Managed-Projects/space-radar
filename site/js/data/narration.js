@@ -219,7 +219,15 @@ export const NARRATION = {
     "back-to-the-moon/launch": 16.57,
     "back-to-the-moon/far-side": 18.43,
     "back-to-the-moon/earth-from-there": 14.19,
-    "back-to-the-moon/south-pole": 19.12
+    "back-to-the-moon/south-pole": 19.12,
+    "onboarding/move": 6.72,
+    "onboarding/find": 6.15,
+    "onboarding/card": 6.06,
+    "onboarding/time": 6.75,
+    "onboarding/places": 6.2,
+    "onboarding/layers": 6.01,
+    "onboarding/share": 5.37,
+    "onboarding/trips": 5.18
   },
   "versions": {
     "people-in-space/far": "577ece1f",
@@ -426,6 +434,14 @@ export const NARRATION = {
     "back-to-the-moon/launch": "8418af13",
     "back-to-the-moon/far-side": "9021845c",
     "back-to-the-moon/earth-from-there": "5c7c3c2e",
-    "back-to-the-moon/south-pole": "299f457c"
+    "back-to-the-moon/south-pole": "299f457c",
+    "onboarding/move": "cd8319e1",
+    "onboarding/find": "5e6b109d",
+    "onboarding/card": "86da3981",
+    "onboarding/time": "155528a9",
+    "onboarding/places": "811db526",
+    "onboarding/layers": "7cc579c4",
+    "onboarding/share": "bec362ae",
+    "onboarding/trips": "c64e150f"
   }
 };

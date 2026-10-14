@@ -1,0 +1,245 @@
+/* onboarding.css -- the tour (ui/onboarding.js, internal spec 0074).
+ *
+ * Linked by ui/onboarding.js when it first draws, never at boot: a first visit's bytes are the
+ * map's, and a returning visitor who never asks for the tour never fetches this. Tokens only, all
+ * from css/ui.css :root; tests/test_tokens.mjs holds this file to the same rules as ui.css.
+ *
+ * FOUR THINGS, ALL IN ONE FIXED LAYER THAT TAKES NO POINTER EVENT (only the caption and the
+ * first visit's line do: the tour never blocks the map):
+ *   the hole     the real control, with everything else dimmed round it: the sky view's eyepiece
+ *                (ui.css .sr-skyeyepiece), a box-shadow of --sr-space thrown 100vmax. Only while a
+ *                control is ringed; never over the scene step, never with the first visit's arrow.
+ *   the ink      a ring and an arrow drawn by hand (ui/onboardingplan.js ringPath, arrowPath):
+ *                --sr-ember, with the --sr-space halo ember wears over the scene (ui-guide 2.1).
+ *                Drawn on ONCE by stroke-dashoffset (`pathLength="1"`), the ring in --sr-slow, the
+ *                shaft after it, the head last. Nothing loops.
+ *   the caption  one .sr-float at --sr-glass-strong with the shell's 16 px corners: the microlabel
+ *                and the count, the sentence, the ask, and a row of Voice, Skip and Next.
+ *   the line     the first visit's words, a button: the caption's glass, one line.
+ *
+ * NO HANDWRITING FACE: the type rules allow three families (ui-guide 2.2). The hand is in the ink.
+ * REDUCED MOTION: nothing is drawn on; the ink is there at once.
+ */
+
+.sr-tour {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-toast);
+  pointer-events: none;
+}
+
+.sr-tour[hidden],
+.sr-tour [hidden] { display: none; }
+
+.sr-tour * { box-sizing: border-box; }
+
+/* --- the hole --------------------------------------------------------------------------------- */
+
+.sr-tour__hole {
+  position: fixed;
+  border-radius: var(--sr-radius-shell);
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--sr-space) 45%, transparent);
+}
+
+/* --- the ink ---------------------------------------------------------------------------------- */
+
+.sr-tour__ink {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sr-tour__ink path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.sr-tour__halo {
+  stroke: var(--sr-space);
+  stroke-width: 6px;
+  opacity: 0.7;
+}
+
+.sr-tour__line {
+  stroke: var(--sr-ember);
+  stroke-width: 2.5px;
+}
+
+.sr-tour__ink:not(.has-ring) .sr-tour__ring { visibility: hidden; }
+
+.sr-tour.is-drawn .sr-tour__ink path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--sr-slow) var(--sr-ease);
+}
+
+.sr-tour.is-drawn .sr-tour__ink .sr-tour__shaft { transition-delay: var(--sr-slow); }
+
+.sr-tour.is-drawn .sr-tour__ink .sr-tour__head {
+  transition-duration: var(--sr-fast);
+  transition-delay: calc(var(--sr-slow) + var(--sr-slow));
+}
+
+/* The scene step and the first visit's arrow have no ring to wait for. */
+.sr-tour.is-drawn .sr-tour__ink:not(.has-ring) .sr-tour__shaft { transition-delay: 0s; }
+.sr-tour.is-drawn .sr-tour__ink:not(.has-ring) .sr-tour__head { transition-delay: var(--sr-slow); }
+
+/* --- the caption ------------------------------------------------------------------------------ */
+
+.sr-tour__card,
+.sr-tour__invite {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  color: var(--sr-text);
+  border-radius: var(--sr-radius-shell);
+}
+
+.sr-tour__card.sr-float,
+.sr-tour__invite.sr-float {
+  background: var(--sr-glass-strong);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-tour__card.sr-float,
+  .sr-tour__invite.sr-float { background: var(--sr-glass-solid); }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-tour__card.sr-float,
+  .sr-tour__invite.sr-float { background: var(--sr-glass-solid); }
+}
+
+.sr-tour__card {
+  display: grid;
+  gap: var(--sp-2);
+  width: 320px;
+  max-width: calc(100vw - var(--sp-6));
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+}
+
+@starting-style {
+  .sr-tour__card.sr-float,
+  .sr-tour__invite.sr-float {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.sr-tour__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+}
+
+.sr-tour__count {
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-tour__words {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+/* Two lines of nearly equal length, never one word alone on the second (seen on a runner). */
+.sr-tour__say,
+.sr-tour__ask {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.sr-tour__say { color: var(--sr-text); }
+
+.sr-tour__ask {
+  font-size: var(--sr-fs-sm);
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
+.sr-tour__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+.sr-tour__row .sr-btn {
+  min-width: 72px;
+  min-height: 44px;
+  font-size: var(--sr-fs-label);
+}
+
+/* Skip is pushed to the right with Next; the voice keeps the left. */
+.sr-tour__skip { margin-left: auto; }
+
+/* Next is the caption's own way on, never the ember: the control being taught may be (one primary). */
+.sr-tour__next {
+  color: var(--sr-text);
+  background: var(--sr-wash);
+}
+
+.sr-tour__next:hover:not(:disabled) { background: var(--sr-wash-hover); }
+.sr-tour__next:active:not(:disabled) { background: var(--sr-wash-strong); }
+
+.sr-tour__voice {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  color: var(--sr-text-soft);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tour__voice:hover { background: var(--sr-wash-hover); }
+.sr-tour__voice:active { background: var(--sr-wash-strong); }
+
+.sr-tour__voice[aria-pressed='true'] {
+  color: var(--sr-ember);
+  border-color: var(--sr-ember);
+}
+
+/* --- the first visit's line ------------------------------------------------------------------- */
+
+.sr-tour__invite {
+  min-height: 44px;
+  max-width: calc(100vw - var(--sp-6));
+  padding: var(--sp-2) var(--sp-4);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sr-tour__invite:hover { border-color: var(--sr-line-strong); }
+
+/* --- reduced motion: still, and at once --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-tour.is-drawn .sr-tour__ink path,
+  .sr-tour.is-drawn .sr-tour__ink .sr-tour__shaft,
+  .sr-tour.is-drawn .sr-tour__ink .sr-tour__head,
+  .sr-tour.is-drawn .sr-tour__ink:not(.has-ring) .sr-tour__shaft,
+  .sr-tour.is-drawn .sr-tour__ink:not(.has-ring) .sr-tour__head {
+    transition: none;
+  }
+
+  .sr-tour__ink path { stroke-dashoffset: 0; }
+
+  .sr-tour__card.sr-float,
+  .sr-tour__invite.sr-float { transition: opacity 120ms linear; }
+}

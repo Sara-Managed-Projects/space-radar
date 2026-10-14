@@ -2525,6 +2525,7 @@ function render(record, ctx, opts = {}) {
   const actions = el('div', 'sr-card__actions');
   actions.setAttribute('role', 'group');
   actions.setAttribute('aria-label', COPY.card.actionsLabel);
+  actions.dataset.tour = 'card-actions'; // the tour's hook (registry/onboarding.yaml)
   for (const b of actionButtons(record, ctx, m)) {
     b.dataset.focus = `act-${b.dataset.action}`;
     actions.appendChild(b);

@@ -250,6 +250,32 @@ export const REAL_MODELS = {
     38771: { file: 'metop.glb', colour: 'satellite', name: 'MetOp-B', catalogue: 'METOP-B', made: 'dimensions', axes: 'app' },
     43689: { file: 'metop.glb', colour: 'satellite', name: 'MetOp-C', catalogue: 'METOP-C', made: 'dimensions', axes: 'app' },
     25989: { file: 'xmm-newton.glb', colour: 'telescope', name: 'XMM-Newton', catalogue: 'XMM-NEWTON', made: 'dimensions', axes: 'app' },
+    // BATCH EIGHT (2026-10-14; public #949, #950): two more European craft that had no route at all
+    // and so wore the shape of their class. Both built in code from cited metres (registry/
+    // models.yaml rows `sentinel-2`, `sentinel-3`); no ESA picture or model was used (ESA's terms
+    // do not allow it): the layouts are read off DLR's photograph of a model (CC BY 2.0) and a
+    // Commons contributor's own drawing (CC BY 4.0).
+    //   sentinel-2.glb  the Copernicus land imager: a gold body 3.4 m long, 1.8 m wide and 2.35 m
+    //                   high, the multispectral instrument at one end with its opening in a raised
+    //                   frame on the Earth face, ONE wing of three panels (7.1 m2) from a side.
+    //   sentinel-3.glb  the Copernicus ocean and land satellite: a black body 3.9 x 2.2 x 2.21 m;
+    //                   on its Earth face the altimeter's 1.2 m dish, the radiometer's two curved
+    //                   openings, the colour camera's five lenses and a gold 60 cm reflector; ONE
+    //                   wing of three panels (10.5 m2) on a long yoke.
+    // BY NUMBER, from the live saved data of 2026-10-12: SENTINEL-2A, -2B, -2C; SENTINEL-3A, -3B.
+    // SENTINEL-3C (launched 15 September 2026) is in that data under 100690, and data/parsers.js
+    // reads a number of 90 000 and up as a placeholder the catalogue has not replaced yet. Whether
+    // 100690 stays is not something this file can know, and a number that may change is not a
+    // key: 3C is routed BY NAME further down (`sentinel-3c`, klass-gated), which holds either way.
+    // SENTINEL-5P and SENTINEL-6 are other craft: 5P has no row, 6A and 6B keep NASA's own file.
+    // `axes: 'app'`: the instruments on the file's +Z, which the app turns to the Earth, as they
+    // fly; the one wing along X, drawn fixed at 45 degrees toward the Sun's side. The real wing
+    // turns once an orbit and the real body keeps one heading to its track; the app's does neither.
+    40697: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2A', catalogue: 'SENTINEL-2A', made: 'dimensions', axes: 'app' },
+    42063: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2B', catalogue: 'SENTINEL-2B', made: 'dimensions', axes: 'app' },
+    60989: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2C', catalogue: 'SENTINEL-2C', made: 'dimensions', axes: 'app' },
+    41335: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3A', catalogue: 'SENTINEL-3A', made: 'dimensions', axes: 'app' },
+    43437: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3B', catalogue: 'SENTINEL-3B', made: 'dimensions', axes: 'app' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
@@ -395,13 +421,31 @@ export const REAL_MODELS = {
     // rest of the European set and concluded they "stay generic unless Ivan finds a licensed
     // source". A licence was never the obstacle for a shape this constrained: nobody had drawn it.
     //
-    // ERS-1 and Envisat carried far more than a radar and are here because the blade is still the
-    // thing you would recognise them by. Envisat's own CC BY model stays on Ivan's list (spec 0027
-    // design.md): this is the family shape until then, which is better than a dish.
-    39634: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1A', generic: true },
-    41456: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1B', generic: true },
-    62261: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1C', generic: true },
-    66315: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1D', generic: true },
+    // ERS-1 and Envisat carried far more than a radar and were here because the blade was still the
+    // thing you would recognise them by. Since batch eight (2026-10-14) each has a file of its own,
+    // further down, and Sentinel-1 has one just below; the blade is what is drawn while it loads.
+    // SENTINEL-1 HAS A FILE OF ITS OWN since batch eight (2026-10-14; public #948): sentinel-1.glb, built
+    // in code from the numbers eoPortal and ESA's facts page give (registry/models.yaml row
+    // `sentinel-1`): the 3.4 x 1.3 x 1.3 m bus, the 12.3 m x 0.821 m antenna of fourteen tiles on its
+    // Earth face, and two wings of five panels, each 10 m long. WHAT THE FILE CORRECTS: the `radar`
+    // build took this craft's antenna and gave it a bus of 3.9 x 2.2 x 2.2 m and wings of 4.6 m;
+    // the real bus is a third of that across and the real wings reach 21 m tip to tip, further
+    // than the antenna is long. The cross the build draws is right, and so is its sideways look.
+    // The build stays as what is drawn while the file is on its way. Not `generic` any more.
+    // BY NUMBER. The live saved data of 2026-10-12 (data/v1/celestrak-active.cols.json) has
+    // SENTINEL-1A, SENTINEL-1C and SENTINEL-1D. SENTINEL-1B (41456) is NOT in it: its mission ended
+    // in August 2022 and it is in no group the app loads, so its row is dormant; it is the same
+    // design and would wear the same file. ESA's facts page (read 2026-10-14) says Sentinel-1A
+    // "ended in June 2026"; CelesTrak still lists it as active, and the route does not judge that.
+    // `axes: 'app'`, AND THIS IS HOW THEY FLY: a dawn-dusk orbit, so the Sun is square to the
+    // track; the antenna along the track (the app's X), the wings along the craft's Y, which "is
+    // aligned with the Sun direction" (eoPortal). THE ROLL IS IN THE FILE: 29.45 degrees about X,
+    // the antenna's "mechanical ... off-nadir angle" (cited as 30.25 to 28.65 degrees), its face
+    // down and away from the Sun, the cells up and toward it.
+    39634: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1A', catalogue: 'SENTINEL-1A', made: 'dimensions', axes: 'app' },
+    41456: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1B', catalogue: 'SENTINEL-1B', made: 'dimensions', axes: 'app' },
+    62261: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1C', catalogue: 'SENTINEL-1C', made: 'dimensions', axes: 'app' },
+    66315: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1D', catalogue: 'SENTINEL-1D', made: 'dimensions', axes: 'app' },
     // RADARSAT-1 has NASA's own model since 2026-10-08 (public #430): its real bus, wings and 15 m
     // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
     // the element groups the app loads (registry/models.yaml says so on its row).
@@ -442,8 +486,30 @@ export const REAL_MODELS = {
     // the antenna looks to one side of its track; the app's one attitude cannot say a roll.
     43641: { build: 'radar', file: 'saocom.glb', colour: 'satellite', name: 'SAOCOM 1A', catalogue: 'SAOCOM 1A', made: 'dimensions', axes: 'app' },
     46265: { build: 'radar', file: 'saocom.glb', colour: 'satellite', name: 'SAOCOM 1B', catalogue: 'SAOCOM 1B', made: 'dimensions', axes: 'app' },
-    21574: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ERS-1', generic: true },
-    27386: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ENVISAT', generic: true },
+    // ERS-1 AND ENVISAT HAVE A FILE EACH since batch eight (2026-10-14; public #945, #944), built in
+    // code from the numbers on eoPortal's pages (registry/models.yaml rows `ers-1`, `envisat`). The
+    // family comment above said they were "here because the blade is still the thing you would
+    // recognise them by"; neither is a bus with a blade under it and two wings.
+    //   ers-1.glb    a gold payload module (2 x 2 x 3 m) and a silver SPOT platform; the 10 m x 1 m
+    //                radar antenna ACROSS the far end, the wind scatterometer's two 3.6 m antennas
+    //                in a V beyond it; the altimeter's 1.2 m dish on the Earth face; one solar array
+    //                of two panels (11.7 m x 2.4 m) across the end of an arm. ERS-2 is in none
+    //                of the saved data files of 2026-10-12 and has no row.
+    //   envisat.glb  a 10.5 m gold body with its instruments on the Earth face; the 10 m x 1.3 m
+    //                ASAR antenna ACROSS it; the Ka-band dish on a 2 m mast on the side away from
+    //                the Earth; one 14 m x 5 m wing beyond the service module, 26 m end to tip.
+    // The `radar` build stays as what is drawn while a file is on its way. Not `generic` any more.
+    // BOTH ARE DEAD, and the card must not let the drawing say otherwise. ERS-1's mission ended on
+    // 10 March 2000; contact with Envisat was lost on 8 April 2012 (eoPortal, both read
+    // 2026-10-14). Each file is the craft as it flew while it worked, whole and steady, and nobody
+    // steers either now, so `was:` adds that as a sentence of its own after "drawn as"
+    // (COPY.drawing.objectWas, as Hitomi's does). Envisat's place in the lists and its "dead since
+    // 2012" are data/layers.js's and are not touched.
+    // `axes: 'app'`: the instruments to the Earth, the body and its one array along X, the radar
+    // antenna along Y. AS THEY FLEW the body lay across the track and the array turned about its
+    // arm once an orbit; the app keeps X square to the Sun and does not turn the array.
+    21574: { build: 'radar', file: 'ers-1.glb', colour: 'satellite', name: 'ERS-1', catalogue: 'ERS-1', made: 'dimensions', was: 'ers1', axes: 'app' },
+    27386: { build: 'radar', file: 'envisat.glb', colour: 'satellite', name: 'Envisat', catalogue: 'ENVISAT', made: 'dimensions', was: 'envisat', axes: 'app' },
 
     // ---------------------------------------------------------------------------------------
     // SEVEN MORE RADAR IMAGERS, BY ID, and they are split between the two shapes -- which is the
@@ -752,6 +818,13 @@ export const REAL_MODELS = {
     umbra: { build: 'radar-mesh', file: 'umbra.glb', colour: 'satellite', name: 'an Umbra radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     'qps-sar': { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
     iceye: { build: 'radar', file: 'iceye.glb', colour: 'satellite', name: 'an ICEYE radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
+    // SENTINEL-3C BY NAME (batch eight, 2026-10-14; public #950): the third of the series, launched
+    // 15 September 2026, is in the live saved data of 2026-10-12 as `SENTINEL-3C` under catalogue
+    // number 100690, which data/parsers.js reads as a placeholder (90 000 and up). Its sisters are
+    // routed by number above; this key takes the same file for the same design. Klass-gated, and a
+    // whole word: `SENTINEL-3C DEB` (debris) and `SENTINEL-3A` do not match it. Not `generic`: the
+    // file is this craft. Once its number is known to be its own, add it above and leave this key.
+    'sentinel-3c': { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3C', klass: ['satellite'], made: 'dimensions', axes: 'app' },
     // STRIX HAS A FILE OF ITS OWN since batch seven (2026-10-13; public #984): strix.glb, built in code
     // from Synspective's numbers as eoPortal tabulates them (registry/models.yaml row `strix`): a 5 m
     // by 0.8 m antenna of seven panels with a 0.8 x 1.0 x 0.8 m bus behind the middle one, and solar

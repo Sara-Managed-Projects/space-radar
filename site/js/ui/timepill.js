@@ -139,6 +139,7 @@ export function createTimePill(ctx, host) {
   const T = COPY.timePill;
   const root = el('div', 'sr-time sr-float');
   root.id = 'sr-time';
+  root.dataset.tour = 'time'; // the tour's hook (registry/onboarding.yaml)
   // A named region: the pill is page content outside the sidebar and the map, and content outside
   // every landmark is skipped by a reader's landmark keys (axe `region`, measured 2026-10-08).
   root.setAttribute('role', 'region');

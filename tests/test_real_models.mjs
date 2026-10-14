@@ -280,6 +280,34 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = nav(name, year, klass, id);
     check(!got || !seventh.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch seven's files: ${JSON.stringify(got)}`);
   }
+  // BATCH EIGHT (public #944, #945, #948, #949, #950): Envisat, ERS-1, Sentinel-1, -2 and -3A/B by number; Sentinel-3C by name.
+  for (const [norad, cat, name, file, build, was] of [[27386, 'ENVISAT', 'Envisat', 'envisat.glb', 'radar', 'envisat'], [21574, 'ERS-1', 'ERS-1', 'ers-1.glb', 'radar', 'ers1'],
+    [39634, 'SENTINEL-1A', 'Sentinel-1A', 'sentinel-1.glb', 'radar'], [41456, 'SENTINEL-1B', 'Sentinel-1B', 'sentinel-1.glb', 'radar'], [62261, 'SENTINEL-1C', 'Sentinel-1C', 'sentinel-1.glb', 'radar'], [66315, 'SENTINEL-1D', 'Sentinel-1D', 'sentinel-1.glb', 'radar'],
+    [40697, 'SENTINEL-2A', 'Sentinel-2A', 'sentinel-2.glb'], [42063, 'SENTINEL-2B', 'Sentinel-2B', 'sentinel-2.glb'], [60989, 'SENTINEL-2C', 'Sentinel-2C', 'sentinel-2.glb'],
+    [41335, 'SENTINEL-3A', 'Sentinel-3A', 'sentinel-3.glb'], [43437, 'SENTINEL-3B', 'Sentinel-3B', 'sentinel-3.glb']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app' && got.was === was, `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  {
+    // Sentinel-3C: the live saved data has it under 100690, which data/parsers.js reads as a placeholder, so the NAME carries it.
+    const got = nav('SENTINEL-3C', 2026, 'satellite', 100690);
+    check(got && got.file === 'sentinel-3.glb' && got.name === 'Sentinel-3C' && !got.generic && !got.build && got.made === 'dimensions' && got.axes === 'app', `SENTINEL-3C wears sentinel-3.glb by name: ${JSON.stringify(got)}`);
+    check(!Object.prototype.hasOwnProperty.call(REAL_MODELS.norad, 100690), 'no route is keyed on 100690: Sentinel-3C is routed by name');
+    // The two dead craft say so on the card, in a sentence of their own after "drawn as".
+    for (const key of ['envisat', 'ers1']) {
+      const was = COPY.drawing.objectWas && COPY.drawing.objectWas[key];
+      check(typeof was === 'string' && /shown steady/.test(was) && /nobody steers it/.test(was), `COPY.drawing.objectWas.${key} says the drawing is steady and the craft is not steered: ${JSON.stringify(was)}`);
+    }
+    check(/dead since 2012/.test(COPY.drawing.objectWas.envisat), 'Envisat is "dead since 2012" in the drawing line, the words data/layers.js already uses for it');
+  }
+  // None of the five files reaches another craft: the other Sentinels, debris, a rocket body, a name that only contains the word.
+  const eighth = ['envisat.glb', 'ers-1.glb', 'sentinel-1.glb', 'sentinel-2.glb', 'sentinel-3.glb'];
+  for (const [name, year, klass, id] of [['SENTINEL-5P', 2017, 'satellite', 42969], ['SENTINEL-6A', 2020, 'satellite', 46984], ['SENTINEL-6B', 2025, 'satellite', 66514], ['SENTINEL-3C DEB', 2026, 'debris'],
+    ['SENTINEL-3C R/B', 2026, 'rocket-body'], ['SENTINEL-3CX', 2030, 'satellite'], ['SENTINEL-3D', 2030, 'satellite'], ['SENTINEL-2D', 2030, 'satellite'], ['SENTINEL-1 DEB', 2014, 'debris'], ['ENVISAT DEB', 2002, 'debris'],
+    ['ERS-1 DEB', 1991, 'debris'], ['ERS-2', 1995, 'satellite', 23560], ['ERS-17', 1965, 'satellite'], ['ARIANE 40 R/B', 1991, 'rocket-body'], ['METOP-B', 2012, 'satellite', 38771], ['PAZ', 2018, 'satellite'], ['RADARSAT-2', 2007, 'satellite', 32382]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !eighth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch eight's files: ${JSON.stringify(got)}`);
+  }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');

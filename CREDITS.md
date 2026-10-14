@@ -36,6 +36,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of the first Starlink generation, Umbra and ICEYE | built by us in code from published dimensions | ours; one render compared with is CC BY 4.0 | [3b-7](#3b-7-three-commercial-craft-built-from-dimensions--the-first-starlink-generation-umbra-iceye-2026-10-13) |
 | The shapes of GPS Block IIR, IIF and III, Galileo, Michibiki, NavIC and SAOCOM | built by us in code from published dimensions | public domain, GODL-India or CC BY 4.0 where a picture was used; ours | [3b-8](#3b-8-seven-more-built-from-dimensions--gps-by-block-galileo-michibiki-navic-saocom-2026-10-13) |
 | The shapes of MetOp, XMM-Newton, TerraSAR-X and TanDEM-X, and StriX | built by us in code from published dimensions | public domain, CC BY 3.0 or CC0 where a picture was used; ours | [3b-9](#3b-9-four-more-built-from-dimensions--metop-xmm-newton-terrasar-x-strix-2026-10-13) |
+| The shapes of Envisat, ERS-1 and Sentinel-1, -2 and -3 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-10](#3b-10-five-european-earth-observation-craft-built-from-dimensions--envisat-ers-1-sentinel-1-sentinel-2-sentinel-3-2026-10-14) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1024,6 +1025,40 @@ pictures; details simplified".
 
 No logo, lettering, flag or insignia is on any of the four. EUMETSAT, ESA, Airbus, NASA, DLR and
 Synspective do not endorse Space Radar, and none of them made or approved these shapes.
+
+## 3b-10. Five European Earth-observation craft built from dimensions — Envisat, ERS-1, Sentinel-1, Sentinel-2, Sentinel-3 (2026-10-14)
+
+The eighth batch. ESA publishes pictures of all five and models of some, and ESA's terms do not
+allow derivative works, so **no ESA picture and no ESA model is in a file, on a sheet or derived from**:
+ESA's and eoPortal's pages were read for words and numbers only. The layouts were read off
+pictures that are free: two visitors' own photographs of full-size models, given to the public
+domain; DLR's photographs of scale models at a show (CC BY 2.0); a Commons contributor's own
+drawing (CC BY 4.0). Six more pictures were looked at only and are in no file and on no sheet
+(five share-alike, one of them ESA's own photograph of Sentinel-2, looked at for the colour of
+its blankets; one with no named author); each row in `registry/models.yaml` names them so. No image-to-3D model was
+used: each file was written in code from numbers, each opened and quoted in its row with what is
+NOT cited named beside it. Their cards say "shape built from published dimensions and pictures;
+details simplified", and the two craft that no longer work say so in a sentence of their own.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `envisat.glb` (60 KB) | Envisat: a gold body 10.5 m long with its instruments on the Earth face, the 10 m by 1.3 m ASAR antenna across it, the Ka-band dish on a 2 m mast, one wing 14 m by 5 m beyond the service module, 26 m from end to tip | eoPortal (<https://www.eoportal.org/satellite-missions/envisat>); a photograph of the full-size model by abrev, "Envisatmod" (<https://commons.wikimedia.org/wiki/File:Envisatmod.jpg>) (read 2026-10-14). The body's width and the instruments' places are ours | numbers are facts; the photograph is in the public domain and is not in the file; NO ESA PICTURE OR MODEL WAS USED |
+| `ers-1.glb` (44 KB) | ERS-1: a gold payload module and a silver platform, the 10 m by 1 m radar antenna across the far end, the wind scatterometer's three antennas, the altimeter's 1.2 m dish, one solar array of two panels (11.7 m by 2.4 m) across the end of an arm | eoPortal (<https://www.eoportal.org/satellite-missions/ers-1>); a photograph of the full-size model by abrev, "Ers1mod" (<https://commons.wikimedia.org/wiki/File:Ers1mod.jpg>); looked at only, a photograph by Pline (<https://commons.wikimedia.org/wiki/File:Maquette-ERS-1.jpg>, CC BY-SA 3.0) and a small picture of the craft in orbit that names no author (<https://commons.wikimedia.org/wiki/File:Ers-1.gif>) (read 2026-10-14). The platform's size and the arm's length are ours | numbers are facts; the photograph drawn from is in the public domain and is not in the file; NO ESA PICTURE WAS USED |
+| `sentinel-1.glb` (43 KB) | Sentinel-1: a gold bus 3.4 m long, the 12.3 m by 0.821 m radar antenna of fourteen tiles on its Earth face, two wings of five panels square to it, 21 m tip to tip | eoPortal (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-1>) and ESA's facts page (<https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-1/Facts_and_figures>), for words and numbers only; DLR's photographs of a scale model (<https://commons.wikimedia.org/wiki/File:Sentinel-1_model_(7628591172).jpg>, <https://commons.wikimedia.org/wiki/File:Sentinel-1_scale_model_(7628218618)_(2).jpg>); looked at only, a photograph by Rama (<https://commons.wikimedia.org/wiki/File:Sentinel_1-IMG_5874-white.jpg>, CC BY-SA 2.0 fr) (read 2026-10-14). The wings' width is ours | numbers are facts; DLR's photographs are CC BY 2.0 and are not in the file; NO ESA PICTURE WAS USED |
+| `sentinel-2.glb` (62 KB) | Sentinel-2: a gold body 3.4 m long, 1.8 m wide and 2.35 m high, the multispectral instrument at one end with its opening on the Earth face, one wing of three panels | ESA's facts page (<https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2/Facts_and_figures>), for words and numbers only, and eoPortal (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-2>); DLR's photograph of models at a show (<https://commons.wikimedia.org/wiki/File:Sentinel-2,_TanDEM-X_und_TerraSAR-X_-_Sentinel-2,_TanDEM-X_and_TerraSAR-X_(14051016907).jpg>); looked at only, a photograph by Rama (<https://commons.wikimedia.org/wiki/File:Sentinel_2-IMG_5873-white_(crop).jpg>, CC BY-SA 2.0 fr) and ESA's photograph of the craft at Kourou (<https://commons.wikimedia.org/wiki/File:Sentinel-2A_satellite_-_CSG_-_Carefully_aligning_the_satellite_to_the_adapter.jpg>, CC BY-SA 2.0), the second for the gold of the blankets and nothing else (read 2026-10-14). How the body divides and what stands where on it are ours | numbers are facts; DLR's photograph is CC BY 2.0 and is not in the file; NO ESA PICTURE IS IN THE FILE OR WAS DERIVED FROM |
+| `sentinel-3.glb` (44 KB) | Sentinel-3: a black body 3.9 by 2.2 by 2.21 m; on its Earth face the altimeter's 1.2 m dish, the radiometer's two curved openings, the colour camera's five lenses, a gold 60 cm reflector; one wing of three panels | eoPortal (<https://www.eoportal.org/satellite-missions/copernicus-sentinel-3>) and ESA's facts page (<https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-3/Facts_and_figures>), for words and numbers only; a drawing by SkywalkerPL, "Sentinel-3 spacecraft model" (<https://commons.wikimedia.org/wiki/File:Sentinel-3_spacecraft_model.svg>); looked at only, a photograph by Neq00 (<https://commons.wikimedia.org/wiki/File:EUMETSAT_%E2%80%93_Model_of_Sentinel-3.jpg>, CC BY-SA 4.0) (read 2026-10-14). The instruments' housings are ours | numbers are facts; the drawing is CC BY 4.0 and is not in the file; NO ESA PICTURE WAS USED |
+| all five | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and a photograph of the full-size model of Envisat by abrev (public domain)`;
+`3D model: built by Space Radar from published dimensions and a photograph of the full-size model of ERS by abrev (public domain)`;
+`3D model: built by Space Radar from published dimensions and DLR's photographs of a model of Sentinel-1 (DLR German Aerospace Center, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and DLR's photograph of a model of Sentinel-2 (DLR German Aerospace Center, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and a drawing of Sentinel-3 by SkywalkerPL (CC BY 4.0)`
+
+No logo, lettering, flag or insignia is on any of the five. ESA, the European Union, EUMETSAT,
+Airbus, Thales Alenia Space and DLR do not endorse Space Radar, and none of them made or approved
+these shapes.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

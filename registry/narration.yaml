@@ -442,3 +442,11 @@ clips:
   - {trip: "back-to-the-moon", stop: "far-side", hash: "9021845cb06b5653", seconds: 18.43, words: 55, lufs: -16.4, opus: 74830, m4a: 95468, vtt: 388, wer: 0.0392, heard: "a5d9ee116cbf5d9d", voice: 0}
   - {trip: "back-to-the-moon", stop: "earth-from-there", hash: "5c7c3c2e2fb358a7", seconds: 14.19, words: 46, lufs: -16.2, opus: 55081, m4a: 73735, vtt: 330, wer: 0.0, heard: "619a76eb8dc6e77c", voice: 0}
   - {trip: "back-to-the-moon", stop: "south-pole", hash: "299f457cf4e26e46", seconds: 19.12, words: 56, lufs: -16.4, opus: 75035, m4a: 98946, vtt: 428, wer: 0.0, heard: "1eab05e551c05707", voice: 0}
+  - {trip: "onboarding", stop: "move", hash: "cd8319e1352dbc30", seconds: 6.72, words: 20, lufs: -16.3, opus: 25882, m4a: 35702, vtt: 183, wer: 0.0, heard: "3022a96bb2ebbc6b", voice: 0}
+  - {trip: "onboarding", stop: "find", hash: "5e6b109dd872fb4a", seconds: 6.15, words: 22, lufs: -16.4, opus: 24002, m4a: 32876, vtt: 153, wer: 0.0, heard: "62ed02af288f2515", voice: 0}
+  - {trip: "onboarding", stop: "card", hash: "86da3981052d2b0a", seconds: 6.06, words: 21, lufs: -16.2, opus: 23890, m4a: 32442, vtt: 152, wer: 0.0, heard: "28f4591d3249e2dd", voice: 0}
+  - {trip: "onboarding", stop: "time", hash: "155528a978e5a830", seconds: 6.75, words: 20, lufs: -16.5, opus: 26092, m4a: 35919, vtt: 184, wer: 0.0, heard: "42dd6acb1be67a04", voice: 0}
+  - {trip: "onboarding", stop: "places", hash: "811db5269dc3f18e", seconds: 6.2, words: 15, lufs: -16.5, opus: 24319, m4a: 33094, vtt: 151, wer: 0.0, heard: "94f115036a64a154", voice: 0}
+  - {trip: "onboarding", stop: "layers", hash: "7cc579c489156e6a", seconds: 6.01, words: 16, lufs: -16.4, opus: 23400, m4a: 32007, vtt: 148, wer: 0.0, heard: "bc44a57d65b0c166", voice: 0}
+  - {trip: "onboarding", stop: "share", hash: "bec362ae05a6c581", seconds: 5.37, words: 13, lufs: -16.3, opus: 20672, m4a: 28747, vtt: 129, wer: 0.0, heard: "9af4972c738153b9", voice: 0}
+  - {trip: "onboarding", stop: "trips", hash: "c64e150fc1c07882", seconds: 5.18, words: 17, lufs: -16.3, opus: 20046, m4a: 27878, vtt: 134, wer: 0.0, heard: "a5c11a76c70dc197", voice: 0}

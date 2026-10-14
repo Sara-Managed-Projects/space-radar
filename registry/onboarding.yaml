@@ -1,0 +1,216 @@
+version: 1
+# THE TOUR (internal spec 0074). Ivan, 2026-10-14: "a tour of all the most important features of
+# our project where the user should click on them and go to next ... it should be well documented
+# somewhere that every new big feature added might need to be highlighted in onboarding, or vice
+# versa if some feature moves or is even completely deleted."
+#
+# THIS FILE IS THAT DOCUMENT, AND TWO TESTS HOLD IT (tests/test_onboarding.mjs and
+# tests/test_onboarding_upkeep.py; CONTRIBUTING.md, "The tour", says the same in six lines):
+#
+#   steps      what the tour shows, in order. A step rings the real control and goes on when the
+#              visitor does the real thing.
+#   features   the map's main features. Each is either taught by a step (`step:`) or left out on
+#              purpose (`not:` with the reason). A new rail button, a new sidebar tab or a new
+#              on-demand module (`ctx.want...` in site/js/main.js) fails the test until a feature
+#              here claims it: that is the moment to decide whether the tour should show it.
+#
+# WHEN YOU ADD, MOVE OR REMOVE A MAIN FEATURE
+#   added     add it to `features` with `step:` (and write the step) or `not:` and one honest line.
+#   moved     keep its `data-tour="..."` attribute on the element, wherever it now is built. A step
+#             names hooks, never classes or positions, so nothing else changes.
+#   removed   delete its feature, its step and its hook. The test names whichever you forgot.
+#   then      python3 scripts/gen_onboarding_js.py   (the mirror the browser reads)
+#             and, if a step's words changed, render its clip again (scripts/narrate.py --only onboarding).
+#
+# A STEP
+#   id        short, lower case. Also the name of its clip (site/audio/narration/onboarding/<id>).
+#   teaches   a feature's id, below.
+#   hooks     `data-tour` names, in order of preference: the first one on screen is ringed (Share
+#             on a desktop, the More menu on a phone). A step with none on screen is passed over.
+#   look      `scene`: no ring and no scrim, an arrow at the middle of the free scene. Left out:
+#             the ring, the arrow and the scrim with its hole.
+#   say       the sentence. Shown, and spoken when the visitor turns the voice on. One line of 60.
+#   ask       what the visitor is asked to do. Shown under it and spoken after it. One line of 60.
+#   awaits    camera (a hand on the camera) | select (a thing chosen, by a press or the search) |
+#             press (a press inside the ring) | type (typing inside the ring).
+#   then      next (go on by itself a beat after the action) | wait (take the ring away and wait
+#             for Next: the action opened something worth a look).
+#   prepare   what to make ready first, in order: home (the sidebar's home), card (select the
+#             station if nothing is selected), sheet (raise a phone's sheet to half), peek (on a
+#             phone only: put the card down and lower the sheet, because the time pill is hidden
+#             behind a card and under a full sheet; a desktop keeps its card).
+#
+# The words follow docs' copy rules: calm, plain, no question, no exclamation mark, nothing that
+# sells. They are read aloud by the trips' voice, so no digit a voice would trip on.
+voice_trip: onboarding
+
+steps:
+  - id: move
+    teaches: scene
+    hooks: [scene]
+    look: scene
+    say: "This is everything in space, where it is right now."
+    ask: "Drag to turn it. Scroll or pinch to come closer."
+    awaits: camera
+    then: next
+
+  - id: find
+    teaches: search
+    hooks: [search]
+    say: "Every dot is a real thing, and each has a name."
+    ask: "Press a dot, or type a name here and choose it."
+    awaits: select
+    then: next
+    prepare: [home]
+
+  - id: card
+    teaches: card
+    hooks: [card-actions, card]
+    say: "Its card says what it is and where it is now."
+    # "ride along" on its own was heard as "right along" (scripts/listen_check.py, 2026-10-14).
+    ask: "Try an action: follow it, or ride along with it."
+    awaits: press
+    then: next
+    prepare: [card, sheet]
+
+  - id: time
+    teaches: time
+    hooks: [time]
+    say: "The clock is live, and the timeline goes to any other day."
+    ask: "Drag the timeline. Live comes back to now."
+    awaits: press
+    then: wait
+    prepare: [peek]
+
+  - id: places
+    teaches: views
+    hooks: [tabs]
+    say: "Four views: near Earth, the planets, the stars, tonight."
+    ask: "Open one: Planets, Stars or Tonight."
+    awaits: press
+    then: next
+    prepare: [home, sheet]
+
+  - id: layers
+    teaches: layers
+    hooks: [layers]
+    say: "What to show holds every layer: satellites, weather, stars."
+    ask: "Open it and switch a layer on."
+    awaits: press
+    then: wait
+
+  - id: share
+    teaches: share
+    hooks: [share, more]
+    say: "Share sends this exact view: a link, a postcard, a picture."
+    ask: "Open Share."
+    awaits: press
+    then: wait
+
+  - id: trips
+    teaches: trips
+    hooks: [trips]
+    say: "A guided trip is one story, told in a few minutes."
+    ask: "Pick one to end the tour."
+    awaits: press
+    then: next
+    prepare: [home, sheet]
+
+# THE MAIN FEATURES. `surfaces` is where a feature shows in the source, in three kinds the upkeep
+# test can find by itself: `rail:<name>` (a button `sr-rail__btn--<name>`), `tab:<id>` (ui/explore.js
+# TABS), `want:<name>` (an on-demand module, `ctx.<name> =` in site/js/main.js). Every one of those
+# in the source must be claimed by exactly one feature here. `files` must exist.
+features:
+  - id: scene
+    name: The scene, turned and zoomed by hand
+    files: [site/js/scene/camera.js]
+    step: move
+  - id: search
+    name: Every dot is a thing with a name; the search
+    files: [site/js/ui/search.js, site/js/ui/explore.js]
+    step: find
+  - id: card
+    name: The object card and its actions (Fly to it, Follow, Ride along)
+    files: [site/js/ui/cards.js, site/js/ui/cardgate.js]
+    step: card
+  - id: time
+    name: The time pill, the timeline and Live
+    files: [site/js/ui/timepill.js, site/js/ui/scrubber.js]
+    step: time
+  - id: views
+    name: The four views (Earth, Planets, Stars, Tonight)
+    files: [site/js/ui/explore.js, site/js/ui/tonight.js]
+    surfaces: ["tab:earth", "tab:planets", "tab:stars", "tab:tonight"]
+    step: places
+  - id: layers
+    name: What to show (the layers, colour by, sound, density)
+    files: [site/js/ui/whattoshow.js]
+    surfaces: ["rail:show", "want:wantNebulae", "want:wantFigures", "want:wantPulsars", "want:wantWeather"]
+    step: layers
+  - id: share
+    name: Share (the link, the postcard, photo mode, the embed)
+    files: [site/js/ui/share.js, site/js/ui/sharesheet.js]
+    surfaces: ["rail:share", "rail:more"]
+    step: share
+  - id: trips
+    name: Guided trips
+    files: [site/js/ui/trip.js, site/js/ui/tripframe.js]
+    step: trips
+  - id: missions
+    name: Mission timelines on a probe's card
+    files: [site/js/ui/missions.js]
+    surfaces: ["want:wantMissions"]
+    step: card
+  - id: tour
+    name: The tour itself
+    files: [site/js/ui/onboarding.js]
+    surfaces: ["rail:tour", "want:wantOnboarding"]
+    not: "It is what is running; the first-visit arrow points at its button."
+  - id: drift
+    name: The drift, a camera that wanders on its own
+    files: [site/js/ui/drift.js]
+    surfaces: ["want:wantDrift"]
+    not: "One row inside Trips' Play on its own, where the last step ends; its bar is being redrawn (Ivan, 2026-10-14, item 4)."
+  - id: reels
+    name: Reels, a screen that plays trips on its own
+    files: [site/js/ui/autopilot.js]
+    surfaces: ["want:wantAutopilot"]
+    not: "For a screen in a corridor, not a first visit; it sits under Trips with the drift."
+  - id: clear-screen
+    name: Hide everything (H) and the HUD screen
+    files: [site/js/ui/cleanview.js]
+    surfaces: ["rail:clean"]
+    not: "The controls hint teaches H, and pressing it would hide the tour's own caption."
+  - id: way-home
+    name: Return to base, the house in the rail
+    files: [site/js/ui/base.js]
+    surfaces: ["rail:base"]
+    not: "It appears only when the view is away from home, with its own name; nothing to point at on a first screen."
+  - id: repository
+    name: The GitHub mark
+    files: [site/js/ui/github.js]
+    surfaces: ["rail:github"]
+    not: "A link out of the app, not a feature of the map."
+  - id: passport
+    name: The passport of places visited
+    files: [site/js/ui/passport.js]
+    surfaces: ["want:wantPassport"]
+    not: "Means something only after several visits."
+  - id: climb
+    name: The continuous flight up the scale ladder
+    files: [site/js/scene/climb.js]
+    surfaces: ["want:wantClimb"]
+    not: "It happens by itself on a long zoom out; step one's scroll leads to it."
+  - id: imagined-worlds
+    name: An imagined world on a plain star stage
+    files: [site/js/scene/exostage.js]
+    surfaces: ["want:wantImagine"]
+    not: "Reached from one kind of card, deep in the Stars view."
+  - id: sky-from-the-ground
+    name: The sky from your place
+    files: [site/js/sky/skyview.js]
+    not: "Inside Tonight and the card's See it; its buttons are being redrawn (Ivan, 2026-10-14, item 2). A step for it is the first one to add."
+  - id: controls-hint
+    name: The keys and gestures hint
+    files: [site/js/ui/keyhint.js]
+    not: "It shows by itself on a first visit and again on the question mark key."

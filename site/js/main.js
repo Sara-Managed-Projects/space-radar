@@ -171,6 +171,8 @@ const TODAY_MS = 4500;
 /** The first visit's three lines and two buttons (ui/welcome.js), the launch chip (ui/launchchip.js)
  * and the way home (ui/base.js): with the timeline, the first things after the first visit. */
 const WELCOME_MS = 4000;
+/** A first visit's arrow at the tour's button (ui/onboarding.js): after the welcome and the keys hint have had their turn. */
+const TOUR_MS = 8000;
 const LAUNCHDAY_MS = 4800;
 /** Two snapshots of the view inside this many ms are one move (a tab sets the stage, then the moment). */
 const ONE_MOVE_MS = 120;
@@ -1088,6 +1090,24 @@ export async function boot({ setStatus } = {}) {
     window.addEventListener('sr:layers-ready', welcomeLater, { once: true });
     window.addEventListener('sr:layers-ready', launchDayLater, { once: true });
   }
+  // THE TOUR (internal spec 0074, ui/onboarding.js): the rail's fourth tool rings the real controls
+  // one at a time. Fetched on the first press, or for a first visit's arrow at that button TOUR_MS
+  // after sr:layers-ready and never over the opening shot; a returning visitor fetches nothing.
+  let tour = null;
+  ctx.onboardingReady = () => tour || (tour = import('./ui/onboarding.js')
+    .then((m) => (ctx.onboarding = m.createOnboarding(ctx, { deepLink: arrivedByLink || location.hash.length > 1, embed: !!embed, automated: navigator.webdriver === true })))
+    .catch((e) => { tour = null; console.warn('the tour did not load', e); return null; }));
+  ctx.wantOnboarding = (from) => ctx.onboardingReady().then((api) => { if (api) api.toggle(from); return api; });
+  const tourLater = () => afterFirstVisit(TOUR_MS, () => {
+    let seen = true;
+    try { seen = !!window.localStorage.getItem('sr:tour'); } catch { seen = true; /* no memory: no arrow */ }
+    if (seen || arrivedByLink || location.hash.length > 1) return;
+    const point = () => ctx.onboardingReady().then((api) => api && api.maybeInvite());
+    if (ctx.opening && ctx.opening.live) window.addEventListener('sr:opening-end', point, { once: true });
+    else point();
+  });
+  if (embed || ambient) { /* no rail to point at */ } else if (window.__srLayersReady) tourLater();
+  else window.addEventListener('sr:layers-ready', tourLater, { once: true });
   // THE SCALE BADGE (public #296, ui/scalebadge.js): "drawn ×N larger" and True size, on the
   // Sun's stage, where every planet is a dot wider than itself. Fetched the first time that stage
   // is entered; the dot's width it is told is scene/orbitrings.js MARKER_PX, the one the dots use.
