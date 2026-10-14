@@ -338,7 +338,10 @@ const GROUPS_B = {
         const fov = (sr.camera ? sr.camera.fov : 45) * Math.PI / 180;
         if (!(r > 0) || !Number.isFinite(r)) break;
         const R = rig.state.distance * Math.sin(r / (innerHeight / 2) * fov / 2);
-        rig.flyTo({ distance: R / Math.sin(px / (innerHeight / 2) * fov / 2), ms: 0 });
+        // With the camera's own side kept: a flight by distance alone puts back the rig's last azimuth,
+        // which after an `offset` flight is another side (the look of 2026-10-15 stood 146° off the line).
+        const H = pos(id), c = sr.camera.position;
+        rig.flyTo({ targetScene: H, offset: unit(sub({ x: c.x, y: c.y, z: c.z }, H)), distance: R / Math.sin(px / (innerHeight / 2) * fov / 2), ms: 0 });
         await sleep(1500);
       }
     };
