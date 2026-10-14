@@ -25,6 +25,7 @@ import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedT
 import { predictPasses } from '../sky/passes.js';
 import '../copy/en.facts.js';
 import { drawnOf, primaryDrawn, distanceEstimate } from '../data/deepsky.js';
+import { lookbackGyr } from '../data/cosmology.js';
 
 // WHAT A GENERATED STAR SYSTEM ADDS TO A CARD (internal #466), handed in by ui/cards.js and not
 // imported here: this module also serves the light embed, which has no star systems, and
@@ -595,7 +596,11 @@ export function rightNowRows(record, m, passInfo) {
     const hi = pickNumber(md, 'distLyHigh');
     if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
     else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
-    if (distLy !== null) {
+    // Past the Local Group the distance is comoving (how far it is now) and the light-travel time is
+    // not the distance read as years: both come from the redshift (data/cosmology.js, spec 0075 task 15).
+    const z = pickNumber(md, 'redshift');
+    if (z !== null) rows.push([R.lightLeft, t(V.billionYearsAgo, { n: fmt.smart(Math.round(lookbackGyr(z) * 10) / 10) })]);
+    else if (distLy !== null) {
       rows.push([R.lightLeft, distLy >= 1e9 ? t(V.billionYearsAgo, { n: fmt.smart(distLy / 1e9) }) : distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
     }
     const note = pick(md, 'distanceNote');

@@ -5,8 +5,13 @@
 #
 # kind        blackhole | pulsar | magnetar | star
 # ra / dec    J2000, as the source prints them (h m s / deg arcmin arcsec); the mirror converts to degrees.
-# dist_ly     light-years. A range is [low, high]. For TON 618 the LIGHT-TRAVEL distance is used and
-#             the row says so: at redshift 2.2 "distance" needs a word beside it.
+# dist_ly     light-years. A range is [low, high]. Past the Local Group a distance needs a word beside
+#             it: a row with a `redshift` gives the COMOVING distance (how far the place is now), as
+#             site/js/data/cosmology.js computes it from that redshift in the map's one cosmology
+#             (Planck 2018), never redshift times a constant; tests/test_cosmology.mjs holds the two
+#             equal, and the card's "light left" row is the light-travel time from the same
+#             redshift, not the distance read as years (internal spec 0075 task 15).
+# redshift    the measured redshift, where the distance comes from one.
 # mass_msun   solar masses, where the object has one worth saying. period_s for a pulsar.
 # vmag        visual magnitude, where the source prints one; a `kind: star` row must have it, because
 #             the card decides from it whether a person can see the thing (Betelgeuse can be).
@@ -95,8 +100,9 @@ exotics:
     kind: blackhole
     ra: 12h 28m 24.9s
     dec: +31° 28′ 38″
-    dist_ly: 10800000000
-    distance_note: "light-travel distance; redshift 2.219, so its light left 10.8 billion years ago and the object is farther now"
+    redshift: 2.219
+    dist_ly: 18300000000
+    distance_note: "how far it is now (comoving distance), from its redshift of 2.219 in the Planck 2018 cosmology. Its light-travel time is 10.8 billion years: we see it as it was when the universe was 3 billion years old, not as it is"
     mass_msun: 40700000000
     why: "One of the heaviest black holes known, forty billion Suns, so far away that its light left before the Earth existed."
     source: "https://en.wikipedia.org/wiki/TON_618 (infobox; 2019 mass estimate, read 2026-09-08)"

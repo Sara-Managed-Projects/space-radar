@@ -805,7 +805,7 @@ export const TOURS = [
 "world": "sun"
 },
 "stage": "local-group",
-"distance_km": 1500000000000000000000000,
+"distance_km": 470000000000000000000000,
 "drift": "none",
 "chapter": "The edge",
 "climb": true,

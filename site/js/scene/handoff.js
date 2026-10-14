@@ -44,8 +44,12 @@ export const JOINS = [
 /** The stages of the chain, innermost first. */
 export const CHAIN = [JOINS[0].from, ...JOINS.map((j) => j.to)];
 
-/** How far out "the edge" control flies, km: the microwave background's shell is in the picture. */
-export const EDGE_KM = 1.6e24;
+/**
+ * How far out "the edge" control flies, km: 50 billion light-years (internal spec 0075 task 17), just
+ * past the observable universe's edge at about 46 (data/cosmology.js horizonLy), where the wheel stops
+ * too (scene/camera.js EDGE_LY). It was 1.6e24 km, 169 billion light-years, until 2026-10-14.
+ */
+export const EDGE_KM = 5e10 * 9460730472580.8;
 
 const finite3 = (v) => v && Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z);
 

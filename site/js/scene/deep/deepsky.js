@@ -47,7 +47,7 @@ import { glowFor as dsoGlowFor } from '../dsoglow.js';
 import { radiusPx as projRadius, levelFor, classOf, THRESHOLDS, createFader } from './lodsize.js';
 import { createGasMesh, holderSteps, marchSteps, columnJs, peak2d, noiseTexture, disposeNoise, KINDS } from './gasmat.js';
 import * as gas from './gasmat.js';
-import { HEROES as LIST } from './heroes.js';
+import { HEROES as LIST, DEEP_LAYERS } from './heroes.js';
 import { nameRule as rule, parentIdOf, drawnOf as drawnClasses, discFrame, enterShare, parentApexDistance, parentPath, NAME_PARENT_PX } from '../../data/deepsky.js';
 
 const SUN_INERTIAL = 'sun-inertial';
@@ -94,6 +94,15 @@ export function createDeepSky(THREE, env = {}) {
     pending.add(p);
   }
   const heroOfRecord = (id) => { for (const h of heroes.values()) if (h.def.record === id) return h; return null; };
+  // Deep layers that are not one object (heroes.js DEEP_LAYERS: the local volume, stage e): fetched the
+  // first time their stage is entered, framed on it, hidden elsewhere.
+  const layers = new Map((env.layers || DEEP_LAYERS).map((def) => [def.id, { def, layer: null, loading: null }]));
+  function wantLayer(l) {
+    if (l.layer || l.loading) return;
+    l.loading = Promise.resolve().then(() => l.def.build()).then((mod) => { l.layer = mod.createLayer(THREE, {}); group.add(l.layer.group); })
+      .catch((e) => console.warn('deep: layer', l.def.id, 'did not load', e)).finally(() => { pending.delete(l.loading); l.loading = null; });
+    pending.add(l.loading);
+  }
 
   // ---------------------------------------------------------------------------- placing a record
   function centreOf(record, out) {
@@ -322,6 +331,11 @@ export function createDeepSky(THREE, env = {}) {
       }
     }
     lastCalls += drawnHeroes;
+    for (const l of layers.values()) {
+      const on = l.def.stages.includes(stage.worldId);
+      if (on) wantLayer(l);
+      if (l.layer) { l.layer.frame({ camera, renderer: info.renderer, stage, gain, visible: on }); lastCalls += l.layer.stats().calls; }
+    }
     lastCpuMs = typeof performance !== 'undefined' ? performance.now() - t0 : 0;
   }
 
@@ -344,6 +358,7 @@ export function createDeepSky(THREE, env = {}) {
   function ready() {
     if (pending.size) return false;
     for (const h of heroes.values()) if (h.hero && h.level >= 2 && !h.hero.ready()) return false;
+    for (const l of layers.values()) if (l.layer && !l.layer.ready()) return false;
     return !(env.picturesBusy && env.picturesBusy());
   }
 
@@ -369,6 +384,7 @@ export function createDeepSky(THREE, env = {}) {
         cpuMs: Math.round(lastCpuMs * 1000) / 1000,
         holders: [...holders.values()].map((h) => ({ id: h.id, share: Math.round(h.share * 100) / 100, rPx: Math.round(px.get(h.id) || 0), march: h.march, steps: h.steps, kind: h.glow.kind })),
         heroes: [...heroes.values()].map((h) => ({ ...(h.hero ? h.hero.stats() : {}), id: h.def.id, stage: h.def.stage, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level, steps: h.steps || 0 })),
+        layers: [...layers.values()].map((l) => (l.layer ? l.layer.stats() : { id: l.def.id, loaded: false })),
         pending: pending.size,
       };
     },
@@ -383,6 +399,7 @@ export function createDeepSky(THREE, env = {}) {
       for (const h of holders.values()) h.v.dispose();
       holders.clear();
       for (const h of heroes.values()) dropHero(h);
+      for (const l of layers.values()) if (l.layer) { l.layer.dispose(); l.layer = null; }
       disposeNoise();
       if (group.parent) group.parent.remove(group);
     },
