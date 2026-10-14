@@ -75,7 +75,7 @@ layers:
     head_au: 200
     tail_au: 1000
     min_px: 2.2
-    drawn: "a seeded sample (model): the count, the radii and the sizes are measured, each knot's place is not. Under 2.2 px a knot is drawn 2.2 px wide and its darkness EXAGGERATED (it falls as 1.4 over the square root of the enlargement, not as one over its area), so that the dark heads can be seen at mid distance"
+    drawn: "a seeded sample (model): the count, the radii and the sizes are measured, each knot's place is not. Under 2.2 px a knot is drawn 2.2 px wide and its darkness EXAGGERATED (it falls as one over the square root of the enlargement, not as one over its area), so that the dark heads can be seen at mid distance"
     source: "Meixner et al. 2005, AJ 130, 1784 (about 23 000 by NICMOS); Matsuura et al. 2009, ApJ 700, 1067 (2.2′ to 6.4′ from the star); STScI release 1996-13, O'Dell & Handron (heads at least twice the Solar System, tails about 1 000 au, pointing away from the star; the brightest on the inner edge of the ring)"
 colours:
   mode: true

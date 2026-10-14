@@ -109,7 +109,7 @@ const g = H.geometryOf();
   check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /float discShare\( vec2 xy \)/.test(f) && /vec3 lightAt\( vec2 xy \)/.test(f), 'the fragment has the same spans, share and light');
   check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/sampler3D/.test(f), 'a hash of the pixel for the offset, and no noise volume at all');
   check(/if \( uStreak <= 0\.0 \) return 1\.0;/.test(f), 'no streaks when they are off (Measured)');
-  check(/vAlpha = aKnot\.z \* min\( 1\.0, 1\.4 \/ sqrt\( grow \) \);/.test(H.SHADERS.knotVertex), 'a knot drawn bigger keeps exaggerated darkness, and the registry says so');
+  check(/vAlpha = aKnot\.z \* min\( 1\.0, 1\.0 \/ sqrt\( grow \) \);/.test(H.SHADERS.knotVertex), 'a knot drawn bigger keeps exaggerated darkness, and the registry says so');
   for (const [k, v] of Object.entries(H.SHADERS)) {
     const bad = [...v.matchAll(/smoothstep\(\s*([-0-9.]+)\s*,\s*([-0-9.]+)\s*,/g)].filter((m) => Number(m[1]) >= Number(m[2]));
     check(!bad.length, `${k}: smoothstep's edges in order (GLSL leaves edge0 >= edge1 undefined): ${bad.map((m) => m[0]).join(' ')}`);

@@ -73,7 +73,7 @@ export const SHAPE = {
   discOut: 1.25,            // the inner disc's box, in its radii
   discIn: 0.92, discEdge: 1.12, // a sky point's light belongs to the disc inside this (its outline as seen from here)
   ringFade: 1.25, ringOut: 1.5, // the outer ring's light fades out between these, in its radii (the faint haze beyond is the photograph's alone)
-  kappa: 1.3,               // self-absorption: optical depth per unit of the light's luminance, face on
+  kappa: 2.5,               // self-absorption: optical depth per unit of the light's luminance; edge on a ring saturates at about 1/kappa of its colour, not white
   knee: 0.8,                // one soft knee over the brightest channel, hue kept
   rimQ: 1.04, rimW: 0.12,   // the rim's dust (the knots' molecular gas), in disc radii
   sigma: 0.5,               // its extinction
@@ -246,8 +246,11 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0]) {
       const rho = Math.exp(-(u ** 4)) / N * sh;
       const tau = S.kappa * lum * sh;
       const comp = tau > 1e-4 ? tau / (1 - Math.exp(-tau)) : 1;
-      for (let c = 0; c < 3; c++) C[c] += T * lc[c] * rho * comp * dt;
-      T *= Math.exp(-S.kappa * lum * rho * dt);
+      // each step integrated exactly for a constant density across it (no over-shoot where it is dense)
+      const ab = S.kappa * lum * rho * dt;
+      const w = ab > 1e-5 ? (1 - Math.exp(-ab)) / (S.kappa * lum) : rho * dt;
+      for (let c = 0; c < 3; c++) C[c] += T * lc[c] * comp * w;
+      T *= Math.exp(-ab);
       if (a === g.a1) { const rq = (Math.hypot(ip[0], ip[1], ip[2]) / g.R1 - S.rimQ) / S.rimW; dust += Math.exp(-(u ** 4)) * Math.exp(-rq * rq) * dt; }
     }
     return { C, T };
@@ -326,7 +329,7 @@ export function knotsOf(g, n, seed = 7293) {
       if (r >= K.from && r <= K.to) break;
     }
     pos.set(p, 3 * i);
-    knot.set([K.head * (0.6 + 0.8 * rand()), K.tail * (0.5 + rand()), 0.5 + 0.3 * rand(), rand()], 4 * i);
+    knot.set([K.head * (0.6 + 0.8 * rand()), K.tail * (0.4 + 0.5 * rand()), 0.4 + 0.25 * rand(), rand()], 4 * i);
   }
   return { pos, knot };
 }
@@ -481,8 +484,11 @@ void main() {
       float rho = g / uDisc.z * sh;
       float tau = ${f3(SHAPE.kappa)} * lum * sh;
       float comp = tau > 1e-4 ? tau / ( 1.0 - exp( -tau ) ) : 1.0;
-      C1 += T1 * lc * rho * comp * streak( vec2( dot( ip, uD1 ), dot( ip, uD2 ) ), r ) * dt;
-      T1 *= exp( -${f3(SHAPE.kappa)} * lum * rho * dt );
+      // each step integrated exactly for a constant density across it
+      float ab = ${f3(SHAPE.kappa)} * lum * rho * dt;
+      float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rho * dt;
+      C1 += T1 * lc * comp * w * streak( vec2( dot( ip, uD1 ), dot( ip, uD2 ) ), r );
+      T1 *= exp( -ab );
       float rq = ( r / uDisc.x - ${f3(SHAPE.rimQ)} ) / ${f3(SHAPE.rimW)};
       dust += g * exp( -rq * rq ) * dt;
     }
@@ -507,8 +513,10 @@ void main() {
       float rho = exp( -u * u * u * u ) / uRing.z * sh;
       float tau = ${f3(SHAPE.kappa)} * lum * sh;
       float comp = tau > 1e-4 ? tau / ( 1.0 - exp( -tau ) ) : 1.0;
-      C2 += T2 * lc * rho * comp * streak( vec2( dot( ip, uE1 ), dot( ip, uE2 ) ), r ) * dt;
-      T2 *= exp( -${f3(SHAPE.kappa)} * lum * rho * dt );
+      float ab = ${f3(SHAPE.kappa)} * lum * rho * dt;
+      float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rho * dt;
+      C2 += T2 * lc * comp * w * streak( vec2( dot( ip, uE1 ), dot( ip, uE2 ) ), r );
+      T2 *= exp( -ab );
     }
   }
   // the two rings add: each absorbs only its own light, so on our line their sum is the photograph
@@ -548,7 +556,7 @@ void main() {
   vTail = tail / head;
   // Drawn bigger than it is, a knot keeps more darkness than its area would: exaggerated so it can be
   // seen at mid distance (helix.yaml says so), and still fading with its true size.
-  vAlpha = aKnot.z * min( 1.0, 1.4 / sqrt( grow ) );
+  vAlpha = aKnot.z * min( 1.0, 1.0 / sqrt( grow ) );
   c.xy += away * along + side * position.y * 1.3 * head;
   gl_Position = projectionMatrix * c;
   #include <logdepthbuf_vertex>
@@ -571,7 +579,7 @@ void main() {
   float headA = 1.0 - smoothstep( 0.55, 1.1, d );
   float u = clamp( vUv.x / max( vTail, 1e-3 ), 0.0, 1.0 );
   float w = 1.0 - 0.7 * u;
-  float tailA = vUv.x > 0.0 ? ( 1.0 - smoothstep( 0.3 * w, w, abs( vUv.y ) ) ) * ( 1.0 - u ) * 0.5 : 0.0;
+  float tailA = vUv.x > 0.0 ? ( 1.0 - smoothstep( 0.3 * w, w, abs( vUv.y ) ) ) * ( 1.0 - u ) * 0.25 : 0.0;
   float cr = ( d - 0.95 ) / 0.25;
   float cusp = exp( -cr * cr ) * ( 1.0 - smoothstep( -0.7, 0.2, vUv.x / max( d, 1e-3 ) ) ); // edges in order (GLSL)
   float a = vAlpha * max( headA, tailA );
