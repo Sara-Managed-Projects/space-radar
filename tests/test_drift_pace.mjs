@@ -18,7 +18,8 @@
 //      them by what the plan itself says and no more.
 //   4. THE LENGTH grows with the logarithm of the distance, never past the ceiling; calm is slower.
 //   5. THE CURVE: starts and ends at rest on the two framings, never steps, never goes back.
-//   6. 240 HOPS NOBODY CHOSE hold the same bounds.
+//   6. 240 HOPS NOBODY CHOSE hold the same bounds, and with the Earth on the stage none goes
+//      through it: the curve bends round the world the rig keeps out of.
 //   7. THE SEAMS: main.js hands the path on; the drift sets its clock by the plan.
 //
 // `node tests/test_drift_pace.mjs --table` prints the before-and-after table a pull request quotes.
@@ -158,16 +159,20 @@ for (const r of rows.filter((x) => x.hop.klass !== 'short')) {
 
 // --- 6. hops nobody chose ------------------------------------------------------------------------
 {
-  // First with no globe on the stage: the curve alone. Then with the Earth where it is: the plan
-  // knows the two places and nothing else, so a camera path that happens to cross the Earth is
-  // pushed round it by the rig's own keep-out (scene/camera.js clearWorld), which is not paced.
-  // That is rare and it is counted here, not hidden: under a hundredth of the hops, and even then
-  // well under what every long hop did before.
+  // First with no globe on the stage: the curve alone. Then with the Earth where it is. Until
+  // 2026-10-15 the plan knew the two places and nothing else, and 3 of these 240 paths went through
+  // the Earth, shoved round it by the rig's keep-out (scene/camera.js clearWorld), unpaced. Now the
+  // rig hands the plan the world it keeps out of and the curve bends round it (planFlight's
+  // bendRound, internal #756): no frame of any of them is pushed, and they hold the same bounds.
   const hops = randomHops(240, seeded(20261014));
   let worst = { loom: 0, turn: 0, sweep: 0, jump: 0, seconds: 0 };
+  let worstReal = { loom: 0, turn: 0, sweep: 0 };
   let planned = 0;
+  let crossedBefore = 0;
   let crossed = 0;
-  let crossedWorst = 0;
+  let bent = 0;
+  let bentMost = 0;
+  let nearest = Infinity;
   for (const hop of hops) {
     let plan = null;
     const path = (h, rig) => ({ ...flightBefore(h, rig), path: (info) => (plan = P.planFlight(info)) });
@@ -177,9 +182,15 @@ for (const r of rows.filter((x) => x.hop.klass !== 'short')) {
     const k = 1 / Math.max(1, plan.over);
     worst = { loom: Math.max(worst.loom, r.loomPerS * k), turn: Math.max(worst.turn, r.turnDegS * k), sweep: Math.max(worst.sweep, r.sweepDegS * k), jump: Math.max(worst.jump, r.jump), seconds: Math.max(worst.seconds, r.seconds) };
     if (!r.landed) problems.push(`${hop.name} never landed`);
+    // The same curve told nothing of the Earth: what the drift flew until this was added.
+    const blind = fly(hop, (h, rig) => ({ ...flightBefore(h, rig), path: (info) => P.planFlight({ ...info, body: null }) }), 30);
+    if (blind.pushed) crossedBefore += 1;
     const real = fly(hop, path, 30);
     if (!real.landed) problems.push(`${hop.name} never landed with the Earth on the stage`);
-    if (real.loomPerS * k > LOOM * SLACK || real.sweepDegS * k > SWEEP * 1.1) { crossed += 1; crossedWorst = Math.max(crossedWorst, real.loomPerS); }
+    if (real.pushed) { crossed += 1; problems.push(`${hop.name} crosses the Earth: ${real.pushed} frames pushed by the keep-out`); }
+    if (plan.bent > 0) { bent += 1; bentMost = Math.max(bentMost, plan.bent); }
+    nearest = Math.min(nearest, real.clearance);
+    worstReal = { loom: Math.max(worstReal.loom, real.loomPerS * k), turn: Math.max(worstReal.turn, real.turnDegS * k), sweep: Math.max(worstReal.sweep, real.sweepDegS * k) };
   }
   check(planned > 200, `most of 240 random hops between low orbit and far worlds are planned (${planned})`);
   check(worst.loom <= LOOM * SLACK, `random hops: the scale changes at most ${worst.loom.toFixed(2)} times e a second`);
@@ -187,10 +198,33 @@ for (const r of rows.filter((x) => x.hop.klass !== 'short')) {
   check(worst.sweep <= SWEEP * 1.1, `random hops: a body in the picture sweeps at most ${worst.sweep.toFixed(1)} degrees a second`);
   check(worst.jump < 0.12, `random hops: the camera never steps (${worst.jump.toFixed(3)} of its distance in a thirtieth of a second)`);
   check(worst.seconds <= P.FLIGHT_MOST_MS / 1000 + 0.1, `random hops: none is past the ceiling (${worst.seconds.toFixed(1)} s)`);
-  check(crossed <= planned / 100 && crossedWorst < 2, `with the Earth on the stage ${crossed} of ${planned} cross it and are pushed round (worst ${crossedWorst.toFixed(2)} times e a second)`);
+  check(crossedBefore > 0, `the test sees a crossing: told nothing of the Earth, ${crossedBefore} paths go through it`);
+  check(crossed === 0, `with the Earth on the stage ${crossed} of ${planned} paths cross it`);
+  check(nearest >= 1, `and the nearest any camera comes is ${nearest.toFixed(3)} of the keep-out's radius`);
+  check(bent > 0 && bentMost < 5 * Math.PI / 180, `the ${bent} that needed it bend round by at most ${(bentMost * 180 / Math.PI).toFixed(1)} degrees`);
+  check(worstReal.loom <= LOOM * SLACK && worstReal.turn <= TURN * SLACK && worstReal.sweep <= SWEEP * 1.1,
+    `with the Earth on the stage the same bounds hold (${worstReal.loom.toFixed(2)} times e, ${worstReal.turn.toFixed(1)} and ${worstReal.sweep.toFixed(1)} degrees a second)`);
+  // A body straight across the path, by hand: the camera comes down past it and does not go through.
+  const across = P.planFlight({ sep: 1000, from: 1, to: 1, fromDir: { x: 0, y: 1, z: 0 }, toDir: { x: 0, y: 1, z: 0 }, along: { x: 1, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 }, body: { at: { x: 480, y: 1400, z: 0 }, radius: 100 } });
+  let inside = 0;
+  for (let i = 0; i <= 2000; i++) {
+    const p = across.at(i / 2000);
+    const q = { x: 1000 * p.pan + p.dir.x * p.distance - 480, y: p.dir.y * p.distance - 1400, z: p.dir.z * p.distance };
+    if (Math.hypot(q.x, q.y, q.z) < 100) inside += 1;
+  }
+  const plain = P.planFlight({ sep: 1000, from: 1, to: 1, fromDir: { x: 0, y: 1, z: 0 }, toDir: { x: 0, y: 1, z: 0 }, along: { x: 1, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 } });
+  let insidePlain = 0;
+  for (let i = 0; i <= 2000; i++) {
+    const p = plain.at(i / 2000);
+    const q = { x: 1000 * p.pan + p.dir.x * p.distance - 480, y: p.dir.y * p.distance - 1400, z: p.dir.z * p.distance };
+    if (Math.hypot(q.x, q.y, q.z) < 100) insidePlain += 1;
+  }
+  check(insidePlain > 0 && inside === 0 && across.bent > 0, `a body set on the path by hand: ${insidePlain} samples inside it without the bend, ${inside} with it (bent ${(across.bent * 180 / Math.PI).toFixed(1)} degrees)`);
+  check(across.at(0).dir.y === 1 || Math.abs(across.at(0).dir.y - 1) < 1e-9, 'and the bend is nothing at the start');
+  check(across.at(1).dir === undefined || Math.abs(across.at(1).dir.y - 1) < 1e-12, 'nor at the end');
   RANDOM.planned = planned;
-  RANDOM.crossed = crossed;
-  RANDOM.crossedWorst = crossedWorst;
+  RANDOM.crossedBefore = crossedBefore;
+  RANDOM.bent = bent;
 }
 
 // --- 7. the seams --------------------------------------------------------------------------------
@@ -209,4 +243,4 @@ if (problems.length) {
   process.exit(1);
 }
 const mars = rows[3];
-console.log(`drift pace ok: short hops as they were; to Mars ${mars.before.seconds.toFixed(1)} s at ${mars.before.loomPerS.toFixed(1)} times e a second before, ${mars.now.seconds.toFixed(1)} s at ${mars.now.loomPerS.toFixed(2)} now; ${rows.length} named hops and ${RANDOM.planned} random ones (${RANDOM.crossed} pushed round the Earth, ${RANDOM.crossedWorst.toFixed(2)} at worst) inside ${LOOM} times e, ${TURN} and ${SWEEP} degrees a second`);
+console.log(`drift pace ok: short hops as they were; to Mars ${mars.before.seconds.toFixed(1)} s at ${mars.before.loomPerS.toFixed(1)} times e a second before, ${mars.now.seconds.toFixed(1)} s at ${mars.now.loomPerS.toFixed(2)} now; ${rows.length} named hops and ${RANDOM.planned} random ones (${RANDOM.crossedBefore} went through the Earth before the bend, none now; ${RANDOM.bent} bend round it) inside ${LOOM} times e, ${TURN} and ${SWEEP} degrees a second`);
