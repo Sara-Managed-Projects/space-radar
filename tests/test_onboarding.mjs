@@ -12,8 +12,9 @@
 //   5. THE GEOMETRY: the caption never over its target and never off the screen, at 1440 x 900 and
 //      on a 360 px phone; the ring goes round the hole and closes like a pen's; the same step is
 //      drawn the same way.
-//   6. THE CONTROLLER on a stub document: a walk through all eight steps by the real actions, a
-//      missing target, the phone's fallback hook, the wait, Escape, a mode, the voice, the arrow.
+//   6. THE CONTROLLER on a stub document: a walk through every step by the real actions, a
+//      missing target, the phone's fallback hook, the wait, Escape, a mode, the voice, the arrow, a
+//      phone's sheet held where the step put it, room for the caption under What to show.
 //   7. THE SEAMS: main.js, the rail, the stylesheet, the boot diet.
 //
 // The feature list (what is in the tour and what is deliberately not) is YAML and is held by
@@ -216,6 +217,35 @@ const numbers = (d) => (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
   check(edge.filter((_, i) => i % 2 === 0).every((x) => x >= 0 && x <= phone.w) && edge.filter((_, i) => i % 2 === 1).every((y) => y >= 0 && y <= phone.h), '360: the ring round the search field is whole, not cut by the screen\'s edge');
   const pfree = P.placeCaption(null, phone, small, pband);
   check(insideView({ x: pfree.x, y: pfree.y, ...small }, phone), '360: the scene step\'s caption is on the screen');
+  // A wider phone: the caption is 320 px and stands in the middle, wherever its target is (#757).
+  const wide = { w: 390, h: 844 };
+  const card = { w: 320, h: 176 };
+  for (const [name, rect] of Object.entries(hand)) {
+    const at = P.placeCaption(P.holeFor(rect, wide), wide, card, P.freeBand(wide, {}));
+    eq(at.x, 35, `390: the caption for ${name} is in the middle`);
+  }
+  eq(P.placeCaption(null, wide, card, P.freeBand(wide, {})).x, 35, '390: and so is a caption with no target');
+  // What to show on a phone drops from the top bar. Shortened by the caption's room while the step
+  // waits (ui/onboarding.js room()), the free scene is under it, and the caption is there.
+  const show = { x: 16, y: 104, w: 328, h: 380 };
+  const under = P.freeBand(phone, { top: { x: 16, y: 12, w: 328, h: 84 }, panels: [show] });
+  eq(under.y, 484, '360: under What to show is free');
+  const waitAt = P.placeCaption(null, phone, small, under);
+  check(!overlaps({ x: waitAt.x, y: waitAt.y, ...small }, show) && insideView({ x: waitAt.x, y: waitAt.y, ...small }, phone), `360: the waiting caption is under What to show, not on its rows (${waitAt.y})`);
+  // A target in a phone's sheet: the caption under it when it fits, so the scene above the sheet is free.
+  const tall = { w: 360, h: 780 };
+  const tabsHole = P.holeFor({ x: 16, y: 455, w: 328, h: 44 }, tall);
+  const inSheet = P.placeCaption(tabsHole, tall, small, P.freeBand(tall, { side: { x: 0, y: 405, w: 360, h: 375 } }), { sheet: true });
+  check(inSheet.side === 'below' && !overlaps({ x: inSheet.x, y: inSheet.y, ...small }, tabsHole) && insideView({ x: inSheet.x, y: inSheet.y, ...small }, tall), `360: the four views' caption is under the tabs, over the sheet's lists (${inSheet.side} at ${inSheet.y})`);
+  // On a desktop, a small target in the sidebar: the caption clears the whole column.
+  const col = P.placeCaption(P.holeFor({ x: 40, y: 790, w: 104, h: 44 }, view), view, size, band, { clearRight: 380 });
+  check(col.side === 'right' && col.x >= 380 + 16, `1440: the caption beside a small sidebar control clears the sidebar (${col.side} at ${col.x})`);
+  check(col.y + size.h <= band.y + band.h, `1440: and stays over the time pill, not on it (bottom ${col.y + size.h}, pill at ${band.y + band.h})`);
+  const deep = P.placeCaption(P.holeFor({ x: 16, y: 579, w: 328, h: 56 }, tall), tall, small, null, { sheet: true });
+  eq(deep.side, 'above', '360: and above a target too low in the sheet for it to fit under');
+  const shareSheet = { x: 0, y: 380, w: 360, h: 360 };
+  const over = P.freeBand(phone, { top: { x: 16, y: 12, w: 328, h: 84 }, panels: [shareSheet] });
+  eq([over.y, over.y + over.h], [96, 380], '360: over a sheet from the bottom (Share) is free');
 
   // The ink.
   const hole = P.holeFor(desk.search[0], view);
@@ -383,6 +413,7 @@ function page(w) {
     tour: w.piece('tour', { x: 1372, y: 164, w: 48, h: 48 }, { tag: 'button', inside: null }),
   };
   parts.actions = w.piece('card-actions', { x: 40, y: 360, w: 320, h: 56 }, { parent: parts.card });
+  parts.drift = w.piece('drift', { x: 40, y: 820, w: 320, h: 44 }, { tag: 'button', parent: parts.trips, inside: null });
   parts.card.hidden = true;
   return parts;
 }
@@ -474,6 +505,17 @@ const press = (w, el) => w.doc.fire('pointerdown', { target: el });
   eq(part(w, 'sr-tour__hole').style.top, '62px', 'Share is ringed on a desktop');
 
   press(w, parts.share);
+  part(w, 'sr-tour__next').fire('click');
+  await w.pass(0);
+  eq(tour.step().id, 'drift', 'then Play on its own, where the drift is');
+  eq(part(w, 'sr-tour__hole').style.top, '814px', 'its button is ringed');
+  const list = w.piece(null, { x: 40, y: 870, w: 320, h: 200 }, { parent: parts.trips, id: 'sr-reels-earth', inside: null });
+  parts.drift.setAttribute('aria-controls', 'sr-reels-earth');
+  press(w, parts.drift);
+  eq(tour.state().phase, 'done', 'the list opened: the step waits, the drift has not started');
+  await w.pass(600);
+  eq(list.scrolled, { block: 'nearest' }, 'and the list it opened is brought into the sidebar\'s view');
+  check(tour.isOn() && part(w, 'sr-tour__hole').hidden === true, 'and the ring is gone so the list is not dimmed');
   part(w, 'sr-tour__next').fire('click');
   await w.pass(0);
   eq(tour.step().id, 'trips', 'the last step is the trips');
@@ -569,6 +611,44 @@ const press = (w, el) => w.doc.fire('pointerdown', { target: el });
     await t5.start();
     await w5.pass(0);
     check(!w5.calls.some((c) => c[0] === 'deselect'), 'on a desktop the card stays for the clock\'s step');
+  }
+  // A phone's sheet rises to what takes focus (ui/sheet.js); the tour's own focus must not raise
+  // it over the scene (#757: the tabs' and the trips' steps).
+  {
+    const w6 = world({ width: 360, height: 780 });
+    globalThis.document = w6.doc;
+    const p6 = page(w6);
+    let detent = 'peek';
+    w6.ctx.shell.sheet = () => ({ detent: () => detent, set: (d) => { detent = d; w6.calls.push(['sheet', d]); } });
+    p6.tabs.kid.focus = () => { w6.doc.activeElement = p6.tabs.kid; detent = 'full'; };
+    const t6 = make(w6, { steps: STEPS.filter((s) => s.id === 'places') });
+    await t6.start();
+    await w6.pass(0);
+    check(w6.doc.activeElement === p6.tabs.kid, 'on a phone focus still goes to the tabs');
+    eq(detent, 'half', 'and the sheet stays at half, as the step put it: the scene is not covered');
+  }
+  // What to show on a phone, open and waiting: it is given room for the caption under it.
+  {
+    const w7 = world({ width: 360, height: 780 });
+    globalThis.document = w7.doc;
+    const p7 = page(w7);
+    p7.layers.rect = { x: 248, y: 12, w: 46, h: 46 };
+    const props = new Map();
+    w7.doc.documentElement.style.setProperty = (k, v) => props.set(k, v);
+    w7.doc.documentElement.style.removeProperty = (k) => props.delete(k);
+    const t7 = make(w7, { steps: STEPS.filter((s) => s.id === 'layers' || s.id === 'share') });
+    await t7.start();
+    await w7.pass(0);
+    eq(t7.step().id, 'layers', 'the layers step on a phone');
+    check(!w7.doc.documentElement.classes.has('sr-tour-room'), 'before the press nothing is shortened');
+    w7.piece(null, { x: 16, y: 104, w: 328, h: 652 }, { id: 'sr-show', inside: null });
+    press(w7, p7.layers);
+    check(w7.doc.documentElement.classes.has('sr-tour-room') && /^\d+px$/.test(props.get('--sr-tour-room') || ''), `waiting with What to show open, it is shortened by the caption's room (${props.get('--sr-tour-room')})`);
+    const capTop = parseInt(part(w7, 'sr-tour__card').style.top, 10);
+    check(capTop + 168 <= 780 - 16 && 780 - 24 - parseInt(props.get('--sr-tour-room'), 10) <= capTop - 8, `and the caption (top ${capTop}) is under where the panel now ends`);
+    part(w7, 'sr-tour__next').fire('click');
+    await w7.pass(0);
+    check(!w7.doc.documentElement.classes.has('sr-tour-room') && !props.has('--sr-tour-room'), 'going on gives What to show its height back');
   }
   for (const mode of MODES) {
     const w2 = world();

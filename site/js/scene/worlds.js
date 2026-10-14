@@ -252,7 +252,7 @@ export function worldRecords() {
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
-      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker) }) } : {}),
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { uv: String(VENUS_UV.gain), ground: String(VENUS_GROUND.exaggeration), steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker) }) } : {}),
     },
   }));
 }
@@ -299,6 +299,40 @@ export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
 // cast no shadow on the globe: a shadow ten times too wide would be a second untruth. Neptune's
 // two broad sheets, Galle and Lassell, have an optical depth of 0.0001 and are left out, and so
 // are the arcs in the Adams ring.
+/**
+ * NEPTUNE'S RING ARCS. The Adams ring is not even: five arcs hold most of its material. Their
+ * spans in Voyager 2's longitudes (the system fixed on 18 August 1989; Smith et al. 1989, Science
+ * 246, 1422; Porco 1991, Science 253, 995): Fraternite 247-257, Egalite 1 261-264, Egalite 2
+ * 265-266, Liberte 276-280, Courage 284.5-285.5 degrees. Their normal optical depth is 0.03 to 0.09
+ * against 0.011 for the ring between them (the same papers), so an arc's depth is `gain` times the
+ * ring's. They go round with the ring, 820.1194 degrees a day (Dumas et al. 1999, Nature 400, 733),
+ * and the planet under them turns 541.1397757 a day (the IAU's, which Astronomy Engine turns the
+ * mesh by), so in the ring's own axes they move at the difference.
+ * WHAT IS NOT KNOWN HERE: where they are round the ring today is not computed (the zero of
+ * Voyager's system is not tied to the mesh's), and they are drawn as Voyager saw them: since
+ * then Liberte has all but gone and Courage has jumped 8 degrees ahead (de Pater et al. 2005,
+ * Icarus 174, 263). ILLUSTRATIVE, and not drawn under the Measured look.
+ */
+export const NEPTUNE_ARCS = {
+  ringKm: 62933,
+  gain: 5.5,
+  degPerDay: 820.1194 - 541.1397757,
+  spans: [[247, 257], [261, 264], [265, 266], [276, 280], [284.5, 285.5]],
+};
+/** The arcs' turn in the ring's own axes, radians, at `tMs`, from their place at J2000 (which is ours). Pure. */
+export function arcTurnRad(tMs) {
+  const days = (tMs - Date.UTC(2000, 0, 1, 12)) / 86400000;
+  const deg = (((NEPTUNE_ARCS.degPerDay * days) % 360) + 360) % 360;
+  return (deg * Math.PI) / 180;
+}
+/** The uniform for the arcs: [centre (rad), half-length (rad), depth gain, 0] per arc, flat. Pure. */
+export function arcUniform(arcs = NEPTUNE_ARCS) {
+  const out = new Float32Array(arcs.spans.length * 4);
+  arcs.spans.forEach(([a, b], i) => out.set([((a + b) / 2) * Math.PI / 180, ((b - a) / 2) * Math.PI / 180, arcs.gain, 0], i * 4));
+  return out;
+}
+export const ARC_SLOTS = NEPTUNE_ARCS.spans.length;
+
 export const URANUS_RINGS = {
   innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x8f9da3,
   bands: [
@@ -313,8 +347,12 @@ export const NEPTUNE_RINGS = {
   bands: [
     [53200, 50, 0.01],   // Le Verrier ("< 100" km wide)
     [57200, 50, 0.005],  // Arago ("< 100" km; the sheet gives no depth: half Le Verrier's, chosen)
-    [62933, 15, 0.05],   // Adams (0.01 to 0.1)
+    // Adams: 0.011 between its arcs (Porco 1991, Science 253, 995). It was 0.05, the middle of
+    // the fact sheet's 0.01 to 0.1, which is the ring and its arcs together; since 2026-10-14 the
+    // arcs are drawn where they are (NEPTUNE_ARCS) at their own depth.
+    [62933, 15, 0.011],
   ],
+  arcs: NEPTUNE_ARCS,
 };
 /** The narrow rings' strip, texels from the inner edge to the outer. */
 export const RING_BANDS_PX = 1024;
@@ -420,7 +458,7 @@ export function marchGrowth(steps) {
 export function terrainUniforms(h, radiusKm, steps, exaggeration = MARS_RELIEF.exaggeration) {
   return {
     terrain: [(exaggeration * (h.maxM - h.minM)) / (radiusKm * 1000), steps, MARS_RELIEF.firstRad, marchGrowth(steps)],
-    march: [h.px, MARS_RELIEF.soft, MARS_RELIEF.bias, MARS_RELIEF.depth],
+    march: [h.px, MARS_RELIEF.soft, MARS_RELIEF.bias, Number.isFinite(h.depth) ? h.depth : MARS_RELIEF.depth],
   };
 }
 /**
@@ -441,6 +479,68 @@ export function castShadow(heightAt, tanSun, steps) {
   const x = Math.min(1, Math.max(0, (horizon - MARS_RELIEF.bias - tanSun) / (2 * MARS_RELIEF.soft)));
   return 1 - MARS_RELIEF.depth * x * x * (3 - 2 * x);
 }
+
+/**
+ * A relief row's heights for the cast shadow: its own `height` map (Mars), or, with `height.self`,
+ * the local-relief map it already wears read as heights (Venus's radar ground, 2026-10-14).
+ * A local-relief map is the height less its broad swells, which is what a low Sun's shadow is
+ * made of: a crater rim stands over its floor, not over the planet's mean. Null without one. Pure.
+ */
+export function heightRowOf(r) {
+  const h = r && r.height;
+  if (!h) return null;
+  return h.self ? { px: r.px, minM: -r.rangeM, maxM: r.rangeM, depth: h.depth } : h;
+}
+
+/**
+ * VENUS'S GROUND, BY RADAR (registry/textures.yaml `venus-surface`, `venus-relief`;
+ * scripts/build-venus-ground.py). The radar map is one channel -- a radar echo has no colour --
+ * worn with `tint` (linear light: the build's old orange, 0xd8924c, over its own largest channel, so the
+ * ground is drawn exactly as the orange map drew it, and the card says the colour is added).
+ * Under it, Magellan's altimeter heights as local relief: slopes, and shadows marched as Mercury's,
+ * drawn `exaggeration` times what was measured. At 18.6 km a texel the true slopes of even Maxwell
+ * Montes light nothing a screen can show. A shadow takes `depth` of the direct light, not all of it: at 0.85 and
+ * eight times, the first look (2026-10-14) drew the ground at the terminator as black blots.
+ */
+export const VENUS_GROUND = { tint: [1, 0.419, 0.105], exaggeration: 6, depth: 0.6, rangeM: 3000 };
+/** The relief row worn under the radar face (scene/worlds.js reliefWanted). */
+export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rangeM: VENUS_GROUND.rangeM, steep: VENUS_GROUND.exaggeration, mono: true, height: { self: true, depth: VENUS_GROUND.depth } };
+
+/**
+ * VENUS'S CLOUD BANDS, IN THE FILM LOOK. To an eye Venus is nearly plain; in ultraviolet (Mariner
+ * 10 in 1974, Pioneer Venus, Venus Express's VMC, Akatsuki's UVI at 365 nm) its cloud tops carry
+ * dark and bright bands and streaks with a third or more of contrast, from an absorber nobody has
+ * identified. The map's own streaks (luminance 0.09 rms about 0.55, measured 2026-10-14) are drawn
+ * `gain` times further from its mean colour (`mean`: linear light, weighted by area, measured on the
+ * file the same day), as Saturn's bands are. ILLUSTRATIVE -- it is the map's pattern made stronger,
+ * not an ultraviolet picture -- and not drawn under the Measured look, which shows the map as it is.
+ */
+export const VENUS_UV = { gain: 2, mean: [0.7919, 0.5209, 0.2218] };
+
+/**
+ * URANUS'S POLAR CAP (measured): the map we ship has no cap. Hubble's OPAL map of 23 October 2025
+ * (`uranus-hubble`) is, row by row, brighter and whiter toward the north pole from about 40 N. The
+ * ratio of its zonal mean to its own equator's, divided by the same ratio on our map, per channel,
+ * every 10 degrees from the equator to the north pole (measured on the two files on 2026-10-14,
+ * each row's mean in linear light; Hubble's "equator" is its first rows, 3 to 13 N): the default
+ * face is multiplied by it, so the cap Hubble saw is drawn on the artist's map. South of the
+ * equator nothing is changed: Hubble could not see it.
+ */
+export const URANUS_CAP = [
+  [1, 1, 1], [1, 1, 1], [1.017, 0.973, 0.957], [1.076, 0.944, 0.932], [1.182, 0.912, 0.902],
+  [1.354, 0.927, 0.895], [1.511, 0.985, 0.914], [1.585, 1.031, 0.949], [1.613, 1.039, 0.955], [1.631, 1.045, 0.946],
+];
+
+/**
+ * NEPTUNE'S DARK SPOT. The artist's map carries Voyager 2's Great Dark Spot of 1989 and its bright
+ * companion clouds (measured on the file 2026-10-14: centre u 0.556, v 0.408; the dark oval and the
+ * white clouds at its edge lie inside these half-sizes). It is a real storm and not today's: Hubble
+ * found it gone in 1994. So it is ILLUSTRATIVE, the card says when it was seen, and under the
+ * Measured look it is not drawn: the oval is filled with the same latitude's clouds from a quarter
+ * turn away, read from a coarse mip (a band's colour, not another picture).
+ */
+export const NEPTUNE_SPOT = { u: 0.556, v: 0.408, half_u: 0.062, half_v: 0.046, fillShift: 0.25, fillLod: 4 };
+
 
 export const WORLDS = [
   {
@@ -495,7 +595,11 @@ export const WORLDS = [
     // 0.18 puts the last light about 10 degrees past it (asin 0.18): CHOSEN, to match Akatsuki's and
     // Mariner 10's pictures, not computed. The air shell's own twilight (scene/atmosphere.js) is
     // the glow above it. Not worn with the radar face: bare rock has a terminator (setMap).
-    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
+    // 2026-10-14 (VENUS_GROUND): the radar face is one channel worn in `faceMono`'s colour, with
+    // Magellan's heights under it (`faceRelief`); `groundFaces` are faces of solid ground, which the
+    // cloud deck's wind does not carry (scene/weather/worldweather.js stands still while one is worn).
+    // `uv` (spec 0073, Film only): the cloud bands as ultraviolet pictures show them (VENUS_UV).
+    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_radar.webp' }, faceMono: { surface: VENUS_GROUND.tint }, groundFaces: ['surface'], faceRelief: { surface: VENUS_GROUND_RELIEF }, uv: VENUS_UV },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
@@ -533,12 +637,15 @@ export const WORLDS = [
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.webp', tint: 0x9eced5, faces: { hubble: '1k_uranus_opal_2025.webp' }, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
+    // `cap` (2026-10-14, URANUS_CAP): Hubble's polar cap of 2025 on the artist's map, measured.
+    look: { map: '2k_uranus.webp', tint: 0x9eced5, faces: { hubble: '1k_uranus_opal_2025.webp' }, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS, cap: URANUS_CAP },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.webp', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
+    // `spot` (2026-10-14, NEPTUNE_SPOT): Voyager's dark spot of 1989 on the artist's map, not drawn
+    // under the Measured look. The ring's arcs are NEPTUNE_RINGS.arcs.
+    look: { map: '2k_neptune.webp', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS, spot: NEPTUNE_SPOT },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
@@ -1027,6 +1134,11 @@ uniform vec3  uReliefK;     // slope per unit of difference between two texels e
 uniform sampler2D uHeightMap;
 uniform vec4  uTerrain;       // a full byte's height in radii (exaggerated); the march's steps; its first step, radians; its growth
 uniform vec4  uTerrainMarch;  // the map's width in texels; the shadow edge's softness and the bias, as tangents; the shadow's depth
+// 2026-10-14, spec 0073 (the last four worlds): each 0 / off on every other world.
+uniform vec4  uMono;        // a one-channel face (Venus's radar ground): its colour in linear light; w 1 while it is worn
+uniform float uCapOn;       // Uranus: Hubble's polar cap on the artist's map (URANUS_CAP); 0 on the Hubble face
+uniform vec3  uCap[ 10 ];   // the map's gain per channel, from the equator to the north pole every 10 degrees
+uniform vec4  uSpotOut;     // Neptune under the Measured look: the 1989 spot's oval (u, v, half-sizes), filled; z 0 is none
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -1036,6 +1148,16 @@ varying vec3 vEastW;
 ${ECLIPSE_GLSL}
 const float MU_FLOOR = ${MU_FLOOR};
 ${RING_U_GLSL}
+// Neptune's dark spot taken out (NEPTUNE_SPOT): inside its oval, the same latitude a quarter turn
+// away, read from a coarse mip -- the band's colour, not another picture. Called where the map is
+// read: here, and in the weather's flowing lookup (scene/weather/worldweather.js), with its own place.
+vec3 spotOut( vec3 c, vec2 p ) {
+  if ( uSpotOut.z <= 0.0 ) return c;
+  vec2 d = vec2( fract( p.x - uSpotOut.x + 0.5 ) - 0.5, p.y - uSpotOut.y ) / uSpotOut.zw;
+  float k = 1.0 - smoothstep( 0.75, 1.25, length( d ) );
+  if ( k <= 0.0 ) return c;
+  return mix( c, textureLod( uMap, vec2( p.x + ${NEPTUNE_SPOT.fillShift.toFixed(2)}, p.y ), ${NEPTUNE_SPOT.fillLod.toFixed(1)} ).rgb, k );
+}
 // Oren-Nayar, qualitative form, divided by A: the JS twin is orenNayar() in scene/worlds.js.
 float orenNayar( vec3 n, vec3 l, vec3 v, float sigma ) {
   float nl = dot( n, l );
@@ -1065,6 +1187,17 @@ void main() {
   vec3 n = normalize( vNormalW );
   vec3 viewDir = normalize( cameraPosition - vPosW );
   vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );
+#ifndef WX_ZONAL
+  base = spotOut( base, vUv );
+#endif
+  // A one-channel face: its echo, decoded from sRGB, in the face's own colour (VENUS_GROUND).
+  if ( uMono.w > 0.0 ) base = uMono.rgb * pow( base.r, 2.2 );
+  // Uranus's polar cap (URANUS_CAP): the north of the map taken to Hubble's colours of 2025.
+  if ( uCapOn > 0.0 && vUv.y > 0.5 ) {
+    float cx = ( vUv.y - 0.5 ) * 18.0;
+    int ci = int( min( floor( cx ), 8.0 ) );
+    base = clamp( base * mix( uCap[ ci ], uCap[ ci + 1 ], cx - float( ci ) ), 0.0, 1.0 );
+  }
   // Saturn's bands (look.contrast): what the map says, further from its own mean. 1 leaves it alone.
   if ( uContrast != 1.0 ) base = clamp( uMapMean + ( base - uMapMean ) * uContrast, 0.0, 1.0 );
 
@@ -1209,6 +1342,10 @@ export function worldMaterial(map, tint) {
       uHeightMap: { value: null },
       uTerrain: { value: new THREE.Vector4(0, 0, 0, 1) },
       uTerrainMarch: { value: new THREE.Vector4(1, 1, 0, 0) },
+      uMono: { value: new THREE.Vector4(1, 1, 1, 0) },
+      uCapOn: { value: 0 },
+      uCap: { value: new Float32Array(30).fill(1) },
+      uSpotOut: { value: new THREE.Vector4(0.5, 0.5, 0, 1) },
     },
   });
 }
@@ -1344,6 +1481,11 @@ uniform vec2 uGlobe;          // the globe's equatorial and polar radii (oblateR
 uniform sampler2D uFineMap;   // the fine structure: measured optical depth over its neighbourhood's (RING_FINE)
 uniform float uFine;          // how much of it is in, 0..1; 0 until Saturn is large on screen
 uniform float uGrain;         // how much of the sparkle of unresolved grains is in, 0..1 (RING_GRAIN)
+// Neptune's arcs (NEPTUNE_ARCS): per arc its centre and half-length (rad, the ring's own axes) and
+// its depth over the ring's; and the ring they are in: radius and half-width (planet radii), their
+// turn now (rad), how much of them is drawn (0 = none: every other ring, and the Measured look).
+uniform vec4 uArcs[ ${ARC_SLOTS} ];
+uniform vec4 uArcBand;
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1407,6 +1549,20 @@ void main() {
   // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
   float alpha = clamp( tex.a * uOpacity, 0.0, 0.999 );
   float tau = -log( 1.0 - alpha );
+  if ( uArcBand.w > 0.0 ) {
+    float inBand = 1.0 - smoothstep( uArcBand.y, 1.6 * uArcBand.y, abs( length( vPosL.xy ) - uArcBand.x ) );
+    if ( inBand > 0.0 ) {
+      float phi = atan( vPosL.y, vPosL.x ) - uArcBand.z;
+      float k = 1.0;
+      for ( int i = 0; i < ${ARC_SLOTS}; i++ ) {
+        float d = abs( mod( phi - uArcs[ i ].x + PI, 2.0 * PI ) - PI );
+        // A soft end a third of a degree long: an arc is a clumpy cloud, not a cut strip.
+        k = max( k, mix( 1.0, uArcs[ i ].z, 1.0 - smoothstep( uArcs[ i ].y, uArcs[ i ].y + 0.006, d ) ) );
+      }
+      tau *= mix( 1.0, k, inBand * uArcBand.w );
+      alpha = min( 1.0 - exp( -tau ), 0.999 );
+    }
+  }
   // The fine structure, from close: Cassini's ringlets and gaps multiply the map's optical depth.
   // ONE more texture fetch. A coarse mip of the strip is 1, so at a distance it changes nothing.
   if ( uFine > 0.0 ) {
@@ -1482,6 +1638,8 @@ function ringMaterial(map, inner, outer, warp) {
       uFineMap: { value: null },
       uFine: { value: 0 },
       uGrain: { value: 0 },
+      uArcs: { value: new Float32Array(ARC_SLOTS * 4) },
+      uArcBand: { value: new THREE.Vector4(0, 0, 0, 0) },
     },
   });
 }
@@ -1504,6 +1662,16 @@ export function applyLook(material, look) {
   if (look.contrast && u.uContrast) {
     u.uContrast.value = look.contrast.gain;
     u.uMapMean.value.set(...look.contrast.mean);
+  }
+  // 2026-10-14: Venus's ultraviolet bands (VENUS_UV) are the Film look's, the default; the worlds'
+  // setLook takes them off under Measured. Uranus's cap (URANUS_CAP) is measured and always on.
+  if (look.uv && u.uContrast) {
+    u.uContrast.value = look.uv.gain;
+    u.uMapMean.value.set(...look.uv.mean);
+  }
+  if (look.cap && u.uCap) {
+    u.uCap.value.set(look.cap.flat());
+    u.uCapOn.value = 1;
   }
 }
 
@@ -1637,12 +1805,46 @@ export function createWorlds(scene, opts = {}) {
   // The device's tier, for the steps of Mars's shadow march (setRelief's second word).
   let reliefTier = 1;
   const marchSteps = () => MARS_RELIEF.steps[Math.min(Math.max(0, reliefTier), MARS_RELIEF.steps.length - 1)];
+  /**
+   * The relief a world should wear now, and the key it is kept under: the one under the face it
+   * wears (`look.faceRelief`: Venus's radar ground), or else its own (`look.relief`), or none.
+   */
+  function reliefWanted(id) {
+    const w = BY_ID.get(id);
+    if (!w) return null;
+    const face = faceWanted.get(id);
+    if (face && w.look.faceRelief) return w.look.faceRelief[face] ? { r: w.look.faceRelief[face], key: `${id}/${face}-relief` } : null;
+    return w.look.relief ? { r: w.look.relief, key: `${id}/relief` } : null;
+  }
+  function clearRelief(mesh) {
+    const u = mesh && mesh.material && mesh.material.uniforms;
+    if (u && u.uReliefK) { u.uReliefK.value.set(0, 0, 0); u.uGlobeRelief.value = null; }
+    dropTerrain(mesh);
+  }
+  /** The slopes from `tex`, and the cast shadow from its own heights or Mars's separate height map once that is here. */
+  function wearRelief(id, mesh, w, r, tex) {
+    const u = mesh.material.uniforms;
+    u.uGlobeRelief.value = tex;
+    u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
+    const h = heightRowOf(r);
+    const ht = h && (r.height.self ? tex : faceTex.get(`${id}/height`));
+    if (!h || !ht || marchSteps() <= 0) { dropTerrain(mesh); return; }
+    const t = terrainUniforms(h, w.radiusKm, marchSteps(), r.steep);
+    u.uHeightMap.value = ht;
+    u.uTerrain.value.set(...t.terrain);
+    u.uTerrainMarch.value.set(...t.march);
+  }
   function fetchRelief(id) {
     const w = BY_ID.get(id);
-    const r = w && w.look.relief;
     const mesh = meshes.get(id);
-    const key = `${id}/relief`;
-    if (!r || !reliefAllowed || !load || !mesh || !bootMap.has(id) || faceTex.has(key)) return false;
+    if (!w || !mesh || !mesh.material.uniforms || !mesh.material.uniforms.uReliefK) return false;
+    const want = reliefWanted(id);
+    if (!want || !reliefAllowed || !load || !bootMap.has(id)) { if (!want) clearRelief(mesh); return false; }
+    const { r, key } = want;
+    const have = faceTex.get(key);
+    if (have) { wearRelief(id, mesh, w, r, have); return true; }
+    if (faceTex.has(key)) return false; // on its way
+    clearRelief(mesh);   // another face's relief, until this one comes
     faceTex.set(key, null); // asked for
     load(base + r.map, (tex) => {
       if (!tex) return;
@@ -1652,16 +1854,16 @@ export function createWorlds(scene, opts = {}) {
       tex.wrapS = THREE.RepeatWrapping;
       tex.needsUpdate = true;
       faceTex.set(key, tex);
-      const u = mesh.material.uniforms;
-      u.uGlobeRelief.value = tex;
-      u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
+      const now = reliefWanted(id);
+      if (now && now.key === key) wearRelief(id, mesh, w, r, tex);
     });
-    // The heights themselves, where the row has them (Mars): the cast shadow's map. Kept and
-    // given back exactly as the relief is.
-    if (r.height && marchSteps() > 0) {
-      const hKey = `${id}/height`;
+    // The heights themselves, where the row has a map of them (Mars): the cast shadow's map. Kept
+    // and given back exactly as the relief is.
+    const h = r.height;
+    const hKey = `${id}/height`;
+    if (h && h.map && marchSteps() > 0 && !faceTex.has(hKey)) {
       faceTex.set(hKey, null);
-      load(base + r.height.map, (tex) => {
+      load(base + h.map, (tex) => {
         if (!tex) return;
         if (!faceTex.has(hKey) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; }
         tex.colorSpace = THREE.NoColorSpace;
@@ -1669,11 +1871,9 @@ export function createWorlds(scene, opts = {}) {
         tex.wrapS = THREE.RepeatWrapping;
         tex.needsUpdate = true;
         faceTex.set(hKey, tex);
-        const u = mesh.material.uniforms;
-        const t = terrainUniforms(r.height, w.radiusKm, marchSteps(), r.steep);
-        u.uHeightMap.value = tex;
-        u.uTerrain.value.set(...t.terrain);
-        u.uTerrainMarch.value.set(...t.march);
+        const now = reliefWanted(id);
+        const slope = now && faceTex.get(now.key);
+        if (now && now.r === r && slope) wearRelief(id, mesh, w, r, slope);
       });
     }
     return true;
@@ -1682,16 +1882,17 @@ export function createWorlds(scene, opts = {}) {
     const u = mesh && mesh.material && mesh.material.uniforms;
     if (u && u.uTerrain) { u.uTerrain.value.set(0, 0, 0, 1); u.uHeightMap.value = null; }
   }
-  /** main.js, beside setRelief: the device's tier, which sets how many steps Mars's shadow is marched in. */
+  /** main.js, beside setRelief: the device's tier, which sets how many steps the shadows are marched in. */
   function setReliefTier(tier) {
     if (!Number.isFinite(tier)) return;
     reliefTier = tier;
     for (const w of WORLDS) {
-      const h = w.look.relief && w.look.relief.height;
+      const want = reliefWanted(w.id);
+      const h = want && heightRowOf(want.r);
       const mesh = meshes.get(w.id);
       const u = mesh && mesh.material && mesh.material.uniforms;
       // Worn already: the march's steps follow the tier.
-      if (h && u && u.uTerrain && u.uTerrain.value.x > 0) u.uTerrain.value.set(...terrainUniforms(h, w.radiusKm, marchSteps(), w.look.relief.steep).terrain);
+      if (h && u && u.uTerrain && u.uTerrain.value.x > 0) u.uTerrain.value.set(...terrainUniforms(h, w.radiusKm, marchSteps(), want.r.steep).terrain);
     }
   }
   // THE RINGS FROM CLOSE (RING_FINE, RING_GRAIN): the same permission as the relief -- tier 1 and
@@ -1759,12 +1960,11 @@ export function createWorlds(scene, opts = {}) {
     reliefAllowed = !!on;
     if (!reliefAllowed) for (const id of [...ringNear.keys()]) dropRingDetail(id);
     for (const w of WORLDS) {
-      if (!w.look.relief) continue;
+      if (!w.look.relief && !w.look.faceRelief) continue;
       if (reliefAllowed) { fetchRelief(w.id); continue; }
-      const mesh = meshes.get(w.id);
-      if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uGlobeRelief.value = null; }
-      dropTerrain(mesh);
-      for (const key of [`${w.id}/relief`, `${w.id}/height`]) {
+      clearRelief(meshes.get(w.id));
+      for (const key of [...faceTex.keys()]) {
+        if (!key.startsWith(`${w.id}/`) || !/(relief|height)$/.test(key)) continue;
         const tex = faceTex.get(key);
         if (tex && tex.dispose) tex.dispose();
         faceTex.delete(key);
@@ -2193,6 +2393,12 @@ export function createWorlds(scene, opts = {}) {
         }
         if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
         if (mesh.userData.ring && w.look.ring.fine) stepRingDetail(w, mesh, wallNow());
+        // Neptune's arcs go round on the clock (NEPTUNE_ARCS); illustrative, so not under Measured.
+        if (mesh.userData.ring && w.look.ring.arcs) {
+          const ab = mesh.userData.ring.material.uniforms.uArcBand.value;
+          ab.z = arcTurnRad(tMs);
+          ab.w = lookMeasured ? 0 : 1;
+        }
         if (mesh.userData.air) updateAir(w, mesh, sunDirHere);
         if (w.look.earthshine && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEarthshine) {
           // The Sun-Earth-Moon angle and the Earth-Moon distance, from the geocentric vectors step 2a
@@ -2407,18 +2613,28 @@ export function createWorlds(scene, opts = {}) {
     const name = face && w && w.look.faces ? w.look.faces[face] : null;
     faceWanted.set(id, name ? face : null);
     faceSpot(id, name ? face : null);
-    if (!name) { setMap(id, tierMap.get(id) || null); return true; }
+    if (!name) { setMap(id, tierMap.get(id) || null); fetchRelief(id); return true; }
     if (!bootMap.has(id)) { fetchMap(id); return false; } // its own map first; apply() calls back
+    fetchRelief(id);   // the ground under a face of ground (Venus's radar), or nothing
     const key = `${id}/${face}`;
     const have = faceTex.get(key);
     if (have) { setMap(id, have); return true; }
     if (!load || faceTex.has(key)) return false;
     faceTex.set(key, null); // asked for: a second press does not fetch it twice
     load(base + name, (tex) => {
-      faceTex.set(key, configure(tex));
+      configure(tex);
+      // A one-channel face (Venus's radar): R8 on the GPU, decoded by the shader (uMono).
+      if (w.look.faceMono && w.look.faceMono[face]) { tex.colorSpace = THREE.NoColorSpace; tex.format = THREE.RedFormat; tex.needsUpdate = true; }
+      faceTex.set(key, tex);
       if (faceWanted.get(id) === face) setMap(id, tex);
     });
     return false;
+  }
+  /** For scene/weather: is this world wearing a face of solid ground (`look.groundFaces`), which no wind carries? */
+  function groundFace(id) {
+    const w = BY_ID.get(id);
+    const f = faceWanted.get(id);
+    return !!(f && w && w.look.groundFaces && w.look.groundFaces.includes(f));
   }
 
   // --- the texture tiers (scene/texturetiers.js, 2026-09-28) ------------------------------------
@@ -2439,16 +2655,38 @@ export function createWorlds(scene, opts = {}) {
     if (m.uniforms && m.uniforms.uMap) m.uniforms.uMap.value = next;
     else if ('map' in m) m.map = next;
     current.set(id, next);
-    // A second face is worn as it was measured: Saturn's Hubble map without the contrast its own
-    // map is given, Venus's radar ground without the cloud deck's soft terminator.
-    const look = BY_ID.get(id).look;
-    if (m.uniforms && m.uniforms.uContrast && (look.contrast || look.wrap)) {
-      let isFace = false;
-      for (const [key, face] of faceTex) if (face === next && key.startsWith(`${id}/`)) isFace = true;
-      if (look.contrast) m.uniforms.uContrast.value = isFace ? 1 : look.contrast.gain;
-      if (look.wrap) m.uniforms.uWrap.value = isFace ? 0 : look.wrap;
-    }
+    dressFace(id);
     return old;
+  }
+
+  /**
+   * What a world's map is worn with, for the face it wears and the look that is on. A second face
+   * is worn as it was measured: Saturn's Hubble map without the contrast its own map is given,
+   * Venus's radar ground without the cloud deck's soft terminator or its ultraviolet bands, in its
+   * own colour (`faceMono`); Uranus's cap is for the artist's map (Hubble's has its own); Neptune's
+   * 1989 spot is taken out of its artist's map under the Measured look.
+   */
+  function dressFace(id) {
+    const mesh = meshes.get(id);
+    const u = mesh && mesh.material && mesh.material.uniforms;
+    const w = BY_ID.get(id);
+    if (!u || !u.uContrast || !w) return;
+    const look = w.look;
+    const next = current.get(id);
+    let face = null;
+    for (const [key, tex] of faceTex) if (tex && tex === next && key.startsWith(`${id}/`)) face = key.slice(id.length + 1);
+    const isFace = !!(face && look.faces && look.faces[face]);
+    if (look.contrast) u.uContrast.value = isFace ? 1 : look.contrast.gain;
+    else if (look.uv) u.uContrast.value = isFace || lookMeasured ? 1 : look.uv.gain;
+    if (look.wrap) u.uWrap.value = isFace ? 0 : look.wrap;
+    const mono = isFace && look.faceMono && look.faceMono[face];
+    if (u.uMono) { if (mono) u.uMono.value.set(mono[0], mono[1], mono[2], 1); else u.uMono.value.w = 0; }
+    if (look.cap && u.uCapOn) u.uCapOn.value = isFace ? 0 : 1;
+    if (look.spot && u.uSpotOut) {
+      const s = look.spot;
+      if (!isFace && lookMeasured) u.uSpotOut.value.set(s.u, s.v, s.half_u, s.half_v);
+      else u.uSpotOut.value.z = 0;
+    }
   }
 
   /**
@@ -2650,7 +2888,7 @@ export function createWorlds(scene, opts = {}) {
     setRelief,
     /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
     // The Earth's clouds are at their true thickness under Measured (scene/earth.js CLOUD_PARALLAX).
-    setLook: (mode) => { lookMeasured = mode === 'measured'; setEarthCloudHeight(meshes.get('earth'), { look: mode }); },
+    setLook: (mode) => { lookMeasured = mode === 'measured'; setEarthCloudHeight(meshes.get('earth'), { look: mode }); for (const w of WORLDS) dressFace(w.id); },
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     /** For the probes: is this world wearing its relief? */
@@ -2666,6 +2904,7 @@ export function createWorlds(scene, opts = {}) {
     facesOf,
     faceOf,
     setFace,
+    groundFace,
     setTierMap,
     discShare,
     meshFor,
@@ -2766,6 +3005,13 @@ export function createWorlds(scene, opts = {}) {
       : ringWarpUniform(w.radiusKm);
     const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, warp));
     if (r.bands && r.colour !== undefined) mesh.material.uniforms.uColour.value.set(r.colour);
+    // Neptune's arcs: in the Adams ring at its drawn width (the band in the strip), turned each frame.
+    if (r.arcs) {
+      mesh.material.uniforms.uArcs.value.set(arcUniform(r.arcs));
+      const band = r.bands.find((b) => b[0] === r.arcs.ringKm);
+      const halfKm = Math.max((band ? band[1] : 15) * (r.widen || 1), (r.outerKm - r.innerKm) / RING_BANDS_PX) / 2;
+      mesh.material.uniforms.uArcBand.value.set(r.arcs.ringKm / w.radiusKm, halfKm / w.radiusKm, 0, 1);
+    }
     if (w.look.oblate) { const g = oblateRadii(w.look.oblate); mesh.material.uniforms.uGlobe.value.set(g.eq, g.pol); }
     mesh.rotation.x = -Math.PI / 2;  // RingGeometry lies in XY; the ring is the planet's equator
     mesh.renderOrder = 1;

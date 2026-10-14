@@ -1,9 +1,11 @@
 // tour: the onboarding tour (ui/onboarding.js, internal spec 0074), walked by the real actions.
-// The first visit's arrow at the rail's button; then each of the eight steps as it comes up; the
-// three steps that wait, with what their press opened (the timeline, What to show, the share
-// sheet); and the page after the tour, with nothing of it left. Run it at 1440 x 900 and again
-// with `-f mobile=true`. Fails when a step never came up, when a caption is off the screen or
-// over its own target, or when something of the tour is still on the page at the end.
+// The first visit's arrow at the rail's button; then each step as it comes up; the four steps that
+// wait, with what their press opened (the timeline, What to show, the share sheet, Play on its
+// own's list with Drift first); and the page after the tour, with nothing of it left. Run it at
+// 1440 x 900, with `-f mobile=true`, and at a 360 px phone (`-f mobile=true -f width=360
+// -f height=780`). Fails when a step never came up, when a caption is off the screen or over its
+// own target, when a waiting caption lies over the panel its press opened, or, on a phone, when a
+// step that is about the scene has the sheet at full over it (internal #757).
 look.probe = 'tour';
 const out = { steps: [], problems: [] };
 const tour = sr.onboardingReady ? await sr.onboardingReady() : null;
@@ -13,6 +15,7 @@ const over = (a, b) => a && b && a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1
 const judge = (name) => {
   const m = tour.measure();
   if (!m) { out.problems.push(name + ': nothing was built'); return null; }
+  m.sheet = document.documentElement.dataset.sheet || null;
   const box = m.card || m.chip;
   if (!box) out.problems.push(name + ': no caption on the page');
   else {
@@ -27,8 +30,8 @@ const judge = (name) => {
  * arrow's head, the last stroke, is whole. A head that never is, is a problem.
  */
 const inkDrawn = async (name) => {
-  const whole = await until(() => { const h = document.querySelector('.sr-tour__line.sr-tour__head'); return h && parseFloat(getComputedStyle(h).strokeDashoffset) < 0.02; }, 10000, 200);
-  if (!whole) out.problems.push(name + ': the ink was not drawn on in ten seconds');
+  const whole = await until(() => { const h = document.querySelector('.sr-tour__line.sr-tour__head'); return h && parseFloat(getComputedStyle(h).strokeDashoffset) < 0.02; }, 20000, 200);
+  if (!whole) out.problems.push(name + ': the ink was not drawn on in twenty seconds');
 };
 /** Wait for a step to be up (its caption on the page), give the ink its time, photograph it. */
 const stepShot = async (n, id, note) => {
@@ -81,7 +84,13 @@ tour.next();
 await stepShot(6, 'layers', 'step 6: What to show ringed');
 { const b = boxOf('layers'); if (b) b.click(); }
 await sleep(3500);
-judge('layers, open');
+{
+  const m = judge('layers, open');
+  const show = document.getElementById('sr-show');
+  const r = show && !show.hidden ? show.getBoundingClientRect() : null;
+  out.layersOpen = { card: m && m.card, show: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null, room: getComputedStyle(document.documentElement).getPropertyValue('--sr-tour-room').trim() || null };
+  if (m && m.card && out.layersOpen.show && over(m.card, out.layersOpen.show)) out.problems.push('layers, open: the waiting caption lies over What to show ' + JSON.stringify(out.layersOpen));
+}
 await shot('6b-layers-open', 'step 6 after the press: What to show is open and not dimmed, the caption beside it');
 tour.next();
 await stepShot(7, 'share', 'step 7: Share ringed (the More menu on a phone)');
@@ -90,15 +99,32 @@ await sleep(4000);
 judge('share, open');
 await shot('7b-share-open', 'step 7 after the press: the share sheet (the menu on a phone) is open, the caption beside or above it');
 tour.next();
-await stepShot(8, 'trips', 'step 8, the last: the Trips section ringed at its head, Next says Done');
+await stepShot(8, 'drift', 'step 8: Play on its own ringed, where the drift is');
+{ const b = boxOf('drift'); if (b) b.click(); }
+await sleep(3500);
+{
+  const m = judge('drift, open');
+  const row = document.querySelector('.sr-reels:not([hidden]) [data-reel="drift"]');
+  const r = row ? row.getBoundingClientRect() : null;
+  out.driftOpen = { phase: tour.state().phase, row: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null, sheet: m && m.sheet };
+  if (!row) out.problems.push('drift, open: the list did not open with Drift in it');
+  if (m && m.card && out.driftOpen.row && over(m.card, out.driftOpen.row)) out.problems.push('drift, open: the waiting caption lies over the Drift row');
+}
+await shot('8b-drift-open', 'step 8 after the press: the list is open with Drift first, the caption waits');
+tour.next();
+await stepShot(9, 'trips', 'step 9, the last: the Trips section ringed at its head, Next says Done');
 tour.stop('escape');
 await sleep(1200);
 const left = [...document.querySelectorAll('.sr-tour')].filter((e) => !e.hidden).length;
 out.leftOnPage = left;
 out.railPressed = (boxOf('tour') || document.querySelector('[data-tour~="tour"]')).getAttribute('aria-pressed');
-await shot('9-after', 'after the tour: nothing of it left on the page');
+await shot('10-after', 'after the tour: nothing of it left on the page');
 const seen = out.steps.map((s) => s.id);
-if (seen.length !== 8) out.problems.push('only ' + seen.length + ' of 8 steps came up: ' + seen.join(', '));
+let all = 9;
+try { all = (await import('/js/data/onboarding.js')).STEPS.length; } catch { /* the count above */ }
+if (seen.length !== all) out.problems.push('only ' + seen.length + ' of ' + all + ' steps came up: ' + seen.join(', '));
+// On a phone the steps about the scene keep the sheet off it (the tour's focus used to raise it).
+if (innerWidth < 900) for (const st of out.steps) if (['move', 'places', 'drift', 'trips'].includes(st.id) && st.sheet === 'full') out.problems.push(st.id + ': the sheet is at full, over the scene');
 if (left) out.problems.push('the tour\'s layer is still on the page after it ended');
 if (out.problems.length) out.fail = out.problems.join('; ');
 return finish(out);

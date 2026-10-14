@@ -688,7 +688,8 @@ export function createCameraRig(camera, domElement, options = {}) {
    *                from, to, fromDir, toDir, along, up}: how far the look-at point travels, the two
    *                camera distances (scene units), and four unit vectors on the scene's axes:
    *                from the look-at point to the camera now, the same on arrival, the line of
-   *                travel and the camera's up. It returns {ms, at(raw)} where at(raw) -> {pan, distance, dir}: the
+   *                travel and the camera's up; and `body`, the world it keeps out of ({at, radius}:
+   *                its centre from the look-at point now, and the keep-out radius) or null. It returns {ms, at(raw)} where at(raw) -> {pan, distance, dir}: the
    *                share of the way the look-at point has gone, the camera's distance, and the
    *                side the camera is on (a vector as above; null keeps the side it has), each
    *                on its own clock. `ms`, `ease`, `targetDelay` and `apex` are then not used.
@@ -772,7 +773,9 @@ export function createCameraRig(camera, domElement, options = {}) {
       syncUpBasis();
       const sep = target.distanceTo(to);
       const along = sep > 0 ? to.clone().sub(target).divideScalar(sep) : null;
-      path = opts.path({ sep, from: distance, to: toDistance, fromDir: side(azimuth, polar), toDir: side(toAz, toPolar), along, up: camera.up.clone().normalize() });
+      // The world the rig keeps out of, from the look-at point the flight leaves: the curve bends round it.
+      const body = state.worldRadius > 0 ? { at: worldCentre.clone().sub(target), radius: state.worldRadius * WORLD_CLEARANCE } : null;
+      path = opts.path({ sep, from: distance, to: toDistance, fromDir: side(azimuth, polar), toDir: side(toAz, toPolar), along, up: camera.up.clone().normalize(), body });
       if (!path || typeof path.at !== 'function' || !(path.ms > 0)) path = null;
     }
 

@@ -608,7 +608,7 @@ Object.assign(COPY, {
       modes: { own: 'Clouds', surface: 'Ground' },
       notes: {
         own: 'The cloud tops, which is all an eye or a telescope ever sees of Venus.',
-        surface: 'The ground under the clouds, mapped by radar from orbit by NASA\u2019s Magellan between 1990 and 1992. Bright is rough ground and dark is smooth. The orange is added, and the strips Magellan missed are filled in from their edges.',
+        surface: 'The ground under the clouds, mapped by radar from orbit by NASA\u2019s Magellan between 1990 and 1992. Bright is rough ground and dark is smooth. The orange is added, and the strips Magellan missed are filled in from their edges. It is lit by the Sun as if the clouds were not there: its mountains and scarps from Magellan\u2019s altimeter, drawn six times taller, cast their shadows. It does not move with the clouds.',
       },
     },
     // 2026-10-07: the four giants' second face, Hubble's yearly OPAL maps (registry/textures.yaml

@@ -306,6 +306,31 @@ export const REAL_MODELS = {
     42969: { file: 'sentinel-5p.glb', colour: 'satellite', name: 'Sentinel-5P', catalogue: 'SENTINEL-5P', made: 'dimensions', axes: 'app' },
     36508: { file: 'cryosat-2.glb', colour: 'satellite', name: 'CryoSat-2', catalogue: 'CRYOSAT 2', made: 'dimensions', axes: 'app' },
     36036: { file: 'smos.glb', colour: 'satellite', name: 'SMOS', catalogue: 'SMOS', made: 'dimensions', axes: 'app' },
+    // BATCH TEN (2026-10-14; public #995, #996), two weather craft that wore the shape of their ring or
+    // class, each built in code from cited metres (registry/models.yaml rows `himawari`, `fengyun-3`):
+    //   himawari.glb   Himawari-8 and -9 ('identical specifications'): ONLY THE ENVELOPE IS CITED,
+    //                  5.2 x 8.0 x 5.3 m; the layout is JMA's sketch, LOOKED AT ONLY (no free picture):
+    //                  a dark box with the imager AHI on its Earth face, ONE solar array of two panels,
+    //                  a Ka-band dish beside it. They wore the geostationary bus (GEO_BUS: two long wings
+    //                  and dishes). `axes: 'app'`: the Earth face on +Z, the array along X, north-south,
+    //                  its cells to +Y; HOW A GEOSTATIONARY CRAFT FLIES (the array turns on its axis once
+    //                  a day, which the app does not draw).
+    //   fengyun-3.glb  FY-3A to 3D, the first batch: SAST's silver box of 4.4 x 2.0 x 2.0 m with ONE
+    //                  wing of 22.464 m2 on a truss yoke, 10 m in flight, the microwave imager's
+    //                  reflector on the sky face (eoPortal), laid out after a visitor's CC BY 2.0
+    //                  photograph of the mockup in Shanghai. They wore the shape of their class (two
+    //                  wings and a dish). `axes: 'app'`: the instruments on +Z; the wing along X, FLAT,
+    //                  its cells to the sky, as the cited flight size allows. NOT how the real wing
+    //                  flies (it turns to the Sun), and the heading on the map is the app's.
+    // BY NUMBER from the live saved data of 2026-10-12. FENGYUN 3E to 3H (the second batch, other
+    // instruments, 3G with a rain radar), FENGYUN 4A to 4C (no opened page gives their size) and
+    // FENGYUN 2G and 2H (spinning drums) are other craft and keep what they had.
+    40267: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-8', catalogue: 'HIMAWARI-8', made: 'dimensions', axes: 'app' },
+    41836: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-9', catalogue: 'HIMAWARI-9', made: 'dimensions', axes: 'app' },
+    32958: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3A', catalogue: 'FENGYUN 3A', made: 'dimensions', axes: 'app' },
+    37214: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3B', catalogue: 'FENGYUN 3B', made: 'dimensions', axes: 'app' },
+    39260: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3C', catalogue: 'FENGYUN 3C', made: 'dimensions', axes: 'app' },
+    43010: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3D', catalogue: 'FENGYUN 3D', made: 'dimensions', axes: 'app' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
@@ -376,35 +401,51 @@ export const REAL_MODELS = {
     // 2026-10-08 (public #429): the shape by the block the catalogue's own label states. GLONASS-M is
     // the pressurised drum, GLONASS-K (and K1) the small box; K2 is a larger craft with no row in
     // scene/models.js NAV_SHAPES and keeps the family box.
-    32275: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
-    32276: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
-    32393: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
-    32395: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
-    36111: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
-    36112: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
-    36402: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
-    37867: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
-    37868: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
-    37869: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
-    39155: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
-    39620: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
-    40001: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
-    40315: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
-    41330: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
-    42939: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
-    43508: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
-    43687: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
-    44299: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
-    44850: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
-    45358: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
-    46805: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
-    52984: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
-    54031: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
-    54377: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
+    // A FILE A BLOCK since batch ten (2026-10-14; public #988), over the build each row had, which stays
+    // as what is drawn while the file loads (registry/models.yaml rows `glonass-m`, `glonass-k`):
+    //   glonass-m.glb  the drum, 1.63 m across, with the antenna platform at its Earth end and two
+    //                  wings of four panels, 30.85 m2 (the maker's number as the MCC sent it to the IGS,
+    //                  IGSMAIL-5104; the drum and the craft's 3.05 m from Duan et al. 2020, CC BY 4.0),
+    //                  laid out after two CC0 photographs of models. Its 12.6 m span is DERIVED from the
+    //                  area: no page opened gives one (the build above uses a catalogue site's 7.8 m).
+    //   glonass-k.glb  the Express-1000 box from the maker's own dimensioned drawings (2.66 x 1.6 x
+    //                  0.795 m, two wings of two 1.6 x 2.65 m panels, 9.2 m tip to tip), which the
+    //                  GLONASS information centre sent to the IGS in 2011 (acc.igs.org/glonass/). NO
+    //                  FREE PICTURE. The build above is a catalogue site's 1 x 1 x 2 m.
+    // `generic` stays, as on every navigation file (batch six). `axes: 'app'`: the Earth face on +Z,
+    // the wings along X, the cells to +Y; HOW BOTH FLY, by the maker's letters: Earth-pointing, the Sun in
+    // the body's X-Y plane, 'Solar panels keep up the Sun direction'. K2 (57517, 63130) is a larger
+    // craft and keeps the family box. 100460 and 100744 are numbers of 90 000 and up, which
+    // data/parsers.js reads as placeholders: the `glonass` name key below routes them by the bracket.
+    32275: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    32276: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    32393: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    32395: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    36111: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    36112: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    36402: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    37867: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    37868: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    37869: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    39155: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    39620: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    40001: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    40315: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    41330: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    42939: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    43508: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    43687: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    44299: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    44850: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    45358: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    46805: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    52984: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    54031: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    54377: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
     57517: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2569 [GLONASS-K2]', generic: true },
     63130: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2584 [GLONASS-K2]', generic: true },
-    65590: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
-    100460: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
+    65590: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true, made: 'dimensions', axes: 'app' },
+    100460: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true, made: 'dimensions', axes: 'app' },
 
     // ---------------------------------------------------------------------------------------
     // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
@@ -950,7 +991,21 @@ export const REAL_MODELS = {
     // Since batch six every block has a FILE and the IIR bus a shape of its own: see gpsBlock above.
     gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
     navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
-    glonass: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
+    // GLONASS BY NAME: the records whose number is a placeholder (90 000 and up, data/parsers.js) reach
+    // this key and not the rows by id above. The block is the catalogue's own bracket, `[GLONASS-M]`,
+    // `[GLONASS-K]`, `[GLONASS-K1]`, `[GLONASS-K2]` (live saved data, 2026-10-12); a name with no
+    // bracket keeps the drum it had, and K2 the family box (batch ten, public #988).
+    glonass: {
+      build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => {
+        const block = /\[glonass-(m|k1?|k2)\]/i.exec(String(record && record.name));
+        if (!block) return {};
+        const b = block[1].toLowerCase();
+        if (b === 'm') return { file: 'glonass-m.glb', made: 'dimensions', axes: 'app' };
+        if (b === 'k2') return { build: 'navigation' };
+        return { build: 'navigation-glonass-k', file: 'glonass-k.glb', made: 'dimensions', axes: 'app' };
+      },
+    },
     irnss: {
       build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true,
       resolve: (record) => (/^irnss-1[a-i]$/i.test(String(record && record.name).trim()) ? { file: 'irnss.glb', made: 'dimensions', axes: 'app' } : {}),

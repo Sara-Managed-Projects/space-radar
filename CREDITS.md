@@ -38,6 +38,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of MetOp, XMM-Newton, TerraSAR-X and TanDEM-X, and StriX | built by us in code from published dimensions | public domain, CC BY 3.0 or CC0 where a picture was used; ours | [3b-9](#3b-9-four-more-built-from-dimensions--metop-xmm-newton-terrasar-x-strix-2026-10-13) |
 | The shapes of Envisat, ERS-1 and Sentinel-1, -2 and -3 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-10](#3b-10-five-european-earth-observation-craft-built-from-dimensions--envisat-ers-1-sentinel-1-sentinel-2-sentinel-3-2026-10-14) |
 | The shapes of Sentinel-5P, CryoSat-2, SMOS and ALOS-2 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 3.0 where a picture was used; ours | [3b-11](#3b-11-four-earth-observation-craft-built-from-dimensions--sentinel-5p-cryosat-2-smos-alos-2-2026-10-14) |
+| The shapes of GLONASS-M and GLONASS-K, Fengyun-3 and Himawari-8 and -9 | built by us in code from published dimensions | CC0 or CC BY 2.0 where a picture was used; ours | [3b-12](#3b-12-four-weather-and-navigation-craft-built-from-dimensions--glonass-m-glonass-k-fengyun-3-himawari-2026-10-14) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -201,7 +202,8 @@ satisfies that with:
 | `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
 | `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
-| `2k_venus_magellan.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), tinted |
+| `2k_venus_radar.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), one grey channel (the orange is added when it is drawn) |
+| `2k_venus_relief.webp` | Venus, the relief under the radar ground | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, Venus Magellan Global Topography 4641 m)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.lbl), local relief only, one grey channel |
 | `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
 | `2k_earth_daymap.webp` | Earth, day side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_nightmap.webp` | Earth, night side | CC BY 4.0 | Solar System Scope |
@@ -345,6 +347,7 @@ checked against this list by `scripts/check_registry.py`):
 - Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
 - Saturn's fine ring structure: Cassini UVIS stellar occultation of Beta Centauri, orbit 77, 2008 (Colwell et al. 2010; NASA Planetary Data System, Ring-Moon Systems Node, data set CO-SR-UVIS-HSP-2/4-OCC-V3.0), public domain, as the measured optical depth over its own neighbourhood's
 - Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
+- Venus relief: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, global topography 4641 m), public domain, local relief only
 - Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
 - Mars relief and heights: Mars Orbiter Laser Altimeter gridded topography (MGS MOLA MEGDR, 16 pixels per degree; D.E. Smith et al., NASA Goddard Space Flight Center), NASA Planetary Data System Geosciences Node, public domain, resampled
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
@@ -1091,6 +1094,38 @@ say "shape built from published dimensions and pictures; details simplified".
 No logo, lettering, flag or insignia is on any of the four. ESA, the European Union, JAXA, Airbus,
 Thales Alenia Space, CNES, DLR and the National Museum of Nature and Science do not endorse Space
 Radar, and none of them made or approved these shapes.
+
+## 3b-12. Four weather and navigation craft built from dimensions — GLONASS-M, GLONASS-K, Fengyun-3, Himawari (2026-10-14)
+
+The tenth batch. **No agency's or maker's picture or model is in a file, on a sheet or derived from**
+(Roscosmos, ISS Reshetnev, CMA, SAST, JMA, JAXA, Mitsubishi Electric): their numbers were read as
+numbers. The two GLONASS files rest on numbers the operator publishes for orbit modellers: the
+GLONASS information centre's letters to the IGS (GLONASS-K's with the maker's dimensioned drawings,
+READ and NOT reproduced). The
+layouts of GLONASS-M and Fengyun-3 were read off photographs that are free: two visitors' photographs
+of models of GLONASS-M given to the public domain (CC0), and a visitor's photograph of the Fengyun-3
+mockup in Shanghai (CC BY 2.0). **GLONASS-K and Himawari have no free picture**: share-alike
+photographs of models (GLONASS-K) and JMA's sketch (Himawari) were looked at only, and each
+row in `registry/models.yaml` names them so. No image-to-3D model was used. Their cards say "shape
+built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `glonass-m.glb` (38 KB) | GLONASS-M: a 1.63 m drum with a white antenna platform at its Earth end, a ring of helices on it, two wings of four panels, 30.85 m2 of cells, 3.05 m long | the maker's numbers as the MCC sent them to the IGS (IGSMAIL-5104, <https://lists.igs.org/pipermail/igsmail/2005/006475.html>), Duan et al., Journal of Geodesy 94:72 (2020), CC BY 4.0 (<https://link.springer.com/article/10.1007/s00190-020-01400-9>); photographs of models by Krassotkin (<https://commons.wikimedia.org/wiki/File:Wikitrip_to_MAI_museum_2016-02-02_073.JPG>) and the Museum of Cosmonautics (<https://commons.wikimedia.org/wiki/File:Glonass2_(14988917775).jpg>) (read 2026-10-14). The span (12.6 m) is derived; the helices and the platform's depth are ours | numbers are facts; the photographs are CC0 and are not in the file; NO ROSCOSMOS OR RESHETNEV PICTURE WAS USED |
+| `glonass-k.glb` (32 KB) | GLONASS-K: a bronze box 2.66 by 1.6 by 0.795 m flaring at its Earth end, the retroreflector ring and the antennas on that end, two wings of two 1.6 by 2.65 m panels, 9.2 m tip to tip | the GLONASS information centre's letter to the IGS of 2011-08-24 (<http://acc.igs.org/glonass/GLONASS-K_mitrikas_24aug11.txt>) and its four figures, the maker's drawings, read and NOT reproduced; NO FREE PICTURE; looked at only, photographs of models by Vitaly V. Kuzmin (<https://commons.wikimedia.org/wiki/File:Glonass-K_-_MAKS2015part8-12.jpg>, CC BY-SA 4.0) and MKonair (CC BY-SA 2.0) (read 2026-10-14). The antennas' and thrusters' sizes are ours | numbers are facts; nothing of any picture or drawing is in the file |
+| `fengyun-3.glb` (41 KB) | Fengyun-3 (3A to 3D): a silver box 4.4 by 2.0 by 2.0 m, one wing of 22.464 m2 on a truss yoke, the microwave imager's reflector and two calibration reflectors on the sky face, 10 m in flight | eoPortal (<https://www.eoportal.org/satellite-missions/fy-3>); a photograph of the mockup in the Shanghai Science and Technology Museum by Hibiki Watabe (<https://commons.wikimedia.org/wiki/File:Fengyun_3_satellite_mockup.jpg>) (read 2026-10-14). The wing's split and every instrument's size are ours | numbers are facts; the photograph is CC BY 2.0 and is not in the file; NO CMA, NSMC OR SAST PICTURE WAS USED |
+| `himawari.glb` (33 KB) | Himawari-8 and -9: a dark box with the imager AHI on its Earth face, one solar array of two panels, a Ka-band dish beside it, inside the cited 5.2 by 8.0 by 5.3 m | eoPortal (<https://www.eoportal.org/satellite-missions/himawari-8-9>) and JMA's Meteorological Satellite Center (<https://www.data.jma.go.jp/mscweb/en/general/himawari.html>); NO FREE PICTURE; looked at only, JMA's sketch on that page (read 2026-10-14). Every size inside the envelope is ours | numbers are facts; nothing of any picture is in the file; NO JMA, JAXA OR MITSUBISHI ELECTRIC PICTURE WAS USED |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `glonass-m`, `glonass-k`, `fengyun-3`, `himawari` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and photographs of models of GLONASS-M by Krassotkin and the Museum of Cosmonautics (CC0)`;
+`3D model: built by Space Radar from published dimensions (the maker's drawings, via the GLONASS information centre; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions and a photograph of the Fengyun-3 mockup by Hibiki Watabe (CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions (no free picture of the craft)`
+
+No logo, lettering, flag or insignia is on any of the four. Roscosmos, ISS Reshetnev, the GLONASS
+information centre, CMA, SAST, JMA, JAXA, Mitsubishi Electric, the IGS and the museums named here do
+not endorse Space Radar, and none of them made or approved these shapes.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
