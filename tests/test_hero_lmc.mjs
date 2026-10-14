@@ -43,6 +43,7 @@ const md = lmc.meta;
   for (const l of HERO.layers) check(typeof l.source === 'string' && l.source.length > 10 || l.kind === 'body' && l.source, `layer ${l.kind} (${l.what}) names its source`);
   check(HERO.review && HERO.review.data_vs_model && HERO.review.geometry && HERO.review.colours && HERO.review.distance && HERO.review.credits, 'the review checklist is filled (a person signs `by` before it ships)');
   check(HERO.shipped === false || (HERO.review.by && HERO.review.date), 'shipped only with a sign-off');
+  check(!HERO.shipped || HERO.review.by === 'Space Radar maintainers', 'signed by the maintainers, never a person or a claim of independent review (the review policy of 2026-10-15)');
   check(HERO.colours && HERO.colours.mode === 'enhanced', 'the colours are declared enhanced');
 }
 
@@ -197,6 +198,7 @@ const maps = L.readMaps(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.by
   const w = COPY.deepLmc;
   check(w && w.rows && w.rows['dso-lmc'] && w.rows['dso-tarantula-nebula'], 'the card carries the distance caveats for both');
   check(w && w.drawnWords && w.drawnWords['dso-lmc'] && w.drawnWords['dso-lmc'].model, 'and says what the model is built from');
+  for (const id of ['dso-lmc', 'dso-tarantula-nebula']) check(w.rows[id].some(([k, v]) => /not yet been reviewed by an astronomer/.test(v)), `${id}'s card says the model has not yet been reviewed by an astronomer`);
 }
 
 if (process.env.VERBOSE) console.log(NOTE.join("\n"));

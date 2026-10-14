@@ -5,7 +5,7 @@ export const HERO = {
   "id": "lmc",
   "record": "dso-lmc",
   "stage": "c",
-  "shipped": false,
+  "shipped": true,
   "children": [
     "dso-tarantula-nebula"
   ],
@@ -46,12 +46,18 @@ export const HERO = {
       "licence": "CC BY-SA 3.0 IGO"
     },
     {
+      "kind": "photograph",
+      "what": "where the LMC's photograph covers the galaxy, its light is the disc's emissivity (spread through the old layer), so seen along our line the model is the photograph",
+      "record": "dso-lmc",
+      "source": "registry/nebulae.yaml lmc: NOIRLab noirlab2030a (SMASH), already credited in CREDITS.md"
+    },
+    {
       "kind": "stars",
       "what": "the old population (red giants and clump stars), as points drawn from map 0",
       "map": 0,
       "scale_height_ly": 1600,
       "count": {
-        "t0": 14000,
+        "t0": 6000,
         "t1": 42000,
         "t2": 84000
       },
@@ -68,7 +74,7 @@ export const HERO = {
       "map": 1,
       "scale_height_ly": 330,
       "count": {
-        "t0": 5000,
+        "t0": 2500,
         "t1": 14000,
         "t2": 26000
       },
@@ -276,8 +282,8 @@ export const HERO = {
     "colours": "Enhanced, declared: H-alpha pink and [O III] teal for the gas, simplified Gaia colours for the stars.",
     "distance": "161 740 ly (Pietrzynski et al. 2019). The Tarantula takes the LMC's distance in its own direction; by the tilted disc it would sit about 2 000 ly nearer, which the registry does not do yet (the card says its depth is not measured).",
     "credits": "CREDITS.md section 3l, the LMC sub-heading: Gaia (CC BY-SA 3.0 IGO), SIMBAD, the papers above.",
-    "by": null,
-    "date": null
+    "by": "Space Radar maintainers",
+    "date": "2026-10-15"
   },
   "credits": [
     "Gaia DR3 star counts: ESA/Gaia/DPAC, CC BY-SA 3.0 IGO; the derived map site/data/deep/lmc-density.bin is under the same licence",

@@ -38,7 +38,7 @@ import { stage } from '../stage.js';
 import { discFrame } from '../../data/deepsky.js';
 import { PICTURE_FOR, pictureBasis, pictureHalfExtent, eqToEcl, eclToEq, ellipseInPicture } from '../nebulae.js';
 import { marchSteps, noiseTexture } from './gasmat.js';
-import { drawnUnder } from '../exposure.js';
+import { drawnUnder, exposureLook } from '../exposure.js';
 
 export const UNDER_MEASURED = { stars: 'same', nodes: 'same', disc: 'same', noise: 'hidden', drift: 'still' };
 /** The words block the card reads for this hero's records (copy/en.later.js). */
@@ -180,6 +180,7 @@ export function readMaps(buffer, n = MAP_BINS) {
  */
 export function buildDisc(g, maps, { size = DISC_TEX, extent = DISC_EXTENT, row = null, ell = null } = {}) {
   const old = new Float32Array(size * size), young = new Float32Array(size * size), cover = new Float32Array(size * size);
+  const uv = new Float32Array(size * size * 2); // where on the photograph each texel's line of sight falls
   const e = g.extent;
   for (let j = 0; j < size; j++) {
     for (let i = 0; i < size; i++) {
@@ -191,9 +192,11 @@ export function buildDisc(g, maps, { size = DISC_TEX, extent = DISC_EXTENT, row 
       old[k] = maps[0] ? mapAt(maps[0], xi, eta) * taper : 0;
       young[k] = maps[1] ? mapAt(maps[1], xi, eta) * taper : 0;
       cover[k] = row ? photoCover(row, ell, eclToEq(dir)) : 0;
+      const q = row ? pictureUv(row, eclToEq(dir)) : null;
+      uv[k * 2] = q ? q.u : -1; uv[k * 2 + 1] = q ? q.v : -1;
     }
   }
-  return { old, young, cover, size, extent };
+  return { old, young, cover, uv, size, extent };
 }
 
 /** A seeded generator (mulberry32): the same stars every visit. Pure. */
@@ -263,6 +266,11 @@ uniform float uSigma;      // dust: optical depth through the young layer at the
 uniform float uNoiseAmp;
 uniform sampler3D uNoise;
 uniform int uSteps;
+uniform sampler2D uPic;    // the LMC's photograph (scene/nebulae.js's file), its display values
+uniform sampler2D uPicUv;  // per disc texel, where its line of sight falls on the photograph
+uniform float uPicOn;
+uniform vec4 uPicLook;     // the exposure's stretch (nebulae.js): gain, gamma, saturation; the sky floor
+uniform float uPicK;
 varying vec3 vObj;
 float slab( float ya, float yb, float dy, float len, float z0 ) {
   // the fraction of a face-on column a straight piece of ray holds, for a sech^2 layer: exact
@@ -306,8 +314,20 @@ void main() {
       dust *= mix( 1.0, 0.15 + 1.9 * n * n, uNoiseAmp );
       young *= mix( 1.0, 0.35 + 1.3 * n2, uNoiseAmp );
     }
-    vec3 e = ( uColOld * uK.x * old * wo + uColYoung * uK.y * young * wy ) * ( 1.0 - uPhoto * m.a );
-    float tau = uSigma * dust * wy;
+    vec3 e = uColOld * uK.x * old * wo + uColYoung * uK.y * young * wy;
+    if ( uPicOn > 0.5 && m.a > 0.002 ) {
+      // Where the photograph covers the galaxy, ITS light is the disc's emissivity, spread through the old
+      // layer: seen along our line the model is the photograph; turned, the same light in the tilted disc.
+      vec2 puv = texture2D( uPicUv, ps.xz / ( 2.0 * uExtent ) + 0.5 ).rg;
+      vec3 t = max( texture2D( uPic, puv ).rgb - uPicLook.w, 0.0 ) / ( 1.0 - uPicLook.w );
+      vec3 c = pow( t, vec3( uPicLook.y ) ) * uPicLook.x;
+      float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
+      c = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uPicLook.z );
+      e = mix( e, c * uPicK * wo, m.a );
+    }
+    e *= 1.0 - uPhoto * m.a;
+    // the photograph already holds its own dust: the model's darkens it less
+    float tau = uSigma * dust * wy * ( 1.0 - 0.7 * m.a * uPicOn );
     // light and dust mixed in the step: what leaves it is e (1 - exp(-tau)) / tau
     float k = tau > 1e-4 ? ( 1.0 - exp( -tau ) ) / tau : 1.0;
     C += T * e * k;
@@ -320,7 +340,7 @@ void main() {
 `;
 
 // Stars: points of a fixed small size whose brightness falls as 1 / d^2; past 1 they grow (the area
-// carries the light) up to 2.2 times. uSb: the surface brightness at the map's peak density.
+// would carry the light): no longer, they stay pinpoints, capped. uSb: the surface brightness at the map's peak density.
 const STAR_VERT = /* glsl */ `
 ${COMMON}
 attribute vec4 aStar;      // colour times luminosity; w: the photograph's cover there
@@ -336,9 +356,9 @@ void main() {
   float d = length( mv.xyz ) / uUnit;
   float pix = d * uPixAng;                  // a pixel's side at the star, object units
   // capped: a point stands for many stars, so close up it would otherwise outshine a real one
-  float bright = min( uSb / max( uPeak * pix * pix * uBase * uBase, 1e-12 ), 3.0 );
+  float bright = min( uSb / max( uPeak * pix * pix * uBase * uBase, 1e-12 ), 1.2 );
   bright *= uShare * uGain * ( 1.0 - uPhoto * aStar.w );
-  float grow = clamp( sqrt( max( bright * length( aStar.rgb ), 1.0 ) ), 1.0, 2.2 );
+  float grow = 1.0; // never grown: points are sparkle over the smooth layer (the M31 review: a carpet of big soft points)
   gl_PointSize = mv.z < 0.0 ? uBase * grow : 0.0;
   vCol = aStar.rgb * bright / ( grow * grow );
 }
@@ -384,7 +404,8 @@ void main() {
   vec2 c = gl_PointCoord * 2.0 - 1.0;
   float r2 = dot( c, c );
   if ( r2 > 1.0 ) discard;
-  float a = ( exp( -5.0 * r2 ) + 0.35 * exp( -22.0 * r2 ) ) * ( 1.0 - r2 );
+  // a knot with an edge, brighter inside, not a Gaussian blur (the Helix review: soft blobs)
+  float a = ( 1.0 - smoothstep( 0.62, 1.0, sqrt( r2 ) ) ) * ( 0.55 + 0.45 * exp( -6.0 * r2 ) );
   gl_FragColor = vec4( vCol * a, 1.0 );
 }
 `;
@@ -505,8 +526,8 @@ export function createHero(THREE, env = {}) {
   const lmcEll = lmcRow ? ellipseInPicture(lmcRow, profile.frame && profile.frame.centre ? profile.frame.centre.ra_deg : 80.8917, profile.frame && profile.frame.centre ? profile.frame.centre.dec_deg : -69.7567, ext.maj_arcmin, ext.min_arcmin, ext.pa_deg) : null;
 
   // ------------------------------------------------------------------ the disc (built now, filled later)
-  const oldL = layer('stars', 0) || { scale_height_ly: 1600, colour: [1, 0.84, 0.66], count: { t0: 14000, t1: 42000, t2: 84000 } };
-  const youngL = layer('stars', 1) || { scale_height_ly: 330, colour: [0.66, 0.79, 1], count: { t0: 5000, t1: 14000, t2: 26000 } };
+  const oldL = layer('stars', 0) || { scale_height_ly: 1600, colour: [1, 0.84, 0.66], count: { t0: 6000, t1: 42000, t2: 84000 } };
+  const youngL = layer('stars', 1) || { scale_height_ly: 330, colour: [0.66, 0.79, 1], count: { t0: 2500, t1: 14000, t2: 26000 } };
   const z0 = [oldL.scale_height_ly / g.unit, youngL.scale_height_ly / g.unit];
   const makeTex = (data, n) => {
     const t = new THREE.DataTexture(data, n, n, THREE.RGBAFormat);
@@ -523,8 +544,9 @@ export function createHero(THREE, env = {}) {
       uCamObj: { value: new THREE.Vector3(0, 0, 3) }, uRadii: { value: new THREE.Vector3(DISC_EXTENT, 4 * z0[0], DISC_EXTENT) },
       uDisc: { value: discTex }, uExtent: { value: DISC_EXTENT }, uZ0: { value: new THREE.Vector2(z0[0], z0[1]) },
       uColOld: { value: new THREE.Vector3(...oldL.colour) }, uColYoung: { value: new THREE.Vector3(...youngL.colour) },
-      uK: { value: new THREE.Vector2(0.4, 0.5) }, uSigma: { value: 1.6 }, uNoiseAmp: { value: 0 },
+      uK: { value: new THREE.Vector2(0.4, 0.5) }, uSigma: { value: 2.6 }, uNoiseAmp: { value: 0 },
       uNoise: { value: null }, uSteps: { value: 6 },
+      uPic: { value: null }, uPicUv: { value: null }, uPicOn: { value: 0 }, uPicLook: { value: new THREE.Vector4(1, 1, 1, 0) }, uPicK: { value: 1.3 },
     },
   }), true);
   discMat.name = 'deep-lmc-disc';
@@ -538,7 +560,7 @@ export function createHero(THREE, env = {}) {
   // ------------------------------------------------------------------------------------- the stars
   const starMat = policy(THREE, new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
-    uniforms: { ...common(THREE), uUnit: { value: 1 }, uPixAng: { value: 0.001 }, uBase: { value: 1.3 }, uPeak: { value: 1 }, uSb: { value: 0.14 } },
+    uniforms: { ...common(THREE), uUnit: { value: 1 }, uPixAng: { value: 0.001 }, uBase: { value: 1.1 }, uPeak: { value: 1 }, uSb: { value: 0.05 } },
   }), false);
   starMat.name = 'deep-lmc-stars';
   const stars = new THREE.Points(new THREE.BufferGeometry(), starMat);
@@ -620,6 +642,14 @@ export function createHero(THREE, env = {}) {
   const _c = new THREE.Vector3();
   const _size = new THREE.Vector2();
 
+  let uvTex = null;
+  let picTex = null;
+  const picPending = (!lmcRow || !lmcRow.file || typeof location === 'undefined' || env.noFetch) ? null
+    : new THREE.TextureLoader().loadAsync(String(new URL(String(lmcRow.file).replace(/^site\//, ''), new URL('../../../', import.meta.url))))
+      .then((t) => { t.colorSpace = THREE.NoColorSpace; picTex = t; discMat.uniforms.uPic.value = t; discMat.uniforms.uPicOn.value = 1; })
+      .catch((e) => { if (typeof console !== 'undefined') console.warn('deep: the LMC photograph did not load for the model', e && e.message); });
+  let picDone = !picPending;
+  if (picPending) picPending.finally(() => { picDone = true; });
   const load = env.fetchBin || ((url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status}`)))));
   const pending = loaded ? null : Promise.resolve().then(() => load(MAP_URL)).then((buf) => { maps = readMaps(buf); }).catch((e) => {
     // The maps could not be read: the model draws its nodes and its Tarantula, the photograph and the
@@ -644,6 +674,17 @@ export function createHero(THREE, env = {}) {
     discTex.dispose();
     discTex = makeTex(px, DISC_TEX);
     discMat.uniforms.uDisc.value = discTex;
+    if (lmcRow) {
+      const half = new Uint16Array(disc.uv.length);
+      for (let i = 0; i < half.length; i++) half[i] = THREE.DataUtils.toHalfFloat(disc.uv[i]);
+      if (uvTex) uvTex.dispose();
+      uvTex = new THREE.DataTexture(half, DISC_TEX, DISC_TEX, THREE.RGFormat, THREE.HalfFloatType);
+      uvTex.minFilter = THREE.LinearFilter; uvTex.magFilter = THREE.LinearFilter; uvTex.colorSpace = THREE.NoColorSpace;
+      uvTex.needsUpdate = true;
+      discMat.uniforms.uPicUv.value = uvTex;
+      discMat.uniforms.uPicLook.value.w = Math.min(0.5, Math.max(0, Number(lmcRow.sky_floor) || 0));
+      bytes += half.byteLength;
+    }
     bytes = px.length;
 
     // Stars: the two populations and R136's, one geometry.
@@ -757,6 +798,9 @@ export function createHero(THREE, env = {}) {
       const fovY = ((camera.fov || 45) * D2R) / (camera.zoom || 1);
       const dpr = info.renderer && info.renderer.getPixelRatio ? info.renderer.getPixelRatio() : 1;
       for (const m of mats) { m.uniforms.uPhoto.value = photo; m.uniforms.uGain.value = gain; }
+      // The photograph's stretch as nebulae.js applies it, for the exposure the gain says (Eye 0.55, Camera 1, Deep 1.7).
+      const ex = exposureLook(gain < 0.8 ? 'eye' : gain > 1.3 ? 'deep' : 'camera');
+      discMat.uniforms.uPicLook.value.set(ex.nebulaGain / Math.max(0.1, gain), ex.nebulaGamma, ex.nebulaSaturation, discMat.uniforms.uPicLook.value.w);
 
       // The disc: a few steps (the vertical integral is exact); more at level 3.
       camIn(discMesh, camera, discMat.uniforms.uCamObj.value);
@@ -767,7 +811,7 @@ export function createHero(THREE, env = {}) {
 
       starMat.uniforms.uUnit.value = unit;
       starMat.uniforms.uPixAng.value = (2 * Math.tan(fovY / 2)) / hDev;
-      starMat.uniforms.uBase.value = 1.3 * Math.max(1, dpr);
+      starMat.uniforms.uBase.value = 1.1 * Math.max(1, dpr);
       spriteMat.uniforms.uUnit.value = unit;
       spriteMat.uniforms.uProjPx.value = (hDev / 2) / Math.tan(fovY / 2);
       spriteMat.uniforms.uPhotoT.value = photoT;
@@ -784,7 +828,7 @@ export function createHero(THREE, env = {}) {
       nebMat.uniforms.uPhotoT.value = photoT;
       tarPx = rT;
     },
-    ready: () => loaded,
+    ready: () => loaded && picDone,
     whenLoaded: () => pending || Promise.resolve(),
     stats: () => ({ level, share: Math.round(share * 100) / 100, meshes: 4, points: pointCount, textures: 1, bytes, tier: builtTier, maps: !!maps, tarantulaPx: Math.round(Math.min(tarPx, 1e6)), tarantulaSteps: nebMat.uniforms.uSteps.value, discSteps: discMat.uniforms.uSteps.value }),
     // For tests: where things are, in object units.
@@ -793,6 +837,8 @@ export function createHero(THREE, env = {}) {
       stars.geometry.dispose(); sprites.geometry.dispose(); discMesh.geometry.dispose(); nebMesh.geometry.dispose();
       for (const m of mats) m.dispose();
       discTex.dispose();
+      if (uvTex) uvTex.dispose();
+      if (picTex) picTex.dispose();
       if (group.parent) group.parent.remove(group);
     },
   };
