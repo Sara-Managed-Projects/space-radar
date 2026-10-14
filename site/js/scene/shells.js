@@ -149,6 +149,14 @@ export function createShells(scene) {
   const _ray = new THREE.Vector3();
   const _axis = new THREE.Vector3();
   const _q = new THREE.Quaternion();
+  const _dir = new THREE.Vector3();
+  /** A label's height on the screen, made smaller where its widest line would not fit the view (a phone). */
+  const fitScale = (sprite, lh, camera) => {
+    const px = camera.projectionMatrix.elements[0] || 1; // NDC per unit of a sizeAttenuation:false sprite
+    const maxW = 1.84 / px;
+    const k = lh * sprite.userData.aspect > maxW ? maxW / (lh * sprite.userData.aspect) : 1;
+    sprite.scale.set(lh * k * sprite.userData.aspect, lh * k, 1);
+  };
 
   function make(id) {
     const mesh = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ color: colour, transparent: true, opacity: 0, depthWrite: false }));
@@ -163,7 +171,8 @@ export function createShells(scene) {
   const edge = { id: 'edge', label: null, labelText: '', shown: false };
   const fmt1 = (x) => (Math.round(x * 10) / 10).toFixed(1);
   const horizonWords = [
-    fill(COPY.deepCosmos.horizon, { n: Math.round(HORIZON_LY / 1e9) }),
+    COPY.deepCosmos.horizon,
+    fill(COPY.deepCosmos.horizonNow, { n: Math.round(HORIZON_LY / 1e9) }),
     fill(COPY.deepCosmos.horizonWhy, { age: fmt1(ageGyr(0)) }),
   ];
 
@@ -206,8 +215,7 @@ export function createShells(scene) {
         if (sh.label.visible) {
           if (d / r < 2.5 && wallPoint(camera, r, halfFov * 0.42, _ray)) sh.label.position.copy(_ray);
           else sh.label.position.copy(_up).multiplyScalar(r * 1.02);
-          const lh = h * (sh.label.userData.lines > 1 ? 1.75 : 1);
-          sh.label.scale.set(lh * sh.label.userData.aspect, lh, 1);
+          fitScale(sh.label, h * (1 + 0.8 * (sh.label.userData.lines - 1)), camera);
           sh.label.material.opacity = Math.min(1, (k - 0.25) / 0.4);
         }
       }
@@ -217,13 +225,12 @@ export function createShells(scene) {
     edge.shown = d > rH;
     if (edge.shown) {
       const gly = Math.min(EDGE_LY, (d * stage.unitKm) / LY_KM) / 1e9;
-      setLabel(edge, [fill(COPY.deepCosmos.edge, { n: Math.round(gly) }), fill(COPY.deepCosmos.edgeWhy, { h: Math.round(HORIZON_LY / 1e9) })]);
+      setLabel(edge, [fill(COPY.deepCosmos.edge, { n: Math.round(gly) }), fill(COPY.deepCosmos.edgeWhy, { h: Math.round(HORIZON_LY / 1e9) }), COPY.deepCosmos.edgeNothing]);
       _axis.crossVectors(_fwd, _up).normalize();
       _q.setFromAxisAngle(_axis, -halfFov * 0.62);
       _ray.copy(_fwd).applyQuaternion(_q);
       edge.label.position.copy(camera.position).addScaledVector(_ray, rH * 0.05);
-      const lh = h * 1.75;
-      edge.label.scale.set(lh * edge.label.userData.aspect, lh, 1);
+      fitScale(edge.label, h * (1 + 0.8 * (edge.label.userData.lines - 1)), camera);
       edge.label.material.opacity = Math.min(1, (d / rH - 1) / 0.02);
     }
     if (edge.label) edge.label.visible = edge.shown;
@@ -237,7 +244,7 @@ export function createShells(scene) {
     _axis.crossVectors(_fwd, _up).normalize();
     if (!(_axis.lengthSq() > 0)) return false;
     _q.setFromAxisAngle(_axis, alpha);
-    const dir = out.copy(_fwd).applyQuaternion(_q).normalize();
+    const dir = _dir.copy(_fwd).applyQuaternion(_q).normalize();
     const o = cam.position;
     const b = o.dot(dir);
     const c = o.lengthSq() - r * r;

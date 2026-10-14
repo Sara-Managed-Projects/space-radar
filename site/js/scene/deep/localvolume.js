@@ -35,7 +35,7 @@ export const UNDER_MEASURED = { marks: 'same' };
 const MLY_KM = 9460730472580.8 * 1e6;
 const SUN_INERTIAL = 'sun-inertial';
 export const MAGIC = 'SRLV';
-export const MIN_PX = 2.2; // CSS px: the smallest a galaxy is drawn, as a point
+export const MIN_PX = 3; // CSS px: the smallest a galaxy is drawn, as a point
 export const MAX_PX = 256; // CSS px: past this a galaxy's own light is spread too thin to see
 export const CULL_PX = 3; // CSS px of the whole tile's radius on screen, below which it is not drawn
 const COLOURS = [
@@ -133,11 +133,11 @@ void main() {
   // Its apparent B magnitude from the camera: M + 5 log10(d / 10 pc).
   float m = aMag + 5.0 * log(dMly * 1.0e6 / 32.6156) / log(10.0);
   float lit = aMag > 90.0 ? 0.3 : clamp((19.0 - m) / 11.0, 0.0, 1.0);
-  // A faint floor: every catalogued galaxy shows as a mark of the map; its light spreads over its
-  // disc when it is wide (surface brightness), and past uMaxPx it fades rather than grow.
+  // A floor: every catalogued galaxy shows as a mark of the map; its light spreads over its disc when
+  // it is wide (surface brightness), and past uMaxPx it fades rather than grow.
   float spread = clamp((uMinPx * 2.5) / size, 0.18, 1.0);
   float past = wide > uMaxPx ? uMaxPx / wide : 1.0;
-  vLight = (0.2 + 0.8 * lit) * spread * spread * past;
+  vLight = (0.45 + 0.75 * lit) * spread * spread * past;
   vColour = aColour;
   gl_PointSize = size * uPixelRatio;
 }`;
@@ -150,8 +150,8 @@ void main() {
   vec2 p = gl_PointCoord * 2.0 - 1.0;
   float r2 = dot(p, p);
   if (r2 > 1.0) discard;
-  float prof = exp(-r2 * 3.5) - 0.0302;                                  // a soft disc, 0 at its rim
-  gl_FragColor = vec4(vColour * (vLight * prof * 0.9 * uGain), 1.0);
+  float prof = (exp(-r2 * 2.2) - 0.1108) / 0.8892;                       // a soft disc, 0 at its rim
+  gl_FragColor = vec4(vColour * (vLight * prof * uGain), 1.0);
 }`;
 
 const VERT_LINES = /* glsl */ `
@@ -159,18 +159,27 @@ attribute float aWeight;  // 1 at the catalogue's distance, 0 at either end of t
 attribute vec3 aColour;
 varying float vWeight;
 varying vec3 vColour;
+varying vec3 vView;       // view space, interpolated per fragment: how near the camera this bit of line is
 void main() {
   vWeight = aWeight;
   vColour = aColour;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vView = mv.xyz;
+  gl_Position = projectionMatrix * mv;
 }`;
 
+// A range is a faint smudge along the line of sight, brightest at the catalogue's value and gone at
+// its ends; where it passes near the camera it fades, or the few nearest would cross the whole view.
 const FRAG_LINES = /* glsl */ `
 uniform float uGain;
+uniform float uScale;
 varying float vWeight;
 varying vec3 vColour;
+varying vec3 vView;
 void main() {
-  gl_FragColor = vec4(vColour * (0.3 * vWeight * uGain), 1.0);
+  float dMly = length(vView) / uScale;
+  float nearFade = smoothstep(1.5, 5.0, dMly);
+  gl_FragColor = vec4(vColour * (0.16 * vWeight * vWeight * nearFade * uGain), 1.0);
 }`;
 
 async function fetchTile(base) {

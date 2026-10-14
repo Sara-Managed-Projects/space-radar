@@ -258,7 +258,7 @@ clips:
   - {trip: "to-the-edge", stop: "centre", hash: "843e0ab159ffc221", seconds: 16.75, words: 44, lufs: -16.4, opus: 66824, m4a: 86775, vtt: 336, wer: 0.0, heard: "4f70b05cac229896", voice: 0}
   - {trip: "to-the-edge", stop: "galaxy", hash: "0251a97379db8f61", seconds: 13.85, words: 33, lufs: -16.4, opus: 54311, m4a: 71996, vtt: 283, wer: 0.0, heard: "447ea895ff498710", voice: 0}
   - {trip: "to-the-edge", stop: "andromeda", hash: "41d250748640e957", seconds: 10.65, words: 28, lufs: -16.4, opus: 41587, m4a: 55696, vtt: 242, wer: 0.0, heard: "5717f5a75731e777", voice: 0}
-  - {trip: "to-the-edge", stop: "edge", hash: "25e885fd309f4109", seconds: 25.21, words: 67, lufs: -16.4, opus: 100152, m4a: 129807, vtt: 541, wer: 0.0, heard: "ff22e1b1d874cd9d", voice: 0}
+  - {trip: "to-the-edge", stop: "edge", hash: "e5b25fffdf5cbb46", seconds: 28.53, words: 75, lufs: -16.5, opus: 113788, m4a: 146759, vtt: 591, wer: 0.0, heard: "68e6be59cc5d14fa", voice: 0}
   - {trip: "roof-to-the-edge", stop: "roof", hash: "2a071e2beca5cb04", seconds: 15.26, words: 47, lufs: -16.4, opus: 59751, m4a: 79168, vtt: 346, wer: 0.0, heard: "877cbd0d20aa60ab", voice: 0}
   - {trip: "roof-to-the-edge", stop: "earth", hash: "43aacee9aed59205", seconds: 13.5, words: 39, lufs: -16.5, opus: 52399, m4a: 70258, vtt: 290, wer: 0.0, heard: "ed25319239a08a19", voice: 0}
   - {trip: "roof-to-the-edge", stop: "moon-orbit", hash: "4a9c60f383e332be", seconds: 16.57, words: 42, lufs: -16.4, opus: 66978, m4a: 85906, vtt: 293, wer: 0.0, heard: "4b12a3a2be146faf", voice: 0}
@@ -268,7 +268,7 @@ clips:
   - {trip: "roof-to-the-edge", stop: "radio", hash: "5c17e9a4ec1d91da", seconds: 20.51, words: 58, lufs: -16.4, opus: 80939, m4a: 105900, vtt: 425, wer: 0.0, heard: "28e87aeed45b0394", voice: 0}
   - {trip: "roof-to-the-edge", stop: "milky-way", hash: "396bdfe3743543f8", seconds: 14.97, words: 39, lufs: -16.5, opus: 58464, m4a: 77647, vtt: 323, wer: 0.0, heard: "9fd2824a7a1e82fe", voice: 0}
   - {trip: "roof-to-the-edge", stop: "local-group", hash: "079389490fe0848a", seconds: 16.4, words: 42, lufs: -16.5, opus: 65177, m4a: 85036, vtt: 318, wer: 0.0, heard: "1632be83f7b29742", voice: 0}
-  - {trip: "roof-to-the-edge", stop: "edge", hash: "aa21967328bdc223", seconds: 20.56, words: 57, lufs: -16.4, opus: 81611, m4a: 106118, vtt: 411, wer: 0.0, heard: "b875a3f84ff7795e", voice: 0}
+  - {trip: "roof-to-the-edge", stop: "edge", hash: "8b9a519a0cbd0cbc", seconds: 26.76, words: 73, lufs: -16.4, opus: 106843, m4a: 137848, vtt: 526}
   - {trip: "travel-to-exoplanets", stop: "all", hash: "1d484c40d627d939", seconds: 19.63, words: 58, lufs: -16.4, opus: 79052, m4a: 101554, vtt: 381, wer: 0.0, heard: "f9a6010898f891b3", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "e6b65efc612f8dab", seconds: 12.41, words: 34, lufs: -16.5, opus: 48456, m4a: 64607, vtt: 262, wer: 0.0, heard: "0360c1a0116a1c61", voice: 0}
   - {trip: "travel-to-exoplanets", stop: "trappist", hash: "5c6e1e960288ec92", seconds: 15.73, words: 45, lufs: -16.4, opus: 62854, m4a: 81559, vtt: 315, wer: 0.0, heard: "85b57d8e9120dba3", voice: 0}

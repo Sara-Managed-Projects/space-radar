@@ -595,6 +595,7 @@ export function rightNowRows(record, m, passInfo) {
     const lo = pickNumber(md, 'distLyLow');
     const hi = pickNumber(md, 'distLyHigh');
     if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+    else if (distLy !== null && distLy >= 1e9 && Number.isFinite(md.redshift)) rows.push([R.distanceFromSun, t(COPY.deepFacts.billionLightYears, { n: fmt.smart(Math.round(distLy / 1e8) / 10) })]);
     else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
     // Past the Local Group the distance is comoving (how far it is now) and the light-travel time is
     // not the distance read as years: both come from the redshift (data/cosmology.js, spec 0075 task 15).

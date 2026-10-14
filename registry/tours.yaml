@@ -823,12 +823,18 @@ tours:
         # read 2026-10-09, https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_and_the_cosmic_microwave_background:
         # ESA: "It formed about 380,000 years after the Big Bang." ... "the visible Universe is at least 93 billion light years across."
         # (card figure = page figure: about 380 000 years after the Big Bang = 380,000 (ESA Planck; NASA Physics of the Cosmos page also "just 380,000 years after the Big Bang") ; 46.5 billion light-years = half of ESA's 93 billion across (46.5 exactly); NASA expert says "about 92 billion light-years across" (46 radius))
+        # 2026-10-14 (spec 0075 task 17): the sphere is now the map's one cosmology's horizon,
+        # data/cosmology.js horizonLy() = 46.2 billion light-years (Planck 2018; NASA's "about 92
+        # billion light-years across"), so the card says "about 46" as the sphere's own label does; the
+        # microwave background left from just inside it (45.3, cosmology.js cmbLy); 13.8 billion years
+        # is the universe's age there (13.79). The card says both numbers, so neither is taken for the other.
         card:
           title: "The oldest light"
           body: >-
-            The sphere is the edge of what can be seen at all. The microwave background, light
-            released about 380 000 years after the Big Bang, reaches us from this surface, now 46.5
-            billion light-years away. It is a horizon around us, not a wall. Every place has its own.
+            The sphere is the edge of what can be seen at all, about 46 billion light-years away now.
+            No light has travelled for longer than 13.8 billion years: space stretched while it came.
+            The microwave background, released about 380 000 years after the Big Bang, reaches us
+            from just inside it. It is a horizon around us, not a wall. Every place has its own.
 
   # =============================================================================================
   # PLANETS AROUND OTHER STARS, THEN ONE SYSTEM OF THEM UP CLOSE (spec 0040, 2026-09-23): the
