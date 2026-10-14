@@ -1395,7 +1395,27 @@ Stage d writes this sub-section, and only this one.
 
 ### The cosmos: the local volume and the horizon (stage e)
 
-Stage e writes this sub-section, and only this one.
+- **The local volume's galaxies** (`site/data/deep/localvolume.bin` and `.json`, built by
+  `scripts/build_deep_localvolume.py`): the Updated Nearby Galaxy Catalog, Karachentsev I.D., Makarov
+  D.I., Kaisina E.I. 2013, *Astronomical Journal* 145, 101 (American Astronomical Society), read from
+  the CDS archive as VizieR catalogue J/AJ/145/101 (its ReadMe, table1 and table6) on 2026-10-14,
+  pinned by SHA-256 in the build script. "This research has made use of the VizieR catalogue access
+  tool, CDS, Strasbourg, France." The terms, as the VizieR licence page read that day
+  (https://cds.unistra.fr/vizier-org/licences_vizier.html): the data "are free of usage in a scientific
+  context", with the original authors and the publication cited, which this line does. Space Radar is
+  free and non-commercial. 800 of its 869 galaxies are drawn (the Milky Way and the 68 the map already
+  draws as deep-sky records are left out); the distance ranges of rows without a published error, and
+  the colours by type, are this map's (the manifest says which). The credit line:
+  Nearby galaxies: the Updated Nearby Galaxy Catalog (Karachentsev, Makarov & Kaisina 2013), via VizieR, CDS
+- **The cosmology** (`site/js/data/cosmology.js`): Planck Collaboration, "Planck 2018 results. VI.
+  Cosmological parameters", *Astronomy & Astrophysics* 641, A6 (2020), Table 2, as Astropy's
+  `Planck18` takes it. The reference values its test holds it to were computed once with Astropy
+  6.0.1 (Astropy Collaboration, BSD 3-Clause) and SciPy 1.13.1 (BSD 3-Clause), offline
+  (`scripts/cosmology_reference.py`, `tests/fixtures/cosmology_astropy.json`); neither ships.
+- **The horizon's explanation** follows NASA, "How Big is Space? We Asked a NASA Expert: Episode 61"
+  (2025-05-21, https://www.nasa.gov/science-research/astrophysics/how-big-is-space-we-asked-a-nasa-expert-episode-61/):
+  "the observable universe is about 92 billion light-years across". Words only; nothing of NASA's is
+  drawn.
 
 ## 4. Runtime data sources
 

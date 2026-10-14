@@ -165,6 +165,7 @@ data:
   - {id: stars,          file: site/data/stars.bin,                  source: "https://github.com/ofrohn/d3-celestial (data/stars.6.json, repacked)", licence: "BSD-3-Clause", credit: "Star catalogue: d3-celestial (Olaf Frohn)"}
   - {id: constellations, file: site/data/constellations.lines.json,  source: "https://github.com/ofrohn/d3-celestial", licence: "BSD-3-Clause", credit: "Constellation lines: d3-celestial (Olaf Frohn)"}
   - {id: constellation-names, file: site/data/constellation-names.json, source: "https://github.com/ofrohn/d3-celestial (constellations.json, fields extracted)", licence: "BSD-3-Clause", credit: "Constellation names: d3-celestial (Olaf Frohn)"}
+  - {id: localvolume, file: site/data/deep/localvolume.bin, source: "https://cdsarc.cds.unistra.fr/ftp/J/AJ/145/101/ (table1.dat, table6.dat; repacked by scripts/build_deep_localvolume.py, internal spec 0075 stage e)", licence: "VizieR terms: free of usage in a scientific context, the authors and publication cited", credit: "Nearby galaxies: the Updated Nearby Galaxy Catalog (Karachentsev, Makarov & Kaisina 2013), via VizieR, CDS"}
 
 # THIRD-PARTY MARKS DRAWN IN THE UI, as opposed to in the scene.
 #
