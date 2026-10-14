@@ -243,9 +243,12 @@ export function placeCaption(hole, view, size, band, opts = {}) {
   // (`opts.clearRight`, its right edge), not just of the target (seen on a runner, 2026-10-15: the
   // drift's caption, beside a 104 px button, lay over the trips' cards).
   const rightX = Math.max(hole.x + hole.w + reachX, Number(opts.clearRight) > 0 ? opts.clearRight + GUTTER : 0);
+  // Beside a target low on the screen, the caption stays over the free scene's foot: a desktop's
+  // time pill is there (seen on a runner, 2026-10-15: the drift's caption hid the pill's LIVE).
+  const sideY = (y) => (band ? Math.max(minY, Math.min(fitY(y), band.y + band.h - size.h - 8)) : fitY(y));
   const spot = {
-    right: { x: rightX, y: fitY(cy - size.h * 0.3 + 12), ok: rightX <= maxX },
-    left: { x: hole.x - reachX - size.w, y: fitY(cy - size.h * 0.3 + 12), ok: hole.x - reachX - size.w >= minX },
+    right: { x: rightX, y: sideY(cy - size.h * 0.3 + 12), ok: rightX <= maxX },
+    left: { x: hole.x - reachX - size.w, y: sideY(cy - size.h * 0.3 + 12), ok: hole.x - reachX - size.w >= minX },
     above: { x: fitX(cx - size.w / 2), y: hole.y - reachY - size.h, ok: hole.y - reachY - size.h >= minY },
     below: { x: fitX(cx - size.w / 2), y: hole.y + hole.h + reachY, ok: hole.y + hole.h + reachY <= maxY },
   };

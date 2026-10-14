@@ -240,6 +240,7 @@ const numbers = (d) => (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
   // On a desktop, a small target in the sidebar: the caption clears the whole column.
   const col = P.placeCaption(P.holeFor({ x: 40, y: 790, w: 104, h: 44 }, view), view, size, band, { clearRight: 380 });
   check(col.side === 'right' && col.x >= 380 + 16, `1440: the caption beside a small sidebar control clears the sidebar (${col.side} at ${col.x})`);
+  check(col.y + size.h <= band.y + band.h, `1440: and stays over the time pill, not on it (bottom ${col.y + size.h}, pill at ${band.y + band.h})`);
   const deep = P.placeCaption(P.holeFor({ x: 16, y: 579, w: 328, h: 56 }, tall), tall, small, null, { sheet: true });
   eq(deep.side, 'above', '360: and above a target too low in the sheet for it to fit under');
   const shareSheet = { x: 0, y: 380, w: 360, h: 360 };
