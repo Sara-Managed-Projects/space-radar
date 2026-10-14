@@ -5,7 +5,7 @@ export const HERO = {
   "id": "helix",
   "record": "dso-helix-nebula",
   "stage": "b",
-  "shipped": false,
+  "shipped": true,
   "children": [],
   "levels": {
     "2": "structure: the inner disc and the outer ring as crisp slabs lit by the photograph (8 samples a ring; 4 on T0), the knots and the white dwarf",
@@ -128,8 +128,8 @@ export const HERO = {
     "colours": "The photograph's own, with each exposure's stretch as the photograph has it; Deep declared enhanced",
     "distance": "655 ± 13 ly, the Gaia DR2 parallax of the central star (registry/dso-hand.yaml); the paper's arcseconds are scaled to it",
     "credits": "CREDITS.md section 3l, The Helix (stage b); the card's source line names the paper",
-    "by": null,
-    "date": null,
+    "by": "Space Radar maintainers",
+    "date": "2026-10-15",
     "astronomer": "not yet: the independent review is internal #785; the card says so"
   },
   "credits": [
