@@ -10,7 +10,7 @@
 // arrows highlight things asking to click, so it is a tour of all the most important features of
 // our project where the user should click on them and go to next."
 //
-// WHAT IT IS. Eight steps (data/onboarding.js, generated from registry/onboarding.yaml). Each
+// WHAT IT IS. Nine steps (data/onboarding.js, generated from registry/onboarding.yaml). Each
 // rings a real control, says one sentence and asks for one thing; doing the thing is the way on,
 // and Next, Skip and Escape are always there. The arithmetic (which step, where the caption goes,
 // the ink's paths) is ui/onboardingplan.js; this file owns the document, the listeners and the
@@ -220,7 +220,12 @@ export function createOnboarding(ctx, opts = {}) {
         if (!el.isConnected || el.closest('[hidden], [inert]') || typeof el.scrollIntoView !== 'function') continue;
         const r = el.getBoundingClientRect();
         if (!(r.width > 0 && r.height > 0)) continue;
-        try { el.scrollIntoView({ block: r.height > P.HEAD_MAX ? 'start' : 'nearest' }); } catch { /* an old browser */ }
+        try {
+          el.scrollIntoView({ block: r.height > P.HEAD_MAX ? 'start' : 'nearest' });
+          // A phone's sheet at half is laid out at full and moved down: "nearest" can leave the
+          // target under the screen's edge. Its head, then, at the top of what shows.
+          if (el.getBoundingClientRect().bottom > win.innerHeight - 8) el.scrollIntoView({ block: 'start' });
+        } catch { /* an old browser */ }
         return true;
       }
     }
@@ -291,11 +296,33 @@ export function createOnboarding(ctx, opts = {}) {
       hole = hit ? P.holeFor(hit[1], view) : null;
     }
     const withInk = !waiting && (scene || !!hole);
+    room(waiting, view);
     const sig = JSON.stringify([state.phase, state.index, hole, view, card.offsetWidth, card.offsetHeight, band(view)]);
     if (!fresh && sig === lastSig) return;
     lastSig = sig;
     holeEl.hidden = !hole;
     place(card, hole, view, step.id, withInk);
+  }
+
+  /**
+   * ROOM FOR THE CAPTION UNDER A PANEL (#757). On a phone What to show drops from the top bar to the
+   * foot of the screen, and a waiting caption has nowhere to go but over its lower rows. While a
+   * step waits and such a panel is open, the panel is shortened by the caption's height
+   * (onboarding.css, `sr-tour-room`); it scrolls, every row is reached, and the caption sits under it.
+   */
+  function room(waiting, view) {
+    const html = doc.documentElement;
+    const open = waiting && view.w < 600 && panels().some((p) => p.w >= view.w * 0.9 && p.y < view.h / 3);
+    // The panel's foot is 24 px off the screen's (ui.css); the caption's is 24 px over the free
+    // scene's, which a phone's sheet and time pill end. The panel ends 8 px over the caption.
+    const free = open ? P.freeBand(view, { side: rectOf('sr-side'), top: rectOf('sr-top'), pill: rectOf('sr-time') }) : null;
+    const h = open ? Math.max(0, Math.ceil(view.h - (free.y + free.h) + card.offsetHeight + 8)) : 0;
+    setRoom(open ? `${h}px` : null);
+    html.classList.toggle('sr-tour-room', open);
+  }
+  function setRoom(value) {
+    const st = doc.documentElement.style;
+    try { if (value) st.setProperty('--sr-tour-room', value); else st.removeProperty('--sr-tour-room'); } catch { /* a page with no custom properties */ }
   }
 
   function layoutInvite(fresh) {
@@ -389,7 +416,20 @@ export function createOnboarding(ctx, opts = {}) {
     if (coarse && /^(INPUT|TEXTAREA)$/.test(f.tagName)) return;
     f.setAttribute('aria-describedby', 'sr-tour-say sr-tour-ask');
     described = f;
+    // ON A PHONE THE SHEET RISES TO WHAT TAKES FOCUS (ui/sheet.js, for a keyboard): the tour's own
+    // focus is not a visitor reaching down, and a sheet at full covers the scene the step is about
+    // (seen on a runner, 2026-10-14: the tabs' and the trips' steps). It stays where the step put it.
+    const sheet = sheetOf();
+    const at = sheet ? sheet.detent() : null;
     try { f.focus({ preventScroll: true }); } catch { /* not focusable after all */ }
+    if (sheet && at && sheet.detent() !== at) { try { sheet.set(at); } catch { /* the sheet is gone */ } }
+  }
+
+  function sheetOf() {
+    try {
+      const sheet = ctx.shell && typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
+      return sheet && typeof sheet.detent === 'function' && typeof sheet.set === 'function' ? sheet : null;
+    } catch { return null; }
   }
 
   function paintWords(step) {
@@ -413,6 +453,7 @@ export function createOnboarding(ctx, opts = {}) {
     card.hidden = true;
     holeEl.hidden = true;
     ink.style.display = 'none';
+    room(false, null);
     prepare(step);
     const t0 = now();
     const settle = () => {
@@ -555,6 +596,8 @@ export function createOnboarding(ctx, opts = {}) {
     watch(false);
     const hadFocus = !!(root && root.contains(doc.activeElement));
     if (root) { root.hidden = true; root.classList.remove('is-drawn'); }
+    doc.documentElement.classList.remove('sr-tour-room');
+    setRoom(null);
     target = null;
     lastSig = '';
     const b = railButton();

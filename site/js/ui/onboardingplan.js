@@ -195,11 +195,16 @@ export function freeBand(view, avoid = {}) {
   // The pill is at the foot of a desktop and above a phone's sheet: either way under the free scene.
   if (avoid.pill && avoid.pill.h > 0 && avoid.pill.y > view.h * 0.3) bottom = Math.min(bottom, avoid.pill.y);
   // A panel the step's own press opened (What to show, the share sheet): a column on the right on
-  // a desktop, a sheet from the bottom on a phone. The caption waits beside it, not on it.
+  // a desktop; on a phone a sheet from the bottom (the share sheet) or a sheet dropped from the top
+  // bar (What to show). The caption waits beside it, not on it: on a phone on whichever side of it
+  // has more room (under What to show, which onboarding.js shortens by the caption's height while it
+  // waits: seen on a runner, 2026-10-14, the caption lay over its lower rows).
   for (const p of avoid.panels || []) {
     if (!p || !(p.w > 0) || !(p.h > 0)) continue;
-    if (p.w >= view.w * 0.9) bottom = Math.min(bottom, p.y);
-    else if (p.x > view.w / 2) right = Math.min(right, p.x);
+    if (p.w >= view.w * 0.9) {
+      const under = Math.max(top, p.y + p.h);
+      if (bottom - under > p.y - top) top = under; else bottom = Math.min(bottom, p.y);
+    } else if (p.x > view.w / 2) right = Math.min(right, p.x);
   }
   if (right - left < 120) { left = inset(view, 'left'); right = view.w - inset(view, 'right'); }
   if (bottom - top < 120) { top = inset(view, 'top'); bottom = view.h - inset(view, 'bottom'); }
@@ -218,7 +223,9 @@ export function placeCaption(hole, view, size, band) {
   const maxX = view.w - GUTTER - inset(view, 'right') - size.w;
   const minY = GUTTER + inset(view, 'top');
   const maxY = view.h - GUTTER - inset(view, 'bottom') - size.h;
-  const fitX = (x) => clamp(x, minX, Math.max(minX, maxX));
+  // On a phone the caption is the screen's width less its gutters, or 320 px on a wider phone: it
+  // stands in the middle, wherever its target is (three steps sat 19 px off at 390 px, #757).
+  const fitX = (x) => (view.w < NARROW ? Math.max(minX, Math.round((minX + maxX) / 2)) : clamp(x, minX, Math.max(minX, maxX)));
   const fitY = (y) => clamp(y, minY, Math.max(minY, maxY));
   if (!hole) {
     const b = band || { x: 0, y: 0, w: view.w, h: view.h };

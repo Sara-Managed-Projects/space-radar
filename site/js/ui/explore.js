@@ -508,6 +508,7 @@ export function createExplore(ctx, host) {
     // fetched when it is first opened: a reel is nobody's first visit.
     const own = button('sr-more', COPY.tripCard.onItsOwn);
     own.title = COPY.tripCard.onItsOwnTitle;
+    own.dataset.tour = 'drift'; // the tour's hook (registry/onboarding.yaml): the drift is its first row
     own.setAttribute('aria-expanded', 'false');
     const reels = el('div', 'sr-reels');
     reels.hidden = true;
