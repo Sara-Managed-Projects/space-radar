@@ -510,9 +510,10 @@ export const MERCURY_SHADOW = { depth: 0.97 };
  * ground is drawn exactly as the orange map drew it, and the card says the colour is added).
  * Under it, Magellan's altimeter heights as local relief: slopes, and shadows marched as Mercury's,
  * drawn `exaggeration` times what was measured. At 18.6 km a texel the true slopes of even Maxwell
- * Montes light nothing a screen can show.
+ * Montes light nothing a screen can show. A shadow takes `depth` of the direct light, not all of it: at 0.85
+ * the first look (2026-10-14) drew the ground at the terminator as black blots.
  */
-export const VENUS_GROUND = { tint: [1, 0.419, 0.105], exaggeration: 8, depth: 0.85, rangeM: 3000 };
+export const VENUS_GROUND = { tint: [1, 0.419, 0.105], exaggeration: 8, depth: 0.6, rangeM: 3000 };
 /** The relief row worn under the radar face (scene/worlds.js reliefWanted). */
 export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rangeM: VENUS_GROUND.rangeM, steep: VENUS_GROUND.exaggeration, mono: true, height: { self: true, depth: VENUS_GROUND.depth } };
 

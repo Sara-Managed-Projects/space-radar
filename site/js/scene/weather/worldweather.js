@@ -117,7 +117,7 @@ export const POLAR = { blue: [0.80, 0.88, 1.0], lean: 0.3, base: 0.93, arms: 3, 
  * height are the row's): how bright a streak is against the deck it stands over (linear RGB and how
  * much of it), and how much of the direct light its shadow on the deck takes. CIRRUS_SLOTS bands.
  */
-export const CIRRUS = { colour: [0.86, 0.9, 1.0], bright: 0.8, shadow: 0.6, layers: 2, maxArcRad: 0.06 };
+export const CIRRUS = { colour: [0.86, 0.9, 1.0], bright: 0.65, shadow: 0.6, layers: 2, maxArcRad: 0.06 };
 export const CIRRUS_SLOTS = 4;
 /**
  * The cirrus uniforms from the row: per band [v of its latitude, half-height in v, streaks round,

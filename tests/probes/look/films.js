@@ -46,6 +46,48 @@ for (const id of ['mercury', 'venus', 'uranus', 'neptune']) {
   await shot(id + '-4-terminator-measured', id + ': the same place and moment, Measured', 6000);
   row.terminatorMeasured = facts(id);
   setLook('film');
+  // The terminator from farther off and on the side of the screen the sidebar does not cover: the
+  // camera 70 degrees from the Sun's line, on the other side of it from the gibbous view.
+  rig.flyTo({ targetScene: centre(), offset: unit(mix(s, 0.34, side, -0.94)), distance: R * 2.2, ms: 0 });
+  await shot(id + '-6-terminator-wide', id + ': the terminator from 2.2 radii, on the open side of the screen, Film', 9000);
+  row.terminatorWide = facts(id);
+  if (id === 'neptune') {
+    // Straight down on the 29 N band (Voyager's streaks, PIA00058) where it meets the terminator.
+    const nn = north(id);
+    const u1 = side;
+    const u2 = unit(cross(nn, u1));
+    const lat = 29 * Math.PI / 180;
+    let best = null;
+    for (let k = 0; k < 360; k++) {
+      const a = k * Math.PI / 180;
+      const p = unit(mix(nn, Math.sin(lat), mix(u1, Math.cos(a), u2, Math.sin(a)), Math.cos(lat)));
+      const lit = p.x * s.x + p.y * s.y + p.z * s.z;
+      if (!best || Math.abs(lit - 0.15) < Math.abs(best.lit - 0.15)) best = { p, lit };
+    }
+    rig.flyTo({ targetScene: centre(), offset: best.p, distance: R * 1.2, ms: 0 });
+    await shot('neptune-7-band-29n', 'neptune: straight down on 29 N where it meets the terminator, a fifth of a radius up (the Sun ' + (Math.asin(best.lit) * 180 / Math.PI).toFixed(0) + ' degrees up)', 10000);
+    row.band29 = facts(id);
+    // The Adams ring where Voyager's arcs are: their place in the ring's own axes is the scene's
+    // NEPTUNE_ARCS turn (worked out here as scene/worlds.js arcTurnRad does, so an older ref is
+    // photographed at the same place) plus the middle of their spans, 266 degrees.
+    const ringMesh = mesh.userData && mesh.userData.ring;
+    if (ringMesh) {
+      const days = (sr.clock.now() - Date.UTC(2000, 0, 1, 12)) / 86400000;
+      const phi = ((((820.1194 - 541.1397757) * days) % 360 + 360) % 360 + 266) * Math.PI / 180;
+      ringMesh.updateMatrixWorld();
+      const e = ringMesh.matrixWorld.elements;
+      const rl = 62933 / 24622;
+      const lx = Math.cos(phi) * rl, ly = Math.sin(phi) * rl;
+      const wx = e[0] * lx + e[4] * ly + e[12], wy = e[1] * lx + e[5] * ly + e[13], wz = e[2] * lx + e[6] * ly + e[14];
+      const toArc = unit({ x: wx - mesh.position.x, y: wy - mesh.position.y, z: wz - mesh.position.z });
+      const lit2 = Math.sign(nn.x * s.x + nn.y * s.y + nn.z * s.z) || 1;
+      rig.flyTo({ targetScene: centre(), offset: unit(mix(toArc, 1, nn, 0.7 * lit2)), distance: R * 4.5, ms: 0 });
+      await shot('neptune-8-arcs', 'neptune: over the part of the Adams ring where Voyager\'s five arcs are drawn, from the lit face, Film', 9000);
+      setLook('measured');
+      await shot('neptune-9-arcs-measured', 'neptune: the same, Measured (the arcs are illustrative in place and not drawn)', 6000);
+      setLook('film');
+    }
+  }
   if (id === 'venus' && sr.worlds.setFace) {
     sr.worlds.setFace('venus', 'surface');
     await until(() => sr.worlds.faceOf('venus') === 'surface', 20000);
