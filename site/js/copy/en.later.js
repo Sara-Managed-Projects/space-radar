@@ -153,7 +153,6 @@ Object.assign(COPY, {
   // Each label says what the sphere is and how far, in words the scene can carry on one line.
   shells: {
     radio: 'Radio from Earth has reached {n} light-years',
-    cmb: 'The microwave background: 46.5 billion light-years',
   },
   // ui/subscribe.js (issue #251): email-only alerts for upcoming launches and meteor shower
   // peaks -- the same for every subscriber, never a per-location pass alert (that is issue #290).
@@ -1724,5 +1723,14 @@ Object.assign(COPY, {
   deepGalaxy: {},
 
   // e. Cosmic scale (stage e, internal #790) writes only inside this block.
-  deepCosmos: {},
+  deepCosmos: {
+    // scene/shells.js: the edge of the observable universe, two lines on the scene. {n} is
+    // data/cosmology.js horizonLy() in billions (46), {age} the universe's age (13.8): the distance now
+    // and the time the light took, side by side, so the one is never taken for the other (DS-D08).
+    horizon: 'The edge of the observable universe, about {n} billion light-years away now',
+    horizonWhy: 'Its light set out {age} billion years ago; space has stretched since',
+    // Past the horizon, to the map's edge at 50 billion light-years (DS-D09): what the band is.
+    edge: '{n} billion light-years: past everything we can see',
+    edgeWhy: 'The observable universe ends about {h} billion light-years away. Nothing measured lies out here.',
+  },
 });

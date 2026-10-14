@@ -108,10 +108,11 @@ export const EXOTICS = [
     "kind": "blackhole",
     "why": "One of the heaviest black holes known, forty billion Suns, so far away that its light left before the Earth existed.",
     "source": "https://en.wikipedia.org/wiki/TON_618 (infobox; 2019 mass estimate, read 2026-09-08)",
-    "distance_note": "light-travel distance; redshift 2.219, so its light left 10.8 billion years ago and the object is farther now",
+    "distance_note": "how far it is now (comoving distance), from its redshift of 2.219 in the Planck 2018 cosmology. Its light-travel time is 10.8 billion years: we see it as it was when the universe was 3 billion years old, not as it is",
+    "redshift": 2.219,
     "raDeg": 187.10375,
     "decDeg": 31.477222,
-    "distLy": 10800000000,
+    "distLy": 18300000000,
     "massMsun": 40700000000
   },
   {

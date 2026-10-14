@@ -17,7 +17,7 @@ import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance, SELECTED_PX, MODEL_SPAN, warmModels } from './scene/heroes.js';
 import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, nightGroundPose, openingPlan, OPENING_KEY } from './scene/framing.js';
-import { createCameraRig, worldFramingDistance } from './scene/camera.js';
+import { createCameraRig, worldFramingDistance, steadyDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
@@ -1408,7 +1408,10 @@ export async function boot({ setStatus } = {}) {
     // A star is a place on the stellar rung: from a world stage its true position is past the far
     // plane, so selecting one recentres on the Sun at one unit = one light-year first. From a star
     // system's stage too: there the rest of the sky is a shell of directions.
-    else if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
+    else if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage(farOff(record) ? 'local-group' : 'stellar');
+    // A place past the stellar rung's far plane (a billion light-years: TON 618) is met on the Local
+    // Group's, where it is drawn at all (spec 0075 task 17, DS-D10).
+    else if (farOff(record) && isLadderStage(stage.worldId) && stage.worldId !== 'local-group' && opts.fly !== false) ctx.setStage('local-group');
     // And back: a thing inside the Solar System, chosen on a rung (from search, or the Next list),
     // sits inside the Sun's pixel there and its layer does not draw (isLayerDrawable above), so the
     // camera would fly into one pixel and show nothing. It goes home to the Earth stage first. The
@@ -1747,6 +1750,11 @@ export async function boot({ setStatus } = {}) {
     }
   }
 
+  /** More than a billion light-years from the Sun: past the stellar rung's far plane (1e9 units). */
+  function farOff(record) {
+    const p = record && record.klass !== 'world' && record.pos;
+    return !!p && Math.hypot(p.x, p.y, p.z) > 1e9 * 9460730472580.8;
+  }
   function arrivalDistance(record, pos) {
     if (record && record.klass === 'world') {
       // 3.5 radii, or farther when the free part of the screen is narrower than that disc
@@ -1776,7 +1784,8 @@ export async function boot({ setStatus } = {}) {
     if (phys) return Math.max(1e-9, (phys.radiusKm * STAR_ARRIVAL_RADII) / stage.unitKm);
     if (record && record.klass === 'star') return 0.4;
     if (record && record.klass === 'exoplanet') return 0.4;
-    if (record && record.klass === 'exotic') return 0.4;
+    // Past a billion light-years, no nearer than float32 holds it steady (scene/camera.js, DS-D10).
+    if (record && record.klass === 'exotic') return farOff(record) && pos ? Math.max(0.4, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : 0.4;
     if (record && record.klass === 'dso') {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;

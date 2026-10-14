@@ -809,7 +809,10 @@ tours:
       - id: edge
         target: {world: sun}
         stage: local-group
-        distance_km: 1500000000000000000000000
+        # 49.7 billion light-years: inside the map's edge (50, scene/camera.js EDGE_LY), just outside
+        # the horizon's sphere (46.2, data/cosmology.js), so its near wall fills the view (spec 0075
+        # task 17). It stood at 158 billion light-years until 2026-10-14.
+        distance_km: 470000000000000000000000
         climb: true
         drift: none
         chapter: "The edge"

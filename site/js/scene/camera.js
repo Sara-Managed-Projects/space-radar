@@ -32,6 +32,30 @@
 // onDone is always deferred to a later update() and can never be synchronous at all.
 
 import * as THREE from '../../vendor/three.module.min.js';
+import { stage as theStage } from './stage.js';
+
+/**
+ * THE EDGE OF THE MAP (internal spec 0075 task 17, DS-D09): 50 billion light-years. The observable
+ * universe ends about 46 billion light-years away (data/cosmology.js horizonLy); the last few are an
+ * illustration with nothing measured in them (scene/shells.js says so on the scene), and past 50 the
+ * wheel stops. scene/handoff.js EDGE_KM is the same distance; tests/test_handoff.mjs holds the two equal.
+ */
+export const EDGE_LY = 5e10;
+const LY_KM = 9460730472580.8;
+/** The farthest a camera may stand from what it looks at, in the scene units of a stage of `unitKm`. */
+export function edgeDistance(unitKm) {
+  return unitKm > 0 ? (EDGE_LY * LY_KM) / unitKm : Infinity;
+}
+/**
+ * The nearest a camera should stand to a point `d` scene units from its stage's origin to see it
+ * steady (DS-D10). The GPU holds positions and the view in float32, 7 digits: a point 18 300 units
+ * out (TON 618 on the local-group stage) is placed to 0.002 units, which from 0.4 units is 4 px of
+ * wander as the camera turns (tests/test_localvolume.mjs measured it). From a thousandth of its
+ * distance it is a tenth of a pixel. Pure.
+ */
+export function steadyDistance(d) {
+  return Number.isFinite(d) && d > 0 ? d * 1e-3 : 0;
+}
 
 // docs/design-language.md: camera motion is always eased, cubic-bezier(0.2, 0.8, 0.2, 1),
 // 600-900 ms, never a cut.
@@ -319,7 +343,8 @@ export function createCameraRig(camera, domElement, options = {}) {
   }
 
   function clampDistance(d) {
-    return THREE.MathUtils.clamp(d, state.minDistance, state.maxDistance);
+    // The edge holds on every stage, in that stage's units: a hand on the wheel stops there.
+    return THREE.MathUtils.clamp(d, state.minDistance, Math.min(state.maxDistance, edgeDistance(theStage.unitKm)));
   }
 
   const _unit = new THREE.Vector3();
