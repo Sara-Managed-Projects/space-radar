@@ -263,10 +263,9 @@ export const REAL_MODELS = {
     //                   openings, the colour camera's five lenses and a gold 60 cm reflector; ONE
     //                   wing of three panels (10.5 m2) on a long yoke.
     // BY NUMBER, from the live saved data of 2026-10-12: SENTINEL-2A, -2B, -2C; SENTINEL-3A, -3B.
-    // SENTINEL-3C (launched 15 September 2026) is in that data under 100690, and data/parsers.js
-    // reads a number of 90 000 and up as a placeholder the catalogue has not replaced yet. Whether
-    // 100690 stays is not something this file can know, and a number that may change is not a
-    // key: 3C is routed BY NAME further down (`sentinel-3c`, klass-gated), which holds either way.
+    // SENTINEL-3C (launched 15 September 2026) is in that data under 100690, a real number since the
+    // five-digit catalogue ran out (data/catnum.js; until 2026-10-14 data/parsers.js read 90 000 and
+    // up as a placeholder). 3C is routed BY NAME further down (`sentinel-3c`, klass-gated).
     // SENTINEL-5P and SENTINEL-6 are other craft: 5P has its own file since batch nine (below), 6A and
     // 6B keep NASA's own file.
     // `axes: 'app'`: the instruments on the file's +Z, which the app turns to the Earth, as they
@@ -863,7 +862,7 @@ export const REAL_MODELS = {
     iceye: { build: 'radar', file: 'iceye.glb', colour: 'satellite', name: 'an ICEYE radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     // SENTINEL-3C BY NAME (batch eight, 2026-10-14; public #950): the third of the series, launched
     // 15 September 2026, is in the live saved data of 2026-10-12 as `SENTINEL-3C` under catalogue
-    // number 100690, which data/parsers.js reads as a placeholder (90 000 and up). Its sisters are
+    // number 100690 (real: data/catnum.js; read as a placeholder until 2026-10-14). Its sisters are
     // routed by number above; this key takes the same file for the same design. Klass-gated, and a
     // whole word: `SENTINEL-3C DEB` (debris) and `SENTINEL-3A` do not match it. Not `generic`: the
     // file is this craft. Once its number is known to be its own, add it above and leave this key.

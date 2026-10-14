@@ -39,7 +39,7 @@ on:
         description: "Window height, CSS px"
         default: "900"
       mobile:
-        description: "A phone instead: 390 x 844, with the tool's --mobile"
+        description: "A phone instead: 390 x 844 (or width x height when given), with the tool's --mobile"
         type: boolean
         default: false
       hold_latch:
@@ -106,7 +106,8 @@ jobs:
               if not re.fullmatch(r"[a-z0-9,-]*", harvest): sys.exit(f"harvest {harvest!r}: source ids with commas")
               if not (re.fullmatch(r"\d{3,4}", width) and re.fullmatch(r"\d{3,4}", height)): sys.exit("width and height: three or four digits")
               if not re.fullmatch(r"[A-Za-z0-9_.-]{0,80}", subject): sys.exit(f"subject {subject!r}: a record id (letters, digits, dot, dash, underscore)")
-              if mobile: width, height = "390", "844"
+              # A phone is 390 x 844 unless a size was asked for with it (a 360 px phone: -f width=360 -f height=780).
+              if mobile and (width, height) == ("1440", "900"): width, height = "390", "844"
               return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height, "subject": subject}
           if e["EVENT"] == "workflow_dispatch":
               browsers = ["chromium", "firefox", "webkit"] if e["BROWSER"] == "all" else [e["BROWSER"]]

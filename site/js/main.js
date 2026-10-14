@@ -34,6 +34,7 @@ import { toast } from './ui/share.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
+import { satIdOf } from './data/catnum.js';
 import { createDensity } from './ui/density.js';
 import { createTripGate } from './ui/tripgate.js';
 import { createVeil } from './ui/veil.js';
@@ -3200,11 +3201,13 @@ function resolveAt(ctx, id) {
   // A planet or a star system by its bare id, as `#go=` gives it: `kepler-186-f`, `kepler-186`.
   const direct = ctx.recordById(text) || ctx.recordById(`exo-${text}`) || ctx.recordById(`star-${text}`);
   if (direct) return direct;
-  if (/^[0-9]+$/.test(text)) {
-    const sat = ctx.recordById(`sat-${text}`);
-    if (sat) return sat;
-  }
+  // A number, Alpha-5 too (`100690`, `A0690`); and `int-<designator>`, the id a number of 90 000 and up had before 2026-10-14.
+  const sat = satIdOf(text) && ctx.recordById(satIdOf(text));
+  if (sat) return sat;
   const records = typeof ctx.records === 'function' ? ctx.records() : [];
+  const intl = /^int-(.+)$/.exec(text);
+  const byIntl = intl && records.find((r) => r && r.meta && r.meta.intlDesignator === intl[1]);
+  if (byIntl) return byIntl;
   const found = findMatches(buildIndex(records, ctx.layers || []), text.replace(/[-_+]+/g, ' '), 1);
   const hit = found.hits[0];
   return hit && !found.fallback && hit.score >= LINK_MIN_SCORE ? hit.record : null;

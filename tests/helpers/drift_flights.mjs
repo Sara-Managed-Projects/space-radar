@@ -90,8 +90,10 @@ export function flightNow(hop, rig, pace = 'steady') {
 
 /**
  * Fly one hop and measure it. Returns seconds, the three peaks and when each came (0..1 of the
- * flight), and the largest step the camera took in one frame as a share of its distance to the
- * nearer body (a jump shows here).
+ * flight), the largest step the camera took in one frame as a share of its distance to the
+ * nearer body (a jump shows here), and with a world on the stage (the Earth at the origin) the
+ * frames the rig's keep-out had to push the camera off it and the camera's nearest approach to it
+ * (1 is the keep-out's edge).
  */
 export function fly(hop, flightFor, fps = 60) {
   const camera = new THREE.PerspectiveCamera(FOV, ASPECT, 1e-9, 1e12);
@@ -123,9 +125,16 @@ export function fly(hop, flightFor, fps = 60) {
   const peaks = { turn: 0, sweep: 0, loom: 0, turnAt: 0, sweepAt: 0, loomAt: 0, jump: 0 };
   const samples = [];
   let frames = 0;
+  // Frames on which the rig's keep-out (scene/camera.js clearWorld) had to move the camera off the
+  // world: the flight's own curve went through it.
+  let pushed = 0;
+  let clearance = Infinity;
+  const keepOut = hop.world > 0 ? hop.world * 1.02 : 0;
   while (!done && frames < fps * 240) {
     rig.update(dt, dt * 1000);
     frames += 1;
+    if (rig.state.cameraDistance > rig.state.distance * (1 + 1e-9)) pushed += 1;
+    if (keepOut) clearance = Math.min(clearance, camera.position.length() / keepOut);
     const now = read();
     const turn = (2 * Math.acos(Math.min(1, Math.abs(prev.quat.dot(now.quat))))) / dt;
     let sweep = 0;
@@ -150,7 +159,7 @@ export function fly(hop, flightFor, fps = 60) {
   const deg = 180 / Math.PI;
   const end = rig.saveState();
   return {
-    seconds: frames / fps, landed: done,
+    seconds: frames / fps, landed: done, pushed, clearance,
     end: { target: end.target.toArray(), distance: end.distance, azimuth: end.azimuth, polar: end.polar },
     turnDegS: peaks.turn * deg, sweepDegS: peaks.sweep * deg, loomPerS: peaks.loom,
     turnAt: peaks.turnAt, sweepAt: peaks.sweepAt, loomAt: peaks.loomAt, jump: peaks.jump, samples,

@@ -13,14 +13,15 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const [issRow] = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/celestrak_gp.json'), 'utf8'));
-// a supplemental-file placeholder: catalogue number 100001, a real designator, an epoch minutes old
-const fresh = { ...issRow, OBJECT_NAME: 'STARLINK-99999', OBJECT_ID: '2026-160T', NORAD_CAT_ID: 100001, EPOCH: new Date().toISOString().replace('Z', '') };
+// a stand-in number: an 18 SDS launch nominal (799xxxxxx, data/catnum.js), a real designator, an
+// epoch minutes old. Not 100001: since the five-digit catalogue ran out (2026-07-11) that is a real number.
+const fresh = { ...issRow, OBJECT_NAME: 'STARLINK-99999', OBJECT_ID: '2026-160T', NORAD_CAT_ID: 799000123, EPOCH: new Date().toISOString().replace('Z', '') };
 const nowish = { ...issRow, EPOCH: new Date().toISOString().replace('Z', '') };
 const recs = parseCelestrakGP([fresh, nowish], { layer: 'starlink-trains', source: 'celestrak-starlink' });
 const prov = recs.find((r) => r.name === 'STARLINK-99999');
 const real = recs.find((r) => r.name !== 'STARLINK-99999');
 check(!!prov && prov.id === 'int-2026-160T', `a placeholder number gives a designator id (${prov && prov.id})`);
-check(prov.meta.provisional === true && prov.meta.noradId === null && prov.meta.catalogueNumber === 100001, 'it is flagged provisional, with no NORAD id but the placeholder kept');
+check(prov.meta.provisional === true && prov.meta.noradId === null && prov.meta.catalogueNumber === 799000123, 'it is flagged provisional, with no NORAD id but the placeholder kept');
 check(prov.cls === 'inferred', `fresh elements do not make a provisional object "measured" (${prov.cls})`);
 check(real && real.meta.provisional === false && real.cls === 'measured', `a numbered object with fresh elements stays measured (${real && real.cls})`);
 check(typeof COPY.cls.provisional === 'string' && COPY.cls.provisional.includes('not yet in the public catalogue'), 'the card has the words');

@@ -107,6 +107,19 @@ steps:
     awaits: press
     then: wait
 
+  # Added 2026-10-15 (internal #757): the drift is the one way to see the map that asks nothing of
+  # a hand, and a newcomer can use it in the first minute. Its button opens a list and does not
+  # leave the map, so the step can come before the trips' and wait; Drift itself, pressed from the
+  # list, ends the tour as a trip does.
+  - id: drift
+    teaches: drift
+    hooks: [drift]
+    say: "Play on its own lets the map wander, from thing to thing."
+    ask: "Press it to see Drift, which flies until you take over."
+    awaits: press
+    then: wait
+    prepare: [home, sheet]
+
   - id: trips
     teaches: trips
     hooks: [trips]
@@ -170,7 +183,7 @@ features:
     name: The drift, a camera that wanders on its own
     files: [site/js/ui/drift.js]
     surfaces: ["want:wantDrift"]
-    not: "One row inside Trips' Play on its own, where the last step ends; its bar is being redrawn (Ivan, 2026-10-14, item 4)."
+    step: drift
   - id: reels
     name: Reels, a screen that plays trips on its own
     files: [site/js/ui/autopilot.js]

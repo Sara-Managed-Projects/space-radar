@@ -195,11 +195,19 @@ export function freeBand(view, avoid = {}) {
   // The pill is at the foot of a desktop and above a phone's sheet: either way under the free scene.
   if (avoid.pill && avoid.pill.h > 0 && avoid.pill.y > view.h * 0.3) bottom = Math.min(bottom, avoid.pill.y);
   // A panel the step's own press opened (What to show, the share sheet): a column on the right on
-  // a desktop, a sheet from the bottom on a phone. The caption waits beside it, not on it.
+  // a desktop; on a phone a sheet from the bottom (the share sheet) or a sheet dropped from the top
+  // bar (What to show). The caption waits beside it, not on it: on a phone on whichever side of it
+  // has more room (under What to show, which onboarding.js shortens by the caption's height while it
+  // waits: seen on a runner, 2026-10-14, the caption lay over its lower rows).
   for (const p of avoid.panels || []) {
     if (!p || !(p.w > 0) || !(p.h > 0)) continue;
-    if (p.w >= view.w * 0.9) bottom = Math.min(bottom, p.y);
-    else if (p.x > view.w / 2) right = Math.min(right, p.x);
+    if (p.w >= view.w * 0.9) {
+      // Dropped from the top bar, it lies over the phone's sheet and pill: under it is free to the
+      // screen's foot, whatever they would have said.
+      const under = p.y + p.h;
+      const foot = view.h - inset(view, 'bottom');
+      if (p.y < view.h / 3 && foot - under >= 120) { top = under; bottom = foot; } else bottom = Math.min(bottom, p.y);
+    } else if (p.x > view.w / 2) right = Math.min(right, p.x);
   }
   if (right - left < 120) { left = inset(view, 'left'); right = view.w - inset(view, 'right'); }
   if (bottom - top < 120) { top = inset(view, 'top'); bottom = view.h - inset(view, 'bottom'); }
@@ -210,15 +218,17 @@ export function freeBand(view, avoid = {}) {
  * Where the caption goes. With a hole: beside it when there is room (right, then left), above or
  * below it when the hole is in the middle of the screen or the screen is narrow; never over the
  * hole unless nothing fits; on a phone never beside it (the first visit's line is small enough to
- * fit beside the More button, and sat on the search field). Without one: the foot of the free band.
- * Returns {x, y, side}.
+ * fit beside the More button, and sat on the search field); on a phone, for a target in the sheet
+ * (`opts.sheet`), under it first. Without one: the foot of the free band. Returns {x, y, side}.
  */
-export function placeCaption(hole, view, size, band) {
+export function placeCaption(hole, view, size, band, opts = {}) {
   const minX = GUTTER + inset(view, 'left');
   const maxX = view.w - GUTTER - inset(view, 'right') - size.w;
   const minY = GUTTER + inset(view, 'top');
   const maxY = view.h - GUTTER - inset(view, 'bottom') - size.h;
-  const fitX = (x) => clamp(x, minX, Math.max(minX, maxX));
+  // On a phone the caption is the screen's width less its gutters, or 320 px on a wider phone: it
+  // stands in the middle, wherever its target is (three steps sat 19 px off at 390 px, #757).
+  const fitX = (x) => (view.w < NARROW ? Math.max(minX, Math.round((minX + maxX) / 2)) : clamp(x, minX, Math.max(minX, maxX)));
   const fitY = (y) => clamp(y, minY, Math.max(minY, maxY));
   if (!hole) {
     const b = band || { x: 0, y: 0, w: view.w, h: view.h };
@@ -229,16 +239,26 @@ export function placeCaption(hole, view, size, band) {
   const cy = hole.y + hole.h / 2;
   const reachX = r.a - hole.w / 2 + REACH;
   const reachY = r.b - hole.h / 2 + REACH;
+  // A target in a desktop's sidebar: the caption beside it stands clear of the whole column
+  // (`opts.clearRight`, its right edge), not just of the target (seen on a runner, 2026-10-15: the
+  // drift's caption, beside a 104 px button, lay over the trips' cards).
+  const rightX = Math.max(hole.x + hole.w + reachX, Number(opts.clearRight) > 0 ? opts.clearRight + GUTTER : 0);
+  // Beside a target low on the screen, the caption stays over the free scene's foot: a desktop's
+  // time pill is there (seen on a runner, 2026-10-15: the drift's caption hid the pill's LIVE).
+  const sideY = (y) => (band ? Math.max(minY, Math.min(fitY(y), band.y + band.h - size.h - 8)) : fitY(y));
   const spot = {
-    right: { x: hole.x + hole.w + reachX, y: fitY(cy - size.h * 0.3 + 12), ok: hole.x + hole.w + reachX <= maxX },
-    left: { x: hole.x - reachX - size.w, y: fitY(cy - size.h * 0.3 + 12), ok: hole.x - reachX - size.w >= minX },
+    right: { x: rightX, y: sideY(cy - size.h * 0.3 + 12), ok: rightX <= maxX },
+    left: { x: hole.x - reachX - size.w, y: sideY(cy - size.h * 0.3 + 12), ok: hole.x - reachX - size.w >= minX },
     above: { x: fitX(cx - size.w / 2), y: hole.y - reachY - size.h, ok: hole.y - reachY - size.h >= minY },
     below: { x: fitX(cx - size.w / 2), y: hole.y + hole.h + reachY, ok: hole.y + hole.h + reachY <= maxY },
   };
   const middle = cx > view.w / 3 && cx < (view.w * 2) / 3;
   const roomAbove = hole.y;
   const roomBelow = view.h - hole.y - hole.h;
-  const vertical = roomAbove >= roomBelow ? ['above', 'below'] : ['below', 'above'];
+  // A target in a phone's sheet (`opts.sheet`): the caption goes under it, over the sheet's own
+  // lists, when it fits there, and leaves the scene above the sheet free (seen on a runner,
+  // 2026-10-15: the four views' caption lay over the half of the scene the sheet leaves).
+  const vertical = opts.sheet && view.w < NARROW ? ['below', 'above'] : roomAbove >= roomBelow ? ['above', 'below'] : ['below', 'above'];
   const order = middle || view.w < NARROW ? [...vertical, 'right', 'left'] : ['right', 'left', ...vertical];
   for (const side of order) if (spot[side].ok) return { x: spot[side].x, y: spot[side].y, side };
   // Nothing fits (a hole as large as the screen): the side with the most room, clamped.

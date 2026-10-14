@@ -227,6 +227,7 @@ export const NARRATION = {
     "onboarding/places": 6.2,
     "onboarding/layers": 6.01,
     "onboarding/share": 5.37,
+    "onboarding/drift": 7.02,
     "onboarding/trips": 5.18
   },
   "versions": {
@@ -442,6 +443,7 @@ export const NARRATION = {
     "onboarding/places": "811db526",
     "onboarding/layers": "7cc579c4",
     "onboarding/share": "bec362ae",
+    "onboarding/drift": "cd2a1bd1",
     "onboarding/trips": "c64e150f"
   }
 };
