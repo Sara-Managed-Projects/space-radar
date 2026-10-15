@@ -5454,7 +5454,7 @@ export const TOURS = [
 "drift_rate_deg_s": 1,
 "key_light_deg": 75,
 "card": {
-"title": "R136, home of the heaviest stars known",
+"title": "R136, where the heaviest stars are",
 "body": "At its heart is R136, a cluster under two million years old whose light makes most of the nebula glow. Its star R136a1 is among the heaviest known, two to three hundred Suns. The stars drawn are a sample, at its real place."
 },
 "frame_radii": 5.0,
