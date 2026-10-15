@@ -105,7 +105,9 @@ html_text = (out / "embed" / "index.html").read_text(encoding="utf-8")
 page = Page()
 page.feed(html_text)
 objects, trips = page.options["gen-object"], page.options["gen-trip"]
-ok(len(objects) >= 200 and len(trips) == 26, f"the page offers {len(objects)} objects and {len(trips)} trips")
+# One option per trip of the registry (it was a typed 26 until spec 0075 stage f added two).
+n_trips = len(re.findall(r"^  - id: ", (ROOT / "registry/tours.yaml").read_text(encoding="utf-8"), re.M))
+ok(len(objects) >= 200 and len(trips) == n_trips, f"the page offers {len(objects)} objects and {len(trips)} trips (the registry has {n_trips})")
 ok((out / "embed" / "generate.js").read_text() == (ROOT / "templates/embed/generate.js").read_text(), "embed/generate.js is the template's generator, unchanged")
 
 # --- 1: the code works, for every choice -------------------------------------------------------------
