@@ -181,6 +181,8 @@ const CONTRACT = {
   'scene/sunimage.js': ['loadSunImage', 'imageFrame', 'imageUv', 'imageWeight', 'cropOf', 'textureBytes', 'IMAGE_GAIN', 'IMAGE_EDGE'],
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
+  // 0076 W2-a (traverse.js)
+  // 0076 W2-c (plumes.js)
 };
 
 const problems = [];

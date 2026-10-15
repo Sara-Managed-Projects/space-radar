@@ -477,6 +477,8 @@ export async function boot({ setStatus } = {}) {
     else if (isLadderStage(id)) ctx.wantDeep();
     if (isSystemStage(id)) systems.enter(id);
     else systems.leave();
+    // 0076 W2-a
+    // 0076 W2-c
     // The Milky Way is fetched, built and its shaders compiled while the stellar rung is up (internal
     // #549: entering the galaxy rung stalled about three seconds), not on the galaxy rung's first frame.
     // Not on a metered connection, where the 2.2 MB file waits for the rung that draws it.
