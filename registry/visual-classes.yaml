@@ -1,0 +1,761 @@
+version: 1
+# THE VISUAL CLASSES: which renderer draws every record, how honest the drawing is, and where its words come
+# from (internal spec 0076 stage W2-e; internal #859 for SR-PLAN-102, -104, -174 and the 38 class source notes,
+# #921 for SR-PLAN-183).
+#
+# The package of 2026-10-15 (internal specs/0076-release-1-2/package-2026-10-15/04_OBJECT_TYPE_SPECS/) names 38
+# classes of thing, from SUN to SPECTRAL_SKY. This file maps each onto the modules of this repository that draw
+# it today; it does not invent a renderer, and a class nothing draws says where one is planned. Four classes of
+# the house (`house: true`) hold what the package has no class for: the Earth's live data, ground stations,
+# oddities and the layers that draw several classes at once.
+#
+# scripts/coverage.py reads every registry, gives each record ONE class by the selectors under `records:`, and
+# writes docs/COVERAGE.md (one section per class, from `note:`) and, through scripts/gen_visual_classes_js.py,
+# site/js/data/visualclasses.js (for search by kind, spec 0076 W3-e). tests/test_coverage.py fails on a record
+# no class takes (or two take), a class with records and no renderer, a renderer that is not a file, a record
+# with no source or no credit CREDITS.md carries, and an illustrative record whose words claim a measurement.
+#
+# A class:
+#   id         the package's renderer id (or the house's)
+#   title      what a person calls it
+#   house      true for a class the package does not have
+#   renderer   the modules that draw its records, paths from the repository root; [] only with `planned:`
+#   planned    where a renderer is planned, when there is none
+#   honesty    measured | modelled | illustrative: what a record of the class is, unless the record says
+#              otherwise (dso.json `drawn`, a real model's `honesty`, a weather effect's `class`, an oddity's
+#              `position_class`), or a selector's own `honesty:` does
+#   fallback   what a weak device draws: tier 0 (scene/quality.js), or any device after the frame latch
+#   heroes     record id -> the file that overrides the class for it (registry/deepsky-heroes/*.yaml and the like)
+#   issue      where what is missing is tracked
+#   note       the source note (the package's SR-PLAN-002 to -076, one per class), written by a person:
+#              source   what the drawing is made from
+#              dates    the dates, the filters or bands, the epoch
+#              drawn    what is measured, what is modelled or reconstructed, what is illustrative
+#              rights   the licences, as CREDITS.md quotes them
+#   records    selectors: {domain, ids | prefix | where, honesty}. `where:` compares a record's field to a value
+#              or a list of values; a value that starts with ^ is a regular expression.
+#
+# A domain is a set of records and the file it is read from (scripts/coverage.py LOADERS reads each). `source:`
+# and `credit:` are what a record of the domain is attributed to when it names nothing itself; a credit is a
+# line CREDITS.md carries word for word.
+
+domains:
+  - id: worlds
+    from: "registry/worlds.yaml (credit and source from the world's map row in registry/models.yaml `textures`)"
+    credits:
+      deimos: {credit: "Deimos: Thomas, P.C. et al. (2021), *Small Body Optical Shape Models V1.0*, NASA Planetary Data System", source: "https://doi.org/10.26033/g5e0-kh52"}
+  - id: rings
+    from: "registry/worlds.yaml rows with `look.ring` (credit from the ring's map row)"
+  - id: dso
+    from: "site/data/dso.json (built by scripts/build-dso.py from OpenNGC and registry/dso-hand.yaml)"
+    credit: "Object data from OpenNGC, © Mattia Verga"
+  - id: photographs
+    from: "registry/nebulae.yaml `pictures`"
+  - id: heroes
+    from: "registry/deepsky-heroes/*.yaml (credit: its section of CREDITS.md 3l, which its `review.credits` names)"
+    credits:
+      helix: {credit: "### The Helix (stage b)"}
+      lmc: {credit: "### The Large Magellanic Cloud and the Tarantula (stage c)"}
+      m31: {credit: "### Andromeda and the Triangulum Galaxy (stage d)"}
+      m33: {credit: "### Andromeda and the Triangulum Galaxy (stage d)"}
+      orion: {credit: "### Orion (0076 W1-a)"}
+  - id: exotics
+    from: "registry/exotics.yaml"
+    credit: "each read from the Wikipedia article's infobox"
+  - id: systems
+    from: "registry/systems.yaml and registry/systems-generated.yaml"
+    credit: "Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13"
+  - id: planets
+    from: "the `planets:` of every system above"
+    credit: "Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13"
+  - id: stars_notable
+    from: "registry/stars-notable.yaml"
+    credit: "Notable stars: the line on each card is this project's, from the Wikipedia article the row of `registry/stars-notable.yaml` names"
+  - id: catalogues
+    from: "site/data/stars3d.bin, site/data/deep/localvolume.json, site/images/deep/cmb/wmap-ilc-9yr.json, registry/ladder.yaml rungs that name a place"
+    credits:
+      stars3d: {credit: "Star data from the HYG Stellar Database v4.4, © David Nash"}
+      edge: {credit: "**The cosmology** (`site/js/data/cosmology.js`): Planck Collaboration"}
+  - id: other_light
+    from: "registry/otherlight.yaml `bands`"
+  - id: sites
+    from: "registry/sites.yaml (source: the row's `references:` entry)"
+    credit: "Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference"
+  - id: real_models
+    from: "registry/models.yaml `real_models`"
+  - id: model_kinds
+    from: "registry/models.yaml `models` (the procedural and illustrative builders)"
+    credit: "Space Radar's own code is MIT"
+  - id: small_bodies
+    loader: small_bodies
+    from: "site/js/data/sample.js ASTEROIDS, FAR_BODIES, NAMED_COMETS (source and credit from the registry/sources.yaml row each builder names)"
+    arrays: {ASTEROIDS: jpl-sbdb-neo, FAR_BODIES: jpl-sbdb-neo, NAMED_COMETS: horizons-deep-space}
+  - id: probes
+    from: "site/js/data/sample.js, the deep-space craft (sampleDeepSpace())"
+    arrays: {ANCHORED_CRAFT: horizons-deep-space, PLANET_ORBITERS: horizons-deep-space, CRUISING_CRAFT: horizons-deep-space, LOST_ORBITERS: horizons-deep-space, PAST_CRAFT: horizons-deep-space, ELLIPTIC_CRAFT: horizons-deep-space, OSCULATING_CRAFT: horizons-deep-space}
+  - id: reentries
+    from: "site/js/data/sample.js REENTRIES (sampleReentries())"
+    arrays: {REENTRIES: space-track-tip}
+  - id: rockets
+    from: "registry/rockets.yaml"
+    credit: "Rockets: the heights, widths and shapes in `registry/rockets.yaml`"
+  - id: oddities
+    from: "registry/oddities.yaml"
+    credit: "Oddities: each row of `registry/oddities.yaml` cites where it was read"
+  - id: weather
+    from: "registry/weather.yaml `effects`"
+    credit: "papers, each named with its DOI in `registry/weather.yaml`"
+  - id: layers
+    from: "registry/layers.yaml, enabled rows (source and credit from its registry/sources.yaml row, else below)"
+    credits:
+      worlds: {credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0", source: registry/worlds.yaml}
+      stars: {credit: "Star data from the HYG Stellar Database v4.4, © David Nash", source: "https://codeberg.org/astronexus/hyg"}
+      systems: {credit: "Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13", source: registry/systems-generated.yaml}
+      deep-sky: {credit: "Object data from OpenNGC, © Mattia Verga", source: "https://github.com/mattiaverga/OpenNGC"}
+      galaxy: {credit: "Reid, M. J. et al. 2019", source: "scripts/build-galaxy.py (Reid et al. 2019, ApJ 885, 131)"}
+      exotics: {credit: "each read from the Wikipedia article's infobox", source: registry/exotics.yaml}
+      far-bodies: {credit: "Orbits: NASA/JPL Small-Body Database", source: "https://ssd-api.jpl.nasa.gov/sbdb.api"}
+      hand-kept-sites: {credit: "Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference", source: registry/sites.yaml}
+      lightning: {credit: "NOAA nowCOAST", source: "registry/weather.yaml earth-lightning"}
+      earth-events: {credit: "Fires, volcanoes and sea ice: NASA EONET", source: "registry/weather.yaml earth-events"}
+      oddities: {credit: "Oddities: each row of `registry/oddities.yaml` cites where it was read", source: registry/oddities.yaml}
+
+classes:
+  # --- the Sun and the planets -------------------------------------------------------------------------
+  - id: SUN
+    title: The Sun
+    renderer: [site/js/scene/sun.js, site/js/scene/sunimage.js]
+    honesty: modelled
+    fallback: The 2k photosphere map with modelled limb darkening; no granulation grain on tier 0 or after the latch.
+    note:
+      source: "Solar System Scope's 2k map for the disc; NOAA SWPC's sunspot regions, flares and CMEs from NASA DONKI, read live with saved copies; SDO/AIA 171 Å, the newest picture of the day (0076 W1-d)."
+      dates: "The regions and the flares are the day's; the SDO picture is dated on the card; the 2k map has no date (a composite)."
+      drawn: "Measured: where the regions are, the SDO picture under Measured. Modelled: limb darkening, granulation, faculae, the corona's shape. Illustrative: the loops over the regions (Film only, labelled)."
+      rights: "Solar System Scope CC BY 4.0; NOAA and NASA data not subject to copyright in the United States; SDO courtesy of NASA/SDO and the AIA, EVE and HMI science teams."
+    records:
+      - {domain: worlds, ids: [sun]}
+
+  - id: ROCKY_PLANET
+    title: Rocky planets
+    renderer: [site/js/scene/worlds.js, site/js/scene/earth.js, site/js/scene/atmosphere.js, site/js/scene/tiles.js]
+    honesty: measured
+    fallback: The 2k map on a sphere; no relief, no 4k map, no tiles and no shadow march on tier 0 or after the latch.
+    issue: "public #404 (Mercury tiles), spec 0073 tasks 11 and 12"
+    note:
+      source: "MESSENGER MDIS mosaic and DEM for Mercury (USGS); Magellan radar mosaic and altimetry for Venus (USGS, NASA/JPL-Caltech); Blue Marble Next Generation, Black Marble 2016 and ETOPO 2022 for the Earth; MGS MOLA heights for Mars; NASA Solar System Treks tiles close up."
+      dates: "Composites over each mission's life (MESSENGER 2011-2015, Magellan 1990-1994, MOLA 1997-2001); the Earth's day map by month (2004)."
+      drawn: "Measured: the maps and the heights. Modelled: the atmosphere's scattering, Mars's shadows marched over MOLA. Illustrative: Mars's seasonal dust (weather.yaml, labelled)."
+      rights: "USGS, NASA and NOAA works are public domain or CC0; Solar System Scope's 2k maps CC BY 4.0."
+    records:
+      - {domain: worlds, ids: [mercury, venus, earth, mars]}
+      - {domain: weather, where: {world: [mars, venus]}}
+
+  - id: GAS_GIANT
+    title: Gas giants
+    renderer: [site/js/scene/worlds.js, site/js/scene/weather/worldweather.js, site/js/scene/weather/flow.js]
+    honesty: measured
+    fallback: The 2k map, its bands carried by the measured winds; no eddies, detail or lightning on tier 0.
+    issue: "#860 (the Great Red Spot's dated longitude and drift, W2-b)"
+    note:
+      source: "Hubble OPAL global maps (A.A. Simon, M.H. Wong) for the 4k faces; zonal wind profiles from Tollefson et al. 2017 (Jupiter) and García-Melendo et al. 2011 (Saturn); Juno's polar cyclones (Adriani et al. 2018); Cassini's hexagon and polar vortex."
+      dates: "OPAL maps of one epoch each, named in CREDITS.md section 2; the wind profiles at their papers' epochs."
+      drawn: "Measured: the maps and the band speeds. Modelled: bands and ovals moved by the wind profiles. Illustrative and labelled: eddies, detail below the map's resolution, the hexagon's and the vortex's faces, lightning."
+      rights: "Hubble OPAL CC BY 4.0 (NASA, ESA, A.A. Simon, M.H. Wong), adapted; Solar System Scope CC BY 4.0; papers cited, nothing of theirs copied."
+    records:
+      - {domain: worlds, ids: [jupiter, saturn]}
+      - {domain: weather, where: {world: [jupiter, saturn]}}
+
+  - id: ICE_GIANT
+    title: Uranus and Neptune
+    renderer: [site/js/scene/worlds.js, site/js/scene/weather/worldweather.js]
+    honesty: measured
+    fallback: The 2k map at the real tilt; no drift or cirrus detail on tier 0.
+    issue: "#860 (Uranus's dark rings, W2-b)"
+    note:
+      source: "Hubble OPAL faces of Uranus and Neptune; Sromovsky et al. 1993 and 2015 for the cloud drift; Voyager 2's Neptune cirrus pictures (NASA/JPL)."
+      dates: "OPAL 2025 faces; Voyager 2 1986 (Uranus) and 1989 (Neptune)."
+      drawn: "Measured: the faces and the tilt. Modelled: the drift by latitude. Illustrative and labelled: Neptune's bright cirrus and the detail below the map."
+      rights: "Hubble OPAL CC BY 4.0, adapted; Voyager pictures public domain."
+    records:
+      - {domain: worlds, ids: [uranus, neptune]}
+      - {domain: weather, where: {world: [uranus, neptune]}}
+
+  - id: RINGS
+    title: Planetary rings
+    renderer: [site/js/scene/worlds.js]
+    honesty: modelled
+    fallback: The ring's alpha map as a lit slab; the fine ringlets and grain only on tier 1 and up, never after the latch.
+    note:
+      source: "Cassini UVIS stellar occultation of Beta Centauri (Colwell et al. 2010, PDS Ring-Moon Systems Node) for Saturn's 8k ringlets; Solar System Scope's ring alpha map; the Cassini Division at its measured radii."
+      dates: "The occultation of 2008 (Cassini orbit 77)."
+      drawn: "Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain."
+      rights: "PDS data public domain; Solar System Scope CC BY 4.0."
+    records:
+      - {domain: rings}
+
+  # --- moons and small worlds --------------------------------------------------------------------------
+  - id: VOLCANIC_MOON
+    title: Io
+    renderer: [site/js/scene/worlds.js]
+    honesty: measured
+    fallback: The 2k map on a sphere.
+    issue: "#861 (plumes and hot spots, W2-c)"
+    note:
+      source: "USGS Astrogeology's Io mosaic from Galileo SSI and Voyager."
+      dates: "Galileo 1996-2001 and Voyager 1979 images, one global mosaic."
+      drawn: "Measured: the map. No plume or hot spot is drawn yet."
+      rights: "USGS public domain."
+    records:
+      - {domain: worlds, ids: [io]}
+
+  - id: ICY_MOON
+    title: Icy moons
+    renderer: [site/js/scene/worlds.js]
+    honesty: measured
+    fallback: The 2k (or 1k) map on a sphere, tinted with the world's flat colour.
+    issue: "#862 (Enceladus and Triton plumes, W2-c)"
+    note:
+      source: "USGS mosaics of Europa, Ganymede, Callisto (Voyager, Galileo SSI); P. Schenk's Cassini colour maps of Saturn's moons (LPI); Voyager 2 maps of Uranus's five and Triton; New Horizons MVIC for Charon."
+      dates: "Voyager 1979-1989, Galileo 1996-2003, Cassini 2004-2017, New Horizons 2015."
+      drawn: "Measured: the maps. Black-and-white mosaics tinted with the flat colour (said in CREDITS.md section 2); nothing drawn where nobody has looked."
+      rights: "USGS, NASA/JPL-Caltech, LPI and JHUAPL/SwRI works, public domain."
+    records:
+      - {domain: worlds, ids: [europa, ganymede, callisto, enceladus, triton, charon, mimas, tethys, dione, rhea, iapetus, miranda, ariel, umbriel, titania, oberon]}
+
+  - id: TITAN
+    title: Titan
+    renderer: [site/js/scene/worlds.js, site/js/scene/atmosphere.js]
+    honesty: measured
+    fallback: The 938 nm map under its haze shell.
+    issue: "#863 (lakes, radar mode, 1.3+)"
+    note:
+      source: "Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); clouds after Webb and Keck (NASA, 2023)."
+      dates: "Cassini 2004-2017, released 2018; the cloud reference of 2023."
+      drawn: "Measured: the surface map through the haze, at half its contrast. Modelled: the haze shell. Illustrative and labelled: the methane clouds."
+      rights: "NASA public domain."
+    records:
+      - {domain: worlds, ids: [titan]}
+      - {domain: weather, where: {world: titan}}
+
+  - id: AIRLESS_MOON
+    title: The Moon, Phobos and Deimos
+    renderer: [site/js/scene/worlds.js, site/js/scene/tiles.js, site/js/scene/moonshape.js]
+    honesty: measured
+    fallback: The 2k map with earthshine; no LRO tiles, no relief and no earthshine after the latch.
+    issue: "#864 (shadows from LOLA at a low Sun, W2-a); internal #379 (Deimos's map)"
+    note:
+      source: "Solar System Scope's 2k Moon; LRO WAC and LOLA through NASA Solar System Treks close up; Viking Orbiter mosaic for Phobos (USGS, P. Stooke); the shape models of Phobos and Deimos."
+      dates: "LRO 2009 onward; Viking 1976-1980."
+      drawn: "Measured: the maps, the heights and the shapes. Modelled: shading along the light. Deimos has a shape and no map: drawn grey, said on its card."
+      rights: "NASA and USGS public domain; Solar System Scope CC BY 4.0."
+    records:
+      - {domain: worlds, ids: [moon, phobos, deimos]}
+
+  - id: DWARF_PLANET
+    title: Dwarf planets
+    renderer: [site/js/scene/worlds.js, site/js/scene/glyphs.js, site/js/scene/models.js]
+    honesty: measured
+    fallback: Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits.
+    issue: "#865 (Eris, Makemake, Haumea, Sedna as more than glyphs)"
+    note:
+      source: "New Horizons' global colour map of Pluto (PIA11707); Dawn's Ceres mosaic (DLR, via USGS); JPL Small-Body Database orbits for the far dwarfs; their sizes and moons from the Wikipedia article each row names."
+      dates: "New Horizons 2015; Dawn 2015-2018; SBDB solutions dated per row (sample.js `solution`)."
+      drawn: "Measured: Pluto's and Ceres's maps, every orbit and its phase. Illustrative: the far dwarfs' bodies (a glyph and a generic rock, labelled)."
+      rights: "NASA works public domain; SBDB data courtesy NASA/JPL-Caltech; facts from Wikipedia, cited, none of its text reproduced."
+    records:
+      - {domain: worlds, ids: [pluto]}
+      - {domain: small_bodies, where: {array: FAR_BODIES, farKind: dwarf}, honesty: modelled}
+
+  - id: ASTEROID
+    title: Asteroids
+    renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js]
+    honesty: modelled
+    fallback: A glyph on its orbit; the seeded rock or the real shape only when selected and near.
+    issue: "#866 (measured spin; Ryugu, Itokawa, Didymos)"
+    note:
+      source: "JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn."
+      dates: "Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card)."
+      drawn: "Measured: orbits, sizes, the real shapes. Modelled: positions propagated from elements. Illustrative: the seeded rock for any asteroid without a shape (labelled generic)."
+      rights: "NASA/JPL data and PDS products public domain."
+    records:
+      - {domain: small_bodies, where: {array: ASTEROIDS}, honesty: illustrative}
+      - {domain: small_bodies, where: {array: FAR_BODIES, farKind: "^(?!dwarf).*"}}
+      - {domain: model_kinds, ids: [asteroid-generic]}
+      - {domain: real_models, where: {class: asteroid}}
+      - {domain: layers, ids: [asteroids]}
+
+  - id: COMET
+    title: Comets
+    renderer: [site/js/scene/models.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js]
+    honesty: modelled
+    fallback: A glyph on its orbit; the seeded nucleus and its tails only when selected.
+    issue: "public #550, #421 (coma; tails that scale with distance from the Sun)"
+    note:
+      source: "JPL Small-Body Database comet elements (60, read live with a saved copy); JPL Horizons for Halley."
+      dates: "Elements at each comet's own epoch."
+      drawn: "Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded) and the tails' look."
+      rights: "NASA/JPL data courtesy NASA/JPL-Caltech."
+    records:
+      - {domain: small_bodies, where: {array: NAMED_COMETS}}
+      - {domain: model_kinds, ids: [comet-generic]}
+      - {domain: layers, ids: [comets]}
+
+  # --- what people built -------------------------------------------------------------------------------
+  - id: ARTIFICIAL_SATELLITE
+    title: Satellites, stations and debris
+    renderer: [site/js/propagate/sgp4.js, site/js/scene/glyphs.js, site/js/scene/realmodels.js, site/js/scene/models.js]
+    honesty: measured
+    fallback: One instanced glyph per satellite (one draw a layer); models only for the selected or the near, at the plain look after the latch.
+    issue: "public #267 (the art pass)"
+    note:
+      source: "CelesTrak's element sets, propagated with SGP4 in a worker pool; 3D models from NASA 3D Resources, agencies' own pages, or built here from published dimensions (models.yaml `real_models`, each with its pictures)."
+      dates: "Element sets read every few hours with saved copies; each model's page read on the day its row says."
+      drawn: "Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one."
+      rights: "CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project)."
+    records:
+      - {domain: real_models, where: {class: [satellite, telescope, station]}}
+      - {domain: model_kinds, prefix: [satellite-, station-, telescope-, debris-]}
+      - {domain: reentries}
+      - {domain: layers, ids: [stations, notable, starlink-trains, just-launched, active, geo-ring, debris-notable, debris-field, visual, reentries]}
+
+  - id: LAUNCH_AND_ROCKET
+    title: Launches and rockets
+    renderer: [site/js/scene/models.js, site/js/propagate/ascent.js, site/js/scene/realmodels.js]
+    honesty: illustrative
+    fallback: The pad's glyph and the launch card; the ascent arc and the procedural rocket only when selected.
+    issue: "#867 (a real launch replayed on its event clock)"
+    note:
+      source: "The Space Devs' Launch Library 2 for what launches when and from where; registry/rockets.yaml for each vehicle's height, width and shape, each row naming its page; NASA's Saturn V and Space Shuttle stack models on their pads."
+      dates: "Launch times as LL2 gives them (read hourly); vehicle facts read on the day each row says."
+      drawn: "Measured: the pad, the time, the vehicle's dimensions. Illustrative: the ascent arc (the real track is not published; the launches layer says so) and the procedural rocket's details."
+      rights: "LL2 free to 15 requests an hour, no published licence; NASA models free and without copyright; facts cited."
+    records:
+      - {domain: rockets}
+      - {domain: real_models, where: {class: rocket}}
+      - {domain: model_kinds, prefix: [rocket-, pad-]}
+      - {domain: sites, where: {class: pad}, honesty: measured}
+      - {domain: layers, ids: [launches]}
+      - {domain: layers, ids: [ground-sites], honesty: measured}
+
+  - id: SPACE_PROBE
+    title: Space probes
+    renderer: [site/js/propagate/sampled.js, site/js/scene/realmodels.js, site/js/scene/models.js, site/js/scene/glyphs.js]
+    honesty: measured
+    fallback: A glyph on its JPL Horizons path; the model only when selected.
+    note:
+      source: "JPL Horizons vectors for 17 craft (registry/ephemerides.yaml) and the deep-space layer; NASA's models of Voyager, Juno, Cassini, New Horizons and others; registry/missions.yaml for dated events."
+      dates: "Horizons windows per craft (ephemerides.yaml); events dated to the minute where the mission page gives one."
+      drawn: "Measured: the paths. A stand-in (sample.js, dashed halo) where Horizons cannot be read from a browser, said on the card."
+      rights: "Horizons data courtesy NASA/JPL-Caltech; NASA models free and without copyright."
+    records:
+      - {domain: probes}
+      - {domain: real_models, where: {class: probe}}
+      - {domain: model_kinds, prefix: [probe-]}
+      - {domain: layers, ids: [deep-space]}
+
+  - id: LANDING_SITE
+    title: Landing sites on other worlds
+    renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/shadow.js]
+    honesty: measured
+    fallback: The site's glyph; the lander, rover or lunar module only when near.
+    issue: "#868 (terrain height, the Apollo 15 and 17 traverses, W2-a)"
+    note:
+      source: "LROC's spacecraft coordinates (Wagner et al. 2017) and NASA NSSDCA for the Moon; PDS Geosciences Node, HiRISE, Golombek et al. 2020 and the Mars 2020 mission map for Mars; each row names its reference in registry/sites.yaml."
+      dates: "Each reference's own date, read on the day the reference says."
+      drawn: "Measured: the coordinates, each with its uncertainty in metres where stated. The lander or rover is a procedural stand-in ('the kind of thing, not this exact one'), except NASA's lunar module."
+      rights: "NASA, LROC and PDS works public domain; papers cited."
+    records:
+      - {domain: sites, where: {class: surface}}
+      - {domain: real_models, where: {class: site}}
+      - {domain: model_kinds, ids: [site-surveyor, rover-generic, lander-generic]}
+
+  # --- stars and their planets -------------------------------------------------------------------------
+  - id: EXOPLANET
+    title: Exoplanets and their systems
+    renderer: [site/js/scene/systems.js, site/js/scene/systemextras.js, site/js/scene/exoface.js, site/js/scene/exostage.js]
+    honesty: modelled
+    fallback: The planets as plain spheres on their orbits; no faces on tier 0 or after the latch.
+    issue: "public #556 (more systems)"
+    note:
+      source: "NASA Exoplanet Archive, Planetary Systems Composite Parameters (pscomppars), read from its TAP service; the habitable zone after Kopparapu et al. 2014."
+      dates: "The archive as read on 2026-10-08 (systems-generated.yaml `as_of`); TRAPPIST-1 on 2026-09-23."
+      drawn: "Measured: periods, sizes, orbits where published (estimated values marked `_from`). Illustrative: every planet's face, tagged 'Artist's impression' (tests/test_exoface_truth.mjs)."
+      rights: "The archive's data are public; its DOI cited (10.26133/NEA13)."
+    records:
+      - {domain: systems, where: {binary: "no"}}
+      - {domain: planets}
+      - {domain: layers, ids: [exoplanets, systems]}
+
+  - id: STAR
+    title: Stars
+    renderer: [site/js/scene/stars3d.js, site/js/scene/starfield.js, site/js/scene/stardisc.js]
+    honesty: measured
+    fallback: Points sized by magnitude; the disc of a near star only past 1.5 px.
+    note:
+      source: "HYG v4.4 (David Nash) for 109 389 stars in 3D; AT-HYG v4.0 for fainter ones from the ground; d3-celestial for the starfield; Boyajian et al. 2012 for four measured radii; the Wikipedia article each notable star names."
+      dates: "Hipparcos (1997) positions and Gaia DR3 distances through AT-HYG; the line on each card read on the day its row says."
+      drawn: "Measured: positions, magnitudes, colours from B-V. Modelled: the limb-darkened disc of a near star. Red stars' radii are estimates where no interferometry exists."
+      rights: "HYG and AT-HYG CC BY-SA 4.0; d3-celestial BSD-3-Clause; facts cited."
+    records:
+      - {domain: stars_notable}
+      - {domain: catalogues, where: {kind: stars}}
+      - {domain: exotics, where: {kind: star}}
+      - {domain: layers, ids: [stars]}
+
+  - id: BINARY_AND_MULTIPLE
+    title: Binary and multiple stars
+    renderer: [site/js/scene/systems.js]
+    honesty: modelled
+    fallback: The pair as two points.
+    issue: "#869 (orbital motion for Sirius AB, Alpha Centauri AB, Algol)"
+    note:
+      source: "registry/systems-binaries.yaml: Kepler-16 and Kepler-1647, the planet circling both stars, from Kostov et al. 2016 and the papers each row names."
+      dates: "The orbits at their papers' epochs."
+      drawn: "Modelled: the two stars' relative orbit. Catalogue pairs elsewhere are separate measured points with no motion drawn."
+      rights: "Facts, cited."
+    records:
+      - {domain: systems, where: {binary: "yes"}}
+
+  - id: COMPACT_REMNANT
+    title: Pulsars, magnetars and white dwarfs
+    renderer: [site/js/scene/pulsars.js]
+    honesty: illustrative
+    fallback: A point at the measured place that blinks at the measured period (still under reduced motion).
+    issue: "#870 (beam geometry; a white-dwarf class)"
+    note:
+      source: "registry/exotics.yaml, each row's Wikipedia infobox for place, distance and period."
+      dates: "Read 2026-09-08 onward, per row."
+      drawn: "Measured: place, distance, period. Illustrative: the blink, which is 'not the beam' (said on the card)."
+      rights: "Facts, cited; no text reproduced."
+    records:
+      - {domain: exotics, where: {kind: [pulsar, magnetar]}}
+
+  - id: BLACK_HOLE
+    title: Black holes
+    renderer: [site/js/scene/portraits.js, site/js/scene/glyphs.js]
+    honesty: illustrative
+    fallback: A marker at the measured place; the EHT pictures of Sgr A* and M87* on their trip stops.
+    issue: "spec 0072 task 12 (lensing in a disc's own material)"
+    note:
+      source: "The Event Horizon Telescope Collaboration's pictures of Sagittarius A* (2022) and M87* (2019); registry/exotics.yaml for places and masses."
+      dates: "EHT observations of April 2017, released 2019 and 2022."
+      drawn: "Measured: the two EHT pictures (radio, shown not to scale and without lensing, said on the card), places and masses. Illustrative: every other black hole's marker."
+      rights: "EHT CC BY 4.0."
+    records:
+      - {domain: exotics, where: {kind: blackhole}, ids: [sgr-a-star, m87-star, cygnus-x-1, gaia-bh1, gaia-bh3, v404-cygni, ss-433, grs-1915-105]}
+
+  # --- clusters and nebulae ----------------------------------------------------------------------------
+  - id: OPEN_CLUSTER
+    title: Open clusters
+    renderer: [site/js/scene/clusters.js, site/js/scene/dsoglow.js]
+    honesty: illustrative
+    fallback: The cluster's glow; M45, the Hyades, M44 and IC 2602 also re-place their HYG members.
+    issue: "#871 (the other open clusters' members, W3-a)"
+    note:
+      source: "OpenNGC for place, size and magnitude; HYG v4.4 members for four clusters; the Messier distances Wikipedia's editors collected."
+      dates: "OpenNGC master of 2026-09-27; distances read 2026-09-08."
+      drawn: "Measured: place, size, distance, the four clusters' members. Illustrative: the glow standing in for the unresolved stars."
+      rights: "OpenNGC and HYG CC BY-SA 4.0."
+    records:
+      - {domain: dso, where: {typeCode: [OCl, "*Ass", "**", Other]}}
+
+  - id: GLOBULAR_CLUSTER
+    title: Globular clusters
+    renderer: [site/js/scene/dsoglow.js]
+    honesty: illustrative
+    fallback: The globular glow profile with its holder.
+    issue: "internal #819 (King-profile points, spec 0075 task 19, W3-a)"
+    note:
+      source: "OpenNGC for place, size and magnitude; the Messier distances."
+      dates: "As OPEN_CLUSTER."
+      drawn: "Measured: place, size, distance. Illustrative: the glow (no star is drawn yet)."
+      rights: "OpenNGC CC BY-SA 4.0."
+    records:
+      - {domain: dso, where: {typeCode: GCl}}
+
+  - id: EMISSION_NEBULA
+    title: Emission nebulae (H II regions)
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js]
+    honesty: measured
+    fallback: The photograph, placed and sized on the sky; the gas is not marched on tier 0 or after the latch.
+    heroes: {orion: registry/deepsky-heroes/orion.yaml}
+    issue: "internal #782 (Orion, W1-a); Carina 1.3+"
+    note:
+      source: "Photographs from ESO, ESA/Hubble, ESA/Webb and NOIRLab, each plate-solved against its archive's coordinates; the Orion hero from Wen & O'Dell 1995, O'Dell 2001 and O'Dell et al. 2009."
+      dates: "Each photograph's release date and filters in registry/nebulae.yaml (M42: VST OmegaCAM, g r i with H-alpha, 2017)."
+      drawn: "Measured: the photographs (colours declared per picture). Reconstructed: the Orion blister's depth, labelled. Illustrative: the glow of a nebula with no photograph."
+      rights: "ESO, ESA/Hubble, ESA/Webb and NOIRLab CC BY 4.0, credited per picture."
+    records:
+      - {domain: dso, where: {typeCode: [HII, Neb, Cl+N]}}
+      - {domain: photographs, ids: [m42, california-nebula, rosette-nebula, m8, m20, m16, m17, cats-paw-nebula, carina-nebula, north-america-nebula, tarantula-nebula]}
+      - {domain: heroes, ids: [orion]}
+
+  - id: PLANETARY_NEBULA
+    title: Planetary nebulae
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/gasmat.js]
+    honesty: measured
+    fallback: The photograph; the Helix's rings unmarched on tier 0 or after the latch.
+    heroes: {helix: registry/deepsky-heroes/helix.yaml}
+    issue: "#872 (M57 as a shell, W3-b)"
+    note:
+      source: "Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009."
+      dates: "Photographs as registry/nebulae.yaml dates them; the Helix's light from eso0907a."
+      drawn: "Measured: the photographs, the rings' sizes and tilts. Reconstructed: which ring each point's light belongs to, the slabs' thickness. Illustrative: the knots' places (seeded)."
+      rights: "ESO, ESA/Hubble, ESA/Webb CC BY 4.0; papers cited."
+    records:
+      - {domain: dso, where: {typeCode: PN}}
+      - {domain: photographs, ids: [helix-nebula, m27, m57, southern-ring-nebula]}
+      - {domain: heroes, ids: [helix]}
+
+  - id: DARK_NEBULA
+    title: Dark nebulae
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js]
+    honesty: measured
+    fallback: The Horsehead's photograph; the others as a holder with no glow.
+    issue: "internal #784 (absorbing sheets, spec 0075 task 28, W3-c)"
+    note:
+      source: "The Horsehead's photograph; OpenNGC for the dark clouds' places."
+      dates: "As the photograph's row."
+      drawn: "Measured: the photograph and the places. Nothing reddens or dims what is behind yet."
+      rights: "CC BY 4.0 photograph; OpenNGC CC BY-SA 4.0."
+    records:
+      - {domain: dso, where: {typeCode: DrkN}}
+      - {domain: photographs, ids: [horsehead-nebula]}
+
+  - id: REFLECTION_NEBULA
+    title: Reflection nebulae
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    honesty: illustrative
+    fallback: The reflection glow; the Pleiades' photograph.
+    issue: "internal #784 (pale-blue sheets lit by their star, W3-c)"
+    note:
+      source: "OpenNGC; the photograph of M45."
+      dates: "As the photograph's row."
+      drawn: "Measured: places and the photograph. Illustrative: the glow."
+      rights: "OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0."
+    records:
+      - {domain: dso, where: {typeCode: RfN}}
+      - {domain: photographs, ids: [m45]}
+
+  - id: SUPERNOVA_REMNANT
+    title: Supernova remnants
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js]
+    honesty: measured
+    fallback: The photograph of the Crab or the Veil; the glow elsewhere.
+    issue: "internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)"
+    note:
+      source: "Photographs of M1 (the Crab) and the Veil; OpenNGC."
+      dates: "As the photographs' rows."
+      drawn: "Measured: the photographs. Illustrative: the glow. No shell is drawn yet."
+      rights: "CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0."
+    records:
+      - {domain: dso, where: {typeCode: SNR}}
+      - {domain: photographs, ids: [m1, veil-nebula]}
+
+  # --- galaxies and beyond -----------------------------------------------------------------------------
+  - id: GALAXY_SPIRAL
+    title: Spiral galaxies, the Milky Way among them
+    renderer: [site/js/scene/galaxy.js, site/js/scene/deep/spiral.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    honesty: illustrative
+    fallback: The glow ellipse with its holder; M31 and M33 as photographs until near; the Milky Way's points thinned on tier 0.
+    heroes: {m31: registry/deepsky-heroes/m31.yaml, m33: registry/deepsky-heroes/m33.yaml}
+    issue: "#873 (the generator applied to other spirals)"
+    note:
+      source: "The Milky Way from Reid et al. 2019 (arms) with the bar and disc from Wikipedia; M31 from Courteau et al. 2011, Gordon et al. 2006, Block et al. 2006, Draine et al. 2014; M33 after Zaritsky et al. 1989 and Regan & Vogel 1994; photographs of M51, M81, M83, M101, M104, NGC 1300."
+      dates: "Papers at their own epochs; photographs as their rows."
+      drawn: "Measured: the photographs, orientations, profiles. Modelled: M31's and M33's arms, knots and thickness (parametric, labelled). Illustrative: the Milky Way's look and every other spiral's glow."
+      rights: "Papers cited; photographs CC BY 4.0; OpenNGC CC BY-SA 4.0."
+    records:
+      - {domain: dso, where: {typeCode: G, hubble: ["^S(?!0)", "^\\(R"]}}
+      - {domain: photographs, ids: [m31, m33, m83, m104, m51, m101, m81, ngc-1300]}
+      - {domain: heroes, ids: [m31, m33]}
+      - {domain: model_kinds, ids: [galaxy-model]}
+      - {domain: layers, ids: [galaxy]}
+
+  - id: GALAXY_IRREGULAR
+    title: Irregular galaxies
+    renderer: [site/js/scene/deep/lmc.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    honesty: illustrative
+    fallback: The LMC's photograph and the SMC's; the glow elsewhere.
+    heroes: {lmc: registry/deepsky-heroes/lmc.yaml}
+    issue: "internal #783 (the SMC, the Bridge and the Stream)"
+    note:
+      source: "The LMC from Gaia DR3 star counts (Gaia Collaboration, Vallenari et al. 2023) with the geometry of van der Marel & Cioni 2001; the SMC's photograph; OpenNGC."
+      dates: "Gaia DR3 (2022); the photographs as their rows."
+      drawn: "Measured: the Gaia counts on the sky. Modelled: depth, brightness per star, the dust and the Tarantula's gas in depth (labelled). Illustrative: the glow of the other irregulars."
+      rights: "Gaia CC BY-SA 3.0 IGO (ESA/Gaia/DPAC); photographs CC BY 4.0."
+    records:
+      - {domain: dso, where: {typeCode: G, hubble: ["^I", "^dI", "^Im"]}}
+      - {domain: photographs, ids: [lmc, smc]}
+      - {domain: heroes, ids: [lmc]}
+
+  - id: GALAXY_ELLIPTICAL
+    title: Elliptical and lenticular galaxies
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    honesty: illustrative
+    fallback: The glow ellipse with its holder.
+    issue: "#874 (M32 and M110 as Sérsic points, W4-a)"
+    note:
+      source: "OpenNGC's sizes, axes and position angles; the photograph of Centaurus A."
+      dates: "OpenNGC master of 2026-09-27."
+      drawn: "Measured: place, size, ellipticity, the photograph. Illustrative: the glow."
+      rights: "OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0."
+    records:
+      - {domain: dso, where: {typeCode: G, hubble: ["^E", "^dE", "^S0", "^dS0", "^dSph", "^$"]}}
+      - {domain: photographs, ids: [centaurus-a]}
+
+  - id: GALAXY_INTERACTION
+    title: Interacting galaxies
+    renderer: [site/js/scene/dsoglow.js]
+    honesty: illustrative
+    fallback: One glow and holder for the pair.
+    issue: "#875 (no renderer of its own and no task)"
+    note:
+      source: "OpenNGC and the Antennae's row in registry/dso-hand.yaml."
+      dates: "As the row says."
+      drawn: "Measured: place and distance. Illustrative: the glow; the pair is not drawn as two."
+      rights: "OpenNGC CC BY-SA 4.0; facts cited."
+    records:
+      - {domain: dso, where: {typeCode: [GPair, GTrpl, GGroup]}}
+
+  - id: AGN_QUASAR
+    title: Quasars and active nuclei
+    renderer: [site/js/scene/glyphs.js, site/js/scene/stage.js]
+    honesty: illustrative
+    fallback: A marker at its comoving distance.
+    issue: "internal #784 (quasars as bright points with a host cue, W4-b)"
+    note:
+      source: "TON 618's row in registry/exotics.yaml (redshift and mass from its Wikipedia infobox); the cosmology of site/js/data/cosmology.js for the distance."
+      dates: "Read 2026-09-08."
+      drawn: "Measured: redshift. Modelled: the comoving distance from Planck 2018. Illustrative: the marker."
+      rights: "Facts, cited."
+    records:
+      - {domain: exotics, ids: [ton-618]}
+
+  - id: GALAXY_GROUP
+    title: Galaxy groups and the local volume
+    renderer: [site/js/scene/deep/localvolume.js]
+    honesty: measured
+    fallback: The 800 galaxies as one tile of points.
+    issue: "#876 (tile galaxies selectable, a group outline, W4-a)"
+    note:
+      source: "The Updated Nearby Galaxy Catalog (Karachentsev, Makarov & Kaisina 2013) via VizieR, CDS; pinned by SHA-256 in scripts/build_deep_localvolume.py."
+      dates: "The catalogue of 2013, read 2026-10-14."
+      drawn: "Measured: places and redshift-independent distances. Illustrative: each point's size and colour."
+      rights: "VizieR: free of usage in a scientific context, the original authors cited."
+    records:
+      - {domain: catalogues, where: {kind: galaxies}}
+
+  - id: GALAXY_CLUSTER
+    title: Galaxy clusters
+    renderer: []
+    planned: "W4-b (internal #784): Virgo and Coma as instanced impostors"
+    honesty: illustrative
+    fallback: Nothing is drawn as a cluster; Virgo's members are separate glows.
+    note:
+      source: "None yet; the members' rows are OpenNGC's."
+      dates: "Not applicable until W4-b."
+      drawn: "Nothing drawn as a cluster."
+      rights: "Not applicable."
+    records: []
+
+  - id: COSMIC_WEB
+    title: The cosmic web
+    renderer: []
+    planned: "1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint"
+    honesty: illustrative
+    fallback: Nothing is drawn.
+    note:
+      source: "None yet; DESI DR1 (CC BY 4.0) is the candidate."
+      dates: "Not applicable."
+      drawn: "Nothing drawn."
+      rights: "Not applicable."
+    records: []
+
+  - id: CMB_AND_HORIZON
+    title: The microwave background and the horizon
+    renderer: [site/js/scene/shells.js, site/js/scene/deep/cmb.js]
+    honesty: measured
+    fallback: The horizon shell with its words; the CMB map as one textured sphere.
+    note:
+      source: "WMAP's nine-year Internal Linear Combination map (Bennett et al. 2013) from LAMBDA, pinned by SHA-256; the particle horizon of Planck 2018 (Planck Collaboration 2020, A&A 641, A6) through astropy's Planck18."
+      dates: "WMAP 2001-2010, the nine-year release of 2012."
+      drawn: "Measured: the CMB map (a temperature map in false colour, said so). Modelled: the horizon at 46.2 billion light-years. The map ends at 50 Gly and nothing past the horizon is called observed."
+      rights: "NASA data, no copyright claimed; LAMBDA acknowledged as it asks."
+    records:
+      - {domain: catalogues, where: {kind: [cmb, horizon]}}
+
+  - id: SPECTRAL_SKY
+    title: The sky in other light
+    renderer: [site/js/scene/otherlight.js]
+    honesty: measured
+    fallback: The baked whole-sky picture; HiPS tiles streamed only on tier 1 and up.
+    issue: "#877 (radio, X-ray, UV, H-alpha)"
+    note:
+      source: "WISE infrared, WMAP 94 GHz microwave and Fermi gamma rays, through CDS HiPS."
+      dates: "The missions' all-sky releases named in registry/otherlight.yaml."
+      drawn: "Measured: each band's brightness, in declared false colour."
+      rights: "NASA data, credited per band; HiPS through CDS under its terms."
+    records:
+      - {domain: other_light}
+
+  # --- the house's classes -----------------------------------------------------------------------------
+  - id: EARTH_LIVE
+    title: The Earth's live data
+    house: true
+    renderer: [site/js/scene/aurora.js, site/js/scene/weather/lightning.js, site/js/scene/liveclouds.js, site/js/scene/glyphs.js]
+    honesty: measured
+    fallback: Glyphs for storms and events; the aurora oval and the lightning flashes only on tier 1 and up.
+    note:
+      source: "NOAA SWPC OVATION (aurora), NOAA nowCOAST (lightning), GDACS (tropical cyclones), NASA EONET (fires, volcanoes, ice), NASA GIBS (clouds)."
+      dates: "Live, each with its saved copy and freshness limit (registry/sources.yaml)."
+      drawn: "Measured: every one of them, as published. The glyphs' look is ours."
+      rights: "NOAA and NASA data not subject to copyright in the United States; GDACS CC BY 4.0."
+    records:
+      - {domain: layers, ids: [storms, aurora, lightning, earth-events]}
+      - {domain: weather, where: {world: earth}}
+
+  - id: GROUND_SITE
+    title: Ground stations on the Earth
+    house: true
+    renderer: [site/js/scene/models.js, site/js/scene/glyphs.js]
+    honesty: measured
+    fallback: The glyph; the dish or dome only when near.
+    note:
+      source: "The DSN Telecommunications Link Design Handbook (810-005, module 301) for the Deep Space Network's dishes; Wikidata for observatories."
+      dates: "As each reference's row in registry/sites.yaml says."
+      drawn: "Measured: the coordinates. Illustrative: the procedural dish or dome (the kind of thing)."
+      rights: "NASA/JPL document, public; Wikidata CC0."
+    records:
+      - {domain: sites, where: {class: [dish, observatory]}}
+      - {domain: model_kinds, ids: [dish-generic, dome-generic]}
+
+  - id: ODDITY
+    title: Oddities
+    house: true
+    renderer: [site/js/scene/models.js, site/js/scene/glyphs.js]
+    honesty: modelled
+    fallback: The glyph on its carrier's path.
+    note:
+      source: "Each row of registry/oddities.yaml cites where it was read: JPL Horizons for the Roadster, LROC for what lies on the Moon, the papers and articles for the rest."
+      dates: "As each row says (`as_of`)."
+      drawn: "Each row's own position class: measured, inferred or inherited from its carrier; the shape is a procedural stand-in."
+      rights: "Facts, cited; no picture used."
+    records:
+      - {domain: oddities}
+      - {domain: model_kinds, ids: [oddity-generic]}
+      - {domain: layers, ids: [oddities]}
+
+  - id: MIXED_LAYER
+    title: Layers that draw several classes
+    house: true
+    renderer: [site/js/data/layers.js, site/js/scene/glyphs.js]
+    honesty: measured
+    fallback: Each member's own class's fallback.
+    note:
+      source: "A layer's members are classified one by one in their own rows above; this row is the layer itself (registry/layers.yaml)."
+      dates: "As its members."
+      drawn: "As its members."
+      rights: "As its members."
+    records:
+      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites]}

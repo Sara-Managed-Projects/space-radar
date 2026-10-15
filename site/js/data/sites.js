@@ -11,8 +11,8 @@ export const SITES = [
     "display": "Goldstone DSS-14",
     "class": "dish",
     "world": "earth",
-    "lat": 35.426,
-    "lon": -116.89,
+    "lat": 35.4259,
+    "lon": -116.8895,
     "alt_m": 1001,
     "diameter_m": 70,
     "doing": "The 70-metre dish at Goldstone, California."
@@ -23,7 +23,7 @@ export const SITES = [
     "class": "dish",
     "world": "earth",
     "lat": 35.3376,
-    "lon": -116.8747,
+    "lon": -116.8754,
     "alt_m": 960,
     "diameter_m": 34,
     "doing": "A 34-metre dish at Goldstone."
@@ -33,8 +33,8 @@ export const SITES = [
     "display": "Canberra DSS-43",
     "class": "dish",
     "world": "earth",
-    "lat": -35.4022,
-    "lon": 148.9812,
+    "lat": -35.4024,
+    "lon": 148.9813,
     "alt_m": 689,
     "diameter_m": 70,
     "doing": "The only dish that can still send commands to Voyager 2."
@@ -44,7 +44,7 @@ export const SITES = [
     "display": "Madrid DSS-63",
     "class": "dish",
     "world": "earth",
-    "lat": 40.2414,
+    "lat": 40.4312,
     "lon": -4.248,
     "alt_m": 865,
     "diameter_m": 70,
@@ -138,8 +138,8 @@ export const SITES = [
     "display": "Chang'e 4",
     "class": "surface",
     "world": "moon",
-    "lat": -45.4446,
-    "lon": 177.5991,
+    "lat": -45.4561,
+    "lon": 177.5885,
     "shape": "lander",
     "aliases": [
       "Change 4",
@@ -331,8 +331,8 @@ export const SITES = [
     "display": "Perseverance, Jezero crater",
     "class": "surface",
     "world": "mars",
-    "lat": 18.4447,
-    "lon": 77.4508,
+    "lat": 18.4446,
+    "lon": 77.4509,
     "shape": "rover",
     "aliases": [
       "Octavia E. Butler Landing"
@@ -382,7 +382,7 @@ export const SITES = [
     "class": "surface",
     "world": "mars",
     "lat": 25.066,
-    "lon": 109.926,
+    "lon": 109.925,
     "shape": "rover",
     "doing": "China's first Mars rover, landed in 2021."
   },

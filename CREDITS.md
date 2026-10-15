@@ -2240,6 +2240,18 @@ read 2026-10-12).
 Checked the same day and not used: NASA OSCAR (PO.DAAC asks for an Earthdata login), Copernicus
 Marine (asks for an account), and NOAA's RTOFS model on NOMADS (files of hundreds of megabytes).
 
+### 4.23 Facts kept by hand, row by row (0076 W2-e)
+
+Four registries are written by hand, and until 2026-10-16 nothing here credited them. Every row names
+the page its numbers were read from and the day; facts are not anybody's copyright, and a sentence a
+row quotes is evidence for a reviewer and is not shipped to the page. `tests/test_coverage.py` holds
+every record of the map to a line of this file (`docs/COVERAGE.md` lists them by class).
+
+- Notable stars: the line on each card is this project's, from the Wikipedia article the row of `registry/stars-notable.yaml` names (CC BY-SA 4.0 text, read from 2026-09-22; the figures only); the measured radii of four of them are §3d-2's.
+- Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference: LROC (Arizona State University) and NASA NSSDCA on the Moon; the PDS Geosciences Node, HiRISE (University of Arizona), Golombek et al. 2020, Wu et al. 2024 (Scientific Reports, CC BY-NC-ND 4.0, one coordinate quoted) and the Mars 2020 mission map (NASA/JPL-Caltech) on Mars; NASA/JPL's DSN Telecommunications Link Design Handbook (810-005, module 301) for the Deep Space Network's dishes; Wikipedia for the two pads.
+- Rockets: the heights, widths and shapes in `registry/rockets.yaml` come from the user's guides, agency pages and Wikipedia articles each row's `source:` names; which rocket is launching when is Launch Library 2's (§4.2).
+- Oddities: each row of `registry/oddities.yaml` cites where it was read: JPL Horizons, LROC and NASA, The Planetary Society, Space.com, collectSPACE, Space Center Houston, Andy Saunders's 2021 work from the Apollo 14 film and Astronomical Returns, each as its row says, with how sure its place is.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are

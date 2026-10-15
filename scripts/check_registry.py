@@ -193,7 +193,7 @@ SITE_SHAPES = {"lander", "rover", "lunar-module"}
 # ship. When one of these is matched to a reference, its id comes out of this set -- the check
 # below refuses a set member that has started citing something, so the set cannot go stale.
 SITE_UNCITED = "uncited"
-UNCITED_SITES = frozenset({"change-4", "jezero", "utopia"})
+UNCITED_SITES: frozenset = frozenset()  # emptied 2026-10-16 (spec 0076 W2-e): the last three now cite a reference
 # Luna 2 hit the Moon on 13 September 1959. A landing date before it is a typo, not a landing.
 FIRST_ARRIVAL = datetime.date(1959, 9, 13)
 
@@ -4821,6 +4821,12 @@ def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
             if sid in UNCITED_SITES and source != SITE_UNCITED:
                 fail(where, "cites a reference now, so take its id out of UNCITED_SITES in "
                             "scripts/check_registry.py -- the set lists the rows still uncited")
+        elif s.get("source") is not None:
+            # A dish or a pad cites its reference the same way (spec 0076 W2-e: every record a source).
+            if s["source"] not in refs:
+                fail(where, f"source `{s['source']}` is not a key of `references:`")
+            else:
+                cited.add(s["source"])
         al = s.get("aliases")
         if al is not None and (not isinstance(al, list) or not al
                                or not all(isinstance(x, str) and x.strip() for x in al)):
