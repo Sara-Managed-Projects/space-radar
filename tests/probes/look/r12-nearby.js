@@ -88,8 +88,10 @@ const look_ = (latDeg, lonDeg, altKm, tiltDeg = 35, fromAz = 180) => {
   rig.flyTo({ targetScene: target, offset: dir, distance: (altKm / RKM) * R / Math.cos(tiltDeg * deg), ms: 0 });
 };
 const tilesState = () => { try { const t = sr.quality.tiles(); return t && t.sets ? t.sets['moon-lro-wac'] : null; } catch { return null; } };
-const castReady = async (capMs = 90000) => until(() => { const s = tilesState(); return s && s.showing && s.loading === 0 && s.cast && s.cast.showing && !s.cast.building; }, capMs, 500);
-const tilesReady = async (capMs = 60000) => until(() => { const s = tilesState(); return s && s.showing && s.loading === 0; }, capMs, 500);
+// A phone (tier 0) has no tiles: nothing to wait for, and its two pictures are the same.
+const tiled = () => { try { return sr.quality.describe().tier >= 1; } catch { return false; } };
+const castReady = async (capMs = 90000) => tiled() && until(() => { const s = tilesState(); return s && s.showing && s.loading === 0 && s.cast && s.cast.showing && !s.cast.building; }, capMs, 500);
+const tilesReady = async (capMs = 60000) => tiled() && until(() => { const s = tilesState(); return s && s.showing && s.loading === 0; }, capMs, 500);
 /** One place, twice: shadows on (after) and off (before). */
 const moonPair = async (name, note, sunDeg) => {
   tilesMod.setCastShadows(true);
@@ -186,7 +188,7 @@ else {
   let tOut = null;
   for (let k = 0; k < 200; k++) {
     sr.clock.goTo(t0 + k * 30e3);
-    await sleep(120);
+    await sleep(350);
     const g = grazeKm();
     if (g !== null && g < -20) tIn = sr.clock.now();
     else if (tIn !== null && (g === null || g > 0)) { tOut = sr.clock.now(); break; }
@@ -196,11 +198,11 @@ else {
   else {
     /** The instant the line grazes `km` up, by bisection between the last minute in shadow and the first out. */
     const when = async (km) => {
-      let a = tIn; let b = tOut + 60e3;
+      let a = tIn; let b = tOut + 180e3;
       for (let i = 0; i < 22; i++) {
         const m = (a + b) / 2;
         sr.clock.goTo(m);
-        await sleep(30);
+        await sleep(350);
         const g = grazeKm();
         if (g === null || g > km) b = m; else a = m;
       }
