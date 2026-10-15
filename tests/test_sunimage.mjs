@@ -68,7 +68,7 @@ const OBS = Date.parse('2026-10-15T16:56:58Z');
   const ft = I.imageFrame(OBS, tilted, OBS);
   check(near(ft.c[1], tilted[1], 1e-9) && near(ft.c[2], tilted[2], 1e-9) && near(ft.n[0] * ft.c[0] + ft.n[1] * ft.c[1] + ft.n[2] * ft.c[2], 0, 1e-9), 'the picture\'s middle has the Earth\'s latitude on the Sun, and its up is square to its middle');
   check(near(I.imageWeight(f.c, f), 1) && I.imageWeight(limbW, f) === 0 && I.imageWeight([0, 0, -1], f) === 0, 'the picture covers its middle, fades over its own limb and never reaches the far side');
-  check(S.SUN_FRAG.includes('0.5 + uImageR * dot( p, uImageW ), 0.5 - uImageR * dot( p, uImageN )') && S.SUN_FRAG.includes('smoothstep( uImageEdge.x, uImageEdge.y, dot( p, uImageC ) )') && S.SUN_FRAG_CHEAP.includes('uImageOn'),
+  check(S.SUN_FRAG.includes('0.5 + uImageR * dot( p, uImageW ), 0.5 - uImageR * dot( p, uImageN )') && S.SUN_FRAG.includes('float sdo = dot( p, uImageC );') && S.SUN_FRAG.includes('smoothstep( uImageEdge.x, uImageEdge.y, sdo ) * smoothstep( ' + S.IMAGE_STRETCH[0].toFixed(2) + ', ' + S.IMAGE_STRETCH[1].toFixed(2) + ', sdo / max( mu, 0.02 ) )') && S.SUN_FRAG_CHEAP.includes('uImageOn'),
     'the shader at every tier reads the picture where imageUv and imageWeight say');
 }
 

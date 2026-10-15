@@ -231,9 +231,16 @@ export const CORONA_RADII = 7;
 export const CORONA_GAIN = 0.9;
 /** SDO's picture fades in over this long when it arrives, wall-clock ms (scene/sunimage.js). */
 export const IMAGE_ARRIVE_MS = 1200;
+/**
+ * The picture is drawn where SDO saw a place at least this share as squarely as the camera does (fading
+ * between the two): over a pole the picture's edge-on strip would be stretched four times and more. Seen
+ * from the Earth's side the two angles are the same and the whole face is the picture. (A look of
+ * 2026-10-15 from over the north pole showed the smear.)
+ */
+export const IMAGE_STRETCH = [0.3, 0.6];
 /** Loops: regions given loops at once by tier, loops per region by tier, and their shape (all illustrative). */
 export const LOOP_SLOTS = [4, 8, 8];
-export const LOOPS_PER = [2, 4, 4];
+export const LOOPS_PER = [2, 3, 3];
 export const LOOP_STEPS = 20;
 export const LOOP_SPAN_K = 3.5;
 export const LOOP_SPAN_MIN = 0.035;
@@ -243,7 +250,7 @@ export const LOOP_JOY = 0.5;
 /** A loop's width as a share of its region's span, and at least this angle seen from the camera (about 1.5 pixels in 900). */
 export const LOOP_WIDTH = 0.03;
 export const LOOP_MIN_ANGLE = 0.0016;
-export const LOOP_GAIN = 0.55;
+export const LOOP_GAIN = 0.3;
 
 /** The grey atmosphere's temperature where a ray leaving at cosine `mu` comes from. */
 export function limbTemperature(mu) {
@@ -528,9 +535,12 @@ void main() {
   colour *= 1.0 + ${FACULA_GAIN.toFixed(2)} * uGrain * towardLimb * min( 1.0, network + plage ) * ( 1.0 - lanes ) * ( 1.0 - lanes );
 
   // THE FACE OF THE DAY: where SDO's picture saw this place, the picture (its own limb, its own colour)
-  // in place of all of the above, faded in over the picture's own limb. Read everywhere, so the
-  // texture's mipmaps have their derivatives; weighed to nothing where there is no picture.
-  float seen = smoothstep( uImageEdge.x, uImageEdge.y, dot( p, uImageC ) ) * uImageOn;
+  // in place of all of the above, faded in over the picture's own limb, and only where this camera does
+  // not see the place much more squarely than SDO did (IMAGE_STRETCH): seen from over a pole, the strip
+  // the picture saw edge-on would be a smear of stretched pixels, and the modelled disc is drawn there.
+  // Read everywhere, so the texture's mipmaps have their derivatives; weighed to nothing with no picture.
+  float sdo = dot( p, uImageC );
+  float seen = smoothstep( uImageEdge.x, uImageEdge.y, sdo ) * smoothstep( ${IMAGE_STRETCH[0].toFixed(2)}, ${IMAGE_STRETCH[1].toFixed(2)}, sdo / max( mu, 0.02 ) ) * uImageOn;
   vec2 iuv = vec2( 0.5 + uImageR * dot( p, uImageW ), 0.5 - uImageR * dot( p, uImageN ) );
   colour = mix( colour, texture2D( uImage, iuv ).rgb * uImageGain, seen );
 
@@ -801,8 +811,9 @@ void main() {
 /** One loop's shape in its slot, chosen and fixed: [scale, across, height, lean], from the slot and the loop's number. Pure. */
 export function loopShape(slot, j) {
   const h = (k) => { const x = Math.sin((slot * 12.9898 + j * 78.233 + k * 37.719) * 1.0) * 43758.5453; return x - Math.floor(x); };
-  const scale = j === 0 ? 1 : 0.55 + 0.6 * h(1);
-  return [scale, (h(2) - 0.5) * 0.5, scale * (0.42 + 0.3 * h(3)), (h(4) - 0.5) * 0.7];
+  // Not a nest of copies: each loop its own span, place across the group, height and lean.
+  const scale = j === 0 ? 1 : 0.45 + 0.75 * h(1);
+  return [scale, (h(2) - 0.5) * 0.9, scale * (0.35 + 0.4 * h(3)), (h(4) - 0.5) * 1.1];
 }
 
 /** A loop's centre line at t (0..1) in its region's axes, in spans, and its direction there. Pure. */
