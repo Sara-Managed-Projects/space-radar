@@ -4495,14 +4495,15 @@ tours:
   #                        path, ui/trip.js FLIGHT_LOG_MS).
   #   REVEAL               the heroes load themselves as they grow on screen (scene/deep/deepsky.js,
   #                        lodsize.js); nothing here asks for them.
-  #   ORBIT                one drift of 10 to 30 degrees at 1 to 3 degrees a second (5 to 15 s), the
+  #   ORBIT                one drift of 10 to 60 degrees at 1 to 5 degrees a second (8 to 12 s), the
   #                        nearer stars sliding past the far ones: the parallax the package asks for.
   #   ENTER                close stops stand OFF the dense middle: the Helix's 0.9 ly is outside the
   #                        inner disc (499 arcsec across, 0.79 ly in radius) and inside the outer ring
   #                        (1.18 ly), 35 degrees off our line, above the disc's face rather than in its
-  #                        plane; R136's stop is 250 ly from the Tarantula's centre, inside the hollow
-  #                        its winds blew (the model's shell, 300 ly, registry/deepsky-heroes/lmc.yaml),
-  #                        R136 itself 25 ly off the centre and in the frame. A rig flight orbits its
+  #                        plane; R136's stop is 600 ly from the Tarantula's centre, just outside the
+  #                        model's shell round the hollow its winds blew (300 ly, 150 wide,
+  #                        registry/deepsky-heroes/lmc.yaml), R136 25 ly off the centre and in the
+  #                        middle of the frame. A rig flight orbits its
   #                        target and never passes through it.
   #   DEPART               the last stop pulls far back and says the scale in words, then `return:
   #                        true` is the one continuous flight home down the ladder (scene/climb.js),
@@ -4558,13 +4559,15 @@ tours:
       - id: shape
         target: {record: dso-helix-nebula}
         needs_layer: deep-sky
-        # Five light-years, and a 30 degree turn off our line at 3 degrees a second (10 s): the
+        # Five light-years, and a 60 degree turn off our line at 5 degrees a second (12 s): the
         # photograph fades by 50 degrees off the line (scene/nebulae.js viewFade) and the model takes
-        # its place, the near ring sliding across the far one and both across the stars behind.
+        # its place, the near ring sliding across the far one and both across the stars behind. The
+        # turn is in azimuth about the ecliptic pole, the Helix 79 degrees from it: 60 degrees of turn
+        # end 59 degrees off our line (measured in the first look run: 30 degrees left the photograph up).
         distance_km: 47303652362904
         key_light_deg: 0
-        drift_deg: 30
-        drift_rate_deg_s: 3
+        drift_deg: 60
+        drift_rate_deg_s: 5
         chapter: "The shape in 3D"
         # read 2026-10-15, O'Dell, McCullough & Meixner 2004, AJ 128, 2339 (https://arxiv.org/abs/astro-ph/0407556),
         # the abstract: "an inner-disk of about 499'' diameter", "an outer-ring (in reality a torus)
@@ -4575,8 +4578,9 @@ tours:
         card:
           title: "Turn, and the photograph becomes a shape"
           body: >-
-            As we turn, a model takes over. Robert O'Dell and colleagues measured how the gas moves, and
-            found a disc inside a ring tilted almost across it. This is their reconstruction.
+            As we turn, the photograph fades and a model takes over. Robert O'Dell and colleagues
+            measured how the gas moves, and found a disc inside a ring tilted almost across it. This is
+            their reconstruction.
 
       - id: heart
         target: {record: dso-helix-nebula}
@@ -4625,7 +4629,9 @@ tours:
   # (the key light's search, ui/trip.js keyLightAngles, run in a sketch outside the repository): the
   # LMC is 4 degrees from the south ecliptic pole, so on our line the camera looks straight up the
   # rig's axis and any drift there would spin the picture, which is why the first stop does not turn;
-  # every later stop stands 60 to 80 degrees off our line, where the drift is an orbit.
+  # every later stop stands 60 to 80 degrees off our line, where the drift is an orbit. Measured in the
+  # first look run (run 38672981119): the Tarantula's three stops looked past it at the SMC; the model
+  # stop's 60 degree turn now carries the camera off that line (its comment says how).
   # ---------------------------------------------------------------------------------------------
   - id: inside-a-neighbouring-galaxy
     title: "Inside a neighbouring galaxy"
@@ -4642,9 +4648,10 @@ tours:
       - id: from-home
         target: {record: dso-lmc}
         needs_layer: deep-sky
-        # 150 000 ly from the LMC on the line to the Sun: 11 700 ly out of the Milky Way towards it,
-        # the LMC (10.75 deg) a quarter of the frame. No drift (above).
-        distance_km: 1419109570887120000
+        # 70 000 ly from the LMC on the line to the Sun, past the Milky Way's halo towards it: the
+        # photograph's bright part a third of the frame (from 150 000 ly, the first look run, it was a
+        # tenth: the photograph's outer ellipse is faint). No drift (above).
+        distance_km: 662251133080656000
         key_light_deg: 0
         drift: none
         drift_deg: 0
@@ -4665,11 +4672,18 @@ tours:
       - id: model
         target: {record: dso-lmc}
         needs_layer: deep-sky
-        # 45 000 ly, 75 degrees off our line, a 30 degree drift at 3 degrees a second (10 s).
+        # 45 000 ly, 75 degrees off our line, a 60 degree drift at 5 degrees a second (12 s). THE TURN
+        # IS ALSO WHERE THE NEXT THREE STOPS LOOK FROM: near the ecliptic pole every direction at one
+        # height is lit alike, so the key light keeps the azimuth the camera has (its turn penalty),
+        # and without this turn the Tarantula's stops look straight past it at the Small Magellanic
+        # Cloud, 85 000 ly behind (the first look run: its glow a white ball beside R136). After 60
+        # degrees the SMC is out of the frame; the Tarantula's stops turn `away`, further from it.
+        # Under reduced motion there is no drift and the SMC stays behind the Tarantula: a true line
+        # of sight, which its own name says.
         distance_km: 425732871266136000
         key_light_deg: 75
-        drift_deg: 30
-        drift_rate_deg_s: 3
+        drift_deg: 60
+        drift_rate_deg_s: 5
         chapter: "The Large Magellanic Cloud"
         # read 2026-10-15, registry/deepsky-heroes/lmc.yaml (stage c): "where its stars are ON THE
         # SKY (Gaia's counts ...)" measured; "how far in front of or behind the disc's middle each
@@ -4688,6 +4702,7 @@ tours:
         # 6 000 ly: the Tarantula (40 arcmin, 1 900 ly across) with the LMC round it.
         distance_km: 56764382835484800
         key_light_deg: 75
+        drift: away
         drift_deg: 15
         drift_rate_deg_s: 1.5
         chapter: "The Tarantula"
@@ -4709,6 +4724,7 @@ tours:
         # wide) fills the frame.
         distance_km: 14191095708871200
         key_light_deg: 75
+        drift: away
         drift_deg: 20
         drift_rate_deg_s: 2
         # read 2026-10-15, registry/deepsky-heroes/lmc.yaml: the Tarantula's 40 arcmin is "about 1 900
@@ -4726,10 +4742,12 @@ tours:
       - id: r136
         target: {record: dso-tarantula-nebula}
         needs_layer: deep-sky
-        # 250 ly from the catalogue centre: inside the hollow, R136 (SIMBAD's RMC 136, 25 ly off the
-        # centre) in the frame at both widths.
-        distance_km: 2365182618145200
+        # 600 ly from the catalogue centre, as stage c frames "R136 near": just outside the model's
+        # shell (300 ly, 150 wide), R136 (SIMBAD's RMC 136, 25 ly off the centre) in the middle. From
+        # 250 ly (the first look run) the camera was in the shell's glow and R136's halo filled the frame.
+        distance_km: 5676438283548480
         key_light_deg: 75
+        drift: away
         drift_deg: 10
         drift_rate_deg_s: 1
         # read 2026-10-15, https://en.wikipedia.org/wiki/R136: "R136 is thought to be less than 2

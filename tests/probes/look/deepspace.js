@@ -625,7 +625,7 @@ const GROUPS_E = {
 // each picture: the camera's distance against the stop's own, the card's words, Leave on screen.
 // On the desktop run the share and card frames of two stops per trip are kept (`out.tripFrames`, the
 // form tools/trip-frames.probe.js returns), for scripts/build_trip_og.py and build_trip_thumbs.py.
-const TRIP_FRAME_STOPS = { 'into-the-helix': ['photograph', 'shape'], 'inside-a-neighbouring-galaxy': ['tarantula', 'depart'] };
+const TRIP_FRAME_STOPS = { 'into-the-helix': ['photograph', 'shape'], 'inside-a-neighbouring-galaxy': ['model', 'tarantula', 'depart'] };
 const tripRows = {};
 const tripNow = () => sr.trip.state;
 /** The turn between two azimuths, in degrees, the short way round. */
@@ -679,31 +679,42 @@ const walkTrip = async (id, tag) => {
     // own distance is the record's (the HUD and the card print it; written down for the reader).
     if (!(Math.abs(r.distanceLy - wantLy) <= Math.max(0.02, wantLy * 0.05))) out.problems.push(`${id}/${stop.id}: the camera is ${r.distanceLy} ly from the target, the stop says ${wantLy}`);
     if (!st.leave) out.problems.push(`${id}/${stop.id}: no Leave on screen`);
+    if (stop.drift !== 'none' && stop.drift_deg >= 15) {
+      // The orbit. It runs on the frame clock, and a software renderer draws one frame a second at the
+      // hero's close stops, so the drift's whole arc does not fit a probe: it is let run for four seconds
+      // (its rate and direction written down), then the camera is put where the arc ends, at the same
+      // distance and height, as the trip would have it; the next stop flies from there, as it would.
+      sr.trip.resume();
+      await sleep(4000);
+      sr.trip.pause('probe');
+      const ran = turnedDeg(az0, rig.state.azimuth);
+      const d = (((rig.state.azimuth - az0) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+      st.orbitRanDeg = ran;
+      st.orbitSign = d < 0 ? -1 : 1;
+      if (!(ran > 0.05)) out.problems.push(`${id}/${stop.id}: the drift did not run (${ran} degrees in 4 s)`);
+      rig.flyTo({ azimuth: az0 + st.orbitSign * stop.drift_deg * Math.PI / 180, polar: rig.state.polar, distance: rig.state.distance, ms: 0 });
+      st.orbitDeg = turnedDeg(az0, rig.state.azimuth);
+      await snap(`${name}-orbit`, `${id} "${stop.card.title}" at the end of its ${stop.drift_deg} degree orbit (ran ${ran} degrees in 4 s on this renderer; the end pose set)`, 2500);
+    }
+    // The share and card frames, at the stop's last pose (after its orbit, where it has one).
     if ((TRIP_FRAME_STOPS[id] || []).includes(stop.id) && !phone) {
       (out.tripFrames = out.tripFrames || []).push({ trip: id, stop: stop.id, number: tour.stops.indexOf(stop) + 1, zoom: 1, og: tripFrame(1200, 504), png: tripFrame(960, 720) });
     }
-    if (stop.drift !== 'none' && stop.drift_deg >= 15) {
-      // The orbit: let the drift run to its end, then the same place again.
-      sr.trip.resume();
-      await sleep(Math.round((stop.drift_deg / stop.drift_rate_deg_s) * 1000) + 1500);
-      sr.trip.pause('probe');
-      st.orbitDeg = turnedDeg(az0, rig.state.azimuth);
-      await snap(`${name}-orbit`, `${id} "${stop.card.title}" at the end of its ${stop.drift_deg} degree orbit (turned ${st.orbitDeg})`, 1500);
-      if (!(st.orbitDeg > stop.drift_deg * 0.5)) out.problems.push(`${id}/${stop.id}: the orbit turned ${st.orbitDeg} degrees of ${stop.drift_deg}`);
-    }
     row.stops.push(st);
   }
-  // Next on the last stop: the flight home (`return: true`), photographed on the way, then the end card.
+  // The last stop's dwell runs out: the flight home (`return: true`, ui/trip.js advance -> flyHome),
+  // photographed on the way, then the end card. (Next on the last stop ends the trip where it is.)
   const t0 = Date.now();
   sr.trip.resume();
-  sr.trip.next();
-  await sleep(5000);
-  row.returning = !!tripNow().returning;
-  await shot(`${tag}-${stops.length + 1}-home-flight`, `${id}: Next on the last stop, the flight home down the ladder (returning ${row.returning}, ${sr.stage.worldId})`);
-  const ended = await until(() => tripNow().phase === 'outro', 90000);
+  row.returning = await until(() => tripNow().returning === true || tripNow().phase === 'outro', 60000, 100);
+  row.returnedAfterMs = Date.now() - t0;
+  await sleep(4000);
+  await shot(`${tag}-${stops.length + 1}-home-flight`, `${id}: the last stop's dwell over, the flight home down the ladder (returning ${tripNow().returning}, on ${sr.stage.worldId}, ${Math.round(rig.state.distance * sr.stage.unitKm / LY_KM * 100) / 100} ly from its aim)`);
+  const ended = await until(() => tripNow().phase === 'outro', 120000);
   row.homeMs = Date.now() - t0;
-  await shot(`${tag}-${stops.length + 2}-end`, `${id}: the end card (${ended ? 'reached' : 'NOT reached'} after ${Math.round(row.homeMs / 1000)} s, on ${sr.stage.worldId})`, 2500);
+  await shot(`${tag}-${stops.length + 2}-end`, `${id}: the end card (${ended ? 'reached' : 'NOT reached'} ${Math.round(row.homeMs / 1000)} s after the last dwell resumed, on ${sr.stage.worldId})`, 2500);
   if (!ended) out.problems.push(`${id}: the end card never came`);
+  if (sr.stage.worldId !== 'earth') out.problems.push(`${id}: the flight home ended on ${sr.stage.worldId}, not the Earth`);
   sr.trip.stop('leave');
   await sleep(3000);
   return row;

@@ -5278,19 +5278,19 @@ export const TOURS = [
 },
 "needs_layer": "deep-sky",
 "distance_km": 47303652362904,
-"drift_deg": 30,
-"drift_rate_deg_s": 3,
+"drift_deg": 60,
+"drift_rate_deg_s": 5,
 "key_light_deg": 0,
 "chapter": "The shape in 3D",
 "card": {
 "title": "Turn, and the photograph becomes a shape",
-"body": "As we turn, a model takes over. Robert O'Dell and colleagues measured how the gas moves, and found a disc inside a ring tilted almost across it. This is their reconstruction."
+"body": "As we turn, the photograph fades and a model takes over. Robert O'Dell and colleagues measured how the gas moves, and found a disc inside a ring tilted almost across it. This is their reconstruction."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 12823
+"dwell_ms": 14155
 },
 {
 "id": "heart",
@@ -5335,7 +5335,7 @@ export const TOURS = [
 "dwell_ms": 14488
 }
 ],
-"estimate_ms": 88356
+"estimate_ms": 89688
 },
 {
 "id": "inside-a-neighbouring-galaxy",
@@ -5366,7 +5366,7 @@ export const TOURS = [
 "record": "dso-lmc"
 },
 "needs_layer": "deep-sky",
-"distance_km": 1419109570887120000,
+"distance_km": 662251133080656000,
 "drift_deg": 0,
 "drift": "none",
 "key_light_deg": 0,
@@ -5388,8 +5388,8 @@ export const TOURS = [
 },
 "needs_layer": "deep-sky",
 "distance_km": 425732871266136000,
-"drift_deg": 30,
-"drift_rate_deg_s": 3,
+"drift_deg": 60,
+"drift_rate_deg_s": 5,
 "key_light_deg": 75,
 "chapter": "The Large Magellanic Cloud",
 "card": {
@@ -5411,6 +5411,7 @@ export const TOURS = [
 "distance_km": 56764382835484800,
 "drift_deg": 15,
 "drift_rate_deg_s": 1.5,
+"drift": "away",
 "key_light_deg": 75,
 "chapter": "The Tarantula",
 "card": {
@@ -5418,7 +5419,6 @@ export const TOURS = [
 "body": "The bright knot is the Tarantula Nebula, the brightest nursery of stars near us. It is part of the Large Magellanic Cloud and shares its distance; its depth within the disc is not known."
 },
 "frame_radii": 5.0,
-"drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 13822
@@ -5432,13 +5432,13 @@ export const TOURS = [
 "distance_km": 14191095708871200,
 "drift_deg": 20,
 "drift_rate_deg_s": 2,
+"drift": "away",
 "key_light_deg": 75,
 "card": {
 "title": "A hollow blown by young stars",
 "body": "Nearly two thousand light-years across, it is gas lit and pushed by young stars, whose winds have blown a hollow in its middle. Its depth here is a model; its pink hydrogen and teal oxygen are made stronger."
 },
 "frame_radii": 5.0,
-"drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 15154
@@ -5449,16 +5449,16 @@ export const TOURS = [
 "record": "dso-tarantula-nebula"
 },
 "needs_layer": "deep-sky",
-"distance_km": 2365182618145200,
+"distance_km": 5676438283548480,
 "drift_deg": 10,
 "drift_rate_deg_s": 1,
+"drift": "away",
 "key_light_deg": 75,
 "card": {
 "title": "Home of the heaviest stars known",
 "body": "At its heart is R136, a cluster under two million years old whose light makes most of the nebula glow. Its brightest star is among the heaviest known, two to three hundred Suns. The stars drawn are a sample, at its real place."
 },
 "frame_radii": 5.0,
-"drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 16819

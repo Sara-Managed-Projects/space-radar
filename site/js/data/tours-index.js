@@ -311,7 +311,7 @@ export const TOURS_INDEX = [
 "next": "inside-a-neighbouring-galaxy",
 "min_stops": 3,
 "count": 4,
-"estimate_ms": 88356
+"estimate_ms": 89688
 },
 {
 "id": "inside-a-neighbouring-galaxy",

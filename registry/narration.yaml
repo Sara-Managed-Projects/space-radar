@@ -443,7 +443,7 @@ clips:
   - {trip: "back-to-the-moon", stop: "earth-from-there", hash: "5c7c3c2e2fb358a7", seconds: 14.19, words: 46, lufs: -16.2, opus: 55081, m4a: 73735, vtt: 330, wer: 0.0, heard: "619a76eb8dc6e77c", voice: 0}
   - {trip: "back-to-the-moon", stop: "south-pole", hash: "299f457cf4e26e46", seconds: 19.12, words: 56, lufs: -16.4, opus: 75035, m4a: 98946, vtt: 428, wer: 0.0, heard: "1eab05e551c05707", voice: 0}
   - {trip: "into-the-helix", stop: "photograph", hash: "602f19503763be3e", seconds: 16.23, words: 42, lufs: -16.5, opus: 63628, m4a: 84167, vtt: 318, wer: 0.0, heard: "3521ec876fcfb2f9", voice: 0}
-  - {trip: "into-the-helix", stop: "shape", hash: "6bf9fb2dbee7963a", seconds: 15.03, words: 38, lufs: -16.5, opus: 58684, m4a: 78082, vtt: 324, wer: 0.0, heard: "11f56075816d8727", voice: 0}
+  - {trip: "into-the-helix", stop: "shape", hash: "284d6f00d53c205a", seconds: 16.59, words: 42, lufs: -16.3, opus: 65257, m4a: 85906, vtt: 349, wer: 0.0, heard: "684a34b40f9b0009", voice: 0}
   - {trip: "into-the-helix", stop: "heart", hash: "d95ecddfb0b49fe9", seconds: 14.88, words: 41, lufs: -16.5, opus: 59027, m4a: 77212, vtt: 301, wer: 0.0, heard: "a69936a4e5718373", voice: 0}
   - {trip: "into-the-helix", stop: "scale", hash: "c2adc5179a11cc23", seconds: 14.11, words: 43, lufs: -16.4, opus: 56109, m4a: 73300, vtt: 273, wer: 0.0, heard: "ba16bab2bae3f23f", voice: 0}
   - {trip: "inside-a-neighbouring-galaxy", stop: "from-home", hash: "15289f2f5287025d", seconds: 16.94, words: 45, lufs: -16.5, opus: 67950, m4a: 87862, vtt: 333, wer: 0.0, heard: "5ef700b94f534ddb", voice: 0}
