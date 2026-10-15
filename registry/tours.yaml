@@ -4940,8 +4940,11 @@ tours:
     stage: local-group
     clock: as-found
     return: true
-    # The share picture: the microwave background from inside (stop 6).
-    og_stop: 6
+    # The share picture: the Milky Way from 150 000 ly (stop 1; the same pose as "Across the Local
+    # Group"'s first stop, whose frame it is). The microwave background's map (stop 6) is the card's
+    # picture: as a 1200 x 630 PNG it is 472 kB even with a palette, over og_png_max_bytes, and the
+    # local volume's frame is 0.3 % lit.
+    og_stop: 1
     stops:
       - id: home
         target: {record: dso-milky-way}
