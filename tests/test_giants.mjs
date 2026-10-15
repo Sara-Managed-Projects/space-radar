@@ -64,8 +64,7 @@ const place = bands && bands.spot && bands.spot.place;
   const { worldMaterial, applyLook } = W;
   const meshes = new Map();
   for (const w of W.WORLDS) { if (w.look.earth || w.look.emissive) continue; const material = worldMaterial(null, w.look.tint); applyLook(material, w.look); meshes.set(w.id, { material, visible: true }); }
-  let before = false;
-  const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null, beforeGiants: () => before } });
+  const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null } });
   const u = meshes.get('jupiter').material.uniforms;
   const t = Date.UTC(2026, 9, 16, 6);
   wx.update(t, 0);
@@ -80,64 +79,64 @@ const place = bands && bands.spot && bands.spot.place;
   const line = wx.spotLine('jupiter', t);
   check(typeof line === 'string' && line.includes('1 December 2025') && line.includes('(79°)') && line.includes(`${Math.round(WW.grsAt(place, t).l2)}°`) && line.includes(`${Math.round(WW.grsAt(place, t).pm)}° either side`), `the card line says where, from when and how far either side (${line})`);
   check(!/\{/.test(line || '{'), 'every slot of it is filled');
-  before = true;
+  // The look probes' before, under ?look=1 only (scene/quality.js lookHeld reads the address).
+  globalThis.location = { search: '?look=1' };
+  const took = wx.setBeforeGiants(true);
   wx.update(t + 1000, 32);
-  check(u.uWxShift.value === 0 && wx.spotLine('jupiter', t) === null, 'the probes\' before puts the spot back where the map has it and says nothing');
-  before = false;
+  check(took && u.uWxShift.value === 0 && wx.spotLine('jupiter', t) === null, 'the probes\' before puts the spot back where the map has it and says nothing');
+  wx.setBeforeGiants(false);
+  delete globalThis.location;
   wx.latch();
   check(wx.spotLine('jupiter', t) === null, 'after the latch the map is the map, and the card does not claim the spot');
 }
 
 // --- 2. Uranus's rings at their own darkness -----------------------------------------------------------
 const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-const lin = (hex) => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
+const lin = WW.hexLinear;
 {
   const ur = W.WORLDS.find((w) => w.id === 'uranus');
   const R = W.URANUS_RINGS;
-  check(ur.look.ring === R && R.albedo === 0.015 && R.globeAlbedo === 0.488, 'Uranus wears its rings with the fact sheets\' albedos: rings 0.015, planet 0.488');
-  const cam = W.ringColour(ur, 'camera');
-  const ratio = lum(cam) / lum(lin(ur.look.tint));
-  check(near(ratio, 0.015 / 0.488, 1e-6) && ratio < 1 / 25, `face-on and lit from overhead the rings are ${(ratio * 100).toFixed(1)} % of the clouds' mean`);
-  check(cam[0] === cam[1] && cam[1] === cam[2], 'grey: Uranus\'s rings are spectrally flat');
-  check(near(lum(W.ringColour(ur, 'deep')), 4 * lum(cam), 1e-9) && near(lum(W.ringColour(ur, 'eye')), lum(cam), 1e-12), 'only Deep lifts them, four times');
-  const was = lum(lin(W.URANUS_RINGS_BEFORE));
-  check(was / lum(cam) > 15, `the grey they were drawn in was ${(was / lum(cam)).toFixed(0)} times brighter`);
-  measured.push(`Uranus's rings: ${lum(cam).toFixed(4)} linear under Camera (was ${was.toFixed(3)}), clouds ${lum(lin(ur.look.tint)).toFixed(3)}`);
-  // The radii and widths are the same rows as before (tests/test_rings.mjs holds them against the strip).
+  const G = WW.GIANT_RINGS.uranus;
+  check(ur.look.ring === R && G.albedo === 0.015 && G.globeAlbedo === 0.488, 'Uranus\'s rings carry the fact sheets\' albedos: rings 0.015, planet 0.488');
+  const want = WW.ringColour(ur.look.tint, G, 'camera');
+  const drawn = lin(R.colour);
+  const ratio = lum(drawn) / lum(lin(ur.look.tint));
+  check(near(lum(drawn), lum(want), 0.03 * lum(want)) && ratio < 1 / 25, `face-on and lit from overhead the rings are ${(ratio * 100).toFixed(2)} % of the clouds' mean (want ${(100 * 0.015 / 0.488).toFixed(2)}): the nearest grey byte`);
+  check(drawn[0] === drawn[1] && drawn[1] === drawn[2], 'grey: Uranus\'s rings are spectrally flat');
+  check(WW.ringStretch(G, 'deep') === 4 && WW.ringStretch(G, 'camera') === 1 && WW.ringStretch(G, 'eye') === 1, 'only Deep lifts them, four times');
+  const was = lum(lin(0x8f9da3));
+  check(was / lum(drawn) > 15, `the grey they were drawn in was ${(was / lum(drawn)).toFixed(0)} times brighter`);
+  measured.push(`Uranus's rings: ${lum(drawn).toFixed(4)} linear (want ${lum(want).toFixed(4)}; was ${was.toFixed(3)}), clouds ${lum(lin(ur.look.tint)).toFixed(3)}`);
   check(R.bands.length === 10 && R.bands[9][0] === 51149 && R.widen === 10, 'the ten rings at the fact sheet\'s radii, drawn ten times wider');
-  // Neptune's are as they were.
-  check(!W.NEPTUNE_RINGS.albedo && W.ringColour(W.WORLDS.find((w) => w.id === 'neptune'), 'deep').every((v, i) => near(v, lin(W.NEPTUNE_RINGS.colour)[i], 1e-12)), 'Neptune\'s rings are left as they were');
+  check(W.NEPTUNE_RINGS.colour === 0x8f9da3, 'Neptune\'s rings are left as they were');
 }
 
 // --- 3. Jupiter's faint ring --------------------------------------------------------------------------
 {
   const ju = W.WORLDS.find((w) => w.id === 'jupiter');
-  const R = W.JUPITER_RINGS;
-  check(ju.look.ring === R && R.faint === true && R.tauScale === 5e-6, 'Jupiter wears a faint ring, tier 1 and up');
-  // The fact sheet's parts: [inner, outer, tau].
+  const R = WW.GIANT_RINGS.jupiter;
+  check(!ju.look.ring, 'Jupiter\'s ring is not in the boot module: scene/weather/worldweather.js draws it, from tier 1');
   const parts = [['halo', 89400, 123000, 3e-6], ['main', 123000, 128940, 5e-6]];
-  const strip = W.ringBandsStrip(R);
-  const kmPerPx = (R.outerKm - R.innerKm) / W.RING_BANDS_PX;
+  const strip = WW.faintStrip(R);
+  const kmPerPx = (R.outerKm - R.innerKm) / WW.FAINT_PX;
   for (const [name, a, b, tau] of parts) {
     const band = R.bands.find((x) => near(x[0] - x[1] / 2, a, 1) && near(x[0] + x[1] / 2, b, 1));
     check(band && band[2] === tau, `the ${name} ring is ${a} to ${b} km at optical depth ${tau}`);
     const mid = Math.floor(((a + b) / 2 - R.innerKm) / kmPerPx);
     const got = (strip[mid * 4 + 3] / 255) * R.tauScale;
-    check(near(got, tau, Math.max(0.03 * tau, R.tauScale / 510)), `and the strip gives it back as ${got.toExponential(2)}`);
+    check(near(got, tau, 0.03 * tau), `and the strip gives it back as ${got.toExponential(2)}`);
   }
-  check(strip[3] > 0 && R.outerKm < 130000 && R.bands.length === 2, 'the strip runs from the halo\'s inner edge to just past the main ring: the gossamer rings are left out');
-  // The halo is thick: seen low, no brighter than its width over its thickness allows.
+  check(strip[3] > 0 && R.outerKm < 130000 && R.bands.length === 2 && strip[(WW.FAINT_PX - 1) * 4 + 3] === 0, 'the strip runs from the halo\'s inner edge to just past the main ring: the gossamer rings are left out');
   const muMin = R.halo.thickKm / (R.halo.outerKm - R.halo.innerKm);
   check(near(muMin, 10000 / 33600, 1e-12), 'the halo\'s thickness over its width is the fact sheet\'s 10 000 over 33 600 km');
-  const lowHalo = W.ringThinLight(3e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G, muMin);
-  const lowMain = W.ringThinLight(5e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G);
+  const lowHalo = WW.ringThinLight(3e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G, muMin);
+  const lowMain = WW.ringThinLight(5e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G);
   check(lowMain / lowHalo > 3, `seen 7 degrees from the plane the main ring is ${(lowMain / lowHalo).toFixed(1)} times the halo`);
-  check(/S = 2\.0 \* tau \/ \( rl > uHalo\.x && rl < uHalo\.y \? max\( m, uHalo\.z \) : m \);/.test(W.RING_FRAG), 'and RING_FRAG holds the same cap');
   // The light, through the shader's JS twin: the main ring seen 9 degrees from its plane.
-  const colour = (mode) => lum(W.ringColour(ju, mode));
+  const colour = (mode) => lum(WW.ringColour(ju.look.tint, R, mode));
   const mu = Math.sin(9 * DEG);
-  const day = W.ringThinLight(5e-6, mu, Math.cos(10 * DEG), R.dust, W.RING_DUST_G);
-  const night = W.ringThinLight(5e-6, mu, Math.cos(170 * DEG), R.dust, W.RING_DUST_G);
+  const day = WW.ringThinLight(5e-6, mu, Math.cos(10 * DEG), R.dust, W.RING_DUST_G);
+  const night = WW.ringThinLight(5e-6, mu, Math.cos(170 * DEG), R.dust, W.RING_DUST_G);
   const dayCam = day * colour('camera');
   const nightCam = night * colour('camera');
   const dayDeep = day * colour('deep');
@@ -145,39 +144,40 @@ const lin = (hex) => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) =>
   check(nightCam > 0.02, `under Camera, from the night side, it shows (${nightCam.toFixed(4)} linear)`);
   check(dayCam < 0.005, `under Camera, from the day side, it hardly does (${dayCam.toFixed(4)} linear)`);
   check(dayDeep > 0.01, `under Deep it shows from the day side too (${dayDeep.toFixed(4)} linear)`);
-  check(colour('eye') === 0 && W.ringStretch(R, 'eye') === 0, 'under Eye it is drawn as it is: nothing');
-  check(near(colour('camera') / W.ringStretch(R, 'camera'), lum(lin(ju.look.tint)) * 0.015 / 0.538, 1e-9), 'its own brightness is the fact sheet\'s albedo against the planet\'s');
+  check(colour('eye') === 0 && WW.ringStretch(R, 'eye') === 0, 'under Eye it is drawn as it is: nothing');
+  check(near(colour('camera') / WW.ringStretch(R, 'camera'), lum(lin(ju.look.tint)) * 0.015 / 0.538, 1e-9), 'its own brightness is the fact sheet\'s albedo against the planet\'s');
   measured.push(`Jupiter's main ring at 9 degrees: day ${dayCam.toExponential(2)}, night ${nightCam.toExponential(2)} under Camera; day ${dayDeep.toExponential(2)} under Deep`);
-  // The shader: optical depth from the strip, the thin-slab limit, its dust in its own colour.
-  const F = W.RING_FRAG;
-  check(/if \( uThin\.x > 0\.0 \) \{ tau = tex\.a \* uThin\.x; alpha = tau; \}/.test(F) && /S = 2\.0 \* tau \/ \( rl > uHalo/.test(F), 'RING_FRAG reads a faint ring\'s strip as optical depth, in the thin-slab limit');
-  check(/float dust = \( uThin\.x > 0\.0 \? uThin\.y : RING_DUST \)/.test(F), 'with its own share of dust');
-  // The scene: built, painted by the exposure, hidden on tier 0.
+  // The shader: RING_FRAG with five lines changed, and nothing else.
+  const F = WW.faintFragment();
+  check(/float tau = tex\.a \* uThin\.x;\n  alpha = tau;/.test(F) && /float S = 2\.0 \* tau \/ \( rl > uHalo\.x && rl < uHalo\.y \? max\( m, uHalo\.z \) : m \);/.test(F), 'the faint shader reads its strip as optical depth, in the thin-slab limit with the halo\'s cap');
+  check(/float dust = uThin\.y;/.test(F) && /dustPhase\( cosAlpha, uThin\.z \)/.test(F) && /vec3 light = uColour \* \( tex\.rgb \* body \+ fine \) \* shade;/.test(F), 'with its own share of dust, in its own colour');
+  check(!/-log\( 1\.0 - alpha \)/.test(F) && !/exp\( -tau \/ m0 \)/.test(F) && F.split('{').length === F.split('}').length && F.split('(').length === F.split(')').length, 'the opacity path and the thick slab are gone, and the braces balance');
+  check(W.RING_FRAG.includes('float tau = -log( 1.0 - alpha );') && !W.RING_FRAG.includes('uThin'), 'RING_FRAG itself, every other ring\'s, is unchanged');
+  // The scene: the worlds and the weather on them, as main.js makes them.
   const THREE = await import(join(JS, '../vendor/three.module.min.js'));
   const { stage } = await import(join(JS, 'scene/stage.js'));
   stage.setWorld('earth');
   const worlds = W.createWorlds(new THREE.Scene(), { textureBase: null });
-  const ring = worlds.meshFor('jupiter').userData.ring;
   const uRing = worlds.meshFor('uranus').userData.ring;
-  check(ring && ring.material.uniforms.uThin.value.x === 5e-6 && ring.material.uniforms.uDustColour.value.x === 1, 'Jupiter\'s ring mesh reads optical depth and colours its dust as itself');
-  const sat = worlds.meshFor('saturn').userData.ring.material.uniforms;
-  check(sat.uThin.value.x === 0 && near(sat.uDustColour.value.x, W.RING_DUST_COLOUR[0], 1e-9), 'Saturn\'s ring is as it was');
   const lumU = (m) => lum([m.material.uniforms.uColour.value.r, m.material.uniforms.uColour.value.g, m.material.uniforms.uColour.value.b]);
-  check(near(lumU(uRing), lum(W.ringColour(W.WORLDS.find((w) => w.id === 'uranus'), 'camera')), 1e-6), 'Uranus\'s ring mesh is painted at its albedo');
-  worlds.setExposure('deep');
-  check(near(lumU(ring), colour('deep'), 1e-6 * colour('deep')) && worlds.exposure() === 'deep', 'the shutter repaints the rings');
-  worlds.setExposure('eye');
-  check(lumU(ring) === 0, 'and under Eye Jupiter\'s has no light');
+  check(near(lumU(uRing), lum(lin(W.URANUS_RINGS.colour)), 1e-6), 'on every tier Uranus\'s rings are painted at their darkness, before the weather comes');
+  check(!worlds.meshFor('jupiter').getObjectByName('jupiter-faint-ring'), 'and Jupiter has no ring until the weather comes (tier 0 never has it)');
   worlds.setExposure('camera');
-  check(worlds.setBeforeGiants(true) === false && worlds.beforeGiants() === false, 'the probes\' before does nothing without ?look=1');
-  worlds.update(Date.UTC(2026, 9, 16), null);
-  check(ring.visible === false, 'tier 0 (no relief allowed): Jupiter\'s ring is not drawn, so it costs nothing');
-  worlds.setRelief(true);
-  worlds.update(Date.UTC(2026, 9, 16, 1), null);
-  check(ring.visible === true, 'tier 1 and up: it is');
+  const wx = WW.createWorldWeather({ worlds });
+  const ring = worlds.meshFor('jupiter').getObjectByName('jupiter-faint-ring');
+  check(ring && ring.material.uniforms.uThin.value.x === 5e-6 && ring.material.fragmentShader === F && ring.visible === true, 'with the weather, Jupiter wears its faint ring, drawn under Camera');
+  check(near(lumU(ring), colour('camera'), 1e-6 * colour('camera')), 'painted at the albedo and the Camera stretch');
+  worlds.setExposure('deep');
+  check(near(lumU(ring), colour('deep'), 1e-6 * colour('deep')) && near(lumU(uRing), 4 * lum(lin(W.URANUS_RINGS.colour)), 1e-6), 'the shutter repaints both: Deep lifts Jupiter\'s and four times Uranus\'s');
   worlds.setExposure('eye');
-  worlds.update(Date.UTC(2026, 9, 16, 2), null);
-  check(ring.visible === false, 'and not under Eye');
+  check(ring.visible === false && near(lumU(uRing), lum(lin(W.URANUS_RINGS.colour)), 1e-6), 'under Eye Jupiter\'s is not drawn and Uranus\'s is as it is');
+  worlds.setExposure('deep');
+  wx.latch();
+  check(ring.visible === false && near(lumU(uRing), lum(lin(W.URANUS_RINGS.colour)), 1e-6), 'the latch takes Jupiter\'s ring off and puts Uranus\'s back at its own darkness');
+  wx.unlatch();
+  check(ring.visible === true, 'and Low left puts it back');
+  check(wx.setBeforeGiants(true) === false && wx.beforeGiants() === false, 'the probes\' before does nothing without ?look=1');
+  check(near(ring.material.uniforms.uHalo.value.z, muMin, 1e-12) && near(ring.material.uniforms.uHalo.value.y, 123000 / 69911, 1e-9), 'the halo\'s cap reaches the shader in planet radii');
   worlds.dispose();
 }
 
@@ -185,14 +185,16 @@ const lin = (hex) => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) =>
 {
   const G = COPY.r12Giants;
   check(G && /\{l2\}/.test(G.spot) && /\{date\}/.test(G.spot) && /\{pm\}° either side/.test(G.spot) && /JUPOS/.test(G.spot), 'the spot\'s line names the place, the day, the source and the error');
-  check(/\{a\} %/.test(G.rings.uranus) && /\{w\} times wider/.test(G.rings.uranus) && /\{d\} times/.test(G.rings.uranus) && /as dark as they are/.test(G.rings.uranus), 'Uranus\'s rings say their albedo, the widening and the Deep lift');
-  check(/\{c\} times brighter/.test(G.rings.jupiter) && /\{d\} times under Deep/.test(G.rings.jupiter) && /illustrative/.test(G.rings.jupiter) && /drawn flat/.test(G.rings.jupiter), 'Jupiter\'s ring says its stretch, what is illustrative and that the halo is flattened');
+  const U = WW.GIANT_RINGS.uranus;
+  const J = WW.GIANT_RINGS.jupiter;
+  const nb = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  check(G.rings.uranus.includes(`about ${U.albedo * 100} %`) && G.rings.uranus.includes(`${W.URANUS_RINGS.widen} times wider`) && G.rings.uranus.includes(`lifts them ${U.stretch.deep} times`) && /as dark as they are/.test(G.rings.uranus) && /a thirtieth/.test(G.rings.uranus) && near(U.albedo / U.globeAlbedo, 1 / 30, 0.004), 'Uranus\'s rings say the albedo, the widening and the Deep lift they are drawn with');
+  check(G.rings.jupiter.includes(`${nb(J.stretch.camera)} times brighter`) && G.rings.jupiter.includes(`${nb(J.stretch.deep)} times under Deep`) && G.rings.jupiter.includes(`${nb(J.halo.thickKm)} km thick`) && /illustrative/.test(G.rings.jupiter) && /drawn flat/.test(G.rings.jupiter) && /lowest quality/.test(G.rings.jupiter), 'Jupiter\'s ring says its stretch, its halo, what is illustrative and where it is not drawn');
+  const { drawingLine } = await import(join(JS, 'ui/cards.js'));
   const recs = new Map(W.worldRecords().map((r) => [r.id, r]));
-  const ju = recs.get('jupiter').meta;
-  const ur = recs.get('uranus').meta;
-  check(ju.ringsWords === 'jupiter' && ju.ringsCamera === 8000 && ju.ringsDeep === 40000, 'Jupiter\'s card carries the stretch it is drawn with');
-  check(ur.ringsWords === 'uranus' && ur.ringsAlbedo === 0.015 && ur.ringsDeep === 4 && ur.ringsWiden === 10, 'Uranus\'s card carries the albedo and the lift it is drawn with');
-  check(!recs.get('neptune').meta.ringsWords, 'Neptune\'s card keeps its own line');
+  check((drawingLine(recs.get('uranus')) || '').includes(G.rings.uranus) && !(drawingLine(recs.get('uranus')) || '').includes('far brighter'), 'Uranus\'s card says its rings are dark, and no longer that they are drawn far brighter');
+  check((drawingLine(recs.get('jupiter')) || '').includes(G.rings.jupiter), 'Jupiter\'s card says what its faint ring is');
+  check((drawingLine(recs.get('neptune')) || '').includes('far brighter'), 'Neptune\'s card keeps its own line');
 }
 
 console.log('measured:');

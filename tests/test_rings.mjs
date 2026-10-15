@@ -191,8 +191,7 @@ function decodePng(buf) {
   check(/S = 2\.0 \* m0 \/ \( m - m0 \) \* \( exp\( -tau \/ m \) - exp\( -tau \/ m0 \) \);/.test(RING_FRAG), 'the unlit face is the slab formula');
   check(/float tau = -log\( 1\.0 - alpha \);/.test(RING_FRAG), 'the map\'s alpha is read as the face-on opacity');
   check(/gl_FragColor = vec4\( light, cover \);/.test(RING_FRAG), 'the ring is premultiplied: its light plus what gets through');
-  // Internal spec 0076 W2-b: the dust's colour is a uniform, RING_DUST_COLOUR on every ring but Jupiter's faint one.
-  check(/vec3 light = uColour \* \( tex\.rgb \* body \+ uDustColour \* fine \) \* shade;/.test(RING_FRAG), 'the particles take the map\'s colour and the dust its own');
+  check(/vec3 light = uColour \* \( tex\.rgb \* body \+ RING_DUST_COLOUR \* fine \) \* shade;/.test(RING_FRAG), 'the particles take the map\'s colour and the dust the map\'s mean');
   check(/smoothstep\( 0\.98, 1\.02, closest \)/.test(RING_FRAG), '#318\'s shadow of the globe on the ring is kept');
   check(/ringShade = 1\.0 - 0\.85 \* a;/.test(WORLD_FRAG), '#318\'s shadow of the ring on the globe is kept');
 }

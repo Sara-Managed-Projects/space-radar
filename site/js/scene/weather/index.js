@@ -41,6 +41,9 @@ export function createWeather({ worlds, camera = null, reducedMotion = false, on
     setStripped: (on) => (on ? air.latch() : air.unlatch()),
     /** Measured or Film (scene/exposure.js): every row's own `measured:` rule, asked in worldweather.js. */
     setLook(look) { if (air.setLook(look)) onChange(); },
+    /** The look probes' before (?look=1 only; internal spec 0076 W2-b): the giants as main drew them. */
+    setBeforeGiants: (on) => air.setBeforeGiants(on),
+    rings: () => air.rings(),
     /**
      * A world's one line for its card, or null when nothing is drawn for it. The Earth's is the
      * lightning's; the rest are the registry's worlds, while they wear the weather. Under the
