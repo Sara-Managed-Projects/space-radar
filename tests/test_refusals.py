@@ -142,11 +142,11 @@ CASES: list[tuple[str, str, str, str]] = [
     ("an asset whose source no row of asset_sources.yaml matches",
      "models.yaml", "https://github.com/primer/octicons", "https://example.invalid/octicons"),
     ("a source that quotes a licence and has no day it was read",
-     "asset_sources.yaml", "    cost: none\n    checked: 2026-10-09\n    licence_also:", "    cost: none\n    licence_also:"),
+     "asset_sources.yaml", "    cost: none\n    offline: shipped\n    checked: 2026-10-09\n    licence_also:", "    cost: none\n    offline: shipped\n    licence_also:"),
     ("a source with neither a quoted licence nor a note saying why not",
      "asset_sources.yaml", 'licence_note: "Drawn from primitives', 'licence_nope: "Drawn from primitives'),
     ("a source nobody can reach by account type",
-     "asset_sources.yaml", "    account: free\n    cost: none\n    checked: 2026-10-09\n", "    account: sometimes\n    cost: none\n    checked: 2026-10-09\n"),
+     "asset_sources.yaml", "    account: free\n    cost: none\n    offline: shipped\n    checked: 2026-10-09\n", "    account: sometimes\n    cost: none\n    offline: shipped\n    checked: 2026-10-09\n"),
     # --- registry/links.yaml, links out (spec 0050 requirement 8, internal #136) --------
     ("a link out nobody says they opened",
      "links.yaml", "    url: \"https://www.nasa.gov/live/\"\n    checked: 2026-10-08\n", "    url: \"https://www.nasa.gov/live/\"\n"),
@@ -299,9 +299,11 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a new landing site that cites nothing",
      "sites.yaml", '    source: pds-mer\n    aliases: ["Columbia',
      '    source: uncited\n    aliases: ["Columbia'),
-    ("an uncited row that now cites something and is still listed as uncited",
-     "sites.yaml", "landed: 2021-02-18, shape: rover, source: uncited",
-     "landed: 2021-02-18, shape: rover, source: pds-msl"),
+    # The last uncited rows cite a reference since 2026-10-16 (spec 0076 W2-e), so UNCITED_SITES is empty;
+    # what that case held now holds for a dish: a reference it names must be written down.
+    ("a dish that cites a reference nobody wrote down",
+     "sites.yaml", "source: dsn-810-005-301, doing: \"The 70-metre dish at Goldstone",
+     "source: dsn-handbook-of-nowhere, doing: \"The 70-metre dish at Goldstone"),
     ("a landing site that says what landed and not when",
      "sites.yaml", "    landed: 1966-06-02\n", ""),
     ("a landing date that is not a date",
@@ -1809,6 +1811,22 @@ def main() -> int:
 
 # 0076 W2-a (sites traverses)
 # 0076 W2-e (asset records, certainty words)
+# Internal spec 0076 W2-e (#891, #921): the asset records' offline status and SHA-256 pins, a photograph's
+# archive written down, and the certainty words refused on an illustration (scripts/check_registry.py).
+CASES += [
+    ("an asset source that does not say what is there offline",
+     "asset_sources.yaml", "    offline: shipped\n", ""),
+    ("an input pinned by a hash its build script does not refuse by",
+     "asset_sources.yaml", "sha256: 4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in",
+     "sha256: 5501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in"),
+    ("a shipped file whose bytes are not the ones pinned",
+     "asset_sources.yaml", "sha256: 565b7726d187a82de1d6aa2d9fc7df6df9475409dc02262410945b38ba04dfbe",
+     "sha256: 665b7726d187a82de1d6aa2d9fc7df6df9475409dc02262410945b38ba04dfbe"),
+    ("a photograph from an archive nobody wrote down",
+     "nebulae.yaml", 'page: "https://noirlab.edu/public/images/{image}/"', 'page: "https://pictures.example.invalid/{image}/"'),
+    ("a rocket drawn as an illustration that calls itself measured",
+     "rockets.yaml", 'display: "Falcon 9 Block 5"', 'display: "Falcon 9 Block 5, measured to the metre"'),
+]
 
 if __name__ == "__main__":
     sys.exit(main())

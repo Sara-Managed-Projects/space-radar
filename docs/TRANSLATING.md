@@ -18,7 +18,7 @@ the text now is not wasted: the loader reads exactly this file.
    card. This is the first milestone, and it is already useful alone.
 2. **The glossary** (`GLOSSARY` in the same file, from `registry/glossary.yaml`): 43 short
    explanations, each written for a curious 14-year-old and read aloud to a 9-year-old.
-3. **The trips** (`registry/tours.yaml`): 26 trips, about 10 000 words of titles, blurbs and cards.
+3. **The trips** (`registry/tours.yaml`): 28 trips, about 11 000 words of titles, blurbs and cards.
    Each stop's words are what the voice reads. Do these after 1 and 2, one trip at a time.
 4. **The pages a search engine reads and the press page**: later, from the same text.
 

@@ -18,6 +18,12 @@ version: 1
 #   account       none | free | paid   (an account needed to download)
 #   cost          none | ...
 #   checked       the day the page was read, YYYY-MM-DD; absent = not read for this file
+#   offline       what a visitor without a network has of it (internal spec 0076 W2-e, #891): shipped (the
+#                 files are under site/ and in the release), saved-copy (read live, and a saved copy under
+#                 data/v1 answers offline) or live (nothing offline; the feature says so when it is gone)
+#   pins          optional: the exact inputs, each {sha256, and file (a path in this repository, whose bytes
+#                 must hash to it) or url + pinned_in (the build script or manifest that refuses any other
+#                 bytes, which must carry the same hash)}. scripts/check_registry.py checks both kinds.
 sources:
   - id: nasa-3d-resources
     name: NASA 3D Resources (github.com/nasa/NASA-3D-Resources)
@@ -28,6 +34,7 @@ sources:
     licence_url: https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/README.md
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
     licence_also: {url: "https://www.nasa.gov/nasa-brand-center/images-and-media/", quote: "NASA content – images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format – generally are not subject to copyright in the United States."}
 
@@ -44,6 +51,7 @@ sources:
     licence_note: "The policy names images and video and does not name 3D models; a model rests on NASA's guidelines in `licence_also`, which do. The credit line the policy asks for is 'Courtesy NASA/JPL-Caltech'. A model whose page credits a contractor or another agency is not covered: read each page."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-15
     licence_also: {url: "https://www.nasa.gov/nasa-brand-center/images-and-media/", quote: "NASA content – images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format – generally are not subject to copyright in the United States."}
 
@@ -59,6 +67,7 @@ sources:
     licence_note: "Drawn from primitives or computed by a script in this repository; the facts they rest on carry their own source in the row."
     account: none
     cost: none
+    offline: shipped
 
   - id: solar-system-scope
     name: Solar System Scope textures
@@ -69,6 +78,7 @@ sources:
     licence_url: https://www.solarsystemscope.com/textures/
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: usgs-astrogeology
@@ -81,6 +91,7 @@ sources:
     licence_note: "The same page warns that some non-USGS images on USGS sites are used with permission and marked copyrighted; each map row names the mission team and the product it is."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: wikimedia-commons
@@ -93,6 +104,7 @@ sources:
     licence_note: "Read today for one file (Enceladus Color Map); each file's own page was read on the day its row says (models.yaml `source: ... (read YYYY-MM-DD)`)."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: nasa-svs-photojournal
@@ -105,6 +117,7 @@ sources:
     licence_note: "SVS is the quoted page; the Photojournal and NASA Science pages fall under the same media usage guidelines (https://www.nasa.gov/nasa-brand-center/images-and-media/), read 2026-10-09, but the Photojournal and Earth Observatory pages gave no sentence of their own to quote that day."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: pds-small-bodies
@@ -117,6 +130,7 @@ sources:
     licence_note: "Neither site stated a licence in a sentence on 2026-10-09 (the page lists the shape models and no terms). The rows' own `licence:` fields (models.yaml) say what each product is: NASA mission data."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: noaa-ncei-stsci
@@ -129,6 +143,7 @@ sources:
     licence_note: "NCEI's page, read 2026-10-09, says only 'NOAA and NCEI cannot provide any warranty as to the accuracy, reliability, or completeness of furnished data'; MAST's page gave no licence sentence. The rows' own `licence:` fields are what the site relies on."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: d3-celestial
@@ -140,6 +155,7 @@ sources:
     licence_url: https://raw.githubusercontent.com/ofrohn/d3-celestial/master/LICENSE
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   # 2026-10-14 (internal spec 0075 stage e): a catalogue, read by a build script and pinned by SHA-256
@@ -154,7 +170,12 @@ sources:
     licence_note: "Commercial use depends on each catalogue's origin (the same page); Space Radar is free and non-commercial. The package's 'ODbL per the package' is SIMBAD's licence, not VizieR's."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-14
+    pins:
+      - {url: "https://cdsarc.cds.unistra.fr/ftp/J/AJ/145/101/ReadMe", sha256: cbf378cafcdbf529a98297a8e86cf04a9f2e5e2f55e5f23ab09976591ff18af7, pinned_in: scripts/build_deep_localvolume.py}
+      - {url: "https://cdsarc.cds.unistra.fr/ftp/J/AJ/145/101/table1.dat", sha256: 0d98691e4b04189e0359be7e55e8e9fa6c6d75fe085d833aad4ef5d1e101ce17, pinned_in: scripts/build_deep_localvolume.py}
+      - {url: "https://cdsarc.cds.unistra.fr/ftp/J/AJ/145/101/table6.dat", sha256: 199187c501d9570bd27b8d7ca5c9a923e16f7d0d1a6ba13659e4af2c7db5fa1b, pinned_in: scripts/build_deep_localvolume.py}
 
   - id: github-octicons
     name: GitHub Octicons (the mark in the sources sheet)
@@ -165,6 +186,7 @@ sources:
     licence_url: https://raw.githubusercontent.com/primer/octicons/main/LICENSE
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: free-music-archive
@@ -176,6 +198,7 @@ sources:
     licence_url: https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   - id: freesound
@@ -188,6 +211,7 @@ sources:
     licence_note: "Read today for one sound; the audio rows quote the other two as read 2026-09-23. Downloading needs a free Freesound login, which is Ivan's."
     account: free
     cost: none
+    offline: shipped
     checked: 2026-10-09
 
   # 2026-10-12 (internal spec 0064): a GENERATOR, not an archive. What comes from it is a mesh made by
@@ -203,6 +227,7 @@ sources:
     licence_note: "The weights' page (https://huggingface.co/microsoft/TRELLIS-image-large) states `license: mit`, read 2026-10-12. Run through the Hugging Face Space trellis-community/TRELLIS, whose page also states `license: mit`; a free Hugging Face account gives the GPU minutes, and that account is Ivan's."
     account: free
     cost: none
+    offline: shipped
     checked: 2026-10-12
   # 0076 W1-a
   # 2026-10-15 (internal spec 0076 stage W1-a, #782): the Orion hero's star places and magnitudes, read once from SIMBAD's
@@ -217,6 +242,7 @@ sources:
     licence_note: "The same page: 'The Data Sets must be cited in any work or product that uses them' and at least 'CDS/SIMBAD'; CREDITS.md section 3l (Orion) does. Page dated 7 January 2026."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-15
   # 0076 W1-b
   # The microwave background's map (scripts/build_deep_cmb.py -> site/images/deep/cmb/): WMAP's
@@ -231,8 +257,80 @@ sources:
     licence_note: "LAMBDA asks for its acknowledgement (CREDITS.md section 3h quotes it). Planck's 2018 map was not used: ESA's page for it says 'Licence: ESA Standard Licence', not CC BY-SA 3.0 IGO (read 2026-10-15)."
     account: none
     cost: none
+    offline: shipped
     checked: 2026-10-15
+    pins:
+      - {url: "https://lambda.gsfc.nasa.gov/data/map/dr5/dfp/ilc/wmap_ilc_9yr_v5.fits", sha256: 4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in: scripts/build_deep_cmb.py}
   # 0076 W1-d
   # 0076 W2-a
   # 0076 W2-c
   # 0076 W2-e (asset_sources schema rows)
+  # 2026-10-16 (internal spec 0076 W2-e, #891; advances internal #785, the deep inputs' register): the four
+  # picture archives registry/nebulae.yaml `archives:` already quoted (read 2026-10-03 and 2026-10-06, quoted
+  # here from there), and Gaia, whose star counts the LMC is drawn from. check_registry.py now holds every
+  # photograph's archive and every hero's file to a row here.
+  - id: esa-hubble
+    name: ESA/Hubble picture archive
+    match: ["https://esahubble.org/", "https://cdn.esahubble.org/"]
+    url: https://esahubble.org/images/
+    licence: CC BY 4.0
+    licence_read: "ESA/Hubble images, videos and web texts are released under the Creative Commons Attribution 4.0 International license and may on a non-exclusive basis be reproduced without fee provided they are clearly and visibly credited."
+    licence_url: https://esahubble.org/copyright/
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-03
+
+  - id: eso
+    name: ESO picture archive
+    match: ["https://www.eso.org/", "https://cdn.eso.org/"]
+    url: https://www.eso.org/public/images/
+    licence: CC BY 4.0
+    licence_read: "Unless specifically noted, the images, videos, and music distributed on the public ESO website, along with the texts of press releases, announcements, pictures of the week, blog posts and captions, are licensed under a Creative Commons Attribution 4.0 International License, and may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible."
+    licence_url: https://www.eso.org/public/copyright/
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-03
+    pins:
+      - {url: "https://cdn.eso.org/images/large/eso1723a.jpg", sha256: 201e807455396c784549f68d20ad36814774c8c28ede3b7e55ae3f55da90a3ba, pinned_in: site/images/deep/orion/manifest.json}
+      - {file: site/images/deep/orion/orion-light.webp, sha256: 565b7726d187a82de1d6aa2d9fc7df6df9475409dc02262410945b38ba04dfbe}
+
+  - id: noirlab
+    name: NOIRLab picture archive
+    match: ["https://noirlab.edu/"]
+    url: https://noirlab.edu/public/images/
+    licence: CC BY 4.0
+    licence_read: "Unless specifically noted, the images, and videos distributed on the public NOIRLab website, along with the texts of press releases, announcements, pictures of the week, blog posts and captions, are licensed under a Creative Commons Attribution 4.0 International License, and hence may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible."
+    licence_url: https://noirlab.edu/public/copyright/
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-03
+
+  - id: esa-webb
+    name: ESA/Webb picture archive
+    match: ["https://esawebb.org/", "https://cdn.esawebb.org/"]
+    url: https://esawebb.org/images/
+    licence: CC BY 4.0
+    licence_read: "ESA/Webb images, videos and web texts are released under the Creative Commons Attribution 4.0 International license and may on a non-exclusive basis be reproduced without fee provided they are clearly and visibly credited."
+    licence_url: https://esawebb.org/copyright/
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-06
+
+  - id: esa-gaia
+    name: ESA Gaia archive (Gaia DR3), read by scripts/build_deep_lmc.py
+    match: ["https://gea.esac.esa.int/"]
+    url: https://gea.esac.esa.int/archive/
+    licence: CC BY-NC 3.0 IGO, as the licence page read 2026-10-16 says
+    licence_read: "Gaia data are distributed under the CC BY-NC 3.0 IGO license."
+    licence_url: https://www.cosmos.esa.int/web/gaia-users/license
+    licence_note: "registry/deepsky-heroes/lmc.yaml, scripts/build_deep_lmc.py and CREDITS.md 3l say CC BY-SA 3.0 IGO (the package's word, internal #785); the page says BY-NC, and points commercial users to ESA's terms (https://www.cosmos.esa.int/web/esdc/terms-and-conditions). Space Radar is free and non-commercial; the derived map's stated licence is a question for the lead (spec 0076 W2-e PR), not changed here."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-16
+    pins:
+      - {file: site/data/deep/lmc-density.bin, sha256: e18e52449d5a904912d9d60df14fdbac71edc895b3ca35a50312591642c1ad47}

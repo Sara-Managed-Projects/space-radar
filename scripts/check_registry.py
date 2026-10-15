@@ -193,7 +193,7 @@ SITE_SHAPES = {"lander", "rover", "lunar-module"}
 # ship. When one of these is matched to a reference, its id comes out of this set -- the check
 # below refuses a set member that has started citing something, so the set cannot go stale.
 SITE_UNCITED = "uncited"
-UNCITED_SITES = frozenset({"change-4", "jezero", "utopia"})
+UNCITED_SITES: frozenset = frozenset()  # emptied 2026-10-16 (spec 0076 W2-e): the last three now cite a reference
 # Luna 2 hit the Moon on 13 September 1959. A landing date before it is a typo, not a landing.
 FIRST_ARRIVAL = datetime.date(1959, 9, 13)
 
@@ -4821,6 +4821,12 @@ def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
             if sid in UNCITED_SITES and source != SITE_UNCITED:
                 fail(where, "cites a reference now, so take its id out of UNCITED_SITES in "
                             "scripts/check_registry.py -- the set lists the rows still uncited")
+        elif s.get("source") is not None:
+            # A dish or a pad cites its reference the same way (spec 0076 W2-e: every record a source).
+            if s["source"] not in refs:
+                fail(where, f"source `{s['source']}` is not a key of `references:`")
+            else:
+                cited.add(s["source"])
         al = s.get("aliases")
         if al is not None and (not isinstance(al, list) or not al
                                or not all(isinstance(x, str) and x.strip() for x in al)):
@@ -5548,6 +5554,75 @@ def main() -> int:
 
 # 0076 W2-a (sites traverses)
 # 0076 W2-e (asset records, certainty words)
+# Internal spec 0076 stage W2-e (#891, #921; advances internal #785). Two rules, run before main()'s own:
+#
+# ASSET RECORDS. Every row of registry/asset_sources.yaml says what a visitor has of it offline, and the
+# inputs a build script read are pinned by SHA-256: a `file:` pin is hashed here from the repository's
+# bytes, a `url:` pin must be the hash its `pinned_in:` script or manifest refuses any other bytes by.
+# Every photograph of registry/nebulae.yaml comes from an archive a row of asset_sources.yaml matches.
+#
+# CERTAINTY WORDS (SR-PLAN-183). A registry record drawn as an illustration may not describe itself with
+# the words of a measurement: scripts/coverage.py certainty_problems(), over the record sets read from
+# registry/ alone (tests/test_coverage.py runs it over every set).
+ASSET_OFFLINE = ("shipped", "saved-copy", "live")
+
+
+def check_asset_records() -> None:
+    import hashlib
+    doc = load(REG / "asset_sources.yaml") or {}
+    rows_ = [r for r in doc.get("sources") or [] if isinstance(r, dict)]
+    prefixes = []
+    for r in rows_:
+        where = f"asset_sources.yaml[{r.get('id')}]"
+        prefixes += [str(m) for m in r.get("match") or []]
+        if r.get("offline") not in ASSET_OFFLINE:
+            fail(where, f"`offline:` is one of {', '.join(ASSET_OFFLINE)}: say what a visitor without a network has of it")
+        for pin in r.get("pins") or []:
+            sha = str((pin or {}).get("sha256") or "")
+            if not re.fullmatch(r"[0-9a-f]{64}", sha):
+                fail(where, f"a pin's sha256 {sha[:20]!r} is not 64 hex digits")
+                continue
+            if pin.get("file"):
+                path = ROOT / str(pin["file"])
+                if path.exists():
+                    got = hashlib.sha256(path.read_bytes()).hexdigest()
+                    if got != sha:
+                        fail(where, f"pins {pin['file']} at sha256 {sha[:12]}..., and its bytes hash to {got[:12]}...: the file changed, so read its source again and pin the new bytes")
+                elif not NO_SITE_MODULES:
+                    fail(where, f"pins {pin['file']}, which is not in the repository")
+            elif pin.get("url") and pin.get("pinned_in"):
+                path = ROOT / str(pin["pinned_in"])
+                if not path.exists():
+                    fail(where, f"a pin names {pin['pinned_in']}, which is not in the repository")
+                elif sha not in path.read_text(encoding="utf-8", errors="replace"):
+                    fail(where, f"pins {pin['url']} at sha256 {sha[:12]}..., and {pin['pinned_in']} does not refuse other bytes by that hash")
+            else:
+                fail(where, "a pin is {sha256, file} or {sha256, url, pinned_in}")
+    neb = load(REG / "nebulae.yaml") or {}
+    archives = neb.get("archives") or {}
+    for pic in neb.get("pictures") or []:
+        page = str((archives.get(pic.get("archive")) or {}).get("page") or "")
+        if not any(page.startswith(p) for p in prefixes):
+            fail(f"nebulae.yaml[{pic.get('id')}]", f"comes from archive `{pic.get('archive')}`, whose pages no row of registry/asset_sources.yaml matches: write the archive down there (spec 0076 W2-e)")
+
+
+def check_certainty_words() -> None:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import coverage
+    domains = {"worlds", "rings", "dso", "photographs", "heroes", "exotics", "systems", "planets", "stars_notable",
+               "other_light", "sites", "real_models", "model_kinds", "rockets", "oddities", "weather", "layers"}
+    for line in coverage.certainty_problems(coverage.collect(domains=domains)["rows"]):
+        domain, _, rest = line.partition("[")
+        fail(f"{coverage.DOMAIN_FILES.get(domain, domain)}[{rest.split(']')[0]}]", rest.split("] ", 1)[1])
+
+
+_main_before_0076_w2e = main
+
+
+def main() -> int:  # noqa: F811 -- the two rules above run first and report through main()'s list
+    check_asset_records()
+    check_certainty_words()
+    return _main_before_0076_w2e()
 
 if __name__ == "__main__":
     sys.exit(main())

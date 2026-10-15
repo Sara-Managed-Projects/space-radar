@@ -43,6 +43,7 @@ ITEMS="python3 scripts/check_registry.py
 python3 scripts/check_copy.py
 python3 scripts/narrate.py --check
 python3 tests/test_credits.py
+python3 tests/test_coverage.py
 python3 tests/test_community_files.py
 python3 tests/test_contributor_docs.py
 python3 tests/test_no_conflict_markers.py"
