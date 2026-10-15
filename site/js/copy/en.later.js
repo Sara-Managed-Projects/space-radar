@@ -1726,7 +1726,7 @@ Object.assign(COPY, {
     // The distance caveats: rows under "Distance found by" on the card.
     rows: {
       'dso-lmc': [['Depth of its stars', 'Not measured star by star: at this distance a star’s parallax is too small. The model spreads its stars through the disc’s known thickness.'], ['Review', 'This model has not yet been reviewed by an astronomer.']],
-      'dso-tarantula-nebula': [['Depth inside the LMC', 'Not measured: it is drawn at the LMC’s distance in its own direction. On the tilted disc it may lie about 2 000 light-years nearer.'], ['Review', 'This model has not yet been reviewed by an astronomer.']],
+      'dso-tarantula-nebula': [['Depth inside the LMC', 'Not measured: it is drawn at the LMC’s distance in its own direction. On the tilted disc it may lie about 2 000 light-years nearer.'], ['Review', 'This model has not yet been reviewed by an astronomer.']],
     },
   },
 

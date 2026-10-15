@@ -40,7 +40,8 @@ import { PICTURE_FOR, pictureBasis, pictureHalfExtent, eqToEcl, eclToEq, ellipse
 import { marchSteps, noiseTexture } from './gasmat.js';
 import { drawnUnder, exposureLook } from '../exposure.js';
 
-export const UNDER_MEASURED = { stars: 'same', nodes: 'same', disc: 'same', noise: 'hidden', drift: 'still' };
+// Nothing in this hero moves in either look, so there is no `still` row to hold (tests/test_look_setting.mjs).
+export const UNDER_MEASURED = { stars: 'same', nodes: 'same', disc: 'same', noise: 'hidden' };
 /** The words block the card reads for this hero's records (copy/en.later.js). */
 export const COPY_BLOCK = 'deepLmc';
 export const DRAWN = { 'dso-lmc': ['model'], 'dso-tarantula-nebula': ['model'] };
