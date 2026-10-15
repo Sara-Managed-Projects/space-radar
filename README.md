@@ -33,7 +33,7 @@ git clone https://github.com/Sara-Managed-Projects/space-radar.git
 cd space-radar && python3 -m http.server 8177 --directory site      # then open http://localhost:8177
 ```
 
-26 narrated trips (205 stops), 109 389 stars in 3D, 40 star systems to fly into, about 17 000
+28 narrated trips (215 stops), 109 389 stars in 3D, 40 star systems to fly into, about 17 000
 satellites at their real positions, and every picture labelled as measured, modelled or an
 artist's impression. **Teach with it:** present mode and an autopilot screen for a classroom or a
 museum, and a [zip that runs offline](docs/RUN_LOCALLY.md).
@@ -66,7 +66,7 @@ Space Radar is a living 3D map of space. It draws the Earth with today's clouds,
 satellites where they are this minute, the space stations and who is aboard, rockets about to
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae as telescopes photographed them, and the Milky Way from outside. Step
-down to the ground and it is tonight's sky from your own street. Twenty-six guided trips, read
+down to the ground and it is tonight's sky from your own street. Twenty-eight guided trips, read
 aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
 
@@ -89,7 +89,7 @@ data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 26 trips and 205 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 28 trips and 215 stops, read aloud, with captions and music. | **Stand where we have been.** Twenty places on the Moon and twelve on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
 | ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
 | **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
