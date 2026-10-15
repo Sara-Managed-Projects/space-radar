@@ -82,6 +82,7 @@ const distanceWords = () => {
 
 /** A picture with its numbers: settle, wait for the deep sky, measure, write down, photograph. */
 let n = 0;
+let netAt = sr.perf && sr.perf.netTotal ? sr.perf.netTotal() : null;
 const scene = async (hero, at, note, settleMs = 3000) => {
   await sleep(settleMs);
   const t0 = Date.now();
@@ -100,10 +101,12 @@ const scene = async (hero, at, note, settleMs = 3000) => {
     frames: m.frames, p50Ms: m.p50Ms, p95Ms: m.p95Ms, maxMs: m.maxMs, workP50Ms: m.workP50Ms ?? null, workP95Ms: m.workP95Ms ?? null,
     calls: m.calls, triangles: m.triangles, textures: m.textures, geometries: m.geometries, programs: m.programs,
     gpuMiB: m.gpu ? m.gpu.totalMiB : null, gpuVisibleMiB: m.gpu ? m.gpu.visibleMiB : null, gpu: m.gpu,
-    netBytes: m.net ? m.net.bytes : null, netRequests: m.net ? m.net.requests : null,
+    // Fetched since the last picture: the move here, the settle and the measure (sr.perf.netTotal).
+    netBytes: netAt !== null ? sr.perf.netTotal() - netAt : null, netInWindow: m.net ? m.net.bytes : null, netRequests: m.net ? m.net.requests : null, netSinceStart: m.net ? m.net.sinceStartBytes : null,
     readyWaitMs, deep,
   };
   out.scenes.push(row);
+  if (netAt !== null) netAt = sr.perf.netTotal();
   await shot(name, `${note} | ${row.stage}, ${row.distance}, tier ${row.tier}, ${row.look || '?'}, p50 ${row.p50Ms} ms p95 ${row.p95Ms} ms (${row.frames} frames), ${row.calls} calls, GPU ~${row.gpuMiB ?? '?'} MiB, net ${row.netBytes ?? '?'} B`);
   return row;
 };
@@ -167,7 +170,33 @@ const HEROES = {
     if (sr.stage.worldId !== 'earth') await stage('earth', 9000);
     const id = ['sat-25544', '25544', 'iss'].find((x) => sr.recordById(x));
     if (!id) { out.problems.push('missing record sat-25544 (the ISS)'); look.missing.push('sat-25544'); return; }
-    await record('iss', id, 'the International Space Station', { far: 4, near: 0.4 })();
+    // IN SUNLIGHT (the first run, 2026-10-15: at 12:00 UTC the station was in the Earth's shadow and
+    // drawn black, rightly). From the fixed instant, five minutes a step until it is lit, and ten more:
+    // the same instant every run. The scenes' clock says where it stopped; the clock goes back after.
+    const rec = sr.recordById(id);
+    const sunlit = () => {
+      const p = sr.positionOfRecord(rec); const e = sr.worlds.meshFor('earth'); const s = sr.worlds.meshFor('sun');
+      if (!p || !e || !s) return null;
+      const v = { x: p.x - e.position.x, y: p.y - e.position.y, z: p.z - e.position.z };
+      const d = unit({ x: s.position.x - e.position.x, y: s.position.y - e.position.y, z: s.position.z - e.position.z });
+      const along = v.x * d.x + v.y * d.y + v.z * d.z;
+      if (along > 0) return true;
+      return Math.hypot(v.x - along * d.x, v.y - along * d.y, v.z - along * d.z) > sr.worlds.drawnRadiusUnits('earth') * 1.01;
+    };
+    const t0 = sr.clock.now();
+    out.issLight = { litAtFirst: sunlit(), movedMinutes: 0 };
+    if (out.issLight.litAtFirst === false) {
+      for (let k = 1; k <= 20; k++) {
+        sr.clock.goTo(t0 + k * 5 * 60e3);
+        await sleep(1500);
+        if (sunlit()) { out.issLight.movedMinutes = (k + 2) * 5; break; }
+      }
+      sr.clock.goTo(t0 + out.issLight.movedMinutes * 60e3);
+      await sleep(2000);
+      out.issLight.lit = sunlit();
+      if (!out.issLight.lit) look.warns.push('probe: the ISS was still in the Earth\'s shadow after 100 minutes of stepping');
+    }
+    try { await record('iss', id, 'the International Space Station' + (out.issLight.movedMinutes ? ` (the clock ${out.issLight.movedMinutes} min on, in sunlight)` : ''), { far: 4, near: 0.4 })(); } finally { sr.clock.goTo(t0); }
   },
   moon: world('moon', { name: 'the Moon', near: 1.5 }),
   sun: world('sun', { name: 'the Sun, its detail on', near: 1.3 }),

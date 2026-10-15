@@ -14,6 +14,7 @@
 //                             no allocation per frame (tests/test_perf.mjs counts).
 //   mark()                    starts a window: frames and network bytes are counted from here
 //   count()                   drawn frames since the mark (cheap: a probe polls it)
+//   netTotal()                bytes fetched since this was made (cheap: a probe diffs two pictures)
 //   stats()                   the window, as one object (below); allocates, walks the scene: not per frame
 //   seed                      the fixed seed that ?look=1 gives the modules that would roll dice
 //   dispose()
@@ -21,8 +22,9 @@
 //
 // stats() -> {
 //   frames, p50Ms, p95Ms, maxMs        drawn-frame intervals in the window (the last RING if longer)
-//   workP50Ms, workP95Ms               the loop's own work per drawn frame (CPU side; on SwiftShader the
-//                                      GPU's work is on the CPU too, so it is in here)
+//   workP50Ms, workP95Ms               the loop's own work per drawn frame, CPU side: from the frame's
+//                                      stamp to the end of the loop, so the GL commands are queued but
+//                                      not drawn; the interval (p50Ms) is what includes the GPU's work
 //   calls, triangles, points, lines    renderer.info of the last frame drawn
 //   textures, geometries, programs     what three.js holds on the GPU now
 //   gpu: { textureMiB, geometryMiB, totalMiB, visibleMiB, textures, geometries }
@@ -156,6 +158,8 @@ export function createPerf(ctx = {}, opts = {}) {
     },
     mark() { n = 0; head = 0; netBytes = 0; netReqs = 0; },
     count: () => n,
+    /** Bytes and requests since this was made (cheap): a probe diffs it between two pictures. */
+    netTotal: () => netAll,
     get total() { return total; },
     stats() {
       const k = n;
