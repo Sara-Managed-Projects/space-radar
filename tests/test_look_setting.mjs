@@ -176,7 +176,9 @@ for (const r of WEATHER) {
   check(/ctx\.look = \(\) => drawn\.mode\(\);/.test(main), 'main.js puts one question on the context');
   check(/\{ still: [^}]*, look: ctx\.look\(\) \}\);/.test(main) && /look: ctx\.look\(\),\n\s+top:/.test(main), 'and hands its answer to the Sun and the aurora every frame');
   check(/weather\.setLook\(ctx\.look\(\)\);/.test(main) && /if \(ctx\.weather && ctx\.weather\.setLook\) ctx\.weather\.setLook\(mode\);/.test(main), 'and to the weather when it is made and when the look changes');
-  check((main.match(/ctx\.look\(\)/g) || []).length <= 4, 'three effects ask; nothing threads a flag through the scene by hand');
+  // The deep sky's coordinator (spec 0075, scene/deep/deepsky.js) is the fourth that asks.
+  check((main.match(/ctx\.look\(\)/g) || []).length <= 5, 'four effects ask; nothing threads a flag through the scene by hand');
+  check(/look: \(\) => ctx\.look\(\)/.test(main), 'the deep sky asks the same question, each frame');
   const cards = read('site/js/ui/cards.js');
   check(/sunLookLine\(ctx\)/.test(cards) && COPY.lookSaid.sun.measured && COPY.lookSaid.sun.film, 'the Sun\'s card says which look is on while its detail is drawn');
 }

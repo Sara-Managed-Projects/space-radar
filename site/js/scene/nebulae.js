@@ -5,7 +5,8 @@
 //   setRecords(records), setSkyVisible(on), rebuild(), update(camera, renderer, skyOn, placeOn), want(id),
 //   prefetch(ids), has(id), loaded(), state(), dispose(), group, skyGroup }
 // Pure, for tests/test_nebulae.mjs: pictureBasis(row), pictureCorners(row), skyToPicture(row, ra, dec),
-//   pictureHalfExtent(row), eqToEcl(v), viewFade(cos), nearFade(distOverWidth), PICTURE_FOR
+//   pictureHalfExtent(row), eqToEcl(v), viewFade(cos), nearFade(distOverWidth), PICTURE_FOR,
+//   ellipseInPicture(row, raDeg, decDeg, majArcmin, minArcmin, paDeg)
 //
 // WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
 // is it real or not? If real - lets add this". They are real, and until this file the Orion Nebula
@@ -45,6 +46,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
 import { NEBULAE } from '../data/nebulae.js';
+import { PHOTO_FETCH_PX } from './deep/lodsize.js';
 
 const D2R = Math.PI / 180;
 const LY_KM = 9460730472580.8;
@@ -55,7 +57,8 @@ const RENDER_ORDER_PLACE = -1;   // with the deep-sky glows
 // A picture narrower than this on screen is not fetched for it. At 10 px a sweep of the camera
 // across Orion fetched three pictures nobody could see (measured 2026-10-03); 32 px is the size at
 // which a nebula stops being a dot. A selected object's picture is fetched whatever its size.
-const WANT_PX = 32;
+// The threshold is scene/deep/lodsize.js's, in radius (spec 0075 task 7: one size-on-screen rule).
+const WANT_PX = 2 * PHOTO_FETCH_PX;
 
 /** record id -> registry row: `dso-m42` -> the M42 picture. */
 export const PICTURE_FOR = new Map(NEBULAE.map((row) => [`dso-${row.id}`, row]));
@@ -70,6 +73,12 @@ const unit = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] 
 export function eqToEcl(v) {
   const c = Math.cos(OBLIQUITY), s = Math.sin(OBLIQUITY);
   return [v[0], v[1] * c + v[2] * s, -v[1] * s + v[2] * c];
+}
+
+/** Ecliptic J2000 -> equatorial J2000, eqToEcl's inverse. Pure. */
+export function eclToEq(v) {
+  const c = Math.cos(OBLIQUITY), s = Math.sin(OBLIQUITY);
+  return [v[0], v[1] * c - v[2] * s, v[1] * s + v[2] * c];
 }
 
 /**
@@ -128,6 +137,32 @@ export function skyToPicture(row, raDeg, decDeg) {
   return { u: 0.5 + dot(p, right) / along / h.x / 2, v: 0.5 + dot(p, up) / along / h.y / 2 };
 }
 
+/**
+ * A galaxy's own ellipse in the picture's coordinates (internal spec 0075 task 36): the catalogue's
+ * centre, major and minor axes and position angle (east of north), as a centre {u, v} and two rows
+ * {x, y} that take a picture offset (du, dv) to (along / semi-major, across / semi-minor), so the
+ * shader's length() of that is 1 on the ellipse. Null for a record without the three numbers. Pure.
+ */
+export function ellipseInPicture(row, raDeg, decDeg, majArcmin, minArcmin, paDeg) {
+  if (!(majArcmin > 0) || !(minArcmin > 0) || !Number.isFinite(paDeg) || !Number.isFinite(raDeg) || !Number.isFinite(decDeg)) return null;
+  const c = skyToPicture(row, raDeg, decDeg);
+  if (!c) return null;
+  const { right, up } = pictureBasis(row);
+  const a = raDeg * D2R, d = decDeg * D2R, pa = paDeg * D2R;
+  const east = [-Math.sin(a), Math.cos(a), 0];
+  const north = [-Math.sin(d) * Math.cos(a), -Math.sin(d) * Math.sin(a), Math.cos(d)];
+  const maj = comb(north, Math.cos(pa), east, Math.sin(pa));
+  const min = comb(north, -Math.sin(pa), east, Math.cos(pa));
+  // uv per arcminute along each axis: [[maj.right/W, min.right/W], [maj.up/H, min.up/H]] times arcmin
+  const W = row.width_arcmin, H = row.height_arcmin;
+  const m00 = dot(maj, right) / W, m01 = dot(min, right) / W, m10 = dot(maj, up) / H, m11 = dot(min, up) / H;
+  const det = m00 * m11 - m01 * m10;
+  if (!(Math.abs(det) > 1e-12)) return null;
+  const sa = majArcmin / 2, sb = minArcmin / 2;
+  // inverse: arcmin = inv * duv; then divided by the semi-axes
+  return { u: c.u, v: c.v, x: [m11 / det / sa, -m01 / det / sa], y: [-m10 / det / sb, m00 / det / sb] };
+}
+
 const smooth = (x, a, b) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 /**
@@ -163,20 +198,39 @@ uniform float uAlpha;
 uniform float uGain;
 uniform float uGamma;
 uniform float uSaturation;
+uniform float uFloor;     // the sky level the bake left (registry/nebulae.yaml sky_floor)
+uniform float uEll;       // 1: fade along the galaxy's own ellipse (spec 0075 task 36)
+uniform vec2 uEllC;
+uniform vec2 uEllX;
+uniform vec2 uEllY;
 varying vec2 vUv;
 void main() {
   if ( uAlpha <= 0.0 ) discard;
   // The picture's own display values, stretched: no colour-space round trip, because the stretch
   // is a darkroom's and is defined on what the photograph looks like.
-  vec3 c = pow( texture2D( map, vUv ).rgb, vec3( uGamma ) ) * uGain;
+  vec3 t = texture2D( map, vUv ).rgb;
+  t = max( t - uFloor, 0.0 ) / ( 1.0 - uFloor );
+  vec3 c = pow( t, vec3( uGamma ) ) * uGain;
   // The night eye sees no colour: a cool grey, as the rods report it.
   float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
   c = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uSaturation );
   // The feather: a superellipse between a circle and the frame, faded over the outer half, so no
   // edge and no corner is ever a line. (Exponent 4 read as a rounded square at 100 px.)
   vec2 q = abs( vUv * 2.0 - 1.0 );
-  float e = pow( pow( q.x, 3.0 ) + pow( q.y, 3.0 ), 1.0 / 3.0 );
-  float f = 1.0 - smoothstep( 0.5, 0.98, e );
+  float f;
+  if ( uEll > 0.5 ) {
+    // A galaxy fades along its own ellipse as well as at the frame: where the ellipse is inside the
+    // frame the shape left is the galaxy's, not a rounded square (the LMC, scene 06 of the deepspace probe).
+    vec2 d = vUv - uEllC;
+    float r = length( vec2( dot( uEllX, d ), dot( uEllY, d ) ) );
+    // The frame is still feathered over its outer half (the LMC's picture is centred 1.94 degrees off
+    // the galaxy and cuts its bar: a narrow feather there read as a hard edge, deepspace look 2026-10-14).
+    float frame = pow( pow( q.x, 4.0 ) + pow( q.y, 4.0 ), 1.0 / 4.0 );
+    f = ( 1.0 - smoothstep( 0.5, 1.0, r ) ) * ( 1.0 - smoothstep( 0.55, 0.98, frame ) );
+  } else {
+    float e = pow( pow( q.x, 3.0 ) + pow( q.y, 3.0 ), 1.0 / 3.0 );
+    f = 1.0 - smoothstep( 0.5, 0.98, e );
+  }
   gl_FragColor = vec4( c * ( f * f * uAlpha ), 1.0 );
 }
 `;
@@ -241,7 +295,10 @@ export function createNebulae(scene, opts = {}) {
   function material() {
     return new THREE.ShaderMaterial({
       vertexShader: VERT, fragmentShader: FRAG,
-      uniforms: { map: { value: null }, uAlpha: { value: 0 }, ...shared },
+      uniforms: {
+        map: { value: null }, uAlpha: { value: 0 }, ...shared,
+        uFloor: { value: 0 }, uEll: { value: 0 }, uEllC: { value: new THREE.Vector2() }, uEllX: { value: new THREE.Vector2() }, uEllY: { value: new THREE.Vector2() },
+      },
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
       toneMapped: false, side: THREE.DoubleSide,
     });
@@ -252,6 +309,7 @@ export function createNebulae(scene, opts = {}) {
     const half = pictureHalfExtent(row);
     // the sky: on the unit sphere, in the starfield's own (equatorial) axes
     const sky = new THREE.Mesh(geometry, material());
+    const floor = Math.min(0.5, Math.max(0, Number(row.sky_floor) || 0));
     sky.name = `nebula-sky-${row.id}`;
     sky.matrixAutoUpdate = false;
     sky.frustumCulled = false; // update() does the looking, with the camera it is given
@@ -266,6 +324,8 @@ export function createNebulae(scene, opts = {}) {
     skyGroup.add(sky);
     // the place: built by rebuild(), once the stage and the object's distance are known
     const place = new THREE.Mesh(geometry, material());
+    sky.material.uniforms.uFloor.value = floor;
+    place.material.uniforms.uFloor.value = floor;
     place.name = `nebula-${row.id}`;
     place.matrixAutoUpdate = false;
     place.frustumCulled = false;
@@ -311,6 +371,18 @@ export function createNebulae(scene, opts = {}) {
       if (!p || !r.pos) continue;
       const d = Math.hypot(r.pos.x, r.pos.y, r.pos.z);
       p.distKm = d > 0 ? d : null;
+      // The galaxy's own ellipse, for the fade (spec 0075 task 36): its direction from its position.
+      const md = r.meta || {};
+      if (md.kind === 'galaxy' && d > 0) {
+        const e = eclToEq([r.pos.x / d, r.pos.y / d, r.pos.z / d]);
+        const ell = ellipseInPicture(p.row, (Math.atan2(e[1], e[0]) / D2R + 360) % 360, Math.asin(Math.max(-1, Math.min(1, e[2]))) / D2R, md.majAxArcmin, md.minAxArcmin, md.posAngDeg);
+        p.ellipse = ell;
+        for (const mesh of [p.sky, p.place]) {
+          const u = mesh.material.uniforms;
+          u.uEll.value = ell ? 1 : 0;
+          if (ell) { u.uEllC.value.set(ell.u, ell.v); u.uEllX.value.set(ell.x[0], ell.x[1]); u.uEllY.value.set(ell.y[0], ell.y[1]); }
+        }
+      }
     }
     rebuild();
   }
@@ -485,6 +557,8 @@ export function createNebulae(scene, opts = {}) {
       }
     },
     has: (recordId) => PICTURE_FOR.has(recordId),
+    /** Is a picture being fetched now (sr.deep.ready(), spec 0075 task 10)? */
+    busy: () => pictures.some((p) => p.state === 'loading'),
     /** The record ids whose pictures are on the GPU's doorstep: scene/dsoglow.js drops their glow. */
     loaded: () => pictures.filter((p) => p.state === 'ready').map((p) => `dso-${p.row.id}`),
     state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, sky: p.sky.visible, place: p.place.visible, alpha: p.place.material.uniforms.uAlpha.value, placed: p.placed, px: Math.round(p.px || 0), inView: !!p.inView, fade: p.fade || 0 })),

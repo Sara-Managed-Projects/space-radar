@@ -1272,6 +1272,13 @@ for (const file of allFiles) {
     // additive -- on the sky sphere and at their places; both must stay in the opaque list too.
     const { createNebulae } = await import(join(JS, 'scene/nebulae.js'));
     const nebulae = createNebulae(scene, { skyGroup: sky.group, load: () => Promise.resolve(new THREE.Texture()) });
+    // The deep sky's gas (spec 0075 task 9): a hero stub with one gas layer, a holder's march and its
+    // T0 shells, built as the coordinator builds them; all three must stay in the opaque list.
+    const gas = await import(join(JS, 'scene/deep/gasmat.js'));
+    const { createHero } = await import(join(JS, 'scene/deep/helix.js'));
+    const stub = createHero(THREE, { profile: { id: 'stub', layers: [{ kind: 'gas', what: 'shell', profile: 5 }] }, gas });
+    scene.add(stub.group);
+    for (const march of [true, false]) scene.add(gas.createGasMesh(THREE, { name: `deep-holder-${march ? 'march' : 'shells'}`, kind: 2, march }).mesh);
     let checked = 0;
     const named = new Set();
     scene.traverse((o) => {
@@ -1288,7 +1295,7 @@ for (const file of allFiles) {
         }
       }
     });
-    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun', 'nebula-sky-m42', 'nebula-m42'];
+    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun', 'nebula-sky-m42', 'nebula-m42', 'deep-hero-stub-shell', 'deep-holder-march', 'deep-holder-shells'];
     const missing = want.filter((n) => ![...named].some((x) => x === n || x.startsWith(n)));
     if (missing.length) problems.push(`DRAWORDER the check never saw ${missing.join(', ')}, so it proves nothing about them`);
     else notes.push(`${checked} materials across the sky and the worlds; none draws after the planets with depthTest off`);
@@ -2975,13 +2982,34 @@ for (const file of allFiles) {
 // thing a future "just add a little bloom" PR would bring, and this is where it is refused.
 {
   const FORBIDDEN = ['EffectComposer', 'RenderPass', 'UnrealBloomPass', 'ShaderPass', 'BloomPass', 'LensflareElement'];
+  // EVERY file under scene/, its folders too (internal #774, spec 0075 task 9): until 2026-10-14 this
+  // read scene/*.js only, so scene/weather/ was never checked and scene/deep/ would not have been.
   const sceneDir = join(JS, 'scene');
-  for (const f of readdirSync(sceneDir).filter((n) => n.endsWith('.js'))) {
+  const sceneFiles = [];
+  const walkScene = (dir) => {
+    for (const n of readdirSync(dir)) {
+      const f = join(dir, n);
+      if (statSync(f).isDirectory()) walkScene(f);
+      else if (n.endsWith('.js')) sceneFiles.push(f.slice(sceneDir.length + 1));
+    }
+  };
+  walkScene(sceneDir);
+  if (!sceneFiles.some((f) => f.startsWith('weather/')) || !sceneFiles.some((f) => f.startsWith('deep/'))) problems.push('CINEMA   the walk of scene/ did not reach scene/weather/ and scene/deep/: it is not recursive');
+  for (const f of sceneFiles) {
     const src = readFileSync(join(sceneDir, f), 'utf8');
     for (const word of FORBIDDEN) {
       if (src.includes(word)) problems.push(`CINEMA   scene/${f} names ${word}: no post-processing pass, no bloom, no lens flare (spec 0034 req 7)`);
     }
   }
+  // The deep sky computes its gas inside its own meshes (spec 0075 design section 7): no render target
+  // and no screen-covering quad anywhere under scene/deep/ (Ivan's decision D1, internal #769, pending).
+  for (const f of sceneFiles.filter((n) => n.startsWith('deep/'))) {
+    const src = readFileSync(join(sceneDir, f), 'utf8');
+    for (const re of [/WebGLRenderTarget/, /FullScreenQuad/, /OrthographicCamera/, /gl_Position\s*=\s*vec4\(\s*position\.xy/]) {
+      if (re.test(src)) problems.push(`CINEMA   scene/${f} has ${re.source}: deep-sky gas is marched inside its own mesh, never in a pass (spec 0075; D1 is Ivan's to decide)`);
+    }
+  }
+  notes.push(`cinema: ${sceneFiles.length} files under scene/ (its folders too) name no pass, and scene/deep/ has no render target`);
   try {
     const { VEIL_MS } = await import(join(JS, 'ui/veil.js'));
     const { STRETCH_PX } = await import(join(JS, 'scene/stretch.js'));

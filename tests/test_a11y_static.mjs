@@ -149,7 +149,8 @@ for (const f of files) {
     const line = src.slice(0, m.index).split('\n').length;
     if (f === 'trajectory.js' || f === 'cardextras.js') continue; // charts with role=img and a name of their own (the second: the distance curve)
     check(/aria-hidden/.test(scope), `site/js/ui/${f}:${line}: an svg without aria-hidden: the button carries the name, the drawing is not read out`);
-    if (f !== 'hud.js') check(/0 0 24 24/.test(scope), `site/js/ui/${f}:${line}: an icon outside the 24 box`);
+    // The HUD's marks and the tour's ink (a ring and an arrow in the viewport's own pixels) are drawings over the page, not icons.
+    if (f !== 'hud.js' && f !== 'onboarding.js') check(/0 0 24 24/.test(scope), `site/js/ui/${f}:${line}: an icon outside the 24 box`);
   }
 }
 check(controls >= 60, `only ${controls} controls found in ui/*.js: this test has lost its way around the builders`);
@@ -179,7 +180,7 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
 
 // 6. a focus ring is never removed without its replacement
 {
-  const CSS = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css'];
+  const CSS = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css'];
   const all = CSS.map((f) => readFileSync(join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
   check(/:focus-visible/.test(all), 'the stylesheets have :focus-visible rules');
   for (const m of all.matchAll(/([^{}]+)\{([^{}]*outline:\s*(?:none|0)\b[^{}]*)\}/g)) {
@@ -255,7 +256,7 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   for (const f of files) check(!/createElement\('main'\)|el\('main'/.test(code(read(f))), `ui/${f} builds a second <main>`);
 
   // 7c. THE CANVAS HAS A TEXT ALTERNATIVE, one sentence, and it changes on selection only.
-  const canvas = /<canvas id="stage" role="img"\s+aria-label="([^"]+)">/.exec(body);
+  const canvas = /<canvas id="stage" role="img"(?: data-tour="scene")?\s+aria-label="([^"]+)">/.exec(body); // data-tour: the tour's hook (registry/onboarding.yaml)
   check(canvas && canvas[1].length > 60, 'the canvas is role="img" with a sentence for a name');
   const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
   check(/window\.addEventListener\('sr:select', \(e\) => \{\s*const record = e && e\.detail;\s*if \(stageEl\) stageEl\.setAttribute\('aria-label', record && record\.name \? fill\(COPY\.app\.sceneSelected, \{ name: record\.name \}\) : sceneName\);/.test(main), 'main.js renames the canvas on sr:select, and gives the page\'s own sentence back when the selection is put down');

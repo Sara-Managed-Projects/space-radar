@@ -112,6 +112,26 @@ export const DUST = [0.62, 0.36, 0.20];
  * arms a cyclone's spiral has and how tightly they wind; how bright its cloud is against the cap.
  */
 export const POLAR = { blue: [0.80, 0.88, 1.0], lean: 0.3, base: 0.93, arms: 3, wind: 4.5, lift: 0.3, blendRad: 0.09 };
+/**
+ * Neptune's high cirrus as drawn (registry/weather.yaml `neptune-cirrus`; its latitudes, widths and
+ * height are the row's): how bright a streak is against the deck it stands over (linear RGB and how
+ * much of it), and how much of the direct light its shadow on the deck takes. CIRRUS_SLOTS bands.
+ */
+export const CIRRUS = { colour: [0.86, 0.9, 1.0], bright: 0.65, shadow: 0.6, layers: 1, maxArcRad: 0.06 };
+export const CIRRUS_SLOTS = 4;
+/**
+ * The cirrus uniforms from the row: per band [v of its latitude, half-height in v, streaks round,
+ * cover], and [height in radii, a streak's half-thickness in v, -, how much is in]. Pure.
+ */
+export function cirrusUniforms(c) {
+  const bands = new Float32Array(CIRRUS_SLOTS * 4);
+  (c.bands || []).slice(0, CIRRUS_SLOTS).forEach(([lat, half, n, cover], i) => bands.set([0.5 + lat / 180, half / 180, n, cover], i * 4));
+  // `widen`: drawn that many times wider AND higher than measured, so the shadow keeps the offset to
+  // the cloud's width that Voyager's picture has (2026-10-14: at the measured width, 2 px on the
+  // whole disc, the streaks read as hairline scratches on the glass).
+  const k = c.widen || 1;
+  return { bands, cirrus: { x: (k * c.height_km) / c.radius_km, y: ((k * c.width_km) / 2 / c.radius_km) / Math.PI, z: 0, w: 0 } };
+}
 /** Seconds a close-range effect takes to come in or go out once the disc crosses its size. */
 export const NEAR_FADE_S = 1;
 
@@ -292,6 +312,75 @@ ${WX_STORM_PARS}${WX_DETAIL_PARS}float wxRate( float v ) {
   int i = int( min( floor( x ), float( ${RATE_ROWS - 2} ) ) );
   return mix( uWxRate[ i ], uWxRate[ i + 1 ], x - float( i ) );
 }
+#ifdef WX_CIRRUS
+uniform vec4 uWxCirrusBand[ ${CIRRUS_SLOTS} ];   // a band of streaks: v of its latitude, half-height in v, streaks round, cover (0 = none)
+uniform vec4 uWxCirrus;                         // their height (radii), a streak's half-thickness (v), -, how much is in (0..1)
+float wxCirrusHash( float x ) { return fract( sin( x * 12.9898 ) * 43758.5453 ); }
+// The streaks at a place of the map, carried by the band's wind: in each cell round the band one
+// streak (two layers of cells, half a cell apart), tapered at its ends, at a latitude in the band,
+// a length and a thickness that are the cell's own. GENERATED: not one is a cloud anyone saw.
+float wxStreaks( vec2 uv, float tau ) {
+  float cover = 0.0;
+  for ( int i = 0; i < ${CIRRUS_SLOTS}; i++ ) {
+    vec4 b = uWxCirrusBand[ i ];
+    if ( b.w <= 0.0 ) continue;
+    float y = ( uv.y - b.x ) / b.y;
+    if ( abs( y ) >= 1.0 ) continue;
+    float x = ( uv.x - uWxPhase.w - wxRate( uv.y ) * tau ) * b.z;
+    for ( int k = 0; k < ${CIRRUS.layers}; k++ ) {
+      float xk = x + 0.5 * float( k );
+      float cell = mod( floor( xk ), b.z ) + float( i * 61 + k * 29 );
+      float f = fract( xk );
+      float h1 = wxCirrusHash( cell * 1.37 + 0.5 );
+      float h2 = wxCirrusHash( cell * 2.11 + 4.1 );
+      float h3 = wxCirrusHash( cell * 3.73 + 9.2 );
+      float len = 0.45 + 0.4 * h1;
+      if ( f >= len ) continue;
+      // A soft band, not a line: it swells and thins along its length and fades out at both ends.
+      float a = f / len;
+      float taper = sin( 3.14159265 * a );
+      float wob = 0.75 + 0.25 * sin( 6.2831853 * ( 1.5 * a + h2 ) );
+      float thick = uWxCirrus.y * ( 0.6 + 0.4 * h3 ) * ( 0.35 + 0.65 * taper ) * wob;
+      float across = ( y - ( h2 - 0.5 ) ) * b.y / max( thick, 1e-5 );
+      cover = max( cover, b.w * ( 0.6 + 0.4 * h3 ) * pow( taper, 1.5 ) * exp( -across * across ) * ( 1.0 - smoothstep( 0.85, 1.0, abs( y ) ) ) );
+    }
+  }
+  return cover;
+}
+// The streaks over the deck, and their shadows on it: the deck at this point is shaded by whatever
+// streak stands uWxCirrus.x radii up on the line to the Sun, which is h / tan(elevation) sunward.
+// Both copies of the flow only while they cross-fade; one otherwise (the second's weight is 0 most of a cycle).
+float wxStreaks2( vec2 uv ) {
+  float a = uWxPhase.z < 1.0 ? wxStreaks( uv, uWxPhase.x ) : 0.0;
+  float b = uWxPhase.z > 0.0 ? wxStreaks( uv, uWxPhase.y ) : 0.0;
+  return mix( a, b, uWxPhase.z );
+}
+vec3 wxCirrus( vec3 c, vec2 uv ) {
+  // Nothing to do away from every band and the reach of its shadow (at most ${CIRRUS.maxArcRad} rad, 0.02 of v):
+  // the frametime look of 2026-10-14 had Neptune close up half again as slow before this.
+  bool nearBand = false;
+  for ( int i = 0; i < ${CIRRUS_SLOTS}; i++ ) {
+    vec4 b = uWxCirrusBand[ i ];
+    if ( b.w > 0.0 && abs( uv.y - b.x ) < b.y + 0.025 ) nearBand = true;
+  }
+  if ( !nearBand ) return c;
+  float cloud = wxStreaks2( uv );
+  vec3 q = normalize( vPosL );
+  float mu = dot( q, vSunL );
+  float shade = 0.0;
+  if ( mu > 0.0 ) {
+    vec3 hz = vSunL - q * mu;
+    float l = length( hz );
+    if ( l > 1e-4 ) {
+      vec3 qs = normalize( q + hz / l * min( uWxCirrus.x * l / mu, ${CIRRUS.maxArcRad.toFixed(3)} ) );
+      vec2 us = vec2( 0.5 + atan( -qs.z, qs.x ) / 6.2831853, 0.5 + asin( clamp( qs.y, -1.0, 1.0 ) ) / 3.14159265 );
+      shade = wxStreaks2( us );
+    }
+  }
+  c *= 1.0 - uWxCirrus.w * ${CIRRUS.shadow.toFixed(2)} * shade;
+  return mix( c, vec3( ${CIRRUS.colour.join(', ')} ), uWxCirrus.w * ${CIRRUS.bright.toFixed(2)} * cloud );
+}
+#endif
 vec3 wxSample( vec2 uv, float tau ) {
   vec2 p = uv;
   float keep = 1.0;
@@ -332,6 +421,8 @@ vec3 wxSample( vec2 uv, float tau ) {
   // The derivatives of the UNWRAPPED coordinate: fract() jumps at the seam, and a mip level picked
   // from that jump is a one-pixel line of the smallest mip down the planet.
   vec3 texel = textureGrad( uMap, p, dFdx( vUv ), dFdy( vUv ) ).rgb;
+  // Neptune's 1989 spot, taken out under the Measured look where the map has it (scene/worlds.js NEPTUNE_SPOT).
+  texel = spotOut( texel, p );
 #ifdef WX_DETAIL
   texel = wxDetail( texel, p );
 #endif
@@ -372,6 +463,9 @@ vec3 wxBase( vec2 uv ) {
       c *= 1.0 + uWxVortex.z * ( ${VORTEX.wall.toFixed(2)} * wall + ${VORTEX.lift.toFixed(2)} * arm * reach - ${VORTEX.eye.toFixed(2)} * eye );
     }
   }
+#ifdef WX_CIRRUS
+  if ( uWxCirrus.w > 0.0 ) c = wxCirrus( c, uv );
+#endif
   if ( uWxWave.x > 0.0 ) {
     // A Y on its side: a dark stem along the equator for half a turn, opening into two arms that
     // reach uWxWave.z of latitude, the whole of it fading out at its two ends.
@@ -546,7 +640,7 @@ export function dressStorms(u, fx, still = false) {
   return state;
 }
 
-const KIND_KEY = { 'cloud-detail': 'detail', 'polar-vortex': 'vortex', 'shear-eddies': 'eddies', ovals: 'ovals', 'polar-cyclones': 'cyclones', 'cloud-depth': 'depth', 'zonal-flow': 'flow', hexagon: 'hexagon', 'mars-season': 'mars', 'giant-lightning': 'flash', 'planetary-wave': 'wave', 'cloud-patches': 'patches' };
+const KIND_KEY = { cirrus: 'cirrus', 'cloud-detail': 'detail', 'polar-vortex': 'vortex', 'shear-eddies': 'eddies', ovals: 'ovals', 'polar-cyclones': 'cyclones', 'cloud-depth': 'depth', 'zonal-flow': 'flow', hexagon: 'hexagon', 'mars-season': 'mars', 'giant-lightning': 'flash', 'planetary-wave': 'wave', 'cloud-patches': 'patches' };
 
 /** The registry's rows by world: {flow, hexagon, mars, flash, wave, patches, eddies, ovals, cyclones, depth, detail}, each a row or undefined. */
 export function effectsByWorld(rows = WEATHER) {
@@ -603,6 +697,14 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
         entry.storms = dressStorms(u, fx, reducedMotion);
         material.defines.WX_STORMS = 1;
       }
+      // Neptune's cirrus and their shadows (CIRRUS): nothing of it is in until the disc reaches its size.
+      if (fx.cirrus && fx.cirrus.cirrus) {
+        const cu = cirrusUniforms(fx.cirrus.cirrus);
+        u.uWxCirrusBand = { value: cu.bands };
+        u.uWxCirrus = { value: cu.cirrus };
+        material.defines.WX_CIRRUS = 1;
+        entry.cirrus = { from: fx.cirrus.cirrus.from_share, wallMs: NaN };
+      }
       // The close-range detail: one uniform, and nothing computed for it per frame (the shader
       // fades it by the map's own footprint on the screen).
       if (fx.detail && fx.detail.detail) {
@@ -648,7 +750,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
       const u = e.material.uniforms;
       const fx = e.fx;
       if (u.uWxHex && fx.hexagon) u.uWxHex.value.x = drawn(fx.hexagon) ? hexagonCornerRad(fx.hexagon.hexagon) : 0;
-      if (u.uWxWave && fx.wave) u.uWxWave.value.x = drawn(fx.wave) ? fx.wave.wave.depth : 0;
+      if (u.uWxWave && fx.wave) u.uWxWave.value.x = drawn(fx.wave) && !e.ground ? fx.wave.wave.depth : 0;
       if (e.storms) e.storms.allow = [drawn(fx.eddies), drawn(fx.ovals), drawn(fx.cyclones), drawn(fx.depth)];
       if (e.mars && !drawn(e.mars)) { const v = u.uWxCap.value; v.x = 2; v.y = -2; v.z = 0; e.season = null; }
       if (u.uWxPatch && fx.patches) {
@@ -704,6 +806,17 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
       e.storms.step(share, reducedMotion ? Infinity : dt, e.material.uniforms);
     }
     for (const e of worn) {
+      if (!e.cirrus || !e.mesh.visible) continue;
+      const share = worlds && worlds.discShare ? worlds.discShare(e.id) : 0;
+      const dt = Number.isFinite(e.cirrus.wallMs) ? Math.max(0, (wallMs - e.cirrus.wallMs) / 1000) : Infinity;
+      e.cirrus.wallMs = wallMs;
+      const stepMax = reducedMotion ? Infinity : dt / NEAR_FADE_S;
+      const v = e.material.uniforms.uWxCirrus.value;
+      // Generated, so not under the Measured look (the row's `measured: hidden`).
+      const want = drawn(e.fx.cirrus) ? nearShare(share, e.cirrus.from) : 0;
+      v.w = !(stepMax < 1) ? want : v.w + Math.max(-stepMax, Math.min(stepMax, want - v.w));
+    }
+    for (const e of worn) {
       if (!e.vortex || !e.mesh.visible) continue;
       const share = worlds && worlds.discShare ? worlds.discShare(e.id) : 0;
       const dt = Number.isFinite(e.vortex.wallMs) ? Math.max(0, (wallMs - e.vortex.wallMs) / 1000) : Infinity;
@@ -714,12 +827,25 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
       const want = drawn(e.fx.vortex) ? nearShare(share, e.vortex.from) : 0;
       v.z = !(stepMax < 1) ? want : v.z + Math.max(-stepMax, Math.min(stepMax, want - v.z));
     }
+    // A face of solid ground (Venus's radar, scene/worlds.js `groundFaces`): no wind carries rock,
+    // and the cloud deck's wave is not on it. Asked every frame, so a held clock still hears it.
+    for (const e of worn) {
+      if (!e.flow) continue;
+      const ground = !!(worlds && worlds.groundFace && worlds.groundFace(e.id));
+      if (ground === !!e.ground) continue;
+      e.ground = ground;
+      const u = e.material.uniforms;
+      if (u.uWxWave && e.fx.wave) u.uWxWave.value.x = !ground && drawn(e.fx.wave) ? e.fx.wave.wave.depth : 0;
+      if (ground) { const v = u.uWxPhase.value; v.x = 0; v.y = 0; v.z = 0; v.w = 0; }
+      lastMs = NaN;
+    }
     if (!Number.isFinite(tMs) || tMs === lastMs) return;
     lastMs = tMs;
     for (const e of worn) {
       // A world that is hidden or a dot draws the same pixel either way; its numbers can wait.
       if (!e.mesh.visible) continue;
       const u = e.material.uniforms;
+      if (e.flow && e.ground) continue;
       if (e.flow) {
         const ph = flowPhases(tMs, e.flow.cycleDays);
         const v = u.uWxPhase.value;
@@ -745,7 +871,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
     for (const e of worn) {
       e.material.fragmentShader = e.original;
       const d = { ...(e.material.defines || {}) };
-      delete d.WX_STORMS; delete d.WX_DETAIL; delete d.WX_ZONAL; delete d.WX_MARS; delete d.WX_PATCH; delete d.WX_FLASH;
+      delete d.WX_STORMS; delete d.WX_DETAIL; delete d.WX_CIRRUS; delete d.WX_ZONAL; delete d.WX_MARS; delete d.WX_PATCH; delete d.WX_FLASH;
       e.material.defines = d;
       e.material.needsUpdate = true;
     }
@@ -804,6 +930,8 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.
         wave: e.wave ? e.material.uniforms.uWxWave.value.y : null,
         flashes: e.flash ? { slots: e.flash.slots.length, lit: e.flash.lit } : null,
         detail: e.detail ? { ...e.material.uniforms.uWxDetail.value } : null,
+        cirrus: e.cirrus ? e.material.uniforms.uWxCirrus.value.w : null,
+        ground: !!e.ground,
         vortex: e.vortex ? { near: e.material.uniforms.uWxVortex.value.z, turn: e.material.uniforms.uWxVortex.value.y, periodDays: e.vortex.periodDays, still: e.vortex.still } : null,
         storms: e.storms ? { near: { ...e.material.uniforms.uWxNear.value }, face: e.storms.face, turn: e.material.uniforms.uWxPole.value.y, still: e.storms.still } : null,
       })),

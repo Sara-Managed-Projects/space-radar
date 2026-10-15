@@ -386,7 +386,6 @@ export function createSystems(scene, ctx = {}) {
   const _v = new THREE.Vector3();
   const _p = new THREE.Vector3();
   const _q = new THREE.Vector3();
-  const _rel = { along: 0, across: 0, r: 0 };
   const _km = { x: 0, y: 0, z: 0 };
   const _off = { x: 0, y: 0, z: 0 };
 
@@ -563,9 +562,32 @@ export function createSystems(scene, ctx = {}) {
   function setScaleRing(on) { scaleRingOn = !!on; applyVisibility(); }
 
   /** Scene position of a member of the active system, or null. */
+  /** The system's barycentre in the scene: where the rings, the band and the light are centred. */
+  function barycentreInto(out) {
+    return stage.toSceneInto(current.hostKm, SUN_INERTIAL, out);
+  }
+
+  /** The second sun's offset from the first, scene units, now (the binary's orbit in basisScene). */
+  const _relNow = { along: 0, across: 0, r: 0 };
+  function binaryOffsetInto(out) {
+    binaryRelative(current.system.binary, stage.tMs, _relNow);
+    const k = AU_KM / stage.unitKm;
+    const { u, v } = current.basisScene;
+    return out.set((_relNow.along * u.x + _relNow.across * v.x) * k, (_relNow.along * u.y + _relNow.across * v.y) * k, (_relNow.along * u.z + _relNow.across * v.z) * k);
+  }
+
+  const _off2 = new THREE.Vector3();
   function drawnPositionOf(id, out = new THREE.Vector3()) {
     if (!isActive()) return null;
-    if (id === current.system.hostId) return stage.toSceneInto(current.hostKm, SUN_INERTIAL, out);
+    if (id === current.system.hostId) {
+      barycentreInto(out);
+      // A CIRCUMBINARY HOST IS DRAWN OFF THE BARYCENTRE, on the far side of it from its companion
+      // (update() below). Asked for "where is the host", the answer was the barycentre: the camera
+      // that followed it, the brackets and the label stood on empty space while the star went
+      // round them once a binary period (Kepler-16: 41 days, a few seconds at a trip's rate).
+      if (current.companionMesh) out.addScaledVector(binaryOffsetInto(_off2), -binaryShares(current.system.binary).fB);
+      return out;
+    }
     const hit = current.planets.find((x) => x.planet.id === id);
     if (!hit) return null;
     planetPosition(hit.planet, stage.tMs, current.basis, _off);
@@ -604,17 +626,14 @@ export function createSystems(scene, ctx = {}) {
     const faceTime = current.faced ? performance.now() / 1000 : 0;
     const viewportH = current.faced && ctx.renderer ? ctx.renderer.domElement.clientHeight || 800 : 800;
     const star = current.starMesh;
-    drawnPositionOf(current.system.hostId, _p);
+    barycentreInto(_p);
     // The origin is the barycentre. With two suns each sits on the far side of it from the other, in
     // inverse proportion to its mass; the planets' light and the rings are about the barycentre.
     let camStar;
     if (current.companionMesh) {
       const bin = current.system.binary;
       const { fA, fB } = binaryShares(bin);
-      binaryRelative(bin, stage.tMs, _rel);
-      const k = AU_KM / stage.unitKm;
-      const { u, v } = current.basisScene;
-      _q.set((_rel.along * u.x + _rel.across * v.x) * k, (_rel.along * u.y + _rel.across * v.y) * k, (_rel.along * u.z + _rel.across * v.z) * k);
+      binaryOffsetInto(_q);
       const comp = current.companionMesh;
       comp.position.copy(_p).addScaledVector(_q, fA);
       comp.scale.setScalar(floorRadiusUnits(comp.userData.trueRadiusUnits, cam ? cam.position.distanceTo(comp.position) : 0));
@@ -794,7 +813,7 @@ export function createSystems(scene, ctx = {}) {
   /** The light on a system stage: the host star's scene position. Null elsewhere. */
   function lightScene(out = new THREE.Vector3()) {
     if (!isActive()) return null;
-    return drawnPositionOf(current.system.hostId, out);
+    return barycentreInto(out);
   }
 
   /**

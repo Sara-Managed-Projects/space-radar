@@ -53,6 +53,9 @@ export const GLYPH_SIZE_PX = {
   // constellation's dot is the size the satellite disc was before satellites had wings.
   crewed: 11,
   dot: 7,
+  // The deep-sky marks (spec 0075 task 4): a little under a satellite's 8 px, which they took until
+  // then, so a nebula's mark does not outdraw the stars it sits among.
+  dso: 7,
 };
 
 const DEBRIS_SIZE = 0.6; // 60 % size
@@ -74,6 +77,9 @@ attribute float iOpacity;
 attribute float iLit;      // 1 in sunlight, 0 in Earth's shadow (scene/shadow.js)
 attribute float iCell;
 attribute float iRing;     // the sample halo's own opacity: what iOpacity was before it yielded
+#ifdef GLYPH_AXIS
+attribute vec3 iAxis;      // a galaxy's major axis, as an offset from iOffset in scene units; zero: not turned
+#endif
 
 uniform float uPxScale;   // world units per CSS pixel, per unit of view depth
 uniform float uGrid;
@@ -130,7 +136,18 @@ void main() {
   }
   float px = clamp( iSize, 4.0, 14.0 ) * uPad * mix( 1.0, uSkyScale, uSky );
   float s = px * uPxScale * max( -mv.z, 1e-6 );
-  mv.xy += position.xy * s;
+  vec2 corner = position.xy;
+#ifdef GLYPH_AXIS
+  // A galaxy's ellipse lies along its major axis as the camera sees it (spec 0075 task 4): the axis's
+  // far end projected like any point, its direction on the screen, the quad turned to it.
+  if ( dot( iAxis, iAxis ) > 0.0 ) {
+    vec4 tip = modelViewMatrix * vec4( iOffset + iAxis, 1.0 );
+    vec2 d = tip.xy / max( -tip.z, 1e-9 ) - mv.xy / max( -mv.z, 1e-9 );
+    float l = length( d );
+    if ( l > 1e-12 ) { d /= l; corner = vec2( corner.x * d.x - corner.y * d.y, corner.x * d.y + corner.y * d.x ); }
+  }
+#endif
+  mv.xy += corner * s;
   gl_Position = projectionMatrix * mv;
 
   #include <logdepthbuf_vertex>
@@ -190,6 +207,20 @@ void main() {
   #include <colorspace_fragment>
 }
 `;
+
+// The north celestial pole in sun-inertial (ecliptic J2000) axes.
+const POLE_ECL = [0, Math.sin(23.4392911 * Math.PI / 180), Math.cos(23.4392911 * Math.PI / 180)];
+/** A major axis on the sky at `pos`, `paDeg` east of north (scene/dsoglow.js majorAxisDir, kept here so the light embed does not fetch the glows). */
+function axisOnSky(pos, paDeg) {
+  const l = Math.hypot(pos.x, pos.y, pos.z) || 1;
+  const u = [pos.x / l, pos.y / l, pos.z / l];
+  let e = [POLE_ECL[1] * u[2] - POLE_ECL[2] * u[1], POLE_ECL[2] * u[0] - POLE_ECL[0] * u[2], POLE_ECL[0] * u[1] - POLE_ECL[1] * u[0]];
+  const el = Math.hypot(e[0], e[1], e[2]) || 1;
+  e = [e[0] / el, e[1] / el, e[2] / el];
+  const n = [u[1] * e[2] - u[2] * e[1], u[2] * e[0] - u[0] * e[2], u[0] * e[1] - u[1] * e[0]];
+  const c = Math.cos(paDeg * Math.PI / 180), k = Math.sin(paDeg * Math.PI / 180);
+  return { x: n[0] * c + e[0] * k, y: n[1] * c + e[1] * k, z: n[2] * c + e[2] * k };
+}
 
 function viewportCss() {
   if (typeof window === 'undefined') return { w: 1280, h: 720 };
@@ -268,6 +299,9 @@ export function createGlyphLayer(scene, layer = {}) {
     side: THREE.DoubleSide,
     toneMapped: false, // the class colours are palette tokens, not lit surfaces
   });
+  // The deep-sky layer turns its galaxies' marks to their position angles (spec 0075 task 4).
+  const axisLayer = layer.klass === 'dso' || layer.id === 'deep-sky';
+  if (axisLayer) material.defines = { GLYPH_AXIS: '' };
 
   // A unit quad, centred. uv (0,0) is the lower left, matching cellUV()'s flipY = true origin.
   const QUAD_POS = new Float32Array([-0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0]);
@@ -298,8 +332,15 @@ export function createGlyphLayer(scene, layer = {}) {
   let attrOpacity = null;
   let attrRing = null;
   let attrCell = null;
+  let attrAxis = null;     // the deep-sky layer only (GLYPH_AXIS)
+  let recAxis = new Float32Array(0); // per record: the major axis as a unit vector, sun-inertial; 0 = round
+  const _tip = { x: 0, y: 0, z: 0 };
+  const _axis = new THREE.Vector3();
 
   let selectedId = null;
+  // Where the selection sits in the live arrays after the last update(), or -1: updateSelected().
+  let selectedAt = -1;
+  let selectedRec = null;
   const uploads = { ticks: 0, bytes: 0, all: 0 };
   let lastCamera = null;
   let viewport = viewportCss();
@@ -340,11 +381,18 @@ export function createGlyphLayer(scene, layer = {}) {
     geometry.setAttribute('iCell', attrCell);
     geometry.setAttribute('iLit', attrLit);
     geometry.setAttribute('iRing', attrRing);
+    if (axisLayer) {
+      attrAxis = new THREE.InstancedBufferAttribute(new Float32Array(capacity * 3), 3);
+      attrAxis.setUsage(THREE.DynamicDrawUsage);
+      geometry.setAttribute('iAxis', attrAxis);
+    }
     geometry.instanceCount = 0;
     // The quad is expanded in view space, so three's bounds are meaningless here.
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
 
     livePos = attrOffset.array;
+    selectedAt = -1;
+    selectedRec = null;
 
     if (mesh) {
       mesh.geometry = geometry;
@@ -395,6 +443,7 @@ export function createGlyphLayer(scene, layer = {}) {
     recSize = new Float32Array(n);
     recOpacity = new Float32Array(n);
     recCell = new Float32Array(n);
+    recAxis = new Float32Array(axisLayer ? n * 3 : 0);
 
     const c = new THREE.Color();
     for (let i = 0; i < n; i++) {
@@ -407,6 +456,12 @@ export function createGlyphLayer(scene, layer = {}) {
       // A provisional object (spec 0026 req 15) is drawn at 70%: there, but visibly not yet a catalogued thing.
       recOpacity[i] = r.klass === 'debris' ? DEBRIS_OPACITY : r.meta && r.meta.provisional ? PROVISIONAL_OPACITY : 1;
       recCell[i] = glyphCell(glyphFor(r, layer)) + (r.cls === 'sample' ? HALO_BIAS : 0);
+      // A galaxy measured clearly longer than wide, with its angle: its mark is turned to it.
+      const md = r.meta || {};
+      if (axisLayer && md.kind === 'galaxy' && r.pos && Number.isFinite(md.posAngDeg) && md.majAxArcmin > 0 && md.minAxArcmin > 0 && md.minAxArcmin / md.majAxArcmin < 0.9) {
+        const dir = axisOnSky(r.pos, md.posAngDeg);
+        recAxis[i * 3] = dir.x; recAxis[i * 3 + 1] = dir.y; recAxis[i * 3 + 2] = dir.z;
+      }
     }
     live = [];
     if (geometry) geometry.instanceCount = 0;
@@ -459,6 +514,7 @@ export function createGlyphLayer(scene, layer = {}) {
     let dCell = false;
     let dLit = false;
     let dRing = false;
+    let dAxis = false;
     const aColour = attrColour.array;
     const aSize = attrSize.array;
     const aOpacity = attrOpacity.array;
@@ -469,6 +525,8 @@ export function createGlyphLayer(scene, layer = {}) {
     const emberG = Math.fround(emberColour.g);
     const emberB = Math.fround(emberColour.b);
     live.length = 0;
+    selectedAt = -1;
+    selectedRec = null;
     // The worker's answer, when there is one (propagate/pool.js): the same SGP4 numbers, computed
     // off this thread for this tick or the one before. Until the first answer lands, with a
     // position source set by hand, or once the worker has failed, every record is asked here as
@@ -519,7 +577,21 @@ export function createGlyphLayer(scene, layer = {}) {
         livePos[o + 2] = pz;
         dOffset = true;
       }
+      if (attrAxis) {
+        // The axis's far end, 1/1000 of the way out, through the same conversion as the centre.
+        let ax = 0, ay = 0, az = 0;
+        const ux = recAxis[i * 3], uy = recAxis[i * 3 + 1], uz = recAxis[i * 3 + 2];
+        if ((ux || uy || uz) && toSceneInto) {
+          const k3 = Math.hypot(p.x, p.y, p.z) * 1e-3;
+          _tip.x = p.x + ux * k3; _tip.y = p.y + uy * k3; _tip.z = p.z + uz * k3;
+          const w = toSceneInto(_tip, p.frame || rec.frame, _axis, tMs);
+          if (w) { ax = Math.fround(w.x - px); ay = Math.fround(w.y - py); az = Math.fround(w.z - pz); }
+        }
+        const aAxis = attrAxis.array;
+        if (aAxis[o] !== ax || aAxis[o + 1] !== ay || aAxis[o + 2] !== az) { aAxis[o] = ax; aAxis[o + 1] = ay; aAxis[o + 2] = az; dAxis = true; }
+      }
       const selected = selectedId !== null && rec.id === selectedId;
+      if (selected) { selectedAt = k; selectedRec = rec; }
       const cr = selected ? emberR : recColour[i * 3];
       const cg = selected ? emberG : recColour[i * 3 + 1];
       const cb = selected ? emberB : recColour[i * 3 + 2];
@@ -568,6 +640,7 @@ export function createGlyphLayer(scene, layer = {}) {
     if (dCell) attrCell.needsUpdate = true;
     if (dLit) attrLit.needsUpdate = true;
     if (dRing) attrRing.needsUpdate = true;
+    if (dAxis) attrAxis.needsUpdate = true;
     uploads.ticks += 1;
     uploads.bytes += 4 * k * ((dOffset ? 3 : 0) + (dColour ? 3 : 0) + (dSize ? 1 : 0) + (dOpacity ? 1 : 0) + (dCell ? 1 : 0) + (dLit ? 1 : 0) + (dRing ? 1 : 0));
     uploads.all += 4 * k * 11;
@@ -575,6 +648,44 @@ export function createGlyphLayer(scene, layer = {}) {
       const a = getGlyphAtlas();
       if (a) material.uniforms.uAtlas.value = a;
     }
+  }
+
+  /**
+   * THE SELECTION'S DOT, PLACED AGAIN ON A FRAME BETWEEN TWO TICKS (Ivan, 2026-10-14: "sometimes
+   * when an object is selected it is shaking on the screen"). At the live clock main.js calls
+   * update() ten times a second, which is enough for a dot nobody is watching. The selection is
+   * watched: the camera follows it and the brackets (ui/hud.js) are placed on it EVERY frame, from
+   * the same propagator. So between two ticks the camera and the brackets went on and the dot
+   * stayed, then jumped: 0.1 s of a low orbit is 760 m, which is 1 px from 700 km and 15 px from
+   * 50 km, ten times a second; from the ground through a telescope's field the same sawtooth is
+   * the Earth's turn under a geostationary dot. One record, three floats: the rest of the layer
+   * keeps its tick. False when this layer does not hold the selection (or holds it undrawn).
+   */
+  function updateSelected(tMs) {
+    if (selectedAt < 0 || !selectedRec || !geometry || !mesh.visible || selectedRec.id !== selectedId) return false;
+    if (selectedAt >= geometry.instanceCount || live[selectedAt] !== selectedRec) return false;
+    let p = null;
+    try { p = positionOf(selectedRec, tMs); } catch { p = null; }
+    if (!p) return false;
+    let v = p;
+    if (toSceneInto) {
+      scratch.x = p.x;
+      scratch.y = p.y;
+      scratch.z = p.z;
+      v = toSceneInto(scratch, p.frame || selectedRec.frame, _scene, tMs);
+      if (!v) return false;
+    }
+    const o = selectedAt * 3;
+    const px = Math.fround(v.x);
+    const py = Math.fround(v.y);
+    const pz = Math.fround(v.z);
+    if (livePos[o] === px && livePos[o + 1] === py && livePos[o + 2] === pz) return true;
+    livePos[o] = px;
+    livePos[o + 1] = py;
+    livePos[o + 2] = pz;
+    attrOffset.needsUpdate = true;
+    uploads.bytes += 4 * geometry.instanceCount * 3;
+    return true;
   }
 
   const _m = new THREE.Matrix4();
@@ -667,6 +778,12 @@ export function createGlyphLayer(scene, layer = {}) {
 
   return {
     setRecords,
+    updateSelected,
+    /** Where the selection's dot is drawn, as the GPU holds it ([x, y, z], scene units), or null: for tests and probes. */
+    selectedOffset() {
+      if (selectedAt < 0 || !geometry || selectedAt >= geometry.instanceCount || live[selectedAt] !== selectedRec) return null;
+      return [livePos[selectedAt * 3], livePos[selectedAt * 3 + 1], livePos[selectedAt * 3 + 2]];
+    },
     /** fn(id) -> 0..1: the dot for that record yields to its model by this much. */
     setModelOpacity(fn) { modelOpacityOf = typeof fn === 'function' ? fn : null; },
     update,
@@ -699,6 +816,8 @@ export function createGlyphLayer(scene, layer = {}) {
     /** Highlight one record in ember (the selection colour, and the only interactive colour). */
     setSelected(id) {
       selectedId = id === undefined ? null : id;
+      selectedAt = -1; // found again by the next update()
+      selectedRec = null;
     },
     /**
      * Override the CSS pixel size of the canvas. Not normally needed: the layer measures the

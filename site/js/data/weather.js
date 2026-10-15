@@ -449,6 +449,51 @@ export const WEATHER = [
     "source": "Sromovsky et al. 1993, Icarus 105, 110 (the winds that carry it; see neptune-drift)"
   },
   {
+    "id": "neptune-cirrus",
+    "world": "neptune",
+    "kind": "cirrus",
+    "class": "illustrative",
+    "measured": "hidden",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "cirrus": {
+      "from_share": 0.15,
+      "height_km": 50,
+      "width_km": 120,
+      "widen": 6,
+      "radius_km": 24622,
+      "bands": [
+        [
+          29,
+          3,
+          7,
+          0.9
+        ],
+        [
+          -27,
+          2.5,
+          5,
+          0.6
+        ],
+        [
+          -42,
+          2.5,
+          4,
+          0.7
+        ],
+        [
+          -70,
+          2,
+          5,
+          0.5
+        ]
+      ]
+    },
+    "source": "NASA/JPL, Neptune Clouds Showing Vertical Relief (Voyager 2, August 1989; PIA00058: streaks at 29 N, 50 to 200 km wide, about 50 km above the deck); Smith et al. 1989, Voyager 2 at Neptune: imaging science results, Science 246, 1422"
+  },
+  {
     "id": "saturn-bands",
     "world": "saturn",
     "kind": "zonal-flow",

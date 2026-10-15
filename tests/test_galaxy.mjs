@@ -10,7 +10,8 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
-const { parseGalaxy, createGalaxy, KPC_KM, ANDROMEDA, andromedaAxes, andromedaFromModel, andromedaDiameterLy } = await import(join(JS, 'scene/galaxy.js'));
+const { parseGalaxy, createGalaxy, KPC_KM, ANDROMEDA, ANDROMEDA_LINK, ANDROMEDA_FAR, andromedaDiameterLy, andromedaKm, NORTH_GALACTIC_POLE: NGP_ROW } = await import(join(JS, 'scene/galaxy.js'));
+const { exposeByDensity, MW_EXPOSURE: { peak: PEAK }, SPRITE_AREA } = await import(join(JS, 'scene/deep/spiral.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { LOD_RULES } = await import(join(JS, 'data/lod.js'));
 const { propagate } = await import(join(JS, 'propagate/index.js'));
@@ -76,40 +77,84 @@ check(!!rule && rule.fade === 'in' && Math.abs(rule.from_km / 9460730472580.8 - 
 }
 stage.setWorld('earth');
 
-// Andromeda from the same model (2026-09-22): at the trip's Andromeda stop it was an 8 px dot.
+// Andromeda is her own (spec 0075 stage d): no longer the Milky Way's cloud moved and scaled, but a far
+// copy of her own model (scene/deep/spiral.js) where neither her hero nor her photograph draws her.
 {
   const row = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects.find((o) => o.id === 'm31');
   check(row && row.raDeg === ANDROMEDA.raDeg && row.decDeg === ANDROMEDA.decDeg && row.distLy === ANDROMEDA.distLy && row.majAxArcmin === ANDROMEDA.majAxArcmin,
     'the drawn Andromeda stands where, as far and as big as the M31 row says');
-  const ax = andromedaAxes();
-  const d = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  check(Math.abs(d(ax.major, ax.across)) < 1e-9 && Math.abs(d(ax.major, ax.normal)) < 1e-9 && Math.abs(d(ax.across, ax.normal)) < 1e-9, 'the disc axes are orthogonal');
-  const tilt = Math.acos(Math.abs(d(ax.normal, ax.los))) * 180 / Math.PI;
-  check(Math.abs(tilt - 77) < 1e-6, `the disc is inclined 77 degrees to the line of sight (${tilt.toFixed(3)})`);
-  // The north-west edge is the near one: the in-disc axis that shows toward the NW on the sky
-  // points back toward the Sun.
-  check(d(ax.across, ax.los) < 0, 'the north-west edge is the nearer one');
-  // The moved cloud: centred on Andromeda, the size its card prints.
-  const bin = readFileSync(join(ROOT, 'site/data/galaxy.bin'));
-  const g = parseGalaxy(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength));
-  let cx = 0, cy = 0, cz = 0, nb = 0;
-  for (let i = 0; i < g.count; i++) if (g.kind[i] === 1) { cx += g.posKpc[i * 3]; cy += g.posKpc[i * 3 + 1]; cz += g.posKpc[i * 3 + 2]; nb++; }
-  const twin = andromedaFromModel(g.posKpc, g.count, [cx / nb, cy / nb, cz / nb]);
-  let tx = 0, ty = 0, tz = 0, tb = 0;
-  for (let i = 0; i < g.count; i++) if (g.kind[i] === 1) { tx += twin[i * 3]; ty += twin[i * 3 + 1]; tz += twin[i * 3 + 2]; tb++; }
-  const KPC_LY = KPC_KM / 9460730472580.8;
-  const distLy = Math.hypot(tx / tb, ty / tb, tz / tb) * KPC_LY;
-  check(Math.abs(distLy - ANDROMEDA.distLy) / ANDROMEDA.distLy < 0.001, `its bulge is at Andromeda's distance (${Math.round(distLy)} ly)`);
-  const rMw = [], rM31 = [];
-  for (let i = 0; i < g.count; i++) {
-    rMw.push(Math.hypot(g.posKpc[i * 3] - cx / nb, g.posKpc[i * 3 + 1] - cy / nb, g.posKpc[i * 3 + 2] - cz / nb));
-    rM31.push(Math.hypot(twin[i * 3] - tx / tb, twin[i * 3 + 1] - ty / tb, twin[i * 3 + 2] - tz / tb));
-  }
-  rMw.sort((a, b) => a - b); rM31.sort((a, b) => a - b);
-  const q = Math.floor(0.99 * g.count);
-  const ratio = rM31[q] / rMw[q];
-  check(Math.abs(ratio - andromedaDiameterLy() / ANDROMEDA.templateDiameterLy) < 0.01, `it is the model scaled by the two records' sizes (${ratio.toFixed(3)})`);
   check(Math.abs(andromedaDiameterLy() - 131391) < 1, 'and that size is the one the card prints (131 391 ly before rounding)');
+  const src = readFileSync(join(JS, 'scene/galaxy.js'), 'utf8');
+  check(!/buildTwin|andromedaFromModel|templateDiameterLy/.test(src), 'the Milky Way\'s copy is retired: no twin, no moved cloud, no template size');
+  const scene = new THREE.Scene();
+  const g = createGalaxy(scene, { binBuffer: buffer, schedule: (fn) => setTimeout(fn, 0) });
+  stage.setWorld('stellar'); stage.setTime(tMs);
+  g.setOpacity(1);
+  await g.ensureGeometry();
+  await g.andromedaReady();
+  g.rebuild();
+  const far = g.andromeda();
+  check(far && far.points >= 6000 && far.points <= 9000 && far.dust > 0, `her far copy is a few thousand of her own points and her dust (${far && far.points} + ${far && far.dust})`);
+  const node = g.group.children.find((c) => c.name === 'galaxy:andromeda');
+  check(!!node, 'the far copy is a child of the galaxy group');
+  if (node) {
+    const p = new THREE.Vector3().setFromMatrixPosition(node.matrix);
+    check(Math.abs(p.length() - ANDROMEDA.distLy) / ANDROMEDA.distLy < 1e-3, `it stands at her distance on the stellar rung (${Math.round(p.length())} ly)`);
+    const km = andromedaKm();
+    const los = new THREE.Vector3(km.x, km.y, km.z).normalize();
+    const v = stage.toScene(km, 'sun-inertial', tMs).normalize();
+    check(v.angleTo(p.clone().normalize()) < 1e-4 && Math.abs(los.length() - 1) < 1e-9, 'in her direction');
+    const e = node.matrix.elements;
+    const z = new THREE.Vector3(e[8], e[9], e[10]).normalize();
+    const tilt = Math.acos(Math.abs(z.dot(p.clone().normalize()))) * 180 / Math.PI;
+    check(Math.abs(tilt - 77) < 0.05, `her disc is inclined 77 degrees to our line of sight (${tilt.toFixed(2)})`);
+    const meshes = node.children.map((c) => c.geometry);
+    const mw = g.group.children.find((c) => c.name === 'galaxy');
+    check(meshes.every((geo) => geo !== mw.geometry && geo.getAttribute('position') !== mw.geometry.getAttribute('position')), 'none of her buffers is the Milky Way\'s');
+  }
+  // The three drawings share one number: the photograph's share, then the hero's, then this copy's.
+  g.setAndromedaShare(1); ANDROMEDA_LINK.heroShare = 0; g.update(null, null);
+  check(Math.abs(g.andromeda().share - 1) < 1e-9, 'off her photograph\'s line, with no hero, the far copy draws her whole');
+  g.setAndromedaShare(0.25); g.update(null, null);
+  check(Math.abs(ANDROMEDA_LINK.photo - 0.75) < 1e-9 && Math.abs(g.andromeda().share - 0.25) < 1e-9, 'with her photograph at 0.75 it draws the 0.25 left');
+  ANDROMEDA_LINK.heroShare = 1; g.update(null, null);
+  check(g.andromeda().share === 0, 'and nothing while the hero draws her');
+  ANDROMEDA_LINK.heroShare = 0;
+  g.setAndromedaShare(1);
+  g.dispose();
+  stage.setWorld('earth');
+  check(ANDROMEDA_FAR.points.every((n) => n <= 9000), 'the far copy stays small on every tier');
+}
+
+// The Milky Way from outside, exposed by its projected density (spec 0075 stage d; scene 15 was white).
+{
+  let cx = 0, cy = 0, cz = 0, nb = 0;
+  for (let i = 0; i < data.count; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
+  const { eclDirection } = await import(join(JS, 'scene/clusters.js'));
+  const pole = eclDirection(NGP_ROW.raDeg, NGP_ROW.decDeg);
+  const e = exposeByDensity(data.posKpc, data.weight, data.count, [cx / nb, cy / nb, cz / nb], pole);
+  check(Number.isFinite(e.gain) && e.gain > 0 && e.weight.length === data.count, 'every point gets an exposed weight and the cloud a gain');
+  // Face-on, cell by cell: how bright the brightest and a typical patch draw, before and after.
+  const shown = (w, gain) => {
+    const u = [1, 0, 0]; const ux = (() => { const c = [pole[1] * 0 - pole[2] * 1, pole[2] * 0 - pole[0] * 0, pole[0] * 1 - pole[1] * 0]; const l = Math.hypot(...c); return c.map((x) => x / l); })();
+    const vx = [pole[1] * ux[2] - pole[2] * ux[1], pole[2] * ux[0] - pole[0] * ux[2], pole[0] * ux[1] - pole[1] * ux[0]];
+    const G = 64, half = 16, cell = 32 / G, out = new Float64Array(G * G);
+    for (let i = 0; i < data.count; i++) {
+      const x = data.posKpc[i * 3] - cx / nb, y = data.posKpc[i * 3 + 1] - cy / nb, z = data.posKpc[i * 3 + 2] - cz / nb;
+      const a = Math.floor((x * ux[0] + y * ux[1] + z * ux[2] + half) / cell), b = Math.floor((x * vx[0] + y * vx[1] + z * vx[2] + half) / cell);
+      if (a >= 0 && b >= 0 && a < G && b < G) out[b * G + a] += SPRITE_AREA * w[i] * gain * 0.15 * 0.15 / (cell * cell);
+    }
+    const v = [...out].filter((t) => t > 0).sort((p, q) => p - q);
+    void u;
+    return { top: v[v.length - 1], p995: v[Math.floor(v.length * 0.995)], mid: v[v.length >> 1] };
+  };
+  const before = shown(data.weight, e.gain), after = shown(e.weight, e.gain);
+  check(after.top / after.mid < 0.5 * before.top / before.mid, `the bulge-to-disc range is compressed (brightest over median ${(before.top / before.mid).toFixed(0)} before, ${(after.top / after.mid).toFixed(0)} after)`);
+  check(after.p995 < 1.3 * PEAK && after.p995 > 0.4 * PEAK, `and the brightest patches draw near ${PEAK} of white, not past it (${after.p995.toFixed(2)})`);
+  const src = readFileSync(join(JS, 'scene/galaxy.js'), 'utf8');
+  const { MW_SHADERS } = await import(join(JS, 'scene/deep/spiral.js'));
+  check(/min\( 1\.0, \( ideal \* ideal \) \/ \( s \* s \) \)/.test(MW_SHADERS.vert) && /uOutside/.test(MW_SHADERS.vert) && /S\.MW_SHADERS\.vert/.test(src), 'a point held small gives up its light; from outside, an edge-on view keeps part of its path');
+  check(!/^import .*deep\/spiral/m.test(src) && /S\.exposeByDensity/.test(src), 'and the exposure and the shaders arrive with the cloud (a dynamic import), not in the boot bytes');
 }
 
 // The dust lanes (public #428): derived from the arms, inside them, thinner, in the real plane.

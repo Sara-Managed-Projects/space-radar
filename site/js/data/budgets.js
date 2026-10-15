@@ -37,5 +37,7 @@ export const BUDGETS = {
   "tier2_texture_gpu_mib": 400,
   "repo_textures_mb": 80,
   "planet_tile_requests_first_visit": 0,
-  "reel_heap_growth_pct": 20
+  "reel_heap_growth_pct": 20,
+  "deep_localvolume_bytes": 300000,
+  "deep_localvolume_draw_calls": 2
 };

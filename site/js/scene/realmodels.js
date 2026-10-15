@@ -104,11 +104,31 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
  * The shape still carries a comms payload's dishes, which is the "not this exact one" half. It is
  * wrong in SILHOUETTE for exactly two of the 400: Fengyun 2G and 2H are spin-stabilised drums.
  */
+// A FILE A BLOCK since batch six (2026-10-13; public #985). The gate is the same launch-year gate,
+// with one more step: the Block IIR and IIR-M craft (Lockheed Martin, one bus) had no shape of their
+// own and wore the family box; they wear gps-iir.glb now. THE YEARS, read on 2026-10-13 in the
+// Cabinet Office of Japan's list of positioning satellites (qzss.go.jp/en/technical/satellites/,
+// which gives every GPS craft's block and launch day: `GPS 2R-2 1997/7/23` ... `GPS 2R-21M
+// 2009/8/17`, `GPS 2F-1 2010/5/28` ... `GPS 2F-12 2016/2/5`, `GPS 3-1 2018/12/23` onward):
+//     1997 to 2009   IIR and IIR-M   gps-iir.glb   18 records in the live saved data that day
+//     2010 to 2016   IIF             gps-iif.glb   12
+//     2018 onward    III             gps-iii.glb   10
+// 1997 IS THE ONE YEAR TWO BLOCKS FLEW: the last Block IIA (a Rockwell bus, a different shape) went
+// up that November and the first IIR that July. The IIR of 1997 is `NAVSTAR 43`, so in that year
+// the name decides too, and a IIA that came back into the catalogue would keep the family box.
+// No GPS craft was launched in 2017. A record with no year keeps the family box.
+// GPS IIIF (not yet flying) is a changed craft on the same bus; when the first is catalogued its
+// year will pass this gate, and the row's `generic` is what keeps the card honest until it is drawn.
+// Each answer carries its own `made` and `axes`: the family box has neither.
+const GPS_FILE = { made: 'dimensions', axes: 'app' };
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
-  if (year >= 2018) return { build: 'navigation-gps-iii' };
-  return year >= 2010 && year <= 2016 ? { build: 'navigation-gps-iif' } : {};
+  if (year >= 2018) return { build: 'navigation-gps-iii', file: 'gps-iii.glb', name: 'a GPS III navigation satellite', ...GPS_FILE };
+  if (year >= 2010 && year <= 2016) return { build: 'navigation-gps-iif', file: 'gps-iif.glb', name: 'a GPS Block IIF navigation satellite', ...GPS_FILE };
+  const first = year === 1997 && /\bnavstar 43\b/i.test(String(record.name));
+  if ((year >= 1998 && year <= 2009) || first) return { file: 'gps-iir.glb', name: 'a GPS Block IIR navigation satellite', ...GPS_FILE };
+  return {};
 }
 
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
@@ -206,6 +226,111 @@ export const REAL_MODELS = {
     // of their cited sizes where NOAA's drawing of the nadir deck puts them, so `made: 'dimensions'`.
     // `axes: 'app'`: the instruments are on the file's +Z, and the app turns that face to the Earth.
     54234: { file: 'noaa21.glb', colour: 'satellite', name: 'NOAA-21 (JPSS-2)', catalogue: 'NOAA 21 (JPSS-2)', made: 'dimensions', axes: 'app' },
+    // BATCH SEVEN (2026-10-13; public #992, #966): two craft that had no route at all and so wore the
+    // shape of their class, a box with two wings and a dish. Both by NUMBER, both built in code from
+    // cited metres (registry/models.yaml rows `metop`, `xmm-newton`, kind `built-from-dimensions`);
+    // no ESA or EUMETSAT picture or model was used (their terms do not allow it), the layout is read
+    // off NASA's public-domain pictures.
+    //   metop.glb       MetOp-B and MetOp-C, Europe's polar weather satellites: a gold body 6.3 m long
+    //                   and 2.5 m square, the instruments on its Earth face, ASCAT's two 3 m antenna
+    //                   arms in a V, and ONE wing beyond the service module, 17.6 m from the far end
+    //                   of the body to its tip. MetOp-A (29499) was retired in 2021 and is in no
+    //                   group the app loads; `METOP-SGA1` (a different, newer craft) is NOT these and
+    //                   has no row: it keeps the shape of its class.
+    //                   `axes: 'app'`: the instrument face to the Earth and the wing's axis square to
+    //                   the Sun, the wing turned 45 degrees toward the Sun's side. The real wing turns
+    //                   once an orbit to follow the Sun; the app's does not turn.
+    //   xmm-newton.glb  ESA's X-ray observatory: 10 m from mirrors to cameras (a 6.8 m tube between
+    //                   a service module and the focal plane), three 70 cm mirror modules at one end,
+    //                   two fixed wings of three panels, 16 m tip to tip.
+    //                   `axes: 'app'`: the tube stands on end, mirrors to the zenith, wings square to
+    //                   the Sun with their cells to it. TRUE of the real craft: the wings are fixed
+    //                   with their cells to the Sun and the telescope looks square to the Sun. NOT
+    //                   TRUE: it holds a star for hours wherever that star is, not the zenith.
+    38771: { file: 'metop.glb', colour: 'satellite', name: 'MetOp-B', catalogue: 'METOP-B', made: 'dimensions', axes: 'app' },
+    43689: { file: 'metop.glb', colour: 'satellite', name: 'MetOp-C', catalogue: 'METOP-C', made: 'dimensions', axes: 'app' },
+    25989: { file: 'xmm-newton.glb', colour: 'telescope', name: 'XMM-Newton', catalogue: 'XMM-NEWTON', made: 'dimensions', axes: 'app' },
+    // BATCH EIGHT (2026-10-14; public #949, #950): two more European craft that had no route at all
+    // and so wore the shape of their class. Both built in code from cited metres (registry/
+    // models.yaml rows `sentinel-2`, `sentinel-3`); no ESA picture or model was used (ESA's terms
+    // do not allow it): the layouts are read off DLR's photograph of a model (CC BY 2.0) and a
+    // Commons contributor's own drawing (CC BY 4.0).
+    //   sentinel-2.glb  the Copernicus land imager: a gold body 3.4 m long, 1.8 m wide and 2.35 m
+    //                   high, the multispectral instrument at one end with its opening in a raised
+    //                   frame on the Earth face, ONE wing of three panels (7.1 m2) from a side.
+    //   sentinel-3.glb  the Copernicus ocean and land satellite: a black body 3.9 x 2.2 x 2.21 m;
+    //                   on its Earth face the altimeter's 1.2 m dish, the radiometer's two curved
+    //                   openings, the colour camera's five lenses and a gold 60 cm reflector; ONE
+    //                   wing of three panels (10.5 m2) on a long yoke.
+    // BY NUMBER, from the live saved data of 2026-10-12: SENTINEL-2A, -2B, -2C; SENTINEL-3A, -3B.
+    // SENTINEL-3C (launched 15 September 2026) is in that data under 100690, a real number since the
+    // five-digit catalogue ran out (data/catnum.js; until 2026-10-14 data/parsers.js read 90 000 and
+    // up as a placeholder). 3C is routed BY NAME further down (`sentinel-3c`, klass-gated).
+    // SENTINEL-5P and SENTINEL-6 are other craft: 5P has its own file since batch nine (below), 6A and
+    // 6B keep NASA's own file.
+    // `axes: 'app'`: the instruments on the file's +Z, which the app turns to the Earth, as they
+    // fly; the one wing along X, drawn fixed at 45 degrees toward the Sun's side. The real wing
+    // turns once an orbit and the real body keeps one heading to its track; the app's does neither.
+    40697: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2A', catalogue: 'SENTINEL-2A', made: 'dimensions', axes: 'app' },
+    42063: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2B', catalogue: 'SENTINEL-2B', made: 'dimensions', axes: 'app' },
+    60989: { file: 'sentinel-2.glb', colour: 'satellite', name: 'Sentinel-2C', catalogue: 'SENTINEL-2C', made: 'dimensions', axes: 'app' },
+    41335: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3A', catalogue: 'SENTINEL-3A', made: 'dimensions', axes: 'app' },
+    43437: { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3B', catalogue: 'SENTINEL-3B', made: 'dimensions', axes: 'app' },
+    // BATCH NINE (2026-10-14; public #951, #957, #958): three more European craft that had no route
+    // and so wore the shape of their class (a box with two wings and a dish). Each built in code from
+    // cited metres (registry/models.yaml rows `sentinel-5p`, `cryosat-2`, `smos`); no ESA picture or
+    // model was used: the layouts are read off a Commons contributor's photograph of a model of
+    // Sentinel-5P (CC BY 3.0) and DLR's photographs of a model of SMOS (CC BY 2.0); CryoSat-2 has NO
+    // FREE PICTURE and is laid out from the pages' own words.
+    //   sentinel-5p.glb  the atmosphere satellite: a gold six-sided body, TROPOMI (1.4 x 0.65 x 0.75 m)
+    //                    and its radiator on the Earth floor, three wings of 1.8 m2 folded out flat at
+    //                    the far end, 5.63 m tip to tip and 3.35 m high (ESA's numbers).
+    //                    `axes: 'app'`: the body's axis on the Earth's line, the instrument to the
+    //                    Earth, as it flies (nadir-pointing, fixed wings: cited). Three-fold, so the
+    //                    app's turn about the vertical changes nothing a page gives.
+    //   cryosat-2.glb    the ice altimeter: a body 4.6 x 2.34 x 2.20 m with NO wings, a roof of two
+    //                    fixed panels of cells, the two SIRAL dishes side by side at the nose (1.2 m
+    //                    apart, cited), the radiator at the nose tip. PITCHED 6 DEGREES NOSE DOWN in
+    //                    the file, as it flies (cited). `axes: 'app'`: the length along X, the dishes
+    //                    to the Earth. NOT TRUE of the real craft: its orbit is not Sun-synchronous and
+    //                    its nose leads along the track; the app turns it about the vertical to keep
+    //                    X square to the Sun, so its heading on the map is the app's.
+    //   smos.glb         the Y of MIRAS (three arms of three segments, 8 m across, 69 receivers) over
+    //                    the instrument's hub and a Proteus bus, two wings of four panels. PITCHED 32.5
+    //                    DEGREES in the file, the Y's face forward of the nadir, as it flies (cited).
+    //                    `axes: 'app'`: the wings along X with their cells to +Y, the Sun's side; TRUE
+    //                    of the real craft in its dawn-dusk orbit (the Sun square to the track, the
+    //                    wings static: cited). Which end of X leads is the app's, not the craft's.
+    // BY NUMBER, from the live saved data of 2026-10-12: SENTINEL-5P 42969, CRYOSAT 2 36508, SMOS
+    // 36036. No other record in the saved data has these shapes (CryoSat-1 was lost at launch).
+    42969: { file: 'sentinel-5p.glb', colour: 'satellite', name: 'Sentinel-5P', catalogue: 'SENTINEL-5P', made: 'dimensions', axes: 'app' },
+    36508: { file: 'cryosat-2.glb', colour: 'satellite', name: 'CryoSat-2', catalogue: 'CRYOSAT 2', made: 'dimensions', axes: 'app' },
+    36036: { file: 'smos.glb', colour: 'satellite', name: 'SMOS', catalogue: 'SMOS', made: 'dimensions', axes: 'app' },
+    // BATCH TEN (2026-10-14; public #995, #996), two weather craft that wore the shape of their ring or
+    // class, each built in code from cited metres (registry/models.yaml rows `himawari`, `fengyun-3`):
+    //   himawari.glb   Himawari-8 and -9 ('identical specifications'): ONLY THE ENVELOPE IS CITED,
+    //                  5.2 x 8.0 x 5.3 m; the layout is JMA's sketch, LOOKED AT ONLY (no free picture):
+    //                  a dark box with the imager AHI on its Earth face, ONE solar array of two panels,
+    //                  a Ka-band dish beside it. They wore the geostationary bus (GEO_BUS: two long wings
+    //                  and dishes). `axes: 'app'`: the Earth face on +Z, the array along X, north-south,
+    //                  its cells to +Y; HOW A GEOSTATIONARY CRAFT FLIES (the array turns on its axis once
+    //                  a day, which the app does not draw).
+    //   fengyun-3.glb  FY-3A to 3D, the first batch: SAST's silver box of 4.4 x 2.0 x 2.0 m with ONE
+    //                  wing of 22.464 m2 on a truss yoke, 10 m in flight, the microwave imager's
+    //                  reflector on the sky face (eoPortal), laid out after a visitor's CC BY 2.0
+    //                  photograph of the mockup in Shanghai. They wore the shape of their class (two
+    //                  wings and a dish). `axes: 'app'`: the instruments on +Z; the wing along X, FLAT,
+    //                  its cells to the sky, as the cited flight size allows. NOT how the real wing
+    //                  flies (it turns to the Sun), and the heading on the map is the app's.
+    // BY NUMBER from the live saved data of 2026-10-12. FENGYUN 3E to 3H (the second batch, other
+    // instruments, 3G with a rain radar), FENGYUN 4A to 4C (no opened page gives their size) and
+    // FENGYUN 2G and 2H (spinning drums) are other craft and keep what they had.
+    40267: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-8', catalogue: 'HIMAWARI-8', made: 'dimensions', axes: 'app' },
+    41836: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-9', catalogue: 'HIMAWARI-9', made: 'dimensions', axes: 'app' },
+    32958: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3A', catalogue: 'FENGYUN 3A', made: 'dimensions', axes: 'app' },
+    37214: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3B', catalogue: 'FENGYUN 3B', made: 'dimensions', axes: 'app' },
+    39260: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3C', catalogue: 'FENGYUN 3C', made: 'dimensions', axes: 'app' },
+    43010: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3D', catalogue: 'FENGYUN 3D', made: 'dimensions', axes: 'app' },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
@@ -232,11 +357,36 @@ export const REAL_MODELS = {
     // one is the spacecraft itself, not a sister ship. Jason-3 (41240) is NOT routed here: it is
     // a Proteus bus, a different shape, and gets its own file.
     46984: { file: 'sentinel6.glb', colour: 'satellite', name: 'Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6A' },
+    // SENTINEL-6B (2026-10-15, batch eleven), launched 17 November 2025: the second of two craft
+    // built to one design, so it wears NASA's model of the first, as Spirit wears Opportunity's, and
+    // says it is the twin. Read in the live saved data that day: `SENTINEL-6B`, 66514, 2025-264A.
+    66514: { file: 'sentinel6.glb', colour: 'satellite', name: 'a Sentinel-6 ocean altimeter, the twin of Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6B', generic: true },
     43613: { file: 'icesat2.glb', colour: 'satellite', name: 'ICESat-2', catalogue: 'ICESAT-2' },
-    // Jason-3 is a rebuild of OSTM/Jason-2 -- same Proteus bus, same instruments -- and NASA only
-    // published the Jason-2 model, so this is the sister ship and `generic` lets the card say so.
-    41240: { file: 'jason.glb', colour: 'satellite', name: 'a Jason-series ocean altimeter', catalogue: 'JASON-3', generic: true },
+    // JASON-3 HAS ITS OWN MODEL since 2026-10-15 (batch eleven, public #1077): JPL's "Jason-3 3D
+    // Model" (sealevel.jpl.nasa.gov/resources/94/), turned to the app's axes before the bake (the
+    // altimeter's dish on +Z, the wings along X, the cells toward +Y), hence `axes: 'app'`. Until
+    // then it wore NASA's OSTM/Jason-2 file as the sister ship; that file now draws Jason-2 itself
+    // (33105, decommissioned in 2019 and still catalogued: it is in no group the app loads, so the
+    // route reaches nothing today, as poes.glb's do not).
+    41240: { file: 'jason-3.glb', colour: 'satellite', name: 'Jason-3', catalogue: 'JASON-3', axes: 'app' },
+    33105: { file: 'jason.glb', colour: 'satellite', name: 'OSTM/Jason-2', catalogue: 'JASON-2 (OSTM)' },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
+    // The second of the pair (2026-10-15, batch eleven): `GRACE-FO 2`, 43477, in the live saved data
+    // that day. The two fly 220 km apart on one orbit and are one design.
+    43477: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 2', generic: true },
+    // THE ELEVENTH BATCH (2026-10-15, public #1076, #1079): two more agencies' own models, by number,
+    // with the names CelesTrak's active group gives them (live saved data that day: `SMAP` 40376,
+    // `SORCE` 27651). Each had no route and was the shape of its class.
+    //   SMAP   JPL's "SMAP 3D Model" (smap.jpl.nasa.gov/resources/99/): the bus, the spun instrument
+    //          platform, the boom and the 6 m reflector, its gold surface drawn SOLID (the file draws
+    //          a see-through mesh with a transparent texture; the toon material has no transparency).
+    //          Turned before the bake: the bus toward the Earth, the reflector away from it, the
+    //          cells toward +Y. The real reflector spins at 14.6 turns a minute; this one does not.
+    //   SORCE  NASA 3D Resources' file: a hexagonal body under six radial wings. NOT TURNED: SORCE
+    //          pointed its instruments and its wings at the Sun, and the app has no Sun-pointing
+    //          attitude for a satellite, so it keeps the seeded constant angle a published mesh gets.
+    40376: { file: 'smap.glb', colour: 'satellite', name: 'SMAP', catalogue: 'SMAP', axes: 'app' },
+    27651: { file: 'sorce.glb', colour: 'satellite', name: 'SORCE', catalogue: 'SORCE' },
     // NASA's Magnetospheric Multiscale: four spacecraft flying in a tetrahedron, MMS 1 to MMS 4.
     //
     // THIS USED TO BE THE NAME `mms`, WHICH ALSO MATCHED ELARASAT MMS-1 -- a different satellite,
@@ -276,35 +426,51 @@ export const REAL_MODELS = {
     // 2026-10-08 (public #429): the shape by the block the catalogue's own label states. GLONASS-M is
     // the pressurised drum, GLONASS-K (and K1) the small box; K2 is a larger craft with no row in
     // scene/models.js NAV_SHAPES and keeps the family box.
-    32275: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
-    32276: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
-    32393: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
-    32395: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
-    36111: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
-    36112: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
-    36402: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
-    37867: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
-    37868: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
-    37869: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
-    39155: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
-    39620: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
-    40001: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
-    40315: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
-    41330: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
-    42939: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
-    43508: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
-    43687: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
-    44299: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
-    44850: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
-    45358: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
-    46805: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
-    52984: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
-    54031: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
-    54377: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
+    // A FILE A BLOCK since batch ten (2026-10-14; public #988), over the build each row had, which stays
+    // as what is drawn while the file loads (registry/models.yaml rows `glonass-m`, `glonass-k`):
+    //   glonass-m.glb  the drum, 1.63 m across, with the antenna platform at its Earth end and two
+    //                  wings of four panels, 30.85 m2 (the maker's number as the MCC sent it to the IGS,
+    //                  IGSMAIL-5104; the drum and the craft's 3.05 m from Duan et al. 2020, CC BY 4.0),
+    //                  laid out after two CC0 photographs of models. Its 12.6 m span is DERIVED from the
+    //                  area: no page opened gives one (the build above uses a catalogue site's 7.8 m).
+    //   glonass-k.glb  the Express-1000 box from the maker's own dimensioned drawings (2.66 x 1.6 x
+    //                  0.795 m, two wings of two 1.6 x 2.65 m panels, 9.2 m tip to tip), which the
+    //                  GLONASS information centre sent to the IGS in 2011 (acc.igs.org/glonass/). NO
+    //                  FREE PICTURE. The build above is a catalogue site's 1 x 1 x 2 m.
+    // `generic` stays, as on every navigation file (batch six). `axes: 'app'`: the Earth face on +Z,
+    // the wings along X, the cells to +Y; HOW BOTH FLY, by the maker's letters: Earth-pointing, the Sun in
+    // the body's X-Y plane, 'Solar panels keep up the Sun direction'. K2 (57517, 63130) is a larger
+    // craft and keeps the family box. 100460 and 100744 are numbers of 90 000 and up, which
+    // data/parsers.js reads as placeholders: the `glonass` name key below routes them by the bracket.
+    32275: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    32276: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    32393: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    32395: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    36111: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    36112: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    36402: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    37867: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    37868: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    37869: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    39155: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    39620: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    40001: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    40315: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    41330: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    42939: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    43508: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    43687: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    44299: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    44850: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    45358: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
+    46805: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    52984: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    54031: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true, made: 'dimensions', axes: 'app' },
+    54377: { build: 'navigation-glonass-m', file: 'glonass-m.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true, made: 'dimensions', axes: 'app' },
     57517: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2569 [GLONASS-K2]', generic: true },
     63130: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2584 [GLONASS-K2]', generic: true },
-    65590: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
-    100460: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
+    65590: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true, made: 'dimensions', axes: 'app' },
+    100460: { build: 'navigation-glonass-k', file: 'glonass-k.glb', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true, made: 'dimensions', axes: 'app' },
 
     // ---------------------------------------------------------------------------------------
     // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
@@ -351,20 +517,50 @@ export const REAL_MODELS = {
     // rest of the European set and concluded they "stay generic unless Ivan finds a licensed
     // source". A licence was never the obstacle for a shape this constrained: nobody had drawn it.
     //
-    // ERS-1 and Envisat carried far more than a radar and are here because the blade is still the
-    // thing you would recognise them by. Envisat's own CC BY model stays on Ivan's list (spec 0027
-    // design.md): this is the family shape until then, which is better than a dish.
-    39634: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1A', generic: true },
-    41456: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1B', generic: true },
-    62261: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1C', generic: true },
-    66315: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1D', generic: true },
+    // ERS-1 and Envisat carried far more than a radar and were here because the blade was still the
+    // thing you would recognise them by. Since batch eight (2026-10-14) each has a file of its own,
+    // further down, and Sentinel-1 has one just below; the blade is what is drawn while it loads.
+    // SENTINEL-1 HAS A FILE OF ITS OWN since batch eight (2026-10-14; public #948): sentinel-1.glb, built
+    // in code from the numbers eoPortal and ESA's facts page give (registry/models.yaml row
+    // `sentinel-1`): the 3.4 x 1.3 x 1.3 m bus, the 12.3 m x 0.821 m antenna of fourteen tiles on its
+    // Earth face, and two wings of five panels, each 10 m long. WHAT THE FILE CORRECTS: the `radar`
+    // build took this craft's antenna and gave it a bus of 3.9 x 2.2 x 2.2 m and wings of 4.6 m;
+    // the real bus is a third of that across and the real wings reach 21 m tip to tip, further
+    // than the antenna is long. The cross the build draws is right, and so is its sideways look.
+    // The build stays as what is drawn while the file is on its way. Not `generic` any more.
+    // BY NUMBER. The live saved data of 2026-10-12 (data/v1/celestrak-active.cols.json) has
+    // SENTINEL-1A, SENTINEL-1C and SENTINEL-1D. SENTINEL-1B (41456) is NOT in it: its mission ended
+    // in August 2022 and it is in no group the app loads, so its row is dormant; it is the same
+    // design and would wear the same file. ESA's facts page (read 2026-10-14) says Sentinel-1A
+    // "ended in June 2026"; CelesTrak still lists it as active, and the route does not judge that.
+    // `axes: 'app'`, AND THIS IS HOW THEY FLY: a dawn-dusk orbit, so the Sun is square to the
+    // track; the antenna along the track (the app's X), the wings along the craft's Y, which "is
+    // aligned with the Sun direction" (eoPortal). THE ROLL IS IN THE FILE: 29.45 degrees about X,
+    // the antenna's "mechanical ... off-nadir angle" (cited as 30.25 to 28.65 degrees), its face
+    // down and away from the Sun, the cells up and toward it.
+    39634: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1A', catalogue: 'SENTINEL-1A', made: 'dimensions', axes: 'app' },
+    41456: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1B', catalogue: 'SENTINEL-1B', made: 'dimensions', axes: 'app' },
+    62261: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1C', catalogue: 'SENTINEL-1C', made: 'dimensions', axes: 'app' },
+    66315: { build: 'radar', file: 'sentinel-1.glb', colour: 'satellite', name: 'Sentinel-1D', catalogue: 'SENTINEL-1D', made: 'dimensions', axes: 'app' },
     // RADARSAT-1 has NASA's own model since 2026-10-08 (public #430): its real bus, wings and 15 m
     // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
     // the element groups the app loads (registry/models.yaml says so on its row).
     23710: { file: 'radarsat1.glb', colour: 'satellite', name: 'RADARSAT-1', catalogue: 'RADARSAT-1' },
     32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
-    31698: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TERRASAR-X', generic: true },
-    36605: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TANDEM-X', generic: true },
+    // TERRASAR-X AND TANDEM-X HAVE A FILE OF THEIR OWN since batch seven (2026-10-13; public #979):
+    // terrasar-x.glb, built in code from DLR's numbers as eoPortal gives them (registry/models.yaml row
+    // `terrasar-x`). WHAT THE FILE CORRECTS: these two are not a blade under a bus with two wings. The
+    // craft is a six-sided body 5 m long with NO wings: the 4.8 m antenna lies on one face, 33.8
+    // degrees off the nadir, the solar array is fixed on the opposite face, and a 3.3 m boom carries
+    // the downlink antenna toward the Earth. The `radar` build stays as what is drawn while the file
+    // is on its way. Not `generic` any more: the file is these two craft ("TanDEM-X is identical to
+    // its twin", eoPortal). PAZ (by name, below) is the same Airbus design by this file's own comment
+    // further down; no page opened for this batch says so in a sentence, so PAZ keeps the blade.
+    // `axes: 'app'`, AND THIS IS HOW THEY FLY: a dawn-dusk orbit, so the Sun is square to the track;
+    // the long axis along the track (the app's X, square to the Sun), the array up and toward the Sun,
+    // the antenna down and to the side away from it.
+    31698: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'TerraSAR-X', catalogue: 'TERRASAR-X', made: 'dimensions', axes: 'app' },
+    36605: { build: 'radar', file: 'terrasar-x.glb', colour: 'satellite', name: 'TanDEM-X', catalogue: 'TANDEM-X', made: 'dimensions', axes: 'app' },
     31598: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 1', generic: true },
     32376: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 2', generic: true },
     33412: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 3', generic: true },
@@ -373,12 +569,55 @@ export const REAL_MODELS = {
     51444: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-2', generic: true },
     67304: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-3', generic: true },
     28931: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS (DAICHI)', generic: true },
-    39766: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-2', generic: true },
+    // ALOS-2 HAS A FILE OF ITS OWN since batch nine (2026-10-14; public #977): alos-2.glb, built in
+    // code from JAXA's numbers as eoPortal gives them (registry/models.yaml row `alos-2`): PALSAR-2,
+    // 9.9 m by 2.9 m of five panels, UNDER a gold body, two solar paddles of three panels across the
+    // track, 16.5 m tip to tip, laid out after a visitor's photograph (CC0) of JAXA's 1/50 model; no
+    // JAXA picture was used. The `radar` build stays as what is drawn while the file is on its way.
+    // Not `generic`: the file is this craft. ALOS (DAICHI) and ALOS-4 are other craft (ALOS-4's
+    // antenna is another size) and keep the blade. `axes: 'app'`: the antenna's face to the Earth,
+    // its length along Y, the paddles along X. HOW IT FLIES, in part: in its noon orbit the Sun is in
+    // the orbit's plane, so the paddles' axis across the track is square to the Sun, as the app keeps
+    // X; the paddles are held at 45 degrees where the real ones turn. THE FILE IS LEVEL: the craft
+    // rolls up to 30 degrees left or right for a pass from a nominal Earth-pointing attitude (cited),
+    // so no one angle is how it flies.
+    39766: { build: 'radar', file: 'alos-2.glb', colour: 'satellite', name: 'ALOS-2', catalogue: 'ALOS-2', made: 'dimensions', axes: 'app' },
     60182: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-4 (DAICHI-4)', generic: true },
-    43641: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1A', generic: true },
-    46265: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1B', generic: true },
-    21574: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ERS-1', generic: true },
-    27386: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ENVISAT', generic: true },
+    // SAOCOM 1A AND 1B HAVE A FILE OF THEIR OWN since batch six (2026-10-13; public #978): saocom.glb,
+    // built in code from CONAE's numbers as eoPortal gives them (a 10 m by 3.5 m antenna of seven
+    // panels, a 15 m2 solar wing, a body 4.4 m long) and laid out as CONAE's own render has it
+    // (CC BY 4.0): the bus lying ACROSS the antenna's back, the wing standing beside it (registry/
+    // models.yaml row `saocom`, kind `built-from-dimensions`). The shared `radar` build stays as what
+    // is drawn while the file is on its way: Sentinel-1's plan, a blade under a bus with two wings,
+    // which SAOCOM is not. Not `generic` any more: the file is these two craft and no other.
+    // `axes: 'app'`: the antenna's face to the Earth. NOT AS IT FLIES: the real craft is rolled so
+    // the antenna looks to one side of its track; the app's one attitude cannot say a roll.
+    43641: { build: 'radar', file: 'saocom.glb', colour: 'satellite', name: 'SAOCOM 1A', catalogue: 'SAOCOM 1A', made: 'dimensions', axes: 'app' },
+    46265: { build: 'radar', file: 'saocom.glb', colour: 'satellite', name: 'SAOCOM 1B', catalogue: 'SAOCOM 1B', made: 'dimensions', axes: 'app' },
+    // ERS-1 AND ENVISAT HAVE A FILE EACH since batch eight (2026-10-14; public #945, #944), built in
+    // code from the numbers on eoPortal's pages (registry/models.yaml rows `ers-1`, `envisat`). The
+    // family comment above said they were "here because the blade is still the thing you would
+    // recognise them by"; neither is a bus with a blade under it and two wings.
+    //   ers-1.glb    a gold payload module (2 x 2 x 3 m) and a silver SPOT platform; the 10 m x 1 m
+    //                radar antenna ACROSS the far end, the wind scatterometer's two 3.6 m antennas
+    //                in a V beyond it; the altimeter's 1.2 m dish on the Earth face; one solar array
+    //                of two panels (11.7 m x 2.4 m) across the end of an arm. ERS-2 is in none
+    //                of the saved data files of 2026-10-12 and has no row.
+    //   envisat.glb  a 10.5 m gold body with its instruments on the Earth face; the 10 m x 1.3 m
+    //                ASAR antenna ACROSS it; the Ka-band dish on a 2 m mast on the side away from
+    //                the Earth; one 14 m x 5 m wing beyond the service module, 26 m end to tip.
+    // The `radar` build stays as what is drawn while a file is on its way. Not `generic` any more.
+    // BOTH ARE DEAD, and the card must not let the drawing say otherwise. ERS-1's mission ended on
+    // 10 March 2000; contact with Envisat was lost on 8 April 2012 (eoPortal, both read
+    // 2026-10-14). Each file is the craft as it flew while it worked, whole and steady, and nobody
+    // steers either now, so `was:` adds that as a sentence of its own after "drawn as"
+    // (COPY.drawing.objectWas, as Hitomi's does). Envisat's place in the lists and its "dead since
+    // 2012" are data/layers.js's and are not touched.
+    // `axes: 'app'`: the instruments to the Earth, the body and its one array along X, the radar
+    // antenna along Y. AS THEY FLEW the body lay across the track and the array turned about its
+    // arm once an orbit; the app keeps X square to the Sun and does not turn the array.
+    21574: { build: 'radar', file: 'ers-1.glb', colour: 'satellite', name: 'ERS-1', catalogue: 'ERS-1', made: 'dimensions', was: 'ers1', axes: 'app' },
+    27386: { build: 'radar', file: 'envisat.glb', colour: 'satellite', name: 'Envisat', catalogue: 'ENVISAT', made: 'dimensions', was: 'envisat', axes: 'app' },
 
     // ---------------------------------------------------------------------------------------
     // SEVEN MORE RADAR IMAGERS, BY ID, and they are split between the two shapes -- which is the
@@ -576,6 +815,13 @@ export const REAL_MODELS = {
     // closed capsule under a ring of solar cells. A procedural shape from the one published
     // length (scene/models.js buildMars2020Cruise), with nothing to upgrade to.
     '-168': { build: 'mars-2020-cruise', colour: 'probe', name: 'Mars 2020 in cruise' },
+    // EUROPA CLIPPER (2026-10-15, batch eleven, public #1075): NASA's own model (science.nasa.gov,
+    // "Europa Clipper 3D Model", credit NASA VTAD), until then the generic probe. Turned before the
+    // bake so the 3 m high-gain dish is +Z and the 30.5 m of wings lie along X with the cells toward
+    // +Y, hence `axes: 'app'`: it flies as the procedural probe did, the dish toward the world the
+    // stage is centred on (the Earth from the Earth's stage). The record is data/sample.js
+    // `deep-europa-clipper`, Horizons -159.
+    '-159': { file: 'europa-clipper.glb', colour: 'probe', name: 'Europa Clipper', axes: 'app' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -687,7 +933,25 @@ export const REAL_MODELS = {
     umbra: { build: 'radar-mesh', file: 'umbra.glb', colour: 'satellite', name: 'an Umbra radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     'qps-sar': { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
     iceye: { build: 'radar', file: 'iceye.glb', colour: 'satellite', name: 'an ICEYE radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
-    strix: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    // SENTINEL-3C BY NAME (batch eight, 2026-10-14; public #950): the third of the series, launched
+    // 15 September 2026, is in the live saved data of 2026-10-12 as `SENTINEL-3C` under catalogue
+    // number 100690 (real: data/catnum.js; read as a placeholder until 2026-10-14). Its sisters are
+    // routed by number above; this key takes the same file for the same design. Klass-gated, and a
+    // whole word: `SENTINEL-3C DEB` (debris) and `SENTINEL-3A` do not match it. Not `generic`: the
+    // file is this craft. Once its number is known to be its own, add it above and leave this key.
+    'sentinel-3c': { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3C', klass: ['satellite'], made: 'dimensions', axes: 'app' },
+    // STRIX HAS A FILE OF ITS OWN since batch seven (2026-10-13; public #984): strix.glb, built in code
+    // from Synspective's numbers as eoPortal tabulates them (registry/models.yaml row `strix`): a 5 m
+    // by 0.8 m antenna of seven panels with a 0.8 x 1.0 x 0.8 m bus behind the middle one, and solar
+    // cells on the BACK of the antenna's wings. The shared `radar` build is Sentinel-1's 12 m blade on
+    // a bus with two wings of its own, which a 100 kg StriX is not. BY NAME and klass-gated, as before:
+    // the fleet grows by the launch; CelesTrak's names in the live saved data (data/v1/
+    // celestrak-active.cols.json, read 2026-10-13) are `STRIX-1` to `STRIX-12` (11 records). `generic`
+    // stays: one shape for every craft of the series.
+    // `axes: 'app'`: the antenna's face to the Earth, its length along X, the cells to the sky. NOT AS
+    // IT FLIES: the real craft rolls to look to one side of its track and turns its cells to the Sun
+    // between passes; the app's one attitude cannot say either.
+    strix: { build: 'radar', file: 'strix.glb', colour: 'satellite', name: 'a StriX radar satellite', klass: ['satellite'], generic: true, made: 'dimensions', axes: 'app' },
     paz: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     novasar: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     'gaofen-3': { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
@@ -713,7 +977,38 @@ export const REAL_MODELS = {
       build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true,
       resolve: (record) => (/beidou-3\s+m\d/i.test(String(record && record.name)) ? { build: 'navigation-beidou-meo' } : {}),
     },
-    galileo: { build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true },
+    // FILES FOR THE NAVIGATION CONSTELLATIONS since batch six (2026-10-13; public #985, #986, #989,
+    // #990). EVERY KEY AND EVERY KLASS GATE BELOW IS THE ONE THAT WAS HERE: a file is an ANSWER of the
+    // row's `resolve`, chosen from the record's own name or launch year, so one constellation's or one
+    // block's file can never reach another's craft, and a craft no file was built for keeps the
+    // build it had. The names are CelesTrak's in the live saved data (data/v1/
+    // celestrak-active.cols.json, read 2026-10-13).
+    //   Galileo    galileo-foc.glb is the Full Operational Capability craft (OHB), `GSAT02nn`: 29
+    //              records, `GSAT0201 (GALILEO 5)` to `GSAT0234 (GALILEO 34)`. From EUSPA's own
+    //              satellite metadata: a box 2.530 x 1.200 x 1.100 m, two arrays of 5.000 x 1.082 m,
+    //              14.67 m tip to tip, the 1.4 m navigation antenna on the Earth face. WHAT THE FILE
+    //              CORRECTS: the body is a slab lying ACROSS the wing axis with its largest face to
+    //              the Earth; the family box stood it on end. The three In-Orbit Validation craft
+    //              (`GSAT0101` to `GSAT0103`, another maker's bus) keep the family box, as would a
+    //              second-generation craft under a `GSAT03nn` name.
+    //   QZSS       michibiki.glb is QZS-2 and QZS-4 ONLY (2 records): the Cabinet Office's drawing of
+    //              QZS-2 gives 2.4 m, 6.2 m and two 8.3 m wings, and its L-band antenna as a cone
+    //              1.8 m to 1.5 m across and 0.8 m tall. QZS-1R has a flat antenna deck (the same
+    //              office's drawing), QZS-3 "uses a flat patch antenna" and carries a 3.2 m dish
+    //              (eoPortal), QZS-6 and QZS-7 are later craft: all four keep the family box.
+    //   NavIC      irnss.glb is the first generation on ISRO's I-1K bus, `IRNSS-1A` to `IRNSS-1I`
+    //              (7 records). `NVS-01 (IRNSS-1J)` is the second generation on a larger bus: the
+    //              key matches its name and the answer leaves it the family box.
+    // All four constellations fly as the app's rule turns them (the antenna face to the Earth, the
+    // wing axis square to the Sun: EUSPA's and the Cabinet Office's attitude laws say exactly that);
+    // what the app does not do is turn the wings on their own axis, so a file's cells face the Sun's
+    // side of the sky and not the Sun itself. `generic` stays on every one.
+    // THE POOL (heroes.js POOL 8, POOL_MAX 16): navigation craft are 20 000 km and more apart, so
+    // two are never near the camera together; each file is fetched once and cloned.
+    galileo: {
+      build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/\bgsat02\d\d\b/i.test(String(record && record.name)) ? { file: 'galileo-foc.glb', made: 'dimensions', axes: 'app' } : {}),
+    },
     // TWO KEYS FOR ONE CONSTELLATION, and this is the endpoint trap again rather than belt and
     // braces. GROUP=active -- the file sources.yaml actually fetches -- calls them
     // `NAVSTAR 43 (USA 132)`, and 40 of them match that. GROUP=gnss and a CATNR query call the
@@ -725,11 +1020,32 @@ export const REAL_MODELS = {
     // Wikipedia: Block IIF flew from 28 May 2010 to 5 February 2016, twelve of them, and Block III
     // from 23 December 2018; no other GPS block was launched in those years. Earlier craft (IIR,
     // IIR-M) are a different bus with no row, and keep the family box, as does a record with no year.
+    // Since batch six every block has a FILE and the IIR bus a shape of its own: see gpsBlock above.
     gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
     navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
-    glonass: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
-    irnss: { build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true },
-    qzs: { build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true },
+    // GLONASS BY NAME: the records whose number is a placeholder (90 000 and up, data/parsers.js) reach
+    // this key and not the rows by id above. The block is the catalogue's own bracket, `[GLONASS-M]`,
+    // `[GLONASS-K]`, `[GLONASS-K1]`, `[GLONASS-K2]` (live saved data, 2026-10-12); a name with no
+    // bracket keeps the drum it had, and K2 the family box (batch ten, public #988).
+    glonass: {
+      build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => {
+        const block = /\[glonass-(m|k1?|k2)\]/i.exec(String(record && record.name));
+        if (!block) return {};
+        const b = block[1].toLowerCase();
+        if (b === 'm') return { file: 'glonass-m.glb', made: 'dimensions', axes: 'app' };
+        if (b === 'k2') return { build: 'navigation' };
+        return { build: 'navigation-glonass-k', file: 'glonass-k.glb', made: 'dimensions', axes: 'app' };
+      },
+    },
+    irnss: {
+      build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/^irnss-1[a-i]$/i.test(String(record && record.name).trim()) ? { file: 'irnss.glb', made: 'dimensions', axes: 'app' } : {}),
+    },
+    qzs: {
+      build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/^qzs-[24]\b/i.test(String(record && record.name).trim()) ? { file: 'michibiki.glb', made: 'dimensions', axes: 'app' } : {}),
+    },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
     //
     // Planet's Flock (94 Doves and SuperDoves, imaging the whole land surface daily) and Spire's
@@ -939,14 +1255,15 @@ export const REAL_MODELS = {
     // THE REST OF NASA'S LANDED VEHICLES THAT IT PUBLISHES AS glTF (issue #437, 2026-10-05). Each
     // was the procedural lander or rover: a few boxes under a real name.
     //
-    // Curiosity is the one that is NOT its own model, and the row says so with `generic`. NASA
-    // publishes Curiosity as a .blend file only, which this pipeline cannot read; Perseverance was
-    // built on Curiosity's chassis -- the same rocker-bogie, deck, mast and RTG -- and differs in
-    // the turret, the wheels and the sample tubes, none of which survive at this size. So the card
-    // reads "drawn as ... the kind of thing, not this exact one", which is the true sentence.
+    // CURIOSITY IS ITS OWN MODEL since 2026-10-15 (batch eleven, public #1078). Until then it wore
+    // Perseverance's file as "a rover of the design Curiosity and Perseverance share", generic,
+    // because NASA 3D Resources publishes Curiosity as a .blend only. NASA Science also publishes a
+    // glTF of it ("Curiosity 3D Model", science.nasa.gov/resource/curiosity-3d-model/, credit NASA
+    // VTAD), and that is the file: metres and +Y up as published, so it stands on Gale's ground as
+    // Perseverance does on Jezero's (heroes.js standOnGround), the arm forward.
     // Ingenuity, where its last flight ended (registry/sites.yaml, from NASA's waypoint file).
     ingenuity: { file: 'ingenuity.glb', colour: 'site', name: 'Ingenuity' },
-    gale: { file: 'perseverance.glb', colour: 'site', name: 'a rover of the design Curiosity and Perseverance share', generic: true },
+    gale: { file: 'curiosity.glb', colour: 'site', name: 'Curiosity' },
     // NASA's Mars Exploration Rover model is Opportunity (MER-B). Spirit was its twin, built to the
     // same drawings, so it wears the same file and says it is the kind of thing.
     opportunity: { file: 'mer.glb', colour: 'site', name: 'Opportunity' },

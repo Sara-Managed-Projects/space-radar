@@ -33,7 +33,10 @@ check(legendCounts(alt, null).every((r) => r.n === 0), 'no records, all zero, no
   const A = await import(join(JS, 'scene/glyphatlas.js'));
   const G = await import(join(JS, 'scene/glyphs.js'));
   const shape = (name, klass, layer = {}) => A.glyphFor({ name, klass }, layer);
-  check(new Set(Object.values(A.CELL_OF)).size === 16 && Math.max(...Object.values(A.CELL_OF)) === 15, 'the atlas is full: sixteen shapes in sixteen cells, and none shared');
+  // Since spec 0075 task 4 the atlas is 5 x 5: the sixteen shapes and the four deep-sky marks (cells 16-19).
+  const cells = Object.values(A.CELL_OF);
+  check(new Set(cells).size === cells.length && cells.length === 20 && Math.max(...cells) === 19 && A.ATLAS_GRID * A.ATLAS_GRID > Math.max(...cells), 'twenty shapes in twenty cells of the 5 x 5 atlas, and none shared');
+  check(A.HALO_BIAS === A.ATLAS_GRID * A.ATLAS_GRID, 'the halo bit is past the last cell');
   for (const k of ['station', 'satellite', 'debris', 'rocket', 'probe']) check(shape('X', k) === k && A.glyphCell(k) === A.CELL_OF[k], `${k} is drawn as its own shape`);
   for (const n of ['SOYUZ-MS 28', 'CREW DRAGON 12', 'SHENZHOU-21 (SZ-21)']) {
     check(shape(n, 'satellite') === 'crewed' && shape(n, 'station') === 'crewed', `${n} is drawn as a crew vehicle whichever class the catalogue files it under`);

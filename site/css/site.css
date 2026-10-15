@@ -199,6 +199,13 @@ html.sr-render .sr-skip { display: none; }
   pointer-events: none;
 }
 .labels .label .dot { opacity: .8; margin-right: 5px; display: inline-block; width: 7px; height: 7px; border-radius: 50%; vertical-align: middle; }
+/* The deep-sky swatches take their mark's shape (internal spec 0075 task 4): a galaxy's ellipse, a
+   planetary nebula's ring, a nebula's cloud, a cluster's three dots. A mask reads only alpha: any
+   opaque token draws the shape. */
+.labels .label .dot.sr-swatch--dso-galaxy { width: 9px; height: 4px; transform: rotate(-30deg); }
+.labels .label .dot.sr-swatch--dso-ring { -webkit-mask: radial-gradient(circle, transparent 1.7px, var(--sr-text) 2.1px); mask: radial-gradient(circle, transparent 1.7px, var(--sr-text) 2.1px); }
+.labels .label .dot.sr-swatch--dso-cloud { width: 9px; border-radius: 0; -webkit-mask: radial-gradient(circle at 28% 62%, var(--sr-text) 2.3px, transparent 2.7px), radial-gradient(circle at 72% 62%, var(--sr-text) 2.1px, transparent 2.5px), radial-gradient(circle at 50% 36%, var(--sr-text) 2.6px, transparent 3px); mask: radial-gradient(circle at 28% 62%, var(--sr-text) 2.3px, transparent 2.7px), radial-gradient(circle at 72% 62%, var(--sr-text) 2.1px, transparent 2.5px), radial-gradient(circle at 50% 36%, var(--sr-text) 2.6px, transparent 3px); }
+.labels .label .dot.sr-swatch--dso-cluster { border-radius: 0; -webkit-mask: radial-gradient(circle at 50% 18%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 18% 78%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 82% 78%, var(--sr-text) 1.3px, transparent 1.7px); mask: radial-gradient(circle at 50% 18%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 18% 78%, var(--sr-text) 1.3px, transparent 1.7px), radial-gradient(circle at 82% 78%, var(--sr-text) 1.3px, transparent 1.7px); }
 .labels .label[data-kind='selection'] { font-weight: 600; }
 .labels .label[data-kind='notable'] { opacity: .8; }
 

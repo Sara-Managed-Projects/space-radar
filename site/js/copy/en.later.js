@@ -153,7 +153,6 @@ Object.assign(COPY, {
   // Each label says what the sphere is and how far, in words the scene can carry on one line.
   shells: {
     radio: 'Radio from Earth has reached {n} light-years',
-    cmb: 'The microwave background: 46.5 billion light-years',
   },
   // ui/subscribe.js (issue #251): email-only alerts for upcoming launches and meteor shower
   // peaks -- the same for every subscriber, never a per-location pass alert (that is issue #290).
@@ -228,7 +227,7 @@ Object.assign(COPY, {
     resume: 'Go on (Space)',
     next: 'Next place (N)',
     options: 'Options',
-    optionsTitle: 'What to travel through, names and pace',
+    optionsTitle: 'What to travel through, what to show and the pace',
     leave: 'Stop drifting (Escape)',
     through: 'Travel through',
     cats: { craft: 'Spacecraft', worlds: 'Worlds', small: 'Small bodies', stars: 'Stars', deep: 'Deep sky' },
@@ -237,12 +236,36 @@ Object.assign(COPY, {
     realTitle: 'Only things with a real model, map or photograph',
     names: 'Names',
     namesTitle: 'The name and numbers beside each place',
+    bare: 'Only space',
+    bareTitle: 'Nothing but the sky and the things in it: no names, marks, lines or panels',
     pace: 'Pace',
     paces: { calm: 'Calm', steady: 'Steady', brisk: 'Brisk' },
     // Said once, when the row starts it.
     hint: 'Drifting. Drag the map to take the controls',
     nothing: 'Nothing to drift through with these choices',
     notFromGround: 'The drift starts from space, not from the ground',
+  },
+
+  // ui/onboarding.js (internal spec 0074): the tour's caption and the first visit's line. A step's
+  // own two lines are not here: they are registry/onboarding.yaml's, as a trip stop's are its
+  // registry's, because the trips' voice is rendered from them.
+  tour: {
+    label: 'The tour',
+    micro: 'Tour',
+    count: '{n} / {of}',
+    next: 'Next',
+    nextTitle: 'The next step (N)',
+    done: 'Done',
+    doneTitle: 'End the tour',
+    skip: 'Skip',
+    skipTitle: 'Leave the tour (Escape)',
+    voice: 'Voice',
+    // The voice is synthetic and the app says so (spec 0069).
+    voiceTitle: 'Read each step aloud, in a synthetic voice',
+    // In place of the ask, once the thing asked for was done and the step waits.
+    waited: 'Have a look, then go on.',
+    invite: 'First time here: take the tour',
+    inviteTitle: 'Eight steps round the map',
   },
 
   // The toast after the app has moved the view for you (ui/camundo.js, internal #274).
@@ -419,6 +442,8 @@ Object.assign(COPY, {
     seenTitle: 'Seen with your own eyes',
     noSeen: 'Nothing ticked yet. A card has a Seen it button.',
     seenIt: 'Seen it',
+    // The name of the card's quiet row (ui/cardextras.js skyControls), for a screen reader.
+    toolsLabel: 'More for this object',
     seenOn: 'Seen {date}',
     seenTitleOff: 'Tick when you have seen it with your own eyes',
     seenTitleOn: 'Ticked as seen. Press to take the tick back',
@@ -582,7 +607,7 @@ Object.assign(COPY, {
       modes: { own: 'Clouds', surface: 'Ground' },
       notes: {
         own: 'The cloud tops, which is all an eye or a telescope ever sees of Venus.',
-        surface: 'The ground under the clouds, mapped by radar from orbit by NASA\u2019s Magellan between 1990 and 1992. Bright is rough ground and dark is smooth. The orange is added, and the strips Magellan missed are filled in from their edges.',
+        surface: 'The ground under the clouds, mapped by radar from orbit by NASA\u2019s Magellan between 1990 and 1992. Bright is rough ground and dark is smooth. The orange is added, and the strips Magellan missed are filled in from their edges. It is lit by the Sun as if the clouds were not there: its mountains and scarps from Magellan\u2019s altimeter, drawn six times taller, cast their shadows. It does not move with the clouds.',
       },
     },
     // 2026-10-07: the four giants' second face, Hubble's yearly OPAL maps (registry/textures.yaml
@@ -1670,5 +1695,64 @@ Object.assign(COPY, {
       snowball: 'frozen over',
       eyeball: 'one face always to its star',
     },
+  },
+
+  // DEEP SPACE (internal spec 0075, 2026-10-14). ONE BLOCK PER STAGE, created here by stage a so the
+  // stages that run in parallel each fill their own and never edit the same lines (design section
+  // 11, amendment of 2026-10-14): deep (a: the foundation), deepHelix (b), deepLmc (c), deepGalaxy
+  // (d), deepCosmos (e). A stage writes only inside its own block.
+  deep: {
+    // The card's microlabel for a deep-sky object inside another (task 3): "Emission nebula · Inside
+    // the Large Magellanic Cloud". `companion` for a galaxy beside a galaxy (M32 by Andromeda).
+    inside: 'Inside the {parent}',
+    companion: 'A companion of the {parent}',
+    // Finer kinds for the microlabel, by OpenNGC type code; anything else keeps the plain kind.
+    kinds: { HII: 'emission nebula', PN: 'planetary nebula', SNR: 'supernova remnant', RfN: 'reflection nebula', DrkN: 'dark nebula', GCl: 'globular cluster' },
+    // The way back out (task 3): a child's card offers its parent.
+    back: 'Back to the {parent}',
+    backTitle: 'Fly out to the {parent} round it',
+  },
+
+  // b. The Helix (stage b, internal #787) writes only inside this block.
+  deepHelix: {
+    // The card's honesty line, after "What is drawn: …", once the hero is shipped (ui/cardfacts.js
+    // honestyClause reads `card[heroId]`). The numbers are registry/deepsky-heroes/helix.yaml's.
+    card: {
+      helix: 'Its light is taken from ESO’s photograph, its shape from O’Dell, McCullough and Meixner (2004): an inner disc tilted 23° and an outer ring tilted 53°. The knots are placed at their measured distances. Not yet reviewed by an astronomer.',
+    },
+    // "How astronomers reconstructed its 3D form" (package section 5.1): two sentences, sourced, for
+    // the trip "Into the Helix" (spec 0075 stage f) and a card disclosure when there is one.
+    how: 'Hubble and telescopes on the ground show two ellipses, 499″ by 459″ and 742″ by 446″. Read as circles seen at a slant they are two rings tilted 23° and 53°, and the knots’ speeds toward and away from us say which side of each is nearer (O’Dell, McCullough and Meixner 2004).',
+  },
+
+  // c. The LMC and the Tarantula (stage c, internal #788) writes only inside this block.
+  deepLmc: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause, stage b's `card[heroId]` hook).
+    card: {
+      lmc: 'This model is built from its photograph and Gaia’s counts of its own stars, tilted as measured.',
+    },
+    // The distance caveats: rows under "Distance found by" on the card.
+    rows: {
+      'dso-lmc': [['Depth of its stars', 'Not measured star by star: at this distance a star’s parallax is too small. The model spreads its stars through the disc’s known thickness.'], ['Review', 'This model has not yet been reviewed by an astronomer.']],
+      'dso-tarantula-nebula': [['Depth inside the LMC', 'Not measured: it is drawn at the LMC’s distance in its own direction. On the tilted disc it may lie about 2 000 light-years nearer.'], ['Review', 'This model has not yet been reviewed by an astronomer.']],
+    },
+  },
+
+  // d. Andromeda and galaxy structure (stage d, internal #789) writes only inside this block.
+  deepGalaxy: {},
+
+  // e. Cosmic scale (stage e, internal #790) writes only inside this block.
+  deepCosmos: {
+    // scene/shells.js: the edge of the observable universe, two lines on the scene. {n} is
+    // data/cosmology.js horizonLy() in billions (46), {age} the universe's age (13.8): the distance now
+    // and the time the light took, side by side, so the one is never taken for the other (DS-D08).
+    // Three lines, each short enough for a phone's width.
+    horizon: 'The edge of the observable universe',
+    horizonNow: 'About {n} billion light-years away now',
+    horizonWhy: 'Its light set out {age} billion years ago; space has stretched since',
+    // Past the horizon, to the map's edge at 50 billion light-years (DS-D09): what the band is.
+    edge: '{n} billion light-years: past everything we can see',
+    edgeWhy: 'The observable universe ends about {h} billion light-years away.',
+    edgeNothing: 'Nothing measured lies out here: this band is an illustration.',
   },
 });

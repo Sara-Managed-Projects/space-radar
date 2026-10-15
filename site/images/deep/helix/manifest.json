@@ -1,0 +1,13 @@
+{
+  "file": "site/images/deep/helix/helix-light.webp",
+  "bytes": 8588,
+  "sha256": "98d6ef9706eaad51dd35a1ce51f29595b5f6e4fe3b5be493a982dcf931b3c774",
+  "from": "site/images/nebulae/helix-nebula.webp",
+  "from_sha256": "a6e48def4c3c1f188394b88c88182f16ab54397decd85f346a1fadedbabb60c1",
+  "stars_removed_px": 53105,
+  "size": [
+    512,
+    474
+  ],
+  "credit": "ESO (eso0907a), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_helix.py)"
+}

@@ -1,0 +1,71 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# Andromeda (M31) from the morphology generator (site/js/scene/deep/spiral.js), at its measured
+# orientation, with M32 and M110 in place. Stage d (internal #789) owns this file.
+#
+# Every number below is one of three things, and says which: a published measurement (its `source`),
+# `assumed` (a value of the right kind that nobody has published for M31 in a form we could read), or
+# `illustrative` (a shape choice, e.g. where the arms start). Lengths are kiloparsecs in the disc's own
+# frame: x along the line of nodes, z along the disc's axis. `light` is a part's share of the light
+# BEFORE the generator's stretch (the head of spiral.js): a choice, so the bulge fills the inner few
+# kiloparsecs as it does in photographs.
+id: m31
+record: dso-m31
+stage: d
+shipped: true
+children: [dso-m32, dso-m110]
+levels:
+  2: "the structure: a smooth integrated-light layer (disc, arms, ring, dust rings and lanes; the bulge facing the camera) with statistical points as sparkle, and a dust point set that carries the edge-on view"
+  3: "the same, larger on screen (no march: the dust is points; a dust sheet in the material is for later)"
+  points: [12000, 60000, 90000]     # by tier T0, T1, T2 (design section 8: about 60 000 on T1); phones fewer, over the smooth layer
+  dust_share: 0.3                   # dust points per light point
+  seed: 31
+frame:
+  pa_deg: 38          # de Vaucouleurs 1958 (ApJ 128, 465), the value later work adopts; the OpenNGC row says 35
+  incl_deg: 77        # de Vaucouleurs 1958, as above (77 degrees from face on)
+  near_side: NW       # the dust lanes cross the bulge's north-western side, so that edge is in front
+  approaching: SW     # Rubin & Ford 1970 (ApJ 159, 379): the south-western half comes toward us; the arms trail
+  units_ly: 100
+  source: "position angle and inclination: de Vaucouleurs 1958; near side from the dust lanes seen against the bulge; rotation: Rubin & Ford 1970"
+layers:
+  - {kind: bulge, what: "the bulge, old stars", sersic_n: 2.2, re_kpc: 1.0, q: 0.8, light: 0.3, colour: "#f6ecf2",
+     source: "Courteau et al. 2011, ApJ 739, 20 (arXiv:1106.3564): Sersic n = 2.2 +/- 0.3, Re = 1.0 +/- 0.2 kpc; deprojected after Prugniel & Simien 1997; q 0.8 assumed"}
+  - {kind: disc, what: "the stellar disc", scale_kpc: 5.3, height_kpc: 0.6, r_max_kpc: 26, light: 0.45, arm_contrast: 0.15, colour: "#d2e4e2", colour_outer: "#bcd4d4",
+     source: "Courteau et al. 2011: exponential, Rd = 5.3 +/- 0.5 kpc; height 0.6 kpc assumed; cut at 26 kpc, about 1.3 times the catalogue's 177.83 arcmin radius"}
+  - {kind: arms, what: "two spiral arms in segments, young blue stars", count: 2, pitch_deg: 9, r_from_kpc: 3, r_to_kpc: 22, width_kpc: 0.6, height_kpc: 0.2, scale_kpc: 8, segments: 0.6, light: 0.1, colour: "#b9cce0",
+     source: "Gordon et al. 2006, ApJ 638, L87 (arXiv:astro-ph/0601314): two arms from the ends of a nuclear bar, out past the ring, 'composed of spiral segments'; pitch, width and the share kept as segments illustrative"}
+  - {kind: ring, what: "the ring of star formation", radius_kpc: 10, width_kpc: 0.7, height_kpc: 0.15, offset_kpc: 0.5, split_half_deg: 30, split_sep_kpc: 1.5, light: 0.12, colour: "#b4c8dc",
+     split_toward: {ra_deg: 10.67429, dec_deg: 40.86528},
+     source: "Gordon et al. 2006: a circular ring of radius about 10 kpc, offset from the nucleus, split near M32; the offset's size and direction and the split's width illustrative (toward M32's catalogue place)"}
+  - {kind: knots, what: "H II regions", count: 700, in_ring: 0.7, size_kpc: 0.06, height_kpc: 0.08, light: 0.03, colour: "#ff8fa0",
+     source: "placed statistically, most in the 10 kpc ring and the rest on the arms, where Gordon et al. 2006 see the star formation; not a catalogue of positions"}
+  - {kind: dust-lanes, what: "dust on the arms' inner edges", inset_kpc: 0.4, width_kpc: 0.35, height_kpc: 0.1, weight: 0.4,
+     source: "illustrative: dust along the arms, as in every photograph of M31"}
+  - {kind: dust-ring, what: "dust rings", radius_kpc: [5.6, 10, 15.1], width_kpc: 0.6, height_kpc: 0.1, weight: 0.45,
+     source: "Draine et al. 2014, ApJ 780, 172 (arXiv:1306.2304): dust rings at R = 5.6 and 15.1 kpc; the 10 kpc ring's dust from Gordon et al. 2006's far-infrared"}
+  - {kind: dust-ring, what: "the inner dust ring", radius_kpc: [0.7], offset_xy_kpc: [0.5, 0], width_kpc: 0.12, height_kpc: 0.05, weight: 0.05,
+     source: "Block et al. 2006, Nature 443, 832 (arXiv:astro-ph/0610543): projected 1.5 by 1 kpc, offset about 0.5 kpc; drawn in the disc's plane (its own tilt is not modelled), the offset's direction illustrative"}
+  - {kind: dust-disc, what: "a thin dust disc", scale_kpc: 7, height_kpc: 0.1, weight: 0.1, source: "assumed"}
+  - {kind: satellites, what: "M32 and M110", drawn_by: "scene/dsoglow.js, as ellipses of OpenNGC's axes at their catalogue places (site/data/dso.json); they step back for her photograph",
+     source: "OpenNGC; distances from the Messier table (stage a)"}
+colours:
+  mode: true
+  note: "Matched to her photograph at the hand-over (scene/nebulae.js, NOIRLab noao0001a, whose plates' filters are unstated): its mean colours measured 2026-10-15 are core #e3d7e3, inner disc #526362, outer disc #263839; the model takes their hue halfway to neutral (bulge #f6ecf2, disc #d2e4e2 to #bcd4d4, arms and ring a little bluer), so the cross-fade keeps its colour without copying the plate's green cast. Pink H II regions. Not enhanced; no pixel is taken from the photograph."
+drawn: [model]
+sources:
+  - "Courteau, Widrow, McDonald et al. 2011, 'The Luminosity Profile and Structural Parameters of the Andromeda Galaxy', ApJ 739, 20; arXiv:1106.3564 (abstract read 2026-10-14)"
+  - "Gordon, Bailin, Engelbracht et al. 2006, 'Spitzer/MIPS Infrared Imaging of M31: Further Evidence for a Spiral/Ring Composite Structure', ApJ 638, L87; arXiv:astro-ph/0601314 (abstract read 2026-10-14)"
+  - "Block, Bournaud, Combes et al. 2006, 'An almost head-on collision as the origin of two off-centre rings in the Andromeda galaxy', Nature 443, 832; arXiv:astro-ph/0610543 (abstract read 2026-10-14)"
+  - "Draine, Aniano, Krause et al. 2014, 'Andromeda's Dust', ApJ 780, 172; arXiv:1306.2304 (abstract read 2026-10-14)"
+  - "de Vaucouleurs 1958, ApJ 128, 465 (position angle 38 degrees, inclination 77 degrees; read through the later papers that adopt them, not the paper itself)"
+  - "Rubin & Ford 1970, ApJ 159, 379 (the rotation: the south-western side approaching; not re-read here)"
+  - "Prugniel & Simien 1997, A&A 321, 111 and Lima Neto, Gerbal & Marquez 1999, MNRAS 309, 481 (the deprojected Sersic profile's constants)"
+review:
+  data_vs_model: "A parametric model: the bulge's and disc's profiles, the ring's radius and the dust rings' radii are published; the arms' pitch, the knots' places, the thicknesses and the light shares are ours, labelled in each layer. Statistical points, not stars."
+  geometry: "Orientation pa 38 / incl 77, NW near, SW approaching (trailing arms). Size: the disc's 26 kpc cut against the catalogue's 20.1 kpc radius at 2.54 Mly; the catalogue's 177.83 arcmin major axis, not the photograph's 132 arcmin frame."
+  colours: "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced."
+  distance: "The record's: 2.54 Mly (2.43-2.65), the Messier table's; the model is in kiloparsecs and does not depend on it."
+  credits: "CREDITS.md section 3l, Andromeda and galaxy structure: the papers above; no image is used by the model."
+  by: "Space Radar maintainers"     # the lead's policy (2026-10-15): not a person's name nor an independent review; an astronomer's review stays open (internal #785), and the card says so
+  date: 2026-10-15
+credits:
+  - "Andromeda's model: structure from Courteau et al. 2011 (ApJ 739, 20), Gordon et al. 2006 (ApJ 638, L87), Block et al. 2006 (Nature 443, 832) and Draine et al. 2014 (ApJ 780, 172); orientation after de Vaucouleurs 1958. Facts, cited; no image or data file is copied."

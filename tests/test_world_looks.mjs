@@ -24,7 +24,10 @@ for (const w of WORLDS) {
   applyLook(m, w.look);
   const u = m.uniforms;
   check((u.uWrap.value > 0) === (w.id === 'venus'), `${w.id}: the soft terminator is Venus's alone`);
-  check((u.uContrast.value !== 1) === (w.id === 'saturn'), `${w.id}: the contrast is Saturn's alone`);
+  // Saturn's bands; and since 2026-10-14 Venus's ultraviolet bands, which are the Film look's (scene/worlds.js VENUS_UV).
+  check((u.uContrast.value !== 1) === (w.id === 'saturn' || w.id === 'venus'), `${w.id}: the contrast is Saturn's and, in Film, Venus's alone`);
+  check((u.uCapOn.value > 0) === (w.id === 'uranus'), `${w.id}: the polar cap is Uranus's alone`);
+  check(u.uSpotOut.value.z === 0 && u.uMono.value.w === 0, `${w.id}: no spot is taken out and no one-channel face is worn as the world is built`);
   check(u.uReliefK.value.x === 0, `${w.id}: no relief until its map has been fetched`);
 }
 check(byId.get('venus').look.wrap > 0.05 && byId.get('venus').look.wrap < 0.3, 'Venus: light reaches 3 to 17 degrees past the terminator');

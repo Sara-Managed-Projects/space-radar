@@ -602,10 +602,14 @@ tours:
           # black hole 10.8 billion light-years out, and M109 (83.5 Mly) and, since public #201, NGC 1300
           # and the Antennae are farther than M87 too. The trip still ends here, on the first black hole
           # anyone photographed; the card now says the map goes further. test_dso reads the number.
+          # 2026-10-14 (spec 0075 task 15): TON 618 is drawn where it is now, its comoving distance
+          # from redshift 2.219 in Planck 2018 (18.3 billion light-years, data/cosmology.js); 10.8
+          # billion is how long its light took, not how far it is, and the card now says both.
           title: "As far as this trip goes"
           body: >-
             Fifty-three million light-years: the black hole in M87, the first one ever photographed.
-            The map goes further, to a quasar's black hole 10.8 billion light-years out. It shows
+            The map goes further, to a quasar's black hole 18.3 billion light-years out, whose light
+            left 10.8 billion years ago. It shows
             109 389 stars of the 1.8 billion Gaia has measured, 209 nebulae, clusters and galaxies (110 of them from OpenNGC's 13 372), and every
             confirmed planet around another star whose distance has been measured. The rest is out
             there; we have not drawn what we cannot place.
@@ -809,19 +813,28 @@ tours:
       - id: edge
         target: {world: sun}
         stage: local-group
-        distance_km: 1500000000000000000000000
+        # 49.7 billion light-years: inside the map's edge (50, scene/camera.js EDGE_LY), just outside
+        # the horizon's sphere (46.2, data/cosmology.js), so its near wall fills the view (spec 0075
+        # task 17). It stood at 158 billion light-years until 2026-10-14.
+        distance_km: 470000000000000000000000
         climb: true
         drift: none
         chapter: "The edge"
         # read 2026-10-09, https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_and_the_cosmic_microwave_background:
         # ESA: "It formed about 380,000 years after the Big Bang." ... "the visible Universe is at least 93 billion light years across."
         # (card figure = page figure: about 380 000 years after the Big Bang = 380,000 (ESA Planck; NASA Physics of the Cosmos page also "just 380,000 years after the Big Bang") ; 46.5 billion light-years = half of ESA's 93 billion across (46.5 exactly); NASA expert says "about 92 billion light-years across" (46 radius))
+        # 2026-10-14 (spec 0075 task 17): the sphere is now the map's one cosmology's horizon,
+        # data/cosmology.js horizonLy() = 46.2 billion light-years (Planck 2018; NASA's "about 92
+        # billion light-years across"), so the card says "about 46" as the sphere's own label does; the
+        # microwave background left from just inside it (45.3, cosmology.js cmbLy); 13.8 billion years
+        # is the universe's age there (13.79). The card says both numbers, so neither is taken for the other.
         card:
           title: "The oldest light"
           body: >-
-            The sphere is the edge of what can be seen at all. The microwave background, light
-            released about 380 000 years after the Big Bang, reaches us from this surface, now 46.5
-            billion light-years away. It is a horizon around us, not a wall. Every place has its own.
+            The sphere is the edge of what can be seen at all, about 46 billion light-years away now.
+            No light has travelled for longer than 13.8 billion years: space stretched while it came.
+            The microwave background, released about 380 000 years after the Big Bang, reaches us
+            from just inside it. It is a horizon around us, not a wall. Every place has its own.
 
   # =============================================================================================
   # PLANETS AROUND OTHER STARS, THEN ONE SYSTEM OF THEM UP CLOSE (spec 0040, 2026-09-23): the
@@ -4464,3 +4477,309 @@ tours:
             from the Sun, and they have kept water ice for billions of years. Ice is
             water to drink, air to breathe and fuel for the journey home. This is the
             region the Artemis flights are meant to explore.
+
+  # =============================================================================================
+  # THE TWO DEEP-SPACE JOURNEYS (internal spec 0075 stage f, internal #791; DS-E07 #838, DS-E08
+  # #839). Ivan's package of 2026-10-14, section 9C: "Into the Helix" (90 s: approach the small
+  # nebula, compare the telescope photograph with the 3D model, orbit round the shell, find the dying
+  # star) and "Inside a neighbouring galaxy" (2.5 min: the Milky Way, the LMC, the Tarantula, R136,
+  # and away with the scale said). Its section 9A is the shape of every stop below:
+  #
+  #   SELECT AND APPROACH  the first stop of each flies in on our own line of sight (`key_light_deg:
+  #                        0` on a deep-sky record stands the camera on the line back to the Sun,
+  #                        ui/trip.js composeShot), so the photograph lines up and the object fills
+  #                        about a third of the frame: from 12 ly the Helix's bright ring (742
+  #                        arcseconds, 2.4 ly at 655 ly) is a fifth of the height and its faint
+  #                        photograph two fifths; from 150 000 ly the LMC (10.75 deg) a quarter. The flight
+  #                        itself decelerates as it closes (the rig's cruise ease over a log-distance
+  #                        path, ui/trip.js FLIGHT_LOG_MS).
+  #   REVEAL               the heroes load themselves as they grow on screen (scene/deep/deepsky.js,
+  #                        lodsize.js); nothing here asks for them.
+  #   ORBIT                one drift of 10 to 60 degrees at 1 to 5 degrees a second (8 to 12 s), the
+  #                        nearer stars sliding past the far ones: the parallax the package asks for.
+  #   ENTER                close stops stand OFF the dense middle: the Helix's 0.9 ly is outside the
+  #                        inner disc (499 arcsec across, 0.79 ly in radius) and inside the outer ring
+  #                        (1.18 ly), 35 degrees off our line, above the disc's face rather than in its
+  #                        plane; R136's stop is 600 ly from the Tarantula's centre, just outside the
+  #                        model's shell round the hollow its winds blew (300 ly, 150 wide,
+  #                        registry/deepsky-heroes/lmc.yaml), R136 25 ly off the centre and in the
+  #                        middle of the frame. A rig flight orbits its
+  #                        target and never passes through it.
+  #   DEPART               the last stop pulls far back and says the scale in words, then `return:
+  #                        true` is the one continuous flight home down the ladder (scene/climb.js),
+  #                        each rung's label on the way: the scale indicator and the breadcrumb.
+  #
+  # WHAT THE WORDS MAY SAY (each hero's honesty class, registry/deepsky-heroes/*.yaml): the Helix's
+  # shape is a RECONSTRUCTION (O'Dell, McCullough & Meixner 2004) lit by a PHOTOGRAPH (ESO eso0907a);
+  # its knots' count and sizes are measured, each knot's place is seeded. The LMC's stars are a MODEL
+  # from Gaia DR3 counts on the sky, with no per-star depth; the Tarantula has no distance of its
+  # own (it takes the LMC's) and its gas in depth is a model; its colours are enhanced. Every card
+  # says the class of what is on screen, and every distance says how it was found. No year is typed
+  # (the validator keeps dates off cards); no number is typed without its page above it.
+  #
+  # REDUCED MOTION is the trips' own: `reader` pacing forced, every flight a cut, no drift (the rig
+  # refuses it), the gas's clock held (scene/deep/gasmat.js); the return flight is skipped (flyHome
+  # refuses under reduced motion) and leaving cuts back to Earth. Tested in the deepspace probe's
+  # stage-f block (tests/probes/look/deepspace.js, `journeys`).
+  # =============================================================================================
+  - id: into-the-helix
+    title: "Into the Helix"
+    blurb: "A dying star: its photograph, its shape in 3D and its heart. Then back to Earth."
+    group: beyond
+    next: inside-a-neighbouring-galaxy
+    requires: [stars, deep-sky]
+    hides: [exoplanets, systems, galaxy, exotics]
+    stage: stellar
+    clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the end card is shown over
+    # the Earth, and the climb's rungs say how far it was.
+    return: true
+    og_stop: 2
+    stops:
+      - id: photograph
+        target: {record: dso-helix-nebula}
+        needs_layer: deep-sky
+        # Twelve light-years. The bright outer ring (742 arcsec, 2.36 ly across at 655 ly) is then a
+        # fifth of the frame's height and the photograph's faint edge (25 arcmin) two fifths.
+        distance_km: 113528765670970
+        key_light_deg: 0
+        drift_deg: 4
+        drift_rate_deg_s: 0.4
+        chapter: "The photograph"
+        # read 2026-10-15, registry/dso-hand.yaml helix-nebula: "655 +/- 13 ly, the central star's
+        # parallax measured by Gaia (DR2 ...)" (the card's 655); the photograph is ESO eso0907a
+        # (registry/nebulae.yaml, CC BY 4.0): "the MPG/ESO 2.2-metre telescope at the La Silla observatory
+        # in Chile", B, V and R (https://www.eso.org/public/images/eso0907a/, read 2026-10-15).
+        card:
+          title: "The Helix Nebula, as a telescope sees it"
+          body: >-
+            This photograph from Chile lines up with our sky. At its centre a star like the Sun is
+            dying. Gaia, a spacecraft, measured its yearly shift: it is 655 light-years away.
+
+      - id: shape
+        target: {record: dso-helix-nebula}
+        needs_layer: deep-sky
+        # Five light-years, and a 60 degree turn off our line at 5 degrees a second (12 s): the
+        # photograph fades by 50 degrees off the line (scene/nebulae.js viewFade) and the model takes
+        # its place, the near ring sliding across the far one and both across the stars behind. The
+        # turn is in azimuth about the ecliptic pole, the Helix 79 degrees from it: 60 degrees of turn
+        # end 59 degrees off our line (measured in the first look run: 30 degrees left the photograph up).
+        distance_km: 47303652362904
+        key_light_deg: 0
+        drift_deg: 60
+        drift_rate_deg_s: 5
+        chapter: "The shape in 3D"
+        # read 2026-10-15, O'Dell, McCullough & Meixner 2004, AJ 128, 2339 (https://arxiv.org/abs/astro-ph/0407556),
+        # the abstract: "an inner-disk of about 499'' diameter", "an outer-ring (in reality a torus)
+        # of 742'' diameter", "almost perpendicular to the inner-disk", from the gas's radial
+        # velocities; NASA (https://science.nasa.gov/asset/hubble/helix-nebula-with-annotated-features/,
+        # read 2026-10-15): "two gas disks nearly perpendicular to each other". O'Dell 2005
+        # (arXiv:astro-ph/0505539) reads the outer ring as possibly lobes: the hero card's source line says so.
+        card:
+          title: "Turn, and the photograph becomes a shape"
+          body: >-
+            As we turn, the photograph fades and a model takes over. Robert O'Dell and colleagues
+            measured how the gas moves, and found a disc inside a ring tilted almost across it. This is
+            their reconstruction.
+
+      - id: heart
+        target: {record: dso-helix-nebula}
+        needs_layer: deep-sky
+        # 0.9 ly from the white dwarf, 35 degrees off our line: inside the outer ring (1.18 ly in
+        # radius), outside the inner disc's rim (0.79 ly), above its face. Not through the middle.
+        distance_km: 8514657425323
+        key_light_deg: 35
+        drift_deg: 15
+        drift_rate_deg_s: 1.5
+        chapter: "The dying star"
+        # read 2026-10-15, registry/deepsky-heroes/helix.yaml (stage b): the white dwarf's
+        # "103 600 +/- 5 500 K (Napiwotzki 1999; Traulsen et al. 2005)" (the card's "about a hundred
+        # thousand degrees"); the knots "about 23 000 by NICMOS" (Meixner et al. 2005, AJ 130, 1784),
+        # heads "at least twice the Solar System" (O'Dell & Handron, STScI release 1996-13), and
+        # "each knot's place is not" measured: a seeded sample.
+        card:
+          title: "Inside the ring, around the dying star"
+          body: >-
+            Inside the ring we face the dying star: a white dwarf of about a hundred thousand degrees.
+            Its dark knots, each wider than our Solar System, are real; where each sits is made up.
+
+      - id: scale
+        target: {record: dso-helix-nebula}
+        needs_layer: deep-sky
+        distance_km: 378429218903232
+        key_light_deg: 0
+        drift_deg: 4
+        drift_rate_deg_s: 0.4
+        chapter: "Going home"
+        # read 2026-10-15, O'Dell et al. 2004's abstract: the outer ring 742'' and "an outermost-ring
+        # of 1500'' (1.76 pc) diameter"; at 655 ly 742'' is 2.36 ly ("nearly two and a half") and
+        # 1500'' 4.76 ly ("twice that"); 1500'' = 25 arcmin, the full Moon about 31 arcmin
+        # (https://science.nasa.gov/moon/facts/, read 2026-10-15); magnitude 7.6 (registry/dso-hand.yaml),
+        # under the eye's limit of about 6. The light's age is its distance in years.
+        card:
+          title: "How big it is"
+          body: >-
+            The bright ring is nearly two and a half light-years across; in our sky the nebula is almost
+            as wide as the full Moon, but too faint for the eye. Its light left 655 years ago.
+
+  # ---------------------------------------------------------------------------------------------
+  # INSIDE A NEIGHBOURING GALAXY. From our own line of sight to the LMC, round it, into the Tarantula
+  # and to R136, then six hundred thousand light-years out to see the two galaxies together, and the
+  # one flight home. Camera directions were worked out for this sky before the words were written
+  # (the key light's search, ui/trip.js keyLightAngles, run in a sketch outside the repository): the
+  # LMC is 4 degrees from the south ecliptic pole, so on our line the camera looks straight up the
+  # rig's axis and any drift there would spin the picture, which is why the first stop does not turn;
+  # every later stop stands 60 to 80 degrees off our line, where the drift is an orbit. Measured in the
+  # first look run (run 38672981119): the Tarantula's three stops looked past it at the SMC; the model
+  # stop's 60 degree turn now carries the camera off that line (its comment says how).
+  # ---------------------------------------------------------------------------------------------
+  - id: inside-a-neighbouring-galaxy
+    title: "Inside a neighbouring galaxy"
+    blurb: "The Large Magellanic Cloud, the Tarantula, its giant stars. Then back to Earth."
+    group: beyond
+    next: into-the-helix
+    requires: [stars, deep-sky, galaxy]
+    hides: [exoplanets, systems, exotics]
+    stage: stellar
+    clock: as-found
+    return: true
+    # The share picture: the LMC turned, its disc and H II regions (stop 2 at the end of its turn).
+    og_stop: 2
+    stops:
+      - id: from-home
+        target: {record: dso-lmc}
+        needs_layer: deep-sky
+        # 70 000 ly from the LMC on the line to the Sun, past the Milky Way's halo towards it: the
+        # photograph's bright part a third of the frame (from 150 000 ly, the first look run, it was a
+        # tenth: the photograph's outer ellipse is faint). No drift (above).
+        distance_km: 662251133080656000
+        key_light_deg: 0
+        drift: none
+        drift_deg: 0
+        chapter: "Leaving the Milky Way"
+        # read 2026-10-15, https://en.wikipedia.org/wiki/Large_Magellanic_Cloud: seen as a faint
+        # "cloud" from the Southern Hemisphere; "a dwarf galaxy and satellite galaxy of the Milky
+        # Way". The distance: registry/dso-hand.yaml lmc, "49.59 +/- 0.09 (statistical) +/- 0.54
+        # (systematic) kpc from twenty late-type eclipsing binaries" (Pietrzyński et al. 2019,
+        # Nature 567, 200, arXiv:1903.08096), 161 740 ly: "a hundred and sixty thousand". The
+        # photograph: NOIRLab noirlab2030a (SMASH), registry/nebulae.yaml.
+        card:
+          title: "A galaxy you can see: its photograph"
+          body: >-
+            From the southern half of the Earth this pale cloud is plain to the eye: the Large
+            Magellanic Cloud, a small galaxy beside ours. Stars that eclipse each other put it a hundred
+            and sixty thousand light-years away.
+
+      - id: model
+        target: {record: dso-lmc}
+        needs_layer: deep-sky
+        # 45 000 ly, 75 degrees off our line, a 60 degree drift at 5 degrees a second (12 s). THE TURN
+        # IS ALSO WHERE THE NEXT THREE STOPS LOOK FROM: near the ecliptic pole every direction at one
+        # height is lit alike, so the key light keeps the azimuth the camera has (its turn penalty),
+        # and without this turn the Tarantula's stops look straight past it at the Small Magellanic
+        # Cloud, 85 000 ly behind (the first look run: its glow a white ball beside R136). After 60
+        # degrees the SMC is out of the frame; the Tarantula's stops turn `away`, further from it.
+        # Under reduced motion there is no drift and the SMC stays behind the Tarantula: a true line
+        # of sight, which its own name says.
+        distance_km: 425732871266136000
+        key_light_deg: 75
+        drift_deg: 60
+        drift_rate_deg_s: 5
+        chapter: "The Large Magellanic Cloud"
+        # read 2026-10-15, registry/deepsky-heroes/lmc.yaml (stage c): "where its stars are ON THE
+        # SKY (Gaia's counts ...)" measured; "how far in front of or behind the disc's middle each
+        # drawn star is (no single star's distance is known at 160 000 light-years: a statistical
+        # scale height, never a parallax)" a model.
+        card:
+          title: "Turned, it becomes a model"
+          body: >-
+            Off our line a model takes over. Where its stars lie on the sky comes from the Gaia
+            spacecraft's counts; how far each sits in front or behind is a guess, as no single star's
+            depth can be measured.
+
+      - id: tarantula
+        target: {record: dso-tarantula-nebula}
+        needs_layer: deep-sky
+        # 6 000 ly: the Tarantula (40 arcmin, 1 900 ly across) with the LMC round it.
+        distance_km: 56764382835484800
+        key_light_deg: 75
+        drift: away
+        drift_deg: 15
+        drift_rate_deg_s: 1.5
+        chapter: "The Tarantula"
+        # read 2026-10-15, https://esahubble.org/images/heic1206a/: "30 Doradus is the brightest
+        # star-forming region in our galactic neighbourhood", "in the Large Magellanic Cloud".
+        # registry/dso-hand.yaml tarantula-nebula: no distance of its own, "it takes the LMC's
+        # distance, in its own direction, and the card says so" (method assumed-member-of-parent).
+        card:
+          title: "The Tarantula, inside the Cloud"
+          body: >-
+            The bright knot is the Tarantula Nebula, the brightest nursery of stars near us. It is part
+            of the Large Magellanic Cloud and shares its distance; its depth within the disc is not
+            known.
+
+      - id: shell
+        target: {record: dso-tarantula-nebula}
+        needs_layer: deep-sky
+        # 1 500 ly: the shell of glowing gas round the hollow (the model's 300 ly radius, 150 ly
+        # wide) fills the frame.
+        distance_km: 14191095708871200
+        key_light_deg: 75
+        drift: away
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        # read 2026-10-15, registry/deepsky-heroes/lmc.yaml: the Tarantula's 40 arcmin is "about 1 900
+        # ly at the LMC's distance"; its shape "R136 inside a cavity its winds blew, the warm gas in a
+        # shell round it ... a model at that scale" after Pellegrini, Baldwin & Ferland 2011, ApJ 738,
+        # 34 ("a confined system of X-ray bubbles"); colours "the narrow-band palette of the ESO and
+        # Hubble pictures, declared enhanced": hydrogen-alpha pink, doubly ionised oxygen teal.
+        card:
+          title: "A hollow blown by young stars"
+          body: >-
+            Nearly two thousand light-years across, it is gas lit and pushed by young stars, whose winds
+            have blown a hollow in its middle. Its depth here is a model; its pink hydrogen and teal
+            oxygen are made stronger.
+
+      - id: r136
+        target: {record: dso-tarantula-nebula}
+        needs_layer: deep-sky
+        # 600 ly from the catalogue centre, as stage c frames "R136 near": just outside the model's
+        # shell (300 ly, 150 wide), R136 (SIMBAD's RMC 136, 25 ly off the centre) in the middle. From
+        # 250 ly (the first look run) the camera was in the shell's glow and R136's halo filled the frame.
+        distance_km: 5676438283548480
+        key_light_deg: 75
+        drift: away
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        # read 2026-10-15, https://en.wikipedia.org/wiki/R136: "R136 is thought to be less than 2
+        # million years old", "R136 produces most of the energy that makes the Tarantula Nebula
+        # visible"; https://en.wikipedia.org/wiki/R136a1: estimates of its mass from 256 to 315 solar
+        # masses in the article, "around 291" in 2025, and Kalari et al. 2022 lower (about 200):
+        # the card says "two to three hundred". lmc.yaml draws R136 as "a Plummer sphere of the
+        # cluster's brightest stars ... the count drawn is a choice, the place is SIMBAD's".
+        card:
+          title: "Home of the heaviest stars known"
+          body: >-
+            At its heart is R136, a cluster under two million years old whose light makes most of the
+            nebula glow. Its brightest star is among the heaviest known, two to three hundred Suns. The
+            stars drawn are a sample, at its real place.
+
+      - id: depart
+        target: {record: dso-lmc}
+        needs_layer: deep-sky
+        # 600 000 ly out, 80 degrees off our line: the LMC in the middle, the SMC beside it and the
+        # Milky Way's centre a third of the frame above (the sketch: y +0.66 at both widths).
+        distance_km: 5676438283548480000
+        key_light_deg: 80
+        drift_deg: 8
+        drift_rate_deg_s: 1
+        chapter: "Going home"
+        # read 2026-10-15, registry/dso-hand.yaml lmc: 645 arcmin across (van der Marel 2001), 30 300
+        # ly at 161 740 ly; data/layers.js dso-milky-way sizeLy 87 400: "about three times" wider.
+        card:
+          title: "Our galaxy and its neighbour"
+          body: >-
+            Far out, the Large Magellanic Cloud is the small patch in the middle, the Small one beside
+            it, and our Milky Way beyond, about three times wider. Now home: a hundred and sixty
+            thousand light-years.
+

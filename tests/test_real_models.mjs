@@ -70,6 +70,10 @@ for (const [table, map] of Object.entries(REAL_MODELS)) for (const [key, entry] 
 for (const year of [2020, 2025]) {
   routes.push({ table: 'named', key: `starlink@${year}`, entry: realModelFor({ id: `sl-${year}`, name: 'STARLINK-1007', klass: 'satellite', layer: 'active', meta: { noradId: 99000, launchYear: year } }) });
 }
+// Batch six: the navigation rows pick a file from the record's launch year or name; each answer is a route here.
+for (const [name, year] of [['NAVSTAR 56 (USA 180)', 2004], ['NAVSTAR 71 (USA 256)', 2014], ['NAVSTAR 81 (USA 319)', 2021], ['GSAT0210 (GALILEO 13)', 2016], ['QZS-2 (MICHIBIKI-2)', 2017], ['IRNSS-1B', 2014]]) {
+  routes.push({ table: 'named', key: `${name}@${year}`, entry: realModelFor({ id: `nav-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId: 99200, launchYear: year } }) });
+}
 check(routes.length > 150, `scene/realmodels.js routes were read (${routes.length})`);
 const routedFiles = new Set(routes.map((r) => r.entry && r.entry.file).filter(Boolean));
 
@@ -220,11 +224,158 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = realModelFor({ id: `b5n-${name}`, name, klass, layer: 'active', meta: { noradId: 99101, launchYear: 2020 } });
     check(!got || got.file !== file, `${name} (klass ${klass}) does not wear ${file}`);
   }
+  // THE SIXTH BATCH (2026-10-13, public #985, #986, #989, #990, #978): the navigation constellations keep every
+  // key and gate they had; a file is an answer chosen from the record's own name or launch year.
+  const nav = (name, launchYear, klass = 'satellite', noradId = 99300) => realModelFor({ id: `b6-${name}`, name, klass, layer: 'active', meta: { noradId, launchYear } });
+  for (const [name, year, file, build, called] of [
+    ['NAVSTAR 43 (USA 132)', 1997, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'], ['NAVSTAR 46 (USA 145)', 1999, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'],
+    ['NAVSTAR 64 (USA 206)', 2009, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'], ['GPS BIIR-5  (PRN 22)', 2000, 'gps-iir.glb', 'navigation', 'a GPS Block IIR navigation satellite'],
+    ['NAVSTAR 65 (USA 213)', 2010, 'gps-iif.glb', 'navigation-gps-iif', 'a GPS Block IIF navigation satellite'], ['NAVSTAR 76 (USA 266)', 2016, 'gps-iif.glb', 'navigation-gps-iif', 'a GPS Block IIF navigation satellite'],
+    ['NAVSTAR 77 (USA 289)', 2018, 'gps-iii.glb', 'navigation-gps-iii', 'a GPS III navigation satellite'], ['NAVSTAR 86 (USA 585)', 2026, 'gps-iii.glb', 'navigation-gps-iii', 'a GPS III navigation satellite'],
+    ['GSAT0201 (GALILEO 5)', 2014, 'galileo-foc.glb', 'navigation', 'a Galileo navigation satellite'], ['GSAT0234 (GALILEO 34)', 2025, 'galileo-foc.glb', 'navigation', 'a Galileo navigation satellite'],
+    ['QZS-2 (MICHIBIKI-2)', 2017, 'michibiki.glb', 'navigation', 'a QZSS navigation satellite'], ['QZS-4 (MICHIBIKI-4)', 2017, 'michibiki.glb', 'navigation', 'a QZSS navigation satellite'],
+    ['IRNSS-1A', 2013, 'irnss.glb', 'navigation', 'an IRNSS navigation satellite'], ['IRNSS-1I', 2018, 'irnss.glb', 'navigation', 'an IRNSS navigation satellite']]) {
+    const got = nav(name, year);
+    check(got && got.file === file && got.build === build && got.name === called && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${name} (launched ${year}) wears ${file} over the build ${build}, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  // What no file was built for keeps the family box and wears NO file: another block, another maker's bus, another antenna.
+  for (const [name, year] of [['NAVSTAR 38 (USA 135)', 1997], ['NAVSTAR 30 (USA 100)', 1996], ['NAVSTAR 90 (USA 999)', 2017], ['NAVSTAR 81 (USA 319)', undefined],
+    ['GSAT0101 (GALILEO-PFM)', 2011], ['GSAT0103 (GALILEO-FM3)', 2012], ['GSAT0301 (GALILEO 35)', 2027],
+    ['QZS-1R (MICHIBIKI-1R)', 2021], ['QZS-3 (MICHIBIKI-3)', 2017], ['QZS-6 (MICHIBIKI-6)', 2025], ['QZS-7 (MICHIBIKI-7)', 2026],
+    ['NVS-01 (IRNSS-1J)', 2023], ['IRNSS-1J', 2023], ['BEIDOU-3 M1', 2017], ['BEIDOU-2 G1', 2010]]) {
+    const got = nav(name, year);
+    check(got && String(got.build).startsWith('navigation') && !got.file && !got.made && !got.axes && got.generic === true, `${name} (launched ${year}) keeps a procedural navigation shape and wears no file: ${JSON.stringify(got)}`);
+  }
+  // One constellation's or block's file never reaches another's craft, debris, or a communications satellite that carries a navigation payload.
+  const sixth = ['gps-iir.glb', 'gps-iif.glb', 'gps-iii.glb', 'galileo-foc.glb', 'michibiki.glb', 'irnss.glb', 'saocom.glb'];
+  for (const [name, year, klass, id] of [['NAVSTAR 56 (USA 180) DEB', 2004, 'debris'], ['GSAT0210 (GALILEO 13) DEB', 2016, 'debris'], ['IRNSS-1A DEB', 2013, 'debris'], ['QZS-2 DEB', 2017, 'debris'],
+    ['GSAT-10', 2012, 'satellite'], ['GSAT-15', 2015, 'satellite'], ['GSAT0210', 2016, 'satellite'], ['COSMOS 2433 [GLONASS-M]', 2007, 'satellite', 32275], ['GLONASS 701K', 2011, 'satellite'],
+    ['INMARSAT 4-F2', 2005, 'satellite'], ['SES-5', 2012, 'satellite'], ['QZS-20', 2030, 'satellite'], ['AQZS-2', 2017, 'satellite'],
+    ['SAOCOM 1A DEB', 2018, 'debris'], ['SAOCOM 2A', 2030, 'satellite'], ['SENTINEL-1A', 2014, 'satellite', 39634], ['TERRASAR-X', 2007, 'satellite', 31698], ['PAZ', 2018, 'satellite']]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !sixth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch six's files: ${JSON.stringify(got)}`);
+  }
+  const worn = (name, year, file) => { const g = nav(name, year); return g && g.file === file; };
+  check(!worn('NAVSTAR 65 (USA 213)', 2010, 'gps-iir.glb') && !worn('NAVSTAR 64 (USA 206)', 2009, 'gps-iif.glb') && !worn('NAVSTAR 76 (USA 266)', 2016, 'gps-iii.glb') && !worn('NAVSTAR 77 (USA 289)', 2018, 'gps-iif.glb'), 'the edges of the GPS blocks: 2009 is IIR, 2010 and 2016 are IIF, 2018 is III');
+  // SAOCOM 1A and 1B by number, as themselves; the radar blade is only what is drawn while the file loads.
+  for (const [norad, name] of [[43641, 'SAOCOM 1A'], [46265, 'SAOCOM 1B']]) {
+    const got = sat(norad, name);
+    check(got && got.file === 'saocom.glb' && got.build === 'radar' && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${name} (${norad}) wears saocom.glb as itself: ${JSON.stringify(got)}`);
+  }
+  // BATCH SEVEN (public #992, #966, #979, #984): MetOp-B and -C, XMM-Newton, TerraSAR-X and TanDEM-X by number; StriX by name.
+  for (const [norad, cat, name, file, build] of [[38771, 'METOP-B', 'MetOp-B', 'metop.glb', undefined], [43689, 'METOP-C', 'MetOp-C', 'metop.glb', undefined],
+    [25989, 'XMM-NEWTON', 'XMM-Newton', 'xmm-newton.glb', undefined], [31698, 'TERRASAR-X', 'TerraSAR-X', 'terrasar-x.glb', 'radar'], [36605, 'TANDEM-X', 'TanDEM-X', 'terrasar-x.glb', 'radar']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  for (const name of ['STRIX-1', 'STRIX-3', 'STRIX-12']) {
+    const got = nav(name, 2024);
+    check(got && got.file === 'strix.glb' && got.build === 'radar' && got.generic === true && got.made === 'dimensions' && got.axes === 'app' && got.name === 'a StriX radar satellite', `${name} wears strix.glb over the radar blade, as the kind of thing: ${JSON.stringify(got)}`);
+  }
+  // None of the four files reaches another craft: a newer MetOp, debris, a rocket body, the same design under another name, a name that only contains the word.
+  const seventh = ['metop.glb', 'xmm-newton.glb', 'terrasar-x.glb', 'strix.glb'];
+  for (const [name, year, klass, id] of [['METOP-SGA1', 2025, 'satellite', 65140], ['METOP-A', 2006, 'satellite', 29499], ['METOP-B DEB', 2012, 'debris'], ['FREGAT R/B', 2012, 'rocket-body'],
+    ['XMM-NEWTON DEB', 1999, 'debris'], ['ARIANE 5 R/B', 1999, 'rocket-body'], ['PAZ', 2018, 'satellite'], ['TERRASAR-X DEB', 2007, 'debris'], ['STRIX-1 DEB', 2022, 'debris'],
+    ['ASTRIX-1', 2024, 'satellite'], ['ICEYE-X2', 2018, 'satellite'], ['SENTINEL-1A', 2014, 'satellite', 39634], ['NOAA 21 (JPSS-2)', 2022, 'satellite', 54234], ['XRISM', 2023, 'satellite', 57800]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !seventh.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch seven's files: ${JSON.stringify(got)}`);
+  }
+  // BATCH EIGHT (public #944, #945, #948, #949, #950): Envisat, ERS-1, Sentinel-1, -2 and -3A/B by number; Sentinel-3C by name.
+  for (const [norad, cat, name, file, build, was] of [[27386, 'ENVISAT', 'Envisat', 'envisat.glb', 'radar', 'envisat'], [21574, 'ERS-1', 'ERS-1', 'ers-1.glb', 'radar', 'ers1'],
+    [39634, 'SENTINEL-1A', 'Sentinel-1A', 'sentinel-1.glb', 'radar'], [41456, 'SENTINEL-1B', 'Sentinel-1B', 'sentinel-1.glb', 'radar'], [62261, 'SENTINEL-1C', 'Sentinel-1C', 'sentinel-1.glb', 'radar'], [66315, 'SENTINEL-1D', 'Sentinel-1D', 'sentinel-1.glb', 'radar'],
+    [40697, 'SENTINEL-2A', 'Sentinel-2A', 'sentinel-2.glb'], [42063, 'SENTINEL-2B', 'Sentinel-2B', 'sentinel-2.glb'], [60989, 'SENTINEL-2C', 'Sentinel-2C', 'sentinel-2.glb'],
+    [41335, 'SENTINEL-3A', 'Sentinel-3A', 'sentinel-3.glb'], [43437, 'SENTINEL-3B', 'Sentinel-3B', 'sentinel-3.glb']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app' && got.was === was, `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  {
+    // Sentinel-3C: the live saved data has it under 100690, which data/parsers.js reads as a placeholder, so the NAME carries it.
+    const got = nav('SENTINEL-3C', 2026, 'satellite', 100690);
+    check(got && got.file === 'sentinel-3.glb' && got.name === 'Sentinel-3C' && !got.generic && !got.build && got.made === 'dimensions' && got.axes === 'app', `SENTINEL-3C wears sentinel-3.glb by name: ${JSON.stringify(got)}`);
+    check(!Object.prototype.hasOwnProperty.call(REAL_MODELS.norad, 100690), 'no route is keyed on 100690: Sentinel-3C is routed by name');
+    // The two dead craft say so on the card, in a sentence of their own after "drawn as".
+    for (const key of ['envisat', 'ers1']) {
+      const was = COPY.drawing.objectWas && COPY.drawing.objectWas[key];
+      check(typeof was === 'string' && /shown steady/.test(was) && /nobody steers it/.test(was), `COPY.drawing.objectWas.${key} says the drawing is steady and the craft is not steered: ${JSON.stringify(was)}`);
+    }
+    check(/dead since 2012/.test(COPY.drawing.objectWas.envisat), 'Envisat is "dead since 2012" in the drawing line, the words data/layers.js already uses for it');
+  }
+  // None of the five files reaches another craft: the other Sentinels, debris, a rocket body, a name that only contains the word.
+  const eighth = ['envisat.glb', 'ers-1.glb', 'sentinel-1.glb', 'sentinel-2.glb', 'sentinel-3.glb'];
+  for (const [name, year, klass, id] of [['SENTINEL-5P', 2017, 'satellite', 42969], ['SENTINEL-6A', 2020, 'satellite', 46984], ['SENTINEL-6B', 2025, 'satellite', 66514], ['SENTINEL-3C DEB', 2026, 'debris'],
+    ['SENTINEL-3C R/B', 2026, 'rocket-body'], ['SENTINEL-3CX', 2030, 'satellite'], ['SENTINEL-3D', 2030, 'satellite'], ['SENTINEL-2D', 2030, 'satellite'], ['SENTINEL-1 DEB', 2014, 'debris'], ['ENVISAT DEB', 2002, 'debris'],
+    ['ERS-1 DEB', 1991, 'debris'], ['ERS-2', 1995, 'satellite', 23560], ['ERS-17', 1965, 'satellite'], ['ARIANE 40 R/B', 1991, 'rocket-body'], ['METOP-B', 2012, 'satellite', 38771], ['PAZ', 2018, 'satellite'], ['RADARSAT-2', 2007, 'satellite', 32382]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !eighth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch eight's files: ${JSON.stringify(got)}`);
+  }
+  // BATCH NINE (public #951, #957, #958, #977): Sentinel-5P, CryoSat-2, SMOS and ALOS-2, each by number. ALOS-2 keeps the radar blade as what is drawn while its file loads.
+  for (const [norad, cat, name, file, build] of [[42969, 'SENTINEL-5P', 'Sentinel-5P', 'sentinel-5p.glb'], [36508, 'CRYOSAT 2', 'CryoSat-2', 'cryosat-2.glb'],
+    [36036, 'SMOS', 'SMOS', 'smos.glb'], [39766, 'ALOS-2', 'ALOS-2', 'alos-2.glb', 'radar']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app' && !got.was, `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  // None of the four files reaches another craft: ALOS and ALOS-4 (other antennas), the RADARSAT and COSMO-SkyMed radars, debris, names that only contain the word.
+  const ninth = ['sentinel-5p.glb', 'cryosat-2.glb', 'smos.glb', 'alos-2.glb'];
+  for (const [name, year, klass, id] of [['ALOS (DAICHI)', 2006, 'satellite', 28931], ['ALOS-4 (DAICHI-4)', 2024, 'satellite', 60182], ['ALOS-2 DEB', 2014, 'debris'], ['RADARSAT-2', 2007, 'satellite', 32382],
+    ['RCM-1', 2019, 'satellite', 44322], ['COSMO-SKYMED 1', 2007, 'satellite', 31598], ['SENTINEL-6A', 2020, 'satellite', 46984], ['SENTINEL-5P DEB', 2017, 'debris'], ['CRYOSAT 2 DEB', 2010, 'debris'],
+    ['SMOS DEB', 2009, 'debris'], ['PROBA-1', 2001, 'satellite'], ['ROCKOT R/B', 2009, 'rocket-body'], ['SENTINEL-3A', 2016, 'satellite', 41335]]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !ninth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch nine's files: ${JSON.stringify(got)}`);
+  }
+  // BATCH TEN (public #988, #995, #996): GLONASS-M and -K wear a file over the build they had, still `generic` as every navigation
+  // file is; Himawari-8 and -9 and Fengyun-3A to 3D wear theirs as themselves. BeiDou-3 was built and did not ship: it keeps its shape.
+  for (const [norad, cat, name, file] of [[40267, 'HIMAWARI-8', 'Himawari-8', 'himawari.glb'], [41836, 'HIMAWARI-9', 'Himawari-9', 'himawari.glb'],
+    [32958, 'FENGYUN 3A', 'Fengyun-3A', 'fengyun-3.glb'], [37214, 'FENGYUN 3B', 'Fengyun-3B', 'fengyun-3.glb'], [39260, 'FENGYUN 3C', 'Fengyun-3C', 'fengyun-3.glb'], [43010, 'FENGYUN 3D', 'Fengyun-3D', 'fengyun-3.glb']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && !got.build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  for (const [norad, cat, file, build] of [[32275, 'COSMOS 2433 [GLONASS-M]', 'glonass-m.glb', 'navigation-glonass-m'], [54377, 'COSMOS 2564 [GLONASS-M]', 'glonass-m.glb', 'navigation-glonass-m'],
+    [40315, 'COSMOS 2501 [GLONASS-K]', 'glonass-k.glb', 'navigation-glonass-k'], [65590, 'COSMOS 2596 [GLONASS-K1]', 'glonass-k.glb', 'navigation-glonass-k']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && got.build === build && got.generic === true && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} over ${build}: ${JSON.stringify(got)}`);
+  }
+  // A placeholder number (90 000 and up) reaches the `glonass` name key: the bracket decides; K2 keeps the family box.
+  for (const [name, file, build] of [['COSMOS 2620 [GLONASS-K1]', 'glonass-k.glb', 'navigation-glonass-k'], ['COSMOS 2699 [GLONASS-M]', 'glonass-m.glb', 'navigation-glonass-m'], ['COSMOS 2650 [GLONASS-K2]', undefined, 'navigation']]) {
+    const got = nav(name, 2026, 'satellite', 100744);
+    check(got && got.file === file && got.build === build && got.generic === true, `${name} (a placeholder number) is drawn as ${build}${file ? ` wearing ${file}` : ' with no file'}: ${JSON.stringify(got)}`);
+  }
+  // None of the four files reaches another craft: BeiDou-3 (CAST's and SECM's), BeiDou's other orbits, GLONASS-K2, the second Fengyun-3 batch,
+  // Fengyun-4 and -2, the other geostationary weather craft, debris.
+  const tenth = ['glonass-m.glb', 'glonass-k.glb', 'fengyun-3.glb', 'himawari.glb'];
+  for (const [name, year, klass, id] of [['BEIDOU-3 M1', 2017, 'satellite', 43001], ['BEIDOU-3 M7', 2018, 'satellite', 43107], ['BEIDOU-3 M28', 2024, 'satellite', 61187], ['BEIDOU-3 G2', 2020, 'satellite', 45344], ['BEIDOU-3 IGSO-1', 2019, 'satellite', 44204],
+    ['COSMOS 2569 [GLONASS-K2]', 2023, 'satellite', 57517], ['COSMOS 2219', 1992, 'satellite', 22219], ['FENGYUN 3E', 2021, 'satellite', 49008], ['FENGYUN 3G', 2023, 'satellite', 56232],
+    ['FENGYUN 4A', 2016, 'satellite', 41882], ['FENGYUN 2H', 2018, 'satellite', 43491], ['FENGYUN 1C DEB', 1999, 'debris', 29716], ['HIMAWARI-7', 2006, 'satellite', 28937], ['ELEKTRO-L 3', 2019, 'satellite', 44903],
+    ['BEIDOU-3 M1 DEB', 2017, 'debris']]) {
+    const got = nav(name, year, klass, id);
+    check(!got || !tenth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch ten's files: ${JSON.stringify(got)}`);
+  }
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');
     check(swot && swot.file === 'swot.glb' && !swot.made && !swot.generic && swot.axes === 'app', `SWOT (54754) wears swot.glb as a published model of itself, turned to the app's axes: ${JSON.stringify(swot)}`);
     for (const n of [65053, 49954, 58928]) check(sat(n, 'X').axes === 'app', `${n} flies in the app's axes`);
+  }
+  // THE ELEVENTH BATCH (2026-10-15, public #1075 to #1079): five agencies' own models, none `made`; the
+  // ones turned to the app's axes say so, SORCE (a Sun-pointer) is not turned. And the routing-only extras.
+  {
+    for (const [norad, name, file, axes] of [[41240, 'JASON-3', 'jason-3.glb', 'app'], [40376, 'SMAP', 'smap.glb', 'app'], [27651, 'SORCE', 'sorce.glb', undefined]]) {
+      const got = sat(norad, name);
+      check(got && got.file === file && !got.made && !got.generic && got.axes === axes, `${name} (${norad}) wears ${file} as a published model of itself${axes ? ', turned to the app\'s axes' : ', not turned'}: ${JSON.stringify(got)}`);
+    }
+    const ostm = sat(33105, 'JASON-2 (OSTM)');
+    check(ostm && ostm.file === 'jason.glb' && !ostm.generic, `JASON-2 (OSTM) keeps NASA's OSTM model, now as itself: ${JSON.stringify(ostm)}`);
+    for (const [norad, name, file] of [[66514, 'SENTINEL-6B', 'sentinel6.glb'], [43477, 'GRACE-FO 2', 'grace.glb']]) {
+      const got = sat(norad, name);
+      check(got && got.file === file && got.generic === true && !got.axes, `${name} (${norad}) wears ${file} as its twin, and says so: ${JSON.stringify(got)}`);
+    }
+    const s6a = sat(46984, 'SENTINEL-6A');
+    check(s6a && s6a.file === 'sentinel6.glb' && !s6a.generic, `SENTINEL-6A keeps NASA's model of itself: ${JSON.stringify(s6a)}`);
+    const clipper = realModelFor({ id: 'deep-europa-clipper', name: 'Europa Clipper', klass: 'probe', meta: { horizonsId: -159 } });
+    check(clipper && clipper.file === 'europa-clipper.glb' && !clipper.generic && clipper.axes === 'app', `Europa Clipper (Horizons -159) wears NASA's model, turned to the app's axes: ${JSON.stringify(clipper)}`);
+    const gale = realModelFor({ id: 'gale', name: 'Curiosity, Gale crater', klass: 'site', meta: { siteShape: 'rover' } });
+    const jezero = realModelFor({ id: 'jezero', name: 'Perseverance, Jezero crater', klass: 'site', meta: { siteShape: 'rover' } });
+    check(gale && gale.file === 'curiosity.glb' && gale.name === 'Curiosity' && !gale.generic && !gale.axes, `Gale crater draws Curiosity's own model, standing as published: ${JSON.stringify(gale)}`);
+    check(jezero && jezero.file === 'perseverance.glb', `Jezero keeps Perseverance: ${JSON.stringify(jezero)}`);
   }
   if (typeof drawingLine === 'function') {
     const line = drawingLine({ id: 'sat-57800', name: 'XRISM', klass: 'satellite', layer: 'visual', meta: { noradId: 57800 } }, Date.UTC(2026, 9, 13));

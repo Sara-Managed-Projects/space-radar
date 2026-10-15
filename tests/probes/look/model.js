@@ -2,7 +2,8 @@
 // wait for the file its route names to replace the procedural shape (scene/heroes.js announces it
 // with `sr:model-upgraded`), move the clock into sunlight if the craft is in the Earth's shadow, then
 // photograph it as the app frames it and from five places on its SUNWARD side, at the same distance,
-// the camera never below the craft (see `walk`).
+// the camera never below the craft, and then once from BELOW it, from the Earth's side looking up at
+// its Earth face (see `walk`): seven views.
 //
 //   gh workflow run look.yml -f probe=model                      # the Cygnus cargo ship in orbit today
 //   gh workflow run look.yml -f probe=model -f subject=sat-25544  # any record id
@@ -140,29 +141,45 @@ out.camera = { riding: !!(rig.state && rig.state.riding), following: !!(rig.stat
 // nothing (the first run of this probe, 2026-10-12, met CYGNUS NG-24 eleven minutes before sunrise).
 // So the clock is stepped forward five minutes at a time until the craft is out of the shadow, and
 // ten minutes more so the Sun is off the horizon. The summary says how far it was moved.
-const earthR = () => { try { return sr.worlds.drawnRadiusUnits('earth') || 0; } catch { return 0; } };
+// A SITE ON ANOTHER WORLD (2026-10-15, batch eleven: Curiosity at Gale crater). Everything below was the
+// Earth's: the shadow test, the frame the camera walks in, the room under a craft. A landing site stands on
+// its own world (registry/sites.yaml `world`, carried as meta.world), is lit when the Sun is up over it,
+// and has no underside to look at; the first run photographed Gale at night, from places inside Mars.
+const onGround = record.klass === 'site' && !!(record.meta && record.meta.world);
+const home = onGround ? record.meta.world : 'earth';
+const earthR = () => { try { return sr.worlds.drawnRadiusUnits(home) || 0; } catch { return 0; } };
 const sunlit = () => {
   const obj = heroOf();
   const sun = sr.worlds.meshFor('sun');
-  const earth = sr.worlds.meshFor('earth');
+  const earth = sr.worlds.meshFor(home);
   if (!obj || !sun || !earth) return null;
   const p = obj.getWorldPosition(obj.position.clone()).sub(earth.position);
   const s = unit({ x: sun.position.x - earth.position.x, y: sun.position.y - earth.position.y, z: sun.position.z - earth.position.z });
   const along = p.x * s.x + p.y * s.y + p.z * s.z;
+  // On the ground: the Sun at least 25 degrees above the site's horizon.
+  if (onGround) return along / Math.max(1e-9, Math.hypot(p.x, p.y, p.z)) > Math.sin((25 * Math.PI) / 180);
   if (along > 0) return true;
   const off = Math.hypot(p.x - along * s.x, p.y - along * s.y, p.z - along * s.z);
   return off > earthR() * 1.01;
 };
 out.light = { litAtFirst: sunlit(), movedMinutes: 0 };
-if (out.light.litAtFirst === false) {
+// ON THE GROUND THE CARD'S OWN LAMP (the second Gale run, 2026-10-15): a step of the clock that the test
+// above called daylight still drew the rover black on black ground, and the card offered "Light it". That
+// lamp (scene/models.js setFloodLight, our light and not the Sun's, said on the card while it is on) is what
+// a visitor presses there, so the probe presses it too, and every picture's line says so.
+const MM = onGround ? await import(urlOf('./js/scene/models.js')) : null;
+if (MM && typeof MM.setFloodLight === 'function') { MM.setFloodLight(true); out.light.flood = true; look.warns.push('probe: ' + record.id + ' is photographed under the card\'s lamp ("Light it"), not in the Sun\'s light'); }
+if (out.light.litAtFirst === false && !onGround) {
   const t0 = sr.clock.now();
   let found = null;
-  for (let k = 1; k <= 14 && found === null; k++) {
-    sr.clock.goTo(t0 + k * 5 * 60e3);
+  // A site waits for its morning: an hour a step, a little more than a day of Mars.
+  const step = onGround ? 60 : 5, steps = onGround ? 26 : 14, more = onGround ? 1 : 2;
+  for (let k = 1; k <= steps && found === null; k++) {
+    sr.clock.goTo(t0 + k * step * 60e3);
     await sleep(3500);
     if (sunlit()) found = k;
   }
-  if (found !== null) { sr.clock.goTo(t0 + (found + 2) * 5 * 60e3); await sleep(4000); out.light.movedMinutes = (found + 2) * 5; }
+  if (found !== null) { sr.clock.goTo(t0 + (found + more) * step * 60e3); await sleep(4000); out.light.movedMinutes = (found + more) * step; }
   // The camera followed the craft round the Earth from where it stood, which by now is anywhere
   // (the second run's "as framed" was from inside the clouds). Selected again, it is framed again.
   sr.select(record, { fly: true, undo: false });
@@ -193,8 +210,8 @@ const onScreen = () => {
  *   X  the Sun crossed with Z (the craft's panel axis);
  *   Y  Z crossed with X: the Sun's direction laid flat on the local horizon (the cells' side).
  *
- * In that frame the Sun is at (0, +, -) whenever the craft is in daylight. Every place below has
- * y > 0 and z <= 0, which makes three promises at once: THE SUN IS BEHIND THE CAMERA (the faces it
+ * In that frame the Sun is at (0, +, -) whenever the craft is in daylight. Every place below but the
+ * last has y > 0 and z <= 0, which makes three promises at once: THE SUN IS BEHIND THE CAMERA (the faces it
  * sees are lit, and there is no glare); THE CAMERA IS NEVER BELOW THE CRAFT (z <= 0 is at or above
  * its altitude, so the line of sight cannot pass through the Earth, and the ground is a backdrop at
  * most); and the cell side of a wing faces it. The distance is the one the app framed the craft at,
@@ -204,7 +221,7 @@ const onScreen = () => {
 const sunFrame = () => {
   const obj = heroOf();
   const sun = sr.worlds.meshFor('sun');
-  const earth = sr.worlds.meshFor('earth');
+  const earth = sr.worlds.meshFor(home);
   if (!obj || !sun || !earth) return null;
   const p = obj.getWorldPosition(obj.position.clone());
   const z = unit({ x: earth.position.x - p.x, y: earth.position.y - p.y, z: earth.position.z - p.z });
@@ -221,6 +238,14 @@ const PLACES = [
   ['4-sun-face', [0.14, 0.93, -0.34], 'square onto the face the Sun lights (a wing\'s cells)'],
   ['5-along-the-panels', [0.9, 0.32, -0.3], 'along the panel axis, the Sun over the camera\'s shoulder'],
   ['6-from-above', [0.3, 0.42, -0.86], 'from above, away from the Earth, leaning sunward'],
+  // THE SEVENTH, FROM THE EARTH'S SIDE (2026-10-13, internal #751). The six above never show a craft's
+  // Earth face, and on a navigation or a radar satellite that is the face with the antennas on it:
+  // batch six's GPS helices showed only at the body's edge. This one stands BELOW the craft (z > 0)
+  // and looks up at it, still on the Sun's side of it, so the sunward flank is lit; the camera is the
+  // framing distance from the craft, tens of metres, so the Earth is behind it and not in the way.
+  // The Earth face itself is in sunlight only when the Sun is below the craft's own horizon (low Sun,
+  // or a high orbit); otherwise it wears the toon ramp's shade tone, and the view's line says which.
+  ['7-from-below', [0.34, 0.5, 0.8], 'from the Earth\'s side, looking up at the Earth face', 'below'],
 ];
 const walk = async (tag, what) => {
   const a0 = rig.state.azimuth;
@@ -233,7 +258,7 @@ const walk = async (tag, what) => {
     out.views.push({ name: prefix + tag + '-' + name, at, ...(extra || {}) });
   };
   await take('1-as-framed', 'as the app frames a selected craft');
-  for (const [name, [lx, ly, lz], words] of PLACES) {
+  for (const [name, [lx, ly, lz], words, side] of PLACES) {
     const f = sunFrame();
     if (!f) { look.warns.push('probe: no Sun or no Earth in the scene; ' + name + ' was not taken'); continue; }
     let d = unit(mix(mix(f.x, lx, f.y, ly), 1, f.z, lz));
@@ -241,6 +266,46 @@ const walk = async (tag, what) => {
     let lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
     if (lit < 0.2) { d = unit(mix(d, 1, f.s, 0.6)); lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z; }
     const above = -(d.x * f.z.x + d.y * f.z.y + d.z * f.z.z);
+    if (side === 'below' && onGround) { look.warns.push('probe: ' + name + ' not taken for ' + record.id + ': a site on the ground has no underside'); continue; }
+    if (side === 'below') {
+      // The lean toward the light may have lifted it: it stays at least 30 degrees under the craft's horizon.
+      const under = d.x * f.z.x + d.y * f.z.y + d.z * f.z.z;
+      if (under < 0.5) d = unit(mix(d, 1, f.z, 0.5 - under + 0.3));
+      lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
+      // The Earth face's normal is +Z: it is in sunlight when the Sun is on its side of the craft's horizon.
+      const sunOnFace = f.s.x * f.z.x + f.s.y * f.z.y + f.s.z * f.z.z;
+      const deg = (c) => Math.round((Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI);
+      // A LOW CRAFT HAS NO ROOM UNDER IT (the first run, 2026-10-13: MetOp-B at 833 km). The map draws a
+      // craft far larger than it is, so the framing distance of a low one is hundreds of kilometres, and
+      // a camera that far under it is inside the sphere the rig keeps every camera out of (the world's
+      // radius times 1.02, scene/camera.js clearWorld): the rig then puts the camera on the FAR side of
+      // the Earth and the picture is of the ocean. So the place is tried less steeply, and then nearer,
+      // until the camera is outside that sphere; the view's line says what it took.
+      const obj = heroOf();
+      const p = obj.getWorldPosition(obj.position.clone());
+      const e = sr.worlds.meshFor(home).position;
+      const keepOut = earthR() * 1.02 * 1.02;
+      const clear = (dir, dist) => Math.hypot(p.x + dir.x * dist - e.x, p.y + dir.y * dist - e.y, p.z + dir.z * dist - e.z) > keepOut;
+      const flat = unit(mix(d, 1, f.z, -(d.x * f.z.x + d.y * f.z.y + d.z * f.z.z)));       // the same heading, on the craft's horizon
+      let dist = d0;
+      let found = clear(d, dist) ? d : null;
+      let underDeg = found ? 90 - deg(found.x * f.z.x + found.y * f.z.y + found.z * f.z.z) : null;
+      for (const scale of [1, 0.75, 0.55, 0.4]) {
+        for (const tan of [0.9, 0.7, 0.5, 0.36, 0.25]) {                                    // 42 to 14 degrees under the horizon
+          if (found) break;
+          const tryDir = unit(mix(flat, 1, f.z, tan));
+          if (clear(tryDir, d0 * scale)) { found = tryDir; dist = d0 * scale; underDeg = Math.round((Math.atan(tan) * 180) / Math.PI); }
+        }
+      }
+      if (!found) { look.warns.push('probe: ' + name + ' was not taken: the craft is drawn too low over the Earth for a camera under it at any distance tried'); continue; }
+      d = found;
+      lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
+      rig.flyTo({ offset: d, distance: dist, ms: 0 });
+      await take(name, words + ', ' + underDeg + ' degrees under its horizon' + (dist < d0 ? ' and at ' + Math.round((dist / d0) * 100) + ' % of the framing distance (a low craft: no room under it)' : '')
+        + '; the Sun ' + deg(lit) + ' degrees from the line of sight; the Earth face is ' + (sunOnFace > 0.03 ? 'in sunlight (the Sun ' + (90 - deg(sunOnFace)) + ' degrees below the craft\'s horizon)' : 'in its own shade, the sunward flank lit'),
+        { sunAngleDeg: deg(lit), aboveHorizon: false, fromBelow: true, earthFaceSunlit: sunOnFace > 0.03, underHorizonDeg: underDeg, distanceShare: dist / d0 });
+      continue;
+    }
     if (above < 0) { d = unit(mix(d, 1, f.z, above)); }                    // never below the craft: flatten onto its horizon
     rig.flyTo({ offset: d, distance: d0, ms: 0 });
     await take(name, words + '; the Sun ' + Math.round((Math.acos(Math.max(-1, Math.min(1, lit))) * 180) / Math.PI) + ' degrees from the line of sight',
@@ -249,7 +314,7 @@ const walk = async (tag, what) => {
   rig.flyTo({ azimuth: a0, polar: p0, distance: d0, ms: 0 });
   await sleep(1500);
 };
-await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape'));
+await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''));
 
 /** Put something else on the hero for a set of pictures; returns the way back. */
 const wearInstead = (obj, thing) => {
@@ -343,6 +408,8 @@ for (const subject of subjects) {
   // A layer this subject needed is put back as it was: sixteen thousand dots do not belong in the
   // next craft's pictures (the third run of batch two photographed Ajisai through them).
   const last = done[done.length - 1];
+  // The card's lamp is put out again: the next subject is photographed in the Sun's light.
+  if (last && last.light && last.light.flood) { try { (await import(urlOf('./js/scene/models.js'))).setFloodLight(false); } catch { /* an older ref */ } }
   if (last && last.layerTurnedOn) { try { sr.setLayerOn(last.layerTurnedOn, false); await sleep(1500); } catch { /* it stays on, and the pictures show it */ } }
 }
 const failed = done.filter((d) => d.fail).map((d) => d.fail);

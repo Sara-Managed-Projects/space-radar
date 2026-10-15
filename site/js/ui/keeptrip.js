@@ -1,6 +1,7 @@
 // ui/keeptrip.js -- "Keep for offline" on a trip's intro (internal #551, from #390).
 //
 // Contract: tripAssets(tour, env) -> { urls, voice, models, maps, beds, other }   pure
+//           deepFilesOf(profile) -> [path]                                       pure: a deep-sky hero's files
 //           keepTrip(urls, opts) -> Promise<{ done, failed, bytes }>               the fetching
 //           keptRow(ctx, tour) -> HTMLElement | null                                the row's button and its line
 //           readKept(storage), writeKept(storage, id, row), KEPT_KEY
@@ -63,6 +64,8 @@ export function worldOfTarget(target, recordById) {
  *   tier        the device's texture tier (0, 1, 2)
  *   isLadder    stage id -> bool, for the music
  *   voice       false when the voice is not wanted (the clips are then left out)
+ *   pictures    data/nebulae.js NEBULAE: a deep-sky stop's photograph, the one scene/nebulae.js lays on the sky
+ *   deepFiles   record id -> the files its deep-sky hero fetches (images/deep/, data/deep/), or [] (spec 0075 stage f)
  */
 export function tripAssets(tour, env) {
   const e = env || {};
@@ -108,6 +111,18 @@ export function tripAssets(tour, env) {
       }
     }
   }
+  // A deep-sky stop draws its photograph (scene/nebulae.js) and, near enough, its hero (scene/deep/):
+  // both are files under images/ and data/ the worker keeps only once fetched (spec 0075 stage f).
+  const pictures = new Map((Array.isArray(e.pictures) ? e.pictures : []).map((row) => [`dso-${row.id}`, row.file]));
+  for (const stop of stops) {
+    const id = stop.target && stop.target.record;
+    if (!id) continue;
+    const pic = pictures.get(id);
+    if (pic) add('other', String(pic).replace(/^site\//, ''));
+    const deep = typeof e.deepFiles === 'function' ? e.deepFiles(id) : null;
+    for (const f of Array.isArray(deep) ? deep : []) add('other', String(f).replace(/^site\//, ''));
+  }
+
   const tier = Number.isFinite(e.tier) ? e.tier : 0;
   for (const row of Array.isArray(e.textures) ? e.textures : []) {
     if (!row || !worlds.has(row.world)) continue;
@@ -130,6 +145,22 @@ export function tripAssets(tour, env) {
 
   // The trip's picture.
   add('other', `images/trips/${encodeURIComponent(String(tour.id))}.webp`);
+  return out;
+}
+
+/**
+ * The files a deep-sky hero's profile names (registry/deepsky-heroes/<id>.yaml, mirrored to
+ * data/hero-<id>.js): every `images/deep/...` or `data/deep/...` path anywhere in it, a field or a
+ * source line, once each. Pure. The profile is the hero's own word for what it draws from, so the
+ * list follows it rather than a table here.
+ */
+export function deepFilesOf(profile) {
+  let text = '';
+  try { text = JSON.stringify(profile || {}); } catch { return []; }
+  const out = [];
+  for (const m of text.matchAll(/(?:site\/)?((?:images|data)\/deep\/[A-Za-z0-9_./-]+\.(?:webp|png|jpg|bin|json|ktx2))/g)) {
+    if (!out.includes(m[1]) && !m[1].includes('..')) out.push(m[1]);
+  }
   return out;
 }
 
@@ -253,10 +284,17 @@ export function keptRow(ctx, tour, env, { storage } = {}) {
  */
 export async function keptRowFor(ctx, tour) {
   if (!tour || !workerKeeps(ctx)) return null;
-  const [N, X, A, R, S] = await Promise.all([
+  const [N, X, A, R, S, P, H] = await Promise.all([
     import('../data/narration.js'), import('../data/textures.js'), import('../data/audio.js'),
-    import('../scene/realmodels.js'), import('../scene/stage.js'),
+    import('../scene/realmodels.js'), import('../scene/stage.js'), import('../data/nebulae.js'),
+    import('../scene/deep/heroes.js'),
   ]);
+  // Only the heroes this trip visits have their profiles read (each is a few kB, never at boot).
+  const visits = new Set((tour.stops || []).map((s) => s.target && s.target.record).filter(Boolean));
+  const deep = new Map();
+  await Promise.all(H.HEROES.filter((h) => visits.has(h.record)).map((h) => h.profile().then((m) => {
+    deep.set(h.record, deepFilesOf(m.HERO || m.default || m));
+  }).catch(() => { /* no profile, no files: the stop keeps its photograph */ })));
   let probe = null;
   const canPlay = (type) => {
     try {
@@ -273,6 +311,8 @@ export async function keptRowFor(ctx, tour) {
     canPlay,
     tier: ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 0,
     isLadder: S.isLadderStage,
+    pictures: P.NEBULAE,
+    deepFiles: (id) => deep.get(id) || [],
   };
   return keptRow(ctx, tour, env);
 }

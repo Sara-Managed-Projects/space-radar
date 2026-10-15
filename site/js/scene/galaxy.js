@@ -10,18 +10,22 @@
 // for the galaxy says so on its card. The stars around the Sun (scene/stars3d.js) are the measured
 // layer; this is the shape they sit in.
 //
-// ANDROMEDA, FROM THE SAME MODEL (2026-09-22). The "To the edge" trip stops 300 000 light-years
-// from Andromeda, where a galaxy 130 000 light-years across fills a quarter of the sky -- and it was
-// an 8 px dot. It is now this same point cloud, moved to Andromeda's measured position, scaled to
-// the diameter its own card prints and turned to its measured tilt (ANDROMEDA below, all sourced).
-// That makes it an illustration twice over: our own galaxy's model, standing in for arms nobody has
-// mapped star by star. The M31 record's card says so (data/parsers.js), as the Milky Way's does.
-// It shares the colours and weights, and costs one more position buffer and no download.
+// ANDROMEDA IS HER OWN (internal spec 0075 stage d, 2026-10-14). From 2026-09-22 Andromeda off her
+// photograph's line was this same point cloud, moved and scaled: our galaxy's arms standing in for hers,
+// and close up a blown-out copy of the Milky Way (the deep-space baseline's scenes 13 and 14). She is
+// now drawn from her own published structure by scene/deep/spiral.js's generator: the coordinator's hero
+// (scene/deep/deepsky.js) when she is large on screen, and below that THIS file's small copy of the same
+// model (ANDROMEDA_FAR points, same pose, same exposure), fetched with the cloud and drawn wherever
+// neither the hero nor her photograph is. The three share one number: what the photograph leaves
+// (setAndromedaShare) the hero takes in proportion to its own share, and this copy the rest.
 //
-// AND IT STEPS BACK FOR THE PHOTOGRAPH (spec 0067, 2026-10-03). Along the line we see Andromeda on
-// there is something truer than our own galaxy's arms standing in for hers: a picture of her
-// (scene/nebulae.js). While that is drawn the stand-in is not -- setAndromedaShare(0) -- and off
-// that line, where a flat photograph would be the lie, the model comes back.
+// THE MILKY WAY, EXPOSED BY ITS PROJECTED DENSITY (same stage). From outside it was white (scene 15):
+// 140 000 additive points of one brightness pile up in the bulge. Each point is now a patch of light of
+// a fixed size whose brightness on screen does not change with distance (held at its minimum size, its
+// light is divided by the area it was given), its light is divided by the face-on density round it to
+// the power STRETCH (a photograph's stretch, so the bulge is a few times brighter than the disc and not
+// a hundred), and seen from outside the disc an edge-on view keeps only part of its longer path. The
+// brightest face-on patch is normalised to PEAK.
 //
 // Static like the stars: one buffer, rebuilt only when the stage changes (140 292 conversions,
 // float64, no allocation), and registry/lod.yaml fades it in as the camera leaves the stellar
@@ -45,111 +49,47 @@ const KIND_RGB = [
   [0.72, 0.84, 1.0],
 ];
 
-// Andromeda's disc as measured. Position, distance and major axis are the M31 row's
-// (site/data/dso.json, test_galaxy checks they agree), so the drawing is the size its card prints;
-// the tilt is sourced here.
+// Andromeda's place and size are the M31 row's (site/data/dso.json; test_galaxy checks they agree); her
+// shape is registry/deepsky-heroes/m31.yaml's, with its sources, drawn by scene/deep/spiral.js.
 export const ANDROMEDA = {
+  id: 'dso-m31',
   raDeg: 10.68479,
   decDeg: 41.26906,
   distLy: 2540000,
   majAxArcmin: 177.83,    // OpenNGC, via the M31 row
-  inclinationDeg: 77,     // Wikipedia, Andromeda Galaxy: "inclined an estimated 77 deg relative to Earth"
-  positionAngleDeg: 38,   // major axis, east of north (e.g. Draine et al. 2014, arXiv:1306.2304)
-  nearSide: 'NW',         // the north-western edge is the near one, from its dust lanes (same source)
-  templateDiameterLy: 87400, // the Milky Way record's own size (data/layers.js), which this model is
 };
+// The far copy: few points, because below the hero's threshold she is at most a few hundred px across.
+export const ANDROMEDA_FAR = { points: [5000, 8000, 8000], dust: 0.3, seed: 31 };
+
+/**
+ * What Andromeda's three drawings tell each other, every frame: how much her photograph is drawn
+ * (main.js through setAndromedaShare), how much the hero is (scene/deep/spiral.js), and the shutter.
+ */
+export const ANDROMEDA_LINK = { photo: 0, heroShare: 0, exposure: 1 };
 
 /** The diameter the M31 card prints: its major axis at its distance (data/parsers.js sizeLy). */
 export function andromedaDiameterLy(g = ANDROMEDA) {
   return g.distLy * (g.majAxArcmin / 60) * (Math.PI / 180);
 }
 
+/** Andromeda's centre in sun-inertial km. Pure. */
+export function andromedaKm(g = ANDROMEDA) {
+  const a = g.raDeg * D2R, d = g.decDeg * D2R;
+  const v = eqToSun([Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d)]);
+  const r = g.distLy * LY_KM;
+  return { x: v[0] * r, y: v[1] * r, z: v[2] * r };
+}
+
 const LY_KM = 9460730472580.8;
 const OBLIQUITY = 23.4392911 * (Math.PI / 180);
 const D2R = Math.PI / 180;
 const eqToSun = (v) => [v[0], v[1] * Math.cos(OBLIQUITY) + v[2] * Math.sin(OBLIQUITY), -v[1] * Math.sin(OBLIQUITY) + v[2] * Math.cos(OBLIQUITY)];
-const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-const unit = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
-const comb = (a, ka, b, kb) => [a[0] * ka + b[0] * kb, a[1] * ka + b[1] * kb, a[2] * ka + b[2] * kb];
 
-/**
- * Andromeda's disc axes in the sun-inertial frame: the major axis on the sky, the in-plane axis
- * across it (tipped so the north-west edge is the near one), and the normal. Pure, for the test.
- */
-export function andromedaAxes(g = ANDROMEDA) {
-  const a = g.raDeg * D2R, d = g.decDeg * D2R;
-  const los = [Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d)]; // Sun -> M31
-  const east = [-Math.sin(a), Math.cos(a), 0];
-  const north = [-Math.sin(d) * Math.cos(a), -Math.sin(d) * Math.sin(a), Math.cos(d)];
-  const pa = g.positionAngleDeg * D2R, inc = g.inclinationDeg * D2R;
-  const major = comb(north, Math.cos(pa), east, Math.sin(pa));
-  const northWest = comb(north, Math.sin(pa), east, -Math.cos(pa)); // the minor axis, NW half
-  // In the disc and across the major axis: it shows cos(i) of itself on the sky, toward the NW,
-  // and its sin(i) points back along the line of sight toward us -- which is what "near side" means.
-  const across = comb(northWest, Math.cos(inc), los, -Math.sin(inc));
-  const normal = cross(major, across);
-  return { los: eqToSun(los), major: eqToSun(major), across: eqToSun(across), normal: eqToSun(normal) };
-}
+// The Milky Way's exposure (the head of this file) is scene/deep/spiral.js's exposeByDensity, fetched
+// with the cloud like Andromeda's model, so none of it is in the boot bytes.
+const PATCH_KPC = 0.15;
 
-// The Milky Way model's own pole: the north galactic pole, RA 192.85948 deg, Dec +27.12825 deg (J2000).
-const NGP = (() => { const a = 192.85948 * D2R, d = 27.12825 * D2R; return eqToSun([Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d)]); })();
-
-/**
- * The model moved onto Andromeda: every point, in kpc from the Sun. `centreKpc` is the model's own
- * centre (the mean of its bulge). Pure, for the test.
- */
-export function andromedaFromModel(posKpc, count, centreKpc, g = ANDROMEDA) {
-  const { major, across, normal } = andromedaAxes(g);
-  const u = unit(cross(NGP, [0, 0, 1]));
-  const v = cross(NGP, u);
-  const k = andromedaDiameterLy(g) / g.templateDiameterLy;
-  const KPC_LY = KPC_KM / LY_KM;
-  const at = eqToSun((() => { const a = g.raDeg * D2R, d = g.decDeg * D2R; return [Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d)]; })())
-    .map((c) => c * g.distLy / KPC_LY);
-  const out = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    const q = [posKpc[i * 3] - centreKpc[0], posKpc[i * 3 + 1] - centreKpc[1], posKpc[i * 3 + 2] - centreKpc[2]];
-    const x = dot(q, u) * k, y = dot(q, v) * k, z = dot(q, NGP) * k;
-    out[i * 3] = at[0] + major[0] * x + across[0] * y + normal[0] * z;
-    out[i * 3 + 1] = at[1] + major[1] * x + across[1] * y + normal[1] * z;
-    out[i * 3 + 2] = at[2] + major[2] * x + across[2] * y + normal[2] * z;
-  }
-  return out;
-}
-
-const VERT = /* glsl */ `
-attribute float aWeight;
-attribute vec3 aColour;
-uniform float uPixelRatio;
-uniform float uGain;
-uniform float uUnitsPerKpc;
-uniform float uPatchKpc;
-varying vec3 vColour;
-varying float vAlpha;
-void main() {
-  vec4 mv = modelViewMatrix * vec4( position, 1.0 );
-  gl_Position = projectionMatrix * mv;
-  // A point is a patch of galaxy ~150 pc across: bigger when the camera is close, never below 1.5 px.
-  float dKpc = max( 1e-6, -mv.z / uUnitsPerKpc );
-  gl_PointSize = clamp( uPatchKpc / dKpc * 600.0, 1.5, 6.0 ) * uPixelRatio;
-  vAlpha = aWeight * uGain * 0.55;
-  vColour = aColour;
-}
-`;
-const FRAG = /* glsl */ `
-varying vec3 vColour;
-varying float vAlpha;
-#include <common>
-void main() {
-  if ( vAlpha <= 0.0 ) discard;
-  float d = length( gl_PointCoord - vec2( 0.5 ) );
-  float a = 1.0 - smoothstep( 0.1, 0.5, d );
-  if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha );
-  #include <colorspace_fragment>
-}
-`;
+// The model's point shaders are scene/deep/spiral.js's MW_SHADERS, fetched with the cloud (not boot bytes).
 
 // --- the dust lanes (public #428) ------------------------------------------------------------------
 //
@@ -249,22 +189,28 @@ export function createGalaxy(scene, opts = {}) {
   let data = null;
   let geometry = null;
   let points = null;
-  let twinGeometry = null;
-  let twinPoints = null;
-  let twinKpc = null;
   let layerOn = true;
   let opacity = 0;
   let builtFor = null;
   let loading = null;
-  const uniforms = { uPixelRatio: { value: 1 }, uGain: { value: 0 }, uUnitsPerKpc: { value: 1 }, uPatchKpc: { value: 0.15 } };
-  // Andromeda shares every uniform but the patch size, which scales with the model, and the gain,
-  // which also carries how much of her the photograph has left to the model (setAndromedaShare).
-  const twinUniforms = { ...uniforms, uGain: { value: 0 }, uPatchKpc: { value: 0.15 * andromedaDiameterLy() / ANDROMEDA.templateDiameterLy } };
-  let twinShare = 1;
+  let norm = 1;            // exposeByDensity's gain: the brightest face-on patch at its PEAK
+  let S = null;            // scene/deep/spiral.js, fetched with the cloud
+  let centreKpc = [0, 0, 0];
+  const uniforms = {
+    uPixelRatio: { value: 1 }, uGain: { value: 0 }, uUnitsPerKpc: { value: 1 }, uPatchKpc: { value: PATCH_KPC },
+    uViewH: { value: 900 }, uOutside: { value: 0 }, uNormalW: { value: new THREE.Vector3(0, 1, 0) },
+  };
   let dustGeometry = null;
   let dustPoints = null;
   let dustKpc = null;
   const dustUniforms = { uPixelRatio: uniforms.uPixelRatio, uUnitsPerKpc: uniforms.uUnitsPerKpc, uPatchKpc: uniforms.uPatchKpc, uDust: { value: 0 } };
+  // Andromeda off her photograph's line and below the hero's threshold (the head of this file).
+  let far = null;
+  let farLoading = null;
+  let farPlacedFor = null;
+  let farAxes = null;
+  const farKm = andromedaKm();
+  const tier = () => (Number.isFinite(opts.tier) ? opts.tier : 1);
 
   function ensureGeometry() {
     if (loading) return loading;
@@ -272,11 +218,12 @@ export function createGalaxy(scene, opts = {}) {
       ? Promise.resolve(opts.binBuffer)
       // `no-cache` = revalidate: the name never changes, the bytes do; unchanged, the answer is a 304.
       : fetch(String(src), { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error(`${src}: HTTP ${r.status}`); return r.arrayBuffer(); }))
+      .then((buf) => Promise.resolve(opts.spiral || import('./deep/spiral.js')).then((m) => { S = m; return buf; }))
       .then((buf) => {
         data = parseGalaxy(buf);
-        // Built in pieces, one per turn (scene/spread.js): the points, the dust lanes, the Andromeda
-        // twin, then the positions. All in one task was the three-second stall on the galaxy rung.
-        return spread([buildPoints, buildDust, buildTwin, () => { builtFor = null; rebuild(); }], opts.schedule || defaultSchedule).then(() => data);
+        // Built in pieces, one per turn (scene/spread.js): the points, the dust lanes, Andromeda,
+        // then the positions. All in one task was the three-second stall on the galaxy rung.
+        return spread([buildPoints, buildDust, buildAndromeda, () => { builtFor = null; rebuild(); }], opts.schedule || defaultSchedule).then(() => data);
       })
       .catch((err) => { console.warn('galaxy: could not load', err); loading = null; data = null; return null; });
     return loading;
@@ -290,19 +237,30 @@ export function createGalaxy(scene, opts = {}) {
    * frame pays as before.
    */
   function prewarm(renderer, camera) {
-    return ensureGeometry().then((d) => {
+    return ensureGeometry().then(() => farLoading).then(() => {
+      const d = data;
       if (!d || !renderer || !camera || typeof renderer.compileAsync !== 'function' || !scene) return d;
-      const shown = [points, dustPoints, twinPoints].filter(Boolean);
+      const shown = [points, dustPoints, far && far.group].filter(Boolean);
       for (const p of shown) p.visible = true;
       return Promise.resolve(renderer.compileAsync(scene, camera)).catch(() => {}).then(() => { applyVisibility(); return d; });
     });
   }
 
+  function bulgeCentre() {
+    let cx = 0, cy = 0, cz = 0, nb = 0;
+    for (let i = 0; i < data.count; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
+    return nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
+  }
+
   function buildPoints() {
     const n = data.count;
+    centreKpc = bulgeCentre();
+    const pole = eclDirection(NORTH_GALACTIC_POLE.raDeg, NORTH_GALACTIC_POLE.decDeg);
+    const exposed = S.exposeByDensity(data.posKpc, data.weight, n, centreKpc, pole);
+    norm = exposed.gain;
     geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-    geometry.setAttribute('aWeight', new THREE.BufferAttribute(data.weight, 1));
+    geometry.setAttribute('aWeight', new THREE.BufferAttribute(exposed.weight, 1));
     const col = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
       const c = KIND_RGB[data.kind[i]] || KIND_RGB[0];
@@ -310,7 +268,7 @@ export function createGalaxy(scene, opts = {}) {
     }
     geometry.setAttribute('aColour', new THREE.BufferAttribute(col, 3));
     const material = new THREE.ShaderMaterial({
-      vertexShader: VERT, fragmentShader: FRAG, uniforms,
+      vertexShader: S.MW_SHADERS.vert, fragmentShader: S.MW_SHADERS.frag, uniforms,
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     });
     points = new THREE.Points(geometry, material);
@@ -321,12 +279,8 @@ export function createGalaxy(scene, opts = {}) {
   }
 
   function buildDust() {
-    const n = data.count;
-    let cx = 0, cy = 0, cz = 0, nb = 0;
-    for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
-    const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
     // The dust lanes (dustLanes above): after the galaxy's own points and before everything else.
-    dustKpc = dustLanes(data.posKpc, data.kind, n, centre);
+    dustKpc = dustLanes(data.posKpc, data.kind, data.count, centreKpc);
     dustGeometry = new THREE.BufferGeometry();
     dustGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(dustKpc.count * 3), 3));
     dustPoints = new THREE.Points(dustGeometry, new THREE.ShaderMaterial({
@@ -340,29 +294,32 @@ export function createGalaxy(scene, opts = {}) {
     group.add(dustPoints);
   }
 
-  function buildTwin() {
-    const n = data.count;
-    let cx = 0, cy = 0, cz = 0, nb = 0;
-    for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
-    const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
-    twinKpc = andromedaFromModel(data.posKpc, n, centre);
-    twinGeometry = new THREE.BufferGeometry();
-    twinGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-    twinGeometry.setAttribute('aWeight', geometry.getAttribute('aWeight'));
-    twinGeometry.setAttribute('aColour', geometry.getAttribute('aColour'));
-    twinPoints = new THREE.Points(twinGeometry, new THREE.ShaderMaterial({
-      vertexShader: VERT, fragmentShader: FRAG, uniforms: twinUniforms,
-      transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
-    }));
-    twinPoints.name = 'galaxy:andromeda';
-    twinPoints.frustumCulled = false;
-    twinPoints.renderOrder = -1;
-    group.add(twinPoints);
-    applyVisibility();
+  /** Andromeda's far copy: the generator and her profile are fetched now, never at boot. */
+  function buildAndromeda() {
+    if (farLoading || opts.andromeda === false) return;
+    farLoading = import('../data/hero-m31.js').then((P) => {
+      if (!data) return;
+      const profile = P.HERO;
+      const record = { id: ANDROMEDA.id, pos: farKm, meta: { sizeLy: andromedaDiameterLy(), posAngDeg: profile.frame && profile.frame.pa_deg } };
+      const params0 = S.paramsFor(profile, record);
+      farAxes = S.discAxes(farKm, params0.frame);
+      const params = S.resolveSky(params0, farKm, farAxes);
+      const t = Math.min(2, Math.max(0, Math.trunc(tier())));
+      far = S.createGalaxyPoints(THREE, params, { count: ANDROMEDA_FAR.points[t], dust: ANDROMEDA_FAR.dust, seed: ANDROMEDA_FAR.seed, name: 'galaxy:andromeda' });
+      group.add(far.group);
+      farPlacedFor = null;
+      placeAndromeda();
+      applyVisibility();
+    }).catch((err) => { console.warn('galaxy: Andromeda’s model did not load', err); far = null; });
+  }
+  function placeAndromeda() {
+    if (!far || !isLadderStage(stage.worldId) || farPlacedFor === stage.worldId) return;
+    if (far.place(farKm, farAxes, 'full')) farPlacedFor = stage.worldId;
   }
 
   const _km = { x: 0, y: 0, z: 0 };
   const _v = new THREE.Vector3();
+  const _c = new THREE.Vector3();
 
   /** Positions for the current stage. Only a rung draws the model; on a world stage it is hidden. */
   function rebuild() {
@@ -372,10 +329,10 @@ export function createGalaxy(scene, opts = {}) {
     builtFor = key;
     if (!isLadderStage(stage.worldId)) { applyVisibility(); return; }
     const tMs = stage.tMs;
+    // One matrix for the whole cloud (stage.affineFrom, internal #549), the exact call per point where the stage bends positions.
+    const A = stage.affineFrom(SUN_INERTIAL, tMs);
     const fill = (src, geo, count = data.count) => {
       const pos = geo.getAttribute('position').array;
-      // One matrix for the whole cloud (stage.affineFrom, internal #549), the exact call per point where the stage bends positions.
-      const A = stage.affineFrom(SUN_INERTIAL, tMs);
       for (let i = 0; i < count; i++) {
         const kx = src[i * 3] * KPC_KM, ky = src[i * 3 + 1] * KPC_KM, kz = src[i * 3 + 2] * KPC_KM;
         if (A) {
@@ -391,22 +348,33 @@ export function createGalaxy(scene, opts = {}) {
       geo.getAttribute('position').needsUpdate = true;
     };
     fill(data.posKpc, geometry);
-    if (twinGeometry && twinKpc) fill(twinKpc, twinGeometry);
     if (dustGeometry && dustKpc) fill(dustKpc.posKpc, dustGeometry, dustKpc.count);
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 30 * KPC_KM / stage.unitKm);
     uniforms.uUnitsPerKpc.value = KPC_KM / stage.unitKm;
+    // The galactic pole and centre in the scene, for the edge-on term (update below).
+    const pole = eclDirection(NORTH_GALACTIC_POLE.raDeg, NORTH_GALACTIC_POLE.decDeg);
+    if (A) {
+      uniforms.uNormalW.value.set(A.x[0] * pole[0] + A.y[0] * pole[1] + A.z[0] * pole[2], A.x[1] * pole[0] + A.y[1] * pole[1] + A.z[1] * pole[2], A.x[2] * pole[0] + A.y[2] * pole[1] + A.z[2] * pole[2]).normalize();
+      const kx = centreKpc[0] * KPC_KM, ky = centreKpc[1] * KPC_KM, kz = centreKpc[2] * KPC_KM;
+      _c.set(A.o[0] + A.x[0] * kx + A.y[0] * ky + A.z[0] * kz, A.o[1] + A.x[1] * kx + A.y[1] * ky + A.z[1] * kz, A.o[2] + A.x[2] * kx + A.y[2] * ky + A.z[2] * kz);
+    }
+    placeAndromeda();
     applyVisibility();
   }
 
   let exposure = 1;
   function applyVisibility() {
-    if (points) points.visible = layerOn && opacity > 0 && isLadderStage(stage.worldId);
-    if (twinPoints) twinPoints.visible = !!(points && points.visible);
-    if (dustPoints) dustPoints.visible = !!(points && points.visible);
+    const on = layerOn && opacity > 0 && isLadderStage(stage.worldId);
+    if (points) points.visible = on;
+    if (dustPoints) dustPoints.visible = on;
     // By the model's opacity alone: dust is not light, and the shutter does not brighten it.
     dustUniforms.uDust.value = DUST_DIM * opacity;
-    uniforms.uGain.value = opacity * exposure;
-    twinUniforms.uGain.value = opacity * twinShare * exposure;
+    uniforms.uGain.value = opacity * exposure * norm;
+    ANDROMEDA_LINK.exposure = exposure;
+    if (far) {
+      // What her photograph and her hero leave (scene/deep/spiral.js), at the model's opacity.
+      far.setShare(on ? opacity * (1 - ANDROMEDA_LINK.photo) * (1 - ANDROMEDA_LINK.heroShare) : 0, exposure);
+    }
   }
   /**
    * The shutter (scene/exposure.js `milkyWay`: 0.55 Eye, 1 Camera, 1.7 Deep): the model is the same
@@ -420,24 +388,39 @@ export function createGalaxy(scene, opts = {}) {
     applyVisibility();
     if (layerOn && opacity > 0 && isLadderStage(stage.worldId)) ensureGeometry();
   }
-  /** 1 = the model draws Andromeda; 0 = her photograph does (scene/nebulae.js), and the model waits. */
+  /** 1 = the models draw Andromeda; 0 = her photograph does (scene/nebulae.js drawn), and they wait. */
   function setAndromedaShare(k) {
-    twinShare = Math.min(1, Math.max(0, Number(k)));
-    twinUniforms.uGain.value = opacity * twinShare * exposure;
+    ANDROMEDA_LINK.photo = 1 - Math.min(1, Math.max(0, Number(k)));
+    applyVisibility();
   }
+  const _cam = new THREE.Vector3();
   function update(camera, renderer) {
     if (!points) return;
-    if (renderer && typeof renderer.getPixelRatio === 'function') uniforms.uPixelRatio.value = Math.min(2, Math.max(0.5, renderer.getPixelRatio()));
+    const dpr = renderer && typeof renderer.getPixelRatio === 'function' ? Math.min(2, Math.max(0.5, renderer.getPixelRatio())) : 1;
+    uniforms.uPixelRatio.value = dpr;
+    const h = renderer && renderer.domElement ? renderer.domElement.height : 0;
+    if (h > 0) uniforms.uViewH.value = h;
+    if (camera) {
+      // Outside the disc (past about twice its radius from the centre) an edge-on view is compressed.
+      _cam.setFromMatrixPosition(camera.matrixWorld);
+      const kpc = _cam.distanceTo(_c) / Math.max(1e-30, uniforms.uUnitsPerKpc.value);
+      const t = Math.min(1, Math.max(0, (kpc - 16) / 14));
+      uniforms.uOutside.value = t * t * (3 - 2 * t);
+    }
+    if (far) {
+      placeAndromeda();
+      applyVisibility();
+      if (far.group.visible) far.update(camera, uniforms.uViewH.value, dpr, tier());
+    }
   }
   function dispose() {
     if (geometry) geometry.dispose();
     if (points && points.material) points.material.dispose();
-    if (twinGeometry) twinGeometry.dispose();
-    if (twinPoints && twinPoints.material) twinPoints.material.dispose();
     if (dustGeometry) dustGeometry.dispose();
     if (dustPoints && dustPoints.material) dustPoints.material.dispose();
+    if (far) far.dispose();
+    far = null; farLoading = null;
     dustGeometry = null; dustPoints = null; dustKpc = null;
-    twinGeometry = null; twinPoints = null; twinKpc = null;
     if (scene) scene.remove(group);
     data = null; geometry = null; points = null; builtFor = null; loading = null;
   }
@@ -445,6 +428,10 @@ export function createGalaxy(scene, opts = {}) {
     ensureGeometry, prewarm, setVisible, setOpacity, setExposure, setAndromedaShare, rebuild, update, dispose, group,
     count: () => (data ? data.count : null),
     dustCount: () => (dustKpc ? dustKpc.count : null),
+    /** Andromeda's far copy, once fetched: {points, dust, share} (null before). */
+    andromeda: () => (far ? { ...far.stats(), share: far.share() } : null),
+    andromedaReady: () => farLoading || Promise.resolve(),
+    exposureGain: () => norm,
     mode: () => (points && points.visible ? 'drawn' : 'hidden'),
   };
 }

@@ -664,6 +664,20 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a deep-sky card line changed in the registry and not in the built file the card reads",
      "dso-hand.yaml", "a small galaxy that kept its jewellery", "a small galaxy that kept its rings"),
 
+    # --- the deep-sky object model (internal spec 0075 task 2) ----------------------------
+    # A parent that is not a record, a chain that comes back on itself, a distance with no method,
+    # and a child that cannot be inside its parent: each is refused and names the registry's file.
+    ("a nebula whose parent is not a deep-sky record",
+     "dso-hand.yaml", "    parent: lmc\n", "    parent: lmcc\n"),
+    ("a parent chain that comes back to itself",
+     "dso-hand.yaml", "    parent: lmc\n", "    parent: tarantula-nebula\n"),
+    ("a distance without a method",
+     "dso-hand.yaml", "distance: {method: eclipsing-binary, value_ly: 161740", "distance: {value_ly: 161740"),
+    ("a distance whose method is not one of the eight",
+     "dso-hand.yaml", "distance: {method: parallax, value_ly: 655", "distance: {method: guesswork, value_ly: 655"),
+    ("a child that cannot be inside its parent",
+     "dso-hand.yaml", "    parent: lmc\n", "    parent: helix-nebula\n"),
+
     # --- registry/nebulae.yaml (spec 0067, 2026-10-03) ------------------------------------
     # A photograph somebody else took, shipped from our bucket: licence, credit, and that it is
     # drawn where its object is.

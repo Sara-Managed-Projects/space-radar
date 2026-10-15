@@ -9,6 +9,21 @@
 #
 # dist_kly     distance in thousands of light-years; where the source gives a range, low and high.
 # ra / dec     J2000, degrees, for an object OpenNGC has no row for (the LMC is not an NGC object).
+#
+# THE OBJECT MODEL (internal spec 0075 task 2, design section 3). scripts/build-dso.py says what each
+# field means and writes them into site/data/dso.json; scripts/check_registry.py refuses a parent that
+# is not a row, a cycle, a distance without a method, and a child that cannot be inside its parent's
+# extent within the two distances' ranges.
+# parent       a record id without `dso-`: what it is inside (or a companion of). Not a claim of
+#              gravitational membership.
+# distance     {method, value_ly, low, high, source, read} in place of `dist_kly`. `method` is one of
+#              parallax, eclipsing-binary, cepheid, TRGB, standard-candle, redshift, kinematic or
+#              assumed-member-of-parent (no number of its own: placed at its parent's distance).
+# orientation  {pa_deg, incl_deg, near_side, source}, where one is published.
+# morphology   spiral, barred-spiral, elliptical, lenticular, irregular, barred-irregular,
+#              dwarf-spheroidal or unknown; for a galaxy, derived from `what:` when not written.
+# drawn        what is drawn for it (photograph, catalogue, reconstruction, model, illustration);
+#              derived when not written. A hero adds its own (registry/deepsky-heroes/).
 version: 1
 
 # `what:` is the plain phrase the card's first sentence uses ("a dwarf spheroidal galaxy"); `hubble:`
@@ -21,9 +36,23 @@ objects:
     hubble: SB(s)m
     ra_deg: 80.8917         # 05h 23m 34s
     dec_deg: -69.7567       # -69 deg 45.4 min
-    dist_kly: 163
+    # 49.59 +/- 0.09 (statistical) +/- 0.54 (systematic) kpc from twenty late-type eclipsing binaries
+    # (the abstract, read 2026-10-14); the range is the two errors added, 49.04 to 50.14 kpc.
+    distance: {method: eclipsing-binary, value_ly: 161740, low: 159950, high: 163540,
+               source: "Pietrzyński et al. 2019, Nature 567, 200 (arXiv:1903.08096)", read: 2026-10-14}
+    morphology: barred-irregular
+    # The disc's viewing angles from near-infrared star counts: i = 34.7 +/- 6.2 deg, line of nodes
+    # 122.5 +/- 8.3 deg (the abstract of van der Marel & Cioni 2001, read 2026-10-14). The near side
+    # is the north-east, from the paper's body: stage c checks it against the paper itself.
+    orientation: {pa_deg: 122.5, incl_deg: 34.7, near_side: NE,
+                  source: "van der Marel & Cioni 2001, AJ 122, 1807 (arXiv:astro-ph/0105339)"}
     vmag: 0.13
     maj_ax_arcmin: 645      # 10.75 deg
+    # The outer isophotes (r > 5 deg): ellipticity 0.199 +/- 0.008 at PA 189.3 +/- 1.4 deg (van der
+    # Marel 2001, AJ 122, 1827, arXiv:astro-ph/0105340, the abstract read 2026-10-14). 645' x (1 - 0.199)
+    # = 517'; 189.3 deg is the same axis as 9.3 deg. The photograph fades along this ellipse.
+    min_ax_arcmin: 517
+    pos_ang_deg: 9.3
     source: "https://en.wikipedia.org/wiki/Large_Magellanic_Cloud (infobox, read 2026-09-08)"
     why: "The biggest of the Milky Way's companion galaxies, a naked-eye cloud from the southern hemisphere, and the reason the ladder has a local-group rung at all."
 
@@ -35,7 +64,10 @@ objects:
     hubble: SB(s)m pec
     ra_deg: 13.1867         # 00h 52m 44.8s
     dec_deg: -72.8286       # -72 deg 49 min 43 s
-    dist_kly: 203.7
+    # 62.44 +/- 0.47 (statistical) +/- 0.81 (systematic) kpc from late-type eclipsing binaries (the
+    # abstract, read 2026-10-14); the range is the two errors added, 61.16 to 63.72 kpc.
+    distance: {method: eclipsing-binary, value_ly: 203650, low: 199480, high: 207830,
+               source: "Graczyk et al. 2020, ApJ 904, 13 (arXiv:2010.08754)", read: 2026-10-14}
     vmag: 2.7
     maj_ax_arcmin: 320      # 5 deg 20 min
     con: Tucana
@@ -670,7 +702,11 @@ objects:
     what: planetary nebula
     ra_deg: 337.4106        # 22h 29m 38.55s
     dec_deg: -20.8371       # -20 deg 50 min 13.6 s
-    dist_kly: 0.65          # 650 +/- 3 ly (200 pc)
+    # 655 +/- 13 ly, the central star's parallax measured by Gaia (DR2, Gaia Collaboration 2018,
+    # VizieR I/345), as the Helix Nebula's page gives it in its text (read 2026-10-14; its infobox
+    # still says 650 +/- 3, unsourced).
+    distance: {method: parallax, value_ly: 655, low: 642, high: 668,
+               source: "Gaia DR2 parallax of the central star (VizieR I/345), via https://en.wikipedia.org/wiki/Helix_Nebula", read: 2026-10-14}
     vmag: 7.6
     maj_ax_arcmin: 25
     con: Aquarius
@@ -779,10 +815,14 @@ objects:
     name: Tarantula Nebula
     designation: NGC 2070
     type: HII
-    what: emission nebula in the Large Magellanic Cloud
+    what: emission nebula
     ra_deg: 84.6583         # 05h 38m 38s
     dec_deg: -69.095        # -69 deg 05.7 min
-    dist_kly: 160           # 160 +/- 10 kly
+    # Inside the LMC (spec 0075 task 2). Its page says 160 +/- 10 kly, a rounded number from another
+    # source than the LMC's, which drew it 3 000 ly in front of its own galaxy. It has no measurement
+    # of its own: it takes the LMC's distance, in its own direction, and the card says so.
+    parent: lmc
+    distance: {method: assumed-member-of-parent, source: parent}
     vmag: 8
     maj_ax_arcmin: 40
     con: Dorado

@@ -1,0 +1,135 @@
+// GENERATED from registry/deepsky-heroes/m33.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "m33",
+  "record": "dso-m33",
+  "stage": "d",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "the structure: statistical points for the nucleus, disc, flocculent arms and H II regions with NGC 604, and a dust point set",
+    "3": "the same, larger on screen",
+    "points": [
+      8000,
+      25000,
+      40000
+    ],
+    "dust_share": 0.2,
+    "seed": 33
+  },
+  "frame": {
+    "pa_deg": 23,
+    "incl_deg": 56,
+    "near_side": null,
+    "approaching": null,
+    "winding": 1,
+    "units_ly": 100,
+    "source": "inclination: Zaritsky, Elston & Hill 1989, as cited; position angle: OpenNGC via the M33 row"
+  },
+  "layers": [
+    {
+      "kind": "bulge",
+      "what": "a small central concentration",
+      "sersic_n": 1,
+      "re_kpc": 0.3,
+      "q": 0.9,
+      "light": 0.04,
+      "colour": "#f2efe8",
+      "source": "illustrative: whether M33 has a bulge at all is contested (Regan & Vogel 1994, ApJ 434, 536 find light beyond the disc in the centre; later kinematics find no bulge's signature)"
+    },
+    {
+      "kind": "disc",
+      "what": "the stellar disc",
+      "scale_kpc": 1.4,
+      "height_kpc": 0.3,
+      "r_max_kpc": 9,
+      "light": 0.6,
+      "arm_contrast": 0.25,
+      "colour": "#ddd2d8",
+      "colour_outer": "#cfcadc",
+      "source": "scale length 1.4 kpc in the K band (Regan & Vogel 1994; Simon et al. 2006 give 1.36 +/- 0.06 kpc), as cited; height assumed; cut at 9 kpc, past the catalogue's 7.5 kpc radius"
+    },
+    {
+      "kind": "arms",
+      "what": "flocculent arms of young stars",
+      "count": 2,
+      "pitch_deg": 22,
+      "r_from_kpc": 0.8,
+      "r_to_kpc": 7.5,
+      "width_kpc": 0.45,
+      "height_kpc": 0.12,
+      "scale_kpc": 2.5,
+      "segments": 0.55,
+      "light": 0.28,
+      "colour": "#b9c4ee",
+      "source": "illustrative pitch and segments; the bluer light extends further than the K band's (Regan & Vogel 1994 tabulate scale lengths by band): 2.5 kpc assumed"
+    },
+    {
+      "kind": "knots",
+      "what": "H II regions",
+      "count": 600,
+      "in_ring": 0,
+      "size_kpc": 0.04,
+      "height_kpc": 0.06,
+      "light": 0.05,
+      "colour": "#ff8fa0",
+      "source": "placed statistically along the arms; not a catalogue of positions"
+    },
+    {
+      "kind": "landmark",
+      "name": "NGC 604",
+      "what": "NGC 604, the giant H II region",
+      "ra_deg": 23.63375,
+      "dec_deg": 30.78361,
+      "radius_kpc": 0.23,
+      "size_kpc": 0.03,
+      "count": 150,
+      "light": 0.02,
+      "colour": "#ff9aac",
+      "source": "SIMBAD, NGC 604: RA 01h 34m 32.1s, Dec +30d 47m 01s (ICRS, read 2026-10-14); placed where that line of sight meets the disc; its size illustrative"
+    },
+    {
+      "kind": "dust-lanes",
+      "what": "dust along the arms",
+      "inset_kpc": 0.2,
+      "width_kpc": 0.2,
+      "height_kpc": 0.06,
+      "weight": 0.6,
+      "source": "illustrative"
+    },
+    {
+      "kind": "dust-disc",
+      "what": "a thin dust disc",
+      "scale_kpc": 2,
+      "height_kpc": 0.06,
+      "weight": 0.4,
+      "source": "assumed"
+    }
+  ],
+  "colours": {
+    "mode": true,
+    "note": "Matched to its photograph at the hand-over (ESO eso1424a, g and r with H-alpha): mean colours measured 2026-10-15 core #bbb8b2, inner #857073, disc #353037; the model takes them halfway to neutral (nucleus #f2efe8, disc #ddd2d8), arms blue-white, pink H II regions. Not enhanced."
+  },
+  "drawn": [
+    "model"
+  ],
+  "sources": [
+    "Zaritsky, Elston & Hill 1989, AJ 97, 97 (inclination 56 degrees; read through the papers that cite it)",
+    "Regan & Vogel 1994, ApJ 434, 536 (the near-infrared structure: the disc's scale length, the contested bulge; read through the papers that cite it)",
+    "Simon et al. 2006 (K-band scale length 1.36 +/- 0.06 kpc at 800 kpc; read through the papers that cite it)",
+    "SIMBAD (CDS), NGC 604, read 2026-10-14"
+  ],
+  "review": {
+    "data_vs_model": "A parametric model: the inclination, the disc's scale length and NGC 604's place are published; the arms, the knots, the thickness and the light shares are ours, labelled.",
+    "geometry": "pa 23 / incl 56; the near side and so the tilt's sign are not established here and are assumed; the arms' winding is chosen, not measured.",
+    "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
+    "distance": "The record's: 2.725 Mly (2.38-3.07), the Messier table's.",
+    "credits": "CREDITS.md section 3l, Andromeda and galaxy structure.",
+    "by": "Space Radar maintainers",
+    "date": "2026-10-15"
+  },
+  "credits": [
+    "The Triangulum Galaxy's model: inclination after Zaritsky, Elston & Hill 1989, the disc after Regan & Vogel 1994; NGC 604's place from SIMBAD (CDS). Facts, cited; no image or data file is copied."
+  ]
+};

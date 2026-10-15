@@ -30,6 +30,7 @@ import {
 import { cueRange } from '../site/js/ui/voicecue.js';
 import { NARRATION } from '../site/js/data/narration.js';
 import { TOURS } from '../site/js/data/tours.js';
+import { STEPS as TOUR_STEPS } from '../site/js/data/onboarding.js';
 import { AUDIO } from '../site/js/data/audio.js';
 import { BUDGETS } from '../site/js/data/budgets.js';
 import { COPY } from '../site/js/copy/en.js';
@@ -151,7 +152,10 @@ const at = (phase, index, generation = 1, stopId = 'abcde'[index]) => ({ phase, 
   let seconds = 0;
   let stops = 0;
   const live = new Set();
-  for (const tour of TOURS) {
+  // The tour's steps are read by the same voice (scripts/narrate.py tour_steps, internal spec 0074):
+  // one more trip to this test, each step a stop with no title whose body is its two lines.
+  const TOUR_AS_TRIP = { id: 'onboarding', stops: TOUR_STEPS.map((s) => ({ id: s.id, card: { title: '', body: `${s.say} ${s.ask}` } })) };
+  for (const tour of [...TOURS, TOUR_AS_TRIP]) {
     for (const stop of tour.stops) {
       stops += 1;
       const key = clipKey(tour.id, stop.id);

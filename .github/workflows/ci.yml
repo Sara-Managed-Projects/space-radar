@@ -75,6 +75,12 @@ jobs:
         run: python3 scripts/gen_showers_activity_js.py --check
       - name: The reels mirror matches the registry (spec 0036)
         run: python3 scripts/gen_autopilot_js.py --check
+      - name: "The tour's mirror matches the registry (internal spec 0074)"
+        run: python3 scripts/gen_onboarding_js.py --check
+      # The upkeep rule, enforced: a new rail button, sidebar tab or on-demand module fails this
+      # until registry/onboarding.yaml says whether the tour shows it or why it does not.
+      - name: "The tour is kept up: every main feature is in it or left out with a reason (internal spec 0074)"
+        run: python3 tests/test_onboarding_upkeep.py
       - name: "The World Magnetic Model's coefficients match NOAA's file (internal #450)"
         run: python3 scripts/gen_wmm_js.py --check
       - name: The missions mirror matches the registry (public #452)
@@ -458,6 +464,16 @@ jobs:
       # never lands cannot strand it, and a hand on the map gets everything back as it was.
       - name: "The drift: the link, the walk, the timings, the controller on a stub map (spec 0071)"
         run: node tests/test_drift.mjs
+      # Ivan, 2026-10-14: a long hop was "super fast for this distance, so eyes are tired". The real
+      # camera rig is flown between framed places and read: how fast the picture turns, how fast a
+      # body crosses it, how fast its scale changes. Short hops as they were; the rest inside bounds.
+      - name: "The drift's long flights on the real rig: turn, sweep and scale inside the comfort bounds (spec 0071)"
+        run: node tests/test_drift_pace.mjs
+      # Internal spec 0074: the tour rings real controls, so it breaks when one moves. Every hook a
+      # step names must be a data-tour some source file sets; the step machine, the caption's
+      # place at 1440 and 360 px and the controller on a stub page are walked here too.
+      - name: "The tour: its steps, its hooks in the source, the machine, the geometry, the controller on a stub page (internal spec 0074)"
+        run: node tests/test_onboarding.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
       - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"
@@ -558,6 +574,10 @@ jobs:
         run: node tests/test_ladder.mjs
       - name: The stage hand-off keeps the pose (internal #410)
         run: node tests/test_handoff.mjs
+      - name: one cosmology for the whole map, Planck 2018 held to Astropy's values; far things placed comoving (spec 0075 stage e)
+        run: node tests/test_cosmology.mjs
+      - name: the local volume is one honest tile, culled and bounded; the cosmic stage is steady at 1 Mly, 1 Gly and the 50 Gly edge (spec 0075 stage e)
+        run: node tests/test_localvolume.mjs
       - name: The continuous flight, flown frame by frame
         run: node tests/test_climb.mjs
       - name: the stars are places (spec 0028 step 3)
@@ -573,12 +593,30 @@ jobs:
         run: node tests/test_dso.mjs
       - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
         run: node tests/test_galaxy.mjs
+      - name: galaxies from their own structure - Andromeda and M33 as heroes, the disc foreshortens as the camera circles (spec 0075 stage d)
+        run: node tests/test_hero_spiral.mjs
       - name: heavy builds run a step a turn; the Milky Way is built in pieces and prewarmed (internal 549)
         run: node tests/test_spread.mjs
       - name: the sky sphere and the 3D stars lie in one frame (internal 549, #387)
         run: node tests/test_one_star_frame.mjs
       - name: the nebulae's photographs sit where their objects are, and nothing of them loads at boot (spec 0067)
         run: node tests/test_nebulae.mjs
+      - name: the deep sky's foundation - parents, distances, names, level by size, the coordinator (spec 0075 stage a)
+        run: node tests/test_deepsky.mjs
+      - name: the deep sky's gas is marched in its own mesh, by tier, in the colour and alpha policy (spec 0075 stage a)
+        run: node tests/test_gasmat.mjs
+      - name: the Helix hero - the published rings and tilts, the star centred, T0's samples, the looks (spec 0075 stage b)
+        run: node tests/test_hero_helix.mjs
+      - name: the Helix hero's light is the bake of the current photograph (spec 0075 stage b)
+        run: python3 scripts/build_deep_helix.py --check
+      - name: the deep-sky heroes' profiles are current and reviewed before they ship (spec 0075 stage a)
+        run: python3 scripts/gen_deepsky_heroes_js.py --check
+      - name: site/data/dso.json is the registry's (spec 0075 stage a)
+        run: python3 scripts/build-dso.py --check
+      - name: the LMC and the Tarantula - tilted as measured, nested, no star at a parallax depth (spec 0075 stage c)
+        run: node tests/test_hero_lmc.mjs
+      - name: the LMC's Gaia maps are the size and hash its profile says (spec 0075 stage c)
+        run: python3 scripts/build_deep_lmc.py --check
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)
@@ -724,6 +762,12 @@ jobs:
       # weather row is still the season: no dust storm is drawn that nobody reported.
       - name: Mars's relief casts shadows from MOLA's heights at a low Sun, on tier 1 and up, and no storm is invented (spec 0073 req 5)
         run: node tests/test_mars_relief.mjs
+      # The last four worlds (spec 0073 requirement 5, 2026-10-14): Mercury's shadows from the map it
+      # wears, Venus's radar ground (one channel, in relief, still under the moving clouds), Uranus's
+      # measured cap, Neptune's 1989 spot left out under Measured, its arcs and cirrus Film-only, and
+      # what each card says.
+      - name: Mercury, Venus, Uranus and Neptune close up, and their honesty lines (spec 0073 req 5)
+        run: node tests/test_worlds_films.mjs
 
       # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
       # measured directions, and nothing else moves.
@@ -778,6 +822,8 @@ jobs:
         run: node tests/test_orbitline.mjs
       - name: a not-yet-catalogued object is inferred, dimmer, and says so (spec 0026 req 15)
         run: node tests/test_provisional.mjs
+      - name: "a catalogue number of 100 000 and up is a real one: one helper reads five digits, Alpha-5 and nine digits, keys sat-<n> and survives a share link and the column twin"
+        run: node tests/test_catalog_numbers.mjs
       - name: the space-weather line says the number, the word, the age and the source (spec 0026 req 16)
         run: node tests/test_spaceweather.mjs
       # 2026-09-28: today's clouds from NASA GIBS and the storms from GDACS, against the answers both
@@ -933,6 +979,8 @@ jobs:
         run: node tests/test_edge_cache.mjs
       - name: "a glyph layer uploads only the attributes whose values changed, and a stand-in GPU never holds a stale one (internal #519)"
         run: node tests/test_glyph_uploads.mjs
+      - name: "a selected object stands still: its dot, the camera that follows it and its brackets are one instant a frame, a followed world is aimed at after it is placed, and the ground is on the Earth's stage (Ivan, 2026-10-14)"
+        run: node tests/test_follow_steady.mjs
       - name: "a saved catalogue published as columns decodes to the verbatim rows, and the browser falls back to the verbatim file on any doubt (internal #523)"
         run: node tests/test_columnar.mjs
       - name: "a publisher who forbids redistribution (ESA NEOCC) is not fetched, published, saved or zipped, and JPL's APIs are never called from a browser (internal #370)"

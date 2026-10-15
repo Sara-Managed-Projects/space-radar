@@ -32,6 +32,30 @@
 // onDone is always deferred to a later update() and can never be synchronous at all.
 
 import * as THREE from '../../vendor/three.module.min.js';
+import { stage as theStage } from './stage.js';
+
+/**
+ * THE EDGE OF THE MAP (internal spec 0075 task 17, DS-D09): 50 billion light-years. The observable
+ * universe ends about 46 billion light-years away (data/cosmology.js horizonLy); the last few are an
+ * illustration with nothing measured in them (scene/shells.js says so on the scene), and past 50 the
+ * wheel stops. scene/handoff.js EDGE_KM is the same distance; tests/test_handoff.mjs holds the two equal.
+ */
+export const EDGE_LY = 5e10;
+const LY_KM = 9460730472580.8;
+/** The farthest a camera may stand from what it looks at, in the scene units of a stage of `unitKm`. */
+export function edgeDistance(unitKm) {
+  return unitKm > 0 ? (EDGE_LY * LY_KM) / unitKm : Infinity;
+}
+/**
+ * The nearest a camera should stand to a point `d` scene units from its stage's origin to see it
+ * steady (DS-D10). The GPU holds positions and the view in float32, 7 digits: a point 18 300 units
+ * out (TON 618 on the local-group stage) is placed to 0.002 units, which from 0.4 units is 4 px of
+ * wander as the camera turns (tests/test_localvolume.mjs measured it). From a thousandth of its
+ * distance it is a tenth of a pixel. Pure.
+ */
+export function steadyDistance(d) {
+  return Number.isFinite(d) && d > 0 ? d * 1e-3 : 0;
+}
 
 // docs/design-language.md: camera motion is always eased, cubic-bezier(0.2, 0.8, 0.2, 1),
 // 600-900 ms, never a cut.
@@ -319,7 +343,8 @@ export function createCameraRig(camera, domElement, options = {}) {
   }
 
   function clampDistance(d) {
-    return THREE.MathUtils.clamp(d, state.minDistance, state.maxDistance);
+    // The edge holds on every stage, in that stage's units: a hand on the wheel stops there.
+    return THREE.MathUtils.clamp(d, state.minDistance, Math.min(state.maxDistance, edgeDistance(theStage.unitKm)));
   }
 
   const _unit = new THREE.Vector3();
@@ -683,6 +708,17 @@ export function createCameraRig(camera, domElement, options = {}) {
    *                come back down, instead of interpolating log-distance straight through. Two
    *                stops far apart laterally otherwise sweep across at close range: a smear, not
    *                a shot.
+   *   path(info)   a caller's own curve for a move too long for one ease (ui/driftplan.js
+   *                planFlight). Asked once, when the destination is known, with `info` = {sep,
+   *                from, to, fromDir, toDir, along, up}: how far the look-at point travels, the two
+   *                camera distances (scene units), and four unit vectors on the scene's axes:
+   *                from the look-at point to the camera now, the same on arrival, the line of
+   *                travel and the camera's up; and `body`, the world it keeps out of ({at, radius}:
+   *                its centre from the look-at point now, and the keep-out radius) or null. It returns {ms, at(raw)} where at(raw) -> {pan, distance, dir}: the
+   *                share of the way the look-at point has gone, the camera's distance, and the
+   *                side the camera is on (a vector as above; null keeps the side it has), each
+   *                on its own clock. `ms`, `ease`, `targetDelay` and `apex` are then not used.
+   *                Null from it means "no curve for this one": the flight is flown as without it.
    *   onArrive(reason)  'done' | 'skipped', and 'cancelled'/'replaced' when no onCancel was given.
    *   onCancel(reason)  'cancelled' | 'replaced'. Optional; see the header.
    */
@@ -756,9 +792,22 @@ export function createCameraRig(camera, domElement, options = {}) {
       apex = { logDist: Math.log(Math.max(clampDistance(Number(opts.apex.distance)), 1e-9)), at };
     }
 
+    let path = null;
+    if (typeof opts.path === 'function') {
+      const side = (az, pol) => new THREE.Vector3(Math.sin(pol) * Math.sin(az), Math.cos(pol), Math.sin(pol) * Math.cos(az)).applyQuaternion(upQuatInv);
+      syncUpBasis();
+      const sep = target.distanceTo(to);
+      const along = sep > 0 ? to.clone().sub(target).divideScalar(sep) : null;
+      // The world the rig keeps out of, from the look-at point the flight leaves: the curve bends round it.
+      const body = state.worldRadius > 0 ? { at: worldCentre.clone().sub(target), radius: state.worldRadius * WORLD_CLEARANCE } : null;
+      path = opts.path({ sep, from: distance, to: toDistance, fromDir: side(azimuth, polar), toDir: side(toAz, toPolar), along, up: camera.up.clone().normalize(), body });
+      if (!path || typeof path.at !== 'function' || !(path.ms > 0)) path = null;
+    }
+
     flight = {
       elapsed: 0,
-      ms: wantMs,
+      ms: path ? path.ms : wantMs,
+      path,
       ease: easeFor(opts.ease),
       targetDelay: THREE.MathUtils.clamp(
         Number.isFinite(opts.targetDelay) ? Number(opts.targetDelay) : TARGET_DELAY,
@@ -798,6 +847,21 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   /** Put the flight's pose at parameter `raw` (0..1 of its wall clock). */
   function poseAt(f, raw) {
+    if (f.path) {
+      // The caller's curve: the side, the distance and the look-at point each on its own clock.
+      const p = f.path.at(raw);
+      if (raw >= 1 || !p.dir) {
+        if (raw >= 1) { azimuth = f.fromAz + f.dAz; polar = f.fromPolar + f.dPolar; }
+      } else {
+        syncUpBasis();
+        _tmp.set(p.dir.x, p.dir.y, p.dir.z).applyQuaternion(upQuat).normalize();
+        azimuth = Math.atan2(_tmp.x, _tmp.z);
+        polar = Math.acos(THREE.MathUtils.clamp(_tmp.y, -1, 1));
+      }
+      distance = p.distance;
+      target.lerpVectors(f.fromTarget, f.toTarget, p.pan);
+      return;
+    }
     const k = f.ease(raw);
     azimuth = f.fromAz + f.dAz * k;
     polar = f.fromPolar + f.dPolar * k;
@@ -937,6 +1001,21 @@ export function createCameraRig(camera, domElement, options = {}) {
       return;
     }
     target.copy(followPos);
+  }
+
+  /**
+   * The followed thing AGAIN, after the scene has moved this frame (Ivan, 2026-10-14: a selected
+   * object shook). update() runs first in a frame, so a follow that reads something the frame
+   * moves later -- a world's drawn disc, placed by worlds.update() -- aimed at where it was a
+   * frame ago: the Moon followed at an hour a second stood 60 km, eleven pixels, off the middle,
+   * and by as much more or less as each frame was long or short. main.js calls this once the
+   * worlds are placed; for anything worked out from the clock alone it changes nothing.
+   */
+  function refollow() {
+    if (!followFn || ride) return false;
+    applyFollow();
+    if (!flight) applyToCamera();
+    return true;
   }
 
   // ---------------------------------------------------------------- ride along
@@ -1235,6 +1314,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     update,
     flyTo,
     follow,
+    refollow,
     stopFollow,
     onUserInput,
     state,

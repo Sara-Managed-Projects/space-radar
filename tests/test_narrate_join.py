@@ -195,7 +195,9 @@ for trip, stop in narrate.every_stop(narrate.load_tours()):
     cues = narrate.cues_for(trip, stop, cfg)
     stops += 1
     has_title = narrate.titled(key, stop.get("card"), cfg, cues)
-    if key not in skip and len(cues) > 1 and not has_title:
+    # The tour's steps (narrate.tour_steps, internal spec 0074) are stops with no title: a caption
+    # of two lines, said in one pass. Everything else below holds for them as for a trip's stop.
+    if key not in skip and len(cues) > 1 and not has_title and trip["id"] != "onboarding":
         untitled.append(key)
     groups = narrate.passes([m for _, m in cues], has_title, rules)
     if has_title and len(cues) > 1 and len(groups[0]) < 2:

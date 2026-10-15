@@ -16,6 +16,7 @@
 
 import * as satellite from '../../vendor/satellite.esm.js';
 import { rocketRowFor } from './rocketmatch.js';
+import { catalogNumber, isCatalogued } from './catnum.js';
 
 const DEG = Math.PI / 180;
 const AU_KM = 149597870.7;
@@ -75,14 +76,14 @@ export function parseCelestrakGP(json, opts = {}) {
     // satellite.js reports an unusable element set on the satrec itself rather than throwing.
     if (!satrec || satrec.error) continue;
 
-    const norad = Number(row.NORAD_CAT_ID);
+    const norad = catalogNumber(row.NORAD_CAT_ID);
     const intl = typeof row.OBJECT_ID === 'string' ? row.OBJECT_ID.trim() : '';
     const name = (row.OBJECT_NAME || intl || String(norad)).trim();
 
-    // The supplemental files carry placeholder catalogue numbers (100001 and up) for objects
-    // the public catalogue has not numbered yet. Their international designator is real, so
-    // that is what identifies them.
-    const numbered = Number.isFinite(norad) && norad > 0 && norad < 90000;
+    // A stand-in number (an analyst object, a launch nominal: data/catnum.js has the ranges and
+    // their sources) is not the object's own, so its international designator identifies it.
+    // Numbers of 100 000 and up are REAL since the five-digit catalogue ran out on 2026-07-11.
+    const numbered = isCatalogued(norad);
     const id = numbered ? `sat-${norad}` : intl ? `int-${intl}` : `${source}-${out.length}`;
     // PROVISIONAL (spec 0026 req 15): an object the public catalogue has not numbered yet, known only
     // from the operator's own elements. Drawn dimmer, classed `inferred` whatever its epoch age, and
@@ -113,7 +114,7 @@ export function parseCelestrakGP(json, opts = {}) {
       satrec,
       meta: {
         noradId: numbered ? norad : null,
-        catalogueNumber: Number.isFinite(norad) ? norad : null,
+        catalogueNumber: norad,
         provisional,
         intlDesignator: intl || null,
         objectName: name,
@@ -1488,9 +1489,18 @@ const GATHERED = 'its catalogued stars are each drawn in their measured directio
 const DSO_DRAWN = {
   m31: {
     drawsAs: 'variant',
-    drawnName: 'Andromeda, from our own galaxy\u2019s model',
-    departure: 'at the size given here and tilted as measured, 77\u00b0 with the north-west edge ' +
-      'nearest; its own arms have not been mapped star by star, so these are ours',
+    // Her own model since spec 0075 stage d (scene/deep/spiral.js, registry/deepsky-heroes/m31.yaml).
+    drawnName: 'Andromeda, as a model of her own measured shape',
+    departure: 'tilted as measured, 77\u00b0 with the north-west edge nearest; her bulge, disc, ' +
+      'ring and dust rings follow published measurements, her arms\u2019 exact shape and her stars ' +
+      'are ours: points standing for light, not a map of her stars. Not yet reviewed by an astronomer',
+  },
+  // The Triangulum Galaxy, a model of its own shape since spec 0075 stage d (registry/deepsky-heroes/m33.yaml).
+  m33: {
+    drawsAs: 'variant',
+    drawnName: 'the Triangulum Galaxy, as a model of its measured shape',
+    departure: 'tilted 56\u00b0 as measured, with NGC 604 where it is; its arms and stars are ours. ' +
+      'Not yet reviewed by an astronomer',
   },
   // ANDROMEDA'S TWO BRIGHT COMPANIONS (public #385). They were two unnamed dots beside her: the
   // Messier table calls them "Andromeda Satellite #1" and "#2", which is nobody's name for them,
@@ -1578,8 +1588,16 @@ export function parseDso(doc) {
         // A Messier row's position is OpenNGC's and its distance the table's; a hand row took both from
         // the one page it names, and must not credit OpenNGC for a position it did not use.
         cite: o.positionSource && o.positionSource !== 'OpenNGC'
-          ? `Position and distance: ${o.positionSource}`
+          ? (o.distanceSource && o.distanceSource !== o.positionSource ? `Position: ${o.positionSource}; distance: ${o.distanceSource}` : `Position and distance: ${o.positionSource}`)
           : `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
+        // The object model (internal spec 0075 task 2; scripts/build-dso.py): what it is inside, how its
+        // distance was found, how it is turned, its shape, and what is drawn for it. `cls` above stays
+        // the class of its POSITION; `drawn` is the class of its PICTURE.
+        parent: o.parent ? `dso-${o.parent}` : null,
+        distance: o.distance && o.distance.method ? { method: o.distance.method, source: o.distance.source || null, read: o.distance.read || null } : null,
+        orientation: o.orientation || null,
+        morphology: o.morphology || null,
+        drawnClasses: Array.isArray(o.drawn) ? o.drawn.slice() : ['illustration'],
         aliases,
         ...drawn,
       },

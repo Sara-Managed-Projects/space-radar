@@ -220,6 +220,26 @@ description, and a maintainer will render the picture and the voice onto your br
 
 Open an issue before a big one. It is much nicer to agree on the shape first.
 
+### Add, move or remove a main feature: keep the tour
+
+The map has a tour (the question mark in the tool rail): eight steps, each a hand-drawn ring
+round a real control. It is only as good as it is current, so it is data and two tests hold it.
+
+- **The steps and the feature list** are `registry/onboarding.yaml`. Its `features` name every
+  main feature and say, for each, either which step shows it (`step:`) or why the tour leaves it
+  out (`not:` and one honest line). Its head explains every field.
+- **A step points at a hook, never at a class or a place**: `data-tour="name"` on the real
+  element, set where the element is built. Move a control and its attribute moves with it.
+- **You added** a rail button, a sidebar tab, a mode fetched on demand (`ctx.want…` in
+  `site/js/main.js`) or another big control: add it to `features`, with a step if a newcomer
+  needs it in their first two minutes, and with `not:` if they do not. Most do not.
+- **You moved** one: keep its `data-tour` attribute on it. Nothing else changes.
+- **You removed** one: delete its feature, its step and its hook.
+- Then `python3 scripts/gen_onboarding_js.py`, and `node tests/test_onboarding.mjs` with
+  `python3 tests/test_onboarding_upkeep.py`: they name whatever was forgotten. A step whose
+  words changed needs its clip read again by the trips' voice (`scripts/narrate.py --only
+  onboarding`); like a trip's, a maintainer can do that on your branch.
+
 ## Tests
 
 ```bash

@@ -467,7 +467,8 @@ function horizonsText(t0Ms, r, v) {
 // Three of them got NASA's own model on 2026-10-05 (issue #431): OSIRIS-APEX is the OSIRIS-REx
 // spacecraft, STEREO-A and LRO are published under their own names. A model of the craft itself is
 // not borrowing, so they leave this loop and are held to the opposite claim below it.
-const OWN_MODEL = { 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb', 'deep-lro': 'lro.glb' };
+// 2026-10-15, batch eleven (public #1075): Europa Clipper wears NASA's own model of itself.
+const OWN_MODEL = { 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb', 'deep-lro': 'lro.glb', 'deep-europa-clipper': 'europa-clipper.glb' };
 for (const [id, file] of Object.entries(OWN_MODEL)) {
   const rec = byId.get(id);
   const entry = realModelFor(rec);

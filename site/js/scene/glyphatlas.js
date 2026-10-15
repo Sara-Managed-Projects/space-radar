@@ -2,7 +2,8 @@
 //
 // No binary asset and no build step: the atlas is painted with Canvas2D into a THREE.CanvasTexture
 // the first time it is asked for. Nine class shapes (plus a plain disc for `world`) live in a 4x4
-// grid of 128 px cells inside a 512 px texture.
+// grid of 128 px cells inside a 512 px texture; since 2026-10-14 a 5x5 grid inside 640 px, for the four
+// deep-sky marks of internal spec 0075 task 4 (cells 16-19).
 //
 // Encoding, so the palette survives tinting:
 //   red channel  = 0 on the outline, 1 on the fill (the shader mixes `space` -> the class colour)
@@ -13,10 +14,10 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 
-export const ATLAS_SIZE = 512;
-export const ATLAS_GRID = 4; // 4x4 cells
+export const ATLAS_SIZE = 640;
+export const ATLAS_GRID = 5; // 5x5 cells (4x4 until the deep-sky marks needed four more)
 export const CELL_PX = ATLAS_SIZE / ATLAS_GRID; // 128
-export const HALO_BIAS = ATLAS_GRID * ATLAS_GRID; // cell + 16 == "draw the sample halo too"
+export const HALO_BIAS = ATLAS_GRID * ATLAS_GRID; // cell + 25 == "draw the sample halo too"
 
 // The class table from docs/design-language.md, verbatim. Shared by glyphs.js and models.js so the
 // nine hexes exist once. Adding a class is a row here plus a shape in SHAPES below.
@@ -73,6 +74,13 @@ export const CELL_OF = {
   // Soyuz is a satellite in the catalogue -- so it has no colour of its own and no row in
   // GLYPH_CLASSES' consumers; it is a SHAPE, in whatever colour its layer draws.
   crewed: 15,
+  // A MARK PER KIND IN THE DEEP SKY (internal spec 0075 task 4, DS-A06). Until 2026-10-14 a galaxy, a
+  // nebula and a cluster were one lilac disc-in-a-ring (cell 12, still the mark of anything else): at
+  // 8 px nothing said which was which. Shapes, not classes: they are all `dso` and its lilac.
+  'dso-galaxy': 16,   // a tilted ellipse with a bright middle, turned to its position angle (glyphs.js)
+  'dso-ring': 17,     // a planetary nebula: a ring round its star
+  'dso-cloud': 18,    // an emission or reflection nebula, a remnant: a cloud of three lobes
+  'dso-cluster': 19,  // a star cluster: three dots
 };
 
 export const GLYPH_CLASSES = Object.keys(CELL_OF);
@@ -109,12 +117,24 @@ const SWARM = /^(starlink|oneweb|kuiper|qianfan|guowang|hulianwang)\b/i;
 /** @returns {string} a key of CELL_OF or GLYPH_ALIASES */
 export function glyphFor(record, layer) {
   const klass = (record && record.klass) || (layer && (layer.klass || layer.glyph));
+  if (klass === 'dso') return dsoMark(record);
   const name = record && record.name;
   if (name && (klass === 'station' || klass === 'satellite')) {
     if (CREWED.test(name)) return 'crewed';
     if (klass === 'satellite' && SWARM.test(name)) return 'dot';
   }
   return klass;
+}
+
+/** Which deep-sky mark a record gets, by its kind and OpenNGC type (spec 0075 task 4). Pure. */
+export function dsoMark(record) {
+  const md = (record && record.meta) || {};
+  const code = md.typeCode || '';
+  if (md.kind === 'galaxy') return 'dso-galaxy';
+  if (code === 'PN') return 'dso-ring';
+  if (md.kind === 'cluster' || code === 'GCl' || code === 'OCl' || code === '*Ass') return 'dso-cluster';
+  if (md.kind === 'nebula') return 'dso-cloud';
+  return 'dso';
 }
 
 /** Cell index for a class name or a layer's glyph name; anything unknown is a satellite. */
@@ -232,6 +252,30 @@ const SHAPES = {
   dso(ctx, cx, cy, R) {
     paint(ctx, annulus(cx, cy, R * 0.95, R * 0.7), R * 0.6);
     paint(ctx, disc(cx, cy, R * 0.45), R);
+  },
+  // The deep-sky marks (spec 0075 task 4). The galaxy's ellipse lies along the cell's x axis; the
+  // vertex shader turns it to the galaxy's position angle as seen from the camera.
+  'dso-galaxy'(ctx, cx, cy, R) {
+    const e = new Path2D();
+    e.ellipse(cx, cy, R * 0.98, R * 0.46, 0, 0, Math.PI * 2);
+    paint(ctx, e, R * 0.6);
+    paint(ctx, disc(cx, cy, R * 0.24), R * 0.5);
+  },
+  'dso-ring'(ctx, cx, cy, R) {
+    paint(ctx, annulus(cx, cy, R * 0.9, R * 0.52), R * 0.6, { rule: 'evenodd' });
+    paint(ctx, disc(cx, cy, R * 0.16), R * 0.4);
+  },
+  'dso-cloud'(ctx, cx, cy, R) {
+    const c = new Path2D();
+    c.addPath(disc(cx - R * 0.42, cy + R * 0.18, R * 0.5));
+    c.addPath(disc(cx + R * 0.42, cy + R * 0.18, R * 0.46));
+    c.addPath(disc(cx + R * 0.02, cy - R * 0.28, R * 0.56));
+    paint(ctx, c, R * 0.6);
+  },
+  'dso-cluster'(ctx, cx, cy, R) {
+    const c = new Path2D();
+    for (const [dx, dy] of [[0, -0.55], [-0.55, 0.4], [0.55, 0.4]]) c.addPath(disc(cx + dx * R, cy + dy * R, R * 0.34));
+    paint(ctx, c, R * 0.5);
   },
   // the weather map's tropical-cyclone symbol: an eye with two curled arms, turned the way the
   // storm turns in the northern hemisphere, where most of them are (anticlockwise seen from above)

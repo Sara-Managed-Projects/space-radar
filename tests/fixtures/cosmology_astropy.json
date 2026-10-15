@@ -1,0 +1,94 @@
+{
+ "about": "Reference values for site/js/data/cosmology.js, computed once by scripts/cosmology_reference.py",
+ "astropy": "6.0.1",
+ "cosmology": "FlatLambdaCDM(name=\"Planck18\", H0=67.66 km / (Mpc s), Om0=0.30966, Tcmb0=2.7255 K, Neff=3.046, m_nu=[0.   0.   0.06] eV, Ob0=0.04897)",
+ "parameters": {
+  "H0": 67.66,
+  "Om0": 0.30966,
+  "Ode0": 0.6888463055445441,
+  "Ogamma0": 5.402015137139352e-05,
+  "Onu0": 0.0014396743040845242,
+  "Tcmb0": 2.7255,
+  "Neff": 3.046,
+  "m_nu_ev": [
+   0.0,
+   0.0,
+   0.06
+  ]
+ },
+ "age_now_gyr": 13.786885302009708,
+ "horizon_mpc": 14165.167032269248,
+ "horizon_gly": 46.20059568997569,
+ "rows": [
+  {
+   "z": 0.01,
+   "comoving_mpc": 44.20505557661846,
+   "comoving_gly": 0.14417760803637203,
+   "lookback_gyr": 0.14346204835892964,
+   "age_gyr": 13.643423253650779
+  },
+  {
+   "z": 0.1,
+   "comoving_mpc": 432.5656977383524,
+   "comoving_gly": 1.4108406109885672,
+   "lookback_gyr": 1.3451981508947874,
+   "age_gyr": 12.441687151114921
+  },
+  {
+   "z": 0.5,
+   "comoving_mpc": 1946.4166347871185,
+   "comoving_gly": 6.348361991297799,
+   "lookback_gyr": 5.196239527320522,
+   "age_gyr": 8.590645774689188
+  },
+  {
+   "z": 1,
+   "comoving_mpc": 3395.6344711515662,
+   "comoving_gly": 11.075078391609043,
+   "lookback_gyr": 7.935542002084361,
+   "age_gyr": 5.851343299925346
+  },
+  {
+   "z": 2,
+   "comoving_mpc": 5308.188883886385,
+   "comoving_gly": 17.312996586046662,
+   "lookback_gyr": 10.51005491751732,
+   "age_gyr": 3.276830384492389
+  },
+  {
+   "z": 2.219,
+   "comoving_mpc": 5614.489330639992,
+   "comoving_gly": 18.312015028108426,
+   "lookback_gyr": 10.831653095168933,
+   "age_gyr": 2.9552322068407735
+  },
+  {
+   "z": 3,
+   "comoving_mpc": 6504.003988949642,
+   "comoving_gly": 21.21322381691065,
+   "lookback_gyr": 11.64313146468227,
+   "age_gyr": 2.1437538373274374
+  },
+  {
+   "z": 6,
+   "comoving_mpc": 8425.100014933401,
+   "comoving_gly": 27.479001027719587,
+   "lookback_gyr": 12.857620352244135,
+   "age_gyr": 0.9292649497655731
+  },
+  {
+   "z": 10,
+   "comoving_mpc": 9636.285079457526,
+   "comoving_gly": 31.42935836161767,
+   "lookback_gyr": 13.31547051921035,
+   "age_gyr": 0.47141478279933635
+  },
+  {
+   "z": 1100,
+   "comoving_mpc": 13886.327957431413,
+   "comoving_gly": 45.29114426382573,
+   "lookback_gyr": 13.786518777284869,
+   "age_gyr": 0.0003665245339833244
+  }
+ ]
+}
