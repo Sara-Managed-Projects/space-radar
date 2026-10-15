@@ -278,6 +278,9 @@ export function createShells(scene, opts = {}) {
     fill(COPY.deepCosmos.horizonNow, { n: Math.round(HORIZON_LY / 1e9) }),
     fill(COPY.deepCosmos.horizonWhy, { age: fmt1(ageGyr(0)) }),
   ];
+  // The map's words, made once: from inside at the foot of the view; from outside with the horizon's.
+  const cmbInside = cmbWords(true);
+  const horizonWithMap = [...horizonWords, ...cmbWords(false)];
 
   function setLabel(sh, text, plate = false) {
     const lines = Array.isArray(text) ? text : [text];
@@ -326,7 +329,7 @@ export function createShells(scene, opts = {}) {
     // The words are made when the number they print changes: once a year for the first, never for the
     // second; the horizon's carry the map's words and scale while the map is on its wall.
     setLabel(shells[0], fill(COPY.shells.radio, { n: Math.floor(radio) }));
-    setLabel(shells[1], mapShown && !inside ? [...horizonWords, ...cmbWords(false)] : horizonWords, mapShown && !inside);
+    setLabel(shells[1], mapShown && !inside ? horizonWithMap : horizonWords, mapShown && !inside);
     const h = 0.03 * Math.min(1, (camera.aspect || 1) * 1.5);
     _up.copy(camera.up).normalize();
     camera.getWorldDirection(_fwd);
@@ -366,7 +369,7 @@ export function createShells(scene, opts = {}) {
     if (edge.shown) {
       const gly = Math.min(EDGE_LY, (d * stage.unitKm) / LY_KM) / 1e9;
       if (past) setLabel(edge, [fill(COPY.deepCosmos.edge, { n: Math.round(gly) }), fill(COPY.deepCosmos.edgeWhy, { h: Math.round(HORIZON_LY / 1e9) }), COPY.deepCosmos.edgeNothing], mapShown);
-      else setLabel(edge, cmbWords(true), true);
+      else setLabel(edge, cmbInside, true);
       if (edge.label) {
         _axis.crossVectors(_fwd, _up).normalize();
         _q.setFromAxisAngle(_axis, -halfFov * 0.62);
@@ -415,9 +418,9 @@ export function createShells(scene, opts = {}) {
   function spoken() { return spokenNow; }
 
   /** `{ cmb: false }` holds the map off, for a look probe's before; only on a page opened with ?look=1. */
-  function debug(opts = {}) {
+  function debug(o = {}) {
     const looking = typeof location !== 'undefined' && /[?&]look=1\b/.test(location.search || '');
-    if (looking && 'cmb' in opts) cmbOff = opts.cmb === false;
+    if (looking && 'cmb' in o) cmbOff = o.cmb === false;
     return { cmbOff };
   }
 
