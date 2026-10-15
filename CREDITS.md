@@ -1587,6 +1587,24 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
 
 ### Plume observations (0076 W2-c)
 
+The plumes on Io, Enceladus and Triton (`registry/plumes.yaml`, drawn by `site/js/scene/plumes.js`) are
+numbers, not images: each plume's place, its height and who saw it when. No picture is copied.
+
+- **Places**: the IAU/USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov): Prometheus,
+  Pillan Patera, Tvashtar, and Enceladus's Alexandria, Cairo, Baghdad and Damascus sulci. "USGS-authored
+  or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights
+  and Credits). Pele's and Loki Patera's from Wikipedia's articles, which cite the gazetteer.
+- **Heights and dates**: NASA/JPL captions PIA00703 (Galileo, Prometheus 75 km and Pillan 140 km, 28 June
+  1997), PIA09359 (New Horizons, Tvashtar about 330 km, 2007), PIA07762 (Cassini, Enceladus's plume "at least
+  as tall as the moon's diameter", November 2005) and the release of 28 July 2014 (101 geysers, Porco et
+  al. 2014); Pele's 300 km (Voyager 1, March 1979; Strom et al. 1979, Nature); Triton's 8 km columns and
+  clouds carried over 100 km (Voyager 2, August 1989; Soderblom et al. 1990, Science 250, USGS abstract)
+  and their places (Hofgartner et al. 2022, arXiv:2112.04627). Facts and numbers; NASA's captions are
+  "generally not subject to copyright in the United States" (NASA media usage guidelines).
+- **Gravity**: GM and mean radii from JPL Solar System Dynamics, Planetary Satellite Physical Parameters.
+- The grains' arcs, the stripes' straight lines, the jets' places along them, the light's stretch and
+  the hot spots' brightness are ours (modelled, reconstructed or illustrative; the card says which).
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

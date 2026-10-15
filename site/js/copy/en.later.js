@@ -1869,5 +1869,19 @@ Object.assign(COPY, {
   // 0076 W2-b (the giants' rings and spots)
   r12Giants: {},
   // 0076 W2-c (plumes)
-  r12Plumes: {},
+  r12Plumes: {
+    // THE PLUMES' LINE ON A MOON'S CARD (scene/plumes.js lineFor): what is drawn, seen when and by what,
+    // then what of it is measured, the motion, and the review. registry/plumes.yaml holds the sources.
+    line: 'Plumes drawn as they were seen: {list}.',
+    item: '{name}, about {km} km high ({by}, {when})',
+    jets: 'the jets of the four tiger stripes, at least {km} km high ({by}, {when})',
+    truth: 'Their places and heights are measured; the grains’ arcs are a model, and their light is stretched so they can be seen. They may not be erupting now.',
+    stripes: 'The stripes are drawn straight from the gazetteer’s centres and lengths, and the places of the 101 jets along them are a model.',
+    column: 'They are dark columns that the wind carried west at their tops; how wide a column is, is not known and is drawn narrow.',
+    hot: 'The orange points on the night side are hot spots where lava glows ({list}): their places are measured, their brightness is not.',
+    film: 'Under Film the grains fly their arcs {k} times faster than the clock.',
+    still: 'They are held still, as under Measured or reduced motion.',
+    review: 'Not yet reviewed by an astronomer.',
+    span: '{a} to {b}',
+  },
 });
