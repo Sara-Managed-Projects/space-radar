@@ -142,6 +142,11 @@ const DEFERRED = {
   'js/data/hero-lmc.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-m31.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-m33.js': 'a hero\'s profile: with the coordinator',
+  // 0076 W1-a (orion.js)
+  // 0076 W1-b (cmb.js)
+  // 0076 W1-c (truthlegend.js)
+  // 0076 W1-d (sunimage.js)
+  // 0076 W1-e (perf.js)
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

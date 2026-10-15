@@ -1546,6 +1546,10 @@ noao0001a, ESO eso1424a).
   "the observable universe is about 92 billion light-years across". Words only; nothing of NASA's is
   drawn.
 
+### Orion (0076 W1-a)
+
+### The CMB map (0076 W1-b)
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —
@@ -1688,6 +1692,8 @@ card. Only our harvester asks NASA for the list; a visitor's browser reads our s
 Sources panel prints "Solar flares: NOAA Space Weather Prediction Center, edited events list" and
 "Coronal mass ejections: NASA DONKI (Moon to Mars Space Weather Analysis Office and CCMC)" while the
 lists are held.
+
+### SDO image of the day (0076 W1-d)
 
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 

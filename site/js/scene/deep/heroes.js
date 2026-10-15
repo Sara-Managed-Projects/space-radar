@@ -17,6 +17,7 @@ export const HEROES = [
   { id: 'lmc', record: 'dso-lmc', stage: 'c', profile: () => import('../../data/hero-lmc.js'), build: () => import('./lmc.js') },
   { id: 'm31', record: 'dso-m31', stage: 'd', profile: () => import('../../data/hero-m31.js'), build: () => import('./spiral.js') },
   { id: 'm33', record: 'dso-m33', stage: 'd', profile: () => import('../../data/hero-m33.js'), build: () => import('./spiral.js') },
+  { id: 'orion', record: 'dso-m42', stage: 'W1-a', profile: () => import('../../data/hero-orion.js'), build: () => import('./orion.js') },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.
