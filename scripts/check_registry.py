@@ -2280,8 +2280,11 @@ def check_dso_hand() -> list:
             ok = len(d) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in d) and d[0] < d[1]
         else:
             ok = isinstance(d, (int, float)) and d > 0
-        if not ok:
-            fail(where, "`dist_kly` must be a positive number or a [low, high] range in thousands of light-years")
+        # A `distance:` block (spec 0075 task 2) stands in for `dist_kly`; check_dso_model reads it.
+        if not ok and not isinstance(o.get("distance"), dict):
+            fail(where, "`dist_kly` must be a positive number or a [low, high] range in thousands of light-years, or give a `distance:` block")
+        if d is not None and isinstance(o.get("distance"), dict):
+            fail(where, "has both `dist_kly` and `distance:`: one number, one place")
         for key, lo, hi in (("ra_deg", 0, 360), ("dec_deg", -90, 90)):
             v = o.get(key)
             if not isinstance(v, (int, float)) or not (lo <= v <= hi):
@@ -2313,7 +2316,109 @@ def check_dso_hand() -> list:
             mid = (d[0] + d[1]) / 2 if isinstance(d, list) and len(d) == 2 else d
             if isinstance(mid, (int, float)) and row.get("distLy") != round(mid * 1000):
                 fail(where, f"`dist_kly: {d}` but site/data/dso.json draws it at {row.get('distLy')} ly")
+            dd = o.get("distance") if isinstance(o.get("distance"), dict) else {}
+            if dd.get("value_ly") and row.get("distLy") != round(dd["value_ly"]):
+                fail(where, f"`distance.value_ly: {dd['value_ly']}` but site/data/dso.json draws it at {row.get('distLy')} ly; run scripts/build-dso.py --refresh")
+            if (row.get("parent") or None) != (o.get("parent") or None):
+                fail(where, "`parent:` differs from site/data/dso.json; run scripts/build-dso.py --refresh")
+        check_dso_model(objects, rows)
     return objects
+
+
+# --- the deep-sky object model (internal spec 0075 task 2, 2026-10-14) ----------------------------
+# A parent is a record, the chain ends, a distance says how it was found, and a child can be inside
+# its parent: placed by two numbers from two pages, the Tarantula was 3 000 ly in front of the LMC.
+DSO_METHODS = ("parallax", "eclipsing-binary", "cepheid", "TRGB", "standard-candle", "redshift",
+               "kinematic", "assumed-member-of-parent")
+DSO_MORPHOLOGIES = ("spiral", "barred-spiral", "elliptical", "lenticular", "irregular", "barred-irregular",
+                    "dwarf-spheroidal", "unknown")
+DSO_DRAWN = ("photograph", "catalogue", "reconstruction", "model", "illustration")
+
+
+def dso_model_problems(rows: dict) -> list:
+    """Every refusal of the object model over built rows {id: row}, as (id, message). Pure, for tests too."""
+    import math
+    out = []
+    for rid, r in rows.items():
+        parent = r.get("parent")
+        d = r.get("distance") if isinstance(r.get("distance"), dict) else None
+        if d is not None:
+            if d.get("method") not in DSO_METHODS:
+                out.append((rid, f"`distance:` without a method of {', '.join(DSO_METHODS)} (got {d.get('method')!r})"))
+            elif d["method"] != "assumed-member-of-parent" and not d.get("source"):
+                out.append((rid, "`distance:` names no `source:`"))
+            elif d["method"] == "assumed-member-of-parent" and not parent:
+                out.append((rid, "`assumed-member-of-parent` with no `parent:` to take the distance from"))
+            lo, hi, v = d.get("low"), d.get("high"), d.get("value_ly")
+            if lo and hi and v and not (lo <= v <= hi):
+                out.append((rid, f"`distance:` {v} is outside its own range {lo}..{hi}"))
+        m = r.get("morphology")
+        if m is not None and m not in DSO_MORPHOLOGIES:
+            out.append((rid, f"`morphology: {m}` is not one of {', '.join(DSO_MORPHOLOGIES)}"))
+        for c in r.get("drawn") or []:
+            if c not in DSO_DRAWN:
+                out.append((rid, f"`drawn: {c}` is not one of {', '.join(DSO_DRAWN)}"))
+        if not parent:
+            continue
+        if parent not in rows:
+            out.append((rid, f"`parent: {parent}` is not a deep-sky record"))
+            continue
+        seen, at = {rid}, parent
+        while at:
+            if at in seen:
+                out.append((rid, f"`parent:` makes a cycle through {at}"))
+                break
+            seen.add(at)
+            at = (rows.get(at) or {}).get("parent")
+        p = rows[parent]
+        # Inside the parent's extent, within what both distances allow: the nearest the two can be.
+        if p.get("majAxArcmin") and p.get("distLy") and r.get("distLy"):
+            def unit(x):
+                ra, dec = math.radians(x["raDeg"]), math.radians(x["decDeg"])
+                return (math.cos(dec) * math.cos(ra), math.cos(dec) * math.sin(ra), math.sin(dec))
+            a, b = unit(r), unit(p)
+            sep = math.acos(max(-1.0, min(1.0, sum(i * j for i, j in zip(a, b)))))
+            lateral = math.sin(sep) * p["distLy"]
+            plo, phi = p.get("distLyLow") or p["distLy"], p.get("distLyHigh") or p["distLy"]
+            clo, chi = r.get("distLyLow") or r["distLy"], r.get("distLyHigh") or r["distLy"]
+            depth = max(0.0, clo - phi, plo - chi)
+            extent = math.tan(math.radians(p["majAxArcmin"] / 60 / 2)) * p["distLy"]
+            if math.hypot(lateral, depth) > extent * 1.0001:
+                out.append((rid, f"is {math.hypot(lateral, depth):,.0f} ly from its parent {parent} at the nearest the two distances allow, "
+                                 f"and {parent} is {extent:,.0f} ly in radius: not inside it"))
+    return out
+
+
+def check_dso_model(objects: list, rows: dict) -> None:
+    """The model over the built rows with the registry's own fields laid on them, so a refusal is of
+    what the registry says (and names its file), not only of what was last built."""
+    path = ROOT / "scripts/data/messier-overlay.yaml"
+    overlay = {}
+    if path.exists():
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
+        overlay = {str(k): (v or {}) for k, v in ((doc.get("objects") or {}).items())}
+    merged = {k: dict(v) for k, v in rows.items()}
+    source = {}
+    for o in objects:
+        if isinstance(o, dict) and o.get("id") in merged:
+            source[o["id"]] = f"dso-hand.yaml[{o['id']}]"
+            for f in ("parent", "distance", "morphology", "drawn"):
+                if f in o:
+                    merged[o["id"]][f] = o[f]
+                elif f in ("parent", "distance"):
+                    merged[o["id"]][f] = None
+    for k, v in overlay.items():
+        if k not in merged:
+            fail(f"messier-overlay.yaml[{k}]", "is not a deep-sky record in site/data/dso.json")
+            continue
+        source[k] = f"messier-overlay.yaml[{k}]"
+        for f in ("parent", "distance", "morphology", "drawn"):
+            if f in v:
+                merged[k][f] = v[f]
+        if (rows[k].get("parent") or None) != (v.get("parent") or None):
+            fail(source[k], "`parent:` differs from site/data/dso.json; run scripts/build-dso.py --refresh")
+    for rid, msg in dso_model_problems(merged):
+        fail(source.get(rid, f"site/data/dso.json[{rid}]"), msg)
 
 
 # --- registry/nebulae.yaml (spec 0067, 2026-10-03) -----------------------------------------------
@@ -3453,6 +3558,94 @@ def budget_reader_text() -> str | None:
     return "\n".join(parts)
 
 
+# A REAL MODEL'S `kind:` (2026-10-12, internal spec 0064, public #938). Absent, a row is somebody's
+# published mesh, re-encoded: the first seventy are. `derived-from-images` is a mesh that an
+# image-to-3D model GENERATED from photographs and this project then cleaned: nobody published it,
+# so the row cannot point at a file a person can compare it with, and everything a person would need
+# to judge it has to be on the row itself. Refused unless it carries:
+#   references   the pictures, each with the page it can be opened on (https), its licence, whose
+#                it is, and the day that was read; at least one;
+#   generator    the model that made the mesh: its name, its page (https), the licence of its code
+#                and of its weights (they differ more often than not), and the day they were read;
+#   dimensions   the cited metres it was scaled to, with where they were read;
+#   honesty      the sentence the card prints, word for word, and it is one sentence for the whole
+#                kind: a visitor is told the same thing about every generated shape.
+# The same fields on a row of another kind are refused too: a published mesh that says it was
+# built from photographs is saying something false about itself.
+#
+# 2026-10-13, the first batch of the "3D model:" issues (public #946, #964, #968, #994). Two things
+# the first row did not need:
+#   A RENDER IS NOT A PHOTOGRAPH. Nobody photographed Seasat or XRISM in orbit; the clean picture of
+#   each is an agency's own artist's render. A mesh generated from one says "an artist's render" on
+#   the card, so `honesty:` is one of two sentences and each reference of such a row says which it
+#   is in its licence or title. Still one sentence per source: a row cannot word its own.
+#   `built-from-dimensions` is a mesh nobody generated either: built here in code, offline, from
+#   cited metres, with pictures looked at for what the metres do not say (NuSTAR: two boxes on a
+#   ten-metre lattice, which no image-to-3D model can draw). It owes the same pictures, the same
+#   cited dimensions and its own sentence, and it may NOT name a generator.
+MODEL_KINDS = {"derived-from-images", "built-from-dimensions"}
+MODEL_FROM_IMAGES_HONESTY = "shape built from photographs; proportions approximate"
+MODEL_FROM_RENDER_HONESTY = "shape built from an artist’s render; proportions approximate"
+MODEL_FROM_DIMENSIONS_HONESTY = "shape built from published dimensions and pictures; details simplified"
+MODEL_HONESTY = {"derived-from-images": (MODEL_FROM_IMAGES_HONESTY, MODEL_FROM_RENDER_HONESTY),
+                 "built-from-dimensions": (MODEL_FROM_DIMENSIONS_HONESTY,)}
+MODEL_FROM_IMAGES_FIELDS = ("references", "generator", "dimensions", "honesty")
+
+
+def check_model_kind(m: dict, where: str) -> None:
+    kind = m.get("kind")
+    if kind is None:
+        carried = [k for k in MODEL_FROM_IMAGES_FIELDS if k in m]
+        if carried:
+            fail(where, f"carries {', '.join('`' + k + ':`' for k in carried)} and no `kind: derived-from-images`: "
+                        "those fields describe a generated mesh, and a row without the kind says it is a published one")
+        return
+    if kind not in MODEL_KINDS:
+        fail(where, f"`kind: {kind}` is not a kind of real model ({', '.join(sorted(MODEL_KINDS))}; leave it out for a published mesh)")
+        return
+    refs = m.get("references")
+    if not isinstance(refs, list) or not refs:
+        fail(where, "a model generated from pictures names no `references:` -- the pictures are its only source, and each is somebody's work")
+    else:
+        for i, r in enumerate(refs):
+            at = f"{where}.references[{i}]"
+            if not isinstance(r, dict):
+                fail(at, "must be a mapping with url, licence, credit and read")
+                continue
+            if not str(r.get("url") or "").startswith("https://"):
+                fail(at, "no https `url:` -- the page a person can open the picture on")
+            for key in ("licence", "credit"):
+                if not str(r.get(key) or "").strip():
+                    fail(at, f"no `{key}:` -- a picture with no stated {key} may not be the source of a shipped shape")
+            if not isinstance(r.get("read"), datetime.date):
+                fail(at, "no `read: YYYY-MM-DD` -- a licence is a fact about a page on a day")
+    gen = m.get("generator")
+    if kind == "built-from-dimensions":
+        if gen is not None:
+            fail(where, "a model built from dimensions names a `generator:` -- then a model generated it, and its kind is derived-from-images")
+    elif not isinstance(gen, dict):
+        fail(where, "a model generated from pictures names no `generator:` (name, url, licence, weights_licence, read)")
+    else:
+        for key in ("name", "licence", "weights_licence"):
+            if not str(gen.get(key) or "").strip():
+                fail(where, f"generator has no `{key}:` -- the code's licence and the weights' licence are two facts, and both decide whether the output may ship")
+        if not str(gen.get("url") or "").startswith("https://"):
+            fail(where, "generator has no https `url:`")
+        if not isinstance(gen.get("read"), datetime.date):
+            fail(where, "generator has no `read: YYYY-MM-DD`")
+    dims = m.get("dimensions")
+    if not isinstance(dims, dict) or not str(dims.get("source") or "").strip():
+        fail(where, "no `dimensions:` with a `source:` -- a generated shape has no scale of its own, and the metres it was given are a citation")
+    elif not any(isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 for k, v in dims.items() if k.endswith("_m")):
+        fail(where, "`dimensions:` cites no length (a field ending in `_m`)")
+    if m.get("honesty") not in MODEL_HONESTY[kind]:
+        fail(where, f"`honesty:` must be exactly {' or '.join(repr(h) for h in MODEL_HONESTY[kind])}: it is the sentence the card prints for every shape of this kind")
+    if "mirror" not in str(m.get("modified") or "").lower() and "symmetr" not in str(m.get("modified") or "").lower():
+        # Not every generated mesh is mirrored. But the first was, and a cleanup pass that copies one
+        # half of a craft onto the other is the change most worth a sentence, so the row says which.
+        fail(where, "`modified:` of a generated model must say whether a mirror or symmetry pass was made (\"no mirror pass\" is an answer)")
+
+
 ASSET_SOURCE_FIELDS = ("id", "name", "match", "url", "licence", "licence_read", "licence_url", "account", "cost")
 
 
@@ -4038,7 +4231,7 @@ WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
 WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches",
-                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail", "polar-vortex"}
+                 "shear-eddies", "ovals", "polar-cyclones", "cloud-depth", "cloud-detail", "polar-vortex", "cirrus"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4244,6 +4437,23 @@ def check_weather(world_ids: set, layers: list) -> list:
                 fail(where, "a generated cloud texture is illustrative: not one streak of it was observed")
             if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):
                 fail(where, f"`{world}` has no zonal-flow row: the detail is carried by the measured wind and has none to follow")
+            if not r.get("why"):
+                fail(where, "no `why:` -- say why it can be no better than generated")
+        # Neptune's high cirrus (2026-10-14): streaks at measured latitudes, width and height, each
+        # one generated, so illustrative; carried by a measured wind, so only where there is one.
+        if r.get("kind") == "cirrus":
+            ci = r.get("cirrus") or {}
+            bands = ci.get("bands") or []
+            if not (all(is_number(ci.get(k)) and ci.get(k) > 0 for k in ("from_share", "height_km", "width_km", "radius_km"))
+                    and 1 <= len(bands) <= 4 and all(isinstance(b, list) and len(b) == 4 and all(is_number(x) for x in b)
+                                                     and -90 < b[0] < 90 and 0 < b[1] <= 10 and 1 <= b[2] <= 64 and 0 < b[3] <= 1 for b in bands)):
+                fail(where, "cirrus needs from_share, height_km, width_km, radius_km and one to four bands [latitude, half-height up to 10 deg, streaks round 1 to 64, cover 0 to 1]")
+            if "widen" in ci and not (is_number(ci.get("widen")) and 1 <= ci.get("widen") <= 20):
+                fail(where, "cirrus `widen` is how many times wider and higher than measured it is drawn: 1 to 20")
+            if cls != "illustrative":
+                fail(where, "generated streaks are illustrative: not one of them was observed")
+            if not any(isinstance(o, dict) and o.get("world") == world and o.get("kind") == "zonal-flow" for o in rows_):
+                fail(where, f"`{world}` has no zonal-flow row: the streaks ride the measured wind and have none to follow")
             if not r.get("why"):
                 fail(where, "no `why:` -- say why it can be no better than generated")
         if r.get("kind") == "hexagon":
@@ -4961,6 +5171,7 @@ def main() -> int:
                 fail(where, f"no {key}; this row redistributes somebody else's work")
         if not m.get("modified"):
             fail(where, "no `modified:` -- say what was changed, or the credit implies it is untouched")
+        check_model_kind(m, where)
 
     # ...and CREDITS.md is the document that actually discharges the obligation, so it has to
     # name the same files. It said "Ten spacecraft models ship" while 29 did, and still listed a

@@ -694,6 +694,9 @@ export const COPY = {
     menuShare: 'Share',
     menuHide: 'Hide the panels',
     menuGitHub: 'Source on GitHub',
+    // The tour (ui/onboarding.js, internal spec 0074): the fourth tool, and its row on a phone.
+    tour: 'Take the tour',
+    menuTour: 'Take the tour',
   },
   // The time pill (0061 §7, ui/timepill.js).
   timePill: {
@@ -1226,7 +1229,6 @@ export const COPY = {
       // A dwarf planet's known moons, by name (data/sample.js farBodies, each from its article's
       // infobox). An empty list is a fact too: Ceres and Sedna have none that anyone has found.
       moons: 'Moons',
-      missDistance: 'Miss distance',
       perihelion: 'Closest to the Sun',
       magnitude: 'Brightness',
       phase: 'Phase',
@@ -1532,8 +1534,10 @@ export const COPY = {
     // and how much of it is known, or what its real maps show and we do not draw.
     also: {
       venus: 'The dark Y going round with it is what ultraviolet cameras see; to the eye Venus is nearly plain, and its place here is illustrative. Lightning on Venus has been reported and is still debated; none is drawn.',
-      uranus: 'On “As Hubble saw it” the bright cap over the north pole is real: Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
-      neptune: 'Its bright streaks are methane ice. Hubble saw them fade after 2019 and its last dark spot dissolve, so no spot is drawn.',
+      // 2026-10-14 (spec 0073): the cap is now drawn on the artist's map too, from Hubble's own rows.
+      uranus: 'The bright cap over the north pole is real: its brightness and colour, latitude by latitude, are taken from Hubble’s map of October 2025, and Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
+      // 2026-10-14 (spec 0073): the artist's map carries Voyager's spot, and it was said that none was drawn.
+      neptune: 'The dark oval on the artist’s map is Voyager 2’s Great Dark Spot of 1989, gone by 1994: illustrative, not drawn in Measured. In Film, methane cirrus casts shadows, drawn six times wider and higher than measured; each streak is ours.',
     },
     // Jupiter's storms (2026-10-12) add two sentences to its line: copy/en.later.js `weatherStorms`.
     // Lightning on the giants (2026-10-08, internal #244), added to the world's line where it is drawn.
@@ -1605,6 +1609,36 @@ export const COPY = {
       dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
     },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
+    // A file made here, worn by the craft it is of (scene/realmodels.js `made`, not `generic`):
+    // not "a published model", which it is not; COPY.drawing.objectMade follows it.
+    objectOwn: 'drawn as {name}',
+    // 2026-10-12 (public #938): a model nobody published (scene/realmodels.js `made`). `images`: an
+    // image-to-3D model generated the mesh from photographs and we cleaned it. The words are the
+    // registry row's own `honesty:` (registry/models.yaml, kind derived-from-images), and
+    // tests/test_real_models.mjs fails if the two ever differ.
+    // 2026-10-13: `render`, the same road from an agency's own artist's render where no photograph
+    // of the craft in orbit exists (Seasat, XRISM, NOAA-21), and `dimensions`, a shape built here
+    // in code from cited metres with pictures looked at for the rest (NuSTAR; registry kind
+    // built-from-dimensions).
+    objectMade: {
+      images: 'shape built from photographs; proportions approximate',
+      render: 'shape built from an artist’s render; proportions approximate',
+      dimensions: 'shape built from published dimensions and pictures; details simplified',
+    },
+    // 2026-10-13 (public #969): a craft drawn as it was, not as it is (scene/realmodels.js `was`).
+    // Hitomi spun itself apart on 26 March 2016; catalogue object 41337 is its main body, and JAXA
+    // found it highly likely that both solar paddles had broken off at their bases
+    // (global.jaxa.jp/press/2016/04/20160428_hitomi.html, read 2026-10-13). The model is the craft
+    // as launched, so the card says what is really up there.
+    objectWas: {
+      hitomi: 'shown whole, as launched in February 2016; it broke apart five weeks later, and what is tracked here is its main body without the solar paddles',
+      // 2026-10-14 (public #944, #945): two craft that are whole and dead. The file is each as it
+      // flew while it worked; nobody steers either now (eoPortal, read 2026-10-14: "April 8, 2012:
+      // Contact with EnviSat was unexpectedly lost"; "The ERS-1 mission ended on March 10, 2000").
+      // "Dead since 2012" is data/layers.js's own wording for Envisat, kept.
+      envisat: 'shown steady, with its instruments to the Earth, as it flew while it worked; it has been dead since 2012 and nobody steers it',
+      ers1: 'shown steady, with its instruments to the Earth, as it flew while it worked; its mission ended in 2000 and nobody steers it',
+    },
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
     // with objectFamily: "drawn as a generic satellite -- the kind of thing, not this exact one".
@@ -1696,7 +1730,9 @@ export const COPY = {
       mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
       // Mars (2026-10-12, scene/worlds.js MARS_RELIEF): {mola} is the exaggeration of slopes and heights alike.
       mars: 'on a larger screen its relief is from the heights Mars Global Surveyor\u2019s laser altimeter measured, drawn {mola} times steeper and taller than they are so that a low Sun shows them: the shadows Olympus Mons and the canyon walls throw are that many times too long.',
-      venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
+      venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative; in the Film look its cloud bands are drawn with {uv} times the contrast its map has, as ultraviolet cameras see them (to an eye they are nearly plain), and the Measured look shows the map as it is; its ground, by radar, is in relief from Magellan\u2019s altimeter, drawn {ground} times steeper and taller than measured',
+      // Neptune (2026-10-14, scene/worlds.js NEPTUNE_ARCS).
+      neptune: 'in the Film look the five arcs of its outer ring are drawn as Voyager 2 saw them in 1989, going round at their measured speed; where they are round the ring today is not computed, and two of them have since faded or moved',
       saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted; on a larger screen and from close, the ringlets and gaps in its rings are where Cassini measured them through the light of a star in 2008, laid over the map, and in the Film look the sparkle of grains closer still is drawn: no ring particle can be seen from here',
     },
     // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
@@ -2012,6 +2048,8 @@ export const COPY = {
     noObserver: 'Set where you are and this line will tell you where to look.',
     noPass: 'It does not come above your horizon in the next 24 hours.',
     notVisibleFromGround: 'This one is too far away to pick out by eye.',
+    // Fly to it, Follow or Ride along pressed from the ground: the sky view is left first (main.js leaveGround).
+    leftGround: 'Left the ground to fly there. Tonight has the sky.',
     // Stars, nebulae, galaxies: the question is brightness, not distance. Magnitude 6.5 is the
     // usual naked-eye limit from a dark site.
     nakedEye: 'Bright enough to see with your own eyes from a dark place.',

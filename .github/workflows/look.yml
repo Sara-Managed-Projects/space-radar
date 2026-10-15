@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
     inputs:
       probe:
-        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, clouds, frametime, settings)"
+        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, clouds, frametime, settings, model, films)"
         default: smoke
       ref:
         description: "Branch or sha to look at (empty: the ref this was dispatched from)"
@@ -39,7 +39,7 @@ on:
         description: "Window height, CSS px"
         default: "900"
       mobile:
-        description: "A phone instead: 390 x 844, with the tool's --mobile"
+        description: "A phone instead: 390 x 844 (or width x height when given), with the tool's --mobile"
         type: boolean
         default: false
       hold_latch:
@@ -53,6 +53,9 @@ on:
         default: chromium
       harvest:
         description: "Source ids to fetch fresh and merge into the served data/v1, with commas (e.g. swpc-edited-events,donki-cme-analysis)"
+        default: ""
+      subject:
+        description: "For a probe that takes one (model): a record id (sat-25544), several joined by an underscore (sat-57800_sat-38358), or a name on the stations layer with dashes (crew-dragon). Empty: the probe's own default"
         default: ""
   # The smoke probe, Chromium only, on a pull request that changes what is drawn.
   pull_request:
@@ -70,8 +73,11 @@ on:
 permissions:
   contents: read
 
+# The width, the height and `mobile` are in the key (internal #775): on 2026-10-14 a 1600 x 900 look of
+# `deepspace` was cancelled within seconds by the 390 x 844 look dispatched right after it, because the
+# two shared one group and a pending run is replaced by the next.
 concurrency:
-  group: look-${{ github.event_name }}-${{ github.ref }}-${{ inputs.probe }}-${{ inputs.browser }}-${{ inputs.ref }}
+  group: look-${{ github.event_name }}-${{ github.ref }}-${{ inputs.probe }}-${{ inputs.browser }}-${{ inputs.ref }}-${{ inputs.width }}x${{ inputs.height }}-${{ inputs.mobile }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -88,6 +94,7 @@ jobs:
           PROBE: ${{ inputs.probe }}
           BROWSER: ${{ inputs.browser }}
           HARVEST: ${{ inputs.harvest }}
+          SUBJECT: ${{ inputs.subject }}
           MOBILE: ${{ inputs.mobile }}
           HOLD: ${{ inputs.hold_latch }}
           WIDTH: ${{ inputs.width }}
@@ -97,15 +104,17 @@ jobs:
           python3 - <<'PY' >>"$GITHUB_OUTPUT"
           import json, os, re, sys
           e = os.environ
-          def row(probe, browser, harvest="", mobile=False, hold=True, width="1440", height="900"):
+          def row(probe, browser, harvest="", mobile=False, hold=True, width="1440", height="900", subject=""):
               if not re.fullmatch(r"[a-z0-9-]+", probe): sys.exit(f"probe {probe!r}: a name under tests/probes/look/, lower case")
               if not re.fullmatch(r"[a-z0-9,-]*", harvest): sys.exit(f"harvest {harvest!r}: source ids with commas")
               if not (re.fullmatch(r"\d{3,4}", width) and re.fullmatch(r"\d{3,4}", height)): sys.exit("width and height: three or four digits")
-              if mobile: width, height = "390", "844"
-              return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height}
+              if not re.fullmatch(r"[A-Za-z0-9_.-]{0,80}", subject): sys.exit(f"subject {subject!r}: a record id (letters, digits, dot, dash, underscore)")
+              # A phone is 390 x 844 unless a size was asked for with it (a 360 px phone: -f width=360 -f height=780).
+              if mobile and (width, height) == ("1440", "900"): width, height = "390", "844"
+              return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height, "subject": subject}
           if e["EVENT"] == "workflow_dispatch":
               browsers = ["chromium", "firefox", "webkit"] if e["BROWSER"] == "all" else [e["BROWSER"]]
-              rows = [row(e["PROBE"].strip(), b, e["HARVEST"].replace(" ", ""), e["MOBILE"] == "true", e["HOLD"] != "false", e["WIDTH"].strip(), e["HEIGHT"].strip()) for b in browsers]
+              rows = [row(e["PROBE"].strip(), b, e["HARVEST"].replace(" ", ""), e["MOBILE"] == "true", e["HOLD"] != "false", e["WIDTH"].strip(), e["HEIGHT"].strip(), (e.get("SUBJECT") or "").strip()) for b in browsers]
           else:
               rows = [row("smoke", "chromium")]
           print("matrix=" + json.dumps({"include": rows}))
@@ -123,6 +132,7 @@ jobs:
       PROBE: ${{ matrix.probe }}
       BROWSER: ${{ matrix.browser }}
       HARVEST: ${{ matrix.harvest }}
+      SUBJECT: ${{ matrix.subject }}
       MOBILE: ${{ matrix.mobile }}
       HOLD: ${{ matrix.hold }}
       WIDTH: ${{ matrix.width }}
@@ -153,7 +163,7 @@ jobs:
           set -euo pipefail
           mkdir -p subject/site/data/v1
           python3 - <<'PY'
-          import json, urllib.request
+          import json, os, re, urllib.request
           base = "https://dus32w6mqcntr.cloudfront.net/data/v1/"
           dest = "subject/site/data/v1/"
           def get(name, cap):
@@ -168,7 +178,20 @@ jobs:
           for sid, row in sorted(json.loads(raw).get("snapshots", {}).items()):
               size = row.get("bytes") if isinstance(row, dict) else None
               if not isinstance(size, int) or size > 1_200_000:
-                  print(f"left   {sid} ({size} B)"); continue
+                  # THE MODEL PROBE LOOKS AT ONE SATELLITE, and most satellites worth a model are on the
+                  # layer "Satellites worth knowing", which is read from the catalogue of every active
+                  # satellite: 7 MB, left out above, and CelesTrak is blocked in the page. The page reads
+                  # that catalogue's COLUMN TWIN when the index names one (data/sources.js readColumns),
+                  # and the twin is 2.7 MB: saved for this probe, so NuSTAR's record is on the page.
+                  twin = row.get("columns") if isinstance(row, dict) else None
+                  if os.environ.get("PROBE") == "model" and isinstance(twin, dict) and isinstance(twin.get("bytes"), int) and twin["bytes"] <= 4_000_000 and re.fullmatch(r"[\w.-]+\.cols\.json", str(twin.get("path"))):
+                      try:
+                          open(dest + twin["path"], "wb").write(get(twin["path"], 120)); print(f"twin   {sid} ({twin['bytes']} B)")
+                      except Exception as e:
+                          print(f"no     {sid} twin: {e}")
+                  else:
+                      print(f"left   {sid} ({size} B)")
+                  continue
               try:
                   open(dest + sid + ".json", "wb").write(get(sid + ".json", 90)); print(f"saved  {sid} ({size} B)")
               except Exception as e:
@@ -228,6 +251,8 @@ jobs:
           cat tests/probes/look/_prelude.js "tests/probes/look/$PROBE.js" > look-out/probe.js
           url="http://127.0.0.1:8177/?sw=0"
           [ "$HOLD" = "true" ] && url="$url&look=1"
+          # A probe's subject rides in the query under a name the app does not read (ui/urlstate.js KEYS).
+          [ -n "$SUBJECT" ] && url="$url&lookSubject=$SUBJECT"
           flags="--width=$WIDTH --height=$HEIGHT --block=celestrak.org,ll.thespacedevs.com --shot-dir=look-out"
           [ "$MOBILE" = "true" ] && flags="$flags --mobile"
           echo "$url  $flags"

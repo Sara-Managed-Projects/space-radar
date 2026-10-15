@@ -278,8 +278,10 @@ const boot = bootFiles(TEXTURES);
 // is large on screen on a tier-1 device and up (`when: asked`). The strip is the one file here that
 // is not 1k or 2k, and the one map that may be wider than 4096 (below): a strip one texel tall is
 // not what the 8k rule is about.
+// 46 since 2026-10-14: Venus's relief under its radar ground (Magellan's altimeter), fetched when a
+// visitor asks for the ground, on a tier-1 device and up (`when: asked`).
 const STRIP = 'textures/8k_saturn_ring_fine.png';
-check(boot.length === 45 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-four 1k and 2k files and the rings' strip (${boot.length})`);
+check(boot.length === 46 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-five 1k and 2k files and the rings' strip (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);

@@ -1,0 +1,17 @@
+# What a Messier row knows beyond the table (internal spec 0075 task 2): the object model's fields
+# for rows that come from OpenNGC and scripts/data/messier-distances.txt. Keyed by the record id
+# without `dso-`. The fields are registry/dso-hand.yaml's (its head says what each means);
+# scripts/build-dso.py applies them, scripts/check_registry.py checks them.
+version: 1
+objects:
+  # Andromeda's two bright companions (public #385) are drawn beside her and step back while her
+  # photograph holds them. Companions, not parts: the card says "a companion of", not "inside".
+  m32:
+    parent: m31
+  m110:
+    parent: m31
+  # De Mairan's Nebula is the northern part of the Orion Nebula, split from it by a dark lane. The
+  # table's 1 300 ly is a rounded number that drew it 44 ly in front of a nebula 35 ly across.
+  m43:
+    parent: m42
+    distance: {method: assumed-member-of-parent, source: parent}

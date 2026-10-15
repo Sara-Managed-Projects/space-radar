@@ -170,6 +170,12 @@ check(/import\('\.\/ui\/keyhint\.js'\)/.test(main), 'main.js imports ui/keyhint.
 check(!/^\s*import[^(]*['"]\.\/ui\/keyhint\.js['"]/m.test(main), 'and never statically (it is not first-visit code)');
 const delay = /const KEYHINT_MS = (\d+);/.exec(main);
 check(delay && Number(delay[1]) >= 3000, `KEYHINT_MS (${delay && delay[1]}) is past the two seconds the first-visit byte test lets a visit settle, and past the later layers`);
+// 2026-10-13: the uninvited hint yields to typing (its Close button was under the search's empty line on a phone).
+{
+  const src = readFileSync(join(ROOT, 'site/js/ui/keyhint.js'), 'utf8');
+  check(/document\.addEventListener\('focusin', \(\) => \{ if \(open && !all && typing\(\)\) hide\('typing'\); \}\)/.test(src), 'a field taking the keyboard closes the hint that came by itself, and not the one that was asked for');
+  check(/async function maybeShow\(\) \{\s*if \(typing\(\)\) return 'typing';/.test(src), 'and it does not come while somebody is typing');
+}
 check(/const hintLater = \(\) => afterFirstVisit\(KEYHINT_MS, \(\) => keyHint\(\)\.then\(\(api\) => api\.maybeShow\(\)\)[\s\S]{0,120}\);\s*window\.addEventListener\('sr:layers-ready', hintLater, \{ once: true \}\);/.test(main), 'it decides after sr:layers-ready, by maybeShow()');
 check(/ctx\.keyhint = \{ show:/.test(main), 'ctx.keyhint.show() exists before the module has loaded');
 check(/arrivedByLink = !!\(link && \(link\.trip \|\| link\.at \|\| link\.event \|\| link\.stage\)\)/.test(main), 'a link with a trip, an object, a mission\'s event or a stage counts as a deep link');

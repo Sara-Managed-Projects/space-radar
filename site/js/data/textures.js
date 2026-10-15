@@ -452,14 +452,33 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_venus_magellan.webp",
+        "file": "textures/2k_venus_radar.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 225388,
-        "format": "rgb",
+        "bytes": 192918,
+        "format": "mono",
         "credit": "Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain"
+      }
+    ]
+  },
+  {
+    "id": "venus-relief",
+    "world": "venus",
+    "slot": "relief",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_venus_relief.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 129422,
+        "format": "mono",
+        "credit": "Venus relief: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, global topography 4641 m), public domain, local relief only"
       }
     ]
   },

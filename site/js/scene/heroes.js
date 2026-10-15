@@ -633,6 +633,15 @@ export function createHeroes(scene, ctx) {
         // the seeded constant attitude it has always had: a file's axes say nothing about which way
         // a spacecraft points.
         if (entry.obj.userData.attitude === 'up') standOnGround(clone);
+        // 2026-10-13: A FILE BUILT TO THE APP'S AXES KEEPS THE ATTITUDE ITS BUILD HAD. A route that
+        // says `axes: 'app'` (realmodels.js) is a mesh made here with +Z as the Earth face, +X the
+        // panel axis and the cells toward +Y, the convention scene/models.js builds to. Its axes DO
+        // say which way it points, so it flies as the procedural shape did (NOAA-21's instruments
+        // look down, a wing's cells face the Sun) and not at the seeded constant angle.
+        if (real.axes === 'app' && entry.obj.userData.attitude) {
+          clone.userData.attitude = entry.obj.userData.attitude;
+          clone.userData.klass = entry.obj.userData.klass;
+        }
         // MEASURED BEFORE THE SCALE IS COPIED ON. unitReachOf() walks world matrices, so asking it
         // after the line below would return a reach already multiplied by the drawn scale -- and
         // the clearance cap would then be computed from a number in the wrong units entirely.

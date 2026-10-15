@@ -17,7 +17,7 @@ import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance, SELECTED_PX, MODEL_SPAN, warmModels } from './scene/heroes.js';
 import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, nightGroundPose, openingPlan, OPENING_KEY } from './scene/framing.js';
-import { createCameraRig, worldFramingDistance } from './scene/camera.js';
+import { createCameraRig, worldFramingDistance, steadyDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
@@ -34,6 +34,7 @@ import { toast } from './ui/share.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
+import { satIdOf } from './data/catnum.js';
 import { createDensity } from './ui/density.js';
 import { createTripGate } from './ui/tripgate.js';
 import { createVeil } from './ui/veil.js';
@@ -171,6 +172,8 @@ const TODAY_MS = 4500;
 /** The first visit's three lines and two buttons (ui/welcome.js), the launch chip (ui/launchchip.js)
  * and the way home (ui/base.js): with the timeline, the first things after the first visit. */
 const WELCOME_MS = 4000;
+/** A first visit's arrow at the tour's button (ui/onboarding.js): after the welcome and the keys hint have had their turn. */
+const TOUR_MS = 8000;
 const LAUNCHDAY_MS = 4800;
 /** Two snapshots of the view inside this many ms are one move (a tab sets the stage, then the moment). */
 const ONE_MOVE_MS = 120;
@@ -281,7 +284,7 @@ export async function boot({ setStatus } = {}) {
     selected: () => selected,
     select,
     deselect,
-    flyToRecord: (record, ms, flight) => flyToRecord(record, ms, flight),
+    flyToRecord: (record, ms, flight) => { leaveGround(); return flyToRecord(record, ms, flight); },
     get observer() { return observer; },
     // The one door a place comes in by. The browser's own answer is rounded here as well as where it
     // is read (ui/place.js), so no caller can hand the app a precise position (spec 0051 req 3).
@@ -350,6 +353,23 @@ export async function boot({ setStatus } = {}) {
     }).catch((e) => { console.warn('the nebula pictures did not load', e); nebulaeImport = null; return null; });
     return nebulaeImport;
   };
+  // DEEP SPACE (internal spec 0075, scene/deep/deepsky.js): the coordinator of the deep sky's levels,
+  // holders and heroes. Fetched the first time a rung of the ladder is entered (sr:stage below), never
+  // at boot; ticked once a frame beside the nebulae. `?deepdebug=1` is for tools, not a visitor's key.
+  let deepImport = null;
+  ctx.wantDeep = () => deepImport || (deepImport = import('./scene/deep/deepsky.js').then((m) => {
+    const reduced = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    ctx.deep = m.createDeepSky(THREE, {
+      scene, records: () => ctx.recordsFor('deep-sky') || [], recordById: (id) => ctx.recordById(id),
+      pictureShare: (id) => (ctx.nebulae ? ctx.nebulae.drawn(id) : 0), picturesBusy: () => !!(ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy()),
+      selectedId: () => (ctx.selected() ? ctx.selected().id : null), subjectId: () => (ctx.labels ? ctx.labels.subject() : null),
+      quality: () => { const d = ctx.quality ? ctx.quality.describe() : {}; return { tier: Number.isFinite(d.tier) ? d.tier : 1, top: !!(d.plan && d.plan.steps === 'top'), latched: !!(ctx.latch && ctx.latch.latched), scaleStep: ctx.scaler ? ctx.scaler.step : 0 }; },
+      look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches), frozen: () => !!(ctx.latch && ctx.latch.held),
+      debug: /[?&]deepdebug=1\b/.test(location.search), glowVisible: (on) => { ctx.deepGlowOff = !on; },
+    });
+    ctx.deep.setExposure(exposure.look().milkyWay);
+    return ctx.deep;
+  }).catch((e) => { console.warn('the deep sky did not load', e); deepImport = null; return null; }));
   exposure.onChange((mode, look, byVisitor) => {
     starfield.setExposure(look.milkyWay);
     if (ctx.nebulae) ctx.nebulae.setExposure(look);
@@ -357,6 +377,7 @@ export async function boot({ setStatus } = {}) {
     // The Milky Way model and the deep-sky glows are the same faint light (internal #343).
     galaxy.setExposure(look.milkyWay);
     dsoGlow.setExposure(look.milkyWay);
+    if (ctx.deep) ctx.deep.setExposure(look.milkyWay);
     stars3d.setMagLimit(look.starLimit);
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
@@ -452,6 +473,8 @@ export async function boot({ setStatus } = {}) {
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if (ctx.nebulae) ctx.nebulae.rebuild();
     else if (isLadderStage(id)) ctx.wantNebulae();
+    if (ctx.deep) ctx.deep.rebuild();
+    else if (isLadderStage(id)) ctx.wantDeep();
     if (isSystemStage(id)) systems.enter(id);
     else systems.leave();
     // The Milky Way is fetched, built and its shaders compiled while the stellar rung is up (internal
@@ -1088,6 +1111,24 @@ export async function boot({ setStatus } = {}) {
     window.addEventListener('sr:layers-ready', welcomeLater, { once: true });
     window.addEventListener('sr:layers-ready', launchDayLater, { once: true });
   }
+  // THE TOUR (internal spec 0074, ui/onboarding.js): the rail's fourth tool rings the real controls
+  // one at a time. Fetched on the first press, or for a first visit's arrow at that button TOUR_MS
+  // after sr:layers-ready and never over the opening shot; a returning visitor fetches nothing.
+  let tour = null;
+  ctx.onboardingReady = () => tour || (tour = import('./ui/onboarding.js')
+    .then((m) => (ctx.onboarding = m.createOnboarding(ctx, { deepLink: arrivedByLink || location.hash.length > 1, embed: !!embed, automated: navigator.webdriver === true })))
+    .catch((e) => { tour = null; console.warn('the tour did not load', e); return null; }));
+  ctx.wantOnboarding = (from) => ctx.onboardingReady().then((api) => { if (api) api.toggle(from); return api; });
+  const tourLater = () => afterFirstVisit(TOUR_MS, () => {
+    let seen = true;
+    try { seen = !!window.localStorage.getItem('sr:tour'); } catch { seen = true; /* no memory: no arrow */ }
+    if (seen || arrivedByLink || location.hash.length > 1) return;
+    const point = () => ctx.onboardingReady().then((api) => api && api.maybeInvite());
+    if (ctx.opening && ctx.opening.live) window.addEventListener('sr:opening-end', point, { once: true });
+    else point();
+  });
+  if (embed || ambient) { /* no rail to point at */ } else if (window.__srLayersReady) tourLater();
+  else window.addEventListener('sr:layers-ready', tourLater, { once: true });
   // THE SCALE BADGE (public #296, ui/scalebadge.js): "drawn ×N larger" and True size, on the
   // Sun's stage, where every planet is a dot wider than itself. Fetched the first time that stage
   // is entered; the dot's width it is told is scene/orbitrings.js MARKER_PX, the one the dots use.
@@ -1167,6 +1208,7 @@ export async function boot({ setStatus } = {}) {
   // along the velocity, which is the same one-second central difference the card's speed row uses.
   ctx.rideAlong = (record) => {
     if (!record) return false;
+    leaveGround();
     const at = (tMs) => { const p = propagate(record, tMs); return p ? stage.toScene(p, p.frame, tMs) : null; };
     const getVel = () => {
       const t = clock.now();
@@ -1366,7 +1408,10 @@ export async function boot({ setStatus } = {}) {
     // A star is a place on the stellar rung: from a world stage its true position is past the far
     // plane, so selecting one recentres on the Sun at one unit = one light-year first. From a star
     // system's stage too: there the rest of the sky is a shell of directions.
-    else if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
+    else if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage(farOff(record) ? 'local-group' : 'stellar');
+    // A place past the stellar rung's far plane (a billion light-years: TON 618) is met on the Local
+    // Group's, where it is drawn at all (spec 0075 task 17, DS-D10).
+    else if (farOff(record) && isLadderStage(stage.worldId) && stage.worldId !== 'local-group' && opts.fly !== false) ctx.setStage('local-group');
     // And back: a thing inside the Solar System, chosen on a rung (from search, or the Next list),
     // sits inside the Sun's pixel there and its layer does not draw (isLayerDrawable above), so the
     // camera would fly into one pixel and show nothing. It goes home to the Earth stage first. The
@@ -1508,7 +1553,7 @@ export async function boot({ setStatus } = {}) {
     // and not a tap (ui/drift.js). Where to stand is still decided here, for every caller.
     // `apexFor(pos, distance)` is asked once the destination is known, on the stage it is on.
     const shotTo = (pos, distance) => (flight ? {
-      ease: flight.ease, targetDelay: flight.targetDelay,
+      ease: flight.ease, targetDelay: flight.targetDelay, path: flight.path,
       apex: typeof flight.apexFor === 'function' ? flight.apexFor(pos, distance) || undefined : flight.apex,
     } : {});
     if (record.klass === 'world') worlds.preload(record.id);
@@ -1577,7 +1622,10 @@ export async function boot({ setStatus } = {}) {
       const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined; // polar: overview, unless the stage's own subject names one
       const hostSubject = !limb && record.klass !== 'exoplanet' && ctx.systems && ctx.systems.active && typeof ctx.systems.subjectFor === 'function' ? ctx.systems.subjectFor(record) : null;
       const hostPolar = hostSubject && Number.isFinite(hostSubject.polar) ? hostSubject.polar : overview;
-      cameraRig.flyTo({ ...shotTo(pos, limb ? limb.distance : distance), targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
+      // A child chosen from afar is flown to THROUGH its parent (spec 0075 task 3): the LMC fills the
+      // view, then the Tarantula, never a lone dot (scene/deep/deepsky.js pathFor).
+      const via = !flight && record.klass === 'dso' && ctx.deep && ms > 0 ? ctx.deep.pathFor(record, cameraRig.state.target, camera) : null;
+      cameraRig.flyTo({ ...shotTo(pos, limb ? limb.distance : distance), ...(via ? { path: via } : {}), targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
@@ -1661,9 +1709,16 @@ export async function boot({ setStatus } = {}) {
     // Deliberately NOT asking the glyph layer: it owns a packed position buffer for drawing, and
     // exposing a per-record lookup would make the camera depend on a layer being visible. The
     // contract's propagate + stage.toScene answers this for any record, drawn or not.
-    const p = propagate(record, clock.now());
+    // ONE INSTANT A FRAME (Ivan, 2026-10-14: a selected object shook). The live clock is the wall
+    // clock, read anew by every clock.now(): the camera's follow read it at the top of a frame,
+    // the dot and the model were placed at the frame's own `t`, and the brackets asked again after
+    // the frame was drawn, a whole render later. 16 ms of a low orbit is 120 m and on a slow phone
+    // a render is 60: the brackets led the dot by an amount that changed with every frame's cost.
+    // Inside a frame the answer is for the frame's instant (ctx.frameT, set by the loop).
+    const tMs = clock.mode === 'live' && Number.isFinite(ctx.frameT) ? ctx.frameT : clock.now();
+    const p = propagate(record, tMs);
     if (!p) return null;
-    return stage.toScene(p, p.frame, clock.now());
+    return stage.toScene(p, p.frame, tMs);
   }
 
   /** A star's width and temperature: a catalogue star's worked out, a planet's host from the Archive. */
@@ -1695,6 +1750,11 @@ export async function boot({ setStatus } = {}) {
     }
   }
 
+  /** More than a billion light-years from the Sun: past the stellar rung's far plane (1e9 units). */
+  function farOff(record) {
+    const p = record && record.klass !== 'world' && record.pos;
+    return !!p && Math.hypot(p.x, p.y, p.z) > 1e9 * 9460730472580.8;
+  }
   function arrivalDistance(record, pos) {
     if (record && record.klass === 'world') {
       // 3.5 radii, or farther when the free part of the screen is narrower than that disc
@@ -1724,7 +1784,8 @@ export async function boot({ setStatus } = {}) {
     if (phys) return Math.max(1e-9, (phys.radiusKm * STAR_ARRIVAL_RADII) / stage.unitKm);
     if (record && record.klass === 'star') return 0.4;
     if (record && record.klass === 'exoplanet') return 0.4;
-    if (record && record.klass === 'exotic') return 0.4;
+    // Past a billion light-years, no nearer than float32 holds it steady (scene/camera.js, DS-D10).
+    if (record && record.klass === 'exotic') return farOff(record) && pos ? Math.max(0.4, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : 0.4;
     if (record && record.klass === 'dso') {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;
@@ -2028,14 +2089,46 @@ export async function boot({ setStatus } = {}) {
       const guess = guessObserver(CITIES);
       if (guess) ctx.setObserver(guess);
     }
-    if (moment === 'now' && observer) ctx.skyView.enter(observer);
+    if (moment === 'now' && observer) enterGround();
     else if (ctx.skyView.active) ctx.skyView.exit();
     if (!silent) writeMoment(moment);
     window.dispatchEvent(new CustomEvent('sr:moment', { detail: moment }));
   }
 
+  /**
+   * THE GROUND IS THE EARTH'S, SO ITS STAGE IS (Ivan, 2026-10-14: "sometimes when an object is
+   * selected it is shaking on the screen"). "See it" on a planet's card opened the sky from the
+   * Sun's stage, where a unit is a million kilometres and the Earth is 150 units from the origin.
+   * The eye is then 150 units out and a satellite a few thousandths of a unit from it, and the dots
+   * are float32 on the GPU: one step at 150 is 15 km, so a geostationary dot sat up to 15 km from
+   * where the brackets (float64) put it, a different 15 km every tick as the Earth moved along its
+   * orbit. Through binoculars' field that is a few pixels, through a telescope's tens. On the
+   * Earth's own stage the eye is 6.4 units from the origin and a step is half a metre.
+   */
+  // Asked of the page and not of inTrip(): setMoment runs once at boot, before that const is set
+  // (a declaration, so it is there for that call too).
+  function tripOnScreen() { return document.documentElement.classList.contains('sr-trip-mode'); }
+  function enterGround() {
+    // A trip's own ground stops go in by the sky view's door, on the stage the trip chose.
+    if (stage.worldId !== 'earth' && typeof ctx.setStage === 'function' && !tripOnScreen()) ctx.setStage('earth');
+    return ctx.skyView.enter(observer);
+  }
+
+  /**
+   * "Fly to it", "Follow" and "Ride along" pressed from the ground (Ivan, 2026-10-14: they did
+   * nothing there). They did fly: the rig flew, and the sky view put the camera back on the ground
+   * every frame. The honest thing is what the words say, so the ground is left first, through the
+   * moment's own door (the tab follows), and one line says so. False when there was no ground to leave.
+   */
+  function leaveGround() {
+    if (!ctx.skyView || !ctx.skyView.active || tripOnScreen()) return false;
+    setMoment('wonder');
+    toast(COPY.sky.leftGround, 4000);
+    return true;
+  }
+
   window.addEventListener('sr:observer', () => {
-    if (moment === 'now' && observer) ctx.skyView.enter(observer);
+    if (moment === 'now' && observer) enterGround();
   });
   window.addEventListener('hashchange', () => {
     setMoment(readMomentFromHash(), { silent: true });
@@ -2619,6 +2712,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     clock.tick(dt);
     const t = clock.now();
     stage.setTime(t);   // every frame conversion this tick reads it; set it before anything does
+    ctx.frameT = t;     // and positionOfRecord answers for it until this frame is done (see there)
 
     resize();
     if (ctx.viewShift) ctx.viewShift.update(dt);
@@ -2627,6 +2721,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     cameraRig.update(dt, frameMs);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
+    // A followed WORLD has only now been placed for this frame: the camera aims at it again
+    // (scene/camera.js refollow says what a frame's lag looked like).
+    cameraRig.refollow();
     // After the worlds and the camera: each light sits on this frame's disc (scene/worldlights.js).
     if (ctx.worldLights) ctx.worldLights.update(t);
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
@@ -2696,6 +2793,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         if (gl.setVisible) gl.setVisible(drawable);
         if (drawable) gl.update(t, ctx.camera);
       }
+    } else if (ctx.selected()) {
+      // Between two ticks the selection's own dot is placed again, as the camera that follows it
+      // and the brackets round it are (scene/glyphs.js updateSelected).
+      for (const gl of glyphLayers.values()) if (gl.updateSelected) gl.updateSelected(t);
     }
 
     // Labels ride the same tick as the glyphs they sit over, so the two never drift apart.
@@ -2754,7 +2855,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.shells) ctx.shells.update(ctx.camera, t);
-    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
+    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')) && !ctx.deepGlowOff);
+    if (ctx.deep) ctx.deep.frame({ camera: ctx.camera, renderer: ctx.renderer, nowMs: nowReal, dtMs: frameMs, frameMs, visible: ctx.isLayerDrawable(layerRec('deep-sky')) });
     if (ctx.nebulae) {
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(layerRec('deep-sky')));
       // Our stars step aside inside a drawn photograph, which carries its own (scene/starholes.js, internal #344).
@@ -2770,6 +2872,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         picturedAt = nowReal;
         const now = new Map();
         for (const id of ctx.nebulae.loaded()) { const share = Math.round(ctx.nebulae.drawn(id) * 10) / 10; if (share > 0) now.set(id, share); }
+        // And to a drawn deep-sky hero (spec 0075 stage b): its own structure stands where the glow stood.
+        if (ctx.deep && ctx.deep.heroShares) for (const [id, k] of ctx.deep.heroShares()) { const share = Math.round(k * 10) / 10; if (share > (now.get(id) || 0)) now.set(id, share); }
         const key = [...now].join(' ');
         if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
       }
@@ -2783,6 +2887,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.stars3d.hidePoint(rec && rec.klass === 'star' && rec.meta ? rec.meta.starIndex : -1);
     }
     if (ctx.skyView.active) ctx.skyView.update(t);
+    if (ctx.bareFrame) ctx.bareFrame(); // only space (ui/drift.js): marks and lines are not drawn
     render();
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
@@ -2794,6 +2899,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.hud) ctx.hud.frame(t);
     // The track's minute marks, on this frame's camera (render() brought its matrices up to date).
     if (ctx.trackLabels) ctx.trackLabels.update();
+    ctx.frameT = null;  // the frame is drawn: from here the clock answers for itself again
     // Is anything moving? Asked after the frame is drawn, because render() is what brings the
     // camera's matrices up to it. Any reason and the next frames are drawn one for one.
     {
@@ -3130,11 +3236,13 @@ function resolveAt(ctx, id) {
   // A planet or a star system by its bare id, as `#go=` gives it: `kepler-186-f`, `kepler-186`.
   const direct = ctx.recordById(text) || ctx.recordById(`exo-${text}`) || ctx.recordById(`star-${text}`);
   if (direct) return direct;
-  if (/^[0-9]+$/.test(text)) {
-    const sat = ctx.recordById(`sat-${text}`);
-    if (sat) return sat;
-  }
+  // A number, Alpha-5 too (`100690`, `A0690`); and `int-<designator>`, the id a number of 90 000 and up had before 2026-10-14.
+  const sat = satIdOf(text) && ctx.recordById(satIdOf(text));
+  if (sat) return sat;
   const records = typeof ctx.records === 'function' ? ctx.records() : [];
+  const intl = /^int-(.+)$/.exec(text);
+  const byIntl = intl && records.find((r) => r && r.meta && r.meta.intlDesignator === intl[1]);
+  if (byIntl) return byIntl;
   const found = findMatches(buildIndex(records, ctx.layers || []), text.replace(/[-_+]+/g, ' '), 1);
   const hit = found.hits[0];
   return hit && !found.fallback && hit.score >= LINK_MIN_SCORE ? hit.record : null;

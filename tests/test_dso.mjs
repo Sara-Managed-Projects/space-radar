@@ -18,7 +18,7 @@ const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
 check(doc.count === 209 && doc.objects.length === 209, `110 Messier objects, forty-one Local Group galaxies and fifty-eight famous non-Messier objects by hand (${doc.count})`);
-check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203700) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
+check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203650) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
 check(doc.objects.some((o) => o.id === 'ursa-major-i' && o.vmag === null && o.majAxArcmin === null) && doc.objects.some((o) => o.id === 'reticulum-ii' && o.distLy === 103100 && o.hubble === null), 'Ursa Major I carries no magnitude or size the infobox did not print; Reticulum II has no Hubble code');
@@ -46,7 +46,8 @@ check(m31 && m31.distLy === 2540000 && m31.distLyLow === 2430000 && m31.kind ===
 const p31 = skyToSunInertialKm(m31.raDeg, m31.decDeg, m31.distLy / 3.2615637771674333);
 check(Math.abs(p31.x / LY_KM - m31.posLy[0]) < 1 && Math.abs(p31.z / LY_KM - m31.posLy[2]) < 1, 'the build script and the browser agree on where the sky is');
 check(doc.objects.every((o) => o.distLy > 0 && o.distanceSource), 'every object has a distance and says where it came from');
-check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 163000), 'the LMC is a hand row at 163 000 ly');
+// Since spec 0075 task 2 the Magellanic Clouds are at their eclipsing-binary distances (Pietrzyński 2019, Graczyk 2020).
+check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 161740 && o.distance && o.distance.method === 'eclipsing-binary'), 'the LMC is a hand row at 161 740 ly, by eclipsing binaries');
 check(doc.objects.find((o) => o.id === 'm45')?.kind === 'cluster', 'the Pleiades (from the addendum) are a cluster');
 
 const recs = parseDso(doc);
@@ -90,7 +91,7 @@ check(findMatches(index, 'ngc 4039').hits.some((h) => h.record.id === 'dso-anten
 check(findMatches(index, 'ring nebula').hits[0]?.record.id === 'dso-m57', `"ring nebula" still finds M57 before the Southern Ring (${findMatches(index, 'ring nebula').hits[0]?.record.id})`);
 check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiades" finds M45');
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
-check(/our own galaxy/.test(drawingLine(andromeda)) && /not been mapped/.test(drawingLine(andromeda)), `Andromeda says it is drawn from our galaxy's model, and that its arms are not its own: ${drawingLine(andromeda)}`);
+check(/her own measured shape/.test(drawingLine(andromeda)) && /not a map of her stars/.test(drawingLine(andromeda)) && !/our own galaxy/.test(drawingLine(andromeda)) && /Not yet reviewed by an astronomer/.test(drawingLine(andromeda)) && /Not yet reviewed by an astronomer/.test(drawingLine(recs.find((r) => r.id === 'dso-m33'))), `Andromeda says she is drawn from a model of her own shape, not our galaxy's, and that its stars are not hers (spec 0075 stage d): ${drawingLine(andromeda)}`);
 const pleiades = recs.find((r) => r.id === 'dso-m45');
 check(typeof drawingLine(pleiades) === 'string' && drawingLine(pleiades).includes('soft glow'), `every other deep-sky object is a soft glow: ${drawingLine(pleiades)}`);
 

@@ -71,6 +71,7 @@ import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
 import { generatedLine, planetFacts, starRows, glowRows } from './systemcard.js';
 import { setSystemRows } from './cardfacts.js';
+import { relationOf } from '../data/deepsky.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
@@ -1222,14 +1223,25 @@ function derivedDrawingLine(record, T, tMs) {
     // A pad whose vehicle is put away at this instant (realmodels.js padVehicleShown): nothing of
     // the model is on the screen, so the line may not say it is drawn (internal #478).
     if (Number.isFinite(tMs) && !padVehicleShown(record, tMs) && T.padEmpty) return t(T.padEmpty, { name: String(entry.name) });
-    if (entry.generic) return t(T.objectFamily, { name: String(entry.name) });
+    // 2026-10-12 (public #938): a shape nobody published, generated from photographs and cleaned
+    // here (realmodels.js `made`), says so after whatever else its line says.
+    const made = entry.made && T.objectMade ? T.objectMade[entry.made] : null;
+    // 2026-10-13 (public #969): a craft drawn as it WAS (realmodels.js `was`), when what the
+    // catalogue tracks is no longer that: Hitomi, intact on the screen and a wreck in orbit.
+    const was = entry.was && T.objectWas ? T.objectWas[entry.was] : null;
+    const said = (line) => [line, made, was].filter(Boolean).join(COPY.punctuation.separator);
+    if (entry.generic) return said(t(T.objectFamily, { name: String(entry.name) }));
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
     // of one of them. See COPY.drawing.objectModel.
-    const line = t(entry.file ? T.objectModel : T.objectVariant, { name: String(entry.name) });
+    // 2026-10-13: and a file NOBODY published (`made`), worn by the craft itself and not as the
+    // kind of thing (NuSTAR, XRISM), may not say "a published model": the first look at NuSTAR's
+    // card read "drawn from a published model of NuSTAR · shape built from published dimensions".
+    // It is "drawn as NuSTAR", and the sentence after it says how the shape was made.
+    const line = t(entry.file ? (made && T.objectOwn ? T.objectOwn : T.objectModel) : T.objectVariant, { name: String(entry.name) });
     // 2026-10-07: a small body that wears a map on its shape (Ceres, Vesta) names the mosaic.
     const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
-    return mapped ? line + COPY.punctuation.separator + mapped : line;
+    return said(mapped ? line + COPY.punctuation.separator + mapped : line);
   }
   // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is
   // different: it has a shape, it is just a point at this scale.
@@ -1604,7 +1616,7 @@ export function floodControls(record, ctx) {
   if (!offersFlood(record)) return [];
   const F = COPY.flood;
   const on = floodWantedNow();
-  const toggle = el('button', 'sr-btn sr-btn--quiet sr-card__inline', on ? F.off : F.on);
+  const toggle = el('button', 'sr-card__tool', on ? F.off : F.on);
   toggle.type = 'button';
   toggle.title = F.title;
   toggle.setAttribute('data-action', 'flood');
@@ -1648,13 +1660,38 @@ function earthOrbitRegime(altKm) {
   return altKm < 35786 ? G.meo : G.heo;
 }
 
+/** A deep-sky record's parent record (spec 0075 task 3), when the context can find it. */
+function parentRecordOf(record, ctx) {
+  const id = record && record.meta && record.meta.parent;
+  if (!id || !ctx || typeof ctx.recordById !== 'function') return null;
+  return ctx.recordById(String(id)) || null;
+}
+
+/**
+ * The way back out of a child (spec 0075 task 3): "Back to the Large Magellanic Cloud", which selects
+ * the parent and flies out to it. Null for anything that is not inside something.
+ */
+function parentButton(record, ctx) {
+  const parent = parentRecordOf(record, ctx);
+  if (!parent || typeof ctx.select !== 'function') return null;
+  const name = displayName(parent);
+  const b = el('button', 'sr-card__parent');
+  b.appendChild(icon('chevron-left'));
+  b.appendChild(el('span', '', t(COPY.deep.back, { parent: name })));
+  b.type = 'button';
+  b.title = t(COPY.deep.backTitle, { parent: name });
+  b.dataset.focus = 'parent';
+  b.addEventListener('click', () => ctx.select(parent, { fly: true }));
+  return b;
+}
+
 /**
  * The line above the name: what it is and where, "STATION · LOW EARTH ORBIT", four words at most.
  * The class word is the card's own badge (klassLabel) except where a finer one is plainer -- a
  * planet is a planet, not "World" -- and the region is worked out from where it is now, never typed.
  * Exported for the test.
  */
-export function microLabel(record, m) {
+export function microLabel(record, m, ctx = null) {
   const C = COPY.card;
   const G = C.regime;
   const md = meta(record);
@@ -1687,9 +1724,14 @@ export function microLabel(record, m) {
     regime = ly !== null && ly < 20 ? G.nearby : con ? t(G.inCon, { con: String(con) }) : null;
   } else if (klass === 'dso') {
     const T = COPY.templates.dso;
-    kind = cap(T.kinds[String(pick(md, 'kind') || 'other')] || T.kinds.other);
+    const D = COPY.deep;
+    kind = cap(D.kinds[String(pick(md, 'typeCode') || '')] || T.kinds[String(pick(md, 'kind') || 'other')] || T.kinds.other);
     const con = pick(md, 'con');
     regime = con ? t(G.inCon, { con: String(con) }) : null;
+    // What it is inside says more than the constellation (spec 0075 task 3): "Emission nebula · Inside
+    // the Large Magellanic Cloud". The parent is a record (registry/dso-hand.yaml `parent:`).
+    const parent = parentRecordOf(record, ctx);
+    if (parent) regime = t(relationOf(record, parent) === 'companion' ? D.companion : D.inside, { parent: displayName(parent) });
   } else if (klass === 'exoplanet') {
     kind = C.microKlass.exoplanet;
     const host = pick(md, 'host');
@@ -1794,8 +1836,10 @@ export function heroNumbers(record, m, rows) {
   const slots = HERO_SLOTS[kind];
   if (!slots) {
     const out = [];
+    // A far thing's light-travel time is not a distance (spec 0075 task 15): never "N ly away" for it.
+    const far = record && record.meta && Number.isFinite(record.meta.redshift);
     for (const key of HERO_ANY) {
-      if (out.length === 3 || !byKey.has(key)) continue;
+      if (out.length === 3 || !byKey.has(key) || (far && key === 'lightLeft')) continue;
       const c = cell(key, byKey.get(key));
       if (c) out.push(c);
     }
@@ -2446,7 +2490,7 @@ function render(record, ctx, opts = {}) {
   // 1. the microlabel and the name. (A guided trip's stop is renderStop above.)
   const name = displayName(record);
   const header = el('header', 'sr-card__header');
-  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m)));
+  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m, ctx)));
   const title = el('h2', 'sr-card__name', name);
   // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
   title.id = CARD_TITLE_ID;
@@ -2514,11 +2558,24 @@ function render(record, ctx, opts = {}) {
   const actions = el('div', 'sr-card__actions');
   actions.setAttribute('role', 'group');
   actions.setAttribute('aria-label', COPY.card.actionsLabel);
+  actions.dataset.tour = 'card-actions'; // the tour's hook (registry/onboarding.yaml)
   for (const b of actionButtons(record, ctx, m)) {
     b.dataset.focus = `act-${b.dataset.action}`;
     actions.appendChild(b);
   }
   body.appendChild(actions);
+  // 3. and, for a deep-sky object inside another, the way back out to it (spec 0075 task 3).
+  const up = record.klass === 'dso' ? parentButton(record, ctx) : null;
+  if (up) body.appendChild(up);
+
+  // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
+  // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One
+  // row of equal tiles in the actions' own wash: the flood light (internal #272), a reminder for
+  // its next dated event and the visitor's own "seen it" tick (public #395). The lamp's note sits
+  // under the row for as long as the lamp is on.
+  const [lamp, lampNote] = floodControls(record, ctx);
+  for (const n of skyControls(record, ctx, lamp)) body.appendChild(n);
+  if (lampNote) body.appendChild(lampNote);
 
   // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
   // registry/missions.yaml; public #452). The module is fetched the first time a card opens
@@ -2536,10 +2593,6 @@ function render(record, ctx, opts = {}) {
   const time = timeFactsSection(record, ctx, m);
   if (time) { body.appendChild(time.bar); startTimeFacts(); }
 
-  // 4b. the flood light, under the light it stands in for (internal #272).
-  for (const n of floodControls(record, ctx)) body.appendChild(n);
-  // 4c. a reminder for its next dated event, and the visitor's own "seen it" tick (public #395).
-  for (const n of skyControls(record, ctx)) body.appendChild(n);
   // The Earth's card carries the legend of whatever map is laid over it (internal #386 item 1).
   const over = overlayBlock(record, ctx);
   if (over) body.appendChild(over);

@@ -11,6 +11,20 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-13
+
+The first release, and the first zip: the whole site with a saved copy of the data, so a classroom
+copy starts with the network off ([docs/RUN_LOCALLY.md](docs/RUN_LOCALLY.md)). It is 1.0.0 because
+three things are now promises: a shared link (`v=1`), the saved-data format (`/data/v1/`) and the
+registry row formats keep working until a 2.0.0 ([docs/RELEASING.md](docs/RELEASING.md)).
+
+Counted on release day with `python3 scripts/count_facts.py`: 26 trips and 205 stops, 109 389
+stars, 40 star systems, 30 nebula and galaxy photographs, 21 moons (20 with a map), 20 landing
+sites on the Moon and 12 on Mars, 72 spacecraft models, 29 layers, and 13 publishers' data
+through 30 feeds.
+
+The section below was written as the work landed, so some of its numbers are the day's own.
+
 Five days, about fifty pull requests: the planetarium grew from nine trips to twenty-six, learned to
 look up from the ground, learned to work with no network, and then, between 6 and 8 October, got
 flybys that move the clock, forty star systems to fly into, a screen that plays on its own and the
@@ -140,6 +154,46 @@ Earth's air.
   keeps 0.1 degrees (about 11 km) as the plan always said ([#489]).
 - Search option rows are 48 px on a phone and never shrink ([#519]).
 
+### Added, 12 and 13 October ([#1009] to [#1042])
+- **Drift**: the camera wanders from one thing to the next with no route and no end, a few places
+  in one neighbourhood and then the next one out, so it never jumps from the Earth to a galaxy.
+  The first row of Just watch, or `#drift=1`; choose what to travel through, real models only,
+  names on or off, three paces ([#1009], [#1031]).
+- **Planets and moons shine by their real brightness** when they are small on screen: Venus
+  outshines Sirius, and the Earth is a blue star from Mars ([#1010]).
+- **The Sun, alive**: granules that are born and fade, loops on the limb at NOAA's active regions,
+  flares NOAA reports and coronal mass ejections from NASA's list ([#1012], [#1034]).
+- **Jupiter's weather**: eddies at the belt edges, turning ovals, the polar cyclones Juno found,
+  and cloud detail close up, on Saturn, Uranus and Neptune too ([#1018], [#1032]).
+- **Saturn's rings in fine**: Cassini's measured profile, with the Encke, Keeler, Huygens, Maxwell
+  and Colombo gaps where they are, and the vortex inside the hexagon ([#1030]).
+- **Mars has relief**: slopes and cast shadows from the laser altimeter's heights; Olympus Mons
+  and Valles Marineris at a low Sun ([#1037]).
+- **Ocean currents** under Earth data: streaks that follow the surface current, coloured by the
+  water's temperature, from NOAA ([#1011], [#1031]).
+- **The Earth's clouds stand up** from low orbit: tops lean toward you, throw longer shadows and
+  keep the last light ([#1040]).
+- **Two settings** in What to show: Quality (Auto, Low, Medium, High, Ultra) and the look,
+  Measured or Film; Measured hides everything generated ([#1029]).
+- **Cygnus from photographs**: the first craft whose shape was generated from NASA's pictures and
+  cleaned by hand; its card says so ([#1036]).
+- **The site says what it is**: `build.json` names the commit it was built from, the Sources sheet
+  shows it, and a check opens an issue when the site or a dataset is a day behind ([#1028]).
+
+### Changed, 12 and 13 October
+- **The trips have a new voice** (Kokoro `af_heart`): sentences carried in one breath, pauses
+  that vary, a natural pace; 59 minutes where there were 66 ([#1042]).
+- **Pluto wears NASA's own colour map**, and Pluto and Charon no longer end on a hard line where
+  nobody imaged them ([#1021], [#1033]).
+- **The open sea reads as water**: the close-up Earth no longer shows the sea floor's survey
+  tracks ([#1041]).
+- "Sources" now counts publishers and "feeds" counts what is read from them, everywhere ([#1028]).
+
+### For contributors, 12 and 13 October
+- **A look from a machine that has time**: the `look` workflow photographs any branch in a real
+  browser on a GitHub runner and fails on a page error ([#1024]).
+- **A pull request that changes what is drawn shows a picture**, and a check holds it ([#1038]).
+
 ## [0.5.0] - 2026-10-04
 
 The planetarium release: a new interface, a voice, and real pictures of the sky.
@@ -249,7 +303,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/commits/main
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.0.0
 [#462]: https://github.com/Sara-Managed-Projects/space-radar/pull/462
 [#463]: https://github.com/Sara-Managed-Projects/space-radar/pull/463
 [#464]: https://github.com/Sara-Managed-Projects/space-radar/pull/464
@@ -297,3 +352,23 @@ The first public map.
 [#516]: https://github.com/Sara-Managed-Projects/space-radar/pull/516
 [#517]: https://github.com/Sara-Managed-Projects/space-radar/pull/517
 [#519]: https://github.com/Sara-Managed-Projects/space-radar/pull/519
+[#1009]: https://github.com/Sara-Managed-Projects/space-radar/pull/1009
+[#1010]: https://github.com/Sara-Managed-Projects/space-radar/pull/1010
+[#1011]: https://github.com/Sara-Managed-Projects/space-radar/pull/1011
+[#1012]: https://github.com/Sara-Managed-Projects/space-radar/pull/1012
+[#1018]: https://github.com/Sara-Managed-Projects/space-radar/pull/1018
+[#1021]: https://github.com/Sara-Managed-Projects/space-radar/pull/1021
+[#1024]: https://github.com/Sara-Managed-Projects/space-radar/pull/1024
+[#1028]: https://github.com/Sara-Managed-Projects/space-radar/pull/1028
+[#1029]: https://github.com/Sara-Managed-Projects/space-radar/pull/1029
+[#1030]: https://github.com/Sara-Managed-Projects/space-radar/pull/1030
+[#1031]: https://github.com/Sara-Managed-Projects/space-radar/pull/1031
+[#1032]: https://github.com/Sara-Managed-Projects/space-radar/pull/1032
+[#1033]: https://github.com/Sara-Managed-Projects/space-radar/pull/1033
+[#1034]: https://github.com/Sara-Managed-Projects/space-radar/pull/1034
+[#1036]: https://github.com/Sara-Managed-Projects/space-radar/pull/1036
+[#1037]: https://github.com/Sara-Managed-Projects/space-radar/pull/1037
+[#1038]: https://github.com/Sara-Managed-Projects/space-radar/pull/1038
+[#1040]: https://github.com/Sara-Managed-Projects/space-radar/pull/1040
+[#1041]: https://github.com/Sara-Managed-Projects/space-radar/pull/1041
+[#1042]: https://github.com/Sara-Managed-Projects/space-radar/pull/1042

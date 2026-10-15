@@ -49,6 +49,7 @@ import { stage, isLadderStage } from '../scene/stage.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { WORLDS, systemOf } from '../scene/worlds.js';
 import { rankAll } from '../scene/pickrank.js';
+import { dsoMark } from '../scene/glyphatlas.js';
 
 /** Names on screen at once, desktop and phone (spec 0061 req 10). */
 export const LABEL_CAP = 8;
@@ -339,6 +340,9 @@ export function chooseLabels(candidates, opts = {}) {
  * same line for the drawing, and there is one rule, not two.
  */
 export function labelParentId(record) {
+  // A deep-sky child ranks on its parent's distance and behind it (spec 0075 task 5): within
+  // DEDUPE_PX the LMC's name wins over the Tarantula's unless the Tarantula is the selection.
+  if (record && record.klass === 'dso') return record.meta && record.meta.parent ? String(record.meta.parent) : null;
   if (!record || record.klass !== 'world' || !record.id) return null;
   const sys = systemOf(record.id);
   return sys === record.id ? null : sys;
@@ -608,6 +612,7 @@ export function createLabels(ctx, host) {
 
     const ladder = isLadderStage(stage.worldId);
     lastAllPlanets = stage.worldId === 'sun';
+    const deepRule = ctx.deep && typeof ctx.deep.nameRule === 'function' ? ctx.deep.nameRule : null;
     // A trip's stop on a world's stage (not the Sun's, where every planet is the picture, and not the
     // ladder): how far the camera stands from what it frames, for tooFarForFrame.
     const frameDist = inTrip && !ladder && stage.worldId !== 'sun' && ctx.cameraRig && ctx.cameraRig.state ? ctx.cameraRig.state.distance : 0;
@@ -653,6 +658,9 @@ export function createLabels(ctx, host) {
         if (seen.has(r.id) || !isNotableHere(r, ladder)) continue; // on the ladder: not inside the Sun's pixel
         if (isGround(r)) continue; // the ground has no label
         if (!mayNameHere(r, layer)) continue; // a dead stage on a layer about light, not derelicts
+        // THE PARENT RULE (internal spec 0075 task 5): the Tarantula is named once its LMC is large on
+        // screen, or when it is chosen; until then the parent speaks for it (scene/deep/deepsky.js).
+        if (r.klass === 'dso' && deepRule && !deepRule(r, selected ? selected.id : null, subjectId)) continue;
         const pr = project(r, tMs, camera, w, h);
         if (pr && tooFarForFrame(pr.dist, frameDist, r)) continue;
         // A moon says which world it goes round, so chooseLabels can rank it behind that world.
@@ -713,7 +721,8 @@ export function createLabels(ctx, host) {
       slot.node.hidden = false;
       const name = shown[i];
       if (slot.text.textContent !== name) slot.text.textContent = name;
-      const klass = c.record.klass || 'satellite';
+      // A deep-sky name's swatch is its mark's shape (spec 0075 task 4): ellipse, ring, cloud, three dots.
+      const klass = c.record.klass === 'dso' ? dsoMark(c.record) : c.record.klass || 'satellite';
       if (slot.klass !== klass) {
         slot.dot.className = `dot sr-swatch sr-swatch--${klass}`;
         slot.klass = klass;

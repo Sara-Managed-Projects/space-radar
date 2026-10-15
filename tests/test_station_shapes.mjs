@@ -38,8 +38,10 @@ const tianhe = { id: 'sat-48274', name: 'CSS (TIANHE)', klass: 'station', layer:
 const wentian = { id: 'sat-53239', name: 'CSS (WENTIAN)', klass: 'station', layer: 'stations', meta: { noradId: 53239 } };
 const iss = { id: 'sat-25544', name: 'ISS (ZARYA)', klass: 'station', layer: 'stations', meta: { noradId: 25544 } };
 const e1 = realModelFor(soyuzRec), e2 = realModelFor(progRec), e3 = realModelFor(debRec), e4 = realModelFor(iss);
-check(e1 && e1.build === 'soyuz' && e1.generic === true && !e1.file, `SOYUZ-MS -> build soyuz, generic: ${JSON.stringify(e1)}`);
-check(e2 && e2.build === 'progress' && e2.generic === true, `PROGRESS-MS -> build progress: ${JSON.stringify(e2)}`);
+// A file over the build since 2026-10-13 (public #939): soyuz-ms.glb, a lathed hull built here from
+// the same metres; the build is what is drawn first (tests/test_real_models.mjs holds the file).
+check(e1 && e1.build === 'soyuz' && e1.generic === true && e1.file === 'soyuz-ms.glb', `SOYUZ-MS -> build soyuz under soyuz-ms.glb, generic: ${JSON.stringify(e1)}`);
+check(e2 && e2.build === 'progress' && e2.generic === true && e2.file === 'progress-ms.glb', `PROGRESS-MS -> build progress under progress-ms.glb (batch three, public #940): ${JSON.stringify(e2)}`);
 check(e3 === null, 'Soyuz debris keeps the debris shape');
 check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route wins)');
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
@@ -129,15 +131,39 @@ check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: '
 { const o = modelFor('satellite', 'sphere'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-sphere') && Math.abs(o.userData.realSizeM - 2.15) < 0.01, `sphere builds inside budget at AJISAI's 2.15 m (${tris(o)} tris)`); disposeModels(o); }
 { const e = realModelFor({ id: 'acs3', name: 'ACS3', klass: 'satellite', layer: 'visual', meta: { noradId: 59588 } });
   check(e?.build === 'solarsail' && !e.generic && !e.file, `ACS3 is drawn from its own published numbers, not as a family: ${JSON.stringify(e)}`); }
-for (const [id, name] of [[16908, 'AJISAI (EGS)'], [8820, 'LAGEOS 1'], [19751, 'COSMOS 1989 (ETALON 1)'], [25398, 'WESTPAC']]) {
+// Each of the other balls has its own surface since batch three (2026-10-13): the plain ball is what
+// is drawn while its file is on its way, and none is "the kind of thing" any more.
+for (const [id, name, file] of [[19751, 'COSMOS 1989 (ETALON 1)', 'etalon.glb'], [20026, 'COSMOS 2024 (ETALON 2)', 'etalon.glb'], [25398, 'WESTPAC', 'westpac.glb'], [7646, 'STARLETTE', 'starlette.glb'], [22824, 'STELLA', 'starlette.glb'], [38077, 'LARES', 'lares.glb'], [53105, 'LARES-2', 'lares2.glb']]) {
   const e = realModelFor({ id: `s-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } });
-  check(e?.build === 'sphere' && e.generic === true, `${name} is a sphere, and says it is the kind of thing`);
+  check(e?.build === 'sphere' && e.file === file && !e.generic, `${name} is the plain ball under ${file}, as itself: ${JSON.stringify(e)}`);
+}
+// Ajisai and the two LAGEOS have their own surfaces since 2026-10-13 (public #947): the plain ball
+// is what is drawn while the file is on its way, and they are no longer "the kind of thing".
+for (const [id, name, file] of [[16908, 'AJISAI (EGS)', 'ajisai.glb'], [8820, 'LAGEOS 1', 'lageos.glb'], [22195, 'LAGEOS 2', 'lageos.glb']]) {
+  const e = realModelFor({ id: `s-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } });
+  check(e?.build === 'sphere' && e.file === file && !e.generic, `${name} is the plain ball under ${file}, as itself: ${JSON.stringify(e)}`);
 }
 // The radar imagers: one shape, twenty-two spacecraft, thirty years and four continents apart.
 { const o = modelFor('satellite', 'radar'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar') && Math.abs(o.userData.realSizeM - 12.3) < 0.01, `radar builds inside budget at Sentinel-1's 12.3 m antenna (${tris(o)} tris)`); disposeModels(o); }
-for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
+for (const [id, name] of [[32382, 'RADARSAT-2'], [28931, 'ALOS (DAICHI)'], [60182, 'ALOS-4 (DAICHI-4)'], [67304, 'CSG-3']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.generic === true, `${name} is a radar imager, and says it is the kind of thing`);
+}
+// SAOCOM has a file of its own since batch six (public #978): the blade is only what is drawn while it loads.
+for (const [id, name] of [[43641, 'SAOCOM 1A'], [46265, 'SAOCOM 1B']]) {
+  const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(e?.build === 'radar' && e.file === 'saocom.glb' && !e.generic && e.name === name, `${name} wears saocom.glb as itself, over the radar blade: ${JSON.stringify(e)}`);
+}
+// TerraSAR-X and TanDEM-X have a file of their own since batch seven (public #979): a six-sided body with no wings, not the blade.
+for (const [id, cat, name] of [[31698, 'TERRASAR-X', 'TerraSAR-X'], [36605, 'TANDEM-X', 'TanDEM-X']]) {
+  const e = realModelFor({ id: `r-${id}`, name: cat, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(e?.build === 'radar' && e.file === 'terrasar-x.glb' && !e.generic && e.name === name, `${cat} wears terrasar-x.glb as itself, over the radar blade: ${JSON.stringify(e)}`);
+}
+// Sentinel-1, ERS-1 and Envisat have a file each since batch eight (public #948, #945, #944), ALOS-2 since batch nine (#977): the blade is only what is drawn while it loads.
+for (const [id, cat, name, file] of [[39634, 'SENTINEL-1A', 'Sentinel-1A', 'sentinel-1.glb'], [62261, 'SENTINEL-1C', 'Sentinel-1C', 'sentinel-1.glb'], [66315, 'SENTINEL-1D', 'Sentinel-1D', 'sentinel-1.glb'],
+  [21574, 'ERS-1', 'ERS-1', 'ers-1.glb'], [27386, 'ENVISAT', 'Envisat', 'envisat.glb'], [39766, 'ALOS-2', 'ALOS-2', 'alos-2.glb']]) {
+  const e = realModelFor({ id: `r-${id}`, name: cat, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(e?.build === 'radar' && e.file === file && !e.generic && e.name === name, `${cat} wears ${file} as itself, over the radar blade: ${JSON.stringify(e)}`);
 }
 // ALOS DEB is debris from the same spacecraft and must not take the shape: the id route has no
 // class gate, so this is asserted on the id the catalogue actually gives the debris.
@@ -230,7 +256,7 @@ check(realModelFor({ id: 'n-44387', name: 'METEOR-M2 2', klass: 'satellite', lay
   'METEOR-M2 2 is not ICON: the id task 9f floated maps to nothing');
 check(realModelFor({ id: 'n-41889', name: 'CYGFM06', klass: 'satellite', layer: 'active', meta: { noradId: 41889 } }) === null,
   'CYGFM06 is not in the catalogue and is not mapped');
-{ const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason.glb' && j.generic === true, 'Jason-3 draws as the OSTM/Jason-2 sister ship, and says so'); }
+{ const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason-3.glb' && !j.generic && j.axes === 'app', 'Jason-3 draws as JPL\'s own model of Jason-3 (batch eleven), no longer the OSTM/Jason-2 sister ship'); }
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
 check(realModelFor({ id: 'z1', name: 'SHENZHOU-21 (SZ-21)', klass: 'satellite', layer: 'stations', meta: { noradId: 8 } })?.build === 'shenzhou', 'a Shenzhou gets its shape');
 check(realModelFor({ id: 'z2', name: 'TIANZHOU-9', klass: 'satellite', layer: 'stations', meta: { noradId: 9 } })?.build === 'tianzhou', 'a Tianzhou gets its shape');
@@ -574,9 +600,11 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // 2026-10-08: four more ended missions with NASA's mesh (public #431).
     'deep-maven': 'maven.glb',
     'deep-rosetta': 'rosetta.glb', 'deep-near': 'near.glb', 'deep-stardust': 'stardust.glb', 'deep-deep-impact': 'deep-impact.glb',
+    // 2026-10-15, batch eleven (public #1075): NASA's own Europa Clipper, turned to the app's axes.
+    'deep-europa-clipper': 'europa-clipper.glb',
   };
   // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
-  const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',
+  const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-juice', 'deep-bepicolombo',
     'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
   for (const r of rows) {
     const e = realModelFor(r);
@@ -621,7 +649,10 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   }
   const stage = realModelFor(rec(694, 'ATLAS CENTAUR 2', 'satellite', 'visual'));
   check(stage?.build === 'stage' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
-  for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [41337, 'ASTRO-H (HITOMI)'], [42758, 'HXMT (HUIYAN)'], [57800, 'XRISM']]) {
+  // XRISM left this list on 2026-10-13 (public #968): it wears xrism.glb, its own shape, and the
+  // generic telescope is only what is drawn while that file is on its way (tests/test_real_models.mjs).
+  // Hitomi left it the same day (public #969): hitomi.glb, XRISM's body with its own optical bench.
+  for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [42758, 'HXMT (HUIYAN)']]) {
     const e = realModelFor(rec(id, name, 'satellite', 'visual'));
     check(e?.build === 'space-telescope' && e.generic === true, `${name} is drawn as a space telescope: ${JSON.stringify(e)}`);
   }

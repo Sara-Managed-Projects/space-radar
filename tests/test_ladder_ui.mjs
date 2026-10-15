@@ -34,7 +34,8 @@ for (const rung of LADDER_RUNGS) {
   const distKm = rec && rec.pos ? Math.hypot(rec.pos.x, rec.pos.y, rec.pos.z) : null;
   if (distKm !== null) { check(distKm > prev, `${rung.id} is farther than the rung before it`); prev = distKm; }
 }
-check(WE_SHOW.length === 4 && WE_SHOW.every((w) => Number.isInteger(w.n) && w.source), 'the honesty line has four sourced numbers');
+// Five since 2026-10-14: the local volume's galaxies (spec 0075 stage e) joined stars, planets, deep-sky objects and exotics.
+check(WE_SHOW.length === 5 && WE_SHOW.every((w) => Number.isInteger(w.n) && w.source), 'the honesty line has five sourced numbers');
 check(WE_SHOW.find((w) => w.what === 'stars drawn').n === 109389, 'the star count in the honesty line matches the binary');
 
 const trip = TOURS.find((t) => t.id === 'to-the-edge');

@@ -457,16 +457,38 @@ textures:
     when: asked
     files:
       - tier: 0
-        file: site/textures/2k_venus_magellan.webp
+        file: site/textures/2k_venus_radar.webp
         px: [2048, 1024]
-        bytes: 225388
-        format: rgb
+        bytes: 192918
+        format: mono
         licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
         credit: "Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain"
         source: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl (read 2026-10-06)"
         original: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.tif"
-        make: "scripts/build-textures.py venus-surface: USGS's Magellan radar mosaic, 2025 m to 2048 wide in linear light, the 2.9 % of the sphere Magellan missed filled from its edges, tinted orange (the colour is added: radar has none), WebP 84"
+        make: "scripts/build-textures.py venus-surface: USGS's Magellan radar mosaic, 2025 m to 2048 wide in linear light, the 2.9 % of the sphere Magellan missed filled from its edges, written as one grey channel (the orange is added by the shader, scene/worlds.js VENUS_GROUND: radar has no colour), WebP 84. The file of 2026-10-14 is the red channel of the orange map that build wrote before (whose tint's red was its largest channel, so that channel was the grey itself), re-encoded"
+        limits: "a radar picture: bright is rough ground or ground tilted toward the radar, dark is smooth; 2025 m a pixel in the mosaic, 18.6 km a texel here"
 
+
+  # VENUS'S GROUND IN RELIEF (2026-10-14, spec 0073 requirement 5). A height map worn UNDER the radar
+  # face, never under the clouds: the shader takes the ground's slope from it and marches it toward
+  # the Sun for shadows (scene/worlds.js VENUS_GROUND, reliefWanted). `when: asked`: fetched when a
+  # visitor presses Ground, on a tier-1 device and up. LOCAL relief: broader than 12 degrees is out.
+  - id: venus-relief
+    world: venus
+    slot: relief
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_venus_relief.webp
+        px: [2048, 1024]
+        bytes: 129422
+        format: mono
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Venus relief: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, global topography 4641 m), public domain, local relief only"
+        source: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.lbl (read 2026-10-14)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.tif"
+        make: "scripts/build-textures.py venus-relief: the 8192 x 4096 grid (metres from a 6051 km sphere; 8.3 % of it no data, filled from its edges) by the mean of 4 x 4 blocks to 2048 x 1024, the relief broader than 12 degrees taken out, the rest clipped to +-3000 m (0.47 % of the map is beyond it) and written as one grey channel with 128 as level ground, WebP 80"
+        limits: "Magellan's altimeter footprint is 10 to 30 km and the grid 4.6 km a pixel; here 18.6 km a texel, so nothing narrower than some 40 km has a slope; drawn 6 times steeper and taller than measured"
   - id: saturn
     world: saturn
     slot: map

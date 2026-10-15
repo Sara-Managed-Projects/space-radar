@@ -202,7 +202,8 @@ let outStats;
   check(Math.abs(r - 125) < 0.01, `radio from Earth has had 125 years on 12 December 2026 (${r})`);
   check(S.radioRadiusLy(Date.parse('1850-01-01T00:00:00Z')) === 0, 'and none before the first signal');
   check(S.radioRadiusLy(tMs + 365.25 * 86400000) - S.radioRadiusLy(tMs) === 1, 'it grows by one light-year a year');
-  check(S.CMB_RADIUS_LY === 46.5e9, 'the microwave background\'s surface is 46.5 billion light-years away');
+  const { horizonLy } = await import(join(JS, 'data/cosmology.js'));
+  check(S.HORIZON_LY === horizonLy() && Math.abs(S.HORIZON_LY / 46.2e9 - 1) < 0.001, `the horizon's sphere is the cosmology's own, 46.2 billion light-years (${S.HORIZON_LY})`);
   check(S.shellOpacity(0.5) === 0 && S.shellOpacity(1) === 0 && S.shellOpacity(1.2) === 0, 'a shell is not drawn from inside it, nor from just outside');
   check(S.shellOpacity(3) === 1 && S.shellOpacity(30) === 1, 'it is drawn whole from a few radii out');
   check(S.shellOpacity(160) === 0 && S.shellOpacity(90) > 0 && S.shellOpacity(90) < 1, 'and fades to nothing where it would be a dot');
@@ -212,7 +213,8 @@ let outStats;
   const radio = tour.stops.find((s) => s.id === 'radio');
   const edge = tour.stops.find((s) => s.id === 'edge');
   check(S.shellOpacity(radio.distance_km / (S.radioRadiusLy(tMs) * LY)) === 1, 'the radio stop sees the whole radio sphere');
-  check(S.shellOpacity(edge.distance_km / (S.CMB_RADIUS_LY * LY)) === 1, 'the last stop sees the whole microwave-background sphere');
+  check(S.horizonOpacity(edge.distance_km / (S.HORIZON_LY * LY)) === 1, 'the last stop, past the horizon, sees its sphere drawn in full');
+  check(S.horizonOpacity(0.99) === 0 && S.horizonOpacity(1.0) === 0, 'and from inside the horizon it is not drawn (it would be the whole sky)');
   check(edge.distance_km <= H.EDGE_KM, 'and the ladder\'s own "edge" flies at least as far out as the trip\'s last stop');
   // every climb stop is at a distance the chain holds its stage at, whichever way it is reached
   for (const s of tour.stops.filter((x) => x.climb)) {

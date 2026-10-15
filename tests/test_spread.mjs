@@ -49,7 +49,9 @@ check((await spread([], (fn) => setTimeout(fn, 0))) === 0, 'an empty list resolv
   const p = g.ensureGeometry();
   check(g.group.children.length === 0, 'the call itself builds nothing: the points come in a later turn');
   await p;
-  check(g.group.children.length === 3 && turns >= 4, `points, dust and twin, each in its own turn (${g.group.children.length} children, ${turns} turns)`);
+  await g.andromedaReady();
+  // spec 0075 stage d: the third piece is Andromeda's own far model (scene/deep/spiral.js), fetched in its turn
+  check(g.group.children.length === 3 && turns >= 4 && g.group.children.some((c) => c.name === 'galaxy:andromeda'), `points, dust and Andromeda, each in its own turn (${g.group.children.length} children, ${turns} turns)`);
   check(g.mode() === 'drawn' && g.dustCount() > 0, 'and the result is the same as before: drawn on the rung, with its dust');
   // prewarm shows every part for the compile and puts the visibility back
   stage.setWorld('earth');

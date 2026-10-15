@@ -102,9 +102,15 @@ export const WE_SHOW = [
   {
     "what": "nebulae, clusters and galaxies placed",
     "n": 209,
-    "of": "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group waits for sourced rows",
+    "of": "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group is in the next row",
     "source": "OpenNGC; Wikipedia Messier distances",
     "layer": "deep-sky"
+  },
+  {
+    "what": "nearby galaxies drawn as points; the fainter grey-blue ones have only a range of distance, not a measured one",
+    "n": 800,
+    "of": "the 869 of the Updated Nearby Galaxy Catalog, all within about 36 million light-years; the Milky Way and the 68 in the row above are not drawn twice. Billions more lie farther out and are not drawn",
+    "source": "Karachentsev, Makarov & Kaisina 2013, AJ 145, 101 (VizieR J/AJ/145/101)"
   },
   {
     "what": "black holes, pulsars, a magnetar and two doomed stars with a fact sheet",

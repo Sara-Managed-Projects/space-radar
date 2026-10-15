@@ -31,9 +31,27 @@ sources:
     checked: 2026-10-09
     licence_also: {url: "https://www.nasa.gov/nasa-brand-center/images-and-media/", quote: "NASA content – images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format – generally are not subject to copyright in the United States."}
 
+  - id: jpl-mission-sites
+    name: JPL's own mission sites (3D models published on a mission's resources page)
+    # 2026-10-13 (public #952): SWOT's model, the first taken from a mission's own site and not from NASA 3D Resources.
+    # 2026-10-15 (public #1076, #1077): SMAP's and Jason-3's, from the same kind of page on two more mission sites; the
+    # same policy was read again that day (through a reader: jpl.nasa.gov answers 403 to curl) and says the same.
+    match: ["https://swot.jpl.nasa.gov/", "https://smap.jpl.nasa.gov/", "https://sealevel.jpl.nasa.gov/"]
+    url: https://swot.jpl.nasa.gov/resources/86/swot-3d-model/
+    licence: Public domain (JPL image use policy; NASA media usage guidelines)
+    licence_read: "Unless otherwise noted, images and video on JPL public web sites (public sites ending with a jpl.nasa.gov address) may be used for any purpose without prior permission, subject to the special cases noted below."
+    licence_url: https://www.jpl.nasa.gov/jpl-image-use-policy/
+    licence_note: "The policy names images and video and does not name 3D models; a model rests on NASA's guidelines in `licence_also`, which do. The credit line the policy asks for is 'Courtesy NASA/JPL-Caltech'. A model whose page credits a contractor or another agency is not covered: read each page."
+    account: none
+    cost: none
+    checked: 2026-10-15
+    licence_also: {url: "https://www.nasa.gov/nasa-brand-center/images-and-media/", quote: "NASA content – images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format – generally are not subject to copyright in the United States."}
+
   - id: own-work
     name: Built here (procedural shapes and scripts of this repository)
-    match: ["site/js/scene/models.js", "scripts/"]
+    # 2026-10-13: "built by this project" is a real_models row of kind built-from-dimensions: a mesh
+    # written offline, in code, from cited metres (the first: nustar). Its pictures and its metres are on the row.
+    match: ["site/js/scene/models.js", "scripts/", "built by this project"]
     url: https://github.com/Sara-Managed-Projects/space-radar
     licence: This repository's own licence (LICENSE)
     licence_read: ""
@@ -124,6 +142,20 @@ sources:
     cost: none
     checked: 2026-10-09
 
+  # 2026-10-14 (internal spec 0075 stage e): a catalogue, read by a build script and pinned by SHA-256
+  # in it (scripts/build_deep_localvolume.py); its terms are the publisher's, through the archive.
+  - id: cds-vizier
+    name: CDS VizieR catalogue archive (Strasbourg)
+    match: ["https://cdsarc.cds.unistra.fr/"]
+    url: https://vizier.cds.unistra.fr/
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Commercial use depends on each catalogue's origin (the same page); Space Radar is free and non-commercial. The package's 'ODbL per the package' is SIMBAD's licence, not VizieR's."
+    account: none
+    cost: none
+    checked: 2026-10-14
+
   - id: github-octicons
     name: GitHub Octicons (the mark in the sources sheet)
     match: ["https://github.com/primer/octicons"]
@@ -157,3 +189,18 @@ sources:
     account: free
     cost: none
     checked: 2026-10-09
+
+  # 2026-10-12 (internal spec 0064): a GENERATOR, not an archive. What comes from it is a mesh made by
+  # its model from pictures a row names itself (registry/models.yaml, `kind: derived-from-images`), so
+  # this row is about the generator's own terms and the pictures' terms are on the model's row.
+  - id: trellis
+    name: TRELLIS image-to-3D model (Microsoft Research)
+    match: ["https://github.com/microsoft/TRELLIS"]
+    url: https://github.com/microsoft/TRELLIS
+    licence: MIT (code, and the image-large weights on their own page)
+    licence_read: "MIT License Copyright (c) Microsoft Corporation. Permission is hereby granted, free of charge, to any person obtaining a copy"
+    licence_url: https://raw.githubusercontent.com/microsoft/TRELLIS/main/LICENSE
+    licence_note: "The weights' page (https://huggingface.co/microsoft/TRELLIS-image-large) states `license: mit`, read 2026-10-12. Run through the Hugging Face Space trellis-community/TRELLIS, whose page also states `license: mit`; a free Hugging Face account gives the GPU minutes, and that account is Ivan's."
+    account: free
+    cost: none
+    checked: 2026-10-12
