@@ -4833,31 +4833,32 @@ tours:
       - id: lmc
         target: {record: dso-lmc}
         needs_layer: deep-sky
-        # 300 000 ly from the LMC, 80 degrees off our line, as "Inside a neighbouring galaxy" leaves it
-        # (its `depart` stop, twice as far): the LMC in the middle, the SMC beside it.
-        distance_km: 2838219141774240000
-        key_light_deg: 80
+        # 100 000 ly on our line: its photograph lined up, about a third of the frame (from 300 000 ly
+        # and 80 degrees off our line, the first look run, it was a small glow).
+        distance_km: 946073047258080000
+        key_light_deg: 0
         drift_deg: 10
         drift_rate_deg_s: 1
         chapter: "Our companions"
         # read 2026-10-16, https://en.wikipedia.org/wiki/Large_Magellanic_Cloud: "a dwarf galaxy and
         # satellite galaxy of the Milky Way", "the fourth-largest galaxy in the Local Group" (after
-        # Andromeda, the Milky Way and Triangulum: the largest of our companions). Distances:
-        # registry/dso-hand.yaml, the LMC 161 740 ly (Pietrzyński et al. 2019) and the SMC 203 650 ly
-        # (Graczyk et al. 2020), both from eclipsing binaries.
+        # Andromeda, the Milky Way and Triangulum: the largest of our companions). The distance:
+        # registry/dso-hand.yaml, 161 740 ly from twenty eclipsing binaries (Pietrzyński et al. 2019).
+        # The photograph: NOIRLab noirlab2030a (SMASH), registry/nebulae.yaml.
         card:
           title: "The Large Magellanic Cloud"
           body: >-
-            The biggest of our galaxy's companions, and the fourth-largest galaxy in the Local Group,
-            is a hundred and sixty thousand light-years from the Sun. The Small Magellanic Cloud is
-            near it. Both distances come from pairs of stars that eclipse each other.
+            This photograph of the Large Magellanic Cloud lines up with our sky. The biggest of our
+            galaxy's companions and the fourth-largest galaxy in the group, it is a hundred and sixty
+            thousand light-years away: pairs of its stars that eclipse each other tell us how far.
 
       - id: andromeda
         target: {record: dso-m31}
         needs_layer: deep-sky
-        # 300 000 ly on our line (as "To the edge" frames her): her 178 arcmin, 131 000 ly at 2.54 Mly,
-        # under half the frame; then 60 degrees at 5 degrees a second (12 s), off the photograph.
-        distance_km: 2838219141774240000
+        # 250 000 ly on our line: her 178 arcmin, 131 000 ly at 2.54 Mly, about half the frame's width on
+        # a desk (from 300 000 ly, the first look run, a quarter); then 60 degrees at 5 degrees a second
+        # (12 s), off the photograph.
+        distance_km: 2365182618145200000
         key_light_deg: 0
         drift_deg: 60
         drift_rate_deg_s: 5
@@ -4872,7 +4873,8 @@ tours:
           body: >-
             Andromeda is two and a half million light-years away. With our Milky Way she is one of the
             group's two largest galaxies, and she is moving towards us. From our side this is a
-            photograph; as we turn, a model takes over: her tilt and rings are measured, her arms drawn.
+            photograph; as we turn, a model takes over. Her tilt and rings are measured; the exact shape
+            of her arms is ours.
 
       - id: triangulum
         target: {record: dso-m33}
@@ -5019,8 +5021,10 @@ tours:
 
       - id: first-galaxies
         target: {world: sun}
-        # 35 billion light-years from the Sun, past where the first galaxies seen are now.
-        distance_km: 331125566540328000000000
+        # 25 billion light-years from the Sun: the microwave background's map is fetched and not yet
+        # drawn (scene/deep/cmb.js: from about 30), so it appears on the next stop, not here as well (the
+        # first look run stood at 35 and the two stops were one picture).
+        distance_km: 236518261814520000000000
         drift_deg: 12
         drift_rate_deg_s: 1
         chapter: "The first galaxies"

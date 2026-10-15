@@ -331,7 +331,7 @@ export const TOURS_INDEX = [
 "next": "out-to-the-edge",
 "min_stops": 3,
 "count": 5,
-"estimate_ms": 121179
+"estimate_ms": 123028
 },
 {
 "id": "out-to-the-edge",
