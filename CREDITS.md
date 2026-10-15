@@ -1588,6 +1588,43 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
 
 ### LOLA, LROC traverses (0076 W2-a)
 
+Release 1.2.0 stage W2-a (internal spec 0076, internal #864, #868, #917). Nothing here is stored at boot;
+each piece is fetched or drawn only close to the Moon or beside the station.
+
+**Shadows cast from the Moon's heights.** `site/js/scene/tiles.js` reads Lunar Orbiter Laser Altimeter
+elevations from NASA's Solar System Treks (`LRO_LOLA_DEM_Global_128ppd_v04`, levels 0 to 5, grey PNG,
+one byte a texel, the visitor's browser asking as for the map tiles of §4.16) and marches toward the Sun
+in them: the shadows of crater rims, peaks and massifs at a low Sun are cast from the measured ground,
+true scale. The byte was turned into metres by a fit to the 44 surveyed objects of LROC's 2016 table
+(Wagner et al. 2017), 77.31 m a byte above -9101.7 m, 18.5 m rms (`registry/tilesets.yaml`). LOLA is
+archived at the PDS Geosciences Node, whose FAQ says "Data sets archived in the PDS are in the public
+domain" (https://pds-geosciences.wustl.edu/faq.html, read 2026-10-16). Credit, in the Sources panel while
+the shadows are drawn:
+
+> The Moon's shadows close up: cast from Lunar Orbiter Laser Altimeter heights, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks
+
+**The rover traverses of Apollo 15 and 17.** `site/js/scene/traverse.js` draws the lines the PDS Geosciences
+Node (Washington University in St. Louis) serves with its Apollo Analyst's Notebook station finders, read
+2026-10-16 by `scripts/build_traverses.py` into `registry/traverses/`: Apollo 15's "from Phil Stooke,
+University of Western Ontario ... created by tracing tracks visible in the LROC data as well as using
+surface photos and descriptions", Apollo 17's "created by tracing tracks visible in the LROC data" (the
+finder pages' words). Terms: the Node's FAQ puts the data sets archived in the PDS in the public domain;
+these lines are the Notebook's own layers, not archived data sets, and no terms for them were found, so
+they are credited here and in the Sources panel, and the question is open (spec 0076, "For spec 0076").
+Credits, in the Sources panel while each is drawn:
+
+> Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis
+
+> Apollo 17's rover traverse: traced from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis
+
+**Huygens on Titan** (`registry/sites.yaml`, a coordinate, not yet drawn): 10.573 S, 192.335 W from the
+Huygens Descent Trajectory Working Group's 2010 trajectory, as Atkinson, Kazeminejad and Lebreton give it
+(EGU General Assembly 2015, abstract EGU2015-162-2, CC Attribution 3.0).
+
+**The red of the station's sunrise** (`site/js/scene/shadow.js` AIR_REDDENING) is modelled, not observed:
+Rayleigh scattering of a single exponential atmosphere along the grazing line to the Sun, with the
+column's optical depths from Hansen and Travis (1974, Space Science Reviews 16, 527). No image is used.
+
 ### Ring and spot data (0076 W2-b)
 
 ### Plume observations (0076 W2-c)

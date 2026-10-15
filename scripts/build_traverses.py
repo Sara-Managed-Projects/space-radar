@@ -51,25 +51,35 @@ def fetch(url: str) -> dict:
 
 
 def length_m(path: list) -> float:
-    return sum(math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]) for i in range(1, len(path)))
+    """Along great circles on the 1737.4 km sphere; `path` in the service's plate carree metres."""
+    out = 0.0
+    for i in range(1, len(path)):
+        lo1, la1 = path[i - 1][0] / R_M, path[i - 1][1] / R_M
+        lo2, la2 = path[i][0] / R_M, path[i][1] / R_M
+        c = math.sin(la1) * math.sin(la2) + math.cos(la1) * math.cos(la2) * math.cos(lo2 - lo1)
+        out += math.acos(max(-1.0, min(1.0, c))) * R_M
+    return out
 
 
 def simplify(path: list, tol: float) -> list:
-    """Douglas-Peucker on the plate carree's metres (a few kilometres from the centre: flat enough)."""
+    """Douglas-Peucker in local metres: the plate carree's x shrunk by the cosine of the latitude (a few
+    kilometres from the lander the ground is flat enough for this)."""
     if len(path) < 3:
         return path
-    keep = [False] * len(path)
+    k = math.cos(path[0][1] / R_M)
+    pts = [(x * k, y) for x, y in path]
+    keep = [False] * len(pts)
     keep[0] = keep[-1] = True
-    stack = [(0, len(path) - 1)]
+    stack = [(0, len(pts) - 1)]
     while stack:
         a, b = stack.pop()
-        ax, ay = path[a]
-        bx, by = path[b]
+        ax, ay = pts[a]
+        bx, by = pts[b]
         dx, dy = bx - ax, by - ay
         L = math.hypot(dx, dy) or 1e-9
         best, at = -1.0, -1
         for i in range(a + 1, b):
-            px, py = path[i]
+            px, py = pts[i]
             d = abs(dy * (px - ax) - dx * (py - ay)) / L
             if d > best:
                 best, at = d, i
