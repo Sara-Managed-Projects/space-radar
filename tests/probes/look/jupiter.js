@@ -2,7 +2,7 @@
 // and Jupiter's faint ring. Every place is photographed twice in a row: BEFORE, as main draws it
 // (sr.worlds.setBeforeGiants(true), a switch that works under ?look=1 only: the spot where the map has
 // it, no ring), then AFTER, with sr.perf's numbers for each. The clock is held at one instant, turned
-// so the spot is under the Sun; then the ring from the night side (the Sun behind the planet) under
+// so the spot is under the Sun, on the world's own face and on Hubble's; then the ring from the night side (the Sun behind the planet) under
 // Camera and Deep, and from the day side under Camera and Deep. Last, the stage as "Go there" frames it.
 look.probe = 'jupiter';
 const J = 'jupiter';
@@ -77,6 +77,17 @@ if (s0) {
   await pair('1-spot-disc', 'the Great Red Spot under the Sun on 2026-10-16 12:00 UTC (the clock turned to put it there), the disc');
   rig.flyTo({ targetScene: centre(), offset: unit(mix(dir, 1, sunward(J), 0.1)), distance: R * (portrait ? 1.9 : 1.45), ms: 0 });
   await pair('2-spot-close', 'the same, closer: the spot and the belt round it');
+  // Hubble's face (OPAL, 11 December 2025): before, its spot is where it was that day, 95 degrees from
+  // where the world's own face had it; after, both faces put it at today's place.
+  if (sr.worlds.setFace) {
+    sr.worlds.setFace(J, 'hubble');
+    await until(() => sr.worlds.faceOf(J) === 'hubble', 20000);
+    await sleep(6000);
+    rig.flyTo({ targetScene: centre(), offset: unit(mix(dir, 1, sunward(J), 0.25)), distance: R * (portrait ? 3.4 : 2.4), ms: 0 });
+    await pair('2b-spot-hubble-face', 'the same place wearing "As Hubble saw it" (OPAL, 11 December 2025)');
+    sr.worlds.setFace(J, null);
+    await sleep(3000);
+  }
 }
 // THE RING FROM THE NIGHT SIDE: the Sun behind the planet, the camera 7 degrees above the ring plane.
 const n = north(J);

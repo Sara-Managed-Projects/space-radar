@@ -404,10 +404,13 @@ export const NEPTUNE_RINGS = {
   arcs: NEPTUNE_ARCS,
 };
 /**
- * JUPITER'S RING (internal spec 0076 W2-b). Four parts, from NASA's Jupiter ring fact sheet (read
+ * JUPITER'S RING (internal spec 0076 W2-b). Two parts, from NASA's Jupiter ring fact sheet (read
  * 2026-10-16), each [centre km, width km, normal optical depth]: the halo, 89 400 to 123 000 km,
- * 3e-6, some 10 000 km thick and drawn flat; the main ring, 123 000 to 128 940 km, 5e-6, albedo about
- * 0.015; the Amalthea and Thebe gossamer rings, 128 940 to 181 350 and 181 350 to 221 900 km, 1e-7.
+ * 3e-6, some 10 000 km thick; the main ring, 123 000 to 128 940 km, 5e-6, albedo about 0.015. The
+ * halo is drawn flat, but a line of sight through it is never longer than its width: its optical
+ * depth along the view is at most width / thickness times the normal one (`halo`, RING_FRAG uHalo).
+ * The Amalthea and Thebe gossamer rings (to 221 900 km, 1e-7) are left out: fifty times fainter than
+ * the main ring, they would double the ring's area on the screen for a glow only Deep would show.
  * Optical depths of millionths are far under a byte, so the strip holds tau / `tauScale` and the
  * shader reads it as an optical depth (RING_FRAG's uThin), in the thin-slab limit, 2 tau / mu.
  * It is dust and dark grains: from the Sun's side it is almost nothing; with the Sun behind it the
@@ -420,14 +423,13 @@ export const NEPTUNE_RINGS = {
  * costs nothing on tier 0, and never under the frame latch.
  */
 export const JUPITER_RINGS = {
-  innerKm: 89400, outerKm: 221900, widen: 1, dense: 1, tauScale: 5e-6,
+  innerKm: 89400, outerKm: 129500, widen: 1, dense: 1, tauScale: 5e-6,
+  halo: { innerKm: 89400, outerKm: 123000, thickKm: 10000 },
   albedo: 0.015, globeAlbedo: 0.538, hue: [1, 0.82, 0.66], dust: 0.5,
   stretch: { eye: 0, camera: 8000, deep: 40000 }, faint: true, words: 'jupiter',
   bands: [
     [106200, 33600, 3e-6],    // the halo
     [125970, 5940, 5e-6],     // the main ring
-    [155145, 52410, 1e-7],    // the Amalthea gossamer ring
-    [201625, 40550, 1e-7],    // the Thebe gossamer ring
   ],
 };
 /** The narrow rings' strip, texels from the inner edge to the outer. */
@@ -1151,10 +1153,10 @@ export function ringLight(alpha, mu0, mu, cosAlpha, unlit) {
 /**
  * A faint ring's light for a white strip (RING_FRAG's uThin branch, internal spec 0076 W2-b): the
  * thin-slab limit 2 tau / mu on either face, shared between grains (a Lambert sphere's phase) and
- * dust (Henyey-Greenstein) by `dust`. JS twin of the shader. Pure.
+ * dust (Henyey-Greenstein) by `dust`; `muMin` is a thick halo's thickness over its width. JS twin of the shader. Pure.
  */
-export function ringThinLight(tau, mu, cosAlpha, dust, g) {
-  const S = (2 * tau) / Math.max(mu, RING_MU_FLOOR);
+export function ringThinLight(tau, mu, cosAlpha, dust, g, muMin = 0) {
+  const S = (2 * tau) / Math.max(mu, RING_MU_FLOOR, muMin);
   return S * ((1 - dust) * lambertSpherePhase(cosAlpha) + dust * dustPhase(cosAlpha, g));
 }
 
@@ -1576,6 +1578,7 @@ uniform vec4 uArcBand;
 // A faint ring (JUPITER_RINGS, internal spec 0076 W2-b): x the optical depth the strip's 1 stands for
 // (0 = the map's alpha is an opacity, every other ring), y the dust's share of the light, z its g.
 uniform vec3 uThin;
+uniform vec3 uHalo;           // a thick part of a faint ring: inner and outer radius (planet radii), thickness over width; 0 = none
 uniform vec3 uDustColour;     // the dust's colour: RING_DUST_COLOUR, or white where uColour already is the ring's
 varying vec2 vUv;
 varying vec3 vPosL;
@@ -1669,7 +1672,9 @@ void main() {
   float S;
   if ( uThin.x > 0.0 ) {
     // The thin-slab limit of both faces, 2 tau / mu: 1 - exp() of a millionth is not a number a float keeps.
-    S = 2.0 * tau / m;
+    // A thick halo: the view's path through it is at most its width, so mu is at least thickness / width.
+    float rl = length( vPosL.xy );
+    S = 2.0 * tau / ( rl > uHalo.x && rl < uHalo.y ? max( m, uHalo.z ) : m );
   } else if ( vSunL.z * vCamL.z >= 0.0 ) {
     S = 2.0 * m0 / ( m0 + m ) * ( 1.0 - exp( -tau * ( 1.0 / m0 + 1.0 / m ) ) );
   } else if ( abs( m - m0 ) < 1e-4 ) {
@@ -1737,6 +1742,7 @@ function ringMaterial(map, inner, outer, warp) {
       uArcs: { value: new Float32Array(ARC_SLOTS * 4) },
       uArcBand: { value: new THREE.Vector4(0, 0, 0, 0) },
       uThin: { value: new THREE.Vector3(0, RING_DUST, RING_DUST_G) },
+      uHalo: { value: new THREE.Vector3(0, 0, 0) },
       uDustColour: { value: new THREE.Vector3(...RING_DUST_COLOUR) },
     },
   });
@@ -3141,6 +3147,7 @@ export function createWorlds(scene, opts = {}) {
     if (r.tauScale) {
       mesh.material.uniforms.uThin.value.set(r.tauScale, r.dust, RING_DUST_G);
       mesh.material.uniforms.uDustColour.value.set(1, 1, 1);
+      if (r.halo) mesh.material.uniforms.uHalo.value.set(r.halo.innerKm / w.radiusKm, r.halo.outerKm / w.radiusKm, r.halo.thickKm / (r.halo.outerKm - r.halo.innerKm));
     }
     // Neptune's arcs: in the Adams ring at its drawn width (the band in the strip), turned each frame.
     if (r.arcs) {
