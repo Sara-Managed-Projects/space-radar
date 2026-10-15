@@ -28,6 +28,9 @@ FIELDS = (("id", "id"), ("world", "world"), ("title", "title"), ("url", "url"), 
 RELIEF_FIELDS = (("title", "title"), ("url", "url"), ("max_level", "maxLevel"),
                  ("light_azimuth_deg", "lightAzimuthDeg"), ("flat", "flat"), ("gain", "gain"),
                  ("credit", "credit"))
+# A row's `height:` block (elevations the cast shadows are marched in; internal spec 0076 W2-a).
+HEIGHT_FIELDS = (("title", "title"), ("url", "url"), ("max_level", "maxLevel"),
+                 ("metres_per_count", "metresPerCount"), ("offset_m", "offsetM"), ("credit", "credit"))
 
 
 def render(doc: dict) -> list:
@@ -37,6 +40,8 @@ def render(doc: dict) -> list:
             row = {js: r[y] for y, js in FIELDS if y in r}
             if isinstance(r.get("relief"), dict):
                 row["relief"] = {js: r["relief"][y] for y, js in RELIEF_FIELDS if y in r["relief"]}
+            if isinstance(r.get("height"), dict):
+                row["height"] = {js: r["height"][y] for y, js in HEIGHT_FIELDS if y in r["height"]}
             rows.append(row)
     return [("Map tiles a world is drawn from when the camera is close (scene/tiles.js, scene/tilemath.js).",
              "TILESETS", rows)]

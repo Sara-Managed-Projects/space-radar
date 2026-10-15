@@ -87,14 +87,37 @@
 // covered at `minLevel` or finer (scene/tilemath.js selectTiles), and that coarse cover -- three or
 // four tiles -- is fetched first, so the mosaic changes once, in a fade, and everything after only
 // sharpens it.
+//
+// CAST SHADOWS (release 1.2.0 stage W2-a, internal #864). The relief above is a slope under the
+// Sun; it cannot make a crater's rim throw its shadow across the floor. A row with `height` (the
+// Moon: LOLA's elevation pyramid, registry/tilesets.yaml) gets real ones. A WINDOW of heights round
+// the view -- one 1024-texel square on the plane that touches the ground where the camera looks,
+// read point by point from the elevation tiles (gnomonic: straight lines on the ground are straight
+// in it, and the poles are no different from the equator) -- goes up as ONE height texture shared
+// by every patch. From each sunlit point the patch marches toward the Sun in it and finds the
+// tallest thing in the way, as the tangent of its angle over this point's horizon on the ball; past
+// the Sun's own elevation the direct light goes (earthshine stays). Exactly the march Mars's globe
+// does (scene/worlds.js MARS_RELIEF), with three differences:
+//   - true heights, not exaggerated: at 666 m a texel a crater's walls are many texels wide;
+//   - the edge is the Sun's own width (its half-angle, 0.27 degrees, is 0.0047 as a tangent), not
+//     a soft blend: a shadow on the Moon is sharp-edged because there is no air;
+//   - the noise is taken out in HEIGHT, not in angle: Trek's elevation is one byte a texel, 77 m a
+//     step, so a mare is flat terraces with a 77 m step at each contour. Every rise is counted one
+//     byte lower than it reads (CAST.marginCounts), so a contour can never shade the plain below it
+//     at any Sun, and a 3.8 km rim loses 2 % of its shadow's length, not the 40 % an angle bias of
+//     the same safety would cost at an 8 degree Sun.
+// The window is rebuilt, a few rows a frame, when the view has moved a third of it or zoomed by a
+// factor of two; the old one draws until the new one is whole. Off the window's edge the shadows
+// fade (CAST.edgeFade). Tier 1 and up (the tiles' own rule), never after the latch.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { WORLD_VERT, WORLD_FRAG } from './worlds.js';
+import { WORLD_VERT, WORLD_FRAG, WORLDS } from './worlds.js';
 import { SURFACE_VERT, SURFACE_FRAG, WGS84_A_KM, WGS84_B_KM } from './earth.js';
 import { TILESETS } from '../data/tilesets.js';
 import {
   selectTiles, drawSet, underlay, nadirLevel, createLru, tileBounds, tileUrl,
   patchArrays, patchSegments, lonLatFromUnit, unitFromLonLat, gridOf, tileKey,
+  levelForFootprint, wrapLon,
 } from './tilemath.js';
 
 /** Tiles on screen at once, per tier. Over it the whole selection is redone one notch coarser. */
@@ -153,6 +176,186 @@ export const RELIEF_SUN_FLOOR = 0.1;
 /** WGS84's first eccentricity squared: the Earth's patches lie on the ellipsoid its mesh is. */
 export const EARTH_E2 = 1 - (WGS84_B_KM / WGS84_A_KM) ** 2;
 
+/**
+ * CAST SHADOWS (above). `texels` the window's side; `cover` its half-width over the half-width of
+ * the ground in view; `minHalf`/`maxHalf` that half-width's bounds on the tangent plane, in radii
+ * (0.25 radii: 434 km on the Moon, where the plane is still within 6 % of the ground); `maxTiles`
+ * the elevation tiles one window may read (a coarser level when more); `steps` the march by tier;
+ * `firstTexels` and `firstMinRad` its first step; `reachRad` its last (104 km on the Moon: a 5 km
+ * wall's shadow at a 3 degree Sun); `marginCounts` the rise not counted, in the source's bytes;
+ * `soft` the edge, as a tangent (the Sun's half-width); `depth` how much of the direct light a
+ * shadow takes; `maxSun` the Sun's height (its sine) past which nothing is marched (no lunar wall
+ * stands 37 degrees); `edgeFade` the share of the window over which shadows fade at its edge;
+ * `recentre` the share of the half-width the view may move, and `rescale` the factor it may zoom,
+ * before the window is rebuilt; `rowsPerFrame` how much of a rebuild one frame does.
+ */
+export const CAST = {
+  texels: 1024, cover: 1.4, minHalf: 0.004, maxHalf: 0.25, maxTiles: 40,
+  steps: [0, 16, 24], firstTexels: 1.5, firstMinRad: 0.0003, reachRad: 0.06,
+  marginCounts: 1, soft: 0.0047, depth: 0.94, maxSun: 0.6, edgeFade: 0.12,
+  recentre: 0.3, rescale: 2, rowsPerFrame: 32, smoothMax: 8,
+};
+/** An elevation tile's texel at level `z`, in radians: its north-south side. Pure. */
+export function castSourceTexel(z) { return Math.PI / (2 ** z * 256); }
+/**
+ * The worlds whose landing sites have traced rover traverses (registry/sites.yaml `traverses:`):
+ * scene/traverse.js is imported the first time one of these worlds' tiles is on screen.
+ * tests/test_traverse.mjs holds it to the data.
+ */
+export const TRAVERSE_WORLDS = ['moon'];
+/** The cast shadows for probes and before pictures: true draws them where a row has heights. */
+let castWanted = true;
+export function setCastShadows(on) { castWanted = !!on; return castWanted; }
+export function castShadowsOn() { return castWanted; }
+
+/** Steps of the march between its first and last, growing by a constant ratio. Pure. */
+export function castGrowth(firstRad, steps, reachRad = CAST.reachRad) {
+  return steps > 1 && firstRad > 0 && reachRad > firstRad ? Math.pow(reachRad / firstRad, 1 / (steps - 1)) : 1;
+}
+
+/**
+ * How much of the direct light reaches a point: the JS twin of the patch's march. `heightAt(s)` is
+ * the ground's height in radii a distance `s` (radians) toward the Sun, 0 being the point; `tanSun`
+ * the tangent of the Sun's elevation there; `marginRadii` the rise not counted. Pure.
+ */
+export function castLight(heightAt, tanSun, { steps = CAST.steps[1], firstRad = CAST.firstMinRad, marginRadii = 0, soft = CAST.soft, depth = CAST.depth } = {}) {
+  const g = castGrowth(firstRad, steps);
+  const h0 = heightAt(0);
+  let s = firstRad;
+  let horizon = -1;
+  for (let j = 0; j < steps; j++) {
+    horizon = Math.max(horizon, (heightAt(s) - h0 - marginRadii) / s - 0.5 * s);
+    s *= g;
+  }
+  const x = Math.min(1, Math.max(0, (horizon - (tanSun - soft)) / (2 * soft)));
+  return 1 - depth * x * x * (3 - 2 * x);
+}
+
+/**
+ * The height window for a view (CAST SHADOWS, above). `cam` the camera and `dir` its forward
+ * direction, both in the world mesh's own axes (the ball is radius 1); `tanHalfFov` the vertical
+ * half-angle's tangent, `aspect` width over height. Returns the window's centre and its east and
+ * north on the plane that touches it, and its half-width in radii, rounded to a power of the square
+ * root of two so a slow zoom does not rebuild it every frame. Pure.
+ */
+export function castWindowFor(cam, dir, tanHalfFov, aspect, opts = CAST) {
+  const cl = Math.hypot(cam[0], cam[1], cam[2]);
+  if (!(cl > 1)) return null;
+  const dl = Math.hypot(dir[0], dir[1], dir[2]) || 1;
+  const d = [dir[0] / dl, dir[1] / dl, dir[2] / dl];
+  // Where the line of sight meets the ball; past the limb, the point under the camera.
+  const b = cam[0] * d[0] + cam[1] * d[1] + cam[2] * d[2];
+  const c = cl * cl - 1;
+  const disc = b * b - c;
+  let p;
+  let dist;
+  if (b < 0 && disc > 0) {
+    dist = -b - Math.sqrt(disc);
+    p = [cam[0] + d[0] * dist, cam[1] + d[1] * dist, cam[2] + d[2] * dist];
+  } else {
+    dist = cl - 1;
+    p = [cam[0] / cl, cam[1] / cl, cam[2] / cl];
+  }
+  const pl = Math.hypot(p[0], p[1], p[2]);
+  const u = [p[0] / pl, p[1] / pl, p[2] / pl];
+  // East is the pole's axis (+y) across the vertical; at a pole any east will do.
+  let e = [u[2], 0, -u[0]];
+  let el = Math.hypot(e[0], e[1], e[2]);
+  if (el < 1e-6) { e = [1, 0, 0]; el = 1; }
+  e = [e[0] / el, e[1] / el, e[2] / el];
+  const n = [u[1] * e[2] - u[2] * e[1], u[2] * e[0] - u[0] * e[2], u[0] * e[1] - u[1] * e[0]];
+  const want = opts.cover * dist * tanHalfFov * Math.max(1, aspect || 1);
+  const half = Math.min(opts.maxHalf, Math.max(opts.minHalf, Math.SQRT2 ** Math.round(2 * Math.log2(Math.max(1e-9, want)))));
+  return { u, e, n, half };
+}
+
+/** Does the window `w` still serve the view's window `v`, or must it be rebuilt? Pure. */
+export function castWindowStale(w, v, opts = CAST) {
+  if (!w) return !!v;
+  if (!v) return false;
+  const cosA = w.u[0] * v.u[0] + w.u[1] * v.u[1] + w.u[2] * v.u[2];
+  const moved = Math.acos(Math.min(1, Math.max(-1, cosA)));
+  return moved > opts.recentre * w.half || v.half >= w.half * opts.rescale || v.half <= w.half / opts.rescale;
+}
+
+/** A point of the window -- (x, y) on its plane, in radii -- as east longitude and latitude, degrees. Pure. */
+export function castPointLonLat(w, x, y) {
+  const px = w.u[0] + x * w.e[0] + y * w.n[0];
+  const py = w.u[1] + x * w.e[1] + y * w.n[1];
+  const pz = w.u[2] + x * w.e[2] + y * w.n[2];
+  return lonLatFromUnit(px, py, pz);
+}
+
+/**
+ * The elevation tiles a window reads, and their level: the finest no finer than the window's own
+ * texel and no more than `maxTiles` of them. A window over a pole takes every column of the rows it
+ * covers. Pure.
+ */
+export function castTilesFor(w, height, opts = CAST) {
+  const texel = (2 * w.half) / opts.texels;
+  let z = Math.max(0, Math.min(height.maxLevel, levelForFootprint(texel)));
+  // A pole inside the window: its rows are needed whole.
+  const poleIn = (sign) => {
+    const ww = sign * w.u[1];
+    if (ww <= 0) return false;
+    return Math.abs(sign * w.e[1] / ww) <= w.half && Math.abs(sign * w.n[1] / ww) <= w.half;
+  };
+  const north = poleIn(1);
+  const south = poleIn(-1);
+  for (; z >= 0; z--) {
+    const keys = new Map();
+    const span = 180 / 2 ** z;
+    const cols = 2 * 2 ** z;
+    const rows = 2 ** z;
+    const add = (lonDeg, latDeg) => {
+      const x = Math.min(cols - 1, Math.max(0, Math.floor((wrapLon(lonDeg) + 180) / span)));
+      const y = Math.min(rows - 1, Math.max(0, Math.floor((90 - latDeg) / span)));
+      keys.set(tileKey(z, x, y), { z, x, y });
+    };
+    const k = 12;
+    let latMin = 90;
+    let latMax = -90;
+    for (let i = 0; i <= k; i++) {
+      for (let j = 0; j <= k; j++) {
+        const ll = castPointLonLat(w, (2 * i / k - 1) * w.half, (2 * j / k - 1) * w.half);
+        add(ll.lonDeg, ll.latDeg);
+        latMin = Math.min(latMin, ll.latDeg);
+        latMax = Math.max(latMax, ll.latDeg);
+      }
+    }
+    if (north) { for (let x = 0; x < cols; x++) for (let lat = latMin; lat <= 90; lat += span) add(-180 + (x + 0.5) * span, Math.min(89.999, lat)); }
+    if (south) { for (let x = 0; x < cols; x++) for (let lat = latMax; lat >= -90; lat -= span) add(-180 + (x + 0.5) * span, Math.max(-89.999, lat)); }
+    if (keys.size <= opts.maxTiles || z === 0) return { z, tiles: [...keys.values()] };
+  }
+  return { z: 0, tiles: [] };
+}
+
+/**
+ * Bilinear height in metres at a longitude and latitude from elevation tiles of level `z`:
+ * `pixels(z, x, y)` gives a tile's bytes (256 x 256, row 0 north) or null. Null where a tile is
+ * missing. Pure.
+ */
+export function castSample(pixels, z, lonDeg, latDeg, height) {
+  const n = 2 * 2 ** z * 256;
+  const m = 2 ** z * 256;
+  const px = ((wrapLon(lonDeg) + 180) / 360) * n - 0.5;
+  const py = ((90 - latDeg) / 180) * m - 0.5;
+  const x0 = Math.floor(px);
+  const y0 = Math.floor(py);
+  const fx = px - x0;
+  const fy = py - y0;
+  let sum = 0;
+  for (let k = 0; k < 4; k++) {
+    const X = (((x0 + (k & 1)) % n) + n) % n;
+    const Y = Math.min(m - 1, Math.max(0, y0 + (k >> 1)));
+    const t = pixels(z, X >> 8, Y >> 8);
+    if (!t) return null;
+    const v = t[(Y & 255) * 256 + (X & 255)];
+    sum += v * ((k & 1) ? fx : 1 - fx) * ((k >> 1) ? fy : 1 - fy);
+  }
+  return sum * height.metresPerCount + height.offsetM;
+}
+
 const FRAG_OUT = 'gl_FragColor = vec4( colour, 1.0 );';
 const FRAG_LIT = 'vec3 colour = base * direct * uSunIrradiance * ringShade;';
 const EARTH_GROUND = 'vec3 ground = dayTex * (';
@@ -209,12 +412,48 @@ export function tileFragment(src = WORLD_FRAG) {
     float along = dot( vSunL, east ) * uReliefLight.x + dot( vSunL, north ) * uReliefLight.y;
     relief = mix( 1.0, clamp( 1.0 + slope * along / max( dot( vSunL, up ), ${RELIEF_SUN_FLOOR.toFixed(2)} ), ${RELIEF_MIN.toFixed(2)}, ${RELIEF_MAX.toFixed(2)} ), uRelief.x );
   }
-  vec3 colour = base * direct * uSunIrradiance * ringShade * relief;`)
+  // CAST SHADOWS (scene/tiles.js CAST): toward the Sun in the window of heights, the tallest
+  // thing in the way. uHtWin: (uv per radian, steps, first step, growth); uHtMarch: (window texel
+  // in radians, the edge, the rise not counted, the depth); heights are stored in km.
+  float castLit = 1.0;
+  if ( uHtOn > 0.0 ) {
+    vec3 upC = normalize( vPosL );
+    vec3 sunC = normalize( vSunL );
+    float sinSun = dot( upC, sunC );
+    float wC = dot( upC, uHtU );
+    if ( sinSun > 0.0 && sinSun < ${CAST.maxSun.toFixed(2)} && wC > 0.5 ) {
+      vec2 uv0 = vec2( dot( upC, uHtE ), dot( upC, uHtN ) ) / wC * uHtWin.x + 0.5;
+      vec2 edgeC = min( uv0, 1.0 - uv0 );
+      float inWin = smoothstep( 0.0, ${CAST.edgeFade.toFixed(2)}, min( edgeC.x, edgeC.y ) );
+      vec3 shC = sunC - upC * sinSun;
+      vec2 dirC = vec2( dot( shC, uHtE ), dot( shC, uHtN ) );
+      float dlC = length( dirC );
+      if ( inWin > 0.0 && dlC > 1e-5 ) {
+        dirC /= dlC;
+        float tanSun = sinSun / max( length( shC ), 1e-5 );
+        float h0 = textureLod( uHtMap, uv0, 0.0 ).r * uHtScale;
+        float s = uHtWin.z;
+        float horizon = -1.0;
+        for ( int j = 0; j < ${CAST.steps[2]}; j++ ) {
+          if ( float( j ) >= uHtWin.y ) break;
+          vec2 uvS = uv0 + dirC * ( s * uHtWin.x );
+          if ( uvS.x < 0.0 || uvS.y < 0.0 || uvS.x > 1.0 || uvS.y > 1.0 ) break;
+          float lod = max( log2( s * ( uHtWin.w - 1.0 ) / uHtMarch.x ), 0.0 );
+          float h = textureLod( uHtMap, uvS, lod ).r * uHtScale;
+          horizon = max( horizon, ( h - h0 - uHtMarch.z ) / s - 0.5 * s );
+          s *= uHtWin.w;
+        }
+        castLit = 1.0 - uHtMarch.w * uHtOn * inWin * smoothstep( tanSun - uHtMarch.y, tanSun + uHtMarch.y, horizon );
+      }
+    }
+  }
+  vec3 colour = base * direct * uSunIrradiance * ringShade * relief * castLit;`)
     .replace(FRAG_BASE, `vec3 tile = texture2D( uMap, vUv ).rgb;
   vec3 base = uDetail > 0.5
     ? texture2D( uBaseMap, vUvGlobe ).rgb * clamp( dot( tile, vec3( 0.2126, 0.7152, 0.0722 ) ) * uTint.r, ${DETAIL_MIN.toFixed(2)}, ${DETAIL_MAX.toFixed(2)} )
     : tile * uTint;`)
-    .replace('uniform sampler2D uMap;', 'uniform sampler2D uMap;\nuniform sampler2D uBaseMap;\nuniform float uDetail;\nuniform float uFade;\nvarying vec2 vUvGlobe;\nuniform sampler2D uReliefMap;\nuniform vec4 uReliefXf;\nuniform vec3 uReliefLight;\nuniform vec2 uRelief;');
+    .replace('uniform sampler2D uMap;', 'uniform sampler2D uMap;\nuniform sampler2D uBaseMap;\nuniform float uDetail;\nuniform float uFade;\nvarying vec2 vUvGlobe;\nuniform sampler2D uReliefMap;\nuniform vec4 uReliefXf;\nuniform vec3 uReliefLight;\nuniform vec2 uRelief;'
+      + '\nuniform sampler2D uHtMap;\nuniform float uHtOn;\nuniform float uHtScale;\nuniform vec3 uHtE;\nuniform vec3 uHtN;\nuniform vec3 uHtU;\nuniform vec4 uHtWin;\nuniform vec4 uHtMarch;');
 }
 
 /**
@@ -296,6 +535,30 @@ async function fetchTile(url, signal) {
 }
 
 /**
+ * Fetch one ELEVATION tile and read its bytes: `{ pixels, bytes }`, the grey channel of a 256 x 256
+ * picture, row 0 at the north (not turned over: these are numbers, not a texture). Rejects on
+ * anything but a picture of that size.
+ */
+async function fetchHeights(url, signal) {
+  const res = await fetch(url, { mode: 'cors', credentials: 'omit', signal });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const blob = await res.blob();
+  const image = await createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+  try {
+    if (image.width !== 256 || image.height !== 256) throw new Error('an elevation tile is not 256 x 256');
+    const canvas = typeof OffscreenCanvas === 'function' ? new OffscreenCanvas(256, 256) : Object.assign(document.createElement('canvas'), { width: 256, height: 256 });
+    const g = canvas.getContext('2d', { willReadFrequently: true });
+    g.drawImage(image, 0, 0);
+    const rgba = g.getImageData(0, 0, 256, 256).data;
+    const pixels = new Uint8Array(256 * 256);
+    for (let i = 0; i < pixels.length; i++) pixels[i] = rgba[i * 4];
+    return { pixels, bytes: blob.size };
+  } finally {
+    if (typeof image.close === 'function') image.close();
+  }
+}
+
+/**
  * @param {object} opts
  * @param {object}   opts.worlds     scene/worlds.js: meshFor(id), hasMap(id)
  * @param {object}   opts.camera     the THREE camera
@@ -312,6 +575,11 @@ export function createPlanetTiles(opts = {}) {
   const camera = opts.camera;
   const sets = opts.sets || TILESETS;
   const loadTile = opts.loadTile || fetchTile;
+  const loadHeights = opts.loadHeights || fetchHeights;
+  // The traverses' module, fetched the first time a world that has them is close (TRAVERSE_WORLDS).
+  const importTraverses = opts.importTraverses || (() => import('./traverse.js'));
+  let traverseModule = null;
+  let traverseAsked = false;
   const onChange = typeof opts.onChange === 'function' ? opts.onChange : () => {};
   const anisotropy = Math.min(4, opts.anisotropy || 1);
   const saveData = !!opts.saveData;
@@ -321,7 +589,7 @@ export function createPlanetTiles(opts = {}) {
   let inFlight = 0;
   let failsInRow = 0;
   let pausedUntil = 0;
-  const stats = { requests: 0, bytes: 0, loaded: 0, failed: 0, aborted: 0, evicted: 0 };
+  const stats = { requests: 0, bytes: 0, loaded: 0, failed: 0, aborted: 0, evicted: 0, heightRequests: 0, heightBytes: 0 };
   const dead = new Set(); // urls that would not load: never asked for twice
   const vertexShader = tileVertex();
   const fragmentShader = tileFragment();
@@ -329,6 +597,16 @@ export function createPlanetTiles(opts = {}) {
   let earthShaders = null;
   const blankRelief = new THREE.DataTexture(new Uint8Array([128, 128, 128, 255]), 1, 1);
   blankRelief.needsUpdate = true;
+  // The cast-shadow uniforms of a set without heights: off.
+  const noCast = castUniforms(1);
+  function castUniforms(radiusKm) {
+    return {
+      uHtMap: { value: blankRelief }, uHtOn: { value: 0 }, uHtScale: { value: 1 / radiusKm },
+      uHtE: { value: new THREE.Vector3(1, 0, 0) }, uHtN: { value: new THREE.Vector3(0, 0, -1) }, uHtU: { value: new THREE.Vector3(0, 1, 0) },
+      uHtWin: { value: new THREE.Vector4(0.5, 0, CAST.firstMinRad, 1) }, uHtMarch: { value: new THREE.Vector4(1, CAST.soft, 0, CAST.depth) },
+    };
+  }
+  const castSteps = () => CAST.steps[Math.min(Math.max(0, tier), CAST.steps.length - 1)] || 0;
 
   // One layer per tile set, built the first time its world comes close.
   const layers = new Map();
@@ -339,6 +617,8 @@ export function createPlanetTiles(opts = {}) {
     const sl = Array.isArray(set.seaLift) ? set.seaLift : [0, 0, 0];
     const rel = set.relief && set.relief.url ? set.relief : null;
     const az = rel ? (Number(rel.lightAzimuthDeg) || 0) * Math.PI / 180 : 0;
+    const ht = set.height && set.height.url ? set.height : null;
+    const world = WORLDS.find((w) => w.id === set.world) || null;
     layers.set(set.id, {
       set, grid: gridOf(set), share: tileShare(set),
       tint: new THREE.Color().setRGB(g[0], g[1], g[2], THREE.LinearSRGBColorSpace),
@@ -349,6 +629,13 @@ export function createPlanetTiles(opts = {}) {
       // and the ones waiting for a fetch slot. `reliefOn` is true once one is on screen.
       relief: rel, reliefs: new Map(), reliefQueue: [], reliefOn: false,
       reliefLight: rel ? new THREE.Vector3(Math.sin(az), Math.cos(az), Number(rel.flat) || 0.7) : null,
+      // CAST SHADOWS: the row's heights, the uniforms every patch of this set shares, and the
+      // window (`win` drawn, `next` being built) with the elevation tiles it reads.
+      height: ht && world ? ht : null,
+      trav: null,
+      radiusKm: world ? world.radiusKm : 1,
+      castU: ht && world ? castUniforms(world.radiusKm) : null,
+      cast: { win: null, tex: null, next: null, tiles: new Map(), fade: 0, showing: false },
     });
   }
 
@@ -444,6 +731,8 @@ export function createPlanetTiles(opts = {}) {
           uReliefLight: { value: layer.reliefLight || new THREE.Vector3(0, 1, 0.7) },
           // x: how much of the relief is in (it fades in when its tile lands); y: the exaggeration.
           uRelief: { value: new THREE.Vector2(0, layer.relief ? Number(layer.relief.gain) || 1 : 0) },
+          // The cast shadows' uniform OBJECTS, one set for every patch of the layer (CAST SHADOWS).
+          ...(layer.castU || noCast),
         },
         transparent: true,
         depthWrite: false,
@@ -571,7 +860,9 @@ export function createPlanetTiles(opts = {}) {
     layer.level = null;
     if (layer.group && layer.group.parent) layer.group.parent.remove(layer.group);
     layer.group = null;
+    if (layer.trav) { layer.trav.hide(); if (layer.trav.group.parent) layer.trav.group.parent.remove(layer.trav.group); }
     layer.mesh = null;
+    freeCast(layer);
   }
 
   function request(layer, t) {
@@ -656,6 +947,287 @@ export function createPlanetTiles(opts = {}) {
       if (inFlight >= room) return;
       if (!layer.tiles.has(t.key)) request(layer, t);
     }
+    // The elevation tiles of the window being built come after the picture's.
+    const next = layer.cast.next;
+    if (next) {
+      for (const t of next.tiles) {
+        if (inFlight >= room) return;
+        if (!layer.cast.tiles.has(t.key)) requestHeight(layer, t);
+      }
+    }
+  }
+
+  // --- CAST SHADOWS: the window of heights (see the head of this file) ----------------------------
+  const _dir = new THREE.Vector3();
+  const _invMesh = new THREE.Matrix4();
+
+  function requestHeight(layer, t) {
+    const cast = layer.cast;
+    const url = tileUrl(layer.height.url, t.z, t.x, t.y);
+    if (dead.has(url)) { cast.tiles.set(t.key, { state: 'dead', px: null }); return; }
+    const abort = typeof AbortController === 'function' ? new AbortController() : null;
+    const entry = { state: 'loading', px: null, abort };
+    cast.tiles.set(t.key, entry);
+    inFlight += 1;
+    stats.requests += 1;
+    stats.heightRequests += 1;
+    let p;
+    try { p = Promise.resolve(loadHeights(url, abort ? abort.signal : undefined)); } catch (e) { p = Promise.reject(e); }
+    const fail = () => {
+      // No shadows from a window with a hole in it: the ground is drawn as before.
+      entry.state = 'dead';
+      entry.abort = null;
+      stats.failed += 1;
+      dead.add(url);
+      failsInRow += 1;
+      if (failsInRow >= FAILS_TO_PAUSE) { pausedUntil = lastFrame + PAUSE_MS; failsInRow = 0; }
+    };
+    p.then((got) => {
+      inFlight -= 1;
+      if (cast.tiles.get(t.key) !== entry) return;
+      if (!got || !got.pixels || got.pixels.length !== 256 * 256) { fail(); return; }
+      entry.px = got.pixels;
+      entry.state = 'ready';
+      entry.abort = null;
+      stats.bytes += got.bytes || 0;
+      stats.heightBytes += got.bytes || 0;
+      failsInRow = 0;
+      pump(layer, lastFrame);
+    }, (err) => {
+      inFlight -= 1;
+      if ((err && err.name === 'AbortError') || cast.tiles.get(t.key) !== entry) { stats.aborted += 1; return; }
+      fail();
+    });
+  }
+
+  function freeCast(layer) {
+    const cast = layer && layer.cast;
+    if (!cast) return;
+    for (const e of cast.tiles.values()) if (e.abort) { try { e.abort.abort(); } catch { /* settled */ } }
+    cast.tiles.clear();
+    if (cast.tex) cast.tex.dispose();
+    cast.tex = null;
+    cast.win = null;
+    cast.next = null;
+    cast.fade = 0;
+    if (layer.castU) { layer.castU.uHtOn.value = 0; layer.castU.uHtMap.value = blankRelief; }
+    if (cast.showing) { cast.showing = false; try { onChange(); } catch { /* a listener's trouble */ } }
+  }
+
+  /** The window the view wants now, in the world mesh's own axes. */
+  function castView(layer) {
+    const mesh = layer.mesh;
+    mesh.updateWorldMatrix(true, false);
+    camera.getWorldPosition(_cam);
+    _local.copy(_cam);
+    mesh.worldToLocal(_local);
+    camera.getWorldDirection(_dir);
+    _invMesh.copy(mesh.matrixWorld).invert();
+    _dir.transformDirection(_invMesh);
+    const tanHalf = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+    return castWindowFor([_local.x, _local.y, _local.z], [_dir.x, _dir.y, _dir.z], tanHalf, camera.aspect || 1);
+  }
+
+  /** A share of the window's rows read from the elevation tiles; true when the last is done. */
+  function castRows(layer, next) {
+    const N = CAST.texels;
+    const ht = layer.height;
+    const z = next.z;
+    const cast = layer.cast;
+    // The window's tiles by column and row as one number: a string key a sample would cost a
+    // million strings a window.
+    if (!next.grid) {
+      next.grid = new Map();
+      for (const t of next.tiles) { const e = cast.tiles.get(t.key); if (e && e.state === 'ready') next.grid.set(t.y * 4096 + t.x, e.px); }
+    }
+    const grid = next.grid;
+    const px = (zz, x, y) => grid.get(y * 4096 + x) || null;
+    const w = next.w;
+    const step = (2 * w.half) / N;
+    const end = Math.min(N, next.row + CAST.rowsPerFrame);
+    for (let j = next.row; j < end; j++) {
+      // Row 0 of the texture is its v = 0 edge: the window's SOUTH (-north) side.
+      const y = -w.half + (j + 0.5) * step;
+      for (let i = 0; i < N; i++) {
+        const x = -w.half + (i + 0.5) * step;
+        const ll = castPointLonLat(w, x, y);
+        const m = castSample(px, z, ll.lonDeg, ll.latDeg, ht);
+        if (m === null) return null; // a tile is missing after all: no window
+        next.km[j * N + i] = m / 1000;
+      }
+    }
+    next.row = end;
+    return end >= N;
+  }
+
+  /**
+   * The window smoothed to its source's own sharpness, a share of it a frame: a box of `r` window
+   * texels run twice along the rows, then twice down the columns (nearly a Gaussian), `r` the
+   * source's texel (its north-south side, the longer one near a pole) over the window's. Without it
+   * a close view magnifies 666 m texels into facets with straight edges, and near a pole, where the
+   * map's texels are 2.7 km north to south and metres east to west, its shadows are radial streaks
+   * (both seen in the first previews, 2026-10-16).
+   */
+  function castSmooth(layer, next) {
+    const N = CAST.texels;
+    const w = next.w;
+    const winTexel = (2 * w.half) / N;
+    const r = Math.min(CAST.smoothMax, Math.max(0, Math.round(castSourceTexel(next.z) / winTexel)));
+    if (!next.blurred) next.blurred = 0;
+    if (r < 1) { next.blurred = 2 * N; return; }
+    const km = next.km;
+    const line = new Float32Array(N);
+    const box = (get, set) => {
+      for (let pass = 0; pass < 2; pass++) {
+        for (let i = 0; i < N; i++) line[i] = get(i);
+        let acc = 0;
+        for (let i = -r; i <= r; i++) acc += line[Math.min(N - 1, Math.max(0, i))];
+        for (let i = 0; i < N; i++) {
+          set(i, acc / (2 * r + 1));
+          acc += line[Math.min(N - 1, i + r + 1)] - line[Math.max(0, i - r)];
+        }
+      }
+    };
+    const end = Math.min(2 * N, next.blurred + CAST.rowsPerFrame * 2);
+    for (let k = next.blurred; k < end; k++) {
+      if (k < N) { const o = k * N; box((i) => km[o + i], (i, v) => { km[o + i] = v; }); }
+      else { const c = k - N; box((i) => km[i * N + c], (i, v) => { km[i * N + c] = v; }); }
+    }
+    next.blurred = end;
+  }
+
+  /** The window's heights as a half-float texture with its mipmaps (a mean of four, level by level). */
+  function castTexture(km) {
+    const N = CAST.texels;
+    const toHalf = THREE.DataUtils.toHalfFloat;
+    const half = (f) => { const u = new Uint16Array(f.length); for (let i = 0; i < f.length; i++) u[i] = toHalf(f[i]); return u; };
+    const mipmaps = [{ data: half(km), width: N, height: N }];
+    let f = km;
+    for (let n = N >> 1; n >= 1; n >>= 1) {
+      const g = new Float32Array(n * n);
+      const m = n * 2;
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+        const a = 2 * j * m + 2 * i;
+        g[j * n + i] = 0.25 * (f[a] + f[a + 1] + f[a + m] + f[a + m + 1]);
+      }
+      mipmaps.push({ data: half(g), width: n, height: n });
+      f = g;
+    }
+    const tex = new THREE.DataTexture(mipmaps[0].data, N, N, THREE.RedFormat, THREE.HalfFloatType);
+    tex.mipmaps = mipmaps;
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.colorSpace = THREE.NoColorSpace;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  /** The finished window on screen: its texture and its plane in the shared uniforms. */
+  function castSwap(layer, next) {
+    const cast = layer.cast;
+    const u = layer.castU;
+    const tex = castTexture(next.km);
+    if (cast.tex) cast.tex.dispose();
+    cast.tex = tex;
+    cast.win = { ...next.w, z: next.z, keys: new Set(next.tiles.map((t) => t.key)) };
+    cast.next = null;
+    const w = next.w;
+    const texel = (2 * w.half) / CAST.texels;
+    const steps = castSteps();
+    const first = Math.max(CAST.firstTexels * texel, CAST.firstMinRad);
+    u.uHtMap.value = tex;
+    u.uHtE.value.set(w.e[0], w.e[1], w.e[2]);
+    u.uHtN.value.set(w.n[0], w.n[1], w.n[2]);
+    u.uHtU.value.set(w.u[0], w.u[1], w.u[2]);
+    u.uHtWin.value.set(1 / (2 * w.half), steps, first, castGrowth(first, steps));
+    u.uHtMarch.value.set(texel, CAST.soft, (CAST.marginCounts * layer.height.metresPerCount) / 1000 / layer.radiusKm, CAST.depth);
+    // The elevation tiles no window reads any more go; the HTTP cache has them if the view comes back.
+    for (const key of [...cast.tiles.keys()]) if (!cast.win.keys.has(key)) cast.tiles.delete(key);
+  }
+
+  function castFrame(layer, layerWanted, dt) {
+    const cast = layer.cast;
+    const want = layerWanted && castWanted && castSteps() > 0 && allowed();
+    if (want) {
+      const v = castView(layer);
+      // After a window with a missing tile, five seconds before another is tried.
+      const resting = cast.failedAt !== undefined && lastFrame - cast.failedAt < 5000;
+      if (v && !cast.next && !resting && castWindowStale(cast.win, v)) {
+        const pick = castTilesFor(v, layer.height);
+        cast.next = { w: v, z: pick.z, tiles: pick.tiles.map((t) => ({ ...t, key: tileKey(t.z, t.x, t.y) })), row: 0, blurred: 0, km: null };
+      }
+      const next = cast.next;
+      if (next) {
+        let ready = true;
+        let dead_ = false;
+        for (const t of next.tiles) {
+          const e = cast.tiles.get(t.key);
+          if (!e || e.state === 'loading') ready = false;
+          else if (e.state === 'dead') dead_ = true;
+        }
+        if (dead_) { cast.next = null; cast.failedAt = lastFrame; }
+        else if (ready) {
+          if (!next.km) next.km = new Float32Array(CAST.texels * CAST.texels);
+          if (next.row < CAST.texels) {
+            if (castRows(layer, next) === null) cast.next = null;
+          } else if (next.blurred < 2 * CAST.texels) {
+            castSmooth(layer, next);
+          } else castSwap(layer, next);
+        }
+      }
+    }
+    // The shadows fade in when a window is first there and out when the layer or the switch goes.
+    const on = want && !!cast.tex;
+    cast.fade = Math.min(1, Math.max(0, cast.fade + (on ? dt : -dt) / FADE_MS));
+    if (layer.castU) {
+      layer.castU.uHtOn.value = cast.fade * cast.fade * (3 - 2 * cast.fade) * layer.master;
+      // The steps follow the tier as it changes.
+      if (cast.tex) layer.castU.uHtWin.value.y = castSteps();
+    }
+    const showing = cast.fade > 0 && !!cast.tex;
+    if (showing !== cast.showing) { cast.showing = showing; try { onChange(); } catch { /* a listener's trouble */ } }
+    if (!want && cast.fade <= 0 && (cast.tex || cast.next || cast.tiles.size)) freeCast(layer);
+  }
+
+  function castState(layer) {
+    const c = layer.cast;
+    let ready = 0;
+    let loading = 0;
+    let deadN = 0;
+    for (const e of c.tiles.values()) { if (e.state === 'ready') ready += 1; else if (e.state === 'loading') loading += 1; else deadN += 1; }
+    return {
+      wanted: castWanted, showing: c.showing, fade: Math.round(c.fade * 1000) / 1000,
+      level: c.win ? c.win.z : null, halfKm: c.win ? Math.round(c.win.half * layer.radiusKm) : null,
+      texelM: c.win ? Math.round((2 * c.win.half / CAST.texels) * layer.radiusKm * 1000) : null,
+      steps: layer.castU ? layer.castU.uHtWin.value.y : 0,
+      building: c.next ? { level: c.next.z, tiles: c.next.tiles.length, row: c.next.row, smoothed: c.next.blurred || 0 } : null,
+      tiles: { ready, loading, dead: deadN },
+    };
+  }
+
+  /** The traverses on a world whose tiles are up: built once the module is here, faded by distance. */
+  function traverseFrame(layer, showing) {
+    if (!showing) { if (layer.trav) layer.trav.hide(); return; }
+    if (!traverseModule) {
+      if (!traverseAsked) {
+        traverseAsked = true;
+        Promise.resolve().then(importTraverses).then((m) => { traverseModule = m; }, () => { /* no traverses: the sites are still there */ });
+      }
+      return;
+    }
+    if (!layer.trav) layer.trav = traverseModule.createTraverses({ world: layer.set.world });
+    if (layer.trav.group.parent !== layer.mesh) layer.mesh.add(layer.trav.group);
+    layer.mesh.updateWorldMatrix(true, false);
+    camera.getWorldPosition(_cam);
+    _local.copy(_cam);
+    layer.mesh.worldToLocal(_local);
+    const h = Math.max(1, Number(opts.viewport ? opts.viewport() : 800) || 800);
+    const cssH = typeof innerHeight === 'number' && innerHeight > 0 ? innerHeight : h;
+    const before = layer.trav.credits().length;
+    layer.trav.frame(_local, layer.radiusKm || 1, [h * (camera.aspect || 1), h], h / cssH);
+    if (layer.trav.credits().length !== before) { try { onChange(); } catch { /* a listener's trouble */ } }
   }
 
   function frameLayer(layer, nowMs, dt) {
@@ -687,6 +1259,7 @@ export function createPlanetTiles(opts = {}) {
       mesh.add(layer.group);
     }
     if (want && nowMs - layer.lastSelect >= SELECT_EVERY_MS) select(layer, view, nowMs);
+    if (layer.height) castFrame(layer, want, dt);
     if (want) pump(layer, nowMs);
     layer.master = Math.min(1, Math.max(0, layer.master + (want ? dt : -dt) / FADE_MS));
     let shown = 0;
@@ -708,6 +1281,7 @@ export function createPlanetTiles(opts = {}) {
     }
     const showing = shown > 0;
     reliefShown = reliefShown && showing;
+    if (TRAVERSE_WORLDS.includes(set.world)) traverseFrame(layer, showing);
     if (showing !== layer.showing || reliefShown !== layer.reliefOn) {
       layer.showing = showing;
       layer.reliefOn = reliefShown;
@@ -760,6 +1334,8 @@ export function createPlanetTiles(opts = {}) {
       for (const layer of layers.values()) {
         if (layer.showing && layer.set.credit) out.push(layer.set.credit);
         if (layer.reliefOn && layer.relief.credit) out.push(layer.relief.credit);
+        if (layer.cast.showing && layer.height.credit) out.push(layer.height.credit);
+        if (layer.trav && layer.showing) out.push(...layer.trav.credits());
       }
       return out;
     },
@@ -777,6 +1353,7 @@ export function createPlanetTiles(opts = {}) {
           id: set.id, world: set.world, title: set.title, mode: set.mode || 'colour', level: layer.level,
           metresPerPixel: set.resolutionM ? set.resolutionM * 2 ** finer : null,
           relief: layer.reliefOn ? { title: layer.relief.title, gain: Number(layer.relief.gain) || 1 } : null,
+          castShadows: layer.cast.showing ? { title: layer.height.title } : null,
           bakedRelief: set.bakedRelief === true,
         });
       }
@@ -797,10 +1374,12 @@ export function createPlanetTiles(opts = {}) {
           waiting: layer.wanted.filter((t) => !layer.drawn.has(t.key)).slice(0, 8)
             .map((t) => t.key + ' ' + (layer.tiles.has(t.key) ? layer.tiles.get(t.key).state : dead.has(tileUrl(layer.set.url, t.z, t.x, t.y)) ? 'dead' : 'not asked')),
           levels: layer.wanted.reduce((m, t) => { m[t.z] = (m[t.z] || 0) + 1; return m; }, {}),
+          cast: layer.height ? castState(layer) : null,
+          traverses: layer.trav ? layer.trav.state() : null,
         };
       }
       return { tier, latched, saveData, inFlight, paused: lastFrame < pausedUntil, ...stats, sets: per };
     },
-    dispose() { for (const layer of layers.values()) clear(layer); },
+    dispose() { for (const layer of layers.values()) { clear(layer); if (layer.trav) layer.trav.dispose(); layer.trav = null; } },
   };
 }

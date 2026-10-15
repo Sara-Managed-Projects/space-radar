@@ -16,6 +16,7 @@ Run:  python3 scripts/gen_sites_js.py           # write it
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -39,5 +40,36 @@ HEADER = """// GENERATED from registry/sites.yaml by scripts/gen_sites_js.py. Do
 
 MIRROR = Mirror(source="registry/sites.yaml", target="site/js/data/sites.js", header=HEADER, render=render, what="sites.js")
 
+# THE TRAVERSES (release 1.2.0 stage W2-a, internal spec 0076): the `traverses:` map of the same file,
+# with each line from its registry/traverses/<id>.json, into a mirror of their own. Not sites.js:
+# that one rides the first visit, and these are read only close to the Moon (scene/traverse.js).
+# A line is one string of "lon,lat" pairs in degrees, five decimals, so the file is a line a path.
+ROOT = Path(__file__).resolve().parent.parent
+TRAVERSE_FIELDS = ("credit",)
+
+
+def render_traverses(doc: dict) -> list:
+    sites = {r.get("id"): r for r in (doc.get("sites") or []) if isinstance(r, dict)}
+    out = []
+    for sid, t in (doc.get("traverses") or {}).items():
+        if not isinstance(t, dict) or sid not in sites:
+            continue
+        line = json.loads((ROOT / t["file"]).read_text(encoding="utf-8"))
+        row = {"site": sid, "world": sites[sid].get("world"), **pick(t, TRAVERSE_FIELDS),
+               "lengthKm": line.get("length_km"),
+               "paths": [" ".join(f"{lon:.5f},{lat:.5f}" for lon, lat in p) for p in line.get("paths", [])]}
+        out.append(row)
+    return [("The rover traverses of registry/sites.yaml `traverses:`, each path a string of 'lon,lat' pairs (degrees, east longitude).", "TRAVERSES", out)]
+
+
+TRAVERSE_HEADER = """// GENERATED from registry/sites.yaml (`traverses:`) and registry/traverses/*.json by
+// scripts/gen_sites_js.py. Do not edit. Read only by scene/traverse.js, close to the Moon.
+"""
+
+TRAVERSES_MIRROR = Mirror(source="registry/sites.yaml", target="site/js/data/traverses.js", header=TRAVERSE_HEADER,
+                          render=render_traverses, what="traverses.js", indent=1)
+
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    a = MIRROR.main(sys.argv[1:])
+    b = TRAVERSES_MIRROR.main(sys.argv[1:])
+    sys.exit(a or b)
