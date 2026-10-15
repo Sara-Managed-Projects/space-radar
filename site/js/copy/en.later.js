@@ -1754,11 +1754,7 @@ Object.assign(COPY, {
     edge: '{n} billion light-years: past everything we can see',
     edgeWhy: 'The observable universe ends about {h} billion light-years away.',
     edgeNothing: 'Nothing measured lies out here: this band is an illustration.',
-    // 0076 W1-b (internal #781): the microwave background's map at the horizon (scene/deep/cmb.js), its
-    // words and its colour scale (scene/shells.js cmbWords). {k} is data/cosmology.js's age of the
-    // universe when the light left (Planck 2018's z* = 1089.8: about 370 000 years; the rounder 380 000
-    // often quoted is the same moment); {n} is the scale's end in microkelvin, {t} the average in kelvin.
-    // The map is measured; where it is put is not, and the third line says so. Short enough for a phone.
+    // 0076 W1-b: the microwave map's words and scale (scene/shells.js cmbWords); {k} is computed there.
     cmbTitle: 'The oldest light, as our sky shows it',
     cmbWhen: 'It left about {k} years after the Big Bang',
     cmbPainted: 'Painted inside the sphere it left from: an illustration',
