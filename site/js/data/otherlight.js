@@ -18,7 +18,11 @@ export const OTHER_LIGHT = [
     "gain": 2.0,
     "mission": "WISE",
     "credit": "NASA/JPL-Caltech/UCLA (WISE)",
-    "terms": "https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/"
+    "terms": "https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/",
+    "observed": {
+      "taken": "2010..2011",
+      "by": "WISE, W1, W2 and W4"
+    }
   },
   {
     "id": "microwave",
@@ -33,7 +37,11 @@ export const OTHER_LIGHT = [
     "gain": 1.5,
     "mission": "WMAP",
     "credit": "NASA/WMAP Science Team (LAMBDA)",
-    "terms": "https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html"
+    "terms": "https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html",
+    "observed": {
+      "taken": "2001-08..2010-08",
+      "by": "WMAP, W band"
+    }
   },
   {
     "id": "gamma",
@@ -48,7 +56,11 @@ export const OTHER_LIGHT = [
     "gain": 1.1,
     "mission": "Fermi",
     "credit": "NASA/DOE/Fermi LAT Collaboration",
-    "terms": "https://fermi.gsfc.nasa.gov/ssc/data/policy/"
+    "terms": "https://fermi.gsfc.nasa.gov/ssc/data/policy/",
+    "observed": {
+      "taken": "2008..2012",
+      "by": "Fermi, LAT"
+    }
   }
 ];
 

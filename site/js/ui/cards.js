@@ -83,7 +83,7 @@ import {
   positionAt, measure, heliocentricEarth, PASS_NO_OBSERVER, PASS_NOT_APPLICABLE, PASS_NONE,
   PASS_ERROR, PASS_OK, standsStill, nextPass, roughly, stormAdvisoryAgo, stormStatusKey, isWorld,
   whyLine, endedWords, pathEndedWords, rightNowRows, placesMod, ensurePlaces, rangeLabel, nearEarthOnEllipse,
-  honestyLine, placesReady,
+  honestyLine, placesReady, truthRow,
 } from './cardfacts.js';
 export {
   stormAdvisoryAgo, stormAdvisoryText, earthEventRows, whyLine, endedWords, pathEndedWords, ensurePlaces,
@@ -2449,6 +2449,14 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     drawn ? el('p', 'sr-card__drawn', drawn) : null,
     el('p', 'sr-card__source', sourceLine(record, ctx)),
   ]));
+
+  // How we know (internal spec 0076 W1-c): the legend of the honesty line's words, last, straight above
+  // that line; ui/truthlegend.js fills it each time it opens (ui/cardfacts.js truthRow).
+  const truth = truthRow(record, ctx, m);
+  add('truth', truth.label, truth.hint, truth.panel);
+  const truthHead = more.querySelector('[data-section="truth"] .sr-disc__head');
+  if (truthHead && truthHead.getAttribute('aria-expanded') === 'true') truth.fill();
+  if (truthHead) truthHead.addEventListener('click', () => { if (truthHead.getAttribute('aria-expanded') === 'true') truth.fill(); });
 
   return more;
 }

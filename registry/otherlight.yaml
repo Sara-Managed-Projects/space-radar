@@ -41,6 +41,11 @@
 #   colours     what the three colour channels of the survey's own composite are: the honest line.
 #   credit      as the mission asks to be named; `terms` where that is written.
 #   evidence    the lines of `properties` this rests on, read on `checked`.
+#   observed    when and with what the survey was taken (internal spec 0076 W1-c, the card's legend):
+#               `by` the mission and instrument, `taken` the span ("A..B", years or ISO dates), from
+#               `t_min`/`t_max` and `obs_description` in `properties` (read 2026-10-15) and the
+#               mission's own pages where those are vaguer. A span the sources disagree on is the
+#               narrower one they share, with the disagreement written beside it.
 hips_licence:
   name: ODbL-1.0
   holder: CNRS/Unistra (CDS)
@@ -63,6 +68,9 @@ bands:
     credit: NASA/JPL-Caltech/UCLA (WISE)
     licence: NASA data, no copyright claimed
     terms: https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/
+    # AllWISE: the cryogenic survey (7 January to 6 August 2010, W1 to W4) and the post-cryogenic months to
+    # 1 February 2011 (W1 and W2 only; the AllWISE explanatory supplement, section 1.1). Red, W4, is 2010 alone.
+    observed: {taken: "2010..2011", by: "WISE, W1, W2 and W4"}
     checked: 2026-10-06
     evidence: "obs_copyright = IPAC/NASA; prov_progenitor = IPAC/NASA - healpixed by CDS; obs_ack: WISE and NEOWISE are funded by the National Aeronautics and Space Administration"
     cors: "200, Access-Control-Allow-Origin: * (Norder3/Allsky.jpg 733 999 B; Norder5/Dir0/Npix1234.jpg 35 265 B)"
@@ -81,6 +89,8 @@ bands:
     credit: NASA/WMAP Science Team (LAMBDA)
     licence: NASA data, no copyright claimed
     terms: https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html
+    # t_min 52131 and t_max 55427 (MJD): 10 August 2001 to 15 August 2010, the nine years.
+    observed: {taken: "2001-08..2010-08", by: "WMAP, W band"}
     checked: 2026-10-06
     evidence: "obs_copyright = HEASARC/LAMBDA; prov_progenitor = HEASARC/LAMBDA; obs_ack: LAMBDA is a service of the Astrophysics Science Division at the NASA Goddard Space Flight Center"
     cors: "200, Access-Control-Allow-Origin: * (Norder3/Allsky.jpg 1 447 337 B)"
@@ -100,6 +110,9 @@ bands:
     credit: NASA/DOE/Fermi LAT Collaboration
     licence: NASA data, no copyright claimed
     terms: https://fermi.gsfc.nasa.gov/ssc/data/policy/
+    # t_min 54628, t_max 56291 (MJD): June 2008 to the end of 2012, as SkyView's "Epoch 2008-2012". The
+    # description's "up to week 396" would run into 2016; the two dates the sources share are kept.
+    observed: {taken: "2008..2012", by: "Fermi, LAT"}
     checked: 2026-10-06
     evidence: "obs_copyright = Distributed by SkyView/HEASARC - HEALPixed by CDS; prov_progenitor = NASA/HEASARC"
     cors: "200, Access-Control-Allow-Origin: * (Norder3/Allsky.jpg 2 038 057 B)"

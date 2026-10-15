@@ -1042,5 +1042,7 @@ jobs:
       # 0076 W1-a
       # 0076 W1-b
       # 0076 W1-c
+      - name: "the truth on every card: the tag by the shares, one legend, the dates, the Milky Way's words (internal spec 0076 W1-c)"
+        run: node tests/test_truthlegend.mjs
       # 0076 W1-d
       # 0076 W1-e
