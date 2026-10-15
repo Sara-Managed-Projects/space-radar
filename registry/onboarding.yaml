@@ -232,3 +232,8 @@ features:
     name: The keys and gestures hint
     files: [site/js/ui/keyhint.js]
     not: "It shows by itself on a first visit and again on the question mark key."
+  - id: perf-counter
+    name: sr.perf, what a frame costs (internal spec 0076 W1-e)
+    files: [site/js/scene/perf.js]
+    surfaces: ["want:wantPerf"]
+    not: "For tools only: fetched under ?look=1 or by a tool's sr.wantPerf(); a visitor never sees it and has nothing to press."
