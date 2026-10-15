@@ -89,7 +89,7 @@ check(sunlitState(null, tMs) === null, 'null record, null answer');
   check(S.AIR_TINT_GLSL.includes(S.AIR_REDDENING.tauRgb.map((x) => x.toFixed(4)).join(', ')) && S.AIR_TINT_GLSL.includes(S.AIR_REDDENING.airmass.toFixed(1)), 'the shader\'s numbers are the JS twin\'s');
   const models = readFileSync(join(JS, 'scene/models.js'), 'utf8');
   check(/if \( uAirH > 0\.0 \) outgoingLight \*= srAirTint\( \( perp - uShadeRadius \) \/ uAirH \);/.test(models) && /AIR_TINT_GLSL,/.test(models), 'scene/models.js reddens the sunlight in the Earth\'s shadow test, with the twin\'s function');
-  check(/SHARED\.uAirH\.value = there && worldId === 'earth'/.test(models), 'only when the shadow is the Earth\'s (the Moon has no air)');
+  check(/SHARED\.uAirH\.value = there && worldId === 'earth' && airReddeningOn\(\)/.test(models), 'only when the shadow is the Earth\'s (the Moon has no air)');
 }
 
 if (problems.length) { console.error('shadow FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

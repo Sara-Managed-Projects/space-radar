@@ -1059,6 +1059,8 @@ jobs:
       - name: "sr.perf: a tools-only counter, no allocation per frame, off unless asked; the seed under ?look=1"
         run: node tests/test_perf.mjs
       # 0076 W2-a
+      - name: "the Moon close up: shadows cast from LOLA's heights, the Apollo 15 and 17 traverses on the ground, the red of the station's sunrise (internal spec 0076 W2-a)"
+        run: node tests/test_traverse.mjs && python3 scripts/build_traverses.py --check
       # 0076 W2-b
       # 0076 W2-c
       # 0076 W2-d

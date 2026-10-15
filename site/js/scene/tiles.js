@@ -114,6 +114,8 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { WORLD_VERT, WORLD_FRAG, WORLDS } from './worlds.js';
 import { SURFACE_VERT, SURFACE_FRAG, WGS84_A_KM, WGS84_B_KM } from './earth.js';
 import { TILESETS } from '../data/tilesets.js';
+import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 import {
   selectTiles, drawSet, underlay, nadirLevel, createLru, tileBounds, tileUrl,
   patchArrays, patchSegments, lonLatFromUnit, unitFromLonLat, gridOf, tileKey,
@@ -1353,7 +1355,10 @@ export function createPlanetTiles(opts = {}) {
           id: set.id, world: set.world, title: set.title, mode: set.mode || 'colour', level: layer.level,
           metresPerPixel: set.resolutionM ? set.resolutionM * 2 ** finer : null,
           relief: layer.reliefOn ? { title: layer.relief.title, gain: Number(layer.relief.gain) || 1 } : null,
-          castShadows: layer.cast.showing ? { title: layer.height.title } : null,
+          castShadows: layer.cast.showing ? {
+            title: layer.height.title,
+            words: COPY.r12Nearby && COPY.r12Nearby.castShadows ? COPY.r12Nearby.castShadows.replace('{title}', layer.height.title) : null,
+          } : null,
           bakedRelief: set.bakedRelief === true,
         });
       }

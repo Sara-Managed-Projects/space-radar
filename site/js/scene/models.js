@@ -35,7 +35,7 @@ import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
 import { attachedOdditiesFor } from '../data/attached.js';
 // 0076 W2-a: the red of the penumbra (scene/shadow.js AIR_REDDENING), on the Earth's shadow side only.
-import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM } from './shadow.js';
+import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM, airReddeningOn } from './shadow.js';
 
 // ------------------------------------------------------------------ the one toon material family
 
@@ -244,7 +244,7 @@ export function setPlanetShine(worldId, centre, radius) {
   // THE SHADOW NEEDS NO ROW: any world that is drawn can stand between a model and the Sun, whether
   // or not this file has an albedo for it.
   SHARED.uShadeRadius.value = there ? radius : 0;
-  SHARED.uAirH.value = there && worldId === 'earth' ? (radius * AIR_REDDENING.scaleKm) / EARTH_RADIUS_KM : 0; // 0076 W2-a
+  SHARED.uAirH.value = there && worldId === 'earth' && airReddeningOn() ? (radius * AIR_REDDENING.scaleKm) / EARTH_RADIUS_KM : 0; // 0076 W2-a
   if (there) SHARED.uShineCentre.value.set(centre.x, centre.y, centre.z);
   SHARED.uNightCol.value.setRGB(0, 0, 0);
   if (!row || !there) { SHARED.uShineRadius.value = 0; return false; }
