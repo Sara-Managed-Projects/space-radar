@@ -355,6 +355,28 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     check(swot && swot.file === 'swot.glb' && !swot.made && !swot.generic && swot.axes === 'app', `SWOT (54754) wears swot.glb as a published model of itself, turned to the app's axes: ${JSON.stringify(swot)}`);
     for (const n of [65053, 49954, 58928]) check(sat(n, 'X').axes === 'app', `${n} flies in the app's axes`);
   }
+  // THE ELEVENTH BATCH (2026-10-15, public #1075 to #1079): five agencies' own models, none `made`; the
+  // ones turned to the app's axes say so, SORCE (a Sun-pointer) is not turned. And the routing-only extras.
+  {
+    for (const [norad, name, file, axes] of [[41240, 'JASON-3', 'jason-3.glb', 'app'], [40376, 'SMAP', 'smap.glb', 'app'], [27651, 'SORCE', 'sorce.glb', undefined]]) {
+      const got = sat(norad, name);
+      check(got && got.file === file && !got.made && !got.generic && got.axes === axes, `${name} (${norad}) wears ${file} as a published model of itself${axes ? ', turned to the app\'s axes' : ', not turned'}: ${JSON.stringify(got)}`);
+    }
+    const ostm = sat(33105, 'JASON-2 (OSTM)');
+    check(ostm && ostm.file === 'jason.glb' && !ostm.generic, `JASON-2 (OSTM) keeps NASA's OSTM model, now as itself: ${JSON.stringify(ostm)}`);
+    for (const [norad, name, file] of [[66514, 'SENTINEL-6B', 'sentinel6.glb'], [43477, 'GRACE-FO 2', 'grace.glb']]) {
+      const got = sat(norad, name);
+      check(got && got.file === file && got.generic === true && !got.axes, `${name} (${norad}) wears ${file} as its twin, and says so: ${JSON.stringify(got)}`);
+    }
+    const s6a = sat(46984, 'SENTINEL-6A');
+    check(s6a && s6a.file === 'sentinel6.glb' && !s6a.generic, `SENTINEL-6A keeps NASA's model of itself: ${JSON.stringify(s6a)}`);
+    const clipper = realModelFor({ id: 'deep-europa-clipper', name: 'Europa Clipper', klass: 'probe', meta: { horizonsId: -159 } });
+    check(clipper && clipper.file === 'europa-clipper.glb' && !clipper.generic && clipper.axes === 'app', `Europa Clipper (Horizons -159) wears NASA's model, turned to the app's axes: ${JSON.stringify(clipper)}`);
+    const gale = realModelFor({ id: 'gale', name: 'Curiosity, Gale crater', klass: 'site', meta: { siteShape: 'rover' } });
+    const jezero = realModelFor({ id: 'jezero', name: 'Perseverance, Jezero crater', klass: 'site', meta: { siteShape: 'rover' } });
+    check(gale && gale.file === 'curiosity.glb' && gale.name === 'Curiosity' && !gale.generic && !gale.axes, `Gale crater draws Curiosity's own model, standing as published: ${JSON.stringify(gale)}`);
+    check(jezero && jezero.file === 'perseverance.glb', `Jezero keeps Perseverance: ${JSON.stringify(jezero)}`);
+  }
   if (typeof drawingLine === 'function') {
     const line = drawingLine({ id: 'sat-57800', name: 'XRISM', klass: 'satellite', layer: 'visual', meta: { noradId: 57800 } }, Date.UTC(2026, 9, 13));
     check(typeof line === 'string' && line.startsWith('drawn as XRISM') && line.includes(sentences.render) && !/published model/.test(line), `XRISM's card says it is drawn as XRISM from an artist's render, and not from a published model: ${JSON.stringify(line)}`);

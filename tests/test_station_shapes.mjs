@@ -256,7 +256,7 @@ check(realModelFor({ id: 'n-44387', name: 'METEOR-M2 2', klass: 'satellite', lay
   'METEOR-M2 2 is not ICON: the id task 9f floated maps to nothing');
 check(realModelFor({ id: 'n-41889', name: 'CYGFM06', klass: 'satellite', layer: 'active', meta: { noradId: 41889 } }) === null,
   'CYGFM06 is not in the catalogue and is not mapped');
-{ const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason.glb' && j.generic === true, 'Jason-3 draws as the OSTM/Jason-2 sister ship, and says so'); }
+{ const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason-3.glb' && !j.generic && j.axes === 'app', 'Jason-3 draws as JPL\'s own model of Jason-3 (batch eleven), no longer the OSTM/Jason-2 sister ship'); }
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
 check(realModelFor({ id: 'z1', name: 'SHENZHOU-21 (SZ-21)', klass: 'satellite', layer: 'stations', meta: { noradId: 8 } })?.build === 'shenzhou', 'a Shenzhou gets its shape');
 check(realModelFor({ id: 'z2', name: 'TIANZHOU-9', klass: 'satellite', layer: 'stations', meta: { noradId: 9 } })?.build === 'tianzhou', 'a Tianzhou gets its shape');
@@ -600,9 +600,11 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // 2026-10-08: four more ended missions with NASA's mesh (public #431).
     'deep-maven': 'maven.glb',
     'deep-rosetta': 'rosetta.glb', 'deep-near': 'near.glb', 'deep-stardust': 'stardust.glb', 'deep-deep-impact': 'deep-impact.glb',
+    // 2026-10-15, batch eleven (public #1075): NASA's own Europa Clipper, turned to the app's axes.
+    'deep-europa-clipper': 'europa-clipper.glb',
   };
   // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
-  const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',
+  const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-juice', 'deep-bepicolombo',
     'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
   for (const r of rows) {
     const e = realModelFor(r);

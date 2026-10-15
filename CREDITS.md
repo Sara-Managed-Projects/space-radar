@@ -39,6 +39,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of Envisat, ERS-1 and Sentinel-1, -2 and -3 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-10](#3b-10-five-european-earth-observation-craft-built-from-dimensions--envisat-ers-1-sentinel-1-sentinel-2-sentinel-3-2026-10-14) |
 | The shapes of Sentinel-5P, CryoSat-2, SMOS and ALOS-2 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 3.0 where a picture was used; ours | [3b-11](#3b-11-four-earth-observation-craft-built-from-dimensions--sentinel-5p-cryosat-2-smos-alos-2-2026-10-14) |
 | The shapes of GLONASS-M and GLONASS-K, Fengyun-3 and Himawari-8 and -9 | built by us in code from published dimensions | CC0 or CC BY 2.0 where a picture was used; ours | [3b-12](#3b-12-four-weather-and-navigation-craft-built-from-dimensions--glonass-m-glonass-k-fengyun-3-himawari-2026-10-14) |
+| The shapes of Europa Clipper, SMAP, Jason-3, Curiosity and SORCE | NASA's and JPL's own published models | public domain (NASA media guidelines) | [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -577,13 +578,13 @@ than counted by hand.
 | `cloudsat.glb` | CloudSat (A) | catalogue name CLOUDSAT | 206 KB |
 | `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 96 KB |
 | `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 124 KB |
-| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 17 KB |
+| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 and 43477 (GRACE-FO 1 and 2), drawn as their sister ship | 17 KB |
 | `icesat2.glb` | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A) | NORAD 43613 (ICESAT-2) | 290 KB |
-| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 123 KB |
+| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 33105 (JASON-2 (OSTM)), the craft itself; until 2026-10-15 also Jason-3 as its sister ship, which now wears JPL's own model ([3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15)) | 123 KB |
 | `landsat.glb` | Landsat 7 | NORAD 25682 (Landsat 7) | 69 KB |
 | `landsat8.glb` | Landsat 8 | NORAD 39084, 49260 (Landsat 8, 9) | 177 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (B) | NORAD 40482-40485 (MMS 1 to MMS 4) | 177 KB |
-| `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 102 KB |
+| `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A); and 66514 (SENTINEL-6B), its twin of the same design | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 11 KB |
@@ -649,7 +650,7 @@ NASA's science data policy, as for Eros.
 | `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 203 KB |
 | `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
-| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars; and Gale crater, where Curiosity is drawn with it as the kind of thing | 256 KB |
+| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars (until 2026-10-15 also Gale crater, as the kind of thing; Gale now wears NASA's own Curiosity, [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15)) | 256 KB |
 | `viking-lander.glb` | Viking Lander | the Viking 1 and Viking 2 landing sites | 163 KB |
 
 **Credit line:** `3D model: NASA`
@@ -1126,6 +1127,49 @@ built from published dimensions and pictures; details simplified".
 No logo, lettering, flag or insignia is on any of the four. Roscosmos, ISS Reshetnev, the GLONASS
 information centre, CMA, SAST, JMA, JAXA, Mitsubishi Electric, the IGS and the museums named here do
 not endorse Space Radar, and none of them made or approved these shapes.
+
+## 3b-13. Five agencies' own models — Europa Clipper, SMAP, Jason-3, Curiosity, SORCE (2026-10-15)
+
+The eleventh batch, the first of the second hundred (public #1075 to #1079). Every file is an
+agency's OWN published model, made ready and baked here; no shape was made by us. Each page was
+read on 2026-10-15 and each file fetched that day; `registry/models.yaml` has a row per file with
+the page's own words, the file's size and hash, what was left out, how it was turned, and every
+colour that is ours.
+
+| File | Model, as its page names it | Page | Credit on the page | Used for | Size |
+|---|---|---|---|---|---|
+| `europa-clipper.glb` | "Europa Clipper 3D Model" (2022) | <https://science.nasa.gov/resource/europa-clipper-3d-model/> | NASA Visualization Technology Applications and Development (VTAD) | JPL Horizons -159, Europa Clipper | 212 KB |
+| `smap.glb` | "SMAP 3D Model" | <https://smap.jpl.nasa.gov/resources/99/smap-3d-model/> | NASA VTAD | NORAD 40376 (SMAP) | 170 KB |
+| `jason-3.glb` | "Jason-3 3D Model" (2020) | <https://sealevel.jpl.nasa.gov/resources/94/jason-3-3d-model/> | none named | NORAD 41240 (JASON-3) | 109 KB |
+| `curiosity.glb` | "Curiosity 3D Model" (2019) | <https://science.nasa.gov/resource/curiosity-3d-model/> | NASA VTAD | the Gale crater site on Mars | 241 KB |
+| `sorce.glb` | "Solar Radiation and Climate Experiment (SORCE)" | <https://github.com/nasa/NASA-3D-Resources> | NASA 3D Resources | NORAD 27651 (SORCE) | 102 KB |
+
+**Licence.** None of the four model pages states terms of its own. NASA's Images and Media Usage
+Guidelines (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, linked from NASA Science's
+menu as "NASA Brand & Usage Guidelines") name models: "NASA content – images, audio, video, and
+media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in
+any format – generally are not subject to copyright in the United States", and ask that "NASA
+should be acknowledged as the source of the material". The two JPL pages carry JPL's image use
+policy (<https://www.jpl.nasa.gov/jpl-image-use-policy/>), which names images and video and asks for
+"Courtesy NASA/JPL-Caltech"; the models rest on NASA's sentence above, as SWOT's does (3b-6). NASA
+3D Resources says "These assets are free and without copyright." No page marks a third-party
+copyright on any of the five.
+
+**What we changed.** Helper meshes left out (a clear helper cube in each JPL file; behind SMAP's
+reflector, a disc whose texture is 96 % transparent); Europa Clipper, SMAP and Jason-3 turned as one
+piece to the app's axes (the dish or the bus toward the Earth, the wings along X); SORCE scaled as
+one piece to its cited 1.48 m; flat colours baked from the agencies' own materials and textures.
+**Colours that are ours:** the solar cells of Europa Clipper, SMAP, Jason-3 and SORCE are drawn in
+the app's panel blue, as NASA's own renders of the craft show them (the files make them a near-black
+or, SORCE's, plain white). SMAP's see-through gold mesh reflector is drawn as a solid gold dish: the
+app's material has no transparency. Curiosity and SORCE are not turned.
+
+**Credit lines:** `3D model: NASA (Visualization Technology Applications and Development)` (Europa
+Clipper, Curiosity); `3D model: NASA/JPL-Caltech (NASA Visualization Technology Applications and
+Development)` (SMAP); `3D model: NASA/JPL-Caltech` (Jason-3); `3D model: NASA` (SORCE).
+
+NASA's insignia and the missions' logos are on none of the five meshes (each file was looked at in
+six views before and after the bake), and NASA does not endorse Space Radar.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

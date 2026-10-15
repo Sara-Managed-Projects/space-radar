@@ -357,11 +357,36 @@ export const REAL_MODELS = {
     // one is the spacecraft itself, not a sister ship. Jason-3 (41240) is NOT routed here: it is
     // a Proteus bus, a different shape, and gets its own file.
     46984: { file: 'sentinel6.glb', colour: 'satellite', name: 'Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6A' },
+    // SENTINEL-6B (2026-10-15, batch eleven), launched 17 November 2025: the second of two craft
+    // built to one design, so it wears NASA's model of the first, as Spirit wears Opportunity's, and
+    // says it is the twin. Read in the live saved data that day: `SENTINEL-6B`, 66514, 2025-264A.
+    66514: { file: 'sentinel6.glb', colour: 'satellite', name: 'a Sentinel-6 ocean altimeter, the twin of Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6B', generic: true },
     43613: { file: 'icesat2.glb', colour: 'satellite', name: 'ICESat-2', catalogue: 'ICESAT-2' },
-    // Jason-3 is a rebuild of OSTM/Jason-2 -- same Proteus bus, same instruments -- and NASA only
-    // published the Jason-2 model, so this is the sister ship and `generic` lets the card say so.
-    41240: { file: 'jason.glb', colour: 'satellite', name: 'a Jason-series ocean altimeter', catalogue: 'JASON-3', generic: true },
+    // JASON-3 HAS ITS OWN MODEL since 2026-10-15 (batch eleven, public #1077): JPL's "Jason-3 3D
+    // Model" (sealevel.jpl.nasa.gov/resources/94/), turned to the app's axes before the bake (the
+    // altimeter's dish on +Z, the wings along X, the cells toward +Y), hence `axes: 'app'`. Until
+    // then it wore NASA's OSTM/Jason-2 file as the sister ship; that file now draws Jason-2 itself
+    // (33105, decommissioned in 2019 and still catalogued: it is in no group the app loads, so the
+    // route reaches nothing today, as poes.glb's do not).
+    41240: { file: 'jason-3.glb', colour: 'satellite', name: 'Jason-3', catalogue: 'JASON-3', axes: 'app' },
+    33105: { file: 'jason.glb', colour: 'satellite', name: 'OSTM/Jason-2', catalogue: 'JASON-2 (OSTM)' },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
+    // The second of the pair (2026-10-15, batch eleven): `GRACE-FO 2`, 43477, in the live saved data
+    // that day. The two fly 220 km apart on one orbit and are one design.
+    43477: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 2', generic: true },
+    // THE ELEVENTH BATCH (2026-10-15, public #1076, #1079): two more agencies' own models, by number,
+    // with the names CelesTrak's active group gives them (live saved data that day: `SMAP` 40376,
+    // `SORCE` 27651). Each had no route and was the shape of its class.
+    //   SMAP   JPL's "SMAP 3D Model" (smap.jpl.nasa.gov/resources/99/): the bus, the spun instrument
+    //          platform, the boom and the 6 m reflector, its gold surface drawn SOLID (the file draws
+    //          a see-through mesh with a transparent texture; the toon material has no transparency).
+    //          Turned before the bake: the bus toward the Earth, the reflector away from it, the
+    //          cells toward +Y. The real reflector spins at 14.6 turns a minute; this one does not.
+    //   SORCE  NASA 3D Resources' file: a hexagonal body under six radial wings. NOT TURNED: SORCE
+    //          pointed its instruments and its wings at the Sun, and the app has no Sun-pointing
+    //          attitude for a satellite, so it keeps the seeded constant angle a published mesh gets.
+    40376: { file: 'smap.glb', colour: 'satellite', name: 'SMAP', catalogue: 'SMAP', axes: 'app' },
+    27651: { file: 'sorce.glb', colour: 'satellite', name: 'SORCE', catalogue: 'SORCE' },
     // NASA's Magnetospheric Multiscale: four spacecraft flying in a tetrahedron, MMS 1 to MMS 4.
     //
     // THIS USED TO BE THE NAME `mms`, WHICH ALSO MATCHED ELARASAT MMS-1 -- a different satellite,
@@ -790,6 +815,13 @@ export const REAL_MODELS = {
     // closed capsule under a ring of solar cells. A procedural shape from the one published
     // length (scene/models.js buildMars2020Cruise), with nothing to upgrade to.
     '-168': { build: 'mars-2020-cruise', colour: 'probe', name: 'Mars 2020 in cruise' },
+    // EUROPA CLIPPER (2026-10-15, batch eleven, public #1075): NASA's own model (science.nasa.gov,
+    // "Europa Clipper 3D Model", credit NASA VTAD), until then the generic probe. Turned before the
+    // bake so the 3 m high-gain dish is +Z and the 30.5 m of wings lie along X with the cells toward
+    // +Y, hence `axes: 'app'`: it flies as the procedural probe did, the dish toward the world the
+    // stage is centred on (the Earth from the Earth's stage). The record is data/sample.js
+    // `deep-europa-clipper`, Horizons -159.
+    '-159': { file: 'europa-clipper.glb', colour: 'probe', name: 'Europa Clipper', axes: 'app' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -1223,14 +1255,15 @@ export const REAL_MODELS = {
     // THE REST OF NASA'S LANDED VEHICLES THAT IT PUBLISHES AS glTF (issue #437, 2026-10-05). Each
     // was the procedural lander or rover: a few boxes under a real name.
     //
-    // Curiosity is the one that is NOT its own model, and the row says so with `generic`. NASA
-    // publishes Curiosity as a .blend file only, which this pipeline cannot read; Perseverance was
-    // built on Curiosity's chassis -- the same rocker-bogie, deck, mast and RTG -- and differs in
-    // the turret, the wheels and the sample tubes, none of which survive at this size. So the card
-    // reads "drawn as ... the kind of thing, not this exact one", which is the true sentence.
+    // CURIOSITY IS ITS OWN MODEL since 2026-10-15 (batch eleven, public #1078). Until then it wore
+    // Perseverance's file as "a rover of the design Curiosity and Perseverance share", generic,
+    // because NASA 3D Resources publishes Curiosity as a .blend only. NASA Science also publishes a
+    // glTF of it ("Curiosity 3D Model", science.nasa.gov/resource/curiosity-3d-model/, credit NASA
+    // VTAD), and that is the file: metres and +Y up as published, so it stands on Gale's ground as
+    // Perseverance does on Jezero's (heroes.js standOnGround), the arm forward.
     // Ingenuity, where its last flight ended (registry/sites.yaml, from NASA's waypoint file).
     ingenuity: { file: 'ingenuity.glb', colour: 'site', name: 'Ingenuity' },
-    gale: { file: 'perseverance.glb', colour: 'site', name: 'a rover of the design Curiosity and Perseverance share', generic: true },
+    gale: { file: 'curiosity.glb', colour: 'site', name: 'Curiosity' },
     // NASA's Mars Exploration Rover model is Opportunity (MER-B). Spirit was its twin, built to the
     // same drawings, so it wears the same file and says it is the kind of thing.
     opportunity: { file: 'mer.glb', colour: 'site', name: 'Opportunity' },
