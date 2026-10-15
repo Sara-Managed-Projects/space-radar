@@ -2674,7 +2674,23 @@ function paintOverlayBlock(box, ctx) {
 
 /** The spots' line and, after it, what the Sun is doing now. */
 export function sunLine(ctx) {
-  return [sunSpotsLine(ctx), sunActivityLine(ctx), sunLookLine(ctx)].filter(Boolean).join(' ') || null;
+  return [sunSpotsLine(ctx), sunImageLine(ctx), sunActivityLine(ctx), sunLookLine(ctx)].filter(Boolean).join(' ') || null;
+}
+
+/** SDO's picture on the face toward the Earth, dated, and the loops over today's regions (internal spec 0076 W1-d; copy r12Sun). */
+export function sunImageLine(ctx) {
+  let st = null;
+  try { st = ctx.sunDetail.state(); } catch { st = null; }
+  const words = COPY.r12Sun;
+  if (!st || !st.on || !words || !words.image) return null;
+  const out = [];
+  const img = st.image;
+  if (img && img.shown > 0 && Number.isFinite(img.observedMs)) {
+    const iso = new Date(img.observedMs).toISOString();
+    out.push(t(words.image, { date: iso.slice(0, 10), time: iso.slice(11, 16), wl: String(img.wavelengthA) }));
+  } else if (img && img.failed) out.push(words.none);
+  if (st.loops > 0) out.push(t(st.loops === 1 ? words.loopsOne : words.loops, { n: fmt.int(st.loops) }));
+  return out.length ? out.join(' ') : null;
 }
 
 /** Which look is on, said while the Sun's detail is drawn: the look changes its grain, corona and prominences (scene/sun.js UNDER_MEASURED). */

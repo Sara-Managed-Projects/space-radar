@@ -1822,5 +1822,13 @@ Object.assign(COPY, {
     lookWord: '{mode} look',
   },
   // 0076 W1-d (the Sun's image of the day)
-  r12Sun: {},
+  // On the Sun's card under its spots' line while its detail is drawn (ui/cards.js sunImageLine; scene/sun.js,
+  // scene/sunimage.js). {date} "2026-10-15", {time} "16:56" UTC, {wl} 171.
+  r12Sun: {
+    image: 'The half of the Sun that faced the Earth is the Solar Dynamics Observatory’s picture taken at {time} UTC on {date}, turned with the Sun since: extreme ultraviolet light at {wl} ångström from gas near a million degrees in the loops over the surface, in SDO’s false colour and drawn brighter. The far side, which it did not see, is drawn from a model in the same false colour, and the two are blended where they meet. It is a browse picture, not one for science. Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.',
+    // The loops are OFF for release 1.2.0 (scene/sun.js LOOPS_ON): these two lines are said only when they are drawn.
+    loops: 'The gold loops over {n} of today’s active regions are illustrative: their places are NOAA’s, their shapes, heights and number are not. Under Measured they are taken off.',
+    loopsOne: 'The gold loops over one of today’s active regions are illustrative: the place is NOAA’s, the shapes, heights and number are not. Under Measured they are taken off.',
+    none: 'No picture of today’s Sun could be read, so the whole disc is drawn.',
+  },
 });

@@ -147,6 +147,7 @@ const DEFERRED = {
   // 0076 W1-c (truthlegend.js)
   'js/ui/truthlegend.js': 'the legend inside every card: ui/cardfacts.js fetches it the first time the row "How we know" opens',
   // 0076 W1-d (sunimage.js)
+  'js/scene/sunimage.js': 'SDO\'s picture of the Sun of the day: scene/sun.js fetches it the first time its detail comes on (internal spec 0076 W1-d)',
   // 0076 W1-e (perf.js)
   'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
 };

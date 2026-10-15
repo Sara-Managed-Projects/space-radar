@@ -8,8 +8,8 @@ export const BUDGETS = {
   "first_visit_bytes": 2855000,
   "boot_longest_task_ms": 3000,
   "boot_blocking_ms": 6000,
-  "deployed_boot_js_bytes": 1868000,
-  "after_first_visit_bytes": 1661000,
+  "deployed_boot_js_bytes": 1868300,
+  "after_first_visit_bytes": 1662200,
   "embed_first_visit_bytes": 2060000,
   "audio_at_boot_bytes": 0,
   "og_at_boot_bytes": 0,
@@ -39,5 +39,7 @@ export const BUDGETS = {
   "planet_tile_requests_first_visit": 0,
   "reel_heap_growth_pct": 20,
   "deep_localvolume_bytes": 300000,
-  "deep_localvolume_draw_calls": 2
+  "deep_localvolume_draw_calls": 2,
+  "sun_image_bytes": 400000,
+  "sun_loops_draw_calls": 1
 };

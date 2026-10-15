@@ -455,6 +455,17 @@
       ]
     },
     {
+      "id": "sdo-aia-171",
+      "url": "https://sdo.gsfc.nasa.gov/assets/img/browse/{ymd}/",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "72h",
+      "parser": "sdo_aia",
+      "outputs": [
+        "sdo-aia-171.json"
+      ]
+    },
+    {
       "id": "wind",
       "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D",
       "auth": "none",

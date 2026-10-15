@@ -175,6 +175,7 @@ const CONTRACT = {
   // 0076 W1-c (truthlegend.js): the legend inside every card; its rows and words are pure for tests/test_truthlegend.mjs.
   'ui/truthlegend.js': ['fillLegend', 'legendRows', 'takenWords', 'termsIn', 'glossaryList'],
   // 0076 W1-d (sunimage.js)
+  'scene/sunimage.js': ['loadSunImage', 'imageFrame', 'imageUv', 'imageWeight', 'cropOf', 'textureBytes', 'IMAGE_GAIN', 'IMAGE_EDGE'],
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
 };
