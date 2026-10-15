@@ -464,6 +464,7 @@ float coverT( vec3 p ) {
   return f * f;
 }
 vec3 tint( vec3 p, vec3 model ) {
+  if ( uTPicOn <= 0.001 ) return model; // off its line: no lookups at all
   float k = uTPicOn * coverT( p );
   if ( k <= 0.001 ) return model;
   vec3 c = pow( texture2D( uTPic, clamp( picUv( p ), 0.0, 1.0 ) ).rgb, vec3( uTPicLook.y ) ) * uTPicLook.x;
@@ -512,7 +513,7 @@ void main() {
         // limb-brightened, but a grazing ray fades: the first look drew the wall's edge as a glass ball's rim
         float limb = smoothstep( 0.04, 0.3, mu ) / max( mu, 0.3 );
         float wf = arcs( pf ) * ( 0.5 + 0.5 * dot( nf, uAway ) ) * ( 1.0 - smoothstep( 0.85, 1.0, length( pf ) ) );
-        C += T * tint( pf, frontCol ) * uFront.x * wf * limb * ( 1.0 - uPhotoT * coverT( pf ) );
+        C += T * tint( pf, frontCol ) * uFront.x * wf * limb * ( uPhotoT > 0.0 ? 1.0 - uPhotoT * coverT( pf ) : 1.0 );
       }
     }
     vec3 p = ro + rd * ( ta + jitter * dt );
@@ -535,7 +536,7 @@ void main() {
       rim = uNoiseAmp * smoothstep( 0.54, 0.62, n2 ) * ( 1.0 - smoothstep( 0.62, 0.68, n2 ) ) * band / ( 1.0 + 6.0 * rq * rq );
     }
     vec3 col = tint( p, mix( uColO3, uColHa, smoothstep( 0.06, 0.38, rq ) ) );
-    float w = 1.0 - uPhotoT * coverT( p );
+    float w = uPhotoT > 0.0 ? 1.0 - uPhotoT * coverT( p ) : 1.0;
     C += T * ( col * rho * uK + rimCol * rim * uFront.y ) * ds * w;
     T *= exp( -uSigma * dust * ds * w );
     if ( T < 0.02 ) break;
@@ -898,7 +899,7 @@ export function createHero(THREE, env = {}) {
       camIn(nebMesh, camera, nebMat.uniforms.uCamObj.value);
       const dT = nebMat.uniforms.uCamObj.value.length() * tarR; // object units
       const rT = dT > tarR ? (Math.asin(tarR / dT) / (fovY / 2)) * (hDev / Math.max(1, dpr) / 2) : Infinity;
-      const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: Math.min(rT, 1e4), selected: (typeof env.selectedId === 'function' ? env.selectedId() : info.selectedId) === TARANTULA });
+      const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: Number.isFinite(info.frameMs) ? info.frameMs : info.dtMs, rPx: Math.min(rT, 1e4), selected: (typeof env.selectedId === 'function' ? env.selectedId() : info.selectedId) === TARANTULA });
       nebMat.uniforms.uSteps.value = Math.max(8, Math.min(48, rT < 24 ? 8 : own || 8)); // never under 8: fewer showed the noise as grain
       nebMat.uniforms.uNoiseAmp.value = noise ? noisy : 0;
       nebMat.uniforms.uNoise.value = noise || nebMat.uniforms.uNoise.value;
