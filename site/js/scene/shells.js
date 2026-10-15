@@ -76,8 +76,8 @@ export function cmbWords(inside) {
   const W = COPY.deepCosmos;
   const n = 200; // scene/deep/cmb.js SCALE_UK
   const lines = [W.cmbTitle, fill(W.cmbWhen, { k: groups(cmbYears()) }), W.cmbPainted];
-  if (inside) lines.push(W.cmbElsewhere);
-  lines.push({ bar: true, left: fill(W.cmbCold, { n }), mid: fill(W.cmbMid, { t: PLANCK18.Tcmb0.toFixed(4) }), right: fill(W.cmbWarm, { n }), say: fill(W.cmbScaleSay, { n, t: PLANCK18.Tcmb0.toFixed(4) }) });
+  if (inside) lines.push(W.cmbElse);
+  lines.push({ bar: true, left: fill(W.cmbCold, { n }), mid: fill(W.cmbMid, { t: PLANCK18.Tcmb0.toFixed(4) }), right: fill(W.cmbWarm, { n }), say: fill(W.cmbSay, { n, t: PLANCK18.Tcmb0.toFixed(4) }) });
   lines.push(W.cmbSource);
   return lines;
 }

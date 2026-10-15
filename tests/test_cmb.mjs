@@ -165,7 +165,7 @@ const galDir = (lDeg, bDeg) => ({ x: Math.cos(bDeg * DEG) * Math.cos(lDeg * DEG)
     check(added <= BUDGETS.deep_cmb_draw_calls, `the map adds ${added} draw calls, within registry/budgets.yaml deep_cmb_draw_calls (${BUDGETS.deep_cmb_draw_calls})`);
   }
   const said40 = shells.spoken();
-  for (const w of [COPY.deepCosmos.cmbTitle, 'about 370 000 years after the Big Bang', 'an illustration', COPY.deepCosmos.cmbElsewhere, 'Colour scale: blue is up to 200 millionths of a degree colder than the average of 2.7255 kelvin', 'WMAP']) {
+  for (const w of [COPY.deepCosmos.cmbTitle, 'about 370 000 years after the Big Bang', 'an illustration', COPY.deepCosmos.cmbElse, 'Colour scale: blue up to 200 millionths of a degree colder than 2.7255 kelvin', 'WMAP']) {
     check(said40.includes(w), `from inside a screen reader is told "${w}" (${said40})`);
   }
   check(!/µK/.test(said40), 'the scale is said in words, not read out as symbols');
@@ -176,7 +176,7 @@ const galDir = (lDeg, bDeg) => ({ x: Math.cos(bDeg * DEG) * Math.cos(lDeg * DEG)
   for (const w of [COPY.deepCosmos.horizon, '46 billion light-years away now', COPY.deepCosmos.cmbTitle, 'Painted inside the sphere it left from: an illustration', 'Colour scale', COPY.deepCosmos.edgeNothing]) {
     check(said48.includes(w), `outside a screen reader is told "${w}"`);
   }
-  check(!said48.includes(COPY.deepCosmos.cmbElsewhere), 'and not the inside\'s line');
+  check(!said48.includes(COPY.deepCosmos.cmbElse), 'and not the inside\'s line');
   const before = live.textContent;
   shells.update(cam, tMs); shells.update(cam, tMs);
   check(live.textContent === before && before === said48, 'the region changes only when what is shown changes');
