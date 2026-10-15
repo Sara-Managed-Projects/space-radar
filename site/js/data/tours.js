@@ -5226,5 +5226,265 @@ export const TOURS = [
 }
 ],
 "estimate_ms": 106506
+},
+{
+"id": "into-the-helix",
+"title": "Into the Helix",
+"blurb": "A dying star: its photograph, its shape in 3D and its heart. Then back to Earth.",
+"requires": [
+"stars",
+"deep-sky"
+],
+"stage": "stellar",
+"clock": "as-found",
+"group": "beyond",
+"next": "inside-a-neighbouring-galaxy",
+"og_stop": 2,
+"hides": [
+"exoplanets",
+"systems",
+"galaxy",
+"exotics"
+],
+"return": true,
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "photograph",
+"target": {
+"record": "dso-helix-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 113528765670970,
+"drift_deg": 4,
+"drift_rate_deg_s": 0.3,
+"key_light_deg": 0,
+"chapter": "The photograph",
+"card": {
+"title": "The Helix Nebula, as a telescope sees it",
+"body": "A photograph from a telescope in Chile, lined up as it is in our sky. A star like the Sun is dying at its centre. Gaia, a spacecraft, measured that star's tiny yearly shift: it is 655 light-years away."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15487
+},
+{
+"id": "shape",
+"target": {
+"record": "dso-helix-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 47303652362904,
+"drift_deg": 35,
+"drift_rate_deg_s": 3,
+"key_light_deg": 0,
+"chapter": "The shape in 3D",
+"card": {
+"title": "Turn, and the photograph becomes a shape",
+"body": "As we turn, a model takes over. Robert O'Dell and colleagues measured how the gas moves and worked out its shape: a disc, and a ring tilted almost across it. This is their reconstruction."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13822
+},
+{
+"id": "heart",
+"target": {
+"record": "dso-helix-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 8514657425323,
+"drift_deg": 15,
+"drift_rate_deg_s": 1.5,
+"key_light_deg": 35,
+"chapter": "The dying star",
+"card": {
+"title": "Inside the ring, around the dying star",
+"body": "Inside the ring, we face the star that made all this: a white dwarf of about a hundred thousand degrees. Its dark knots, each wider than our Solar System, are real; where each sits is made up."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14821
+},
+{
+"id": "scale",
+"target": {
+"record": "dso-helix-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 378429218903232,
+"drift_deg": 4,
+"drift_rate_deg_s": 0.3,
+"key_light_deg": 0,
+"chapter": "Going home",
+"card": {
+"title": "Back out: almost as wide as the full Moon",
+"body": "The bright ring is nearly two and a half light-years across. In our sky the whole nebula is almost as wide as the full Moon, yet too faint for the eye. The light we see left it 655 years ago."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15820
+}
+],
+"estimate_ms": 94350
+},
+{
+"id": "inside-a-neighbouring-galaxy",
+"title": "Inside a neighbouring galaxy",
+"blurb": "The Large Magellanic Cloud, the Tarantula, its giant stars. Then back to Earth.",
+"requires": [
+"stars",
+"deep-sky",
+"galaxy"
+],
+"stage": "stellar",
+"clock": "as-found",
+"group": "beyond",
+"next": "into-the-helix",
+"og_stop": 3,
+"hides": [
+"exoplanets",
+"systems",
+"exotics"
+],
+"return": true,
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "from-home",
+"target": {
+"record": "dso-lmc"
+},
+"needs_layer": "deep-sky",
+"distance_km": 1419109570887120000,
+"drift_deg": 0,
+"drift": "none",
+"key_light_deg": 0,
+"chapter": "Leaving the Milky Way",
+"card": {
+"title": "A galaxy you can see from Earth",
+"body": "From the southern half of the Earth this pale cloud is plain to the eye: the Large Magellanic Cloud, a small galaxy beside our own. Pairs of stars that eclipse each other put it a hundred and sixty thousand light-years away. This is its photograph."
+},
+"frame_radii": 5.0,
+"drift_rate_deg_s": 6,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17485
+},
+{
+"id": "model",
+"target": {
+"record": "dso-lmc"
+},
+"needs_layer": "deep-sky",
+"distance_km": 425732871266136000,
+"drift_deg": 30,
+"drift_rate_deg_s": 3,
+"key_light_deg": 75,
+"chapter": "The Large Magellanic Cloud",
+"card": {
+"title": "Turned, the photograph gives way to a model",
+"body": "Off our line the photograph fades and a model takes over. Where its stars lie on the sky comes from the Gaia spacecraft's counts; how far each sits in front or behind is a guess, since no single star's depth can be measured this far away."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17818
+},
+{
+"id": "tarantula",
+"target": {
+"record": "dso-tarantula-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 56764382835484800,
+"drift_deg": 15,
+"drift_rate_deg_s": 1.5,
+"key_light_deg": 75,
+"chapter": "The Tarantula",
+"card": {
+"title": "The Tarantula, inside the Cloud",
+"body": "The bright knot is the Tarantula Nebula, the brightest nursery of stars anywhere near us. It belongs to the Large Magellanic Cloud and shares its distance; how far it sits in front of or behind the disc's middle is not known."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 16153
+},
+{
+"id": "shell",
+"target": {
+"record": "dso-tarantula-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 14191095708871200,
+"drift_deg": 20,
+"drift_rate_deg_s": 2,
+"key_light_deg": 75,
+"card": {
+"title": "A hollow blown by young stars",
+"body": "Nearly two thousand light-years across, the Tarantula is gas lit and pushed by the young stars at its heart, whose winds have blown a hollow in the middle. Its depth here is a model; the pink of hydrogen and the teal of oxygen are made stronger."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17818
+},
+{
+"id": "r136",
+"target": {
+"record": "dso-tarantula-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 2365182618145200,
+"drift_deg": 10,
+"drift_rate_deg_s": 1,
+"key_light_deg": 75,
+"card": {
+"title": "R136, home of the heaviest stars known",
+"body": "At its heart is R136, a cluster less than two million years old whose light makes most of the nebula glow. Its star R136a1 is among the heaviest known, weighing two to three hundred Suns. The stars drawn are a sample; the cluster's place is real."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17818
+},
+{
+"id": "depart",
+"target": {
+"record": "dso-lmc"
+},
+"needs_layer": "deep-sky",
+"distance_km": 5676438283548480000,
+"drift_deg": 8,
+"drift_rate_deg_s": 1,
+"key_light_deg": 80,
+"chapter": "Going home",
+"card": {
+"title": "Our galaxy and its neighbour",
+"body": "Far out, the Large Magellanic Cloud is the small patch in the middle, the Small Magellanic Cloud beside it, and our Milky Way beyond, about three times wider. Now the long way home: a hundred and sixty thousand light-years."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15487
+}
+],
+"estimate_ms": 143679
 }
 ];

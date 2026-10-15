@@ -302,5 +302,25 @@ export const TOURS_INDEX = [
 "min_stops": 3,
 "count": 5,
 "estimate_ms": 106506
+},
+{
+"id": "into-the-helix",
+"title": "Into the Helix",
+"blurb": "A dying star: its photograph, its shape in 3D and its heart. Then back to Earth.",
+"group": "beyond",
+"next": "inside-a-neighbouring-galaxy",
+"min_stops": 3,
+"count": 4,
+"estimate_ms": 94350
+},
+{
+"id": "inside-a-neighbouring-galaxy",
+"title": "Inside a neighbouring galaxy",
+"blurb": "The Large Magellanic Cloud, the Tarantula, its giant stars. Then back to Earth.",
+"group": "beyond",
+"next": "into-the-helix",
+"min_stops": 3,
+"count": 6,
+"estimate_ms": 143679
 }
 ];
