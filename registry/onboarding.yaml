@@ -228,6 +228,11 @@ features:
     name: The sky from your place
     files: [site/js/sky/skyview.js]
     not: "Inside Tonight and the card's See it; its buttons are being redrawn (Ivan, 2026-10-14, item 2). A step for it is the first one to add."
+  # 0076 W1-c
+  - id: truth-legend
+    name: How we know, the legend of the honesty words inside every card
+    files: [site/js/ui/truthlegend.js]
+    not: "A row that opens in place on the card the card step already rings; nothing new to press first."
   - id: controls-hint
     name: The keys and gestures hint
     files: [site/js/ui/keyhint.js]

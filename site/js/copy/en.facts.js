@@ -1,4 +1,4 @@
-// The four sections of copy/en.later.js that ui/cardfacts.js reads (internal #429).
+// The sections of the words that ui/cardfacts.js reads (internal #429; `truth`, internal spec 0076 W1-c).
 //
 // WHY A THIRD FILE. The light embed prints a tag line from the card's facts, and cardfacts.js used to
 // import all of copy/en.later.js (45 kB) for these four sections. They live here and are ADDED TO THE
@@ -157,5 +157,29 @@ Object.assign(COPY, {
     // The honesty line's second half: {drawn} is one or two of drawnWords, joined.
     drawnLine: 'What is drawn: {drawn}.',
     drawnJoin: '; elsewhere, ',
+    // A record whose drawing is not one of the five classes' plain cases says it in its own words
+    // (internal spec 0076 W1-c). The Milky Way (internal #918): nobody has seen it from outside, so the
+    // line says which part of the picture is measured and which is inferred. ui/cardfacts.js honestyClause.
+    records: {
+      'dso-milky-way': {
+        drawn: 'an illustration built on measurements',
+        split: 'Measured: the stars within a few thousand light-years (Gaia), the bar’s angle, the directions along the arms and the nearer arms (Reid et al. 2019). Inferred: the far side beyond the centre, hidden by dust; its arms are the near ones carried round.',
+      },
+    },
+  },
+
+  // THE LEGEND'S ROW (internal spec 0076 W1-c): "How we know", the last row that opens in place on a card,
+  // straight above the honesty line it explains (ui/cardfacts.js truthRow). Its hint is this card's own
+  // word: what draws now for a deep-sky object, else how its position is known. The legend itself is
+  // ui/truthlegend.js, fetched when the row opens, and its words are copy/en.later.js r12Truth.
+  truth: {
+    label: 'How we know',
+    hints: {
+      measured: 'Measured', inferred: 'Worked out', illustrative: 'Illustrative', sample: 'Sample',
+      unknown: 'Not known', unplaced: 'Not placed',
+      reconstruction: 'Reconstructed', model: 'Model', photograph: 'Photograph', catalogue: 'Catalogue', illustration: 'Illustration',
+    },
+    loading: 'Opening the legend.',
+    failed: 'The legend did not load. The line below says it in short.',
   },
 });

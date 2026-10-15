@@ -172,7 +172,8 @@ const CONTRACT = {
   'copy/en.js': ['COPY', 'compare'],
   // 0076 W1-a (orion.js)
   // 0076 W1-b (cmb.js)
-  // 0076 W1-c (truthlegend.js)
+  // 0076 W1-c (truthlegend.js): the legend inside every card; its rows and words are pure for tests/test_truthlegend.mjs.
+  'ui/truthlegend.js': ['fillLegend', 'legendRows', 'takenWords', 'termsIn', 'glossaryList'],
   // 0076 W1-d (sunimage.js)
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],

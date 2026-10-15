@@ -19,7 +19,7 @@ from _genmirror import Mirror, pick  # noqa: E402
 
 # `evidence`, `cors` and `checked` are a reviewer's; a phone needs none of them.
 FIELDS = ("id", "hips_id", "base", "file", "frame", "max_order", "tile_width", "format", "stream",
-          "gain", "mission", "credit", "terms")
+          "gain", "mission", "credit", "terms", "observed")
 
 
 def render(doc: dict) -> list:

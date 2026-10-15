@@ -1761,7 +1761,66 @@ Object.assign(COPY, {
   // 0076 W1-a (Orion)
   deepOrion: {},
   // 0076 W1-c (the truth on every card)
-  r12Truth: {},
+  r12Truth: {
+    // ui/truthlegend.js: the legend inside every card, under the row "How we know" (copy/en.facts.js
+    // `truth`). Three groups, each a microlabel over the card's own rows: what this card is, the words
+    // the app uses everywhere, and the terms this card's text uses. Only the existing honesty classes:
+    // a position's (`cls`), the five drawn classes (data/deepsky.js DRAWN_CLASSES) and the two looks.
+    here: 'On this card',
+    words: 'The words, everywhere',
+    terms: 'Words on this card',
+    rows: {
+      where: 'Where it is',
+      drawnNow: 'Drawn now',
+      drawn: 'What is drawn',
+      photo: 'Photograph by',
+      filters: 'Filters',
+      colours: 'Colours',
+      taken: 'Taken',
+      released: 'Published',
+      sky: 'Sky shown',
+      survey: 'Survey by',
+      look: 'Look',
+    },
+    // {a} to {b}: a span of years or months ("2004 to 2006"), from a registry's `taken: "A..B"`.
+    span: '{a} to {b}',
+    notPublished: 'Date not published',
+    // How a position is known (the honesty line's first half: copy/en.facts.js cls).
+    position: {
+      measured: 'Seen by an instrument at a known time',
+      inferred: 'Worked forward from an older measurement',
+      illustrative: 'Drawn to show the idea, not measured',
+      sample: 'Bundled sample data, not live',
+    },
+    // What is drawn (the honesty line's second half: copy/en.facts.js deepFacts.drawnWords).
+    drawn: {
+      photograph: 'Real light, photographed from our side',
+      reconstruction: 'A 3D shape from a published study',
+      model: 'A model of its kind, not its own stars',
+      catalogue: 'Positions a survey measured',
+      illustration: 'Drawn to show its kind, not it',
+    },
+    // How a photograph's colours were made (registry/nebulae.yaml `colours`), in two to four words.
+    colours: {
+      broadband: 'Broad colour filters',
+      mixed: 'Colour filters and hydrogen',
+      narrowband: 'Gases mapped to colours',
+      unstated: 'Not stated',
+    },
+    falseColour: '{band}, false colour',
+    // The deep sky's glossary terms (registry/glossary.yaml, word for word; tests/test_truthlegend.mjs).
+    // `match`: other words on a card that send the reader to the term.
+    glossary: [
+      { term: 'parsec', match: ['kpc'], say: 'About 3.26 light-years: the distance from which the Earth\'s orbit would look one arcsecond wide. Papers write pc, and kpc for a thousand.' },
+      { term: 'million light-years', match: ['million years ago'], say: 'A million light-years, written Mly. Andromeda, the nearest big galaxy, is about 2.5 million away.' },
+      { term: 'billion light-years', match: ['billion years ago'], say: 'A thousand million light-years, written Gly. The edge of what we can see is about 46 billion light-years away now.' },
+      { term: 'lookback time', match: ['light left'], say: 'How long ago the light we see left something. From far galaxies it is billions of years: we see them as they were then.' },
+      { term: 'comoving distance', match: ['comoving', 'billion light-years'], say: 'How far away something is now, counting how much space has stretched since its light left. Far out it is more than the light\'s travel time suggests.' },
+    ],
+    termLine: '{term}: {say}',
+    // The two looks among the words, named so they are not taken for the position's "Measured".
+    lookWord: '{mode} look',
+  },
   // 0076 W1-d (the Sun's image of the day)
   r12Sun: {},
 });
