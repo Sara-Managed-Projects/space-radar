@@ -163,7 +163,13 @@ const sunlit = () => {
   return off > earthR() * 1.01;
 };
 out.light = { litAtFirst: sunlit(), movedMinutes: 0 };
-if (out.light.litAtFirst === false) {
+// ON THE GROUND THE CARD'S OWN LAMP (the second Gale run, 2026-10-15): a step of the clock that the test
+// above called daylight still drew the rover black on black ground, and the card offered "Light it". That
+// lamp (scene/models.js setFloodLight, our light and not the Sun's, said on the card while it is on) is what
+// a visitor presses there, so the probe presses it too, and every picture's line says so.
+const MM = onGround ? await import(urlOf('./js/scene/models.js')) : null;
+if (MM && typeof MM.setFloodLight === 'function') { MM.setFloodLight(true); out.light.flood = true; look.warns.push('probe: ' + record.id + ' is photographed under the card\'s lamp ("Light it"), not in the Sun\'s light'); }
+if (out.light.litAtFirst === false && !onGround) {
   const t0 = sr.clock.now();
   let found = null;
   // A site waits for its morning: an hour a step, a little more than a day of Mars.
@@ -308,7 +314,7 @@ const walk = async (tag, what) => {
   rig.flyTo({ azimuth: a0, polar: p0, distance: d0, ms: 0 });
   await sleep(1500);
 };
-await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape'));
+await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''));
 
 /** Put something else on the hero for a set of pictures; returns the way back. */
 const wearInstead = (obj, thing) => {
@@ -402,6 +408,8 @@ for (const subject of subjects) {
   // A layer this subject needed is put back as it was: sixteen thousand dots do not belong in the
   // next craft's pictures (the third run of batch two photographed Ajisai through them).
   const last = done[done.length - 1];
+  // The card's lamp is put out again: the next subject is photographed in the Sun's light.
+  if (last && last.light && last.light.flood) { try { (await import(urlOf('./js/scene/models.js'))).setFloodLight(false); } catch { /* an older ref */ } }
   if (last && last.layerTurnedOn) { try { sr.setLayerOn(last.layerTurnedOn, false); await sleep(1500); } catch { /* it stays on, and the pictures show it */ } }
 }
 const failed = done.filter((d) => d.fail).map((d) => d.fail);
