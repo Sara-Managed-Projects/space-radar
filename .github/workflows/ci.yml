@@ -1043,4 +1043,8 @@ jobs:
       # 0076 W1-b
       # 0076 W1-c
       # 0076 W1-d
+      - name: "the Sun's face of the day: SDO's picture dated, the only thing on its face under Measured, loops over NOAA's regions in Film only, the modelled disc offline (internal spec 0076 W1-d)"
+        run: node tests/test_sunimage.mjs
+      - name: "the Sun's face of the day, harvested: the newest 171 picture by its name, yesterday's after midnight, refused over budget (internal spec 0076 W1-d)"
+        run: python3 tests/test_harvest_sdo.py
       # 0076 W1-e

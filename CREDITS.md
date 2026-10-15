@@ -1695,6 +1695,29 @@ lists are held.
 
 ### SDO image of the day (0076 W1-d)
 
+Close up, the half of the Sun that faced the Earth wears the Solar Dynamics Observatory's newest
+picture of it (internal spec 0076 W1-d, #916; `scene/sunimage.js`): the Atmospheric Imaging
+Assembly's 171 ångström channel, extreme ultraviolet light from gas near a million degrees in the
+loops over the surface, at 1 024 pixels, from the browse archive
+`https://sdo.gsfc.nasa.gov/assets/img/browse/YYYY/MM/DD/`. The harvester (`sdo-aia-171`,
+`harvest/parsers/sdo_aia.py`) saves the newest picture of the day every three hours, with the moment
+in its file name as its date; a visitor's browser reads only that saved copy (the archive sends no
+CORS header; measured 2026-10-15, 188 279 bytes). Terms, read 2026-10-15 on
+<https://sdo.gsfc.nasa.gov/data/rules.php>: "SDO images and movies are not copyrighted unless
+explicitly noted. The use of SDO images for non-commercial purposes and public education and
+information efforts is strongly encouraged and requires no expressed authorization", asked to be
+credited "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."; the same page says browse
+products are not intended for science analysis, and the card says the picture is a browse picture.
+What is done to it: cropped round the disc, laid on the sphere from the place it was taken (north
+up, as SDO publishes it) and turned with the Sun since, drawn 1.8 times brighter than the JPEG so it
+sits beside the drawn far side; its colour is SDO's own false colour for that channel. The Sun's card
+says when it was taken and gives the credit line. Sources panel line:
+The Sun's face of the day: courtesy of NASA/SDO and the AIA, EVE, and HMI science teams
+
+The loops drawn over today's active regions under the Film look are not from any picture: their
+places are NOAA's (`swpc-solar-regions`, above), their shapes, heights and number are illustrative,
+and the card says so.
+
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 
 The MPC's [World-Wide Web Policy](https://www.minorplanetcenter.net/iau/WWWPolicy.html) is explicit

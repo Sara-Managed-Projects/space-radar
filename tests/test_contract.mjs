@@ -174,6 +174,7 @@ const CONTRACT = {
   // 0076 W1-b (cmb.js)
   // 0076 W1-c (truthlegend.js)
   // 0076 W1-d (sunimage.js)
+  'scene/sunimage.js': ['loadSunImage', 'imageFrame', 'imageUv', 'imageWeight', 'cropOf', 'textureBytes', 'IMAGE_GAIN', 'IMAGE_EDGE'],
   // 0076 W1-e (perf.js)
 };
 

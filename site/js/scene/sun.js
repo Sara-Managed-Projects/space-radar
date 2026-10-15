@@ -99,19 +99,38 @@
 //   round the Sun, the halo a coronagraph sees. The three parts and their brightness are the
 //   picture's; the place of the front is the catalogue's. With no saved copy none is drawn.
 //
+//   THE FACE OF THE DAY -- measured (internal spec 0076 W1-d, #916; scene/sunimage.js says how). When our
+//   saved copy holds SDO's newest picture in extreme ultraviolet (AIA 171 angstrom, SDO's false colour),
+//   the half of the Sun that faced the Earth when it was taken wears it, turned with the Sun since, in
+//   both looks: the spots, the grain and the limb darkening drawn there give way to it, and the far side,
+//   which no picture saw, stays as above. It is drawn within SUN_IMAGE_MAX_DAYS of its moment
+//   (data/sunactivity.js imageFade), faded in over a second when it arrives and as the disc grows, and
+//   under Film from very close it gives way to the drawn surface as the map does (uClose). With no copy
+//   (offline, a failed read, a connection that saves data) nothing changes from the disc above.
+//
+//   LOOPS OVER TODAY'S ACTIVE REGIONS -- measured places, illustrative everything else; FILM ONLY. Over
+//   each of NOAA's numbered regions (the spots' list, biggest first, LOOP_SLOTS by tier), a few thin
+//   arcs of light standing on the surface, as the 171 angstrom pictures show them: LOOPS_PER nested
+//   loops, their span LOOP_SPAN_K times the group's drawn radius (LOOP_SPAN_MIN to LOOP_SPAN_MAX radii),
+//   their axis east-west and tilted by Joy's law (LOOP_JOY of the latitude, the leading end nearer the
+//   equator), their heights and leans chosen. Gold, as the picture is. They do not move. Under Measured
+//   they are taken off. One merged mesh: one draw call.
+//
 // NO BLOOM, NO PASS (tests/test_contract.mjs): every light here is an additive, soft-edged material
 // of its own. REDUCED MOTION (`still`): the clock's own events (a flare's fading, a CME's flight)
 // still follow the clock, and nothing else moves: one fixed phase of the grain, the loops and the
 // corona. UNDER THE FRAME LATCH everything here is taken off.
 //
 // UNDER THE MEASURED LOOK (`look: 'measured'`, UNDER_MEASURED below): the generated grain and the
-// faculae drawn along it are off, and the corona and the prominences are held still as under reduced
-// motion; the limb darkening, the spots, the flares and the CMEs are as in Film.
+// faculae drawn along it are off, the loops are taken off, and the corona and the prominences are held
+// still as under reduced motion; the limb darkening, the spots, the flares and the CMEs are as in Film,
+// except that on the face SDO's picture covers only the picture is drawn (no flare kernel there either).
 //
 // The card says so (copy/en.js drawing.worldSun; the spots' line and copy/en.later.js sunAlive when a list is drawn).
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { MAX_SPOTS, spotDirection, spotRadiusRad, splitRegion, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
+import { imageFade } from '../data/sunactivity.js';
 import { drawnUnder, stillUnder } from './exposure.js';
 import { MAX_FLARES, MAX_CMES, PROM_CAP, FLARE_ERUPTIVE_FLUX, CME_REACH_RADII, flaresAt, cmesAt, limbOffsetDeg, prominenceFade, prominenceShape } from '../data/sunactivity.js';
 
@@ -121,7 +140,7 @@ import { MAX_FLARES, MAX_CMES, PROM_CAP, FLARE_ERUPTIVE_FLUX, CME_REACH_RADII, f
  * faculae are a pattern of ours seventeen times too big; the corona's and the prominences' places and
  * sizes stand for something real, their motion does not.
  */
-export const UNDER_MEASURED = { grain: 'hidden', faculae: 'hidden', corona: 'still', prominences: 'still' };
+export const UNDER_MEASURED = { grain: 'hidden', faculae: 'hidden', corona: 'still', prominences: 'still', loops: 'hidden' };
 
 /** The IAU's nominal solar effective temperature, kelvin (2015 Resolution B3). */
 export const T_EFF = 5772;
@@ -210,6 +229,21 @@ export const UMBRA_SHARE = 0.45;
 /** The corona's plane, in Sun radii from the centre to its edge, and its brightness at the limb. */
 export const CORONA_RADII = 7;
 export const CORONA_GAIN = 0.9;
+/** SDO's picture fades in over this long when it arrives, wall-clock ms (scene/sunimage.js). */
+export const IMAGE_ARRIVE_MS = 1200;
+/** Loops: regions given loops at once by tier, loops per region by tier, and their shape (all illustrative). */
+export const LOOP_SLOTS = [4, 8, 8];
+export const LOOPS_PER = [2, 4, 4];
+export const LOOP_STEPS = 20;
+export const LOOP_SPAN_K = 3.5;
+export const LOOP_SPAN_MIN = 0.035;
+export const LOOP_SPAN_MAX = 0.14;
+/** Joy's law, as a share of the latitude: a group's axis is tilted about half its latitude, the leading end toward the equator. */
+export const LOOP_JOY = 0.5;
+/** A loop's width as a share of its region's span, and at least this angle seen from the camera (about 1.5 pixels in 900). */
+export const LOOP_WIDTH = 0.03;
+export const LOOP_MIN_ANGLE = 0.0016;
+export const LOOP_GAIN = 0.55;
 
 /** The grey atmosphere's temperature where a ray leaving at cosine `mu` comes from. */
 export function limbTemperature(mu) {
@@ -395,6 +429,14 @@ uniform vec4 uSpots[ ${MAX_SPOTS} ];   // xyz: the group's place on the unit sph
 uniform int uSpotCount;
 uniform vec4 uFlares[ ${MAX_FLARES} ]; // xyz: the flaring region's place; w: the flare's brightness now
 uniform int uFlareCount;
+uniform sampler2D uImage;   // SDO's picture of the day, cropped to the disc (scene/sunimage.js)
+uniform float uImageOn;     // 0 with none; how strongly it is drawn
+uniform vec3 uImageC;       // where it was taken from, its right (west) and its up (north), in the Sun's axes
+uniform vec3 uImageW;
+uniform vec3 uImageN;
+uniform float uImageR;      // the Sun's radius as a share of the texture's side
+uniform float uImageGain;
+uniform vec2 uImageEdge;    // the cosines from its middle over which it fades in: its own limb
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -484,6 +526,13 @@ void main() {
   // Faculae: toward the limb the lanes of the network, and round a group, are bright, not dark.
   float towardLimb = ( 1.0 - smoothstep( 0.4, 0.72, mu ) ) * smoothstep( 0.03, 0.15, mu );
   colour *= 1.0 + ${FACULA_GAIN.toFixed(2)} * uGrain * towardLimb * min( 1.0, network + plage ) * ( 1.0 - lanes ) * ( 1.0 - lanes );
+
+  // THE FACE OF THE DAY: where SDO's picture saw this place, the picture (its own limb, its own colour)
+  // in place of all of the above, faded in over the picture's own limb. Read everywhere, so the
+  // texture's mipmaps have their derivatives; weighed to nothing where there is no picture.
+  float seen = smoothstep( uImageEdge.x, uImageEdge.y, dot( p, uImageC ) ) * uImageOn;
+  vec2 iuv = vec2( 0.5 + uImageR * dot( p, uImageW ), 0.5 - uImageR * dot( p, uImageN ) );
+  colour = mix( colour, texture2D( uImage, iuv ).rgb * uImageGain, seen );
 
   // Flares: a white kernel and a wider glow at the region, as bright as the clock's time makes it.
   for ( int i = 0; i < ${MAX_FLARES}; i++ ) {
@@ -688,11 +737,160 @@ void main() {
 `;
 
 /**
+ * LOOPS OVER TODAY'S ACTIVE REGIONS (Film only, illustrative shapes at NOAA's places). Every loop of every
+ * region is one ribbon in ONE mesh: its vertices carry where they are on a loop in the region's own axes
+ * (along the group's axis, across it, up), in units of the region's span, and which region slot they
+ * belong to; the slots' places, spans, axes and opacities are uniforms set every frame, so nothing is
+ * rebuilt when the Sun turns or the list changes, and a slot with no region draws nothing.
+ */
+export const LOOP_VERT = (slots) => /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_vertex>
+attribute vec3 aLocal;     // along the axis, across it, up: in spans
+attribute vec3 aTan;       // the loop's direction there, in the same axes
+attribute vec2 aRibbon;    // x: -1..1 across the ribbon; y: 0..1 along the loop
+attribute float aSlot;
+uniform vec4 uLoopAt[ ${slots} ];     // xyz: the region's place on the unit sphere; w: its span, radii
+uniform vec4 uLoopAxis[ ${slots} ];   // xyz: the group's axis, tangent to the sphere; w: opacity
+varying vec2 vRibbon;
+varying float vOpacity;
+void main() {
+  int i = int( aSlot + 0.5 );
+  vOpacity = uLoopAxis[ i ].w;
+  vRibbon = aRibbon;
+  if ( vOpacity <= 0.0 ) { gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 ); return; }   // outside the clip volume: nothing drawn
+  vec3 up = uLoopAt[ i ].xyz;
+  float span = uLoopAt[ i ].w;
+  vec3 ax = uLoopAxis[ i ].xyz;
+  vec3 ac = normalize( cross( up, ax ) );
+  vec3 c = up * ( 1.0 + aLocal.z * span ) + ( ax * aLocal.x + ac * aLocal.y ) * span;
+  vec3 t = ax * aTan.x + ac * aTan.y + up * aTan.z;
+  vec4 wc = modelMatrix * vec4( c, 1.0 );
+  vec3 tw = normalize( mat3( modelMatrix ) * t );
+  vec3 toCam = cameraPosition - wc.xyz;
+  float dist = length( toCam );
+  vec3 side = cross( tw, toCam / max( dist, 1e-9 ) );
+  float sl = length( side );
+  side = sl > 1e-6 ? side / sl : vec3( 0.0 );
+  // As wide as a share of the span, and never under a pixel and a half: a thinner line shimmers.
+  float width = max( ${LOOP_WIDTH.toFixed(3)} * span * length( modelMatrix[ 0 ].xyz ), ${LOOP_MIN_ANGLE.toFixed(4)} * dist );
+  wc.xyz += side * aRibbon.x * width;
+  gl_Position = projectionMatrix * viewMatrix * wc;
+  #include <logdepthbuf_vertex>
+}
+`;
+
+export const LOOP_FRAG = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_fragment>
+varying vec2 vRibbon;
+varying float vOpacity;
+void main() {
+  #include <logdepthbuf_fragment>
+  float across = 1.0 - vRibbon.x * vRibbon.x;
+  // Rooted in the surface: faint at the feet, brightest along the legs and the top.
+  float feet = smoothstep( 0.0, 0.1, vRibbon.y ) * smoothstep( 0.0, 0.1, 1.0 - vRibbon.y );
+  float light = across * across * feet * ( 0.65 + 0.35 * sin( 3.14159265 * vRibbon.y ) ) * vOpacity;
+  if ( light < 0.002 ) discard;
+  // Gold, as the 171 angstrom picture is in SDO's false colour.
+  gl_FragColor = vec4( vec3( 1.0, 0.78, 0.32 ) * light * ${LOOP_GAIN.toFixed(2)}, 1.0 );
+  #include <colorspace_fragment>
+}
+`;
+
+/** One loop's shape in its slot, chosen and fixed: [scale, across, height, lean], from the slot and the loop's number. Pure. */
+export function loopShape(slot, j) {
+  const h = (k) => { const x = Math.sin((slot * 12.9898 + j * 78.233 + k * 37.719) * 1.0) * 43758.5453; return x - Math.floor(x); };
+  const scale = j === 0 ? 1 : 0.55 + 0.6 * h(1);
+  return [scale, (h(2) - 0.5) * 0.5, scale * (0.42 + 0.3 * h(3)), (h(4) - 0.5) * 0.7];
+}
+
+/** A loop's centre line at t (0..1) in its region's axes, in spans, and its direction there. Pure. */
+export function loopPoint(shape, t) {
+  const [scale, across, height, lean] = shape;
+  const a = Math.PI * t;
+  const z = height * Math.sin(a);
+  const dz = height * Math.PI * Math.cos(a);
+  return {
+    at: [-0.5 * scale * Math.cos(a), across + lean * z, z],
+    tan: [0.5 * scale * Math.PI * Math.sin(a), lean * dz, dz],
+  };
+}
+
+/** The loops' one geometry for a tier: LOOP_SLOTS slots of LOOPS_PER loops, each a ribbon of LOOP_STEPS segments. */
+export function loopGeometry(tier) {
+  const k = Math.max(0, Math.min(2, tier));
+  const slots = LOOP_SLOTS[k];
+  const per = LOOPS_PER[k];
+  const n = LOOP_STEPS + 1;
+  const count = slots * per * n * 2;
+  const local = new Float32Array(count * 3);
+  const tan = new Float32Array(count * 3);
+  const ribbon = new Float32Array(count * 2);
+  const slot = new Float32Array(count);
+  const index = [];
+  let v = 0;
+  for (let s = 0; s < slots; s++) {
+    for (let j = 0; j < per; j++) {
+      const shape = loopShape(s, j);
+      const first = v;
+      for (let q = 0; q < n; q++) {
+        const pt = loopPoint(shape, q / LOOP_STEPS);
+        for (const side of [-1, 1]) {
+          local.set(pt.at, v * 3);
+          tan.set(pt.tan, v * 3);
+          ribbon[v * 2] = side;
+          ribbon[v * 2 + 1] = q / LOOP_STEPS;
+          slot[v] = s;
+          v += 1;
+        }
+        if (q > 0) {
+          const a = first + (q - 1) * 2;
+          index.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+        }
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(local, 3)); // three wants a position; the shader reads aLocal
+  g.setAttribute('aLocal', new THREE.BufferAttribute(local, 3));
+  g.setAttribute('aTan', new THREE.BufferAttribute(tan, 3));
+  g.setAttribute('aRibbon', new THREE.BufferAttribute(ribbon, 2));
+  g.setAttribute('aSlot', new THREE.BufferAttribute(slot, 1));
+  g.setIndex(index);
+  // The vertices are placed in the shader: a sphere that holds every loop of every region.
+  g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1 + LOOP_SPAN_MAX * 1.5);
+  return { geometry: g, slots, per };
+}
+
+/**
+ * A region's slot: its span in radii and its axis, east-west tilted by Joy's law with the leading (west)
+ * end toward the equator. `s` its place on the unit sphere (+Y north). Pure.
+ */
+export function loopFrame(s, latDeg, areaMsh, out = { span: 0, axis: [1, 0, 0] }) {
+  out.span = Math.min(LOOP_SPAN_MAX, Math.max(LOOP_SPAN_MIN, LOOP_SPAN_K * spotRadiusRad(areaMsh)));
+  // West at s is north x s; north along the surface is north less its part along s.
+  let wx = s[2], wz = -s[0];
+  const wl = Math.hypot(wx, wz) || 1;
+  wx /= wl; wz /= wl;
+  let nx = -s[1] * s[0], ny = 1 - s[1] * s[1], nz = -s[1] * s[2];
+  const nl = Math.hypot(nx, ny, nz) || 1;
+  nx /= nl; ny /= nl; nz /= nl;
+  const tilt = LOOP_JOY * Math.abs(latDeg) * Math.PI / 180;
+  const sign = latDeg >= 0 ? 1 : -1;
+  out.axis[0] = Math.cos(tilt) * wx - sign * Math.sin(tilt) * nx;
+  out.axis[1] = -sign * Math.sin(tilt) * ny;
+  out.axis[2] = Math.cos(tilt) * wz - sign * Math.sin(tilt) * nz;
+  return out;
+}
+
+/**
  * @param {object} opts
  * @param {THREE.Mesh}   opts.mesh    the Sun's own mesh (scene/worlds.js): a unit sphere, +Y its north pole
  * @param {THREE.Camera} opts.camera
  * @param {THREE.Object3D} [opts.sprite]  the round glow it wears far away; faded out while the corona is drawn
  * @param {number} [opts.tier]  0: no grain, two prominences and one CME at most
+ * @param {Function} [opts.imageLoader]  tier -> Promise<{ mod, img }>: scene/sunimage.js and its loadSunImage(); for tests
  */
 export function createSunDetail(opts = {}) {
   const mesh = opts.mesh;
@@ -724,6 +922,14 @@ export function createSunDetail(opts = {}) {
       uSpotCount: { value: 0 },
       uFlares: { value: flareSlots },
       uFlareCount: { value: 0 },
+      uImage: { value: null },
+      uImageOn: { value: 0 },
+      uImageC: { value: new THREE.Vector3(0, 0, 1) },
+      uImageW: { value: new THREE.Vector3(1, 0, 0) },
+      uImageN: { value: new THREE.Vector3(0, 1, 0) },
+      uImageR: { value: 0.48 },
+      uImageGain: { value: 1 },
+      uImageEdge: { value: new THREE.Vector2(0.1, 0.32) },
     },
     toneMapped: false, // as the flat disc: the Sun stays out of the tone mapper's way
     fog: false,
@@ -795,6 +1001,60 @@ export function createSunDetail(opts = {}) {
     fronts.push(front);
   }
 
+  // LOOPS: one mesh for every region's loops (loopGeometry), placed by the slots' uniforms each frame.
+  const loopBuilt = loopGeometry(tier);
+  const loopAt = [];
+  const loopAxis = [];
+  for (let i = 0; i < loopBuilt.slots; i++) { loopAt.push(new THREE.Vector4(0, 1, 0, LOOP_SPAN_MIN)); loopAxis.push(new THREE.Vector4(1, 0, 0, 0)); }
+  const loops = new THREE.Mesh(loopBuilt.geometry, new THREE.ShaderMaterial({
+    name: 'sun-loops',
+    vertexShader: LOOP_VERT(loopBuilt.slots),
+    fragmentShader: LOOP_FRAG,
+    uniforms: { uLoopAt: { value: loopAt }, uLoopAxis: { value: loopAxis } },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    toneMapped: false,
+  }));
+  loops.name = 'sun-loops';
+  loops.userData.kind = 'loops';
+  loops.renderOrder = 2;
+  loops.visible = false;
+  mesh.add(loops);
+  let looped = 0;
+  const _loop = { span: 0, axis: [1, 0, 0] };
+
+  // THE FACE OF THE DAY: asked for once, the first time the detail is on (scene/sunimage.js).
+  let image = null;        // loadSunImage()'s answer
+  let imageMod = null;     // scene/sunimage.js
+  let imageAsked = false;
+  let imageFailed = false;
+  let imageArrived = 0;
+  let imageOn = 0;
+  let imageFrameNow = null;
+  const _frame = { c: [0, 0, 1], w: [1, 0, 0], n: [0, 1, 0] };
+  let disposed = false;
+  const show = { image: true, loops: true }; // the probe's before (debug), nothing else
+  const wallNow = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
+  function askImage() {
+    imageAsked = true;
+    const loader = opts.imageLoader || ((t) => import('./sunimage.js').then((mod) => mod.loadSunImage({ tier: t }).then((img) => ({ mod, img }))));
+    Promise.resolve().then(() => loader(tier)).then((got) => {
+      const img = got && got.img;
+      if (disposed || latched) { if (img) img.dispose(); return; }
+      if (!img || !got.mod) { imageFailed = true; return; }
+      imageMod = got.mod;
+      image = img;
+      imageArrived = wallNow();
+      const u = material.uniforms;
+      u.uImage.value = img.texture;
+      u.uImageR.value = img.radiusUv;
+      u.uImageGain.value = imageMod.IMAGE_GAIN;
+      u.uImageEdge.value.set(imageMod.IMAGE_EDGE[0], imageMod.IMAGE_EDGE[1]);
+    }).catch(() => { imageFailed = true; });
+  }
+
   let flares = [];
   let cmes = [];
   let regionNumbers = new Set();
@@ -840,6 +1100,8 @@ export function createSunDetail(opts = {}) {
       for (const sheet of proms) sheet.visible = false;
       material.uniforms.uFlareCount.value = 0;
       promNow = []; flaresNow = [];
+      loops.visible = false; looped = 0;
+      imageOn = 0;
     }
     if (sprite && sprite.material) sprite.material.opacity = detail ? 0 : spriteOpacity;
   }
@@ -907,6 +1169,25 @@ export function createSunDetail(opts = {}) {
       // Only where the grain is drawn is there a drawn surface to give way to (never at tier 0).
       u.uClose.value = closeShare(fromCentre) * u.uGrain.value;
 
+      // THE FACE OF THE DAY: where it was taken from, carried round by the turning since; faded in as it
+      // arrives and as the disc grows, out with its age, and under Film from very close where the drawn
+      // surface carries the picture (uClose is 0 under Measured, where the grain is off).
+      if (!imageAsked && !latched) askImage();
+      imageOn = 0;
+      imageFrameNow = null;
+      if (image && imageMod && meridian && show.image) {
+        imageFrameNow = imageMod.imageFrame(image.observedMs, _e, tMs, _frame);
+        if (imageFrameNow) {
+          const grow = Math.min(1, Math.max(0, (share - SUN_DETAIL_AT * 0.8) / (SUN_DETAIL_AT * 1.2)));
+          const arrive = Math.min(1, Math.max(0, (wallNow() - imageArrived) / IMAGE_ARRIVE_MS));
+          imageOn = imageFade(image.observedMs, tMs) * grow * grow * (3 - 2 * grow) * arrive * (1 - u.uClose.value);
+          u.uImageC.value.fromArray(imageFrameNow.c);
+          u.uImageW.value.fromArray(imageFrameNow.w);
+          u.uImageN.value.fromArray(imageFrameNow.n);
+        }
+      }
+      u.uImageOn.value = imageOn;
+
       // The corona's plane is the plane of the sky.
       corona.quaternion.copy(_plane);
       // Where the Sun's north is in that plane: its pole against the camera's right and up.
@@ -943,12 +1224,18 @@ export function createSunDetail(opts = {}) {
       // Flares: the strongest now showing at regions that have a place today.
       flaresNow = listed && flares.length ? flaresAt(flares, tMs, regionNumbers) : [];
       let lit = 0;
+      const measured = !drawnUnder(look, UNDER_MEASURED.loops);
+      const kept = [];
       for (const now of flaresNow) {
         const region = regions.find((r) => r.region === now.flare.region);
         if (!region || !spotDirection(region, _e, tMs, _s)) continue;
+        // Under Measured, on the face SDO's picture covers, only the picture: no kernel of ours on it.
+        if (measured && imageFrameNow && imageOn * imageMod.imageWeight(_s, imageFrameNow) > 0.5) continue;
         flareSlots[lit].set(_s[0], _s[1], _s[2], now.brightness);
+        kept.push(now);
         lit += 1;
       }
+      flaresNow = kept;
       u.uFlareCount.value = lit;
 
       // Prominences: the regions near the limb this camera sees, biggest first, up to the tier's cap.
@@ -992,7 +1279,25 @@ export function createSunDetail(opts = {}) {
       }
       for (let i = promNow.length; i < before; i++) proms[i].visible = false;
 
+      // Loops over today's regions, biggest first, under Film only; they fade in with the prominences.
+      looped = 0;
+      if (listed && closeness > 0 && show.loops && drawnUnder(look, UNDER_MEASURED.loops)) {
+        for (const region of regions) {
+          if (looped >= loopBuilt.slots) break;
+          if (!spotDirection(region, _e, tMs, _s)) continue;
+          loopFrame(_s, region.latDeg, region.areaMsh, _loop);
+          loopAt[looped].set(_s[0], _s[1], _s[2], _loop.span);
+          loopAxis[looped].set(_loop.axis[0], _loop.axis[1], _loop.axis[2], closeness);
+          looped += 1;
+        }
+      }
+      for (let i = looped; i < loopBuilt.slots; i++) loopAxis[i].w = 0;
+      loops.visible = looped > 0;
+
       let key = promNow.length ? 'p' + promNow.length : '';
+      if (looped) key += 'l' + looped;
+      if (imageOn > 0) key += 'i';
+      else if (imageFailed) key += 'n';
       for (const now of flaresNow) key += 'f' + now.flare.region + now.flare.cls;
       activityKey = key + cmeKey;
     },
@@ -1009,16 +1314,31 @@ export function createSunDetail(opts = {}) {
     },
     /** The frame latch tripped: back to the flat disc and the round glow, for good. */
     latch() { latched = true; wear(false); for (const front of fronts) front.visible = false; cmesNow = []; activityKey = ''; },
+    /** Tools only (the `sun` look probe's before): draw SDO's picture and the loops, or not. Nothing in the app calls it. */
+    debug(o = {}) {
+      if (typeof o.image === 'boolean') show.image = o.image;
+      if (typeof o.loops === 'boolean') show.loops = o.loops;
+      return { ...show };
+    },
     state() {
       return { on, latched, grain: material.uniforms.uGrain.value, level: material.uniforms.uLevel.value, close: material.uniforms.uClose.value, spots: groups, circles: drawn, pairs, regions: regions.length,
         observedMs: regions.length ? regions[0].observedMs : null, corona: corona.material.uniforms.uOpacity.value,
         prominences: promNow.slice(),
         flares: flaresNow.map((f) => ({ region: f.flare.region, cls: f.flare.cls, maxMs: f.flare.maxMs, brightness: f.brightness })),
         cmes: cmesNow.map((x) => ({ id: x.cme.id, startMs: x.cme.startMs, speedKmS: x.cme.speedKmS, radii: x.radii, opacity: x.opacity })),
-        flareList: flares.length, cmeList: cmes.length };
+        flareList: flares.length, cmeList: cmes.length,
+        loops: looped,
+        // SDO's picture: null until asked, { failed } when there is none, else its date and how strongly it is drawn now.
+        image: image ? { observedMs: image.observedMs, wavelengthA: image.wavelengthA, instrument: image.instrument, file: image.file, shown: imageOn, side: image.side, gpuBytes: image.gpuBytes }
+          : (imageFailed ? { failed: true, shown: 0 } : null) };
     },
     dispose() {
+      disposed = true;
       wear(false);
+      mesh.remove(loops);
+      loopBuilt.geometry.dispose();
+      loops.material.dispose();
+      if (image) { image.dispose(); image = null; }
       mesh.remove(corona);
       corona.geometry.dispose();
       corona.material.dispose();

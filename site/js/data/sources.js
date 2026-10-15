@@ -422,6 +422,20 @@ export const SOURCES = {
     attribution: 'Coronal mass ejections: NASA DONKI (M2M Space Weather Analysis Office, CCMC)',
     note: '48.1 kB, the analyses of the last thirty days, measured 2026-10-12.',
   },
+  // 0076 W1-d: the Sun's face of the day (scene/sunimage.js). The archive sends no CORS header: our saved copy only.
+  'sdo-aia-171': {
+    id: 'sdo-aia-171',
+    registryId: 'sdo-aia-171',
+    label: 'NASA SDO — the Sun in extreme ultraviolet (AIA 171 Å)',
+    publisher: 'NASA Solar Dynamics Observatory',
+    url: 'https://sdo.gsfc.nasa.gov/assets/img/browse/',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 72 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'The Sun\'s face of the day: courtesy of NASA/SDO and the AIA, EVE, and HMI science teams',
+    note: '251.5 kB saved (a 188 kB picture in base64), the newest of the day, measured 2026-10-15.',
+  },
 
   // The wind overlay's field (scene/wind.js, data/wind.js; internal #552). Read only from our saved copy:
   // `browser: false`, registry/sources.yaml `wind` says why. Nothing calls load() for it; the Earth data

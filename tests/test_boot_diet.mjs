@@ -146,6 +146,7 @@ const DEFERRED = {
   // 0076 W1-b (cmb.js)
   // 0076 W1-c (truthlegend.js)
   // 0076 W1-d (sunimage.js)
+  'js/scene/sunimage.js': 'SDO\'s picture of the Sun of the day: scene/sun.js fetches it the first time its detail comes on (internal spec 0076 W1-d)',
   // 0076 W1-e (perf.js)
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
