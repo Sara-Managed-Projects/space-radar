@@ -19,8 +19,11 @@
 //     outside above all, it is a picture of our sky wrapped on the place its light came from: nobody
 //     there would see it, and an observer there sees another map. The words say so (scene/shells.js).
 //     It is not a wall: nothing ends there, and the band past it says it is an illustration too.
-//   - From inside it is drawn only on the last third of the way out (from about 30 billion
-//     light-years), never as the backdrop of the deep sky: in visible light the sky behind the
+//   - It is painted on the sphere's INSIDE, as the sky is seen from within: from inside, on the last
+//     third of the way out (from about 30 billion light-years), it is the sky ahead; from outside, the
+//     near side is clear and the far side's inside is seen through it. (The first look, 2026-10-15,
+//     painted the outside too: from just outside, a few texels of a one-degree map filled the view as
+//     blurred blobs.) It is never the backdrop of the deep sky: in visible light the sky behind the
 //     galaxies is dark, and a microwave map behind them would say otherwise.
 //
 // THE COLOUR. A diverging scale of this map's own, dark at the average so the sphere never washes the
@@ -99,15 +102,13 @@ export function colourAt(uk) {
 
 const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 /**
- * How strongly the map is drawn from a camera `ratio` of its radius from the Sun. Inside: nothing
- * before two thirds of the way out (30 billion light-years), all of it from 0.8, gone again in the
- * last 3 % so the camera never passes through a coloured wall. Outside: in over the first 1.5 %, and
- * out by 150 radii, as the horizon's wire is. Negative is inside, positive outside.
+ * How strongly the map is drawn from a camera `ratio` of its radius from the Sun: nothing before two
+ * thirds of the way out (30 billion light-years), all of it from 0.8, the same through the surface
+ * (only its inside is painted, so there is no wall to pass through) and outside, gone by 150 radii.
  */
 export function cmbOpacity(ratio) {
   if (!(ratio > 0)) return 0;
-  if (ratio < 1) return 0.72 * smooth(0.66, 0.8, ratio) * (1 - smooth(0.97, 1.0, ratio));
-  return 0.92 * smooth(1.0, 1.015, ratio) * (1 - smooth(40, 150, ratio));
+  return 0.8 * smooth(0.66, 0.8, ratio) * (1 - smooth(40, 150, ratio));
 }
 
 const VERT = /* glsl */ `
@@ -166,7 +167,7 @@ export function createCmb(parent, opts = {}) {
       uStops: { value: STOP_RGB.map((c) => new THREE.Vector3(...c)) },
       uOpacity: { value: 0 },
     },
-    transparent: true, depthWrite: false, depthTest: true, toneMapped: false, side: THREE.FrontSide,
+    transparent: true, depthWrite: false, depthTest: true, toneMapped: false, side: THREE.BackSide, // the inside only
   });
   const geom = new THREE.SphereGeometry(1, 128, 64);
   const mesh = new THREE.Mesh(geom, mat);
@@ -193,7 +194,6 @@ export function createCmb(parent, opts = {}) {
     mesh.visible = k > 0.005;
     if (mesh.visible) {
       mesh.scale.setScalar(rUnits);
-      mat.side = ratio < 1 ? THREE.BackSide : THREE.FrontSide;
       mat.uniforms.uOpacity.value = k;
     }
     return k;

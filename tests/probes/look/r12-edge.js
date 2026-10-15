@@ -1,7 +1,7 @@
 // r12-edge: the way out to the edge, and the microwave background's map at the horizon (internal spec
 // 0076 stage W1-b, internal #781). On the Local Group's stage, the camera round the Sun: the local
 // volume from 25 Mly, 1, 20 and 40 billion light-years (the map from inside, with its scale), the
-// horizon from just outside with the map on its near wall, the same turned 60 degrees, and the map's
+// horizon from just outside with the map seen through it on the far side's inside, the same turned 60 degrees, and the map's
 // edge at 50 billion light-years as the climb flies there (the Stars tab's "The edge of the map").
 //
 // THE BEFORE IN THE SAME RUN. Where the map is drawn the scene is photographed twice from the same
@@ -98,19 +98,19 @@ try {
   else if (!c40.drawn || c40.side !== 'inside') out.problems.push('the map is not drawn from inside at 40 billion light-years');
   if (!/oldest light/.test(p40.after.spoken || '') || !/Colour scale/.test(p40.after.spoken || '')) out.problems.push(`the live region does not hold the map's words: ${p40.after.spoken}`);
   put(47.5);
-  const p47 = await pair('e05-horizon-outside', 'the horizon from just outside, 47.5 billion light-years: the map on its near wall, the horizon\'s words with the map\'s and its scale');
+  const p47 = await pair('e05-horizon-outside', 'the horizon from just outside, 47.5 billion light-years: the map on the far side\'s inside, seen through the clear near side; the horizon\'s words with the map\'s and its scale');
   const c47 = p47.after.shells && p47.after.shells.find((s) => s.id === 'cmb');
   if (!c47 || !c47.drawn || c47.side !== 'outside') out.problems.push('the map is not drawn from outside the horizon');
   // Turned 60 degrees round the Sun at the same distance: another part of the sky's map on the wall.
   rig.flyTo({ azimuth: rig.state.azimuth + Math.PI / 3, polar: rig.state.polar, ms: 0 });
-  await pair('e06-horizon-turned60', 'the same distance, turned 60 degrees round the Sun: another part of our sky on the near wall');
+  await pair('e06-horizon-turned60', 'the same distance, turned 60 degrees round the Sun: another part of our sky through the horizon');
   // The map's edge as a visitor gets there: the Stars tab's row, one flight from a billion light-years.
   put(1);
   await sleep(2500);
   const climb = sr.wantClimb ? await sr.wantClimb() : null;
   if (climb) {
     await new Promise((resolve) => { climb.toEdge({ onArrive: resolve }); setTimeout(resolve, 45000); });
-    await pair('e07-edge-by-the-climb', '"The edge of the map": 50 billion light-years, flown there by the climb; the horizon\'s near wall with the map, the band past it said to be an illustration');
+    await pair('e07-edge-by-the-climb', '"The edge of the map": 50 billion light-years, flown there by the climb; the map through the horizon\'s wire, the band past it said to be an illustration');
   } else out.problems.push('no climb to fly to the edge');
   out.mapBytes = mapBytes();
   if (out.mapBytes && out.mapBytes.requests !== 1) out.problems.push(`the map's picture was asked for ${out.mapBytes.requests} times`);

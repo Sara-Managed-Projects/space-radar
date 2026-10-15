@@ -57,6 +57,8 @@ export const RADIO_SINCE_MS = Date.UTC(1901, 11, 12, 12);
 export const HORIZON_LY = horizonLy();
 /** Where the microwave background we see left from, now: data/cosmology.js, just inside the horizon. */
 export const CMB_LY = cmbLy();
+/** The highest a label's top may stand on the canvas (NDC): under the search box on a phone. */
+const TOP_NDC = 0.8;
 /** The map's module and picture are fetched from this share of the way out (scene/deep/cmb.js LOAD_RATIO). */
 export const CMB_LOAD_RATIO = 0.2;
 
@@ -163,7 +165,7 @@ function textSprite(text, colour, plate = false) {
   let w = 0;
   lines.forEach((line, i) => {
     if (typeof line === 'string') { c2.font = fontOf(i); w = Math.max(w, c2.measureText(line).width); }
-    else { c2.font = fontOf(1, 0.85); w = Math.max(w, 420, c2.measureText(`${line.left}   ${line.mid}   ${line.right}`).width); }
+    else { c2.font = fontOf(1, 0.85); w = Math.max(w, 420, 1.25 * c2.measureText(`${line.left}${line.mid}${line.right}`).width); }
   });
   const pad = plate ? 20 : 8;
   canvas.width = Math.ceil(w) + 2 * pad;
@@ -191,7 +193,7 @@ function textSprite(text, colour, plate = false) {
       c.fillText(line, canvas.width / 2, y + LH / 2);
     } else {
       // The bar: the map's own seven colours at equal steps, as scene/deep/cmb.js mixes them.
-      const bw = Math.min(w, Math.max(420, w * 0.8));
+      const bw = w; // as wide as the widest line: its three numbers never meet
       const x0 = (canvas.width - bw) / 2;
       const g = c.createLinearGradient(x0, 0, x0 + bw, 0);
       (line.stops || []).forEach((s, k, all) => g.addColorStop(k / (all.length - 1), s));
@@ -241,6 +243,7 @@ export function createShells(scene, opts = {}) {
   const _axis = new THREE.Vector3();
   const _q = new THREE.Quaternion();
   const _dir = new THREE.Vector3();
+  const _ndc = new THREE.Vector3();
   /** A label's height on the screen, made smaller where its widest line would not fit the view (a phone). */
   const fitScale = (sprite, lh, camera) => {
     const px = camera.projectionMatrix.elements[0] || 1; // NDC per unit of a sizeAttenuation:false sprite
@@ -349,12 +352,16 @@ export function createShells(scene, opts = {}) {
         sh.label.visible = sh.wordsOn;
         if (sh.label.visible) {
           fitScale(sh.label, h * (1 + 0.8 * (sh.label.userData.lines - 1)), camera);
-          // On the near wall, as high as the label's height (on screen: scale.y times the projection's
-          // y scale) lets it stay inside the view.
-          const tanH = Math.tan(halfFov);
-          const tall = sh.label.scale.y * (camera.projectionMatrix.elements[5] || 1 / tanH);
-          const alpha = Math.min(halfFov * 0.42, Math.atan(Math.max(-0.5, 0.94 - tall) * tanH));
-          if (d / r < 2.5 && wallPoint(camera, r, alpha, _ray)) sh.label.position.copy(_ray);
+          // On the near wall, a little above the view's centre; a tall label (the map's words with the
+          // horizon's) is let down until its top is under the page's own controls (TOP_NDC). Measured
+          // through the projection itself: the app moves the view's centre off the canvas's.
+          let placed = d / r < 2.5 && wallPoint(camera, r, halfFov * 0.42, _ray);
+          if (placed) {
+            const tall = sh.label.scale.y * camera.projectionMatrix.elements[5];
+            const over = _ndc.copy(_ray).project(camera).y + tall - TOP_NDC;
+            if (over > 0) placed = wallPoint(camera, r, Math.atan(Math.tan(halfFov * 0.42) - over * Math.tan(halfFov)), _ray);
+          }
+          if (placed) sh.label.position.copy(_ray);
           else sh.label.position.copy(_up).multiplyScalar(r * 1.02);
           sh.label.material.opacity = Math.min(1, (k - 0.25) / 0.4);
         }

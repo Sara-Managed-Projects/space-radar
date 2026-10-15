@@ -1761,7 +1761,7 @@ Object.assign(COPY, {
     // The map is measured; where it is put is not, and the third line says so. Short enough for a phone.
     cmbTitle: 'The oldest light, as our sky shows it',
     cmbWhen: 'It left about {k} years after the Big Bang',
-    cmbPainted: 'Painted on the sphere it left from: an illustration',
+    cmbPainted: 'Painted inside the sphere it left from: an illustration',
     cmbElsewhere: 'From anywhere else the map would be different',
     cmbCold: '−{n} µK colder',
     cmbMid: 'average {t} K',

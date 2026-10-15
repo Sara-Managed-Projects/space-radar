@@ -117,8 +117,9 @@ const galDir = (lDeg, bDeg) => ({ x: Math.cos(bDeg * DEG) * Math.cos(lDeg * DEG)
   const r = S.CMB_LY;
   check(C.cmbOpacity(1e9 / r) === 0 && C.cmbOpacity(20e9 / r) === 0 && C.cmbOpacity(29.5e9 / r) === 0, 'from 1 and 20 billion light-years the map is not drawn: the deep sky keeps its dark sky');
   check(C.cmbOpacity(40e9 / r) > 0.5, 'from 40 billion light-years, on the way out, it is');
-  check(C.cmbOpacity(0.999) < 0.01 && C.cmbOpacity(1.0) === 0 && C.cmbOpacity(1.0005) < 0.02, 'the camera never passes through a coloured wall: the map is gone at its surface');
-  check(C.cmbOpacity(50e9 / r) > 0.9, 'from the map\'s edge at 50 billion light-years, outside it, it is drawn whole');
+  check(Math.abs(C.cmbOpacity(0.999) - C.cmbOpacity(1.001)) < 1e-3, 'nothing changes as the camera passes the surface: only the inside is painted, so there is no wall to pass through');
+  check(/side: THREE\.BackSide/.test(read('site/js/scene/deep/cmb.js')) && !/FrontSide|DoubleSide/.test(read('site/js/scene/deep/cmb.js')), 'the map is on the sphere\'s inside only: from outside the near side is clear');
+  check(C.cmbOpacity(50e9 / r) > 0.75, 'from the map\'s edge at 50 billion light-years, outside it, it is drawn whole');
   check(C.LOAD_RATIO === S.CMB_LOAD_RATIO && C.cmbOpacity(C.LOAD_RATIO) === 0, 'the picture is fetched before the map is drawn');
   check(C.UNDER_MEASURED.map === 'same' && !/uTime|time/.test(read('site/js/scene/deep/cmb.js').split('const VERT')[1].split('export function createCmb')[0]), 'the map is measured and still: the same under Measured, nothing in its shader moves');
   const sh = read('site/js/scene/shells.js');
@@ -170,9 +171,9 @@ const galDir = (lDeg, bDeg) => ({ x: Math.cos(bDeg * DEG) * Math.cos(lDeg * DEG)
   check(!/µK/.test(said40), 'the scale is said in words, not read out as symbols');
   at(48); shells.update(cam, tMs);
   const s48 = cmbState();
-  check(s48.drawn && s48.side === 'outside' && mesh.material.side === THREE.FrontSide, 'from just outside the horizon the map is on the near wall');
+  check(s48.drawn && s48.side === 'outside' && mesh.material.side === THREE.BackSide, 'from just outside the horizon the map is seen on the far side\'s inside, through the clear near side');
   const said48 = shells.spoken();
-  for (const w of [COPY.deepCosmos.horizon, '46 billion light-years away now', COPY.deepCosmos.cmbTitle, 'Painted on the sphere it left from: an illustration', 'Colour scale', COPY.deepCosmos.edgeNothing]) {
+  for (const w of [COPY.deepCosmos.horizon, '46 billion light-years away now', COPY.deepCosmos.cmbTitle, 'Painted inside the sphere it left from: an illustration', 'Colour scale', COPY.deepCosmos.edgeNothing]) {
     check(said48.includes(w), `outside a screen reader is told "${w}"`);
   }
   check(!said48.includes(COPY.deepCosmos.cmbElsewhere), 'and not the inside\'s line');
