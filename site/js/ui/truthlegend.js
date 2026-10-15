@@ -172,11 +172,12 @@ export async function fillLegend(panel, record, ctx, m) {
     } catch { band = null; }
   }
   const L = legendRows(record, ctx, m, { picture, band, text });
-  const parts = [node('h3', 'sr-card__label', C.here), rowsList(L.here), node('h3', 'sr-card__label', C.words), rowsList(L.words)];
-  if (L.terms.length) {
-    parts.push(node('h3', 'sr-card__label', C.terms));
-    for (const g of L.terms) parts.push(node('p', 'sr-card__note', t(C.termLine, { term: g.term, say: g.say })));
-  }
+  // One <section> per group: the panel's 12 px rhythm (.sr-disc__body > * + *) falls between the groups,
+  // and inside each the microlabel keeps its own 8 px over its rows (seen at 320 px on 2026-10-15: as
+  // siblings, the label's own margin cancelled the gap and it sat on the row above).
+  const group = (title, ...kids) => { const sec = node('section', null); sec.appendChild(node('h3', 'sr-card__label', title)); for (const k of kids) sec.appendChild(k); return sec; };
+  const parts = [group(C.here, rowsList(L.here)), group(C.words, rowsList(L.words))];
+  if (L.terms.length) parts.push(group(C.terms, ...L.terms.map((g) => node('p', 'sr-card__note', t(C.termLine, { term: g.term, say: g.say })))));
   panel.replaceChildren(...parts);
   return L;
 }

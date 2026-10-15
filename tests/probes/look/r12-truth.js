@@ -127,6 +127,6 @@ try {
   look.errors.push('probe threw: ' + (e && e.stack || e));
 }
 
-const res = finish({ ...out, phone });
-if (out.problems.length) res.fail = out.problems.join(' | ');
-return res;
+// A field named `fail` fails the job (_prelude.js): only where a row exists and says something untrue.
+if (out.problems.length) out.fail = out.problems.join(' | ');
+return finish({ ...out, phone });
