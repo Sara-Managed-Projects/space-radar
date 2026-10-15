@@ -827,8 +827,10 @@ export const REAL_MODELS = {
     // derivative (registry/models.yaml says what was looked for), so each is BUILT here in code from
     // cited numbers (`made: 'dimensions'`: the card says "drawn as Psyche" and "shape built from
     // published dimensions and pictures; details simplified"). Each is built to the app's axes: the
-    // high-gain dish on +Z, the wings along X with their cells to +Y (Lucy's round arrays face +Z with
-    // its dish, as NASA draws them), so each flies as the generic probe did (`earth-dish`). The records
+    // high-gain dish on +Z, the wings along X with their cells ALSO toward +Z (the wings turned on their
+    // axis to face the way the dish does; Lucy's round arrays do, as NASA draws them), so each flies as
+    // the generic probe did (`earth-dish`, +Z at the centre of the stage: the Sun in the Solar System's
+    // view, where cells square to the dish would stand edge-on to the light). The records
     // are data/sample.js `deep-psyche`, `deep-lucy`, `deep-juice`, `deep-bepicolombo`, `deep-hera`.
     // BepiColombo is drawn as its cruise stack (transfer module, MPO, Mio in its sunshield): it comes
     // apart at Mercury in November 2026, and the record does not know when it has.
