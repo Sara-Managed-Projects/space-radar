@@ -432,8 +432,12 @@ def _matches(rec: dict, sel: dict) -> bool:
     return True
 
 
-def collect(reg: dict | None = None, *, domains: set | None = None) -> dict:
-    """{rows, classes, unresolved, ambiguous}: every record with its class, and what went wrong."""
+def collect(reg: dict | None = None, *, domains: set | None = None, tolerant: bool = False) -> dict:
+    """{rows, classes, unresolved, ambiguous}: every record with its class, and what went wrong.
+
+    `tolerant` skips a record set whose file is missing or unreadable (scripts/check_registry.py runs
+    the certainty rule in trees that hold the registry and little else); tests/test_coverage.py never
+    passes it, so there a missing set is a failure."""
     reg = reg or registry()
     classes = reg.get("classes") or []
     rows, unresolved, ambiguous = [], [], []
@@ -441,7 +445,13 @@ def collect(reg: dict | None = None, *, domains: set | None = None) -> dict:
         if domains is not None and d["id"] not in domains:
             continue
         loader = LOADERS.get(d.get("loader") or d["id"])
-        for rec in loader(d):
+        try:
+            recs = loader(d)
+        except (OSError, ValueError, KeyError, TypeError):
+            if not tolerant:
+                raise
+            continue
+        for rec in recs:
             pairs = [(c, sel) for c in classes for sel in (c.get("records") or []) if _matches(rec, sel)]
             hits = list({c["id"]: c for c, _ in pairs}.values())
             if not hits:

@@ -5611,7 +5611,7 @@ def check_certainty_words() -> None:
     import coverage
     domains = {"worlds", "rings", "dso", "photographs", "heroes", "exotics", "systems", "planets", "stars_notable",
                "other_light", "sites", "real_models", "model_kinds", "rockets", "oddities", "weather", "layers"}
-    for line in coverage.certainty_problems(coverage.collect(domains=domains)["rows"]):
+    for line in coverage.certainty_problems(coverage.collect(domains=domains, tolerant=True)["rows"]):
         domain, _, rest = line.partition("[")
         fail(f"{coverage.DOMAIN_FILES.get(domain, domain)}[{rest.split(']')[0]}]", rest.split("] ", 1)[1])
 
