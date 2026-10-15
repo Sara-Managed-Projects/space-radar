@@ -233,3 +233,6 @@ sources:
     cost: none
     checked: 2026-10-15
   # 0076 W1-d
+  # 0076 W2-a
+  # 0076 W2-c
+  # 0076 W2-e (asset_sources schema rows)

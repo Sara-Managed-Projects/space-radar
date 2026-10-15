@@ -153,6 +153,8 @@ const DEFERRED = {
   'js/scene/sunimage.js': 'SDO\'s picture of the Sun of the day: scene/sun.js fetches it the first time its detail comes on (internal spec 0076 W1-d)',
   // 0076 W1-e (perf.js)
   'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
+  // 0076 W2-a (traverse.js)
+  // 0076 W2-c (plumes.js)
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

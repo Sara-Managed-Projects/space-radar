@@ -1861,4 +1861,13 @@ Object.assign(COPY, {
     loopsOne: 'The gold loops over one of today’s active regions are illustrative: the place is NOAA’s, the shapes, heights and number are not. Under Measured they are taken off.',
     none: 'No picture of today’s Sun could be read, so the whole disc is drawn.',
   },
+
+  // RELEASE 1.2.0 wave 2 (internal spec 0076, design section 6): one empty block per stage, created by the lead
+  // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
+  // 0076 W2-a (the nearby worlds' sites and traverses)
+  r12Nearby: {},
+  // 0076 W2-b (the giants' rings and spots)
+  r12Giants: {},
+  // 0076 W2-c (plumes)
+  r12Plumes: {},
 });

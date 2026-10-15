@@ -1581,6 +1581,12 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
   from anywhere but the Sun. Planck's sharper map was not used: ESA's page for it gives "Licence: ESA
   Standard Licence", not CC BY-SA 3.0 IGO (read 2026-10-15).
 
+### LOLA, LROC traverses (0076 W2-a)
+
+### Ring and spot data (0076 W2-b)
+
+### Plume observations (0076 W2-c)
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —
