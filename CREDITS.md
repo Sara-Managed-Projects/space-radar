@@ -1548,6 +1548,20 @@ noao0001a, ESO eso1424a).
 
 ### Orion (0076 W1-a)
 
+The Orion Nebula's reconstruction (`site/js/scene/deep/orion.js`, its numbers in
+`registry/deepsky-heroes/orion.yaml`) is computed here from facts read in each source on 2026-10-15; no text,
+figure or model file of any of them is shipped. Lengths on the sky are turned into light-years at the record's
+distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and the card says so.
+
+| what | the numbers | from |
+|---|---|---|
+| the blister | a thin layer of ionised gas near the ionisation front on the near side of the molecular cloud OMC-1, its depth found from the H-alpha surface brightness with theta1 Ori C the only ionising star; the Bright Bar where the front turns toward us | Wen & O'Dell 1995, ApJ 438, 784; O'Dell 2001, ARA&A 39, 99 |
+| theta1 Ori C before the front | about 0.2 pc (0.65 ly) in front of the main ionisation front; the concave blister, revised to the south-west (Orion-S, not drawn) | O'Dell, Henney, Abel, Ferland & Arthur 2009, AJ 137, 367 (arXiv:0810.4375) |
+| the Veil | neutral gas 1 to 3 pc in front of the star, drawn at 2 pc; its closest layer 1.3 pc from it. The Dark Bay is drawn as the Veil's shadow: its optical depth is the photograph's darkness against its surroundings there (reconstructed) | Abel et al. 2004, ApJ 609, 247 (arXiv:astro-ph/0404399); Abel, Ferland & O'Dell 2019, ApJ (arXiv:1906.07779) |
+| the cluster | a core radius of 0.16 to 0.21 pc, elongated north-south; ellipticity 0.30 about 10 degrees from north-south. 400 to 1 600 stars are drawn; their places and brightnesses are seeded, not catalogued | Hillenbrand & Hartmann 1998, ApJ 492, 540; Da Rio et al. 2014 (arXiv:1409.2503) |
+| the Trapezium, theta2 Ori A and NU Ori | places, V magnitudes and spectral types of theta1 Ori A, B, C, D (HD 37020 to 37023), theta2 Ori A (HD 37041; its V from Hipparcos via HYG) and NU Ori (HD 37061); their depths are not measured, so they stand in theta1 Ori C's plane | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-15; the CDS terms ask the data be cited as "CDS/SIMBAD" |
+| the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_orion.py` -> `site/images/deep/orion/orion-light.webp`, an adaptation); near the Trapezium a sharper map of the same photograph, from ESO's large JPEG (16 877 x 13 107 px, downloaded for the bake and not shipped): a 13 arcmin square at 1.1" a pixel, its stars removed and its colours matched to the 640 px map (`site/images/deep/orion/orion-detail.webp`, an adaptation); the front's depth map (`site/data/deep/orion-front.bin`) is computed from the same picture and the numbers above. Under Deep the photograph's own stretch is ENHANCED | ESO eso1723a, credit ESO/G. Beccari, CC BY 4.0 (section 3 above): "ESO/G. Beccari"; stars removed and depth reconstructed by Space Radar |
+
 ### The CMB map (0076 W1-b)
 
 - **The microwave background at the horizon** (`site/images/deep/cmb/wmap-ilc-9yr.webp`, 119 400 B,

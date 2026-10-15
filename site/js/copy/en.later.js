@@ -1769,7 +1769,27 @@ Object.assign(COPY, {
   // RELEASE 1.2.0 wave 1 (internal spec 0076, design section 6): one empty block per stage, created by the lead
   // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
   // 0076 W1-a (Orion)
-  deepOrion: {},
+  deepOrion: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]` from the
+    // blocks it lists; until 'deepOrion' is among them the rows below carry the same news).
+    card: {
+      orion: 'Its light is taken from ESO’s photograph, its shape reconstructed after Wen and O’Dell (1995) and O’Dell (2001): a thin glowing layer on the near face of a dark cloud, the Trapezium about 0.2 parsecs in front of it. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook).
+    rows: {
+      'dso-m42': [
+        ['Its shape in depth', 'Reconstructed. Near the Trapezium it is measured: the glowing layer lies about 0.2 parsecs behind its brightest star. Farther out the depth follows the published picture of a bowl opening toward us, not a measurement.'],
+        ['Behind it', 'The dark molecular cloud the nebula is carved from. Seen from behind, the nebula is hidden in it.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-m43': [
+        ['Its shape in depth', 'Reconstructed: a smaller hollow on the same cloud, lit by the star NU Orionis. Its depth is not measured.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'The nebula’s glow comes from a thin layer where the light of the Trapezium’s brightest star eats into a dark cloud. Wen and O’Dell (1995) mapped how far that layer lies behind the star from how bright it is, since a nearer patch of it receives more light.',
+  },
   // 0076 W1-c (the truth on every card)
   r12Truth: {
     // ui/truthlegend.js: the legend inside every card, under the row "How we know" (copy/en.facts.js

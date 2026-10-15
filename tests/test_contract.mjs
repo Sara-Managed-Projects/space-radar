@@ -171,6 +171,8 @@ const CONTRACT = {
   'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag', 'facesReady'],
   'copy/en.js': ['COPY', 'compare'],
   // 0076 W1-a (orion.js)
+  // Release 1.2.0 stage W1-a (internal #782): the Orion hero, fetched when M42 is near; its pure parts for tests/test_hero_orion.mjs.
+  'scene/deep/orion.js': ['createHero', 'geometryOf', 'skyFrame', 'uvOf', 'coverAt', 'readFront', 'sampleFront', 'columnJs', 'samplesFor', 'sharesFor', 'paletteFor', 'starLook', 'sparkleLook', 'clusterOf', 'tintOf', 'pixelHash', 'SHAPE', 'SHADERS', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
   // 0076 W1-b (cmb.js): the microwave background's map; its frame, colours and fade are pure for tests/test_cmb.mjs.
   'scene/deep/cmb.js': ['createCmb', 'SCENE_FROM_GAL', 'galToScene', 'sceneToGal', 'galUv', 'greyToUk', 'colourAt', 'cmbOpacity', 'STOPS', 'SCALE_UK', 'MAP_URL', 'LOAD_RATIO', 'UNDER_MEASURED'],
   // 0076 W1-c (truthlegend.js): the legend inside every card; its rows and words are pure for tests/test_truthlegend.mjs.

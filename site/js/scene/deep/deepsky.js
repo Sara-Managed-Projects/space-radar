@@ -264,7 +264,8 @@ export function createDeepSky(THREE, env = {}) {
       const cls = rec ? classOf(rec) : 'other';
       if (!shipped || !rec) { if (h.hero) dropHero(h); continue; }
       if (rp >= (THRESHOLDS[cls] || THRESHOLDS.other).fetch) fetchHero(h);
-      let lv = q.latched ? Math.min(1, levels.get(h.def.record) || 0) : levels.get(h.def.record) || 0;
+      // (spec 0076 W1-a) a hero whose cheap path costs what a holder does (`latchSafe`) stays drawn under the latch and Low.
+      let lv = q.latched && !(h.hero && h.hero.latchSafe) ? Math.min(1, levels.get(h.def.record) || 0) : levels.get(h.def.record) || 0;
       if (lv >= 2 && drawnHeroes >= 2) lv = 1;
       if (lv >= 3 && drawnHeroes >= 1) lv = 2; // one costly hero at a time
       const share = fader.to(`hero:${h.def.id}`, lv >= 2 ? 1 : 0, now);

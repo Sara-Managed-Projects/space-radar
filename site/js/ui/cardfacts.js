@@ -1073,7 +1073,7 @@ export function honestyClause(record, m) {
     if (mine) return `${t(F.drawnLine, { drawn: mine.drawn })} ${mine.split}`;
     const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
     // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
-    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 
