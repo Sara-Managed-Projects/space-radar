@@ -75,7 +75,8 @@ const galDir = (lDeg, bDeg) => ({ x: Math.cos(bDeg * DEG) * Math.cos(lDeg * DEG)
   check(man.frame === 'galactic' && /column 0 at l = 0/.test(man.projection) && /row 0 at b = \+90/.test(man.projection), 'the manifest says the grid is Galactic, l from column 0, b = +90 at the top');
   check(man.scaleUk === C.SCALE_UK && new RegExp(`SCALE_UK = ${C.SCALE_UK}\\b`).test(build), `the picture's scale (${man.scaleUk} uK) is the module's (${C.SCALE_UK}) and the build's`);
   check(man.fileBytes === img.length && man.fileSha256 === createHash('sha256').update(img).digest('hex'), 'the manifest names the picture that is there');
-  check(img.length <= 600000, `the map is at most 600 kB (${img.length} B)`);
+  const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
+  check(img.length <= BUDGETS.deep_cmb_map_bytes && BUDGETS.deep_cmb_map_bytes <= 600000, `the map is within its budget, at most 600 kB (${img.length} B of ${BUDGETS.deep_cmb_map_bytes}; registry/budgets.yaml deep_cmb_map_bytes)`);
   const pinned = (build.match(/SOURCE_SHA256 = "([0-9a-f]{64})"/) || [])[1];
   check(pinned && man.source.sha256 === pinned && /lambda\.gsfc\.nasa\.gov/.test(man.source.url), 'the source is LAMBDA\'s file, pinned by SHA-256');
   check(/no copyright/.test(man.source.licence), 'and its licence is written down');
@@ -154,6 +155,14 @@ const galDir = (lDeg, bDeg) => ({ x: Math.cos(bDeg * DEG) * Math.cos(lDeg * DEG)
   const rC = (S.CMB_LY * LY_KM) / stage.unitKm;
   const rH = (S.HORIZON_LY * LY_KM) / stage.unitKm;
   check(mesh && Math.abs(mesh.scale.x / rC - 1) < 1e-9 && mesh.scale.x < rH && mesh.material.side === THREE.BackSide, 'its sphere is at the light\'s radius, inside the horizon, seen from within');
+  {
+    // What the map adds to a frame: its sphere, and the words at the foot (sprites here are none: no canvas).
+    const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
+    const drawn = [];
+    scene.traverseVisible((o) => { if (o.isMesh || o.isSprite) drawn.push(o.name); });
+    const added = drawn.filter((n) => n === 'shells:cmb' || n === 'shells:edge-label').length + 1; // + the foot's words on a page
+    check(added <= BUDGETS.deep_cmb_draw_calls, `the map adds ${added} draw calls, within registry/budgets.yaml deep_cmb_draw_calls (${BUDGETS.deep_cmb_draw_calls})`);
+  }
   const said40 = shells.spoken();
   for (const w of [COPY.deepCosmos.cmbTitle, 'about 370 000 years after the Big Bang', 'an illustration', COPY.deepCosmos.cmbElsewhere, 'Colour scale: blue is up to 200 millionths of a degree colder than the average of 2.7255 kelvin', 'WMAP']) {
     check(said40.includes(w), `from inside a screen reader is told "${w}" (${said40})`);
