@@ -143,6 +143,8 @@ const DEFERRED = {
   'js/data/hero-m31.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-m33.js': 'a hero\'s profile: with the coordinator',
   // 0076 W1-a (orion.js)
+  'js/scene/deep/orion.js': 'the Orion hero: the coordinator fetches it when M42 is near (release 1.2.0, internal #782)',
+  'js/data/hero-orion.js': 'a hero\'s profile: with the coordinator',
   // 0076 W1-b (cmb.js)
   // 0076 W1-c (truthlegend.js)
   // 0076 W1-d (sunimage.js)

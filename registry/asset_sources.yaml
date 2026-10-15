@@ -205,5 +205,18 @@ sources:
     cost: none
     checked: 2026-10-12
   # 0076 W1-a
+  # 2026-10-15 (internal spec 0076 stage W1-a, #782): the Orion hero's star places and magnitudes, read once from SIMBAD's
+  # TAP service into registry/deepsky-heroes/orion.yaml (five rows: theta1 Ori A to D, NU Ori); nothing is fetched by the site.
+  - id: cds-simbad
+    name: SIMBAD astronomical database (CDS, Strasbourg)
+    match: ["https://simbad.cds.unistra.fr/"]
+    url: https://simbad.cds.unistra.fr/
+    licence: CDS General Terms; public-information datasets under an open licence, cited as CDS/SIMBAD
+    licence_read: "Datasets containing only Public Information are distributed under an Open Licence or ODbL"
+    licence_url: https://cds.unistra.fr/legals/
+    licence_note: "The same page: 'The Data Sets must be cited in any work or product that uses them' and at least 'CDS/SIMBAD'; CREDITS.md section 3l (Orion) does. Page dated 7 January 2026."
+    account: none
+    cost: none
+    checked: 2026-10-15
   # 0076 W1-b
   # 0076 W1-d

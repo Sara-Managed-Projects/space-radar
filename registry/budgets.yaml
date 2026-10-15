@@ -161,5 +161,10 @@ budgets:
   - {id: deep_localvolume_bytes, value: 300000, unit: B, since: 2026-10-14, reason: "spec 0075 design section 11: the tile at most 300 kB; 49 214 B with its manifest on 2026-10-14 (800 galaxies of the Updated Nearby Galaxy Catalog)"}
   - {id: deep_localvolume_draw_calls, value: 2, unit: calls, since: 2026-10-14, reason: "spec 0075 requirement 18: at most five draw calls per visible data class; the tile is one call of points, and one more while a galaxy's range of distance is shown"}
   # 0076 W1-a
+  # Release 1.2.0 stage W1-a (internal spec 0076, design section 4; internal #782): the Orion hero's assets, fetched
+  # when M42 is near (scripts/build_deep_orion.py: the light map and the front's map, with their manifest), and
+  # its draw calls (the gas, the stars). tests/test_hero_orion.mjs reads both.
+  - {id: deep_orion_bytes, value: 300000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 20 946 B of light map + 160 016 B of front + its manifest measured on 2026-10-15"}
+  - {id: deep_orion_draw_calls, value: 2, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the gas and the stars are one call each"}
   # 0076 W1-b
   # 0076 W1-d

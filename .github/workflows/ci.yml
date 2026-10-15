@@ -1040,6 +1040,10 @@ jobs:
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs
       # 0076 W1-a
+      - name: "the Orion hero: the blister and the Trapezium, the photograph within 5 % on our line (internal spec 0076 W1-a, #782)"
+        run: node tests/test_hero_orion.mjs
+      - name: "the Orion hero's light and front are the bake of the photograph and the profile"
+        run: python3 scripts/build_deep_orion.py --check
       # 0076 W1-b
       # 0076 W1-c
       # 0076 W1-d

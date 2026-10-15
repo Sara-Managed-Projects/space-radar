@@ -1,0 +1,92 @@
+{
+  "light": {
+    "file": "site/images/deep/orion/orion-light.webp",
+    "bytes": 20946,
+    "sha256": "565b7726d187a82de1d6aa2d9fc7df6df9475409dc02262410945b38ba04dfbe",
+    "stars_removed_px": 76664,
+    "size": [
+      640,
+      497
+    ]
+  },
+  "depth": {
+    "file": "site/data/deep/orion-front.bin",
+    "bytes": 160016,
+    "sha256": "c13270cbe8330eb02503ede92be96bfdc873f4b9e97828dd367f2910125505b5",
+    "grid": [
+      160,
+      125
+    ],
+    "z_ly": [
+      -0.653,
+      3.813
+    ],
+    "z_at_star_ly": -0.6523,
+    "max_slope": 2.204,
+    "veil_tau_max": 1.5
+  },
+  "from": "site/images/nebulae/m42.webp",
+  "from_sha256": "4f8bea4e9d67f3164466f8baaef7e99632f631e8bcf2aba7d3a64073c4aa2290",
+  "params": {
+    "distance_ly": 1344,
+    "star": [
+      83.8186096,
+      -5.3897005
+    ],
+    "picture": {
+      "ra_deg": 83.78771,
+      "dec_deg": -5.48198,
+      "width_arcmin": 59.95,
+      "height_arcmin": 46.56,
+      "north_deg": 0.28
+    },
+    "front": {
+      "star_in_front_pc": 0.2,
+      "bowl": {
+        "rho_s_ly": 2.0,
+        "slope": 0.55,
+        "rim_ly": 4.0
+      },
+      "bar": {
+        "offset_arcmin": 2.0,
+        "normal_pa_deg": 145,
+        "length_arcmin": 4.5,
+        "width_arcmin": 1.0,
+        "rise_ly": 0.9
+      },
+      "relief": {
+        "power": 0.5,
+        "max_ln": 0.4,
+        "max_ly": 0.3,
+        "fine_arcmin": 0.4,
+        "wide_arcmin": 3.0,
+        "from_ly": 0.3,
+        "full_ly": 1.0
+      },
+      "grid": [
+        160,
+        125
+      ]
+    },
+    "m43": {
+      "star": [
+        83.8806871,
+        -5.2673839
+      ],
+      "depth_ly": 0.35,
+      "radius_ly": 1.4,
+      "star_in_front_ly": 0.3
+    },
+    "cloud": {
+      "blur_arcmin": 3.0
+    },
+    "veil": {
+      "east_arcmin": 5.0,
+      "north_arcmin": 1.5,
+      "a_arcmin": 4.5,
+      "b_arcmin": 2.5,
+      "tau_max": 1.5
+    }
+  },
+  "credit": "ESO/G. Beccari (eso1723a), CC BY 4.0; stars removed and depth reconstructed by Space Radar (scripts/build_deep_orion.py)"
+}
