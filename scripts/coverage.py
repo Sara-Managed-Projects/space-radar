@@ -133,7 +133,12 @@ def load_rings(_d):
 
 
 def load_dso(_d):
-    doc = json.loads((ROOT / "site" / "data" / "dso.json").read_text(encoding="utf-8"))
+    built = ROOT / "site" / "data" / "dso.json"
+    # An empty file is the names-not-bytes tree (tests/test_growth.py), not a build. The same
+    # rule as check_registry.py's cross-check of dso-hand.yaml: a placeholder is not JSON.
+    if not built.exists() or built.stat().st_size == 0:
+        return []
+    doc = json.loads(built.read_text(encoding="utf-8"))
     hand = {r.get("id"): r for r in (_yaml("dso-hand.yaml").get("objects") or []) if isinstance(r, dict)}
     out = []
     for o in doc.get("objects") or []:
