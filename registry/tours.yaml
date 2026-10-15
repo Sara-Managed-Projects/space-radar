@@ -4643,7 +4643,8 @@ tours:
     stage: stellar
     clock: as-found
     return: true
-    og_stop: 3
+    # The share picture: the LMC turned, its disc and H II regions (stop 2 at the end of its turn).
+    og_stop: 2
     stops:
       - id: from-home
         target: {record: dso-lmc}

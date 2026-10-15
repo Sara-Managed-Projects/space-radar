@@ -5350,7 +5350,7 @@ export const TOURS = [
 "clock": "as-found",
 "group": "beyond",
 "next": "into-the-helix",
-"og_stop": 3,
+"og_stop": 2,
 "hides": [
 "exoplanets",
 "systems",
