@@ -416,7 +416,7 @@ void main() {
   // An H II region: a crisp edge and a shell brighter toward it (its ionisation front), not a soft disc
   // (the Tarantula review). R136's core: compact, falling off fast.
   float a = vCore > 0.5 ? exp( -7.0 * r2 ) * ( 1.0 - r2 )
-                        : ( 1.0 - smoothstep( 0.9, 1.0, r ) ) * ( 0.3 + 0.7 * smoothstep( 0.45, 0.93, r ) );
+                        : ( 1.0 - smoothstep( 0.93, 1.0, r ) ) * ( 0.12 + 0.88 * smoothstep( 0.72, 0.95, r ) );
   gl_FragColor = vec4( vCol * a, 1.0 );
 }
 `;
@@ -508,9 +508,11 @@ void main() {
       if ( tf >= ta && tf < ta + dt && tf > 0.0 ) {
         vec3 pf = ro + rd * tf;
         vec3 nf = normalize( pf - uR136 );
-        float mu = max( abs( dot( nf, rd ) ), 0.15 );
+        float mu = abs( dot( nf, rd ) );
+        // limb-brightened, but a grazing ray fades: the first look drew the wall's edge as a glass ball's rim
+        float limb = smoothstep( 0.04, 0.3, mu ) / max( mu, 0.3 );
         float wf = arcs( pf ) * ( 0.5 + 0.5 * dot( nf, uAway ) ) * ( 1.0 - smoothstep( 0.85, 1.0, length( pf ) ) );
-        C += T * tint( pf, frontCol ) * uFront.x * wf / mu * ( 1.0 - uPhotoT * coverT( pf ) );
+        C += T * tint( pf, frontCol ) * uFront.x * wf * limb * ( 1.0 - uPhotoT * coverT( pf ) );
       }
     }
     vec3 p = ro + rd * ( ta + jitter * dt );
@@ -524,11 +526,13 @@ void main() {
     float dust = 0.0, rim = 0.0;
     if ( uNoiseAmp > 0.0 ) {
       float n1 = texture( uNoise, p * 0.45 + vec3( 0.13, 0.71, 0.37 ) ).r;
-      float n2 = texture( uNoise, p * 1.1 + vec3( 0.59, 0.23, 0.11 ) ).r;
-      rho *= mix( 1.0, 0.3 + 1.6 * n1, uNoiseAmp );
-      float out1 = smoothstep( uShell.x * 0.8, uShell.x * 1.3, rq ) * ( 1.0 - smoothstep( 0.7, 0.95, r ) );
-      dust = uNoiseAmp * smoothstep( 0.6, 0.72, n2 ) * out1;
-      rim = uNoiseAmp * smoothstep( 0.5, 0.6, n2 ) * ( 1.0 - smoothstep( 0.6, 0.68, n2 ) ) * out1 / ( 1.0 + 6.0 * rq * rq );
+      float n2 = texture( uNoise, p * 0.6 + vec3( 0.59, 0.23, 0.11 ) ).r;
+      // patchy: filaments with dark gaps between, never an even pink (the review: a screen-filling haze)
+      rho *= mix( 1.0, 0.05 + 2.2 * n1 * n1, uNoiseAmp );
+      // the clouds lie in a band just outside the front (the second look: a whole sphere of them read as a cauliflower)
+      float band = smoothstep( uShell.x * 0.9, uShell.x * 1.15, rq ) * ( 1.0 - smoothstep( uShell.x * 1.5, uShell.x * 2.1, rq ) );
+      dust = uNoiseAmp * smoothstep( 0.62, 0.74, n2 ) * band;
+      rim = uNoiseAmp * smoothstep( 0.54, 0.62, n2 ) * ( 1.0 - smoothstep( 0.62, 0.68, n2 ) ) * band / ( 1.0 + 6.0 * rq * rq );
     }
     vec3 col = tint( p, mix( uColO3, uColHa, smoothstep( 0.06, 0.38, rq ) ) );
     float w = 1.0 - uPhotoT * coverT( p );
@@ -648,7 +652,7 @@ export function createHero(THREE, env = {}) {
       uAway: { value: new THREE.Vector3(...toGal(g, g.u).map((v) => v * g.unit)).normalize() },
       uShell: { value: new THREE.Vector2(((nebL.shell && nebL.shell.radius_ly) || 300) / g.unit / tarR, ((nebL.shell && nebL.shell.width_ly) || 150) / g.unit / tarR) },
       uColHa: { value: hex(colours.Ha, '#ff6b8c') }, uColO3: { value: hex(colours.OIII, '#73f2e6') },
-      uK: { value: 0.12 }, uSigma: { value: 0.9 }, uFront: { value: new THREE.Vector2(0.32, 1.4) }, uNoiseAmp: { value: 0 }, uCover: { value: 1 }, uPhotoT: { value: 0 },
+      uK: { value: 0.07 }, uSigma: { value: 1.2 }, uFront: { value: new THREE.Vector2(0.4, 1.6) }, uNoiseAmp: { value: 0 }, uCover: { value: 1 }, uPhotoT: { value: 0 },
       uPicC: { value: new THREE.Vector3(0, 0, 50) }, uPicR: { value: new THREE.Vector3() }, uPicU: { value: new THREE.Vector3() },
       uTPic: { value: null }, uTPicOn: { value: 0 }, uTPicLook: { value: new THREE.Vector3(1, 1, 1) },
       uNoise: { value: null }, uSteps: { value: 10 },
