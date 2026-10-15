@@ -213,9 +213,17 @@ export function spotShift(place, mapU, tMs) {
 // read 2026-10-16: Uranus 0.488, Jupiter 0.538). `stretch` is how many times brighter than that each
 // exposure (scene/exposure.js) draws it. The card says each number (copy/en.later.js r12Giants.rings).
 //
-// JUPITER'S RING. Two parts from NASA's Jupiter ring fact sheet (read 2026-10-16), each [centre km,
-// width km, normal optical depth]: the halo, 89 400 to 123 000 km, 3e-6, some 10 000 km thick; the main
-// ring, 123 000 to 128 940 km, 5e-6, albedo about 0.015. The halo is drawn flat, but a line of sight
+// JUPITER'S RING. Two parts from NASA's Jupiter ring fact sheet (read 2026-10-16): the halo, 89 400 to
+// 123 000 km, 3e-6, some 10 000 km thick; the main ring, 123 000 to 128 940 km, 5e-6, albedo about 0.015.
+// `profile` is each part as [inner km, outer km, optical depth at the inner edge, at the outer edge],
+// straight between. The main ring is its 5 940 km at the fact sheet's 5e-6 on average, deeper toward its
+// sharp outer edge (Adrastea's orbit) and fading inward into the halo; the halo is 3e-6 where it meets the
+// main ring and fades to nothing at its inner edge, so it is a wide faint glow (internal spec 0076 W2-b
+// review, 2026-10-16: at Deep the first version was a flat painted annulus). Galileo's pictures show
+// both fades; the straight lines are ILLUSTRATIVE, the radii and the means are the fact sheet's.
+// `ceiling`: the brightest the ring is drawn, in linear light, reached softly (1 - exp), so under Deep
+// the main ring saturates to its own colour only where it is brightest and the stars stay visible
+// through it. The halo is drawn flat, but a line of sight
 // through it is never longer than its width, so its optical depth along the view is at most width /
 // thickness times the normal one (`halo`). The Amalthea and Thebe gossamer rings (to 221 900 km, 1e-7)
 // are left out: fifty times fainter, they would treble the ring's area on the screen for a glow only
@@ -230,11 +238,11 @@ export function spotShift(place, mapU, tMs) {
 export const GIANT_RINGS = {
   uranus: { albedo: 0.015, globeAlbedo: 0.488, stretch: { eye: 1, camera: 1, deep: 4 } },
   jupiter: {
-    innerKm: 89400, outerKm: 129500, tauScale: 5e-6,
+    innerKm: 89400, outerKm: 129500, tauScale: 7.5e-6, ceiling: 0.3,
     halo: { innerKm: 89400, outerKm: 123000, thickKm: 10000 },
     albedo: 0.015, globeAlbedo: 0.538, hue: [1, 0.82, 0.66], dust: 0.5,
     stretch: { eye: 0, camera: 8000, deep: 40000 },
-    bands: [[106200, 33600, 3e-6], [125970, 5940, 5e-6]],   // the halo; the main ring
+    profile: [[89400, 123000, 0, 3e-6], [123000, 128940, 2.5e-6, 7.5e-6]],   // the halo; the main ring
   },
 };
 /** The texels of the faint ring's strip. */
@@ -262,17 +270,24 @@ export function ringColour(tintHex, ring, exposure = 'camera') {
   const h = lumOf(hue);
   return hue.map((c) => (c / h) * k);
 }
-/** The faint ring's strip: FAINT_PX texels, white, alpha its optical depth over `tauScale`. Pure but for the array. */
+/** A faint ring's normal optical depth at a radius, from its `profile`; 0 outside it. Pure. */
+export function faintTau(ring, rKm) {
+  for (const [a, b, ta, tb] of ring.profile) if (rKm >= a && rKm < b) return ta + ((tb - ta) * (rKm - a)) / (b - a);
+  return 0;
+}
+/** The faint ring's strip: FAINT_PX texels, white, alpha its optical depth at each texel's middle over `tauScale`. Pure but for the array. */
 export function faintStrip(ring, px = FAINT_PX) {
   const data = new Uint8Array(px * 4);
-  for (let i = 0; i < px; i++) { data[i * 4] = 255; data[i * 4 + 1] = 255; data[i * 4 + 2] = 255; }
   const kmPerPx = (ring.outerKm - ring.innerKm) / px;
-  for (const [rKm, widthKm, tau] of ring.bands) {
-    const from = Math.max(0, Math.floor((rKm - widthKm / 2 - ring.innerKm) / kmPerPx));
-    const to = Math.min(px - 1, Math.ceil((rKm + widthKm / 2 - ring.innerKm) / kmPerPx) - 1);
-    for (let i = from; i <= to; i++) data[i * 4 + 3] = Math.max(data[i * 4 + 3], Math.round(Math.min(1, tau / ring.tauScale) * 255));
+  for (let i = 0; i < px; i++) {
+    data[i * 4] = 255; data[i * 4 + 1] = 255; data[i * 4 + 2] = 255;
+    data[i * 4 + 3] = Math.round(Math.min(1, faintTau(ring, ring.innerKm + (i + 0.5) * kmPerPx) / ring.tauScale) * 255);
   }
   return data;
+}
+/** The soft ceiling the faint shader puts on its light, per channel: c (1 - exp(-x / c)). JS twin. Pure. */
+export function softCeiling(x, c) {
+  return c * (1 - Math.exp(-x / c));
 }
 function lambertSpherePhase(cosAlpha) {
   const a = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
@@ -310,6 +325,8 @@ export function faintFragment(src = RING_FRAG) {
   swap('float dust = RING_DUST * ( 1.0 - alpha );', 'float dust = uThin.y;');
   swap('dustPhase( cosAlpha, RING_DUST_G )', 'dustPhase( cosAlpha, uThin.z )');
   swap('RING_DUST_COLOUR * fine', 'fine');
+  swap('  gl_FragColor = vec4( light, cover );', '  light = uCeil * ( 1.0 - exp( -light / uCeil ) );\n  gl_FragColor = vec4( light, cover );');
+  swap('uniform vec3 uHalo;\n', 'uniform vec3 uHalo;\nuniform vec3 uCeil;\n');
   return out;
 }
 
@@ -338,6 +355,10 @@ function faintRing(planet, ring, id = 'jupiter') {
   material.uniforms.uThin = { value: new THREE.Vector3(ring.tauScale, ring.dust, RING_DUST_G) };
   const h = ring.halo;
   material.uniforms.uHalo = { value: new THREE.Vector3(h ? h.innerKm / w.radiusKm : 0, h ? h.outerKm / w.radiusKm : 0, h ? h.thickKm / (h.outerKm - h.innerKm) : 0) };
+  // The ceiling in the ring's own hue, `ceiling` its luminance.
+  const hue = ring.hue || [1, 1, 1];
+  const hl = lumOf(hue);
+  material.uniforms.uCeil = { value: new THREE.Vector3(...hue.map((c) => (c / hl) * (ring.ceiling || 1e3))) };
   if (w.look.oblate) { const g = oblateRadii(w.look.oblate); material.uniforms.uGlobe.value.set(g.eq, g.pol); }
   const mesh = new THREE.Mesh(geo, material);
   mesh.rotation.x = -Math.PI / 2;
