@@ -294,3 +294,60 @@ export function cmesAt(cmes, tMs, cap = MAX_CMES) {
   }
   return out;
 }
+
+// THE SUN'S FACE OF THE DAY (internal spec 0076 W1-d, #916) -- MEASURED: the Solar Dynamics Observatory's
+// newest browse picture in the AIA's 171 angstrom channel, and the moment it was taken. Saved by our
+// harvester only (registry/sources.yaml `sdo-aia-171`, harvest/parsers/sdo_aia.py: the archive sends no
+// CORS header), as { observed, instrument, wavelength_A, size_px, file, url, content_type, bytes, base64 }.
+// scene/sunimage.js lays it on the sphere; what is here is the date, the reading and the arithmetic of
+// the picture's own scale. WHAT IS CHOSEN: how long either side of its moment it is drawn
+// (SUN_IMAGE_FULL_DAYS, then fading to SUN_IMAGE_MAX_DAYS: the Sun turns 13 degrees a day and the
+// picture turns with it, but its loops live for hours to days).
+export const SUN_IMAGE_SOURCE_ID = 'sdo-aia-171';
+export const SUN_IMAGE_FULL_DAYS = 2;
+export const SUN_IMAGE_MAX_DAYS = 3;
+/** AIA's plate scale at its full 4 096 pixels, arcseconds a pixel (Lemen et al. 2012, Solar Physics 275, 17). */
+export const AIA_ARCSEC_PER_PX_4096 = 0.6;
+/** The Sun's radius seen from 1 au, arcseconds (the IAU's nominal radius, 695 700 km). */
+export const SUN_ARCSEC_AT_1AU = 959.63;
+
+/** SDO's picture of the day: our saved copy only (the row is `browser: false`). `opts.load` is for tests. */
+export function readSunImage(opts = {}) { return read(SUN_IMAGE_SOURCE_ID, opts, 'the Sun’s picture could not be read'); }
+
+/**
+ * The saved picture, checked: { observedMs, instrument, wavelengthA, sizePx, file, url, contentType, bytes, base64 },
+ * or null when anything a drawing needs is missing or is not a JPEG.
+ */
+export function parseSunImage(json) {
+  if (!json || typeof json !== 'object') return null;
+  const observedMs = typeof json.observed === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(json.observed) ? Date.parse(json.observed) : NaN;
+  const sizePx = Number(json.size_px);
+  const b64 = typeof json.base64 === 'string' ? json.base64 : '';
+  if (!Number.isFinite(observedMs) || !(sizePx >= 256) || !b64.startsWith('/9j/')) return null; // '/9j/' is a JPEG's first three bytes
+  if (json.instrument !== 'SDO/AIA' || !Number.isFinite(Number(json.wavelength_A))) return null;
+  return {
+    observedMs, instrument: json.instrument, wavelengthA: Number(json.wavelength_A), sizePx,
+    file: String(json.file || ''), url: String(json.url || ''), contentType: String(json.content_type || 'image/jpeg'),
+    bytes: Number(json.bytes) || Math.floor(b64.length * 3 / 4), base64: b64,
+  };
+}
+
+/** The Earth's distance from the Sun at a time, au (the Astronomical Almanac's low-precision formula, good to 1e-4). */
+export function earthSunAu(tMs) {
+  const d = tMs / 86400000 + 2440587.5 - 2451545.0;
+  const g = (357.529 + 0.98560028 * d) * RAD;
+  return 1.00014 - 0.01671 * Math.cos(g) - 0.00014 * Math.cos(2 * g);
+}
+
+/** The Sun's radius in the picture, in its own pixels: 401 in a 1 024-pixel picture in October. */
+export function imageRadiusPx(observedMs, sizePx) {
+  return (SUN_ARCSEC_AT_1AU / earthSunAu(observedMs)) / (AIA_ARCSEC_PER_PX_4096 * 4096 / sizePx);
+}
+
+/** How strongly the picture of `observedMs` is drawn at `tMs`: 1 within SUN_IMAGE_FULL_DAYS, 0 past SUN_IMAGE_MAX_DAYS. */
+export function imageFade(observedMs, tMs) {
+  if (!Number.isFinite(observedMs) || !Number.isFinite(tMs)) return 0;
+  const days = Math.abs(tMs - observedMs) / 86400000;
+  const x = clamp((SUN_IMAGE_MAX_DAYS - days) / (SUN_IMAGE_MAX_DAYS - SUN_IMAGE_FULL_DAYS), 0, 1);
+  return x * x * (3 - 2 * x);
+}

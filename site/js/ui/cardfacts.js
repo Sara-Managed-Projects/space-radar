@@ -24,7 +24,7 @@ import { periodMsOf } from '../scene/orbitline.js';
 import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedToSpherical, worldRadiusKm, toStage, spinPeriodHours, moonLapHours, yearDays } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import '../copy/en.facts.js';
-import { drawnOf, primaryDrawn, distanceEstimate } from '../data/deepsky.js';
+import { drawnOf, primaryDrawn, distanceEstimate, parentIdOf, DRAWN_CLASSES } from '../data/deepsky.js';
 import { lookbackGyr } from '../data/cosmology.js';
 
 // WHAT A GENERATED STAR SYSTEM ADDS TO A CARD (internal #466), handed in by ui/cards.js and not
@@ -872,11 +872,99 @@ export function tagLines(record, ctx, m) {
     const suffix = key === 'range'
       ? (mm.observerGuess && mm.observerName ? t(COPY.hud.fromPlace, { place: mm.observerName }) : COPY.hud.fromYou)
       // A deep-sky object's distance says what is drawn for it (spec 0075 task 6): "· photograph".
-      : key === 'sun' && klassOf(record) === 'dso' ? COPY.deepFacts.drawnTag[primaryDrawn(drawnOf(record))] || ''
+      // Since internal spec 0076 W1-c it follows the shares (spec 0075 task 40): "· photograph" on our
+      // line, where the photograph is what draws, "· reconstructed" once turned off it (drawnNow).
+      : key === 'sun' && klassOf(record) === 'dso' ? COPY.deepFacts.drawnTag[drawnNow(record, ctx)] || ''
         : '';
     readouts.push({ key, num: split.num, unit: split.unit, suffix });
   }
   return { name: displayName(record), klass: klassOf(record), readouts, honesty: shortHonesty(record, mm), tMs: mm.tMs };
+}
+
+// ---------------------------------------------------------------------------------------
+// WHAT DRAWS NOW, AND THE LEGEND'S ROW (internal spec 0076 W1-c)
+// ---------------------------------------------------------------------------------------
+
+const DRAWN_RANK = new Map(DRAWN_CLASSES.map((c, i) => [c, i]));
+
+/**
+ * Which of a deep-sky record's drawn classes is drawing most, from the shares the scene reports
+ * (spec 0075 task 40): `photo` is how strongly its photograph is drawn at its place (scene/nebulae.js
+ * drawn(), 0..1), `hero` its hero's level share (scene/deep/deepsky.js heroShares(), 0..1). The hero
+ * gives way to the photograph on our line of sight (scene/deep/helix.js sharesFor: gas = level x
+ * (1 - photo)); the record's own glow or mark takes what both leave. `heroClasses` are the hero's
+ * (`meta.heroDrawn`). The largest share wins; on a tie, the more three-dimensional class. Pure.
+ */
+export function drawnByShares(classes, heroClasses, photo = 0, hero = 0) {
+  const list = Array.isArray(classes) && classes.length ? classes : ['illustration'];
+  const own = new Set(Array.isArray(heroClasses) ? heroClasses : []);
+  const p = list.includes('photograph') ? Math.min(1, Math.max(0, Number(photo) || 0)) : 0;
+  const h = own.size ? Math.min(1, Math.max(0, Number(hero) || 0)) : 0;
+  const heroTop = list.find((c) => own.has(c) && c !== 'photograph') || null;
+  const restTop = list.find((c) => !own.has(c) && c !== 'photograph') || 'illustration';
+  const shares = [];
+  if (p > 0) shares.push(['photograph', p]);
+  if (heroTop) shares.push([heroTop, h * (1 - p)]);
+  shares.push([restTop, (1 - p) * (1 - (heroTop ? h : 0))]);
+  shares.sort((a, b) => (b[1] - a[1]) || ((DRAWN_RANK.get(a[0]) ?? 9) - (DRAWN_RANK.get(b[0]) ?? 9)));
+  return shares[0][0];
+}
+
+/**
+ * What draws now for a deep-sky record, by the shares, where the scene can say them (`ctx.nebulae`,
+ * `ctx.deep`); elsewhere (the light embed, a test) the most three-dimensional class, as before. A
+ * child drawn by its parent's hero (the Tarantula by the LMC's) takes its parent's share.
+ */
+export function drawnNow(record, ctx) {
+  const classes = drawnOf(record);
+  const pics = ctx && ctx.nebulae && typeof ctx.nebulae.drawn === 'function' ? ctx.nebulae : null;
+  const deep = ctx && ctx.deep && typeof ctx.deep.heroShares === 'function' ? ctx.deep : null;
+  if (!record || (!pics && !deep)) return primaryDrawn(classes);
+  let photo = 0;
+  let hero = 0;
+  try { photo = pics ? Number(pics.drawn(record.id)) || 0 : 0; } catch { photo = 0; }
+  try {
+    const shares = deep ? deep.heroShares() : null;
+    if (shares) hero = shares.get(record.id) ?? shares.get(parentIdOf(record)) ?? 0;
+  } catch { hero = 0; }
+  return drawnByShares(classes, meta(record).heroDrawn, photo, hero);
+}
+
+/** How a record's position is known, as the honesty line's first half says it: measured, inferred, illustrative, sample, unplaced or unknown. */
+export function positionKey(record, m) {
+  if (pick(meta(record), 'unplaceable')) return 'unplaced';
+  const cls = (m && m.cls) || (record && record.cls) || '';
+  return ['measured', 'inferred', 'illustrative', 'sample'].includes(cls) ? cls : 'unknown';
+}
+
+/** The legend's key for a card: what draws now (deep sky), else how its position is known. */
+export function truthKey(record, ctx, m) {
+  return klassOf(record) === 'dso' ? drawnNow(record, ctx) : positionKey(record, m);
+}
+
+/**
+ * The card's row "How we know" (ui/cards.js adds it last among the rows that open in place, straight
+ * above the honesty line): its label, its one-word hint, and an empty panel that `fill()` hands to
+ * ui/truthlegend.js, fetched the first time the row opens. Not at boot, and not in the light embed.
+ * Each opening fills it again, and the hint with it: what draws changes as the camera turns (the shares).
+ */
+export function truthRow(record, ctx, m) {
+  const T = COPY.truth;
+  const panel = document.createElement('div');
+  panel.className = 'sr-disc__body';
+  const wait = document.createElement('p');
+  wait.className = 'sr-card__note';
+  wait.textContent = T.loading;
+  panel.appendChild(wait);
+  const fill = () => import('./truthlegend.js')
+    .then((mod) => {
+      const head = panel.parentNode && panel.parentNode.querySelector ? panel.parentNode.querySelector('.sr-disc__hint') : null;
+      const hint = T.hints[truthKey(record, ctx, m)];
+      if (head && hint && head.textContent !== hint) head.textContent = hint;
+      return mod.fillLegend(panel, record, ctx, m);
+    })
+    .catch(() => { if (!panel.querySelector || !panel.querySelector('.sr-rows')) wait.textContent = T.failed; });
+  return { label: T.label, hint: T.hints[truthKey(record, ctx, m)] || null, panel, fill };
 }
 
 // ---------------------------------------------------------------------------------------
@@ -979,9 +1067,13 @@ export function honestyClause(record, m) {
   // the most three-dimensional thing first (spec 0075 task 6, data/deepsky.js drawnOf).
   if (klassOf(record) === 'dso') {
     const F = COPY.deepFacts;
+    // A record with its own words (the Milky Way, internal #918): what is drawn, then what of it is
+    // measured and what inferred (internal spec 0076 W1-c).
+    const mine = F.records && record && Object.prototype.hasOwnProperty.call(F.records, record.id) ? F.records[record.id] : null;
+    if (mine) return `${t(F.drawnLine, { drawn: mine.drawn })} ${mine.split}`;
     const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
     // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
-    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 

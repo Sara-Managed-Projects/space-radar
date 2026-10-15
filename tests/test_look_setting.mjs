@@ -168,7 +168,7 @@ for (const r of WEATHER) {
   const sun = read('site/js/scene/sun.js');
   check(/const g = tier >= 1 && drawnUnder\(look, UNDER_MEASURED\.grain\) \?/.test(sun), 'the Sun\'s generated grain (and the faculae drawn along it, by uGrain) is off under Measured');
   check(/const still = !!\(how && how\.still\) \|\| stillUnder\(look, UNDER_MEASURED\.corona\);/.test(sun), 'the corona and the prominences are held still as under reduced motion');
-  check(/UNDER_MEASURED = \{ grain: 'hidden', faculae: 'hidden', corona: 'still', prominences: 'still' \}/.test(sun), 'and the module says so');
+  check(/UNDER_MEASURED = \{ grain: 'hidden', faculae: 'hidden', corona: 'still', prominences: 'still', loops: 'hidden' \}/.test(sun), 'and the module says so (the loops over active regions are taken off: internal spec 0076 W1-d)');
   const aurora = read('site/js/scene/aurora.js');
   check(/const folds = cfg\.folds && drawnUnder\(look, UNDER_MEASURED\.folds\);/.test(aurora) && /u\.uFolds\.value = folds \? 1 : 0;/.test(aurora), 'the aurora\'s folds are off under Measured: NOAA\'s grid is what is drawn');
   check(typeof COPY.aurora.liveNoFolds === 'string' && !/folds/.test(COPY.aurora.liveNoFolds), 'and its card line then does not claim them');

@@ -1754,14 +1754,111 @@ Object.assign(COPY, {
     edge: '{n} billion light-years: past everything we can see',
     edgeWhy: 'The observable universe ends about {h} billion light-years away.',
     edgeNothing: 'Nothing measured lies out here: this band is an illustration.',
+    // 0076 W1-b: the microwave map's words and scale (scene/shells.js cmbWords); {k} is computed there.
+    cmbTitle: 'The oldest light, as our sky shows it',
+    cmbWhen: 'It left about {k} years after the Big Bang',
+    cmbPainted: 'Painted inside the sphere it left from: an illustration',
+    cmbElse: 'Seen from anywhere else, the map differs',
+    cmbCold: '−{n} µK',
+    cmbMid: 'average {t} K',
+    cmbWarm: '+{n} µK',
+    cmbSay: 'Colour scale: blue up to {n} millionths of a degree colder than {t} kelvin, orange up to {n} warmer',
+    cmbSource: 'WMAP nine-year map, NASA',
   },
 
   // RELEASE 1.2.0 wave 1 (internal spec 0076, design section 6): one empty block per stage, created by the lead
   // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
   // 0076 W1-a (Orion)
-  deepOrion: {},
+  deepOrion: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]` from the
+    // blocks it lists; until 'deepOrion' is among them the rows below carry the same news).
+    card: {
+      orion: 'Its light is taken from ESO’s photograph, its shape reconstructed after Wen and O’Dell (1995) and O’Dell (2001): a thin glowing layer on the near face of a dark cloud, the Trapezium about 0.2 parsecs in front of it. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook).
+    rows: {
+      'dso-m42': [
+        ['Its shape in depth', 'Reconstructed. Near the Trapezium it is measured: the glowing layer lies about 0.2 parsecs behind its brightest star. Farther out the depth follows the published picture of a bowl opening toward us, not a measurement.'],
+        ['Behind it', 'The dark molecular cloud the nebula is carved from. Seen from behind, the nebula is hidden in it.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-m43': [
+        ['Its shape in depth', 'Reconstructed: a smaller hollow on the same cloud, lit by the star NU Orionis. Its depth is not measured.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'The nebula’s glow comes from a thin layer where the light of the Trapezium’s brightest star eats into a dark cloud. Wen and O’Dell (1995) mapped how far that layer lies behind the star from how bright it is, since a nearer patch of it receives more light.',
+  },
   // 0076 W1-c (the truth on every card)
-  r12Truth: {},
+  r12Truth: {
+    // ui/truthlegend.js: the legend inside every card, under the row "How we know" (copy/en.facts.js
+    // `truth`). Three groups, each a microlabel over the card's own rows: what this card is, the words
+    // the app uses everywhere, and the terms this card's text uses. Only the existing honesty classes:
+    // a position's (`cls`), the five drawn classes (data/deepsky.js DRAWN_CLASSES) and the two looks.
+    here: 'On this card',
+    words: 'The words, everywhere',
+    terms: 'Words on this card',
+    rows: {
+      where: 'Where it is',
+      drawnNow: 'Drawn now',
+      drawn: 'What is drawn',
+      photo: 'Photograph by',
+      filters: 'Filters',
+      colours: 'Colours',
+      taken: 'Taken',
+      released: 'Published',
+      sky: 'Sky shown',
+      survey: 'Survey by',
+      look: 'Look',
+    },
+    // {a} to {b}: a span of years or months ("2004 to 2006"), from a registry's `taken: "A..B"`.
+    span: '{a} to {b}',
+    notPublished: 'Date not published',
+    // How a position is known (the honesty line's first half: copy/en.facts.js cls).
+    position: {
+      measured: 'Seen by an instrument at a known time',
+      inferred: 'Worked forward from an older measurement',
+      illustrative: 'Drawn to show the idea, not measured',
+      sample: 'Bundled sample data, not live',
+    },
+    // What is drawn (the honesty line's second half: copy/en.facts.js deepFacts.drawnWords).
+    drawn: {
+      photograph: 'Real light, photographed from our side',
+      reconstruction: 'A 3D shape from a published study',
+      model: 'A model of its kind, not its own stars',
+      catalogue: 'Positions a survey measured',
+      illustration: 'Drawn to show its kind, not it',
+    },
+    // How a photograph's colours were made (registry/nebulae.yaml `colours`), in two to four words.
+    colours: {
+      broadband: 'Broad colour filters',
+      mixed: 'Colour filters and hydrogen',
+      narrowband: 'Gases mapped to colours',
+      unstated: 'Not stated',
+    },
+    falseColour: '{band}, false colour',
+    // The deep sky's glossary terms (registry/glossary.yaml, word for word; tests/test_truthlegend.mjs).
+    // `match`: other words on a card that send the reader to the term.
+    glossary: [
+      { term: 'parsec', match: ['kpc'], say: 'About 3.26 light-years: the distance from which the Earth\'s orbit would look one arcsecond wide. Papers write pc, and kpc for a thousand.' },
+      { term: 'million light-years', match: ['million years ago'], say: 'A million light-years, written Mly. Andromeda, the nearest big galaxy, is about 2.5 million away.' },
+      { term: 'billion light-years', match: ['billion years ago'], say: 'A thousand million light-years, written Gly. The edge of what we can see is about 46 billion light-years away now.' },
+      { term: 'lookback time', match: ['light left'], say: 'How long ago the light we see left something. From far galaxies it is billions of years: we see them as they were then.' },
+      { term: 'comoving distance', match: ['comoving', 'billion light-years'], say: 'How far away something is now, counting how much space has stretched since its light left. Far out it is more than the light\'s travel time suggests.' },
+    ],
+    termLine: '{term}: {say}',
+    // The two looks among the words, named so they are not taken for the position's "Measured".
+    lookWord: '{mode} look',
+  },
   // 0076 W1-d (the Sun's image of the day)
-  r12Sun: {},
+  // On the Sun's card under its spots' line while its detail is drawn (ui/cards.js sunImageLine; scene/sun.js,
+  // scene/sunimage.js). {date} "2026-10-15", {time} "16:56" UTC, {wl} 171.
+  r12Sun: {
+    image: 'The half of the Sun that faced the Earth is the Solar Dynamics Observatory’s picture taken at {time} UTC on {date}, turned with the Sun since: extreme ultraviolet light at {wl} ångström from gas near a million degrees in the loops over the surface, in SDO’s false colour and drawn brighter. The far side, which it did not see, is drawn from a model in the same false colour, and the two are blended where they meet. It is a browse picture, not one for science. Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.',
+    // The loops are OFF for release 1.2.0 (scene/sun.js LOOPS_ON): these two lines are said only when they are drawn.
+    loops: 'The gold loops over {n} of today’s active regions are illustrative: their places are NOAA’s, their shapes, heights and number are not. Under Measured they are taken off.',
+    loopsOne: 'The gold loops over one of today’s active regions are illustrative: the place is NOAA’s, the shapes, heights and number are not. Under Measured they are taken off.',
+    none: 'No picture of today’s Sun could be read, so the whole disc is drawn.',
+  },
 });

@@ -2932,6 +2932,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       else window.addEventListener('sr:layers-ready', go, { once: true });
     }
     // 0076 W1-e
+    // sr.perf (scene/perf.js): what a frame costs, for TOOLS only. Fetched under ?look=1 or when a tool
+    // calls sr.wantPerf(); a visitor's loop pays two property reads. No panel (internal spec 0076 W1-e).
+    if (ctx.perf) ctx.perf.frame(nowReal, frameMs);
+    else if (!ctx.wantPerf) {
+      ctx.wantPerf = () => ctx.wantPerf.p || (ctx.wantPerf.p = import('./scene/perf.js').then((m) => (ctx.perf = m.createPerf(ctx))));
+      if (ctx.latch && ctx.latch.held) ctx.wantPerf(); // ?look=1
+    }
   }
   let tiersStarted = false;
   let lastTierTick = 0;

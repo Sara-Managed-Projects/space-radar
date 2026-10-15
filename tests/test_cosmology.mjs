@@ -99,7 +99,8 @@ check(rel(C.horizonLy() / 1e9, REF.horizon_gly) < 1e-6, `the particle horizon: $
   const W = COPY.deepCosmos;
   check(W && /observable universe/.test(W.horizon) && /\{n\} billion light-years away now/.test(W.horizonNow) && /\{age\} billion years ago/.test(W.horizonWhy), 'the horizon\'s label says the distance now and the time the light took');
   check(/Nothing measured lies out here/.test(W.edgeNothing) && /illustration/.test(W.edgeNothing) && /\{h\} billion/.test(W.edgeWhy), 'past the horizon the scene says nothing measured lies there, and that the band is an illustration');
-  for (const k of Object.keys(W)) check(W[k].length <= 72, `deepCosmos.${k} fits a phone's width as one line of the scene (${W[k].length} characters)`);
+  // A key ending in `Say` is said to a screen reader and never drawn (0076 W1-b: the colour scale as a sentence).
+  for (const k of Object.keys(W)) if (!k.endsWith('Say')) check(W[k].length <= 72, `deepCosmos.${k} fits a phone's width as one line of the scene (${W[k].length} characters)`);
 }
 
 if (problems.length) {

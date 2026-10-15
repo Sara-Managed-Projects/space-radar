@@ -23,9 +23,17 @@ for (const r of recordsFromNames(JSON.parse(readFileSync(join(ROOT, 'site/data/s
 for (const r of parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')))) ids.set(r.id, r);
 for (const l of LAYERS) if (typeof l.sample === 'function' && (l.id === 'exotics' || l.id === 'galaxy')) for (const r of l.sample()) ids.set(r.id, r);
 
-check(LADDER_RUNGS.length === 8, `eight rungs (${LADDER_RUNGS.length})`);
+// Nine since 0076 W1-b: the edge rung (spec 0075 task 65), a place rather than a record.
+check(LADDER_RUNGS.length === 9, `nine rungs (${LADDER_RUNGS.length})`);
 let prev = 0;
 for (const rung of LADDER_RUNGS) {
+  if (rung.target.place) {
+    const { horizonLy } = await import(join(JS, 'data/cosmology.js'));
+    check(rung.target.place === 'horizon' && rung === LADDER_RUNGS[LADDER_RUNGS.length - 1], `the place rung is the horizon, and the last (${rung.id})`);
+    check(horizonLy() * 9460730472580.8 > prev, 'the horizon is farther than every rung before it');
+    check(rung.distance.startsWith(String(Math.round(horizonLy() / 1e9))), `its distance is the cosmology's horizon (${rung.distance})`);
+    continue;
+  }
   const key = rung.target.world || rung.target.record;
   const rec = ids.get(key);
   check(!!rec, `rung ${rung.id} names a record the app has (${key})`);
@@ -50,4 +58,4 @@ check(trip.stops[trip.stops.length - 1].card.body.includes('109 389') && trip.st
 check(trip.blurb.includes('back to Earth'), 'the blurb says leaving returns to Earth');
 
 if (problems.length) { console.error('ladder ui FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('ladder ui ok: eight rungs, each farther than the last and each a real record; the edge trip has eight resolvable stops on the stellar rung');
+console.log('ladder ui ok: nine rungs, each farther than the last, each a real record or the horizon; the edge trip has eight resolvable stops on the stellar rung');

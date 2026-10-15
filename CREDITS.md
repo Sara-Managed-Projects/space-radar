@@ -1548,7 +1548,38 @@ noao0001a, ESO eso1424a).
 
 ### Orion (0076 W1-a)
 
+The Orion Nebula's reconstruction (`site/js/scene/deep/orion.js`, its numbers in
+`registry/deepsky-heroes/orion.yaml`) is computed here from facts read in each source on 2026-10-15; no text,
+figure or model file of any of them is shipped. Lengths on the sky are turned into light-years at the record's
+distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and the card says so.
+
+| what | the numbers | from |
+|---|---|---|
+| the blister | a thin layer of ionised gas near the ionisation front on the near side of the molecular cloud OMC-1, its depth found from the H-alpha surface brightness with theta1 Ori C the only ionising star; the Bright Bar where the front turns toward us | Wen & O'Dell 1995, ApJ 438, 784; O'Dell 2001, ARA&A 39, 99 |
+| theta1 Ori C before the front | about 0.2 pc (0.65 ly) in front of the main ionisation front; the concave blister, revised to the south-west (Orion-S, not drawn) | O'Dell, Henney, Abel, Ferland & Arthur 2009, AJ 137, 367 (arXiv:0810.4375) |
+| the Veil | neutral gas 1 to 3 pc in front of the star, drawn at 2 pc; its closest layer 1.3 pc from it. The Dark Bay is drawn as the Veil's shadow: its optical depth is the photograph's darkness against its surroundings there (reconstructed) | Abel et al. 2004, ApJ 609, 247 (arXiv:astro-ph/0404399); Abel, Ferland & O'Dell 2019, ApJ (arXiv:1906.07779) |
+| the cluster | a core radius of 0.16 to 0.21 pc, elongated north-south; ellipticity 0.30 about 10 degrees from north-south. 400 to 1 600 stars are drawn; their places and brightnesses are seeded, not catalogued | Hillenbrand & Hartmann 1998, ApJ 492, 540; Da Rio et al. 2014 (arXiv:1409.2503) |
+| the Trapezium, theta2 Ori A and NU Ori | places, V magnitudes and spectral types of theta1 Ori A, B, C, D (HD 37020 to 37023), theta2 Ori A (HD 37041; its V from Hipparcos via HYG) and NU Ori (HD 37061); their depths are not measured, so they stand in theta1 Ori C's plane | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-15; the CDS terms ask the data be cited as "CDS/SIMBAD" |
+| the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_orion.py` -> `site/images/deep/orion/orion-light.webp`, an adaptation); near the Trapezium a sharper map of the same photograph, from ESO's large JPEG (16 877 x 13 107 px, downloaded for the bake and not shipped): a 13 arcmin square at 1.1" a pixel, its stars removed and its colours matched to the 640 px map (`site/images/deep/orion/orion-detail.webp`, an adaptation); the front's depth map (`site/data/deep/orion-front.bin`) is computed from the same picture and the numbers above. Under Deep the photograph's own stretch is ENHANCED | ESO eso1723a, credit ESO/G. Beccari, CC BY 4.0 (section 3 above): "ESO/G. Beccari"; stars removed and depth reconstructed by Space Radar |
+
 ### The CMB map (0076 W1-b)
+
+- **The microwave background at the horizon** (`site/images/deep/cmb/wmap-ilc-9yr.webp`, 119 400 B,
+  built by `scripts/build_deep_cmb.py`, drawn by `site/js/scene/deep/cmb.js`): the WMAP nine-year
+  Internal Linear Combination map, `wmap_ilc_9yr_v5.fits` from LAMBDA
+  (<https://lambda.gsfc.nasa.gov/product/wmap/dr5/ilc_map_get.html>), pinned by SHA-256; Bennett et al.
+  2013, "Nine-year Wilkinson Microwave Anisotropy Probe (WMAP) observations: final maps and results",
+  *ApJS* 208, 20, section 6. NASA data: "NASA content – images, audio, video, and media files used in
+  the rendition of 3-dimensional models, such as texture maps and polygon data in any format –
+  generally are not subject to copyright in the United States"
+  (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-15). LAMBDA's
+  acknowledgement is the one in section 3h. The credit line: **Microwave background: NASA / WMAP
+  Science Team (LAMBDA)**. Measured: the temperature in each direction of our sky, smoothed to one
+  degree, average and dipole removed, re-gridded to 1024 x 512 in Galactic coordinates and clipped at
+  ±200 µK (0.45 % of the sky). This map's own: the colour scale. An illustration, and labelled so on
+  the scene: the map painted on the sphere its light left from (`data/cosmology.js cmbLy()`), seen
+  from anywhere but the Sun. Planck's sharper map was not used: ESA's page for it gives "Licence: ESA
+  Standard Licence", not CC BY-SA 3.0 IGO (read 2026-10-15).
 
 ## 4. Runtime data sources
 
@@ -1694,6 +1725,29 @@ Sources panel prints "Solar flares: NOAA Space Weather Prediction Center, edited
 lists are held.
 
 ### SDO image of the day (0076 W1-d)
+
+Close up, the half of the Sun that faced the Earth wears the Solar Dynamics Observatory's newest
+picture of it (internal spec 0076 W1-d, #916; `scene/sunimage.js`): the Atmospheric Imaging
+Assembly's 171 ångström channel, extreme ultraviolet light from gas near a million degrees in the
+loops over the surface, at 1 024 pixels, from the browse archive
+`https://sdo.gsfc.nasa.gov/assets/img/browse/YYYY/MM/DD/`. The harvester (`sdo-aia-171`,
+`harvest/parsers/sdo_aia.py`) saves the newest picture of the day every three hours, with the moment
+in its file name as its date; a visitor's browser reads only that saved copy (the archive sends no
+CORS header; measured 2026-10-15, 188 279 bytes). Terms, read 2026-10-15 on
+<https://sdo.gsfc.nasa.gov/data/rules.php>: "SDO images and movies are not copyrighted unless
+explicitly noted. The use of SDO images for non-commercial purposes and public education and
+information efforts is strongly encouraged and requires no expressed authorization", asked to be
+credited "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."; the same page says browse
+products are not intended for science analysis, and the card says the picture is a browse picture.
+What is done to it: cropped round the disc, laid on the sphere from the place it was taken (north
+up, as SDO publishes it) and turned with the Sun since, drawn 1.8 times brighter than the JPEG so it
+sits beside the drawn far side; its colour is SDO's own false colour for that channel. The Sun's card
+says when it was taken and gives the credit line. Sources panel line:
+The Sun's face of the day: courtesy of NASA/SDO and the AIA, EVE, and HMI science teams
+
+The loops drawn over today's active regions under the Film look are not from any picture: their
+places are NOAA's (`swpc-solar-regions`, above), their shapes, heights and number are illustrative,
+and the card says so.
 
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 

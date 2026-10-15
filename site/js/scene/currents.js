@@ -39,7 +39,7 @@
 // arrays written on the CPU (they are now read once per piece instead of once per vertex).
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { localOf, SHELL_SCALE } from './wind.js';
+import { localOf, SHELL_SCALE, lookRandom } from './wind.js';
 import { CURRENTS, fetchCurrents, stepCurrent, sampleCurrent, sampleTemp } from '../data/currents.js';
 
 export const CURRENTS_ID = CURRENTS.id;
@@ -174,7 +174,7 @@ export function createCurrents(opts = {}) {
   const onChange = typeof opts.onChange === 'function' ? opts.onChange : () => {};
   const still = !!opts.reducedMotion;
   const count = streakCount(opts.tier, opts.saveData);
-  const rand = typeof opts.random === 'function' ? opts.random : Math.random;
+  const rand = typeof opts.random === 'function' ? opts.random : lookRandom(2);
   const tick = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   let lines = null;

@@ -2,6 +2,11 @@
 // corona wide, then the clock put inside a real flare and two hours into a real coronal mass
 // ejection when the two feeds are there. The detail is loaded by main.js's own loader, which is why
 // this probe needs the latch held by `?look=1` and not by pretending the page is hidden.
+// FIRST, THE FACE OF THE DAY (internal spec 0076 W1-d): from the Earth's side at arrival under Film
+// and under Measured, closer under Film (the loops), from the side over the limb, and over the north
+// pole; each place twice, BEFORE (sr.sunDetail.debug({ image: false, loops: false }): main's Sun) and
+// AFTER, with the frame interval of each and the renderer's counts. Needs SDO's picture in the served
+// data/v1: dispatch with `-f harvest=sdo-aia-171` until the live site has a saved copy.
 look.probe = 'sun';
 const out = {};
 await stage('sun', 8000);
@@ -13,6 +18,51 @@ await until(() => sr.sunDetail && sr.sunDetail.state().regions > 0, 20000);
 await shot('sun-1-arrival', 'the Sun on its stage, detail ' + (out.detailLoaded ? 'on' : 'OFF'), 4000);
 out.detail = sr.sunDetail ? sr.sunDetail.state() : null;
 const d = rig.state.distance;
+{
+  // THE FACE OF THE DAY, before and after from the same places.
+  const r12 = { scenes: [] };
+  out.r12 = r12;
+  const toEarth = () => { const e = sr.worlds.drawnPositionOf('earth'); const s = sr.worlds.drawnPositionOf('sun'); return unit({ x: e.x - s.x, y: e.y - s.y, z: e.z - s.z }); };
+  const frames = async (n = 60) => {
+    const ts = [];
+    await new Promise((res) => { const f = (x) => { ts.push(x); if (ts.length > n) res(); else requestAnimationFrame(f); }; requestAnimationFrame(f); });
+    const dt = ts.slice(1).map((x, i) => x - ts[i]).sort((a, b) => a - b);
+    return { p50: +dt[Math.floor(dt.length * 0.5)].toFixed(1), p95: +dt[Math.floor(dt.length * 0.95)].toFixed(1) };
+  };
+  const brief = (st) => (st ? { image: st.image, loops: st.loops, spots: st.spots, flares: st.flares.length, prominences: st.prominences.length, grain: +st.grain.toFixed(2), close: +st.close.toFixed(2) } : null);
+  const ok = await until(() => sr.sunDetail && sr.sunDetail.state().image && (sr.sunDetail.state().image.shown > 0.9 || sr.sunDetail.state().image.failed), 30000);
+  r12.image = sr.sunDetail ? sr.sunDetail.state().image : null;
+  if (!ok || !r12.image || r12.image.failed) look.missing.push('SDO\'s picture: not in the served data/v1 (dispatch with -f harvest=sdo-aia-171)');
+  const pair = async (name, note, look_) => {
+    try { sr.drawn.set(look_); } catch (e) { look.warns.push('probe: could not set the look ' + look_ + ': ' + e); }
+    const row = { name, look: look_, share: +sr.worlds.discShare('sun').toFixed(3) };
+    for (const [when, on] of [['before', false], ['after', true]]) {
+      if (sr.sunDetail) sr.sunDetail.debug({ image: on, loops: on });
+      await sleep(5000);
+      row[when] = { frames: await frames(), render: frameCost(), state: brief(sr.sunDetail && sr.sunDetail.state()) };
+      await shot(name + '-' + when, (on ? 'AFTER: ' : 'BEFORE (main\'s Sun): ') + note + ' (' + look_ + ')');
+    }
+    r12.scenes.push(row);
+  };
+  try {
+    rig.flyTo({ offset: toEarth(), distance: d, ms: 0 });
+    await pair('sun-r12-1-arrival', 'arrival, from the Earth\'s side', 'film');
+    await pair('sun-r12-2-measured', 'the same place under Measured: only the observed picture on its face', 'measured');
+    rig.flyTo({ offset: toEarth(), distance: d * 0.55, ms: 0 });
+    await pair('sun-r12-3-closer', 'closer, from the Earth\'s side: the loops over today\'s regions', 'film');
+    // From the side, 80 degrees west of the Earth: the picture's own limb, the far side drawn, loops in profile.
+    const e = toEarth(); const n = north('sun'); const w = unit(cross(n, e));
+    const a = 80 * Math.PI / 180;
+    rig.flyTo({ offset: unit({ x: Math.cos(a) * e.x + Math.sin(a) * w.x, y: Math.cos(a) * e.y + Math.sin(a) * w.y, z: Math.cos(a) * e.z + Math.sin(a) * w.z }), distance: d * 0.7, ms: 0 });
+    await pair('sun-r12-4-limb', 'from 80 degrees west of the Earth: the picture\'s edge, the far side drawn', 'film');
+    rig.flyTo({ offset: unit({ x: n.x + 0.25 * e.x, y: n.y + 0.25 * e.y, z: n.z + 0.25 * e.z }), distance: d * 0.7, ms: 0 });
+    await pair('sun-r12-5-north-pole', 'over the north pole', 'film');
+  } catch (err) { look.errors.push('probe: the face of the day: ' + (err && err.stack || err)); }
+  if (sr.sunDetail) sr.sunDetail.debug({ image: true, loops: true });
+  try { sr.drawn.set('film'); } catch { /* said above */ }
+  rig.flyTo({ distance: d, ms: 0 });
+  await sleep(3000);
+}
 rig.flyTo({ distance: d * 0.55, ms: 0 });
 await shot('sun-2-closer', 'closer: granulation and today\'s spot groups', 6000);
 await shot('sun-3-six-seconds-later', 'six seconds on: the granulation should have moved', 6000);

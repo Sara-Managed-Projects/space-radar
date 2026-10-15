@@ -2757,6 +2757,11 @@ def check_stars_notable(exotics: list) -> list:
     return rows_
 
 
+# 0076 W1-b: the places a ladder rung can name that are neither a world nor a record: the horizon,
+# which scene/climb.js toEdge() flies to and scene/shells.js draws.
+LADDER_PLACES = {"horizon"}
+
+
 def check_ladder(world_ids: set, layer_ids: set) -> list:
     """registry/ladder.yaml: every rung names a world or a record in a layer, with a distance and its source."""
     path = REG / "ladder.yaml"
@@ -2785,9 +2790,11 @@ def check_ladder(world_ids: set, layer_ids: set) -> list:
             fail(where, "duplicate id")
         seen.add(rid)
         t = r.get("target") or {}
-        keys = [k for k in ("world", "record") if k in t]
+        keys = [k for k in ("world", "record", "place") if k in t]
         if len(keys) != 1:
-            fail(where, "target must be exactly one of {world: ...} or {record: ...}")
+            fail(where, "target must be exactly one of {world: ...}, {record: ...} or {place: horizon}")
+        elif keys[0] == "place" and t["place"] not in LADDER_PLACES:
+            fail(where, f"targets place `{t['place']}`; the places a rung can name are {sorted(LADDER_PLACES)}")
         elif keys[0] == "world" and t["world"] not in world_ids:
             fail(where, f"targets world `{t['world']}`, which has no worlds.yaml row")
         elif keys[0] == "record":

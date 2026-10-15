@@ -55,7 +55,7 @@ budgets:
   # in 115 modules after the comment stripper alone, 1 778 733 B after esbuild's `--minify` over the modules (no
   # bundling, no property renaming). The row holds the minified number with 5 % of room, so a deploy
   # that fell back to the stripper, or a module that grew by a library, is seen before it is served.
-  - {id: deployed_boot_js_bytes, value: 1868000, unit: bytes, since: 2026-10-09, reason: "internal #515: the static graph from js/main.js in the minified tree, 1 778 733 B in 115 modules measured 2026-10-09 by scripts/check_built_tree.mjs (2 175 514 B after the comment stripper alone), plus 5 %"}
+  - {id: deployed_boot_js_bytes, value: 1869400, unit: bytes, since: 2026-10-16, reason: "internal #515: 1 868 581 B in 118 modules measured 2026-10-16 on the release-1.2 wave-1 integration branch (the five stages together; each was under 1 868 300 alone: the perf hook and the card row each add a few hundred bytes to main.js and cards.js). Cap set about 800 B above it. Before: 1 868 300 on 2026-10-15 (SDO row)"}
   # THE FIRST MINUTE (internal #527, 2026-10-09). first_visit_bytes above stops two seconds after the
   # layers are ready. This is what the same visit goes on to fetch from OUR OWN host in the next 60
   # seconds, with nobody touching the page: the named stars, the exoplanets, the deep sky and their
@@ -66,7 +66,9 @@ budgets:
   # does not get. MEASURED 2026-10-09 in CI on public #559: 1 581 495 B of our own files in 57 requests
   # (the largest: exoplanets.csv 583 527, stars3d.names.json 288 436, the trips' data 116 529, dso.json
   # 116 070), and 684 552 B from other hosts, which is NASA's picture of today's clouds.
-  - {id: after_first_visit_bytes, value: 1661000, unit: bytes, since: 2026-10-09, reason: "internal #527: 1 581 495 B + 5 %, our own files fetched in the 60 s after the first-visit window, measured 2026-10-09 by CI on public #559 (tests/test_first_visit_bytes.mjs --minute in screens.yml; other hosts sent 684 552 B more, not held)"}
+  # MEASURED 2026-10-15 in CI on the Sun's face of the day: 1 662 006 B. The face's modules used the
+  # last of the 1 661 000 cap and 1 006 B past it.
+  - {id: after_first_visit_bytes, value: 1670000, unit: bytes, since: 2026-10-16, reason: "internal #527: 1 668 539 B measured 2026-10-16 by CI on the release-1.2 wave-1 integration branch (public #1198, tests/test_first_visit_bytes.mjs --minute): the five stages together add later-loaded words (the CMB, How we know, the Sun, Orion). Cap about 1.5 kB above it. Before: 1 662 200 on 2026-10-15"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
@@ -161,5 +163,19 @@ budgets:
   - {id: deep_localvolume_bytes, value: 300000, unit: B, since: 2026-10-14, reason: "spec 0075 design section 11: the tile at most 300 kB; 49 214 B with its manifest on 2026-10-14 (800 galaxies of the Updated Nearby Galaxy Catalog)"}
   - {id: deep_localvolume_draw_calls, value: 2, unit: calls, since: 2026-10-14, reason: "spec 0075 requirement 18: at most five draw calls per visible data class; the tile is one call of points, and one more while a galaxy's range of distance is shown"}
   # 0076 W1-a
+  # Release 1.2.0 stage W1-a (internal spec 0076, design section 4; internal #782): the Orion hero's assets, fetched
+  # when M42 is near (scripts/build_deep_orion.py: the light map and the front's map, with their manifest), and
+  # its draw calls (the gas, the stars). tests/test_hero_orion.mjs reads both.
+  - {id: deep_orion_bytes, value: 450000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 20 946 B of light map + 36 678 B of sharp map + 357 136 B of front (240 x 186 cells) + its manifest measured on 2026-10-15"}
+  - {id: deep_orion_draw_calls, value: 2, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the gas and the stars are one call each"}
   # 0076 W1-b
+  # The microwave background's map (scene/deep/cmb.js): one picture, fetched a fifth of the way out to the
+  # horizon, never at boot; one sphere, one draw call, 1024 x 512 RGBA without mipmaps on the GPU.
+  - {id: deep_cmb_map_bytes, value: 600000, unit: B, since: 2026-10-15, reason: "spec 0076 W1-b acceptance: the map at most 600 kB; 119 400 B on 2026-10-15 (WMAP nine-year ILC, 1024 x 512 grey WebP)"}
+  - {id: deep_cmb_draw_calls, value: 2, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4 (+5 for a hero at most): the sphere, and the words with the colour scale at the foot of the view while inside"}
   # 0076 W1-d
+  # The Sun's face of the day (internal spec 0076 W1-d, #916): SDO/AIA's newest 1024-pixel 171 angstrom browse
+  # picture, saved by harvest/parsers/sdo_aia.py (which refuses a bigger one) and read on the Sun's stage only.
+  # The loops over today's active regions are one merged mesh (scene/sun.js), one draw call.
+  - {id: sun_image_bytes, value: 400000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 5 W1-d: the image at most 400 kB; 188 279 B on 2026-10-15 (251 547 B as the saved JSON copy, base64)"}
+  - {id: sun_loops_draw_calls, value: 1, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the loops of every region are one mesh"}
