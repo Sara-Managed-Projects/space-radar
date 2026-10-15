@@ -55,7 +55,7 @@ budgets:
   # in 115 modules after the comment stripper alone, 1 778 733 B after esbuild's `--minify` over the modules (no
   # bundling, no property renaming). The row holds the minified number with 5 % of room, so a deploy
   # that fell back to the stripper, or a module that grew by a library, is seen before it is served.
-  - {id: deployed_boot_js_bytes, value: 1868300, unit: bytes, since: 2026-10-15, reason: "internal #515: 1 868 131 B in 118 modules measured 2026-10-15 by CI (scripts/check_built_tree.mjs on the SDO face-of-the-day branch). The 2026-10-09 cap was 1 778 733 B plus 5 %; data/sources.js now carries the sdo-aia-171 row, which used the last of that room and 131 B past it"}
+  - {id: deployed_boot_js_bytes, value: 1869400, unit: bytes, since: 2026-10-16, reason: "internal #515: 1 868 581 B in 118 modules measured 2026-10-16 on the release-1.2 wave-1 integration branch (the five stages together; each was under 1 868 300 alone: the perf hook and the card row each add a few hundred bytes to main.js and cards.js). Cap set about 800 B above it. Before: 1 868 300 on 2026-10-15 (SDO row)"}
   # THE FIRST MINUTE (internal #527, 2026-10-09). first_visit_bytes above stops two seconds after the
   # layers are ready. This is what the same visit goes on to fetch from OUR OWN host in the next 60
   # seconds, with nobody touching the page: the named stars, the exoplanets, the deep sky and their
