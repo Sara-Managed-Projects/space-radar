@@ -175,6 +175,7 @@ const CONTRACT = {
   // 0076 W1-c (truthlegend.js)
   // 0076 W1-d (sunimage.js)
   // 0076 W1-e (perf.js)
+  'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
 };
 
 const problems = [];

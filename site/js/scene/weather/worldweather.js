@@ -60,6 +60,7 @@
 import { WORLD_FRAG } from '../worlds.js';
 import { WEATHER } from '../../data/weather.js';
 import { drawnUnder } from '../exposure.js';
+import { lookHeld } from '../quality.js';
 import {
   RATE_ROWS, rateTable, splitFlow, flowPhases, rigidTurn, planetocentricDeg, marsLs, marsSeason,
   nextFlash, flashLight, bodyDirection, wavePhase,
@@ -654,13 +655,29 @@ export function effectsByWorld(rows = WEATHER) {
   return out;
 }
 
+// A FIXED SEED UNDER ?look=1 (internal spec 0076 W1-e, internal #779): a tool's two looks at one moment
+// draw the same lightning; a visitor's is Math.random's as before. The same as scene/wind.js lookRandom,
+// kept here so the weather does not fetch the wind's module. Mulberry32 on the release's seed (76,
+// scene/perf.js LOOK_SEED) mixed with a salt per module. Never beside embed=1 (scene/quality.js lookHeld).
+function lookRandom(salt = 0, search = typeof location !== 'undefined' ? location.search : '') {
+  if (!lookHeld({ search })) return Math.random;
+  let a = (76 * 0x9e3779b1 + salt * 0x85ebca6b) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /**
  * @param {object} opts
  * @param {object}   opts.worlds          scene/worlds.js: meshFor(id)
  * @param {boolean}  [opts.reducedMotion] no flashes (registry/weather.yaml off_at: reduced_motion)
- * @param {Function} [opts.rand]          () -> [0, 1), for the flashes; Math.random by default
+ * @param {Function} [opts.rand]          () -> [0, 1), for the flashes; Math.random by default, seeded under ?look=1
  */
-export function createWorldWeather({ worlds, reducedMotion = false, rand = Math.random } = {}) {
+export function createWorldWeather({ worlds, reducedMotion = false, rand = lookRandom(3) } = {}) {
   const fragment = weatherFragment();
   const worn = [];   // {id, mesh, material, original, flow, mars, defines}
   let latched = false;

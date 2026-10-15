@@ -147,6 +147,7 @@ const DEFERRED = {
   // 0076 W1-c (truthlegend.js)
   // 0076 W1-d (sunimage.js)
   // 0076 W1-e (perf.js)
+  'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

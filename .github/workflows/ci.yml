@@ -1044,3 +1044,5 @@ jobs:
       # 0076 W1-c
       # 0076 W1-d
       # 0076 W1-e
+      - name: "sr.perf: a tools-only counter, no allocation per frame, off unless asked; the seed under ?look=1"
+        run: node tests/test_perf.mjs
