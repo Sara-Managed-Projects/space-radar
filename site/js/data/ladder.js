@@ -80,7 +80,16 @@ export const LADDER_RUNGS = [
     },
     "layer": "exotics",
     "distance": "53 million light-years",
-    "why": "The first black hole ever photographed, and the last rung of this ladder. A few places on the map are farther still."
+    "why": "The first black hole ever photographed. A few places on the map are farther still."
+  },
+  {
+    "id": "edge",
+    "label": "The edge of the observable universe",
+    "target": {
+      "place": "horizon"
+    },
+    "distance": "46 billion light-years",
+    "why": "The farthest place whose light has had time to reach us, 13.8 billion years on its way. The microwave background left from just inside it, about 370 000 years after the Big Bang: the last rung."
   }
 ];
 

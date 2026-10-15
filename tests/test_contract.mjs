@@ -171,7 +171,8 @@ const CONTRACT = {
   'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag', 'facesReady'],
   'copy/en.js': ['COPY', 'compare'],
   // 0076 W1-a (orion.js)
-  // 0076 W1-b (cmb.js)
+  // 0076 W1-b (cmb.js): the microwave background's map; its frame, colours and fade are pure for tests/test_cmb.mjs.
+  'scene/deep/cmb.js': ['createCmb', 'SCENE_FROM_GAL', 'galToScene', 'sceneToGal', 'galUv', 'greyToUk', 'colourAt', 'cmbOpacity', 'STOPS', 'SCALE_UK', 'MAP_URL', 'LOAD_RATIO', 'UNDER_MEASURED'],
   // 0076 W1-c (truthlegend.js)
   // 0076 W1-d (sunimage.js)
   // 0076 W1-e (perf.js)

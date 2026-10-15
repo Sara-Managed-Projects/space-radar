@@ -1041,6 +1041,8 @@ jobs:
         run: node tests/test_ci_runs_every_test.mjs
       # 0076 W1-a
       # 0076 W1-b
+      - name: "the microwave background at the horizon: Galactic turned to the map's axes, the scale in microkelvin, nothing past the horizon, its words read aloud (internal #781)"
+        run: node tests/test_cmb.mjs
       # 0076 W1-c
       # 0076 W1-d
       # 0076 W1-e

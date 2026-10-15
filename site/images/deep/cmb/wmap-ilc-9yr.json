@@ -1,0 +1,32 @@
+{
+  "what": "The cosmic microwave background as our sky shows it: WMAP nine-year ILC map",
+  "source": {
+    "name": "WMAP nine-year Internal Linear Combination map (wmap_ilc_9yr_v5.fits), LAMBDA, NASA Goddard",
+    "url": "https://lambda.gsfc.nasa.gov/data/map/dr5/dfp/ilc/wmap_ilc_9yr_v5.fits",
+    "page": "https://lambda.gsfc.nasa.gov/product/wmap/dr5/ilc_map_get.html",
+    "sha256": "4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9",
+    "bytes": 25174080,
+    "paper": "Bennett et al. 2013, ApJS 208, 20, section 6",
+    "licence": "NASA data, no copyright claimed",
+    "terms": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "credit": "NASA / WMAP Science Team"
+  },
+  "frame": "galactic",
+  "projection": "equirectangular: column 0 at l = 0, l growing with the column; row 0 at b = +90",
+  "width": 1024,
+  "height": 512,
+  "encoding": "grey = round((T_uK / scaleUk + 1) * 127.5), clipped to 0..255",
+  "scaleUk": 200,
+  "meanK": 2.7255,
+  "smoothingDeg": 1.0,
+  "removed": "the average temperature and the dipole of our own motion",
+  "stats": {
+    "rmsUk": 71.1,
+    "minUk": -452.5,
+    "maxUk": 442.2,
+    "clippedShare": 0.0045
+  },
+  "file": "wmap-ilc-9yr.webp",
+  "fileBytes": 119400,
+  "fileSha256": "961dc5099556cc029ffb05958620fe4c062fa0c664b8105e578e6b385d15e477"
+}

@@ -4,6 +4,7 @@
 # file into site/js/data/ladder.js and scripts/check_registry.py refuses a row that names nothing.
 #
 # target       {world: <worlds.yaml id>} or {record: <a record id the layer named in `layer:` produces>}
+#              or {place: horizon}, the one place that is neither (0076 W1-b: the edge rung)
 # distance     the number a visitor reads, as text, and the source it was read from
 # why          one sentence, plain words
 #
@@ -75,7 +76,17 @@ rungs:
     layer: exotics
     distance: "53 million light-years"
     distance_source: "registry/exotics.yaml, Wikipedia infobox"
-    why: "The first black hole ever photographed, and the last rung of this ladder. A few places on the map are farther still."
+    why: "The first black hole ever photographed. A few places on the map are farther still."
+
+  # 0076 W1-b (internal spec 0075 task 65): the edge rung. Not a record or a world: a `place` the
+  # camera flies to without a cut (scene/climb.js toEdge(), the Stars tab's "The edge of the map" row).
+  # Its sphere is scene/shells.js, with the microwave map of scene/deep/cmb.js just inside it.
+  - id: edge
+    label: The edge of the observable universe
+    target: {place: horizon}
+    distance: "46 billion light-years"
+    distance_source: "site/js/data/cosmology.js horizonLy(): the particle horizon of Planck 2018 (Planck Collaboration 2020, A&A 641, A6, Table 2, as astropy.cosmology.Planck18), 46.2 billion light-years now, comoving"
+    why: "The farthest place whose light has had time to reach us, 13.8 billion years on its way. The microwave background left from just inside it, about 370 000 years after the Big Bang: the last rung."
 
 we_show:
   # The numbers a visitor should have when they ask "is that all of it?" Each names its source.

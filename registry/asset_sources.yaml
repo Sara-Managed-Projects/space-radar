@@ -206,4 +206,17 @@ sources:
     checked: 2026-10-12
   # 0076 W1-a
   # 0076 W1-b
+  # The microwave background's map (scripts/build_deep_cmb.py -> site/images/deep/cmb/): WMAP's
+  # nine-year ILC map read from LAMBDA, pinned by SHA-256 in the script and the manifest.
+  - id: nasa-lambda
+    name: LAMBDA, NASA's Legacy Archive for Microwave Background Data Analysis (WMAP data products)
+    match: ["https://lambda.gsfc.nasa.gov/"]
+    url: https://lambda.gsfc.nasa.gov/product/wmap/dr5/ilc_map_get.html
+    licence: NASA data, no copyright claimed (NASA media usage guidelines)
+    licence_read: "NASA content – images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format – generally are not subject to copyright in the United States."
+    licence_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    licence_note: "LAMBDA asks for its acknowledgement (CREDITS.md section 3h quotes it). Planck's 2018 map was not used: ESA's page for it says 'Licence: ESA Standard Licence', not CC BY-SA 3.0 IGO (read 2026-10-15)."
+    account: none
+    cost: none
+    checked: 2026-10-15
   # 0076 W1-d
