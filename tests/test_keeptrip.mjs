@@ -28,12 +28,18 @@ const { AUDIO } = await import(join(JS, 'data/audio.js'));
 const { realModelFor } = await import(join(JS, 'scene/realmodels.js'));
 const { isLadderStage } = await import(join(JS, 'scene/stage.js'));
 const S = await import(join(JS, 'data/sample.js'));
+const { NEBULAE } = await import(join(JS, 'data/nebulae.js'));
+const { HEROES } = await import(join(JS, 'scene/deep/heroes.js'));
+// Each hero's files, as keptRowFor() reads them (spec 0075 stage f).
+const heroFiles = new Map();
+for (const h of HEROES) heroFiles.set(h.record, K.deepFilesOf((await h.profile()).HERO));
 
 const all = [...S.sampleOddities(), ...S.sampleDeepSpace(), ...S.handKeptSites(), ...S.sampleAsteroids(), ...S.farBodies(), ...S.namedComets(), ...S.namedAsteroids()];
 const recordById = (id) => all.find((r) => r.id === id) || null;
 const env = (over = {}) => ({
   narration: NARRATION, textures: TEXTURES, audioRows: AUDIO, recordById, realModelFor,
-  canPlay: (type) => (/opus/.test(type) ? 'probably' : ''), tier: 1, isLadder: isLadderStage, ...over,
+  canPlay: (type) => (/opus/.test(type) ? 'probably' : ''), tier: 1, isLadder: isLadderStage,
+  pictures: NEBULAE, deepFiles: (id) => heroFiles.get(id) || [], ...over,
 });
 
 // --- 1. every trip -----------------------------------------------------------------------------
@@ -82,6 +88,18 @@ check(biggest.bytes < 40e6, `${biggest.id} keeps ${(biggest.bytes / 1e6).toFixed
   // The 4k map only for a device that earns it.
   const phone = K.tripAssets(tour, env({ tier: 0 }));
   check(!phone.urls.some((u) => u.startsWith('textures/4k/')), 'a tier-0 device is asked for a 4k map');
+}
+
+// --- 2b. a deep-sky trip keeps its photographs and its heroes' files (spec 0075 stage f) ---------
+{
+  const helix = TOURS.find((x) => x.id === 'into-the-helix');
+  const plan = K.tripAssets(helix, env());
+  check(plan.urls.includes('images/nebulae/helix-nebula.webp'), 'into-the-helix does not keep the Helix\u2019s photograph');
+  for (const f of heroFiles.get('dso-helix-nebula') || []) check(plan.urls.includes(f), `into-the-helix does not keep its hero's ${f}`);
+  const lmc = K.tripAssets(TOURS.find((x) => x.id === 'inside-a-neighbouring-galaxy'), env());
+  check(lmc.urls.includes('images/nebulae/lmc.webp'), 'inside-a-neighbouring-galaxy does not keep the LMC\u2019s photograph');
+  for (const f of heroFiles.get('dso-lmc') || []) check(lmc.urls.includes(f), `inside-a-neighbouring-galaxy does not keep its hero's ${f}`);
+  check(JSON.stringify(K.deepFilesOf({ a: 'site/images/deep/x/y.webp', b: ['data/deep/z.bin', 'see (site/images/deep/x/y.webp)'], c: '../data/deep/../q.bin' })) === JSON.stringify(['images/deep/x/y.webp', 'data/deep/z.bin']), 'deepFilesOf reads every deep path once, and no climb out');
 }
 
 // --- 3. the fetching ---------------------------------------------------------------------------
