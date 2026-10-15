@@ -1063,3 +1063,7 @@ jobs:
       # 0076 W2-c
       # 0076 W2-d
       # 0076 W2-e
+      - name: "every record on the map has one class, a renderer, a source and a credit CREDITS.md carries; no illustration claims a measurement; docs/COVERAGE.md current (internal spec 0076 W2-e, #859, #891, #921)"
+        run: python3 tests/test_coverage.py
+      - name: "the visual classes' mirror for search by kind is the registries' (internal spec 0076 W2-e)"
+        run: python3 scripts/gen_visual_classes_js.py --check

@@ -1809,6 +1809,22 @@ def main() -> int:
 
 # 0076 W2-a (sites traverses)
 # 0076 W2-e (asset records, certainty words)
+# Internal spec 0076 W2-e (#891, #921): the asset records' offline status and SHA-256 pins, a photograph's
+# archive written down, and the certainty words refused on an illustration (scripts/check_registry.py).
+CASES += [
+    ("an asset source that does not say what is there offline",
+     "asset_sources.yaml", "    offline: shipped\n", ""),
+    ("an input pinned by a hash its build script does not refuse by",
+     "asset_sources.yaml", "sha256: 4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in",
+     "sha256: 5501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in"),
+    ("a shipped file whose bytes are not the ones pinned",
+     "asset_sources.yaml", "sha256: 565b7726d187a82de1d6aa2d9fc7df6df9475409dc02262410945b38ba04dfbe",
+     "sha256: 665b7726d187a82de1d6aa2d9fc7df6df9475409dc02262410945b38ba04dfbe"),
+    ("a photograph from an archive nobody wrote down",
+     "nebulae.yaml", 'page: "https://noirlab.edu/public/images/{image}/"', 'page: "https://pictures.example.invalid/{image}/"'),
+    ("a rocket drawn as an illustration that calls itself measured",
+     "rockets.yaml", 'display: "Falcon 9 Block 5"', 'display: "Falcon 9 Block 5, measured to the metre"'),
+]
 
 if __name__ == "__main__":
     sys.exit(main())

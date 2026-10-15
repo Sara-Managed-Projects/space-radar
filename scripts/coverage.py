@@ -68,8 +68,16 @@ POSITION_TO_HONESTY = {"measured": "measured", "inferred": "modelled", "inherit"
                        "sample": "illustrative", "unknown": "illustrative"}
 
 
+_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+_PARSED: dict = {}
+
+
 def _yaml(name: str):
-    return yaml.safe_load((REG / name).read_text(encoding="utf-8")) or {}
+    """A registry file, parsed once a run (models.yaml is read by five record sets)."""
+    path = REG / name
+    if path not in _PARSED:
+        _PARSED[path] = yaml.load(path.read_text(encoding="utf-8"), Loader=_LOADER) or {}
+    return _PARSED[path]
 
 
 def _text(v) -> str:
@@ -274,7 +282,16 @@ def load_model_kinds(_d):
 _SAMPLE = ROOT / "site" / "js" / "data" / "sample.js"
 
 
+_ARRAYS: dict = {}
+
+
 def _sample_arrays() -> dict:
+    if not _ARRAYS:
+        _ARRAYS.update(_read_sample_arrays())
+    return _ARRAYS
+
+
+def _read_sample_arrays() -> dict:
     """site/js/data/sample.js's hand-kept arrays, each as a list of {id, fields...}: read as text
     (the file is a module for the browser), one object per `id:` line at the array's own indent."""
     text = _SAMPLE.read_text(encoding="utf-8")
@@ -364,6 +381,13 @@ def load_layers(d):
                         source=s.get("url"), credit=s.get("attribution")))
     return out
 
+
+# The file a domain's record is written in, for a refusal that has to name it.
+DOMAIN_FILES = {"worlds": "worlds.yaml", "rings": "worlds.yaml", "dso": "dso-hand.yaml", "photographs": "nebulae.yaml",
+                "heroes": "deepsky-heroes", "exotics": "exotics.yaml", "systems": "systems-generated.yaml",
+                "planets": "systems-generated.yaml", "stars_notable": "stars-notable.yaml", "other_light": "otherlight.yaml",
+                "sites": "sites.yaml", "real_models": "models.yaml", "model_kinds": "models.yaml", "rockets": "rockets.yaml",
+                "oddities": "oddities.yaml", "weather": "weather.yaml", "layers": "layers.yaml"}
 
 LOADERS = {
     "worlds": load_worlds, "rings": load_rings, "dso": load_dso, "photographs": load_photographs,
