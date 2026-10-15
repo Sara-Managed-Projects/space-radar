@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """The Orion hero's light and the depth of its front (internal spec 0076 stage W1-a, internal #782).
 
-    python3 scripts/build_deep_orion.py            bake both files (PIL, numpy)
+    python3 scripts/build_deep_orion.py --large=<eso1723a.jpg>   bake all three files (PIL, numpy); the large JPEG is
+                                                    ESO's (68 MB, not in git: https://cdn.eso.org/images/large/eso1723a.jpg)
+    python3 scripts/build_deep_orion.py            bake the light and the front again, keeping the sharp map
     python3 scripts/build_deep_orion.py --check    the outputs match their manifest, the photograph and the profile
 
 WHY. The Orion Nebula is a BLISTER: a thin layer of ionised gas on the near face of the molecular cloud
@@ -15,6 +17,8 @@ WHAT IT WRITES.
   site/images/deep/orion/orion-light.webp   the photograph with its stars taken out (as build_deep_helix.py
                                             does: a star is not in the nebula, and drawn on a tilted sheet it
                                             would smear). The Trapezium and NU Ori are drawn as stars.
+  site/images/deep/orion/orion-detail.webp  the SHARP light near the Trapezium (bake_detail): the same photograph from
+                                            ESO's large JPEG, 18 arcmin square, its stars out, its colours the 640 px map's.
   site/data/deep/orion-front.bin            a 240 x 186 grid on the PHOTOGRAPH'S OWN (u, v) (v up, row 0 the
                                             bottom), four half floats a cell, little-endian, after a 16-byte
                                             header (b"SROR", u16 version, u16 nx, u16 ny, u16 channels, 6 spare):
@@ -56,6 +60,8 @@ PROFILE = ROOT / "registry" / "deepsky-heroes" / "orion.yaml"
 NEBULAE = ROOT / "registry" / "nebulae.yaml"
 LIGHT = ROOT / "site" / "images" / "deep" / "orion" / "orion-light.webp"
 DEPTH = ROOT / "site" / "data" / "deep" / "orion-front.bin"
+DETAIL = ROOT / "site" / "images" / "deep" / "orion" / "orion-detail.webp"
+LARGE_URL = "https://cdn.eso.org/images/large/eso1723a.jpg"
 MANIFEST = LIGHT.with_name("manifest.json")
 VERSION = 1
 
@@ -79,6 +85,7 @@ def params() -> dict:
         "m43": {"star": [parts["m43"]["star"]["ra_deg"], parts["m43"]["star"]["dec_deg"]], **parts["m43"]["dimple"]},
         "cloud": {k: parts["cloud"][k] for k in ("blur_arcmin",)},
         "veil": parts["veil"]["dark_bay"],
+        "detail": parts["light"]["detail"],
     }
 
 
@@ -108,6 +115,70 @@ def uv_map(p: dict):
         return cw + dw, cn + dn
 
     return to_uv, from_uv
+
+
+def bake_detail(p: dict, large: Path, light640) -> dict:
+    """The sharp light near the Trapezium: ESO's large JPEG of the same photograph (16 877 x 13 107 px, not in git),
+    a square of `size_arcmin` round the star's offset `centre_*_arcmin`, its stars taken out, and its colour and
+    levels the 640 px light map's at `level_arcmin`: detail = sharp x (light640 blurred / sharp blurred). So at that
+    scale the two are the same picture and the hand-over between them has no seam; finer than it, the large one's."""
+    import numpy as np
+    from PIL import Image, ImageFilter
+
+    D = p["detail"]
+    pic = p["picture"]
+    Image.MAX_IMAGE_PIXELS = None
+    im = Image.open(large)
+    im.draft("RGB", (im.width // 2, im.height // 2))   # JPEG decoded at half scale: 0.43 arcsec a pixel
+    im = im.convert("RGB")
+    W, H = im.size
+    to_uv, _ = uv_map(p)
+    # the square in the photograph's (u, v), v up; the large image is the same frame as the 640 px one
+    cw, cn = -D["centre_east_arcmin"], D["centre_north_arcmin"]
+    half = D["size_arcmin"] / 2
+    uc, vc = to_uv(cw, cn)
+    du, dv = half / pic["width_arcmin"], half / pic["height_arcmin"]
+    box = [uc - du, vc - dv, uc + du, vc + dv]           # u0, v0, u1, v1
+    crop = im.crop((round(box[0] * W), round((1 - box[3]) * H), round(box[2] * W), round((1 - box[1]) * H)))
+    n = D["px"]
+    sharp = crop.resize((n, n), Image.LANCZOS)
+    # the stars out: brighter than the local median by a threshold, grown; a wider pass round the bright ones
+    a = np.asarray(sharp).astype(np.float32)
+    # the big stars first (wider than an 11 px median): found and filled with a 41 px median, taken at half size
+    medb = np.asarray(sharp.resize((n // 2, n // 2), Image.BOX).filter(ImageFilter.MedianFilter(21)).resize((n, n), Image.BICUBIC)).astype(np.float32)
+    big = Image.fromarray((((a.mean(axis=2) - medb.mean(axis=2)) > 35.0) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(9))
+    bigm = np.asarray(big) > 0
+    a[bigm] = medb[bigm]
+    sharp = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    med = np.asarray(sharp.filter(ImageFilter.MedianFilter(11))).astype(np.float32)
+    excess = a.mean(axis=2) - med.mean(axis=2)
+    m = Image.fromarray(((excess > 20.0) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))
+    mask = np.asarray(m) > 0
+    out = a.copy()
+    out[mask] = med[mask]
+    # only round the BRIGHT stars a second, wider pass (a wide median elsewhere would blur the gas)
+    bright = Image.fromarray(((excess > 70.0) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(25))
+    near = np.asarray(bright) > 0
+    im2 = Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
+    med2 = np.asarray(im2.filter(ImageFilter.MedianFilter(31))).astype(np.float32)
+    halo = near & ((out.mean(axis=2) - med2.mean(axis=2)) > 8.0)
+    halo = (np.asarray(Image.fromarray((halo * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))) > 0) & near
+    out[halo] = med2[halo]
+    mask = mask | halo | bigm
+    sharp = np.clip(out, 0, 255) / 255.0
+    # Colour and level from the 640 px map at a 1.5 arcmin scale, everything finer from the large picture:
+    # detail = sharp x (light640 blurred / sharp blurred), both blurred alike.
+    L = Image.fromarray(light640)
+    lw, lh = L.size
+    low = np.asarray(L.transform((n, n), Image.EXTENT, (box[0] * lw, (1 - box[3]) * lh, box[2] * lw, (1 - box[1]) * lh), Image.BICUBIC)).astype(np.float64) / 255.0
+    rad = D["level_arcmin"] / D["size_arcmin"] * n
+    gb = lambda x: np.asarray(Image.fromarray((np.clip(x, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(rad))).astype(np.float64) / 255.0
+    ratio = np.clip((gb(low) + 0.02) / (gb(sharp) + 0.02), 0.25, 4.0)
+    detail = np.clip(sharp * ratio, 0, 1)
+    DETAIL.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray((detail * 255 + 0.5).astype(np.uint8)).save(DETAIL, "WEBP", quality=D["quality"], method=6)
+    return {"file": str(DETAIL.relative_to(ROOT)), "bytes": DETAIL.stat().st_size, "sha256": sha(DETAIL), "uv_box": [round(x, 6) for x in box],
+            "size": [n, n], "stars_removed_px": int(mask.sum()), "from": LARGE_URL, "from_sha256": sha(large)}
 
 
 def bake() -> int:
@@ -253,8 +324,9 @@ def bake() -> int:
     slope = np.hypot(gx, gy)
     # --- 3. the cloud's column and the Veil's Dark Bay
     c = at(cloudmap)
-    c = np.clip(c / np.percentile(c, 98), 0, 1) ** 0.7
-    c = 0.05 + 0.95 * c
+    # thick behind the bright middle, thin under the faint outer nebula (so from behind its edges show through)
+    c = np.clip(c / np.percentile(c, 98), 0, 1) ** 1.3
+    c = 0.02 + 0.98 * c
     Vb = p["veil"]
     e = np.hypot((-Wm - Vb["east_arcmin"]) / Vb["a_arcmin"], (Nm - Vb["north_arcmin"]) / Vb["b_arcmin"])
     tau = np.clip(np.log(np.maximum(at(ref), 1e-6) / np.maximum(at(fine), 1e-6)), 0, Vb["tau_max"]) * (1 - smooth(e, 0.6, 1.0))
@@ -262,11 +334,23 @@ def bake() -> int:
     data = np.stack([z, c, tau, np.ones_like(z)], axis=-1).astype("<f2")
     DEPTH.parent.mkdir(parents=True, exist_ok=True)
     DEPTH.write_bytes(b"SROR" + struct.pack("<HHHH", VERSION, nx, ny, 4) + b"\0" * 4 + data.tobytes())
+    detail = None
+    large = next((Path(a.split("=", 1)[1]) for a in sys.argv[1:] if a.startswith("--large=")), None)
+    if large:
+        detail = bake_detail(p, large, light)
+    elif MANIFEST.exists() and DETAIL.exists():
+        detail = json.loads(MANIFEST.read_text(encoding="utf-8")).get("detail")
+        if detail and detail.get("sha256") != sha(DETAIL):
+            detail = None
+    if not detail:
+        print(f"REFUSED the sharp light map needs ESO's large JPEG: download {LARGE_URL} (68 MB, not in git) and run with --large=<path>")
+        return 1
     MANIFEST.write_text(json.dumps({
         "light": {"file": str(LIGHT.relative_to(ROOT)), "bytes": LIGHT.stat().st_size, "sha256": sha(LIGHT), "stars_removed_px": int(mask.sum()), "size": [Wpx, Hpx]},
         "depth": {"file": str(DEPTH.relative_to(ROOT)), "bytes": DEPTH.stat().st_size, "sha256": sha(DEPTH), "grid": [nx, ny],
                   "z_ly": [round(float(z.min()), 3), round(float(z.max()), 3)], "z_at_star_ly": round(float(-d0), 4),
                   "max_slope": round(float(slope.max()), 3), "veil_tau_max": round(float(tau.max()), 3)},
+        "detail": detail,
         "from": str(SRC.relative_to(ROOT)), "from_sha256": sha(SRC),
         "params": p,
         "credit": "ESO/G. Beccari (eso1723a), CC BY 4.0; stars removed and depth reconstructed by Space Radar (scripts/build_deep_orion.py)",
@@ -284,6 +368,8 @@ def check() -> int:
     bad = []
     if m["light"]["sha256"] != sha(LIGHT):
         bad.append("orion-light.webp is not the bake's")
+    if not DETAIL.exists() or (m.get("detail") or {}).get("sha256") != sha(DETAIL):
+        bad.append("orion-detail.webp is not the bake's")
     if m["depth"]["sha256"] != sha(DEPTH):
         bad.append("orion-front.bin is not the bake's")
     if m.get("from_sha256") != sha(SRC):
@@ -294,7 +380,7 @@ def check() -> int:
         for b in bad:
             print("STALE   " + b + ": run python3 scripts/build_deep_orion.py")
         return 1
-    print(f"orion light and front ok: {m['light']['bytes']} + {m['depth']['bytes']} B from {m['from']}")
+    print(f"orion light, detail and front ok: {m['light']['bytes']} + {m['detail']['bytes']} + {m['depth']['bytes']} B from {m['from']} and {m['detail']['from']}")
     return 0
 
 

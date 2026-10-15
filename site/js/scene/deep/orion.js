@@ -46,6 +46,7 @@ import { stage } from '../stage.js';
 import { exposureLook, EXPOSURES, drawnUnder } from '../exposure.js';
 import { STAR_LIGHT_GLSL } from '../stretch.js';
 import { kelvinToRgb, STAR_CHROMA } from '../starfield.js';
+import { setExtraHole } from '../starholes.js';
 import { HERO as PROFILE } from '../../data/hero-orion.js';
 import { NEBULAE } from '../../data/nebulae.js';
 
@@ -61,12 +62,14 @@ const MAX_N = 32;          // coarse steps at most (level 3 on T2)
 const BISECT = 4;          // halvings at a crossing, then a secant step: a 2 ly step is found to well under a cell
 const LIGHT_URL = '../../../images/deep/orion/orion-light.webp';
 const FRONT_URL = '../../../data/deep/orion-front.bin';
+const DETAIL_URL = '../../../images/deep/orion/orion-detail.webp';
 const CLUSTER_BY_TIER = [400, 900, 1600];
 // ONE table for the light and the march: the GLSL below is written from it.
 export const SHAPE = {
-  limbCap: 0.5,     // the limb's 1 / |cos| stops growing at cos 0.5 (twice)...
-  grazeFrom: 0.03,  // ...and the light fades out between these cosines (a grazing ray sees a thin edge, not a rim)
-  grazeTo: 0.35,
+  limbCap: 0.5,     // the limb's 1 / |cos| stops growing at cos 0.5 (twice): a fold seen edge on is a bright line
+                    // of gas, as an ionisation front is (the Bright Bar), never a dark arc
+  detailEdge: 0.85, // the sharp map blends in from its square's edge to 0.85 of its half-width
+  meshStep: 2,      // the T0 sheet's vertices: every second cell of the front's map
   shoulder: 1.0,    // a soft shoulder over 1 (only a limb-brightened edge reaches it; our line never does)
   adapt: 0.45,      // what is left of its light when it fills the view (the eye's adaptation)
   sparkleCap: 0.6,  // the brightest a cluster pinpoint is drawn (a crowd of them close up is a field of faint points, not snow)
@@ -148,7 +151,7 @@ export function geometryOf(profile = PROFILE) {
   const xs = corners.map((c) => c[0]), ys = corners.map((c) => c[1]);
   const at = (s, z) => { const [w, n] = offset(star[0], star[1], s.ra_deg, s.dec_deg); return [w * lyA, n * lyA, z]; };
   const dim = m43.dimple || {};
-  const stars = (trap.stars || []).map((s) => ({ id: s.id, pos: at(s, 0), v: s.v_mag, temp: s.temp_k }));
+  const stars = (trap.stars || []).map((s) => ({ id: s.id, pos: at(s, Number(s.z_ly) || 0), v: s.v_mag, temp: s.temp_k, catalogueLy: s.catalogue_ly || null }));
   if (m43.star) {
     // NU Ori stands star_in_front_ly before the floor of its dimple: the bowl's height there (the bake's formula,
     // without the relief), less the dimple's depth
@@ -160,7 +163,17 @@ export function geometryOf(profile = PROFILE) {
     stars.push({ id: m43.star.id, pos: at(m43.star, zb - (Number(dim.depth_ly) || 0) + (Number(dim.star_in_front_ly) || 0.3)), v: m43.star.v_mag, temp: m43.star.temp_k });
   }
   const cloudLy = Number(cloud.thickness_ly) || 3;
+  // the sharp map's square in the photograph's (u, v): u0, v0, u1, v1 (the bake's own arithmetic)
+  const D = part(P, 'light').detail || null;
+  let detailBox = null;
+  if (D) {
+    const [x, y] = [-Number(D.centre_east_arcmin) * lyA, Number(D.centre_north_arcmin) * lyA];
+    const uc = uv.u0 + x * uv.ux[0] + y * uv.uy[0], vc = uv.v0 + x * uv.ux[1] + y * uv.uy[1];
+    const du = D.size_arcmin / 2 / row.width_arcmin, dv = D.size_arcmin / 2 / row.height_arcmin;
+    detailBox = [uc - du, vc - dv, uc + du, vc + dv];
+  }
   return {
+    detailBox,
     distanceLy: dist, lyPerArcmin: lyA, uv, d0,
     // the box reaches up to the Veil's plane (so a view through it is drawn); the march's slab only to just over
     // the front's rim
@@ -272,7 +285,7 @@ export function columnJs(g, front, ro, rd, { n = 12, j = 0.5, light = () => [0, 
           const zy = (fAt([pc[0], pc[1] + h])[0] - fc[0]) / h;
           const len = Math.hypot(zx, zy, 1);
           const mu = Math.abs(rd[2] - zx * rd[0] - zy * rd[1]) / len;
-          const limb = smooth(mu, SHAPE.grazeFrom, SHAPE.grazeTo) / (Math.max(mu, SHAPE.limbCap) * len);
+          const limb = 1 / (Math.max(mu, SHAPE.limbCap) * len);
           const lc = light(u, v);
           const k = cov * Math.exp(fc[2] * Math.sqrt(cov)) * limb;
           for (let c = 0; c < 3; c++) C[c] += T * lc[c] * k;
@@ -326,14 +339,14 @@ export function tintOf(kelvin, chroma = STAR_CHROMA) {
   return out.map((v) => v / max);
 }
 
-/** A catalogued star at the camera, by scene/stars3d.js's curve (its VERT): size in CSS px and the rest. Pure. */
+/**
+ * A catalogued star at the camera (STAR_VERT's kind 0): a small hard core and a compact halo, its size on screen
+ * capped at about 9 CSS px however bright (a brighter star is whiter and more intense, never a bigger blob). Pure.
+ */
 export function starLook(m) {
-  const tt = clamp((6.5 - m) / 8, 0, 1);
-  let core = 1 + 5 * tt ** 1.6;
-  const glare = clamp((-1.5 - m) / 6, 0, 1), glow = clamp((2.5 - m) / 4, 0, 1);
-  core *= 1 + 0.8 * glow;
-  const size = core * (1 + 4 * glow) + 26 * glare;
-  return { size, core: core / size, glow, glare, alpha: 0.35 + 0.65 * tt };
+  const tt = clamp((6.5 - m) / 8, 0, 1), over = clamp((-1.5 - m) / 6, 0, 1);
+  const core = 1.2 + 1.6 * tt, size = core * (2 + 1.2 * over);
+  return { size, core: core / size, glow: 0.35 + 0.65 * Math.max(tt, over), alpha: m > 7.5 ? 0 : (0.35 + 0.65 * tt) * (1 + 1.5 * over) };
 }
 
 /** A cluster pinpoint: its size (CSS px) and per-pixel brightness, from its flux and its distance (ly). Pure. */
@@ -412,6 +425,35 @@ float cloudW( float g ) { return g < 0.0 ? 1.0 - smoothstep( 0.6 * uCloudLy, uCl
 float cloudAt( vec4 f, vec3 p ) { return uSigma * f.g * coverAt( uvAt( p.xy ) ) * cloudW( p.z - f.r ); }
 `;
 
+// The light: the 640 px photograph, and near the Trapezium the sharp map of the same photograph, blended in from its
+// square's edge, and only where its texels are larger than a pixel (it has no mipmaps: GPU memory).
+const LIGHT_GLSL = /* glsl */ `
+uniform sampler2D uLight;  // the photograph without its stars (display values, gasmat.js COLOUR_POLICY)
+uniform sampler2D uDetail; // the sharp map near the Trapezium (scripts/build_deep_orion.py bake_detail)
+uniform vec4 uDetBox;      // its square in the photograph's (u, v): u0, v0, u1, v1
+uniform float uDetOn;      // 1 once it has landed
+uniform float uDetPx;      // its side, texels
+uniform float uGamma;      // the exposure's stretch, as scene/nebulae.js gives the photograph
+uniform float uSat;
+vec3 rawLight( vec2 uv, float uvPerPx ) {
+  vec3 t = texture2D( uLight, uv ).rgb;
+  if ( uDetOn > 0.0 ) {
+    vec2 q = ( uv - uDetBox.xy ) / ( uDetBox.zw - uDetBox.xy );
+    float e = max( abs( q.x * 2.0 - 1.0 ), abs( q.y * 2.0 - 1.0 ) );
+    // a texel of the sharp map against a pixel: blended in only once it is at least half a pixel
+    float texel = ( uDetBox.z - uDetBox.x ) / uDetPx;
+    float w = ( 1.0 - smoothstep( ${f3(SHAPE.detailEdge)}, 1.0, e ) ) * smoothstep( 0.25, 0.5, texel / max( uvPerPx, 1e-9 ) );
+    if ( w > 0.0 ) t = mix( t, texture2D( uDetail, clamp( q, 0.0, 1.0 ) ).rgb, w );
+  }
+  return t;
+}
+vec3 stretchLight( vec3 t ) {
+  vec3 c = pow( max( t, vec3( 0.0 ) ), vec3( uGamma ) );
+  float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
+  return mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uSat );
+}
+`;
+
 const GAS_FRAG = /* glsl */ `
 #define MAX_N ${MAX_N}
 uniform vec3 uCam;         // the camera in the sky frame, ly (CPU, float64, each frame)
@@ -421,13 +463,12 @@ uniform float uVeilZ;
 uniform float uSlabTop;    // the front's rim and a little: the march stops there (the Veil is a plane above)
 uniform float uCell;       // one cell of the front's map, ly (for its slope)
 uniform int uN;            // coarse steps
-uniform sampler2D uLight;  // the photograph without its stars (display values, gasmat.js COLOUR_POLICY)
-uniform float uGamma;      // the exposure's stretch, as scene/nebulae.js gives the photograph
-uniform float uSat;
+uniform float uPixAng;     // a pixel's angle, radians (the sharp map's blend)
 uniform float uShare;
 uniform float uGain;
 varying vec3 vObj;
 ${FRONT_GLSL}
+${LIGHT_GLSL}
 #include <common>
 #include <logdepthbuf_pars_fragment>
 
@@ -435,12 +476,6 @@ float pixelHash( vec2 p ) {
   vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
   p3 += dot( p3, p3.yzx + 33.33 );
   return fract( ( p3.x + p3.y ) * p3.z );
-}
-// The photograph's colour at (u, v), stretched as the exposure stretches the photograph (scene/nebulae.js FRAG).
-vec3 lightAt( vec2 uv ) {
-  vec3 c = pow( max( texture2D( uLight, uv ).rgb, vec3( 0.0 ) ), vec3( uGamma ) );
-  float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
-  return mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uSat );
 }
 float veilT( vec3 ro, vec3 rd, float tv ) {
   vec2 uv = uvAt( ( ro + rd * tv ).xy );
@@ -502,9 +537,11 @@ void main() {
           float len = length( vec3( zx, zy, 1.0 ) );
           float mu = abs( rd.z - zx * rd.x - zy * rd.y ) / len;
           // limb-brightened as a thin layer is, but a grazing ray fades: a thin edge, not a glass rim
-          float limb = smoothstep( ${f3(SHAPE.grazeFrom)}, ${f3(SHAPE.grazeTo)}, mu ) / ( max( mu, ${f3(SHAPE.limbCap)} ) * len );
+          float limb = 1.0 / ( max( mu, ${f3(SHAPE.limbCap)} ) * len );
           // the Veil's Dark Bay given back here and taken again on our line (the plane above)
-          C += T * lightAt( uv ) * ( cov * exp( fc.b * sqrt( cov ) ) * limb );
+          // how much of the photograph one pixel spans here: the crossing's distance times a pixel's angle
+          float uvPerPx = tc * uPixAng * length( uUx );
+          C += T * stretchLight( rawLight( uv, uvPerPx ) ) * ( cov * exp( fc.b * sqrt( cov ) ) * limb );
         }
         if ( ga > 0.0 ) T *= exp( -0.5 * ( sc + kb ) * ( tb - tc ) );
       } else if ( ga < 0.0 ) {
@@ -571,19 +608,18 @@ void main() {
   vKind = aKind;
   vColour = aStar.rgb;
   if ( aKind < 0.5 ) {
-    // apparent magnitude at the CAMERA, then the catalogue stars' own size curve
+    // its magnitude at the CAMERA; drawn as a SMALL HARD POINT with a compact halo whose size on screen is capped
+    // (at most about 9 CSS px across on any screen): brighter is whiter and more intense, never a bigger blob
     float m = aStar.w + 5.0 * log( d / uDistLy ) / log( 10.0 ) - 2.5 * log( max( ext, 1e-6 ) ) / log( 10.0 );
     float tt = clamp( ( 6.5 - m ) / 8.0, 0.0, 1.0 );
-    float core = 1.0 + 5.0 * pow( tt, 1.6 );
-    float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
-    float glow = clamp( ( 2.5 - m ) / 4.0, 0.0, 1.0 );
-    core *= 1.0 + 0.8 * glow;
-    float size = core * ( 1.0 + 4.0 * glow ) + 26.0 * glare;
+    float over = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
+    float core = 1.2 + 1.6 * tt;
+    float size = core * ( 2.0 + 1.2 * over );
     gl_PointSize = mv.z < 0.0 ? size * uPixelRatio : 0.0;
     vCore = core / size;
-    vGlow = glow;
-    vGlare = glare;
-    vAlpha = ( m > 7.5 ? 0.0 : 0.35 + 0.65 * tt ) * uShare * uGain;
+    vGlow = 0.35 + 0.65 * max( tt, over );
+    vGlare = 0.0;
+    vAlpha = ( m > 7.5 ? 0.0 : ( 0.35 + 0.65 * tt ) * ( 1.0 + 1.5 * over ) ) * uShare * uGain;
   } else {
     // a pinpoint: its flux falls as 1 / d^2 from the record's distance; close up it gets SMALLER (its light in
     // fewer pixels), capped, never grown (spec 0075's lesson)
@@ -617,8 +653,7 @@ void main() {
   if ( vKind < 0.5 ) {
     vec2 light = starLight( d, vCore, vGlow );
     a = light.x + light.y;
-    if ( vGlare > 0.0 ) { float e = 1.0 - clamp( d / 0.5, 0.0, 1.0 ); a = max( a, vGlare * 0.8 * e * e ); }
-    col = mix( vColour, vec3( 1.0 ), 0.4 * light.x * max( vGlow, vGlare ) );
+    col = mix( vColour, vec3( 1.0 ), 0.5 * light.x );
   } else {
     a = exp( -10.0 * d * d ) * ( 1.0 - smoothstep( 0.4, 0.5, d ) );
   }
@@ -627,8 +662,93 @@ void main() {
 }
 `;
 
+// THE CHEAP PATH (T0 and the frame latch, Low included): the front as a MESH, the same sheet the march finds,
+// one texture lookup a pixel. Seen from the star's side it glows with the light (limb as the march's); seen from the
+// cloud's side its light comes through the cloud's column, so from behind the thin outer parts show and the
+// thick middle is dark. Its alpha is the cloud's: what is behind the sheet is hidden as by the march's cloud.
+const SHEET_VERT = /* glsl */ `
+attribute vec2 aUv;
+attribute vec3 aNormal;
+varying vec2 vUv;
+varying vec3 vN;
+varying vec3 vP;
+${COMMON}
+void main() {
+  vUv = aUv; vN = aNormal; vP = position;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  #include <logdepthbuf_vertex>
+}
+`;
+const SHEET_FRAG = /* glsl */ `
+uniform vec3 uCam;
+uniform float uVeilZ;
+uniform float uPixAng;
+uniform float uShare;
+uniform float uGain;
+varying vec2 vUv;
+varying vec3 vN;
+varying vec3 vP;
+${FRONT_GLSL}
+${LIGHT_GLSL}
+#include <common>
+#include <logdepthbuf_pars_fragment>
+void main() {
+  #include <logdepthbuf_fragment>
+  if ( uShare <= 0.0 ) discard;
+  float cov = coverAt( vUv );
+  if ( cov <= 0.0 ) discard;
+  vec3 toCam = uCam - vP;
+  float dist = length( toCam );
+  vec3 v = toCam / dist;
+  vec3 n = normalize( vN );
+  float side = dot( n, v );
+  float mu = abs( side );
+  vec4 f = texture2D( uFront, vUv );
+  float limb = n.z / max( mu, ${f3(SHAPE.limbCap)} );
+  vec3 e = stretchLight( rawLight( vUv, dist * uPixAng * length( uUx ) ) ) * cov * exp( f.b * sqrt( cov ) ) * limb;
+  // the Veil, if it lies between the camera and here (on our line it takes back what the front was given)
+  float T = 1.0;
+  if ( ( uCam.z - uVeilZ ) * ( vP.z - uVeilZ ) < 0.0 ) {
+    vec3 pv = uCam + ( vP - uCam ) * ( ( uVeilZ - uCam.z ) / ( vP.z - uCam.z ) );
+    vec2 uvv = uvAt( pv.xy );
+    T = exp( -texture2D( uFront, uvv ).b * sqrt( coverAt( uvv ) ) );
+  }
+  // the cloud behind the sheet: its column along the view, capped at three thicknesses
+  float Tc = exp( -uSigma * f.g * cov * min( uCloudLy / max( mu, 0.05 ), 3.0 * uCloudLy ) );
+  vec3 col = ( side < 0.0 ? e * Tc : e ) * T * uGain * uShare;
+  float mx = max( col.r, max( col.g, col.b ) );
+  if ( mx > ${f3(SHAPE.shoulder)} ) col *= ( ${f3(SHAPE.shoulder)} + ( 1.0 - exp( -( mx - ${f3(SHAPE.shoulder)} ) ) ) * 0.5 ) / mx;
+  gl_FragColor = vec4( col, ( 1.0 - Tc * T ) * uShare );
+}
+`;
+
+/** The T0 sheet's vertices from the front's map: every `step`-th cell; sky-frame positions, (u, v) and normals. Pure. */
+export function sheetOf(g, front, step = SHAPE.meshStep) {
+  const nx = Math.floor((front.nx - 1) / step) + 1, ny = Math.floor((front.ny - 1) / step) + 1;
+  const pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), nrm = new Float32Array(nx * ny * 3);
+  const cx = 1 / (front.nx * g.uv.ux[0]), cy = 1 / (front.ny * g.uv.uy[1]);
+  const z = (i, j) => front.data[(Math.min(front.ny - 1, Math.max(0, j)) * front.nx + Math.min(front.nx - 1, Math.max(0, i))) * 4];
+  for (let b = 0; b < ny; b++) for (let a = 0; a < nx; a++) {
+    const i = Math.min(front.nx - 1, a * step), j = Math.min(front.ny - 1, b * step);
+    const u = (i + 0.5) / front.nx, v = (j + 0.5) / front.ny;
+    const [x, y] = g.uv.xyOf(u, v);
+    const k = b * nx + a;
+    pos.set([x, y, z(i, j)], 3 * k);
+    uv.set([u, v], 2 * k);
+    const zx = (z(i + 1, j) - z(i - 1, j)) / (2 * cx), zy = (z(i, j + 1) - z(i, j - 1)) / (2 * cy);
+    const l = Math.hypot(zx, zy, 1);
+    nrm.set([-zx / l, -zy / l, 1 / l], 3 * k);
+  }
+  const index = [];
+  for (let b = 0; b < ny - 1; b++) for (let a = 0; a < nx - 1; a++) {
+    const k = b * nx + a;
+    index.push(k, k + 1, k + nx, k + 1, k + nx + 1, k + nx);
+  }
+  return { pos, uv, nrm, index, nx, ny };
+}
+
 /** The shader sources, for tests/test_hero_orion.mjs (columnJs mirrors GAS_FRAG). */
-export const SHADERS = { gasVertex: GAS_VERT, gas: GAS_FRAG, starVertex: STAR_VERT, star: STAR_FRAG };
+export const SHADERS = { gasVertex: GAS_VERT, gas: GAS_FRAG, starVertex: STAR_VERT, star: STAR_FRAG, sheetVertex: SHEET_VERT, sheet: SHEET_FRAG };
 
 // -------------------------------------------------------------------------------------- the hero
 
@@ -674,22 +794,65 @@ export function createHero(THREE, env = {}) {
     sky.matrixWorldNeedsUpdate = true;
   }
 
-  // --- what it fetches: the light map and the front's map
-  let lightTex = null, lightState = 'none', frontTex = null, frontState = 'none', frontBytes = 0;
+  // --- what it fetches: the light map, the sharp map near the Trapezium, and the front's map
+  let lightTex = null, lightState = 'none', detailTex = null, detailState = 'none', frontTex = null, frontState = 'none', frontBytes = 0;
   const browser = typeof document !== 'undefined';
+  const loadTex = (url, mip, done) => {
+    const t = new THREE.TextureLoader().load(new URL(url, import.meta.url).href, () => done('ready'), undefined, (e) => { done('failed'); console.warn('deep: an Orion map did not load', url, e); });
+    t.colorSpace = THREE.NoColorSpace; // display values, as the photographs (gasmat.js COLOUR_POLICY)
+    t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+    t.generateMipmaps = mip;
+    t.minFilter = mip ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    return t;
+  };
   if (browser && THREE.TextureLoader) {
     lightState = 'loading';
-    lightTex = new THREE.TextureLoader().load(new URL(LIGHT_URL, import.meta.url).href,
-      () => { lightState = 'ready'; },
-      undefined,
-      (e) => { lightState = 'failed'; console.warn('deep: the Orion light map did not load', e); });
-    lightTex.colorSpace = THREE.NoColorSpace;
-    lightTex.wrapS = lightTex.wrapT = THREE.ClampToEdgeWrapping;
-    lightTex.minFilter = THREE.LinearMipmapLinearFilter;
-    lightTex.magFilter = THREE.LinearFilter;
+    lightTex = loadTex(LIGHT_URL, true, (st) => { lightState = st; });
+    // the sharp map has no mipmaps (GPU memory): the shader uses it only where its texels are at least half a pixel
+    detailState = 'loading';
+    detailTex = loadTex(DETAIL_URL, false, (st) => { detailState = st; for (const m of [gasMat, sheetMat]) m.uniforms.uDetOn.value = st === 'ready' ? 1 : 0; });
   }
+  const DET = part(profile, 'light').detail || {};
   const blank = new THREE.DataTexture(new Uint16Array([0, 0, 0, 0x3c00]), 1, 1, THREE.RGBAFormat, THREE.HalfFloatType);
   blank.needsUpdate = true;
+
+  const pal0 = paletteFor(1, profile);
+  const V3 = (v) => new THREE.Vector3(...v);
+  const V2 = (v) => new THREE.Vector2(...v);
+  const front = () => ({
+    uFront: { value: blank }, uUv0: { value: new THREE.Vector2(g.uv.u0, g.uv.v0) }, uUx: { value: V2(g.uv.ux) }, uUy: { value: V2(g.uv.uy) },
+    uSigma: { value: g.sigma }, uCloudLy: { value: g.cloudLy }, uBoxMin: { value: V3(g.box.min) }, uBoxMax: { value: V3(g.box.max) },
+  });
+  const camU = { value: new THREE.Vector3(0, 0, 50) };
+  const lightU = () => ({
+    uLight: { value: lightTex }, uDetail: { value: detailTex }, uDetBox: { value: new THREE.Vector4(...(g.detailBox || [0, 0, 1, 1])) }, uDetOn: { value: 0 }, uDetPx: { value: Number(DET.px) || 704 },
+    uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation },
+  });
+  // --- the gas: the box round the footprint, by its back faces (T1 and up)
+  const size = g.box.max.map((v, i) => v - g.box.min[i]);
+  const gasGeo = new THREE.BoxGeometry(size[0], size[1], size[2]);
+  gasGeo.translate(...g.box.max.map((v, i) => (v + g.box.min[i]) / 2));
+  const gasMat = material(THREE, {
+    vertexShader: GAS_VERT, fragmentShader: GAS_FRAG, absorbing: true, side: THREE.BackSide,
+    uniforms: {
+      ...front(), ...lightU(), uCam: camU, uVeilZ: { value: g.veilZ }, uSlabTop: { value: g.slabTop }, uCell: { value: 0.15 }, uN: { value: 12 },
+      uPixAng: { value: 0.001 }, uShare: { value: 0 }, uGain: { value: 1 },
+    },
+  });
+  gasMat.name = 'deep-orion-gas';
+  const gas = new THREE.Mesh(gasGeo, gasMat);
+  gas.name = `${group.name}-shells`; // the contract's draw-order check knows a deep mesh by `-shells`
+  gas.renderOrder = -1;
+  sky.add(gas);
+  // --- the sheet: the same front as a mesh (T0 and the latch), built once the front's map has landed
+  const sheetMat = material(THREE, {
+    vertexShader: SHEET_VERT, fragmentShader: SHEET_FRAG, absorbing: true, side: THREE.DoubleSide,
+    uniforms: { ...front(), ...lightU(), uCam: camU, uVeilZ: { value: g.veilZ }, uPixAng: gasMat.uniforms.uPixAng, uShare: { value: 0 }, uGain: { value: 1 } },
+  });
+  sheetMat.name = 'deep-orion-sheet';
+  let sheet = null, sheetBytes = 0;
+
   const useFront = (f) => {
     frontTex = new THREE.DataTexture(f.half, f.nx, f.ny, THREE.RGBAFormat, THREE.HalfFloatType);
     frontTex.minFilter = frontTex.magFilter = THREE.LinearFilter;
@@ -697,9 +860,20 @@ export function createHero(THREE, env = {}) {
     frontTex.generateMipmaps = false;
     frontTex.needsUpdate = true;
     frontBytes = f.half.byteLength;
-    gasMat.uniforms.uFront.value = frontTex;
-    starMat.uniforms.uFront.value = frontTex;
+    for (const m of [gasMat, starMat, sheetMat]) m.uniforms.uFront.value = frontTex;
     gasMat.uniforms.uCell.value = 1 / f.nx / Math.hypot(g.uv.ux[0], g.uv.ux[1]);
+    const sh = sheetOf(g, f);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(sh.pos, 3));
+    geo.setAttribute('aUv', new THREE.Float32BufferAttribute(sh.uv, 2));
+    geo.setAttribute('aNormal', new THREE.Float32BufferAttribute(sh.nrm, 3));
+    geo.setIndex(sh.index);
+    sheet = new THREE.Mesh(geo, sheetMat);
+    sheet.name = `${group.name}-sheet`;
+    sheet.renderOrder = -1;
+    sheet.visible = false;
+    sky.add(sheet);
+    sheetBytes = sh.pos.byteLength + sh.uv.byteLength + sh.nrm.byteLength + sh.index.length * 4;
     frontState = 'ready';
   };
   if (browser || env.fetchBin) {
@@ -709,34 +883,10 @@ export function createHero(THREE, env = {}) {
       .catch((e) => { frontState = 'failed'; console.warn('deep: the Orion front did not load', e); });
   }
 
-  const pal0 = paletteFor(1, profile);
-  const V3 = (v) => new THREE.Vector3(...v);
-  const V2 = (v) => new THREE.Vector2(...v);
-  const front = () => ({
-    uFront: { value: blank }, uUv0: { value: new THREE.Vector2(g.uv.u0, g.uv.v0) }, uUx: { value: V2(g.uv.ux) }, uUy: { value: V2(g.uv.uy) },
-    uSigma: { value: g.sigma }, uCloudLy: { value: g.cloudLy }, uBoxMin: { value: V3(g.box.min) }, uBoxMax: { value: V3(g.box.max) },
-  });
-  // --- the gas: the box round the footprint, by its back faces
-  const size = g.box.max.map((v, i) => v - g.box.min[i]);
-  const gasGeo = new THREE.BoxGeometry(size[0], size[1], size[2]);
-  gasGeo.translate(...g.box.max.map((v, i) => (v + g.box.min[i]) / 2));
-  const gasMat = material(THREE, {
-    vertexShader: GAS_VERT, fragmentShader: GAS_FRAG, absorbing: true, side: THREE.BackSide,
-    uniforms: {
-      ...front(), uCam: { value: new THREE.Vector3(0, 0, 50) }, uVeilZ: { value: g.veilZ }, uSlabTop: { value: g.slabTop }, uCell: { value: 0.15 }, uN: { value: 12 },
-      uLight: { value: lightTex }, uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation }, uShare: { value: 0 }, uGain: { value: 1 },
-    },
-  });
-  gasMat.name = 'deep-orion-gas';
-  const gas = new THREE.Mesh(gasGeo, gasMat);
-  gas.name = `${group.name}-shells`; // the contract's draw-order check knows a deep mesh by `-shells`
-  gas.renderOrder = -1;
-  sky.add(gas);
-
-  // --- the stars: the Trapezium and NU Ori, and the cluster (built for the tier)
+  // --- the stars: the Trapezium, theta2 Ori A and NU Ori, and the cluster (built for the tier)
   const starMat = material(THREE, {
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
-    uniforms: { ...front(), uCam: gasMat.uniforms.uCam, uDistLy: { value: g.distanceLy }, uPixelRatio: { value: 1 }, uShare: { value: 0 }, uGain: { value: 1 } },
+    uniforms: { ...front(), uCam: camU, uDistLy: { value: g.distanceLy }, uPixelRatio: { value: 1 }, uShare: { value: 0 }, uGain: { value: 1 } },
   });
   starMat.name = 'deep-orion-stars';
   let stars = null, starTier = -1, starCount = 0, starBytes = 0;
@@ -765,8 +915,13 @@ export function createHero(THREE, env = {}) {
     starTier = tier; starCount = m + n; starBytes = pos.byteLength + star.byteLength + kind.byteLength;
   }
   buildStars(1);
+  // A catalogue star the hero draws itself (theta2 Ori A): the catalogue's copy, at its own distance, steps aside
+  // while the hero's is drawn (scene/starholes.js, the M42 hole).
+  const twins = g.stars.filter((s) => Array.isArray(s.catalogueLy)).map((s) => ({ id: `orion:${s.id}`, km: s.catalogueLy.map((v) => v * 9460730472580.8) }));
+  const _tw = new THREE.Vector3();
+  const holeOff = () => { for (const t of twins) setExtraHole(t.id, null); };
 
-  let level = 0, levelShare = 0, samples = 12, tierNow = 1, slowMs = 0, last = { gas: 0, stars: 0, photo: 0, light: 1 }, palette = pal0;
+  let level = 0, levelShare = 0, samples = 12, tierNow = 1, slowMs = 0, cheap = false, last = { gas: 0, stars: 0, photo: 0, light: 1 }, palette = pal0;
   const _inv = new THREE.Matrix4();
   const _id = new THREE.Matrix4();
   const _cam = new THREE.Vector3();
@@ -774,63 +929,84 @@ export function createHero(THREE, env = {}) {
   return {
     group,
     levels: [2, 3],
+    // The cheap path (the sheet) costs about what the holder it replaces does: the coordinator may keep it drawn under
+    // the frame latch and Low (internal spec 0076 W1-a).
+    latchSafe: true,
     // (spec 0075 stage c's hook) the card's rows come from this block; M42 and M43 are drawn as a reconstruction
     card: { copy: COPY_BLOCK, drawn: DRAWN },
     setLevel(n, share = 1) {
       level = n;
       levelShare = n >= 2 ? clamp(share, 0, 1) : 0;
       group.visible = levelShare > 0;
+      if (!group.visible) holeOff();
     },
     frame(info = {}) {
       if (basisFor !== stage.worldId) placeSky();
       const tier = Number.isFinite(info.tier) ? info.tier : 1;
       if (tier !== tierNow || !stars) { tierNow = tier; buildStars(tier); }
+      const q = typeof env.quality === 'function' ? env.quality() || {} : {};
+      cheap = !(tier >= 1) || !!q.latched;
       const vh = (typeof globalThis.innerHeight === 'number' && globalThis.innerHeight) || 800;
       const sh = sharesFor({ level: levelShare, rPx: info.rPx, photo: info.photo, viewH: vh });
       last = { ...sh, photo: Number(info.photo) || 0 };
       // slow frames halve the coarse steps before the governor would lower the pixel ratio (spec 0075 task 44)
       const dt = Number(info.dtMs) || 0;
       if (!(info.frozen || info.reduced)) slowMs = slowMs * 0.9 + dt * 0.1;
-      samples = samplesFor({ tier, steps: level >= 3 ? info.steps : 0, slow: slowMs > 24 });
+      samples = cheap ? 0 : samplesFor({ tier, steps: level >= 3 ? info.steps : 0, slow: slowMs > 24 });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
       if (gain !== palette.gainIn) {
         palette = { ...paletteFor(gain, profile), gainIn: gain };
-        gasMat.uniforms.uGamma.value = palette.gamma; gasMat.uniforms.uSat.value = palette.saturation;
+        for (const m of [gasMat, sheetMat]) { m.uniforms.uGamma.value = palette.gamma; m.uniforms.uSat.value = palette.saturation; }
       }
       // Under Measured nothing changes and nothing moves (UNDER_MEASURED): every part is measured, reconstructed or seeded.
       const look = info.look || 'film';
       const keep = drawnUnder(look, UNDER_MEASURED.front) ? 1 : 0;
-      const gu = gasMat.uniforms;
       const lit = lightState === 'ready' && frontState === 'ready';
-      gu.uShare.value = lit ? sh.gas * keep : 0;
-      gu.uN.value = samples;
-      gu.uGain.value = palette.gain * sh.light;
+      const gu = gasMat.uniforms, su = sheetMat.uniforms;
+      gu.uShare.value = lit && !cheap ? sh.gas * keep : 0;
+      su.uShare.value = lit && cheap ? sh.gas * keep : 0;
+      gu.uN.value = Math.max(1, samples);
+      gu.uGain.value = su.uGain.value = palette.gain * sh.light;
       starMat.uniforms.uShare.value = frontState === 'ready' ? sh.stars : 0;
       starMat.uniforms.uPixelRatio.value = (typeof globalThis.devicePixelRatio === 'number' && globalThis.devicePixelRatio) || 1;
       gas.visible = gu.uShare.value > 0.002;
+      if (sheet) sheet.visible = su.uShare.value > 0.002;
       stars.visible = starMat.uniforms.uShare.value > 0.002;
       if (info.camera) {
         if (group.parent) group.parent.updateWorldMatrix(true, false);
         _inv.multiplyMatrices(group.parent ? group.parent.matrixWorld : _id, group.matrix).multiply(sky.matrix).invert();
         _cam.copy(info.camera.position).applyMatrix4(_inv);
-        gu.uCam.value.copy(_cam);
+        camU.value.copy(_cam);
+        const P = info.camera.projectionMatrix.elements;
+        gu.uPixAng.value = 2 / Math.max(1, P[5] * vh);
+        // the catalogue twin's direction in view space, and a cone of about 16 px round it
+        info.camera.updateMatrixWorld();
+        for (const t of twins) {
+          const k = starMat.uniforms.uShare.value;
+          if (k > 0.003 && stage.toSceneInto({ x: t.km[0], y: t.km[1], z: t.km[2] }, 'sun-inertial', _tw, stage.tMs)) {
+            _tw.applyMatrix4(info.camera.matrixWorldInverse).normalize();
+            setExtraHole(t.id, { dir: [_tw.x, _tw.y, _tw.z], radius: 16 * gu.uPixAng.value, k });
+          } else setExtraHole(t.id, null);
+        }
       }
     },
-    ready: () => lightState !== 'loading' && frontState !== 'loading',
+    ready: () => lightState !== 'loading' && frontState !== 'loading' && detailState !== 'loading',
     stats: () => ({
       level, share: Math.round(last.gas * 100) / 100, photo: Math.round(last.photo * 100) / 100, stars: Math.round(last.stars * 100) / 100,
-      light: lightState, front: frontState, samples, tier: tierNow, palette: palette.mode, points: starCount, meshes: 2, textures: (lightTex ? 1 : 0) + (frontTex ? 1 : 0),
-      bytes: starBytes + gasGeo.getAttribute('position').array.byteLength + frontBytes + (lightTex ? Math.round(640 * 497 * 4 * 4 / 3) : 0),
+      light: lightState, detail: detailState, front: frontState, path: cheap ? 'sheet' : 'march', samples, tier: tierNow, palette: palette.mode, points: starCount, meshes: 2,
+      textures: (lightTex ? 1 : 0) + (detailTex ? 1 : 0) + (frontTex ? 1 : 0),
+      bytes: starBytes + sheetBytes + gasGeo.getAttribute('position').array.byteLength + frontBytes + (lightTex ? Math.round(640 * 497 * 4 * 4 / 3) : 0) + (detailTex ? (Number(DET.px) || 704) ** 2 * 4 : 0),
       camLy: [Math.round(_cam.x * 100) / 100, Math.round(_cam.y * 100) / 100, Math.round(_cam.z * 100) / 100],
     }),
     dispose() {
+      holeOff();
       if (stars) stars.geometry.dispose();
+      if (sheet) sheet.geometry.dispose();
       gasGeo.dispose();
-      gasMat.dispose(); starMat.dispose();
-      if (lightTex) lightTex.dispose();
-      if (frontTex) frontTex.dispose();
+      gasMat.dispose(); starMat.dispose(); sheetMat.dispose();
+      for (const t of [lightTex, detailTex, frontTex]) if (t) t.dispose();
       blank.dispose();
-      stars = null;
+      stars = null; sheet = null;
       if (group.parent) group.parent.remove(group);
     },
   };

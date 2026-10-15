@@ -29,8 +29,21 @@ frame: {units_ly: 1, distance_ly: 1344, ra_deg: 83.8186096, dec_deg: -5.3897005,
 # (ESO eso1723a without its stars: scripts/build_deep_orion.py), at its own depth, so from our side the model IS the
 # photograph and turned it is that light on the reconstructed sheet. Where the Veil darkens the photograph (the Dark
 # Bay) the front behind it is given back the light the Veil took, and the Veil takes it again on our line.
-light: {file: site/images/deep/orion/orion-light.webp, depth: site/data/deep/orion-front.bin, from: "site/images/nebulae/m42.webp (ESO eso1723a, CC BY 4.0, credit ESO/G. Beccari)", made_by: scripts/build_deep_orion.py, note: "stars removed (they are drawn as stars); nothing else changed"}
 layers:
+  - part: light
+    kind: photograph
+    what: "the front's light: the photograph without its stars, and near the Trapezium a sharp map of the same photograph"
+    file: site/images/deep/orion/orion-light.webp
+    depth: site/data/deep/orion-front.bin
+    from: "site/images/nebulae/m42.webp (ESO eso1723a, CC BY 4.0, credit ESO/G. Beccari)"
+    made_by: scripts/build_deep_orion.py
+    # The SHARP light near the Trapezium: the same photograph from ESO's large JPEG (16 877 x 13 107 px; downloaded for
+    # the bake, not in git), a 13 arcmin square at 1.1" a pixel round the star (its centre 0.8' east and 2.5' north of
+    # it, so the Bright Bar, the Dark Bay and M43 are in it), stars removed, colours and levels the 640 px map's over
+    # 1.5 arcmin (finer structure is the large picture's). The hero blends to it over the square's outer 15 %.
+    detail: {centre_east_arcmin: 0.8, centre_north_arcmin: 2.5, size_arcmin: 13.0, px: 704, quality: 90, level_arcmin: 1.5, url: "https://cdn.eso.org/images/large/eso1723a.jpg"}
+    note: "stars removed (they are drawn as stars); nothing else changed but the sharp map's levels, matched to the 640 px map"
+    source: "ESO eso1723a, ESO/G. Beccari, CC BY 4.0: https://www.eso.org/public/images/eso1723a/"
   - part: front
     kind: front
     what: "the main ionisation front: a thin layer of ionised gas on the near face of the molecular cloud OMC-1, lit by theta1 Ori C, concave toward us"
@@ -39,7 +52,7 @@ layers:
     # on the sky; its rim held behind the Veil, softly under rim_ly.
     bowl: {rho_s_ly: 2.0, slope: 0.55, rim_ly: 4.0}
     # The Bright Bar: the front turns toward us across it. Its place is read from the photograph; its rise is illustrative.
-    bar: {offset_arcmin: 2.0, normal_pa_deg: 145, length_arcmin: 4.5, width_arcmin: 1.0, rise_ly: 0.9}
+    bar: {offset_arcmin: 1.5, normal_pa_deg: 155, length_arcmin: 4.5, width_arcmin: 2.0, rise_ly: 0.35}
     # Wen & O'Dell's rule on the photograph: the front is nearer the star where it is locally brighter (r ~ S^-1/2):
     # its height is scaled by (fine / wide)^-power, the factor at most e^max_ln either way and the change at most max_ly.
     relief: {power: 0.5, max_ln: 0.4, max_ly: 0.3, fine_arcmin: 0.3, wide_arcmin: 3.0, from_ly: 0.3, full_ly: 1.0}
@@ -67,12 +80,17 @@ layers:
     source: "Abel et al. 2004, ApJ 609, 247 (arXiv:astro-ph/0404399): photoionisation models 'place the veil 1-3 pc in front of the star'; drawn at 2 pc. The Dark Bay's optical depth is the photograph's darkness against its surroundings there (reconstructed)"
   - part: trapezium
     kind: stars
-    what: "the Trapezium: the four brightest stars of the cluster, at their catalogued places on the sky; their depths are not measured, so they stand in theta1 Ori C's plane"
+    what: "the Trapezium: the four brightest stars of the cluster, and theta2 Ori A beside it, at their catalogued places on the sky; their depths are not measured, so they stand in theta1 Ori C's plane"
     stars:
       - {id: "theta1 Ori A (HD 37020)", ra_deg: 83.8159392, dec_deg: -5.3873152, v_mag: 6.73, spectral: B0V, temp_k: 30000}
       - {id: "theta1 Ori B (HD 37021)", ra_deg: 83.8172249, dec_deg: -5.3852179, v_mag: 7.96, spectral: B1V, temp_k: 25000}
       - {id: "theta1 Ori C (HD 37022)", ra_deg: 83.8186096, dec_deg: -5.3897005, v_mag: 5.13, spectral: O7Vp, temp_k: 39000}
       - {id: "theta1 Ori D (HD 37023)", ra_deg: 83.8219060, dec_deg: -5.3879363, v_mag: 6.70, spectral: B1.5Vp, temp_k: 24000}
+      # theta2 Ori A, 2.2' south-east: the catalogue (HYG, its Hipparcos parallax) puts it 200 ly behind the nebula; drawn
+      # here in the Trapezium's plane like the others, and the catalogue's copy steps aside where the hero draws it
+      # (scene/starholes.js, the M42 hole). It stands 0.3 ly before the front there, which the Bright Bar lifts (z_ly; not
+      # measured: it ionises the gas beyond the Bar, O'Dell 2001). V is Hipparcos's via HYG (SIMBAD's flux table quotes 6.39 from Ducati 2002).
+      - {id: "theta2 Ori A (HD 37041)", ra_deg: 83.8454218, dec_deg: -5.4160646, v_mag: 4.98, spectral: O9.5IVp, temp_k: 31000, z_ly: 0.6, catalogue_ly: [164.9836, 1345.7071, -742.4584]}
     note: "V as seen from here, its extinction included; colours a blackbody's at the spectral type's temperature. Their Gaia and Hipparcos parallaxes (2.3 to 2.7 mas) cannot place them within a light-year"
     source: "SIMBAD (CDS), basic and allfluxes tables, read 2026-10-15"
   - part: onc

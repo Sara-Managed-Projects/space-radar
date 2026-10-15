@@ -22,6 +22,26 @@ export const HERO = {
   },
   "layers": [
     {
+      "part": "light",
+      "kind": "photograph",
+      "what": "the front's light: the photograph without its stars, and near the Trapezium a sharp map of the same photograph",
+      "file": "site/images/deep/orion/orion-light.webp",
+      "depth": "site/data/deep/orion-front.bin",
+      "from": "site/images/nebulae/m42.webp (ESO eso1723a, CC BY 4.0, credit ESO/G. Beccari)",
+      "made_by": "scripts/build_deep_orion.py",
+      "detail": {
+        "centre_east_arcmin": 0.8,
+        "centre_north_arcmin": 2.5,
+        "size_arcmin": 13.0,
+        "px": 704,
+        "quality": 90,
+        "level_arcmin": 1.5,
+        "url": "https://cdn.eso.org/images/large/eso1723a.jpg"
+      },
+      "note": "stars removed (they are drawn as stars); nothing else changed but the sharp map's levels, matched to the 640 px map",
+      "source": "ESO eso1723a, ESO/G. Beccari, CC BY 4.0: https://www.eso.org/public/images/eso1723a/"
+    },
+    {
       "part": "front",
       "kind": "front",
       "what": "the main ionisation front: a thin layer of ionised gas on the near face of the molecular cloud OMC-1, lit by theta1 Ori C, concave toward us",
@@ -32,11 +52,11 @@ export const HERO = {
         "rim_ly": 4.0
       },
       "bar": {
-        "offset_arcmin": 2.0,
-        "normal_pa_deg": 145,
+        "offset_arcmin": 1.5,
+        "normal_pa_deg": 155,
         "length_arcmin": 4.5,
-        "width_arcmin": 1.0,
-        "rise_ly": 0.9
+        "width_arcmin": 2.0,
+        "rise_ly": 0.35
       },
       "relief": {
         "power": 0.5,
@@ -99,7 +119,7 @@ export const HERO = {
     {
       "part": "trapezium",
       "kind": "stars",
-      "what": "the Trapezium: the four brightest stars of the cluster, at their catalogued places on the sky; their depths are not measured, so they stand in theta1 Ori C's plane",
+      "what": "the Trapezium: the four brightest stars of the cluster, and theta2 Ori A beside it, at their catalogued places on the sky; their depths are not measured, so they stand in theta1 Ori C's plane",
       "stars": [
         {
           "id": "theta1 Ori A (HD 37020)",
@@ -132,6 +152,20 @@ export const HERO = {
           "v_mag": 6.7,
           "spectral": "B1.5Vp",
           "temp_k": 24000
+        },
+        {
+          "id": "theta2 Ori A (HD 37041)",
+          "ra_deg": 83.8454218,
+          "dec_deg": -5.4160646,
+          "v_mag": 4.98,
+          "spectral": "O9.5IVp",
+          "temp_k": 31000,
+          "z_ly": 0.6,
+          "catalogue_ly": [
+            164.9836,
+            1345.7071,
+            -742.4584
+          ]
         }
       ],
       "note": "V as seen from here, its extinction included; colours a blackbody's at the spectral type's temperature. Their Gaia and Hipparcos parallaxes (2.3 to 2.7 mas) cannot place them within a light-year",

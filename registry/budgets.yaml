@@ -164,7 +164,7 @@ budgets:
   # Release 1.2.0 stage W1-a (internal spec 0076, design section 4; internal #782): the Orion hero's assets, fetched
   # when M42 is near (scripts/build_deep_orion.py: the light map and the front's map, with their manifest), and
   # its draw calls (the gas, the stars). tests/test_hero_orion.mjs reads both.
-  - {id: deep_orion_bytes, value: 450000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 20 946 B of light map + 357 136 B of front (240 x 186 cells) + its manifest measured on 2026-10-15"}
+  - {id: deep_orion_bytes, value: 450000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 20 946 B of light map + 36 678 B of sharp map + 357 136 B of front (240 x 186 cells) + its manifest measured on 2026-10-15"}
   - {id: deep_orion_draw_calls, value: 2, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the gas and the stars are one call each"}
   # 0076 W1-b
   # 0076 W1-d

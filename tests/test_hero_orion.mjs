@@ -66,7 +66,7 @@ const g = H.geometryOf();
   // each Trapezium star: its offset from theta1 Ori C equals the angular separation SIMBAD's places give
   const sep = (r1, d1, r2, d2) => { const s = Math.sin, c = Math.cos; const v = s(d1 * D2R) * s(d2 * D2R) + c(d1 * D2R) * c(d2 * D2R) * c((r1 - r2) * D2R); return Math.acos(Math.min(1, v)) / D2R * 3600; };
   const simbad = { A: [83.8159392, -5.3873152], B: [83.8172249, -5.3852179], C: [83.8186096, -5.3897005], D: [83.8219060, -5.3879363] };
-  const byId = Object.fromEntries(g.stars.map((s) => [s.id.split(' ')[1] === 'Ori' ? s.id.split(' ')[2] : s.id, s]));
+  const byId = Object.fromEntries(g.stars.filter((s) => /^theta1 Ori/.test(s.id)).map((s) => [s.id.split(' ')[2], s]));
   for (const k of ['A', 'B', 'C', 'D']) {
     const s = byId[k];
     const want = sep(simbad[k][0], simbad[k][1], ...simbad.C);
@@ -74,7 +74,9 @@ const g = H.geometryOf();
     check(s && near(got, want, 0.05) && s.pos[2] === 0, `theta1 Ori ${k} ${got.toFixed(2)}" from C (SIMBAD: ${want.toFixed(2)}"), in C's plane`);
   }
   check(byId.D.pos[0] < 0 && byId.A.pos[0] > 0, 'D is east of C (x is west), A west of it: the Trapezium is not mirrored');
-  check(g.stars.length === 5 && /NU Ori/.test(g.stars[4].id), 'and NU Ori, M43\'s star');
+  check(g.stars.length === 6 && /theta2 Ori A/.test(g.stars[4].id) && /NU Ori/.test(g.stars[5].id), 'and theta2 Ori A beside them and NU Ori, M43\'s star');
+  const t2 = g.stars[4];
+  check(near(Math.hypot(t2.pos[0], t2.pos[1]) / g.lyPerArcmin, 2.25, 0.02) && Array.isArray(t2.catalogueLy) && near(Math.hypot(...t2.catalogueLy), 1545.8, 1), `theta2 Ori A 2.25' south-east of C, and the catalogue's copy (1 546 ly, HYG) known so it steps aside (scene/starholes.js)`);
   check(g.box.max[2] >= g.veilZ && g.slabTop < g.veilZ && g.box.min[2] < -g.d0 - g.cloudLy, 'the box holds the cloud, the front and the Veil; the march stops under the Veil');
 }
 
@@ -204,8 +206,8 @@ const light = (u, v) => { const r = Math.hypot(u - 0.47, v - 0.62); const fil = 
   check(q > 0.6 && q < 0.8, `elongated along PA 10 degrees, axis ratio ${q.toFixed(2)} (ellipticity 0.30)`);
   const far = H.sparkleLook(0.01, 40), close = H.sparkleLook(0.01 * (40 / 0.5) ** 2, 0.5);
   check(close.size < far.size && close.bright <= H.SHAPE.sparkleCap, `a pinpoint gets smaller close up (${far.size} -> ${close.size} px) and its brightness is capped (${close.bright})`);
-  const L = H.starLook(5.13 + 5 * Math.log10(40 / 1344));
-  check(L.glare > 0 && L.size > 6, `theta1 Ori C from 40 ly is a glaring star by the catalogue stars' own curve (size ${L.size.toFixed(1)} px)`);
+  const L = H.starLook(5.13 + 5 * Math.log10(40 / 1344)), N = H.starLook(5.13 + 5 * Math.log10(3 / 1344)), F = H.starLook(6.7);
+  check(N.size <= 9 && L.size <= 9 && N.alpha > L.alpha && L.alpha > F.alpha, `the Trapezium's stars are small hard points whose size on screen is capped: ${F.size.toFixed(1)} px at its own distance, ${L.size.toFixed(1)} px from 40 ly, ${N.size.toFixed(1)} px from 3 ly (brighter, never a blob)`);
   check(/m = aStar\.w \+ 5\.0 \* log\( d \/ uDistLy \)/.test(H.SHADERS.starVertex) && /cloudTau\( position, uCam \)/.test(H.SHADERS.starVertex), 'the stars\' magnitude is at the camera, dimmed by the cloud between them and it');
 }
 
@@ -232,11 +234,12 @@ const light = (u, v) => { const r = Math.hypot(u - 0.47, v - 0.62); const fil = 
   const gas = hero.group.getObjectByName('deep-hero-orion-shells');
   const u = gas.material.uniforms;
   check(u.uCam.value.z > 39.9 && Math.hypot(u.uCam.value.x, u.uCam.value.y) < 0.01, `on our line the camera is on the sky frame's +z, 40 ly out (${u.uCam.value.toArray().map((v) => v.toFixed(3))})`);
-  check(hero.stats().samples === 8 && hero.stats().points === 5 + 400, `T0: 8 coarse steps, the five stars and 400 cluster points (${JSON.stringify(hero.stats())})`);
+  check(hero.stats().path === 'sheet' && hero.stats().points === 6 + 400, `T0 draws the front as a mesh (the cheap path), the six stars and 400 cluster points (${JSON.stringify(hero.stats())})`);
   check(u.uShare.value === 0, 'no gas is drawn until its light (the photograph) has landed (in node it never does)');
+  check(hero.latchSafe === true && /h\.hero\.latchSafe/.test(readFileSync(join(JS, 'scene/deep/deepsky.js'), 'utf8')), 'under the latch and Low the coordinator keeps it drawn, on its cheap path (not a holder)');
   hero.setLevel(3, 1);
   hero.frame({ camera, rPx: 400, steps: 48, look: 'measured', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
-  check(hero.stats().samples === 24 && hero.stats().points === 5 + 1600, 'T2 at level 3: half the march\'s steps, 1 600 cluster points');
+  check(hero.stats().path === 'march' && hero.stats().samples === 24 && hero.stats().points === 6 + 1600, 'T2 at level 3: the march with half the coordinator\'s steps, 1 600 cluster points');
   check(hero.card && hero.card.copy === 'deepOrion' && hero.card.drawn['dso-m43'], 'its card hook names its words block and M43');
   let meshes = 0;
   hero.group.traverse((o) => {
@@ -245,15 +248,39 @@ const light = (u, v) => { const r = Math.hypot(u - 0.47, v - 0.62); const fil = 
     const m = o.material;
     check(m.transparent === false && m.toneMapped === false && m.depthWrite === false, `${o.name}: gasmat.js COLOUR_POLICY`);
   });
-  check(meshes <= BUDGETS.deep_orion_draw_calls, `${meshes} draw calls, within the budget (${BUDGETS.deep_orion_draw_calls}, registry/budgets.yaml deep_orion_draw_calls)`);
+  // the march and the sheet are two paths, never drawn together: one of them and the stars
+  check(meshes === 3 && meshes - 1 <= BUDGETS.deep_orion_draw_calls, `${meshes - 1} draw calls at once (the march or the sheet, and the stars), within the budget (${BUDGETS.deep_orion_draw_calls}, registry/budgets.yaml deep_orion_draw_calls)`);
   check(gas.material.blending === THREE.CustomBlending && gas.material.side === THREE.BackSide, 'the gas is premultiplied over (the cloud darkens what is behind it), by the box\'s back faces');
   hero.dispose();
   check(!hero.group.parent, 'disposed, it leaves the scene');
 }
 
+// --- 8b. the cheap path's sheet: the same front, its normals up, every vertex on the map -------------------------
+{
+  const sh = H.sheetOf(g, front);
+  let worst = 0, down = 0;
+  for (let k = 0; k < sh.nx * sh.ny; k += 37) {
+    const z = sh.pos[3 * k + 2], want = H.sampleFront(front, sh.uv[2 * k], sh.uv[2 * k + 1])[0];
+    worst = Math.max(worst, Math.abs(z - want));
+    if (sh.nrm[3 * k + 2] <= 0) down += 1;
+  }
+  check(worst < 1e-3 && down === 0, `T0's sheet is the march's front (largest difference ${worst.toExponential(1)} ly), every normal toward the star's side`);
+  check(sh.index.length / 3 < 50000, `${sh.index.length / 3} triangles: cheaper than the holder's march on a phone`);
+  check(/side < 0\.0 \? e \* Tc : e/.test(H.SHADERS.sheet), 'seen from behind, the sheet\'s light comes through the cloud\'s column: dark in the middle, its thin outer parts showing');
+  check(!/smoothstep\( 0\.0[0-9]*, 0\.3/.test(H.SHADERS.gas), 'no grazing fade to black: a fold seen edge on is a bright line of gas, never a dark arc');
+}
+{
+  const S = await import(join(JS, 'scene/starholes.js'));
+  const u = S.holeUniforms();
+  S.setExtraHole('test', { dir: [0, 0, -1], radius: 0.01, k: 1 });
+  check(S.setHoles(u, []) === 1 && S.holeFactor([0, 0, -1], [{ dir: [0, 0, -1], radius: 0.01, k: 1 }]) < 0.01, 'a hero\'s extra hole hides the catalogue\'s copy of a star it draws itself');
+  S.setExtraHole('test', null);
+  check(S.setHoles(u, []) === 0, 'and is gone when the hero stops drawing it');
+}
+
 // --- 9. budgets and the boot ---------------------------------------------------------------------------------------
 {
-  const bytes = ['site/images/deep/orion/orion-light.webp', 'site/data/deep/orion-front.bin', 'site/images/deep/orion/manifest.json'].reduce((a, p) => a + statSync(join(ROOT, p)).size, 0);
+  const bytes = ['site/images/deep/orion/orion-light.webp', 'site/images/deep/orion/orion-detail.webp', 'site/data/deep/orion-front.bin', 'site/images/deep/orion/manifest.json'].reduce((a, p) => a + statSync(join(ROOT, p)).size, 0);
   check(bytes <= BUDGETS.deep_orion_bytes && bytes <= 1500000, `its assets are ${bytes} B, within the budget (${BUDGETS.deep_orion_bytes}; the design's 1.5 MB)`);
   const diet = readFileSync(join(ROOT, 'tests/test_boot_diet.mjs'), 'utf8');
   check(/'js\/scene\/deep\/orion\.js'/.test(diet) && /'js\/data\/hero-orion\.js'/.test(diet), 'the boot diet holds its module and its profile out of the first visit');

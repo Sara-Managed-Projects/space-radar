@@ -12,7 +12,7 @@
   "depth": {
     "file": "site/data/deep/orion-front.bin",
     "bytes": 357136,
-    "sha256": "d2c2bf2b41f3b49786e8e08b08a00a5dadef2f00e270236f0d6b057d27f88d93",
+    "sha256": "fd40d4b0c1cb29673a6362651d972f5c33ded4324045b76e42bf5ef54104a13c",
     "grid": [
       240,
       186
@@ -22,8 +22,26 @@
       3.815
     ],
     "z_at_star_ly": -0.6523,
-    "max_slope": 2.618,
+    "max_slope": 2.429,
     "veil_tau_max": 1.5
+  },
+  "detail": {
+    "file": "site/images/deep/orion/orion-detail.webp",
+    "bytes": 36678,
+    "sha256": "c5ac2fb13221ebb41ac6c2e1d67f91bf833c86c680e187bc63e04c364cd0273c",
+    "uv_box": [
+      0.346789,
+      0.532726,
+      0.563636,
+      0.811936
+    ],
+    "size": [
+      704,
+      704
+    ],
+    "stars_removed_px": 18125,
+    "from": "https://cdn.eso.org/images/large/eso1723a.jpg",
+    "from_sha256": "201e807455396c784549f68d20ad36814774c8c28ede3b7e55ae3f55da90a3ba"
   },
   "from": "site/images/nebulae/m42.webp",
   "from_sha256": "4f8bea4e9d67f3164466f8baaef7e99632f631e8bcf2aba7d3a64073c4aa2290",
@@ -48,11 +66,11 @@
         "rim_ly": 4.0
       },
       "bar": {
-        "offset_arcmin": 2.0,
-        "normal_pa_deg": 145,
+        "offset_arcmin": 1.5,
+        "normal_pa_deg": 155,
         "length_arcmin": 4.5,
-        "width_arcmin": 1.0,
-        "rise_ly": 0.9
+        "width_arcmin": 2.0,
+        "rise_ly": 0.35
       },
       "relief": {
         "power": 0.5,
@@ -86,6 +104,15 @@
       "a_arcmin": 4.5,
       "b_arcmin": 2.5,
       "tau_max": 1.5
+    },
+    "detail": {
+      "centre_east_arcmin": 0.8,
+      "centre_north_arcmin": 2.5,
+      "size_arcmin": 13.0,
+      "px": 704,
+      "quality": 90,
+      "level_arcmin": 1.5,
+      "url": "https://cdn.eso.org/images/large/eso1723a.jpg"
     }
   },
   "credit": "ESO/G. Beccari (eso1723a), CC BY 4.0; stars removed and depth reconstructed by Space Radar (scripts/build_deep_orion.py)"
