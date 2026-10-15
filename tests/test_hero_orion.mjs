@@ -82,7 +82,7 @@ const g = H.geometryOf();
 const front = H.readFront(fileBuf('site/data/deep/orion-front.bin'));
 const at = (x, y) => H.sampleFront(front, g.uv.u0 + x * g.uv.ux[0] + y * g.uv.uy[0], g.uv.v0 + x * g.uv.ux[1] + y * g.uv.uy[1]);
 {
-  check(front.nx === 160 && front.ny === 125, `the front's grid is 160 x 125 (${front.nx} x ${front.ny})`);
+  check(front.nx === 240 && front.ny === 186, `the front's grid is 240 x 186 (${front.nx} x ${front.ny})`);
   check(near(at(0, 0)[0], -g.d0, 0.03), `the front ${(-at(0, 0)[0]).toFixed(3)} ly behind theta1 Ori C (0.2 pc = ${g.d0.toFixed(3)} ly, O'Dell et al. 2009)`);
   for (const s of g.stars) check(s.pos[2] > at(s.pos[0], s.pos[1])[0] + 0.15, `${s.id} stands in front of the front (${s.pos[2].toFixed(2)} over ${at(s.pos[0], s.pos[1])[0].toFixed(2)} ly)`);
   let maxZ = -Infinity, minZ = Infinity, maxSlope = 0, tauOut = 0, cBad = 0;
@@ -103,7 +103,7 @@ const at = (x, y) => H.sampleFront(front, g.uv.u0 + x * g.uv.ux[0] + y * g.uv.uy
   check(maxSlope < 3, `its slope stays under 3 (${maxSlope.toFixed(2)}): on our line no part of it is dimmed by the limb`);
   check(cBad === 0 && tauOut < 0.01, `the cloud's column within 0 to 1, the Veil's Dark Bay only where it is (${tauOut.toFixed(3)} outside it)`);
   const m = JSON.parse(readFileSync(join(ROOT, 'site/images/deep/orion/manifest.json'), 'utf8'));
-  check(m.light.size[0] === 640 && m.depth.grid[0] === 160 && /eso1723a/.test(m.credit), 'the manifest names its photograph and grid');
+  check(m.light.size[0] === 640 && m.depth.grid[0] === 240 && /eso1723a/.test(m.credit), 'the manifest names its photograph and grid');
 }
 
 // --- 4. FROM OUR SIDE THE MODEL IS THE PHOTOGRAPH (within 5 %); finite from every side; dark from behind --------

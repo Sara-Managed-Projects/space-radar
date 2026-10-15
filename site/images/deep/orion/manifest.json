@@ -11,18 +11,18 @@
   },
   "depth": {
     "file": "site/data/deep/orion-front.bin",
-    "bytes": 160016,
-    "sha256": "c13270cbe8330eb02503ede92be96bfdc873f4b9e97828dd367f2910125505b5",
+    "bytes": 357136,
+    "sha256": "d2c2bf2b41f3b49786e8e08b08a00a5dadef2f00e270236f0d6b057d27f88d93",
     "grid": [
-      160,
-      125
+      240,
+      186
     ],
     "z_ly": [
-      -0.653,
-      3.813
+      -0.652,
+      3.815
     ],
     "z_at_star_ly": -0.6523,
-    "max_slope": 2.204,
+    "max_slope": 2.618,
     "veil_tau_max": 1.5
   },
   "from": "site/images/nebulae/m42.webp",
@@ -58,14 +58,14 @@
         "power": 0.5,
         "max_ln": 0.4,
         "max_ly": 0.3,
-        "fine_arcmin": 0.4,
+        "fine_arcmin": 0.3,
         "wide_arcmin": 3.0,
         "from_ly": 0.3,
         "full_ly": 1.0
       },
       "grid": [
-        160,
-        125
+        240,
+        186
       ]
     },
     "m43": {

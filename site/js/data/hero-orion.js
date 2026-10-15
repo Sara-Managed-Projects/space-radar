@@ -42,14 +42,14 @@ export const HERO = {
         "power": 0.5,
         "max_ln": 0.4,
         "max_ly": 0.3,
-        "fine_arcmin": 0.4,
+        "fine_arcmin": 0.3,
         "wide_arcmin": 3.0,
         "from_ly": 0.3,
         "full_ly": 1.0
       },
       "grid": [
-        160,
-        125
+        240,
+        186
       ],
       "check": "From our line each sky point's light is the photograph's (tests/test_hero_orion.mjs holds the column to 5 %); the sheet's slope stays under 3 so no part of it is dimmed on our line",
       "source": "Wen & O'Dell 1995, ApJ 438, 784 (the 3D model: a thin ionised layer near the front on the near side of OMC-1, its depth from the H-alpha surface brightness with theta1 Ori C as the only ionising star); O'Dell et al. 2009, AJ 137, 367 (arXiv:0810.4375: theta1 Ori C about 0.2 pc in front of the main ionisation front; a concave blister); O'Dell 2001, ARA&A 39, 99"

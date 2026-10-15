@@ -15,7 +15,7 @@ WHAT IT WRITES.
   site/images/deep/orion/orion-light.webp   the photograph with its stars taken out (as build_deep_helix.py
                                             does: a star is not in the nebula, and drawn on a tilted sheet it
                                             would smear). The Trapezium and NU Ori are drawn as stars.
-  site/data/deep/orion-front.bin            a 160 x 125 grid on the PHOTOGRAPH'S OWN (u, v) (v up, row 0 the
+  site/data/deep/orion-front.bin            a 240 x 186 grid on the PHOTOGRAPH'S OWN (u, v) (v up, row 0 the
                                             bottom), four half floats a cell, little-endian, after a 16-byte
                                             header (b"SROR", u16 version, u16 nx, u16 ny, u16 channels, 6 spare):
                                               R  the front's height z in light-years (z toward the Sun, theta1 Ori C at 0)
@@ -254,7 +254,7 @@ def bake() -> int:
     # --- 3. the cloud's column and the Veil's Dark Bay
     c = at(cloudmap)
     c = np.clip(c / np.percentile(c, 98), 0, 1) ** 0.7
-    c = 0.15 + 0.85 * c
+    c = 0.05 + 0.95 * c
     Vb = p["veil"]
     e = np.hypot((-Wm - Vb["east_arcmin"]) / Vb["a_arcmin"], (Nm - Vb["north_arcmin"]) / Vb["b_arcmin"])
     tau = np.clip(np.log(np.maximum(at(ref), 1e-6) / np.maximum(at(fine), 1e-6)), 0, Vb["tau_max"]) * (1 - smooth(e, 0.6, 1.0))

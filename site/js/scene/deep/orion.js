@@ -58,20 +58,20 @@ const D2R = Math.PI / 180;
 const OBLIQUITY = 23.4392911 * D2R;
 const POLE = [0, Math.sin(OBLIQUITY), Math.cos(OBLIQUITY)];
 const MAX_N = 32;          // coarse steps at most (level 3 on T2)
-const BISECT = 5;          // halvings at a crossing: a step of 2 ly is found to 6 cm... to 0.06 ly
+const BISECT = 4;          // halvings at a crossing, then a secant step: a 2 ly step is found to well under a cell
 const LIGHT_URL = '../../../images/deep/orion/orion-light.webp';
 const FRONT_URL = '../../../data/deep/orion-front.bin';
 const CLUSTER_BY_TIER = [400, 900, 1600];
 // ONE table for the light and the march: the GLSL below is written from it.
 export const SHAPE = {
-  limbCap: 0.4,     // the limb's 1 / |cos| stops growing at cos 0.4 (two and a half times)...
+  limbCap: 0.5,     // the limb's 1 / |cos| stops growing at cos 0.5 (twice)...
   grazeFrom: 0.03,  // ...and the light fades out between these cosines (a grazing ray sees a thin edge, not a rim)
-  grazeTo: 0.3,
+  grazeTo: 0.35,
   shoulder: 1.0,    // a soft shoulder over 1 (only a limb-brightened edge reaches it; our line never does)
   adapt: 0.45,      // what is left of its light when it fills the view (the eye's adaptation)
-  sparkleCap: 1.2,  // the brightest a cluster pinpoint is drawn
+  sparkleCap: 0.6,  // the brightest a cluster pinpoint is drawn (a crowd of them close up is a field of faint points, not snow)
   sparklePx: 1.6,   // a cluster pinpoint's size, CSS px; down to 0.6 of it close up (never grown)
-  clusterV: 6.0,    // the drawn cluster's summed light: that of a star of V = 6 from here (a model)
+  clusterV: 7.0,    // the drawn cluster's summed light: that of a star of V = 7 from here (a model)
   slabPad: 0.05,    // light-years over the front's highest point (the march's slab)
 };
 const f3 = (x) => Number(x).toFixed(3);
@@ -247,7 +247,7 @@ export function columnJs(g, front, ro, rd, { n = 12, j = 0.5, light = () => [0, 
     const dt = (t1 - t0) / n;
     let ta = t0, fa = fAt(P(ta)), ga = P(ta)[2] - fa[0];
     const cloudW = (gz) => (gz < 0 ? 1 - smooth(-gz, 0.6 * g.cloudLy, g.cloudLy) : 0);
-    const cloudOf = (f, p, gz) => { const [u, v] = uvAt(p[0], p[1]); return g.sigma * f[1] * Math.sqrt(coverAt(u, v)) * cloudW(gz); };
+    const cloudOf = (f, p, gz) => { const [u, v] = uvAt(p[0], p[1]); return g.sigma * f[1] * coverAt(u, v) * cloudW(gz); };
     for (let i = 0; i <= n; i++) {
       const tb = Math.min(t1, t0 + (i + j) * dt);
       if (tb <= ta) continue;
@@ -263,13 +263,13 @@ export function columnJs(g, front, ro, rd, { n = 12, j = 0.5, light = () => [0, 
         const tc = lo + (hi - lo) * glo / (glo - ghi || 1e-9);
         const pc = P(tc), fc = fAt(pc);
         // the cloud on the ray's way in, if it started behind the front
-        if (ga < 0) T *= Math.exp(-0.5 * (ka + g.sigma * fc[1] * Math.sqrt(coverAt(...uvAt(pc[0], pc[1])))) * (tc - ta));
+        if (ga < 0) T *= Math.exp(-0.5 * (ka + g.sigma * fc[1] * coverAt(...uvAt(pc[0], pc[1]))) * (tc - ta));
         const [u, v] = uvAt(pc[0], pc[1]);
         const cov = coverAt(u, v);
         if (cov > 0) {
           const h = 1 / front.nx / Math.hypot(g.uv.ux[0], g.uv.ux[1]); // one cell, in ly
-          const zx = (fAt([pc[0] + h, pc[1]])[0] - fAt([pc[0] - h, pc[1]])[0]) / (2 * h);
-          const zy = (fAt([pc[0], pc[1] + h])[0] - fAt([pc[0], pc[1] - h])[0]) / (2 * h);
+          const zx = (fAt([pc[0] + h, pc[1]])[0] - fc[0]) / h;
+          const zy = (fAt([pc[0], pc[1] + h])[0] - fc[0]) / h;
           const len = Math.hypot(zx, zy, 1);
           const mu = Math.abs(rd[2] - zx * rd[0] - zy * rd[1]) / len;
           const limb = smooth(mu, SHAPE.grazeFrom, SHAPE.grazeTo) / (Math.max(mu, SHAPE.limbCap) * len);
@@ -278,7 +278,7 @@ export function columnJs(g, front, ro, rd, { n = 12, j = 0.5, light = () => [0, 
           for (let c = 0; c < 3; c++) C[c] += T * lc[c] * k;
         }
         out.crossings += 1;
-        if (ga > 0) T *= Math.exp(-0.5 * (g.sigma * fc[1] * Math.sqrt(cov) + kb) * (tb - tc));
+        if (ga > 0) T *= Math.exp(-0.5 * (g.sigma * fc[1] * cov + kb) * (tb - tc));
       } else if (ga < 0) {
         T *= Math.exp(-0.5 * (ka + kb) * (tb - ta));
       }
@@ -409,7 +409,7 @@ float coverAt( vec2 uv ) {
   return f * f;
 }
 float cloudW( float g ) { return g < 0.0 ? 1.0 - smoothstep( 0.6 * uCloudLy, uCloudLy, -g ) : 0.0; }
-float cloudAt( vec4 f, vec3 p ) { return uSigma * f.g * sqrt( coverAt( uvAt( p.xy ) ) ) * cloudW( p.z - f.r ); }
+float cloudAt( vec4 f, vec3 p ) { return uSigma * f.g * coverAt( uvAt( p.xy ) ) * cloudW( p.z - f.r ); }
 `;
 
 const GAS_FRAG = /* glsl */ `
@@ -494,11 +494,11 @@ void main() {
         vec4 fc = frontAt( pc.xy );
         vec2 uv = uvAt( pc.xy );
         float cov = coverAt( uv );
-        float sc = uSigma * fc.g * sqrt( cov );
+        float sc = uSigma * fc.g * cov;
         if ( ga < 0.0 ) T *= exp( -0.5 * ( ka + sc ) * ( tc - ta ) );
         if ( cov > 0.0 ) {
-          float zx = ( frontAt( pc.xy + vec2( uCell, 0.0 ) ).r - frontAt( pc.xy - vec2( uCell, 0.0 ) ).r ) / ( 2.0 * uCell );
-          float zy = ( frontAt( pc.xy + vec2( 0.0, uCell ) ).r - frontAt( pc.xy - vec2( 0.0, uCell ) ).r ) / ( 2.0 * uCell );
+          float zx = ( frontAt( pc.xy + vec2( uCell, 0.0 ) ).r - fc.r ) / uCell;
+          float zy = ( frontAt( pc.xy + vec2( 0.0, uCell ) ).r - fc.r ) / uCell;
           float len = length( vec3( zx, zy, 1.0 ) );
           float mu = abs( rd.z - zx * rd.x - zy * rd.y ) / len;
           // limb-brightened as a thin layer is, but a grazing ray fades: a thin edge, not a glass rim

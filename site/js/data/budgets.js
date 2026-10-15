@@ -40,6 +40,6 @@ export const BUDGETS = {
   "reel_heap_growth_pct": 20,
   "deep_localvolume_bytes": 300000,
   "deep_localvolume_draw_calls": 2,
-  "deep_orion_bytes": 300000,
+  "deep_orion_bytes": 450000,
   "deep_orion_draw_calls": 2
 };
