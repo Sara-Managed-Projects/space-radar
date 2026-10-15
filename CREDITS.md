@@ -1550,6 +1550,23 @@ noao0001a, ESO eso1424a).
 
 ### The CMB map (0076 W1-b)
 
+- **The microwave background at the horizon** (`site/images/deep/cmb/wmap-ilc-9yr.webp`, 119 400 B,
+  built by `scripts/build_deep_cmb.py`, drawn by `site/js/scene/deep/cmb.js`): the WMAP nine-year
+  Internal Linear Combination map, `wmap_ilc_9yr_v5.fits` from LAMBDA
+  (<https://lambda.gsfc.nasa.gov/product/wmap/dr5/ilc_map_get.html>), pinned by SHA-256; Bennett et al.
+  2013, "Nine-year Wilkinson Microwave Anisotropy Probe (WMAP) observations: final maps and results",
+  *ApJS* 208, 20, section 6. NASA data: "NASA content – images, audio, video, and media files used in
+  the rendition of 3-dimensional models, such as texture maps and polygon data in any format –
+  generally are not subject to copyright in the United States"
+  (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-15). LAMBDA's
+  acknowledgement is the one in section 3h. The credit line: **Microwave background: NASA / WMAP
+  Science Team (LAMBDA)**. Measured: the temperature in each direction of our sky, smoothed to one
+  degree, average and dipole removed, re-gridded to 1024 x 512 in Galactic coordinates and clipped at
+  ±200 µK (0.45 % of the sky). This map's own: the colour scale. An illustration, and labelled so on
+  the scene: the map painted on the sphere its light left from (`data/cosmology.js cmbLy()`), seen
+  from anywhere but the Sun. Planck's sharper map was not used: ESA's page for it gives "Licence: ESA
+  Standard Licence", not CC BY-SA 3.0 IGO (read 2026-10-15).
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

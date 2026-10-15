@@ -40,6 +40,8 @@ export const BUDGETS = {
   "reel_heap_growth_pct": 20,
   "deep_localvolume_bytes": 300000,
   "deep_localvolume_draw_calls": 2,
+  "deep_cmb_map_bytes": 600000,
+  "deep_cmb_draw_calls": 2,
   "sun_image_bytes": 400000,
   "sun_loops_draw_calls": 1
 };

@@ -144,6 +144,7 @@ const DEFERRED = {
   'js/data/hero-m33.js': 'a hero\'s profile: with the coordinator',
   // 0076 W1-a (orion.js)
   // 0076 W1-b (cmb.js)
+  'js/scene/deep/cmb.js': 'the microwave background\'s map: scene/shells.js fetches it a fifth of the way out to the horizon',
   // 0076 W1-c (truthlegend.js)
   'js/ui/truthlegend.js': 'the legend inside every card: ui/cardfacts.js fetches it the first time the row "How we know" opens',
   // 0076 W1-d (sunimage.js)

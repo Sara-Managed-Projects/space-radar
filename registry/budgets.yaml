@@ -164,6 +164,10 @@ budgets:
   - {id: deep_localvolume_draw_calls, value: 2, unit: calls, since: 2026-10-14, reason: "spec 0075 requirement 18: at most five draw calls per visible data class; the tile is one call of points, and one more while a galaxy's range of distance is shown"}
   # 0076 W1-a
   # 0076 W1-b
+  # The microwave background's map (scene/deep/cmb.js): one picture, fetched a fifth of the way out to the
+  # horizon, never at boot; one sphere, one draw call, 1024 x 512 RGBA without mipmaps on the GPU.
+  - {id: deep_cmb_map_bytes, value: 600000, unit: B, since: 2026-10-15, reason: "spec 0076 W1-b acceptance: the map at most 600 kB; 119 400 B on 2026-10-15 (WMAP nine-year ILC, 1024 x 512 grey WebP)"}
+  - {id: deep_cmb_draw_calls, value: 2, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4 (+5 for a hero at most): the sphere, and the words with the colour scale at the foot of the view while inside"}
   # 0076 W1-d
   # The Sun's face of the day (internal spec 0076 W1-d, #916): SDO/AIA's newest 1024-pixel 171 angstrom browse
   # picture, saved by harvest/parsers/sdo_aia.py (which refuses a bigger one) and read on the Sun's stage only.

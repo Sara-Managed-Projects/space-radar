@@ -1754,6 +1754,16 @@ Object.assign(COPY, {
     edge: '{n} billion light-years: past everything we can see',
     edgeWhy: 'The observable universe ends about {h} billion light-years away.',
     edgeNothing: 'Nothing measured lies out here: this band is an illustration.',
+    // 0076 W1-b: the microwave map's words and scale (scene/shells.js cmbWords); {k} is computed there.
+    cmbTitle: 'The oldest light, as our sky shows it',
+    cmbWhen: 'It left about {k} years after the Big Bang',
+    cmbPainted: 'Painted inside the sphere it left from: an illustration',
+    cmbElse: 'Seen from anywhere else, the map differs',
+    cmbCold: '−{n} µK',
+    cmbMid: 'average {t} K',
+    cmbWarm: '+{n} µK',
+    cmbSay: 'Colour scale: blue up to {n} millionths of a degree colder than {t} kelvin, orange up to {n} warmer',
+    cmbSource: 'WMAP nine-year map, NASA',
   },
 
   // RELEASE 1.2.0 wave 1 (internal spec 0076, design section 6): one empty block per stage, created by the lead
