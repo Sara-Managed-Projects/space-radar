@@ -302,8 +302,9 @@ const BLOCKS = {
   // e. cosmic scale (#790): scenes 17-21 again with the local volume, the horizon and the 50 Gly edge.
   e: ['cosmic'],
 
-  // f. the two journeys (#791): one stop per trip, and the trip frame.
-  f: [],
+  // f. the two journeys (#791): every stop of both trips with the trip frame, the orbit's two ends,
+  //    the flight home, and one stop under reduced motion.
+  f: ['helixTrip', 'lmcTrip', 'tripReduced'],
 };
 // Each stage's own groups (async functions, as GROUPS above): one object per stage.
 // b. the Helix's groups go in this object.
@@ -617,8 +618,132 @@ const GROUPS_E = {
   },
 };
 
-// f. the journeys' groups go in this object.
-const GROUPS_F = {};
+// f. the journeys' groups go in this object. A trip is walked as a visitor's would run, through
+// sr.trip (ui/trip.js): start (the intro sheet), each stop by jumpTo and play, paused on arrival for
+// the picture; a stop with a drift is photographed again when its orbit is done, so the two pictures
+// show the parallax; then Next on the last stop, which is the flight home, and the end card. Beside
+// each picture: the camera's distance against the stop's own, the card's words, Leave on screen.
+// On the desktop run the share and card frames of two stops per trip are kept (`out.tripFrames`, the
+// form tools/trip-frames.probe.js returns), for scripts/build_trip_og.py and build_trip_thumbs.py.
+const TRIP_FRAME_STOPS = { 'into-the-helix': ['photograph', 'shape'], 'inside-a-neighbouring-galaxy': ['tarantula', 'depart'] };
+const tripRows = {};
+const tripNow = () => sr.trip.state;
+/** The turn between two azimuths, in degrees, the short way round. */
+const turnedDeg = (a, b) => { const d = (((b - a) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; return Math.round(Math.abs(d) * 1800 / Math.PI) / 10; };
+const tripArrive = async (index, capMs = 60000) => {
+  const t0 = Date.now();
+  const seen = [];
+  const ok = await until(() => {
+    const st = tripNow();
+    if (st.phase === 'flight' && Date.now() - t0 > 20000 && rig.finishFlight) rig.finishFlight();
+    const at = `${st.phase}@${st.index}`;
+    if (seen[seen.length - 1] !== at) seen.push(at);
+    return (st.phase === 'settle' || st.phase === 'dwell' || st.phase === 'held') && st.index === index;
+  }, capMs, 100);
+  return { ok, ms: Date.now() - t0, seen };
+};
+const tripFrame = (w, h) => {
+  const cam = sr.camera;
+  const v = cam.view && cam.view.enabled ? { ...cam.view } : null;
+  if (v) cam.clearViewOffset();
+  try { const c = sr.rendererApi.renderTo(w, h); return c ? c.toDataURL('image/png') : null; } catch (e) { return 'error: ' + e; } finally {
+    if (v) cam.setViewOffset(v.fullWidth, v.fullHeight, v.offsetX, v.offsetY, v.width, v.height);
+    cam.updateProjectionMatrix();
+  }
+};
+const walkTrip = async (id, tag) => {
+  const row = { id, stops: [], problems: [] };
+  tripRows[id] = row;
+  const plan = await sr.trip.start(id);
+  if (!plan || plan.offerable === false) { out.problems.push(`${id}: cannot run (${plan && plan.reason})`); return row; }
+  if (!(await until(() => tripNow().phase === 'intro', 30000))) { out.problems.push(`${id}: no intro`); return row; }
+  await until(() => { const t = sr.trip.tours().find((x) => x.id === id); return t && Array.isArray(t.stops); }, 15000);
+  const tour = sr.trip.tours().find((x) => x.id === id);
+  row.count = plan.count; row.estimateMs = tripNow().estimateMs; row.pacing = tripNow().pacing; row.dropped = (plan.dropped || []).map((d) => d.id);
+  await shot(`${tag}-0-intro`, `${id}: the intro sheet (title, blurb, the stops and the length, Start and Leave)`, 2500);
+  const stops = tour.stops.filter((st) => !row.dropped.includes(st.id));
+  for (let i = 0; i < stops.length; i += 1) {
+    const stop = stops[i];
+    sr.trip.jumpTo(i);
+    if (i === 0) sr.trip.play();
+    const arrived = await tripArrive(i);
+    if (!arrived.ok) { out.problems.push(`${id}/${stop.id}: never arrived (${arrived.seen.join(' ')})`); continue; }
+    const az0 = rig.state.azimuth;
+    sr.trip.pause('probe');
+    const wantLy = stop.distance_km / LY_KM;
+    const name = `${tag}-${i + 1}-${stop.id}`;
+    const r = await snap(name, `${id} stop ${i + 1}/${stops.length} "${stop.card.title}": the camera ${Math.round(wantLy * 10) / 10} ly from ${stop.target.record}, ${stop.key_light_deg} degrees off our line`, 4500);
+    const leave = document.querySelector('.sr-trip__leave');
+    const st = { id: stop.id, arriveMs: arrived.ms, wantLy, gotLy: r.distanceLy, card: r.card, chapter: textOf('.sr-trip__chapter', 60), title: textOf('.sr-trip__title', 80), leave: !!(leave && leave.offsetParent), phase: tripNow().phase };
+    // No false distance: the camera is where the stop says (the rig never pushed it out), and the card's
+    // own distance is the record's (the HUD and the card print it; written down for the reader).
+    if (!(Math.abs(r.distanceLy - wantLy) <= Math.max(0.02, wantLy * 0.05))) out.problems.push(`${id}/${stop.id}: the camera is ${r.distanceLy} ly from the target, the stop says ${wantLy}`);
+    if (!st.leave) out.problems.push(`${id}/${stop.id}: no Leave on screen`);
+    if ((TRIP_FRAME_STOPS[id] || []).includes(stop.id) && !phone) {
+      (out.tripFrames = out.tripFrames || []).push({ trip: id, stop: stop.id, number: tour.stops.indexOf(stop) + 1, zoom: 1, og: tripFrame(1200, 504), png: tripFrame(960, 720) });
+    }
+    if (stop.drift !== 'none' && stop.drift_deg >= 15) {
+      // The orbit: let the drift run to its end, then the same place again.
+      sr.trip.resume();
+      await sleep(Math.round((stop.drift_deg / stop.drift_rate_deg_s) * 1000) + 1500);
+      sr.trip.pause('probe');
+      st.orbitDeg = turnedDeg(az0, rig.state.azimuth);
+      await snap(`${name}-orbit`, `${id} "${stop.card.title}" at the end of its ${stop.drift_deg} degree orbit (turned ${st.orbitDeg})`, 1500);
+      if (!(st.orbitDeg > stop.drift_deg * 0.5)) out.problems.push(`${id}/${stop.id}: the orbit turned ${st.orbitDeg} degrees of ${stop.drift_deg}`);
+    }
+    row.stops.push(st);
+  }
+  // Next on the last stop: the flight home (`return: true`), photographed on the way, then the end card.
+  const t0 = Date.now();
+  sr.trip.resume();
+  sr.trip.next();
+  await sleep(5000);
+  row.returning = !!tripNow().returning;
+  await shot(`${tag}-${stops.length + 1}-home-flight`, `${id}: Next on the last stop, the flight home down the ladder (returning ${row.returning}, ${sr.stage.worldId})`);
+  const ended = await until(() => tripNow().phase === 'outro', 90000);
+  row.homeMs = Date.now() - t0;
+  await shot(`${tag}-${stops.length + 2}-end`, `${id}: the end card (${ended ? 'reached' : 'NOT reached'} after ${Math.round(row.homeMs / 1000)} s, on ${sr.stage.worldId})`, 2500);
+  if (!ended) out.problems.push(`${id}: the end card never came`);
+  sr.trip.stop('leave');
+  await sleep(3000);
+  return row;
+};
+const GROUPS_F = {
+  helixTrip: async () => { try { await fresh(); await walkTrip('into-the-helix', 'f1-helix'); } catch (e) { look.errors.push('probe: the Helix trip threw: ' + (e && e.stack || e)); } },
+  lmcTrip: async () => { try { await fresh(); await walkTrip('inside-a-neighbouring-galaxy', 'f2-lmc'); } catch (e) { look.errors.push('probe: the LMC trip threw: ' + (e && e.stack || e)); } },
+  // Reduced motion, as the browser would report it: the trip forces reader pacing, the flight is a cut
+  // (the rig never says it is flying), and the drift is refused (the azimuth does not move in 4 s).
+  tripReduced: async () => {
+    const real = window.matchMedia;
+    const Q = '(prefers-reduced-motion: reduce)';
+    try {
+      await fresh();
+      window.matchMedia = (q) => (String(q).replace(/\s+/g, ' ').trim() === Q
+        ? { matches: true, media: Q, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent() { return false; } }
+        : real.call(window, q));
+      await sr.trip.start('into-the-helix');
+      await until(() => tripNow().phase === 'intro', 30000);
+      const rm = { pacing: tripNow().pacing, reducedMotion: tripNow().reducedMotion, flewAtAll: false };
+      sr.trip.jumpTo(1);
+      sr.trip.play();
+      const t0 = Date.now();
+      while (Date.now() - t0 < 1500) { if (rig.state.flying) rm.flewAtAll = true; await sleep(50); }
+      const arrived = await tripArrive(1, 20000);
+      rm.arriveMs = arrived.ms;
+      const az = rig.state.azimuth;
+      await sleep(4000);
+      rm.turnedDeg = turnedDeg(az, rig.state.azimuth);
+      rm.phase = tripNow().phase; rm.index = tripNow().index;
+      out.tripReduced = rm;
+      await snap('f3-reduced-motion-shape', `reduced motion: "Into the Helix" stop 2 reached by a cut (pacing ${rm.pacing}, flew ${rm.flewAtAll}, turned ${rm.turnedDeg} deg in 4 s)`, 500);
+      if (rm.pacing !== 'reader' || rm.flewAtAll || rm.turnedDeg > 0.5) out.problems.push('reduced motion not obeyed by the journey: ' + JSON.stringify(rm));
+    } catch (e) { look.errors.push('probe: the reduced-motion trip threw: ' + (e && e.stack || e)); } finally {
+      window.matchMedia = real;
+      try { sr.trip.stop('leave'); } catch { /* nothing running */ }
+      await sleep(2000);
+    }
+  },
+};
 
 Object.assign(GROUPS, GROUPS_B, GROUPS_C, GROUPS_D, GROUPS_E, GROUPS_F);
 // The package's DS-01 to DS-18 (its section 3) onto the groups; `-f subject=DS-07` runs that pose alone.
@@ -641,7 +766,7 @@ const POSES = {
   'DS-10': ['far', 'cosmic'], 'DS-11': ['far', 'cosmic'], 'DS-17': ['far', 'cosmic'], 'DS-18': ['far', 'cosmic'],
 
   // f.
-
+  'DS-E07': ['helixTrip'], 'DS-E08': ['lmcTrip'], journeys: ['helixTrip', 'lmcTrip', 'tripReduced'],
 };
 
 const subject = new URLSearchParams(location.search).get('lookSubject');
@@ -656,5 +781,6 @@ for (const g of pick) {
   await GROUPS[g]();
 }
 
+if (Object.keys(tripRows).length) out.trips = tripRows;
 if (out.problems.length) out.fail = out.problems.join('; ');
 return finish(out);
