@@ -103,12 +103,14 @@
 //   saved copy holds SDO's newest picture in extreme ultraviolet (AIA 171 angstrom, SDO's false colour),
 //   the half of the Sun that faced the Earth when it was taken wears it, turned with the Sun since, in
 //   both looks: the spots, the grain and the limb darkening drawn there give way to it, and the far side,
-//   which no picture saw, stays as above. It is drawn within SUN_IMAGE_MAX_DAYS of its moment
+//   which no picture saw, is drawn as above but in the picture's own false-colour palette (aia171), the
+//   two cross-faded over a band of 26 degrees ending 75 degrees from the picture's middle. It is drawn within SUN_IMAGE_MAX_DAYS of its moment
 //   (data/sunactivity.js imageFade), faded in over a second when it arrives and as the disc grows, and
 //   under Film from very close it gives way to the drawn surface as the map does (uClose). With no copy
 //   (offline, a failed read, a connection that saves data) nothing changes from the disc above.
 //
-//   LOOPS OVER TODAY'S ACTIVE REGIONS -- measured places, illustrative everything else; FILM ONLY. Over
+//   LOOPS OVER TODAY'S ACTIVE REGIONS -- OFF FOR RELEASE 1.2.0 (LOOPS_ON). When on: measured places,
+//   illustrative everything else; FILM ONLY. Over
 //   each of NOAA's numbered regions (the spots' list, biggest first, LOOP_SLOTS by tier), a few thin
 //   arcs of light standing on the surface, as the 171 angstrom pictures show them: LOOPS_PER nested
 //   loops, their span LOOP_SPAN_K times the group's drawn radius (LOOP_SPAN_MIN to LOOP_SPAN_MAX radii),
@@ -231,6 +233,16 @@ export const CORONA_RADII = 7;
 export const CORONA_GAIN = 0.9;
 /** SDO's picture fades in over this long when it arrives, wall-clock ms (scene/sunimage.js). */
 export const IMAGE_ARRIVE_MS = 1200;
+/** The 171 ramp's red against its green (fitted, the shader's aia171), the picture's mean green as linear light, and the map's mean luminance (linear). */
+export const AIA171_RED = 1.44;
+export const AIA171_MEAN_LIN = 0.096;
+export const MAP_LUMA = 0.407;
+/**
+ * THE LOOPS ARE OFF FOR RELEASE 1.2.0 (the review of 2026-10-15: seen from the Earth's side they read as
+ * dashes and nested coils). The code stays; nothing draws them while this is false. opts.loops overrides
+ * it for tests only.
+ */
+export const LOOPS_ON = false;
 /**
  * The picture is drawn where SDO saw a place at least this share as squarely as the camera does (fading
  * between the two): over a pole the picture's edge-on strip would be stretched four times and more. Seen
@@ -461,6 +473,14 @@ vec3 limb( float mu ) {
                planck( ${CHANNEL_NM[2].toFixed(1)}, T ) / planck( ${CHANNEL_NM[2].toFixed(1)}, T1 ) );
 }
 
+// SDO's false-colour ramp for AIA 171 angstrom, sRGB in and out: green is the intensity, red rises
+// 1.44 times as fast and saturates, blue only in the brightest. FITTED on the picture of 2026-10-15
+// 16:56:58 (the mean red and blue of its disc pixels in twenty bins of green, every bin within 0.03).
+vec3 aia171( float g ) {
+  g = clamp( g, 0.0, 1.0 );
+  return vec3( min( 1.0, ${AIA171_RED.toFixed(2)} * g ), g, 0.8 * pow( max( g - 0.62, 0.0 ) / 0.38, 1.7 ) );
+}
+
 vec3 hash3( vec3 p ) {
   p = vec3( dot( p, vec3( 127.1, 311.7, 74.7 ) ), dot( p, vec3( 269.5, 183.3, 246.1 ) ), dot( p, vec3( 113.5, 271.9, 124.6 ) ) );
   return fract( sin( p ) * 43758.5453123 );
@@ -533,6 +553,14 @@ void main() {
   // Faculae: toward the limb the lanes of the network, and round a group, are bright, not dark.
   float towardLimb = ( 1.0 - smoothstep( 0.4, 0.72, mu ) ) * smoothstep( 0.03, 0.15, mu );
   colour *= 1.0 + ${FACULA_GAIN.toFixed(2)} * uGrain * towardLimb * min( 1.0, network + plage ) * ( 1.0 - lanes ) * ( 1.0 - lanes );
+
+  // THE DRAWN SURFACE IN THE PICTURE'S PALETTE, while the picture is drawn: its brightness without the
+  // limb darkening (grain, spots and the map's mottling kept), as 171 angstrom light's mean green, brighter
+  // toward the limb as the picture is (the limb's ring measured 1.7 times its middle), through aia171.
+  // Drawn, not observed: the card says the far side is drawn.
+  float plain = dot( colour, vec3( 0.2126, 0.7152, 0.0722 ) ) / max( limb( mu ).g, 0.05 ) / ${MAP_LUMA.toFixed(3)};
+  float g171 = pow( max( ${AIA171_MEAN_LIN.toFixed(4)} * plain * ( 1.0 + 0.7 * pow( 1.0 - mu, 3.0 ) ), 0.0 ), 1.0 / 2.2 );
+  colour = mix( colour, pow( aia171( g171 ), vec3( 2.2 ) ) * uImageGain, uImageOn );
 
   // THE FACE OF THE DAY: where SDO's picture saw this place, the picture (its own limb, its own colour)
   // in place of all of the above, faded in over the picture's own limb, and only where this camera does
@@ -901,6 +929,7 @@ export function loopFrame(s, latDeg, areaMsh, out = { span: 0, axis: [1, 0, 0] }
  * @param {THREE.Camera} opts.camera
  * @param {THREE.Object3D} [opts.sprite]  the round glow it wears far away; faded out while the corona is drawn
  * @param {number} [opts.tier]  0: no grain, two prominences and one CME at most
+ * @param {boolean} [opts.loops]  tests only: draw the loops although LOOPS_ON is false
  * @param {Function} [opts.imageLoader]  tier -> Promise<{ mod, img }>: scene/sunimage.js and its loadSunImage(); for tests
  */
 export function createSunDetail(opts = {}) {
@@ -1047,6 +1076,7 @@ export function createSunDetail(opts = {}) {
   const _frame = { c: [0, 0, 1], w: [1, 0, 0], n: [0, 1, 0] };
   let disposed = false;
   const show = { image: true, loops: true }; // the probe's before (debug), nothing else
+  const loopsOn = opts.loops === true || LOOPS_ON;
   const wallNow = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
   function askImage() {
     imageAsked = true;
@@ -1292,7 +1322,7 @@ export function createSunDetail(opts = {}) {
 
       // Loops over today's regions, biggest first, under Film only; they fade in with the prominences.
       looped = 0;
-      if (listed && closeness > 0 && show.loops && drawnUnder(look, UNDER_MEASURED.loops)) {
+      if (loopsOn && listed && closeness > 0 && show.loops && drawnUnder(look, UNDER_MEASURED.loops)) {
         for (const region of regions) {
           if (looped >= loopBuilt.slots) break;
           if (!spotDirection(region, _e, tMs, _s)) continue;

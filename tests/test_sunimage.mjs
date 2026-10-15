@@ -98,13 +98,13 @@ function fakeImage(observedMs = OBS) {
   let gone = false;
   return { texture, observedMs, wavelengthA: 171, instrument: 'SDO/AIA', file: FIX.file, radiusUv: 0.483, side: 830, bytes: FIX.bytes, gpuBytes: I.textureBytes(830), dispose() { gone = true; }, get gone() { return gone; } };
 }
-function makeSun(img, tier = 1) {
+function makeSun(img, tier = 1, loops = true) {
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: 0xf18833 }));
   const camera = new THREE.PerspectiveCamera(45, 1.6, 0.01, 1e6);
   camera.position.set(0, 0, 3.2);
   camera.lookAt(0, 0, 0);
   camera.updateMatrixWorld();
-  const sun = S.createSunDetail({ mesh, camera, tier, imageLoader: async () => ({ mod: I, img }) });
+  const sun = S.createSunDetail({ mesh, camera, tier, loops, imageLoader: async () => ({ mod: I, img }) });
   return { mesh, camera, sun };
 }
 const earth = new THREE.Vector3(0, 0, 150);
@@ -138,10 +138,21 @@ const flares = A.parseFlares([{ type: 'XRA', particulars1: 'M2.0', region: 4250,
   check(!/uTime/.test(S.LOOP_VERT(8)) && !/uTime/.test(S.LOOP_FRAG), 'the loops do not move: nothing for reduced motion or Measured to hold still');
   const ctx = { sunDetail: sun };
   const line = sunImageLine(ctx);
-  check(line && line.includes('16:56 UTC on 2026-10-15') && line.includes('171 ångström') && /false colour/.test(line) && line.includes('Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams') && /far side[^.]*drawn/.test(line),
+  check(line && line.includes('16:56 UTC on 2026-10-15') && line.includes('171 ångström') && /false colour/.test(line) && line.includes('Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams') && /far side[^.]*drawn from a model in the same false colour/.test(line),
     `the card dates the picture, says it is ultraviolet false colour, that the far side is drawn, and whose it is: ${line}`);
   check(/illustrative/.test(line) && /NOAA/.test(line) && line.includes('3 of today'), 'and that the loops over three regions are illustrative at NOAA\'s places');
   check(sunLine(ctx).includes(line), 'the line is part of the Sun\'s note on its card');
+  // FOR RELEASE 1.2.0 THE LOOPS ARE OFF (the review of 2026-10-15): with the flag as shipped, none, and the card says none.
+  {
+    const off = makeSun(fakeImage(), 1, false);
+    off.sun.setRegions(regions);
+    off.sun.update(T, 1, earth, { look: 'film' });
+    check(S.LOOPS_ON === false && off.sun.state().loops === 0 && !off.mesh.children.find((c) => c.name === 'sun-loops').visible, 'as shipped (LOOPS_ON false) no loops are drawn under Film either');
+    off.sun.dispose();
+  }
+  // The drawn surface takes the picture's palette while the picture is drawn, so no seam shows.
+  check(S.SUN_FRAG.includes('vec3 aia171( float g )') && S.SUN_FRAG.includes('colour = mix( colour, pow( aia171( g171 ), vec3( 2.2 ) ) * uImageGain, uImageOn );') && S.SUN_FRAG.indexOf('aia171( g171 )') < S.SUN_FRAG.indexOf('texture2D( uImage'), 'the drawn far side is in the 171 palette while the picture is shown, before the picture is laid over it');
+  check(near(Math.acos(I.IMAGE_EDGE[0]) * 180 / Math.PI, 75, 1) && Math.acos(I.IMAGE_EDGE[0]) - Math.acos(I.IMAGE_EDGE[1]) > 25 * Math.PI / 180 && Math.acos(I.IMAGE_EDGE[0]) - Math.acos(I.IMAGE_EDGE[1]) < 35 * Math.PI / 180, 'the picture is gone 75 degrees from its middle, over a band of 25 to 35 degrees');
 
   // MEASURED: only the observed picture on the face it covers.
   sun.update(T, 1, earth, { look: 'measured' });

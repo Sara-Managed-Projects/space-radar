@@ -18,8 +18,9 @@
 // FALSE colour for that channel (the gold). It is drawn on the half of the Sun that faced the Earth at the
 // moment it was taken (SDO circles the Earth, so its view is ours, north up as SDO publishes it), and
 // turns with the Sun from there (data/sunregions.js spotDirection, the turning the spots already use).
-// The far side, which no picture saw, stays the modelled photosphere (scene/sun.js), and the two are
-// cross-faded over IMAGE_EDGE of the picture's own limb, where its pixels are stretched thinnest.
+// The far side, which no picture saw, is the modelled photosphere (scene/sun.js) DRAWN IN THE PICTURE'S
+// OWN PALETTE while the picture is shown (SDO's 171 false-colour ramp, fitted on the picture itself), and
+// the two are cross-faded over IMAGE_EDGE, a band of 26 degrees ending 75 degrees from the picture's middle.
 //
 // THE PICTURE'S GEOMETRY. The Sun's radius in the picture is its angular radius that day over AIA's plate
 // scale (data/sunactivity.js imageRadiusPx: 401 pixels in October); the picture is centred on the Sun to a
@@ -46,8 +47,14 @@ export const IMAGE_MARGIN_PX = 14;
 export const IMAGE_PHONE_PX = 512;
 /** How much brighter than SDO's JPEG the picture is drawn (a JPEG stretched for a screen, not a measurement). */
 export const IMAGE_GAIN = 1.8;
-/** The picture fades in between these cosines from the place it was seen from: its own limb, stretched thinnest. */
-export const IMAGE_EDGE = [0.1, 0.32];
+/**
+ * The picture fades in between these cosines from the place it was seen from: nothing of it beyond 75 degrees
+ * from its middle, where its pixels are stretched four times and more (a look over the north pole on
+ * 2026-10-15 showed the streaks), all of it within 49 degrees; the 26 degrees between are a wide cross-fade
+ * into the drawn surface, which wears the picture's own palette while it is drawn (scene/sun.js aia171),
+ * so no line shows at any angle (the review of 2026-10-15 saw a hard seam from the side).
+ */
+export const IMAGE_EDGE = [0.26, 0.66];
 
 const RAD = Math.PI / 180;
 
