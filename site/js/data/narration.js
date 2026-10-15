@@ -10,7 +10,6 @@ export const NARRATION = {
   "credit": "Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0",
   "base": "audio/narration",
   "scripted": [
-    "inside-a-neighbouring-galaxy/r136",
     "the-constellations/southern-cross",
     "to-the-edge/edge",
     "travel-to-exoplanets/all"
@@ -229,7 +228,7 @@ export const NARRATION = {
     "inside-a-neighbouring-galaxy/model": 15.41,
     "inside-a-neighbouring-galaxy/tarantula": 15.1,
     "inside-a-neighbouring-galaxy/shell": 16.49,
-    "inside-a-neighbouring-galaxy/r136": 17.35,
+    "inside-a-neighbouring-galaxy/r136": 19.06,
     "inside-a-neighbouring-galaxy/depart": 15.27,
     "onboarding/move": 6.72,
     "onboarding/find": 6.15,
@@ -455,7 +454,7 @@ export const NARRATION = {
     "inside-a-neighbouring-galaxy/model": "ad7a6384",
     "inside-a-neighbouring-galaxy/tarantula": "ff4f3412",
     "inside-a-neighbouring-galaxy/shell": "d805e6f4",
-    "inside-a-neighbouring-galaxy/r136": "87cca042",
+    "inside-a-neighbouring-galaxy/r136": "30b17c3c",
     "inside-a-neighbouring-galaxy/depart": "f471e8f6",
     "onboarding/move": "cd8319e1",
     "onboarding/find": "5e6b109d",

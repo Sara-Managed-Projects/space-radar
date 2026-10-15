@@ -4739,10 +4739,10 @@ tours:
         # the card says "two to three hundred". lmc.yaml draws R136 as "a Plummer sphere of the
         # cluster's brightest stars ... the count drawn is a choice, the place is SIMBAD's".
         card:
-          title: "R136, where the heaviest stars are"
+          title: "Home of the heaviest stars known"
           body: >-
             At its heart is R136, a cluster under two million years old whose light makes most of the
-            nebula glow. Its star R136a1 is among the heaviest known, two to three hundred Suns. The
+            nebula glow. Its brightest star is among the heaviest known, two to three hundred Suns. The
             stars drawn are a sample, at its real place.
 
       - id: depart
