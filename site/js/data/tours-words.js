@@ -34,6 +34,6 @@ export const TOUR_WORDS = {
 "comets-and-meteors": "halley comet where today what from another star stranger shooting stars come dust earth shower rock phaethon why has name radiant the next you are tonight how watch one",
 "birth-of-the-solar-system": "began cloud like this why flat jupiter nearly all became the sun close only rock mercury far out giants giant leftovers how earth got its moon frozen edge pluto and here are home",
 "back-to-the-moon": "the last footprints four people leave again launch earth round far side moon home from out there where they mean land south pole",
-"into-the-helix": "the helix nebula telescope sees photograph turn and becomes shape inside ring around dying star heart back out almost wide full moon scale",
-"inside-a-neighbouring-galaxy": "galaxy you can see from earth home turned the photograph gives way model tarantula inside cloud hollow blown young stars shell r136 heaviest known our and its neighbour depart"
+"into-the-helix": "the helix nebula telescope sees photograph turn and becomes shape inside ring around dying star heart how big scale",
+"inside-a-neighbouring-galaxy": "galaxy you can see its photograph from home turned becomes model the tarantula inside cloud hollow blown young stars shell r136 heaviest known our and neighbour depart"
 };

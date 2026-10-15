@@ -4495,7 +4495,7 @@ tours:
   #                        path, ui/trip.js FLIGHT_LOG_MS).
   #   REVEAL               the heroes load themselves as they grow on screen (scene/deep/deepsky.js,
   #                        lodsize.js); nothing here asks for them.
-  #   ORBIT                one drift of 15 to 40 degrees at 1 to 3 degrees a second (5 to 15 s), the
+  #   ORBIT                one drift of 10 to 30 degrees at 1 to 3 degrees a second (5 to 15 s), the
   #                        nearer stars sliding past the far ones: the parallax the package asks for.
   #   ENTER                close stops stand OFF the dense middle: the Helix's 0.9 ly is outside the
   #                        inner disc (499 arcsec across, 0.79 ly in radius) and inside the outer ring
@@ -4543,7 +4543,7 @@ tours:
         distance_km: 113528765670970
         key_light_deg: 0
         drift_deg: 4
-        drift_rate_deg_s: 0.3
+        drift_rate_deg_s: 0.4
         chapter: "The photograph"
         # read 2026-10-15, registry/dso-hand.yaml helix-nebula: "655 +/- 13 ly, the central star's
         # parallax measured by Gaia (DR2 ...)" (the card's 655); the photograph is ESO eso0907a
@@ -4552,19 +4552,18 @@ tours:
         card:
           title: "The Helix Nebula, as a telescope sees it"
           body: >-
-            A photograph from a telescope in Chile, lined up as it is in our sky. A star like the Sun is
-            dying at its centre. Gaia, a spacecraft, measured that star's tiny yearly shift: it is 655
-            light-years away.
+            This photograph from Chile lines up with our sky. At its centre a star like the Sun is
+            dying. Gaia, a spacecraft, measured its yearly shift: it is 655 light-years away.
 
       - id: shape
         target: {record: dso-helix-nebula}
         needs_layer: deep-sky
-        # Five light-years, and a 35 degree turn off our line at 3 degrees a second (12 s): the
+        # Five light-years, and a 30 degree turn off our line at 3 degrees a second (10 s): the
         # photograph fades by 50 degrees off the line (scene/nebulae.js viewFade) and the model takes
         # its place, the near ring sliding across the far one and both across the stars behind.
         distance_km: 47303652362904
         key_light_deg: 0
-        drift_deg: 35
+        drift_deg: 30
         drift_rate_deg_s: 3
         chapter: "The shape in 3D"
         # read 2026-10-15, O'Dell, McCullough & Meixner 2004, AJ 128, 2339 (https://arxiv.org/abs/astro-ph/0407556),
@@ -4576,9 +4575,8 @@ tours:
         card:
           title: "Turn, and the photograph becomes a shape"
           body: >-
-            As we turn, a model takes over. Robert O'Dell and colleagues measured how the gas moves and
-            worked out its shape: a disc, and a ring tilted almost across it. This is their
-            reconstruction.
+            As we turn, a model takes over. Robert O'Dell and colleagues measured how the gas moves, and
+            found a disc inside a ring tilted almost across it. This is their reconstruction.
 
       - id: heart
         target: {record: dso-helix-nebula}
@@ -4598,9 +4596,8 @@ tours:
         card:
           title: "Inside the ring, around the dying star"
           body: >-
-            Inside the ring, we face the star that made all this: a white dwarf of about a hundred
-            thousand degrees. Its dark knots, each wider than our Solar System, are real; where each
-            sits is made up.
+            Inside the ring we face the dying star: a white dwarf of about a hundred thousand degrees.
+            Its dark knots, each wider than our Solar System, are real; where each sits is made up.
 
       - id: scale
         target: {record: dso-helix-nebula}
@@ -4608,7 +4605,7 @@ tours:
         distance_km: 378429218903232
         key_light_deg: 0
         drift_deg: 4
-        drift_rate_deg_s: 0.3
+        drift_rate_deg_s: 0.4
         chapter: "Going home"
         # read 2026-10-15, O'Dell et al. 2004's abstract: the outer ring 742'' and "an outermost-ring
         # of 1500'' (1.76 pc) diameter"; at 655 ly 742'' is 2.36 ly ("nearly two and a half") and
@@ -4616,11 +4613,10 @@ tours:
         # (https://science.nasa.gov/moon/facts/, read 2026-10-15); magnitude 7.6 (registry/dso-hand.yaml),
         # under the eye's limit of about 6. The light's age is its distance in years.
         card:
-          title: "Back out: almost as wide as the full Moon"
+          title: "How big it is"
           body: >-
-            The bright ring is nearly two and a half light-years across. In our sky the whole nebula is
-            almost as wide as the full Moon, yet too faint for the eye. The light we see left it 655
-            years ago.
+            The bright ring is nearly two and a half light-years across; in our sky the nebula is almost
+            as wide as the full Moon, but too faint for the eye. Its light left 655 years ago.
 
   # ---------------------------------------------------------------------------------------------
   # INSIDE A NEIGHBOURING GALAXY. From our own line of sight to the LMC, round it, into the Tarantula
@@ -4660,11 +4656,11 @@ tours:
         # Nature 567, 200, arXiv:1903.08096), 161 740 ly: "a hundred and sixty thousand". The
         # photograph: NOIRLab noirlab2030a (SMASH), registry/nebulae.yaml.
         card:
-          title: "A galaxy you can see from Earth"
+          title: "A galaxy you can see: its photograph"
           body: >-
             From the southern half of the Earth this pale cloud is plain to the eye: the Large
-            Magellanic Cloud, a small galaxy beside our own. Pairs of stars that eclipse each
-            other put it a hundred and sixty thousand light-years away. This is its photograph.
+            Magellanic Cloud, a small galaxy beside ours. Stars that eclipse each other put it a hundred
+            and sixty thousand light-years away.
 
       - id: model
         target: {record: dso-lmc}
@@ -4680,11 +4676,11 @@ tours:
         # drawn star is (no single star's distance is known at 160 000 light-years: a statistical
         # scale height, never a parallax)" a model.
         card:
-          title: "Turned, the photograph gives way to a model"
+          title: "Turned, it becomes a model"
           body: >-
-            Off our line the photograph fades and a model takes over. Where its stars lie on the sky
-            comes from the Gaia spacecraft's counts; how far each sits in front or behind is a guess,
-            since no single star's depth can be measured this far away.
+            Off our line a model takes over. Where its stars lie on the sky comes from the Gaia
+            spacecraft's counts; how far each sits in front or behind is a guess, as no single star's
+            depth can be measured.
 
       - id: tarantula
         target: {record: dso-tarantula-nebula}
@@ -4702,9 +4698,9 @@ tours:
         card:
           title: "The Tarantula, inside the Cloud"
           body: >-
-            The bright knot is the Tarantula Nebula, the brightest nursery of stars anywhere near us. It
-            belongs to the Large Magellanic Cloud and shares its distance; how far it sits in front of
-            or behind the disc's middle is not known.
+            The bright knot is the Tarantula Nebula, the brightest nursery of stars near us. It is part
+            of the Large Magellanic Cloud and shares its distance; its depth within the disc is not
+            known.
 
       - id: shell
         target: {record: dso-tarantula-nebula}
@@ -4723,9 +4719,9 @@ tours:
         card:
           title: "A hollow blown by young stars"
           body: >-
-            Nearly two thousand light-years across, the Tarantula is gas lit and pushed by the
-            young stars at its heart, whose winds have blown a hollow in the middle. Its depth
-            here is a model; the pink of hydrogen and the teal of oxygen are made stronger.
+            Nearly two thousand light-years across, it is gas lit and pushed by young stars, whose winds
+            have blown a hollow in its middle. Its depth here is a model; its pink hydrogen and teal
+            oxygen are made stronger.
 
       - id: r136
         target: {record: dso-tarantula-nebula}
@@ -4745,9 +4741,9 @@ tours:
         card:
           title: "R136, home of the heaviest stars known"
           body: >-
-            At its heart is R136, a cluster less than two million years old whose light makes most of
-            the nebula glow. Its star R136a1 is among the heaviest known, weighing two to three hundred
-            Suns. The stars drawn are a sample; the cluster's place is real.
+            At its heart is R136, a cluster under two million years old whose light makes most of the
+            nebula glow. Its star R136a1 is among the heaviest known, two to three hundred Suns. The
+            stars drawn are a sample, at its real place.
 
       - id: depart
         target: {record: dso-lmc}
@@ -4764,6 +4760,7 @@ tours:
         card:
           title: "Our galaxy and its neighbour"
           body: >-
-            Far out, the Large Magellanic Cloud is the small patch in the middle, the Small
-            Magellanic Cloud beside it, and our Milky Way beyond, about three times wider. Now the
-            long way home: a hundred and sixty thousand light-years.
+            Far out, the Large Magellanic Cloud is the small patch in the middle, the Small one beside
+            it, and our Milky Way beyond, about three times wider. Now home: a hundred and sixty
+            thousand light-years.
+
