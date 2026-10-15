@@ -113,11 +113,15 @@ layers:
     ra_deg: 84.6583
     dec_deg: -69.095
     arcmin: 40
-    # The shape: R136 inside a cavity its winds blew, the warm gas in a shell round it, confined by
+    # The shape: R136 inside a cavity its winds blew, its wall an ionisation front (radius_ly; width_ly is
+    # how fast the gas falls off outside it), the warm gas confined by
     # molecular gas ("a confined system of X-ray bubbles in rough pressure equilibrium with each other
     # and with the confining molecular gas", Pellegrini et al. 2011, abstract read 2026-10-15), mapped
     # out to 75 pc (245 ly) from R136. The shell's radius and width below are a model at that scale.
     shell: {radius_ly: 300, width_ly: 150}
+    # Along our line (within 25 degrees, gone by 45) its colour is its photograph's (ESA/Webb weic2212a, the
+    # registry/nebulae.yaml row), as the Helix's is; the molecular clouds' dark cores and lit rims are generated
+    # (Film only).
     source: "Pellegrini, Baldwin & Ferland 2011, ApJ 738, 34 (arXiv:1101.3778); Pellegrini et al. 2010, ApJS 191, 160 (arXiv:1009.4948)"
   - kind: cluster
     what: R136, the young cluster at the Tarantula's heart, and its glow
@@ -125,9 +129,11 @@ layers:
     dec_deg: -69.10093
     # A Plummer sphere of the cluster's brightest stars (NGC 2070 spans about 40 pc); the count drawn is
     # a choice, the place is SIMBAD's (RMC 136).
-    plummer_ly: 10
-    radius_ly: 70
-    count: {t0: 300, t1: 900, t2: 1600}
+    # Tight and resolved (the Tarantula review of 2026-10-15: a blurred disc at its heart): R136's core is
+    # about 2 pc across, so the brightest stars are drawn within a few light-years, thinning out to 50.
+    plummer_ly: 4
+    radius_ly: 50
+    count: {t0: 200, t1: 500, t2: 900}
     colour: [0.74, 0.84, 1.0]
     source: "SIMBAD, RMC 136, read 2026-10-15"
 colours:

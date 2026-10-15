@@ -242,12 +242,12 @@ export const HERO = {
       "what": "R136, the young cluster at the Tarantula's heart, and its glow",
       "ra_deg": 84.67665,
       "dec_deg": -69.10093,
-      "plummer_ly": 10,
-      "radius_ly": 70,
+      "plummer_ly": 4,
+      "radius_ly": 50,
       "count": {
-        "t0": 300,
-        "t1": 900,
-        "t2": 1600
+        "t0": 200,
+        "t1": 500,
+        "t2": 900
       },
       "colour": [
         0.74,

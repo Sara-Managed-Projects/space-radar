@@ -1449,6 +1449,7 @@ from star counts, catalogued positions and published geometry. No image of any p
 | Positions of 21 H II regions (Henize 1956 numbers) and of the cluster R136 | SIMBAD (Wenger et al. 2000, A&AS 143, 9), CDS, Strasbourg, read 2026-10-15 | facts, credited |
 | The disc's tilt 34.7° and line of nodes 122.5°; the scale length 1.3–1.5 kpc; the outer ellipse | van der Marel & Cioni 2001, AJ 122, 1807; van der Marel 2001, AJ 122, 1827 | facts, cited |
 | The disc's thickness (the old stars' scale height from their V/σ) | van der Marel, Alves, Hardy & Suntzeff 2002, AJ 124, 2639 | facts, cited; the young stars' thickness is illustrative |
+| The Tarantula's colour along our line (within 25° of the line it was taken along): its photograph, already shipped | NASA, ESA, CSA, and STScI (ESA/Webb weic2212a, the photograph's own row above) | CC BY 4.0 |
 | The Tarantula's shape: R136 in a cavity, warm gas in a shell confined by molecular gas, mapped to 75 pc | Pellegrini, Baldwin & Ferland 2011, ApJ 738, 34; Pellegrini et al. 2010, ApJS 191, 160 | facts, cited; the shell's radius and width are a model |
 
 The stars' depths, their brightness, the dust and the Tarantula's gas in depth are a model, and the card

@@ -190,6 +190,30 @@ const maps = L.readMaps(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.by
         check(on === 1 && mid > 0 && mid < 1 && offl === 0 && inside === 0, `the photograph lights the disc on our line (${on}), half at 35 degrees (${mid}), not at 60 (${offl}) nor from inside (${inside})`);
         camera.position.set(0, 0, 900);
       }
+      // The Tarantula (its review, 2026-10-15): R136 a tight cluster of resolved points and a 4 ly core, not a
+      // blurred disc; the front found exactly; the Webb photograph its colour only along our line.
+      {
+        const sa = hero.group.getObjectByName('deep-lmc-sprites').geometry.getAttribute('aSprite');
+        const core = sa.array[(sa.count - 1) * 4 + 3];
+        check(core < 0 && -core * 100 <= 5, `R136's core is compact (${(-core * 100).toFixed(1)} ly) and marked as a core`);
+        const nodeR = [...Array(sa.count - 1).keys()].map((i) => sa.array[i * 4 + 3]);
+        check(nodeR.every((r) => r > 0), 'the H II regions are drawn as regions with an edge, not as cores');
+        const st = hero.group.getObjectByName('deep-lmc-stars').geometry.getAttribute('aStar');
+        const cl = [...Array(st.count).keys()].filter((i) => st.array[i * 4 + 3] >= 1.5).length;
+        check(cl === HERO.layers.find((l) => l.kind === 'cluster').count.t1, `R136's ${cl} stars are flagged to be drawn resolved`);
+        const src = readFileSync(join(JS, 'scene/deep/lmc.js'), 'utf8');
+        check(/tA = -fb - fh/.test(src) && !/0\.22 \* exp\( -5\.0 \* r \* r \)/.test(src), 'the ionisation front is found exactly per ray, and the halo that filled the view is gone');
+        const tm = hero.group.getObjectByName('deep-lmc-tarantula');
+        hero.group.updateMatrixWorld(true);
+        const tc = tm.getWorldPosition(new THREE.Vector3());
+        const fg = hero.group.getObjectByName('deep-lmc-frame');
+        const toSun = new THREE.Vector3(...L.toGal(g0, g0.u).map((v) => -v * g0.unit)).applyMatrix4(new THREE.Matrix4().extractRotation(fg.matrixWorld)).normalize();
+        const side = new THREE.Vector3(1, 0, 0).cross(toSun).normalize();
+        const atT = (deg) => { const a = deg * D2R; camera.position.copy(tc).add(toSun.clone().multiplyScalar(Math.cos(a) * 6).add(side.clone().multiplyScalar(Math.sin(a) * 6))); hero.frame({ camera, quality: { tier }, look: 'film' }); return hero.stats().tarantulaHonest; };
+        const on = atT(0), off = atT(60);
+        check(on === 1 && off === 0, `the Webb photograph colours the Tarantula along our line (${on}) and not 60 degrees off it (${off})`);
+        camera.position.set(0, 0, 900);
+      }
       const card = hero.card;
       check(card && card.copy === L.COPY_BLOCK && card.drawn['dso-tarantula-nebula'], 'the hero names its words block and what it draws for each record');
     }

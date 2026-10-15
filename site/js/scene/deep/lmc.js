@@ -344,7 +344,7 @@ void main() {
 // would carry the light): no longer, they stay pinpoints, capped. uSb: the surface brightness at the map's peak density.
 const STAR_VERT = /* glsl */ `
 ${COMMON}
-attribute vec4 aStar;      // colour times luminosity; w: the photograph's cover there
+attribute vec4 aStar;      // colour times luminosity; w: the photograph's cover there (+ 2 for R136's stars)
 uniform float uUnit;       // scene units per object unit
 uniform float uPixAng;     // a device pixel's angle, radians
 uniform float uBase;       // a star's size, device px
@@ -357,9 +357,13 @@ void main() {
   float d = length( mv.xyz ) / uUnit;
   float pix = d * uPixAng;                  // a pixel's side at the star, object units
   // capped: a point stands for many stars, so close up it would otherwise outshine a real one
-  float bright = min( uSb / max( uPeak * pix * pix * uBase * uBase, 1e-12 ), 1.2 );
-  bright *= uShare * uGain * ( 1.0 - uPhoto * aStar.w );
-  float grow = 1.0; // never grown: points are sparkle over the smooth layer (the M31 review: a carpet of big soft points)
+  // R136's stars carry 2 + cover in w: a cluster of RESOLVED blue-white points, brighter and a little larger
+  // (the Tarantula review: a blurred disc at its heart); every other point stays sparkle.
+  float isCl = step( 1.5, aStar.w );
+  float cover = aStar.w - 2.0 * isCl;
+  float bright = min( uSb / max( uPeak * pix * pix * uBase * uBase, 1e-12 ), mix( 1.2, 6.0, isCl ) );
+  bright *= uShare * uGain * ( 1.0 - uPhoto * cover );
+  float grow = isCl > 0.5 ? clamp( 0.6 * sqrt( bright * length( aStar.rgb ) ), 1.0, 2.6 ) : 1.0; // others never grown (the M31 review)
   gl_PointSize = mv.z < 0.0 ? uBase * grow : 0.0;
   vCol = aStar.rgb * bright / ( grow * grow );
 }
@@ -379,18 +383,20 @@ void main() {
 // distance; under a pixel they keep their light in a pixel; when the camera is inside one it fades.
 const SPRITE_VERT = /* glsl */ `
 ${COMMON}
-attribute vec4 aSprite;    // colour times brightness; w: radius, object units
+attribute vec4 aSprite;    // colour times brightness; w: radius, object units (negative: R136's core)
 attribute vec2 aCover;     // the LMC photograph's cover there; 1 when the Tarantula's photograph covers it too
 uniform float uUnit;
 uniform float uProjPx;     // projectionMatrix[1][1] * the drawing buffer's height / 2
 uniform float uPhotoT;     // how much of the Tarantula's photograph is drawn now
 uniform float uMinPx;
 varying vec3 vCol;
+varying float vCore;
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
   float z = -mv.z;
-  float rWorld = aSprite.w * uUnit;
+  vCore = aSprite.w < 0.0 ? 1.0 : 0.0;
+  float rWorld = abs( aSprite.w ) * uUnit;
   float px = 2.0 * rWorld / max( z, 1e-9 ) * uProjPx;
   float size = clamp( px, uMinPx, ${SPRITE_MAX_PX.toFixed(1)} );
   float keep = px < uMinPx ? ( px / uMinPx ) * ( px / uMinPx ) : 1.0;
@@ -401,20 +407,29 @@ void main() {
 `;
 const SPRITE_FRAG = /* glsl */ `
 varying vec3 vCol;
+varying float vCore;
 void main() {
   vec2 c = gl_PointCoord * 2.0 - 1.0;
   float r2 = dot( c, c );
   if ( r2 > 1.0 ) discard;
-  // a knot with an edge, brighter inside, not a Gaussian blur (the Helix review: soft blobs)
-  float a = ( 1.0 - smoothstep( 0.62, 1.0, sqrt( r2 ) ) ) * ( 0.55 + 0.45 * exp( -6.0 * r2 ) );
+  float r = sqrt( r2 );
+  // An H II region: a crisp edge and a shell brighter toward it (its ionisation front), not a soft disc
+  // (the Tarantula review). R136's core: compact, falling off fast.
+  float a = vCore > 0.5 ? exp( -7.0 * r2 ) * ( 1.0 - r2 )
+                        : ( 1.0 - smoothstep( 0.93, 1.0, r ) ) * ( 0.12 + 0.88 * smoothstep( 0.72, 0.95, r ) );
   gl_FragColor = vec4( vCol * a, 1.0 );
 }
 `;
 
-// The Tarantula: a march in its own unit sphere. A cavity round R136 inside a shell of warm gas, more of
-// it behind R136 than in front (the confining molecular cloud), a faint halo, a bright core; [O III]
-// teal where the gas is most ionised, H-alpha pink outside. Under Film, noise breaks the shell into
-// filaments and lays dark filaments in front.
+// The Tarantula: a march in its own unit sphere (the Tarantula review of 2026-10-15: no pink fog).
+//   * THE IONISATION FRONT: the cavity R136's winds blew has a wall, found EXACTLY where each ray crosses
+//     it (a sphere round R136, no step can miss it), so it is crisp at any step count; brighter where the
+//     line grazes it (limb), more of it behind R136 (the confining cloud), and under Film broken into arcs.
+//   * THE GAS outside the front falls off outward; the cavity is nearly empty; no halo fills the view.
+//   * MOLECULAR CLOUDS (Film only, generated): dark where dense, their surfaces facing R136 lit, the
+//     backlit rims of the pictures.
+//   * ALONG OUR LINE, the Webb photograph is the colour (its own structure), as the Helix's is: within 25
+//     degrees of the line it was taken along, gone by 45.
 const NEB_FRAG = /* glsl */ `
 precision highp sampler3D;
 ${COMMON}
@@ -422,7 +437,8 @@ uniform vec3 uCamObj;
 uniform float uRadius;     // object units
 uniform vec3 uR136;        // R136 in the unit sphere
 uniform vec3 uAway;        // the unit vector from the Sun, in the unit sphere's axes
-uniform vec2 uShell;       // radius and width, in units of the nebula's radius
+uniform vec2 uShell;       // the front's radius round R136 and the gas's fall-off outside it, in the nebula's radius
+uniform vec2 uFront;       // the front's brightness, the clouds' rims'
 uniform vec3 uColHa;
 uniform vec3 uColO3;
 uniform float uK;
@@ -433,17 +449,33 @@ uniform float uPhotoT;
 uniform vec3 uPicC;        // the Tarantula photograph: its plane's centre, right and up in the unit sphere,
 uniform vec3 uPicR;        // the latter two scaled so that (u, v) = 0.5 + dot / 2
 uniform vec3 uPicU;
+uniform sampler2D uTPic;   // that photograph (Webb, weic2212a), display values
+uniform float uTPicOn;     // how honest it is now: 1 within 25 degrees of its line, 0 by 45
+uniform vec3 uTPicLook;    // the exposure's stretch: gain, gamma, saturation
 uniform sampler3D uNoise;
 uniform int uSteps;
 varying vec3 vObj;
+vec2 picUv( vec3 p ) { vec3 q = p - uPicC; return 0.5 + 0.5 * vec2( dot( q, uPicR ), dot( q, uPicU ) ); }
 float coverT( vec3 p ) {
   // where the Tarantula's photograph is drawn on the line through p (its own frame fade, nebulae.js)
-  vec3 q = p - uPicC;
-  vec2 uv = 0.5 + 0.5 * vec2( dot( q, uPicR ), dot( q, uPicU ) );
-  vec2 a = abs( uv * 2.0 - 1.0 );
+  vec2 a = abs( picUv( p ) * 2.0 - 1.0 );
   float e = pow( pow( a.x, 3.0 ) + pow( a.y, 3.0 ), 1.0 / 3.0 );
   float f = 1.0 - smoothstep( 0.5, 0.98, e );
   return f * f;
+}
+vec3 tint( vec3 p, vec3 model ) {
+  if ( uTPicOn <= 0.001 ) return model; // off its line: no lookups at all
+  float k = uTPicOn * coverT( p );
+  if ( k <= 0.001 ) return model;
+  vec3 c = pow( texture2D( uTPic, clamp( picUv( p ), 0.0, 1.0 ) ).rgb, vec3( uTPicLook.y ) ) * uTPicLook.x;
+  float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
+  c = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uTPicLook.z );
+  return mix( model, c * 2.4, k );
+}
+float arcs( vec3 p ) {
+  if ( uNoiseAmp <= 0.0 ) return 1.0;
+  float n = texture( uNoise, p * 0.7 + vec3( 0.21, 0.47, 0.83 ) ).r;
+  return mix( 1.0, smoothstep( 0.34, 0.6, n ), uNoiseAmp );
 }
 void main() {
   if ( uShare <= 0.0 ) discard;
@@ -456,34 +488,56 @@ void main() {
   float t0 = max( 0.0, -b - h );
   float t1 = -b + h;
   if ( t1 <= t0 ) discard;
-  float jitter = fract( sin( dot( gl_FragCoord.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); // white, not a lattice: with few steps a structured offset showed as a grid (look, 2026-10-15)
+  // the front: where this ray crosses the sphere round R136, exactly
+  vec3 oc = ro - uR136;
+  float fb = dot( oc, rd );
+  float fh = fb * fb - ( dot( oc, oc ) - uShell.x * uShell.x );
+  float tA = -1.0, tB = -1.0;
+  if ( fh > 0.0 ) { fh = sqrt( fh ); tA = -fb - fh; tB = -fb + fh; }
+  float jitter = fract( sin( dot( gl_FragCoord.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ); // white, not a lattice
   float dt = ( t1 - t0 ) / float( uSteps );
   float ds = dt * uRadius;
   vec3 C = vec3( 0.0 );
   float T = 1.0;
+  vec3 frontCol = mix( uColO3, uColHa, 0.55 );
+  vec3 rimCol = mix( uColHa, vec3( 1.0, 0.86, 0.76 ), 0.35 );
   for ( int i = 0; i < 48; i++ ) {
     if ( i >= uSteps ) break;
-    vec3 p = ro + rd * ( t0 + ( float( i ) + jitter ) * dt );
+    float ta = t0 + float( i ) * dt;
+    for ( int j = 0; j < 2; j++ ) {
+      float tf = j == 0 ? tA : tB;
+      if ( tf >= ta && tf < ta + dt && tf > 0.0 ) {
+        vec3 pf = ro + rd * tf;
+        vec3 nf = normalize( pf - uR136 );
+        float mu = abs( dot( nf, rd ) );
+        // limb-brightened, but a grazing ray fades: the first look drew the wall's edge as a glass ball's rim
+        float limb = smoothstep( 0.04, 0.3, mu ) / max( mu, 0.3 );
+        float wf = arcs( pf ) * ( 0.5 + 0.5 * dot( nf, uAway ) ) * ( 1.0 - smoothstep( 0.85, 1.0, length( pf ) ) );
+        C += T * tint( pf, frontCol ) * uFront.x * wf * limb * ( uPhotoT > 0.0 ? 1.0 - uPhotoT * coverT( pf ) : 1.0 );
+      }
+    }
+    vec3 p = ro + rd * ( ta + jitter * dt );
     float r = length( p );
     vec3 q = p - uR136;
     float rq = length( q );
     float back = dot( q / max( rq, 1e-4 ), uAway );
-    float k = ( rq - uShell.x ) / uShell.y;
-    float shell = exp( -k * k ) * ( 0.62 + 0.38 * back );
-    float rho = shell + 0.22 * exp( -5.0 * r * r ) + 0.9 * exp( -rq * rq / 0.004 );
-    rho *= 1.0 - smoothstep( 0.82, 1.0, r );
-    float dust = 0.0;
+    float d = rq - uShell.x;
+    float rho = ( d > 0.0 ? exp( -d / uShell.y ) : 0.05 ) * ( 0.55 + 0.45 * back ) + 1.2 * exp( -rq * rq / 0.0015 );
+    rho *= 1.0 - smoothstep( 0.8, 1.0, r );
+    float dust = 0.0, rim = 0.0;
     if ( uNoiseAmp > 0.0 ) {
       float n1 = texture( uNoise, p * 0.45 + vec3( 0.13, 0.71, 0.37 ) ).r;
-      float n2 = texture( uNoise, p * 0.9 + vec3( 0.59, 0.23, 0.11 ) ).r;
-      rho *= mix( 1.0, 0.25 + 1.9 * n1 * n2, uNoiseAmp );
-      // dark filaments: broad ridges of the noise, in front of R136 (toward the Sun), inside the shell
-      float ridge = 1.0 - abs( 2.0 * n2 - 1.0 );
-      dust = uNoiseAmp * smoothstep( 0.55, 0.9, ridge ) * smoothstep( 0.0, 0.6, -back ) * ( 1.0 - smoothstep( 0.25, 0.7, r ) );
+      float n2 = texture( uNoise, p * 0.6 + vec3( 0.59, 0.23, 0.11 ) ).r;
+      // patchy: filaments with dark gaps between, never an even pink (the review: a screen-filling haze)
+      rho *= mix( 1.0, 0.05 + 2.2 * n1 * n1, uNoiseAmp );
+      // the clouds lie in a band just outside the front (the second look: a whole sphere of them read as a cauliflower)
+      float band = smoothstep( uShell.x * 0.9, uShell.x * 1.15, rq ) * ( 1.0 - smoothstep( uShell.x * 1.5, uShell.x * 2.1, rq ) );
+      dust = uNoiseAmp * smoothstep( 0.62, 0.74, n2 ) * band;
+      rim = uNoiseAmp * smoothstep( 0.54, 0.62, n2 ) * ( 1.0 - smoothstep( 0.62, 0.68, n2 ) ) * band / ( 1.0 + 6.0 * rq * rq );
     }
-    vec3 col = mix( uColO3, uColHa, smoothstep( 0.06, 0.38, rq ) );
-    float w = ( 1.0 - uPhotoT * coverT( p ) );
-    C += T * col * rho * uK * ds * w;
+    vec3 col = tint( p, mix( uColO3, uColHa, smoothstep( 0.06, 0.38, rq ) ) );
+    float w = uPhotoT > 0.0 ? 1.0 - uPhotoT * coverT( p ) : 1.0;
+    C += T * ( col * rho * uK + rimCol * rim * uFront.y ) * ds * w;
     T *= exp( -uSigma * dust * ds * w );
     if ( T < 0.02 ) break;
   }
@@ -584,7 +638,7 @@ export function createHero(THREE, env = {}) {
 
   // -------------------------------------------------------------------------------- the Tarantula
   const nebL = layer('nebula') || { ra_deg: 84.6583, dec_deg: -69.095, arcmin: 40, shell: { radius_ly: 300, width_ly: 150 } };
-  const clusterL = layer('cluster') || { ra_deg: 84.67665, dec_deg: -69.10093, plummer_ly: 10, radius_ly: 70, count: { t0: 300, t1: 900, t2: 1600 }, colour: [0.74, 0.84, 1] };
+  const clusterL = layer('cluster') || { ra_deg: 84.67665, dec_deg: -69.10093, plummer_ly: 4, radius_ly: 50, count: { t0: 200, t1: 500, t2: 900 }, colour: [0.74, 0.84, 1] };
   const tarCentre = memberAt(g, nebL.ra_deg, nebL.dec_deg);
   const tarR = (g.D * Math.tan((nebL.arcmin / 60) * D2R / 2)) / g.unit; // the catalogue radius, object units
   const r136 = memberAt(g, clusterL.ra_deg, clusterL.dec_deg);
@@ -599,8 +653,9 @@ export function createHero(THREE, env = {}) {
       uAway: { value: new THREE.Vector3(...toGal(g, g.u).map((v) => v * g.unit)).normalize() },
       uShell: { value: new THREE.Vector2(((nebL.shell && nebL.shell.radius_ly) || 300) / g.unit / tarR, ((nebL.shell && nebL.shell.width_ly) || 150) / g.unit / tarR) },
       uColHa: { value: hex(colours.Ha, '#ff6b8c') }, uColO3: { value: hex(colours.OIII, '#73f2e6') },
-      uK: { value: 0.22 }, uSigma: { value: 0.35 }, uNoiseAmp: { value: 0 }, uCover: { value: 1 }, uPhotoT: { value: 0 },
+      uK: { value: 0.07 }, uSigma: { value: 1.2 }, uFront: { value: new THREE.Vector2(0.4, 1.6) }, uNoiseAmp: { value: 0 }, uCover: { value: 1 }, uPhotoT: { value: 0 },
       uPicC: { value: new THREE.Vector3(0, 0, 50) }, uPicR: { value: new THREE.Vector3() }, uPicU: { value: new THREE.Vector3() },
+      uTPic: { value: null }, uTPicOn: { value: 0 }, uTPicLook: { value: new THREE.Vector3(1, 1, 1) },
       uNoise: { value: null }, uSteps: { value: 10 },
     },
   }), true);
@@ -638,6 +693,7 @@ export function createHero(THREE, env = {}) {
   let orientedFor = null;
   let tarPx = 0;
   let honest = 0;
+  let tarHonest = 0;
   const _m = new THREE.Matrix4();
   const _inv = new THREE.Matrix4();
   const _v = new THREE.Vector3();
@@ -650,8 +706,15 @@ export function createHero(THREE, env = {}) {
     : new THREE.TextureLoader().loadAsync(String(new URL(String(lmcRow.file).replace(/^site\//, ''), new URL('../../../', import.meta.url))))
       .then((t) => { t.colorSpace = THREE.NoColorSpace; picTex = t; discMat.uniforms.uPic.value = t; })
       .catch((e) => { if (typeof console !== 'undefined') console.warn('deep: the LMC photograph did not load for the model', e && e.message); });
-  let picDone = !picPending;
-  if (picPending) picPending.finally(() => { picDone = true; });
+  // The Tarantula's photograph too (Webb, weic2212a, already shipped and credited): its colour along our line.
+  let tPicTex = null;
+  const tPicPending = (!tarRow || !tarRow.file || typeof location === 'undefined' || env.noFetch) ? null
+    : new THREE.TextureLoader().loadAsync(String(new URL(String(tarRow.file).replace(/^site\//, ''), new URL('../../../', import.meta.url))))
+      .then((t) => { t.colorSpace = THREE.NoColorSpace; tPicTex = t; nebMat.uniforms.uTPic.value = t; })
+      .catch((e) => { if (typeof console !== 'undefined') console.warn('deep: the Tarantula photograph did not load for the model', e && e.message); });
+  let picDone = !picPending && !tPicPending;
+  let picsLeft = (picPending ? 1 : 0) + (tPicPending ? 1 : 0);
+  for (const pp of [picPending, tPicPending]) if (pp) pp.finally(() => { picsLeft -= 1; if (picsLeft <= 0) picDone = true; });
   const load = env.fetchBin || ((url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status}`)))));
   const pending = loaded ? null : Promise.resolve().then(() => load(MAP_URL)).then((buf) => { maps = readMaps(buf); }).catch((e) => {
     // The maps could not be read: the model draws its nodes and its Tarantula, the photograph and the
@@ -708,7 +771,7 @@ export function createHero(THREE, env = {}) {
       let rr = rMax + 1;
       while (rr > rMax) rr = a / Math.sqrt(Math.pow(Math.max(1e-6, r()), -2 / 3) - 1);
       const ct = 2 * r() - 1, ph = 2 * Math.PI * r(), st = Math.sqrt(1 - ct * ct);
-      put(k++, [r136[0] + rr * st * Math.cos(ph), r136[1] + rr * ct, r136[2] + rr * st * Math.sin(ph)], clusterL.colour, 6 * luminosity(r()), coverR);
+      put(k++, [r136[0] + rr * st * Math.cos(ph), r136[1] + rr * ct, r136[2] + rr * st * Math.sin(ph)], clusterL.colour, 10 * luminosity(r()), coverR + 2);
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -732,9 +795,8 @@ export function createHero(THREE, env = {}) {
       sc.push(photoCover(lmcRow, lmcEll, eclToEq(dir)), 0);
     }
     const coverT = tarRow ? photoCover(tarRow, null, eclToEq(skyDir(g, r136))) : 0;
-    for (const [rad, kk] of [[22 / g.unit, 2.2], [90 / g.unit, 0.45]]) {
-      sp.push(...r136); sa.push(0.8 * kk, 0.88 * kk, 1.0 * kk, rad); sc.push(coverR, coverT);
-    }
+    // R136's core: 4 ly, compact (a negative radius says so to the shader); its stars are the points.
+    sp.push(...r136); sa.push(0.8 * 1.6, 0.88 * 1.6, 1.6, -4 / g.unit); sc.push(coverR, coverT);
     const sg = new THREE.BufferGeometry();
     sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
     sg.setAttribute('aSprite', new THREE.Float32BufferAttribute(sa, 4));
@@ -837,16 +899,22 @@ export function createHero(THREE, env = {}) {
       camIn(nebMesh, camera, nebMat.uniforms.uCamObj.value);
       const dT = nebMat.uniforms.uCamObj.value.length() * tarR; // object units
       const rT = dT > tarR ? (Math.asin(tarR / dT) / (fovY / 2)) * (hDev / Math.max(1, dpr) / 2) : Infinity;
-      const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: Math.min(rT, 1e4), selected: (typeof env.selectedId === 'function' ? env.selectedId() : info.selectedId) === TARANTULA });
+      const own = marchSteps({ tier: q.tier, top: q.top, latched: false, scaleStep: q.scaleStep, frameMs: Number.isFinite(info.frameMs) ? info.frameMs : info.dtMs, rPx: Math.min(rT, 1e4), selected: (typeof env.selectedId === 'function' ? env.selectedId() : info.selectedId) === TARANTULA });
       nebMat.uniforms.uSteps.value = Math.max(8, Math.min(48, rT < 24 ? 8 : own || 8)); // never under 8: fewer showed the noise as grain
       nebMat.uniforms.uNoiseAmp.value = noise ? noisy : 0;
       nebMat.uniforms.uNoise.value = noise || nebMat.uniforms.uNoise.value;
       nebMat.uniforms.uPhotoT.value = photoT;
+      nebMat.uniforms.uTPicLook.value.set(ex.nebulaGain / Math.max(0.1, gain), ex.nebulaGamma, ex.nebulaSaturation);
+      nebMesh.getWorldPosition(_c);
+      const toCamT = _v.copy(camera.position).sub(_c).normalize();
+      const offT = Math.acos(Math.max(-1, Math.min(1, toCamT.dot(sunDir)))) * 180 / Math.PI;
+      tarHonest = 1 - Math.min(1, Math.max(0, (offT - 25) / 20));
+      nebMat.uniforms.uTPicOn.value = tPicTex ? tarHonest : 0;
       tarPx = rT;
     },
     ready: () => loaded && picDone,
     whenLoaded: () => pending || Promise.resolve(),
-    stats: () => ({ level, share: Math.round(share * 100) / 100, meshes: 4, points: pointCount, textures: 1, bytes, tier: builtTier, maps: !!maps, tarantulaPx: Math.round(Math.min(tarPx, 1e6)), tarantulaSteps: nebMat.uniforms.uSteps.value, discSteps: discMat.uniforms.uSteps.value, photoHonest: Math.round(honest * 100) / 100 }),
+    stats: () => ({ level, share: Math.round(share * 100) / 100, meshes: 4, points: pointCount, textures: 1, bytes, tier: builtTier, maps: !!maps, tarantulaPx: Math.round(Math.min(tarPx, 1e6)), tarantulaSteps: nebMat.uniforms.uSteps.value, discSteps: discMat.uniforms.uSteps.value, photoHonest: Math.round(honest * 100) / 100, tarantulaHonest: Math.round(tarHonest * 100) / 100 }),
     // For tests: where things are, in object units.
     layout: () => ({ geometry: g, tarantula: { centre: tarCentre, radius: tarR }, r136, extent: DISC_EXTENT, z0 }),
     dispose() {
@@ -855,6 +923,7 @@ export function createHero(THREE, env = {}) {
       discTex.dispose();
       if (uvTex) uvTex.dispose();
       if (picTex) picTex.dispose();
+      if (tPicTex) tPicTex.dispose();
       if (group.parent) group.parent.remove(group);
     },
   };
