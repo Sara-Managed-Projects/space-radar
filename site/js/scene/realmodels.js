@@ -822,6 +822,21 @@ export const REAL_MODELS = {
     // stage is centred on (the Earth from the Earth's stage). The record is data/sample.js
     // `deep-europa-clipper`, Horizons -159.
     '-159': { file: 'europa-clipper.glb', colour: 'probe', name: 'Europa Clipper', axes: 'app' },
+    // FIVE DEEP-SPACE PROBES WITH LARGE ARRAYS (2026-10-15, batch twelve, public #1080 to #1084), until
+    // then the generic probe. No agency publishes a model of any of them under terms that allow a
+    // derivative (registry/models.yaml says what was looked for), so each is BUILT here in code from
+    // cited numbers (`made: 'dimensions'`: the card says "drawn as Psyche" and "shape built from
+    // published dimensions and pictures; details simplified"). Each is built to the app's axes: the
+    // high-gain dish on +Z, the wings along X with their cells to +Y (Lucy's round arrays face +Z with
+    // its dish, as NASA draws them), so each flies as the generic probe did (`earth-dish`). The records
+    // are data/sample.js `deep-psyche`, `deep-lucy`, `deep-juice`, `deep-bepicolombo`, `deep-hera`.
+    // BepiColombo is drawn as its cruise stack (transfer module, MPO, Mio in its sunshield): it comes
+    // apart at Mercury in November 2026, and the record does not know when it has.
+    '-255': { file: 'psyche.glb', colour: 'probe', name: 'Psyche', made: 'dimensions', axes: 'app' },
+    '-49': { file: 'lucy.glb', colour: 'probe', name: 'Lucy', made: 'dimensions', axes: 'app' },
+    '-28': { file: 'juice.glb', colour: 'probe', name: 'JUICE', made: 'dimensions', axes: 'app' },
+    '-121': { file: 'bepicolombo.glb', colour: 'probe', name: 'BepiColombo in its cruise stack', made: 'dimensions', axes: 'app' },
+    '-91': { file: 'hera.glb', colour: 'probe', name: 'Hera', made: 'dimensions', axes: 'app' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
