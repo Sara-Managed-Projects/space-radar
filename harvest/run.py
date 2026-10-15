@@ -7,7 +7,8 @@ The loop knows no source names. What varies per row is data on the row:
     list: {...}         -> one request per id, the body maps id -> response text (Horizons);
                            an id row's `center:` replaces the list's CENTER for that id alone
     query: "..."        -> the text is sent as `query=` with a SPARQL Accept header (Wikidata)
-    parser: name        -> harvest/parsers/<name>.py: count(), validate(), not_modified(), pack()
+    parser: name        -> harvest/parsers/<name>.py: count(), validate(), not_modified(), pack(),
+                           and fetch() for the one source that is not one GET (sdo_aia)
 
 Every outcome is one of six statuses and lands in the manifest; nothing raises out of a source.
 A source that fails keeps its previous stamps and snapshot, so the browser keeps drawing the last
@@ -124,7 +125,11 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
         return done(_carry(prev, status="error", error=str(e)))
 
     try:
-        if source.list:
+        # A parser that fetches for itself (one does: sdo_aia, a folder listing and then a picture,
+        # internal spec 0076 W1-d) answers with Fetched's own fields; the rest of the run is the same.
+        if callable(getattr(parser, "fetch", None)):
+            fetched = Fetched(content_type="application/json", **parser.fetch(source, prev, now=now, fetcher=fetcher))
+        elif source.list:
             fetched = _fetch_list(source, now=now, fetcher=fetcher, sleep=sleep)
         elif source.query:
             fetched = _fetch_query(source, prev, fetcher=fetcher)

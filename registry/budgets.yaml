@@ -163,3 +163,8 @@ budgets:
   # 0076 W1-a
   # 0076 W1-b
   # 0076 W1-d
+  # The Sun's face of the day (internal spec 0076 W1-d, #916): SDO/AIA's newest 1024-pixel 171 angstrom browse
+  # picture, saved by harvest/parsers/sdo_aia.py (which refuses a bigger one) and read on the Sun's stage only.
+  # The loops over today's active regions are one merged mesh (scene/sun.js), one draw call.
+  - {id: sun_image_bytes, value: 400000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 5 W1-d: the image at most 400 kB; 188 279 B on 2026-10-15 (251 547 B as the saved JSON copy, base64)"}
+  - {id: sun_loops_draw_calls, value: 1, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the loops of every region are one mesh"}

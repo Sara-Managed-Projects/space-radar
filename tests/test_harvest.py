@@ -23,6 +23,7 @@ Run: python3 tests/test_harvest.py
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -70,6 +71,7 @@ EXPECTED_COUNTS = {
     "ll2_crew": 15,       # LL2's flag, Starman and four who had landed included; the page joins
     "ll2_stations": 7,    # vehicles docked now, over two stations
     "ll2_previous": 6,
+    "sdo_aia": 1,          # one picture: the Sun of the day (internal spec 0076 W1-d)
 }
 
 CELESTRAK_TEXT = "GP data has not updated since your last successful download"
@@ -537,6 +539,15 @@ def assert_valid_index(tc: unittest.TestCase, doc: dict, source_ids: set[str]) -
             tc.assertGreater(e["items"], 0, sid)
 
 
+def sdo_answer(url):
+    """harvest/parsers/sdo_aia.py reads a day's folder, then the newest picture in it (internal spec 0076 W1-d)."""
+    b = fixture("sdo_aia")[0]
+    if url.endswith(".jpg"):
+        return fetch.Response(url=url, status=200, body=base64.b64decode(b["base64"]), content_type="image/jpeg",
+                              etag=None, last_modified=None, duration_ms=1)
+    return response(url, text=f'<a href="{b["file"]}">{b["file"]}</a>', content_type="text/html")
+
+
 class WholeRun(unittest.TestCase):
     def test_a_dest_run_through_the_real_mirror_yields_a_valid_index(self):
         sources = registry.load()
@@ -545,6 +556,8 @@ class WholeRun(unittest.TestCase):
         good_hz = fixture("horizons")[0]["-170"]
 
         def answer(url, h, e, s):
+            if url.startswith("https://sdo.gsfc.nasa.gov/assets/img/browse/"):  # 0076 W1-d: a folder, then a picture
+                return sdo_answer(url)
             base = url.split("?")[0]
             src = by_url.get(url) or next((v for k, v in by_url.items() if k.split("?")[0] == base), None)
             if src is None:
