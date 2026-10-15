@@ -2931,6 +2931,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       if (window.__srLayersReady) go();
       else window.addEventListener('sr:layers-ready', go, { once: true });
     }
+    // 0076 W1-e
   }
   let tiersStarted = false;
   let lastTierTick = 0;

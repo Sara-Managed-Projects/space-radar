@@ -1,0 +1,16 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Orion Nebula (M42): the blister on the near face of the molecular cloud, the Trapezium in front of it (internal spec 0076 stage W1-a, #782).
+# Created empty by the lead's slot commit for wave 1. Stage W1-a fills this file and only this file.
+id: orion
+record: dso-m42
+stage: W1-a
+shipped: false
+children: []
+levels: {}
+frame: null
+layers: []
+colours: null
+drawn: []
+sources: []
+review: {data_vs_model: null, geometry: null, colours: null, distance: null, credits: null, by: null, date: null}
+credits: []

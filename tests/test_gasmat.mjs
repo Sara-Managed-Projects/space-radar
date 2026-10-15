@@ -125,6 +125,7 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
     const mod = await import(join(JS, 'scene/deep', f));
     if (typeof mod.createHero !== 'function') continue;
     const hero = mod.createHero(THREE, { profile: { id: 'test', layers: [{ kind: 'gas', what: 'shell', profile: 5 }] }, gas: G });
+    if (!hero) continue; // a stub that builds nothing yet (scene/deep/orion.js, spec 0076 W1-a)
     hero.group.traverse((o) => { if (o.material) mats.push([`${f} ${o.name}`, o.material]); });
     hero.dispose();
   }

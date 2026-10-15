@@ -1039,3 +1039,8 @@ jobs:
         run: node tests/test_base.mjs
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs
+      # 0076 W1-a
+      # 0076 W1-b
+      # 0076 W1-c
+      # 0076 W1-d
+      # 0076 W1-e

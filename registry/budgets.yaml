@@ -160,3 +160,6 @@ budgets:
   # Group's stage and drawn in two calls, points and lines of range. tests/test_localvolume.mjs reads both.
   - {id: deep_localvolume_bytes, value: 300000, unit: B, since: 2026-10-14, reason: "spec 0075 design section 11: the tile at most 300 kB; 49 214 B with its manifest on 2026-10-14 (800 galaxies of the Updated Nearby Galaxy Catalog)"}
   - {id: deep_localvolume_draw_calls, value: 2, unit: calls, since: 2026-10-14, reason: "spec 0075 requirement 18: at most five draw calls per visible data class; the tile is one call of points, and one more while a galaxy's range of distance is shown"}
+  # 0076 W1-a
+  # 0076 W1-b
+  # 0076 W1-d

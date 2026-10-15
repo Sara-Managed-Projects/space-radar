@@ -170,6 +170,11 @@ const CONTRACT = {
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
   'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag', 'facesReady'],
   'copy/en.js': ['COPY', 'compare'],
+  // 0076 W1-a (orion.js)
+  // 0076 W1-b (cmb.js)
+  // 0076 W1-c (truthlegend.js)
+  // 0076 W1-d (sunimage.js)
+  // 0076 W1-e (perf.js)
 };
 
 const problems = [];

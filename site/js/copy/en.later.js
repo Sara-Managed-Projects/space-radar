@@ -1755,4 +1755,13 @@ Object.assign(COPY, {
     edgeWhy: 'The observable universe ends about {h} billion light-years away.',
     edgeNothing: 'Nothing measured lies out here: this band is an illustration.',
   },
+
+  // RELEASE 1.2.0 wave 1 (internal spec 0076, design section 6): one empty block per stage, created by the lead
+  // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
+  // 0076 W1-a (Orion)
+  deepOrion: {},
+  // 0076 W1-c (the truth on every card)
+  r12Truth: {},
+  // 0076 W1-d (the Sun's image of the day)
+  r12Sun: {},
 });
