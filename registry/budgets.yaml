@@ -66,7 +66,9 @@ budgets:
   # does not get. MEASURED 2026-10-09 in CI on public #559: 1 581 495 B of our own files in 57 requests
   # (the largest: exoplanets.csv 583 527, stars3d.names.json 288 436, the trips' data 116 529, dso.json
   # 116 070), and 684 552 B from other hosts, which is NASA's picture of today's clouds.
-  - {id: after_first_visit_bytes, value: 1661000, unit: bytes, since: 2026-10-09, reason: "internal #527: 1 581 495 B + 5 %, our own files fetched in the 60 s after the first-visit window, measured 2026-10-09 by CI on public #559 (tests/test_first_visit_bytes.mjs --minute in screens.yml; other hosts sent 684 552 B more, not held)"}
+  # MEASURED 2026-10-15 in CI on the Sun's face of the day: 1 662 006 B. The face's modules used the
+  # last of the 1 661 000 cap and 1 006 B past it.
+  - {id: after_first_visit_bytes, value: 1662200, unit: bytes, since: 2026-10-15, reason: "internal #527: 1 662 006 B measured 2026-10-15 by CI on the Sun's face of the day (tests/test_first_visit_bytes.mjs --minute). The 2026-10-09 cap was 1 661 000 (1 581 495 B + 5 %); the face's modules used the last of that room and 1 006 B past it"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
