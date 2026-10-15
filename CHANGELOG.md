@@ -11,6 +11,113 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-15
+
+Deep space, rebuilt. The Helix, the Large Magellanic Cloud with the Tarantula inside it, Andromeda
+and Triangulum are now drawn from what astronomers have measured of their shape, the map has one
+cosmology from the Local Group out to the edge, and two new trips fly into it. Around that: a tour
+of the map, a Drift that is paced for the eye and can show only space, a calmer card, Venus, Uranus
+and Neptune redrawn, 54 more spacecraft models, and catalogue numbers of 100 000 and up. It is a
+minor release: everything new is added, and the 1.0.0 promises hold. A shared link (`v=1`), the
+saved-data format (`/data/v1/`) and the registry row formats from 1.0.0 all still work; the new
+registry fields are optional, and a row written with `dist_kly` is read as before.
+
+Counted on release day with `python3 scripts/count_facts.py`: 28 trips and 215 stops, 109 389
+stars, 40 star systems, 30 nebula and galaxy photographs, 21 moons (20 with a map), 20 landing
+sites on the Moon and 12 on Mars, 126 spacecraft models (72 in 1.0.0), 29 layers, and 13
+publishers' data through 30 feeds.
+
+### Added
+- **Deep space rebuilt** (internal spec 0075, [#1178], [#1183], [#1185]). Every deep-sky object
+  now has a parent, a distance with the method that found it, a way it is turned and a kind, and the
+  map uses them:
+  - **The Helix Nebula** is the photograph on our line of sight and, turned away from it, the disc
+    and ring at their published tilts, 655 light-years away by Gaia's parallax.
+  - **The Large Magellanic Cloud, with the Tarantula inside it.** The Cloud is a disc seen at its
+    measured angles, 161 740 light-years away by eclipsing binaries, with the Small Cloud beside it.
+    The Tarantula sits at its parent's distance, with its ionisation front, backlit clouds and R136
+    as a tight cluster of resolved stars.
+  - **Andromeda and Triangulum** are drawn from their own structure; close up, Andromeda is no
+    longer a copy of the Milky Way.
+  - **One cosmology**, Planck 2018, for every distance beyond the Local Group. Redshifts become
+    distances in it, never a redshift times a constant. The observable universe's horizon is drawn
+    at 46.2 billion light-years, and the map ends at 50 Gly, where it used to run to 169.
+  - **The local volume**: 800 nearby galaxies from the Updated Nearby Galaxy Catalog, at their
+    measured distances.
+  - **Parents on cards and labels**: a card says what a thing is inside ("Inside the Large
+    Magellanic Cloud"), a child is reached through its parent, and there is a way back. A child is
+    named only when its parent is big enough on screen, so names no longer overlap.
+  - **A mark per kind** on the sky: a galaxy's ellipse turned to its position angle, a ring, a
+    cloud, a cluster's three dots.
+  - **Nothing vanishes up close**: a nebula or galaxy keeps a body of its own as the photograph
+    fades out, instead of disappearing as you fly in.
+  - **The four hero models (the Helix, the LMC, Andromeda and Triangulum) are labelled** on their cards as not yet reviewed by an astronomer, and
+    each says whether what you see is a photograph, a reconstruction, a model or an illustration.
+- **Two trips into deep space**: *Into the Helix* (4 stops) and *Inside a neighbouring galaxy*
+  (6 stops, from the Milky Way to the LMC, the Tarantula and R136 and back out), with the trips'
+  voice, captions, a share page and an offline copy ([#1184]).
+- **A tour of the map**: a question mark in the tool rail rings the real controls one at a time
+  (nine steps in all, the last of them Drift), with a hand-drawn arrow and one sentence each, read
+  aloud if you press Voice. A first visit gets an arrow at it for a few seconds. It never starts by
+  itself, and a phone gets its own placement ([#1071], [#1176]).
+- **Only space** in Drift: hides every label, dot, orbit line and tag so only the sky and its
+  objects remain; `#drift=worlds,bare` in the address. It also hides the maps, aurora, lightning
+  and eclipse shadows laid on the Earth ([#1070], [#1176]).
+- **Venus, Uranus and Neptune redrawn** ([#1177]): Venus has the radar ground in relief, with
+  slopes and shadows from USGS's Magellan heights, and its ultraviolet bands; Uranus wears Hubble's
+  measured polar cap; Neptune has cirrus streaks, the Adams ring's arcs and a Great Dark Spot of
+  1989 that is labelled as illustrative and taken out under Measured.
+- **54 more spacecraft models, in eleven batches** ([#1054], [#1057], [#1061], [#1062], [#1063],
+  [#1068], [#1069], [#1072], [#1074], [#1175], [#1186]): 54 new `.glb` files, 126 in all, where
+  1.0.0 had 72, and four existing rows adjusted for the craft they stand for. They include XRISM, NuSTAR, Seasat, NOAA-21, the
+  Soyuz, Progress, both Dragons, Shenzhou and Tianzhou, SWOT, NISAR, PACE, the first Starlinks, GPS
+  by block, Galileo, MetOp, Envisat, the Sentinels, GLONASS, Europa Clipper and Curiosity. Some are the
+  agency's own published model, the rest are built from published dimensions; [CREDITS.md](CREDITS.md)
+  says which.
+- Every page's footer links the Lab's 75 simulators, so they can be found without a sitemap
+  ([#1052]).
+- The README shows the latest release next to the licence badge ([#1066]).
+
+### Changed
+- **Drift's long flights are paced by what the eye sees.** A hop to Mars, Saturn or another star
+  takes as long as its distance needs: the picture's scale changes at no more than one e-fold a
+  second inside the Solar System, a third of what it was, and a flight between stars no longer ends in a jump. Short
+  hops, round the Earth, are unchanged. A long flight now bends round the Earth rather than
+  through it ([#1070], [#1176]).
+- **The card's quiet row**: Light it and Seen it are one row of equal tiles under the actions, not
+  two stray buttons ([#1073]).
+- **Tonight's place box and Use my location share one line** ([#1073]).
+- **TON 618 stands where it is now**: 18.3 billion light-years, from its redshift in the map's one
+  cosmology. Its light left 10.8 billion years ago, which is what the card and the M87 trip's last
+  card used to call its distance ([#1183]).
+- **Neptune's card says what its spot is.** It said no spot was drawn while the map carried
+  Voyager's 1989 one ([#1177]).
+- On a phone the tour's captions are centred and stay clear of What to show and of the open sheet
+  ([#1176]).
+
+### Fixed
+- **Fly to it, Follow and Ride along work from the ground.** They moved the camera and the sky view
+  put it back every frame, so nothing happened. They now leave the ground first, and a toast says
+  so ([#1073]).
+- **A selected object no longer shakes**: four separate causes, from a dot placed ten times a
+  second to the ground being entered on the Sun's stage, are fixed and held to a quarter of a pixel
+  by a test ([#1073]).
+- **Catalogue numbers of 100 000 and up are real.** The five-digit catalogue ran out in July, and
+  every object catalogued since then was treated as not yet catalogued. One helper now reads five
+  digits, Alpha-5 and nine digits ([#1173]).
+- Kepler-16, a pair of stars, is followed, bracketed and labelled at the star, not at the point
+  between the two ([#1176]).
+- Venus's ground face no longer turns with the cloud deck ([#1177]).
+
+### For contributors
+- Thanks to @AnushreeKasturi for a test of which exoplanet rows belong to a star ([#905]), and to
+  @Fire162 for removing five copy strings nothing used ([#1055], [#1056], [#1058], [#1059],
+  [#1060]).
+- A look probe for deep space photographs the baseline scenes of spec 0075 ([#1174]).
+- The first-task picker leaves out issues reserved for a maintainers' batch ([#1065]).
+- A pull request that changes what the tour points at must keep `registry/onboarding.yaml` current,
+  and two tests say what was forgotten ([#1071]).
+
 ## [1.0.0] - 2026-10-13
 
 The first release, and the first zip: the whole site with a saved copy of the data, so a classroom
@@ -303,7 +410,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.0.0
 [#462]: https://github.com/Sara-Managed-Projects/space-radar/pull/462
 [#463]: https://github.com/Sara-Managed-Projects/space-radar/pull/463
@@ -352,6 +460,7 @@ The first public map.
 [#516]: https://github.com/Sara-Managed-Projects/space-radar/pull/516
 [#517]: https://github.com/Sara-Managed-Projects/space-radar/pull/517
 [#519]: https://github.com/Sara-Managed-Projects/space-radar/pull/519
+[#905]: https://github.com/Sara-Managed-Projects/space-radar/pull/905
 [#1009]: https://github.com/Sara-Managed-Projects/space-radar/pull/1009
 [#1010]: https://github.com/Sara-Managed-Projects/space-radar/pull/1010
 [#1011]: https://github.com/Sara-Managed-Projects/space-radar/pull/1011
@@ -372,3 +481,33 @@ The first public map.
 [#1040]: https://github.com/Sara-Managed-Projects/space-radar/pull/1040
 [#1041]: https://github.com/Sara-Managed-Projects/space-radar/pull/1041
 [#1042]: https://github.com/Sara-Managed-Projects/space-radar/pull/1042
+[#1052]: https://github.com/Sara-Managed-Projects/space-radar/pull/1052
+[#1054]: https://github.com/Sara-Managed-Projects/space-radar/pull/1054
+[#1055]: https://github.com/Sara-Managed-Projects/space-radar/pull/1055
+[#1056]: https://github.com/Sara-Managed-Projects/space-radar/pull/1056
+[#1057]: https://github.com/Sara-Managed-Projects/space-radar/pull/1057
+[#1058]: https://github.com/Sara-Managed-Projects/space-radar/pull/1058
+[#1059]: https://github.com/Sara-Managed-Projects/space-radar/pull/1059
+[#1060]: https://github.com/Sara-Managed-Projects/space-radar/pull/1060
+[#1061]: https://github.com/Sara-Managed-Projects/space-radar/pull/1061
+[#1062]: https://github.com/Sara-Managed-Projects/space-radar/pull/1062
+[#1063]: https://github.com/Sara-Managed-Projects/space-radar/pull/1063
+[#1065]: https://github.com/Sara-Managed-Projects/space-radar/pull/1065
+[#1066]: https://github.com/Sara-Managed-Projects/space-radar/pull/1066
+[#1068]: https://github.com/Sara-Managed-Projects/space-radar/pull/1068
+[#1069]: https://github.com/Sara-Managed-Projects/space-radar/pull/1069
+[#1070]: https://github.com/Sara-Managed-Projects/space-radar/pull/1070
+[#1071]: https://github.com/Sara-Managed-Projects/space-radar/pull/1071
+[#1072]: https://github.com/Sara-Managed-Projects/space-radar/pull/1072
+[#1073]: https://github.com/Sara-Managed-Projects/space-radar/pull/1073
+[#1074]: https://github.com/Sara-Managed-Projects/space-radar/pull/1074
+[#1173]: https://github.com/Sara-Managed-Projects/space-radar/pull/1173
+[#1174]: https://github.com/Sara-Managed-Projects/space-radar/pull/1174
+[#1175]: https://github.com/Sara-Managed-Projects/space-radar/pull/1175
+[#1176]: https://github.com/Sara-Managed-Projects/space-radar/pull/1176
+[#1177]: https://github.com/Sara-Managed-Projects/space-radar/pull/1177
+[#1178]: https://github.com/Sara-Managed-Projects/space-radar/pull/1178
+[#1183]: https://github.com/Sara-Managed-Projects/space-radar/pull/1183
+[#1184]: https://github.com/Sara-Managed-Projects/space-radar/pull/1184
+[#1185]: https://github.com/Sara-Managed-Projects/space-radar/pull/1185
+[#1186]: https://github.com/Sara-Managed-Projects/space-radar/pull/1186
