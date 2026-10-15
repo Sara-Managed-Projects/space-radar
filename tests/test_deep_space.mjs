@@ -477,7 +477,20 @@ for (const [id, file] of Object.entries(OWN_MODEL)) {
   check(typeof line === 'string' && line.includes('a published model') && !line.includes('generic'),
     `${id}: the card says it is a published model of the craft: ${line}`);
 }
-for (const id of [...ADDED.filter((x) => x !== 'deep-gaia'), 'deep-mars-express', 'deep-lro'].filter((x) => !OWN_MODEL[x])) {
+// 2026-10-15, batch twelve (public #1080 to #1084): five probes BUILT HERE from published dimensions.
+// Not "a published model", which nobody published: the card says it is drawn as the craft, and how
+// the shape was made (COPY.drawing.objectOwn and objectMade.dimensions).
+const MADE_HERE = { 'deep-psyche': ['psyche.glb', 'Psyche'], 'deep-lucy': ['lucy.glb', 'Lucy'], 'deep-juice': ['juice.glb', 'JUICE'],
+  'deep-bepicolombo': ['bepicolombo.glb', 'BepiColombo in its cruise stack'], 'deep-hera': ['hera.glb', 'Hera'] };
+for (const [id, [file, name]] of Object.entries(MADE_HERE)) {
+  const rec = byId.get(id);
+  const entry = realModelFor(rec);
+  check(entry && entry.file === file && entry.made === 'dimensions' && entry.axes === 'app' && !entry.generic && !entry.build, `${id} is drawn with ${file}, built here, to the app's axes: ${JSON.stringify(entry)}`);
+  const line = drawingLine(rec);
+  check(typeof line === 'string' && line.startsWith(`drawn as ${name}`) && line.includes('shape built from published dimensions') && !line.includes('a published model') && !line.includes('generic'),
+    `${id}: the card says it is drawn as ${name}, built from published dimensions: ${line}`);
+}
+for (const id of [...ADDED.filter((x) => x !== 'deep-gaia'), 'deep-mars-express', 'deep-lro'].filter((x) => !OWN_MODEL[x] && !MADE_HERE[x])) {
   const rec = byId.get(id);
   // No model of its own in the repository, so the generic probe -- and the card says so. (Gaia,
   // in the osculating table since 2026-09-22, keeps the one scene/models.js builds for it.)
