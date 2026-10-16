@@ -103,7 +103,8 @@ const castReady = async (capMs = 180000) => {
   let calm = 0;
   return until(() => {
     const s = tilesState();
-    const ok = s && s.showing && s.loading === 0 && s.cast && s.cast.showing && s.cast.fade === 1 && !s.cast.building;
+    // Out of the range gate (CAST.maxTexelPx: 45 km over a landing site) there is nothing to wait for.
+    const ok = s && s.showing && s.loading === 0 && s.cast && (s.cast.inRange === false || (s.cast.showing && s.cast.fade === 1 && !s.cast.building));
     calm = ok ? calm + 1 : 0;
     return calm >= 3;
   }, capMs, 1000);
@@ -112,7 +113,7 @@ const tilesReady = async (capMs = 60000) => tiled() && until(() => { const s = t
 /** One place, twice: shadows on (after) and off (before). */
 const moonPair = async (name, note, sunDeg) => {
   tilesMod.setCastShadows(true);
-  const okCast = await castReady();
+  const okCast = (await castReady()) && !!(tilesState() || {}).cast && tilesState().cast.showing;
   await sleep(2500);
   const m = await measure();
   const s = tilesState();
