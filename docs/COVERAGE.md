@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
+Honesty over the 876 records: 319 measured, 234 modelled, 323 illustrative.
 
 ## The classes
 
