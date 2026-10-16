@@ -2908,8 +2908,8 @@ export function createWorlds(scene, opts = {}) {
     // tier; scene/weather/worldweather.js stretches Jupiter's by it (onExposure).
     setExposure: (mode) => {
       exposureNow = mode;
-      const u = meshes.get('uranus')?.userData.ring;
-      if (u) u.material.uniforms.uColour.value.set(URANUS_RINGS.colour).multiplyScalar(mode === 'deep' ? URANUS_RINGS.deep : 1);
+      // URANUS_RINGS[mode]: the lift is keyed by the exposure's name (only `deep`); 1 for the others.
+      meshes.get('uranus')?.userData.ring.material.uniforms.uColour.value.set(URANUS_RINGS.colour).multiplyScalar(URANUS_RINGS[mode] || 1);
       for (const f of exposureHooks) f(mode);
     },
     exposure: () => exposureNow,
