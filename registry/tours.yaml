@@ -4833,8 +4833,9 @@ tours:
       - id: lmc
         target: {record: dso-lmc}
         needs_layer: deep-sky
-        # 100 000 ly on our line: its photograph lined up, about a third of the frame (from 300 000 ly
-        # and 80 degrees off our line, the first look run, it was a small glow).
+        # 100 000 ly on our line: its photograph lined up, about a tenth of the frame's width at 1600 x
+        # 900 (read in look run 38816386446; from 300 000 ly and 80 degrees off our line, the first
+        # look run, it was a small glow).
         distance_km: 946073047258080000
         key_light_deg: 0
         drift_deg: 10
