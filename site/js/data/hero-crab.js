@@ -58,8 +58,8 @@ export const HERO = {
         "incl_deg": 63.0,
         "near": "south-east"
       },
-      "inner": 0.3,
-      "fill": 0.3,
+      "inner": 0.6,
+      "fill": 0.2,
       "limb_min": 0.35,
       "check": "From our line each sky point's light is the photograph's (tests/test_remnant.mjs holds the column to 1 %)",
       "source": "Martin, T., Milisavljevic, D. & Drissen, L. 2021, MNRAS 502, 1864 (arXiv:2101.02709): the 3D envelope from SITELLE spectra, an ellipsoid fitted along the torus axis, nothing beyond 2 pc on that axis, nothing within 0.5 pc of the centre; Ng, C.-Y. & Romani, R. W. 2004, ApJ 601, 479: the torus's position angle and inclination"
@@ -87,7 +87,7 @@ export const HERO = {
     "ESA/Hubble heic0515a (CC BY 4.0), the photograph the app already shows: the hero's LIGHT (its stars removed)"
   ],
   "review": {
-    "data_vs_model": "Measured: the distance, the centre, the torus axis's direction and tilt, the envelope's reach along it and the inner void (Martin et al. 2021), and the light (the photograph). Reconstructed: the envelope as an ellipsoid with equal minor axes, which end of its axis is nearer (assumed), the shell's depth along our line, and the share of the light given to the wind nebula inside (30 %, illustrative)",
+    "data_vs_model": "Measured: the distance, the centre, the torus axis's direction and tilt, the envelope's reach along it and the inner void (Martin et al. 2021), and the light (the photograph). Reconstructed: the envelope as an ellipsoid with equal minor axes, which end of its axis is nearer (assumed), the shell's depth along our line, the inner surface drawn at 0.75 pc rather than 0.5, and the share of the light given to the wind nebula inside (20 %); both illustrative",
     "geometry": "Martin et al. 2021 for the envelope and the void; Ng & Romani 2004 for the axis; the heart shape they find is not drawn (an ellipsoid stands for it, as their own fit does)",
     "colours": "The photograph's own false colour, declared on the card; Deep declared enhanced",
     "distance": "6 500 ly, the record's (2.0 kpc, Trimble 1973), as Martin et al. 2021 adopt; lengths on the sky are scaled to it",

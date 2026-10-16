@@ -21,22 +21,26 @@ stage: W3-c
 shipped: true
 children: []
 levels:
-  2: "structure: the lit dust as a sheet, the lanes in front of it, the cloud behind it absorbing and reddening the stars beyond, the lighting star in front (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)"
-  3: "close-up: the same with up to 16 samples"
+  2: "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds"
+  3: "close-up: the same sheets; the camera may go between them"
 frame: {units_ly: 1, distance_ly: 1600, ra_deg: 86.69092, dec_deg: 0.07931, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: light
     kind: photograph
     what: "the scattered starlight: the photograph without its stars, and where the lanes hide it, the glow round it carried in (reconstructed)"
     file: site/images/deep/sheets/m78-light.webp
-    from: "NOIRLab noao-m78, the archive's 1280 px rendition (not in git: scripts/build_deep_sheets.py fetches it)"
+    from: "NOIRLab noao-m78, the archive's large JPEG (not in git: scripts/build_deep_sheets.py fetches it; the 1280 px rendition places it)"
     image: noao-m78
     # Where the picture is, measured by scripts/build_deep_sheets.py --solve against 2MASS (CDS hips2fits), as
     # scripts/build_nebulae.py places every photograph; `published` is the archive's own.
-    picture: {ra_deg: 86.60659, dec_deg: 0.09601, width_arcmin: 35.78, height_arcmin: 36.54, north_deg: 0.0}
+    # The map is a 12 arcmin square round M78 cut from the archive's LARGE JPEG (3 447 px, 0.62" a pixel; downloaded
+    # for the bake, not in git), so close up it is sharp: `crop.of` is the whole picture's place (the solve's), and
+    # `picture` the crop's (centred on the record, the whole picture's turn).
+    crop: {size_arcmin: 12, of: {ra_deg: 86.60659, dec_deg: 0.09601, width_arcmin: 35.78, height_arcmin: 36.54, north_deg: 0.0}}
+    picture: {ra_deg: 86.69092, dec_deg: 0.07931, width_arcmin: 12, height_arcmin: 12, north_deg: 0.0}
     solved: {moved_arcmin: 7.82, correlation: 38.0, mirror: 5.1, as_published: 29.9}
     published: {ra_deg: 86.50867, dec_deg: 0.01008, width_arcmin: 35.78, height_arcmin: 36.54, north_deg: -0.2}
-    px: 512
+    px: 640
     stars: {above_median: 28, grow_px: 2}
     z_ly: 0
     half_ly: 0.4
@@ -50,10 +54,11 @@ layers:
     file: site/images/deep/sheets/m78-dust.webp
     # THE RULE (horsehead.yaml says it in full). `back_tau` is the cloud behind the lit sheet, as thick as that where
     # the light is at least `back_from` of its brightest (illustrative: the cloud is opaque in the optical).
-    rule: {envelope_arcmin: 1.5, blur_arcmin: 0.8, dark_below: 0.6, cloud_below: 0, cloud_tau: 0, back_tau: 3.0, back_from: 0.05}
+    rule: {envelope_arcmin: 0.8, blur_arcmin: 0.4, dark_below: 0.35, cloud_below: 0, cloud_tau: 0, back_tau: 3.0, back_from: 0.05}
     tau_max: 4.0
     # the picture's edge feathered from 0.75 to 0.98 of its half-size (scene/deep/remnant.js coverAt): the cloud runs on past it
     feather: [0.75, 0.98]
+    # the lanes in front lifted toward us, the cloud behind pushed away, each by up to `half_ly` where thickest
     front: {z_ly: 0.6, half_ly: 0.3}
     back: {z_ly: -1.2, half_ly: 0.8}
     reddening: {law: "Cardelli, Clayton & Mathis 1989", rv: 3.1, lambda_um: [0.61, 0.55, 0.45]}
@@ -69,7 +74,7 @@ layers:
     kind: phase
     what: "how bright the scattered light is from another side: a Henyey-Greenstein phase function of the angle between the star, the dust and the eye, against the angle from here"
     g: 0.6
-    range: [0.3, 1.8]
+    range: [0.3, 1.4]
     source: "Henyey & Greenstein 1941, ApJ 93, 70; g about 0.6 for interstellar dust (Sujatha et al. 2007, ApJ 665, 363, measured 0.61 +/- 0.07 in the far ultraviolet near the Coalsack: arXiv:0705.1752)"
 colours:
   mode: true

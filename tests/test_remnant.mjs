@@ -59,7 +59,7 @@ const gc = R.shellOf(CRAB), gv = R.shellOf(VEIL);
   check(near((pa + 360) % 360, 126.3, 0.05) && near(incl, 63.0, 0.05), `the Crab's long axis at PA ${pa.toFixed(2)}, ${incl.toFixed(2)} degrees from our line (Ng & Romani 2004: 126.3, 63.0)`);
   check(a1[2] > 0, 'its south-east end toward us, as the profile says');
   check(near(gc.semi[0], 6.2, 1e-9) && 6.2 / 3.26156 <= 2.0, 'the Crab reaches 1.9 pc along its axis, inside Martin et al.\'s "no material beyond 2 pc"');
-  check(gc.inner * gc.semi[1] / 3.26156 >= 0.35 && gc.inner * gc.semi[1] / 3.26156 <= 0.5, `its void ${(gc.inner * gc.semi[1] / 3.26156).toFixed(2)} pc across its short axis: inside Martin et al.'s 0.5 pc`);
+  check(gc.inner * gc.semi[1] / 3.26156 >= 0.5 && gc.inner * gc.semi[1] / 3.26156 <= 0.8, `its void ${(gc.inner * gc.semi[1] / 3.26156).toFixed(2)} pc across its short axis: no light inside Martin et al.'s 0.5 pc (drawn a little wider, said in the profile)`);
   // the projected outline on the sky: about 6 by 4.3 arcmin at 6 500 ly
   const arc = (ly) => ly / gc.distanceLy / D2R * 60;
   const along = Math.sqrt((gc.semi[0] * Math.sin(63 * D2R)) ** 2 + (gc.semi[1] * Math.cos(63 * D2R)) ** 2);

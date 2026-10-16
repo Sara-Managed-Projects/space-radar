@@ -34,15 +34,15 @@
       "sha256": "d59d65fdf66fba0e2a9d353f005d664289230b421e21bc1d48c8df20ebaf5a62"
     },
     "m78-dust.webp": {
-      "bytes": 15268,
-      "sha256": "f8877e4ef90f783285d502de7887a66a829239138f8b2d26b1eea86df8aedff9",
-      "tau_front_max": 4.0,
-      "tau_back_max": 2.326,
-      "tau_front_mean": 0.1039
+      "bytes": 16176,
+      "sha256": "5ce5adcc695edbeab0db1471e18b13b7522f958dad2252e70a1e3123df2e48c6",
+      "tau_front_max": 2.578,
+      "tau_back_max": 2.974,
+      "tau_front_mean": 0.0762
     },
     "m78-light.webp": {
-      "bytes": 8158,
-      "sha256": "73a86cf7b5d12fcb89755a8c67fb44b118cc8333e94822fc007a95f0f117ffc3"
+      "bytes": 11738,
+      "sha256": "240b06a27a82000507ad7a5f6cb47b0dffb6cdfb79304cfe0446969836e97651"
     },
     "veil-light.webp": {
       "bytes": 10764,
@@ -95,12 +95,12 @@
     },
     {
       "id": "m78",
-      "from": "NOIRLab noao-m78 (screen rendition)",
-      "from_sha256": "c4879b97b9b3a0ca14ef73b26217fc9d6389015759ce4c0b6bac61069b70e408",
-      "stars_removed_px": 49005,
+      "from": "NOIRLab noao-m78 (large JPEG, a 12 arcmin crop)",
+      "from_sha256": "00c6efa90aeb5e28887305dc970fe81f74580ec0ea943092306217d418935497",
+      "stars_removed_px": 3945,
       "size": [
-        504,
-        512
+        640,
+        637
       ]
     },
     {

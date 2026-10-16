@@ -8,8 +8,8 @@ export const HERO = {
   "shipped": true,
   "children": [],
   "levels": {
-    "2": "structure: the lit dust as a sheet, the lanes in front of it, the cloud behind it absorbing and reddening the stars beyond, HD 200775 in front (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)",
-    "3": "close-up: the same with up to 16 samples"
+    "2": "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds",
+    "3": "close-up: the same sheets; the camera may go between them"
   },
   "frame": {
     "units_ly": 1,
@@ -125,7 +125,7 @@ export const HERO = {
       "g": 0.6,
       "range": [
         0.3,
-        1.8
+        1.4
       ],
       "source": "Henyey & Greenstein 1941, ApJ 93, 70; g about 0.6 for interstellar dust (Sujatha et al. 2007, ApJ 665, 363, measured 0.61 +/- 0.07 in the far ultraviolet near the Coalsack: arXiv:0705.1752)"
     }

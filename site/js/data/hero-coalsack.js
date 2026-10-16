@@ -8,8 +8,8 @@ export const HERO = {
   "shipped": true,
   "children": [],
   "levels": {
-    "2": "structure: the cloud absorbing and reddening the stars and the Milky Way behind it (8 samples through it; its crossing in closed form on T0 and under the latch)",
-    "3": "close-up: the same with up to 16 samples; the camera may go into the cloud"
+    "2": "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds",
+    "3": "close-up: the same sheets; the camera may go between them"
   },
   "frame": {
     "units_ly": 1,

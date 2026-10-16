@@ -8,8 +8,8 @@ export const HERO = {
   "shipped": true,
   "children": [],
   "levels": {
-    "2": "structure: the glowing gas of IC 434 as a sheet, the dust in front of it absorbing and reddening it and every star behind (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)",
-    "3": "close-up: the same with up to 16 samples"
+    "2": "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds",
+    "3": "close-up: the same sheets; the camera may go between them"
   },
   "frame": {
     "units_ly": 1,

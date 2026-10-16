@@ -8,8 +8,8 @@ export const HERO = {
   "shipped": true,
   "children": [],
   "levels": {
-    "2": "structure: the lit dust as a sheet, the lanes in front of it, the cloud behind it absorbing and reddening the stars beyond, the lighting star in front (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)",
-    "3": "close-up: the same with up to 16 samples"
+    "2": "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds",
+    "3": "close-up: the same sheets; the camera may go between them"
   },
   "frame": {
     "units_ly": 1,
@@ -24,13 +24,23 @@ export const HERO = {
       "kind": "photograph",
       "what": "the scattered starlight: the photograph without its stars, and where the lanes hide it, the glow round it carried in (reconstructed)",
       "file": "site/images/deep/sheets/m78-light.webp",
-      "from": "NOIRLab noao-m78, the archive's 1280 px rendition (not in git: scripts/build_deep_sheets.py fetches it)",
+      "from": "NOIRLab noao-m78, the archive's large JPEG (not in git: scripts/build_deep_sheets.py fetches it; the 1280 px rendition places it)",
       "image": "noao-m78",
+      "crop": {
+        "size_arcmin": 12,
+        "of": {
+          "ra_deg": 86.60659,
+          "dec_deg": 0.09601,
+          "width_arcmin": 35.78,
+          "height_arcmin": 36.54,
+          "north_deg": 0.0
+        }
+      },
       "picture": {
-        "ra_deg": 86.60659,
-        "dec_deg": 0.09601,
-        "width_arcmin": 35.78,
-        "height_arcmin": 36.54,
+        "ra_deg": 86.69092,
+        "dec_deg": 0.07931,
+        "width_arcmin": 12,
+        "height_arcmin": 12,
         "north_deg": 0.0
       },
       "solved": {
@@ -46,7 +56,7 @@ export const HERO = {
         "height_arcmin": 36.54,
         "north_deg": -0.2
       },
-      "px": 512,
+      "px": 640,
       "stars": {
         "above_median": 28,
         "grow_px": 2
@@ -66,9 +76,9 @@ export const HERO = {
       "what": "dark lanes in front of the lit dust, and the Orion B cloud behind it: dust that absorbs and reddens, never glows",
       "file": "site/images/deep/sheets/m78-dust.webp",
       "rule": {
-        "envelope_arcmin": 1.5,
-        "blur_arcmin": 0.8,
-        "dark_below": 0.6,
+        "envelope_arcmin": 0.8,
+        "blur_arcmin": 0.4,
+        "dark_below": 0.35,
         "cloud_below": 0,
         "cloud_tau": 0,
         "back_tau": 3.0,
@@ -124,7 +134,7 @@ export const HERO = {
       "g": 0.6,
       "range": [
         0.3,
-        1.8
+        1.4
       ],
       "source": "Henyey & Greenstein 1941, ApJ 93, 70; g about 0.6 for interstellar dust (Sujatha et al. 2007, ApJ 665, 363, measured 0.61 +/- 0.07 in the far ultraviolet near the Coalsack: arXiv:0705.1752)"
     }

@@ -59,6 +59,7 @@ MILKY = ROOT / "site" / "textures" / "4k" / "milky_way.webp"
 IDS = ("crab", "veil", "horsehead", "coalsack", "m78", "iris")
 UA = "space-radar-build (+https://github.com/Sara-Managed-Projects/space-radar)"
 NOIRLAB_SCREEN = "https://noirlab.edu/public/media/archives/images/screen/{image}.jpg"
+NOIRLAB_LARGE = "https://noirlab.edu/public/media/archives/images/large/{image}.jpg"
 HIPS2FITS = "https://alasky.cds.unistra.fr/hips-image-services/hips2fits"
 OBLIQUITY = math.radians(23.4392911)
 LIGHT_Q = 86
@@ -152,13 +153,14 @@ def remove_stars(a, above: float, grow: int):
     return out, mask | halo
 
 
-def sky_to_black(im):
-    """build_nebulae.py's bake step 2: the picture's own sky to black (the darkest 4 % of a thumbnail, per channel)."""
+def sky_to_black(im, levels=None):
+    """build_nebulae.py's bake step 2: the picture's own sky to black (the darkest 4 % of a thumbnail, per channel),
+    or the `levels` of the whole picture a crop was cut from (a crop inside a nebula has no sky of its own)."""
     sys.path.insert(0, str(ROOT / "scripts"))
     import build_nebulae as bn
 
     bands = []
-    for band, level in zip(im.split(), bn.sky_level(im)):
+    for band, level in zip(im.split(), levels or bn.sky_level(im)):
         gain = 255.0 / (255 - level)
         bands.append(band.point([max(0, min(255, round((v - level) * gain))) for v in range(256)]))
     from PIL import Image
@@ -171,16 +173,17 @@ def fetch(url: str, timeout: int = 90) -> bytes:
         return r.read()
 
 
-def noirlab(image: str):
-    """The archive's screen rendition, cached under --cache (it is not kept in git)."""
+def noirlab(image: str, large: bool = False):
+    """The archive's screen rendition (or its large JPEG), cached under --cache (neither is kept in git)."""
     from PIL import Image
 
+    Image.MAX_IMAGE_PIXELS = None
     cache = Path(arg("cache")) if arg("cache") else None
-    path = cache / f"{image}.jpg" if cache else None
+    path = cache / f"{image}{'-large' if large else ''}.jpg" if cache else None
     if path and path.exists():
         data = path.read_bytes()
     else:
-        data = fetch(NOIRLAB_SCREEN.format(image=image))
+        data = fetch((NOIRLAB_LARGE if large else NOIRLAB_SCREEN).format(image=image), timeout=300)
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
@@ -472,7 +475,27 @@ def bake_one(hid: str, files: dict, stars: dict, cat, maps: dict) -> None:
     dust = part(prof, "dust")
     row = {"id": hid}
     if light:
-        if light.get("image"):
+        if light.get("image") and light.get("crop"):
+            # A square of `crop.size_arcmin` round the record, from the archive's LARGE JPEG, placed by the screen
+            # rendition's solve (`crop.of`, the whole picture); its own place is `picture` (the crop's, written by hand
+            # from what this prints: centred on the record, the whole picture's turn).
+            full, cr = light["crop"]["of"], light["crop"]
+            big, src_sha = noirlab(light["image"], large=True)
+            fr = prof["frame"]
+            uc, vc = picture_uv(full, fr["ra_deg"], fr["dec_deg"])(0, 0)
+            du, dv = cr["size_arcmin"] / full["width_arcmin"] / 2, cr["size_arcmin"] / full["height_arcmin"] / 2
+            W, H = big.size
+            box = (round((uc - du) * W), round((1 - vc - dv) * H), round((uc + du) * W), round((1 - vc + dv) * H))
+            sys.path.insert(0, str(ROOT / "scripts"))
+            import build_nebulae as bn
+
+            whole, _ = noirlab(light["image"])
+            im = sky_to_black(resize_long(big.crop(box), int(light.get("px", 512))), bn.sky_level(whole))
+            row["from"] = f"NOIRLab {light['image']} (large JPEG, a {cr['size_arcmin']} arcmin crop)"
+            row["from_sha256"] = src_sha
+            print(f"{hid}: crop picture {{ra_deg: {fr['ra_deg']}, dec_deg: {fr['dec_deg']}, width_arcmin: {cr['size_arcmin']}, "
+                  f"height_arcmin: {cr['size_arcmin']}, north_deg: {full['north_deg']}}} (pixels {box} of {W} x {H})")
+        elif light.get("image"):
             im, src_sha = noirlab(light["image"])
             im = sky_to_black(resize_long(im, int(light.get("px", 512))))
             row["from"] = f"NOIRLab {light['image']} (screen rendition)"

@@ -67,12 +67,12 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
   const g = D.sheetOf(P.coalsack);
   const front = g.layers.find((L) => L.kind === 'front');
   const cam = [0, 0, 580];                                  // from near the Sun's side
-  for (const closed of [false, true]) {
-    const behind = D.transmissionTo(g, [3, -2, -400], cam, { tau: tauFlat(1.2), n: 12, closed });
-    const before = D.transmissionTo(g, [3, -2, front.z + front.half + 50], cam, { tau: tauFlat(1.2), n: 12, closed });
-    check(behind.every((t) => t < 1) && behind[2] < behind[1] && behind[1] < behind[0], `${closed ? 'closed form' : 'march'}: a star behind the Coalsack is dimmed and reddened (T r ${behind[0].toFixed(3)}, g ${behind[1].toFixed(3)}, b ${behind[2].toFixed(3)})`);
-    check(near(-Math.log(behind[1]), 1.2 * D.ccm(0.55), 0.06), `${closed ? 'closed form' : 'march'}: in green its optical depth is the map's (${(-Math.log(behind[1])).toFixed(3)} for 1.2)`);
-    check(before.every((t) => t === 1), `${closed ? 'closed form' : 'march'}: a star in front of it is not dimmed`);
+  for (const closed of [true]) {
+    const behind = D.transmissionTo(g, [3, -2, -400], cam, { tau: tauFlat(1.2) });
+    const before = D.transmissionTo(g, [3, -2, front.z + front.half + 50], cam, { tau: tauFlat(1.2) });
+    check(behind.every((t) => t < 1) && behind[2] < behind[1] && behind[1] < behind[0], `a star behind the Coalsack is dimmed and reddened (T r ${behind[0].toFixed(3)}, g ${behind[1].toFixed(3)}, b ${behind[2].toFixed(3)})`);
+    check(near(-Math.log(behind[1]), 1.2 * D.ccm(0.55), 0.06), `in green its optical depth is the map's (${(-Math.log(behind[1])).toFixed(3)} for 1.2)`);
+    check(before.every((t) => t === 1), `a star in front of it is not dimmed`);
   }
   // the kept stars: a catalogue star in front of the dust is kept clear from our side, and from behind the dust it is not
   const list = [[1, 1, front.z + 40, 0.5], [2, 2, front.z - 40, 0.5]];
@@ -85,8 +85,31 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
 }
 
 // --- 4. the dust absorbs and never glows: the multiply blend, the draw order ------------------------------------------
+const { stage } = await import(join(JS, 'scene/stage.js'));
+const { parseDso } = await import(join(JS, 'data/parsers.js'));
+stage.setWorld('stellar');
+const RECORDS = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')));
+/** A hero placed as the coordinator places it, and a camera `ly` out along +z of its sky frame turned `deg` about north. */
+function placed(H, rid, ly, deg = 0) {
+  const rec = RECORDS.find((r) => r.id === rid);
+  const hero = D.createHero(THREE, { profile: H, record: rec, fetchJson: () => Promise.resolve(STARS) });
+  const centre = new THREE.Vector3();
+  stage.toSceneInto(rec.pos, 'sun-inertial', centre, stage.tMs);
+  const s = 9460730472580.8 / stage.unitKm;
+  hero.group.matrixAutoUpdate = false;
+  hero.group.matrix.makeScale(s, s, s).setPosition(centre);
+  const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e9);
+  const toSun = centre.clone().negate().normalize();
+  const side = new THREE.Vector3().crossVectors(toSun, new THREE.Vector3(0, 1, 0)).normalize();
+  const a = deg * Math.PI / 180;
+  camera.position.copy(centre).addScaledVector(toSun.multiplyScalar(Math.cos(a)).addScaledVector(side, Math.sin(a)), ly * s);
+  camera.lookAt(centre); camera.updateMatrixWorld();
+  return { hero, camera, rec };
+}
 {
-  const hero = D.createHero(THREE, { profile: P.horsehead, record: null, fetchJson: () => Promise.resolve(STARS) });
+  const { hero, camera } = placed(P.horsehead, 'dso-horsehead-nebula', 20);
+  hero.setLevel(2, 1);
+  hero.frame({ camera, rPx: 250, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
   const meshes = [];
   hero.group.traverse((o) => { if (o.isMesh || o.isPoints) meshes.push(o); });
   const absorb = meshes.find((m) => m.material.name === 'deep-dust-absorb'), light = meshes.find((m) => m.material.name === 'deep-dust-light');
@@ -102,55 +125,47 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
   const starsG = new THREE.Group(); starsG.renderOrder = -1; const stars = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial()); stars.renderOrder = -1; stars.name = 'stars3d'; starsG.add(stars);
   const neb = new THREE.Group(); neb.renderOrder = -1; const photo = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshBasicMaterial()); photo.renderOrder = -1; photo.name = 'nebula-photo'; neb.add(photo);
   const deep = new THREE.Group(); deep.renderOrder = -1; deep.add(hero.group);
+  check(JSON.stringify(hero.stats().order) === '["light","front"]', `from our side the glow (behind) is drawn first and the dust after it, so the dust dims it (${JSON.stringify(hero.stats().order)})`);
   scene.add(starsG, neb, deep);
   const order = [];
   const walk = (o, groupOrder) => { if (o.isGroup) groupOrder = o.renderOrder; if (o.isMesh || o.isPoints) order.push({ name: o.material.name || o.name, g: groupOrder, r: o.renderOrder, id: o.id }); for (const c of o.children) walk(c, groupOrder); };
   walk(scene, 0);
   order.sort((a, b) => a.g - b.g || a.r - b.r || a.id - b.id);
   const at = (n) => order.findIndex((o) => o.name === n);
-  check(at('stars3d') < at('deep-dust-absorb') && at('nebula-photo') < at('deep-dust-absorb') && at('deep-dust-absorb') < at('deep-dust-light'),
-    `the draw order: the catalogue's stars and the photographs, then the dust, then its own light (${order.map((o) => o.name).join(' < ')})`);
+  check(at('stars3d') < at('deep-dust-light') && at('nebula-photo') < at('deep-dust-light') && at('deep-dust-light') < at('deep-dust-absorb'),
+    `the draw order: the catalogue's stars and the photographs, then the glow behind, then the dust (${order.map((o) => o.name).join(' < ')})`);
   hero.dispose();
-  const iris = D.createHero(THREE, { profile: P.iris, record: null, fetchJson: () => Promise.resolve(STARS) });
+  const back = placed(P.horsehead, 'dso-horsehead-nebula', 20, 180);
+  back.hero.setLevel(2, 1);
+  back.hero.frame({ camera: back.camera, rPx: 250, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
+  check(JSON.stringify(back.hero.stats().order) === '["front","light"]', `from behind the dust is drawn first and the glow after it: the glow is now in front (${JSON.stringify(back.hero.stats().order)})`);
+  back.hero.dispose();
+  check(JSON.stringify(D.orderOf([{ kind: 'front', z: 0.6 }, { kind: 'light', z: 0 }, { kind: 'back', z: -1.2 }, { kind: 'star', z: 1 }], 500).map((x) => x.kind)) === '["back","light","front","star"]', 'a reflection sheet from our side: the cloud behind, the lit dust, the lanes, the star');
+  const { hero: iris, camera: ic } = placed(P.iris, 'dso-iris-nebula', 30);
+  iris.setLevel(2, 1);
+  iris.frame({ camera: ic, rPx: 250, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
   const pts = [];
   iris.group.traverse((o) => { if (o.isPoints) pts.push(o); });
   const ab = []; iris.group.traverse((o) => { if (o.isMesh) ab.push(o); });
-  check(pts.length === 1 && pts[0].renderOrder > Math.max(...ab.map((m) => m.renderOrder)), 'a reflection nebula\'s own star is drawn after its dust and its light: it stands in front');
+  check(pts.length === 1 && pts[0].renderOrder > Math.max(...ab.map((m) => m.renderOrder)) && ab.length === 3, 'a reflection nebula: three sheets and its own star drawn after them from our side: it stands in front');
   check(iris.latchSafe === true && iris.card.copy === 'r12Dust', 'latch-safe; the card reads the r12Dust words');
   iris.dispose();
 }
 
 // --- 4b. in a scene: placed on the sky frame, the camera on our line at +z, the kept stars from the Sun's side -----------
 {
-  const { stage } = await import(join(JS, 'scene/stage.js'));
-  const { parseDso } = await import(join(JS, 'data/parsers.js'));
-  stage.setWorld('stellar');
-  const records = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')));
-  const rec = records.find((r) => r.id === 'dso-coalsack');
-  const hero = D.createHero(THREE, { profile: P.coalsack, record: rec, fetchJson: () => Promise.resolve(STARS) });
+  const { hero, camera } = placed(P.coalsack, 'dso-coalsack', 200);
   await new Promise((r) => setTimeout(r, 20));
-  const scene = new THREE.Scene();
-  scene.add(hero.group);
-  const centre = new THREE.Vector3();
-  stage.toSceneInto(rec.pos, 'sun-inertial', centre, stage.tMs);
-  const s = 9460730472580.8 / stage.unitKm;
-  hero.group.matrixAutoUpdate = false;
-  hero.group.matrix.makeScale(s, s, s).setPosition(centre);
-  const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e9);
-  camera.position.copy(centre).addScaledVector(centre.clone().negate().normalize(), 200 * s);
-  camera.lookAt(centre); camera.updateMatrixWorld();
   hero.setLevel(2, 1);
-  hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
-  const ab = hero.group.getObjectByName('deep-hero-coalsack-dust-shells');
+  hero.frame({ camera, rPx: 250, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
+  const ab = hero.group.getObjectByName('deep-hero-coalsack-front-shells');
   const u = ab.material.uniforms;
   check(u.uCam.value.z > 199.9 && Math.hypot(u.uCam.value.x, u.uCam.value.y) < 0.01, `on our line the camera is on the sky frame's +z, 200 ly out (${u.uCam.value.toArray().map((v) => v.toFixed(3))})`);
   check(u.uShare.value === 0, 'no dust is drawn until its map has landed (in node it never does)');
   check(hero.stats().list === 'ready' && hero.ready(), `the star list landed and the hero is ready (${JSON.stringify(hero.stats())})`);
-  hero.setLevel(3, 1);
-  hero.frame({ camera, rPx: 400, steps: 48, look: 'measured', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
-  check(hero.stats().path === 'march' && hero.stats().samples === 16, 'T2 at level 3: 16 samples a layer');
-  hero.frame({ camera, rPx: 400, steps: 48, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  check(hero.stats().path === 'closed' && u.uN.value === 0, 'T0: the closed form');
+  check(hero.stats().grid === 64 && hero.stats().meshes === 1, 'T1: one sheet of 64 x 64 vertices, one draw call');
+  hero.frame({ camera, rPx: 400, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
+  check(hero.stats().grid === 32, 'T0: a 32 x 32 sheet, the same picture');
   hero.dispose();
   check(!hero.group.parent, 'disposed, it leaves the scene');
 }
@@ -162,17 +177,15 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
   const cam = [0.4, -0.3, 300];
   const L = [0.6, 0.3, 0.45];
   for (const tau of [0, 0.4, 1.5]) {
-    const m = D.columnJs(g, cam, [0, 0, -1], { n: 8, j: 0.31, tau: tauFlat(tau), light: () => L });
     const c = D.closedJs(g, cam, [0, 0, -1], { tau: tauFlat(tau), light: () => L });
     const [u, v] = g.uvL.at(cam[0], cam[1]);
     const [ud, vd] = g.uvD.at(cam[0], cam[1]);
     const cov = R.coverAt(u, v, g.edgeL), covD = R.coverAt(ud, vd, g.edgeD);
     const want = L.map((x, i) => x * cov * Math.exp(-tau * covD * g.k[i]));
-    check(want.every((w, i) => near(c.C[i], w, 1e-9 + 1e-6)), `closed form, tau ${tau}: from our line light x exp(-tau k) exactly (the bake's rule: the picture again)`);
-    check(want.every((w, i) => near(m.C[i], w, 0.04 * w + 1e-6)), `march, tau ${tau}: the same within 4 % (${m.C.map((x) => x.toFixed(3)).join(', ')} against ${want.map((x) => x.toFixed(3)).join(', ')})`);
+    check(want.every((w, i) => near(c.C[i], w, 1e-9 + 1e-6)), `tau ${tau}: from our line light x exp(-tau k) exactly (the bake's rule: the picture again)`);
   }
   check(lightL.z_ly < 0, 'the glow is behind the dust');
-  const none = D.columnJs(g, cam, [0, 0, -1], { tau: tauFlat(0), light: () => [0, 0, 0] });
+  const none = D.closedJs(g, cam, [0, 0, -1], { tau: tauFlat(0), light: () => [0, 0, 0] });
   check(none.C.every((c) => c === 0), 'where the picture has no light, the sheet adds none: nothing glows that the picture does not show');
   // a reflection sheet: the phase function is 1 on our line, brighter looking toward the star (forward), dimmer from the side
   const gr = D.sheetOf(P.iris);
@@ -180,7 +193,7 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
   const p = [s[0] + 0.3, s[1] - 0.2, R.part(P.iris, 'light').z_ly];
   check(near(D.phaseFactor(ph, p, [p[0], p[1], 500]), 1, 1e-6), 'the phase function is exactly 1 on our line: there the light is the photograph\'s');
   const back = [p[0] + (p[0] - s[0]) * 50, p[1] + (p[1] - s[1]) * 50, p[2] + (p[2] - s[2]) * 50];
-  check(D.phaseFactor(ph, p, back) > 1.5, 'seen from beyond the dust, looking back toward the star, forward scattering brightens it');
+  check(D.phaseFactor(ph, p, back) > 1.3, 'seen from beyond the dust, looking back toward the star, forward scattering brightens it');
   check(D.phaseFactor(ph, p, [p[0] + 500, p[1], p[2]]) > 1, 'from the side it is brighter than from here: the star is in front, so from here the dust is seen scattering light back, the weakest way');
   check(D.phaseFactor(ph, p, back) <= ph.hi && D.phaseFactor(ph, p, [p[0], p[1], -500]) >= ph.lo, 'clamped to the profile\'s range');
 }
@@ -198,15 +211,16 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
       const ro = dir.map((d, k) => (g.box.min[k] + g.box.max[k]) / 2 + d * dist);
       const rd = [Math.sin(phi * 1.3), Math.cos(th * 1.9), Math.sin(th - phi)];
       const l = Math.hypot(...rd); rd.forEach((_, k) => { rd[k] /= l; });
-      for (const fn of [D.columnJs, D.closedJs]) {
+      for (const fn of [D.closedJs]) {
         const o = fn(g, ro, rd, { n: 8, j: 0.5, tau: tauFlat(2, 1), light: () => [0.5, 0.5, 0.5] });
         if (!o.T.every((t) => Number.isFinite(t) && t >= 0 && t <= 1) || !o.C.every((c) => Number.isFinite(c) && c >= 0)) bad += 1;
       }
     }
   }
-  check(bad === 0, `finite, transmissions in [0, 1] and light never negative from 1 600 views of the four (${bad} bad)`);
-  check(D.samplesFor({ tier: 0 }) === 0 && D.samplesFor({ tier: 2, cheap: true }) === 0, 'T0 and the latch: the closed form (0 samples)');
-  check(D.samplesFor({ tier: 1 }) === 8 && D.samplesFor({ tier: 2, steps: 48 }) === 16, 'level 2: 8 samples a layer; Ultra at level 3: 16');
+  check(bad === 0, `finite, transmissions in [0, 1] and light never negative from 800 views of the four (${bad} bad)`);
+  check(D.gridFor({ tier: 0 }) === 32 && D.gridFor({ tier: 2, cheap: true }) === 32 && D.gridFor({ tier: 1 }) === 64 && D.gridFor({ tier: 2 }) === 96, 'the sheets\' grid by tier: 32, 64, 96 vertices a side (32 under the latch)');
+  check(D.grazeOf(1) === 1 && D.grazeOf(0.2) < 1 / 0.2 && D.grazeOf(0.001) === 0, 'face on the column is the map\'s; slanted it is capped; edge on it fades to nothing');
+  check(D.reliefAt(1, 4, 4) === 1 && D.reliefAt(1, 0, 4) === 0, 'a dust sheet is lifted by its half-thickness where it is thickest, not at all where it is clear');
   check(X.drawnUnder('measured', D.UNDER_MEASURED.dust) && X.drawnUnder('measured', D.UNDER_MEASURED.light) && X.stillUnder('measured', D.UNDER_MEASURED.motion), 'under Measured the dust and the light are the same and nothing moves');
   for (const [name, src] of Object.entries(D.SHADERS)) check(!/bloom|EffectComposer|WebGLRenderTarget|lensflare/i.test(src), `${name}: no bloom, no pass, no render target`);
   check((D.SHADERS.absorb.match(/uniform vec4 uKeep\[ (\d+) \]/) || [])[1] <= 64, 'the kept stars fit a fragment shader\'s uniforms');

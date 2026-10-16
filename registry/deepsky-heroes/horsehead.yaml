@@ -21,8 +21,8 @@ stage: W3-c
 shipped: true
 children: []
 levels:
-  2: "structure: the glowing gas of IC 434 as a sheet, the dust in front of it absorbing and reddening it and every star behind (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)"
-  3: "close-up: the same with up to 16 samples"
+  2: "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds"
+  3: "close-up: the same sheets; the camera may go between them"
 frame: {units_ly: 1, distance_ly: 1375, ra_deg: 85.2458, dec_deg: -2.4583, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: light
@@ -33,7 +33,7 @@ layers:
     # The photograph's place, as registry/nebulae.yaml measured it (scripts/build_nebulae.py --solve).
     picture: {ra_deg: 85.24168, dec_deg: -2.48238, width_arcmin: 56.58, height_arcmin: 57.53, north_deg: 89.66}
     stars: {above_median: 16, grow_px: 3}
-    # The sheet of glowing gas: its middle 1.5 ly behind the dust's, 0.6 ly thick each side (illustrative).
+    # The sheet of glowing gas, 1.5 ly behind the dust (illustrative); `half_ly` is not used by a light sheet.
     z_ly: -1.5
     half_ly: 0.6
     # the picture's edge feathered from 0.55 to 0.97 of its half-size (scene/deep/remnant.js coverAt): the glow runs on past it
@@ -57,8 +57,8 @@ layers:
     tau_max: 4.0
     # the picture's edge feathered from 0.55 to 0.97 of its half-size (scene/deep/remnant.js coverAt): the cloud runs on past it
     feather: [0.55, 0.97]
-    # The dust's middle at the record's depth; up to 1.0 ly thick each side where it is thickest, thinner at its
-    # edges (the half-thickness follows the square root of the optical depth): illustrative.
+    # The dust sheet at the record's depth, lifted toward us (away from the glow) by up to `half_ly` where it is
+    # thickest (by the square root of its optical depth), so turned it is a lumpy cloud: illustrative.
     front: {z_ly: 0, half_ly: 1.0}
     reddening: {law: "Cardelli, Clayton & Mathis 1989", rv: 3.1, lambda_um: [0.61, 0.55, 0.45]}
     source: "The photograph's darkness against the glow round it (reconstructed by Space Radar, scripts/build_deep_sheets.py); the extinction law: Cardelli, Clayton & Mathis 1989, ApJ 345, 245, R_V = 3.1"

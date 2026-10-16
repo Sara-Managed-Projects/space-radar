@@ -20,8 +20,8 @@ stage: W3-c
 shipped: true
 children: []
 levels:
-  2: "structure: the lit dust as a sheet, the lanes in front of it, the cloud behind it absorbing and reddening the stars beyond, HD 200775 in front (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)"
-  3: "close-up: the same with up to 16 samples"
+  2: "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds"
+  3: "close-up: the same sheets; the camera may go between them"
 frame: {units_ly: 1, distance_ly: 1300, ra_deg: 315.3983, dec_deg: 68.1694, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: light
@@ -51,6 +51,7 @@ layers:
     tau_max: 4.0
     # the picture's edge feathered from 0.75 to 0.98 of its half-size (scene/deep/remnant.js coverAt): the cloud runs on past it
     feather: [0.75, 0.98]
+    # the lanes in front lifted toward us, the cloud behind pushed away, each by up to `half_ly` where thickest
     front: {z_ly: 0.35, half_ly: 0.2}
     back: {z_ly: -0.8, half_ly: 0.5}
     reddening: {law: "Cardelli, Clayton & Mathis 1989", rv: 3.1, lambda_um: [0.61, 0.55, 0.45]}
@@ -66,7 +67,7 @@ layers:
     kind: phase
     what: "how bright the scattered light is from another side: a Henyey-Greenstein phase function of the angle between the star, the dust and the eye, against the angle from here"
     g: 0.6
-    range: [0.3, 1.8]
+    range: [0.3, 1.4]
     source: "Henyey & Greenstein 1941, ApJ 93, 70; g about 0.6 for interstellar dust (Sujatha et al. 2007, ApJ 665, 363, measured 0.61 +/- 0.07 in the far ultraviolet near the Coalsack: arXiv:0705.1752)"
 colours:
   mode: true

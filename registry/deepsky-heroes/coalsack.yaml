@@ -23,8 +23,8 @@ stage: W3-c
 shipped: true
 children: []
 levels:
-  2: "structure: the cloud absorbing and reddening the stars and the Milky Way behind it (8 samples through it; its crossing in closed form on T0 and under the latch)"
-  3: "close-up: the same with up to 16 samples; the camera may go into the cloud"
+  2: "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds"
+  3: "close-up: the same sheets; the camera may go between them"
 frame: {units_ly: 1, distance_ly: 587, ra_deg: 192.5, dec_deg: -62.5, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
 layers:
   - part: dust
@@ -43,8 +43,8 @@ layers:
     tau_max: 3.0
     # the picture's edge feathered from 0.5 to 0.95 of its half-size (scene/deep/remnant.js coverAt): the cloud runs on past it
     feather: [0.5, 0.95]
-    # The cloud's middle at the record's depth; up to 9 ly thick each side where it is thickest (illustrative: the
-    # cloud is about 70 ly across).
+    # The cloud at the record's depth, lifted toward us by up to `half_ly` where it is thickest (by the square root of
+    # its optical depth), so turned it is a lumpy cloud (illustrative: the cloud is about 70 ly across).
     front: {z_ly: 0, half_ly: 9.0}
     reddening: {law: "Cardelli, Clayton & Mathis 1989", rv: 3.1, lambda_um: [0.61, 0.55, 0.45]}
     source: "The Milky Way map's darkness against the Milky Way round it (reconstructed by Space Radar, scripts/build_deep_sheets.py); NASA SVS Deep Star Maps 2020 (https://svs.gsfc.nasa.gov/4851/); the extinction law: Cardelli, Clayton & Mathis 1989, ApJ 345, 245, R_V = 3.1"
