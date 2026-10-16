@@ -159,6 +159,9 @@ const DEFERRED = {
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
   // 0076 W3-d (scalerail.js)
+  // 0076 W3-e (kindwords.js, visualclasses.js)
+  'js/data/kindwords.js': 'the words for a kind of thing ("galaxies"): with ui/searchrows.js, on the search field\'s first focus',
+  'js/data/visualclasses.js': 'every record\'s visual class: ui/searchrows.js fetches it the first time a kind is typed',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

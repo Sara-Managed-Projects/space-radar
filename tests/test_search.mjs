@@ -209,5 +209,17 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   check(base && phone, 'every search option row is at least 44 px (48 on a phone) and never shrinks');
 }
 
+// Search by kind (internal spec 0076 W3-e): its words are a second mirror of the same registry, out of the
+// boot graph, and no kind word is also an alias (one word, one meaning: an alias searches ALONGSIDE a name,
+// a kind lists a class, and a word that did both would answer two questions at once).
+{
+  const { KINDS } = await import(join(JS, 'data/kindwords.js'));
+  const words = KINDS.flatMap((k) => k.say);
+  check(words.length >= 40 && words.includes('galaxies') && words.includes('nebulae') && words.includes('moons'), `the kind words come from the registry (${words.length})`);
+  for (const w of words) check(!Object.prototype.hasOwnProperty.call(ALIASES, w), `"${w}" is both an alias and a kind`);
+  const src = readFileSync(join(JS, 'ui/search.js'), 'utf8');
+  check(!/from '\.\.\/data\/kindwords\.js'/.test(src) && !/from '\.\.\/data\/visualclasses\.js'/.test(src), 'the field on the first screen imports neither the kind words nor the classes');
+}
+
 if (problems.length) { console.error('search FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('search ok: whole words first, buried letters only as an announced fallback, eight rows, aliases from the registry');

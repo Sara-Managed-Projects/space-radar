@@ -567,7 +567,7 @@ classes:
       drawn: "Measured: the photographs, orientations, profiles. Modelled: M31's and M33's arms, knots and thickness (parametric, labelled). Illustrative: the Milky Way's look and every other spiral's glow."
       rights: "Papers cited; photographs CC BY 4.0; OpenNGC CC BY-SA 4.0."
     records:
-      - {domain: dso, where: {typeCode: G, hubble: ["^S(?!0)", "^\\(R"]}}
+      - {domain: dso, where: {typeCode: G, hubble: ["^S(?!0)(?!(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z]))", "^\\(R'?\\)(?!S(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z]))"]}}
       - {domain: photographs, ids: [m31, m33, m83, m104, m51, m101, m81, ngc-1300]}
       - {domain: heroes, ids: [m31, m33]}
       - {domain: model_kinds, ids: [galaxy-model]}
@@ -586,7 +586,7 @@ classes:
       drawn: "Measured: the Gaia counts on the sky. Modelled: depth, brightness per star, the dust and the Tarantula's gas in depth (labelled). Illustrative: the glow of the other irregulars."
       rights: "Gaia CC BY-NC 3.0 IGO (ESA/Gaia/DPAC, https://www.cosmos.esa.int/web/gaia-users/license); photographs CC BY 4.0."
     records:
-      - {domain: dso, where: {typeCode: G, hubble: ["^I", "^dI", "^Im"]}}
+      - {domain: dso, where: {typeCode: G, hubble: ["^I", "^dI", "^Im", "^(?:\\(R'?\\))?S(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z])"]}}
       - {domain: photographs, ids: [lmc, smc]}
       - {domain: heroes, ids: [lmc]}
 
