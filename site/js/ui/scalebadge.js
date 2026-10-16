@@ -205,6 +205,10 @@ export function createScaleBadge(ctx, opts = {}) {
   }
 
   root.addEventListener('click', () => { setTrue(!trueOn); refresh(); });
+  // Where you are on the ladder (internal spec 0076 W3-d, ui/scalerail.js): the rail this badge stands
+  // under. Fetched with the badge, the first time the Sun's stage is entered, so a visitor who zooms
+  // out from the Earth with no card open has it and the word at the join they have just crossed.
+  import('./scalerail.js').then((m) => m.wireRail(ctx)).catch((e) => console.warn('the rail did not load', e));
   const onAny = () => refresh();
   win.addEventListener('sr:stage', onAny);
   win.addEventListener('sr:select', onAny);

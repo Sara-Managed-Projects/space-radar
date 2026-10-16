@@ -159,6 +159,7 @@ const DEFERRED = {
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
   // 0076 W3-d (scalerail.js)
+  'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

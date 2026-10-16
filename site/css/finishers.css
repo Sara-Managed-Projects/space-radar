@@ -250,6 +250,7 @@ html.sr-phone .sr-launchchip {
 
 @media (prefers-reduced-motion: reduce) {
   .sr-scalebadge,
+  .sr-scalerail,
   .sr-launchchip,
   .sr-welcome,
   .sr-welcome__btn,
@@ -291,4 +292,144 @@ html.sr-phone .sr-overlaykey__top:not([hidden]) {
   border-radius: var(--sr-radius);
   font: 400 var(--sr-fs-sm)/16px var(--sr-font);
   color: var(--sr-text-dim);
+}
+
+/* 0076 W3-d: WHERE YOU ARE (ui/scalerail.js; internal #881, #883). The scale badge's place at the top
+   left of the scene area, one line of level 2 glass: Back along the visitor's own path, then the five
+   rungs of the ladder with the camera's own marked. Under it, once per join a visit, one line saying
+   the flight is sped up and how far the far side is. On a phone, Back and this rung alone. The badge,
+   on the Sun's stage, stands under it (--sr-rail-h above). */
+.sr-scalerail {
+  position: fixed;
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px));
+  left: calc(var(--sr-scene-left) + var(--sr-inset));
+  z-index: var(--sr-z-controls);
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100vw - var(--sr-scene-left) - 2 * var(--sr-inset) - 64px);
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius);
+  transition: left var(--sr-slow) var(--sr-ease);
+}
+
+.sr-scalerail[hidden] { display: none; }
+
+.sr-scalerail__line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  min-width: 0;
+}
+
+.sr-scalerail__back {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 32px;
+  margin: 0;
+  padding: 0 var(--sp-2) 0 0;
+  border: 0;
+  border-right: 1px solid var(--sr-line);
+  background: none;
+  font: inherit;
+  color: var(--sr-text);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-scalerail__back[hidden] { display: none; }
+.sr-scalerail__back svg { width: 16px; height: 16px; flex: none; }
+
+@media (hover: hover) {
+  .sr-scalerail__back:hover { color: var(--sr-ember-light); }
+}
+
+.sr-scalerail__rungs {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sr-scalerail__rung {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.sr-scalerail__rung[aria-current] {
+  font-weight: 600;
+  color: var(--sr-text);
+}
+
+.sr-scalerail__note {
+  margin: 0;
+  padding: 0 0 var(--sp-2);
+  color: var(--sr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-scalerail__note[hidden] { display: none; }
+
+html.sr-phone .sr-scalerail {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  max-width: calc(100vw - 2 * var(--sp-4));
+}
+
+html.sr-phone.sr-card-open:not([data-sheet='full']) .sr-scalerail,
+html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-scalerail {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+
+html.sr-phone .sr-scalerail__line,
+html.sr-phone .sr-scalerail__back {
+  min-height: 44px;
+}
+
+/* On a phone this rung and the one inside it, so the nesting still reads ("Solar System › Nearby stars"). */
+html.sr-phone .sr-scalerail__rung:not([aria-current]) { display: none; }
+html.sr-phone .sr-scalerail__rung:has(+ .sr-scalerail__rung[aria-current]) { display: inline-flex; }
+html.sr-phone .sr-scalerail__rung:has(+ .sr-scalerail__rung[aria-current]) .sr-scalerail__sep,
+html.sr-phone .sr-scalerail__rung:first-child[aria-current] .sr-scalerail__sep { display: none; }
+
+/* With a card up on a phone the card's own chain says where it is, and the scene above the sheet is a
+   narrow band the HUD's tag needs: the rail is Back alone (seen at 390 px on 2026-10-16, the tag under
+   the rungs). At full height the sheet is the page and the rail is not drawn over it. */
+html.sr-phone.sr-card-open .sr-scalerail__rungs { display: none; }
+html.sr-phone.sr-card-open .sr-scalerail__back { padding-right: 0; border-right: 0; }
+html.sr-phone.sr-card-open .sr-scalerail:not(:has(.sr-scalerail__back:not([hidden]))) { display: none; }
+html.sr-phone[data-sheet='full'] .sr-scalerail { display: none; }
+
+/* The badge, on the Sun's stage, one step down under the rail while it is up (--sr-rail-h: its height and 8 px). */
+html.sr-rail-on .sr-scalebadge {
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + var(--sr-rail-h, 0px));
+}
+
+html.sr-phone.sr-rail-on .sr-scalebadge {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + var(--sr-rail-h, 0px));
+}
+
+html.sr-phone.sr-rail-on.sr-card-open:not([data-sheet='full']) .sr-scalebadge,
+html.sr-phone.sr-rail-on.sr-launchday:not([data-sheet='full']) .sr-scalebadge {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2) + var(--sr-rail-h, 0px));
+}
+
+html.sr-clean .sr-scalerail,
+html.sr-trip-mode .sr-scalerail,
+html.sr-ambient .sr-scalerail,
+html.sr-sharing .sr-scalerail {
+  display: none;
 }
