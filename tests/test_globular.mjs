@@ -56,6 +56,7 @@ const fileBytes = manBytes.length + BIN.byteLength;
 check(fileBytes <= BUDGETS.deep_clusters_bytes, `the two files are within the budget (${fileBytes} B of ${BUDGETS.deep_clusters_bytes}; registry/budgets.yaml deep_clusters_bytes)`);
 check(G.POINTS[2] === BUDGETS.deep_globular_points && G.POINTS[0] < G.POINTS[1] && G.POINTS[1] < G.POINTS[2], `POINTS rise by tier to the budget's ${BUDGETS.deep_globular_points} (registry/budgets.yaml deep_globular_points)`);
 check(G.MAX_DRAWN <= BUDGETS.deep_clusters_draw_calls, `at most ${BUDGETS.deep_clusters_draw_calls} clusters drawn at once (registry/budgets.yaml deep_clusters_draw_calls)`);
+check(G.limitFor(0.55) === G.LIMIT_MAG.eye && G.limitFor(1) === G.LIMIT_MAG.camera && G.limitFor(1.7) === G.LIMIT_MAG.camera && G.LIMIT_MAG.eye === 6.5, `drawn to the eye's 6.5 under Eye, to a camera's ${G.LIMIT_MAG.camera} under Camera and Deep`);
 check(G.UNDER_MEASURED.stars === 'same' && G.UNDER_MEASURED.members === 'same', 'under Measured the stars are the same (nothing in them moves)');
 
 // 2. A globular from its catalogue.

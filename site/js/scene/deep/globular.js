@@ -37,7 +37,9 @@
 // the glow fades as the stars come), at most MAX_DRAWN at once, the largest; one draw call each. Its points are
 // built once per tier (POINTS) and sorted brightest first, so the frame latch keeps the brightest POINTS[0] by
 // the draw range. A star's size and light are scene/stars3d.js's curve for its absolute magnitude at its distance
-// from the camera, and fade out over the last magnitude before LIMIT_MAG. Nothing moves: no proper motion is
+// from the camera, and fade out over the last magnitude before limitFor(gain): a cluster is drawn as a camera's
+// exposure shows one, to LIMIT_MAG.camera, deeper than the map's other stars (whose file ends near 7.5), and under the
+// Eye exposure to the naked eye's LIMIT_MAG.eye. Nothing moves: no proper motion is
 // drawn, under any look. Where a photograph of the cluster is drawn, its stars give way to it.
 
 import { stage } from '../stage.js';
@@ -58,7 +60,9 @@ export const MAX_DRAWN = 3;
 export const FROM_PX = 14;      // CSS px of the cluster's radius on screen: its stars start
 export const FULL_PX = 48;      // and are fully drawn (the point glow is a soft dot until here)
 export const KEEP_MS = 10000;   // a cluster not drawn this long gives its buffers back
-export const LIMIT_MAG = 7.5;   // the faintest apparent magnitude drawn, as scene/stars3d.js under Camera
+export const LIMIT_MAG = { eye: 6.5, camera: 10 }; // the faintest apparent magnitude drawn: the eye's, or a camera's exposure
+/** The limit for the exposure's faint-light gain (scene/exposure.js milkyWay: 0.55 under Eye, 1 and 1.7 under Camera and Deep). Pure. */
+export function limitFor(gain) { return Number.isFinite(gain) && gain < 0.8 ? LIMIT_MAG.eye : LIMIT_MAG.camera; }
 /**
  * The globulars' luminosity function (a model, said on the card): absolute V from `tip` (the red-giant tip) to
  * `cut` (about the main-sequence turn-off), dlog10 N / dM = `slope`; together `light` of the cluster's light.
@@ -186,7 +190,7 @@ export function sampleGlobular(row, distLy, tier = 1, lf = LF) {
  * The share of the cluster's light the drawn stars show from `distPc`: those brighter than LIMIT_MAG there, the
  * last magnitude fading as the shader fades it, among the first `drawn` (the draw range). Pure.
  */
-export function visibleLight(absMag, light, drawn, distPc, limit = LIMIT_MAG) {
+export function visibleLight(absMag, light, drawn, distPc, limit = LIMIT_MAG.camera) {
   const mu = 5 * Math.log10(Math.max(1e-6, distPc) / 10);
   let sum = 0;
   for (let i = 0; i < Math.min(drawn, absMag.length); i++) {
@@ -363,7 +367,7 @@ export function createLayer(THREE, env = {}) {
   function material() {
     return new THREE.ShaderMaterial({
       vertexShader: VERT, fragmentShader: FRAG,
-      uniforms: { uPixelRatio: { value: 1 }, uGain: { value: 1 }, uShare: { value: 0 }, uUnitsPerPc: { value: 1 }, uMagLimit: { value: LIMIT_MAG } },
+      uniforms: { uPixelRatio: { value: 1 }, uGain: { value: 1 }, uShare: { value: 0 }, uUnitsPerPc: { value: 1 }, uMagLimit: { value: LIMIT_MAG.camera } },
       // Opaque list on purpose, like scene/stars3d.js: `transparent: true` would draw after Earth.
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     });
@@ -378,7 +382,11 @@ export function createLayer(THREE, env = {}) {
     } else {
       if (!state.members) { wantMembers(); return null; }
       a = membersOf(state.members, entry.row);
-      a.light = null;
+      // each member's share of the file's light for this cluster (sorted brightest first, as baked)
+      let L = 0;
+      a.light = new Float64Array(a.count);
+      for (let i = 0; i < a.count; i++) { a.light[i] = 10 ** (-0.4 * a.absMag[i]); L += a.light[i]; }
+      for (let i = 0; i < a.count; i++) a.light[i] /= L || 1;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(a.pos, 3));
@@ -470,12 +478,16 @@ export function createLayer(THREE, env = {}) {
       b.mesh.visible = share > 0.002;
       b.share = share;
       b.rPx = rp;
-      if (b.kind === 'globular' && camera) {
+      const limit = limitFor(info.gain);
+      u.uMagLimit.value = limit;
+      // The glow steps back by the light the stars show from here: a globular's model carries LF.light of the
+      // cluster's light; an open cluster's members are its light (their glow is an illustration of them).
+      if (camera) {
         const centre = _c.set(b.mesh.matrix.elements[12], b.mesh.matrix.elements[13], b.mesh.matrix.elements[14]);
         const dPc = Math.max(1e-3, centre.distanceTo(camera.position) / (PC_KM / stage.unitKm));
-        b.taken = share * visibleLight(b.absMag, b.light, drawn, dPc);
+        b.taken = share * visibleLight(b.absMag, b.light, drawn, dPc, limit);
       } else {
-        b.taken = share;
+        b.taken = 0;
       }
       if (b.mesh.visible) { b.usedAt = now; state.calls += 1; drawnIds.add(id); taken.set(id, b.taken); }
     }

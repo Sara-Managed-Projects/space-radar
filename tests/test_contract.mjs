@@ -184,7 +184,7 @@ const CONTRACT = {
   // 0076 W2-a (traverse.js)
   // 0076 W2-c (plumes.js)
   // 0076 W3-a (globular.js): star clusters as stars; its King profile, its luminosity function and its members' file are pure for tests/test_globular.mjs.
-  'scene/deep/globular.js': ['createLayer', 'kingDensity', 'kingSurface', 'kingTable', 'sampleRadius', 'giantCount', 'sampleGlobular', 'visibleLight', 'parseMembers', 'membersOf', 'fadeFor', 'seedOf', 'mulberry32', 'POINTS', 'MAX_DRAWN', 'FROM_PX', 'FULL_PX', 'LIMIT_MAG', 'LF', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
+  'scene/deep/globular.js': ['createLayer', 'kingDensity', 'kingSurface', 'kingTable', 'sampleRadius', 'giantCount', 'sampleGlobular', 'visibleLight', 'parseMembers', 'membersOf', 'fadeFor', 'seedOf', 'mulberry32', 'POINTS', 'MAX_DRAWN', 'FROM_PX', 'FULL_PX', 'LIMIT_MAG', 'limitFor', 'LF', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
   // 0076 W3-d (scalerail.js)

@@ -1617,7 +1617,9 @@ are the cluster's MVt. An open cluster's members are Gaia's: their directions ar
 own parallax where it is good to a quarter of the cluster's half-member radius (the Hyades' nearly all, the
 Pleiades' brightest), otherwise modelled as a Plummer sphere of the cluster's measured half-member radius; the
 cluster stands at the map's distance for it. The conversion of BP−RP into the app's B−V colours is this map's
-linear fit (B−V = 0.82 (BP−RP)0 − 0.06), not a published relation. Not yet reviewed by an astronomer.
+linear fit (B−V = 0.82 (BP−RP)0 − 0.06), not a published relation. Both kinds are drawn to apparent magnitude 10 from
+the camera, as a camera's exposure shows a cluster (6.5 under the Eye exposure), deeper than the map's other stars.
+Not yet reviewed by an astronomer.
 
 ### The Ring (0076 W3-b)
 
