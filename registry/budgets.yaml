@@ -185,3 +185,8 @@ budgets:
   # 0076 W3-a
   # 0076 W3-b
   # 0076 W3-c
+  # Remnants as shells and dust as sheets (scene/deep/remnant.js, scene/deep/dustsheet.js): the six heroes' maps under
+  # site/images/deep/sheets/, fetched when one is near, never at boot. A remnant is one draw call (its shell); a sheet
+  # at most three (the dust's multiply, its light, its own star).
+  - {id: deep_sheets_bytes, value: 300000, unit: B, since: 2026-10-17, reason: "spec 0076 design section 4: at most 1.5 MB of hero assets; the six heroes' maps, star list and manifest were about 100 kB on 2026-10-17"}
+  - {id: deep_sheets_draw_calls, value: 3, unit: calls, since: 2026-10-17, reason: "spec 0076 design section 4: at most +5 for a hero; a dust sheet's absorb, light and star, a remnant's one shell"}

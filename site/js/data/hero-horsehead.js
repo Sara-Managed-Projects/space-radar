@@ -1,0 +1,122 @@
+// GENERATED from registry/deepsky-heroes/horsehead.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "horsehead",
+  "record": "dso-horsehead-nebula",
+  "stage": "W3-c",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "structure: the glowing gas of IC 434 as a sheet, the dust in front of it absorbing and reddening it and every star behind (8 samples through each; the sheets' crossings in closed form on T0 and under the latch)",
+    "3": "close-up: the same with up to 16 samples"
+  },
+  "frame": {
+    "units_ly": 1,
+    "distance_ly": 1375,
+    "ra_deg": 85.2458,
+    "dec_deg": -2.4583,
+    "axes": "x west, y north, z toward the Sun; the record's place at the origin"
+  },
+  "layers": [
+    {
+      "part": "light",
+      "kind": "photograph",
+      "what": "the glowing gas of IC 434 behind the dust: the photograph without its stars, and where the dust hides it, the glow round it carried in (reconstructed)",
+      "file": "site/images/deep/sheets/horsehead-light.webp",
+      "from": "site/images/nebulae/horsehead-nebula.webp (NOIRLab noao0126a, CC BY 4.0)",
+      "picture": {
+        "ra_deg": 85.24168,
+        "dec_deg": -2.48238,
+        "width_arcmin": 56.58,
+        "height_arcmin": 57.53,
+        "north_deg": 89.66
+      },
+      "stars": {
+        "above_median": 16,
+        "grow_px": 3
+      },
+      "z_ly": -1.5,
+      "half_ly": 0.6,
+      "feather": [
+        0.55,
+        0.97
+      ],
+      "made_by": "scripts/build_deep_sheets.py",
+      "source": "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA), noao0126a, CC BY 4.0: https://noirlab.edu/public/images/noao0126a/"
+    },
+    {
+      "part": "dust",
+      "kind": "dust",
+      "what": "the Horsehead and the edge of the cloud it stands out of: dust that absorbs and reddens, never glows",
+      "file": "site/images/deep/sheets/horsehead-dust.webp",
+      "rule": {
+        "smooth_arcmin": 0.2,
+        "envelope_arcmin": 3.0,
+        "blur_arcmin": 1.5,
+        "dark_below": 0.3,
+        "cloud_below": 0.12,
+        "cloud_tau": 3.0,
+        "cloud_side": {
+          "pa_deg": 90,
+          "offset_arcmin": 3.0,
+          "soft_arcmin": 0.5
+        }
+      },
+      "tau_max": 4.0,
+      "feather": [
+        0.55,
+        0.97
+      ],
+      "front": {
+        "z_ly": 0,
+        "half_ly": 1.0
+      },
+      "reddening": {
+        "law": "Cardelli, Clayton & Mathis 1989",
+        "rv": 3.1,
+        "lambda_um": [
+          0.61,
+          0.55,
+          0.45
+        ]
+      },
+      "source": "The photograph's darkness against the glow round it (reconstructed by Space Radar, scripts/build_deep_sheets.py); the extinction law: Cardelli, Clayton & Mathis 1989, ApJ 345, 245, R_V = 3.1"
+    }
+  ],
+  "colours": {
+    "mode": "enhanced",
+    "lines": {},
+    "note": "FALSE COLOUR. The glow is the photograph's own: narrow filters for hydrogen (red), oxygen (green) and sulphur (blue) mapped to colours by its makers. The reddening of the stars behind the dust is the Cardelli, Clayton and Mathis law's, in true colour",
+    "enhanced": {
+      "mode": "enhanced",
+      "under": "deep",
+      "lines": {},
+      "note": "Deep: the photograph's own Deep stretch on top of its false colour"
+    }
+  },
+  "drawn": [
+    "reconstruction"
+  ],
+  "sources": [
+    "Abergel, A. et al. 2024, JWST observations of the Horsehead photon-dominated region I, A&A (https://arxiv.org/abs/2404.15816): the Horsehead in silhouette against IC 434, lit from behind by sigma Ori 3.5 pc away in projection, at 400 pc",
+    "Habart, E. et al. 2005, Density structure of the Horsehead nebula photo-dissociation region, A&A (https://arxiv.org/abs/astro-ph/0501536): the edge seen nearly edge on, lit by sigma Ori (O9.5V)",
+    "Cardelli, J. A., Clayton, G. C. & Mathis, J. S. 1989, ApJ 345, 245: the extinction law (R_V = 3.1) that reddens what is behind the dust",
+    "NOIRLab noao0126a (CC BY 4.0), the photograph the app already shows: the dust's darkness and the glow behind it"
+  ],
+  "review": {
+    "data_vs_model": "Measured: the distance, the silhouette against IC 434 and the light from behind (Abergel et al. 2024), the darkness (the photograph). Reconstructed: the optical depth from the darkness (the rule), the glow given back behind the dust, the 1.5 ly between them and their thickness; illustrative: the opacity deep inside the cloud",
+    "geometry": "Abergel et al. 2024 and Habart et al. 2005: a dark pillar at the edge of Orion B, IC 434 behind it, seen nearly edge on; the depths are illustrative and the card says so",
+    "colours": "The glow's false colour is the photograph's, declared; the reddening of the stars behind is Cardelli, Clayton and Mathis's law",
+    "distance": "1 375 ly, the record's; Abergel et al. 2024 use 400 pc (1 300 ly). Lengths on the sky are scaled to the record's",
+    "credits": "CREDITS.md section 3l, Remnants and dust (0076 W3-c); the card's rows name the reconstruction and that no astronomer has reviewed it",
+    "by": "Space Radar maintainers",
+    "date": "2026-10-17",
+    "astronomer": "not yet: the independent review is internal #785; the card says so"
+  },
+  "credits": [
+    "The Horsehead as dust in front of IC 434: Abergel et al. 2024, A&A; Habart et al. 2005, A&A; reconstructed by Space Radar",
+    "The extinction law: Cardelli, Clayton & Mathis 1989, ApJ 345, 245",
+    "Its darkness and the glow behind it: the photograph noao0126a, T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA) (CC BY 4.0), reworked by Space Radar"
+  ]
+};

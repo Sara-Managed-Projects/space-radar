@@ -20,6 +20,12 @@ export const HEROES = [
   { id: 'orion', record: 'dso-m42', stage: 'W1-a', profile: () => import('../../data/hero-orion.js'), build: () => import('./orion.js') },
   { id: 'm57', record: 'dso-m57', stage: 'W3-b', profile: () => import('../../data/hero-m57.js'), build: () => import('./ring.js') },
   // 0076 W3-c (its profiles)
+  { id: 'crab', record: 'dso-m1', stage: 'W3-c', profile: () => import('../../data/hero-crab.js'), build: () => import('./remnant.js') },
+  { id: 'veil', record: 'dso-veil-nebula', stage: 'W3-c', profile: () => import('../../data/hero-veil.js'), build: () => import('./remnant.js') },
+  { id: 'horsehead', record: 'dso-horsehead-nebula', stage: 'W3-c', profile: () => import('../../data/hero-horsehead.js'), build: () => import('./dustsheet.js') },
+  { id: 'coalsack', record: 'dso-coalsack', stage: 'W3-c', profile: () => import('../../data/hero-coalsack.js'), build: () => import('./dustsheet.js') },
+  { id: 'm78', record: 'dso-m78', stage: 'W3-c', profile: () => import('../../data/hero-m78.js'), build: () => import('./dustsheet.js') },
+  { id: 'iris', record: 'dso-iris-nebula', stage: 'W3-c', profile: () => import('../../data/hero-iris.js'), build: () => import('./dustsheet.js') },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

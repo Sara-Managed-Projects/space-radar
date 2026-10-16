@@ -1878,7 +1878,53 @@ Object.assign(COPY, {
   // 0076 W3-b (the Ring Nebula)
   deepRing: {},
   // 0076 W3-c (remnants and dust)
-  r12Dust: {},
+  r12Dust: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]` from the
+    // blocks it lists; until 'r12Dust' is among them the rows below carry the same news).
+    card: {
+      crab: 'Its light is taken from Hubble’s photograph, in false colour, carried on a shell whose shape follows Martin, Milisavljevic and Drissen (2021): a filament cage about 4 parsecs long round an empty middle. Not yet reviewed by an astronomer.',
+      veil: 'Its light is taken from NOIRLab’s photograph, in false colour, carried on a thin sphere 37 parsecs across (Fesen and others, 2018): the filaments are its rim seen edge on. Not yet reviewed by an astronomer.',
+      horsehead: 'Its darkness is read from NOIRLab’s photograph: dust in front of the glowing gas of IC 434, which absorbs and reddens what is behind it and gives off no light. Not yet reviewed by an astronomer.',
+      coalsack: 'Its darkness is read from the Milky Way around it: a cloud of dust about 590 light-years away that dims and reddens the stars behind it. Not yet reviewed by an astronomer.',
+      m78: 'Its light is NOIRLab’s photograph: dust scattering the blue light of the star in front of it, on the face of a dark cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
+      iris: 'Its light is NOIRLab’s photograph: dust scattering the light of the young star HD 200775 in a hollow of its cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook), keyed by record.
+    rows: {
+      'dso-m1': [
+        ['Its shape in depth', 'Reconstructed from a measured outline. The filaments reach about 2 parsecs along the axis of the pulsar’s wind and none lie within half a parsec of the centre (Martin and others, 2021). Drawn as an ellipsoid along that axis; which end is nearer us is assumed.'],
+        ['Its colours', 'False colour: the photograph’s narrow filters for oxygen and sulphur, mapped to colours by the picture’s makers.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-veil-nebula': [
+        ['Its shape in depth', 'Reconstructed: a sphere 37 parsecs across, the size and distance Fesen and others (2018) measured. The shell’s thickness is illustrative.'],
+        ['Its colours', 'False colour: the photograph’s narrow filters for oxygen, sulphur and hydrogen, mapped to colours by the picture’s maker.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-horsehead-nebula': [
+        ['Its shape in depth', 'Reconstructed. The dust is in front of the glowing gas of IC 434, as observed; how far in front, and how thick it is, are illustrative.'],
+        ['What the dust does', 'It only absorbs: the stars and the glow behind it are dimmed, and more in blue than in red, so they look redder. It gives off no light of its own.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-coalsack': [
+        ['How dark it is', 'Read from how much darker the Milky Way is here than at the same distance from its middle line nearby. That is an estimate and lower than infrared maps give, because stars in front of the cloud add their light.'],
+        ['What the dust does', 'It only absorbs: the stars behind it are dimmed and reddened. Stars in front of it are not. Part of the darkness to the north-east is a second cloud far behind, drawn here at the near distance.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-m78': [
+        ['Its shape in depth', 'Reconstructed: the lit dust as a sheet with its star in front and a dark cloud behind. The depths are illustrative.'],
+        ['From another side', 'Modelled: dust scatters more light forward than sideways, so from another side the same dust looks brighter or fainter.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-iris-nebula': [
+        ['Its shape in depth', 'Reconstructed: the lit walls as a sheet with the star in front and a dark cloud behind. The depths are illustrative.'],
+        ['From another side', 'Modelled: dust scatters more light forward than sideways, so from another side the same dust looks brighter or fainter.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'A remnant’s gas flies outward at a steady speed, so its speed toward or away from us says how far in front of or behind the centre it is. Martin, Milisavljevic and Drissen (2021) turned 310 000 spectra of the Crab into its shape that way.',
+  },
   // 0076 W3-d (where you are, and the way back)
   r12Navigate: {},
   // 0076 W3-e (search by kind)

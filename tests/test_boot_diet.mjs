@@ -158,6 +158,14 @@ const DEFERRED = {
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
+  'js/scene/deep/remnant.js': 'remnants as shells: the coordinator fetches it when the Crab or the Veil is near (release 1.2.0 W3-c, internal #784)',
+  'js/scene/deep/dustsheet.js': 'dust as sheets: the coordinator fetches it when the Horsehead, the Coalsack, M78 or the Iris is near (release 1.2.0 W3-c, internal #784, #806)',
+  'js/data/hero-crab.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-veil.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-horsehead.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-coalsack.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-m78.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-iris.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-d (scalerail.js)
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.

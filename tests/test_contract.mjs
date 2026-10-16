@@ -186,6 +186,9 @@ const CONTRACT = {
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
+  // Release 1.2.0 stage W3-c (internal #784, #806): remnants as shells and dust as sheets, fetched when one is near; their pure parts for tests/test_remnant.mjs and tests/test_dustsheet.mjs.
+  'scene/deep/remnant.js': ['createHero', 'skyFrame', 'offsetLy', 'uvOf', 'coverAt', 'shellOf', 'chordAt', 'pathsAt', 'weightsAt', 'columnJs', 'samplesFor', 'sharesFor', 'paletteFor', 'stretchJs', 'pixelHash', 'featherOf', 'placeSkyGroup', 'loadMap', 'cameraInSky', 'part', 'SHAPE', 'SHADERS', 'COMMON_GLSL', 'VERT', 'UNDER_MEASURED', 'COPY_BLOCK'],
+  'scene/deep/dustsheet.js': ['createHero', 'sheetOf', 'slotsOf', 'ccm', 'reddening', 'decodeTau', 'halfAt', 'profileAt', 'hg', 'phaseFactor', 'grazeOf', 'layerSpan', 'columnJs', 'closedJs', 'transmissionTo', 'keepRadiusPx', 'keepActive', 'samplesFor', 'starLook', 'SHAPE', 'SHADERS', 'UNDER_MEASURED'],
   // 0076 W3-d (scalerail.js)
 };
 

@@ -1027,6 +1027,10 @@ export const VISUAL_CLASSES = [
 ],
 "photographs": [
 "dso-horsehead-nebula"
+],
+"heroes": [
+"dso-coalsack",
+"dso-horsehead-nebula"
 ]
 }
 },
@@ -1041,6 +1045,10 @@ export const VISUAL_CLASSES = [
 ],
 "photographs": [
 "dso-m45"
+],
+"heroes": [
+"dso-iris-nebula",
+"dso-m78"
 ]
 }
 },
@@ -1054,6 +1062,10 @@ export const VISUAL_CLASSES = [
 "dso-veil-nebula"
 ],
 "photographs": [
+"dso-m1",
+"dso-veil-nebula"
+],
+"heroes": [
 "dso-m1",
 "dso-veil-nebula"
 ]
