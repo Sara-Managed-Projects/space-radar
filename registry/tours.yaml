@@ -5011,7 +5011,9 @@ tours:
         # A billion light-years past TON 618, looking back at it with home behind it (`behind: sun`,
         # 3 to 16 degrees off the middle). From the side towards home the frame held the quasar's ring
         # alone, 99.991 % one colour at 1440 x 900, under the trips walk's empty-frame floor (screens
-        # run 38824226655); looking home, the frame also holds what is drawn there, as stop 5 does.
+        # run 38824226655); looking home, the frame also holds what is drawn there: 99.95 % (screens
+        # run 38956512528). Stop 5 keeps this direction and read 99.980 % there, ON the floor; from two
+        # billion light-years past it, stop 5 read 99.991 % and failed (run 38965043202), so one it is.
         distance_km: 9460730472580800000000
         behind: sun
         drift_deg: 8
