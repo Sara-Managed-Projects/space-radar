@@ -56,12 +56,14 @@ export const DRAWN = { globular: ['model'], open: ['catalogue'] };
 
 /** Stars drawn for one globular, by tier (T0, T1, T2): the brightest of the model's, never more than it has. */
 /**
- * The open clusters' members are drawn only when this is true (or a caller's `env.open`). OFF since the stage's last
- * look run (2026-10-17): at the app's arrival 40 light-years out most members are fainter than magnitude 7 and were
- * drawn as one-pixel specks, while their illustrative haze stepped back, so the picture was emptier than before. The
- * file, the shader and the card's rows are ready; what is left is a visibility floor for faint members and one look.
+ * The open clusters' members are drawn while this is true (or a caller's `env.open`). The stage's second look run
+ * (2026-10-17) drew them as one-pixel specks with their haze gone; since then a faint member has a floor (FLOOR) and
+ * the haze steps back only by the light the members drawn here carry, less what the map's own stars carry already
+ * (the manifest's `lightInHyg`): the same sharing as a globular's.
  */
-export const OPEN_MEMBERS = false;
+export const OPEN_MEMBERS = true;
+/** A faint open-cluster member (6.5 to the limit) is never under `px` CSS px wide nor `alpha` bright: never a 1-px speck. */
+export const FLOOR = { px: 2.2, alpha: 0.75 };
 export const POINTS = [3000, 10000, 24000];
 export const MAX_DRAWN = 3;
 export const FROM_PX = 14;      // CSS px of the cluster's radius on screen: its stars start
@@ -269,6 +271,7 @@ uniform float uGain;
 uniform float uShare;
 uniform float uUnitsPerPc;
 uniform float uMagLimit;
+uniform float uFloor;     // 1 for an open cluster's members (FLOOR), 0 for a globular's
 varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
@@ -281,7 +284,8 @@ void main() {
   float dpc = max( 1e-6, length( mv.xyz ) / uUnitsPerPc );
   float m = aAbsMag + 5.0 * log( dpc / 10.0 ) / log( 10.0 );
   float tt = clamp( ( 6.5 - m ) / 8.0, 0.0, 1.0 );
-  float core = 1.0 + 5.0 * pow( tt, 1.6 );
+  float core = max( 1.0 + 5.0 * pow( tt, 1.6 ), 1.0 + uFloor * ${(FLOOR.px - 1).toFixed(2)} );
+  float faint = clamp( ( m - 6.5 ) / max( 0.1, uMagLimit - 6.5 ), 0.0, 1.0 );
   float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
   float glow = clamp( ( 2.5 - m ) / 4.0, 0.0, 1.0 );
   core *= 1.0 + 0.8 * glow;
@@ -291,7 +295,7 @@ void main() {
   vGlare = glare;
   vGlow = glow;
   // the last magnitude before the limit fades (no star pops in or out as the camera moves)
-  vAlpha = ( 0.35 + 0.65 * tt ) * uGain * uShare * ( 1.0 - smoothstep( uMagLimit - 1.0, uMagLimit, m ) );
+  vAlpha = max( 0.35 + 0.65 * tt, uFloor * ${FLOOR.alpha.toFixed(2)} * ( 1.0 - 0.5 * faint ) ) * uGain * uShare * ( 1.0 - smoothstep( uMagLimit - 1.0, uMagLimit, m ) );
   vColour = aColour;
 }
 `;
@@ -351,6 +355,7 @@ export function createLayer(THREE, env = {}) {
   let stampTick = 0;
   function stamp() {
     const W = COPY[COPY_BLOCK];
+    const fresh = [];
     for (const id of [...unstamped]) {
       const rec = env.recordById ? env.recordById(id) : null;
       if (!rec || !rec.meta) continue;
@@ -359,7 +364,10 @@ export function createLayer(THREE, env = {}) {
       if (!rec.meta.heroCopy) rec.meta.heroCopy = COPY_BLOCK;
       if (W && W.rows && !W.rows[id] && (kind === 'open' || Number.isFinite(rec.meta.distLy))) { const r = rowsFor(kind, row, rec, null); if (r) W.rows[id] = r; }
       unstamped.delete(id);
+      fresh.push(id);
     }
+    // An open card drawn before this layer arrived says what is drawn again (ui/cards.js listens).
+    if (fresh.length && typeof window !== 'undefined' && window.dispatchEvent && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('sr:drawn-changed', { detail: { ids: fresh } }));
   }
 
   function wantMembers() {
@@ -374,7 +382,7 @@ export function createLayer(THREE, env = {}) {
   function material() {
     return new THREE.ShaderMaterial({
       vertexShader: VERT, fragmentShader: FRAG,
-      uniforms: { uPixelRatio: { value: 1 }, uGain: { value: 1 }, uShare: { value: 0 }, uUnitsPerPc: { value: 1 }, uMagLimit: { value: LIMIT_MAG.camera } },
+      uniforms: { uPixelRatio: { value: 1 }, uGain: { value: 1 }, uShare: { value: 0 }, uUnitsPerPc: { value: 1 }, uMagLimit: { value: LIMIT_MAG.camera }, uFloor: { value: 0 } },
       // Opaque list on purpose, like scene/stars3d.js: `transparent: true` would draw after Earth.
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     });
@@ -407,6 +415,7 @@ export function createLayer(THREE, env = {}) {
     geo.setAttribute('aColour', new THREE.BufferAttribute(col, 3));
     geo.computeBoundingSphere();
     const mesh = new THREE.Points(geo, material());
+    mesh.material.uniforms.uFloor.value = entry.kind === 'open' ? 1 : 0;
     mesh.name = `deep-cluster-${id}`;
     mesh.matrixAutoUpdate = false;
     mesh.renderOrder = -1;
@@ -492,7 +501,9 @@ export function createLayer(THREE, env = {}) {
       if (camera) {
         const centre = _c.set(b.mesh.matrix.elements[12], b.mesh.matrix.elements[13], b.mesh.matrix.elements[14]);
         const dPc = Math.max(1e-3, centre.distanceTo(camera.position) / (PC_KM / stage.unitKm));
-        b.taken = share * visibleLight(b.absMag, b.light, drawn, dPc, limit);
+        // an open cluster's members carry its light less the share its catalogue stars (scene/stars3d.js) carry
+        const own = b.kind === 'open' ? 1 - (rows.get(id).row.lightInHyg || 0) : 1;
+        b.taken = share * own * visibleLight(b.absMag, b.light, drawn, dPc, limit);
       } else {
         b.taken = 0;
       }

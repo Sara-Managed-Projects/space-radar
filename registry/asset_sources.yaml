@@ -352,6 +352,6 @@ sources:
     checked: 2026-10-16
     pins:
       - {file: site/data/deep/clusters.bin, sha256: ec62a3321f5c6773ea0be5b0d3738f49797514adedd1576c39216c07a6f2b0de}
-      - {file: site/data/deep/clusters.json, sha256: 4db6698575b01748d7dd6adf344bb4e633818241a250cc177e3bb3548925561c}
+      - {file: site/data/deep/clusters.json, sha256: 92b874837e1ab7a50afe479f8f69fe46bb243ed44c98408efb3165b21e6ef394}
   # 0076 W3-b
   # 0076 W3-c

@@ -538,6 +538,7 @@
    "scaleLy": 29.098,
    "measuredDepth": 0,
    "inHyg": 1,
+   "lightInHyg": 0.0341,
    "brightestKept": false,
    "centreDeg": [
     265.08646,
@@ -566,6 +567,7 @@
    "scaleLy": 42.244,
    "measuredDepth": 0,
    "inHyg": 14,
+   "lightInHyg": 0.4013,
    "brightestKept": false,
    "centreDeg": [
     268.46325,
@@ -594,6 +596,7 @@
    "scaleLy": 22.192,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     282.77496,
@@ -622,6 +625,7 @@
    "scaleLy": 39.838,
    "measuredDepth": 0,
    "inHyg": 1,
+   "lightInHyg": 0.0342,
    "brightestKept": false,
    "centreDeg": [
     274.99371,
@@ -650,6 +654,7 @@
    "scaleLy": 22.57,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     271.05604,
@@ -678,6 +683,7 @@
    "scaleLy": 36.634,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     269.26988,
@@ -706,6 +712,7 @@
    "scaleLy": 44.138,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     277.94488,
@@ -734,6 +741,7 @@
    "scaleLy": 27.729,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     281.32775,
@@ -762,6 +770,7 @@
    "scaleLy": 15.957,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     305.99071,
@@ -790,6 +799,7 @@
    "scaleLy": 36.717,
    "measuredDepth": 0,
    "inHyg": 2,
+   "lightInHyg": 0.0231,
    "brightestKept": false,
    "centreDeg": [
     40.53083,
@@ -818,6 +828,7 @@
    "scaleLy": 35.938,
    "measuredDepth": 0,
    "inHyg": 2,
+   "lightInHyg": 0.0119,
    "brightestKept": false,
    "centreDeg": [
     92.27108,
@@ -846,6 +857,7 @@
    "scaleLy": 21.921,
    "measuredDepth": 0,
    "inHyg": 1,
+   "lightInHyg": 0.005,
    "brightestKept": false,
    "centreDeg": [
     84.07392,
@@ -874,6 +886,7 @@
    "scaleLy": 40.408,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     88.07646,
@@ -902,6 +915,7 @@
    "scaleLy": 48.499,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     82.17704,
@@ -930,6 +944,7 @@
    "scaleLy": 59.545,
    "measuredDepth": 30,
    "inHyg": 7,
+   "lightInHyg": 0.5939,
    "brightestKept": false,
    "centreDeg": [
     322.95133,
@@ -958,6 +973,7 @@
    "scaleLy": 31.769,
    "measuredDepth": 0,
    "inHyg": 5,
+   "lightInHyg": 0.2479,
    "brightestKept": false,
    "centreDeg": [
     101.49975,
@@ -986,6 +1002,7 @@
    "scaleLy": 33.791,
    "measuredDepth": 167,
    "inHyg": 21,
+   "lightInHyg": 0.5319,
    "brightestKept": false,
    "centreDeg": [
     130.0925,
@@ -1014,6 +1031,7 @@
    "scaleLy": 34.642,
    "measuredDepth": 321,
    "inHyg": 37,
+   "lightInHyg": 0.6929,
    "brightestKept": false,
    "centreDeg": [
     56.86917,
@@ -1042,6 +1060,7 @@
    "scaleLy": 61.193,
    "measuredDepth": 0,
    "inHyg": 1,
+   "lightInHyg": 0.0007,
    "brightestKept": true,
    "centreDeg": [
     115.44508,
@@ -1070,6 +1089,7 @@
    "scaleLy": 25.892,
    "measuredDepth": 0,
    "inHyg": 5,
+   "lightInHyg": 0.2916,
    "brightestKept": false,
    "centreDeg": [
     114.14592,
@@ -1098,6 +1118,7 @@
    "scaleLy": 41.872,
    "measuredDepth": 0,
    "inHyg": 1,
+   "lightInHyg": 0.0122,
    "brightestKept": false,
    "centreDeg": [
     123.42992,
@@ -1126,6 +1147,7 @@
    "scaleLy": 33.552,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     105.66863,
@@ -1154,6 +1176,7 @@
    "scaleLy": 42.37,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     351.20167,
@@ -1182,6 +1205,7 @@
    "scaleLy": 28.218,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     132.83388,
@@ -1210,6 +1234,7 @@
    "scaleLy": 41.284,
    "measuredDepth": 0,
    "inHyg": 3,
+   "lightInHyg": 0.0052,
    "brightestKept": false,
    "centreDeg": [
     116.12179,
@@ -1238,6 +1263,7 @@
    "scaleLy": 39.899,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     23.34088,
@@ -1274,6 +1300,7 @@
    "scaleLy": 46.528,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     35.0,
@@ -1302,6 +1329,7 @@
    "scaleLy": 32.158,
    "measuredDepth": 253,
    "inHyg": 115,
+   "lightInHyg": 0.985,
    "brightestKept": false,
    "centreDeg": [
     66.75,
@@ -1330,6 +1358,7 @@
    "scaleLy": 43.579,
    "measuredDepth": 0,
    "inHyg": 2,
+   "lightInHyg": 0.0008,
    "brightestKept": false,
    "centreDeg": [
     193.425,
@@ -1358,6 +1387,7 @@
    "scaleLy": 29.586,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     97.975,
@@ -1386,6 +1416,7 @@
    "scaleLy": 40.101,
    "measuredDepth": 0,
    "inHyg": 6,
+   "lightInHyg": 0.0964,
    "brightestKept": true,
    "centreDeg": [
     166.3875,
@@ -1414,6 +1445,7 @@
    "scaleLy": 31.871,
    "measuredDepth": 134,
    "inHyg": 19,
+   "lightInHyg": 0.876,
    "brightestKept": false,
    "centreDeg": [
     160.7396,
@@ -1442,6 +1474,7 @@
    "scaleLy": 32.612,
    "measuredDepth": 0,
    "inHyg": 3,
+   "lightInHyg": 0.0502,
    "brightestKept": false,
    "centreDeg": [
     253.55,
@@ -1470,6 +1503,7 @@
    "scaleLy": 19.929,
    "measuredDepth": 0,
    "inHyg": 1,
+   "lightInHyg": 0.1688,
    "brightestKept": false,
    "centreDeg": [
     100.25,
@@ -1498,6 +1532,7 @@
    "scaleLy": 33.56,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": false,
    "centreDeg": [
     19.8858,
@@ -1526,6 +1561,7 @@
    "scaleLy": 67.264,
    "measuredDepth": 0,
    "inHyg": 0,
+   "lightInHyg": 0.0,
    "brightestKept": true,
    "centreDeg": [
     359.35,

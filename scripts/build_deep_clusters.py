@@ -165,10 +165,10 @@ def hyg_directions():
     count = struct.unpack_from("<I", b, 8)[0]
     out = []
     for i in range(count):
-        x, y, z, _abs, app = struct.unpack_from("<fffff", b, 16 + i * 24)
+        x, y, z, absmag, app = struct.unpack_from("<fffff", b, 16 + i * 24)
         r = math.sqrt(x * x + y * y + z * z)
         if r > 0:
-            out.append((x / r, y / r, z / r, app))
+            out.append((x / r, y / r, z / r, app, absmag, i))
     return out
 
 
@@ -213,6 +213,7 @@ def bake(cache: Path) -> tuple[dict, bytes]:
         pos = o["posLy"]
         d_rec = math.sqrt(sum(v * v for v in pos))
         kept, matched, measured = [], 0, 0
+        hyg_seen = {}  # the map's own stars that are members: index -> absolute magnitude (their light is the cluster's too)
         row_info = []
         for n in names:
             cl = clusters[n]
@@ -230,8 +231,10 @@ def bake(cache: Path) -> tuple[dict, bytes]:
                 if g is None:
                     continue
                 u = ecliptic(num(m["_RA.icrs"]), num(m["_DE.icrs"]))
-                if any(s[0] * u[0] + s[1] * u[1] + s[2] * u[2] >= cos_match and abs(s[3] - g) <= MATCH_MAG for s in near):
+                hit = next((s for s in near if s[0] * u[0] + s[1] * u[1] + s[2] * u[2] >= cos_match and abs(s[3] - g) <= MATCH_MAG), None)
+                if hit is not None:
                     matched += 1
+                    hyg_seen[hit[5]] = hit[4]
                     continue
                 # depth: own parallax when it is good to a quarter of r50, else a Plummer draw
                 own = None
@@ -259,6 +262,10 @@ def bake(cache: Path) -> tuple[dict, bytes]:
         cut = len(kept) > MAX_MEMBERS
         kept = kept[:MAX_MEMBERS]
         measured = sum(k[4] for k in kept)
+        # the share of the members' light the map's own stars already carry (V and G taken alike: an approximation)
+        l_file = sum(10 ** (-0.4 * k[0]) for k in kept)
+        l_hyg = sum(10 ** (-0.4 * a) for a in hyg_seen.values())
+        light_in_hyg = l_hyg / (l_hyg + l_file) if (l_hyg + l_file) > 0 else 0.0
         scale = max(1.0, max((max(abs(v) for v in k[1]) for k in kept), default=1.0) * 1.001)
         offset = total
         for abs_g, xyz, bv, p, flag in kept:
@@ -267,7 +274,7 @@ def bake(cache: Path) -> tuple[dict, bytes]:
         total += len(kept)
         opens.append({
             "id": rid, "hr23": row_info, "offset": offset, "count": len(kept), "scaleLy": round(scale, 3),
-            "measuredDepth": measured, "inHyg": matched, "brightestKept": cut,
+            "measuredDepth": measured, "inHyg": matched, "lightInHyg": round(light_in_hyg, 4), "brightestKept": cut,
             "centreDeg": [o["raDeg"], o["decDeg"]], "centreEcl": [round(v, 7) for v in centre],
         })
 

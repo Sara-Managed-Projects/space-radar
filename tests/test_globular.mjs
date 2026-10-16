@@ -56,7 +56,7 @@ const fileBytes = manBytes.length + BIN.byteLength;
 check(fileBytes <= BUDGETS.deep_clusters_bytes, `the two files are within the budget (${fileBytes} B of ${BUDGETS.deep_clusters_bytes}; registry/budgets.yaml deep_clusters_bytes)`);
 check(G.POINTS[2] === BUDGETS.deep_globular_points && G.POINTS[0] < G.POINTS[1] && G.POINTS[1] < G.POINTS[2], `POINTS rise by tier to the budget's ${BUDGETS.deep_globular_points} (registry/budgets.yaml deep_globular_points)`);
 check(G.MAX_DRAWN <= BUDGETS.deep_clusters_draw_calls, `at most ${BUDGETS.deep_clusters_draw_calls} clusters drawn at once (registry/budgets.yaml deep_clusters_draw_calls)`);
-check(G.OPEN_MEMBERS === false, 'the open clusters\' members stay off until their faint end is legible (globular.js OPEN_MEMBERS)');
+check(G.OPEN_MEMBERS === true && G.FLOOR.px >= 2 && G.FLOOR.alpha >= 0.5, `the open clusters' members are drawn, a faint one never under ${G.FLOOR.px} px and ${G.FLOOR.alpha} bright (globular.js OPEN_MEMBERS, FLOOR)`);
 check(G.limitFor(0.55) === G.LIMIT_MAG.eye && G.limitFor(1) === G.LIMIT_MAG.camera && G.limitFor(1.7) === G.LIMIT_MAG.camera && G.LIMIT_MAG.eye === 6.5, `drawn to the eye's 6.5 under Eye, to a camera's ${G.LIMIT_MAG.camera} under Camera and Deep`);
 check(G.UNDER_MEASURED.stars === 'same' && G.UNDER_MEASURED.members === 'same', 'under Measured the stars are the same (nothing in them moves)');
 
@@ -181,6 +181,8 @@ await new Promise((r) => setTimeout(r, 20)); // the members' file
 for (let i = 0; i < 6; i++) step();
 check(layer.stats().calls === G.MAX_DRAWN, `at most ${G.MAX_DRAWN} clusters drawn, one call each (${layer.stats().calls})`);
 check(layer.stats().drawn.some((d) => d.id === 'dso-m13'), 'the largest on screen is among them');
+{ const k = layer.shares().get('dso-m45'); check(k === undefined || k <= 1 - pl.lightInHyg + 1e-9, `the Pleiades' haze steps back only by the light its Gaia members carry, not its catalogue stars' (${k}, at most ${(1 - pl.lightInHyg).toFixed(2)})`); }
+check(pl.lightInHyg > 0.3 && hy.lightInHyg > 0.9, `the map's own stars carry most of the Pleiades' and the Hyades' light (${pl.lightInHyg}, ${hy.lightInHyg})`);
 const mesh = layer.group.children.find((c) => c.name === 'deep-cluster-dso-m13');
 const before = mesh.geometry.attributes.position.array.slice(0, 30);
 step(); step();
