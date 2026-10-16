@@ -64,7 +64,7 @@ TITLE_MAX = 60
 DESC_MIN, DESC_MAX = 70, 160
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Built directories that are not pages of the growth set (the press page has its own builder and test).
-NOT_GROWTH = {"o", "press", "share", "embed"}  # press and the embed gallery have their own builders; they are judged by the rules above
+NOT_GROWTH = {"o", "press", "share", "embed", "lab"}  # press, the embed gallery and the Lab have their own builders; they are judged by the rules above and check_lab()
 FOOTER_PAGES = ("../about/index.html", "../sources/index.html", "../accuracy/index.html")
 IMG_NS = "http://www.google.com/schemas/sitemap-image/1.1"
 
@@ -420,7 +420,47 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
     if f"{HOST}/{indexnow.key_file_name()}" in in_sitemap:
         say("sitemap.xml lists the IndexNow key file")
 
+    check_lab(site, built, say)
     return problems
+
+
+def check_lab(site: Path, built: Path, say) -> None:
+    """Every simulator in site/lab/ is built under built/lab/ (scripts/seo_lab.py) with one canonical and og:url at its
+    own address, og:title, og:description, an og:image that exists, and one LearningResource block. The description is
+    not held to DESC_MIN: it is the contributor's one-sentence lesson, and fourteen are shorter than 70 characters."""
+    sims = [p for p in sorted((site / "lab").glob("*/index.html")) if not p.parent.name.startswith("_")]
+    if sims and not (built / "lab" / "index.html").is_file():
+        say("built/lab/index.html is missing: deploy.sh uploads the Lab from the build")
+    for src in sims:
+        f = built / "lab" / src.parent.name / "index.html"
+        rel = label(site, built, f)
+        if not f.is_file():
+            say(f"{rel} is missing")
+            continue
+        h = Head()
+        h.feed(f.read_text(encoding="utf-8"))
+        url = page_url(built, f)
+        if h.links.get("canonical") != [url]:
+            say(f"{rel}: the canonical is {h.links.get('canonical')}, not one link to {url}")
+        if h.one("og:url") != url:
+            say(f"{rel}: og:url is {h.one('og:url')!r}, not {url}")
+        for key in ("og:title", "og:description"):
+            if not h.one(key):
+                say(f"{rel}: no {key}")
+        img = h.one("og:image")
+        imgf = site_file(site, built, img) if img else None
+        if imgf is None or not imgf.is_file():
+            say(f"{rel}: og:image {img!r} is not a picture on the site")
+        types = []
+        for block in h.ld:
+            try:
+                data = json.loads(block)
+            except json.JSONDecodeError:
+                say(f"{rel}: a JSON-LD block does not parse")
+                continue
+            types += [g.get("@type") for g in data.get("@graph", [data])]
+        if types.count("LearningResource") != 1:
+            say(f"{rel}: {types.count('LearningResource')} LearningResource blocks, not one")
 
 
 def main(argv: list[str]) -> int:
