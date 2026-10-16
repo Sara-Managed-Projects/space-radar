@@ -71,9 +71,6 @@ const CAT_PREFIX = 400;
 export const MOONS_AFTER = 4;
 /** The weakest hit a `#at=` link will fly to (main.js resolveAt): the start of a word or better. */
 export const LINK_MIN_SCORE = WORD_PREFIX;
-// A kind or the 3D toggle (internal spec 0076 W3-e, ui/searchrows.js byKind) asks for this many matches,
-// so what it keeps is chosen from all of them and not from the eight a name query shows.
-const KIND_CAP = 5000;
 
 const reduceMotion =
   typeof window !== 'undefined' && window.matchMedia
@@ -734,14 +731,8 @@ export function createSearch(ctx, host) {
       const hit = state.hits[i];
       // A kind's group (ui/searchrows.js kindHits): a microlabel over the first row of a run, heard as
       // each of its rows' description rather than as a choosable row of its own.
-      if (hit.group && (!head || head.dataset.group !== hit.group.id)) {
-        head = el('li', 'sr-search__head', hit.group.text);
-        head.id = `${OPTION_ID}g${i}`;
-        head.dataset.group = hit.group.id;
-        head.setAttribute('role', 'presentation');
-        head.setAttribute('aria-hidden', 'true');
-        list.appendChild(head);
-      } else if (!hit.group) head = null;
+      if (hit.group && (!head || head.dataset.group !== hit.group.id)) list.appendChild(head = state.more.groupHead(hit.group, `${OPTION_ID}g${i}`));
+      else if (!hit.group) head = null;
       const item = el('li', 'sr-search__option');
       if (head) item.setAttribute('aria-describedby', head.id);
       state.items.push(item);
@@ -826,18 +817,12 @@ export function createSearch(ctx, host) {
   /** The "3D models" toggle: under the results while they hold objects, or while it is on. */
   function paintOnly() {
     const m = state.more;
-    if (!m || typeof m.byKind !== 'function') return;
+    if (!m || typeof m.answer !== 'function') return;
     if (!only) {
-      only = button('sr-search__only', state.more.KIND_COPY.only, state.more.KIND_COPY.onlyTitle);
-      only.setAttribute('aria-pressed', 'false');
-      // Pressed with the field keeping the focus, so a touch never blurs the list shut under it.
-      only.addEventListener('pointerdown', (event) => event.preventDefault());
-      only.addEventListener('click', () => { state.only = !state.only; run(input.value); });
-      only.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); close(true); paintList(); input.focus(); } });
+      only = m.onlyToggle(() => { state.only = !state.only; run(input.value); }, () => { close(true); paintList(); input.focus(); });
       pop.insertBefore(only, foot);
     }
-    only.hidden = !m.kindsOn() || !(state.only || (!state.missed && state.hits.some((h) => h.record && !h.extra)));
-    only.setAttribute('aria-pressed', state.only ? 'true' : 'false');
+    m.paintToggle(only, state);
   }
 
   function paintActive() {
@@ -898,14 +883,12 @@ export function createSearch(ctx, host) {
       return;
     }
     ensureIndex();
-    // A kind of thing ("galaxies", "moons of saturn") or the 3D toggle (spec 0076 W3-e): the rows come
-    // from ui/searchrows.js byKind, asked again when the classes it reads have arrived.
-    const m0 = state.more && typeof state.more.byKind === 'function' && state.more.kindsOn() ? state.more : null;
-    const kind = m0 ? m0.readKind(q, state.index) : null;
-    const wait = m0 ? m0.wantKinds(kind, state.only) : null;
-    if (wait) wait.then(() => { if (state.open && norm(input.value) === q) run(input.value); });
-    let result = findMatches(state.index, q, kind || (m0 && state.only) ? KIND_CAP : MAX_RESULTS);
-    if (m0 && (kind || state.only)) result = m0.byKind(state.index, result, kind, { limit: MAX_RESULTS, only: state.only, exact: NAME_EXACT, word: WORD_PREFIX });
+    // A kind of thing ("galaxies", "moons of saturn") or the 3D toggle (spec 0076 W3-e): ui/searchrows.js
+    // answer() asks findMatches itself, and asks again (`again`) when the classes it reads have arrived.
+    const kinds = state.more && typeof state.more.answer === 'function' ? state.more : null;
+    const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); } })
+      : findMatches(state.index, q, MAX_RESULTS);
+    const kind = result.kind;
     state.hits = result.hits;
     state.total = result.total;
     state.fallback = result.fallback === true;
@@ -915,7 +898,7 @@ export function createSearch(ctx, host) {
     // Nothing matched: say so, and offer the nearest names as the options (closest() above).
     state.missed = result.hits.length || state.none ? '' : String(text).trim();
     // A kind typed in the moment its classes are on their way is not a miss: "counting…", then the rows.
-    state.counting = !!(kind && wait && !result.hits.length);
+    state.counting = result.counting === true;
     if (state.counting) state.missed = '';
     if (state.missed) { state.hits = closest(state.index, q); state.total = state.hits.length; }
     if (state.more) {

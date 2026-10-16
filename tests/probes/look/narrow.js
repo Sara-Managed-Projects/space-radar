@@ -101,7 +101,8 @@ if (new URLSearchParams(location.search).get('lookSubject') === 'search') {
     runs.sort((a, b) => a - b);
     return { records: index.n, medianMs: +runs[3].toFixed(2), worstMs: +runs[6].toFixed(2) };
   };
-  await full();
+  // A phone's results hang under the top bar over the scene, as tall as the sheet leaves them: at peek.
+  if (innerWidth < 900) { const sh = sr.shell && sr.shell.sheet && sr.shell.sheet(); if (sh && sh.set) { sh.set('peek'); await sleep(900); } }
   window.srSearchBefore = true;
   out.search.before = { galaxies: await ask('galaxies') };
   await shot('search-0-before-galaxies', innerWidth + ' px, before: "galaxies" with search by kind switched off (what main shows)');
@@ -127,7 +128,13 @@ if (new URLSearchParams(location.search).get('lookSubject') === 'search') {
   await shot('search-5-galaxies-3d', `${innerWidth} px: "galaxies" with 3D models only: ${out.search.toggled.rows.map((r) => r.name).join(', ')}`);
   { const t = wrapOf(field()).querySelector('.sr-search__only'); if (t) t.click(); await sleep(600); }
   // The keyboard: the field, Fly to it, the toggle, in the order the screen reads them.
-  out.search.order = order(wrapOf(field()), 'search');
+  // (Fly to it is drawn for a screen reader only in the sidebar: a 1 px box is not on the screen to read.)
+  {
+    const els = [...wrapOf(field()).querySelectorAll(FOCUSABLE)].filter((n) => shown(n) && n.getBoundingClientRect().width > 2);
+    const read = els.map((n) => ({ n, r: n.getBoundingClientRect() })).sort((a, b) => { const ma = a.r.top + a.r.height / 2; const mb = b.r.top + b.r.height / 2; return Math.abs(ma - mb) < 12 ? a.r.left - b.r.left : ma - mb; });
+    out.search.order = { keyboard: els.map(label), screen: read.map((x) => label(x.n)) };
+    if (out.search.order.keyboard.join(' | ') !== out.search.order.screen.join(' | ')) out.problems.push('search: the keyboard goes ' + out.search.order.keyboard.join(' > ') + ' but the screen reads ' + out.search.order.screen.join(' > '));
+  }
   // Enter on the first row of "moons of saturn" flies there, as it always did.
   const moons = await ask('moons of saturn');
   const firstName = moons && moons.rows[0] && moons.rows[0].name;

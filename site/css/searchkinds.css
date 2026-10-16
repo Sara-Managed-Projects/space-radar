@@ -23,6 +23,12 @@
   list-style: none;
 }
 
+/* A grouped list carries its microlabels as well as its eight rows: room for them, off the phone (whose
+   list is the bar's own scroller, css/ui.css). */
+html:not(.sr-phone) .sr-search__list:has(.sr-search__head) {
+  max-height: 392px;
+}
+
 .sr-search__head + .sr-search__option {
   border-top: 0;
 }

@@ -1902,8 +1902,8 @@ Object.assign(COPY, {
     other: 'Other things',
     // A kind query's other matches: records whose name holds the word but are not of the kind.
     byName: 'By name',
-    // "Moons of Saturn": the microlabel says whose.
-    of: '{label} of {world}',
+    // "Moons of Saturn": the microlabel says whose ({label} arrives lower-cased: "Saturn’s icy moons").
+    of: '{world}’s {label}',
     // The toggle under the results (aria-pressed). Two words; the tooltip says what counts.
     only: '3D models',
     onlyTitle: 'List only what is drawn from a 3D model: a real model or a reconstruction',

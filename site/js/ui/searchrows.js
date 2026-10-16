@@ -610,9 +610,15 @@ function hitOf(index, i, group, drawn) {
  * what has a 3D model; `skip` is a set of record ids already shown. Within a group the brighter first
  * (the registry's order for a planet's moons), then the index's own ladder.
  */
+const collected = new WeakMap(); // index -> key -> what collectKind found: the toggle and a re-run are free
 function collectKind(index, kind, only, skip) {
   const out = { lists: [], ids: new Set(), total: 0 };
   if (!index || !index.n || !kind || !classes) return out;
+  const key = [kind.row.say[0], kind.of ? kind.of.id : '', only ? 1 : 0, heroes ? heroes.size : -1, skip ? [...skip].join() : ''].join('|');
+  if (!collected.has(index)) collected.set(index, new Map());
+  const memo = collected.get(index);
+  if (memo.has(key)) return memo.get(key);
+  memo.set(key, out);
   const S = COPY.r12Search;
   const model = !!kind.row.model;
   const want = model ? null : new Set(kind.row.classes);
@@ -643,7 +649,7 @@ function collectKind(index, kind, only, skip) {
       : (index.mag[a.i] - index.mag[b.i]) || (index.pop[b.i] - index.pop[a.i]) || (index.kind[a.i] - index.kind[b.i])
         || (index.picked[b.i] - index.picked[a.i]) || (index.rank[a.i] - index.rank[b.i]) || (index.len[a.i] - index.len[b.i]) || (a.i - b.i)));
     const label = k === 'other' ? S.other : (S.groups && S.groups[k]) || classes.title.get(k) || k;
-    const named = kind.of ? t(S.of, { label, world: kind.of.name }) : label;
+    const named = kind.of ? t(S.of, { label: label.charAt(0).toLowerCase() + label.slice(1), world: kind.of.name }) : label;
     out.total += list.length;
     return { group: { id: k, text: t(S.group, { label: named, n: fmt.int(list.length) }) }, list };
   });
@@ -711,6 +717,61 @@ export function byKind(index, result, kind, { limit = 8, only = false, exact = 9
   out.total = (lead ? 1 : 0) + groups.total + names.length;
   out.none = only && !out.hits.length && hits.length > 0;
   return out;
+}
+
+/** How many matches a kind or the toggle asks findMatches for: it keeps from all of them, not the eight shown. */
+export const KIND_CAP = 5000;
+
+/**
+ * ui/search.js's whole question when the rows have landed: findMatches as before, or, for a kind or with
+ * the toggle on, byKind over KIND_CAP matches. `kind` and `counting` (a kind whose classes are on their
+ * way: not a miss) ride on the answer; `again` is called once they have arrived.
+ */
+export function answer(index, q, only, { find, limit = 8, exact = 900, word = 700, again = null } = {}) {
+  const on = kindsOn();
+  const kind = on ? readKind(q, index) : null;
+  const wait = on ? wantKinds(kind, only) : null;
+  if (wait && again) wait.then(again);
+  if (!kind && !(on && only)) return find(index, q, limit);
+  const out = byKind(index, find(index, q, KIND_CAP), kind, { limit, only: on && only, exact, word });
+  out.kind = kind;
+  out.counting = !!(kind && wait && !out.hits.length);
+  return out;
+}
+
+// The two nodes search by kind adds to the list (ui/search.js draws them; they are built here so the
+// field on the first screen does not carry them). Their look is css/searchkinds.css.
+
+/** A group's microlabel: heard as its rows' description (aria-describedby), not as a row of its own. */
+export function groupHead(group, id) {
+  const head = document.createElement('li');
+  head.className = 'sr-search__head';
+  head.textContent = group.text;
+  head.id = id;
+  head.dataset.group = group.id;
+  head.setAttribute('role', 'presentation');
+  head.setAttribute('aria-hidden', 'true');
+  return head;
+}
+
+/** The "3D models" toggle under the results: pressed with the field keeping the focus, so a touch never blurs the list shut. */
+export function onlyToggle(onPress, onEscape) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sr-search__only';
+  b.textContent = COPY.r12Search.only;
+  b.title = COPY.r12Search.onlyTitle;
+  b.setAttribute('aria-pressed', 'false');
+  b.addEventListener('pointerdown', (event) => event.preventDefault());
+  b.addEventListener('click', onPress);
+  b.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); onEscape(); } });
+  return b;
+}
+
+/** Shown under results that hold objects, or while it is on; never in a look tool's before picture. */
+export function paintToggle(b, state) {
+  b.hidden = !kindsOn() || !(state.only || (!state.missed && state.hits.some((h) => h.record && !h.extra)));
+  b.setAttribute('aria-pressed', state.only ? 'true' : 'false');
 }
 
 if (typeof document !== 'undefined') loadCss('searchkinds');

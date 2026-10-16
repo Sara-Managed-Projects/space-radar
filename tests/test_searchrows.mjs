@@ -249,7 +249,7 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
     const { out } = ask('moons of saturn');
     const ids = out.hits.map((h) => h.record.id);
     check(ids.length === 3 && ids.includes('titan') && ids.includes('mimas') && ids.includes('enceladus') && !ids.includes('io') && !ids.includes('moon'), `the moons of Saturn and nobody else's (${ids.join(', ')})`);
-    check(out.hits.some((h) => /of Saturn · \d/.test(h.group.text)), `the microlabel says whose moons (${out.hits.map((h) => h.group.text).join(' / ')})`);
+    check(out.hits.some((h) => /^Saturn’s icy moons · \d/.test(h.group.text)), `the microlabel says whose moons (${out.hits.map((h) => h.group.text).join(' / ')})`);
   }
   // "moon": the Moon by name first, then the moons by kind; the first row is what Enter flies to.
   {
@@ -311,7 +311,26 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   check(R.kindsOn() === true, 'search by kind is on wherever there is no look tool');
   const srcS = readFileSync(join(ROOT, 'site/js/ui/search.js'), 'utf8');
   check(!/COPY\.r12Search/.test(srcS) && /KIND_COPY/.test(srcS), 'the boot module reads the kind words through the search rows, never from the later copy');
-  check(/aria-describedby/.test(srcS) && /aria-hidden', 'true'/.test(srcS) && /aria-pressed/.test(srcS), 'a group microlabel describes its rows and is not itself an option; the toggle says it is pressed');
+  if (typeof globalThis.document === 'undefined') {
+    // The two nodes, on a document that has just enough of one.
+    const node = () => ({ attrs: {}, dataset: {}, listeners: {}, setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return this.attrs[k]; }, addEventListener(k, f) { this.listeners[k] = f; } });
+    globalThis.document = { createElement: (tag) => ({ ...node(), tag }) };
+    const head = R.groupHead({ id: 'GALAXY_SPIRAL', text: 'Spiral galaxies · 42' }, 'opt-g0');
+    check(head.attrs.role === 'presentation' && head.attrs['aria-hidden'] === 'true' && head.textContent === 'Spiral galaxies · 42', 'a group microlabel is not itself an option, and is hidden from a reader (its rows name it)');
+    let pressed = 0;
+    const b = R.onlyToggle(() => { pressed += 1; }, () => {});
+    check(b.tag === 'button' && b.type === 'button' && b.textContent === COPY.r12Search.only && b.title === COPY.r12Search.onlyTitle && b.attrs['aria-pressed'] === 'false', 'the toggle is a real button with its words, a tooltip and aria-pressed');
+    let prevented = false;
+    b.listeners.pointerdown({ preventDefault: () => { prevented = true; } });
+    b.listeners.click();
+    check(prevented && pressed === 1, 'a press keeps the focus in the field and runs the query again');
+    R.paintToggle(b, { only: true, missed: '', hits: [] });
+    check(b.hidden === false && b.attrs['aria-pressed'] === 'true', 'on, it stays shown and says it is pressed, even over no rows');
+    R.paintToggle(b, { only: false, missed: 'x', hits: [{ record: {} }] });
+    check(b.hidden === true, 'off, it is not offered beside a miss');
+    delete globalThis.document;
+  }
+  check(/aria-describedby/.test(srcS) && /groupHead/.test(srcS) && /paintToggle/.test(srcS), 'the field draws the microlabels as its rows\' description and paints the toggle from the search rows');
 }
 
 if (problems.length) { console.error('searchrows FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
