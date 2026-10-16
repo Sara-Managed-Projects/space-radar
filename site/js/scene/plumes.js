@@ -28,7 +28,7 @@
 // against black space and barely over the lit disc, as in the images that found them. Premultiplied
 // "over" (gasmat.js's policy): a grain adds the light it scatters and takes the share of what is behind
 // it that it absorbs, so Triton's dark plumes darken the ground. No pass, no target, no bloom; grains
-// are 1.5 to 9 pixels with a soft edge, their light kept the same when the size is clamped, so the
+// are 1.5 to 14 pixels with a soft edge, about six overlapping anywhere, their light kept the same when the size is clamped, so the
 // plume is a veil of fine structure at every distance, never a blob.
 //
 // MOTION. Film: the grains fly their arcs at FILM_SPEED times the clock (a demonstration multiplier,
@@ -53,6 +53,11 @@ const KINDS = ['umbrella', 'fountain', 'jets', 'column', 'hotspot'];
 const WRAP_S = 20000; // the motion's clock is wrapped here so a float32 keeps it to the millisecond
 const SHIMMER = 2400; // clock rate x FILM_SPEED past which the arcs would alias into a shimmer: held still
 const SPRITE_MEAN = 0.25; // the soft sprite's mean cover of its square
+// A grain's sprite is this many times the spacing of the grains, so that about six overlap anywhere in a
+// plume and their sum is a veil, each grain faint: the first look (2026-10-16, 1.2 times) drew a spray
+// of separate white dots.
+const OVERLAP = 2.5;
+const GRAIN_MAX = 0.6; // no one grain covers more than this of what is behind it
 
 /** A place on a moon (east longitude, latitude, degrees) as a unit vector in its mesh's axes (worlds.js faceVector). Pure. */
 export function placeVector(lonDeg, latDeg) {
@@ -146,12 +151,12 @@ export function particlesFor(worldId, rows = PLUMES, hot = HOTSPOTS, worlds = PL
       const n = placeVector(p.lon, p.lat);
       const far = ballisticOf(p.heightKm, z1, z0, g).rangeKm;
       const area = 2 * far * p.heightKm * 0.6;
-      const size = 1.2 * Math.sqrt(area / p.particles);
+      const size = OVERLAP * Math.sqrt(area / p.particles);
       const weight = (tau * area) / (p.particles * size * size * SPRITE_MEAN);
       topKm = Math.max(topKm, p.heightKm);
       for (let i = 0; i < p.particles; i++) {
         // A canopy of filaments: each grain on one of `rays` azimuths, a little off it; a fountain all round.
-        const az = p.rays > 0 ? ((Math.floor(r() * p.rays) + 0.5 + (r() - 0.5) * 0.35) / p.rays) * 2 * Math.PI : r() * 2 * Math.PI;
+        const az = p.rays > 0 ? ((Math.floor(r() * p.rays) + 0.5 + (r() - 0.5) * 0.6) / p.rays) * 2 * Math.PI : r() * 2 * Math.PI;
         // Uniform in cos(zenith) between the two: the canopy's grains fill its width evenly.
         const zc = Math.cos(z1 * D2R) + (Math.cos(z0 * D2R) - Math.cos(z1 * D2R)) * r();
         const zen = Math.acos(zc);
@@ -162,7 +167,7 @@ export function particlesFor(worldId, rows = PLUMES, hot = HOTSPOTS, worlds = PL
       const [z0, z1] = p.zenithDeg;
       const area = 220 * 2 * p.scaleKm;
       const total = p.stripes.reduce((s, x) => s + x.jets, 0) * p.particles;
-      const size = 1.2 * Math.sqrt(area / total);
+      const size = OVERLAP * Math.sqrt(area / total);
       const weight = (tau * area) / (total * size * size * SPRITE_MEAN);
       topKm = Math.max(topKm, p.heightKm);
       for (const s of p.stripes) {
@@ -191,7 +196,7 @@ export function particlesFor(worldId, rows = PLUMES, hot = HOTSPOTS, worlds = PL
       const n = placeVector(p.lon, p.lat);
       const west = westOf(p.lon);
       const area = p.tailKm * p.heightKm * 1.2;
-      const size = 1.2 * Math.sqrt(area / p.particles);
+      const size = OVERLAP * Math.sqrt(area / p.particles);
       const weight = (tau * area) / (p.particles * size * size * SPRITE_MEAN);
       topKm = Math.max(topKm, p.heightKm + 2);
       for (let i = 0; i < p.particles; i++) {
@@ -350,9 +355,9 @@ void main() {
   if ( kind == 4 ) {
     // A hot spot: only where it is night, a fixed small point, its rank its brightness.
     float night = smoothstep( 0.03, -0.12, dot( n, sunL ) );
-    gl_PointSize = 2.0 + 1.5 * aMotion.w;
+    gl_PointSize = 3.5 + 2.5 * aMotion.w;
     vLight = uColour[4] * night;
-    vTau = aMotion.w * 0.9;
+    vTau = aMotion.w * 1.6;
     vAbsorb = 0.0;
     return;
   }
@@ -364,7 +369,7 @@ void main() {
   // The grain's size on the screen; its light is kept when the size is clamped.
   float unitScale = length( modelMatrix[0].xyz );
   float px = aShape.y / uRadiusKm * unitScale * projectionMatrix[1][1] * 0.5 * uViewportH / max( -mv.z, 1e-6 );
-  float pxC = clamp( px, 1.5, 9.0 );
+  float pxC = clamp( px, 1.5, 14.0 );
   gl_PointSize = pxC;
   vTau = aMotion.w * uDensity * fade * ( px * px ) / ( pxC * pxC );
   vLight = uColour[li] * phase * lit;
@@ -373,6 +378,7 @@ void main() {
 `;
 
 const FRAG = /* glsl */`
+#define GRAIN_MAX ${GRAIN_MAX.toFixed(2)}
 #include <common>
 #include <logdepthbuf_pars_fragment>
 varying vec3 vLight;
@@ -383,7 +389,7 @@ void main() {
   vec2 q = gl_PointCoord - 0.5;
   float r2 = dot( q, q ) * 4.0;
   if ( r2 > 1.0 ) discard;
-  float a = min( vTau * exp( -3.0 * r2 ), 1.0 );
+  float a = min( vTau * exp( -3.0 * r2 ), GRAIN_MAX );
   gl_FragColor = vec4( vLight * a, a * vAbsorb );
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
