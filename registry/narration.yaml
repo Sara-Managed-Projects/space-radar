@@ -457,7 +457,7 @@ clips:
   - {trip: "across-the-local-group", stop: "andromeda", hash: "62a337ff6a56baf9", seconds: 21.4, words: 60, lufs: -16.5, opus: 84598, m4a: 110464, vtt: 449, wer: 0.0, heard: "945e4d97dcfee5fe", voice: 0}
   - {trip: "across-the-local-group", stop: "triangulum", hash: "df8091f53b626c6a", seconds: 19.25, words: 48, lufs: -16.4, opus: 75995, m4a: 99598, vtt: 384, wer: 0.0, heard: "d6d40477f344b55b", voice: 0}
   - {trip: "across-the-local-group", stop: "neighbours", hash: "a79cff3d68cc0c29", seconds: 17.4, words: 43, lufs: -16.3, opus: 68770, m4a: 90035, vtt: 387, wer: 0.0, heard: "8a1f2b9f24e9e3ea", voice: 0}
-  - {trip: "out-to-the-edge", stop: "home", hash: "3557c1f36842decb", seconds: 14.12, words: 38, lufs: -16.5, opus: 55853, m4a: 73300, vtt: 289, wer: 0.0, heard: "6d09132a3ffcaf17", voice: 0}
+  - {trip: "out-to-the-edge", stop: "home", hash: "579c289d7b2c1895", seconds: 14.34, words: 37, lufs: -16.4, opus: 57364, m4a: 74604, vtt: 277, wer: 0.0, heard: "485107e5533294cb", voice: 0}
   - {trip: "out-to-the-edge", stop: "local-group", hash: "127019a589568113", seconds: 15.73, words: 45, lufs: -16.5, opus: 62448, m4a: 81559, vtt: 328, wer: 0.0, heard: "2278a4b533c08002", voice: 0}
   - {trip: "out-to-the-edge", stop: "local-volume", hash: "6941e8fb15fb22f5", seconds: 15.55, words: 38, lufs: -16.3, opus: 61648, m4a: 80690, vtt: 347, wer: 0.0, heard: "2475ee29c93350a3", voice: 0}
   - {trip: "out-to-the-edge", stop: "ton-618", hash: "83419dd61b7ab270", seconds: 22.6, words: 61, lufs: -16.4, opus: 90264, m4a: 116550, vtt: 384, wer: 0.0, heard: "f7cb89675bedbbfe", voice: 0}
