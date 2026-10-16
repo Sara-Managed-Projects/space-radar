@@ -49,7 +49,7 @@ export const PLUMES = [
       12.0,
       38.0
     ],
-    "rays": 26
+    "rays": 40
   },
   {
     "id": "tvashtar",
@@ -69,7 +69,7 @@ export const PLUMES = [
       12.0,
       38.0
     ],
-    "rays": 22
+    "rays": 36
   },
   {
     "id": "prometheus",
@@ -291,7 +291,7 @@ export const PLUME_LOOK = {
     ],
     "absorb": 0.04,
     "g": 0.55,
-    "tau": 0.14
+    "tau": 0.1
   },
   "fountain": {
     "colour": [

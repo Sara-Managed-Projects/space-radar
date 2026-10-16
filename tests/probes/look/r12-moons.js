@@ -34,6 +34,7 @@ const PLACES = {
   mahilani: { world: 'triton', lat: -49, lon: 2 },
 };
 const RADIUS_KM = { io: 1821.5, enceladus: 252.1, triton: 1352.6 };
+// (Distances below are from the moon's centre when the view looks at the centre.)
 
 try { if (sr.wantPerf && !sr.perf) await sr.wantPerf(); } catch (e) { look.warns.push('probe: sr.wantPerf: ' + e); }
 sr.clock.goTo(AT);
@@ -134,68 +135,86 @@ const arrive = async (id) => {
   return true;
 };
 
+// THE VIEWS AIM AT THE MOON'S CENTRE. The first after-run (2026-10-16) aimed at a point over the vent
+// from 0.2 to 0.8 radii away, and the moon's near side was not drawn: whenever its centre was off the
+// screen the globe was missing round the target (main's own run shows the same: the before of io-2 is
+// black). So every view looks at the centre, and a plume is put on the limb by the camera's side:
+// across the vent's vertical, turned so the vent is at the TOP or BOTTOM of the picture (the camera's
+// own up), which keeps it on a 390 px phone too, and as far toward or away from the Sun as 30 degrees
+// of turn allow; far enough out that the plume's top is inside 16 degrees of the middle (a phone's sheet and time bar sit below).
+const limbView = (id, n, heightKm, wantBack) => {
+  const s = sunward(id);
+  const up = sr.camera && sr.camera.up ? unit(sr.camera.up) : { x: 0, y: 1, z: 0 };
+  const R = RADIUS_KM[id];
+  const d = (R + heightKm) / Math.sin(16 * D2R);
+  let best = null;
+  for (const sign of [1, -1]) {
+    const d0 = scale(across(up, n, anyAcross(n)), sign);
+    const side = unit(cross(n, d0));
+    for (const deg of [-30, -15, 0, 15, 30]) {
+      const b = deg * D2R;
+      const D = add(scale(d0, Math.cos(b)), side, Math.sin(b));
+      const score = (wantBack ? -1 : 1) * dot(D, s);
+      if (!best || score > best.score) best = { D, score };
+    }
+  }
+  // Leaned toward the vent so it stands just in front of the limb seen from there.
+  return { dir: add(best.D, n, (R / d) * 1.05), distKm: d };
+};
+
 // ---- Io --------------------------------------------------------------------------------------------
 try {
   if (await arrive('io')) {
-    const s = sunward('io');
+    const C = centre('io');
     const pele = placeDir('io', PLACES.pele.lat, PLACES.pele.lon);
-    // Pele on the limb from the sunward side: the camera across Pele's vertical, toward the Sun's side, a
-    // little above the horizon plane; the target half-way up the 300 km plume.
-    const pT = over('io', pele, 150);
-    const pDir = add(across(s, pele, anyAcross(pele)), pele, 0.12);
-    await aim('io', pT, pDir, 1500);
-    await pair('io-2-pele-limb', 'Pele (Voyager 1, March 1979, about 300 km) on the limb, from the sunward side', 'io', 'film', pT);
-    await scene('io-3-pele-limb-measured', 'the same place under Measured: the plume as observed, still', 'io', 'measured', pT);
-    // Tvashtar from the night side, the Sun behind Io, as New Horizons saw it on 1 March 2007.
+    const pv = limbView('io', pele, 300, false);
+    await aim('io', C, pv.dir, pv.distKm);
+    await pair('io-2-pele-limb', 'Pele (Voyager 1, March 1979, about 300 km) on the limb, from the Sun\'s side', 'io', 'film', C);
+    await scene('io-3-pele-limb-measured', 'the same place under Measured: the plume as observed, still', 'io', 'measured', C);
+    // Tvashtar on the limb with the Sun beyond Io, as New Horizons saw it in 2007.
     const tv = placeDir('io', PLACES.tvashtar.lat, PLACES.tvashtar.lon);
-    const tT = over('io', tv, 165);
-    const tDir = add(neg(across(s, tv, anyAcross(tv))), tv, 0.12);
-    await aim('io', tT, tDir, 1700);
-    await pair('io-4-tvashtar-backlit', 'Tvashtar (New Horizons, 2007, about 330 km) on the limb from the night side', 'io', 'film', tT);
-    // The night side square on, centred between the Sun's antipode and Loki: the hot spots.
+    const tvv = limbView('io', tv, 330, true);
+    await aim('io', C, tvv.dir, tvv.distKm);
+    await pair('io-4-tvashtar-backlit', 'Tvashtar (New Horizons, 2007, about 330 km) on the limb, the Sun beyond Io', 'io', 'film', C);
+    // The night side square on, between the Sun's antipode and Loki: the hot spots.
     const loki = placeDir('io', PLACES.loki.lat, PLACES.loki.lon);
-    const nDir = unit(add(neg(s), loki, 0.6));
-    await aim('io', centre('io'), nDir, RADIUS_KM.io * 3.2);
-    await pair('io-5-night-hot-spots', 'Io\'s night side: the hot spots (Loki Patera, Pele, Pillan, Tvashtar, Prometheus where on the night side)', 'io', 'film', centre('io'));
+    await aim('io', C, unit(add(neg(sunward('io')), loki, 0.6)), RADIUS_KM.io * 3.2);
+    await pair('io-5-night-hot-spots', 'Io\'s night side: the hot spots where they face the camera, and plumes lit over the limb', 'io', 'film', C);
   }
 } catch (err) { look.errors.push('probe: Io: ' + (err && err.stack || err)); }
 
 // ---- Enceladus -------------------------------------------------------------------------------------
 try {
   if (await arrive('enceladus')) {
-    const s = sunward('enceladus');
+    const C = centre('enceladus');
     const south = neg(north('enceladus'));
-    const T = over('enceladus', south, 200);
-    const lit = across(s, south, anyAcross(south));
-    await aim('enceladus', T, add(lit, south, 0.05), RADIUS_KM.enceladus * 5);
-    await pair('enc-2-south-limb', 'the south pole on the limb from the sunward side: the jets of the tiger stripes (Cassini, 2005)', 'enceladus', 'film', T);
-    // From behind: the camera across the pole on the far side from the Sun, turned 25 degrees off the
-    // Sun's line so the Sun is not straight behind the moon's centre. Phase about 155 degrees.
-    const q = unit(cross(south, lit));
-    const back = add(scale(neg(lit), Math.cos(25 * D2R)), q, Math.sin(25 * D2R));
-    await aim('enceladus', T, back, RADIUS_KM.enceladus * 5);
-    await pair('enc-3-backlit', 'the south pole on the limb from behind, the Sun beyond the moon: Cassini\'s view of November 2005', 'enceladus', 'film', T);
-    await scene('enc-4-backlit-measured', 'the same place under Measured: the jets as observed, still', 'enceladus', 'measured', T);
+    const lv = limbView('enceladus', south, 505, false);
+    await aim('enceladus', C, lv.dir, lv.distKm);
+    await pair('enc-2-south-limb', 'the south pole on the limb from the Sun\'s side: the jets of the tiger stripes (Cassini, 2005)', 'enceladus', 'film', C);
+    const bv = limbView('enceladus', south, 505, true);
+    await aim('enceladus', C, bv.dir, bv.distKm);
+    await pair('enc-3-backlit', 'the south pole on the limb with the Sun beyond the moon: Cassini\'s view of November 2005', 'enceladus', 'film', C);
+    await scene('enc-4-backlit-measured', 'the same place under Measured: the jets as observed, still', 'enceladus', 'measured', C);
   }
 } catch (err) { look.errors.push('probe: Enceladus: ' + (err && err.stack || err)); }
 
 // ---- Triton ----------------------------------------------------------------------------------------
+// An 8 km column is two pixels at a whole-disc distance, so Triton is seen from above the geysers, as
+// Voyager 2 found them: the camera over Hili, leaning a quarter toward the Sun's side, looking at the
+// centre (the globe is drawn whole that way); the cloud is a streak on the ground carried west.
 try {
   if (await arrive('triton')) {
+    const C = centre('triton');
     const s = sunward('triton');
     const hili = placeDir('triton', PLACES.hili.lat, PLACES.hili.lon);
-    const T = over('triton', hili, 5);
-    // From the side, the camera on the Sun's side of the column and a little above: the 8 km column and
-    // its cloud carried west (Soderblom et al. 1990) across the picture.
-    const side = add(across(s, hili, anyAcross(hili)), hili, 0.18);
-    await aim('triton', T, side, 260);
-    await pair('tri-2-hili-side', 'Hili (Voyager 2, August 1989): the 8 km column and its cloud blown west, from the side', 'triton', 'film', T);
-    await scene('tri-3-hili-side-measured', 'the same place under Measured: still', 'triton', 'measured', T);
+    const over1 = unit(add(hili, across(s, hili, anyAcross(hili)), 0.25));
+    await aim('triton', C, over1, RADIUS_KM.triton + 320);
+    await pair('tri-2-hili-above', 'Hili (Voyager 2, August 1989) from 320 km: the 8 km column and its cloud carried west', 'triton', 'film', C);
+    await scene('tri-3-hili-above-measured', 'the same place under Measured: still', 'triton', 'measured', C);
     const mah = placeDir('triton', PLACES.mahilani.lat, PLACES.mahilani.lon);
     const mid = unit(add(hili, mah));
-    const M = over('triton', mid, 0);
-    await aim('triton', M, add(mid, across(s, mid, anyAcross(mid)), 0.7), 700);
-    await pair('tri-4-geysers-above', 'Hili and Mahilani from 700 km, obliquely from the Sun\'s side', 'triton', 'film', M);
+    await aim('triton', C, unit(add(mid, across(s, mid, anyAcross(mid)), 0.35)), RADIUS_KM.triton + 900);
+    await pair('tri-4-geysers-above', 'Hili and Mahilani from 900 km, leaning toward the Sun\'s side', 'triton', 'film', C);
   }
 } catch (err) { look.errors.push('probe: Triton: ' + (err && err.stack || err)); }
 

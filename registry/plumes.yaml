@@ -72,7 +72,7 @@ plumes:
     source: {url: "https://en.wikipedia.org/wiki/Pele_(volcano)", read: 2026-10-16, says: "A large, 300-kilometer (190 mi) tall volcanic plume has been observed at Pele by various spacecraft starting with Voyager 1 in 1979 (Strom et al. 1979, Nature)"}
     place: {url: "https://en.wikipedia.org/wiki/Pele_(volcano)", read: 2026-10-16, says: "18.7 S 255.3 W (Gazetteer of Planetary Nomenclature)"}
     zenith_deg: [12, 38]
-    rays: 26
+    rays: 40
     particles: 5200
   - id: tvashtar
     world: io
@@ -85,7 +85,7 @@ plumes:
     source: {url: "https://pds-rings.seti.org/press_releases/pages/PIA09xxx/PIA09359.html", read: 2026-10-16, says: "The plume is roughly 330 kilometers (200 miles) high."}
     place: {url: "https://planetarynames.wr.usgs.gov/Feature/6159", read: 2026-10-16, says: "Tvashtar (Catena, now Paterae): centre latitude 62.76, centre longitude 123.53, planetographic, +West"}
     zenith_deg: [12, 38]
-    rays: 22
+    rays: 36
     particles: 5200
   - id: prometheus
     world: io
@@ -173,7 +173,7 @@ hotspots:
 look:
   # Io's small plumes look bluish-white in Voyager's and Galileo's violet and green (fine grains); Pele's
   # is mostly gas and faint. Not purple, not uniform: the colour is the same pale grey-blue for every vent.
-  umbrella: {colour: [0.80, 0.84, 0.92], absorb: 0.04, g: 0.55, tau: 0.14}
+  umbrella: {colour: [0.80, 0.84, 0.92], absorb: 0.04, g: 0.55, tau: 0.10}
   fountain: {colour: [0.84, 0.88, 0.96], absorb: 0.05, g: 0.55, tau: 0.16}
   # Water-ice grains a few microns across: strongly forward-scattering (Cassini saw the jets best from behind).
   jets: {colour: [0.92, 0.95, 1.00], absorb: 0.02, g: 0.75, tau: 0.06}
