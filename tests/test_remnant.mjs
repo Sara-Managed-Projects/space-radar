@@ -144,6 +144,34 @@ ourLine(gv, 'the Veil');
   check(deep.mode === 'deep' && deep.enhanced === true && cam.mode === 'camera', 'the exposure\'s stretch: Deep is enhanced and the profile says so');
 }
 
+// --- 6b. in a scene: placed on the sky frame, the camera on our line at +z ------------------------------------------------
+{
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const { parseDso } = await import(join(JS, 'data/parsers.js'));
+  stage.setWorld('stellar');
+  const records = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')));
+  const rec = records.find((r) => r.id === 'dso-m1');
+  const hero = R.createHero(THREE, { profile: CRAB, record: rec });
+  const scene = new THREE.Scene();
+  scene.add(hero.group);
+  const centre = new THREE.Vector3();
+  stage.toSceneInto(rec.pos, 'sun-inertial', centre, stage.tMs);
+  const s = 9460730472580.8 / stage.unitKm;
+  hero.group.matrixAutoUpdate = false;
+  hero.group.matrix.makeScale(s, s, s).setPosition(centre);
+  const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e9);
+  camera.position.copy(centre).addScaledVector(centre.clone().negate().normalize(), 30 * s);
+  camera.lookAt(centre); camera.updateMatrixWorld();
+  hero.setLevel(2, 1);
+  hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
+  const u = hero.group.getObjectByName('deep-hero-crab-shells').material.uniforms;
+  check(u.uCam.value.z > 29.9 && Math.hypot(u.uCam.value.x, u.uCam.value.y) < 0.01, `on our line the camera is on the sky frame's +z, 30 ly out (${u.uCam.value.toArray().map((v) => v.toFixed(3))})`);
+  check(u.uShare.value === 0 && hero.stats().samples === 4, 'nothing is drawn until its light has landed; 4 samples at level 2');
+  hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
+  check(hero.stats().samples === 2 && hero.stats().path === 'cheap', 'T0: 2 samples a stretch');
+  hero.dispose();
+}
+
 // --- 7. the shader mirrors columnJs; no pass; the budgets ------------------------------------------------------------
 {
   const f = R.SHADERS.frag;

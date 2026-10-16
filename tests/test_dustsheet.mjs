@@ -120,6 +120,41 @@ const tauFlat = (tf, tb = 0) => () => [tf, tb];
   iris.dispose();
 }
 
+// --- 4b. in a scene: placed on the sky frame, the camera on our line at +z, the kept stars from the Sun's side -----------
+{
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const { parseDso } = await import(join(JS, 'data/parsers.js'));
+  stage.setWorld('stellar');
+  const records = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')));
+  const rec = records.find((r) => r.id === 'dso-coalsack');
+  const hero = D.createHero(THREE, { profile: P.coalsack, record: rec, fetchJson: () => Promise.resolve(STARS) });
+  await new Promise((r) => setTimeout(r, 20));
+  const scene = new THREE.Scene();
+  scene.add(hero.group);
+  const centre = new THREE.Vector3();
+  stage.toSceneInto(rec.pos, 'sun-inertial', centre, stage.tMs);
+  const s = 9460730472580.8 / stage.unitKm;
+  hero.group.matrixAutoUpdate = false;
+  hero.group.matrix.makeScale(s, s, s).setPosition(centre);
+  const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e9);
+  camera.position.copy(centre).addScaledVector(centre.clone().negate().normalize(), 200 * s);
+  camera.lookAt(centre); camera.updateMatrixWorld();
+  hero.setLevel(2, 1);
+  hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
+  const ab = hero.group.getObjectByName('deep-hero-coalsack-dust-shells');
+  const u = ab.material.uniforms;
+  check(u.uCam.value.z > 199.9 && Math.hypot(u.uCam.value.x, u.uCam.value.y) < 0.01, `on our line the camera is on the sky frame's +z, 200 ly out (${u.uCam.value.toArray().map((v) => v.toFixed(3))})`);
+  check(u.uShare.value === 0, 'no dust is drawn until its map has landed (in node it never does)');
+  check(hero.stats().list === 'ready' && hero.ready(), `the star list landed and the hero is ready (${JSON.stringify(hero.stats())})`);
+  hero.setLevel(3, 1);
+  hero.frame({ camera, rPx: 400, steps: 48, look: 'measured', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
+  check(hero.stats().path === 'march' && hero.stats().samples === 16, 'T2 at level 3: 16 samples a layer');
+  hero.frame({ camera, rPx: 400, steps: 48, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
+  check(hero.stats().path === 'closed' && u.uN.value === 0, 'T0: the closed form');
+  hero.dispose();
+  check(!hero.group.parent, 'disposed, it leaves the scene');
+}
+
 // --- 5. from our line the light through the dust is the picture; the light only where the picture has it ----------------
 {
   const g = D.sheetOf(P.horsehead);

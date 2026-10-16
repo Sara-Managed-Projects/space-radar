@@ -48,7 +48,6 @@ export const UNDER_MEASURED = { dust: 'same', light: 'same', motion: 'still' };
 
 const MAX_N = 16;          // samples a layer at most (level 3)
 const MAX_KEEP = 48;       // catalogue stars kept clear of the dust at once
-const KEEP_FADE_MS = 300;
 const STARS_URL = '../../../images/deep/sheets/stars.json';
 // ONE table: the GLSL below is written from it.
 export const SHAPE = {
@@ -652,7 +651,7 @@ export function createHero(THREE, env = {}) {
   const twinId = (sid) => `${id}:${sid}`;
   const holesOff = () => { for (const s of g.stars) setExtraHole(twinId(s.id), null); };
 
-  let level = 0, levelShare = 0, samples = 8, tierNow = 1, slowMs = 0, cheap = false, palette = { ...pal0, gainIn: 1 }, last = { gas: 0, light: 1, photo: 0 }, kept = 0, keepK = 0, keepT = 0;
+  let level = 0, levelShare = 0, samples = 8, tierNow = 1, slowMs = 0, cheap = false, palette = { ...pal0, gainIn: 1 }, last = { gas: 0, light: 1, photo: 0 }, kept = 0;
   const _inv = new THREE.Matrix4(), _id = new THREE.Matrix4(), _cam = new THREE.Vector3(), _tw = new THREE.Vector3();
   return {
     group,
@@ -704,11 +703,8 @@ export function createHero(THREE, env = {}) {
       camU.value.copy(cam);
       const P = info.camera.projectionMatrix.elements;
       const pixAng = 2 / Math.max(1, P[5] * vh);
-      // the catalogue's stars in front of the dust from here: their discs kept clear (faded in over KEEP_FADE_MS)
+      // the catalogue's stars in front of the dust from here: their discs kept clear
       const act = listState === 'ready' && absorb.visible ? keepActive(g, keepList, [cam.x, cam.y, cam.z]) : [];
-      const now = Number(info.nowMs) || 0;
-      keepK = act.length ? Math.min(1, keepK + (now - keepT) / KEEP_FADE_MS) : 0;
-      keepT = now;
       const ku = absorbMat.uniforms.uKeep.value;
       act.forEach((s, i) => ku[i].set(s.pos[0], s.pos[1], s.pos[2], s.radiusPx * pixAng));
       absorbMat.uniforms.uKeepN.value = act.length;
@@ -729,7 +725,7 @@ export function createHero(THREE, env = {}) {
     ready: () => lightState !== 'loading' && dustState !== 'loading' && listState !== 'loading',
     stats: () => ({
       level, share: Math.round(last.gas * 100) / 100, photo: Math.round(last.photo * 100) / 100, light: lightState, dust: dustState, list: listState,
-      path: cheap ? 'closed' : 'march', samples, tier: tierNow, palette: palette.mode, kept, keepFade: Math.round(keepK * 100) / 100,
+      path: cheap ? 'closed' : 'march', samples, tier: tierNow, palette: palette.mode, kept,
       meshes: 1 + (lightMesh ? 1 : 0) + (starPts ? 1 : 0), textures: (lightTex ? 1 : 0) + (dustTex ? 1 : 0),
       bytes: geo.getAttribute('position').array.byteLength + (lightTex ? Math.round(512 * 512 * 4 * 4 / 3) : 0) + (dustTex ? Math.round(512 * 512 * 4 * 4 / 3) : 0),
       camLy: [Math.round(_cam.x * 100) / 100, Math.round(_cam.y * 100) / 100, Math.round(_cam.z * 100) / 100],
