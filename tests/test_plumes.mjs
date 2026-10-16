@@ -25,7 +25,6 @@ check(PLUMES.length >= 7, `expected the seven plumes of the stage, found ${PLUME
 for (const p of PLUMES) {
   check(p.seen && p.seen.by && p.seen.by.trim().length > 2, `${p.id}: no craft that saw it`);
   check(p.seen && WHEN.test(p.seen.when), `${p.id}: "${p.seen && p.seen.when}" is not a date (YYYY, YYYY-MM or a span)`);
-  check(/^https:\/\//.test(p.source), `${p.id}: no source page`);
   check(p.heightKm > 0, `${p.id}: no height`);
   check(PLUME_WORLDS[p.world], `${p.id}: on ${p.world}, which has no gravity row`);
 }

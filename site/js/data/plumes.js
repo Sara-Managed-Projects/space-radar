@@ -41,7 +41,6 @@ export const PLUMES = [
       "by": "Voyager 1",
       "when": "1979-03"
     },
-    "source": "https://en.wikipedia.org/wiki/Pele_(volcano)",
     "particles": 5200,
     "lat": -18.7,
     "lon": 104.7,
@@ -61,7 +60,6 @@ export const PLUMES = [
       "by": "New Horizons",
       "when": "2007-03"
     },
-    "source": "https://pds-rings.seti.org/press_releases/pages/PIA09xxx/PIA09359.html",
     "particles": 5200,
     "lat": 62.76,
     "lon": -123.53,
@@ -81,7 +79,6 @@ export const PLUMES = [
       "by": "Voyager 1 and Galileo",
       "when": "1979-03..1997-06"
     },
-    "source": "https://www.jpl.nasa.gov/images/pia00703-active-volcanic-plumes-on-io/",
     "particles": 2600,
     "lat": -1.52,
     "lon": -153.94,
@@ -101,7 +98,6 @@ export const PLUMES = [
       "by": "Galileo",
       "when": "1997-06"
     },
-    "source": "https://www.jpl.nasa.gov/images/pia00703-active-volcanic-plumes-on-io/",
     "particles": 2600,
     "lat": -12.34,
     "lon": 116.75,
@@ -121,7 +117,6 @@ export const PLUMES = [
       "by": "Cassini",
       "when": "2005-11"
     },
-    "source": "https://pds-rings.seti.org/press_releases/pages/PIA07xxx/PIA07762.html",
     "particles": 120,
     "stripes": [
       {
@@ -189,7 +184,6 @@ export const PLUMES = [
       "by": "Voyager 2",
       "when": "1989-08"
     },
-    "source": "https://www.usgs.gov/publications/tritons-geyser-plumes-discovery-and-basic-characterization",
     "particles": 2400,
     "lat": -57.0,
     "lon": 28.0,
@@ -207,7 +201,6 @@ export const PLUMES = [
       "by": "Voyager 2",
       "when": "1989-08"
     },
-    "source": "https://www.usgs.gov/publications/tritons-geyser-plumes-discovery-and-basic-characterization",
     "particles": 2400,
     "lat": -49.0,
     "lon": 2.0,
