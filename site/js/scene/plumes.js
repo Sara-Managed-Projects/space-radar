@@ -28,8 +28,9 @@
 // against black space and barely over the lit disc, as in the images that found them. Premultiplied
 // "over" (gasmat.js's policy): a grain adds the light it scatters and takes the share of what is behind
 // it that it absorbs, so Triton's dark plumes darken the ground. No pass, no target, no bloom; grains
-// are 1.5 to 14 pixels with a soft edge, about six overlapping anywhere, their light kept the same when the size is clamped, so the
-// plume is a veil of fine structure at every distance, never a blob.
+// are 1.5 to 14 pixels in a 900-pixel-high frame (more in a taller drawing buffer, so a phone's are the same
+// size to the eye) with a soft edge, some sixteen overlapping anywhere, their light kept the same when the
+// size is clamped, so the plume is a veil of fine structure at every distance, never a blob or a speckle.
 //
 // MOTION. Film: the grains fly their arcs at FILM_SPEED times the clock (a demonstration multiplier,
 // said on the card); a paused clock is still; the same clock gives the same frame. Measured and reduced
@@ -53,11 +54,13 @@ const KINDS = ['umbrella', 'fountain', 'jets', 'column', 'hotspot'];
 const WRAP_S = 20000; // the motion's clock is wrapped here so a float32 keeps it to the millisecond
 const SHIMMER = 2400; // clock rate x FILM_SPEED past which the arcs would alias into a shimmer: held still
 const SPRITE_MEAN = 0.25; // the soft sprite's mean cover of its square
-// A grain's sprite is this many times the spacing of the grains, so that about six overlap anywhere in a
-// plume and their sum is a veil, each grain faint: the first look (2026-10-16, 1.2 times) drew a spray
-// of separate white dots.
-const OVERLAP = 2.5;
-const GRAIN_MAX = 0.6; // no one grain covers more than this of what is behind it
+// A grain's sprite is this many times the spacing of the grains, so that some sixteen (pi/4 x 4.5^2)
+// overlap anywhere in a plume and their sum is a veil, each grain faint. The first look (2026-10-16,
+// 1.2 times) drew a spray of separate white dots and the second (2.5 times) still a speckle, saturated
+// where lit from behind; this value has not been photographed yet.
+const OVERLAP = 4.5;
+const GRAIN_MAX = 0.35; // no one grain covers more than this of what is behind it
+const PHASE_CAP = 2.2; // forward scattering at most this many times its value at a right angle
 
 /** A place on a moon (east longitude, latitude, degrees) as a unit vector in its mesh's axes (worlds.js faceVector). Pure. */
 export function placeVector(lonDeg, latDeg) {
@@ -283,6 +286,7 @@ export function lineFor(worldId, look, reduced, rows = PLUMES, hot = HOTSPOTS) {
 }
 
 const VERT = /* glsl */`
+#define PHASE_CAP ${PHASE_CAP.toFixed(2)}
 #include <common>
 #include <logdepthbuf_pars_vertex>
 attribute vec3 aDir;
@@ -365,11 +369,11 @@ void main() {
   // as a ratio to its value at a right angle (capped: no grain outshines the lit ground by much).
   vec3 toCam = normalize( cameraPosition - worldPos.xyz );
   float c = -dot( normalize( uSunDir ), toCam );
-  float phase = min( hg( c, uHG[li] ) / hg( 0.0, uHG[li] ), 3.0 );
+  float phase = min( hg( c, uHG[li] ) / hg( 0.0, uHG[li] ), PHASE_CAP );
   // The grain's size on the screen; its light is kept when the size is clamped.
   float unitScale = length( modelMatrix[0].xyz );
   float px = aShape.y / uRadiusKm * unitScale * projectionMatrix[1][1] * 0.5 * uViewportH / max( -mv.z, 1e-6 );
-  float pxC = clamp( px, 1.5, 14.0 );
+  float pxC = clamp( px, 1.5, 14.0 * max( 1.0, uViewportH / 900.0 ) );
   gl_PointSize = pxC;
   vTau = aMotion.w * uDensity * fade * ( px * px ) / ( pxC * pxC );
   vLight = uColour[li] * phase * lit;
