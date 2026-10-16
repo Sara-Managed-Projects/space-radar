@@ -25,7 +25,7 @@ Each of these takes minutes, needs no install, and is named in the release notes
 - **Report a wrong number or name.** A
   [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)
   with a source is one of the most valuable things you can send.
-- **Review a trip's narration.** Astronomers and teachers: read one of the 28 trips
+- **Review a trip's narration.** Astronomers and teachers: read one of the 30 trips
   (`registry/tours.yaml`, or fly it on the site) and tell us what is wrong or unclear, in an
   [issue](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=trip-or-content.yml).
 - **Test it in a classroom or on a museum screen.** What worked, what broke, on which machine: a

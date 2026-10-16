@@ -282,7 +282,7 @@ for (const [frameMs, label] of [[333, '3 fps'], [5000, '5 s stalls']]) {
   // from a planet's own stage or a star system's there is no continuous way home. Spec 0075 stage f
   // (internal #791) adds the two deep-space journeys, which end on the stellar rung.
   const home = TOURS.filter((x) => x.return === true && !x.id.startsWith('fe-')).map((x) => x.id).sort();
-  check(home.join() === 'inside-a-neighbouring-galaxy,into-the-helix,life-of-a-star,roof-to-the-edge,the-constellations,through-a-telescope,to-the-edge', `the trips that fly home are the seven that end on the chain (${home.join()})`);
+  check(home.join() === 'across-the-local-group,inside-a-neighbouring-galaxy,into-the-helix,life-of-a-star,out-to-the-edge,roof-to-the-edge,the-constellations,through-a-telescope,to-the-edge', `the trips that fly home are the nine that end on the chain (${home.join()})`);
   for (const id of home) {
     const tour = TOURS.find((x) => x.id === id);
     const last = tour.stops[tour.stops.length - 1];

@@ -30,6 +30,7 @@ const { isLadderStage } = await import(join(JS, 'scene/stage.js'));
 const S = await import(join(JS, 'data/sample.js'));
 const { NEBULAE } = await import(join(JS, 'data/nebulae.js'));
 const { HEROES } = await import(join(JS, 'scene/deep/heroes.js'));
+const { cmbLy } = await import(join(JS, 'data/cosmology.js'));
 // Each hero's files, as keptRowFor() reads them (spec 0075 stage f).
 const heroFiles = new Map();
 for (const h of HEROES) heroFiles.set(h.record, K.deepFilesOf((await h.profile()).HERO));
@@ -39,7 +40,7 @@ const recordById = (id) => all.find((r) => r.id === id) || null;
 const env = (over = {}) => ({
   narration: NARRATION, textures: TEXTURES, audioRows: AUDIO, recordById, realModelFor,
   canPlay: (type) => (/opus/.test(type) ? 'probably' : ''), tier: 1, isLadder: isLadderStage,
-  pictures: NEBULAE, deepFiles: (id) => heroFiles.get(id) || [], ...over,
+  pictures: NEBULAE, deepFiles: (id) => heroFiles.get(id) || [], cmbFromKm: K.CMB_LOAD_RATIO * cmbLy() * 9460730472580.8, ...over,
 });
 
 // --- 1. every trip -----------------------------------------------------------------------------
@@ -100,6 +101,23 @@ check(biggest.bytes < 40e6, `${biggest.id} keeps ${(biggest.bytes / 1e6).toFixed
   check(lmc.urls.includes('images/nebulae/lmc.webp'), 'inside-a-neighbouring-galaxy does not keep the LMC\u2019s photograph');
   for (const f of heroFiles.get('dso-lmc') || []) check(lmc.urls.includes(f), `inside-a-neighbouring-galaxy does not keep its hero's ${f}`);
   check(JSON.stringify(K.deepFilesOf({ a: 'site/images/deep/x/y.webp', b: ['data/deep/z.bin', 'see (site/images/deep/x/y.webp)'], c: '../data/deep/../q.bin' })) === JSON.stringify(['images/deep/x/y.webp', 'data/deep/z.bin']), 'deepFilesOf reads every deep path once, and no climb out');
+}
+
+// --- 2c. the two journeys keep the local volume's tile and the microwave background's map (spec 0076 W2-d)
+{
+  const lv = readFileSync(join(JS, 'scene/deep/localvolume.js'), 'utf8');
+  for (const f of K.STAGE_FILES['local-group']) check(lv.includes(`data/deep/\${name}`) && lv.includes(f.replace('data/deep/', '')), `localvolume.js does not fetch ${f}`);
+  const cmb = readFileSync(join(JS, 'scene/deep/cmb.js'), 'utf8');
+  check(cmb.includes(`MAP_URL = '../../../${K.CMB_MAP}'`), `keeptrip's CMB_MAP ${K.CMB_MAP} is not cmb.js MAP_URL`);
+  const shells = readFileSync(join(JS, 'scene/shells.js'), 'utf8');
+  check(new RegExp(`CMB_LOAD_RATIO = ${K.CMB_LOAD_RATIO};`).test(shells), `keeptrip's CMB_LOAD_RATIO ${K.CMB_LOAD_RATIO} is not shells.js's`);
+  const edge = K.tripAssets(TOURS.find((x) => x.id === 'out-to-the-edge'), env());
+  check(edge.urls.includes(K.CMB_MAP), 'out-to-the-edge does not keep the microwave background\u2019s map');
+  for (const f of K.STAGE_FILES['local-group']) check(edge.urls.includes(f), `out-to-the-edge does not keep ${f}`);
+  const lg = K.tripAssets(TOURS.find((x) => x.id === 'across-the-local-group'), env());
+  check(!lg.urls.includes(K.CMB_MAP), 'across-the-local-group keeps the microwave background\u2019s map, which it never goes far enough to fetch');
+  for (const f of ['images/nebulae/m31.webp', 'images/nebulae/m33.webp', 'images/nebulae/lmc.webp', ...K.STAGE_FILES['local-group']]) check(lg.urls.includes(f), `across-the-local-group does not keep ${f}`);
+  check(!K.tripAssets(TOURS.find((x) => x.id === 'into-the-helix'), env()).urls.some((u) => u.includes('localvolume') || u === K.CMB_MAP), 'into-the-helix keeps files of rungs it never visits');
 }
 
 // --- 3. the fetching ---------------------------------------------------------------------------
