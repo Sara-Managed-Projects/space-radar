@@ -360,7 +360,7 @@ void main() {
   // as a ratio to its value at a right angle (capped: no grain outshines the lit ground by much).
   vec3 toCam = normalize( cameraPosition - worldPos.xyz );
   float c = -dot( normalize( uSunDir ), toCam );
-  float phase = min( hg( c, uHG[li] ) / hg( 0.0, uHG[li] ), 4.0 );
+  float phase = min( hg( c, uHG[li] ) / hg( 0.0, uHG[li] ), 3.0 );
   // The grain's size on the screen; its light is kept when the size is clamped.
   float unitScale = length( modelMatrix[0].xyz );
   float px = aShape.y / uRadiusKm * unitScale * projectionMatrix[1][1] * 0.5 * uViewportH / max( -mv.z, 1e-6 );

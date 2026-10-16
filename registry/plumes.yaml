@@ -173,10 +173,10 @@ hotspots:
 look:
   # Io's small plumes look bluish-white in Voyager's and Galileo's violet and green (fine grains); Pele's
   # is mostly gas and faint. Not purple, not uniform: the colour is the same pale grey-blue for every vent.
-  umbrella: {colour: [0.80, 0.84, 0.92], absorb: 0.04, g: 0.55, tau: 0.10}
+  umbrella: {colour: [0.80, 0.84, 0.92], absorb: 0.04, g: 0.55, tau: 0.14}
   fountain: {colour: [0.84, 0.88, 0.96], absorb: 0.05, g: 0.55, tau: 0.16}
   # Water-ice grains a few microns across: strongly forward-scattering (Cassini saw the jets best from behind).
-  jets: {colour: [0.92, 0.95, 1.00], absorb: 0.02, g: 0.75, tau: 0.08}
+  jets: {colour: [0.92, 0.95, 1.00], absorb: 0.02, g: 0.75, tau: 0.06}
   # Triton's plumes are DARK: they take light from what is behind them more than they give.
   column: {colour: [0.30, 0.28, 0.26], absorb: 0.55, g: 0.35, tau: 0.35}
   hotspot: {colour: [1.00, 0.42, 0.12]}

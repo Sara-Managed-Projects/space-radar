@@ -291,7 +291,7 @@ export const PLUME_LOOK = {
     ],
     "absorb": 0.04,
     "g": 0.55,
-    "tau": 0.1
+    "tau": 0.14
   },
   "fountain": {
     "colour": [
@@ -311,7 +311,7 @@ export const PLUME_LOOK = {
     ],
     "absorb": 0.02,
     "g": 0.75,
-    "tau": 0.08
+    "tau": 0.06
   },
   "column": {
     "colour": [
