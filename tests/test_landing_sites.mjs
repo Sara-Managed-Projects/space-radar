@@ -64,8 +64,12 @@ for (const row of SITES.filter((x) => x.record === false)) {
 }
 // And the mirror is the YAML: gen_sites_js.py --check proves bytes, this proves the count a
 // reader of the YAML would get, so a row the generator silently dropped would show here too.
-const yamlRows = (readFileSync(join(ROOT, 'registry/sites.yaml'), 'utf8').match(/^ {2}- (\{id: |id: )/gm) || []).length;
-check(yamlRows === SITES.length, `registry/sites.yaml has ${yamlRows} rows and the mirror ${SITES.length}`);
+const sitesYaml = readFileSync(join(ROOT, 'registry/sites.yaml'), 'utf8');
+const yamlRows = (sitesYaml.match(/^ {2}- (\{id: |id: )/gm) || []).length;
+// 0076 W2-a: a row with `app: false` is kept in the registry and left out of the mirror (Huygens), and
+// only such a row: counted here from the YAML's own words, so nothing else may go missing.
+const offApp = (sitesYaml.match(/^ {4}app: false$|^ {2}- \{id: [^\n]*\bapp: false\b/gm) || []).length;
+check(yamlRows - offApp === SITES.length, `registry/sites.yaml has ${yamlRows} rows (${offApp} with app: false) and the mirror ${SITES.length}`);
 
 // -------------------------------------------------------------------- 2. on its own world's surface
 for (const r of landings) {

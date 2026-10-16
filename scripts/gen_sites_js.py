@@ -27,7 +27,9 @@ FIELDS = ("id", "display", "class", "world", "lat", "lon", "alt_m", "diameter_m"
 
 
 def render(doc: dict) -> list:
-    rows = [pick(r, FIELDS) for r in (doc.get("sites") or []) if isinstance(r, dict)]
+    # `app: false` (0076 W2-a): a row kept in the registry (its source, the coverage table) and not
+    # shipped, because the app cannot draw it yet and this file rides the first visit (Huygens on Titan).
+    rows = [pick(r, FIELDS) for r in (doc.get("sites") or []) if isinstance(r, dict) and r.get("app") is not False]
     return [("Every registry/sites.yaml row, in file order. `record: false` rows are coordinates other rows anchor on, not records.", "SITES", rows)]
 
 

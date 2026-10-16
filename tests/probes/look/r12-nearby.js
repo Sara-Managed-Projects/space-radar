@@ -26,7 +26,7 @@ const deg = Math.PI / 180;
 const SYNODIC_S = 29.530589 * 86400;
 const AT = Date.UTC(2026, 9, 15, 12, 0, 0);
 const tilesMod = await import('/js/scene/tiles.js');
-const shadowMod = await import('/js/scene/shadow.js');
+const shadowMod = await import('/js/scene/airtint.js');
 try { if (sr.wantPerf && !sr.perf) await sr.wantPerf(); } catch (e) { look.warns.push('probe: sr.wantPerf: ' + e); }
 const measure = async () => {
   if (!sr.perf) return null;

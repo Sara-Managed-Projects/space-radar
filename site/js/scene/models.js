@@ -34,8 +34,8 @@ import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
 import { attachedOdditiesFor } from '../data/attached.js';
-// 0076 W2-a: the red of the penumbra (scene/shadow.js AIR_REDDENING), on the Earth's shadow side only.
-import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM, airReddeningOn } from './shadow.js';
+// 0076 W2-a: the red of the penumbra (scene/airtint.js AIR_REDDENING), on the Earth's shadow side only.
+import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM, airReddeningOn } from './airtint.js';
 
 // ------------------------------------------------------------------ the one toon material family
 
@@ -491,7 +491,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '      float perp = sqrt( max( dot( rel, rel ) - along * along, 0.0 ) );',
           `      float pen = max( -along * ${SUN_ANGULAR_RADIUS}, 1e-9 );`,
           '      float sunlit = smoothstep( uShadeRadius - pen, uShadeRadius + pen, perp );',
-          // 0076 W2-a: sunlight that grazed the Earth's air on its way is reddened (scene/shadow.js sunlightOn).
+          // 0076 W2-a: sunlight that grazed the Earth's air on its way is reddened (scene/airtint.js sunlightOn).
           '      if ( uAirH > 0.0 ) outgoingLight *= srAirTint( ( perp - uShadeRadius ) / uAirH );',
           '      float dR = max( length( rel ), 1e-9 );',
           '      float coverN = min( uShadeRadius / dR, 1.0 );',

@@ -51,6 +51,8 @@ for (const t of TRAVERSES) {
   check(far < 10 && nearest < 0.25, `${t.site}: the line stays within 10 km of the lander (${far.toFixed(1)}) and reaches it (${(nearest * 1000).toFixed(0)} m)`);
 }
 check(!SITES.some((s) => s.world === 'mars' && TRAVERSES.some((t) => t.site === s.id)), 'no path on Mars: none was traced into this registry, so none is drawn');
+// Huygens is in the registry with its source, and not in the first visit until Titan can hold it (`app: false`).
+check(/\n  - id: huygens\n[\s\S]{0,400}?\n    app: false\n/.test(yaml) && !SITES.some((s) => s.id === 'huygens'), 'Huygens: a sites.yaml row with app: false, left out of data/sites.js');
 
 // --- the ribbon: on the drawn ground, both sides of every point --------------------------------------------
 {

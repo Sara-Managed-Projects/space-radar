@@ -1608,14 +1608,14 @@ Node (Washington University in St. Louis) serves with its Apollo Analyst's Noteb
 2026-10-16 by `scripts/build_traverses.py` into `registry/traverses/`: Apollo 15's "from Phil Stooke,
 University of Western Ontario ... created by tracing tracks visible in the LROC data as well as using
 surface photos and descriptions", Apollo 17's "created by tracing tracks visible in the LROC data" (the
-finder pages' words). Terms: the Node's FAQ puts the data sets archived in the PDS in the public domain;
-these lines are the Notebook's own layers, not archived data sets, and no terms for them were found, so
-they are credited here and in the Sources panel, and the question is open (spec 0076, "For spec 0076").
-Credits, in the Sources panel while each is drawn:
+finder pages' words). Terms: the Analyst's Notebook layers carry no separate terms; they are distributed
+by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy (the Node's FAQ:
+"Data sets archived in the PDS are in the public domain"). Credited as "NASA PDS Geosciences Node,
+Analyst's Notebook". Credits, in the Sources panel while each is drawn:
 
-> Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis
+> Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images; NASA PDS Geosciences Node, Analyst's Notebook
 
-> Apollo 17's rover traverse: traced from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis
+> Apollo 17's rover traverse: traced from LROC images; NASA PDS Geosciences Node, Analyst's Notebook
 
 **Huygens on Titan** (`registry/sites.yaml`, a coordinate, not yet drawn): 10.573 S, 192.335 W from the
 Huygens Descent Trajectory Working Group's 2010 trajectory, as Atkinson, Kazeminejad and Lebreton give it

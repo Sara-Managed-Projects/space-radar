@@ -6,7 +6,7 @@ export const TRAVERSES = [
  {
   "site": "apollo-15",
   "world": "moon",
-  "credit": "Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis",
+  "credit": "Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images; NASA PDS Geosciences Node, Analyst's Notebook",
   "lengthKm": 23.35,
   "paths": [
    "3.63216,26.13195 3.63234,26.13248 3.63268,26.13281",
@@ -76,7 +76,7 @@ export const TRAVERSES = [
  {
   "site": "apollo-17",
   "world": "moon",
-  "credit": "Apollo 17's rover traverse: traced from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis",
+  "credit": "Apollo 17's rover traverse: traced from LROC images; NASA PDS Geosciences Node, Analyst's Notebook",
   "lengthKm": 31.09,
   "paths": [
    "30.77729,20.19184 30.77409,20.19136 30.76701,20.18988 30.76616,20.18945 30.76266,20.18858 30.76013,20.18839 30.75731,20.18848 30.75150,20.18779 30.74978,20.18783 30.74912,20.18775 30.74835,20.18749",

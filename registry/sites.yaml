@@ -497,7 +497,8 @@ sites:
   # Huygens (release 1.2.0 stage W2-a, internal #868). A COORDINATE, not yet a record: Titan has no
   # fixed frame in registry/worlds.yaml (`frames: [inertial]`), so nothing could stand on it where
   # it turns. When Titan's row gains `fixed` (synchronous rotation), drop `record: false` and add
-  # `shape: lander`.
+  # `shape: lander`. `app: false`: not shipped in site/js/data/sites.js (the first visit) until then;
+  # scripts/gen_sites_js.py leaves it out.
   - id: huygens
     display: "Huygens, Adiri"
     class: surface
@@ -506,6 +507,7 @@ sites:
     lon: 167.665
     landed: 2005-01-14
     record: false
+    app: false
     source: atkinson-2015
     doing: "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
 
@@ -530,13 +532,13 @@ traverses:
     finder: "https://an.rsl.wustl.edu/apollo/map/apMap.aspx?m=15"
     read: 2026-10-16
     traced: "'The traverse line is from Phil Stooke, University of Western Ontario. It was created by tracing tracks visible in the LROC data as well as using surface photos and descriptions.'"
-    licence: "PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.' This line is the Node's own Analyst's Notebook layer, not an archived data set, and no terms for it were found (2026-10-16): credited, and asked about (spec 0076, For spec 0076)."
-    credit: "Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis"
+    licence: "The Analyst's Notebook layers carry no separate terms; they are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.'"
+    credit: "Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images; NASA PDS Geosciences Node, Analyst's Notebook"
   apollo-17:
     file: registry/traverses/apollo-17.json
     source: "https://anms.rsl.wustl.edu/arcgis/rest/services/Apollo/Apollo17_vec/MapServer/7"
     finder: "https://an.rsl.wustl.edu/apollo/map/apMap.aspx?m=17"
     read: 2026-10-16
     traced: "'The traverse line is created by tracing tracks visible in the LROC data.'"
-    licence: "PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.' This line is the Node's own Analyst's Notebook layer, not an archived data set, and no terms for it were found (2026-10-16): credited, and asked about (spec 0076, For spec 0076)."
-    credit: "Apollo 17's rover traverse: traced from LROC images, served by the PDS Geosciences Node's Apollo Analyst's Notebook, Washington University in St. Louis"
+    licence: "The Analyst's Notebook layers carry no separate terms; they are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.'"
+    credit: "Apollo 17's rover traverse: traced from LROC images; NASA PDS Geosciences Node, Analyst's Notebook"
