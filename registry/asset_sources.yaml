@@ -335,5 +335,23 @@ sources:
     pins:
       - {file: site/data/deep/lmc-density.bin, sha256: e18e52449d5a904912d9d60df14fdbac71edc895b3ca35a50312591642c1ad47}
   # 0076 W3-a
+  # Star clusters as stars (internal spec 0076 W3-a): two catalogues asked of VizieR's query service by
+  # scripts/build_deep_clusters.py on 2026-10-16. Its answers carry the date of the query, so the pins are the two
+  # files the script bakes from them (the members are Gaia DR3 data: the esa-gaia row's licence holds for them).
+  - id: cds-vizier-asu
+    name: CDS VizieR query service (asu-tsv), read by scripts/build_deep_clusters.py
+    match: ["https://vizier.cds.unistra.fr/viz-bin/asu-tsv"]
+    url: https://vizier.cds.unistra.fr/
+    licence: Free of usage in a scientific context, with the original authors and publication cited; the open clusters' members are Gaia DR3 data, CC BY-NC 3.0 IGO
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Two catalogues: Harris 1996, AJ 112, 1487 (VII/202), the globulars' radii and light; Hunt & Reffert 2023, A&A 673, A114 (J/A+A/673/A114), the open clusters' Gaia DR3 members. The same page: tables from A&A are free for a scientific usage. The members are measurements of ESA's Gaia (Gaia Collaboration, Vallenari et al. 2023), whose licence page says \"Gaia data are distributed under the CC BY-NC 3.0 IGO license.\" (https://www.cosmos.esa.int/web/gaia-users/license, read 2026-10-16): site/data/deep/clusters.bin keeps that non-commercial term. Space Radar is free and non-commercial."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-16
+    pins:
+      - {file: site/data/deep/clusters.bin, sha256: ec62a3321f5c6773ea0be5b0d3738f49797514adedd1576c39216c07a6f2b0de}
+      - {file: site/data/deep/clusters.json, sha256: 92b874837e1ab7a50afe479f8f69fe46bb243ed44c98408efb3165b21e6ef394}
   # 0076 W3-b
   # 0076 W3-c

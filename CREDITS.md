@@ -1594,6 +1594,34 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
 
 ### Clusters (0076 W3-a)
 
+Star clusters drawn as stars (`scene/deep/globular.js`, internal #819 and #871), from two catalogues read through
+VizieR by `scripts/build_deep_clusters.py` on 2026-10-16 into `site/data/deep/clusters.json` and
+`site/data/deep/clusters.bin`. "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg,
+France." The terms, as the VizieR licence page read that day (<https://cds.unistra.fr/vizier-org/licences_vizier.html>):
+"The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in
+scientific publication, the original authors and publication references including the publisher have to be
+explicitely cited", and tables from A&A "are free for a scientific usage". Space Radar is free and non-commercial.
+
+| what | from | licence |
+|---|---|---|
+| The 33 globular clusters' core radii, concentrations (so their tidal radii), integrated V magnitudes, metallicities, horizontal-branch ratios and magnitudes (`clusters.json`, `globulars`) | Harris W.E. 1996, AJ 112, 1487, *A Catalog of Parameters for Globular Clusters in the Milky Way*, VizieR VII/202 | VizieR's terms above; facts, cited |
+| The globulars' stars: placed by King's density in space for that core and tidal radius | King I. 1962, AJ 67, 471 (eq. 27) | a published model, cited; the placing is seeded and is ours |
+| 23 685 members of 36 open clusters, each with its Gaia DR3 direction, parallax, G magnitude, BP−RP colour and membership probability (`clusters.bin`; kept: probability at least 0.5, inside the tidal radius; less the stars the map's own catalogue draws) | Hunt E.L. & Reffert S. 2023, A&A 673, A114, *Improving the open cluster census. II.*, VizieR J/A+A/673/A114; the measurements are ESA/Gaia/DPAC's, Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1 | VizieR's terms above, and Gaia's: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>, read 2026-10-16); the derived file keeps ESA's non-commercial term |
+| The members' absolute magnitudes and colours less the clusters' extinction: A_G = 0.789 A_V, E(BP−RP) = 0.413 A_V | Wang S. & Chen X. 2019, ApJ 877, 116 | facts, cited |
+| Gaia DR3's global parallax offset, −0.017 mas | Lindegren L. et al. 2021, A&A 649, A4 | facts, cited |
+
+What is measured and what is not. A globular's core and tidal radius are Harris's; its stars are a model of its
+kind, not its own stars: their number, brightness and colour follow a luminosity function and an illustrative
+colour scale that are ours (the card says so), and their light is shared with the glow so the two together
+are the cluster's MVt. An open cluster's members are Gaia's: their directions are measured; their depth is their
+own parallax where it is good to a quarter of the cluster's half-member radius (the Hyades' nearly all, the
+Pleiades' brightest), otherwise modelled as a Plummer sphere of the cluster's measured half-member radius; the
+cluster stands at the map's distance for it. The conversion of BP−RP into the app's B−V colours is this map's
+linear fit (B−V = 0.82 (BP−RP)0 − 0.06), not a published relation. A faint open-cluster member is drawn at least 2.2 px wide (a floor for legibility, not
+its brightness), and the cluster's haze steps back only by the light its Gaia members carry. Both kinds are drawn to apparent magnitude 10 from
+the camera, as a camera's exposure shows a cluster (6.5 under the Eye exposure), deeper than the map's other stars.
+Not yet reviewed by an astronomer.
+
 ### The Ring (0076 W3-b)
 
 ### Remnants and dust (0076 W3-c)

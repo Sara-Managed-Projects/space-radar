@@ -1068,6 +1068,10 @@ jobs:
       - name: "the visual classes' mirror for search by kind is the registries' (internal spec 0076 W2-e)"
         run: python3 scripts/gen_visual_classes_js.py --check
       # 0076 W3-a
+      - name: "star clusters as stars: King's profile from Harris's radii, seeded, by tier; the light shared with the glow; Gaia members above the probability cut, measured or modelled depth (internal spec 0076 W3-a, #819, #871)"
+        run: node tests/test_globular.mjs
+      - name: "the clusters' file is the size and hash its manifest says (internal spec 0076 W3-a)"
+        run: python3 scripts/build_deep_clusters.py --check
       # 0076 W3-b
       # 0076 W3-c
       # 0076 W3-d

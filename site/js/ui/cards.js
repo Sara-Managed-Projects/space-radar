@@ -2760,6 +2760,11 @@ function subscribe(ctx) {
     window.addEventListener('sr:places', () => {
       if (current && current.record) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
     });
+    // (0076 W3-a) A deep layer stamped what is drawn for records (scene/deep/globular.js): the open card says it again.
+    window.addEventListener('sr:drawn-changed', (e) => {
+      const ids = e && e.detail && e.detail.ids;
+      if (current && current.record && Array.isArray(ids) && ids.includes(current.record.id)) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
+    });
     window.addEventListener('sr:clouds', () => {
       const c = current && current.ctx;
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__clouds');

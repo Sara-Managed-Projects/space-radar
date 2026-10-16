@@ -156,6 +156,7 @@ const DEFERRED = {
   // 0076 W2-a (traverse.js)
   // 0076 W2-c (plumes.js)
   // 0076 W3-a (globular.js)
+  'js/scene/deep/globular.js': 'star clusters as stars: the deep-sky coordinator fetches it on the first rung of the ladder (release 1.2.0, internal #819, #871)',
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
   // 0076 W3-d (scalerail.js)
