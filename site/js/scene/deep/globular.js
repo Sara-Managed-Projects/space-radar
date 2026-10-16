@@ -232,9 +232,11 @@ function rowsFor(kind, row, record, built) {
   if (!W || !W.templates) return null;
   const T = W.templates;
   if (kind === 'globular') {
-    const s = built || sampleGlobular(row, record.meta.distLy, 1);
+    // The catalogue's radii at the map's distance and the model's count: no sampling for a card.
+    const rcLy = row.rcArcmin * ARCMIN * record.meta.distLy;
+    const s = built || { want: giantCount(row.mvt), rcLy, rtLy: rcLy * 10 ** row.c };
     return [
-      [T.starsLabel, t(T.globularStars, { n: groupDigits(Math.round(s.want)), rc: groupDigits(Math.max(1, s.rcLy)), rt: groupDigits(s.rtLy) })],
+      [T.starsLabel, t(T.globularStars, { n: groupDigits(Math.round(s.want)), rc: s.rcLy < 10 ? s.rcLy.toFixed(1) : groupDigits(s.rcLy), rt: groupDigits(s.rtLy) })],
       [T.lightLabel, t(T.globularLight, { pct: Math.round(LF.light * 100), mv: row.mvt.toFixed(1) })],
       [T.reviewLabel, T.review],
     ];
@@ -327,17 +329,27 @@ export function createLayer(THREE, env = {}) {
       state.fileBytes += JSON.stringify(man).length;
       for (const g of man.globulars || []) rows.set(`dso-${g.id}`, { kind: 'globular', row: g });
       for (const o of man.open || []) rows.set(`dso-${o.id}`, { kind: 'open', row: o });
-      // The card: what is drawn for each, and its rows (ui/cardfacts.js reads `heroDrawn` and `heroCopy`).
-      const W = COPY[COPY_BLOCK];
-      for (const [id, { kind, row }] of rows) {
-        const rec = env.recordById ? env.recordById(id) : null;
-        if (!rec || !rec.meta) continue;
-        if (!rec.meta.heroDrawn) rec.meta.heroDrawn = DRAWN[kind].slice();
-        if (!rec.meta.heroCopy) rec.meta.heroCopy = COPY_BLOCK;
-        if (W && W.rows && !W.rows[id] && (kind === 'open' || Number.isFinite(rec.meta.distLy))) { const r = rowsFor(kind, row, rec, null); if (r) W.rows[id] = r; }
-      }
+      for (const id of rows.keys()) unstamped.add(id);
+      stamp();
     })
     .catch((e) => { state.failed = String(e && e.message || e); console.warn('deep: the clusters did not load', e); });
+
+  // The card: what is drawn for each, and its rows (ui/cardfacts.js reads `heroDrawn` and `heroCopy`). A record the
+  // catalogue has not delivered yet is stamped when it arrives (frame() asks again now and then).
+  const unstamped = new Set();
+  let stampTick = 0;
+  function stamp() {
+    const W = COPY[COPY_BLOCK];
+    for (const id of [...unstamped]) {
+      const rec = env.recordById ? env.recordById(id) : null;
+      if (!rec || !rec.meta) continue;
+      const { kind, row } = rows.get(id);
+      if (!rec.meta.heroDrawn) rec.meta.heroDrawn = DRAWN[kind].slice();
+      if (!rec.meta.heroCopy) rec.meta.heroCopy = COPY_BLOCK;
+      if (W && W.rows && !W.rows[id] && (kind === 'open' || Number.isFinite(rec.meta.distLy))) { const r = rowsFor(kind, row, rec, null); if (r) W.rows[id] = r; }
+      unstamped.delete(id);
+    }
+  }
 
   function wantMembers() {
     if (state.members || state.membersFailed || state.membersLoading) return;
@@ -422,6 +434,7 @@ export function createLayer(THREE, env = {}) {
     taken.clear();
     state.calls = 0;
     if (!state.manifest) { for (const b of built.values()) b.mesh.visible = false; return; }
+    if (unstamped.size && (stampTick++ % 60) === 0) stamp();
     const q = env.quality ? env.quality() : { tier: 1 };
     const tier = Math.max(0, Math.min(POINTS.length - 1, q.tier | 0));
     // The largest on screen past the start of the fade, at most MAX_DRAWN.
