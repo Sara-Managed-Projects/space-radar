@@ -1874,7 +1874,24 @@ Object.assign(COPY, {
   // RELEASE 1.2.0 wave 3 (internal spec 0076, design section 6): one empty block per stage, created by the lead
   // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
   // 0076 W3-a (star clusters as stars)
-  r12Clusters: {},
+  r12Clusters: {
+    // ui/cardfacts.js reads `rows[record.id]` (stage c's hook, `meta.heroCopy`): scene/deep/globular.js fills them from
+    // the templates below once its catalogue numbers have loaded, with the numbers it draws.
+    rows: {},
+    templates: {
+      starsLabel: 'Its stars',
+      lightLabel: 'Their light',
+      depthLabel: 'Their depth',
+      reviewLabel: 'Review',
+      globularStars: 'A model of its kind, not its own stars: {n} stars brighter than the turn-off, placed by King’s profile with Harris’s core radius ({rc} light-years) and tidal radius ({rt}). Their number, brightness and colours are a model.',
+      globularLight: 'Together about {pct}% of the cluster’s light (absolute magnitude {mv}); the faint stars no point stands for are the glow.',
+      openStars: '{n} members from Gaia (Hunt and Reffert 2023, {name}), each with a membership probability of at least {p}, inside its tidal radius.',
+      openStarsHyg: '{n} members from Gaia (Hunt and Reffert 2023, {name}), each with a membership probability of at least {p}, inside its tidal radius; {h} brighter ones are the map’s own catalogue stars.',
+      openDepthSome: '{m} are placed by their own parallax; the other {k} at the cluster’s distance, their depth inside it modelled.',
+      openDepthNone: 'Their directions are measured; their depth inside the cluster is modelled, since at this distance one star’s parallax is not precise enough.',
+      review: 'This model has not yet been reviewed by an astronomer.',
+    },
+  },
   // 0076 W3-b (the Ring Nebula)
   deepRing: {},
   // 0076 W3-c (remnants and dust)
