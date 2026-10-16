@@ -877,6 +877,10 @@ function timeFactsSection(record, ctx, m) {
   // says the number is inferred.
   const lines = el('div', 'sr-card__facts');
   for (const key of FACT_LINES) lines.appendChild(factNode('p', key === 'orbitNote' ? 'sr-card__fact-note' : `sr-card__fact sr-card__fact--${key}`, key));
+  // 0076 W2-a: a craft drawn as a model is reddened at its sunrise (scene/airtint.js); the card says that is modelled.
+  let modelled = null;
+  try { modelled = realModelFor(record); } catch { modelled = null; }
+  if (modelled && COPY.r12Nearby && COPY.r12Nearby.sunriseModelled) lines.appendChild(el('p', 'sr-card__fact-note', COPY.r12Nearby.sunriseModelled));
   paintTimeFacts(wrap, words);
   paintTimeFacts(lines, words);
   return { bar: wrap, lines };
@@ -2747,6 +2751,8 @@ export function mosaicLine(record, ctx) {
     parts.push(n === 1 && T.worldReliefTrue ? t(T.worldReliefTrue, { title: String(m.relief.title) })
       : t(T.worldRelief, { title: String(m.relief.title), n: Number.isInteger(n) ? fmt.int(n) : fmt.num(n, 1) }));
   } else if (m.bakedRelief && T.worldReliefBaked) parts.push(T.worldReliefBaked);
+  // 0076 W2-a: the cast shadows' sentence, worded in copy/en.later.js r12Nearby and handed over by scene/tiles.js mosaics().
+  if (m.castShadows && m.castShadows.words) parts.push(String(m.castShadows.words));
   return parts.join(' ');
 }
 

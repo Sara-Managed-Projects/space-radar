@@ -263,6 +263,26 @@ sources:
       - {url: "https://lambda.gsfc.nasa.gov/data/map/dr5/dfp/ilc/wmap_ilc_9yr_v5.fits", sha256: 4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in: scripts/build_deep_cmb.py}
   # 0076 W1-d
   # 0076 W2-a
+  # The Apollo 15 and 17 rover traverses (scripts/build_traverses.py -> registry/traverses/): lines the PDS
+  # Geosciences Node serves with its Apollo Analyst's Notebook station finders. LOLA's heights for the Moon's
+  # cast shadows are not an asset: the visitor's browser reads them as it reads the map tiles
+  # (registry/tilesets.yaml, the Moon's `height:`).
+  - id: pds-geo-apollo-notebook
+    name: PDS Geosciences Node, Washington University in St. Louis, Apollo Analyst's Notebook map services
+    match: ["https://anms.rsl.wustl.edu/arcgis/rest/services/Apollo/", "https://an.rsl.wustl.edu/apollo/"]
+    url: https://an.rsl.wustl.edu/apollo/
+    licence: NASA PDS archive data under NASA's open data policy; the Analyst's Notebook layers carry no separate terms
+    licence_read: "Data sets archived in the PDS are in the public domain."
+    licence_url: https://pds-geosciences.wustl.edu/faq.html
+    licence_note: "The traverse lines are the Analyst's Notebook's layers (Apollo 15's traced by Phil Stooke, University of Western Ontario). They carry no separate terms and are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. Credited as NASA PDS Geosciences Node, Analyst's Notebook, in CREDITS.md (0076 W2-a) and the Sources panel."
+    account: none
+    cost: none
+    checked: 2026-10-16
+    # The lines are copied into registry/traverses/ and generated into site/js/data/traverses.js: they ship.
+    offline: shipped
+    pins:
+      - {file: registry/traverses/apollo-15.json, sha256: 5dc6123bb46a3ee4b4a6e26d9c399b591ef74569e2595c583643f45af48e4b3a}
+      - {file: registry/traverses/apollo-17.json, sha256: 446a8abf80bad0156a4fbdc015658817cff6c17a794caa742f8c43c15808ac9f}
   # 0076 W2-c
   # 0076 W2-e (asset_sources schema rows)
   # 2026-10-16 (internal spec 0076 W2-e, #891; advances internal #785, the deep inputs' register): the four

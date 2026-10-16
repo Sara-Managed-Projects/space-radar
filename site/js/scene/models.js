@@ -34,6 +34,8 @@ import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
 import { attachedOdditiesFor } from '../data/attached.js';
+// 0076 W2-a: the red of the penumbra (scene/airtint.js AIR_REDDENING), on the Earth's shadow side only.
+import { AIR_TINT_GLSL, AIR_REDDENING, EARTH_RADIUS_KM, airReddeningOn } from './airtint.js';
 
 // ------------------------------------------------------------------ the one toon material family
 
@@ -95,6 +97,8 @@ const SHARED = {
   uGlint: { value: 0 },
   // The two surface terms (surfaceTermsGLSL below): 1 on a device that can afford them, else 0.
   uSurface: { value: 0 },
+  // 0076 W2-a: the air's scale height in scene units when the shadow is the Earth's, else 0.
+  uAirH: { value: 0 },
 };
 
 /**
@@ -240,6 +244,7 @@ export function setPlanetShine(worldId, centre, radius) {
   // THE SHADOW NEEDS NO ROW: any world that is drawn can stand between a model and the Sun, whether
   // or not this file has an albedo for it.
   SHARED.uShadeRadius.value = there ? radius : 0;
+  SHARED.uAirH.value = there && worldId === 'earth' && airReddeningOn() ? (radius * AIR_REDDENING.scaleKm) / EARTH_RADIUS_KM : 0; // 0076 W2-a
   if (there) SHARED.uShineCentre.value.set(centre.x, centre.y, centre.z);
   SHARED.uNightCol.value.setRGB(0, 0, 0);
   if (!row || !there) { SHARED.uShineRadius.value = 0; return false; }
@@ -411,6 +416,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
     shader.uniforms.uSunRim = SHARED.uSunRim;
     shader.uniforms.uGlint = SHARED.uGlint;
     shader.uniforms.uSurface = SHARED.uSurface;
+    shader.uniforms.uAirH = SHARED.uAirH;
     // A mapped world has no air to glow at its limb: a third of the models' rim, enough to part it from the sky.
     shader.uniforms.uRim = { value: kind === 'world' ? 0.12 : 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
@@ -434,6 +440,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           'uniform float uSunRim;',
           'uniform float uGlint;',
           'uniform float uSurface;',
+          'uniform float uAirH;',
+          AIR_TINT_GLSL,
           'void main() {',
         ].join('\n')
       )
@@ -483,6 +491,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '      float perp = sqrt( max( dot( rel, rel ) - along * along, 0.0 ) );',
           `      float pen = max( -along * ${SUN_ANGULAR_RADIUS}, 1e-9 );`,
           '      float sunlit = smoothstep( uShadeRadius - pen, uShadeRadius + pen, perp );',
+          // 0076 W2-a: sunlight that grazed the Earth's air on its way is reddened (scene/airtint.js sunlightOn).
+          '      if ( uAirH > 0.0 ) outgoingLight *= srAirTint( ( perp - uShadeRadius ) / uAirH );',
           '      float dR = max( length( rel ), 1e-9 );',
           '      float coverN = min( uShadeRadius / dR, 1.0 );',
           '      float facingN = 0.5 - 0.5 * dot( normal, rel / dR );',

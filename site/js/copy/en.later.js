@@ -1865,7 +1865,12 @@ Object.assign(COPY, {
   // RELEASE 1.2.0 wave 2 (internal spec 0076, design section 6): one empty block per stage, created by the lead
   // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
   // 0076 W2-a (the nearby worlds' sites and traverses)
-  r12Nearby: {},
+  // The Moon's card while its shadows are cast from heights (scene/tiles.js mosaics(), ui/cards.js mosaicLine).
+  r12Nearby: {
+    castShadows: 'Its shadows are cast by the ground’s own heights, from {title}, where the Sun stands now and at true scale: measured, one height every 670 m at best, so a crater under about two kilometres casts none.',
+    // A modelled craft's card, under its light bar (ui/cards.js timeFactsSection; scene/airtint.js).
+    sunriseModelled: 'Its colour at sunrise and sunset is modelled: sunlight reddened by the air it grazed, Rayleigh scattering only.',
+  },
   // 0076 W2-b (the giants' rings and spots)
   r12Giants: {},
   // 0076 W2-c (plumes)
