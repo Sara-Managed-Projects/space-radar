@@ -81,6 +81,10 @@ want('hip-32349', ['Milky Way', 'Sirius']);
 want('exo-proxima-cen-b', ['Milky Way', 'Proxima Centauri', 'Proxima Cen b']);
 want('exo-trappist-1-e', ['Milky Way', 'TRAPPIST-1', 'TRAPPIST-1 e']);
 want('exotic-sgr-a-star', ['Milky Way', 'Sagittarius A*']);
+// A host star the catalogue has no row for is named, and the chain still reaches the Milky Way.
+R.push(rec('exo-kepler-22-b', 'Kepler-22 b', 'exoplanet', { host: 'Kepler-22' }, { layer: 'exoplanets' }));
+byId.set('exo-kepler-22-b', R[R.length - 1]);
+want('exo-kepler-22-b', ['Milky Way', 'Kepler-22', 'Kepler-22 b']);
 // A galaxy is never "in" the Milky Way, and its parents are only what the registries write down.
 want('dso-m31', [C.outside, 'Andromeda Galaxy']);
 want('dso-tarantula-nebula', [C.outside, 'Large Magellanic Cloud', 'Tarantula Nebula']);

@@ -15,8 +15,7 @@
    sake is not taken: the line is a sentence. */
 .sr-scalebadge {
   position: fixed;
-  /* Under the rail of where you are when it is up (ui/scalerail.js sets --sr-rail-h; 0076 W3-d). */
-  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + var(--sr-rail-h, 0px));
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px));
   left: calc(var(--sr-scene-left) + var(--sr-inset));
   z-index: var(--sr-z-controls);
   display: inline-flex;
@@ -54,7 +53,7 @@
 
 /* On a phone: under the search row, 16 px in; under the line too while that is up. */
 html.sr-phone .sr-scalebadge {
-  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + var(--sr-rail-h, 0px));
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
   left: max(var(--sp-4), env(safe-area-inset-left, 0px));
   min-height: 44px;
   max-width: calc(100vw - 2 * var(--sp-4));
@@ -62,7 +61,7 @@ html.sr-phone .sr-scalebadge {
 
 html.sr-phone.sr-card-open:not([data-sheet='full']) .sr-scalebadge,
 html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-scalebadge {
-  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2) + var(--sr-rail-h, 0px));
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
 }
 
 html.sr-clean .sr-scalebadge,
@@ -400,8 +399,25 @@ html.sr-phone .sr-scalerail__back {
   min-height: 44px;
 }
 
+/* On a phone this rung and the one inside it, so the nesting still reads ("Solar System › Nearby stars"). */
 html.sr-phone .sr-scalerail__rung:not([aria-current]) { display: none; }
-html.sr-phone .sr-scalerail__rung[aria-current] .sr-scalerail__sep { display: none; }
+html.sr-phone .sr-scalerail__rung:has(+ .sr-scalerail__rung[aria-current]) { display: inline-flex; }
+html.sr-phone .sr-scalerail__rung:has(+ .sr-scalerail__rung[aria-current]) .sr-scalerail__sep,
+html.sr-phone .sr-scalerail__rung:first-child[aria-current] .sr-scalerail__sep { display: none; }
+
+/* The badge, on the Sun's stage, one step down under the rail while it is up (--sr-rail-h: its height and 8 px). */
+html.sr-rail-on .sr-scalebadge {
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px) + var(--sr-rail-h, 0px));
+}
+
+html.sr-phone.sr-rail-on .sr-scalebadge {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + var(--sr-rail-h, 0px));
+}
+
+html.sr-phone.sr-rail-on.sr-card-open:not([data-sheet='full']) .sr-scalebadge,
+html.sr-phone.sr-rail-on.sr-launchday:not([data-sheet='full']) .sr-scalebadge {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2) + var(--sr-rail-h, 0px));
+}
 
 html.sr-clean .sr-scalerail,
 html.sr-trip-mode .sr-scalerail,

@@ -478,7 +478,8 @@ export function createHud(ctx, host) {
   // What the tag may not sit under. Since spec 0061: the sidebar (which holds the card; on a phone
   // it is the sheet), the rail, the pill, the What-to-show popover while it is open, and the
   // phone's top bar (task 3), and an embed's one link (ui/embed.js).
-  const PANELS = '#sr-side, #sr-rail, #sr-time, #sr-card, #sr-show, #sr-top, #sr-embed';
+  // 0076 W3-d: and the rail of where you are (ui/scalerail.js), at the top left: seen under the tag at 390 px.
+  const PANELS = '#sr-side, #sr-rail, #sr-time, #sr-card, #sr-show, #sr-top, #sr-embed, .sr-scalerail';
   function panelRects() {
     const out = [];
     if (document.documentElement.classList.contains('sr-clean')) return out;

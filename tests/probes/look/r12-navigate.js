@@ -60,10 +60,11 @@ const scene = async (name, note, expect = {}, { withBefore = false } = {}) => {
     }
     if (row.sideways) out.problems.push(`${name}: the page scrolls sideways (${document.scrollingElement.scrollWidth} > ${innerWidth})`);
   }
+  // The picture first, while a join's note is still up; the frame numbers after it.
+  await shot(name, `${note} | chain: ${row.chain}; parent: ${row.parent}; rail: ${row.rail}; note: ${row.note}; trail ${row.trail}`);
   if (withBefore) { before(true); await shot(`${name}-before`, `${note} | before: the stage's pieces hidden`, 600); before(false); await sleep(300); }
   row.perf = await perfNow();
   out.scenes.push(row);
-  await shot(name, `${note} | chain: ${row.chain}; parent: ${row.parent}; rail: ${row.rail}; note: ${row.note}; trail ${row.trail}`);
   return row;
 };
 const need = async (id, waitMs = 9000) => {

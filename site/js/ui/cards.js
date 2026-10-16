@@ -1748,7 +1748,16 @@ export function parentChain(record, ctx, m = null) {
     const p = parentOf(cur, ctx, i === 0 ? m : null);
     if (!p) break;
     out.unshift({ name: p.name, record: p.record, here: false });
-    if (p.root || !p.record || seen.has(String(p.record.id))) break;
+    if (p.root || seen.has(String(p.record && p.record.id))) break;
+    // A parent known by name only (a host star the catalogue has no row for): the chain still ends
+    // where every chain does. Stars and their planets are in the Milky Way, the rest round the Sun.
+    if (!p.record) {
+      const starry = ['star', 'exoplanet'].includes(klassOf(cur)) || !!systemOfRecordId(String(cur.id || ''));
+      const top = starry ? { name: COPY.r12Navigate.milkyWay, id: MILKY_WAY_ID } : { name: bareWorld(worldName('sun') || 'sun'), id: 'sun' };
+      const rec = ctx && typeof ctx.recordById === 'function' ? ctx.recordById(top.id) || null : null;
+      out.unshift({ name: rec && top.id === 'sun' ? bareWorld(displayName(rec)) : top.name, record: rec, here: false });
+      break;
+    }
     seen.add(String(p.record.id));
     cur = p.record;
   }
@@ -2777,10 +2786,6 @@ function render(record, ctx, opts = {}) {
     actions.appendChild(b);
   }
   body.appendChild(actions);
-  // 3. and where it is: the chain out to the Sun or the Milky Way, and the way back out to its parent
-  // (spec 0075 task 3 for the deep sky; internal spec 0076 W3-d for moons, planets of other stars, stars).
-  const where = whereBlock(record, ctx, m);
-  if (where) body.appendChild(where);
 
   // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One
@@ -2790,6 +2795,12 @@ function render(record, ctx, opts = {}) {
   const [lamp, lampNote] = floodControls(record, ctx);
   for (const n of skyControls(record, ctx, lamp)) body.appendChild(n);
   if (lampNote) body.appendChild(lampNote);
+
+  // 3a'. where it is, under the quiet row (which stays straight under the actions, docs/ui-guide.md
+  // §3.10 5a): the chain out to the Sun or the Milky Way and the way back out to its parent (spec 0075
+  // task 3 for the deep sky; internal spec 0076 W3-d for moons, planets of other stars and stars).
+  const where = whereBlock(record, ctx, m);
+  if (where) body.appendChild(where);
 
   // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
   // registry/missions.yaml; public #452). The module is fetched the first time a card opens
