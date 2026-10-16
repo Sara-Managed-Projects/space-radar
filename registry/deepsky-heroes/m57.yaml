@@ -1,0 +1,17 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Ring Nebula (M57): a planetary nebula seen nearly along its axis (internal spec 0076 stage W3-b, #872).
+# Created empty by the lead's slot commit for wave 3. Stage W3-b fills this file and only this file.
+id: m57
+record: dso-m57
+stage: W3-b
+shipped: false
+children: []
+levels: {}
+frame: null
+layers: []
+colours: null
+drawn: []
+# The stub's one source is its record's catalogue, so tests/test_coverage.py has a source; stage W3-b replaces it.
+sources: ["site/data/dso.json, record dso-m57 (OpenNGC): the place, size and distance the record carries"]
+review: {data_vs_model: null, geometry: null, colours: null, distance: null, credits: null, by: null, date: null}
+credits: []

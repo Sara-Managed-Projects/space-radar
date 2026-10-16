@@ -1,0 +1,28 @@
+// GENERATED from registry/deepsky-heroes/m57.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "m57",
+  "record": "dso-m57",
+  "stage": "W3-b",
+  "shipped": false,
+  "children": [],
+  "levels": {},
+  "frame": null,
+  "layers": [],
+  "colours": null,
+  "drawn": [],
+  "sources": [
+    "site/data/dso.json, record dso-m57 (OpenNGC): the place, size and distance the record carries"
+  ],
+  "review": {
+    "data_vs_model": null,
+    "geometry": null,
+    "colours": null,
+    "distance": null,
+    "credits": null,
+    "by": null,
+    "date": null
+  },
+  "credits": []
+};

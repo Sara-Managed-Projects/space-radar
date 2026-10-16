@@ -59,6 +59,7 @@ domains:
       m31: {credit: "### Andromeda and the Triangulum Galaxy (stage d)"}
       m33: {credit: "### Andromeda and the Triangulum Galaxy (stage d)"}
       orion: {credit: "### Orion (0076 W1-a)"}
+      m57: {credit: "### The Ring (0076 W3-b)"}
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -495,7 +496,7 @@ classes:
     renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/gasmat.js]
     honesty: measured
     fallback: The photograph; the Helix's rings unmarched on tier 0 or after the latch.
-    heroes: {helix: registry/deepsky-heroes/helix.yaml}
+    heroes: {helix: registry/deepsky-heroes/helix.yaml, m57: registry/deepsky-heroes/m57.yaml}
     issue: "#872 (M57 as a shell, W3-b)"
     note:
       source: "Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009."
@@ -505,7 +506,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: PN}}
       - {domain: photographs, ids: [helix-nebula, m27, m57, southern-ring-nebula]}
-      - {domain: heroes, ids: [helix]}
+      - {domain: heroes, ids: [helix, m57]}
 
   - id: DARK_NEBULA
     title: Dark nebulae

@@ -136,6 +136,10 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `r12-nearby` | planned, stage W2-a (internal spec 0076): the Moon's and Mars's sites with their traverses; the file arrives with the stage |
 | `r12-moons` | planned, stage W2-c (internal spec 0076): plumes where they were seen on Io, Enceladus and Triton; the file arrives with the stage |
 | `r12-journeys` | planned, stage W2-d (internal spec 0076): the two journeys, across the Local Group and out to the edge; the file arrives with the stage |
+| `r12-clusters` | planned, stage W3-a (internal spec 0076): Omega Centauri, M13 and 47 Tucanae by King profile, the Pleiades, the Hyades and M44 by their members; the file arrives with the stage |
+| `r12-ring` | planned, stage W3-b (internal spec 0076): the Ring Nebula (M57) in 3D, and the Helix from our line; the file arrives with the stage |
+| `r12-dust` | planned, stage W3-c (internal spec 0076): the Crab and the Veil as shells, the Horsehead, the Coalsack, M78 and the Iris as sheets; the file arrives with the stage |
+| `r12-navigate` | planned, stage W3-d (internal spec 0076): the parent chain on the cards, Back along the visitor's path, the ladder's compression note; the file arrives with the stage |
 
 **The job fails** when the page logged an error (`console.error`, an uncaught error, an unhandled
 rejection), when the probe returned a `fail`, or when it returned nothing. `summary.md` (also the

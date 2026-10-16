@@ -334,3 +334,6 @@ sources:
     checked: 2026-10-16
     pins:
       - {file: site/data/deep/lmc-density.bin, sha256: e18e52449d5a904912d9d60df14fdbac71edc895b3ca35a50312591642c1ad47}
+  # 0076 W3-a
+  # 0076 W3-b
+  # 0076 W3-c

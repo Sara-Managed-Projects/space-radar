@@ -16,7 +16,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rings | 1 | 1 |
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
-| heroes | 5 | 5 |
+| heroes | 6 | 6 |
 | exotics | 20 | 20 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **875** | **111 062** |
+| **all** | **876** | **111 063** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -61,7 +61,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 35 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js` | measured | orion |
-| [PLANETARY_NEBULA](#planetary_nebula) | 20 | `nebulae.js`, `dsoglow.js`, `helix.js`, `gasmat.js` | measured | helix |
+| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `gasmat.js` | measured | helix, m57 |
 | [DARK_NEBULA](#dark_nebula) | 3 | `nebulae.js`, `dsoglow.js` | measured | - |
 | [REFLECTION_NEBULA](#reflection_nebula) | 3 | `dsoglow.js`, `nebulae.js` | illustrative | - |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 4 | `nebulae.js`, `dsoglow.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 875 records: 319 measured, 233 modelled, 323 illustrative.
+Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
 
 ## The classes
 
@@ -479,16 +479,16 @@ Honesty over the 875 records: 319 measured, 233 modelled, 323 illustrative.
 - **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/gasmat.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The photograph; the Helix's rings unmarched on tier 0 or after the latch.
-- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml)
+- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml)
 - **Source:** Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009.
 - **Dates and filters:** Photographs as registry/nebulae.yaml dates them; the Helix's light from eso0907a.
 - **Measured, modelled or reconstructed:** Measured: the photographs, the rings' sizes and tilts. Reconstructed: which ring each point's light belongs to, the slabs' thickness. Illustrative: the knots' places (seeded).
 - **Rights:** ESO, ESA/Hubble, ESA/Webb CC BY 4.0; papers cited.
 - **What is missing is tracked in:** #872 (M57 as a shell, W3-b)
-- **Records (20):**
+- **Records (21):**
   - dso (15): `m27`, `m57`, `m76`, `m97`, `helix-nebula`, `cats-eye-nebula`, `eskimo-nebula`, `saturn-nebula`, `butterfly-nebula`, `ghost-of-jupiter`, `blue-snowball`, `skull-nebula`, `blinking-planetary`, `southern-ring-nebula`, `ngc-7027`
   - photographs (4): `helix-nebula`, `m27`, `m57`, `southern-ring-nebula`
-  - heroes (1): `helix`
+  - heroes (2): `helix`, `m57`
 
 ### DARK_NEBULA
 

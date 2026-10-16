@@ -155,6 +155,10 @@ const DEFERRED = {
   'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
   // 0076 W2-a (traverse.js)
   // 0076 W2-c (plumes.js)
+  // 0076 W3-a (globular.js)
+  // 0076 W3-b (ring.js, shellneb.js)
+  // 0076 W3-c (remnant.js, dustsheet.js)
+  // 0076 W3-d (scalerail.js)
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
