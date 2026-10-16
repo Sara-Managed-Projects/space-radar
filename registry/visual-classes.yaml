@@ -583,7 +583,7 @@ classes:
       source: "The LMC from Gaia DR3 star counts (Gaia Collaboration, Vallenari et al. 2023) with the geometry of van der Marel & Cioni 2001; the SMC's photograph; OpenNGC."
       dates: "Gaia DR3 (2022); the photographs as their rows."
       drawn: "Measured: the Gaia counts on the sky. Modelled: depth, brightness per star, the dust and the Tarantula's gas in depth (labelled). Illustrative: the glow of the other irregulars."
-      rights: "Gaia CC BY-SA 3.0 IGO (ESA/Gaia/DPAC); photographs CC BY 4.0."
+      rights: "Gaia CC BY-NC 3.0 IGO (ESA/Gaia/DPAC, https://www.cosmos.esa.int/web/gaia-users/license); photographs CC BY 4.0."
     records:
       - {domain: dso, where: {typeCode: G, hubble: ["^I", "^dI", "^Im"]}}
       - {domain: photographs, ids: [lmc, smc]}
