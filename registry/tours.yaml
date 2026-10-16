@@ -5032,10 +5032,14 @@ tours:
 
       - id: first-galaxies
         target: {world: sun}
-        # 25 billion light-years from the Sun: the microwave background's map is fetched and not yet
-        # drawn (scene/deep/cmb.js: from about 30), so it appears on the next stop, not here as well (the
-        # first look run stood at 35 and the two stops were one picture).
-        distance_km: 236518261814520000000000
+        # 32 billion light-years from the Sun, on stop 4's line: the microwave background's map begins
+        # to show (scene/deep/cmb.js cmbOpacity: from 0.66 of its 45.3 Gly radius, full at 0.8; here
+        # 0.71, about a quarter of its full strength), and it fills the next stop. Tried before it: 25
+        # Gly, where the map is not drawn and the frame is home's names and the quasar's mark, which
+        # read 99.959 to 99.989 % one colour in the trips walk, on and over its empty-frame floor
+        # (screens runs 38956512528, 38969993012); and 35 Gly, the first look run, where the two stops
+        # were one picture.
+        distance_km: 302743375122585600000000
         drift_deg: 12
         drift_rate_deg_s: 1
         chapter: "The first galaxies"
