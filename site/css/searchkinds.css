@@ -1,0 +1,87 @@
+/* searchkinds.css -- search by kind (ui/search.js with ui/searchrows.js; internal spec 0076 W3-e).
+ *
+ * Linked by ui/searchrows.js (through ui/latercss.js) when the search field is first focused, never at
+ * boot: a first visit carries none of it (registry/budgets.yaml first_visit_bytes). Tokens only, all
+ * from css/ui.css :root; tests/test_tokens.mjs, tests/test_guide_rails.mjs and
+ * tests/test_touch_targets.mjs hold this file to the same rules as ui.css.
+ *
+ * Two things, both inside the results the field already has (docs/ui-guide.md 3.2; no new panel):
+ * a group's microlabel over the first row of each class, the same face as "Closest names"
+ * (.sr-search__emptyhint), and the "3D models" toggle under the list, a quiet text button that
+ * reads as pressed with the selection's ember wash.
+ */
+
+.sr-search__head {
+  padding: var(--sp-3) var(--sp-3) var(--sp-1);
+  overflow: hidden;
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  list-style: none;
+}
+
+.sr-search__head + .sr-search__option {
+  border-top: 0;
+}
+
+.sr-search__only {
+  display: block;
+  min-height: 32px;
+  margin: var(--sp-2) var(--sp-3);
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/20px var(--sr-font);
+  color: var(--sr-text-soft);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-pill);
+  transition:
+    background-color var(--sr-fast) var(--sr-ease),
+    color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-search__only[hidden] {
+  display: none;
+}
+
+@media (hover: hover) {
+  .sr-search__only:hover {
+    color: var(--sr-text);
+    background: var(--sr-wash);
+  }
+}
+
+.sr-search__only:active {
+  background: var(--sr-wash-strong);
+  transform: translateY(1px);
+}
+
+.sr-search__only:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-search__only[aria-pressed='true'] {
+  color: var(--sr-text);
+  background: var(--sr-ember-soft);
+  border-color: var(--sr-ember);
+}
+
+html.sr-phone .sr-search__only {
+  min-height: 44px;
+}
+
+@media (pointer: coarse) {
+  .sr-search__only {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-search__only {
+    transition: opacity 120ms linear;
+  }
+}
