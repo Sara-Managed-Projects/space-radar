@@ -482,8 +482,6 @@ const OWN_SETS = ['worlds', 'small_bodies', 'probes', 'systems', 'planets', 'exo
 const MIXED = 'MIXED_LAYER';
 // The kinds the model layer can draw from a file (ui/drift.js lookOf asks the same of the same table).
 const MODELLED = new Set(['station', 'satellite', 'telescope', 'probe', 'rocket', 'site', 'asteroid', 'comet']);
-/** The words of search by kind (copy/en.later.js r12Search), for ui/search.js, which is in the boot graph and must not import them. */
-export const KIND_COPY = COPY.r12Search;
 /** Rows a kind's name matches may keep beside its groups ("By name"). */
 export const NAME_ROWS = 2;
 
@@ -724,8 +722,9 @@ export const KIND_CAP = 5000;
 
 /**
  * ui/search.js's whole question when the rows have landed: findMatches as before, or, for a kind or with
- * the toggle on, byKind over KIND_CAP matches. `kind` and `counting` (a kind whose classes are on their
- * way: not a miss) ride on the answer; `again` is called once they have arrived.
+ * the toggle on, byKind over KIND_CAP matches. `kind` and `note` (the foot's line: "counting…" while the
+ * classes are on their way, or that the toggle left nothing; either way not a miss) ride on the answer;
+ * `again` is called once the classes have arrived.
  */
 export function answer(index, q, only, { find, limit = 8, exact = 900, word = 700, again = null } = {}) {
   const on = kindsOn();
@@ -735,7 +734,8 @@ export function answer(index, q, only, { find, limit = 8, exact = 900, word = 70
   if (!kind && !(on && only)) return find(index, q, limit);
   const out = byKind(index, find(index, q, KIND_CAP), kind, { limit, only: on && only, exact, word });
   out.kind = kind;
-  out.counting = !!(kind && wait && !out.hits.length);
+  // The foot's line, and not a miss: the classes are on their way, or the toggle left nothing.
+  out.note = kind && wait && !out.hits.length ? COPY.r12Search.counting : out.none ? COPY.r12Search.noneWithModel : '';
   return out;
 }
 

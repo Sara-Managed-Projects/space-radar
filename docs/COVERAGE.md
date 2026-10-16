@@ -65,8 +65,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DARK_NEBULA](#dark_nebula) | 3 | `nebulae.js`, `dsoglow.js` | measured | - |
 | [REFLECTION_NEBULA](#reflection_nebula) | 3 | `dsoglow.js`, `nebulae.js` | illustrative | - |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 4 | `nebulae.js`, `dsoglow.js` | measured | - |
-| [GALAXY_SPIRAL](#galaxy_spiral) | 54 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
-| [GALAXY_IRREGULAR](#galaxy_irregular) | 14 | `lmc.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc |
+| [GALAXY_SPIRAL](#galaxy_spiral) | 50 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
+| [GALAXY_IRREGULAR](#galaxy_irregular) | 18 | `lmc.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 41 | `dsoglow.js`, `nebulae.js` | illustrative | - |
 | [GALAXY_INTERACTION](#galaxy_interaction) | 1 | `dsoglow.js` | illustrative | - |
 | [AGN_QUASAR](#agn_quasar) | 1 | `glyphs.js`, `stage.js` | illustrative | - |
@@ -551,8 +551,8 @@ Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the photographs, orientations, profiles. Modelled: M31's and M33's arms, knots and thickness (parametric, labelled). Illustrative: the Milky Way's look and every other spiral's glow.
 - **Rights:** Papers cited; photographs CC BY 4.0; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** #873 (the generator applied to other spirals)
-- **Records (54):**
-  - dso (42): `m31`, `m33`, `m51`, `m58`, `m61`, `m63`, `m64`, `m65`, `m66`, `m74`, `m77`, `m81`, `m82`, `m83`, `m88`, `m90`, `m91`, `m94`, `m95`, `m96`, `m98`, `m99`, `m100`, `m101`, `m104`, `m106`, `m108`, `m109`, `lmc`, `smc`, `ngc-3109`, `ngc-253`, `ngc-891`, `ngc-7331`, `needle-galaxy`, `whale-galaxy`, `ngc-2403`, `fireworks-galaxy`, `ngc-55`, `ngc-300`, `ngc-1300`, `hamburger-galaxy`
+- **Records (50):**
+  - dso (38): `m31`, `m33`, `m51`, `m58`, `m61`, `m63`, `m64`, `m65`, `m66`, `m74`, `m77`, `m81`, `m82`, `m83`, `m88`, `m90`, `m91`, `m94`, `m95`, `m96`, `m98`, `m99`, `m100`, `m101`, `m104`, `m106`, `m108`, `m109`, `ngc-253`, `ngc-891`, `ngc-7331`, `needle-galaxy`, `whale-galaxy`, `ngc-2403`, `fireworks-galaxy`, `ngc-300`, `ngc-1300`, `hamburger-galaxy`
   - photographs (8): `m31`, `m33`, `m83`, `m104`, `m51`, `m101`, `m81`, `ngc-1300`
   - heroes (2): `m31`, `m33`
   - model_kinds (1): `galaxy-model`
@@ -571,8 +571,8 @@ Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the Gaia counts on the sky. Modelled: depth, brightness per star, the dust and the Tarantula's gas in depth (labelled). Illustrative: the glow of the other irregulars.
 - **Rights:** Gaia CC BY-NC 3.0 IGO (ESA/Gaia/DPAC, https://www.cosmos.esa.int/web/gaia-users/license); photographs CC BY 4.0.
 - **What is missing is tracked in:** internal #783 (the SMC, the Bridge and the Stream)
-- **Records (14):**
-  - dso (11): `ngc-6822`, `ic-10`, `ic-1613`, `wlm`, `sextans-a`, `sextans-b`, `leo-a`, `pegasus-dwarf`, `phoenix-dwarf`, `aquarius-dwarf`, `sagdig`
+- **Records (18):**
+  - dso (15): `lmc`, `smc`, `ngc-6822`, `ic-10`, `ic-1613`, `wlm`, `sextans-a`, `sextans-b`, `leo-a`, `pegasus-dwarf`, `phoenix-dwarf`, `aquarius-dwarf`, `sagdig`, `ngc-3109`, `ngc-55`
   - photographs (2): `lmc`, `smc`
   - heroes (1): `lmc`
 

@@ -225,14 +225,34 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   }
   R.setClasses(VISUAL_CLASSES);
   check(R.classOf(kindex.record[0]) === 'GALAXY_SPIRAL', 'a deep-sky record takes its class from its own id');
-  check(R.classOf({ id: 'dso-lmc', layer: 'deep-sky' }) === 'GALAXY_SPIRAL', 'the record\'s own set decides over a photograph or a hero that lists it again (the LMC)');
+  // A Magellanic type (de Vaucouleurs "m": Sm, SBm, SB(s)m) is an irregular galaxy, as NASA describes the
+  // LMC and as the registry's photograph and hero rows already said (the lead's decision on #1210); an
+  // ordinary barred spiral, SB(s)b or SB(s)bc, stays a spiral.
+  {
+    const dsoOf = (cls) => new Set((VISUAL_CLASSES.find((c) => c.id === cls).members.dso) || []);
+    const irr = dsoOf('GALAXY_IRREGULAR');
+    const spi = dsoOf('GALAXY_SPIRAL');
+    check(irr.has('dso-lmc') && irr.has('dso-smc') && !spi.has('dso-lmc') && !spi.has('dso-smc'), 'the LMC and the SMC (SB(s)m) are irregular galaxies, not spirals');
+    check(R.classOf({ id: 'dso-lmc', layer: 'deep-sky' }) === 'GALAXY_IRREGULAR', 'and search groups the LMC with the irregulars');
+    const { objects } = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
+    const magellanic = /^(?:\(R'?\))?S(?:A|AB|B)?(?:\([rs]+\))?m(?![a-z])/;
+    let barred = 0;
+    for (const o of objects) {
+      if (o.typeCode !== 'G' || !o.hubble) continue;
+      const id = `dso-${o.id}`;
+      if (magellanic.test(o.hubble)) check(irr.has(id) && !spi.has(id), `${o.name} (${o.hubble}) is irregular`);
+      if (/^(?:\(R'?\))?SB\(s\)bc?\b/.test(o.hubble)) { barred += 1; check(spi.has(id), `${o.name} (${o.hubble}) stays a spiral`); }
+    }
+    check(barred >= 1, 'at least one SB(s)b-type galaxy is in the catalogue to hold the spiral side');
+  }
   check(R.classOf({ id: 'sat-1', layer: 'stations' }) === 'ARTIFICIAL_SATELLITE' && R.classOf({ id: 'dso-unknown', layer: 'deep-sky' }) === null, 'a satellite takes its layer\'s class, and a layer of several classes gives none');
   // "galaxies": grouped by class in the row's order, the brighter first, the groups taking turns.
   {
     const { out } = ask('galaxies');
     const groups = [...new Set(out.hits.map((h) => h.group && h.group.id))];
-    check(groups[0] === 'GALAXY_SPIRAL' && groups.includes('GALAXY_ELLIPTICAL'), `"galaxies" lists the spirals, then the ellipticals (${groups.join(', ')})`);
-    check(out.hits[0].record.id === 'dso-lmc' && out.hits[1].record.id === 'dso-m31', `within a group the brighter first (${out.hits.slice(0, 3).map((h) => h.record.name).join(', ')})`);
+    check(groups[0] === 'GALAXY_SPIRAL' && groups.includes('GALAXY_ELLIPTICAL') && groups.includes('GALAXY_IRREGULAR'), `"galaxies" lists the spirals, the ellipticals, the irregulars (${groups.join(', ')})`);
+    check(out.hits[0].record.id === 'dso-m31' && out.hits[1].record.id === 'dso-m33', `within a group the brighter first (${out.hits.slice(0, 3).map((h) => h.record.name).join(', ')})`);
+    check(out.hits.find((h) => h.record.id === 'dso-lmc').group.id === 'GALAXY_IRREGULAR', 'the LMC is listed with the irregulars');
     check(out.hits.length <= 8 && out.total >= out.hits.length, 'eight rows at most, and the total says how many more');
     check(/^Spiral galaxies · \d+$/.test(out.hits[0].group.text), `a group's microlabel names it and counts it ("${out.hits[0].group.text}")`);
     check(!out.hits.some((h) => h.record.klass === 'satellite'), '"galaxies" lists no satellite: none is named so');
@@ -310,7 +330,15 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   // The before picture's switch is the look tool's only: off unless ?look=1 is in the address.
   check(R.kindsOn() === true, 'search by kind is on wherever there is no look tool');
   const srcS = readFileSync(join(ROOT, 'site/js/ui/search.js'), 'utf8');
-  check(!/COPY\.r12Search/.test(srcS) && /KIND_COPY/.test(srcS), 'the boot module reads the kind words through the search rows, never from the later copy');
+  check(!/COPY\.r12Search/.test(srcS) && /\.answer\(/.test(srcS) && /result\.note/.test(srcS), 'the boot module asks the search rows (answer) and prints their note, never the later copy itself');
+  {
+    const none = R.answer(kindex, 'no model', true, { find: findMatches });
+    check(none.note === COPY.r12Search.noneWithModel && !none.hits.length, 'answer: the toggle leaving nothing is the foot\'s note, not a miss');
+    const plain = R.answer(kindex, 'iss', false, { find: findMatches });
+    check(plain.hits[0].record.id === 'sat-25544' && !plain.note && !plain.kind, 'answer: a plain name with the toggle off is findMatches as before');
+    const k = R.answer(kindex, 'moons of saturn', false, { find: findMatches });
+    check(k.kind && k.kind.of.id === 'saturn' && k.hits.length === 3, 'answer: a kind with its classes here lists them');
+  }
   if (typeof globalThis.document === 'undefined') {
     // The two nodes, on a document that has just enough of one.
     const node = () => ({ attrs: {}, dataset: {}, listeners: {}, setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return this.attrs[k]; }, addEventListener(k, f) { this.listeners[k] = f; } });

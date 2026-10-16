@@ -128,9 +128,12 @@ if (new URLSearchParams(location.search).get('lookSubject') === 'search') {
   await shot('search-5-galaxies-3d', `${innerWidth} px: "galaxies" with 3D models only: ${out.search.toggled.rows.map((r) => r.name).join(', ')}`);
   { const t = wrapOf(field()).querySelector('.sr-search__only'); if (t) t.click(); await sleep(600); }
   // The keyboard: the field, Fly to it, the toggle, in the order the screen reads them.
-  // (Fly to it is drawn for a screen reader only in the sidebar: a 1 px box is not on the screen to read.)
+  // Fly to it is drawn for a screen reader only in the sidebar and the bar (css/ui.css: absolute, 1 px,
+  // clip: rect(0 0 0 0)): a clipped control is not on the screen to read, whatever its box says (its padding
+  // kept it wider than 1 px, so the first version of this check counted it as the first thing read).
+  const srOnly = (n) => { const cs = getComputedStyle(n); const r = n.getBoundingClientRect(); return (cs.clip && cs.clip !== 'auto') || (cs.clipPath && cs.clipPath !== 'none') || r.width <= 1 || r.height <= 1; };
   {
-    const els = [...wrapOf(field()).querySelectorAll(FOCUSABLE)].filter((n) => shown(n) && n.getBoundingClientRect().width > 2);
+    const els = [...wrapOf(field()).querySelectorAll(FOCUSABLE)].filter((n) => shown(n) && !srOnly(n));
     const read = els.map((n) => ({ n, r: n.getBoundingClientRect() })).sort((a, b) => { const ma = a.r.top + a.r.height / 2; const mb = b.r.top + b.r.height / 2; return Math.abs(ma - mb) < 12 ? a.r.left - b.r.left : ma - mb; });
     out.search.order = { keyboard: els.map(label), screen: read.map((x) => label(x.n)) };
     if (out.search.order.keyboard.join(' | ') !== out.search.order.screen.join(' | ')) out.problems.push('search: the keyboard goes ' + out.search.order.keyboard.join(' > ') + ' but the screen reads ' + out.search.order.screen.join(' > '));

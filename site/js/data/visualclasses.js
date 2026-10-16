@@ -1093,9 +1093,6 @@ export const VISUAL_CLASSES = [
 "dso-m106",
 "dso-m108",
 "dso-m109",
-"dso-lmc",
-"dso-smc",
-"dso-ngc-3109",
 "dso-ngc-253",
 "dso-ngc-891",
 "dso-ngc-7331",
@@ -1103,7 +1100,6 @@ export const VISUAL_CLASSES = [
 "dso-whale-galaxy",
 "dso-ngc-2403",
 "dso-fireworks-galaxy",
-"dso-ngc-55",
 "dso-ngc-300",
 "dso-ngc-1300",
 "dso-hamburger-galaxy"
@@ -1136,6 +1132,8 @@ export const VISUAL_CLASSES = [
 "honesty": "illustrative",
 "members": {
 "dso": [
+"dso-lmc",
+"dso-smc",
 "dso-ngc-6822",
 "dso-ic-10",
 "dso-ic-1613",
@@ -1146,7 +1144,9 @@ export const VISUAL_CLASSES = [
 "dso-pegasus-dwarf",
 "dso-phoenix-dwarf",
 "dso-aquarius-dwarf",
-"dso-sagdig"
+"dso-sagdig",
+"dso-ngc-3109",
+"dso-ngc-55"
 ],
 "photographs": [
 "dso-lmc",
