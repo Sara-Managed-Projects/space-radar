@@ -233,10 +233,12 @@ export function wireRail(ctx, opts = {}) {
   win.addEventListener('resize', onAny);
   // The classes that hide it (a trip, a clear screen, the drift, the share sheet) change without an event of their own.
   const watch = typeof MutationObserver === 'function' ? new MutationObserver(onAny) : null;
-  if (watch) watch.observe(html, { attributes: true, attributeFilter: ['class'] });
+  if (watch) watch.observe(html, { attributes: true, attributeFilter: ['class', 'data-sheet'] });
   // A join crossed in the moment before this module landed (the first long zoom fetches it): said now.
   const last = ctx.climb && ctx.climb.state ? ctx.climb.state.lastJoin : null;
-  if (last && last.to === lastStage && typeof performance !== 'undefined' && performance.now() - last.atMs < 3000) {
+  // No clock on it: the badge that fetches this module is fetched by that same join, and on a slow
+  // machine (a runner's software GL) the two fetches took longer than any fixed window (seen 2026-10-16).
+  if (last && last.to === lastStage && last.from !== last.to) {
     lastStage = last.from;
     onStage({ detail: { worldId: last.to } });
   }
