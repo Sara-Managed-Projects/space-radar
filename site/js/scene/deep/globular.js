@@ -3,7 +3,7 @@
 // anchor on every rung of the ladder, the first time a rung is entered, never at boot.
 //
 //   createLayer(THREE, env) -> { group, frame(info), ready(), stats(), shares(), taken(id), dispose() }
-//     env  = { records(), recordById(id), radiusPx(id), quality(), pictureShare(id), on(), load?(), loadMembers?(), base? }
+//     env  = { records(), recordById(id), radiusPx(id), quality(), pictureShare(id), on(), open?, load?(), loadMembers?(), base? }
 //     info = { camera, renderer, stage, gain, visible }
 //   Pure, for tests/test_globular.mjs: kingDensity, kingSurface, kingTable, sampleRadius, giantCount, sampleGlobular,
 //   visibleLight, parseMembers, membersOf, seedOf, mulberry32, fadeFor, POINTS, MAX_DRAWN, FROM_PX, FULL_PX, LF
@@ -55,6 +55,13 @@ export const COPY_BLOCK = 'r12Clusters';
 export const DRAWN = { globular: ['model'], open: ['catalogue'] };
 
 /** Stars drawn for one globular, by tier (T0, T1, T2): the brightest of the model's, never more than it has. */
+/**
+ * The open clusters' members are drawn only when this is true (or a caller's `env.open`). OFF since the stage's last
+ * look run (2026-10-17): at the app's arrival 40 light-years out most members are fainter than magnitude 7 and were
+ * drawn as one-pixel specks, while their illustrative haze stepped back, so the picture was emptier than before. The
+ * file, the shader and the card's rows are ready; what is left is a visibility floor for faint members and one look.
+ */
+export const OPEN_MEMBERS = false;
 export const POINTS = [3000, 10000, 24000];
 export const MAX_DRAWN = 3;
 export const FROM_PX = 14;      // CSS px of the cluster's radius on screen: its stars start
@@ -332,7 +339,7 @@ export function createLayer(THREE, env = {}) {
       state.manifest = man;
       state.fileBytes += JSON.stringify(man).length;
       for (const g of man.globulars || []) rows.set(`dso-${g.id}`, { kind: 'globular', row: g });
-      for (const o of man.open || []) rows.set(`dso-${o.id}`, { kind: 'open', row: o });
+      if (env.open === undefined ? OPEN_MEMBERS : env.open) for (const o of man.open || []) rows.set(`dso-${o.id}`, { kind: 'open', row: o });
       for (const id of rows.keys()) unstamped.add(id);
       stamp();
     })

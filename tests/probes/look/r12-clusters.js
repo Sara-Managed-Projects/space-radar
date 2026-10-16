@@ -61,6 +61,9 @@ const rtLy = (id) => {
   const r = sr.recordById(id);
   return g && r ? g.rcArcmin * ARCMIN * r.meta.distLy * 10 ** g.c : null;
 };
+let OPEN = true;
+try { OPEN = (await import(new URL('js/scene/deep/globular.js', document.baseURI).href)).OPEN_MEMBERS !== false; } catch { /* a ref from before the stage */ }
+out.openMembers = OPEN;
 const starsOn = (on) => { try { sr.deep.debug({ stars: on }); } catch (e) { look.warns.push('debug: ' + e); } };
 
 let subjectId = null;
@@ -122,7 +125,7 @@ for (const [id, label] of [['dso-m45', 'the Pleiades'], ['dso-hyades', 'the Hyad
   await pair(`${key}-arrival`, `${label} at the app's framing: its members`);
   pose(id, 60, arrival);
   const turned = await pair(`${key}-turned60`, `${label} turned 60 degrees round its centre: the members' depth`);
-  if (!(turned.layer && turned.layer.drawn && turned.layer.drawn.some((x) => x.id === id))) out.problems.push(`${id}: no members drawn`);
+  if (!(turned.layer && turned.layer.drawn && turned.layer.drawn.some((x) => x.id === id))) (OPEN ? out.problems : look.warns).push(`${id}: no members drawn${OPEN ? '' : ' (globular.js OPEN_MEMBERS is off)'}`);
 }
 
 if (await need('dso-m13')) {

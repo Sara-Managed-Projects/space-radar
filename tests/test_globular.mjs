@@ -56,6 +56,7 @@ const fileBytes = manBytes.length + BIN.byteLength;
 check(fileBytes <= BUDGETS.deep_clusters_bytes, `the two files are within the budget (${fileBytes} B of ${BUDGETS.deep_clusters_bytes}; registry/budgets.yaml deep_clusters_bytes)`);
 check(G.POINTS[2] === BUDGETS.deep_globular_points && G.POINTS[0] < G.POINTS[1] && G.POINTS[1] < G.POINTS[2], `POINTS rise by tier to the budget's ${BUDGETS.deep_globular_points} (registry/budgets.yaml deep_globular_points)`);
 check(G.MAX_DRAWN <= BUDGETS.deep_clusters_draw_calls, `at most ${BUDGETS.deep_clusters_draw_calls} clusters drawn at once (registry/budgets.yaml deep_clusters_draw_calls)`);
+check(G.OPEN_MEMBERS === false, 'the open clusters\' members stay off until their faint end is legible (globular.js OPEN_MEMBERS)');
 check(G.limitFor(0.55) === G.LIMIT_MAG.eye && G.limitFor(1) === G.LIMIT_MAG.camera && G.limitFor(1.7) === G.LIMIT_MAG.camera && G.LIMIT_MAG.eye === 6.5, `drawn to the eye's 6.5 under Eye, to a camera's ${G.LIMIT_MAG.camera} under Camera and Deep`);
 check(G.UNDER_MEASURED.stars === 'same' && G.UNDER_MEASURED.members === 'same', 'under Measured the stars are the same (nothing in them moves)');
 
@@ -154,7 +155,7 @@ for (const id of ['m13', 'omega-centauri', '47-tucanae', 'm45', 'hyades']) {
 const px = new Map();
 let on = true, tier = 1, latched = false;
 const layer = G.createLayer(THREE, {
-  load: async () => MAN, loadMembers: async () => BIN,
+  load: async () => MAN, loadMembers: async () => BIN, open: true, // the members, switched on for the test (OPEN_MEMBERS is off)
   records: () => [...recs.values()], recordById: (id) => recs.get(id) || null, radiusPx: (id) => px.get(id) || 0,
   quality: () => ({ tier, latched }), pictureShare: () => 0, on: () => on,
 });
