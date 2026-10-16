@@ -242,3 +242,5 @@ features:
     files: [site/js/scene/perf.js]
     surfaces: ["want:wantPerf"]
     not: "For tools only: fetched under ?look=1 or by a tool's sr.wantPerf(); a visitor never sees it and has nothing to press."
+  # 0076 W3-d
+  # 0076 W3-e

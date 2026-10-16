@@ -1870,4 +1870,17 @@ Object.assign(COPY, {
   r12Giants: {},
   // 0076 W2-c (plumes)
   r12Plumes: {},
+
+  // RELEASE 1.2.0 wave 3 (internal spec 0076, design section 6): one empty block per stage, created by the lead
+  // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
+  // 0076 W3-a (star clusters as stars)
+  r12Clusters: {},
+  // 0076 W3-b (the Ring Nebula)
+  deepRing: {},
+  // 0076 W3-c (remnants and dust)
+  r12Dust: {},
+  // 0076 W3-d (where you are, and the way back)
+  r12Navigate: {},
+  // 0076 W3-e (search by kind)
+  r12Search: {},
 });

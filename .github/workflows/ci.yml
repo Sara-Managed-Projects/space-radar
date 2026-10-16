@@ -1067,3 +1067,8 @@ jobs:
         run: python3 tests/test_coverage.py
       - name: "the visual classes' mirror for search by kind is the registries' (internal spec 0076 W2-e)"
         run: python3 scripts/gen_visual_classes_js.py --check
+      # 0076 W3-a
+      # 0076 W3-b
+      # 0076 W3-c
+      # 0076 W3-d
+      # 0076 W3-e

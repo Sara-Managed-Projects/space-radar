@@ -1592,6 +1592,12 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
 
 ### Plume observations (0076 W2-c)
 
+### Clusters (0076 W3-a)
+
+### The Ring (0076 W3-b)
+
+### Remnants and dust (0076 W3-c)
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

@@ -183,6 +183,10 @@ const CONTRACT = {
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
   // 0076 W2-a (traverse.js)
   // 0076 W2-c (plumes.js)
+  // 0076 W3-a (globular.js)
+  // 0076 W3-b (ring.js, shellneb.js)
+  // 0076 W3-c (remnant.js, dustsheet.js)
+  // 0076 W3-d (scalerail.js)
 };
 
 const problems = [];

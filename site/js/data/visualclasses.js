@@ -1011,7 +1011,8 @@ export const VISUAL_CLASSES = [
 "dso-southern-ring-nebula"
 ],
 "heroes": [
-"dso-helix-nebula"
+"dso-helix-nebula",
+"dso-m57"
 ]
 }
 },

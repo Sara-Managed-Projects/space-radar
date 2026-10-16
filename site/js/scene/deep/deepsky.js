@@ -57,6 +57,7 @@ const MAX_HOLDERS = 3;          // the three largest on screen; anything else is
 const HOLDER_KEEP_MS = 5000;    // a holder out of use this long is disposed
 const HERO_KEEP_MS = 10000;     // a hero at level 0 this long gives its memory back
 const HERO_KINDS = new Set(['galaxy', 'cloud', 'soft', 'shell', 'remnant', 'globular']);
+// 0076 W3-c (holder kinds)
 // Thickness of a disc galaxy's holder, of its radius: an illustration (an LMC's disc is about a fifth
 // as thick as it is wide; a large spiral's a tenth); stage c and d replace it with the measured.
 const THICK = { 'barred-irregular': 0.22, irregular: 0.3, spiral: 0.12, 'barred-spiral': 0.12, lenticular: 0.2 };
@@ -103,6 +104,7 @@ export function createDeepSky(THREE, env = {}) {
       .catch((e) => console.warn('deep: layer', l.def.id, 'did not load', e)).finally(() => { pending.delete(l.loading); l.loading = null; });
     pending.add(l.loading);
   }
+  // 0076 W3-a (a class layer)
 
   // ---------------------------------------------------------------------------- placing a record
   function centreOf(record, out) {
