@@ -29,8 +29,9 @@ field at once times out, and a WHERE on proper motion makes the archive scan the
 tile of half a degree asks only for a cone and GROUP BYs the signs of the cuts, and the cuts are applied
 here. Every tile's answer is kept in the cache, so a second run fetches nothing.
 
-LICENCE. Gaia data: ESA/Gaia/DPAC, CC BY-SA 3.0 IGO. The bin is a derived work under the same licence
-(CREDITS.md section 3l, the LMC sub-heading).
+LICENCE. Gaia data: ESA/Gaia/DPAC, CC BY-NC 3.0 IGO (https://www.cosmos.esa.int/web/gaia-users/license: "Gaia data are
+distributed under the CC BY-NC 3.0 IGO license.", read 2026-10-16). The bin is a derived work and keeps
+that non-commercial term (CREDITS.md section 3l, the LMC sub-heading).
 """
 from __future__ import annotations
 

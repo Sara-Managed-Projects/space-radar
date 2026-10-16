@@ -569,7 +569,7 @@ Honesty over the 875 records: 319 measured, 233 modelled, 323 illustrative.
 - **Source:** The LMC from Gaia DR3 star counts (Gaia Collaboration, Vallenari et al. 2023) with the geometry of van der Marel & Cioni 2001; the SMC's photograph; OpenNGC.
 - **Dates and filters:** Gaia DR3 (2022); the photographs as their rows.
 - **Measured, modelled or reconstructed:** Measured: the Gaia counts on the sky. Modelled: depth, brightness per star, the dust and the Tarantula's gas in depth (labelled). Illustrative: the glow of the other irregulars.
-- **Rights:** Gaia CC BY-SA 3.0 IGO (ESA/Gaia/DPAC); photographs CC BY 4.0.
+- **Rights:** Gaia CC BY-NC 3.0 IGO (ESA/Gaia/DPAC, https://www.cosmos.esa.int/web/gaia-users/license); photographs CC BY 4.0.
 - **What is missing is tracked in:** internal #783 (the SMC, the Bridge and the Stream)
 - **Records (14):**
   - dso (11): `ngc-6822`, `ic-10`, `ic-1613`, `wlm`, `sextans-a`, `sextans-b`, `leo-a`, `pegasus-dwarf`, `phoenix-dwarf`, `aquarius-dwarf`, `sagdig`

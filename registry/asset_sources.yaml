@@ -327,7 +327,7 @@ sources:
     licence: CC BY-NC 3.0 IGO, as the licence page read 2026-10-16 says
     licence_read: "Gaia data are distributed under the CC BY-NC 3.0 IGO license."
     licence_url: https://www.cosmos.esa.int/web/gaia-users/license
-    licence_note: "registry/deepsky-heroes/lmc.yaml, scripts/build_deep_lmc.py and CREDITS.md 3l say CC BY-SA 3.0 IGO (the package's word, internal #785); the page says BY-NC, and points commercial users to ESA's terms (https://www.cosmos.esa.int/web/esdc/terms-and-conditions). Space Radar is free and non-commercial; the derived map's stated licence is a question for the lead (spec 0076 W2-e PR), not changed here."
+    licence_note: "The page points commercial users to ESA's terms (https://www.cosmos.esa.int/web/esdc/terms-and-conditions). registry/deepsky-heroes/lmc.yaml, scripts/build_deep_lmc.py and CREDITS.md 3l said CC BY-SA 3.0 IGO (the package's word, internal #785) and were corrected to CC BY-NC 3.0 IGO on 2026-10-16. Space Radar is free and non-commercial; the derived map keeps ESA's non-commercial term and is not for commercial reuse."
     account: none
     cost: none
     offline: shipped

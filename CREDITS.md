@@ -1383,6 +1383,8 @@ the source for fainter stars. Its terms were read on 2026-10-07
 distributed under **CC BY-NC 3.0 IGO**, with commercial use only by request to ESA. This site ships
 nothing under a non-commercial licence (the same rule that left out one sky culture in §3i and two
 voices in §9), so nothing was downloaded from the Gaia archive and nothing here is a cut of it.
+(Since 2026-10-15 one file is: the LMC's map in §3l, counted from Gaia DR3, which keeps ESA's
+non-commercial term.)
 AT-HYG is a compilation its author publishes under CC BY-SA 4.0, as he does the HYG database of
 §3c; its positions and magnitudes for these stars are Tycho-2's and Hipparcos's, and it uses Gaia
 DR3 for distances, which these files do not carry. **If you build something commercial on this
@@ -1489,12 +1491,15 @@ from star counts, catalogued positions and published geometry. No image of any p
 
 | what | from | licence |
 |---|---|---|
-| `site/data/deep/lmc-density.bin`: two maps of the LMC's stars on the sky (all members; young blue stars), counted from Gaia DR3 by `scripts/build_deep_lmc.py` (anonymous queries of the Gaia archive, 2026-10-15) | ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1. The member cuts follow the manner of Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | CC BY-SA 3.0 IGO; the derived map is under the same licence |
+| `site/data/deep/lmc-density.bin`: two maps of the LMC's stars on the sky (all members; young blue stars), counted from Gaia DR3 by `scripts/build_deep_lmc.py` (anonymous queries of the Gaia archive, 2026-10-15) | ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1. The member cuts follow the manner of Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | CC BY-NC 3.0 IGO: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>, read 2026-10-16; commercial use: ESA's terms, <https://www.cosmos.esa.int/web/esdc/terms-and-conditions>); the derived map keeps the same licence |
 | Positions of 21 H II regions (Henize 1956 numbers) and of the cluster R136 | SIMBAD (Wenger et al. 2000, A&AS 143, 9), CDS, Strasbourg, read 2026-10-15 | facts, credited |
 | The disc's tilt 34.7° and line of nodes 122.5°; the scale length 1.3–1.5 kpc; the outer ellipse | van der Marel & Cioni 2001, AJ 122, 1807; van der Marel 2001, AJ 122, 1827 | facts, cited |
 | The disc's thickness (the old stars' scale height from their V/σ) | van der Marel, Alves, Hardy & Suntzeff 2002, AJ 124, 2639 | facts, cited; the young stars' thickness is illustrative |
 | The Tarantula's colour along our line (within 25° of the line it was taken along): its photograph, already shipped | NASA, ESA, CSA, and STScI (ESA/Webb weic2212a, the photograph's own row above) | CC BY 4.0 |
 | The Tarantula's shape: R136 in a cavity, warm gas in a shell confined by molecular gas, mapped to 75 pc | Pellegrini, Baldwin & Ferland 2011, ApJ 738, 34; Pellegrini et al. 2010, ApJS 191, 160 | facts, cited; the shell's radius and width are a model |
+
+Space Radar is free and non-commercial; files derived from Gaia data keep ESA's non-commercial term and
+are not for commercial reuse.
 
 The stars' depths, their brightness, the dust and the Tarantula's gas in depth are a model, and the card
 says so. The colours of the gas are enhanced (hydrogen-alpha pink, [O III] teal), declared in the profile.
