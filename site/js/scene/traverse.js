@@ -181,6 +181,11 @@ export function createTraverses({ world = 'moon' } = {}) {
       },
       transparent: true,
       depthWrite: false,
+      // BOTH FACES. ribbonArrays winds each quad clockwise on screen (side -1 is the right of the way
+      // travelled), and where a traced line turns back on itself a quad folds over: with three's
+      // default FrontSide 85 % of Apollo 15's triangles and 96 % of Apollo 17's were culled, which
+      // the first pictures showed as a few yellow dots (tests/test_traverse.mjs counts them).
+      side: THREE.DoubleSide,
     });
     const mesh = new THREE.Mesh(geo, material);
     mesh.name = 'traverse:' + t.site;

@@ -86,6 +86,39 @@ check(V.traverseFade(0) === 1 && V.traverseFade(V.TRAVERSE_LOOK.nearKm) === 1 &&
   check(st.find((x) => x.site === 'apollo-15').shown && !st.find((x) => x.site === 'apollo-17').shown, '40 km over Hadley: Apollo 15\'s is drawn, Apollo 17\'s (1 000 km away) is not');
   check(T.credits().length === 1 && T.credits()[0] === a15.credit, 'and only its credit is in the Sources panel');
   check(T.group.children.length === 2 && T.group.children.every((m) => m.material.depthWrite === false && m.material.transparent), 'one mesh a traverse, never writing depth');
+  // Seen from above, as the shader widens it, most of the ribbon's triangles wind clockwise on screen:
+  // drawn only if the material draws both faces (the first look run, 2026-10-16, culled them).
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  check(T.group.children.every((m) => m.material.side === THREE.DoubleSide), 'both faces drawn: a one-sided ribbon loses its clockwise quads');
+  {
+    const sub = (a, b) => a.map((x, i) => x - b[i]);
+    const dot = (a, b) => a.reduce((acc, x, i) => acc + x * b[i], 0);
+    const unit = (a) => { const l = Math.hypot(...a); return a.map((x) => x / l); };
+    const up = at;
+    const north = unit(sub([0, 1, 0], up.map((x) => x * up[1])));
+    const right = unit([north[1] * up[2] - north[2] * up[1], north[2] * up[0] - north[0] * up[2], north[0] * up[1] - north[1] * up[0]]);
+    const cam = up.map((x) => x * (1 + 45 / R));
+    const px = (p) => { const v = sub(p, cam); const z = -dot(v, up); return [dot(v, right) / z * 1000, dot(v, north) / z * 1000]; };
+    const r = V.ribbonArrays(a15.paths.map(V.parsePath));
+    const scr = [];
+    for (let i = 0; i < r.side.length; i++) {
+      const g = (arr) => [arr[i * 3], arr[i * 3 + 1], arr[i * 3 + 2]];
+      const c = px(g(r.position));
+      let a = sub(c, px(g(r.prev)));
+      let b = sub(px(g(r.next)), c);
+      if (dot(a, a) < 1e-8) a = b;
+      if (dot(b, b) < 1e-8) b = a;
+      let d = unit(a).map((x, k) => x + unit(b)[k]);
+      d = dot(d, d) < 1e-8 ? [1, 0] : unit(d);
+      scr.push([c[0] - d[1] * r.side[i] * 1.125, c[1] + d[0] * r.side[i] * 1.125]);
+    }
+    let cw = 0;
+    for (let k = 0; k < r.index.length; k += 3) {
+      const [A, B, C] = [scr[r.index[k]], scr[r.index[k + 1]], scr[r.index[k + 2]]];
+      if ((B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]) < 0) cw += 1;
+    }
+    check(cw > r.index.length / 6, `the ribbon's clockwise triangles seen from 45 km over Hadley: ${cw} of ${r.index.length / 3} (the reason for DoubleSide)`);
+  }
   T.hide();
   check(T.credits().length === 0, 'hidden with the tiles');
   T.dispose();
