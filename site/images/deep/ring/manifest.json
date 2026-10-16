@@ -9,5 +9,6 @@
     512,
     512
   ],
+  "peak_lum_p99": 0.777,
   "credit": "NASA, ESA, and C. Robert O'Dell (Vanderbilt University) (ESA/Hubble heic1310a), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_ring.py)"
 }

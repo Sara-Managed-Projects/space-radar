@@ -51,7 +51,7 @@ const pa = (v) => ((Math.atan2(-v[0], v[1]) / D2R) + 360) % 360; // position ang
   check(HERO.drawn.length === 1 && HERO.drawn[0] === 'reconstruction' && HERO.credits.length >= 3, 'it draws a reconstruction, with its credit lines');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
   const sect = credits.slice(credits.indexOf('### The Ring (0076 W3-b)'), credits.indexOf('### Remnants and dust (0076 W3-c)'));
-  for (const s of ['AJ 145, 92', 'AJ 134, 1679', 'heic1310a', 'arXiv:2308.09027', 'ApJ 985', 'NARROWBAND', 'ENHANCED']) check(sect.includes(s), `CREDITS.md's Ring section names ${s}`);
+  for (const s of ['AJ 145, 92', 'AJ 134, 1679', 'heic1310a', 'arXiv:2308.09027', 'ApJ 985', 'NARROWBAND', 'ENHANCED', '2090486618786534784', 'CC BY-NC 3.0 IGO']) check(sect.includes(s), `CREDITS.md's Ring section names ${s}`);
   const words = readFileSync(join(JS, 'copy/en.later.js'), 'utf8');
   check(/deepRing: \{[\s\S]*card: \{\s*m57: 'Its light is taken from Hubble’s photograph, its shape from O’Dell, Ferland, Henney and Peimbert \(2013\)[^']*Not yet reviewed by an astronomer\.'/.test(words), 'the card says its light is the photograph\'s, its shape the paper\'s, and that no astronomer has reviewed it yet');
   check(statSync(join(ROOT, 'site/images/deep/ring/ring-light.webp')).size < 40000, 'the light map is small (the photograph, its stars removed)');
@@ -60,7 +60,10 @@ const pa = (v) => ((Math.atan2(-v[0], v[1]) / D2R) + 360) % 360; // position ang
 // --- 2. the geometry: the published axis and tilt; the light map's place on the sky ----------------------
 const g = R.geometryOf();
 {
-  const asLy = (arcsec) => arcsec * 2700 * Math.PI / 648000;
+  const asLy = (arcsec) => arcsec * 2569 * Math.PI / 648000;
+  const dsoRow = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects.find((o) => o.id === 'm57');
+  check(dsoRow.distLy === 2569 && dsoRow.distance.method === 'parallax' && /Gaia DR3/.test(dsoRow.distance.source) && /2090486618786534784/.test(dsoRow.distance.source) && /CC BY-NC 3\.0 IGO/.test(dsoRow.distance.source), 'the record\'s distance is Gaia DR3\'s parallax of the central star, credited CC BY-NC 3.0 IGO');
+  check(HERO.frame.distance_ly === dsoRow.distLy, 'and the hero scales its arcseconds by the same distance');
   check(near(Math.acos(-g.axis[2]) / D2R, 13.5, 1e-9), `the disc's axis is 13.5° from our line of sight (${(Math.acos(-g.axis[2]) / D2R).toFixed(3)}°)`);
   check(near(pa(g.axis), 60, 1e-6), `its far end points to PA 60° on the sky: the NE end of the ring is near (${pa(g.axis).toFixed(2)}°)`);
   // Seen from here the ring's outline is the paper's ellipse: 44″ along PA 60°, 30″ across.
@@ -146,6 +149,49 @@ const lightOf = (x, y) => {
   check(jump < 0.05, `the line's column changes smoothly across the nebula: no seam (largest step ${(jump * 100).toFixed(2)} % over a fiftieth of a sample)`);
 }
 
+// --- 3b. photometric discipline: the core never goes white; from inside nothing washes the screen grey ------
+{
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'site/images/deep/ring/manifest.json'), 'utf8'));
+  check(near(R.SHAPE.peak, manifest.peak_lum_p99, 1e-9), `the cap is the photograph's own brightest (SHAPE.peak ${R.SHAPE.peak}, the light map's 99th percentile ${manifest.peak_lum_p99})`);
+  // Turned 45 degrees round the star, through the core and across the face: never past the photograph's brightest,
+  // and never white (the photograph's colour stays in it).
+  const bright = (x, y) => lightOf(x, y).map((v) => Math.min(1, v * 1.25));
+  let worstLum = 0, leastChroma = 1;
+  for (const deg of [30, 45, 60, 90]) {
+    const a = deg * D2R, dir = [Math.sin(a), 0, Math.cos(a)];
+    const right = [Math.cos(a), 0, -Math.sin(a)];
+    for (let k = -6; k <= 6; k++) {
+      const off = right.map((v) => v * k * g.A / 6);
+      const ro = dir.map((v, i) => v * 6 * g.bound + off[i]);
+      const c = R.columnJs(g, ro, dir.map((v) => -v), 16, 0.5, bright).rgb;
+      const y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+      worstLum = Math.max(worstLum, y);
+      if (y > 0.3) leastChroma = Math.min(leastChroma, (Math.max(...c) - Math.min(...c)) / Math.max(...c));
+    }
+  }
+  check(worstLum <= R.SHAPE.peak + 1e-9, `turned 30 to 90 degrees the core is held to the photograph's brightest (largest luminance ${worstLum.toFixed(3)} against ${R.SHAPE.peak})`);
+  check(leastChroma > 0.15, `and keeps its colour: no bright pixel is white (least chroma ${leastChroma.toFixed(2)})`);
+  const capped = R.capLight([2, 1.6, 1.2]);
+  check(near(0.2126 * capped[0] + 0.7152 * capped[1] + 0.0722 * capped[2], R.SHAPE.peak, 0.08) && capped[0] > capped[2] * 1.3, `the cap keeps the hue (${capped.map((v) => v.toFixed(2)).join(', ')})`);
+  // From inside, 0.3 ly from the star and 60 degrees off our line, as the probe's r04: a view of 32 x 18 rays.
+  const a = 60 * D2R, cam = [Math.sin(a) * 0.3, 0, Math.cos(a) * 0.3];
+  const fwd = cam.map((v) => -v / 0.3), up = [0, 1, 0], right = [fwd[1] * up[2] - fwd[2] * up[1], fwd[2] * up[0] - fwd[0] * up[2], fwd[0] * up[1] - fwd[1] * up[0]];
+  const lums = [];
+  for (let jy = 0; jy < 18; jy++) for (let ix = 0; ix < 32; ix++) {
+    const sx = (ix + 0.5) / 32 * 2 - 1, sy = ((jy + 0.5) / 18 * 2 - 1) * 9 / 16;
+    const rd = unit([0, 1, 2].map((c) => fwd[c] + right[c] * sx * 0.8 + up[c] * sy * 0.8));
+    const c = R.columnJs(g, cam, rd, 16, S.pixelHash(ix, jy), lightOf).rgb;
+    lums.push((0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) * R.sharesFor({ level: 1, rPx: Infinity, photo: 0 }).light);
+  }
+  lums.sort((p, q) => p - q);
+  const median = lums[lums.length >> 1], p90 = lums[Math.floor(lums.length * 0.9)], p10 = lums[Math.floor(lums.length * 0.1)];
+  check(median < 0.12, `from inside the view is not washed: its median luminance ${median.toFixed(3)} after the eye's adaptation (${R.SHAPE.adapt})`);
+  check(p90 > 2 * Math.max(p10, 0.005), `and it has structure, the lobes' wall round the camera brighter than the hollow it stands in (10th / 90th percentile ${p10.toFixed(3)} / ${p90.toFixed(3)})`);
+  // The lobes are a wall: empty at their middle and at their surface.
+  const mid = R.columnsAt(g, 0, 0)[1];
+  check(mid > 0 && Number.isFinite(mid), 'the lobes still carry the cavity\'s light on our line');
+}
+
 // --- 4. the exact integrals, and the GLSL written from the same numbers ----------------------------------
 {
   // ∫ exp(-u⁴) by fine trapezoids against the closed form
@@ -161,8 +207,11 @@ const lightOf = (x, y) => {
   const f = R.SHADERS.gas;
   for (const k of ['slab', 'edge', 'kappa', 'knee']) check(f.includes(Number(R.SHAPE[k]).toFixed(3)), `GAS_FRAG carries SHAPE.${k} (${R.SHAPE[k]})`);
   check(S.QUARTIC_CDF.every((c) => f.includes(String(c))), 'and the closed form\'s coefficients');
-  check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec2 quadSpan\( mat3 S/.test(f) && /texture2D\( uCols, p\.xy \* uColScale \+ 0\.5 \)/.test(f) && /float slabIntegral\(/.test(f) && /max\( 4, uN \/ 2 \)/.test(f), 'the fragment has the same spans, integrals, tabulated columns and the halo\'s half samples');
+  check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec2 quadSpan\( mat3 S/.test(f) && /texture2D\( uCols, xy \* uColScale \+ 0\.5 \)/.test(f) && /float slabIntegral\(/.test(f), 'the fragment has the same spans, integrals and tabulated columns');
   check(/gl_FragColor = vec4\( col \* uGain \* uShare, 1\.0 \)/.test(f), 'additive with alpha 1: the light lands (three\'s AdditiveBlending is SRC_ALPHA, ONE)');
+  check(/col = capLight\( col \);/.test(f) && /if \( y > uPeak \) c \*= uPeak \/ y;/.test(f), 'the fragment holds the core to the photograph\'s brightest');
+  check((f.match(/for \( int i = 0; i < MAX_N; i\+\+ \)/g) || []).length === 3 && !/k == 0 \?/.test(f), 'one loop a layer, each computing only its own integral (no branch a step that a GPU runs both sides of)');
+  check(/int nl = max\( 2, int\( float\( uN \) \* 0\.6 \+ 0\.5 \) \)/.test(f) && /int nh = max\( 1, int\( float\( uN \) \* 0\.25 \+ 0\.5 \) \)/.test(f), 'the lobes and the halo take ring.js layerSamples');
   check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/sampler3D/.test(f) && !/uTime/.test(f), 'a hash of the pixel for the offset, no noise volume, no clock');
   for (const [k, v] of Object.entries(R.SHADERS)) {
     const bad = [...v.matchAll(/smoothstep\(\s*([-0-9.]+)\s*,\s*([-0-9.]+)\s*,/g)].filter((m) => Number(m[1]) >= Number(m[2]));
@@ -204,10 +253,11 @@ const lightOf = (x, y) => {
   }
   check(off < 1e-6, `the white dwarf stays at the centre of the frame across a 90° arc (largest offset ${off.toExponential(1)})`);
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  check(hero.stats().samples === 4 && hero.stats().knots === 400, `T0: 4 samples a layer, 400 knots (${JSON.stringify(hero.stats())})`);
+  check(hero.stats().samples === 4 && hero.stats().knots === 150, `T0: 4 samples for the disc, 150 knots (${JSON.stringify(hero.stats())})`);
   check(uGas.uShare.value === 0 && hero.ready(), 'no gas is drawn until its light (the photograph) has landed; with nothing to fetch here it is ready');
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
-  check(hero.stats().samples === 16 && hero.stats().knots === 1200, 'T2 at level 3: 16 samples a layer (32 steps), 1 200 knots');
+  check(hero.stats().samples === 16 && hero.stats().knots === 1000, 'T2 at level 3: 16 samples for the disc (32 steps), 1 000 knots');
+  check(JSON.stringify(R.layerSamples(8)) === '[8,5,2]' && JSON.stringify(R.layerSamples(4)) === '[4,2,1]', `fewer samples where the light is smooth or faint: disc, lobes, halo ${R.layerSamples(8)} at level 2, ${R.layerSamples(4)} on T0`);
   check(R.samplesFor({ tier: 2, steps: 48 }) === 24 && R.samplesFor({ tier: 1, steps: 0 }) === 8, 'Ultra 24 a layer; level 2 8');
   const sh = R.sharesFor({ level: 1, rPx: 300, photo: 1 });
   check(sh.gas === 0 && sh.knots === 0 && sh.star === 0.5, 'on our line, with its photograph drawn, the gas gives way and the star is half');
@@ -249,6 +299,7 @@ const lightOf = (x, y) => {
   const { COPY } = await import(join(JS, 'copy/en.js'));
   const rows = COPY.deepRing && COPY.deepRing.rows && COPY.deepRing.rows['dso-m57'];
   check(Array.isArray(rows) && rows.some(([k, v]) => /depth/.test(k) && /illustration/.test(v)) && rows.some(([, v]) => /not yet been reviewed/.test(v)), 'its rows say what of its depth is drawn as an illustration, and the review');
+  check(rows.some(([k, v]) => /distance/.test(k) && /Parallax \(Gaia DR3\)/.test(v)), 'and that its distance is a parallax from Gaia DR3');
 }
 
 // --- 6. the knots: in the outer part of the ring, seeded -------------------------------------------------
@@ -264,6 +315,7 @@ const lightOf = (x, y) => {
   }
   check(out === 0, `the knots lie in the ring's outer part, inside its thickness (${out} of ${n} outside)`);
   check(a.knot.every((v, i) => (i % 4 !== 0) || (v > 0.5 * g.knots.head && v < 1.5 * g.knots.head)), 'heads of the measured size (0.2″, 150 au)');
+  check(a.knot.every((v, i) => (i % 4 !== 2) || (v >= 0.18 && v <= 0.32)), 'their darkness lighter than the Helix\'s (0.18 to 0.32), so on a phone they do not read as specks');
 }
 
 // --- 7. the Helix's exact front (spec 0075 task 45), on the shared part --------------------------------------

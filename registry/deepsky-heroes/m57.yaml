@@ -5,7 +5,7 @@
 # Filled by stage W3-b. site/js/scene/deep/ring.js draws it; every number it draws is here.
 #
 # Angles are the paper's. Lengths are the paper's ARCSECONDS, turned into light-years at the record's distance
-# (2 700 ly; the paper used 740 pc, Gaia's parallax of the star gives about 790 pc), so the size on the sky is the
+# (2 569 ly, Gaia DR3's parallax of the central star; the paper used 740 pc), so the size on the sky is the
 # measured one whatever the distance. `near_pa_deg` is the position angle (east of north) of the disc's NEAR side,
 # where the FAR end of its axis points (scene/deep/shellneb.js ringAxis, as the Helix's).
 id: m57
@@ -18,7 +18,7 @@ children: []
 levels:
   2: "structure: the main ring as a crisp disc, the lobes as a spheroid through its cavity and the inner halo as a shell, all lit by the photograph (8 samples a layer; 4 on T0), the knots and the white dwarf"
   3: "close-up: the same layers marched with half the coordinator's steps a layer (12 to 24 by tier); the camera may go inside"
-frame: {pa_deg: 60, incl_deg: 13.5, units_ly: 1, distance_ly: 2700, ra_deg: 283.39587, dec_deg: 33.02858, axes: "x west, y north, z toward the Sun; the white dwarf at the origin"}
+frame: {pa_deg: 60, incl_deg: 13.5, units_ly: 1, distance_ly: 2569, ra_deg: 283.39587, dec_deg: 33.02858, axes: "x west, y north, z toward the Sun; the white dwarf at the origin"}
 # THE LIGHT. Each sky point's light (Hubble heic1310a without its stars: scripts/build_deep_ring.py,
 # site/images/deep/ring/) is spread along our line through the layers it crosses, in proportion to each layer's
 # `weight` times its density there, divided by that line's own column: from our side the model IS the
@@ -74,7 +74,7 @@ layers:
     kind: knots
     what: "the dense globules: dark knots with ionised rims, near the ionisation boundary"
     count_estimated: 20000
-    count_drawn: [400, 800, 1200]
+    count_drawn: [150, 600, 1000]
     q_from: 0.72
     q_to: 1.0
     head_au: 150
@@ -97,13 +97,14 @@ sources:
   - "O'Dell, C. R., Sabbadin, F. & Henney, W. J. 2007, AJ 134, 1679: the polar semi-axis (59″), used for the lobes' length"
   - "ESA/Hubble heic1310, New view of the Ring Nebula (https://esahubble.org/news/heic1310/, read 2026-10-16): \"shaped like a distorted doughnut\", \"a rugby ball slotted into the doughnut's central gap\". Read for the interpretation; nothing of it is shipped but the photograph"
   - "Wesson, R. et al. 2024, JWST observations of the Ring Nebula (NGC 6720): I. Imaging of the rings, globules, and arcs, MNRAS (https://arxiv.org/abs/2308.09027): the globules' count and size"
+  - "Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1), source_id 2090486618786534784, read through VizieR I/355/gaiadr3 on 2026-10-17: the central star's parallax, 1.2696 ± 0.0438 mas, the record's distance. ESA/Gaia/DPAC, CC BY-NC 3.0 IGO"
   - "Sahai, R. et al. 2025, JWST observations of the Ring Nebula (NGC 6720). III. A dusty disk around its central star, ApJ 985 (https://arxiv.org/abs/2504.01188): the star's temperature"
   - "ESA/Hubble heic1310a (NASA, ESA, and C. Robert O'Dell (Vanderbilt University), CC BY 4.0), the photograph the app already shows: the hero's LIGHT (its stars removed, site/images/deep/ring/ring-light.webp), and the ring's projected axis, measured from it"
 review:
   data_vs_model: "Measured: the sizes on the sky, the major axis's position angle and tilt (and which end is near), the knots' count and size, the star's temperature, and the light (the photograph). Model: which layer each sky point's light belongs to (by density along our line), the disc's thickness and crisp faces, the cavity's edge, the lobes' form, the halo as a shell, each layer's self-absorption, each knot's place (seeded) and its exaggerated darkness"
   geometry: "O'Dell, Ferland, Henney & Peimbert 2013 (a disc nearly in the plane of the sky, 44″ by 30″ at PA 60°, tilted 13.5° with the NE end near; lobes nearly along our line; the inner halo within 65″). The projected axis checked against the photograph (62° measured, 60° published). The lobes' form and the disc's thickness are not measured; said on the card"
   colours: "The photograph's own narrowband colours under every look, with each exposure's stretch as the photograph has it; declared enhanced"
-  distance: "2 700 ly, the record's (registry/dso-hand.yaml and OpenNGC); the paper used 740 pc (2 400 ly) and Gaia's parallax of the star gives about 790 pc (2 600 ly). The paper's arcseconds are scaled to the record's distance, so its size on the sky is kept"
+  distance: "2 569 ly (2 483 to 2 661), the record's since 0076 W3-b: Gaia DR3's parallax of the central star, source_id 2090486618786534784, 1.2696 ± 0.0438 mas, inverted without a zero-point correction (scripts/data/messier-overlay.yaml; ESA/Gaia/DPAC, CC BY-NC 3.0 IGO). It replaces the Messier table's 2 700 ly. The paper used 740 pc (2 400 ly). The paper's arcseconds are scaled to the record's distance, so its size on the sky is kept"
   credits: "CREDITS.md section 3l, The Ring (0076 W3-b); the card's source line names the paper"
   by: "Space Radar maintainers"
   date: 2026-10-16
@@ -112,4 +113,5 @@ credits:
   - "The Ring's 3D shape: O'Dell, Ferland, Henney & Peimbert 2013, AJ 145, 92 (the disc, its axes and tilt, the lobes, the halos); the lobes' length after O'Dell, Sabbadin & Henney 2007, AJ 134, 1679"
   - "The globules: O'Dell et al. 2013; Wesson et al. 2024, MNRAS (CC BY 4.0)"
   - "The white dwarf's temperature: Sahai et al. 2025, ApJ 985"
+  - "The distance: the central star's parallax from Gaia DR3 (source_id 2090486618786534784), ESA/Gaia/DPAC, CC BY-NC 3.0 IGO"
   - "Its light: the photograph heic1310a, NASA, ESA, and C. Robert O'Dell (Vanderbilt University) (CC BY 4.0), its stars removed by Space Radar"

@@ -1599,7 +1599,7 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
 The Ring Nebula's reconstruction (`site/js/scene/deep/ring.js`, its numbers in
 `registry/deepsky-heroes/m57.yaml`, the shared part in `site/js/scene/deep/shellneb.js`) is computed here from
 facts read in each source on 2026-10-16; no text, figure, image or model file of any of them is shipped. The
-sizes are the papers' arcseconds, turned into light-years at the record's distance (2 700 ly).
+sizes are the papers' arcseconds, turned into light-years at the record's distance (2 569 ly, below).
 
 | what | the numbers | from |
 |---|---|---|
@@ -1607,8 +1607,9 @@ sizes are the papers' arcseconds, turned into light-years at the record's distan
 | the lobes | "a pair of extended Lobes pointed almost at the observer" through the cavity; the paper has "no evidence about the form of the Lobes": drawn as one soft spheroid 59″ long each way (the semi-polar axis of the earlier model), an illustration | O'Dell et al. 2013, section IV; O'Dell, Sabbadin & Henney 2007, AJ 134, 1679 |
 | the interpretation | "shaped like a distorted doughnut", with "a rugby ball slotted into the doughnut's central gap": read, not shipped | ESA/Hubble heic1310 (2013-05-23, read 2026-10-16) |
 | the inner halo | loops "almost all of them within 65″" of the star: drawn as a soft spherical shell from 44″ to 62″ (where the photograph's light ends), an illustration. The outer halo (115″) and the ten arcs Webb found are not drawn | O'Dell et al. 2013, sections I and III.4; Wesson et al. 2024, MNRAS (arXiv:2308.09027) |
-| the knots | dark knots of about 0.2″ (150 au) near the ionisation boundaries; "some 20 000 dense globules". 400 to 1 200 are drawn in the outer part of the ring at that size; their places are seeded, not catalogued, their 300 au tails are an illustration, and under 2.2 px their darkness is exaggerated so they can be seen | O'Dell et al. 2013, section II.2; Wesson et al. 2024, MNRAS, CC BY 4.0 |
+| the knots | dark knots of about 0.2″ (150 au) near the ionisation boundaries; "some 20 000 dense globules". 150 to 1 000 are drawn in the outer part of the ring at that size; their places are seeded, not catalogued, their 300 au tails are an illustration, and under 2.2 px their darkness is exaggerated so they can be seen | O'Dell et al. 2013, section II.2; Wesson et al. 2024, MNRAS, CC BY 4.0 |
 | the white dwarf | about 135 000 K (published fits 101 000 to 162 000 K): its colour is a blackbody's | Sahai et al. 2025, ApJ 985 (arXiv:2504.01188) |
+| the distance | 2 569 ly (2 483 to 2 661): the inverse of the central star's parallax, 1.2696 ± 0.0438 mas, Gaia DR3 source_id 2090486618786534784 (no zero-point correction). It replaces the Messier table's 2 700 ly for the record (`scripts/data/messier-overlay.yaml`) | Gaia DR3, ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1; read through VizieR I/355/gaiadr3 (CDS) on 2026-10-17. CC BY-NC 3.0 IGO: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>) |
 | the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_ring.py` -> `site/images/deep/ring/ring-light.webp`, 11.5 kB, an adaptation): each sky point's light is spread along our line through the ring, the lobes and the halo. The ring's projected axis (PA 62°, ratio 0.78) was measured from it too | ESA/Hubble heic1310a, NASA, ESA, and C. Robert O'Dell (Vanderbilt University), CC BY 4.0 (section 3 above); stars removed by Space Radar |
 
 The photograph's colours are NARROWBAND (helium, oxygen, hydrogen, nitrogen and sulphur filters given colours by

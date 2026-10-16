@@ -68,6 +68,9 @@ def bake() -> int:
         "file": str(OUT.relative_to(ROOT)), "bytes": OUT.stat().st_size, "sha256": sha(OUT),
         "from": str(SRC.relative_to(ROOT)), "from_sha256": sha(SRC),
         "stars_removed_px": int(mask.sum()), "size": list(im.size),
+        # the light's brightest luminance (Rec. 709 weights, display values, 99th percentile): scene/deep/ring.js
+        # SHAPE.peak holds a turned view's column to it, so the core never goes whiter than the photograph
+        "peak_lum_p99": round(float(np.percentile(np.asarray(Image.open(OUT).convert("RGB")).astype(np.float32) @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32) / 255.0, 99)), 3),
         "credit": "NASA, ESA, and C. Robert O'Dell (Vanderbilt University) (ESA/Hubble heic1310a), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_ring.py)",
     }, indent=2) + "\n", encoding="utf-8")
     print(f"ring light: {OUT.relative_to(ROOT)} {OUT.stat().st_size} B, {int(mask.sum())} star pixels filled")
