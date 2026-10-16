@@ -243,4 +243,8 @@ features:
     surfaces: ["want:wantPerf"]
     not: "For tools only: fetched under ?look=1 or by a tool's sr.wantPerf(); a visitor never sees it and has nothing to press."
   # 0076 W3-d
+  - id: where-you-are
+    name: Where you are on the ladder, and Back along your own path
+    files: [site/js/ui/scalerail.js, site/js/ui/camundo.js]
+    not: "It appears by itself once there is a path to walk back or the camera has left the Earth, and says what it is; a newcomer's first two minutes are on the Earth with nothing behind them."
   # 0076 W3-e

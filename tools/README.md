@@ -139,7 +139,7 @@ sips -Z 800 /tmp/look/pluto-1-stage.png --out /tmp/look/small.png # shrink befor
 | `r12-clusters` | planned, stage W3-a (internal spec 0076): Omega Centauri, M13 and 47 Tucanae by King profile, the Pleiades, the Hyades and M44 by their members; the file arrives with the stage |
 | `r12-ring` | planned, stage W3-b (internal spec 0076): the Ring Nebula (M57) in 3D, and the Helix from our line; the file arrives with the stage |
 | `r12-dust` | planned, stage W3-c (internal spec 0076): the Crab and the Veil as shells, the Horsehead, the Coalsack, M78 and the Iris as sheets; the file arrives with the stage |
-| `r12-navigate` | planned, stage W3-d (internal spec 0076): the parent chain on the cards, Back along the visitor's path, the ladder's compression note; the file arrives with the stage |
+| `r12-navigate` | where you are and the way back (internal spec 0076 W3-d): the Helix's card ("Milky Way › Helix Nebula"), Europa's (Back to Jupiter), a planet of TRAPPIST-1, three flights then Back three times, and the ladder at each rung with its note at the join. Beside each picture: the chain, the parent button, the rail's words, the trail's size, sideways scroll. On a ref without the stage the same places are photographed as they were (the before). Run it at 1440 x 900 and on a 320 px phone (`-f mobile=true -f width=320 -f height=700`) |
 
 **The job fails** when the page logged an error (`console.error`, an uncaught error, an unhandled
 rejection), when the probe returned a `fail`, or when it returned nothing. `summary.md` (also the

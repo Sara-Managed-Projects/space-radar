@@ -186,7 +186,8 @@ const CONTRACT = {
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
-  // 0076 W3-d (scalerail.js)
+  // 0076 W3-d (scalerail.js): where you are on the ladder, Back and the note at a join; its words and rules are pure for tests/test_navigate.mjs.
+  'ui/scalerail.js': ['wireRail', 'rungOf', 'railRungs', 'joinNote', 'noteWords', 'backWords', 'railShown', 'NOTE_MS'],
 };
 
 const problems = [];

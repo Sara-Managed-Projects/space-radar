@@ -1071,4 +1071,6 @@ jobs:
       # 0076 W3-b
       # 0076 W3-c
       # 0076 W3-d
+      - name: "where you are and the way back: a chain from the Sun or the Milky Way on every card, Back along the visitor's own path (20 steps, never sent), the ladder's rung and a note at each join (internal spec 0076 W3-d)"
+        run: node tests/test_navigate.mjs
       # 0076 W3-e
