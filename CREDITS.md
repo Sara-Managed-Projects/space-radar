@@ -1603,7 +1603,9 @@ No picture or file is added: these are numbers, each typed into the code with it
   Mizumoto's measurements: L2 = 79 on 2025 Dec. 1 and a drift of +0.8 deg/30d from March to November;
   and "Jupiter in 2024/25, Report no.7" (2026 Jan.): +1.78 deg/30d over that apparition.
   <https://britastro.org/wp-content/uploads/2025/12/Jup_2025dec_Report-no-4.pdf>, read 2026-10-16. Three
-  measured numbers, cited; nothing of the reports' text or figures is reproduced. System II's rotation,
+  measured numbers, cited; two short passages of the reports are quoted, with this attribution, in the
+  row's comment in `registry/weather.yaml`, and none of their figures is reproduced. The ±1° on that
+  L2 is assumed, not the reports'. System II's rotation,
   W = 43.3 + 870.270 d, is the IAU/IAG working group's (Davies et al. 1980, Celestial Mechanics 22, 205).
   Row `jupiter-bands` in `registry/weather.yaml`; drawn by `scene/weather/worldweather.js`.
 

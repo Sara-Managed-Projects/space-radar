@@ -343,12 +343,11 @@ export const ARC_SLOTS = NEPTUNE_ARCS.spans.length;
  * mean luminance (0.562 in linear light, `tint`) times 0.015 / 0.488, a neutral grey (the rings are
  * spectrally flat): 0.0173 linear, which the nearest sRGB byte, 0x24, draws as 0.0176. That is a
  * thirtieth of the clouds: in front of the planet they are dark threads, against black faint ones.
- * The Deep exposure lifts them four times (scene/weather/worldweather.js GIANT_RINGS, from tier 1;
- * the module the giants' weather is in), as a long exposure lifts them in Voyager's and Keck's
- * pictures. tests/test_giants.mjs holds the arithmetic.
+ * The Deep exposure lifts them `deep` (four) times on every tier (setExposure below), as a long
+ * exposure lifts them in Voyager's and Keck's pictures. tests/test_giants.mjs holds the arithmetic.
  */
 export const URANUS_RINGS = {
-  innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x242424,
+  innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x242424, deep: 4,
   bands: [
     [41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3],      // 6, 5, 4
     [44718, 7, 0.4], [45661, 8, 0.3],                          // alpha, beta
@@ -2905,9 +2904,14 @@ export function createWorlds(scene, opts = {}) {
     /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
     // The Earth's clouds are at their true thickness under Measured (scene/earth.js CLOUD_PARALLAX).
     setLook: (mode) => { lookMeasured = mode === 'measured'; setEarthCloudHeight(meshes.get('earth'), { look: mode }); for (const w of WORLDS) dressFace(w.id); },
-    // Eye, Camera or Deep (main.js; internal spec 0076 W2-b): kept for the giants' rings, which
-    // scene/weather/worldweather.js stretches by it (onExposure). Nothing here draws by it.
-    setExposure: (mode) => { exposureNow = mode; for (const f of exposureHooks) f(mode); },
+    // Eye, Camera or Deep (main.js; internal spec 0076 W2-b): Deep lifts Uranus's rings here, so on every
+    // tier; scene/weather/worldweather.js stretches Jupiter's by it (onExposure).
+    setExposure: (mode) => {
+      exposureNow = mode;
+      const u = meshes.get('uranus')?.userData.ring;
+      if (u) u.material.uniforms.uColour.value.set(URANUS_RINGS.colour).multiplyScalar(mode === 'deep' ? URANUS_RINGS.deep : 1);
+      for (const f of exposureHooks) f(mode);
+    },
     exposure: () => exposureNow,
     onExposure: (f) => { exposureHooks.add(f); return () => exposureHooks.delete(f); },
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */

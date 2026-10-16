@@ -47,9 +47,9 @@
 //
 // THE GIANTS' RINGS (internal spec 0076 W2-b), here because this module is what the giants wear from
 // tier 1 and never on tier 0 or a connection that saves data: Jupiter's faint ring (GIANT_RINGS.jupiter),
-// a mesh of its own round Jupiter, and the Deep exposure's lift of Uranus's dark rings (scene/worlds.js
-// URANUS_RINGS draws them at their own darkness on every tier). Neither is weather; both need the
-// shutter (worlds.onExposure) and both go with the latch.
+// a mesh of its own round Jupiter, which needs the shutter (worlds.onExposure) and goes with the latch.
+// Uranus's dark rings and their Deep lift are scene/worlds.js's own (URANUS_RINGS, setExposure), on every
+// tier; here they are only repainted the same way, and as main drew them for the probes' before.
 //
 // THE CLOCK. Everything is a function of the app's time (update(tMs)), computed in doubles here and
 // handed over as small numbers, so scrubbing forwards or backwards moves the bands the right way at
@@ -236,7 +236,7 @@ export function spotShift(place, mapU, tMs) {
 // ILLUSTRATIVE. Under Eye it is drawn as it is, which is not at all; under Camera 8 000 times
 // brighter, which shows it from the night side and hardly from the day side; under Deep 40 000 times.
 export const GIANT_RINGS = {
-  uranus: { albedo: 0.015, globeAlbedo: 0.488, stretch: { eye: 1, camera: 1, deep: 4 } },
+  uranus: { albedo: 0.015, globeAlbedo: 0.488, stretch: { eye: 1, camera: 1, deep: URANUS_RINGS.deep } },
   jupiter: {
     innerKm: 89400, outerKm: 129500, tauScale: 7.5e-6, ceiling: 0.3,
     halo: { innerKm: 89400, outerKm: 123000, thickKm: 10000 },
@@ -1011,7 +1011,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       faint.material.uniforms.uColour.value.setRGB(c[0], c[1], c[2], THREE.LinearSRGBColorSpace);
     }
     if (uranusRing) {
-      const k = latched ? 1 : ringStretch(GIANT_RINGS.uranus, exposure);
+      const k = ringStretch(GIANT_RINGS.uranus, exposure);   // as worlds.js paints it, latched or not
       const c = hexLinear(before && !latched ? 0x8f9da3 : URANUS_RINGS.colour);
       uranusRing.material.uniforms.uColour.value.setRGB(c[0] * k, c[1] * k, c[2] * k, THREE.LinearSRGBColorSpace);
     }
