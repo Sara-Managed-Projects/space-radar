@@ -107,6 +107,15 @@ const lightOf = (x, y) => {
     worst4 = Math.max(worst4, err(4, 0.37), err(4, 0.81), err(4, 0.05));
   }
   check(inside === 120, `every sky point out to 1.3 of the ring's radius has a layer to carry its light (${inside} of 120)`);
+  // As the GPU draws it: the columns read from the tabulated map, bilinearly.
+  const map = R.columnMap(g);
+  let worstMap = 0;
+  for (let k = 0; k < 120; k++) {
+    const r = 1.3 * g.A * Math.sqrt((k + 0.5) / 120), th = k * 2.399963, x = r * Math.cos(th), y = r * Math.sin(th);
+    const want = lightOf(x, y);
+    for (const j of [0.05, 0.37, 0.81]) { const c = R.columnJs(g, [x, y, 3 * g.bound], [0, 0, -1], 4, j, lightOf, map).rgb; worstMap = Math.max(worstMap, ...c.map((v, i) => Math.abs(v - want[i]) / Math.max(0.05, want[i]))); }
+  }
+  check(worstMap < 0.05, `and through the tabulated columns the GPU reads (${R.COLUMN_MAP}², bilinear), with T0's 4 samples: ${(worstMap * 100).toFixed(2)} %`);
   check(worst < 0.02, `on our line the column IS the photograph's light: ${(worst * 100).toFixed(2)} % at worst over 120 points (24 samples)`);
   check(worst4 < 0.03, `and with T0's 4 samples, whatever the pixel's offset: ${(worst4 * 100).toFixed(2)} % (the step integrals are exact)`);
   // Edge on to the disc: a colour, not a white bar.
@@ -152,7 +161,8 @@ const lightOf = (x, y) => {
   const f = R.SHADERS.gas;
   for (const k of ['slab', 'edge', 'kappa', 'knee']) check(f.includes(Number(R.SHAPE[k]).toFixed(3)), `GAS_FRAG carries SHAPE.${k} (${R.SHAPE[k]})`);
   check(S.QUARTIC_CDF.every((c) => f.includes(String(c))), 'and the closed form\'s coefficients');
-  check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec2 quadSpan\( mat3 S/.test(f) && /vec3 columnsAt\( vec2 xy \)/.test(f) && /float slabIntegral\(/.test(f), 'the fragment has the same spans, columns and integrals');
+  check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec2 quadSpan\( mat3 S/.test(f) && /texture2D\( uCols, p\.xy \* uColScale \+ 0\.5 \)/.test(f) && /float slabIntegral\(/.test(f) && /max\( 4, uN \/ 2 \)/.test(f), 'the fragment has the same spans, integrals, tabulated columns and the halo\'s half samples');
+  check(/gl_FragColor = vec4\( col \* uGain \* uShare, 1\.0 \)/.test(f), 'additive with alpha 1: the light lands (three\'s AdditiveBlending is SRC_ALPHA, ONE)');
   check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/sampler3D/.test(f) && !/uTime/.test(f), 'a hash of the pixel for the offset, no noise volume, no clock');
   for (const [k, v] of Object.entries(R.SHADERS)) {
     const bad = [...v.matchAll(/smoothstep\(\s*([-0-9.]+)\s*,\s*([-0-9.]+)\s*,/g)].filter((m) => Number(m[1]) >= Number(m[2]));

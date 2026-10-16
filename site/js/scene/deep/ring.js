@@ -2,7 +2,7 @@
 // first planetary nebula after the Helix, built from the class's shared part (scene/deep/shellneb.js). Fetched
 // by scene/deep/deepsky.js when M57 is near (scene/deep/heroes.js); never at boot. scene/deep/helix.js says
 // what a hero answers: createHero(THREE, env) -> { group, levels, setLevel, frame, ready, stats, dispose, card }.
-// Pure, for tests/test_hero_ring.mjs: geometryOf, columnsAt, columnJs, knotsOf, paletteFor, samplesFor,
+// Pure, for tests/test_hero_ring.mjs: geometryOf, columnsAt, columnMap, columnsFrom, columnJs, knotsOf, paletteFor, samplesFor,
 //   sharesFor, SHAPE, SHADERS, UNDER_MEASURED, COPY_BLOCK
 //
 // ITS SHAPE IS PUBLISHED; ITS LIGHT IS THE PHOTOGRAPH'S.
@@ -68,7 +68,8 @@ const LIGHT_SIZE = [512, 512];
 // The shape of the light inside the layers. ONE table: the GLSL below is written from it.
 export const SHAPE = {
   slab: 1.6,                // the disc's box reaches 1.6 of its half-thickness: exp(-1.6⁴) is 0.15 % of its middle
-  edge: 0.08,               // the disc's window across the ring rises and falls over this, in the ring's radii, either side
+  edge: 0.1,                // the disc's window across the ring rises and falls over this, in the ring's radii, either side
+  outer: 1.05,              // and falls about here: the ionisation boundary's bright rim belongs to the ring, not the halo
   lean: 0.15,               // the disc's box reaches this much further: its walls run along our line, which leans 13.5° off its axis
   kappa: 2.0,               // self-absorption: optical depth per unit of the light's luminance (edge on, not white)
   knee: 0.8,                // one soft knee over the brightest channel, hue kept
@@ -139,7 +140,7 @@ export function geometryOf(profile = PROFILE) {
 
 const mul = (S, v) => [dot(S[0], v), dot(S[1], v), dot(S[2], v)];
 const Z = [0, 0, 1];
-const windowOf = (g, q) => smooth(q, g.qIn - SHAPE.edge, g.qIn + SHAPE.edge) * (1 - smooth(q, 1 - SHAPE.edge, 1 + SHAPE.edge));
+const windowOf = (g, q) => smooth(q, g.qIn - SHAPE.edge, g.qIn + SHAPE.edge) * (1 - smooth(q, SHAPE.outer - SHAPE.edge, SHAPE.outer + SHAPE.edge));
 /** The disc's window at sky point (x, y): where our line through it crosses the disc's middle plane. Pure. */
 function windowAt(g, x, y) {
   const q0 = mul(g.Sd, [x, y, 0]), qz = [g.Sd[0][2], g.Sd[1][2], g.Sd[2][2]];
@@ -149,7 +150,7 @@ function windowAt(g, x, y) {
 
 /** The disc's span along a ray: in its scaled frame the ellipses are circles (t keeps its meaning). Pure. */
 function discSpan(g, ro, rd, t0, t1) {
-  return layerSpan(mul(g.Sd, ro), mul(g.Sd, rd), Z, SHAPE.slab, Math.max(0, g.qIn - SHAPE.edge - SHAPE.lean), 1 + SHAPE.edge + SHAPE.lean, t0, t1);
+  return layerSpan(mul(g.Sd, ro), mul(g.Sd, rd), Z, SHAPE.slab, Math.max(0, g.qIn - SHAPE.edge - SHAPE.lean), SHAPE.outer + SHAPE.edge + SHAPE.lean, t0, t1);
 }
 /** A quadric's quadratic along a ray, about its point of closest approach: s² = a·τ² + b2, τ = t - tc. Pure. */
 function quadAlong(S, ro, rd) {
@@ -193,6 +194,32 @@ export function columnsAt(g, x, y) {
   return [disc, lobes, Math.max(0, halo)];
 }
 
+/**
+ * The columns tabulated once, when the hero is built: COLUMN_MAP x COLUMN_MAP sky points over the bound's square,
+ * [disc, lobes, halo] per point (texel centres), so the fragment reads one texture where it would solve three
+ * quadrics a sample. The columns are smooth by construction (the layers are soft), so a bilinear read is close:
+ * tests/test_hero_ring.mjs holds the column on our line to the photograph through this map. Pure.
+ */
+export const COLUMN_MAP = 192;
+export function columnMap(g, n = COLUMN_MAP) {
+  const data = new Float32Array(n * n * 4);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const c = columnsAt(g, ((i + 0.5) / n - 0.5) * 2 * g.bound, ((j + 0.5) / n - 0.5) * 2 * g.bound);
+    data.set([c[0], c[1], c[2], 1], 4 * (j * n + i));
+  }
+  return { n, data, extent: g.bound };
+}
+/** The map read bilinearly at sky point (x, y), as the GPU's linear filter reads it (clamped at the edges). Pure. */
+export function columnsFrom(map, x, y) {
+  const n = map.n;
+  const fx = Math.min(n - 1, Math.max(0, (x / (2 * map.extent) + 0.5) * n - 0.5)), fy = Math.min(n - 1, Math.max(0, (y / (2 * map.extent) + 0.5) * n - 0.5));
+  const i0 = Math.floor(fx), j0 = Math.floor(fy), i1 = Math.min(n - 1, i0 + 1), j1 = Math.min(n - 1, j0 + 1), ax = fx - i0, ay = fy - j0;
+  const at = (i, j, c) => map.data[4 * (j * n + i) + c];
+  return [0, 1, 2].map((c) => (at(i0, j0, c) * (1 - ax) + at(i1, j0, c) * ax) * (1 - ay) + (at(i0, j1, c) * (1 - ax) + at(i1, j1, c) * ax) * ay);
+}
+/** Samples of the halo: half the others' (it is the faintest and the largest on screen), never under 4. Pure. */
+export const haloSamples = (n) => Math.max(4, Math.floor(n / 2));
+
 /** Each layer's spans along a ray, and the step integral of its density over span coordinates [a, b]. Pure. */
 function layersAlong(g, ro, rd, t0, t1) {
   const q0 = mul(g.Sd, ro), qd = mul(g.Sd, rd);
@@ -210,7 +237,8 @@ function layersAlong(g, ro, rd, t0, t1) {
  * The colour along a ray from ro (unit rd): `light(x, y)` -> stretched [r, g, b] (or null outside the picture),
  * n samples a layer, offset j in [0, 1). Returns {rgb} before the share and the gain. FRAG's main(). Pure.
  */
-export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0]) {
+export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0], map = null) {
+  const colsAt = map ? (x, y) => columnsFrom(map, x, y) : (x, y) => columnsAt(g, x, y);
   const S = SHAPE;
   const b = dot(ro, rd), hh = b * b - (dot(ro, ro) - g.bound * g.bound);
   if (hh <= 0) return { rgb: [0, 0, 0] };
@@ -222,14 +250,15 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0]) {
     const { s, step } = layers[k];
     const L = spanLen(s);
     if (!(L > 0)) continue;
-    const dt = L / n;
+    const nk = k === 2 ? haloSamples(n) : n;
+    const dt = L / nk;
     let T = 1;
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < nk; i++) {
       const t = spanT(s, (i + j) * dt);
       const p = [ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t];
       const lc = light(p[0], p[1]);
       if (!lc) continue;
-      const col = columnsAt(g, p[0], p[1]);
+      const col = colsAt(p[0], p[1]);
       const N = g.w[0] * col[0] + g.w[1] * col[1] + g.w[2] * col[2];
       if (!(N > S.minColumn)) continue;
       const lum = 0.2126 * lc[0] + 0.7152 * lc[1] + 0.0722 * lc[2];
@@ -305,6 +334,8 @@ uniform vec2 uRot;        // and its turn: cos r, sin r (the archive's north)
 uniform float uBound;
 uniform int uN;           // samples a layer
 uniform sampler2D uLight; // the photograph without its stars (display values, gasmat.js COLOUR_POLICY)
+uniform sampler2D uCols;  // each layer's column along our line, tabulated (ring.js columnMap): disc, lobes, halo
+uniform float uColScale;  // 1 / (2 * the map's extent)
 uniform float uGamma;     // the exposure's stretch, as scene/nebulae.js gives the photograph
 uniform float uSat;
 uniform float uShare;
@@ -322,10 +353,10 @@ vec3 lightAt( vec2 xy ) {
   return vec3( y ) + ( c - vec3( y ) ) * uSat;
 }
 vec4 discSpan( vec3 ro, vec3 rd, float t0, float t1 ) {
-  return layerSpan( uSd * ro, uSd * rd, vec3( 0.0, 0.0, 1.0 ), ${f3(SHAPE.slab)}, max( 0.0, uDisc.y - ${f3(SHAPE.edge + SHAPE.lean)} ), ${f3(1 + SHAPE.edge + SHAPE.lean)}, t0, t1 );
+  return layerSpan( uSd * ro, uSd * rd, vec3( 0.0, 0.0, 1.0 ), ${f3(SHAPE.slab)}, max( 0.0, uDisc.y - ${f3(SHAPE.edge + SHAPE.lean)} ), ${f3(SHAPE.outer + SHAPE.edge + SHAPE.lean)}, t0, t1 );
 }
 float windowOf( float q ) {
-  return smoothstep( uDisc.y - ${f3(SHAPE.edge)}, uDisc.y + ${f3(SHAPE.edge)}, q ) * ( 1.0 - smoothstep( ${f3(1 - SHAPE.edge)}, ${f3(1 + SHAPE.edge)}, q ) );
+  return smoothstep( uDisc.y - ${f3(SHAPE.edge)}, uDisc.y + ${f3(SHAPE.edge)}, q ) * ( 1.0 - smoothstep( ${f3(SHAPE.outer - SHAPE.edge)}, ${f3(SHAPE.outer + SHAPE.edge)}, q ) );
 }
 // the disc's window at a sky point: where our line through it crosses the disc's middle plane (ring.js windowAt)
 float windowAt( vec2 xy ) {
@@ -349,19 +380,6 @@ float haloF( float rho2, float tau ) {
   float p1 = t2 * tau / 3.0 + rho2 * tau;
   float p2 = t2 * t2 * tau / 5.0 + 2.0 * rho2 * t2 * tau / 3.0 + rho2 * rho2 * tau;
   return ( -p2 + uHalo.x * p1 - uHalo.y * tau ) * uHalo.z;
-}
-// Each layer's column along our line at sky point (x, y): ring.js columnsAt().
-vec3 columnsAt( vec2 xy ) {
-  vec3 ro = vec3( xy, 2.0 * uBound );
-  vec3 rd = vec3( 0.0, 0.0, -1.0 );
-  vec3 qd = uSd * rd;
-  float d = windowAt( xy ) * ${(2 * 0.9063281258341047).toFixed(6)} / abs( qd.z );
-  vec3 L = quadAlong( uSl, ro, rd );
-  float l = L.z < 1.0 && L.x > 0.0 ? 1.3333333 * pow( 1.0 - L.z, 1.5 ) / sqrt( L.x ) : 0.0;
-  float rho2 = dot( xy, xy );
-  float zo = rho2 < uShell.y * uShell.y ? sqrt( uShell.y * uShell.y - rho2 ) : 0.0;
-  float zi = rho2 < uShell.x * uShell.x ? sqrt( uShell.x * uShell.x - rho2 ) : 0.0;
-  return vec3( d, l, max( 0.0, 2.0 * ( haloF( rho2, zo ) - haloF( rho2, zi ) ) ) );
 }
 // the step [a, b] of span coordinates through a span's pieces: the lobes' and the halo's exact integrals
 float lobeStep( vec4 s, float a, float b, vec3 L ) {
@@ -405,13 +423,14 @@ void main() {
     float L = spanLen( s );
     if ( L <= 0.0 ) continue;
     float wk = k == 0 ? uW.x : ( k == 1 ? uW.y : uW.z );
-    float dt = L / float( uN );
+    int nk = k == 2 ? max( 4, uN / 2 ) : uN; // the halo: half the samples (ring.js haloSamples)
+    float dt = L / float( nk );
     float T = 1.0;
     for ( int i = 0; i < MAX_N; i++ ) {
-      if ( i >= uN ) break;
+      if ( i >= nk ) break;
       vec3 p = ro + rd * spanT( s, ( float( i ) + j ) * dt );
       vec3 lc = lightAt( p.xy );
-      vec3 cols = columnsAt( p.xy );
+      vec3 cols = texture2D( uCols, p.xy * uColScale + 0.5 ).rgb;
       float N = dot( uW, cols );
       if ( N <= ${SHAPE.minColumn.toExponential(1)} ) continue;
       float lum = dot( lc, vec3( 0.2126, 0.7152, 0.0722 ) );
@@ -432,7 +451,8 @@ void main() {
   }
   float mx = max( col.r, max( col.g, col.b ) );
   if ( mx > ${f3(SHAPE.knee)} ) col *= ( ${f3(SHAPE.knee)} + ${f3(1 - SHAPE.knee)} * ( 1.0 - exp( -( mx - ${f3(SHAPE.knee)} ) / ${f3(1 - SHAPE.knee)} ) ) ) / mx;
-  gl_FragColor = vec4( col * uGain * uShare, 0.0 );
+  // additive (SRC_ALPHA, ONE): alpha 1 adds the light whole
+  gl_FragColor = vec4( col * uGain * uShare, 1.0 );
 }
 `;
 
@@ -454,6 +474,16 @@ export function createHero(THREE, env = {}) {
   // --- the light: the photograph without its stars (scripts/build_deep_ring.py). Fetched with the hero.
   const light = lightTexture(THREE, new URL(LIGHT_URL, import.meta.url).href, 'Ring');
   const pal0 = paletteFor(1, profile);
+  // --- the columns along our line, tabulated once (half floats, filtered linearly)
+  const cmap = columnMap(g);
+  const half = new Uint16Array(cmap.data.length);
+  for (let i = 0; i < half.length; i++) half[i] = THREE.DataUtils.toHalfFloat(cmap.data[i]);
+  const colTex = new THREE.DataTexture(half, cmap.n, cmap.n, THREE.RGBAFormat, THREE.HalfFloatType);
+  colTex.colorSpace = THREE.NoColorSpace;
+  colTex.minFilter = colTex.magFilter = THREE.LinearFilter;
+  colTex.wrapS = colTex.wrapT = THREE.ClampToEdgeWrapping;
+  colTex.generateMipmaps = false;
+  colTex.needsUpdate = true;
   // --- the gas
   const gasGeo = new THREE.IcosahedronGeometry(g.bound * 1.09, 3);
   const gasMat = shellMaterial(THREE, {
@@ -465,7 +495,7 @@ export function createHero(THREE, env = {}) {
       uShell: { value: new THREE.Vector2(g.Ri, g.Ro) },
       uHalo: { value: new THREE.Vector3(g.Ri * g.Ri + g.Ro * g.Ro, g.Ri * g.Ri * g.Ro * g.Ro, 1 / (((g.Ro * g.Ro - g.Ri * g.Ri) / 2) ** 2)) },
       uUv: { value: new THREE.Vector4(g.uv.u0, g.uv.v0, 1 / g.uv.W, 1 / g.uv.H) }, uRot: { value: new THREE.Vector2(g.uv.cos, g.uv.sin) },
-      uBound: { value: g.bound }, uN: { value: 8 }, uLight: { value: light.tex },
+      uBound: { value: g.bound }, uN: { value: 8 }, uLight: { value: light.tex }, uCols: { value: colTex }, uColScale: { value: 1 / (2 * cmap.extent) },
       uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation }, uShare: { value: 0 }, uGain: { value: 1 },
     },
   });
@@ -542,14 +572,15 @@ export function createHero(THREE, env = {}) {
     ready: () => light.state() !== 'loading',
     stats: () => ({
       level, share: Math.round(last.gas * 100) / 100, photo: Math.round(last.photo * 100) / 100, star: Math.round(last.star * 100) / 100,
-      light: light.state(), samples, tier: tierNow, palette: palette.mode, knots: knotCount, meshes: 3, points: knotCount, textures: light.tex ? 1 : 0, front: 'exact',
-      bytes: knotBytes + gasGeo.getAttribute('position').array.byteLength + QUAD_BYTES * 2 + (light.tex ? Math.round(LIGHT_SIZE[0] * LIGHT_SIZE[1] * 4 * 4 / 3) : 0),
+      light: light.state(), samples, tier: tierNow, palette: palette.mode, knots: knotCount, meshes: 3, points: knotCount, textures: light.tex ? 2 : 1, front: 'exact',
+      bytes: knotBytes + gasGeo.getAttribute('position').array.byteLength + QUAD_BYTES * 2 + half.byteLength + (light.tex ? Math.round(LIGHT_SIZE[0] * LIGHT_SIZE[1] * 4 * 4 / 3) : 0),
     }),
     dispose() {
       if (knots) knots.geometry.dispose();
       gasGeo.dispose(); starGeo.dispose();
       gasMat.dispose(); knotMat.dispose(); starMat.dispose();
       if (light.tex) light.tex.dispose();
+      colTex.dispose();
       knots = null;
       if (group.parent) group.parent.remove(group);
     },
