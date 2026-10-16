@@ -79,7 +79,8 @@ def render(doc: dict) -> list:
         r = worlds[p["world"]]["radiusKm"]
         row = {
             "id": p["id"], "world": p["world"], "name": p["name"], "kind": p["kind"],
-            "heightKm": float(p["height_km"]), "seen": seen(p), "source": str((p.get("source") or {}).get("url", "")),
+            # The source pages stay in the registry: a mirror the browser loads holds no address it could fetch.
+            "heightKm": float(p["height_km"]), "seen": seen(p),
             "particles": int(p["particles"]),
         }
         if p["kind"] == "jets":

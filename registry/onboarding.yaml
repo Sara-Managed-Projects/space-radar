@@ -242,5 +242,10 @@ features:
     files: [site/js/scene/perf.js]
     surfaces: ["want:wantPerf"]
     not: "For tools only: fetched under ?look=1 or by a tool's sr.wantPerf(); a visitor never sees it and has nothing to press."
+  - id: plumes
+    name: Plumes where they were seen on Io, Enceladus and Triton (internal spec 0076 W2-c)
+    files: [site/js/scene/plumes.js]
+    surfaces: ["want:wantPlumes"]
+    not: "Drawn on the moon itself when its stage is entered; there is nothing to press, and the card says what is drawn."
   # 0076 W3-d
   # 0076 W3-e
