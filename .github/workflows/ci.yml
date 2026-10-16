@@ -1061,6 +1061,8 @@ jobs:
       # 0076 W2-a
       # 0076 W2-b
       # 0076 W2-c
+      - name: "plumes where they were seen: none without a dated source, heights from the registry, still under Measured and reduced motion (internal spec 0076 W2-c)"
+        run: node tests/test_plumes.mjs
       # 0076 W2-d
       # 0076 W2-e
       - name: "every record on the map has one class, a renderer, a source and a credit CREDITS.md carries; no illustration claims a measurement; docs/COVERAGE.md current (internal spec 0076 W2-e, #859, #891, #921)"

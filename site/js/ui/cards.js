@@ -2370,6 +2370,13 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       line.hidden = !wx;
       aboutNodes.push(line);
     }
+    // 0076 W2-c: the plumes drawn on this moon, each seen when and by what (scene/plumes.js lineFor).
+    if (['io', 'enceladus', 'triton'].includes(record.id)) {
+      const words = ctx && ctx.plumes ? ctx.plumes.line(record.id) : null;
+      const line = el('p', 'sr-card__note sr-card__plumes', words || '');
+      line.hidden = !words;
+      aboutNodes.push(line);
+    }
     // The Sun's spots, when NOAA's list for today is drawn (main.js ctx.sunRegions, scene/sun.js).
     if (record.id === 'sun' && ctx && ctx.sunDetail && typeof ctx.sunDetail.state === 'function') {
       const words = sunLine(ctx);
@@ -2809,6 +2816,13 @@ function subscribe(ctx) {
         line.textContent = wx || '';
         line.hidden = !wx;
       } catch { /* keep the last line */ }
+    });
+    // 0076 W2-c: the plumes' line, when the module built them or the look changed.
+    window.addEventListener('sr:plumes', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__plumes');
+      if (!line || !c || !c.plumes || !current.record) return;
+      try { const words = c.plumes.line(current.record.id); line.textContent = words || ''; line.hidden = !words; } catch { /* keep the last line */ }
     });
   }
   try {
