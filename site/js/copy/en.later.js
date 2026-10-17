@@ -1923,7 +1923,7 @@ Object.assign(COPY, {
       ],
     },
     // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
-    how: 'A remnant’s gas flies outward at a steady speed, so its speed toward or away from us says how far in front of or behind the centre it is. Martin, Milisavljevic and Drissen (2021) turned 310 000 spectra of the Crab into its shape that way.',
+    how: 'A remnant’s gas flies outward at a steady speed, so its speed toward or away from us says how far in front of or behind the centre it is. Martin, Milisavljevic and Drissen (2021) turned 310 000 spectra of the Crab into its shape that way.',
   },
   // 0076 W3-d (where you are, and the way back)
   r12Navigate: {},
