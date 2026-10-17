@@ -34,7 +34,7 @@ for (const H of Object.values(P)) {
   check(du.source && /Cardelli, Clayton & Mathis 1989, ApJ 345, 245/.test(du.source), `${H.id}: its dust has a source and the extinction law's`);
   check(du.reddening && du.reddening.rv === 3.1, `${H.id}: R_V = 3.1`);
   check(du.rule && du.rule.dark_below > 0 && du.rule.dark_below < 1 && du.tau_max > 0, `${H.id}: the rule that reads an optical depth from darkness is in its profile`);
-  check(H.shipped === true && H.review.by === 'Space Radar maintainers' && /not yet/.test(H.review.astronomer || ''), `${H.id}: shipped under the lead's policy`);
+  check(H.review.by === 'Space Radar maintainers' && /not yet/.test(H.review.astronomer || ''), `${H.id}: signed under the lead's policy, no astronomer's review claimed`);
   check(H.credits.length >= 2 && H.sources.length >= 3, `${H.id}: credits and sources`);
 }
 check(/in silhouette against IC 434/.test(P.horsehead.sources[0]) && /Abergel, A\. et al\. 2024/.test(P.horsehead.sources[0]), 'the Horsehead in silhouette against IC 434 (Abergel et al. 2024)');
@@ -116,7 +116,7 @@ function placed(H, rid, ly, deg = 0) {
   check(absorb && absorb.material.blending === THREE.CustomBlending && absorb.material.blendSrc === THREE.ZeroFactor && absorb.material.blendDst === THREE.SrcColorFactor,
     'the dust is a multiply blend (Zero, SrcColor): what is behind is multiplied by its transmission, and nothing is added');
   check(absorb && absorb.material.blendSrcAlpha === THREE.ZeroFactor && absorb.material.blendDstAlpha === THREE.OneFactor, 'and the framebuffer\'s alpha is left as it was');
-  check(/vec4\( mix\( vec3\( 1\.0 \), pow\( T, vec3\( 1\.0 \/ 2\.2 \) \), uShare \), 1\.0 \)/.test(D.SHADERS.absorb) && /vec3 T = exp\( -tau \* uK \)/.test(D.SHADERS.absorb),
+  check(/vec3 Td = mix\( exp\( -tau \* uK \* 0\.4545 \), vec3\( 1\.0 \), keep \)/.test(D.SHADERS.absorb) && /gl_FragColor = vec4\( mix\( vec3\( 1\.0 \), Td, uShare \), 1\.0 \)/.test(D.SHADERS.absorb) && /if \( tau < 0\.002 \) discard/.test(D.SHADERS.absorb),
     'its output is exp(-tau k)^(1/2.2) mixed with 1: never above 1, so it can only darken (and on display values)');
   check(light && light.material.blending === THREE.AdditiveBlending, 'the light behind the dust is its own additive mesh');
   for (const m of meshes) check(m.material.transparent === false && m.material.depthWrite === false && m.material.depthTest === false, `${m.name}: in the opaque list, no depth (gasmat.js COLOUR_POLICY)`);
@@ -180,7 +180,7 @@ function placed(H, rid, ly, deg = 0) {
     const c = D.closedJs(g, cam, [0, 0, -1], { tau: tauFlat(tau), light: () => L });
     const [u, v] = g.uvL.at(cam[0], cam[1]);
     const [ud, vd] = g.uvD.at(cam[0], cam[1]);
-    const cov = R.coverAt(u, v, g.edgeL), covD = R.coverAt(ud, vd, g.edgeD);
+    const cov = D.coverSheet(u, v, g.edgeL), covD = D.coverSheet(ud, vd, g.edgeD);
     const want = L.map((x, i) => x * cov * Math.exp(-tau * covD * g.k[i]));
     check(want.every((w, i) => near(c.C[i], w, 1e-9 + 1e-6)), `tau ${tau}: from our line light x exp(-tau k) exactly (the bake's rule: the picture again)`);
   }
@@ -196,6 +196,50 @@ function placed(H, rid, ly, deg = 0) {
   check(D.phaseFactor(ph, p, back) > 1.3, 'seen from beyond the dust, looking back toward the star, forward scattering brightens it');
   check(D.phaseFactor(ph, p, [p[0] + 500, p[1], p[2]]) > 1, 'from the side it is brighter than from here: the star is in front, so from here the dust is seen scattering light back, the weakest way');
   check(D.phaseFactor(ph, p, back) <= ph.hi && D.phaseFactor(ph, p, [p[0], p[1], -500]) >= ph.lo, 'clamped to the profile\'s range');
+}
+
+// --- 5b. the light never outshines the picture; the stubs the coordinator reads at once --------------------------------
+{
+  const MAN = JSON.parse(readFileSync(join(ROOT, 'site/images/deep/sheets/manifest.json'), 'utf8'));
+  for (const id of ['horsehead', 'm78', 'iris']) {
+    const pk = R.part(P[id], 'light').peak;
+    check(pk === MAN.files[`${id}-light.webp`].peak_p99, `${id}: its light's ceiling is the bake's measure of the photograph's brightest (${pk})`);
+  }
+  // M78 (the lead's fix, #1215): turned toward its star, the slant and the phase function would lift the light past the
+  // photograph's brightest; held to it, colour kept
+  const g = D.sheetOf(P.m78);
+  const s = g.phase.star.pos, p = [s[0] + 0.3, s[1] - 0.2, R.part(P.m78, 'light').z_ly];
+  const bright = () => [0.98, 0.95, 0.99];
+  let worst = 0;
+  for (const cam of [[p[0], p[1], 400], [p[0] + 300, p[1], p[2] + 150], [p[0] - 200, p[1] + 200, p[2] + 60], [p[0], p[1] + 380, p[2] + 40]]) {
+    const d = [p[0] - cam[0], p[1] - cam[1], p[2] - cam[2]], l = Math.hypot(...d);
+    const C = D.closedJs({ ...g, layers: g.layers.filter((L) => L.kind === 'light') }, cam, d.map((x) => x / l), { light: bright }).C;
+    worst = Math.max(worst, 0.2126 * C[0] + 0.7152 * C[1] + 0.0722 * C[2]);
+  }
+  check(worst <= g.peak + 1e-9 && worst > 0.5 * g.peak, `M78 from four sides never brighter than its photograph's brightest (${worst.toFixed(3)} against ${g.peak})`);
+  const c = D.capLight([2, 1, 0.5], 0.5);
+  check(Math.abs(0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] - 0.5) < 1e-9 && Math.abs(c[0] / c[1] - 2) < 1e-9, 'capLight holds the luminance and keeps the colour');
+  check(/if \( y > uPeak \) col \*= uPeak \/ y/.test(D.SHADERS.light), 'the light shader holds the same ceiling');
+  // the stubs: what the coordinator reads at once is the registry's (shipped, drawn); the full profile comes with build
+  for (const id of ['horsehead', 'coalsack', 'm78', 'iris']) {
+    const def = HEROES.find((h) => h.id === id);
+    check(def && def.stub && def.stub.shipped === P[id].shipped && JSON.stringify(def.stub.drawn) === JSON.stringify(P[id].drawn), `${id}: its line's stub says what its registry says (shipped ${P[id].shipped})`);
+    check(def && !/hero-/.test(String(def.profile)) && /hero-/.test(String(def.build)), `${id}: its full profile is read with its module, not when the coordinator starts`);
+  }
+  {
+    const stub = { shipped: true, drawn: ['reconstruction'], children: [] };
+    const rec = RECORDS.find((r) => r.id === 'dso-horsehead-nebula');
+    const h = D.createHero(THREE, { profile: P.horsehead, record: rec, stub, fetchJson: () => Promise.resolve(STARS) });
+    const cam = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e9);
+    h.setLevel(2, 1);
+    h.frame({ camera: cam, rPx: 250, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
+    const on = stub.shipped;
+    h.frame({ camera: cam, rPx: 250, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
+    check(on === true && stub.shipped === false && /stepped aside/.test(h.stats().path), 'on T0 the Horsehead hero steps aside: its stub says not shipped, so the coordinator draws main\'s photograph, glow and holder');
+    h.dispose();
+  }
+  check(P.coalsack.shipped === false, 'the Coalsack is held (the lead, #1215): its code stays, nothing of it is drawn');
+  check(P.horsehead.frame.min_tier === 1 && D.sheetOf(P.horsehead).minTier === 1, 'the Horsehead steps aside below tier 1 (its relief faceted on T0)');
 }
 
 // --- 6. finite from every side and from inside; tiers; Measured; no pass; budgets -------------------------------------

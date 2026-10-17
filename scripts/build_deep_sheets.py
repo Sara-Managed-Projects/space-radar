@@ -520,7 +520,10 @@ def bake_one(hid: str, files: dict, stars: dict, cat, maps: dict) -> None:
                                         "tau_front_mean": round(float(front.mean()), 4)}
             maps[hid] = (front, light["picture"])
         save_light(OUT / f"{hid}-light.webp", a)
-        files[f"{hid}-light.webp"] = {}
+        # the photograph's own brightest: the 99th percentile of the map's display luminance (scene/deep/dustsheet.js
+        # caps a sheet's light at it, so a turned view never outshines the picture; the profile's `light.peak` is this)
+        disp = np.clip(a, 0, 255) / 255.0
+        files[f"{hid}-light.webp"] = {"peak_p99": round(float(np.quantile(disp @ np.array([0.2126, 0.7152, 0.0722]), 0.99)), 3)}
     elif dust:
         pic = dust["picture"]
         n = int(dust.get("px", 256))

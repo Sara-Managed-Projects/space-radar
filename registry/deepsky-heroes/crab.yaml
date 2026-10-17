@@ -15,9 +15,9 @@
 id: crab
 record: dso-m1
 stage: W3-c
-# Shipped under the lead's review policy of 2026-10-15 (internal spec 0075 design 14.4): signed by the maintainers,
-# never a person's name or a claim of independent review; the card says no astronomer has reviewed it (internal #785).
-shipped: true
+# HELD by the lead (2026-10-17, #1215): turned it is a pale egg, from inside a grey wash. The code stays; `shipped: true` again once
+# the light is held to the shell's outer surface (or self-absorbs) and the fill fades inside (spec 0076, For spec 0076, left).
+shipped: false
 children: []
 levels:
   2: "structure: the shell's light from the photograph, carried on the ellipsoid in depth (4 samples a segment; 2 on T0 and under the latch)"

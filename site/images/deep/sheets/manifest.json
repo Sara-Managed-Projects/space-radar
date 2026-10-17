@@ -9,7 +9,8 @@
     },
     "crab-light.webp": {
       "bytes": 14006,
-      "sha256": "937f8d4126c681a991debfdd4698fe0b505c7cb5b65e9c5ab15e2386d99cdf2f"
+      "sha256": "937f8d4126c681a991debfdd4698fe0b505c7cb5b65e9c5ab15e2386d99cdf2f",
+      "peak_p99": 0.79
     },
     "horsehead-dust.webp": {
       "bytes": 2986,
@@ -20,7 +21,8 @@
     },
     "horsehead-light.webp": {
       "bytes": 7290,
-      "sha256": "da76432f0e0a6e3835b5b2331fbda8876f0325479d3f58749b76bdf259c36c36"
+      "sha256": "da76432f0e0a6e3835b5b2331fbda8876f0325479d3f58749b76bdf259c36c36",
+      "peak_p99": 0.518
     },
     "iris-dust.webp": {
       "bytes": 20558,
@@ -31,7 +33,8 @@
     },
     "iris-light.webp": {
       "bytes": 11508,
-      "sha256": "d59d65fdf66fba0e2a9d353f005d664289230b421e21bc1d48c8df20ebaf5a62"
+      "sha256": "d59d65fdf66fba0e2a9d353f005d664289230b421e21bc1d48c8df20ebaf5a62",
+      "peak_p99": 0.841
     },
     "m78-dust.webp": {
       "bytes": 16176,
@@ -42,11 +45,13 @@
     },
     "m78-light.webp": {
       "bytes": 11738,
-      "sha256": "240b06a27a82000507ad7a5f6cb47b0dffb6cdfb79304cfe0446969836e97651"
+      "sha256": "240b06a27a82000507ad7a5f6cb47b0dffb6cdfb79304cfe0446969836e97651",
+      "peak_p99": 0.915
     },
     "veil-light.webp": {
       "bytes": 10764,
-      "sha256": "1fd90c45780205114f38f9f150737c194f2cd9ae3716b14d54e5f4ce25cefc6b"
+      "sha256": "1fd90c45780205114f38f9f150737c194f2cd9ae3716b14d54e5f4ce25cefc6b",
+      "peak_p99": 0.425
     },
     "stars.json": {
       "bytes": 1854,

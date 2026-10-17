@@ -265,7 +265,7 @@ float pixelHash( vec2 p ) {
 uniform float uGamma;      // the exposure's stretch, as scene/nebulae.js gives the photograph
 uniform float uSat;
 vec3 stretchLight( vec3 t ) {
-  vec3 c = pow( max( t, vec3( 0.0 ) ), vec3( uGamma ) );
+  vec3 c = uGamma == 1.0 ? max( t, vec3( 0.0 ) ) : pow( max( t, vec3( 0.0 ) ), vec3( uGamma ) );   // Camera: no pow
   float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
   return mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uSat );
 }

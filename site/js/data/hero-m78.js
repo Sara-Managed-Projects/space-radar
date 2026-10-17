@@ -67,6 +67,7 @@ export const HERO = {
         0.75,
         0.98
       ],
+      "peak": 0.915,
       "made_by": "scripts/build_deep_sheets.py",
       "source": "T. A. Rector/University of Alaska Anchorage, H. Schweiker/WIYN and NOIRLab/NSF/AURA, noao-m78, CC BY 4.0: https://noirlab.edu/public/images/noao-m78/ (B, V, R and H-alpha, Mosaic I on the Mayall 4-metre, released 2006-08-09)"
     },

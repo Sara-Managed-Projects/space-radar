@@ -18,9 +18,9 @@
 id: coalsack
 record: dso-coalsack
 stage: W3-c
-# Shipped under the lead's review policy of 2026-10-15 (internal spec 0075 design 14.4): signed by the maintainers,
-# never a person's name or a claim of independent review; the card says no astronomer has reviewed it (internal #785).
-shipped: true
+# HELD by the lead (2026-10-17, #1215): faint against the rung's dim backdrop, and 7.7x the frame on a phone from the per-pixel
+# kept-star loop. The code stays; `shipped: true` again once the kept stars are tested per vertex or on the CPU.
+shipped: false
 children: []
 levels:
   2: "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds"

@@ -4,7 +4,7 @@
 // nebula is near (scene/deep/heroes.js); never at boot. scene/deep/helix.js says what a hero answers:
 //   createHero(THREE, env) -> { group, levels, setLevel(level, share), frame(info), ready(), stats(), card, dispose() }
 // Pure, for tests/test_dustsheet.mjs: sheetOf, ccm, reddening, decodeTau, grazeOf, reliefAt, closedJs, transmissionTo,
-//   hg, phaseFactor, orderOf, gridFor, keepRadiusPx, keepActive, starLook, SHAPE, UNDER_MEASURED, COPY_BLOCK.
+//   hg, phaseFactor, coverSheet, capLight, orderOf, gridFor, keepRadiusPx, keepActive, starLook, SHAPE, UNDER_MEASURED, COPY_BLOCK.
 //
 // ONE MODULE FOR EVERY SHEET. Nothing here names an object: registry/deepsky-heroes/<id>.yaml gives up to three LAYERS
 // parallel to the sky, each at its depth (z, light-years toward the Sun): the dust in FRONT (the dust map's red
@@ -43,7 +43,7 @@ import { STAR_LIGHT_GLSL } from '../stretch.js';
 import { kelvinToRgb, STAR_CHROMA } from '../starfield.js';
 import { setExtraHole } from '../starholes.js';
 import {
-  part, offsetLy, uvOf, coverAt, featherOf, paletteFor, sharesFor, placeSkyGroup, loadMap, cameraInSky, COMMON_GLSL, COPY_BLOCK,
+  part, offsetLy, uvOf, featherOf, paletteFor, sharesFor, placeSkyGroup, loadMap, cameraInSky, COMMON_GLSL, COPY_BLOCK,
 } from './remnant.js';
 
 export { COPY_BLOCK };
@@ -128,6 +128,10 @@ export function sheetOf(profile) {
     phase: sc.g !== undefined ? { g: clamp(Number(sc.g), -0.95, 0.95), lo: Number((sc.range || [])[0]) || 0.25, hi: Number((sc.range || [])[1]) || 3, star: stars[0] || null } : null,
     box: { min: [Math.min(...xs), Math.min(...ys), zlo], max: [Math.max(...xs), Math.max(...ys), zhi] },
     hasLight: !!li.file, hasDust: !!du.file,
+    // the photograph's own brightest display luminance (the bake's peak_p99): a sheet's light never passes it
+    peak: Number(li.peak) > 0 ? Number(li.peak) : 1,
+    // below this tier the hero steps aside and main's photograph, glow and holder draw the object (`min_tier`)
+    minTier: Number.isFinite(Number(fr.min_tier)) ? Number(fr.min_tier) : 0,
   };
 }
 
@@ -137,6 +141,27 @@ export function sheetOf(profile) {
  */
 export function grazeOf(mu) {
   return smooth(mu, SHAPE.grazeFrom, SHAPE.grazeTo) / Math.max(mu, SHAPE.slantCap);
+}
+
+/**
+ * A sheet's picture edge: feathered from edge[0] to edge[1] of its half-size on a squircle (q^4), the GLSL's
+ * coverSheet (cheaper than remnant.js's cube root, the same kind of edge). Pure.
+ */
+export function coverSheet(u, v, edge = [0.88, 0.995]) {
+  const qx = Math.abs(u * 2 - 1), qy = Math.abs(v * 2 - 1);
+  const e = Math.sqrt(Math.sqrt(qx ** 4 + qy ** 4));
+  const f = 1 - smooth(e, edge[0], edge[1]);
+  return f * f;
+}
+
+/**
+ * THE LIGHT NEVER OUTSHINES THE PICTURE (photometric discipline; ring.js capLight for M57 does the same): turned, the
+ * slant and the phase function could lift a sheet's light past the photograph's brightest, so its luminance is held
+ * to `peak` (the light map's 99th percentile), colour kept. Pure; the GLSL's cap is the same.
+ */
+export function capLight(rgb, peak) {
+  const y = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  return y > peak ? rgb.map((x) => x * peak / y) : rgb.slice();
 }
 
 /** A dust sheet's relief where its optical depth is tau: lifted away from the light by up to `half` (ly). Pure. */
@@ -177,11 +202,12 @@ export function closedJs(g, ro, rd, { tau = () => [0, 0], light = () => [0, 0, 0
     if (p[0] < g.box.min[0] || p[0] > g.box.max[0] || p[1] < g.box.min[1] || p[1] > g.box.max[1]) continue;
     if (L.kind === 'light') {
       const [u, v] = g.uvL.at(p[0], p[1]);
-      const e = light(u, v), w = coverAt(u, v, g.edgeL) * slant * phaseFactor(g.phase, p, ro);
-      for (let c = 0; c < 3; c++) C[c] += T[c] * e[c] * w;
+      const w = coverSheet(u, v, g.edgeL) * slant * phaseFactor(g.phase, p, ro);
+      const e = capLight(light(u, v).map((x) => x * w), g.peak);
+      for (let c = 0; c < 3; c++) C[c] += T[c] * e[c];
     } else {
       const [u, v] = g.uvD.at(p[0], p[1]);
-      const tv = tau(u, v)[L.kind === 'front' ? 0 : 1] * coverAt(u, v, g.edgeD) * slant;
+      const tv = tau(u, v)[L.kind === 'front' ? 0 : 1] * coverSheet(u, v, g.edgeD) * slant;
       for (let c = 0; c < 3; c++) T[c] *= Math.exp(-tv * g.k[c]);
     }
   }
@@ -297,6 +323,12 @@ ${COMMON_GLSL}
 float grazeOf( float mu ) {
   return smoothstep( ${f3(SHAPE.grazeFrom)}, ${f3(SHAPE.grazeTo)}, mu ) / max( mu, ${f3(SHAPE.slantCap)} );
 }
+float coverSheet( vec2 uv, vec2 edge ) {
+  vec2 q = abs( uv * 2.0 - 1.0 );
+  q *= q;
+  float f = 1.0 - smoothstep( edge.x, edge.y, sqrt( sqrt( q.x * q.x + q.y * q.y ) ) );
+  return f * f;
+}
 `;
 
 // DUST: the multiply. The transmission per channel, raised to 1 / 2.2 (display values), kept stars left clear.
@@ -317,9 +349,9 @@ void main() {
   vec3 rd = normalize( vPos - uCam );
   vec2 t = texture2D( uDust, vUv ).rg;
   float v = uChannel < 0.5 ? t.r : t.g;
-  float tau = uTauMax * v * v * coverAt( vUv, uEdge ) * grazeOf( abs( rd.z ) );
+  float tau = uTauMax * v * v * coverSheet( vUv, uEdge ) * grazeOf( abs( rd.z ) );
   if ( tau < 0.002 ) discard;
-  vec3 T = exp( -tau * uK );
+  // what is behind keeps T = exp(-tau k) of its light; on display values that is T^(1/2.2) = exp(-tau k / 2.2)
   float keep = 0.0;
   for ( int i = 0; i < ${MAX_KEEP}; i++ ) {
     if ( i >= uKeepN ) break;
@@ -327,8 +359,8 @@ void main() {
     float w = uKeep[ i ].w;
     keep = max( keep, smoothstep( w, 1.0 - ( 1.0 - w ) * uKeepIn, c ) );
   }
-  T = mix( T, vec3( 1.0 ), keep );
-  gl_FragColor = vec4( mix( vec3( 1.0 ), pow( T, vec3( 1.0 / 2.2 ) ), uShare ), 1.0 );
+  vec3 Td = mix( exp( -tau * uK * ${f3(1 / 2.2)} ), vec3( 1.0 ), keep );   // T^(1/2.2), one exp
+  gl_FragColor = vec4( mix( vec3( 1.0 ), Td, uShare ), 1.0 );
 }
 `;
 
@@ -339,6 +371,7 @@ uniform sampler2D uLight;   // display values (gasmat.js COLOUR_POLICY)
 uniform float uGain;
 uniform vec3 uStar;         // the lighting star, sky frame (uPhase.x == 0: no phase function)
 uniform vec3 uPhase;        // g, the factor's floor and ceiling
+uniform float uPeak;        // the photograph's brightest luminance, in the exposure's stretch (capLight)
 #include <common>
 #include <logdepthbuf_pars_fragment>
 float hg( float mu, float g ) { float d = 1.0 + g * g - 2.0 * g * mu; return ( 1.0 - g * g ) / ( d * sqrt( d ) ); }
@@ -346,13 +379,16 @@ void main() {
   #include <logdepthbuf_fragment>
   if ( uShare <= 0.0 ) discard;
   vec3 rd = normalize( vPos - uCam );
-  float w = coverAt( vUv, uEdge ) * grazeOf( abs( rd.z ) );
+  float w = coverSheet( vUv, uEdge ) * grazeOf( abs( rd.z ) );
   if ( w <= 0.0 ) discard;
   if ( abs( uPhase.x ) > 1e-4 ) {
     vec3 i = normalize( vPos - uStar );
     w *= clamp( hg( dot( i, -rd ), uPhase.x ) / hg( i.z, uPhase.x ), uPhase.y, uPhase.z );
   }
-  vec3 col = stretchLight( texture2D( uLight, vUv ).rgb ) * ( w * uGain * uShare );
+  vec3 col = stretchLight( texture2D( uLight, vUv ).rgb ) * w;
+  float y = dot( col, vec3( 0.2126, 0.7152, 0.0722 ) );
+  if ( y > uPeak ) col *= uPeak / y;     // never brighter than the photograph's own brightest
+  col *= uGain * uShare;
   float mx = max( col.r, max( col.g, col.b ) );
   if ( mx > ${f3(SHAPE.shoulder)} ) col *= ( ${f3(SHAPE.shoulder)} + ( 1.0 - exp( -( mx - ${f3(SHAPE.shoulder)} ) ) ) * 0.5 ) / mx;
   gl_FragColor = vec4( col, 1.0 );   // additive (SrcAlpha, One): alpha 1
@@ -490,7 +526,8 @@ export function createHero(THREE, env = {}) {
       mat = new THREE.ShaderMaterial({
         vertexShader: SHEET_VERT, fragmentShader: LIGHT_FRAG, ...shared, blending: THREE.AdditiveBlending,
         uniforms: { ...sheetU, uLight: { value: lightTex || blank }, uGain: { value: 1 },
-          uStar: { value: new THREE.Vector3(...(ph && ph.star ? ph.star.pos : [0, 0, 0])) }, uPhase: { value: new THREE.Vector3(...(ph ? [ph.g, ph.lo, ph.hi] : [0, 1, 1])) } },
+          uStar: { value: new THREE.Vector3(...(ph && ph.star ? ph.star.pos : [0, 0, 0])) }, uPhase: { value: new THREE.Vector3(...(ph ? [ph.g, ph.lo, ph.hi] : [0, 1, 1])) },
+          uPeak: { value: g.peak ** pal0.gamma } },
       });
       mat.name = 'deep-dust-light';
     } else {
@@ -535,7 +572,7 @@ export function createHero(THREE, env = {}) {
   const twinId = (sid) => `${id}:${sid}`;
   const holesOff = () => { for (const s of g.stars) setExtraHole(twinId(s.id), null); };
 
-  let level = 0, levelShare = 0, tierNow = 1, cheap = false, palette = { ...pal0, gainIn: 1 }, last = { gas: 0, light: 1, photo: 0 }, kept = 0, order = [];
+  let stepped = false, level = 0, levelShare = 0, tierNow = 1, cheap = false, palette = { ...pal0, gainIn: 1 }, last = { gas: 0, light: 1, photo: 0 }, kept = 0, order = [];
   const _inv = new THREE.Matrix4(), _id = new THREE.Matrix4(), _cam = new THREE.Vector3(), _tw = new THREE.Vector3();
   return {
     group,
@@ -555,6 +592,15 @@ export function createHero(THREE, env = {}) {
       tierNow = tier;
       const q = typeof env.quality === 'function' ? env.quality() || {} : {};
       cheap = !(tier >= 1) || !!q.latched;
+      // below the profile's min_tier the hero steps aside for good on this device: its line's stub says not shipped,
+      // and the coordinator draws the object as main does (the photograph, the glow, the holder)
+      if (tier < g.minTier) {
+        if (env.stub) env.stub.shipped = false;
+        for (const it of items) { it.mat.uniforms.uShare.value = 0; it.mesh.visible = false; }
+        if (starPts) starPts.visible = false;
+        stepped = true;
+        return;
+      }
       const n = gridFor({ tier, cheap });
       if (n !== gridN) { const old = geo; gridN = n; geo = gridGeometry(THREE, n); for (const it of items) it.mesh.geometry = geo; old.dispose(); }
       const vh = (typeof globalThis.innerHeight === 'number' && globalThis.innerHeight) || 800;
@@ -563,7 +609,10 @@ export function createHero(THREE, env = {}) {
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
       if (gain !== palette.gainIn) {
         palette = { ...paletteFor(gain, profile), gainIn: gain };
-        for (const it of items) { it.mat.uniforms.uGamma.value = palette.gamma; it.mat.uniforms.uSat.value = palette.saturation; }
+        for (const it of items) {
+          it.mat.uniforms.uGamma.value = palette.gamma; it.mat.uniforms.uSat.value = palette.saturation;
+          if (it.mat.uniforms.uPeak) it.mat.uniforms.uPeak.value = g.peak ** palette.gamma; // the peak in the light's own stretch
+        }
       }
       const look = info.look || 'film';
       const keepDust = drawnUnder(look, UNDER_MEASURED.dust) ? 1 : 0, keepLight = drawnUnder(look, UNDER_MEASURED.light) ? 1 : 0;
@@ -611,7 +660,7 @@ export function createHero(THREE, env = {}) {
     ready: () => lightState !== 'loading' && dustState !== 'loading' && listState !== 'loading',
     stats: () => ({
       level, share: Math.round(last.gas * 100) / 100, photo: Math.round(last.photo * 100) / 100, light: lightState, dust: dustState, list: listState,
-      path: 'sheets', grid: gridN, tier: tierNow, cheap, palette: palette.mode, kept, order: order.map((it) => it.kind),
+      path: stepped ? 'stepped aside (below min_tier)' : 'sheets', grid: gridN, tier: tierNow, cheap, palette: palette.mode, kept, order: order.map((it) => it.kind),
       meshes: items.length + (starPts ? 1 : 0), textures: (lightTex ? 1 : 0) + (dustTex ? 1 : 0),
       bytes: items.length * gridN * gridN * 20 + (lightTex ? Math.round(512 * 512 * 4 * 4 / 3) : 0) + (dustTex ? Math.round(512 * 512 * 4 * 4 / 3) : 0),
       camLy: [Math.round(_cam.x * 100) / 100, Math.round(_cam.y * 100) / 100, Math.round(_cam.z * 100) / 100],

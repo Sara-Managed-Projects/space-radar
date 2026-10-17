@@ -500,7 +500,7 @@ Honesty over the 882 records: 320 measured, 239 modelled, 323 illustrative.
 - **Hero overrides:** `horsehead` (registry/deepsky-heroes/horsehead.yaml), `coalsack` (registry/deepsky-heroes/coalsack.yaml)
 - **Source:** The Horsehead's photograph; OpenNGC for the dark clouds' places.
 - **Dates and filters:** As the photograph's row.
-- **Measured, modelled or reconstructed:** Measured: the photograph and the places. Reconstructed: the Horsehead's and the Coalsack's dust as sheets that dim and redden what is behind them (W3-c); the other dark clouds dim nothing yet.
+- **Measured, modelled or reconstructed:** Measured: the photograph and the places. Reconstructed: the Horsehead's dust as a sheet that dims and reddens what is behind it (W3-c, tier 1 and up; the Coalsack's is built and held); the other dark clouds dim nothing yet.
 - **Rights:** CC BY 4.0 photograph; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (absorbing sheets, spec 0075 task 28, W3-c)
 - **Records (5):**
@@ -536,7 +536,7 @@ Honesty over the 882 records: 320 measured, 239 modelled, 323 illustrative.
 - **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml)
 - **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC.
 - **Dates and filters:** As the photographs' rows.
-- **Measured, modelled or reconstructed:** Measured: the photographs. Reconstructed: the Crab's and the Veil's shells in depth, their light the photographs' (W3-c). Illustrative: the glow.
+- **Measured, modelled or reconstructed:** Measured: the photographs. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c; the Crab's is built and held). Illustrative: the glow.
 - **Rights:** CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)
 - **Records (6):**

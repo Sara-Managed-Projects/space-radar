@@ -1,10 +1,8 @@
 // r12-dust: remnants as shells and dust as sheets (release 1.2.0 stage W3-c, internal spec 0076, internal #784, #806).
-// Every pose is photographed twice in one run, BEFORE (the hero's `shipped` switched off for the shot: the photograph,
-// the point glow and the holder, as main draws it today) and AFTER (the hero): the Crab at arrival and turned 60
-// degrees, the Veil at arrival and turned 70, the Horsehead against IC 434 at arrival and turned 50, the Coalsack
-// against the Milky Way at arrival and turned 40, M78 and the Iris lit by their stars at arrival and turned 50; then,
-// after only, the Crab from inside its shell, the Coalsack under the Measured look and the Horsehead turned 50 on Low
-// (T0: the closed form).
+// Every pose of the SHIPPED heroes is photographed twice in one run, BEFORE (the hero's `shipped` switched off for the
+// shot: the photograph, the point glow and the holder, as main draws it today) and AFTER (the hero): the Veil at arrival
+// and turned 70 degrees, the Horsehead against IC 434 at arrival and turned 50, M78 and the Iris lit by their stars at
+// arrival and turned 50; then the Horsehead turned 50 on Low (T0), where the hero steps aside for main's look.
 //
 // Beside each picture: the camera's distance and angle off our line, how much of the photograph is drawn, the hero's
 // own numbers (sr.deep.stats(): level, samples, shares, what loaded, the kept stars), the renderer's counts and the
@@ -14,7 +12,9 @@
 look.probe = 'r12-dust';
 const out = { scenes: [], problems: [] };
 const LY_KM = 9.4607304725808e12;
-const HEROES = { crab: 'dso-m1', veil: 'dso-veil-nebula', horsehead: 'dso-horsehead-nebula', coalsack: 'dso-coalsack', m78: 'dso-m78', iris: 'dso-iris-nebula' };
+// The SHIPPED set (the lead's answers on #1215, 2026-10-17); the Crab and the Coalsack are built and held (`shipped:
+// false`), so they are not photographed.
+const HEROES = { veil: 'dso-veil-nebula', horsehead: 'dso-horsehead-nebula', m78: 'dso-m78', iris: 'dso-iris-nebula' };
 
 const frames = (n = 20, capMs = 60000) => new Promise((resolve) => {
   const stamps = [];
@@ -57,12 +57,14 @@ try { if (sr.wantNebulae) await sr.wantNebulae(); } catch (e) { look.warns.push(
 try { if (sr.wantDeep) await sr.wantDeep(); } catch (e) { look.warns.push('wantDeep: ' + e); }
 try { if (sr.wantPerf) await sr.wantPerf(); } catch (e) { look.warns.push('wantPerf: ' + e); }
 
-// A hero's profile is a module the coordinator reads by reference: `shipped: false` for a BEFORE shot makes it drop the
-// hero (deepsky.js), so the photograph, the point glow and the holder draw the object as main does.
+// A W3-c hero's line in scene/deep/heroes.js carries the stub profile the coordinator reads by reference: `shipped:
+// false` for a BEFORE shot makes it drop the hero (deepsky.js), so the photograph, the glow and the holder draw the
+// object as main does.
 const PROFILES = {};
-for (const id of Object.keys(HEROES)) {
-  try { PROFILES[id] = (await import(new URL(`js/data/hero-${id}.js`, document.baseURI).href)).HERO; } catch (e) { out.problems.push(`the ${id} profile did not import: no BEFORE shots for it (${e})`); }
-}
+try {
+  const { HEROES: LIST } = await import(new URL('js/scene/deep/heroes.js', document.baseURI).href);
+  for (const id of Object.keys(HEROES)) { const d = LIST.find((x) => x.id === id); if (d && d.stub) PROFILES[id] = d.stub; else out.problems.push(`no stub for ${id}: no BEFORE shots for it`); }
+} catch (e) { out.problems.push(`heroes.js did not import: no BEFORE shots (${e})`); }
 const heroOn = (id, on) => {
   const P = PROFILES[id];
   const r = sr.recordById(HEROES[id]);
@@ -125,26 +127,12 @@ const visit = async (id, turnDeg, label) => {
   return arrival;
 };
 
-const crabLy = await visit('crab', 60, 'the Crab (M1): its shell from Martin et al. 2021, its light the photograph');
 await visit('veil', 70, 'the Veil (the Cygnus Loop): a thin sphere 37 pc across, its light the photograph');
 const hhLy = await visit('horsehead', 50, 'the Horsehead against IC 434: dust in front of the glow, absorbing and reddening');
-const csLy = await visit('coalsack', 40, 'the Coalsack against the Milky Way: dust dimming and reddening the stars behind it');
 await visit('m78', 50, 'M78 lit by HD 38563: a reflection sheet, blue only where the star lights it');
 await visit('iris', 50, 'the Iris lit by HD 200775: a reflection sheet, the star in front of it');
 
-// after only: inside the Crab's shell; the Coalsack under Measured; the Horsehead on Low (T0)
-if (crabLy) {
-  sr.select(sr.recordById(HEROES.crab), { fly: false, undo: false });
-  heroOn('crab', true);
-  pose(HEROES.crab, 35, 2.5);
-  await snap('crab', 'crab-3-inside', 'inside the Crab\'s shell, 2.5 ly from the centre, 35 degrees off our line: the filaments round the camera');
-}
-if (csLy) {
-  sr.select(sr.recordById(HEROES.coalsack), { fly: false, undo: false });
-  heroOn('coalsack', true);
-  pose(HEROES.coalsack, 40, csLy);
-  try { sr.drawn.set('measured'); await snap('coalsack', 'coalsack-3-measured', 'the Measured look, turned 40: the same dust (nothing generated, nothing moves)', 5000); } finally { sr.drawn.set('film'); }
-}
+// after only: the Horsehead on Low (T0): the hero steps aside below its min_tier, so this is main's look
 if (hhLy) {
   sr.select(sr.recordById(HEROES.horsehead), { fly: false, undo: false });
   heroOn('horsehead', true);
@@ -152,12 +140,12 @@ if (hhLy) {
   let choice = null;
   try {
     choice = sr.quality ? sr.quality.choice : null;
-    if (sr.quality && sr.quality.setChoice) { sr.quality.setChoice('low'); await snap('horsehead', 'horsehead-3-low', 'Low quality (T0) turned 50: each sheet\'s crossing in closed form, no bands', 6000); }
+    if (sr.quality && sr.quality.setChoice) { sr.quality.setChoice('low'); await snap('horsehead', 'horsehead-3-low', 'Low quality (T0) turned 50: below its min_tier the hero steps aside and main draws the Horsehead', 6000); }
   } catch (e) { look.warns.push('probe: Low: ' + e); } finally { try { if (sr.quality && sr.quality.setChoice) sr.quality.setChoice(choice || 'auto'); } catch { /* left */ } }
 }
 
 for (const id of Object.keys(HEROES)) heroOn(id, true);
-const after = out.scenes.filter((s) => /after|inside|measured|low/.test(s.name));
+const after = out.scenes.filter((s) => /after/.test(s.name));
 for (const id of Object.keys(HEROES)) if (!after.some((s) => s.hero === id && s.heroStats && s.heroStats.loaded)) out.problems.push(`the ${id} hero never drew`);
 if (out.problems.length) out.fail = out.problems.join('; ');
 return finish(out);

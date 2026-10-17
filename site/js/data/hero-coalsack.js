@@ -5,7 +5,7 @@ export const HERO = {
   "id": "coalsack",
   "record": "dso-coalsack",
   "stage": "W3-c",
-  "shipped": true,
+  "shipped": false,
   "children": [],
   "levels": {
     "2": "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds",

@@ -5,7 +5,7 @@ export const HERO = {
   "id": "crab",
   "record": "dso-m1",
   "stage": "W3-c",
-  "shipped": true,
+  "shipped": false,
   "children": [],
   "levels": {
     "2": "structure: the shell's light from the photograph, carried on the ellipsoid in depth (4 samples a segment; 2 on T0 and under the latch)",

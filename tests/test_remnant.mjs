@@ -30,7 +30,9 @@ const D2R = Math.PI / 180;
 for (const P of [CRAB, VEIL]) {
   const shell = R.part(P, 'shell'), light = R.part(P, 'light');
   check(shell.source && shell.source.length > 40 && light.source && /CC BY 4\.0/.test(light.source), `${P.id}: its shell and its light each have a source, the light's licence quoted`);
-  check(P.shipped === true && P.review.by === 'Space Radar maintainers' && /not yet/.test(P.review.astronomer || ''), `${P.id}: shipped under the lead's policy, no astronomer's review claimed`);
+  check(P.review.by === 'Space Radar maintainers' && /not yet/.test(P.review.astronomer || ''), `${P.id}: signed under the lead's policy, no astronomer's review claimed`);
+  const def = HEROES.find((h) => h.id === P.id);
+  check(def && def.stub && def.stub.shipped === P.shipped && !/hero-/.test(String(def.profile)) && /hero-/.test(String(def.build)), `${P.id}: its line's stub says what its registry says (shipped ${P.shipped}); the full profile is read with its module`);
   check(/FALSE COLOUR/.test(P.colours.note || ''), `${P.id}: the photograph's false colour is declared`);
   check(Array.isArray(P.drawn) && P.drawn.includes('reconstruction'), `${P.id}: drawn as a reconstruction`);
   check(P.credits.length >= 2, `${P.id}: its credit lines`);

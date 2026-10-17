@@ -16,7 +16,8 @@ export const HERO = {
     "distance_ly": 1375,
     "ra_deg": 85.2458,
     "dec_deg": -2.4583,
-    "axes": "x west, y north, z toward the Sun; the record's place at the origin"
+    "axes": "x west, y north, z toward the Sun; the record's place at the origin",
+    "min_tier": 1
   },
   "layers": [
     {
@@ -42,6 +43,7 @@ export const HERO = {
         0.55,
         0.97
       ],
+      "peak": 0.518,
       "made_by": "scripts/build_deep_sheets.py",
       "source": "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA), noao0126a, CC BY 4.0: https://noirlab.edu/public/images/noao0126a/"
     },

@@ -23,7 +23,9 @@ children: []
 levels:
   2: "structure: each layer one sheet over its picture (64 x 64 vertices; 32 on T0 and under the latch, 96 on T2), drawn far to near: the dust multiplies what is behind it, the glow adds"
   3: "close-up: the same sheets; the camera may go between them"
-frame: {units_ly: 1, distance_ly: 1375, ra_deg: 85.2458, dec_deg: -2.4583, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
+# `min_tier`: below tier 1 (T0: phones) the hero steps aside and main's photograph, glow and holder draw the Horsehead: its
+# relief showed as faceted wedges on T0 (the look of 2026-10-17; the lead's answer on #1215).
+frame: {units_ly: 1, distance_ly: 1375, ra_deg: 85.2458, dec_deg: -2.4583, axes: "x west, y north, z toward the Sun; the record's place at the origin", min_tier: 1}
 layers:
   - part: light
     kind: photograph
@@ -38,6 +40,8 @@ layers:
     half_ly: 0.6
     # the picture's edge feathered from 0.55 to 0.97 of its half-size (scene/deep/remnant.js coverAt): the glow runs on past it
     feather: [0.55, 0.97]
+    # the photograph's own brightest display luminance (the bake's manifest `peak_p99`): the sheet's light is held to it
+    peak: 0.518
     made_by: scripts/build_deep_sheets.py
     source: "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA), noao0126a, CC BY 4.0: https://noirlab.edu/public/images/noao0126a/"
   - part: dust
