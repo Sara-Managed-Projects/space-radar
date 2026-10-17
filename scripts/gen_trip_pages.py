@@ -260,7 +260,7 @@ def main(argv: list[str]) -> int:
             return 0
         else:
             print(f"gen_trip_pages: unknown option {a}", file=sys.stderr)
-            print(__doc__)
+            print(__doc__, file=sys.stderr)
             return 2
 
     want = expected(host)
