@@ -1,6 +1,6 @@
 // jupiter (internal spec 0076 W2-b; this wave's): the Great Red Spot where the JUPOS team measured it,
 // and Jupiter's faint ring. Every place is photographed twice in a row: BEFORE, as main draws it
-// (sr.worlds.setBeforeGiants(true), a switch that works under ?look=1 only: the spot where the map has
+// (sr.weather.setBeforeGiants(true), a switch that works under ?look=1 only: the spot where the map has
 // it, no ring), then AFTER, with sr.perf's numbers for each. The clock is held at one instant, turned
 // so the spot is under the Sun, on the world's own face and on Hubble's; then the ring from the night side (the Sun behind the planet) under
 // Camera and Deep, and from the day side under Camera and Deep. Last, the stage as "Go there" frames it.
@@ -9,7 +9,7 @@ const J = 'jupiter';
 const out = { scenes: [] };
 out.weatherLoaded = await until(() => sr.weather && typeof sr.weather.state === 'function', 30000);
 try { if (sr.wantPerf && !sr.perf) await sr.wantPerf(); } catch (e) { look.warns.push('probe: sr.wantPerf: ' + e); }
-const before = (on) => { try { return !!(sr.worlds.setBeforeGiants && sr.worlds.setBeforeGiants(on)); } catch { return false; } };
+const before = (on) => { try { return !!(sr.weather && sr.weather.setBeforeGiants && sr.weather.setBeforeGiants(on)); } catch { return false; } };
 const measure = async () => {
   if (!sr.perf) return null;
   sr.perf.mark();
@@ -18,7 +18,7 @@ const measure = async () => {
   return { p50Ms: s.p50Ms, p95Ms: s.p95Ms, calls: s.calls, triangles: s.triangles, textures: s.textures, gpuMiB: s.gpu ? s.gpu.visibleMiB : null, netBytes: s.net ? s.net.bytes : null, exposure: s.exposure, tier: s.tier };
 };
 const spot = () => { try { const w = sr.weather.state().air.worlds.find((x) => x.id === J); return w ? w.spot : null; } catch { return null; } };
-const ring = () => { try { const r = sr.worlds.meshFor(J).userData.ring; return r ? { visible: r.visible } : null; } catch { return null; } };
+const ring = () => { try { return sr.weather.rings(); } catch { return null; } };
 const exposure = (m) => { try { if (sr.exposure && sr.exposure.set) sr.exposure.set(m); } catch (e) { look.errors.push('probe: exposure ' + m + ': ' + e); } };
 /** One place before and after, from the same camera at the same instant. */
 const pair = async (name, note, settleMs = 8000) => {

@@ -1634,7 +1634,7 @@ No picture or file is added: these are numbers, each typed into the code with it
   <https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html>, and the planets' geometric albedos
   from <https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html> and `jupiterfact.html`, read
   2026-10-16. A NASA page; NASA's media guidelines: NASA content "generally [is] not subject to copyright
-  in the United States". Drawn by `scene/worlds.js` (`URANUS_RINGS`, `JUPITER_RINGS`).
+  in the United States". Drawn by `scene/worlds.js` (`URANUS_RINGS`) and `scene/weather/worldweather.js` (`GIANT_RINGS`).
 - **The Great Red Spot's place and drift.** The British Astronomical Association's Jupiter Section (John
   Rogers), "Jupiter in 2025/26, Report no.4" (2025 Dec. 31), reporting the JUPOS team's and Shinji
   Mizumoto's measurements: L2 = 79 on 2025 Dec. 1 and a drift of +0.8 deg/30d from March to November;

@@ -45,6 +45,12 @@
 //   Titan        three pale streaks in the north, where Webb and Keck saw methane clouds in 2022
 //                and 2023. ILLUSTRATIVE.
 //
+// THE GIANTS' RINGS (internal spec 0076 W2-b), here because this module is what the giants wear from
+// tier 1 and never on tier 0 or a connection that saves data: Jupiter's faint ring (GIANT_RINGS.jupiter),
+// a mesh of its own round Jupiter, and the Deep exposure's lift of Uranus's dark rings (scene/worlds.js
+// URANUS_RINGS draws them at their own darkness on every tier). Neither is weather; both need the
+// shutter (worlds.onExposure) and both go with the latch.
+//
 // THE CLOCK. Everything is a function of the app's time (update(tMs)), computed in doubles here and
 // handed over as small numbers, so scrubbing forwards or backwards moves the bands the right way at
 // the right speed and a 32-bit float never sees a Unix time.
@@ -60,7 +66,8 @@
 // with its own materials; the seasonal frost is not painted on those. Up close the picture is the
 // mosaic, as photographed; the season is on the globe seen whole.
 
-import { WORLD_FRAG } from '../worlds.js';
+import * as THREE from '../../../vendor/three.module.min.js';
+import { WORLD_FRAG, RING_FRAG, RING_DUST_G, URANUS_RINGS, WORLDS, ringMaterial, oblateRadii } from '../worlds.js';
 import { WEATHER } from '../../data/weather.js';
 import { drawnUnder } from '../exposure.js';
 import { lookHeld } from '../quality.js';
@@ -197,6 +204,149 @@ export function meshU(l3) {
 export function spotShift(place, mapU, tMs) {
   const u = meshU(grsAt(place, tMs).l3);
   return (((u - mapU) % 1) + 1) % 1;
+}
+
+// --- the giants' rings (internal spec 0076 W2-b) -----------------------------------------------------
+//
+// HOW BRIGHT. A ring with an `albedo` is lit as particles that reflect that share of the light, against
+// the globe's map, which stands for the planet's geometric albedo (`globeAlbedo`; NASA's fact sheets,
+// read 2026-10-16: Uranus 0.488, Jupiter 0.538). `stretch` is how many times brighter than that each
+// exposure (scene/exposure.js) draws it. The card says each number (copy/en.later.js r12Giants.rings).
+//
+// JUPITER'S RING. Two parts from NASA's Jupiter ring fact sheet (read 2026-10-16), each [centre km,
+// width km, normal optical depth]: the halo, 89 400 to 123 000 km, 3e-6, some 10 000 km thick; the main
+// ring, 123 000 to 128 940 km, 5e-6, albedo about 0.015. The halo is drawn flat, but a line of sight
+// through it is never longer than its width, so its optical depth along the view is at most width /
+// thickness times the normal one (`halo`). The Amalthea and Thebe gossamer rings (to 221 900 km, 1e-7)
+// are left out: fifty times fainter, they would treble the ring's area on the screen for a glow only
+// Deep would show. Millionths are far under a byte, so the strip holds tau / `tauScale` and the shader
+// reads it back as an optical depth, in the thin-slab limit 2 tau / mu on either face (FAINT_FRAG). It
+// is dust and dark grains: from the Sun's side almost nothing; with the Sun behind it the dust throws
+// light forward (Galileo's and New Horizons' pictures from the night side). Half the light is the
+// dust's (Henyey-Greenstein, g = RING_DUST_G) and half the grains' (a Lambert sphere's) -- the papers
+// put about half the main ring's optical depth in dust; the split, the g and the reddish `hue` are
+// ILLUSTRATIVE. Under Eye it is drawn as it is, which is not at all; under Camera 8 000 times
+// brighter, which shows it from the night side and hardly from the day side; under Deep 40 000 times.
+export const GIANT_RINGS = {
+  uranus: { albedo: 0.015, globeAlbedo: 0.488, stretch: { eye: 1, camera: 1, deep: 4 } },
+  jupiter: {
+    innerKm: 89400, outerKm: 129500, tauScale: 5e-6,
+    halo: { innerKm: 89400, outerKm: 123000, thickKm: 10000 },
+    albedo: 0.015, globeAlbedo: 0.538, hue: [1, 0.82, 0.66], dust: 0.5,
+    stretch: { eye: 0, camera: 8000, deep: 40000 },
+    bands: [[106200, 33600, 3e-6], [125970, 5940, 5e-6]],   // the halo; the main ring
+  },
+};
+/** The texels of the faint ring's strip. */
+export const FAINT_PX = 512;
+/** How many times brighter than it is a ring is drawn under an exposure (1 without a `stretch`). Pure. */
+export function ringStretch(ring, exposure = 'camera') {
+  const s = ring && ring.stretch;
+  return s && Number.isFinite(s[exposure]) ? s[exposure] : 1;
+}
+/** sRGB hex to linear RGB, as three.js's ColorManagement reads one. Pure. */
+export function hexLinear(hex) {
+  return [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+}
+const lumOf = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+/**
+ * A ring's colour in linear light under an exposure: the globe's map mean (`tintHex`) times albedo /
+ * globeAlbedo, in the ring's hue, times the exposure's stretch. Pure.
+ */
+export function ringColour(tintHex, ring, exposure = 'camera') {
+  const k = (lumOf(hexLinear(tintHex)) * ring.albedo) / ring.globeAlbedo * ringStretch(ring, exposure);
+  const hue = ring.hue || [1, 1, 1];
+  const h = lumOf(hue);
+  return hue.map((c) => (c / h) * k);
+}
+/** The faint ring's strip: FAINT_PX texels, white, alpha its optical depth over `tauScale`. Pure but for the array. */
+export function faintStrip(ring, px = FAINT_PX) {
+  const data = new Uint8Array(px * 4);
+  for (let i = 0; i < px; i++) { data[i * 4] = 255; data[i * 4 + 1] = 255; data[i * 4 + 2] = 255; }
+  const kmPerPx = (ring.outerKm - ring.innerKm) / px;
+  for (const [rKm, widthKm, tau] of ring.bands) {
+    const from = Math.max(0, Math.floor((rKm - widthKm / 2 - ring.innerKm) / kmPerPx));
+    const to = Math.min(px - 1, Math.ceil((rKm + widthKm / 2 - ring.innerKm) / kmPerPx) - 1);
+    for (let i = from; i <= to; i++) data[i * 4 + 3] = Math.max(data[i * 4 + 3], Math.round(Math.min(1, tau / ring.tauScale) * 255));
+  }
+  return data;
+}
+function lambertSpherePhase(cosAlpha) {
+  const a = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
+  return (Math.sin(a) + (Math.PI - a) * Math.cos(a)) / Math.PI;
+}
+/**
+ * The faint ring's light for a white strip (FAINT_FRAG): 2 tau / mu, mu held at `muMin` (a thick
+ * halo's thickness over its width), shared between grains (a Lambert sphere) and dust
+ * (Henyey-Greenstein by phase angle, over the isotropic value) by `dust`. JS twin of the shader. Pure.
+ */
+export function ringThinLight(tau, mu, cosAlpha, dust, g, muMin = 0) {
+  const S = (2 * tau) / Math.max(mu, 0.02, muMin);
+  const hg = (1 - g * g) / Math.pow(1 + g * g + 2 * g * cosAlpha, 1.5);
+  return S * ((1 - dust) * lambertSpherePhase(cosAlpha) + dust * hg);
+}
+/**
+ * RING_FRAG made faint (scene/worlds.js keeps one ring shader; this changes five lines of it, as this
+ * module changes one line of WORLD_FRAG): the strip is optical depth (uThin.x per unit), the slab is
+ * its thin limit with the halo's cap (uHalo), the dust's share and g are uThin.y and z, and the dust is
+ * in the ring's own colour. Throws if RING_FRAG no longer has a line it changes. Pure.
+ */
+export function faintFragment(src = RING_FRAG) {
+  let out = src;
+  const swap = (from, to) => {
+    if (!out.includes(from)) throw new Error(`faintFragment: RING_FRAG has no "${from.trim().slice(0, 60)}"`);
+    out = out.replace(from, to);
+  };
+  swap('uniform vec4 uArcBand;\n', 'uniform vec4 uArcBand;\nuniform vec3 uThin;\nuniform vec3 uHalo;\n');
+  swap('  float tau = -log( 1.0 - alpha );\n', '  float tau = tex.a * uThin.x;\n  alpha = tau;\n');
+  const a = out.indexOf('  float S;\n');
+  const end = '( exp( -tau / m ) - exp( -tau / m0 ) );\n  }\n';
+  const b = out.indexOf(end, a);
+  if (a < 0 || b < 0) throw new Error('faintFragment: RING_FRAG has no slab to replace');
+  out = out.slice(0, a) + '  float rl = length( vPosL.xy );\n  float S = 2.0 * tau / ( rl > uHalo.x && rl < uHalo.y ? max( m, uHalo.z ) : m );\n' + out.slice(b + end.length);
+  swap('float dust = RING_DUST * ( 1.0 - alpha );', 'float dust = uThin.y;');
+  swap('dustPhase( cosAlpha, RING_DUST_G )', 'dustPhase( cosAlpha, uThin.z )');
+  swap('RING_DUST_COLOUR * fine', 'fine');
+  return out;
+}
+
+/**
+ * Jupiter's faint ring as a mesh: a child of the planet's, in its equator, radii in planet radii,
+ * RING_FRAG made faint (faintFragment). Hidden until paintRings() says otherwise.
+ */
+function faintRing(planet, ring, id = 'jupiter') {
+  const w = WORLDS.find((x) => x.id === id);
+  const inner = ring.innerKm / w.radiusKm;
+  const outer = ring.outerKm / w.radiusKm;
+  const geo = new THREE.RingGeometry(inner, outer, 192, 1);
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (Math.hypot(pos.getX(i), pos.getY(i)) - inner) / (outer - inner), 0.5);
+  uv.needsUpdate = true;
+  const tex = new THREE.DataTexture(faintStrip(ring), FAINT_PX, 1, THREE.RGBAFormat);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.needsUpdate = true;
+  // No warp: the strip is laid on its radii (RING_U_GLSL's three pieces, each where it already is).
+  const material = ringMaterial(tex, inner, outer, [inner + (outer - inner) / 3, inner + (2 * (outer - inner)) / 3, 1 / 3, 2 / 3]);
+  material.fragmentShader = faintFragment();
+  material.uniforms.uThin = { value: new THREE.Vector3(ring.tauScale, ring.dust, RING_DUST_G) };
+  const h = ring.halo;
+  material.uniforms.uHalo = { value: new THREE.Vector3(h ? h.innerKm / w.radiusKm : 0, h ? h.outerKm / w.radiusKm : 0, h ? h.thickKm / (h.outerKm - h.innerKm) : 0) };
+  if (w.look.oblate) { const g = oblateRadii(w.look.oblate); material.uniforms.uGlobe.value.set(g.eq, g.pol); }
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.renderOrder = 1;
+  mesh.name = `${id}-faint-ring`;
+  mesh.visible = false;
+  mesh.userData.tint = w.look.tint;
+  planet.add(mesh);
+  return mesh;
 }
 
 const WX_STORM_PARS = /* glsl */`
@@ -825,6 +975,29 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
     worn.push(entry);
   }
 
+  // THE GIANTS' RINGS (internal spec 0076 W2-b; GIANT_RINGS). `before`: the look probes' switch
+  // (?look=1 only, setBeforeGiants): the giants as main drew them, for a before and after in one run.
+  let before = false;
+  let exposure = worlds && worlds.exposure ? worlds.exposure() : 'camera';
+  const jupiterMesh = worlds && worlds.meshFor ? worlds.meshFor('jupiter') : null;
+  const faint = jupiterMesh && typeof jupiterMesh.add === 'function' ? faintRing(jupiterMesh, GIANT_RINGS.jupiter) : null;
+  const uranusRing = (() => { const m = worlds && worlds.meshFor ? worlds.meshFor('uranus') : null; return m && m.userData && m.userData.ring ? m.userData.ring : null; })();
+  /** The rings as the shutter, the latch and the probes' switch want them now. */
+  function paintRings() {
+    if (faint) {
+      faint.visible = !latched && !before && ringStretch(GIANT_RINGS.jupiter, exposure) > 0;
+      const c = ringColour(faint.userData.tint, GIANT_RINGS.jupiter, exposure);
+      faint.material.uniforms.uColour.value.setRGB(c[0], c[1], c[2], THREE.LinearSRGBColorSpace);
+    }
+    if (uranusRing) {
+      const k = latched ? 1 : ringStretch(GIANT_RINGS.uranus, exposure);
+      const c = hexLinear(before && !latched ? 0x8f9da3 : URANUS_RINGS.colour);
+      uranusRing.material.uniforms.uColour.value.setRGB(c[0] * k, c[1] * k, c[2] * k, THREE.LinearSRGBColorSpace);
+    }
+  }
+  if (worlds && worlds.onExposure) worlds.onExposure((mode) => { exposure = mode; paintRings(); });
+  paintRings();
+
   /**
    * Measured or Film: each row asked once, and what is `hidden` taken out by the uniform that means none.
    * Returns true when the look changed.
@@ -929,7 +1102,11 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
     // The Great Red Spot where it is (internal spec 0076 W2-b): asked every frame, before the clock's
     // own early return, because the face the world wears (and so where its map has the spot) can
     // change on a held clock. One subtraction and a few multiplications for one world.
-    const before = !!(worlds && worlds.beforeGiants && worlds.beforeGiants());
+    // Jupiter's faint ring is lit from where Jupiter is (scene/worlds.js has put the Sun's direction in its globe).
+    if (faint && faint.visible) {
+      const sd = jupiterMesh.material && jupiterMesh.material.uniforms && jupiterMesh.material.uniforms.uSunDir;
+      if (sd) faint.material.uniforms.uSunDir.value.copy(sd.value);
+    }
     for (const e of worn) {
       if (!e.place || !Number.isFinite(tMs)) continue;
       const u = e.material.uniforms;
@@ -972,6 +1149,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       e.material.defines = d;
       e.material.needsUpdate = true;
     }
+    paintRings();
   }
 
   /**
@@ -987,6 +1165,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       e.material.defines = { ...(e.material.defines || {}), ...e.defines };
       e.material.needsUpdate = true;
     }
+    paintRings();
   }
 
   /** The spot as drawn now, for the probes: its longitudes, the map's turn and where on the mesh it is. */
@@ -997,6 +1176,16 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
   }
 
   return {
+    /** The look probes' before (?look=1 only): the giants as main drew them. True when it took. */
+    setBeforeGiants(on) {
+      if (!lookHeld({ search: typeof location !== 'undefined' ? location.search : '' })) return false;
+      before = !!on;
+      paintRings();
+      return true;
+    },
+    beforeGiants: () => before,
+    /** For the probes: is Jupiter's faint ring drawn, under which exposure? */
+    rings: () => ({ exposure, jupiter: faint ? faint.visible : null, uranus: uranusRing ? uranusRing.material.uniforms.uColour.value.getHex(THREE.LinearSRGBColorSpace) : null }),
     update,
     latch,
     unlatch,
@@ -1027,7 +1216,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
      */
     spotLine(id, clockMs) {
       const e = !latched && worn.find((x) => x.id === id && x.place);
-      if (!e || e.ground || (worlds && worlds.beforeGiants && worlds.beforeGiants())) return null;
+      if (!e || e.ground || before) return null;
       const W = COPY.r12Giants;
       if (!W || !W.spot) return null;
       const p = e.place;

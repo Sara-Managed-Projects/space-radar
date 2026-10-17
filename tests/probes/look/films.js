@@ -1,5 +1,5 @@
 // films (internal spec 0076 W2-b; this wave's): Uranus's rings at their own darkness, and Neptune's
-// beside them unchanged. Each place twice in a row: BEFORE, as main draws it (sr.worlds.setBeforeGiants
+// beside them unchanged. Each place twice in a row: BEFORE, as main draws it (sr.weather.setBeforeGiants
 // (true), a switch that works under ?look=1 only: the pale grey Uranus's rings had), then AFTER, with
 // sr.perf's numbers. The clock is held at one instant. For Uranus: its stage; low over the lit face of
 // the rings, so their near side crosses the disc (dark threads against the clouds) and their far side
@@ -8,7 +8,7 @@
 look.probe = 'films';
 const out = { scenes: [] };
 try { if (sr.wantPerf && !sr.perf) await sr.wantPerf(); } catch (e) { look.warns.push('probe: sr.wantPerf: ' + e); }
-const before = (on) => { try { return !!(sr.worlds.setBeforeGiants && sr.worlds.setBeforeGiants(on)); } catch { return false; } };
+const before = (on) => { try { return !!(sr.weather && sr.weather.setBeforeGiants && sr.weather.setBeforeGiants(on)); } catch { return false; } };
 const measure = async () => {
   if (!sr.perf) return null;
   sr.perf.mark();
@@ -64,10 +64,7 @@ for (const id of ['uranus', 'neptune']) {
     await pair('neptune-2-rings', 'neptune: above the lit face of its rings (no change is expected), Camera');
   }
 }
-try {
-  const recs = ['uranus', 'jupiter', 'neptune'].map((id) => sr.recordById(id));
-  out.cards = recs.map((r) => r && r.meta ? { id: r.id, ringsWords: r.meta.ringsWords || null, ringsAlbedo: r.meta.ringsAlbedo || null, ringsCamera: r.meta.ringsCamera || null, ringsDeep: r.meta.ringsDeep || null } : null);
-} catch (e) { look.warns.push('probe: the card rows: ' + e); }
+try { out.rings = sr.weather && sr.weather.rings ? sr.weather.rings() : null; } catch (e) { look.warns.push('probe: the rings: ' + e); }
 sr.clock.setPaused(false);
 sr.clock.live();
 return finish(out);

@@ -105,7 +105,7 @@ worlds:
     ephemeris: {propagator: body, body: Jupiter}
     rotation: {kind: sidereal, period_h: 9.925}
     frames: [inertial, fixed]
-    # `ring_bands` (internal spec 0076 W2-b; drawn from a strip of measured bands, no texture): the faint ring, as scene/worlds.js JUPITER_RINGS draws it. NASA's
+    # `ring_bands` (internal spec 0076 W2-b; drawn from a strip of measured bands, no texture): the faint ring, as scene/weather/worldweather.js GIANT_RINGS draws it. NASA's
     # Jupiter ring fact sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html, read
     # 2026-10-16): halo 89 400-123 000 km, optical depth 3e-6, about 10 000 km thick; main ring
     # 123 000-128 940 km, 5e-6, albedo about 0.015. The Amalthea and Thebe gossamer rings (to 221 900 km,
