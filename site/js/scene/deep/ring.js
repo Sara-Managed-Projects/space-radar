@@ -532,10 +532,44 @@ export const SHADERS = { gasVertex: GAS_VERT, gas: GAS_FRAG, ...SHELL_SHADERS };
 
 const M3 = (THREE, S) => new THREE.Matrix3().set(...S[0], ...S[1], ...S[2]);
 
+/**
+ * TIER 0: PHOTOGRAPH ONLY. On T0 (phones) the model is not drawn at all: M57 is drawn as main draws it, its
+ * photograph on our line and its holder and point glow off it. The coordinator (deepsky.js) reads the profile's
+ * `shipped` every frame and drops a hero that is not, restoring the holder and the glow; so the profile's
+ * `shipped` becomes "shipped AND the device's tier is at least `min`", and the record's drawn-by-a-hero stamps
+ * (meta.heroDrawn, heroId, heroCopy: what the card says) are taken off while it is not drawn and put back when it
+ * is. `shipped` can still be set (the look probe's BEFORE shots set it). A hook in deepsky.js (a hero's own tier
+ * floor) would replace this; it is not this stage's file. Pure but for the profile and record it is given.
+ */
+export function tierFloor(profile, tierOf, record = null, min = 1) {
+  if (!profile || typeof tierOf !== 'function') return profile;
+  const own = Object.getOwnPropertyDescriptor(profile, 'shipped');
+  if (own && own.get && own.get.tierFloor) return profile; // once
+  let base = !!profile.shipped;
+  let saved = null;
+  const KEYS = ['heroDrawn', 'heroId', 'heroCopy'];
+  const get = () => {
+    let tier = 1;
+    try { const q = tierOf(); tier = Number.isFinite(q && q.tier) ? q.tier : Number(q); } catch { tier = 1; }
+    const on = base && !(tier < min);
+    const meta = record && record.meta;
+    if (meta) {
+      if (!on && meta.heroId === profile.id) { saved = Object.fromEntries(KEYS.map((k) => [k, meta[k]])); for (const k of KEYS) delete meta[k]; }
+      else if (on && saved) { for (const k of KEYS) if (saved[k] !== undefined) meta[k] = saved[k]; saved = null; }
+    }
+    return on;
+  };
+  get.tierFloor = true;
+  Object.defineProperty(profile, 'shipped', { get, set: (v) => { base = !!v; }, configurable: true, enumerable: true });
+  return profile;
+}
+
 export function createHero(THREE, env = {}) {
   const group = new THREE.Group();
   group.name = `deep-hero-${(env.profile && env.profile.id) || 'm57'}`;
   const profile = env.profile && Array.isArray(env.profile.layers) && env.profile.layers.some((l) => l && l.part === 'disc') ? env.profile : PROFILE;
+  // Tier 0: photograph only (the coordinator drops the hero and draws M57 as main does). See tierFloor.
+  if (typeof env.quality === 'function') tierFloor(profile, env.quality, env.record);
   const g = geometryOf(profile);
   const placer = skyPlacer(THREE, group, env);
   const sky = placer.sky;
@@ -613,7 +647,7 @@ export function createHero(THREE, env = {}) {
       const tier = Number.isFinite(info.tier) ? info.tier : 1;
       if (tier !== tierNow || !knots) { tierNow = tier; buildKnots(tier); }
       const { vw, vh } = viewSize();
-      const sh = sharesFor({ level: levelShare, rPx: info.rPx, photo: info.photo, viewH: vh });
+      const sh = sharesFor({ level: tier >= 1 ? levelShare : 0, rPx: info.rPx, photo: info.photo, viewH: vh });
       last = { ...sh, photo: Number(info.photo) || 0 };
       samples = samplesFor({ tier, steps: info.steps });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;

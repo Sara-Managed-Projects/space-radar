@@ -276,7 +276,7 @@ const lightOf = (x, y) => {
   }
   check(off < 1e-6, `the white dwarf stays at the centre of the frame across a 90° arc (largest offset ${off.toExponential(1)})`);
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  check(hero.stats().samples === 1 && hero.stats().knots === 150, `T0: one step a layer at its middle, 150 knots (${JSON.stringify(hero.stats())})`);
+  check(hero.stats().share === 0 && hero.stats().star === 0, `T0: the model draws nothing, not even for the frame before the coordinator drops it (${JSON.stringify(hero.stats())})`);
   check(uGas.uShare.value === 0 && hero.ready(), 'no gas is drawn until its light (the photograph) has landed; with nothing to fetch here it is ready');
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
   check(hero.stats().samples === 16 && hero.stats().knots === 1000, 'T2 at level 3: 16 samples for the disc (32 steps), 1 000 knots');
@@ -311,6 +311,31 @@ const lightOf = (x, y) => {
   check(hero.card && hero.card.copy === 'deepRing', 'its card reads the words block deepRing');
   hero.dispose();
   check(!hero.group.parent, 'disposed: out of the scene');
+}
+
+// --- 5a. tier 0: photograph only (the coordinator drops a hero whose profile is not shipped) ---------------
+{
+  let tier = 1;
+  const prof = { id: 'm57', shipped: true };
+  const rec = { id: 'dso-m57', meta: { heroDrawn: ['reconstruction'], heroId: 'm57', heroCopy: 'deepRing', drawn: ['photograph'] } };
+  R.tierFloor(prof, () => ({ tier }), rec);
+  check(prof.shipped === true && rec.meta.heroId === 'm57', 'on T1 the Ring is shipped and the card says it is drawn');
+  tier = 0;
+  check(prof.shipped === false && !('heroId' in rec.meta) && !('heroDrawn' in rec.meta) && !('heroCopy' in rec.meta), 'on T0 it is not: the coordinator drops it (the holder and the glow as main), and the card no longer says a reconstruction is drawn');
+  tier = 2;
+  check(prof.shipped === true && rec.meta.heroId === 'm57' && rec.meta.heroCopy === 'deepRing' && rec.meta.heroDrawn[0] === 'reconstruction', 'back on T1 or T2 it is shipped again, with its card');
+  prof.shipped = false;
+  check(prof.shipped === false, 'and `shipped` can still be set (the look probe\'s BEFORE shots)');
+  prof.shipped = true; tier = 0;
+  R.tierFloor(prof, () => ({ tier: 2 }), rec);
+  check(prof.shipped === false, 'installed once (a second hero build does not stack another floor)');
+  // As the coordinator builds it: env.quality is the device's tier.
+  const P2 = JSON.parse(JSON.stringify(HERO));
+  stage.setWorld('stellar');
+  const rec2 = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'))).find((r) => r.id === 'dso-m57');
+  const h2 = R.createHero(THREE, { profile: P2, record: rec2, gas: G, quality: () => ({ tier: 0 }) });
+  check(P2.shipped === false, 'createHero puts the floor on its profile: on T0 the profile reads not shipped');
+  h2.dispose();
 }
 
 // --- 5b. the card: a shipped hero names its source after "What is drawn", and its caveats -------------------
