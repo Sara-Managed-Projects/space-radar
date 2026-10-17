@@ -559,7 +559,8 @@ export const VISUAL_CLASSES = [
 "spirit",
 "opportunity",
 "phoenix",
-"mars-3"
+"mars-3",
+"huygens"
 ],
 "real_models": [
 "dsn70",
