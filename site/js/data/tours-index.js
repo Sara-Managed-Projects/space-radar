@@ -341,6 +341,6 @@ export const TOURS_INDEX = [
 "next": "across-the-local-group",
 "min_stops": 3,
 "count": 7,
-"estimate_ms": 161517
+"estimate_ms": 161184
 }
 ];

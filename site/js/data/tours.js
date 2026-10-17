@@ -5655,14 +5655,14 @@ export const TOURS = [
 "chapter": "Home",
 "card": {
 "title": "We start at home",
-"body": "Our galaxy is about a hundred thousand light-years across, with between one and four hundred billion stars. Seen from outside, as here, it is a model: nobody has ever left it to look back."
+"body": "Our galaxy is about 87 000 light-years across, with between one and four hundred billion stars. Seen from outside, as here, it is a model: nobody has ever left it to look back."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 13822
+"dwell_ms": 13489
 },
 {
 "id": "local-group",
@@ -5713,9 +5713,9 @@ export const TOURS = [
 },
 "needs_layer": "exotics",
 "distance_km": 9460730472580800000000,
+"behind": "sun",
 "drift_deg": 8,
 "drift_rate_deg_s": 1,
-"key_light_deg": 0,
 "chapter": "A quasar",
 "card": {
 "title": "TON 618, a quasar",
@@ -5723,6 +5723,7 @@ export const TOURS = [
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
+"key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 18817
@@ -5788,6 +5789,6 @@ export const TOURS = [
 "dwell_ms": 18484
 }
 ],
-"estimate_ms": 161517
+"estimate_ms": 161184
 }
 ];
