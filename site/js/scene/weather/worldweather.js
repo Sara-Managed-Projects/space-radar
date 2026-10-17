@@ -15,7 +15,10 @@
 //   zonal flow   Jupiter, Saturn, Venus, Uranus, Neptune: every latitude of the map slides at the
 //                published wind's angular rate (scene/weather/flow.js). MODELLED.
 //   the spot     Jupiter's Great Red Spot: the band's wind is taken round it and the oval turns
-//                within itself. MODELLED (its place is the map's; its drift is not drawn).
+//                within itself. MODELLED. Since internal spec 0076 W2-b it is also WHERE IT IS: the
+//                map is turned so its spot stands at the System II longitude the JUPOS team measured,
+//                carried forward at the measured drift (GRS_PLACE below), and the card says by how
+//                much that may be wrong. The other clouds go round with the map and are not placed.
 //   the hexagon  Saturn's north pole: a six-sided line at the jet's measured latitude.
 //                ILLUSTRATIVE (the map has no pole in it).
 //   the vortex   inside it, from close: a small cyclone whose eye is as wide and whose wall is as
@@ -61,6 +64,8 @@ import { WORLD_FRAG } from '../worlds.js';
 import { WEATHER } from '../../data/weather.js';
 import { drawnUnder } from '../exposure.js';
 import { lookHeld } from '../quality.js';
+import { COPY, t, fmt } from '../../copy/en.js';
+import '../../copy/en.later.js';
 import {
   RATE_ROWS, rateTable, splitFlow, flowPhases, rigidTurn, planetocentricDeg, marsLs, marsSeason,
   nextFlash, flashLight, bodyDirection, wavePhase,
@@ -135,6 +140,64 @@ export function cirrusUniforms(c) {
 }
 /** Seconds a close-range effect takes to come in or go out once the disc crosses its size. */
 export const NEAR_FADE_S = 1;
+
+// --- the Great Red Spot where it is (internal spec 0076 W2-b, internal #860) -------------------------
+//
+// A map of Jupiter is one picture: its Great Red Spot is where it was that day. The spot drifts
+// slowly against System II, the rotation astronomers have kept since the 1890s for the bands away
+// from the equator, and its place in System II is measured every few weeks by the JUPOS team (the
+// British Astronomical Association's Jupiter Section with amateur observers' images). The registry
+// row (`jupiter-bands` spot.place) holds one dated measurement and the drift; this turns it into
+// System III, the rotation the globe is drawn with (Astronomy Engine's IAU W = 284.95 + 870.536 d),
+// and into the turn of the map that puts the map's own spot there.
+//
+// SYSTEM II: W = 43.3 + 870.270 d (Davies et al. 1980, the IAU/IAG working group's report, Celestial
+// Mechanics 22, 205; the Explanatory Supplement to the Astronomical Almanac, 1992, sect. 7.42). A
+// feature fixed in System II goes round System III 0.266 degrees a day: L3 = L2 + (W3 - W2), which
+// the BAA's reports give as "DL3 = DL2 + 8.0 deg/30d". Longitudes are west longitudes, as the
+// reports and the IAU use for Jupiter.
+//
+// THE MESH. scene/worlds.js turns the globe with Astronomy Engine; SphereGeometry's u runs east, and
+// a west longitude L sits at u = 0.5 - L / 360 (tests/test_giants.mjs holds it against Hubble's map
+// of 11 December 2025, whose spot is within a degree of where this puts it that day).
+export const SYSTEM_II = { w0: 43.3, perDay: 870.27 };
+export const SYSTEM_III = { w0: 284.95, perDay: 870.536 };
+const J2000_MS = Date.UTC(2000, 0, 1, 12);
+const wrap360 = (x) => ((x % 360) + 360) % 360;
+/** Days from J2000 (the clock's UTC as TDB: 69 s, 0.0002 degrees of the difference). Pure. */
+const daysJ2000 = (tMs) => (tMs - J2000_MS) / 86400000;
+/** A System II west longitude as System III's at `tMs`, degrees 0..360. Pure. */
+export function l2ToL3(l2, tMs) {
+  const d = daysJ2000(tMs);
+  return wrap360(l2 + (SYSTEM_III.w0 - SYSTEM_II.w0) + (SYSTEM_III.perDay - SYSTEM_II.perDay) * d);
+}
+/** Milliseconds of a place's date (`date`, YYYY-MM-DD: its midnight, UTC; or a full ISO instant). Pure. */
+function placeMs(place) {
+  const s = String(place.date);
+  return Date.parse(/T/.test(s) ? s : s + 'T00:00:00Z');
+}
+/**
+ * The spot at `tMs` from the registry's dated place: its System II and System III longitudes, the
+ * days since it was measured, and how far either side it may be (the measurement's own error plus
+ * the spread of the drifts measured that year, carried over the days). Pure.
+ */
+export function grsAt(place, tMs) {
+  const days = (tMs - placeMs(place)) / 86400000;
+  const l2 = wrap360(place.l2_deg + (place.drift_deg_per_30d * days) / 30);
+  const range = place.drift_range || [place.drift_deg_per_30d, place.drift_deg_per_30d];
+  const spread = Math.max(Math.abs(range[1] - place.drift_deg_per_30d), Math.abs(place.drift_deg_per_30d - range[0]));
+  const pm = (place.l2_sd_deg || 0) + (spread * Math.abs(days)) / 30;
+  return { l2, l3: l2ToL3(l2, tMs), days, pm };
+}
+/** Where on the mesh (SphereGeometry's u) a System III west longitude is. Pure. */
+export function meshU(l3) {
+  return (((0.5 - l3 / 360) % 1) + 1) % 1;
+}
+/** The map's turn (fraction of a turn, 0..1) that puts a spot the map has at `mapU` at its place now. Pure. */
+export function spotShift(place, mapU, tMs) {
+  const u = meshU(grsAt(place, tMs).l3);
+  return (((u - mapU) % 1) + 1) % 1;
+}
 
 const WX_STORM_PARS = /* glsl */`
 #ifdef WX_STORMS
@@ -305,6 +368,7 @@ uniform float uWxRate[ ${RATE_ROWS} ];  // turns per day toward the east, south 
 uniform vec4  uWxPhase;                 // days each copy has flowed (x, y), the second's weight, the whole map's turn
 uniform vec4  uWxSpot;                  // the pinned oval: centre u, v and half-sizes; half-size 0 = none
 uniform float uWxSpotRate;              // its own turning, turns per day, anticlockwise positive
+uniform float uWxShift;                 // the map's turn that puts its spot where it is today (turns; 0 = where the map has it)
 uniform vec3  uWxHex;                   // the hexagon: its corners' colatitude (rad; 0 = none), its depth, its longitude
 uniform vec3  uWxWave;                  // the dark Y: its depth (0 = none), how far round it has gone (turns), its arms' reach (rad)
 uniform vec4  uWxVortex;                // the polar vortex: its eye's radius (rad), its turn (0..1), how much of it is in (0..1), its reach in eye radii
@@ -429,7 +493,10 @@ vec3 wxSample( vec2 uv, float tau ) {
 #endif
   return texel;
 }
-vec3 wxBase( vec2 uv ) {
+vec3 wxBase( vec2 uvMesh ) {
+  // From the mesh's longitudes to the map's: the map turned so its spot is where it is (uWxShift).
+  // Everything below is in the map's own coordinates, as it was before the turn existed.
+  vec2 uv = vec2( uvMesh.x - uWxShift, uvMesh.y );
   vec3 c = mix( wxSample( uv, uWxPhase.x ), wxSample( uv, uWxPhase.y ), uWxPhase.z );
 #ifdef WX_STORMS
   if ( uWxNear.w > 0.0 ) c = wxDeep( c, uv );
@@ -700,6 +767,9 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       const s = fx.flow.spot;
       u.uWxSpot = { value: s ? { x: s.u, y: s.v, z: s.half_u, w: s.half_v } : { x: 0, y: 0, z: 0, w: 1 } };
       u.uWxSpotRate = { value: s && s.period_days ? 1 / s.period_days : 0 };
+      // The spot where it is (internal spec 0076 W2-b): turned each frame in update(); 0 = the map's place.
+      u.uWxShift = { value: 0 };
+      if (s && s.place) entry.place = s.place;
       u.uWxHex = { value: fx.hexagon ? { x: hexagonCornerRad(fx.hexagon.hexagon), y: HEXAGON.depth, z: 0 } : { x: 0, y: 0, z: 0 } };
       // The dark Y goes round with the wind: the same way the flow's `sense` turns the clouds.
       const wave = fx.wave ? fx.wave.wave : null;
@@ -856,6 +926,16 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       if (ground) { const v = u.uWxPhase.value; v.x = 0; v.y = 0; v.z = 0; v.w = 0; }
       lastMs = NaN;
     }
+    // The Great Red Spot where it is (internal spec 0076 W2-b): asked every frame, before the clock's
+    // own early return, because the face the world wears (and so where its map has the spot) can
+    // change on a held clock. One subtraction and a few multiplications for one world.
+    const before = !!(worlds && worlds.beforeGiants && worlds.beforeGiants());
+    for (const e of worn) {
+      if (!e.place || !Number.isFinite(tMs)) continue;
+      const u = e.material.uniforms;
+      u.uWxShift.value = before || e.ground ? 0 : spotShift(e.place, u.uWxSpot.value.x, tMs);
+      e.spotMs = tMs;
+    }
     if (!Number.isFinite(tMs) || tMs === lastMs) return;
     lastMs = tMs;
     for (const e of worn) {
@@ -909,6 +989,13 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
     }
   }
 
+  /** The spot as drawn now, for the probes: its longitudes, the map's turn and where on the mesh it is. */
+  function spotState(e) {
+    const g = grsAt(e.place, e.spotMs);
+    const u = e.material.uniforms;
+    return { l2: g.l2, l3: g.l3, pm: g.pm, days: g.days, shift: u.uWxShift.value, mapU: u.uWxSpot.value.x, meshU: (((u.uWxSpot.value.x + u.uWxShift.value) % 1) + 1) % 1, v: u.uWxSpot.value.y };
+  }
+
   return {
     update,
     latch,
@@ -934,6 +1021,25 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
     detail: (id) => !latched && worn.some((e) => e.id === id && !!e.detail && drawn(e.fx.detail)),
     /** Does this world wear the polar vortex: 'moving', 'still' (less motion asked for), or null? */
     vortex: (id) => { const e = !latched && worn.find((x) => x.id === id && !!x.vortex && drawn(x.fx.vortex)); return e ? (e.vortex.still ? 'still' : 'moving') : null; },
+    /**
+     * The Great Red Spot's line for Jupiter's card (internal spec 0076 W2-b; copy/en.later.js r12Giants):
+     * where it is drawn, from when, and how far either side it may be. Null where it is not placed.
+     */
+    spotLine(id, clockMs) {
+      const e = !latched && worn.find((x) => x.id === id && x.place);
+      if (!e || e.ground || (worlds && worlds.beforeGiants && worlds.beforeGiants())) return null;
+      const W = COPY.r12Giants;
+      if (!W || !W.spot) return null;
+      const p = e.place;
+      const g = grsAt(p, Number.isFinite(clockMs) ? clockMs : e.spotMs);
+      const range = p.drift_range || [p.drift_deg_per_30d, p.drift_deg_per_30d];
+      const date = new Date(placeMs(p)).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+      return t(W.spot, {
+        l2: fmt.int(Math.round(g.l2)), at: fmt.int(Math.round(p.l2_deg)), date,
+        rate: fmt.num(p.drift_deg_per_30d, 1), lo: fmt.num(range[0], 1), hi: fmt.num(range[1], 1),
+        pm: fmt.int(Math.max(1, Math.round(g.pm))),
+      });
+    },
     /** For the probes and the card: the season on Mars, each flow's cycle, the latch. */
     state: () => ({
       latched,
@@ -951,6 +1057,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
         ground: !!e.ground,
         vortex: e.vortex ? { near: e.material.uniforms.uWxVortex.value.z, turn: e.material.uniforms.uWxVortex.value.y, periodDays: e.vortex.periodDays, still: e.vortex.still } : null,
         storms: e.storms ? { near: { ...e.material.uniforms.uWxNear.value }, face: e.storms.face, turn: e.material.uniforms.uWxPole.value.y, still: e.storms.still } : null,
+        spot: e.place && Number.isFinite(e.spotMs) ? spotState(e) : null,
       })),
     }),
   };

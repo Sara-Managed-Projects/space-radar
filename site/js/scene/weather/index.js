@@ -73,7 +73,9 @@ export function createWeather({ worlds, camera = null, reducedMotion = false, on
       // Saturn's polar vortex (2026-10-12): said wherever it is drawn (not under the Measured look); that it turns only where it does.
       const vortex = air.vortex(worldId);
       const vortexLine = vortex ? COPY.weatherVortex[vortex === 'moving' ? 'turning' : 'still'][worldId] : null;
-      return [line, also, turning, poles, vortexLine, detail, flash && air.flashing(worldId) ? flash : null, said].filter(Boolean).join(' ');
+      // Jupiter's Great Red Spot where it is (internal spec 0076 W2-b): when, from whom, how far either side.
+      const spot = air.spotLine ? air.spotLine(worldId, clockMs) : null;
+      return [line, also, spot, turning, poles, vortexLine, detail, flash && air.flashing(worldId) ? flash : null, said].filter(Boolean).join(' ');
     },
     credit: () => lightning.credit(),
     perMinute: () => lightning.perMinute(),

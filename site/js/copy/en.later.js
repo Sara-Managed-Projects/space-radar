@@ -1872,7 +1872,19 @@ Object.assign(COPY, {
     sunriseModelled: 'Its colour at sunrise and sunset is modelled: sunlight reddened by the air it grazed, Rayleigh scattering only.',
   },
   // 0076 W2-b (the giants' rings and spots)
-  r12Giants: {},
+  r12Giants: {
+    // Jupiter's weather line (scene/weather/index.js), after "no cloud is drawn where it is today".
+    // {l2} where it is drawn now and {at} where it was measured, System II degrees; {date} "1 December
+    // 2025"; {rate} the drift drawn and {lo}, {hi} the two measured, degrees a month; {pm} degrees.
+    spot: 'Except one: the Great Red Spot is put at {l2}° System II longitude, carried from where the JUPOS team and the British Astronomical Association measured it on {date} ({at}°) at {rate}° a month, the middle of the two drifts they measured that year ({lo} and {hi}), so by now it may be {pm}° either side. The map is turned to put it there, and its other clouds go round with it.',
+    // The drawing line on a giant's card (ui/cards.js), for a ring set drawn at its own darkness
+    // (scene/worlds.js URANUS_RINGS, JUPITER_RINGS). {w} times wider, {a} its albedo in per cent, {c}
+    // and {d} how many times brighter it is drawn under the Camera and Deep exposures.
+    rings: {
+      uranus: 'its rings are at their measured distances and as dark as they are: their particles reflect about {a} % of the light, a thirtieth of what its clouds do, so in front of the planet they are dark threads; they are drawn {w} times wider than they are so that they show, and the Deep exposure lifts them {d} times, as a long exposure does',
+      jupiter: 'its faint ring is at the distances and optical depths NASA’s fact sheet gives: the halo, the main ring and two gossamer rings of dust and dark grains that stop a few millionths of the light. From the Sun’s side it is almost nothing; with the Sun behind it the dust throws light forward and it shows, as it did to Galileo and New Horizons from the night side. To show at all it is drawn {c} times brighter than it is under the Camera exposure and {d} times under Deep; under Eye it is not drawn, which is how it would look. The halo is some 10 000 km thick and is drawn flat; how much of the light is the dust’s, how far forward it throws it and the ring’s reddish colour are illustrative',
+    },
+  },
   // 0076 W2-c (plumes)
   r12Plumes: {},
 

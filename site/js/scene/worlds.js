@@ -250,6 +250,9 @@ export function worldRecords() {
       // are so that they show; the card says by how much (ui/cards.js derivedDrawingLine).
       ringsWiden: w.look.ring && w.look.ring.bands ? w.look.ring.widen || 1 : 0,
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
+      // Internal spec 0076 W2-b: a ring set drawn at its own darkness says so in its own words
+      // (copy/en.later.js r12Giants.rings[ringsWords]), with its albedo and each exposure's stretch.
+      ...(w.look.ring && w.look.ring.words ? { ringsWords: w.look.ring.words, ringsAlbedo: w.look.ring.albedo, ringsCamera: ringStretch(w.look.ring, 'camera'), ringsDeep: ringStretch(w.look.ring, 'deep') } : {}),
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
       ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { uv: String(VENUS_UV.gain), ground: String(VENUS_GROUND.exaggeration), steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker) }) } : {}),
@@ -295,7 +298,8 @@ export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
 // width and darkness nobody would see them -- Uranus's epsilon ring, the widest, is under a pixel
 // with the planet 600 pixels across, and all of them reflect 1.5 % of the light that reaches them.
 // So each is drawn `widen` times wider, `dense` times more opaque (Neptune's are also nearly
-// transparent), and in `colour`, far brighter than charcoal. The RADII are the measurement. They
+// transparent), and in `colour`, far brighter than charcoal -- Neptune's still; Uranus's since
+// internal spec 0076 W2-b at their own darkness (`albedo`, ringColour below). The RADII are the measurement. They
 // cast no shadow on the globe: a shadow ten times too wide would be a second untruth. Neptune's
 // two broad sheets, Galle and Lassell, have an optical depth of 0.0001 and are left out, and so
 // are the arcs in the Adams ring.
@@ -333,8 +337,53 @@ export function arcUniform(arcs = NEPTUNE_ARCS) {
 }
 export const ARC_SLOTS = NEPTUNE_ARCS.spans.length;
 
+/**
+ * HOW DARK THE RINGS ARE (internal spec 0076 W2-b, internal #860). Since 2026-10-06 Uranus's rings
+ * were drawn in a pale grey "far brighter than they are". They are drawn now at their own darkness:
+ * a ring set with `albedo` is lit as particles that reflect that share of the light, against the
+ * globe's map, which stands for the planet's geometric albedo (`globeAlbedo`; NASA's fact sheets,
+ * read 2026-10-16: Uranus 0.488, Jupiter 0.538). So a thick ring face-on under an overhead Sun is
+ * the map's mean luminance times albedo / globeAlbedo -- a thirtieth of the clouds for Uranus -- in
+ * `hue` (a neutral grey for Uranus, whose rings are spectrally flat; Jupiter's is reddish, and how
+ * reddish is ours). `stretch` is how many times brighter than that each exposure draws it
+ * (scene/exposure.js): Uranus's are drawn as they are under Eye and Camera and lifted under Deep, as a
+ * long exposure lifts them in Voyager's and Keck's pictures. The card says each number (ui/cards.js,
+ * copy/en.later.js r12Giants.rings). `colour` is kept for the rings without an albedo (Neptune's).
+ */
+export const URANUS_RINGS_BEFORE = 0x8f9da3;
+/** The luminance of a linear RGB. Pure. */
+const lumOf = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+/** sRGB hex to linear RGB, as three.js's ColorManagement reads a hex. Pure. */
+function hexLinear(hex) {
+  return [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+}
+/** How many times brighter than it is a ring set is drawn under an exposure (1 without a `stretch`). Pure. */
+export function ringStretch(ring, exposure = 'camera') {
+  const s = ring && ring.stretch;
+  return s && Number.isFinite(s[exposure]) ? s[exposure] : 1;
+}
+/**
+ * A narrow or faint ring set's colour in linear light, for RING_FRAG's uColour, under an exposure:
+ * the globe's map mean times albedo / globeAlbedo in the ring's hue, times the exposure's stretch;
+ * or the row's own `colour` (Neptune's, and Uranus's before 0076 W2-b). Null for a ring with a map. Pure.
+ */
+export function ringColour(w, exposure = 'camera') {
+  const r = w && w.look && w.look.ring;
+  if (!r || !r.bands) return null;
+  if (!r.albedo) return hexLinear(r.colour);
+  const k = (lumOf(hexLinear(w.look.tint)) * r.albedo) / r.globeAlbedo * ringStretch(r, exposure);
+  const hue = r.hue || [1, 1, 1];
+  const h = lumOf(hue);
+  return hue.map((c) => (c / h) * k);
+}
+
 export const URANUS_RINGS = {
   innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x8f9da3,
+  // NASA's ring fact sheet gives each ring's albedo as about 15 thousandths (epsilon about 18).
+  albedo: 0.015, globeAlbedo: 0.488, hue: [1, 1, 1], stretch: { eye: 1, camera: 1, deep: 4 }, words: 'uranus',
   bands: [
     [41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3],      // 6, 5, 4
     [44718, 7, 0.4], [45661, 8, 0.3],                          // alpha, beta
@@ -354,6 +403,33 @@ export const NEPTUNE_RINGS = {
   ],
   arcs: NEPTUNE_ARCS,
 };
+/**
+ * JUPITER'S RING (internal spec 0076 W2-b). Four parts, from NASA's Jupiter ring fact sheet (read
+ * 2026-10-16), each [centre km, width km, normal optical depth]: the halo, 89 400 to 123 000 km,
+ * 3e-6, some 10 000 km thick and drawn flat; the main ring, 123 000 to 128 940 km, 5e-6, albedo about
+ * 0.015; the Amalthea and Thebe gossamer rings, 128 940 to 181 350 and 181 350 to 221 900 km, 1e-7.
+ * Optical depths of millionths are far under a byte, so the strip holds tau / `tauScale` and the
+ * shader reads it as an optical depth (RING_FRAG's uThin), in the thin-slab limit, 2 tau / mu.
+ * It is dust and dark grains: from the Sun's side it is almost nothing; with the Sun behind it the
+ * dust throws light forward (Galileo's and New Horizons' pictures from Jupiter's night side). Half
+ * the light is the dust's (`dust`, Henyey-Greenstein with g = RING_DUST_G) and half the grains', a
+ * Lambert sphere's -- the papers put about half the main ring's optical depth in dust; the split
+ * and the g are ILLUSTRATIVE. Then `stretch`: under Eye it is drawn as it is, which is not at all;
+ * under Camera 8 000 times brighter, which shows it from the night side and hardly from the day
+ * side; under Deep 40 000 times, which shows it from both. Tier 1 and up only (`faint`), so it
+ * costs nothing on tier 0, and never under the frame latch.
+ */
+export const JUPITER_RINGS = {
+  innerKm: 89400, outerKm: 221900, widen: 1, dense: 1, tauScale: 5e-6,
+  albedo: 0.015, globeAlbedo: 0.538, hue: [1, 0.82, 0.66], dust: 0.5,
+  stretch: { eye: 0, camera: 8000, deep: 40000 }, faint: true, words: 'jupiter',
+  bands: [
+    [106200, 33600, 3e-6],    // the halo
+    [125970, 5940, 5e-6],     // the main ring
+    [155145, 52410, 1e-7],    // the Amalthea gossamer ring
+    [201625, 40550, 1e-7],    // the Thebe gossamer ring
+  ],
+};
 /** The narrow rings' strip, texels from the inner edge to the outer. */
 export const RING_BANDS_PX = 1024;
 
@@ -368,7 +444,8 @@ export function ringBandsStrip(ring, px = RING_BANDS_PX) {
   const kmPerPx = (ring.outerKm - ring.innerKm) / px;
   for (const [rKm, widthKm, tau] of ring.bands) {
     const half = Math.max(kmPerPx, widthKm * (ring.widen || 1)) / 2;
-    const a = 1 - Math.exp(-tau * (ring.dense || 1));
+    // A faint ring's strip holds its optical depth over `tauScale` (RING_FRAG's uThin reads it back).
+    const a = ring.tauScale ? Math.min(1, tau / ring.tauScale) : 1 - Math.exp(-tau * (ring.dense || 1));
     const from = Math.max(0, Math.floor((rKm - half - ring.innerKm) / kmPerPx));
     const to = Math.min(px - 1, Math.ceil((rKm + half - ring.innerKm) / kmPerPx) - 1);
     for (let i = from; i <= Math.max(from, to); i++) data[i * 4 + 3] = Math.max(data[i * 4 + 3], Math.round(a * 255));
@@ -622,7 +699,7 @@ export const WORLDS = [
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.webp', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487, faces: { hubble: '2k_jupiter_opal_2025.webp' }, faceSpot: { hubble: { u: 0.6058, v: 0.3878, half_u: 0.019, half_v: 0.024 } } },
+    look: { map: '2k_jupiter.webp', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487, faces: { hubble: '2k_jupiter_opal_2025.webp' }, faceSpot: { hubble: { u: 0.6058, v: 0.3878, half_u: 0.019, half_v: 0.024 } }, ring: JUPITER_RINGS },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
@@ -1072,6 +1149,16 @@ export function ringLight(alpha, mu0, mu, cosAlpha, unlit) {
 }
 
 /**
+ * A faint ring's light for a white strip (RING_FRAG's uThin branch, internal spec 0076 W2-b): the
+ * thin-slab limit 2 tau / mu on either face, shared between grains (a Lambert sphere's phase) and
+ * dust (Henyey-Greenstein) by `dust`. JS twin of the shader. Pure.
+ */
+export function ringThinLight(tau, mu, cosAlpha, dust, g) {
+  const S = (2 * tau) / Math.max(mu, RING_MU_FLOOR);
+  return S * ((1 - dust) * lambertSpherePhase(cosAlpha) + dust * dustPhase(cosAlpha, g));
+}
+
+/**
  * The warp as GLSL, shared by the ring and the globe's shadow of it: uRingRadii (inner, outer) and
  * uRingWarp (the division's two radii, then their two map coordinates), all in planet radii.
  */
@@ -1486,6 +1573,10 @@ uniform float uGrain;         // how much of the sparkle of unresolved grains is
 // turn now (rad), how much of them is drawn (0 = none: every other ring, and the Measured look).
 uniform vec4 uArcs[ ${ARC_SLOTS} ];
 uniform vec4 uArcBand;
+// A faint ring (JUPITER_RINGS, internal spec 0076 W2-b): x the optical depth the strip's 1 stands for
+// (0 = the map's alpha is an opacity, every other ring), y the dust's share of the light, z its g.
+uniform vec3 uThin;
+uniform vec3 uDustColour;     // the dust's colour: RING_DUST_COLOUR, or white where uColour already is the ring's
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1549,6 +1640,8 @@ void main() {
   // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
   float alpha = clamp( tex.a * uOpacity, 0.0, 0.999 );
   float tau = -log( 1.0 - alpha );
+  // Millionths: the strip is the optical depth over uThin.x, read back as one (alpha is tau there).
+  if ( uThin.x > 0.0 ) { tau = tex.a * uThin.x; alpha = tau; }
   if ( uArcBand.w > 0.0 ) {
     float inBand = 1.0 - smoothstep( uArcBand.y, 1.6 * uArcBand.y, abs( length( vPosL.xy ) - uArcBand.x ) );
     if ( inBand > 0.0 ) {
@@ -1574,7 +1667,10 @@ void main() {
   float m0 = max( abs( vSunL.z ), RING_MU_FLOOR );
   float m = max( abs( view.z ), RING_MU_FLOOR );
   float S;
-  if ( vSunL.z * vCamL.z >= 0.0 ) {
+  if ( uThin.x > 0.0 ) {
+    // The thin-slab limit of both faces, 2 tau / mu: 1 - exp() of a millionth is not a number a float keeps.
+    S = 2.0 * tau / m;
+  } else if ( vSunL.z * vCamL.z >= 0.0 ) {
     S = 2.0 * m0 / ( m0 + m ) * ( 1.0 - exp( -tau * ( 1.0 / m0 + 1.0 / m ) ) );
   } else if ( abs( m - m0 ) < 1e-4 ) {
     S = 2.0 * tau / m0 * exp( -tau / m0 );
@@ -1582,9 +1678,9 @@ void main() {
     S = 2.0 * m0 / ( m - m0 ) * ( exp( -tau / m ) - exp( -tau / m0 ) );
   }
   float cosAlpha = dot( vSunL, view );
-  float dust = RING_DUST * ( 1.0 - alpha );
+  float dust = ( uThin.x > 0.0 ? uThin.y : RING_DUST ) * ( 1.0 - alpha );
   float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
-  float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
+  float fine = max( S * dust * dustPhase( cosAlpha, uThin.x > 0.0 ? uThin.z : RING_DUST_G ), 0.0 );
   // The grains, from very close (RING_GRAIN): no fetch. Cells a few pixels across at this distance,
   // two sizes cross-faded; they scale what the slab sends, so each phase keeps its own sparkle.
   if ( uGrain > 0.0 ) {
@@ -1604,7 +1700,7 @@ void main() {
   }
   // What the ring hides behind it: its optical depth along the line of sight.
   float cover = 1.0 - exp( -tau / m );
-  vec3 light = uColour * ( tex.rgb * body + RING_DUST_COLOUR * fine ) * shade;
+  vec3 light = uColour * ( tex.rgb * body + uDustColour * fine ) * shade;
   // Premultiplied (One, OneMinusSrcAlpha): what the ring sends, plus what gets through it.
   gl_FragColor = vec4( light, cover );
   #include <tonemapping_fragment>
@@ -1640,6 +1736,8 @@ function ringMaterial(map, inner, outer, warp) {
       uGrain: { value: 0 },
       uArcs: { value: new Float32Array(ARC_SLOTS * 4) },
       uArcBand: { value: new THREE.Vector4(0, 0, 0, 0) },
+      uThin: { value: new THREE.Vector3(0, RING_DUST, RING_DUST_G) },
+      uDustColour: { value: new THREE.Vector3(...RING_DUST_COLOUR) },
     },
   });
 }
@@ -1762,6 +1860,23 @@ export function createWorlds(scene, opts = {}) {
   // The camera the maps are measured against. Without one nothing is ever fetched lazily, which
   // is what a headless test that only wants geometry needs.
   const camera = opts.camera || null;
+  // THE SHUTTER AND THE RINGS (internal spec 0076 W2-b): Eye, Camera or Deep (scene/exposure.js), which
+  // main.js hands to setExposure(). A ring set with a `stretch` is drawn that many times brighter
+  // than it is under each (ringColour); Jupiter's is not drawn at all under Eye.
+  let exposureMode = 'camera';
+  // A tools-only switch for the look probes' "before" (?look=1 only): Uranus's rings in their old
+  // grey, no ring round Jupiter, and the Great Red Spot where the map has it (scene/weather reads it).
+  let giantsBefore = false;
+  const lookOnly = () => typeof location !== 'undefined' && /[?&]look=1\b/.test(location.search || '');
+  /** A ring set's colour now: the exposure's, or (the probes' before) the grey it had. */
+  function paintRing(w, mesh, mode) {
+    const r = w.look.ring;
+    const u = mesh && mesh.material && mesh.material.uniforms;
+    if (!r || !r.bands || !u || !u.uColour) return;
+    if (giantsBefore && r === URANUS_RINGS) { const c = hexLinear(URANUS_RINGS_BEFORE); u.uColour.value.setRGB(c[0], c[1], c[2], THREE.LinearSRGBColorSpace); return; }
+    const c = ringColour(w, mode);
+    u.uColour.value.setRGB(c[0], c[1], c[2], THREE.LinearSRGBColorSpace);
+  }
 
   function configure(tex) {
     if (!tex) return tex;
@@ -2392,6 +2507,9 @@ export function createWorlds(scene, opts = {}) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
         if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
+        // A faint ring (JUPITER_RINGS): tier 1 and up and no latch (the relief's permission), an
+        // exposure that draws it, and not the probes' before. Nothing at all on tier 0.
+        if (mesh.userData.ring && w.look.ring.faint) mesh.userData.ring.visible = reliefAllowed && ringStretch(w.look.ring, exposureMode) > 0 && !giantsBefore;
         if (mesh.userData.ring && w.look.ring.fine) stepRingDetail(w, mesh, wallNow());
         // Neptune's arcs go round on the clock (NEPTUNE_ARCS); illustrative, so not under Measured.
         if (mesh.userData.ring && w.look.ring.arcs) {
@@ -2889,6 +3007,20 @@ export function createWorlds(scene, opts = {}) {
     /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
     // The Earth's clouds are at their true thickness under Measured (scene/earth.js CLOUD_PARALLAX).
     setLook: (mode) => { lookMeasured = mode === 'measured'; setEarthCloudHeight(meshes.get('earth'), { look: mode }); for (const w of WORLDS) dressFace(w.id); },
+    /** Eye, Camera or Deep (main.js, scene/exposure.js; internal spec 0076 W2-b): the narrow and faint rings' stretch. */
+    setExposure(mode) {
+      exposureMode = ['eye', 'camera', 'deep'].includes(mode) ? mode : 'camera';
+      for (const w of WORLDS) { const m = meshes.get(w.id); if (m && m.userData.ring) paintRing(w, m.userData.ring, exposureMode); }
+    },
+    exposure: () => exposureMode,
+    /** The look probes' before (?look=1 only, internal spec 0076 W2-b): the giants as main drew them. True when it took. */
+    setBeforeGiants(on) {
+      if (!lookOnly()) return false;
+      giantsBefore = !!on;
+      for (const w of WORLDS) { const m = meshes.get(w.id); if (m && m.userData.ring) paintRing(w, m.userData.ring, exposureMode); }
+      return true;
+    },
+    beforeGiants: () => giantsBefore,
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     /** For the probes: is this world wearing its relief? */
@@ -3004,7 +3136,12 @@ export function createWorlds(scene, opts = {}) {
       ? [inner + (outer - inner) / 3, inner + (2 * (outer - inner)) / 3, 1 / 3, 2 / 3]
       : ringWarpUniform(w.radiusKm);
     const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, warp));
-    if (r.bands && r.colour !== undefined) mesh.material.uniforms.uColour.value.set(r.colour);
+    if (r.bands) paintRing(w, mesh, exposureMode);
+    // A faint ring (JUPITER_RINGS): its strip is optical depth, and its dust is in its own colour.
+    if (r.tauScale) {
+      mesh.material.uniforms.uThin.value.set(r.tauScale, r.dust, RING_DUST_G);
+      mesh.material.uniforms.uDustColour.value.set(1, 1, 1);
+    }
     // Neptune's arcs: in the Adams ring at its drawn width (the band in the strip), turned each frame.
     if (r.arcs) {
       mesh.material.uniforms.uArcs.value.set(arcUniform(r.arcs));

@@ -105,7 +105,12 @@ worlds:
     ephemeris: {propagator: body, body: Jupiter}
     rotation: {kind: sidereal, period_h: 9.925}
     frames: [inertial, fixed]
-    look: {textures: jupiter, atmosphere: thick}
+    # `ring_bands` (internal spec 0076 W2-b; drawn from a strip of measured bands, no texture): the faint ring, as scene/worlds.js JUPITER_RINGS draws it. NASA's
+    # Jupiter ring fact sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html, read
+    # 2026-10-16): halo 89 400-123 000 km, optical depth 3e-6, about 10 000 km thick; main ring
+    # 123 000-128 940 km, 5e-6, albedo about 0.015; Amalthea ring 128 940-181 350 km and Thebe ring
+    # 181 350-221 900 km, 1e-7. Tier 1 and up; stretched 8 000 times under Camera, 40 000 under Deep.
+    look: {textures: jupiter, atmosphere: thick, ring_bands: {inner_km: 89400, outer_km: 221900, optical_depth_max: 5.0e-6, albedo: 0.015, stretch: {eye: 0, camera: 8000, deep: 40000}}}
 
   # Saturn: radius_km is the volumetric mean radius and period_h the sidereal rotation period; NASA NSSDCA Planetary Fact Sheet, https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html, read 2026-10-11.
   - id: saturn
@@ -127,7 +132,11 @@ worlds:
     ephemeris: {propagator: body, body: Uranus}
     rotation: {kind: sidereal, period_h: -17.24}
     frames: [inertial, fixed]
-    look: {textures: uranus}
+    # `ring_bands` (internal spec 0076 W2-b; drawn from a strip of measured bands, no texture): the ten narrow rings at the radii, widths and optical depths of
+    # NASA's Uranus ring fact sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html,
+    # read 2026-10-16), drawn 10 times wider at their own albedo, about 0.015 ("Albedo (x 10-3): ~15";
+    # epsilon ~18), against the planet's geometric albedo 0.488; lifted 4 times under Deep.
+    look: {textures: uranus, ring_bands: {inner_km: 41000, outer_km: 52000, albedo: 0.015, widen: 10, stretch: {eye: 1, camera: 1, deep: 4}}}
 
   - id: neptune
     display: Neptune

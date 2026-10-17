@@ -1062,6 +1062,8 @@ jobs:
       - name: "the Moon close up: shadows cast from LOLA's heights, the Apollo 15 and 17 traverses on the ground, the red of the station's sunrise (internal spec 0076 W2-a)"
         run: node tests/test_traverse.mjs && python3 scripts/build_traverses.py --check
       # 0076 W2-b
+      - name: "the giants' details: the Great Red Spot at JUPOS's dated place and drift, Uranus's rings at their own darkness, Jupiter's faint ring from the night side or under Deep (internal spec 0076 W2-b)"
+        run: node tests/test_giants.mjs
       # 0076 W2-c
       # 0076 W2-d
       # 0076 W2-e

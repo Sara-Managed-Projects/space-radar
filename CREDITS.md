@@ -1627,6 +1627,23 @@ column's optical depths from Hansen and Travis (1974, Space Science Reviews 16, 
 
 ### Ring and spot data (0076 W2-b)
 
+No picture or file is added: these are numbers, each typed into the code with its source beside it.
+
+- **Uranus's and Jupiter's rings.** Radii, widths, optical depths and albedos from NASA's NSSDCA ring
+  fact sheets (D. R. Williams), <https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html> and
+  <https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html>, and the planets' geometric albedos
+  from <https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html> and `jupiterfact.html`, read
+  2026-10-16. A NASA page; NASA's media guidelines: NASA content "generally [is] not subject to copyright
+  in the United States". Drawn by `scene/worlds.js` (`URANUS_RINGS`, `JUPITER_RINGS`).
+- **The Great Red Spot's place and drift.** The British Astronomical Association's Jupiter Section (John
+  Rogers), "Jupiter in 2025/26, Report no.4" (2025 Dec. 31), reporting the JUPOS team's and Shinji
+  Mizumoto's measurements: L2 = 79 on 2025 Dec. 1 and a drift of +0.8 deg/30d from March to November;
+  and "Jupiter in 2024/25, Report no.7" (2026 Jan.): +1.78 deg/30d over that apparition.
+  <https://britastro.org/wp-content/uploads/2025/12/Jup_2025dec_Report-no-4.pdf>, read 2026-10-16. Three
+  measured numbers, cited; nothing of the reports' text or figures is reproduced. System II's rotation,
+  W = 43.3 + 870.270 d, is the IAU/IAG working group's (Davies et al. 1980, Celestial Mechanics 22, 205).
+  Row `jupiter-bands` in `registry/weather.yaml`; drawn by `scene/weather/worldweather.js`.
+
 ### Plume observations (0076 W2-c)
 
 ### Clusters (0076 W3-a)
