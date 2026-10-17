@@ -1877,7 +1877,7 @@ that stands in until the first snapshot lands, every record saying *as of* its d
 
 ### 4.8 Black holes and other extremes — `registry/exotics.yaml`
 
-Ten fact sheets, each read from the Wikipedia article's infobox on 2026-09-08 and carrying that page as
+Twenty fact sheets, each read from the Wikipedia article's infobox on 2026-09-08 or 2026-09-09 and carrying that page as
 its `source:`; the card prints the source under the numbers. Positions, distances, masses and pulsar
 periods are facts; the sentence on each row is this project's. Wikipedia's text is CC BY-SA 4.0 and
 none of it is reproduced — only the figures.

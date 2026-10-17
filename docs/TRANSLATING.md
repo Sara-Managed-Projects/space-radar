@@ -16,7 +16,7 @@ the text now is not wasted: the loader reads exactly this file.
 1. **The interface and the cards** (`site/js/copy/en.js` and `en.later.js`): about 2 300 strings
    across 100 sections (counted 2026-10-09): buttons, menus, panel names, the words on an object's
    card. This is the first milestone, and it is already useful alone.
-2. **The glossary** (`GLOSSARY` in the same file, from `registry/glossary.yaml`): 43 short
+2. **The glossary** (`GLOSSARY` in the same file, from `registry/glossary.yaml`): 42 short
    explanations, each written for a curious 14-year-old and read aloud to a 9-year-old.
 3. **The trips** (`registry/tours.yaml`): 30 trips, about 11 000 words of titles, blurbs and cards.
    Each stop's words are what the voice reads. Do these after 1 and 2, one trip at a time.
