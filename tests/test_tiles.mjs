@@ -238,7 +238,7 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
   check(lost.length === 4 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )'))
     && lost.some((l) => l.includes('vec3 colour = base * direct * uSunIrradiance * ringShade;')) && lost.some((l) => l.includes('vec2 reliefUv = vUv; float slopeShare = 1.0;')),
     `the tile shader drops ${lost.length} of the world's lines, want the map read, the lit ground, the relief's place and the output only`);
-  check(f.includes('vec3 colour = base * direct * uSunIrradiance * ringShade * relief;') && f.includes('uniform sampler2D uReliefMap;'), 'the lit ground is the world\'s, times the relief');
+  check(f.includes('vec3 colour = base * direct * uSunIrradiance * ringShade * relief * castLit;') && f.includes('uniform sampler2D uReliefMap;'), 'the lit ground is the world\'s, times the relief and the cast shadow (0076 W2-a)');
   check(!/\bflat\b/.test(f.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')), '`flat` is a reserved word in GLSL ES 3: the shader must not name a variable that');
   const v = T.tileVertex();
   check(/vFragDepth = 1\.0 \+ gl_Position\.w \* 0\.9990;/.test(v), 'the vertex shader pulls the depth a thousandth nearer');
@@ -264,6 +264,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   const place = (km) => { camera.position.set((radiusKm + km) / 1000, 0, 0); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true); };
   place(altKm);
   const asked = [];
+  const askedHeights = [];
   const pending = [];
   let changes = 0;
   const tiles = T.createPlanetTiles({
@@ -273,6 +274,9 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
     tier,
     saveData,
     onChange: () => { changes += 1; },
+    // 0076 W2-a: the elevation tiles of the cast shadows, flat ground (byte 118, 0 m), answered at once.
+    loadHeights: (url) => { askedHeights.push(url); return Promise.resolve({ pixels: new Uint8Array(65536).fill(118), bytes: 18000 }); },
+    importTraverses: () => import(join(JS, 'scene/traverse.js')),
     loadTile: (url, signal) => new Promise((resolve, reject) => {
       asked.push(url);
       const job = { url, done: false };
@@ -295,7 +299,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
       await new Promise((r) => setImmediate(r));
     }
   };
-  return { tiles, mesh, camera, place, asked, pending, run, changes: () => changes, now: () => now };
+  return { tiles, mesh, camera, place, asked, askedHeights, pending, run, changes: () => changes, now: () => now };
 }
 {
   // A laptop 300 km over the Moon.
@@ -311,7 +315,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(moon.on && moon.showing && moon.master === 1, 'the layer is on and fully faded in');
   check(moon.level === 7 && moon.loading === 0 && moon.drawn === moon.wanted, `every wanted tile is drawn and nothing else: level ${moon.level}, ${moon.drawn} of ${moon.wanted}`);
   check(moon.wanted <= T.DRAW_TILES[1], `within the T1 draw budget: ${moon.wanted}`);
-  check(s.bytes === s.loaded * 25000 && s.failed === 0, 'bytes are counted as they arrive');
+  check(s.bytes === s.loaded * 25000 + s.heightBytes && s.heightBytes === s.heightRequests * 18000 && s.failed === 0, 'bytes are counted as they arrive, the elevation tiles\' with them');
   check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MOON.credit, MOON.relief.credit]) && r.changes() >= 1 && r.changes() <= 2, `the credits are the registry's lines, the mosaic's and its relief's: ${r.changes()} announcements`);
   // RELIEF: one shaded-relief tile over each colour tile, shared below the relief pyramid's last level.
   check(moon.relief === true && moon.reliefs > 0 && moon.reliefs <= moon.cached / 3, `relief is on, ${moon.reliefs} relief tiles under ${moon.cached} colour tiles: far fewer`);
@@ -605,6 +609,86 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   check(ICE_SHEEN.lo < ICE_SHEEN.hi && ICE_SHEEN.chroma > 0.04 && NIGHT_CORE_LIGHTS > 0xe0e0c0, 'the ice band and the core colour are sane (the core is near white)');
   for (const name of ['uNightCore', 'uNightGlow', 'uIceSheen']) check(new RegExp('uniform (vec3|float) +' + name + ';').test(SURFACE_FRAG) && name in u, `${name} is declared and filled`);
   check(/vec3 cities = uNightTint \* lit \* uNightGain/.test(SURFACE_FRAG), 'the old city line is intact for the tiles\' patch');
+}
+
+// --- 0076 W2-a: CAST SHADOWS from LOLA's heights (scene/tiles.js CAST) --------------------------------
+{
+  const MOONSET = TILESETS.find((x) => x.world === 'moon');
+  const H = MOONSET.height;
+  check(!!H && /LRO_LOLA_DEM_Global_128ppd_v04/.test(H.url) && H.maxLevel === 5, 'the Moon\'s row reads LOLA\'s elevation pyramid, to its last level (5)');
+  check(near(H.metresPerCount, 77.31, 1e-9) && near(H.offsetM, -9101.7, 1e-9), 'a byte is 77.31 m above -9101.7 m (the fit to LROC\'s 44 surveyed objects)');
+  check(TILESETS.filter((x) => x.height).length === 1, 'only the Moon has heights for now (Mars marches its own globe map)');
+  const R = 1737.4;
+  // A wall: flat ground, then a step up of 3.8 km (Copernicus's rim over its floor) 10 km toward the Sun.
+  const wallAt = (distRad) => (distRad >= 10 / R ? 3.8 / R : 0);
+  const at = (deg) => T.castLight(wallAt, Math.tan(deg * Math.PI / 180), { steps: 24, firstRad: 0.0003, marginRadii: 0.07731 / R });
+  check(at(5) < 0.1, `a 3.8 km wall 10 km away shades the floor at a 5 degree Sun: ${at(5).toFixed(3)}`);
+  check(at(30) > 0.99, `and not at 30 degrees (3.8 / 10 is 21 degrees): ${at(30).toFixed(3)}`);
+  check(at(18) < 0.5 && at(23) > 0.5, `the edge is near where the wall's top is the Sun's height (20.6 degrees less the steps' spacing): ${at(18).toFixed(2)} at 18, ${at(23).toFixed(2)} at 23`);
+  // A CONTOUR: a single byte's step (77.31 m) never shades the plain below it, at any Sun.
+  const step = (distRad) => (distRad >= 0.5 / R ? 0.07731 / R : 0);
+  for (const deg of [0.5, 1, 2, 5]) check(T.castLight(step, Math.tan(deg * Math.PI / 180), { steps: 24, firstRad: 0.0003, marginRadii: 0.07731 / R }) > 0.999, `one byte's step does not shade at a ${deg} degree Sun`);
+  check(near(T.castGrowth(0.0003, 24) ** 23 * 0.0003, T.CAST.reachRad, 1e-9) && T.castGrowth(0.0003, 1) === 1, 'the steps grow from the first to the reach');
+  // THE WINDOW: where the line of sight meets the ground, half-width rounded to a power of root 2.
+  const cam = [1 + 300 / R, 0, 0];
+  const w = T.castWindowFor(cam, [-1, 0, 0], Math.tan(22.5 * Math.PI / 180), 1.6);
+  check(near(w.u[0], 1, 1e-12) && near(w.e[2], -1, 1e-12) && near(w.n[1], 1, 1e-12), 'looking straight down at 0 E 0 N: the window is centred there, east is -z (the map\'s east), north +y');
+  const want = 1.4 * (300 / R) * Math.tan(22.5 * Math.PI / 180) * 1.6;
+  check(Math.abs(Math.log2(w.half / want)) <= 0.26, `its half-width is the view's ground, ${(w.half * R).toFixed(0)} km for ${(want * R).toFixed(0)}`);
+  const oblique = T.castWindowFor([1 + 300 / R, 0, 0], [-1, 0.2, 0], 0.414, 1.6);
+  check(oblique.u[1] > 0.02, 'looking north of straight down, the window is north of the point below');
+  check(T.castWindowFor([0.5, 0, 0], [1, 0, 0], 0.4, 1) === null, 'a camera inside the ball has no window');
+  check(!T.castWindowStale(w, w) && T.castWindowStale(w, { ...w, half: w.half * 2 }) && T.castWindowStale(null, w)
+    && T.castWindowStale(w, { ...w, u: [Math.cos(w.half), Math.sin(w.half), 0] }), 'rebuilt when zoomed by two or moved a third of it, not otherwise');
+  const pick = T.castTilesFor(w, H);
+  check(pick.z === 5 && pick.tiles.length >= 1 && pick.tiles.length <= T.CAST.maxTiles, `300 km up: level ${pick.z}, ${pick.tiles.length} elevation tiles`);
+  const wide = T.castTilesFor({ ...w, half: T.CAST.maxHalf }, H);
+  check(wide.tiles.length <= T.CAST.maxTiles, `the widest window still reads at most ${T.CAST.maxTiles} tiles (level ${wide.z}, ${wide.tiles.length})`);
+  const pole = T.castWindowFor([0, -(1 + 60 / R), 0], [0, 1, 0], 0.414, 1.6);
+  const pp = T.castTilesFor(pole, H);
+  const cols = 2 * 2 ** pp.z;
+  check(pp.tiles.filter((t) => t.y === 2 ** pp.z - 1).length === cols && pp.tiles.length <= T.CAST.maxTiles, `over the south pole every column of the last row is read (level ${pp.z}, ${pp.tiles.length} tiles)`);
+  const pt = T.castPointLonLat(w, 0, 0.01);
+  check(near(pt.lonDeg, 0, 1e-9) && near(pt.latDeg, Math.atan(0.01) * 180 / Math.PI, 1e-9), 'a point of the window is the gnomonic point on the ball');
+  // castSample: bilinear inside a tile, wrapping east-west, in metres.
+  const ramp = new Uint8Array(65536);
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++) ramp[y * 256 + x] = x;
+  const px = () => ramp;
+  const m = T.castSample(px, 0, -180 + (100.5 / 512) * 360, 0, H);
+  check(near(m, 100 * H.metresPerCount + H.offsetM, 1e-6), `a texel's centre reads its own byte: ${m}`);
+  check(T.castSample(() => null, 0, 0, 0, H) === null, 'a missing tile reads nothing, not zero');
+  // The shader: the march is in the tile's fragment, a branch on its uniform, after the relief.
+  const f = T.tileFragment();
+  check(/float castLit = 1\.0;\s*\n\s*if \( uHtOn > 0\.0 \)/.test(f) && f.indexOf('float castLit') > f.indexOf('float relief = 1.0;') && /for \( int j = 0; j < 24; j\+\+ \)/.test(f), 'the cast shadow is one branch on uHtOn, after the relief, at most 24 steps');
+  for (const name of ['uHtMap', 'uHtOn', 'uHtScale', 'uHtE', 'uHtN', 'uHtU', 'uHtWin', 'uHtMarch']) check(new RegExp('uniform \\w+ ' + name + ';').test(f), `${name} is declared`);
+  check(T.CAST.soft < 0.006 && T.CAST.marginCounts === 1, 'the edge is the Sun\'s width and the margin one byte');
+}
+{
+  // A WINDOW IS BUILT, SHADES, AND GOES: 120 km over the Moon at 0 E, a flat ground of heights.
+  const r = rig({ altKm: 120 });
+  await r.run(9000);
+  const st = r.tiles.state().sets['moon-lro-wac'];
+  check(st.cast && st.cast.showing && st.cast.level === 5 && st.cast.tiles.dead === 0, `the window is up: ${JSON.stringify(st.cast)}`);
+  check(r.askedHeights.length > 0 && r.askedHeights.every((u) => /LRO_LOLA_DEM_Global_128ppd_v04\/1\.0\.0\/default\/default028mm\/5\/\d+\/\d+\.png$/.test(u)), 'its tiles are LOLA\'s, at level 5');
+  const tile = r.mesh.children.find((c) => c.name === 'moon-lro-wac-tiles').children.find((c) => c.visible);
+  const u = tile.material.uniforms;
+  check(u.uHtOn.value > 0.99 && u.uHtMap.value.isDataTexture && u.uHtMap.value.type === THREE.HalfFloatType && u.uHtMap.value.mipmaps.length === 11, 'a patch reads the window: a half-float texture with its own 11 mipmaps');
+  check(near(u.uHtScale.value, 1 / 1737.4, 1e-12) && u.uHtWin.value.y === T.CAST.steps[1], 'heights in km over the radius; tier 1 marches 16 steps');
+  check(r.tiles.credits().includes(MOON.height.credit), 'the Sources panel names LOLA while the shadows are drawn');
+  const before = r.askedHeights.length;
+  T.setCastShadows(false);
+  await r.run(1500);
+  check(r.tiles.state().sets['moon-lro-wac'].cast.showing === false && u.uHtOn.value === 0 && !r.tiles.credits().includes(MOON.height.credit), 'switched off: faded out, freed, and the credit goes');
+  T.setCastShadows(true);
+  check(r.askedHeights.length === before, 'nothing is fetched while it is off');
+  r.tiles.latch();
+  check(r.tiles.state().sets['moon-lro-wac'].cast === null || !r.tiles.state().sets['moon-lro-wac'].cast.showing, 'the latch takes it with the tiles');
+}
+{
+  // Tier 0 never builds one, and asks for no heights.
+  const r = rig({ tier: 0, altKm: 120 });
+  await r.run(2000);
+  check(r.askedHeights.length === 0, 'no elevation tile on tier 0');
 }
 
 if (problems.length) { console.error('tiles FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
