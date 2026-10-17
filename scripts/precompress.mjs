@@ -59,7 +59,6 @@ export function precompressed(path) {
   return false;
 }
 
-const TEXT = new Set(['js', 'css', 'json', 'csv', 'txt']);
 const brotli = promisify(zlib.brotliCompress);
 const gzip = promisify(zlib.gzip);
 
