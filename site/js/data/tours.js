@@ -5537,20 +5537,20 @@ export const TOURS = [
 "record": "dso-lmc"
 },
 "needs_layer": "deep-sky",
-"distance_km": 2838219141774240000,
+"distance_km": 946073047258080000,
 "drift_deg": 10,
 "drift_rate_deg_s": 1,
-"key_light_deg": 80,
+"key_light_deg": 0,
 "chapter": "Our companions",
 "card": {
 "title": "The Large Magellanic Cloud",
-"body": "The biggest of our galaxy's companions, and the fourth-largest galaxy in the Local Group, is a hundred and sixty thousand light-years from the Sun. The Small Magellanic Cloud is near it. Both distances come from pairs of stars that eclipse each other."
+"body": "This photograph of the Large Magellanic Cloud lines up with our sky. The biggest of our galaxy's companions and the fourth-largest galaxy in the group, it is a hundred and sixty thousand light-years away: pairs of its stars that eclipse each other tell us how far."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 16486
+"dwell_ms": 17818
 },
 {
 "id": "andromeda",
@@ -5558,20 +5558,20 @@ export const TOURS = [
 "record": "dso-m31"
 },
 "needs_layer": "deep-sky",
-"distance_km": 2838219141774240000,
+"distance_km": 2365182618145200000,
 "drift_deg": 60,
 "drift_rate_deg_s": 5,
 "key_light_deg": 0,
 "chapter": "Andromeda",
 "card": {
 "title": "Andromeda, the other giant",
-"body": "Andromeda is two and a half million light-years away. With our Milky Way she is one of the group's two largest galaxies, and she is moving towards us. From our side this is a photograph; as we turn, a model takes over: her tilt and rings are measured, her arms drawn."
+"body": "Andromeda is two and a half million light-years away. With our Milky Way she is one of the group's two largest galaxies, and she is moving towards us. From our side this is a photograph; as we turn, a model takes over. Her tilt and rings are measured; the exact shape of her arms is ours."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 19483
+"dwell_ms": 20000
 },
 {
 "id": "triangulum",
@@ -5617,7 +5617,7 @@ export const TOURS = [
 "dwell_ms": 14821
 }
 ],
-"estimate_ms": 121179
+"estimate_ms": 123028
 },
 {
 "id": "out-to-the-edge",
@@ -5732,7 +5732,7 @@ export const TOURS = [
 "target": {
 "world": "sun"
 },
-"distance_km": 331125566540328000000000,
+"distance_km": 236518261814520000000000,
 "drift_deg": 12,
 "drift_rate_deg_s": 1,
 "chapter": "The first galaxies",
