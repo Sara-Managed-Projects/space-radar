@@ -348,7 +348,9 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   }
   const tint = p.material.uniforms.uTint.value;
   check(near(tint.r, MOON.grade[0]) && near(tint.g, MOON.grade[1]) && near(tint.b, MOON.grade[2]), 'graded to the map under it (registry grade)');
-  // Seen again: nothing more is fetched.
+  // Seen again: nothing more is fetched. The credits arrive in one announcement or two, as the frames
+  // fall (0076 W2-a: the rows a frame takes are timed), so leaving is judged against what arrived.
+  const arrived = r.changes();
   const before = r.asked.length;
   await r.run(1000);
   check(r.asked.length === before, 'a still camera fetches nothing more');
@@ -358,7 +360,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   const gone = r.tiles.state().sets[MOON.id];
   check(!gone.on && !gone.showing && gone.cached === 0 && gone.master === 0, 'far away the tiles fade out and are freed');
   check(!r.mesh.children.some((c) => c.name === MOON.id + '-tiles'), 'and their group leaves the mesh');
-  check(r.tiles.credits().length === 0 && r.changes() === 2, 'the credit goes with them');
+  check(r.tiles.credits().length === 0 && r.changes() === arrived + 1, `the credit goes with them, in one announcement: ${arrived} then ${r.changes()}`);
 }
 {
   // Mars: detail over the globe's own map, whichever map that is at the time.
