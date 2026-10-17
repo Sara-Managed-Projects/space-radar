@@ -68,7 +68,7 @@ budgets:
   # 116 070), and 684 552 B from other hosts, which is NASA's picture of today's clouds.
   # MEASURED 2026-10-15 in CI on the Sun's face of the day: 1 662 006 B. The face's modules used the
   # last of the 1 661 000 cap and 1 006 B past it.
-  - {id: after_first_visit_bytes, value: 1670000, unit: bytes, since: 2026-10-16, reason: "internal #527: 1 668 539 B measured 2026-10-16 by CI on the release-1.2 wave-1 integration branch (public #1198, tests/test_first_visit_bytes.mjs --minute): the five stages together add later-loaded words (the CMB, How we know, the Sun, Orion). Cap about 1.5 kB above it. Before: 1 662 200 on 2026-10-15"}
+  - {id: after_first_visit_bytes, value: 1681500, unit: bytes, since: 2026-10-17, reason: "internal #527: 1 679 838 B measured 2026-10-17 by CI (screens run 38985481209, tests/test_first_visit_bytes.mjs --minute; first visit 2 848 486 B, so not the end-of-first-visit race) on the release-1.2 wave-2 integration branch r12-w2 (W2-a, W2-b, W2-d together): the trips' rows in tours.js (+7 202), the Moon, giants and ISS words in en.later.js and cards.js, the tile sets. The independent review composed the same 1 679 838 B from the stages' own readings. Cap about 1.5 kB above it. Before: 1 670 000 on 2026-10-16 (wave 1)"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
