@@ -474,15 +474,5 @@ export const SITES = [
     "lon": 202.031,
     "shape": "lander",
     "doing": "The first soft landing on Mars, in December 1971. It fell silent after 20 seconds; in 2013 HiRISE photographed what may be its parachute."
-  },
-  {
-    "id": "huygens",
-    "display": "Huygens, Adiri",
-    "class": "surface",
-    "world": "titan",
-    "lat": -10.573,
-    "lon": 167.665,
-    "record": false,
-    "doing": "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
   }
 ];

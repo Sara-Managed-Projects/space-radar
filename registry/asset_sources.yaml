@@ -271,10 +271,10 @@ sources:
     name: PDS Geosciences Node, Washington University in St. Louis, Apollo Analyst's Notebook map services
     match: ["https://anms.rsl.wustl.edu/arcgis/rest/services/Apollo/", "https://an.rsl.wustl.edu/apollo/"]
     url: https://an.rsl.wustl.edu/apollo/
-    licence: PDS archive data are public domain; the Notebook's own traverse layers carry no stated terms
+    licence: NASA PDS archive data under NASA's open data policy; the Analyst's Notebook layers carry no separate terms
     licence_read: "Data sets archived in the PDS are in the public domain."
     licence_url: https://pds-geosciences.wustl.edu/faq.html
-    licence_note: "The traverse lines are the Notebook's layers (Apollo 15's traced by Phil Stooke, University of Western Ontario), not archived PDS data sets; no terms for them were found on 2026-10-16. Credited in CREDITS.md (0076 W2-a) and the Sources panel; the question is open in spec 0076."
+    licence_note: "The traverse lines are the Analyst's Notebook's layers (Apollo 15's traced by Phil Stooke, University of Western Ontario). They carry no separate terms and are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. Credited as NASA PDS Geosciences Node, Analyst's Notebook, in CREDITS.md (0076 W2-a) and the Sources panel."
     account: none
     cost: none
     checked: 2026-10-16

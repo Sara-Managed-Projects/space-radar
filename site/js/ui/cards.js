@@ -877,6 +877,10 @@ function timeFactsSection(record, ctx, m) {
   // says the number is inferred.
   const lines = el('div', 'sr-card__facts');
   for (const key of FACT_LINES) lines.appendChild(factNode('p', key === 'orbitNote' ? 'sr-card__fact-note' : `sr-card__fact sr-card__fact--${key}`, key));
+  // 0076 W2-a: a craft drawn as a model is reddened at its sunrise (scene/airtint.js); the card says that is modelled.
+  let modelled = null;
+  try { modelled = realModelFor(record); } catch { modelled = null; }
+  if (modelled && COPY.r12Nearby && COPY.r12Nearby.sunriseModelled) lines.appendChild(el('p', 'sr-card__fact-note', COPY.r12Nearby.sunriseModelled));
   paintTimeFacts(wrap, words);
   paintTimeFacts(lines, words);
   return { bar: wrap, lines };

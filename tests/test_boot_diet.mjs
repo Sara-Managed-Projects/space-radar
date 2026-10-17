@@ -156,6 +156,7 @@ const DEFERRED = {
   // 0076 W2-a (traverse.js)
   'js/scene/traverse.js': 'the Apollo rover traverses: scene/tiles.js fetches it the first time the Moon\'s tiles are on screen (internal spec 0076 W2-a)',
   'js/data/traverses.js': 'the traverses\' lines, read only by scene/traverse.js (internal spec 0076 W2-a)',
+  'js/scene/airtint.js': 'the red of a craft\'s orbital sunrise: imported by scene/models.js only, which loads when a record wants geometry (internal spec 0076 W2-a)',
   // 0076 W2-c (plumes.js)
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)

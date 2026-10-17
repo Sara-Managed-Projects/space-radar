@@ -5562,6 +5562,14 @@ TRAVERSE_FIELDS = ("file", "source", "finder", "read", "traced", "licence", "cre
 
 def check_site_traverses(sites_doc: dict, sites: list) -> None:
     by_id = {s.get("id"): s for s in sites if isinstance(s, dict)}
+    # `app: false` keeps a row out of site/js/data/sites.js (the first visit): only `false`, and only on a
+    # coordinate that is not a record, so nothing drawn ever goes missing from the app this way.
+    for s in sites:
+        if isinstance(s, dict) and "app" in s:
+            if s.get("app") is not False:
+                fail(f"sites.yaml[{s.get('id')}]", "`app:` is only ever written as `app: false`")
+            elif s.get("record") is not False:
+                fail(f"sites.yaml[{s.get('id')}]", "`app: false` on a record would drop it from the map: only a `record: false` row may stay out of the app")
     credits_path = ROOT / "CREDITS.md"
     credits = credits_path.read_text(encoding="utf-8") if credits_path.exists() else ""
     trav = sites_doc.get("traverses") or {}

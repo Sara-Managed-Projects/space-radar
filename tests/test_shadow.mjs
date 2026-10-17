@@ -63,9 +63,12 @@ check(sunlitState(null, tMs) === null, 'null record, null answer');
   check(/const world = standsOn\(rec\);\s*const centre = world \? worldCentreScene\(world, tMs\) : null;\s*if \(centre\) lit = groundLit\(v, centre, shadowRef\.sun\);/.test(glyphs), 'the glyph layer asks it of every mark that stands on another world');
 }
 
-// --- 0076 W2-a: THE RED OF THE PENUMBRA (scene/shadow.js AIR_REDDENING, sunlightOn) ----------------------
+// --- 0076 W2-a: THE RED OF THE PENUMBRA (scene/airtint.js AIR_REDDENING, sunlightOn) ---------------------
 {
-  const S = await import(join(JS, 'scene/shadow.js'));
+  const S = await import(join(JS, 'scene/airtint.js'));
+  // Out of the boot module: scene/shadow.js is in the first visit, the reddening only where a model is lit.
+  const boot = await import(join(JS, 'scene/shadow.js'));
+  check(!('AIR_REDDENING' in boot) && !('sunlightOn' in boot) && !/AIR_REDDENING|srAirTint/.test(readFileSync(join(JS, 'scene/shadow.js'), 'utf8')), 'the reddening is not in scene/shadow.js, which rides the first visit');
   const close = (a, b, eps) => Math.abs(a - b) <= eps;
   // Hansen and Travis (1974): 0.008569 l^-4 (1 + 0.0113 l^-2 + 0.00013 l^-4).
   const tau = (l) => 0.008569 * l ** -4 * (1 + 0.0113 * l ** -2 + 0.00013 * l ** -4);
