@@ -14,9 +14,14 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 USAGE = """python3 tools/serve.py site 8190       # the app
 python3 tools/serve.py . 8190          # the repository, for tools/shape-sheet.html"""
 
-if len(sys.argv) != 3 or sys.argv[1] in ("--help", "-h"):
+if sys.argv[1:] and sys.argv[1] in ("--help", "-h"):
     print(USAGE)
-    sys.exit(0 if sys.argv[1:] and sys.argv[1] in ("--help", "-h") else 2)
+    sys.exit(0)
+
+if len(sys.argv) != 3:
+    print("serve.py: expected a root directory and a port", file=sys.stderr)
+    print(USAGE, file=sys.stderr)
+    sys.exit(2)
 
 try:
     port = int(sys.argv[2])
