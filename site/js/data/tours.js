@@ -5733,7 +5733,7 @@ export const TOURS = [
 "target": {
 "world": "sun"
 },
-"distance_km": 236518261814520000000000,
+"distance_km": 302743375122585600000000,
 "drift_deg": 12,
 "drift_rate_deg_s": 1,
 "chapter": "The first galaxies",
