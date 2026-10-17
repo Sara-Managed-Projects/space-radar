@@ -5633,7 +5633,7 @@ export const TOURS = [
 "clock": "as-found",
 "group": "beyond",
 "next": "across-the-local-group",
-"og_stop": 6,
+"og_stop": 1,
 "hides": [
 "exoplanets",
 "systems"
