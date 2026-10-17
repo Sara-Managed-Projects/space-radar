@@ -322,5 +322,25 @@ export const TOURS_INDEX = [
 "min_stops": 3,
 "count": 6,
 "estimate_ms": 131691
+},
+{
+"id": "across-the-local-group",
+"title": "Across the Local Group",
+"blurb": "Our galaxy, its biggest companion, Andromeda, Triangulum. Then back to Earth.",
+"group": "beyond",
+"next": "out-to-the-edge",
+"min_stops": 3,
+"count": 5,
+"estimate_ms": 121179
+},
+{
+"id": "out-to-the-edge",
+"title": "Out to the edge of the universe we can see",
+"blurb": "Past the Local Group and a quasar to the oldest light. Then back to Earth.",
+"group": "beyond",
+"next": "across-the-local-group",
+"min_stops": 3,
+"count": 7,
+"estimate_ms": 161517
 }
 ];
