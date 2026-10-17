@@ -689,6 +689,16 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   check(r.tiles.state().sets['moon-lro-wac'].cast === null || !r.tiles.state().sets['moon-lro-wac'].cast.showing, 'the latch takes it with the tiles');
 }
 {
+  // Over the south pole from 600 km: every column of the polar rows, and any tile the corners missed is
+  // fetched on the way (the first look, 2026-10-16, had no window there).
+  const r = rig({ altKm: 600 });
+  const k = (1737.4 + 600) / 1000;
+  r.camera.position.set(0, -k, 0.05 * k); r.camera.up.set(0, 0, 1); r.camera.lookAt(0, 0, 0); r.camera.updateMatrixWorld(true);
+  await r.run(20000);
+  const c = r.tiles.state().sets['moon-lro-wac'].cast;
+  check(c && c.showing && c.tiles.dead === 0 && !c.building, `a window over the south pole is built: ${JSON.stringify(c)}`);
+}
+{
   // Tier 0 never builds one, and asks for no heights.
   const r = rig({ tier: 0, altKm: 120 });
   await r.run(2000);

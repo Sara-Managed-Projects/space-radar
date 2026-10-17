@@ -78,6 +78,9 @@ const sunrise = async (latDeg, lonDeg, elev) => {
 };
 /** Look at a place from `altKm` above, tipped `tiltDeg` from straight down, the camera `fromAz` degrees east of north of it. */
 const look_ = (latDeg, lonDeg, altKm, tiltDeg = 35, fromAz = 180) => {
+  // Nothing selected and nothing followed: a selected Moon pulls the look-at point back to its centre
+  // (the first run, 2026-10-16: the camera inside the ball, a black frame, and every window stale).
+  try { sr.deselect(); rig.stopFollow(); } catch (e) { look.warns.push('probe: deselect: ' + e); }
   const up = outward(latDeg, lonDeg);
   const n0 = axes().y;
   const north = unit(add(n0, up, -dot(n0, up)));
@@ -90,7 +93,21 @@ const look_ = (latDeg, lonDeg, altKm, tiltDeg = 35, fromAz = 180) => {
 const tilesState = () => { try { const t = sr.quality.tiles(); return t && t.sets ? t.sets['moon-lro-wac'] : null; } catch { return null; } };
 // A phone (tier 0) has no tiles: nothing to wait for, and its two pictures are the same.
 const tiled = () => { try { return sr.quality.describe().tier >= 1; } catch { return false; } };
-const castReady = async (capMs = 90000) => tiled() && until(() => { const s = tilesState(); return s && s.showing && s.loading === 0 && s.cast && s.cast.showing && !s.cast.building; }, capMs, 500);
+/**
+ * The window of heights for THIS view, whole: a few frames after the camera moved (so a stale window
+ * has been seen and its successor begun), then nothing building for three looks in a row.
+ */
+const castReady = async (capMs = 180000) => {
+  if (!tiled()) return false;
+  await sleep(4000);
+  let calm = 0;
+  return until(() => {
+    const s = tilesState();
+    const ok = s && s.showing && s.loading === 0 && s.cast && s.cast.showing && s.cast.fade === 1 && !s.cast.building;
+    calm = ok ? calm + 1 : 0;
+    return calm >= 3;
+  }, capMs, 1000);
+};
 const tilesReady = async (capMs = 60000) => tiled() && until(() => { const s = tilesState(); return s && s.showing && s.loading === 0; }, capMs, 500);
 /** One place, twice: shadows on (after) and off (before). */
 const moonPair = async (name, note, sunDeg) => {
@@ -103,7 +120,9 @@ const moonPair = async (name, note, sunDeg) => {
   out.scenes.push(row);
   await shot(name + '-after', `${note}; the Sun ${sunDeg} degrees up; shadows cast from LOLA heights ${okCast ? 'ON' : 'NOT READY'}${s && s.cast ? ` (window level ${s.cast.level}, half ${s.cast.halfKm} km, texel ${s.cast.texelM} m, ${s.cast.steps} steps)` : ''}${s && s.traverses ? '; traverses ' + JSON.stringify(s.traverses.filter((t) => t.shown).map((t) => t.site)) : ''}${m ? `; p50 ${m.p50Ms} p95 ${m.p95Ms} ms, ${m.calls} calls` : ''}`);
   tilesMod.setCastShadows(false);
-  await sleep(2500);
+  // The shadows fade out over 450 ms of frames (a frame counts at most 100 ms): wait until they are gone.
+  await until(() => { const t = tilesState(); return !t || !t.cast || !t.cast.showing; }, 30000, 500);
+  await sleep(1500);
   await shot(name + '-before', `${note}; the same place and clock with the cast shadows switched off (main's look: slope shading only)`);
   tilesMod.setCastShadows(true);
   return okCast;
@@ -143,6 +162,7 @@ let anyCast = false;
   look_(lat, lon, 90, 30, 0);
   await tilesReady();
   await moonPair('05-shackleton-90km', 'Shackleton crater at the south pole from 90 km', e);
+  try { sr.deselect(); rig.stopFollow(); } catch { /* as above */ }
   rig.flyTo({ targetScene: centre(), offset: unit(mix(north(M), -1, sunward(M), 0.35)), distance: R * 1.35, ms: 0 });
   await tilesReady();
   await moonPair('06-south-pole-600km', 'the south pole from 600 km, leaning to the Sun', e);

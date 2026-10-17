@@ -195,7 +195,7 @@ export const CAST = {
   texels: 1024, cover: 1.4, minHalf: 0.004, maxHalf: 0.25, maxTiles: 40,
   steps: [0, 16, 24], firstTexels: 1.5, firstMinRad: 0.0003, reachRad: 0.06,
   marginCounts: 1, soft: 0.0047, depth: 0.94, maxSun: 0.6, edgeFade: 0.12,
-  recentre: 0.3, rescale: 2, rowsPerFrame: 32, smoothMax: 8,
+  recentre: 0.3, rescale: 2, rowsPerFrame: 16, budgetMs: 6, smoothMax: 8,
 };
 /** An elevation tile's texel at level `z`, in radians: its north-south side. Pure. */
 export function castSourceTexel(z) { return Math.PI / (2 ** z * 256); }
@@ -314,7 +314,7 @@ export function castTilesFor(w, height, opts = CAST) {
       const y = Math.min(rows - 1, Math.max(0, Math.floor((90 - latDeg) / span)));
       keys.set(tileKey(z, x, y), { z, x, y });
     };
-    const k = 12;
+    const k = 24;
     let latMin = 90;
     let latMax = -90;
     for (let i = 0; i <= k; i++) {
@@ -1043,23 +1043,36 @@ export function createPlanetTiles(opts = {}) {
       for (const t of next.tiles) { const e = cast.tiles.get(t.key); if (e && e.state === 'ready') next.grid.set(t.y * 4096 + t.x, e.px); }
     }
     const grid = next.grid;
-    const px = (zz, x, y) => grid.get(y * 4096 + x) || null;
+    let missing = null;
+    const px = (zz, x, y) => { const t = grid.get(y * 4096 + x); if (!t && !missing) missing = { z: zz, x, y }; return t || null; };
     const w = next.w;
     const step = (2 * w.half) / N;
-    const end = Math.min(N, next.row + CAST.rowsPerFrame);
-    for (let j = next.row; j < end; j++) {
+    // A share of the rows a frame: at least `rowsPerFrame`, more while the frame has had under CAST.budgetMs of it.
+    const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
+    let j = next.row;
+    for (; j < N; j++) {
+      if (j - next.row >= CAST.rowsPerFrame && (typeof performance === 'undefined' || performance.now() - t0 > CAST.budgetMs)) break;
       // Row 0 of the texture is its v = 0 edge: the window's SOUTH (-north) side.
       const y = -w.half + (j + 0.5) * step;
       for (let i = 0; i < N; i++) {
         const x = -w.half + (i + 0.5) * step;
         const ll = castPointLonLat(w, x, y);
         const m = castSample(px, z, ll.lonDeg, ll.latDeg, ht);
-        if (m === null) return null; // a tile is missing after all: no window
+        if (m === null) {
+          // An elevation tile the window's corners missed (castTilesFor samples a grid of points):
+          // add it, fetch it, and carry on from this row when it is here.
+          next.row = j;
+          if (!missing || next.tiles.length >= CAST.maxTiles + 12) return null;
+          const key = tileKey(missing.z, missing.x, missing.y);
+          if (!next.tiles.some((t) => t.key === key)) next.tiles.push({ ...missing, key });
+          next.grid = null;
+          return false;
+        }
         next.km[j * N + i] = m / 1000;
       }
     }
-    next.row = end;
-    return end >= N;
+    next.row = j;
+    return j >= N;
   }
 
   /**
@@ -1090,8 +1103,11 @@ export function createPlanetTiles(opts = {}) {
         }
       }
     };
-    const end = Math.min(2 * N, next.blurred + CAST.rowsPerFrame * 2);
-    for (let k = next.blurred; k < end; k++) {
+    const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
+    let end = next.blurred;
+    for (let k = next.blurred; k < 2 * N; k++) {
+      if (k - next.blurred >= CAST.rowsPerFrame * 2 && (typeof performance === 'undefined' || performance.now() - t0 > CAST.budgetMs)) break;
+      end = k + 1;
       if (k < N) { const o = k * N; box((i) => km[o + i], (i, v) => { km[o + i] = v; }); }
       else { const c = k - N; box((i) => km[i * N + c], (i, v) => { km[i * N + c] = v; }); }
     }
@@ -1173,7 +1189,7 @@ export function createPlanetTiles(opts = {}) {
         else if (ready) {
           if (!next.km) next.km = new Float32Array(CAST.texels * CAST.texels);
           if (next.row < CAST.texels) {
-            if (castRows(layer, next) === null) cast.next = null;
+            if (castRows(layer, next) === null) { cast.next = null; cast.failedAt = lastFrame; }
           } else if (next.blurred < 2 * CAST.texels) {
             castSmooth(layer, next);
           } else castSwap(layer, next);
