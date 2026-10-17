@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **876** | **111 063** |
+| **all** | **877** | **111 064** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
+Honesty over the 877 records: 321 measured, 233 modelled, 323 illustrative.
 
 ## The classes
 
