@@ -2747,6 +2747,8 @@ export function mosaicLine(record, ctx) {
     parts.push(n === 1 && T.worldReliefTrue ? t(T.worldReliefTrue, { title: String(m.relief.title) })
       : t(T.worldRelief, { title: String(m.relief.title), n: Number.isInteger(n) ? fmt.int(n) : fmt.num(n, 1) }));
   } else if (m.bakedRelief && T.worldReliefBaked) parts.push(T.worldReliefBaked);
+  // 0076 W2-a: the cast shadows' sentence, worded in copy/en.later.js r12Nearby and handed over by scene/tiles.js mosaics().
+  if (m.castShadows && m.castShadows.words) parts.push(String(m.castShadows.words));
   return parts.join(' ');
 }
 

@@ -263,6 +263,21 @@ sources:
       - {url: "https://lambda.gsfc.nasa.gov/data/map/dr5/dfp/ilc/wmap_ilc_9yr_v5.fits", sha256: 4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in: scripts/build_deep_cmb.py}
   # 0076 W1-d
   # 0076 W2-a
+  # The Apollo 15 and 17 rover traverses (scripts/build_traverses.py -> registry/traverses/): lines the PDS
+  # Geosciences Node serves with its Apollo Analyst's Notebook station finders. LOLA's heights for the Moon's
+  # cast shadows are not an asset: the visitor's browser reads them as it reads the map tiles
+  # (registry/tilesets.yaml, the Moon's `height:`).
+  - id: pds-geo-apollo-notebook
+    name: PDS Geosciences Node, Washington University in St. Louis, Apollo Analyst's Notebook map services
+    match: ["https://anms.rsl.wustl.edu/arcgis/rest/services/Apollo/", "https://an.rsl.wustl.edu/apollo/"]
+    url: https://an.rsl.wustl.edu/apollo/
+    licence: PDS archive data are public domain; the Notebook's own traverse layers carry no stated terms
+    licence_read: "Data sets archived in the PDS are in the public domain."
+    licence_url: https://pds-geosciences.wustl.edu/faq.html
+    licence_note: "The traverse lines are the Notebook's layers (Apollo 15's traced by Phil Stooke, University of Western Ontario), not archived PDS data sets; no terms for them were found on 2026-10-16. Credited in CREDITS.md (0076 W2-a) and the Sources panel; the question is open in spec 0076."
+    account: none
+    cost: none
+    checked: 2026-10-16
   # 0076 W2-c
   # 0076 W2-e (asset_sources schema rows)
   # 2026-10-16 (internal spec 0076 W2-e, #891; advances internal #785, the deep inputs' register): the four

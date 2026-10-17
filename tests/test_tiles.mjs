@@ -662,6 +662,10 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   check(/float castLit = 1\.0;\s*\n\s*if \( uHtOn > 0\.0 \)/.test(f) && f.indexOf('float castLit') > f.indexOf('float relief = 1.0;') && /for \( int j = 0; j < 24; j\+\+ \)/.test(f), 'the cast shadow is one branch on uHtOn, after the relief, at most 24 steps');
   for (const name of ['uHtMap', 'uHtOn', 'uHtScale', 'uHtE', 'uHtN', 'uHtU', 'uHtWin', 'uHtMarch']) check(new RegExp('uniform \\w+ ' + name + ';').test(f), `${name} is declared`);
   check(T.CAST.soft < 0.006 && T.CAST.marginCounts === 1, 'the edge is the Sun\'s width and the margin one byte');
+  check(T.CAST.maxTiles === BUDGETS.moon_height_tiles_per_window, `a window reads at most registry/budgets.yaml's ${BUDGETS.moon_height_tiles_per_window} tiles`);
+  check(T.CAST.maxTiles * 21000 <= BUDGETS.moon_height_bytes_per_window, 'and their bytes (21 KB at most, measured) fit its byte budget');
+  const gpu = (T.CAST.texels ** 2 * 2 * 4 / 3) / 2 ** 20;
+  check(gpu <= BUDGETS.moon_height_window_gpu_mib, `the window's texture with its mipmaps is ${gpu.toFixed(2)} MiB, within ${BUDGETS.moon_height_window_gpu_mib}`);
 }
 {
   // A WINDOW IS BUILT, SHADES, AND GOES: 120 km over the Moon at 0 E, a flat ground of heights.

@@ -90,6 +90,13 @@ check(V.traverseFade(0) === 1 && V.traverseFade(V.TRAVERSE_LOOK.nearKm) === 1 &&
   check(T.credits().length === 0, 'hidden with the tiles');
   T.dispose();
 }
+// --- the budgets (registry/budgets.yaml, 0076 W2-a) ----------------------------------------------------------
+{
+  const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
+  const bytes = readFileSync(join(JS, 'data/traverses.js')).length;
+  check(bytes <= BUDGETS.traverse_data_bytes, `data/traverses.js is ${bytes} B, within ${BUDGETS.traverse_data_bytes}`);
+  check(TRAVERSES.filter((t) => t.world === 'moon').length <= BUDGETS.traverse_draw_calls, 'one draw call a traverse, within the budget');
+}
 // --- never at boot ---------------------------------------------------------------------------------------------
 {
   const main = readFileSync(join(JS, 'main.js'), 'utf8');

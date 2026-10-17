@@ -180,6 +180,14 @@ budgets:
   - {id: sun_image_bytes, value: 400000, unit: B, since: 2026-10-15, reason: "spec 0076 design section 5 W1-d: the image at most 400 kB; 188 279 B on 2026-10-15 (251 547 B as the saved JSON copy, base64)"}
   - {id: sun_loops_draw_calls, value: 1, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the loops of every region are one mesh"}
   # 0076 W2-a
+  # The Moon close up (internal spec 0076 W2-a, #864, #868): the window of LOLA heights the cast shadows are
+  # marched in (scene/tiles.js CAST) and the Apollo traverses (scene/traverse.js), both only while the
+  # Moon's tiles are on screen. tests/test_tiles.mjs and tests/test_traverse.mjs read these rows.
+  - {id: moon_height_tiles_per_window, value: 40, unit: requests, since: 2026-10-16, reason: "spec 0076 W2-a: one window reads at most 40 elevation tiles (a coarser level past it); 2 to 9 at 60 to 300 km over the equator, 32 over a pole"}
+  - {id: moon_height_bytes_per_window, value: 900000, unit: B, since: 2026-10-16, reason: "spec 0065's tile bytes per view (2.6 MB measured 300 km over the Moon) plus at most this; LOLA's level-5 tiles are 9 to 21 KB, so 40 of them is at most 0.84 MB"}
+  - {id: moon_height_window_gpu_mib, value: 3, unit: MiB, since: 2026-10-16, reason: "spec 0076 design section 4: at most +4 MB per hero on T1; 1024 x 1024 half floats with mipmaps is 2.67 MiB"}
+  - {id: traverse_draw_calls, value: 2, unit: calls, since: 2026-10-16, reason: "spec 0076 design section 4: at most +5 for a hero; one ribbon a traverse, two traverses"}
+  - {id: traverse_data_bytes, value: 60000, unit: B, since: 2026-10-16, reason: "site/js/data/traverses.js, fetched with scene/traverse.js close to the Moon only; 26 kB on 2026-10-16"}
   # 0076 W2-c
   # 0076 W2-e
   # 0076 W3-a

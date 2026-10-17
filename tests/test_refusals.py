@@ -1810,6 +1810,13 @@ def main() -> int:
 
 
 # 0076 W2-a (sites traverses)
+# Release 1.2.0 stage W2-a: a traverse is a documented line on a landing, and the Moon's heights are measured.
+CASES += [
+    ("a traverse on a site that does not exist", "sites.yaml", "traverses:\n  apollo-15:", "traverses:\n  apollo-99:"),
+    ("a traverse that does not say who traced it", "sites.yaml", "    traced: \"'The traverse line is created by tracing", "    tracer: \"'The traverse line is created by tracing"),
+    ("a traverse whose credit CREDITS.md does not carry", "sites.yaml", "credit: \"Apollo 17's rover traverse: traced from LROC images", "credit: \"Apollo 17's rover traverse: drawn from LROC images"),
+    ("heights for shadows with no fitted metres a byte", "tilesets.yaml", "      metres_per_count: 77.31\n", ""),
+]
 # 0076 W2-e (asset records, certainty words)
 # Internal spec 0076 W2-e (#891, #921): the asset records' offline status and SHA-256 pins, a photograph's
 # archive written down, and the certainty words refused on an illustration (scripts/check_registry.py).

@@ -154,6 +154,8 @@ const DEFERRED = {
   // 0076 W1-e (perf.js)
   'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
   // 0076 W2-a (traverse.js)
+  'js/scene/traverse.js': 'the Apollo rover traverses: scene/tiles.js fetches it the first time the Moon\'s tiles are on screen (internal spec 0076 W2-a)',
+  'js/data/traverses.js': 'the traverses\' lines, read only by scene/traverse.js (internal spec 0076 W2-a)',
   // 0076 W2-c (plumes.js)
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)

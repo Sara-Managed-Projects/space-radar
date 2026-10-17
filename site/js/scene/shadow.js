@@ -155,6 +155,10 @@ export function sunlitState(record, tMs) {
  *   topKm      above this the line is in sunlight unreddened (0.5 % or less in blue).
  */
 export const AIR_REDDENING = { tauRgb: [0.0493, 0.0973, 0.2213], scaleKm: 8, airmass: 70.7, topKm: 60 };
+/** On by default; a probe switches it off for the picture before (tests/probes/look/r12-nearby.js). */
+let airReddening = true;
+export function setAirReddening(on) { airReddening = !!on; return airReddening; }
+export function airReddeningOn() { return airReddening; }
 
 /**
  * Pure: the share of the Sun's light in red, green and blue that crosses the air along a line
