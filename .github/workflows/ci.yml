@@ -1070,5 +1070,11 @@ jobs:
       # 0076 W3-a
       # 0076 W3-b
       # 0076 W3-c
+      - name: "remnants as shells: the Crab and the Veil on their published geometry, the photograph exactly on our line (internal spec 0076 W3-c, #784)"
+        run: node tests/test_remnant.mjs
+      - name: "dust as sheets: a star behind is dimmed and reddened, the dust never glows, the draw order (internal spec 0076 W3-c, #784, #806)"
+        run: node tests/test_dustsheet.mjs
+      - name: "the remnants' and the dust's maps are the bake of their pictures and profiles"
+        run: python3 scripts/build_deep_sheets.py --check
       # 0076 W3-d
       # 0076 W3-e

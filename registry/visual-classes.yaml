@@ -60,6 +60,12 @@ domains:
       m33: {credit: "### Andromeda and the Triangulum Galaxy (stage d)"}
       orion: {credit: "### Orion (0076 W1-a)"}
       m57: {credit: "### The Ring (0076 W3-b)"}
+      crab: {credit: "### Remnants and dust (0076 W3-c)"}
+      veil: {credit: "### Remnants and dust (0076 W3-c)"}
+      horsehead: {credit: "### Remnants and dust (0076 W3-c)"}
+      coalsack: {credit: "### Remnants and dust (0076 W3-c)"}
+      m78: {credit: "### Remnants and dust (0076 W3-c)"}
+      iris: {credit: "### Remnants and dust (0076 W3-c)"}
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -510,24 +516,27 @@ classes:
 
   - id: DARK_NEBULA
     title: Dark nebulae
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js]
     honesty: measured
     fallback: The Horsehead's photograph; the others as a holder with no glow.
+    heroes: {horsehead: registry/deepsky-heroes/horsehead.yaml, coalsack: registry/deepsky-heroes/coalsack.yaml}
     issue: "internal #784 (absorbing sheets, spec 0075 task 28, W3-c)"
     note:
       source: "The Horsehead's photograph; OpenNGC for the dark clouds' places."
       dates: "As the photograph's row."
-      drawn: "Measured: the photograph and the places. Nothing reddens or dims what is behind yet."
+      drawn: "Measured: the photograph and the places. Reconstructed: the Horsehead's dust as a sheet that dims and reddens what is behind it (W3-c, tier 1 and up; the Coalsack's is built and held); the other dark clouds dim nothing yet."
       rights: "CC BY 4.0 photograph; OpenNGC CC BY-SA 4.0."
     records:
       - {domain: dso, where: {typeCode: DrkN}}
       - {domain: photographs, ids: [horsehead-nebula]}
+      - {domain: heroes, ids: [horsehead, coalsack]}
 
   - id: REFLECTION_NEBULA
     title: Reflection nebulae
-    renderer: [site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/nebulae.js, site/js/scene/deep/dustsheet.js]
     honesty: illustrative
     fallback: The reflection glow; the Pleiades' photograph.
+    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml}
     issue: "internal #784 (pale-blue sheets lit by their star, W3-c)"
     note:
       source: "OpenNGC; the photograph of M45."
@@ -537,21 +546,24 @@ classes:
     records:
       - {domain: dso, where: {typeCode: RfN}}
       - {domain: photographs, ids: [m45]}
+      - {domain: heroes, ids: [m78, iris]}
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/remnant.js]
     honesty: measured
     fallback: The photograph of the Crab or the Veil; the glow elsewhere.
+    heroes: {crab: registry/deepsky-heroes/crab.yaml, veil: registry/deepsky-heroes/veil.yaml}
     issue: "internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)"
     note:
       source: "Photographs of M1 (the Crab) and the Veil; OpenNGC."
       dates: "As the photographs' rows."
-      drawn: "Measured: the photographs. Illustrative: the glow. No shell is drawn yet."
+      drawn: "Measured: the photographs. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c; the Crab's is built and held). Illustrative: the glow."
       rights: "CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0."
     records:
       - {domain: dso, where: {typeCode: SNR}}
       - {domain: photographs, ids: [m1, veil-nebula]}
+      - {domain: heroes, ids: [crab, veil]}
 
   # --- galaxies and beyond -----------------------------------------------------------------------------
   - id: GALAXY_SPIRAL

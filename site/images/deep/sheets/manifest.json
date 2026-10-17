@@ -1,0 +1,122 @@
+{
+  "files": {
+    "coalsack-dust.webp": {
+      "bytes": 3374,
+      "sha256": "25bb83d140531b0442b45298aaed5dccd15405c496a7af541089135e72ec11e8",
+      "tau_front_max": 2.133,
+      "tau_back_max": 0.0,
+      "tau_front_mean": 0.1082
+    },
+    "crab-light.webp": {
+      "bytes": 14006,
+      "sha256": "937f8d4126c681a991debfdd4698fe0b505c7cb5b65e9c5ab15e2386d99cdf2f",
+      "peak_p99": 0.79
+    },
+    "horsehead-dust.webp": {
+      "bytes": 2986,
+      "sha256": "dc45a0bbe8d58507d45e6b60ee1956913d7b03e5b2f2a071abec6778528824ab",
+      "tau_front_max": 4.0,
+      "tau_back_max": 0.0,
+      "tau_front_mean": 1.2616
+    },
+    "horsehead-light.webp": {
+      "bytes": 7290,
+      "sha256": "da76432f0e0a6e3835b5b2331fbda8876f0325479d3f58749b76bdf259c36c36",
+      "peak_p99": 0.518
+    },
+    "iris-dust.webp": {
+      "bytes": 20558,
+      "sha256": "33ed201cccd12f4dc615638bde96c4081ade9b8bf53143e9cdf0a9504361d00d",
+      "tau_front_max": 4.0,
+      "tau_back_max": 2.999,
+      "tau_front_mean": 0.1262
+    },
+    "iris-light.webp": {
+      "bytes": 11508,
+      "sha256": "d59d65fdf66fba0e2a9d353f005d664289230b421e21bc1d48c8df20ebaf5a62",
+      "peak_p99": 0.841
+    },
+    "m78-dust.webp": {
+      "bytes": 16176,
+      "sha256": "5ce5adcc695edbeab0db1471e18b13b7522f958dad2252e70a1e3123df2e48c6",
+      "tau_front_max": 2.578,
+      "tau_back_max": 2.974,
+      "tau_front_mean": 0.0762
+    },
+    "m78-light.webp": {
+      "bytes": 11738,
+      "sha256": "240b06a27a82000507ad7a5f6cb47b0dffb6cdfb79304cfe0446969836e97651",
+      "peak_p99": 0.915
+    },
+    "veil-light.webp": {
+      "bytes": 10764,
+      "sha256": "1fd90c45780205114f38f9f150737c194f2cd9ae3716b14d54e5f4ce25cefc6b",
+      "peak_p99": 0.425
+    },
+    "stars.json": {
+      "bytes": 1854,
+      "sha256": "69998778903d78378a471061c8188760a6c8835f5693b56b66e3acd3d5d41e13"
+    }
+  },
+  "inputs": [
+    {
+      "id": "crab",
+      "from": "site/images/nebulae/m1.webp",
+      "from_sha256": "996c7158e6b793dc86baf56bf4c41a69ad37e9d7b409d955cd6d5d0e93327496",
+      "stars_removed_px": 186392,
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "veil",
+      "from": "site/images/nebulae/veil-nebula.webp",
+      "from_sha256": "16fd77114467c20051d9abbf9708f566cc2fcaf879bf949406cbd9c24e9434b0",
+      "stars_removed_px": 389271,
+      "size": [
+        637,
+        640
+      ]
+    },
+    {
+      "id": "horsehead",
+      "from": "site/images/nebulae/horsehead-nebula.webp",
+      "from_sha256": "7a550e889342cdf8ade11fcdf584616fe8596aa12d18e4fdf4b36b05d39462a9",
+      "stars_removed_px": 84434,
+      "size": [
+        504,
+        512
+      ]
+    },
+    {
+      "id": "coalsack",
+      "from": "site/textures/4k/milky_way.webp",
+      "from_sha256": "181997538c607dcfcedb764038e3d8687e6a45cd4b8f502c713dcb4a1683c107",
+      "size": [
+        256,
+        256
+      ]
+    },
+    {
+      "id": "m78",
+      "from": "NOIRLab noao-m78 (large JPEG, a 12 arcmin crop)",
+      "from_sha256": "00c6efa90aeb5e28887305dc970fe81f74580ec0ea943092306217d418935497",
+      "stars_removed_px": 3945,
+      "size": [
+        640,
+        637
+      ]
+    },
+    {
+      "id": "iris",
+      "from": "NOIRLab noao-ngc7023 (screen rendition)",
+      "from_sha256": "fef5210acf994b76ceeab745b8ebfb74dddc5f29e46cffb31f25a7d6e69d9e63",
+      "stars_removed_px": 72394,
+      "size": [
+        512,
+        470
+      ]
+    }
+  ]
+}

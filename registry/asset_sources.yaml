@@ -337,3 +337,23 @@ sources:
   # 0076 W3-a
   # 0076 W3-b
   # 0076 W3-c
+  # 2026-10-17 (internal spec 0076 stage W3-c, #784, #806): NOIRLab's pictures of M78 and the Iris, the light of two dust
+  # heroes (the app showed neither before), read by scripts/build_deep_sheets.py from their 1280 px renditions (not in
+  # git) and pinned by SHA-256 in the bake's manifest; the maps it writes are under site/images/deep/sheets/. The page
+  # was read again that day and says what the NOIRLab row above quotes. The other heroes' maps are made from pictures
+  # already in the site (registry/nebulae.yaml, the 4k Milky Way), whose rows these are.
+  - id: noirlab-dust-heroes
+    name: NOIRLab pictures of M78 (noao-m78) and the Iris Nebula (noao-ngc7023), the light of two dust heroes
+    match: ["https://noirlab.edu/public/media/archives/images/screen/noao-m78", "https://noirlab.edu/public/media/archives/images/large/noao-m78", "https://noirlab.edu/public/media/archives/images/screen/noao-ngc7023"]
+    url: https://noirlab.edu/public/images/noao-ngc7023/
+    licence: CC BY 4.0
+    licence_read: "Unless specifically noted, the images, and videos distributed on the public NOIRLab website, along with the texts of press releases, announcements, pictures of the week, blog posts and captions, are licensed under a Creative Commons Attribution 4.0 International License, and hence may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible."
+    licence_url: https://noirlab.edu/public/copyright/
+    licence_note: "Both pages give the credit line \"T. A. Rector/University of Alaska Anchorage, H. Schweiker/WIYN and NOIRLab/NSF/AURA\"; CREDITS.md section 3l (Remnants and dust) prints it."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-17
+    pins:
+      - {url: "https://noirlab.edu/public/media/archives/images/large/noao-m78.jpg", sha256: 00c6efa90aeb5e28887305dc970fe81f74580ec0ea943092306217d418935497, pinned_in: site/images/deep/sheets/manifest.json}
+      - {url: "https://noirlab.edu/public/media/archives/images/screen/noao-ngc7023.jpg", sha256: fef5210acf994b76ceeab745b8ebfb74dddc5f29e46cffb31f25a7d6e69d9e63, pinned_in: site/images/deep/sheets/manifest.json}

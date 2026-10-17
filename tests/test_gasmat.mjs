@@ -134,7 +134,10 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol;
     check(m.transparent === false && m.toneMapped === false && m.depthWrite === false, `${name}: transparent false, toneMapped false, depthWrite false`);
     const add = m.blending === THREE.AdditiveBlending;
     const over = m.blending === THREE.CustomBlending && m.blendSrc === THREE.OneFactor && m.blendDst === THREE.OneMinusSrcAlphaFactor;
-    check(add || over, `${name}: additive for emission or premultiplied "over" for absorbing gas, nothing else`);
+    // 0076 W3-c: dust that REDDENS what is behind it (scene/deep/dustsheet.js) multiplies it per channel (Zero, SrcColor):
+    // it adds nothing and its output is at most 1, so it only darkens; "over" has one alpha for all three channels.
+    const multiply = m.blending === THREE.CustomBlending && m.blendSrc === THREE.ZeroFactor && m.blendDst === THREE.SrcColorFactor && m.name === 'deep-dust-absorb';
+    check(add || over || multiply, `${name}: additive for emission, premultiplied "over" for absorbing gas, or the dust's multiply, nothing else`);
   }
   check(dust.blending === THREE.CustomBlending, 'absorbing gas is premultiplied over: it darkens what is behind it');
   // Additive blending multiplies by the source alpha: emission must write alpha 1, absorbing gas 1 - T.
