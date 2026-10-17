@@ -115,23 +115,36 @@ const lin = WW.hexLinear;
 {
   const ju = W.WORLDS.find((w) => w.id === 'jupiter');
   const R = WW.GIANT_RINGS.jupiter;
+  const ju_tint = () => ju.look.tint;
   check(!ju.look.ring, 'Jupiter\'s ring is not in the boot module: scene/weather/worldweather.js draws it, from tier 1');
-  const parts = [['halo', 89400, 123000, 3e-6], ['main', 123000, 128940, 5e-6]];
+  // The fact sheet's parts and mean depths; the main ring deeper toward its sharp outer edge, the halo fading inward.
   const strip = WW.faintStrip(R);
   const kmPerPx = (R.outerKm - R.innerKm) / WW.FAINT_PX;
-  for (const [name, a, b, tau] of parts) {
-    const band = R.bands.find((x) => near(x[0] - x[1] / 2, a, 1) && near(x[0] + x[1] / 2, b, 1));
-    check(band && band[2] === tau, `the ${name} ring is ${a} to ${b} km at optical depth ${tau}`);
-    const mid = Math.floor(((a + b) / 2 - R.innerKm) / kmPerPx);
-    const got = (strip[mid * 4 + 3] / 255) * R.tauScale;
-    check(near(got, tau, 0.03 * tau), `and the strip gives it back as ${got.toExponential(2)}`);
+  const mean = (a, b) => { let sum = 0; const n = 400; for (let k = 0; k < n; k++) sum += WW.faintTau(R, a + ((k + 0.5) * (b - a)) / n); return sum / n; };
+  check(near(mean(123000, 128940), 5e-6, 1e-8), `the main ring, 123 000 to 128 940 km, averages the fact sheet's 5e-6 (${mean(123000, 128940).toExponential(2)})`);
+  check(WW.faintTau(R, 128900) > WW.faintTau(R, 123100) && WW.faintTau(R, 129000) === 0, 'deepest at its sharp outer edge, nothing past it');
+  check(near(WW.faintTau(R, 122990), 3e-6, 1e-8) && WW.faintTau(R, 89500) < 0.02 * 3e-6 && WW.faintTau(R, 89000) === 0, 'the halo is the fact sheet\'s 3e-6 where it meets the main ring and fades to nothing inward');
+  for (const r of [95000, 110000, 124000, 128000]) {
+    const got = (strip[Math.floor((r - R.innerKm) / kmPerPx) * 4 + 3] / 255) * R.tauScale;
+    check(near(got, WW.faintTau(R, r), 0.012 * R.tauScale + 0.05 * WW.faintTau(R, r)), `the strip gives ${r} km back as ${got.toExponential(2)} (want ${WW.faintTau(R, r).toExponential(2)})`);
   }
-  check(strip[3] > 0 && R.outerKm < 130000 && R.bands.length === 2 && strip[(WW.FAINT_PX - 1) * 4 + 3] === 0, 'the strip runs from the halo\'s inner edge to just past the main ring: the gossamer rings are left out');
+  check(strip[3] === 0 && R.outerKm < 130000 && strip[(WW.FAINT_PX - 1) * 4 + 3] === 0, 'the strip runs from the halo\'s inner edge to just past the main ring: the gossamer rings are left out');
   const muMin = R.halo.thickKm / (R.halo.outerKm - R.halo.innerKm);
   check(near(muMin, 10000 / 33600, 1e-12), 'the halo\'s thickness over its width is the fact sheet\'s 10 000 over 33 600 km');
   const lowHalo = WW.ringThinLight(3e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G, muMin);
   const lowMain = WW.ringThinLight(5e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G);
-  check(lowMain / lowHalo > 3, `seen 7 degrees from the plane the main ring is ${(lowMain / lowHalo).toFixed(1)} times the halo`);
+  check(lowMain / lowHalo > 3, `seen 7 degrees from the plane the main ring is ${(lowMain / lowHalo).toFixed(1)} times the halo where they meet`);
+  // Under Deep, from the night side, 7 degrees from the plane: the main ring's brightest part near the
+  // ceiling and no further; the middle of the halo a faint glow far under it (the review of 2026-10-16).
+  const deepK = lum(WW.ringColour(ju_tint(), R, 'deep'));
+  const at7 = (tau, mm) => softCeiling(WW.ringThinLight(tau, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G, mm) * deepK, R.ceiling);
+  const softCeiling = WW.softCeiling;
+  const mainPeak = at7(7.5e-6, 0);
+  const haloMid = at7(WW.faintTau(R, 106200), muMin);
+  check(mainPeak < R.ceiling && mainPeak > 0.5 * R.ceiling, `under Deep the main ring's edge is ${mainPeak.toFixed(3)} linear, under its ceiling ${R.ceiling}`);
+  const raw = (tau, mm) => WW.ringThinLight(tau, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G, mm);
+  check(raw(WW.faintTau(R, 106200), muMin) < 0.1 * raw(7.5e-6, 0) && haloMid < 0.05 && haloMid > 0.002, `and the halo's middle a faint glow, ${haloMid.toFixed(4)} linear, a twelfth of the main ring's edge before its ceiling`);
+  measured.push(`Deep, night side, 7 degrees: main ring edge ${mainPeak.toFixed(3)}, halo middle ${haloMid.toFixed(4)} linear (ceiling ${R.ceiling})`);
   // The light, through the shader's JS twin: the main ring seen 9 degrees from its plane.
   const colour = (mode) => lum(WW.ringColour(ju.look.tint, R, mode));
   const mu = Math.sin(9 * DEG);
@@ -165,7 +178,7 @@ const lin = WW.hexLinear;
   worlds.setExposure('camera');
   const wx = WW.createWorldWeather({ worlds });
   const ring = worlds.meshFor('jupiter').getObjectByName('jupiter-faint-ring');
-  check(ring && ring.material.uniforms.uThin.value.x === 5e-6 && ring.material.fragmentShader === F && ring.visible === true, 'with the weather, Jupiter wears its faint ring, drawn under Camera');
+  check(ring && ring.material.uniforms.uThin.value.x === 7.5e-6 && near(lum(ring.material.uniforms.uCeil.value.toArray()), 0.3, 1e-9) && ring.material.fragmentShader === F && ring.visible === true, 'with the weather, Jupiter wears its faint ring, drawn under Camera');
   check(near(lumU(ring), colour('camera'), 1e-6 * colour('camera')), 'painted at the albedo and the Camera stretch');
   worlds.setExposure('deep');
   check(near(lumU(ring), colour('deep'), 1e-6 * colour('deep')) && near(lumU(uRing), 4 * lum(lin(W.URANUS_RINGS.colour)), 1e-6), 'the shutter repaints both: Deep lifts Jupiter\'s and four times Uranus\'s');

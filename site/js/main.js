@@ -332,7 +332,6 @@ export async function boot({ setStatus } = {}) {
   galaxy.setExposure(exposure.look().milkyWay);
   dsoGlow.setExposure(exposure.look().milkyWay);
   stars3d.setMagLimit(exposure.look().starLimit);
-  worlds.setExposure(exposure.mode()); // the faint and dark rings' stretch (internal spec 0076 W2-b)
   let skyStrength = 1;
   let nebulaeImport = null;
   ctx.wantNebulae = () => {
@@ -380,7 +379,6 @@ export async function boot({ setStatus } = {}) {
     dsoGlow.setExposure(look.milkyWay);
     if (ctx.deep) ctx.deep.setExposure(look.milkyWay);
     stars3d.setMagLimit(look.starLimit);
-    worlds.setExposure(mode);
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
@@ -470,6 +468,9 @@ export async function boot({ setStatus } = {}) {
   // stage is entered, dropped when it is left, nothing at boot.
   const systems = createSystems(scene, ctx);
   ctx.systems = systems;
+  // 0076 W2-b (exposure to the worlds)
+  worlds.setExposure(exposure.mode());
+  exposure.onChange((mode) => worlds.setExposure(mode));
   window.addEventListener('sr:stage', (e) => {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
