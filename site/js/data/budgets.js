@@ -45,5 +45,7 @@ export const BUDGETS = {
   "deep_cmb_map_bytes": 600000,
   "deep_cmb_draw_calls": 2,
   "sun_image_bytes": 400000,
-  "sun_loops_draw_calls": 1
+  "sun_loops_draw_calls": 1,
+  "deep_ring_bytes": 60000,
+  "deep_ring_draw_calls": 3
 };

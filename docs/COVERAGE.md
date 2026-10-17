@@ -61,7 +61,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 35 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js` | measured | orion |
-| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `gasmat.js` | measured | helix, m57 |
+| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m57 |
 | [DARK_NEBULA](#dark_nebula) | 3 | `nebulae.js`, `dsoglow.js` | measured | - |
 | [REFLECTION_NEBULA](#reflection_nebula) | 3 | `dsoglow.js`, `nebulae.js` | illustrative | - |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 4 | `nebulae.js`, `dsoglow.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
+Honesty over the 876 records: 319 measured, 234 modelled, 323 illustrative.
 
 ## The classes
 
@@ -476,9 +476,9 @@ Honesty over the 876 records: 320 measured, 233 modelled, 323 illustrative.
 
 **Planetary nebulae**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/gasmat.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`
 - **Default honesty:** measured
-- **On a weak device (T0, or after the frame latch):** The photograph; the Helix's rings unmarched on tier 0 or after the latch.
+- **On a weak device (T0, or after the frame latch):** The photograph; the Helix's rings and the Ring's layers unmarched after the latch.
 - **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml)
 - **Source:** Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009.
 - **Dates and filters:** Photographs as registry/nebulae.yaml dates them; the Helix's light from eso0907a.

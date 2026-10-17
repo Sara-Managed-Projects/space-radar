@@ -493,9 +493,9 @@ classes:
 
   - id: PLANETARY_NEBULA
     title: Planetary nebulae
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/gasmat.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/ring.js, site/js/scene/deep/shellneb.js, site/js/scene/deep/gasmat.js]
     honesty: measured
-    fallback: The photograph; the Helix's rings unmarched on tier 0 or after the latch.
+    fallback: The photograph; the Helix's rings and the Ring's layers unmarched after the latch.
     heroes: {helix: registry/deepsky-heroes/helix.yaml, m57: registry/deepsky-heroes/m57.yaml}
     issue: "#872 (M57 as a shell, W3-b)"
     note:
