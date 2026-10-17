@@ -20,6 +20,10 @@ runs (`python3 tools/serve.py . 8386` puts the app at `/site/`). `og:url` and th
 are absolute, because a crawler needs them to be; the host is `--host`, defaulting to the one
 scripts/deploy.sh already knows, so a fork is not hardcoded to it.
 
+    python3 scripts/gen_trip_pages.py             # write site/t/<id>.html for every trip
+    python3 scripts/gen_trip_pages.py --check     # exit 1 if a page is stale
+    python3 scripts/gen_trip_pages.py --host URL  # set the site address (default https://www.spaceradar.ai)
+
 `og:image` is `/og/<id>.png` when that file exists and `/og/default.png` when it does not. Since
 spec 0033 (2026-09-23) the per-trip pictures are rendered by `scripts/shots.mjs --only=og` in the
 readme-shots workflow and checked in; a trip added since the last run keeps the default until the
@@ -251,8 +255,12 @@ def main(argv: list[str]) -> int:
             host = args.pop(0).rstrip("/")
         elif a.startswith("--host="):
             host = a[len("--host="):].rstrip("/")
+        elif a in ("--help", "-h"):
+            print(__doc__)
+            return 0
         else:
             print(f"gen_trip_pages: unknown option {a}", file=sys.stderr)
+            print(__doc__)
             return 2
 
     want = expected(host)
