@@ -190,15 +190,34 @@ export const EARTH_E2 = 1 - (WGS84_B_KM / WGS84_A_KM) ** 2;
  * stands 37 degrees); `edgeFade` the share of the window over which shadows fade at its edge;
  * `recentre` the share of the half-width the view may move, and `rescale` the factor it may zoom,
  * before the window is rebuilt; `rowsPerFrame` how much of a rebuild one frame does.
+ * `maxTexelPx` the RANGE GATE (the review of 2026-10-17): no cast pass when one height of the source
+ * (castSourceTexel at its last level, 670 m on the Moon) spans more than this many CSS pixels on
+ * screen, because closer in the shadows are smooth blobs that follow nothing in the mosaic (45 km over
+ * Hadley: 14 px); the view falls back to the slope shading, with the fade. `texelPxHold` the
+ * hysteresis: shadows already on stay on to this many times the gate, so a slow zoom does not flicker.
  */
 export const CAST = {
   texels: 1024, cover: 1.4, minHalf: 0.004, maxHalf: 0.25, maxTiles: 40,
   steps: [0, 16, 24], firstTexels: 1.5, firstMinRad: 0.0003, reachRad: 0.06,
   marginCounts: 1, soft: 0.0047, depth: 0.94, maxSun: 0.6, edgeFade: 0.12,
   recentre: 0.3, rescale: 2, rowsPerFrame: 16, budgetMs: 6, smoothMax: 8,
+  maxTexelPx: 8, texelPxHold: 1.2,
 };
 /** An elevation tile's texel at level `z`, in radians: its north-south side. Pure. */
 export function castSourceTexel(z) { return Math.PI / (2 ** z * 256); }
+/**
+ * The RANGE GATE's measure (CAST.maxTexelPx): how many CSS pixels one height texel at level `z` spans
+ * seen from `dist` radii away along the line of sight, with a vertical half-angle of tangent
+ * `tanHalfFov` over `viewportPxH` CSS pixels. Pure.
+ */
+export function castTexelPx(dist, tanHalfFov, viewportPxH, z) {
+  if (!(dist > 0) || !(tanHalfFov > 0)) return Infinity;
+  return (castSourceTexel(z) / dist) * (viewportPxH / 2) / tanHalfFov;
+}
+/** Is the range right for cast shadows (CAST.maxTexelPx, with its hold while they are on)? Pure. */
+export function castRangeOk(texelPx, wasOn, opts = CAST) {
+  return texelPx <= opts.maxTexelPx * (wasOn ? opts.texelPxHold : 1);
+}
 /**
  * The worlds whose landing sites have traced rover traverses (registry/sites.yaml `traverses:`):
  * scene/traverse.js is imported the first time one of these worlds' tiles is on screen.
@@ -268,7 +287,7 @@ export function castWindowFor(cam, dir, tanHalfFov, aspect, opts = CAST) {
   const n = [u[1] * e[2] - u[2] * e[1], u[2] * e[0] - u[0] * e[2], u[0] * e[1] - u[1] * e[0]];
   const want = opts.cover * dist * tanHalfFov * Math.max(1, aspect || 1);
   const half = Math.min(opts.maxHalf, Math.max(opts.minHalf, Math.SQRT2 ** Math.round(2 * Math.log2(Math.max(1e-9, want)))));
-  return { u, e, n, half };
+  return { u, e, n, half, dist };
 }
 
 /** Does the window `w` still serve the view's window `v`, or must it be rebuilt? Pure. */
@@ -1027,7 +1046,13 @@ export function createPlanetTiles(opts = {}) {
     _invMesh.copy(mesh.matrixWorld).invert();
     _dir.transformDirection(_invMesh);
     const tanHalf = Math.tan(((camera.fov || 45) * Math.PI) / 360);
-    return castWindowFor([_local.x, _local.y, _local.z], [_dir.x, _dir.y, _dir.z], tanHalf, camera.aspect || 1);
+    const w = castWindowFor([_local.x, _local.y, _local.z], [_dir.x, _dir.y, _dir.z], tanHalf, camera.aspect || 1);
+    if (w) {
+      const h = Math.max(1, Number(opts.viewport ? opts.viewport() : 800) || 800);
+      const cssH = typeof innerHeight === 'number' && innerHeight > 0 ? innerHeight : h;
+      w.texelPx = castTexelPx(w.dist, tanHalf, cssH, layer.height ? layer.height.maxLevel : 0);
+    }
+    return w;
   }
 
   /** A share of the window's rows read from the elevation tiles; true when the last is done. */
@@ -1167,9 +1192,13 @@ export function createPlanetTiles(opts = {}) {
 
   function castFrame(layer, layerWanted, dt) {
     const cast = layer.cast;
-    const want = layerWanted && castWanted && castSteps() > 0 && allowed();
+    let want = layerWanted && castWanted && castSteps() > 0 && allowed();
+    const v = want ? castView(layer) : null;
+    // THE RANGE GATE (CAST.maxTexelPx): too close for the heights, main's slope shading, faded to.
+    cast.rangeOn = !!v && castRangeOk(v.texelPx, cast.rangeOn);
+    cast.texelPx = v ? Math.round(v.texelPx * 10) / 10 : null;
+    want = want && cast.rangeOn;
     if (want) {
-      const v = castView(layer);
       // After a window with a missing tile, five seconds before another is tried.
       const resting = cast.failedAt !== undefined && lastFrame - cast.failedAt < 5000;
       if (v && !cast.next && !resting && castWindowStale(cast.win, v)) {
@@ -1216,7 +1245,7 @@ export function createPlanetTiles(opts = {}) {
     let deadN = 0;
     for (const e of c.tiles.values()) { if (e.state === 'ready') ready += 1; else if (e.state === 'loading') loading += 1; else deadN += 1; }
     return {
-      wanted: castWanted, showing: c.showing, fade: Math.round(c.fade * 1000) / 1000,
+      wanted: castWanted, showing: c.showing, fade: Math.round(c.fade * 1000) / 1000, inRange: !!c.rangeOn, texelPx: c.texelPx ?? null,
       level: c.win ? c.win.z : null, halfKm: c.win ? Math.round(c.win.half * layer.radiusKm) : null,
       texelM: c.win ? Math.round((2 * c.win.half / CAST.texels) * layer.radiusKm * 1000) : null,
       steps: layer.castU ? layer.castU.uHtWin.value.y : 0,

@@ -668,6 +668,28 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   check(gpu <= BUDGETS.moon_height_window_gpu_mib, `the window's texture with its mipmaps is ${gpu.toFixed(2)} MiB, within ${BUDGETS.moon_height_window_gpu_mib}`);
 }
 {
+  // THE RANGE GATE (the review of 2026-10-17): close in, one LOLA height (670 m) covers many pixels and the
+  // shadows are blobs that follow nothing in the mosaic, so the cast pass is off and main's slope shading
+  // shows. 900 CSS px tall, a 45 degree field, the probe's own views (tests/probes/look/r12-nearby.js).
+  const R = 1737.4;
+  const tan = Math.tan(22.5 * Math.PI / 180);
+  const px = (slantKm) => T.castTexelPx(slantKm / R, tan, 900, 5);
+  check(near(T.castSourceTexel(5) * R, 0.666, 0.001), `a level-5 height is ${(T.castSourceTexel(5) * R * 1000).toFixed(0)} m on the Moon`);
+  check(px(45 / Math.cos(30 * Math.PI / 180)) > T.CAST.maxTexelPx * T.CAST.texelPxHold && !T.castRangeOk(px(52), false) && !T.castRangeOk(px(52), true), `45 km over Apollo 15 or 17: ${px(52).toFixed(1)} px a height, no cast shadows (main's look)`);
+  check(T.castRangeOk(px(110 / Math.cos(40 * Math.PI / 180)), false) && T.castRangeOk(px(185), false) && T.castRangeOk(px(350), false), `Copernicus from 110 km (${px(143.6).toFixed(1)} px), Tycho from 160 km and 350 km up keep them`);
+  check(T.CAST.maxTexelPx >= 4 && T.CAST.maxTexelPx <= 10 && T.CAST.texelPxHold > 1 && T.CAST.texelPxHold < 1.5, 'the gate is a few pixels, with a small hold');
+  const edge = T.CAST.maxTexelPx * 1.1;
+  check(!T.castRangeOk(edge, false) && T.castRangeOk(edge, true), 'just past the gate: not switched on, and not switched off once on (no flicker)');
+  check(T.castTexelPx(0, tan, 900, 5) === Infinity && T.castWindowFor([1 + 120 / R, 0, 0], [-1, 0, 0], tan, 1.6).dist > 0, 'the window carries its distance; none at no distance');
+}
+{
+  // CLOSE IN, THE GATE CLOSES: 40 km over the Moon, the same rig: no window is asked for.
+  const r = rig({ altKm: 40 });
+  await r.run(9000);
+  const st = r.tiles.state().sets['moon-lro-wac'];
+  check(st.cast && !st.cast.showing && !st.cast.inRange && st.cast.texelPx > T.CAST.maxTexelPx && r.askedHeights.length === 0, `40 km up: out of range, no heights fetched: ${JSON.stringify(st.cast)}`);
+}
+{
   // A WINDOW IS BUILT, SHADES, AND GOES: 120 km over the Moon at 0 E, a flat ground of heights.
   const r = rig({ altKm: 120 });
   await r.run(9000);
