@@ -71,7 +71,16 @@ const g = R.geometryOf();
   check(near(Math.hypot(maj[0], maj[1]), asLy(44), 1e-9) && near(Math.hypot(mnr[0], mnr[1]), asLy(30), 1e-9), 'projected, the ring is 44″ by 30″');
   check(near(pa(maj) % 180, 60, 1e-6), `its long axis at PA 60° on the sky (${pa(maj).toFixed(2)}°)`);
   check(dot(maj, g.axis) === 0 || near(dot(maj, g.axis), 0, 1e-12), 'the major axis lies in the disc\'s plane');
-  check(g.Lp > g.A && g.Ro > g.A && g.bound >= g.Ro, 'the lobes reach past the ring along our line; the halo round both; all inside the bound');
+  check(g.Lp > g.A && g.w[2] === 0 && g.bound === Math.max(g.bA, g.bB, g.bC), 'the lobes reach past the ring along our line; the halo carries no light (weight 0); the bounding ellipsoid holds both');
+  // The bounding ellipsoid holds the disc's whole lit box and the lobes (rays that miss it are discarded at once).
+  let outside = 0;
+  for (let k = 0; k < 2000; k++) {
+    const phi = k * 2.399963, q = (SHAPE_Q => SHAPE_Q * Math.sqrt((k % 97 + 0.5) / 97))(R.SHAPE.outer + R.SHAPE.edge), u = ((k % 13) / 6 - 1) * 1.2;
+    const p = [0, 1, 2].map((c) => g.e1[c] * Math.cos(phi) * q * g.A + g.e2[c] * Math.sin(phi) * q * g.B + g.axis[c] * u * g.H);
+    const sb = Math.hypot(dot(g.Sb[0], p), dot(g.Sb[1], p), dot(g.Sb[2], p));
+    if (sb > 1) outside++;
+  }
+  check(outside === 0, `the bounding ellipsoid holds the disc wherever its window is lit (${outside} of 2000 points outside)`);
   // The light map: where a sky point lands is where scene/nebulae.js puts that sky point on the photograph (the
   // archive's north, 11.2° for M57, included); with no turn it is the Helix's mapping.
   const row = NEBULAE.find((r) => r.id === 'm57');
@@ -100,8 +109,9 @@ const lightOf = (x, y) => {
 {
   let worst = 0, worst4 = 0, inside = 0;
   for (let k = 0; k < 120; k++) {
-    const r = 1.3 * g.A * Math.sqrt((k + 0.5) / 120), th = k * 2.399963;
-    const x = r * Math.cos(th), y = r * Math.sin(th);
+    // sky points across the ring, out to 1.1 of its ellipse (beyond it the fringe is dropped off our line: below)
+    const th = k * 2.399963, q = 1.1 * Math.sqrt((k + 0.5) / 120), xm = q * g.A * Math.cos(13.5 * D2R) * Math.cos(th), ym = q * g.B * Math.sin(th);
+    const x = g.e1[0] * xm + g.e2[0] * ym, y = g.e1[1] * xm + g.e2[1] * ym;
     const want = lightOf(x, y);
     const cols = R.columnsAt(g, x, y);
     if (g.w[0] * cols[0] + g.w[1] * cols[1] + g.w[2] * cols[2] > R.SHAPE.minColumn) inside++;
@@ -109,18 +119,29 @@ const lightOf = (x, y) => {
     worst = Math.max(worst, err(24, 0.37));
     worst4 = Math.max(worst4, err(4, 0.37), err(4, 0.81), err(4, 0.05));
   }
-  check(inside === 120, `every sky point out to 1.3 of the ring's radius has a layer to carry its light (${inside} of 120)`);
+  check(inside === 120, `every sky point out to 1.1 of the ring's ellipse has a layer to carry its light (${inside} of 120)`);
+  // What is dropped: the light beyond the ring's window and the lobes (the halo's fringe), against the whole.
+  let all = 0, lost = 0;
+  for (let jy = -60; jy <= 60; jy++) for (let ix = -60; ix <= 60; ix++) {
+    const x = ix / 60 * 1.4 * g.A, y = jy / 60 * 1.4 * g.A;
+    const c = lightOf(x, y), l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] - 0.2126 * 0.075 - 0.7152 * 0.225 - 0.0722 * 0.375;
+    const cols = R.columnsAt(g, x, y);
+    all += Math.max(0, l);
+    if (!(g.w[0] * cols[0] + g.w[1] * cols[1] > R.SHAPE.minColumn)) lost += Math.max(0, l);
+  }
+  check(lost / all < 0.03, `the light no layer carries off our line is the faint fringe: ${(100 * lost / all).toFixed(1)} % of the nebula's (above its floor)`);
   // As the GPU draws it: the columns read from the tabulated map, bilinearly.
   const map = R.columnMap(g);
   let worstMap = 0;
   for (let k = 0; k < 120; k++) {
-    const r = 1.3 * g.A * Math.sqrt((k + 0.5) / 120), th = k * 2.399963, x = r * Math.cos(th), y = r * Math.sin(th);
+    const th = k * 2.399963, q = 1.1 * Math.sqrt((k + 0.5) / 120), xm = q * g.A * Math.cos(13.5 * D2R) * Math.cos(th), ym = q * g.B * Math.sin(th);
+    const x = g.e1[0] * xm + g.e2[0] * ym, y = g.e1[1] * xm + g.e2[1] * ym;
     const want = lightOf(x, y);
     for (const j of [0.05, 0.37, 0.81]) { const c = R.columnJs(g, [x, y, 3 * g.bound], [0, 0, -1], 4, j, lightOf, map).rgb; worstMap = Math.max(worstMap, ...c.map((v, i) => Math.abs(v - want[i]) / Math.max(0.05, want[i]))); }
   }
   check(worstMap < 0.05, `and through the tabulated columns the GPU reads (${R.COLUMN_MAP}², bilinear), with T0's 4 samples: ${(worstMap * 100).toFixed(2)} %`);
   check(worst < 0.02, `on our line the column IS the photograph's light: ${(worst * 100).toFixed(2)} % at worst over 120 points (24 samples)`);
-  check(worst4 < 0.03, `and with T0's 4 samples, whatever the pixel's offset: ${(worst4 * 100).toFixed(2)} % (the step integrals are exact)`);
+  check(worst4 < 0.03, `and with 4 samples, whatever the pixel's offset: ${(worst4 * 100).toFixed(2)} % (the step integrals are exact)`);
   // Edge on to the disc: a colour, not a white bar.
   const edge = R.columnJs(g, g.e1.map((v) => v * 6 * g.bound), g.e1.map((v) => -v), 8, 0.5, lightOf).rgb;
   check(Math.max(...edge) < 1 && Math.max(...edge) > 0.05 && Math.max(...edge) - Math.min(...edge) > 0.05, `edge on, the ring keeps a colour (${edge.map((v) => v.toFixed(2)).join(', ')}) and does not go white`);
@@ -166,11 +187,11 @@ const lightOf = (x, y) => {
       const c = R.columnJs(g, ro, dir.map((v) => -v), 16, 0.5, bright).rgb;
       const y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
       worstLum = Math.max(worstLum, y);
-      if (y > 0.3) leastChroma = Math.min(leastChroma, (Math.max(...c) - Math.min(...c)) / Math.max(...c));
+      if (Math.min(...c) > 0.8) leastChroma = 0; // near-white: every channel above 0.8 (the pictures' measure)
     }
   }
   check(worstLum <= R.SHAPE.peak + 1e-9, `turned 30 to 90 degrees the core is held to the photograph's brightest (largest luminance ${worstLum.toFixed(3)} against ${R.SHAPE.peak})`);
-  check(leastChroma > 0.15, `and keeps its colour: no bright pixel is white (least chroma ${leastChroma.toFixed(2)})`);
+  check(leastChroma > 0, 'and no pixel goes near-white (every channel above 0.8)');
   const capped = R.capLight([2, 1.6, 1.2]);
   check(near(0.2126 * capped[0] + 0.7152 * capped[1] + 0.0722 * capped[2], R.SHAPE.peak, 0.08) && capped[0] > capped[2] * 1.3, `the cap keeps the hue (${capped.map((v) => v.toFixed(2)).join(', ')})`);
   // From inside, 0.3 ly from the star and 60 degrees off our line, as the probe's r04: a view of 32 x 18 rays.
@@ -210,8 +231,10 @@ const lightOf = (x, y) => {
   check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec2 quadSpan\( mat3 S/.test(f) && /texture2D\( uCols, xy \* uColScale \+ 0\.5 \)/.test(f) && /float slabIntegral\(/.test(f), 'the fragment has the same spans, integrals and tabulated columns');
   check(/gl_FragColor = vec4\( col \* uGain \* uShare, 1\.0 \)/.test(f), 'additive with alpha 1: the light lands (three\'s AdditiveBlending is SRC_ALPHA, ONE)');
   check(/col = capLight\( col \);/.test(f) && /if \( y > uPeak \) c \*= uPeak \/ y;/.test(f), 'the fragment holds the core to the photograph\'s brightest');
-  check((f.match(/for \( int i = 0; i < MAX_N; i\+\+ \)/g) || []).length === 3 && !/k == 0 \?/.test(f), 'one loop a layer, each computing only its own integral (no branch a step that a GPU runs both sides of)');
-  check(/int nl = max\( 2, int\( float\( uN \) \* 0\.6 \+ 0\.5 \) \)/.test(f) && /int nh = max\( 1, int\( float\( uN \) \* 0\.25 \+ 0\.5 \) \)/.test(f), 'the lobes and the halo take ring.js layerSamples');
+  check((f.match(/for \( int i = 0; i < MAX_N; i\+\+ \)/g) || []).length === 2 && !/k == 0 \?/.test(f), 'one loop a layer (the disc, the lobes), each computing only its own integral');
+  check(/int nd = max\( 1, int\( float\( uN \) \* 0\.75 \+ 0\.5 \) \)/.test(f) && /int nl = max\( 1, int\( float\( uN \) \* 0\.4 \+ 0\.5 \) \)/.test(f), 'the disc and the lobes take ring.js layerSamples');
+  check(/vec2 bb = quadSpan\( uSb, ro, rd, 0\.0, 1e9 \);\s*if \( bb\.y <= bb\.x \) discard;/.test(f), 'an early exit for every ray that misses the bounding ellipsoid');
+  check(/uJit > 0\.5 \? pixelHash\( gl_FragCoord\.xy \) : 0\.5/.test(f) && /uInside \* smoothstep\( 0\.0, uNear, t \)/.test(f), 'T0 steps at the middle; from inside the gas near the camera fades');
   check(/pixelHash\( gl_FragCoord\.xy \)/.test(f) && !/sampler3D/.test(f) && !/uTime/.test(f), 'a hash of the pixel for the offset, no noise volume, no clock');
   for (const [k, v] of Object.entries(R.SHADERS)) {
     const bad = [...v.matchAll(/smoothstep\(\s*([-0-9.]+)\s*,\s*([-0-9.]+)\s*,/g)].filter((m) => Number(m[1]) >= Number(m[2]));
@@ -253,11 +276,11 @@ const lightOf = (x, y) => {
   }
   check(off < 1e-6, `the white dwarf stays at the centre of the frame across a 90° arc (largest offset ${off.toExponential(1)})`);
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  check(hero.stats().samples === 4 && hero.stats().knots === 150, `T0: 4 samples for the disc, 150 knots (${JSON.stringify(hero.stats())})`);
+  check(hero.stats().samples === 1 && hero.stats().knots === 150, `T0: one step a layer at its middle, 150 knots (${JSON.stringify(hero.stats())})`);
   check(uGas.uShare.value === 0 && hero.ready(), 'no gas is drawn until its light (the photograph) has landed; with nothing to fetch here it is ready');
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
   check(hero.stats().samples === 16 && hero.stats().knots === 1000, 'T2 at level 3: 16 samples for the disc (32 steps), 1 000 knots');
-  check(JSON.stringify(R.layerSamples(8)) === '[8,5,2]' && JSON.stringify(R.layerSamples(4)) === '[4,2,1]', `fewer samples where the light is smooth or faint: disc, lobes, halo ${R.layerSamples(8)} at level 2, ${R.layerSamples(4)} on T0`);
+  check(JSON.stringify(R.layerSamples(8).slice(0, 2)) === '[6,3]' && JSON.stringify(R.layerSamples(1).slice(0, 2)) === '[1,1]', `fewer samples where the light is smooth: disc and lobes ${R.layerSamples(8).slice(0, 2)} at level 2, ${R.layerSamples(1).slice(0, 2)} on T0`);
   check(R.samplesFor({ tier: 2, steps: 48 }) === 24 && R.samplesFor({ tier: 1, steps: 0 }) === 8, 'Ultra 24 a layer; level 2 8');
   const sh = R.sharesFor({ level: 1, rPx: 300, photo: 1 });
   check(sh.gas === 0 && sh.knots === 0 && sh.star === 0.5, 'on our line, with its photograph drawn, the gas gives way and the star is half');

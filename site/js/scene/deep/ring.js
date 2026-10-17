@@ -69,7 +69,10 @@ const LIGHT_SIZE = [512, 512];
 export const SHAPE = {
   slab: 1.6,                // the disc's box reaches 1.6 of its half-thickness: exp(-1.6⁴) is 0.15 % of its middle
   edge: 0.1,                // the disc's window across the ring rises and falls over this, in the ring's radii, either side
-  outer: 1.05,              // and falls about here: the ionisation boundary's bright rim belongs to the ring, not the halo
+  outer: 1.08,              // and falls about here: the ionisation boundary's bright rim and its fringe belong to the ring
+  boundQ: 1.26,             // the bounding ellipsoid reaches this far across the ring (its window and a little of its lean)
+  nearFade: 0.3,            // gas nearer the camera than this (in the lobes' length) fades out: from inside, stars through the cavity
+  insideFloor: 0.15,        // and what is left of the gas's light with the camera deep in the cavity (the lobes' wall)
   lean: 0.15,               // the disc's box reaches this much further: its walls run along our line, which leans 13.5° off its axis
   kappa: 2.0,               // self-absorption: optical depth per unit of the light's luminance (edge on, not white)
   knee: 0.8,                // one soft knee over the brightest channel, hue kept
@@ -112,7 +115,7 @@ export function geometryOf(profile = PROFILE) {
     Sl: rows3(scaled(e1, 1 / (cq * A)), scaled(e2, 1 / (cq * B)), scaled(a, 1 / Lp)), Lp, cq,
     // the inner halo: a shell between two spheres
     So: rows3([1 / Ro, 0, 0], [0, 1 / Ro, 0], [0, 0, 1 / Ro]), Si: rows3([1 / Ri, 0, 0], [0, 1 / Ri, 0], [0, 0, 1 / Ri]), Ri, Ro,
-    w: [Number(disc.weight) || 1, Number(lobes.weight) || 1, Number(halo.weight) || 0.05],
+    w: [Number(disc.weight ?? 1), Number(lobes.weight ?? 1), Number(halo.weight ?? 0)],
     uv: uvOf(row, [Number(fr.ra_deg) || 283.39587, Number(fr.dec_deg) || 33.02858], dist),
     knots: {
       qFrom: Number(knots.q_from) || 0.72, qTo: Number(knots.q_to) || 1.0,
@@ -121,7 +124,15 @@ export function geometryOf(profile = PROFILE) {
     },
     starK: Number(star.temp_k) || 135000,
   };
-  g.bound = Math.max(Ro, Lp, Math.hypot(A, SHAPE.slab * H)) * 1.02;
+  // THE BOUNDING ELLIPSOID (an early exit for every ray that misses it): round the disc's box out to boundQ of its
+  // ellipse and the lobes' length; the halo's sphere only while it carries light (its weight is 0 since 0076 W3-b's
+  // second look: the fringe is the disc's window, and the halo's grain and cost went with it).
+  const c1 = Math.max(Lp, SHAPE.slab * H) * 1.02;
+  const kk = 1 / Math.sqrt(Math.max(0.05, 1 - (SHAPE.slab * H / c1) ** 2));
+  g.bA = SHAPE.boundQ * A * kk; g.bB = SHAPE.boundQ * B * kk; g.bC = c1;
+  if (g.w[2] > 0) { g.bA = Math.max(g.bA, Ro); g.bB = Math.max(g.bB, Ro); g.bC = Math.max(g.bC, Ro); }
+  g.Sb = rows3(scaled(e1, 1 / g.bA), scaled(e2, 1 / g.bB), scaled(a, 1 / g.bC));
+  g.bound = Math.max(g.bA, g.bB, g.bC);
   return g;
 }
 
@@ -227,11 +238,11 @@ export function columnsFrom(map, x, y) {
   return [0, 1, 2].map((c) => (at(i0, j0, c) * (1 - ax) + at(i1, j0, c) * ax) * (1 - ay) + (at(i0, j1, c) * (1 - ax) + at(i1, j1, c) * ax) * ay);
 }
 /**
- * Samples a layer from the disc's n: the disc n, the lobes 0.6 of it (their light is smooth along a ray), the halo
- * a quarter (the faintest and the largest on screen). Each step's density is integrated exactly, so fewer steps
+ * Samples a layer from the coordinator's n: the disc 0.75 of it, the lobes 0.4 (their light is smooth along a ray), the
+ * halo a quarter (it carries light only while its weight is above 0). On T0 n is 1: one step a layer at its middle. Each step's density is integrated exactly, so fewer steps
  * mean grain, never a wrong column. GLSL main() takes the same. Pure.
  */
-export const layerSamples = (n) => [n, Math.max(2, Math.round(n * 0.6)), Math.max(1, Math.round(n / 4))];
+export const layerSamples = (n) => [Math.max(1, Math.round(n * 0.75)), Math.max(1, Math.round(n * 0.4)), Math.max(1, Math.round(n / 4))];
 export const haloSamples = (n) => layerSamples(n)[2];
 
 /** Each layer's spans along a ray, and the step integral of its density over span coordinates [a, b]. Pure. */
@@ -254,13 +265,14 @@ function layersAlong(g, ro, rd, t0, t1) {
 export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0], map = null, peak = SHAPE.peak) {
   const colsAt = map ? (x, y) => columnsFrom(map, x, y) : (x, y) => columnsAt(g, x, y);
   const S = SHAPE;
-  const b = dot(ro, rd), hh = b * b - (dot(ro, ro) - g.bound * g.bound);
-  if (hh <= 0) return { rgb: [0, 0, 0] };
-  const t0 = Math.max(0, -b - Math.sqrt(hh)), t1 = -b + Math.sqrt(hh);
-  if (t1 <= t0) return { rgb: [0, 0, 0] };
+  const bb = quadSpan(g.Sb, ro, rd, 0, Infinity);
+  if (!bb) return { rgb: [0, 0, 0] };
+  const [t0, t1] = bb;
+  const jit = n <= 1 ? 0.5 : j; // T0: one step a layer, at its middle (no grain)
+  const fin = insideOf(g, ro);
   let rgb = [0, 0, 0];
   const layers = layersAlong(g, ro, rd, t0, t1);
-  for (let k = 0; k < 3; k++) {
+  for (let k = 0; k < (g.w[2] > 0 ? 3 : 2); k++) {
     const { s, step } = layers[k];
     const L = spanLen(s);
     if (!(L > 0)) continue;
@@ -268,10 +280,11 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0], map
     const dt = L / nk;
     let T = 1;
     for (let i = 0; i < nk; i++) {
-      const t = spanT(s, (i + j) * dt);
+      const t = spanT(s, (i + jit) * dt);
       const p = [ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t];
       const lc = light(p[0], p[1]);
       if (!lc) continue;
+      const fade = fin * nearOf(g, t);
       const col = colsAt(p[0], p[1]);
       const N = g.w[0] * col[0] + g.w[1] * col[1] + g.w[2] * col[2];
       if (!(N > S.minColumn)) continue;
@@ -282,7 +295,7 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0], map
       const comp = tau > 1e-4 ? tau / (1 - Math.exp(-tau)) : 1;
       const ab = S.kappa * lum * rhoDt;
       const w = ab > 1e-5 ? (1 - Math.exp(-ab)) / (S.kappa * lum) : rhoDt;
-      for (let c = 0; c < 3; c++) rgb[c] += T * lc[c] * comp * w;
+      for (let c = 0; c < 3; c++) rgb[c] += T * lc[c] * comp * w * fade;
       T *= Math.exp(-ab);
     }
   }
@@ -308,7 +321,18 @@ export function capLight(rgb, peak = SHAPE.peak) {
 // ----------------------------------------------------------------------------- tiers, shares, palette
 
 /** Samples a layer: 4 on T0, 8 at level 2, half the march's steps above. Pure. */
-export const samplesFor = (o = {}) => samplesOf(o, MAX_N);
+export const samplesFor = (o = {}) => (Number(o.tier) >= 1 ? samplesOf(o, MAX_N) : 1);
+/**
+ * From inside the nebula the gas round the camera would fill the view. Its light falls off as the camera goes into
+ * the lobes' wall (SHAPE.insideFloor deep in the cavity) and, for every sample, as the sample nears the camera
+ * (gone at the camera, whole from nearFade of the lobes' length): from inside, the wall round the camera and
+ * stars through the cavity, not fog. From outside both are 1. Pure; GLSL main() takes the same.
+ */
+export function insideOf(g, cam) {
+  const s = Math.hypot(...mul(g.Sl, cam));
+  return SHAPE.insideFloor + (1 - SHAPE.insideFloor) * smooth(s, 0.8, 1.5);
+}
+export const nearOf = (g, dist) => smooth(dist, 0, SHAPE.nearFade * g.Lp);
 /** How much of each part draws (shellneb.js sharesOf, with SHAPE.adapt). Pure. */
 export const sharesFor = (o = {}) => sharesOf(o, SHAPE.adapt);
 /** The exposure's stretch and the knots' and the star's colours (shellneb.js paletteOf). Pure. */
@@ -352,15 +376,15 @@ const GAS_FRAG = /* glsl */ `
 uniform vec3 uCam;        // the camera in the sky frame, light-years (CPU, float64, each frame)
 uniform mat3 uSd;         // the disc's scaled frame (rows: major / A, minor / B, axis / H)
 uniform mat3 uSl;         // the lobes' spheroid
-uniform mat3 uSo;         // the halo's outer and inner spheres
-uniform mat3 uSi;
 uniform vec4 uDisc;       // its box in half-thicknesses, the cavity's edge in the ring's radii, -, -
-uniform vec2 uShell;      // the halo's inner and outer radii (ly)
-uniform vec3 uHalo;       // Ri² + Ro², Ri² Ro², 1 / n0 (its density's normalisation)
 uniform vec3 uW;          // the layers' weights: disc, lobes, halo
 uniform vec4 uUv;         // the light map: u0, v0, 1 / W, 1 / H
 uniform vec2 uRot;        // and its turn: cos r, sin r (the archive's north)
 uniform float uBound;
+uniform mat3 uSb;         // the bounding ellipsoid: a ray that misses it is discarded at once
+uniform float uJit;       // 1: a per-pixel offset; 0 on T0 (one step a layer, at its middle)
+uniform float uInside;    // ring.js insideOf: the gas's light with the camera in the lobes' wall
+uniform float uNear;      // ring.js nearOf: the distance over which gas near the camera fades in (ly)
 uniform int uN;           // samples a layer
 uniform sampler2D uLight; // the photograph without its stars (display values, gasmat.js COLOUR_POLICY)
 uniform sampler2D uCols;  // each layer's column along our line, tabulated (ring.js columnMap): disc, lobes, halo
@@ -410,12 +434,6 @@ float lobeF( vec3 L, float tau ) {
   float s4 = L.x * L.x * t2 * t2 * tau / 5.0 + 2.0 * L.x * L.z * t2 * tau / 3.0 + L.z * L.z * tau;
   return 4.0 * ( s2 - s4 );
 }
-float haloF( float rho2, float tau ) {
-  float t2 = tau * tau;
-  float p1 = t2 * tau / 3.0 + rho2 * tau;
-  float p2 = t2 * t2 * tau / 5.0 + 2.0 * rho2 * t2 * tau / 3.0 + rho2 * rho2 * tau;
-  return ( -p2 + uHalo.x * p1 - uHalo.y * tau ) * uHalo.z;
-}
 // the step [a, b] of span coordinates through a span's pieces: the lobes' and the halo's exact integrals
 float lobeStep( vec4 s, float a, float b, vec3 L ) {
   float l1 = max( 0.0, s.y - s.x );
@@ -424,17 +442,10 @@ float lobeStep( vec4 s, float a, float b, vec3 L ) {
   if ( b > l1 ) sum += lobeF( L, s.z + b - l1 - L.y ) - lobeF( L, s.z + max( a, l1 ) - l1 - L.y );
   return sum;
 }
-float haloStep( vec4 s, float a, float b, float tc, float rho2 ) {
-  float l1 = max( 0.0, s.y - s.x );
-  float sum = 0.0;
-  if ( a < l1 ) sum += haloF( rho2, s.x + min( b, l1 ) - tc ) - haloF( rho2, s.x + a - tc );
-  if ( b > l1 ) sum += haloF( rho2, s.z + b - l1 - tc ) - haloF( rho2, s.z + max( a, l1 ) - l1 - tc );
-  return sum;
-}
 
 // One step of a layer: its light emitted and self-absorbed, compensated so that on our line the column is the
 // photograph's (ring.js columnJs). cols: the line's columns at the sample, ck this layer's, st its step integral.
-void emitStep( inout vec3 C, inout float T, vec3 lc, vec3 cols, float wk, float ck, float st ) {
+void emitStep( inout vec3 C, inout float T, vec3 lc, vec3 cols, float wk, float ck, float st, float fade ) {
   float N = dot( uW, cols );
   if ( N <= ${SHAPE.minColumn.toExponential(1)} ) return;
   float lum = dot( lc, vec3( 0.2126, 0.7152, 0.0722 ) );
@@ -444,7 +455,7 @@ void emitStep( inout vec3 C, inout float T, vec3 lc, vec3 cols, float wk, float 
   float comp = tau > 1e-4 ? tau / ( 1.0 - exp( -tau ) ) : 1.0;
   float ab = ${f3(SHAPE.kappa)} * lum * rhoDt;
   float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rhoDt;
-  C += T * lc * comp * w;
+  C += T * lc * comp * w * fade;
   T *= exp( -ab );
 }
 vec3 colsAt( vec2 xy ) { return texture2D( uCols, xy * uColScale + 0.5 ).rgb; }
@@ -462,32 +473,32 @@ void main() {
   if ( uShare <= 0.0 ) discard;
   vec3 ro = uCam;
   vec3 rd = normalize( vObj - ro );
-  float b = dot( ro, rd );
-  float h = b * b - ( dot( ro, ro ) - uBound * uBound );
-  if ( h <= 0.0 ) discard;
-  h = sqrt( h );
-  float t0 = max( 0.0, -b - h );
-  float t1 = -b + h;
-  if ( t1 <= t0 ) discard;
-  // a static per-pixel offset: grain, never bands, and no temporal state
-  float j = pixelHash( gl_FragCoord.xy );
+  // the bounding ellipsoid: an early exit for every ray that misses it
+  vec2 bb = quadSpan( uSb, ro, rd, 0.0, 1e9 );
+  if ( bb.y <= bb.x ) discard;
+  float t0 = bb.x;
+  float t1 = bb.y;
+  // a static per-pixel offset: grain, never bands, and no temporal state (T0: the middle of each step)
+  float j = uJit > 0.5 ? pixelHash( gl_FragCoord.xy ) : 0.5;
   vec3 col = vec3( 0.0 );
-  // Three loops, one a layer, each computing only its own integral (one loop with a branch per layer had every
-  // step evaluate all three on a GPU that runs both sides). Samples a layer: ring.js layerSamples.
+  // Two loops, one a layer, each computing only its own integral (one loop with a branch per layer had every step
+  // evaluate all of them on a GPU that runs both sides). Samples a layer: ring.js layerSamples.
   // ---- the disc: its profile integrated exactly per step, its window constant along our line
   vec4 s = discSpan( ro, rd, t0, t1 );
   float L = spanLen( s );
   if ( L > 0.0 ) {
     float zq = ( uSd * ro ).z;
     float dzq = ( uSd * rd ).z;
-    float dt = L / float( uN );
+    int nd = max( 1, int( float( uN ) * 0.75 + 0.5 ) );
+    float dt = L / float( nd );
     float T = 1.0;
     for ( int i = 0; i < MAX_N; i++ ) {
-      if ( i >= uN ) break;
-      vec3 p = ro + rd * spanT( s, ( float( i ) + j ) * dt );
+      if ( i >= nd ) break;
+      float t = spanT( s, ( float( i ) + j ) * dt );
+      vec3 p = ro + rd * t;
       vec3 cols = colsAt( p.xy );
       float st = windowAt( p.xy ) * slabIntegral( s, float( i ) * dt, float( i + 1 ) * dt, zq, dzq );
-      emitStep( col, T, lightAt( p.xy ), cols, uW.x, cols.x, st );
+      emitStep( col, T, lightAt( p.xy ), cols, uW.x, cols.x, st, uInside * smoothstep( 0.0, uNear, t ) );
     }
   }
   // ---- the lobes: a wall, integrated exactly per step
@@ -495,33 +506,19 @@ void main() {
   if ( l.y > l.x ) {
     s = vec4( l.x, l.y, l.y, l.y );
     vec3 La = quadAlong( uSl, ro, rd );
-    int nl = max( 2, int( float( uN ) * 0.6 + 0.5 ) );
+    int nl = max( 1, int( float( uN ) * 0.4 + 0.5 ) );
     float dt = ( l.y - l.x ) / float( nl );
     float T = 1.0;
     for ( int i = 0; i < MAX_N; i++ ) {
       if ( i >= nl ) break;
-      vec3 p = ro + rd * ( l.x + ( float( i ) + j ) * dt );
+      float t = l.x + ( float( i ) + j ) * dt;
+      vec3 p = ro + rd * t;
       vec3 cols = colsAt( p.xy );
       float st = lobeStep( s, float( i ) * dt, float( i + 1 ) * dt, La );
-      emitStep( col, T, lightAt( p.xy ), cols, uW.y, cols.y, st );
+      emitStep( col, T, lightAt( p.xy ), cols, uW.y, cols.y, st, uInside * smoothstep( 0.0, uNear, t ) );
     }
   }
-  // ---- the halo: a soft shell, integrated exactly per step
-  s = shellSpan( uSo, uSi, ro, rd, t0, t1 );
-  L = spanLen( s );
-  if ( L > 0.0 ) {
-    float rho2 = max( 0.0, dot( ro, ro ) - b * b );
-    int nh = max( 1, int( float( uN ) * 0.25 + 0.5 ) );
-    float dt = L / float( nh );
-    float T = 1.0;
-    for ( int i = 0; i < MAX_N; i++ ) {
-      if ( i >= nh ) break;
-      vec3 p = ro + rd * spanT( s, ( float( i ) + j ) * dt );
-      vec3 cols = colsAt( p.xy );
-      float st = haloStep( s, float( i ) * dt, float( i + 1 ) * dt, -b, rho2 );
-      emitStep( col, T, lightAt( p.xy ), cols, uW.z, cols.z, st );
-    }
-  }
+  // (the halo carries no light since its weight is 0: no loop, no cost)
   col = capLight( col );
   // additive (SRC_ALPHA, ONE): alpha 1 adds the light whole
   gl_FragColor = vec4( col * uGain * uShare, 1.0 );
@@ -557,17 +554,17 @@ export function createHero(THREE, env = {}) {
   colTex.generateMipmaps = false;
   colTex.needsUpdate = true;
   // --- the gas
-  const gasGeo = new THREE.IcosahedronGeometry(g.bound * 1.09, 3);
+  // the bounding ellipsoid's own mesh (drawn by its back faces): fewer pixels than the sphere round it
+  const gasGeo = new THREE.IcosahedronGeometry(1.09, 3);
+  gasGeo.applyMatrix4(new THREE.Matrix4().makeBasis(new THREE.Vector3(...g.e1), new THREE.Vector3(...g.e2), new THREE.Vector3(...g.axis)).multiply(new THREE.Matrix4().makeScale(g.bA, g.bB, g.bC)));
   const gasMat = shellMaterial(THREE, {
     vertexShader: GAS_VERT, fragmentShader: GAS_FRAG, side: THREE.BackSide,
     uniforms: {
       uCam: { value: new THREE.Vector3(0, 0, 10) },
-      uSd: { value: M3(THREE, g.Sd) }, uSl: { value: M3(THREE, g.Sl) }, uSo: { value: M3(THREE, g.So) }, uSi: { value: M3(THREE, g.Si) },
+      uSd: { value: M3(THREE, g.Sd) }, uSl: { value: M3(THREE, g.Sl) },
       uDisc: { value: new THREE.Vector4(SHAPE.slab, g.qIn, 0, 0) }, uW: { value: new THREE.Vector3(...g.w) },
-      uShell: { value: new THREE.Vector2(g.Ri, g.Ro) },
-      uHalo: { value: new THREE.Vector3(g.Ri * g.Ri + g.Ro * g.Ro, g.Ri * g.Ri * g.Ro * g.Ro, 1 / (((g.Ro * g.Ro - g.Ri * g.Ri) / 2) ** 2)) },
       uUv: { value: new THREE.Vector4(g.uv.u0, g.uv.v0, 1 / g.uv.W, 1 / g.uv.H) }, uRot: { value: new THREE.Vector2(g.uv.cos, g.uv.sin) },
-      uBound: { value: g.bound }, uN: { value: 8 }, uLight: { value: light.tex }, uCols: { value: colTex }, uColScale: { value: 1 / (2 * cmap.extent) }, uPeak: { value: SHAPE.peak },
+      uBound: { value: g.bound }, uSb: { value: M3(THREE, g.Sb) }, uJit: { value: 1 }, uInside: { value: 1 }, uNear: { value: SHAPE.nearFade * g.Lp }, uN: { value: 8 }, uLight: { value: light.tex }, uCols: { value: colTex }, uColScale: { value: 1 / (2 * cmap.extent) }, uPeak: { value: SHAPE.peak },
       uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation }, uShare: { value: 0 }, uGain: { value: 1 },
     },
   });
@@ -630,6 +627,7 @@ export function createHero(THREE, env = {}) {
       const gu = gasMat.uniforms;
       gu.uShare.value = light.state() === 'ready' ? sh.gas : 0;
       gu.uN.value = samples;
+      gu.uJit.value = samples > 1 ? 1 : 0;
       gu.uGain.value = palette.gain * SHAPE.exposure * sh.light;
       knotMat.uniforms.uGain.value = palette.gain * sh.light;
       knotMat.uniforms.uShare.value = drawnUnder(look, UNDER_MEASURED.knots) ? sh.knots : 0;
@@ -639,7 +637,10 @@ export function createHero(THREE, env = {}) {
       star.visible = sh.star > 0.002;
       knotMat.uniforms.uViewH.value = vh;
       starMat.uniforms.uView.value.set(vw, vh);
-      if (info.camera) gu.uCam.value.copy(placer.camera(info.camera, _cam));
+      if (info.camera) {
+        gu.uCam.value.copy(placer.camera(info.camera, _cam));
+        gu.uInside.value = insideOf(g, [_cam.x, _cam.y, _cam.z]);
+      }
     },
     // The light map is the one thing it fetches: ready once it has landed (or failed, and said so).
     ready: () => light.state() !== 'loading',

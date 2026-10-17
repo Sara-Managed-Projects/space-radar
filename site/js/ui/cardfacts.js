@@ -631,7 +631,9 @@ export function rightNowRows(record, m, passInfo) {
     const type = pick(md, 'typeText');
     if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
     const sizeLy = pickNumber(md, 'sizeLy');
+    // (0076 W3-b) under a light-year, one decimal (the Ring at Gaia's distance is 0.95 ly): a real value, never a dash.
     if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(roughly(sizeLy)) })]);
+    else if (sizeLy !== null && sizeLy >= 0.05) rows.push([R.across, t(V.lightYears, { n: fmt.num(sizeLy, 1) })]);
     const con = pick(md, 'con');
     if (con) rows.push([R.constellation, String(con)]);
     const desig = pick(md, 'designation');

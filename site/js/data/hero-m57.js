@@ -8,7 +8,7 @@ export const HERO = {
   "shipped": true,
   "children": [],
   "levels": {
-    "2": "structure: the main ring as a crisp disc, the lobes as a spheroid through its cavity and the inner halo as a shell, all lit by the photograph (8 samples a layer; 4 on T0), the knots and the white dwarf",
+    "2": "structure: the main ring as a crisp disc and the lobes as a wall through its cavity, lit by the photograph (6 and 3 samples; on T0 one step each, at its middle), the knots and the white dwarf; from inside the gas near the camera fades",
     "3": "close-up: the same layers marched with half the coordinator's steps a layer (12 to 24 by tier); the camera may go inside"
   },
   "frame": {
@@ -68,8 +68,8 @@ export const HERO = {
       "what": "the inner halo: loops round the ring, the light of an earlier, fuller ionisation",
       "inner_arcsec": 44,
       "outer_arcsec": 62,
-      "weight": 0.05,
-      "drawn": "a thick spherical shell from the ring's edge to 62″, even inside, lit by the photograph's faint fringe: an illustration. The paper puts \"almost all\" of the loops \"within 65″\" of the star; 62″ is where the photograph's light ends. Its weight (0.05 against the ring's 1) keeps the ring's own light on the ring",
+      "weight": 0,
+      "drawn": "NOT DRAWN as a layer since W3-b's second look (weight 0): as a shell lit by the photograph's faint fringe it showed as wide grain round the nebula and cost a third of the march. The fringe's light is carried by the ring's window out to 1.18 of its radii; beyond that, off our line, it is not drawn. The paper puts \"almost all\" of the loops \"within 65″\" of the star",
       "source": "O'Dell, Ferland, Henney & Peimbert 2013, AJ 145, 92, section III.4"
     },
     {
