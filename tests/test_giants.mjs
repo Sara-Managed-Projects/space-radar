@@ -115,7 +115,7 @@ const lin = (hex) => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) =>
   const R = W.JUPITER_RINGS;
   check(ju.look.ring === R && R.faint === true && R.tauScale === 5e-6, 'Jupiter wears a faint ring, tier 1 and up');
   // The fact sheet's parts: [inner, outer, tau].
-  const parts = [['halo', 89400, 123000, 3e-6], ['main', 123000, 128940, 5e-6], ['Amalthea', 128940, 181350, 1e-7], ['Thebe', 181350, 221900, 1e-7]];
+  const parts = [['halo', 89400, 123000, 3e-6], ['main', 123000, 128940, 5e-6]];
   const strip = W.ringBandsStrip(R);
   const kmPerPx = (R.outerKm - R.innerKm) / W.RING_BANDS_PX;
   for (const [name, a, b, tau] of parts) {
@@ -125,7 +125,14 @@ const lin = (hex) => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) =>
     const got = (strip[mid * 4 + 3] / 255) * R.tauScale;
     check(near(got, tau, Math.max(0.03 * tau, R.tauScale / 510)), `and the strip gives it back as ${got.toExponential(2)}`);
   }
-  check(strip[3] > 0 && strip[(W.RING_BANDS_PX - 1) * 4 + 3] > 0, 'the strip runs from the halo\'s inner edge to the Thebe ring\'s outer');
+  check(strip[3] > 0 && R.outerKm < 130000 && R.bands.length === 2, 'the strip runs from the halo\'s inner edge to just past the main ring: the gossamer rings are left out');
+  // The halo is thick: seen low, no brighter than its width over its thickness allows.
+  const muMin = R.halo.thickKm / (R.halo.outerKm - R.halo.innerKm);
+  check(near(muMin, 10000 / 33600, 1e-12), 'the halo\'s thickness over its width is the fact sheet\'s 10 000 over 33 600 km');
+  const lowHalo = W.ringThinLight(3e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G, muMin);
+  const lowMain = W.ringThinLight(5e-6, Math.sin(7 * DEG), Math.cos(173 * DEG), R.dust, W.RING_DUST_G);
+  check(lowMain / lowHalo > 3, `seen 7 degrees from the plane the main ring is ${(lowMain / lowHalo).toFixed(1)} times the halo`);
+  check(/S = 2\.0 \* tau \/ \( rl > uHalo\.x && rl < uHalo\.y \? max\( m, uHalo\.z \) : m \);/.test(W.RING_FRAG), 'and RING_FRAG holds the same cap');
   // The light, through the shader's JS twin: the main ring seen 9 degrees from its plane.
   const colour = (mode) => lum(W.ringColour(ju, mode));
   const mu = Math.sin(9 * DEG);
@@ -143,7 +150,7 @@ const lin = (hex) => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) =>
   measured.push(`Jupiter's main ring at 9 degrees: day ${dayCam.toExponential(2)}, night ${nightCam.toExponential(2)} under Camera; day ${dayDeep.toExponential(2)} under Deep`);
   // The shader: optical depth from the strip, the thin-slab limit, its dust in its own colour.
   const F = W.RING_FRAG;
-  check(/if \( uThin\.x > 0\.0 \) \{ tau = tex\.a \* uThin\.x; alpha = tau; \}/.test(F) && /S = 2\.0 \* tau \/ m;/.test(F), 'RING_FRAG reads a faint ring\'s strip as optical depth, in the thin-slab limit');
+  check(/if \( uThin\.x > 0\.0 \) \{ tau = tex\.a \* uThin\.x; alpha = tau; \}/.test(F) && /S = 2\.0 \* tau \/ \( rl > uHalo/.test(F), 'RING_FRAG reads a faint ring\'s strip as optical depth, in the thin-slab limit');
   check(/float dust = \( uThin\.x > 0\.0 \? uThin\.y : RING_DUST \)/.test(F), 'with its own share of dust');
   // The scene: built, painted by the exposure, hidden on tier 0.
   const THREE = await import(join(JS, '../vendor/three.module.min.js'));
