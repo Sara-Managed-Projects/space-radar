@@ -19,6 +19,12 @@ export const LINKS = {
       "words": "See today's Earth",
       "publisher": "NASA EPIC",
       "url": "https://epic.gsfc.nasa.gov/"
+    },
+    {
+      "id": "aurora-forecast",
+      "words": "Aurora forecast",
+      "publisher": "NOAA SWPC",
+      "url": "https://www.spaceweather.gov/products/aurora-30-minute-forecast"
     }
   ],
   "sun": [
