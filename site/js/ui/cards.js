@@ -42,20 +42,17 @@ import {
   compassWords,
   fistsWords,
   inWords,
-  ageInWords,
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
-import { propagate, EPHEMERIS_OF } from '../propagate/index.js';
+import { propagate } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
-import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
   toStage,
   eclipticToEquatorial,
 } from '../propagate/frames.js';
-import { predictPasses } from '../sky/passes.js';
 import { riseHighestSet, RISE_SET_BODIES } from '../sky/riseset.js';
 import { altitudeInWords, azimuthInWords } from '../sky/skywords.js';
 import { trajectorySection } from './trajectory.js';
@@ -82,7 +79,7 @@ import {
   DEG, meta, pick, pickNumber, pickTime, displayName, klassOf, isEarthFrame, frameWorld, worldName,
   positionAt, measure, heliocentricEarth, PASS_NO_OBSERVER, PASS_NOT_APPLICABLE, PASS_NONE,
   PASS_ERROR, PASS_OK, standsStill, nextPass, roughly, stormAdvisoryAgo, stormStatusKey, isWorld,
-  whyLine, endedWords, pathEndedWords, rightNowRows, placesMod, ensurePlaces, rangeLabel, nearEarthOnEllipse,
+  whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
   honestyLine, placesReady, truthRow,
 } from './cardfacts.js';
 export {
