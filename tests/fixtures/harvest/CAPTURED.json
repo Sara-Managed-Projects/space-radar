@@ -104,5 +104,9 @@
   "donki_cme_analysis.json": {
     "url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/CMEAnalysis",
     "note": "read 2026-10-12; 7 rows kept of 63: the oldest 3, one more past 1000 km/s and the newest 4 (two of them under 500 km/s)"
+  },
+  "sdo_aia.json": {
+    "url": "https://sdo.gsfc.nasa.gov/assets/img/browse/2026/10/15/20261015_165658_1024_0171.jpg",
+    "note": "the body harvest/parsers/sdo_aia.py saved on 2026-10-15 from that day's folder, every field as saved but the picture: its 188 279 bytes re-encoded at 32 x 32 (993 bytes) so the fixture stays small, and `bytes` says so"
   }
 }

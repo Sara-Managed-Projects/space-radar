@@ -17,7 +17,11 @@ export const NEBULAE = [
     "filters": "g, r and i, with H-alpha",
     "credit": "ESO/G. Beccari",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso1723a/"
+    "page": "https://www.eso.org/public/images/eso1723a/",
+    "observed": {
+      "by": "VLT Survey Telescope, OmegaCAM",
+      "released": "2017-07-27"
+    }
   },
   {
     "id": "horsehead-nebula",
@@ -31,7 +35,11 @@ export const NEBULAE = [
     "filters": "hydrogen red, oxygen green, sulphur blue",
     "credit": "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao0126a/"
+    "page": "https://noirlab.edu/public/images/noao0126a/",
+    "observed": {
+      "by": "WIYN 0.9-metre telescope, Mosaic I",
+      "released": "2015-11-23"
+    }
   },
   {
     "id": "m1",
@@ -45,7 +53,11 @@ export const NEBULAE = [
     "filters": "oxygen in two states and sulphur",
     "credit": "NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)",
     "licence": "CC BY 4.0",
-    "page": "https://esahubble.org/images/heic0515a/"
+    "page": "https://esahubble.org/images/heic0515a/",
+    "observed": {
+      "by": "Hubble, WFPC2",
+      "released": "2005-12-01"
+    }
   },
   {
     "id": "m45",
@@ -59,7 +71,11 @@ export const NEBULAE = [
     "filters": "B, V and I",
     "credit": "NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao-m45/"
+    "page": "https://noirlab.edu/public/images/noao-m45/",
+    "observed": {
+      "by": "WIYN 0.9-metre telescope, Mosaic I",
+      "released": "2020-06-30"
+    }
   },
   {
     "id": "california-nebula",
@@ -72,7 +88,12 @@ export const NEBULAE = [
     "colours": "unstated",
     "credit": "KPNO/NOIRLab/NSF/AURA/Adam Block",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao-n1499block/"
+    "page": "https://noirlab.edu/public/images/noao-n1499block/",
+    "observed": {
+      "taken": "2014",
+      "by": "RCOS 16-inch telescope, Kitt Peak",
+      "released": "2014-06-09"
+    }
   },
   {
     "id": "rosette-nebula",
@@ -85,7 +106,12 @@ export const NEBULAE = [
     "colours": "unstated",
     "credit": "KPNO/NOIRLab/NSF/AURA/N. A. Sharp",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao-rosette/"
+    "page": "https://noirlab.edu/public/images/noao-rosette/",
+    "observed": {
+      "taken": "1997-09",
+      "by": "Burrell Schmidt telescope, Kitt Peak",
+      "released": "2020-06-30"
+    }
   },
   {
     "id": "m8",
@@ -99,7 +125,11 @@ export const NEBULAE = [
     "filters": "B, V and R, with H-alpha",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso0936a/"
+    "page": "https://www.eso.org/public/images/eso0936a/",
+    "observed": {
+      "by": "MPG/ESO 2.2-metre telescope, WFI",
+      "released": "2009-09-28"
+    }
   },
   {
     "id": "m20",
@@ -113,7 +143,11 @@ export const NEBULAE = [
     "filters": "the Rubin camera’s broad survey filters",
     "credit": "NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noirlab2521ah/"
+    "page": "https://noirlab.edu/public/images/noirlab2521ah/",
+    "observed": {
+      "by": "Rubin Observatory, LSSTCam",
+      "released": "2025-06-23"
+    }
   },
   {
     "id": "m16",
@@ -127,7 +161,11 @@ export const NEBULAE = [
     "filters": "B, V and R",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso0926a/"
+    "page": "https://www.eso.org/public/images/eso0926a/",
+    "observed": {
+      "by": "MPG/ESO 2.2-metre telescope, WFI",
+      "released": "2009-07-16"
+    }
   },
   {
     "id": "m17",
@@ -141,7 +179,11 @@ export const NEBULAE = [
     "filters": "g, r and i",
     "credit": "ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso1119a/"
+    "page": "https://www.eso.org/public/images/eso1119a/",
+    "observed": {
+      "by": "VLT Survey Telescope, OmegaCAM",
+      "released": "2011-06-08"
+    }
   },
   {
     "id": "cats-paw-nebula",
@@ -155,7 +197,11 @@ export const NEBULAE = [
     "filters": "B, V and R, with H-alpha",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso1003a/"
+    "page": "https://www.eso.org/public/images/eso1003a/",
+    "observed": {
+      "by": "MPG/ESO 2.2-metre telescope, WFI",
+      "released": "2010-01-20"
+    }
   },
   {
     "id": "carina-nebula",
@@ -169,7 +215,12 @@ export const NEBULAE = [
     "filters": "B, g and r, with H-alpha",
     "credit": "ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso1250a/"
+    "page": "https://www.eso.org/public/images/eso1250a/",
+    "observed": {
+      "taken": "2012-06-05",
+      "by": "VLT Survey Telescope, OmegaCAM",
+      "released": "2012-12-06"
+    }
   },
   {
     "id": "north-america-nebula",
@@ -182,7 +233,12 @@ export const NEBULAE = [
     "colours": "unstated",
     "credit": "KPNO/NOIRLab/NSF/AURA/Adam Block",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao-n7000mosblock/"
+    "page": "https://noirlab.edu/public/images/noao-n7000mosblock/",
+    "observed": {
+      "taken": "2014",
+      "by": "RCOS 16-inch telescope, Kitt Peak",
+      "released": "2014-06-11"
+    }
   },
   {
     "id": "veil-nebula",
@@ -196,7 +252,11 @@ export const NEBULAE = [
     "filters": "oxygen blue, sulphur green, hydrogen orange",
     "credit": "T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao1209a/"
+    "page": "https://noirlab.edu/public/images/noao1209a/",
+    "observed": {
+      "by": "WIYN 0.9-metre telescope, Mosaic I",
+      "released": "2012-12-18"
+    }
   },
   {
     "id": "helix-nebula",
@@ -210,7 +270,11 @@ export const NEBULAE = [
     "filters": "B, V and R",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso0907a/"
+    "page": "https://www.eso.org/public/images/eso0907a/",
+    "observed": {
+      "by": "MPG/ESO 2.2-metre telescope, WFI",
+      "released": "2009-02-25"
+    }
   },
   {
     "id": "m27",
@@ -224,7 +288,11 @@ export const NEBULAE = [
     "filters": "oxygen blue, hydrogen red, sulphur green",
     "credit": "T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA)",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao-m27-kpno-mayall-4-m/"
+    "page": "https://noirlab.edu/public/images/noao-m27-kpno-mayall-4-m/",
+    "observed": {
+      "by": "Mayall 4-metre telescope, Mosaic I",
+      "released": "2020-06-30"
+    }
   },
   {
     "id": "m57",
@@ -238,7 +306,11 @@ export const NEBULAE = [
     "filters": "helium, oxygen, hydrogen, nitrogen and sulphur",
     "credit": "NASA, ESA, and C. Robert O’Dell (Vanderbilt University).",
     "licence": "CC BY 4.0",
-    "page": "https://esahubble.org/images/heic1310a/"
+    "page": "https://esahubble.org/images/heic1310a/",
+    "observed": {
+      "by": "Hubble, WFC3",
+      "released": "2013-05-23"
+    }
   },
   {
     "id": "m31",
@@ -251,7 +323,12 @@ export const NEBULAE = [
     "colours": "unstated",
     "credit": "Bill Schoening, Vanessa Harvey/REU program/NOIRLab/NSF/AURA",
     "licence": "CC BY 4.0",
-    "page": "https://noirlab.edu/public/images/noao0001a/"
+    "page": "https://noirlab.edu/public/images/noao0001a/",
+    "observed": {
+      "taken": "1979",
+      "by": "Burrell Schmidt telescope, photographic plates",
+      "released": "2000-01-13"
+    }
   },
   {
     "id": "m33",
@@ -265,7 +342,11 @@ export const NEBULAE = [
     "filters": "g and r, with H-alpha",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso1424a/"
+    "page": "https://www.eso.org/public/images/eso1424a/",
+    "observed": {
+      "by": "VLT Survey Telescope, OmegaCAM",
+      "released": "2014-08-06"
+    }
   },
   {
     "id": "lmc",
@@ -280,7 +361,11 @@ export const NEBULAE = [
     "credit": "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin",
     "licence": "CC BY 4.0",
     "page": "https://noirlab.edu/public/images/noirlab2030a/",
-    "sky_floor": 0.04
+    "sky_floor": 0.04,
+    "observed": {
+      "by": "Blanco 4-metre telescope, DECam",
+      "released": "2020-12-01"
+    }
   },
   {
     "id": "smc",
@@ -295,7 +380,11 @@ export const NEBULAE = [
     "credit": "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin",
     "licence": "CC BY 4.0",
     "page": "https://noirlab.edu/public/images/noirlab2030b/",
-    "sky_floor": 0.012
+    "sky_floor": 0.012,
+    "observed": {
+      "by": "Blanco 4-metre telescope, DECam",
+      "released": "2020-12-01"
+    }
   },
   {
     "id": "centaurus-a",
@@ -309,7 +398,11 @@ export const NEBULAE = [
     "filters": "B, V and R, with H-alpha and an oxygen filter",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso1221a/"
+    "page": "https://www.eso.org/public/images/eso1221a/",
+    "observed": {
+      "by": "MPG/ESO 2.2-metre telescope, WFI",
+      "released": "2012-05-16"
+    }
   },
   {
     "id": "m83",
@@ -323,7 +416,11 @@ export const NEBULAE = [
     "filters": "B, V and R",
     "credit": "ESO",
     "licence": "CC BY 4.0",
-    "page": "https://www.eso.org/public/images/eso0825a/"
+    "page": "https://www.eso.org/public/images/eso0825a/",
+    "observed": {
+      "by": "MPG/ESO 2.2-metre telescope, WFI",
+      "released": "2008-09-02"
+    }
   },
   {
     "id": "m104",
@@ -337,7 +434,11 @@ export const NEBULAE = [
     "filters": "B, V and far red",
     "credit": "NASA/ESA and The Hubble Heritage Team (STScI/AURA)",
     "licence": "CC BY 4.0",
-    "page": "https://esahubble.org/images/opo0328a/"
+    "page": "https://esahubble.org/images/opo0328a/",
+    "observed": {
+      "by": "Hubble, ACS",
+      "released": "2004-10-02"
+    }
   },
   {
     "id": "m51",
@@ -351,7 +452,12 @@ export const NEBULAE = [
     "filters": "B, V and I, with H-alpha",
     "credit": "NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)",
     "licence": "CC BY 4.0",
-    "page": "https://esahubble.org/images/heic0506a/"
+    "page": "https://esahubble.org/images/heic0506a/",
+    "observed": {
+      "taken": "2005-01",
+      "by": "Hubble, ACS",
+      "released": "2005-04-25"
+    }
   },
   {
     "id": "m101",
@@ -365,7 +471,11 @@ export const NEBULAE = [
     "filters": "B, V and I",
     "credit": "Image: European Space Agency & NASA",
     "licence": "CC BY 4.0",
-    "page": "https://esahubble.org/images/heic0602a/"
+    "page": "https://esahubble.org/images/heic0602a/",
+    "observed": {
+      "by": "Hubble",
+      "released": "2006-02-28"
+    }
   },
   {
     "id": "m81",
@@ -379,7 +489,12 @@ export const NEBULAE = [
     "filters": "B, V and I",
     "credit": "NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)",
     "licence": "CC BY 4.0",
-    "page": "https://esahubble.org/images/heic0710a/"
+    "page": "https://esahubble.org/images/heic0710a/",
+    "observed": {
+      "taken": "2004..2006",
+      "by": "Hubble, ACS",
+      "released": "2007-05-28"
+    }
   },
   {
     "id": "southern-ring-nebula",
@@ -393,7 +508,11 @@ export const NEBULAE = [
     "filters": "0.9 to 4.7 micrometres, Webb's NIRCam; shorter waves blue, longer ones red",
     "credit": "NASA, ESA, CSA, STScI, and the Webb ERO Production Team",
     "licence": "CC BY 4.0",
-    "page": "https://esawebb.org/images/weic2207b/"
+    "page": "https://esawebb.org/images/weic2207b/",
+    "observed": {
+      "by": "Webb, NIRCam",
+      "released": "2022-07-12"
+    }
   },
   {
     "id": "ngc-1300",
@@ -407,7 +526,11 @@ export const NEBULAE = [
     "filters": "3 to 21 micrometres, Webb's NIRCam and MIRI; shorter waves blue, longer ones red",
     "credit": "NASA, ESA, CSA, STScI, J. Lee (STScI), T. Williams (Oxford), PHANGS Team",
     "licence": "CC BY 4.0",
-    "page": "https://esawebb.org/images/weic2403e/"
+    "page": "https://esawebb.org/images/weic2403e/",
+    "observed": {
+      "by": "Webb, NIRCam and MIRI",
+      "released": "2024-01-29"
+    }
   },
   {
     "id": "tarantula-nebula",
@@ -422,6 +545,10 @@ export const NEBULAE = [
     "part": "the nebula's bright centre, 340 light-years across",
     "credit": "NASA, ESA, CSA, and STScI",
     "licence": "CC BY 4.0",
-    "page": "https://esawebb.org/images/weic2212a/"
+    "page": "https://esawebb.org/images/weic2212a/",
+    "observed": {
+      "by": "Webb, NIRCam",
+      "released": "2022-09-06"
+    }
   }
 ];

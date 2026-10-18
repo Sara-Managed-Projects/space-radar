@@ -23,6 +23,22 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { WIND, fetchWind, stepWind, sampleWind } from '../data/wind.js';
+import { lookHeld } from './quality.js';
+
+// A FIXED SEED UNDER ?look=1 (internal spec 0076 W1-e, internal #779): a tool's two looks at one moment
+// draw the same streaks; a visitor's are Math.random's as before. Mulberry32 on the release's seed (76,
+// scene/perf.js LOOK_SEED) mixed with a salt per module. Never beside embed=1 (scene/quality.js lookHeld).
+export function lookRandom(salt = 0, search = typeof location !== 'undefined' ? location.search : '') {
+  if (!lookHeld({ search })) return Math.random;
+  let a = (76 * 0x9e3779b1 + salt * 0x85ebca6b) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 export const WIND_ID = WIND.id;
 /**
@@ -86,7 +102,7 @@ export function createWind(opts = {}) {
   const onChange = typeof opts.onChange === 'function' ? opts.onChange : () => {};
   const still = !!opts.reducedMotion;
   const count = streakCount(opts.tier, opts.saveData);
-  const rand = typeof opts.random === 'function' ? opts.random : Math.random;
+  const rand = typeof opts.random === 'function' ? opts.random : lookRandom(1);
   const tick = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   let lines = null;

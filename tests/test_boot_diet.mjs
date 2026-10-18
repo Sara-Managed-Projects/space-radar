@@ -143,10 +143,22 @@ const DEFERRED = {
   'js/data/hero-m31.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-m33.js': 'a hero\'s profile: with the coordinator',
   // 0076 W1-a (orion.js)
+  'js/scene/deep/orion.js': 'the Orion hero: the coordinator fetches it when M42 is near (release 1.2.0, internal #782)',
+  'js/data/hero-orion.js': 'a hero\'s profile: with the coordinator',
   // 0076 W1-b (cmb.js)
+  'js/scene/deep/cmb.js': 'the microwave background\'s map: scene/shells.js fetches it a fifth of the way out to the horizon',
   // 0076 W1-c (truthlegend.js)
+  'js/ui/truthlegend.js': 'the legend inside every card: ui/cardfacts.js fetches it the first time the row "How we know" opens',
   // 0076 W1-d (sunimage.js)
+  'js/scene/sunimage.js': 'SDO\'s picture of the Sun of the day: scene/sun.js fetches it the first time its detail comes on (internal spec 0076 W1-d)',
   // 0076 W1-e (perf.js)
+  'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
+  // 0076 W2-a (traverse.js)
+  // 0076 W2-c (plumes.js)
+  // 0076 W3-a (globular.js)
+  // 0076 W3-b (ring.js, shellneb.js)
+  // 0076 W3-c (remnant.js, dustsheet.js)
+  // 0076 W3-d (scalerail.js)
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
@@ -176,7 +188,8 @@ const importsLater = /import\s+'(?:\.\.?\/)+(?:copy\/)?en\.later\.js';/;
 // (internal #429; `deepFacts` since spec 0075 task 6, the tag's deep-sky words). en.later.js imports
 // it; a module may import either for these.
 const factsKeys = new Set([...readFileSync(join(JS, 'copy/en.facts.js'), 'utf8').matchAll(/^  (\w+): \{/gm)].map((m) => m[1]));
-check(factsKeys.size === 5 && ['klass', 'cls', 'unplaced', 'earthEvent', 'deepFacts'].every((k) => factsKeys.has(k)), `copy/en.facts.js holds exactly klass, cls, unplaced, earthEvent and deepFacts (has ${[...factsKeys]})`);
+// `truth` (internal spec 0076 W1-c): the card's row "How we know", whose label and hint ui/cardfacts.js prints.
+check(factsKeys.size === 6 && ['klass', 'cls', 'unplaced', 'earthEvent', 'deepFacts', 'truth'].every((k) => factsKeys.has(k)), `copy/en.facts.js holds exactly klass, cls, unplaced, earthEvent, deepFacts and truth (has ${[...factsKeys]})`);
 check(/import '\.\/en\.facts\.js';/.test(laterText), 'copy/en.later.js imports copy/en.facts.js');
 const importsFacts = /import\s+'(?:\.\.?\/)+(?:copy\/)?en\.facts\.js';/;
 const readsAll = new RegExp(`COPY\\.(${laterKeys.join('|')})\\b`, 'g');

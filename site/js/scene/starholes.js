@@ -44,9 +44,19 @@ export function holeUniforms() {
   };
 }
 
-/** Writes a list of { dir:[x,y,z], radius (radians), k } into those uniforms. Returns how many holes are set. */
+// THE M42 HOLE (internal spec 0076 W1-a): a deep-sky hero that draws a catalogue star itself, in its own place (the
+// Orion hero's theta2 Ori A, which the catalogue puts 200 ly behind the nebula), asks for a small hole round the
+// catalogue's copy while it draws it, so the star is never drawn twice. Set each frame by the hero, view-space like the
+// photographs' holes; null takes it away. These come first, so the photographs' cannot crowd them out.
+const EXTRA = new Map();
+export function setExtraHole(id, hole) {
+  if (hole && hole.k > 0.003 && hole.radius > 0) EXTRA.set(id, hole); else EXTRA.delete(id);
+}
+const withExtra = (list) => (EXTRA.size ? [...EXTRA.values(), ...(Array.isArray(list) ? list : [])] : list);
+
+/** Writes a list of { dir:[x,y,z], radius (radians), k } into those uniforms (and the extra holes). Returns how many holes are set. */
 export function setHoles(uniforms, list) {
-  const rows = (Array.isArray(list) ? list : []).filter((h) => h && h.k > 0.003 && h.radius > 0).slice(0, MAX_HOLES);
+  const rows = (Array.isArray(withExtra(list)) ? withExtra(list) : []).filter((h) => h && h.k > 0.003 && h.radius > 0).slice(0, MAX_HOLES);
   rows.forEach((h, i) => {
     uniforms.uHoleDir.value[i].set(h.dir[0], h.dir[1], h.dir[2]);
     uniforms.uHoleE.value[i].set(Math.cos(h.radius * OUTER), Math.cos(h.radius * INNER), Math.min(1, h.k));

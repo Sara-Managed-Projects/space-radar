@@ -49,7 +49,7 @@ layers:
     bin_deg: 0.125
     selection: "G < 19.5; parallax < 5 sigma + 0.05 mas; proper motion within 1.5 mas/yr of (1.85, 0.30) mas/yr; young: BP-RP < 0.5 and G < 18"
     source: "Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1), counted by scripts/build_deep_lmc.py; cuts in the manner of Gaia Collaboration, Luri et al. 2021, A&A 649, A7"
-    licence: CC BY-SA 3.0 IGO
+    licence: "CC BY-NC 3.0 IGO (https://www.cosmos.esa.int/web/gaia-users/license)"
   - kind: photograph
     what: where the LMC's photograph covers the galaxy, its light is the disc's emissivity (spread through the old layer), so seen along our line the model is the photograph
     record: dso-lmc
@@ -142,7 +142,7 @@ colours:
   lines: {Ha: "#ff6b8c", OIII: "#73f2e6"}
 drawn: [model]
 sources:
-  - "Gaia DR3: Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1 (CC BY-SA 3.0 IGO)"
+  - "Gaia DR3: Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1 (CC BY-NC 3.0 IGO, https://www.cosmos.esa.int/web/gaia-users/license)"
   - "Gaia Collaboration, Luri et al. 2021, A&A 649, A7 (arXiv:2012.01771)"
   - "Pietrzyński et al. 2019, Nature 567, 200 (the distance, registry/dso-hand.yaml)"
   - "van der Marel & Cioni 2001, AJ 122, 1807; van der Marel 2001, AJ 122, 1827; van der Marel et al. 2002, AJ 124, 2639; van der Marel & Kallivayalil 2014, ApJ 781, 121"
@@ -153,10 +153,10 @@ review:
   geometry: "Tilt and line of nodes from van der Marel & Cioni 2001 (as the registry); near side north-east; scale heights 1 600 ly (from V/sigma) and 330 ly (illustrative). To check: the near side against the paper's own figure, and whether to switch to the Gaia EDR3 kinematic angles."
   colours: "Enhanced, declared: H-alpha pink and [O III] teal for the gas, simplified Gaia colours for the stars."
   distance: "161 740 ly (Pietrzynski et al. 2019). The Tarantula takes the LMC's distance in its own direction; by the tilted disc it would sit about 2 000 ly nearer, which the registry does not do yet (the card says its depth is not measured)."
-  credits: "CREDITS.md section 3l, the LMC sub-heading: Gaia (CC BY-SA 3.0 IGO), SIMBAD, the papers above."
+  credits: "CREDITS.md section 3l, the LMC sub-heading: Gaia (CC BY-NC 3.0 IGO, https://www.cosmos.esa.int/web/gaia-users/license), SIMBAD, the papers above."
   by: Space Radar maintainers
   date: 2026-10-15
 credits:
-  - "Gaia DR3 star counts: ESA/Gaia/DPAC, CC BY-SA 3.0 IGO; the derived map site/data/deep/lmc-density.bin is under the same licence"
+  - "Gaia DR3 star counts: ESA/Gaia/DPAC, CC BY-NC 3.0 IGO (https://www.cosmos.esa.int/web/gaia-users/license); the derived map site/data/deep/lmc-density.bin keeps the same non-commercial licence"
   - "H II region and R136 positions: SIMBAD, CDS, Strasbourg"
   - "Geometry: van der Marel & Cioni 2001; van der Marel 2001; van der Marel et al. 2002; Pellegrini et al. 2011"

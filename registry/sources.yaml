@@ -494,6 +494,32 @@ sources:
     terms_recorded: 2026-10-12
     publisher: NASA DONKI
 
+  # 0076 W1-d
+  # The Sun's face of the day (scene/sunimage.js, internal spec 0076 W1-d, #916): the Solar Dynamics
+  # Observatory's newest 1024-pixel AIA 171 angstrom browse picture, laid on the half of the Sun that
+  # faced the Earth when it was taken. `{ymd}` is the UTC day; harvest/parsers/sdo_aia.py reads that
+  # day's folder, picks the newest picture by the time in its name and saves its bytes (it says why the
+  # folder `latest/` is not used: on 2026-10-15 it was three weeks old). MEASURED 2026-10-15: 188 279
+  # bytes, `image/jpeg`, NO Access-Control-Allow-Origin header: `browser: false`, the page reads our
+  # saved copy and, with none, draws the modelled disc. Terms, READ 2026-10-15 on sdo.gsfc.nasa.gov/data/
+  # rules.php: "SDO images and movies are not copyrighted unless explicitly noted. The use of SDO images
+  # for non-commercial purposes and public education and information efforts is strongly encouraged and
+  # requires no expressed authorization", attributed as "Courtesy of NASA/SDO and the AIA, EVE, and HMI
+  # science teams." The same page says browse products are not for science analysis: the card says so.
+  - id: sdo-aia-171
+    url: https://sdo.gsfc.nasa.gov/assets/img/browse/{ymd}/
+    auth: none
+    browser: false
+    cadence: 3h
+    freshness_max: 72h
+    parser: sdo_aia
+    outputs: [sdo-aia-171.json]
+    attribution: "The Sun's face of the day: courtesy of NASA/SDO and the AIA, EVE, and HMI science teams"
+    licence: "Not copyrighted unless noted; non-commercial and educational use needs no authorization, credited \"Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams\" (read 2026-10-15)"
+    terms_url: https://sdo.gsfc.nasa.gov/data/rules.php
+    terms_recorded: 2026-10-15
+    publisher: NASA SDO
+
   # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
   # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
   # regional association), dataset `ncep_global`: one forecast hour (`{hour3}`, filled by harvest/run.py

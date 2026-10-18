@@ -1383,6 +1383,8 @@ the source for fainter stars. Its terms were read on 2026-10-07
 distributed under **CC BY-NC 3.0 IGO**, with commercial use only by request to ESA. This site ships
 nothing under a non-commercial licence (the same rule that left out one sky culture in §3i and two
 voices in §9), so nothing was downloaded from the Gaia archive and nothing here is a cut of it.
+(Since 2026-10-15 one file is: the LMC's map in §3l, counted from Gaia DR3, which keeps ESA's
+non-commercial term.)
 AT-HYG is a compilation its author publishes under CC BY-SA 4.0, as he does the HYG database of
 §3c; its positions and magnitudes for these stars are Tycho-2's and Hipparcos's, and it uses Gaia
 DR3 for distances, which these files do not carry. **If you build something commercial on this
@@ -1489,12 +1491,15 @@ from star counts, catalogued positions and published geometry. No image of any p
 
 | what | from | licence |
 |---|---|---|
-| `site/data/deep/lmc-density.bin`: two maps of the LMC's stars on the sky (all members; young blue stars), counted from Gaia DR3 by `scripts/build_deep_lmc.py` (anonymous queries of the Gaia archive, 2026-10-15) | ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1. The member cuts follow the manner of Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | CC BY-SA 3.0 IGO; the derived map is under the same licence |
+| `site/data/deep/lmc-density.bin`: two maps of the LMC's stars on the sky (all members; young blue stars), counted from Gaia DR3 by `scripts/build_deep_lmc.py` (anonymous queries of the Gaia archive, 2026-10-15) | ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1. The member cuts follow the manner of Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | CC BY-NC 3.0 IGO: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>, read 2026-10-16; commercial use: ESA's terms, <https://www.cosmos.esa.int/web/esdc/terms-and-conditions>); the derived map keeps the same licence |
 | Positions of 21 H II regions (Henize 1956 numbers) and of the cluster R136 | SIMBAD (Wenger et al. 2000, A&AS 143, 9), CDS, Strasbourg, read 2026-10-15 | facts, credited |
 | The disc's tilt 34.7° and line of nodes 122.5°; the scale length 1.3–1.5 kpc; the outer ellipse | van der Marel & Cioni 2001, AJ 122, 1807; van der Marel 2001, AJ 122, 1827 | facts, cited |
 | The disc's thickness (the old stars' scale height from their V/σ) | van der Marel, Alves, Hardy & Suntzeff 2002, AJ 124, 2639 | facts, cited; the young stars' thickness is illustrative |
 | The Tarantula's colour along our line (within 25° of the line it was taken along): its photograph, already shipped | NASA, ESA, CSA, and STScI (ESA/Webb weic2212a, the photograph's own row above) | CC BY 4.0 |
 | The Tarantula's shape: R136 in a cavity, warm gas in a shell confined by molecular gas, mapped to 75 pc | Pellegrini, Baldwin & Ferland 2011, ApJ 738, 34; Pellegrini et al. 2010, ApJS 191, 160 | facts, cited; the shell's radius and width are a model |
+
+Space Radar is free and non-commercial; files derived from Gaia data keep ESA's non-commercial term and
+are not for commercial reuse.
 
 The stars' depths, their brightness, the dust and the Tarantula's gas in depth are a model, and the card
 says so. The colours of the gas are enhanced (hydrogen-alpha pink, [O III] teal), declared in the profile.
@@ -1548,7 +1553,50 @@ noao0001a, ESO eso1424a).
 
 ### Orion (0076 W1-a)
 
+The Orion Nebula's reconstruction (`site/js/scene/deep/orion.js`, its numbers in
+`registry/deepsky-heroes/orion.yaml`) is computed here from facts read in each source on 2026-10-15; no text,
+figure or model file of any of them is shipped. Lengths on the sky are turned into light-years at the record's
+distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and the card says so.
+
+| what | the numbers | from |
+|---|---|---|
+| the blister | a thin layer of ionised gas near the ionisation front on the near side of the molecular cloud OMC-1, its depth found from the H-alpha surface brightness with theta1 Ori C the only ionising star; the Bright Bar where the front turns toward us | Wen & O'Dell 1995, ApJ 438, 784; O'Dell 2001, ARA&A 39, 99 |
+| theta1 Ori C before the front | about 0.2 pc (0.65 ly) in front of the main ionisation front; the concave blister, revised to the south-west (Orion-S, not drawn) | O'Dell, Henney, Abel, Ferland & Arthur 2009, AJ 137, 367 (arXiv:0810.4375) |
+| the Veil | neutral gas 1 to 3 pc in front of the star, drawn at 2 pc; its closest layer 1.3 pc from it. The Dark Bay is drawn as the Veil's shadow: its optical depth is the photograph's darkness against its surroundings there (reconstructed) | Abel et al. 2004, ApJ 609, 247 (arXiv:astro-ph/0404399); Abel, Ferland & O'Dell 2019, ApJ (arXiv:1906.07779) |
+| the cluster | a core radius of 0.16 to 0.21 pc, elongated north-south; ellipticity 0.30 about 10 degrees from north-south. 400 to 1 600 stars are drawn; their places and brightnesses are seeded, not catalogued | Hillenbrand & Hartmann 1998, ApJ 492, 540; Da Rio et al. 2014 (arXiv:1409.2503) |
+| the Trapezium, theta2 Ori A and NU Ori | places, V magnitudes and spectral types of theta1 Ori A, B, C, D (HD 37020 to 37023), theta2 Ori A (HD 37041; its V from Hipparcos via HYG) and NU Ori (HD 37061); their depths are not measured, so they stand in theta1 Ori C's plane | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-15; the CDS terms ask the data be cited as "CDS/SIMBAD" |
+| the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_orion.py` -> `site/images/deep/orion/orion-light.webp`, an adaptation); near the Trapezium a sharper map of the same photograph, from ESO's large JPEG (16 877 x 13 107 px, downloaded for the bake and not shipped): a 13 arcmin square at 1.1" a pixel, its stars removed and its colours matched to the 640 px map (`site/images/deep/orion/orion-detail.webp`, an adaptation); the front's depth map (`site/data/deep/orion-front.bin`) is computed from the same picture and the numbers above. Under Deep the photograph's own stretch is ENHANCED | ESO eso1723a, credit ESO/G. Beccari, CC BY 4.0 (section 3 above): "ESO/G. Beccari"; stars removed and depth reconstructed by Space Radar |
+
 ### The CMB map (0076 W1-b)
+
+- **The microwave background at the horizon** (`site/images/deep/cmb/wmap-ilc-9yr.webp`, 119 400 B,
+  built by `scripts/build_deep_cmb.py`, drawn by `site/js/scene/deep/cmb.js`): the WMAP nine-year
+  Internal Linear Combination map, `wmap_ilc_9yr_v5.fits` from LAMBDA
+  (<https://lambda.gsfc.nasa.gov/product/wmap/dr5/ilc_map_get.html>), pinned by SHA-256; Bennett et al.
+  2013, "Nine-year Wilkinson Microwave Anisotropy Probe (WMAP) observations: final maps and results",
+  *ApJS* 208, 20, section 6. NASA data: "NASA content – images, audio, video, and media files used in
+  the rendition of 3-dimensional models, such as texture maps and polygon data in any format –
+  generally are not subject to copyright in the United States"
+  (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-15). LAMBDA's
+  acknowledgement is the one in section 3h. The credit line: **Microwave background: NASA / WMAP
+  Science Team (LAMBDA)**. Measured: the temperature in each direction of our sky, smoothed to one
+  degree, average and dipole removed, re-gridded to 1024 x 512 in Galactic coordinates and clipped at
+  ±200 µK (0.45 % of the sky). This map's own: the colour scale. An illustration, and labelled so on
+  the scene: the map painted on the sphere its light left from (`data/cosmology.js cmbLy()`), seen
+  from anywhere but the Sun. Planck's sharper map was not used: ESA's page for it gives "Licence: ESA
+  Standard Licence", not CC BY-SA 3.0 IGO (read 2026-10-15).
+
+### LOLA, LROC traverses (0076 W2-a)
+
+### Ring and spot data (0076 W2-b)
+
+### Plume observations (0076 W2-c)
+
+### Clusters (0076 W3-a)
+
+### The Ring (0076 W3-b)
+
+### Remnants and dust (0076 W3-c)
 
 ## 4. Runtime data sources
 
@@ -1694,6 +1742,29 @@ Sources panel prints "Solar flares: NOAA Space Weather Prediction Center, edited
 lists are held.
 
 ### SDO image of the day (0076 W1-d)
+
+Close up, the half of the Sun that faced the Earth wears the Solar Dynamics Observatory's newest
+picture of it (internal spec 0076 W1-d, #916; `scene/sunimage.js`): the Atmospheric Imaging
+Assembly's 171 ångström channel, extreme ultraviolet light from gas near a million degrees in the
+loops over the surface, at 1 024 pixels, from the browse archive
+`https://sdo.gsfc.nasa.gov/assets/img/browse/YYYY/MM/DD/`. The harvester (`sdo-aia-171`,
+`harvest/parsers/sdo_aia.py`) saves the newest picture of the day every three hours, with the moment
+in its file name as its date; a visitor's browser reads only that saved copy (the archive sends no
+CORS header; measured 2026-10-15, 188 279 bytes). Terms, read 2026-10-15 on
+<https://sdo.gsfc.nasa.gov/data/rules.php>: "SDO images and movies are not copyrighted unless
+explicitly noted. The use of SDO images for non-commercial purposes and public education and
+information efforts is strongly encouraged and requires no expressed authorization", asked to be
+credited "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams."; the same page says browse
+products are not intended for science analysis, and the card says the picture is a browse picture.
+What is done to it: cropped round the disc, laid on the sphere from the place it was taken (north
+up, as SDO publishes it) and turned with the Sun since, drawn 1.8 times brighter than the JPEG so it
+sits beside the drawn far side; its colour is SDO's own false colour for that channel. The Sun's card
+says when it was taken and gives the credit line. Sources panel line:
+The Sun's face of the day: courtesy of NASA/SDO and the AIA, EVE, and HMI science teams
+
+The loops drawn over today's active regions under the Film look are not from any picture: their
+places are NOAA's (`swpc-solar-regions`, above), their shapes, heights and number are illustrative,
+and the card says so.
 
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 
@@ -2179,6 +2250,18 @@ read 2026-10-12).
 
 Checked the same day and not used: NASA OSCAR (PO.DAAC asks for an Earthdata login), Copernicus
 Marine (asks for an account), and NOAA's RTOFS model on NOMADS (files of hundreds of megabytes).
+
+### 4.23 Facts kept by hand, row by row (0076 W2-e)
+
+Four registries are written by hand, and until 2026-10-16 nothing here credited them. Every row names
+the page its numbers were read from and the day; facts are not anybody's copyright, and a sentence a
+row quotes is evidence for a reviewer and is not shipped to the page. `tests/test_coverage.py` holds
+every record of the map to a line of this file (`docs/COVERAGE.md` lists them by class).
+
+- Notable stars: the line on each card is this project's, from the Wikipedia article the row of `registry/stars-notable.yaml` names (CC BY-SA 4.0 text, read from 2026-09-22; the figures only); the measured radii of four of them are §3d-2's.
+- Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference: LROC (Arizona State University) and NASA NSSDCA on the Moon; the PDS Geosciences Node, HiRISE (University of Arizona), Golombek et al. 2020, Wu et al. 2024 (Scientific Reports, CC BY-NC-ND 4.0, one coordinate quoted) and the Mars 2020 mission map (NASA/JPL-Caltech) on Mars; NASA/JPL's DSN Telecommunications Link Design Handbook (810-005, module 301) for the Deep Space Network's dishes; Wikipedia for the two pads.
+- Rockets: the heights, widths and shapes in `registry/rockets.yaml` come from the user's guides, agency pages and Wikipedia articles each row's `source:` names; which rocket is launching when is Launch Library 2's (§4.2).
+- Oddities: each row of `registry/oddities.yaml` cites where it was read: JPL Horizons, LROC and NASA, The Planetary Society, Space.com, collectSPACE, Space Center Houston, Andy Saunders's 2021 work from the Apollo 14 film and Astronomical Returns, each as its row says, with how sure its place is.
 
 ## 4.6 Third-party trademarks the app names or draws
 

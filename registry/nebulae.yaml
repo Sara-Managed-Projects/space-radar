@@ -48,6 +48,13 @@
 #                 left the sky not quite black: the LMC's faint grey plate (internal spec 0075 task 36,
 #                 measured 2026-10-14 as the median of the outer 6 % of the file, 13 of 255 for the LMC).
 #   file          the baked WebP. checked: the day the page was read.
+#   observed      when and with what the picture was taken (internal spec 0076 W1-c; the card's legend,
+#                 ui/truthlegend.js): `by` the telescope and camera from the page's "Colours & filters"
+#                 table or its caption; `taken` only where the page or its caption says when ("YYYY",
+#                 "YYYY-MM", "YYYY-MM-DD", or "A..B" for a span): left out, the card says the date is
+#                 not published, and never guesses one; `released` the page's own release date, which
+#                 bounds it. Read 2026-10-15. The Andromeda page's caption says photographic plates of
+#                 1979 where its table says CCD; the caption's words are kept.
 version: 1
 
 archives:
@@ -103,6 +110,7 @@ pictures:
     filters: "g, r and i, with H-alpha"
     px: 640
     file: site/images/nebulae/m42.webp
+    observed: {by: "VLT Survey Telescope, OmegaCAM", released: "2017-07-27"}
     checked: 2026-10-03
 
   - id: horsehead-nebula
@@ -119,6 +127,7 @@ pictures:
     colours: narrowband
     filters: "hydrogen red, oxygen green, sulphur blue"
     file: site/images/nebulae/horsehead-nebula.webp
+    observed: {by: "WIYN 0.9-metre telescope, Mosaic I", released: "2015-11-23"}
     checked: 2026-10-03
 
   - id: m1
@@ -135,6 +144,7 @@ pictures:
     colours: narrowband
     filters: "oxygen in two states and sulphur"
     file: site/images/nebulae/m1.webp
+    observed: {by: "Hubble, WFPC2", released: "2005-12-01"}
     checked: 2026-10-03
 
   - id: m45
@@ -151,6 +161,7 @@ pictures:
     colours: broadband
     filters: "B, V and I"
     file: site/images/nebulae/m45.webp
+    observed: {by: "WIYN 0.9-metre telescope, Mosaic I", released: "2020-06-30"}
     checked: 2026-10-03
 
   - id: california-nebula
@@ -167,6 +178,7 @@ pictures:
     colours: unstated
     colours_note: "the page (a Kitt Peak visitor-programme picture, 2014) names no filters"
     file: site/images/nebulae/california-nebula.webp
+    observed: {taken: "2014", by: "RCOS 16-inch telescope, Kitt Peak", released: "2014-06-09"}
     checked: 2026-10-03
 
   - id: rosette-nebula
@@ -183,6 +195,7 @@ pictures:
     colours: unstated
     colours_note: "the page (Burrell Schmidt, September 1997) names no filters"
     file: site/images/nebulae/rosette-nebula.webp
+    observed: {taken: "1997-09", by: "Burrell Schmidt telescope, Kitt Peak", released: "2020-06-30"}
     checked: 2026-10-03
 
   - id: m8
@@ -200,6 +213,7 @@ pictures:
     filters: "B, V and R, with H-alpha"
     px: 640
     file: site/images/nebulae/m8.webp
+    observed: {by: "MPG/ESO 2.2-metre telescope, WFI", released: "2009-09-28"}
     checked: 2026-10-03
 
   - id: m20
@@ -217,6 +231,7 @@ pictures:
     filters: "the Rubin camera’s broad survey filters"
     colours_note: "the page names no filters; LSSTCam carries only the six broad ones (u g r i z y)"
     file: site/images/nebulae/m20.webp
+    observed: {by: "Rubin Observatory, LSSTCam", released: "2025-06-23"}
     checked: 2026-10-03
 
   - id: m16
@@ -233,6 +248,7 @@ pictures:
     colours: broadband
     filters: "B, V and R"
     file: site/images/nebulae/m16.webp
+    observed: {by: "MPG/ESO 2.2-metre telescope, WFI", released: "2009-07-16"}
     checked: 2026-10-03
 
   - id: m17
@@ -249,6 +265,7 @@ pictures:
     colours: broadband
     filters: "g, r and i"
     file: site/images/nebulae/m17.webp
+    observed: {by: "VLT Survey Telescope, OmegaCAM", released: "2011-06-08"}
     checked: 2026-10-03
 
   - id: cats-paw-nebula
@@ -265,6 +282,7 @@ pictures:
     colours: mixed
     filters: "B, V and R, with H-alpha"
     file: site/images/nebulae/cats-paw-nebula.webp
+    observed: {by: "MPG/ESO 2.2-metre telescope, WFI", released: "2010-01-20"}
     checked: 2026-10-03
 
   - id: carina-nebula
@@ -282,6 +300,7 @@ pictures:
     filters: "B, g and r, with H-alpha"
     px: 640
     file: site/images/nebulae/carina-nebula.webp
+    observed: {taken: "2012-06-05", by: "VLT Survey Telescope, OmegaCAM", released: "2012-12-06"}
     checked: 2026-10-03
 
   - id: north-america-nebula
@@ -299,6 +318,7 @@ pictures:
     colours_note: "the page (a Kitt Peak visitor-programme mosaic, 2014) names no filters"
     px: 640
     file: site/images/nebulae/north-america-nebula.webp
+    observed: {taken: "2014", by: "RCOS 16-inch telescope, Kitt Peak", released: "2014-06-11"}
     checked: 2026-10-03
 
   - id: veil-nebula
@@ -316,6 +336,7 @@ pictures:
     filters: "oxygen blue, sulphur green, hydrogen orange"
     px: 640
     file: site/images/nebulae/veil-nebula.webp
+    observed: {by: "WIYN 0.9-metre telescope, Mosaic I", released: "2012-12-18"}
     checked: 2026-10-03
 
   - id: helix-nebula
@@ -332,6 +353,7 @@ pictures:
     colours: broadband
     filters: "B, V and R"
     file: site/images/nebulae/helix-nebula.webp
+    observed: {by: "MPG/ESO 2.2-metre telescope, WFI", released: "2009-02-25"}
     checked: 2026-10-03
 
   - id: m27
@@ -348,6 +370,7 @@ pictures:
     colours: narrowband
     filters: "oxygen blue, hydrogen red, sulphur green"
     file: site/images/nebulae/m27.webp
+    observed: {by: "Mayall 4-metre telescope, Mosaic I", released: "2020-06-30"}
     checked: 2026-10-03
 
   - id: m57
@@ -364,6 +387,7 @@ pictures:
     colours: narrowband
     filters: "helium, oxygen, hydrogen, nitrogen and sulphur"
     file: site/images/nebulae/m57.webp
+    observed: {by: "Hubble, WFC3", released: "2013-05-23"}
     checked: 2026-10-03
 
   - id: m31
@@ -381,6 +405,7 @@ pictures:
     colours_note: "the page says photographic plates from the Burrell Schmidt and names no filters"
     px: 640
     file: site/images/nebulae/m31.webp
+    observed: {taken: "1979", by: "Burrell Schmidt telescope, photographic plates", released: "2000-01-13"}
     checked: 2026-10-03
 
   - id: m33
@@ -397,6 +422,7 @@ pictures:
     colours: mixed
     filters: "g and r, with H-alpha"
     file: site/images/nebulae/m33.webp
+    observed: {by: "VLT Survey Telescope, OmegaCAM", released: "2014-08-06"}
     checked: 2026-10-03
 
   - id: lmc
@@ -416,6 +442,7 @@ pictures:
     px: 768
     sky_floor: 0.04
     file: site/images/nebulae/lmc.webp
+    observed: {by: "Blanco 4-metre telescope, DECam", released: "2020-12-01"}
     checked: 2026-10-03
 
   - id: smc
@@ -434,6 +461,7 @@ pictures:
     colours_note: "the page names no filters; SMASH is a DECam survey in u g r i z"
     sky_floor: 0.012
     file: site/images/nebulae/smc.webp
+    observed: {by: "Blanco 4-metre telescope, DECam", released: "2020-12-01"}
     checked: 2026-10-03
 
   - id: centaurus-a
@@ -450,6 +478,7 @@ pictures:
     colours: mixed
     filters: "B, V and R, with H-alpha and an oxygen filter"
     file: site/images/nebulae/centaurus-a.webp
+    observed: {by: "MPG/ESO 2.2-metre telescope, WFI", released: "2012-05-16"}
     checked: 2026-10-03
 
   - id: m83
@@ -466,6 +495,7 @@ pictures:
     colours: broadband
     filters: "B, V and R"
     file: site/images/nebulae/m83.webp
+    observed: {by: "MPG/ESO 2.2-metre telescope, WFI", released: "2008-09-02"}
     checked: 2026-10-03
 
   - id: m104
@@ -482,6 +512,7 @@ pictures:
     colours: broadband
     filters: "B, V and far red"
     file: site/images/nebulae/m104.webp
+    observed: {by: "Hubble, ACS", released: "2004-10-02"}
     checked: 2026-10-03
 
   - id: m51
@@ -498,6 +529,7 @@ pictures:
     colours: mixed
     filters: "B, V and I, with H-alpha"
     file: site/images/nebulae/m51.webp
+    observed: {taken: "2005-01", by: "Hubble, ACS", released: "2005-04-25"}
     checked: 2026-10-03
 
   - id: m101
@@ -514,6 +546,7 @@ pictures:
     colours: broadband
     filters: "B, V and I"
     file: site/images/nebulae/m101.webp
+    observed: {by: "Hubble", released: "2006-02-28"}
     checked: 2026-10-03
 
   - id: m81
@@ -530,6 +563,7 @@ pictures:
     colours: broadband
     filters: "B, V and I"
     file: site/images/nebulae/m81.webp
+    observed: {taken: "2004..2006", by: "Hubble, ACS", released: "2007-05-28"}
     checked: 2026-10-03
 
   - id: southern-ring-nebula
@@ -546,6 +580,7 @@ pictures:
     colours: infrared
     filters: "0.9 to 4.7 micrometres, Webb's NIRCam; shorter waves blue, longer ones red"
     file: site/images/nebulae/southern-ring-nebula.webp
+    observed: {by: "Webb, NIRCam", released: "2022-07-12"}
     checked: 2026-10-06
 
   - id: ngc-1300
@@ -562,6 +597,7 @@ pictures:
     colours: infrared
     filters: "3 to 21 micrometres, Webb's NIRCam and MIRI; shorter waves blue, longer ones red"
     file: site/images/nebulae/ngc-1300.webp
+    observed: {by: "Webb, NIRCam and MIRI", released: "2024-01-29"}
     checked: 2026-10-06
 
   # The page gives this mosaic a centre and neither a field nor an orientation. Both were found
@@ -584,4 +620,5 @@ pictures:
     part: "the nebula's bright centre, 340 light-years across"
     px: 768
     file: site/images/nebulae/tarantula-nebula.webp
+    observed: {by: "Webb, NIRCam", released: "2022-09-06"}
     checked: 2026-10-06

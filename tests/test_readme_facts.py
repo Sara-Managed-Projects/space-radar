@@ -54,7 +54,24 @@ m = re.search(r"tests/\s+more than (\d+) node and python test files", readme)
 if not m or not n["test_files"] > int(m.group(1)):
     problems.append(f"README's test-file claim is missing or too high; there are {n['test_files']}")
 
+# The contributor documents quote the trips too (internal spec 0076 W2-e, #920, SR-PLAN-180): they said 26
+# for a week after the 27th and 28th trips shipped, and nothing held them.
+OTHER_DOCS = {
+    "CONTRIBUTING.md": lambda n: rf"read one of the {n['trips']} trips",
+    "docs/TRANSLATING.md": lambda n: rf"\(`registry/tours\.yaml`\): {n['trips']} trips",
+}
+
+
+def doc_claims(texts: dict, n: dict) -> list:
+    return [name for name, rx in OTHER_DOCS.items() if not re.search(rx(n), re.sub(r"\s+", " ", texts[name]))]
+
+
+texts = {name: (ROOT / name).read_text(encoding="utf-8") for name in OTHER_DOCS}
+problems += [f"{name} does not carry the registry's count of trips ({n['trips']})" for name in doc_claims(texts, n)]
+if sorted(doc_claims(texts, dict(n, trips=n["trips"] + 1))) != sorted(OTHER_DOCS):
+    problems.append("the contributor documents' trips rule did not notice a count that is one trip behind")
+
 if problems:
     print("\n".join(problems))
     sys.exit(1)
-print(f"README facts ok: {n['trips']} trips, {n['stops']} stops, {n['star_systems']} systems, {count_facts.spaced(n['stars'])} stars")
+print(f"README, CONTRIBUTING.md and docs/TRANSLATING.md facts ok: {n['trips']} trips, {n['stops']} stops, {n['star_systems']} systems, {count_facts.spaced(n['stars'])} stars")

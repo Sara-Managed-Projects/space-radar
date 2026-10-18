@@ -48,3 +48,14 @@ terms:
   - {term: penumbra, say: "The paler outer part of a shadow, where only some of the light is blocked. A Moon in the Earth's penumbra only dims a little."}
   - {term: totality, say: "The minutes of a total eclipse when the Sun is covered completely. The sky goes dark enough to see stars."}
   - {term: annular, say: "Ring-shaped. In an annular eclipse the Moon is too far away to cover the whole Sun, so a bright ring is left around it."}
+  # The deep sky's words (internal spec 0076 W1-c, internal #884): the card's legend ("How we know",
+  # ui/truthlegend.js) shows the ones a card uses, and copy/en.later.js r12Truth.terms repeats these five
+  # word for word (tests/test_truthlegend.mjs holds the two together).
+  # parsec: 648 000/pi astronomical units, about 3.26 light-years, IAU 2015 Resolution B2, https://www.iau.org/static/resolutions/IAU2015_English.pdf, read 2026-10-15.
+  - {term: parsec, say: "About 3.26 light-years: the distance from which the Earth's orbit would look one arcsecond wide. Papers write pc, and kpc for a thousand."}
+  # Andromeda at about 2.5 million light-years: the M31 row of site/data/dso.json (2 540 000 ly).
+  - {term: million light-years, say: "A million light-years, written Mly. Andromeda, the nearest big galaxy, is about 2.5 million away."}
+  # The edge of the observable universe at about 46 billion light-years: data/cosmology.js horizonLy() (Planck 2018 parameters).
+  - {term: billion light-years, say: "A thousand million light-years, written Gly. The edge of what we can see is about 46 billion light-years away now."}
+  - {term: lookback time, say: "How long ago the light we see left something. From far galaxies it is billions of years: we see them as they were then."}
+  - {term: comoving distance, say: "How far away something is now, counting how much space has stretched since its light left. Far out it is more than the light's travel time suggests."}

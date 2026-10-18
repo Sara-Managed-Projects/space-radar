@@ -1040,7 +1040,35 @@ jobs:
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs
       # 0076 W1-a
+      - name: "the Orion hero: the blister and the Trapezium, the photograph within 5 % on our line (internal spec 0076 W1-a, #782)"
+        run: node tests/test_hero_orion.mjs
+      - name: "the Orion hero's light and front are the bake of the photograph and the profile"
+        run: python3 scripts/build_deep_orion.py --check
       # 0076 W1-b
+      - name: "the microwave background at the horizon: Galactic turned to the map's axes, the scale in microkelvin, nothing past the horizon, its words read aloud (internal #781)"
+        run: node tests/test_cmb.mjs
       # 0076 W1-c
+      - name: "the truth on every card: the tag by the shares, one legend, the dates, the Milky Way's words (internal spec 0076 W1-c)"
+        run: node tests/test_truthlegend.mjs
       # 0076 W1-d
+      - name: "the Sun's face of the day: SDO's picture dated, the only thing on its face under Measured, loops over NOAA's regions in Film only, the modelled disc offline (internal spec 0076 W1-d)"
+        run: node tests/test_sunimage.mjs
+      - name: "the Sun's face of the day, harvested: the newest 171 picture by its name, yesterday's after midnight, refused over budget (internal spec 0076 W1-d)"
+        run: python3 tests/test_harvest_sdo.py
       # 0076 W1-e
+      - name: "sr.perf: a tools-only counter, no allocation per frame, off unless asked; the seed under ?look=1"
+        run: node tests/test_perf.mjs
+      # 0076 W2-a
+      # 0076 W2-b
+      # 0076 W2-c
+      # 0076 W2-d
+      # 0076 W2-e
+      - name: "every record on the map has one class, a renderer, a source and a credit CREDITS.md carries; no illustration claims a measurement; docs/COVERAGE.md current (internal spec 0076 W2-e, #859, #891, #921)"
+        run: python3 tests/test_coverage.py
+      - name: "the visual classes' mirror for search by kind is the registries' (internal spec 0076 W2-e)"
+        run: python3 scripts/gen_visual_classes_js.py --check
+      # 0076 W3-a
+      # 0076 W3-b
+      # 0076 W3-c
+      # 0076 W3-d
+      # 0076 W3-e
