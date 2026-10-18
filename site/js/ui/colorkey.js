@@ -6,7 +6,7 @@
 // data/colorkeyrules.js. Applying a key is ctx.setColourKey(id) -- main.js hands it to every glyph
 // layer -- and the legend counts records over the layers that are on, so it is the same set of dots.
 
-import { COPY, t, fmt } from '../copy/en.js';
+import { COPY, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';
 import { keyById, legendCounts } from '../data/colorkeyrules.js';
