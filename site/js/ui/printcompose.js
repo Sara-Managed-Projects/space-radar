@@ -55,7 +55,6 @@ export const PRINT_DPI = 300;
 export const PRINT_LONG_IN = 6;
 export const PRINT_SHORT_IN = 4;
 const JPEG_QUALITY = 0.92;
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /** Landscape unless the screen is portrait: {w, h} in px at 300 dpi and {ptW, ptH} in points. */
 export function printSize(aspect) {
