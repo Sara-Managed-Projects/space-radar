@@ -31,3 +31,10 @@ links:
     url: "https://sdo.gsfc.nasa.gov/data/"
     checked: 2026-10-08
     saw: "SDO, Solar Dynamics Observatory; the Data page links the newest pictures of the Sun by wavelength (AIA 193 and others)"
+  - id: aurora-forecast
+    for: earth
+    words: "Aurora forecast"
+    publisher: NOAA SWPC
+    url: "https://www.spaceweather.gov/products/aurora-30-minute-forecast"
+    checked: 2026-10-17
+    saw: "Aurora - 30 Minute Forecast, NOAA / NWS Space Weather Prediction Center; OVATION-model short-term forecast maps of the aurora for the Northern and Southern Hemisphere"
