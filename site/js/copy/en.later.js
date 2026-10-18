@@ -12,7 +12,7 @@
 // own code runs. No module in the boot graph may import it. tests/test_boot_diet.mjs checks both,
 // and that no section is defined twice; scripts/check_copy.py and tests/test_chrome_copy.mjs read
 // this file with the other. A section moves here only when nothing at boot reads it.
-import { COPY, article } from './en.js';
+import { COPY } from './en.js';
 // Four sections ui/cardfacts.js reads (the light embed's tag lines load it without the card): their
 // own file, so the embed does not fetch the other 40 kB of this one (internal #429, #553).
 import './en.facts.js';
