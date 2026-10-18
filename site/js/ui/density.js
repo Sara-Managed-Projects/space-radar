@@ -40,6 +40,7 @@ export function writeDensity(storage, choice) {
   }
 }
 
+/** Returns whether the interface should be compact based on the chosen density and screen height. */
 export function isCompact(choice, short) {
   return choice === 'compact' || (choice === 'auto' && !!short);
 }
