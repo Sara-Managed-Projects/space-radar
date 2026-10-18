@@ -10,7 +10,7 @@
 // line names the number, the word, how old the reading is and where it came from -- and when NOAA
 // gave only a forecast, or the reading is stale, it says that instead of dressing it up.
 
-import { COPY, t, fmt, timeText } from '../copy/en.js';
+import { COPY, t, fmt } from '../copy/en.js';
 import { load, onUpdate } from '../data/sources.js';
 import { parseSpaceWeather } from '../data/parsers.js';
 
