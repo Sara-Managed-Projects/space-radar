@@ -11,7 +11,25 @@ import functools
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
-root, port = sys.argv[1], int(sys.argv[2])
+USAGE = """python3 tools/serve.py site 8190       # the app
+python3 tools/serve.py . 8190          # the repository, for tools/shape-sheet.html"""
+
+if sys.argv[1:] and sys.argv[1] in ("--help", "-h"):
+    print(USAGE)
+    sys.exit(0)
+
+if len(sys.argv) != 3:
+    print("serve.py: expected a root directory and a port", file=sys.stderr)
+    print(USAGE, file=sys.stderr)
+    sys.exit(2)
+
+try:
+    port = int(sys.argv[2])
+except ValueError:
+    print(f"serve.py: port must be a number, got {sys.argv[2]}", file=sys.stderr)
+    sys.exit(2)
+
+root = sys.argv[1]
 handler = functools.partial(SimpleHTTPRequestHandler, directory=root)
 handler.log_message = lambda *a, **k: None
 ThreadingHTTPServer(("127.0.0.1", port), handler).serve_forever()
