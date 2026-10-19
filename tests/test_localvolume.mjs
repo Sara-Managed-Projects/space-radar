@@ -254,6 +254,14 @@ for (const [ly, name] of [[1e9, '1 billion'], [5e10, '50 billion']]) {
   console.log(`  TON 618: from 0.4 Mly it wandered ${old.wander.toFixed(2)} px; from ${d.toFixed(1)} Mly ${res.wander.toFixed(3)} px`);
 }
 
+// ---- 3b. (0076 W4-a, spec 0075 task 64) the steady stand-off is for any far place, not only the exotics' -----
+{
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  check(/farOff\(record\) && pos \? Math\.max\(framing, steadyDistance\(Math\.hypot\(pos\.x, pos\.y, pos\.z\)\)\) : framing/.test(main), 'a galaxy past a billion light-years is met from a steady distance too, as an exotic is');
+  check(/record\.klass === 'exotic'\) return farOff\(record\) && pos \? Math\.max\(0\.4, steadyDistance/.test(main), 'and the exotics still are');
+  check(/ctx\.wantDeep\(\)\.then\(\(d\) => \{ if \(d && typeof d\.prefetch === 'function'\) d\.prefetch\(ids,/.test(main), 'a trip\'s intro asks the deep sky to prefetch its heroes (0076 W4-a)');
+}
+
 // ---- 4. the edge ----------------------------------------------------------------------------------
 check(Math.abs(EDGE_KM / (EDGE_LY * LY_KM) - 1) < 1e-12 && EDGE_LY === 5e10, `the climb's edge and the wheel's are both 50 billion light-years (${EDGE_KM} km)`);
 check(EDGE_LY > horizonLy() && EDGE_LY < horizonLy() * 1.1, 'the edge is a little past the horizon: the band between is the illustration');
