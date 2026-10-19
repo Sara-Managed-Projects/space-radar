@@ -3,7 +3,12 @@ name: community
 # Labels a pull request by the paths it touches, and welcomes a person's first issue and first
 # pull request with the two things a newcomer most needs to hear: where the ten-minute guide is,
 # and that their first CI run waits for a maintainer (one first pull request was closed by its
-# author on 2026-10-09 while it waited, with nobody having said so).
+# author on 2026-10-09 while it waited, with nobody having said so). When an outside author's
+# FIRST pull request merges, it thanks them by name and names three open good first issues
+# (docs/REVIEWING.md step 7; nobody had been told anything at merge before 2026-10-16), with one
+# optional sentence about a star. Never more than that one sentence, no reward, and review never
+# depends on it (GitHub's Acceptable Use Policies). It is measured as experiment E-003 in the
+# internal growth notes; any complaint about it removes the sentence the same day.
 #
 # WHY pull_request_target AND NOT pull_request. A workflow started by `pull_request` from a fork
 # gets a read-only token, so it can neither label nor comment, and a first-time contributor's run
@@ -13,6 +18,8 @@ name: community
 #   - there is no checkout step, and nothing from the fork is fetched, built or run;
 #   - actions/labeler reads the list of changed file NAMES through the API and .github/labeler.yml
 #     from the base branch; actions/first-interaction reads the author's history through the API;
+#     actions/github-script (the merge thanks) reads the author's merged pull requests and the open
+#     good first issues through the API, and passes the author's login only as an API argument;
 #   - no value from the pull request (title, body, branch name) is put into a shell command;
 #   - the token is scoped per job to labels and comments. It cannot push, merge or read a secret,
 #     and this repository's workflows use none besides GITHUB_TOKEN.
@@ -23,7 +30,7 @@ name: community
 # person's comment (docs/REVIEWING.md), not a timer.
 on:
   pull_request_target:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, closed]
   issues:
     types: [opened]
 
@@ -31,7 +38,7 @@ permissions: {}
 
 jobs:
   label:
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request_target' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -60,3 +67,42 @@ jobs:
             **Your first CI run waits for a maintainer.** GitHub does not run workflows from a first-time contributor's fork until a maintainer approves them, so you will see "workflows awaiting approval" for a while. That is normal, it says nothing about your change, and there is nothing you need to do. Please do not close the pull request while it waits. We aim to approve within a day.
 
             While you wait: `scripts/check.sh` runs the checks a first pull request meets, and [docs/FIRST_PR.md](https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/FIRST_PR.md) lists the common red checks and their fixes. If you changed a trip card's words, the narration check will be red: leave it, a maintainer renders the voice. When every check is green and this is not a draft, it merges on its own, and you are named in the release notes and in CONTRIBUTORS.md.
+
+  thanks:
+    # A merged pull request only, from a person outside the maintainers, and only their first.
+    if: >-
+      github.event_name == 'pull_request_target' && github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.type == 'User' &&
+      !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+            const login = pr.user.login;
+            // Their first merge here: no other merged pull request by them. The search index can lag
+            // behind this merge, so this one is left out by number rather than counted.
+            const merged = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${owner}/${repo} is:pr is:merged author:${login}`, per_page: 5,
+            });
+            if (merged.data.items.some(i => i.number !== pr.number)) return;
+            const open = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'good first issue', assignee: 'none',
+              sort: 'created', direction: 'desc', per_page: 20,
+            });
+            const next = open.data.filter(i => !i.pull_request).slice(0, 3);
+            const lines = [
+              `Merged. Thank you, @${login}: this is your first change in Space Radar, and it goes live on spaceradar.ai with the next deploy. You are named in the release notes and in CONTRIBUTORS.md.`,
+            ];
+            if (next.length) {
+              lines.push('', 'If you would like another, these are open and nobody has taken them yet:');
+              for (const i of next) lines.push(`- #${i.number} ${i.title}`);
+            }
+            lines.push('', 'If you would like more people to find the project, a star on the repository helps. It is entirely optional.');
+            await github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body: lines.join('\n') });
