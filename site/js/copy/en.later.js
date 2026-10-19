@@ -1990,7 +1990,36 @@ Object.assign(COPY, {
     how: 'A remnant’s gas flies outward at a steady speed, so its speed toward or away from us says how far in front of or behind the centre it is. Martin, Milisavljevic and Drissen (2021) turned 310 000 spectra of the Crab into its shape that way.',
   },
   // 0076 W3-d (where you are, and the way back)
-  r12Navigate: {},
+  r12Navigate: {
+    // ui/cards.js: where a thing is, outermost first ("Milky Way › Helix Nebula"), its parents buttons
+    // that fly out to them, and the way out to the nearest one (internal #883).
+    chainLabel: 'Where it is',
+    chainTitle: 'Fly to {name}',
+    milkyWay: 'Milky Way',
+    outside: 'Outside the Milky Way',
+    // A parent said with "the": "Back to the Sun", but "Back to Jupiter".
+    the: ['Sun', 'Moon', 'Milky Way'],
+    theWord: 'the',
+    backParent: 'Back to {parent}',
+    backParentTitle: 'Fly out to {parent}',
+    // The legend's door from a line that is not the card's foot (internal #908): a trip's truth line,
+    // a star system's drawing line. It opens the card's row "How we know".
+    legendTitle: 'Open the legend: what each of these words means',
+    // ui/scalerail.js: the rung of the ladder the camera is on, Back along the visitor's own path, and
+    // the note at each join, once a visit, with the far side's distance from registry/ladder.yaml.
+    label: 'Where you are',
+    title: 'Where the camera is on the ladder, from the Earth out to the Local Group',
+    back: 'Back',
+    backTo: 'Back to {name}',
+    sep: '›',
+    rungs: { earth: 'Earth', sun: 'Solar System', stellar: 'Nearby stars', galaxy: 'Milky Way', 'local-group': 'Local Group' },
+    notes: {
+      sun: 'Sped up: the Sun is {distance} away',
+      stellar: 'Sped up: the nearest star is {distance} away',
+      galaxy: 'Sped up: our galaxy’s centre is {distance} away',
+      'local-group': 'Sped up: Andromeda is {distance} away',
+    },
+  },
   // 0076 W3-e (search by kind)
   r12Search: {
     // A group's microlabel over its rows (ui/searchrows.js kindHits): the class in four words at most,

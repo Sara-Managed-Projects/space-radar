@@ -176,6 +176,7 @@ const DEFERRED = {
   'js/data/hero-m78.js': 'a hero\'s profile: with the coordinator',
   'js/data/hero-iris.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-d (scalerail.js)
+  'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
   // 0076 W3-e (kindwords.js, visualclasses.js)
   'js/data/kindwords.js': 'the words for a kind of thing ("galaxies"): with ui/searchrows.js, on the search field\'s first focus',
   'js/data/visualclasses.js': 'every record\'s visual class: ui/searchrows.js fetches it the first time a kind is typed',
