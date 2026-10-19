@@ -1202,7 +1202,11 @@ function derivedDrawingLine(record, T, tMs) {
     // The narrow rings of Uranus and Neptune: at measured radii, and drawn so that they show.
     const widen = Number(pick(md, 'ringsWiden'));
     const dense = Number(pick(md, 'ringsDense'));
-    if (widen > 0 && T.worldRings) {
+    // Uranus's rings at their own darkness and Jupiter's faint ring say so in their own words (internal spec 0076 W2-b).
+    const ownRings = COPY.r12Giants && COPY.r12Giants.rings && COPY.r12Giants.rings[record.id];
+    if (ownRings) {
+      parts.push(ownRings);
+    } else if (widen > 0 && T.worldRings) {
       parts.push(dense > 1 ? t(T.worldRingsDense, { w: fmt.int(widen), d: fmt.int(dense) }) : t(T.worldRings, { w: fmt.int(widen) }));
     }
     const air = Number(pick(md, 'airGain'));

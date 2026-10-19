@@ -206,7 +206,22 @@ export const WEATHER = [
       "v": 0.398,
       "half_u": 0.036,
       "half_v": 0.04,
-      "period_days": 6
+      "period_days": 6,
+      "place": {
+        "l2_deg": 79,
+        "date": "2025-12-01",
+        "l2_sd_deg": 1,
+        "drift_deg_per_30d": 1.3,
+        "drift_range": [
+          0.8,
+          1.78
+        ],
+        "source": {
+          "name": "British Astronomical Association Jupiter Section (John Rogers), Jupiter in 2025/26, Report no.4, 2025 Dec. 31: the JUPOS team's and Shinji Mizumoto's measurements; drift range from Report no.7 of 2024/25 (2026 Jan.)",
+          "url": "https://britastro.org/wp-content/uploads/2025/12/Jup_2025dec_Report-no-4.pdf",
+          "read": "2026-10-16"
+        }
+      }
     },
     "source": "Tollefson et al. 2017, Changes in Jupiter's Zonal Wind Profile preceding and during the Juno mission, Icarus 296, 163"
   },

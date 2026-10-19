@@ -468,6 +468,9 @@ export async function boot({ setStatus } = {}) {
   // stage is entered, dropped when it is left, nothing at boot.
   const systems = createSystems(scene, ctx);
   ctx.systems = systems;
+  // 0076 W2-b (exposure to the worlds)
+  worlds.setExposure(exposure.mode());
+  exposure.onChange((mode) => worlds.setExposure(mode));
   window.addEventListener('sr:stage', (e) => {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
     const id = e && e.detail ? e.detail.worldId : stage.worldId;

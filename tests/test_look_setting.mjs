@@ -155,7 +155,9 @@ for (const r of WEATHER) {
   weather.setLook('measured');
   check(told === before + 1, 'the card is told when the look changes');
   weather.tick(t0 + 1, { on: true });
-  check(weather.line('jupiter', t0) === [COPY.weather.worlds.jupiter, S.turning.jupiter, S.poles.jupiter, S.measured].join(' '), `Jupiter under Measured: the bands, the ovals, the cyclones, and no eddy, deck or flash is claimed (${weather.line('jupiter', t0)})`);
+  // Internal spec 0076 W2-b: the Great Red Spot's dated place is modelled from a measurement, so it is said under Measured too.
+  const spotM = /Except one: the Great Red Spot [^]*? go round with it\./.exec(weather.line('jupiter', t0) || '');
+  check(weather.line('jupiter', t0) === [COPY.weather.worlds.jupiter, spotM ? spotM[0] : 'NO SPOT LINE', S.turning.jupiter, S.poles.jupiter, S.measured].join(' '), `Jupiter under Measured: the bands, the ovals, the cyclones, and no eddy, deck or flash is claimed (${weather.line('jupiter', t0)})`);
   check(weather.line('saturn', t0) === [S.worlds.saturn, S.measured].join(' ') && !/hexagon/.test(weather.line('saturn', t0)), 'Saturn under Measured does not claim the hexagon');
   check(weather.line('venus', t0) === [COPY.weather.worlds.venus, S.also.venus, S.measured].join(' ') && !/dark Y/.test(weather.line('venus', t0)), 'Venus under Measured does not claim the Y');
   check(weather.line('mars', t0) === S.measured && weather.line('titan', t0) === S.measured, 'Mars and Titan, whose whole weather is illustrative, say only that the look is Measured');

@@ -98,8 +98,35 @@ effects:
     # The Great Red Spot, where it is in the map we ship (site/textures/2k_jupiter.webp, measured on
     # the picture 2026-10-03): the band's wind goes round it and the oval turns within itself,
     # anticlockwise, once in about six days (Cassini-era; it has since shrunk and sped up).
-    spot: {u: 0.3635, v: 0.398, half_u: 0.036, half_v: 0.040, period_days: 6}
-    note: "The bands slide past one another at the published jet speeds. The Great Red Spot stays where the map has it; its drift is not modelled."
+    #
+    # `place` (internal spec 0076 W2-b, internal #860): WHERE IT IS. One dated measurement of its
+    # System II west longitude and the drift that carries it on (scene/weather/worldweather.js grsAt).
+    # The BAA Jupiter Section's "Jupiter in 2025/26, Report no.4" (John Rogers, 2025 Dec. 31, read
+    # 2026-10-16): "Measurements by Shinji Mizumoto and by the JUPOS team agree that the speed from
+    # March to Nov., across solar conjunction, was about DL2 = +0.8 deg/30d (+/- 0.15) ... On Dec.1 it
+    # was at L3=321, L2=79." Its "Jupiter in 2024/25, Report no.7" (2026 Jan.) charts the JUPOS
+    # team's measurements "in a system moving at +1.78 deg/30d in L2" for the apparition before.
+    # Which of the two holds after conjunction is not measured here, so the drift drawn is their
+    # middle, 1.3 deg/30d (the spot's mean since 2010 in JUPOS's record, 16 deg a year, is the same),
+    # and `drift_range` is the two: the card says how far either side that may put it by now.
+    # Positive is a westward drift, toward larger System II longitudes, as the BAA writes it.
+    spot:
+      u: 0.3635
+      v: 0.398
+      half_u: 0.036
+      half_v: 0.040
+      period_days: 6
+      place:
+        l2_deg: 79
+        date: "2025-12-01"
+        l2_sd_deg: 1   # ASSUMED, not sourced: the report gives L2 = 79 to the whole degree and states no error for it
+        drift_deg_per_30d: 1.3
+        drift_range: [0.8, 1.78]
+        source:
+          name: "British Astronomical Association Jupiter Section (John Rogers), Jupiter in 2025/26, Report no.4, 2025 Dec. 31: the JUPOS team's and Shinji Mizumoto's measurements; drift range from Report no.7 of 2024/25 (2026 Jan.)"
+          url: "https://britastro.org/wp-content/uploads/2025/12/Jup_2025dec_Report-no-4.pdf"
+          read: 2026-10-16
+    note: "The bands slide past one another at the published jet speeds. The Great Red Spot is put at its System II longitude as JUPOS measured it on 1 December 2025, carried forward at the measured drift; the map is turned to put it there, and its other clouds go with it."
 
   # JUPITER'S STORMS (2026-10-12, spec 0073 requirement 4). Four rows, all drawn inside the flow's own
   # shader term (scene/weather/worldweather.js WX_STORMS), each from the disc size its `from_share`
