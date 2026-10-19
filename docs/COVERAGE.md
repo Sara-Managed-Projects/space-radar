@@ -33,8 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **882** | **111 069** |
-| **all** | **877** | **111 064** |
+| **all** | **883** | **111 070** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -62,16 +61,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 35 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js` | measured | orion |
-| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `gasmat.js` | measured | helix, m57 |
+| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m57 |
 | [DARK_NEBULA](#dark_nebula) | 5 | `nebulae.js`, `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 5 | `dsoglow.js`, `nebulae.js`, `dustsheet.js` | illustrative | iris, m78 |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
-| [GALAXY_SPIRAL](#galaxy_spiral) | 54 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
-| [GALAXY_IRREGULAR](#galaxy_irregular) | 14 | `lmc.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc |
-| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m57 |
-| [DARK_NEBULA](#dark_nebula) | 3 | `nebulae.js`, `dsoglow.js` | measured | - |
-| [REFLECTION_NEBULA](#reflection_nebula) | 3 | `dsoglow.js`, `nebulae.js` | illustrative | - |
-| [SUPERNOVA_REMNANT](#supernova_remnant) | 4 | `nebulae.js`, `dsoglow.js` | measured | - |
 | [GALAXY_SPIRAL](#galaxy_spiral) | 50 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 18 | `lmc.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 41 | `dsoglow.js`, `nebulae.js` | illustrative | - |
@@ -89,9 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 882 records: 320 measured, 239 modelled, 323 illustrative.
-Honesty over the 876 records: 319 measured, 234 modelled, 323 illustrative.
-Honesty over the 877 records: 321 measured, 233 modelled, 323 illustrative.
+Honesty over the 883 records: 320 measured, 240 modelled, 323 illustrative.
 
 ## The classes
 

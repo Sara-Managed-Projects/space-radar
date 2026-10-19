@@ -1933,7 +1933,7 @@ Object.assign(COPY, {
     // Rows under "Distance found by" on the card (ui/cardfacts.js, the `rows` hook).
     rows: {
       'dso-m57': [
-        ['Its distance', 'Parallax (Gaia DR3) of its central star, Gaia DR3 2090486618786534784: 1.270 ± 0.044 milliarcseconds, about 2 570 light-years (2 480 to 2 660).'],
+        ['Its distance', 'Parallax (Gaia DR3) of its central star, Gaia DR3 2090486618786534784: 1.270 ± 0.044 milliarcseconds, about 2 570 light-years (2 480 to 2 660).'],
         ['Its shape in depth', 'Reconstructed. The ring’s size on the sky, the tilt of its long axis and which end is nearer are measured. Its thickness and the form of the gas through its middle are not: they are drawn as an illustration.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],
