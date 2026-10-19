@@ -106,7 +106,6 @@ import { createAirShell, ATMO_PARAMS, EARTH_AIR } from './atmosphere.js';
 import { COPY, t, fmt } from '../copy/en.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
-const DEG = Math.PI / 180;
 
 // --- the exaggeration, named and exported so the UI can say it ---------------------------------
 
