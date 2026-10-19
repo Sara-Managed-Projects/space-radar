@@ -105,8 +105,9 @@ check(biggest.bytes < 40e6, `${biggest.id} keeps ${(biggest.bytes / 1e6).toFixed
 
 // --- 2c. the two journeys keep the local volume's tile and the microwave background's map (spec 0076 W2-d)
 {
-  const lv = readFileSync(join(JS, 'scene/deep/localvolume.js'), 'utf8');
-  for (const f of K.STAGE_FILES['local-group']) check(lv.includes(`data/deep/\${name}`) && lv.includes(f.replace('data/deep/', '')), `localvolume.js does not fetch ${f}`);
+  // 0076 W4-b: the local-group rung's deep layers are two: the local volume's tile and the galaxy clusters' members
+  const lv = readFileSync(join(JS, 'scene/deep/localvolume.js'), 'utf8') + readFileSync(join(JS, 'scene/deep/galclusters.js'), 'utf8');
+  for (const f of K.STAGE_FILES['local-group']) check(lv.includes(`data/deep/\${name}`) && lv.includes(f.replace('data/deep/', '')), `no deep layer fetches ${f}`);
   const cmb = readFileSync(join(JS, 'scene/deep/cmb.js'), 'utf8');
   check(cmb.includes(`MAP_URL = '../../../${K.CMB_MAP}'`), `keeptrip's CMB_MAP ${K.CMB_MAP} is not cmb.js MAP_URL`);
   const shells = readFileSync(join(JS, 'scene/shells.js'), 'utf8');

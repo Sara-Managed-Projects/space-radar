@@ -1,5 +1,5 @@
 // r12-far: galaxy clusters and quasars (release 1.2.0 stage W4-b, internal spec 0076, internal #784). On the Local Group's stage:
-// Virgo from the Local Group (60 million light-years nearer the Sun than its centre) and from inside (3 Mly from its centre), Coma from
+// Virgo from the Local Group (30 million light-years nearer the Sun than its centre) and from inside (3 Mly from its centre), Coma from
 // the Sun at its 334 million light-years, from 60 Mly turned 45 degrees off our line and from 40 Mly turned 80 degrees (its depth: a
 // swarm, not a sheet), the same under the Measured look; Fornax and Perseus from 40 Mly; then 3C 273 as a point from the Sun, from
 // 0.7 Mly (its host galaxy, 29 arcseconds across from here), its card (the light-travel words), and 3C 279, a point without a host.
@@ -89,8 +89,8 @@ const drawn = (row, id) => !!(row.layer && row.layer.clusters && row.layer.clust
 
 // ---- the clusters ---------------------------------------------------------------------------------
 subject = { name: 'Virgo', at: clusterScene('virgo') };
-pose(subject.at, 0, 60);
-const virgoFar = await pair('virgo-from-here', 'Virgo from the Local Group, 60 million light-years nearer us than its centre');
+pose(subject.at, 0, 30);
+const virgoFar = await pair('virgo-from-here', 'Virgo from the Local Group, 30 million light-years nearer us than its centre');
 if (!drawn(virgoFar, 'virgo')) out.problems.push('Virgo is not drawn from the Local Group');
 pose(subject.at, 50, 3);
 await pair('virgo-inside', 'inside Virgo, 3 million light-years from its centre, 50 degrees off our line');
