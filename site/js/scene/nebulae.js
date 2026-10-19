@@ -49,7 +49,6 @@ import { NEBULAE } from '../data/nebulae.js';
 import { PHOTO_FETCH_PX } from './deep/lodsize.js';
 
 const D2R = Math.PI / 180;
-const LY_KM = 9460730472580.8;
 const OBLIQUITY = 23.4392911 * D2R; // J2000 mean obliquity, as scene/galaxy.js
 const SUN_INERTIAL = 'sun-inertial';
 const RENDER_ORDER_SKY = -2.5;   // after the Milky Way (-3), before the stars (-2)
