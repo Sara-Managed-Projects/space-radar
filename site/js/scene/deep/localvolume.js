@@ -32,20 +32,103 @@
 // shader receives is camera-relative. tests/test_localvolume.mjs holds a galaxy still to a quarter of
 // a pixel with the camera 1 million and 1 billion light-years out.
 
+import { parseDso } from '../../data/parsers.js';
+
 export const UNDER_MEASURED = { marks: 'same' };
 
 const MLY_KM = 9460730472580.8 * 1e6;
 const SUN_INERTIAL = 'sun-inertial';
 export const MAGIC = 'SRLV';
-export const MIN_PX = 3; // CSS px: the smallest a galaxy is drawn, as a point
+export const MIN_PX = 4.5; // CSS px: the smallest a galaxy is drawn, as a point (0076 W4-a, task 66: was 3, small beside the labelled marks)
 export const MAX_PX = 256; // CSS px: past this a galaxy's own light is spread too thin to see
 export const CULL_PX = 3; // CSS px of the whole tile's radius on screen, below which it is not drawn
 export const FADE_PX = 40; // and from which, going smaller, it fades out (no pop)
 /** The inferred galaxies' swatch: a cool grey, apart from the type colours. */
 export const INFERRED_COLOUR = [0.6, 0.66, 0.8];
 /** Their light against a measured galaxy's, and how much wider their soft mark is. */
-export const INFERRED_LIGHT = 0.45;
-export const INFERRED_SIZE = 1.7;
+export const INFERRED_LIGHT = 0.6;
+export const INFERRED_SIZE = 1.6;
+/** The selected galaxy's mark, CSS px across (0076 W4-a). */
+export const SELECTED_PX = 22;
+/** A tap reaches a galaxy at least this far (CSS px), and ranks this far behind a deep-sky mark of the same distance. */
+export const PICK_MIN_PX = 12;
+export const PICK_BEHIND_PX = 4;
+// ---------------------------------------------------------------------------- the galaxies as records
+// (0076 W4-a, spec 0075 task 63, SR-PLAN-067) Each galaxy of the tile is a deep-sky record when asked for: the same shape
+// data/parsers.js parseDso gives the 209 of dso.json, built on demand from the tile and its manifest, so a tap can select it,
+// the card can tell its name, its distance and HOW that distance was found, and the camera can fly to it. Nothing here is
+// stored: the tile and the manifest already are the data (one galaxy, one mark: the 68 the map draws as records are not in it).
+const LY_PER_MLY = 1e6;
+const TYPE_WORDS = ['early-type galaxy', 'spiral galaxy', 'irregular galaxy', 'galaxy'];
+/** The app's own distance-method codes (data/deepsky.js DISTANCE_METHODS) for the catalogue's, where one means the same. */
+const METHOD_OF = { TRGB: 'TRGB', Cep: 'cepheid', SN: 'standard-candle' };
+/** 'NGC0024' -> 'NGC 24', 'UGC12894' -> 'UGC 12894'; a name with a hyphen or a space is left as the catalogue has it. Pure. */
+export function prettyName(name) {
+  const m = /^([A-Za-z]+)0*(\d+)([A-Za-z]?)$/.exec(String(name || '').trim());
+  return m ? `${m[1]} ${m[2]}${m[3]}` : String(name || '').trim();
+}
+const slug = (name) => String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/**
+ * The rows of site/data/dso.json's shape for every galaxy of the tile, in tile order. `inferred` galaxies carry no method
+ * (the card prints none) and say in their source that the distance is the group's or the velocity's, not their own. Pure.
+ */
+export function rowsOf(tile, manifest) {
+  const src = (manifest && manifest.source && manifest.source.name) || 'the Updated Nearby Galaxy Catalog';
+  const out = [];
+  const seen = new Set();
+  for (let i = 0; i < tile.count; i++) {
+    const g = rowOf(tile, i);
+    const name = (manifest.names && manifest.names[i]) || `galaxy ${i}`;
+    let id = `lv-${slug(name)}`;
+    if (seen.has(id)) id = `${id}-${i}`;
+    seen.add(id);
+    const m = (manifest.methods && manifest.methods[g.method]) || { code: '', words: 'the catalogue' };
+    const dLy = g.dMly * LY_PER_MLY;
+    const widthArcmin = g.radiusMly > 0 ? (2 * g.radiusMly / g.dMly) * (180 / Math.PI) * 60 : null;
+    out.push({
+      id,
+      name: prettyName(name),
+      messier: null,
+      designation: prettyName(name),
+      kind: 'galaxy',
+      typeCode: 'G',
+      typeText: TYPE_WORDS[Math.max(0, Math.min(3, Math.round(g.kind)))],
+      raDeg: null,
+      decDeg: null,
+      distLy: Math.round(dLy),
+      distLyLow: Math.round(g.loMly * LY_PER_MLY),
+      distLyHigh: Math.round(g.hiMly * LY_PER_MLY),
+      majAxArcmin: widthArcmin !== null ? Math.round(widthArcmin * 100) / 100 : null,
+      minAxArcmin: null,
+      posAngDeg: null,
+      vmag: null,
+      posLy: [g.dir[0] * dLy, g.dir[1] * dLy, g.dir[2] * dLy],
+      distanceSource: g.inferred
+        ? `not measured: it takes ${m.words} (${src}); the range is the catalogue's typical error of such distances`
+        : `${m.words} (${src})${g.rangeAssumed ? '; the range is assumed' : ''}`,
+      positionSource: src,
+      why: null,
+      parent: null,
+      orientation: null,
+      morphology: null,
+      distance: !g.inferred && METHOD_OF[m.code] ? { method: METHOD_OF[m.code], source: `${m.words} (${src})`, read: manifest.source && manifest.source.read || null } : null,
+      drawn: ['catalogue'],
+    });
+  }
+  return out;
+}
+/** The tile's records (parseDso's shape), same order as the tile's rows; a row parseDso refuses leaves a null. Pure. */
+export function recordsOf(tile, manifest) {
+  const rows = rowsOf(tile, manifest);
+  const byId = new Map(parseDso({ objects: rows }).map((r) => [r.id, r]));
+  return rows.map((r) => byId.get(`dso-${r.id}`) || null);
+}
+/** A galaxy's drawn width in CSS px, as VERT_POINTS computes it (for picking). Pure. */
+export function pointPx({ dMly, radiusMly, inferred }, pxPerRad) {
+  const wide = (2 * radiusMly / Math.max(1e-9, dMly)) * pxPerRad;
+  return Math.min(MAX_PX, Math.max(wide, MIN_PX * (inferred ? INFERRED_SIZE : 1)));
+}
+
 /** The tile's light as its radius on screen shrinks from FADE_PX to CULL_PX: 1 to 0, smooth. Pure. */
 export function tileFade(radiusPx) {
   if (!(radiusPx < FADE_PX)) return 1;
@@ -126,6 +209,8 @@ attribute float aRadius;   // half the Holmberg diameter, million light-years
 attribute float aMag;      // absolute B magnitude (99: none catalogued)
 attribute vec3 aColour;
 attribute float aInferred; // 1: the distance is not its own (fainter, wider, softer)
+attribute float aIndex;    // the galaxy's row in the tile (the selected one is lit: uSelected)
+uniform float uSelected;   // 0076 W4-a: the selected galaxy's row, or -1
 uniform float uScale;      // scene units per million light-years
 uniform float uPxPerRad;   // CSS px per radian at the centre of the view
 uniform float uPixelRatio;
@@ -140,6 +225,8 @@ void main() {
   float dMly = max(1e-9, length(mv.xyz) / uScale);
   float wide = 2.0 * aRadius / dMly * uPxPerRad;                       // its true width, CSS px
   float size = clamp(wide, uMinPx * mix(1.0, ${INFERRED_SIZE.toFixed(2)}, aInferred), uMaxPx);
+  float sel = step(abs(aIndex - uSelected), 0.5);
+  size = max(size, sel * ${SELECTED_PX.toFixed(1)});                       // the selected one is a lit mark of its own
   // Its apparent B magnitude from the camera: M + 5 log10(d / 10 pc).
   float m = aMag + 5.0 * log(dMly * 1.0e6 / 32.6156) / log(10.0);
   float lit = aMag > 90.0 ? 0.3 : clamp((19.0 - m) / 11.0, 0.0, 1.0);
@@ -147,7 +234,8 @@ void main() {
   // it is wide (surface brightness), and past uMaxPx it fades rather than grow.
   float spread = clamp((uMinPx * 2.5) / size, 0.18, 1.0);
   float past = wide > uMaxPx ? uMaxPx / wide : 1.0;
-  vLight = (0.45 + 0.75 * lit) * spread * spread * past * mix(1.0, ${INFERRED_LIGHT.toFixed(2)}, aInferred);
+  vLight = (0.6 + 0.8 * lit) * spread * spread * past * mix(1.0, ${INFERRED_LIGHT.toFixed(2)}, aInferred);
+  vLight = mix(vLight, max(vLight, 1.2), sel);
   vSoft = aInferred;
   vColour = aColour;
   gl_PointSize = size * uPixelRatio;
@@ -211,7 +299,7 @@ export function createLayer(THREE, env = {}) {
   group.visible = false;
   const uniforms = {
     uScale: { value: 1 }, uPxPerRad: { value: 1000 }, uPixelRatio: { value: 1 },
-    uMinPx: { value: MIN_PX }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 }, uFade: { value: 1 },
+    uMinPx: { value: MIN_PX }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 }, uFade: { value: 1 }, uSelected: { value: -1 },
   };
   const state = { loaded: false, failed: null, manifest: null, tile: null, arrays: null, bytes: 0, fileBytes: 0, placedFor: null, culled: 'not loaded', radiusPx: 0, calls: 0 };
   let points = null;
@@ -244,6 +332,7 @@ export function createLayer(THREE, env = {}) {
     pg.setAttribute('aMag', new THREE.BufferAttribute(a.points.mag, 1));
     pg.setAttribute('aColour', new THREE.BufferAttribute(a.points.colour, 3));
     pg.setAttribute('aInferred', new THREE.BufferAttribute(a.points.inferred, 1));
+    pg.setAttribute('aIndex', new THREE.BufferAttribute(Float32Array.from({ length: a.points.radius.length }, (_, i) => i), 1));
     points = new THREE.Points(pg, new THREE.ShaderMaterial({
       vertexShader: VERT_POINTS, fragmentShader: FRAG_POINTS, uniforms,
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
@@ -302,6 +391,7 @@ export function createLayer(THREE, env = {}) {
     uniforms.uPxPerRad.value = (viewH / 2) / Math.tan(fovY / 2);
     if (info.renderer && typeof info.renderer.getPixelRatio === 'function') uniforms.uPixelRatio.value = Math.min(2, Math.max(0.5, info.renderer.getPixelRatio()));
     uniforms.uGain.value = Number.isFinite(info.gain) && info.gain > 0 ? info.gain : 1;
+    selectRow(info.selectedId);
     // Culled whole: by the frustum, then by its size on the screen.
     _c.setFromMatrixPosition(group.matrixWorld);
     sphere.center.copy(_c);
@@ -317,6 +407,50 @@ export function createLayer(THREE, env = {}) {
     group.visible = true;
     state.culled = null;
     state.calls = 1 + (lines && lines.visible ? 1 : 0);
+  }
+
+  // 0076 W4-a: records on demand, the selected galaxy lit, and a tap on one.
+  let recs = null;
+  let recRow = null;
+  function records() {
+    if (!state.loaded) return [];
+    if (!recs) { recs = recordsOf(state.tile, state.manifest); recRow = new Map(); recs.forEach((r, i) => { if (r) recRow.set(r.id, i); }); }
+    return recs;
+  }
+  /** The tile row of a record id of this layer, or -1. */
+  function rowOfId(id) { records(); return recRow && recRow.has(id) ? recRow.get(id) : -1; }
+  let selectedRow = -1;
+  function selectRow(id) {
+    const row = typeof id === 'string' && id.startsWith('dso-lv-') ? rowOfId(id) : -1;
+    if (row === selectedRow) return;
+    selectedRow = row;
+    uniforms.uSelected.value = row;
+    showRange(row); // an inferred galaxy's line of possible distances, for the one selected (-1 hides it)
+  }
+  const _p = new THREE.Vector3();
+  /** Candidates for a tap: {record, px, score}, nearest first. The tile has to be on screen; ranks just behind the map's own marks. */
+  function pickAll(ndcX, ndcY, camera, viewport, limit = 6) {
+    if (!state.loaded || !group.visible || state.culled || !camera || !viewport) return [];
+    const recsNow = records();
+    camera.updateMatrixWorld();
+    group.updateMatrixWorld();
+    _m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).multiply(group.matrixWorld);
+    const e = _m.elements;
+    const pos = state.arrays.points.position;
+    const halfW = viewport.w * 0.5, halfH = viewport.h * 0.5;
+    const out = [];
+    for (let i = 0; i < state.tile.count; i++) {
+      const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
+      const w = e[3] * x + e[7] * y + e[11] * z + e[15];
+      if (w <= 0) continue;
+      const dx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / w - ndcX) * halfW, dy = ((e[1] * x + e[5] * y + e[9] * z + e[13]) / w - ndcY) * halfH;
+      const px = Math.sqrt(dx * dx + dy * dy);
+      const reach = Math.min(24, Math.max(PICK_MIN_PX, pointPx(rowOf(state.tile, i), uniforms.uPxPerRad.value) / 2 + 4));
+      if (px > reach || !recsNow[i]) continue;
+      out.push({ i, px });
+    }
+    out.sort((p, q) => p.px - q.px);
+    return out.slice(0, Math.max(1, limit)).map(({ i, px }) => ({ record: recsNow[i], px, score: px + PICK_BEHIND_PX }));
   }
 
   /** Show one galaxy's range of distance (a selection or a hover will ask), or none (-1). */
@@ -336,6 +470,9 @@ export function createLayer(THREE, env = {}) {
     group,
     frame,
     showRange,
+    records,
+    pickAll,
+    rowOfId,
     whenLoaded: () => loading,
     ready: () => state.loaded || !!state.failed,
     stats: () => ({

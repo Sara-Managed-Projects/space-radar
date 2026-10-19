@@ -117,6 +117,7 @@ export function createDeepSky(THREE, env = {}) {
     const ask = { records: env.records, recordById: env.recordById, radiusPx: (id) => px.get(id) || 0, quality: env.quality, pictureShare: env.pictureShare, on: () => debugState.stars };
     layers.set(CLUSTERS, { def: { id: CLUSTERS, stage: 'W3-a', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./globular.js').then((m) => ({ createLayer: (T) => m.createLayer(T, ask) })) }, layer: null, loading: null });
   }
+  const volumeLayer = () => { const l = layers.get('localvolume'); return l && l.layer && l.layer.records ? l.layer : null; };
   const classTaken = (id) => { const l = layers.get(CLUSTERS); return l && l.layer && l.layer.taken ? l.layer.taken(id) : 0; };
 
   // ---------------------------------------------------------------------------- placing a record
@@ -375,7 +376,7 @@ export function createDeepSky(THREE, env = {}) {
     for (const l of layers.values()) {
       const on = l.def.stages.includes(stage.worldId);
       if (on) wantLayer(l);
-      if (l.layer) { l.layer.frame({ camera, renderer: info.renderer, stage, gain, visible: on }); lastCalls += l.layer.stats().calls; }
+      if (l.layer) { l.layer.frame({ camera, renderer: info.renderer, stage, gain, visible: on, selectedId }); /* (0076 W4-a) selectedId: the local volume lights the selected galaxy */ lastCalls += l.layer.stats().calls; }
     }
     lastCpuMs = typeof performance !== 'undefined' ? performance.now() - t0 : 0;
   }
@@ -415,6 +416,9 @@ export function createDeepSky(THREE, env = {}) {
     /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
     heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) { m.set(h.def.record, fader.share(`hero:${h.def.id}`)); if (h.hero.shares) for (const [id, k] of h.hero.shares()) if (k > (m.get(id) || 0)) m.set(id, k); } /* 0076 W4-a: and the records a hero draws with it (M32, M110) */ for (const l of layers.values()) if (l.layer && l.layer.shares) for (const [id, k] of l.layer.shares()) if (k > (m.get(id) || 0)) m.set(id, k); return m; }, // (0076 W3-a) and a class layer's
     ready, prefetch,
+    // (0076 W4-a, spec 0075 task 63) the local volume's galaxies as selectable records: found by id, and by a tap (main.js pick)
+    volumeRecord: (id) => { const v = volumeLayer(); const row = v && typeof id === 'string' && id.startsWith('dso-lv-') ? v.rowOfId(id) : -1; return row >= 0 ? v.records()[row] : null; },
+    pickAll: (ndcX, ndcY, camera, viewport, limit) => { const v = volumeLayer(); return v ? v.pickAll(ndcX, ndcY, camera, viewport, limit) : []; },
     whenReady(ms = 20000) {
       const until = Date.now() + ms;
       return new Promise((resolve) => { const tick = () => (ready() ? resolve(true) : Date.now() > until ? resolve(false) : setTimeout(tick, 100)); tick(); });

@@ -143,6 +143,53 @@ check(layer.stats().culled === 'size' && layer.stats().calls === 0, `from 50 bil
 const g0 = layer.galaxy(0);
 check(g0 && g0.name && g0.method && g0.method.code && g0.method.words, 'each galaxy answers its name and its method in words');
 
+// ---- 2b. the galaxies as records, selected by a tap (0076 W4-a, spec 0075 tasks 63 and 66) ----------
+{
+  const recs = layer.records();
+  check(recs.length === tile.count && recs.every((r) => r && r.klass === 'dso' && /^dso-lv-/.test(r.id) && r.frame === 'sun-inertial' && r.pos && Number.isFinite(r.pos.x)), `every galaxy is a deep-sky record in parseDso's shape (${recs.filter(Boolean).length} of ${tile.count})`);
+  check(new Set(recs.map((r) => r.id)).size === tile.count, 'with a unique id each');
+  const ids = new Set();
+  let measuredWithMethod = 0, bad = 0;
+  for (let i = 0; i < tile.count; i++) {
+    const r = recs[i], g = LV.rowOf(tile, i);
+    const dly = Math.hypot(r.pos.x, r.pos.y, r.pos.z) / LY_KM;
+    if (Math.abs(dly - g.dMly * 1e6) > 2 || r.meta.distLy !== Math.round(g.dMly * 1e6)) bad++;
+    if (g.inferred && (r.meta.distance || !/not measured/.test(r.meta.distanceSource))) bad++;
+    if (!g.inferred && r.meta.distance) measuredWithMethod++;
+    if (!/Karachentsev/.test(r.meta.cite)) bad++;
+  }
+  check(bad === 0, `each record sits at its tile distance, an inferred one says "not measured" and carries no method, all cite the catalogue (${bad} wrong)`);
+  check(measuredWithMethod > 200, `and a measured one with a method the app has words for names it (${measuredWithMethod})`);
+  check(LV.prettyName('NGC0024') === 'NGC 24' && LV.prettyName('ESO409-015') === 'ESO409-015' && LV.prettyName('And XVIII') === 'And XVIII', 'catalogue names are tidied only where they are padded');
+  check(layer.rowOfId(recs[5].id) === 5 && layer.rowOfId('dso-m31') === -1, 'a record id finds its row');
+  // a tap on a galaxy finds it
+  stage.setWorld('local-group');
+  const target = recs.find((r, i) => !LV.rowOf(tile, i).inferred);
+  const ti = recs.indexOf(target);
+  const tp = new THREE.Vector3(); stage.toSceneInto(target.pos, 'sun-inertial', tp, stage.tMs);
+  look([tp.x * 0.5, tp.y * 0.5 + 0.1, tp.z * 0.5], [tp.x, tp.y, tp.z]);
+  layer.frame({ camera: cam, renderer, stage, gain: 1 });
+  const proj = tp.clone().project(cam);
+  const vp = { w: W, h: HPX };
+  const hit = layer.pickAll(proj.x, proj.y, cam, vp, 6);
+  check(hit.length >= 1 && hit.some((c) => c.record === target && c.px < 1), `a tap on a galaxy offers it (${hit.length} candidates, nearest ${hit[0] && hit[0].record.name})`);
+  check(hit.every((c, i) => i === 0 || hit[i - 1].score <= c.score) && hit.every((c) => c.score >= c.px), 'nearest first, ranked just behind the map\'s own marks');
+  check(layer.pickAll(0.99, -0.99, cam, vp, 6).every((c) => c.px <= 24), 'and nothing is offered from farther than 24 px');
+  // selecting it lights it; an inferred one shows its range
+  layer.frame({ camera: cam, renderer, stage, gain: 1, selectedId: target.id });
+  const u = layer.group.children.find((o) => o.isPoints).material.uniforms;
+  check(u.uSelected.value === ti, `the selected galaxy is the one lit (row ${u.uSelected.value})`);
+  const infRow = recs.findIndex((r, i) => LV.rowOf(tile, i).inferred);
+  layer.frame({ camera: cam, renderer, stage, gain: 1, selectedId: recs[infRow].id });
+  check(layer.stats().rangeShown === infRow, 'an inferred galaxy selected shows its range of possible distances');
+  layer.frame({ camera: cam, renderer, stage, gain: 1, selectedId: null });
+  check(u.uSelected.value === -1 && layer.stats().rangeShown === -1, 'and deselected, both go');
+  // 0076 W4-a task 66: the points are no longer small and dim
+  check(LV.MIN_PX >= 4 && LV.INFERRED_LIGHT >= 0.55 && /0\.6 \+ 0\.8 \* lit/.test(readFileSync(join(JS, 'scene/deep/localvolume.js'), 'utf8')), `the marks are at least ${LV.MIN_PX} px and brighter than they were`);
+  look([0, 5, 30], [0, 0, 0]);
+}
+
+
 // ---- 3. precision ---------------------------------------------------------------------------------
 const f32 = (m) => { const o = new THREE.Matrix4(); o.elements = Array.from(new Float32Array(m.elements)); return o; };
 const toPx = (v) => ({ x: ((v.x + 1) / 2) * W, y: ((1 - v.y) / 2) * HPX });

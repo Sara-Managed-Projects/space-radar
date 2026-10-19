@@ -280,7 +280,7 @@ export async function boot({ setStatus } = {}) {
     recordsFor: (id) => layerRecords.get(id) || [],
     // The dot layers, for one reader: sky/skyview.js puts them in the same air as the stars.
     glyphLayers,
-    recordById: (id) => ctx.records().find((r) => r.id === id) || null,
+    recordById: (id) => ctx.records().find((r) => r.id === id) || (ctx.deep && ctx.deep.volumeRecord ? ctx.deep.volumeRecord(id) : null), // 0076 W4-a: and the local volume's galaxies
     selected: () => selected,
     select,
     deselect,
@@ -1358,6 +1358,10 @@ export async function boot({ setStatus } = {}) {
     if (isLayerOn('stars') && ctx.stars3d) {
       for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
     }
+    // 0076 W4-a (spec 0075 task 63): the local volume's galaxies (scene/deep/localvolume.js), on the Local Group's rung
+    if (ctx.deep && ctx.deep.pickAll) {
+      for (const c of ctx.deep.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+    }
     // A star system's own star and planets, on its stage (spec 0040): the same exo-... records.
     if (ctx.systems && ctx.systems.active) {
       for (const c of ctx.systems.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
@@ -1799,7 +1803,8 @@ export async function boot({ setStatus } = {}) {
     if (record && record.klass === 'exotic') return farOff(record) && pos ? Math.max(0.4, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : 0.4;
     if (record && record.klass === 'dso') {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
-      const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;
+      // 0076 W4-a: a galaxy of the local volume with no catalogued diameter is framed by its distance (a thousandth of it), not as a 20 ly nebula
+      const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : record.meta && record.meta.distLy > 1e6 ? record.meta.distLy / 1000 : 20;
       const framing = Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
       // 0076 W4-a (spec 0075 task 64): the steady stand-off is for any place past the stellar rung's far plane, not only the exotics'
       return farOff(record) && pos ? Math.max(framing, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : framing;
