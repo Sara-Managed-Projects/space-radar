@@ -4783,3 +4783,307 @@ tours:
             it, and our Milky Way beyond, about three times wider. Now home: a hundred and sixty
             thousand light-years.
 
+
+  # ---------------------------------------------------------------------------------------------
+  # ACROSS THE LOCAL GROUP (internal spec 0076 W2-d, internal #777). The four largest galaxies of the
+  # Local Group, then the whole group from outside among the galaxies round it, and the one flight
+  # home. Built as "Inside a neighbouring galaxy" is (public #1184): the stops are on the stellar rung,
+  # one unit a light-year, where every deep-sky record and hero is drawn; the last is on the Local
+  # Group's rung, the one stage that draws the local volume's galaxies (scene/deep/heroes.js DEEP_LAYERS).
+  # A stage change between two ladder stages keeps the camera's place in kilometres (above), so the
+  # move to it is still a flight. Andromeda's stop starts on our line (`key_light_deg: 0`: the
+  # photograph lined up) and turns 60 degrees, where the photograph has faded (scene/nebulae.js
+  # viewFade, gone by 50) and the model takes its place, as the Helix's shape stop does.
+  # WHAT IS SAID ALOUD, AND WHY: each card says which of photograph, model or catalogue the picture
+  # is, where it changes (the Milky Way's shape a model, Andromeda's photograph then model, the
+  # local volume's measured and estimated distances), and every distance is the record's own.
+  # ---------------------------------------------------------------------------------------------
+  - id: across-the-local-group
+    title: "Across the Local Group"
+    blurb: "Our galaxy, its biggest companion, Andromeda, Triangulum. Then back to Earth."
+    group: beyond
+    next: out-to-the-edge
+    requires: [stars, deep-sky, galaxy]
+    hides: [exoplanets, systems, exotics]
+    stage: stellar
+    clock: as-found
+    return: true
+    # The share picture: Andromeda at the end of her turn, the model (stop 3).
+    og_stop: 3
+    stops:
+      - id: milky-way
+        target: {record: dso-milky-way}
+        needs_layer: galaxy
+        # 150 000 ly from the Galaxy's centre, as the roof trip's Milky Way stop stands.
+        distance_km: 1419109570887120000
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        chapter: "Home"
+        # read 2026-10-16, https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/:
+        # "Our galaxy probably contains 100 to 400 billion stars, and is about 100,000 light-years
+        # across." https://www.eso.org/public/news/eso2119/ (read 2026-10-16): Sagittarius A* "27 000
+        # light-years away". The shape: data/layers.js dso-milky-way, a model (W1-c's card words).
+        card:
+          title: "Our galaxy, from outside"
+          body: >-
+            Nobody has seen the Milky Way from outside: this shape is a model built from measurements
+            made inside it. It holds between one and four hundred billion stars, and the Sun is one of
+            them, 27 000 light-years from the centre.
+
+      - id: lmc
+        target: {record: dso-lmc}
+        needs_layer: deep-sky
+        # 100 000 ly on our line: its photograph lined up, about a tenth of the frame's width at 1600 x
+        # 900 (read in look run 38816386446; from 300 000 ly and 80 degrees off our line, the first
+        # look run, it was a small glow).
+        distance_km: 946073047258080000
+        key_light_deg: 0
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        chapter: "Our companions"
+        # read 2026-10-16, https://en.wikipedia.org/wiki/Large_Magellanic_Cloud: "a dwarf galaxy and
+        # satellite galaxy of the Milky Way", "the fourth-largest galaxy in the Local Group" (after
+        # Andromeda, the Milky Way and Triangulum: the largest of our companions). The distance:
+        # registry/dso-hand.yaml, 161 740 ly from twenty eclipsing binaries (Pietrzyński et al. 2019).
+        # The photograph: NOIRLab noirlab2030a (SMASH), registry/nebulae.yaml.
+        card:
+          title: "The Large Magellanic Cloud"
+          body: >-
+            This photograph of the Large Magellanic Cloud lines up with our sky. The biggest of our
+            galaxy's companions and the fourth-largest galaxy in the group, it is a hundred and sixty
+            thousand light-years away: pairs of its stars that eclipse each other tell us how far.
+
+      - id: andromeda
+        target: {record: dso-m31}
+        needs_layer: deep-sky
+        # 250 000 ly on our line: her 178 arcmin, 131 000 ly at 2.54 Mly, about half the frame's width on
+        # a desk (from 300 000 ly, the first look run, a quarter); then 60 degrees at 5 degrees a second
+        # (12 s), off the photograph.
+        distance_km: 2365182618145200000
+        key_light_deg: 0
+        drift_deg: 60
+        drift_rate_deg_s: 5
+        chapter: "Andromeda"
+        # read 2026-10-16, https://science.nasa.gov/missions/hubble/nasas-hubble-shows-milky-way-is-destined-for-head-on-collision/:
+        # "The galaxy is now 2.5 million light-years away", "M31 is moving toward the Milky Way";
+        # https://en.wikipedia.org/wiki/Local_Group (read 2026-10-16): "The two largest members, the
+        # Andromeda and the Milky Way galaxies". The record: 2.54 Mly. The photograph: NOIRLab noao0001a,
+        # "1979", photographic plates (registry/nebulae.yaml). The model: deepsky-heroes/m31.yaml.
+        card:
+          title: "Andromeda, the other giant"
+          body: >-
+            Andromeda is two and a half million light-years away. With our Milky Way she is one of the
+            group's two largest galaxies, and she is moving towards us. From our side this is a
+            photograph; as we turn, a model takes over. Her tilt and rings are measured; the exact shape
+            of her arms is ours.
+
+      - id: triangulum
+        target: {record: dso-m33}
+        needs_layer: deep-sky
+        # 120 000 ly on our line: its 62 arcmin, 49 000 ly at 2.725 Mly, about two fifths of the frame.
+        distance_km: 1135287656709696000
+        key_light_deg: 0
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        chapter: "Triangulum"
+        # read 2026-10-16, https://en.wikipedia.org/wiki/Triangulum_Galaxy: "the third largest member of
+        # the Local Group", "can be seen by some people with the fully dark-adapted naked eye". The
+        # record: 2.725 Mly, 2.38 to 3.07 Mly (the Messier table), wider than Andromeda's 2.43 to 2.65.
+        # The photograph: ESO eso1424a, the VLT Survey Telescope (registry/nebulae.yaml).
+        card:
+          title: "Triangulum, the third spiral"
+          body: >-
+            This photograph from Chile lines up with our sky. The Triangulum Galaxy, third largest in
+            the group, is about 2.7 million light-years away, a less certain distance than Andromeda's.
+            On a very dark night some people can see it without a telescope.
+
+      - id: neighbours
+        target: {world: sun}
+        stage: local-group
+        needs_layer: deep-sky
+        # 25 million light-years from the Sun: the local volume's tile, as stage e's probe frames it.
+        distance_km: 236518261814520000000
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "The galaxies around us"
+        # read 2026-10-16, site/data/deep/localvolume.json: 800 galaxies of the Updated Nearby Galaxy
+        # Catalog (Karachentsev, Makarov & Kaisina 2013, AJ 145, 101) within about 36 Mly, less the
+        # records the map draws; scene/deep/localvolume.js: a measured distance a point, an inferred
+        # one "a FAINTER, LARGER, SOFTER point in its own grey-blue swatch".
+        card:
+          title: "The Local Group among its neighbours"
+          body: >-
+            Twenty-five million light-years out, the whole Local Group is the knot in the middle. Around
+            it are eight hundred nearby galaxies from one catalogue. The brighter points have measured
+            distances; the fainter grey-blue ones are only estimates.
+
+  # ---------------------------------------------------------------------------------------------
+  # OUT TO THE EDGE (internal spec 0076 W2-d, internal #777; the package's journey scenes GAL-06 and
+  # COSMO-01 to COSMO-10). From the Milky Way past the Local Group and the local volume to TON 618, to
+  # where the first galaxies are now, the microwave background (W1-b's map at the horizon) and the
+  # map's 50 billion light-year end; then the one flight home. Every stop past the first is on the
+  # Local Group's rung (one unit a million light-years). The Sun as a subject has no key light, so a
+  # stop about it keeps the direction the camera came from: past TON 618 every stop is on its line.
+  # THE COSMOLOGY IS THE MAP'S ONE (data/cosmology.js, Planck 2018), computed 2026-10-16 with its own
+  # functions: TON 618 (z 2.219) is 18.31 Gly away now, its light left 10.832 Gyr ago; a galaxy at
+  # z 14.18 (JADES-GS-z14-0) or 14.44 (MoM-z14) is 33.7 to 33.9 Gly away now, its light left when the
+  # universe was 283 to 291 million years old; the horizon is 46.2 Gly, the background left from 45.3
+  # Gly at 370 000 years (scene/shells.js cmbYears, the words on its sphere). The cards say "now" for
+  # a comoving distance and "its light left" for a light-travel time, never one for the other.
+  # ---------------------------------------------------------------------------------------------
+  - id: out-to-the-edge
+    title: "Out to the edge of the universe we can see"
+    blurb: "Past the Local Group and a quasar to the oldest light. Then back to Earth."
+    group: beyond
+    next: across-the-local-group
+    requires: [stars, deep-sky, galaxy, exotics]
+    hides: [exoplanets, systems]
+    stage: local-group
+    clock: as-found
+    return: true
+    # The share picture: the Milky Way from 150 000 ly (stop 1; the same pose as "Across the Local
+    # Group"'s first stop, whose frame it is). The microwave background's map (stop 6) is the card's
+    # picture: as a 1200 x 630 PNG it is 472 kB even with a palette, over og_png_max_bytes, and the
+    # local volume's frame is 0.3 % lit.
+    og_stop: 1
+    stops:
+      - id: home
+        target: {record: dso-milky-way}
+        stage: galaxy
+        needs_layer: galaxy
+        distance_km: 1419109570887120000
+        drift_deg: 10
+        drift_rate_deg_s: 1
+        chapter: "Home"
+        # read 2026-10-16, https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/:
+        # "Our galaxy probably contains 100 to 400 billion stars" (the star count). The width is the
+        # card's own stat above these words, data/layers.js dso-milky-way sizeLy 87 400 ("disc size:
+        # Wikipedia, Milky Way"), printed 87 000 ly: the same page's "about 100,000" beside it read
+        # as a second, different figure (review of public #1200, 2026-10-16).
+        card:
+          title: "We start at home"
+          body: >-
+            Our galaxy is about 87 000 light-years across, with between one and four
+            hundred billion stars. Seen from outside, as here, it is a model: nobody has ever left it to
+            look back.
+
+      - id: local-group
+        target: {world: sun}
+        needs_layer: deep-sky
+        # Six million light-years from the Sun, as the roof trip's Local Group stop stands.
+        distance_km: 56764382835484800000
+        drift_deg: 15
+        drift_rate_deg_s: 1.5
+        chapter: "The Local Group"
+        # read 2026-10-16, https://en.wikipedia.org/wiki/Local_Group: "a current total of 134 members is
+        # known within 1 megaparsec", "The two largest members, the Andromeda and the Milky Way
+        # galaxies", "a total diameter of 5.11 megaparsecs (17 million light-years". The places are the
+        # deep-sky records' (measured); the three spirals' shapes are models (deepsky-heroes, data/layers.js).
+        card:
+          title: "Our group of galaxies"
+          body: >-
+            Six million light-years out, our galaxy and Andromeda are the two large members of a group
+            of more than a hundred galaxies, most of them small. Where each one is has been measured;
+            the shapes of the big spirals are models.
+
+      - id: local-volume
+        target: {world: sun}
+        needs_layer: deep-sky
+        # 40 million light-years: outside the local volume's 36 Mly, the whole tile in the frame.
+        distance_km: 378429218903232000000
+        drift_deg: 15
+        drift_rate_deg_s: 1.5
+        chapter: "Our neighbours"
+        # read 2026-10-16, site/data/deep/localvolume.json and scene/deep/localvolume.js: 800 galaxies
+        # of Karachentsev, Makarov & Kaisina 2013 (AJ 145, 101) within about 36 Mly; a distance from
+        # a measured distance (the tip of the red giant branch, Cepheids, the rotation's width...) a point,
+        # one inferred from its group or its speed a fainter grey-blue point "at its most likely distance".
+        card:
+          title: "The local volume"
+          body: >-
+            Forty million light-years out, our group is one knot among eight hundred galaxies. Most of
+            their distances have been measured. The fainter grey-blue points are only estimates: their
+            direction is known, their depth is not.
+
+      - id: ton-618
+        target: {record: exotic-ton-618}
+        needs_layer: exotics
+        # A billion light-years past TON 618, looking back at it with home behind it (`behind: sun`,
+        # 3 to 16 degrees off the middle). From the side towards home the frame held the quasar's ring
+        # alone, 99.991 % one colour at 1440 x 900, under the trips walk's empty-frame floor (screens
+        # run 38824226655); looking home, the frame also holds what is drawn there: 99.95 % (screens
+        # run 38956512528). Stop 5 keeps this direction and read 99.980 % there, ON the floor; from two
+        # billion light-years past it, stop 5 read 99.991 % and failed (run 38965043202), so one it is.
+        distance_km: 9460730472580800000000
+        behind: sun
+        drift_deg: 8
+        drift_rate_deg_s: 1
+        chapter: "A quasar"
+        # read 2026-10-16, https://en.wikipedia.org/wiki/TON_618: "a hyperluminous, broad-emission-line,
+        # radio-loud quasar", "roughly 40.7 billion times the Sun's mass", "observed redshift of
+        # 2.219", light travel distance "10.8 Gly". registry/exotics.yaml ton-618: 18 300 000 000 ly,
+        # "how far it is now (comoving distance) ... in the Planck 2018 cosmology"; cosmology.js 18.31.
+        card:
+          title: "TON 618, a quasar"
+          body: >-
+            TON 618 is a quasar: gas blazing as it falls into a black hole of about forty billion Suns.
+            Its light left 10.8 billion years ago. Space has stretched since, so the map draws it where
+            our model of the universe puts it now: about 18 billion light-years away.
+
+      - id: first-galaxies
+        target: {world: sun}
+        # 32 billion light-years from the Sun, on stop 4's line: the microwave background's map begins
+        # to show (scene/deep/cmb.js cmbOpacity: from 0.66 of its 45.3 Gly radius, full at 0.8; here
+        # 0.71, about a quarter of its full strength), and it fills the next stop. Tried before it: 25
+        # Gly, where the map is not drawn and the frame is home's names and the quasar's mark, which
+        # read 99.959 to 99.989 % one colour in the trips walk, on and over its empty-frame floor
+        # (screens runs 38956512528, 38969993012); and 35 Gly, the first look run, where the two stops
+        # were one picture.
+        distance_km: 302743375122585600000000
+        drift_deg: 12
+        drift_rate_deg_s: 1
+        chapter: "The first galaxies"
+        # read 2026-10-16, https://en.wikipedia.org/wiki/JADES-GS-z14-0: found with the James Webb Space
+        # Telescope in 2024, "a redshift of about 14.18", about 300 million years after the Big Bang;
+        # MoM-z14, "z = 14.44", in May 2025. data/cosmology.js (computed 2026-10-16): 33.7 to 33.9 Gly
+        # now, the universe 283 to 291 million years old when the light left. No record is drawn there.
+        card:
+          title: "Where the first galaxies are now"
+          body: >-
+            The James Webb telescope has seen galaxies whose light left when the universe was about
+            three hundred million years old. Those galaxies are now about 34 billion light-years away,
+            in a few small patches of our sky. None is drawn on this map.
+
+      - id: oldest-light
+        target: {world: sun}
+        # 44 billion light-years: inside the background's sphere (45.3), its far side's map ahead.
+        distance_km: 416272140793555200000000
+        drift_deg: 12
+        drift_rate_deg_s: 1
+        chapter: "The oldest light"
+        # read 2026-10-16, scene/deep/cmb.js (W1-b): the map is WMAP's nine-year ILC map (NASA, LAMBDA),
+        # measured in every direction of our sky; painted at cmbLy() it is "an illustration ... an
+        # observer there sees another map". scene/shells.js cmbYears(): 370 000 years, as its words say.
+        card:
+          title: "The microwave background"
+          body: >-
+            This is the oldest light there is, released about 370 000 years after the Big Bang. The map
+            is measured: a NASA spacecraft charted it across our whole sky. Painting it on this sphere,
+            where the light set out, is an illustration; seen from anywhere else, it would differ.
+
+      - id: edge
+        target: {world: sun}
+        # 49.7 billion light-years, as the roof trip's edge: inside the map's edge (scene/camera.js
+        # EDGE_LY, 50), outside the horizon (46.2).
+        distance_km: 470000000000000000000000
+        drift: none
+        chapter: "The edge"
+        # read 2026-10-16, data/cosmology.js horizonLy(): 46.2 billion light-years (Planck 2018); the
+        # words past it on the map (scene/shells.js): "Nothing measured lies out here: this band is an
+        # illustration". scene/camera.js EDGE_LY 5e10: the map's end.
+        card:
+          title: "The end of this map"
+          body: >-
+            Nearly fifty billion light-years out, this map ends. What we can see ends sooner, about 46
+            billion light-years away: farther light has not had time to reach us. Nothing measured lies
+            past it, so this band is an illustration. Space goes on; our view of it does not.
