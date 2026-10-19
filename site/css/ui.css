@@ -1018,7 +1018,7 @@ button.sr-card__crumb:hover, button.sr-card__crumb:focus-visible { color: var(--
 }
 .sr-card__legendlink:hover, .sr-card__legendlink:focus-visible { color: var(--sr-ember-light); }
 @media (pointer: coarse) {
-  .sr-card__crumb { min-height: 44px; }
+  .sr-card__crumb { min-height: 44px; min-width: 44px; justify-content: center; }
 }
 
 /* What goes inside them: today's sections, in the guide's type roles. */
