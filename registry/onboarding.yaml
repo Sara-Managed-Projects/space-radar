@@ -249,3 +249,7 @@ features:
     not: "Drawn on the moon itself when its stage is entered; there is nothing to press, and the card says what is drawn."
   # 0076 W3-d
   # 0076 W3-e
+  - id: search-by-kind
+    name: Search by kind, and its 3D models toggle (internal spec 0076 W3-e)
+    files: [site/js/data/kindwords.js, site/css/searchkinds.css]
+    not: "Inside the search the find step already rings: typing a kind lists it there, and the toggle sits under those results."

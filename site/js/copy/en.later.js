@@ -1913,5 +1913,37 @@ Object.assign(COPY, {
   // 0076 W3-d (where you are, and the way back)
   r12Navigate: {},
   // 0076 W3-e (search by kind)
-  r12Search: {},
+  r12Search: {
+    // A group's microlabel over its rows (ui/searchrows.js kindHits): the class in four words at most,
+    // then how many of it the map holds. A class with no line here uses its registry title.
+    group: '{label} · {n}',
+    groups: {
+      SUN: 'The Sun', ROCKY_PLANET: 'Rocky planets', GAS_GIANT: 'Gas giants', ICE_GIANT: 'Ice giants', RINGS: 'Rings',
+      VOLCANIC_MOON: 'Volcanic moon', ICY_MOON: 'Icy moons', TITAN: 'Moon with an atmosphere', AIRLESS_MOON: 'Airless moons',
+      DWARF_PLANET: 'Dwarf planets', ASTEROID: 'Asteroids', COMET: 'Comets', ARTIFICIAL_SATELLITE: 'Satellites',
+      LAUNCH_AND_ROCKET: 'Launches and rockets', SPACE_PROBE: 'Space probes', LANDING_SITE: 'Landing sites',
+      EXOPLANET: 'Exoplanets', STAR: 'Stars', BINARY_AND_MULTIPLE: 'Binary and multiple stars', COMPACT_REMNANT: 'Dead stars',
+      BLACK_HOLE: 'Black holes', OPEN_CLUSTER: 'Open clusters', GLOBULAR_CLUSTER: 'Globular clusters',
+      EMISSION_NEBULA: 'Emission nebulae', PLANETARY_NEBULA: 'Planetary nebulae', DARK_NEBULA: 'Dark nebulae',
+      REFLECTION_NEBULA: 'Reflection nebulae', SUPERNOVA_REMNANT: 'Supernova remnants', GALAXY_SPIRAL: 'Spiral galaxies',
+      GALAXY_IRREGULAR: 'Irregular galaxies', GALAXY_ELLIPTICAL: 'Elliptical galaxies', GALAXY_INTERACTION: 'Interacting galaxies',
+      AGN_QUASAR: 'Quasars', GALAXY_GROUP: 'Galaxy groups', GROUND_SITE: 'Ground stations', ODDITY: 'Oddities',
+    },
+    // Rows of a 3D-model listing whose class the registry does not give (a satellite only on a mixed layer).
+    other: 'Other things',
+    // A kind query's other matches: records whose name holds the word but are not of the kind.
+    byName: 'By name',
+    // "Moons of Saturn": the microlabel says whose ({label} arrives lower-cased: "Saturn’s icy moons").
+    of: '{world}’s {label}',
+    // The toggle under the results (aria-pressed). Two words; the tooltip says what counts.
+    only: '3D models',
+    onlyTitle: 'List only what is drawn from a 3D model: a real model or a reconstruction',
+    // What a row of a 3D listing says it is drawn from, after its kind.
+    real: 'real 3D model',
+    rebuilt: '3D reconstruction',
+    // The toggle is on and nothing of these has a model.
+    noneWithModel: 'None of these has a 3D model.',
+    // A kind word typed before the classes have arrived (one small file, fetched then).
+    counting: 'counting…',
+  },
 });
