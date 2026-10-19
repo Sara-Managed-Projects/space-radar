@@ -78,7 +78,7 @@ export function createDeepSky(THREE, env = {}) {
   const heroes = new Map();        // hero id -> { def, profile, mod, hero, level, pending, idleSince }
   const fader = createFader();
   const pending = new Set();
-  const debugState = { gas: true, glow: true, holders: true, stars: true, dust: true, force: !!env.debug };
+  const debugState = { gas: true, glow: true, holders: true, stars: true, dust: true, far: true /* 0076 W4-b */, force: !!env.debug };
   let gain = 1;
   let builtFor = null;
   let lastCpuMs = 0;
@@ -100,7 +100,7 @@ export function createDeepSky(THREE, env = {}) {
   const layers = new Map((env.layers || DEEP_LAYERS).map((def) => [def.id, { def, layer: null, loading: null }]));
   function wantLayer(l) {
     if (l.layer || l.loading) return;
-    l.loading = Promise.resolve().then(() => l.def.build()).then((mod) => { l.layer = mod.createLayer(THREE, {}); group.add(l.layer.group); })
+    l.loading = Promise.resolve().then(() => l.def.build()).then((mod) => { l.layer = mod.createLayer(THREE, l.def.ask ? l.def.ask(env, () => debugState.far) : {}); group.add(l.layer.group); /* 0076 W4-b: a layer asks for what it reads */ })
       .catch((e) => console.warn('deep: layer', l.def.id, 'did not load', e)).finally(() => { pending.delete(l.loading); l.loading = null; });
     pending.add(l.loading);
   }
@@ -403,7 +403,7 @@ export function createDeepSky(THREE, env = {}) {
     },
     debug(opts = {}) {
       // `stars` and `dust` are the heroes' own (stage b-d); until a hero ships they switch nothing.
-      for (const k of ['gas', 'glow', 'holders', 'force', 'stars', 'dust']) if (k in opts) debugState[k] = !!opts[k];
+      for (const k of ['gas', 'glow', 'holders', 'force', 'stars', 'dust', 'far' /* 0076 W4-b */]) if (k in opts) debugState[k] = !!opts[k];
       if ('glow' in opts && env.glowVisible) env.glowVisible(debugState.glow);
       return { ...debugState };
     },

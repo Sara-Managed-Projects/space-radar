@@ -2571,7 +2571,7 @@ def check_nebulae() -> list:
     return pictures
 
 
-EXOTIC_KINDS = {"blackhole", "pulsar", "magnetar", "star"}
+EXOTIC_KINDS = {"blackhole", "pulsar", "magnetar", "star", "quasar"}  # 0076 W4-b: quasar
 
 
 def check_exotics() -> list:

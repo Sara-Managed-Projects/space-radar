@@ -214,3 +214,9 @@ budgets:
   # at most three (the dust's multiply, its light, its own star).
   - {id: deep_sheets_bytes, value: 300000, unit: B, since: 2026-10-17, reason: "spec 0076 design section 4: at most 1.5 MB of hero assets; the six heroes' maps, star list and manifest were about 100 kB on 2026-10-17"}
   - {id: deep_sheets_draw_calls, value: 3, unit: calls, since: 2026-10-17, reason: "spec 0076 design section 4: at most +5 for a hero; a dust sheet's absorb, light and star, a remnant's one shell"}
+  # 0076 W4-b
+  # Galaxy clusters and quasars (internal spec 0076 W4-b, #784; scene/deep/galclusters.js): 3 596 member galaxies of four clusters
+  # (scripts/build_deep_galclusters.py -> site/data/deep/galclusters.{json,bin}), fetched on the Local Group's stage, never at boot.
+  # tests/test_galclusters.mjs reads both.
+  - {id: deep_galclusters_bytes, value: 150000, unit: B, since: 2026-10-20, reason: "spec 0076 design section 4 (1.5 MB at most for a hero's assets): 71 936 B of members (3 596 galaxies at 20 B) and 7 237 B of manifest on 2026-10-20"}
+  - {id: deep_galclusters_draw_calls, value: 6, unit: calls, since: 2026-10-20, reason: "spec 0076 design section 4: one call per galaxy cluster (four) and one per quasar (two), each culled whole by the frustum and by its size on the screen; three at most in any ordinary view"}

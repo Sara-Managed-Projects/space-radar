@@ -36,4 +36,7 @@ export const HEROES = [
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.
 export const DEEP_LAYERS = [
   { id: 'localvolume', stage: 'e', stages: ['local-group'], build: () => import('./localvolume.js') },
+  // 0076 W4-b: Virgo, Coma, Fornax and Perseus as instanced impostors, and two quasars with their host cue. `ask` is what the coordinator
+  // hands the layer (scene/deep/deepsky.js); `debug` is the key of `sr.deep.debug({ far: false })`, which takes it off for a probe's BEFORE shot.
+  { id: 'galclusters', stage: 'W4-b', stages: ['local-group'], build: () => import('./galclusters.js'), ask: (env, on) => ({ recordById: env.recordById, on }) },
 ];

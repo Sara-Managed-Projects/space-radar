@@ -1,0 +1,246 @@
+{
+ "version": 1,
+ "built": "2026-10-20",
+ "stride": 20,
+ "count": 3596,
+ "bin": {
+  "bytes": 71936,
+  "sha256": "69aa4c756f93a02f78fa78fbe08e08de0095e3a5926e93e517196de63c026720"
+ },
+ "cuts": {
+  "virgo": "EVCC members by the infall model (MmI = M)",
+  "coma": "Kang+ 2025 flag Mm = 1",
+  "fornax": "Ferguson 1989 likely members",
+  "perseus": "Kang+ 2024 flag Mm = 1",
+  "dsoMatchArcsec": 90.0
+ },
+ "licence": "VizieR: free of usage in a scientific context, the original authors cited; SDSS: all data released in public data releases are in the public domain",
+ "sources": {
+  "evcc": "Kim and others 2014, ApJS 215, 22 (VizieR J/ApJS/215/22/table2)",
+  "sbf": "Mei and others 2007, ApJ 655, 144 (VizieR J/ApJ/655/144/table1)",
+  "coma": "Kang and others 2025, ApJS 278, 51 (VizieR J/ApJS/278/51/table2)",
+  "perseus": "Kang and others 2024, ApJS 272, 22 (VizieR J/ApJS/272/22/table2)",
+  "fornax": "Ferguson 1989, AJ 98, 367 (VizieR VII/180/p2tbl2); distance Blakeslee and others 2009, ApJ 694, 556",
+  "sdss": "SDSS DR17 through SkyServer (petroR50_r, g and r model magnitudes and extinction)"
+ },
+ "clusters": [
+  {
+   "id": "virgo",
+   "name": "Virgo Cluster",
+   "aliases": [
+    "Virgo",
+    "Virgo Galaxy Cluster"
+   ],
+   "count": 1012,
+   "centre": {
+    "raDeg": 187.4311,
+    "decDeg": 10.9756,
+    "dir": [
+     -0.973463,
+     -0.040757,
+     0.225185
+    ],
+    "note": "the mean direction of the members drawn"
+   },
+   "distMly": 53.816,
+   "distMpc": 16.5,
+   "distance": {
+    "method": "sbf",
+    "mpc": 16.5,
+    "random_mpc": 0.1,
+    "systematic_mpc": 1.1
+   },
+   "depth": {
+    "kind": "measured",
+    "sigmaMly": 1.957,
+    "cutSigma": 2.5,
+    "note": "the published rms scatter of the cluster's SBF distances"
+   },
+   "radiusMly": 24.03,
+   "own": 71,
+   "sized": 1012,
+   "excluded": [
+    "dso-m100",
+    "dso-m49",
+    "dso-m58",
+    "dso-m59",
+    "dso-m60",
+    "dso-m84",
+    "dso-m85",
+    "dso-m86",
+    "dso-m87",
+    "dso-m88",
+    "dso-m89",
+    "dso-m90",
+    "dso-m91",
+    "dso-m98",
+    "dso-m99"
+   ],
+   "absMagRange": [
+    -21.41,
+    -12.06
+   ],
+   "catalogue": "The Extended Virgo Cluster Catalog (Kim and others 2014, ApJS 215, 22; VizieR J/ApJS/215/22), members by the infall model; distances of 84 of them from Mei and others 2007, ApJ 655, 144 (VizieR J/ApJ/655/144)",
+   "source": "Mei and others 2007, ApJ 655, 144 (arXiv astro-ph/0702510): 'The remaining 79 galaxies have a narrow distribution around our adopted mean distance of 16.5+/-0.1 (random mean error) +/-1.1 Mpc (systematic). The rms distance scatter of this sample is 0.6+/-0.1 Mpc' (abstract, read 2026-10-20). Kim and others 2014, ApJS 215, 22 (VizieR, read 2026-10-20).",
+   "band": "SDSS g",
+   "sbfInCatalogue": 84,
+   "offset": 0
+  },
+  {
+   "id": "coma",
+   "name": "Coma Cluster",
+   "aliases": [
+    "Abell 1656",
+    "Coma Galaxy Cluster"
+   ],
+   "count": 1826,
+   "centre": {
+    "raDeg": 194.8661,
+    "decDeg": 27.9596,
+    "dir": [
+     -0.853713,
+     -0.021418,
+     0.520302
+    ],
+    "note": "the mean direction of the members drawn"
+   },
+   "distMly": 333.744,
+   "distMpc": 102.326,
+   "distance": {
+    "method": "redshift",
+    "zMean": 0.02322
+   },
+   "depth": {
+    "kind": "modelled",
+    "sigmaMly": 3.966,
+    "cutSigma": 2.5,
+    "note": "the members' spread on the sky, read as the same spread in depth (a cluster is round: an assumption)"
+   },
+   "radiusMly": 15.268,
+   "own": 0,
+   "sized": 1826,
+   "excluded": [],
+   "absMagRange": [
+    -23.36,
+    -12.12
+   ],
+   "catalogue": "Spectroscopic redshift survey of the Coma cluster (Kang and others 2025, ApJS 278, 51; VizieR J/ApJS/278/51), the members its own flag names; sizes and colours from the Sloan Digital Sky Survey (DR17)",
+   "source": "Kang and others 2025, ApJS 278, 51 (VizieR J/ApJS/278/51/table2, read 2026-10-20). SDSS DR17 photometry through SkyServer (https://skyserver.sdss.org/dr17, read 2026-10-20).",
+   "band": "SDSS r (extinction corrected Petrosian)",
+   "offset": 1012
+  },
+  {
+   "id": "fornax",
+   "name": "Fornax Cluster",
+   "aliases": [
+    "Fornax",
+    "Fornax Galaxy Cluster"
+   ],
+   "count": 340,
+   "centre": {
+    "raDeg": 53.9371,
+    "decDeg": -35.4528,
+    "dir": [
+     0.479529,
+     0.373433,
+     -0.794103
+    ],
+    "note": "the mean direction of the members drawn"
+   },
+   "distMly": 65.231,
+   "distMpc": 20.0,
+   "distance": {
+    "method": "sbf",
+    "mpc": 20.0,
+    "random_mpc": 0.3,
+    "systematic_mpc": 1.4
+   },
+   "depth": {
+    "kind": "measured",
+    "sigmaMly": 1.598,
+    "cutSigma": 2.5,
+    "note": "the published rms scatter of the cluster's SBF distances"
+   },
+   "radiusMly": 6.15,
+   "own": 0,
+   "sized": 306,
+   "excluded": [],
+   "absMagRange": [
+    -22.11,
+    -11.01
+   ],
+   "catalogue": "Galaxies in the Fornax Cluster (Ferguson 1989, AJ 98, 367; VizieR VII/180), the likely members",
+   "source": "Blakeslee and others 2009, ApJ 694, 556 (arXiv 0901.1138): 'The resulting Fornax distance modulus is 31.51 +/-0.03 +/-0.15 mag, 20.0 +/-0.3 +/-1.4 Mpc ... The rms distance scatter for the early-type Fornax galaxies is 0.49 Mpc' (abstract, read 2026-10-20). Ferguson 1989 (VizieR VII/180, read 2026-10-20).",
+   "band": "B_T",
+   "offset": 2838
+  },
+  {
+   "id": "perseus",
+   "name": "Perseus Cluster",
+   "aliases": [
+    "Abell 426",
+    "Perseus Galaxy Cluster"
+   ],
+   "count": 418,
+   "centre": {
+    "raDeg": 49.953,
+    "decDeg": 41.5041,
+    "dir": [
+     0.481859,
+     0.789591,
+     0.379945
+    ],
+    "note": "the mean direction of the members drawn"
+   },
+   "distMly": 254.754,
+   "distMpc": 78.108,
+   "distance": {
+    "method": "redshift",
+    "zMean": 0.017701
+   },
+   "depth": {
+    "kind": "modelled",
+    "sigmaMly": 1.659,
+    "cutSigma": 2.5,
+    "note": "the members' spread on the sky, read as the same spread in depth (a cluster is round: an assumption)"
+   },
+   "radiusMly": 5.864,
+   "own": 0,
+   "sized": 394,
+   "excluded": [],
+   "absMagRange": [
+    -23.0,
+    -13.91
+   ],
+   "catalogue": "Galaxies with redshifts in the vicinity of A426 (Kang and others 2024, ApJS 272, 22; VizieR J/ApJS/272/22), the members its own flag names; sizes and colours from the Sloan Digital Sky Survey (DR17)",
+   "source": "Kang and others 2024, ApJS 272, 22 (VizieR J/ApJS/272/22/table2, read 2026-10-20). SDSS DR17 photometry through SkyServer (https://skyserver.sdss.org/dr17, read 2026-10-20).",
+   "band": "SDSS r (extinction corrected Petrosian)",
+   "offset": 3178
+  }
+ ],
+ "quasars": [
+  {
+   "id": "3c-273",
+   "record": "exotic-3c-273",
+   "name": "3C 273",
+   "redshift": 0.158339,
+   "vmag": 12.9,
+   "host": {
+    "morphology": "E4",
+    "apparent_size_arcsec": 29,
+    "apparent_mag": 16,
+    "source": "https://en.wikipedia.org/wiki/3C_273 ('a giant elliptical galaxy with an apparent magnitude of 16 and an apparent size of 29 arcseconds', morphology E4 after Bahcall and others 1997, ApJ 479, 642; read 2026-10-20)"
+   },
+   "note": null
+  },
+  {
+   "id": "3c-279",
+   "record": "exotic-3c-279",
+   "name": "3C 279",
+   "redshift": 0.5362,
+   "vmag": 17.8,
+   "host": null,
+   "note": "The source read (https://en.wikipedia.org/wiki/3C_279, 2026-10-20) gives no size for its host galaxy, so none is drawn."
+  }
+ ]
+}

@@ -542,7 +542,7 @@ const TEMPLATES = {
     const mHi = pickNumber(md, 'massMsunHigh');
     const period = pickNumber(md, 'periodS');
     const name = displayName(record);
-    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar' }[kind] || 'leadBlackhole';
+    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */ }[kind] || 'leadBlackhole';
     const lead = lo !== null && hi !== null
       ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
       : t(T[leadKey], { name, dist: distLy !== null ? fmt.int(distLy) : '?' });
