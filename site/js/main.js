@@ -2882,7 +2882,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
       // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
-      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare(1 - ctx.nebulae.drawn('dso-m31'));
+      // 0076 W4-a (spec 0075 task 59): and by what M31's hero draws of them as Sersic points (the two never draw one galaxy twice).
+      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare((1 - ctx.nebulae.drawn('dso-m31')) * (1 - (ctx.deep && ctx.deep.heroShareOf ? ctx.deep.heroShareOf('dso-m32') : 0)));
       // A glow gives way to a photograph only while the photograph is being drawn (scene/dsoglow.js):
       // off the line of sight from the Sun the picture fades and the mark of its kind comes back.
       // Asked four times a second; the glow's buffer is rewritten only when the answer changes.

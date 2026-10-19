@@ -281,6 +281,7 @@ const A = prep(M31, m31, 30000);
     const f = S.spheroidFrame(byId('dso-m32'), 0.7);
     const apparent = Math.sqrt(Math.cos(f.incl_deg * D2R) ** 2 + f.q * f.q * Math.sin(f.incl_deg * D2R) ** 2);
     check(Math.abs(apparent - f.apparent) < 1e-6 && f.pa_deg === 170, `a spheroid of flattening ${f.q} seen at ${f.incl_deg.toFixed(1)} degrees shows the catalogue ellipse (${apparent.toFixed(3)} against ${f.apparent.toFixed(3)}), position angle 170`);
+    check(S.companionShare(1, 1, 10) === 0 && S.companionShare(1, 1, 200) === 1 && S.companionShare(1, 0, 0) === 1 && S.companionShare(0.5, 0.5, 70) > 0.25 && S.companionShare(0.5, 0.5, 70) < 0.5, 'a companion the photograph holds at 10 px is left to it; large on screen (200 px) its points draw it whatever the photograph does');
     hero.setLevel(2, 1);
     const cam = new THREE.PerspectiveCamera(50, 1.6, 1, 1e9);
     cam.position.set(0, 0, 1000); cam.updateMatrixWorld();

@@ -1118,6 +1118,17 @@ export function spheroidFrame(record, qInt) {
   const c2 = qi >= 1 ? 1 : Math.min(1, Math.max(0, (qObs * qObs - qi * qi) / (1 - qi * qi)));
   return { pa_deg: Number.isFinite(md.posAngDeg) ? md.posAngDeg : 0, incl_deg: Math.acos(Math.sqrt(c2)) / D2R, q: qi, apparent: qObs };
 }
+/**
+ * How much of a companion (M32, M110) its Sersic points draw (0076 W4-a): the hero's share, less what the photograph holds of it.
+ * The photograph holds a companion only while the companion is small on its plate; once its own radius passes ~100 px it is
+ * larger than the plate shows it (or the camera is off the plate's line), so the points draw it whatever the photograph does:
+ * nothing vanishes close up. Pure.
+ */
+export function companionShare(share, photo, rPx) {
+  const t = Math.min(1, Math.max(0, ((Number(rPx) || 0) - 40) / 60));
+  const near = t * t * (3 - 2 * t);
+  return Math.min(1, Math.max(0, share)) * (1 - Math.min(1, Math.max(0, photo)) * (1 - near));
+}
 const SPHEROID_POINTS = [1500, 3500, 5000];     // by tier: points a companion spheroid is made of
 
 export function createHero(THREE, env = {}) {
@@ -1159,8 +1170,9 @@ export function createHero(THREE, env = {}) {
     const mp = { id: m.record, frame, sense: 1, layers: [{ kind: 'bulge', sersic_n: Number(m.sersic_n) || 2, re_kpc: Number(m.re_kpc), q: frame.q, light: 1, colour: m.colour || '#ffd9ae' }] };
     const cg = createGalaxyPoints(THREE, mp, { count: SPHEROID_POINTS[Math.min(2, Math.max(0, tier | 0))], dust: 0, seed: 32 + companions.length, name: `${group.name}:${m.record}`, spheroid: true });
     group.add(cg.group);
-    companions.push({ id: m.record, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame) });
+    companions.push({ id: m.record, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame), rPx: 0 });
   }
+  const shareMap = new Map(companions.map((c) => [c.id, 0]));
   const _o = new THREE.Vector3();
   const placeCompanions = () => {
     if (!companions.length || !stage.toSceneInto(posKm, 'sun-inertial', _o, stage.tMs)) return;
@@ -1175,7 +1187,7 @@ export function createHero(THREE, env = {}) {
   const refresh = () => {
     const k = share * (1 - Math.min(1, Math.max(0, photoIn)));
     g.setShare(k, gainIn);
-    for (const c of companions) c.g.setShare(before ? 0 : k, gainIn);
+    for (const c of companions) c.g.setShare(before ? 0 : companionShare(share, photoIn, c.rPx), gainIn);
     g.setOld(before);
   };
   return {
@@ -1196,6 +1208,7 @@ export function createHero(THREE, env = {}) {
       if (Number.isFinite(info.photo)) photoIn = info.photo;
       if (Number.isFinite(info.gain) && info.gain > 0) gainIn = info.gain;
       before = !!info.before; // sr.deep.debug({before: true}): the 1.1 look, for a probe
+      for (const c of companions) c.rPx = typeof info.pxOf === 'function' ? info.pxOf(c.id) : 0;
       refresh();
       g.update(info.camera, viewHNow(), dprNow(), tier);
       for (const c of companions) c.g.update(info.camera, viewHNow(), dprNow(), tier);
@@ -1203,7 +1216,7 @@ export function createHero(THREE, env = {}) {
     },
     ready: () => true,
     /** record id -> how much of it this hero draws (the level's share): the point glow of M32 and M110 steps back by it. */
-    shares: () => new Map(companions.map((c) => [c.id, share])),
+    shares: () => { for (const c of companions) shareMap.set(c.id, share); return shareMap; },
     stats: () => ({ level, share: Math.round(g.share() * 100) / 100, ...g.stats(), meshes: g.stats().meshes + companions.reduce((n, c) => n + c.g.stats().meshes, 0), companions: companions.length, points: g.stats().points + companions.reduce((n, c) => n + c.g.stats().points, 0) }),
     dispose() {
       g.dispose();

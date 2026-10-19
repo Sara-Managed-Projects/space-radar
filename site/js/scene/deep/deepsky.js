@@ -315,7 +315,7 @@ export function createDeepSky(THREE, env = {}) {
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);
         if (share > 0) {
           // photo: its photograph's share now (a hero gives way to it on its line); tier and gain: the device's tier, the exposure.
-          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, before: debugState.before, photo: env.pictureShare ? env.pictureShare(h.def.record) || 0 : 0, tier: q.tier, gain });
+          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, before: debugState.before, pxOf: (id) => px.get(id) || 0, photo: env.pictureShare ? env.pictureShare(h.def.record) || 0 : 0, tier: q.tier, gain });
           drawnHeroes += 1;
           heroIds.add(h.def.record);
           // (stage c) Its children are drawn by it (the Tarantula by the LMC): no holder of their own, and
@@ -416,6 +416,8 @@ export function createDeepSky(THREE, env = {}) {
     /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
     heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) { m.set(h.def.record, fader.share(`hero:${h.def.id}`)); if (h.hero.shares) for (const [id, k] of h.hero.shares()) if (k > (m.get(id) || 0)) m.set(id, k); } /* 0076 W4-a: and the records a hero draws with it (M32, M110) */ for (const l of layers.values()) if (l.layer && l.layer.shares) for (const [id, k] of l.layer.shares()) if (k > (m.get(id) || 0)) m.set(id, k); return m; }, // (0076 W3-a) and a class layer's
     ready, prefetch,
+    /** (0076 W4-a) how much of a record a hero draws with it as its own (M31's companions), 0..1; no allocation, once a frame. */
+    heroShareOf: (id) => { let k = 0; for (const h of heroes.values()) if (h.hero && h.level >= 2 && h.hero.shares) { const m = h.hero.shares(); if (m.has(id)) k = Math.max(k, m.get(id)); } return k; },
     // (0076 W4-a, spec 0075 task 63) the local volume's galaxies as selectable records: found by id, and by a tap (main.js pick)
     volumeRecord: (id) => { const v = volumeLayer(); const row = v && typeof id === 'string' && id.startsWith('dso-lv-') ? v.rowOfId(id) : -1; return row >= 0 ? v.records()[row] : null; },
     pickAll: (ndcX, ndcY, camera, viewport, limit) => { const v = volumeLayer(); return v ? v.pickAll(ndcX, ndcY, camera, viewport, limit) : []; },
