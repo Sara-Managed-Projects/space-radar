@@ -16,7 +16,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rings | 1 | 1 |
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
-| heroes | 6 | 6 |
+| heroes | 12 | 12 |
 | exotics | 20 | 20 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
@@ -33,6 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
+| **all** | **882** | **111 069** |
 | **all** | **877** | **111 064** |
 
 | class | records | renderer | honesty (default) | heroes |
@@ -61,6 +62,12 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 35 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js` | measured | orion |
+| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `gasmat.js` | measured | helix, m57 |
+| [DARK_NEBULA](#dark_nebula) | 5 | `nebulae.js`, `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
+| [REFLECTION_NEBULA](#reflection_nebula) | 5 | `dsoglow.js`, `nebulae.js`, `dustsheet.js` | illustrative | iris, m78 |
+| [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
+| [GALAXY_SPIRAL](#galaxy_spiral) | 54 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
+| [GALAXY_IRREGULAR](#galaxy_irregular) | 14 | `lmc.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc |
 | [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m57 |
 | [DARK_NEBULA](#dark_nebula) | 3 | `nebulae.js`, `dsoglow.js` | measured | - |
 | [REFLECTION_NEBULA](#reflection_nebula) | 3 | `dsoglow.js`, `nebulae.js` | illustrative | - |
@@ -82,6 +89,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
+Honesty over the 882 records: 320 measured, 239 modelled, 323 illustrative.
 Honesty over the 876 records: 319 measured, 234 modelled, 323 illustrative.
 Honesty over the 877 records: 321 measured, 233 modelled, 323 illustrative.
 
@@ -495,49 +503,55 @@ Honesty over the 877 records: 321 measured, 233 modelled, 323 illustrative.
 
 **Dark nebulae**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The Horsehead's photograph; the others as a holder with no glow.
+- **Hero overrides:** `horsehead` (registry/deepsky-heroes/horsehead.yaml), `coalsack` (registry/deepsky-heroes/coalsack.yaml)
 - **Source:** The Horsehead's photograph; OpenNGC for the dark clouds' places.
 - **Dates and filters:** As the photograph's row.
-- **Measured, modelled or reconstructed:** Measured: the photograph and the places. Nothing reddens or dims what is behind yet.
+- **Measured, modelled or reconstructed:** Measured: the photograph and the places. Reconstructed: the Horsehead's dust as a sheet that dims and reddens what is behind it (W3-c, tier 1 and up; the Coalsack's is built and held); the other dark clouds dim nothing yet.
 - **Rights:** CC BY 4.0 photograph; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (absorbing sheets, spec 0075 task 28, W3-c)
-- **Records (3):**
+- **Records (5):**
   - dso (2): `coalsack`, `horsehead-nebula`
   - photographs (1): `horsehead-nebula`
+  - heroes (2): `coalsack`, `horsehead`
 
 ### REFLECTION_NEBULA
 
 **Reflection nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`, `site/js/scene/deep/dustsheet.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The reflection glow; the Pleiades' photograph.
+- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml)
 - **Source:** OpenNGC; the photograph of M45.
 - **Dates and filters:** As the photograph's row.
 - **Measured, modelled or reconstructed:** Measured: places and the photograph. Illustrative: the glow.
 - **Rights:** OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0.
 - **What is missing is tracked in:** internal #784 (pale-blue sheets lit by their star, W3-c)
-- **Records (3):**
+- **Records (5):**
   - dso (2): `m78`, `iris-nebula`
   - photographs (1): `m45`
+  - heroes (2): `iris`, `m78`
 
 ### SUPERNOVA_REMNANT
 
 **Supernova remnants**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`
+- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/remnant.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The photograph of the Crab or the Veil; the glow elsewhere.
+- **Hero overrides:** `crab` (registry/deepsky-heroes/crab.yaml), `veil` (registry/deepsky-heroes/veil.yaml)
 - **Source:** Photographs of M1 (the Crab) and the Veil; OpenNGC.
 - **Dates and filters:** As the photographs' rows.
-- **Measured, modelled or reconstructed:** Measured: the photographs. Illustrative: the glow. No shell is drawn yet.
+- **Measured, modelled or reconstructed:** Measured: the photographs. Reconstructed: the Veil's shell in depth, its light the photograph's (W3-c; the Crab's is built and held). Illustrative: the glow.
 - **Rights:** CC BY 4.0 photographs; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** internal #784 (shells, W3-c); internal #549 (NASA meshes wait on a licence)
-- **Records (4):**
+- **Records (6):**
   - dso (2): `m1`, `veil-nebula`
   - photographs (2): `m1`, `veil-nebula`
+  - heroes (2): `crab`, `veil`
 
 ### GALAXY_SPIRAL
 

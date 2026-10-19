@@ -194,6 +194,9 @@ const CONTRACT = {
   'scene/deep/ring.js': ['createHero', 'tierFloor', 'geometryOf', 'insideOf', 'nearOf', 'layerSamples', 'capLight', 'columnsAt', 'columnMap', 'columnsFrom', 'haloSamples', 'COLUMN_MAP', 'columnJs', 'knotsOf', 'paletteFor', 'samplesFor', 'sharesFor', 'lightUv', 'SHAPE', 'SHADERS', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
   'scene/deep/shellneb.js': ['skyFrame', 'ringAxis', 'planeBasis', 'skyDir', 'uvOf', 'uvAt', 'layerSpan', 'spanLen', 'spanT', 'quadSpan', 'shellSpan', 'quarticCdf', 'slabIntegral', 'lightStretch', 'paletteOf', 'sharesOf', 'samplesOf', 'viewSize', 'pixelHash', 'seeded', 'shellMaterial', 'skyPlacer', 'starMesh', 'knotMaterial', 'knotMesh', 'lightTexture', 'GLSL', 'SHELL_SHADERS', 'QUARTIC_CDF', 'QUARTIC', 'QUAD_BYTES', 'AU_LY', 'D2R', 'norm', 'cross', 'dot', 'neg', 'smooth', 'hexRgb', 'f3'],
   // 0076 W3-c (remnant.js, dustsheet.js)
+  // Release 1.2.0 stage W3-c (internal #784, #806): remnants as shells and dust as sheets, fetched when one is near; their pure parts for tests/test_remnant.mjs and tests/test_dustsheet.mjs.
+  'scene/deep/remnant.js': ['createHero', 'skyFrame', 'offsetLy', 'uvOf', 'coverAt', 'shellOf', 'chordAt', 'pathsAt', 'weightsAt', 'columnJs', 'samplesFor', 'sharesFor', 'paletteFor', 'stretchJs', 'pixelHash', 'featherOf', 'placeSkyGroup', 'loadMap', 'cameraInSky', 'part', 'SHAPE', 'SHADERS', 'COMMON_GLSL', 'VERT', 'UNDER_MEASURED', 'COPY_BLOCK'],
+  'scene/deep/dustsheet.js': ['createHero', 'sheetOf', 'ccm', 'reddening', 'decodeTau', 'grazeOf', 'reliefAt', 'hg', 'phaseFactor', 'coverSheet', 'capLight', 'closedJs', 'transmissionTo', 'orderOf', 'gridFor', 'keepRadiusPx', 'keepActive', 'starLook', 'SHAPE', 'SHADERS', 'UNDER_MEASURED'],
   // 0076 W3-d (scalerail.js)
 };
 

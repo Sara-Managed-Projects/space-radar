@@ -58,5 +58,7 @@ export const BUDGETS = {
   "deep_clusters_draw_calls": 3,
   "deep_globular_points": 24000,
   "deep_ring_bytes": 60000,
-  "deep_ring_draw_calls": 3
+  "deep_ring_draw_calls": 3,
+  "deep_sheets_bytes": 300000,
+  "deep_sheets_draw_calls": 3
 };

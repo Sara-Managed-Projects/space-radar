@@ -1722,6 +1722,25 @@ that its thickness and the lobes' form are not measured, and that no astronomer 
 
 ### Remnants and dust (0076 W3-c)
 
+The remnants' shells (`site/js/scene/deep/remnant.js`) and the dust sheets (`site/js/scene/deep/dustsheet.js`), their
+numbers in `registry/deepsky-heroes/{crab,veil,horsehead,coalsack,m78,iris}.yaml`, are computed here from facts read in
+each source on 2026-10-17; no text, figure or model file of any of them is shipped. Lengths on the sky are turned into
+light-years at each record's distance. Each shape in depth is **reconstructed** and each card says so; the dust only
+absorbs (a multiply blend in its own material) and reddens by the extinction law below.
+
+| what | the numbers | from |
+|---|---|---|
+| the Crab's shell | the envelope fitted as an ellipsoid along the pulsar's torus axis, no line-emitting gas beyond 2 pc along it and none within 0.5 pc of the centre (310 000 SITELLE spectra, uniform expansion); its true outline is "heart-shaped", not drawn | Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864 (arXiv:2101.02709) |
+| the Crab's axis | the outer torus at position angle 126.3 degrees, its axis 63.0 degrees from the line of sight; which end is nearer is assumed | Ng & Romani 2004, ApJ 601, 479 (arXiv:astro-ph/0310155) |
+| the Cygnus Loop (the Veil) | 735 +/- 25 pc; a main shell 2.85 degrees (37 pc) across, fairly spherical; its centre SIMBAD's | Fesen, Weil, Cisneros, Blair & Raymond 2018, MNRAS 481, 1786 (arXiv:1809.01713); SIMBAD, CDS |
+| the Horsehead | in silhouette against the glowing gas of IC 434, lit from behind by sigma Ori 3.5 pc away in projection; the edge seen nearly edge on | Abergel et al. 2024, A&A (arXiv:2404.15816); Habart et al. 2005, A&A (arXiv:astro-ph/0501536) |
+| the Coalsack | the near cloud at 100 to 200 pc; a second cloud about 3.1 kpc away in the north-east (drawn here at the near distance); extinction above 6 and up to 10 magnitudes in a few places | Beuther et al. 2011, A&A (arXiv:1107.2298) |
+| M78's and the Iris's stars | HD 38563 (B2II-III, V 10.81) and HD 200775 (B2Ve, V 7.43): places, magnitudes, types; their depths are not measured | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-17, cited as "CDS/SIMBAD" |
+| the Iris's cavity | HD 200775 in a cavity largely devoid of molecular gas | Gerin, Phillips, Keene, Betz et al. 1998 (arXiv:astro-ph/9802116) |
+| the extinction law | A(lambda) / A(V) at 0.61, 0.55 and 0.45 um for R_V = 3.1 (the stars behind the dust reddened) | Cardelli, Clayton & Mathis 1989, ApJ 345, 245 |
+| the phase function | Henyey-Greenstein with g = 0.6 (modelled): a reflection nebula seen from another side | Henyey & Greenstein 1941, ApJ 93, 70; g as Sujatha, Murthy, Shalima & Henry 2007, ApJ 665, 363 measured it near the Coalsack (0.61 +/- 0.07, far ultraviolet) |
+| the light and the darkness | the remnants' light IS the photograph the app already shows, its stars removed; the Horsehead's darkness and the glow behind it are read from its photograph; the Coalsack's darkness from the Milky Way map the app draws, against the Milky Way at the same galactic latitude; M78's and the Iris's light from NOIRLab's photographs (B, V, R and H-alpha; their 1280 px renditions, downloaded for the bake and not shipped; placed by a 2MASS solve, CDS hips2fits, as section 3g's photographs). All by `scripts/build_deep_sheets.py` into `site/images/deep/sheets/` (adaptations). Under Deep the photographs' own stretch is ENHANCED; the Crab's, the Veil's and the Horsehead's colours are FALSE COLOUR (narrow filters) | heic0515a: "NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)", CC BY 4.0; noao1209a: "T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA", CC BY 4.0; noao0126a: "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)", CC BY 4.0; noao-m78 and noao-ngc7023: "T. A. Rector/University of Alaska Anchorage, H. Schweiker/WIYN and NOIRLab/NSF/AURA", CC BY 4.0; the Milky Way map: "NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." (section 2's 4k map); stars removed, darkness read and depth reconstructed by Space Radar |
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

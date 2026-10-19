@@ -167,6 +167,14 @@ const DEFERRED = {
   'js/scene/deep/shellneb.js': 'the planetary nebulae\'s shared part: with the Helix or the Ring',
   'js/data/hero-m57.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-c (remnant.js, dustsheet.js)
+  'js/scene/deep/remnant.js': 'remnants as shells: the coordinator fetches it when the Crab or the Veil is near (release 1.2.0 W3-c, internal #784)',
+  'js/scene/deep/dustsheet.js': 'dust as sheets: the coordinator fetches it when the Horsehead, the Coalsack, M78 or the Iris is near (release 1.2.0 W3-c, internal #784, #806)',
+  'js/data/hero-crab.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-veil.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-horsehead.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-coalsack.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-m78.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-iris.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-d (scalerail.js)
   // 0076 W3-e (kindwords.js, visualclasses.js)
   'js/data/kindwords.js': 'the words for a kind of thing ("galaxies"): with ui/searchrows.js, on the search field\'s first focus',
