@@ -183,6 +183,9 @@ budgets:
   - {id: sun_loops_draw_calls, value: 1, unit: calls, since: 2026-10-15, reason: "spec 0076 design section 4: at most +5 for a hero; the loops of every region are one mesh"}
   # 0076 W2-a
   # 0076 W2-c
+  - {id: plumes_draw_calls, value: 1, unit: calls, since: 2026-10-16, reason: "spec 0076 design section 4: at most +5 for a hero; every plume and hot spot of a moon is one Points draw"}
+  - {id: plumes_gpu_bytes, value: 1200000, unit: B, since: 2026-10-16, reason: "spec 0076 design section 4: at most +4 MB per hero; Io's 15 605 grains at 56 B each are 873 880 B, freed when its stage is left"}
+  - {id: plumes_data_bytes, value: 12000, unit: B, since: 2026-10-16, reason: "no image or binary is fetched: the registry's mirror data/plumes.js is 6.8 kB, with scene/plumes.js when a moon with plumes gets its stage"}
   # 0076 W2-e
   # 0076 W3-a
   # 0076 W3-b

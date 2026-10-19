@@ -1063,6 +1063,8 @@ jobs:
       - name: "the giants' details: the Great Red Spot at JUPOS's dated place and drift, Uranus's rings at their own darkness, Jupiter's faint ring from the night side or under Deep (internal spec 0076 W2-b)"
         run: node tests/test_giants.mjs
       # 0076 W2-c
+      - name: "plumes where they were seen: none without a dated source, heights from the registry, still under Measured and reduced motion (internal spec 0076 W2-c)"
+        run: node tests/test_plumes.mjs
       # 0076 W2-d
       # 0076 W2-e
       - name: "every record on the map has one class, a renderer, a source and a credit CREDITS.md carries; no illustration claims a measurement; docs/COVERAGE.md current (internal spec 0076 W2-e, #859, #891, #921)"

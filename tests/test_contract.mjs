@@ -182,7 +182,8 @@ const CONTRACT = {
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
   // 0076 W2-a (traverse.js)
-  // 0076 W2-c (plumes.js)
+  // 0076 W2-c (plumes.js): plumes where they were seen, fetched with a moon's stage; its pure parts for tests/test_plumes.mjs.
+  'scene/plumes.js': ['createPlumes', 'ballisticOf', 'placeVector', 'westOf', 'particlesFor', 'motionTime', 'lineFor', 'whenWords', 'UNDER_MEASURED', 'COPY_BLOCK', 'SHADERS'],
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)

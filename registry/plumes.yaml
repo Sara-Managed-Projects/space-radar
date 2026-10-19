@@ -1,0 +1,182 @@
+# registry/plumes.yaml -- plumes where they were seen: Io, Enceladus and Triton (release 1.2.0 stage W2-c,
+# internal spec 0076; internal #861, #862). Mirrored into site/js/data/plumes.js by scripts/gen_plumes_js.py
+# (`--check` in CI); drawn by site/js/scene/plumes.js on the moon's own stage.
+#
+# THE RULE. No plume without a dated observation: every row names who saw it (`seen.by`), when
+# (`seen.when`, a year, a month or a day) and the page that says so (`source`, with the words read).
+# Heights are the observation's, rounded as the source rounds them; places are the IAU gazetteer's
+# (planetarynames.wr.usgs.gov), copied as published. Io's longitudes there are planetographic,
+# WEST-positive (`lon_w`); Triton's in the review cited are EAST (`lon_e`). The generator turns both into
+# east longitude, which is what scene/worlds.js faceVector takes. tests/test_plumes.mjs holds the rule.
+#
+# WHAT IS MEASURED AND WHAT IS NOT (the card says it in these words' order, copy/en.later.js r12Plumes):
+#   measured      the place, the height (and for Triton the >100 km cloud and its westward drift), the date
+#   modelled      the particles' arcs: launch speed from the height (v = sqrt(2 g h)), flat gravity bent
+#                 round the moon, the spread of launch angles of the plume's type (Pele: a canopy with no
+#                 central column; Prometheus: a fountain) -- McEwen & Soderblom 1983, "Two classes of
+#                 volcanic plume on Io"
+#   reconstructed Enceladus's four tiger stripes as straight segments through the gazetteer's centres,
+#                 at its lengths, parallel to Baghdad Sulcus's two ends; the 101 jets' number (Porco et al.
+#                 2014) shared out by the stripes' activity, their places along each stripe seeded
+#   illustrative  the light: stretched to be seen (the images that found these plumes were stretched too),
+#                 forward-scattering by the grains' kind; Triton's column's width and rise; the hot spots'
+#                 brightness
+# A plume is drawn as it was SEEN, at that date's height. It may not be erupting now (Pele's was not seen
+# by Voyager 2 four months later); the card says "as seen by".
+#
+# MOTION. Measured, and reduced motion: still (the particles held where a steady plume has them). Film:
+# the particles fly their arcs at `film_speed` times the clock (the package's "demonstration-time
+# multiplier"), said on the card; a paused clock is still.
+#
+# FIELDS
+#   worlds.<id>     gm_km3_s2 (the moon's GM, for g = GM / R^2), radius_km (scene/worlds.js's), source
+#   plumes[]        id, world, name, kind (umbrella | fountain | jets | column), lat, lon_w or lon_e,
+#                   height_km, seen {by, when, note}, source {url, read, says}, place {url, read, says}
+#                   umbrella/fountain: zenith_deg [min, max] (launch angles from the vertical), rays (the
+#                   canopy's filaments; 0 = none), particles
+#                   jets: stripes [{name, lat, lon_w, length_km, jets}] and axis {lat_a, lon_w_a, lat_b,
+#                   lon_w_b} (Baghdad's two ends), scale_km (the heights' spread), particles per jet
+#                   column: tail_km, wind_m_s, tail_dir (west), particles
+#   hotspots[]      id, world, name, lat, lon_w, seen, source: a glow on the NIGHT side only
+#   look.<kind>     colour (linear RGB), absorb (0..1 of the light it takes from behind), g (Henyey-Greenstein
+#                   asymmetry: how strongly the grains throw light forward), tau (the stretch: how bright a
+#                   plume's column is against the lit ground, on a 90 degree phase)
+review:
+  by: "Space Radar maintainers"
+  note: "not yet reviewed by an astronomer (spec 0075 section 14.4; internal #785)"
+film_speed: 20
+
+worlds:
+  io:
+    gm_km3_s2: 5959.9
+    radius_km: 1821.5
+    source: {url: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-10-16, says: "Io GM 5959.91547 km^3/s^2, mean radius 1821.49 km"}
+  enceladus:
+    gm_km3_s2: 7.2104
+    radius_km: 252.1
+    source: {url: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-10-16, says: "Enceladus GM 7.21037 km^3/s^2, mean radius 252.10 km"}
+  triton:
+    gm_km3_s2: 1428.5
+    radius_km: 1352.6
+    source: {url: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-10-16, says: "Triton GM 1428.49546 km^3/s^2, mean radius 1352.60 km"}
+
+plumes:
+  - id: pele
+    world: io
+    name: Pele
+    kind: umbrella
+    lat: -18.7
+    lon_w: 255.3
+    height_km: 300
+    seen: {by: "Voyager 1", when: "1979-03", note: "found on 8 March 1979; Galileo saw it twice (1996, 2000) at 300 to 426 km"}
+    source: {url: "https://en.wikipedia.org/wiki/Pele_(volcano)", read: 2026-10-16, says: "A large, 300-kilometer (190 mi) tall volcanic plume has been observed at Pele by various spacecraft starting with Voyager 1 in 1979 (Strom et al. 1979, Nature)"}
+    place: {url: "https://en.wikipedia.org/wiki/Pele_(volcano)", read: 2026-10-16, says: "18.7 S 255.3 W (Gazetteer of Planetary Nomenclature)"}
+    zenith_deg: [12, 38]
+    rays: 40
+    particles: 5200
+  - id: tvashtar
+    world: io
+    name: Tvashtar
+    kind: umbrella
+    lat: 62.76
+    lon_w: 123.53
+    height_km: 330
+    seen: {by: "New Horizons", when: "2007-03", note: "LORRI, late February to early March 2007, from the night side"}
+    source: {url: "https://pds-rings.seti.org/press_releases/pages/PIA09xxx/PIA09359.html", read: 2026-10-16, says: "The plume is roughly 330 kilometers (200 miles) high."}
+    place: {url: "https://planetarynames.wr.usgs.gov/Feature/6159", read: 2026-10-16, says: "Tvashtar (Catena, now Paterae): centre latitude 62.76, centre longitude 123.53, planetographic, +West"}
+    zenith_deg: [12, 38]
+    rays: 36
+    particles: 5200
+  - id: prometheus
+    world: io
+    name: Prometheus
+    kind: fountain
+    lat: -1.52
+    lon_w: 153.94
+    height_km: 75
+    seen: {by: "Voyager 1 and Galileo", when: "1979-03..1997-06", note: "in every Voyager image of 1979 and every Galileo image with the geometry; 75 km on 28 June 1997"}
+    source: {url: "https://www.jpl.nasa.gov/images/pia00703-active-volcanic-plumes-on-io/", read: 2026-10-16, says: "Prometheus ... 75 km (45 mi) high, and its shadow is visible beside the vent (Galileo, 28 June 1997)"}
+    place: {url: "https://planetarynames.wr.usgs.gov/Feature/4836", read: 2026-10-16, says: "Prometheus: centre latitude -1.52, centre longitude 153.94, planetographic, +West"}
+    zenith_deg: [0, 40]
+    rays: 0
+    particles: 2600
+  - id: pillan
+    world: io
+    name: Pillan
+    kind: fountain
+    lat: -12.34
+    lon_w: 243.25
+    height_km: 140
+    seen: {by: "Galileo", when: "1997-06", note: "on the bright limb on 28 June 1997, also seen by the Hubble Space Telescope; a later caption says 120 km"}
+    source: {url: "https://www.jpl.nasa.gov/images/pia00703-active-volcanic-plumes-on-io/", read: 2026-10-16, says: "Pillan Patera ... 140 km (86 mi) high and was also detected by the Hubble Space Telescope"}
+    place: {url: "https://planetarynames.wr.usgs.gov/Feature/4729", read: 2026-10-16, says: "Pillan Patera: centre latitude -12.34, centre longitude 243.25, planetographic, +West"}
+    zenith_deg: [0, 40]
+    rays: 0
+    particles: 2600
+  - id: enceladus-south
+    world: enceladus
+    name: the tiger stripes' jets
+    kind: jets
+    height_km: 505
+    seen: {by: "Cassini", when: "2005-11", note: "the jets imaged from behind on 27 November 2005 at a phase of about 161 degrees; 101 jets mapped by 2014"}
+    source: {url: "https://pds-rings.seti.org/press_releases/pages/PIA07xxx/PIA07762.html", read: 2026-10-16, says: "The full plume towers over the 505-kilometer-wide (314-mile) moon and is at least as tall as the moon's diameter."}
+    place: {url: "https://www.jpl.nasa.gov/news/cassini-spacecraft-reveals-101-geysers-and-more-on-icy-saturn-moon/", read: 2026-10-16, says: "a map of 101 geysers, each erupting from one of the tiger stripe fractures (Porco et al. 2014, Astronomical Journal)"}
+    axis: {from: "Baghdad Sulcus's extent in the gazetteer (Feature 14248: latitudes -68.46 and -71.25, longitudes 36.98 and 225.13 W)", lat_a: -68.46, lon_w_a: 36.98, lat_b: -71.25, lon_w_b: 225.13}
+    stripes:
+      - {name: Alexandria Sulcus, lat: -75.63, lon_w: 137.56, length_km: 111, jets: 14, place: "https://planetarynames.wr.usgs.gov/Feature/14247"}
+      - {name: Cairo Sulcus, lat: -81.62, lon_w: 154.48, length_km: 165, jets: 22, place: "https://planetarynames.wr.usgs.gov/Feature/14249"}
+      - {name: Baghdad Sulcus, lat: -86.91, lon_w: 230.54, length_km: 176, jets: 35, place: "https://planetarynames.wr.usgs.gov/Feature/14248"}
+      - {name: Damascus Sulcus, lat: -80.59, lon_w: 285.87, length_km: 125, jets: 30, place: "https://planetarynames.wr.usgs.gov/Feature/14252"}
+    activity: {url: "https://en.wikipedia.org/wiki/Tiger_stripes_(Enceladus)", read: 2026-10-16, says: "Baghdad and Damascus sulci are the most active, Alexandria the least"}
+    scale_km: 110
+    zenith_deg: [0, 18]
+    particles: 120
+  - id: hili
+    world: triton
+    name: Hili
+    kind: column
+    lat: -57
+    lon_e: 28
+    height_km: 8
+    tail_km: 110
+    wind_m_s: 15
+    tail_dir: west
+    seen: {by: "Voyager 2", when: "1989-08", note: "a dark column rising to about 8 km, its cloud carried west for more than 100 km"}
+    source: {url: "https://www.usgs.gov/publications/tritons-geyser-plumes-discovery-and-basic-characterization", read: 2026-10-16, says: "columns of dark material rising to an altitude of about 8 kilometers where dark clouds of material are left suspended to drift downwind over 100 kilometers (Soderblom et al. 1990, Science 250)"}
+    place: {url: "https://arxiv.org/abs/2112.04627", read: 2026-10-16, says: "Mahilani and Hili at 2 E, 49 S and 28 E, 57 S; the plume columns streak westward at about 8 km (Hofgartner et al. 2022)"}
+    particles: 2400
+  - id: mahilani
+    world: triton
+    name: Mahilani
+    kind: column
+    lat: -49
+    lon_e: 2
+    height_km: 8
+    tail_km: 110
+    wind_m_s: 15
+    tail_dir: west
+    seen: {by: "Voyager 2", when: "1989-08", note: "a dark column rising to about 8 km, its cloud carried west for more than 100 km"}
+    source: {url: "https://www.usgs.gov/publications/tritons-geyser-plumes-discovery-and-basic-characterization", read: 2026-10-16, says: "columns of dark material rising to an altitude of about 8 kilometers where dark clouds of material are left suspended to drift downwind over 100 kilometers (Soderblom et al. 1990, Science 250)"}
+    place: {url: "https://arxiv.org/abs/2112.04627", read: 2026-10-16, says: "Mahilani and Hili at 2 E, 49 S and 28 E, 57 S; the plume columns streak westward at about 8 km (Hofgartner et al. 2022)"}
+    particles: 2400
+
+# Io's hot spots: where lava glows. Seen in Jupiter's shadow by Galileo's camera, and in the infrared
+# since Voyager 1. Drawn only on the night side, as small points; their brightness is illustrative, ranked
+# (Loki Patera first: about a tenth of Io's heat).
+hotspots:
+  - {id: loki, world: io, name: Loki Patera, lat: 13.0, lon_w: 308.8, rank: 1.0, seen: {by: "Voyager 1 (infrared)", when: "1979-03"}, source: {url: "https://en.wikipedia.org/wiki/Loki_Patera", read: 2026-10-16, says: "13 N 308.8 W; about 10% of Io's total thermal emission; IRIS on Voyager 1 measured its heat"}}
+  - {id: pele, world: io, name: Pele, lat: -18.7, lon_w: 255.3, rank: 0.8, seen: {by: "Galileo (in Jupiter's shadow)", when: "1996..2000"}, source: {url: "https://en.wikipedia.org/wiki/Pele_(volcano)", read: 2026-10-16, says: "Galileo also recorded thermal emission from Pele on nearly every occasion its trailing hemisphere was imaged in Jupiter's shadow"}}
+  - {id: pillan, world: io, name: Pillan Patera, lat: -12.34, lon_w: 243.25, rank: 0.7, seen: {by: "Galileo", when: "1997"}, source: {url: "https://ntrs.nasa.gov/citations/20030018895", read: 2026-10-16, says: "a high-temperature (greater than 1600 C) ... 140-km-high plume eruption during the summer 1997 event"}}
+  - {id: tvashtar, world: io, name: Tvashtar, lat: 62.76, lon_w: 123.53, rank: 0.6, seen: {by: "New Horizons", when: "2007-03"}, source: {url: "https://pds-rings.seti.org/press_releases/pages/PIA09xxx/PIA09359.html", read: 2026-10-16, says: "a giant plume from the Tvashtar volcano (late February to early March 2007)"}}
+  - {id: prometheus, world: io, name: Prometheus, lat: -1.52, lon_w: 153.94, rank: 0.45, seen: {by: "Galileo", when: "1997"}, source: {url: "https://www.jpl.nasa.gov/images/pia00703-active-volcanic-plumes-on-io/", read: 2026-10-16, says: "Prometheus ... near the day-night boundary (Galileo, 28 June 1997)"}}
+
+look:
+  # Io's small plumes look bluish-white in Voyager's and Galileo's violet and green (fine grains); Pele's
+  # is mostly gas and faint. Not purple, not uniform: the colour is the same pale grey-blue for every vent.
+  umbrella: {colour: [0.80, 0.84, 0.92], absorb: 0.04, g: 0.55, tau: 0.10}
+  fountain: {colour: [0.84, 0.88, 0.96], absorb: 0.05, g: 0.55, tau: 0.16}
+  # Water-ice grains a few microns across: strongly forward-scattering (Cassini saw the jets best from behind).
+  jets: {colour: [0.92, 0.95, 1.00], absorb: 0.02, g: 0.75, tau: 0.06}
+  # Triton's plumes are DARK: they take light from what is behind them more than they give.
+  column: {colour: [0.30, 0.28, 0.26], absorb: 0.55, g: 0.35, tau: 0.35}
+  hotspot: {colour: [1.00, 0.42, 0.12]}

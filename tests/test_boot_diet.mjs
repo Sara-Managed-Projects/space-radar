@@ -155,6 +155,8 @@ const DEFERRED = {
   'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
   // 0076 W2-a (traverse.js)
   // 0076 W2-c (plumes.js)
+  'js/scene/plumes.js': 'plumes where they were seen: main.js fetches it when Io, Enceladus or Triton gets its own stage (internal spec 0076 W2-c)',
+  'js/data/plumes.js': 'the plumes\' registry: with scene/plumes.js',
   // 0076 W3-a (globular.js)
   // 0076 W3-b (ring.js, shellneb.js)
   // 0076 W3-c (remnant.js, dustsheet.js)
