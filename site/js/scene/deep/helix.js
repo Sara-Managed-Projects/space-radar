@@ -198,8 +198,10 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0]) {
 // ----------------------------------------------------------------------------- tiers and shares
 
 /** Samples a ring: 4 on T0, 8 at level 2, half the march's steps above. Pure. */
-export function samplesFor({ tier = 1, steps = 0 } = {}) {
-  return samplesOf({ tier, steps }, MAX_N);
+export function samplesFor({ tier = 1, steps = 0, slow = false } = {}) {
+  const n = samplesOf({ tier, steps }, MAX_N);
+  // 0076 W4-a (spec 0075 task 44): the frame interval, read as `dtMs`, halves the samples before the pixel-ratio governor steps down
+  return slow && tier >= 1 ? Math.max(4, Math.round(n / 2)) : n;
 }
 
 /**
@@ -464,7 +466,7 @@ export function createHero(THREE, env = {}) {
   star.name = `${group.name}-star`;
   sky.add(star);
 
-  let level = 0, levelShare = 0, clock = 0, samples = 8, tierNow = 1, last = { gas: 0, knots: 0, star: 0, photo: 0, light: 1 }, palette = pal0;
+  let level = 0, levelShare = 0, clock = 0, slowMs = 0, samples = 8, tierNow = 1, last = { gas: 0, knots: 0, star: 0, photo: 0, light: 1 }, palette = pal0;
   const _cam = new THREE.Vector3();
   const setColour = (u, c) => u.value.setRGB(c[0], c[1], c[2], THREE.NoColorSpace);
 
@@ -483,7 +485,8 @@ export function createHero(THREE, env = {}) {
       const { vw, vh } = viewSize();
       const sh = sharesFor({ level: levelShare, rPx: info.rPx, photo: info.photo, viewH: vh });
       last = { ...sh, photo: Number(info.photo) || 0 };
-      samples = samplesFor({ tier, steps: info.steps });
+      if (!(info.frozen || info.reduced)) slowMs = slowMs * 0.9 + (Number(info.dtMs) || 0) * 0.1;
+      samples = samplesFor({ tier, steps: info.steps, slow: slowMs > 24 });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
       if (gain !== palette.gainIn) {
         palette = { ...paletteFor(gain, profile), gainIn: gain };

@@ -10,6 +10,8 @@
 //   nameRule(record, selId, subjectId)   ui/labels.js asks it of every deep-sky name (data/deepsky.js)
 //   pathFor(record, fromTarget, camera)  a flight through the record's parent, or null (main.js flyToRecord)
 //   drawnOf(record)             what is drawn for it, most 3D first, its hero's classes included once shipped
+//   prefetch(ids, {renderer, camera})   (0076 W4-a) the heroes among these record ids are fetched, built and their shaders
+//                               compiled now (a trip's intro asks), so the arrival finds them ready; a promise
 //   ready()                     true when nothing the visible heroes and photographs need is in flight
 //   whenReady(ms)               a promise of ready(), or false at the timeout
 //   stats()                     per holder and hero: level, steps, share, draw calls, CPU ms in this hook
@@ -82,6 +84,7 @@ export function createDeepSky(THREE, env = {}) {
   let gain = 1;
   let builtFor = null;
   let lastCpuMs = 0;
+  let lastGl = { renderer: null, camera: null }; // (0076 W4-a) what prefetch compiles against when it was not handed any
   let lastCalls = 0;
   const _v = new THREE.Vector3();
   const _w = new THREE.Vector3();
@@ -222,9 +225,32 @@ export function createDeepSky(THREE, env = {}) {
     }).catch((e) => console.warn('deep: hero', h.def.id, 'did not load', e)).finally(() => { pending.delete(h.loading); h.loading = null; });
     pending.add(h.loading);
   }
+  // 0076 W4-a (SR-PLAN-087, the hero prefetch): a trip's intro names the records its stops show. A shipped hero among
+  // them is fetched and built now, and its programs are compiled against the renderer (`compileAsync` waits for the
+  // driver's parallel compile; a hero's group is compiled whether or not it is visible), so the first frame of the
+  // arrival does not stall on a link. It is kept 45 s at level 0 (the drop below would otherwise take it back at 10 s).
+  const WARM_KEEP_MS = 45000;
+  function prefetch(ids, gl = {}) {
+    const want = new Set(Array.isArray(ids) ? ids : ids ? [ids] : []);
+    const jobs = [];
+    for (const h of heroes.values()) {
+      if (!want.has(h.def.record)) continue;
+      jobs.push(Promise.all([...pending]).then(() => {
+        if (!(h.profile && h.profile.shipped) && !debugState.force) return null;
+        h.keepFor = WARM_KEEP_MS;
+        fetchHero(h);
+        return h.loading;
+      }).then(() => {
+        const renderer = gl.renderer || lastGl.renderer, camera = gl.camera || lastGl.camera;
+        if (!h.hero || !renderer || !camera || typeof renderer.compileAsync !== 'function') return false;
+        return Promise.resolve(renderer.compileAsync(h.hero.group, camera, env.scene || undefined)).then(() => { h.warm = true; return true; }, () => false);
+      }).catch((e) => { console.warn('deep: prefetch of', h.def.id, 'failed', e); return false; }));
+    }
+    return Promise.all(jobs);
+  }
   function dropHero(h) {
     if (h.hero) { h.hero.dispose(); if (h.hero.group.parent) h.hero.group.parent.remove(h.hero.group); }
-    h.hero = null; h.mod = null; h.level = 0;
+    h.hero = null; h.mod = null; h.level = 0; h.warm = false;
   }
 
   // -------------------------------------------------------------------------------------- frame
@@ -232,6 +258,7 @@ export function createDeepSky(THREE, env = {}) {
     const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
     const camera = info.camera;
     const now = Number(info.nowMs) || 0;
+    if (camera && info.renderer) { lastGl.renderer = info.renderer; lastGl.camera = camera; }
     const ladder = isLadderStage(stage.worldId);
     group.visible = ladder && info.visible !== false && debugState.gas;
     px.clear();
@@ -275,6 +302,7 @@ export function createDeepSky(THREE, env = {}) {
       const rec = env.recordById ? env.recordById(h.def.record) : null;
       const cls = rec ? classOf(rec) : 'other';
       if (!shipped || !rec) { if (h.hero) dropHero(h); continue; }
+      if (h.keepFor) { h.keepUntil = now + h.keepFor; h.keepFor = 0; } // (0076 W4-a) a prefetched hero is kept until its trip arrives
       if (rp >= (THRESHOLDS[cls] || THRESHOLDS.other).fetch) fetchHero(h);
       // (spec 0076 W1-a) a hero whose cheap path costs what a holder does (`latchSafe`) stays drawn under the latch and Low.
       let lv = q.latched && !(h.hero && h.hero.latchSafe) ? Math.min(1, levels.get(h.def.record) || 0) : levels.get(h.def.record) || 0;
@@ -304,7 +332,7 @@ export function createDeepSky(THREE, env = {}) {
           }
           h.idleSince = 0;
         } else if (!h.idleSince) h.idleSince = now;
-        else if (now - h.idleSince > HERO_KEEP_MS && lv === 0) dropHero(h);
+        else if (now - h.idleSince > HERO_KEEP_MS && lv === 0 && now > (h.keepUntil || 0)) dropHero(h);
         h.steps = steps;
       }
       h.level = lv;
@@ -386,7 +414,7 @@ export function createDeepSky(THREE, env = {}) {
     hero: (id) => { const h = heroes.get(id); return h ? { id, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level } : null; },
     /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
     heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) { m.set(h.def.record, fader.share(`hero:${h.def.id}`)); if (h.hero.shares) for (const [id, k] of h.hero.shares()) if (k > (m.get(id) || 0)) m.set(id, k); } /* 0076 W4-a: and the records a hero draws with it (M32, M110) */ for (const l of layers.values()) if (l.layer && l.layer.shares) for (const [id, k] of l.layer.shares()) if (k > (m.get(id) || 0)) m.set(id, k); return m; }, // (0076 W3-a) and a class layer's
-    ready,
+    ready, prefetch,
     whenReady(ms = 20000) {
       const until = Date.now() + ms;
       return new Promise((resolve) => { const tick = () => (ready() ? resolve(true) : Date.now() > until ? resolve(false) : setTimeout(tick, 100)); tick(); });
@@ -396,7 +424,7 @@ export function createDeepSky(THREE, env = {}) {
         calls: lastCalls,
         cpuMs: Math.round(lastCpuMs * 1000) / 1000,
         holders: [...holders.values()].map((h) => ({ id: h.id, share: Math.round(h.share * 100) / 100, rPx: Math.round(px.get(h.id) || 0), march: h.march, steps: h.steps, kind: h.glow.kind })),
-        heroes: [...heroes.values()].map((h) => ({ ...(h.hero ? h.hero.stats() : {}), id: h.def.id, stage: h.def.stage, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level, steps: h.steps || 0 })),
+        heroes: [...heroes.values()].map((h) => ({ ...(h.hero ? h.hero.stats() : {}), id: h.def.id, stage: h.def.stage, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level, steps: h.steps || 0, warm: !!h.warm })),
         layers: [...layers.values()].map((l) => (l.layer ? l.layer.stats() : { id: l.def.id, loaded: false })),
         pending: pending.size,
       };

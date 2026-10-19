@@ -715,6 +715,8 @@ export async function boot({ setStatus } = {}) {
       if (ids !== picturesAsked) {
         picturesAsked = ids;
         ctx.wantNebulae().then((n) => { if (n && typeof n.prefetch === 'function') n.prefetch(ids); });
+        // 0076 W4-a (the hero prefetch): and the deep-sky heroes among them, built with their shaders compiled, before the stop lands
+        ctx.wantDeep().then((d) => { if (d && typeof d.prefetch === 'function') d.prefetch(ids, { renderer: ctx.renderer, camera: ctx.camera }); });
       }
     }
     tripPortrait = tripping && st.portrait ? st.portrait.id : '';
@@ -1798,7 +1800,9 @@ export async function boot({ setStatus } = {}) {
     if (record && record.klass === 'dso') {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;
-      return Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
+      const framing = Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
+      // 0076 W4-a (spec 0075 task 64): the steady stand-off is for any place past the stellar rung's far plane, not only the exotics'
+      return farOff(record) && pos ? Math.max(framing, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : framing;
     }
     // A point on the Earth's own ground (a storm, a launch pad, a site) is met from no nearer than
     // the map can bear (internal #420, scene/framing.js groundDistanceKm).

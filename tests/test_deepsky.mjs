@@ -257,6 +257,36 @@ const m31 = byId.get('dso-m31'), m32 = byId.get('dso-m32'), m42 = byId.get('dso-
   check(!scene.children.includes(deep.group), 'disposed, the layer leaves the scene');
 }
 
+// --- 10. the hero prefetch (0076 W4-a, SR-PLAN-087): fetched, built and compiled before it is near -----------
+{
+  stage.setWorld('stellar');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e9);
+  let built = 0;
+  const compiled = [];
+  const renderer = { domElement: { clientHeight: 900 }, compileAsync: (obj, cam, target) => { compiled.push({ obj, cam, target }); return Promise.resolve(obj); } };
+  const mk = (shipped) => [{ id: 'helix', record: 'dso-helix-nebula', stage: 'b', profile: async () => ({ HERO: { id: 'helix', shipped, drawn: ['reconstruction'], layers: [{ kind: 'gas', what: 'shell', profile: 5 }] } }), build: async () => { const m = await import(join(JS, 'scene/deep/helix.js')); return { createHero: (...a) => { built++; return m.createHero(...a); } }; } }];
+  const base = { scene, records: () => records, recordById: (id) => byId.get(id), pictureShare: () => 0, picturesBusy: () => false, selectedId: () => null, subjectId: () => null, quality: () => ({ tier: 1 }), look: () => 'film', reduced: () => false, frozen: true };
+  const deep = createDeepSky(THREE, { ...base, heroes: mk(true) });
+  const far = new THREE.Vector3(); stage.toSceneInto(helix.pos, 'sun-inertial', far, stage.tMs);
+  camera.position.copy(far).multiplyScalar(1.01).add(new THREE.Vector3(0, 0, 1e5)); camera.lookAt(far); camera.updateMatrixWorld();
+  const res = await deep.prefetch(['dso-helix-nebula', 'dso-m31'], { renderer, camera });
+  check(built === 1 && res.length === 1 && res[0] === true, `the named hero is built with nothing near it, the others are left (${built}, ${JSON.stringify(res)})`);
+  check(compiled.length === 1 && compiled[0].obj.name.startsWith('deep-hero') && compiled[0].cam === camera && compiled[0].target === scene, 'and its group is compiled against the renderer, the camera and the scene');
+  check(deep.stats().heroes[0].warm === true && deep.stats().heroes[0].loaded, 'stats say it is warm');
+  // kept for 45 s at level 0, not dropped at 10
+  for (let t = 0; t <= 30000; t += 1000) deep.frame({ camera, renderer, nowMs: t, visible: true });
+  check(deep.stats().heroes[0].loaded, 'a prefetched hero outlives the ten seconds a level-0 hero is given');
+  for (let t = 31000; t <= 70000; t += 1000) deep.frame({ camera, renderer, nowMs: t, visible: true });
+  check(!deep.stats().heroes[0].loaded, 'and goes after the trip never came');
+  deep.dispose();
+  built = 0;
+  const unshipped = createDeepSky(THREE, { ...base, heroes: mk(false) });
+  const none = await unshipped.prefetch(['dso-helix-nebula'], { renderer, camera });
+  check(built === 0 && none[0] === false, 'a hero that is not shipped is not built');
+  unshipped.dispose();
+}
+
 if (problems.length) {
   console.error('deepsky FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
