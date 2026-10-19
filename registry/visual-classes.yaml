@@ -633,17 +633,17 @@ classes:
 
   - id: AGN_QUASAR
     title: Quasars and active nuclei
-    renderer: [site/js/scene/glyphs.js, site/js/scene/stage.js]
+    renderer: [site/js/scene/glyphs.js, site/js/scene/stage.js, site/js/scene/deep/galclusters.js]
     honesty: illustrative
-    fallback: A marker at its comoving distance.
-    issue: "internal #784 (quasars as bright points with a host cue, W4-b)"
+    fallback: A marker at its comoving distance, and the bright point of scene/deep/galclusters.js (a few instanced quads; no tier turns it off).
+    issue: "internal #784 (a jet and an accretion disc, 1.3+); 0076 W4-b drew the bright point and 3C 273's host cue"
     note:
-      source: "TON 618's row in registry/exotics.yaml (redshift and mass from its Wikipedia infobox); the cosmology of site/js/data/cosmology.js for the distance."
-      dates: "Read 2026-09-08."
-      drawn: "Measured: redshift. Modelled: the comoving distance from Planck 2018. Illustrative: the marker."
+      source: "The rows of registry/exotics.yaml (TON 618, 3C 273, 3C 279: redshift, apparent magnitude and mass from their Wikipedia infoboxes, NED's numbers); the cosmology of site/js/data/cosmology.js for the distance; the host galaxy's size from registry/galaxy-clusters.yaml."
+      dates: "Read 2026-09-08 (TON 618) and 2026-10-20 (3C 273, 3C 279)."
+      drawn: "Measured: redshift and apparent magnitude. Modelled: the comoving distance from Planck 2018. Illustrative: the marker, the bright point's width, and 3C 273's host drawn as one round soft shape at the angular size the source gives (flattening and tilt not drawn)."
       rights: "Facts, cited."
     records:
-      - {domain: exotics, ids: [ton-618]}
+      - {domain: exotics, ids: [ton-618, 3c-273, 3c-279]}
 
   - id: GALAXY_GROUP
     title: Galaxy groups and the local volume
@@ -661,15 +661,15 @@ classes:
 
   - id: GALAXY_CLUSTER
     title: Galaxy clusters
-    renderer: []
-    planned: "W4-b (internal #784): Virgo and Coma as instanced impostors"
-    honesty: illustrative
-    fallback: Nothing is drawn as a cluster; Virgo's members are separate glows.
+    renderer: [site/js/scene/deep/galclusters.js]
+    honesty: modelled
+    fallback: The same instanced galaxies on every tier (one draw call a cluster; 3 596 quads in all); the members the map draws as records keep their glows.
+    issue: "internal #784 (clusters as searchable records with a card: 1.3+; they are drawn, not yet records)"
     note:
-      source: "None yet; the members' rows are OpenNGC's."
-      dates: "Not applicable until W4-b."
-      drawn: "Nothing drawn as a cluster."
-      rights: "Not applicable."
+      source: "Virgo: Kim and others 2014 (EVCC) with Mei and others 2007 (SBF distances); Coma and Perseus: Kang and others 2025 and 2024, with SDSS DR17 photometry; Fornax: Ferguson 1989 with Blakeslee and others 2009. Through VizieR and SkyServer; registry/galaxy-clusters.yaml."
+      dates: "Read 2026-10-20."
+      drawn: "Measured: each galaxy's direction, and its size and light in the catalogue's band. Measured or inferred: its distance (its own by SBF for 71 Virgo galaxies, its cluster's by SBF or by the members' mean redshift otherwise). Modelled: its depth inside the cluster where it has no distance of its own. Illustrative: the round, centrally peaked shape."
+      rights: "VizieR: free of usage in a scientific context, the original authors cited; SDSS: public domain."
     records: []
 
   - id: COSMIC_WEB

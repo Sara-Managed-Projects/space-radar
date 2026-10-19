@@ -415,8 +415,11 @@ export function createLayer(THREE, env = {}) {
     return true;
   }
 
+  let stampTick = 0;
   function frame(info = {}) {
     state.calls = 0;
+    // A card whose record the app had not made when the files came is stamped when it has (asked now and then).
+    if (state.loaded && stamped.size < quasars.length && (stampTick++ % 60) === 0) stamp();
     const camera = info.camera;
     const on = env.on ? env.on() !== false : true;
     if (!state.loaded || !camera || info.visible === false || !info.stage || !on) {

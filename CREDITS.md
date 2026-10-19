@@ -1741,6 +1741,40 @@ absorbs (a multiply blend in its own material) and reddens by the extinction law
 | the phase function | Henyey-Greenstein with g = 0.6 (modelled): a reflection nebula seen from another side | Henyey & Greenstein 1941, ApJ 93, 70; g as Sujatha, Murthy, Shalima & Henry 2007, ApJ 665, 363 measured it near the Coalsack (0.61 +/- 0.07, far ultraviolet) |
 | the light and the darkness | the remnants' light IS the photograph the app already shows, its stars removed; the Horsehead's darkness and the glow behind it are read from its photograph; the Coalsack's darkness from the Milky Way map the app draws, against the Milky Way at the same galactic latitude; M78's and the Iris's light from NOIRLab's photographs (B, V, R and H-alpha; their 1280 px renditions, downloaded for the bake and not shipped; placed by a 2MASS solve, CDS hips2fits, as section 3g's photographs). All by `scripts/build_deep_sheets.py` into `site/images/deep/sheets/` (adaptations). Under Deep the photographs' own stretch is ENHANCED; the Crab's, the Veil's and the Horsehead's colours are FALSE COLOUR (narrow filters) | heic0515a: "NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)", CC BY 4.0; noao1209a: "T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA", CC BY 4.0; noao0126a: "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)", CC BY 4.0; noao-m78 and noao-ngc7023: "T. A. Rector/University of Alaska Anchorage, H. Schweiker/WIYN and NOIRLab/NSF/AURA", CC BY 4.0; the Milky Way map: "NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." (section 2's 4k map); stars removed, darkness read and depth reconstructed by Space Radar |
 
+### Galaxy clusters and quasars (0076 W4-b)
+
+Four clusters of galaxies and two quasars (`site/js/scene/deep/galclusters.js`, internal #784), their numbers read on
+2026-10-20 by `scripts/build_deep_galclusters.py` into `site/data/deep/galclusters.json` and `site/data/deep/galclusters.bin`;
+the hand-kept facts and every page read are in `registry/galaxy-clusters.yaml`. "This research has made use of the VizieR
+catalogue access tool, CDS, Strasbourg, France." VizieR's terms, as its licence page read that day
+(<https://cds.unistra.fr/vizier-org/licences_vizier.html>): "The data retrieved with VizieR are free of usage in a scientific
+context ; however, as it is the usage in scientific publication, the original authors and publication references including the
+publisher have to be explicitely cited". SDSS, as <https://www.sdss.org/collaboration/> read that day: "All SDSS data released
+in our public data releases are considered in the public domain." Funding for the Sloan Digital Sky Survey is acknowledged at
+<https://www.sdss.org/collaboration/citing-sdss/>; a link back to <https://www.sdss.org/> is given as the courtesy it asks.
+Space Radar is free and non-commercial.
+
+| what | from | licence |
+|---|---|---|
+| Virgo's 1 012 members (position, SDSS g and r magnitudes, half-light radius, redshift), those its infall model calls members and the map does not already draw as a record | Kim S. and others 2014, ApJS 215, 22, *The Extended Virgo Cluster Catalog*, VizieR J/ApJS/215/22 | VizieR's terms above; facts, cited |
+| The distances of 71 of them, found one by one from surface brightness fluctuations; the cluster's mean 16.5 Mpc, its rms scatter 0.6 Mpc, the W' cloud near 23 Mpc | Mei S. and others 2007, ApJ 655, 144, *The ACS Virgo Cluster Survey. XIII.*, VizieR J/ApJ/655/144 (arXiv:astro-ph/0702510) | VizieR's terms above; facts, cited |
+| Coma's 1 826 members (position, redshift, r magnitude) | Kang W. and others 2025, ApJS 278, 51, *Spectroscopic redshift survey of the Coma cluster*, VizieR J/ApJS/278/51 | VizieR's terms above; facts, cited |
+| Perseus's 418 members (position, redshift, r magnitude) | Kang W. and others 2024, ApJS 272, 22, *Galaxies with redshifts in the vicinity of A426*, VizieR J/ApJS/272/22 | VizieR's terms above; facts, cited |
+| Coma's and Perseus's half-light radii (petroR50_r), g and r model magnitudes and extinction, by SDSS object id | SDSS DR17, <https://skyserver.sdss.org/dr17/> | public domain (the sentence above) |
+| Fornax's 340 likely members (position, B_T magnitude, effective radius) and its mean SBF distance 20.0 Mpc, its rms scatter 0.49 Mpc | Ferguson H.C. 1989, AJ 98, 367, VizieR VII/180; Blakeslee J.P. and others 2009, ApJ 694, 556, *The ACS Fornax Cluster Survey. V.* (arXiv:0901.1138) | VizieR's terms above; facts, cited |
+| 3C 273 and 3C 279: position, redshift and apparent magnitude (NED's, as the pages print them); 3C 273's host, an E4 of apparent size 29 arcseconds and magnitude 16 (Bahcall and others 1997, ApJ 479, 642), its mass 886 million Suns; the spectroastrometric distance in its note (Wang and others 2020, Nature Astronomy 4, 517) | Wikipedia, *3C 273* and *3C 279*, infoboxes, read 2026-10-20 (`registry/exotics.yaml`) | Wikipedia's text is CC BY-SA 4.0 and none of it is reproduced: figures only |
+| The comoving distance of a redshift | `site/js/data/cosmology.js`, Planck 2018 (Planck Collaboration, A&A 641, A6, 2020) | facts, cited |
+
+What is measured and what is not. A member's direction is the catalogue's. Its distance is its own where surface brightness
+fluctuations measured one (71 Virgo galaxies) and its cluster's otherwise, by the cluster's method: SBF for Virgo and Fornax, the
+members' mean redshift carried to a comoving distance for Coma and Perseus. Its depth inside the cluster, when it has no distance
+of its own, is **modelled**: an offset along the line of sight drawn, seeded by its catalogue id, from the cluster's published rms
+scatter (Virgo, Fornax) or from the spread of its members across the sky (Coma, Perseus: a cluster is round, an assumption), cut at
+2.5 sigma, so that a cluster seen from the side is a swarm and not one thin sheet. Its size is the catalogue's half-light radius at
+that distance, drawn as one round, centrally peaked shape (flattening and tilt are not drawn): an illustration. Its light is its
+catalogue magnitude, an exposure and not photometry. The quasars are bright points at their comoving distance; 3C 273's host is a
+faint round shape at the angular size its source gives; 3C 279 has none because the source gives no size.
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —
