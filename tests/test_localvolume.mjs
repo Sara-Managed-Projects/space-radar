@@ -161,6 +161,7 @@ check(g0 && g0.name && g0.method && g0.method.code && g0.method.words, 'each gal
   check(bad === 0, `each record sits at its tile distance, an inferred one says "not measured" and carries no method, all cite the catalogue (${bad} wrong)`);
   check(measuredWithMethod > 200, `and a measured one with a method the app has words for names it (${measuredWithMethod})`);
   check(LV.prettyName('NGC0024') === 'NGC 24' && LV.prettyName('ESO409-015') === 'ESO409-015' && LV.prettyName('And XVIII') === 'And XVIII', 'catalogue names are tidied only where they are padded');
+  check(recs.every((r) => r.meta.drawsAs === 'variant' && /point of light/.test(r.meta.drawnName)) && recs.some((r) => /not its own/.test(r.meta.departure)), 'the card says each is a point of light, and an inferred one that its distance is not its own');
   check(layer.rowOfId(recs[5].id) === 5 && layer.rowOfId('dso-m31') === -1, 'a record id finds its row');
   // a tap on a galaxy finds it
   stage.setWorld('local-group');
@@ -185,7 +186,7 @@ check(g0 && g0.name && g0.method && g0.method.code && g0.method.words, 'each gal
   layer.frame({ camera: cam, renderer, stage, gain: 1, selectedId: null });
   check(u.uSelected.value === -1 && layer.stats().rangeShown === -1, 'and deselected, both go');
   // 0076 W4-a task 66: the points are no longer small and dim
-  check(LV.MIN_PX >= 4 && LV.INFERRED_LIGHT >= 0.55 && /0\.6 \+ 0\.8 \* lit/.test(readFileSync(join(JS, 'scene/deep/localvolume.js'), 'utf8')), `the marks are at least ${LV.MIN_PX} px and brighter than they were`);
+  check(LV.MIN_PX >= 4 && LV.INFERRED_LIGHT >= 0.55 && LV.LITE[0] > LV.BEFORE.lite[0] && LV.MIN_PX > LV.BEFORE.minPx, `the marks are at least ${LV.MIN_PX} px and brighter than they were`);
   look([0, 5, 30], [0, 0, 0]);
 }
 

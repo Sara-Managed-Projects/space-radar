@@ -80,7 +80,7 @@ export function createDeepSky(THREE, env = {}) {
   const heroes = new Map();        // hero id -> { def, profile, mod, hero, level, pending, idleSince }
   const fader = createFader();
   const pending = new Set();
-  const debugState = { gas: true, glow: true, holders: true, stars: true, dust: true, force: !!env.debug };
+  const debugState = { gas: true, glow: true, holders: true, stars: true, dust: true, force: !!env.debug, before: false }; // before (0076 W4-a): the changes of that stage off, for a probe's before shot
   let gain = 1;
   let builtFor = null;
   let lastCpuMs = 0;
@@ -315,7 +315,7 @@ export function createDeepSky(THREE, env = {}) {
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);
         if (share > 0) {
           // photo: its photograph's share now (a hero gives way to it on its line); tier and gain: the device's tier, the exposure.
-          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, photo: env.pictureShare ? env.pictureShare(h.def.record) || 0 : 0, tier: q.tier, gain });
+          h.hero.frame({ camera, rPx: rp, steps, look, reduced, frozen: isFrozen(), dtMs: info.dtMs || 0, before: debugState.before, photo: env.pictureShare ? env.pictureShare(h.def.record) || 0 : 0, tier: q.tier, gain });
           drawnHeroes += 1;
           heroIds.add(h.def.record);
           // (stage c) Its children are drawn by it (the Tarantula by the LMC): no holder of their own, and
@@ -376,7 +376,7 @@ export function createDeepSky(THREE, env = {}) {
     for (const l of layers.values()) {
       const on = l.def.stages.includes(stage.worldId);
       if (on) wantLayer(l);
-      if (l.layer) { l.layer.frame({ camera, renderer: info.renderer, stage, gain, visible: on, selectedId }); /* (0076 W4-a) selectedId: the local volume lights the selected galaxy */ lastCalls += l.layer.stats().calls; }
+      if (l.layer) { l.layer.frame({ camera, renderer: info.renderer, stage, gain, visible: on, selectedId, before: debugState.before }); /* (0076 W4-a) selectedId: the local volume lights the selected galaxy */ lastCalls += l.layer.stats().calls; }
     }
     lastCpuMs = typeof performance !== 'undefined' ? performance.now() - t0 : 0;
   }
@@ -435,7 +435,7 @@ export function createDeepSky(THREE, env = {}) {
     },
     debug(opts = {}) {
       // `stars` and `dust` are the heroes' own (stage b-d); until a hero ships they switch nothing.
-      for (const k of ['gas', 'glow', 'holders', 'force', 'stars', 'dust']) if (k in opts) debugState[k] = !!opts[k];
+      for (const k of ['gas', 'glow', 'holders', 'force', 'stars', 'dust', 'before']) if (k in opts) debugState[k] = !!opts[k];
       if ('glow' in opts && env.glowVisible) env.glowVisible(debugState.glow);
       return { ...debugState };
     },

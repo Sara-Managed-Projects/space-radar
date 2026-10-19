@@ -236,7 +236,7 @@ const A = prep(M31, m31, 30000);
     check(xs.every((x, i) => i === 0 || S.bulgeShoulder(x) > S.bulgeShoulder(xs[i - 1])), 'the bulge shoulder keeps its order: a brighter core stays brighter');
     check(S.bulgeShoulder(1e6) <= S.SHOULDER_KNEE + S.SHOULDER_ROOM + 1e-9 && S.bulgeShoulder(1e6) < 0.9, `and it stops under white (${S.bulgeShoulder(1e6).toFixed(3)})`);
     check(Math.abs(S.bulgeShoulder(S.SHOULDER_KNEE + 1e-6) - S.bulgeShoulder(S.SHOULDER_KNEE - 1e-6)) < 1e-5 && S.bulgeShoulder(0.3) === 0.3, 'with no step at the knee, and the dim part untouched');
-    check(/exp\( -\( v - 0\.50 \) \/ 0\.35 \)/.test(S.SHADERS_LAYER.bulge) && !/min\( v, 1\.2 \)/.test(S.SHADERS_LAYER.bulge), 'the shader has the same shoulder and no clamp');
+    check(/exp\( -\( v - 0\.50 \) \/ 0\.35 \)/.test(S.SHADERS_LAYER.bulge) && /uOld > 0\.5 \? min\( v, 1\.2 \)/.test(S.SHADERS_LAYER.bulge), 'the shader has the same shoulder, and the old clamp only for a probe\'s before shot');
   }
   check(S.SPARKLE <= 0.25, `close up the points carry only ${S.SPARKLE} of the light`);
   check(/min\( a, uAlphaCap \)/.test(S.SHADERS.light) && !/colorspace_fragment/.test(S.SHADERS_LAYER.layer + S.SHADERS_LAYER.bulge), 'each point is capped; the layer in display values');

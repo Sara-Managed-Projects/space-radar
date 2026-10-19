@@ -48,6 +48,9 @@ export const INFERRED_COLOUR = [0.6, 0.66, 0.8];
 /** Their light against a measured galaxy's, and how much wider their soft mark is. */
 export const INFERRED_LIGHT = 0.6;
 export const INFERRED_SIZE = 1.6;
+/** A point's light: base and the share brightness adds (0076 W4-a, task 66: was 0.45 and 0.75); BEFORE is the old set, for a probe's before shot. */
+export const LITE = [0.6, 0.8];
+export const BEFORE = { minPx: 3, lite: [0.45, 0.75], infer: [0.45, 1.7] };
 /** The selected galaxy's mark, CSS px across (0076 W4-a). */
 export const SELECTED_PX = 22;
 /** A tap reaches a galaxy at least this far (CSS px), and ranks this far behind a deep-sky mark of the same distance. */
@@ -121,7 +124,17 @@ export function rowsOf(tile, manifest) {
 export function recordsOf(tile, manifest) {
   const rows = rowsOf(tile, manifest);
   const byId = new Map(parseDso({ objects: rows }).map((r) => [r.id, r]));
-  return rows.map((r) => byId.get(`dso-${r.id}`) || null);
+  return rows.map((r, i) => {
+    const rec = byId.get(`dso-${r.id}`) || null;
+    // The card's "drawn as" line: a point of light from the catalogue, not a galaxy's shape (the default would say "a soft glow ... at its measured distance")
+    if (rec) Object.assign(rec.meta, {
+      drawsAs: 'variant',
+      drawnName: `${rec.name}, as a point of light at its catalogue distance`,
+      departure: 'as wide as its catalogued diameter allows and never under a few pixels, so the size is only a lower bound on screen; its shape is not drawn' +
+        (rows[i].distance === null && /^not measured/.test(rows[i].distanceSource) ? '. Its distance is not its own, so the point is fainter and softer, and its possible range can be shown as a line' : ''),
+    });
+    return rec;
+  });
 }
 /** A galaxy's drawn width in CSS px, as VERT_POINTS computes it (for picking). Pure. */
 export function pointPx({ dMly, radiusMly, inferred }, pxPerRad) {
@@ -211,6 +224,8 @@ attribute vec3 aColour;
 attribute float aInferred; // 1: the distance is not its own (fainter, wider, softer)
 attribute float aIndex;    // the galaxy's row in the tile (the selected one is lit: uSelected)
 uniform float uSelected;   // 0076 W4-a: the selected galaxy's row, or -1
+uniform vec2 uLite;        // the light of a point: base and the share its brightness adds (a probe's before shot puts the old numbers back)
+uniform vec2 uInfer;       // an inferred point's light and size against a measured one's
 uniform float uScale;      // scene units per million light-years
 uniform float uPxPerRad;   // CSS px per radian at the centre of the view
 uniform float uPixelRatio;
@@ -224,7 +239,7 @@ void main() {
   gl_Position = projectionMatrix * mv;
   float dMly = max(1e-9, length(mv.xyz) / uScale);
   float wide = 2.0 * aRadius / dMly * uPxPerRad;                       // its true width, CSS px
-  float size = clamp(wide, uMinPx * mix(1.0, ${INFERRED_SIZE.toFixed(2)}, aInferred), uMaxPx);
+  float size = clamp(wide, uMinPx * mix(1.0, uInfer.y, aInferred), uMaxPx);
   float sel = step(abs(aIndex - uSelected), 0.5);
   size = max(size, sel * ${SELECTED_PX.toFixed(1)});                       // the selected one is a lit mark of its own
   // Its apparent B magnitude from the camera: M + 5 log10(d / 10 pc).
@@ -234,7 +249,7 @@ void main() {
   // it is wide (surface brightness), and past uMaxPx it fades rather than grow.
   float spread = clamp((uMinPx * 2.5) / size, 0.18, 1.0);
   float past = wide > uMaxPx ? uMaxPx / wide : 1.0;
-  vLight = (0.6 + 0.8 * lit) * spread * spread * past * mix(1.0, ${INFERRED_LIGHT.toFixed(2)}, aInferred);
+  vLight = (uLite.x + uLite.y * lit) * spread * spread * past * mix(1.0, uInfer.x, aInferred);
   vLight = mix(vLight, max(vLight, 1.2), sel);
   vSoft = aInferred;
   vColour = aColour;
@@ -300,6 +315,7 @@ export function createLayer(THREE, env = {}) {
   const uniforms = {
     uScale: { value: 1 }, uPxPerRad: { value: 1000 }, uPixelRatio: { value: 1 },
     uMinPx: { value: MIN_PX }, uMaxPx: { value: MAX_PX }, uGain: { value: 1 }, uFade: { value: 1 }, uSelected: { value: -1 },
+    uLite: { value: new THREE.Vector2(LITE[0], LITE[1]) }, uInfer: { value: new THREE.Vector2(INFERRED_LIGHT, INFERRED_SIZE) },
   };
   const state = { loaded: false, failed: null, manifest: null, tile: null, arrays: null, bytes: 0, fileBytes: 0, placedFor: null, culled: 'not loaded', radiusPx: 0, calls: 0 };
   let points = null;
@@ -392,6 +408,12 @@ export function createLayer(THREE, env = {}) {
     if (info.renderer && typeof info.renderer.getPixelRatio === 'function') uniforms.uPixelRatio.value = Math.min(2, Math.max(0.5, info.renderer.getPixelRatio()));
     uniforms.uGain.value = Number.isFinite(info.gain) && info.gain > 0 ? info.gain : 1;
     selectRow(info.selectedId);
+    {
+      const b = !!info.before; // a probe's `before` shot (sr.deep.debug({before: true})): the numbers of 1.1
+      uniforms.uMinPx.value = b ? BEFORE.minPx : MIN_PX;
+      uniforms.uLite.value.set(...(b ? BEFORE.lite : LITE));
+      uniforms.uInfer.value.set(...(b ? BEFORE.infer : [INFERRED_LIGHT, INFERRED_SIZE]));
+    }
     // Culled whole: by the frustum, then by its size on the screen.
     _c.setFromMatrixPosition(group.matrixWorld);
     sphere.center.copy(_c);

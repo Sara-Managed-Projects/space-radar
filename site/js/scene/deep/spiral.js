@@ -867,6 +867,7 @@ void main() {
 `;
 const BULGE_FRAG = /* glsl */ `
 uniform float uGain;
+uniform float uOld;
 uniform float uIe;
 uniform float uRe;
 uniform float uN;
@@ -879,7 +880,7 @@ void main() {
   float S = uIe * exp( -uB * ( pow( r / uRe, 1.0 / uN ) - 1.0 ) );
   float v = uGain * pow( S, ${LAYER_POWER.toFixed(2)} ) * smoothstep( 6.0 * uRe, 3.5 * uRe, r );
   // 0076 W4-a (task 55): a soft shoulder, not a clamp: the core keeps its falloff and never reaches white (bulgeShoulder)
-  v = v < ${SHOULDER_KNEE.toFixed(2)} ? v : ${SHOULDER_KNEE.toFixed(2)} + ${SHOULDER_ROOM.toFixed(2)} * ( 1.0 - exp( -( v - ${SHOULDER_KNEE.toFixed(2)} ) / ${SHOULDER_ROOM.toFixed(2)} ) );
+  v = uOld > 0.5 ? min( v, 1.2 ) : v < ${SHOULDER_KNEE.toFixed(2)} ? v : ${SHOULDER_KNEE.toFixed(2)} + ${SHOULDER_ROOM.toFixed(2)} * ( 1.0 - exp( -( v - ${SHOULDER_KNEE.toFixed(2)} ) / ${SHOULDER_ROOM.toFixed(2)} ) );
   gl_FragColor = vec4( uCol * v, 1.0 );
 }
 `;
@@ -981,7 +982,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     group.add(layerMesh);
   }
   let bulgeMesh = null;
-  const bulgeU = { uGain: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
+  const bulgeU = { uGain: { value: 0 }, uOld: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
   if (prof.bulge && !spheroid) {
     const R6 = 6 * prof.bulge.re;
     bulgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * R6, 2 * R6), new THREE.ShaderMaterial({
@@ -1071,6 +1072,8 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   const bytes = L.count * 24 + D.count * 20;
   return {
     group, place, setShare, update, dispose,
+    /** A probe's before shot (0076 W4-a): the bulge's old clamp instead of the soft shoulder. */
+    setOld: (b) => { bulgeU.uOld.value = b ? 1 : 0; },
     share: () => share,
     generated: g,
     stats: () => ({ points: L.count, dust: D.count, meshes: group.children.length, textures: 0, bytes }),
@@ -1166,13 +1169,14 @@ export function createHero(THREE, env = {}) {
   placeCompanionsLater = placeCompanions;
   placedFor = null;
   orient();
-  let level = 0, share = 0, photoIn = 0, gainIn = 1;
+  let level = 0, share = 0, photoIn = 0, gainIn = 1, before = false;
   // ONE ROUTE (spec 0075 task 61): the coordinator hands every hero its photograph's share (`info.photo`) and the shutter
   // (`info.gain`) with each frame; this hero reads nothing else, and tells scene/galaxy.js's far copy only how much it draws.
   const refresh = () => {
     const k = share * (1 - Math.min(1, Math.max(0, photoIn)));
     g.setShare(k, gainIn);
-    for (const c of companions) c.g.setShare(k, gainIn);
+    for (const c of companions) c.g.setShare(before ? 0 : k, gainIn);
+    g.setOld(before);
   };
   return {
     group,
@@ -1191,6 +1195,7 @@ export function createHero(THREE, env = {}) {
       orient();
       if (Number.isFinite(info.photo)) photoIn = info.photo;
       if (Number.isFinite(info.gain) && info.gain > 0) gainIn = info.gain;
+      before = !!info.before; // sr.deep.debug({before: true}): the 1.1 look, for a probe
       refresh();
       g.update(info.camera, viewHNow(), dprNow(), tier);
       for (const c of companions) c.g.update(info.camera, viewHNow(), dprNow(), tier);
