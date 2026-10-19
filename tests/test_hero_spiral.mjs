@@ -230,6 +230,14 @@ const A = prep(M31, m31, 30000);
   check(armMax > 0.5, 'the arms modulate it');
   const d15 = at(15.1, 0, 1).dust, d15m = at(15.1, 0, 0.6).dust;
   check(d15 > d15m, 'the dust is stronger in Film than under Measured');
+  // 0076 W4-a (task 55): the bulge's core is a gradient that never reaches white, whatever the gain
+  {
+    const xs = [0.2, 0.5, 0.8, 1.2, 2, 5, 50];
+    check(xs.every((x, i) => i === 0 || S.bulgeShoulder(x) > S.bulgeShoulder(xs[i - 1])), 'the bulge shoulder keeps its order: a brighter core stays brighter');
+    check(S.bulgeShoulder(1e6) <= S.SHOULDER_KNEE + S.SHOULDER_ROOM + 1e-9 && S.bulgeShoulder(1e6) < 0.9, `and it stops under white (${S.bulgeShoulder(1e6).toFixed(3)})`);
+    check(Math.abs(S.bulgeShoulder(S.SHOULDER_KNEE + 1e-6) - S.bulgeShoulder(S.SHOULDER_KNEE - 1e-6)) < 1e-5 && S.bulgeShoulder(0.3) === 0.3, 'with no step at the knee, and the dim part untouched');
+    check(/exp\( -\( v - 0\.50 \) \/ 0\.35 \)/.test(S.SHADERS_LAYER.bulge) && !/min\( v, 1\.2 \)/.test(S.SHADERS_LAYER.bulge), 'the shader has the same shoulder and no clamp');
+  }
   check(S.SPARKLE <= 0.25, `close up the points carry only ${S.SPARKLE} of the light`);
   check(/min\( a, uAlphaCap \)/.test(S.SHADERS.light) && !/colorspace_fragment/.test(S.SHADERS_LAYER.layer + S.SHADERS_LAYER.bulge), 'each point is capped; the layer in display values');
   const hero = S.createHero(THREE, { profile: M31, record: m31 });

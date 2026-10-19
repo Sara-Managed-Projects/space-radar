@@ -851,6 +851,11 @@ void main() {
   gl_FragColor = vec4( col * v, 1.0 );
 }
 `;
+// The bulge's light, past the knee, approaches KNEE + ROOM (0.85 of white) and no further: with the disc and the points added
+// the core stays under white on a phone as on a desktop, and keeps its gradient (spec 0075 task 55). Pure; the GLSL mirrors it.
+export const SHOULDER_KNEE = 0.5;
+export const SHOULDER_ROOM = 0.35;
+export const bulgeShoulder = (v) => (v < SHOULDER_KNEE ? v : SHOULDER_KNEE + SHOULDER_ROOM * (1 - Math.exp(-(v - SHOULDER_KNEE) / SHOULDER_ROOM)));
 const BULGE_VERT = /* glsl */ `
 varying vec2 vR;
 void main() {
@@ -873,7 +878,9 @@ void main() {
   if ( r > 6.0 * uRe ) discard;
   float S = uIe * exp( -uB * ( pow( r / uRe, 1.0 / uN ) - 1.0 ) );
   float v = uGain * pow( S, ${LAYER_POWER.toFixed(2)} ) * smoothstep( 6.0 * uRe, 3.5 * uRe, r );
-  gl_FragColor = vec4( uCol * min( v, 1.2 ), 1.0 );
+  // 0076 W4-a (task 55): a soft shoulder, not a clamp: the core keeps its falloff and never reaches white (bulgeShoulder)
+  v = v < ${SHOULDER_KNEE.toFixed(2)} ? v : ${SHOULDER_KNEE.toFixed(2)} + ${SHOULDER_ROOM.toFixed(2)} * ( 1.0 - exp( -( v - ${SHOULDER_KNEE.toFixed(2)} ) / ${SHOULDER_ROOM.toFixed(2)} ) );
+  gl_FragColor = vec4( uCol * v, 1.0 );
 }
 `;
 SHADERS_LAYER.layer = LAYER_VERT + LAYER_FRAG;
