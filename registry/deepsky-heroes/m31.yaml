@@ -45,8 +45,18 @@ layers:
   - {kind: dust-ring, what: "the inner dust ring", radius_kpc: [0.7], offset_xy_kpc: [0.5, 0], width_kpc: 0.12, height_kpc: 0.05, weight: 0.05,
      source: "Block et al. 2006, Nature 443, 832 (arXiv:astro-ph/0610543): projected 1.5 by 1 kpc, offset about 0.5 kpc; drawn in the disc's plane (its own tilt is not modelled), the offset's direction illustrative"}
   - {kind: dust-disc, what: "a thin dust disc", scale_kpc: 7, height_kpc: 0.1, weight: 0.1, source: "assumed"}
-  - {kind: satellites, what: "M32 and M110", drawn_by: "scene/dsoglow.js, as ellipses of OpenNGC's axes at their catalogue places (site/data/dso.json); they step back for her photograph",
-     source: "OpenNGC; distances from the Messier table (stage a)"}
+  # 0076 W4-a (spec 0075 task 59): M32 and M110 are drawn by this hero, one Points draw each, the Sersic profile's radii
+  # as the generator's spheroid (spiral.js): their shape on the sky is OpenNGC's ellipse (axes and position angle in
+  # site/data/dso.json), their third dimension assumed (q), their colour old stars. The point glow steps back by the hero's share.
+  - kind: satellites
+    what: "M32 and M110, M31's two companions, as Sersic points"
+    drawn_by: "this hero (scene/deep/spiral.js, one Points draw each); beyond it scene/dsoglow.js, as ellipses of OpenNGC's axes at their catalogue places; they step back for her photograph"
+    members:
+      - {record: dso-m32, sersic_n: 1.5, re_kpc: 0.1, q: 0.7, colour: "#ffd9ae",
+         source: "Graham 2002, ApJ 568, L13 (arXiv:astro-ph/0202307): the bulge of M32 as a Sersic r^(1/n) profile, n = 1.5, effective radius 27 arcsec (about 100 pc; 27 arcsec at the record's 2.49 Mly is 0.10 kpc); the abstract read 2026-10-20. Flattening q 0.7 assumed"}
+      - {record: dso-m110, sersic_n: 1.5, re_kpc: 0.7, q: 0.7, colour: "#ffd9ae",
+         source: "illustrative: no profile of NGC 205 was read. n 1.5 as M32's (a dwarf early-type), Re about 0.35 of the catalogue's semi-major axis (8.1 arcmin, 1.9 kpc at the record's 2.69 Mly); q 0.7 assumed"}
+    source: "Positions, axes and position angles: OpenNGC (via site/data/dso.json); distances from the Messier table (stage a); profiles as each member says"
 colours:
   mode: true
   note: "Matched to her photograph at the hand-over (scene/nebulae.js, NOIRLab noao0001a, whose plates' filters are unstated): its mean colours measured 2026-10-15 are core #e3d7e3, inner disc #526362, outer disc #263839; the model takes their hue halfway to neutral (bulge #f6ecf2, disc #d2e4e2 to #bcd4d4, arms and ring a little bluer), so the cross-fade keeps its colour without copying the plate's green cast. Pink H II regions. Not enhanced; no pixel is taken from the photograph."
@@ -57,6 +67,7 @@ sources:
   - "Block, Bournaud, Combes et al. 2006, 'An almost head-on collision as the origin of two off-centre rings in the Andromeda galaxy', Nature 443, 832; arXiv:astro-ph/0610543 (abstract read 2026-10-14)"
   - "Draine, Aniano, Krause et al. 2014, 'Andromeda's Dust', ApJ 780, 172; arXiv:1306.2304 (abstract read 2026-10-14)"
   - "de Vaucouleurs 1958, ApJ 128, 465 (position angle 38 degrees, inclination 77 degrees; read through the later papers that adopt them, not the paper itself)"
+  - "Graham 2002, 'Evidence for an Outer Disk in the Prototype Compact Elliptical Galaxy M32', ApJ 568, L13; arXiv:astro-ph/0202307 (abstract read 2026-10-20): M32's bulge n = 1.5, Re = 27 arcsec"
   - "Rubin & Ford 1970, ApJ 159, 379 (the rotation: the south-western side approaching; not re-read here)"
   - "Prugniel & Simien 1997, A&A 321, 111 and Lima Neto, Gerbal & Marquez 1999, MNRAS 309, 481 (the deprojected Sersic profile's constants)"
 review:

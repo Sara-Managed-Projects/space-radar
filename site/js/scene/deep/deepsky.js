@@ -216,7 +216,7 @@ export function createDeepSky(THREE, env = {}) {
       h.mod = mod;
       const rec = env.recordById ? env.recordById(h.def.record) : null;
       // (stage c) quality, selectedId and pictureShare as functions: the LMC reads the Tarantula's photograph and the selection.
-      h.hero = mod.createHero(THREE, { profile: h.profile, record: rec, gas, quality: env.quality, selectedId: env.selectedId, pictureShare: env.pictureShare });
+      h.hero = mod.createHero(THREE, { profile: h.profile, record: rec, gas, quality: env.quality, selectedId: env.selectedId, pictureShare: env.pictureShare, recordById: env.recordById }); // 0076 W4-a: recordById, for M31's companions
       group.add(h.hero.group);
       placeHero(h);
     }).catch((e) => console.warn('deep: hero', h.def.id, 'did not load', e)).finally(() => { pending.delete(h.loading); h.loading = null; });
@@ -385,7 +385,7 @@ export function createDeepSky(THREE, env = {}) {
     drawnOf: (record) => { const h = record ? heroOfRecord(record.id) : null; return drawnClasses(record, h ? h.profile : null); },
     hero: (id) => { const h = heroes.get(id); return h ? { id, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level } : null; },
     /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
-    heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) m.set(h.def.record, fader.share(`hero:${h.def.id}`)); for (const l of layers.values()) if (l.layer && l.layer.shares) for (const [id, k] of l.layer.shares()) if (k > (m.get(id) || 0)) m.set(id, k); return m; }, // (0076 W3-a) and a class layer's
+    heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) { m.set(h.def.record, fader.share(`hero:${h.def.id}`)); if (h.hero.shares) for (const [id, k] of h.hero.shares()) if (k > (m.get(id) || 0)) m.set(id, k); } /* 0076 W4-a: and the records a hero draws with it (M32, M110) */ for (const l of layers.values()) if (l.layer && l.layer.shares) for (const [id, k] of l.layer.shares()) if (k > (m.get(id) || 0)) m.set(id, k); return m; }, // (0076 W3-a) and a class layer's
     ready,
     whenReady(ms = 20000) {
       const until = Date.now() + ms;

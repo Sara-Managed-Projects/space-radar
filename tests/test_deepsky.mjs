@@ -74,7 +74,7 @@ const m31 = byId.get('dso-m31'), m32 = byId.get('dso-m32'), m42 = byId.get('dso-
     check(Math.abs(off) < 1, `the Tarantula lies in the LMC's disc plane (${off.toFixed(2)} ly off it)`);
     const dT = Math.hypot(tar.pos.x, tar.pos.y, tar.pos.z) / LY_KM, dL = Math.hypot(lmc.pos.x, lmc.pos.y, lmc.pos.z) / LY_KM;
     check(Math.abs(dT - dL) < 4000, `and within the disc's thickness of the LMC's distance, not 3 000 ly in front of its disc (${(dT - dL).toFixed(0)} ly)`);
-    check(tar.meta.distLy === lmc.meta.distLy && /plane of/.test(String(tar.meta.positionSource || '')), 'the card keeps the LMC\'s distance and the record says how it was placed');
+    check(tar.meta.distLy === lmc.meta.distLy && /plane of/.test(String(tar.meta.cite || '')), 'the card keeps the LMC\'s distance and the record says how it was placed');
   }
   check(D.separationLy(helix, lmc) > 150000, 'and the Helix is a neighbour in the sky, not in space');
 }
