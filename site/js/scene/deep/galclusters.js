@@ -29,7 +29,7 @@
 // million); under the Measured look and reduced motion nothing moves, because nothing here ever does.
 //
 // HONEST BRIGHTNESS AT ANY DISTANCE. A crowd of galaxies seen from afar must not add up to a white blob: the cluster's whole light is
-// stepped back by `crowd` (the members' footprint against the cluster's area on the screen), and it fades out below FADE_PX (no pop).
+// stepped back by `crowd` (the members' footprint against the cluster's area on the screen, linearly), and it fades out below FADE_PX (no pop).
 //
 // ONE FRAME, ONE PRECISION. Each cluster's mesh matrix puts its centre where the stage puts it (float64) and the members' offsets are
 // float32 million light-years about that centre (at most 25), so what the GPU sees is camera-relative as in scene/deep/localvolume.js.
@@ -61,11 +61,16 @@ export function tileFade(radiusPx) {
   const k = Math.min(1, Math.max(0, (radiusPx - CULL_PX) / (FADE_PX - CULL_PX)));
   return k * k * (3 - 2 * k);
 }
-/** The footprint of `count` members against the area of a cluster `radiusPx` wide: 1 when they have room, less as they pile up. Pure. */
+/**
+ * The footprint of `count` members against the area of a cluster `radiusPx` wide: 1 when they have room, less as they pile up.
+ * Linear in the room, which is what keeps a cluster's light its own as it shrinks: a member is never drawn under a mark's floor,
+ * so when the cluster is a fifth as wide there are 25 times as many marks to a pixel, and each is 25 times fainter. (The first look
+ * run drew it with the square root, and Coma from the Sun was a white blob; this is the fix, not yet photographed.) Pure.
+ */
 export function crowd(radiusPx, count) {
   if (!(radiusPx > 0) || !(count > 0)) return 0;
   const room = (Math.PI * radiusPx * radiusPx) / (count * Math.PI * FOOT_PX * FOOT_PX);
-  return Math.min(1, Math.sqrt(room));
+  return Math.min(1, room);
 }
 /** A cluster's radius on the screen, CSS px; Infinity from inside it. Pure. */
 export function tileRadiusPx(radiusScene, distanceScene, fovYRad, viewH) {

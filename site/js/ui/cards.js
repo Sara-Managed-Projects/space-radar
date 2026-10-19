@@ -1257,6 +1257,8 @@ function derivedDrawingLine(record, T, tMs) {
     // generic asteroid" would name the wrong kind of thing.
     : klass === 'asteroid' && pick(meta(record), 'farKind') === 'dwarf' && T.classShape && T.classShape.dwarf ? 'dwarf'
     : klass;
+  // 0076 W4-b: a quasar is a bright point with a ring on its place, not a bare ring (copy/en.later.js r12Far.quasar.shape)
+  if (klass === 'exotic' && pick(meta(record), 'kind') === 'quasar' && COPY.r12Far && COPY.r12Far.quasar) return t(T.objectFamily, { name: COPY.r12Far.quasar.shape });
   const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }

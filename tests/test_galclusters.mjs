@@ -173,7 +173,10 @@ const away = (id, mly) => { const c = clusterAt(id); const n = c.clone().normali
   const n = MAN.clusters.find((c) => c.id === 'coma').count;
   let monoC = true;
   for (let r = 5; r < 4000; r *= 1.1) if (G.crowd(r * 1.1, n) < G.crowd(r, n)) monoC = false;
-  check(monoC && G.crowd(30, n) < 0.25 && G.crowd(3000, n) === 1 && G.crowd(0, n) === 0 && G.crowd(100, 0) === 0, `the crowd dims 1 826 members in a cluster 30 px wide to ${G.crowd(30, n).toFixed(2)} and leaves them whole with room (${G.crowd(3000, n)})`);
+  const roomAt = (r) => (r * r) / (n * G.FOOT_PX * G.FOOT_PX);
+  check(monoC && G.crowd(30, n) < 0.05 && G.crowd(3000, n) === 1 && G.crowd(0, n) === 0 && G.crowd(100, 0) === 0, `the crowd dims 1 826 members in a cluster 30 px wide to ${G.crowd(30, n).toFixed(3)} and leaves them whole with room (${G.crowd(3000, n)})`);
+  // The light is conserved: halve the cluster's width and the marks per pixel quadruple while each is a quarter as bright, so the sum holds.
+  check(Math.abs(G.crowd(40, n) / G.crowd(80, n) - 0.25) < 1e-9 && Math.abs(G.crowd(40, n) - roomAt(40)) < 1e-12, 'the crowd is linear in the room: a cluster half as wide is a quarter as bright per mark, so its light stays its own');
   // Inside a cluster (the radius on the screen is infinite): drawn whole.
   const c0 = clusterAt('coma');
   lookAt(c0.clone().add(new THREE.Vector3(2, 1, 1)).toArray(), c0.clone().add(new THREE.Vector3(-3, 0, 0)).toArray());
@@ -237,7 +240,10 @@ const away = (id, mly) => { const c = clusterAt(id); const n = c.clone().normali
   check(qm.length === 2 && m273.geometry.instanceCount === 2 && m279.geometry.instanceCount === 1, 'a mesh each: the point and the host for 3C 273, the point alone for 3C 279');
   // The card says what is drawn, once the layer has stamped the record.
   const r273 = recs.get('exotic-3c-273');
-  check(typeof r273.meta.departure === 'string' && /29 arcseconds/.test(r273.meta.departure) && /270,000|280,000|260,000/.test(r273.meta.departure) && /redshift/.test(r273.meta.departure), `3C 273's card says what is drawn (${r273.meta.departure && r273.meta.departure.slice(0, 80)}...)`);
+  check(typeof r273.meta.departure === 'string' && /29 arcseconds/.test(r273.meta.departure) && /270,000|280,000|260,000/.test(r273.meta.departure) && /host galaxy/.test(r273.meta.departure), `3C 273's card says what is drawn (${r273.meta.departure && r273.meta.departure.slice(0, 80)}...)`);
+  // ...and the card's "drawn as" line carries it (ui/cards.js appends a record's `departure`).
+  const { drawingLine } = await import(join(JS, 'ui/cards.js'));
+  check(/bright point/.test(drawingLine(r273)) && !/black hole|pulsar/.test(drawingLine(r273)) && /29 arcseconds/.test(drawingLine(r273)) && /270,000/.test(drawingLine(r273)), `the card's drawn-as line for 3C 273 says a bright point and the host's words: ${drawingLine(r273)}`);
   const r279 = recs.get('exotic-3c-279');
   check(typeof r279.meta.departure === 'string' && /no size/.test(r279.meta.departure), '3C 279\'s card says its host is not drawn');
 }

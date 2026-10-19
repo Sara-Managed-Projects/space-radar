@@ -1927,10 +1927,11 @@ Object.assign(COPY, {
   },
   // 0076 W4-b (galaxy clusters and quasars; scene/deep/galclusters.js)
   r12Far: {
-    // A quasar's card: appended to its "drawn as" line (ui/cards.js, a record's `departure`). {size} arcseconds, {ly} light-years.
+    // A quasar's card: its "drawn as" line (`shape`, read by ui/cards.js) and what is added to it (a record's `departure`). {size} arcseconds, {ly} light-years.
     quasar: {
-      host: 'The bright point is the quasar where its redshift puts it. Its host galaxy is drawn faint and round at the angular size the source gives, {size} arcseconds across seen from here; in truth that is about {ly} light-years. Its flattening and its tilt are not drawn.',
-      point: 'The bright point is the quasar where its redshift puts it. The source gives no size for its host galaxy, so none is drawn.',
+      shape: 'a bright point where its redshift puts it, with a ring marking the place; its disc and its jet are far too small to draw',
+      host: 'Its host galaxy is drawn faint and round at the angular size the source gives, {size} arcseconds across seen from here; in truth that is about {ly} light-years. Its flattening and its tilt are not drawn.',
+      point: 'The source gives no size for its host galaxy, so none is drawn.',
     },
     // A cluster, in four lines (layer.describe(id)): who its members are, how far, how deep, how wide.
     cluster: {
