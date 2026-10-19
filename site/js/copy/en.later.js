@@ -1924,7 +1924,23 @@ Object.assign(COPY, {
     },
   },
   // 0076 W3-b (the Ring Nebula)
-  deepRing: {},
+  deepRing: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]`). The
+    // numbers are registry/deepsky-heroes/m57.yaml's.
+    card: {
+      m57: 'Its light is taken from Hubble’s photograph, its shape from O’Dell, Ferland, Henney and Peimbert (2013): a thick ring tilted 13.5°, seen almost along its axis, the bluer gas of its middle drawn reaching toward and away from us. Its colours are the photograph’s, taken through narrow filters. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, the `rows` hook).
+    rows: {
+      'dso-m57': [
+        ['Its distance', 'Parallax (Gaia DR3) of its central star, Gaia DR3 2090486618786534784: 1.270 ± 0.044 milliarcseconds, about 2 570 light-years (2 480 to 2 660).'],
+        ['Its shape in depth', 'Reconstructed. The ring’s size on the sky, the tilt of its long axis and which end is nearer are measured. Its thickness and the form of the gas through its middle are not: they are drawn as an illustration.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'Hubble’s pictures in single colours of light, with the gas’s speeds measured across the nebula, show a thick ring nearly face on: its long axis is tilted 13.5°, its north-eastern end nearer to us. Faster gas fills its middle and stretches toward and away from us along our line of sight (O’Dell, Ferland, Henney and Peimbert 2013).',
+  },
   // 0076 W3-c (remnants and dust)
   r12Dust: {},
   // 0076 W3-d (where you are, and the way back)

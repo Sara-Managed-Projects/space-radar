@@ -56,5 +56,7 @@ export const BUDGETS = {
   "plumes_data_bytes": 12000,
   "deep_clusters_bytes": 400000,
   "deep_clusters_draw_calls": 3,
-  "deep_globular_points": 24000
+  "deep_globular_points": 24000,
+  "deep_ring_bytes": 60000,
+  "deep_ring_draw_calls": 3
 };

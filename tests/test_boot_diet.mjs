@@ -163,6 +163,9 @@ const DEFERRED = {
   // 0076 W3-a (globular.js)
   'js/scene/deep/globular.js': 'star clusters as stars: the deep-sky coordinator fetches it on the first rung of the ladder (release 1.2.0, internal #819, #871)',
   // 0076 W3-b (ring.js, shellneb.js)
+  'js/scene/deep/ring.js': 'the Ring Nebula hero: the coordinator fetches it when M57 is near (release 1.2.0, internal #872)',
+  'js/scene/deep/shellneb.js': 'the planetary nebulae\'s shared part: with the Helix or the Ring',
+  'js/data/hero-m57.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-c (remnant.js, dustsheet.js)
   // 0076 W3-d (scalerail.js)
   // 0076 W3-e (kindwords.js, visualclasses.js)

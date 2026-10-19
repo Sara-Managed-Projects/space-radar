@@ -374,4 +374,22 @@ sources:
       - {file: site/data/deep/clusters.bin, sha256: ec62a3321f5c6773ea0be5b0d3738f49797514adedd1576c39216c07a6f2b0de}
       - {file: site/data/deep/clusters.json, sha256: 92b874837e1ab7a50afe479f8f69fe46bb243ed44c98408efb3165b21e6ef394}
   # 0076 W3-b
+  # The Ring Nebula hero's light (internal spec 0076 W3-b, #872): scripts/build_deep_ring.py takes the stars out of the
+  # ESA/Hubble photograph already shipped (heic1310a, the esa-hubble row above) and nothing is fetched. A row of its
+  # own so its input and output can be pinned under this stage's anchor without editing the esa-hubble row.
+  - id: esa-hubble-ring-light
+    name: ESA/Hubble heic1310a, its stars removed by scripts/build_deep_ring.py (the Ring Nebula hero's light)
+    match: ["scripts/build_deep_ring.py"]
+    url: https://esahubble.org/images/heic1310a/
+    licence: CC BY 4.0
+    licence_read: "ESA/Hubble images, videos and web texts are released under the Creative Commons Attribution 4.0 International license and may on a non-exclusive basis be reproduced without fee provided they are clearly and visibly credited."
+    licence_url: https://esahubble.org/copyright/
+    licence_note: "Credit NASA, ESA, and C. Robert O'Dell (Vanderbilt University); an adaptation (stars removed), said in CREDITS.md 3l, The Ring (0076 W3-b)"
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-17
+    pins:
+      - {file: site/images/nebulae/m57.webp, sha256: ec522121c255d2b2e0f7b55c48d1660ea1b4aed3c0521117be80b0a288b4fd8a}
+      - {file: site/images/deep/ring/ring-light.webp, sha256: a57725e86ab01b2333e60ffa2009c06b72539ff29a88a6a426b768edcd9880a5}
   # 0076 W3-c

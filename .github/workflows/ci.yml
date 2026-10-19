@@ -1079,6 +1079,10 @@ jobs:
       - name: "the clusters' file is the size and hash its manifest says (internal spec 0076 W3-a)"
         run: python3 scripts/build_deep_clusters.py --check
       # 0076 W3-b
+      - name: "the Ring Nebula hero - the published ring, axis and tilt, the photograph from our side, exact step integrals; the Helix's exact front (internal spec 0076 W3-b, #872)"
+        run: node tests/test_hero_ring.mjs
+      - name: "the Ring hero's light is the bake of the current photograph (internal spec 0076 W3-b)"
+        run: python3 scripts/build_deep_ring.py --check
       # 0076 W3-c
       # 0076 W3-d
       # 0076 W3-e

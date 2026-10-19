@@ -203,4 +203,9 @@ budgets:
   - {id: deep_clusters_draw_calls, value: 3, unit: calls, since: 2026-10-17, reason: "spec 0076 design section 4 (+5 for a hero at most): one call per cluster drawn, at most three at once, the largest on screen"}
   - {id: deep_globular_points, value: 24000, unit: points, since: 2026-10-17, reason: "spec 0076 design section 4 (+4 MB of GPU memory for a hero on T1): 24 000 stars at most per globular on T2, 10 000 on T1, 3 000 on T0 and under the frame latch; 28 bytes each"}
   # 0076 W3-b
+  # Release 1.2.0 stage W3-b (internal spec 0076, design section 4; internal #872): the Ring Nebula hero's asset,
+  # fetched when M57 is near (scripts/build_deep_ring.py: the light map and its manifest), and its draw calls (the
+  # gas, the knots, the star). tests/test_hero_ring.mjs reads both.
+  - {id: deep_ring_bytes, value: 60000, unit: B, since: 2026-10-16, reason: "spec 0076 design section 4 allows a hero 1.5 MB; 11 458 B of light map + its manifest measured on 2026-10-16"}
+  - {id: deep_ring_draw_calls, value: 3, unit: calls, since: 2026-10-16, reason: "spec 0076 design section 4: at most +5 for a hero; the gas, the knots and the star are one call each, as the Helix's"}
   # 0076 W3-c

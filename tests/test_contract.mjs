@@ -189,6 +189,10 @@ const CONTRACT = {
   // 0076 W2-c (plumes.js): plumes where they were seen, fetched with a moon's stage; its pure parts for tests/test_plumes.mjs.
   'scene/plumes.js': ['createPlumes', 'ballisticOf', 'placeVector', 'westOf', 'particlesFor', 'motionTime', 'lineFor', 'whenWords', 'UNDER_MEASURED', 'COPY_BLOCK', 'SHADERS'],
   // 0076 W3-b (ring.js, shellneb.js)
+  // Release 1.2.0 stage W3-b (internal #872): the Ring Nebula hero, fetched when M57 is near, and the part every planetary
+  // nebula hero shares (the Helix imports it); their pure parts for tests/test_hero_ring.mjs.
+  'scene/deep/ring.js': ['createHero', 'tierFloor', 'geometryOf', 'insideOf', 'nearOf', 'layerSamples', 'capLight', 'columnsAt', 'columnMap', 'columnsFrom', 'haloSamples', 'COLUMN_MAP', 'columnJs', 'knotsOf', 'paletteFor', 'samplesFor', 'sharesFor', 'lightUv', 'SHAPE', 'SHADERS', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
+  'scene/deep/shellneb.js': ['skyFrame', 'ringAxis', 'planeBasis', 'skyDir', 'uvOf', 'uvAt', 'layerSpan', 'spanLen', 'spanT', 'quadSpan', 'shellSpan', 'quarticCdf', 'slabIntegral', 'lightStretch', 'paletteOf', 'sharesOf', 'samplesOf', 'viewSize', 'pixelHash', 'seeded', 'shellMaterial', 'skyPlacer', 'starMesh', 'knotMaterial', 'knotMesh', 'lightTexture', 'GLSL', 'SHELL_SHADERS', 'QUARTIC_CDF', 'QUARTIC', 'QUAD_BYTES', 'AU_LY', 'D2R', 'norm', 'cross', 'dot', 'neg', 'smooth', 'hexRgb', 'f3'],
   // 0076 W3-c (remnant.js, dustsheet.js)
   // 0076 W3-d (scalerail.js)
 };
