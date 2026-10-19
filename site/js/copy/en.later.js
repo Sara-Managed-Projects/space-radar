@@ -12,7 +12,7 @@
 // own code runs. No module in the boot graph may import it. tests/test_boot_diet.mjs checks both,
 // and that no section is defined twice; scripts/check_copy.py and tests/test_chrome_copy.mjs read
 // this file with the other. A section moves here only when nothing at boot reads it.
-import { COPY, article } from './en.js';
+import { COPY } from './en.js';
 // Four sections ui/cardfacts.js reads (the light embed's tag lines load it without the card): their
 // own file, so the embed does not fetch the other 40 kB of this one (internal #429, #553).
 import './en.facts.js';
@@ -94,8 +94,8 @@ Object.assign(COPY, {
     unmeasuredOne: 'Its {what} is not measured.',
     and: ' and ',
     what: { size: 'size', year: 'year', mass: 'mass', least: 'least possible mass' },
-    au: '{n} au',
-    auComputed: '{n} au, computed from its year and its star’s mass',
+    au: '{n} AU',
+    auComputed: '{n} AU, computed from its year and its star’s mass',
     earthsEstimated: '{n}× Earth, the archive’s estimate from its mass',
     massEstimated: '{n}× Earth, the archive’s estimate from its size',
     massLeast: 'At least {n}× Earth',
@@ -115,7 +115,7 @@ Object.assign(COPY, {
       'no-luminosity': 'Not computed: the star’s brightness is not measured',
       twoStars: 'Not computed: it orbits two stars and the catalogue describes one',
     },
-    zoneRange: '{a} to {b} au from the star (Kopparapu et al. 2014)',
+    zoneRange: '{a} to {b} AU from the star (Kopparapu et al. 2014)',
     // The two things a visitor lays over a system's view on demand (internal #280), on the card of
     // its star and of each planet: the row's title, the two buttons, and the line under them.
     overlay: {
@@ -142,8 +142,8 @@ Object.assign(COPY, {
     starsBoth: 'Two, both drawn',
     companionValue: '{width} wide, {mass} heavy, {k} K{derived}',
     companionDerived: ' (a model value; its colour is illustrative)',
-    zoneBoth: '{a} to {b} au, both suns’ light summed',
-    pairLine: 'The two suns circle each other every {days} days, {a} au apart on average, on the orbit the papers measured; the planet goes round both. Their positions are computed from that orbit; the plane they are drawn in, the planets’ plane, is the one the sky view uses.',
+    zoneBoth: '{a} to {b} AU, both suns’ light summed',
+    pairLine: 'The two suns circle each other every {days} days, {a} AU apart on average, on the orbit the papers measured; the planet goes round both. Their positions are computed from that orbit; the plane they are drawn in, the planets’ plane, is the one the sky view uses.',
     // The card's drawing line on the system's stage. {date} the day the table was read.
     line: 'Sizes and years from the NASA Exoplanet Archive, read {date}. The orbits are drawn as circles{computed}; the colours{phase} and the tilt of the orbits are illustrative{defaults}.',
     lineComputed: ', {n} of them sized from the year and the star’s mass',
