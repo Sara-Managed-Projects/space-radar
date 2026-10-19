@@ -105,6 +105,16 @@ export function createDeepSky(THREE, env = {}) {
     pending.add(l.loading);
   }
   // 0076 W3-a (a class layer)
+  // Star clusters as stars (scene/deep/globular.js): the globulars by King's profile, the open clusters by their
+  // Gaia members. A deep layer on every rung (none at boot), handed what it reads; `debug({stars:false})` takes
+  // it off for a probe's BEFORE shot. classTaken(id): the share of a cluster's light its stars draw now, by
+  // which its glow (heroShares) and its holder step back, so the two together are the one cluster.
+  const CLUSTERS = 'clusters';
+  if (!env.layers) {
+    const ask = { records: env.records, recordById: env.recordById, radiusPx: (id) => px.get(id) || 0, quality: env.quality, pictureShare: env.pictureShare, on: () => debugState.stars };
+    layers.set(CLUSTERS, { def: { id: CLUSTERS, stage: 'W3-a', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./globular.js').then((m) => ({ createLayer: (T) => m.createLayer(T, ask) })) }, layer: null, loading: null });
+  }
+  const classTaken = (id) => { const l = layers.get(CLUSTERS); return l && l.layer && l.layer.taken ? l.layer.taken(id) : 0; };
 
   // ---------------------------------------------------------------------------- placing a record
   function centreOf(record, out) {
@@ -316,7 +326,7 @@ export function createDeepSky(THREE, env = {}) {
       if (h.march && q.latched) { h.v.dispose(); holders.delete(id); continue; }
       const rp = px.get(id) || 0;
       const photo = env.pictureShare ? Math.min(1, Math.max(0, env.pictureShare(id) || 0)) : 0;
-      const target = want.has(id) ? smooth(rp, HOLD_FROM, HOLD_FULL) * (1 - photo) : 0;
+      const target = want.has(id) ? smooth(rp, HOLD_FROM, HOLD_FULL) * (1 - photo) * (1 - classTaken(id)) : 0; // (0076 W3-a) less what a cluster's stars draw
       h.share = fader.to(`holder:${id}`, target, now);
       const u = h.v.material.uniforms;
       u.uShare.value = h.share;
@@ -375,7 +385,7 @@ export function createDeepSky(THREE, env = {}) {
     drawnOf: (record) => { const h = record ? heroOfRecord(record.id) : null; return drawnClasses(record, h ? h.profile : null); },
     hero: (id) => { const h = heroes.get(id); return h ? { id, shipped: !!(h.profile && h.profile.shipped), loaded: !!h.hero, level: h.level } : null; },
     /** record id -> how much of its hero is drawn now (the level's fade): main.js steps the point glow back by it. */
-    heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) m.set(h.def.record, fader.share(`hero:${h.def.id}`)); return m; },
+    heroShares: () => { const m = new Map(); for (const h of heroes.values()) if (h.hero && h.level >= 2) m.set(h.def.record, fader.share(`hero:${h.def.id}`)); for (const l of layers.values()) if (l.layer && l.layer.shares) for (const [id, k] of l.layer.shares()) if (k > (m.get(id) || 0)) m.set(id, k); return m; }, // (0076 W3-a) and a class layer's
     ready,
     whenReady(ms = 20000) {
       const until = Date.now() + ms;

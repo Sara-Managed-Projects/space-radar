@@ -53,5 +53,8 @@ export const BUDGETS = {
   "traverse_data_bytes": 60000,
   "plumes_draw_calls": 1,
   "plumes_gpu_bytes": 1200000,
-  "plumes_data_bytes": 12000
+  "plumes_data_bytes": 12000,
+  "deep_clusters_bytes": 400000,
+  "deep_clusters_draw_calls": 3,
+  "deep_globular_points": 24000
 };

@@ -196,5 +196,11 @@ budgets:
   - {id: plumes_data_bytes, value: 12000, unit: B, since: 2026-10-16, reason: "no image or binary is fetched: the registry's mirror data/plumes.js is 6.8 kB, with scene/plumes.js when a moon with plumes gets its stage"}
   # 0076 W2-e
   # 0076 W3-a
+  # Star clusters as stars (internal spec 0076 W3-a, #819, #871; scene/deep/globular.js): the globulars' numbers and the
+  # open clusters' Gaia members (scripts/build_deep_clusters.py -> site/data/deep/clusters.{json,bin}), fetched on the
+  # first rung of the ladder (the members only when an open cluster is near). tests/test_globular.mjs reads all three.
+  - {id: deep_clusters_bytes, value: 400000, unit: B, since: 2026-10-17, reason: "spec 0076 design section 4 (1.5 MB at most for a hero's assets): 309 110 B on 2026-10-17, 284 236 B of members (23 685 stars of 36 clusters) and 24 874 B of manifest"}
+  - {id: deep_clusters_draw_calls, value: 3, unit: calls, since: 2026-10-17, reason: "spec 0076 design section 4 (+5 for a hero at most): one call per cluster drawn, at most three at once, the largest on screen"}
+  - {id: deep_globular_points, value: 24000, unit: points, since: 2026-10-17, reason: "spec 0076 design section 4 (+4 MB of GPU memory for a hero on T1): 24 000 stars at most per globular on T2, 10 000 on T1, 3 000 on T0 and under the frame latch; 28 bytes each"}
   # 0076 W3-b
   # 0076 W3-c

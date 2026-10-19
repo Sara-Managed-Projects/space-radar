@@ -448,29 +448,29 @@ classes:
   # --- clusters and nebulae ----------------------------------------------------------------------------
   - id: OPEN_CLUSTER
     title: Open clusters
-    renderer: [site/js/scene/clusters.js, site/js/scene/dsoglow.js]
+    renderer: [site/js/scene/clusters.js, site/js/scene/dsoglow.js, site/js/scene/deep/globular.js]
     honesty: illustrative
-    fallback: The cluster's glow; M45, the Hyades, M44 and IC 2602 also re-place their HYG members.
+    fallback: The cluster's glow; M45, the Hyades, M44 and IC 2602 also re-place their HYG members; near, their Gaia members (scene/deep/globular.js, 0076 W3-a).
     issue: "#871 (the other open clusters' members, W3-a)"
     note:
       source: "OpenNGC for place, size and magnitude; HYG v4.4 members for four clusters; the Messier distances Wikipedia's editors collected."
       dates: "OpenNGC master of 2026-09-27; distances read 2026-09-08."
-      drawn: "Measured: place, size, distance, the four clusters' members. Illustrative: the glow standing in for the unresolved stars."
-      rights: "OpenNGC and HYG CC BY-SA 4.0."
+      drawn: "Measured: place, size, distance, the four clusters' members; the Gaia DR3 members of 36 (Hunt & Reffert 2023, VizieR J/A+A/673/A114, probability at least 0.5), their directions and, where precise enough, their depths. Modelled: the other members' depths. Illustrative: the glow standing in for the unresolved stars."
+      rights: "OpenNGC and HYG CC BY-SA 4.0; the Gaia members CC BY-NC 3.0 IGO (ESA), through VizieR's terms."
     records:
       - {domain: dso, where: {typeCode: [OCl, "*Ass", "**", Other]}}
 
   - id: GLOBULAR_CLUSTER
     title: Globular clusters
-    renderer: [site/js/scene/dsoglow.js]
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/globular.js]
     honesty: illustrative
-    fallback: The globular glow profile with its holder.
+    fallback: The globular glow profile with its holder; near, stars by King's profile from Harris's radii (scene/deep/globular.js, 0076 W3-a).
     issue: "internal #819 (King-profile points, spec 0075 task 19, W3-a)"
     note:
       source: "OpenNGC for place, size and magnitude; the Messier distances."
       dates: "As OPEN_CLUSTER."
-      drawn: "Measured: place, size, distance. Illustrative: the glow (no star is drawn yet)."
-      rights: "OpenNGC CC BY-SA 4.0."
+      drawn: "Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars."
+      rights: "OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited)."
     records:
       - {domain: dso, where: {typeCode: GCl}}
 

@@ -58,8 +58,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
 | [COMPACT_REMNANT](#compact_remnant) | 9 | `pulsars.js` | illustrative | - |
 | [BLACK_HOLE](#black_hole) | 8 | `portraits.js`, `glyphs.js` | illustrative | - |
-| [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js` | illustrative | - |
-| [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js` | illustrative | - |
+| [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
+| [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
 | [EMISSION_NEBULA](#emission_nebula) | 35 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js` | measured | orion |
 | [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `gasmat.js` | measured | helix, m57 |
 | [DARK_NEBULA](#dark_nebula) | 3 | `nebulae.js`, `dsoglow.js` | measured | - |
@@ -428,13 +428,13 @@ Honesty over the 877 records: 321 measured, 233 modelled, 323 illustrative.
 
 **Open clusters**
 
-- **Drawn by:** `site/js/scene/clusters.js`, `site/js/scene/dsoglow.js`
+- **Drawn by:** `site/js/scene/clusters.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/globular.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The cluster's glow; M45, the Hyades, M44 and IC 2602 also re-place their HYG members.
+- **On a weak device (T0, or after the frame latch):** The cluster's glow; M45, the Hyades, M44 and IC 2602 also re-place their HYG members; near, their Gaia members (scene/deep/globular.js, 0076 W3-a).
 - **Source:** OpenNGC for place, size and magnitude; HYG v4.4 members for four clusters; the Messier distances Wikipedia's editors collected.
 - **Dates and filters:** OpenNGC master of 2026-09-27; distances read 2026-09-08.
-- **Measured, modelled or reconstructed:** Measured: place, size, distance, the four clusters' members. Illustrative: the glow standing in for the unresolved stars.
-- **Rights:** OpenNGC and HYG CC BY-SA 4.0.
+- **Measured, modelled or reconstructed:** Measured: place, size, distance, the four clusters' members; the Gaia DR3 members of 36 (Hunt & Reffert 2023, VizieR J/A+A/673/A114, probability at least 0.5), their directions and, where precise enough, their depths. Modelled: the other members' depths. Illustrative: the glow standing in for the unresolved stars.
+- **Rights:** OpenNGC and HYG CC BY-SA 4.0; the Gaia members CC BY-NC 3.0 IGO (ESA), through VizieR's terms.
 - **What is missing is tracked in:** #871 (the other open clusters' members, W3-a)
 - **Records (38):**
   - dso (38): `m6`, `m7`, `m11`, `m18`, `m21`, `m23`, `m24`, `m25`, `m26`, `m29`, `m34`, `m35`, `m36`, `m37`, `m38`, `m39`, `m40`, `m41`, `m44`, `m45`, `m46`, `m47`, `m48`, `m50`, `m52`, `m67`, `m73`, `m93`, `m103`, `double-cluster`, `hyades`, `jewel-box`, `ngc-2244`, `ngc-3532`, `ic-2602`, `ngc-6231`, `owl-cluster`, `carolines-rose`
@@ -443,13 +443,13 @@ Honesty over the 877 records: 321 measured, 233 modelled, 323 illustrative.
 
 **Globular clusters**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/globular.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The globular glow profile with its holder.
+- **On a weak device (T0, or after the frame latch):** The globular glow profile with its holder; near, stars by King's profile from Harris's radii (scene/deep/globular.js, 0076 W3-a).
 - **Source:** OpenNGC for place, size and magnitude; the Messier distances.
 - **Dates and filters:** As OPEN_CLUSTER.
-- **Measured, modelled or reconstructed:** Measured: place, size, distance. Illustrative: the glow (no star is drawn yet).
-- **Rights:** OpenNGC CC BY-SA 4.0.
+- **Measured, modelled or reconstructed:** Measured: place, size, distance, core and tidal radius (Harris 1996, VizieR VII/202). Modelled: the stars, by King's (1962) profile, their number, brightness and colour. Illustrative: the glow standing in for the faint stars.
+- **Rights:** OpenNGC CC BY-SA 4.0; VizieR's terms (free of usage in a scientific context, authors cited).
 - **What is missing is tracked in:** internal #819 (King-profile points, spec 0075 task 19, W3-a)
 - **Records (33):**
   - dso (33): `m2`, `m3`, `m4`, `m5`, `m9`, `m10`, `m12`, `m13`, `m14`, `m15`, `m19`, `m22`, `m28`, `m30`, `m53`, `m54`, `m55`, `m56`, `m62`, `m68`, `m69`, `m70`, `m71`, `m72`, `m75`, `m79`, `m80`, `m92`, `m107`, `omega-centauri`, `47-tucanae`, `ngc-2419`, `ngc-6397`
