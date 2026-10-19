@@ -65,7 +65,7 @@ const pose = (at, deg, distMly) => {
   const toSun = unit(sub(S, at));
   const side = unit(cross(toSun, { x: 0, y: 1, z: 0 }));
   const a = deg * Math.PI / 180;
-  rig.flyTo({ targetScene: at, offset: unit(mix(toSun, Math.cos(a), side, Math.sin(a))), distance: distMly * MLY_KM / unitKm(), ms: 0 });
+  rig.flyTo({ targetScene: { x: at.x, y: at.y, z: at.z }, offset: unit(mix(toSun, Math.cos(a), side, Math.sin(a))), distance: distMly * MLY_KM / unitKm(), ms: 0 });
 };
 const snap = async (name, note, settleMs = 4000) => {
   await sleep(settleMs);
