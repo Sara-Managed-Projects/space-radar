@@ -62,10 +62,20 @@ const m31 = byId.get('dso-m31'), m32 = byId.get('dso-m32'), m42 = byId.get('dso-
     const l = Math.hypot(r.pos.x, r.pos.y, r.pos.z);
     const ang = Math.acos(Math.min(1, (want[0] * r.pos.x + want[1] * r.pos.y + want[2] * r.pos.z) / l)) / D2R;
     check(ang < 0.01, `${id} points within 0.01 degree of its RA and Dec (${ang.toFixed(5)})`);
-    check(Math.abs(l / LY_KM - r.meta.distLy) < 1, `${id} is at its stated distance`);
+    // 0076 W4-a (task 52): a member of an oriented disc is placed in its plane, so the Tarantula's position is not at its stated (the LMC's) distance
+    if (id !== 'dso-tarantula-nebula') check(Math.abs(l / LY_KM - r.meta.distLy) < 1, `${id} is at its stated distance`);
   }
   check(D.insideParent(tar, lmc), `the Tarantula is inside the LMC's extent (${D.separationLy(tar, lmc).toFixed(0)} ly from its centre, radius ${(lmc.meta.sizeLy / 2).toFixed(0)})`);
-  check(Math.abs(Math.hypot(tar.pos.x, tar.pos.y, tar.pos.z) - Math.hypot(lmc.pos.x, lmc.pos.y, lmc.pos.z)) / LY_KM < 1, 'the Tarantula is at the LMC\'s distance, not 3 000 ly in front of it');
+  // 0076 W4-a (task 52): in the LMC's disc plane (within a light-year), on its own line of sight; the card's distance stays the LMC's.
+  {
+    const o = lmc.meta.orientation;
+    const fr = D.discFrame(lmc.pos, o.pa_deg, o.incl_deg, o.near_side);
+    const off = ((tar.pos.x - lmc.pos.x) * fr.normal[0] + (tar.pos.y - lmc.pos.y) * fr.normal[1] + (tar.pos.z - lmc.pos.z) * fr.normal[2]) / LY_KM;
+    check(Math.abs(off) < 1, `the Tarantula lies in the LMC's disc plane (${off.toFixed(2)} ly off it)`);
+    const dT = Math.hypot(tar.pos.x, tar.pos.y, tar.pos.z) / LY_KM, dL = Math.hypot(lmc.pos.x, lmc.pos.y, lmc.pos.z) / LY_KM;
+    check(Math.abs(dT - dL) < 4000, `and within the disc's thickness of the LMC's distance, not 3 000 ly in front of its disc (${(dT - dL).toFixed(0)} ly)`);
+    check(tar.meta.distLy === lmc.meta.distLy && /plane of/.test(String(tar.meta.positionSource || '')), 'the card keeps the LMC\'s distance and the record says how it was placed');
+  }
   check(D.separationLy(helix, lmc) > 150000, 'and the Helix is a neighbour in the sky, not in space');
 }
 

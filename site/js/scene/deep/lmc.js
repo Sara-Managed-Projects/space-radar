@@ -110,8 +110,8 @@ export function deproject(g, dir) {
 }
 /** The sun-inertial direction from the Sun to a point of the frame (object units). Pure. */
 export const skyDir = (g, p) => norm(add3(fromGal(g, p), g.u, g.D));
-/** A record placed at the LMC's distance in its own direction (the registry's rule), in object units. Pure. */
-export const memberAt = (g, raDeg, decDeg) => toGal(g, add3(siDir(raDeg, decDeg).map((x) => x * g.D), g.u, -g.D));
+/** A record placed IN the LMC's disc along its own direction (build-dso.py on_disc_plane, 0076 W4-a, task 52), in object units. Pure. */
+export const memberAt = (g, raDeg, decDeg) => deproject(g, siDir(raDeg, decDeg));
 /** A sun-inertial direction on the maps' tangent plane: [xi east, eta north], degrees. Pure. */
 export function gnomonic(g, dir) {
   const e = eclToEq(dir);
