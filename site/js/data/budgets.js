@@ -46,6 +46,11 @@ export const BUDGETS = {
   "deep_cmb_draw_calls": 2,
   "sun_image_bytes": 400000,
   "sun_loops_draw_calls": 1,
+  "moon_height_tiles_per_window": 40,
+  "moon_height_bytes_per_window": 900000,
+  "moon_height_window_gpu_mib": 3,
+  "traverse_draw_calls": 2,
+  "traverse_data_bytes": 60000,
   "plumes_draw_calls": 1,
   "plumes_gpu_bytes": 1200000,
   "plumes_data_bytes": 12000

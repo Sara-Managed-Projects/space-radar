@@ -181,7 +181,9 @@ const CONTRACT = {
   'scene/sunimage.js': ['loadSunImage', 'imageFrame', 'imageUv', 'imageWeight', 'cropOf', 'textureBytes', 'IMAGE_GAIN', 'IMAGE_EDGE'],
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
-  // 0076 W2-a (traverse.js)
+  // 0076 W2-a (traverse.js): the Apollo 15 and 17 rover traverses, fetched by scene/tiles.js close to the Moon; pure parts for tests/test_traverse.mjs.
+  'scene/traverse.js': ['createTraverses', 'parsePath', 'pathLengthKm', 'traverseFade', 'ribbonArrays', 'TRAVERSE_LOOK', 'DEPTH_PULL'],
+  'scene/airtint.js': ['AIR_REDDENING', 'setAirReddening', 'airReddeningOn', 'airTransmission', 'sunlightOn', 'AIR_TINT_GLSL', 'EARTH_RADIUS_KM'],
   // 0076 W2-c (plumes.js): plumes where they were seen, fetched with a moon's stage; its pure parts for tests/test_plumes.mjs.
   'scene/plumes.js': ['createPlumes', 'ballisticOf', 'placeVector', 'westOf', 'particlesFor', 'motionTime', 'lineFor', 'whenWords', 'UNDER_MEASURED', 'COPY_BLOCK', 'SHADERS'],
   // 0076 W3-a (globular.js)
