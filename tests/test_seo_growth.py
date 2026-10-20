@@ -100,7 +100,9 @@ ok(checked(rootcopy, built) == "", "a symlinked copy of the tree passes (the bas
 def spoil(path: Path, old: str, new: str) -> None:
     t = path.read_text(encoding="utf-8")
     assert old in t, (path, old)
-    path.write_text(t.replace(old, new, 1), encoding="utf-8")
+    # The LAST occurrence: on the home page the readable no-JavaScript list (0076 W4-c) names the same pages before the footer does.
+    i = t.rindex(old)
+    path.write_text(t[:i] + new + t[i + len(old):], encoding="utf-8")
 
 obj = sorted((built / "o").glob("*.html"))[0].name
 cases = [
