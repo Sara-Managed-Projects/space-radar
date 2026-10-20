@@ -188,6 +188,39 @@ html.sr-phone .sr-launchchip {
   background: var(--sr-wash-strong);
 }
 
+/* 0077 W3-e: begin (internal i#878) THREE WAYS IN: an icon over a word, three equal buttons in one row, 64 px high (the home's
+   section; the opening's row keeps its own one-line buttons, over the scene). */
+.sr-welcome__actions > .sr-welcome__btn {
+  flex-direction: column;
+  gap: var(--sp-1);
+  justify-content: center;
+  height: 64px;
+  padding: 0 var(--sp-1);
+  font-size: var(--sr-fs-label);
+}
+
+.sr-welcome__actions > .sr-welcome__btn .sr-welcome__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-welcome__tonight {
+  color: var(--sr-text);
+  background: var(--sr-wash);
+}
+
+.sr-welcome__tonight:active {
+  background: var(--sr-wash-strong);
+}
+
+@media (hover: hover) {
+  .sr-welcome__tonight:hover {
+    background: var(--sr-wash-hover);
+  }
+}
+/* 0077 W3-e: end */
+
 @media (hover: hover) {
   .sr-welcome__go:hover {
     background: var(--sr-ember-light);

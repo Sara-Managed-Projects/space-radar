@@ -7,7 +7,7 @@
 // WHY. A first visit's camera comes in from past the Moon's path to the home view in eight seconds
 // (scene/framing.js openingPlan; main.js flies it and owns every way out of it). Over that shot,
 // and only for as long as it lasts: one true sentence at a time, and the two buttons the home's
-// first-visit section also has (ui/welcome.js): Guided trip, Look around.
+// first-visit section also has (ui/welcome.js): Tonight, Explore, Guided trip (0077 W3-e; before it was Guided trip, Look around).
 //
 // THE SENTENCE IS THE HOME'S (ui/sentence.js): the same candidates from the same loaded data,
 // one clause at a time, changed every ROTATE_MS and worked out again at each change, so a headcount
@@ -56,7 +56,7 @@ export function createOpening(ctx, opts = {}) {
   const win = opts.win || window;
   const doc = win.document;
   const C = COPY.opening;
-  const W = COPY.welcome;
+  const W = COPY.entrances; // 0077 W3-e: the welcome's three ways in (internal i#878)
   const root = doc.createElement('div');
   root.className = 'sr-opening';
   root.setAttribute('role', 'group');
@@ -76,9 +76,12 @@ export function createOpening(ctx, opts = {}) {
     b.appendChild(doc.createTextNode(label));
     return b;
   };
+  // 0077 W3-e: begin
+  const tonight = mk('sr-welcome__tonight', 'moon', W.tonight, W.tonightTitle);
   const go = mk('sr-welcome__go sr-opening__go', 'play', W.trip, W.tripTitle);
-  const look = mk('sr-welcome__look', 'compass', W.look, W.lookTitle);
-  row.append(go, look);
+  const look = mk('sr-welcome__look', 'compass', W.explore, W.exploreTitle);
+  row.append(tonight, look, go);
+  // 0077 W3-e: end
   const skip = doc.createElement('p');
   skip.className = 'sr-opening__skip';
   skip.textContent = C.skip;
@@ -133,6 +136,13 @@ export function createOpening(ctx, opts = {}) {
     }, 250);
   });
   look.addEventListener('click', () => { seen(); done('look'); });
+  // 0077 W3-e: begin (the shot ends, and the Tonight tab opens as it does from the home's section)
+  tonight.addEventListener('click', () => {
+    seen();
+    done('tonight');
+    if (ctx.explore && typeof ctx.explore.setTab === 'function') ctx.explore.setTab('tonight');
+  });
+  // 0077 W3-e: end
 
   return {
     root,

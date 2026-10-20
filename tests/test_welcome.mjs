@@ -6,7 +6,8 @@
 //     means no welcome. Never for a link, an embed, a reel, a running trip or an automated browser,
 //     and none of those is remembered.
 //   THREE LINES, each at most 60 characters, the middle one in the words of the hand that is there.
-//   TWO BUTTONS of at most two words; one ember; the first trip that can run is the one started.
+//   THREE WAYS IN since 0077 W3-e (internal i#878): Tonight, Explore, Guided trip, each of at most two words; one ember;
+//     Tonight opens the Tonight tab, Explore puts the lines away, and the first trip that can run is the one started.
 //   LAZY: main.js imports it dynamically; 44 px targets on a phone; reduced motion is a fade.
 //
 //   node tests/test_welcome.mjs
@@ -49,7 +50,15 @@ for (const touch of [false, true]) {
 }
 check(w.welcomeLines(true)[1] !== w.welcomeLines(false)[1], 'the second line is the gestures on touch and the pointer elsewhere');
 check(/pinch/i.test(w.welcomeLines(true)[1]) && /scroll/i.test(w.welcomeLines(false)[1]), 'pinch on touch, scroll with a pointer');
-for (const key of ['trip', 'look']) check(C[key].trim().split(/\s+/).length <= 2, `button "${C[key]}" is at most two words`);
+// 0077 W3-e: begin
+const E = COPY.entrances;
+for (const key of ['tonight', 'explore', 'trip']) {
+  check(E[key].trim().split(/\s+/).length <= 2, `entrance "${E[key]}" is at most two words`);
+  check(typeof E[`${key}Title`] === 'string' && E[`${key}Title`].length > 0 && E[`${key}Title`].length <= 60, `and has a title of at most 60 characters`);
+}
+check(E.tonight === 'Tonight' && E.explore === 'Explore' && E.trip === 'Guided trip', 'the three are Tonight, Explore and Guided trip (the issue\'s Take a trip, in the guide\'s two words)');
+for (const s of Object.values(E)) check(!/[!→]/.test(s) && !/please/i.test(s), `no exclamation, arrow or "please": "${s}"`);
+// 0077 W3-e: end
 check(C.title.trim().split(/\s+/).length <= 4, 'the microlabel is at most four words');
 for (const s of Object.values(C)) check(!/[!→]/.test(s) && !/please/i.test(s), `no exclamation, arrow or "please": "${s}"`);
 
@@ -57,12 +66,16 @@ check(w.firstTrip([{ id: 'a', off: true }, { id: 'b', off: false }, { id: 'c' }]
 check(w.firstTrip([{ id: 'a', off: true }]) === null && w.firstTrip(null) === null, 'none can run: none is started');
 
 const src = read('site/js/ui/welcome.js');
-check((src.match(/sr-welcome__go/g) || []).length === 1 && (src.match(/sr-welcome__look/g) || []).length === 1, 'two buttons, built once each');
+check((src.match(/sr-welcome__go/g) || []).length === 1 && (src.match(/sr-welcome__look/g) || []).length === 1 && (src.match(/sr-welcome__tonight/g) || []).length === 1, 'three buttons, built once each');
+check(/setTab\('tonight'\)/.test(src) && /ctx\.explore\.setTab/.test(src), 'Tonight opens the Tonight tab through the explorer\'s own setTab');
+check(/data-tour|hide\('look'\)/.test(src) && /look\.addEventListener\('click', \(\) => hide\('look'\)\)/.test(src), 'Explore only puts the lines away: the map is as it was');
+check(!/\.hidden = true|classList\.add\('is-hidden'/.test(src.slice(src.indexOf('THREE WAYS IN, in one row'))), 'choosing one hides no tab and no control: nothing in the entrances touches the chrome');
 {
   const css0 = read('site/css/finishers.css');
   const rule = (sel) => (new RegExp(sel.replace(/[.]/g, '\\.') + '\\s*\\{([^}]*)\\}').exec(css0) || [])[1] || '';
   check(/background:\s*var\(--sr-ember\)/.test(rule('.sr-welcome__go')), 'Guided trip is the ember');
-  check(!/--sr-ember/.test(rule('.sr-welcome__look')), 'Look around is not: one ember on the home');
+  check(!/--sr-ember/.test(rule('.sr-welcome__look')) && !/--sr-ember/.test(rule('.sr-welcome__tonight')), 'Explore and Tonight are not: one ember on the home');
+  check(/height:\s*64px/.test(rule('.sr-welcome__actions > .sr-welcome__btn')) && /flex-direction:\s*column/.test(rule('.sr-welcome__actions > .sr-welcome__btn')), 'an icon over a word, 64 px high: a 44 px target with room to spare');
 }
 const main = read('site/js/main.js');
 check(/import\('\.\/ui\/welcome\.js'\)/.test(main) && !/^import[^\n]*welcome/m.test(main), 'main.js imports it dynamically, never statically');
@@ -75,4 +88,4 @@ if (problems.length) {
   console.error('welcome FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`welcome ok: once (none without storage, a link, an embed, a reel, a trip or automation); three lines of ${w.welcomeLines(false).map((l) => l.length).join(', ')} characters; "${C.trip}" and "${C.look}"`);
+console.log(`welcome ok: once (none without storage, a link, an embed, a reel, a trip or automation); three lines of ${w.welcomeLines(false).map((l) => l.length).join(', ')} characters; "${COPY.entrances.tonight}", "${COPY.entrances.explore}" and "${COPY.entrances.trip}"`);

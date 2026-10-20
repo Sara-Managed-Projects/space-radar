@@ -2289,7 +2289,7 @@ Object.assign(COPY, {
     tonightTitle: 'What is overhead tonight, from your place',
     explore: 'Explore',
     exploreTitle: 'Look around the whole map',
-    trip: 'Take a trip',
+    trip: 'Guided trip', // two words: the guide's limit for a button (the issue's "Take a trip" is three)
     tripTitle: 'Starts the first guided trip on the list',
   },
 
