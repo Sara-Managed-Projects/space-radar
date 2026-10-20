@@ -46,7 +46,7 @@ export const RING_PARTICLES = {
   tauMax: 2,         // a tile holds enough particles for this optical depth; a thicker ring is drawn as this, as bright
   fromM: 25000,      // the camera's height over the ring plane below which they are drawn
   reach: [0, 800, 1200],   // metres round the camera's foot, by tier (tier 0 draws none)
-  fadeFrom: 0.6,     // of `reach`: full nearer, gone at `reach`
+  fadeFrom: 0.25,    // of `reach`: full nearer, gone at `reach` (0.6 drew the patch's edge as a circle in the first look)
   wakes: { lambdaM: 80, cantDeg: 21, amp: 0.6, fromKm: 122170, toKm: 136775, refM: 1.3e8 },  // the A ring's
   maxPx: 48,
 };

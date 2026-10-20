@@ -536,9 +536,10 @@ export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rang
  *
  * THE RADAR FACE is one grey (the echo) and an alpha (how much of the texel a swath covered). Where
  * the radar looked it is drawn in `grey`, a neutral grey: radar has no colour, and the card says the
- * grey is ours. Where it never looked the face shows the 938 nm map in Titan's own orange, dimmed
- * (`fill`: the own face's mean colour over the map's mean grey, times 0.75, measured on the files
- * 2026-10-20), so a visitor sees strips of radar laid over the moon they already know, and never a
+ * grey is ours. Where it never looked the face shows the 938 nm map in Titan's own hue, dimmed and
+ * half desaturated (`fill`: the own face's mean colour at 0.6 of its luminance, half way to grey, over
+ * the map's mean grey, measured on the files 2026-10-20; the first look's full orange was a loud red
+ * beside the grey), so a visitor sees strips of radar laid over the moon they already know, and never a
  * radar picture of ground the radar did not see. Bright is rough ground, or ground tilted toward the
  * radar; the seas are black. Linear light, as VENUS_GROUND.
  *
@@ -554,7 +555,7 @@ export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rang
  * here) at `gain`, in the haze's colour. Where it falls is geometry; how wide and bright it is, is
  * illustrative, so it is not drawn under the Measured look. The outlines are measured and stay.
  */
-export const TITAN_RADAR = { grey: [0.18, 0.19, 0.21], fill: [0.42, 0.07, 0.002] };
+export const TITAN_RADAR = { grey: [0.18, 0.19, 0.21], fill: [0.22, 0.084, 0.057] };
 export const TITAN_LAKES = { map: 'titan_lakes.webp', fromShare: 0.12, darken: 0.45, gain: 30, lobe: 900, f0: 0.016, colour: [1.0, 0.8, 0.55] };
 // 0077 W1-f: end
 

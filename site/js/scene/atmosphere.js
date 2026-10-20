@@ -198,7 +198,8 @@ export const ATMO_PARAMS = {
   // standing apart from it with a dark gap between: near 500 km in 2005 to 2007 (Porco et al. 2005,
   // Nature 434, 159), sinking to about 380 km by 2010 (West et al. 2011, GRL 38, L06204), and fainter
   // since. `layer` draws it where it was in 2005 to 2007: a Gaussian sheet of particles `sigmaKm` thick
-  // (a full width of 28 km) of vertical optical depth `tau`, small grains scattering nearly evenly
+  // (a full width of 28 km) of vertical optical depth `tau` (0.004: at 0.012 the first look of 2026-10-20
+  // drew a grey ring round the whole disc and a veil over the gap; it is faint), small grains scattering nearly evenly
   // (`g`) and white-blue (`albedo`). Height and thickness are measured, for those years; its depth,
   // colour and today's height are not, and the card says so (copy/en.js worldDeparture.titan). It is
   // integrated on its own fine steps (LAYER_STEPS a crossing): the 12 steps of the main march are
@@ -217,7 +218,7 @@ export const ATMO_PARAMS = {
     dustG: [0.62, 0.62, 0.6],
     heightGain: 1.0,
     sun: 12.0,
-    layer: { heightKm: 500, sigmaKm: 12, tau: 0.012, albedo: [0.9, 0.93, 0.97], g: 0.35 }, // 0077 W1-f
+    layer: { heightKm: 500, sigmaKm: 12, tau: 0.004, albedo: [0.9, 0.93, 0.97], g: 0.35 }, // 0077 W1-f
   },
 };
 // 0077 W1-f: begin
