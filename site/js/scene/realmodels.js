@@ -760,6 +760,22 @@ export const REAL_MODELS = {
     26069: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2369, a Tselina-2 listening satellite', catalogue: 'COSMOS 2369' },
     28352: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2406, a Tselina-2 listening satellite', catalogue: 'COSMOS 2406' },
     31792: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2428, a Tselina-2 listening satellite', catalogue: 'COSMOS 2428' },
+    // 0077 W1-a: begin
+    // THEMIS (release 1.3.0, public #549): NASA's own model of the probe (NASA 3D Resources, the THEMIS
+    // folder), baked with its own colours; registry/models.yaml row `themis`. The five probes are one design;
+    // three are in CelesTrak's active group (read in the live saved data, 2026-10-20). Not turned: the probes
+    // spin, and the file's axes say nothing about which way.
+    30580: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS A', catalogue: 'THEMIS A' },
+    30797: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS D', catalogue: 'THEMIS D' },
+    30798: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS E', catalogue: 'THEMIS E' },
+    // THE SHENZHOU ORBITAL MODULE FLYING ALONE (public #1089): each crew leaves it in orbit when it goes home.
+    // Built here from the cited metres of shenzhou.glb's front third (row `shenzhou-orbital`); by number, the
+    // three in the live saved data of 2026-10-20. Not `generic`: each is that module. Not turned: it flies
+    // uncontrolled, and nobody publishes its attitude.
+    66515: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 21', catalogue: 'SZ-21 MODULE', made: 'dimensions' },
+    67481: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 20', catalogue: 'SZ-20 MODULE', made: 'dimensions' },
+    69328: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 22', catalogue: 'SZ-22 MODULE', made: 'dimensions' },
+    // 0077 W1-a: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -787,7 +803,7 @@ export const REAL_MODELS = {
     // assembled and baked into new-horizons.glb (registry/models.yaml says how). Until 2026-10-10 there was
     // no file and this named only the PROCEDURAL shape; it stays as what is drawn while the file is on its
     // way, as JWST's does (heroes.js acquire).
-    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons' },
+    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons', axes: 'app' }, // 0077 W1-a: NASA's parts rebuilt with the drawings' dish and tripod, turned to the app's axes (row `new-horizons`)
     // Three of the twelve craft added on 2026-09-22 as the generic probe, which NASA publishes a
     // model of (issue #431). OSIRIS-APEX is the OSIRIS-REx spacecraft under its second mission's
     // name -- the same vehicle, so this is its model and not a stand-in. NASA's STEREO model is
@@ -893,9 +909,15 @@ export const REAL_MODELS = {
     // type, not this object" -- right for "a Starlink", wrong for the second crewed station in
     // orbit, which the stations trip is about and which was labelled "CSS (TIANHE)" while the ISS
     // beside it read "International Space Station".
-    'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], generic: true },
-    'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], generic: true },
-    'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], generic: true },
+    // 0077 W1-a: begin
+    // FILES SINCE RELEASE 1.3.0 (public #936, #267): tiangong.glb is the whole T built here in code from the cited
+    // metres and CMSA's rear view of 2023 (row `tiangong`); wentian.glb and mengtian.glb are each laboratory cut
+    // from that same build, for the lab drawn on its own. The builds stay as what is drawn while a file loads.
+    // Not `generic` any more: each file is that object.
+    'css (tianhe': { build: 'tiangong', file: 'tiangong.glb', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], made: 'dimensions', axes: 'app' },
+    'css (wentian': { build: 'tiangong-module', file: 'wentian.glb', colour: 'station', name: 'Wentian, a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
+    'css (mengtian': { build: 'tiangong-module', file: 'mengtian.glb', colour: 'station', name: 'Mengtian, a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
+    // 0077 W1-a: end
     // Shenzhou and Tianzhou: the Soyuz plan at Chinese proportions, white-grey, wings on both ends
     // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
     // FILES AS WELL since batch three (2026-10-13; public #941, #942), each hull ONE LATHE as the
