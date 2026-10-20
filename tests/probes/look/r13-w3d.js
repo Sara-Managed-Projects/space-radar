@@ -114,7 +114,7 @@ await stage('mars', 12000);
 const MARS = onWorld('mars');
 const SOL_S = 88775.244;
 for (const [id, name, lat, lon, near] of [
-  ['spirit', '05-spirit-gusev', -14.585, 175.50, 25],
+  ['spirit', '05-spirit-gusev', -14.585, 175.50, 9],
   ['opportunity', '06-opportunity-meridiani', -2.15, 354.56, 70],
 ]) {
   const e = await MARS.morning(lat, lon, 35, SOL_S);
@@ -140,9 +140,10 @@ const TITAN = onWorld('titan');
   if (!ok) out.problems.push('no record huygens');
   out.huygensCard = cardText();
   out.huygensSun = TITAN.sunElev(-10.573, 167.665);
-  TITAN.over(-10.573, 167.665, 900, 2574.76, 20, 180);
+  // Still selected: from 6 000 km out over the site, so the mark and its label sit on Titan's disc.
+  rig.flyTo({ offset: unit(add(TITAN.outward(-10.573, 167.665), sunward('titan'), 0.6)), distance: (6000 / 2574.76) * TITAN.mesh.scale.x, ms: 0 });
   await sleep(6000);
-  await shot('08-huygens-over', `the Huygens site from 900 km over Adiri (Sun ${out.huygensSun} degrees up there); the mark is the probe's coordinate on Titan's fixed frame`);
+  await shot('08-huygens-over', `the Huygens site, still selected, from about 6 000 km out over Adiri, leaning to the Sun (Sun ${out.huygensSun} degrees up there): the mark is the probe's coordinate on Titan's fixed frame`);
 }
 
 // --- 4. the small bodies ----------------------------------------------------------------------------------
