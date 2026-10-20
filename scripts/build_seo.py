@@ -51,6 +51,7 @@ import seo_pages  # noqa: E402  (growth pages: scripts/seo_pages.py)
 import seo_share  # noqa: E402
 import seo_dates  # noqa: E402
 import seo_embed  # noqa: E402
+import seo_lab  # noqa: E402
 import indexnow  # noqa: E402
 from seo_footer import sitelinks  # noqa: E402
 
@@ -286,6 +287,9 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     # The embed gallery and its generator (scripts/seo_embed.py), and the IndexNow key file
     # (scripts/indexnow.py: public by design, written beside the pages so a deploy ships it).
     seo_embed.build(out, host, pages, style, ICON)
+    # The Lab's simulators with a canonical, Open Graph and a LearningResource block, from their own heads
+    # (scripts/seo_lab.py); deploy.sh uploads lab/ from here, so the committed files stay as contributors wrote them.
+    seo_lab.build(out, host)
     indexnow.write_key(out)
     dates = page_dates(host, pages)
     dates[f"{host}/embed/index.html"] = seo_dates.page_date(
