@@ -12,7 +12,10 @@ const { budget, judge } = await import(join(ROOT, 'scripts/boot-timeline.mjs'));
 const text = readFileSync(join(ROOT, 'registry/budgets.yaml'), 'utf8');
 check(budget('boot_longest_task_ms', text) > 0 && budget('boot_blocking_ms', text) > 0, 'both budget rows exist');
 check(budget('no_such_row', text) === null, 'a missing row is null, not zero');
-check(budget('first_visit_bytes', text) === 2855000, 'the reader finds a row by its id, with the digits intact');
+// The live row moves with every wave's raise; read it back against the file itself, and the digit handling against a fixed row.
+const live = Number((text.match(/\{id: first_visit_bytes, value: (\d+),/) || [])[1]);
+check(live > 0 && budget('first_visit_bytes', text) === live, 'the reader finds a row by its id, with the digits intact');
+check(budget('x_bytes', '  - {id: x_bytes, value: 2855000, unit: bytes}\n  - {id: y_bytes, value: 7, unit: bytes}') === 2855000, 'the reader finds a row by its id among others, with the digits intact');
 
 const ok = { layersReadyFound: true, longestTaskMs: 400, totalBlockingMs: 900 };
 check(judge(ok, { longest: 3000, blocking: 6000 }).length === 0, 'a quiet boot holds');

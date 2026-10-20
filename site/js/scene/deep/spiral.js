@@ -851,6 +851,11 @@ void main() {
   gl_FragColor = vec4( col * v, 1.0 );
 }
 `;
+// The bulge's light, past the knee, approaches KNEE + ROOM (0.85 of white) and no further: with the disc and the points added
+// the core stays under white on a phone as on a desktop, and keeps its gradient (spec 0075 task 55). Pure; the GLSL mirrors it.
+export const SHOULDER_KNEE = 0.5;
+export const SHOULDER_ROOM = 0.35;
+export const bulgeShoulder = (v) => (v < SHOULDER_KNEE ? v : SHOULDER_KNEE + SHOULDER_ROOM * (1 - Math.exp(-(v - SHOULDER_KNEE) / SHOULDER_ROOM)));
 const BULGE_VERT = /* glsl */ `
 varying vec2 vR;
 void main() {
@@ -862,6 +867,7 @@ void main() {
 `;
 const BULGE_FRAG = /* glsl */ `
 uniform float uGain;
+uniform float uOld;
 uniform float uIe;
 uniform float uRe;
 uniform float uN;
@@ -873,7 +879,9 @@ void main() {
   if ( r > 6.0 * uRe ) discard;
   float S = uIe * exp( -uB * ( pow( r / uRe, 1.0 / uN ) - 1.0 ) );
   float v = uGain * pow( S, ${LAYER_POWER.toFixed(2)} ) * smoothstep( 6.0 * uRe, 3.5 * uRe, r );
-  gl_FragColor = vec4( uCol * min( v, 1.2 ), 1.0 );
+  // 0076 W4-a (task 55): a soft shoulder, not a clamp: the core keeps its falloff and never reaches white (bulgeShoulder)
+  v = uOld > 0.5 ? min( v, 1.2 ) : v < ${SHOULDER_KNEE.toFixed(2)} ? v : ${SHOULDER_KNEE.toFixed(2)} + ${SHOULDER_ROOM.toFixed(2)} * ( 1.0 - exp( -( v - ${SHOULDER_KNEE.toFixed(2)} ) / ${SHOULDER_ROOM.toFixed(2)} ) );
+  gl_FragColor = vec4( uCol * v, 1.0 );
 }
 `;
 SHADERS_LAYER.layer = LAYER_VERT + LAYER_FRAG;
@@ -892,7 +900,8 @@ function sceneDirs(dirs) {
  * kiloparsecs. `place(posKm, axes, mode)`: mode 'rotate' sets only the turn (the hero's parent is placed
  * and scaled by the coordinator), 'full' also the place and the scale on the stage (scene/galaxy.js).
  */
-export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, seed = 7, name = 'galaxy' } = {}) {
+export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, seed = 7, name = 'galaxy', spheroid = false } = {}) {
+  // 0076 W4-a (task 59): `spheroid` is a galaxy with no disc (M32, M110): one Points draw, no layer, no halves, the same from every side.
   const g = generateGalaxy(params, { count, dust, seed });
   const group = new THREE.Group();
   group.name = name;
@@ -902,13 +911,14 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   const dustU = { ...shared, uDust: { value: 0 } };
   const halves = [];
   const L = g.light;
-  for (const sign of [1, -1]) {
+  for (const sign of (spheroid ? [0] : [1, -1])) {
+    const takes = (j) => spheroid || (L.pos[j * 3 + 2] >= 0) === (sign > 0);
     let m = 0;
-    for (let j = 0; j < L.count; j++) if ((L.pos[j * 3 + 2] >= 0) === (sign > 0)) m++;
+    for (let j = 0; j < L.count; j++) if (takes(j)) m++;
     const p = new Float32Array(m * 3), c = new Uint8Array(m * 4), t = new Uint8Array(m * 4), f = new Float32Array(m);
     let k = 0;
     for (let j = 0; j < L.count; j++) {
-      if ((L.pos[j * 3 + 2] >= 0) !== (sign > 0)) continue;
+      if (!takes(j)) continue;
       p.set(L.pos.subarray(j * 3, j * 3 + 3), k * 3); c.set(L.col.subarray(j * 4, j * 4 + 4), k * 4); t.set(L.meta.subarray(j * 4, j * 4 + 4), k * 4);
       f[k] = L.flux[j];
       k++;
@@ -922,8 +932,9 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
       vertexShader: LIGHT_VERT, fragmentShader: LIGHT_FRAG, uniforms: lightU,
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     }));
-    pts.name = `${name}:light${sign > 0 ? '+' : '-'}`;
+    pts.name = `${name}:light${spheroid ? '' : sign > 0 ? '+' : '-'}`;
     pts.frustumCulled = false;
+    if (spheroid) pts.renderOrder = -0.84;
     halves.push({ sign, pts, count: m });
     group.add(pts);
   }
@@ -960,17 +971,19 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     uLane: { value: new THREE.Vector2(prof.dust.lane, prof.dust.inset) }, uDustK: { value: 1 },
     uNormalW: lightU.uNormalW, uInner: { value: v3(prof.colours.inner) }, uOuter: { value: v3(prof.colours.outer) }, uArmCol: { value: v3(armCol) }, uRingCol: { value: v3(ringCol) },
   };
-  const layerMesh = new THREE.Mesh(new THREE.CircleGeometry(prof.rMax, 160), new THREE.ShaderMaterial({
+  const layerMesh = spheroid ? null : new THREE.Mesh(new THREE.CircleGeometry(prof.rMax, 160), new THREE.ShaderMaterial({
     vertexShader: LAYER_VERT, fragmentShader: LAYER_FRAG, uniforms: layerU, side: THREE.DoubleSide,
     transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
   }));
-  layerMesh.name = `${name}:layer`;
-  layerMesh.frustumCulled = false;
-  layerMesh.renderOrder = -0.855;
-  group.add(layerMesh);
+  if (layerMesh) {
+    layerMesh.name = `${name}:layer`;
+    layerMesh.frustumCulled = false;
+    layerMesh.renderOrder = -0.855;
+    group.add(layerMesh);
+  }
   let bulgeMesh = null;
-  const bulgeU = { uGain: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
-  if (prof.bulge) {
+  const bulgeU = { uGain: { value: 0 }, uOld: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
+  if (prof.bulge && !spheroid) {
     const R6 = 6 * prof.bulge.re;
     bulgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * R6, 2 * R6), new THREE.ShaderMaterial({
       vertexShader: BULGE_VERT, fragmentShader: BULGE_FRAG, uniforms: bulgeU,
@@ -985,7 +998,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   const _inv = new THREE.Matrix4();
   const _cam = new THREE.Vector3();
   let share = 0, exposureNow = 1, faceOn = 1, small = false;
-  function place(posKm, axes, mode = 'rotate') {
+  function place(posKm, axes, mode = 'rotate', origin = null) {
     const dirs = sceneDirs([axes.major, axes.across, axes.normal]);
     if (!dirs) return false;
     const [x, y, z] = dirs;
@@ -995,6 +1008,12 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
       if (!stage.toSceneInto(posKm, 'sun-inertial', v, stage.tMs)) return false;
       const s = KPC_KM / stage.unitKm;
       group.matrix.copy(_m).scale(new THREE.Vector3(s, s, s)).setPosition(v);
+    } else if (mode === 'offset' && origin) {
+      // 0076 W4-a: inside a hero (the parent is placed and scaled by the coordinator): the offset from `origin` (a scene position), in 100 ly
+      const v = new THREE.Vector3();
+      if (!stage.toSceneInto(posKm, 'sun-inertial', v, stage.tMs)) return false;
+      const s100 = (100 * LY_KM) / stage.unitKm;
+      group.matrix.copy(_m).scale(new THREE.Vector3(KPC_UNITS, KPC_UNITS, KPC_UNITS)).setPosition(v.sub(origin).multiplyScalar(1 / s100));
     } else {
       group.matrix.copy(_m).scale(new THREE.Vector3(KPC_UNITS, KPC_UNITS, KPC_UNITS));
     }
@@ -1012,6 +1031,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     layerU.uGain.value = prof.gain * share * exposureNow;
     bulgeU.uGain.value = prof.gain * share * exposureNow * lay;
     layerU.uDustK.value = lookNow() === 'measured' ? 0.6 : 1;
+    if (spheroid) { lightU.uGain.value = g.gain * share * exposureNow; shared.uMaxPx.value = (small ? 2.2 : 3.2) * dprNow; shared.uMinPx.value = Math.min(1.8 * dprNow, shared.uMaxPx.value); return; }
     // close up the points are small, capped dots (sparkle), never a carpet; edge on they are patches again
     const cap = (small ? 1.8 : 2.6) * dprNow;
     shared.uMaxPx.value = cap + (40 * dprNow - cap) * (1 - lay);
@@ -1038,12 +1058,12 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     _inv.copy(group.matrixWorld).invert();
     _cam.setFromMatrixPosition(camera.matrixWorld).applyMatrix4(_inv);
     const above = _cam.z >= 0;
-    faceOn = Math.abs(_cam.z) / Math.max(1e-9, _cam.length());
-    for (const h of halves) h.pts.renderOrder = (h.sign > 0) === above ? -0.84 : -0.86;
+    faceOn = spheroid ? 1 : Math.abs(_cam.z) / Math.max(1e-9, _cam.length());
+    if (!spheroid) for (const h of halves) h.pts.renderOrder = (h.sign > 0) === above ? -0.84 : -0.86;
     apply();
   }
   function dispose() {
-    layerMesh.geometry.dispose(); layerMesh.material.dispose();
+    if (layerMesh) { layerMesh.geometry.dispose(); layerMesh.material.dispose(); }
     if (bulgeMesh) { bulgeMesh.geometry.dispose(); bulgeMesh.material.dispose(); }
     for (const h of halves) { h.pts.geometry.dispose(); h.pts.material.dispose(); }
     if (dustPts) { dustPts.geometry.dispose(); dustPts.material.dispose(); }
@@ -1052,6 +1072,8 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   const bytes = L.count * 24 + D.count * 20;
   return {
     group, place, setShare, update, dispose,
+    /** A probe's before shot (0076 W4-a): the bulge's old clamp instead of the soft shoulder. */
+    setOld: (b) => { bulgeU.uOld.value = b ? 1 : 0; },
     share: () => share,
     generated: g,
     stats: () => ({ points: L.count, dust: D.count, meshes: group.children.length, textures: 0, bytes }),
@@ -1085,11 +1107,29 @@ const lookNow = () => { try { const sr = globalThis.spaceRadar; return sr && typ
 const tierNow = () => { try { const q = globalThis.spaceRadar && globalThis.spaceRadar.quality; const d = q && q.describe ? q.describe() : null; return d && Number.isFinite(d.tier) ? d.tier : 1; } catch (e) { return 1; } };
 const viewHNow = () => { try { const r = globalThis.spaceRadar && globalThis.spaceRadar.renderer; return r && r.domElement ? r.domElement.height || 900 : 900; } catch (e) { return 900; } };
 const dprNow = () => { try { const r = globalThis.spaceRadar && globalThis.spaceRadar.renderer; return r && r.getPixelRatio ? r.getPixelRatio() : 1; } catch (e) { return 1; } };
-/** How much of a record's photograph is drawn now (scene/nebulae.js drawn()); Andromeda's through scene/galaxy.js. */
-function photoShare(id) {
-  if (id === 'dso-m31') return ANDROMEDA_LINK.photo;
-  try { const n = globalThis.spaceRadar && globalThis.spaceRadar.nebulae; return n && n.drawn ? Number(n.drawn(id)) || 0 : 0; } catch (e) { return 0; }
+/**
+ * (0076 W4-a, spec 0075 task 62) A companion spheroid's frame from its catalogue ellipse: the position angle as written, and
+ * the inclination at which a spheroid of intrinsic flattening `qInt` (assumed) shows the ellipse's axis ratio. Pure.
+ */
+export function spheroidFrame(record, qInt) {
+  const md = (record && record.meta) || {};
+  const qObs = md.majAxArcmin > 0 && md.minAxArcmin > 0 ? Math.min(1, md.minAxArcmin / md.majAxArcmin) : 1;
+  const qi = Math.min(qObs, Math.max(0.2, qInt));
+  const c2 = qi >= 1 ? 1 : Math.min(1, Math.max(0, (qObs * qObs - qi * qi) / (1 - qi * qi)));
+  return { pa_deg: Number.isFinite(md.posAngDeg) ? md.posAngDeg : 0, incl_deg: Math.acos(Math.sqrt(c2)) / D2R, q: qi, apparent: qObs };
 }
+/**
+ * How much of a companion (M32, M110) its Sersic points draw (0076 W4-a): the hero's share, less what the photograph holds of it.
+ * The photograph holds a companion only while the companion is small on its plate; once its own radius passes ~100 px it is
+ * larger than the plate shows it (or the camera is off the plate's line), so the points draw it whatever the photograph does:
+ * nothing vanishes close up. Pure.
+ */
+export function companionShare(share, photo, rPx) {
+  const t = Math.min(1, Math.max(0, ((Number(rPx) || 0) - 40) / 60));
+  const near = t * t * (3 - 2 * t);
+  return Math.min(1, Math.max(0, share)) * (1 - Math.min(1, Math.max(0, photo)) * (1 - near));
+}
+const SPHEROID_POINTS = [1500, 3500, 5000];     // by tier: points a companion spheroid is made of
 
 export function createHero(THREE, env = {}) {
   const profile = env.profile || {};
@@ -1105,7 +1145,8 @@ export function createHero(THREE, env = {}) {
   const g = createGalaxyPoints(THREE, params, { count: pointsFor(params, tier), dust: profile.levels && Number.isFinite(profile.levels.dust_share) ? profile.levels.dust_share : 0.3, seed, name: group.name });
   group.add(g.group);
   let placedFor = null;
-  const orient = () => { if (placedFor !== stage.worldId && g.place(posKm, axes, 'rotate')) placedFor = stage.worldId; };
+  let placeCompanionsLater = () => {};
+  const orient = () => { if (placedFor !== stage.worldId && g.place(posKm, axes, 'rotate')) { placedFor = stage.worldId; placeCompanionsLater(); } };
   orient();
   // A `gas` layer, as the stub heroes build one (scene/deep/gasmat.js): none in M31's or M33's profile.
   const parts = [];
@@ -1116,7 +1157,39 @@ export function createHero(THREE, env = {}) {
     parts.push(v);
   }
   const id = profile.record || (record && record.id) || null;
-  let level = 0, share = 0;
+  // 0076 W4-a (spec 0075 task 59): M32 and M110, M31's two companions, as Sersic points in their own place. The profile's
+  // `satellites` layer lists them (one `members` row each, with its source); each is ONE Points draw, the same from every
+  // side, its shape the catalogue ellipse and its third dimension assumed. They are part of this hero (the profile's
+  // `children`): no holder of their own, the point glow steps back by this hero's share (`shares`).
+  const companions = [];
+  const satellites = (profile.layers || []).find((l) => l && l.kind === 'satellites');
+  for (const m of (satellites && satellites.members) || []) {
+    const rec = env.recordById ? env.recordById(m.record) : null;
+    if (!rec || !rec.pos || !Number.isFinite(Number(m.re_kpc))) continue;
+    const frame = spheroidFrame(rec, Number(m.q) || 0.7);
+    const mp = { id: m.record, frame, sense: 1, layers: [{ kind: 'bulge', sersic_n: Number(m.sersic_n) || 2, re_kpc: Number(m.re_kpc), q: frame.q, light: 1, colour: m.colour || '#ffd9ae' }] };
+    const cg = createGalaxyPoints(THREE, mp, { count: SPHEROID_POINTS[Math.min(2, Math.max(0, tier | 0))], dust: 0, seed: 32 + companions.length, name: `${group.name}:${m.record}`, spheroid: true });
+    group.add(cg.group);
+    companions.push({ id: m.record, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame), rPx: 0 });
+  }
+  const shareMap = new Map(companions.map((c) => [c.id, 0]));
+  const _o = new THREE.Vector3();
+  const placeCompanions = () => {
+    if (!companions.length || !stage.toSceneInto(posKm, 'sun-inertial', _o, stage.tMs)) return;
+    for (const c of companions) c.g.place(c.posKm, c.axes, 'offset', _o);
+  };
+  placeCompanionsLater = placeCompanions;
+  placedFor = null;
+  orient();
+  let level = 0, share = 0, photoIn = 0, gainIn = 1, before = false;
+  // ONE ROUTE (spec 0075 task 61): the coordinator hands every hero its photograph's share (`info.photo`) and the shutter
+  // (`info.gain`) with each frame; this hero reads nothing else, and tells scene/galaxy.js's far copy only how much it draws.
+  const refresh = () => {
+    const k = share * (1 - Math.min(1, Math.max(0, photoIn)));
+    g.setShare(k, gainIn);
+    for (const c of companions) c.g.setShare(before ? 0 : companionShare(share, photoIn, c.rPx), gainIn);
+    g.setOld(before);
+  };
   return {
     group,
     levels: [2, 3],
@@ -1124,20 +1197,31 @@ export function createHero(THREE, env = {}) {
       level = n;
       share = n >= 2 ? Math.min(1, Math.max(0, s)) : 0;
       orient();
-      // the model draws what the photograph leaves (scene/nebulae.js drawn): the two always sum to one
-      g.setShare(share * (1 - Math.min(1, Math.max(0, photoShare(id)))), ANDROMEDA_LINK.exposure);
+      // the model draws what the photograph leaves (the coordinator's `photo`): the two always sum to one
+      refresh();
       if (id === 'dso-m31') ANDROMEDA_LINK.heroShare = share;
       for (const v of parts) v.material.uniforms.uShare.value = share;
       group.visible = share > 0;
     },
     frame(info = {}) {
+      orient();
+      if (Number.isFinite(info.photo)) photoIn = info.photo;
+      if (Number.isFinite(info.gain) && info.gain > 0) gainIn = info.gain;
+      before = !!info.before; // sr.deep.debug({before: true}): the 1.1 look, for a probe
+      for (const c of companions) c.rPx = typeof info.pxOf === 'function' ? info.pxOf(c.id) : 0;
+      refresh();
       g.update(info.camera, viewHNow(), dprNow(), tier);
+      for (const c of companions) c.g.update(info.camera, viewHNow(), dprNow(), tier);
       for (const v of parts) { if (info.camera) v.setCamera(info.camera, 1); v.setLook(info.look, info); }
     },
     ready: () => true,
-    stats: () => ({ level, share: Math.round(g.share() * 100) / 100, ...g.stats() }),
+    /** record id -> how much of it this hero draws (the level's share): the point glow of M32 and M110 steps back by it. */
+    shares: () => { for (const c of companions) shareMap.set(c.id, share); return shareMap; },
+    stats: () => ({ level, share: Math.round(g.share() * 100) / 100, ...g.stats(), meshes: g.stats().meshes + companions.reduce((n, c) => n + c.g.stats().meshes, 0), companions: companions.length, points: g.stats().points + companions.reduce((n, c) => n + c.g.stats().points, 0) }),
     dispose() {
       g.dispose();
+      for (const c of companions) c.g.dispose();
+      companions.length = 0;
       for (const v of parts) v.dispose();
       parts.length = 0;
       if (id === 'dso-m31') ANDROMEDA_LINK.heroShare = 0;

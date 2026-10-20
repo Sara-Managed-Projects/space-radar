@@ -413,3 +413,34 @@ sources:
     pins:
       - {url: "https://noirlab.edu/public/media/archives/images/large/noao-m78.jpg", sha256: 00c6efa90aeb5e28887305dc970fe81f74580ec0ea943092306217d418935497, pinned_in: site/images/deep/sheets/manifest.json}
       - {url: "https://noirlab.edu/public/media/archives/images/screen/noao-ngc7023.jpg", sha256: fef5210acf994b76ceeab745b8ebfb74dddc5f29e46cffb31f25a7d6e69d9e63, pinned_in: site/images/deep/sheets/manifest.json}
+  # 0076 W4-b
+  # Galaxy clusters and quasars (internal spec 0076 W4-b, #784): scripts/build_deep_galclusters.py asked VizieR (four catalogues) and
+  # SDSS's SkyServer (photometry of the Coma and Perseus members) on 2026-10-20 and baked the two files pinned here. Its answers carry
+  # the day of the query, so the pins are the files it wrote.
+  - id: cds-vizier-galclusters
+    name: CDS VizieR (four catalogues of cluster members and their distances), read by scripts/build_deep_galclusters.py
+    match: ["scripts/build_deep_galclusters.py"]
+    url: https://vizier.cds.unistra.fr/
+    licence: Free of usage in a scientific context, with the original authors and publication cited
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Four tables: Kim and others 2014, ApJS 215, 22 (J/ApJS/215/22), Mei and others 2007, ApJ 655, 144 (J/ApJ/655/144), Kang and others 2025, ApJS 278, 51 (J/ApJS/278/51) and 2024, ApJS 272, 22 (J/ApJS/272/22), Ferguson 1989 (VII/180); the same page says tables from the AAS journals and A&A are free for a scientific usage. Space Radar is free and non-commercial."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-20
+    pins:
+      - {file: site/data/deep/galclusters.bin, sha256: 69aa4c756f93a02f78fa78fbe08e08de0095e3a5926e93e517196de63c026720}
+      - {file: site/data/deep/galclusters.json, sha256: 1bea2a5d9162361d158646ae787dee06ee06120f4883f80ff17a3d420c8eda1a}
+  - id: sdss-skyserver
+    name: Sloan Digital Sky Survey DR17, through SkyServer (half-light radii and colours of the Coma and Perseus members)
+    match: ["https://skyserver.sdss.org/"]
+    url: https://skyserver.sdss.org/dr17/
+    licence: Public domain (SDSS public data releases)
+    licence_read: "All SDSS data released in our public data releases are considered in the public domain."
+    licence_url: https://www.sdss.org/collaboration/
+    licence_note: "The same page asks for the SDSS acknowledgement and the key technical papers to be cited in a paper, and for a link back to www.sdss.org as a courtesy; CREDITS.md section 3l (Galaxy clusters and quasars) carries both. Only petroR50_r, model magnitudes and extinction were read, by object id."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-20

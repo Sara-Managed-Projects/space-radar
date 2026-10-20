@@ -170,10 +170,13 @@ const A = prep(M31, m31, 30000);
   const hero = S.createHero(THREE, { profile: M31, record: m31 });
   const st = hero.stats();
   check(st.points === 60000 && st.meshes === 5, `with no tier to read, T1's 60 000 points; five draws: two halves, dust, the light layer, the bulge (${st.points}, ${st.meshes})`);
-  ANDROMEDA_LINK.photo = 0.6;
   hero.setLevel(2, 1);
+  hero.frame({ photo: 0.6, gain: 1.7 }); // 0076 W4-a (task 61): the coordinator's route, the only one
   check(Math.abs(hero.stats().share - 0.4) < 0.011 && ANDROMEDA_LINK.heroShare === 1, `with her photograph at 0.6 the model draws the 0.4 left (${hero.stats().share})`);
-  ANDROMEDA_LINK.photo = 0;
+  const lg = hero.group.children[0].children.find((o) => o.name.endsWith(':light+')).material.uniforms.uGain.value;
+  hero.frame({ photo: 0.6, gain: 0.55 });
+  check(hero.group.children[0].children.find((o) => o.name.endsWith(':light+')).material.uniforms.uGain.value < lg * 0.5, 'and the shutter is the one the coordinator hands her (info.gain), not ANDROMEDA_LINK.exposure');
+  hero.frame({ photo: 0, gain: 1 });
   hero.setLevel(1, 0);
   check(!hero.group.visible && hero.stats().share === 0 && ANDROMEDA_LINK.heroShare === 0, 'below level 2 the hero hands Andromeda back to the far copy');
   hero.setLevel(2, 0.5);
@@ -227,6 +230,14 @@ const A = prep(M31, m31, 30000);
   check(armMax > 0.5, 'the arms modulate it');
   const d15 = at(15.1, 0, 1).dust, d15m = at(15.1, 0, 0.6).dust;
   check(d15 > d15m, 'the dust is stronger in Film than under Measured');
+  // 0076 W4-a (task 55): the bulge's core is a gradient that never reaches white, whatever the gain
+  {
+    const xs = [0.2, 0.5, 0.8, 1.2, 2, 5, 50];
+    check(xs.every((x, i) => i === 0 || S.bulgeShoulder(x) > S.bulgeShoulder(xs[i - 1])), 'the bulge shoulder keeps its order: a brighter core stays brighter');
+    check(S.bulgeShoulder(1e6) <= S.SHOULDER_KNEE + S.SHOULDER_ROOM + 1e-9 && S.bulgeShoulder(1e6) < 0.9, `and it stops under white (${S.bulgeShoulder(1e6).toFixed(3)})`);
+    check(Math.abs(S.bulgeShoulder(S.SHOULDER_KNEE + 1e-6) - S.bulgeShoulder(S.SHOULDER_KNEE - 1e-6)) < 1e-5 && S.bulgeShoulder(0.3) === 0.3, 'with no step at the knee, and the dim part untouched');
+    check(/exp\( -\( v - 0\.50 \) \/ 0\.35 \)/.test(S.SHADERS_LAYER.bulge) && /uOld > 0\.5 \? min\( v, 1\.2 \)/.test(S.SHADERS_LAYER.bulge), 'the shader has the same shoulder, and the old clamp only for a probe\'s before shot');
+  }
   check(S.SPARKLE <= 0.25, `close up the points carry only ${S.SPARKLE} of the light`);
   check(/min\( a, uAlphaCap \)/.test(S.SHADERS.light) && !/colorspace_fragment/.test(S.SHADERS_LAYER.layer + S.SHADERS_LAYER.bulge), 'each point is capped; the layer in display values');
   const hero = S.createHero(THREE, { profile: M31, record: m31 });
@@ -256,6 +267,35 @@ const A = prep(M31, m31, 30000);
   check(SHAPED['dso-m32'] && SHAPED['dso-m32'].of === 'dso-m31' && SHAPED['dso-m110'] && SHAPED['dso-m110'].of === 'dso-m31', 'M32 and M110 are drawn as her companions');
   check([M31, M33].every((h) => h.review.by === 'Space Radar maintainers' && !!h.review.date), 'both are signed by "Space Radar maintainers" with a date, not a person or an independent review (internal #785 open)');
   check(M31.children.includes('dso-m32') && M31.children.includes('dso-m110'), 'and her profile names them as her children');
+  // 0076 W4-a (task 59): M32 and M110 as Sersic points, one Points draw each, in their own place
+  {
+    const byId = (id) => { const r = recordOf(id.replace('dso-', '')); return r; };
+    const hero = S.createHero(THREE, { profile: M31, record: m31, recordById: byId });
+    const st = hero.stats();
+    check(st.companions === 2 && st.meshes === 7, `M32 and M110 are two more draws, one each (${st.companions} companions, ${st.meshes} meshes against 5)`);
+    check([...hero.shares().keys()].sort().join() === 'dso-m110,dso-m32', 'the hero names the records it draws, for the point glow to step back by');
+    const sat = M31.layers.find((l) => l.kind === 'satellites').members;
+    const m32m = sat.find((m) => m.record === 'dso-m32');
+    check(m32m.sersic_n === 1.5 && Math.abs(m32m.re_kpc - 27 / 206265 * (m32.distLy / 3261.563777)) < 0.01 && /Graham 2002/.test(m32m.source), `M32: Graham 2002's n = 1.5 and 27 arcsec (${m32m.re_kpc} kpc at its distance)`);
+    check(/illustrative/.test(sat.find((m) => m.record === 'dso-m110').source), 'M110 says its profile is illustrative: no profile of it was read');
+    const f = S.spheroidFrame(byId('dso-m32'), 0.7);
+    const apparent = Math.sqrt(Math.cos(f.incl_deg * D2R) ** 2 + f.q * f.q * Math.sin(f.incl_deg * D2R) ** 2);
+    check(Math.abs(apparent - f.apparent) < 1e-6 && f.pa_deg === 170, `a spheroid of flattening ${f.q} seen at ${f.incl_deg.toFixed(1)} degrees shows the catalogue ellipse (${apparent.toFixed(3)} against ${f.apparent.toFixed(3)}), position angle 170`);
+    check(S.companionShare(1, 1, 10) === 0 && S.companionShare(1, 1, 200) === 1 && S.companionShare(1, 0, 0) === 1 && S.companionShare(0.5, 0.5, 70) > 0.25 && S.companionShare(0.5, 0.5, 70) < 0.5, 'a companion the photograph holds at 10 px is left to it; large on screen (200 px) its points draw it whatever the photograph does');
+    hero.setLevel(2, 1);
+    const cam = new THREE.PerspectiveCamera(50, 1.6, 1, 1e9);
+    cam.position.set(0, 0, 1000); cam.updateMatrixWorld();
+    hero.frame({ camera: cam, photo: 0.25, gain: 1 });
+    const comp = hero.group.children.filter((c) => /dso-m3|dso-m1/.test(c.name));
+    check(comp.length === 2 && comp.every((c) => c.children.length === 1 && c.children[0].material.blending === THREE.AdditiveBlending && c.children[0].material.uniforms.uGain.value > 0), 'each is one additive Points draw, lit by the share the photograph leaves');
+    // placed relative to M31's centre, in the hero's 100 ly: M32 is 24 arcmin from her (about 17 kly at her distance), M110 37 arcmin
+    const off = (c) => Math.hypot(c.matrix.elements[12], c.matrix.elements[13], c.matrix.elements[14]) * 100;
+    const dly = (o) => { const d = o.distLy; const a = Math.hypot(o.posLy[0] - m31.row.posLy[0], o.posLy[1] - m31.row.posLy[1], o.posLy[2] - m31.row.posLy[2]); return a; };
+    const offs = comp.map(off).sort((a, b) => a - b), wants = [m32, rows.find((r) => r.id === 'm110')].map(dly).sort((a, b) => a - b);
+    check(offs.every((v, i) => Math.abs(v - wants[i]) / wants[i] < 0.02), `each stands where its record is, from M31's centre: ${offs.map((v) => v.toFixed(0)).join(', ')} ly against ${wants.map((v) => v.toFixed(0)).join(', ')}`);
+    hero.dispose();
+    check(ANDROMEDA_LINK.heroShare === 0 && hero.group.children.length === 0, 'and gives everything back when disposed');
+  }
   const sep = (o) => Math.acos(Math.sin(o.decDeg * D2R) * Math.sin(m31.row.decDeg * D2R) + Math.cos(o.decDeg * D2R) * Math.cos(m31.row.decDeg * D2R) * Math.cos((o.raDeg - m31.row.raDeg) * D2R)) / D2R * 60;
   check(Math.abs(sep(m32) - 24.4) < 1.5 && Math.abs(sep(rows.find((r) => r.id === 'm110')) - 36.6) < 1.5, `at their measured separations on the sky: M32 ${sep(m32).toFixed(1)} arcmin, M110 ${sep(rows.find((r) => r.id === 'm110')).toFixed(1)} arcmin`);
 }

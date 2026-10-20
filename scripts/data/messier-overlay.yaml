@@ -6,6 +6,14 @@ version: 1
 objects:
   # Andromeda's two bright companions (public #385) are drawn beside her and step back while her
   # photograph holds them. Companions, not parts: the card says "a companion of", not "inside".
+  # Andromeda's viewing angles (spec 0076 W4-a, spec 0075 task 62): the record said 35 (OpenNGC's catalogue ellipse, which
+  # still draws the photograph's frame, `posAngDeg`) while the hero turned the disc by 38. One orientation for the disc,
+  # the hero's own (registry/deepsky-heroes/m31.yaml): de Vaucouleurs 1958, ApJ 128, 465, 38 and 77 degrees from face on,
+  # read through the later papers that adopt them; the NW side near. The 3-degree difference is the catalogue ellipse's
+  # (isophotes of the whole galaxy) against the disc's line of nodes (the disc alone).
+  m31:
+    orientation: {pa_deg: 38, incl_deg: 77, near_side: NW,
+                  source: "de Vaucouleurs 1958, ApJ 128, 465 (as the hero profile cites it; the paper itself is not yet read); near side from the dust lanes against the bulge"}
   m32:
     parent: m31
   m110:

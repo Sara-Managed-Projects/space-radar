@@ -146,7 +146,7 @@ const CONTRACT = {
   'data/weather.js': ['WEATHER'],
   // The one owner of the URL hash (spec 0032): main.js and ui/trip.js write
   // through it, and a second dialect is the bug it was written to end.
-  'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
+  'ui/urlstate.js': ['KEYS', 'VERSION', 'BUILD', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
   // Share (spec 0033, spec 0061 task 8): the link rules and the one door, ctx.share.open().
   'ui/share.js': ['appBase', 'shareUrl', 'shareState', 'tripWords', 'toast', 'installShare', 'openShare', 'savePostcard', 'shareButton'],
   // Spec 0061 task 8: the one share sheet, imported on the first Share; its pure parts for the tests.
@@ -194,6 +194,10 @@ const CONTRACT = {
   'scene/deep/ring.js': ['createHero', 'tierFloor', 'geometryOf', 'insideOf', 'nearOf', 'layerSamples', 'capLight', 'columnsAt', 'columnMap', 'columnsFrom', 'haloSamples', 'COLUMN_MAP', 'columnJs', 'knotsOf', 'paletteFor', 'samplesFor', 'sharesFor', 'lightUv', 'SHAPE', 'SHADERS', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
   'scene/deep/shellneb.js': ['skyFrame', 'ringAxis', 'planeBasis', 'skyDir', 'uvOf', 'uvAt', 'layerSpan', 'spanLen', 'spanT', 'quadSpan', 'shellSpan', 'quarticCdf', 'slabIntegral', 'lightStretch', 'paletteOf', 'sharesOf', 'samplesOf', 'viewSize', 'pixelHash', 'seeded', 'shellMaterial', 'skyPlacer', 'starMesh', 'knotMaterial', 'knotMesh', 'lightTexture', 'GLSL', 'SHELL_SHADERS', 'QUARTIC_CDF', 'QUARTIC', 'QUAD_BYTES', 'AU_LY', 'D2R', 'norm', 'cross', 'dot', 'neg', 'smooth', 'hexRgb', 'f3'],
   // 0076 W3-c (remnant.js, dustsheet.js)
+  // 0076 W4-b (galclusters.js): galaxy clusters and quasars; its columns, fades and quasar geometry are pure for tests/test_galclusters.mjs.
+  'scene/deep/galclusters.js': ['createLayer', 'parseMembers', 'rowOf', 'arraysOf', 'colourOf', 'tileFade', 'crowd', 'tileRadiusPx', 'eclipticDir', 'quasarOf', 'hostOf', 'EXTENT', 'MIN_PX', 'MAX_PX', 'CULL_PX', 'FADE_PX', 'FOOT_PX', 'STRIDE', 'MAGIC', 'UNDER_MEASURED', 'COPY_BLOCK'],
+  // 0076 W4-c (scenesummary.js): what is on screen, for a screen reader; its pure parts for tests/test_access.mjs.
+  'ui/scenesummary.js': ['summaryText', 'factsOf', 'createSceneSummary'],
   // 0076 W3-d (scalerail.js): where you are on the ladder, Back and the note at a join; its words and rules are pure for tests/test_navigate.mjs.
   'ui/scalerail.js': ['wireRail', 'rungOf', 'railRungs', 'joinNote', 'noteWords', 'backWords', 'railShown', 'NOTE_MS'],
   // Release 1.2.0 stage W3-c (internal #784, #806): remnants as shells and dust as sheets, fetched when one is near; their pure parts for tests/test_remnant.mjs and tests/test_dustsheet.mjs.

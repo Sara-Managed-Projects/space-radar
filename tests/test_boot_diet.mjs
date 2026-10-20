@@ -177,9 +177,13 @@ const DEFERRED = {
   'js/data/hero-iris.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-d (scalerail.js)
   'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
+  // 0076 W4-b (galclusters.js)
+  'js/scene/deep/galclusters.js': 'galaxy clusters and quasars: the deep-sky coordinator fetches it on the Local Group rung (release 1.2.0 W4-b, internal #784)',
   // 0076 W3-e (kindwords.js, visualclasses.js)
   'js/data/kindwords.js': 'the words for a kind of thing ("galaxies"): with ui/searchrows.js, on the search field\'s first focus',
   'js/data/visualclasses.js': 'every record\'s visual class: ui/searchrows.js fetches it the first time a kind is typed',
+  // 0076 W4-c (scenesummary.js)
+  'js/ui/scenesummary.js': 'what is on screen, for a screen reader: main.js fetches it SUMMARY_MS after sr:layers-ready (internal spec 0076 W4-c)',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

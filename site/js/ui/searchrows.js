@@ -770,8 +770,11 @@ export function onlyToggle(onPress, onEscape) {
 
 /** Shown under results that hold objects, or while it is on; never in a look tool's before picture. */
 export function paintToggle(b, state) {
-  b.hidden = !kindsOn() || !(state.only || (!state.missed && state.hits.some((h) => h.record && !h.extra)));
+  // Not before its stylesheet has landed: unstyled it is a 21 px browser button (the ui gate measured exactly that).
+  b.hidden = !styled || !kindsOn() || !(state.only || (!state.missed && state.hits.some((h) => h.record && !h.extra)));
   b.setAttribute('aria-pressed', state.only ? 'true' : 'false');
 }
 
-if (typeof document !== 'undefined') loadCss('searchkinds');
+let styled = typeof document === 'undefined'; // a test in node has no stylesheet to wait for
+/** Resolves once css/searchkinds.css is in (or has failed); the toggle stays hidden until then. */
+export const stylesReady = typeof document !== 'undefined' ? loadCss('searchkinds').then(() => { styled = true; }) : Promise.resolve();

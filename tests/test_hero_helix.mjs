@@ -165,6 +165,14 @@ const g = H.geometryOf();
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
   check(hero.stats().samples === 16 && hero.stats().knots === 1600, 'T2 at level 3: 16 samples a ring (32 steps), 1 600 knots');
   check(H.samplesFor({ tier: 2, steps: 48 }) === 24 && H.samplesFor({ tier: 1, steps: 0 }) === 8, 'Ultra 24 a layer; level 2 8');
+  check(H.samplesFor({ tier: 2, steps: 48, slow: true }) === 12 && H.samplesFor({ tier: 1, steps: 0, slow: true }) === 4 && H.samplesFor({ tier: 0, slow: true }) === 4, 'a slow frame (dtMs over 24 ms) halves the samples, never under 4 (0076 W4-a, task 44)');
+  { // the hero reads the frame interval (dtMs): slow frames halve its samples, quick ones give them back; a frozen frame does not count
+    const go = (n, dtMs, frozen) => { for (let i = 0; i < n; i++) hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen, dtMs, photo: 0, tier: 1, gain: 1 }); return hero.stats().samples; };
+    check(go(30, 40, false) === 4, 'on 40 ms frames the Helix takes 4 samples a ring, not 8');
+    check(go(60, 8, false) === 8, 'and 8 again on 8 ms frames');
+    go(30, 40, true);
+    check(hero.stats().samples === 8, 'a frozen frame (?look=1) does not count');
+  }
   // Shares: the photograph's own, the glow's own fade.
   const sh = H.sharesFor({ level: 1, rPx: 300, photo: 1 });
   check(sh.gas === 0 && sh.knots === 0 && sh.star === 0.5, 'on our line, with its photograph drawn, the gas gives way and the star is half');

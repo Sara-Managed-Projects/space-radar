@@ -257,3 +257,8 @@ features:
     name: Search by kind, and its 3D models toggle (internal spec 0076 W3-e)
     files: [site/js/data/kindwords.js, site/css/searchkinds.css]
     not: "Inside the search the find step already rings: typing a kind lists it there, and the toggle sits under those results."
+  # 0076 W4-c
+  - id: scene-summary
+    name: What is on screen, in words, for a screen reader (internal spec 0076 W4-c)
+    files: [site/js/ui/scenesummary.js]
+    not: "A line only a screen reader hears; there is nothing to press. The Motion row is one more setting in What to show, which the layers step opens."

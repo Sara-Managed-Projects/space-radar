@@ -816,6 +816,8 @@ export function createSearch(ctx, host) {
     if (!only) {
       only = m.onlyToggle(() => { state.only = !state.only; run(input.value); }, () => { close(true); paintList(); input.focus(); });
       pop.insertBefore(only, foot);
+      // Shown once css/searchkinds.css has landed (searchrows.js paintToggle), then painted again here.
+      m.stylesReady.then(() => { if (only) m.paintToggle(only, state); });
     }
     m.paintToggle(only, state);
   }
