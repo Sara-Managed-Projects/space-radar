@@ -109,6 +109,7 @@ if (await openCompare('earth')) {
 }
 
 // --- 3. the passport: real visits, then its second page ----------------------------------------------
+try { if (sr.wantPassport) await sr.wantPassport(); } catch (e) { look.warns.push('wantPassport: ' + e); }
 {
   const visit = async (id) => { const r = sr.recordById(id); if (!r) { look.missing.push(id); return false; } sr.select(r, { fly: false, undo: false }); await sleep(250); return true; };
   const ids = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'sat-25544', 'dso-helix-nebula', 'dso-m31'];
