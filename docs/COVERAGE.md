@@ -23,8 +23,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | stars_notable | 41 | 41 |
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
-| sites | 39 | 39 |
-| real_models | 146 | 146 |
+| sites | 43 | 43 |
+| real_models | 149 | 149 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **907** | **111 094** |
+| **all** | **914** | **111 101** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -45,9 +45,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
 | [ICY_MOON](#icy_moon) | 16 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
-| [AIRLESS_MOON](#airless_moon) | 3 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
+| [AIRLESS_MOON](#airless_moon) | 7 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
-| [ASTEROID](#asteroid) | 17 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js` | modelled | - |
+| [ASTEROID](#asteroid) | 20 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 146 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 58 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
+Honesty over the 914 records: 328 measured, 261 modelled, 325 illustrative.
 
 ## The classes
 
@@ -220,8 +220,9 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the maps, the heights and the shapes. Modelled: shading along the light. Deimos has a shape and no map: drawn grey, said on its card.
 - **Rights:** NASA and USGS public domain; Solar System Scope CC BY 4.0.
 - **What is missing is tracked in:** #864 (shadows from LOLA at a low Sun, W2-a); internal #379 (Deimos's map)
-- **Records (3):**
+- **Records (7):**
   - worlds (3): `moon`, `phobos`, `deimos`
+  - sites (4): `copernicus`, `tycho`, `shackleton`, `moon-south-pole`
 
 ### DWARF_PLANET
 
@@ -243,16 +244,16 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 
 **Asteroids**
 
-- **Drawn by:** `site/js/scene/models.js`, `site/js/scene/realmodels.js`, `site/js/scene/glyphs.js`, `site/js/propagate/kepler.js`
+- **Drawn by:** `site/js/scene/models.js`, `site/js/scene/realmodels.js`, `site/js/scene/glyphs.js`, `site/js/propagate/kepler.js`, `site/js/scene/moonshape.js`
 - **Default honesty:** modelled
 - **On a weak device (T0, or after the frame latch):** A glyph on its orbit; the seeded rock or the real shape only when selected and near.
 - **Source:** JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn.
 - **Dates and filters:** Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card).
 - **Measured, modelled or reconstructed:** Measured: orbits, sizes, the real shapes. Modelled: positions propagated from elements. Illustrative: the seeded rock for any asteroid without a shape (labelled generic).
 - **Rights:** NASA/JPL data and PDS products public domain.
-- **What is missing is tracked in:** #866 (measured spin; Ryugu, Itokawa, Didymos)
-- **Records (17):**
-  - real_models (4): `asteroid-bennu`, `asteroid-vesta`, `asteroid-eros`, `dwarf-ceres`
+- **What is missing is tracked in:** #866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)
+- **Records (20):**
+  - real_models (7): `asteroid-bennu`, `asteroid-vesta`, `asteroid-eros`, `dwarf-ceres`, `asteroid-ryugu`, `asteroid-itokawa`, `asteroid-didymos`
   - model_kinds (1): `asteroid-generic`
   - small_bodies (11): `asteroid-99942`, `asteroid-101955`, `asteroid-433`, `asteroid-162173`, `asteroid-4`, `asteroid-65803`, `asteroid-25143`, `asteroid-2`, `asteroid-3200`, `interstellar-1i`, `interstellar-2i`
   - layers (1): `asteroids`

@@ -145,6 +145,12 @@ export const VISUAL_CLASSES = [
 "moon",
 "phobos",
 "deimos"
+],
+"sites": [
+"copernicus",
+"tycho",
+"shackleton",
+"moon-south-pole"
 ]
 }
 },
@@ -177,7 +183,10 @@ export const VISUAL_CLASSES = [
 "asteroid-bennu",
 "asteroid-vesta",
 "asteroid-eros",
-"dwarf-ceres"
+"dwarf-ceres",
+"asteroid-ryugu",
+"asteroid-itokawa",
+"asteroid-didymos"
 ],
 "model_kinds": [
 "asteroid-generic"
