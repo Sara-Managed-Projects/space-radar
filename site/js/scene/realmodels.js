@@ -792,6 +792,22 @@ export const REAL_MODELS = {
     67481: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 20', catalogue: 'SZ-20 MODULE', made: 'dimensions' },
     69328: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 22', catalogue: 'SZ-22 MODULE', made: 'dimensions' },
     // 0077 W1-a: end
+    // 0077 W3-a: begin
+    // NASA SCIENCE CRAFT (release 1.3.0, stage W3-a; public #1090, #1091, #1092, #1094, #1110). NASA 3D Resources has
+    // none of the five (its 1 583 paths read 2026-10-20), so each is built here from cited dimensions and photographs
+    // (`made: 'dimensions'`; rows `iris`, `timed`, `tracers`, `sert-2`, `isis-1`), by number, only for the numbers that
+    // are that craft (names as the live saved data of 2026-10-20 has them). `axes: 'app'`: each file was built to the
+    // app's axes (+Z the Earth face, the wings along X with their cells to +Y), so it flies as the procedural shape did.
+    39197: { file: 'iris.glb', colour: 'telescope', name: 'IRIS, the Interface Region Imaging Spectrograph', catalogue: 'IRIS', made: 'dimensions', axes: 'app' },
+    26998: { file: 'timed.glb', colour: 'satellite', name: 'TIMED', catalogue: 'TIMED', made: 'dimensions', axes: 'app' },
+    // The two TRACERS craft are one design: one file serves both.
+    64870: { file: 'tracers.glb', colour: 'satellite', name: 'TRACERS 1', catalogue: 'TRACERS 1', made: 'dimensions', axes: 'app' },
+    64873: { file: 'tracers.glb', colour: 'satellite', name: 'TRACERS 2', catalogue: 'TRACERS 2', made: 'dimensions', axes: 'app' },
+    // SERT 2 flew, and is still in orbit, ATTACHED TO ITS AGENA STAGE: the catalogued object is the pair, and so is the file.
+    4327: { file: 'sert-2.glb', colour: 'satellite', name: 'SERT 2 on its Agena stage', catalogue: 'SERT 2', made: 'dimensions', axes: 'app' },
+    // ISIS 1 SPUN, and nobody publishes its attitude now: not turned (no `axes`), it keeps the seeded constant angle.
+    3669: { file: 'isis-1.glb', colour: 'satellite', name: 'ISIS 1', catalogue: 'ISIS 1', made: 'dimensions' },
+    // 0077 W3-a: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },

@@ -318,7 +318,12 @@ export const VISUAL_CLASSES = [
 "wentian",
 "mengtian",
 "shenzhou-orbital",
-"gaia"
+"gaia",
+"iris",
+"timed",
+"sert-2",
+"isis-1",
+"tracers"
 ],
 "model_kinds": [
 "satellite-iridium",

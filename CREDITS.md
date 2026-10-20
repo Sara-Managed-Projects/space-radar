@@ -51,6 +51,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: begin -->
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-a: begin -->
+| The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1 | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
+<!-- 0077 W3-a: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1336,6 +1339,28 @@ pictures; details simplified".
 **Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
 
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-a: begin -->
+## 3b-16. NASA science craft built from dimensions — IRIS, TIMED, TRACERS, SERT 2, ISIS 1 (2026-10-20)
+
+Release 1.3.0, stage W3-a (public #1090, #1091, #1092, #1094, #1110). **NASA 3D Resources (its 1 583 paths) and NASA Science's 3D
+models have none of these five**, so each was built in code, part by part, from cited numbers, and compared side by side with
+the pictures below from four angles and more. No image-to-3D model was used and no picture is in any file. No logo and no lettering
+is on any mesh. Their cards say "shape built from published dimensions and pictures; details simplified". Two of them carry long thin
+parts DRAWN SHORT, because the app scales a model's longest side to one unit: ISIS 1's sounder dipoles (6.0 and 3.0 m tip to tip
+against 73 and 18.7 m) and TRACERS' four electric-field booms (1.25 m of their 3 m). Each row of `registry/models.yaml` cites every
+number and says what is ours.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `iris.glb` (114 KB) | IRIS as it flies: door open, both wings out, silver flight blankets | De Pontieu et al. 2014 (Solar Physics 289:2733, CC BY 4.0, figures 7 and 8); NASA's photographs (<https://commons.wikimedia.org/wiki/File:IRIS_spacecraft_model.png>, KSC-2013-2109) and Goddard's render (<https://commons.wikimedia.org/wiki/File:IRIS_satellite.jpg>) | public domain; CC BY 4.0 (the paper) |
+| `timed.glb` (148 KB) | TIMED: the bus, the optical bench with the four TIDI telescopes, GUVI, two four-panel wings | TIMED QuickFacts and the CDR (spdf.gsfc.nasa.gov); NASA's render (<https://commons.wikimedia.org/wiki/File:TIMED.jpg>); APL's photographs looked at only | public domain |
+| `tracers.glb` (69 KB) | TRACERS (both craft): the black octagon, its cells, brackets and booms (booms drawn short) | Miles et al. 2025 and Bonnell et al. 2025 (Space Sci. Rev.); NASA's turntable (<https://commons.wikimedia.org/wiki/File:TRACERS_spacecraft_turntable_(30fps_4k).webm>); SpaceX's encapsulation photograph (CC0) | public domain; CC0 |
+| `sert-2.glb` (126 KB) | SERT 2 on its Agena D, both wings out, its two ion thrusters | NASA's reports (NTRS 19710002423, 19720019048, 19710013187); NASA's painting C-70-2041 and the Tank 5 photograph (Commons) | public domain |
+| `isis-1.glb` (134 KB) | ISIS 1: the drum of cells and its crossed sounder dipoles (drawn short) | NRC Science Dimension 1969 (looked at only) and NSSDCA; NSSDCA's photograph of the flight craft (<https://nssdc.gsfc.nasa.gov/planetary/image/isis_1.jpg>) | public domain |
+
+**Credit lines:** `3D model: built by Space Radar from ... published dimensions; compared with ...` (each row's `credit:`).
+
+<!-- 0077 W3-a: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
