@@ -228,7 +228,7 @@ check(!/from '\.\/compare\.js'/.test(cards) && /import\('\.\/compare\.js'\)/.tes
 const src = readFileSync(join(JS, 'ui/compare.js'), 'utf8');
 check(!/from 'three'|THREE/.test(src) && !/fetch\(|XMLHttpRequest|localStorage|sessionStorage|location\./.test(src), 'it draws with SVG, fetches nothing, keeps nothing and writes no URL');
 const imports = [...src.matchAll(/^import .*? from '([^']+)'/gm)].map((x) => x[1]);
-check(imports.every((p) => ['../copy/en.js', '../data/compare.js'].includes(p)) || imports.length === 2, `it imports only copy and its data (${imports})`);
+check(imports.every((p) => ['../copy/en.js', '../data/compare.js', './latercss.js'].includes(p)), `it imports only copy, its data and the later-css loader (${imports})`);
 const cardRows = /const COMPARABLE = new Set\(\[([^\]]+)\]\)/.exec(cards);
 check(!!cardRows && cardRows[1].match(/'(\w+)'/g).map((q) => q.slice(1, -1)).join() === ORDER.join(), 'the ids cards.js offers Compare for are the registry\'s bodies');
 

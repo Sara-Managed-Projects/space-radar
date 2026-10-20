@@ -24,6 +24,10 @@
 
 import { COPY, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
+import { loadCss } from './latercss.js';
+
+// Its rules (css/compare.css) arrive with the passport, which is itself fetched late; a stand-in document has no head for them.
+if (typeof document !== 'undefined' && document.head) Promise.resolve().then(() => loadCss('compare')).catch(() => {});
 
 export const FAMILIES = ['worlds', 'stations', 'satellites', 'spacecraft', 'small', 'stars', 'exoplanets', 'deep', 'earth'];
 

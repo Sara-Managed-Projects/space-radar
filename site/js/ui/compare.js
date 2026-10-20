@@ -27,6 +27,7 @@
 import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 import { COMPARE_BODIES, COMPARE_READ } from '../data/compare.js';
+import { loadCss } from './latercss.js';
 
 const AU_KM = 149597870.7;
 /** The view of a ring plane: the height of a ring's ellipse over its width. Illustrative (about 17 degrees up). */
@@ -190,26 +191,30 @@ export function extentKm(b) {
  * under MIN_R px is drawn at MIN_R and flagged `tiny`. Pure.
  */
 export const MIN_R = 1.5;
+const MARGIN = 12;
 /** The picture's own box. It is a vector drawing scaled to the card's width, so the layout does not depend on the screen. */
 export const VIEW_W = 320;
 export const VIEW_H = 148;
 export function layout(a, b, mode, w = 320, h = 150, gap = 24) {
+  // A margin round the picture, so nothing touches the frame it is drawn in.
+  const inW = w - 2 * MARGIN;
+  const inH = h - 2 * MARGIN;
   const ea = extentKm(a);
   const eb = extentKm(b);
   let sa;
   let sb;
   if (mode === 'same') {
-    const k = Math.min(h / 2, (w - gap) / (2 * (ea / a.radius_km + eb / b.radius_km)));
+    const k = Math.min(inH / 2, (inW - gap) / (2 * (ea / a.radius_km + eb / b.radius_km)));
     sa = k / a.radius_km;
     sb = k / b.radius_km;
   } else {
     const tallest = Math.max(a.radius_km, b.radius_km, ea * TILT, eb * TILT);
-    sa = sb = Math.min((w - gap) / (2 * (ea + eb)), h / 2 / tallest);
+    sa = sb = Math.min((inW - gap) / (2 * (ea + eb)), inH / 2 / tallest);
   }
   // A body under MIN_R px is drawn as a dot of MIN_R, so the dot's width is what the pair is centred on.
   const widthA = 2 * Math.max(ea * sa, MIN_R);
   const widthB = 2 * Math.max(eb * sb, MIN_R);
-  const space = Math.max(0, Math.min(gap, w - widthA - widthB));
+  const space = Math.max(0, Math.min(gap, inW - widthA - widthB));
   const x0 = (w - (widthA + space + widthB)) / 2;
   const one = (body, s, cx) => {
     const r = body.radius_km * s;
@@ -332,6 +337,8 @@ export function mountCompare(box, record, ctx = null) {
   const id = String(record && record.id || '');
   const a = BODY.get(id);
   if (!a) return { destroy() {} };
+  // Its rules come with it (css/compare.css), and are not a first visit's bytes. A stand-in document has no head to put them in.
+  Promise.resolve().then(() => loadCss('compare')).catch(() => {});
   const state = PERSIST.get(id) || { mode: 'pair', withId: defaultWith(id), scale: 'true', prop: 'across' };
   PERSIST.set(id, state);
   let live = true;

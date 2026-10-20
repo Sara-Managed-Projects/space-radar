@@ -21,6 +21,7 @@
 import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { heroShipped } from '../scene/deep/heroes.js';
+import { loadCss } from './latercss.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -48,6 +49,7 @@ export function mountPhotoCompare(box, record, ctx) {
     const nebulae = ctx.nebulae || (typeof ctx.wantNebulae === 'function' ? ctx.wantNebulae() : null);
     return Promise.resolve(nebulae).then((neb) => {
       if (!neb || typeof neb.setCompare !== 'function' || box.isConnected === false) return null;
+      Promise.resolve().then(() => loadCss('compare')).catch(() => {}); // css/compare.css, with the module
       const wrap = el('section', 'sr-panel sr-density sr-exposure sr-photocmp');
       wrap.dataset.record = id;
       wrap.appendChild(el('h2', 'sr-panel__title', P.title));
