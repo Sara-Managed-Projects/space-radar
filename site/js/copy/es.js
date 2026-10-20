@@ -653,6 +653,7 @@ export const COPY = {
       launched: "Lanzado",
       ended: "Terminó",
       pathEnds: "Su trayectoria termina",
+      pathBegins: "Su trayectoria empieza",
       period: "Una vuelta tarda",
       location: "Dónde está",
       onWorld: "Sobre",
@@ -741,11 +742,13 @@ export const COPY = {
     notApplicable: "Algo que este objeto no tiene",
     endedLine: "Su misión terminó el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     pathEndedLine: "La trayectoria que guarda el JPL termina el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
+    pathBeginsLine: "La trayectoria que guarda el JPL empieza el {date}. Sus hitos, más abajo, te llevan de vuelta a ella.",
     actions: {
       flyTo: "Ir allí",
       flyToTitle: "Mover la cámara a este objeto",
       flyEnded: "Terminó el {date}. Elige un hito de su misión para ir allí",
       flyPathEnded: "Su trayectoria termina el {date}. Elige un hito de su misión para ir allí",
+      flyPathBegins: "Su trayectoria empieza el {date}. Elige un hito de su misión para ir allí",
       flyNowhere: "Este objeto no tiene posición en este momento",
       seeFromHere: "Verlo desde aquí",
       seeFromHereTitle: "Mirar hacia arriba desde tu propio lugar de la Tierra",
@@ -976,6 +979,7 @@ export const COPY = {
     },
     worldDeparture: {
       earth: "en una pantalla más grande, sus montañas salen de las alturas ETOPO 2022 de NOAA, dibujadas {relief} veces más empinadas de lo que son para que un Sol bajo las muestre; el resplandor del aire alrededor de su borde se dibuja {air} veces más alto que el aire; desde una órbita baja y en una pantalla más grande, sus nubes se alzan hacia el horizonte y bajo un Sol bajo, dibujadas {clouds} veces más gruesas de lo que son para que se vean su inclinación, sus largas sombras y la última luz en sus cimas (con su grosor verdadero en el aspecto Medido), con la altura de cada cima tomada de su temperatura medida donde cubre la imagen de hoy y del brillo del mapa de nubes en el resto",
+      titan: "justo encima de su bruma, a unos 500 km de altura, se dibuja una capa fina y separada de bruma donde la vio la Cassini entre 2005 y 2007; se hundió y se desvaneció en los años siguientes, y no se sabe dónde está ahora",
       mercury: "en una pantalla más grande, su relieve sale del modelo de elevación de MESSENGER, dibujado {steep} veces más empinado de lo medido para que los bordes de los cráteres atrapen la luz",
       mars: "en una pantalla más grande, su relieve sale de las alturas que midió el altímetro láser de Mars Global Surveyor, dibujadas {mola} veces más empinadas y más altas de lo que son para que un Sol bajo las muestre: las sombras que proyectan el Monte Olimpo y las paredes del cañón son más largas en esa misma proporción.",
       venus: "el resplandor alrededor de su borde y más allá de su lado diurno representa una bruma profunda; su grosor dibujado y hasta dónde llega son ilustrativos; en el aspecto Cine sus bandas de nubes se dibujan con {uv} veces el contraste de su mapa, como las ven las cámaras ultravioleta (a simple vista son casi lisas), y el aspecto Medido muestra el mapa tal cual es; su suelo, visto por radar, está en relieve con el altímetro de Magellan, dibujado {ground} veces más empinado y alto de lo medido",
@@ -1744,7 +1748,13 @@ export const COPY = {
     note: "El mapa guarda su trayectoria de ese día, de JPL Horizons, con una precisión de unos {km} km.",
     noteLate: "La trayectoria del JPL empieza {n} minutos después de este momento, y el reloj va allí. Precisión de unos {km} km.",
     noteDay: "La página de la NASA da el día. El reloj va a las {time} UTC, el paso más cercano en la trayectoria del JPL ese día, con una precisión de unos {km} km.",
-    failed: "Su trayectoria de ese día no se cargó, así que el reloj se queda donde está. Elígelo otra vez para reintentar."
+    failed: "Su trayectoria de ese día no se cargó, así que el reloj se queda donde está. Elígelo otra vez para reintentar.",
+    span: "La trayectoria del JPL para él va de {from} a {to}.",
+    before: "El reloj está antes de eso, así que el mapa no tiene posición para él.",
+    after: "El reloj está después de eso, así que el mapa no tiene posición para él.",
+    go: "Ir a la fecha disponible más cercana",
+    goBefore: "Llevar el reloj al {date}, donde empieza la trayectoria del JPL para él",
+    goAfter: "Llevar el reloj al {date}, donde termina la trayectoria del JPL para él"
   },
   offline: {
     updateReady: "Hay una versión más nueva lista",
@@ -1917,6 +1927,8 @@ export const COPY = {
     stormOne: "una tormenta en marcha",
     approach: "{name}: paso cercano {when}",
     launched: "{n} objetos nuevos en órbita en 30 días",
+    dateToday: "hoy es {date}",
+    dateClock: "el reloj está puesto en {date}",
     sources: {
       pass: "elementos de CelesTrak",
       launch: "Launch Library 2",
@@ -1925,7 +1937,8 @@ export const COPY = {
       crew: "Open Notify",
       storms: "GDACS",
       approach: "NASA JPL",
-      launched: "CelesTrak"
+      launched: "CelesTrak",
+      clock: "el reloj de tu dispositivo"
     }
   },
   wonder: {
@@ -2111,7 +2124,29 @@ export const COPY = {
     creditsLine: "Música y sonidos: {credits}",
     narrationCredit: "Narración: una voz sintética, Kokoro-82M (af_heart), Apache-2.0"
   },
+  dwarfLook: {
+    colour: "Dibujado del color que mide su luz (B−V {bv}, V−R {vr}), tan brillante como lo refleja su superficie (albedo {albedo}) en una escala comprimida para que el más oscuro de estos mundos aún se vea.",
+    colourRed: "Dibujado del color que mide su luz (B−V {bv}, V−R {vr}), una de las cosas más rojas del Sistema Solar, tan brillante como lo refleja su superficie (albedo {albedo}) en una escala comprimida para que el más oscuro de estos mundos aún se vea.",
+    shapeEgg: "Su forma es el huevo que midieron su curva de luz y una ocultación estelar de 2017, de {a} × {b} × {c} km.",
+    shapeMeasured: "Su forma es la que midieron las ocultaciones estelares.",
+    shapeUnknown: "Su forma nunca se ha medido, así que se dibuja redonda.",
+    ring: "Su anillo está a su distancia, anchura y opacidad medidas; no se dibuja cómo está inclinado el anillo en el cielo.",
+    faintRings: "Sus dos anillos, hallados en 2023, son demasiado tenues para verse con su opacidad real, así que no se dibujan.",
+    surface: "Ningún telescopio ha resuelto su superficie: no se dibuja nada en ella, y se dibuja quieto, sin girar.",
+    source: "Cifras: {src}."
+  },
   worldFace: {
+    titan: {
+      title: "Titán, de dos maneras",
+      modes: {
+        own: "Infrarrojo",
+        radar: "Radar"
+      },
+      notes: {
+        own: "El suelo de Titán como lo vio la cámara de la Cassini a través de la bruma, con luz del infrarrojo cercano (938 nm), en el naranja de la bruma. Los mares del norte se oscurecen siguiendo los contornos que dibujó el radar de la Cassini y, de cerca, donde el Sol se refleja en ellos, brillan: dónde cae el destello está calculado; su tamaño y su brillo son ilustrativos.",
+        radar: "Franjas del suelo de Titán como las vio el radar de la Cassini a través de la bruma, de 2004 a 2015: lo brillante es terreno rugoso o inclinado hacia el radar, lo oscuro es liso, y los mares de metano y etano líquidos son negros. El gris es nuestro: el radar no tiene color. El radar vio el 61 % de Titán; entre sus franjas se ve, atenuado y en naranja, el mapa infrarrojo. USGS Astrogeology y NASA/JPL-Caltech, dominio público."
+      }
+    },
     venus: {
       title: "Venus, de dos maneras",
       modes: {
