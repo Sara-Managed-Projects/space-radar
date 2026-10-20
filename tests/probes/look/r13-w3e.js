@@ -64,7 +64,7 @@ if (sr.rail && sr.rail.openShow) {
       const status = section.querySelector('.sr-confidence__status');
       out.status = status ? status.textContent : null;
       out.filter = sr.confidence();
-      out.railDot = document.querySelector('.sr-rail__btn--show').classList.contains('is-filtered');
+      out.railDot = !!(document.querySelector('.sr-rail__btn--show') && document.querySelector('.sr-rail__btn--show').classList.contains('is-filtered'));
       need(out.filter && out.filter.length === 1 && out.filter[0] === 'measured', 'Measured only filters to measured');
       need(out.railDot, 'the rail\'s button wears the dot');
       need(status && !status.hidden && /of/.test(status.textContent), 'the status line says "n of m"');
@@ -80,7 +80,7 @@ if (sr.rail && sr.rail.openShow) {
       await settle(1500);
       out.filterAfterAll = sr.confidence();
       need(out.filterAfterAll === null, 'All puts every dot back');
-      need(!document.querySelector('.sr-rail__btn--show').classList.contains('is-filtered'), 'and the rail\'s dot goes');
+      need(!(document.querySelector('.sr-rail__btn--show') && document.querySelector('.sr-rail__btn--show').classList.contains('is-filtered')), 'and the rail\'s dot goes');
     }
   } else {
     // BEFORE: the same popover, scrolled to Colour by, which is where the section goes.
