@@ -72,6 +72,7 @@ import { relationOf } from '../data/deepsky.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
+import { dwarfFacts, dwarfLook } from '../scene/dwarfs.js'; // 0077 W1-f
 // Where it is and the way back (internal spec 0076 W3-d): the visitor's path, kept as the card moves.
 import { noteSelection, noteHidden } from './camundo.js';
 // The card's FACTS (what is measured about a record, its "right now" rows, its honesty line, the
@@ -1317,12 +1318,36 @@ export function systemLine(record, stageId = stage.worldId) {
   return face ? face + ' ' + line : line;
 }
 
+// 0077 W1-f: begin
+/**
+ * A far dwarf planet's drawing, in words (internal #865): its colour and brightness measured (the
+ * brightness squeezed), its shape measured or not, its ring, and that nothing on its surface is
+ * drawn because nothing has been seen. Built from scene/dwarfs.js's row. Exported for the test.
+ */
+export function dwarfDrawingLine(id) {
+  const f = dwarfFacts(id);
+  const L = dwarfLook(id);
+  const D = COPY.dwarfLook;
+  if (!f || !L || !D) return null;
+  const parts = [t(f.red ? D.colourRed : D.colour, { bv: L.bv.toFixed(2), vr: L.vr.toFixed(2), albedo: String(L.albedo) })];
+  if (f.shape === 'egg') parts.push(t(D.shapeEgg, { a: fmt.int(L.axes[0]), b: fmt.int(L.axes[1]), c: fmt.int(L.axes[2]) }));
+  else parts.push(f.shape === 'measured' ? D.shapeMeasured : D.shapeUnknown);
+  if (f.ring) parts.push(D.ring);
+  if (f.faintRings) parts.push(D.faintRings);
+  parts.push(D.surface);
+  parts.push(t(D.source, { src: f.src }));
+  return parts.join(' ');
+}
+// 0077 W1-f: end
+
 export function drawingLine(record, tMs) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
   const T = COPY.drawing;
   const inSystem = systemLine(record);
   if (inSystem) return inSystem;
+  // 0077 W1-f: a far dwarf planet drawn as itself (scene/dwarfs.js) says what of it is measured and what is not.
+  if (!drawsAs && dwarfFacts(record.id) && COPY.dwarfLook) return dwarfDrawingLine(record.id); // 0077 W1-f
   if (!drawsAs) {
     // The derived line, plus a row's own `departure` where the drawing knowingly differs: Haumea
     // is drawn round and is an egg; nobody has seen 'Oumuamua's shape at all.

@@ -1102,3 +1102,7 @@ jobs:
       # 0076 W4-c
       - name: "readable without WebGL, without motion, and a full link: the page without JavaScript or WebGL 2 lists every trip and the crawlable pages, a shared link carries v=1 and the build, the scene summary's words, Motion off is an instant flight and still gas (internal spec 0076 W4-c)"
         run: node tests/test_access.mjs
+      # 0077 W1-f: begin
+      - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
+        run: node tests/test_outer_worlds.mjs
+      # 0077 W1-f: end

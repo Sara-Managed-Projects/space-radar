@@ -28,6 +28,7 @@ const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { wholePathTimes, wholePathKind, createOrbitLine, SAMPLES } = await import(join(JS, 'scene/orbitline.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 const { modelFor, disposeModels } = await import(join(JS, 'scene/models.js'));
+const { dwarfLook } = await import(join(JS, 'scene/dwarfs.js')); // 0077 W1-f
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 
 const problems = [];
@@ -148,6 +149,8 @@ for (const id of DWARFS) {
     const head = microLabel(r, { distSunKm: 2.8 * 149597870.7, frame: 'sun-inertial' });
     check(/Asteroid belt$/.test(head) && !/Outer/.test(head), `Ceres's card is headed by the asteroid belt: "${head}"`);
   }
+  // 0077 W1-f: a far dwarf with a row of scene/dwarfs.js says what of its drawing is measured, and that its surface is not.
+  else if (dwarfLook(id)) check(/colour its light measures/.test(drawingLine(r)) && /nothing on it is drawn/.test(drawingLine(r)), `${r.name} says its colour is measured and its surface not drawn: "${drawingLine(r)}"`); // 0077 W1-f
   else check(/plain round body/.test(drawingLine(r)), `${r.name} is drawn as a round body, not "a generic asteroid": "${drawingLine(r)}"`);
   check(orbitLineLine(r) && /whole orbit/.test(orbitLineLine(r)), `${r.name}'s line is its whole orbit`);
   // The badge: "Asteroid" beside "is a dwarf planet" was the first thing read in the browser.
@@ -318,10 +321,17 @@ for (const id of DWARFS) {
   const r = byId.get(id);
   const obj = modelFor('asteroid', undefined, { record: r });
   obj.updateMatrixWorld(true);
-  const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+  // 0077 W1-f: begin -- a row of scene/dwarfs.js draws the measured shape (Haumea's egg) and its ring
+  const look = dwarfLook(id);
+  const bodyOf = look ? obj.getObjectByName('body') : obj;
+  const size = new THREE.Box3().setFromObject(bodyOf).getSize(new THREE.Vector3());
   const roundness = Math.min(size.x, size.y, size.z) / Math.max(size.x, size.y, size.z);
-  check(roundness > 0.99, `${r.name} is drawn round (${roundness.toFixed(3)})`);
-  check(Math.abs(obj.userData.realSizeM - r.meta.diameterKm * 1000) < 1, `${r.name}'s model declares ${r.meta.diameterKm} km`);
+  const want = look && look.axes ? look.axes[2] / look.axes[0] : 1;
+  check(Math.abs(roundness - want) < 0.01, `${r.name} is drawn ${want === 1 ? 'round' : 'as its measured shape'} (${roundness.toFixed(3)}, want ${want.toFixed(3)})`);
+  const span = look ? Math.max(look.axes ? look.axes[0] : r.meta.diameterKm, look.ring ? 2 * (look.ring.radiusKm + look.ring.widthKm / 2) : 0) : r.meta.diameterKm;
+  check(Math.abs(obj.userData.realSizeM - span * 1000) < 1, `${r.name}'s model declares ${span} km, its longest dimension`);
+  if (look && look.ring) check(!!obj.getObjectByName('ring'), `${r.name} wears its ring`);
+  // 0077 W1-f: end
   disposeModels(obj);
 }
 

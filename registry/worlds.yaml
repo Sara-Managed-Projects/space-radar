@@ -338,6 +338,11 @@ worlds:
       landing: {source: "https://en.wikipedia.org/wiki/Titan_(moon)", read: 2026-09-22, says: "The Huygens probe descends by parachute and lands on Titan on January 14, 2005."}
       colour: {source: "https://en.wikipedia.org/wiki/Titan_(moon)", read: 2026-09-22, says: "Titan's orange color comes from a thick atmospheric haze"}
       seen: {source: "https://en.wikipedia.org/wiki/Titan_(moon)", read: 2026-09-22, says: "Titan is never visible to the naked eye, but can be observed through small telescopes or strong binoculars. Amateur observation is difficult because of the proximity of Titan to Saturn's brilliant globe and ring system ... a maximum apparent magnitude of +8.2"}
+      # 0077 W1-f: begin -- the radar face, the seas and the detached haze (scene/worlds.js TITAN_RADAR, TITAN_LAKES; scene/atmosphere.js titan.layer)
+      radar: {source: "https://astrogeology.usgs.gov/search/map/titan_cassini_sar_hisar_global_mosaic_351m", read: 2026-10-20, says: "a preliminary global map at 351 m per pixel ... This mosaic merges Cassini swaths through flyby T104 into a single mosaic"}
+      seas: {source: "https://en.wikipedia.org/wiki/Lakes_of_Titan", read: 2026-10-20, says: "Kraken Mare 68 N 310 W, 400,000 km2; Ligeia Mare 79 N 248 W, 126,000 km2; Punga Mare 85 N 340 W, 40,000 km2; Ontario Lacus 72 S 183 W ... numerous large, smooth regions that appeared dark to radar ... a specular reflection in 5 um infrared light (Jingpo Lacus, 8 July 2009)"}
+      haze_layer: {source: "https://doi.org/10.1029/2011GL046843", read: 2026-10-20, says: "West et al. 2011, GRL 38, L06204: the detached haze layer, near 500 km in 2005-2007 (Porco et al. 2005, Nature 434, 159), descended to about 380 km by 2010"}
+      # 0077 W1-f: end
 
   - id: triton
     aliases: ["Neptune I"]

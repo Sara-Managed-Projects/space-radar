@@ -41,12 +41,12 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [ROCKY_PLANET](#rocky_planet) | 7 | `worlds.js`, `earth.js`, `atmosphere.js`, `tiles.js` | measured | - |
 | [GAS_GIANT](#gas_giant) | 14 | `worlds.js`, `worldweather.js`, `flow.js` | measured | - |
 | [ICE_GIANT](#ice_giant) | 7 | `worlds.js`, `worldweather.js` | measured | - |
-| [RINGS](#rings) | 1 | `worlds.js` | modelled | - |
+| [RINGS](#rings) | 1 | `worlds.js`, `ringgrains.js` | modelled | - |
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
 | [ICY_MOON](#icy_moon) | 16 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
 | [AIRLESS_MOON](#airless_moon) | 3 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
-| [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js` | measured | - |
+| [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 17 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 140 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
@@ -152,12 +152,12 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 
 **Planetary rings**
 
-- **Drawn by:** `site/js/scene/worlds.js`
+- **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/ringgrains.js`
 - **Default honesty:** modelled
-- **On a weak device (T0, or after the frame latch):** The ring's alpha map as a lit slab; the fine ringlets and grain only on tier 1 and up, never after the latch.
+- **On a weak device (T0, or after the frame latch):** The ring's alpha map as a lit slab; the fine ringlets, grain and particles only on tier 1 and up, never after the latch.
 - **Source:** Cassini UVIS stellar occultation of Beta Centauri (Colwell et al. 2010, PDS Ring-Moon Systems Node) for Saturn's 8k ringlets; Solar System Scope's ring alpha map; the Cassini Division at its measured radii.
 - **Dates and filters:** The occultation of 2008 (Cassini orbit 77).
-- **Measured, modelled or reconstructed:** Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain.
+- **Measured, modelled or reconstructed:** Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 1 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still.
 - **Rights:** PDS data public domain; Solar System Scope CC BY 4.0.
 - **Records (1):**
   - rings (1): `saturn-ring`
@@ -199,11 +199,11 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 - **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/atmosphere.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The 938 nm map under its haze shell.
-- **Source:** Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); clouds after Webb and Keck (NASA, 2023).
-- **Dates and filters:** Cassini 2004-2017, released 2018; the cloud reference of 2023.
-- **Measured, modelled or reconstructed:** Measured: the surface map through the haze, at half its contrast. Modelled: the haze shell. Illustrative and labelled: the methane clouds.
+- **Source:** Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); Cassini RADAR's SAR and HiSAR mosaic through T104 (USGS Astrogeology), which gives the radar face and the seas' outlines; the detached haze layer's height from Porco et al. 2005 and West et al. 2011; clouds after Webb and Keck (NASA, 2023).
+- **Dates and filters:** Cassini 2004-2017, released 2018; the radar mosaic of January 2015; the detached layer as seen 2005-2007; the cloud reference of 2023.
+- **Measured, modelled or reconstructed:** Measured: the surface map through the haze, at half its contrast; the radar face (its grey ours), only where a swath looked; the seas' outlines. Modelled: the haze shell and the detached layer at its 2005-2007 height. Illustrative and labelled: the methane clouds, and the glint's size and brightness.
 - **Rights:** NASA public domain.
-- **What is missing is tracked in:** #863 (lakes, radar mode, 1.3+)
+- **What is missing is tracked in:** #863 (done in 1.3.0, 0077 W1-f; left: the Huygens site, W2-a)
 - **Records (2):**
   - worlds (1): `titan`
   - weather (1): `titan-clouds`
@@ -227,14 +227,14 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 
 **Dwarf planets**
 
-- **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/glyphs.js`, `site/js/scene/models.js`
+- **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/glyphs.js`, `site/js/scene/models.js`, `site/js/scene/dwarfs.js`
 - **Default honesty:** measured
-- **On a weak device (T0, or after the frame latch):** Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits.
+- **On a weak device (T0, or after the frame latch):** Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits, and close up as smooth bodies in their measured colours.
 - **Source:** New Horizons' global colour map of Pluto (PIA11707); Dawn's Ceres mosaic (DLR, via USGS); JPL Small-Body Database orbits for the far dwarfs; their sizes and moons from the Wikipedia article each row names.
 - **Dates and filters:** New Horizons 2015; Dawn 2015-2018; SBDB solutions dated per row (sample.js `solution`).
-- **Measured, modelled or reconstructed:** Measured: Pluto's and Ceres's maps, every orbit and its phase. Illustrative: the far dwarfs' bodies (a glyph and a generic rock, labelled).
+- **Measured, modelled or reconstructed:** Measured: Pluto's and Ceres's maps, every orbit and its phase; the far dwarfs' colours (B-V, V-R), albedos, Haumea's, Makemake's and Quaoar's shapes and Haumea's ring (scene/dwarfs.js names whose). Modelled and labelled: their brightness on a squeezed scale, and the three never measured drawn round; no surface is drawn on any of them.
 - **Rights:** NASA works public domain; SBDB data courtesy NASA/JPL-Caltech; facts from Wikipedia, cited, none of its text reproduced.
-- **What is missing is tracked in:** #865 (Eris, Makemake, Haumea, Sedna as more than glyphs)
+- **What is missing is tracked in:** #865 (done in 1.3.0, 0077 W1-f; left: spins)
 - **Records (9):**
   - worlds (1): `pluto`
   - small_bodies (8): `dwarf-ceres`, `dwarf-eris`, `dwarf-haumea`, `dwarf-makemake`, `dwarf-sedna`, `dwarf-gonggong`, `dwarf-quaoar`, `dwarf-orcus`

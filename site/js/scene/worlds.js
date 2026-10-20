@@ -420,6 +420,22 @@ export function ringGrainGate(radiiPerPx) {
   const x = Math.min(1, Math.max(0, (radiiPerPx - RING_GRAIN.farRadii * 0.5) / (RING_GRAIN.farRadii * 0.5)));
   return 1 - x * x * (3 - 2 * x);
 }
+// 0077 W1-f: begin
+/**
+ * THE RING AS PARTICLES (internal #890; scene/ringgrains.js has the numbers and whose they are).
+ * Within RING_GRAINS.fromM of Saturn's ring plane, over the ring, on tier 1 and up and never under
+ * the Measured look or the latch, the balls from `rMinM` to `rMaxM` are drawn as balls, fetched with
+ * a dynamic import the first time. The sheet gives up their share of its light where they are drawn
+ * (RING_FRAG uResolved): with q = 3 that is ln(rMax / r) / ln(rMax / rFloor) for the balls bigger
+ * than r, a pixel's worth at that distance. JS twin: ringResolved().
+ */
+export const RING_GRAINS = { fromM: 25000, rMinM: 1, rMaxM: 5, rFloorM: 0.01, pxShare: 0.3 };
+/** The share of the sheet's light the drawn balls take, `distM` from a camera whose pixel is `pxAngle` rad. Pure. */
+export function ringResolved(distM, pxAngle, G = RING_GRAINS) {
+  const rc = Math.max(G.pxShare * distM * pxAngle, G.rMinM);
+  return Math.min(1, Math.max(0, Math.log(G.rMaxM / rc) / Math.log(G.rMaxM / G.rFloorM)));
+}
+// 0077 W1-f: end
 /** The slab's optical depth with the fine structure in: tau x (1 + fine x (ratio - 1)). JS twin of RING_FRAG. Pure. */
 export function ringFineTau(tau, ratio, fine) {
   return Math.max(0, tau * (1 + Math.min(1, Math.max(0, fine)) * (ratio - 1)));
@@ -1554,6 +1570,8 @@ uniform float uGrain;         // how much of the sparkle of unresolved grains is
 // turn now (rad), how much of them is drawn (0 = none: every other ring, and the Measured look).
 uniform vec4 uArcs[ ${ARC_SLOTS} ];
 uniform vec4 uArcBand;
+uniform vec4 uResolved;       // 0077 W1-f: balls drawn over the sheet (RING_GRAINS): on, planet radius (m), reach, fade start (m)
+uniform float uResolvedPx;    // 0077 W1-f: a pixel, radians
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1653,11 +1671,20 @@ void main() {
   float dust = RING_DUST * ( 1.0 - alpha );
   float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
   float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
+  // 0077 W1-f: the balls drawn over the sheet carry their share of its light (RING_GRAINS, ringResolved).
+  float drawn = 0.0;
+  if ( uResolved.x > 0.0 ) {
+    float near = 1.0 - smoothstep( uResolved.w, uResolved.z, length( vCamL.xy ) * uResolved.y );
+    float rc = max( ${RING_GRAINS.pxShare.toFixed(2)} * length( vCamL ) * uResolved.y * uResolvedPx, ${RING_GRAINS.rMinM.toFixed(2)} );
+    drawn = uResolved.x * near * clamp( log( ${RING_GRAINS.rMaxM.toFixed(2)} / rc ) / ${Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rFloorM).toFixed(5)}, 0.0, 1.0 );
+    body *= 1.0 - drawn;
+  }
   // The grains, from very close (RING_GRAIN): no fetch. Cells a few pixels across at this distance,
   // two sizes cross-faded; they scale what the slab sends, so each phase keeps its own sparkle.
   if ( uGrain > 0.0 ) {
     float perPx = max( length( dFdx( vPosL.xy ) ), length( dFdy( vPosL.xy ) ) );
     float gate = uGrain * ( 1.0 - smoothstep( ${(RING_GRAIN.farRadii * 0.5).toExponential(2)}, ${RING_GRAIN.farRadii.toExponential(2)}, perPx ) );
+    gate *= 1.0 - min( drawn * ${(Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rFloorM) / Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rMinM)).toFixed(4)}, 1.0 ); // 0077 W1-f: the balls take over from the sparkle
     if ( gate > 0.0 ) {
       float lg = log2( max( perPx, 1e-9 ) * ${RING_GRAIN.px.toFixed(1)} );
       float lv = floor( lg );
@@ -1708,6 +1735,8 @@ export function ringMaterial(map, inner, outer, warp) {
       uGrain: { value: 0 },
       uArcs: { value: new Float32Array(ARC_SLOTS * 4) },
       uArcBand: { value: new THREE.Vector4(0, 0, 0, 0) },
+      uResolved: { value: new THREE.Vector4(0, 6e7, 1, 0) }, // 0077 W1-f
+      uResolvedPx: { value: 0.0005 }, // 0077 W1-f
     },
   });
 }
@@ -2012,12 +2041,16 @@ export function createWorlds(scene, opts = {}) {
     const u = ring.material.uniforms;
     u.uFine.value = st.fine;
     u.uGrain.value = st.grain;
+    stepRingGrains(w, mesh, ring); // 0077 W1-f
     if (!near && st.asked && st.fine === 0 && st.grain === 0) dropRingDetail(w.id);
   }
   // 0077 W1-f: begin
   // TITAN'S SEAS (TITAN_LAKES): the radar's outlines, fetched the first time Titan is large on a device
   // that may wear the reliefs (tier 1 and up, never under the frame latch), then kept: 17 kB.
   const lakeState = new Map();   // world id -> { asked, tex }
+  // A look probe's BEFORE (`?look=1` only, main.js): the seas, the detached layer and the ring's
+  // particles held off for one picture, so a before and an after are taken from the same place.
+  let outerBefore = false;
   function stepLakes(w, mesh) {
     const row = w.look.lakes;
     const u = mesh.material && mesh.material.uniforms;
@@ -2039,7 +2072,48 @@ export function createWorlds(scene, opts = {}) {
         dressFace(w.id);
       });
     }
-    u.uLake.value.x = st.tex && reliefAllowed ? 1 : 0;
+    u.uLake.value.x = st.tex && reliefAllowed && !outerBefore ? 1 : 0;
+  }
+  // THE RING AS PARTICLES (RING_GRAINS, scene/ringgrains.js): asked for the first time the camera is
+  // within fromM of the plane, over the ring, with Saturn drawn at its true size.
+  let grains = null;
+  let grainsAsked = false;
+  const _gCam = new THREE.Vector3();
+  const _gInv = new THREE.Matrix4();
+  const _gSun = new THREE.Vector3();
+  function stepRingGrains(w, mesh, ring) {
+    let on = false;
+    const ru = ring.material.uniforms.uRingRadii.value;
+    const planetM = w.radiusKm * 1000;
+    if (reliefAllowed && !lookMeasured && !latched && !outerBefore && camera && Math.abs((mesh.scale.x * stage.unitKm) / w.radiusKm - 1) < 0.01) {
+      camera.getWorldPosition(_gCam);
+      if (_gCam.distanceTo(mesh.position) < mesh.scale.x * ru.y * 1.05) {
+        ring.updateWorldMatrix(true, false);
+        _gCam.applyMatrix4(_gInv.copy(ring.matrixWorld).invert());   // planet radii, the ring's axes
+        const r = Math.hypot(_gCam.x, _gCam.y);
+        on = Math.abs(_gCam.z) * planetM < RING_GRAINS.fromM && r > ru.x && r < ru.y;
+      }
+    }
+    if (on && !grains && !grainsAsked) {
+      grainsAsked = true;
+      import('./ringgrains.js')
+        .then((m) => { grains = m.createRingGrains(THREE, { root, ringUniforms: ring.material.uniforms, ringGlsl: RING_U_GLSL, fineMax: RING_FINE.ratioMax }); })
+        .catch((e) => { console.warn('the ring particles did not load', e); });
+    }
+    if (!grains) return;
+    if (!on) { grains.update(null); return; }
+    const sunW = ring.material.uniforms.uSunDir.value;
+    _gSun.copy(sunW).transformDirection(_gInv);
+    // The globe's shadow on the patch, as RING_FRAG works it for the sheet.
+    const g = w.look.oblate ? oblateRadii(w.look.oblate) : { eq: 1, pol: 1 };
+    const gp = [_gCam.x / g.eq, _gCam.y / g.eq, 0];
+    const gs = new THREE.Vector3(_gSun.x / g.eq, _gSun.y / g.eq, _gSun.z / g.pol).normalize();
+    const b = gp[0] * gs.x + gp[1] * gs.y;
+    const closest = Math.sqrt(Math.max(gp[0] * gp[0] + gp[1] * gp[1] - b * b, 0));
+    const shade = b < 0 ? Math.min(1, Math.max(0, (closest - 0.98) / 0.04)) : 1;
+    const c = ring.material.uniforms.uColour.value;
+    const sunView = sunW.clone().transformDirection(camera.matrixWorldInverse);
+    grains.update({ on: true, tier: reliefTier, ring, planetM, cam: [_gCam.x, _gCam.y, _gCam.z], sun: [_gSun.x, _gSun.y, _gSun.z], sunView, light: ((c.r + c.g + c.b) / 3) * shade });
   }
   // 0077 W1-f: end
   function dropRingDetail(id) {
@@ -2298,6 +2372,7 @@ export function createWorlds(scene, opts = {}) {
     if (u && u.uRimGain) u.uRimGain.value = on || !w.look.rim ? 0 : w.look.rim.gain;
     if (!on) return;
     air.material.uniforms.uSunDir.value.copy(sunDir);
+    if (ATMO_PARAMS[w.look.air].layer) air.material.uniforms.uLayer.value.w = outerBefore ? 0 : 1; // 0077 W1-f
     camera.getWorldPosition(_camPosU);
     const inside = _camPosU.distanceTo(mesh.position) < mesh.scale.x * air.userData.top;
     const side = inside ? THREE.BackSide : THREE.FrontSide;
@@ -3010,6 +3085,9 @@ export function createWorlds(scene, opts = {}) {
     onExposure: (f) => { exposureHooks.add(f); return () => exposureHooks.delete(f); },
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
+    ringGrains: () => (grains ? grains.stats() : { on: false, loaded: false }), // 0077 W1-f
+    setOuterBefore: (on) => { outerBefore = !!on; }, // 0077 W1-f: a look probe's before, from the same place
+    lakes: (id) => { const st = lakeState.get(id); const m = meshes.get(id); return { asked: !!(st && st.asked), worn: !!(m && m.material.uniforms.uLake && m.material.uniforms.uLake.value.x > 0), glint: m && m.material.uniforms.uLake ? m.material.uniforms.uLake.value.y : 0 }; }, // 0077 W1-f
     /** For the probes: is this world wearing its relief? */
     hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
     setReliefTier,
