@@ -16,6 +16,10 @@ import { COPY } from './en.js';
 // Four sections ui/cardfacts.js reads (the light embed's tag lines load it without the card): their
 // own file, so the embed does not fetch the other 40 kB of this one (internal #429, #553).
 import './en.facts.js';
+// 0077 W1-e: begin
+import { LANG } from './lang.js';
+const KEYS_BEFORE = new Set(Object.keys(COPY));
+// 0077 W1-e: end
 
 Object.assign(COPY, {
   // Jupiter's storms (2026-10-12, spec 0073 req 4; registry/weather.yaml jupiter-eddies, -ovals,
@@ -2103,3 +2107,8 @@ Object.assign(COPY, {
     },
   },
 });
+
+// 0077 W1-e: begin
+// The sections this file added, in the visitor's language (copy/en.js says how; public #524).
+if (LANG !== 'en') await (await import('./index.js')).localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
+// 0077 W1-e: end
