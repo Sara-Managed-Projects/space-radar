@@ -1238,7 +1238,9 @@ export const VISUAL_CLASSES = [
 "honesty": "illustrative",
 "members": {
 "exotics": [
-"exotic-ton-618"
+"exotic-ton-618",
+"exotic-3c-273",
+"exotic-3c-279"
 ]
 }
 },
@@ -1255,7 +1257,7 @@ export const VISUAL_CLASSES = [
 {
 "id": "GALAXY_CLUSTER",
 "title": "Galaxy clusters",
-"honesty": "illustrative",
+"honesty": "modelled",
 "members": {}
 },
 {

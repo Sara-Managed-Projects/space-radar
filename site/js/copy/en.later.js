@@ -286,6 +286,7 @@ Object.assign(COPY, {
       star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical storm', oddity: 'Oddity',
       earthevent: 'Event on Earth',
       blackhole: 'Black hole', pulsar: 'Pulsar', magnetar: 'Magnetar',
+      quasar: 'Quasar', // 0076 W4-b
     },
     upNow: 'up now, {compass}',
     lowNow: 'low in the {compass} now',
@@ -1282,6 +1283,7 @@ Object.assign(COPY, {
       leadBlackhole: '{name} is a black hole {dist} light-years away',
       leadPulsar: '{name} is a pulsar {dist} light-years away',
       leadMagnetar: '{name} is a magnetar {dist} light-years away',
+      leadQuasar: '{name} is a quasar {dist} light-years away', // 0076 W4-b
       leadStar: '{name} is a star {dist} light-years away',
       leadRange: '{name} is {a} {kind} somewhere between {lo} and {hi} light-years away',
       mass: 'weighing {n} Suns',
@@ -1290,7 +1292,7 @@ Object.assign(COPY, {
       massBillions: 'weighing {n} billion Suns',
       spins: 'turning {n} times a second',
       spinsSlow: 'turning once every {n} seconds',
-      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star' },
+      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star', quasar: 'quasar' }, // 0076 W4-b: quasar
     },
     dso: {
       leadHome: '{name} is the galaxy we live in; its centre is {dist} light-years away',
@@ -1921,6 +1923,25 @@ Object.assign(COPY, {
       openDepthSome: '{m} are placed by their own parallax; the other {k} at the cluster’s distance, their depth inside it modelled.',
       openDepthNone: 'Their directions are measured; their depth inside the cluster is modelled, since at this distance one star’s parallax is not precise enough.',
       review: 'This model has not yet been reviewed by an astronomer.',
+    },
+  },
+  // 0076 W4-b (galaxy clusters and quasars; scene/deep/galclusters.js)
+  r12Far: {
+    // A quasar's card: its "drawn as" line (`shape`, read by ui/cards.js) and what is added to it (a record's `departure`). {size} arcseconds, {ly} light-years.
+    quasar: {
+      shape: 'a bright point where its redshift puts it, with a ring marking the place; its disc and its jet are far too small to draw',
+      host: 'Its host galaxy is drawn faint and round at the angular size the source gives, {size} arcseconds across seen from here; in truth that is about {ly} light-years. Its flattening and its tilt are not drawn.',
+      point: 'The source gives no size for its host galaxy, so none is drawn.',
+    },
+    // A cluster, in four lines (layer.describe(id)): who its members are, how far, how deep, how wide.
+    cluster: {
+      members: '{n} member galaxies from {catalogue}; {own} of them stand at distances measured one by one.',
+      membersNoOwn: '{n} member galaxies from {catalogue}.',
+      distanceSbf: 'The cluster is {mpc} megaparsecs ({mly} million light-years) away, a mean of distances found from surface brightness fluctuations.',
+      distanceZ: 'The cluster is {mly} million light-years away: the mean redshift of its members ({z}), carried to a comoving distance in the map’s one cosmology.',
+      depthMeasured: 'A galaxy with no distance of its own is spread in depth by the cluster’s measured scatter, {rms} megaparsecs; that placement is a model.',
+      depthModelled: 'No galaxy here has a distance of its own, so they are spread in depth as widely as they are across the sky, as if the cluster were round; that placement is a model.',
+      size: 'Each galaxy is as wide as its catalogue half-light radius says, drawn as a round, centrally bright shape; its flattening and its tilt are not drawn.',
     },
   },
   // 0076 W3-b (the Ring Nebula)

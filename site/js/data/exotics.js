@@ -320,5 +320,42 @@ export const EXOTICS = [
     "distLy": 6800,
     "massMsun": 2.01,
     "periodS": 0.0391226563571297
+  },
+  {
+    "id": "3c-273",
+    "name": "3C 273",
+    "kind": "quasar",
+    "why": "The first quasar ever identified and the brightest in our sky: a black hole of nearly a billion Suns eating gas, outshining the whole giant galaxy around it sixteen times over.",
+    "aliases": [
+      "3C273",
+      "PGC 41121"
+    ],
+    "source": "https://en.wikipedia.org/wiki/3C_273 (infobox: position, redshift 0.158339 and apparent magnitude 12.9 from NED, mass 886 million Suns; the host galaxy, an E4 of apparent size 29 arcseconds and magnitude 16 after Bahcall and others 1997, ApJ 479, 642; read 2026-10-20)",
+    "distance_note": "how far it is now (comoving distance), from its redshift of 0.158339 in the Planck 2018 cosmology. Its light-travel time is 2.0 billion years: we see it as it was, not as it is. A separate method, the spectroastrometry of its gas (Wang and others, Nature Astronomy 2020), gives 1.8 billion light-years with a wide margin",
+    "vmag": 12.9,
+    "redshift": 0.158339,
+    "raDeg": 187.277917,
+    "decDeg": 2.0525,
+    "distLy": 2200000000,
+    "massMsun": 886000000
+  },
+  {
+    "id": "3c-279",
+    "name": "3C 279",
+    "kind": "quasar",
+    "why": "A quasar that flickers in visible light, radio waves and X-rays; in 1973 its jet seemed to move faster than light, an illusion that comes from the angle we see it at.",
+    "aliases": [
+      "3C279",
+      "4C -05.55",
+      "NRAO 413",
+      "PKS 1253-05"
+    ],
+    "source": "https://en.wikipedia.org/wiki/3C_279 (infobox: position, redshift 0.5362 and magnitude 17.8 from NED; read 2026-10-20)",
+    "distance_note": "how far it is now (comoving distance), from its redshift of 0.5362 in the Planck 2018 cosmology. Its light-travel time is 5.5 billion years: we see it as it was, not as it is",
+    "vmag": 17.8,
+    "redshift": 0.5362,
+    "raDeg": 194.04625,
+    "decDeg": -5.789444,
+    "distLy": 6740000000
   }
 ];

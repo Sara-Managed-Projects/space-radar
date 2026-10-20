@@ -37,8 +37,8 @@ const DOWNLOAD = [['path', { d: 'M12 15V3' }], ['path', { d: 'M21 15v4a2 2 0 0 1
 /** The folders the worker keeps as `asset` (site/sw.js ASSET_DIRS); anything else would be fetched and not kept. */
 export const KEPT_DIRS = ['textures/', 'models/', 'audio/', 'images/', 'og/', 'data/'];
 
-/** What a deep layer fetches when its stage is entered (scene/deep/localvolume.js): tests/test_keeptrip.mjs holds the names. */
-export const STAGE_FILES = { 'local-group': ['data/deep/localvolume.json', 'data/deep/localvolume.bin'] };
+/** What the deep layers fetch when their stage is entered (scene/deep/localvolume.js, and scene/deep/galclusters.js: 0076 W4-b): tests/test_keeptrip.mjs holds the names. */
+export const STAGE_FILES = { 'local-group': ['data/deep/localvolume.json', 'data/deep/localvolume.bin', 'data/deep/galclusters.json', 'data/deep/galclusters.bin'] };
 /** The microwave background's map (scene/deep/cmb.js MAP_URL), and the share of its radius from which it is fetched (scene/shells.js CMB_LOAD_RATIO). */
 export const CMB_MAP = 'images/deep/cmb/wmap-ilc-9yr.webp';
 export const CMB_LOAD_RATIO = 0.2;

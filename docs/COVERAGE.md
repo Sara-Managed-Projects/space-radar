@@ -17,7 +17,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
 | heroes | 12 | 12 |
-| exotics | 20 | 20 |
+| exotics | 22 | 22 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
 | stars_notable | 41 | 41 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **883** | **111 070** |
+| **all** | **885** | **111 072** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -69,9 +69,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 18 | `lmc.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 41 | `dsoglow.js`, `nebulae.js` | illustrative | - |
 | [GALAXY_INTERACTION](#galaxy_interaction) | 1 | `dsoglow.js` | illustrative | - |
-| [AGN_QUASAR](#agn_quasar) | 1 | `glyphs.js`, `stage.js` | illustrative | - |
+| [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
-| [GALAXY_CLUSTER](#galaxy_cluster) | 0 | none yet (W4-b (internal #784): Virgo and Coma as instanced impostors) | illustrative | - |
+| [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
 | [COSMIC_WEB](#cosmic_web) | 0 | none yet (1.3+ (internal #826, #828; spec 0075 tasks 23 and 24): the DESI DR1 wedge with its footprint) | illustrative | - |
 | [CMB_AND_HORIZON](#cmb_and_horizon) | 2 | `shells.js`, `cmb.js` | measured | - |
 | [SPECTRAL_SKY](#spectral_sky) | 3 | `otherlight.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 883 records: 320 measured, 240 modelled, 323 illustrative.
+Honesty over the 885 records: 320 measured, 240 modelled, 325 illustrative.
 
 ## The classes
 
@@ -617,16 +617,16 @@ Honesty over the 883 records: 320 measured, 240 modelled, 323 illustrative.
 
 **Quasars and active nuclei**
 
-- **Drawn by:** `site/js/scene/glyphs.js`, `site/js/scene/stage.js`
+- **Drawn by:** `site/js/scene/glyphs.js`, `site/js/scene/stage.js`, `site/js/scene/deep/galclusters.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** A marker at its comoving distance.
-- **Source:** TON 618's row in registry/exotics.yaml (redshift and mass from its Wikipedia infobox); the cosmology of site/js/data/cosmology.js for the distance.
-- **Dates and filters:** Read 2026-09-08.
-- **Measured, modelled or reconstructed:** Measured: redshift. Modelled: the comoving distance from Planck 2018. Illustrative: the marker.
+- **On a weak device (T0, or after the frame latch):** A marker at its comoving distance, and the bright point of scene/deep/galclusters.js (a few instanced quads; no tier turns it off).
+- **Source:** The rows of registry/exotics.yaml (TON 618, 3C 273, 3C 279: redshift, apparent magnitude and mass from their Wikipedia infoboxes, NED's numbers); the cosmology of site/js/data/cosmology.js for the distance; the host galaxy's size from registry/galaxy-clusters.yaml.
+- **Dates and filters:** Read 2026-09-08 (TON 618) and 2026-10-20 (3C 273, 3C 279).
+- **Measured, modelled or reconstructed:** Measured: redshift and apparent magnitude. Modelled: the comoving distance from Planck 2018. Illustrative: the marker, the bright point's width, and 3C 273's host drawn as one round soft shape at the angular size the source gives (flattening and tilt not drawn).
 - **Rights:** Facts, cited.
-- **What is missing is tracked in:** internal #784 (quasars as bright points with a host cue, W4-b)
-- **Records (1):**
-  - exotics (1): `ton-618`
+- **What is missing is tracked in:** internal #784 (a jet and an accretion disc, 1.3+); 0076 W4-b drew the bright point and 3C 273's host cue
+- **Records (3):**
+  - exotics (3): `ton-618`, `3c-273`, `3c-279`
 
 ### GALAXY_GROUP
 
@@ -647,13 +647,14 @@ Honesty over the 883 records: 320 measured, 240 modelled, 323 illustrative.
 
 **Galaxy clusters**
 
-- **Drawn by:** nothing yet; planned in W4-b (internal #784): Virgo and Coma as instanced impostors
-- **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** Nothing is drawn as a cluster; Virgo's members are separate glows.
-- **Source:** None yet; the members' rows are OpenNGC's.
-- **Dates and filters:** Not applicable until W4-b.
-- **Measured, modelled or reconstructed:** Nothing drawn as a cluster.
-- **Rights:** Not applicable.
+- **Drawn by:** `site/js/scene/deep/galclusters.js`
+- **Default honesty:** modelled
+- **On a weak device (T0, or after the frame latch):** The same instanced galaxies on every tier (one draw call a cluster; 3 596 quads in all); the members the map draws as records keep their glows.
+- **Source:** Virgo: Kim and others 2014 (EVCC) with Mei and others 2007 (SBF distances); Coma and Perseus: Kang and others 2025 and 2024, with SDSS DR17 photometry; Fornax: Ferguson 1989 with Blakeslee and others 2009. Through VizieR and SkyServer; registry/galaxy-clusters.yaml.
+- **Dates and filters:** Read 2026-10-20.
+- **Measured, modelled or reconstructed:** Measured: each galaxy's direction, and its size and light in the catalogue's band. Measured or inferred: its distance (its own by SBF for 71 Virgo galaxies, its cluster's by SBF or by the members' mean redshift otherwise). Modelled: its depth inside the cluster where it has no distance of its own. Illustrative: the round, centrally peaked shape.
+- **Rights:** VizieR: free of usage in a scientific context, the original authors cited; SDSS: public domain.
+- **What is missing is tracked in:** internal #784 (clusters as searchable records with a card: 1.3+; they are drawn, not yet records)
 - **Records:** none on the map today.
 
 ### COSMIC_WEB
