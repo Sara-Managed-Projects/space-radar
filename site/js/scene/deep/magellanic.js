@@ -1,6 +1,8 @@
 // scene/deep/magellanic.js -- the Magellanic Bridge and the Magellanic Stream as neutral hydrogen (internal spec 0077
 // stage W2-e, internal #783; DS-08, package section 5.2 layer 5). A deep layer (scene/deep/heroes.js DEEP_LAYERS) on the
-// Milky Way's and the Local Group's stages, fetched the first time one of them is entered; never at boot.
+// ladder's stages, fetched the first time one of them is entered; never at boot. It is drawn only with the camera far
+// from the Sun (from 15 000 ly, whole by 40 000): near home it would be a radio map laid over the whole southern sky,
+// which is the other-light skies' work, not this.
 //   createLayer(THREE, env) -> { group, frame(info), ready(), stats(), dispose() }
 //     info = { camera, renderer, stage, gain, visible, before }
 // Pure, for tests/test_hero_smc.mjs: magToGal, galToEq, directionOf, distanceAt, keepAt, sheetOf, lookFor.
@@ -28,6 +30,7 @@ const KLY_KM = 9460730472580.8 * 1e3;
 const SUN_INERTIAL = 'sun-inertial';
 const TEX_URL = '../../../images/deep/magellanic/hi-column.webp';
 export const SHAPE = {
+  near: [15000, 40000], // ly from the Sun: it fades in over these (a flight out toward the Clouds)
   step: 1,          // the sheet's vertices, degrees
   peak: 0.26,       // its brightest, a display value: a radio map is a faint overlay, never a glow
   limbCap: 2.5,     // a slant's column grows as 1 / |cos| up to this
@@ -161,7 +164,8 @@ export function createLayer(THREE, env = {}) {
   geo.setAttribute('aKeep', new THREE.Float32BufferAttribute(sh.keep, 1));
   geo.setAttribute('aNormal', new THREE.Float32BufferAttribute(sh.nrm, 3));
   geo.setIndex(sh.index);
-  const state = { loaded: false, failed: null, placedFor: null, calls: 0, on: false };
+  const state = { loaded: false, failed: null, placedFor: null, calls: 0, on: false, fade: 0 };
+  const sunAt = new THREE.Vector3();
   const blank = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat);
   blank.needsUpdate = true;
   let tex = null;
@@ -193,7 +197,7 @@ export function createLayer(THREE, env = {}) {
       0, 0, 0, 1,
     );
     const sun = stage.toScene({ x: 0, y: 0, z: 0 }, SUN_INERTIAL, stage.tMs);
-    if (sun) _m.setPosition(sun);
+    if (sun) { _m.setPosition(sun); sunAt.set(sun.x, sun.y, sun.z); }
     group.matrix.copy(_m);
     group.matrixWorldNeedsUpdate = true;
     state.placedFor = key;
@@ -206,13 +210,18 @@ export function createLayer(THREE, env = {}) {
       state.calls = 0;
       const look = lookFor(Number.isFinite(info.gain) ? info.gain : 1);
       state.on = !!(info.camera && info.visible !== false && !info.before && state.loaded && look.on && info.stage && place(info.stage));
+      if (state.on) {
+        const ly = info.camera.position.distanceTo(sunAt) * info.stage.unitKm / 9460730472580.8;
+        state.fade = smooth(ly, SHAPE.near[0], SHAPE.near[1]);
+        state.on = state.fade > 0.005;
+      }
       group.visible = state.on;
       if (!state.on) return;
-      uniforms.uGain.value = look.gain;
+      uniforms.uGain.value = look.gain * state.fade;
       state.calls = 1;
     },
     ready: () => state.loaded || !!state.failed,
-    stats: () => ({ id: 'magellanic', loaded: state.loaded, failed: state.failed, on: state.on, calls: state.calls, vertices: sh.pos.length / 3, triangles: sh.index.length / 3, bytes: sh.pos.byteLength + sh.uv.byteLength + sh.keep.byteLength + sh.nrm.byteLength + sh.index.length * 4 + 680 * 280 * 4 }),
+    stats: () => ({ id: 'magellanic', loaded: state.loaded, failed: state.failed, on: state.on, fade: Math.round(state.fade * 100) / 100, calls: state.calls, vertices: sh.pos.length / 3, triangles: sh.index.length / 3, bytes: sh.pos.byteLength + sh.uv.byteLength + sh.keep.byteLength + sh.nrm.byteLength + sh.index.length * 4 + 680 * 280 * 4 }),
     dispose() {
       geo.dispose(); mat.dispose(); blank.dispose();
       if (tex && !env.texture) tex.dispose();

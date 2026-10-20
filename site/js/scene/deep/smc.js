@@ -43,7 +43,8 @@ export const MAP_BINS = 128;
 const D2R = Math.PI / 180;
 const MAP_URL = new URL('../../../data/deep/smc-density.bin', import.meta.url);
 const LIGHT_URL = new URL('../../../images/deep/smc/smc-light.webp', import.meta.url);
-const MAX_STEPS = 24;
+const MAX_STEPS = 16;
+const STEP_UNITS_GLSL = '25.0'; // STEP_UNITS, as GLSL
 // Drawing choices (not measurements).
 export const SHAPE = {
   adapt: 0.45,       // what is left of its light when it fills the view (the eye's adaptation)
@@ -134,6 +135,26 @@ export function slab(za, zb, m, z0) {
   return Math.abs(t(zb) - t(za)) / 2;
 }
 
+/** Steps a ray takes: one per STEP_UNITS of its span inside the drawn cone, from 2 to the tier's n. */
+export const STEP_UNITS = 25;
+
+/**
+ * Where a ray (frame units) is inside the cone of the drawn extent: the directions within fade_to of the galaxy's
+ * centre as seen from the Sun (nothing is drawn outside it: the taper is 0 there). [t0, t1], or null when it misses.
+ * A ray nearly along the axis (A <= 0) keeps its whole span: conservative, and exact on our line. Pure (the shader's).
+ */
+export function coneSpan(g, ro, rd) {
+  const k = Math.tan(g.fade[1] * D2R), k2 = k * k, oz = ro[2] - g.D;
+  const A = rd[0] * rd[0] + rd[1] * rd[1] - k2 * rd[2] * rd[2];
+  const B = 2 * (ro[0] * rd[0] + ro[1] * rd[1] - k2 * oz * rd[2]);
+  const C = ro[0] * ro[0] + ro[1] * ro[1] - k2 * oz * oz;
+  if (!(A > 1e-9)) return [-Infinity, Infinity];
+  const disc = B * B - 4 * A * C;
+  if (disc < 0) return null;
+  const q = Math.sqrt(disc);
+  return [(-B - q) / (2 * A), (-B + q) / (2 * A)];
+}
+
 /**
  * The march along ro + t rd (unit rd, frame units) through the box, n steps with offset j: per population the
  * weighted map times the share of its spread the step holds, so a column along our line is exactly the weighted maps.
@@ -141,7 +162,7 @@ export function slab(za, zb, m, z0) {
  * column's units). Returns {rgb, weight}: weight the summed population weights along the ray (for the test). The
  * shader's arithmetic. Pure.
  */
-export function columnJs(g, maps, ro, rd, { n = 12, j = 0.5, light = null } = {}) {
+export function columnJs(g, maps, ro, rd, { n = 12, j = 0.5, light = null, adaptive = true } = {}) {
   let t0 = 0, t1 = Infinity;
   for (let k = 0; k < 3; k++) {
     if (Math.abs(rd[k]) < 1e-12) { if (ro[k] < g.box.min[k] || ro[k] > g.box.max[k]) return { rgb: [0, 0, 0], weight: 0 }; continue; }
@@ -149,7 +170,12 @@ export function columnJs(g, maps, ro, rd, { n = 12, j = 0.5, light = null } = {}
     t0 = Math.max(t0, Math.min(a, b)); t1 = Math.min(t1, Math.max(a, b));
   }
   const out = { rgb: [0, 0, 0], weight: 0 };
+  const cone = coneSpan(g, ro, rd);
+  if (!cone) return out;
+  t0 = Math.max(t0, cone[0]); t1 = Math.min(t1, cone[1]);
   if (!(t1 > t0)) return out;
+  if (adaptive) n = Math.max(2, Math.min(n, Math.ceil((t1 - t0) / STEP_UNITS)));
+  out.steps = n;
   const dt = (t1 - t0) / n;
   for (let i = 0; i < n; i++) {
     const ta = t0 + i * dt, tb = ta + dt, ts = ta + j * dt;
@@ -324,6 +350,7 @@ uniform vec3 uCam;          // the camera in the frame, object units (CPU, float
 uniform vec3 uBoxMin;
 uniform vec3 uBoxMax;
 uniform float uD;           // the distance, object units
+uniform float uConeK;       // tan of the drawn extent's radius on the sky (coneSpan)
 uniform sampler2D uBins;    // r old, g young (square roots), b the photograph's cover, a the taper
 uniform vec2 uPicC;        // the photograph's (u, v) = uPicC + mat2 of the sky offset (pictureAffine)
 uniform vec4 uPicM;
@@ -366,12 +393,26 @@ void main() {
   vec3 tn = min( ta3, tb3 ), tf = max( ta3, tb3 );
   float t0 = max( max( tn.x, tn.y ), max( tn.z, 0.0 ) );
   float t1 = min( min( tf.x, tf.y ), tf.z );
+  // only the part of the ray inside the cone of the drawn extent, as seen from the Sun (coneSpan): nothing is drawn
+  // outside it, so a ray that misses it costs nothing and one that grazes it takes few steps
+  float k2 = uConeK * uConeK, oz = ro.z - uD;
+  float A = rd.x * rd.x + rd.y * rd.y - k2 * rd.z * rd.z;
+  if ( A > 1e-9 ) {
+    float B = 2.0 * ( ro.x * rd.x + ro.y * rd.y - k2 * oz * rd.z );
+    float Cc = ro.x * ro.x + ro.y * ro.y - k2 * oz * oz;
+    float disc = B * B - 4.0 * A * Cc;
+    if ( disc < 0.0 ) discard;
+    float q = sqrt( disc );
+    t0 = max( t0, ( -B - q ) / ( 2.0 * A ) );
+    t1 = min( t1, ( -B + q ) / ( 2.0 * A ) );
+  }
   if ( t1 <= t0 ) discard;
   float j = pixelHash( gl_FragCoord.xy );   // a static per-pixel offset: grain, never bands
-  float dt = ( t1 - t0 ) / float( uSteps );
+  int n = int( clamp( ceil( ( t1 - t0 ) / ${STEP_UNITS_GLSL} ), 2.0, float( uSteps ) ) );
+  float dt = ( t1 - t0 ) / float( n );
   vec3 C = vec3( 0.0 );
   for ( int i = 0; i < MAX_STEPS; i++ ) {
-    if ( i >= uSteps ) break;
+    if ( i >= n ) break;
     float ta = t0 + float( i ) * dt;
     float tb = ta + dt;
     vec3 ps = ro + rd * ( ta + j * dt );
@@ -457,11 +498,15 @@ void main() {
 `;
 export const SHADERS = { bodyVertex: BODY_VERT, body: BODY_FRAG, starVertex: STAR_VERT, star: STAR_FRAG };
 
-/** Coarse steps through the box: 6 on T0, 12 at level 2, half the coordinator's at level 3 (at most 24). Pure. */
+/**
+ * Steps through the cone at most: 4 on T0, 8 at level 2, half the coordinator's at level 3 (at most 16); a ray takes one
+ * per STEP_UNITS of its span within that. Each step's integral is exact in depth, so fewer steps are grain, not bands.
+ * Pure.
+ */
 export function stepsFor({ tier = 1, steps = 0, slow = false } = {}) {
-  if (!(tier >= 1)) return 6;
-  const n = Math.max(12, Math.min(MAX_STEPS, Math.round((Number(steps) || 0) / 2)));
-  return slow ? Math.max(6, Math.round(n / 2)) : n;
+  if (!(tier >= 1)) return 4;
+  const n = Math.max(8, Math.min(MAX_STEPS, Math.round((Number(steps) || 0) / 2)));
+  return slow ? Math.max(4, Math.round(n / 2)) : n;
 }
 
 // -------------------------------------------------------------------------------------- the hero
@@ -509,14 +554,14 @@ export function createHero(THREE, env = {}) {
   const blank = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat);
   blank.needsUpdate = true;
   const u = {
-    uCam: { value: new THREE.Vector3(0, 0, 4000) }, uD: { value: g.D }, uBins: { value: blank }, uPicC: { value: new THREE.Vector2(0.5, 0.5) }, uPicM: { value: new THREE.Vector4() }, uPic: { value: picTex || blank },
+    uCam: { value: new THREE.Vector3(0, 0, 4000) }, uConeK: { value: Math.tan(g.fade[1] * D2R) }, uBoxMin: { value: new THREE.Vector3(...g.box.min) }, uBoxMax: { value: new THREE.Vector3(...g.box.max) }, uD: { value: g.D }, uBins: { value: blank }, uPicC: { value: new THREE.Vector2(0.5, 0.5) }, uPicM: { value: new THREE.Vector4() }, uPic: { value: picTex || blank },
     uBinDeg: { value: g.binDeg }, uBins_n: { value: g.bins },
     uPopA: { value: new THREE.Vector4(g.pops[0].weight, g.pops[0].z0, g.pops[0].a, g.pops[0].b) },
     uPopB: { value: new THREE.Vector4(g.pops[1].weight, g.pops[1].z0, g.pops[1].a, g.pops[1].b) },
     uMax: { value: new THREE.Vector2(g.pops[0].max, g.pops[1].max) },
     uColA: { value: new THREE.Vector3(...g.pops[0].colour) }, uColB: { value: new THREE.Vector3(...g.pops[1].colour) },
     uMapLight: { value: SHAPE.mapLight }, uLook: { value: new THREE.Vector4(1, 1, Math.min(0.5, Math.max(0, Number(row && row.sky_floor) || 0)), 0) },
-    uPhoto: { value: 0 }, uSteps: { value: 12 }, uShare: { value: 0 }, uGain: { value: 1 },
+    uPhoto: { value: 0 }, uSteps: { value: 8 }, uShare: { value: 0 }, uGain: { value: 1 },
   };
   const box = g.box;
   const size = box.max.map((v, i) => v - box.min[i]);
@@ -566,7 +611,7 @@ export function createHero(THREE, env = {}) {
       .catch((e) => { mapsState = 'failed'; console.warn('deep: the SMC maps did not load', e); });
   }
 
-  let level = 0, levelShare = 0, steps = 12, tierNow = 1, slowMs = 0, last = { body: 0, stars: 0, light: 1 }, palette = null;
+  let level = 0, levelShare = 0, steps = 8, tierNow = 1, slowMs = 0, last = { body: 0, stars: 0, light: 1 }, palette = null;
   const _inv = new THREE.Matrix4();
   const _id = new THREE.Matrix4();
   const _cam = new THREE.Vector3();

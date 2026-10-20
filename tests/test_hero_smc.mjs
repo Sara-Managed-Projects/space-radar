@@ -42,7 +42,7 @@ const parts = Object.fromEntries(HERO.layers.map((l) => [l.part, l]));
   const line = HEROES.find((h) => h.id === 'smc');
   check(line && line.record === 'dso-smc' && line.stub && line.stub.shipped === HERO.shipped && line.stub.drawn.join() === HERO.drawn.join(), 'the hero list has its line, a stub whose `shipped` and `drawn` equal the registry\'s');
   const layer = DEEP_LAYERS.find((l) => l.id === 'magellanic');
-  check(layer && layer.stages.includes('local-group') && layer.stages.includes('galaxy'), 'the Bridge and Stream are a deep layer on the Milky Way\'s and the Local Group\'s stages');
+  check(layer && ['stellar', 'galaxy', 'local-group'].every((s) => layer.stages.includes(s)), 'the Bridge and Stream are a deep layer on the ladder\'s stages (a flight to the Clouds stays on the stellar one)');
   const bin = readFileSync(join(ROOT, 'site/data/deep/smc-density.bin'));
   check(bin.length === parts.maps.bytes && createHash('sha256').update(bin).digest('hex') === parts.maps.sha256, 'the maps are the bake\'s (size and hash as the profile says; scripts/build_deep_smc.py --check)');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
@@ -83,13 +83,13 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
     if (want < 0.01) continue;
     const kk = g.D * D2R, tgt = [-e * kk, nn * kk, 0], ro = [0, 0, g.D];
     const d = tgt.map((t, i) => t - ro[i]); const l = Math.hypot(...d);
-    for (const steps of [6, 12, 24]) {
+    for (const steps of [4, 8, 16]) {
       const c = H.columnJs(g, maps, ro, d.map((t) => t / l), { n: steps, j: (k * 0.37) % 1 });
       worst = Math.max(worst, Math.abs(c.weight - want) / want);
     }
     n += 1;
   }
-  check(n > 50 && worst < 0.05, `from the Sun every line's column is the weighted maps within 5 % at 6, 12 and 24 steps (worst ${(worst * 100).toFixed(2)} %, ${n} lines): at arrival the model is the photograph where it covers it`);
+  check(n > 50 && worst < 0.05, `from the Sun every line's column is the weighted maps within 5 % at 4, 8 and 16 steps (worst ${(worst * 100).toFixed(2)} %, ${n} lines): at arrival the model is the photograph where it covers it`);
   let bad = 0;
   for (let k = 0; k < 200; k++) {
     const th = Math.acos(1 - 2 * ((k * 0.7548777) % 1)), ph = 2 * Math.PI * ((k * 0.5698403) % 1), R = [20, 150, 900][k % 3];
@@ -113,10 +113,15 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   let worstSide = 0;
   for (const rd0 of [[-1, 0, 0], [-1, 0, -0.002], [-1, 0.05, -0.3], [-0.7, 0.02, -0.7]]) {
     const l = Math.hypot(...rd0), rd = rd0.map((v) => v / l), ro = [600, 10, 20 + 400 * (rd0[2] === -0.7 ? 1 : 0)];
-    const fine = H.columnJs(g, maps, ro, rd, { n: 400, j: 0.5 }).weight;
-    if (fine > 0.02) for (const n of [12, 24]) worstSide = Math.max(worstSide, Math.abs(H.columnJs(g, maps, ro, rd, { n, j: 0.5 }).weight - fine) / fine);
+    const fine = H.columnJs(g, maps, ro, rd, { n: 400, j: 0.5, adaptive: false }).weight;
+    if (fine > 0.02) for (const n of [8, 16]) worstSide = Math.max(worstSide, Math.abs(H.columnJs(g, maps, ro, rd, { n, j: 0.5 }).weight - fine) / fine);
   }
-  check(worstSide < 0.25, `a slanted ray's light at 12 and 24 steps is within 25 % of 400 steps' (worst ${(worstSide * 100).toFixed(1)} %): grain, never a dark side`);
+  check(worstSide < 0.25, `a slanted ray's light at 8 and 16 steps is within 25 % of 400 steps' (worst ${(worstSide * 100).toFixed(1)} %): grain, never a dark side`);
+  // the cone: a ray that misses the drawn extent costs nothing; one across it takes a few steps, not the tier's all
+  const miss = H.columnJs(g, maps, [600, 0, 0], [0, 1, 0]);
+  const thru = H.columnJs(g, maps, [600, 0, 0], [-1, 0, 0], { n: 16 });
+  check(miss.weight === 0 && !miss.steps && thru.steps < 16 && thru.steps >= 2, `the march is only inside the cone of the drawn extent (a miss takes ${miss.steps || 0} steps, a ray across it ${thru.steps} of 16)`);
+  check(/uConeK/.test(H.SHADERS.body) && /if \( disc < 0\.0 \) discard;/.test(H.SHADERS.body), 'and the shader does the same (coneSpan)');
   check(along > across, `seen from the side it is longer along our line (${along * 20 * 100 / 1000} kly lit) than across the sky (${across * 20 * 100 / 1000} kly): deep, not a disc`);
 }
 
@@ -135,7 +140,7 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
 
 // --- 5. shares, tiers, Measured -----------------------------------------------------------------------------------
 {
-  check(H.stepsFor({ tier: 0 }) === 6 && H.stepsFor({ tier: 1 }) === 12 && H.stepsFor({ tier: 2, steps: 96 }) === 24, 'steps: 6 on T0, 12 at level 2, at most 24');
+  check(H.stepsFor({ tier: 0 }) === 4 && H.stepsFor({ tier: 1 }) === 8 && H.stepsFor({ tier: 2, steps: 96 }) === 16, 'steps: 4 on T0, 8 at level 2, at most 16');
   const out = H.sharesFor({ level: 1, rPx: 300 }), inside = H.sharesFor({ level: 1, rPx: Infinity, inside: 1 });
   check(out.body === 1 && near(inside.body, H.SHAPE.inside, 1e-9) && near(inside.light, H.SHAPE.adapt, 1e-9), 'inside it the unresolved light steps back to a quarter (stars, not a fog), and the light adapts as it fills the view');
   check(/1\.0 - uPhoto \* cov/.test(H.SHADERS.body) && /1\.0 - uPhoto \* cov/.test(H.SHADERS.starVertex), 'every part gives way to the photograph by its share where the photograph covers it');
@@ -165,8 +170,14 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   const tex = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat);
   const L = M.createLayer(THREE, { texture: tex });
   const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1e-5, 1e12);
+  const sun = stage.toScene({ x: 0, y: 0, z: 0 }, 'sun-inertial', stage.tMs);
+  camera.position.set(sun.x, sun.y, sun.z);
+  L.frame({ camera, stage, gain: 1, visible: true });
+  check(!L.group.visible, 'off with the camera at home: near the Sun it would be a radio map over the whole southern sky');
+  camera.position.x += 100000 * LY_KM / stage.unitKm;
   L.frame({ camera, stage, gain: 1, visible: true });
   check(L.group.visible && L.stats().calls === 1, 'one draw call on the Local Group\'s stage');
+  L.group.traverse((o) => { if (o.material && o.material.fragmentShader) for (const src of [o.material.vertexShader, o.material.fragmentShader]) for (const m of src.matchAll(/^uniform \w+ (\w+);/gm)) check(m[1] in o.material.uniforms, `${o.name}: the shader's uniform ${m[1]} is given`); });
   L.frame({ camera, stage, gain: 1, visible: true, before: true });
   check(!L.group.visible, 'off for a probe\'s before shot');
   L.frame({ camera, stage, gain: X.exposureLook('eye').milkyWay, visible: true });
@@ -198,6 +209,11 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   const cam = body.material.uniforms.uCam.value;
   check(cam.z > 599 && Math.hypot(cam.x, cam.y) < 0.5, `on our line the camera is on the sky frame's +z (${cam.toArray().map((v) => v.toFixed(1))})`);
   check(hero.stats().points === 40000 && hero.stats().maps === 'ready' && body.material.uniforms.uShare.value === 1, `T1: 40 000 points and the body drawn (${JSON.stringify(hero.stats())})`);
+  // every uniform a shader declares is in its material (a missing one reads as 0 and draws nothing: the box, 2026-10-20)
+  hero.group.traverse((o) => {
+    if (!o.material || !o.material.fragmentShader) return;
+    for (const src of [o.material.vertexShader, o.material.fragmentShader]) for (const m of src.matchAll(/^uniform \w+ (\w+);/gm)) check(m[1] in o.material.uniforms, `${o.name}: the shader's uniform ${m[1]} is given`);
+  });
   let meshes = 0;
   hero.group.traverse((o) => { if (o.material) { meshes += 1; check(o.material.transparent === false && o.material.toneMapped === false && o.material.depthWrite === false, `${o.name}: gasmat.js COLOUR_POLICY`); } });
   check(meshes === 2, `${meshes} draw calls: the body and the stars (a hero's +5 at most)`);

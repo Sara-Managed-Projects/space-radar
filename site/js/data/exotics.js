@@ -202,11 +202,11 @@ export const EXOTICS = [
       "η Car",
       "Eta Car"
     ],
-    "source": "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: distance 7 500 ly / 2 300 pc, mass ~100 Suns, read 2026-09-08)",
+    "source": "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: mass ~100 Suns, read 2026-09-08); the distance, 2 350 +/- 50 pc, is the Homunculus's expansion parallax (Smith 2006, ApJ 644, 1151), with which Gaia agrees (Göppl & Preibisch 2022, A&A 660, A11)",
     "vmag": 4.2,
     "raDeg": 161.264962,
     "decDeg": -59.684517,
-    "distLy": 7500,
+    "distLy": 7665,
     "massMsun": 100
   },
   {

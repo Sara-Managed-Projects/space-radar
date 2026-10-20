@@ -230,6 +230,10 @@ const light = (u, v) => { const r = Math.hypot(u - 0.5, v - 0.62); const fil = 0
   hero.frame({ camera, rPx: 400, steps: 48, look: 'measured', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
   check(hero.stats().path === 'march' && hero.stats().samples === 24 && hero.stats().points === 15 + 2600, 'T2 at level 3: the march with half the coordinator\'s steps, 2 600 cluster points');
   check(hero.card && hero.card.copy === 'deepCarina' && hero.latchSafe === true, 'its card hook names its words block; under the latch it stays on its cheap path');
+  hero.group.traverse((o) => {
+    if (!o.material || !o.material.fragmentShader) return;
+    for (const src of [o.material.vertexShader, o.material.fragmentShader]) for (const m of src.matchAll(/^uniform \w+ (\w+);/gm)) check(m[1] in o.material.uniforms, `${o.name}: the shader's uniform ${m[1]} is given`);
+  });
   let meshes = 0;
   hero.group.traverse((o) => {
     if (!o.material) return;

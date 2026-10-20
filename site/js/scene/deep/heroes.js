@@ -47,6 +47,6 @@ export const DEEP_LAYERS = [
   { id: 'galclusters', stage: 'W4-b', stages: ['local-group'], build: () => import('./galclusters.js'), ask: (env, on) => ({ recordById: env.recordById, on }) },
   // 0077 W2-e: begin
   // The Magellanic Bridge and Stream: neutral hydrogen from HI4PI at a modelled distance, in false colour (scene/deep/magellanic.js).
-  { id: 'magellanic', stage: 'W2-e', stages: ['galaxy', 'local-group'], build: () => import('./magellanic.js') },
+  { id: 'magellanic', stage: 'W2-e', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./magellanic.js') },
   // 0077 W2-e: end
 ];

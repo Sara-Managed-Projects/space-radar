@@ -64,6 +64,12 @@ for (const def of HEROES) {
     const drawnAs = rec.meta.departure || ''; // the card's drawn-as line (data/parsers.js DSO_DRAWN), M31's and M33's
     const own = line.length > (C.honestyClause({ ...rec, meta: { ...rec.meta, heroId: undefined, heroCopy: undefined } }, {}) || '').length;
     check(own || /published|measured|photograph|survey/.test(drawnAs), `${t.id}: its card says where its shape or light comes from (its own sentence or its drawn-as line): "${line.slice(-160)}"`);
+    // as the card shows it before the hero first draws: its id and classes are stamped at once, its words block not yet
+    if (t.heroId && own) {
+      const early = fresh(base);
+      early.meta.heroDrawn = t.drawn.slice(); early.meta.heroId = t.heroId;
+      check((C.honestyClause(early, {}) || '').length === line.length, `${t.id}: its source sentence shows before the hero first draws (on a card opened as the flight lands)`);
+    }
     const rows = block && COPY[block] && COPY[block].rows ? COPY[block].rows[t.id] || [] : [];
     const said = [line, drawnAs, ...rows.map((r) => r.join(' '))].join(' ');
     check(/reviewed by an astronomer/.test(said), `${t.id}: its card says no astronomer has reviewed it yet`);
