@@ -4693,6 +4693,20 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 }
 
 .sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-line); }
+
+/* 0077 W3-e: begin (ui/confidence.js: a confidence filter is on, and the shut popover says so with one dot) */
+.sr-rail__btn.is-filtered { position: relative; }
+.sr-rail__btn.is-filtered::after {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  width: var(--sp-2);
+  height: var(--sp-2);
+  content: '';
+  background: var(--sr-ember);
+  border-radius: 50%;
+}
+/* 0077 W3-e: end */
 .sr-rail__btn:hover { background: var(--sr-wash); }
 
 .sr-rail__btn[aria-expanded='true'],

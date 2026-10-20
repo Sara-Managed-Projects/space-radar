@@ -2278,3 +2278,78 @@ Object.assign(COPY, {
   },
 });
 // 0077 W2-d: end
+
+// 0077 W3-e: begin
+Object.assign(COPY, {
+  // ui/welcome.js (internal i#878, SR-PLAN-077): the three ways into the map on a first visit. Each name is one word or
+  // two; the title says what it does. Nothing is hidden by choosing: every tab, the rail and the search stay.
+  entrances: {
+    label: 'Three ways in',
+    tonight: 'Tonight',
+    tonightTitle: 'What is overhead tonight, from your place',
+    explore: 'Explore',
+    exploreTitle: 'Look around the whole map',
+    trip: 'Take a trip',
+    tripTitle: 'Starts the first guided trip on the list',
+  },
+
+  // ui/confidence.js (internal i#886, SR-PLAN-085): the section "How we know" in What to show. The four words are the
+  // card's (copy/en.facts.js truth.hints), their sentences the legend's (r12Truth.position): no second set.
+  confidence: {
+    title: 'How we know',
+    onlyMeasured: 'Measured only',
+    onlyMeasuredTitle: 'Show only the dots seen by an instrument at a known time',
+    all: 'All',
+    allTitle: 'Show every dot again',
+    status: 'Showing {n} of {m} dots',
+    scope: 'Filters the dots; the star field stays as it is.',
+    railNote: 'Some dots are hidden: How we know',
+  },
+
+  // ui/bookmarks.js (internal i#882, SR-PLAN-081): arrival views, in the share sheet.
+  views: {
+    row: 'Arrival views',
+    label: 'Views of this place',
+    curatedLabel: 'From the sheet',
+    savedLabel: 'Saved here',
+    go: 'Go',
+    copy: 'Copy link',
+    remove: 'Remove',
+    save: 'Save this view',
+    saveTitle: 'Keeps where the camera stands, in this browser only',
+    saved: 'View saved in this browser.',
+    full: 'Twelve views are saved. Remove one first.',
+    copied: 'Link to this view copied.',
+    copyRefused: 'Could not copy. The link is in the address bar.',
+    none: 'Nothing saved yet.',
+    goTitle: 'Fly there and stand where it was framed',
+    copyTitle: 'A link that opens this view',
+    removeTitle: 'Forget this view',
+    from: '{name}, {view}',
+    // The poses are the camera's, not a measurement of the thing: what each one does, in the words of what it is.
+    curated: {
+      above: 'From above the plane of the planets',
+      inPlane: 'In the plane of the planets',
+    },
+    aboveTitle: 'Looking down on the north side of the Solar System\u2019s plane',
+    inPlaneTitle: 'Level with the planets\u2019 orbits, from the side',
+  },
+
+  // ui/sharesheet.js (internal i#905, SR-PLAN-134): photo presets, each a shape, a lens, a shutter and a look, set for
+  // one kind of picture and put back when photo mode is left. None is a grade: no bloom, no post pass (D2, public #261).
+  presets: {
+    row: 'Photo presets',
+    label: 'Photo presets',
+    go: 'Open',
+    science: 'Science frame',
+    scienceNote: 'Measured look, the map\u2019s own lens, caption on',
+    cinematic: 'Cinematic frame',
+    cinematicNote: 'Wide, a long lens, the deep shutter',
+    telescope: 'Telescope view',
+    telescopeNote: 'The narrowest lens, square, as a telescope frames',
+    card: 'Object card',
+    cardNote: 'Portrait, with its tag, a page for one thing',
+    title: '{name}: {note}',
+  },
+});
+// 0077 W3-e: end

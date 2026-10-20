@@ -2026,6 +2026,17 @@ export async function boot({ setStatus } = {}) {
     ctx.colourKeyFn = fn;
   };
   ctx.colourKey = () => colourKeyId;
+  // 0077 W3-e: begin (internal i#886: "How we know", the confidence filter in What to show; ui/confidence.js decides what is shown)
+  // `fn(record) -> boolean` is handed to every glyph layer (scene/glyphs.js setFilter); `classes` is the visitor's choice, for the row's own paint.
+  // The layers are all made up front (below), so there is no later one to catch up. Never stored, never in the link: a view, not a setting.
+  let confidenceClasses = null;
+  ctx.setConfidence = (classes, fn) => {
+    confidenceClasses = Array.isArray(classes) && classes.length ? [...classes] : null;
+    for (const gl of glyphLayers.values()) if (gl.setFilter) gl.setFilter(confidenceClasses && typeof fn === 'function' ? fn : null);
+    window.dispatchEvent(new CustomEvent('sr:confidence', { detail: { classes: confidenceClasses } }));
+  };
+  ctx.confidence = () => (confidenceClasses ? [...confidenceClasses] : null);
+  // 0077 W3-e: end
 
   ctx.setStage = (stageId) => {
     if (!STAGES[stageId] || stage.worldId === stageId) return false;
