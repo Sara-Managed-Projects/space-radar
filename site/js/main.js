@@ -2765,7 +2765,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
       const earth = worlds.meshFor('earth');
-      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: (!!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill()), look: ctx.look() });
+      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill(), look: ctx.look() });
       // A prominence came over the limb, a flare began or faded, a CME left: the Sun's card says so.
       const doing = ctx.sunDetail.activity();
       if (doing !== sunDoing) { sunDoing = doing; if (ctx.quality) window.dispatchEvent(new CustomEvent('sr:tier', { detail: ctx.quality.describe() })); }
