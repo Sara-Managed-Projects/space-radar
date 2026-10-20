@@ -962,7 +962,7 @@ export const COPY = {
     "illustrative": "Nuvens: ilustrativas. É uma imagem de um dia do passado, à deriva devagar; não é o tempo de hoje.",
     "illustrativeSaveData": "Nuvens: ilustrativas. As imagens de satélite de hoje não são baixadas em uma conexão que economiza dados.",
     "illustrativeScrubbed": "Nuvens: ilustrativas, porque o relógio está a mais de 12 horas da imagem de satélite mais recente, de {date} às {time} UTC.",
-    "gibsAcknowledgement": "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
+    "gibsAcknowledgement": "Reconhecemos o uso de imagens fornecidas pelos serviços Global Imagery Browse Services (GIBS) da NASA, parte do Earth Science Data and Information System (ESDIS) da NASA.",
     "satelliteCredit": "Nuvens ao vivo: imagens em infravermelho do GOES-East e do GOES-West, NOAA; imagens em infravermelho do Himawari, Agência Meteorológica do Japão (JMA)."
   },
   "aurora": {
