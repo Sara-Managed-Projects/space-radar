@@ -1301,12 +1301,11 @@ export const REAL_MODELS = {
     // `display`); `name` is what the model is of, for the line that says what is drawn.
     'surveyor-1': { build: 'surveyor', file: 'surveyor.glb', colour: 'site', name: 'Surveyor 1', displayName: 'Surveyor 1, Oceanus Procellarum', made: 'dimensions' },
     'surveyor-3': { build: 'surveyor', file: 'surveyor-3.glb', colour: 'site', name: 'Surveyor 3', displayName: 'Surveyor 3, Oceanus Procellarum', made: 'dimensions' },
-    // THE FOUR MODERN LANDERS (public #1133 to #1136), each built in code from cited metres and photographs
-    // and drawn AS IT CAME TO REST: Vikram upright with its ramp down and Pragyan gone; SLIM on its nose,
-    // its engines up and one nozzle lost; Odysseus on its side, the legs under it broken; Blue Ghost
-    // upright. Until the file arrives each is the generic lander it was.
+    // THREE MODERN LANDERS (public #1133, #1135, #1136), each built in code from cited metres and
+    // photographs and drawn AS IT CAME TO REST: Vikram upright with its ramp down and Pragyan gone;
+    // Odysseus on its side, the legs under it broken; Blue Ghost upright. Until the file arrives each is
+    // the generic lander it was. SLIM (#1134) was built and not shipped: it did not read as SLIM.
     'chandrayaan-3': { build: 'lander', file: 'vikram.glb', colour: 'site', name: 'the Vikram lander, its ramp down', displayName: 'Chandrayaan-3 Vikram lander', made: 'dimensions' },
-    slim: { build: 'lander', file: 'slim.glb', colour: 'site', name: 'SLIM, as it came to rest on its nose', displayName: 'SLIM, near Shioli crater', made: 'dimensions' },
     'im-1': { build: 'lander', file: 'odysseus.glb', colour: 'site', name: 'Odysseus, as it came to rest on its side', displayName: 'Odysseus (IM-1), near Malapert A', made: 'dimensions' },
     'blue-ghost-1': { build: 'lander', file: 'blue-ghost.glb', colour: 'site', name: 'the Blue Ghost lander', displayName: 'Blue Ghost 1, Mare Crisium', made: 'dimensions' },
     // 0077 W1-c: end

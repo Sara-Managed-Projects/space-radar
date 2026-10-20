@@ -42,7 +42,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of Europa Clipper, SMAP, Jason-3, Curiosity and SORCE | NASA's and JPL's own published models | public domain (NASA media guidelines) | [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15) |
 | The shapes of Psyche, Lucy, JUICE, BepiColombo (cruise stack) and Hera | built by us in code from published dimensions | public domain or CC BY 4.0 where a picture was used; ours | [3b-14](#3b-14-five-deep-space-probes-built-from-dimensions--psyche-lucy-juice-bepicolombo-hera-2026-10-15) |
 <!-- 0077 W1-c: begin -->
-| The shapes of the Vikram, SLIM, Odysseus and Blue Ghost landers, and Surveyor | built by us in code from published dimensions | GODL-India, public domain, CC0 or CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-four-modern-moon-landers-and-surveyor-built-from-dimensions--vikram-slim-odysseus-blue-ghost-surveyor-2026-10-20) |
+| The shapes of the Vikram, Odysseus and Blue Ghost landers, and Surveyor | built by us in code from published dimensions | GODL-India, public domain, CC0 or CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-three-modern-moon-landers-and-surveyor-built-from-dimensions--vikram-odysseus-blue-ghost-surveyor-2026-10-20) |
 <!-- 0077 W1-c: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
@@ -1211,15 +1211,15 @@ Science Operations Centre and the papers' authors do not endorse Space Radar, an
 approved these shapes.
 
 <!-- 0077 W1-c: begin -->
-## 3b-15. Four modern Moon landers and Surveyor built from dimensions — Vikram, SLIM, Odysseus, Blue Ghost, Surveyor (2026-10-20)
+## 3b-15. Three modern Moon landers and Surveyor built from dimensions — Vikram, Odysseus, Blue Ghost, Surveyor (2026-10-20)
 
-Release 1.3.0, stage W1-c (public #1133 to #1136, #267). **No agency or company publishes a model of any of these craft
-under terms that allow a derivative**: ISRO, JAXA, Intuitive Machines and Firefly publish none, and NASA's 3D Resources
+Release 1.3.0, stage W1-c (public #1133, #1135, #1136, #267). **No agency or company publishes a model of any of these craft
+under terms that allow a derivative**: ISRO, Intuitive Machines and Firefly publish none, and NASA's 3D Resources
 (1 583 paths, read 2026-10-20) and NASA Science's 3D models have none of them (NASA's `Firefly` model is a CubeSat). So each
 file was built in code, part by part, from cited numbers, with photographs looked at for what the numbers do not say, and
-each is drawn **as it came to rest**: Vikram upright with its ramp down; SLIM on its nose, engines up, one nozzle lost;
-Odysseus on its side; Blue Ghost upright. No image-to-3D model was used, no picture is in any file, and **no JAXA picture or
-model is in a file, on a sheet or derived from** (JAXA's figures were looked at only). No logo and no lettering is on any
+each is drawn **as it came to rest**: Vikram upright with its ramp down;
+Odysseus on its side; Blue Ghost upright. No image-to-3D model was used and no picture is in any file. SLIM (#1134) was
+built too and not shipped: at the app's framing it did not read as SLIM. No logo and no lettering is on any
 mesh. Their cards say "shape built from published dimensions and pictures; details simplified".
 
 ISRO's pictures are under the Government Open Data License – India (GODL-India), which gives "a worldwide, royalty-free,
@@ -1230,15 +1230,13 @@ commercial and non-commercial purposes", with attribution, and excludes "names, 
 | File | What | What it was drawn from or compared with | Terms |
 |---|---|---|---|
 | `vikram.glb` (136 KB) | Chandrayaan-3's Vikram lander: the cited 2 by 2 by 1.166 m body in gold blankets, two leaning solar panels, a radiator, the rover's empty bay and its two-part ramp down to the ground, four legs, the four 800 N engines round the interface ring, the dome, NASA's retroreflector, ChaSTE's probe in the ground | ISRO's brochure (<https://www.isro.gov.in/media_isro/pdf/Missions/LVM3/LVM3M4_Chandrayaan3_brochure.pdf>) and mission page (<https://www.isro.gov.in/Chandrayaan3_Details.html>); ISRO's clean-room photographs 03 and 05 (<https://commons.wikimedia.org/wiki/File:Chandrayaan-3_lander_in_clean-room_03.webp>, <https://commons.wikimedia.org/wiki/File:Chandrayaan-3_lander_in_clean-room_05.webp>), its labelled drawings (<https://commons.wikimedia.org/wiki/File:Chandrayaan-3_Lander_Module_-Views.webp>) and Pragyan's picture of Vikram on the Moon (read 2026-10-20) | numbers are facts; the pictures are ISRO's, GODL-India, credit "Indian Space Research Organisation", and are not in the file |
-| `slim.glb` (111 KB) | JAXA's SLIM standing on its nose: the cited 2.4 by 1.7 by 2.7 m, the thin-film cells, the cylindrical tank, five legs with ball absorbers, one main nozzle and the broken mount of the other, twelve 22 N thrusters | JAXA's media kit (<https://global.jaxa.jp/countdown/slim/SLIM-mediakit-EN_2310.pdf>) and press conference of 25 January 2024 (<https://www.isas.jaxa.jp/en/outreach/announcements/files/SLIM-pressconf-20240125.pdf>), their figures looked at only; a photograph of JAXA's quarter-scale model at Expo 2025 by Artem.G (<https://commons.wikimedia.org/wiki/File:SLIM_at_Expo2025_02.jpg>, CC BY 4.0) | numbers are facts; the photograph is CC BY 4.0, credit "Artem.G", and is not in the file |
 | `odysseus.glb` (67 KB) | Intuitive Machines' Nova-C Odysseus on its side: a hexagonal body 3.938 m tall, black below and white above, two body arrays and the top-deck array, the copper-wrapped tank it rests on, six legs (those under it as stubs) | Wikipedia's "Nova-C" and "IM-1" (read 2026-10-20) for the height, the arrays, the broken leg and the 30 degrees; NASA's photograph of the flight lander (<https://commons.wikimedia.org/wiki/File:Intuitive_Machines%E2%80%99_Nova-C_lunar_lander_(IM_00309)_(cropped).jpg>) | numbers are facts; the photograph is public domain and is not in the file |
 | `blue-ghost.glb` (63 KB) | Firefly's Blue Ghost of Mission 1: 2 m tall and 3.5 m wide (cited), a black lower deck, a body whose faces lean in, three arrays, gold blankets, four legs to dish footpads, thruster pods, payloads on the top deck | Firefly (<https://fireflyspace.com/missions/blue-ghost-mission-1/>) and NASA's podcast (<https://www.nasa.gov/podcasts/houston-we-have-a-podcast/blue-ghost-mission-1/>); a photograph of Firefly's full-size mock-up by Blervis (<https://commons.wikimedia.org/wiki/File:Firefly_Blue_Ghost_lander_mockup.jpg>, CC BY 4.0), NASA's rendering (<https://commons.wikimedia.org/wiki/File:Blue_Ghost_Mission_1_rendering.jpg>, public domain) and SpaceX's photograph of the lander in its fairing (<https://commons.wikimedia.org/wiki/File:Blue_Ghost_M1_in_fairing.jpg>, CC0) | numbers are facts; the photographs are CC BY 4.0 (credit "Blervis"), public domain and CC0, and are not in the file |
 | `surveyor.glb` (62 KB), `surveyor-3.glb` (64 KB) | Surveyor 1, and Surveyor 3 with its soil sampler: the triangular spaceframe, three lattice legs to crushable footpads, the mast with the 0.855 m² panel and the planar array, the compartments, the camera, the omni booms, the verniers | NSSDCA's Surveyor pages (as `scene/models.js` buildSurveyor cites them) and Wikipedia's "Surveyor 3"; Apollo 12's photographs AS12-48-7134 (<https://commons.wikimedia.org/wiki/File:Apollo12ConradSurveyor.jpg>) and AS12-48-7110, public domain; the Smithsonian's photographs of its Surveyor test vehicle (<https://commons.wikimedia.org/wiki/File:Lunar_Lander,_Surveyor_-_DPLA_-_d6accc3d89e8efa6f2e88962941bf43a_(page_1).jpg>, CC0) | numbers are facts; the photographs are public domain and CC0 and are not in the files |
-| all six | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `vikram`, `slim`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3` |
+| all five | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3` |
 
 **Credit lines:**
 `3D model: built by Space Radar from ISRO's published dimensions and pictures (ISRO, GODL-India)`;
-`3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`;
 `3D model: built by Space Radar from published dimensions and a NASA photograph (public domain)`;
 `3D model: built by Space Radar from Firefly's published dimensions and pictures (NASA, public domain; SpaceX, CC0; Blervis, CC BY 4.0)`;
 `3D model: built by Space Radar from NSSDCA's dimensions and NASA's and the Smithsonian's photographs (public domain, CC0)`.

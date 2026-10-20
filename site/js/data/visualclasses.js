@@ -579,7 +579,6 @@ export const VISUAL_CLASSES = [
 "ingenuity",
 "curiosity",
 "vikram",
-"slim",
 "odysseus",
 "blue-ghost",
 "surveyor",
