@@ -51,6 +51,7 @@ const one = async (id) => {
   if (!PB) { try { PB = await import(urlOf('./js/scene/pbr.js')); } catch (e) { return { ...out, fail: 'scene/pbr.js did not load: ' + e }; } }
   await sleep(2000);
   const onGround = record.klass === 'site' && !!(record.meta && record.meta.world);
+  const deep = /^deep-/.test(record.id);
   const home = onGround ? record.meta.world : 'earth';
   const earthR = () => { try { return sr.worlds.drawnRadiusUnits(home) || 0; } catch { return 0; } };
   const sunlit = () => {
@@ -120,8 +121,11 @@ const one = async (id) => {
     const obj = heroOf(), sun = sr.worlds.meshFor('sun'), w = sr.worlds.meshFor(home);
     if (!obj || !sun || !w) return null;
     const p = obj.getWorldPosition(obj.position.clone());
-    const z = unit({ x: w.position.x - p.x, y: w.position.y - p.y, z: w.position.z - p.z });
     const s = unit({ x: sun.position.x - p.x, y: sun.position.y - p.y, z: sun.position.z - p.z });
+    // A craft far from any world (Webb and Gaia, near L2, where the Earth and the Sun are one direction): the
+    // frame's "down" is away from the Sun, so the places that look down on a craft look at its Sun side.
+    // The first run used the Earth's direction there too and photographed both craft from their cold side.
+    const z = deep ? unit({ x: -s.x, y: -s.y, z: -s.z }) : unit({ x: w.position.x - p.x, y: w.position.y - p.y, z: w.position.z - p.z });
     let x = cross(s, z);
     if (Math.hypot(x.x, x.y, x.z) < 1e-4) x = cross({ x: 0, y: 1, z: 0 }, z);
     x = unit(x);
@@ -178,7 +182,9 @@ const one = async (id) => {
   PB.setModelLook('auto');
   rig.flyTo({ azimuth: a0, polar: p0, distance: dFramed, ms: 0 });
   if (out.light.flood) MM.setFloodLight(false);
-  if (!(out.looks.pbr && out.looks.pbr.model.pbr > 0)) out.fail = 'no part of ' + record.name + ' wore the physically based look when it was asked for';
+  // A file whose row says `look: toon` (Webb) keeps the ramp whatever is asked: the two sets are then the same.
+  out.fileLook = (heroOf() && heroOf().userData.look) || null;
+  if (out.fileLook === 'pbr' && !(out.looks.pbr && out.looks.pbr.model.pbr > 0)) out.fail = 'no part of ' + record.name + ' wore the physically based look when it was asked for';
   return out;
 };
 

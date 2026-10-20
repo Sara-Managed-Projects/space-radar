@@ -100,7 +100,7 @@ for (const finish of Object.keys(P.FINISHES)) {
   }
   check(out.vertex.includes('vSrPos = transformed;') && out.vertex.indexOf('vSrPos = transformed;') > out.vertex.indexOf('#include <begin_vertex>'), `the ${finish} vertex shader writes the part's own position after begin_vertex`);
   check(out.fragment.indexOf('#include <opaque_fragment>') > out.fragment.indexOf('outgoingLight = mix( night'), `the ${finish} shader takes the world's shadow before the frame is written`);
-  check(/#include <lights_fragment_maps>[\s\S]*radiance \+= srFill/.test(out.fragment), `the ${finish} shader adds the environment after three.js's own`);
+  check(/#include <lights_fragment_maps>[\s\S]*irradiance \+= PI \* srFill;\s*radiance \+= /.test(out.fragment), `the ${finish} shader adds the environment after three.js's own`);
   check(P.FINISHES[finish].grid === out.fragment.includes('uSrGridScale ;') || P.FINISHES[finish].grid === out.fragment.includes('* uSrGridScale;'), `the ${finish} shader has the cell grid exactly when its finish does`);
 }
 // Every uniform the material hands the shader is one models.js keeps (the same Sun, world and lamp).

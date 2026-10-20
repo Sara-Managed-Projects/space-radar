@@ -5,5 +5,6 @@
 
 /** The look each file is drawn in, where its row states one (scene/pbr.js lookOf decides the rest). */
 export const MODEL_LOOKS = {
+  "jwst.glb": "toon",
   "slim.glb": "pbr"
 };

@@ -162,6 +162,10 @@ export function finishOf(role, hex) {
  */
 export const FILL = 0.12;
 export const FILL_TINT = [0.86, 0.92, 1.0];
+/** The same faint sky as a mirror sees it, stronger than as a wall does: a metal in a black sky is black
+ * wherever the Sun's highlight is not, and the first pictures (2026-10-20) drew Webb's gold mirror and
+ * Hubble's silver skin dark brown and slate. 0.35 is ours: a metal then keeps its own colour in shade. */
+export const FILL_SPECULAR = 0.35;
 /** The world's disc as a mirror sees it: its radiance per unit of models.js's planet-shine colour
  * (albedo x SHINE_GAIN x the world's tint). A Lambertian disc under the Sun lamp of intensity 3 sends
  * albedo x 3 / pi; divided by SHINE_GAIN 1.2 that is 0.8. */
@@ -170,8 +174,10 @@ export const WORLD_RADIANCE = 0.8;
  * black space still needs one, a lit metal does not need to glow. Ours. */
 export const PBR_RIM = 0.15;
 /** How many fold periods and cell periods across the model's longest side. Ours: what reads at the
- * app's close-up framing (a fold of about 20 px when the model fills 800 px), not the real size. */
-export const CRINKLE_PERIODS = 40;
+ * app's close-up framing (a facet of about 20 px when the model fills 800 px: a period holds about seven
+ * facets across), not the real size. 40 periods, the first try, drew facets of 3 px, which the screen
+ * turned into fine diagonal stripes. */
+export const CRINKLE_PERIODS = 6;
 export const GRID_PERIODS = 110;
 /** The slope of the folds, as a multiple of the height field's own (crinkleTexture: up to 0.35). */
 export const CRINKLE_DEPTH = 1.0;
@@ -365,7 +371,7 @@ function fragSurface(f) {
   const lines = ['#include <metalnessmap_fragment>', '{'];
   lines.push('  vec3 srW = srTriWeights( normalize( vSrNrm ) );');
   // A blanket's uneven sheen, a few per cent of its colour; structure a little less.
-  lines.push(`  float srPatch = srFold( vSrPos * uSrFoldScale * 0.21, srW ).g;`);
+  lines.push(`  float srPatch = srFold( vSrPos * uSrFoldScale * 0.5, srW ).g;`);
   lines.push(`  diffuseColor.rgb *= ${f4(f.crinkle > 0 ? 0.9 : 0.95)} + ${f4(f.crinkle > 0 ? 0.2 : 0.1)} * srPatch;`);
   if (f.grid) {
     lines.push(
@@ -418,7 +424,7 @@ const FRAG_ENV = [
   '{',
   `  vec3 srFill = vec3( ${FILL_TINT.map(f4).join(', ')} ) * uSrFill;`,
   '  irradiance += PI * srFill;',
-  '  radiance += srFill;',
+  `  radiance += vec3( ${FILL_TINT.map(f4).join(', ')} ) * ${f4(FILL_SPECULAR)};`,
   '  if ( uShineRadius > 0.0 ) {',
   '    vec3 L = normalize( ( viewMatrix * vec4( uSunDir, 0.0 ) ).xyz );',
   '    vec3 toC = ( viewMatrix * vec4( uShineCentre, 1.0 ) ).xyz + vViewPosition;',
