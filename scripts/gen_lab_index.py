@@ -122,6 +122,7 @@ def build() -> str:
 <meta property="og:image" content="{HOST}/og/default.png">
 <meta property="og:url" content="{HOST}/lab/index.html">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{HOST}/og/default.png">
 <link rel="icon" href="{icon}">
 <link rel="stylesheet" href="../css/fonts.css">
 <style>

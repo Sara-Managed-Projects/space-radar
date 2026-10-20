@@ -8,6 +8,8 @@
 //   info = { camera, rPx, steps, look, reduced, frozen, dtMs, photo, tier, gain }   once a frame while drawn
 // Pure, for tests/test_hero_helix.mjs and the preview: geometryOf, skyFrame, ringAxis, layerSpan, uvOf,
 //   discShare, lightStretch, columnJs, knotsOf, paletteFor, samplesFor, sharesFor, pixelHash, SHAPE, UNDER_MEASURED
+// What does not depend on the Helix (the spans, the sky frame, the knots' and the star's meshes, the exact front)
+// lives in scene/deep/shellneb.js since release 1.2.0 stage W3-b (internal spec 0076), which the Ring shares.
 //
 // ITS SHAPE IS PUBLISHED; ITS LIGHT IS THE PHOTOGRAPH'S.
 //   The shape (O'Dell, McCullough & Meixner 2004, AJ 128, 2339; "OMM04"): an inner disc 499″ across
@@ -39,6 +41,10 @@
 //          stretch the gas emits and also absorbs its own light (a little, as an optical depth of about 1
 //          face on, compensated so the column on our line is still the photograph's): seen edge on a ring
 //          shows its near side's colour and does not add up to white. The two rings' light adds. Samples: 4 a ring on T0, 8 at level 2, half the march's steps from level 3.
+//          THE EXACT FRONT (spec 0075 task 45, since 0076 W3-b): each step carries its slab's profile integrated
+//          in closed form over the whole stretch it stands for (shellneb.js slabIntegral), not the one point it
+//          samples, so a ring's crisp face is crossed exactly at any step count and on our line the column is
+//          the photograph's with T0's four samples as with 24. The light is still read at the sampled point.
 //   knots  one instanced quad per knot: a dark head that absorbs, a bright cusp toward the star, a tail away.
 //   star   the white dwarf: a point of a few pixels with a soft halo in its material, at the frame's centre.
 // The photograph is the truth from our side: the gas and the knots give way to it by its own share
@@ -52,20 +58,24 @@
 // Under Measured the streaks go and nothing moves; under Film the streaks drift at most 1 % of their
 // width a minute, never under reduced motion or ?look=1. The knots stay: their count and radii are measured.
 
-import { stage } from '../stage.js';
-import { drawnUnder, stillUnder, exposureLook, EXPOSURES } from '../exposure.js';
+import { drawnUnder, stillUnder } from '../exposure.js';
 import { HERO as PROFILE } from '../../data/hero-helix.js';
 import { NEBULAE } from '../../data/nebulae.js';
+import {
+  D2R, AU_LY, QUARTIC, dot, smooth, f3, pixelHash, skyFrame, ringAxis, planeBasis, uvOf as uvOnSky,
+  layerSpan, spanLen, spanT, slabIntegral, lightStretch, paletteOf, sharesOf, samplesOf, viewSize, seeded,
+  GLSL, SHELL_SHADERS, shellMaterial, skyPlacer, starMesh, knotMaterial, knotMesh, lightTexture, QUAD_BYTES,
+} from './shellneb.js';
+
+export { pixelHash, skyFrame, ringAxis, layerSpan, lightStretch };
 
 export const UNDER_MEASURED = { streaks: 'hidden', drift: 'still', knots: 'same' };
+// The exact front (task 45). `exact: false` is the march as it was before 0076 W3-b (each step the profile at its
+// one sampled point): a switch for the look probe's BEFORE shot (tests/probes/look/r12-ring.js) and nothing else.
+export const FRONT = { exact: true };
 
-const D2R = Math.PI / 180;
-const OBLIQUITY = 23.4392911 * D2R;
-const POLE = [0, Math.sin(OBLIQUITY), Math.cos(OBLIQUITY)]; // the north celestial pole, sun-inertial (ecliptic J2000)
-const AU_LY = 1 / 63241.077;
 const MAX_N = 24;          // samples a ring at most (48 march steps at Ultra)
 const KNOTS_BY_TIER = [500, 1000, 1600];
-const QUARTIC = 1.8128049541109541; // ∫ exp(-u⁴) du over the line, 2 Γ(5/4)
 const LIGHT_URL = '../../../images/deep/helix/helix-light.webp';
 // The shape of the light inside the rings. ONE table: the GLSL below is written from it.
 export const SHAPE = {
@@ -82,57 +92,15 @@ export const SHAPE = {
   exposure: 1.0,            // the whole, against the photograph's own levels (its light IS the photograph's)
   adapt: 0.45,              // what is left of its light when it fills the view (the eye's adaptation)
 };
-const f3 = (x) => Number(x).toFixed(3);
-
-const norm = (v) => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
-const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const neg = (a) => [-a[0], -a[1], -a[2]];
-const smooth = (x, a, b) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-const hexRgb = (h) => { const n = parseInt(String(h).replace('#', ''), 16); return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; };
-
-/** A static per-pixel offset in [0, 1): a hash of the pixel (no pattern, no temporal state). FRAG's pixelHash(). Pure. */
-export function pixelHash(x, y) {
-  const fr = (v) => v - Math.floor(v);
-  let a = fr(x * 0.1031), b = fr(y * 0.1031), c = fr(x * 0.1031);
-  const d = a * (b + 33.33) + b * (c + 33.33) + c * (a + 33.33);
-  a += d; b += d; c += d;
-  return fr((a + b) * c);
-}
-
 // --------------------------------------------------------------------------------- the geometry
 
-/** The sky frame at an object, in sun-inertial: west, north, and toward the Sun (right-handed). Pure. */
-export function skyFrame(posKm) {
-  const u = norm([posKm.x, posKm.y, posKm.z]);
-  const east = norm(cross(POLE, u));
-  const north = cross(u, east);
-  return { west: neg(east), north, toward: neg(u) };
-}
-
 /**
- * A ring's axis in the sky frame from its tilt out of the plane of the sky and the position angle (east
- * of north) of its NEAR side. The near side of a tilted circle is where the FAR end of its axis points
- * on the sky, which is how OMM04 states the same angles in its sections 3.1 and 4.4. Pure.
- */
-export function ringAxis(inclDeg, nearPaDeg) {
-  const i = inclDeg * D2R, pa = nearPaDeg * D2R;
-  return [-Math.sin(pa) * Math.sin(i), Math.cos(pa) * Math.sin(i), -Math.cos(i)];
-}
-
-const planeBasis = (ax) => { const e1 = norm(cross(ax, Math.abs(ax[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0])); return [e1, cross(ax, e1)]; };
-
-/**
- * The light map's place on the sky: u = u0 + x / W, v = v0 + y / H (x west, y north, light-years; the
- * picture is north up, east left). The picture's centre is its measured one (registry/nebulae.yaml),
- * not the star's. Pure.
+ * The light map's place on the sky: u = u0 + x / W, v = v0 + y / H (x west, y north, light-years; the picture is
+ * north up, east left: its archive turns north by 0.07°, which the Helix has never drawn). The picture's centre is
+ * its measured one (registry/nebulae.yaml), not the star's. shellneb.js uvOf without the turn. Pure.
  */
 export function uvOf(row, recordRaDec, distLy) {
-  const asLy = (arcmin) => arcmin * 60 * distLy * Math.PI / 648000;
-  const W = asLy(row.width_arcmin), H = asLy(row.height_arcmin);
-  const [ra, dec] = recordRaDec;
-  const eastArcmin = (row.ra_deg - ra) * Math.cos(dec * D2R) * 60, northArcmin = (row.dec_deg - dec) * 60;
-  return { u0: 0.5 + asLy(eastArcmin) / W, v0: 0.5 - asLy(northArcmin) / H, W, H };
+  return uvOnSky({ ...row, north_deg: 0 }, recordRaDec, distLy);
 }
 
 /** The profile's numbers in light-years, about the white dwarf, in the sky frame. Pure. */
@@ -167,51 +135,11 @@ export function geometryOf(profile = PROFILE) {
 
 // ------------------------------------------------------------ the rings along a ray (mirrored in GLSL)
 
-/**
- * The part of the ray ro + t·rd, t in [t0, t1], inside a slab about axis `a`: |z| <= h and rIn <= ρ <=
- * rOut, ρ the distance from the axis. Up to two pieces, [lo1, hi1, lo2, hi2] (a piece with hi <= lo is
- * empty), or null. rd is a unit vector. Pure; FRAG's layerSpan() is the same arithmetic.
- */
-export function layerSpan(ro, rd, a, h, rIn, rOut, t0, t1) {
-  const z0 = dot(ro, a), dz = dot(rd, a);
-  let lo = t0, hi = t1;
-  if (Math.abs(dz) > 1e-6) {
-    const ta = (-h - z0) / dz, tb = (h - z0) / dz;
-    lo = Math.max(lo, Math.min(ta, tb)); hi = Math.min(hi, Math.max(ta, tb));
-  } else if (Math.abs(z0) > h) return null;
-  const op = [ro[0] - a[0] * z0, ro[1] - a[1] * z0, ro[2] - a[2] * z0];
-  const dp = [rd[0] - a[0] * dz, rd[1] - a[1] * dz, rd[2] - a[2] * dz];
-  const A = dot(dp, dp), B = dot(op, dp), C = dot(op, op);
-  if (A > 1e-9) {
-    let D = B * B - A * (C - rOut * rOut);
-    if (D <= 0) return null;
-    D = Math.sqrt(D);
-    lo = Math.max(lo, (-B - D) / A); hi = Math.min(hi, (-B + D) / A);
-  } else if (C > rOut * rOut) return null;
-  if (hi <= lo) return null;
-  if (rIn > 0) {
-    if (A > 1e-9) {
-      let D = B * B - A * (C - rIn * rIn);
-      if (D > 0) { D = Math.sqrt(D); return [lo, Math.min(hi, (-B - D) / A), Math.max(lo, (-B + D) / A), hi]; }
-    } else if (C < rIn * rIn) return null;
-  }
-  return [lo, hi, hi, hi];
-}
-const spanLen = (s) => (s ? Math.max(0, s[1] - s[0]) + Math.max(0, s[3] - s[2]) : 0);
-const spanT = (s, u) => { const l1 = Math.max(0, s[1] - s[0]); return u < l1 ? s[0] + u : s[2] + (u - l1); };
-
 /** Of the light along our line at sky point (x, y), the inner disc's share: inside its outline as seen from here. Pure. */
 export function discShare(g, x, y) {
   const zc = -(x * g.a1[0] + y * g.a1[1]) / g.a1[2];
   const q = Math.hypot(x, y, zc) / g.R1;
   return 1 - smooth(q, SHAPE.discIn, SHAPE.discEdge);
-}
-
-/** The exposure's stretch on a display colour, as scene/nebulae.js shows the photograph: gamma, then saturation. Pure. */
-export function lightStretch(c, gamma = 1, sat = 1) {
-  const s = c.map((x) => Math.max(0, x) ** gamma);
-  const y = 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
-  return { rgb: s.map((x) => y + (x - y) * sat), lum: y };
 }
 
 /**
@@ -243,12 +171,14 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0]) {
       const lum = 0.2126 * lc[0] + 0.7152 * lc[1] + 0.0722 * lc[2];
       const ip = [p[0] - a[0] * z, p[1] - a[1] * z, p[2] - a[2] * z];
       const sh = share(p[0], p[1]) * fadeOf(Math.hypot(ip[0], ip[1], ip[2]));
-      const rho = Math.exp(-(u ** 4)) / N * sh;
+      // the exact front: the profile over the step's whole stretch (shellneb.js slabIntegral), or at its one point
+      const prof = FRONT.exact ? slabIntegral(s, i * dt, (i + 1) * dt, dot(ro, a) / H, dot(rd, a) / H) : Math.exp(-(u ** 4)) * dt;
+      const rhoDt = prof / N * sh;
       const tau = S.kappa * lum * sh;
       const comp = tau > 1e-4 ? tau / (1 - Math.exp(-tau)) : 1;
       // each step integrated exactly for a constant density across it (no over-shoot where it is dense)
-      const ab = S.kappa * lum * rho * dt;
-      const w = ab > 1e-5 ? (1 - Math.exp(-ab)) / (S.kappa * lum) : rho * dt;
+      const ab = S.kappa * lum * rhoDt;
+      const w = ab > 1e-5 ? (1 - Math.exp(-ab)) / (S.kappa * lum) : rhoDt;
       for (let c = 0; c < 3; c++) C[c] += T * lc[c] * comp * w;
       T *= Math.exp(-ab);
       if (a === g.a1) { const rq = (Math.hypot(ip[0], ip[1], ip[2]) / g.R1 - S.rimQ) / S.rimW; dust += Math.exp(-(u ** 4)) * Math.exp(-rq * rq) * dt; }
@@ -268,48 +198,34 @@ export function columnJs(g, ro, rd, n = 8, j = 0.5, light = () => [0, 0, 0]) {
 // ----------------------------------------------------------------------------- tiers and shares
 
 /** Samples a ring: 4 on T0, 8 at level 2, half the march's steps above. Pure. */
-export function samplesFor({ tier = 1, steps = 0 } = {}) {
-  if (!(tier >= 1)) return 4;
-  return Math.max(8, Math.min(MAX_N, Math.round((Number(steps) || 0) / 2)));
+export function samplesFor({ tier = 1, steps = 0, slow = false } = {}) {
+  const n = samplesOf({ tier, steps }, MAX_N);
+  // 0076 W4-a (spec 0075 task 44): the frame interval, read as `dtMs`, halves the samples before the pixel-ratio governor steps down
+  return slow && tier >= 1 ? Math.max(4, Math.round(n / 2)) : n;
 }
 
 /**
- * How much of each part draws. `level` is the coordinator's level share (its 300 ms fade), `rPx` the
- * record's radius on screen and `viewH` the view's height (CSS px), `photo` how much of its photograph
- * is drawn now. The gas and the knots give way to the photograph (the point glow gives way to the hero:
- * main.js, deepsky.js heroShares); the star stays, at half strength over the photograph, whose star it
- * doubles. `light` is the eye's adaptation: as the nebula grows past the view its light is scaled down,
- * to SHAPE.adapt from inside, so a camera in the gas sees the gas round it and not a white screen. Pure.
+ * How much of each part draws (shellneb.js sharesOf, with the Helix's own adaptation SHAPE.adapt): the gas and the
+ * knots give way to the photograph, the star stays at half strength over it, and as the nebula grows past the
+ * view its light is scaled down to SHAPE.adapt from inside. Pure.
  */
-export function sharesFor({ level = 0, rPx = 0, photo = 0, viewH = 800 } = {}) {
-  const lv = Math.min(1, Math.max(0, Number(level) || 0));
-  const ph = Math.min(1, Math.max(0, Number(photo) || 0));
-  const gas = lv * (1 - ph);
-  const fill = Number.isFinite(rPx) ? Math.max(0, Number(rPx) || 0) / Math.max(1, viewH / 2) : Infinity;
-  const light = 1 - (1 - SHAPE.adapt) * (Number.isFinite(fill) ? smooth(fill, 0.7, 2) : 1);
-  return { gas, knots: gas, star: lv * (1 - 0.5 * ph), light };
+export function sharesFor(o = {}) {
+  return sharesOf(o, SHAPE.adapt);
 }
 
 /**
- * The exposure (scene/exposure.js), from the coordinator's gain (the exposure's milkyWay number): the
- * light's stretch as the photographs have it (gain, gamma, saturation), and the knots' cusp and the
- * star's colours: the profile's under Eye and Camera, its declared `enhanced` set under Deep. Pure.
+ * The exposure (scene/exposure.js), from the coordinator's gain: the light's stretch as the photographs have it,
+ * and the knots' cusp and the star's colours: the profile's under Eye and Camera, its declared `enhanced` set
+ * under Deep (shellneb.js paletteOf). Pure.
  */
 export function paletteFor(gain = 1, profile = PROFILE) {
   const P = profile && profile.colours && profile.colours.lines ? profile : PROFILE;
-  const mode = EXPOSURES.find((m) => Math.abs(exposureLook(m).milkyWay - gain) < 1e-6) || 'camera';
-  const L = exposureLook(mode);
-  const set = mode === 'deep' && P.colours.enhanced ? P.colours.enhanced : P.colours;
-  const sat = (c) => { const y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; return c.map((x) => y + (x - y) * L.nebulaSaturation); };
-  const pick = (k, d) => sat(hexRgb((set.lines && set.lines[k]) || P.colours.lines[k] || d));
-  return { mode, enhanced: set.mode === 'enhanced', gain: L.nebulaGain, gamma: L.nebulaGamma, saturation: L.nebulaSaturation, cusp: pick('Ha', '#f59a62'), star: pick('star', '#cfdcff') };
+  return paletteOf(gain, P);
 }
 
 /** The knots, seeded: {pos: Float32Array(3n), knot: Float32Array(4n) [head, tail, opacity, seed]}. Pure. */
 export function knotsOf(g, n, seed = 7293) {
-  let a = seed >>> 0;
-  const rand = () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const gauss = () => Math.sqrt(-2 * Math.log(1 - rand())) * Math.cos(2 * Math.PI * rand());
+  const { rand, gauss } = seeded(seed);
   const pos = new Float32Array(3 * n), knot = new Float32Array(4 * n);
   const K = g.knots;
   for (let i = 0; i < n; i++) {
@@ -336,10 +252,7 @@ export function knotsOf(g, n, seed = 7293) {
 
 // ------------------------------------------------------------------------------------- the GLSL
 
-const COMMON = /* glsl */ `
-#include <common>
-#include <logdepthbuf_pars_vertex>
-`;
+const COMMON = GLSL.common;
 
 const GAS_VERT = /* glsl */ `
 varying vec3 vObj;
@@ -372,56 +285,12 @@ uniform float uShare;
 uniform float uGain;
 uniform float uStreak;    // 0 under Measured (UNDER_MEASURED.streaks)
 uniform float uTime;      // still under Measured, reduced motion and ?look=1 (UNDER_MEASURED.drift)
+uniform float uExact;     // 1: the exact front (each step its profile's integral); 0: the profile at the sampled point
 varying vec3 vObj;
 #include <common>
 #include <logdepthbuf_pars_fragment>
 
-// The part of the ray inside a slab about axis a: |z| <= h, rIn <= rho <= rOut. Two pieces (lo1, hi1,
-// lo2, hi2); a piece with hi <= lo is empty. helix.js layerSpan() is the same arithmetic.
-vec4 layerSpan( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 ) {
-  float z0 = dot( ro, a );
-  float dz = dot( rd, a );
-  float lo = t0;
-  float hi = t1;
-  if ( abs( dz ) > 1e-6 ) {
-    float ta = ( -h - z0 ) / dz;
-    float tb = ( h - z0 ) / dz;
-    lo = max( lo, min( ta, tb ) );
-    hi = min( hi, max( ta, tb ) );
-  } else if ( abs( z0 ) > h ) return vec4( 0.0 );
-  vec3 op = ro - a * z0;
-  vec3 dp = rd - a * dz;
-  float A = dot( dp, dp );
-  float B = dot( op, dp );
-  float C = dot( op, op );
-  if ( A > 1e-9 ) {
-    float D = B * B - A * ( C - rOut * rOut );
-    if ( D <= 0.0 ) return vec4( 0.0 );
-    D = sqrt( D );
-    lo = max( lo, ( -B - D ) / A );
-    hi = min( hi, ( -B + D ) / A );
-  } else if ( C > rOut * rOut ) return vec4( 0.0 );
-  if ( hi <= lo ) return vec4( 0.0 );
-  if ( rIn > 0.0 ) {
-    if ( A > 1e-9 ) {
-      float E = B * B - A * ( C - rIn * rIn );
-      if ( E > 0.0 ) {
-        E = sqrt( E );
-        return vec4( lo, min( hi, ( -B - E ) / A ), max( lo, ( -B + E ) / A ), hi );
-      }
-    } else if ( C < rIn * rIn ) return vec4( 0.0 );
-  }
-  return vec4( lo, hi, hi, hi );
-}
-
-float pixelHash( vec2 p ) {
-  vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
-  p3 += dot( p3, p3.yzx + 33.33 );
-  return fract( ( p3.x + p3.y ) * p3.z );
-}
-float spanLen( vec4 s ) { return max( 0.0, s.y - s.x ) + max( 0.0, s.w - s.z ); }
-float spanT( vec4 s, float u ) { float l1 = max( 0.0, s.y - s.x ); return u < l1 ? s.x + u : s.z + ( u - l1 ); }
-
+${GLSL.layerSpan}${GLSL.pixelHash}${GLSL.front}
 // The photograph's colour at sky point (x, y), stretched as the exposure stretches the photograph.
 vec3 lightAt( vec2 xy ) {
   vec2 uv = uUv.xy + xy * uUv.zw;
@@ -467,6 +336,8 @@ void main() {
   vec3 C1 = vec3( 0.0 );
   float T1 = 1.0;
   vec4 s = layerSpan( ro, rd, uA1, ${f3(SHAPE.slab)} * uDisc.y, 0.0, uDisc.w * uDisc.x, t0, t1 );
+  float z1 = dot( ro, uA1 );
+  float dz1 = dot( rd, uA1 );
   float L = spanLen( s );
   if ( L > 0.0 ) {
     float dt = L / float( uN );
@@ -481,12 +352,14 @@ void main() {
       vec3 lc = lightAt( p.xy );
       float lum = dot( lc, vec3( 0.2126, 0.7152, 0.0722 ) );
       float sh = discShare( p.xy );
-      float rho = g / uDisc.z * sh;
+      // the exact front: the profile over the step's whole stretch, or at its one point
+      float prof = uExact > 0.5 ? slabIntegral( s, float( i ) * dt, float( i + 1 ) * dt, z1 / uDisc.y, dz1 / uDisc.y ) : g * dt;
+      float rhoDt = prof / uDisc.z * sh;
       float tau = ${f3(SHAPE.kappa)} * lum * sh;
       float comp = tau > 1e-4 ? tau / ( 1.0 - exp( -tau ) ) : 1.0;
       // each step integrated exactly for a constant density across it
-      float ab = ${f3(SHAPE.kappa)} * lum * rho * dt;
-      float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rho * dt;
+      float ab = ${f3(SHAPE.kappa)} * lum * rhoDt;
+      float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rhoDt;
       C1 += T1 * lc * comp * w * streak( vec2( dot( ip, uD1 ), dot( ip, uD2 ) ), r );
       T1 *= exp( -ab );
       float rq = ( r / uDisc.x - ${f3(SHAPE.rimQ)} ) / ${f3(SHAPE.rimW)};
@@ -497,6 +370,8 @@ void main() {
   vec3 C2 = vec3( 0.0 );
   float T2 = 1.0;
   s = layerSpan( ro, rd, uA2, ${f3(SHAPE.slab)} * uRing.y, 0.0, uRing.w * uRing.x, t0, t1 );
+  float z2 = dot( ro, uA2 );
+  float dz2 = dot( rd, uA2 );
   L = spanLen( s );
   if ( L > 0.0 ) {
     float dt = L / float( uN );
@@ -510,11 +385,12 @@ void main() {
       vec3 lc = lightAt( p.xy );
       float lum = dot( lc, vec3( 0.2126, 0.7152, 0.0722 ) );
       float sh = ( 1.0 - discShare( p.xy ) ) * ( 1.0 - smoothstep( ${f3(SHAPE.ringFade)}, ${f3(SHAPE.ringOut)}, r / uRing.x ) );
-      float rho = exp( -u * u * u * u ) / uRing.z * sh;
+      float prof = uExact > 0.5 ? slabIntegral( s, float( i ) * dt, float( i + 1 ) * dt, z2 / uRing.y, dz2 / uRing.y ) : exp( -u * u * u * u ) * dt;
+      float rhoDt = prof / uRing.z * sh;
       float tau = ${f3(SHAPE.kappa)} * lum * sh;
       float comp = tau > 1e-4 ? tau / ( 1.0 - exp( -tau ) ) : 1.0;
-      float ab = ${f3(SHAPE.kappa)} * lum * rho * dt;
-      float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rho * dt;
+      float ab = ${f3(SHAPE.kappa)} * lum * rhoDt;
+      float w = ab > 1e-5 ? ( 1.0 - exp( -ab ) ) / ( ${f3(SHAPE.kappa)} * lum ) : rhoDt;
       C2 += T2 * lc * comp * w * streak( vec2( dot( ip, uE1 ), dot( ip, uE2 ) ), r );
       T2 *= exp( -ab );
     }
@@ -529,113 +405,10 @@ void main() {
 }
 `;
 
-// A knot: a quad from the head back along the line from the star, screen-aligned. position.x is -1 at
-// the star's side and +1 at the tail's end, position.y across it.
-const KNOT_VERT = /* glsl */ `
-attribute vec3 aPos;
-attribute vec4 aKnot;     // head radius (ly), tail length (ly), opacity, seed
-uniform float uViewH;     // the view's height, CSS px
-uniform float uMinPx;     // the smallest head drawn, CSS px
-varying vec2 vUv;         // in head radii: x away from the star, y across
-varying float vTail;      // the tail's length in head radii
-varying float vAlpha;
-${COMMON}
-void main() {
-  vec4 c = modelViewMatrix * vec4( aPos, 1.0 );
-  vec4 s = modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
-  float zc = max( 1e-6, -c.z );
-  vec2 away = c.xy / zc - s.xy / max( 1e-6, -s.z );
-  away = dot( away, away ) > 1e-14 ? normalize( away ) : vec2( 1.0, 0.0 );
-  vec2 side = vec2( -away.y, away.x );
-  float headPx = aKnot.x * projectionMatrix[ 1 ][ 1 ] * 0.5 * uViewH / zc;
-  float grow = max( 1.0, uMinPx / max( headPx, 1e-6 ) );
-  float head = aKnot.x * grow;
-  float tail = aKnot.y * grow;
-  float along = position.x < 0.0 ? -1.3 * head : tail;
-  vUv = vec2( position.x < 0.0 ? -1.3 : tail / head, position.y * 1.3 );
-  vTail = tail / head;
-  // Drawn bigger than it is, a knot keeps more darkness than its area would: exaggerated so it can be
-  // seen at mid distance (helix.yaml says so), and still fading with its true size.
-  vAlpha = aKnot.z * min( 1.0, 1.0 / sqrt( grow ) );
-  c.xy += away * along + side * position.y * 1.3 * head;
-  gl_Position = projectionMatrix * c;
-  #include <logdepthbuf_vertex>
-}
-`;
-
-const KNOT_FRAG = /* glsl */ `
-uniform vec3 uCusp;
-uniform float uShare;
-uniform float uGain;
-varying vec2 vUv;
-varying float vTail;
-varying float vAlpha;
-#include <common>
-#include <logdepthbuf_pars_fragment>
-void main() {
-  #include <logdepthbuf_fragment>
-  if ( uShare <= 0.0 ) discard;
-  float d = length( vUv );
-  float headA = 1.0 - smoothstep( 0.55, 1.1, d );
-  float u = clamp( vUv.x / max( vTail, 1e-3 ), 0.0, 1.0 );
-  float w = 1.0 - 0.7 * u;
-  float tailA = vUv.x > 0.0 ? ( 1.0 - smoothstep( 0.3 * w, w, abs( vUv.y ) ) ) * ( 1.0 - u ) * 0.25 : 0.0;
-  float cr = ( d - 0.95 ) / 0.25;
-  float cusp = exp( -cr * cr ) * ( 1.0 - smoothstep( -0.7, 0.2, vUv.x / max( d, 1e-3 ) ) ); // edges in order (GLSL)
-  float a = vAlpha * max( headA, tailA );
-  if ( a <= 0.002 && cusp <= 0.002 ) discard;
-  gl_FragColor = vec4( uCusp * cusp * vAlpha * 1.4 * uGain * uShare, a * uShare );
-}
-`;
-
-// The white dwarf: a point of a fixed size on screen, with its halo, at the centre of the frame.
-const STAR_VERT = /* glsl */ `
-uniform vec2 uView;       // the view's width and height, CSS px
-uniform float uPx;        // the sprite's half size, CSS px
-varying vec2 vPx;
-${COMMON}
-void main() {
-  vPx = position.xy * uPx;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( 0.0, 0.0, 0.0, 1.0 );
-  gl_Position.xy += position.xy * uPx * 2.0 / uView * gl_Position.w;
-  #include <logdepthbuf_vertex>
-}
-`;
-
-const STAR_FRAG = /* glsl */ `
-uniform vec3 uColour;
-uniform float uShare;
-varying vec2 vPx;
-#include <common>
-#include <logdepthbuf_pars_fragment>
-void main() {
-  #include <logdepthbuf_fragment>
-  float d = length( vPx );
-  float core = exp( -( d / 1.3 ) * ( d / 1.3 ) );
-  float halo = 0.22 * exp( -d / 4.5 ) * ( 1.0 - smoothstep( 14.0, 20.0, d ) );
-  float k = ( core + halo ) * uShare;
-  if ( k <= 0.002 ) discard;
-  gl_FragColor = vec4( uColour * k, 1.0 );
-}
-`;
-
 /** The shader sources, for tests/test_hero_helix.mjs (the JS above mirrors GAS_FRAG). */
-export const SHADERS = { gasVertex: GAS_VERT, gas: GAS_FRAG, knotVertex: KNOT_VERT, knot: KNOT_FRAG, starVertex: STAR_VERT, star: STAR_FRAG };
+export const SHADERS = { gasVertex: GAS_VERT, gas: GAS_FRAG, ...SHELL_SHADERS };
 
 // ------------------------------------------------------------------------------------- the hero
-
-function material(THREE, { vertexShader, fragmentShader, uniforms, absorbing, side }) {
-  // gasmat.js COLOUR_POLICY: display values, opaque list, no depth write, additive for light and
-  // premultiplied "over" (with GAS_ABSORB) for what absorbs.
-  const m = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, transparent: false, depthTest: false, depthWrite: false, toneMapped: false, side: side || THREE.DoubleSide });
-  if (absorbing) {
-    m.defines = { GAS_ABSORB: '' };
-    m.blending = THREE.CustomBlending;
-    m.blendSrc = THREE.OneFactor;
-    m.blendDst = THREE.OneMinusSrcAlphaFactor;
-  } else m.blending = THREE.AdditiveBlending;
-  return m;
-}
 
 export function createHero(THREE, env = {}) {
   const group = new THREE.Group();
@@ -643,48 +416,17 @@ export function createHero(THREE, env = {}) {
   const profile = env.profile && Array.isArray(env.profile.layers) && env.profile.layers.some((l) => l && l.part === 'disc') ? env.profile : PROFILE;
   const g = geometryOf(profile);
   // The sky frame: west, north, toward the Sun. Set from the record's direction when the stage changes.
-  const sky = new THREE.Group();
-  sky.name = `${group.name}-sky`;
-  sky.matrixAutoUpdate = false;
-  group.add(sky);
-  let basisFor = null;
-  function placeSky() {
-    const rec = env.record;
-    basisFor = stage.worldId;
-    if (!rec || !rec.pos) return;
-    const f = skyFrame(rec.pos);
-    const c = new THREE.Vector3(), tip = new THREE.Vector3();
-    if (!stage.toSceneInto(rec.pos, 'sun-inertial', c, stage.tMs)) return;
-    const k = 1e12; // km: far enough to be a direction, near enough for float64
-    const dir = (v) => {
-      stage.toSceneInto({ x: rec.pos.x + v[0] * k, y: rec.pos.y + v[1] * k, z: rec.pos.z + v[2] * k }, 'sun-inertial', tip, stage.tMs);
-      return tip.clone().sub(c).normalize();
-    };
-    const x = dir(f.west), y = dir(f.north);
-    const z = new THREE.Vector3().crossVectors(x, y).normalize();
-    y.crossVectors(z, x).normalize();
-    sky.matrix.makeBasis(x, y, z);
-    sky.matrixWorldNeedsUpdate = true;
-  }
+  const placer = skyPlacer(THREE, group, env);
+  const sky = placer.sky;
 
   // --- the light: the photograph without its stars (scripts/build_deep_helix.py). Fetched with the hero.
-  let lightTex = null, lightState = 'none';
-  if (typeof document !== 'undefined' && THREE.TextureLoader) {
-    lightState = 'loading';
-    lightTex = new THREE.TextureLoader().load(new URL(LIGHT_URL, import.meta.url).href,
-      () => { lightState = 'ready'; },
-      undefined,
-      (e) => { lightState = 'failed'; console.warn('deep: the Helix light map did not load', e); });
-    lightTex.colorSpace = THREE.NoColorSpace; // display values, as the photographs (gasmat.js COLOUR_POLICY)
-    lightTex.wrapS = lightTex.wrapT = THREE.ClampToEdgeWrapping;
-    lightTex.minFilter = THREE.LinearMipmapLinearFilter;
-    lightTex.magFilter = THREE.LinearFilter;
-  }
+  const light = lightTexture(THREE, new URL(LIGHT_URL, import.meta.url).href, 'Helix');
+  const lightTex = light.tex;
   const pal0 = paletteFor(1, profile);
   // --- the gas
   const gasGeo = new THREE.IcosahedronGeometry(g.bound * 1.09, 3);
   const V3 = (v) => new THREE.Vector3(...v);
-  const gasMat = material(THREE, {
+  const gasMat = shellMaterial(THREE, {
     vertexShader: GAS_VERT, fragmentShader: GAS_FRAG, absorbing: true, side: THREE.BackSide,
     uniforms: {
       uCam: { value: new THREE.Vector3(0, 0, 10) },
@@ -694,7 +436,7 @@ export function createHero(THREE, env = {}) {
       uUv: { value: new THREE.Vector4(g.uv.u0, g.uv.v0, 1 / g.uv.W, 1 / g.uv.H) },
       uBound: { value: g.bound }, uN: { value: 8 }, uLight: { value: lightTex },
       uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation },
-      uShare: { value: 0 }, uGain: { value: 1 }, uStreak: { value: 0 }, uTime: { value: 0 },
+      uShare: { value: 0 }, uGain: { value: 1 }, uStreak: { value: 0 }, uTime: { value: 0 }, uExact: { value: 1 },
     },
   });
   gasMat.name = 'deep-helix-gas';
@@ -705,51 +447,26 @@ export function createHero(THREE, env = {}) {
   sky.add(gas);
 
   // --- the knots (built for the tier; rebuilt if the tier changes)
-  const quad = new Float32Array([-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0]);
-  const knotMat = material(THREE, {
-    vertexShader: KNOT_VERT, fragmentShader: KNOT_FRAG, absorbing: true,
-    uniforms: { uViewH: { value: 800 }, uMinPx: { value: g.knots.minPx }, uCusp: { value: new THREE.Color().setRGB(...pal0.cusp, THREE.NoColorSpace) }, uShare: { value: 0 }, uGain: { value: 1 } },
-  });
-  knotMat.name = 'deep-helix-knots';
+  const knotMat = knotMaterial(THREE, { minPx: g.knots.minPx, cusp: pal0.cusp, name: 'deep-helix' });
   let knots = null, knotTier = -1, knotCount = 0, knotBytes = 0;
   function buildKnots(tier) {
     const n = (Array.isArray(g.knots.count) ? g.knots.count : KNOTS_BY_TIER)[Math.max(0, Math.min(2, tier | 0))] | 0;
     if (knots && knotTier === tier) return;
     if (knots) { sky.remove(knots); knots.geometry.dispose(); }
-    const { pos, knot } = knotsOf(g, n);
-    const geo = new THREE.InstancedBufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(quad, 3));
-    geo.setIndex([0, 1, 2, 0, 2, 3]);
-    geo.setAttribute('aPos', new THREE.InstancedBufferAttribute(pos, 3));
-    geo.setAttribute('aKnot', new THREE.InstancedBufferAttribute(knot, 4));
-    geo.instanceCount = n;
-    knots = new THREE.Mesh(geo, knotMat);
+    const data = knotsOf(g, n);
+    knots = knotMesh(THREE, data, knotMat);
     knots.name = `${group.name}-knots`;
-    knots.frustumCulled = false; // the instances are not in the quad's bounds
-    knots.renderOrder = -0.98;
     sky.add(knots);
-    knotTier = tier; knotCount = n; knotBytes = pos.byteLength + knot.byteLength;
+    knotTier = tier; knotCount = n; knotBytes = data.pos.byteLength + data.knot.byteLength;
   }
   buildKnots(1);
 
   // --- the white dwarf
-  const starGeo = new THREE.BufferGeometry();
-  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(quad, 3));
-  starGeo.setIndex([0, 1, 2, 0, 2, 3]);
-  const starMat = material(THREE, {
-    vertexShader: STAR_VERT, fragmentShader: STAR_FRAG,
-    uniforms: { uView: { value: new THREE.Vector2(1280, 800) }, uPx: { value: 20 }, uColour: { value: new THREE.Color().setRGB(...pal0.star, THREE.NoColorSpace) }, uShare: { value: 0 } },
-  });
-  starMat.name = 'deep-helix-star';
-  const star = new THREE.Mesh(starGeo, starMat);
+  const { mesh: star, mat: starMat, geo: starGeo } = starMesh(THREE, pal0.star, 'deep-helix');
   star.name = `${group.name}-star`;
-  star.frustumCulled = false;
-  star.renderOrder = -0.96;
   sky.add(star);
 
-  let level = 0, levelShare = 0, clock = 0, samples = 8, tierNow = 1, last = { gas: 0, knots: 0, star: 0, photo: 0, light: 1 }, palette = pal0;
-  const _inv = new THREE.Matrix4();
-  const _id = new THREE.Matrix4();
+  let level = 0, levelShare = 0, clock = 0, slowMs = 0, samples = 8, tierNow = 1, last = { gas: 0, knots: 0, star: 0, photo: 0, light: 1 }, palette = pal0;
   const _cam = new THREE.Vector3();
   const setColour = (u, c) => u.value.setRGB(c[0], c[1], c[2], THREE.NoColorSpace);
 
@@ -762,14 +479,14 @@ export function createHero(THREE, env = {}) {
       group.visible = levelShare > 0;
     },
     frame(info = {}) {
-      if (basisFor !== stage.worldId) placeSky();
+      placer.update();
       const tier = Number.isFinite(info.tier) ? info.tier : 1;
       if (tier !== tierNow || !knots) { tierNow = tier; buildKnots(tier); }
-      const vw = (typeof globalThis.innerWidth === 'number' && globalThis.innerWidth) || 1280;
-      const vh = (typeof globalThis.innerHeight === 'number' && globalThis.innerHeight) || 800;
+      const { vw, vh } = viewSize();
       const sh = sharesFor({ level: levelShare, rPx: info.rPx, photo: info.photo, viewH: vh });
       last = { ...sh, photo: Number(info.photo) || 0 };
-      samples = samplesFor({ tier, steps: info.steps });
+      if (!(info.frozen || info.reduced)) slowMs = slowMs * 0.9 + (Number(info.dtMs) || 0) * 0.1;
+      samples = samplesFor({ tier, steps: info.steps, slow: slowMs > 24 });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
       if (gain !== palette.gainIn) {
         palette = { ...paletteFor(gain, profile), gainIn: gain };
@@ -781,9 +498,10 @@ export function createHero(THREE, env = {}) {
       // At most 1 % of a streak's width a minute (design section 7): barely perceptible, never under Measured.
       if (!still) clock += ((Number(info.dtMs) || 0) / 60000) * 0.01;
       const gu = gasMat.uniforms;
-      const lit = lightState === 'ready';
+      const lit = light.state() === 'ready';
       gu.uShare.value = lit ? sh.gas : 0;
       gu.uN.value = samples;
+      gu.uExact.value = FRONT.exact ? 1 : 0;
       gu.uStreak.value = drawnUnder(look, UNDER_MEASURED.streaks) ? SHAPE.streakAmp : 0;
       gu.uTime.value = clock;
       gu.uGain.value = palette.gain * SHAPE.exposure * sh.light;
@@ -795,21 +513,14 @@ export function createHero(THREE, env = {}) {
       star.visible = sh.star > 0.002;
       knotMat.uniforms.uViewH.value = vh;
       starMat.uniforms.uView.value.set(vw, vh);
-      if (info.camera) {
-        // The sky frame's world matrix from the matrices themselves (the coordinator places the group
-        // with matrixAutoUpdate off; its parent, the deep-sky group, sits at the origin).
-        if (group.parent) group.parent.updateWorldMatrix(true, false);
-        _inv.multiplyMatrices(group.parent ? group.parent.matrixWorld : _id, group.matrix).multiply(sky.matrix).invert();
-        _cam.copy(info.camera.position).applyMatrix4(_inv);
-        gu.uCam.value.copy(_cam);
-      }
+      if (info.camera) gu.uCam.value.copy(placer.camera(info.camera, _cam));
     },
     // The light map is the one thing it fetches: ready once it has landed (or failed, and said so).
-    ready: () => lightState !== 'loading',
+    ready: () => light.state() !== 'loading',
     stats: () => ({
       level, share: Math.round(last.gas * 100) / 100, photo: Math.round(last.photo * 100) / 100, star: Math.round(last.star * 100) / 100,
-      light: lightState, samples, tier: tierNow, palette: palette.mode, knots: knotCount, meshes: 3, points: knotCount, textures: lightTex ? 1 : 0,
-      bytes: knotBytes + gasGeo.getAttribute('position').array.byteLength + quad.byteLength * 2 + (lightTex ? Math.round(512 * 474 * 4 * 4 / 3) : 0),
+      light: light.state(), samples, tier: tierNow, palette: palette.mode, knots: knotCount, meshes: 3, points: knotCount, textures: lightTex ? 1 : 0, front: FRONT.exact ? 'exact' : 'sampled',
+      bytes: knotBytes + gasGeo.getAttribute('position').array.byteLength + QUAD_BYTES * 2 + (lightTex ? Math.round(512 * 474 * 4 * 4 / 3) : 0),
     }),
     dispose() {
       if (knots) knots.geometry.dispose();

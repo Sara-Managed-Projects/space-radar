@@ -286,6 +286,7 @@ Object.assign(COPY, {
       star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical storm', oddity: 'Oddity',
       earthevent: 'Event on Earth',
       blackhole: 'Black hole', pulsar: 'Pulsar', magnetar: 'Magnetar',
+      quasar: 'Quasar', // 0076 W4-b
     },
     upNow: 'up now, {compass}',
     lowNow: 'low in the {compass} now',
@@ -1282,6 +1283,7 @@ Object.assign(COPY, {
       leadBlackhole: '{name} is a black hole {dist} light-years away',
       leadPulsar: '{name} is a pulsar {dist} light-years away',
       leadMagnetar: '{name} is a magnetar {dist} light-years away',
+      leadQuasar: '{name} is a quasar {dist} light-years away', // 0076 W4-b
       leadStar: '{name} is a star {dist} light-years away',
       leadRange: '{name} is {a} {kind} somewhere between {lo} and {hi} light-years away',
       mass: 'weighing {n} Suns',
@@ -1290,7 +1292,7 @@ Object.assign(COPY, {
       massBillions: 'weighing {n} billion Suns',
       spins: 'turning {n} times a second',
       spinsSlow: 'turning once every {n} seconds',
-      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star' },
+      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star', quasar: 'quasar' }, // 0076 W4-b: quasar
     },
     dso: {
       leadHome: '{name} is the galaxy we live in; its centre is {dist} light-years away',
@@ -1865,22 +1867,239 @@ Object.assign(COPY, {
   // RELEASE 1.2.0 wave 2 (internal spec 0076, design section 6): one empty block per stage, created by the lead
   // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
   // 0076 W2-a (the nearby worlds' sites and traverses)
-  r12Nearby: {},
+  // The Moon's card while its shadows are cast from heights (scene/tiles.js mosaics(), ui/cards.js mosaicLine).
+  r12Nearby: {
+    castShadows: 'Its shadows are cast by the ground’s own heights, from {title}, where the Sun stands now and at true scale: measured, one height every 670 m at best, so a crater under about two kilometres casts none.',
+    // A modelled craft's card, under its light bar (ui/cards.js timeFactsSection; scene/airtint.js).
+    sunriseModelled: 'Its colour at sunrise and sunset is modelled: sunlight reddened by the air it grazed, Rayleigh scattering only.',
+  },
   // 0076 W2-b (the giants' rings and spots)
-  r12Giants: {},
+  r12Giants: {
+    // Jupiter's weather line (scene/weather/index.js), after "no cloud is drawn where it is today".
+    // {l2} where it is drawn now and {at} where it was measured, System II degrees; {date} "1 December
+    // 2025"; {rate} the drift drawn and {lo}, {hi} the two measured, degrees a month; {pm} degrees.
+    spot: 'Except one: the Great Red Spot is put at {l2}° System II longitude, carried from where the JUPOS team and the British Astronomical Association measured it on {date} ({at}°) at {rate}° a month, the middle of the two drifts they measured that year ({lo} and {hi}), so by now it may be {pm}° either side. The map is turned to put it there, and its other clouds go round with it.',
+    // The drawing line on a giant's card (ui/cards.js), by the world's id: Uranus's rings at their own
+    // darkness (scene/worlds.js URANUS_RINGS), Jupiter's faint ring (scene/weather/worldweather.js
+    // GIANT_RINGS). Every number is the one drawn: tests/test_giants.mjs holds them together.
+    rings: {
+      uranus: 'its rings are at their measured distances and as dark as they are: their particles reflect about 1.5 % of the light, a thirtieth of what its clouds do, so in front of the planet they are dark threads; they are drawn 10 times wider than they are so that they show, and the Deep exposure lifts them 4 times, as a long exposure does',
+      jupiter: 'its faint ring is at the distances and optical depths NASA’s fact sheet gives: the halo and the main ring, dust and dark grains that stop a few millionths of the light; the two fainter gossamer rings beyond them are not drawn. From the Sun’s side it is almost nothing; with the Sun behind it the dust throws light forward and it shows, as it did to Galileo and New Horizons from the night side. To show at all it is drawn 8 000 times brighter than it is under the Camera exposure and 40 000 times under Deep; under Eye it is not drawn, which is how it would look, and nor is it on the lowest quality. The halo is some 10 000 km thick and is drawn flat, no brighter than its thickness allows; how the halo fades inward and the main ring deepens toward its sharp outer edge, how much of the light is the dust’s, how far forward it throws it, the ring’s reddish colour and the brightest it is drawn are illustrative',
+    },
+  },
   // 0076 W2-c (plumes)
-  r12Plumes: {},
+  r12Plumes: {
+    // THE PLUMES' LINE ON A MOON'S CARD (scene/plumes.js lineFor): what is drawn, seen when and by what,
+    // then what of it is measured, the motion, and the review. registry/plumes.yaml holds the sources.
+    line: 'Plumes drawn as they were seen: {list}.',
+    item: '{name}, about {km} km high ({by}, {when})',
+    jets: 'the jets of the four tiger stripes, at least {km} km high ({by}, {when})',
+    truth: 'Their places and heights are measured; the grains’ arcs are a model, and their light is stretched so they can be seen. They may not be erupting now.',
+    stripes: 'The stripes are drawn straight from the gazetteer’s centres and lengths, and the places of the 101 jets along them are a model.',
+    column: 'They are dark columns that the wind carried west at their tops; how wide a column is, is not known and is drawn narrow.',
+    hot: 'The orange points on the night side are hot spots where lava glows ({list}): their places are measured, their brightness is not.',
+    film: 'Under Film the grains fly their arcs {k} times faster than the clock.',
+    still: 'They are held still, as under Measured or reduced motion.',
+    review: 'Not yet reviewed by an astronomer.',
+    span: '{a} to {b}',
+  },
 
   // RELEASE 1.2.0 wave 3 (internal spec 0076, design section 6): one empty block per stage, created by the lead
   // so the stages that run in parallel each fill their own. A stage writes only inside its own block.
   // 0076 W3-a (star clusters as stars)
-  r12Clusters: {},
+  r12Clusters: {
+    // ui/cardfacts.js reads `rows[record.id]` (stage c's hook, `meta.heroCopy`): scene/deep/globular.js fills them from
+    // the templates below once its catalogue numbers have loaded, with the numbers it draws.
+    rows: {},
+    templates: {
+      starsLabel: 'Its stars',
+      lightLabel: 'Their light',
+      depthLabel: 'Their depth',
+      reviewLabel: 'Review',
+      globularStars: 'A model of its kind, not its own stars: {n} stars brighter than the turn-off, placed by King’s profile with Harris’s core radius ({rc} light-years) and tidal radius ({rt}). Their number, brightness and colours are a model.',
+      globularLight: 'Together about {pct}% of the cluster’s light (absolute magnitude {mv}); the faint stars no point stands for are the glow. Drawn to magnitude 10, as a camera’s exposure shows it.',
+      openStars: '{n} members from Gaia (Hunt and Reffert 2023, {name}), each with a membership probability of at least {p}, inside its tidal radius. Drawn to magnitude 10, as a camera’s exposure shows them.',
+      openStarsHyg: '{n} members from Gaia (Hunt and Reffert 2023, {name}), each with a membership probability of at least {p}, inside its tidal radius; {h} brighter ones are the map’s own catalogue stars. Drawn to magnitude 10, as a camera’s exposure shows them.',
+      openDepthSome: '{m} are placed by their own parallax; the other {k} at the cluster’s distance, their depth inside it modelled.',
+      openDepthNone: 'Their directions are measured; their depth inside the cluster is modelled, since at this distance one star’s parallax is not precise enough.',
+      review: 'This model has not yet been reviewed by an astronomer.',
+    },
+  },
+  // 0076 W4-b (galaxy clusters and quasars; scene/deep/galclusters.js)
+  r12Far: {
+    // A quasar's card: its "drawn as" line (`shape`, read by ui/cards.js) and what is added to it (a record's `departure`). {size} arcseconds, {ly} light-years.
+    quasar: {
+      shape: 'a bright point where its redshift puts it, with a ring marking the place; its disc and its jet are far too small to draw',
+      host: 'Its host galaxy is drawn faint and round at the angular size the source gives, {size} arcseconds across seen from here; in truth that is about {ly} light-years. Its flattening and its tilt are not drawn.',
+      point: 'The source gives no size for its host galaxy, so none is drawn.',
+    },
+    // A cluster, in four lines (layer.describe(id)): who its members are, how far, how deep, how wide.
+    cluster: {
+      members: '{n} member galaxies from {catalogue}; {own} of them stand at distances measured one by one.',
+      membersNoOwn: '{n} member galaxies from {catalogue}.',
+      distanceSbf: 'The cluster is {mpc} megaparsecs ({mly} million light-years) away, a mean of distances found from surface brightness fluctuations.',
+      distanceZ: 'The cluster is {mly} million light-years away: the mean redshift of its members ({z}), carried to a comoving distance in the map’s one cosmology.',
+      depthMeasured: 'A galaxy with no distance of its own is spread in depth by the cluster’s measured scatter, {rms} megaparsecs; that placement is a model.',
+      depthModelled: 'No galaxy here has a distance of its own, so they are spread in depth as widely as they are across the sky, as if the cluster were round; that placement is a model.',
+      size: 'Each galaxy is as wide as its catalogue half-light radius says, drawn as a round, centrally bright shape; its flattening and its tilt are not drawn.',
+    },
+  },
   // 0076 W3-b (the Ring Nebula)
-  deepRing: {},
+  deepRing: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]`). The
+    // numbers are registry/deepsky-heroes/m57.yaml's.
+    card: {
+      m57: 'Its light is taken from Hubble’s photograph, its shape from O’Dell, Ferland, Henney and Peimbert (2013): a thick ring tilted 13.5°, seen almost along its axis, the bluer gas of its middle drawn reaching toward and away from us. Its colours are the photograph’s, taken through narrow filters. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, the `rows` hook).
+    rows: {
+      'dso-m57': [
+        ['Its distance', 'Parallax (Gaia DR3) of its central star, Gaia DR3 2090486618786534784: 1.270 ± 0.044 milliarcseconds, about 2 570 light-years (2 480 to 2 660).'],
+        ['Its shape in depth', 'Reconstructed. The ring’s size on the sky, the tilt of its long axis and which end is nearer are measured. Its thickness and the form of the gas through its middle are not: they are drawn as an illustration.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'Hubble’s pictures in single colours of light, with the gas’s speeds measured across the nebula, show a thick ring nearly face on: its long axis is tilted 13.5°, its north-eastern end nearer to us. Faster gas fills its middle and stretches toward and away from us along our line of sight (O’Dell, Ferland, Henney and Peimbert 2013).',
+  },
   // 0076 W3-c (remnants and dust)
-  r12Dust: {},
+  r12Dust: {
+    // The hero's own source, after the honesty line (ui/cardfacts.js honestyClause reads `card[heroId]` from the
+    // blocks it lists; until 'r12Dust' is among them the rows below carry the same news).
+    card: {
+      crab: 'Its light is taken from Hubble’s photograph, in false colour, carried on a shell whose shape follows Martin, Milisavljevic and Drissen (2021): a filament cage about 4 parsecs long round an empty middle. Not yet reviewed by an astronomer.',
+      veil: 'Its light is taken from NOIRLab’s photograph, in false colour, carried on a thin sphere 37 parsecs across (Fesen and others, 2018): the filaments are its rim seen edge on. Not yet reviewed by an astronomer.',
+      horsehead: 'Its darkness is read from NOIRLab’s photograph: dust in front of the glowing gas of IC 434, which absorbs and reddens what is behind it and gives off no light. Not yet reviewed by an astronomer.',
+      coalsack: 'Its darkness is read from the Milky Way around it: a cloud of dust about 590 light-years away that dims and reddens the stars behind it. Not yet reviewed by an astronomer.',
+      m78: 'Its light is NOIRLab’s photograph: dust scattering the blue light of the star in front of it, on the face of a dark cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
+      iris: 'Its light is NOIRLab’s photograph: dust scattering the light of the young star HD 200775 in a hollow of its cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook), keyed by record.
+    rows: {
+      'dso-m1': [
+        ['Its shape in depth', 'Reconstructed from a measured outline. The filaments reach about 2 parsecs along the axis of the pulsar’s wind and none lie within half a parsec of the centre (Martin and others, 2021). Drawn as an ellipsoid along that axis; which end is nearer us is assumed.'],
+        ['Its colours', 'False colour: the photograph’s narrow filters for oxygen and sulphur, mapped to colours by the picture’s makers.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-veil-nebula': [
+        ['Its shape in depth', 'Reconstructed: a sphere 37 parsecs across, the size and distance Fesen and others (2018) measured. The shell’s thickness is illustrative.'],
+        ['Its colours', 'False colour: the photograph’s narrow filters for oxygen, sulphur and hydrogen, mapped to colours by the picture’s maker.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-horsehead-nebula': [
+        ['Its shape in depth', 'Reconstructed. The dust is in front of the glowing gas of IC 434, as observed; how far in front, and how thick it is, are illustrative.'],
+        ['What the dust does', 'It only absorbs: the stars and the glow behind it are dimmed, and more in blue than in red, so they look redder. It gives off no light of its own.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-coalsack': [
+        ['How dark it is', 'Read from how much darker the Milky Way is here than at the same distance from its middle line nearby. That is an estimate and lower than infrared maps give, because stars in front of the cloud add their light.'],
+        ['What the dust does', 'It only absorbs: the stars behind it are dimmed and reddened. Stars in front of it are not. Part of the darkness to the north-east is a second cloud far behind, drawn here at the near distance.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-m78': [
+        ['Its shape in depth', 'Reconstructed: the lit dust as a sheet with its star in front and a dark cloud behind. The depths are illustrative.'],
+        ['From another side', 'Modelled: dust scatters more light forward than sideways, so from another side the same dust looks brighter or fainter.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-iris-nebula': [
+        ['Its shape in depth', 'Reconstructed: the lit walls as a sheet with the star in front and a dark cloud behind. The depths are illustrative.'],
+        ['From another side', 'Modelled: dust scatters more light forward than sideways, so from another side the same dust looks brighter or fainter.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'A remnant’s gas flies outward at a steady speed, so its speed toward or away from us says how far in front of or behind the centre it is. Martin, Milisavljevic and Drissen (2021) turned 310 000 spectra of the Crab into its shape that way.',
+  },
   // 0076 W3-d (where you are, and the way back)
-  r12Navigate: {},
+  r12Navigate: {
+    // ui/cards.js: where a thing is, outermost first ("Milky Way › Helix Nebula"), its parents buttons
+    // that fly out to them, and the way out to the nearest one (internal #883).
+    chainLabel: 'Where it is',
+    chainTitle: 'Fly to {name}',
+    milkyWay: 'Milky Way',
+    outside: 'Outside the Milky Way',
+    // A parent said with "the": "Back to the Sun", but "Back to Jupiter".
+    the: ['Sun', 'Moon', 'Milky Way'],
+    theWord: 'the',
+    backParent: 'Back to {parent}',
+    backParentTitle: 'Fly out to {parent}',
+    // The legend's door from a line that is not the card's foot (internal #908): a trip's truth line,
+    // a star system's drawing line. It opens the card's row "How we know".
+    legendTitle: 'Open the legend: what each of these words means',
+    // ui/scalerail.js: the rung of the ladder the camera is on, Back along the visitor's own path, and
+    // the note at each join, once a visit, with the far side's distance from registry/ladder.yaml.
+    label: 'Where you are',
+    title: 'Where the camera is on the ladder, from the Earth out to the Local Group',
+    back: 'Back',
+    backTo: 'Back to {name}',
+    sep: '›',
+    rungs: { earth: 'Earth', sun: 'Solar System', stellar: 'Nearby stars', galaxy: 'Milky Way', 'local-group': 'Local Group' },
+    notes: {
+      sun: 'Sped up: the Sun is {distance} away',
+      stellar: 'Sped up: the nearest star is {distance} away',
+      galaxy: 'Sped up: our galaxy’s centre is {distance} away',
+      'local-group': 'Sped up: Andromeda is {distance} away',
+    },
+  },
   // 0076 W3-e (search by kind)
-  r12Search: {},
+  r12Search: {
+    // A group's microlabel over its rows (ui/searchrows.js kindHits): the class in four words at most,
+    // then how many of it the map holds. A class with no line here uses its registry title.
+    group: '{label} · {n}',
+    groups: {
+      SUN: 'The Sun', ROCKY_PLANET: 'Rocky planets', GAS_GIANT: 'Gas giants', ICE_GIANT: 'Ice giants', RINGS: 'Rings',
+      VOLCANIC_MOON: 'Volcanic moon', ICY_MOON: 'Icy moons', TITAN: 'Moon with an atmosphere', AIRLESS_MOON: 'Airless moons',
+      DWARF_PLANET: 'Dwarf planets', ASTEROID: 'Asteroids', COMET: 'Comets', ARTIFICIAL_SATELLITE: 'Satellites',
+      LAUNCH_AND_ROCKET: 'Launches and rockets', SPACE_PROBE: 'Space probes', LANDING_SITE: 'Landing sites',
+      EXOPLANET: 'Exoplanets', STAR: 'Stars', BINARY_AND_MULTIPLE: 'Binary and multiple stars', COMPACT_REMNANT: 'Dead stars',
+      BLACK_HOLE: 'Black holes', OPEN_CLUSTER: 'Open clusters', GLOBULAR_CLUSTER: 'Globular clusters',
+      EMISSION_NEBULA: 'Emission nebulae', PLANETARY_NEBULA: 'Planetary nebulae', DARK_NEBULA: 'Dark nebulae',
+      REFLECTION_NEBULA: 'Reflection nebulae', SUPERNOVA_REMNANT: 'Supernova remnants', GALAXY_SPIRAL: 'Spiral galaxies',
+      GALAXY_IRREGULAR: 'Irregular galaxies', GALAXY_ELLIPTICAL: 'Elliptical galaxies', GALAXY_INTERACTION: 'Interacting galaxies',
+      AGN_QUASAR: 'Quasars', GALAXY_GROUP: 'Galaxy groups', GROUND_SITE: 'Ground stations', ODDITY: 'Oddities',
+    },
+    // Rows of a 3D-model listing whose class the registry does not give (a satellite only on a mixed layer).
+    other: 'Other things',
+    // A kind query's other matches: records whose name holds the word but are not of the kind.
+    byName: 'By name',
+    // "Moons of Saturn": the microlabel says whose ({label} arrives lower-cased: "Saturn’s icy moons").
+    of: '{world}’s {label}',
+    // The toggle under the results (aria-pressed). Two words; the tooltip says what counts.
+    only: '3D models',
+    onlyTitle: 'List only what is drawn from a 3D model: a real model or a reconstruction',
+    // What a row of a 3D listing says it is drawn from, after its kind.
+    real: 'real 3D model',
+    rebuilt: '3D reconstruction',
+    // The toggle is on and nothing of these has a model.
+    noneWithModel: 'None of these has a 3D model.',
+    // A kind word typed before the classes have arrived (one small file, fetched then).
+    counting: 'counting…',
+  },
+});
+
+// 0076 W4-c (readable without motion, and for a screen reader; internal #912, #836)
+Object.assign(COPY, {
+  r12Access: {
+    // ui/whattoshow.js: the Motion row, in the shape of the Quality row. Off is what prefers-reduced-motion is.
+    motion: {
+      panelTitle: 'Motion',
+      choices: { on: 'On', off: 'Off' },
+      titles: {
+        on: 'Flights glide and trips move on by themselves, as the map is made to',
+        off: 'Every flight is an instant move, nothing moves that is not measured to, and a trip waits for Next',
+      },
+      device: 'Your device asks for less motion, so it is off.',
+    },
+    // ui/scenesummary.js: one polite line for a screen reader, said when the stage, the selection, the
+    // look or a trip's stop changes. It names what is on screen and never a number it has not measured.
+    summary: {
+      label: 'What is on screen',
+      stage: 'Looking at {stage}.',
+      selected: '{name} is selected, {kind}.',
+      nothing: 'Nothing is selected.',
+      trip: 'Trip stop {n} of {count}: {title}.',
+      tripIntro: 'The trip {title} is open.',
+      measured: 'Drawn as measured.',
+    },
+  },
 });

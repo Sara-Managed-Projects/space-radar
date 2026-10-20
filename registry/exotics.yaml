@@ -3,7 +3,7 @@
 # distance, a kind it knows, or a position on the sky. scripts/gen_exotics_js.py mirrors this file
 # into site/js/data/exotics.js; CI refuses drift.
 #
-# kind        blackhole | pulsar | magnetar | star
+# kind        blackhole | pulsar | magnetar | star | quasar (0076 W4-b: a quasar needs no mass; the two rows have a redshift)
 # ra / dec    J2000, as the source prints them (h m s / deg arcmin arcsec); the mirror converts to degrees.
 # dist_ly     light-years. A range is [low, high]. Past the Local Group a distance needs a word beside
 #             it: a row with a `redshift` gives the COMOVING distance (how far the place is now), as
@@ -273,3 +273,32 @@ exotics:
     why: "Two Suns in a ball twenty kilometres across, circling a white dwarf every two and a half hours; among the heaviest neutron stars ever weighed."
     aliases: [J0348+0432]
     source: "https://en.wikipedia.org/wiki/PSR_J0348%2B0432 (infobox, read 2026-09-09)"
+
+  # 0076 W4-b (internal #784): two quasars at their comoving distance from their redshift (data/cosmology.js, Planck 2018).
+  # scene/deep/galclusters.js draws each as a bright point; 3C 273 also gets its host galaxy at the size the source gives.
+  - id: 3c-273
+    name: 3C 273
+    kind: quasar
+    ra: 12h 29m 06.7s
+    dec: +02° 03′ 09″
+    redshift: 0.158339
+    dist_ly: 2200000000
+    distance_note: "how far it is now (comoving distance), from its redshift of 0.158339 in the Planck 2018 cosmology. Its light-travel time is 2.0 billion years: we see it as it was, not as it is. A separate method, the spectroastrometry of its gas (Wang and others, Nature Astronomy 2020), gives 1.8 billion light-years with a wide margin"
+    mass_msun: 886000000
+    vmag: 12.9
+    why: "The first quasar ever identified and the brightest in our sky: a black hole of nearly a billion Suns eating gas, outshining the whole giant galaxy around it sixteen times over."
+    aliases: [3C273, PGC 41121]
+    source: "https://en.wikipedia.org/wiki/3C_273 (infobox: position, redshift 0.158339 and apparent magnitude 12.9 from NED, mass 886 million Suns; the host galaxy, an E4 of apparent size 29 arcseconds and magnitude 16 after Bahcall and others 1997, ApJ 479, 642; read 2026-10-20)"
+
+  - id: 3c-279
+    name: 3C 279
+    kind: quasar
+    ra: 12h 56m 11.1s
+    dec: -05° 47′ 22″
+    redshift: 0.5362
+    dist_ly: 6740000000
+    distance_note: "how far it is now (comoving distance), from its redshift of 0.5362 in the Planck 2018 cosmology. Its light-travel time is 5.5 billion years: we see it as it was, not as it is"
+    vmag: 17.8
+    why: "A quasar that flickers in visible light, radio waves and X-rays; in 1973 its jet seemed to move faster than light, an illusion that comes from the angle we see it at."
+    aliases: [3C279, 4C -05.55, NRAO 413, PKS 1253-05]
+    source: "https://en.wikipedia.org/wiki/3C_279 (infobox: position, redshift 0.5362 and magnitude 17.8 from NED; read 2026-10-20)"

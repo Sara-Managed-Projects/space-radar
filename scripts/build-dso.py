@@ -84,6 +84,56 @@ DRAWN_CLASSES = ("photograph", "catalogue", "reconstruction", "model", "illustra
 LY_PER_PC = 3.261563777
 
 
+def _unit(a):
+    n = math.sqrt(sum(x * x for x in a)) or 1.0
+    return [x / n for x in a]
+
+
+def _cross(a, b):
+    return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+
+
+def _dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+
+def _comb(a, ka, b, kb):
+    return [a[i] * ka + b[i] * kb for i in range(3)]
+
+
+def disc_normal(pos, pa_deg, incl_deg, near_side):
+    """A disc galaxy's axis in the sun-inertial frame: site/js/data/deepsky.js discFrame, the same arithmetic. Pure."""
+    pole = [0.0, math.sin(OBLIQUITY), math.cos(OBLIQUITY)]
+    u = _unit(pos)
+    east = _unit(_cross(pole, u))
+    north = _cross(u, east)
+    pa, i = math.radians(pa_deg or 0), math.radians(incl_deg or 0)
+    major = _comb(north, math.cos(pa), east, math.sin(pa))
+    back = [-x for x in u]
+    minor_sky = _cross(back, major)
+    normal = _unit(_comb(back, math.cos(i), minor_sky, math.sin(i)))
+    w = str(near_side or "").upper()
+    toward = _comb(north, 1 if "N" in w else -1 if "S" in w else 0, east, 1 if "E" in w else -1 if "W" in w else 0)
+    if math.hypot(*toward) > 0:
+        in_disc = _comb(toward, 1, normal, -_dot(toward, normal))
+        if _dot(in_disc, u) > 0:
+            normal = _unit(_comb(back, math.cos(i), minor_sky, -math.sin(i)))
+    return normal
+
+
+def on_disc_plane(child_pos, parent_pos, orientation):
+    """(spec 0076 W4-a, spec 0075 task 52) Where the Sun -> child line crosses the plane of the parent's disc, in light-years.
+    The child keeps its direction (its catalogue position) and takes the distance at which it lies IN the disc; None
+    when the disc is edge on to that line or the crossing is behind the Sun. Pure."""
+    n = disc_normal(parent_pos, orientation.get("pa_deg"), orientation.get("incl_deg"), orientation.get("near_side"))
+    u = _unit(child_pos)
+    d = _dot(u, n)
+    if abs(d) < 0.05:
+        return None
+    t = _dot(parent_pos, n) / d
+    return t if t > 0 else None
+
+
 def morphology_of(row: dict) -> str | None:
     """A galaxy's morphology from its own words and Hubble code, when the registry does not say. Pure."""
     if row.get("kind") != "galaxy":
@@ -132,6 +182,15 @@ def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> Non
             set_distance(r, p["distLy"], p.get("distLyLow"), p.get("distLyHigh"),
                          f"its parent's ({p['name']}): {p.get('distanceSource')}")
             r["distance"] = {**d, "value_ly": p["distLy"], "low": p.get("distLyLow"), "high": p.get("distLyHigh")}
+            # 0076 W4-a (spec 0075 task 52): a member of an oriented disc is PLACED in its plane. Its direction stays; where it
+            # sits is where that line meets the disc. Its distance on the card stays the parent's and stays "not measured".
+            o = p.get("orientation")
+            if o and o.get("incl_deg") and p.get("posLy") and r.get("posLy") and "placed where its line" not in str(r.get("positionSource")):
+                t = on_disc_plane(r["posLy"], p["posLy"], o)
+                if t and abs(t - p["distLy"]) < 0.5 * p["distLy"]:
+                    r["posLy"] = ecliptic_ly(r["raDeg"], r["decDeg"], t)
+                    r["positionSource"] = (f"{r.get('positionSource')}; placed where its line of sight meets the plane of "
+                                           f"{p['name']}'s disc ({o.get('source')})")
 
 
 def plain(v):

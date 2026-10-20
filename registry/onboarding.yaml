@@ -242,5 +242,23 @@ features:
     files: [site/js/scene/perf.js]
     surfaces: ["want:wantPerf"]
     not: "For tools only: fetched under ?look=1 or by a tool's sr.wantPerf(); a visitor never sees it and has nothing to press."
+  - id: plumes
+    name: Plumes where they were seen on Io, Enceladus and Triton (internal spec 0076 W2-c)
+    files: [site/js/scene/plumes.js]
+    surfaces: ["want:wantPlumes"]
+    not: "Drawn on the moon itself when its stage is entered; there is nothing to press, and the card says what is drawn."
   # 0076 W3-d
+  - id: where-you-are
+    name: Where you are on the ladder, and Back along your own path
+    files: [site/js/ui/scalerail.js, site/js/ui/camundo.js]
+    not: "It appears by itself once there is a path to walk back or the camera has left the Earth, and says what it is; a newcomer's first two minutes are on the Earth with nothing behind them."
   # 0076 W3-e
+  - id: search-by-kind
+    name: Search by kind, and its 3D models toggle (internal spec 0076 W3-e)
+    files: [site/js/data/kindwords.js, site/css/searchkinds.css]
+    not: "Inside the search the find step already rings: typing a kind lists it there, and the toggle sits under those results."
+  # 0076 W4-c
+  - id: scene-summary
+    name: What is on screen, in words, for a screen reader (internal spec 0076 W4-c)
+    files: [site/js/ui/scenesummary.js]
+    not: "A line only a screen reader hears; there is nothing to press. The Motion row is one more setting in What to show, which the layers step opens."

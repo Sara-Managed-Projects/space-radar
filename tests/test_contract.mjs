@@ -146,7 +146,7 @@ const CONTRACT = {
   'data/weather.js': ['WEATHER'],
   // The one owner of the URL hash (spec 0032): main.js and ui/trip.js write
   // through it, and a second dialect is the bug it was written to end.
-  'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
+  'ui/urlstate.js': ['KEYS', 'VERSION', 'BUILD', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
   // Share (spec 0033, spec 0061 task 8): the link rules and the one door, ctx.share.open().
   'ui/share.js': ['appBase', 'shareUrl', 'shareState', 'tripWords', 'toast', 'installShare', 'openShare', 'savePostcard', 'shareButton'],
   // Spec 0061 task 8: the one share sheet, imported on the first Share; its pure parts for the tests.
@@ -181,12 +181,28 @@ const CONTRACT = {
   'scene/sunimage.js': ['loadSunImage', 'imageFrame', 'imageUv', 'imageWeight', 'cropOf', 'textureBytes', 'IMAGE_GAIN', 'IMAGE_EDGE'],
   // 0076 W1-e (perf.js)
   'scene/perf.js': ['createPerf', 'sceneBytes', 'textureBytes', 'geometryBytes', 'quantile', 'RING', 'LOOK_SEED'],
-  // 0076 W2-a (traverse.js)
-  // 0076 W2-c (plumes.js)
-  // 0076 W3-a (globular.js)
+  // 0076 W3-a (globular.js): star clusters as stars; its King profile, its luminosity function and its members' file are pure for tests/test_globular.mjs.
+  'scene/deep/globular.js': ['createLayer', 'kingDensity', 'kingSurface', 'kingTable', 'sampleRadius', 'giantCount', 'sampleGlobular', 'visibleLight', 'parseMembers', 'membersOf', 'fadeFor', 'seedOf', 'mulberry32', 'POINTS', 'MAX_DRAWN', 'FROM_PX', 'FULL_PX', 'LIMIT_MAG', 'limitFor', 'OPEN_MEMBERS', 'FLOOR', 'LF', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
+  // 0076 W2-a (traverse.js): the Apollo 15 and 17 rover traverses, fetched by scene/tiles.js close to the Moon; pure parts for tests/test_traverse.mjs.
+  'scene/traverse.js': ['createTraverses', 'parsePath', 'pathLengthKm', 'traverseFade', 'ribbonArrays', 'TRAVERSE_LOOK', 'DEPTH_PULL'],
+  'scene/airtint.js': ['AIR_REDDENING', 'setAirReddening', 'airReddeningOn', 'airTransmission', 'sunlightOn', 'AIR_TINT_GLSL', 'EARTH_RADIUS_KM'],
+  // 0076 W2-c (plumes.js): plumes where they were seen, fetched with a moon's stage; its pure parts for tests/test_plumes.mjs.
+  'scene/plumes.js': ['createPlumes', 'ballisticOf', 'placeVector', 'westOf', 'particlesFor', 'motionTime', 'lineFor', 'whenWords', 'UNDER_MEASURED', 'COPY_BLOCK', 'SHADERS'],
   // 0076 W3-b (ring.js, shellneb.js)
+  // Release 1.2.0 stage W3-b (internal #872): the Ring Nebula hero, fetched when M57 is near, and the part every planetary
+  // nebula hero shares (the Helix imports it); their pure parts for tests/test_hero_ring.mjs.
+  'scene/deep/ring.js': ['createHero', 'tierFloor', 'geometryOf', 'insideOf', 'nearOf', 'layerSamples', 'capLight', 'columnsAt', 'columnMap', 'columnsFrom', 'haloSamples', 'COLUMN_MAP', 'columnJs', 'knotsOf', 'paletteFor', 'samplesFor', 'sharesFor', 'lightUv', 'SHAPE', 'SHADERS', 'UNDER_MEASURED', 'COPY_BLOCK', 'DRAWN'],
+  'scene/deep/shellneb.js': ['skyFrame', 'ringAxis', 'planeBasis', 'skyDir', 'uvOf', 'uvAt', 'layerSpan', 'spanLen', 'spanT', 'quadSpan', 'shellSpan', 'quarticCdf', 'slabIntegral', 'lightStretch', 'paletteOf', 'sharesOf', 'samplesOf', 'viewSize', 'pixelHash', 'seeded', 'shellMaterial', 'skyPlacer', 'starMesh', 'knotMaterial', 'knotMesh', 'lightTexture', 'GLSL', 'SHELL_SHADERS', 'QUARTIC_CDF', 'QUARTIC', 'QUAD_BYTES', 'AU_LY', 'D2R', 'norm', 'cross', 'dot', 'neg', 'smooth', 'hexRgb', 'f3'],
   // 0076 W3-c (remnant.js, dustsheet.js)
-  // 0076 W3-d (scalerail.js)
+  // 0076 W4-b (galclusters.js): galaxy clusters and quasars; its columns, fades and quasar geometry are pure for tests/test_galclusters.mjs.
+  'scene/deep/galclusters.js': ['createLayer', 'parseMembers', 'rowOf', 'arraysOf', 'colourOf', 'tileFade', 'crowd', 'tileRadiusPx', 'eclipticDir', 'quasarOf', 'hostOf', 'EXTENT', 'MIN_PX', 'MAX_PX', 'CULL_PX', 'FADE_PX', 'FOOT_PX', 'STRIDE', 'MAGIC', 'UNDER_MEASURED', 'COPY_BLOCK'],
+  // 0076 W4-c (scenesummary.js): what is on screen, for a screen reader; its pure parts for tests/test_access.mjs.
+  'ui/scenesummary.js': ['summaryText', 'factsOf', 'createSceneSummary'],
+  // 0076 W3-d (scalerail.js): where you are on the ladder, Back and the note at a join; its words and rules are pure for tests/test_navigate.mjs.
+  'ui/scalerail.js': ['wireRail', 'rungOf', 'railRungs', 'joinNote', 'noteWords', 'backWords', 'railShown', 'NOTE_MS'],
+  // Release 1.2.0 stage W3-c (internal #784, #806): remnants as shells and dust as sheets, fetched when one is near; their pure parts for tests/test_remnant.mjs and tests/test_dustsheet.mjs.
+  'scene/deep/remnant.js': ['createHero', 'skyFrame', 'offsetLy', 'uvOf', 'coverAt', 'shellOf', 'chordAt', 'pathsAt', 'weightsAt', 'columnJs', 'samplesFor', 'sharesFor', 'paletteFor', 'stretchJs', 'pixelHash', 'featherOf', 'placeSkyGroup', 'loadMap', 'cameraInSky', 'part', 'SHAPE', 'SHADERS', 'COMMON_GLSL', 'VERT', 'UNDER_MEASURED', 'COPY_BLOCK'],
+  'scene/deep/dustsheet.js': ['createHero', 'sheetOf', 'ccm', 'reddening', 'decodeTau', 'grazeOf', 'reliefAt', 'hg', 'phaseFactor', 'coverSheet', 'capLight', 'closedJs', 'transmissionTo', 'orderOf', 'gridFor', 'keepRadiusPx', 'keepActive', 'starLook', 'SHAPE', 'SHADERS', 'UNDER_MEASURED'],
 };
 
 const problems = [];

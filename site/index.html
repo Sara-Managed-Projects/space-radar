@@ -33,6 +33,8 @@
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/ui.css">
+<!-- 0076 W4-c: with scripts off the boot panel would sit over the readable page -->
+<noscript><style>#boot{display:none}</style></noscript>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12.5' fill='%230B0E14'/><circle cx='32' cy='32' r='14.38' fill='%232E6FB8'/><path d='M39.82 19.94A16.38 16.38 0 0 0 25.51 44.83A14.38 14.38 0 0 0 39.82 19.94Z' fill='%23123255'/><path d='M10.09 35.86A22.25 22.25 0 0 1 49.04 17.7' stroke='%23FF9F43' stroke-width='5.25' stroke-linecap='round' fill='none'/></svg>">
 <!-- Installable (issue #290): the manifest and the icon a home screen uses, both beside the page,
      so a copy in a subfolder installs as itself. The worker is registered late, by js/ui/offline.js. -->
@@ -194,11 +196,67 @@
   </div>
 </div>
 
-<noscript>
-  <div class="boot"><div class="boot-inner">
-    <p class="boot-line">Space Radar needs JavaScript.</p>
-    <p class="boot-sub">It computes every satellite position in your browser, so there is nothing to show without it.</p>
-  </div></div>
+<!-- 0076 W4-c (internal #919): what a visitor reads when the map cannot run. The same markup is shown by
+     js/scene/renderer.js when the browser cannot draw WebGL 2 (it reads this element's text; with
+     scripting on, a noscript's content is text). tests/test_access.mjs holds the links: every trip page in
+     t/ is listed, and every page the footer lists is too. -->
+<noscript id="sr-readable-src">
+<div class="sr-readable" id="sr-readable" role="region" aria-labelledby="sr-readable-h">
+<p class="sr-readable__title" id="sr-readable-h">Space Radar</p>
+<p class="sr-readable__lead">A free, live 3D map of space: the satellites and the International Space Station, launches, probes, the planets and their moons, the stars and the galaxies, each drawn where it really is.</p>
+<p class="sr-readable__why" data-why="js">The map needs JavaScript, which is off here. It works out every position in your browser from public orbit data, so nothing could be drawn without it.</p>
+<p class="sr-readable__why" data-why="gl" hidden>The map needs WebGL 2 to draw the sky, and this browser cannot give it.</p>
+<p>Everything on the map says whether it is measured, modelled or illustrative. What is below opens as plain pages and needs neither.</p>
+<h2>Read about it</h2>
+<ul>
+<li><a href="about/index.html">About Space Radar</a></li>
+<li><a href="sources/index.html">Sources: where every number comes from</a></li>
+<li><a href="accuracy/index.html">Accuracy: how close the positions are</a></li>
+<li><a href="teachers/index.html">For teachers</a></li>
+<li><a href="satellites/index.html">Satellites</a></li>
+<li><a href="starlink/index.html">Starlink</a></li>
+<li><a href="o/international-space-station.html">Where is the ISS?</a></li>
+<li><a href="planets-tonight/index.html">Planets tonight</a></li>
+<li><a href="events/index.html">Sky events</a></li>
+<li><a href="press/index.html">Press</a></li>
+<li><a href="embed/index.html">Embed the map in a page</a></li>
+<li><a href="https://github.com/Sara-Managed-Projects/space-radar" rel="noopener">The code, on GitHub</a></li>
+</ul>
+<h2>The trips</h2>
+<p>A trip is a guided flight through the map. Each opens in the map itself, so it needs JavaScript and WebGL 2. This is what each one covers.</p>
+<ul>
+<li><a href="t/a-dark-sky.html">A dark sky</a>. Your sky from a city, a town and a dark place.</li>
+<li><a href="t/a-year-in-a-minute.html">A year in a minute</a>. A year of orbits in a minute.</li>
+<li><a href="t/across-the-local-group.html">Across the Local Group</a>. Our galaxy, its biggest companion, Andromeda, Triangulum.</li>
+<li><a href="t/asteroids-that-come-close.html">Asteroids, and the ones that come close</a>. The belt, the rocks that pass us, and how we moved one.</li>
+<li><a href="t/back-to-the-moon.html">Back to the Moon</a>. Artemis: round the Moon again, and where they mean to land.</li>
+<li><a href="t/black-holes.html">Black holes</a>. Three real black holes: where they are and how we know.</li>
+<li><a href="t/chasing-the-solar-eclipse.html">Chasing the solar eclipse</a>. The next total eclipse's shadow crossing the Earth.</li>
+<li><a href="t/comets-and-meteors.html">Comets and meteor showers</a>. A comet, its dust and the next shower from your street.</li>
+<li><a href="t/journey-to-the-station.html">From your ground to the space station</a>. Straight up to the station and its next pass.</li>
+<li><a href="t/roof-to-the-edge.html">From your roof to the edge</a>. One flight out past the Moon, the planets and the stars, and one flight home.</li>
+<li><a href="t/inside-a-neighbouring-galaxy.html">Inside a neighbouring galaxy</a>. The Large Magellanic Cloud, the Tarantula, its giant stars.</li>
+<li><a href="t/into-the-helix.html">Into the Helix</a>. A dying star: its photograph, its shape in 3D and its heart.</li>
+<li><a href="t/mars-where-we-have-driven.html">Mars, where we have driven</a>. A volcano, a canyon, five landing sites and a moon.</li>
+<li><a href="t/outer-solar-system.html">Out past Jupiter, to the farthest thing we sent</a>. Ten stops through the cold outer worlds.</li>
+<li><a href="t/out-to-the-edge.html">Out to the edge of the universe we can see</a>. Past the Local Group and a quasar to the oldest light.</li>
+<li><a href="t/satellites-and-junk.html">Satellites and space junk</a>. Everything working in orbit today, the ring that stands still, and the junk.</li>
+<li><a href="t/birth-of-the-solar-system.html">The birth of the Solar System</a>. The story science tells, told over real places.</li>
+<li><a href="t/the-constellations.html">The constellations</a>. Twelve figures of the night sky, drawn star by star.</li>
+<li><a href="t/life-of-a-star.html">The life of a star</a>. From a cloud of gas to a pulsar: one real star at each age, then back to Earth.</li>
+<li><a href="t/the-living-earth.html">The living Earth</a>. One planet's cycles with today's data: storms, sea, ice.</li>
+<li><a href="t/planets-tonight.html">The planets tonight</a>. Every planet in turn, then where to look tonight.</li>
+<li><a href="t/through-a-telescope.html">The sky as telescopes see it</a>. Real photographs, each where it is in the sky.</li>
+<li><a href="t/strangest-things.html">The strangest things we have ever sent</a>. A family photograph, two golf balls, a library, a record and a car.</li>
+<li><a href="t/the-sun-today.html">The Sun today</a>. Our star, its wind, and tonight's aurora forecast.</li>
+<li><a href="t/to-the-edge.html">To the edge of what we know</a>. From the Sun to a photographed black hole.</li>
+<li><a href="t/tonight-from-your-street.html">Tonight from your street</a>. Your own sky tonight: a star, a figure, the Moon, a planet, the station's pass.</li>
+<li><a href="t/travel-to-exoplanets.html">Travel to exoplanets</a>. Other stars' planets, then TRAPPIST-1's seven.</li>
+<li><a href="t/people-in-space.html">Where people are living in space right now</a>. The only two places above you tonight with people inside them.</li>
+<li><a href="t/moon-landings.html">Where we have landed on the Moon</a>. Landings from the first to the private ones.</li>
+<li><a href="t/moon-phases.html">Why the Moon changes shape</a>. The Moon's month from space, then from your street.</li>
+</ul>
+</div>
 </noscript>
 
 <!-- The UI modules build and append their own roots (#sr-controls, #sr-status, #sr-card).
@@ -263,7 +321,8 @@
       await boot({ setStatus });
     }
   } catch (err) {
-    fail('Space Radar could not start.', err);
+    // 0076 W4-c: no WebGL 2: scene/renderer.js has put the readable page up, so no failure panel.
+    if (!(err && err.code === 'no-webgl2' && err.shown)) fail('Space Radar could not start.', err);
   }
 </script>
 

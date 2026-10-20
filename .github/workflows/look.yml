@@ -248,7 +248,9 @@ jobs:
         run: |
           set -uo pipefail
           mkdir -p look-out
-          cat tests/probes/look/_prelude.js "tests/probes/look/$PROBE.js" > look-out/probe.js
+          # 0076 W4-c: a probe with a sibling `<name>.axe` file gets axe-core (tests/vendor, MPL-2.0, never served) behind the prelude.
+          axe=""; [ -f "tests/probes/look/$PROBE.axe" ] && axe=tests/vendor/axe.min.js
+          cat tests/probes/look/_prelude.js $axe "tests/probes/look/$PROBE.js" > look-out/probe.js
           url="http://127.0.0.1:8177/?sw=0"
           [ "$HOLD" = "true" ] && url="$url&look=1"
           # A probe's subject rides in the query under a name the app does not read (ui/urlstate.js KEYS).

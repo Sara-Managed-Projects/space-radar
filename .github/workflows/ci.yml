@@ -1059,8 +1059,14 @@ jobs:
       - name: "sr.perf: a tools-only counter, no allocation per frame, off unless asked; the seed under ?look=1"
         run: node tests/test_perf.mjs
       # 0076 W2-a
+      - name: "the Moon close up: shadows cast from LOLA's heights, the Apollo 15 and 17 traverses on the ground, the red of the station's sunrise (internal spec 0076 W2-a)"
+        run: node tests/test_traverse.mjs && python3 scripts/build_traverses.py --check
       # 0076 W2-b
+      - name: "the giants' details: the Great Red Spot at JUPOS's dated place and drift, Uranus's rings at their own darkness, Jupiter's faint ring from the night side or under Deep (internal spec 0076 W2-b)"
+        run: node tests/test_giants.mjs
       # 0076 W2-c
+      - name: "plumes where they were seen: none without a dated source, heights from the registry, still under Measured and reduced motion (internal spec 0076 W2-c)"
+        run: node tests/test_plumes.mjs
       # 0076 W2-d
       # 0076 W2-e
       - name: "every record on the map has one class, a renderer, a source and a credit CREDITS.md carries; no illustration claims a measurement; docs/COVERAGE.md current (internal spec 0076 W2-e, #859, #891, #921)"
@@ -1068,7 +1074,31 @@ jobs:
       - name: "the visual classes' mirror for search by kind is the registries' (internal spec 0076 W2-e)"
         run: python3 scripts/gen_visual_classes_js.py --check
       # 0076 W3-a
+      - name: "star clusters as stars: King's profile from Harris's radii, seeded, by tier; the light shared with the glow; Gaia members above the probability cut, measured or modelled depth (internal spec 0076 W3-a, #819, #871)"
+        run: node tests/test_globular.mjs
+      - name: "the clusters' file is the size and hash its manifest says (internal spec 0076 W3-a)"
+        run: python3 scripts/build_deep_clusters.py --check
       # 0076 W3-b
+      - name: "the Ring Nebula hero - the published ring, axis and tilt, the photograph from our side, exact step integrals; the Helix's exact front (internal spec 0076 W3-b, #872)"
+        run: node tests/test_hero_ring.mjs
+      - name: "the Ring hero's light is the bake of the current photograph (internal spec 0076 W3-b)"
+        run: python3 scripts/build_deep_ring.py --check
       # 0076 W3-c
+      - name: "remnants as shells: the Crab and the Veil on their published geometry, the photograph exactly on our line (internal spec 0076 W3-c, #784)"
+        run: node tests/test_remnant.mjs
+      - name: "dust as sheets: a star behind is dimmed and reddened, the dust never glows, the draw order (internal spec 0076 W3-c, #784, #806)"
+        run: node tests/test_dustsheet.mjs
+      - name: "the remnants' and the dust's maps are the bake of their pictures and profiles"
+        run: python3 scripts/build_deep_sheets.py --check
       # 0076 W3-d
+      - name: "where you are and the way back: a chain from the Sun or the Milky Way on every card, Back along the visitor's own path (20 steps, never sent), the ladder's rung and a note at each join (internal spec 0076 W3-d)"
+        run: node tests/test_navigate.mjs
       # 0076 W3-e
+      # 0076 W4-b
+      - name: "galaxy clusters and quasars: every member at a catalogued distance with its method, modelled depth stated, one draw call per cluster, the quasars at their comoving distance, the host at the source's size, the shaders read as text (internal spec 0076 W4-b, #784)"
+        run: node tests/test_galclusters.mjs
+      - name: "the clusters' members are the size and hash their manifest says (internal spec 0076 W4-b)"
+        run: python3 scripts/build_deep_galclusters.py --check
+      # 0076 W4-c
+      - name: "readable without WebGL, without motion, and a full link: the page without JavaScript or WebGL 2 lists every trip and the crawlable pages, a shared link carries v=1 and the build, the scene summary's words, Motion off is an instant flight and still gas (internal spec 0076 W4-c)"
+        run: node tests/test_access.mjs

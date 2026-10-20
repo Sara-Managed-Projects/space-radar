@@ -182,7 +182,7 @@ for (const f of app) {
 }
 const deploy = readFileSync(join(ROOT, 'scripts', 'deploy.sh'), 'utf8');
 if (!/KNOWN="[^"]*\blab\b/.test(deploy)) bad('scripts/deploy.sh', 'KNOWN does not list lab, so a deploy refuses site/lab/');
-if (!/"\$SITE\/lab" "s3:\/\/\$BUCKET\/lab"[^\n]*\\?\n?[^\n]*--delete/.test(deploy) || !/--exclude "_template\/\*"/.test(deploy)) bad('scripts/deploy.sh', 'does not sync site/lab/ (without _template/) to the bucket');
+if (!/"\$BUILT\/lab" "s3:\/\/\$BUCKET\/lab"[^\n]*\\?\n?[^\n]*--delete/.test(deploy)) bad('scripts/deploy.sh', 'does not sync the built lab (site/lab/ run through seo_lab.py, _template/ never built) to the bucket');
 if (!/"\/lab\/\*"/.test(deploy)) bad('scripts/deploy.sh', 'does not invalidate /lab/*');
 const seo = readFileSync(join(ROOT, 'scripts', 'build_seo.py'), 'utf8');
 if (!/def lab_pages\(/.test(seo) || !/\+ lab_pages\(\)/.test(seo)) bad('scripts/build_seo.py', 'does not put the Lab into the sitemap');

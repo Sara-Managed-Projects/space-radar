@@ -50,6 +50,31 @@ const GL_ATTRIBUTES = {
   failIfMajorPerformanceCaveat: false,
 };
 
+// 0076 W4-c (internal #919). A browser that cannot give WebGL 2 reads what a browser without
+// JavaScript reads: index.html's <noscript id="sr-readable-src">, whose text IS the markup while
+// scripting is on. It is shown over the boot panel, the "needs WebGL 2" line instead of the "needs
+// JavaScript" one. Returns whether it was shown; never throws (a missing page leaves the old message).
+export function showReadable(doc = typeof document !== 'undefined' ? document : null) {
+  try {
+    const src = doc && doc.getElementById('sr-readable-src');
+    if (!src || !src.textContent.trim()) return false;
+    const tpl = doc.createElement('template');
+    tpl.innerHTML = src.textContent;
+    const page = tpl.content.getElementById('sr-readable');
+    if (!page) return false;
+    const js = page.querySelector('[data-why="js"]');
+    if (js) js.remove();
+    const gl = page.querySelector('[data-why="gl"]');
+    if (gl) gl.hidden = false;
+    const boot = doc.getElementById('boot');
+    if (boot) { boot.hidden = true; boot.classList.add('gone'); }
+    doc.body.appendChild(page);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function createRenderer(canvas) {
   if (!canvas) throw new Error('createRenderer: no canvas');
 
@@ -64,6 +89,7 @@ export function createRenderer(canvas) {
     if (!probe) {
       const err = new Error('This browser cannot draw WebGL2, which the map needs.');
       err.code = 'no-webgl2';
+      err.shown = showReadable(); // 0076 W4-c
       throw err;
     }
   }

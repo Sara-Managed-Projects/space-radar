@@ -72,6 +72,8 @@ import { relationOf } from '../data/deepsky.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
+// Where it is and the way back (internal spec 0076 W3-d): the visitor's path, kept as the card moves.
+import { noteSelection, noteHidden } from './camundo.js';
 // The card's FACTS (what is measured about a record, its "right now" rows, its honesty line, the
 // tag's three lines) live in ui/cardfacts.js since 2026-10-08, so the light embed can have the tag
 // without the card (internal #429). They are this module's as before: imported here, exported again.
@@ -540,7 +542,7 @@ const TEMPLATES = {
     const mHi = pickNumber(md, 'massMsunHigh');
     const period = pickNumber(md, 'periodS');
     const name = displayName(record);
-    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar' }[kind] || 'leadBlackhole';
+    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */ }[kind] || 'leadBlackhole';
     const lead = lo !== null && hi !== null
       ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
       : t(T[leadKey], { name, dist: distLy !== null ? fmt.int(distLy) : '?' });
@@ -874,6 +876,10 @@ function timeFactsSection(record, ctx, m) {
   // says the number is inferred.
   const lines = el('div', 'sr-card__facts');
   for (const key of FACT_LINES) lines.appendChild(factNode('p', key === 'orbitNote' ? 'sr-card__fact-note' : `sr-card__fact sr-card__fact--${key}`, key));
+  // 0076 W2-a: a craft drawn as a model is reddened at its sunrise (scene/airtint.js); the card says that is modelled.
+  let modelled = null;
+  try { modelled = realModelFor(record); } catch { modelled = null; }
+  if (modelled && COPY.r12Nearby && COPY.r12Nearby.sunriseModelled) lines.appendChild(el('p', 'sr-card__fact-note', COPY.r12Nearby.sunriseModelled));
   paintTimeFacts(wrap, words);
   paintTimeFacts(lines, words);
   return { bar: wrap, lines };
@@ -1202,7 +1208,11 @@ function derivedDrawingLine(record, T, tMs) {
     // The narrow rings of Uranus and Neptune: at measured radii, and drawn so that they show.
     const widen = Number(pick(md, 'ringsWiden'));
     const dense = Number(pick(md, 'ringsDense'));
-    if (widen > 0 && T.worldRings) {
+    // Uranus's rings at their own darkness and Jupiter's faint ring say so in their own words (internal spec 0076 W2-b).
+    const ownRings = COPY.r12Giants && COPY.r12Giants.rings && COPY.r12Giants.rings[record.id];
+    if (ownRings) {
+      parts.push(ownRings);
+    } else if (widen > 0 && T.worldRings) {
       parts.push(dense > 1 ? t(T.worldRingsDense, { w: fmt.int(widen), d: fmt.int(dense) }) : t(T.worldRings, { w: fmt.int(widen) }));
     }
     const air = Number(pick(md, 'airGain'));
@@ -1247,6 +1257,8 @@ function derivedDrawingLine(record, T, tMs) {
     // generic asteroid" would name the wrong kind of thing.
     : klass === 'asteroid' && pick(meta(record), 'farKind') === 'dwarf' && T.classShape && T.classShape.dwarf ? 'dwarf'
     : klass;
+  // 0076 W4-b: a quasar is a bright point with a ring on its place, not a bare ring (copy/en.later.js r12Far.quasar.shape)
+  if (klass === 'exotic' && pick(meta(record), 'kind') === 'quasar' && COPY.r12Far && COPY.r12Far.quasar) return t(T.objectFamily, { name: COPY.r12Far.quasar.shape });
   const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }
@@ -1664,22 +1676,230 @@ function parentRecordOf(record, ctx) {
   return ctx.recordById(String(id)) || null;
 }
 
+/** The Milky Way's own record (registry/dso-hand.yaml), when the deep sky has it. */
+const MILKY_WAY_ID = 'dso-milky-way';
 /**
- * The way back out of a child (spec 0075 task 3): "Back to the Large Magellanic Cloud", which selects
- * the parent and flies out to it. Null for anything that is not inside something.
+ * How far a thing without a parent may be and still be inside our galaxy: its globular clusters reach
+ * about 300 000 light-years out. Only a guard for a record whose parent is not written down: a galaxy
+ * is never inside, and the registries' `parent:` decides everything else (internal spec 0076 W3-d).
  */
-function parentButton(record, ctx) {
-  const parent = parentRecordOf(record, ctx);
-  if (!parent || typeof ctx.select !== 'function') return null;
-  const name = displayName(parent);
+const IN_MILKY_WAY_LY = 300000;
+
+/** A world in a chain without its article, as a breadcrumb says it: "Sun › Earth › Moon" (registry/worlds.yaml says "The Sun"). */
+const bareWorld = (name) => cap(String(name || '').replace(/^the\s+/i, ''));
+
+/** One step up from `record`: { record (or null), name, root } -- `root` ends the chain. Null at the top. */
+function parentOf(record, ctx, m = null) {
+  const C = COPY.r12Navigate;
+  const byId = (id) => (id && ctx && typeof ctx.recordById === 'function' ? ctx.recordById(String(id)) || null : null);
+  const milkyWay = () => ({ record: byId(MILKY_WAY_ID), name: C.milkyWay, root: true });
+  const outside = () => ({ record: null, name: C.outside, root: true });
+  // A world by its card's own name ("Sun", "Jupiter"); without a record, the copy's ("the Sun") without its article.
+  const world = (id) => {
+    const rec = byId(id);
+    const said = worldName(id);
+    return { record: rec, name: bareWorld(rec ? displayName(rec) : said || String(id)), root: id === 'sun' };
+  };
+  if (!record) return null;
+  const md = meta(record);
+  const klass = klassOf(record);
+  const id = String(record.id || '');
+  if (id === MILKY_WAY_ID) return null;
+  if (klass === 'world') {
+    if (id === 'sun') return milkyWay();
+    return world(pick(md, 'parent') || 'sun');
+  }
+  // A planet of a drawn star system belongs to its star; the star, as every star, to the Milky Way.
+  const member = systemOfRecordId(id);
+  if (member && member.planet) {
+    const host = byId(member.system.hostId);
+    return { record: host, name: host ? displayName(host) : String(member.system.display || member.system.host || ''), root: false };
+  }
+  if (klass === 'star') return milkyWay();
+  if (klass === 'exoplanet') {
+    const hostName = pick(md, 'host');
+    const stars = ctx && typeof ctx.recordsFor === 'function' ? ctx.recordsFor('stars') : [];
+    const host = hostName ? stars.find((r) => r && r.name === String(hostName)) || null : null;
+    return hostName ? { record: host, name: host ? displayName(host) : String(hostName), root: false } : milkyWay();
+  }
+  if (klass === 'dso') {
+    const parent = parentRecordOf(record, ctx);
+    if (parent) return { record: parent, name: displayName(parent), root: false };
+    if (md.kind === 'galaxy') return outside();
+    const ly = pickNumber(md, 'distLy');
+    return ly !== null && ly > IN_MILKY_WAY_LY ? outside() : milkyWay();
+  }
+  if (klass === 'exotic') {
+    const ly = pickNumber(md, 'distLy');
+    return ly !== null && ly > IN_MILKY_WAY_LY ? outside() : milkyWay();
+  }
+  // Everything else is somewhere in the Solar System: on or round a world, or round the Sun.
+  const mm = m || measure(record, ctx);
+  const on = mm && mm.worldId && mm.worldId !== 'sun' ? mm.worldId : mm && isEarthFrame(mm.frame) ? 'earth' : null;
+  return on ? world(on) : world('sun');
+}
+
+/**
+ * Where a thing is, outermost first, ending with the thing itself: "Milky Way, Helix Nebula";
+ * "Sun, Jupiter, Europa"; "Milky Way, TRAPPIST-1, TRAPPIST-1 e"; "Outside the Milky Way, Large
+ * Magellanic Cloud, Tarantula Nebula". Every chain starts at the Sun, the Milky Way or outside it
+ * (internal spec 0076 W3-d). [{ name, record, here }]. Exported for tests/test_navigate.mjs.
+ */
+export function parentChain(record, ctx, m = null) {
+  if (!record) return [];
+  const own = displayName(record);
+  const out = [{ name: klassOf(record) === 'world' ? bareWorld(own) : own, record, here: true }];
+  let cur = record;
+  const seen = new Set([String(record.id)]);
+  for (let i = 0; i < 6 && cur; i += 1) {
+    const p = parentOf(cur, ctx, i === 0 ? m : null);
+    if (!p) break;
+    out.unshift({ name: p.name, record: p.record, here: false });
+    if (p.root || seen.has(String(p.record && p.record.id))) break;
+    // A parent known by name only (a host star the catalogue has no row for): the chain still ends
+    // where every chain does. Stars and their planets are in the Milky Way, the rest round the Sun.
+    if (!p.record) {
+      const starry = ['star', 'exoplanet'].includes(klassOf(cur)) || !!systemOfRecordId(String(cur.id || ''));
+      const top = starry ? { name: COPY.r12Navigate.milkyWay, id: MILKY_WAY_ID } : { name: bareWorld(worldName('sun') || 'sun'), id: 'sun' };
+      const rec = ctx && typeof ctx.recordById === 'function' ? ctx.recordById(top.id) || null : null;
+      out.unshift({ name: rec && top.id === 'sun' ? bareWorld(displayName(rec)) : top.name, record: rec, here: false });
+      break;
+    }
+    seen.add(String(p.record.id));
+    cur = p.record;
+  }
+  return out;
+}
+
+/** "the Sun", "Jupiter": a name as it follows "Back to". */
+function withThe(name) {
+  return COPY.r12Navigate.the.includes(name) ? `${COPY.r12Navigate.theWord} ${name}` : name;
+}
+
+/** The parent the card offers a way out to, or null: deep sky, moons, planets of other stars, and stars. */
+export function parentFor(record, ctx, m = null) {
+  if (!record) return null;
+  const klass = klassOf(record);
+  const md = meta(record);
+  if (klass === 'dso') { const p = parentRecordOf(record, ctx); return p ? { record: p, name: displayName(p), deep: true } : null; }
+  const moon = klass === 'world' && String(record.id) !== 'sun' && (pick(md, 'parent') || 'sun') !== 'sun';
+  const systemPlanet = !!(systemOfRecordId(String(record.id || '')) || {}).planet;
+  if (!(moon || klass === 'star' || klass === 'exoplanet' || systemPlanet)) return null;
+  const p = parentOf(record, ctx, m);
+  return p && p.record ? { record: p.record, name: p.name, deep: false } : null;
+}
+
+/**
+ * The way back out of a child (spec 0075 task 3; for moons, planets of other stars and stars since
+ * internal spec 0076 W3-d): "Back to Jupiter", a quiet button that selects the parent and flies out.
+ */
+function parentButton(words, tip, onClick) {
   const b = el('button', 'sr-card__parent');
   b.appendChild(icon('chevron-left'));
-  b.appendChild(el('span', '', t(COPY.deep.back, { parent: name })));
+  b.appendChild(el('span', '', words));
   b.type = 'button';
-  b.title = t(COPY.deep.backTitle, { parent: name });
+  b.title = tip;
   b.dataset.focus = 'parent';
-  b.addEventListener('click', () => ctx.select(parent, { fly: true }));
+  b.addEventListener('click', onClick);
   return b;
+}
+
+/**
+ * Where it is, under the actions (internal #883, the package's SR-PLAN-082): the chain as one line,
+ * each parent with a card of its own a quiet button that flies out to it, the thing itself marked
+ * as here, and the way out to the nearest parent under it. Null when there is no chain to show.
+ */
+function whereBlock(record, ctx, m) {
+  const C = COPY.r12Navigate;
+  const chain = parentChain(record, ctx, m);
+  // The way out to the nearest parent with a card: the deep sky in its own words ("Back to the Large
+  // Magellanic Cloud"), everything else by name ("Back to Jupiter", "Back to the Milky Way").
+  const parent = ctx && typeof ctx.select === 'function' ? parentFor(record, ctx, m) : null;
+  const named = parent && !parent.deep ? withThe(parent.name) : null;
+  const up = parent ? parentButton(
+    parent.deep ? t(COPY.deep.back, { parent: parent.name }) : t(C.backParent, { parent: named }),
+    parent.deep ? t(COPY.deep.backTitle, { parent: parent.name }) : t(C.backParentTitle, { parent: named }),
+    () => ctx.select(parent.record, { fly: true }),
+  ) : null;
+  if (chain.length < 2 && !up) return null;
+  const nav = el('nav', 'sr-card__where');
+  nav.setAttribute('aria-label', C.chainLabel);
+  if (chain.length > 1) {
+    const ol = el('ol', 'sr-card__chain');
+    chain.forEach((step, i) => {
+      const li = el('li', 'sr-card__step');
+      if (i) {
+        const sep = el('span', 'sr-card__sep', C.sep);
+        sep.setAttribute('aria-hidden', 'true');
+        li.appendChild(sep);
+      }
+      if (step.here) {
+        const here = el('span', 'sr-card__crumb sr-card__crumb--here', step.name);
+        here.setAttribute('aria-current', 'location');
+        li.appendChild(here);
+      } else if (step.record && ctx && typeof ctx.select === 'function') {
+        const b = el('button', 'sr-card__crumb', step.name);
+        b.type = 'button';
+        b.title = t(C.chainTitle, { name: step.name });
+        b.dataset.focus = `crumb-${i}`;
+        b.addEventListener('click', () => ctx.select(step.record, { fly: true }));
+        li.appendChild(b);
+      } else {
+        li.appendChild(el('span', 'sr-card__crumb sr-card__crumb--text', step.name));
+      }
+      ol.appendChild(li);
+    });
+    nav.appendChild(ol);
+  }
+  if (up) nav.appendChild(up);
+  return nav;
+}
+
+/**
+ * The legend's door from a line that is not the card's foot (internal #908): a text button, "How we
+ * know", that opens the card's own row of that name and takes the focus to it. The row is there on
+ * every card with a record (moreSections); the button finds it when pressed, so a repaint is no matter.
+ */
+function legendLink() {
+  const b = el('button', 'sr-card__legendlink', COPY.truth.label);
+  b.type = 'button';
+  b.title = COPY.r12Navigate.legendTitle;
+  b.dataset.focus = 'legend-link';
+  b.addEventListener('click', () => {
+    const card = b.closest('.sr-card') || (typeof document !== 'undefined' ? document.getElementById(HOST_ID) : null);
+    const head = card ? card.querySelector('[data-section="truth"] .sr-disc__head') : null;
+    if (!head) return;
+    if (head.getAttribute('aria-expanded') !== 'true') head.click();
+    head.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    head.focus({ preventScroll: true });
+  });
+  return b;
+}
+
+/**
+ * The words of the legend, for a place with no card under it (internal #908): the live trip's intro,
+ * under its truth line (ui/tripframe.js). The card's own disclosure row, "How we know", opening in
+ * place; its panel is the legend's second group (every honesty word the app uses, what each means),
+ * from ui/truthlegend.js, fetched the first time it opens.
+ */
+export function wordsLegend(ctx) {
+  const T = COPY.truth;
+  const panel = el('div', 'sr-disc__body');
+  const wait = el('p', 'sr-card__note', T.loading);
+  panel.appendChild(wait);
+  let filled = false;
+  const fill = () => {
+    if (filled) return;
+    import('./truthlegend.js').then((mod) => {
+      const L = mod.legendRows({ id: '', klass: 'unknown', meta: {} }, ctx, {});
+      const sec = el('section', null);
+      sec.appendChild(el('h3', 'sr-card__label', COPY.r12Truth.words));
+      sec.appendChild(rowsList(L.words.filter(([k, v]) => k && v)));
+      panel.replaceChildren(sec);
+      filled = true;
+    }).catch(() => { wait.textContent = T.failed; });
+  };
+  return disclosure('truth-words', T.label, null, panel, false, (on) => { if (on) fill(); });
 }
 
 /**
@@ -2105,6 +2325,8 @@ function renderStop(record, ctx, opts) {
     const tripLine = el('p', 'sr-card__tripline');
     tripLine.hidden = true;
     foot.appendChild(tripLine);
+    // The trip's truth at a stop is the honesty line and the trip's own line: the legend's door beside them (internal #908).
+    if (record) foot.appendChild(legendLink());
     node.appendChild(foot);
     node.appendChild(moreCue());
   }
@@ -2367,6 +2589,13 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       line.hidden = !wx;
       aboutNodes.push(line);
     }
+    // 0076 W2-c: the plumes drawn on this moon, each seen when and by what (scene/plumes.js lineFor).
+    if (['io', 'enceladus', 'triton'].includes(record.id)) {
+      const words = ctx && ctx.plumes ? ctx.plumes.line(record.id) : null;
+      const line = el('p', 'sr-card__note sr-card__plumes', words || '');
+      line.hidden = !words;
+      aboutNodes.push(line);
+    }
     // The Sun's spots, when NOAA's list for today is drawn (main.js ctx.sunRegions, scene/sun.js).
     if (record.id === 'sun' && ctx && ctx.sunDetail && typeof ctx.sunDetail.state === 'function') {
       const words = sunLine(ctx);
@@ -2444,6 +2673,8 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const drawn = drawingLine(record, m && m.tMs);
   add('sources', S.sources, null, panelOf([
     drawn ? el('p', 'sr-card__drawn', drawn) : null,
+    // A star system's line says what is measured and what is illustrative: the legend says what those mean (internal #908).
+    drawn && systemLine(record) ? legendLink() : null,
     el('p', 'sr-card__source', sourceLine(record, ctx)),
   ]));
 
@@ -2569,9 +2800,6 @@ function render(record, ctx, opts = {}) {
     actions.appendChild(b);
   }
   body.appendChild(actions);
-  // 3. and, for a deep-sky object inside another, the way back out to it (spec 0075 task 3).
-  const up = record.klass === 'dso' ? parentButton(record, ctx) : null;
-  if (up) body.appendChild(up);
 
   // 3a. the quiet row, straight under the four (Ivan, 2026-10-14: "Light it" and "Seen it" were two
   // outlined buttons stacked at the left edge, under the time bar, in a style of their own). One
@@ -2581,6 +2809,12 @@ function render(record, ctx, opts = {}) {
   const [lamp, lampNote] = floodControls(record, ctx);
   for (const n of skyControls(record, ctx, lamp)) body.appendChild(n);
   if (lampNote) body.appendChild(lampNote);
+
+  // 3a'. where it is, under the quiet row (which stays straight under the actions, docs/ui-guide.md
+  // §3.10 5a): the chain out to the Sun or the Milky Way and the way back out to its parent (spec 0075
+  // task 3 for the deep sky; internal spec 0076 W3-d for moons, planets of other stars and stars).
+  const where = whereBlock(record, ctx, m);
+  if (where) body.appendChild(where);
 
   // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
   // registry/missions.yaml; public #452). The module is fetched the first time a card opens
@@ -2744,6 +2978,8 @@ export function mosaicLine(record, ctx) {
     parts.push(n === 1 && T.worldReliefTrue ? t(T.worldReliefTrue, { title: String(m.relief.title) })
       : t(T.worldRelief, { title: String(m.relief.title), n: Number.isInteger(n) ? fmt.int(n) : fmt.num(n, 1) }));
   } else if (m.bakedRelief && T.worldReliefBaked) parts.push(T.worldReliefBaked);
+  // 0076 W2-a: the cast shadows' sentence, worded in copy/en.later.js r12Nearby and handed over by scene/tiles.js mosaics().
+  if (m.castShadows && m.castShadows.words) parts.push(String(m.castShadows.words));
   return parts.join(' ');
 }
 
@@ -2756,6 +2992,11 @@ function subscribe(ctx) {
     // The places arrived: the open card gains its "Below it now" row on the next paint, now.
     window.addEventListener('sr:places', () => {
       if (current && current.record) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
+    });
+    // (0076 W3-a) A deep layer stamped what is drawn for records (scene/deep/globular.js): the open card says it again.
+    window.addEventListener('sr:drawn-changed', (e) => {
+      const ids = e && e.detail && e.detail.ids;
+      if (current && current.record && Array.isArray(ids) && ids.includes(current.record.id)) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
     });
     window.addEventListener('sr:clouds', () => {
       const c = current && current.ctx;
@@ -2806,6 +3047,13 @@ function subscribe(ctx) {
         line.textContent = wx || '';
         line.hidden = !wx;
       } catch { /* keep the last line */ }
+    });
+    // 0076 W2-c: the plumes' line, when the module built them or the look changed.
+    window.addEventListener('sr:plumes', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__plumes');
+      if (!line || !c || !c.plumes || !current.record) return;
+      try { const words = c.plumes.line(current.record.id); line.textContent = words || ''; line.hidden = !words; } catch { /* keep the last line */ }
     });
   }
   try {
@@ -2862,6 +3110,12 @@ export function showCard(record, ctx, opts = {}) {
     return;
   }
   const wasOpen = !!(host && !host.hidden);
+  // The visitor's path (internal spec 0076 W3-d, ui/camundo.js): noted here, inside main.js select()
+  // and before its flight, so the place left behind is where the camera still is. A trip's stop is not a step.
+  if (record && !opts.lead) {
+    noteSelection(record, ctx, displayName);
+    wantRail(ctx);
+  }
   current = { record, ctx, opts };
   subscribe(ctx);
   render(record, ctx, opts);
@@ -2893,7 +3147,16 @@ export function refreshLeadNote() {
   if (text && node.textContent !== text) node.textContent = text;
 }
 
+/** The rail of where you are and Back (ui/scalerail.js), fetched with the first card, never at boot. */
+let railAsked = false;
+function wantRail(ctx) {
+  if (railAsked || !ctx || typeof document === 'undefined' || document.documentElement.classList.contains('sr-embed')) return;
+  railAsked = true;
+  import('./scalerail.js').then((mod) => mod.wireRail(ctx)).catch((e) => { railAsked = false; console.warn('the rail did not load', e); });
+}
+
 export function hideCard() {
+  if (current && current.record && !(current.opts && current.opts.lead)) noteHidden(current.ctx);
   current = null;
   stopTimeFacts();
   stopLive();

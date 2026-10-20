@@ -82,5 +82,14 @@ check(data.posLy !== drawLy && dist(data.posLy, pleiads[0]) !== dist(drawLy, ple
 const rec = parseDso(dso).find((r) => r.id === 'dso-m45');
 check(rec && typeof rec.meta.departure === 'string' && rec.meta.departure.includes('gathered') && rec.meta.departure.includes('not measured'), 'the Pleiades\' record carries the sentence that says how its stars are drawn');
 
+// 5. Their Gaia members (internal spec 0076 W3-a, scene/deep/globular.js): every cluster gathered here has them, and
+// the members' file leaves out the stars this file gathers, so no star is drawn twice.
+const MAN = JSON.parse(readFileSync(join(ROOT, 'site/data/deep/clusters.json'), 'utf8'));
+for (const c of CLUSTERS) {
+  const row = MAN.open.find((o) => o.id === c.id);
+  check(row && row.count > 100, `${c.id}: its Gaia members are in site/data/deep/clusters.json (${row ? row.count : 0})`);
+  check(row && row.inHyg > 0, `${c.id}: the members the map's own catalogue holds are left out of the file (${row ? row.inHyg : 0})`);
+}
+
 if (problems.length) { console.error(`clusters: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
 console.log(`clusters ok: ${pleiads.length} Pleiades stars gathered from a ${Math.round(spread)} light-year streak, ${bees.length} Beehive and ${south.length} Southern Pleiades stars gathered, ${hyads.length} Hyades stars left in place`);

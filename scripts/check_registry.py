@@ -2571,7 +2571,56 @@ def check_nebulae() -> list:
     return pictures
 
 
-EXOTIC_KINDS = {"blackhole", "pulsar", "magnetar", "star"}
+EXOTIC_KINDS = {"blackhole", "pulsar", "magnetar", "star", "quasar"}  # 0076 W4-b: quasar
+
+
+# 0076 W4-b: registry/galaxy-clusters.yaml, the hand-kept facts of scene/deep/galclusters.js. A cluster must say where its distance and its
+# members came from, on which day, and a quasar must be a `kind: quasar` row of exotics.yaml with a redshift and a magnitude.
+def check_galaxy_clusters(exotics) -> None:
+    path = REG / "galaxy-clusters.yaml"
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # noqa: BLE001
+        fail("galaxy-clusters.yaml", f"will not parse: {exc}")
+        return
+    seen = set()
+    for r in doc.get("clusters") or []:
+        rid = str(r.get("id") or "")
+        where = f"galaxy-clusters.yaml[{rid}]"
+        if not rid or rid in seen:
+            fail(where, "no id, or a duplicate")
+        seen.add(rid)
+        if not r.get("name"):
+            fail(where, "no `name:`")
+        d = r.get("distance") or {}
+        if d.get("method") not in ("sbf", "redshift"):
+            fail(where, "`distance.method` must be sbf or redshift")
+        if d.get("method") == "sbf" and not (isinstance(d.get("mpc"), (int, float)) and d["mpc"] > 0):
+            fail(where, "an SBF cluster needs `distance.mpc`")
+        dp = r.get("depth") or {}
+        if dp.get("kind") not in ("measured", "modelled"):
+            fail(where, "`depth.kind` must be measured or modelled")
+        if dp.get("kind") == "measured" and not (isinstance(dp.get("rms_mpc"), (int, float)) and dp["rms_mpc"] > 0):
+            fail(where, "a measured depth needs `depth.rms_mpc`")
+        if not r.get("catalogue"):
+            fail(where, "no `catalogue:` -- where the members came from")
+        if not re.search(r"read \d{4}-\d{2}-\d{2}", str(r.get("source") or "")):
+            fail(where, "`source:` must name the pages and the day they were read (\"read 2026-10-20\")")
+    if len(seen) < 2:
+        fail("galaxy-clusters.yaml", "fewer than two clusters")
+    rows = {str(x.get("id")): x for x in (exotics or []) if isinstance(x, dict)}
+    for q in doc.get("quasars") or []:
+        qid = str(q.get("id") or "")
+        row = rows.get(qid)
+        where = f"galaxy-clusters.yaml[quasar {qid}]"
+        if not row or row.get("kind") != "quasar":
+            fail(where, "not a `kind: quasar` row of exotics.yaml")
+            continue
+        if not isinstance(row.get("redshift"), (int, float)) or not isinstance(row.get("vmag"), (int, float)):
+            fail(where, "the exotics row needs a `redshift` and a `vmag`")
+        h = q.get("host")
+        if h != "none" and not (isinstance(h, dict) and h.get("apparent_size_arcsec") and h.get("apparent_mag") and h.get("source")):
+            fail(where, "`host` is `none`, or a size in arcseconds, a magnitude and a source")
 
 
 def check_exotics() -> list:
@@ -5297,6 +5346,7 @@ def main() -> int:
     nebulae = check_nebulae()
     ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
+    check_galaxy_clusters(exotics)  # 0076 W4-b
     TOUR_PORTRAITS.update(f"exotic-{r.get('id')}" for r in exotics
                           if isinstance(r, dict) and r.get('id') and isinstance(r.get('image'), dict))
     famous_stars = check_stars_notable(exotics)
@@ -5553,6 +5603,81 @@ def main() -> int:
 
 
 # 0076 W2-a (sites traverses)
+# Release 1.2.0 stage W2-a (internal spec 0076, #868): registry/sites.yaml `traverses:`, each a traced rover
+# line drawn by scene/traverse.js, and the Moon's `height:` block in registry/tilesets.yaml (the elevations
+# its shadows are cast from). Held here, under the stage's anchor: check_sites is wrapped so main() runs
+# these with it, and main() itself is not edited.
+TRAVERSE_FIELDS = ("file", "source", "finder", "read", "traced", "licence", "credit")
+
+
+def check_site_traverses(sites_doc: dict, sites: list) -> None:
+    by_id = {s.get("id"): s for s in sites if isinstance(s, dict)}
+    # `app: false` keeps a row out of site/js/data/sites.js (the first visit): only `false`, and only on a
+    # coordinate that is not a record, so nothing drawn ever goes missing from the app this way.
+    for s in sites:
+        if isinstance(s, dict) and "app" in s:
+            if s.get("app") is not False:
+                fail(f"sites.yaml[{s.get('id')}]", "`app:` is only ever written as `app: false`")
+            elif s.get("record") is not False:
+                fail(f"sites.yaml[{s.get('id')}]", "`app: false` on a record would drop it from the map: only a `record: false` row may stay out of the app")
+    credits_path = ROOT / "CREDITS.md"
+    credits = credits_path.read_text(encoding="utf-8") if credits_path.exists() else ""
+    trav = sites_doc.get("traverses") or {}
+    if not isinstance(trav, dict):
+        fail("sites.yaml", "`traverses:` must be a map of site id -> {file, source, finder, read, traced, licence, credit}")
+        return
+    for sid, t in trav.items():
+        where = f"sites.yaml[traverses/{sid}]"
+        site = by_id.get(sid)
+        if not site:
+            fail(where, "names no site row: a traverse is drawn from a landing, never on its own")
+            continue
+        if site.get("class") != "surface" or site.get("landed") is None:
+            fail(where, "its row is not a landing: only a place something landed has a traverse")
+        if not isinstance(t, dict):
+            fail(where, "is not a map")
+            continue
+        lost = [k for k in TRAVERSE_FIELDS if t.get(k) in (None, "", [])]
+        if lost:
+            fail(where, f"no {', '.join(lost)} -- only a documented path is drawn, and it says who traced it and from what")
+        for k in ("source", "finder"):
+            if t.get(k) and not str(t.get(k)).startswith("https://"):
+                fail(where, f"{k} {t.get(k)!r} is not an https URL")
+        if t.get("read") is not None and not isinstance(t.get("read"), datetime.date):
+            fail(where, "`read:` must be a date (YYYY-MM-DD)")
+        f = ROOT / str(t.get("file") or "")
+        if t.get("file") and (not f.is_file() or not str(t.get("file")).startswith("registry/traverses/")):
+            fail(where, f"file {t.get('file')!r} is not a file under registry/traverses/ (scripts/build_traverses.py writes them)")
+        if t.get("credit") and str(t.get("credit")) not in credits:
+            fail("CREDITS.md", f"sites.yaml credits the traverse of `{sid}` as {t.get('credit')!r}, and CREDITS.md does not carry that line")
+    doc = load("tilesets.yaml") if (REG / "tilesets.yaml").exists() else {}
+    for r in doc.get("tilesets") or []:
+        h = r.get("height") if isinstance(r, dict) else None
+        if h is None:
+            continue
+        where = f"tilesets.yaml[{r.get('id')}].height"
+        lost = [k for k in ("title", "url", "levels", "max_level", "metres_per_count", "offset_m", "cors", "licence", "credit", "source") if h.get(k) in (None, "", [])]
+        if lost:
+            fail(where, f"no {', '.join(lost)} -- the heights a shadow is cast from are measured, and somebody's")
+        url = str(h.get("url") or "")
+        if url and (not url.startswith("https://") or any(k not in url for k in ("{z}", "{y}", "{x}"))):
+            fail(where, f"url {url!r} must be an https template with {{z}}, {{y}} and {{x}}")
+        mpc = h.get("metres_per_count")
+        if not (is_number(mpc) and 1 <= mpc <= 500):
+            fail(where, f"metres_per_count {mpc!r} must be the fitted metres of one byte, 1 to 500")
+        lv = h.get("levels")
+        if isinstance(lv, list) and len(lv) == 2 and not (isinstance(h.get("max_level"), int) and lv[0] <= h["max_level"] <= lv[1]):
+            fail(where, f"max_level {h.get('max_level')!r} must be a level the host serves, {lv[0]} to {lv[1]}")
+        if h.get("credit") and str(h.get("credit")) not in credits:
+            fail("CREDITS.md", f"tilesets.yaml credits the heights of `{r.get('id')}` as {h.get('credit')!r}, and CREDITS.md does not carry that line")
+
+
+_check_sites_before_0076 = check_sites
+
+
+def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:  # noqa: F811 -- 0076 W2-a, see above
+    _check_sites_before_0076(sites_doc, sites, world_ids)
+    check_site_traverses(sites_doc, sites)
 # 0076 W2-e (asset records, certainty words)
 # Internal spec 0076 stage W2-e (#891, #921; advances internal #785). Two rules, run before main()'s own:
 #

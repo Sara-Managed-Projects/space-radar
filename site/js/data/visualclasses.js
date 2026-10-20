@@ -470,7 +470,12 @@ export const VISUAL_CLASSES = [
 "deep-impact",
 "maven",
 "new-horizons",
-"europa-clipper"
+"europa-clipper",
+"psyche",
+"juice",
+"bepicolombo",
+"hera",
+"lucy"
 ],
 "model_kinds": [
 "probe-generic",
@@ -559,7 +564,8 @@ export const VISUAL_CLASSES = [
 "spirit",
 "opportunity",
 "phoenix",
-"mars-3"
+"mars-3",
+"huygens"
 ],
 "real_models": [
 "dsn70",
@@ -1027,6 +1033,10 @@ export const VISUAL_CLASSES = [
 ],
 "photographs": [
 "dso-horsehead-nebula"
+],
+"heroes": [
+"dso-coalsack",
+"dso-horsehead-nebula"
 ]
 }
 },
@@ -1041,6 +1051,10 @@ export const VISUAL_CLASSES = [
 ],
 "photographs": [
 "dso-m45"
+],
+"heroes": [
+"dso-iris-nebula",
+"dso-m78"
 ]
 }
 },
@@ -1054,6 +1068,10 @@ export const VISUAL_CLASSES = [
 "dso-veil-nebula"
 ],
 "photographs": [
+"dso-m1",
+"dso-veil-nebula"
+],
+"heroes": [
 "dso-m1",
 "dso-veil-nebula"
 ]
@@ -1093,9 +1111,6 @@ export const VISUAL_CLASSES = [
 "dso-m106",
 "dso-m108",
 "dso-m109",
-"dso-lmc",
-"dso-smc",
-"dso-ngc-3109",
 "dso-ngc-253",
 "dso-ngc-891",
 "dso-ngc-7331",
@@ -1103,7 +1118,6 @@ export const VISUAL_CLASSES = [
 "dso-whale-galaxy",
 "dso-ngc-2403",
 "dso-fireworks-galaxy",
-"dso-ngc-55",
 "dso-ngc-300",
 "dso-ngc-1300",
 "dso-hamburger-galaxy"
@@ -1136,6 +1150,8 @@ export const VISUAL_CLASSES = [
 "honesty": "illustrative",
 "members": {
 "dso": [
+"dso-lmc",
+"dso-smc",
 "dso-ngc-6822",
 "dso-ic-10",
 "dso-ic-1613",
@@ -1146,7 +1162,9 @@ export const VISUAL_CLASSES = [
 "dso-pegasus-dwarf",
 "dso-phoenix-dwarf",
 "dso-aquarius-dwarf",
-"dso-sagdig"
+"dso-sagdig",
+"dso-ngc-3109",
+"dso-ngc-55"
 ],
 "photographs": [
 "dso-lmc",
@@ -1225,7 +1243,9 @@ export const VISUAL_CLASSES = [
 "honesty": "illustrative",
 "members": {
 "exotics": [
-"exotic-ton-618"
+"exotic-ton-618",
+"exotic-3c-273",
+"exotic-3c-279"
 ]
 }
 },
@@ -1242,7 +1262,7 @@ export const VISUAL_CLASSES = [
 {
 "id": "GALAXY_CLUSTER",
 "title": "Galaxy clusters",
-"honesty": "illustrative",
+"honesty": "modelled",
 "members": {}
 },
 {

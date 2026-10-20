@@ -35,5 +35,7 @@ export const TOUR_WORDS = {
 "birth-of-the-solar-system": "began cloud like this why flat jupiter nearly all became the sun close only rock mercury far out giants giant leftovers how earth got its moon frozen edge pluto and here are home",
 "back-to-the-moon": "the last footprints four people leave again launch earth round far side moon home from out there where they mean land south pole",
 "into-the-helix": "the helix nebula telescope sees photograph turn and becomes shape inside ring around dying star heart how big scale",
-"inside-a-neighbouring-galaxy": "galaxy you can see its photograph from home turned becomes model the tarantula inside cloud hollow blown young stars shell heaviest known r136 our and neighbour depart"
+"inside-a-neighbouring-galaxy": "galaxy you can see its photograph from home turned becomes model the tarantula inside cloud hollow blown young stars shell heaviest known r136 our and neighbour depart",
+"across-the-local-group": "our galaxy from outside milky way the large magellanic cloud lmc andromeda other giant triangulum third spiral local group among its neighbours sun",
+"out-to-the-edge": "start home our group galaxies local sun the volume ton 618 quasar where first are now microwave background oldest light end this map edge"
 };

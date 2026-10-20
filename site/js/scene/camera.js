@@ -155,6 +155,8 @@ const DEFAULT_ORBIT_DEG_S = 6;
 
 function prefersReducedMotion() {
   try {
+    // 0076 W4-c: the Motion row's Off (ui/whattoshow.js) is the same answer as the device's.
+    if (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.srMotion === 'off') return true;
     return (
       typeof globalThis.matchMedia === 'function' &&
       globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches

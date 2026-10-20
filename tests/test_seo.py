@@ -105,6 +105,40 @@ else:
     leaks = [f.name for f in sorted((BUILT / "o").glob("*.html")) if live.search(f.read_text(encoding="utf-8"))]
     ok(not leaks, f"no object page prints a live reading ({leaks[:3]})")
 
+# --- 3b: the Lab's simulators get their head tags at build time (scripts/seo_lab.py) ----------
+# The requirement: every simulator a contributor commits is served with a canonical at its own address, Open
+# Graph and a LearningResource block, the contributor writes none of them, and the page's body is unchanged.
+LAB = ROOT / "site" / "lab"
+sims = [p for p in sorted(LAB.glob("*/index.html")) if not p.parent.name.startswith("_")]
+ok(len(sims) >= 75, f"the Lab has its simulators in site/lab/ ({len(sims)})")
+ok(not any('rel="canonical"' in p.read_text(encoding="utf-8") for p in sims),
+   "no committed simulator carries a canonical: contributors do not write them")
+missing, wrong, body_changed, schema = [], [], [], []
+for src in sims:
+    f = BUILT / "lab" / src.parent.name / "index.html"
+    if not f.is_file():
+        missing.append(src.parent.name)
+        continue
+    text, orig = f.read_text(encoding="utf-8"), src.read_text(encoding="utf-8")
+    url = f"https://www.spaceradar.ai/lab/{src.parent.name}/index.html"
+    if text.count('rel="canonical"') != 1 or f'<link rel="canonical" href="{url}">' not in text \
+            or f'<meta property="og:url" content="{url}">' not in text or 'property="og:image"' not in text:
+        wrong.append(src.parent.name)
+    if text.split("</head>", 1)[1] != orig.split("</head>", 1)[1] or not text.startswith(orig.split("</head>", 1)[0]):
+        body_changed.append(src.parent.name)
+    blocks = [json.loads(b) for b in re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S)]
+    graph = [g for b in blocks for g in b.get("@graph", [b])]
+    lr = [g for g in graph if g.get("@type") == "LearningResource"]
+    if len(lr) != 1 or lr[0]["url"] != url or any(k in json.dumps(graph) for k in ("aggregateRating", "review")):
+        schema.append(src.parent.name)
+ok(not missing, f"every simulator is built under lab/ ({missing[:3]})")
+ok(not wrong, f"each has one canonical and og:url at its own address, and an og:image ({wrong[:3]})")
+ok(not body_changed, f"only the head gains tags: what a visitor sees is the committed file ({body_changed[:3]})")
+ok(not schema, f"each has one LearningResource at its own address, with no rating or review ({schema[:3]})")
+ok((BUILT / "lab" / "index.html").read_bytes() == (LAB / "index.html").read_bytes() if (BUILT / "lab" / "index.html").is_file() else False,
+   "the Lab's list is built as committed (gen_lab_index.py writes its head)")
+ok(not (BUILT / "lab" / "_template").exists(), "the contributor's starter is not built, so not uploaded")
+
 # --- 4: deploy.sh ships it ------------------------------------------------------------------
 with tempfile.TemporaryDirectory() as tmp:
     bindir = Path(tmp) / "bin"
@@ -132,6 +166,9 @@ with tempfile.TemporaryDirectory() as tmp:
        "css/, js/ and vendor/ are stored as Brotli")
     ok(all(sync(f"_gz/{d}") and all("--content-encoding gzip" in c for c in sync(f"_gz/{d}")) for d in ("css", "js", "vendor")),
        "their gzip copies go under _gz/")
+    lab_sync = [c for c in calls if c.startswith("s3 sync") and " s3://example-bucket/lab " in c]
+    ok(len(lab_sync) == 1 and "/site/lab " not in lab_sync[0] and "text/html" in lab_sync[0] and "--delete" in lab_sync[0],
+       f"lab/ is uploaded from the build, with its head tags, not from site/lab/ ({lab_sync})")
     ok(all(sync(d) and not any("--content-encoding" in c for c in sync(d)) for d in ("o", "t", "press")),
        "the pages a crawler reads (o/, t/, press/) are uploaded as written")
     ok("SEO ok" in r.stdout, "deploy.sh builds the pages and holds them to check_seo.py before it uploads")
