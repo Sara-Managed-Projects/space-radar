@@ -325,6 +325,10 @@ jobs:
         run: scripts/check.sh
         env:
           CHECK_MAX_SECONDS: "60"
+      # On a Mac the same command once printed FAIL for every check and then PASS (BSD xargs fused the
+      # line number into the command). This holds it to failing on a failed or unrun check.
+      - name: "scripts/check.sh exits non-zero on a failed or unrun check, and never says PASS after a FAIL"
+        run: python3 tests/test_check_harness.py
       # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
       # out of the pages (and each validator is shown to refuse a broken one); the footer, the
       # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator
