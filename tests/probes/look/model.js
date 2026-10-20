@@ -4,6 +4,13 @@
 // photograph it as the app frames it and from five places on its SUNWARD side, at the same distance,
 // the camera never below the craft, and then once from BELOW it, from the Earth's side looking up at
 // its Earth face (see `walk`): seven views.
+// 0077 W1-a: begin
+// THEN THE CLOSE-UP SHEET (release 1.3.0, stage W1-a): four more, the model filling nine tenths of the
+// picture's short side through a lens for looking only (`lensOn`, `CLOSE`): right and left from the
+// sunward side, square onto the lit face, and from the Earth's side. A route with a file is photographed
+// wearing the shape it replaces as framed and from the same four close places. A list of craft is one run
+// (`-f subject=sat-48274_sat-30580_deep-new-horizons`). Each picture of the sheet is named `...-close-N-...`.
+// 0077 W1-a: end
 //
 //   gh workflow run look.yml -f probe=model                      # the Cygnus cargo ship in orbit today
 //   gh workflow run look.yml -f probe=model -f subject=sat-25544  # any record id
@@ -119,6 +126,35 @@ const describe = (obj) => {
   });
   return d;
 };
+// 0077 W1-a: begin
+/**
+ * A LENS FOR LOOKING, NOT A VIEW A VISITOR GETS (2026-10-20, release 1.3.0 stage W1-a). The hero layer draws a
+ * selected craft at a constant size on screen (scene/heroes.js SELECTED_PX, 260 px), whatever the camera's
+ * distance, so a camera moved nearer sees the same 260 px. A reviewer judging foil seams, struts and cell
+ * grids beside a photograph needs the model to fill the picture. So, for the close-up sheet only, every
+ * mesh of the hero scales it by `k` just before it is drawn (onBeforeRender: after heroes.js has written
+ * this frame's scale, before three.js reads the matrix), and the walk stands at 1/k of the framing distance:
+ * the model is exactly as big IN THE WORLD as the app draws it (no new clash with the Earth or a neighbour)
+ * and k times bigger on screen. Nothing in site/ changes. Returns the way back.
+ */
+const lensOn = (k) => {
+  const obj = heroOf();
+  if (!obj) return () => {};
+  let applied = NaN;
+  const grow = () => {
+    if (obj.scale.x === applied) return;            // this frame's scale is already grown
+    obj.scale.multiplyScalar(k);
+    applied = obj.scale.x;
+    obj.updateMatrixWorld(true);
+  };
+  const meshes = [];
+  obj.traverse((n) => { if (n.isMesh) { meshes.push([n, n.onBeforeRender]); n.onBeforeRender = grow; } });
+  lensState.k = k;
+  lensState.grown = () => obj.scale.x === applied;  // drawnReach reads the scale as it stands now
+  return () => { for (const [n, f] of meshes) n.onBeforeRender = f; lensState.k = 1; lensState.grown = () => false; };
+};
+const lensState = { k: 1, grown: () => false };
+// 0077 W1-a: end
 /** How many CSS pixels the drawn model spans (its bounding circle), from the camera's own projection. */
 const drawnPx = () => {
   try {
@@ -247,18 +283,29 @@ const PLACES = [
   // or a high orbit); otherwise it wears the toon ramp's shade tone, and the view's line says which.
   ['7-from-below', [0.34, 0.5, 0.8], 'from the Earth\'s side, looking up at the Earth face', 'below'],
 ];
-const walk = async (tag, what) => {
+// 0077 W1-a: begin
+// `opts` (2026-10-20, release 1.3.0 stage W1-a, internal spec 0077): `places` (default PLACES), `share` (the
+// camera's distance as a share of the framing distance, default 1), `lens` (the model drawn this many times
+// its selected size for the walk, default 1; see `lensOn`), and `framed` (take the app's own framing first,
+// default true). The close-up sheet below is this walk with places CLOSE, share 1/k and lens k.
+const walk = async (tag, what, opts = {}) => {
+  const places = opts.places || PLACES;
+  const k = opts.lens > 1 ? opts.lens : 1;
   const a0 = rig.state.azimuth;
   const p0 = rig.state.polar;
-  const d0 = rig.state.distance;
+  const dFramed = rig.state.distance;
+  const d0 = dFramed * (opts.share > 0 ? opts.share : 1);
+  const lensOff = k > 1 ? lensOn(k) : () => {};
+// 0077 W1-a: end
   const take = async (name, words, extra) => {
     await sleep(4000);
     const at = onScreen();
-    await shot(prefix + tag + '-' + name, what + ', ' + words + '; its circle ' + (at && at.px) + ' px across');
+    if (at && at.px && k > 1 && !lensState.grown()) at.px = Math.round(at.px * k); // 0077 W1-a: the circle as drawn
+    await shot(prefix + tag + '-' + name, what + ', ' + words + '; its circle ' + (at && at.px) + ' px across' + (k > 1 ? ' (drawn ' + k.toFixed(2) + ' times its selected size from ' + Math.round((d0 / dFramed) * 100) + ' % of the framing distance: the same size in the world, nearer; for looking only)' : ''));
     out.views.push({ name: prefix + tag + '-' + name, at, ...(extra || {}) });
   };
-  await take('1-as-framed', 'as the app frames a selected craft');
-  for (const [name, [lx, ly, lz], words, side] of PLACES) {
+  if (opts.framed !== false) await take('1-as-framed', 'as the app frames a selected craft');
+  for (const [name, [lx, ly, lz], words, side] of places) { // 0077 W1-a
     const f = sunFrame();
     if (!f) { look.warns.push('probe: no Sun or no Earth in the scene; ' + name + ' was not taken'); continue; }
     let d = unit(mix(mix(f.x, lx, f.y, ly), 1, f.z, lz));
@@ -311,10 +358,29 @@ const walk = async (tag, what) => {
     await take(name, words + '; the Sun ' + Math.round((Math.acos(Math.max(-1, Math.min(1, lit))) * 180) / Math.PI) + ' degrees from the line of sight',
       { sunAngleDeg: Math.round((Math.acos(Math.max(-1, Math.min(1, lit))) * 180) / Math.PI), aboveHorizon: above >= 0 });
   }
-  rig.flyTo({ azimuth: a0, polar: p0, distance: d0, ms: 0 });
+  lensOff(); // 0077 W1-a
+  rig.flyTo({ azimuth: a0, polar: p0, distance: dFramed, ms: 0 }); // 0077 W1-a
   await sleep(1500);
 };
 await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''));
+// 0077 W1-a: begin
+// THE CLOSE-UP SHEET (2026-10-20, release 1.3.0 stage W1-a; internal spec 0077 task 1, internal #751). Four
+// angles, each with the model filling about nine tenths of the picture's short side (the lens above), for a
+// contact sheet beside a photograph of the craft: right and left of the panel axis from the sunward side,
+// square onto the lit face, and from the Earth's side looking up at the Earth face. Every later model stage
+// proves its craft with these four (`views` whose name has `-close-`; each carries `at`, the model's centre
+// and circle, for whoever crops them).
+const CLOSE = [
+  ['close-1-sunward-right', [0.62, 0.66, -0.42], 'close up, from the sunward side, right of the panel axis and above'],
+  ['close-2-sunward-left', [-0.62, 0.66, -0.42], 'close up, from the sunward side, left and above'],
+  ['close-3-sun-face', [0.14, 0.93, -0.34], 'close up, square onto the lit face'],
+  ['close-4-earth-side', [0.34, 0.5, 0.8], 'close up, from the Earth\'s side, looking up at the Earth face', 'below'],
+];
+const fill = 0.9 * Math.min(innerWidth, innerHeight);
+const lensK = out.drawnPx > 0 ? Math.max(1, Math.min(4, fill / out.drawnPx)) : 2.5;
+out.close = { lens: Math.round(lensK * 100) / 100, framedPx: out.drawnPx, fillPx: Math.round(fill) };
+await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape'), { places: CLOSE, share: 1 / lensK, lens: lensK, framed: false });
+// 0077 W1-a: end
 
 /** Put something else on the hero for a set of pictures; returns the way back. */
 const wearInstead = (obj, thing) => {
@@ -343,7 +409,13 @@ if (entry.file) {
     const back = wearInstead(obj, built);
     await sleep(2500);
     out.procedural = { build: entry.build || null, klassShape: entry.build ? null : record.klass, model: describe(built) };
-    await walk('procedural', record.name + ' wearing the procedural shape ' + (entry.build ? '`' + entry.build + '`' : 'of its class, `' + record.klass + '`,') + ' that the file replaces (put back by the probe for the comparison)');
+    // 0077 W1-a: begin
+    // The shape a file replaces, from the app's framing and the four close places only (the before of the
+    // close-up sheet); its six framed places were a third of a run's pictures and nobody compared them.
+    const was = record.name + ' wearing the procedural shape ' + (entry.build ? '`' + entry.build + '`' : 'of its class, `' + record.klass + '`,') + ' that the file replaces (put back by the probe for the comparison)';
+    await walk('procedural', was, { places: [] });
+    await walk('procedural', was, { places: CLOSE, share: 1 / lensK, lens: lensK, framed: false });
+    // 0077 W1-a: end
     back();
     await sleep(1500);
   } catch (e) { out.procedural = { error: String((e && e.message) || e) }; }
