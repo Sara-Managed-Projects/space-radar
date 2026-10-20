@@ -229,6 +229,7 @@ const KEY_LIGHT_TURN_WEIGHT = 0.35;
 const CLEAR_MARGIN = 1.04;
 const CLEAR_TURN_DEG_S = 60;
 const CLEAR_LOOK_MS = 20000;
+const CLEAR_ASK_MS = 200;
 // A stop's `behind:` world: how far off the middle of the frame it may sit and still be in the
 // picture. Half the camera's vertical field of view is 22.5 degrees (scene/renderer.js), and at
 // that the backdrop's CENTRE is on the frame's edge with half its disc outside: measured at 22,
@@ -1473,6 +1474,7 @@ export function createTrip(ctx) {
    * the sky keep their own rules. Nothing here moves the target, the distance or the clock.
    */
   let clearTurn = null;
+  let clearAskedAt = 0;
   const _clearDir = new THREE.Vector3();
   let handOn = '';
 
@@ -1486,14 +1488,6 @@ export function createTrip(ctx) {
     if (!stop || !subject || subject.kind !== 'record' || run.ground) { clearTurn = null; return; }
     if (stop.seen_from || Array.isArray(stop.over) || stop.framing || stop.key_light_deg === 0) { clearTurn = null; return; }
     if (handOn === `${gen}:${state.index}`) { clearTurn = null; return; }
-    const tMs = ctx.clock.now();
-    const here = subject.position(tMs);
-    if (!here) return;
-    const at = here.clone();
-    const { worldCentre, radius } = worldFrame(subject, tMs);
-    if (!(radius > 0)) return;
-    const fromCentre = at.distanceTo(worldCentre);
-    if (fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]) { clearTurn = null; return; }
     const stamp = now();
     if (clearTurn) {
       const k = clamp((stamp - clearTurn.at) / clearTurn.ms, 0, 1);
@@ -1504,6 +1498,17 @@ export function createTrip(ctx) {
       if (k >= 1) clearTurn = null;
       return;
     }
+    // A turn runs every frame; the looking-ahead test only five times a second.
+    if (stamp - clearAskedAt < CLEAR_ASK_MS) return;
+    clearAskedAt = stamp;
+    const tMs = ctx.clock.now();
+    const here = subject.position(tMs);
+    if (!here) return;
+    const at = here.clone();
+    const { worldCentre, radius } = worldFrame(subject, tMs);
+    if (!(radius > 0)) return;
+    const fromCentre = at.distanceTo(worldCentre);
+    if (fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]) return;
     // How near the line of sight runs to the world's surface: the closest approach of the segment
     // from the subject to the camera to the world's centre, against its radius. Asked of now and of
     // CLEAR_LOOK_MS ahead, with the camera keeping its place beside the subject, so the turn begins
