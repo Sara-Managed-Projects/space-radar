@@ -107,7 +107,7 @@ are as they were in 1.2.0.
   `scripts/verify-deploy.sh` passes on a clean deploy ([#1257]).
 - `docs/TRANSLATING.md` says how a language is drafted, reviewed and shown ([#1247]).
 - The `model` look probe photographs a four-angle close-up sheet ([#1248]).
-- How the release was assembled: waves 1 to 3 reached `main` as [#1250], [#1256] and [#WAVE3].
+- How the release was assembled: waves 1 to 3 reached `main` as [#1250], [#1256] and [#1263].
 
 ## [1.2.0] - 2026-10-20
 
@@ -748,6 +748,7 @@ The first public map.
 [#1213]: https://github.com/Sara-Managed-Projects/space-radar/pull/1213
 [#1214]: https://github.com/Sara-Managed-Projects/space-radar/pull/1214
 [#1215]: https://github.com/Sara-Managed-Projects/space-radar/pull/1215
+[#1216]: https://github.com/Sara-Managed-Projects/space-radar/pull/1216
 [#1217]: https://github.com/Sara-Managed-Projects/space-radar/pull/1217
 [#1218]: https://github.com/Sara-Managed-Projects/space-radar/pull/1218
 [#1219]: https://github.com/Sara-Managed-Projects/space-radar/pull/1219
@@ -765,9 +766,8 @@ The first public map.
 [#1237]: https://github.com/Sara-Managed-Projects/space-radar/pull/1237
 [#1238]: https://github.com/Sara-Managed-Projects/space-radar/pull/1238
 [#1239]: https://github.com/Sara-Managed-Projects/space-radar/pull/1239
-[#1241]: https://github.com/Sara-Managed-Projects/space-radar/pull/1241
-[#1216]: https://github.com/Sara-Managed-Projects/space-radar/pull/1216
 [#1240]: https://github.com/Sara-Managed-Projects/space-radar/pull/1240
+[#1241]: https://github.com/Sara-Managed-Projects/space-radar/pull/1241
 [#1244]: https://github.com/Sara-Managed-Projects/space-radar/pull/1244
 [#1245]: https://github.com/Sara-Managed-Projects/space-radar/pull/1245
 [#1246]: https://github.com/Sara-Managed-Projects/space-radar/pull/1246
@@ -787,4 +787,4 @@ The first public map.
 [#1260]: https://github.com/Sara-Managed-Projects/space-radar/pull/1260
 [#1261]: https://github.com/Sara-Managed-Projects/space-radar/pull/1261
 [#1262]: https://github.com/Sara-Managed-Projects/space-radar/pull/1262
-[#WAVE3]: https://github.com/Sara-Managed-Projects/space-radar/pull/WAVE3
+[#1263]: https://github.com/Sara-Managed-Projects/space-radar/pull/1263
