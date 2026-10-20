@@ -182,7 +182,10 @@ for (const [code, want] of Object.entries(WANT)) {
   assert.equal(mod.META.review.status, 'machine-drafted', `${code}: it says what it is until two native speakers have read it`);
   assert.equal(LANGUAGES[code].reviewed, false, `${code}: and the browser's language does not bring it in`);
   const { out: o2 } = await check(join(JS, `copy/${code}.js`));
-  assert.deepEqual([o2.missing.length, o2.placeholder, o2.kind, o2.extra], [0, [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(o2, null, 1).slice(0, 600)}`);
+  // Release 1.3.0 wave 2 integration: four English sections landed in the same wave as the drafts; until they are
+  // translated they fall back to English (docs/TRANSLATING.md), and are listed here so nothing else goes missing.
+  const WAVE2_ENGLISH_ONLY = ['COPY.r13Deep', 'COPY.compare', 'COPY.passportKinds', 'COPY.photoCompare'];
+  assert.deepEqual([o2.missing.filter((k) => !WAVE2_ENGLISH_ONLY.includes(k)).length, o2.placeholder, o2.kind, o2.extra], [0, [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(o2, null, 1).slice(0, 600)}`);
 }
 assert.equal(pickLanguage('?lang=pt-BR', [], LANGUAGES), 'pt', '?lang=pt-BR is read as pt: the file is copy/pt.js');
 assert.equal(run({ location: { search: '?lang=pt-BR' }, document: {} }, probe2).tonight, 'Esta noite');

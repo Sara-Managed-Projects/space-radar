@@ -45,6 +45,12 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { lightUniforms, surfaceTermsOn, SUN_ANGULAR_RADIUS, NIGHT_FLOOR, SUN_RIM_EXPONENT } from './models.js';
 import { AIR_TINT_GLSL } from './airtint.js';
 
+// UNDER THE MEASURED LOOK (scene/exposure.js MEASURED_RULES, tests/test_look_setting.mjs). The folds and the cell grid
+// (and the cells' small unevenness, `srVar`) are illustrative detail on a model's own surface, not weather or grain laid
+// over a world: they stay drawn the same, as the model's shape and colours do. Said here so a look that hides them is
+// one line to change.
+export const UNDER_MEASURED = { folds: 'same', grid: 'same' };
+
 /** The two looks a real model can wear. */
 export const LOOKS = ['pbr', 'toon'];
 
