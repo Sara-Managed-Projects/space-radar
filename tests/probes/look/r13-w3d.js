@@ -101,9 +101,12 @@ for (const [id, name, lat, lon, elev] of [
   const e = elev == null ? MOON.sunElev(lat, lon) : await MOON.morning(lat, lon, elev, SYNODIC_S);
   if (!(await go(id, null, 9000))) { out.problems.push('no record ' + id); continue; }
   await tilesReady('moon-lro-wac');
+  // The shadows cast from LOLA's heights build their window a few seconds after the camera stops (r12-nearby castReady).
   await sleep(4000);
+  if (tiled()) await until(() => { const c = (tilesState('moon-lro-wac') || {}).cast; return c && (c.inRange === false || (c.showing && c.fade === 1 && !c.building)); }, 150000, 1000);
+  await sleep(2500);
   const s = tilesState('moon-lro-wac');
-  const row = { id, sunDeg: e, altKm: camKm('moon', 1737.4), card: cardText(), cast: s && s.cast ? { showing: s.cast.showing, level: s.cast.level } : null };
+  const row = { id, sunDeg: e, altKm: camKm('moon', 1737.4), card: cardText(), cast: s && s.cast ? { showing: s.cast.showing, inRange: s.cast.inRange, level: s.cast.level } : null };
   out.scenes.push(row);
   await shot(name + '-arrive', `${id} selected and flown to by the app (its arrival pose): camera ${row.altKm} km over the ground, the Sun ${e} degrees up there, cast shadows ${row.cast && row.cast.showing ? 'on' : 'off'}`);
 }
