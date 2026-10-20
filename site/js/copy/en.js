@@ -1219,6 +1219,7 @@ export const COPY = {
       launched: 'Launched',
       ended: 'Ended',
       pathEnds: 'Its path ends',
+      pathBegins: 'Its path begins', // 0077 W1-d
       period: 'One lap takes',
       location: 'Where it stands',
       onWorld: 'Standing on',
@@ -1323,12 +1324,14 @@ export const COPY = {
     // In place of the three numbers, on the card of a craft whose mission is over.
     endedLine: 'Its mission ended on {date}. Its events, below, go back to it.',
     pathEndedLine: 'The path JPL holds for it ends on {date}. Its events, below, go back to it.',
+    pathBeginsLine: 'The path JPL holds for it begins on {date}. Its events, below, go back to it.', // 0077 W1-d
 
     actions: {
       flyTo: 'Fly to it',
       flyToTitle: 'Move the camera to this object',
       flyEnded: 'It ended on {date}. Choose an event of its mission to go there',
     flyPathEnded: 'Its path ends on {date}. Choose an event of its mission to go there',
+    flyPathBegins: 'Its path begins on {date}. Choose an event of its mission to go there', // 0077 W1-d
       flyNowhere: 'There is no position for this object at this moment',
       seeFromHere: 'See it from here',
       seeFromHereTitle: 'Look up from your own place on Earth',

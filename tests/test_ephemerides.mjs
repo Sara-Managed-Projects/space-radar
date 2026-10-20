@@ -245,6 +245,67 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(wa && /prediction/.test(wa[1]), 'Apophis in 2029 is said to be a prediction');
   check(COPY.ephemeris && !/!| -- |→/.test(Object.values(COPY.ephemeris).join(' ')), 'the words are plain');
 }
+// 0077 W1-d: begin (public #493) the days a path covers, and the way to the nearest
+{
+  const sp = (id, iso) => M.pathSpan(id, Date.parse(iso));
+  const c1 = sp('deep-cassini', '1990-01-01T00:00:00Z');
+  const c2 = sp('deep-cassini', '2026-10-07T00:00:00Z');
+  const c3 = sp('deep-cassini', '2005-06-01T00:00:00Z');
+  check(c1 && c1.side === 'before' && c1.nearestMs === Date.parse('1997-10-15T09:27:00Z'), `before Cassini's path the nearest day is its first (${c1 && new Date(c1.nearestMs).toISOString()})`);
+  check(c2 && c2.side === 'after' && c2.nearestMs === Date.parse('2017-09-15T10:30:00Z'), `after it, its last (${c2 && new Date(c2.nearestMs).toISOString()})`);
+  check(c3 && c3.side === 'inside' && c3.nearestMs === Date.parse('2005-06-01T00:00:00Z'), 'inside it the clock is where it is');
+  check(M.pathSpan('nobody', 0) === null && M.pathSpan('deep-cassini', NaN) === null, 'no file or no clock, no span');
+  // Both ends of every file are places the file answers for: the button never lands on a gap.
+  const E = await import(join(JS, 'propagate/ephemeris.js'));
+  for (const id of Object.keys(E.EPHEMERIDES)) {
+    const row = E.EPHEMERIDES[id];
+    const ends = [Date.parse(row.from), Date.parse(row.to)];
+    const eph = await E.ensure(id, { read: async (file) => { const b = readFileSync(join(ROOT, 'site/data/eph', file)); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); } });
+    check(eph && ends.every((tMs) => E.covers(id, tMs) && E.stateAt(eph, tMs)), `${id}: the file answers at both ends of its span`);
+  }
+  // The card block, built against a stub page.
+  class Node {
+    constructor(tag) { this.tag = tag; this.children = []; this.className = ''; this.textContent = ''; this.dataset = {}; this.hidden = false; this.title = ''; this.listeners = {}; }
+    appendChild(n) { this.children.push(n); return n; }
+    append(...ns) { for (const n of ns) this.children.push(n); }
+    setAttribute() {}
+    get classList() { return { add() {}, remove() {}, toggle() {} }; }
+    removeChild(n) { this.children = this.children.filter((c) => c !== n); }
+    get firstChild() { return this.children[0] || null; }
+    addEventListener(type, fn) { this.listeners[type] = fn; }
+    all(test) { return [this, ...this.children.flatMap((c) => c.all(test))].filter(test); }
+  }
+  globalThis.document = { createElement: (tag) => new Node(tag), createTextNode: (t) => ({ tag: '#text', textContent: t, all: () => [] }) };
+  const asked = [];
+  const mk = (iso) => {
+    const clock = { t: Date.parse(iso), now() { return this.t; }, goTo(ms) { this.t = ms; asked.push(ms); } };
+    return { clock, rememberView() { asked.push('remembered'); }, offerUndo: (d) => asked.push(`undo ${d}`), refreshCard() { asked.push('refreshed'); } };
+  };
+  const cassini = { id: 'deep-cassini', name: 'Cassini', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: {} };
+  for (const [iso, side, word] of [['1990-01-01T00:00:00Z', 'before', 'before'], ['2026-10-07T00:00:00Z', 'after', 'after']]) {
+    const host = new Node('div');
+    const ctx = mk(iso);
+    M.mountMission(host, cassini, ctx);
+    const texts = host.all((n) => n.tag === 'p').map((n) => n.textContent);
+    check(texts.includes('JPL’s path for it runs from 15 October 1997 to 15 September 2017.'), `the card says the days the path covers (${texts.join(' | ')})`);
+    check(texts.some((x) => new RegExp(`^The clock is ${word} that, so the map has no position for it\\.$`).test(x)), `and that the map has no position when the clock is ${word} them (${texts.join(' | ')})`);
+    const button = host.all((n) => n.tag === 'button' && n.dataset.focus === 'mission-nearest')[0];
+    check(button && button.textContent === 'Go to nearest available date' && /^Move the clock to /.test(button.title), `with the button "Go to nearest available date" (${button && button.textContent})`);
+    asked.length = 0;
+    button.listeners.click();
+    check(ctx.clock.now() === (side === 'before' ? Date.parse('1997-10-15T09:27:00Z') : Date.parse('2017-09-15T10:30:00Z')), `pressed, the clock goes to the ${side === 'before' ? 'first' : 'last'} moment of the path`);
+    check(asked[0] === 'remembered' && asked.some((x) => /^undo /.test(String(x))) && asked.includes('refreshed'), 'and the way back is offered and the card repaints');
+    check(ctx.clock.now() >= 0 && M.pathSpan('deep-cassini', ctx.clock.now()).side === 'inside', 'and there the path answers');
+  }
+  {
+    const host = new Node('div');
+    M.mountMission(host, cassini, mk('2005-06-01T00:00:00Z'));
+    const ps = host.all((n) => n.tag === 'p').map((n) => n.textContent);
+    check(ps.some((x) => /^JPL’s path for it runs from 15 October 1997/.test(x)) && !host.all((n) => n.dataset && n.dataset.focus === 'mission-nearest').length && !ps.some((x) => /no position/.test(x)), 'inside the span: the days, no warning and no button');
+  }
+  delete globalThis.document;
+}
+// 0077 W1-d: end
 {
   const { countUpTo } = await import(join(JS, 'scene/ephpath.js')).catch(() => ({}));
   if (countUpTo) check(countUpTo([1, 2, 3, 5], 0) === 0 && countUpTo([1, 2, 3, 5], 3) === 3 && countUpTo([1, 2, 3, 5], 9) === 4, 'the line ends at the clock');

@@ -84,6 +84,8 @@ import {
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
   honestyLine, placesReady, truthRow,
 } from './cardfacts.js';
+import { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
+export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
 export {
   stormAdvisoryAgo, stormAdvisoryText, earthEventRows, whyLine, endedWords, pathEndedWords, ensurePlaces,
   belowWords, TAG_READOUTS, TAG_HONESTY_MAX, shortHonesty, splitReadout, tagLines, classLine,
@@ -1535,8 +1537,10 @@ export function actionButtons(record, ctx, m) {
     // states). An ended craft names its last day; its mission's events below are the way there.
     const ended = endedWords(record, m);
     const pathEnds = ended ? null : pathEndedWords(record, m);
+    const pathBegins = ended || pathEnds ? null : pathBeginsWords(record, m); // 0077 W1-d
     if (ended) { fly.title = t(A.flyEnded, { date: ended }); fly.setAttribute('aria-label', fly.title); }
     else if (pathEnds) { fly.title = t(A.flyPathEnded, { date: pathEnds }); fly.setAttribute('aria-label', fly.title); }
+    else if (pathBegins) { fly.title = t(A.flyPathBegins, { date: pathBegins }); fly.setAttribute('aria-label', fly.title); } // 0077 W1-d
     else if (fly.disabled) fly.title = A.flyNowhere;
     buttons.push(fly);
     const see = actionButton('see', A.seeShort, A.seeFromHereTitle, 'telescope', () => seeFromHere(record, ctx));
@@ -2696,7 +2700,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
  */
 function distanceCurve(record, ctx, m) {
   const klass = klassOf(record);
-  if (klass === 'world' || klass === 'site' || m.frame !== 'sun-inertial' || !Number.isFinite(m.tMs) || endedWords(record, m) || pathEndedWords(record, m)) return null;
+  if (klass === 'world' || klass === 'site' || m.frame !== 'sun-inertial' || !Number.isFinite(m.tMs) || endedWords(record, m) || pathEndedWords(record, m) || pathBeginsWords(record, m)) return null; // 0077 W1-d
   try {
     return sparkBlock(record, earthDistanceAt(record, ctx), m.tMs, ctx,
       (min) => nearEarthOnEllipse(record, { tMs: min.tMs, distEarthKm: min.km }));
@@ -2757,10 +2761,12 @@ function render(record, ctx, opts = {}) {
   // 2026-10-07 on Cassini's card). One line says when it ended instead (internal #424).
   const ended = endedWords(record, m);
   const pathEnds = ended ? null : pathEndedWords(record, m);
+  const pathBegins = ended || pathEnds ? null : pathBeginsWords(record, m); // 0077 W1-d
   const heroes = ended || pathEnds ? [] : heroNumbers(record, m, rows);
-  if (heroes.length) body.appendChild(heroBlock(heroes));
+  if (heroes.length && !pathBegins) body.appendChild(heroBlock(heroes)); // 0077 W1-d: before its path, as after it: no dashes
   if (ended) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.endedLine, { date: ended })));
   else if (pathEnds) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathEndedLine, { date: pathEnds })));
+  else if (pathBegins) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathBeginsLine, { date: pathBegins }))); // 0077 W1-d
 
   // 2b. a launch within a day counts down (public #289, ui/countdown.js): in the clock's own time,
   // as the scene is, with Launch Library's status and how old it is.

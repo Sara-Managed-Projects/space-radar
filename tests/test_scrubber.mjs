@@ -200,6 +200,25 @@ check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.
   check(sh[1] === 0 && sh[0] === 21, `the order given does not matter and the earlier mark stays on its time (${sh})`);
   check(Math.max(...spreadMarks([100, 100, 100, 100, 100, 100], 28)) <= 84, 'no mark is pushed more than three boxes from its time');
   check(spreadMarks([], 28).length === 0, 'no marks, no shifts');
+  // 0077 W1-d: begin (internal #713) the Now button is a box the marks keep out of
+  {
+    const w = 44;
+    const now = [172, 216];
+    const box = (xs, sh, i) => [xs[i] + sh[i] - w / 2, xs[i] + sh[i] + w / 2];
+    const clear = (xs, sh) => xs.every((x, i) => { const [a, b] = box(xs, sh, i); return b <= now[0] + 1e-9 || a >= now[1] - 1e-9; });
+    const day = [152];
+    check(spreadMarks(day, w)[0] === 0 && !clear(day, spreadMarks(day, w)), 'without the Now box a mark 20 px left of it covers 2 px of it (the phone gate of the new Moon)');
+    check(clear(day, spreadMarks(day, w, 3 * w, now)) && spreadMarks(day, w, 3 * w, now)[0] < 0, 'with it, the mark stands to its left');
+    const right = [196];
+    check(clear(right, spreadMarks(right, w, 3 * w, now)) && spreadMarks(right, w, 3 * w, now)[0] > 0, 'a mark right of its middle stands to its right');
+    const crowd = [140, 152, 190, 200];
+    const sh = spreadMarks(crowd, w, 3 * w, now);
+    const at = crowd.map((x, i) => x + sh[i]).sort((a, b) => a - b);
+    check(clear(crowd, sh) && at.slice(1).every((v, i) => v - at[i] >= w - 1e-9), `a crowd round it keeps out of it and a box apart (${at})`);
+    check(spreadMarks([60, 300], w, 3 * w, now).every((v) => v === 0), 'marks that are clear of the Now box do not move');
+    check(spreadMarks([152], w, 3 * w, null)[0] === 0 && spreadMarks([152], w, 3 * w, [Infinity, 1])[0] === 0, 'no box, or a broken one, changes nothing');
+  }
+  // 0077 W1-d: end
   const ui = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
   check(/margin-left: calc\(-5px \+ var\(--sr-mark-shift, 0px\)\)/.test(ui) && /margin-left: calc\(-2px \+ var\(--sr-mark-shift, 0px\)\)/.test(ui), 'the glyph is drawn back by the shift (both shapes)');
 }
