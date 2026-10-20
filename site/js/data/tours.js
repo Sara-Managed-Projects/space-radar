@@ -5712,7 +5712,7 @@ export const TOURS = [
 "record": "exotic-ton-618"
 },
 "needs_layer": "exotics",
-"distance_km": 9460730472580800000000,
+"distance_km": 119205204000000000000000,
 "behind": "sun",
 "drift_deg": 8,
 "drift_rate_deg_s": 1,

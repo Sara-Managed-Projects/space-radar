@@ -317,6 +317,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(moon.wanted <= T.DRAW_TILES[1], `within the T1 draw budget: ${moon.wanted}`);
   check(s.bytes === s.loaded * 25000 + s.heightBytes && s.heightBytes === s.heightRequests * 18000 && s.failed === 0, 'bytes are counted as they arrive, the elevation tiles\' with them');
   check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MOON.credit, MOON.relief.credit]) && r.changes() >= 1 && r.changes() <= 2, `the credits are the registry's lines, the mosaic's and its relief's: ${r.changes()} announcements`);
+  const announcedWhileShown = r.changes(); // 1 or 2 depending on how the mosaic's and the relief's credits fall across frames (slower on a CI runner)
   // RELIEF: one shaded-relief tile over each colour tile, shared below the relief pyramid's last level.
   check(moon.relief === true && moon.reliefs > 0 && moon.reliefs <= moon.cached / 3, `relief is on, ${moon.reliefs} relief tiles under ${moon.cached} colour tiles: far fewer`);
   check(r.asked.some((u) => u.includes('LRO_LOLA_Shade_Global_256ppd_v06') && u.endsWith('.png')) && !r.asked.some((u) => /LOLA_Shade[^?]*\/(7|8)\/\d+\/\d+\.png$/.test(u)), 'relief tiles come from the row\'s relief pyramid and never past its last level');
@@ -358,7 +359,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   const gone = r.tiles.state().sets[MOON.id];
   check(!gone.on && !gone.showing && gone.cached === 0 && gone.master === 0, 'far away the tiles fade out and are freed');
   check(!r.mesh.children.some((c) => c.name === MOON.id + '-tiles'), 'and their group leaves the mesh');
-  check(r.tiles.credits().length === 0 && r.changes() === 2, 'the credit goes with them');
+  check(r.tiles.credits().length === 0 && r.changes() === announcedWhileShown + 1, 'the credit goes with them, announced once');
 }
 {
   // Mars: detail over the globe's own map, whichever map that is at the time.

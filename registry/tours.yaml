@@ -5008,13 +5008,19 @@ tours:
       - id: ton-618
         target: {record: exotic-ton-618}
         needs_layer: exotics
-        # A billion light-years past TON 618, looking back at it with home behind it (`behind: sun`,
-        # 3 to 16 degrees off the middle). From the side towards home the frame held the quasar's ring
-        # alone, 99.991 % one colour at 1440 x 900, under the trips walk's empty-frame floor (screens
-        # run 38824226655); looking home, the frame also holds what is drawn there: 99.95 % (screens
-        # run 38956512528). Stop 5 keeps this direction and read 99.980 % there, ON the floor; from two
-        # billion light-years past it, stop 5 read 99.991 % and failed (run 38965043202), so one it is.
-        distance_km: 9460730472580800000000
+        # 12.6 billion light-years past TON 618, looking back at it with home behind it (`behind: sun`,
+        # 3 to 16 degrees off the middle): the camera is 30.9 billion light-years from the Sun, just
+        # past the 29.9 where the microwave background's map begins to show (scene/deep/cmb.js; the
+        # horizon's wire sphere is drawn only from outside it). Nothing else is drawn between the
+        # Local Group and the quasar, so from a billion light-years past it the frame held the
+        # quasar's mark and M87*'s alone, 99.95 to 99.991 % one colour in the trips walk against its
+        # empty-frame floor of 99.98 (screens runs 38824226655, 38956512528, 38965043202; on release
+        # 1.2.0's integration branch, public #1235, 99.984 %). Nearer and farther along this line
+        # changes no pixel of that: a mark is as wide on the screen wherever it is. From here the
+        # faint map is behind the quasar, which is the horizon's own context and no new claim, and the
+        # frame read 79 % one colour at 1440 x 900. The next stop stands 1.1 billion light-years
+        # further out, on the Sun's side, with the map a quarter of the way up.
+        distance_km: 119205204000000000000000
         behind: sun
         drift_deg: 8
         drift_rate_deg_s: 1
