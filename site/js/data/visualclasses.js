@@ -312,7 +312,12 @@ export const VISUAL_CLASSES = [
 "himawari",
 "smap",
 "jason-3",
-"sorce"
+"sorce",
+"themis",
+"tiangong",
+"wentian",
+"mengtian",
+"shenzhou-orbital"
 ],
 "model_kinds": [
 "satellite-iridium",
