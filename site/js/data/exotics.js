@@ -213,15 +213,15 @@ export const EXOTICS = [
     "id": "wd-j1330-6435",
     "name": "WD J1330+6435",
     "kind": "star",
-    "why": "A dying star that would look green to human eyes, the first ever confirmed -- a white dwarf whose atmosphere, enriched with sodium and calcium from a shredded planetary system, absorbs the yellow, orange and red light a normal star that hot would still show as white.",
+    "why": "The first star found that would look green, in its discoverers' colour models: a cool white dwarf whose sodium-rich atmosphere absorbs yellow, orange and red light. A star this cool would otherwise look orange.",
     "aliases": [
       "SDSS J1330+6435",
       "WD 1328+648"
     ],
-    "source": "https://en.wikipedia.org/wiki/WD_J1330%2B6435 (infobox: distance 281.6 ly / 86.35 pc from parallax, Gaia G mag 20.64, read 2026-10-19); https://www.space.com/astronomy/stars/astronomers-discover-the-1st-ever-green-star-a-cosmic-zombie-just-in-time-for-halloween (read 2026-10-19)",
+    "source": "https://en.wikipedia.org/wiki/WD_J1330%2B6435 (infobox: distance 281.6 ly / 86.35 pc from parallax, Gaia G mag 20.64, Gaia DR3 position, read 2026-10-19); https://warwick.ac.uk/news/pressreleases/astronomers-reveal-true-colours-of-white-dwarf-stars (University of Warwick, 15 October 2026: about 4 000 degrees C, colour calculated from its spectrum by a model of human colour vision, sodium absorbs yellow, orange and red; Hollands et al., RAS Techniques and Instruments, doi 10.1093/rasti/rzag069, read 2026-10-20); https://www.space.com/astronomy/stars/astronomers-discover-the-1st-ever-green-star-a-cosmic-zombie-just-in-time-for-halloween (read 2026-10-19)",
     "vmag": 20.6,
-    "raDeg": 202.503729,
-    "decDeg": 64.589819,
+    "raDeg": 202.50485,
+    "decDeg": 64.589919,
     "distLy": 281.6
   },
   {

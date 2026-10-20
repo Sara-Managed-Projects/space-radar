@@ -767,6 +767,7 @@ export const VISUAL_CLASSES = [
 "members": {
 "exotics": [
 "exotic-eta-carinae",
+"exotic-wd-j1330-6435",
 "exotic-betelgeuse"
 ],
 "stars_notable": [
