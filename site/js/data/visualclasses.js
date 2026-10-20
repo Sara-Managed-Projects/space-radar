@@ -327,7 +327,11 @@ export const VISUAL_CLASSES = [
 "wentian",
 "mengtian",
 "shenzhou-orbital",
-"gaia"
+"gaia",
+"earthcare",
+"biomass",
+"swarm",
+"metop-sg-a"
 ],
 "model_kinds": [
 "satellite-iridium",
