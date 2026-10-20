@@ -897,6 +897,11 @@ export function createTripFrame(ctx) {
     // what from, the sentence the trip's video opens on (ui/truthline.js). A trip whose stops set
     // their own instants names the sources only; the line under it says the clock will move.
     if (tour) p.appendChild(el('p', 'sr-tripsheet__note sr-tripsheet__truth', truthLine(tour, st.clockMoves ? NaN : ctx.clock.now())));
+    // 0076 W3-d (internal #908): what the line's words mean, the card's row "How we know" opening in place under it.
+    if (tour) {
+      const legend = p.appendChild(el('div', 'sr-tripsheet__legend'));
+      import('./cards.js').then((m) => { if (legend.isConnected) legend.replaceChildren(m.wordsLegend(ctx)); }).catch(() => legend.remove());
+    }
     const dropped = (st.dropped || []).length;
     if (dropped === 1) p.appendChild(el('p', 'sr-tripsheet__note', T.droppedOne));
     else if (dropped > 1) p.appendChild(el('p', 'sr-tripsheet__note', t(T.droppedMany, { n: dropped })));

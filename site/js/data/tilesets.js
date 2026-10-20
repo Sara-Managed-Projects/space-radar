@@ -33,6 +33,14 @@ export const TILESETS = [
       "flat": 0.65,
       "gain": 1,
       "credit": "The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
+    },
+    "height": {
+      "title": "Lunar Orbiter Laser Altimeter elevation, 128 pixels per degree",
+      "url": "https://trek.nasa.gov/tiles/Moon/EQ/LRO_LOLA_DEM_Global_128ppd_v04/1.0.0/default/default028mm/{z}/{y}/{x}.png",
+      "maxLevel": 5,
+      "metresPerCount": 77.31,
+      "offsetM": -9101.7,
+      "credit": "The Moon's shadows close up: cast from Lunar Orbiter Laser Altimeter heights, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
     }
   },
   {

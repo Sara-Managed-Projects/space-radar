@@ -14,6 +14,11 @@
 //   runExtra(ctx, hit) -> does it;  whereEnv(ctx) -> a promise of describe()'s env
 //   constellationCentre(lines) -> { raDeg, decDeg } | null    where a figure's lines are, on average
 //   setConstellations(names, lines) / loadConstellations() -> the 88 star patterns as rows ("orion")
+//   readKind(query, index) -> { row, of } | null       a kind of thing typed: "galaxies", "moons of saturn"
+//   setClasses(list) / loadClasses() / classOf(record)  the visual classes (data/visualclasses.js)
+//   modelOf(record) -> 'real' | 'rebuilt' | null        drawn from a 3D model, or a reconstruction
+//   kindHits(index, kind, opts) / byKind(index, result, kind, opts) -> the rows of a kind, grouped
+//   wantKinds(kind, only) -> a promise while what they need is still arriving, else null
 //
 // WHY A SECOND FILE. ui/search.js is in the boot graph: the field is on the first screen. None of
 // this is needed until somebody puts the cursor in it, and the missions' events alone are 30 kB,
@@ -35,6 +40,10 @@ import { MISSIONS } from '../data/missions.js';
 import { editDistance } from './search.js';
 import { parseFrame } from '../propagate/frames.js';
 import { icon, iconFrom } from './icons.js';
+import { KINDS } from '../data/kindwords.js';
+import { realModelFor } from '../scene/realmodels.js';
+import { HEROES } from '../scene/deep/heroes.js';
+import { loadCss } from './latercss.js';
 
 /** The classes found by where they are round the Sun, not round the Earth (whereNow). */
 const WANDERERS = new Set(['probe', 'comet', 'asteroid']);
@@ -216,7 +225,7 @@ export function groupRows(hits, countOf, open) {
       if (placed) return false;
       placed = true;
       return true;
-    }).map((h) => (of(h) ? { extra: 'group', id: g.id, klass: 'satellite', name: g.name, sub: t(R.group, { n: fmt.int(total) }), record: null, at: -1, length: 0 } : h));
+    }).map((h) => (of(h) ? { extra: 'group', id: g.id, klass: 'satellite', name: g.name, sub: t(R.group, { n: fmt.int(total) }), record: null, at: -1, length: 0, group: h.group } : h));
   }
   return out;
 }
@@ -453,3 +462,319 @@ export async function whereEnv(ctx) {
     },
   };
 }
+
+// --- search by kind (internal spec 0076 W3-e; internal #879, #880) ---------------------------------
+//
+// "galaxies", "nebulae", "moons of saturn" found nothing: no record is NAMED that. A kind's words are
+// registry/aliases.yaml `kinds:` (data/kindwords.js); its members are the visual classes W2-e gave every
+// record (registry/visual-classes.yaml through data/visualclasses.js, 19 kB, fetched the first time a
+// kind is typed). The rows are the records of the index (what the map holds now), grouped by class under
+// a microlabel, the groups taking turns at the eight rows. Nothing here flies: a row is an ordinary
+// object row, and picking it is search.js pick(), as before.
+
+const KIND_AT = new Map();
+for (const row of KINDS) for (const w of row.say) KIND_AT.set(w, row);
+// The record sets whose ids ARE records' ids, read before the sets that list them again under another
+// heading (a photograph, a hero, a model): dso-lmc is a spiral in `dso` and an irregular in `heroes`, and
+// the record's own row is the one the registry classifies (scripts/coverage.py, one class a record).
+const OWN_SETS = ['worlds', 'small_bodies', 'probes', 'systems', 'planets', 'exotics', 'stars_notable', 'dso', 'sites', 'oddities', 'reentries', 'weather', 'rings'];
+// The class that is a layer drawing several classes: it says nothing about any one of its records.
+const MIXED = 'MIXED_LAYER';
+// The kinds the model layer can draw from a file (ui/drift.js lookOf asks the same of the same table).
+const MODELLED = new Set(['station', 'satellite', 'telescope', 'probe', 'rocket', 'site', 'asteroid', 'comet']);
+/** Rows a kind's name matches may keep beside its groups ("By name"). */
+export const NAME_ROWS = 2;
+
+let classes = null;
+let classesAsked = null;
+let heroes = null;
+let heroesAsked = null;
+
+/** Make the tables from data/visualclasses.js VISUAL_CLASSES. Pure but for the module's state. */
+export function setClasses(list) {
+  const rows = (Array.isArray(list) ? list : []).filter((c) => c && c.id);
+  const byId = new Map();
+  const byLayer = new Map();
+  for (const own of [true, false]) {
+    for (const c of rows) {
+      for (const [set, ids] of Object.entries(c.members || {})) {
+        if (set === 'layers' || OWN_SETS.includes(set) !== own) continue;
+        for (const id of ids) if (!byId.has(id)) byId.set(id, c.id);
+      }
+    }
+  }
+  for (const c of rows) {
+    if (c.id === MIXED) continue;
+    for (const id of (c.members && c.members.layers) || []) if (!byLayer.has(id)) byLayer.set(id, c.id);
+  }
+  classes = { byId, byLayer, title: new Map(rows.map((c) => [c.id, c.title])), order: rows.map((c) => c.id) };
+  return byId.size;
+}
+
+export function loadClasses() {
+  if (classes) return Promise.resolve(true);
+  if (!classesAsked) {
+    classesAsked = import('../data/visualclasses.js').then((m) => { setClasses(m.VISUAL_CLASSES); return true; }, () => { classesAsked = null; return false; });
+  }
+  return classesAsked;
+}
+
+/** The class of one index entry: its own id first, else its layer's. null when neither is classified. */
+export function classOf(record) {
+  if (!record || !classes) return null;
+  return classes.byId.get(record.id) || classes.byLayer.get(record.layer) || null;
+}
+
+/** The deep-sky heroes whose profiles say `shipped` (registry/deepsky-heroes/*.yaml), as record ids. */
+export function setHeroes(ids) { heroes = new Set(ids || []); return heroes.size; }
+
+function loadHeroes() {
+  if (heroes) return Promise.resolve(true);
+  if (!heroesAsked) {
+    heroesAsked = Promise.all(HEROES.map((h) => h.profile().then((m) => (m && m.HERO && m.HERO.shipped ? h.record : null), () => null)))
+      .then((ids) => { setHeroes(ids.filter(Boolean)); return true; });
+  }
+  return heroesAsked;
+}
+
+/**
+ * What a record is drawn from in 3D: 'real' for a model file that is its own (a NASA glTF, a shape
+ * model), 'rebuilt' for a shipped deep-sky reconstruction, null for a mark, a glyph, a generic shape or
+ * a mapped globe. The same test Drift's "real models only" makes (ui/drift.js lookOf).
+ */
+const modelSeen = new WeakMap(); // record -> its answer: "has a model" asks every record of the map
+export function modelOf(record) {
+  if (!record) return null;
+  if ((heroes && heroes.has(record.id)) || (record.meta && record.meta.heroId)) return 'rebuilt';
+  if (!MODELLED.has(record.klass)) return null;
+  if (modelSeen.has(record)) return modelSeen.get(record);
+  let m = null;
+  try { m = realModelFor(record); } catch { m = null; }
+  const answer = m && m.file && !m.generic ? 'real' : null;
+  modelSeen.set(record, answer);
+  return answer;
+}
+
+/** A promise while the classes or the heroes a query needs are still arriving; null when all is here. */
+export function wantKinds(kind, only) {
+  const asks = [];
+  if (kind && !classes) asks.push(loadClasses());
+  if ((only || (kind && kind.row.model)) && !heroes) asks.push(loadHeroes());
+  return asks.length ? Promise.all(asks) : null;
+}
+
+/** False only for a look tool's "before" picture: `?look=1` and `window.srSearchBefore = true`. */
+export function kindsOn() {
+  try { return !(window.srSearchBefore === true && /[?&]look=1(&|$)/.test(location.search)); } catch { return true; }
+}
+
+function worldNamed(index, name) {
+  for (let i = 0; i < index.n; i += 1) {
+    const r = index.record[i];
+    if (r && r.klass === 'world' && index.name[i] === name) return { id: r.id, name: r.name };
+  }
+  return null;
+}
+
+/**
+ * The kind a query names, or null. "galaxies"; "moons of saturn", "saturn moons", "saturn's moons" for a
+ * row that takes a world (`of`). Whole words only: "galax" is still a name being typed.
+ */
+export function readKind(query, index) {
+  const q = norm(query).replace(/’/g, "'");
+  if (q.length < 3) return null;
+  if (KIND_AT.has(q)) return { row: KIND_AT.get(q), of: null };
+  if (!index || !index.n) return null;
+  const tail = /^(.+?) (?:of|round|around) (?:the )?(.+)$/.exec(q);
+  if (tail && KIND_AT.has(tail[1]) && KIND_AT.get(tail[1]).of) {
+    const of = worldNamed(index, tail[2]);
+    if (of) return { row: KIND_AT.get(tail[1]), of };
+  }
+  const head = /^(.+?)(?:'s|s')? (\S+(?: \S+)?)$/.exec(q);
+  if (head && KIND_AT.has(head[2]) && KIND_AT.get(head[2]).of) {
+    const of = worldNamed(index, head[1]);
+    if (of) return { row: KIND_AT.get(head[2]), of };
+  }
+  return null;
+}
+
+function hitOf(index, i, group, drawn) {
+  const record = index.record[i];
+  return { record, name: record.name || COPY.card.unknownName, where: index.where[i], klass: record.klass || 'unknown', score: 0, at: -1, length: 0, group, drawn };
+}
+
+/**
+ * The records of a kind in the index, grouped (one pass; kindHits and byKind share it). `only` keeps
+ * what has a 3D model; `skip` is a set of record ids already shown. Within a group the brighter first
+ * (the registry's order for a planet's moons), then the index's own ladder.
+ */
+const collected = new WeakMap(); // index -> key -> what collectKind found: the toggle and a re-run are free
+function collectKind(index, kind, only, skip) {
+  const out = { lists: [], ids: new Set(), total: 0 };
+  if (!index || !index.n || !kind || !classes) return out;
+  const key = [kind.row.say[0], kind.of ? kind.of.id : '', only ? 1 : 0, heroes ? heroes.size : -1, skip ? [...skip].join() : ''].join('|');
+  if (!collected.has(index)) collected.set(index, new Map());
+  const memo = collected.get(index);
+  if (memo.has(key)) return memo.get(key);
+  memo.set(key, out);
+  const S = COPY.r12Search;
+  const model = !!kind.row.model;
+  const want = model ? null : new Set(kind.row.classes);
+  const first = new Map(); // record id -> { i, cls }: the best-ranked entry, and a class from any entry
+  for (let i = 0; i < index.n; i += 1) {
+    const r = index.record[i];
+    if (!r || r.id == null || (skip && skip.has(r.id))) continue;
+    if (kind.of && labelParentId(r) !== kind.of.id) continue;
+    const cls = classOf(r);
+    const had = first.get(r.id);
+    if (!had) first.set(r.id, { i, cls });
+    else if (!had.cls && cls) had.cls = cls;
+  }
+  const groups = new Map();
+  for (const [id, { i, cls }] of first) {
+    if (want && !want.has(cls)) continue;
+    const drawn = only || model ? modelOf(index.record[i]) : null;
+    if ((only || model) && !drawn) continue;
+    const key = cls || 'other';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ i, drawn });
+    out.ids.add(id);
+  }
+  const order = (model ? classes.order.concat('other') : kind.row.classes).filter((k) => groups.has(k));
+  out.lists = order.map((k) => {
+    const list = groups.get(k);
+    list.sort((a, b) => (kind.of ? a.i - b.i
+      : (index.mag[a.i] - index.mag[b.i]) || (index.pop[b.i] - index.pop[a.i]) || (index.kind[a.i] - index.kind[b.i])
+        || (index.picked[b.i] - index.picked[a.i]) || (index.rank[a.i] - index.rank[b.i]) || (index.len[a.i] - index.len[b.i]) || (a.i - b.i)));
+    const label = k === 'other' ? S.other : (S.groups && S.groups[k]) || classes.title.get(k) || k;
+    const named = kind.of ? t(S.of, { label: label.charAt(0).toLowerCase() + label.slice(1), world: kind.of.name }) : label;
+    out.total += list.length;
+    return { group: { id: k, text: t(S.group, { label: named, n: fmt.int(list.length) }) }, list };
+  });
+  return out;
+}
+
+/** `limit` rows of what collectKind found, the groups taking turns: one row each in order, round again. */
+function shareKind(index, found, limit) {
+  const S = COPY.r12Search;
+  const take = found.lists.map(() => 0);
+  let room = Math.max(0, limit);
+  for (let moved = true; room > 0 && moved;) {
+    moved = false;
+    for (let k = 0; k < found.lists.length && room > 0; k += 1) if (take[k] < found.lists[k].list.length) { take[k] += 1; room -= 1; moved = true; }
+  }
+  const hits = [];
+  found.lists.forEach((g, k) => {
+    for (const { i, drawn } of g.list.slice(0, take[k])) hits.push(hitOf(index, i, g.group, drawn ? (drawn === 'real' ? S.real : S.rebuilt) : undefined));
+  });
+  return hits;
+}
+
+/**
+ * The records of a kind in the index, grouped: at most `limit` rows. Each row carries `group` ({id,
+ * text}, the microlabel search.js draws over the first of a run) and, in a 3D listing, `drawn`.
+ */
+export function kindHits(index, kind, { limit = 8, only = false, skip = null } = {}) {
+  const found = collectKind(index, kind, only, skip);
+  return { hits: shareKind(index, found, limit), total: found.total, ids: found.ids };
+}
+
+/**
+ * findMatches' answer, made the answer to a kind or to the 3D toggle. `result` was asked for with a cap
+ * far past the eight rows, so the toggle filters every match and not the eight shown. An exact name
+ * leads ("moon" is the Moon, then the moons); then the kind's groups; then up to NAME_ROWS other records
+ * whose name starts a word with the query ("galaxy" also finds the satellite GALAXY 19), under "By name".
+ * `none` when the toggle left nothing of what matched.
+ */
+export function byKind(index, result, kind, { limit = 8, only = false, exact = 900, word = 700 } = {}) {
+  const hits = (result && result.hits) || [];
+  const out = { hits: [], total: 0, query: result ? result.query : '', fallback: false, none: false };
+  const needModel = only || !!(kind && kind.row.model);
+  const keep = (h) => h && h.record && (!needModel || modelOf(h.record));
+  // What a row of a 3D listing says it is drawn from, after its kind.
+  const said = (h) => {
+    const m = needModel ? modelOf(h.record) : null;
+    return m ? { ...h, drawn: m === 'real' ? COPY.r12Search.real : COPY.r12Search.rebuilt } : h;
+  };
+  if (!kind || !classes) {
+    const shown = only ? hits.filter(keep) : hits;
+    out.hits = shown.slice(0, limit).map(said);
+    out.total = only ? shown.length : result.total;
+    out.fallback = !!(result && result.fallback);
+    out.none = only && hits.length > 0 && !shown.length;
+    return out;
+  }
+  const lead = hits[0] && hits[0].score >= exact && keep(hits[0]) ? hits[0] : null;
+  const skip = new Set(lead ? [lead.record.id] : []);
+  const found = collectKind(index, kind, only, skip);
+  const names = hits.filter((h) => h !== lead && h.score >= word && keep(h) && !found.ids.has(h.record.id));
+  const nameRoom = found.total ? Math.min(NAME_ROWS, names.length) : Math.min(limit - (lead ? 1 : 0), names.length);
+  const groups = { hits: shareKind(index, found, limit - (lead ? 1 : 0) - nameRoom), total: found.total };
+  const byName = { id: 'name', text: COPY.r12Search.byName };
+  out.hits = [...(lead ? [said(lead)] : []), ...groups.hits, ...names.slice(0, nameRoom).map((h) => ({ ...said(h), group: groups.total ? byName : undefined }))];
+  out.total = (lead ? 1 : 0) + groups.total + names.length;
+  out.none = only && !out.hits.length && hits.length > 0;
+  return out;
+}
+
+/** How many matches a kind or the toggle asks findMatches for: it keeps from all of them, not the eight shown. */
+export const KIND_CAP = 5000;
+
+/**
+ * ui/search.js's whole question when the rows have landed: findMatches as before, or, for a kind or with
+ * the toggle on, byKind over KIND_CAP matches. `kind` and `note` (the foot's line: "counting…" while the
+ * classes are on their way, or that the toggle left nothing; either way not a miss) ride on the answer;
+ * `again` is called once the classes have arrived.
+ */
+export function answer(index, q, only, { find, limit = 8, exact = 900, word = 700, again = null } = {}) {
+  const on = kindsOn();
+  const kind = on ? readKind(q, index) : null;
+  const wait = on ? wantKinds(kind, only) : null;
+  if (wait && again) wait.then(again);
+  if (!kind && !(on && only)) return find(index, q, limit);
+  const out = byKind(index, find(index, q, KIND_CAP), kind, { limit, only: on && only, exact, word });
+  out.kind = kind;
+  // The foot's line, and not a miss: the classes are on their way, or the toggle left nothing.
+  out.note = kind && wait && !out.hits.length ? COPY.r12Search.counting : out.none ? COPY.r12Search.noneWithModel : '';
+  return out;
+}
+
+// The two nodes search by kind adds to the list (ui/search.js draws them; they are built here so the
+// field on the first screen does not carry them). Their look is css/searchkinds.css.
+
+/** A group's microlabel: heard as its rows' description (aria-describedby), not as a row of its own. */
+export function groupHead(group, id) {
+  const head = document.createElement('li');
+  head.className = 'sr-search__head';
+  head.textContent = group.text;
+  head.id = id;
+  head.dataset.group = group.id;
+  head.setAttribute('role', 'presentation');
+  head.setAttribute('aria-hidden', 'true');
+  return head;
+}
+
+/** The "3D models" toggle under the results: pressed with the field keeping the focus, so a touch never blurs the list shut. */
+export function onlyToggle(onPress, onEscape) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sr-search__only';
+  b.textContent = COPY.r12Search.only;
+  b.title = COPY.r12Search.onlyTitle;
+  b.setAttribute('aria-pressed', 'false');
+  b.addEventListener('pointerdown', (event) => event.preventDefault());
+  b.addEventListener('click', onPress);
+  b.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); onEscape(); } });
+  return b;
+}
+
+/** Shown under results that hold objects, or while it is on; never in a look tool's before picture. */
+export function paintToggle(b, state) {
+  // Not before its stylesheet has landed: unstyled it is a 21 px browser button (the ui gate measured exactly that).
+  b.hidden = !styled || !kindsOn() || !(state.only || (!state.missed && state.hits.some((h) => h.record && !h.extra)));
+  b.setAttribute('aria-pressed', state.only ? 'true' : 'false');
+}
+
+let styled = typeof document === 'undefined'; // a test in node has no stylesheet to wait for
+/** Resolves once css/searchkinds.css is in (or has failed); the toggle stays hidden until then. */
+export const stylesReady = typeof document !== 'undefined' ? loadCss('searchkinds').then(() => { styled = true; }) : Promise.resolve();

@@ -121,7 +121,9 @@ check(/laser altimeter measured/.test(recs.get('mars').meta.departure || '') && 
 {
   const { segmentsFor, sagKm, SITE_BODIES } = await import(join(JS, 'scene/worlds.js'));
   const sites = readFileSync(join(ROOT, 'registry/sites.yaml'), 'utf8');
-  const bodies = new Set([...sites.matchAll(/\bworld:\s*([a-z]+)/g)].map((m) => m[1]));
+  // A row with `app: false` (Huygens on Titan, W2-a) is not shipped in data/sites.js, so it cuts nothing finely.
+  const shipped = sites.split(/^  - id:/m).filter((row) => !/^\s*app:\s*false\b/m.test(row)).join('\n  - id:');
+  const bodies = new Set([...shipped.matchAll(/\bworld:\s*([a-z]+)/g)].map((m) => m[1]));
   bodies.delete('earth'); // the Earth's sphere is scene/earth.js's own, cut by its own SEGMENTS
   check(bodies.has('moon') && bodies.has('mars') && bodies.size === 2, `registry/sites.yaml puts ground sites on the Moon and Mars only (${[...bodies]})`);
   for (const b of bodies) check(SITE_BODIES.has(b), `${b} has ground sites in registry/sites.yaml, so its sphere is cut finely`);

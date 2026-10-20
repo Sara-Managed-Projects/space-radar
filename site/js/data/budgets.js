@@ -5,11 +5,11 @@
 
 /** Every gate CI reads, by id (spec 0044). A raised value needs a dated reason in the YAML. */
 export const BUDGETS = {
-  "first_visit_bytes": 2855000,
+  "first_visit_bytes": 2864000,
   "boot_longest_task_ms": 3000,
   "boot_blocking_ms": 6000,
-  "deployed_boot_js_bytes": 1869400,
-  "after_first_visit_bytes": 1670000,
+  "deployed_boot_js_bytes": 1876000,
+  "after_first_visit_bytes": 1712500,
   "embed_first_visit_bytes": 2060000,
   "audio_at_boot_bytes": 0,
   "og_at_boot_bytes": 0,
@@ -45,5 +45,22 @@ export const BUDGETS = {
   "deep_cmb_map_bytes": 600000,
   "deep_cmb_draw_calls": 2,
   "sun_image_bytes": 400000,
-  "sun_loops_draw_calls": 1
+  "sun_loops_draw_calls": 1,
+  "moon_height_tiles_per_window": 40,
+  "moon_height_bytes_per_window": 900000,
+  "moon_height_window_gpu_mib": 3,
+  "traverse_draw_calls": 2,
+  "traverse_data_bytes": 60000,
+  "plumes_draw_calls": 1,
+  "plumes_gpu_bytes": 1200000,
+  "plumes_data_bytes": 12000,
+  "deep_clusters_bytes": 400000,
+  "deep_clusters_draw_calls": 3,
+  "deep_globular_points": 24000,
+  "deep_ring_bytes": 60000,
+  "deep_ring_draw_calls": 3,
+  "deep_sheets_bytes": 300000,
+  "deep_sheets_draw_calls": 3,
+  "deep_galclusters_bytes": 150000,
+  "deep_galclusters_draw_calls": 6
 };

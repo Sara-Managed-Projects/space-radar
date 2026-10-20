@@ -168,6 +168,8 @@ const OFFLINE_MS = 6000;
 /** The timeline in the time pill (ui/scrubber.js) and the home's dated cards (ui/today.js): after
  * the two seconds tests/test_first_visit_bytes.mjs waits past sr:layers-ready. */
 const SCRUBBER_MS = 4000;
+/** The scene summary for a screen reader (ui/scenesummary.js, 0076 W4-c): with the first of the later modules. */
+const SUMMARY_MS = 3000;
 const TODAY_MS = 4500;
 /** The first visit's three lines and two buttons (ui/welcome.js), the launch chip (ui/launchchip.js)
  * and the way home (ui/base.js): with the timeline, the first things after the first visit. */
@@ -213,10 +215,17 @@ function afterFirstVisit(ms, run) {
   }, ms);
 }
 
+// 0076 W4-c (internal #912, #836): the Motion row in What to show. Off is read here and from scene/camera.js and
+// ui/trip.js as `data-sr-motion="off"` on the page, so a flight is an instant set and a trip reads at the reader's
+// pace, as under prefers-reduced-motion. The row writes the same attribute and `sr:motion` (ui/whattoshow.js).
+const motionStill = () => typeof document !== 'undefined' && document.documentElement.dataset.srMotion === 'off';
+
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
   // `/?from=ig` is the home page: the tag is taken off the address bar before anything reads it (ui/urlstate.js).
   dropFrom();
+  // 0076 W4-c: the choice the Motion row remembered, before anything flies.
+  try { if (window.localStorage.getItem('sr:motion') === 'off') document.documentElement.dataset.srMotion = 'off'; } catch { /* no memory: motion as the device says */ }
   // RENDER MODE (spec 0070, ui/rendermode.js): `?render=1#trip=<id>` is tools/render-trip.mjs
   // filming a trip one frame at a time. It takes over what the page calls time, so it is installed
   // before anything below asks what time it is; the module is imported only for that address
@@ -280,7 +289,7 @@ export async function boot({ setStatus } = {}) {
     recordsFor: (id) => layerRecords.get(id) || [],
     // The dot layers, for one reader: sky/skyview.js puts them in the same air as the stars.
     glyphLayers,
-    recordById: (id) => ctx.records().find((r) => r.id === id) || null,
+    recordById: (id) => ctx.records().find((r) => r.id === id) || (ctx.deep && ctx.deep.volumeRecord ? ctx.deep.volumeRecord(id) : null), // 0076 W4-a: and the local volume's galaxies
     selected: () => selected,
     select,
     deselect,
@@ -364,7 +373,7 @@ export async function boot({ setStatus } = {}) {
       pictureShare: (id) => (ctx.nebulae ? ctx.nebulae.drawn(id) : 0), picturesBusy: () => !!(ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy()),
       selectedId: () => (ctx.selected() ? ctx.selected().id : null), subjectId: () => (ctx.labels ? ctx.labels.subject() : null),
       quality: () => { const d = ctx.quality ? ctx.quality.describe() : {}; return { tier: Number.isFinite(d.tier) ? d.tier : 1, top: !!(d.plan && d.plan.steps === 'top'), latched: !!(ctx.latch && ctx.latch.latched), scaleStep: ctx.scaler ? ctx.scaler.step : 0 }; },
-      look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches), frozen: () => !!(ctx.latch && ctx.latch.held),
+      look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches) || motionStill(), frozen: () => !!(ctx.latch && ctx.latch.held),
       debug: /[?&]deepdebug=1\b/.test(location.search), glowVisible: (on) => { ctx.deepGlowOff = !on; },
     });
     ctx.deep.setExposure(exposure.look().milkyWay);
@@ -468,6 +477,9 @@ export async function boot({ setStatus } = {}) {
   // stage is entered, dropped when it is left, nothing at boot.
   const systems = createSystems(scene, ctx);
   ctx.systems = systems;
+  // 0076 W2-b (exposure to the worlds)
+  worlds.setExposure(exposure.mode());
+  exposure.onChange((mode) => worlds.setExposure(mode));
   window.addEventListener('sr:stage', (e) => {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
@@ -479,6 +491,10 @@ export async function boot({ setStatus } = {}) {
     else systems.leave();
     // 0076 W2-a
     // 0076 W2-c
+    // Plumes where they were seen (scene/plumes.js): fetched when Io, Enceladus or Triton gets its stage.
+    if (!ctx.wantPlumes) ctx.wantPlumes = () => ctx.wantPlumes.p || (ctx.wantPlumes.p = import('./scene/plumes.js').then((m) => (ctx.plumes = m.createPlumes(ctx))).catch((e) => { console.warn('the plumes did not load', e); ctx.wantPlumes.p = null; return null; }));
+    if (ctx.plumes) ctx.plumes.stage(id);
+    else if (id === 'io' || id === 'enceladus' || id === 'triton') ctx.wantPlumes().then((p) => p && p.stage(stage.worldId));
     // The Milky Way is fetched, built and its shaders compiled while the stellar rung is up (internal
     // #549: entering the galaxy rung stalled about three seconds), not on the galaxy rung's first frame.
     // Not on a metered connection, where the 2.2 MB file waits for the rung that draws it.
@@ -500,7 +516,7 @@ export async function boot({ setStatus } = {}) {
   // cross-fade is it. Mounted on <body> beside the canvas, because the trip frame is a stacking
   // context of its own and anything inside it sits over the card.
   ctx.veil = createVeil(document.body, {
-    reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+    reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
   });
   // ui/tripgate.js: the trip's own object once a trip is wanted, an idle stand-in until then.
   ctx.trip = createTripGate(ctx);
@@ -581,7 +597,7 @@ export async function boot({ setStatus } = {}) {
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
         tier: ctx.quality ? ctx.quality.tier : 1, // 600, 1200 or 2400 streaks (scene/wind.js COUNT_BY_TIER)
-        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
         onChange: tellOverlay,
       });
       return ctx.wind;
@@ -599,7 +615,7 @@ export async function boot({ setStatus } = {}) {
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
         tier: ctx.quality ? ctx.quality.tier : 1, // 1200, 2500 or 5000 streaks (scene/currents.js COUNT_BY_TIER)
-        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
         onChange: tellOverlay,
       });
       return ctx.currents;
@@ -708,6 +724,8 @@ export async function boot({ setStatus } = {}) {
       if (ids !== picturesAsked) {
         picturesAsked = ids;
         ctx.wantNebulae().then((n) => { if (n && typeof n.prefetch === 'function') n.prefetch(ids); });
+        // 0076 W4-a (the hero prefetch): and the deep-sky heroes among them, built with their shaders compiled, before the stop lands
+        ctx.wantDeep().then((d) => { if (d && typeof d.prefetch === 'function') d.prefetch(ids, { renderer: ctx.renderer, camera: ctx.camera }); });
       }
     }
     tripPortrait = tripping && st.portrait ? st.portrait.id : '';
@@ -751,7 +769,7 @@ export async function boot({ setStatus } = {}) {
     opening = openingPlan({
       seen: !!store.getItem(OPENING_KEY),
       link: !!(link && Object.keys(link).length) || location.hash.length > 1,
-      reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+      reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
       embed: !!embed,
       hidden: document.hidden,
       automated: navigator.webdriver === true,
@@ -953,7 +971,7 @@ export async function boot({ setStatus } = {}) {
       const weather = m.createWeather({
         worlds,
         camera,
-        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
         // A world's card rewrites its weather line on this, as the Earth's does its clouds line.
         onChange: () => window.dispatchEvent(new CustomEvent('sr:weather')),
       });
@@ -1168,6 +1186,13 @@ export async function boot({ setStatus } = {}) {
   else window.addEventListener('sr:layers-ready', offlineLater, { once: true });
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
+  // 0076 W4-c (internal #912): one line on what is on screen, for a screen reader; not in an embed, which has no panels.
+  const summaryLater = () => afterFirstVisit(SUMMARY_MS, () => {
+    import('./ui/scenesummary.js').then((m) => m.createSceneSummary(ctx)).catch((e) => console.warn('the scene summary did not load', e));
+  });
+  if (embed) { /* no summary */ }
+  else if (window.__srLayersReady) summaryLater();
+  else window.addEventListener('sr:layers-ready', summaryLater, { once: true });
   // `#sources` opens the sheet (design §6): a link to "what could this page read" is worth having.
   const openSourcesFromHash = () => { if (location.hash === '#sources') shell.openSources(); };
   openSourcesFromHash();
@@ -1348,6 +1373,10 @@ export async function boot({ setStatus } = {}) {
     }
     if (isLayerOn('stars') && ctx.stars3d) {
       for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+    }
+    // 0076 W4-a (spec 0075 task 63): the local volume's galaxies (scene/deep/localvolume.js), on the Local Group's rung
+    if (ctx.deep && ctx.deep.pickAll) {
+      for (const c of ctx.deep.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
     }
     // A star system's own star and planets, on its stage (spec 0040): the same exo-... records.
     if (ctx.systems && ctx.systems.active) {
@@ -1790,8 +1819,11 @@ export async function boot({ setStatus } = {}) {
     if (record && record.klass === 'exotic') return farOff(record) && pos ? Math.max(0.4, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : 0.4;
     if (record && record.klass === 'dso') {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
-      const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;
-      return Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
+      // 0076 W4-a: a galaxy of the local volume with no catalogued diameter is framed by its distance (a thousandth of it), not as a 20 ly nebula
+      const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : record.meta && record.meta.distLy > 1e6 ? record.meta.distLy / 1000 : 20;
+      const framing = Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
+      // 0076 W4-a (spec 0075 task 64): the steady stand-off is for any place past the stellar rung's far plane, not only the exotics'
+      return farOff(record) && pos ? Math.max(framing, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : framing;
     }
     // A point on the Earth's own ground (a storm, a launch pad, a site) is met from no nearer than
     // the map can bear (internal #420, scene/framing.js groundDistanceKm).
@@ -2742,7 +2774,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
       const earth = worlds.meshFor('earth');
-      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches), look: ctx.look() });
+      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill(), look: ctx.look() });
       // A prominence came over the limb, a flare began or faded, a CME left: the Sun's card says so.
       const doing = ctx.sunDetail.activity();
       if (doing !== sunDoing) { sunDoing = doing; if (ctx.quality) window.dispatchEvent(new CustomEvent('sr:tier', { detail: ctx.quality.describe() })); }
@@ -2759,7 +2791,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         latched: latch.latched || lowChosen,
         look: ctx.look(),
         top: !!(ctx.quality && ctx.quality.ultra),
-        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
+        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill(),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
       });
     }
@@ -2769,7 +2801,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.weather.tick(t, {
         on: ctx.isLayerOn('lightning'),
         latched: latch.latched || lowChosen,
-        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
+        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill(),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
         viewportH: ctx.renderer && ctx.renderer.domElement ? ctx.renderer.domElement.height : 800,
         pixelRatio: ctx.renderer && ctx.renderer.getPixelRatio ? ctx.renderer.getPixelRatio() : 1,
@@ -2866,7 +2898,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
       // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
-      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare(1 - ctx.nebulae.drawn('dso-m31'));
+      // 0076 W4-a (spec 0075 task 59): and by what M31's hero draws of them as Sersic points (the two never draw one galaxy twice).
+      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare((1 - ctx.nebulae.drawn('dso-m31')) * (1 - (ctx.deep && ctx.deep.heroShareOf ? ctx.deep.heroShareOf('dso-m32') : 0)));
       // A glow gives way to a photograph only while the photograph is being drawn (scene/dsoglow.js):
       // off the line of sight from the Sun the picture fades and the mark of its kind comes back.
       // Asked four times a second; the glow's buffer is rewritten only when the answer changes.

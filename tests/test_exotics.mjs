@@ -16,7 +16,7 @@ const { drawingLine, seeItLine } = await import(join(JS, 'ui/cards.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 const LY = 9460730472580.8;
 
-check(EXOTICS.length === 20, `twenty fact sheets (${EXOTICS.length})`);
+check(EXOTICS.length === 22, `twenty-two fact sheets (${EXOTICS.length})`); // 0076 W4-b: 20 + 3C 273 and 3C 279
 check(EXOTICS.filter((x) => x.kind === 'pulsar' && x.massMsun >= 1.9).length === 2, 'two pulsars weigh about two Suns');
 const fast = EXOTICS.find((x) => x.id === 'psr-j1748-2446ad');
 check(fast && Math.abs(1 / fast.periodS - 716.36) < 0.01, `the fastest pulsar turns 716 times a second (${fast && (1 / fast.periodS).toFixed(2)})`);
@@ -35,10 +35,16 @@ check(lgm.distLyLow === 300 && lgm.distLyHigh === 3600 && lgm.periodS > 1.33, 't
 const ton = EXOTICS.find((x) => x.id === 'ton-618');
 check(ton.distance_note && ton.distance_note.includes('light-travel'), 'TON 618 says what kind of distance it quotes');
 
+// 0076 W4-b: the two quasars carry a redshift, a kind of their own and, for 3C 273, its mass and its apparent magnitude.
+const q273 = EXOTICS.find((x) => x.id === '3c-273'), q279 = EXOTICS.find((x) => x.id === '3c-279');
+check(q273 && q273.kind === 'quasar' && q273.redshift === 0.158339 && q273.vmag === 12.9 && q273.massMsun === 886000000, '3C 273: a quasar, z 0.158339, magnitude 12.9, 886 million Suns');
+check(q279 && q279.kind === 'quasar' && q279.redshift === 0.5362 && q279.vmag === 17.8 && q279.massMsun === undefined, '3C 279: a quasar, z 0.5362, magnitude 17.8, no mass claimed');
+check([q273, q279].every((x) => x && /comoving/.test(x.distance_note) && /light-travel/.test(x.distance_note)), 'each quasar says which distance it quotes');
+
 const row = LAYERS.find((l) => l.id === 'exotics');
 check(!!row && row.noModel === true && row.klass === 'exotic' && typeof row.sample === 'function', 'the exotics layer row exists, no hero model');
 const recs = row.sample();
-check(recs.length === 20 && recs.every((r) => r.propagator === 'static' && r.frame === 'sun-inertial' && r.meta.source), 'twenty static records carrying their sources');
+check(recs.length === 22 && recs.every((r) => r.propagator === 'static' && r.frame === 'sun-inertial' && r.meta.source), 'twenty-two static records carrying their sources');
 
 // Sgr A* sits where the galaxy record put the centre, and M87* where the deep-sky layer put M87
 const galaxyRow = LAYERS.find((l) => l.id === 'galaxy');
@@ -76,4 +82,4 @@ check(seeItLine(sgrRec, null, m0, {}) === COPY.sky.needsTelescope, 'Sgr A*, with
 check(drawingLine(betRec).includes('point at this scale') && !drawingLine(betRec).includes('black hole'), `a star among the extremes is drawn as a ring for its own reason: ${drawingLine(betRec)}`);
 
 if (problems.length) { console.error('exotics FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('exotics ok: twenty fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');
+console.log('exotics ok: twenty-two fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');

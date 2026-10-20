@@ -554,7 +554,9 @@ export function createSearch(ctx, host) {
     more: null, // ui/searchrows.js, once the field has been focused: what a row says, and the extras
     env: null, // where things are in the visitor's sky, for the rows
     group: null, // {id, q}: a constellation's row the visitor pressed, listed while the query stands
+    only: false, // the "3D models" toggle under the results (spec 0076 W3-e)
   };
+  let only = null; // the toggle, built once the search rows have landed (its words are theirs)
 
   // WHAT A ROW SAYS, AND TRIPS, MISSIONS AND EVENTS (public #312): fetched on the first focus, never
   // at boot (ui/searchrows.js says why). Until it lands the list is a name and its layer.
@@ -721,9 +723,15 @@ export function createSearch(ctx, host) {
 
   function paintList() {
     list.textContent = '';
+    let head = null;
     for (let i = 0; i < state.hits.length; i += 1) {
       const hit = state.hits[i];
+      // A kind's group (ui/searchrows.js kindHits): a microlabel over the first row of a run, heard as
+      // each of its rows' description rather than as a choosable row of its own.
+      if (hit.group && (!head || head.dataset.group !== hit.group.id)) list.appendChild(head = state.more.groupHead(hit.group, `${OPTION_ID}g${i}`));
+      else if (!hit.group) head = null;
       const item = el('li', 'sr-search__option');
+      if (head) item.setAttribute('aria-describedby', head.id);
       item.id = OPTION_ID + i;
       item.setAttribute('role', 'option');
       item.setAttribute('aria-selected', 'false');
@@ -751,7 +759,7 @@ export function createSearch(ctx, host) {
         if (hit.extra) item.dataset.extra = hit.extra;
         const text = el('span', 'sr-search__text');
         text.appendChild(nameNode(hit));
-        const sub = hit.extra ? [hit.sub] : [hit.row.kind, hit.row.also, hit.row.where];
+        const sub = hit.extra ? [hit.sub] : [hit.row.kind, hit.drawn, hit.row.also, hit.row.where];
         const line = sub.filter(Boolean).join(COPY.punctuation.separator);
         if (line) text.appendChild(el('span', 'sr-search__what', line));
         item.appendChild(text);
@@ -782,12 +790,14 @@ export function createSearch(ctx, host) {
 
     const hidden = state.total - state.hits.length;
     const lines = [];
+    if (state.note) lines.push(state.note);
     if (!state.missed) {
       if (state.fallback) lines.push(COPY.search.fallback);
       if (hidden > 0) lines.push(t(COPY.search.more, { n: fmt.int(hidden) }));
     }
     foot.textContent = lines.join(' ');
     foot.hidden = foot.textContent === '';
+    paintOnly();
     // The miss: the query quoted back (cut, so a pasted paragraph stays one line), and whether
     // anything is near it. With an empty index the line says that instead: nothing was searched.
     empty.hidden = !state.missed;
@@ -799,16 +809,31 @@ export function createSearch(ctx, host) {
     }
   }
 
+  /** The "3D models" toggle: under the results while they hold objects, or while it is on. */
+  function paintOnly() {
+    const m = state.more;
+    if (!m || typeof m.answer !== 'function') return;
+    if (!only) {
+      only = m.onlyToggle(() => { state.only = !state.only; run(input.value); }, () => { close(true); paintList(); input.focus(); });
+      pop.insertBefore(only, foot);
+      // Shown once css/searchkinds.css has landed (searchrows.js paintToggle), then painted again here.
+      m.stylesReady.then(() => { if (only) m.paintToggle(only, state); });
+    }
+    m.paintToggle(only, state);
+  }
+
   function paintActive() {
-    for (let i = 0; i < list.children.length; i += 1) {
-      const item = list.children[i];
+    // The options only: a kind's group microlabels sit between them (spec 0076 W3-e).
+    const items = list.querySelectorAll('[role="option"]');
+    for (let i = 0; i < items.length; i += 1) {
+      const item = items[i];
       const on = i === state.active;
       item.classList.toggle('is-active', on);
       item.setAttribute('aria-selected', on ? 'true' : 'false');
     }
-    if (state.active >= 0 && list.children[state.active]) {
+    if (state.active >= 0 && items[state.active]) {
       input.setAttribute('aria-activedescendant', OPTION_ID + state.active);
-      const item = list.children[state.active];
+      const item = items[state.active];
       if (item.scrollIntoView) item.scrollIntoView({ block: 'nearest' });
     } else {
       input.removeAttribute('aria-activedescendant');
@@ -839,6 +864,7 @@ export function createSearch(ctx, host) {
       state.hits = [];
       state.total = 0;
       state.missed = '';
+      state.only = false;
     }
   }
 
@@ -856,14 +882,22 @@ export function createSearch(ctx, host) {
       return;
     }
     ensureIndex();
-    const result = findMatches(state.index, q, MAX_RESULTS);
+    // A kind of thing ("galaxies", "moons of saturn") or the 3D toggle (spec 0076 W3-e): ui/searchrows.js
+    // answer() asks findMatches itself, and asks again (`again`) when the classes it reads have arrived.
+    const kinds = state.more && typeof state.more.answer === 'function' ? state.more : null;
+    const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); } })
+      : findMatches(state.index, q, MAX_RESULTS);
+    const kind = result.kind;
     state.hits = result.hits;
     state.total = result.total;
     state.fallback = result.fallback === true;
+    // The foot's own line from the search rows: "counting…", or that the toggle left nothing.
+    state.note = result.note || '';
     state.switchedOn = null;
     state.skyNote = '';
     // Nothing matched: say so, and offer the nearest names as the options (closest() above).
-    state.missed = result.hits.length ? '' : String(text).trim();
+    // A kind typed while its classes are on their way, or the toggle leaving nothing, is not a miss.
+    state.missed = result.hits.length || state.note ? '' : String(text).trim();
     if (state.missed) { state.hits = closest(state.index, q); state.total = state.hits.length; }
     if (state.more) {
       // The rows' words, one row per drawn name, and under the objects the trips, missions and
@@ -882,7 +916,7 @@ export function createSearch(ctx, host) {
       rows.splice(0, rows.length, ...grouped);
       state.total = Math.max(0, state.total - (before - rows.length));
       const merged = state.hits.length - before;
-      const extras = m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
+      const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
       if (extras.length && state.missed && !rows.length) state.missed = '';
       state.total = Math.max(0, state.total - merged);
       state.hits = rows.slice(0, MAX_RESULTS - Math.min(extras.length, rows.length ? extras.length : 0)).concat(state.missed ? [] : extras);
@@ -1008,6 +1042,8 @@ export function createSearch(ctx, host) {
         return;
       }
       case 'Tab': {
+        // Forward to the "3D models" toggle under the list, when it is there: the list stays open for it.
+        if (!event.shiftKey && only && !only.hidden && state.open) return;
         setOpen(false);
         return;
       }

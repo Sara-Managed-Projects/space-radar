@@ -602,10 +602,12 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     'deep-rosetta': 'rosetta.glb', 'deep-near': 'near.glb', 'deep-stardust': 'stardust.glb', 'deep-deep-impact': 'deep-impact.glb',
     // 2026-10-15, batch eleven (public #1075): NASA's own Europa Clipper, turned to the app's axes.
     'deep-europa-clipper': 'europa-clipper.glb',
+    // 2026-10-15, batch twelve (public #1080 to #1084): five built here from published dimensions.
+    'deep-psyche': 'psyche.glb', 'deep-lucy': 'lucy.glb', 'deep-juice': 'juice.glb',
+    'deep-bepicolombo': 'bepicolombo.glb', 'deep-hera': 'hera.glb',
   };
-  // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
-  const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-juice', 'deep-bepicolombo',
-    'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
+  // The 2026-09-22 twelve, less those above: generic on purpose, and never another craft's shape.
+  const generic = new Set(['deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;
@@ -613,7 +615,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     else if (generic.has(r.id)) check(got === null, `${r.name} (${r.id}) has no model of its own, yet a route gives it ${got}`);
     else check(got !== null, `${r.name} (${r.id}) has no shape at all -- it would fall back to the generic one`);
   }
-  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all nine generic-probe craft are in the layer');
+  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all three generic-probe craft are in the layer');
   // 1279 Gaia is a main-belt asteroid. Without the klass gate on the name route it would be drawn
   // with a ten-metre sunshield, which is the TESS mistake -- a comet wearing a telescope -- exactly.
   const rock = realModelFor({ id: 'a-1279', name: '1279 Gaia', klass: 'asteroid', layer: 'asteroids', meta: {} });

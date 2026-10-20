@@ -294,7 +294,8 @@ export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
 // width and darkness nobody would see them -- Uranus's epsilon ring, the widest, is under a pixel
 // with the planet 600 pixels across, and all of them reflect 1.5 % of the light that reaches them.
 // So each is drawn `widen` times wider, `dense` times more opaque (Neptune's are also nearly
-// transparent), and in `colour`, far brighter than charcoal. The RADII are the measurement. They
+// transparent), and in `colour`, far brighter than charcoal -- Neptune's still. Uranus's since
+// internal spec 0076 W2-b are drawn at their own darkness (URANUS_RINGS below). The RADII are the measurement. They
 // cast no shadow on the globe: a shadow ten times too wide would be a second untruth. Neptune's
 // two broad sheets, Galle and Lassell, have an optical depth of 0.0001 and are left out, and so
 // are the arcs in the Adams ring.
@@ -332,8 +333,20 @@ export function arcUniform(arcs = NEPTUNE_ARCS) {
 }
 export const ARC_SLOTS = NEPTUNE_ARCS.spans.length;
 
+/**
+ * URANUS'S RINGS AT THEIR OWN DARKNESS (internal spec 0076 W2-b, internal #860). Until 1.2.0 they were
+ * drawn in a pale grey (0x8f9da3) "far brighter than they are". NASA's ring fact sheet gives each
+ * ring's albedo as about 15 thousandths (epsilon about 18); the planet's geometric albedo is 0.488
+ * (its fact sheet, read 2026-10-16). RING_FRAG draws a thick ring, face-on under an overhead Sun, in
+ * `colour`, as the world shader draws the sub-solar point in the map's colour; so `colour` is the map's
+ * mean luminance (0.562 in linear light, `tint`) times 0.015 / 0.488, a neutral grey (the rings are
+ * spectrally flat): 0.0173 linear, which the nearest sRGB byte, 0x24, draws as 0.0176. That is a
+ * thirtieth of the clouds: in front of the planet they are dark threads, against black faint ones.
+ * The Deep exposure lifts them `deep` (four) times on every tier (setExposure below), as a long
+ * exposure lifts them in Voyager's and Keck's pictures. tests/test_giants.mjs holds the arithmetic.
+ */
 export const URANUS_RINGS = {
-  innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x8f9da3,
+  innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x242424, deep: 4,
   bands: [
     [41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3],      // 6, 5, 4
     [44718, 7, 0.4], [45661, 8, 0.3],                          // alpha, beta
@@ -1611,7 +1624,7 @@ void main() {
 }
 `;
 
-function ringMaterial(map, inner, outer, warp) {
+export function ringMaterial(map, inner, outer, warp) {
   return new THREE.ShaderMaterial({
     name: 'world-ring',
     vertexShader: RING_VERT,
@@ -1803,6 +1816,8 @@ export function createWorlds(scene, opts = {}) {
   let reliefAllowed = false;
   // The device's tier, for the steps of Mars's shadow march (setRelief's second word).
   let reliefTier = 1;
+  let exposureNow = 'camera';
+  const exposureHooks = new Set();
   const marchSteps = () => MARS_RELIEF.steps[Math.min(Math.max(0, reliefTier), MARS_RELIEF.steps.length - 1)];
   /**
    * The relief a world should wear now, and the key it is kept under: the one under the face it
@@ -2888,6 +2903,16 @@ export function createWorlds(scene, opts = {}) {
     /** Measured or Film (main.js, scene/exposure.js createDrawn): under Measured nothing generated is drawn, so no ring grains. */
     // The Earth's clouds are at their true thickness under Measured (scene/earth.js CLOUD_PARALLAX).
     setLook: (mode) => { lookMeasured = mode === 'measured'; setEarthCloudHeight(meshes.get('earth'), { look: mode }); for (const w of WORLDS) dressFace(w.id); },
+    // Eye, Camera or Deep (main.js; internal spec 0076 W2-b): Deep lifts Uranus's rings here, so on every
+    // tier; scene/weather/worldweather.js stretches Jupiter's by it (onExposure).
+    setExposure: (mode) => {
+      exposureNow = mode;
+      // URANUS_RINGS[mode]: the lift is keyed by the exposure's name (only `deep`); 1 for the others.
+      meshes.get('uranus')?.userData.ring.material.uniforms.uColour.value.set(URANUS_RINGS.colour).multiplyScalar(URANUS_RINGS[mode] || 1);
+      for (const f of exposureHooks) f(mode);
+    },
+    exposure: () => exposureNow,
+    onExposure: (f) => { exposureHooks.add(f); return () => exposureHooks.delete(f); },
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     /** For the probes: is this world wearing its relief? */

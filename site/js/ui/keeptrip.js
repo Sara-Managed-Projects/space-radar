@@ -37,6 +37,12 @@ const DOWNLOAD = [['path', { d: 'M12 15V3' }], ['path', { d: 'M21 15v4a2 2 0 0 1
 /** The folders the worker keeps as `asset` (site/sw.js ASSET_DIRS); anything else would be fetched and not kept. */
 export const KEPT_DIRS = ['textures/', 'models/', 'audio/', 'images/', 'og/', 'data/'];
 
+/** What the deep layers fetch when their stage is entered (scene/deep/localvolume.js, and scene/deep/galclusters.js: 0076 W4-b): tests/test_keeptrip.mjs holds the names. */
+export const STAGE_FILES = { 'local-group': ['data/deep/localvolume.json', 'data/deep/localvolume.bin', 'data/deep/galclusters.json', 'data/deep/galclusters.bin'] };
+/** The microwave background's map (scene/deep/cmb.js MAP_URL), and the share of its radius from which it is fetched (scene/shells.js CMB_LOAD_RATIO). */
+export const CMB_MAP = 'images/deep/cmb/wmap-ilc-9yr.webp';
+export const CMB_LOAD_RATIO = 0.2;
+
 const plain = (file) => typeof file === 'string' && file.length > 0 && !file.includes('{') && !file.startsWith('/') && !file.includes('..');
 
 /** The world a stop's target stands on, or null: a world itself, or a record fixed to one. Pure. */
@@ -66,6 +72,8 @@ export function worldOfTarget(target, recordById) {
  *   voice       false when the voice is not wanted (the clips are then left out)
  *   pictures    data/nebulae.js NEBULAE: a deep-sky stop's photograph, the one scene/nebulae.js lays on the sky
  *   deepFiles   record id -> the files its deep-sky hero fetches (images/deep/, data/deep/), or [] (spec 0075 stage f)
+ *   cmbFromKm   how far from the Sun a stop must stand for scene/shells.js to fetch the microwave
+ *               background's map (CMB_LOAD_RATIO x cosmology.js cmbLy, in km); unset: never (spec 0076 W2-d)
  */
 export function tripAssets(tour, env) {
   const e = env || {};
@@ -122,6 +130,13 @@ export function tripAssets(tour, env) {
     const deep = typeof e.deepFiles === 'function' ? e.deepFiles(id) : null;
     for (const f of Array.isArray(deep) ? deep : []) add('other', String(f).replace(/^site\//, ''));
   }
+
+  // A deep layer drawn on a stage the trip visits (heroes.js DEEP_LAYERS: the local volume on the Local
+  // Group's rung), and the microwave background's map for a stop that stands far enough out that
+  // scene/shells.js fetches it (spec 0076 W2-d). Both files are fetched once and kept like a hero's.
+  for (const id of stageIds) for (const f of STAGE_FILES[id] || []) add('other', f);
+  const far = Number(e.cmbFromKm);
+  if (far > 0 && stops.some((s) => s.target && s.target.world === 'sun' && Number(s.distance_km) >= far)) add('other', CMB_MAP);
 
   const tier = Number.isFinite(e.tier) ? e.tier : 0;
   for (const row of Array.isArray(e.textures) ? e.textures : []) {
@@ -284,10 +299,10 @@ export function keptRow(ctx, tour, env, { storage } = {}) {
  */
 export async function keptRowFor(ctx, tour) {
   if (!tour || !workerKeeps(ctx)) return null;
-  const [N, X, A, R, S, P, H] = await Promise.all([
+  const [N, X, A, R, S, P, H, C] = await Promise.all([
     import('../data/narration.js'), import('../data/textures.js'), import('../data/audio.js'),
     import('../scene/realmodels.js'), import('../scene/stage.js'), import('../data/nebulae.js'),
-    import('../scene/deep/heroes.js'),
+    import('../scene/deep/heroes.js'), import('../data/cosmology.js'),
   ]);
   // Only the heroes this trip visits have their profiles read (each is a few kB, never at boot).
   const visits = new Set((tour.stops || []).map((s) => s.target && s.target.record).filter(Boolean));
@@ -313,6 +328,7 @@ export async function keptRowFor(ctx, tour) {
     isLadder: S.isLadderStage,
     pictures: P.NEBULAE,
     deepFiles: (id) => deep.get(id) || [],
+    cmbFromKm: CMB_LOAD_RATIO * C.cmbLy() * 9460730472580.8,
   };
   return keptRow(ctx, tour, env);
 }
