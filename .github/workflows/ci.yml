@@ -1045,6 +1045,10 @@ jobs:
         run: node tests/test_calm_sky.mjs
       - name: "model light: the world's phase as the craft sees it, the Sun's rim, the panels' glint, by tier (public #266)"
         run: node tests/test_model_light.mjs
+      # 0077 W2-pbr: begin
+      - name: "real models in their own materials: the look per file, the finishes, the shader's hooks, the tiers, no render target (release 1.3.0, internal #967)"
+        run: node tests/test_pbr.mjs
+      # 0077 W2-pbr: end
       - name: "a reason to come back: Remind me as a calendar file, a Seen it tick in the passport (public #395)"
         run: node tests/test_comeback.mjs
       - name: "this week's story out of the catalogue: four rules, their numbers, nothing typed (public #450)"

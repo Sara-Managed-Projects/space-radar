@@ -48,6 +48,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W1-c: begin -->
 | The shapes of the Vikram, Odysseus and Blue Ghost landers, and Surveyor | built by us in code from published dimensions | GODL-India, public domain, CC0 or CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-three-modern-moon-landers-and-surveyor-built-from-dimensions--vikram-odysseus-blue-ghost-surveyor-2026-10-20) |
 <!-- 0077 W1-c: end -->
+<!-- 0077 W2-pbr: begin -->
+| The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
+<!-- 0077 W2-pbr: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1315,6 +1318,24 @@ commercial and non-commercial purposes", with attribution, and excludes "names, 
 `3D model: built by Space Radar from NSSDCA's dimensions and NASA's and the Smithsonian's photographs (public domain, CC0)`.
 
 <!-- 0077 W1-c: end -->
+<!-- 0077 W2-pbr: begin -->
+## 3b-15. SLIM built from dimensions (2026-10-20)
+
+Release 1.3.0, stage W2-pbr (internal #967; public #1134). Built by stage W1-c and held back because the toon ramp drew it as
+a yellow box; shipped once the app could draw a file's own materials (`scene/pbr.js`). **JAXA publishes no model of SLIM under
+terms that allow a derivative**, and NASA's 3D Resources and NASA Science have none. So it was built in code, part by part,
+from JAXA's cited numbers, and drawn **as it came to rest**: on its nose, engines up, one nozzle lost. No image-to-3D model was
+used, no picture is in the file, and **no JAXA picture or model is in the file, on a sheet or derived from** (JAXA's figures
+were looked at only). No logo and no lettering is on the mesh. Its card says "shape built from published dimensions and
+pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `slim.glb` (114 KB) | JAXA's SLIM standing on its nose: the cited 2.4 by 1.7 by 2.7 m, the thin-film cells, the cylindrical tank, five legs with ball absorbers, one main nozzle and the broken mount of the other, twelve 22 N thrusters | JAXA's media kit (<https://global.jaxa.jp/countdown/slim/SLIM-mediakit-EN_2310.pdf>) and press conference of 25 January 2024 (<https://www.isas.jaxa.jp/en/outreach/announcements/files/SLIM-pressconf-20240125.pdf>), their figures looked at only; a photograph of JAXA's quarter-scale model at Expo 2025 by Artem.G (<https://commons.wikimedia.org/wiki/File:SLIM_at_Expo2025_02.jpg>, CC BY 4.0) | numbers are facts; the photograph is CC BY 4.0, credit "Artem.G", and is not in the file; the shape is this project's, under this repository's licence (`registry/models.yaml`, row `slim`) |
+
+**Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
+
+<!-- 0077 W2-pbr: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in

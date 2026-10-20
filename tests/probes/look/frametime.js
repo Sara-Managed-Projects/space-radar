@@ -55,4 +55,28 @@ for (const id of ['mercury', 'venus', 'uranus', 'neptune']) {
   await shot('ft-' + n + '-' + id, 'scene ' + n + ', ' + id + ' from close over its terminator');
   n += 1;
 }
+// 0077 W2-pbr: begin
+// 8 and 9 (release 1.3.0, internal #967): the ISS selected as a click frames it, on the toon ramp and then
+// in its physically based materials (scene/pbr.js setModelLook), the same frames, the same place.
+{
+  const iss = sr.recordById('sat-25544');
+  if (iss) {
+    await stage('earth', 6000);
+    sr.select(iss, { fly: true, undo: false });
+    await sleep(9000);
+    const real = () => { let got = false; sr.scene.traverse((o) => { if (o.userData && o.userData.recordId === iss.id && o.userData.realModel && o.visible) got = true; }); return got; };
+    out.issModel = await until(real, 120000, 500);
+    try {
+      const PB = await import(new URL('./js/scene/pbr.js', document.baseURI).href);
+      for (const [n, lookName] of [[8, 'toon'], [9, 'pbr']]) {
+        PB.setModelLook(lookName);
+        await sleep(4000);
+        await measure('iss-' + lookName);
+        await shot('ft-' + n + '-iss-' + lookName, 'scene ' + n + ', the ISS selected, ' + (lookName === 'pbr' ? 'physically based' : 'on the toon ramp'));
+      }
+      PB.setModelLook('auto');
+    } catch (e) { out.issLookError = String((e && e.message) || e); }
+  } else out.issLookError = 'no ISS record on this page';
+}
+// 0077 W2-pbr: end
 return finish(out);
