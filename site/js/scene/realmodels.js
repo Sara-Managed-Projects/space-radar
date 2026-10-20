@@ -1330,10 +1330,23 @@ export const REAL_MODELS = {
     // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
-    // Surveyor from NSSDCA's own description (scene/models.js buildSurveyor; public #267). A shape
-    // built from a paragraph, so the card still says the kind of thing.
-    'surveyor-1': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
-    'surveyor-3': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    // 0077 W1-c: begin
+    // SURVEYOR IS A FILE OF ITS OWN since release 1.3.0 (public #267): built in code from NSSDCA's metres
+    // and Apollo 12's photographs of Surveyor 3 (registry/models.yaml `surveyor`, `surveyor-3`). The
+    // procedural shape (scene/models.js buildSurveyor, from a paragraph) is what is drawn while the file
+    // is on its way. Surveyor 3 carried the soil sampler and Surveyor 1 did not, so they are two files.
+    // `displayName` keeps each card and label titled by the site's own name (registry/sites.yaml
+    // `display`); `name` is what the model is of, for the line that says what is drawn.
+    'surveyor-1': { build: 'surveyor', file: 'surveyor.glb', colour: 'site', name: 'Surveyor 1', displayName: 'Surveyor 1, Oceanus Procellarum', made: 'dimensions' },
+    'surveyor-3': { build: 'surveyor', file: 'surveyor-3.glb', colour: 'site', name: 'Surveyor 3', displayName: 'Surveyor 3, Oceanus Procellarum', made: 'dimensions' },
+    // THREE MODERN LANDERS (public #1133, #1135, #1136), each built in code from cited metres and
+    // photographs and drawn AS IT CAME TO REST: Vikram upright with its ramp down and Pragyan gone;
+    // Odysseus on its side, the legs under it broken; Blue Ghost upright. Until the file arrives each is
+    // the generic lander it was. SLIM (#1134) was built and not shipped: it did not read as SLIM.
+    'chandrayaan-3': { build: 'lander', file: 'vikram.glb', colour: 'site', name: 'the Vikram lander, its ramp down', displayName: 'Chandrayaan-3 Vikram lander', made: 'dimensions' },
+    'im-1': { build: 'lander', file: 'odysseus.glb', colour: 'site', name: 'Odysseus, as it came to rest on its side', displayName: 'Odysseus (IM-1), near Malapert A', made: 'dimensions' },
+    'blue-ghost-1': { build: 'lander', file: 'blue-ghost.glb', colour: 'site', name: 'the Blue Ghost lander', displayName: 'Blue Ghost 1, Mare Crisium', made: 'dimensions' },
+    // 0077 W1-c: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the
