@@ -9,8 +9,8 @@ object and question pages have all three.
 Contributors are not asked to write them. scripts/build_seo.py calls build() at deploy time: it copies every
 simulator into <out>/lab/<slug>/index.html with, just before </head>,
     a canonical and og:url (the page's own address), og:title / og:description / og:image (the site's card,
-    site/og/default.png), twitter:card, and one JSON-LD block: a LearningResource (a simulation) with a
-    BreadcrumbList Space Radar > Lab > the simulator.
+    site/og/default.png), twitter:card, and one JSON-LD block: a LearningResource (a simulation) and,
+    beside it as its own node, a BreadcrumbList Space Radar > Lab > the simulator.
 Nothing between <body> and </body> changes, and nothing is added that the head does not already say: no
 rating, no review, no audience or age the page does not state. A page that already has a canonical keeps its
 own head (a contributor who wrote one is not overwritten). The list, site/lab/index.html, is copied as it is
@@ -48,11 +48,12 @@ def head_tags(facts: dict, host: str) -> str:
          "description": facts["lesson"], "learningResourceType": "Simulation", "interactivityType": "active",
          "educationalUse": "Interactive simulation", "about": facts["category"], "keywords": facts["category"],
          "inLanguage": "en", "isAccessibleForFree": True, "image": image,
-         "isPartOf": {"@id": f"{host}/#website"},
-         "breadcrumb": {"@type": "BreadcrumbList", "itemListElement": [
-             {"@type": "ListItem", "position": 1, "name": "Space Radar", "item": f"{host}/"},
-             {"@type": "ListItem", "position": 2, "name": "Lab", "item": f"{host}/lab/index.html"},
-             {"@type": "ListItem", "position": 3, "name": facts["title"]}]}}]}
+         "isPartOf": {"@id": f"{host}/#website"}},
+        # Its own node: breadcrumb is a WebPage property, and the validator warns on a LearningResource.
+        {"@type": "BreadcrumbList", "@id": f"{url}#breadcrumb", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Space Radar", "item": f"{host}/"},
+            {"@type": "ListItem", "position": 2, "name": "Lab", "item": f"{host}/lab/index.html"},
+            {"@type": "ListItem", "position": 3, "name": facts["title"]}]}]}
     rows = [
         MARK,
         f'<link rel="canonical" href="{esc(url)}">',

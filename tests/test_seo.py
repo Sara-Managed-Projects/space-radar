@@ -113,7 +113,7 @@ sims = [p for p in sorted(LAB.glob("*/index.html")) if not p.parent.name.startsw
 ok(len(sims) >= 75, f"the Lab has its simulators in site/lab/ ({len(sims)})")
 ok(not any('rel="canonical"' in p.read_text(encoding="utf-8") for p in sims),
    "no committed simulator carries a canonical: contributors do not write them")
-missing, wrong, body_changed, schema = [], [], [], []
+missing, wrong, body_changed, schema, crumb_wrong = [], [], [], [], []
 for src in sims:
     f = BUILT / "lab" / src.parent.name / "index.html"
     if not f.is_file():
@@ -131,10 +131,15 @@ for src in sims:
     lr = [g for g in graph if g.get("@type") == "LearningResource"]
     if len(lr) != 1 or lr[0]["url"] != url or any(k in json.dumps(graph) for k in ("aggregateRating", "review")):
         schema.append(src.parent.name)
+    crumbs = [g for g in graph if g.get("@type") == "BreadcrumbList"]
+    if "breadcrumb" in (lr[0] if lr else {}) or len(crumbs) != 1 or len(crumbs[0].get("itemListElement", [])) != 3:
+        crumb_wrong.append(src.parent.name)
 ok(not missing, f"every simulator is built under lab/ ({missing[:3]})")
 ok(not wrong, f"each has one canonical and og:url at its own address, and an og:image ({wrong[:3]})")
 ok(not body_changed, f"only the head gains tags: what a visitor sees is the committed file ({body_changed[:3]})")
 ok(not schema, f"each has one LearningResource at its own address, with no rating or review ({schema[:3]})")
+ok(not crumb_wrong, "the trail Space Radar > Lab > simulator is its own BreadcrumbList node, not a field of the "
+   f"LearningResource, which schema.org does not define ({crumb_wrong[:3]})")
 ok((BUILT / "lab" / "index.html").read_bytes() == (LAB / "index.html").read_bytes() if (BUILT / "lab" / "index.html").is_file() else False,
    "the Lab's list is built as committed (gen_lab_index.py writes its head)")
 ok(not (BUILT / "lab" / "_template").exists(), "the contributor's starter is not built, so not uploaded")
