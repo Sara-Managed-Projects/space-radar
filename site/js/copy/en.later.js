@@ -2160,6 +2160,13 @@ Object.assign(COPY, {
     card: {
       'dso-tarantula-nebula': 'Its light near our line is Webb’s photograph; its gas is a model of a cavity round the cluster R136 inside a shell of glowing gas confined by molecular clouds, after Pellegrini, Baldwin and Ferland (2011). Not yet reviewed by an astronomer.',
       'dso-m43': 'Its light is taken from ESO’s photograph, its shape reconstructed as a smaller hollow on the same dark cloud as the Orion Nebula, lit by the star NU Orionis. Not yet reviewed by an astronomer.',
+      // 0077 W3-f: begin (the galaxies drawn by scene/deep/spiral.js from their own numbers)
+      'dso-m51': 'Built from its published tilt and structure: a two-armed spiral seen nearly face on, its companion NGC 5195 behind the end of its northern arm, and the arm that reaches it; the depths are a model. Not yet reviewed by an astronomer.',
+      'dso-m81': 'Built from its published tilt and structure: a large old bulge, two tightly wound arms with dust on their inner edges. Not yet reviewed by an astronomer.',
+      'dso-m101': 'Built from its published tilt and structure: a large disc seen nearly face on, many arms and its giant star-forming regions where the sky puts them. Not yet reviewed by an astronomer.',
+      'dso-m104': 'Built from its published tilt and structure: a huge round bulge and a thin disc seen almost edge on, its ring of dust in front. Not yet reviewed by an astronomer.',
+      'dso-antennae-galaxies': 'Two colliding galaxies where the sky puts them, and their two tidal tails; how far each part is in front or behind is a model after the simulations of the collision. Not yet reviewed by an astronomer.',
+      // 0077 W3-f: end
     },
   },
 });

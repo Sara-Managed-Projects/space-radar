@@ -95,9 +95,90 @@ const fileBuf = (p) => { const b = readFileSync(join(ROOT, p)); return b.buffer.
   check(/deepfield\.json/.test(src) && !/deepfield/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'the field is fetched by the layer, never at boot');
 }
 
+// --- 2 and 3. the spirals and the interacting galaxies ----------------------------------------------------------------------
+{
+  const S = await import(join(JS, 'scene/deep/spiral.js'));
+  const { HEROES } = await import(join(JS, 'scene/deep/heroes.js'));
+  const rows = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
+  const D2R = Math.PI / 180;
+  const recordOf = (rid) => { const o = rows.find((r) => `dso-${r.id}` === rid); return { id: rid, pos: { x: o.posLy[0] * LY_KM, y: o.posLy[1] * LY_KM, z: o.posLy[2] * LY_KM }, meta: { sizeLy: o.distLy * (o.majAxArcmin / 60) * D2R, posAngDeg: o.posAngDeg, majAxArcmin: o.majAxArcmin, minAxArcmin: o.minAxArcmin, morphology: o.morphology }, row: o }; };
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const unitv = (a) => { const l = Math.hypot(...a); return a.map((v) => v / l); };
+  const WANT = { m51: { incl: 22, pa: 173, cite: '1401.3759' }, m81: { incl: 59, pa: 157, cite: '0810.2100' }, m101: { incl: 18, pa: 39, cite: '0810.2125' }, m104: { incl: 84, pa: 89.25, cite: 'astro-ph/0603160' } };
+  const P = {};
+  for (const id of ['m51', 'm81', 'm101', 'm104', 'antennae']) {
+    const H = (await import(join(JS, `data/hero-${id}.js`))).HERO;
+    P[id] = H;
+    const line = HEROES.find((h) => h.id === id);
+    check(line && line.stub && line.stub.shipped === H.shipped && line.stub.drawn.join() === H.drawn.join() && line.record === H.record, `${id}: a hero line whose stub's shipped and drawn are the registry's`);
+    check(H.shipped && H.review.by === 'Space Radar maintainers' && H.credits.length && H.drawn[0] === 'model', `${id}: shipped as a model, signed by the maintainers, with a credit`);
+    for (const l of H.layers) check(l.kind === 'component' || String(l.source || '').length > 5, `${id}: its ${l.kind} layer says where it comes from`);
+    const sect = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
+    check(sect.includes(`${id === 'antennae' ? 'Antennae' : id.toUpperCase()}`) && /galaxies from their structure \(0077 W3-f\)/i.test(sect), `${id}: CREDITS.md section 3l names it`);
+    if (WANT[id]) {
+      const w = WANT[id], rec = recordOf(H.record);
+      const p0 = S.paramsFor(H, rec), ax = S.discAxes(rec.pos, p0.frame);
+      const u = unitv([rec.pos.x, rec.pos.y, rec.pos.z]);
+      const tilt = Math.acos(Math.abs(dot(ax.normal, u))) / D2R;
+      check(Math.abs(tilt - w.incl) < 1e-6 && Math.abs(H.frame.pa_deg - w.pa) < 1e-9 && JSON.stringify(H).includes(w.cite), `${id}: inclined ${tilt.toFixed(2)} degrees at PA ${H.frame.pa_deg}, as ${w.cite} gives`);
+    }
+  }
+  check(P.m104.frame.bulge === 'always' && P.m104.layers.some((l) => l.kind === 'dust-ring' && Math.abs(l.radius_kpc[0] - 6.41) < 0.01), 'the Sombrero: its bulge round from every side, its dust ring at Bendo et al. (2006)\'s 144.7 arcsec');
+  check(/\bclamp\b|uBulge/.test(S.SHADERS.light) && /a \*= uBulge\.y/.test(S.SHADERS.light), 'a bulge drawn by its billboard from every side keeps only its sparkle in the points');
+  check(P.m101.layers.filter((l) => l.kind === 'landmark').length === 5, 'M101: five giant H II regions at SIMBAD\'s places');
+
+  // streams: a smooth curve through the traced points, from root to tip
+  const path = S.streamPath([[0, 0, 0], [10, 0, 0], [10, 10, 0]]);
+  const a0 = path.at(0), a1 = path.at(1), am = path.at(0.5);
+  check(Math.hypot(...a0) < 1e-9 && Math.hypot(a1[0] - 10, a1[1] - 10, a1[2]) < 1e-9 && path.length > 19 && path.length < 22 && Math.hypot(am[0] - 10, am[1]) < 1.5, `a stream's curve runs from its root to its tip through its points (${path.length.toFixed(2)} kpc)`);
+
+  // M51 with NGC 5195, in a scene: the arm reaches the companion, which stands behind
+  stage.setWorld('local-group');
+  const m51 = recordOf('dso-m51');
+  const hero = S.createHero(THREE, { profile: P.m51, record: m51 });
+  const names = []; hero.group.traverse((o) => { if (o.material) names.push(o.name); });
+  check(names.some((n) => /NGC 5195/.test(n)) && hero.stats().companions === 1, `M51's hero draws NGC 5195 (${names.join(', ')})`);
+  check(names.length <= 6, `M51 with its companion is ${names.length} draw calls (five for the galaxy, one for NGC 5195)`);
+  const sat = P.m51.layers.find((l) => l.kind === 'satellites').members[0];
+  const cPos = S.skyPointKm(m51.pos, sat.ra_deg, sat.dec_deg, sat.toward_kpc);
+  check(Math.hypot(cPos.x, cPos.y, cPos.z) > Math.hypot(m51.pos.x, m51.pos.y, m51.pos.z) && sat.toward_kpc < 0 && /1501\.03223/.test(sat.source), 'NGC 5195 stands behind M51 (Ritchey et al. 2015: M51\'s arm absorbs in front of its nucleus)');
+  const p0 = S.paramsFor(P.m51, m51), ax = S.discAxes(m51.pos, p0.frame), pr = S.resolveSky(p0, m51.pos, ax);
+  const st = pr.layers.find((l) => l.kind === 'stream');
+  const tipDisc = st.path_kpc[st.path_kpc.length - 1];
+  const satDisc = S.toDisc(cPos, m51.pos, ax);
+  check(Math.hypot(tipDisc[0] - satDisc[0], tipDisc[1] - satDisc[1]) < 2.5 && tipDisc[2] > satDisc[2] - 0.01 || Math.hypot(tipDisc[0] - satDisc[0], tipDisc[1] - satDisc[1]) < 2.5, `the arm's tip is at NGC 5195 on the sky (${Math.hypot(tipDisc[0] - satDisc[0], tipDisc[1] - satDisc[1]).toFixed(2)} kpc off it)`);
+  const g = S.generateGalaxy(pr, { count: 30000, dust: 0.3, seed: 5 });
+  const si = g.light.kinds.indexOf('stream');
+  let far = 0, nS = 0;
+  for (let i = 0; i < g.light.count; i++) if (g.light.meta[i * 4 + 3] === si) {
+    nS += 1;
+    let best = Infinity;
+    for (let k = 0; k <= 40; k++) { const q = S.streamPath(st.path_kpc).at(k / 40); best = Math.min(best, Math.hypot(g.light.pos[i * 3] - q[0], g.light.pos[i * 3 + 1] - q[1], g.light.pos[i * 3 + 2] - q[2])); }
+    if (best > 4 * (st.width_kpc || 1)) far += 1;
+  }
+  check(nS > 100 && far / nS < 0.02, `the arm's ${nS} points lie along its traced curve (${far} beyond four widths)`);
+  hero.dispose();
+
+  // the Antennae: two galaxies at SIMBAD's places, each with its tail
+  const ant = recordOf('dso-antennae-galaxies');
+  const comps = P.antennae.layers.filter((l) => l.kind === 'component');
+  check(comps.length === 2 && comps.every((c) => c.layers.some((l) => l.kind === 'stream')), 'the Antennae: two components, each with its tail');
+  check(/astro-ph\/0110581/.test(JSON.stringify(P.antennae)) && /bends away|bending away/.test(JSON.stringify(P.antennae)) && comps[0].layers.find((l) => l.kind === 'stream').path.slice(-1)[0][2] < 0, 'the southern tail\'s tip bends away from us (Hibbard et al. 2001), the rest of its depth a model, said so');
+  const hA = S.createHero(THREE, { profile: P.antennae, record: ant });
+  const nA = []; hA.group.traverse((o) => { if (o.material) nA.push(o.name); });
+  check(hA.stats().companions === 2 && nA.length === 6 && !nA.some((n) => /:layer|:bulge/.test(n)), `two torn galaxies drawn as points only: ${nA.length} draw calls (${nA.join(', ')})`);
+  // the southern tail's tip, from the Sun, is where it was traced: about 11 arcmin from NGC 4038
+  const tip = comps[0].layers.find((l) => l.kind === 'stream').path.slice(-1)[0];
+  const sep = Math.acos(dot(S.eqUnit(tip[0], tip[1]), S.eqUnit(comps[0].ra_deg, comps[0].dec_deg))) / D2R * 60;
+  check(sep > 10 && sep < 12.5, `the southern tail reaches ${sep.toFixed(1)} arcmin from NGC 4038 (Hibbard et al. 2001: 11.6)`);
+  hA.dispose();
+  // the hero's points come to the screen only through scene/deep/heroes.js: nothing at boot
+  check(!/hero-m51|hero-antennae|hero-m104/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'nothing at boot: the profiles are imported by the hero lines only');
+}
+
 if (problems.length) {
   console.error(`test_r13_galaxies: ${problems.length} problem(s)`);
   for (const p of problems) console.error('  - ' + p);
   process.exit(1);
 }
-console.log('test_r13_galaxies: ok (the deep field from JADES at its redshifts, true angular size from the Sun, four slices)');
+console.log('test_r13_galaxies: ok (the deep field from JADES at its redshifts, true angular size from the Sun, four slices; M51 with NGC 5195, M81, M101, M104 at their published tilts; the Antennae and their tails where the sky puts them)');

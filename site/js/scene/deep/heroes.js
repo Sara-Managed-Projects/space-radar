@@ -38,6 +38,15 @@ export const HEROES = [
   // The SMC ships with its light as patches (0077 W3-f, internal #783: within main's frame cost, no haze, no veil).
   { id: 'smc', record: 'dso-smc', stage: 'W2-e', stub: { shipped: true, drawn: ['model'], children: [] }, /* 0077 W3-f: shipped */ profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./smc.js'), import('../../data/hero-smc.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   // 0077 W2-e: end
+  // 0077 W3-f: begin
+  // Spirals from their own numbers (internal #873) and interacting galaxies (internal #875), all drawn by scene/deep/spiral.js's
+  // generator from their profiles (registry/deepsky-heroes/<id>.yaml), read lazily as W3-c's lines are.
+  { id: 'm51', record: 'dso-m51', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m51.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm81', record: 'dso-m81', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m81.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm101', record: 'dso-m101', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m101.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm104', record: 'dso-m104', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m104.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'antennae', record: 'dso-antennae-galaxies', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-antennae.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // 0077 W3-f: end
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

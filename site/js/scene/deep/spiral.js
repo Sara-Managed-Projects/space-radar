@@ -169,7 +169,7 @@ const recordR25Kpc = (record) => {
  */
 export function paramsFor(profile, record) {
   const md = (record && record.meta) || {};
-  const own = profile && Array.isArray(profile.layers) ? profile.layers.filter((l) => l && l.kind && l.kind !== 'gas' && l.kind !== 'satellites') : [];
+  const own = profile && Array.isArray(profile.layers) ? profile.layers.filter((l) => l && l.kind && l.kind !== 'gas' && l.kind !== 'satellites' && l.kind !== 'component') : []; // 0077 W3-f: a system's galaxies are its `component` layers
   const frame = { ...((profile && profile.frame) || {}) };
   if (!Number.isFinite(frame.pa_deg)) frame.pa_deg = Number.isFinite(md.posAngDeg) ? md.posAngDeg : 0;
   if (!Number.isFinite(frame.incl_deg)) {
@@ -943,7 +943,8 @@ function sceneDirs(dirs) {
  * kiloparsecs. `place(posKm, axes, mode)`: mode 'rotate' sets only the turn (the hero's parent is placed
  * and scaled by the coordinator), 'full' also the place and the scale on the stage (scene/galaxy.js).
  */
-export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, seed = 7, name = 'galaxy', spheroid = false } = {}) {
+export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, seed = 7, name = 'galaxy', spheroid = false, layered = true } = {}) {
+  // 0077 W3-f: `layered: false` (a torn galaxy of a colliding pair) draws its light as points only, no smooth layer or bulge billboard
   // 0076 W4-a (task 59): `spheroid` is a galaxy with no disc (M32, M110): one Points draw, no layer, no halves, the same from every side.
   const g = generateGalaxy(params, { count, dust, seed });
   const group = new THREE.Group();
@@ -1014,7 +1015,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     uLane: { value: new THREE.Vector2(prof.dust.lane, prof.dust.inset) }, uDustK: { value: 1 },
     uNormalW: lightU.uNormalW, uInner: { value: v3(prof.colours.inner) }, uOuter: { value: v3(prof.colours.outer) }, uArmCol: { value: v3(armCol) }, uRingCol: { value: v3(ringCol) },
   };
-  const layerMesh = spheroid ? null : new THREE.Mesh(new THREE.CircleGeometry(prof.rMax, 160), new THREE.ShaderMaterial({
+  const layerMesh = spheroid || !layered ? null : new THREE.Mesh(new THREE.CircleGeometry(prof.rMax, 160), new THREE.ShaderMaterial({
     vertexShader: LAYER_VERT, fragmentShader: LAYER_FRAG, uniforms: layerU, side: THREE.DoubleSide,
     transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
   }));
@@ -1026,7 +1027,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   }
   let bulgeMesh = null;
   const bulgeU = { uGain: { value: 0 }, uOld: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
-  if (prof.bulge && !spheroid) {
+  if (prof.bulge && !spheroid && layered) {
     const R6 = 6 * prof.bulge.re;
     bulgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * R6, 2 * R6), new THREE.ShaderMaterial({
       vertexShader: BULGE_VERT, fragmentShader: BULGE_FRAG, uniforms: bulgeU,
@@ -1068,7 +1069,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   // How much the layer is drawn (1 face on, 0 edge on), from the camera's line to the centre; the points
   // and their dust carry the rest, so the light is the same from every side.
   function apply() {
-    const lay = smoothstepJs(0.04, 0.15, faceOn);
+    const lay = layered ? smoothstepJs(0.04, 0.15, faceOn) : 0;
     const pts = SPARKLE + (1 - SPARKLE) * (1 - lay);
     lightU.uGain.value = g.gain * share * exposureNow * pts;
     dustU.uDust.value = g.dustGain * share * (0.3 + 0.7 * (1 - lay));
@@ -1206,7 +1207,8 @@ export function createHero(THREE, env = {}) {
   const tier = tierNow();
   const dustShare = profile.levels && Number.isFinite(profile.levels.dust_share) ? profile.levels.dust_share : 0.3;
   // 0077 W3-f: a system of galaxies (the Antennae) has no galaxy of its own at the record's place, only its `components`
-  const own = params.layers.some((l) => !String(l.kind).startsWith('dust'));
+  const comps = (profile.layers || []).filter((l) => l && l.kind === 'component');
+  const own = !comps.length && params.layers.some((l) => !String(l.kind).startsWith('dust'));
   const g = own ? createGalaxyPoints(THREE, params, { count: pointsFor(params, tier), dust: dustShare, seed, name: group.name }) : null;
   if (g) { g.setBulgeAlways(params.frame && params.frame.bulge === 'always'); group.add(g.group); }
   let placedFor = null;
@@ -1242,15 +1244,15 @@ export function createHero(THREE, env = {}) {
     group.add(cg.group);
     companions.push({ id: m.record || null, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame), rPx: 0, light: Number.isFinite(Number(m.light)) ? Number(m.light) : 1 });
   }
-  // 0077 W3-f (internal #875): the galaxies of an interacting system, each from its own layers in its own frame, at its own
+  // 0077 W3-f (internal #875): the galaxies of an interacting system (its `component` layers), each from its own layers in its own frame, at its own
   // place on the sky and depth (`toward_kpc`, a model where the profile says so); its streams belong to it (resolveSky).
-  for (const c of profile.components || []) {
+  for (const c of comps) {
     if (!c || !Number.isFinite(Number(c.ra_deg))) continue;
     const cPos = skyPointKm(posKm, Number(c.ra_deg), Number(c.dec_deg), Number(c.toward_kpc) || 0);
     const cp0 = paramsFor({ id: `${profile.id}-${c.name}`, layers: c.layers || [], frame: c.frame || {}, levels: { points: c.points } }, null);
     const cAxes = discAxes(cPos, cp0.frame);
     const cp = resolveSky(cp0, cPos, cAxes, posKm);
-    const cg = createGalaxyPoints(THREE, cp, { count: pointsFor(cp, tier), dust: dustShare, seed: seed + 1 + companions.length, name: `${group.name}:${c.name}` });
+    const cg = createGalaxyPoints(THREE, cp, { count: pointsFor(cp, tier), dust: dustShare, seed: seed + 1 + companions.length, name: `${group.name}:${c.name}`, layered: false });
     group.add(cg.group);
     companions.push({ id: null, g: cg, posKm: cPos, axes: cAxes, rPx: 0, light: Number.isFinite(Number(c.light)) ? Number(c.light) : 1, component: true });
   }

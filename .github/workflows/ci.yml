@@ -1140,6 +1140,12 @@ jobs:
       - name: "every deep-space hero's card says what is drawn, where it comes from and that no astronomer has reviewed it yet (#1187)"
         run: node tests/test_deep_labels.mjs
       # 0077 W2-e: end
+      # 0077 W3-f: begin
+      - name: "galaxy classes in deep space: M51 with NGC 5195, M81, M101 and M104 from their own numbers, the Antennae and their tails, the Hubble Ultra Deep Field from JADES at its redshifts (internal spec 0077 W3-f, #873, #875, #784)"
+        run: node tests/test_r13_galaxies.mjs
+      - name: "the deep field's galaxies are the size and hash their manifest says (internal spec 0077 W3-f)"
+        run: python3 scripts/build_deep_field.py --check
+      # 0077 W3-f: end
       # 0077 W2-d: begin
       - name: "Compare and the comparison lab: eleven worlds from NASA's fact sheets, the picture inside its box for every pair, the lab's order, the panel pressed (internal i#885, i#909)"
         run: node tests/test_compare.mjs
