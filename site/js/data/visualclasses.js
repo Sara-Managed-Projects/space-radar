@@ -317,7 +317,8 @@ export const VISUAL_CLASSES = [
 "tiangong",
 "wentian",
 "mengtian",
-"shenzhou-orbital"
+"shenzhou-orbital",
+"gaia"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -480,7 +481,10 @@ export const VISUAL_CLASSES = [
 "juice",
 "bepicolombo",
 "hera",
-"lucy"
+"lucy",
+"mars-express",
+"hayabusa2",
+"hope"
 ],
 "model_kinds": [
 "probe-generic",

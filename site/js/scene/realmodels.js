@@ -855,6 +855,20 @@ export const REAL_MODELS = {
     '-28': { file: 'juice.glb', colour: 'probe', name: 'JUICE', made: 'dimensions', axes: 'app' },
     '-121': { file: 'bepicolombo.glb', colour: 'probe', name: 'BepiColombo in its cruise stack', made: 'dimensions', axes: 'app' },
     '-91': { file: 'hera.glb', colour: 'probe', name: 'Hera', made: 'dimensions', axes: 'app' },
+    // 0077 W1-b: begin
+    // FOUR MORE DEEP-SPACE CRAFT BUILT FROM DIMENSIONS (2026-10-20, release 1.3.0 W1-b, public #1085 to
+    // #1088). Mars Express, Hayabusa2 and Hope were the generic probe; Gaia was its procedural shape
+    // (scene/models.js buildGaia), which stays as what is drawn while the file is in flight, as
+    // JWST's does. No agency publishes a model of any of the four under terms that allow a
+    // derivative (registry/models.yaml says what was looked for), so each is BUILT here from cited
+    // numbers (`made: 'dimensions'`), to the app's axes: +Z the dish (Gaia: the Sun side of its
+    // shield, with its cells and its antenna) and the cells with it, the wings along X. The records
+    // are data/sample.js `deep-mars-express`, `deep-gaia`, `deep-hayabusa2`, `deep-hope`.
+    '-41': { file: 'mars-express.glb', colour: 'probe', name: 'Mars Express', made: 'dimensions', axes: 'app' },
+    '-139479': { build: 'gaia', file: 'gaia.glb', colour: 'telescope', name: 'Gaia', made: 'dimensions', axes: 'app' },
+    '-37': { file: 'hayabusa2.glb', colour: 'probe', name: 'Hayabusa2', made: 'dimensions', axes: 'app' },
+    '-62': { file: 'hope.glb', colour: 'probe', name: 'Hope (Emirates Mars Mission)', made: 'dimensions', axes: 'app' },
+    // 0077 W1-b: end
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -1240,8 +1254,10 @@ export const REAL_MODELS = {
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
     goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
     // Gaia and Solar Orbiter are matched by NAME: Solar Orbiter carries no Horizons id in the
-    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) has no glTF to key, because
-    // its shape is built rather than downloaded. The klass gate is doing real work on the first
+    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) had no glTF to key, because
+    // its shape was built rather than downloaded. // 0077 W1-b
+    // Since 2026-10-20 the record goes by its Horizons id to gaia.glb (above); this name route is the procedural shape for any other record called Gaia. // 0077 W1-b
+    // The klass gate is doing real work on the first
     // one: 1279 Gaia is a main-belt asteroid, and without `klass: ['telescope']` a ten-metre
     // sunshield would be drawn on a rock. That is the TESS mistake exactly, and it is why the
     // gate exists.

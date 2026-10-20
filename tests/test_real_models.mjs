@@ -384,6 +384,14 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
       const got = realModelFor({ id, name, klass: 'probe', meta: { horizonsId: hid } });
       check(!got || !['psyche.glb', 'lucy.glb', 'juice.glb', 'bepicolombo.glb', 'hera.glb'].includes(got.file), `${name} wears none of the twelfth batch's files: ${JSON.stringify(got)}`);
     }
+    // 0077 W1-b: begin
+    // 2026-10-20 (release 1.3.0 W1-b, public #1085 to #1088): those three and Gaia wear their own files, built here, each by its Horizons id.
+    for (const [hid, id, name, klass, file] of [[-41, 'deep-mars-express', 'Mars Express', 'probe', 'mars-express.glb'], [-139479, 'deep-gaia', 'Gaia', 'telescope', 'gaia.glb'],
+      [-37, 'deep-hayabusa2', 'Hayabusa2', 'probe', 'hayabusa2.glb'], [-62, 'deep-hope', 'Hope', 'probe', 'hope.glb']]) {
+      const got = realModelFor({ id, name, klass, meta: { horizonsId: hid } });
+      check(got && got.file === file && got.made === 'dimensions' && got.axes === 'app' && !got.generic, `${name} (Horizons ${hid}) wears ${file}, built from dimensions, as itself: ${JSON.stringify(got)}`);
+    }
+    // 0077 W1-b: end
     const gale = realModelFor({ id: 'gale', name: 'Curiosity, Gale crater', klass: 'site', meta: { siteShape: 'rover' } });
     const jezero = realModelFor({ id: 'jezero', name: 'Perseverance, Jezero crater', klass: 'site', meta: { siteShape: 'rover' } });
     check(gale && gale.file === 'curiosity.glb' && gale.name === 'Curiosity' && !gale.generic && !gale.axes, `Gale crater draws Curiosity's own model, standing as published: ${JSON.stringify(gale)}`);

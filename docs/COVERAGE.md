@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 39 | 39 |
-| real_models | 136 | 136 |
+| real_models | 140 | 140 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **895** | **111 082** |
+| **all** | **899** | **111 086** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -49,9 +49,9 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 17 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
-| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 145 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
+| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 146 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 58 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
-| [SPACE_PROBE](#space_probe) | 66 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
+| [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
 | [LANDING_SITE](#landing_site) | 46 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 45 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 895 records: 321 measured, 249 modelled, 325 illustrative.
+Honesty over the 899 records: 321 measured, 253 modelled, 325 illustrative.
 
 ## The classes
 
@@ -286,8 +286,8 @@ Honesty over the 895 records: 321 measured, 249 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one.
 - **Rights:** CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project).
 - **What is missing is tracked in:** public #267 (the art pass)
-- **Records (145):**
-  - real_models (96): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`
+- **Records (146):**
+  - real_models (97): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`
   - model_kinds (36): `satellite-iridium`, `satellite-spacemobile`, `satellite-solarsail`, `satellite-sphere`, `satellite-navigation`, `satellite-cubesat`, `satellite-cubesat-6u`, `satellite-cubesat-1u`, `satellite-cubesat-2u`, `satellite-navigation-gps-iif`, `satellite-navigation-gps-iii`, `satellite-navigation-glonass-m`, `satellite-navigation-glonass-k`, `satellite-navigation-beidou-meo`, `satellite-oneweb`, `satellite-starlink-v1`, `satellite-starlink-v2`, `satellite-radar`, `satellite-radar-mesh`, `satellite-generic`, `satellite-comms`, `station-soyuz`, `station-progress`, `station-cygnus`, `station-tiangong`, `station-tiangong-module`, `station-shenzhou`, `station-tianzhou`, `station-dragon`, `station-dragon-cargo`, `station-generic`, `debris-shard`, `telescope-gaia`, `telescope-generic`, `telescope-jwst`, `satellite-space-telescope`
   - reentries (3): `reentry-tiangong-1`, `reentry-cz-5b-y2`, `reentry-skylab`
   - layers (10): `stations`, `notable`, `starlink-trains`, `just-launched`, `active`, `geo-ring`, `debris-notable`, `debris-field`, `visual`, `reentries`
@@ -322,8 +322,8 @@ Honesty over the 895 records: 321 measured, 249 modelled, 325 illustrative.
 - **Dates and filters:** Horizons windows per craft (ephemerides.yaml); events dated to the minute where the mission page gives one.
 - **Measured, modelled or reconstructed:** Measured: the paths. A stand-in (sample.js, dashed halo) where Horizons cannot be read from a browser, said on the card.
 - **Rights:** Horizons data courtesy NASA/JPL-Caltech; NASA models free and without copyright.
-- **Records (66):**
-  - real_models (24): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`
+- **Records (69):**
+  - real_models (27): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`
   - model_kinds (4): `probe-generic`, `probe-new-horizons`, `probe-mars-2020-cruise`, `probe-solar-orbiter`
   - probes (37): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
   - layers (1): `deep-space`

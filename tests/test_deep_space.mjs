@@ -481,7 +481,12 @@ for (const [id, file] of Object.entries(OWN_MODEL)) {
 // Not "a published model", which nobody published: the card says it is drawn as the craft, and how
 // the shape was made (COPY.drawing.objectOwn and objectMade.dimensions).
 const MADE_HERE = { 'deep-psyche': ['psyche.glb', 'Psyche'], 'deep-lucy': ['lucy.glb', 'Lucy'], 'deep-juice': ['juice.glb', 'JUICE'],
-  'deep-bepicolombo': ['bepicolombo.glb', 'BepiColombo in its cruise stack'], 'deep-hera': ['hera.glb', 'Hera'] };
+  'deep-bepicolombo': ['bepicolombo.glb', 'BepiColombo in its cruise stack'], 'deep-hera': ['hera.glb', 'Hera'],
+  // 0077 W1-b: begin
+  // 2026-10-20, release 1.3.0 W1-b (public #1085, #1087, #1088): three more built here, until then the generic probe.
+  'deep-mars-express': ['mars-express.glb', 'Mars Express'], 'deep-hayabusa2': ['hayabusa2.glb', 'Hayabusa2'], 'deep-hope': ['hope.glb', 'Hope (Emirates Mars Mission)'],
+  // 0077 W1-b: end
+};
 for (const [id, [file, name]] of Object.entries(MADE_HERE)) {
   const rec = byId.get(id);
   const entry = realModelFor(rec);
@@ -490,6 +495,18 @@ for (const [id, [file, name]] of Object.entries(MADE_HERE)) {
   check(typeof line === 'string' && line.startsWith(`drawn as ${name}`) && line.includes('shape built from published dimensions') && !line.includes('a published model') && !line.includes('generic'),
     `${id}: the card says it is drawn as ${name}, built from published dimensions: ${line}`);
 }
+// 0077 W1-b: begin
+// Gaia (public #1086): built here too, and the one built file that keeps a procedural build, as JWST's does: buildGaia is what
+// is drawn while gaia.glb is in flight. The card says it is drawn as Gaia, built from published dimensions.
+{
+  const rec = byId.get('deep-gaia');
+  const entry = realModelFor(rec);
+  check(entry && entry.file === 'gaia.glb' && entry.build === 'gaia' && entry.made === 'dimensions' && entry.axes === 'app' && !entry.generic, `deep-gaia is drawn with gaia.glb, built here, its procedural shape kept for the wait: ${JSON.stringify(entry)}`);
+  const line = drawingLine(rec);
+  check(typeof line === 'string' && line.startsWith('drawn as Gaia') && line.includes('shape built from published dimensions') && !line.includes('a published model') && !line.includes('generic'),
+    `deep-gaia: the card says it is drawn as Gaia, built from published dimensions: ${line}`);
+}
+// 0077 W1-b: end
 for (const id of [...ADDED.filter((x) => x !== 'deep-gaia'), 'deep-mars-express', 'deep-lro'].filter((x) => !OWN_MODEL[x] && !MADE_HERE[x])) {
   const rec = byId.get(id);
   // No model of its own in the repository, so the generic probe -- and the card says so. (Gaia,
