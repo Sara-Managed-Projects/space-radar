@@ -45,13 +45,13 @@ export const HASH_KEY = 'm';
 // carries the ordinary `at=` and a link copied from there is the ordinary link.
 // `drift` (spec 0071, ui/drift.js): the camera wanders on its own. `1`, or words with commas:
 // what to travel through, `any`, `notags`, a pace (ui/driftplan.js readOptions).
-// `build` (0076 W4-c, internal #906): the release a shared link was made by, `1.2.0`. ui/share.js shareUrl writes it
+// `build` (0076 W4-c, internal #906): the release a shared link was made by, `1.3.0`. ui/share.js shareUrl writes it
 // beside `v=1`; read() hands it back and nothing acts on it (a newer map opens an older link and says nothing
 // of it yet); write() never produces it, as for `go`, so an address bar never carries a stale build.
 export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
-export const BUILD = '1.2.0';
+export const BUILD = '1.3.0';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';
 
