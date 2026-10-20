@@ -206,7 +206,7 @@ setHash('');
 
 // 0077 W3-e: begin (public #564)
 // `#go=` and `#imagine=` against every other key of the address. A link that carries two of them must
-// mean one thing, the same on every path that reads it (read(), write(), laterLink(), goTarget()).
+// mean one thing, the same on every path that reads it (read(), write(), laterLink() and main.js's landing).
 {
   const U = await import(join(JS, 'ui/urlstate.js'));
   const others = KEYS.filter((k) => k !== 'go' && k !== 'imagine');
@@ -229,17 +229,24 @@ setHash('');
       if (lead === 'imagine') check(location.hash.includes('imagine=kepler-186-f') && (k === 'rate' || location.hash.includes(`${k}=`)), `write() keeps imagine= and ${k}= (${location.hash})`);
     }
   }
-  // 2. go= and at= together: `at` is the visitor's own deep link and wins, in read() and in goTarget() alike.
+  // 2. go= and at= together: `at` is the visitor's own deep link and wins. read() marks an `at` that came from a `go=` (`goOnly`),
+  //    and main.js flies a landing only for that, so the two paths cannot disagree.
+  const landing = (hash) => { setHash(hash); const link = read(); return link.goOnly ? link.at : ''; };
   setHash('#go=kepler-186&at=iss');
-  check(read().at === 'iss' && read().go === undefined, 'go= and at=: read() keeps the at');
-  check(U.goTarget('#go=kepler-186&at=iss') === '' && U.goTarget('#at=iss&go=kepler-186') === '', 'and no landing is flown for a go= that lost: goTarget() is empty in either order');
-  check(U.goTarget('#go=kepler-186-f') === 'kepler-186-f' && U.goTarget('go=kepler-186') === 'kepler-186', 'a go= alone names its place, with or without the #');
-  check(U.goTarget('#m=now&go=kepler-186&stage=sun') === 'kepler-186' && U.goTarget('#go=kepler-186&cam=1,2,3') === 'kepler-186', 'beside a moment, a stage or a camera it still lands');
-  check(U.goTarget('#go=kepler-186&trip=moon-landings') === '' && U.goTarget('#go=iss&event=voyager-2.neptune') === '', 'a trip or a mission event is that and nothing else');
-  check(U.goTarget('#go=a&imagine=7') === '' && U.goTarget('#go=a&imagine=0') === 'a', 'an imagined world is not flown away from; imagine=0 means none');
-  check(U.goTarget('#go=100%') === '100%' && U.goTarget('#go=a%20b') === 'a b' && U.goTarget('') === '' && U.goTarget(undefined) === '', 'a stray percent sign is a value, an empty address is no landing');
-  check(U.goTarget('#cargo=x') === '' && U.goTarget('#xgo=x') === '' && U.goTarget('#go') === '', 'only the key go counts: not one that ends in it, nor a bare word');
-  check(U.goTarget('#go=a&go=b') === 'b', 'a repeated key: the last, as read() does');
+  check(read().at === 'iss' && read().go === undefined && !read().goOnly, 'go= and at=: read() keeps the at, and says it is not a landing');
+  check(landing('#go=kepler-186&at=iss') === '' && landing('#at=iss&go=kepler-186') === '', 'and no landing is flown for a go= that lost: in either order');
+  check(landing('#go=kepler-186-f') === 'kepler-186-f' && landing('go=kepler-186') === 'kepler-186', 'a go= alone names its place, with or without the #');
+  check(landing('#m=now&go=kepler-186&stage=sun') === 'kepler-186' && landing('#go=kepler-186&cam=1,2,3') === 'kepler-186', 'beside a moment, a stage or a camera it still lands');
+  check(landing('#go=100%') === '100%' && landing('#go=a%20b') === 'a b' && landing('') === '' && landing('#go=') === '', 'a stray percent sign is a value, an empty address is no landing');
+  check(landing('#cargo=x') === '' && landing('#xgo=x') === '' && landing('#go') === '', 'only the key go counts: not one that ends in it, nor a bare word');
+  check(landing('#go=a&go=b') === 'b', 'a repeated key: the last');
+  check(!('goOnly' in (setHash('#at=iss'), read())), 'an ordinary link carries no mark');
+  check(!KEYS.includes('goOnly') && !location.hash.includes('goOnly'), 'the mark is not a key, and write() never puts it in the address');
+  setHash('#go=kepler-186'); write({ rate: '4' });
+  check(!location.hash.includes('go') && !location.hash.includes('kepler'), 'write() on a go= link drops the go, as before');
+  // A trip, an event and an imagined world are that and nothing else: main.js goLanding returns null for each, and the ordinary path applies it.
+  const mainSrc = (await import('node:fs')).readFileSync(join(JS, 'main.js'), 'utf8');
+  check(/const goId = link && link\.goOnly \? link\.at : ''/.test(mainSrc) && /link\.trip \|\| link\.event \|\| \(link\.imagine && link\.imagine !== '0'\)\) return null/.test(mainSrc), 'main.js lands only for a go-only link that is no trip, event or imagined world');
   // 3. imagine= against the keys that fly: the world wins, nothing else is carried out at layers-ready.
   const link = { m: 'wonder', imagine: '7', at: 'iss', stage: 'saturn', cam: '40,62,26540', trip: 'moon-landings', stop: '3', event: 'voyager-2.neptune' };
   const rest = U.laterLink(link, false);
@@ -247,7 +254,7 @@ setHash('');
   check(same(U.laterLink(link, true), rest), 'and the same when a trip is running');
   check(U.laterLink({ imagine: '0', at: 'iss' }, false).at === 'iss', 'imagine=0 is no world: the place applies');
   check(U.laterLink({ at: 'iss' }, false).at === 'iss' && link.at === 'iss', 'a link with no imagine= is as before, and the snapshot is untouched');
-  for (const k of U.WORLD_KEYS) check(KEYS.includes(k), `WORLD_KEYS names only keys of the link: ${k}`);
+  check(!('goOnly' in U.laterLink({ imagine: '7', at: 'x' }, false)), 'and the go-only mark goes with the place it marked');
   // 4. A link pasted over a running tab: a world is main.js's own branch (it returns once it has opened it), and a
   //    link that names only a world or a landing is no view that linkChange() would move the tab for.
   check(linkChange({ imagine: '7' }, { at: 'iss', stage: 'earth' }) === null, 'linkChange(): an imagine= alone moves nothing');

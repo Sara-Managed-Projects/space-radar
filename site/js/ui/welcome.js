@@ -42,7 +42,9 @@
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { loadCss } from './latercss.js';
-import { icon } from './icons.js';
+import { icon, iconFrom } from './icons.js';
+// 0077 W3-e: Lucide `moon` (ISC), for Tonight; here and not in icons.js, which is at boot and has no room for a first visit's icon.
+const MOON = [['path', { d: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' }]];
 
 export const WELCOME_KEY = 'sr:welcome';
 
@@ -136,28 +138,20 @@ export function createWelcome(ctx, opts = {}) {
     row.className = 'sr-welcome__actions';
     row.setAttribute('role', 'group');
     row.setAttribute('aria-label', E.label);
-    const tonight = document.createElement('button');
-    tonight.type = 'button';
-    tonight.className = 'sr-welcome__btn sr-welcome__tonight';
-    tonight.title = E.tonightTitle;
-    tonight.dataset.entrance = 'tonight';
-    tonight.appendChild(icon('moon', 20));
-    tonight.appendChild(textSpan(doc, E.tonight));
-    const look = document.createElement('button');
-    look.type = 'button';
-    look.className = 'sr-welcome__btn sr-welcome__look';
-    look.title = E.exploreTitle;
-    look.dataset.entrance = 'explore';
-    look.appendChild(icon('compass', 20));
-    look.appendChild(textSpan(doc, E.explore));
-    const go = document.createElement('button');
-    go.type = 'button';
-    go.className = 'sr-welcome__btn sr-welcome__go';
-    go.title = E.tripTitle;
-    go.dataset.entrance = 'trip';
-    go.appendChild(icon('play', 20));
-    go.appendChild(textSpan(doc, E.trip));
-    row.append(tonight, look, go);
+    // Tonight and Explore share the quiet button's rules (`sr-welcome__look`); only Guided trip is the ember.
+    const entrance = (cls, id, glyph, label, title) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `sr-welcome__btn ${cls}`;
+      b.title = title;
+      b.dataset.entrance = id;
+      b.append(glyph, textSpan(doc, label));
+      row.appendChild(b);
+      return b;
+    };
+    const tonight = entrance('sr-welcome__look', 'tonight', iconFrom('moon', MOON, 20), E.tonight, E.tonightTitle);
+    const look = entrance('sr-welcome__look', 'explore', icon('compass', 20), E.explore, E.exploreTitle);
+    const go = entrance('sr-welcome__go', 'trip', icon('play', 20), E.trip, E.tripTitle);
     root.appendChild(row);
     tonight.addEventListener('click', () => {
       hide('tonight');

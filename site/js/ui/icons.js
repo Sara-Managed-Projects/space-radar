@@ -54,7 +54,6 @@ const ICONS = {
   // The trip's toolbar, intro and end card (spec 0061 task 7, ui/tripframe.js): the same family,
   // so a trip's controls and the card's actions read as one set.
   play: [['polygon', { points: '6 3 20 12 6 21 6 3' }]],
-  moon: [['path', { d: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' }]], // 0077 W3-e: Lucide `moon`, ISC; the first visit's Tonight
   pause: [
     ['rect', { x: 14, y: 4, width: 4, height: 16, rx: 1 }],
     ['rect', { x: 6, y: 4, width: 4, height: 16, rx: 1 }],

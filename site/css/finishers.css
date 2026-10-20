@@ -204,21 +204,6 @@ html.sr-phone .sr-launchchip {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.sr-welcome__tonight {
-  color: var(--sr-text);
-  background: var(--sr-wash);
-}
-
-.sr-welcome__tonight:active {
-  background: var(--sr-wash-strong);
-}
-
-@media (hover: hover) {
-  .sr-welcome__tonight:hover {
-    background: var(--sr-wash-hover);
-  }
-}
 /* 0077 W3-e: end */
 
 @media (hover: hover) {

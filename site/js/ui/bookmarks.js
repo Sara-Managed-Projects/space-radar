@@ -30,7 +30,7 @@
 //
 // NOT AT BOOT: ui/sharesheet.js imports this when its sheet opens; the sheet is itself a dynamic import.
 import { COPY, fmt, t } from '../copy/en.js';
-import '../copy/en.later.js';
+import '../copy/en.w3e.js';
 import { camValue, parseCam, DEFAULT_STAGE, VERSION, BUILD } from './urlstate.js';
 
 export const SAVED_KEY = 'sr:arrival-views';

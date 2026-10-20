@@ -5,8 +5,7 @@
 //           readExposure(storage), writeExposure(storage, mode)
 //           createExposure({ storage }) -> { mode(), look(), set(mode), hold(mode), release(), onChange(f) }
 //           DRAWN, DEFAULT_DRAWN, DRAWN_KEY, MEASURED_RULES, drawnUnder(look, rule), stillUnder(look, rule)
-//           createDrawn({ storage, initial }) -> { mode(), set(mode), hold(mode), release(), onChange(f) }     Measured or Film (below)
-//           PHOTO_PRESETS, PRESET_IDS, presetOf(id), applyPhotoPreset(ctx, preset) -> restore()          photo presets (the end of this file)
+//           createDrawn({ storage, initial }) -> { mode(), set(mode, keep = true), onChange(f) }     Measured or Film (below)
 //
 // WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
 // is it real or not?" It is real and it is faint. A nebula's colour in a photograph is minutes or
@@ -171,87 +170,21 @@ function readDrawn(storage) {
 export function createDrawn(opts = {}) {
   const storage = opts.storage;
   let mode = DRAWN.includes(opts.initial) ? opts.initial : readDrawn(storage);
-  // 0077 W3-e: begin. A look worn for a while and never stored (a photo preset, below), as the shutter's `hold` is a trip stop's.
-  let held = null;
-  const now = () => held || mode;
-  const tell = (was) => { if (was !== now()) for (const f of listeners) f(now()); };
-  // 0077 W3-e: end
   const listeners = new Set();
   return {
-    mode: now, // 0077 W3-e: was `() => mode`
-    // 0077 W3-e: begin
-    hold(next) {
-      if (!DRAWN.includes(next) || held === next) return false;
-      const was = now();
-      held = next;
-      tell(was);
-      return true;
-    },
-    release() {
-      if (!held) return false;
-      const was = now();
-      held = null;
-      tell(was);
-      return true;
-    },
-    // 0077 W3-e: end
-    set(next) {
+    mode: () => mode,
+    // `keep` false (0077 W3-e, a photo preset, ui/photopresets.js) wears the look for the page and writes nothing: the visitor's own
+    // choice, in storage, is what a reload and the next visit find.
+    set(next, keep = true) {
       if (!DRAWN.includes(next) || next === mode) return false;
       mode = next;
       try {
         const s = storage === undefined ? globalThis.localStorage : storage;
-        if (s) { if (next === DEFAULT_DRAWN) s.removeItem(DRAWN_KEY); else s.setItem(DRAWN_KEY, next); }
+        if (keep && s) { if (next === DEFAULT_DRAWN) s.removeItem(DRAWN_KEY); else s.setItem(DRAWN_KEY, next); }
       } catch { /* the choice still holds for the page */ }
-      for (const f of listeners) f(now());
+      for (const f of listeners) f(mode);
       return true;
     },
     onChange(f) { listeners.add(f); return () => listeners.delete(f); },
-  };
-}
-
-// --- Photo presets (0077 W3-e, internal i#905, SR-PLAN-134) ----------------------------------------------------
-//
-// A named way to set up one kind of picture: the frame's shape, the lens, the shutter, the look and whether the
-// object's tag is on it. Each is a handful of the settings photo mode already has (ui/photomode.js: shape, lens,
-// caption, the tag) and the two this file owns (Eye, Camera, Deep; Measured or Film). Nothing is a new effect:
-// "a cinematic grade with bloom" is Ivan's decision D2 (public #261) and the design contract refuses a post
-// pass (tests/test_contract.mjs), so the cinematic frame is a wide frame, a long lens and the Deep shutter, and
-// the caption still says it is a drawing, as every picture's does.
-//
-//   science    16:9, the map's own lens, Camera, Measured: nothing generated, what is measured and modelled.
-//   cinematic  16:9, a long lens (28 degrees), Deep, Film: the stretch an observatory gives a press picture.
-//   telescope  square, the longest lens (15 degrees), Camera, Measured: the narrow field a telescope frames.
-//   card       4:5, the map's own lens, as it is, the tag on: an object, its name and its facts, for one post.
-//
-// `lens: null` is the map's own and `exposure`/`look: null` leave what the visitor has. A preset is WORN while photo
-// mode is open (the shutter by `hold`, the look by `hold`) and put back by the function applyPhotoPreset returns;
-// neither is stored, so leaving by any way leaves the visitor's own settings as they were.
-export const PHOTO_PRESETS = {
-  science: { shape: '16:9', lens: null, exposure: 'camera', look: 'measured', tag: false },
-  cinematic: { shape: '16:9', lens: 28, exposure: 'deep', look: 'film', tag: false },
-  telescope: { shape: '1:1', lens: 15, exposure: 'camera', look: 'measured', tag: false },
-  card: { shape: '4:5', lens: null, exposure: null, look: null, tag: true },
-};
-export const PRESET_IDS = Object.keys(PHOTO_PRESETS);
-
-/** A preset by id, or null. Pure. */
-export function presetOf(id) {
-  return Object.prototype.hasOwnProperty.call(PHOTO_PRESETS, id) ? { id, ...PHOTO_PRESETS[id] } : null;
-}
-
-/**
- * Wear a preset's shutter and look. Returns the function that puts both back (safe to call twice). The shape, the lens, the caption
- * and the tag are photo mode's own and go through its options (ui/sharesheet.js hands them over).
- */
-export function applyPhotoPreset(ctx, preset) {
-  const held = { exposure: false, look: false };
-  if (preset && ctx && ctx.exposure && typeof ctx.exposure.hold === 'function' && EXPOSURES.includes(preset.exposure)) held.exposure = ctx.exposure.hold(preset.exposure);
-  if (preset && ctx && ctx.drawn && typeof ctx.drawn.hold === 'function' && DRAWN.includes(preset.look)) held.look = ctx.drawn.hold(preset.look);
-  let done = false;
-  return () => {
-    if (done) return;
-    done = true;
-    if (held.exposure && ctx.exposure && typeof ctx.exposure.release === 'function') ctx.exposure.release();
-    if (held.look && ctx.drawn && typeof ctx.drawn.release === 'function') ctx.drawn.release();
   };
 }

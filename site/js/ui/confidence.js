@@ -31,7 +31,8 @@
 // is left looking at a map with half its dots gone and no idea why. While it is on, the row says
 // "n of m", and ctx.confidence() answers for a probe.
 import { COPY, fmt, t } from '../copy/en.js';
-import '../copy/en.later.js';
+import '../copy/en.later.js'; // COPY.truth and COPY.r12Truth, the card's own words
+import '../copy/en.w3e.js';
 
 export const CONFIDENCE = ['measured', 'inferred', 'illustrative', 'sample'];
 
@@ -193,11 +194,9 @@ export function confidencePanel(ctx) {
   }
 
   const onEvent = () => { if (wrap.isConnected) refresh(); };
-  window.addEventListener('sr:confidence', onEvent);
   document.addEventListener('sr:layer-toggle', onEvent);
   wrap.refresh = refresh;
   wrap.destroy = () => {
-    window.removeEventListener('sr:confidence', onEvent);
     document.removeEventListener('sr:layer-toggle', onEvent);
   };
   refresh();

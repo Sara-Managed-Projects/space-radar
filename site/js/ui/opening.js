@@ -26,7 +26,9 @@
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { loadCss } from './latercss.js';
-import { icon } from './icons.js';
+import { icon, iconFrom } from './icons.js';
+// 0077 W3-e: Lucide `moon` (ISC), Tonight's icon, here and in welcome.js and not in icons.js, which is at boot and has no room for it.
+const MOON = [['path', { d: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' }]];
 
 /** How long one sentence stays. Three of them fit the shot. */
 export const ROTATE_MS = 2600;
@@ -72,12 +74,12 @@ export function createOpening(ctx, opts = {}) {
     b.type = 'button';
     b.className = `sr-welcome__btn ${cls}`;
     b.title = title;
-    b.appendChild(icon(name, 16));
+    b.appendChild(name === 'moon' ? iconFrom(name, MOON, 16) : icon(name, 16));
     b.appendChild(doc.createTextNode(label));
     return b;
   };
   // 0077 W3-e: begin
-  const tonight = mk('sr-welcome__tonight', 'moon', W.tonight, W.tonightTitle);
+  const tonight = mk('sr-welcome__look', 'moon', W.tonight, W.tonightTitle);
   const go = mk('sr-welcome__go sr-opening__go', 'play', W.trip, W.tripTitle);
   const look = mk('sr-welcome__look', 'compass', W.explore, W.exploreTitle);
   row.append(tonight, look, go);

@@ -55,7 +55,7 @@ check(read.at === 'jupiter' && read.stage === 'jupiter' && read.cam === jup[0].c
 for (const k of Object.keys(read)) check(U.KEYS.includes(k), `and only keys it has: ${k}`);
 const boot = U.bootLink({ goTo() { throw new Error('a view carries no clock'); }, rates: () => [], setRate() {} });
 check(boot.at === 'jupiter' && boot.cam === jup[0].cam, 'bootLink() hands it on for the layers-ready half');
-check(U.goTarget(link) === '' && U.laterLink(read, false).cam === read.cam, 'it is no `go=` and no imagined world: nothing in it collides (public #564)');
+check(!read.goOnly && U.laterLink(read, false).cam === read.cam, 'it is no `go=` and no imagined world: nothing in it collides (public #564)');
 check(B.viewLink({ at: 'iss', stage: 'earth', cam: '40,62,26540' }, BASE) === `${BASE}#v=1&build=${U.BUILD}&at=iss&cam=40,62,26540`, 'on the Earth\'s map the stage is left out, as the app leaves it out');
 check(B.viewLink({ at: 'iss', cam: 'junk' }, BASE) === '' && B.viewLink(null) === '' && B.viewLink({ cam: '1,2,3' }) === '', 'a view that is not one has no link');
 check(B.viewLink({ at: 'a b&c', stage: 'x y', cam: '10,20,300' }, 'https://x.test').includes('at=a%20b%26c&stage=x%20y&cam=10,20,300'), 'values are encoded, the commas of the pose kept');

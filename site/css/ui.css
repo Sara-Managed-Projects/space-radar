@@ -4694,7 +4694,7 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-line); }
 
-/* 0077 W3-e: begin (ui/confidence.js: a confidence filter is on, and the shut popover says so with one dot) */
+/* 0077 W3-e: begin (ui/confidence.js: a confidence filter is on, and the shut popover says so with one dot, in the text colour: a mark, not a second ember) */
 .sr-rail__btn.is-filtered { position: relative; }
 .sr-rail__btn.is-filtered::after {
   position: absolute;
@@ -4703,14 +4703,14 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   width: var(--sp-2);
   height: var(--sp-2);
   content: '';
-  background: var(--sr-ember);
+  background: var(--sr-text);
   border-radius: 50%;
 }
 /* 0077 W3-e: end */
 
 /* 0077 W3-e: begin (the rows of "How we know" are the layers' rows without the swatch: a box, a word, a count, a sentence under it) */
 .sr-confidence .sr-show__label { grid-template-columns: 18px 1fr auto; }
-.sr-confidence .sr-show__hint { margin-left: calc(18px + var(--sp-2)); }
+.sr-confidence .sr-show__hint { margin-left: var(--sp-5); }
 /* 0077 W3-e: end */
 .sr-rail__btn:hover { background: var(--sr-wash); }
 

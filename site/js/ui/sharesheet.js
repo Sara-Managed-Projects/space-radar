@@ -69,8 +69,9 @@ import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
 import { embedSnippet, embedState } from './embed.js';
 import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
-// 0077 W3-e: begin (the presets are small and already at boot: the shutter and the look live there)
-import { PRESET_IDS, presetOf, applyPhotoPreset } from '../scene/exposure.js';
+// 0077 W3-e: begin
+import { PRESET_IDS, presetOf, applyPhotoPreset } from './photopresets.js';
+import '../copy/en.w3e.js'; // the words of the two rows
 // 0077 W3-e: end
 
 export { objectPageUrl, PAGES_INDEX };
