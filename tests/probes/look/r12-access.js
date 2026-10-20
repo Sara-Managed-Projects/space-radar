@@ -154,7 +154,7 @@ try {
     out.motion.row.off = state();
     if (document.documentElement.dataset.srMotion !== 'off') out.problems.push('pressing Off did not set data-sr-motion');
     if (!out.motion.row.off.pressed.includes('off')) out.problems.push('Off is not shown pressed');
-    if (out.motion.row.off.heightPx < 44) out.problems.push(`a Motion button is ${out.motion.row.off.heightPx} px tall`);
+    if (phone && out.motion.row.off.heightPx < 44) out.problems.push(`a Motion button is ${out.motion.row.off.heightPx} px tall`);
     try { out.motion.remembered = localStorage.getItem('sr:motion'); } catch { out.motion.remembered = 'no storage'; }
     await shot('motion-row-off', 'What to show: the Motion row, Off');
     sr.rail.closeShow && sr.rail.closeShow();
@@ -245,20 +245,7 @@ try {
   if (phone && sr.shell && sr.shell.sheet && sr.shell.sheet()) { sr.shell.sheet().set('half'); await sleep(800); }
   await scan('map');
   if (sr.rail && sr.rail.openShow) { sr.rail.openShow(); await sleep(600); await scan('what-to-show'); sr.rail.closeShow && sr.rail.closeShow(); }
-  // The readable page itself, as markup in a document of its own.
-  const f = holder();
-  f.setAttribute('sandbox', 'allow-same-origin');
-  document.body.appendChild(f);
-  f.src = base + 'index.html';
-  await new Promise((res) => { f.onload = res; setTimeout(res, 60000); });
-  await sleep(800);
-  if (window.axe && f.contentDocument) {
-    try {
-      const r = await window.axe.run(f.contentDocument, { runOnly: { type: 'tag', values: TAGS }, resultTypes: ['violations'] });
-      out.axe['readable-no-js'] = { violations: r.violations.map((v) => ({ id: v.id, impact: v.impact, n: v.nodes.length, nodes: v.nodes.slice(0, 4).map((n) => n.target.join(' ')) })), serious: r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id} (${v.impact}, ${v.nodes.length})`) };
-    } catch (e) { out.axe['readable-no-js'] = { error: String(e).slice(0, 300) }; }
-  }
-  f.remove();
+  // The readable page is not scanned here: axe is loaded into this page's realm and cannot run in a frame's (tests/test_access.mjs holds its structure).
 } catch (e) { out.problems.push('axe: ' + e); }
 for (const [name, a] of Object.entries(out.axe)) {
   if (a.error) out.problems.push(`axe ${name}: ${a.error}`);

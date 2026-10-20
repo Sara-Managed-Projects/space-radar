@@ -239,7 +239,7 @@ html.sr-render .sr-skip { display: none; }
   font-size: var(--sr-fs-input);
   line-height: 1.6;
 }
-.sr-readable > * { max-width: 62ch; margin-left: auto; margin-right: auto; }
+.sr-readable > * { max-width: 40rem; margin-left: auto; margin-right: auto; }
 .sr-readable__title { margin-bottom: 0.5em; font-size: var(--sr-fs-name); font-weight: 600; line-height: 1.2; }
 .sr-readable h2 { margin: 1.6em auto 0.4em; font-size: var(--sr-fs-lead); }
 .sr-readable p { margin-top: 0; margin-bottom: 0.9em; }
