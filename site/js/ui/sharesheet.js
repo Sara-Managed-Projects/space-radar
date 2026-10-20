@@ -69,6 +69,9 @@ import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
 import { embedSnippet, embedState } from './embed.js';
 import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
+// 0077 W3-e: begin (the presets are small and already at boot: the shutter and the look live there)
+import { PRESET_IDS, presetOf, applyPhotoPreset } from '../scene/exposure.js';
+// 0077 W3-e: end
 
 export { objectPageUrl, PAGES_INDEX };
 import { WIKI_TITLES } from '../data/wikititles.js';
@@ -466,6 +469,38 @@ export function createShareSheet(ctx) {
   acts.append(nativeBtn, copyBtn, mailA, jpegBtn, pdfBtn, photoBtn, embedBtn);
   const mailNote = el('p', 'sr-share__note', S.emailNote);
 
+  // 0077 W3-e: begin. TWO ROWS THAT OPEN IN PLACE, shut at first, so the sheet still fits a 1440 x 900 window with no scroll: Photo presets
+  // (internal i#905) and Arrival views (internal i#882). Each is the post's words' row again, class for class (docs/ui-guide.md 3.10).
+  const PR = COPY.presets;
+  const presetsRow = button('sr-share__row', PR.row, '', '');
+  presetsRow.appendChild(icon('chevron-down'));
+  presetsRow.setAttribute('aria-expanded', 'false');
+  presetsRow.setAttribute('aria-controls', 'sr-share-presets');
+  const presetsPanel = el('div', 'sr-share__panel sr-share__presets');
+  presetsPanel.id = 'sr-share-presets';
+  presetsPanel.hidden = true;
+  presetsPanel.setAttribute('role', 'group');
+  presetsPanel.setAttribute('aria-label', PR.label);
+  const presetBtns = new Map();
+  for (const id of PRESET_IDS) {
+    const b = el('button', 'sr-share__preset');
+    b.type = 'button';
+    b.dataset.preset = id;
+    b.title = t(PR.title, { name: PR[id], note: PR[`${id}Note`] });
+    b.append(el('span', 'sr-share__presetname', PR[id]), el('span', 'sr-share__presetnote', PR[`${id}Note`]));
+    presetsPanel.appendChild(b);
+    presetBtns.set(id, b);
+  }
+  const VW = COPY.views;
+  const viewsRow = button('sr-share__row', VW.row, '', '');
+  viewsRow.appendChild(icon('chevron-down'));
+  viewsRow.setAttribute('aria-expanded', 'false');
+  viewsRow.setAttribute('aria-controls', 'sr-share-views');
+  const viewsPanelBox = el('div', 'sr-share__panel');
+  viewsPanelBox.id = 'sr-share-views';
+  viewsPanelBox.hidden = true;
+  // 0077 W3-e: end
+
   const netLabel = el('p', 'sr-micro sr-share__micro', S.networksLabel);
   const nets = el('div', 'sr-share__nets');
   const netLinks = {};
@@ -484,7 +519,7 @@ export function createShareSheet(ctx) {
   // The picture and what to do with it first, so the actions are above the fold on a laptop; then
   // the link and the post itself, which is what Copy, Email and the networks carry.
   textPanel.append(textBox, wikiLine);
-  body.append(pic, tagRow, acts, mailNote, netLabel, nets, linkLabel, linkRow, textRow, textPanel);
+  body.append(pic, tagRow, acts, mailNote, presetsRow, presetsPanel, viewsRow, viewsPanelBox, netLabel, nets, linkLabel, linkRow, textRow, textPanel); // 0077 W3-e: the two rows after mailNote
   root.append(head, body);
   document.body.appendChild(root);
 
@@ -615,6 +650,12 @@ export function createShareSheet(ctx) {
     cur.trip = w.trip || null;
     tagRow.hidden = !w.record;
     setTextOpen(false);
+    // 0077 W3-e: begin (the rows shut for every opening; the object card needs an object; the views are made again for this record)
+    setPresetsOpen(false);
+    setViewsOpen(false);
+    viewsFor = null;
+    presetBtns.get('card').hidden = !w.record;
+    // 0077 W3-e: end
     // The skeleton in the postcard's own orientation (printcompose.js printSize: the screen's).
     const view = ctx && ctx.renderer && ctx.renderer.domElement;
     const aspect = view && view.clientHeight > 0 ? view.clientWidth / view.clientHeight : window.innerWidth / window.innerHeight;
@@ -660,6 +701,59 @@ export function createShareSheet(ctx) {
     textRow.setAttribute('aria-expanded', on ? 'true' : 'false');
   }
   textRow.addEventListener('click', () => setTextOpen(textPanel.hidden));
+
+  // 0077 W3-e: begin
+  function setPresetsOpen(on) {
+    presetsPanel.hidden = !on;
+    presetsRow.setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  presetsRow.addEventListener('click', () => setPresetsOpen(presetsPanel.hidden));
+  /** The views for this record, built the first time the row opens: bookmarks.js and the radii come with it, never before. */
+  let viewsFor = null;
+  async function fillViews() {
+    if (!cur) return;
+    const key = cur.record ? String(cur.record.id) : '';
+    if (viewsFor === key && viewsPanelBox.firstChild) return;
+    try {
+      const [m, compare] = await Promise.all([import('./bookmarks.js'), import('../data/compare.js')]);
+      if (!cur || (cur.record ? String(cur.record.id) : '') !== key) return;
+      viewsFor = key;
+      while (viewsPanelBox.firstChild) viewsPanelBox.removeChild(viewsPanelBox.firstChild);
+      viewsPanelBox.appendChild(m.viewsPanel(ctx, { record: cur.record, base: appBase(), radiusOf: (id) => m.radiusFrom(compare.COMPARE_BODIES, id) }));
+    } catch (e) {
+      fail(VW.copyRefused);
+      if (ctx) ctx.lastView = { error: String((e && e.message) || e) };
+    }
+  }
+  function setViewsOpen(on) {
+    viewsPanelBox.hidden = !on;
+    viewsRow.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) fillViews();
+  }
+  viewsRow.addEventListener('click', () => setViewsOpen(viewsPanelBox.hidden));
+  // A preset is photo mode with its shape, its lens, its shutter and its look, and the tag where it has one. The shutter and the look are
+  // worn while photo mode is open and put back when it is left, by any way (photomode.js onClose); the caption stays on, with its honesty line.
+  for (const [id, b] of presetBtns) {
+    b.addEventListener('click', async () => {
+      if (!cur) return;
+      const { record, opener } = cur;
+      const preset = presetOf(id);
+      let restore = null;
+      try {
+        const m = await import('./photomode.js');
+        close();
+        restore = applyPhotoPreset(ctx, preset);
+        const api = m.openPhotoMode(ctx, { record, opener, shape: preset.shape, caption: true, withTag: preset.tag, preset: id, onClose: restore });
+        if (preset.lens) api.setLens(preset.lens);
+        if (ctx) ctx.lastPreset = { id, shape: preset.shape, lens: preset.lens, exposure: preset.exposure, look: preset.look, tag: preset.tag && !!record };
+      } catch (e) {
+        if (restore) restore();
+        fail(COPY.photo.failed);
+        if (ctx) ctx.lastPhoto = { error: String((e && e.message) || e) };
+      }
+    });
+  }
+  // 0077 W3-e: end
 
   // The phone's sheet behaviour, made the first time the sheet opens on a phone and dropped on a
   // desktop, where the sheet is the rail's popover.

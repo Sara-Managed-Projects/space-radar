@@ -272,3 +272,21 @@ features:
     files: [site/js/ui/photocompare.js]
     not: "Reached from one kind of card, inside About it, deep in the Stars view."
   # 0077 W2-d: end
+  # 0077 W3-e: begin
+  - id: entrances
+    name: The three ways in on a first visit (Tonight, Explore, Guided trip; internal i#878)
+    files: [site/js/ui/welcome.js, site/js/ui/opening.js]
+    not: "It is the first thing a newcomer sees, once; the tour's own first step (move) and last (trips) cover where it leads, and Tonight is one of the four views the places step names."
+  - id: confidence-filter
+    name: How we know, show only measured, worked out, illustrative or sample dots (internal i#886)
+    files: [site/js/ui/confidence.js]
+    not: "A section of What to show, which the layers step opens; it filters the dots by the four classes every card's honesty line already uses, and a dot on the rail's button says when it is on."
+  - id: arrival-views
+    name: Arrival views, authored and saved, in the share sheet (internal i#882)
+    files: [site/js/ui/bookmarks.js]
+    not: "A row that opens in place inside Share, which the share step opens; it is for someone who has already found a thing worth coming back to."
+  - id: photo-presets
+    name: Photo presets, a science frame, a cinematic frame, a telescope view and an object card (internal i#905)
+    files: [site/js/scene/exposure.js]
+    not: "A row that opens in place inside Share, one press before photo mode, which the share step opens; presets are shortcuts to settings photo mode already has."
+  # 0077 W3-e: end

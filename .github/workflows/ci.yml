@@ -995,6 +995,12 @@ jobs:
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
         run: node tests/test_precompress.mjs
       # 0077 W3-e: begin
+      - name: "How we know: the confidence filter, on the app's four honesty classes, in What to show (internal i#886)"
+        run: node tests/test_confidence.mjs
+      - name: "arrival views: authored and saved, as the link keys the app already reads (internal i#882)"
+        run: node tests/test_bookmarks.mjs
+      - name: "photo presets: shape, lens, shutter, look and tag, worn while photo mode is open and never stored (internal i#905)"
+        run: node tests/test_photopresets.mjs
       - name: "verify-deploy compares the Lab and the worker with what deploy.sh uploads, so a clean deploy reports 0 differ (public #1214)"
         run: node tests/test_verify_deploy.mjs
       # 0077 W3-e: end
