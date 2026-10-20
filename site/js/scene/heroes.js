@@ -353,6 +353,18 @@ const _sunHere = new THREE.Vector3();
 const _sunLocal = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _ground = new THREE.Vector3();
+// 0077 W3-d: begin -- a small body turning as measured (realmodels.js `spin`; scene/moonshape.js applySpin,
+// fetched the first time such a model is drawn, never at boot).
+let spinMod = null;
+let spinAsked = false;
+const _spinBasis = new THREE.Matrix4();
+const _spinX = new THREE.Vector3();
+const _spinY = new THREE.Vector3();
+const _spinZ = new THREE.Vector3();
+const _spinIn = { x: 0, y: 0, z: 0 };
+/** An ecliptic J2000 direction ([x, y, z]) as a scene direction, through scene/stage.js like every other. */
+const spinToScene = (tMs) => (v, out) => { _spinIn.x = v[0] * 1e3; _spinIn.y = v[1] * 1e3; _spinIn.z = v[2] * 1e3; return stage.dirToScene(_spinIn, 'sun-inertial', out, tMs); };
+// 0077 W3-d: end
 
 /**
  * Which way is DOWN for a model at `pos`: toward the centre of the world it stands on. Pure, and
@@ -642,6 +654,11 @@ export function createHeroes(scene, ctx) {
           clone.userData.attitude = entry.obj.userData.attitude;
           clone.userData.klass = entry.obj.userData.klass;
         }
+        // 0077 W3-d: a shape in its body's own axes turns about its measured pole (scene/moonshape.js applySpin).
+        if (real.spin) {
+          clone.userData.spin = real.spin;
+          if (!spinAsked) { spinAsked = true; import('./moonshape.js').then((m) => { spinMod = m; }, () => { spinAsked = false; }); }
+        }
         // MEASURED BEFORE THE SCALE IS COPIED ON. unitReachOf() walks world matrices, so asking it
         // after the line below would return a reach already multiplied by the drawn scale -- and
         // the clearance cap would then be computed from a number in the wrong units entirely.
@@ -920,6 +937,7 @@ export function createHeroes(scene, ctx) {
       // (models.js cometTailVisible): per-frame state on the object, as `burn` is.
       if (obj.userData.tails) { obj.userData.sunAu = M.sunAuOf(c.p); obj.userData.selected = c.record.id === selectedId; }
       M.updateModelAttitude(obj, c.record, sun, _v, tMs);
+      if (obj.userData.spin && spinMod) spinMod.applySpin(obj, obj.userData.spin, tMs, spinToScene(tMs), _spinBasis, _spinX, _spinY, _spinZ); // 0077 W3-d
 
       // The contact shadow leans away from the Sun, in the model's own frame (groundShadowPose).
       const shadow = sun && obj.userData.attitude === 'up' ? obj.getObjectByName(SHADOW_NAME) : null;

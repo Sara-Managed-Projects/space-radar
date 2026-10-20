@@ -645,6 +645,11 @@ than counted by hand.
 | `asteroid-vesta.glb` | NOT from NASA 3D Resources since 2026-10-07: DLR's stereo height model of Vesta from Dawn's Framing Camera pictures (`Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd`, hosted by USGS Astrogeology, <https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd.lbl>), credit NASA/JPL-Caltech/UCLA/MPS/DLR/IDA; thinned to 3 072 triangles and given texture coordinates by `scripts/shape-to-glb.py`, so that it can wear DLR's mosaic on the same grid of longitudes. Licence as the mosaic's (section 2): NASA's media guidelines; the height model was made at DLR | 4 Vesta | 50 KB |
 | `asteroid-eros.glb` | Gaskell Eros Shape Model V1.1 (NASA PDS, not NASA 3D Resources): Gaskell, R. (2021), doi:10.26033/d0gq-9427. CC0 under NASA's science data policy | 433 Eros | 22 KB |
 | `dwarf-ceres.glb` | Ceres SPC Shape Model Dataset V1.0 (NASA PDS, not NASA 3D Resources): Park, R.S. and Buccino, D.R. (2018), DAWN-A-FC2-5-CERESSHAPESPC-V1.0. CC0 under NASA's science data policy. Since 2026-10-07 with texture coordinates (longitude and latitude of each vertex), for the map in section 2 | 1 Ceres | 50 KB |
+<!-- 0077 W3-d: begin -->
+| `asteroid-ryugu.glb` | Hayabusa2's SPC shape model of Ryugu, `ryugu_shape_spc_49k_v20200323` (JAXA's PDS4 archive DARTS, Hayabusa2 SPICE bundle, doi:10.17597/isas.darts/hyb2-00600; Watanabe et al. 2019, Science 364, 268). ISAS Data Policy: open data "can be used free of charge, either for commercial or non-commercial purposes. They may be copied, forwarded or modified", credit "ISAS/JAXA" | 162173 Ryugu | 58 KB |
+| `asteroid-itokawa.glb` | Gaskell Itokawa Shape Model V1.1 (NASA PDS Small Bodies Node): Gaskell, R. et al. (2021), doi:10.26033/3b2j-yy57, from Hayabusa's AMICA images. ISAS Data Policy (as for Ryugu), credit "ISAS/JAXA" | 25143 Itokawa | 58 KB |
+| `asteroid-didymos.glb` | The DART team's shape models of Didymos (v003) and Dimorphos (v004): Daly, R.T. et al. (2023), DART Shapemodel Archive Bundle, NASA PDS Small Bodies Node, doi:10.26007/96fn-p578. CC0 under NASA's science data policy | 65803 Didymos and its moon Dimorphos | 61 KB |
+<!-- 0077 W3-d: end -->
 
 **The shapes of Phobos and Deimos** are not `.glb` files: `site/js/data/moonshapes.js` holds a radius
 every 5 degrees for each, which `site/js/scene/moonshape.js` bends the moon's sphere to
@@ -1813,6 +1818,22 @@ public domain"). Credits, in the Sources panel while each is drawn:
 
 **Huygens on Titan** is drawn since this stage, at the coordinate above, on Titan's fixed frame (its tidal
 lock), as the procedural lander the card calls "the kind of thing, not this exact one".
+
+**The Moon's named places** (`registry/sites.yaml`, `class: feature`): Copernicus, Tycho and Shackleton at the
+centres the IAU Gazetteer of Planetary Nomenclature gives (USGS Astrogeology, planetarynames.wr.usgs.gov,
+read 2026-10-20), and the south pole. Numbers, no picture.
+
+**Ryugu, Itokawa, Didymos and Dimorphos** (the small-bodies table above): each simplified by quadric error to
+1 000 to 4 800 triangles by `scripts/small-body-glb.py`, in its body's own axes, and turned by the rotation
+model its mission published: Ryugu by JAXA's SPICE constants (`ryugu_v10.tpc`), Itokawa by the pole and rate
+in Gaskell's bundle, Didymos by the DART team's (`didymos_system_15.tpc`, NASA/NAIF and JHU/APL). Dimorphos goes
+round Didymos at 1.152 km in 11.3674 h, the post-impact values of Richardson et al. 2024 (PSJ 5:182, Table 2);
+where it is on that orbit is illustrative, and so is the phase of every turn. The ISAS Data Policy
+(https://www.isas.jaxa.jp/en/researchers/data-policy/, read 2026-10-20) names shape models among its open data,
+says they "can be used free of charge, either for commercial or non-commercial purposes. They may be copied,
+forwarded or modified", asks that the origin be given as "ISAS/JAXA", and calls its terms "compatible with
+Creative Commons BY 4.0". NASA's science data licence (https://science.data.nasa.gov/about/license): data "from
+a NASA-led mission ... are licensed as Creative Commons Zero" (DART).
 <!-- 0077 W3-d: end -->
 
 ### Ring and spot data (0076 W2-b)

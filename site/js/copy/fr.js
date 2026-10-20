@@ -1076,6 +1076,7 @@ export const COPY = {
     },
     "storm": "dessiné comme une marque en son centre ; la tempête elle-même est le nuage tout autour",
     "feature": "un lieu nommé : rien n’est dessiné ici qu’une marque en son centre, d’après le répertoire de l’UAI ; le sol dessous est la carte elle-même", // 0077 W3-d
+    "objectSpin": { "spin": "il tourne autour de son pôle mesuré, à sa vitesse mesurée ; la face tournée vers le Soleil en ce moment n’est pas une prédiction", "pair": "les deux tournent autour de leur pôle mesuré, à leurs vitesses mesurées, et Dimorphos fait le tour à la distance et en la durée mesurées après l’impact de DART ; sa place sur cette orbite est illustrative" }, // 0077 W3-d
     "worldFlat": "dessiné comme une simple boule : il n’y a pas ici de carte de surface pour {name}, et sa couleur unique est choisie d’après des descriptions publiées, pas mesurée",
     "worldFlatIrregular": "dessiné comme une simple boule de la taille de son rayon moyen : il n’y a pas ici de carte de surface pour {name}, sa couleur unique est choisie d’après des descriptions publiées, pas mesurée, et {name} est en réalité un rocher irrégulier dont la vraie forme n’est pas dessinée",
     "worldFlatShaped": "dessiné dans sa forme mesurée et d’une seule couleur : il n’y a pas ici de carte de surface pour {name}, et la couleur est choisie d’après des descriptions publiées, pas mesurée",
