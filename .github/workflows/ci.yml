@@ -994,6 +994,10 @@ jobs:
         run: python3 tests/test_strip_shaders.py
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
         run: node tests/test_precompress.mjs
+      # 0077 W3-e: begin
+      - name: "verify-deploy compares the Lab and the worker with what deploy.sh uploads, so a clean deploy reports 0 differ (public #1214)"
+        run: node tests/test_verify_deploy.mjs
+      # 0077 W3-e: end
       - name: "the minifier a deploy runs: pinned by hash, licence headers kept, maps true, and the node tests pass against the tree it writes (internal #515)"
         run: node tests/test_minify_real.mjs
       - name: "the edge keeps the app between deploys and a browser still revalidates: the header, the invalidation that covers it, and the check after (internal #513)"
