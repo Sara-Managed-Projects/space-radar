@@ -372,6 +372,18 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     check(s6a && s6a.file === 'sentinel6.glb' && !s6a.generic, `SENTINEL-6A keeps NASA's model of itself: ${JSON.stringify(s6a)}`);
     const clipper = realModelFor({ id: 'deep-europa-clipper', name: 'Europa Clipper', klass: 'probe', meta: { horizonsId: -159 } });
     check(clipper && clipper.file === 'europa-clipper.glb' && !clipper.generic && clipper.axes === 'app', `Europa Clipper (Horizons -159) wears NASA's model, turned to the app's axes: ${JSON.stringify(clipper)}`);
+    // THE TWELFTH BATCH (2026-10-15, public #1080 to #1084): five deep-space probes built here from
+    // published dimensions, each by its own Horizons id, as itself, to the app's axes; no other craft
+    // wears them (the other probes that were generic stay so).
+    for (const [hid, id, name, file] of [[-255, 'deep-psyche', 'Psyche', 'psyche.glb'], [-49, 'deep-lucy', 'Lucy', 'lucy.glb'], [-28, 'deep-juice', 'JUICE', 'juice.glb'],
+      [-121, 'deep-bepicolombo', 'BepiColombo', 'bepicolombo.glb'], [-91, 'deep-hera', 'Hera', 'hera.glb']]) {
+      const got = realModelFor({ id, name, klass: 'probe', meta: { horizonsId: hid } });
+      check(got && got.file === file && got.made === 'dimensions' && got.axes === 'app' && !got.generic && !got.build, `${name} (Horizons ${hid}) wears ${file}, built from dimensions, as itself: ${JSON.stringify(got)}`);
+    }
+    for (const [hid, id, name] of [[-37, 'deep-hayabusa2', 'Hayabusa2'], [-62, 'deep-hope', 'Hope'], [-41, 'deep-mars-express', 'Mars Express']]) {
+      const got = realModelFor({ id, name, klass: 'probe', meta: { horizonsId: hid } });
+      check(!got || !['psyche.glb', 'lucy.glb', 'juice.glb', 'bepicolombo.glb', 'hera.glb'].includes(got.file), `${name} wears none of the twelfth batch's files: ${JSON.stringify(got)}`);
+    }
     const gale = realModelFor({ id: 'gale', name: 'Curiosity, Gale crater', klass: 'site', meta: { siteShape: 'rover' } });
     const jezero = realModelFor({ id: 'jezero', name: 'Perseverance, Jezero crater', klass: 'site', meta: { siteShape: 'rover' } });
     check(gale && gale.file === 'curiosity.glb' && gale.name === 'Curiosity' && !gale.generic && !gale.axes, `Gale crater draws Curiosity's own model, standing as published: ${JSON.stringify(gale)}`);

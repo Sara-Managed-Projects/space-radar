@@ -470,7 +470,12 @@ export const VISUAL_CLASSES = [
 "deep-impact",
 "maven",
 "new-horizons",
-"europa-clipper"
+"europa-clipper",
+"psyche",
+"juice",
+"bepicolombo",
+"hera",
+"lucy"
 ],
 "model_kinds": [
 "probe-generic",
