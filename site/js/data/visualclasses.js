@@ -577,7 +577,13 @@ export const VISUAL_CLASSES = [
 "insight",
 "viking-lander",
 "ingenuity",
-"curiosity"
+"curiosity",
+"vikram",
+"slim",
+"odysseus",
+"blue-ghost",
+"surveyor",
+"surveyor-3"
 ],
 "model_kinds": [
 "site-surveyor",
