@@ -187,6 +187,14 @@ Object.assign(COPY, {
     noteLate: 'JPL’s track of it begins {n} minutes after this moment, and the clock goes there. Good to about {km} km.',
     noteDay: 'NASA’s page gives the day. The clock goes to {time} UTC, the closest pass in JPL’s track that day, good to about {km} km.',
     failed: 'Its path for that day did not load, so the clock stays where it is. Choose it again to retry.',
+    // 0077 W1-d: begin (public #493) the days the path covers, and the clock outside them
+    span: 'JPL’s path for it runs from {from} to {to}.',
+    before: 'The clock is before that, so the map has no position for it.',
+    after: 'The clock is after that, so the map has no position for it.',
+    go: 'Go to nearest available date',
+    goBefore: 'Move the clock to {date}, where JPL’s path for it begins',
+    goAfter: 'Move the clock to {date}, where JPL’s path for it ends',
+    // 0077 W1-d: end
   },
 
   // The service worker's one line (ui/offline.js): a newer build is installed and waiting.
@@ -364,6 +372,10 @@ Object.assign(COPY, {
     stormOne: 'one storm is turning',
     approach: '{name} passes Earth {when}',
     launched: '{n} new objects reached orbit in 30 days',
+    // 0077 W1-d: begin (public #503) the last clause, when no source answered: the clock's own date
+    dateToday: 'today is {date}',
+    dateClock: 'the clock is set to {date}',
+    // 0077 W1-d: end
     sources: {
       pass: 'CelesTrak elements',
       launch: 'Launch Library 2',
@@ -373,6 +385,7 @@ Object.assign(COPY, {
       storms: 'GDACS',
       approach: 'NASA JPL',
       launched: 'CelesTrak',
+      clock: 'your device’s clock', // 0077 W1-d
     },
   },
 
