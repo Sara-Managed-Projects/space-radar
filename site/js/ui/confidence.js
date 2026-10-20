@@ -131,12 +131,9 @@ export function confidencePanel(ctx) {
     box.type = 'checkbox';
     box.className = 'sr-show__box';
     box.dataset.class = id;
-    const gap = node('span', 'sr-swatch');
-    gap.setAttribute('aria-hidden', 'true');
-    gap.style.visibility = 'hidden';
     const name = node('span', 'sr-show__name', COPY.truth.hints[id]);
     const count = node('span', 'sr-show__count', fmt.int(0));
-    label.append(box, gap, name, count);
+    label.append(box, name, count);
     li.appendChild(label);
     const hint = node('p', 'sr-show__hint', COPY.r12Truth.position[id]);
     hint.id = `sr-confidence-${id}`;

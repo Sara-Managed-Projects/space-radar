@@ -4707,6 +4707,11 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   border-radius: 50%;
 }
 /* 0077 W3-e: end */
+
+/* 0077 W3-e: begin (the rows of "How we know" are the layers' rows without the swatch: a box, a word, a count, a sentence under it) */
+.sr-confidence .sr-show__label { grid-template-columns: 18px 1fr auto; }
+.sr-confidence .sr-show__hint { margin-left: calc(18px + var(--sp-2)); }
+/* 0077 W3-e: end */
 .sr-rail__btn:hover { background: var(--sr-wash); }
 
 .sr-rail__btn[aria-expanded='true'],

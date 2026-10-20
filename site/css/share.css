@@ -662,7 +662,7 @@ html.sr-phone .sr-photo__range { flex: 1 1 auto; width: auto; }
   border-radius: var(--sr-radius-sm);
 }
 
-.sr-share__viewsave { align-self: flex-start; }
+.sr-share__viewsave { width: 100%; margin-top: var(--sp-2); }
 
 @media (pointer: coarse) {
   .sr-share__viewbtn { height: 44px; }

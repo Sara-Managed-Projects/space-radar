@@ -76,6 +76,17 @@ if (sr.rail && sr.rail.openShow) {
       await shot('5-map-measured-only', 'the map with only the measured dots (the popover shut; the rail\'s dot is the visitor\'s clue)', 1500);
       sr.rail.openShow();
       await settle(800);
+      // Two classes taken off by their boxes: Worked out and Illustrative left, which is a strong change (110 of 489 dots).
+      for (const id of ['measured', 'sample']) document.querySelector('.sr-confidence [data-class="' + id + '"]').click();
+      await settle(1200);
+      out.filterWorkedOut = sr.confidence();
+      out.statusWorkedOut = section.querySelector('.sr-confidence__status').textContent;
+      need(out.filterWorkedOut && out.filterWorkedOut.join() === 'inferred,illustrative', 'unticking two boxes leaves the other two');
+      sr.rail.closeShow();
+      await settle(2500);
+      await shot('5b-map-worked-out', 'the map with only the worked-out and illustrative dots (' + out.statusWorkedOut + ')', 1500);
+      sr.rail.openShow();
+      await settle(800);
       byText('.sr-confidence .sr-show__bulkbtn', 'All').click();
       await settle(1500);
       out.filterAfterAll = sr.confidence();
@@ -120,11 +131,19 @@ else {
     const sheetEl = document.getElementById('sr-share');
     out.sheetBox = box(sheetEl);
     presetsRow.scrollIntoView({ block: 'start' });
+    viewsRow.scrollIntoView({ block: 'start' });
+    await shot('7b-share-views', 'the same sheet scrolled to Arrival views: each authored view with Go and Copy, the touch targets 44 px on a phone (before: no such row)', 400);
+    presetsRow.scrollIntoView({ block: 'start' });
     await shot('7-share-presets-views', 'Jupiter\'s share sheet, Photo presets and Arrival views open: four presets, two authored views with Go and Copy (before: neither row)', 600);
     // Go: "From above the plane".
     const before = sr.camPose();
     rows[0].querySelector('.sr-share__viewbtn').click();
-    await settle(12000);
+    // The camera stands where the link says only once the flight has landed (main.js applyCam waits twenty quiet frames, which a software
+    // renderer takes its time over), so the pose is waited for, not slept for.
+    out.fromAbove_landedMs = Date.now();
+    await until(() => { const p = sr.camPose(); return Math.abs(p.polarDeg - 12) < 1 && Math.abs(p.distanceKm / (69911 * 5) - 1) < 0.02; }, 120000, 500);
+    out.fromAbove_landedMs = Date.now() - out.fromAbove_landedMs;
+    await settle(1500);
     const pose = sr.camPose();
     out.fromAbove = { before, pose, hash: location.hash, stage: sr.stage.worldId, selected: sr.selected() && sr.selected().id };
     need(Math.abs(pose.polarDeg - 12) < 3, 'From above: the camera stands at polar 12 (got ' + Math.round(pose.polarDeg * 10) / 10 + ')');
@@ -135,7 +154,8 @@ else {
     await settle(1500);
     const rows2 = [...document.querySelectorAll('.sr-share__viewrow')];
     rows2[1].querySelector('.sr-share__viewbtn').click();
-    await settle(12000);
+    await until(() => { const p = sr.camPose(); return Math.abs(p.polarDeg - 90) < 1 && Math.abs(p.distanceKm / (69911 * 5) - 1) < 0.02; }, 120000, 500);
+    await settle(1500);
     const pose2 = sr.camPose();
     out.inPlane = { pose: pose2, hash: location.hash };
     need(Math.abs(pose2.polarDeg - 90) < 3, 'In the plane: the camera stands at polar 90 (got ' + Math.round(pose2.polarDeg * 10) / 10 + ')');
@@ -176,6 +196,17 @@ else {
     out.presets[id] = { state: st && { shape: st.shape, preset: st.preset, tag: st.tag, caption: st.caption, lens: st.lens, words: st.words }, exposure: sr.exposure.mode(), look: sr.look(), fov: cam ? cam.fov : null, rect: st && st.rect };
     need(st && st.preset === id, id + ': photo mode is open with the preset');
     await shot(n + '-preset-' + id, 'photo mode with the ' + id + ' preset: shape ' + (st && st.shape) + ', lens ' + (st && st.lens) + ', shutter ' + sr.exposure.mode() + ', look ' + sr.look() + (st && st.tag ? ', with the object\'s tag' : ''), 800);
+    if (id === 'card' && sr.photo) {
+      // The tag is drawn on the saved picture (the live preview has no HUD): press Save and read what was made.
+      const save = document.querySelector('.sr-photo__save');
+      if (save) {
+        sr.lastPhoto = null;
+        save.click();
+        await until(() => sr.lastPhoto, 120000, 500);
+        out.cardSaved = sr.lastPhoto ? { error: sr.lastPhoto.error, width: sr.lastPhoto.width, height: sr.lastPhoto.height, shape: sr.lastPhoto.shape, tag: sr.lastPhoto.tag ? sr.lastPhoto.tag.text : null } : null;
+        need(out.cardSaved && !out.cardSaved.error && out.cardSaved.tag, 'the saved object card carries the object\'s tag (' + JSON.stringify(out.cardSaved) + ')');
+      }
+    }
     if (sr.photo) sr.photo.close();
     await settle(1200);
     need(sr.exposure.mode() === own.exposure && sr.look() === own.look, id + ': leaving photo mode gives back the visitor\'s shutter and look (' + sr.exposure.mode() + ', ' + sr.look() + ')');

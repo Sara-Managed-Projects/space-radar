@@ -148,6 +148,12 @@ export function viewWords(view) {
   return String(view && view.name ? view.name : '');
 }
 
+/** How far out a saved view stands, short: "349 600 km out". Pure. */
+export function awayWords(view) {
+  const p = parseCam(view && view.cam);
+  return p ? t(COPY.views.away, { km: fmt.int(Math.round(p.distanceKm)) }) : '';
+}
+
 /** A saved view's pose in a line: where round, how far from the pole, how far off. Pure. */
 export function poseWords(view) {
   const p = parseCam(view && view.cam);
@@ -224,8 +230,9 @@ export function viewsPanel(ctx, opts = {}) {
     const label = view.curated ? `${view.name}, ${viewWords(view)}` : `${view.name}, ${poseWords(view)}`;
     const name = node('span', 'sr-share__viewname');
     name.appendChild(node('span', 'sr-share__viewtitle', viewWords(view)));
-    if (!view.curated) name.appendChild(node('span', 'sr-share__viewpose', poseWords(view)));
-    name.title = view.curated ? V[`${view.kind}Title`] || '' : '';
+    // A saved view says how far out in a line that fits beside three buttons; the whole pose is its tooltip.
+    if (!view.curated) name.appendChild(node('span', 'sr-share__viewpose', awayWords(view)));
+    name.title = view.curated ? V[`${view.kind}Title`] || '' : poseWords(view);
     const go = node('button', 'sr-share__viewbtn', V.go);
     go.type = 'button';
     go.title = V.goTitle;

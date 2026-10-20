@@ -111,7 +111,7 @@ const btns = (row) => row.querySelectorAll('.sr-share__viewbtn').map((b) => b.te
   const saved = B.readSaved(st);
   check(saved.length === 1 && saved[0].at === 'jupiter' && saved[0].stage === 'jupiter' && saved[0].cam === '33.3,55,123500', `kept in this browser as the camera stood (${JSON.stringify(saved)})`);
   check(/saved in this browser/i.test(panel.querySelector('.sr-share__viewnote').textContent) && ctx.lastView.saved === saved[0].id, 'and said so in one line');
-  check(rows(panel)[2].querySelector('.sr-share__viewpose').textContent === '33° round, 55° from the pole, 123 500 km', `the pose in a line (${rows(panel)[2].querySelector('.sr-share__viewpose').textContent})`);
+  check(rows(panel)[2].querySelector('.sr-share__viewpose').textContent === '123\u202f500 km out' && rows(panel)[2].querySelector('.sr-share__viewname').title === '33\u00b0 round, 55\u00b0 from the pole, 123\u202f500 km', `how far out in a line, the whole pose as its tooltip (${rows(panel)[2].querySelector('.sr-share__viewpose').textContent})`);
   // Go writes the address and closes the sheet; main.js's hashchange does the flight.
   location.hash = '';
   rows(panel)[0].querySelectorAll('.sr-share__viewbtn')[0].click();

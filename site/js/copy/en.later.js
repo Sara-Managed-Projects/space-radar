@@ -2328,6 +2328,7 @@ Object.assign(COPY, {
     copyTitle: 'A link that opens this view',
     removeTitle: 'Forget this view',
     pose: '{az}\u00b0 round, {pol}\u00b0 from the pole, {km} km',
+    away: '{km} km out',
     // The poses are the camera's, not a measurement of the thing: what each one does, in the words of what it is.
     curated: {
       above: 'From above the plane',
@@ -2344,13 +2345,13 @@ Object.assign(COPY, {
     label: 'Photo presets',
     go: 'Open',
     science: 'Science frame',
-    scienceNote: 'Measured look, the map\u2019s own lens, caption on',
+    scienceNote: 'Measured look, caption on',
     cinematic: 'Cinematic frame',
-    cinematicNote: 'Wide, a long lens, the deep shutter',
+    cinematicNote: 'Wide, long lens, deep shutter',
     telescope: 'Telescope view',
-    telescopeNote: 'The narrowest lens, square, as a telescope frames',
+    telescopeNote: 'Narrowest lens, square',
     card: 'Object card',
-    cardNote: 'Portrait, with its tag, a page for one thing',
+    cardNote: 'Portrait, tag on the saved picture',
     title: '{name}: {note}',
   },
 });
