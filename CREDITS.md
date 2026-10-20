@@ -580,7 +580,7 @@ than counted by hand.
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
 | `swift.glb` | Swift | NORAD 28485 (SWIFT) | 147 KB |
 | `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
-| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 (James Webb Space Telescope) | 211 KB |
+| `jwst.glb` | James Webb Space Telescope (A), re-baked with its mirror and sunshield in true materials (release 1.3.0, W3-a) | Horizons -170 (James Webb Space Telescope) | 476 KB | <!-- 0077 W3-a -->
 
 **Satellites**
 
