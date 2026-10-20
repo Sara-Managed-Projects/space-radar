@@ -66,6 +66,8 @@ domains:
       coalsack: {credit: "### Remnants and dust (0076 W3-c)"}
       m78: {credit: "### Remnants and dust (0076 W3-c)"}
       iris: {credit: "### Remnants and dust (0076 W3-c)"}
+      carina: {credit: "### Carina (0077 W2-e)"}  # 0077 W2-e
+      smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -482,11 +484,11 @@ classes:
 
   - id: EMISSION_NEBULA
     title: Emission nebulae (H II regions)
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js, site/js/scene/deep/carina.js]  # 0077 W2-e
     honesty: measured
     fallback: The photograph, placed and sized on the sky; the gas is not marched on tier 0 or after the latch.
-    heroes: {orion: registry/deepsky-heroes/orion.yaml}
-    issue: "internal #782 (Orion, W1-a); Carina 1.3+"
+    heroes: {orion: registry/deepsky-heroes/orion.yaml, carina: registry/deepsky-heroes/carina.yaml}  # 0077 W2-e
+    issue: "internal #782 (Orion, W1-a; Carina, 0077 W2-e)"  # 0077 W2-e
     note:
       source: "Photographs from ESO, ESA/Hubble, ESA/Webb and NOIRLab, each plate-solved against its archive's coordinates; the Orion hero from Wen & O'Dell 1995, O'Dell 2001 and O'Dell et al. 2009."
       dates: "Each photograph's release date and filters in registry/nebulae.yaml (M42: VST OmegaCAM, g r i with H-alpha, 2017)."
@@ -495,7 +497,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: [HII, Neb, Cl+N]}}
       - {domain: photographs, ids: [m42, california-nebula, rosette-nebula, m8, m20, m16, m17, cats-paw-nebula, carina-nebula, north-america-nebula, tarantula-nebula]}
-      - {domain: heroes, ids: [orion]}
+      - {domain: heroes, ids: [orion, carina]}  # 0077 W2-e
 
   - id: PLANETARY_NEBULA
     title: Planetary nebulae
@@ -587,10 +589,10 @@ classes:
 
   - id: GALAXY_IRREGULAR
     title: Irregular galaxies
-    renderer: [site/js/scene/deep/lmc.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    renderer: [site/js/scene/deep/lmc.js, site/js/scene/deep/smc.js, site/js/scene/deep/magellanic.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]  # 0077 W2-e
     honesty: illustrative
     fallback: The LMC's photograph and the SMC's; the glow elsewhere.
-    heroes: {lmc: registry/deepsky-heroes/lmc.yaml}
+    heroes: {lmc: registry/deepsky-heroes/lmc.yaml, smc: registry/deepsky-heroes/smc.yaml}  # 0077 W2-e
     issue: "internal #783 (the SMC, the Bridge and the Stream)"
     note:
       source: "The LMC from Gaia DR3 star counts (Gaia Collaboration, Vallenari et al. 2023) with the geometry of van der Marel & Cioni 2001; the SMC's photograph; OpenNGC."
@@ -600,7 +602,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: G, hubble: ["^I", "^dI", "^Im", "^(?:\\(R'?\\))?S(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z])"]}}
       - {domain: photographs, ids: [lmc, smc]}
-      - {domain: heroes, ids: [lmc]}
+      - {domain: heroes, ids: [lmc, smc]}  # 0077 W2-e
 
   - id: GALAXY_ELLIPTICAL
     title: Elliptical and lenticular galaxies

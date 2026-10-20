@@ -2149,6 +2149,52 @@ Object.assign(COPY, {
   },
 });
 
+// 0077 W2-e: begin
+// Deep-space heroes of release 1.3.0 (internal spec 0077 stage W2-e): the Carina Nebula (scene/deep/carina.js), the Small
+// Magellanic Cloud with the Magellanic Bridge and Stream (scene/deep/smc.js, scene/deep/magellanic.js), and the card's
+// source sentence for every hero (public #1187: ui/cardfacts.js honestyClause reads `card[heroId]` of the block the hero
+// names, and `card[recordId]` for a record a hero draws as its child).
+Object.assign(COPY, {
+  deepCarina: {
+    // The hero's own source, after the honesty line.
+    card: {
+      carina: 'Its light is taken from ESO’s photograph, its shape reconstructed after Smith and others (2000) and Smith and Brooks (2008): a cavity of two lobes blown by its clusters, its glowing wall behind Eta Carinae and the dark V-shaped lane of dust in front. Not yet reviewed by an astronomer.',
+    },
+    // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook).
+    rows: {
+      'dso-carina-nebula': [
+        ['Its shape in depth', 'Reconstructed. On the largest scale the nebula is a cavity of two lobes about 40 parsecs across, along an axis square to the Milky Way’s plane. The glow is drawn on the cavity’s far wall; how deep each lobe is has not been measured.'],
+        ['In front of it', 'The dark V-shaped lane is dust and molecular gas in front of the glowing gas, as observed. How far in front is not measured: it is drawn 20 light-years before the clusters.'],
+        ['Its stars', 'Eta Carinae and fourteen of its brightest hot stars at their measured places; their depths are not measured, so they stand in one plane. The clusters Trumpler 14 and 16 are a seeded sample of their stars.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
+    how: 'Infrared pictures of the whole nebula show one structure, a bubble with two lobes blown out of the Milky Way’s plane by the clusters at its waist (Smith and others, 2000). Eta Carinae is inside it: its light is reflected across the Keyhole, and the dust round it hides glowing gas behind it but not in front.',
+  },
+  deepSmc: {
+    card: {
+      smc: 'This model is built from its photograph and Gaia’s counts of its own stars, as deep along our line as its pulsating Cepheids and old red giants are measured to be (Ripepi and others, 2017; Scowcroft and others, 2016; Tatton and others, 2021). Not yet reviewed by an astronomer.',
+    },
+    rows: {
+      'dso-smc': [
+        ['Its shape in depth', 'Not a flat disc: its young stars stretch more than 25 000 parsecs along our line, the north-eastern end nearest us, and its old stars lie near a plane tilted about 40°. Measured as trends; each drawn star’s depth is a model, never a measurement.'],
+        ['Round it', 'The Magellanic Bridge and Stream: hydrogen gas pulled out of the Clouds, mapped by its radio glow (HI4PI). No eye or camera sees it, so it is drawn faint, in false colour. Where it lies along our line is a model: only its end at the Clouds is anchored.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+    },
+    how: 'Astronomers measured the distances of hundreds of its Cepheids, stars whose pulsing gives away how bright they are. They lie along a streak more than 25 000 parsecs long pointing nearly at us, the north-eastern end nearest: the Small Cloud is being pulled apart by the Large one (Ripepi and others, 2017).',
+  },
+  // (internal #1187) The source sentence of a record a hero draws as its child: ui/cardfacts.js honestyClause reads it by
+  // the record's id once the hero has drawn it (until then the card says what is drawn for it without a hero).
+  r13Deep: {
+    card: {
+      'dso-tarantula-nebula': 'Its light near our line is Webb’s photograph; its gas is a model of a cavity round the cluster R136 inside a shell of glowing gas confined by molecular clouds, after Pellegrini, Baldwin and Ferland (2011). Not yet reviewed by an astronomer.',
+      'dso-m43': 'Its light is taken from ESO’s photograph, its shape reconstructed as a smaller hollow on the same dark cloud as the Orion Nebula, lit by the star NU Orionis. Not yet reviewed by an astronomer.',
+    },
+  },
+});
+// 0077 W2-e: end
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
 if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));

@@ -1120,3 +1120,15 @@ jobs:
       - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
         run: node tests/test_outer_worlds.mjs
       # 0077 W1-f: end
+      # 0077 W2-e: begin
+      - name: "the Carina hero: its bipolar cavity behind the clusters, the dust lane in front, the photograph within 5 % on our line (internal spec 0077 W2-e, #782)"
+        run: node tests/test_hero_carina.mjs
+      - name: "the Carina hero's light, sharp light and wall are the bake of the photograph and the profile"
+        run: python3 scripts/build_deep_carina.py --check
+      - name: "the SMC hero and the Magellanic Bridge and Stream: Gaia's counts at the measured depths, the photograph exact on our line, HI4PI's hydrogen at a modelled distance in false colour (internal spec 0077 W2-e, #783)"
+        run: node tests/test_hero_smc.mjs
+      - name: "the SMC's maps and the Stream's map are the bakes the profile names"
+        run: python3 scripts/build_deep_smc.py --check && python3 scripts/build_deep_magellanic.py --check
+      - name: "every deep-space hero's card says what is drawn, where it comes from and that no astronomer has reviewed it yet (#1187)"
+        run: node tests/test_deep_labels.mjs
+      # 0077 W2-e: end
