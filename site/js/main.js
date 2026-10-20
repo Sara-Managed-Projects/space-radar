@@ -20,7 +20,7 @@ import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, ni
 import { createCameraRig, worldFramingDistance, steadyDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
-import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
+import { dropFrom, readMoment, writeMoment, bootLink, laterLink, goTarget, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js'; // 0077 W3-e
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer, addSystemRows, addPlanetAliases } from './data/layers.js';
@@ -276,7 +276,9 @@ export async function boot({ setStatus } = {}) {
   // keys are applied here and the rest waits for the layers (ui/urlstate.js bootLink says why).
   const link = bootLink(clock, embed && embed.link);
   // `go=` is read here, raw: ui/urlstate.js hands it on as `at`, and the landing needs to know which it was.
-  const goId = (() => { const m = /(?:^#|&)go=([^&]+)/.exec(location.hash || ''); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; } })();
+  // 0077 W3-e: begin (public #564: urlstate.js goTarget keeps `go` and `at` to one rule, and no landing for a trip, an event or an imagined world)
+  const goId = goTarget(location.hash);
+  // 0077 W3-e: end
   // A SCREEN THAT PLAYS ON ITS OWN (spec 0036): `#ambient=…`. The class goes on before anything is
   // built, so a kiosk never shows the panels it is about to hide; ui/autopilot.js does the rest.
   const ambient = !embed && !!(link && link.ambient && link.ambient !== '0');

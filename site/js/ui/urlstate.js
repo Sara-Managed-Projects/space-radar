@@ -257,11 +257,46 @@ export function bootLink(clock, extra = null) {
  * link that named a trip of its own. Pure.
  */
 export function laterLink(link, tripRunning) {
+  // 0077 W3-e: begin (public #564)
+  // An imagined world (`imagine=N`) is a stage of its own with no object ids on it: a link that also
+  // names a place says two things, and the world wins, as it does for a link pasted over a running
+  // tab (main.js hashchange returns once it has opened the world). So nothing that selects or flies applies.
+  if (link && link.imagine !== undefined && link.imagine !== '0') {
+    const world = { ...link };
+    for (const key of WORLD_KEYS) delete world[key];
+    return world;
+  }
+  // 0077 W3-e: end
   if (!link || !tripRunning) return link;
   const rest = { ...link };
   for (const key of ['trip', 'stop', 'at', 'event', 'stage', 'cam']) delete rest[key];
   return rest;
 }
+
+// 0077 W3-e: begin (public #564)
+/** What a link to an imagined world does not carry out: every key that selects, flies or frames. */
+export const WORLD_KEYS = ['trip', 'stop', 'at', 'go', 'event', 'stage', 'cam'];
+
+/**
+ * The id a `#go=` link names, or '' when it is not that kind of link. `go` is `at` under a name a
+ * person can say, so it follows the rule read() gives `at`: a link that carries BOTH keeps the `at`
+ * (read() hands `go` on only when there is no `at`), and a link to a trip, a mission's event or an
+ * imagined world is that and nothing else, so no landing is flown for it. main.js used to read the
+ * raw `go=` and fly it whatever else the link said, which was the one place the two disagreed
+ * (public #564). Pure: reads the hash string it is given, not the address bar.
+ */
+export function goTarget(hash) {
+  const parts = String(hash || '').replace(/^#/, '').split('&').filter(Boolean);
+  const value = new Map();
+  for (const part of parts) {
+    const eq = part.indexOf('=');
+    if (eq > 0) value.set(part.slice(0, eq), part.slice(eq + 1)); // the last of a repeated key wins, as in read()
+  }
+  if (!value.has('go') || ['at', 'trip', 'event'].some((k) => value.has(k))) return '';
+  if (value.has('imagine') && decode(value.get('imagine')) !== '0') return '';
+  return decode(value.get('go'));
+}
+// 0077 W3-e: end
 
 /**
  * A link that arrives in a tab that is ALREADY RUNNING: Back, Forward, or an address pasted over

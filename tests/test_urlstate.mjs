@@ -19,7 +19,7 @@ globalThis.history = {
 };
 const setHash = (h) => { globalThis.location.hash = h; };
 
-const { KEYS, VERSION, read, write, clear, stopIndex, readMoment, writeMoment, HASH_KEY, bootLink, laterLink } = await import(join(JS, 'ui/urlstate.js'));
+const { KEYS, VERSION, read, write, clear, stopIndex, readMoment, writeMoment, HASH_KEY, bootLink, laterLink, linkChange } = await import(join(JS, 'ui/urlstate.js'));
 const { clock } = await import(join(JS, 'clock.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -203,6 +203,57 @@ setHash('');
   check(!/ctx\.clock\.(goTo|setRate)/.test(main.slice(main.indexOf('function applyUrlState'), main.indexOf('function openTrip'))),
     'applyUrlState() in main.js no longer touches the clock');
 }
+
+// 0077 W3-e: begin (public #564)
+// `#go=` and `#imagine=` against every other key of the address. A link that carries two of them must
+// mean one thing, the same on every path that reads it (read(), write(), laterLink(), goTarget()).
+{
+  const U = await import(join(JS, 'ui/urlstate.js'));
+  const others = KEYS.filter((k) => k !== 'go' && k !== 'imagine');
+  // 1. Every other key survives beside either of the two: read() hands it back, write() keeps it.
+  for (const lead of ['go', 'imagine']) {
+    for (const k of others) {
+      if (k === 'v' || k === 'build' || k === 'autopilot') continue; // v is the format, build is never written, autopilot is read as ambient
+      const value = k === 'cam' ? '40,62,26540' : k === 't' ? '2027-08-02T10%3A00%3A00Z' : k === 'p' ? '35.7,51.4' : 'x1';
+      setHash(`#${lead}=kepler-186-f&${k}=${value}`);
+      const got = read();
+      if (lead === 'go' && k === 'at') {
+        check(got.at === 'x1' && got.go === undefined, `go= beside at=: the at wins and go never leaks (${JSON.stringify(got)})`);
+        continue;
+      }
+      check(got[k] !== undefined, `${lead}= beside ${k}= : ${k} is read (${JSON.stringify(got)})`);
+      if (lead === 'imagine') check(got.imagine === 'kepler-186-f', `imagine= beside ${k}= keeps its value`);
+      else check(got.at === 'kepler-186-f' && got.go === undefined, `go= beside ${k}= is read as at= and go never leaks (${JSON.stringify(got)})`);
+      write({ rate: '4' });
+      check(!location.hash.includes('go='), `write() never puts go= back (${location.hash})`);
+      if (lead === 'imagine') check(location.hash.includes('imagine=kepler-186-f') && (k === 'rate' || location.hash.includes(`${k}=`)), `write() keeps imagine= and ${k}= (${location.hash})`);
+    }
+  }
+  // 2. go= and at= together: `at` is the visitor's own deep link and wins, in read() and in goTarget() alike.
+  setHash('#go=kepler-186&at=iss');
+  check(read().at === 'iss' && read().go === undefined, 'go= and at=: read() keeps the at');
+  check(U.goTarget('#go=kepler-186&at=iss') === '' && U.goTarget('#at=iss&go=kepler-186') === '', 'and no landing is flown for a go= that lost: goTarget() is empty in either order');
+  check(U.goTarget('#go=kepler-186-f') === 'kepler-186-f' && U.goTarget('go=kepler-186') === 'kepler-186', 'a go= alone names its place, with or without the #');
+  check(U.goTarget('#m=now&go=kepler-186&stage=sun') === 'kepler-186' && U.goTarget('#go=kepler-186&cam=1,2,3') === 'kepler-186', 'beside a moment, a stage or a camera it still lands');
+  check(U.goTarget('#go=kepler-186&trip=moon-landings') === '' && U.goTarget('#go=iss&event=voyager-2.neptune') === '', 'a trip or a mission event is that and nothing else');
+  check(U.goTarget('#go=a&imagine=7') === '' && U.goTarget('#go=a&imagine=0') === 'a', 'an imagined world is not flown away from; imagine=0 means none');
+  check(U.goTarget('#go=100%') === '100%' && U.goTarget('#go=a%20b') === 'a b' && U.goTarget('') === '' && U.goTarget(undefined) === '', 'a stray percent sign is a value, an empty address is no landing');
+  check(U.goTarget('#cargo=x') === '' && U.goTarget('#xgo=x') === '' && U.goTarget('#go') === '', 'only the key go counts: not one that ends in it, nor a bare word');
+  check(U.goTarget('#go=a&go=b') === 'b', 'a repeated key: the last, as read() does');
+  // 3. imagine= against the keys that fly: the world wins, nothing else is carried out at layers-ready.
+  const link = { m: 'wonder', imagine: '7', at: 'iss', stage: 'saturn', cam: '40,62,26540', trip: 'moon-landings', stop: '3', event: 'voyager-2.neptune' };
+  const rest = U.laterLink(link, false);
+  check(same(rest, { m: 'wonder', imagine: '7' }), `imagine=: laterLink() drops every key that selects or flies (${JSON.stringify(rest)})`);
+  check(same(U.laterLink(link, true), rest), 'and the same when a trip is running');
+  check(U.laterLink({ imagine: '0', at: 'iss' }, false).at === 'iss', 'imagine=0 is no world: the place applies');
+  check(U.laterLink({ at: 'iss' }, false).at === 'iss' && link.at === 'iss', 'a link with no imagine= is as before, and the snapshot is untouched');
+  for (const k of U.WORLD_KEYS) check(KEYS.includes(k), `WORLD_KEYS names only keys of the link: ${k}`);
+  // 4. A link pasted over a running tab: a world is main.js's own branch (it returns once it has opened it), and a
+  //    link that names only a world or a landing is no view that linkChange() would move the tab for.
+  check(linkChange({ imagine: '7' }, { at: 'iss', stage: 'earth' }) === null, 'linkChange(): an imagine= alone moves nothing');
+  check(linkChange({ at: 'kepler-186' }, { at: 'iss', stage: 'earth' }).at.open === 'kepler-186', 'a go= is an at= by then: it opens its place');
+}
+// 0077 W3-e: end
 
 if (problems.length) {
   console.error(`urlstate FAILED (${problems.length}):\n  ${problems.join('\n  ')}`);
