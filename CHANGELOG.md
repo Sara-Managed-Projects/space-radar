@@ -11,6 +11,11 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+- Without JavaScript, and in a browser that cannot draw WebGL 2, the page now says what Space Radar is and lists its trips and its pages, instead of one line.
+- A shared link carries `v=1` and the release that made it (`build=`).
+- Motion, in What to show: Off makes every flight an instant move and a trip wait for Next, as a device's own reduced-motion setting does.
+- A screen reader hears one line on what is on screen: the world the camera is round, what is selected, a trip's stop.
+
 ## [1.1.0] - 2026-10-15
 
 Deep space, rebuilt. The Helix, the Large Magellanic Cloud with the Tarantula inside it, Andromeda

@@ -45,8 +45,13 @@ export const HASH_KEY = 'm';
 // carries the ordinary `at=` and a link copied from there is the ordinary link.
 // `drift` (spec 0071, ui/drift.js): the camera wanders on its own. `1`, or words with commas:
 // what to travel through, `any`, `notags`, a pace (ui/driftplan.js readOptions).
-export const KEYS = ['m', 'v', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'cam'];
+// `build` (0076 W4-c, internal #906): the release a shared link was made by, `1.2.0`. ui/share.js shareUrl writes it
+// beside `v=1`; read() hands it back and nothing acts on it (a newer map opens an older link and says nothing
+// of it yet); write() never produces it, as for `go`, so an address bar never carries a stale build.
+export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
+/** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
+export const BUILD = '1.2.0';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';
 
@@ -125,11 +130,11 @@ export function write(patch) {
     const eq = part.indexOf('=');
     if (eq < 0) continue; // the legacy bare word is never written back
     const key = part.slice(0, eq);
-    // `go` is read as `at` and never written back (KEYS says why).
-    if (KEYS.includes(key) && key !== 'go') current[key] = part.slice(eq + 1); // raw: already encoded
+    // `go` is read as `at` and never written back (KEYS says why); nor is `build`.
+    if (KEYS.includes(key) && key !== 'go' && key !== 'build') current[key] = part.slice(eq + 1); // raw: already encoded
   }
   for (const key of Object.keys(patch)) {
-    if (!KEYS.includes(key) || key === 'go') continue;
+    if (!KEYS.includes(key) || key === 'go' || key === 'build') continue;
     const value = patch[key];
     if (value === null || value === undefined || value === '') delete current[key];
     else current[key] = encodeURIComponent(String(value));

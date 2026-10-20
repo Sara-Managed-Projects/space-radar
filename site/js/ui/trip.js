@@ -2304,6 +2304,7 @@ export function createTrip(ctx) {
 
   function reducedMotion() {
     try {
+      if (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.srMotion === 'off') return true; // 0076 W4-c: the Motion row's Off
       return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     } catch {
       return false;

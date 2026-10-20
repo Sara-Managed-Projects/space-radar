@@ -50,6 +50,7 @@ import { soundButton, volumeSlider } from './sound.js';
 import { densityPanel } from './density.js';
 import { exposurePanel, lookPanel } from './exposure.js';
 import { qualityPanel } from './qualitypanel.js';
+// 0076 W4-c: the Motion row below is built here, in the Quality row's shape.
 import { overlayPanel } from './overlaypanel.js';
 import { otherLightPanel } from './otherlight.js';
 import { LAYER_GROUPS } from '../data/layers.registry.js';
@@ -251,6 +252,53 @@ export function rovingTarget(count, index, key) {
 
 function isTouch() {
   try { return !!(typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches); } catch { return false; }
+}
+
+// 0076 W4-c (internal #912, #836). The Motion row: On, or Off, which is what prefers-reduced-motion is: every
+// flight an instant set, a trip at the reader's pace, nothing drifting that is not measured to (scene/camera.js,
+// ui/trip.js and main.js read `data-sr-motion` beside the device's setting). Remembered in `sr:motion`. A device
+// that asks for less motion already has it Off, and On is not offered to override it.
+export const MOTION_KEY = 'sr:motion';
+export function motionPanel(doc = document, win = window) {
+  const C = COPY.r12Access.motion;
+  const html = doc.documentElement;
+  const device = () => { try { return !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch { return false; } };
+  const wrap = el('section', 'sr-panel sr-density sr-exposure sr-motion');
+  wrap.appendChild(el('h2', 'sr-panel__title', C.panelTitle));
+  const note = el('p', 'sr-quality__note', C.device);
+  wrap.appendChild(note);
+  const row = el('div', 'sr-density__choices');
+  row.setAttribute('role', 'group');
+  row.setAttribute('aria-label', C.panelTitle);
+  wrap.appendChild(row);
+  const buttons = {};
+  for (const choice of ['on', 'off']) {
+    const b = el('button', 'sr-density__btn', C.choices[choice]);
+    b.type = 'button';
+    b.title = C.titles[choice];
+    b.dataset.motion = choice;
+    b.addEventListener('click', () => {
+      if (choice === 'off') html.dataset.srMotion = 'off'; else delete html.dataset.srMotion;
+      try { if (choice === 'off') win.localStorage.setItem(MOTION_KEY, 'off'); else win.localStorage.removeItem(MOTION_KEY); } catch { /* not remembered */ }
+      win.dispatchEvent(new win.CustomEvent('sr:motion', { detail: { off: choice === 'off' } }));
+      paint();
+    });
+    buttons[choice] = b;
+    row.appendChild(b);
+  }
+  function paint() {
+    const own = html.dataset.srMotion === 'off';
+    const off = own || device();
+    note.hidden = !device();
+    buttons.on.disabled = device();
+    for (const choice of ['on', 'off']) {
+      const pressed = (choice === 'off') === off;
+      buttons[choice].setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      buttons[choice].classList.toggle('sr-bracketed', pressed);
+    }
+  }
+  paint();
+  return wrap;
 }
 
 export function createWhatToShow(ctx, opts = {}) {
@@ -522,6 +570,10 @@ export function createWhatToShow(ctx, opts = {}) {
     qualityRow.classList.add('sr-show__section', 'sr-show__setting');
     root.appendChild(qualityRow);
   }
+  // 0076 W4-c: Motion, On or Off, the same path as the device's own setting.
+  const motionRow = motionPanel();
+  motionRow.classList.add('sr-show__section', 'sr-show__setting');
+  root.appendChild(motionRow);
 
   // --- Keys: the controls hint again, on request (issue #321) ----------------------------------
   const touch = isTouch();

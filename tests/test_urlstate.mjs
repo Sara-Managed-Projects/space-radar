@@ -48,6 +48,15 @@ check(!read().unknownVersion, 'v=1 is this format');
 setHash('#m=now');
 check(!('unknownVersion' in read()), 'no v at all is this format');
 
+// 0076 W4-c (#906): `build` is the release a shared link was made by. It is read, and never written back.
+setHash('#v=1&build=1.2.0&m=now');
+check(read().build === '1.2.0' && !read().unknownVersion, 'build is read, and a build alone does not make the format unknown');
+write({ stage: 'saturn' });
+check(location.hash.includes('v=1') && !location.hash.includes('build='), 'write() keeps v and drops a build: an address bar never carries a stale one');
+write({ build: '1.2.0' });
+check(!location.hash.includes('build='), 'and never writes one');
+setHash('');
+
 setHash('#m=now&foo=bar&at=iss');
 check(!('foo' in read()) && read().at === 'iss', 'an unknown key is dropped on read, the known ones kept');
 

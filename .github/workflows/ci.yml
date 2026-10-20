@@ -1099,3 +1099,6 @@ jobs:
         run: node tests/test_galclusters.mjs
       - name: "the clusters' members are the size and hash their manifest says (internal spec 0076 W4-b)"
         run: python3 scripts/build_deep_galclusters.py --check
+      # 0076 W4-c
+      - name: "readable without WebGL, without motion, and a full link: the page without JavaScript or WebGL 2 lists every trip and the crawlable pages, a shared link carries v=1 and the build, the scene summary's words, Motion off is an instant flight and still gas (internal spec 0076 W4-c)"
+        run: node tests/test_access.mjs

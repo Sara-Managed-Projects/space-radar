@@ -224,3 +224,30 @@ html.sr-render .sr-skip { display: none; }
   pointer-events: none;
 }
 #sr-handoff[hidden] { display: none; }
+
+/* --- 0076 W4-c (internal #919): the page read without JavaScript or without WebGL 2 ------------
+   index.html's <noscript id="sr-readable-src">. It is the only thing on the screen then, and the
+   one place the page scrolls: the map's html and body do not. Same faces and tokens as the rest. */
+.sr-readable {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  z-index: var(--sr-z-boot);
+  padding: var(--sp-5) 16px calc(var(--sp-5) + var(--safe-bottom));
+  background: var(--space);
+  color: var(--text);
+  font-size: var(--sr-fs-input);
+  line-height: 1.6;
+}
+.sr-readable > * { max-width: 40rem; margin-left: auto; margin-right: auto; }
+.sr-readable__title { margin-bottom: 0.5em; font-size: var(--sr-fs-name); font-weight: 600; line-height: 1.2; }
+.sr-readable h2 { margin: 1.6em auto 0.4em; font-size: var(--sr-fs-lead); }
+.sr-readable p { margin-top: 0; margin-bottom: 0.9em; }
+.sr-readable__lead { font-size: var(--sr-fs-lead); }
+.sr-readable__why { color: var(--text-dim); }
+.sr-readable ul { padding-left: 1.2em; margin-top: 0; margin-bottom: 0; }
+.sr-readable li { margin-bottom: 0.1em; }
+/* A finger tall (44 px at 16 px text), as every link of the app is. */
+.sr-readable a { display: inline-block; padding: 0.6em 0; color: var(--text); text-decoration: underline; text-underline-offset: 0.2em; }
+.sr-readable a:hover { color: var(--sr-text-soft); }
+
