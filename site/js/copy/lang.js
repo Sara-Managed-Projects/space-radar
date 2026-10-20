@@ -19,9 +19,9 @@ export const LANGUAGES = {
   es: { locale: 'es-ES', pill: 'es-ES', reviewed: false }, // machine-drafted: flip `reviewed` when a native speaker has read copy/es.js
   // 0077 W1-e: end
   // 0077 W2-f: begin
-  fr: { locale: 'fr-FR', pill: 'fr-FR', reviewed: false }, // machine-drafted: flip `reviewed` when a native speaker has read copy/fr.js
+  fr: { locale: 'fr-FR', pill: 'fr-FR', reviewed: false }, // machine-drafted
   de: { locale: 'de-DE', pill: 'de-DE', reviewed: false }, // machine-drafted
-  pt: { locale: 'pt-BR', pill: 'pt-BR', reviewed: false }, // Brazilian Portuguese (?lang=pt-BR is read as pt); machine-drafted
+  pt: { locale: 'pt-BR', pill: 'pt-BR', reviewed: false }, // Brazil; ?lang=pt-BR is read as pt
   // 0077 W2-f: end
 };
 const RTL = ['he', 'ar'];
