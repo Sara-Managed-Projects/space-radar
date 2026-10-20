@@ -223,6 +223,13 @@ export function stretchEnvelope(k) {
 const KEY_LIGHT_POLARS = [Math.PI * 0.33, Math.PI * 0.42, Math.PI * 0.5];
 const KEY_LIGHT_STEPS = 36;
 const KEY_LIGHT_TURN_WEIGHT = 0.35;
+// A held stop turns its camera away from the world it is about to be hidden by (trackClear): when
+// the line of sight comes within this much of the surface (a fraction of the radius over 1), at
+// this many degrees a second.
+const CLEAR_MARGIN = 1.04;
+const CLEAR_TURN_DEG_S = 60;
+const CLEAR_LOOK_MS = 20000;
+const CLEAR_ASK_MS = 200;
 // A stop's `behind:` world: how far off the middle of the frame it may sit and still be in the
 // picture. Half the camera's vertical field of view is 22.5 degrees (scene/renderer.js), and at
 // that the backdrop's CENTRE is on the frame's edge with half its disc outside: measured at 22,
@@ -500,6 +507,7 @@ export function createTrip(ctx) {
     refreshNote();
     stepStretch();
     trackSeenFrom();
+    trackClear();
     // A timer from a superseded generation is dropped rather than fired: a user-initiated jump
     // must not be overtaken by the dwell of the stop it left.
     timers = timers.filter((timer) => timer.gen === gen);
@@ -924,6 +932,24 @@ export function createTrip(ctx) {
     return d > -b - root && d < -b + root;
   }
 
+  /**
+   * Would the world hide the subject from a camera `d` out along `u`? (public #580.) `blocked`
+   * above asks only whether the CAMERA is inside the world, which is the rig's own clearance; a
+   * camera on the far side of the Earth is outside it and sees only the planet. A subject inside
+   * the clearance sphere (a lander on the ground) is `blocked`'s case, and is answered the same.
+   */
+  function sightBlocked(targetScene, u, d, worldCentre, radius) {
+    if (!(radius > 0)) return false;
+    _toTarget.copy(targetScene).sub(worldCentre);
+    const b = u.dot(_toTarget);
+    const c = _toTarget.lengthSq() - radius * radius;
+    const disc = b * b - c;
+    if (disc < 0) return false;
+    const root = Math.sqrt(disc);
+    if (c < 0) return d < -b + root;
+    return d > -b - root && -b + root > 0;
+  }
+
   function sunScene(tMs) {
     // On a star system's stage the light is its own star, not ours forty light-years behind.
     const own = ctx.systems && ctx.systems.lightScene ? ctx.systems.lightScene() : null;
@@ -1048,7 +1074,7 @@ export function createTrip(ctx) {
         let best = null;
         for (const c of candidates) {
           offsetDirection(c.azimuth, c.polar, _u);
-          if (blocked(targetScene, _u, d, worldCentre, radius * (ground ? GROUND_CLEARANCE : APEX_CLEARANCE))) continue;
+          if ((ground ? blocked : sightBlocked)(targetScene, _u, d, worldCentre, radius * (ground ? GROUND_CLEARANCE : APEX_CLEARANCE))) continue;
           if (ground && !seesGround(c.azimuth, c.polar, driftRad || 0, groundUp)) continue;
           const lit = Math.abs(_u.dot(_sun) - want);
           const turn = Math.abs(shortestAngle(azNow, c.azimuth)) / Math.PI;
@@ -1194,6 +1220,19 @@ export function createTrip(ctx) {
     return Math.max(50, ((layer && layer.nearKm) || 2000) * 0.35);
   }
 
+  /** The world a subject is seen against, where it is at `tMs` (scene units) and how big it is. */
+  function worldFrame(subject, tMs) {
+    const world = worldById.get(subject.worldId) || worldById.get('earth');
+    // A star system's member (spec 0040) names its own ground: the host star at the stage's origin.
+    const ownGround = subject.ground && subject.ground.centre ? subject.ground.centre() : null;
+    const worldCentreKm = ownGround ? null : positionOf(world.id, tMs);
+    const worldCentre = ownGround || (worldCentreKm
+      ? stage.toScene(worldCentreKm, worldCentreKm.frame, tMs)
+      : new THREE.Vector3());
+    const radius = (ownGround ? subject.ground.radiusKm : world.radiusKm) / stage.unitKm;
+    return { world, ownGround, worldCentre, radius };
+  }
+
   /**
    * Everything a flight needs, computed in KILOMETRES and converted here, this frame. The trip
    * holds no scene-unit number between frames: `follow` re-aims the destination every tick, and
@@ -1206,14 +1245,7 @@ export function createTrip(ctx) {
     const targetScene = subject.position(tMs);
     if (!targetScene) return null;
 
-    const world = worldById.get(subject.worldId) || worldById.get('earth');
-    // A star system's member (spec 0040) names its own ground: the host star at the stage's origin.
-    const ownGround = subject.ground && subject.ground.centre ? subject.ground.centre() : null;
-    const worldCentreKm = ownGround ? null : positionOf(world.id, tMs);
-    const worldCentre = ownGround || (worldCentreKm
-      ? stage.toScene(worldCentreKm, worldCentreKm.frame, tMs)
-      : new THREE.Vector3());
-    const radius = (ownGround ? subject.ground.radiusKm : world.radiusKm) / stage.unitKm;
+    const { worldCentre, radius } = worldFrame(subject, tMs);
 
     // Re-teach the rig its world at every stop. main.js does this once, at boot, and nothing
     // subscribes to sr:stage; this is the first module in the app that keeps it current. It is
@@ -1421,6 +1453,108 @@ export function createTrip(ctx) {
     const at = entry.subject.position(tMs);
     const a = at ? seenFromAngles(entry.stop.seen_from, at, tMs) : null;
     if (a) rig.setAngles(a.azimuth, a.polar);
+  }
+
+  /**
+   * KEEP THE SUBJECT IN SIGHT WHILE THE CLOCK RUNS (public #580, seen on a phone: stop 2 of "Where
+   * people are living in space right now", the station, its brackets round empty black and its tag
+   * saying "behind Earth"). The camera's side is chosen once, when the flight begins, from where the
+   * subject is THEN; the rig's angles are fixed against the stars, and a station goes round the
+   * Earth in ninety-three minutes. Held for five to twenty minutes (a paused trip, a card being read,
+   * the reader's pace) it passes behind the planet, and the camera, still on its old side, looks
+   * at the Earth. Swept over one orbit of the fixture's station, every three minutes (the control
+   * of tests/test_trip_clear.mjs, with this function off), the station was behind the planet at
+   * twenty minutes from 18 of 32 starting points, and at five minutes from 6.
+   *
+   * So while a stop settles or dwells, or waits paused (but not once the visitor's hand has been on the
+   * camera in this stop: it is theirs then), the line from the camera to the subject is tested against the world it
+   * is seen over; when it comes within CLEAR_MARGIN of the world's surface the side is chosen
+   * AGAIN, by the same key-light search from where the subject is now (which prefers the side the
+   * camera is on), and the camera turns there at CLEAR_TURN_DEG_S. Under reduced motion it is a cut.
+   * A stop on the ground, one with its own framing (`seen_from`, `over`, `framing`) and a look at
+   * the sky keep their own rules. Nothing here moves the target, the distance or the clock.
+   */
+  let clearTurn = null;
+  let clearAskedAt = 0;
+  const _clearDir = new THREE.Vector3();
+  let handOn = '';
+
+  function trackClear() {
+    if (!run || state.index < 0 || typeof rig.setAngles !== 'function') { clearTurn = null; return; }
+    const phase = state.phase;
+    if (phase !== 'dwell' && phase !== 'settle' && phase !== 'paused') { clearTurn = null; return; }
+    const entry = run.stops[state.index];
+    const stop = entry && entry.stop;
+    const subject = entry && entry.subject;
+    if (!stop || !subject || subject.kind !== 'record' || run.ground) { clearTurn = null; return; }
+    if (stop.seen_from || Array.isArray(stop.over) || stop.framing || stop.key_light_deg === 0) { clearTurn = null; return; }
+    if (handOn === `${gen}:${state.index}`) { clearTurn = null; return; }
+    const stamp = now();
+    if (clearTurn) {
+      const k = clamp((stamp - clearTurn.at) / clearTurn.ms, 0, 1);
+      rig.setAngles(
+        clearTurn.fromAz + clearTurn.dAz * k,
+        clearTurn.fromPolar + clearTurn.dPolar * k,
+      );
+      if (k >= 1) clearTurn = null;
+      return;
+    }
+    // A turn runs every frame; the looking-ahead test only five times a second.
+    if (stamp - clearAskedAt < CLEAR_ASK_MS) return;
+    clearAskedAt = stamp;
+    const tMs = ctx.clock.now();
+    const here = subject.position(tMs);
+    if (!here) return;
+    const at = here.clone();
+    const { worldCentre, radius } = worldFrame(subject, tMs);
+    if (!(radius > 0)) return;
+    const fromCentre = at.distanceTo(worldCentre);
+    if (fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]) return;
+    // How near the line of sight runs to the world's surface: the closest approach of the segment
+    // from the subject to the camera to the world's centre, against its radius. Asked of now and of
+    // CLEAR_LOOK_MS ahead, with the camera keeping its place beside the subject, so the turn begins
+    // while the subject is still in sight.
+    _u.copy(ctx.camera.position).sub(at);
+    const d = _u.length();
+    if (!(d > 0)) return;
+    _u.multiplyScalar(1 / d);
+    const near = (atMs) => {
+      const there = atMs === tMs ? at : subject.position(atMs);
+      if (!there) return false;
+      const frame = worldFrame(subject, atMs);
+      _toTarget.copy(there).sub(frame.worldCentre);
+      const along = clamp(-_u.dot(_toTarget), 0, d);
+      _b1.copy(_toTarget).addScaledVector(_u, along);
+      return _b1.length() < frame.radius * CLEAR_MARGIN;
+    };
+    if (!near(tMs) && !near(tMs + CLEAR_LOOK_MS)) return;
+    const driftDeg = stop.drift === 'none' ? 0 : Number(stop.drift_deg) || 0;
+    const sun = sunScene(tMs);
+    const angles = keyLightAngles(at, d, worldCentre, radius, sun, stop.key_light_deg, driftDeg * DEG, null, null, 0, run.savedUp || null);
+    if (!angles || !Number.isFinite(angles.azimuth)) return;
+    const fromAz = rig.state.azimuth || 0;
+    const fromPolar = rig.state.polar || 0;
+    let dAz = shortestAngle(fromAz, angles.azimuth);
+    const dPolar = angles.polar - fromPolar;
+    // The way round that keeps the subject in sight all the turn: the short way when it does, else
+    // the other (the camera swings round the far side of the subject, not through the planet).
+    syncUpBasis();
+    const clearWay = (turn) => {
+      for (let i = 1; i < 12; i += 1) {
+        const k = i / 12;
+        offsetDirection(fromAz + turn * k, fromPolar + dPolar * k, _clearDir);
+        if (sightBlocked(at, _clearDir, d, worldCentre, radius)) return false;
+      }
+      return true;
+    };
+    if (!clearWay(dAz)) {
+      const other = dAz > 0 ? dAz - Math.PI * 2 : dAz + Math.PI * 2;
+      if (clearWay(other)) dAz = other;
+    }
+    const reduced = typeof rig.state.reducedMotion === 'boolean' ? rig.state.reducedMotion : false;
+    const big = Math.max(Math.abs(dAz), Math.abs(dPolar));
+    if (reduced || big < 1e-3) { rig.setAngles(angles.azimuth, angles.polar); return; }
+    clearTurn = { at: stamp, ms: Math.max(300, (big / (CLEAR_TURN_DEG_S * DEG)) * 1000), fromAz, fromPolar, dAz, dPolar };
   }
 
   /**
@@ -3328,6 +3462,8 @@ export function createTrip(ctx) {
   // never locked.
   const offInput = rig.onUserInput
     ? rig.onUserInput(() => {
+        // The camera is the visitor's from here to the end of this stop (trackClear leaves it).
+        if (run) handOn = `${gen}:${state.index}`;
         if (run && state.phase !== 'paused') pause('input');
       })
     : () => {};

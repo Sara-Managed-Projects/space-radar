@@ -487,6 +487,26 @@ export function pathEndedWords(record, m) {
   return tMs >= ms ? timeText.utcLong(ms) : null;
 }
 
+// 0077 W1-d: begin (public #493)
+/**
+ * A craft drawn only from its own path file (the ended craft of data/sample.js PAST_CRAFT), at a
+ * clock BEFORE the path begins: the day it launched, in words; else null. Before this the card said
+ * "could not work this out" for Cassini in 1990, which says the arithmetic failed when the truth
+ * is that the craft was not yet flying. Answers null while the craft is placed, after its end
+ * (endedWords, pathEndedWords) and for a record with no launch date.
+ */
+export function pathBeginsWords(record, m) {
+  const start = pick(meta(record), 'launchDate');
+  if (!start || (m && m.ok) || endedWords(record, m) || pathEndedWords(record, m)) return null;
+  // Only the craft whose row says it is drawn from its own path (they carry the day the path ends).
+  if (!pick(meta(record), 'endDate')) return null;
+  const ms = Date.parse(`${start}T00:00:00Z`);
+  if (!Number.isFinite(ms)) return null;
+  const tMs = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+  return tMs < Date.parse(`${pick(meta(record), 'endDate')}T00:00:00Z`) ? timeText.utcLong(ms) : null;
+}
+// 0077 W1-d: end
+
 export function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
   const V = COPY.card.values;
@@ -507,6 +527,8 @@ export function rightNowRows(record, m, passInfo) {
     if (ended) { rows.push([R.ended, ended]); return rows; }
     const pathEnds = pathEndedWords(record, m);
     if (pathEnds) { rows.push([R.pathEnds, pathEnds]); return rows; }
+    const pathBegins = pathBeginsWords(record, m); // 0077 W1-d
+    if (pathBegins) { rows.push([R.pathBegins, pathBegins]); return rows; } // 0077 W1-d
     rows.push([R.altitude, COPY.card.couldNotLook]);
     return rows;
   }
@@ -1075,7 +1097,14 @@ export function honestyClause(record, m) {
     if (mine) return `${t(F.drawnLine, { drawn: mine.drawn })} ${mine.split}`;
     const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
     // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
-    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    // 0077 W2-e: begin
+    // (public #1187) The hero's own block first (md.heroCopy, which the coordinator stamps from the hero's `card`), so a
+    // new hero's source sentence shows without a line here; and a record a hero draws as its child (the Tarantula, M43)
+    // by its own id, `card[recordId]`; the blocks below as well, so a hero's sentence shows before it first draws (its
+    // id is stamped at once). r13Deep holds the sentences of release 1.3.0 for records another block lacks.
+    const blocks = [md.heroCopy, 'deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust', 'deepCarina', 'deepSmc', 'r13Deep'];
+    const own = (md.heroId || md.heroCopy) && Array.isArray(md.heroDrawn) ? blocks.map((b) => b && COPY[b] && COPY[b].card && ((md.heroId && COPY[b].card[md.heroId]) || COPY[b].card[record.id])).find(Boolean) : null;
+    // 0077 W2-e: end
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 

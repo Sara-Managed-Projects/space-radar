@@ -167,6 +167,70 @@ for (const file of walk(JS)) {
 }
 check(scanned >= 10, `the scan read the files that name a catalogue field (${scanned})`);
 
+// --- 5. search finds each form (public #1188) -------------------------------------------------------------
+// 0077 W2-d: begin
+// "Searching by a legacy 5-digit number, an Alpha-5 code and a 9-digit number each find the correct object."
+// A new numbering scheme is exactly where an old search path could still assume five digits: ui/search.js
+// compares a typed number as written and used to read a letter as a name, so "A0690" found nothing at all
+// while "100690" found Sentinel-3C.
+{
+  const { buildIndex, findMatches, catalogQuery } = await import(join(JS, 'ui/search.js'));
+  const { LAYERS } = await import(join(JS, 'data/layers.js'));
+  const rec = (n, name, extra = {}) => ({ id: `sat-${n}`, name, klass: 'satellite', layer: 'active', meta: { noradId: n, catalogueNumber: n, ...extra } });
+  // the real rows either side of 99 999, as parsed, plus a legacy five-digit station, a nine-digit OMM number
+  // and two objects whose NAMES look like the other forms, which must still be found by name
+  const real = recs.map((r) => ({ ...r, layer: 'active' }));
+  const world = [
+    rec(25544, 'ISS (ZARYA)', { why: 'people live here' }),
+    rec(5, 'VANGUARD 1'),
+    rec(400000123, 'NINE DIGIT SAT'),
+    { id: 'sat-9', name: 'A0690 ATLAS', klass: 'satellite', layer: 'active', meta: { noradId: 90909 } },
+    { id: 'sat-8', name: 'H2 TEST 00005', klass: 'satellite', layer: 'active', meta: { noradId: 70808 } },
+    ...real,
+  ];
+  const index = buildIndex(world, LAYERS);
+  const top = (q) => { const r = findMatches(index, q); return r.hits[0] ? r.hits[0].record.id : null; };
+  // legacy five digits, typed whole and as far as it has been typed
+  eq(top('25544'), 'sat-25544', 'a five-digit number finds its object');
+  eq(top('2554'), 'sat-25544', 'and as it is typed, one digit short');
+  eq(top('00005'), 'sat-5', 'a zero-padded TLE field finds object 5');
+  eq(top('5'.padStart(5, '0')), 'sat-5', 'padded the way a TLE writes it');
+  // Alpha-5, either case, and the number it stands for
+  eq(top('A0690'), 'sat-100690', 'an Alpha-5 code finds its object');
+  eq(top('a0690'), 'sat-100690', 'in lower case');
+  eq(top(' A0690 '), 'sat-100690', 'with spaces round it');
+  eq(top('100690'), 'sat-100690', 'the number it stands for finds the same one');
+  eq(top('1006'), 'sat-100690', 'typed as far as four digits it is offered');
+  // a name that looks like a code is still found by name (the code is searched alongside, never instead)
+  const a0690 = findMatches(index, 'A0690').hits.map((h) => h.record.id);
+  check(a0690[0] === 'sat-100690' && a0690.includes('sat-9'), `"A0690" finds Sentinel-3C first and the satellite called A0690 ATLAS too (${a0690})`);
+  // nine digits, as OMM writes them
+  eq(top('400000123'), 'sat-400000123', 'a nine-digit number finds its object');
+  eq(top('4000001'), 'sat-400000123', 'and as it is typed');
+  // every real row either side of 99 999, by its number and by its Alpha-5 form
+  for (const r of real) {
+    const n = r.meta.catalogueNumber;
+    eq(top(String(n)), r.id, `${r.name}: found by ${n}`);
+    const a5 = N.alpha5(n);
+    if (a5 && n >= 100000) { eq(top(a5), r.id, `${r.name}: found by ${a5}`); eq(top(a5.toLowerCase()), r.id, `${r.name}: found by ${a5.toLowerCase()}`); }
+  }
+  // not found, and not the wrong thing
+  eq(top('A9999'), null, 'a code nothing has finds nothing');
+  eq(top('I0690'), null, 'there is no I in Alpha-5');
+  eq(top('O0690'), null, 'and no O');
+  eq(catalogQuery('a069'), '', 'a code short of its four digits is not a code');
+  eq(catalogQuery('a0690'), '100690', 'the helper reads Alpha-5');
+  eq(catalogQuery('00005'), '5', 'the helper reads a padded number');
+  eq(catalogQuery('25544'), '', 'a plain number is compared as written');
+  eq(catalogQuery('iss'), '', 'a word is not a number');
+  eq(catalogQuery('0'), '', 'zero is not a catalogue number');
+  // the field takes the number to a card by the route that was already tested: the record id
+  const src = readFileSync(join(JS, 'ui/search.js'), 'utf8');
+  check(/import \{ catalogNumber \} from '\.\.\/data\/catnum\.js';/.test(src), 'ui/search.js reads a number through data/catnum.js and has no table of its own');
+  check(!/ALPHA5/.test(src), 'and repeats no Alpha-5 alphabet');
+}
+// 0077 W2-d: end
+
 if (problems.length) { console.error('catalog numbers FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`catalog numbers ok: ${TABLE.length} table rows and the Alpha-5 round trip; five real rows either side of 99 999 keyed sat-<n> and confirmed by the satcat; `
-  + `the share link round trip by id, number, Alpha-5 and old int- id; nine digits survive the column twin; no narrow typed array holds one (${scanned} files scanned)`);
+  + `the share link round trip by id, number, Alpha-5 and old int- id; nine digits survive the column twin; no narrow typed array holds one (${scanned} files scanned); and search finds a legacy five-digit number, an Alpha-5 code and a nine-digit number (public #1188)`);

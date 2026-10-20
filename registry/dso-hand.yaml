@@ -688,7 +688,13 @@ objects:
     what: emission nebula
     ra_deg: 161.2854        # 10h 45m 08.5s
     dec_deg: -59.8678       # -59 deg 52 min 04 s
-    dist_kly: 8.5           # about 8 500 ly
+    # 0077 W2-e: begin
+    # 2.35 +/- 0.05 kpc: the Homunculus's expansion parallax (Smith 2006, ApJ 644, 1151: 2 350 +/- 50 pc), with which
+    # Gaia EDR3's parallaxes of the clusters' OB stars (2.36 kpc) and X-ray selected members (2.34 kpc) agree (Göppl &
+    # Preibisch 2022, A&A 660, A11, the abstract, read 2026-10-20). It was "about 8 500 ly" from the infobox.
+    distance: {method: parallax, value_ly: 7665, low: 7502, high: 7828,
+               source: "Smith 2006, ApJ 644, 1151; Göppl & Preibisch 2022, A&A 660, A11 (arXiv:2201.09097)", read: 2026-10-20}
+    # 0077 W2-e: end
     vmag: 1.0
     maj_ax_arcmin: 120
     con: Carina

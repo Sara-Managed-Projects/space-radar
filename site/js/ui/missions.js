@@ -366,6 +366,56 @@ function wantPath(ctx, record) {
   });
 }
 
+// 0077 W1-d: begin (public #493) the span of a craft's path against the clock
+/**
+ * Where the clock stands against the span of a craft's own path file: `{fromMs, toMs, side,
+ * nearestMs}`, side `before`, `inside` or `after`, and the moment of the span nearest the clock
+ * (the clock's own when it is inside); null for a craft with no file. From the index alone: the
+ * words need no download. Pure.
+ */
+export function pathSpan(recordId, tMs) {
+  const row = indexOf(recordId);
+  if (!row || !Number.isFinite(tMs)) return null;
+  const fromMs = Date.parse(row.from);
+  const toMs = Date.parse(row.to);
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) return null;
+  const side = tMs < fromMs ? 'before' : tMs > toMs ? 'after' : 'inside';
+  return { fromMs, toMs, side, nearestMs: side === 'before' ? fromMs : side === 'after' ? toMs : tMs };
+}
+
+/**
+ * The days JPL's path for the craft covers, and, when the clock is outside them, that the map has
+ * no position for it then (when the record's own propagator has none either) and a button that
+ * moves the clock to the nearest day it has. Up to two sentences and one button; false when the
+ * craft has no path file.
+ */
+function appendPathSpan(host, record, ctx) {
+  const now = ctx.clock.now();
+  const span = pathSpan(record.id, now);
+  if (!span) return false;
+  const E = COPY.ephemeris;
+  host.appendChild(el('p', 'sr-mission__note sr-mission__span', t(E.span, { from: timeText.utcLong(span.fromMs), to: timeText.utcLong(span.toMs) })));
+  if (span.side === 'inside') return true;
+  let placed = null;
+  try { placed = propagateRecord(record, now); } catch { placed = null; }
+  if (!placed) host.appendChild(el('p', 'sr-mission__note sr-mission__span', span.side === 'before' ? E.before : E.after));
+  const acts = el('div', 'sr-mission__acts');
+  const go = button('sr-btn sr-btn--quiet sr-mission__go', E.go, 'mission-nearest');
+  const date = timeText.utcLong(span.nearestMs);
+  go.title = t(span.side === 'before' ? E.goBefore : E.goAfter, { date });
+  go.addEventListener('click', () => {
+    if (typeof ctx.rememberView === 'function') ctx.rememberView();
+    applied = null;
+    ctx.clock.goTo(span.nearestMs);
+    if (typeof ctx.offerUndo === 'function') ctx.offerUndo(date);
+    if (typeof ctx.refreshCard === 'function') ctx.refreshCard();
+  });
+  acts.appendChild(go);
+  host.appendChild(acts);
+  return true;
+}
+// 0077 W1-d: end
+
 function appendPathWords(host, record, now) {
   const words = pathWords(record.id, now);
   if (!words) return false;
@@ -384,7 +434,8 @@ export function mountMission(host, record, ctx) {
     // No event list, but its own path (Apophis, OSIRIS-APEX): the card still says what is drawn.
     if (file) {
       host.className = 'sr-card__mission sr-mission';
-      host.hidden = !appendPathWords(host, record, ctx.clock.now());
+      const spanned = appendPathSpan(host, record, ctx); // 0077 W1-d
+      host.hidden = !(appendPathWords(host, record, ctx.clock.now()) || spanned); // 0077 W1-d
     }
     return false;
   }
@@ -431,6 +482,7 @@ export function mountMission(host, record, ctx) {
   const note = el('p', 'sr-mission__note', here ? M.here : failed.has(id) ? COPY.ephemeris.failed : eventNote(mission, event, place, world && world.name));
   if (here) note.classList.add('is-here');
   host.appendChild(note);
+  appendPathSpan(host, record, ctx); // 0077 W1-d: the days its path covers, and the way to the nearest
   // Drawn from its own file at the clock's time: how closely, and what JPL says of the track.
   appendPathWords(host, record, now);
   // On the straight line, the clock being there does not make the place measured: say both. And

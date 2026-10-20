@@ -7210,3 +7210,56 @@ button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
   button.sr-debris__oldname { min-height: 44px; }
 }
 .sr-debris__oldyears { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
+
+/* 0077 W1-d: begin (public #579) Tonight's place controls are one family.
+   "Change place" was an outlined 4 px button, the city box a filled 6 px field, "Use my location" a
+   filled 6 px button and the chips under them pills: four shapes in three rows (reported on a phone,
+   2026-10-10; the box and its button were joined on 2026-10-14, the rest were not). Now all four are
+   what the field is (docs/ui-guide.md 2.3: every control inside a panel is 6 px, 44 px tall on touch):
+   the wash fill, no outline, the dim hover and the pressed wash of the standard states. The chips
+   keep their quiet look, with the same corner. */
+.sr-tonight-view__change {
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font-size: var(--sr-fs-sm);
+  font-weight: 400;
+  white-space: nowrap;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border-color: transparent;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tonight-view__change:active:not(:disabled),
+.sr-tonight-view__change[aria-expanded='true'] { background: var(--sr-wash-strong); }
+
+@media (hover: hover) {
+  .sr-tonight-view__change:hover:not(:disabled) {
+    background: var(--sr-wash-hover);
+    border-color: transparent;
+  }
+  .sr-tonight-view__change[aria-expanded='true']:hover:not(:disabled) { background: var(--sr-wash-strong); }
+}
+
+.sr-tonight-view .sr-place__chips .sr-chip {
+  min-height: 44px;
+  border-radius: var(--sr-radius);
+}
+
+@media (hover: hover) {
+  .sr-tonight-view .sr-place__chips .sr-chip--quiet:hover:not(:disabled) {
+    background: var(--sr-wash);
+    border-color: transparent;
+  }
+}
+
+/* The line and its button sit on one line; the line wraps as far as it needs and the button stays
+   at the top of it, so a three-line guess does not float the button in the middle of the text. */
+.sr-tonight-view__where { align-items: flex-start; }
+.sr-tonight-view__where > .sr-tonight-view__place { padding-top: var(--sp-3); line-height: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-tonight-view__change { transition: none; }
+}
+/* 0077 W1-d: end */

@@ -41,6 +41,16 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of GLONASS-M and GLONASS-K, Fengyun-3 and Himawari-8 and -9 | built by us in code from published dimensions | CC0 or CC BY 2.0 where a picture was used; ours | [3b-12](#3b-12-four-weather-and-navigation-craft-built-from-dimensions--glonass-m-glonass-k-fengyun-3-himawari-2026-10-14) |
 | The shapes of Europa Clipper, SMAP, Jason-3, Curiosity and SORCE | NASA's and JPL's own published models | public domain (NASA media guidelines) | [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15) |
 | The shapes of Psyche, Lucy, JUICE, BepiColombo (cruise stack) and Hera | built by us in code from published dimensions | public domain or CC BY 4.0 where a picture was used; ours | [3b-14](#3b-14-five-deep-space-probes-built-from-dimensions--psyche-lucy-juice-bepicolombo-hera-2026-10-15) |
+| The shapes of Tiangong and its two laboratories, and the Shenzhou orbital module | built by us in code from published dimensions | CC BY 4.0 or CC0 where a picture was used; ours | [3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20) |  <!-- 0077 W1-a -->
+<!-- 0077 W1-b: begin -->
+| The shapes of Mars Express, Gaia, Hayabusa2 and Hope | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 3.0 where a picture was used; ours | [3b-15](#3b-15-four-deep-space-craft-built-from-dimensions--mars-express-gaia-hayabusa2-hope-2026-10-20) |
+<!-- 0077 W1-b: end -->
+<!-- 0077 W1-c: begin -->
+| The shapes of the Vikram, Odysseus and Blue Ghost landers, and Surveyor | built by us in code from published dimensions | GODL-India, public domain, CC0 or CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-three-modern-moon-landers-and-surveyor-built-from-dimensions--vikram-odysseus-blue-ghost-surveyor-2026-10-20) |
+<!-- 0077 W1-c: end -->
+<!-- 0077 W2-pbr: begin -->
+| The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
+<!-- 0077 W2-pbr: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -368,6 +378,10 @@ checked against this list by `scripts/check_registry.py`):
 - Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain
 - Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain
 - Titan map: NASA/JPL-Caltech/Univ. Arizona (Cassini ISS, 938 nm, PIA22770), public domain
+<!-- 0077 W1-f: begin -->
+- Titan radar map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Cassini RADAR, SAR and HiSAR mosaic through flyby T104), public domain
+- Titan seas: outlined from the same Cassini RADAR mosaic (USGS Astrogeology Science Center and NASA/JPL-Caltech), public domain
+<!-- 0077 W1-f: end -->
 - Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain
 - Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, global mosaic by DLR), hosted by USGS Astrogeology Science Center
 - Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center
@@ -585,6 +599,7 @@ than counted by hand.
 | `landsat.glb` | Landsat 7 | NORAD 25682 (Landsat 7) | 69 KB |
 | `landsat8.glb` | Landsat 8 | NORAD 39084, 49260 (Landsat 8, 9) | 177 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (B) | NORAD 40482-40485 (MMS 1 to MMS 4) | 177 KB |
+| `themis.glb` | Time History of Events and Macroscale Interactions During Substorms (THEMIS); its booms drawn shorter ([3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20)) | NORAD 30580, 30797, 30798 (THEMIS A, D, E) | 105 KB |  <!-- 0077 W1-a -->
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A); and 66514 (SENTINEL-6B), its twin of the same design | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
@@ -608,7 +623,7 @@ than counted by hand.
 | `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) | 96 KB |
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | the Space Shuttle on Launch Complex 39B (`shuttle-lc-39b`) | 130 KB |
 | `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
-| `new-horizons.glb` | New Horizons: NASA's printable body, antenna and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-10; the page names no author), assembled by us, colours ours | Horizons -98 (New Horizons) | 64 KB |
+| `new-horizons.glb` | New Horizons: NASA's printable body and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-20; the page names no author), assembled by us; the dish, its tripod and feed rebuilt from NASA's own 1/12 drawings on the same page (readme.pdf), colours ours from NASA's photographs ([3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20)) | Horizons -98 (New Horizons) | 151 KB |  <!-- 0077 W1-a -->
 | `near.glb` | NEAR Shoemaker | Horizons -93 (NEAR Shoemaker, 1996 to 2001) | 88 KB |
 | `stardust.glb` | Stardust (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -29 (Stardust, 1999 to 2011) | 111 KB |
 | `deep-impact.glb` | Deep Impact (EPOXI) (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -140 (Deep Impact, 2005 to 2013) | 73 KB |
@@ -1207,6 +1222,120 @@ No logo, lettering, flag, insignia or plaque is on any of the five. NASA, JPL, S
 Science Operations Centre and the papers' authors do not endorse Space Radar, and none of them made or
 approved these shapes.
 
+<!-- 0077 W1-a: begin -->
+## 3b-15. Release 1.3.0: crewed craft and NASA flagships — Tiangong, Shenzhou orbital module, THEMIS, New Horizons (2026-10-20)
+
+Stage W1-a of release 1.3.0 (internal spec 0077), to the model quality bar of 2026-10-20 ("the quality of
+models should be very high"): an agency's own model first, otherwise a detailed build from published numbers
+and several photographs. **THEMIS and New Horizons are NASA's own**; **Tiangong, Wentian, Mengtian and the
+Shenzhou orbital module are built here in code**, because CMSA publishes no model and its own pictures on its
+site carry no free licence. The free pictures used are photographs CMSA's office published in an open paper
+(CC BY 4.0 on Commons), China News Service's stills (CC BY 4.0), a photographer's pictures of the full-size
+mock-up (CC0) and NASA's (public domain). No picture is in a file; no image-to-3D model was used. The built
+cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `themis.glb` (105 KB) | THEMIS, the probe NASA flies five of (A, D and E in Earth orbit): NASA's model with its own colours, the booms drawn shorter | NASA 3D Resources (<https://github.com/nasa/NASA-3D-Resources>, "Time History of Events and Macroscale Interactions During Substorms (THEMIS)"; its README, read 2026-10-20: "These assets are free and without copyright.") | public domain (NASA media usage guidelines) |
+| `new-horizons.glb` (151 KB) | New Horizons: NASA's printable body and RTG, its dish, tripod, subreflector and feed rebuilt from NASA's 1/12 drawings, in gold blanket with white radiators | NASA Science (<https://science.nasa.gov/3d-resources/new-horizons/>: the STL parts, assembly.pdf and readme.pdf, read 2026-10-20; the page states no terms of its own and links NASA's Brand & Usage Guidelines); NASA's photographs "KSC-05pd2588" (<https://commons.wikimedia.org/wiki/File:KSC-05pd2588~orig.jpg>) and "New Horizons 1" (<https://commons.wikimedia.org/wiki/File:New_Horizons_1.jpg>), public domain, for the colours | NASA media usage guidelines; the photographs are public domain and are not in the file |
+| `tiangong.glb` (206 KB) | Tiangong in its T: Tianhe with its node, relay dish, stowed arm and its own pair of wings flat in the plane of the T; Wentian to starboard and Mengtian to port with their outer sections, dishes, arms and platforms; the laboratories' four wings of copper-brown cells on lattice masts, 55.6 m tip to tip | Wikipedia's module pages (16.6 m, 17.9 m, 4.2 m, 55.6 m, 110 m2 a wing, read 2026-10-20); "Rear view of Tiangong Space Station", China Manned Space Engineering Office, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Rear_view_of_Tiangong_Space_Station.jpg>); "Tiangong mockup at ZHAL 01" to "06", Shujianyang, CC0 (<https://commons.wikimedia.org/wiki/File:Tiangong_mockup_at_ZHAL_01.jpg>); "Tianhe solar array", China Manned Space Engineering Office, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Tianhe_solar_array.jpg>); "Tiangong expansion", Wang Xiang, Zhang Qiao, Wang Wei, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Tiangong_expansion.jpg>). A CC BY-SA 4.0 configuration drawing by Shujianyang was looked at only | numbers are facts; the photographs are CC BY 4.0 or CC0 and are not in the file |
+| `wentian.glb` (82 KB), `mengtian.glb` (81 KB) | Each laboratory with its two wings, cut from the same build, for a laboratory drawn on its own | as `tiangong.glb` | as `tiangong.glb` |
+| `shenzhou-orbital.glb` (36 KB) | The orbital module each Shenzhou crew leaves in orbit: a 2.25 m drum 2.8 m long with a domed front in quilted grey cloth, the docking mechanism, the rendezvous cameras and antennas, the joint where it held the re-entry module | the cited metres of the row `shenzhou` (Wikipedia); "Shenzhou 21 docking with CSS view from CSS 02" and "... view from docking hatch 01", China News Service, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Shenzhou_21_docking_with_CSS_view_from_CSS_02.png>, <https://commons.wikimedia.org/wiki/File:Shenzhou_21_docking_with_CSS_view_from_docking_hatch_01.png>) | numbers are facts; the stills are CC BY 4.0 and are not in the file |
+| the four built files | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital` |
+
+**Credit lines:**
+`3D model: NASA`;
+`3D model: NASA (the page names no author); dish, tripod and colours added by Space Radar from NASA's drawings`;
+`3D model: built by Space Radar from published dimensions and photographs by the China Manned Space Engineering Office (CC BY 4.0) and Shujianyang (CC0)`;
+`3D model: built by Space Radar from published dimensions and stills by China News Service (CC BY 4.0)`
+
+No logo, lettering, flag or insignia is on any of these files: the red panels where Tiangong carries its flag
+and the white plate where a Shenzhou carries its number are plain. NASA, CMSA, the China Manned Space
+Engineering Office, China News Service and the photographers do not endorse Space Radar, and none of them made
+or approved these shapes.
+<!-- 0077 W1-a: end -->
+<!-- 0077 W1-b: begin -->
+## 3b-15. Four deep-space craft built from dimensions — Mars Express, Gaia, Hayabusa2, Hope (2026-10-20)
+
+Release 1.3.0, stage W1-b (public #1085 to #1088). **No agency publishes a model of any of the four under terms that allow
+a derivative**: NASA's 3D Resources and NASA Science have none of them; ESA's terms for the images on its site allow
+"education, editorial and/or information purposes only", and its planetarium models may not be altered; JAXA's terms forbid
+altered derivatives of its material; MBRSC publishes no model of Hope. So each file was built in code with the part library
+from cited numbers. **No ESA, JAXA or MBRSC picture or model is in a file, on a sheet or derived from.** Mars Express's layout
+was read off two NASA/JPL illustrations by Corby Waste (public domain); Gaia's Sun side off DLR's photograph of the full-size
+model (CC BY 2.0); Hayabusa2's off DLR's renders (CC BY 2.0) and The Planetary Society's diagram (CC BY 3.0). **Hope has no free
+picture of the flight craft**: the mock-up's photographs (CC BY-SA 4.0) and MBRSC's photograph of the deployed craft were looked
+at only. ESA's renders on Commons (CC BY-SA 3.0 IGO) and JAXA's 1:20 model (photograph CC BY-SA 4.0) were looked at only. No
+image-to-3D model was used. Their cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `mars-express.glb` (72 KB) | Mars Express: a black box 1.5 by 1.4 by 1.8 m, a 1.6 m dish, the two relay antennas and Beagle 2's empty ring on the top face, two four-panel wings on D-shaped yokes, 11.9 m tip to tip, the MARSIS dipole and monopole DRAWN SHORTENED (5.6 of 20 m a side, 2 of 7 m) | Wikipedia (<https://en.wikipedia.org/wiki/Mars_Express>); NASA/JPL's illustrations by Corby Waste (<https://commons.wikimedia.org/wiki/File:Mars_Express_illustration_highlighting_MARSIS_antenna.jpg>, <https://commons.wikimedia.org/wiki/File:Mars_Express_over_Tharsis_volcanoes.jpg>); looked at only, ESA's render ESA392355 (<https://commons.wikimedia.org/wiki/File:Mars_Express_ESA392355.jpg>, CC BY-SA 3.0 IGO) (read 2026-10-20). The panels' size is derived; the yokes, the instruments and the radiators are ours | numbers are facts; the illustrations are public domain and are not in the file; NO ESA PICTURE WAS USED |
+| `gaia.glb` (97 KB) | Gaia: a twelve-sided sunshield 10 m across, each face a crinkled sheet of foil (blue-violet silver on the Sun side, with six cell panels, the fixed ring and the phased-array antenna; darker grey-silver on the cold side, with the frame's struts); the hexagonal service module; the black thermal tent with the two telescopes' openings 106.5 degrees apart, 3.5 m tall | Wikipedia (<https://en.wikipedia.org/wiki/Gaia_(spacecraft)>), eoPortal (<https://www.eoportal.org/satellite-missions/gaia>), ESA's factsheet; DLR's photograph of the full-size model (<https://commons.wikimedia.org/wiki/File:GAIA_(14050944939).jpg>, CC BY 2.0); looked at only, the model at Le Bourget (CC BY-SA 3.0) and ESA's render (CC BY-SA 3.0 IGO) (read 2026-10-20). The drum, the service module and the panels' sizes are ours | numbers are facts; the photograph is CC BY 2.0 and is not in the file; NO ESA PICTURE WAS USED |
+| `hayabusa2.glb` (86 KB) | Hayabusa2: a gold box 1.0 by 1.6 by 1.25 m with two flat antennas, the re-entry capsule, the ion engines' four heads, the sampler horn, two wings of three panels on ladders, 6 by 4.23 m | eoPortal (<https://www.eoportal.org/satellite-missions/hayabusa-2>), Wikipedia (<https://en.wikipedia.org/wiki/Hayabusa2>); DLR's renders (<https://commons.wikimedia.org/wiki/File:Hayabusa2_front_view.jpg>, <https://commons.wikimedia.org/wiki/File:Hayabusa2_side_view.jpg>, CC BY 2.0) and The Planetary Society's diagram (<https://commons.wikimedia.org/wiki/File:20190605_hayabusa-diagram-tpr-01.png>, CC BY 3.0); looked at only, JAXA's 1:20 model (CC BY-SA 4.0) and JAXA's labelled views (read 2026-10-20). The antennas' size, the horn and the instruments are ours | numbers are facts; the renders and the diagram are CC BY and are not in the file; NO JAXA PICTURE WAS USED |
+| `hope.glb` (66 KB) | Hope (Emirates Mars Mission): a gold hexagonal prism 2.37 m across and 2.9 m tall, a 1.85 m dark dish, two wings of two panels, the three instruments on one face, 8.0 m tip to tip | eoPortal (<https://www.eoportal.org/satellite-missions/emm-hope>); NO FREE PICTURE; looked at only, the mock-up at IAC 2021 (<https://commons.wikimedia.org/wiki/File:Emirates_Mars_Mission_mockup_at_IAC_2021_01_(cropped).jpg>, CC BY-SA 4.0) and MBRSC's photograph of the deployed craft (read 2026-10-20). The wings' size and place, the dish's depth and the instruments' boxes are ours | numbers are facts; nothing of any picture is in the file |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `mars-express`, `gaia`, `hayabusa2`, `hope` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and NASA/JPL pictures (public domain)`;
+`3D model: built by Space Radar from published dimensions and a photograph of the full-size model (CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions, DLR renders (CC BY 2.0) and a Planetary Society diagram (CC BY 3.0)`;
+`3D model: built by Space Radar from published dimensions (no free picture of the flight craft)`
+
+No logo, lettering, flag or insignia is on any of the four. NASA, JPL, ESA, DLR, JAXA, MBRSC, the UAE Space Agency, The Planetary
+Society and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0077 W1-b: end -->
+
+<!-- 0077 W1-c: begin -->
+## 3b-15. Three modern Moon landers and Surveyor built from dimensions — Vikram, Odysseus, Blue Ghost, Surveyor (2026-10-20)
+
+Release 1.3.0, stage W1-c (public #1133, #1135, #1136, #267). **No agency or company publishes a model of any of these craft
+under terms that allow a derivative**: ISRO, Intuitive Machines and Firefly publish none, and NASA's 3D Resources
+(1 583 paths, read 2026-10-20) and NASA Science's 3D models have none of them (NASA's `Firefly` model is a CubeSat). So each
+file was built in code, part by part, from cited numbers, with photographs looked at for what the numbers do not say, and
+each is drawn **as it came to rest**: Vikram upright with its ramp down;
+Odysseus on its side; Blue Ghost upright. No image-to-3D model was used and no picture is in any file. SLIM (#1134) was
+built too and not shipped: at the app's framing it did not read as SLIM. No logo and no lettering is on any
+mesh. Their cards say "shape built from published dimensions and pictures; details simplified".
+
+ISRO's pictures are under the Government Open Data License – India (GODL-India), which gives "a worldwide, royalty-free,
+non-exclusive license to use, adapt, publish (either in original, or in adapted and/or derivative forms) ... for all lawful
+commercial and non-commercial purposes", with attribution, and excludes "names, crests, logos and other official symbols"
+(Commons' licence text, read 2026-10-20).
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `vikram.glb` (136 KB) | Chandrayaan-3's Vikram lander: the cited 2 by 2 by 1.166 m body in gold blankets, two leaning solar panels, a radiator, the rover's empty bay and its two-part ramp down to the ground, four legs, the four 800 N engines round the interface ring, the dome, NASA's retroreflector, ChaSTE's probe in the ground | ISRO's brochure (<https://www.isro.gov.in/media_isro/pdf/Missions/LVM3/LVM3M4_Chandrayaan3_brochure.pdf>) and mission page (<https://www.isro.gov.in/Chandrayaan3_Details.html>); ISRO's clean-room photographs 03 and 05 (<https://commons.wikimedia.org/wiki/File:Chandrayaan-3_lander_in_clean-room_03.webp>, <https://commons.wikimedia.org/wiki/File:Chandrayaan-3_lander_in_clean-room_05.webp>), its labelled drawings (<https://commons.wikimedia.org/wiki/File:Chandrayaan-3_Lander_Module_-Views.webp>) and Pragyan's picture of Vikram on the Moon (read 2026-10-20) | numbers are facts; the pictures are ISRO's, GODL-India, credit "Indian Space Research Organisation", and are not in the file |
+| `odysseus.glb` (67 KB) | Intuitive Machines' Nova-C Odysseus on its side: a hexagonal body 3.938 m tall, black below and white above, two body arrays and the top-deck array, the copper-wrapped tank it rests on, six legs (those under it as stubs) | Wikipedia's "Nova-C" and "IM-1" (read 2026-10-20) for the height, the arrays, the broken leg and the 30 degrees; NASA's photograph of the flight lander (<https://commons.wikimedia.org/wiki/File:Intuitive_Machines%E2%80%99_Nova-C_lunar_lander_(IM_00309)_(cropped).jpg>) | numbers are facts; the photograph is public domain and is not in the file |
+| `blue-ghost.glb` (63 KB) | Firefly's Blue Ghost of Mission 1: 2 m tall and 3.5 m wide (cited), a black lower deck, a body whose faces lean in, three arrays, gold blankets, four legs to dish footpads, thruster pods, payloads on the top deck | Firefly (<https://fireflyspace.com/missions/blue-ghost-mission-1/>) and NASA's podcast (<https://www.nasa.gov/podcasts/houston-we-have-a-podcast/blue-ghost-mission-1/>); a photograph of Firefly's full-size mock-up by Blervis (<https://commons.wikimedia.org/wiki/File:Firefly_Blue_Ghost_lander_mockup.jpg>, CC BY 4.0), NASA's rendering (<https://commons.wikimedia.org/wiki/File:Blue_Ghost_Mission_1_rendering.jpg>, public domain) and SpaceX's photograph of the lander in its fairing (<https://commons.wikimedia.org/wiki/File:Blue_Ghost_M1_in_fairing.jpg>, CC0) | numbers are facts; the photographs are CC BY 4.0 (credit "Blervis"), public domain and CC0, and are not in the file |
+| `surveyor.glb` (62 KB), `surveyor-3.glb` (64 KB) | Surveyor 1, and Surveyor 3 with its soil sampler: the triangular spaceframe, three lattice legs to crushable footpads, the mast with the 0.855 m² panel and the planar array, the compartments, the camera, the omni booms, the verniers | NSSDCA's Surveyor pages (as `scene/models.js` buildSurveyor cites them) and Wikipedia's "Surveyor 3"; Apollo 12's photographs AS12-48-7134 (<https://commons.wikimedia.org/wiki/File:Apollo12ConradSurveyor.jpg>) and AS12-48-7110, public domain; the Smithsonian's photographs of its Surveyor test vehicle (<https://commons.wikimedia.org/wiki/File:Lunar_Lander,_Surveyor_-_DPLA_-_d6accc3d89e8efa6f2e88962941bf43a_(page_1).jpg>, CC0) | numbers are facts; the photographs are public domain and CC0 and are not in the files |
+| all five | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3` |
+
+**Credit lines:**
+`3D model: built by Space Radar from ISRO's published dimensions and pictures (ISRO, GODL-India)`;
+`3D model: built by Space Radar from published dimensions and a NASA photograph (public domain)`;
+`3D model: built by Space Radar from Firefly's published dimensions and pictures (NASA, public domain; SpaceX, CC0; Blervis, CC BY 4.0)`;
+`3D model: built by Space Radar from NSSDCA's dimensions and NASA's and the Smithsonian's photographs (public domain, CC0)`.
+
+<!-- 0077 W1-c: end -->
+<!-- 0077 W2-pbr: begin -->
+## 3b-15. SLIM built from dimensions (2026-10-20)
+
+Release 1.3.0, stage W2-pbr (internal #967; public #1134). Built by stage W1-c and held back because the toon ramp drew it as
+a yellow box; shipped once the app could draw a file's own materials (`scene/pbr.js`). **JAXA publishes no model of SLIM under
+terms that allow a derivative**, and NASA's 3D Resources and NASA Science have none. So it was built in code, part by part,
+from JAXA's cited numbers, and drawn **as it came to rest**: on its nose, engines up, one nozzle lost. No image-to-3D model was
+used, no picture is in the file, and **no JAXA picture or model is in the file, on a sheet or derived from** (JAXA's figures
+were looked at only). No logo and no lettering is on the mesh. Its card says "shape built from published dimensions and
+pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `slim.glb` (114 KB) | JAXA's SLIM standing on its nose: the cited 2.4 by 1.7 by 2.7 m, the thin-film cells, the cylindrical tank, five legs with ball absorbers, one main nozzle and the broken mount of the other, twelve 22 N thrusters | JAXA's media kit (<https://global.jaxa.jp/countdown/slim/SLIM-mediakit-EN_2310.pdf>) and press conference of 25 January 2024 (<https://www.isas.jaxa.jp/en/outreach/announcements/files/SLIM-pressconf-20240125.pdf>), their figures looked at only; a photograph of JAXA's quarter-scale model at Expo 2025 by Artem.G (<https://commons.wikimedia.org/wiki/File:SLIM_at_Expo2025_02.jpg>, CC BY 4.0) | numbers are facts; the photograph is CC BY 4.0, credit "Artem.G", and is not in the file; the shape is this project's, under this repository's licence (`registry/models.yaml`, row `slim`) |
+
+**Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
+
+<!-- 0077 W2-pbr: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
@@ -1813,6 +1942,40 @@ scatter (Virgo, Fornax) or from the spread of its members across the sky (Coma, 
 that distance, drawn as one round, centrally peaked shape (flattening and tilt are not drawn): an illustration. Its light is its
 catalogue magnitude, an exposure and not photometry. The quasars are bright points at their comoving distance; 3C 273's host is a
 faint round shape at the angular size its source gives; 3C 279 has none because the source gives no size.
+
+<!-- 0077 W2-e: begin -->
+### Carina (0077 W2-e)
+
+The Carina Nebula's reconstruction (`site/js/scene/deep/carina.js`, its numbers in `registry/deepsky-heroes/carina.yaml`)
+is computed here from facts read in each source on 2026-10-20; no text, figure or model file of any of them is shipped.
+Lengths on the sky are turned into light-years at the record's distance (2.35 kpc, 7 665 ly). Its shape is
+**reconstructed** and the card says so.
+
+| what | the numbers | from |
+|---|---|---|
+| the bipolar cavity | on the largest scale one coherent bipolar nebula, its axis perpendicular to the Galactic plane, lobes about 40 pc across; the cavities north and south of Trumpler 14 and 16 its two halves. Drawn as the far walls of two lobes along Galactic north (position angle 27.8 degrees here); the lobes' sizes, centres and depths are read from the photograph and are illustrative | Smith, Egan, Carey, Price, Morse & Price 2000, ApJ 532, L145; Smith & Brooks 2008, Handbook of Star Forming Regions II (arXiv:0809.5081); Rebolledo et al. 2017, MNRAS 472, 1685 (arXiv:1708.02864) |
+| the dust lane and the Keyhole | the V-shaped lane is dust mixed with molecular gas in front of the glowing gas, the nebula's highest column on our line; the Keyhole's dark clumps cool foreground clumps. Drawn 20 ly in front of the clusters (not measured); its optical depth is the photograph's darkness along the lane (reconstructed) | Smith & Brooks 2008 (arXiv:0809.5081), after Brooks et al. 2000 |
+| the distance | 2 350 +/- 50 pc from the Homunculus's expansion parallax; Gaia EDR3's parallaxes of the clusters' OB stars and X-ray selected members agree within about 2 % (2.36 and 2.34 kpc) | Smith 2006, ApJ 644, 1151; Göppl & Preibisch 2022, A&A 660, A11 (arXiv:2201.09097) |
+| Trumpler 14 | a King core radius of 0.17 arcmin and a halo out to about 5 arcmin; 2 000 members drawn as a seeded sample (model), as is Trumpler 16 (its size illustrative) | Ascenso et al. 2007, A&A 476, 199 |
+| Eta Carinae and the O stars | places, V magnitudes and spectral types of Eta Carinae, HD 93129A, HD 93128, HD 93160, HD 93161, HD 93250, WR 25, HD 93205, HD 93204, HD 303308, CPD-59 2600, HD 93130, HD 93403, QZ Car and WR 24; Eta Carinae's V 4.2 is the app's own record (it is variable and brightening: Damineli et al. 2019, MNRAS 484, 1325); their depths are not measured, so they stand in one plane | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-20; the CDS terms ask the data be cited as "CDS/SIMBAD" |
+| the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_carina.py` -> `site/images/deep/carina/carina-light.webp`, an adaptation); round Eta Carinae and Trumpler 14 a sharper map of the same photograph from ESO's publication JPEG (3 727 x 4 000 px, downloaded for the bake and not shipped): a 20 arcmin square, its stars removed and its colours matched to the 640 px map (`carina-detail.webp`, an adaptation); the wall's depth map (`site/data/deep/carina-front.bin`) is computed from the same picture and the numbers above. Under Deep the photograph's own stretch is ENHANCED | ESO eso1250a, credit "ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit", CC BY 4.0 (section 3 above); stars removed and depth reconstructed by Space Radar |
+
+### The SMC and the Magellanic Stream (0077 W2-e)
+
+The Small Magellanic Cloud's model (`site/js/scene/deep/smc.js`) and the Magellanic Bridge and Stream
+(`site/js/scene/deep/magellanic.js`), their numbers in `registry/deepsky-heroes/smc.yaml`, read on 2026-10-20. What is
+measured: where the stars are on the sky, the depth trends below, the hydrogen's column on the sky, the light (the
+photograph). What is a **model**: each drawn star's depth and brightness, the populations' thickness, and the Stream's
+distance beyond its root. The card says so.
+
+| what | from | licence |
+|---|---|---|
+| Two maps of the SMC's stars on the sky (all members; young blue stars), 128 x 128 bins of 0.075 degrees, counted from Gaia DR3 by `scripts/build_deep_smc.py` (`site/data/deep/smc-density.bin`, 65 536 B); the SMC's proper motion from Luri et al. 2021 | Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1; Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | ESA/Gaia/DPAC, CC BY-NC 3.0 IGO (https://www.cosmos.esa.int/web/gaia-users/license: "Gaia data are distributed under the CC BY-NC 3.0 IGO license."); the bin is a derived work and keeps that term |
+| The young stars stretched along our line: the Cepheids "heavily elongated for more than 25-30 kpc approximately in the east/north-east towards south-west direction"; the eastern side up to 20 kpc nearer than the western; an extended ellipsoid, its northern part nearer | Ripepi et al. 2017, MNRAS 472, 808 (arXiv:1707.04500); Scowcroft et al. 2016, ApJ 816, 49 (arXiv:1502.06995); Jacyszyn-Dobrzeniecka et al. 2016, AcA 66, 149 (arXiv:1602.09141) | facts, cited |
+| The old stars near a plane, inclination 35-48 degrees and position angle 170-186 degrees (drawn at 41 and 178), with a second group up to 10 kpc behind on the east (not drawn) | Tatton et al. 2021, MNRAS (arXiv:2012.12288) | facts, cited |
+| The Magellanic Bridge and Stream: the HI4PI survey's high-velocity H I column density in Magellanic coordinates (`hi4pi-hvc-nhi-mag-car.fits.gz`, 7.9 MB, downloaded for the bake and not shipped), cropped and resampled by `scripts/build_deep_magellanic.py` (`site/images/deep/magellanic/hi-column.webp`, an adaptation). Drawn in **false colour**: hydrogen at 21 cm, which no eye or camera sees. Its distance along our line is a **model**: the Bridge between the Clouds' measured distances, the Stream from the SMC's to 100 kpc at its far end ("the only solid distance constraint on the Stream is that one end is anchored to the Magellanic Clouds"; models put the far end 80 to 150 kpc away) | Westmeier 2018, MNRAS 474, 289 (arXiv:1712.00909); HI4PI Collaboration, Ben Bekhti et al. 2016, A&A 594, A116; served by NASA's LAMBDA (https://lambda.gsfc.nasa.gov/product/foreground/fg_hi4pi_hvhi_info.html); Magellanic coordinates: Nidever, Majewski & Butler Burton 2008, ApJ 679, 432; the distance: Fox et al. 2019 (arXiv:1903.04831) | LAMBDA's page states no licence of its own and asks for the paper to be cited; HI4PI's data are distributed by CDS, whose VizieR terms read that day (https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context ; however, ... the original authors and publication references including the publisher have to be explicitely cited". Cited as both ask; Space Radar is free and non-commercial |
+| The light where the SMC's photograph covers it: the photograph with its stars taken out (its pink H II regions kept) and 47 Tucanae and NGC 362, Milky Way globulars in front of it, filled from round them (`scripts/build_deep_smc.py --light` -> `site/images/deep/smc/smc-light.webp`, an adaptation) | NOIRLab noirlab2030b, credit "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University)..." (section 3 above) | CC BY 4.0; stars removed by Space Radar |
+<!-- 0077 W2-e: end -->
 
 ## 4. Runtime data sources
 

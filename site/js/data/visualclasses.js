@@ -312,7 +312,13 @@ export const VISUAL_CLASSES = [
 "himawari",
 "smap",
 "jason-3",
-"sorce"
+"sorce",
+"themis",
+"tiangong",
+"wentian",
+"mengtian",
+"shenzhou-orbital",
+"gaia"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -475,7 +481,10 @@ export const VISUAL_CLASSES = [
 "juice",
 "bepicolombo",
 "hera",
-"lucy"
+"lucy",
+"mars-express",
+"hayabusa2",
+"hope"
 ],
 "model_kinds": [
 "probe-generic",
@@ -577,7 +586,13 @@ export const VISUAL_CLASSES = [
 "insight",
 "viking-lander",
 "ingenuity",
-"curiosity"
+"curiosity",
+"vikram",
+"odysseus",
+"blue-ghost",
+"surveyor",
+"surveyor-3",
+"slim"
 ],
 "model_kinds": [
 "site-surveyor",
@@ -984,6 +999,7 @@ export const VISUAL_CLASSES = [
 "dso-tarantula-nebula"
 ],
 "heroes": [
+"dso-carina-nebula",
 "dso-m42"
 ]
 }
@@ -1171,7 +1187,8 @@ export const VISUAL_CLASSES = [
 "dso-smc"
 ],
 "heroes": [
-"dso-lmc"
+"dso-lmc",
+"dso-smc"
 ]
 }
 },

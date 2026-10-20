@@ -1,0 +1,138 @@
+{
+  "light": {
+    "file": "site/images/deep/carina/carina-light.webp",
+    "bytes": 30114,
+    "sha256": "7dc347d8b1a47673822a7eaa75d788023704dda9093a061e23ab0f9f3a53e125",
+    "stars_removed_px": 311477,
+    "size": [
+      596,
+      640
+    ]
+  },
+  "depth": {
+    "file": "site/data/deep/carina-front.bin",
+    "bytes": 342416,
+    "sha256": "51bfa38bdb199eec79f6102d06d4a3d1616cf2defd34ab695accb6e4ee68565f",
+    "grid": [
+      200,
+      214
+    ],
+    "z_ly": [
+      -47.207,
+      -2.079
+    ],
+    "max_slope": 1.599,
+    "dust_tau_max": 1.0
+  },
+  "detail": {
+    "file": "site/images/deep/carina/carina-detail.webp",
+    "bytes": 27000,
+    "sha256": "d8abaa336b7ab798ff673b747e6082f27d30383af595c75a80bec5fefe1a1aeb",
+    "uv_box": [
+      0.391344,
+      0.567102,
+      0.714864,
+      0.868579
+    ],
+    "size": [
+      576,
+      576
+    ],
+    "stars_removed_px": 178250,
+    "from": "https://cdn.eso.org/images/publicationjpg/eso1250a.jpg",
+    "from_sha256": "b4129a8fff119cbdd1c0831dd994030d512c46738acd3c9e2120161192897629"
+  },
+  "from": "site/images/nebulae/carina-nebula.webp",
+  "from_sha256": "e8e2fc0aab8da4292172810c2a944db4c91a4a7a25a9d358f1afbae48c731061",
+  "params": {
+    "distance_ly": 7665,
+    "origin": [
+      161.2854,
+      -59.8678
+    ],
+    "picture": {
+      "ra_deg": 161.2882,
+      "dec_deg": -59.86687,
+      "width_arcmin": 61.82,
+      "height_arcmin": 66.34,
+      "north_deg": 0.09
+    },
+    "front": {
+      "axis_pa_deg": 27.8,
+      "lobes": [
+        {
+          "name": "north",
+          "centre_west_arcmin": 2.0,
+          "centre_north_arcmin": 14.0,
+          "along_arcmin": 26.0,
+          "across_arcmin": 28.0,
+          "depth_ly": 45
+        },
+        {
+          "name": "south",
+          "centre_west_arcmin": 6.0,
+          "centre_north_arcmin": -18.0,
+          "along_arcmin": 26.0,
+          "across_arcmin": 30.0,
+          "depth_ly": 40
+        }
+      ],
+      "waist_ly": 12,
+      "relief": {
+        "power": 0.5,
+        "max_ln": 0.4,
+        "max_ly": 4.0,
+        "fine_arcmin": 0.6,
+        "wide_arcmin": 5.0
+      },
+      "grid": [
+        200,
+        214
+      ]
+    },
+    "cloud": {
+      "blur_arcmin": 6.0
+    },
+    "dust": {
+      "lane": {
+        "points": [
+          [
+            -11.0,
+            8.6
+          ],
+          [
+            0.0,
+            1.6
+          ],
+          [
+            12.0,
+            13.5
+          ],
+          [
+            24.0,
+            27.5
+          ]
+        ],
+        "half_width_arcmin": 3.6
+      },
+      "keyhole": {
+        "west_arcmin": 0.4,
+        "north_arcmin": 10.0,
+        "a_arcmin": 2.6,
+        "b_arcmin": 1.6,
+        "pa_deg": 120
+      },
+      "tau_max": 1.0
+    },
+    "detail": {
+      "centre_west_arcmin": 2.6,
+      "centre_north_arcmin": 3.5,
+      "size_arcmin": 20.0,
+      "px": 576,
+      "quality": 88,
+      "level_arcmin": 1.5,
+      "url": "https://cdn.eso.org/images/publicationjpg/eso1250a.jpg"
+    }
+  },
+  "credit": "ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit (eso1250a), CC BY 4.0; stars removed and depth reconstructed by Space Radar (scripts/build_deep_carina.py)"
+}

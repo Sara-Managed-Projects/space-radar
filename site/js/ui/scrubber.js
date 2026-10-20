@@ -80,7 +80,7 @@ const DAY_MS = 86400e3;
  * when something happens. Pure. `xs` is the marks' times as pixels, in any order.
  * @returns {number[]} the shift of each, in the order given
  */
-export function spreadMarks(xs, w, cap = 3 * w) {
+export function spreadMarks(xs, w, cap = 3 * w, avoid = null) {
   const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
   const out = new Array(xs.length).fill(0);
   let edge = -Infinity;
@@ -90,6 +90,34 @@ export function spreadMarks(xs, w, cap = 3 * w) {
     out[i] = shift;
     edge = xs[i] + shift;
   }
+  // 0077 W1-d: begin (internal #713)
+  // `avoid` is a stretch of the tape, [from, to] in pixels, that holds another button: the Now
+  // button, which stands from the real present rightwards. A mark whose box reaches into it is
+  // under it for a few pixels, so the press (and axe's `target-size`, on the day the Moon is new
+  // beside "Now") finds the mark 42 px wide and not 44. Those left of its middle stand to the
+  // left of it, those right of it to the right, each side spread by the same rule as above.
+  if (avoid && Number.isFinite(avoid[0]) && Number.isFinite(avoid[1]) && avoid[1] > avoid[0]) {
+    const half = w / 2;
+    const reaches = (i) => xs[i] + out[i] + half > avoid[0] && xs[i] + out[i] - half < avoid[1];
+    if (xs.some((x, i) => reaches(i))) {
+      const mid = (avoid[0] + avoid[1]) / 2;
+      const left = order.filter((i) => xs[i] < mid).reverse();
+      const right = order.filter((i) => xs[i] >= mid);
+      let edgeL = avoid[0] - half + w;
+      for (const i of left) {
+        const at = Math.min(xs[i], edgeL - w);
+        out[i] = Math.max(at - xs[i], -cap);
+        edgeL = xs[i] + out[i];
+      }
+      let edgeR = avoid[1] + half - w;
+      for (const i of right) {
+        const at = Math.max(xs[i], edgeR + w);
+        out[i] = Math.min(at - xs[i], cap);
+        edgeR = xs[i] + out[i];
+      }
+    }
+  }
+  // 0077 W1-d: end
   return out;
 }
 
@@ -385,7 +413,11 @@ export function createScrubber(ctx, pill) {
     // the glyph is drawn back to the mark's own time (css --sr-mark-shift).
     const boxW = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 44 : 28;
     const drawn = marks.map((m) => ({ m, x: tapeX(m.tMs, tMs, unit, width) })).filter(({ x }) => x >= MARK_EDGE_PX && x <= width - MARK_EDGE_PX);
-    const shifts = spreadMarks(drawn.map((d) => d.x), boxW);
+    // 0077 W1-d: begin (internal #713)
+    // The Now button stands from the real present to the right: its own width, 44 px at least.
+    const nowAvoid = nowShown ? [nowX, nowX + Math.max(44, nowBtn.offsetWidth || 0)] : null;
+    const shifts = spreadMarks(drawn.map((d) => d.x), boxW, 3 * boxW, nowAvoid);
+    // 0077 W1-d: end
     for (let k = 0; k < drawn.length; k++) {
       const { m, x } = drawn[k];
       // Not in the tape's last MARK_EDGE_PX either side: there the mark's 44 px target is clipped

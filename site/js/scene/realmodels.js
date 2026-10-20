@@ -24,6 +24,16 @@
 //    and a procedural one beside it are drawn by the same hand. The class colour is now only what
 //    a file with no colours of its own falls back to (colourRoute, below).
 //
+// 0077 W2-pbr: begin
+//    AND SINCE RELEASE 1.3.0 THE SHADING IS REAL TOO, WHERE THE FILE CARRIES IT (internal #967). A file
+//    whose parts are named for their surfaces and painted in their own colours is drawn in physically
+//    based materials (scene/pbr.js: metal, roughness, crinkled foil, cells under glass) on a device of
+//    tier 1 and up; tier 0 and the frame-rate latch keep the toon ramp above. The flat ramp turned
+//    crinkled gold blanket and white cloth into the same flat tone, and a craft built with every
+//    feature of its photographs (SLIM, public #1134) still read as a yellow box. `look: toon` on a
+//    registry row keeps a file on the ramp; the procedural shapes are drawings and stay on it.
+// 0077 W2-pbr: end
+//
 // 2. NOTHING BLOCKS. A hero appears as procedural geometry immediately and upgrades in place when
 //    its file arrives. A visitor on a slow connection sees a satellite now and a better satellite
 //    a second later, rather than an empty orbit and a spinner. A file that fails to load is simply
@@ -44,8 +54,14 @@ function loadKit() {
       import('../../vendor/GLTFLoader.js'),
       import('../../vendor/meshopt_decoder.module.js'),
       import('./models.js'),
-    ]).then(([g, m, models]) => {
-      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial };
+      // 0077 W2-pbr: begin
+      // The physically based look (scene/pbr.js) and the registry's `look:` per file, with the loader:
+      // nothing of either is wanted until a file is.
+      import('./pbr.js'),
+      import('../data/modellooks.js'),
+    ]).then(([g, m, models, pbr, looks]) => {
+      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial, pbr, looks: looks.MODEL_LOOKS || {} };
+      // 0077 W2-pbr: end
       return kit;
     }).catch((err) => { kitAsked = null; throw err; });
   }
@@ -760,6 +776,22 @@ export const REAL_MODELS = {
     26069: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2369, a Tselina-2 listening satellite', catalogue: 'COSMOS 2369' },
     28352: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2406, a Tselina-2 listening satellite', catalogue: 'COSMOS 2406' },
     31792: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2428, a Tselina-2 listening satellite', catalogue: 'COSMOS 2428' },
+    // 0077 W1-a: begin
+    // THEMIS (release 1.3.0, public #549): NASA's own model of the probe (NASA 3D Resources, the THEMIS
+    // folder), baked with its own colours; registry/models.yaml row `themis`. The five probes are one design;
+    // three are in CelesTrak's active group (read in the live saved data, 2026-10-20). Not turned: the probes
+    // spin, and the file's axes say nothing about which way.
+    30580: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS A', catalogue: 'THEMIS A' },
+    30797: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS D', catalogue: 'THEMIS D' },
+    30798: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS E', catalogue: 'THEMIS E' },
+    // THE SHENZHOU ORBITAL MODULE FLYING ALONE (public #1089): each crew leaves it in orbit when it goes home.
+    // Built here from the cited metres of shenzhou.glb's front third (row `shenzhou-orbital`); by number, the
+    // three in the live saved data of 2026-10-20. Not `generic`: each is that module. Not turned: it flies
+    // uncontrolled, and nobody publishes its attitude.
+    66515: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 21', catalogue: 'SZ-21 MODULE', made: 'dimensions' },
+    67481: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 20', catalogue: 'SZ-20 MODULE', made: 'dimensions' },
+    69328: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 22', catalogue: 'SZ-22 MODULE', made: 'dimensions' },
+    // 0077 W1-a: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -787,7 +819,7 @@ export const REAL_MODELS = {
     // assembled and baked into new-horizons.glb (registry/models.yaml says how). Until 2026-10-10 there was
     // no file and this named only the PROCEDURAL shape; it stays as what is drawn while the file is on its
     // way, as JWST's does (heroes.js acquire).
-    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons' },
+    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons', axes: 'app' }, // 0077 W1-a: NASA's parts rebuilt with the drawings' dish and tripod, turned to the app's axes (row `new-horizons`)
     // Three of the twelve craft added on 2026-09-22 as the generic probe, which NASA publishes a
     // model of (issue #431). OSIRIS-APEX is the OSIRIS-REx spacecraft under its second mission's
     // name -- the same vehicle, so this is its model and not a stand-in. NASA's STEREO model is
@@ -839,6 +871,20 @@ export const REAL_MODELS = {
     '-28': { file: 'juice.glb', colour: 'probe', name: 'JUICE', made: 'dimensions', axes: 'app' },
     '-121': { file: 'bepicolombo.glb', colour: 'probe', name: 'BepiColombo in its cruise stack', made: 'dimensions', axes: 'app' },
     '-91': { file: 'hera.glb', colour: 'probe', name: 'Hera', made: 'dimensions', axes: 'app' },
+    // 0077 W1-b: begin
+    // FOUR MORE DEEP-SPACE CRAFT BUILT FROM DIMENSIONS (2026-10-20, release 1.3.0 W1-b, public #1085 to
+    // #1088). Mars Express, Hayabusa2 and Hope were the generic probe; Gaia was its procedural shape
+    // (scene/models.js buildGaia), which stays as what is drawn while the file is in flight, as
+    // JWST's does. No agency publishes a model of any of the four under terms that allow a
+    // derivative (registry/models.yaml says what was looked for), so each is BUILT here from cited
+    // numbers (`made: 'dimensions'`), to the app's axes: +Z the dish (Gaia: the Sun side of its
+    // shield, with its cells and its antenna) and the cells with it, the wings along X. The records
+    // are data/sample.js `deep-mars-express`, `deep-gaia`, `deep-hayabusa2`, `deep-hope`.
+    '-41': { file: 'mars-express.glb', colour: 'probe', name: 'Mars Express', made: 'dimensions', axes: 'app' },
+    '-139479': { build: 'gaia', file: 'gaia.glb', colour: 'telescope', name: 'Gaia', made: 'dimensions', axes: 'app' },
+    '-37': { file: 'hayabusa2.glb', colour: 'probe', name: 'Hayabusa2', made: 'dimensions', axes: 'app' },
+    '-62': { file: 'hope.glb', colour: 'probe', name: 'Hope (Emirates Mars Mission)', made: 'dimensions', axes: 'app' },
+    // 0077 W1-b: end
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -893,9 +939,15 @@ export const REAL_MODELS = {
     // type, not this object" -- right for "a Starlink", wrong for the second crewed station in
     // orbit, which the stations trip is about and which was labelled "CSS (TIANHE)" while the ISS
     // beside it read "International Space Station".
-    'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], generic: true },
-    'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], generic: true },
-    'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], generic: true },
+    // 0077 W1-a: begin
+    // FILES SINCE RELEASE 1.3.0 (public #936, #267): tiangong.glb is the whole T built here in code from the cited
+    // metres and CMSA's rear view of 2023 (row `tiangong`); wentian.glb and mengtian.glb are each laboratory cut
+    // from that same build, for the lab drawn on its own. The builds stay as what is drawn while a file loads.
+    // Not `generic` any more: each file is that object.
+    'css (tianhe': { build: 'tiangong', file: 'tiangong.glb', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], made: 'dimensions', axes: 'app' },
+    'css (wentian': { build: 'tiangong-module', file: 'wentian.glb', colour: 'station', name: 'Wentian, a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
+    'css (mengtian': { build: 'tiangong-module', file: 'mengtian.glb', colour: 'station', name: 'Mengtian, a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
+    // 0077 W1-a: end
     // Shenzhou and Tianzhou: the Soyuz plan at Chinese proportions, white-grey, wings on both ends
     // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
     // FILES AS WELL since batch three (2026-10-13; public #941, #942), each hull ONE LATHE as the
@@ -1218,8 +1270,10 @@ export const REAL_MODELS = {
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
     goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
     // Gaia and Solar Orbiter are matched by NAME: Solar Orbiter carries no Horizons id in the
-    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) has no glTF to key, because
-    // its shape is built rather than downloaded. The klass gate is doing real work on the first
+    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) had no glTF to key, because
+    // its shape was built rather than downloaded. // 0077 W1-b
+    // Since 2026-10-20 the record goes by its Horizons id to gaia.glb (above); this name route is the procedural shape for any other record called Gaia. // 0077 W1-b
+    // The klass gate is doing real work on the first
     // one: 1279 Gaia is a main-belt asteroid, and without `klass: ['telescope']` a ten-metre
     // sunshield would be drawn on a rock. That is the TESS mistake exactly, and it is why the
     // gate exists.
@@ -1292,10 +1346,28 @@ export const REAL_MODELS = {
     // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
-    // Surveyor from NSSDCA's own description (scene/models.js buildSurveyor; public #267). A shape
-    // built from a paragraph, so the card still says the kind of thing.
-    'surveyor-1': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
-    'surveyor-3': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    // 0077 W1-c: begin
+    // SURVEYOR IS A FILE OF ITS OWN since release 1.3.0 (public #267): built in code from NSSDCA's metres
+    // and Apollo 12's photographs of Surveyor 3 (registry/models.yaml `surveyor`, `surveyor-3`). The
+    // procedural shape (scene/models.js buildSurveyor, from a paragraph) is what is drawn while the file
+    // is on its way. Surveyor 3 carried the soil sampler and Surveyor 1 did not, so they are two files.
+    // `displayName` keeps each card and label titled by the site's own name (registry/sites.yaml
+    // `display`); `name` is what the model is of, for the line that says what is drawn.
+    'surveyor-1': { build: 'surveyor', file: 'surveyor.glb', colour: 'site', name: 'Surveyor 1', displayName: 'Surveyor 1, Oceanus Procellarum', made: 'dimensions' },
+    'surveyor-3': { build: 'surveyor', file: 'surveyor-3.glb', colour: 'site', name: 'Surveyor 3', displayName: 'Surveyor 3, Oceanus Procellarum', made: 'dimensions' },
+    // THREE MODERN LANDERS (public #1133, #1135, #1136), each built in code from cited metres and
+    // photographs and drawn AS IT CAME TO REST: Vikram upright with its ramp down and Pragyan gone;
+    // Odysseus on its side, the legs under it broken; Blue Ghost upright. Until the file arrives each is
+    // the generic lander it was. SLIM (#1134) was built and not shipped: it did not read as SLIM.
+    'chandrayaan-3': { build: 'lander', file: 'vikram.glb', colour: 'site', name: 'the Vikram lander, its ramp down', displayName: 'Chandrayaan-3 Vikram lander', made: 'dimensions' },
+    'im-1': { build: 'lander', file: 'odysseus.glb', colour: 'site', name: 'Odysseus, as it came to rest on its side', displayName: 'Odysseus (IM-1), near Malapert A', made: 'dimensions' },
+    'blue-ghost-1': { build: 'lander', file: 'blue-ghost.glb', colour: 'site', name: 'the Blue Ghost lander', displayName: 'Blue Ghost 1, Mare Crisium', made: 'dimensions' },
+    // 0077 W1-c: end
+    // 0077 W2-pbr: begin
+    // SLIM (public #1134), standing on its nose, engines up, one nozzle lost: built by W1-c, held back while the
+    // toon ramp drew its blankets as a flat yellow box, and shipped on the physically based look (scene/pbr.js).
+    slim: { build: 'lander', file: 'slim.glb', colour: 'site', name: 'SLIM, as it came to rest on its nose', displayName: 'SLIM, near Shioli crater', made: 'dimensions' },
+    // 0077 W2-pbr: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the
@@ -1574,10 +1646,26 @@ export function colourRoute(root) {
   return stated.size >= 2 ? 'own' : 'class';
 }
 
-function applyToon(root, colourToken, surface = null) {
+function applyToon(root, colourToken, surface = null, file = null) { // 0077 W2-pbr: `file`, for its stated look
   const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
   // Measured once per model, not per mesh: the question is whether the FILE carries variation.
   const route = colourRoute(root);
+  // 0077 W2-pbr: begin
+  // WHICH LOOK (scene/pbr.js lookOf): the registry's `look:` for this file, else the physically based
+  // one when the file carries real materials -- its own colours on parts named for their surfaces.
+  // Each part then gets both materials and wears the one the device's tier wants (pbr.js pairLooks).
+  let roles = false;
+  root.traverse((n) => { if (n.isMesh && kit.pbr && kit.pbr.roleOf(n.name)) roles = true; });
+  const look = kit.pbr ? kit.pbr.lookOf({ stated: file ? kit.looks[file] : null, route, roles, surface: !!surface }) : 'toon';
+  // The folds and the cell grid are drawn in each part's own coordinates, so their period is worked out
+  // per part from its scale against the model's longest side (pbr.js CRINKLE_PERIODS, GRID_PERIODS).
+  let longest = 1;
+  if (look === 'pbr') {
+    root.updateMatrixWorld(true);
+    const size = new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+    longest = Math.max(size.x, size.y, size.z) || 1;
+  }
+  // 0077 W2-pbr: end
   // A pool PER MODEL, not the shared one. models.js explains why: the hero layer fades a model in
   // by writing material.opacity, and one shared instance would fade every object of that class at
   // once. The compiled shader program is still shared, so this costs a few uniforms and nothing more.
@@ -1627,8 +1715,20 @@ function applyToon(root, colourToken, surface = null) {
         if (m.dispose) m.dispose();
       }
       n.material = replacement;
+      // 0077 W2-pbr: begin
+      if (look === 'pbr' && !palette) {
+        const s = n.matrixWorld.getMaxScaleOnAxis() / (root.matrixWorld.getMaxScaleOnAxis() || 1);
+        const finish = kit.pbr.finishOf(kit.pbr.roleOf(name) || 'body', tint);
+        kit.pbr.pairLooks(n, replacement, () => kit.pbr.pbrMaterial(tint, finish, {
+          foldScale: (kit.pbr.CRINKLE_PERIODS * s) / longest,
+          gridScale: (kit.pbr.GRID_PERIODS * s) / longest,
+          side: replacement.side,
+        }));
+      }
+      // 0077 W2-pbr: end
     }
   });
+  root.userData.look = look; // 0077 W2-pbr
   return root;
 }
 
@@ -1663,7 +1763,7 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           let top = scene;
           if (turn) { top = new THREE.Group(); scene.rotation.set(turn[0], turn[1], turn[2]); top.add(scene); }
           if (keepMaterials) return resolve(normalise(top));
-          if (!entry.map) { applyToon(scene, entry.colour); return resolve(normalise(top)); }
+          if (!entry.map) { applyToon(scene, entry.colour, null, entry.file); const out = normalise(top); out.userData.look = scene.userData.look; return resolve(out); } // 0077 W2-pbr: the file, for its look
           // The map first, then the material: a body shown plain and then repainted would flash.
           // A map that does not arrive leaves the body in its class colour, as it was before.
           const done = (tex) => {
