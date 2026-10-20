@@ -55,6 +55,9 @@ node tests/test_cards_copy.mjs"
 if [ "$HAVE_NODE" = 1 ]; then ITEMS="$ITEMS
 $NODE_ITEMS"; fi
 
+# CHECK_ITEMS replaces the list, one command a line; tests/test_check_harness.py uses it.
+if [ -n "${CHECK_ITEMS:-}" ]; then ITEMS="$CHECK_ITEMS"; fi
+
 if [ "$LIST" = 1 ]; then echo "$ITEMS"; exit 0; fi
 
 if [ "$FIX" = 1 ]; then
@@ -70,11 +73,15 @@ export OUT
 JOBS="${CHECK_JOBS:-$( (getconf _NPROCESSORS_ONLN || sysctl -n hw.ncpu) 2>/dev/null | head -1)}"
 case "$JOBS" in ''|*[!0-9]*) JOBS=4 ;; esac
 
-# One item per line into a small pool. Each job keeps its output in a file named after its line
-# number and leaves a `.fail` beside it when it fails; the summary below reads those.
-echo "$ITEMS" | awk '{print NR "\t" $0}' | xargs -P "$JOBS" -I{} bash -c '
-  line="$1"; n="${line%%	*}"; cmd="${line#*	}"
-  if $cmd > "$OUT/$n.log" 2>&1; then echo "ok   $cmd"; else echo "FAIL $cmd"; echo "$cmd" > "$OUT/$n.fail"; fi
+# One item per line into a small pool. Only the line number crosses xargs: BSD xargs -I (macOS)
+# rewrites a tab in its input line to a space, which once fused the number into the command, so no
+# check ran and every result file failed to open. Each job reads its command from items.txt, keeps
+# its output in <n>.log and leaves <n>.ok or <n>.fail; a line with neither is counted as not run.
+echo "$ITEMS" > "$OUT/items.txt"
+TOTAL=$(wc -l < "$OUT/items.txt" | tr -d ' ')
+awk '{print NR}' "$OUT/items.txt" | xargs -P "$JOBS" -I{} bash -c '
+  n="$1"; cmd="$(sed -n "${n}p" "$OUT/items.txt")"
+  if $cmd > "$OUT/$n.log" 2>&1; then echo "ok   $cmd"; : > "$OUT/$n.ok"; else echo "FAIL $cmd"; : > "$OUT/$n.fail"; fi
 ' _ {}
 
 hint() { # the command that failed -> what to do about it
@@ -112,24 +119,34 @@ hint() { # the command that failed -> what to do about it
   esac
 }
 
-FAILS=0; SOFT=0
-for f in "$OUT"/*.fail; do
-  [ -f "$f" ] || continue
-  cmd="$(cat "$f")"; log="${f%.fail}.log"
+FAILS=0; SOFT=0; UNRUN=""
+n=0
+while [ "$n" -lt "$TOTAL" ]; do
+  n=$((n + 1))
+  cmd="$(sed -n "${n}p" "$OUT/items.txt")"; log="$OUT/$n.log"
+  [ -f "$OUT/$n.ok" ] && continue
+  if [ ! -f "$OUT/$n.fail" ]; then UNRUN="$UNRUN
+   $cmd"; FAILS=$((FAILS + 1)); continue; fi
   echo
   echo "---- FAIL $cmd"
-  tail -12 "$log" | sed 's/^/   | /'
+  tail -12 "$log" 2>/dev/null | sed 's/^/   | /'
   echo "   WHAT TO DO:"
   hint "$cmd" | sed 's/^/   /'
   case "$cmd" in *narrate.py*) SOFT=$((SOFT + 1)) ;; *) FAILS=$((FAILS + 1)) ;; esac
 done
+if [ -n "$UNRUN" ]; then
+  echo
+  echo "---- FAIL these checks left no result, so they did not run (a bug in this script: please open an issue):$UNRUN"
+fi
 rm -rf "$OUT"
 echo
 if [ "$HAVE_NODE" = 0 ]; then
   echo "note: node is not on PATH, so these were skipped (CI runs them): $(echo "$NODE_ITEMS" | sed 's/^node //' | tr '\n' ' ')"
 fi
 ELAPSED=$(( $(date +%s) - START ))
-if [ "$FAILS" = 0 ] && [ "$SOFT" = 0 ]; then
+if [ "$FAILS" = 0 ] && [ "$SOFT" = 0 ] && [ "$HAVE_NODE" = 0 ]; then
+  echo "PASS  every check that ran is green (${ELAPSED}s); the node checks named above did not run. Open the pull request: CI runs them."
+elif [ "$FAILS" = 0 ] && [ "$SOFT" = 0 ]; then
   echo "PASS  every check is green (${ELAPSED}s). Open the pull request."
 elif [ "$FAILS" = 0 ]; then
   echo "PASS, with the voice check red (${ELAPSED}s). Open the pull request and say the narration needs rendering."
