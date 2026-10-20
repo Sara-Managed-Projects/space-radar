@@ -1120,3 +1120,13 @@ jobs:
       - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
         run: node tests/test_outer_worlds.mjs
       # 0077 W1-f: end
+      # 0077 W2-d: begin
+      - name: "Compare and the comparison lab: eleven worlds from NASA's fact sheets, the picture inside its box for every pair, the lab's order, the panel pressed (internal i#885, i#909)"
+        run: node tests/test_compare.mjs
+      - name: "the Compare view's data is the registry's (internal i#885, i#909)"
+        run: python3 scripts/gen_compare_js.py --check
+      - name: "the passport's kinds and notes: stamped once, never taken back, nothing that keeps score (internal i#911)"
+        run: node tests/test_passport_kinds.mjs
+      - name: "Compare with the photograph: the slider's share on the picture and the hero, put back by any other choice, offered for shipped heroes only (internal i#776)"
+        run: node tests/test_photocompare.mjs
+      # 0077 W2-d: end

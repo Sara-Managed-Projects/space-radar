@@ -40,3 +40,18 @@ export const DEEP_LAYERS = [
   // hands the layer (scene/deep/deepsky.js); `debug` is the key of `sr.deep.debug({ far: false })`, which takes it off for a probe's BEFORE shot.
   { id: 'galclusters', stage: 'W4-b', stages: ['local-group'], build: () => import('./galclusters.js'), ask: (env, on) => ({ recordById: env.recordById, on }) },
 ];
+
+// 0077 W2-d: begin (the photograph slider is offered only where a reconstruction is shipped; ui/photocompare.js, internal i#776)
+/** The hero list's line for a record, or null. */
+export const heroForRecord = (recordId) => HEROES.find((h) => h.record === recordId) || null;
+
+/**
+ * Is the record's reconstruction shipped? Reads its profile, which is small data and is read when the hero is
+ * near anyway; false for a record with no hero, a hero that is not signed off, and a profile that will not load.
+ */
+export function heroShipped(recordId) {
+  const h = heroForRecord(recordId);
+  if (!h) return Promise.resolve(false);
+  return Promise.resolve().then(() => h.profile()).then((m) => !!(m && m.HERO && m.HERO.shipped)).catch(() => false);
+}
+// 0077 W2-d: end

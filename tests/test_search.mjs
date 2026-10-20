@@ -221,5 +221,129 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   check(!/from '\.\.\/data\/kindwords\.js'/.test(src) && !/from '\.\.\/data\/visualclasses\.js'/.test(src), 'the field on the first screen imports neither the kind words nor the classes');
 }
 
+// --- a key typed into search is the search's, whichever transient prompt is up (public #916) -----------------
+// 0077 W2-d: begin
+// #615 fixed one prompt (the go-back offer sat on the search row for six seconds on a phone). This holds the
+// whole class: every global key listener the app has is either shown to leave a focused field alone or named
+// here with the reason it may not; every decision function that answers "what does this key mean" is run with
+// the search field focused over every key a person types; and the prompts that appear by themselves, built for
+// real in a stand-in document, are typed over. Nothing here is a browser: a handler that reads something this
+// stand-in lacks fails the test, and is then given what it needs, not skipped.
+{
+  const { install } = await import('./helpers/fakedom.mjs');
+  const doc = install();
+  const { readdirSync, statSync } = await import('node:fs');
+  const ROOTJS = JS;
+  const src = (rel) => readFileSync(join(ROOTJS, rel), 'utf8');
+  const strip = (text) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  // what a person types into a search field: letters of both cases, digits, punctuation, space, and the named keys
+  const KEYS = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 /?.,-+=_*#@!:;\'"[]{}()<>\\|`~%^&', 'Enter', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown', 'Tab', 'Escape'];
+  const fieldNode = () => ({ tagName: 'INPUT', className: 'sr-search__input', isContentEditable: false });
+  const keyEvent = (key, target, extra = {}) => ({ type: 'keydown', key, target, defaultPrevented: false, ctrlKey: false, metaKey: false, altKey: false, shiftKey: key.length === 1 && key !== key.toLowerCase(), isComposing: false, keyCode: 0, ...extra });
+
+  // 1. every decision function, with the search field focused: nobody takes a letter, a digit, a space or an arrow
+  const { railKey } = await import(join(JS, 'ui/rail.js'));
+  const { wantsToggle } = await import(join(JS, 'ui/cleanview.js'));
+  const { wantsSearch } = await import(join(JS, 'ui/explore.js'));
+  const { keyAction } = await import(join(JS, 'ui/tripframe.js'));
+  const field = fieldNode();
+  const idleTrip = { phase: 'dwell', index: 1, count: 4 };
+  for (const key of KEYS) {
+    const e = keyEvent(key, field);
+    check(!railKey(e, field), `the rail does not take "${key}" typed into search`);
+    check(!wantsSearch(e, field), `"/" in a field is a slash, not a jump to search ("${key}")`);
+    if (key !== 'Escape') check(!wantsToggle(e, field, false) && !wantsToggle(e, field, true), `the clear screen does not take "${key}" typed into search`);
+    check(!keyAction(e, idleTrip, field, false) && !keyAction(e, idleTrip, field, true), `a running trip does not take "${key}" typed into search`);
+  }
+  check(wantsToggle(keyEvent('Escape', field), field, false) === null, 'Escape in search is the search\'s when the screen is not clear');
+  // ...and the same keys do mean something when nothing is focused, so the checks above are not vacuous
+  check(railKey(keyEvent('l', null), null) === 'show' && wantsToggle(keyEvent('h', null), null, false) === 'toggle' && keyAction(keyEvent('ArrowRight', null), idleTrip, null, false) === 'next', 'with nothing focused the same keys are answered');
+  // a contenteditable field is a field too
+  const editable = { tagName: 'DIV', isContentEditable: true };
+  check(!railKey(keyEvent('l', editable), editable) && !wantsToggle(keyEvent('h', editable), editable, false), 'a contenteditable field has the keyboard as an input does');
+
+  // 2. every global key listener in the app, found in the source and classified
+  const CLASSES = {
+    'ui/rail.js': 'guarded: railKey (above)',
+    'ui/cleanview.js': 'guarded: wantsToggle (above)',
+    'ui/explore.js': 'guarded: wantsSearch (above)',
+    'ui/tripframe.js': 'guarded: keyAction (above)',
+    'ui/onboarding.js': 'guarded inline: the tour\'s own keys ignore a field',
+    'ui/drift.js': 'guarded inline: Space and N are not taken from a field',
+    'ui/keyhint.js': 'guarded inline: the caps do not light for a field; Escape only closes its own hint',
+    'sky/skyview.js': 'guarded inline',
+    'scene/camera.js': 'guarded inline: keyIsOurs',
+    'ui/shell.js': 'Escape only, and only for a view of its own (Sources, Passport)',
+    'ui/cards.js': 'Escape only: closes the card',
+    'ui/sharesheet.js': 'Escape and Tab only, while the share sheet is open and holds the focus',
+    'ui/chooser.js': 'Escape only, while the pick list is open',
+    'ui/camundo.js': 'on the toast node itself, Escape only: heard only while a person has moved focus into the toast',
+    'ui/scrubber.js': 'on the timeline\'s own slider',
+    'ui/embed.js': 'embeds only: the host page owns the keyboard',
+    'ui/autopilot.js': 'a mode, not a prompt: while a reel plays any key hands the screen back, which is its whole contract',
+    'scene/exostage.js': 'on its own panel',
+  };
+  const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/ };
+  const walkJs = (dir) => readdirSync(dir).flatMap((f) => { const full = join(dir, f); return statSync(full).isDirectory() ? walkJs(full) : full.endsWith('.js') ? [full] : []; });
+  const found = [];
+  for (const file of walkJs(ROOTJS)) {
+    const rel = file.slice(ROOTJS.length + 1);
+    const text = strip(readFileSync(file, 'utf8'));
+    if (/addEventListener\(\s*['"]key(down|up|press)['"]/.test(text) && /\b(document|doc|window|win|keyTarget)\.addEventListener\(\s*['"]key(down|up|press)['"]|(?:root|node|host)\.addEventListener\(\s*['"]keydown['"]/.test(text)) found.push(rel);
+  }
+  for (const rel of found) check(!!CLASSES[rel], `${rel} listens for keys: say in test_search.mjs why it leaves a field alone (an unlisted global key listener is the next #615)`);
+  for (const rel of Object.keys(CLASSES)) check(found.includes(rel), `${rel} is classified but no longer listens for keys: take it off the list`);
+  for (const [rel, re] of Object.entries(guards)) check(re.test(src(rel)), `${rel} no longer checks for a focused field (${re})`);
+  // an Escape-only listener must not look at any other key
+  for (const rel of ['ui/shell.js', 'ui/cards.js', 'ui/chooser.js']) {
+    const body = strip(src(rel));
+    const handlers = [...body.matchAll(/addEventListener\(\s*'keydown',\s*(?:\(\w*\)\s*=>|function\s*\(\w*\)|\(\w*,?\s*\w*\)\s*=>|onKey)[\s\S]{0,260}/g)].map((m) => m[0]);
+    check(handlers.length > 0 && handlers.every((h) => /key (?:!==|===) 'Escape'/.test(h) || /onKey/.test(h)), `${rel}: its key listener is for Escape and nothing else`);
+  }
+
+  // 3. the prompts that come by themselves, built for real, and typed over
+  const listeners = [];
+  const realAdd = doc.addEventListener;
+  doc.addEventListener = (type, fn, capture) => listeners.push({ type, fn, capture: capture === true || !!(capture && capture.capture) });
+  doc.removeEventListener = (type, fn) => { const i = listeners.findIndex((l) => l.type === type && l.fn === fn); if (i >= 0) listeners.splice(i, 1); };
+  const search = doc.createElement('input');
+  search.className = 'sr-search__input';
+  doc.body.appendChild(search);
+  search.focus();
+  doc.activeElement = search;
+  const { offerUndo } = await import(join(JS, 'ui/camundo.js'));
+  let undone = 0;
+  const node = offerUndo({}, { name: 'Jupiter', undo: () => { undone += 1; }, ms: 60000 });
+  check(!!node && !node.hidden, 'the go-back offer is up');
+  const taken = [];
+  for (const key of KEYS) {
+    const ev = keyEvent(key, search, { preventDefault() { this.defaultPrevented = true; }, stopPropagation() { this.stopped = true; }, stopImmediatePropagation() { this.stopped = true; } });
+    for (const l of listeners.filter((x) => x.type === 'keydown' || x.type === 'keypress')) l.fn(ev);
+    if (ev.defaultPrevented || ev.stopped) taken.push(key);
+  }
+  check(taken.length === 0, `with the go-back offer up, search keeps every key (taken: ${taken.join(' ')})`);
+  check(undone === 0, 'and no key presses the offer\'s button');
+  check(!node.hidden, 'a key alone does not take the offer away (it gives way to the text, below)');
+  // the text arriving: the offer gives way, and the toast is one node that stays for the next line
+  const typed = { type: 'input', target: search, defaultPrevented: false };
+  for (const l of listeners.filter((x) => x.type === 'input')) l.fn(typed);
+  check(node.hidden === true, 'typing in search puts the go-back offer away');
+  check(listeners.filter((l) => l.type === 'input' || l.type === 'keydown').length === 0, 'and it leaves no listener behind');
+  // other toasts hold no key at all
+  const { toast } = await import(join(JS, 'ui/share.js'));
+  toast('Link copied', 0);
+  const before = listeners.length;
+  check(before === 0, 'a plain toast adds no listener to the document');
+  // the prompts with no key handler of their own: none of them moves focus at show time
+  for (const [rel, allowed] of [['ui/camundo.js', 0], ['ui/launchchip.js', 0], ['ui/scalebadge.js', 0], ['ui/keyhint.js', 0], ['ui/welcome.js', 1]]) {
+    const n = (strip(src(rel)).match(/\.focus\(/g) || []).length;
+    check(n === allowed, `${rel}: ${n} calls to focus() (allowed ${allowed}; welcome gives focus back only if it had it)`);
+  }
+  const welcome = strip(src('ui/welcome.js'));
+  check(/const hadFocus = root\.contains\(doc\.activeElement\);[\s\S]{0,200}if \(hadFocus\)/.test(welcome), 'the welcome returns focus only when it was inside it');
+  doc.addEventListener = realAdd;
+}
+// 0077 W2-d: end
+
 if (problems.length) { console.error('search FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('search ok: whole words first, buried letters only as an announced fallback, eight rows, aliases from the registry');

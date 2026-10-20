@@ -309,7 +309,7 @@ export function createDeepSky(THREE, env = {}) {
       let lv = q.latched && !(h.hero && h.hero.latchSafe) ? Math.min(1, levels.get(h.def.record) || 0) : levels.get(h.def.record) || 0;
       if (lv >= 2 && drawnHeroes >= 2) lv = 1;
       if (lv >= 3 && drawnHeroes >= 1) lv = 2; // one costly hero at a time
-      const share = fader.to(`hero:${h.def.id}`, lv >= 2 ? 1 : 0, now);
+      const share = fader.to(`hero:${h.def.id}`, lv >= 2 ? 1 - (env.compareShare ? Math.min(1, Math.max(0, env.compareShare(h.def.record) || 0)) : 0) : 0, now); // 0077 W2-d: the photograph slider hides it by its share
       if (h.hero) {
         const steps = lv >= 3 ? marchSteps({ tier: q.tier, top: q.top, latched: q.latched, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: rp, selected: selectedId === h.def.record }) : 0;
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);

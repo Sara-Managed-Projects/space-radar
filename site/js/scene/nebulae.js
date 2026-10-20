@@ -285,6 +285,11 @@ export function createNebulae(scene, opts = {}) {
   let skyVisible = true;
   let selected = null;
   let held = new Set(); // ids a trip asked for at its intro (prefetch): kept until the next trip asks
+  // 0077 W2-d: begin ("Compare with the photograph", ui/photocompare.js; internal i#776, spec 0075 requirement 14)
+  // One picture at a time is compared with its reconstruction. k is the slider (0 the reconstruction, 1 the
+  // photograph); it is not remembered, and choosing anything else puts it back (want() below).
+  let cmp = { id: null, k: 0 };
+  // 0077 W2-d: end
   let budget = Number.isFinite(opts.maxResident) ? opts.maxResident : TIER_PICTURES[1];
   let frame = 0;
   const sunScene = new THREE.Vector3();
@@ -470,7 +475,7 @@ export function createNebulae(scene, opts = {}) {
       if (skyAlpha > 0) p.seen = frame;
       // --- the place
       let alpha = 0;
-      p.px = 0; p.inView = false; p.fade = 0;
+      p.px = 0; p.inView = false; p.fade = 0; p.cmpAlpha = 0; // 0077 W2-d: cmpAlpha
       if (layerPlace !== false && ladder && p.placed) {
         _v.copy(p.centre).sub(camera.position);
         const d = _v.length();
@@ -482,6 +487,14 @@ export function createNebulae(scene, opts = {}) {
           _n.copy(p.centre).sub(sunScene).normalize();
           p.fade = viewFade(_v.dot(_n) / d);
           alpha = (1 - skyOpacity) * viewFade(_v.dot(_n) / d) * nearFade(d / p.widthUnits);
+          // 0077 W2-d: begin (the slider draws the photograph at its own share on the line it was taken along, and
+          // fades it with that line as every placed picture fades: the hero's share is the other way round)
+          if (cmp.id === p.row.id && cmp.k > 0) {
+            p.cmpAlpha = cmp.k * p.fade;
+            alpha = Math.max(alpha, p.cmpAlpha);
+            if (p.state === 'idle') fetchPicture(p);
+          }
+          // 0077 W2-d: end
           if (alpha > 0 && p.state === 'idle' && !opts.saveData && (p.widthUnits / d) * pxPerRad >= WANT_PX) fetchPicture(p);
         }
       }
@@ -536,11 +549,34 @@ export function createNebulae(scene, opts = {}) {
       const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null;
       return p && p.state === 'ready' && p.place.visible ? p.place.material.uniforms.uAlpha.value : 0;
     },
+    // 0077 W2-d: begin (internal i#776)
+    /** The slider: compare `recordId`'s reconstruction (k = 0) with its photograph (k = 1). Not remembered. */
+    setCompare(recordId, k) {
+      const row = typeof recordId === 'string' && recordId.startsWith('dso-') ? byId.get(recordId.slice(4)) : null;
+      const v = Math.min(1, Math.max(0, Number(k) || 0));
+      cmp = row && v > 0 ? { id: row.row.id, k: v } : { id: null, k: 0 };
+      if (row && v > 0) fetchPicture(row);
+    },
+    /** Where the slider stands for this record, 0..1. */
+    compareK: (recordId) => (cmp.id && recordId === `dso-${cmp.id}` ? cmp.k : 0),
+    /** How much of the picture the slider is drawing now (the hero gives way by this much): 0 without the slider. */
+    compareShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && cmp.id === p.row.id ? p.cmpAlpha || 0 : 0; },
+    /** How whole the picture is from where the camera stands (1 on the line it was taken along, 0 past 50 degrees, 0 out of view). */
+    lineShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && p.inView ? p.fade || 0 : 0; },
+    /** The line the picture was taken along: where to stand to see it whole. { target, offset (toward the Sun, unit) } in scene units, or null. */
+    lineFor(recordId) {
+      const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null;
+      if (!p || !p.placed) return null;
+      const d = _v.copy(sunScene).sub(p.centre).normalize();
+      return { target: { x: p.centre.x, y: p.centre.y, z: p.centre.z }, offset: { x: d.x, y: d.y, z: d.z } };
+    },
+    // 0077 W2-d: end
     /** The frame-rate latch hides the Milky Way picture; the sky pictures go with it. */
     setSkyVisible(on) { skyVisible = on !== false; },
     /** A record was selected (or null): its picture is fetched now. */
     want(recordId) {
       selected = typeof recordId === 'string' && recordId.startsWith('dso-') && byId.has(recordId.slice(4)) ? recordId.slice(4) : null;
+      if (cmp.id && cmp.id !== selected) cmp = { id: null, k: 0 }; // 0077 W2-d: choosing anything else puts the slider back
       if (selected) fetchPicture(byId.get(selected));
     },
     /**
