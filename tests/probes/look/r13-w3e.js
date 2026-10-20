@@ -77,6 +77,8 @@ if (sr.rail && sr.rail.openShow) {
       sr.rail.openShow();
       await settle(800);
       // Two classes taken off by their boxes: Worked out and Illustrative left, which is a strong change (110 of 489 dots).
+      byText('.sr-confidence .sr-show__bulkbtn', 'All').click(); // from Measured only, a box press would be the last class off: everything again
+      await settle(600);
       for (const id of ['measured', 'sample']) document.querySelector('.sr-confidence [data-class="' + id + '"]').click();
       await settle(1200);
       out.filterWorkedOut = sr.confidence();
