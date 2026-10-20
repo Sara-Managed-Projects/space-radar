@@ -5,7 +5,7 @@ export const HERO = {
   "id": "smc",
   "record": "dso-smc",
   "stage": "W2-e",
-  "shipped": true,
+  "shipped": false,
   "children": [],
   "levels": {
     "1": "the photograph (scene/nebulae.js), with this model filling what the photograph's frame cuts off",

@@ -16,9 +16,11 @@
 id: smc
 record: dso-smc
 stage: W2-e
-# Shipped under the lead's review policy of 2026-10-15: signed by the maintainers (never a person's name or a claim of
-# independent review), and the card says the model has not yet been reviewed by an astronomer (internal #785).
-shipped: true
+# NOT SHIPPED (the lead, 2026-10-20, release 1.3.0 wave 2): the app draws the SMC as main does until this hero reaches
+# main's frame cost within about 1.5 times and shows no haze or veil from any position (internal #783, wave 3). Its
+# review below is ready for when it ships under the policy of 2026-10-15 (signed by the maintainers, the card saying no
+# astronomer has reviewed it, internal #785).
+shipped: false
 children: []
 levels:
   1: the photograph (scene/nebulae.js), with this model filling what the photograph's frame cuts off
