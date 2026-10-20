@@ -112,7 +112,8 @@ export function read() {
   }
   if (out.m === undefined && bare !== null) out.m = bare;
   if (out.autopilot !== undefined) { if (out.ambient === undefined) out.ambient = out.autopilot; delete out.autopilot; }
-  if (out.go !== undefined) { if (out.at === undefined) out.at = out.go; delete out.go; }
+  // 0077 W3-e: `goOnly` says the `at` below came from a `go=` and not from an `at=` (public #564): main.js flies a landing only for that.
+  if (out.go !== undefined) { if (out.at === undefined) { out.at = out.go; out.goOnly = true; } delete out.go; }
   if (out.v !== undefined && out.v !== VERSION) out.unknownVersion = true;
   return out;
 }
@@ -257,11 +258,21 @@ export function bootLink(clock, extra = null) {
  * link that named a trip of its own. Pure.
  */
 export function laterLink(link, tripRunning) {
+  // 0077 W3-e: begin (public #564)
+  // An imagined world (`imagine=N`) is a stage of its own with no object ids on it: a link that also names a place says two
+  // things, and the world wins, as it does for a link pasted over a running tab (main.js hashchange returns once it has opened
+  // the world). So nothing that selects or flies applies. `goOnly` is read()'s mark, and is not a key of the link.
+  if (link && link.imagine !== undefined && link.imagine !== '0') {
+    const { at, go, goOnly, stage, cam, trip, stop, event, ...world } = link;
+    return world;
+  }
+  // 0077 W3-e: end
   if (!link || !tripRunning) return link;
   const rest = { ...link };
   for (const key of ['trip', 'stop', 'at', 'event', 'stage', 'cam']) delete rest[key];
   return rest;
 }
+
 
 /**
  * A link that arrives in a tab that is ALREADY RUNNING: Back, Forward, or an address pasted over

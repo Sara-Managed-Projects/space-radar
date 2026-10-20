@@ -583,3 +583,96 @@ html.sr-phone .sr-photo__seg { flex: 1 1 0; }
 html.sr-phone .sr-photo__save { flex: 1 1 auto; }
 html.sr-phone .sr-photo__lens { flex: 1 0 100%; }
 html.sr-phone .sr-photo__range { flex: 1 1 auto; width: auto; }
+
+/* 0077 W3-e: begin. Photo presets and Arrival views: two more rows that open in place, under the actions (ui/sharesheet.js). */
+.sr-share__presets { gap: var(--sp-2); }
+
+.sr-share__preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  color: var(--sr-text);
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+}
+
+.sr-share__preset[hidden] { display: none; }
+.sr-share__presetname { font: 400 var(--sr-fs-label)/20px var(--sr-font); }
+.sr-share__presetnote { font: 400 var(--sr-fs-sm)/18px var(--sr-font); color: var(--sr-text-soft); }
+
+.sr-share__viewlist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-share__viewrow {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  min-height: 44px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+
+.sr-share__viewname {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sr-share__viewtitle {
+  overflow: hidden;
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  color: var(--sr-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-share__viewpose {
+  overflow: hidden;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono);
+  color: var(--sr-text-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-share__viewbtn {
+  flex: 0 0 auto;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 var(--sp-2);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text);
+  cursor: pointer;
+  background: var(--sr-wash-strong);
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-share__viewsave { width: 100%; margin-top: var(--sp-2); }
+
+@media (pointer: coarse) {
+  .sr-share__viewbtn { height: 44px; }
+}
+
+@media (hover: hover) {
+  .sr-share__preset:hover,
+  .sr-share__viewbtn:hover { background: var(--sr-wash-hover); }
+}
+
+.sr-share__preset:active,
+.sr-share__viewbtn:active { background: var(--sr-wash-strong); }
+/* 0077 W3-e: end */

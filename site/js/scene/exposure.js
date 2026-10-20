@@ -5,7 +5,7 @@
 //           readExposure(storage), writeExposure(storage, mode)
 //           createExposure({ storage }) -> { mode(), look(), set(mode), hold(mode), release(), onChange(f) }
 //           DRAWN, DEFAULT_DRAWN, DRAWN_KEY, MEASURED_RULES, drawnUnder(look, rule), stillUnder(look, rule)
-//           createDrawn({ storage, initial }) -> { mode(), set(mode), onChange(f) }     Measured or Film (below)
+//           createDrawn({ storage, initial }) -> { mode(), set(mode, keep = true), onChange(f) }     Measured or Film (below)
 //
 // WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
 // is it real or not?" It is real and it is faint. A nebula's colour in a photograph is minutes or
@@ -173,12 +173,14 @@ export function createDrawn(opts = {}) {
   const listeners = new Set();
   return {
     mode: () => mode,
-    set(next) {
+    // `keep` false (0077 W3-e, a photo preset, ui/photopresets.js) wears the look for the page and writes nothing: the visitor's own
+    // choice, in storage, is what a reload and the next visit find.
+    set(next, keep = true) {
       if (!DRAWN.includes(next) || next === mode) return false;
       mode = next;
       try {
         const s = storage === undefined ? globalThis.localStorage : storage;
-        if (s) { if (next === DEFAULT_DRAWN) s.removeItem(DRAWN_KEY); else s.setItem(DRAWN_KEY, next); }
+        if (keep && s) { if (next === DEFAULT_DRAWN) s.removeItem(DRAWN_KEY); else s.setItem(DRAWN_KEY, next); }
       } catch { /* the choice still holds for the page */ }
       for (const f of listeners) f(mode);
       return true;

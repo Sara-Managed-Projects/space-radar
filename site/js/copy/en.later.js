@@ -2278,3 +2278,19 @@ Object.assign(COPY, {
   },
 });
 // 0077 W2-d: end
+
+// 0077 W3-e: begin
+Object.assign(COPY, {
+  // ui/welcome.js (internal i#878, SR-PLAN-077): the three ways into the map on a first visit. Each name is one word or
+  // two; the title says what it does. Nothing is hidden by choosing: every tab, the rail and the search stay.
+  entrances: {
+    label: 'Three ways in',
+    tonight: 'Tonight',
+    tonightTitle: 'What is overhead tonight, from your place',
+    explore: 'Explore',
+    exploreTitle: 'Look around the whole map',
+    trip: 'Guided trip', // two words: the guide's limit for a button (the issue's "Take a trip" is three)
+    tripTitle: 'Starts the first guided trip on the list',
+  },
+});
+// 0077 W3-e: end

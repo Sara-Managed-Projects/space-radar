@@ -20,7 +20,7 @@ import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, ni
 import { createCameraRig, worldFramingDistance, steadyDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
-import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
+import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js'; // 0077 W3-e
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer, addSystemRows, addPlanetAliases } from './data/layers.js';
@@ -276,7 +276,9 @@ export async function boot({ setStatus } = {}) {
   // keys are applied here and the rest waits for the layers (ui/urlstate.js bootLink says why).
   const link = bootLink(clock, embed && embed.link);
   // `go=` is read here, raw: ui/urlstate.js hands it on as `at`, and the landing needs to know which it was.
-  const goId = (() => { const m = /(?:^#|&)go=([^&]+)/.exec(location.hash || ''); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; } })();
+  // 0077 W3-e: begin (public #564: read() marks an `at` that came from `go=` alone, so a link with both keeps the `at`)
+  const goId = link && link.goOnly ? link.at : '';
+  // 0077 W3-e: end
   // A SCREEN THAT PLAYS ON ITS OWN (spec 0036): `#ambient=…`. The class goes on before anything is
   // built, so a kiosk never shows the panels it is about to hide; ui/autopilot.js does the rest.
   const ambient = !embed && !!(link && link.ambient && link.ambient !== '0');
@@ -1262,7 +1264,7 @@ export async function boot({ setStatus } = {}) {
   // ever; the place it names is met by one slow push-in (ui/golink.js), fetched for it. Returns
   // the landing's promise, or null when the link is not one (a film being made reads no link).
   const goLanding = (tripRunning) => {
-    if (film || !goId || tripRunning || !link || link.unknownVersion || link.trip) return null;
+    if (film || !goId || tripRunning || !link || link.unknownVersion || link.trip || link.event || (link.imagine && link.imagine !== '0')) return null; // 0077 W3-e: event, imagine
     applyUrlState(ctx, { ...link, at: undefined, cam: undefined });
     return import('./ui/golink.js').then((m) => m.land(ctx, goId), () => openAt(ctx, goId));
   };
@@ -2024,6 +2026,16 @@ export async function boot({ setStatus } = {}) {
     ctx.colourKeyFn = fn;
   };
   ctx.colourKey = () => colourKeyId;
+  // 0077 W3-e: begin (internal i#886: "How we know", the confidence filter in What to show; ui/confidence.js decides what is shown)
+  // `fn(record) -> boolean` is handed to every glyph layer (scene/glyphs.js setFilter); `classes` is the visitor's choice, for the row's own paint.
+  // The layers are all made up front (below), so there is no later one to catch up. Never stored, never in the link: a view, not a setting.
+  let confidenceClasses = null;
+  ctx.setConfidence = (classes, fn) => {
+    confidenceClasses = Array.isArray(classes) && classes.length ? [...classes] : null;
+    for (const gl of glyphLayers.values()) gl.setFilter(confidenceClasses ? fn : null);
+  };
+  ctx.confidence = () => (confidenceClasses ? [...confidenceClasses] : null);
+  // 0077 W3-e: end
 
   ctx.setStage = (stageId) => {
     if (!STAGES[stageId] || stage.worldId === stageId) return false;

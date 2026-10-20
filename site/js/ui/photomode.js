@@ -171,6 +171,10 @@ export function openPhotoMode(ctx, opts = {}) {
   let shape = SHAPES.includes(opts.shape) ? opts.shape : '1:1';
   let withCaption = opts.caption !== false;
   let asPng = opts.format === 'png';
+  // 0077 W3-e: begin (internal i#905, photo presets: ui/sharesheet.js opens photo mode with one, scene/exposure.js PHOTO_PRESETS)
+  const tagged = !!opts.withTag && !!record; // the selection's brackets and tag on the picture, as the postcard has them
+  const presetId = typeof opts.preset === 'string' ? opts.preset : null;
+  // 0077 W3-e: end
   const cam = ctx && ctx.camera;
   const ownFov = cam && Number.isFinite(cam.fov) ? cam.fov : null;
   let rect = null;
@@ -296,7 +300,7 @@ export function openPhotoMode(ctx, opts = {}) {
     toast(P.making, 0);
     try {
       const made = await makePostcard(ctx, asPng ? 'png' : 'jpeg', {
-        record, withTag: false, size: pictureSize(shape), fovScale: rect.fovScale, caption: withCaption, honesty: true,
+        record, withTag: tagged, size: pictureSize(shape), fovScale: rect.fovScale, caption: withCaption, honesty: true, // 0077 W3-e: was false
       });
       toast(P.saved);
       if (ctx) ctx.lastPhoto = { ...made.out, shape, caption: withCaption, fovScale: rect.fovScale, lens: cam ? cam.fov : null };
@@ -320,7 +324,7 @@ export function openPhotoMode(ctx, opts = {}) {
     let made = null;
     try {
       made = await makePostcard(ctx, asPng ? 'png' : 'jpeg', {
-        record, withTag: false, size: pictureSize(shape), fovScale: rect.fovScale, caption: withCaption, honesty: true, save: false,
+        record, withTag: tagged, size: pictureSize(shape), fovScale: rect.fovScale, caption: withCaption, honesty: true, save: false, // 0077 W3-e: was false
       });
       const via = await sharePicture(navigator, made, saveBlob);
       toast(via === 'saved' ? P.sharedSaved : '', via === 'saved' ? 4000 : 1);
@@ -350,6 +354,9 @@ export function openPhotoMode(ctx, opts = {}) {
     // The lens was photo mode's: the map gets its own back.
     if (cam && ownFov !== null && cam.fov !== ownFov) { cam.fov = ownFov; if (typeof cam.updateProjectionMatrix === 'function') cam.updateProjectionMatrix(); }
     if (current === api) current = null;
+    // 0077 W3-e: begin (a preset's shutter and look are put back, by whichever way photo mode is left)
+    if (typeof opts.onClose === 'function') { try { opts.onClose(); } catch { /* the settings are the visitor's: never block leaving */ } }
+    // 0077 W3-e: end
     if (clean && !wasClean && !cleanAlreadyOff) clean.set(false);
     const back = opts.opener;
     if (back && back.isConnected && typeof back.focus === 'function') back.focus({ preventScroll: true });
@@ -362,7 +369,7 @@ export function openPhotoMode(ctx, opts = {}) {
   paint();
   saveBtn.focus({ preventScroll: true });
 
-  const api = { close: () => close(), save, state: () => ({ open, shape, caption: withCaption, rect, words: withCaption ? words() : null, format: asPng ? 'png' : 'jpeg', lens: cam ? cam.fov : null }), setLens, root };
+  const api = { close: () => close(), save, state: () => ({ open, shape, preset: presetId, tag: tagged, caption: withCaption, rect, words: withCaption ? words() : null, format: asPng ? 'png' : 'jpeg', lens: cam ? cam.fov : null }), setLens, root }; // 0077 W3-e: preset, tag
   current = api;
   if (ctx) ctx.photo = api;
   return api;
