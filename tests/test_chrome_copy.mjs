@@ -214,7 +214,11 @@ const sweep = (node, path) => {
     if (path[0] === 'keyHint' && path[1] === 'caps') return; // a keycap is a picture of a key: ← and → are keys
     const text = t(node, { ...WORST, ...(WORST_FOR[dotted] || {}) });
     const n = [...text].length;
-    const cap = LONG_OK.has(dotted) || EVENT_SENTENCE.test(dotted) ? Infinity : TOOLTIP.test(key) || path.some((k) => /^(titles|labels|notes|whys|help)$/i.test(k)) ? 90 : MAX_CHARS;
+    // 0077 W2-f: begin
+    // The guide's 60 is counted in English; German and Spanish run a quarter longer for the same sentence (the one-line list above is not relaxed).
+    const room = process.env.SR_LANG && process.env.SR_LANG !== 'en' ? 1.25 : 1;
+    const cap = LONG_OK.has(dotted) || EVENT_SENTENCE.test(dotted) ? Infinity : Math.round(room * (TOOLTIP.test(key) || path.some((k) => /^(titles|labels|notes|whys|help)$/i.test(k)) ? 90 : MAX_CHARS));
+    // 0077 W2-f: end
     swept += 1;
     check(n <= cap, `COPY.${dotted} is ${n} characters, over ${cap}: "${text}"`);
     check(!/!/.test(text) && !/→/.test(text) && !/ -- /.test(text) && !PICTO.test(text.replace(/[©®™↑↓←↔]/g, '')), `COPY.${dotted} has an exclamation mark, an arrow, a double hyphen or an emoji: "${text}"`);

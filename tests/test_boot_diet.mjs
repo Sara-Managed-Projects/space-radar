@@ -74,6 +74,11 @@ const DEFERRED = {
   'js/copy/en.later.js': 'the words of what loads later',
   'js/copy/index.js': 'puts a language over the English words: copy/en.js fetches it only when copy/lang.js chose another language', // 0077 W1-e
   'js/copy/es.js': 'Spanish: copy/index.js fetches it for ?lang=es, and for no one else', // 0077 W1-e
+  // 0077 W2-f: begin
+  'js/copy/fr.js': 'French: copy/index.js fetches it for ?lang=fr, and for no one else',
+  'js/copy/de.js': 'German: copy/index.js fetches it for ?lang=de, and for no one else',
+  'js/copy/pt.js': 'Brazilian Portuguese: copy/index.js fetches it for ?lang=pt (or pt-BR), and for no one else',
+  // 0077 W2-f: end
   'js/sky/groundsky.js': 'the sky from the ground: sky/skyview.js fetches it when the sky view opens',
   'js/sky/skyculture.js': 'other peoples\' figures, the borders and the pictures: sky/groundsky.js fetches it when one is asked for',
   'js/sky/meteors.js': 'a shower\'s streaks: sky/groundsky.js fetches it when a shower is active',

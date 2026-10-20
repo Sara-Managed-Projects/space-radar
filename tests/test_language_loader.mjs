@@ -108,7 +108,7 @@ const STATIC = /^\s*(?:import|export)\b[^'"\n]*?(?:from\s*)?['"]([^'"]+)['"]/gm;
 for (const file of walk(JS)) {
   const code = readFileSync(file, 'utf8');
   for (const [, target] of code.matchAll(STATIC)) {
-    if (/(^|\/)(index|es|fr|de|pt-BR|ru|uk|zh-Hans|he|ar|hi)\.js$/.test(target) && /copy\//.test(target + file)) {
+    if (/(^|\/)(index|es|fr|de|pt|pt-BR|ru|uk|zh-Hans|he|ar|hi)\.js$/.test(target) && /copy\//.test(target + file)) { // 0077 W2-f: pt added
       assert.fail(`${file} imports ${target} statically: a language file or copy/index.js would be part of every first visit`);
     }
   }
@@ -127,7 +127,7 @@ for (const file of walk(JS)) {
   assert.ok(!/^(?:await\b|(?:const|let|var)\s+[^=\n]+=\s*await\b)/m.test(code), `${file} has a top-level await: the deploy's es2020 target refuses it`);
 }
 const langBytes = statSync(join(JS, 'copy/lang.js')).size;
-assert.ok(langBytes < 3200, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`);
+assert.ok(langBytes < 3500, `copy/lang.js is in the boot graph and must stay small (${langBytes} B as written, comments included)`); // 0077 W2-f: 3200 to 3500, three rows for fr, de, pt
 assert.ok(!/import\s*\(/.test(readFileSync(join(JS, 'copy/lang.js'), 'utf8').replace(/\/\/.*$/gm, '')), 'copy/lang.js only decides: it fetches nothing');
 
 // --- 4. the Spanish --------------------------------------------------------------------------------------
@@ -154,4 +154,39 @@ const bad = await (async () => {
   return render({ total: 10, rows: fake.rows }, true);
 })();
 assert.match(bad, /\| Zed \(Zed\) \| `zz\.js` \|/, 'the table prints a row for each language');
+// 0077 W2-f: begin
+// --- 5. French, German, Brazilian Portuguese (public #526, #527, #528) ------------------------------------------
+const probe2 = `out({
+  lang: globalThis.document.documentElement.lang || '', tonight: m.COPY.tabs.tonight, later: m.COPY.templates.storm.lead, facts: m.COPY.klass.station,
+  glossary: m.GLOSSARY.orbit.slice(0, 24), ago: m.ageInWords(3 * 3600e3), num: m.fmt.num(1234.5, 1), int: m.fmt.int(1234567),
+  plural: [m.fmt.plural(0, 'one', 'many'), m.fmt.plural(1, 'one', 'many'), m.fmt.plural(1.5, 'one', 'many'), m.fmt.plural(2, 'one', 'many')],
+  article: [m.article('galaxy'), m.article('nebula')], compass: m.compassWords(45),
+});`;
+const WANT = {
+  fr: { lang: 'fr', tonight: 'Ce soir', ago: 'il y a 3 heures', num: '1 234,5', plural: ['one', 'one', 'one', 'many'] },
+  de: { lang: 'de', tonight: 'Heute Nacht', ago: 'vor 3 Stunden', num: '1 234,5', plural: ['many', 'one', 'many', 'many'] },
+  pt: { lang: 'pt', tonight: 'Esta noite', ago: 'há 3 horas', num: '1 234,5', plural: ['one', 'one', 'one', 'many'] },
+};
+for (const [code, want] of Object.entries(WANT)) {
+  const got = run({ location: { search: `?lang=${code}` }, document: {} }, probe2);
+  assert.equal(got.lang, want.lang, `${code}: <html lang> follows the language`);
+  assert.equal(got.tonight, want.tonight, `${code}: copy/en.js sections are in the language`);
+  assert.match(got.later, /\{name\}/, `${code}: the sections copy/en.later.js adds are translated, with their slots`);
+  assert.notEqual(got.facts, 'Space station', `${code}: and the ones copy/en.facts.js adds`);
+  assert.notEqual(got.glossary, 'A path around a world or a star'.slice(0, 24), `${code}: the glossary`);
+  assert.equal(got.ago, want.ago, `${code}: the time words`);
+  assert.equal(got.num, want.num, `${code}: the decimal is a comma, the groups are narrow no-break spaces (RULES.decimal)`);
+  assert.deepEqual(got.plural, want.plural, `${code}: RULES.plural`);
+  assert.deepEqual(got.article.map((a) => typeof a), ['string', 'string'], `${code}: RULES.article answers`);
+  const mod = await import(href(`copy/${code}.js`));
+  assert.equal(mod.META.review.status, 'machine-drafted', `${code}: it says what it is until two native speakers have read it`);
+  assert.equal(LANGUAGES[code].reviewed, false, `${code}: and the browser's language does not bring it in`);
+  const { out: o2 } = await check(join(JS, `copy/${code}.js`));
+  assert.deepEqual([o2.missing.length, o2.placeholder, o2.kind, o2.extra], [0, [], [], []], `copy/${code}.js lacks a key, loses or invents a {slot}, or has the wrong kind of value:\n${JSON.stringify(o2, null, 1).slice(0, 600)}`);
+}
+assert.equal(pickLanguage('?lang=pt-BR', [], LANGUAGES), 'pt', '?lang=pt-BR is read as pt: the file is copy/pt.js');
+assert.equal(run({ location: { search: '?lang=pt-BR' }, document: {} }, probe2).tonight, 'Esta noite');
+assert.equal(run({ location: { search: '' }, navigator: { languages: ['fr-FR', 'de', 'pt-BR'], language: 'fr-FR' }, document: {} }, probe2).tonight, 'Tonight', 'a machine-drafted language is never taken from the browser');
+// 0077 W2-f: end
+
 console.log(`language loader ok: ?lang= and the browser's list, English for a missing key, ${row.present} strings of Spanish in place (${langBytes} B of boot code), the table current`);

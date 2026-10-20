@@ -57,7 +57,7 @@ function num(value, decimals = 0) {
   // True minus sign, not a hyphen -- and never in front of a value that has rounded to zero.
   // A rocket still on its pad has an altitude of a few metres, and "−0 km" is not a number.
   const sign = n < 0 && Number(fixed) !== 0 ? '−' : '';
-  return sign + groupDigits(intPart) + (frac ? `.${frac}` : '');
+  return sign + groupDigits(intPart) + (frac ? `${RULES.decimal || '.'}${frac}` : ''); // 0077 W2-f: a language that writes a decimal comma (fr, de, pt) says so in RULES
 }
 
 /** Round to a sensible number of decimals for the magnitude of the value. */
