@@ -9,23 +9,27 @@
 // 2016), and its old stars lie near a plane tilted about 40 degrees with its eastern side nearer (Tatton et al. 2021).
 //
 // WHAT IT DRAWS, in the sky frame at the catalogue centre (x west, y north, z toward the Sun; one unit 100 ly):
-//   * its UNRESOLVED LIGHT: one box drawn by its back faces, marched in a few steps; each step reads the two Gaia maps
-//     where the ray is (as seen from the Sun) and integrates each population's sech^2 spread about its measured mean
-//     depth there EXACTLY over the step (tanh), so nothing shows as layers. Where the SMC's photograph covers the sky,
-//     ITS light is the emissivity, spread through the two populations in proportion to their counts: seen along our
-//     line the model is the photograph (tests/test_hero_smc.mjs holds the column to 5 %); turned, the young light
-//     stands in a long streak toward and away from us and the old in a tilted slab. The photograph's STARS are taken out
-//     first, and 47 Tucanae and NGC 362 in front of it (scripts/build_deep_smc.py --light): a point of light spread
-//     through 60 000 light-years would be a streak; the hero's stars are drawn as points. Beyond the photograph's frame the
-//     maps' own light, in illustrative colours. Close up (inside it) the unresolved light steps back to a quarter: what
-//     surrounds the camera is stars, not a fog (inside: within its inner radius on the sky and 1.5 spreads in depth).
+//   * its UNRESOLVED LIGHT as PATCHES (0077 W3-f, internal #783: the march it replaced cost five times main's frame on a
+//     runner and read as a veil close up). A few thousand soft patches of light, each a small ball of the galaxy's light
+//     at a place drawn from the two Gaia maps (where on the sky) and the population's sech^2 spread about its measured
+//     mean depth there (how far along our line), exactly as its stars are drawn. A patch's size follows how crowded its
+//     population is round it (so about OVERLAP patches cover any spot seen from the side, and many more along our line);
+//     its light is its population's column there over the patches that share it, so seen from the Sun the patches add
+//     up to the weighted maps (tests/test_hero_smc.mjs holds the sum to 12 % in half-degree cells). Where the SMC's
+//     photograph covers the sky, the patch takes ITS colour there, spread through the two populations in proportion to
+//     their counts: seen along our line the model is the photograph; turned, the young light stands in a long streak
+//     toward and away from us and the old in a tilted slab. The photograph's STARS are taken out first, and 47 Tucanae
+//     and NGC 362 in front of it (scripts/build_deep_smc.py --light). Beyond the photograph's frame the maps' own light,
+//     in illustrative colours. A patch is a patch of light of a fixed size in light-years: its surface brightness is the
+//     same from every distance; close up it is held small and gives up the light it would have spread over the view,
+//     so the camera is among stars, never in a fog, and the cost is a few points' fill, not a march over the screen.
 //   * STARS: points drawn from the same maps at depths drawn from the same spreads: a statistical population, never a
 //     Gaia star at a parallax distance. Each is a pinpoint whose light falls as 1/d^2 and which gets smaller close up,
 //     never larger; their summed light is the same at every tier.
 // Two draw calls. Every part is weighted by 1 - share x cover, where cover is how much of the photograph is drawn
 // there (scene/nebulae.js's fade, baked per map bin as lmc.js photoCover makes it) and share how much of it is drawn
-// now: at arrival the photograph shows what it shows and the model draws the rest; turned, the photograph fades and
-// the model is whole.
+// now: at arrival the photograph shows what it shows and the model draws the rest (a patch under a whole photograph is
+// not drawn at all); turned, the photograph fades and the model is whole.
 //
 // UNDER THE MEASURED LOOK: the same (a labelled model); nothing ever moves.
 
@@ -44,8 +48,6 @@ export const MAP_BINS = 128;
 const D2R = Math.PI / 180;
 const MAP_URL = new URL('../../../data/deep/smc-density.bin', import.meta.url);
 const LIGHT_URL = new URL('../../../images/deep/smc/smc-light.webp', import.meta.url);
-const MAX_STEPS = 16;
-const STEP_UNITS_GLSL = '25.0'; // STEP_UNITS, as GLSL
 // Drawing choices (not measurements).
 export const SHAPE = {
   adapt: 0.45,       // what is left of its light when it fills the view (the eye's adaptation)
@@ -54,7 +56,20 @@ export const SHAPE = {
   sparklePx: 1.5,    // a point's size, CSS px; down to 0.6 of it close up (never grown)
   sparkleCap: 0.55,  // the brightest a point is drawn
   mapLight: 0.55,    // the maps' light at their peak, beyond the photograph (a display value, illustrative)
+  // 0077 W3-f: the patches (the unresolved light)
+  overlap: 8,        // patches over any spot seen from the side, about (along our line many more): look run 1 at 3 was blotchy
+  widthUnits: 90,    // the populations' width on the sky the side view crosses, object units (2.6 degrees at the distance)
+  patchMin: 2,       // a patch's radius, object units (200 ly) at least
+  patchMax: 40,      // and at most (4 000 ly): the faint outskirts are soft, never one blob
+  patchMaxPx: 22,    // CSS px: held no wider on the screen (close up a patch gives its light up, never grows into a veil)
+  patchMinPx: 1.5,   // and no narrower (its light spread over the pixels it is given)
+  patchCap: 0.3,     // the brightest a patch is drawn: look run 1's side views had white blotches where a few overlapped
 };
+/** Patches by tier (the unresolved light): their summed light is the same at every tier, only finer. */
+export const PATCHES = { t0: 4000, t1: 9000, t2: 12000 };
+/** The integral of a patch's Gaussian over its point, as a share of the point's square (spiral.js SPRITE_AREA). */
+const PATCH_SIGMA = 0.18;
+export const PATCH_AREA = 2 * Math.PI * PATCH_SIGMA * PATCH_SIGMA * (1 - Math.exp(-0.25 / (2 * PATCH_SIGMA * PATCH_SIGMA)));
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const smooth = (x, a, b) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const part = (P, k) => (P.layers || []).find((l) => l && l.part === k) || {};
@@ -136,67 +151,80 @@ export function slab(za, zb, m, z0) {
   return Math.abs(t(zb) - t(za)) / 2;
 }
 
-/** Steps a ray takes: one per STEP_UNITS of its span inside the drawn cone, from 2 to the tier's n. */
-export const STEP_UNITS = 25;
-
 /**
- * Where a ray (frame units) is inside the cone of the drawn extent: the directions within fade_to of the galaxy's
- * centre as seen from the Sun (nothing is drawn outside it: the taper is 0 there). [t0, t1], or null when it misses.
- * A ray nearly along the axis (A <= 0) keeps its whole span: conservative, and exact on our line. Pure (the shader's).
+ * The patches of unresolved light, seeded (0077 W3-f): per population a share of the tier's count by its light, each at
+ * a place drawn from its map (a bin by its weight, a place in it at random) and a depth drawn from its spread about its
+ * mean depth there (as starsOf). For each: its radius R (object units), from how crowded its population is round it in
+ * three dimensions, so that about SHAPE.overlap of them cover a spot seen across the galaxy's width; and its FLUX, its
+ * population's column over the patches that share it, divided by the patch's own area on the sky as seen from the Sun:
+ * so from the Sun the patches add up to the population's weighted map (the photograph's light where it covers it, which
+ * the shader multiplies in). {pos: Float32Array(3n), col: Float32Array(4n) colour + flux, sky: Float32Array(4n) east,
+ * north (degrees, from the Sun), R, population; n}. Pure.
  */
-export function coneSpan(g, ro, rd) {
-  const k = Math.tan(g.fade[1] * D2R), k2 = k * k, oz = ro[2] - g.D;
-  const A = rd[0] * rd[0] + rd[1] * rd[1] - k2 * rd[2] * rd[2];
-  const B = 2 * (ro[0] * rd[0] + ro[1] * rd[1] - k2 * oz * rd[2]);
-  const C = ro[0] * ro[0] + ro[1] * ro[1] - k2 * oz * oz;
-  if (!(A > 1e-9)) return [-Infinity, Infinity];
-  const disc = B * B - 4 * A * C;
-  if (disc < 0) return null;
-  const q = Math.sqrt(disc);
-  return [(-B - q) / (2 * A), (-B + q) / (2 * A)];
+export function patchesOf(g, maps, tier = 1, seed = 783) {
+  const total = PATCHES[['t0', 't1', 't2'][clamp(tier | 0, 0, 2)]];
+  const r = rng(seed);
+  const N = g.bins, bin2 = g.binDeg * g.binDeg;
+  const pops = g.pops.map((p) => {
+    const map = maps[p.map];
+    const cdf = new Float64Array(N * N);
+    let sum = 0;
+    if (map) for (let k = 0; k < N * N; k++) {
+      const x = k % N, y = Math.floor(k / N);
+      sum += map[k] * taperAt(g, (x + 0.5 - N / 2) * g.binDeg, (y + 0.5 - N / 2) * g.binDeg); cdf[k] = sum;
+    }
+    return { p, map, cdf, sum, light: p.weight * sum * bin2 };
+  });
+  const L = pops.reduce((a, q) => a + q.light, 0) || 1;
+  const out = [];
+  pops.forEach((q, pi) => {
+    const n = Math.round(total * q.light / L);
+    if (!q.map || !(n > 0) || !(q.sum > 0)) return;
+    const Z = q.sum * bin2;                    // the population's map summed over the sky, map x deg^2
+    for (let s = 0; s < n; s++) {
+      const want = r() * q.sum;
+      let lo = 0, hi = q.cdf.length - 1;
+      while (lo < hi) { const mid = (lo + hi) >> 1; if (q.cdf[mid] < want) lo = mid + 1; else hi = mid; }
+      const w = q.cdf[lo] - (lo ? q.cdf[lo - 1] : 0);              // this bin's map x taper
+      const east = (lo % N + r() - N / 2) * g.binDeg, north = (Math.floor(lo / N) + r() - N / 2) * g.binDeg;
+      const m = meanDepth(q.p, east, north);
+      const u = clamp(r(), 1e-6, 1 - 1e-6);
+      const t = clamp(Math.atanh(2 * u - 1), -4, 4);
+      const z = m + t * q.p.z0;
+      const Dz = g.D - z, perDeg = Dz * D2R;                      // object units a degree, at the patch
+      const perDeg2 = n * w / Z;                                   // patches a square degree here, seen from the Sun
+      const c = 1 / Math.cosh(t);
+      const n3 = perDeg2 / (perDeg * perDeg) * (c * c) / (2 * q.p.z0); // patches an object unit cubed
+      const R = clamp(Math.sqrt(SHAPE.overlap / (Math.PI * Math.max(1e-12, n3) * SHAPE.widthUnits)), SHAPE.patchMin, SHAPE.patchMax);
+      const rDeg = R / perDeg;
+      const area = PATCH_AREA * (2 * rDeg) * (2 * rDeg);           // its light's footprint from the Sun, deg^2
+      const flux = q.p.weight * (Z / n) / area;
+      const k = Dz * D2R;
+      out.push(-east * k, north * k, z, ...q.p.colour, flux, east, north, R, pi);
+    }
+  });
+  const n = out.length / 11;
+  const pos = new Float32Array(3 * n), col = new Float32Array(4 * n), sky = new Float32Array(4 * n);
+  for (let i = 0; i < n; i++) { pos.set(out.slice(11 * i, 11 * i + 3), 3 * i); col.set(out.slice(11 * i + 3, 11 * i + 7), 4 * i); sky.set(out.slice(11 * i + 7, 11 * i + 11), 4 * i); }
+  return { pos, col, sky, n };
 }
 
 /**
- * The march along ro + t rd (unit rd, frame units) through the box, n steps with offset j: per population the
- * weighted map times the share of its spread the step holds, so a column along our line is exactly the weighted maps.
- * `light(east, north, w)` -> rgb for a step whose population weights are w = [old, young] (both already in the
- * column's units). Returns {rgb, weight}: weight the summed population weights along the ray (for the test). The
- * shader's arithmetic. Pure.
+ * What the patches add up to on the sky seen from the Sun, in cells of `cellDeg` (east, north): each patch's whole light
+ * (flux x its footprint) in the cell of its centre, per square degree. With colour 1 this is each cell's weighted map,
+ * statistically. For the test. Pure.
  */
-export function columnJs(g, maps, ro, rd, { n = 12, j = 0.5, light = null, adaptive = true } = {}) {
-  let t0 = 0, t1 = Infinity;
-  for (let k = 0; k < 3; k++) {
-    if (Math.abs(rd[k]) < 1e-12) { if (ro[k] < g.box.min[k] || ro[k] > g.box.max[k]) return { rgb: [0, 0, 0], weight: 0 }; continue; }
-    const a = (g.box.min[k] - ro[k]) / rd[k], b = (g.box.max[k] - ro[k]) / rd[k];
-    t0 = Math.max(t0, Math.min(a, b)); t1 = Math.min(t1, Math.max(a, b));
+export function patchSky(g, P, cellDeg = 0.5) {
+  const half = (g.bins * g.binDeg) / 2, M = Math.ceil((2 * half) / cellDeg);
+  const sum = new Float64Array(M * M);
+  for (let i = 0; i < P.n; i++) {
+    const e = P.sky[4 * i], nn = P.sky[4 * i + 1];
+    const x = Math.floor((e + half) / cellDeg), y = Math.floor((nn + half) / cellDeg);
+    if (x < 0 || y < 0 || x >= M || y >= M) continue;
+    const rDeg = P.sky[4 * i + 2] / ((g.D - P.pos[3 * i + 2]) * D2R);
+    sum[y * M + x] += P.col[4 * i + 3] * PATCH_AREA * 4 * rDeg * rDeg / (cellDeg * cellDeg);
   }
-  const out = { rgb: [0, 0, 0], weight: 0 };
-  const cone = coneSpan(g, ro, rd);
-  if (!cone) return out;
-  t0 = Math.max(t0, cone[0]); t1 = Math.min(t1, cone[1]);
-  if (!(t1 > t0)) return out;
-  if (adaptive) n = Math.max(2, Math.min(n, Math.ceil((t1 - t0) / STEP_UNITS)));
-  out.steps = n;
-  const dt = (t1 - t0) / n;
-  for (let i = 0; i < n; i++) {
-    const ta = t0 + i * dt, tb = ta + dt, ts = ta + j * dt;
-    const ps = [ro[0] + rd[0] * ts, ro[1] + rd[1] * ts, ro[2] + rd[2] * ts];
-    const za = ro[2] + rd[2] * ta, zb = ro[2] + rd[2] * tb;
-    const [e, nn] = skyOf(g, ps);
-    const tp = taperAt(g, e, nn);
-    const w = g.pops.map((p) => {
-      const v = maps[p.map] ? mapAt(g, maps[p.map], e, nn) : 0;
-      const m = meanDepth(p, e, nn);
-      // a step nearly across the layer: the layer's density at the sample times the step's length
-      // the share of a face-on column a straight piece holds is the layer's share between its depths over |rd.z|; a
-      // piece nearly across the layer, its density at the sample times its length (the two agree as |rd.z| -> 0)
-      const s = Math.abs(zb - za) > 1e-3 * p.z0 ? slab(za, zb, m, p.z0) / Math.abs(rd[2]) : (1 / Math.cosh(clamp((ps[2] - m) / p.z0, -9, 9))) ** 2 * dt / (2 * p.z0);
-      return p.weight * v * tp * s;
-    });
-    out.weight += w[0] + w[1];
-    if (light) { const c = light(e, nn, w); for (let k = 0; k < 3; k++) out.rgb[k] += c[k]; }
-  }
-  return out;
+  return { sum, M, cellDeg, half };
 }
 
 /**
@@ -335,115 +363,76 @@ export function skyFrame(posKm) {
 }
 
 // ------------------------------------------------------------------------------------------- GLSL
-const BODY_VERT = /* glsl */ `
-varying vec3 vObj;
-#include <common>
-#include <logdepthbuf_pars_vertex>
-void main() {
-  vObj = position;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-  #include <logdepthbuf_vertex>
-}
-`;
-const BODY_FRAG = /* glsl */ `
-#define MAX_STEPS ${MAX_STEPS}
+// 0077 W3-f: the unresolved light as patches (the head of this file): a point a patch, its size from its radius in light-years
+// and the camera's focal length, its light from the photograph where it covers the sky (read once a vertex, never a pixel).
+const PATCH_VERT = /* glsl */ `
+attribute vec4 aCol;        // the population's colour; w: the patch's flux (its population's column over its share)
+attribute vec4 aSky;        // east, north (degrees, from the Sun), radius (object units), population (0 old, 1 young)
 uniform vec3 uCam;          // the camera in the frame, object units (CPU, float64, each frame)
-uniform vec3 uBoxMin;
-uniform vec3 uBoxMax;
-uniform float uD;           // the distance, object units
-uniform float uConeK;       // tan of the drawn extent's radius on the sky (coneSpan)
 uniform sampler2D uBins;    // r old, g young (square roots), b the photograph's cover, a the taper
-uniform vec2 uPicC;        // the photograph's (u, v) = uPicC + mat2 of the sky offset (pictureAffine)
+uniform vec2 uPicC;         // the photograph's (u, v) = uPicC + mat2 of the sky offset (pictureAffine)
 uniform vec4 uPicM;
-uniform sampler2D uPic;     // the SMC's photograph (scene/nebulae.js's file), display values
+uniform sampler2D uPic;     // the SMC's light (the photograph without its stars), display values
 uniform float uBinDeg;
 uniform float uBins_n;
 uniform vec4 uPopA;         // old: weight, z0, a, b
 uniform vec4 uPopB;         // young: weight, z0, a, b
-uniform vec2 uMax;          // their mean depths' limits
-uniform vec3 uColA;
-uniform vec3 uColB;
 uniform float uMapLight;    // the maps' light beyond the photograph
 uniform vec4 uLook;         // the photograph's stretch: gamma, saturation, sky floor, 1 once it has landed
 uniform float uPhoto;       // how much of the photograph is drawn now
-uniform int uSteps;
+uniform float uPxPerRad;    // CSS px a radian on the screen
+uniform float uPixelRatio;
 uniform float uShare;
 uniform float uGain;
-varying vec3 vObj;
+varying vec3 vColour;
+#include <common>
+#include <logdepthbuf_pars_vertex>
+void main() {
+  vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  gl_Position = projectionMatrix * mv;
+  #include <logdepthbuf_vertex>
+  vec4 b = texture2D( uBins, aSky.xy / ( uBinDeg * uBins_n ) + 0.5 );
+  float cov = b.b;
+  float keep = uShare * ( 1.0 - uPhoto * cov );
+  // the size: its radius over its distance, on the screen; held no wider than ${SHAPE.patchMaxPx} px (close up it gives up its light)
+  float d = max( 1e-3, length( position - uCam ) );
+  float ideal = 2.0 * aSky.z / d * uPxPerRad;
+  float s = clamp( ideal, ${SHAPE.patchMinPx.toFixed(2)}, ${SHAPE.patchMaxPx.toFixed(2)} );
+  // its colour: beyond the photograph the maps' light in its population's colour; where the photograph covers the sky,
+  // ITS light there, shared by the two populations in proportion to their counts
+  vec3 c = aCol.rgb * uMapLight;
+  if ( uLook.w > 0.5 && cov > 0.002 ) {
+    vec2 sky = aSky.xy;
+    vec2 puv = uPicC + vec2( dot( uPicM.xy, sky ), dot( uPicM.zw, sky ) );
+    vec3 t = max( texture2D( uPic, puv ).rgb - uLook.z, 0.0 ) / ( 1.0 - uLook.z );
+    vec3 p = pow( t, vec3( uLook.x ) );
+    float l = dot( p, vec3( 0.2126, 0.7152, 0.0722 ) );
+    p = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), p, uLook.y );
+    float wsum = uPopA.x * b.r * b.r + uPopB.x * b.g * b.g;
+    c = mix( c, p / max( wsum, 1e-3 ), cov );
+  }
+  float a = aCol.w * keep * uGain * min( 1.0, ( ideal * ideal ) / ( s * s ) );
+  // too faint for the framebuffer's 8 bits: drawn at the floor, by chance in proportion (spiral.js's rule)
+  float lum = a * max( c.r, max( c.g, c.b ) );
+  if ( lum < 0.004 ) a = fract( float( gl_VertexID ) * 0.6180339887 ) * 0.004 < lum ? a * 0.004 / max( lum, 1e-6 ) : 0.0;
+  // no patch brighter than SHAPE.patchCap (look run 1: white blotches from the side); what is over it is let go
+  float peak = max( c.r, max( c.g, c.b ) ) * a;
+  if ( peak > ${SHAPE.patchCap.toFixed(2)} ) a *= ${SHAPE.patchCap.toFixed(2)} / peak;
+  vColour = c * a;
+  gl_PointSize = mv.z < 0.0 && a > 0.0 ? s * uPixelRatio : 0.0;
+  if ( a <= 0.0 ) gl_Position = vec4( 2.0, 2.0, 2.0, 1.0 );
+}
+`;
+const PATCH_FRAG = /* glsl */ `
+varying vec3 vColour;
 #include <common>
 #include <logdepthbuf_pars_fragment>
-float pixelHash( vec2 p ) {
-  vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
-  p3 += dot( p3, p3.yzx + 33.33 );
-  return fract( ( p3.x + p3.y ) * p3.z );
-}
-float slabOf( float za, float zb, float zs, float m, float z0, float len ) {
-  // the share of a face-on column this piece of ray holds: the layer's share between its depths over |rd.z| (exact),
-  // or nearly across the layer its density at the sample times its length
-  if ( abs( zb - za ) > 1e-3 * z0 ) return abs( tanh( clamp( ( zb - m ) / z0, -9.0, 9.0 ) ) - tanh( clamp( ( za - m ) / z0, -9.0, 9.0 ) ) ) * 0.5 * len / abs( zb - za );
-  float c = 1.0 / cosh( clamp( ( zs - m ) / z0, -9.0, 9.0 ) );
-  return c * c * len / ( 2.0 * z0 );
-}
 void main() {
   #include <logdepthbuf_fragment>
-  if ( uShare <= 0.0 ) discard;
-  vec3 ro = uCam;
-  vec3 rd = normalize( vObj - ro );
-  vec3 inv = 1.0 / ( abs( rd ) + 1e-9 ) * sign( rd + 1e-12 );
-  vec3 ta3 = ( uBoxMin - ro ) * inv, tb3 = ( uBoxMax - ro ) * inv;
-  vec3 tn = min( ta3, tb3 ), tf = max( ta3, tb3 );
-  float t0 = max( max( tn.x, tn.y ), max( tn.z, 0.0 ) );
-  float t1 = min( min( tf.x, tf.y ), tf.z );
-  // only the part of the ray inside the cone of the drawn extent, as seen from the Sun (coneSpan): nothing is drawn
-  // outside it, so a ray that misses it costs nothing and one that grazes it takes few steps
-  float k2 = uConeK * uConeK, oz = ro.z - uD;
-  float A = rd.x * rd.x + rd.y * rd.y - k2 * rd.z * rd.z;
-  if ( A > 1e-9 ) {
-    float B = 2.0 * ( ro.x * rd.x + ro.y * rd.y - k2 * oz * rd.z );
-    float Cc = ro.x * ro.x + ro.y * ro.y - k2 * oz * oz;
-    float disc = B * B - 4.0 * A * Cc;
-    if ( disc < 0.0 ) discard;
-    float q = sqrt( disc );
-    t0 = max( t0, ( -B - q ) / ( 2.0 * A ) );
-    t1 = min( t1, ( -B + q ) / ( 2.0 * A ) );
-  }
-  if ( t1 <= t0 ) discard;
-  float j = pixelHash( gl_FragCoord.xy );   // a static per-pixel offset: grain, never bands
-  int n = int( clamp( ceil( ( t1 - t0 ) / ${STEP_UNITS_GLSL} ), 2.0, float( uSteps ) ) );
-  float dt = ( t1 - t0 ) / float( n );
-  vec3 C = vec3( 0.0 );
-  for ( int i = 0; i < MAX_STEPS; i++ ) {
-    if ( i >= n ) break;
-    float ta = t0 + float( i ) * dt;
-    float tb = ta + dt;
-    vec3 ps = ro + rd * ( ta + j * dt );
-    float za = ro.z + rd.z * ta, zb = ro.z + rd.z * tb;
-    // where it is on the sky, from the Sun (degrees east, north)
-    float k = 1.0 / ( uD - ps.z ) * 57.29577951;
-    vec2 sky = vec2( -ps.x * k, ps.y * k );
-    vec2 tuv = sky / ( uBinDeg * uBins_n ) + 0.5;
-    if ( tuv.x < 0.0 || tuv.y < 0.0 || tuv.x > 1.0 || tuv.y > 1.0 ) continue;
-    vec4 b = texture2D( uBins, tuv );
-    float ma = clamp( dot( uPopA.zw, sky ), -uMax.x, uMax.x ), mb = clamp( dot( uPopB.zw, sky ), -uMax.y, uMax.y );
-    float wa = uPopA.x * b.r * b.r * b.a * slabOf( za, zb, ps.z, ma, uPopA.y, dt );
-    float wb = uPopB.x * b.g * b.g * b.a * slabOf( za, zb, ps.z, mb, uPopB.y, dt );
-    if ( wa + wb <= 0.0 ) continue;
-    // beyond the photograph, the maps' own light in the populations' colours
-    vec3 e = ( uColA * wa + uColB * wb ) * uMapLight;
-    float cov = b.b;
-    if ( uLook.w > 0.5 && cov > 0.002 ) {
-      // where the photograph covers the galaxy, ITS light, spread through the populations by their share here
-      vec2 puv = uPicC + vec2( dot( uPicM.xy, sky ), dot( uPicM.zw, sky ) );
-      vec3 t = max( texture2D( uPic, puv ).rgb - uLook.z, 0.0 ) / ( 1.0 - uLook.z );
-      vec3 c = pow( t, vec3( uLook.x ) );
-      float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
-      c = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uLook.y );
-      float wsum = uPopA.x * b.r * b.r + uPopB.x * b.g * b.g;
-      e = mix( e, c * ( wa + wb ) / max( wsum, 1e-4 ), cov );
-    }
-    C += e * ( 1.0 - uPhoto * cov );
-  }
-  gl_FragColor = vec4( C * uGain * uShare, 1.0 );
+  vec2 q = gl_PointCoord - vec2( 0.5 );
+  float r2 = dot( q, q );
+  if ( r2 > 0.25 ) discard;
+  gl_FragColor = vec4( vColour * exp( -r2 / ${(2 * PATCH_SIGMA * PATCH_SIGMA).toFixed(4)} ), 1.0 );
 }
 `;
 const STAR_VERT = /* glsl */ `
@@ -497,18 +486,7 @@ void main() {
   gl_FragColor = vec4( vColour * a * vAlpha, 1.0 );
 }
 `;
-export const SHADERS = { bodyVertex: BODY_VERT, body: BODY_FRAG, starVertex: STAR_VERT, star: STAR_FRAG };
-
-/**
- * Steps through the cone at most: 4 on T0, 8 at level 2, half the coordinator's at level 3 (at most 16); a ray takes one
- * per STEP_UNITS of its span within that. Each step's integral is exact in depth, so fewer steps are grain, not bands.
- * Pure.
- */
-export function stepsFor({ tier = 1, steps = 0, slow = false } = {}) {
-  if (!(tier >= 1)) return 4;
-  const n = Math.max(8, Math.min(MAX_STEPS, Math.round((Number(steps) || 0) / 2)));
-  return slow ? Math.max(4, Math.round(n / 2)) : n;
-}
+export const SHADERS = { bodyVertex: PATCH_VERT, body: PATCH_FRAG, starVertex: STAR_VERT, star: STAR_FRAG };
 
 // -------------------------------------------------------------------------------------- the hero
 
@@ -555,26 +533,33 @@ export function createHero(THREE, env = {}) {
   const blank = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat);
   blank.needsUpdate = true;
   const u = {
-    uCam: { value: new THREE.Vector3(0, 0, 4000) }, uConeK: { value: Math.tan(g.fade[1] * D2R) }, uBoxMin: { value: new THREE.Vector3(...g.box.min) }, uBoxMax: { value: new THREE.Vector3(...g.box.max) }, uD: { value: g.D }, uBins: { value: blank }, uPicC: { value: new THREE.Vector2(0.5, 0.5) }, uPicM: { value: new THREE.Vector4() }, uPic: { value: picTex || blank },
+    uCam: { value: new THREE.Vector3(0, 0, 4000) }, uBins: { value: blank }, uPicC: { value: new THREE.Vector2(0.5, 0.5) }, uPicM: { value: new THREE.Vector4() }, uPic: { value: picTex || blank },
     uBinDeg: { value: g.binDeg }, uBins_n: { value: g.bins },
     uPopA: { value: new THREE.Vector4(g.pops[0].weight, g.pops[0].z0, g.pops[0].a, g.pops[0].b) },
     uPopB: { value: new THREE.Vector4(g.pops[1].weight, g.pops[1].z0, g.pops[1].a, g.pops[1].b) },
-    uMax: { value: new THREE.Vector2(g.pops[0].max, g.pops[1].max) },
-    uColA: { value: new THREE.Vector3(...g.pops[0].colour) }, uColB: { value: new THREE.Vector3(...g.pops[1].colour) },
     uMapLight: { value: SHAPE.mapLight }, uLook: { value: new THREE.Vector4(1, 1, Math.min(0.5, Math.max(0, Number(row && row.sky_floor) || 0)), 0) },
-    uPhoto: { value: 0 }, uSteps: { value: 8 }, uShare: { value: 0 }, uGain: { value: 1 },
+    uPhoto: { value: 0 }, uPxPerRad: { value: 900 }, uPixelRatio: { value: 1 }, uShare: { value: 0 }, uGain: { value: 1 },
   };
-  const box = g.box;
-  const size = box.max.map((v, i) => v - box.min[i]);
-  const bodyGeo = new THREE.BoxGeometry(size[0], size[1], size[2]);
-  const bodyMat = new THREE.ShaderMaterial({ vertexShader: BODY_VERT, fragmentShader: BODY_FRAG, uniforms: u, transparent: false, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+  // 0077 W3-f: the unresolved light as patches (one Points draw), built with the stars once the maps have landed
+  const bodyMat = new THREE.ShaderMaterial({ vertexShader: PATCH_VERT, fragmentShader: PATCH_FRAG, uniforms: u, transparent: false, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending });
   bodyMat.name = 'deep-smc-body';
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.name = `${group.name}-shells`; // the contract's draw-order check knows a deep mesh by `-shells`
-  body.renderOrder = -1;
-  body.frustumCulled = false;
-  sky.add(body);
-  const su = { uCam: u.uCam, uD: u.uD, uR: { value: Math.tan(g.fade[0] * D2R) * g.D * 0.6 }, uPxPerRad: { value: 900 }, uPixelRatio: { value: 1 }, uShare: { value: 0 }, uGain: { value: 1 }, uPhoto: u.uPhoto, uBins: u.uBins, uBinDeg: u.uBinDeg, uBins_n: u.uBins_n };
+  let body = null, patchCount = 0, patchBytes = 0;
+  function buildPatches(tier) {
+    if (!maps) return;
+    if (body) { sky.remove(body); body.geometry.dispose(); }
+    const P = patchesOf(g, maps, tier);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(P.pos, 3));
+    geo.setAttribute('aCol', new THREE.Float32BufferAttribute(P.col, 4));
+    geo.setAttribute('aSky', new THREE.Float32BufferAttribute(P.sky, 4));
+    body = new THREE.Points(geo, bodyMat);
+    body.name = `${group.name}-patches`;
+    body.renderOrder = -0.97;
+    body.frustumCulled = false;
+    sky.add(body);
+    patchCount = P.n; patchBytes = P.pos.byteLength + P.col.byteLength + P.sky.byteLength;
+  }
+  const su = { uCam: u.uCam, uD: { value: g.D }, uR: { value: Math.tan(g.fade[0] * D2R) * g.D * 0.6 }, uPxPerRad: u.uPxPerRad, uPixelRatio: u.uPixelRatio, uShare: { value: 0 }, uGain: { value: 1 }, uPhoto: u.uPhoto, uBins: u.uBins, uBinDeg: u.uBinDeg, uBins_n: u.uBins_n };
   const starMat = new THREE.ShaderMaterial({ vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, uniforms: su, transparent: false, depthTest: false, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending });
   starMat.name = 'deep-smc-stars';
   let stars = null, starTier = -1, starCount = 0, starBytes = 0;
@@ -604,6 +589,7 @@ export function createHero(THREE, env = {}) {
     u.uBins.value = binTex;
     mapsState = 'ready';
     buildStars(tierNow);
+    buildPatches(tierNow);
   };
   if (browser || env.fetchBin) {
     mapsState = 'loading';
@@ -612,7 +598,7 @@ export function createHero(THREE, env = {}) {
       .catch((e) => { mapsState = 'failed'; console.warn('deep: the SMC maps did not load', e); });
   }
 
-  let level = 0, levelShare = 0, steps = 8, tierNow = 1, slowMs = 0, last = { body: 0, stars: 0, light: 1 }, palette = null;
+  let level = 0, levelShare = 0, tierNow = 1, last = { body: 0, stars: 0, light: 1 }, palette = null;
   const _inv = new THREE.Matrix4();
   const _id = new THREE.Matrix4();
   const _cam = new THREE.Vector3();
@@ -630,23 +616,20 @@ export function createHero(THREE, env = {}) {
     frame(info = {}) {
       if (basisFor !== stage.worldId) placeSky();
       const tier = Number.isFinite(info.tier) ? info.tier : 1;
-      if (tier !== tierNow) { tierNow = tier; buildStars(tier); }
+      if (tier !== tierNow) { tierNow = tier; buildStars(tier); buildPatches(tier); }
       const vh = (typeof globalThis.innerHeight === 'number' && globalThis.innerHeight) || 800;
       if (info.camera) {
         if (group.parent) group.parent.updateWorldMatrix(true, false);
         _inv.multiplyMatrices(group.parent ? group.parent.matrixWorld : _id, group.matrix).multiply(sky.matrix).invert();
         _cam.copy(info.camera.position).applyMatrix4(_inv);
         u.uCam.value.copy(_cam);
-        su.uPxPerRad.value = (info.camera.projectionMatrix.elements[5] || 1) * vh / 2;
+        u.uPxPerRad.value = (info.camera.projectionMatrix.elements[5] || 1) * vh / 2;
       }
-      // inside: the camera within the populations' extent (the box's half-width on the sky, their depth along it)
-      // inside, or close: the body steps back from 3 core radii in to 1 (look run 2: from 24 000 ly it was a veil)
+      // inside, or close: the body steps back from 3 core radii in to 1 (look run 2: from 24 000 ly it was a veil); the
+      // patches near the camera give up their light besides (held at SHAPE.patchMaxPx)
       const rIn = Math.max(Math.hypot(_cam.x, _cam.y) / g.core[0], Math.abs(_cam.z) / g.core[1]) / 3;
       const sh = sharesFor({ level: levelShare, rPx: info.rPx, viewH: vh, inside: 1 - smooth(rIn, 0.5, 1.2) });
       last = sh;
-      const dt = Number(info.dtMs) || 0;
-      if (!(info.frozen || info.reduced)) slowMs = slowMs * 0.9 + dt * 0.1;
-      steps = stepsFor({ tier, steps: level >= 3 ? info.steps : 0, slow: slowMs > 24 });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
       if (!palette || gain !== palette.gainIn) {
         palette = { ...paletteFor(gain, profile), gainIn: gain };
@@ -656,29 +639,28 @@ export function createHero(THREE, env = {}) {
       const keep = drawnUnder(info.look || 'film', UNDER_MEASURED.light) ? 1 : 0;
       const ok = mapsState === 'ready';
       u.uShare.value = ok ? sh.body * keep : 0;
-      u.uSteps.value = steps;
       u.uGain.value = palette.gain * sh.light;
       u.uPhoto.value = clamp(Number(info.photo) || 0, 0, 1);
       su.uShare.value = ok ? sh.stars : 0;
       su.uGain.value = palette.gain * sh.light;
-      su.uPixelRatio.value = (typeof globalThis.devicePixelRatio === 'number' && globalThis.devicePixelRatio) || 1;
-      body.visible = u.uShare.value > 0.002;
+      u.uPixelRatio.value = (typeof globalThis.devicePixelRatio === 'number' && globalThis.devicePixelRatio) || 1;
+      if (body) body.visible = u.uShare.value > 0.002;
       if (stars) stars.visible = su.uShare.value > 0.002;
     },
     ready: () => mapsState !== 'loading' && picState !== 'loading',
     stats: () => ({
       level, body: Math.round(last.body * 100) / 100, stars: Math.round(last.stars * 100) / 100, light: Math.round(last.light * 100) / 100,
-      maps: mapsState, photo: picState, steps, tier: tierNow, palette: palette ? palette.mode : null, points: starCount, meshes: 2,
-      bytes: starBytes + (binTex ? g.bins * g.bins * 4 : 0) + bodyGeo.getAttribute('position').array.byteLength,
+      maps: mapsState, photo: picState, tier: tierNow, palette: palette ? palette.mode : null, points: starCount, patches: patchCount, meshes: 2,
+      bytes: starBytes + patchBytes + (binTex ? g.bins * g.bins * 4 : 0),
       camKly: [Math.round(_cam.x) / 10, Math.round(_cam.y) / 10, Math.round(_cam.z) / 10],
     }),
     dispose() {
       if (stars) stars.geometry.dispose();
-      bodyGeo.dispose();
+      if (body) body.geometry.dispose();
       bodyMat.dispose(); starMat.dispose();
       for (const t of [binTex, picTex]) if (t) t.dispose();
       blank.dispose();
-      stars = null;
+      stars = null; body = null;
       if (group.parent) group.parent.remove(group);
     },
   };

@@ -16,7 +16,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rings | 1 | 1 |
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
-| heroes | 14 | 14 |
+| heroes | 19 | 19 |
 | exotics | 22 | 22 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **907** | **111 094** |
+| **all** | **912** | **111 099** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -65,10 +65,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DARK_NEBULA](#dark_nebula) | 5 | `nebulae.js`, `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 5 | `dsoglow.js`, `nebulae.js`, `dustsheet.js` | illustrative | iris, m78 |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
-| [GALAXY_SPIRAL](#galaxy_spiral) | 50 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
+| [GALAXY_SPIRAL](#galaxy_spiral) | 54 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m101, m104, m31, m33, m51, m81 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc, smc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 41 | `dsoglow.js`, `nebulae.js` | illustrative | - |
-| [GALAXY_INTERACTION](#galaxy_interaction) | 1 | `dsoglow.js` | illustrative | - |
+| [GALAXY_INTERACTION](#galaxy_interaction) | 2 | `spiral.js`, `dsoglow.js` | illustrative | antennae |
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
+Honesty over the 912 records: 321 measured, 266 modelled, 325 illustrative.
 
 ## The classes
 
@@ -551,16 +551,16 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Drawn by:** `site/js/scene/galaxy.js`, `site/js/scene/deep/spiral.js`, `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The glow ellipse with its holder; M31 and M33 as photographs until near; the Milky Way's points thinned on tier 0.
-- **Hero overrides:** `m31` (registry/deepsky-heroes/m31.yaml), `m33` (registry/deepsky-heroes/m33.yaml)
+- **Hero overrides:** `m31` (registry/deepsky-heroes/m31.yaml), `m33` (registry/deepsky-heroes/m33.yaml), `m51` (registry/deepsky-heroes/m51.yaml), `m81` (registry/deepsky-heroes/m81.yaml), `m101` (registry/deepsky-heroes/m101.yaml), `m104` (registry/deepsky-heroes/m104.yaml)
 - **Source:** The Milky Way from Reid et al. 2019 (arms) with the bar and disc from Wikipedia; M31 from Courteau et al. 2011, Gordon et al. 2006, Block et al. 2006, Draine et al. 2014; M33 after Zaritsky et al. 1989 and Regan & Vogel 1994; photographs of M51, M81, M83, M101, M104, NGC 1300.
 - **Dates and filters:** Papers at their own epochs; photographs as their rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs, orientations, profiles. Modelled: M31's and M33's arms, knots and thickness (parametric, labelled). Illustrative: the Milky Way's look and every other spiral's glow.
 - **Rights:** Papers cited; photographs CC BY 4.0; OpenNGC CC BY-SA 4.0.
-- **What is missing is tracked in:** #873 (the generator applied to other spirals)
-- **Records (50):**
+- **What is missing is tracked in:** #873 (0077 W3-f: M51, M81, M101 and M104 from their own numbers; NGC 1300, NGC 253, NGC 891, M83 and NGC 2403 still glow and holder)
+- **Records (54):**
   - dso (38): `m31`, `m33`, `m51`, `m58`, `m61`, `m63`, `m64`, `m65`, `m66`, `m74`, `m77`, `m81`, `m82`, `m83`, `m88`, `m90`, `m91`, `m94`, `m95`, `m96`, `m98`, `m99`, `m100`, `m101`, `m104`, `m106`, `m108`, `m109`, `ngc-253`, `ngc-891`, `ngc-7331`, `needle-galaxy`, `whale-galaxy`, `ngc-2403`, `fireworks-galaxy`, `ngc-300`, `ngc-1300`, `hamburger-galaxy`
   - photographs (8): `m31`, `m33`, `m83`, `m104`, `m51`, `m101`, `m81`, `ngc-1300`
-  - heroes (2): `m31`, `m33`
+  - heroes (6): `m101`, `m104`, `m31`, `m33`, `m51`, `m81`
   - model_kinds (1): `galaxy-model`
   - layers (1): `galaxy`
 
@@ -602,16 +602,18 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 
 **Interacting galaxies**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`
+- **Drawn by:** `site/js/scene/deep/spiral.js`, `site/js/scene/dsoglow.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** One glow and holder for the pair.
+- **On a weak device (T0, or after the frame latch):** One glow and holder for the pair; the Antennae and M51 with NGC 5195 as models from their own numbers once near (0077 W3-f).
+- **Hero overrides:** `antennae` (registry/deepsky-heroes/antennae.yaml)
 - **Source:** OpenNGC and the Antennae's row in registry/dso-hand.yaml.
 - **Dates and filters:** As the row says.
-- **Measured, modelled or reconstructed:** Measured: place and distance. Illustrative: the glow; the pair is not drawn as two.
+- **Measured, modelled or reconstructed:** Measured: place and distance; the Antennae's two galaxies' places and their tails on the sky. Modelled: the tails' depths after the simulations, the discs' tilts. Illustrative: the glow of the other pairs.
 - **Rights:** OpenNGC CC BY-SA 4.0; facts cited.
-- **What is missing is tracked in:** #875 (no renderer of its own and no task)
-- **Records (1):**
+- **What is missing is tracked in:** #875 (0077 W3-f: the Antennae and M51 with NGC 5195; Arp 220, the Mice, NGC 7252, NGC 2623 and NGC 2207 are not on the map)
+- **Records (2):**
   - dso (1): `antennae-galaxies`
+  - heroes (1): `antennae`
 
 ### AGN_QUASAR
 

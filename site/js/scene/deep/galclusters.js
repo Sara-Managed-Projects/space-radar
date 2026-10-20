@@ -25,6 +25,11 @@
 //     (29 arcseconds across as seen from the Sun, an E4 of magnitude 16). 3C 279 has none, because the source gives no size. No glare, no
 //     bloom, no spikes (tests/test_contract.mjs): a point's size grows a little with its brightness, as a star's does.
 //
+//   - A DEEP FIELD (0077 W3-f, internal #784): the Hubble Ultra Deep Field as Webb's JADES survey catalogued it, 7 000-odd galaxies
+//     each at the comoving distance of its redshift (NIRSpec's where it measured one, else the photometric estimate) and as wide, FROM
+//     THE SUN, as Webb saw it (scripts/build_deep_field.py). It is a needle: three arcminutes wide and thirty billion light-years
+//     long, four slices by redshift, one draw call each (site/data/deep/deepfield.{json,bin}, fetched with the clusters).
+//
 // NOTHING IS PAST THE HORIZON; NOTHING MOVES. No member is drawn at a distance of 46 billion light-years or more (the farthest is 334
 // million); under the Measured look and reduced motion nothing moves, because nothing here ever does.
 //
@@ -49,6 +54,7 @@ export const MAX_PX = 1400;   // CSS px: half a quad is never wider (past it a g
 export const CULL_PX = 3;     // the cluster's radius on the screen below which it is not drawn
 export const FADE_PX = 40;    // and from which, going smaller, it fades out
 export const FOOT_PX = 4.5;   // the footprint of one member, CSS px of radius, for the crowd
+export const FIELD_LIGHT = 0.5; // 0077 W3-f: a deep field's galaxies at half a cluster member's floor (look run 1: the needle read as a white line)
 const SUN_INERTIAL = 'sun-inertial';
 const LY_KM = 9460730472580.8;
 const MLY_KM = LY_KM * 1e6;
@@ -279,6 +285,13 @@ async function fetchFiles(base) {
   if (!mr.ok || !br.ok) throw new Error(`galclusters: HTTP ${mr.status} / ${br.status}`);
   return { manifest: await mr.json(), buffer: await br.arrayBuffer() };
 }
+// 0077 W3-f: the deep field's two files (scripts/build_deep_field.py), fetched beside the clusters'
+async function fetchField(base) {
+  const at = (name) => String(new URL(`data/deep/${name}`, base));
+  const [mr, br] = await Promise.all([fetch(at('deepfield.json')), fetch(at('deepfield.bin'))]);
+  if (!mr.ok || !br.ok) throw new Error(`deepfield: HTTP ${mr.status} / ${br.status}`);
+  return { manifest: await mr.json(), buffer: await br.arrayBuffer() };
+}
 
 export function createLayer(THREE, env = {}) {
   const group = new THREE.Group();
@@ -310,6 +323,18 @@ export function createLayer(THREE, env = {}) {
       stamp();
     })
     .catch((e) => { state.failed = String(e && e.message || e); console.warn('deep: the galaxy clusters did not load', e); });
+  // 0077 W3-f: the deep field, each slice a cluster of its own (one instanced draw), from its own files; the clusters never wait for it
+  const fieldLoading = Promise.resolve()
+    .then(() => (env.loadField ? env.loadField() : env.load ? null : fetchField(base)))
+    .then((got) => {
+      if (!got) return;
+      const tile = parseMembers(got.buffer);
+      state.field = got.manifest.field || null;
+      state.fileBytes += got.buffer.byteLength + JSON.stringify(got.manifest).length;
+      for (const info of got.manifest.slices || []) clusters.push(buildCluster({ ...info, centre: { dir: info.centre.dir } }, tile));
+      state.placedFor = null;
+    })
+    .catch((e) => { state.fieldFailed = String(e && e.message || e); console.warn('deep: the deep field did not load', e); });
 
   function material(vert, frag, uniforms) {
     return new THREE.ShaderMaterial({
@@ -325,8 +350,8 @@ export function createLayer(THREE, env = {}) {
   }
   function bytesOf(g) { return Object.values(g.attributes).reduce((n, a) => n + a.array.byteLength, 0); }
 
-  function buildCluster(info) {
-    const A = arraysOf(state.tile, info.offset, info.count);
+  function buildCluster(info, tile = state.tile) {
+    const A = arraysOf(tile, info.offset, info.count);
     const g = quadGeometry();
     g.setAttribute('aOff', new THREE.InstancedBufferAttribute(A.off, 3));
     g.setAttribute('aRe', new THREE.InstancedBufferAttribute(A.re, 1));
@@ -343,7 +368,7 @@ export function createLayer(THREE, env = {}) {
     mesh.visible = false;
     group.add(mesh);
     state.bytes += bytesOf(g);
-    return { info, mesh, material: mat, uniforms, radiusPx: 0, culled: 'not placed', fade: 0, crowd: 0, own: A.own, sized: A.sized };
+    return { info, mesh, material: mat, uniforms, radiusPx: 0, culled: 'not placed', fade: 0, crowd: 0, own: A.own, sized: A.sized, field: info.field || null };
   }
   function buildQuasar(q) {
     const g = quadGeometry();
@@ -453,7 +478,7 @@ export function createLayer(THREE, env = {}) {
       if (!frustum.intersectsSphere(sphere)) { c.culled = 'frustum'; continue; }
       if (c.radiusPx < CULL_PX) { c.culled = 'size'; continue; }
       c.crowd = Number.isFinite(c.radiusPx) ? crowd(c.radiusPx, c.info.count) : 1;
-      c.fade = tileFade(c.radiusPx) * c.crowd;
+      c.fade = tileFade(c.radiusPx) * c.crowd * (c.field ? FIELD_LIGHT : 1); // 0077 W3-f: the deep field's thousands of specks, fainter
       c.uniforms.uFade.value = c.fade;
       c.mesh.visible = true;
       c.culled = null;
@@ -472,7 +497,7 @@ export function createLayer(THREE, env = {}) {
 
   /** The words for one cluster (a card, a label, a probe): what the layer knows about how it draws it. */
   function describe(id) {
-    const c = clusters.find((x) => x.info.id === id);
+    const c = clusters.find((x) => x.info.id === id && !x.field); // 0077 W3-f: a deep field's slice is not a cluster
     const W = COPY[COPY_BLOCK];
     if (!c || !W || !W.cluster) return null;
     const i = c.info;
@@ -492,12 +517,15 @@ export function createLayer(THREE, env = {}) {
     group,
     frame,
     describe,
-    whenLoaded: () => loading,
+    whenLoaded: () => Promise.all([loading, fieldLoading]),
     ready: () => state.loaded || !!state.failed,
     stats: () => ({
       id: 'galclusters', loaded: state.loaded, failed: state.failed,
       members: state.tile ? state.tile.count : 0, calls: state.calls, bytes: state.bytes, fileBytes: state.fileBytes,
-      clusters: clusters.map((c) => ({ id: c.info.id, count: c.info.count, own: c.own, sized: c.sized, culled: c.culled, radiusPx: Number.isFinite(c.radiusPx) ? Math.round(c.radiusPx) : 'inside', fade: Math.round(c.fade * 1000) / 1000, crowd: Math.round(c.crowd * 1000) / 1000 })),
+      clusters: clusters.filter((c) => !c.field).map((c) => ({ id: c.info.id, count: c.info.count, own: c.own, sized: c.sized, culled: c.culled, radiusPx: Number.isFinite(c.radiusPx) ? Math.round(c.radiusPx) : 'inside', fade: Math.round(c.fade * 1000) / 1000, crowd: Math.round(c.crowd * 1000) / 1000 })),
+      // 0077 W3-f: the deep field's slices
+      field: clusters.filter((c) => c.field).map((c) => ({ id: c.info.id, count: c.info.count, z: c.info.z, culled: c.culled, radiusPx: Number.isFinite(c.radiusPx) ? Math.round(c.radiusPx) : 'inside', fade: Math.round(c.fade * 1000) / 1000 })),
+      fieldFailed: state.fieldFailed || null,
       quasars: quasars.map((s) => ({ id: s.q.id, host: !!s.q.host, culled: s.culled })),
     }),
     dispose() {

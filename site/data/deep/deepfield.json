@@ -1,0 +1,146 @@
+{
+ "version": 1,
+ "built": "2026-10-20",
+ "stride": 20,
+ "count": 7607,
+ "bin": {
+  "bytes": 152156,
+  "sha256": "e9afbd22bf092c794e6ac15e1c5850c6f5a6cf0fc45e78422be6537b725293e2"
+ },
+ "field": {
+  "id": "hudf",
+  "name": "Hubble Ultra Deep Field",
+  "box": {
+   "ra_min": 53.11707,
+   "ra_max": 53.20799,
+   "dec_min": -27.83116,
+   "dec_max": -27.75184
+  },
+  "mag_limit": 28.0,
+  "catalogue": "JADES, the JWST Advanced Deep Extragalactic Survey (Rieke and others 2023, ApJS 269, 16; VizieR V/159: gssample, gskron, gsprism), the GOODS-South galaxies inside the box; stars left out by the MUSE Hubble Ultra Deep Field survey (Bacon and others 2023, A&A 670, A4; VizieR J/A+A/670/A4/dr2-main)",
+  "source": "VizieR V/159 ReadMe ('These HLSP data products are licensed for use under CC BY 4.0', read 2026-10-20); Rafelski and others 2015, AJ 150, 31 (the footprint: RA 53.117 to 53.208, Dec -27.831 to -27.752, VizieR J/AJ/150/31, read 2026-10-20); Bacon and others 2023, A&A 670, A4 (VizieR, read 2026-10-20)"
+ },
+ "dropped": {
+  "star": 62,
+  "noRedshift": 10,
+  "noFlux": 0
+ },
+ "cosmology": "Planck 2018 as data/cosmology.js (Astropy's Planck18): comoving distance now",
+ "rules": {
+  "distance": "the comoving distance of the redshift: NIRSpec's (flag A or B) where there is one, else JADES's photometric estimate",
+  "size": "the half-light radius in F090W as an angle, times the comoving distance: as wide from the Sun as Webb saw it",
+  "brightness": "F200W Kron, as the absolute magnitude that looks that bright from the Sun at that distance: an exposure, not photometry",
+  "colour": "F090W - F444W as observed, mapped onto a blue-to-red tint: illustrative"
+ },
+ "licence": "JADES (VizieR V/159): CC BY 4.0. MUSE (VizieR J/A+A/670/A4): free for scientific usage, the authors cited",
+ "slices": [
+  {
+   "id": "hudf-1",
+   "field": "hudf",
+   "name": "Hubble Ultra Deep Field, redshift 0 to 1",
+   "count": 1921,
+   "offset": 0,
+   "centre": {
+    "dir": [
+     0.53041894,
+     0.46409985,
+     -0.70941319
+    ],
+    "note": "the mean place of the slice's members"
+   },
+   "distMly": 6739.482,
+   "radiusMly": 6451.805,
+   "z": [
+    0.02,
+    0.99
+   ],
+   "distMlyRange": [
+    287.7,
+    10996.2
+   ],
+   "spectroscopic": 12,
+   "sized": 1915
+  },
+  {
+   "id": "hudf-2",
+   "field": "hudf",
+   "name": "Hubble Ultra Deep Field, redshift 1 to 2",
+   "count": 2405,
+   "offset": 1921,
+   "centre": {
+    "dir": [
+     0.53040874,
+     0.46413052,
+     -0.70940075
+    ],
+    "note": "the mean place of the slice's members"
+   },
+   "distMly": 14279.733,
+   "radiusMly": 3204.575,
+   "z": [
+    1.0,
+    1.999
+   ],
+   "distMlyRange": [
+    11075.2,
+    17307.5
+   ],
+   "spectroscopic": 78,
+   "sized": 2404
+  },
+  {
+   "id": "hudf-3",
+   "field": "hudf",
+   "name": "Hubble Ultra Deep Field, redshift 2 to 3.5",
+   "count": 2346,
+   "offset": 4326,
+   "centre": {
+    "dir": [
+     0.53041405,
+     0.46410739,
+     -0.70941192
+    ],
+    "note": "the mean place of the slice's members"
+   },
+   "distMly": 19900.727,
+   "radiusMly": 2745.969,
+   "z": [
+    2.0,
+    3.49
+   ],
+   "distMlyRange": [
+    17313.2,
+    22646.7
+   ],
+   "spectroscopic": 200,
+   "sized": 2341
+  },
+  {
+   "id": "hudf-4",
+   "field": "hudf",
+   "name": "Hubble Ultra Deep Field, redshift 3.5 and beyond",
+   "count": 935,
+   "offset": 6672,
+   "centre": {
+    "dir": [
+     0.53039869,
+     0.46412406,
+     -0.70941249
+    ],
+    "note": "the mean place of the slice's members"
+   },
+   "distMly": 25037.379,
+   "radiusMly": 6814.253,
+   "z": [
+    3.5,
+    10.62
+   ],
+   "distMlyRange": [
+    22673.5,
+    31851.6
+   ],
+   "spectroscopic": 151,
+   "sized": 934
+  }
+ ]
+}

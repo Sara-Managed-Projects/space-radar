@@ -1149,8 +1149,12 @@ export const VISUAL_CLASSES = [
 "dso-ngc-1300"
 ],
 "heroes": [
+"dso-m101",
+"dso-m104",
 "dso-m31",
-"dso-m33"
+"dso-m33",
+"dso-m51",
+"dso-m81"
 ],
 "model_kinds": [
 "galaxy-model"
@@ -1250,6 +1254,9 @@ export const VISUAL_CLASSES = [
 "honesty": "illustrative",
 "members": {
 "dso": [
+"dso-antennae-galaxies"
+],
+"heroes": [
 "dso-antennae-galaxies"
 ]
 }

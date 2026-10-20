@@ -1976,6 +1976,45 @@ distance beyond its root. The card says so.
 | The Magellanic Bridge and Stream: the HI4PI survey's high-velocity H I column density in Magellanic coordinates (`hi4pi-hvc-nhi-mag-car.fits.gz`, 7.9 MB, downloaded for the bake and not shipped), cropped and resampled by `scripts/build_deep_magellanic.py` (`site/images/deep/magellanic/hi-column.webp`, an adaptation). Drawn in **false colour**: hydrogen at 21 cm, which no eye or camera sees. Its distance along our line is a **model**: the Bridge between the Clouds' measured distances, the Stream from the SMC's to 100 kpc at its far end ("the only solid distance constraint on the Stream is that one end is anchored to the Magellanic Clouds"; models put the far end 80 to 150 kpc away) | Westmeier 2018, MNRAS 474, 289 (arXiv:1712.00909); HI4PI Collaboration, Ben Bekhti et al. 2016, A&A 594, A116; served by NASA's LAMBDA (https://lambda.gsfc.nasa.gov/product/foreground/fg_hi4pi_hvhi_info.html); Magellanic coordinates: Nidever, Majewski & Butler Burton 2008, ApJ 679, 432; the distance: Fox et al. 2019 (arXiv:1903.04831) | LAMBDA's page states no licence of its own and asks for the paper to be cited; HI4PI's data are distributed by CDS, whose VizieR terms read that day (https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context ; however, ... the original authors and publication references including the publisher have to be explicitely cited". Cited as both ask; Space Radar is free and non-commercial |
 | The light where the SMC's photograph covers it: the photograph with its stars taken out (its pink H II regions kept) and 47 Tucanae and NGC 362, Milky Way globulars in front of it, filled from round them (`scripts/build_deep_smc.py --light` -> `site/images/deep/smc/smc-light.webp`, an adaptation) | NOIRLab noirlab2030b, credit "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University)..." (section 3 above) | CC BY 4.0; stars removed by Space Radar |
 <!-- 0077 W2-e: end -->
+<!-- 0077 W3-f: begin -->
+### Galaxies from their structure (0077 W3-f)
+
+M51 with NGC 5195, M81, M101, M104 and the Antennae as models (`site/js/scene/deep/spiral.js`, internal #873 and #875), their
+numbers in `registry/deepsky-heroes/m51.yaml`, `m81.yaml`, `m101.yaml`, `m104.yaml` and `antennae.yaml`, each with its source.
+Facts read on 2026-10-20 in the papers' abstracts and texts (arXiv) and in VizieR's and SIMBAD's tables; no text, figure,
+image or data file of any of them is shipped. Angular sizes are turned into kiloparsecs at each record's distance. Every
+model is a **model** and the card says so, and that no astronomer has reviewed it yet (internal #785).
+
+| what | the numbers | from |
+|---|---|---|
+| M51's orientation | i = 22 +/- 5, PA = 173 +/- 3 degrees from the gas's velocities; the north half approaching (THINGS's velocity map); the east near (derived from the rotation and trailing arms, not published) | Colombo et al. 2014 (arXiv:1401.3759); Walter et al. 2008, THINGS (arXiv:0810.2125); Shetty et al. 2007 (arXiv:0705.3240) |
+| M51's structure | bulge n 0.995, Re 21.6 arcsec, B/T 0.128; disc scale length 84.2 arcsec; pitch about 19 degrees | Salo et al. 2015, S4G (VizieR J/ApJS/219/4); Puerari et al. 2014 (arXiv:1408.3658); Honig & Reid 2015 (arXiv:1412.1012) |
+| NGC 5195 | its place and 5.89 x 4.68 arcmin outline; behind M51's arm (absorption by the arm in its nucleus's spectrum); 4 kpc behind and its profile illustrative; the arm that reaches it traced on the photograph heic0506a, its depth a model | SIMBAD (CDS, "CDS/SIMBAD"), Paturel et al. 2003; Ritchey et al. 2015 (arXiv:1501.03223); Theis & Spinneker 2003 (arXiv:astro-ph/0306502) |
+| M81 | i = 59.0 degrees; PA 157 (RC3); bulge n 2.62, Re 46.2 arcsec; disc scale length 155.4 arcsec; pitch 13.4 +/- 2.3 degrees; the south-east approaching, the south-west near | de Blok et al. 2008 (arXiv:0810.2100); Kendall et al. 2008 (arXiv:0804.2380); Davis et al. 2017 (arXiv:1707.04001); Schnorr-Müller et al. 2011 (arXiv:1012.3015) |
+| M101 | i = 18, PA = 39 degrees; disc scale length 127.3 arcsec at 3.6 microns; arms' pitches 7 to 29 degrees; the south-west approaching; the near side derived; five giant H II regions (NGC 5447, 5455, 5461, 5462, 5471) at their places | Walter et al. 2008 (after Bosma, Goss & Allen 1981); Salo et al. 2015; Herrera-Endoqui et al. 2015 (VizieR J/A+A/582/A86); Mihos et al. 2013 (arXiv:1211.3095); SIMBAD (CDS) |
+| M104, the Sombrero | PA 89.25 degrees; i = 84 (84.3 +/- 0.2 for the CO ring); bulge n 3.9, Re 71 arcsec; disc scale length 61 and height 18 arcsec; the dust ring's radius 144.7 arcsec and width 22.9 arcsec, an inner dust disc of 48 arcsec; which side is near is not published in what was read, and is assumed | Bendo et al. 2006 (arXiv:astro-ph/0603160); Gadotti 2012 (arXiv:1101.2900), after Emsellem et al. 1996; Sutter et al. 2022 (arXiv:2210.13527); Vlahakis et al. 2008 (arXiv:0805.4791) |
+| The Antennae | NGC 4038's and NGC 4039's places; their RC3 outlines (tilts read from torn outlines: illustrative); 22 +/- 3 Mpc (13.3 +/- 1.0 by another method); the tails' lengths and parents, the southern tip bending away; the tails traced on Robert Gendler's photograph, their depths a model after the simulations | SIMBAD (CDS); RC3 (de Vaucouleurs et al. 1991, VizieR VII/155); Schweizer et al. 2008 (arXiv:0807.3955); Saviane et al. 2008 (arXiv:0802.1045); Hibbard et al. 2001 (arXiv:astro-ph/0110581); Privon et al. 2013 (arXiv:1305.5865); Karl et al. 2010 (arXiv:1003.0685); heic0812c, "Robert Gendler", ESA/Hubble, CC BY 4.0 |
+
+### A deep field (0077 W3-f)
+
+The Hubble Ultra Deep Field as Webb's JADES survey catalogued it (`site/js/scene/deep/galclusters.js`, internal #784), read on
+2026-10-20 by `scripts/build_deep_field.py` into `site/data/deep/deepfield.json` and `site/data/deep/deepfield.bin`; the box on
+the sky, the cut and every page read are in `registry/galaxy-clusters.yaml` (`fields:`). "This research has made use of the
+VizieR catalogue access tool, CDS, Strasbourg, France."
+
+| what | from | licence |
+|---|---|---|
+| 7 607 galaxies brighter than F200W 28 in the Ultra Deep Field's box: position, half-light radius in F090W, Kron fluxes in F090W, F200W and F444W, the photometric redshift, and NIRSpec's spectroscopic redshift where its flag is A or B (441 of them) | JADES, the JWST Advanced Deep Extragalactic Survey: Rieke M.J. and others 2023, ApJS 269, 16; the GOODS-South tables of VizieR V/159 (gssample, gskron, gsprism); MAST DOIs 10.17909/8tdj-8n28, 10.17909/z2gw-mk31, 10.17909/fsc4-dt61 | the catalogue's ReadMe, read that day: "These HLSP data products are licensed for use under CC BY 4.0." |
+| The stars left out: the MUSE survey's stars in the field (redshift under 0.01) | Bacon R. and others 2023, A&A 670, A4, *The MUSE Hubble Ultra Deep Field surveys: Data release II*, VizieR J/A+A/670/A4 | VizieR's terms (<https://cds.unistra.fr/vizier-org/licences_vizier.html>), read that day: "Tabular data, spectra or images coming from A&A (J/A+A) are free for a scientific usage"; the authors cited |
+| The box: RA 53.117 to 53.208, Dec -27.831 to -27.752 | Rafelski M. and others 2015, AJ 150, 31, *UVUDF* (its footprint only; none of its rows is used) | facts, cited |
+| The comoving distance of each redshift | `site/js/data/cosmology.js`, Planck 2018 (Planck Collaboration, A&A 641, A6, 2020) | facts, cited |
+
+What is measured and what is not. Each galaxy's direction is JADES's. Its distance is the comoving distance of its redshift: NIRSpec's
+where it measured one, else the photometric **estimate**, whose error is wide (the catalogue's 68 % range is often a tenth of the
+redshift). As seen from the Sun each galaxy is as wide as Webb measured it (its half-light radius as an angle, times the comoving
+distance; its true width is that over 1 + z). Its light is its F200W magnitude, an exposure and not photometry; its tint is the F090W
+minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
+<!-- 0077 W3-f: end -->
 
 ## 4. Runtime data sources
 
