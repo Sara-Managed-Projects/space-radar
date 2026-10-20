@@ -1438,7 +1438,7 @@ export function oblateRadii(f) {
  * worlds that carry ground sites (registry/sites.yaml: the Moon and Mars) are cut finely enough that the sag is
  * under a quarter of a kilometre; the camera cannot go nearer than ~35 km, so nothing shows it. Pure.
  */
-export const SITE_BODIES = new Set(['moon', 'mars']);
+export const SITE_BODIES = new Set(['moon', 'mars', 'titan']); // 0077 W3-d: Titan too, for Huygens (registry/sites.yaml)
 export function segmentsFor(id) { return SITE_BODIES.has(id) ? { width: 192, height: 96 } : { width: 64, height: 48 }; }
 /**
  * The fine cut is worn from this disc size up (a share of HALF the view's height, as discShare gives it): 0.05
