@@ -422,19 +422,12 @@ export function ringGrainGate(radiiPerPx) {
 }
 // 0077 W1-f: begin
 /**
- * THE RING AS PARTICLES (internal #890; scene/ringgrains.js has the numbers and whose they are).
- * Within RING_GRAINS.fromM of Saturn's ring plane, over the ring, on tier 1 and up and never under
- * the Measured look or the latch, the balls from `rMinM` to `rMaxM` are drawn as balls, fetched with
- * a dynamic import the first time. The sheet gives up their share of its light where they are drawn
- * (RING_FRAG uResolved): with q = 3 that is ln(rMax / r) / ln(rMax / rFloor) for the balls bigger
- * than r, a pixel's worth at that distance. JS twin: ringResolved().
+ * THE RING AS PARTICLES (internal #890): scene/ringgrains.js, fetched the first time the camera is
+ * within `fromM` of Saturn's ring plane over the ring (tier 1 up, never under Measured or the latch).
+ * The sheet gives up the drawn balls' share of its light where they are (RING_FRAG uResolved; the
+ * JS twin and the numbers' sources are ringgrains.js resolvedAt and RING_PARTICLES).
  */
 export const RING_GRAINS = { fromM: 25000, rMinM: 1, rMaxM: 5, rFloorM: 0.01, pxShare: 0.3 };
-/** The share of the sheet's light the drawn balls take, `distM` from a camera whose pixel is `pxAngle` rad. Pure. */
-export function ringResolved(distM, pxAngle, G = RING_GRAINS) {
-  const rc = Math.max(G.pxShare * distM * pxAngle, G.rMinM);
-  return Math.min(1, Math.max(0, Math.log(G.rMaxM / rc) / Math.log(G.rMaxM / G.rFloorM)));
-}
 // 0077 W1-f: end
 /** The slab's optical depth with the fine structure in: tau x (1 + fine x (ratio - 1)). JS twin of RING_FRAG. Pure. */
 export function ringFineTau(tau, ratio, fine) {
@@ -563,11 +556,6 @@ export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rang
  */
 export const TITAN_RADAR = { grey: [0.18, 0.19, 0.21], fill: [0.42, 0.07, 0.002] };
 export const TITAN_LAKES = { map: 'titan_lakes.webp', fromShare: 0.12, darken: 0.45, gain: 30, lobe: 900, f0: 0.016, colour: [1.0, 0.8, 0.55] };
-/** Schlick's reflectance of a flat sea at the cosine between the half vector and the view. JS twin of the glint. Pure. */
-export function seaReflectance(cosHv, f0 = TITAN_LAKES.f0) {
-  const c = Math.min(1, Math.max(0, cosHv));
-  return f0 + (1 - f0) * Math.pow(1 - c, 5);
-}
 // 0077 W1-f: end
 
 /**
@@ -1203,12 +1191,10 @@ uniform vec4  uMono;        // a one-channel face (Venus's radar ground): its co
 uniform float uCapOn;       // Uranus: Hubble's polar cap on the artist's map (URANUS_CAP); 0 on the Hubble face
 uniform vec3  uCap[ 10 ];   // the map's gain per channel, from the equator to the north pole every 10 degrees
 uniform vec4  uSpotOut;     // Neptune under the Measured look: the 1989 spot's oval (u, v, half-sizes), filled; z 0 is none
-// 0077 W1-f: begin -- Titan (TITAN_RADAR, TITAN_LAKES); off on every other world
-uniform vec4  uMonoFill;      // a radar face with gaps: the colour of the part no swath saw; w 1 while it is worn
-uniform sampler2D uLakeMap;   // the share of each texel that is sea
-uniform vec4  uLake;          // how much of the seas is in, the glint's gain (0 under Measured), its lobe, the darkening
-uniform vec4  uLakeGlint;     // the glint's colour, and the sea's reflectance straight down
-// 0077 W1-f: end
+uniform vec4  uMonoFill; // 0077 W1-f: TITAN_RADAR, TITAN_LAKES
+uniform sampler2D uLakeMap; // 0077 W1-f
+uniform vec4  uLake; // 0077 W1-f
+uniform vec4  uLakeGlint; // 0077 W1-f
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -1261,7 +1247,6 @@ void main() {
   base = spotOut( base, vUv );
 #endif
   // A one-channel face: its echo, decoded from sRGB, in the face's own colour (VENUS_GROUND).
-  // 0077 W1-f: a face with gaps (Titan's radar): alpha 0.5 to 1 is how much of the texel a swath saw.
   if ( uMono.w > 0.0 && uMonoFill.w > 0.0 ) { vec4 face = texture2D( uMap, vUv ); float echo = pow( face.r, 2.2 ); base = mix( uMonoFill.rgb * echo, uMono.rgb * echo, clamp( face.a * 2.0 - 1.0, 0.0, 1.0 ) ); }
   else if ( uMono.w > 0.0 ) base = uMono.rgb * pow( base.r, 2.2 );
   float sea = uLake.x > 0.0 ? texture2D( uLakeMap, vUv ).r * uLake.x : 0.0; // 0077 W1-f
@@ -1343,7 +1328,6 @@ void main() {
   }
 
   vec3 colour = base * direct * uSunIrradiance * ringShade;
-  // 0077 W1-f: the Sun mirrored in Titan's seas (TITAN_LAKES): where it falls is geometry, its lobe illustrative.
   if ( sea > 0.0 && uLake.y > 0.0 && d > 0.0 ) {
     vec3 hv = normalize( uSunDir + viewDir );
     float fres = uLakeGlint.w + ( 1.0 - uLakeGlint.w ) * pow( 1.0 - clamp( dot( hv, viewDir ), 0.0, 1.0 ), 5.0 );
@@ -1570,8 +1554,8 @@ uniform float uGrain;         // how much of the sparkle of unresolved grains is
 // turn now (rad), how much of them is drawn (0 = none: every other ring, and the Measured look).
 uniform vec4 uArcs[ ${ARC_SLOTS} ];
 uniform vec4 uArcBand;
-uniform vec4 uResolved;       // 0077 W1-f: balls drawn over the sheet (RING_GRAINS): on, planet radius (m), reach, fade start (m)
-uniform float uResolvedPx;    // 0077 W1-f: a pixel, radians
+uniform vec4 uResolved; // 0077 W1-f: RING_GRAINS
+uniform float uResolvedPx; // 0077 W1-f
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1671,7 +1655,6 @@ void main() {
   float dust = RING_DUST * ( 1.0 - alpha );
   float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
   float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
-  // 0077 W1-f: the balls drawn over the sheet carry their share of its light (RING_GRAINS, ringResolved).
   float drawn = 0.0;
   if ( uResolved.x > 0.0 ) {
     float near = 1.0 - smoothstep( uResolved.w, uResolved.z, length( vCamL.xy ) * uResolved.y );
@@ -1684,7 +1667,7 @@ void main() {
   if ( uGrain > 0.0 ) {
     float perPx = max( length( dFdx( vPosL.xy ) ), length( dFdy( vPosL.xy ) ) );
     float gate = uGrain * ( 1.0 - smoothstep( ${(RING_GRAIN.farRadii * 0.5).toExponential(2)}, ${RING_GRAIN.farRadii.toExponential(2)}, perPx ) );
-    gate *= 1.0 - min( drawn * ${(Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rFloorM) / Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rMinM)).toFixed(4)}, 1.0 ); // 0077 W1-f: the balls take over from the sparkle
+    gate *= 1.0 - min( drawn * ${(Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rFloorM) / Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rMinM)).toFixed(4)}, 1.0 ); // 0077 W1-f
     if ( gate > 0.0 ) {
       float lg = log2( max( perPx, 1e-9 ) * ${RING_GRAIN.px.toFixed(1)} );
       float lv = floor( lg );
@@ -2074,46 +2057,20 @@ export function createWorlds(scene, opts = {}) {
     }
     u.uLake.value.x = st.tex && reliefAllowed && !outerBefore ? 1 : 0;
   }
-  // THE RING AS PARTICLES (RING_GRAINS, scene/ringgrains.js): asked for the first time the camera is
-  // within fromM of the plane, over the ring, with Saturn drawn at its true size.
+  // THE RING AS PARTICLES (RING_GRAINS): the gate here, the rest in scene/ringgrains.js step().
   let grains = null;
   let grainsAsked = false;
-  const _gCam = new THREE.Vector3();
-  const _gInv = new THREE.Matrix4();
-  const _gSun = new THREE.Vector3();
   function stepRingGrains(w, mesh, ring) {
-    let on = false;
-    const ru = ring.material.uniforms.uRingRadii.value;
-    const planetM = w.radiusKm * 1000;
-    if (reliefAllowed && !lookMeasured && !latched && !outerBefore && camera && Math.abs((mesh.scale.x * stage.unitKm) / w.radiusKm - 1) < 0.01) {
-      camera.getWorldPosition(_gCam);
-      if (_gCam.distanceTo(mesh.position) < mesh.scale.x * ru.y * 1.05) {
-        ring.updateWorldMatrix(true, false);
-        _gCam.applyMatrix4(_gInv.copy(ring.matrixWorld).invert());   // planet radii, the ring's axes
-        const r = Math.hypot(_gCam.x, _gCam.y);
-        on = Math.abs(_gCam.z) * planetM < RING_GRAINS.fromM && r > ru.x && r < ru.y;
-      }
-    }
+    const on = reliefAllowed && !lookMeasured && !latched && !outerBefore && !!camera
+      && Math.abs((mesh.scale.x * stage.unitKm) / w.radiusKm - 1) < 0.01
+      && camera.getWorldPosition(_camPosU).distanceTo(mesh.position) < mesh.scale.x * ring.material.uniforms.uRingRadii.value.y * 1.05;
     if (on && !grains && !grainsAsked) {
       grainsAsked = true;
       import('./ringgrains.js')
         .then((m) => { grains = m.createRingGrains(THREE, { root, ringUniforms: ring.material.uniforms, ringGlsl: RING_U_GLSL, fineMax: RING_FINE.ratioMax }); })
         .catch((e) => { console.warn('the ring particles did not load', e); });
     }
-    if (!grains) return;
-    if (!on) { grains.update(null); return; }
-    const sunW = ring.material.uniforms.uSunDir.value;
-    _gSun.copy(sunW).transformDirection(_gInv);
-    // The globe's shadow on the patch, as RING_FRAG works it for the sheet.
-    const g = w.look.oblate ? oblateRadii(w.look.oblate) : { eq: 1, pol: 1 };
-    const gp = [_gCam.x / g.eq, _gCam.y / g.eq, 0];
-    const gs = new THREE.Vector3(_gSun.x / g.eq, _gSun.y / g.eq, _gSun.z / g.pol).normalize();
-    const b = gp[0] * gs.x + gp[1] * gs.y;
-    const closest = Math.sqrt(Math.max(gp[0] * gp[0] + gp[1] * gp[1] - b * b, 0));
-    const shade = b < 0 ? Math.min(1, Math.max(0, (closest - 0.98) / 0.04)) : 1;
-    const c = ring.material.uniforms.uColour.value;
-    const sunView = sunW.clone().transformDirection(camera.matrixWorldInverse);
-    grains.update({ on: true, tier: reliefTier, ring, planetM, cam: [_gCam.x, _gCam.y, _gCam.z], sun: [_gSun.x, _gSun.y, _gSun.z], sunView, light: ((c.r + c.g + c.b) / 3) * shade });
+    if (grains) grains.step(on ? { w, mesh, ring, camera, tier: reliefTier, oblate: w.look.oblate ? oblateRadii(w.look.oblate) : null } : null);
   }
   // 0077 W1-f: end
   function dropRingDetail(id) {
@@ -3087,7 +3044,7 @@ export function createWorlds(scene, opts = {}) {
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
     ringGrains: () => (grains ? grains.stats() : { on: false, loaded: false }), // 0077 W1-f
     setOuterBefore: (on) => { outerBefore = !!on; }, // 0077 W1-f: a look probe's before, from the same place
-    lakes: (id) => { const st = lakeState.get(id); const m = meshes.get(id); return { asked: !!(st && st.asked), worn: !!(m && m.material.uniforms.uLake && m.material.uniforms.uLake.value.x > 0), glint: m && m.material.uniforms.uLake ? m.material.uniforms.uLake.value.y : 0 }; }, // 0077 W1-f
+    lakes: (id) => { const u = meshes.get(id).material.uniforms.uLake; return { worn: u.value.x > 0, glint: u.value.y }; }, // 0077 W1-f
     /** For the probes: is this world wearing its relief? */
     hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
     setReliefTier,

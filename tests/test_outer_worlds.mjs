@@ -32,6 +32,32 @@ const D = await import(join(JS, 'scene/dwarfs.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 await import(join(JS, 'copy/en.later.js'));
 const notes = [];
+// The twins of two shader blocks, written here once: Schlick's reflectance of a flat sea (WORLD_FRAG's
+// glint), and the detached layer's optical depth along a ray on 400 steps (AIR_SHELL_FRAG's two crossings).
+const seaReflectance = (cosHv, f0) => f0 + (1 - f0) * Math.pow(1 - Math.min(1, Math.max(0, cosHv)), 5);
+const hit = (ro, rd, r) => {
+  const b = ro[0] * rd[0] + ro[1] * rd[1] + ro[2] * rd[2];
+  const c = ro[0] * ro[0] + ro[1] * ro[1] + ro[2] * ro[2] - r * r;
+  const d = b * b - c;
+  return d < 0 ? [1e9, -1e9] : [-b - Math.sqrt(d), -b + Math.sqrt(d)];
+};
+function layerDepth(p, ro, rd, steps = 400) {
+  const L = A.layerCoefficients(p);
+  const o = hit(ro, rd, L.r + 3 * L.sigma);
+  if (!(o[0] < 1e8)) return 0;
+  const g = hit(ro, rd, 1);
+  const a = Math.max(o[0], 0);
+  const b = Math.min(o[1], g[0] > 0 && g[0] < 1e8 ? g[0] : o[1]);
+  if (!(b > a)) return 0;
+  const dl = (b - a) / steps;
+  let od = 0;
+  for (let i = 0; i < steps; i++) {
+    const t = a + (i + 0.5) * dl;
+    const x = (Math.hypot(ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t) - L.r) / L.sigma;
+    od += Math.exp(-0.5 * x * x) * L.peak * dl;
+  }
+  return od;
+}
 
 // ------------------------------------------------------------------------------------- 1. Titan
 const titan = W.WORLDS.find((w) => w.id === 'titan');
@@ -41,7 +67,7 @@ check(titan.look.lakes === W.TITAN_LAKES && titan.look.groundFaces.includes('rad
 check(COPY.worldFace.titan && COPY.worldFace.titan.modes.radar && /61 %/.test(COPY.worldFace.titan.notes.radar) && /grey is ours/.test(COPY.worldFace.titan.notes.radar), 'the card says what the radar face is, how much it covers and that its grey is ours');
 check(/glint/.test(COPY.worldFace.titan.notes.own) && /illustrative/.test(COPY.worldFace.titan.notes.own), 'the card says the glint is illustrative');
 check(/500 km/.test(COPY.drawing.worldDeparture.titan) && /not known/.test(COPY.drawing.worldDeparture.titan), 'the card says where the detached layer is drawn and that today\'s is not known');
-check(near(W.seaReflectance(1), W.TITAN_LAKES.f0, 1e-9) && near(W.seaReflectance(0), 1, 1e-9), 'a flat sea reflects 1.6 % straight down and all of it at grazing');
+check(near(seaReflectance(1, W.TITAN_LAKES.f0), W.TITAN_LAKES.f0, 1e-9) && near(seaReflectance(0, W.TITAN_LAKES.f0), 1, 1e-9), 'a flat sea reflects 1.6 % straight down and all of it at grazing');
 for (const s of ['uMonoFill', 'uLakeMap', 'uLake.w', 'face.a * 2.0 - 1.0', 'uLakeGlint']) check(W.WORLD_FRAG.includes(s), `the world shader has ${s}`);
 // The tiles' shader is built from this one by rewriting four lines; they must still be there.
 const T = await import(join(JS, 'scene/tiles.js'));
@@ -65,11 +91,11 @@ const lc = A.layerCoefficients(tp);
 check(lc && near((lc.r - 1) * tp.radiusKm, 500, 1e-6), 'the layer is 500 km up');
 check(tp.topKm >= tp.layer.heightKm + 3 * tp.layer.sigmaKm, 'the shell reaches past the whole layer');
 check(!A.layerCoefficients(A.ATMO_PARAMS.mars) && !A.layerCoefficients(A.ATMO_PARAMS.venus), 'Mars and Venus have no detached layer');
-const down = A.layerDepth(tp, [0, 0, 3], [0, 0, -1]);
+const down = layerDepth(tp, [0, 0, 3], [0, 0, -1]);
 check(near(down, tp.layer.tau, tp.layer.tau * 0.02), `straight down the layer is its own optical depth (${down.toFixed(4)} against ${tp.layer.tau})`);
-const limb = A.layerDepth(tp, [-3, lc.r, 0], [1, 0, 0]);
+const limb = layerDepth(tp, [-3, lc.r, 0], [1, 0, 0]);
 check(limb > 10 * tp.layer.tau && limb < 40 * tp.layer.tau, `along the limb it is many times deeper (${limb.toFixed(3)})`);
-const miss = A.layerDepth(tp, [-3, lc.r + 4 * lc.sigma, 0], [1, 0, 0]);
+const miss = layerDepth(tp, [-3, lc.r + 4 * lc.sigma, 0], [1, 0, 0]);
 check(miss < 1e-4, 'a ray above it misses it');
 for (const s of ['LAYER_STEPS', 'dFdx( rd )', 'exp( -layerOd )', 'uLayerAlbedo']) check(A.AIR_SHELL_FRAG.includes(s), `the shell's shader has ${s}`);
 const shell = A.createAirShell('titan');
@@ -87,10 +113,10 @@ check(near(G.slabLight(20, 1, 1, true), 1, 1e-6) && G.slabLight(0.1, 0.5, 0.5, t
 check(G.grainFade(0, 1000) === 1 && G.grainFade(1000, 1000) === 0 && G.grainFade(800, 1000) > 0 && G.grainFade(800, 1000) < 1, 'the balls fade out toward their reach');
 // The sheet's twin: the share it gives up is the balls' share where they are big enough on screen.
 const px = 0.0005;
-check(near(W.ringResolved(100, px), G.resolvedShare(), 1e-12), 'close up the sheet gives up exactly the balls\' share');
-check(W.ringResolved(40000, px) === 0, 'where even a 5 m ball is under a third of a pixel it gives up nothing');
+check(near(G.resolvedAt(100, px), G.resolvedShare(), 1e-12), 'close up the sheet gives up exactly the balls\' share');
+check(G.resolvedAt(40000, px) === 0, 'where even a 5 m ball is under a third of a pixel it gives up nothing');
 check(W.RING_GRAINS.rMinM === P.rMinM && W.RING_GRAINS.rMaxM === P.rMaxM && W.RING_GRAINS.rFloorM === P.rFloorM && W.RING_GRAINS.fromM === P.fromM, 'the sheet and the module agree on the numbers');
-check(W.RING_FRAG.includes('uResolved') && W.RING_FRAG.includes('body *= 1.0 - drawn'), 'the sheet wears it');
+check(W.RING_FRAG.includes(Math.log(5 / 0.01).toFixed(5)) && W.RING_FRAG.includes('uResolved') && W.RING_FRAG.includes('body *= 1.0 - drawn'), 'the sheet wears it');
 check(/balls of ice/.test(COPY.drawing.worldDeparture.saturn) && /illustrative/.test(COPY.drawing.worldDeparture.saturn), 'Saturn\'s card says the balls are drawn and what of them is illustrative');
 // Build it and lay the tiles, as worlds.js would, 2 km over the A ring at 130 000 km.
 const root = new THREE.Group();

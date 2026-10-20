@@ -63,6 +63,16 @@ export function resolvedShare(P = RING_PARTICLES) {
   return Math.log(P.rMaxM / P.rMinM) / Math.log(P.rMaxM / P.rFloorM);
 }
 
+/**
+ * The share of the sheet's light the drawn balls take, `distM` from a camera whose pixel is `pxAngle`
+ * radians: with q = 3, ln(rMax / r) / ln(rMax / rFloor) for the balls bigger than r, a third of a pixel
+ * there. JS twin of RING_FRAG's uResolved block (scene/worlds.js). Pure.
+ */
+export function resolvedAt(distM, pxAngle, P = RING_PARTICLES) {
+  const rc = Math.max(0.3 * distM * pxAngle, P.rMinM);
+  return Math.min(1, Math.max(0, Math.log(P.rMaxM / rc) / Math.log(P.rMaxM / P.rFloorM)));
+}
+
 /** The particles' fade with distance from the camera, 1 near and 0 at `reachM`. Pure. */
 export function grainFade(distM, reachM, P = RING_PARTICLES) {
   if (!(reachM > 0)) return 0;
@@ -382,11 +392,40 @@ export function createRingGrains(THREE, { root, ringUniforms, ringGlsl, fineMax 
     return { ...stats };
   }
 
+  // The camera over the ring, the Sun in the ring's axes and the view's, and the globe's shadow on the
+  // patch (as RING_FRAG works it for the sheet). `a` null: off. scene/worlds.js stepRingGrains calls it.
+  const _c = new THREE.Vector3();
+  const _inv = new THREE.Matrix4();
+  const _s = new THREE.Vector3();
+  const _v = new THREE.Vector3();
+  function step(a) {
+    if (!a) return update(null);
+    const { w, ring, camera } = a;
+    ring.updateWorldMatrix(true, false);
+    camera.getWorldPosition(_c).applyMatrix4(_inv.copy(ring.matrixWorld).invert());
+    const planetM = w.radiusKm * 1000;
+    const ru = ring.material.uniforms.uRingRadii.value;
+    const r = Math.hypot(_c.x, _c.y);
+    if (!(Math.abs(_c.z) * planetM < P.fromM && r > ru.x && r < ru.y)) return update(null);
+    const sunW = ring.material.uniforms.uSunDir.value;
+    _s.copy(sunW).transformDirection(_inv);
+    const g = a.oblate || { eq: 1, pol: 1 };
+    const gx = _c.x / g.eq;
+    const gy = _c.y / g.eq;
+    const gs = new THREE.Vector3(_s.x / g.eq, _s.y / g.eq, _s.z / g.pol).normalize();
+    const b = gx * gs.x + gy * gs.y;
+    const closest = Math.sqrt(Math.max(gx * gx + gy * gy - b * b, 0));
+    const shade = b < 0 ? Math.min(1, Math.max(0, (closest - 0.98) / 0.04)) : 1;
+    const c = ring.material.uniforms.uColour.value;
+    _v.copy(sunW).transformDirection(camera.matrixWorldInverse);
+    return update({ on: true, tier: a.tier, ring, planetM, cam: [_c.x, _c.y, _c.z], sun: [_s.x, _s.y, _s.z], sunView: _v, light: ((c.r + c.g + c.b) / 3) * shade });
+  }
+
   function dispose() {
     if (ringUniforms.uResolved) ringUniforms.uResolved.value.x = 0;
     if (points.parent) points.parent.remove(points);
     geo.dispose();
     material.dispose();
   }
-  return { points, update, dispose, stats: () => ({ ...stats, perTile: n }) };
+  return { points, update, step, dispose, stats: () => ({ ...stats, perTile: n }) };
 }

@@ -235,30 +235,6 @@ export function layerCoefficients(p) {
   const sigma = (L.sigmaKm * gain) / p.radiusKm;
   return { r: 1 + (L.heightKm * gain) / p.radiusKm, sigma, peak: L.tau / (sigma * Math.sqrt(2 * Math.PI)), albedo: L.albedo.slice(), g: L.g };
 }
-/**
- * The layer's optical depth along a ray from `ro` along `rd` (unit), in ground radii, stopping at the
- * ground: the twin of the shader's two crossings, on 400 steps instead of 2 x LAYER_STEPS. Pure.
- */
-export function layerDepth(p, ro, rd, steps = 400) {
-  const L = layerCoefficients(p);
-  if (!L) return 0;
-  const o = sphere(ro, rd, L.r + 3 * L.sigma);
-  if (!(o[0] < 1e8)) return 0;
-  const g = sphere(ro, rd, 1);
-  const end = g[0] > 0 && g[0] < 1e8 ? g[0] : o[1];
-  const a = Math.max(o[0], 0);
-  const b = Math.min(o[1], end);
-  if (!(b > a)) return 0;
-  const dl = (b - a) / steps;
-  let od = 0;
-  for (let i = 0; i < steps; i++) {
-    const t = a + (i + 0.5) * dl;
-    const r = Math.hypot(ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t);
-    const x = (r - L.r) / L.sigma;
-    od += Math.exp(-0.5 * x * x) * L.peak * dl;
-  }
-  return od;
-}
 // 0077 W1-f: end
 
 /**
@@ -417,9 +393,7 @@ uniform vec3  uKappa;     // how fast it dies with depth, per colour
 uniform vec3  uAlbedo;    // the particles' albedo: diffuse light has met it at least twice
 uniform float uTauUp;     // the particles' optical depth straight up
 uniform float uTwilight;  // how far light is carried into the shadow, in radii (TWILIGHT); 0: a hard shadow
-// 0077 W1-f: the detached layer (ATMO_PARAMS.titan.layer): its radius, sigma, peak extinction, all in
-// ground radii, and 1 where a row has one (0 everywhere else); its albedo; its asymmetry.
-uniform vec4  uLayer;
+uniform vec4  uLayer; // 0077 W1-f: layerCoefficients(); w 1 where a row has one
 uniform vec3  uLayerAlbedo;
 uniform float uLayerG;
 const int LAYER_STEPS = ${LAYER_STEPS};
@@ -500,11 +474,10 @@ void main() {
   float mu = dot( rd, uSunDir );
   float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
   bool hitsGround = ground.x > 0.0 && ground.x < 1e8;
-  // 0077 W1-f: begin -- the detached layer, on its own steps across each of its (at most two) crossings
+  // 0077 W1-f: begin -- the detached layer (layerCoefficients)
   vec3 layerLight = vec3( 0.0 );
   float layerOd = 0.0;
   if ( uLayer.w > 0.0 ) {
-    // Its thickness on screen, in pixels: a sigma under about half a pixel is faded out, not aliased.
     float pxAngle = max( length( dFdx( rd ) ), length( dFdy( rd ) ) );
     float far = sqrt( max( dot( ro, ro ) - uLayer.x * uLayer.x, 1e-4 ) );
     float shown = uLayer.w * smoothstep( 0.35, 0.9, uLayer.y / max( far * pxAngle, 1e-9 ) );
@@ -521,7 +494,6 @@ void main() {
         b = min( b, tEnd );
         if ( b <= a ) continue;
         float dl = ( b - a ) / float( LAYER_STEPS );
-        // The far crossing is seen through whatever of the main haze the ray crossed on its way there.
         vec3 seen = c == 0 ? vec3( 1.0 ) : behind;
         for ( int k = 0; k < LAYER_STEPS; k++ ) {
           vec3 q = ro + rd * ( a + ( float( k ) + 0.5 ) * dl );
