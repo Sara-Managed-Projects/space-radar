@@ -41,6 +41,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of GLONASS-M and GLONASS-K, Fengyun-3 and Himawari-8 and -9 | built by us in code from published dimensions | CC0 or CC BY 2.0 where a picture was used; ours | [3b-12](#3b-12-four-weather-and-navigation-craft-built-from-dimensions--glonass-m-glonass-k-fengyun-3-himawari-2026-10-14) |
 | The shapes of Europa Clipper, SMAP, Jason-3, Curiosity and SORCE | NASA's and JPL's own published models | public domain (NASA media guidelines) | [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15) |
 | The shapes of Psyche, Lucy, JUICE, BepiColombo (cruise stack) and Hera | built by us in code from published dimensions | public domain or CC BY 4.0 where a picture was used; ours | [3b-14](#3b-14-five-deep-space-probes-built-from-dimensions--psyche-lucy-juice-bepicolombo-hera-2026-10-15) |
+<!-- 0077 W1-b: begin -->
+| The shapes of Mars Express, Gaia, Hayabusa2 and Hope | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 3.0 where a picture was used; ours | [3b-15](#3b-15-four-deep-space-craft-built-from-dimensions--mars-express-gaia-hayabusa2-hope-2026-10-20) |
+<!-- 0077 W1-b: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1206,6 +1209,38 @@ details simplified".
 No logo, lettering, flag, insignia or plaque is on any of the five. NASA, JPL, SwRI, ESA, JAXA, the JUICE
 Science Operations Centre and the papers' authors do not endorse Space Radar, and none of them made or
 approved these shapes.
+
+<!-- 0077 W1-b: begin -->
+## 3b-15. Four deep-space craft built from dimensions — Mars Express, Gaia, Hayabusa2, Hope (2026-10-20)
+
+Release 1.3.0, stage W1-b (public #1085 to #1088). **No agency publishes a model of any of the four under terms that allow
+a derivative**: NASA's 3D Resources and NASA Science have none of them; ESA's terms for the images on its site allow
+"education, editorial and/or information purposes only", and its planetarium models may not be altered; JAXA's terms forbid
+altered derivatives of its material; MBRSC publishes no model of Hope. So each file was built in code with the part library
+from cited numbers. **No ESA, JAXA or MBRSC picture or model is in a file, on a sheet or derived from.** Mars Express's layout
+was read off two NASA/JPL illustrations by Corby Waste (public domain); Gaia's Sun side off DLR's photograph of the full-size
+model (CC BY 2.0); Hayabusa2's off DLR's renders (CC BY 2.0) and The Planetary Society's diagram (CC BY 3.0). **Hope has no free
+picture of the flight craft**: the mock-up's photographs (CC BY-SA 4.0) and MBRSC's photograph of the deployed craft were looked
+at only. ESA's renders on Commons (CC BY-SA 3.0 IGO) and JAXA's 1:20 model (photograph CC BY-SA 4.0) were looked at only. No
+image-to-3D model was used. Their cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `mars-express.glb` (72 KB) | Mars Express: a black box 1.5 by 1.4 by 1.8 m, a 1.6 m dish, the two relay antennas and Beagle 2's empty ring on the top face, two four-panel wings on D-shaped yokes, 11.9 m tip to tip, the MARSIS dipole and monopole DRAWN SHORTENED (5.6 of 20 m a side, 2 of 7 m) | Wikipedia (<https://en.wikipedia.org/wiki/Mars_Express>); NASA/JPL's illustrations by Corby Waste (<https://commons.wikimedia.org/wiki/File:Mars_Express_illustration_highlighting_MARSIS_antenna.jpg>, <https://commons.wikimedia.org/wiki/File:Mars_Express_over_Tharsis_volcanoes.jpg>); looked at only, ESA's render ESA392355 (<https://commons.wikimedia.org/wiki/File:Mars_Express_ESA392355.jpg>, CC BY-SA 3.0 IGO) (read 2026-10-20). The panels' size is derived; the yokes, the instruments and the radiators are ours | numbers are facts; the illustrations are public domain and are not in the file; NO ESA PICTURE WAS USED |
+| `gaia.glb` (121 KB) | Gaia: a twelve-sided sunshield 10 m across, its Sun side with six cell panels, the fixed ring and the phased-array antenna, its cold side in silver foil with gold patches; the hexagonal service module; the black thermal tent with the two telescopes' openings 106.5 degrees apart, 3.5 m tall | Wikipedia (<https://en.wikipedia.org/wiki/Gaia_(spacecraft)>), eoPortal (<https://www.eoportal.org/satellite-missions/gaia>), ESA's factsheet; DLR's photograph of the full-size model (<https://commons.wikimedia.org/wiki/File:GAIA_(14050944939).jpg>, CC BY 2.0); looked at only, the model at Le Bourget (CC BY-SA 3.0) and ESA's render (CC BY-SA 3.0 IGO) (read 2026-10-20). The drum, the service module and the panels' sizes are ours | numbers are facts; the photograph is CC BY 2.0 and is not in the file; NO ESA PICTURE WAS USED |
+| `hayabusa2.glb` (86 KB) | Hayabusa2: a gold box 1.0 by 1.6 by 1.25 m with two flat antennas, the re-entry capsule, the ion engines' four heads, the sampler horn, two wings of three panels on ladders, 6 by 4.23 m | eoPortal (<https://www.eoportal.org/satellite-missions/hayabusa-2>), Wikipedia (<https://en.wikipedia.org/wiki/Hayabusa2>); DLR's renders (<https://commons.wikimedia.org/wiki/File:Hayabusa2_front_view.jpg>, <https://commons.wikimedia.org/wiki/File:Hayabusa2_side_view.jpg>, CC BY 2.0) and The Planetary Society's diagram (<https://commons.wikimedia.org/wiki/File:20190605_hayabusa-diagram-tpr-01.png>, CC BY 3.0); looked at only, JAXA's 1:20 model (CC BY-SA 4.0) and JAXA's labelled views (read 2026-10-20). The antennas' size, the horn and the instruments are ours | numbers are facts; the renders and the diagram are CC BY and are not in the file; NO JAXA PICTURE WAS USED |
+| `hope.glb` (66 KB) | Hope (Emirates Mars Mission): a gold hexagonal prism 2.37 m across and 2.9 m tall, a 1.85 m dark dish, two wings of two panels, the three instruments on one face, 8.0 m tip to tip | eoPortal (<https://www.eoportal.org/satellite-missions/emm-hope>); NO FREE PICTURE; looked at only, the mock-up at IAC 2021 (<https://commons.wikimedia.org/wiki/File:Emirates_Mars_Mission_mockup_at_IAC_2021_01_(cropped).jpg>, CC BY-SA 4.0) and MBRSC's photograph of the deployed craft (read 2026-10-20). The wings' size and place, the dish's depth and the instruments' boxes are ours | numbers are facts; nothing of any picture is in the file |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `mars-express`, `gaia`, `hayabusa2`, `hope` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and NASA/JPL pictures (public domain)`;
+`3D model: built by Space Radar from published dimensions and a photograph of the full-size model (CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions, DLR renders (CC BY 2.0) and a Planetary Society diagram (CC BY 3.0)`;
+`3D model: built by Space Radar from published dimensions (no free picture of the flight craft)`
+
+No logo, lettering, flag or insignia is on any of the four. NASA, JPL, ESA, DLR, JAXA, MBRSC, the UAE Space Agency, The Planetary
+Society and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0077 W1-b: end -->
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
