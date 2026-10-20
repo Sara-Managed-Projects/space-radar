@@ -347,7 +347,7 @@ export const REAL_MODELS = {
     37214: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3B', catalogue: 'FENGYUN 3B', made: 'dimensions', axes: 'app' },
     39260: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3C', catalogue: 'FENGYUN 3C', made: 'dimensions', axes: 'app' },
     43010: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3D', catalogue: 'FENGYUN 3D', made: 'dimensions', axes: 'app' },
-    20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
+    20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST', made: 'dimensions' }, // 0077 W3-a: rebuilt in code from cited dimensions (row `hubble`)
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
     // different spacecraft: a boxy 1999 bus, where 8 and 9 are the same Orbital/Northrop bus with

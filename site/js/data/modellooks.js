@@ -5,7 +5,7 @@
 
 /** The look each file is drawn in, where its row states one (scene/pbr.js lookOf decides the rest). */
 export const MODEL_LOOKS = {
-  "hubble.glb": "toon",
+  "hubble.glb": "pbr",
   "iris.glb": "pbr",
   "isis-1.glb": "pbr",
   "jwst.glb": "pbr",

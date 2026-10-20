@@ -52,7 +52,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
 <!-- 0077 W3-a: begin -->
-| The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1 | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
+| The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
 <!-- 0077 W3-a: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
@@ -575,7 +575,7 @@ than counted by hand.
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 148 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 142 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 76 KB |
+| `hubble.glb` | rebuilt by us in code in release 1.3.0 (see [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20)); NASA's Hubble Space Telescope (A) used for proportions only | NORAD 20580 | 408 KB | <!-- 0077 W3-a -->
 | `kepler.glb` | Kepler (A) | Horizons -227 (Kepler) | 96 KB |
 | `roman.glb` | Nancy Grace Roman Space Telescope (B) | Horizons -211 (Nancy Grace Roman Space Telescope) | 162 KB |
 | `spitzer.glb` | Spitzer Space Telescope | Horizons -79 (Spitzer) | 166 KB |
@@ -1359,6 +1359,14 @@ number and says what is ours.
 | `isis-1.glb` (134 KB) | ISIS 1: the drum of cells and its crossed sounder dipoles (drawn short) | NRC Science Dimension 1969 (looked at only) and NSSDCA; NSSDCA's photograph of the flight craft (<https://nssdc.gsfc.nasa.gov/planetary/image/isis_1.jpg>) | public domain |
 
 **Credit lines:** `3D model: built by Space Radar from ... published dimensions; compared with ...` (each row's `credit:`).
+
+### Hubble rebuilt, and Webb re-baked, for the physically based look
+
+`hubble.glb` was NASA's (A) file, 7 670 triangles of plain cylinders and two flat plates; it is replaced by a build in code at
+flagship detail from cited dimensions and NASA's Servicing Mission 4 photographs (public domain), with (A) used for its proportions
+only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with its gold mirror segments as their own part (row `jwst`).
+
+| `hubble.glb` (408 KB) | Hubble as it has flown since SM4: silver foil, white NOBL and radiator panels, SA3 wings, door open | NASA's SM4 photographs (Commons, e.g. <https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg>); NASA 3D Resources' Hubble (A) for proportions | public domain |
 
 <!-- 0077 W3-a: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
