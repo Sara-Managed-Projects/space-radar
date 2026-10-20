@@ -7,8 +7,8 @@
 // graph may import it (tests/test_boot_diet.mjs).
 import { COPY } from './en.js';
 // 0077 W1-e: begin
-import { LANG } from './lang.js';
-const KEYS_BEFORE = new Set(Object.keys(COPY));
+import { HOOK } from './lang.js';
+const KEYS_BEFORE = HOOK.localise ? new Set(Object.keys(COPY)) : null;
 // 0077 W1-e: end
 
 Object.assign(COPY, {
@@ -189,6 +189,6 @@ Object.assign(COPY, {
 });
 
 // 0077 W1-e: begin
-// The sections this file added, in the visitor's language (copy/en.js says how; public #524).
-if (LANG !== 'en') await (await import('./index.js')).localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
+// The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
+if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
 // 0077 W1-e: end

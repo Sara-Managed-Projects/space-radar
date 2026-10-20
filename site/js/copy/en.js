@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------------------
 
 // 0077 W1-e: begin
-import { LANG, LOCALE, PILL_LOCALE } from './lang.js';
+import { HOOK, LOCALE, PILL_LOCALE } from './lang.js';
 // A language file's grammar written as code (public #524): copy/<code>.js may export RULES with
 // `article(phrase)` and `typeWords(text)`; copy/index.js puts them here. English needs none.
 export const RULES = {};
@@ -93,6 +93,7 @@ export const fmt = {
   nbsp: NBSP,
   /** "4 minutes" / "1 minute" */
   plural(n, one, many) {
+    if (RULES.plural) return RULES.plural(n, one, many); // 0077 W1-e
     return Math.abs(Number(n)) === 1 ? one : many;
   },
 };
@@ -2594,9 +2595,8 @@ export const CITIES = [
 ];
 
 // 0077 W1-e: begin
-// The language (public #524). A top-level await, so that every module that imports this file -- all of
-// them, by way of COPY -- is evaluated with the words already in place, and none of them has to ask. In
-// English nothing is fetched. Otherwise copy/index.js (and copy/<code>.js) arrive by dynamic import and
-// the file's strings go over these IN PLACE, a key at a time: a key the language lacks stays English.
-if (LANG !== 'en') await (await import('./index.js')).localise({ COPY, GLOSSARY, RULES });
+// The language (public #524). If index.html prepared one (copy/lang.js says how), its words go over these IN PLACE, a key at a
+// time, now: this file ends before any module that imports it has run, so every one of them is evaluated with the words already
+// in place. A key the language lacks stays English. In English HOOK is empty and nothing happens.
+if (HOOK.localise) HOOK.localise({ COPY, GLOSSARY, RULES });
 // 0077 W1-e: end

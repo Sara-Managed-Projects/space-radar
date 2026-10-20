@@ -1,7 +1,7 @@
 // es: Spanish, the words of site/js/copy/en.js, en.later.js and en.facts.js (public #525, spec 0077 W1-e).
 // Fetched by copy/index.js only when the page speaks Spanish (?lang=es). docs/TRANSLATING.md says how it was made.
 //
-// STATUS: MACHINE-DRAFTED. Every string was written by a language model from the English, to be natural
+// STATUS: MACHINE-DRAFTED. Every string was drafted by a program from the English, aiming at natural
 // Spanish and not a word-for-word copy, and has NOT been read by a native speaker yet. Until a second native
 // speaker has read it and put their name in `review.by`, copy/lang.js keeps `reviewed: false`, so the page
 // speaks Spanish only to a visitor who asks for it (?lang=es), never from the browser's language.
@@ -17,7 +17,7 @@
 //   * "Aspecto" is the Look panel (Medido / Cine); "ficha" is a card; "viaje" is a trip; "parada" a stop.
 //   * Numbers keep the app's own format (a narrow no-break space between groups of three digits, a point for the
 //     decimal) because most of them are written by code that is shared by every language.
-//   * The compass uses the RAE's names (oesnoroeste, nornoreste) and O for oeste.
+//   * The compass is written like the English one, with hyphens (nor-noreste, oeste-suroeste), and O is oeste.
 
 export const META = {
   code: 'es',
@@ -89,21 +89,21 @@ export const COPY = {
     lightHours: "a {lh} horas luz",
     compass: [
       "norte",
-      "nornoreste",
+      "nor-noreste",
       "noreste",
-      "estenoreste",
+      "este-noreste",
       "este",
-      "estesureste",
+      "este-sureste",
       "sureste",
-      "sursureste",
+      "sur-sureste",
       "sur",
-      "sursuroeste",
+      "sur-suroeste",
       "suroeste",
-      "oessuroeste",
+      "oeste-suroeste",
       "oeste",
-      "oesnoroeste",
+      "oeste-noroeste",
       "noroeste",
-      "nornoroeste"
+      "nor-noroeste"
     ]
   },
   numberWords: ["ningún", "un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"],
@@ -192,7 +192,7 @@ export const COPY = {
   },
   explore: {
     worldsTitle: "Los mundos",
-    worldsDrawn: "Los planetas se dibujan como puntos, más grandes de lo que son.",
+    worldsDrawn: "Planetas como puntos, más grandes que en la realidad.",
     farTitle: "Lugares lejanos",
     systemsTitle: "Sistemas estelares",
     systemsMild: "Planetas cerca de la zona habitable",
@@ -231,8 +231,8 @@ export const COPY = {
     backToLiveTitle: "Volver a la hora real, ahora",
     rate: "{n}×",
     rateTitle: "Velocidad {n}×. Pulsa para {next}×",
-    hold: "Haz clic para detener el tiempo, arrastra para moverte por él",
-    run: "Haz clic para que el tiempo corra, arrastra para moverte por él",
+    hold: "Clic para detener el tiempo, arrastra para moverte",
+    run: "Clic para que corra el tiempo, arrastra para moverte",
     localTitle: "Tu hora: {time}, {zone}. {hold}",
     readLabel: "{text}. {hold}",
     units: {
@@ -265,7 +265,7 @@ export const COPY = {
     nowTitle: "Volver a ahora",
     rough: "aproximado",
     roughTitle: "Pasada una semana desde ahora, el lugar de un satélite en su órbita es aproximado",
-    roughSay: "A esta distancia de ahora, los lugares de los satélites son aproximados.",
+    roughSay: "Lejos de ahora, el lugar de un satélite es aproximado.",
     worlds: "Los planetas y las lunas se mantienen durante siglos.",
     markTitle: "{what}. Pulsa para ir allí",
     endTitle: "La línea de tiempo termina aquí: un mes atrás, un año adelante"
@@ -350,7 +350,7 @@ export const COPY = {
     home: "La Tierra",
     homeHow: "volver a casa",
     homeTitle: "Un solo vuelo desde aquí de vuelta a la Tierra",
-    flightOff: "No desde este lugar: ve primero a Tierra, Planetas o Estrellas"
+    flightOff: "Desde aquí no: ve antes a Tierra, Planetas o Estrellas"
   },
   sceneNote: {
     refused: "No se pudieron leer los satélites.",
@@ -360,10 +360,10 @@ export const COPY = {
     closeTitle: "Cerrar esta nota"
   },
   link: {
-    unknownVersion: "Este enlace es de un mapa más nuevo. Se muestra la vista por defecto.",
-    unknownTrip: "Ese viaje ya no está en este mapa. Se muestra la vista por defecto.",
-    unknownAt: "Ese objeto no está en este mapa; se muestra la vista por defecto.",
-    unknownStage: "Este mapa no puede centrarse en ese lugar. Se muestra la vista por defecto."
+    unknownVersion: "Enlace de un mapa más nuevo. Se muestra la vista inicial.",
+    unknownTrip: "Ese viaje ya no está en el mapa. Vista inicial.",
+    unknownAt: "Ese objeto no está en el mapa; se muestra la vista inicial.",
+    unknownStage: "No se puede centrar ahí. Se muestra la vista inicial."
   },
   share: {
     link: "Compartir",
@@ -379,23 +379,23 @@ export const COPY = {
     textLabel: "Texto",
     lookingUp: "Buscándolo en Wikipedia…",
     wikiSource: "El artículo de Wikipedia que se cita",
-    noWiki: "No hay texto de Wikipedia aquí: la publicación es más corta.",
+    noWiki: "Sin texto de Wikipedia: publicación más corta.",
     attribution: "De Wikipedia, CC BY-SA 4.0",
     native: "Compartir…",
     nativeTitle: "El menú de compartir de tu propio dispositivo, con la postal donde admita una imagen",
-    nativeFailed: "No se abrió el menú de compartir; copia o descarga en su lugar",
+    nativeFailed: "No se abrió «Compartir»; copia o descarga",
     copy: "Copiar el texto",
     copyTitle: "Copiar el texto y el enlace, listos para pegar en una publicación",
     copied: "Texto y enlace copiados",
     linkCopied: "Enlace copiado",
-    copyRefused: "No se permitió copiar; el texto queda seleccionado para que lo copies",
+    copyRefused: "No se pudo copiar; el texto queda seleccionado",
     jpeg: "Descargar JPEG",
     jpegTitle: "Guardar la postal como imagen JPEG, de 6 por 4 pulgadas a 300 puntos por pulgada",
     pdf: "Descargar PDF",
     pdfTitle: "Guardar la postal como PDF de una página, de 6 por 4 pulgadas, para imprimir",
     email: "Correo",
     emailTitle: "Escribir un correo con el texto y el enlace",
-    emailNote: "El correo no lleva imagen: usa «Compartir…» o descárgala.",
+    emailNote: "Sin imagen por correo: «Compartir…» o descarga.",
     networksLabel: "Publicar en",
     networkTitle: "Abrir {network} con esta publicación, en una pestaña nueva",
     networkLabel: "Publicar en {network}",
@@ -431,7 +431,7 @@ export const COPY = {
     compact: "Compacta",
     auto: "Automática",
     autoCompact: "Compacta ahora, porque esta ventana es baja.",
-    autoRegular: "Normal ahora; Compacta cuando la ventana mide 800 px de alto o menos."
+    autoRegular: "Normal ahora; Compacta con ventana de 800 px de alto o menos"
   },
   nextList: {
     justHappened: "Acaba de ocurrir",
@@ -452,7 +452,7 @@ export const COPY = {
     launch: "{name} despega {when}",
     launchRough: "{name} despega {when}, más o menos: la fecha aún no está fijada",
     approach: "{name} pasa junto a la Tierra {when}, a {ld} veces la distancia de la Luna",
-    approachNoDistance: "{name} pasa junto a la Tierra {when}",
+    approachNoDistance: "{name}: paso cercano {when}",
     sizeM: "Mide {n} m de ancho",
     sizeKm: "Mide {n} km de ancho",
     sizeRangeM: "Entre {lo} y {hi} m de ancho, estimado por su brillo",
@@ -461,7 +461,7 @@ export const COPY = {
     perihelion: "{name} está lo más cerca del Sol {when}",
     pass: "{name} pasa sobre ti {when}",
     train: "Un tren de {n} satélites pasa sobre ti {when}",
-    aurora: "NOAA prevé {word}, a partir de {when} (Kp {kp})",
+    aurora: "NOAA prevé {word}, {when} (Kp {kp})",
     auroraNow: "Hay una tormenta geomagnética en marcha: {word} (Kp {kp})",
     shower: "La lluvia de meteoros {name} alcanza su máximo hacia el {date}, con hasta {zhr} por hora bajo un cielo oscuro",
     showerMoon: "La lluvia de meteoros {name} alcanza su máximo hacia el {date}, con hasta {zhr} por hora bajo un cielo oscuro, y esa noche la Luna estará iluminada al {pct}%",
@@ -498,8 +498,8 @@ export const COPY = {
     equinox: "{title} el {date}",
     eclipseNear: "cerca de {city}",
     eclipseFrom: "a unos {km} km de {city}",
-    eclipseLocal: "Desde donde estás: empieza a las {begin}, el máximo es a las {peak} con el {pct}% del Sol cubierto, termina a las {end}",
-    eclipseLocalTotal: "Desde donde estás: empieza a las {begin}, la totalidad llega a las {peak}, termina a las {end}",
+    eclipseLocal: "Desde tu lugar: de {begin} a {end}, máximo a las {peak} con el {pct}% del Sol cubierto",
+    eclipseLocalTotal: "Desde tu lugar: de {begin} a {end}, totalidad a las {peak}",
     eclipseNotVisible: "No se ve desde donde estás",
     eclipseBelowHorizon: "Desde donde estás, el Sol está bajo el horizonte mientras ocurre",
     classOf: {
@@ -536,7 +536,7 @@ export const COPY = {
       trainTitle: "Tren de {n} Starlink",
       auroraTitle: "Pronóstico de auroras",
       auroraNowTitle: "Tormenta geomagnética ahora",
-      aurora: "Pronóstico de NOAA, a partir de {when}",
+      aurora: "Pronóstico de NOAA, {when}",
       auroraNow: "Medido por NOAA en las últimas horas",
       kp: "Kp {kp}",
       showerTitle: "Meteoros {name}",
@@ -1251,7 +1251,7 @@ export const COPY = {
     },
     layerCountEmpty: "vacía",
     layerCountEmptyTitle: "Esta capa volvió vacía: no se pudo leer su fuente, o ahora no contiene nada.",
-    layerWaits: "todavía no",
+    layerWaits: "aún no",
     layerWaitsTitle: "Se carga cuando la activas, para ahorrar datos.",
     layersFailed: "{n} capas volvieron vacías.",
     layersFailedOne: "Una capa volvió vacía.",
@@ -1276,7 +1276,7 @@ export const COPY = {
     groupAllLabel: "Mostrar todas las capas de {group}",
     groupNoneLabel: "Ocultar todas las capas de {group}",
     layerFilter: "Buscar una capa",
-    layersKeys: "Capas. Las flechas arriba y abajo se mueven; Espacio activa una.",
+    layersKeys: "Capas. Flechas arriba y abajo; Espacio activa una.",
     layerFilterEmpty: "Ninguna capa con ese nombre.",
     keysRow: "Teclas",
     keysRowTouch: "Gestos",
@@ -1290,24 +1290,24 @@ export const COPY = {
     locationUseMine: "Usar mi ubicación",
     locationUseMineTitle: "Preguntar al navegador dónde estás",
     locationInsecure: "El navegador solo comparte tu ubicación con páginas servidas por https. Esta página está en http simple, así que el botón está desactivado. Elige una ciudad, o abre la dirección https cuando exista.",
-    locationUnsupported: "Este navegador no tiene servicio de ubicación. Elige una ciudad.",
+    locationUnsupported: "El navegador no ofrece ubicación. Elige una ciudad.",
     locationDenied: "El navegador dijo que no. Elige una ciudad.",
     locationFailed: "El navegador no pudo encontrarte. Elige una ciudad.",
     locationAsking: "Preguntando al navegador",
     locationClear: "Borrar",
     locationNoMatch: "Ninguna ciudad de la lista incluida coincide.",
-    tonightCouldNotLook: "No se pudo calcular: no se ha cargado ningún satélite."
+    tonightCouldNotLook: "No se pudo calcular: no hay satélites cargados."
   },
   search: {
     title: "Buscar un objeto",
-    placeholder: "Buscar planetas, estrellas, satélites",
+    placeholder: "Planetas, estrellas, satélites",
     placeholderPhone: "Buscar en el espacio",
     inputLabel: "Buscar un objeto por nombre o número de catálogo",
     listLabel: "Objetos que coinciden",
     fly: "Volar hasta él",
     flyTitle: "Mover la cámara al objeto resaltado y abrir su ficha",
     hint: "Con dos letras basta. Intro elige el primero.",
-    noMatch: "Aquí no hay nada llamado «{q}».",
+    noMatch: "Nada llamado «{q}» aquí.",
     closest: "Nombres más cercanos",
     more: "{n} coincidencias más. Escribe más para afinar.",
     searching: "{n} objetos buscados.",
@@ -1327,16 +1327,16 @@ export const COPY = {
     notLoadedCount: "No se puede saber cuántos objetos quedan fuera hasta que se carguen."
   },
   quality: {
-    dataSaver: "Ahorro de datos activado: las dos listas más grandes esperan.",
-    lowered: "Fotogramas lentos ({ms} ms): una imagen más sencilla.",
-    tierPhone: "Mapas de superficie a 2k, del tamaño adecuado para un teléfono.",
-    tierSaver: "Mapas de superficie a 2k, para ahorrar datos.",
-    tierSmall: "Mapas de superficie a 2k, del tamaño adecuado para este dispositivo.",
-    tierLatched: "Mapas de superficie de nuevo a 2k: los fotogramas iban lentos.",
-    tierLow: "Mapas de superficie a 2k, como pide Baja.",
-    tier1: "Mapas de superficie a 4k, descargados cuando hay tiempo libre.",
-    tier2: "Mapas de superficie a 4k, con más mundos nítidos.",
-    promoted: "Subido un nivel tras varios fotogramas rápidos.",
+    dataSaver: "Ahorro de datos: las dos mayores esperan.",
+    lowered: "Fotogramas lentos ({ms} ms): imagen simple.",
+    tierPhone: "Mapas a 2k, a la medida de un teléfono.",
+    tierSaver: "Mapas a 2k, para ahorrar datos.",
+    tierSmall: "Mapas a 2k, a medida de este dispositivo.",
+    tierLatched: "Mapas a 2k otra vez: fotogramas lentos.",
+    tierLow: "Mapas a 2k, como pide Baja.",
+    tier1: "Mapas a 4k, descargados sin prisa.",
+    tier2: "Mapas a 4k, con más mundos nítidos.",
+    promoted: "Un nivel más tras fotogramas rápidos.",
     mapsWorn: "Mapas en este dispositivo: {credits}.",
     panelTitle: "Calidad",
     choices: {
@@ -1460,7 +1460,7 @@ export const COPY = {
     fromYou: "de ti",
     fromPlace: "de {place}",
     behind: "detrás de {world}",
-    offScreen: "{name}, a {distance}, fuera de la pantalla: volar hasta él",
+    offScreen: "{name}, a {distance}, fuera de pantalla: volar allí",
     live: "{name}: {readouts}"
   },
   clean: {
@@ -1722,7 +1722,7 @@ export const COPY = {
     radio: "La radio desde la Tierra ha llegado a {n} años luz"
   },
   subscribe: {
-    heading: "Envíame por correo los lanzamientos y las lluvias de meteoros",
+    heading: "Lanzamientos y meteoros, por correo",
     emailLabel: "Tu dirección de correo",
     emailPlaceholder: "tu@ejemplo.com",
     pickOne: "Marca al menos una de las dos.",
@@ -1731,7 +1731,7 @@ export const COPY = {
     submit: "Suscribirme",
     sending: "Enviando…",
     pending: "Revisa tu correo para confirmar.",
-    couldNotReach: "No se pudo contactar con el servicio de suscripción."
+    couldNotReach: "No se pudo contactar con el servicio."
   },
   flood: {
     on: "Iluminarlo",
@@ -1902,9 +1902,9 @@ export const COPY = {
       "sat-48274": "Tiangong"
     },
     pass: "{name} pasa sobre ti {when}",
-    launch: "{name} tiene previsto despegar {when}",
-    showerToday: "el máximo de {name} es hoy",
-    showerTomorrow: "el máximo de {name} es mañana",
+    launch: "{name} despegará {when}",
+    showerToday: "{name}: máximo hoy",
+    showerTomorrow: "{name}: máximo mañana",
     moonName: "La Luna",
     moonPhases: ["nueva", "", "llena", ""],
     moonToday: "hoy la Luna está {phase}",
@@ -1915,8 +1915,8 @@ export const COPY = {
     crewOne: "una persona está en órbita ahora mismo",
     storms: "{n} tormentas en marcha",
     stormOne: "una tormenta en marcha",
-    approach: "{name} pasa junto a la Tierra {when}",
-    launched: "{n} objetos nuevos llegaron a la órbita en 30 días",
+    approach: "{name}: paso cercano {when}",
+    launched: "{n} objetos nuevos en órbita en 30 días",
     sources: {
       pass: "elementos de CelesTrak",
       launch: "Launch Library 2",
@@ -1970,7 +1970,7 @@ export const COPY = {
     places: "{n} lugares",
     placeOne: "{n} lugar",
     kept: "Guardado solo en este navegador, nunca enviado.",
-    notKept: "Este navegador no guarda nada, así que aquí no hay nada.",
+    notKept: "Este navegador no guarda nada: aquí no hay nada.",
     placesTitle: "Lugares que abriste",
     tripsTitle: "Viajes terminados",
     outOf: "{n} de {total}",
@@ -1979,13 +1979,13 @@ export const COPY = {
     noPlaces: "Todavía no hay lugares. Abre uno en el mapa.",
     noTrips: "Todavía no hay viajes terminados.",
     seenTitle: "Visto con tus propios ojos",
-    noSeen: "Todavía no has marcado nada. Una ficha tiene un botón «Lo he visto».",
+    noSeen: "Aún nada marcado. Cada ficha tiene un botón «Lo he visto».",
     seenIt: "Lo he visto",
     toolsLabel: "Más para este objeto",
     seenOn: "Visto el {date}",
     seenTitleOff: "Márcalo cuando lo hayas visto con tus propios ojos",
     seenTitleOn: "Marcado como visto. Pulsa para quitar la marca",
-    seenNotKept: "Este navegador no guarda nada, así que la marca no se quedará",
+    seenNotKept: "Este navegador no guarda nada: la marca no se queda",
     remind: "Recuérdamelo",
     remindTitle: "Descarga un archivo de calendario con un recordatorio: {title}",
     forget: "Olvidarme",
@@ -1994,7 +1994,7 @@ export const COPY = {
     forgotten: "Olvidado. Este navegador ya no guarda nada.",
     stamp: "Viaje {n} de {total} · {date}",
     stampPlaces: "Lugares abiertos hasta ahora: {places}",
-    resume: "Continuar desde la parada {n}"
+    resume: "Seguir en la parada {n}"
   },
   kept: {
     title: "Lo que este sitio guarda en tu dispositivo",
@@ -2309,7 +2309,7 @@ export const COPY = {
   colourKey: {
     title: "Color según",
     unknown: "no se conoce para estos",
-    scope: "Contando lo que se dibuja desde aquí, en las capas activadas.",
+    scope: "Cuenta lo que se dibuja desde aquí, en las capas activas.",
     byLayer: "La forma es lo que es; el color es su capa.",
     crewed: "de ellos, construidos para llevar tripulación",
     swarm: "de ellos, en una gran constelación"
@@ -2413,7 +2413,7 @@ export const COPY = {
   },
   tonight: {
     title: "Esta noche",
-    placeGuess: "Cerca de {place}, supuesto a partir de tu zona horaria",
+    placeGuess: "Supuesto por tu zona horaria: {place}",
     placeSet: "Desde {place}",
     placeMine: "Desde cerca de tu lugar",
     placeShared: "Desde {place}, compartido contigo",
@@ -2433,9 +2433,9 @@ export const COPY = {
     degrees: "{deg}°",
     path: "Del {from} al {to}",
     rowDetail: "{time} · a {deg}° de altura · {mins} min",
-    nothingTonight: "Esta noche no pasa nada brillante por encima.",
+    nothingTonight: "Esta noche no pasa nada brillante sobre ti.",
     nextPass: "Siguiente: {when} · {name}",
-    nothingAtAll: "Durante tres días no pasa nada brillante por encima.",
+    nothingAtAll: "Tres días sin nada brillante sobre ti.",
     darkFrom: "Oscuro desde las {time}",
     darkUntil: "Oscuro hasta las {time}",
     darkNow: "Oscuro ahora",
@@ -2458,7 +2458,7 @@ export const COPY = {
       rowTitle: "Mostrarlo en el cielo",
       passLine: "{t0} {d0} · {t1} {deg}° {d1} · {t2} {d2}",
       mag: "mag {mag}",
-      passAria: "{name}: aparece a las {t0} {d0}, punto más alto a las {t1} a {deg}° {d1}, desaparece a las {t2} {d2}, magnitud {mag}.",
+      passAria: "{name}: aparece a las {t0} {d0}; máx. a las {t1}, {deg}° {d1}; fin a las {t2} {d2}; mag. {mag}.",
       fades: "Se apaga en la sombra de la Tierra antes de ponerse.",
       appears: "Sale de la sombra de la Tierra a media altura.",
       notVisible: "No visible: el cielo está claro o está en sombra.",
@@ -2529,8 +2529,8 @@ export const COPY = {
         binoculars: "Un campo de 7°: salen estrellas más débiles.",
         telescope: "Un campo de 1°: los planetas se convierten en discos."
       },
-      following: "Siguiendo a {name}. Arrastra el cielo para soltarlo.",
-      followSet: "{name} se ha puesto, así que la vista lo soltó.",
+      following: "Siguiendo a {name}. Arrastra para soltar.",
+      followSet: "{name} se puso; la vista lo soltó.",
       show: "Líneas y nombres",
       toggles: {
         figures: "Figuras",
@@ -2546,7 +2546,7 @@ export const COPY = {
         seeThrough: "Suelo transparente"
       },
       toggleTitles: {
-        seeThrough: "Dibujar la tierra transparente, para encontrar lo que hay bajo el horizonte",
+        seeThrough: "Tierra transparente, para ver lo que hay bajo el horizonte",
         figures: "Las figuras de las constelaciones",
         names: "Nombres de constelaciones y de estrellas brillantes",
         sunPath: "El camino que siguen el Sol, la Luna y los planetas",
@@ -2555,8 +2555,8 @@ export const COPY = {
         starGrid: "La cuadrícula sobre la que se cartografían las estrellas",
         art: "Las figuras occidentales como dibujos, de Johan Meuris",
         bounds: "Las fronteras oficiales de las 88 constelaciones",
-        meteors: "Estelas de las lluvias activas esta noche, al ritmo de esta noche",
-        trails: "La última hora de cada estrella brillante, como una exposición larga"
+        meteors: "Estelas de las lluvias activas esta noche, a su ritmo",
+        trails: "Última hora de cada estrella brillante, en exposición larga"
       },
       time: "Hora en el cielo",
       timeNow: "Ahora",
@@ -2586,7 +2586,7 @@ export const COPY = {
         night: "noche"
       },
       timeNoNight: "Esta noche no oscurece aquí.",
-      timeFar: "No hay satélites tan lejos de hoy: sus órbitas se quedan obsoletas.",
+      timeFar: "Sin satélites tan lejos de hoy: sus órbitas caducan.",
       eyepiece: "Ocular",
       eyepieces: {
         low: "Bajo · 1°",
@@ -2623,14 +2623,14 @@ export const COPY = {
         boorong: "Boorong"
       },
       cultureNotes: {
-        western: "Las 88 constelaciones en las que los astrónomos se pusieron de acuerdo en 1922.",
+        western: "Las 88 constelaciones acordadas por los astrónomos en 1922.",
         chinese: "Unos 300 asterismos pequeños. Una lectura de un cielo vivo.",
-        maori: "Seis figuras. Los nombres difieren entre iwi; el cielo está vivo.",
-        hawaiian: "Las líneas estelares de un navegante, que aún se usan para orientarse.",
+        maori: "Seis figuras. Los nombres varían entre iwi; cielo vivo.",
+        hawaiian: "Líneas estelares de navegantes, aún usadas para guiarse.",
         samoan: "Catorce figuras de la tradición samoana. Una tradición viva.",
         tongan: "Caminos y figuras estelares de Tonga. Una tradición viva.",
         norse: "Seis figuras, una reconstrucción del cielo nórdico.",
-        boorong: "El cielo de una familia boorong, tal como se contó en 1857. Aún vivo."
+        boorong: "El cielo de una familia boorong, contado en 1857. Vivo aún."
       },
       cultureCredits: {
         western: "Dibujos: Johan Meuris, para Stellarium, Free Art License. Carina, Puppis y Vela comparten un dibujo; Serpens no tiene ninguno.",
@@ -2642,10 +2642,10 @@ export const COPY = {
         norse: "Figuras: Jonas Persson, para Stellarium, CC BY-SA 4.0. Una reconstrucción, no un registro.",
         boorong: "Figuras: John Morieson y Alex Cherney, para Stellarium, CC BY-SA 4.0. Una lectura de un cielo vivo."
       },
-      meteorNote: "{name}: unos {n} por hora en este cielo.",
-      meteorFew: "{name}: menos de uno por hora en este cielo.",
-      meteorDown: "{name}: el radiante está bajo el horizonte, sin estelas.",
-      meteorHonest: "El ritmo de esta noche es un modelo. Las estelas son ilustrativas.",
+      meteorNote: "{name}: unos {n} por hora en tu cielo.",
+      meteorFew: "{name}: menos de uno por hora en tu cielo.",
+      meteorDown: "{name}: radiante abajo, sin estelas.",
+      meteorHonest: "El ritmo es un modelo; las estelas son ilustrativas.",
       meteorSporadic: "Esta noche no hay lluvia. Fuente antihelio: {n} por hora.",
       darkness: "Tu cielo",
       darknessModes: {
@@ -2656,7 +2656,7 @@ export const COPY = {
       darknessAuto: "Auto",
       darknessAutoTitle: "Leer el tipo de cielo a partir de las luces nocturnas de tu lugar",
       darknessBy: {
-        place: "Estimado a partir del mapa de luces nocturnas de la NASA en tu lugar.",
+        place: "Estimado con el mapa de luces nocturnas de la NASA.",
         reading: "Leyendo las luces nocturnas de tu lugar.",
         unread: "No se pudo leer el mapa de luces nocturnas: elige tu cielo.",
         trip: "Fijado por esta parada del viaje."
@@ -2670,14 +2670,14 @@ export const COPY = {
         row: "Apunta con tu teléfono",
         on: "Apunta con tu teléfono",
         title: "Levanta el teléfono: la vista gira con él",
-        note: "Levanta el teléfono hacia el cielo y gira. La vista te sigue.",
+        note: "Levanta el teléfono al cielo y gira; la vista te sigue.",
         noPlace: "Necesita tu lugar, para saber dónde está el norte.",
-        denied: "El teléfono rechazó su sensor de movimiento. Arrastrar sigue funcionando.",
-        deniedHow: "Para permitirlo: recarga y elige Permitir cuando se pregunte.",
-        none: "Aquí no respondió ningún sensor de movimiento. Arrastrar sigue funcionando.",
-        unsupported: "Este navegador no ofrece sensor de movimiento. Arrastrar sigue funcionando.",
-        lineUpWith: "¿El cielo no coincide? Arrastra hasta que {name} encaje.",
-        lineUpPlain: "¿El cielo no coincide? Arrastra hasta que encaje una estrella brillante.",
+        denied: "Sin permiso para el sensor de movimiento. Puedes arrastrar.",
+        deniedHow: "Para permitirlo, recarga y elige Permitir cuando pregunte.",
+        none: "Ningún sensor de movimiento responde. Puedes arrastrar.",
+        unsupported: "El navegador no da sensor de movimiento. Puedes arrastrar.",
+        lineUpWith: "Arrastra hasta que {name} encaje.",
+        lineUpPlain: "¿No coincide? Arrastra hasta alinear una estrella brillante.",
         lined: "Alineado a mano, a {n}° de la brújula.",
         reset: "Deshacer la alineación",
         resetTitle: "Volver al norte de la propia brújula",
@@ -2686,7 +2686,7 @@ export const COPY = {
         declination: "Norte verdadero: brújula corregida {n}° al {dir}.",
         east: "este",
         west: "oeste",
-        honest: "El norte es el de la brújula del teléfono. El metal cercano lo desvía."
+        honest: "Norte según la brújula del teléfono; el metal lo desvía."
       },
       red: "Luz roja",
       redTitle: "Poner la página en rojo para que tus ojos sigan acostumbrados a la oscuridad",
@@ -3089,9 +3089,9 @@ export const COPY = {
     label: "Primera visita",
     title: "Primera vez aquí",
     dots: "Cada punto es algo real. Pulsa uno.",
-    move: "Arrastra para girar. Desplaza para acercarte.",
-    moveTouch: "Arrastra para girar. Pellizca para acercarte.",
-    trips: "Un viaje guiado es una historia en unos minutos.",
+    move: "Arrastra para girar. Rueda para acercar.",
+    moveTouch: "Arrastra para girar. Pellizca para acercar.",
+    trips: "Un viaje guiado: una historia en minutos.",
     trip: "Viaje guiado",
     tripTitle: "Empieza el primer viaje de la lista",
     look: "Echar un vistazo",

@@ -1,6 +1,11 @@
 // copy/lang.js -- which language the page speaks (public #524, spec 0077 W1-e). In the boot graph, so it
 // is small: it only DECIDES. The words of another language are copy/<code>.js, fetched by
 // copy/index.js when this says anything but English; a first visit in English fetches nothing more.
+// HOW THE WORDS ARRIVE (no top-level await: scripts/minify_site.py compiles for es2020, which has none).
+// index.html's own module asks copy/index.js to `prepare()` BEFORE it imports main.js: that fetches the
+// language file and sets HOOK.localise. Then main.js's graph evaluates, and copy/en.js (and en.later.js,
+// en.facts.js) end by calling HOOK.localise, which puts the words over the English in place -- before any
+// module that imports them has run. Where nothing prepared (English, a lab page, a test) HOOK is empty.
 //
 // THE ORDER. `?lang=<code>` first (a regional form is read by its first part: es-MX is es). Else the
 // browser's own list (navigator.languages), but only a language marked `reviewed`: docs/TRANSLATING.md
@@ -16,13 +21,17 @@ export const LANGUAGES = {
 };
 const RTL = ['he', 'ar'];
 
+/** Filled by copy/index.js `prepare()` with { localise(target, keys) }. Empty in English. */
+export const HOOK = {};
+
 const base = (tag) => String(tag || '').toLowerCase().split(/[-_]/)[0];
 
 /** The language to speak. Pure: `search` is location.search, `preferred` navigator.languages. */
 export function pickLanguage(search, preferred, languages = LANGUAGES) {
   const asked = /[?&]lang=([^&#]*)/.exec(String(search || ''));
   if (asked) {
-    const code = base(decodeURIComponent(asked[1]));
+    let code = '';
+    try { code = base(decodeURIComponent(asked[1])); } catch { /* a stray % in the address: no such language */ }
     return Object.prototype.hasOwnProperty.call(languages, code) ? code : 'en';
   }
   for (const tag of preferred || []) {

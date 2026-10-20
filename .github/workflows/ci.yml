@@ -302,6 +302,14 @@ jobs:
       # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
       - name: "The translation checker names a missing key, a lost slot and an untouched string"
         run: node tests/test_check_translation.mjs
+      # 0077 W1-e: begin
+      # The language loader (public #524): ?lang=, the browser's list for a reviewed language only, English for a missing key,
+      # nothing fetched for English, the Spanish whole; and the table of every language in docs/TRANSLATING.md (i#688).
+      - name: "The page speaks a language file: ?lang=, the review rule, English for a gap, no extra bytes for English"
+        run: node tests/test_language_loader.mjs
+      - name: "The translation table in docs/TRANSLATING.md is current and no language breaks the review rule"
+        run: node scripts/check-translation.mjs --check-doc
+      # 0077 W1-e: end
       # The first files a newcomer meets: the issue chooser (6 forms, 3 contact links), CITATION.cff,
       # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
       - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
