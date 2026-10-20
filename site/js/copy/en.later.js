@@ -2055,3 +2055,30 @@ Object.assign(COPY, {
     counting: 'counting…',
   },
 });
+
+// 0076 W4-c (readable without motion, and for a screen reader; internal #912, #836)
+Object.assign(COPY, {
+  r12Access: {
+    // ui/whattoshow.js: the Motion row, in the shape of the Quality row. Off is what prefers-reduced-motion is.
+    motion: {
+      panelTitle: 'Motion',
+      choices: { on: 'On', off: 'Off' },
+      titles: {
+        on: 'Flights glide and trips move on by themselves, as the map is made to',
+        off: 'Every flight is an instant move, nothing moves that is not measured to, and a trip waits for Next',
+      },
+      device: 'Your device asks for less motion, so it is off.',
+    },
+    // ui/scenesummary.js: one polite line for a screen reader, said when the stage, the selection, the
+    // look or a trip's stop changes. It names what is on screen and never a number it has not measured.
+    summary: {
+      label: 'What is on screen',
+      stage: 'Looking at {stage}.',
+      selected: '{name} is selected, {kind}.',
+      nothing: 'Nothing is selected.',
+      trip: 'Trip stop {n} of {count}: {title}.',
+      tripIntro: 'The trip {title} is open.',
+      measured: 'Drawn as measured.',
+    },
+  },
+});

@@ -1094,3 +1094,6 @@ jobs:
       - name: "where you are and the way back: a chain from the Sun or the Milky Way on every card, Back along the visitor's own path (20 steps, never sent), the ladder's rung and a note at each join (internal spec 0076 W3-d)"
         run: node tests/test_navigate.mjs
       # 0076 W3-e
+      # 0076 W4-c
+      - name: "readable without WebGL, without motion, and a full link: the page without JavaScript or WebGL 2 lists every trip and the crawlable pages, a shared link carries v=1 and the build, the scene summary's words, Motion off is an instant flight and still gas (internal spec 0076 W4-c)"
+        run: node tests/test_access.mjs

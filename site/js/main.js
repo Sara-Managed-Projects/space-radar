@@ -168,6 +168,8 @@ const OFFLINE_MS = 6000;
 /** The timeline in the time pill (ui/scrubber.js) and the home's dated cards (ui/today.js): after
  * the two seconds tests/test_first_visit_bytes.mjs waits past sr:layers-ready. */
 const SCRUBBER_MS = 4000;
+/** The scene summary for a screen reader (ui/scenesummary.js, 0076 W4-c): with the first of the later modules. */
+const SUMMARY_MS = 3000;
 const TODAY_MS = 4500;
 /** The first visit's three lines and two buttons (ui/welcome.js), the launch chip (ui/launchchip.js)
  * and the way home (ui/base.js): with the timeline, the first things after the first visit. */
@@ -213,8 +215,15 @@ function afterFirstVisit(ms, run) {
   }, ms);
 }
 
+// 0076 W4-c (internal #912, #836): the Motion row in What to show. Off is read here and from scene/camera.js and
+// ui/trip.js as `data-sr-motion="off"` on the page, so a flight is an instant set and a trip reads at the reader's
+// pace, as under prefers-reduced-motion. The row writes the same attribute and `sr:motion` (ui/whattoshow.js).
+const motionStill = () => typeof document !== 'undefined' && document.documentElement.dataset.srMotion === 'off';
+
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
+  // 0076 W4-c: the choice the Motion row remembered, before anything flies.
+  try { if (window.localStorage.getItem('sr:motion') === 'off') document.documentElement.dataset.srMotion = 'off'; } catch { /* no memory: motion as the device says */ }
   // `/?from=ig` is the home page: the tag is taken off the address bar before anything reads it (ui/urlstate.js).
   dropFrom();
   // RENDER MODE (spec 0070, ui/rendermode.js): `?render=1#trip=<id>` is tools/render-trip.mjs
@@ -364,7 +373,7 @@ export async function boot({ setStatus } = {}) {
       pictureShare: (id) => (ctx.nebulae ? ctx.nebulae.drawn(id) : 0), picturesBusy: () => !!(ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy()),
       selectedId: () => (ctx.selected() ? ctx.selected().id : null), subjectId: () => (ctx.labels ? ctx.labels.subject() : null),
       quality: () => { const d = ctx.quality ? ctx.quality.describe() : {}; return { tier: Number.isFinite(d.tier) ? d.tier : 1, top: !!(d.plan && d.plan.steps === 'top'), latched: !!(ctx.latch && ctx.latch.latched), scaleStep: ctx.scaler ? ctx.scaler.step : 0 }; },
-      look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches), frozen: () => !!(ctx.latch && ctx.latch.held),
+      look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches) || motionStill(), frozen: () => !!(ctx.latch && ctx.latch.held),
       debug: /[?&]deepdebug=1\b/.test(location.search), glowVisible: (on) => { ctx.deepGlowOff = !on; },
     });
     ctx.deep.setExposure(exposure.look().milkyWay);
@@ -507,7 +516,7 @@ export async function boot({ setStatus } = {}) {
   // cross-fade is it. Mounted on <body> beside the canvas, because the trip frame is a stacking
   // context of its own and anything inside it sits over the card.
   ctx.veil = createVeil(document.body, {
-    reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+    reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
   });
   // ui/tripgate.js: the trip's own object once a trip is wanted, an idle stand-in until then.
   ctx.trip = createTripGate(ctx);
@@ -588,7 +597,7 @@ export async function boot({ setStatus } = {}) {
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
         tier: ctx.quality ? ctx.quality.tier : 1, // 600, 1200 or 2400 streaks (scene/wind.js COUNT_BY_TIER)
-        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
         onChange: tellOverlay,
       });
       return ctx.wind;
@@ -606,7 +615,7 @@ export async function boot({ setStatus } = {}) {
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
         tier: ctx.quality ? ctx.quality.tier : 1, // 1200, 2500 or 5000 streaks (scene/currents.js COUNT_BY_TIER)
-        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
         onChange: tellOverlay,
       });
       return ctx.currents;
@@ -758,7 +767,7 @@ export async function boot({ setStatus } = {}) {
     opening = openingPlan({
       seen: !!store.getItem(OPENING_KEY),
       link: !!(link && Object.keys(link).length) || location.hash.length > 1,
-      reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+      reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
       embed: !!embed,
       hidden: document.hidden,
       automated: navigator.webdriver === true,
@@ -960,7 +969,7 @@ export async function boot({ setStatus } = {}) {
       const weather = m.createWeather({
         worlds,
         camera,
-        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || motionStill(),
         // A world's card rewrites its weather line on this, as the Earth's does its clouds line.
         onChange: () => window.dispatchEvent(new CustomEvent('sr:weather')),
       });
@@ -1175,6 +1184,13 @@ export async function boot({ setStatus } = {}) {
   else window.addEventListener('sr:layers-ready', offlineLater, { once: true });
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
+  // 0076 W4-c (internal #912): one line on what is on screen, for a screen reader; not in an embed, which has no panels.
+  const summaryLater = () => afterFirstVisit(SUMMARY_MS, () => {
+    import('./ui/scenesummary.js').then((m) => m.createSceneSummary(ctx)).catch((e) => console.warn('the scene summary did not load', e));
+  });
+  if (embed) { /* no summary */ }
+  else if (window.__srLayersReady) summaryLater();
+  else window.addEventListener('sr:layers-ready', summaryLater, { once: true });
   // `#sources` opens the sheet (design §6): a link to "what could this page read" is worth having.
   const openSourcesFromHash = () => { if (location.hash === '#sources') shell.openSources(); };
   openSourcesFromHash();
@@ -2749,7 +2765,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
       const earth = worlds.meshFor('earth');
-      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: !!(reducedMotionQuery && reducedMotionQuery.matches), look: ctx.look() });
+      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null, { still: (!!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill()), look: ctx.look() });
       // A prominence came over the limb, a flare began or faded, a CME left: the Sun's card says so.
       const doing = ctx.sunDetail.activity();
       if (doing !== sunDoing) { sunDoing = doing; if (ctx.quality) window.dispatchEvent(new CustomEvent('sr:tier', { detail: ctx.quality.describe() })); }
@@ -2766,7 +2782,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         latched: latch.latched || lowChosen,
         look: ctx.look(),
         top: !!(ctx.quality && ctx.quality.ultra),
-        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
+        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill(),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
       });
     }
@@ -2776,7 +2792,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.weather.tick(t, {
         on: ctx.isLayerOn('lightning'),
         latched: latch.latched || lowChosen,
-        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
+        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches) || motionStill(),
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
         viewportH: ctx.renderer && ctx.renderer.domElement ? ctx.renderer.domElement.height : 800,
         pixelRatio: ctx.renderer && ctx.renderer.getPixelRatio ? ctx.renderer.getPixelRatio() : 1,

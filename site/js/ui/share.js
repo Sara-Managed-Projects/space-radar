@@ -13,7 +13,7 @@
 // imported on the first open.
 
 import { COPY } from '../copy/en.js';
-import { read } from './urlstate.js';
+import { read, VERSION, BUILD } from './urlstate.js';
 
 // A trip AT a stop (ui/trip.js STOP_PHASES); on its intro or end card it shares its own page.
 const AT_STOP = ['flight', 'settle', 'dwell', 'held', 'paused'];
@@ -46,7 +46,11 @@ export function shareUrl(st, base = appBase()) {
   if (!s.trip) put('stage', s.stage); // a trip picks its own stage at every stop
   if (s.exp === 'eye' || s.exp === 'deep') put('exp', s.exp); // the shutter (#460)
   if (s.drawn === 'measured') put('drawn', s.drawn);
-  return keys.length ? `${root}#${keys.join('&')}` : root;
+  if (!keys.length) return root;
+  // 0076 W4-c (internal #906): the format and the release ride in every link that names a view, after `m`
+  // (the order urlstate.js KEYS gives). A link that says nothing is still the root.
+  keys.splice(keys[0].startsWith('m=') ? 1 : 0, 0, `v=${VERSION}`, `build=${encodeURIComponent(BUILD)}`);
+  return `${root}#${keys.join('&')}`;
 }
 
 /** The state to share now: the hash, with a running trip's position and the card's own record. */

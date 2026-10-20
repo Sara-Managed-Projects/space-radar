@@ -77,6 +77,9 @@ const setNavigator = (value) => Object.defineProperty(globalThis, 'navigator', {
 
 const shareMod = await import(join(JS, 'ui/share.js'));
 const { shareUrl, shareState, appBase, tripWords, toast, shareButton } = shareMod;
+// 0076 W4-c (#906): every link that names a view carries the format and the release, after `m`.
+const { BUILD } = await import(join(JS, 'ui/urlstate.js'));
+const VB = `v=1&build=${BUILD}`;
 const { read } = await import(join(JS, 'ui/urlstate.js'));
 const { showCard } = await import(join(JS, 'ui/cards.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
@@ -94,23 +97,23 @@ check(shareUrl({ trip: 'moon-landings' }, BASE) === `${BASE}t/moon-landings.html
 check(shareUrl({ trip: 'moon-landings', stop: 0, t: '2027-01-01T00:00:00Z' }, BASE) === `${BASE}t/moon-landings.html`, 'the short page carries nothing else');
 
 const atStop = shareUrl({ trip: 'moon-landings', stop: 3, m: 'wonder' }, BASE);
-check(atStop === `${BASE}#trip=moon-landings&stop=3`, `a trip at stop 3 is the hash form: ${atStop}`);
+check(atStop === `${BASE}#${VB}&trip=moon-landings&stop=3`, `a trip at stop 3 is the hash form: ${atStop}`);
 const back = readBack(atStop);
 check(back.trip === 'moon-landings' && back.stop === '3', 'the stop link reads back through urlstate');
 
 const at = shareUrl({ at: 'europa' }, BASE);
-check(at === `${BASE}#at=europa`, `a selection is the hash with at: ${at}`);
+check(at === `${BASE}#${VB}&at=europa`, `a selection is the hash with at: ${at}`);
 
 const scrubbed = shareUrl({ at: 'europa', t: '2027-08-02T10:00:00Z', rate: '60' }, BASE);
 const sb = readBack(scrubbed);
 check(sb.at === 'europa' && sb.t === '2027-08-02T10:00:00Z' && sb.rate === '60', `a scrubbed selection carries at, t and rate: ${scrubbed}`);
-check(/#at=europa&t=[^&]+&rate=60$/.test(scrubbed), `keys in the order the app writes them: ${scrubbed}`);
-check(shareUrl({ at: 'europa', t: 'now', rate: '1' }, BASE) === `${BASE}#at=europa`, 't=now and rate=1 are the defaults and are left out');
+check(/#v=1&build=[^&]+&at=europa&t=[^&]+&rate=60$/.test(scrubbed), `keys in the order the app writes them: ${scrubbed}`);
+check(shareUrl({ at: 'europa', t: 'now', rate: '1' }, BASE) === `${BASE}#${VB}&at=europa`, 't=now and rate=1 are the defaults and are left out');
 
 // m: wonder is the default and is left out; now is kept.
 check(!shareUrl({ at: 'iss', m: 'wonder' }, BASE).includes('m='), 'm=wonder is omitted');
-check(shareUrl({ at: 'iss', m: 'now' }, BASE) === `${BASE}#m=now&at=iss`, 'm=now is kept');
-check(shareUrl({ at: 'titan', stage: 'saturn' }, BASE) === `${BASE}#at=titan&stage=saturn`, 'the stage rides with a selection');
+check(shareUrl({ at: 'iss', m: 'now' }, BASE) === `${BASE}#m=now&${VB}&at=iss`, 'm=now is kept');
+check(shareUrl({ at: 'titan', stage: 'saturn' }, BASE) === `${BASE}#${VB}&at=titan&stage=saturn`, 'the stage rides with a selection');
 check(!shareUrl({ trip: 'outer-solar-system', stop: 4, stage: 'jupiter' }, BASE).includes('stage='), 'a trip picks its own stage, so a trip link carries none');
 check(shareUrl({}, BASE) === BASE, 'nothing to say is the root');
 
@@ -120,17 +123,17 @@ const leaky = {
   place: 'London', obs: 'x', v: '1', unknownVersion: true, name: 'somewhere',
 };
 const leak = shareUrl(leaky, BASE);
-check(leak === `${BASE}#at=iss`, `only known keys reach a link: ${leak}`);
+check(leak === `${BASE}#${VB}&at=iss`, `only known keys reach a link: ${leak}`);
 check(!/51\.5|London|lat|lon|obs|place/i.test(leak), `no trace of the visitor's place: ${leak}`);
-for (const k of Object.keys(readBack(leak))) check(['m', 'trip', 'stop', 'at', 't', 'rate', 'stage'].includes(k), `a shared link read back has only link keys, not ${k}`);
+for (const k of Object.keys(readBack(leak))) check(['m', 'v', 'build', 'trip', 'stop', 'at', 't', 'rate', 'stage'].includes(k), `a shared link read back has only link keys, not ${k}`);
 
 check(appBase({ origin: 'http://127.0.0.1:8416', pathname: '/site/index.html' }) === 'http://127.0.0.1:8416/site/', 'the base under a local prefix keeps the prefix');
 check(shareUrl({ trip: 'moon-landings', stop: 1 }, 'http://127.0.0.1:8416/site/') === 'http://127.0.0.1:8416/site/t/moon-landings.html', 'the short page is relative to where the app lives');
 
 // The shutter (public #460): a post's picture is drawn from the live scene, so the link beside it
 // names the exposure the scene wears when that is not the default, and never the address bar's echo.
-check(shareUrl({ at: 'dso-m42', exp: 'deep' }, 'https://x.test/') === 'https://x.test/#at=dso-m42&exp=deep', 'a Deep sky is in the link');
-check(shareUrl({ at: 'dso-m42', exp: 'camera' }, 'https://x.test/') === 'https://x.test/#at=dso-m42' && shareUrl({ at: 'dso-m42', exp: 'x' }, 'https://x.test/') === 'https://x.test/#at=dso-m42', 'the default and an unknown mode are not');
+check(shareUrl({ at: 'dso-m42', exp: 'deep' }, 'https://x.test/') === `https://x.test/#${VB}&at=dso-m42&exp=deep`, 'a Deep sky is in the link');
+check(shareUrl({ at: 'dso-m42', exp: 'camera' }, 'https://x.test/') === `https://x.test/#${VB}&at=dso-m42` && shareUrl({ at: 'dso-m42', exp: 'x' }, 'https://x.test/') === `https://x.test/#${VB}&at=dso-m42`, 'the default and an unknown mode are not');
 check(shareState({ exposure: { mode: () => 'eye' } }, 'dso-m42').exp === 'eye' && shareUrl(shareState({ exposure: { mode: () => 'eye' } }, 'dso-m42'), 'https://x.test/').endsWith('&exp=eye'), 'shareState reads the live shutter');
 check(!shareUrl(shareState({ exposure: { mode: () => 'camera' } }, 'mars'), 'https://x.test/').includes('exp='), 'and at Camera the link is as it was');
 // ---------------------------------------------------------------------------- shareState()
@@ -196,10 +199,10 @@ check(!('shareLink' in shareMod) && !('savePicture' in shareMod) && !('pictureBu
 
 // ------------------------------------------------------------------------------------ bytes
 const bytes = statSync(join(JS, 'ui/share.js')).size;
-// 6 kB, and 128 bytes for the two lines that carry the look (`drawn`, spec 0073 requirement 8) beside `exp`.
-check(bytes < 6144 + 128, `ui/share.js loads with every card and stays under 6 kB and 128 bytes: ${bytes} bytes`);
-check(shareUrl({ at: 'jupiter', drawn: 'measured' }, 'https://x.test/') === 'https://x.test/#at=jupiter&drawn=measured', 'a Measured view is in the link');
-check(shareUrl({ at: 'jupiter', drawn: 'film' }, 'https://x.test/') === 'https://x.test/#at=jupiter' && shareUrl({ at: 'jupiter', drawn: 'x' }, 'https://x.test/') === 'https://x.test/#at=jupiter', 'Film, the default, and an unknown look are not');
+// 6 kB, and 128 bytes for the two lines that carry the look (`drawn`, spec 0073 requirement 8) beside `exp`, and 512 for `v` and `build` (0076 W4-c).
+check(bytes < 6144 + 128 + 512, `ui/share.js loads with every card and stays under 6 kB and 640 bytes: ${bytes} bytes`);
+check(shareUrl({ at: 'jupiter', drawn: 'measured' }, 'https://x.test/') === `https://x.test/#${VB}&at=jupiter&drawn=measured`, 'a Measured view is in the link');
+check(shareUrl({ at: 'jupiter', drawn: 'film' }, 'https://x.test/') === `https://x.test/#${VB}&at=jupiter` && shareUrl({ at: 'jupiter', drawn: 'x' }, 'https://x.test/') === `https://x.test/#${VB}&at=jupiter`, 'Film, the default, and an unknown look are not');
 check(shareState({ look: () => 'measured' }, 'jupiter').drawn === 'measured' && !shareUrl(shareState({ look: () => 'film' }, 'mars'), 'https://x.test/').includes('drawn='), 'shareState reads the look that is on');
 const src = readFileSync(join(JS, 'ui/share.js'), 'utf8');
 check(!/import\s*\(\s*['"][^.]/.test(src) && !/from\s+['"][^.]/.test(src), 'ui/share.js imports nothing from outside site/js');
