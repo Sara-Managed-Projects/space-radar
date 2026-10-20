@@ -83,10 +83,10 @@ import {
   PASS_ERROR, PASS_OK, standsStill, nextPass, roughly, stormAdvisoryAgo, stormStatusKey, isWorld,
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
   honestyLine, placesReady, truthRow,
-  pathBeginsWords, // 0077 W1-d
 } from './cardfacts.js';
+import { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
+export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
 export {
-  pathBeginsWords, // 0077 W1-d
   stormAdvisoryAgo, stormAdvisoryText, earthEventRows, whyLine, endedWords, pathEndedWords, ensurePlaces,
   belowWords, TAG_READOUTS, TAG_HONESTY_MAX, shortHonesty, splitReadout, tagLines, classLine,
   NEAR_EARTH_KM, nearEarthOnEllipse, honestyClause, honestyLine,
