@@ -556,6 +556,7 @@ export const VISUAL_CLASSES = [
 "apollo-15",
 "lunokhod-2",
 "change-3",
+"yutu",
 "change-5",
 "chandrayaan-3",
 "slim",
@@ -592,7 +593,14 @@ export const VISUAL_CLASSES = [
 "blue-ghost",
 "surveyor",
 "surveyor-3",
-"slim"
+"slim",
+"zhurong",
+"change-3",
+"change-4",
+"yutu",
+"change-5",
+"lunokhod-1",
+"lunokhod-2"
 ],
 "model_kinds": [
 "site-surveyor",

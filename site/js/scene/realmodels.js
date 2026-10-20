@@ -1368,6 +1368,21 @@ export const REAL_MODELS = {
     // toon ramp drew its blankets as a flat yellow box, and shipped on the physically based look (scene/pbr.js).
     slim: { build: 'lander', file: 'slim.glb', colour: 'site', name: 'SLIM, as it came to rest on its nose', displayName: 'SLIM, near Shioli crater', made: 'dimensions' },
     // 0077 W2-pbr: end
+    // 0077 W3-c: begin
+    // CHINA'S LANDERS AND ROVERS AND THE LUNOKHODS (public #1124 to #1127), each built in code from cited metres and
+    // photographs (registry/models.yaml rows `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`,
+    // `lunokhod-2`) and drawn as it stands now: the Chang'e 3 and 4 landers with their rover gone and both ramps down,
+    // the Chang'e 5 lander with its ascender gone (Chang'e 6's is the same design), the Lunokhods with their lids open.
+    // Yutu has a site of its own (LROC's 2016 table); Yutu-2 has none, because where it is now is not published.
+    utopia: { build: 'rover', file: 'zhurong.glb', colour: 'site', name: 'Zhurong', displayName: 'Zhurong, Utopia Planitia', made: 'dimensions' },
+    'change-3': { build: 'lander', file: 'change-3.glb', colour: 'site', name: "the Chang'e 3 lander, Yutu gone and its ramps down", displayName: "Chang'e 3, Mare Imbrium", made: 'dimensions' },
+    'change-4': { build: 'lander', file: 'change-4.glb', colour: 'site', name: "the Chang'e 4 lander, Yutu-2 gone and its ramps down", displayName: "Chang'e 4", made: 'dimensions' },
+    yutu: { build: 'rover', file: 'yutu.glb', colour: 'site', name: 'the Yutu rover', displayName: 'Yutu rover, Mare Imbrium', made: 'dimensions' },
+    'change-5': { build: 'lander', file: 'change-5.glb', colour: 'site', name: "the Chang'e 5 lander, its ascender gone", displayName: "Chang'e 5, Oceanus Procellarum", made: 'dimensions' },
+    'change-6': { build: 'lander', file: 'change-5.glb', colour: 'site', name: "the Chang'e 6 lander, of Chang'e 5's design, its ascender gone", displayName: "Chang'e 6, Apollo basin", made: 'dimensions' },
+    'lunokhod-1': { build: 'rover', file: 'lunokhod-1.glb', colour: 'site', name: 'Lunokhod 1, its lid open', displayName: 'Lunokhod 1, Mare Imbrium', made: 'dimensions' },
+    'lunokhod-2': { build: 'rover', file: 'lunokhod-2.glb', colour: 'site', name: 'Lunokhod 2, its lid open', displayName: 'Lunokhod 2, Le Monnier crater', made: 'dimensions' },
+    // 0077 W3-c: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

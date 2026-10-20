@@ -248,6 +248,20 @@ export const SITES = [
     "doing": "China's first Moon landing, in December 2013, and the first soft landing on the Moon since 1976. It carried the Yutu rover."
   },
   {
+    "id": "yutu",
+    "display": "Yutu rover, Mare Imbrium",
+    "class": "surface",
+    "world": "moon",
+    "lat": 44.1208,
+    "lon": 340.4878,
+    "shape": "rover",
+    "aliases": [
+      "Yutu 1",
+      "Jade Rabbit"
+    ],
+    "doing": "China's first Moon rover. It rolled off Chang'e 3 in December 2013, drove 114 metres and stopped here, about 20 metres from its lander."
+  },
+  {
     "id": "change-5",
     "display": "Chang'e 5, Oceanus Procellarum",
     "class": "surface",

@@ -326,6 +326,22 @@ sites:
     source: lroc-2016
     aliases: ["Change 3", "Yutu"]
     doing: "China's first Moon landing, in December 2013, and the first soft landing on the Moon since 1976. It carried the Yutu rover."
+  # 0077 W3-c: begin
+  # The rover Chang'e 3 carried, where LROC's 2016 table puts it (12.9 m, its own uncertainty), so its model has a place of its
+  # own (public #1125). Yutu-2 has no row: NSSDCA gives only where it landed and says its "final coordinates TBD".
+  - id: yutu
+    display: "Yutu rover, Mare Imbrium"
+    class: surface
+    world: moon
+    lat: 44.1208
+    lon: 340.4878
+    uncertainty_m: 12.9
+    landed: 2013-12-14
+    shape: rover
+    source: lroc-2016
+    aliases: ["Yutu 1", "Jade Rabbit"]
+    doing: "China's first Moon rover. It rolled off Chang'e 3 in December 2013, drove 114 metres and stopped here, about 20 metres from its lander."
+  # 0077 W3-c: end
   - id: change-5
     display: "Chang'e 5, Oceanus Procellarum"
     class: surface

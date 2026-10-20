@@ -51,6 +51,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: begin -->
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-c: begin -->
+| The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
+<!-- 0077 W3-c: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1336,6 +1339,39 @@ pictures; details simplified".
 **Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
 
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-c: begin -->
+## 3b-16. China's landers and rovers and the Lunokhods built from dimensions — Zhurong, Chang'e 3 and 4, Yutu, Chang'e 5 and 6, Lunokhod 1 and 2 (2026-10-20)
+
+Release 1.3.0, stage W3-c (public #1124, #1125, #1126, #1127). **No agency publishes a model of any of these craft under terms
+that allow a derivative**: CNSA and Lavochkin publish none, and NASA's 3D Resources and NASA Science's 3D models have none of
+them (read 2026-10-20). So each file was built in code, part by part, from cited numbers, with photographs looked at for what
+the numbers do not say, and each is drawn **as it stands now**: the Chang'e 3 and 4 landers with their rovers gone and both
+ramps down; the Chang'e 5 lander with its ascender gone (Chang'e 6's site wears the same file: the same design); Zhurong with
+its wings spread; the Lunokhods with their lids open. No image-to-3D model was used and no picture is in any file. The flags are
+drawn as plates; no logo and no lettering is on any mesh. Photographs under share-alike licences (the museums' mock-ups) were
+looked at only: nothing was traced from them. Their cards say "shape built from published dimensions and pictures; details
+simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `zhurong.glb` (81 KB) | Zhurong on Mars: the cited 2.6 by 3 by 1.85 m, the gold body under the deck with its two round windows, four swept wings, the mast and camera head, MarSCoDe, the climate station, the dish, the whips, six wheels on the suspension's beams | Wikipedia's "Zhurong (rover)" and zh.wikipedia's "祝融号火星车" (read 2026-10-20); the selfie with the lander (<https://commons.wikimedia.org/wiki/File:Zhurong-with-lander-selfie.png>, CNSA via China News Service, CC BY 4.0); the payload layout of Li et al. 2021 (<https://commons.wikimedia.org/wiki/File:Zhurong_payload.jpg>, CC BY 4.0); Regnart's suspension drawing (<https://commons.wikimedia.org/wiki/File:ZhurongFahrwerk.jpeg>, CC0) | numbers are facts; the pictures are not in the file |
+| `change-3.glb` (122 KB), `change-4.glb` (121 KB) | The Chang'e 3 and Chang'e 4 landers: an octagonal body 0.83 m off the ground, four legs 4.76 m across the pads, two panels, the main engine, eight thruster pods, both ramps down, the deck's camera, dish and whip; Chang'e 3 with its ultraviolet telescope and EUV camera, Chang'e 4 with its three LFS antennas | eoPortal's "Chang'e-3" (<https://eoportal.org/satellite-missions/chang-e-3>) and Wikipedia's "Chang'e 4" (read 2026-10-20); Yutu-2's pictures of the lander (<https://commons.wikimedia.org/wiki/File:ChangE-4_-_PCAM.png>, <https://commons.wikimedia.org/wiki/File:ChangE-4_-_PCAM_(51216550288).png>, CSNA/Siyu Zhang/Kevin M. Gill, CC BY 2.0); the lander's own picture of Yutu-2 leaving (<https://commons.wikimedia.org/wiki/File:Yutu-2_leaving_Chang_e-4-iau1901a.jpg>, CNSA, CC BY 4.0) | numbers are facts; the pictures are not in the files |
+| `yutu.glb` (95 KB) | Yutu (and Yutu-2, the same design, which has no site of its own): the cited 1.5 by 1 by 1.1 m body, two panels, the mast with its cameras 1.5 m up and the dish, the arm, six wheels on rocker and bogie | zh.wikipedia's "玉兔号月球车" and "嫦娥四号", eoPortal's "Chang'e-3" (read 2026-10-20); Yutu on the Moon (<https://commons.wikimedia.org/wiki/File:Yutu_rover.jpg>, IHEP/CAS, CC BY 4.0); Yutu-2 on the far side (<https://commons.wikimedia.org/wiki/File:ChangE-4,_Yutu-2.png>, CSNA/Siyu Zhang/Kevin M. Gill, CC BY 2.0) | numbers are facts; the pictures are not in the file |
+| `change-5.glb` (118 KB) | The Chang'e 5 lander, also drawn for Chang'e 6: the Chang'e 3 structure (cited), the ascender's empty seat, two arrays, the drill's column, the arm raised with its scoop, the flag on its boom | eoPortal's "Chang'e-5" (<https://www.eoportal.org/satellite-missions/chang-e-5>) and zh.wikipedia's "嫦娥五号" (read 2026-10-20); China News Service's pictures of the flight lander in test and its rendering of the flag (<https://commons.wikimedia.org/wiki/File:Chang-e_5_assembly_factory_test_1.png>, <https://commons.wikimedia.org/wiki/File:Chang-e_5_lander_ascender_assembly_test.png>, <https://commons.wikimedia.org/wiki/File:Chang-e-5-Lander-Flag.png>, CC BY 4.0) | numbers are facts; the pictures are not in the file |
+| `lunokhod-1.glb` (164 KB), `lunokhod-2.glb` (165 KB) | Lunokhod 1 and 2: the tub 1.7 by 1.6 m and 1.35 m high (cited), the round lid open with its cells, eight wire wheels, the TV cameras (Lunokhod 2's third high one), the cone and helical antennas, the retroreflector, the telephotometers | Wikipedia's "Lunokhod 1" and "Lunokhod 2" (read 2026-10-20); Lunokhod 2's model in Kaluga (<https://commons.wikimedia.org/wiki/File:Lunokhod_2_in_Kaluga_01.jpg>, <https://commons.wikimedia.org/wiki/File:Lunokhod_2_in_Kaluga_02.jpg>, Stolbovsky, CC BY 4.0); Lunokhod 1's full-size model (<https://commons.wikimedia.org/wiki/File:Lunokhod_1_moon_rover_(MMA_2011)_(1).JPG>, Armael, CC0); the Evergreen replica (<https://commons.wikimedia.org/wiki/File:USSR_Lunokhod_1_(6586684979)_(6).jpg>, Clemens Vasters, CC BY 2.0) | numbers are facts; the pictures are not in the files |
+| all seven | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and pictures (CNSA via China News Service, CC BY 4.0; Li et al. 2021, CC BY 4.0; Regnart, CC0)`;
+`3D model: built by Space Radar from published dimensions and pictures (CNSA/Siyu Zhang/Kevin M. Gill, CC BY 2.0; CNSA, CC BY 4.0)`;
+`3D model: built by Space Radar from published dimensions and pictures (IHEP/CAS, CC BY 4.0; CNSA/Siyu Zhang/Kevin M. Gill, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and pictures (China News Service, CC BY 4.0)`;
+`3D model: built by Space Radar from published dimensions and photographs of museum models (Stolbovsky, CC BY 4.0; Armael, CC0; Clemens Vasters, CC BY 2.0)`.
+
+CNSA, China News Service, the Chinese Academy of Sciences, Lavochkin, the museums and the pictures' authors do not endorse
+Space Radar, and none of them made or approved these shapes.
+
+<!-- 0077 W3-c: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
