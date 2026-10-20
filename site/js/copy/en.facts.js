@@ -6,6 +6,10 @@
 // finds them, and ui/cardfacts.js imports only this. Same rule as en.later.js: no module in the boot
 // graph may import it (tests/test_boot_diet.mjs).
 import { COPY } from './en.js';
+// 0077 W1-e: begin
+import { HOOK } from './lang.js';
+const KEYS_BEFORE = HOOK.localise ? new Set(Object.keys(COPY)) : null;
+// 0077 W1-e: end
 
 Object.assign(COPY, {
   klass: {
@@ -183,3 +187,8 @@ Object.assign(COPY, {
     failed: 'The legend did not load. The line below says it in short.',
   },
 });
+
+// 0077 W1-e: begin
+// The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
+if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
+// 0077 W1-e: end

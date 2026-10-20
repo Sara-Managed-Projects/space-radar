@@ -19,6 +19,13 @@
 // Formatting primitives
 // ---------------------------------------------------------------------------------------
 
+// 0077 W1-e: begin
+import { HOOK, LOCALE, PILL_LOCALE } from './lang.js';
+// A language file's grammar written as code (public #524): copy/<code>.js may export RULES with
+// `article(phrase)` and `typeWords(text)`; copy/index.js puts them here. English needs none.
+export const RULES = {};
+// 0077 W1-e: end
+
 const NNBSP = '\u202F'; // narrow no-break space: "35 786 km", per docs/design-language.md
 const NBSP = '\u00A0';
 
@@ -86,6 +93,7 @@ export const fmt = {
   nbsp: NBSP,
   /** "4 minutes" / "1 minute" */
   plural(n, one, many) {
+    if (RULES.plural) return RULES.plural(n, one, many); // 0077 W1-e
     return Math.abs(Number(n)) === 1 ? one : many;
   },
 };
@@ -154,10 +162,15 @@ function bandFor(bands, n) {
   return null;
 }
 
+// 0077 W1-e: begin
+// The words of a band: COPY.compareText.<key>[i] (a language file's), else the English `say` above.
+const said = (key, bands, band) => (COPY.compareText && COPY.compareText[key] && COPY.compareText[key][bands.indexOf(band)]) || band.say;
+// 0077 W1-e: end
+
 function compareSize(m) {
   if (!(m > 0)) return null;
   const band = bandFor(SIZE_BANDS, m);
-  return band ? band.say : null;
+  return band ? said('size', SIZE_BANDS, band) : null; // 0077 W1-e
 }
 
 /** Drop trailing zeros so a comparison reads "3.9×", never "3.90×". */
@@ -179,36 +192,36 @@ function compareDistance(km) {
     // 200 km, so the hours are derived at 100 km/h rather than fixed: a wrong number a
     // beginner CAN check is worse than no comparison at all.
     const hours = Math.max(1, Math.round(km / 100));
-    return t('{n} km up, about {h} {word} of driving if the road went straight up', {
+    return t(COPY.compareText.driving, { // 0077 W1-e: the English of these five sentences is COPY.compareText
       n: num(km, 0),
       h: hours,
-      word: fmt.plural(hours, 'hour', 'hours'),
+      word: fmt.plural(hours, COPY.compareText.hour, COPY.compareText.hours),
     });
   }
   if (km < LUNAR_DISTANCE_KM * 0.1) {
-    return t('{n} km up', { n: num(km, 0) });
+    return t(COPY.compareText.up, { n: num(km, 0) }); // 0077 W1-e
   }
   if (km < LIGHT_MINUTE_KM) {
-    return t("{ld}× the Moon's distance", { ld: ratio(km / LUNAR_DISTANCE_KM) });
+    return t(COPY.compareText.moon, { ld: ratio(km / LUNAR_DISTANCE_KM) }); // 0077 W1-e
   }
   const lt = km / LIGHT_MINUTE_KM;
   if (lt < 90) {
-    return t('{lt} light-minutes away', { lt: ratio(lt) });
+    return t(COPY.compareText.lightMinutes, { lt: ratio(lt) }); // 0077 W1-e
   }
-  return t('{lh} light-hours away', { lh: ratio(lt / 60) });
+  return t(COPY.compareText.lightHours, { lh: ratio(lt / 60) }); // 0077 W1-e
 }
 
 function compareSpeed(kmh) {
   if (!(kmh > 0)) return null;
   const band = bandFor(SPEED_BANDS, kmh);
   if (!band) return null;
-  return t(band.say, { n: num(kmh, 0), m: num(kmh / 60, 0) });
+  return t(said('speed', SPEED_BANDS, band), { n: num(kmh, 0), m: num(kmh / 60, 0) }); // 0077 W1-e
 }
 
 function compareMagnitude(mag) {
   if (!Number.isFinite(mag)) return null;
   const band = bandFor(MAGNITUDE_BANDS, mag);
-  return band ? band.say : null;
+  return band ? said('magnitude', MAGNITUDE_BANDS, band) : null; // 0077 W1-e
 }
 
 const COMPARE_KINDS = {
@@ -229,6 +242,7 @@ const COMPARE_KINDS = {
  */
 /** The indefinite article for a type phrase: "an ultra-faint dwarf galaxy", "a spiral galaxy". English only. */
 export function article(phrase) {
+  if (RULES.article) return RULES.article(phrase); // 0077 W1-e
   const text = String(phrase || '').trim();
   // An initialism is said letter by letter, so it is the LETTER's sound that counts: "an H II
   // region" (aitch), "an M dwarf", "a UV source". A card read "a h ii region" (2026-09-22).
@@ -247,6 +261,7 @@ const PROPER_IN_TYPES = ['Milky Way', 'Large Magellanic Cloud', 'Small Magellani
  * names above keep their capitals; every other word is lowered.
  */
 export function typeWords(text) {
+  if (RULES.typeWords) return RULES.typeWords(text); // 0077 W1-e
   let s = String(text || '');
   PROPER_IN_TYPES.forEach((name, i) => { s = s.split(name).join(`\u0000${i}\u0000`); });
   s = s.split(/(\s+)/).map((w) => (/^[A-Z0-9]{1,3}$/.test(w) ? w : w.toLowerCase())).join('');
@@ -311,7 +326,7 @@ export function compassWords(azDeg) {
   const n = Number(azDeg);
   if (!Number.isFinite(n)) return null;
   const idx = Math.round((((n % 360) + 360) % 360) / 22.5) % 16;
-  return COMPASS_16[idx];
+  return (COPY.compareText.compass[idx]) || COMPASS_16[idx]; // 0077 W1-e
 }
 
 /**
@@ -378,26 +393,26 @@ export function inWords(deltaMs) {
 // Time display
 // ---------------------------------------------------------------------------------------
 
-const utcTimeFmt = new Intl.DateTimeFormat('en-GB', {
+const utcTimeFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
   hour12: false,
   timeZone: 'UTC',
 });
-const utcDateFmt = new Intl.DateTimeFormat('en-GB', {
+const utcDateFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   year: 'numeric',
   month: 'short',
   day: '2-digit',
   timeZone: 'UTC',
 });
-const localTimeFmt = new Intl.DateTimeFormat('en-GB', {
+const localTimeFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
   hour12: false,
 });
-const localDateFmt = new Intl.DateTimeFormat('en-GB', {
+const localDateFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   weekday: 'short',
   month: 'short',
   day: '2-digit',
@@ -405,23 +420,23 @@ const localDateFmt = new Intl.DateTimeFormat('en-GB', {
 // A date whose YEAR is the point. `localDate` is "Mon 19 Mar", which is right for a pass tonight
 // and wrong for the last time anybody photographed the Tesla Roadster: measured in the browser it
 // printed "the last time anybody saw it was Mon 19 Mar" about March 2018.
-const longDateFmt = new Intl.DateTimeFormat('en-GB', {
+const longDateFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
-const utcLongFmt = new Intl.DateTimeFormat('en-GB', {
+const utcLongFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   timeZone: 'UTC',
 });
-const clockFmt = new Intl.DateTimeFormat('en-GB', {
+const clockFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   hour: '2-digit',
   minute: '2-digit',
   hour12: false,
 });
-const pillFmt = new Intl.DateTimeFormat('en-US', {
+const pillFmt = new Intl.DateTimeFormat(PILL_LOCALE, { // 0077 W1-e
   day: '2-digit',
   month: 'short',
   hour: '2-digit',
@@ -496,7 +511,7 @@ export const timeText = {
 
 // The instant, in UTC and in words a visitor reads: the stop's time is a fact about the world, so
 // it is not converted to anybody's local clock.
-const shownAtFmt = new Intl.DateTimeFormat('en-GB', {
+const shownAtFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   year: 'numeric',
   month: 'short',
   day: 'numeric',
@@ -505,7 +520,7 @@ const shownAtFmt = new Intl.DateTimeFormat('en-GB', {
   hour12: false,
   timeZone: 'UTC',
 });
-const shownOnFmt = new Intl.DateTimeFormat('en-GB', {
+const shownOnFmt = new Intl.DateTimeFormat(LOCALE, { // 0077 W1-e
   year: 'numeric',
   month: 'short',
   day: 'numeric',
@@ -553,6 +568,24 @@ export const COPY = {
     sceneSelected: 'A map of space drawn at real positions, with {name} selected: its card, in the panel beside the map, says what it is.',
   },
 
+  // 0077 W1-e: begin
+  // The sentences copy/en.js's comparisons and compass are built from (public #524): they were typed in the
+  // functions above, which no translator can reach. Lists are in the order of SIZE_BANDS, MAGNITUDE_BANDS,
+  // SPEED_BANDS and COMPASS_16; a language keeps the length of each.
+  compareText: {
+    size: SIZE_BANDS.map((b) => b.say),
+    magnitude: MAGNITUDE_BANDS.map((b) => b.say),
+    speed: SPEED_BANDS.map((b) => b.say),
+    driving: '{n} km up, about {h} {word} of driving if the road went straight up',
+    hour: 'hour',
+    hours: 'hours',
+    up: '{n} km up',
+    moon: '{ld}× the Moon\'s distance',
+    lightMinutes: '{lt} light-minutes away',
+    lightHours: '{lh} light-hours away',
+    compass: COMPASS_16.slice(),
+  },
+  // 0077 W1-e: end
 
   // "Six storms are turning": a count a person reads as a word (ui/explore.js Right now).
   numberWords: SMALL_WORDS,
@@ -2563,3 +2596,10 @@ export const CITIES = [
   { name: 'Warsaw', country: 'Poland', latDeg: 52.2297, lonDeg: 21.0122, zone: 'Europe/Warsaw' },
   { name: 'Yangon', country: 'Myanmar', latDeg: 16.8409, lonDeg: 96.1735, zone: 'Asia/Yangon' },
 ];
+
+// 0077 W1-e: begin
+// The language (public #524). If index.html prepared one (copy/lang.js says how), its words go over these IN PLACE, a key at a
+// time, now: this file ends before any module that imports it has run, so every one of them is evaluated with the words already
+// in place. A key the language lacks stays English. In English HOOK is empty and nothing happens.
+if (HOOK.localise) HOOK.localise({ COPY, GLOSSARY, RULES });
+// 0077 W1-e: end

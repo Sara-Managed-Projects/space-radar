@@ -28,11 +28,12 @@ with a link to the source is enough. Someone else will make the change and credi
 
 For anyone who writes well in two languages.
 
-**State today, plainly:** the site shows English only. There is no language loader yet
-([#524](https://github.com/Sara-Managed-Projects/space-radar/issues/524)), so a translation file is
-checked by the tools but not shown on the site until the loader lands. The loader will read
-exactly this file, so the work is not wasted. No translation has been merged yet; yours could be
-the first.
+**State today, plainly:** the site can show a language file: `?lang=es` at the end of the address
+([#524](https://github.com/Sara-Managed-Projects/space-radar/issues/524)). Spanish is the first, drafted
+by a program and not yet read by a native speaker, so it is shown only to a visitor who asks for it.
+A language from the browser's own settings waits for a second native speaker (the review rule in
+[docs/TRANSLATING.md](TRANSLATING.md)). Yours could be the next, or the reader that makes Spanish the first
+the page offers by itself.
 
 | | |
 |---|---|
