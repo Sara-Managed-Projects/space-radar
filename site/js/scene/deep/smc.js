@@ -49,7 +49,7 @@ const STEP_UNITS_GLSL = '25.0'; // STEP_UNITS, as GLSL
 // Drawing choices (not measurements).
 export const SHAPE = {
   adapt: 0.45,       // what is left of its light when it fills the view (the eye's adaptation)
-  inside: 0.25,      // what is left of the unresolved light with the camera inside the galaxy
+  inside: 0.12,      // what is left of the unresolved light with the camera inside the galaxy
   sparkle: 0.18,     // the points' share of the light (on top of the unresolved light: sparkle, not the body)
   sparklePx: 1.5,    // a point's size, CSS px; down to 0.6 of it close up (never grown)
   sparkleCap: 0.55,  // the brightest a point is drawn
@@ -640,7 +640,8 @@ export function createHero(THREE, env = {}) {
         su.uPxPerRad.value = (info.camera.projectionMatrix.elements[5] || 1) * vh / 2;
       }
       // inside: the camera within the populations' extent (the box's half-width on the sky, their depth along it)
-      const rIn = Math.max(Math.hypot(_cam.x, _cam.y) / g.core[0], Math.abs(_cam.z) / g.core[1]);
+      // inside, or close: the body steps back from 3 core radii in to 1 (look run 2: from 24 000 ly it was a veil)
+      const rIn = Math.max(Math.hypot(_cam.x, _cam.y) / g.core[0], Math.abs(_cam.z) / g.core[1]) / 3;
       const sh = sharesFor({ level: levelShare, rPx: info.rPx, viewH: vh, inside: 1 - smooth(rIn, 0.5, 1.2) });
       last = sh;
       const dt = Number(info.dtMs) || 0;

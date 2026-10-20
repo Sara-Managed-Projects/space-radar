@@ -31,6 +31,8 @@ const SUN_INERTIAL = 'sun-inertial';
 const TEX_URL = '../../../images/deep/magellanic/hi-column.webp';
 export const SHAPE = {
   near: [15000, 40000], // ly from the Sun: it fades in over these (a flight out toward the Clouds)
+  close: [40, 120],     // kly from the camera: gas nearer than this fades out, so beside the Clouds it is a far ribbon,
+                        // never a haze filling the view (look run 2, 2026-10-20)
   step: 1,          // the sheet's vertices, degrees
   peak: 0.26,       // its brightest, a display value: a radio map is a faint overlay, never a glow
   limbCap: 2.5,     // a slant's column grows as 1 / |cos| up to this
@@ -116,13 +118,15 @@ const VERT = /* glsl */ `
 attribute vec2 aUv;
 attribute float aKeep;
 attribute vec3 aNormal;
+uniform vec3 uCamKly;      // the camera in the layer's own kly about the Sun (CPU, float64)
 varying vec2 vUv;
 varying float vKeep;
 varying float vMu;
 #include <common>
 #include <logdepthbuf_pars_vertex>
 void main() {
-  vUv = aUv; vKeep = aKeep;
+  vUv = aUv;
+  vKeep = aKeep * smoothstep( ${SHAPE.close[0].toFixed(1)}, ${SHAPE.close[1].toFixed(1)}, length( position - uCamKly ) );
   // in view space: three.js makes modelViewMatrix in float64 on the CPU, so the GPU sees camera-relative numbers
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   vMu = abs( dot( normalize( normalMatrix * aNormal ), normalize( -mv.xyz ) ) );
@@ -175,7 +179,7 @@ export function createLayer(THREE, env = {}) {
     tex.colorSpace = THREE.NoColorSpace;
     tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   } else if (env.texture) { tex = env.texture; state.loaded = true; }
-  const uniforms = { uMap: { value: tex || blank }, uColour: { value: new THREE.Vector3(...(s.colour || [0.45, 0.62, 1])) }, uGain: { value: 1 } };
+  const uniforms = { uCamKly: { value: new THREE.Vector3() }, uMap: { value: tex || blank }, uColour: { value: new THREE.Vector3(...(s.colour || [0.45, 0.62, 1])) }, uGain: { value: 1 } };
   const mat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms, transparent: false, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
   mat.name = 'deep-magellanic-gas';
   const mesh = new THREE.Mesh(geo, mat);
@@ -184,6 +188,7 @@ export function createLayer(THREE, env = {}) {
   mesh.renderOrder = -1;
   group.add(mesh);
   const _m = new THREE.Matrix4();
+  const _inv = new THREE.Matrix4();
 
   function place(stage) {
     const key = `${stage.worldId}:${stage.unitKm}`;
@@ -219,6 +224,9 @@ export function createLayer(THREE, env = {}) {
       group.visible = state.on;
       if (!state.on) return;
       uniforms.uGain.value = look.gain * state.fade;
+      group.updateMatrixWorld(true);
+      _inv.copy(group.matrixWorld).invert();
+      uniforms.uCamKly.value.copy(info.camera.position).applyMatrix4(_inv);
       state.calls = 1;
     },
     // nothing in flight: the map has landed, failed, or was never asked for (no document: a test)
