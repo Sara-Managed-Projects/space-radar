@@ -1429,7 +1429,7 @@ export const COPY = {
     "swatchMixed": "In eigenen Farben gezeichnet",
     "keyedNote": "Punkte nach {key} gefärbt: Die Legende steht unten.",
     "localTimeFallback": "lokal",
-    "locationPlaceholder": "Stadt eintippen",
+    "locationPlaceholder": "Stadt suchen",
     "locationSearchLabel": "Stadt suchen",
     "locationUseMine": "Meinen Standort nutzen",
     "locationUseMineTitle": "Den Browser fragen, wo du bist",
@@ -2665,10 +2665,10 @@ export const COPY = {
         "waningCrescent": "abnehmende Sichel"
       },
       "showerLine": "bis zu {zhr} pro Stunde · am besten {time}, im {dir}",
-      "dsoLine": "am besten {time} · {deg}° hoch, im {dir} · {how}",
+      "dsoLine": "Max. {time} · {deg}° hoch, {dir} · {how}",
       "dsoNeeds": {
-        "eye": "mit bloßem Auge",
-        "binoculars": "mit Fernglas"
+        "eye": "bloßes Auge",
+        "binoculars": "Fernglas"
       },
       "view": "Meine Blickrichtung",
       "viewHeight": "Wie hoch es stehen muss",
@@ -2692,14 +2692,14 @@ export const COPY = {
         "30": "Über 30°"
       },
       "viewNothing": "Durch diesen Teil des Himmels zieht heute Nacht nichts.",
-      "darkHours": "Dunkel von {from} bis {to}",
+      "darkHours": "Dunkel {from}–{to}",
       "moonless": "kein Mond, eine dunkle Nacht",
-      "moonBright": "Mond {pct} % verdeckt schwache Sterne",
+      "moonBright": "Mond {pct} % dämpft schwache Sterne",
       "moonFaint": "Mond {pct} %, wenig Licht",
       "neverDark": "Heute Nacht wird es nicht dunkel.",
       "markEnds": "{time} {dir}",
       "markPeak": "{time} {deg}°",
-      "honesty": "Für deinen Ort berechnet. Die Helligkeit ist eine Schätzung."
+      "honesty": "Für deinen Ort berechnet; Helligkeit geschätzt."
     },
     "skybar": {
       "title": "Der Himmel",

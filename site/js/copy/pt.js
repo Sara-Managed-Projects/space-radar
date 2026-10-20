@@ -323,7 +323,7 @@ export const COPY = {
   "timePill": {
     "label": "Hora",
     "when": "{date} {time} UTC",
-    "live": "AO VIVO · {when}",
+    "live": "VIVO · {when}",
     "held": "{when} · parado",
     "away": "{when} · {off}",
     "unknown": "Hora desconhecida",
@@ -868,7 +868,7 @@ export const COPY = {
       "rideShort": "Carona",
       "seeShort": "Ver",
       "postcard": "Postal",
-      "share": "Compartilhar"
+      "share": "Enviar"
     },
     "micro": "{klass} · {regime}",
     "microKlass": {
@@ -1421,7 +1421,7 @@ export const COPY = {
     "swatchMixed": "Desenhado nas próprias cores",
     "keyedNote": "Pontos coloridos por {key}: a legenda está abaixo.",
     "localTimeFallback": "local",
-    "locationPlaceholder": "Digite uma cidade",
+    "locationPlaceholder": "Qual cidade?",
     "locationSearchLabel": "Buscar uma cidade",
     "locationUseMine": "Usar minha localização",
     "locationUseMineTitle": "Perguntar ao navegador onde você está",
@@ -2657,7 +2657,7 @@ export const COPY = {
         "waningCrescent": "Lua minguante"
       },
       "showerLine": "até {zhr} por hora · melhor às {time}, {dir}",
-      "dsoLine": "melhor às {time} · {deg}° de altura, {dir} · {how}",
+      "dsoLine": "melhor {time} · {deg}° acima, {dir} · {how}",
       "dsoNeeds": {
         "eye": "a olho nu",
         "binoculars": "binóculo"
@@ -2684,14 +2684,14 @@ export const COPY = {
         "30": "Acima de 30°"
       },
       "viewNothing": "Nada passa por essa parte do céu esta noite.",
-      "darkHours": "Escuro das {from} às {to}",
+      "darkHours": "Escuro {from}–{to}",
       "moonless": "sem Lua, uma noite escura",
       "moonBright": "Lua {pct}% esconde estrelas fracas",
       "moonFaint": "Lua {pct}%, pouca luz",
       "neverDark": "Não escurece esta noite.",
       "markEnds": "{time} {dir}",
       "markPeak": "{time} {deg}°",
-      "honesty": "Calculado para o seu lugar. O brilho é uma estimativa."
+      "honesty": "Calculado para o seu lugar. O brilho é estimado."
     },
     "skybar": {
       "title": "O céu",

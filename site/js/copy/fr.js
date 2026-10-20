@@ -2653,7 +2653,7 @@ export const COPY = {
       "notVisible": "Invisible : le ciel est clair ou il est dans l’ombre.",
       "rocket": "Étage de fusée · {name}",
       "debris": "Débris · {name}",
-      "planetLine": "meilleur à {time} · {deg}° de haut, {dir}",
+      "planetLine": "pic {time} · {deg}° de haut, {dir}",
       "moonTitle": "{phase} · {pct} %",
       "moonSets": "se couche à {time}",
       "moonRises": "se lève à {time}",
@@ -2668,11 +2668,11 @@ export const COPY = {
         "lastQuarter": "Dernier quartier",
         "waningCrescent": "Dernier croissant"
       },
-      "showerLine": "jusqu’à {zhr} par heure · meilleur à {time}, {dir}",
-      "dsoLine": "meilleur à {time} · {deg}° de haut, {dir} · {how}",
+      "showerLine": "jusqu’à {zhr}/h · pic {time}, {dir}",
+      "dsoLine": "pic {time} · {deg}° de haut, {dir} · {how}",
       "dsoNeeds": {
         "eye": "à l’œil nu",
-        "binoculars": "aux jumelles"
+        "binoculars": "jumelles"
       },
       "view": "Ma vue",
       "viewHeight": "Hauteur minimale",
@@ -2696,9 +2696,9 @@ export const COPY = {
         "30": "Au-dessus de 30°"
       },
       "viewNothing": "Rien ne passe dans cette partie du ciel ce soir.",
-      "darkHours": "Nuit noire de {from} à {to}",
+      "darkHours": "Nuit {from}–{to}",
       "moonless": "pas de Lune, une nuit noire",
-      "moonBright": "Lune {pct} %, elle cache les étoiles faibles",
+      "moonBright": "Lune {pct} %, étoiles faibles noyées",
       "moonFaint": "Lune {pct} %, peu de lumière",
       "neverDark": "Il ne fait pas nuit noire ce soir.",
       "markEnds": "{time} {dir}",

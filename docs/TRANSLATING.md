@@ -20,9 +20,9 @@ the file you write.
 | --- | --- | --- | --- | --- | --- |
 | English | `en.js` | 2 894 (the source) | - | the source | yes |
 | Deutsch (German) | `de.js` | 2 892 of 2 894 (99.9 %) | 2 763 (95.4 %) | machine-drafted | no: `?lang=de` only |
-| Español (Spanish) | `es.js` | 2 867 of 2 894 (99 %) | 2 758 (95.3 %) | machine-drafted | no: `?lang=es` only |
+| Español (Spanish) | `es.js` | 2 894 of 2 894 (100 %) | 2 784 (96.1 %) | machine-drafted | no: `?lang=es` only |
 | Français (French) | `fr.js` | 2 890 of 2 894 (99.8 %) | 2 749 (94.9 %) | machine-drafted | no: `?lang=fr` only |
-| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 2 893 of 2 894 (99.9 %) | 2 775 (95.8 %) | machine-drafted | no: `?lang=pt` only |
+| Português (Brasil) (Portuguese (Brazil)) | `pt.js` | 2 893 of 2 894 (99.9 %) | 2 776 (95.9 %) | machine-drafted | no: `?lang=pt` only |
 <!-- translation-status:end -->
 
 ## What is translated, in order
