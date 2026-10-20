@@ -1,4 +1,7 @@
-// scene/traverse.js -- where the rovers drove on the Moon (release 1.2.0 stage W2-a, internal #868).
+// scene/traverse.js -- where the rovers drove on the Moon (release 1.2.0 stage W2-a, internal #868) and on
+// Mars (release 1.3.0 stage W3-d: Spirit's and Opportunity's, the lines the PDS Geosciences Node's MER
+// Analyst's Notebooks map; scripts/build_traverses.py). The same ribbon on any world whose tiles are up:
+// scene/tiles.js TRAVERSE_WORLDS names them, and a world's rows are the ones whose site stands on it.
 //
 // Contract: createTraverses({ world }) -> { group, frame(camLocal, viewportPx, pixelRatio), state(), credits(), dispose() }
 //

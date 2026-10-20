@@ -474,5 +474,71 @@ export const SITES = [
     "lon": 202.031,
     "shape": "lander",
     "doing": "The first soft landing on Mars, in December 1971. It fell silent after 20 seconds; in 2013 HiRISE photographed what may be its parachute."
+  },
+  {
+    "id": "huygens",
+    "display": "Huygens, Adiri",
+    "class": "surface",
+    "world": "titan",
+    "lat": -10.573,
+    "lon": 167.665,
+    "shape": "lander",
+    "aliases": [
+      "Huygens probe",
+      "Huygens landing site"
+    ],
+    "doing": "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
+  },
+  {
+    "id": "copernicus",
+    "display": "Copernicus crater",
+    "class": "feature",
+    "world": "moon",
+    "lat": 9.62,
+    "lon": 339.92,
+    "diameter_m": 96070,
+    "aliases": [
+      "Copernicus"
+    ],
+    "doing": "A crater 96 km across and nearly 4 km deep, young for the Moon, its bright rays crossing the plains. Best at sunrise or sunset, when its walls cast shadows."
+  },
+  {
+    "id": "tycho",
+    "display": "Tycho crater",
+    "class": "feature",
+    "world": "moon",
+    "lat": -43.3,
+    "lon": 348.78,
+    "diameter_m": 85290,
+    "aliases": [
+      "Tycho"
+    ],
+    "doing": "A crater 85 km across with a central peak, young enough that its rays of bright ejecta still run across much of the near side."
+  },
+  {
+    "id": "shackleton",
+    "display": "Shackleton crater",
+    "class": "feature",
+    "world": "moon",
+    "lat": -89.67,
+    "lon": 129.78,
+    "diameter_m": 20920,
+    "aliases": [
+      "Shackleton"
+    ],
+    "doing": "A crater 21 km across beside the Moon's south pole. Sunlight only grazes its rim, and its floor never sees the Sun at all."
+  },
+  {
+    "id": "moon-south-pole",
+    "display": "The Moon's south pole",
+    "class": "feature",
+    "world": "moon",
+    "lat": -90,
+    "lon": 0,
+    "aliases": [
+      "Lunar south pole",
+      "South pole of the Moon"
+    ],
+    "doing": "Where the Moon's axis comes out. The Sun never climbs more than a degree or two here, so peaks stay lit for most of a month and crater floors stay dark."
   }
 ];

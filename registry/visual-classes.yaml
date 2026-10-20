@@ -266,6 +266,7 @@ classes:
       rights: "NASA and USGS public domain; Solar System Scope CC BY 4.0."
     records:
       - {domain: worlds, ids: [moon, phobos, deimos]}
+      - {domain: sites, where: {class: feature}}  # 0077 W3-d: the Moon's named places (Copernicus, Tycho, Shackleton, the south pole), on its tiles
 
   - id: DWARF_PLANET
     title: Dwarf planets
@@ -284,10 +285,10 @@ classes:
 
   - id: ASTEROID
     title: Asteroids
-    renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js]
+    renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js, site/js/scene/moonshape.js] # 0077 W3-d
     honesty: modelled
     fallback: A glyph on its orbit; the seeded rock or the real shape only when selected and near.
-    issue: "#866 (measured spin; Ryugu, Itokawa, Didymos)"
+    issue: "#866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)" # 0077 W3-d
     note:
       source: "JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn."
       dates: "Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card)."

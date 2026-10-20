@@ -66,6 +66,7 @@ function kindOf(record) {
   if (record.klass === 'exotic') return K[record.meta && record.meta.kind] || '';
   // A site on another world is where something landed; on the Earth it is a place.
   if (record.klass === 'site') {
+    if (record.meta && record.meta.siteKind === 'feature') return K.site; // 0077 W3-d: a named place (Tycho) is a place, not a landing site
     let f = null;
     try { f = parseFrame(record.frame); } catch { f = null; }
     return f && f.kind === 'fixed' && f.world && f.world !== 'earth' ? K.landing : K.site;

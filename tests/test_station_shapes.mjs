@@ -778,13 +778,13 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   // printing and laid out as two pieces, and reassembling them would be a guess.
   const vesta = rocks.find((r) => r.name === 'Vesta');
   check(vesta && realModelFor(vesta)?.file === 'asteroid-vesta.glb', `Vesta is drawn from its shape model: ${JSON.stringify(vesta && realModelFor(vesta))}`);
-  // Eros wears Gaskell's PDS shape model, which is one piece. Itokawa has no model yet: its only
-  // single-piece model is built from JAXA imagery with JAXA co-authors, which is exactly the "other
-  // restrictions" case NASA's CC0 policy carves out, so it waits for a licensing decision.
+  // Eros wears Gaskell's PDS shape model, which is one piece. Itokawa waited for a licensing reading: its
+  // model is built from JAXA imagery with JAXA co-authors, so NASA's CC0 does not cover it. 0077 W3-d: the
+  // ISAS Data Policy does -- shape models are open data, free for any use, credited "ISAS/JAXA" (CREDITS.md).
   const eros = rocks.find((r) => r.name === 'Eros');
   check(eros && realModelFor(eros)?.file === 'asteroid-eros.glb', `Eros is drawn from Gaskell's shape model: ${JSON.stringify(eros && realModelFor(eros))}`);
   const itokawa = rocks.find((r) => r.name === 'Itokawa');
-  check(!itokawa || !realModelFor(itokawa)?.file, `Itokawa has no cleared model and must keep the procedural shape: ${JSON.stringify(itokawa && realModelFor(itokawa))}`);
+  check(!itokawa || realModelFor(itokawa)?.file === 'asteroid-itokawa.glb', `Itokawa is drawn from Gaskell's shape model under the ISAS Data Policy: ${JSON.stringify(itokawa && realModelFor(itokawa))}`); // 0077 W3-d
   // The klass gate: anything that is not an asteroid and happens to share the name keeps its shape.
   // EROS A and EROS B are real Israeli imaging satellites in the live catalogue.
   check(realModelFor({ id: 's-vesta', name: 'VESTA', klass: 'satellite', layer: 'active', meta: {} }) === null,

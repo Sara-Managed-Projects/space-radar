@@ -1230,6 +1230,7 @@ function derivedDrawingLine(record, T, tMs) {
   }
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
+  if (klass === 'site' && pick(meta(record), 'siteKind') === 'feature' && T.feature) return T.feature; // 0077 W3-d: a named place, nothing standing on it
   if (klass === 'earthevent') return COPY.earthEvent.drawn;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
@@ -1255,6 +1256,9 @@ function derivedDrawingLine(record, T, tMs) {
     const line = t(entry.file ? (made && T.objectOwn ? T.objectOwn : T.objectModel) : T.objectVariant, { name: String(entry.name) });
     // 2026-10-07: a small body that wears a map on its shape (Ceres, Vesta) names the mosaic.
     const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
+    // 0077 W3-d: a small body turning as measured (realmodels.js `spin`) says what of the turn is measured and what is not.
+    const turning = entry.spinWords && T.objectSpin ? T.objectSpin[entry.spinWords] : null;
+    if (turning) return said([mapped ? line + COPY.punctuation.separator + mapped : line, turning].join(COPY.punctuation.separator)); // 0077 W3-d
     return said(mapped ? line + COPY.punctuation.separator + mapped : line);
   }
   // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is

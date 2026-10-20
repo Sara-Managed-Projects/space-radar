@@ -369,7 +369,7 @@ layers:
     style: {kind: model, model: dish-generic, glyph: site, colour: site, near_km: 900}
     card: site
     select: {all: true}
-    budget: {max_items: 40}
+    budget: {max_items: 60}  # 0077 W3-d: 43 rows since Huygens and the Moon's four named places; at 40 the last three were cut
 
   # Tropical cyclones happening now (2026-09-28): GDACS's list, read by the browser (CORS `*`),
   # each drawn at its centre at its latest advisory. `fixed` in `earth-fixed` because that is what

@@ -1256,6 +1256,23 @@ export const REAL_MODELS = {
     // half. The klass gate is load-bearing here: EROS A and EROS B are Israeli imaging satellites,
     // and without it they would be drawn as a 33 km asteroid.
     eros: { file: 'asteroid-eros.glb', colour: 'asteroid', name: '433 Eros', klass: ['asteroid'] },
+    // 0077 W3-d: begin -- RYUGU, ITOKAWA, AND DIDYMOS WITH DIMORPHOS (release 1.3.0 stage W3-d, internal #866), each
+    // from its mission's own shape model (registry/models.yaml; scripts/small-body-glb.py), in its body's axes, and
+    // turned by `spin` (scene/moonshape.js applySpin): the pole and the prime meridian in the IAU's form, J2000.
+    // Itokawa waited for a licence reading (tests/test_station_shapes.mjs): the ISAS Data Policy names shape models
+    // as open data, "free of charge, either for commercial or non-commercial purposes", to be credited "ISAS/JAXA".
+    ryugu: { file: 'asteroid-ryugu.glb', colour: 'asteroid', name: '162173 Ryugu', klass: ['asteroid'], spinWords: 'spin',
+      // JAXA's SPICE constants for Ryugu, ryugu_v10.tpc (BODY2162173_POLE_RA, _POLE_DEC, _PM): 7.632624787 h a turn.
+      spin: { poleRaDeg: 96.43112, poleDecDeg: -66.38741, w0Deg: 274.16225, wDegPerDay: 1131.98280286 } },
+    itokawa: { file: 'asteroid-itokawa.glb', colour: 'asteroid', name: '25143 Itokawa', klass: ['asteroid'], spinWords: 'spin',
+      // Gaskell's shape model's own pole and rate (BODY2025143_POLE_RA, _POLE_DEC, _PM in its bundle description): 12.1324 h.
+      spin: { poleRaDeg: 90.02564, poleDecDeg: -67.02704, w0Deg: 129.73, wDegPerDay: 712.1437611 } },
+    didymos: { file: 'asteroid-didymos.glb', colour: 'asteroid', name: '65803 Didymos and its moon Dimorphos', klass: ['asteroid'], spinWords: 'pair',
+      // The DART team's SPICE constants, didymos_system_15.tpc (BODY920065803_POLE_RA, _POLE_DEC, _PM): 2.2600 h a turn.
+      // Dimorphos after DART's impact: 1.152 km from Didymos, 11.3674 h round it (Richardson et al. 2024, PSJ 5:182, Table 2).
+      spin: { poleRaDeg: 69.326861266078069, poleDecDeg: -72.724550395829496, w0Deg: 0, wDegPerDay: 3823.008849557522,
+        moon: { node: 'dimorphos-orbit', aKm: 1.152, periodH: 11.3674 } } },
+    // 0077 W3-d: end
     // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
     // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
     // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.

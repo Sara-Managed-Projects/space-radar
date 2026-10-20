@@ -476,7 +476,7 @@ export const LAYER_ROWS = [
     "card": "site",
     "glyph": "site",
     "colour": "site",
-    "maxItems": 40,
+    "maxItems": 60,
     "train": null
   },
   {

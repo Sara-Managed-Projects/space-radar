@@ -184,6 +184,16 @@ references:
            Titan's pole from Cassini's radar gives 'revised Huygens landing coordinates of 192.335
            degrees West and 10.573 degrees South with longitude and latitude residuals of
            respectively 0.035 degrees and 0.007 degrees'. 192.335 W is 167.665 E."
+  # 0077 W3-d: begin -- the named places on the Moon (the rows `class: feature` below)
+  iau-gazetteer-moon:
+    url: "https://planetarynames.wr.usgs.gov/Feature/1296"
+    read: 2026-10-20
+    says: "IAU Gazetteer of Planetary Nomenclature (USGS Astrogeology), the Moon's craters, 'Planetographic,
+           +East, -180 - 180' (on the Moon's sphere the same as planetocentric): Copernicus (Feature 1296)
+           'Center Latitude 9.62', 'Center Longitude -20.08', 'Diameter 96.07 km'; Tycho (Feature 6163)
+           '-43.30', '-11.22', '85.29 km'; Shackleton (Feature 5450) '-89.67', '129.78', '20.92 km'.
+           -20.08 is 339.92 E and -11.22 is 348.78 E."
+  # 0077 W3-d: end
 
 sites:
   # --- Deep Space Network: three complexes, the big dishes ---------------------------
@@ -494,11 +504,11 @@ sites:
     doing: "The first soft landing on Mars, in December 1971. It fell silent after 20 seconds; in 2013 HiRISE photographed what may be its parachute."
 
   # --- On Titan ------------------------------------------------------------------------
-  # Huygens (release 1.2.0 stage W2-a, internal #868). A COORDINATE, not yet a record: Titan has no
-  # fixed frame in registry/worlds.yaml (`frames: [inertial]`), so nothing could stand on it where
-  # it turns. When Titan's row gains `fixed` (synchronous rotation), drop `record: false` and add
-  # `shape: lander`. `app: false`: not shipped in site/js/data/sites.js (the first visit) until then;
-  # scripts/gen_sites_js.py leaves it out.
+  # Huygens (release 1.2.0 stage W2-a, internal #868). Kept as a coordinate until Titan had a fixed frame.
+  # 0077 W3-d: begin -- a record since release 1.3.0 stage W3-d: Titan's fixed frame is its tidal lock
+  # (propagate/frames.js lockedAxes, the same axes scene/worlds.js turns its globe by; registry/worlds.yaml
+  # `frames: [inertial, fixed]`). Drawn as the procedural lander, and the card says so ("the kind of
+  # thing, not this exact one"): Huygens was a 1.3 m heat-shielded disc, not a lander on legs.
   - id: huygens
     display: "Huygens, Adiri"
     class: surface
@@ -506,10 +516,61 @@ sites:
     lat: -10.573
     lon: 167.665
     landed: 2005-01-14
-    record: false
-    app: false
+    shape: lander
+    aliases: ["Huygens probe", "Huygens landing site"]
     source: atkinson-2015
     doing: "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
+  # 0077 W3-d: end
+
+  # 0077 W3-d: begin
+  # --- Named places on the Moon (release 1.3.0 stage W3-d, internal #864) -------------------------------
+  # PLACES, NOT MACHINES: `class: feature` is a named place on a world's ground that a visitor can search
+  # for and arrive at, with nothing standing on it. No `landed:`, no `shape:`: scene/heroes.js draws no
+  # model for one, main.js meets it from where its width fills the screen (a crater's `diameter_m`; the
+  # pole, which has none, from 60 km), ui/cards.js says nothing is drawn there but its name, and the
+  # ground under it is the map's (scene/tiles.js, with the shadows cast from LOLA's heights at a low Sun).
+  # The four the release 1.2.0 package named for the Moon at sunrise: Copernicus, Tycho, Shackleton and
+  # the south pole. Coordinates are the IAU gazetteer's centres (`iau-gazetteer-moon`); the pole is the pole.
+  - id: copernicus
+    display: "Copernicus crater"
+    class: feature
+    world: moon
+    lat: 9.62
+    lon: 339.92
+    diameter_m: 96070
+    source: iau-gazetteer-moon
+    aliases: ["Copernicus"]
+    doing: "A crater 96 km across and nearly 4 km deep, young for the Moon, its bright rays crossing the plains. Best at sunrise or sunset, when its walls cast shadows."
+  - id: tycho
+    display: "Tycho crater"
+    class: feature
+    world: moon
+    lat: -43.30
+    lon: 348.78
+    diameter_m: 85290
+    source: iau-gazetteer-moon
+    aliases: ["Tycho"]
+    doing: "A crater 85 km across with a central peak, young enough that its rays of bright ejecta still run across much of the near side."
+  - id: shackleton
+    display: "Shackleton crater"
+    class: feature
+    world: moon
+    lat: -89.67
+    lon: 129.78
+    diameter_m: 20920
+    source: iau-gazetteer-moon
+    aliases: ["Shackleton"]
+    doing: "A crater 21 km across beside the Moon's south pole. Sunlight only grazes its rim, and its floor never sees the Sun at all."
+  - id: moon-south-pole
+    display: "The Moon's south pole"
+    class: feature
+    world: moon
+    lat: -90
+    lon: 0
+    source: iau-gazetteer-moon
+    aliases: ["Lunar south pole", "South pole of the Moon"]
+    doing: "Where the Moon's axis comes out. The Sun never climbs more than a degree or two here, so peaks stay lit for most of a month and crater floors stay dark."
+  # 0077 W3-d: end
 
 # THE TRAVERSES (release 1.2.0 stage W2-a, internal #868): where the rovers drove, as lines traced
 # from what the Lunar Reconnaissance Orbiter's cameras see of their tracks. Keyed by the site row
@@ -542,3 +603,25 @@ traverses:
     traced: "'The traverse line is created by tracing tracks visible in the LROC data.'"
     licence: "The Analyst's Notebook layers carry no separate terms; they are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.'"
     credit: "Apollo 17's rover traverse: traced from LROC images; NASA PDS Geosciences Node, Analyst's Notebook"
+  # 0077 W3-d: begin -- Spirit and Opportunity (release 1.3.0, internal #868). The same node's Mars Exploration
+  # Rover Analyst's Notebooks, one line a rover; scripts/build_traverses.py says how they were read. Each
+  # begins 160 m (Opportunity) and 260 m (Spirit) from the landing point of the rows above, which are the
+  # node's mission page's numbers: two publications of one node, a few hundred metres apart, both kept as
+  # published. The node does not say on the service how its lines were made, so `traced:` does not either.
+  spirit:
+    file: registry/traverses/spirit.json
+    source: "https://anms.rsl.wustl.edu/arcgis/rest/services/MER/merApubmap/MapServer/3"
+    finder: "https://an.rsl.wustl.edu/mera/merxbrowser/an3.aspx"
+    read: 2026-10-20
+    traced: "the Spirit Analyst's Notebook's own 'Traverse map' (the 'Maps' page: 'Interactive plot showing rover traverse over time'), layer merATraverse; how the line was made is not stated with it"
+    licence: "The Analyst's Notebook layers carry no separate terms; they are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.'"
+    credit: "Spirit's traverse in Gusev crater: the rover's path as the Spirit Analyst's Notebook maps it; NASA PDS Geosciences Node"
+  opportunity:
+    file: registry/traverses/opportunity.json
+    source: "https://anms.rsl.wustl.edu/arcgis/rest/services/MER/merBpubmap/MapServer/3"
+    finder: "https://an.rsl.wustl.edu/merb/merxbrowser/an3.aspx"
+    read: 2026-10-20
+    traced: "the Opportunity Analyst's Notebook's own 'Traverse map' (the 'Maps' page: 'Interactive plot showing rover traverse over time'), layer merbTraverse; how the line was made is not stated with it"
+    licence: "The Analyst's Notebook layers carry no separate terms; they are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. PDS Geosciences Node FAQ: 'Data sets archived in the PDS are in the public domain.'"
+    credit: "Opportunity's traverse across Meridiani Planum: the rover's path as the Opportunity Analyst's Notebook maps it; NASA PDS Geosciences Node"
+  # 0077 W3-d: end

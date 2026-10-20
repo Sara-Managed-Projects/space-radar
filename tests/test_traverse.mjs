@@ -19,11 +19,15 @@ const { unitFromLonLat } = await import(join(JS, 'scene/tilemath.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const R = 1737.4;
+// 0077 W3-d: the radius each world's ground is drawn at (registry/worlds.yaml), and how far a traverse may run from its landing:
+// Apollo 17's longest drive, to station 2, was 7.6 km out; Opportunity ended on Endeavour's rim, 20-odd km from Eagle crater.
+const RADIUS = { moon: 1737.4, mars: 3389.5 };
+const REACH_KM = { moon: 10, mars: 40 };
 
 // --- the data: documented, cited, and only where a site is ------------------------------------------------
 const yaml = readFileSync(join(ROOT, 'registry/sites.yaml'), 'utf8');
 const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
-check(TRAVERSES.length === 2 && TRAVERSES.map((t) => t.site).sort().join() === 'apollo-15,apollo-17', `the traced traverses are Apollo 15's and 17's: ${TRAVERSES.map((t) => t.site)}`);
+check(TRAVERSES.length === 4 && TRAVERSES.map((t) => t.site).sort().join() === 'apollo-15,apollo-17,opportunity,spirit', `the published traverses are Apollo 15's and 17's, Spirit's and Opportunity's: ${TRAVERSES.map((t) => t.site)}`); // 0077 W3-d
 for (const t of TRAVERSES) {
   const site = SITES.find((s) => s.id === t.site);
   check(!!site && site.world === t.world && site.class === 'surface', `${t.site}: a surface site row on the same world`);
@@ -35,24 +39,28 @@ for (const t of TRAVERSES) {
   const file = join(ROOT, `registry/traverses/${t.site}.json`);
   check(existsSync(file), `${t.site}: registry/traverses/${t.site}.json is there`);
   const paths = t.paths.map(V.parsePath);
-  check(paths.length > 10 && paths.every((p) => p.length >= 2), `${t.site}: ${paths.length} traced lines`);
-  const km = paths.reduce((a, p) => a + V.pathLengthKm(p, R), 0);
-  check(Math.abs(km - t.lengthKm) / t.lengthKm < 0.03, `${t.site}: ${km.toFixed(2)} km drawn of the ${t.lengthKm} km traced`);
+  // 0077 W3-d: a rover's line is one long path; Apollo's are many pieces. Drawn against the simplified length (drawnKm), on its own world.
+  check(paths.length >= (t.world === 'moon' ? 10 : 1) && paths.every((p) => p.length >= 2), `${t.site}: ${paths.length} traced lines`);
+  const km = paths.reduce((a, p) => a + V.pathLengthKm(p, RADIUS[t.world]), 0);
+  check(Math.abs(km - t.drawnKm) / t.drawnKm < 0.01, `${t.site}: ${km.toFixed(2)} km drawn of the ${t.drawnKm} km simplified`);
+  check(t.drawnKm <= t.lengthKm && t.drawnKm / t.lengthKm > 0.9, `${t.site}: the simplified line keeps ${t.drawnKm} of the ${t.lengthKm} km published`);
   // Every point within 10 km of the lander (Apollo 17's longest drive, to station 2, was 7.6 km out).
   const lm = unitFromLonLat(site.lon, site.lat, [0, 0, 0]);
   let far = 0;
   let nearest = Infinity;
   for (const p of paths) for (const [lon, lat] of p) {
     const q = unitFromLonLat(lon, lat, [0, 0, 0]);
-    const d = Math.acos(Math.min(1, lm[0] * q[0] + lm[1] * q[1] + lm[2] * q[2])) * R;
+    const d = Math.acos(Math.min(1, lm[0] * q[0] + lm[1] * q[1] + lm[2] * q[2])) * RADIUS[t.world]; // 0077 W3-d
     far = Math.max(far, d);
     nearest = Math.min(nearest, d);
   }
-  check(far < 10 && nearest < 0.25, `${t.site}: the line stays within 10 km of the lander (${far.toFixed(1)}) and reaches it (${(nearest * 1000).toFixed(0)} m)`);
+  // 0077 W3-d: Spirit's line begins 260 m from the landing point the same node's mission page gives (scripts/build_traverses.py).
+  check(far < REACH_KM[t.world] && nearest < 0.3, `${t.site}: the line stays within ${REACH_KM[t.world]} km of the lander (${far.toFixed(1)}) and reaches it (${(nearest * 1000).toFixed(0)} m)`);
 }
-check(!SITES.some((s) => s.world === 'mars' && TRAVERSES.some((t) => t.site === s.id)), 'no path on Mars: none was traced into this registry, so none is drawn');
-// Huygens is in the registry with its source, and not in the first visit until Titan can hold it (`app: false`).
-check(/\n  - id: huygens\n[\s\S]{0,400}?\n    app: false\n/.test(yaml) && !SITES.some((s) => s.id === 'huygens'), 'Huygens: a sites.yaml row with app: false, left out of data/sites.js');
+// 0077 W3-d: on Mars only Spirit's and Opportunity's, the two the PDS Geosciences Node publishes; Curiosity, Perseverance and Zhurong have none here.
+check(SITES.filter((s) => s.world === 'mars' && TRAVERSES.some((t) => t.site === s.id)).map((s) => s.id).sort().join() === 'opportunity,spirit', 'on Mars, Spirit and Opportunity only');
+// 0077 W3-d: Huygens is a record on Titan now (Titan's fixed frame is its tidal lock), with its source, and no traverse.
+check(SITES.some((s) => s.id === 'huygens' && s.world === 'titan' && s.record !== false) && !TRAVERSES.some((t) => t.site === 'huygens'), 'Huygens: a record on Titan, no path');
 
 // --- the ribbon: on the drawn ground, both sides of every point --------------------------------------------
 {
@@ -130,7 +138,7 @@ check(V.traverseFade(0) === 1 && V.traverseFade(V.TRAVERSE_LOOK.nearKm) === 1 &&
   const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
   const bytes = readFileSync(join(JS, 'data/traverses.js')).length;
   check(bytes <= BUDGETS.traverse_data_bytes, `data/traverses.js is ${bytes} B, within ${BUDGETS.traverse_data_bytes}`);
-  check(TRAVERSES.filter((t) => t.world === 'moon').length <= BUDGETS.traverse_draw_calls, 'one draw call a traverse, within the budget');
+  for (const w of TRAVERSE_WORLDS) check(TRAVERSES.filter((t) => t.world === w).length <= BUDGETS.traverse_draw_calls, `one draw call a traverse, within the budget, on ${w}`); // 0077 W3-d: per world
 }
 // --- never at boot ---------------------------------------------------------------------------------------------
 {

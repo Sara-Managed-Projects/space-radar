@@ -1833,6 +1833,16 @@ export async function boot({ setStatus } = {}) {
       const cv = ctx.renderer && ctx.renderer.domElement;
       return groundDistanceKm(cv && cv.clientHeight > 0 ? cv.clientHeight : window.innerHeight, camera.fov) / stage.unitKm;
     }
+    // 0077 W3-d: begin -- a named place on a world's ground (registry/sites.yaml `class: feature`: Copernicus,
+    // Tycho, Shackleton, the Moon's south pole) has no model to fill 260 px: it is met from where its own width
+    // fills the narrower side of the screen, or from 60 km for a place with no width (a pole).
+    if (record && record.meta && record.meta.siteKind === 'feature') {
+      const tanV = Math.tan(((camera.fov || 50) * Math.PI) / 360);
+      const tanN = Math.min(tanV, tanV * (camera.aspect || 1));
+      const widthKm = Number(record.meta.diameterM) > 0 ? Number(record.meta.diameterM) / 1000 : 60;
+      return Math.max(0.05, (widthKm / tanN) / stage.unitKm);
+    }
+    // 0077 W3-d: end
     const layer = layerRec(record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     // No farther than the selected model can be drawn at full size (scene/heroes.js
