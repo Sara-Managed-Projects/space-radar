@@ -108,12 +108,19 @@ for (const stop of trip.stops) {
 // The last card counts the map's own lunar landing sites, the way test_ladder_ui holds the edge
 // trip's last card to the star count: add a lunar row and this says which sentence to change.
 // A landing row is one with a shape to draw; Beresheet's crash is a coordinate, not a record.
-const lunarOnMap = SITES.filter((row) => row.world === 'moon' && row.shape && row.record !== false).length;
+// 0077 W3-c: begin
+// A ROVER BESIDE ITS LANDER (release 1.3.0, public #1125): Yutu has a row of its own and so does Chang'e 3, which carried
+// it, so Yutu marks no landing of its own; the card names it apart. A rover that is the only mark of its landing
+// (Lunokhod 1 and 2: Luna 17 and Luna 21 have no rows) is one of the landings.
+const BESIDE_ITS_LANDER = ['yutu'];
+const lunarOnMap = SITES.filter((row) => row.world === 'moon' && row.shape && row.record !== false && !BESIDE_ITS_LANDER.includes(row.id)).length;
 const lastBody = trip.stops[trip.stops.length - 1].card.body;
 check(lastBody.includes(`marks ${lunarOnMap} of them`),
   `the last card says how many lunar landing sites this map marks, and the registry has ${lunarOnMap}: "${lastBody}"`);
-const rovers = SITES.filter((row) => row.world === 'moon' && row.shape === 'rover' && row.record !== false).length;
+const rovers = SITES.filter((row) => row.world === 'moon' && row.shape === 'rover' && row.record !== false && !BESIDE_ITS_LANDER.includes(row.id)).length;
 check(rovers === 2 && /two by where their rovers stopped/.test(lastBody), `the last card says two sites are rovers; the registry has ${rovers}`);
+for (const id of BESIDE_ITS_LANDER) check(SITES.some((row) => row.id === id && row.shape === 'rover') && /rover Yutu beside its lander/.test(lastBody), `the last card names ${id}, a rover beside its lander`);
+// 0077 W3-c: end
 
 // ----------------------------------------------------------- 3. the camera can see every site
 // rAF as a queue drained by hand, the way test_contract.mjs drives the same machine.
