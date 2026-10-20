@@ -51,6 +51,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: begin -->
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-b: begin -->
+| The shapes of EarthCARE, Biomass, Swarm and MetOp-SG A1 | built by us in code from published dimensions | CC0, CC BY-SA 3.0 IGO or CC BY-SA 4.0 where a picture was compared; ours | [3b-15](#3b-15-four-esa-and-eumetsat-earth-explorers-built-from-dimensions--earthcare-biomass-swarm-metop-sg-a1-2026-10-20) |
+<!-- 0077 W3-b: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1336,6 +1339,35 @@ pictures; details simplified".
 **Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
 
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-b: begin -->
+## 3b-15. Four ESA and EUMETSAT Earth explorers built from dimensions — EarthCARE, Biomass, Swarm, MetOp-SG A1 (2026-10-20)
+
+Release 1.3.0, stage W3-b (public #955, #956, #1101, #993). **No agency publishes a model of any of the four under terms that
+allow a derivative**: NASA's 3D Resources and NASA Science have none of them; ESA's terms for the pictures on its site (the ESA
+Standard Licence) allow use for information and education, not an altered model, and EUMETSAT and JAXA publish none. So each
+file was built in code with the part library from cited numbers. **No ESA, JAXA, EUMETSAT or Airbus picture or model is in a
+file.** The layouts were read off pictures that are free (named below, with credit) and off ESA's own photographs and renders
+under the ESA Standard Licence, which were looked at only and are on no sheet. **Swarm has no free picture**: it was built from
+eoPortal's numbers, its layout read off ESA's pictures and not traced, as its issue asked. No image-to-3D model was used. Their
+cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `earthcare.glb` (75 KB) | EarthCARE: a white body 4.1 by 2.3 by 2.0 m, the cloud radar's 2.5 m dish out in front looking at the Earth on its tower and truss, the lidar's 620 mm telescope, the radiometer's three telescopes and the imager on the Earth face, five panels of 1.68 by 2.5 m trailing on a 1.9 m yoke, 17.4 m in all | ESA's facts and figures (<https://www.esa.int/Applications/Observing_the_Earth/FutureEO/EarthCARE/Facts_and_figures>) and eoPortal (<https://www.eoportal.org/satellite-missions/earthcare>); ESA's photographs "Cleaning EarthCARE" (<https://commons.wikimedia.org/wiki/File:Cleaning_EarthCARE_ESA25462753.jpg>) and "EarthCARE solar wing deployed" (<https://commons.wikimedia.org/wiki/File:EarthCARE_solar_wing_deployed_ESA24376876.jpeg>), CC BY-SA 3.0 IGO; Syced's photograph of JAXA's 1/50 model (<https://commons.wikimedia.org/wiki/File:Inside_JAXA_Space_Dome_5.jpg>, CC0); looked at only, ESA's renders and photographs on esa.int (read 2026-10-20). The body's size, the dish's place and lean and the instruments' sizes are ours | numbers are facts; the photographs are not in the file |
+| `biomass.glb` (94 KB) | Biomass: an orange-gold bus 1.3 by 1.2 by 3.4 m with its black face, the feed's two by two radiators on its wall, one wing of four panels, a three-piece boom of 7.5 m to the 12 m reflector: nine ribs from a hub, the gold mesh in scallops between them, a mast and its cords | eoPortal (<https://www.eoportal.org/satellite-missions/biomass>) and ESA's "The satellite" (<https://www.esa.int/Applications/Observing_the_Earth/FutureEO/Biomass/The_satellite>); ESA's picture "Biomass in orbit" (<https://www.esa.int/ESA_Multimedia/Images/2025/02/Biomass_in_orbit>) and photograph "Rolling Biomass to the cleanroom" (<https://commons.wikimedia.org/wiki/File:Rolling_Biomass_to_the_cleanroom_ESA507406.jpg>), CC BY-SA 3.0 IGO; looked at only, ESA's photographs and renders on esa.int and the satellite's own picture of the opened reflector (read 2026-10-20). The bus's size, the number of ribs and the reflector's tilt are ours | numbers are facts; the pictures are not in the file |
+| `swarm.glb` (32 KB) | Swarm (A, B and C, one design): a body 1.5 m wide and 0.85 m high at its ram face, its roof the two arrays, narrowing to the back; the electric field instrument and the Langmuir probes in front; a 4.3 m boom with the optical bench and its star trackers and the scalar magnetometer at the tip; 9.15 m in all | eoPortal (<https://www.eoportal.org/satellite-missions/swarm>); NO FREE PICTURE; looked at only, ESA's photographs and pictures on esa.int (read 2026-10-20). The taper, the ridge and the instruments' sizes are ours | numbers are facts; nothing of any picture is in the file |
+| `metop-sg-a.glb` (103 KB) | MetOp-SG A1: a gold body 6.5 by 2.6 by 1.8 m over a dark payload module, IASI-NG with its cooler's shield on top at one end, METimage, Sentinel-5, the microwave sounder and 3MI on the Earth face, one wing of four panels 2.4 by 2.5 m out to the side, 11.75 m from the wall | eoPortal (<https://www.eoportal.org/satellite-missions/metop-sg>) and ESA's MetOp-SG facts and figures; ESA's pictures of the A satellite on Commons (<https://commons.wikimedia.org/wiki/File:MetOp_Second_Generation_A-type_satellite_ESA511182.jpg>, <https://commons.wikimedia.org/wiki/File:MetOp-SG-A_instruments_ESA511184.jpg>, CC BY-SA 3.0 IGO); Don-vip's photographs of A1 at Airbus (<https://commons.wikimedia.org/wiki/File:Metop-SG_A1_avec_IASI-NG-09.jpg> and its series, CC BY-SA 4.0) (read 2026-10-20). The instruments' sizes and places are ours | numbers are facts; the pictures are not in the file |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `earthcare`, `biomass`, `swarm`, `metop-sg-a` |
+
+**Credit lines:**
+`3D model: built by Space Radar from ESA's and eoPortal's published dimensions; compared with photographs by ESA (CC BY-SA 3.0 IGO) and Syced (CC0)`;
+`3D model: built by Space Radar from ESA's and eoPortal's published dimensions; compared with ESA's pictures (CC BY-SA 3.0 IGO)`;
+`3D model: built by Space Radar from eoPortal's published dimensions`;
+`3D model: built by Space Radar from eoPortal's and ESA's published dimensions; compared with pictures by ESA (CC BY-SA 3.0 IGO) and Don-vip (CC BY-SA 4.0)`
+
+No logo, lettering, flag or insignia is on any of the four. ESA, JAXA, EUMETSAT, Airbus, the pictures' authors and eoPortal do
+not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0077 W3-b: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in

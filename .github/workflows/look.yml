@@ -184,7 +184,8 @@ jobs:
                   # that catalogue's COLUMN TWIN when the index names one (data/sources.js readColumns),
                   # and the twin is 2.7 MB: saved for this probe, so NuSTAR's record is on the page.
                   twin = row.get("columns") if isinstance(row, dict) else None
-                  if os.environ.get("PROBE") == "model" and isinstance(twin, dict) and isinstance(twin.get("bytes"), int) and twin["bytes"] <= 4_000_000 and re.fullmatch(r"[\w.-]+\.cols\.json", str(twin.get("path"))):
+                  # 0077 W3-b: and for any probe given a subject (r13-w3b's four Earth explorers are on that layer too).
+                  if (os.environ.get("PROBE") == "model" or os.environ.get("SUBJECT")) and isinstance(twin, dict) and isinstance(twin.get("bytes"), int) and twin["bytes"] <= 4_000_000 and re.fullmatch(r"[\w.-]+\.cols\.json", str(twin.get("path"))):
                       try:
                           open(dest + twin["path"], "wb").write(get(twin["path"], 120)); print(f"twin   {sid} ({twin['bytes']} B)")
                       except Exception as e:

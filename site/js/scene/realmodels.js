@@ -792,6 +792,29 @@ export const REAL_MODELS = {
     67481: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 20', catalogue: 'SZ-20 MODULE', made: 'dimensions' },
     69328: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 22', catalogue: 'SZ-22 MODULE', made: 'dimensions' },
     // 0077 W1-a: end
+    // 0077 W3-b: begin
+    // FOUR ESA AND EUMETSAT EARTH EXPLORERS (release 1.3.0 W3-b; public #955, #956, #1101, #993), each BUILT in
+    // code from cited metres and looked-at pictures (registry/models.yaml rows `earthcare`, `biomass`, `swarm`,
+    // `metop-sg-a`): no agency publishes a model of them under terms that allow a derivative. Each had no route and
+    // wore the class shape of a satellite. All four to the app's axes (`axes: 'app'`: +Z the Earth face, the wing
+    // along X with its cells toward +Y), so each flies as its procedural stand-in did, Earth face down.
+    //   earthcare.glb   EarthCARE: the radar's dish out in front (+X), the lidar and the radiometer on the Earth
+    //                   face, five panels trailing along -X. TRUE: the radar and the lidar look straight down, the
+    //                   wing trails. NOT TRUE: the app's +X is square to the Sun and the Earth, not the direction
+    //                   of flight, and the real wing turns about its axis to follow the Sun.
+    //   biomass.glb     Biomass: the 12 m reflector over the bus on its boom, its hollow toward the feed on the
+    //                   bus's wall; the wing along +X. NOT TRUE: the real radar looks to one side (the craft rolls).
+    //   swarm.glb       Swarm A, B and C, one design: the flat floor to the Earth, the arrays as the roof, the
+    //                   boom along -X. The real boom trails along the track; the app's X is not the track.
+    //   metop-sg-a.glb  MetOp-SG A1: the instruments to the Earth, the wing out to the side along -X. Not
+    //                   MetOp-B or -C (metop.glb above), and the B satellites are not this shape.
+    59908: { file: 'earthcare.glb', colour: 'satellite', name: 'EarthCARE', catalogue: 'EARTHCARE', made: 'dimensions', axes: 'app' },
+    63772: { file: 'biomass.glb', colour: 'satellite', name: 'Biomass', catalogue: 'BIOMASS', made: 'dimensions', axes: 'app' },
+    39451: { file: 'swarm.glb', colour: 'satellite', name: 'Swarm B', catalogue: 'SWARM B', made: 'dimensions', axes: 'app' },
+    39452: { file: 'swarm.glb', colour: 'satellite', name: 'Swarm A', catalogue: 'SWARM A', made: 'dimensions', axes: 'app' },
+    39453: { file: 'swarm.glb', colour: 'satellite', name: 'Swarm C', catalogue: 'SWARM C', made: 'dimensions', axes: 'app' },
+    65159: { file: 'metop-sg-a.glb', colour: 'satellite', name: 'MetOp-SG A1', catalogue: 'METOP-SGA1', made: 'dimensions', axes: 'app' },
+    // 0077 W3-b: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
