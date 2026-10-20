@@ -339,7 +339,15 @@ export function bodyFixedToInertial(v, world, tMs) {
     return ecefToEci(v, gmst(tMs));
   }
   const a = iauAngles(w, tMs);
-  if (!a) return null;
+  if (!a) {
+    const L = lockedAxes(w, tMs); // 0077 W3-d: a moon that keeps one face to its planet (Titan)
+    if (!L) return null;
+    return equatorialToEcliptic({
+      x: v.x * L.x.x + v.y * L.y.x + v.z * L.z.x,
+      y: v.x * L.x.y + v.y * L.y.y + v.z * L.z.y,
+      z: v.x * L.x.z + v.y * L.y.z + v.z * L.z.z,
+    });
+  }
   const eqj = rotZ(rotX(rotZ(v, a.spin), Math.PI / 2 - a.dec), a.ra + Math.PI / 2);
   return equatorialToEcliptic(eqj);
 }
@@ -353,10 +361,51 @@ export function inertialToBodyFixed(v, world, tMs) {
     return eciToEcef(v, gmst(tMs));
   }
   const a = iauAngles(w, tMs);
-  if (!a) return null;
+  if (!a) {
+    const L = lockedAxes(w, tMs); // 0077 W3-d: the inverse of the above
+    if (!L) return null;
+    const e = eclipticToEquatorial(v);
+    return {
+      x: e.x * L.x.x + e.y * L.x.y + e.z * L.x.z,
+      y: e.x * L.y.x + e.y * L.y.y + e.z * L.y.z,
+      z: e.x * L.z.x + e.y * L.z.y + e.z * L.z.z,
+    };
+  }
   const eqj = eclipticToEquatorial(v);
   return rotZ(rotX(rotZ(eqj, -(a.ra + Math.PI / 2)), -(Math.PI / 2 - a.dec)), -a.spin);
 }
+
+// 0077 W3-d: begin
+// A FIXED FRAME FOR A MOON THAT KEEPS ONE FACE TO ITS PLANET (release 1.3.0 stage W3-d, internal #868: the
+// Huygens probe's landing site on Titan). astronomy-engine has no rotation model for Saturn's moons, so
+// `titan-fixed` was a refusal and the site could not be drawn. Tidal locking is the model, and it is the
+// one scene/worlds.js applyLockedOrientation already turns Titan's globe by: longitude 0 toward the
+// planet, the pole along the planet's own (Saturn's IAU pole), east to the right of the way to the planet
+// seen from above the north pole. The same three axes here, from the same moon offset and the same pole,
+// so the site and the globe it stands on cannot disagree. (The IAU's own prime meridian for Titan is
+// defined by the sub-Saturn point as well; Titan's orbit is within a third of a degree of Saturn's equator.)
+// Only the moons named here: every other moon's fixed frame stays a refusal until somebody needs it and
+// checks it. Axes in EQJ; null without a position or a planet's pole.
+const LOCKED_FIXED = { titan: 'saturn' };
+function lockedAxes(world, tMs) {
+  const planet = Object.prototype.hasOwnProperty.call(LOCKED_FIXED, world) ? LOCKED_FIXED[world] : null;
+  if (!planet || !Number.isFinite(tMs)) return null;
+  const off = moonOffsetKm(world, tMs);
+  const pa = iauAngles(planet, tMs);
+  if (!off || !pa) return null;
+  const n = Math.hypot(off.x, off.y, off.z);
+  if (!(n > 0)) return null;
+  const x = { x: -off.x / n, y: -off.y / n, z: -off.z / n };
+  const p = { x: Math.cos(pa.dec) * Math.cos(pa.ra), y: Math.cos(pa.dec) * Math.sin(pa.ra), z: Math.sin(pa.dec) };
+  const d = p.x * x.x + p.y * x.y + p.z * x.z;
+  const zr = { x: p.x - d * x.x, y: p.y - d * x.y, z: p.z - d * x.z };
+  const zn = Math.hypot(zr.x, zr.y, zr.z);
+  if (!(zn > 1e-9)) return null;
+  const z = { x: zr.x / zn, y: zr.y / zn, z: zr.z / zn };
+  const y = { x: z.y * x.z - z.z * x.y, y: z.z * x.x - z.x * x.z, z: z.x * x.y - z.y * x.x };
+  return { x, y, z };
+}
+// 0077 W3-d: end
 
 /** Accepts {latRad,lonRad,altKm} or satellite.js's {latitude,longitude,height}. */
 function normaliseGd(gd) {

@@ -1793,6 +1793,28 @@ Huygens Descent Trajectory Working Group's 2010 trajectory, as Atkinson, Kazemin
 Rayleigh scattering of a single exponential atmosphere along the grazing line to the Sun, with the
 column's optical depths from Hansen and Travis (1974, Space Science Reviews 16, 527). No image is used.
 
+<!-- 0077 W3-d: begin -->
+### Mars traverses, Titan's Huygens, named lunar places, small-body shapes (0077 W3-d)
+
+Release 1.3.0 stage W3-d (internal spec 0077, internal #864, #866, #868). Nothing here is fetched at boot.
+
+**The traverses of Spirit and Opportunity.** `site/js/scene/traverse.js` draws, on Mars as on the Moon, the
+rover lines the PDS Geosciences Node (Washington University in St. Louis) serves with its Mars Exploration
+Rover Analyst's Notebooks (`MER/merApubmap` layer `merATraverse`, `MER/merBpubmap` layer `merbTraverse`),
+read 2026-10-20 by `scripts/build_traverses.py` into `registry/traverses/`. Spirit's line is 7.07 km, from
+Columbia Memorial Station to Home Plate and Troy; Opportunity's 45.10 km, from Eagle crater to Perseverance
+Valley on the rim of Endeavour. The node does not say on the service how its lines were made, and the app does
+not either. Terms: as for the Apollo lines above (the Node's FAQ: "Data sets archived in the PDS are in the
+public domain"). Credits, in the Sources panel while each is drawn:
+
+> Spirit's traverse in Gusev crater: the rover's path as the Spirit Analyst's Notebook maps it; NASA PDS Geosciences Node
+
+> Opportunity's traverse across Meridiani Planum: the rover's path as the Opportunity Analyst's Notebook maps it; NASA PDS Geosciences Node
+
+**Huygens on Titan** is drawn since this stage, at the coordinate above, on Titan's fixed frame (its tidal
+lock), as the procedural lander the card calls "the kind of thing, not this exact one".
+<!-- 0077 W3-d: end -->
+
 ### Ring and spot data (0076 W2-b)
 
 No picture or file is added: these are numbers, each typed into the code with its source beside it.

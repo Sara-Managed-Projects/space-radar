@@ -59,6 +59,8 @@ def render_traverses(doc: dict) -> list:
         line = json.loads((ROOT / t["file"]).read_text(encoding="utf-8"))
         row = {"site": sid, "world": sites[sid].get("world"), **pick(t, TRAVERSE_FIELDS),
                "lengthKm": line.get("length_km"),
+               # 0077 W3-d: the length of the line as drawn, after the simplification (a Mars line's metre-scale jitter goes)
+               "drawnKm": line.get("length_km_simplified"),
                "paths": [" ".join(f"{lon:.5f},{lat:.5f}" for lon, lat in p) for p in line.get("paths", [])]}
         out.append(row)
     return [("The rover traverses of registry/sites.yaml `traverses:`, each path a string of 'lon,lat' pairs (degrees, east longitude).", "TRAVERSES", out)]

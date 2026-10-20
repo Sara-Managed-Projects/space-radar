@@ -223,7 +223,7 @@ export function castRangeOk(texelPx, wasOn, opts = CAST) {
  * scene/traverse.js is imported the first time one of these worlds' tiles is on screen.
  * tests/test_traverse.mjs holds it to the data.
  */
-export const TRAVERSE_WORLDS = ['moon'];
+export const TRAVERSE_WORLDS = ['moon', 'mars']; // 0077 W3-d: and Spirit's and Opportunity's on Mars
 /** The cast shadows for probes and before pictures: true draws them where a row has heights. */
 let castWanted = true;
 export function setCastShadows(on) { castWanted = !!on; return castWanted; }
