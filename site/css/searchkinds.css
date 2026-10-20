@@ -91,3 +91,17 @@ html.sr-phone .sr-search__only {
     transition: opacity 120ms linear;
   }
 }
+
+/* The kind filter never shrinks: in a short floating popup on a phone the list scrolls instead,
+   so the chip keeps its 44 px touch target (the ui gate measured it cut to 21 px). */
+.sr-search__pop:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+}
+.sr-search__pop > .sr-search__list {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.sr-search__only {
+  flex: 0 0 auto;
+}
