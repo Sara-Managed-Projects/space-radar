@@ -670,6 +670,12 @@ jobs:
       # flown, not collapsed: collapsed, the station stop put the camera behind the Earth.
       - name: "From your ground to the station: your place, from above its horizon, and a real pass ahead (spec 0038)"
         run: node tests/test_station_trip.mjs
+      # 0077 w1d: begin
+      # A held stop keeps its subject in sight: the station went behind the Earth while a card was read
+      # (public #580). The real trip machine, an hour held at eight points round one orbit.
+      - name: a held trip stop keeps its subject from going behind the world it orbits (public #580)
+        run: node tests/test_trip_clear.mjs
+      # 0077 w1d: end
       # Each stop's subject stayed selected through the flight to the next: `follow` held the camera
       # on it and heroes.js drew it at 260 px, a lander filling the screen under the next stop's
       # title (Ivan, 2026-10-01). Flown frame by frame through the Moon and station trips.
