@@ -312,7 +312,8 @@ export const VISUAL_CLASSES = [
 "himawari",
 "smap",
 "jason-3",
-"sorce"
+"sorce",
+"gaia"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -475,7 +476,10 @@ export const VISUAL_CLASSES = [
 "juice",
 "bepicolombo",
 "hera",
-"lucy"
+"lucy",
+"mars-express",
+"hayabusa2",
+"hope"
 ],
 "model_kinds": [
 "probe-generic",
