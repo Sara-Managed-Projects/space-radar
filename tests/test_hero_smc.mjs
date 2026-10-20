@@ -145,7 +145,7 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   check(M.keepAt(0, 2.4) === 0 && M.keepAt(-15.5, -11.6) === 0 && M.keepAt(-8, -6) > 0.5 && M.keepAt(-60, 0) === 1 && M.keepAt(15, 0) === 0, 'the Clouds\' own gas and the Leading Arm are not drawn; the Bridge and the Stream are');
   const m = JSON.parse(readFileSync(join(ROOT, 'site/images/deep/magellanic/manifest.json'), 'utf8'));
   check(m.size[0] === 680 && m.size[1] === 280 && /hi4pi-hvc-nhi-mag-car/.test(m.from) && JSON.stringify(m.params) === JSON.stringify(parts.stream.map), 'the map is the bake of HI4PI\'s Magellanic map with the profile\'s numbers');
-  check(/smoothstep\( 40\.0, 120\.0, length\( position - uCamKly \) \)/.test(M.SHADERS.vertex), 'gas within 40 000 ly of the camera fades out: beside the Clouds a far ribbon, never a haze');
+  check(/smoothstep\( 60\.0, 200\.0, length\( position - uCamKly \) \)/.test(M.SHADERS.vertex), 'gas within 60 000 ly of the camera fades out (whole from 200 000): beside the Clouds a far ribbon, never a haze' /* 0077 W3-f */);
   check(!M.lookFor(X.exposureLook('eye').milkyWay).on && M.lookFor(X.exposureLook('camera').milkyWay).on, 'no eye sees 21 cm: none under Eye');
   check(/min\( 1\.0 \/ max\( vMu, 1e-3 \), 2\.5 \)/.test(M.SHADERS.fragment) && !/uTime/.test(M.SHADERS.fragment), 'a sheet: its column grows at a slant up to two and a half times, never a haze; nothing moves');
   const sh = M.sheetOf();

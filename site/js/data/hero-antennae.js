@@ -59,20 +59,20 @@ export const HERO = {
         {
           "kind": "disc",
           "what": "its torn disc",
-          "scale_kpc": 4,
-          "height_kpc": 0.6,
-          "r_max_kpc": 14,
+          "scale_kpc": 2.2,
+          "height_kpc": 0.5,
+          "r_max_kpc": 9,
           "light": 0.42,
           "arm_contrast": 0,
           "colour": "#e8dccc",
           "colour_outer": "#d6d6e0",
-          "source": "RC3: D25 5.25 arcmin (34 kpc here); scale length and height assumed"
+          "source": "RC3: D25 5.25 arcmin (34 kpc here, the faint torn outskirts); scale length 2.2 kpc and height assumed, so the bright body is the 3 arcmin the photographs show"
         },
         {
           "kind": "clumps",
           "what": "the giant star-forming complexes",
-          "count": 14,
-          "size_kpc": 1.1,
+          "count": 16,
+          "size_kpc": 0.6,
           "light": 0.24,
           "colour": "#c8d4ff",
           "source": "illustrative: the knots Hubble's pictures show round the disc's rim and in the overlap"
@@ -188,20 +188,20 @@ export const HERO = {
         {
           "kind": "disc",
           "what": "its torn disc",
-          "scale_kpc": 2.6,
-          "height_kpc": 0.5,
-          "r_max_kpc": 10,
+          "scale_kpc": 1.6,
+          "height_kpc": 0.4,
+          "r_max_kpc": 7,
           "light": 0.48,
           "arm_contrast": 0,
           "colour": "#e8dccc",
           "colour_outer": "#d6d6e0",
-          "source": "RC3: D25 3.1 arcmin (20 kpc here); scale length and height assumed"
+          "source": "RC3: D25 3.1 arcmin (20 kpc here); scale length 1.6 kpc and height assumed"
         },
         {
           "kind": "clumps",
           "what": "star-forming complexes",
-          "count": 8,
-          "size_kpc": 0.9,
+          "count": 10,
+          "size_kpc": 0.5,
           "light": 0.16,
           "colour": "#c8d4ff",
           "source": "illustrative"

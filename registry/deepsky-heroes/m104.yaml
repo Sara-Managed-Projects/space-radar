@@ -13,6 +13,7 @@ levels:
   points: [12000, 45000, 70000]
   dust_share: 0.45
   seed: 104
+  layer_power: 0.6           # the smooth layer's stretch, S^0.6 (LAYER_POWER is 0.45): look run 1 at 0.45 lifted the outskirts into a grey disc twice the photograph's size
 frame:
   pa_deg: 89.25       # Bendo et al. 2006 (arXiv:astro-ph/0603160, table 3): 89.25 +/- 0.06 degrees for the dust ring
   incl_deg: 84        # Emsellem et al. 1996 as Gadotti 2012 cites it; Sutter et al. 2022 fit the CO ring at 84.3 +/- 0.2

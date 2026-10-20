@@ -13,6 +13,7 @@ levels:
   points: [14000, 50000, 80000]
   dust_share: 0.25
   seed: 101
+  layer_power: 0.7           # the smooth layer's stretch, S^0.7 (LAYER_POWER is 0.45): look run 1 at 0.45 lifted the outskirts into a grey disc twice the photograph's size
 frame:
   pa_deg: 39          # Bosma, Goss & Allen 1981, as THINGS's table (Walter et al. 2008) gives it; S4G's outer isophotes 37.7
   incl_deg: 18        # the same: nearly face on
@@ -23,9 +24,9 @@ frame:
 layers:
   - {kind: bulge, what: "a small central bulge", sersic_n: 1.5, re_kpc: 0.4, q: 0.9, light: 0.04, colour: "#f4e8de",
      source: "illustrative: M101 is an Scd galaxy with little bulge; n and Re not read from a decomposition"}
-  - {kind: disc, what: "the stellar disc", scale_kpc: 3.92, height_kpc: 0.4, r_max_kpc: 26, light: 0.58, arm_contrast: 0.35, colour: "#e0d8d2", colour_outer: "#d2d4e0",
+  - {kind: disc, what: "the stellar disc", scale_kpc: 3.92, height_kpc: 0.4, r_max_kpc: 26, light: 0.5, arm_contrast: 0.55, colour: "#e0d8d2", colour_outer: "#d2d4e0",
      source: "S4G (Salo et al. 2015; VizieR J/ApJS/219/4): the 3.6 micron scale length 127.3 arcsec (3.92 kpc here); Mihos et al. 2013 (arXiv:1211.3095): 2.42 arcmin in B, 1.9 to 3.4 by direction (lopsided, not drawn); height assumed; cut at 26 kpc"}
-  - {kind: arms, what: "several arms of young stars, in segments", count: 4, pitch_deg: 20, r_from_kpc: 2, r_to_kpc: 22, width_kpc: 0.7, height_kpc: 0.15, scale_kpc: 8, segments: 0.65, light: 0.25, colour: "#b8c8f4",
+  - {kind: arms, what: "several arms of young stars, in segments", count: 4, pitch_deg: 20, r_from_kpc: 2, r_to_kpc: 22, width_kpc: 0.7, height_kpc: 0.15, scale_kpc: 8, segments: 0.65, light: 0.33, colour: "#a8c0f4",
      source: "a multiple-armed spiral (class M): the S4G arm catalogue's six segments have pitches 7 to 29 degrees (mean 19); four arms and 20 degrees illustrative; the light's share illustrative"}
   - {kind: knots, what: "H II regions along the arms", count: 1100, in_ring: 0, size_kpc: 0.06, height_kpc: 0.06, light: 0.08, colour: "#ff8fa4",
      source: "placed statistically along the arms; not a catalogue of positions"}

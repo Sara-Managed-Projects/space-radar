@@ -178,7 +178,8 @@ export function paramsFor(profile, record) {
   }
   const lv = (profile && profile.levels) || {};
   const points = Array.isArray(lv.points) ? lv.points : null;
-  if (own.length) return { id: (profile && profile.id) || (record && record.id) || 'galaxy', layers: own, frame, points };
+  const layerPower = Number.isFinite(lv.layer_power) ? lv.layer_power : null; // 0077 W3-f: a profile's own stretch of its smooth layer
+  if (own.length) return { id: (profile && profile.id) || (record && record.id) || 'galaxy', layers: own, frame, points, layerPower };
   const morph = DEFAULTS[md.morphology] ? md.morphology : 'spiral';
   const R = recordR25Kpc(record);
   const layers = DEFAULTS[morph].map((l) => {
@@ -186,7 +187,7 @@ export function paramsFor(profile, record) {
     for (const k of SCALED) if (Number.isFinite(o[k])) o[`${k}_kpc`] = o[k] * R;
     return o;
   });
-  return { id: (record && record.id) || (profile && profile.id) || 'galaxy', layers, frame, morphology: morph, points };
+  return { id: (record && record.id) || (profile && profile.id) || 'galaxy', layers, frame, morphology: morph, points, layerPower };
 }
 
 // ------------------------------------------------------------------------------------- the generator
@@ -644,6 +645,8 @@ uniform float uDust;
 uniform float uViewH;
 uniform float uMinPx;
 uniform float uMaxPx;
+uniform float uSide;        // 0077 W3-f: 0 all; +1 only the dust in front of the centre as the camera sees it, -1 only behind
+uniform vec3 uCamL;         // the camera's direction from the centre, in the galaxy's own frame
 varying float vA;
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
@@ -654,6 +657,7 @@ void main() {
   float ideal = aMeta.x * ${PATCH_MAX_KPC.toFixed(3)} * scale / d * focal;
   float s = clamp( ideal, uMinPx, uMaxPx );
   float a = aTau * uDust * min( 1.0, ( ideal * ideal ) / ( s * s ) );
+  if ( uSide != 0.0 && dot( position, uCamL ) * uSide < 0.0 ) a = 0.0;
   if ( a < ${ALPHA_FLOOR.toFixed(3)} ) a = aMeta.z * ${ALPHA_FLOOR.toFixed(3)} < a ? ${ALPHA_FLOOR.toFixed(3)} : 0.0;
   vA = min( a, 0.7 );
   gl_PointSize = s;
@@ -736,6 +740,7 @@ export const MW_SHADERS = { vert: MW_VERT, frag: MW_FRAG };
 export const LAYER_POWER = 0.45;
 export const LAYER_DISC_AT_RD = 0.2;      // the layer's face-on brightness one scale length out
 export const SPARKLE = 0.2;               // the points' share of the light where the layer is drawn
+export const LAYER_BULGE_AT_RE = 0.32;    // 0077 W3-f: a bulge-dominated galaxy's bulge at one effective radius
 const lanczos = (z) => {
   const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
   if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * lanczos(1 - z));
@@ -770,9 +775,13 @@ export function layerProfile(params) {
   for (const l of dl) for (const R of (Array.isArray(l.radius_kpc) ? l.radius_kpc : [kpc(l, 'radius', 10)])) { if (radii.length < 4 && R > 1.5) { radii.push(R); widths.push(kpc(l, 'width', 0.6)); amps.push(Math.min(1, (Number(l.weight) || 0.3) * 1.6)); } }
   while (radii.length < 4) { radii.push(-100); widths.push(1); amps.push(0); }
   const lanes = L.find((l) => l.kind === 'dust-lanes');
-  const gain = i0 > 0 ? LAYER_DISC_AT_RD / Math.pow(i0 * Math.exp(-1), LAYER_POWER) : 1;
+  const power = Number.isFinite(params.layerPower) ? params.layerPower : LAYER_POWER; // 0077 W3-f
+  let gain = i0 > 0 ? LAYER_DISC_AT_RD / Math.pow(i0 * Math.exp(-1), power) : 1;
+  // 0077 W3-f: a bulge-dominated galaxy (the Sombrero, `frame.bulge: always`) is exposed by its bulge, not by its faint disc:
+  // the bulge at one effective radius at LAYER_BULGE_AT_RE (look run 1: exposed by the disc, the bulge was a flat white blob)
+  if (b && params.frame && params.frame.bulge === 'always') gain = Math.min(gain, LAYER_BULGE_AT_RE / Math.pow(b.ie, power));
   return {
-    rd, rMax, i0, bulge: b, ring: r, arms: a, gain, sense: params.sense || 1,
+    rd, rMax, i0, bulge: b, ring: r, arms: a, gain, power, sense: params.sense || 1,
     dust: { radii, widths, amps, lane: lanes ? Math.min(1, (Number(lanes.weight) || 0.4) * 1.5) : 0, inset: lanes ? kpc(lanes, 'inset', 0.4) : 0.4 },
     colours: { inner: hexRgb(disc && disc.colour), outer: hexRgb(disc && (disc.colour_outer || disc.colour)) },
     segSeed: params.segmentSeed || 0,
@@ -823,6 +832,7 @@ void main() {
 `;
 const LAYER_FRAG = /* glsl */ `
 uniform float uGain;
+uniform float uPow;          // the stretch (0077 W3-f: a profile may set its own; LAYER_POWER otherwise)
 uniform float uI0;
 uniform float uRd;
 uniform float uRMax;
@@ -886,7 +896,7 @@ void main() {
   // a flat layer seen edge on is a line: it gives way to the points (the head of this section)
   float c = abs( dot( normalize( vView ), uNormalW ) );
   float path = pow( max( c, 0.08 ), ${(VIEW_POWER - 1).toFixed(2)} ) * smoothstep( 0.04, 0.15, c );
-  float v = uGain * pow( max( light, 0.0 ), ${LAYER_POWER.toFixed(2)} ) * ( 1.0 - dust ) * path;
+  float v = uGain * pow( max( light, 0.0 ), uPow ) * ( 1.0 - dust ) * path;
   float t = clamp( R / ( 2.5 * uRd ), 0.0, 1.0 );
   vec3 col = mix( uInner, uOuter, t );
   col = mix( col, uArmCol, clamp( 0.6 * arm, 0.0, 0.6 ) );
@@ -910,6 +920,7 @@ void main() {
 `;
 const BULGE_FRAG = /* glsl */ `
 uniform float uGain;
+uniform float uPow;
 uniform float uOld;
 uniform float uIe;
 uniform float uRe;
@@ -921,7 +932,7 @@ void main() {
   float r = length( vR );
   if ( r > 6.0 * uRe ) discard;
   float S = uIe * exp( -uB * ( pow( r / uRe, 1.0 / uN ) - 1.0 ) );
-  float v = uGain * pow( S, ${LAYER_POWER.toFixed(2)} ) * smoothstep( 6.0 * uRe, 3.5 * uRe, r );
+  float v = uGain * pow( S, uPow ) * smoothstep( 6.0 * uRe, 3.5 * uRe, r );
   // 0076 W4-a (task 55): a soft shoulder, not a clamp: the core keeps its falloff and never reaches white (bulgeShoulder)
   v = uOld > 0.5 ? min( v, 1.2 ) : v < ${SHOULDER_KNEE.toFixed(2)} ? v : ${SHOULDER_KNEE.toFixed(2)} + ${SHOULDER_ROOM.toFixed(2)} * ( 1.0 - exp( -( v - ${SHOULDER_KNEE.toFixed(2)} ) / ${SHOULDER_ROOM.toFixed(2)} ) );
   gl_FragColor = vec4( uCol * v, 1.0 );
@@ -943,7 +954,8 @@ function sceneDirs(dirs) {
  * kiloparsecs. `place(posKm, axes, mode)`: mode 'rotate' sets only the turn (the hero's parent is placed
  * and scaled by the coordinator), 'full' also the place and the scale on the stage (scene/galaxy.js).
  */
-export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, seed = 7, name = 'galaxy', spheroid = false, layered = true } = {}) {
+export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, seed = 7, name = 'galaxy', spheroid = false, layered = true, billboard = false } = {}) {
+  // 0077 W3-f: `billboard` (a spheroid companion with no record, NGC 5195): its light a smooth Sersic billboard, its points sparkle
   // 0077 W3-f: `layered: false` (a torn galaxy of a colliding pair) draws its light as points only, no smooth layer or bulge billboard
   // 0076 W4-a (task 59): `spheroid` is a galaxy with no disc (M32, M110): one Points draw, no layer, no halves, the same from every side.
   const g = generateGalaxy(params, { count, dust, seed });
@@ -952,7 +964,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   group.matrixAutoUpdate = false;
   const shared = { uViewH: { value: 900 }, uMinPx: { value: 1.5 }, uMaxPx: { value: 40 } };
   const lightU = { ...shared, uGain: { value: 0 }, uOutside: { value: 1 }, uAlphaCap: { value: 0.9 }, uNormalW: { value: new THREE.Vector3(0, 0, 1) }, uBulge: { value: new THREE.Vector2(-1, 1) } };
-  const dustU = { ...shared, uDust: { value: 0 } };
+  const dustU = { uViewH: shared.uViewH, uMinPx: shared.uMinPx, uMaxPx: { value: 40 }, uDust: { value: 0 }, uSide: { value: 0 }, uCamL: { value: new THREE.Vector3() } }; // 0077 W3-f: the dust's own size cap, and a side
   const halves = [];
   const L = g.light;
   for (const sign of (spheroid ? [0] : [1, -1])) {
@@ -999,13 +1011,17 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     dustPts.renderOrder = -0.85;
     group.add(dustPts);
   }
+  // 0077 W3-f: a bulge kept round (the Sombrero) has its dust in two draws: what is behind the centre before the bulge, what is
+  // in front after it, so the far half of a dust ring does not cross the bulge's face
+  let dustBack = null;
+  const dustBackU = { ...dustU, uSide: { value: -1 } };
   // The integrated light (the section above): a disc in the disc's plane and the bulge facing the camera.
   const prof = layerProfile(params);
   const v3 = (c) => new THREE.Vector3(c[0], c[1], c[2]);
   const ringCol = prof.ring ? prof.ring.colour : prof.colours.outer;
   const armCol = prof.arms ? prof.arms.colour : prof.colours.outer;
   const layerU = {
-    uGain: { value: 0 }, uI0: { value: prof.i0 }, uRd: { value: prof.rd }, uRMax: { value: prof.rMax }, uSense: { value: prof.sense },
+    uGain: { value: 0 }, uPow: { value: prof.power }, uI0: { value: prof.i0 }, uRd: { value: prof.rd }, uRMax: { value: prof.rMax }, uSense: { value: prof.sense },
     uArmM: { value: prof.arms ? prof.arms.m : 0 }, uArmTanP: { value: prof.arms ? prof.arms.tanP : 1 }, uArmR0: { value: prof.arms ? prof.arms.r0 : 1 },
     uArmR1: { value: prof.arms ? prof.arms.r1 : 1 }, uArmPhase: { value: prof.arms ? prof.arms.phase : 0 }, uArmC: { value: prof.arms ? prof.arms.contrast : 0 },
     uArmSeg: { value: prof.arms ? prof.arms.segments : 1 }, uSegSeed: { value: prof.segSeed },
@@ -1026,8 +1042,8 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     group.add(layerMesh);
   }
   let bulgeMesh = null;
-  const bulgeU = { uGain: { value: 0 }, uOld: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
-  if (prof.bulge && !spheroid && layered) {
+  const bulgeU = { uGain: { value: 0 }, uPow: { value: prof.power }, uOld: { value: 0 }, uIe: { value: prof.bulge ? prof.bulge.ie : 0 }, uRe: { value: prof.bulge ? prof.bulge.re : 1 }, uN: { value: prof.bulge ? prof.bulge.n : 1 }, uB: { value: prof.bulge ? prof.bulge.b : 1 }, uCol: { value: v3(prof.bulge ? prof.bulge.colour : [1, 1, 1]) } };
+  if (prof.bulge && ((!spheroid && layered) || (spheroid && billboard))) {
     const R6 = 6 * prof.bulge.re;
     bulgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * R6, 2 * R6), new THREE.ShaderMaterial({
       vertexShader: BULGE_VERT, fragmentShader: BULGE_FRAG, uniforms: bulgeU,
@@ -1078,11 +1094,13 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     // 0077 W3-f: a bulge that stays round edge on (the Sombrero's) is the billboard's from every side; its points only sparkle
     lightU.uBulge.value.set(bulgeAlways && bulgeKind >= 0 && bulgeMesh ? bulgeKind : -1, SPARKLE / Math.max(1e-6, pts));
     layerU.uDustK.value = lookNow() === 'measured' ? 0.6 : 1;
-    if (spheroid) { lightU.uGain.value = g.gain * share * exposureNow; shared.uMaxPx.value = (small ? 2.2 : 3.2) * dprNow; shared.uMinPx.value = Math.min(1.8 * dprNow, shared.uMaxPx.value); return; }
+    if (spheroid) { lightU.uGain.value = g.gain * share * exposureNow * (bulgeMesh ? SPARKLE : 1); if (bulgeMesh) bulgeU.uGain.value = prof.gain * share * exposureNow; shared.uMaxPx.value = (small ? 2.2 : 3.2) * dprNow; shared.uMinPx.value = Math.min(1.8 * dprNow, shared.uMaxPx.value); return; }
     // close up the points are small, capped dots (sparkle), never a carpet; edge on they are patches again
     const cap = (small ? 1.8 : 2.6) * dprNow;
-    shared.uMaxPx.value = cap + (40 * dprNow - cap) * (1 - lay);
+    shared.uMaxPx.value = layered ? cap + (40 * dprNow - cap) * (1 - lay) : (small ? 10 : 14) * dprNow; // 0077 W3-f: a points-only galaxy's patches stay small (look run 1: blotchy)
     shared.uMinPx.value = Math.min(1.2 * dprNow, shared.uMaxPx.value);
+    // 0077 W3-f: a bulge kept round has fine dust (look run 1: edge on, 40 px dust patches blanketed the Sombrero's bulge)
+    dustU.uMaxPx.value = bulgeAlways ? Math.min(shared.uMaxPx.value, 8 * dprNow) : shared.uMaxPx.value;
     lightU.uAlphaCap.value = 0.9;
   }
   let dprNow = 1;
@@ -1104,6 +1122,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     lightU.uNormalW.value.set(e[8], e[9], e[10]).normalize();
     _inv.copy(group.matrixWorld).invert();
     _cam.setFromMatrixPosition(camera.matrixWorld).applyMatrix4(_inv);
+    dustU.uCamL.value.copy(_cam).normalize(); // 0077 W3-f (shared by both dust draws)
     const above = _cam.z >= 0;
     faceOn = spheroid ? 1 : Math.abs(_cam.z) / Math.max(1e-9, _cam.length());
     if (!spheroid) for (const h of halves) h.pts.renderOrder = (h.sign > 0) === above ? -0.84 : -0.86;
@@ -1114,6 +1133,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     if (bulgeMesh) { bulgeMesh.geometry.dispose(); bulgeMesh.material.dispose(); }
     for (const h of halves) { h.pts.geometry.dispose(); h.pts.material.dispose(); }
     if (dustPts) { dustPts.geometry.dispose(); dustPts.material.dispose(); }
+    if (dustBack) dustBack.material.dispose();
     if (group.parent) group.parent.remove(group);
   }
   const bytes = L.count * 24 + D.count * 20;
@@ -1122,7 +1142,22 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     /** A probe's before shot (0076 W4-a): the bulge's old clamp instead of the soft shoulder. */
     setOld: (b) => { bulgeU.uOld.value = b ? 1 : 0; },
     /** (0077 W3-f) The bulge drawn round by its billboard from every side, edge on too (profile `frame.bulge: always`). */
-    setBulgeAlways: (b) => { bulgeAlways = !!b; apply(); },
+    setBulgeAlways: (b) => {
+      bulgeAlways = !!b;
+      if (bulgeAlways && dustPts && bulgeMesh && !dustBack) {
+        dustBack = new THREE.Points(dustPts.geometry, new THREE.ShaderMaterial({
+          vertexShader: DUST_VERT, fragmentShader: DUST_FRAG, uniforms: dustBackU, defines: { GAS_ABSORB: 1 },
+          transparent: false, depthTest: false, depthWrite: false, toneMapped: false,
+          blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+        }));
+        dustBack.name = `${name}:dust-behind`;
+        dustBack.frustumCulled = false;
+        dustBack.renderOrder = -0.8535;
+        group.add(dustBack);
+        dustU.uSide.value = 1;
+      }
+      apply();
+    },
     share: () => share,
     generated: g,
     stats: () => ({ points: L.count, dust: D.count, meshes: group.children.length, textures: 0, bytes }),
@@ -1239,8 +1274,9 @@ export function createHero(THREE, env = {}) {
     }
     if (!rec || !rec.pos || !Number.isFinite(Number(m.re_kpc))) continue;
     const frame = spheroidFrame(rec, Number(m.q) || 0.7);
-    const mp = { id: m.record || m.name, frame, sense: 1, layers: [{ kind: 'bulge', sersic_n: Number(m.sersic_n) || 2, re_kpc: Number(m.re_kpc), q: frame.q, light: 1, colour: m.colour || '#ffd9ae' }] };
-    const cg = createGalaxyPoints(THREE, mp, { count: SPHEROID_POINTS[Math.min(2, Math.max(0, tier | 0))], dust: 0, seed: 32 + companions.length, name: `${group.name}:${m.record || m.name}`, spheroid: true });
+    const own = !m.record; // 0077 W3-f: a companion with no record of its own is drawn smooth (a billboard), as its galaxy is
+    const mp = { id: m.record || m.name, frame: own ? { ...frame, bulge: 'always' } : frame, sense: 1, layers: [{ kind: 'bulge', sersic_n: Number(m.sersic_n) || 2, re_kpc: Number(m.re_kpc), q: frame.q, light: 1, colour: m.colour || '#ffd9ae' }] };
+    const cg = createGalaxyPoints(THREE, mp, { count: SPHEROID_POINTS[Math.min(2, Math.max(0, tier | 0))], dust: 0, seed: 32 + companions.length, name: `${group.name}:${m.record || m.name}`, spheroid: true, billboard: own });
     group.add(cg.group);
     companions.push({ id: m.record || null, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame), rPx: 0, light: Number.isFinite(Number(m.light)) ? Number(m.light) : 1 });
   }

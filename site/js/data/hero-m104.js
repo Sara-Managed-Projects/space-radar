@@ -16,7 +16,8 @@ export const HERO = {
       70000
     ],
     "dust_share": 0.45,
-    "seed": 104
+    "seed": 104,
+    "layer_power": 0.6
   },
   "frame": {
     "pa_deg": 89.25,

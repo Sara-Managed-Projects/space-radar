@@ -80,7 +80,7 @@ const fileBuf = (p) => { const b = readFileSync(join(ROOT, p)); return b.buffer.
   layer.frame({ camera: cam, renderer, stage, gain: 1, visible: true });
   const st = layer.stats();
   const drawn = st.field.filter((f) => f.culled === null);
-  check(drawn.some((f) => f.id === 'hudf-3') && drawn.every((f) => f.fade > 0.5), `inside the field, looking out along it, its slices are drawn (${JSON.stringify(st.field.map((f) => [f.id, f.culled, f.fade]))})`);
+  check(drawn.some((f) => f.id === 'hudf-3') && drawn.every((f) => f.fade >= 0.5 * G.FIELD_LIGHT), `inside the field, looking out along it, its slices are drawn (${JSON.stringify(st.field.map((f) => [f.id, f.culled, f.fade]))})`);
   check(st.calls >= drawn.length, `one draw call a slice (${st.calls} calls, ${drawn.length} slices drawn)`);
   // from beside it, 12 billion light-years off its line: a needle across the view, drawn
   const mid = at(16000), sun = stage.toScene({ x: 0, y: 0, z: 0 }, 'sun-inertial');
@@ -138,7 +138,7 @@ const fileBuf = (p) => { const b = readFileSync(join(ROOT, p)); return b.buffer.
   const hero = S.createHero(THREE, { profile: P.m51, record: m51 });
   const names = []; hero.group.traverse((o) => { if (o.material) names.push(o.name); });
   check(names.some((n) => /NGC 5195/.test(n)) && hero.stats().companions === 1, `M51's hero draws NGC 5195 (${names.join(', ')})`);
-  check(names.length <= 6, `M51 with its companion is ${names.length} draw calls (five for the galaxy, one for NGC 5195)`);
+  check(names.length <= 7, `M51 with its companion is ${names.length} draw calls (five for the galaxy, two for NGC 5195: its smooth light and its sparkle; M31 with M32 and M110 is seven too)`);
   const sat = P.m51.layers.find((l) => l.kind === 'satellites').members[0];
   const cPos = S.skyPointKm(m51.pos, sat.ra_deg, sat.dec_deg, sat.toward_kpc);
   check(Math.hypot(cPos.x, cPos.y, cPos.z) > Math.hypot(m51.pos.x, m51.pos.y, m51.pos.z) && sat.toward_kpc < 0 && /1501\.03223/.test(sat.source), 'NGC 5195 stands behind M51 (Ritchey et al. 2015: M51\'s arm absorbs in front of its nucleus)');

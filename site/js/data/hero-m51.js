@@ -16,7 +16,8 @@ export const HERO = {
       60000
     ],
     "dust_share": 0.3,
-    "seed": 51
+    "seed": 51,
+    "layer_power": 0.7
   },
   "frame": {
     "pa_deg": 173,
@@ -43,8 +44,8 @@ export const HERO = {
       "scale_kpc": 2.88,
       "height_kpc": 0.35,
       "r_max_kpc": 15,
-      "light": 0.55,
-      "arm_contrast": 0.45,
+      "light": 0.45,
+      "arm_contrast": 0.6,
       "colour": "#e2d6cc",
       "colour_outer": "#cfd0dc",
       "source": "S4G table7: the 3.6 micron scale length 84.2 arcsec (2.88 kpc here); Meijerink et al. 2005 (arXiv:astro-ph/0409511) find 80 to 93 arcsec in B, R, I and K; height assumed; cut at 15 kpc, past the catalogue's 13.7 arcmin"
@@ -56,12 +57,12 @@ export const HERO = {
       "pitch_deg": 19,
       "r_from_kpc": 1.2,
       "r_to_kpc": 12,
-      "width_kpc": 0.55,
+      "width_kpc": 0.75,
       "height_kpc": 0.15,
       "scale_kpc": 5,
       "segments": 0.9,
-      "light": 0.22,
-      "colour": "#b8c8f0",
+      "light": 0.32,
+      "colour": "#a8c0f4",
       "source": "pitch: Puerari et al. 2014 (arXiv:1408.3658): about 19 degrees for the main two-armed spiral at 8 microns (Shetty et al. 2007 give 21.1 for the CO arm, Honig & Reid 2015 13.4 and 8.3 from H II regions); width, extent and the light's share illustrative"
     },
     {
@@ -78,10 +79,10 @@ export const HERO = {
     {
       "kind": "dust-lanes",
       "what": "dust on the arms' inner edges",
-      "inset_kpc": 0.25,
-      "width_kpc": 0.25,
+      "inset_kpc": 0.3,
+      "width_kpc": 0.22,
       "height_kpc": 0.07,
-      "weight": 0.8,
+      "weight": 0.55,
       "source": "illustrative: the lanes every photograph of M51 shows on the arms' inner edges"
     },
     {

@@ -57,15 +57,16 @@ export const SHAPE = {
   sparkleCap: 0.55,  // the brightest a point is drawn
   mapLight: 0.55,    // the maps' light at their peak, beyond the photograph (a display value, illustrative)
   // 0077 W3-f: the patches (the unresolved light)
-  overlap: 3,        // patches over any spot seen from the side, about (along our line many more)
+  overlap: 8,        // patches over any spot seen from the side, about (along our line many more): look run 1 at 3 was blotchy
   widthUnits: 90,    // the populations' width on the sky the side view crosses, object units (2.6 degrees at the distance)
   patchMin: 2,       // a patch's radius, object units (200 ly) at least
   patchMax: 40,      // and at most (4 000 ly): the faint outskirts are soft, never one blob
   patchMaxPx: 22,    // CSS px: held no wider on the screen (close up a patch gives its light up, never grows into a veil)
   patchMinPx: 1.5,   // and no narrower (its light spread over the pixels it is given)
+  patchCap: 0.3,     // the brightest a patch is drawn: look run 1's side views had white blotches where a few overlapped
 };
 /** Patches by tier (the unresolved light): their summed light is the same at every tier, only finer. */
-export const PATCHES = { t0: 2500, t1: 8000, t2: 12000 };
+export const PATCHES = { t0: 4000, t1: 9000, t2: 12000 };
 /** The integral of a patch's Gaussian over its point, as a share of the point's square (spiral.js SPRITE_AREA). */
 const PATCH_SIGMA = 0.18;
 export const PATCH_AREA = 2 * Math.PI * PATCH_SIGMA * PATCH_SIGMA * (1 - Math.exp(-0.25 / (2 * PATCH_SIGMA * PATCH_SIGMA)));
@@ -414,6 +415,9 @@ void main() {
   // too faint for the framebuffer's 8 bits: drawn at the floor, by chance in proportion (spiral.js's rule)
   float lum = a * max( c.r, max( c.g, c.b ) );
   if ( lum < 0.004 ) a = fract( float( gl_VertexID ) * 0.6180339887 ) * 0.004 < lum ? a * 0.004 / max( lum, 1e-6 ) : 0.0;
+  // no patch brighter than SHAPE.patchCap (look run 1: white blotches from the side); what is over it is let go
+  float peak = max( c.r, max( c.g, c.b ) ) * a;
+  if ( peak > ${SHAPE.patchCap.toFixed(2)} ) a *= ${SHAPE.patchCap.toFixed(2)} / peak;
   vColour = c * a;
   gl_PointSize = mv.z < 0.0 && a > 0.0 ? s * uPixelRatio : 0.0;
   if ( a <= 0.0 ) gl_Position = vec4( 2.0, 2.0, 2.0, 1.0 );

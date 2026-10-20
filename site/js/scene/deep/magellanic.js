@@ -31,10 +31,10 @@ const SUN_INERTIAL = 'sun-inertial';
 const TEX_URL = '../../../images/deep/magellanic/hi-column.webp';
 export const SHAPE = {
   near: [15000, 40000], // ly from the Sun: it fades in over these (a flight out toward the Clouds)
-  close: [40, 120],     // kly from the camera: gas nearer than this fades out, so beside the Clouds it is a far ribbon,
+  close: [60, 200],     // kly from the camera (0077 W3-f: 40-120 still read as blue clouds from 87 kpc out): gas nearer than this fades out, so beside the Clouds it is a far ribbon,
                         // never a haze filling the view (look run 2, 2026-10-20)
   step: 1,          // the sheet's vertices, degrees
-  peak: 0.26,       // its brightest, a display value: a radio map is a faint overlay, never a glow
+  peak: 0.2,        // its brightest (0077 W3-f: 0.26), a display value: a radio map is a faint overlay, never a glow
   limbCap: 2.5,     // a slant's column grows as 1 / |cos| up to this
   gamma: 1.6,       // the column's log scale to light: the faint Stream stays faint
 };

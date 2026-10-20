@@ -33,9 +33,9 @@ layers:
             source: "RC3: PA 80 degrees, log R25 0.23 (an axis ratio of 0.59, read as an inclination of 54 degrees: illustrative, the disc is torn)"}
     layers:
       - {kind: bulge, what: "its nucleus", sersic_n: 2, re_kpc: 0.6, q: 0.8, light: 0.1, colour: "#f4e4d0", source: "illustrative"}
-      - {kind: disc, what: "its torn disc", scale_kpc: 4, height_kpc: 0.6, r_max_kpc: 14, light: 0.42, arm_contrast: 0, colour: "#e8dccc", colour_outer: "#d6d6e0",
-         source: "RC3: D25 5.25 arcmin (34 kpc here); scale length and height assumed"}
-      - {kind: clumps, what: "the giant star-forming complexes", count: 14, size_kpc: 1.1, light: 0.24, colour: "#c8d4ff", source: "illustrative: the knots Hubble's pictures show round the disc's rim and in the overlap"}
+      - {kind: disc, what: "its torn disc", scale_kpc: 2.2, height_kpc: 0.5, r_max_kpc: 9, light: 0.42, arm_contrast: 0, colour: "#e8dccc", colour_outer: "#d6d6e0",
+         source: "RC3: D25 5.25 arcmin (34 kpc here, the faint torn outskirts); scale length 2.2 kpc and height assumed, so the bright body is the 3 arcmin the photographs show"}
+      - {kind: clumps, what: "the giant star-forming complexes", count: 16, size_kpc: 0.6, light: 0.24, colour: "#c8d4ff", source: "illustrative: the knots Hubble's pictures show round the disc's rim and in the overlap"}
       - {kind: knots, what: "young star clusters and H II regions", count: 900, in_ring: 0, size_kpc: 0.08, height_kpc: 0.1, light: 0.1, colour: "#ff8fa6", source: "placed statistically; not a catalogue of positions"}
       - kind: stream
         what: "the southern tail"
@@ -66,9 +66,9 @@ layers:
             source: "RC3: PA 130 degrees, log R25 0.29 (an axis ratio of 0.51, read as 59 degrees: illustrative); 2 kpc behind NGC 4038 illustrative"}
     layers:
       - {kind: bulge, what: "its nucleus", sersic_n: 2, re_kpc: 0.5, q: 0.8, light: 0.12, colour: "#f4e4d0", source: "illustrative"}
-      - {kind: disc, what: "its torn disc", scale_kpc: 2.6, height_kpc: 0.5, r_max_kpc: 10, light: 0.48, arm_contrast: 0, colour: "#e8dccc", colour_outer: "#d6d6e0",
-         source: "RC3: D25 3.1 arcmin (20 kpc here); scale length and height assumed"}
-      - {kind: clumps, what: "star-forming complexes", count: 8, size_kpc: 0.9, light: 0.16, colour: "#c8d4ff", source: "illustrative"}
+      - {kind: disc, what: "its torn disc", scale_kpc: 1.6, height_kpc: 0.4, r_max_kpc: 7, light: 0.48, arm_contrast: 0, colour: "#e8dccc", colour_outer: "#d6d6e0",
+         source: "RC3: D25 3.1 arcmin (20 kpc here); scale length 1.6 kpc and height assumed"}
+      - {kind: clumps, what: "star-forming complexes", count: 10, size_kpc: 0.5, light: 0.16, colour: "#c8d4ff", source: "illustrative"}
       - {kind: knots, what: "young star clusters and H II regions", count: 500, in_ring: 0, size_kpc: 0.08, height_kpc: 0.1, light: 0.06, colour: "#ff8fa6", source: "placed statistically"}
       - kind: stream
         what: "the northern tail"

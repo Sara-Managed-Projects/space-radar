@@ -14,6 +14,7 @@ levels:
   points: [12000, 40000, 60000]     # by tier T0, T1, T2
   dust_share: 0.3
   seed: 51
+  layer_power: 0.7           # the smooth layer's stretch, S^0.7 (LAYER_POWER is 0.45): look run 1 at 0.45 lifted the outskirts into a grey disc twice the photograph's size
 frame:
   pa_deg: 173         # Colombo et al. 2014 (arXiv:1401.3759, abstract): PA 173 +/- 3 degrees from the gas's velocities
   incl_deg: 22        # Colombo et al. 2014: i = 22 +/- 5 degrees (the arms' shape gives 20.3 +/- 2.8, Hu et al. 2013 as cited there)
@@ -24,13 +25,13 @@ frame:
 layers:
   - {kind: bulge, what: "a small, nearly exponential bulge", sersic_n: 1.0, re_kpc: 0.74, q: 0.85, light: 0.13, colour: "#f4e8dc",
      source: "S4G decomposition (Salo et al. 2015, ApJS 219, 4; VizieR J/ApJS/219/4 table7): n = 0.995, Re = 21.62 arcsec (0.74 kpc here), bulge-to-total 0.128; q assumed"}
-  - {kind: disc, what: "the stellar disc", scale_kpc: 2.88, height_kpc: 0.35, r_max_kpc: 15, light: 0.55, arm_contrast: 0.45, colour: "#e2d6cc", colour_outer: "#cfd0dc",
+  - {kind: disc, what: "the stellar disc", scale_kpc: 2.88, height_kpc: 0.35, r_max_kpc: 15, light: 0.45, arm_contrast: 0.6, colour: "#e2d6cc", colour_outer: "#cfd0dc",
      source: "S4G table7: the 3.6 micron scale length 84.2 arcsec (2.88 kpc here); Meijerink et al. 2005 (arXiv:astro-ph/0409511) find 80 to 93 arcsec in B, R, I and K; height assumed; cut at 15 kpc, past the catalogue's 13.7 arcmin"}
-  - {kind: arms, what: "two grand-design arms of young stars", count: 2, pitch_deg: 19, r_from_kpc: 1.2, r_to_kpc: 12, width_kpc: 0.55, height_kpc: 0.15, scale_kpc: 5, segments: 0.9, light: 0.22, colour: "#b8c8f0",
+  - {kind: arms, what: "two grand-design arms of young stars", count: 2, pitch_deg: 19, r_from_kpc: 1.2, r_to_kpc: 12, width_kpc: 0.75, height_kpc: 0.15, scale_kpc: 5, segments: 0.9, light: 0.32, colour: "#a8c0f4",
      source: "pitch: Puerari et al. 2014 (arXiv:1408.3658): about 19 degrees for the main two-armed spiral at 8 microns (Shetty et al. 2007 give 21.1 for the CO arm, Honig & Reid 2015 13.4 and 8.3 from H II regions); width, extent and the light's share illustrative"}
   - {kind: knots, what: "H II regions along the arms", count: 900, in_ring: 0, size_kpc: 0.05, height_kpc: 0.06, light: 0.06, colour: "#ff8fa0",
      source: "placed statistically along the arms; not a catalogue of positions"}
-  - {kind: dust-lanes, what: "dust on the arms' inner edges", inset_kpc: 0.25, width_kpc: 0.25, height_kpc: 0.07, weight: 0.8, source: "illustrative: the lanes every photograph of M51 shows on the arms' inner edges"}
+  - {kind: dust-lanes, what: "dust on the arms' inner edges", inset_kpc: 0.3, width_kpc: 0.22, height_kpc: 0.07, weight: 0.55, source: "illustrative: the lanes every photograph of M51 shows on the arms' inner edges"}
   - {kind: dust-disc, what: "a thin dust disc", scale_kpc: 3, height_kpc: 0.08, weight: 0.2, source: "assumed"}
   # 0077 W3-f (internal #875): the arm that runs from M51's outer northern spiral to NGC 5195, traced on the Hubble photograph
   # (heic0506a) as sky places; how far each point is toward us is a model (below).

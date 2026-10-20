@@ -16,7 +16,8 @@ export const HERO = {
       80000
     ],
     "dust_share": 0.25,
-    "seed": 101
+    "seed": 101,
+    "layer_power": 0.7
   },
   "frame": {
     "pa_deg": 39,
@@ -43,8 +44,8 @@ export const HERO = {
       "scale_kpc": 3.92,
       "height_kpc": 0.4,
       "r_max_kpc": 26,
-      "light": 0.58,
-      "arm_contrast": 0.35,
+      "light": 0.5,
+      "arm_contrast": 0.55,
       "colour": "#e0d8d2",
       "colour_outer": "#d2d4e0",
       "source": "S4G (Salo et al. 2015; VizieR J/ApJS/219/4): the 3.6 micron scale length 127.3 arcsec (3.92 kpc here); Mihos et al. 2013 (arXiv:1211.3095): 2.42 arcmin in B, 1.9 to 3.4 by direction (lopsided, not drawn); height assumed; cut at 26 kpc"
@@ -60,8 +61,8 @@ export const HERO = {
       "height_kpc": 0.15,
       "scale_kpc": 8,
       "segments": 0.65,
-      "light": 0.25,
-      "colour": "#b8c8f4",
+      "light": 0.33,
+      "colour": "#a8c0f4",
       "source": "a multiple-armed spiral (class M): the S4G arm catalogue's six segments have pitches 7 to 29 degrees (mean 19); four arms and 20 degrees illustrative; the light's share illustrative"
     },
     {
