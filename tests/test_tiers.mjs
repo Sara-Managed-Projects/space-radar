@@ -280,8 +280,9 @@ const boot = bootFiles(TEXTURES);
 // not what the 8k rule is about.
 // 46 since 2026-10-14: Venus's relief under its radar ground (Magellan's altimeter), fetched when a
 // visitor asks for the ground, on a tier-1 device and up (`when: asked`).
+// 47 since 2026-10-20 (release 1.3.0 W1-f): Titan's radar map, 2k, under its haze.
 const STRIP = 'textures/8k_saturn_ring_fine.png';
-check(boot.length === 46 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-five 1k and 2k files and the rings' strip (${boot.length})`);
+check(boot.length === 47 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-six 1k and 2k files and the rings' strip (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);
@@ -302,6 +303,7 @@ for (const w of WORLDS) {
 for (const row of TEXTURES) {
   for (const f of row.files) {
     if (f.tier > 0 && row.slot === 'relief') check(row.id === 'earth-relief' && f.px[0] === 1024 * f.tier && f.px[1] * 2 === f.px[0] && f.format === 'mono', `${row.id} tier ${f.tier} is ${f.px} ${f.format}, not one grey channel ${1024 * f.tier} wide`);
+    else if (f.tier > 0 && row.id === 'titan-lakes') check(f.px[0] === 2048 && f.px[1] === 1024, `${row.id} tier ${f.tier} is ${f.px}, not the 2048 x 1024 sea mask`); // release 1.3.0 W1-f: a share-of-sea mask for 6 by 12 degrees of the north, read for its edges; 4096 wide would be 8 MiB for no sharper a lake
     else if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
     check(f.px[0] <= 4096 || (f.px[1] === 1 && f.px[0] <= 8192), `${row.id}: ${f.px[0]} wide is over what any tier may ship without KTX2`);
   }

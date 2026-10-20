@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 39 | 39 |
-| real_models | 131 | 131 |
+| real_models | 145 | 145 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **890** | **111 077** |
+| **all** | **904** | **111 091** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -41,18 +41,18 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [ROCKY_PLANET](#rocky_planet) | 7 | `worlds.js`, `earth.js`, `atmosphere.js`, `tiles.js` | measured | - |
 | [GAS_GIANT](#gas_giant) | 14 | `worlds.js`, `worldweather.js`, `flow.js` | measured | - |
 | [ICE_GIANT](#ice_giant) | 7 | `worlds.js`, `worldweather.js` | measured | - |
-| [RINGS](#rings) | 1 | `worlds.js` | modelled | - |
+| [RINGS](#rings) | 1 | `worlds.js`, `ringgrains.js` | modelled | - |
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
 | [ICY_MOON](#icy_moon) | 16 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
 | [AIRLESS_MOON](#airless_moon) | 3 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
-| [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js` | measured | - |
+| [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 17 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
-| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 140 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
+| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 146 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 58 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
-| [SPACE_PROBE](#space_probe) | 66 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
-| [LANDING_SITE](#landing_site) | 46 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
+| [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
+| [LANDING_SITE](#landing_site) | 51 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 45 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
+Honesty over the 904 records: 321 measured, 258 modelled, 325 illustrative.
 
 ## The classes
 
@@ -152,12 +152,12 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 
 **Planetary rings**
 
-- **Drawn by:** `site/js/scene/worlds.js`
+- **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/ringgrains.js`
 - **Default honesty:** modelled
-- **On a weak device (T0, or after the frame latch):** The ring's alpha map as a lit slab; the fine ringlets and grain only on tier 1 and up, never after the latch.
+- **On a weak device (T0, or after the frame latch):** The ring's alpha map as a lit slab; the fine ringlets, grain and particles only on tier 1 and up, never after the latch.
 - **Source:** Cassini UVIS stellar occultation of Beta Centauri (Colwell et al. 2010, PDS Ring-Moon Systems Node) for Saturn's 8k ringlets; Solar System Scope's ring alpha map; the Cassini Division at its measured radii.
 - **Dates and filters:** The occultation of 2008 (Cassini orbit 77).
-- **Measured, modelled or reconstructed:** Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain.
+- **Measured, modelled or reconstructed:** Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 2 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still.
 - **Rights:** PDS data public domain; Solar System Scope CC BY 4.0.
 - **Records (1):**
   - rings (1): `saturn-ring`
@@ -199,11 +199,11 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 - **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/atmosphere.js`
 - **Default honesty:** measured
 - **On a weak device (T0, or after the frame latch):** The 938 nm map under its haze shell.
-- **Source:** Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); clouds after Webb and Keck (NASA, 2023).
-- **Dates and filters:** Cassini 2004-2017, released 2018; the cloud reference of 2023.
-- **Measured, modelled or reconstructed:** Measured: the surface map through the haze, at half its contrast. Modelled: the haze shell. Illustrative and labelled: the methane clouds.
+- **Source:** Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); Cassini RADAR's SAR and HiSAR mosaic through T104 (USGS Astrogeology), which gives the radar face and the seas' outlines; the detached haze layer's height from Porco et al. 2005 and West et al. 2011; clouds after Webb and Keck (NASA, 2023).
+- **Dates and filters:** Cassini 2004-2017, released 2018; the radar mosaic of January 2015; the detached layer as seen 2005-2007; the cloud reference of 2023.
+- **Measured, modelled or reconstructed:** Measured: the surface map through the haze, at half its contrast; the radar face (its grey ours), only where a swath looked; the seas' outlines. Modelled: the haze shell and the detached layer at its 2005-2007 height. Illustrative and labelled: the methane clouds, and the glint's size and brightness.
 - **Rights:** NASA public domain.
-- **What is missing is tracked in:** #863 (lakes, radar mode, 1.3+)
+- **What is missing is tracked in:** #863 (done in 1.3.0, 0077 W1-f; left: the Huygens site, W2-a)
 - **Records (2):**
   - worlds (1): `titan`
   - weather (1): `titan-clouds`
@@ -227,14 +227,14 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 
 **Dwarf planets**
 
-- **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/glyphs.js`, `site/js/scene/models.js`
+- **Drawn by:** `site/js/scene/worlds.js`, `site/js/scene/glyphs.js`, `site/js/scene/models.js`, `site/js/scene/dwarfs.js`
 - **Default honesty:** measured
-- **On a weak device (T0, or after the frame latch):** Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits.
+- **On a weak device (T0, or after the frame latch):** Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits, and close up as smooth bodies in their measured colours.
 - **Source:** New Horizons' global colour map of Pluto (PIA11707); Dawn's Ceres mosaic (DLR, via USGS); JPL Small-Body Database orbits for the far dwarfs; their sizes and moons from the Wikipedia article each row names.
 - **Dates and filters:** New Horizons 2015; Dawn 2015-2018; SBDB solutions dated per row (sample.js `solution`).
-- **Measured, modelled or reconstructed:** Measured: Pluto's and Ceres's maps, every orbit and its phase. Illustrative: the far dwarfs' bodies (a glyph and a generic rock, labelled).
+- **Measured, modelled or reconstructed:** Measured: Pluto's and Ceres's maps, every orbit and its phase; the far dwarfs' colours (B-V, V-R), albedos, Haumea's, Makemake's and Quaoar's shapes and Haumea's ring (scene/dwarfs.js names whose). Modelled and labelled: their brightness on a squeezed scale, and the three never measured drawn round; no surface is drawn on any of them.
 - **Rights:** NASA works public domain; SBDB data courtesy NASA/JPL-Caltech; facts from Wikipedia, cited, none of its text reproduced.
-- **What is missing is tracked in:** #865 (Eris, Makemake, Haumea, Sedna as more than glyphs)
+- **What is missing is tracked in:** #865 (done in 1.3.0, 0077 W1-f; left: spins)
 - **Records (9):**
   - worlds (1): `pluto`
   - small_bodies (8): `dwarf-ceres`, `dwarf-eris`, `dwarf-haumea`, `dwarf-makemake`, `dwarf-sedna`, `dwarf-gonggong`, `dwarf-quaoar`, `dwarf-orcus`
@@ -286,8 +286,8 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one.
 - **Rights:** CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project).
 - **What is missing is tracked in:** public #267 (the art pass)
-- **Records (140):**
-  - real_models (91): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`
+- **Records (146):**
+  - real_models (97): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`
   - model_kinds (36): `satellite-iridium`, `satellite-spacemobile`, `satellite-solarsail`, `satellite-sphere`, `satellite-navigation`, `satellite-cubesat`, `satellite-cubesat-6u`, `satellite-cubesat-1u`, `satellite-cubesat-2u`, `satellite-navigation-gps-iif`, `satellite-navigation-gps-iii`, `satellite-navigation-glonass-m`, `satellite-navigation-glonass-k`, `satellite-navigation-beidou-meo`, `satellite-oneweb`, `satellite-starlink-v1`, `satellite-starlink-v2`, `satellite-radar`, `satellite-radar-mesh`, `satellite-generic`, `satellite-comms`, `station-soyuz`, `station-progress`, `station-cygnus`, `station-tiangong`, `station-tiangong-module`, `station-shenzhou`, `station-tianzhou`, `station-dragon`, `station-dragon-cargo`, `station-generic`, `debris-shard`, `telescope-gaia`, `telescope-generic`, `telescope-jwst`, `satellite-space-telescope`
   - reentries (3): `reentry-tiangong-1`, `reentry-cz-5b-y2`, `reentry-skylab`
   - layers (10): `stations`, `notable`, `starlink-trains`, `just-launched`, `active`, `geo-ring`, `debris-notable`, `debris-field`, `visual`, `reentries`
@@ -322,8 +322,8 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 - **Dates and filters:** Horizons windows per craft (ephemerides.yaml); events dated to the minute where the mission page gives one.
 - **Measured, modelled or reconstructed:** Measured: the paths. A stand-in (sample.js, dashed halo) where Horizons cannot be read from a browser, said on the card.
 - **Rights:** Horizons data courtesy NASA/JPL-Caltech; NASA models free and without copyright.
-- **Records (66):**
-  - real_models (24): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`
+- **Records (69):**
+  - real_models (27): `mro`, `parker`, `juno`, `voyager`, `cassini`, `galileo`, `pioneer`, `lro`, `osiris-rex`, `stereo`, `dawn`, `odyssey`, `rosetta`, `near`, `stardust`, `deep-impact`, `maven`, `new-horizons`, `europa-clipper`, `psyche`, `juice`, `bepicolombo`, `hera`, `lucy`, `mars-express`, `hayabusa2`, `hope`
   - model_kinds (4): `probe-generic`, `probe-new-horizons`, `probe-mars-2020-cruise`, `probe-solar-orbiter`
   - probes (37): `deep-jwst`, `deep-soho`, `deep-roman`, `deep-mro`, `deep-mars-express`, `deep-mars-odyssey`, `deep-hope`, `deep-juno`, `deep-lro`, `deep-voyager-1`, `deep-voyager-2`, `deep-new-horizons`, `deep-pioneer-10`, `deep-pioneer-11`, `deep-maven`, `deep-cassini`, `deep-galileo`, `deep-mars-2020`, `deep-dawn`, `deep-rosetta`, `deep-near`, `deep-stardust`, `deep-deep-impact`, `deep-parker`, `deep-solar-orbiter`, `deep-psyche`, `deep-lucy`, `deep-europa-clipper`, `deep-juice`, `deep-bepicolombo`, `deep-hera`, `deep-osiris-apex`, `deep-hayabusa2`, `deep-stereo-a`, `deep-gaia`, `deep-spitzer`, `deep-kepler`
   - layers (1): `deep-space`
@@ -340,9 +340,9 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the coordinates, each with its uncertainty in metres where stated. The lander or rover is a procedural stand-in ('the kind of thing, not this exact one'), except NASA's lunar module.
 - **Rights:** NASA, LROC and PDS works public domain; papers cited.
 - **What is missing is tracked in:** #868 (terrain height, the Apollo 15 and 17 traverses, W2-a)
-- **Records (46):**
+- **Records (51):**
   - sites (33): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `surveyor-1`, `surveyor-3`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `lunokhod-2`, `change-3`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
-  - real_models (10): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`
+  - real_models (15): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`
   - model_kinds (3): `site-surveyor`, `rover-generic`, `lander-generic`
 
 ### EXOPLANET

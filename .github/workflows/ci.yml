@@ -302,6 +302,14 @@ jobs:
       # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
       - name: "The translation checker names a missing key, a lost slot and an untouched string"
         run: node tests/test_check_translation.mjs
+      # 0077 W1-e: begin
+      # The language loader (public #524): ?lang=, the browser's list for a reviewed language only, English for a missing key,
+      # nothing fetched for English, the Spanish whole; and the table of every language in docs/TRANSLATING.md (i#688).
+      - name: "The page speaks a language file: ?lang=, the review rule, English for a gap, no extra bytes for English"
+        run: node tests/test_language_loader.mjs
+      - name: "The translation table in docs/TRANSLATING.md is current and no language breaks the review rule"
+        run: node scripts/check-translation.mjs --check-doc
+      # 0077 W1-e: end
       # The first files a newcomer meets: the issue chooser (6 forms, 3 contact links), CITATION.cff,
       # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
       - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
@@ -670,6 +678,12 @@ jobs:
       # flown, not collapsed: collapsed, the station stop put the camera behind the Earth.
       - name: "From your ground to the station: your place, from above its horizon, and a real pass ahead (spec 0038)"
         run: node tests/test_station_trip.mjs
+      # 0077 w1d: begin
+      # A held stop keeps its subject in sight: the station went behind the Earth while a card was read
+      # (public #580). The real trip machine, an hour held at eight points round one orbit.
+      - name: a held trip stop keeps its subject from going behind the world it orbits (public #580)
+        run: node tests/test_trip_clear.mjs
+      # 0077 w1d: end
       # Each stop's subject stayed selected through the flight to the next: `follow` held the camera
       # on it and heroes.js drew it at 260 px, a lander filling the screen under the next stop's
       # title (Ivan, 2026-10-01). Flown frame by frame through the Moon and station trips.
@@ -1102,3 +1116,7 @@ jobs:
       # 0076 W4-c
       - name: "readable without WebGL, without motion, and a full link: the page without JavaScript or WebGL 2 lists every trip and the crawlable pages, a shared link carries v=1 and the build, the scene summary's words, Motion off is an instant flight and still gas (internal spec 0076 W4-c)"
         run: node tests/test_access.mjs
+      # 0077 W1-f: begin
+      - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
+        run: node tests/test_outer_worlds.mjs
+      # 0077 W1-f: end

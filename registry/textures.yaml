@@ -27,6 +27,7 @@ version: 1
 #             idle  -- on screen from the first frame: fetched after it, when the browser is idle
 #             near  -- fetched when the world's disc is big enough for 4k to show, or it is selected
 #             asked -- a second face of a world (slot `surface`), fetched when its card asks for it
+#                      (0077 W1-f: or a world's own detail its module fetches itself, never at boot: Titan's seas)
 #   boot      `none` when a phone does without the map altogether (the Earth's water mask)
 #   files     one per tier:
 #     tier      0 | 1 | 2
@@ -815,6 +816,49 @@ textures:
         source: "https://photojournal.jpl.nasa.gov/catalog/PIA22770 (read 2026-10-07)"
         original: "https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia22/pia22770/PIA22770.tif"
         make: "scripts/build-textures.py moon-titan: the 2018 Cassini ISS mosaic (9 873 pictures averaged, made without image seams: it replaces the 2015 one, whose pictures' outlines showed), 5760 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, contrast about the mean times 0.5, mean taken to the flat colour's luminance by a gain 0.95, WebP 82"
+  # 0077 W1-f: begin
+  # TITAN BY RADAR (internal #863): its second face, `when: asked`, fetched when a visitor presses Radar on
+  # its card (scene/worlds.js setFace, TITAN_RADAR) and never before. RGBA: the grey is the radar's echo,
+  # alpha (128 to 255) how much of the texel a swath covered; where none did the grey is the 938 nm map's
+  # and the shader paints it in Titan's own orange, dimmed. Not built from a downloaded copy: the 1.06 GB
+  # GeoTIFF is uncompressed one row a strip, so scripts/build_titan_maps.py reads two rows per output row
+  # by HTTP range requests (94 MB).
+  - id: titan-radar
+    world: titan
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_titan_radar.webp
+        px: [2048, 1024]
+        bytes: 445294
+        format: rgba
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Titan radar map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Cassini RADAR, SAR and HiSAR mosaic through flyby T104), public domain"
+        source: "https://astrogeology.usgs.gov/search/map/titan_cassini_sar_hisar_global_mosaic_351m (read 2026-10-20)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Titan_SAR_HiSAR_MosaicThru_T104_Jan2015_clon180_128ppd.tif"
+        make: "scripts/build_titan_maps.py: 46 080 x 23 040 px (351 m) to 2048 x 1024 by the mean of two rows in 22.5 and 22.5 columns in 45 in linear light, no-data pixels left out; alpha 128 + 127 x the share of covered pixels (the radar covers 0.606 of the sphere); the gaps given the ISS map's grey; rolled half a turn so longitude 0 is in the middle (checked against the ISS map by correlation, 0.54 at exactly half a turn); WebP 80 with lossless alpha"
+        limits: "a radar picture, not light: bright is rough ground or ground tilted toward the radar, dark is smooth, and the seas are black; 351 m a pixel in the mosaic, 7.9 km a texel here; the strips at the far south are noisy in the original"
+  # TITAN'S SEAS (internal #863): the share of each texel that is radar-dark, north of 55 N and round
+  # Ontario Lacus. `boot: none`, `when: asked`: no phone wears them, and scene/worlds.js fetches the
+  # file itself the first time Titan is large on a tier-1 device (TITAN_LAKES.fromShare), never at boot.
+  - id: titan-lakes
+    world: titan
+    slot: water
+    when: asked
+    boot: none
+    files:
+      - tier: 1
+        file: site/textures/titan_lakes.webp
+        px: [2048, 1024]
+        bytes: 16626
+        format: mono
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Titan seas: outlined from the same Cassini RADAR mosaic (USGS Astrogeology Science Center and NASA/JPL-Caltech), public domain"
+        source: "https://astrogeology.usgs.gov/search/map/titan_cassini_sar_hisar_global_mosaic_351m (read 2026-10-20)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Titan_SAR_HiSAR_MosaicThru_T104_Jan2015_clon180_128ppd.tif"
+        make: "scripts/build_titan_maps.py: a source pixel is sea where the mosaic, box-blurred over 9 pixels along its row, is under 40 of 255 and covered; a texel holds the share of its 45 source pixels that are; only north of 55 N and within 6 by 12 degrees of Ontario Lacus (72 S, 183 W); a 3 x 3 mean, a soft threshold from 0.3 to 0.6, an opening that keeps nothing narrower than three texels; 551 000 km2 in all; rolled half a turn; lossless WebP"
+  # 0077 W1-f: end
   # CERES AND VESTA (2026-10-07, internal #382) are not rows of registry/worlds.yaml: they are dots of
   # the far-bodies and asteroid layers, drawn close up from their shape models by scene/realmodels.js
   # (site/models/dwarf-ceres.glb, asteroid-vesta.glb), and these maps are laid on those shapes by the

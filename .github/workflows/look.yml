@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
     inputs:
       probe:
-        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, clouds, frametime, settings, model, films)"
+        description: "A probe under tests/probes/look/ (smoke, worlds, sun, jupiter, saturn, lights, clouds, frametime, settings, model, films, language)"
         default: smoke
       ref:
         description: "Branch or sha to look at (empty: the ref this was dispatched from)"
@@ -255,6 +255,8 @@ jobs:
           [ "$HOLD" = "true" ] && url="$url&look=1"
           # A probe's subject rides in the query under a name the app does not read (ui/urlstate.js KEYS).
           [ -n "$SUBJECT" ] && url="$url&lookSubject=$SUBJECT"
+          # 0077 W1-e: the `language` probe looks at the Spanish page (js/copy/lang.js reads ?lang=).
+          [ "$PROBE" = "language" ] && url="$url&lang=es"
           flags="--width=$WIDTH --height=$HEIGHT --block=celestrak.org,ll.thespacedevs.com --shot-dir=look-out"
           [ "$MOBILE" = "true" ] && flags="$flags --mobile"
           echo "$url  $flags"

@@ -760,6 +760,22 @@ export const REAL_MODELS = {
     26069: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2369, a Tselina-2 listening satellite', catalogue: 'COSMOS 2369' },
     28352: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2406, a Tselina-2 listening satellite', catalogue: 'COSMOS 2406' },
     31792: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2428, a Tselina-2 listening satellite', catalogue: 'COSMOS 2428' },
+    // 0077 W1-a: begin
+    // THEMIS (release 1.3.0, public #549): NASA's own model of the probe (NASA 3D Resources, the THEMIS
+    // folder), baked with its own colours; registry/models.yaml row `themis`. The five probes are one design;
+    // three are in CelesTrak's active group (read in the live saved data, 2026-10-20). Not turned: the probes
+    // spin, and the file's axes say nothing about which way.
+    30580: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS A', catalogue: 'THEMIS A' },
+    30797: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS D', catalogue: 'THEMIS D' },
+    30798: { file: 'themis.glb', colour: 'satellite', name: 'THEMIS E', catalogue: 'THEMIS E' },
+    // THE SHENZHOU ORBITAL MODULE FLYING ALONE (public #1089): each crew leaves it in orbit when it goes home.
+    // Built here from the cited metres of shenzhou.glb's front third (row `shenzhou-orbital`); by number, the
+    // three in the live saved data of 2026-10-20. Not `generic`: each is that module. Not turned: it flies
+    // uncontrolled, and nobody publishes its attitude.
+    66515: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 21', catalogue: 'SZ-21 MODULE', made: 'dimensions' },
+    67481: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 20', catalogue: 'SZ-20 MODULE', made: 'dimensions' },
+    69328: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 22', catalogue: 'SZ-22 MODULE', made: 'dimensions' },
+    // 0077 W1-a: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -787,7 +803,7 @@ export const REAL_MODELS = {
     // assembled and baked into new-horizons.glb (registry/models.yaml says how). Until 2026-10-10 there was
     // no file and this named only the PROCEDURAL shape; it stays as what is drawn while the file is on its
     // way, as JWST's does (heroes.js acquire).
-    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons' },
+    '-98': { build: 'new-horizons', file: 'new-horizons.glb', colour: 'probe', name: 'New Horizons', axes: 'app' }, // 0077 W1-a: NASA's parts rebuilt with the drawings' dish and tripod, turned to the app's axes (row `new-horizons`)
     // Three of the twelve craft added on 2026-09-22 as the generic probe, which NASA publishes a
     // model of (issue #431). OSIRIS-APEX is the OSIRIS-REx spacecraft under its second mission's
     // name -- the same vehicle, so this is its model and not a stand-in. NASA's STEREO model is
@@ -839,6 +855,20 @@ export const REAL_MODELS = {
     '-28': { file: 'juice.glb', colour: 'probe', name: 'JUICE', made: 'dimensions', axes: 'app' },
     '-121': { file: 'bepicolombo.glb', colour: 'probe', name: 'BepiColombo in its cruise stack', made: 'dimensions', axes: 'app' },
     '-91': { file: 'hera.glb', colour: 'probe', name: 'Hera', made: 'dimensions', axes: 'app' },
+    // 0077 W1-b: begin
+    // FOUR MORE DEEP-SPACE CRAFT BUILT FROM DIMENSIONS (2026-10-20, release 1.3.0 W1-b, public #1085 to
+    // #1088). Mars Express, Hayabusa2 and Hope were the generic probe; Gaia was its procedural shape
+    // (scene/models.js buildGaia), which stays as what is drawn while the file is in flight, as
+    // JWST's does. No agency publishes a model of any of the four under terms that allow a
+    // derivative (registry/models.yaml says what was looked for), so each is BUILT here from cited
+    // numbers (`made: 'dimensions'`), to the app's axes: +Z the dish (Gaia: the Sun side of its
+    // shield, with its cells and its antenna) and the cells with it, the wings along X. The records
+    // are data/sample.js `deep-mars-express`, `deep-gaia`, `deep-hayabusa2`, `deep-hope`.
+    '-41': { file: 'mars-express.glb', colour: 'probe', name: 'Mars Express', made: 'dimensions', axes: 'app' },
+    '-139479': { build: 'gaia', file: 'gaia.glb', colour: 'telescope', name: 'Gaia', made: 'dimensions', axes: 'app' },
+    '-37': { file: 'hayabusa2.glb', colour: 'probe', name: 'Hayabusa2', made: 'dimensions', axes: 'app' },
+    '-62': { file: 'hope.glb', colour: 'probe', name: 'Hope (Emirates Mars Mission)', made: 'dimensions', axes: 'app' },
+    // 0077 W1-b: end
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -893,9 +923,15 @@ export const REAL_MODELS = {
     // type, not this object" -- right for "a Starlink", wrong for the second crewed station in
     // orbit, which the stations trip is about and which was labelled "CSS (TIANHE)" while the ISS
     // beside it read "International Space Station".
-    'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], generic: true },
-    'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], generic: true },
-    'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], generic: true },
+    // 0077 W1-a: begin
+    // FILES SINCE RELEASE 1.3.0 (public #936, #267): tiangong.glb is the whole T built here in code from the cited
+    // metres and CMSA's rear view of 2023 (row `tiangong`); wentian.glb and mengtian.glb are each laboratory cut
+    // from that same build, for the lab drawn on its own. The builds stay as what is drawn while a file loads.
+    // Not `generic` any more: each file is that object.
+    'css (tianhe': { build: 'tiangong', file: 'tiangong.glb', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], made: 'dimensions', axes: 'app' },
+    'css (wentian': { build: 'tiangong-module', file: 'wentian.glb', colour: 'station', name: 'Wentian, a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
+    'css (mengtian': { build: 'tiangong-module', file: 'mengtian.glb', colour: 'station', name: 'Mengtian, a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], made: 'dimensions', axes: 'app' },
+    // 0077 W1-a: end
     // Shenzhou and Tianzhou: the Soyuz plan at Chinese proportions, white-grey, wings on both ends
     // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
     // FILES AS WELL since batch three (2026-10-13; public #941, #942), each hull ONE LATHE as the
@@ -1218,8 +1254,10 @@ export const REAL_MODELS = {
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
     goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
     // Gaia and Solar Orbiter are matched by NAME: Solar Orbiter carries no Horizons id in the
-    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) has no glTF to key, because
-    // its shape is built rather than downloaded. The klass gate is doing real work on the first
+    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) had no glTF to key, because
+    // its shape was built rather than downloaded. // 0077 W1-b
+    // Since 2026-10-20 the record goes by its Horizons id to gaia.glb (above); this name route is the procedural shape for any other record called Gaia. // 0077 W1-b
+    // The klass gate is doing real work on the first
     // one: 1279 Gaia is a main-belt asteroid, and without `klass: ['telescope']` a ten-metre
     // sunshield would be drawn on a rock. That is the TESS mistake exactly, and it is why the
     // gate exists.
@@ -1292,10 +1330,23 @@ export const REAL_MODELS = {
     // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
-    // Surveyor from NSSDCA's own description (scene/models.js buildSurveyor; public #267). A shape
-    // built from a paragraph, so the card still says the kind of thing.
-    'surveyor-1': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
-    'surveyor-3': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    // 0077 W1-c: begin
+    // SURVEYOR IS A FILE OF ITS OWN since release 1.3.0 (public #267): built in code from NSSDCA's metres
+    // and Apollo 12's photographs of Surveyor 3 (registry/models.yaml `surveyor`, `surveyor-3`). The
+    // procedural shape (scene/models.js buildSurveyor, from a paragraph) is what is drawn while the file
+    // is on its way. Surveyor 3 carried the soil sampler and Surveyor 1 did not, so they are two files.
+    // `displayName` keeps each card and label titled by the site's own name (registry/sites.yaml
+    // `display`); `name` is what the model is of, for the line that says what is drawn.
+    'surveyor-1': { build: 'surveyor', file: 'surveyor.glb', colour: 'site', name: 'Surveyor 1', displayName: 'Surveyor 1, Oceanus Procellarum', made: 'dimensions' },
+    'surveyor-3': { build: 'surveyor', file: 'surveyor-3.glb', colour: 'site', name: 'Surveyor 3', displayName: 'Surveyor 3, Oceanus Procellarum', made: 'dimensions' },
+    // THREE MODERN LANDERS (public #1133, #1135, #1136), each built in code from cited metres and
+    // photographs and drawn AS IT CAME TO REST: Vikram upright with its ramp down and Pragyan gone;
+    // Odysseus on its side, the legs under it broken; Blue Ghost upright. Until the file arrives each is
+    // the generic lander it was. SLIM (#1134) was built and not shipped: it did not read as SLIM.
+    'chandrayaan-3': { build: 'lander', file: 'vikram.glb', colour: 'site', name: 'the Vikram lander, its ramp down', displayName: 'Chandrayaan-3 Vikram lander', made: 'dimensions' },
+    'im-1': { build: 'lander', file: 'odysseus.glb', colour: 'site', name: 'Odysseus, as it came to rest on its side', displayName: 'Odysseus (IM-1), near Malapert A', made: 'dimensions' },
+    'blue-ghost-1': { build: 'lander', file: 'blue-ghost.glb', colour: 'site', name: 'the Blue Ghost lander', displayName: 'Blue Ghost 1, Mare Crisium', made: 'dimensions' },
+    // 0077 W1-c: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

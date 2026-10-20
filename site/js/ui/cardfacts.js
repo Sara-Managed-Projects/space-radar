@@ -487,6 +487,26 @@ export function pathEndedWords(record, m) {
   return tMs >= ms ? timeText.utcLong(ms) : null;
 }
 
+// 0077 W1-d: begin (public #493)
+/**
+ * A craft drawn only from its own path file (the ended craft of data/sample.js PAST_CRAFT), at a
+ * clock BEFORE the path begins: the day it launched, in words; else null. Before this the card said
+ * "could not work this out" for Cassini in 1990, which says the arithmetic failed when the truth
+ * is that the craft was not yet flying. Answers null while the craft is placed, after its end
+ * (endedWords, pathEndedWords) and for a record with no launch date.
+ */
+export function pathBeginsWords(record, m) {
+  const start = pick(meta(record), 'launchDate');
+  if (!start || (m && m.ok) || endedWords(record, m) || pathEndedWords(record, m)) return null;
+  // Only the craft whose row says it is drawn from its own path (they carry the day the path ends).
+  if (!pick(meta(record), 'endDate')) return null;
+  const ms = Date.parse(`${start}T00:00:00Z`);
+  if (!Number.isFinite(ms)) return null;
+  const tMs = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+  return tMs < Date.parse(`${pick(meta(record), 'endDate')}T00:00:00Z`) ? timeText.utcLong(ms) : null;
+}
+// 0077 W1-d: end
+
 export function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
   const V = COPY.card.values;
@@ -507,6 +527,8 @@ export function rightNowRows(record, m, passInfo) {
     if (ended) { rows.push([R.ended, ended]); return rows; }
     const pathEnds = pathEndedWords(record, m);
     if (pathEnds) { rows.push([R.pathEnds, pathEnds]); return rows; }
+    const pathBegins = pathBeginsWords(record, m); // 0077 W1-d
+    if (pathBegins) { rows.push([R.pathBegins, pathBegins]); return rows; } // 0077 W1-d
     rows.push([R.altitude, COPY.card.couldNotLook]);
     return rows;
   }

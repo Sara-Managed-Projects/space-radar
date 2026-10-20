@@ -72,6 +72,7 @@ import { relationOf } from '../data/deepsky.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
+import { dwarfFacts, dwarfLook } from '../scene/dwarfs.js'; // 0077 W1-f
 // Where it is and the way back (internal spec 0076 W3-d): the visitor's path, kept as the card moves.
 import { noteSelection, noteHidden } from './camundo.js';
 // The card's FACTS (what is measured about a record, its "right now" rows, its honesty line, the
@@ -84,6 +85,8 @@ import {
   whyLine, endedWords, pathEndedWords, rightNowRows, ensurePlaces, rangeLabel, nearEarthOnEllipse,
   honestyLine, placesReady, truthRow,
 } from './cardfacts.js';
+import { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
+export { pathBeginsWords } from './cardfacts.js'; // 0077 W1-d
 export {
   stormAdvisoryAgo, stormAdvisoryText, earthEventRows, whyLine, endedWords, pathEndedWords, ensurePlaces,
   belowWords, TAG_READOUTS, TAG_HONESTY_MAX, shortHonesty, splitReadout, tagLines, classLine,
@@ -1317,12 +1320,36 @@ export function systemLine(record, stageId = stage.worldId) {
   return face ? face + ' ' + line : line;
 }
 
+// 0077 W1-f: begin
+/**
+ * A far dwarf planet's drawing, in words (internal #865): its colour and brightness measured (the
+ * brightness squeezed), its shape measured or not, its ring, and that nothing on its surface is
+ * drawn because nothing has been seen. Built from scene/dwarfs.js's row. Exported for the test.
+ */
+export function dwarfDrawingLine(id) {
+  const f = dwarfFacts(id);
+  const L = dwarfLook(id);
+  const D = COPY.dwarfLook;
+  if (!f || !L || !D) return null;
+  const parts = [t(f.red ? D.colourRed : D.colour, { bv: L.bv.toFixed(2), vr: L.vr.toFixed(2), albedo: String(L.albedo) })];
+  if (f.shape === 'egg') parts.push(t(D.shapeEgg, { a: fmt.int(L.axes[0]), b: fmt.int(L.axes[1]), c: fmt.int(L.axes[2]) }));
+  else parts.push(f.shape === 'measured' ? D.shapeMeasured : D.shapeUnknown);
+  if (f.ring) parts.push(D.ring);
+  if (f.faintRings) parts.push(D.faintRings);
+  parts.push(D.surface);
+  parts.push(t(D.source, { src: f.src }));
+  return parts.join(' ');
+}
+// 0077 W1-f: end
+
 export function drawingLine(record, tMs) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
   const T = COPY.drawing;
   const inSystem = systemLine(record);
   if (inSystem) return inSystem;
+  // 0077 W1-f: a far dwarf planet drawn as itself (scene/dwarfs.js) says what of it is measured and what is not.
+  if (!drawsAs && dwarfFacts(record.id) && COPY.dwarfLook) return dwarfDrawingLine(record.id); // 0077 W1-f
   if (!drawsAs) {
     // The derived line, plus a row's own `departure` where the drawing knowingly differs: Haumea
     // is drawn round and is an egg; nobody has seen 'Oumuamua's shape at all.
@@ -1535,8 +1562,10 @@ export function actionButtons(record, ctx, m) {
     // states). An ended craft names its last day; its mission's events below are the way there.
     const ended = endedWords(record, m);
     const pathEnds = ended ? null : pathEndedWords(record, m);
+    const pathBegins = ended || pathEnds ? null : pathBeginsWords(record, m); // 0077 W1-d
     if (ended) { fly.title = t(A.flyEnded, { date: ended }); fly.setAttribute('aria-label', fly.title); }
     else if (pathEnds) { fly.title = t(A.flyPathEnded, { date: pathEnds }); fly.setAttribute('aria-label', fly.title); }
+    else if (pathBegins) { fly.title = t(A.flyPathBegins, { date: pathBegins }); fly.setAttribute('aria-label', fly.title); } // 0077 W1-d
     else if (fly.disabled) fly.title = A.flyNowhere;
     buttons.push(fly);
     const see = actionButton('see', A.seeShort, A.seeFromHereTitle, 'telescope', () => seeFromHere(record, ctx));
@@ -2696,7 +2725,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
  */
 function distanceCurve(record, ctx, m) {
   const klass = klassOf(record);
-  if (klass === 'world' || klass === 'site' || m.frame !== 'sun-inertial' || !Number.isFinite(m.tMs) || endedWords(record, m) || pathEndedWords(record, m)) return null;
+  if (klass === 'world' || klass === 'site' || m.frame !== 'sun-inertial' || !Number.isFinite(m.tMs) || endedWords(record, m) || pathEndedWords(record, m) || pathBeginsWords(record, m)) return null; // 0077 W1-d
   try {
     return sparkBlock(record, earthDistanceAt(record, ctx), m.tMs, ctx,
       (min) => nearEarthOnEllipse(record, { tMs: min.tMs, distEarthKm: min.km }));
@@ -2757,10 +2786,12 @@ function render(record, ctx, opts = {}) {
   // 2026-10-07 on Cassini's card). One line says when it ended instead (internal #424).
   const ended = endedWords(record, m);
   const pathEnds = ended ? null : pathEndedWords(record, m);
+  const pathBegins = ended || pathEnds ? null : pathBeginsWords(record, m); // 0077 W1-d
   const heroes = ended || pathEnds ? [] : heroNumbers(record, m, rows);
-  if (heroes.length) body.appendChild(heroBlock(heroes));
+  if (heroes.length && !pathBegins) body.appendChild(heroBlock(heroes)); // 0077 W1-d: before its path, as after it: no dashes
   if (ended) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.endedLine, { date: ended })));
   else if (pathEnds) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathEndedLine, { date: pathEnds })));
+  else if (pathBegins) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.pathBeginsLine, { date: pathBegins }))); // 0077 W1-d
 
   // 2b. a launch within a day counts down (public #289, ui/countdown.js): in the clock's own time,
   // as the scene is, with Launch Library's status and how old it is.

@@ -585,7 +585,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
-    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'new-horizons.glb', // NASA's printable parts, bake 2026-10-10 (bulk 3); build:new-horizons stays as what is drawn while it loads
+    'deep-gaia': 'gaia.glb', // 0077 W1-b: built from dimensions 2026-10-20 (public #1086); build:gaia stays as what is drawn while it loads
+    'deep-new-horizons': 'new-horizons.glb', // NASA's printable parts, bake 2026-10-10 (bulk 3); build:new-horizons stays as what is drawn while it loads
     'deep-solar-orbiter': 'build:solar-orbiter',
     // 2026-10-05: three of the twelve that NASA publishes a model of (issue #431).
     'deep-lro': 'lro.glb', 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb',
@@ -605,9 +606,13 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // 2026-10-15, batch twelve (public #1080 to #1084): five built here from published dimensions.
     'deep-psyche': 'psyche.glb', 'deep-lucy': 'lucy.glb', 'deep-juice': 'juice.glb',
     'deep-bepicolombo': 'bepicolombo.glb', 'deep-hera': 'hera.glb',
+    // 0077 W1-b: begin
+    // 2026-10-20, release 1.3.0 W1-b (public #1085, #1087, #1088): the last three generic probes, built here from published dimensions.
+    'deep-mars-express': 'mars-express.glb', 'deep-hayabusa2': 'hayabusa2.glb', 'deep-hope': 'hope.glb',
+    // 0077 W1-b: end
   };
   // The 2026-09-22 twelve, less those above: generic on purpose, and never another craft's shape.
-  const generic = new Set(['deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
+  const generic = new Set([]); // 0077 W1-b: none left since 2026-10-20
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;
@@ -615,7 +620,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     else if (generic.has(r.id)) check(got === null, `${r.name} (${r.id}) has no model of its own, yet a route gives it ${got}`);
     else check(got !== null, `${r.name} (${r.id}) has no shape at all -- it would fall back to the generic one`);
   }
-  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all three generic-probe craft are in the layer');
+  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'every generic-probe craft is in the layer'); // 0077 W1-b
   // 1279 Gaia is a main-belt asteroid. Without the klass gate on the name route it would be drawn
   // with a ten-metre sunshield, which is the TESS mistake -- a comet wearing a telescope -- exactly.
   const rock = realModelFor({ id: 'a-1279', name: '1279 Gaia', klass: 'asteroid', layer: 'asteroids', meta: {} });
@@ -634,7 +639,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(Math.abs(o.userData.realSizeM - sizeM) < 0.01, `${klass}:${variant} is drawn at its published ${sizeM} m, not ${o.userData.realSizeM}`);
     disposeModels(o);
   }
-  if (!problems.length) console.log('  the ten original deep-space spacecraft have their own shape, nine of the twelve added 2026-09-22 are the generic probe and nobody else; 1279 Gaia the asteroid does not get one');
+  if (!problems.length) console.log('  every deep-space spacecraft has its own shape and none is the generic probe; 1279 Gaia the asteroid does not get one'); // 0077 W1-b
 }
 
 // THE RIGHT KIND OF THING. Measured against the live stations and visual catalogues on 2026-09-18:

@@ -16,6 +16,10 @@ import { COPY } from './en.js';
 // Four sections ui/cardfacts.js reads (the light embed's tag lines load it without the card): their
 // own file, so the embed does not fetch the other 40 kB of this one (internal #429, #553).
 import './en.facts.js';
+// 0077 W1-e: begin
+import { HOOK } from './lang.js';
+const KEYS_BEFORE = HOOK.localise ? new Set(Object.keys(COPY)) : null;
+// 0077 W1-e: end
 
 Object.assign(COPY, {
   // Jupiter's storms (2026-10-12, spec 0073 req 4; registry/weather.yaml jupiter-eddies, -ovals,
@@ -187,6 +191,14 @@ Object.assign(COPY, {
     noteLate: 'JPL’s track of it begins {n} minutes after this moment, and the clock goes there. Good to about {km} km.',
     noteDay: 'NASA’s page gives the day. The clock goes to {time} UTC, the closest pass in JPL’s track that day, good to about {km} km.',
     failed: 'Its path for that day did not load, so the clock stays where it is. Choose it again to retry.',
+    // 0077 W1-d: begin (public #493) the days the path covers, and the clock outside them
+    span: 'JPL’s path for it runs from {from} to {to}.',
+    before: 'The clock is before that, so the map has no position for it.',
+    after: 'The clock is after that, so the map has no position for it.',
+    go: 'Go to nearest available date',
+    goBefore: 'Move the clock to {date}, where JPL’s path for it begins',
+    goAfter: 'Move the clock to {date}, where JPL’s path for it ends',
+    // 0077 W1-d: end
   },
 
   // The service worker's one line (ui/offline.js): a newer build is installed and waiting.
@@ -364,6 +376,10 @@ Object.assign(COPY, {
     stormOne: 'one storm is turning',
     approach: '{name} passes Earth {when}',
     launched: '{n} new objects reached orbit in 30 days',
+    // 0077 W1-d: begin (public #503) the last clause, when no source answered: the clock's own date
+    dateToday: 'today is {date}',
+    dateClock: 'the clock is set to {date}',
+    // 0077 W1-d: end
     sources: {
       pass: 'CelesTrak elements',
       launch: 'Launch Library 2',
@@ -373,6 +389,7 @@ Object.assign(COPY, {
       storms: 'GDACS',
       approach: 'NASA JPL',
       launched: 'CelesTrak',
+      clock: 'your device’s clock', // 0077 W1-d
     },
   },
 
@@ -599,10 +616,38 @@ Object.assign(COPY, {
     narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0',
   },
 
+  // 0077 W1-f: begin
+  // A far dwarf planet's drawing (scene/dwarfs.js, ui/cards.js dwarfDrawingLine; internal #865).
+  // {bv}, {vr}: its colour indices; {albedo}: its geometric albedo; {a} {b} {c}: Haumea's axes, km.
+  dwarfLook: {
+    colour: 'Drawn in the colour its light measures (B\u2212V {bv}, V\u2212R {vr}), as bright as its surface reflects (albedo {albedo}) on a scale squeezed so the darkest of these worlds still shows.',
+    colourRed: 'Drawn in the colour its light measures (B\u2212V {bv}, V\u2212R {vr}), one of the reddest things in the Solar System, as bright as its surface reflects (albedo {albedo}) on a scale squeezed so the darkest of these worlds still shows.',
+    shapeEgg: 'Its shape is the egg its light curve and a 2017 stellar occultation measured, {a} \u00d7 {b} \u00d7 {c} km.',
+    shapeMeasured: 'Its shape is the one stellar occultations measured.',
+    shapeUnknown: 'Its shape has never been measured, so it is drawn round.',
+    ring: 'Its ring is at its measured distance, width and opacity; how the ring is tilted on the sky is not drawn.',
+    faintRings: 'Its two rings, found in 2023, are too faint to see at their real opacity, so they are not drawn.',
+    surface: 'No telescope has resolved its surface: nothing on it is drawn, and it is drawn still, not turning.',
+    source: 'Numbers: {src}.',
+  },
+  // 0077 W1-f: end
+
   // A world with a second face on its card (scene/worlds.js `faces`, 2026-10-06, public #417).
   // Venus: NASA's Magellan page, read 2026-10-06, has the radar mapping begin on 15 September 1990
   // and "finished coverage at 98%" in September 1992.
   worldFace: {
+    // 0077 W1-f: begin
+    // Titan (scene/worlds.js TITAN_RADAR; registry/textures.yaml titan-radar). Cassini's RADAR swaths
+    // through flyby T104 (January 2015); the mosaic covers 0.61 of the sphere (scripts/build_titan_maps.py).
+    titan: {
+      title: 'Titan, two ways',
+      modes: { own: 'Infrared', radar: 'Radar' },
+      notes: {
+        own: 'Titan\u2019s ground as Cassini\u2019s camera saw it through the haze in near-infrared light (938 nm), in the haze\u2019s orange. The seas in the north are darkened along the outlines Cassini\u2019s radar drew, and from close, where the Sun is mirrored in them, they glint: where the glint falls is worked out; its size and brightness are illustrative.',
+        radar: 'Strips of Titan\u2019s ground as Cassini\u2019s radar saw it through the haze, 2004 to 2015: bright is rough ground or ground tilted toward the radar, dark is smooth, and the seas of liquid methane and ethane are black. The grey is ours: radar has no colour. The radar saw 61 % of Titan; between its strips the infrared map shows through, dimmed, in orange. USGS Astrogeology and NASA/JPL-Caltech, public domain.',
+      },
+    },
+    // 0077 W1-f: end
     venus: {
       title: 'Venus, two ways',
       modes: { own: 'Clouds', surface: 'Ground' },
@@ -2103,3 +2148,8 @@ Object.assign(COPY, {
     },
   },
 });
+
+// 0077 W1-e: begin
+// The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
+if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
+// 0077 W1-e: end
