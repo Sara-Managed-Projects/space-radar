@@ -100,9 +100,9 @@ for (const [hid, rec, label, group] of GALAXIES) {
     try { sr.nebulae.setCompare(rec, 1); } catch { /* older */ }
     await scene(`${hid}-0-photo`, `${label} on our line at arrival, the photograph alone (the slider at the photograph)`, 4000);
     try { sr.nebulae.clearCompare(); } catch { /* older */ }
-    for (const [deg, k] of [[35, 1], [60, 1], [85, 1], [60, 0.35]]) {
+    for (const [deg, k] of hid === 'antennae' ? [[0, 3], [35, 1], [60, 1], [85, 1], [60, 0.35]] : [[35, 1], [60, 1], [85, 1], [60, 0.35]]) { // the Antennae's tails reach three times its framing
       pose(rec, deg, k, d0);
-      const r = await scene(`${hid}-${deg}${k < 1 ? '-close' : ''}-after`, `${label}, ${deg} degrees off its photograph's line, ${k} of the arrival distance, AFTER (the model); photograph ${photo(rec)}; hero ${JSON.stringify(heroRow(hid))}`, 6000);
+      const r = await scene(`${hid}-${deg}${k < 1 ? '-close' : k > 1 ? '-wide' : ''}-after`, `${label}, ${deg} degrees off its photograph's line, ${k} of the arrival distance, AFTER (the model); photograph ${photo(rec)}; hero ${JSON.stringify(heroRow(hid))}`, 6000);
       if (deg === 60 && k === 1) { const h = heroRow(hid); if (!h || !h.loaded || !(h.level >= 2)) out.problems.push(`${hid} did not draw at 60 degrees: ${JSON.stringify(h)}`); }
       void r; void r0;
     }

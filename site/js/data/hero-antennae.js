@@ -140,7 +140,7 @@ export const HERO = {
           ],
           "width_kpc": 2.4,
           "tip_light": 0.45,
-          "light": 0.05,
+          "light": 0.09,
           "colour": "#c6cce0",
           "source": "its places on the sky traced on Robert Gendler's photograph heic0812c (ESA/Hubble, CC BY 4.0): its tip 11.2 arcmin from NGC 4038 (Hibbard et al. 2001, arXiv:astro-ph/0110581: 11.6 arcmin, about 65 kpc projected); its parent NGC 4038, as Hibbard et al. 2001 make NGC 4039 the northern tail's; its depth a MODEL: the tip bends away from us (Hibbard et al. 2001's abstract), the amount illustrative"
         },
@@ -254,7 +254,7 @@ export const HERO = {
           ],
           "width_kpc": 2.2,
           "tip_light": 0.4,
-          "light": 0.04,
+          "light": 0.07,
           "colour": "#c6cce0",
           "source": "its places on the sky traced on heic0812c; Hibbard et al. 2001: NGC 4039 is its parent and its hydrogen reaches 7.3 arcmin (40 kpc); its depth a MODEL (toward us, illustrative: no source read gives its sign)"
         },

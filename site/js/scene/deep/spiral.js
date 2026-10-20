@@ -1088,7 +1088,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     const lay = layered ? smoothstepJs(0.04, 0.15, faceOn) : 0;
     const pts = SPARKLE + (1 - SPARKLE) * (1 - lay);
     lightU.uGain.value = g.gain * share * exposureNow * pts;
-    dustU.uDust.value = g.dustGain * share * (0.3 + 0.7 * (1 - lay));
+    dustU.uDust.value = g.dustGain * share * (bulgeAlways ? 1 : 0.3 + 0.7 * (1 - lay)); // 0077 W3-f: the Sombrero's ring as dark from every side
     layerU.uGain.value = prof.gain * share * exposureNow;
     bulgeU.uGain.value = prof.gain * share * exposureNow * (bulgeAlways ? 1 : lay);
     // 0077 W3-f: a bulge that stays round edge on (the Sombrero's) is the billboard's from every side; its points only sparkle
