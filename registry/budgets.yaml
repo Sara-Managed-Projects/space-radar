@@ -39,7 +39,7 @@ budgets:
   # esbuild after the comment stripper, and screens.yml builds the same tree. Measured in CI on that
   # pull request: 2 719 025 B in 141 requests, where main was 3 142 846 B the day before (the head of
   # public #518, same method). Lowered to that with the usual 5 %.
-  - {id: first_visit_bytes, value: 2877000, unit: bytes, since: 2026-10-20, reason: "release 1.3.0 wave-1 integration (public #1250): 2 874 476 B measured by CI; the language loader (lang.js, index.html) and the card path words. Cap about 0.1 % above. Before: 2 864 000"}
+  - {id: first_visit_bytes, value: 2879900, unit: bytes, since: 2026-10-20, reason: "#1240 (2026-10-20): the exotics row for WD J1330+6435 (site/js/data/exotics.js is fetched on a first visit) took the CI measure to 2 877 033 B, 33 B over the cap of 2 877 000 that main passed with. Cap set 0.1 % above the new number. Before: 2 877 000. Earlier note: release 1.3.0 wave-1 integration (public #1250): 2 874 476 B measured by CI; the language loader (lang.js, index.html) and the card path words. Cap about 0.1 % above. Before: 2 864 000"}
   # THE BOOT AS A TIMELINE (internal #528, 2026-10-10). scripts/boot-timeline.mjs boots the tree a deploy
   # uploads in Playwright's Chromium (screens.yml), reads every long task from the start of the page and
   # sums the blocking time. It REPORTS by default; `--gate` holds these two rows. MEASURED once, on a Mac
