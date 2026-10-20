@@ -222,10 +222,10 @@ const motionStill = () => typeof document !== 'undefined' && document.documentEl
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
-  // 0076 W4-c: the choice the Motion row remembered, before anything flies.
-  try { if (window.localStorage.getItem('sr:motion') === 'off') document.documentElement.dataset.srMotion = 'off'; } catch { /* no memory: motion as the device says */ }
   // `/?from=ig` is the home page: the tag is taken off the address bar before anything reads it (ui/urlstate.js).
   dropFrom();
+  // 0076 W4-c: the choice the Motion row remembered, before anything flies.
+  try { if (window.localStorage.getItem('sr:motion') === 'off') document.documentElement.dataset.srMotion = 'off'; } catch { /* no memory: motion as the device says */ }
   // RENDER MODE (spec 0070, ui/rendermode.js): `?render=1#trip=<id>` is tools/render-trip.mjs
   // filming a trip one frame at a time. It takes over what the page calls time, so it is installed
   // before anything below asks what time it is; the module is imported only for that address
