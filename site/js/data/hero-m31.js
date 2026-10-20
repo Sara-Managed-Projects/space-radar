@@ -142,9 +142,27 @@ export const HERO = {
     },
     {
       "kind": "satellites",
-      "what": "M32 and M110",
-      "drawn_by": "scene/dsoglow.js, as ellipses of OpenNGC's axes at their catalogue places (site/data/dso.json); they step back for her photograph",
-      "source": "OpenNGC; distances from the Messier table (stage a)"
+      "what": "M32 and M110, M31's two companions, as Sersic points",
+      "drawn_by": "this hero (scene/deep/spiral.js, one Points draw each); beyond it scene/dsoglow.js, as ellipses of OpenNGC's axes at their catalogue places; they step back for her photograph",
+      "members": [
+        {
+          "record": "dso-m32",
+          "sersic_n": 1.5,
+          "re_kpc": 0.1,
+          "q": 0.7,
+          "colour": "#ffd9ae",
+          "source": "Graham 2002, ApJ 568, L13 (arXiv:astro-ph/0202307): the bulge of M32 as a Sersic r^(1/n) profile, n = 1.5, effective radius 27 arcsec (about 100 pc; 27 arcsec at the record's 2.49 Mly is 0.10 kpc); the abstract read 2026-10-20. Flattening q 0.7 assumed"
+        },
+        {
+          "record": "dso-m110",
+          "sersic_n": 1.5,
+          "re_kpc": 0.7,
+          "q": 0.7,
+          "colour": "#ffd9ae",
+          "source": "illustrative: no profile of NGC 205 was read. n 1.5 as M32's (a dwarf early-type), Re about 0.35 of the catalogue's semi-major axis (8.1 arcmin, 1.9 kpc at the record's 2.69 Mly); q 0.7 assumed"
+        }
+      ],
+      "source": "Positions, axes and position angles: OpenNGC (via site/data/dso.json); distances from the Messier table (stage a); profiles as each member says"
     }
   ],
   "colours": {
@@ -160,6 +178,7 @@ export const HERO = {
     "Block, Bournaud, Combes et al. 2006, 'An almost head-on collision as the origin of two off-centre rings in the Andromeda galaxy', Nature 443, 832; arXiv:astro-ph/0610543 (abstract read 2026-10-14)",
     "Draine, Aniano, Krause et al. 2014, 'Andromeda's Dust', ApJ 780, 172; arXiv:1306.2304 (abstract read 2026-10-14)",
     "de Vaucouleurs 1958, ApJ 128, 465 (position angle 38 degrees, inclination 77 degrees; read through the later papers that adopt them, not the paper itself)",
+    "Graham 2002, 'Evidence for an Outer Disk in the Prototype Compact Elliptical Galaxy M32', ApJ 568, L13; arXiv:astro-ph/0202307 (abstract read 2026-10-20): M32's bulge n = 1.5, Re = 27 arcsec",
     "Rubin & Ford 1970, ApJ 159, 379 (the rotation: the south-western side approaching; not re-read here)",
     "Prugniel & Simien 1997, A&A 321, 111 and Lima Neto, Gerbal & Marquez 1999, MNRAS 309, 481 (the deprojected Sersic profile's constants)"
   ],

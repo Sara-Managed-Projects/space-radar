@@ -1520,6 +1520,9 @@ published, `assumed` or `illustrative`. No image or data file is used or copied;
 | M31's tilt | position angle 38°, inclination 77° | de Vaucouleurs 1958, ApJ 128, 465, as later work adopts it |
 | M31's rotation | the south-western half approaches (the arms trail) | Rubin & Ford 1970, ApJ 159, 379 |
 | deprojected bulge | the Sersic constants b_n and p | Prugniel & Simien 1997, A&A 321, 111; Lima Neto, Gerbal & Márquez 1999, MNRAS 309, 481 |
+| M31's tilt, reconciled (0076 W4-a) | the record now carries the hero's 38° and 77°, NW side near (`scripts/data/messier-overlay.yaml`); OpenNGC's 35° stays the photograph's frame | as above |
+| M32's profile (0076 W4-a) | Sersic n = 1.5, Re = 27″ (about 100 pc), drawn as Sersic points; its shape on the sky is OpenNGC's ellipse, its flattening assumed | Graham 2002, ApJ 568, L13 (arXiv:astro-ph/0202307), abstract read 2026-10-20 |
+| M110's profile (0076 W4-a) | illustrative: no profile of NGC 205 was read; n 1.5 as M32's, Re 0.35 of the catalogue's semi-major axis | none, said so in the profile |
 | M33's tilt | inclination 56° (position angle 23° is the OpenNGC row's) | Zaritsky, Elston & Hill 1989, AJ 97, 97, as cited |
 | M33's disc | K-band scale length about 1.4 kpc; a bulge contested | Regan & Vogel 1994, ApJ 434, 536, as cited |
 | NGC 604's place | RA 01h 34m 32.1s, Dec +30° 47′ 01″ (ICRS) | SIMBAD (CDS), read 2026-10-14 |

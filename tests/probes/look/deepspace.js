@@ -305,6 +305,10 @@ const BLOCKS = {
   // f. the two journeys (#791): every stop of both trips with the trip frame, the orbit's two ends,
   //    the flight home, and one stop under reduced motion.
   f: ['helixTrip', 'lmcTrip', 'tripReduced'],
+
+  // g. (spec 0076 W4-a) deep space made consistent: M32 and M110 as points, the bulge's shoulder, the Helix's hand-over,
+  //    the 180 px fade of M31, the local volume's marks and one selected. Run alone: `-f subject=W4-a`.
+  g: ['w4a'],
 };
 // Each stage's own groups (async functions, as GROUPS above): one object per stage.
 // b. the Helix's groups go in this object.
@@ -756,7 +760,92 @@ const GROUPS_F = {
   },
 };
 
-Object.assign(GROUPS, GROUPS_B, GROUPS_C, GROUPS_D, GROUPS_E, GROUPS_F);
+// ---- g. spec 0076 W4-a. The BEFORE shots are the same pose with sr.deep.debug({before: true}), which puts back the
+//    1.1 look of what this stage changed (M32 and M110 as glow ellipses only, the bulge's clamp, the local volume's small dim marks).
+const GROUPS_G = {
+  w4a: async () => {
+    const before = (on) => { try { sr.deep.debug({ before: !!on }); } catch (e) { out.problems.push('no sr.deep.debug({before})'); } };
+    const pairShot = async (name, note, settle = 4000) => {
+      before(true);
+      await shot(`${name}-before`, `BEFORE (1.1's look): ${note}`, settle);
+      before(false);
+      return snap(name, note, settle);
+    };
+    const ly = (n) => n * LY_KM / sr.stage.unitKm;
+    const upV = { x: 0, y: 1, z: 0 };
+    const offFrom = (rec, deg) => {
+      const R = pos(rec), S = pos('sun') || { x: 0, y: 0, z: 0 };
+      const home = unit(sub(S, R)), side = unit(cross(home, upV));
+      const a = deg * Math.PI / 180;
+      return { R, o: unit(mix(home, Math.cos(a), side, Math.sin(a))) };
+    };
+    out.w4a = { steps: {} };
+    // 1. Andromeda with M32 and M110 as points (spec 0075 task 59), off our line so the model shows, then close to M32.
+    if (await need('dso-m31')) {
+      if (sr.galaxy && sr.galaxy.andromedaReady) await sr.galaxy.andromedaReady();
+      const arrival = rig.state.distance;
+      const a = offFrom('dso-m31', 50);
+      rig.flyTo({ targetScene: a.R, offset: a.o, distance: arrival, ms: 0 });
+      await pairShot('g1-m31-companions', 'Andromeda 50 degrees off our line, at the arrival distance: M32 and M110 beside her');
+      // 2. The bulge on a phone and next to the photograph (task 55): on our line at 34 000 ly, the crossover.
+      const h = offFrom('dso-m31', 0);
+      rig.flyTo({ targetScene: h.R, offset: h.o, distance: ly(34000), ms: 0 });
+      await pairShot('g2-m31-bulge', 'on our line, 34 000 ly from her centre: the bulge against the photograph');
+      // 3. The 180 px fade of the hero and the far copy (task 60): three distances on one line, 30 degrees off.
+      const f = offFrom('dso-m31', 30);
+      rig.flyTo({ targetScene: f.R, offset: f.o, distance: arrival, ms: 0 });
+      await sleep(2500);
+      const r0 = sr.deep.radiusPx('dso-m31'), d0 = rig.state.distance;
+      out.w4a.fade = [];
+      for (const px of [300, 200, 180, 150]) {
+        if (!(r0 > 0)) break;
+        rig.flyTo({ targetScene: f.R, offset: f.o, distance: d0 * r0 / px, ms: 0 });
+        const row = await snap(`g3-m31-fade-${px}px`, `Andromeda ${px} px in radius, 30 degrees off our line: the hero and the far copy share her (task 60)`, 3000);
+        out.w4a.fade.push({ want: px, got: Math.round(sr.deep.radiusPx('dso-m31')), andromeda: sr.galaxy && sr.galaxy.andromeda ? sr.galaxy.andromeda() : null, hero: (row.deep.heroes || []).find((x) => x.id === 'm31') || null });
+      }
+    }
+    // 4. Close to M32 itself: selected, the Sersic points at arrival, turned.
+    if (await need('dso-m32', 7000)) {
+      const m = offFrom('dso-m32', 40);
+      rig.flyTo({ targetScene: m.R, offset: m.o, distance: rig.state.distance, ms: 0 });
+      await pairShot('g4-m32-selected', 'M32 selected, 40 degrees off our line: its own Sersic points (Graham 2002) where the glow ellipse was');
+    }
+    // 5. The Helix's hand-over (task 39): the same distance, four angles off our line across the 25-50 degree crossover.
+    if (await need('dso-helix-nebula', 7000)) {
+      const d = rig.state.distance;
+      out.w4a.helix = [];
+      for (const deg of [22, 32, 40, 48]) {
+        const a = offFrom('dso-helix-nebula', deg);
+        rig.flyTo({ targetScene: a.R, offset: a.o, distance: d, ms: 0 });
+        const row = await snap(`g5-helix-${deg}deg`, `the Helix ${deg} degrees off our line at the arrival distance: the photograph handing over to the gas (task 39)`, 3500);
+        out.w4a.helix.push({ deg, photo: row.drawn['dso-helix-nebula'], hero: (row.deep.heroes || []).find((x) => x.id === 'helix') || null });
+      }
+    }
+    // 6. The local volume: marks bigger and brighter (task 66), and one selected by a tap's path (task 63).
+    sr.deselect();
+    await stage('local-group', 9000);
+    const sun = pos('sun') || { x: 0, y: 0, z: 0 };
+    rig.flyTo({ targetScene: sun, distance: ly(14e6), ms: 0 });
+    await pairShot('g6-localvolume', 'the local volume from 14 Mly: 800 galaxies of the Updated Nearby Galaxy Catalog as marks', 5000);
+    const pickId = 'dso-lv-ngc4945';
+    const rec = sr.recordById(pickId);
+    out.w4a.pick = { id: pickId, found: !!rec };
+    if (rec) {
+      // The tap's own path: where the mark is on the screen, and what main.js's pick would be offered there.
+      const p = sr.positionOfRecord(rec);
+      const cam = sr.camera;
+      const v = new cam.position.constructor(p.x, p.y, p.z).project(cam);
+      const offered = sr.deep.pickAll ? sr.deep.pickAll(v.x, v.y, cam, { w: innerWidth, h: innerHeight }, 6) : [];
+      out.w4a.pick.ndc = [Math.round(v.x * 1000) / 1000, Math.round(v.y * 1000) / 1000];
+      out.w4a.pick.offered = offered.map((c) => ({ id: c.record.id, px: Math.round(c.px * 10) / 10 }));
+      sr.select(rec, { fly: true, undo: false });
+      await sleep(7000);
+      await snap('g7-localvolume-selected', 'NGC 4945 selected from the local volume: a lit mark, its card says the distance was measured (tip of the red giant branch) and how', 3000);
+    } else out.problems.push(`no record ${pickId}: the local volume's galaxies are not records`);
+    before(false);
+  },
+};
+Object.assign(GROUPS, GROUPS_B, GROUPS_C, GROUPS_D, GROUPS_E, GROUPS_F, GROUPS_G);
 // The package's DS-01 to DS-18 (its section 3) onto the groups; `-f subject=DS-07` runs that pose alone.
 // A later stage that owns a pose writes its row under its own letter (a later row for the same DS id wins).
 const POSES = {
@@ -776,12 +865,15 @@ const POSES = {
   // e.
   'DS-10': ['far', 'cosmic'], 'DS-11': ['far', 'cosmic'], 'DS-17': ['far', 'cosmic'], 'DS-18': ['far', 'cosmic'],
 
+  // g. (0076 W4-a)
+  'W4-a': ['w4a'],
+
   // f.
   'DS-E07': ['helixTrip'], 'DS-E08': ['lmcTrip'], journeys: ['helixTrip', 'lmcTrip', 'tripReduced'],
 };
 
 const subject = new URLSearchParams(location.search).get('lookSubject');
-const order = [...BLOCKS.a, ...BLOCKS.b, ...BLOCKS.c, ...BLOCKS.d, ...BLOCKS.e, ...BLOCKS.f];
+const order = [...BLOCKS.a, ...BLOCKS.b, ...BLOCKS.c, ...BLOCKS.d, ...BLOCKS.e, ...BLOCKS.f, ...BLOCKS.g];
 const pick = subject ? (POSES[subject] || (GROUPS[subject] ? [subject] : [])) : order;
 if (subject && !pick.length) out.problems.push(`no pose or group called ${subject}: ${Object.keys(POSES).concat(Object.keys(GROUPS)).join(', ')}`);
 out.poses = POSES;
