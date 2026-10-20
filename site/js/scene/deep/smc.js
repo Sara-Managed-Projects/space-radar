@@ -34,6 +34,7 @@ import { PICTURE_FOR, pictureBasis, pictureHalfExtent } from '../nebulae.js';
 import { photoCover, readMaps, rng } from './lmc.js';
 import { exposureLook, EXPOSURES, drawnUnder } from '../exposure.js';
 import { HERO as PROFILE } from '../../data/hero-smc.js';
+import '../../copy/en.deepheroes.js'; // the card's words (deepCarina, deepSmc), fetched with the hero
 
 export const UNDER_MEASURED = { stars: 'same', light: 'same', motion: 'still' };
 /** The words block the card reads for this hero's record (copy/en.later.js). */

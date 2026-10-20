@@ -45,6 +45,7 @@ import { stage } from '../stage.js';
 import { exposureLook, EXPOSURES, drawnUnder } from '../exposure.js';
 import { HERO as PROFILE } from '../../data/hero-carina.js';
 import { NEBULAE } from '../../data/nebulae.js';
+import '../../copy/en.deepheroes.js'; // the card's words (deepCarina, deepSmc), fetched with the hero
 import { SHADERS, SHAPE, skyFrame, uvOf, coverAt, readFront, sampleFront, columnJs, samplesFor, sharesFor, tintOf, sheetOf, pixelHash } from './orion.js';
 
 export { coverAt, readFront, sampleFront, columnJs, samplesFor, sharesFor, pixelHash, SHAPE };

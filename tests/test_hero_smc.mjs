@@ -49,10 +49,10 @@ const parts = Object.fromEntries(HERO.layers.map((l) => [l.part, l]));
   const i0 = credits.indexOf('### The SMC and the Magellanic Stream (0077 W2-e)');
   const sect = i0 >= 0 ? credits.slice(i0, credits.indexOf('\n## ', i0)) : '';
   for (const s of ['Gaia DR3', 'CC BY-NC 3.0 IGO', '1707.04500', '1502.06995', '1602.09141', '2012.12288', 'HI4PI', 'MNRAS 474, 289', 'LAMBDA', 'false colour', 'model']) check(sect.includes(s), `CREDITS.md's SMC section names ${s}`);
-  const words = readFileSync(join(JS, 'copy/en.later.js'), 'utf8');
+  const words = readFileSync(join(JS, 'copy/en.deepheroes.js'), 'utf8');
   const b0 = words.indexOf('deepSmc: {');
   const block = b0 >= 0 ? words.slice(b0, words.indexOf('\n  },', b0)) : '';
-  check(/false colour/.test(block) && /not yet been reviewed by an astronomer/.test(block) && /'dso-smc': \[/.test(block), 'the card says what is measured, that the Stream is false colour and that no astronomer has reviewed it (copy/en.later.js deepSmc)');
+  check(/false colour/.test(block) && /not yet been reviewed by an astronomer/.test(block) && /'dso-smc': \[/.test(block), 'the card says what is measured, that the Stream is false colour and that no astronomer has reviewed it (copy/en.deepheroes.js deepSmc)');
   check(H.COPY_BLOCK === 'deepSmc' && H.DRAWN['dso-smc'][0] === 'model', 'the hero hands the coordinator its words block and classes');
 }
 

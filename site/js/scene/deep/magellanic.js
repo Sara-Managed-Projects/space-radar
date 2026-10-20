@@ -168,9 +168,10 @@ export function createLayer(THREE, env = {}) {
   const sunAt = new THREE.Vector3();
   const blank = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat);
   blank.needsUpdate = true;
-  let tex = null;
+  let tex = null, loading = false;
   if (typeof document !== 'undefined' && THREE.TextureLoader) {
-    tex = new THREE.TextureLoader().load(new URL(TEX_URL, import.meta.url).href, () => { state.loaded = true; }, undefined, (e) => { state.failed = String(e && e.message || e); });
+    loading = true;
+    tex = new THREE.TextureLoader().load(new URL(TEX_URL, import.meta.url).href, () => { state.loaded = true; loading = false; }, undefined, (e) => { state.failed = String(e && e.message || e); loading = false; });
     tex.colorSpace = THREE.NoColorSpace;
     tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   } else if (env.texture) { tex = env.texture; state.loaded = true; }
@@ -220,7 +221,8 @@ export function createLayer(THREE, env = {}) {
       uniforms.uGain.value = look.gain * state.fade;
       state.calls = 1;
     },
-    ready: () => state.loaded || !!state.failed,
+    // nothing in flight: the map has landed, failed, or was never asked for (no document: a test)
+    ready: () => !loading,
     stats: () => ({ id: 'magellanic', loaded: state.loaded, failed: state.failed, on: state.on, fade: Math.round(state.fade * 100) / 100, calls: state.calls, vertices: sh.pos.length / 3, triangles: sh.index.length / 3, bytes: sh.pos.byteLength + sh.uv.byteLength + sh.keep.byteLength + sh.nrm.byteLength + sh.index.length * 4 + 680 * 280 * 4 }),
     dispose() {
       geo.dispose(); mat.dispose(); blank.dispose();

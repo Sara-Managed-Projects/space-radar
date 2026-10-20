@@ -21,6 +21,7 @@ const { HEROES } = await import(join(JS, 'scene/deep/heroes.js'));
 const { parseDso } = await import(join(JS, 'data/parsers.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 await import(join(JS, 'copy/en.later.js'));
+await import(join(JS, 'copy/en.deepheroes.js')); // the words of 1.3.0's heroes, which their modules import
 const C = await import(join(JS, 'ui/cardfacts.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
