@@ -35,6 +35,7 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 import { ALIASES } from '../data/aliases.js';
+import { catalogNumber } from '../data/catnum.js'; // 0077 W2-d: a catalogue number is read in one place
 import { labelParentId } from './labels.js';
 
 // Ids are per instance, not per module. aria-controls and aria-activedescendant are id
@@ -289,6 +290,22 @@ function scoreOne(index, i, q, numeric) {
 // What people type, against what the catalogue calls it: registry/aliases.yaml through its mirror
 // (spec 0021 requirement 6). Searched ALONGSIDE the query, never instead of it -- see findMatches.
 
+// 0077 W2-d: begin (public #1188: the numbers of 100 000 and up)
+/**
+ * The catalogue number a typed query names when it is not simply digits as they stand: Alpha-5 ("A0690" is
+ * 100690, the form a TLE writes it in) and a zero-padded number ("00005" is 5). '' for anything else. The
+ * number is searched ALONGSIDE the text as typed, as an alias is, so a name that looks like one is still found.
+ * Nine-digit OMM numbers need nothing: they are digits, and a digit query is already compared as written.
+ */
+export function catalogQuery(q) {
+  if (/^[a-hj-np-z][0-9]{4}$/.test(q) || /^0[0-9]+$/.test(q)) {
+    const n = catalogNumber(q);
+    return n === null ? '' : String(n);
+  }
+  return '';
+}
+// 0077 W2-d: end
+
 /**
  * The whole ranking, pure and DOM-free.
  *
@@ -316,6 +333,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   if (!index || !index.n || q.length < MIN_QUERY) return out;
 
   const numeric = /^[0-9]+$/.test(q);
+  const catQ = catalogQuery(q); // 0077 W2-d
   const aliasNumeric = alias ? /^[0-9]+$/.test(alias) : false;
   // The score is kept from the scan rather than recomputed in the comparator: scoring twice was
   // the difference between one pass and one pass plus a sort's worth of indexOf.
@@ -327,6 +345,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   let buried = [];
   for (let i = 0; i < index.n; i += 1) {
     let score = scoreOne(index, i, q, numeric);
+    if (catQ && index.cat[i] === catQ) score = Math.max(score, CAT_EXACT); // 0077 W2-d: A0690, 00005
     if (score === NAME_CONTAINS) { buried.push({ i, score }); score = 0; }
     if (alias) {
       // The alias must land at the START OF A WORD, which is what WORD_PREFIX and better mean.

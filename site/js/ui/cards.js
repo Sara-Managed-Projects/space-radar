@@ -138,6 +138,10 @@ function el(tag, className, text) {
   return node;
 }
 
+// 0077 W2-d: begin (the worlds ui/compare.js has NASA's numbers for; tests/test_compare.mjs holds this to registry/compare.yaml)
+const COMPARABLE = new Set(['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
+// 0077 W2-d: end
+
 function ensureHost() {
   if (host && host.isConnected) return host;
   host = document.getElementById(HOST_ID);
@@ -2510,6 +2514,9 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       box.appendChild(pictureFigure(row, name));
       box.appendChild(pictureNote(row));
       box.appendChild(exposurePanel(ctx.exposure));
+      // 0077 W2-d: begin ("Compare with the photograph", where there is a shipped reconstruction to compare it with)
+      import('./photocompare.js').then((pc) => pc.mountPhotoCompare(box, record, ctx)).catch(() => { /* the card is whole without it */ });
+      // 0077 W2-d: end
     }).catch(() => { /* no registry, no block: the card is whole without it */ });
   }
   // A GENERATED STAR SYSTEM'S TWO OVERLAYS, ON DEMAND (internal #280): the computed habitable-zone
@@ -2691,6 +2698,19 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   // Links out to live pictures (spec 0050 requirement 8): the publisher's own page, never an embed.
   aboutNodes.push(...linkNodes(record));
   add('about', S.about, null, panelOf(aboutNodes));
+  // 0077 W2-d: begin (Compare and the comparison lab, internal i#885 and i#909: ui/compare.js is fetched when the row is opened)
+  if (klass === 'world' && COMPARABLE.has(String(record.id)) && COPY.compare) {
+    const box = el('div', 'sr-vs');
+    const mountVs = () => {
+      if (box.dataset.mounted) return;
+      box.dataset.mounted = '1';
+      import('./compare.js').then((m) => m.mountCompare(box, record, ctx)).catch(() => { box.dataset.mounted = ''; });
+    };
+    const openNow = isOpen(rid, 'compare');
+    more.appendChild(disclosure('compare', COPY.compare.row, COPY.compare.hint, panelOf([box]), openNow, (on) => { setOpen(rid, 'compare', on); if (on) mountVs(); }));
+    if (openNow) mountVs();
+  }
+  // 0077 W2-d: end
   const aboutHead = more.querySelector('[data-section="about"] .sr-disc__head');
   const findPage = () => import('./objectpage.js').then((m) => m.pageFor(record)).then((url) => {
     if (url) { page.href = url; page.hidden = false; }

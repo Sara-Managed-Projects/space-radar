@@ -32,6 +32,9 @@
 
 import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
+// 0077 W2-d: begin (the passport's kinds and notes, internal i#911)
+import { FAMILIES, ACHIEVEMENTS, familyOfKlass, noteAchievements, kindsSections } from './passportkinds.js';
+// 0077 W2-d: end
 
 export const KEY = 'sr:passport';
 export const VISITED_CAP = 300;
@@ -52,7 +55,7 @@ const GRID_MAX = 6;
 const CONFIRM_MS = 6000;
 
 export function emptyPassport() {
-  return { v: 1, visited: {}, trips: {}, seen: {}, first: 0, last: 0, wonder: null };
+  return { v: 1, visited: {}, trips: {}, seen: {}, first: 0, last: 0, wonder: null, kinds: {}, ach: {} }; // 0077 W2-d: kinds, ach
 }
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -82,6 +85,15 @@ export function sanitize(raw) {
   if (isObj(raw.seen)) {
     for (const [id, at] of Object.entries(raw.seen)) if (okId(id) && okMs(at)) p.seen[id] = at;
   }
+  // 0077 W2-d: begin (the kind a place was when it was opened, and the day each note first held)
+  if (isObj(raw.kinds)) {
+    for (const [id, fam] of Object.entries(raw.kinds)) if (p.visited[id] && typeof fam === 'string' && FAMILIES.includes(fam)) p.kinds[id] = fam;
+  }
+  if (isObj(raw.ach)) {
+    const known = new Set(ACHIEVEMENTS.map((a) => a.id));
+    for (const [id, at] of Object.entries(raw.ach)) if (known.has(id) && okMs(at)) p.ach[id] = at;
+  }
+  // 0077 W2-d: end
   if (okMs(raw.first)) p.first = raw.first;
   if (okMs(raw.last)) p.last = raw.last;
   if (isObj(raw.wonder) && Number.isInteger(raw.wonder.day) && okId(raw.wonder.id)) p.wonder = { day: raw.wonder.day, id: raw.wonder.id };
@@ -95,6 +107,9 @@ function cap(p) {
     places.sort((a, b) => b[1] - a[1]);
     p.visited = Object.fromEntries(places.slice(0, VISITED_CAP));
   }
+  // 0077 W2-d: begin (a kind goes with its place)
+  if (p.kinds) for (const id of Object.keys(p.kinds)) if (!p.visited[id]) delete p.kinds[id];
+  // 0077 W2-d: end
   const seen = Object.entries(p.seen || {});
   if (seen.length > SEEN_CAP) {
     seen.sort((a, b) => b[1] - a[1]);
@@ -162,9 +177,15 @@ function touch(p, nowMs) {
 }
 
 /** A place was opened. The first time is the one kept. */
-export function recordVisit(p, id, nowMs) {
+export function recordVisit(p, id, nowMs, family) { // 0077 W2-d: family
   if (!okId(id) || !okMs(nowMs)) return p;
   if (!p.visited[id]) p.visited[id] = nowMs;
+  // 0077 W2-d: begin (the first visit decides the kind, as it decides the day)
+  if (family && FAMILIES.includes(family)) {
+    if (!isObj(p.kinds)) p.kinds = {};
+    if (!p.kinds[id]) p.kinds[id] = family;
+  }
+  // 0077 W2-d: end
   return cap(touch(p, nowMs));
 }
 
@@ -305,6 +326,7 @@ export function createPassport(ctx, opts = {}) {
   const storage = opts.storage !== undefined ? opts.storage : safeStorage(typeof window !== 'undefined' ? window : null);
   const now = typeof opts.now === 'function' ? opts.now : () => Date.now();
   let p = readPassport(storage);
+  p = noteAchievements(p, ctx && ctx.recordById, now()); // 0077 W2-d: what already holds is noted on the first look
   // Is anything kept at all? Asked once, with the record itself: a storage that takes no write is
   // a first visit every time, and the view says so.
   let available = writePassport(storage, p);
@@ -312,6 +334,7 @@ export function createPassport(ctx, opts = {}) {
   const tours = () => (trip && typeof trip.tours === 'function' ? trip.tours() : []);
 
   const changed = () => {
+    p = noteAchievements(p, ctx && ctx.recordById, now()); // 0077 W2-d
     available = writePassport(storage, p);
     if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('sr:passport'));
     paintOpen();
@@ -322,7 +345,7 @@ export function createPassport(ctx, opts = {}) {
   const onSelect = (e) => {
     const rec = e && e.detail;
     if (!rec || !okId(rec.id) || p.visited[rec.id]) return;
-    p = recordVisit(p, rec.id, now());
+    p = recordVisit(p, rec.id, now(), familyOfKlass(rec.klass)); // 0077 W2-d: the kind
     changed();
   };
   let lastStop = '';
@@ -418,6 +441,7 @@ export function createPassport(ctx, opts = {}) {
       places.appendChild(el('p', 'sr-passport__empty', P.noPlaces));
     }
     page.appendChild(places);
+    for (const sect of kindsSections(p, ctx, el)) page.appendChild(sect); // 0077 W2-d: opened by kind, and what is noted
 
     // Seen with your own eyes (public #395): the ticks set on cards, newest first.
     const seenRows = seenList(p);

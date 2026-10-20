@@ -57,3 +57,17 @@ export const DEEP_LAYERS = [
 // tests build it from here.
 export const MAGELLANIC = { id: 'magellanic', stage: 'W2-e', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./magellanic.js') };
 // 0077 W2-e: end
+// 0077 W2-d: begin (the photograph slider is offered only where a reconstruction is shipped; ui/photocompare.js, internal i#776)
+/** The hero list's line for a record, or null. */
+export const heroForRecord = (recordId) => HEROES.find((h) => h.record === recordId) || null;
+
+/**
+ * Is the record's reconstruction shipped? Reads its profile, which is small data and is read when the hero is
+ * near anyway; false for a record with no hero, a hero that is not signed off, and a profile that will not load.
+ */
+export function heroShipped(recordId) {
+  const h = heroForRecord(recordId);
+  if (!h) return Promise.resolve(false);
+  return Promise.resolve().then(() => h.profile()).then((m) => !!(m && m.HERO && m.HERO.shipped)).catch(() => false);
+}
+// 0077 W2-d: end

@@ -1140,3 +1140,13 @@ jobs:
       - name: "every deep-space hero's card says what is drawn, where it comes from and that no astronomer has reviewed it yet (#1187)"
         run: node tests/test_deep_labels.mjs
       # 0077 W2-e: end
+      # 0077 W2-d: begin
+      - name: "Compare and the comparison lab: eleven worlds from NASA's fact sheets, the picture inside its box for every pair, the lab's order, the panel pressed (internal i#885, i#909)"
+        run: node tests/test_compare.mjs
+      - name: "the Compare view's data is the registry's (internal i#885, i#909)"
+        run: python3 scripts/gen_compare_js.py --check
+      - name: "the passport's kinds and notes: stamped once, never taken back, nothing that keeps score (internal i#911)"
+        run: node tests/test_passport_kinds.mjs
+      - name: "Compare with the photograph: the slider's share on the picture and the hero, put back by any other choice, offered for shipped heroes only (internal i#776)"
+        run: node tests/test_photocompare.mjs
+      # 0077 W2-d: end
