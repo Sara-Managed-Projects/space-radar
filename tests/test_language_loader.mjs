@@ -108,7 +108,7 @@ const STATIC = /^\s*(?:import|export)\b[^'"\n]*?(?:from\s*)?['"]([^'"]+)['"]/gm;
 for (const file of walk(JS)) {
   const code = readFileSync(file, 'utf8');
   for (const [, target] of code.matchAll(STATIC)) {
-    if (/(^|\/)(index|es|fr|de|pt-BR|ru|uk|zh-Hans|he|ar|hi)\.js$/.test(target) && /copy\//.test(target + file)) {
+    if (/(^|\/)(index|es|fr|de|pt|pt-BR|ru|uk|zh-Hans|he|ar|hi)\.js$/.test(target) && /copy\//.test(target + file)) { // 0077 W2-f: pt added
       assert.fail(`${file} imports ${target} statically: a language file or copy/index.js would be part of every first visit`);
     }
   }
