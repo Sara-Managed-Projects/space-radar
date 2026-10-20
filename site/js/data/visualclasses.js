@@ -331,7 +331,12 @@ export const VISUAL_CLASSES = [
 "earthcare",
 "biomass",
 "swarm",
-"metop-sg-a"
+"metop-sg-a",
+"iris",
+"timed",
+"sert-2",
+"isis-1",
+"tracers"
 ],
 "model_kinds": [
 "satellite-iridium",

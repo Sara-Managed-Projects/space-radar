@@ -57,6 +57,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W3-c: begin -->
 | The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
 <!-- 0077 W3-c: end -->
+<!-- 0077 W3-a: begin -->
+| The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
+<!-- 0077 W3-a: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -578,7 +581,7 @@ than counted by hand.
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 148 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 142 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 76 KB |
+| `hubble.glb` | rebuilt by us in code in release 1.3.0 (see [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20)); NASA's Hubble Space Telescope (A) used for proportions only | NORAD 20580 | 408 KB | <!-- 0077 W3-a -->
 | `kepler.glb` | Kepler (A) | Horizons -227 (Kepler) | 96 KB |
 | `roman.glb` | Nancy Grace Roman Space Telescope (B) | Horizons -211 (Nancy Grace Roman Space Telescope) | 162 KB |
 | `spitzer.glb` | Spitzer Space Telescope | Horizons -79 (Spitzer) | 166 KB |
@@ -586,7 +589,7 @@ than counted by hand.
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
 | `swift.glb` | Swift | NORAD 28485 (SWIFT) | 147 KB |
 | `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
-| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 (James Webb Space Telescope) | 211 KB |
+| `jwst.glb` | James Webb Space Telescope (A), re-baked with its mirror and sunshield in true materials (release 1.3.0, W3-a) | Horizons -170 (James Webb Space Telescope) | 476 KB | <!-- 0077 W3-a -->
 
 **Satellites**
 
@@ -1409,6 +1412,36 @@ CNSA, China News Service, the Chinese Academy of Sciences, Lavochkin, the museum
 Space Radar, and none of them made or approved these shapes.
 
 <!-- 0077 W3-c: end -->
+<!-- 0077 W3-a: begin -->
+## 3b-16. NASA science craft built from dimensions — IRIS, TIMED, TRACERS, SERT 2, ISIS 1 (2026-10-20)
+
+Release 1.3.0, stage W3-a (public #1090, #1091, #1092, #1094, #1110). **NASA 3D Resources (its 1 583 paths) and NASA Science's 3D
+models have none of these five**, so each was built in code, part by part, from cited numbers, and compared side by side with
+the pictures below from four angles and more. No image-to-3D model was used and no picture is in any file. No logo and no lettering
+is on any mesh. Their cards say "shape built from published dimensions and pictures; details simplified". Two of them carry long thin
+parts DRAWN SHORT, because the app scales a model's longest side to one unit: ISIS 1's sounder dipoles (6.0 and 3.0 m tip to tip
+against 73 and 18.7 m) and TRACERS' four electric-field booms (1.25 m of their 3 m). Each row of `registry/models.yaml` cites every
+number and says what is ours.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `iris.glb` (114 KB) | IRIS as it flies: door open, both wings out, silver flight blankets | De Pontieu et al. 2014 (Solar Physics 289:2733, CC BY 4.0, figures 7 and 8); NASA's photographs (<https://commons.wikimedia.org/wiki/File:IRIS_spacecraft_model.png>, KSC-2013-2109) and Goddard's render (<https://commons.wikimedia.org/wiki/File:IRIS_satellite.jpg>) | public domain; CC BY 4.0 (the paper) |
+| `timed.glb` (148 KB) | TIMED: the bus, the optical bench with the four TIDI telescopes, GUVI, two four-panel wings | TIMED QuickFacts and the CDR (spdf.gsfc.nasa.gov); NASA's render (<https://commons.wikimedia.org/wiki/File:TIMED.jpg>); APL's photographs looked at only | public domain |
+| `tracers.glb` (69 KB) | TRACERS (both craft): the black octagon, its cells, brackets and booms (booms drawn short) | Miles et al. 2025 and Bonnell et al. 2025 (Space Sci. Rev.); NASA's turntable (<https://commons.wikimedia.org/wiki/File:TRACERS_spacecraft_turntable_(30fps_4k).webm>); SpaceX's encapsulation photograph (CC0) | public domain; CC0 |
+| `sert-2.glb` (126 KB) | SERT 2 on its Agena D, both wings out, its two ion thrusters | NASA's reports (NTRS 19710002423, 19720019048, 19710013187); NASA's painting C-70-2041 and the Tank 5 photograph (Commons) | public domain |
+| `isis-1.glb` (134 KB) | ISIS 1: the drum of cells and its crossed sounder dipoles (drawn short) | NRC Science Dimension 1969 (looked at only) and NSSDCA; NSSDCA's photograph of the flight craft (<https://nssdc.gsfc.nasa.gov/planetary/image/isis_1.jpg>) | public domain |
+
+**Credit lines:** `3D model: built by Space Radar from ... published dimensions; compared with ...` (each row's `credit:`).
+
+### Hubble rebuilt, and Webb re-baked, for the physically based look
+
+`hubble.glb` was NASA's (A) file, 7 670 triangles of plain cylinders and two flat plates; it is replaced by a build in code at
+flagship detail from cited dimensions and NASA's Servicing Mission 4 photographs (public domain), with (A) used for its proportions
+only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with its gold mirror segments as their own part (row `jwst`).
+
+| `hubble.glb` (408 KB) | Hubble as it has flown since SM4: silver foil, white NOBL and radiator panels, SA3 wings, door open | NASA's SM4 photographs (Commons, e.g. <https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg>); NASA 3D Resources' Hubble (A) for proportions | public domain |
+
+<!-- 0077 W3-a: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in

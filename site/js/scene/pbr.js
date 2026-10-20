@@ -70,6 +70,7 @@ export function lookOf({ stated = null, route = 'class', roles = false, surface 
 /** A part named for its surface, as scripts/bake-own-colours.mjs and the builders name them. */
 export function roleOf(name) {
   const n = String(name || '');
+  if (/mirror/i.test(n)) return 'mirror'; // 0077 W3-a: an optical mirror (Webb's segments), its own part since the re-bake
   return /panel|solar|array|cells/i.test(n) ? 'panel' : /foil|mli|kapton|blanket/i.test(n) ? 'foil' : /body/i.test(n) ? 'body' : null;
 }
 
@@ -94,6 +95,8 @@ export function roleOf(name) {
  *   dark           black paint, anodised parts, openings.
  *   paint          any other painted colour.
  *   gold-body      a gold part the builder named structure (a gold rim, a gilded box).
+ *   mirror         an optical mirror (a part named `mirror`): polished metal, smooth, no folds -- Webb's
+ *                  gold-coated segments. Its colour is the coating's (gold), as a metal's is. // 0077 W3-a
  */
 export const FINISHES = {
   'gold-foil': { metalness: 0.7, roughness: 0.42, crinkle: 1.0, grid: false },
@@ -109,6 +112,7 @@ export const FINISHES = {
   dark: { metalness: 0.0, roughness: 0.5, crinkle: 0.0, grid: false },
   paint: { metalness: 0.0, roughness: 0.55, crinkle: 0.0, grid: false },
   'gold-body': { metalness: 0.6, roughness: 0.4, crinkle: 0.0, grid: false },
+  mirror: { metalness: 1.0, roughness: 0.18, crinkle: 0.0, grid: false }, // 0077 W3-a
 };
 
 /** Hue (degrees), saturation (0..1, HSV) and value (0..1) of a #rrggbb colour, as written (sRGB). */
@@ -130,10 +134,11 @@ export function hsvOf(hex) {
 /**
  * Which finish a part is, from its surface role and its colour. Pure; tests/test_pbr.mjs holds it to
  * the colours the shipped files use (ISS, Hubble, Webb, Gaia, Tiangong, the landers).
- * @param {'body'|'foil'|'panel'|null} role
+ * @param {'body'|'foil'|'panel'|'mirror'|null} role
  * @param {string} hex '#rrggbb'
  */
 export function finishOf(role, hex) {
+  if (role === 'mirror') return 'mirror'; // 0077 W3-a
   const { h, s, v } = hsvOf(hex);
   const golden = h >= 18 && h <= 62 && s >= 0.3 && v >= 0.35;
   const grey = s < 0.16;
