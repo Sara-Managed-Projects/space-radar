@@ -427,7 +427,7 @@ export function ringGrainGate(radiiPerPx) {
  * The sheet gives up the drawn balls' share of its light where they are (RING_FRAG uResolved; the
  * JS twin and the numbers' sources are ringgrains.js resolvedAt and RING_PARTICLES).
  */
-export const RING_GRAINS = { fromM: 25000, rMinM: 1, rMaxM: 5, rFloorM: 0.01, pxShare: 0.3 };
+export const RING_GRAINS = { fromM: 25000, rMinM: 2, rMaxM: 5, rFloorM: 0.01, pxShare: 0.3 };
 // 0077 W1-f: end
 /** The slab's optical depth with the fine structure in: tau x (1 + fine x (ratio - 1)). JS twin of RING_FRAG. Pure. */
 export function ringFineTau(tau, ratio, fine) {

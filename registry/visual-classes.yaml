@@ -195,7 +195,7 @@ classes:
     note:
       source: "Cassini UVIS stellar occultation of Beta Centauri (Colwell et al. 2010, PDS Ring-Moon Systems Node) for Saturn's 8k ringlets; Solar System Scope's ring alpha map; the Cassini Division at its measured radii."
       dates: "The occultation of 2008 (Cassini orbit 77)."
-      drawn: "Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 1 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still." # 0077 W1-f
+      drawn: "Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 2 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still." # 0077 W1-f
       rights: "PDS data public domain; Solar System Scope CC BY 4.0."
     records:
       - {domain: rings}

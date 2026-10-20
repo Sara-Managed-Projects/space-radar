@@ -157,7 +157,7 @@ Honesty over the 890 records: 320 measured, 245 modelled, 325 illustrative.
 - **On a weak device (T0, or after the frame latch):** The ring's alpha map as a lit slab; the fine ringlets, grain and particles only on tier 1 and up, never after the latch.
 - **Source:** Cassini UVIS stellar occultation of Beta Centauri (Colwell et al. 2010, PDS Ring-Moon Systems Node) for Saturn's 8k ringlets; Solar System Scope's ring alpha map; the Cassini Division at its measured radii.
 - **Dates and filters:** The occultation of 2008 (Cassini orbit 77).
-- **Measured, modelled or reconstructed:** Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 1 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still.
+- **Measured, modelled or reconstructed:** Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 2 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still.
 - **Rights:** PDS data public domain; Solar System Scope CC BY 4.0.
 - **Records (1):**
   - rings (1): `saturn-ring`

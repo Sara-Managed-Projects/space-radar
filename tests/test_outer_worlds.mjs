@@ -103,12 +103,12 @@ check(shell.material.uniforms.uLayer.value.w === 1 && A.createAirShell('mars').m
 
 // --------------------------------------------------------------------------- 3. the ring as particles
 const P = G.RING_PARTICLES;
-check(near(G.resolvedShare(), Math.log(5) / Math.log(500), 1e-12), 'the drawn balls carry ln 5 / ln 500 of the optical depth');
-check(near(G.keptPerSquareMetre(1), (1 / (Math.PI * Math.log(500))) / 2 * (1 - 1 / 25), 1e-12), 'their number a square metre follows from q = 3');
-// The sizes drawn: N(>2 m) / N(>1 m) = (2^-2 - 5^-2) / (1 - 5^-2).
+check(near(G.resolvedShare(), Math.log(5 / P.rMinM) / Math.log(500), 1e-12), 'the drawn balls carry ln(5 / rMin) / ln 500 of the optical depth');
+check(near(G.keptPerSquareMetre(1), (1 / (Math.PI * Math.log(500))) / 2 * (P.rMinM ** -2 - 1 / 25), 1e-12), 'their number a square metre follows from q = 3');
+// The sizes drawn: N(>3 m) / N(>rMin) = (3^-2 - 5^-2) / (rMin^-2 - 5^-2).
 const radii = G.particleRadii(200000, 3);
-const over2 = radii.filter((r) => r > 2).length / radii.length;
-check(near(over2, (0.25 - 0.04) / 0.96, 0.005) && radii.every((r) => r >= 1 && r <= 5.0001), `the sizes follow the power law (${over2.toFixed(4)} over 2 m)`);
+const over3 = radii.filter((r) => r > 3).length / radii.length;
+check(near(over3, (1 / 9 - 0.04) / (P.rMinM ** -2 - 0.04), 0.005) && radii.every((r) => r >= P.rMinM && r <= 5.0001), `the sizes follow the power law (${over3.toFixed(4)} over 3 m)`);
 check(near(G.slabLight(20, 1, 1, true), 1, 1e-6) && G.slabLight(0.1, 0.5, 0.5, true) < 0.5, 'the slab is 1 when thick and less when thin');
 check(G.grainFade(0, 1000) === 1 && G.grainFade(1000, 1000) === 0 && G.grainFade(800, 1000) > 0 && G.grainFade(800, 1000) < 1, 'the balls fade out toward their reach');
 // The sheet's twin: the share it gives up is the balls' share where they are big enough on screen.
@@ -130,7 +130,7 @@ const Rm = 58232e3;
 const st = grains.update({ on: true, tier: 2, ring, planetM: Rm, cam: [130000e3 / Rm, 0.5 / Rm, 2000 / Rm], sun: [0.3, 0, 0.95], sunView: new THREE.Vector3(0, 0, 1), light: 1 });
 check(st.on && st.tiles > 50 && st.tiles <= (2 * Math.ceil(P.reach[2] / P.tileM) + 1) ** 2 && st.wakes && ringU.uResolved.value.x === 1, `tier 2 lays ${st.tiles} tiles round the camera over the A ring, wakes on, and tells the sheet`);
 const st1 = grains.update({ on: true, tier: 1, ring, planetM: Rm, cam: [100000e3 / Rm, 0, 2000 / Rm], sun: [0.3, 0, 0.95], sunView: new THREE.Vector3(0, 0, 1), light: 1 });
-check(st1.tiles < st.tiles && !st1.wakes, `tier 1 lays fewer (${st1.tiles}), and the B ring has no wakes`);
+check(st1.tiles < st.tiles && !st1.wakes && st1.slots < 150000 && st.slots < 300000, `tier 1 lays fewer (${st1.tiles}, ${st1.slots} slots), and the B ring has no wakes`);
 const st0 = grains.update(null);
 check(!st0.on && !grains.points.visible && ringU.uResolved.value.x === 0, 'off, nothing is drawn and the sheet takes its light back');
 check(grains.points.material.vertexShader.includes('float ringMapU') && !grains.points.material.vertexShader.includes('#RING_U_GLSL#') && !/\$\{/.test(grains.points.material.vertexShader), 'the particles\' shader is whole');

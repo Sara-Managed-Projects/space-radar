@@ -15,8 +15,8 @@
 // particle's own radius, from the same map and fine strip the sheet is drawn from. The slab's
 // thickness, about ten metres (the A ring's, from its self-gravity wakes; Colwell et al. 2006, GRL 33,
 // L07201). From those the NUMBER of particles a square metre holds follows: with q = 3 every factor of
-// size carries the same share of the optical depth, so the particles from 1 to 5 m carry ln 5 / ln 500
-// = 0.26 of it, and there are tau x 0.0492 of them a square metre (keptPerSquareMetre). Smaller ones
+// size carries the same share of the optical depth, so the particles from 2 to 5 m carry ln 2.5 / ln 500
+// = 0.15 of it, and there are tau x 0.0054 of them a square metre (keptPerSquareMetre). Smaller ones
 // stay in the sheet, which gives up exactly the share the drawn ones take (resolvedShare, worn by the
 // sheet as uResolved), so the ring is no brighter and no darker for being drawn as particles.
 //
@@ -37,7 +37,7 @@
 
 /** The numbers (see the header for whose). Lengths in metres. */
 export const RING_PARTICLES = {
-  rMinM: 1,          // the smallest drawn
+  rMinM: 2,          // the smallest drawn (1 m until the second look: 4.6 times the slots for balls of a pixel or two, and a reach too short to cover the view)
   rMaxM: 5,          // the largest in the distribution
   rFloorM: 0.01,     // the smallest in it, which the sheet keeps
   q: 3,
@@ -45,7 +45,7 @@ export const RING_PARTICLES = {
   tileM: 200,
   tauMax: 2,         // a tile holds enough particles for this optical depth; a thicker ring is drawn as this, as bright
   fromM: 25000,      // the camera's height over the ring plane below which they are drawn
-  reach: [0, 800, 1200],   // metres round the camera's foot, by tier (tier 0 draws none)
+  reach: [0, 1700, 2600],  // metres round the camera's foot, by tier (tier 0 draws none): the view from 1.5 km is inside it
   fadeFrom: 0.25,    // of `reach`: full nearer, gone at `reach` (0.6 drew the patch's edge as a circle in the first look)
   wakes: { lambdaM: 80, cantDeg: 21, amp: 0.6, fromKm: 122170, toKm: 136775, refM: 1.3e8 },  // the A ring's
   maxPx: 48,

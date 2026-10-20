@@ -169,7 +169,7 @@ try {
   overRing(130000, 4, 0.6);
   await pair('12-a-ring-4km', '4 km over the A ring: the biggest balls come out of the sheet as points; the A ring\'s wake clumps', 8000);
   overRing(130000, 1.5, 0.4);
-  await pair('13-a-ring-1500m', '1.5 km over the A ring, looking down: balls of ice of 1 to 5 m, lit from the Sun\'s side, crisp edges; the sheet under them', 8000);
+  await pair('13-a-ring-1500m', '1.5 km over the A ring, looking down: balls of ice of 2 to 5 m, lit from the Sun\'s side, crisp edges; the sheet under them', 8000);
   overRing(130000, 1.5, 2.2);
   await pair('14-a-ring-1500m-along', '1.5 km over the A ring, looking along it: the field thins into the sheet toward the horizon, no hard edge', 8000);
   overRing(105000, 3, 0.6);

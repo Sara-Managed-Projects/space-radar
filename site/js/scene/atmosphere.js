@@ -203,8 +203,9 @@ export const ATMO_PARAMS = {
   // (`g`) and white-blue (`albedo`). Height and thickness are measured, for those years; its depth,
   // colour and today's height are not, and the card says so (copy/en.js worldDeparture.titan). It is
   // integrated on its own fine steps (LAYER_STEPS a crossing): the 12 steps of the main march are
-  // hundreds of km long at the limb and would step over a sheet this thin, in bands. Under a pixel
-  // thick it fades out (the shader measures its own width on screen), so it never shimmers.
+  // hundreds of km long at the limb and would step over a sheet this thin, in bands. Under about two
+  // pixels thick it fades out (the shader measures its own width on screen): it never shimmers, and
+  // at the stage's framing it is not a grey ring round the disc (the second look).
   // The shell now reaches 560 km, so the whole sheet is inside it.
   // 0077 W1-f: end
   titan: {
@@ -481,7 +482,7 @@ void main() {
   if ( uLayer.w > 0.0 ) {
     float pxAngle = max( length( dFdx( rd ) ), length( dFdy( rd ) ) );
     float far = sqrt( max( dot( ro, ro ) - uLayer.x * uLayer.x, 1e-4 ) );
-    float shown = uLayer.w * smoothstep( 0.35, 0.9, uLayer.y / max( far * pxAngle, 1e-9 ) );
+    float shown = uLayer.w * smoothstep( 1.0, 2.5, uLayer.y / max( far * pxAngle, 1e-9 ) );
     vec2 o = sphere( ro, rd, uLayer.x + 3.0 * uLayer.y );
     vec2 inner = sphere( ro, rd, uLayer.x - 3.0 * uLayer.y );
     bool through = inner.x < 1e8;
