@@ -354,15 +354,17 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   await r.run(1000);
   check(r.asked.length === before, 'a still camera fetches nothing more');
   // Away: the layer fades out and every tile is freed.
+  const creditsShown = Math.max(1, r.tiles.credits().length);
   r.place(20000);
   await r.run(2000);
   const gone = r.tiles.state().sets[MOON.id];
   check(!gone.on && !gone.showing && gone.cached === 0 && gone.master === 0, 'far away the tiles fade out and are freed');
   check(!r.mesh.children.some((c) => c.name === MOON.id + '-tiles'), 'and their group leaves the mesh');
   // Leaving announces the credit's going once per change of state: the mosaic's and the relief's credits can fall
-  // on one frame (+1) or on two (+2, as they did on a CI runner on 2026-10-20, on main too); never a storm, and nothing after.
+  // on one frame or on separate ones (two on a CI runner on 2026-10-20, three once the LOLA relief added its own credit);
+  // at most one announcement per credit that was showing, never a storm, and nothing after.
   const announcedOnLeaving = r.changes() - announcedWhileShown;
-  check(r.tiles.credits().length === 0 && announcedOnLeaving >= 1 && announcedOnLeaving <= 2, `the credit goes with them, announced once per change of state: ${announcedOnLeaving} announcement(s)`);
+  check(r.tiles.credits().length === 0 && announcedOnLeaving >= 1 && announcedOnLeaving <= creditsShown, `the credit goes with them, announced once per change of state: ${announcedOnLeaving} announcement(s)`);
   await r.run(1000);
   check(r.changes() === announcedWhileShown + announcedOnLeaving, 'and not announced again once gone');
 }
