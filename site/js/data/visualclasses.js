@@ -999,6 +999,7 @@ export const VISUAL_CLASSES = [
 "dso-tarantula-nebula"
 ],
 "heroes": [
+"dso-carina-nebula",
 "dso-m42"
 ]
 }
@@ -1186,7 +1187,8 @@ export const VISUAL_CLASSES = [
 "dso-smc"
 ],
 "heroes": [
-"dso-lmc"
+"dso-lmc",
+"dso-smc"
 ]
 }
 },

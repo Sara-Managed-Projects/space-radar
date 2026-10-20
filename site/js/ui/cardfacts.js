@@ -1097,7 +1097,14 @@ export function honestyClause(record, m) {
     if (mine) return `${t(F.drawnLine, { drawn: mine.drawn })} ${mine.split}`;
     const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
     // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
-    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    // 0077 W2-e: begin
+    // (public #1187) The hero's own block first (md.heroCopy, which the coordinator stamps from the hero's `card`), so a
+    // new hero's source sentence shows without a line here; and a record a hero draws as its child (the Tarantula, M43)
+    // by its own id, `card[recordId]`; the blocks below as well, so a hero's sentence shows before it first draws (its
+    // id is stamped at once). r13Deep holds the sentences of release 1.3.0 for records another block lacks.
+    const blocks = [md.heroCopy, 'deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust', 'deepCarina', 'deepSmc', 'r13Deep'];
+    const own = (md.heroId || md.heroCopy) && Array.isArray(md.heroDrawn) ? blocks.map((b) => b && COPY[b] && COPY[b].card && ((md.heroId && COPY[b].card[md.heroId]) || COPY[b].card[record.id])).find(Boolean) : null;
+    // 0077 W2-e: end
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 

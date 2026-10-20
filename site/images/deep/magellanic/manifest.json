@@ -1,0 +1,23 @@
+{
+  "file": "site/images/deep/magellanic/hi-column.webp",
+  "bytes": 22178,
+  "sha256": "43aee1bf4afd713b5f4bac660f38adc04c72db08413924251ca172bd2151559f",
+  "size": [
+    680,
+    280
+  ],
+  "from": "https://lambda.gsfc.nasa.gov/data/foregrounds/HI4PI/hvc/hi4pi-hvc-nhi-mag-car.fits.gz",
+  "from_sha256": "bb3f53af64be582af2a07c9e564fa951d9db300acf1dd449c08978fb4b2971bf",
+  "params": {
+    "l_min": -150,
+    "l_max": 20,
+    "b_min": -40,
+    "b_max": 30,
+    "px_deg": 4,
+    "log_min": 18.6,
+    "log_max": 21.6
+  },
+  "frame": "Magellanic coordinates (Nidever et al. 2008): pole at Galactic (l, b) = (188.5, -7.5) degrees, longitude 0 at (280.47, -32.75); column 0 at l_max, row 0 at b_max",
+  "credit": "HI4PI high-velocity H I (Westmeier 2018, MNRAS 474, 289; HI4PI Collaboration 2016, A&A 594, A116), served by NASA's LAMBDA; cropped and resampled by Space Radar (scripts/build_deep_magellanic.py)",
+  "peak_log10_nhi": 21.967
+}

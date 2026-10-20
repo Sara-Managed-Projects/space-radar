@@ -2149,6 +2149,21 @@ Object.assign(COPY, {
   },
 });
 
+// 0077 W2-e: begin
+// The card's source sentence for a record a hero draws as its child (public #1187: ui/cardfacts.js honestyClause reads
+// `card[recordId]`). The words of release 1.3.0's own heroes, Carina and the SMC, are in copy/en.deepheroes.js, which
+// their modules import: they are read only near them, and the first minute's bytes are budgeted (budgets.yaml).
+Object.assign(COPY, {
+  // (public #1187) The source sentence of a record a hero draws as its child: ui/cardfacts.js honestyClause reads it by
+  // the record's id once the hero has drawn it (until then the card says what is drawn for it without a hero).
+  r13Deep: {
+    card: {
+      'dso-tarantula-nebula': 'Its light near our line is Webb’s photograph; its gas is a model of a cavity round the cluster R136 inside a shell of glowing gas confined by molecular clouds, after Pellegrini, Baldwin and Ferland (2011). Not yet reviewed by an astronomer.',
+      'dso-m43': 'Its light is taken from ESO’s photograph, its shape reconstructed as a smaller hollow on the same dark cloud as the Orion Nebula, lit by the star NU Orionis. Not yet reviewed by an astronomer.',
+    },
+  },
+});
+// 0077 W2-e: end
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
 if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
