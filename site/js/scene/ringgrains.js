@@ -9,6 +9,9 @@
 // too small to draw (RING_GRAIN). Within RING_PARTICLES.fromM of the ring plane the biggest particles
 // are big enough on screen to be drawn as what they are: balls of ice.
 //
+// Under the Measured look nothing here is hidden or held still: the grains are placed by a seeded law, the same in both looks.
+export const UNDER_MEASURED = { grains: 'same' };
+//
 // WHAT IS MEASURED. The sizes: a power law, n(r) ~ r^-q with q = 3, from about a centimetre to about
 // five metres (French and Nicholson 2000, Icarus 145, 502; Cuzzi et al. 2009, "Ring particle
 // composition and size distribution", in Saturn from Cassini-Huygens). The optical depth, at the
