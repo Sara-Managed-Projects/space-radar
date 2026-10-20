@@ -879,7 +879,7 @@ export const COPY = {
       "ride": "Embarquer",
       "rideShort": "Embarquer",
       "seeShort": "Voir",
-      "postcard": "Carte postale",
+      "postcard": "Carte",
       "share": "Partager"
     },
     "micro": "{klass} · {regime}",
@@ -1449,7 +1449,7 @@ export const COPY = {
   "search": {
     "title": "Trouver un objet",
     "placeholder": "Planètes, étoiles, satellites",
-    "placeholderPhone": "Chercher dans l’espace",
+    "placeholderPhone": "Rechercher",
     "inputLabel": "Chercher un objet par son nom ou son numéro de catalogue",
     "listLabel": "Objets correspondants",
     "fly": "S’y rendre",

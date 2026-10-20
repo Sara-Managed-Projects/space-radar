@@ -1445,7 +1445,7 @@ export const COPY = {
   "search": {
     "title": "Ein Objekt finden",
     "placeholder": "Planeten, Sterne und Satelliten",
-    "placeholderPhone": "Weltraum durchsuchen",
+    "placeholderPhone": "Weltraum suchen",
     "inputLabel": "Ein Objekt nach Name oder Katalognummer suchen",
     "listLabel": "Passende Objekte",
     "fly": "Hinfliegen",
