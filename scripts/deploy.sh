@@ -376,13 +376,6 @@ if [ "$WHAT" != "assets" ]; then
   # registry must not keep a page that opens the app on nothing.
   "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
     --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
-  # THE LAB (site/lab/, docs/ADD_A_SIMULATOR.md): small stand-alone simulator pages, each ONE HTML file with no
-  # library and no network request, and the list scripts/gen_lab_index.py writes from them. HTML, revalidated
-  # like t/ and --delete, so a simulator that leaves the repository leaves the site. NOTHING in it is loaded by
-  # the app, the worker does not hold it (a navigation passes), and _template/ is the contributor's starter,
-  # not a page: it is not uploaded.
-  "${SYNC[@]}" "$SITE/lab" "s3://$BUCKET/lab" \
-    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --exclude "_template/*" --delete
   # The pages a search engine reads that are not kept in git (spec 0061 task 9): one per notable
   # object, the sitemap and the 404 page, built here from the records and the card's own words
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
@@ -403,6 +396,14 @@ if [ "$WHAT" != "assets" ]; then
   fi
   python3 "$HERE/build_seo.py" --out "$BUILT" ${SNAP[@]+"${SNAP[@]}"} || die "scripts/build_seo.py failed"
   python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
+  # THE LAB (site/lab/, docs/ADD_A_SIMULATOR.md): small stand-alone simulator pages, each ONE HTML file with no
+  # library and no network request, and the list scripts/gen_lab_index.py writes from them. Uploaded from the
+  # BUILD, not site/lab/: scripts/seo_lab.py (run by build_seo.py) copies each one with its canonical, Open Graph
+  # and LearningResource tags, and check_seo.py has just held them. HTML, revalidated like t/ and --delete, so a
+  # simulator that leaves the repository leaves the site. NOTHING in it is loaded by the app, the worker does not
+  # hold it (a navigation passes), and _template/ is the contributor's starter: it is never built, so never uploaded.
+  "${SYNC[@]}" "$BUILT/lab" "s3://$BUCKET/lab" \
+    --cache-control "$REVALIDATE" --content-type "text/html; charset=utf-8" --delete
   # The embed gallery (scripts/seo_embed.py, run by build_seo.py): HTML, revalidated, like the press page.
   # Its generator script is NOT stored compressed, unlike js/: it is not one of precompress.mjs's
   # folders, so there is no copy under _gz/ and the edge function would have nowhere to send a client
