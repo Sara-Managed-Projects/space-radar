@@ -16,16 +16,18 @@
 id: smc
 record: dso-smc
 stage: W2-e
-# NOT SHIPPED (the lead, 2026-10-20, release 1.3.0 wave 2): the app draws the SMC as main does until this hero reaches
-# main's frame cost within about 1.5 times and shows no haze or veil from any position (internal #783, wave 3). Its
-# review below is ready for when it ships under the policy of 2026-10-15 (signed by the maintainers, the card saying no
-# astronomer has reviewed it, internal #785).
-shipped: false
+# SHIPPED in release 1.3.0 wave 3 (0077 W3-f, internal #783). Wave 2 left it out (the lead, 2026-10-20): its light was a
+# march through a box that cost five times main's frame on a runner, and close up it read as a veil. Its unresolved light
+# is now drawn as patches (scene/deep/smc.js: a few thousand soft balls of light placed as its stars are, summing to the
+# maps, and the photograph where it covers them, seen from the Sun), which give up their light close to the camera. Its
+# review below is signed under the policy of 2026-10-15 (the maintainers; the card says no astronomer has reviewed it,
+# internal #785).
+shipped: true
 children: []
 levels:
   1: the photograph (scene/nebulae.js), with this model filling what the photograph's frame cuts off
-  2: Gaia-mapped stars in two populations at their measured depths, their unresolved light (the photograph's where it covers them)
-  3: the same with more march steps for the unresolved light
+  2: Gaia-mapped stars in two populations at their measured depths, their unresolved light as patches (the photograph's where it covers them)
+  3: "the same (the patches cost what they cost at level 2; there is no march to refine)"
 # The galaxy's frame: the sky frame at the catalogue centre (x west, y north, z toward the Sun); one object unit is 100 ly.
 frame:
   units_ly: 100
@@ -132,7 +134,7 @@ review:
   distance: "62.44 kpc (203 650 ly), Graczyk et al. 2020 (registry/dso-hand.yaml); the LMC's 49.59 kpc for the Bridge's other end; the Stream's far end from models, said so"
   credits: "CREDITS.md section 3l, the SMC and the Magellanic Stream (0077 W2-e); the card's rows say what is measured and that no astronomer has reviewed it"
   by: "Space Radar maintainers"
-  date: 2026-10-20
+  date: 2026-10-20     # shipped 2026-10-20 in wave 3 (0077 W3-f)
   astronomer: "not yet: the independent review is internal #785; the card says so"
 credits:
   - "The SMC's star counts: Gaia DR3, ESA/Gaia/DPAC (CC BY-NC 3.0 IGO), counted by Space Radar"

@@ -37,12 +37,13 @@ const parts = Object.fromEntries(HERO.layers.map((l) => [l.part, l]));
   check(/1707\.04500/.test(parts.young.source) && /1502\.06995/.test(parts.young.source) && /25-30 kpc/.test(parts.young.source + JSON.stringify(HERO)), 'the young stars\' stretch is Ripepi et al. (2017) and Scowcroft et al. (2016)\'s');
   check(/2012\.12288/.test(parts.old.source) && parts.old.incl_deg >= 35 && parts.old.incl_deg <= 48 && parts.old.nodes_pa_deg >= 170 && parts.old.nodes_pa_deg <= 186, 'the old stars\' plane is within Tatton et al. (2021)\'s i = 35-48 and PA = 170-186 degrees');
   check(/1712\.00909/.test(parts.stream.source) && /A&A 594, A116/.test(parts.stream.source) && /FALSE colour/i.test(HERO.colours.note), 'the Stream is HI4PI\'s (Westmeier 2018), declared false colour');
-  check(HERO.frame.distance_ly === 203650 && HERO.shipped === false && HERO.review.by === 'Space Radar maintainers' && /not yet/.test(HERO.review.astronomer), 'its distance is the record\'s; NOT shipped yet (the lead, wave 2: main\'s frame cost within 1.5 times and no haze first), its review ready');
+  check(HERO.frame.distance_ly === 203650 && HERO.shipped === true && HERO.review.by === 'Space Radar maintainers' && /not yet/.test(HERO.review.astronomer), 'its distance is the record\'s; shipped (0077 W3-f: its light as patches), its review signed by the maintainers and no astronomer\'s yet'); // 0077 W3-f
   check(HERO.drawn.length === 1 && HERO.drawn[0] === 'model', 'it draws a model');
   const line = HEROES.find((h) => h.id === 'smc');
   check(line && line.record === 'dso-smc' && line.stub && line.stub.shipped === HERO.shipped && line.stub.drawn.join() === HERO.drawn.join(), 'the hero list has its line, a stub whose `shipped` and `drawn` equal the registry\'s');
   const layer = MAGELLANIC;
-  check(!DEEP_LAYERS.some((l) => l.id === 'magellanic') && layer && ['stellar', 'galaxy', 'local-group'].every((s) => layer.stages.includes(s)), 'the Bridge and Stream\'s layer line is ready for the ladder\'s stages but not in DEEP_LAYERS until the SMC ships: the app draws the SMC as main does');
+  const listed = DEEP_LAYERS.find((l) => l.id === 'magellanic'); // 0077 W3-f: begin
+  check(listed && layer && ['stellar', 'galaxy', 'local-group'].every((s) => layer.stages.includes(s) && listed.stages.includes(s)), 'the Bridge and Stream\'s layer is in DEEP_LAYERS, on the ladder\'s stages, now that the SMC ships'); // 0077 W3-f: end
   const bin = readFileSync(join(ROOT, 'site/data/deep/smc-density.bin'));
   check(bin.length === parts.maps.bytes && createHash('sha256').update(bin).digest('hex') === parts.maps.sha256, 'the maps are the bake\'s (size and hash as the profile says; scripts/build_deep_smc.py --check)');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
@@ -74,55 +75,38 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   check(H.taperAt(g, 0, 0) === 1 && H.taperAt(g, 5, 0) === 0, 'the drawn extent fades from 3.2 to 4.6 degrees');
 }
 
-// --- 3. ALONG OUR LINE THE LIGHT IS THE MAPS (so the photograph); finite from every side --------------------------
+// --- 3. SEEN FROM THE SUN THE PATCHES ADD UP TO THE MAPS (so the photograph); deep from the side (0077 W3-f) ------------
 {
-  let worst = 0, n = 0;
-  for (let k = 0; k < 200; k++) {
-    const e = ((k * 0.618034) % 1 - 0.5) * 7, nn = ((k * 0.381966 + 0.2) % 1 - 0.5) * 7;
-    const want = g.pops.reduce((s, p) => s + p.weight * H.mapAt(g, maps[p.map], e, nn) * H.taperAt(g, e, nn), 0);
-    if (want < 0.01) continue;
-    const kk = g.D * D2R, tgt = [-e * kk, nn * kk, 0], ro = [0, 0, g.D];
-    const d = tgt.map((t, i) => t - ro[i]); const l = Math.hypot(...d);
-    for (const steps of [4, 8, 16]) {
-      const c = H.columnJs(g, maps, ro, d.map((t) => t / l), { n: steps, j: (k * 0.37) % 1 });
-      worst = Math.max(worst, Math.abs(c.weight - want) / want);
+  for (const tier of [0, 1, 2]) {
+    const P = H.patchesOf(g, maps, tier);
+    const S = H.patchSky(g, P, 0.5);
+    let worst = 0, sum = 0, n = 0;
+    for (let y = 0; y < S.M; y++) for (let x = 0; x < S.M; x++) {
+      let want = 0;
+      const K = 6;
+      for (let a = 0; a < K; a++) for (let c = 0; c < K; c++) {
+        const e = -S.half + (x + (a + 0.5) / K) * S.cellDeg, nn = -S.half + (y + (c + 0.5) / K) * S.cellDeg;
+        want += g.pops.reduce((t, p) => t + p.weight * H.mapAt(g, maps[p.map], e, nn) * H.taperAt(g, e, nn), 0) / (K * K);
+      }
+      if (want < 0.15) continue;
+      const err = Math.abs(S.sum[y * S.M + x] - want) / want;
+      worst = Math.max(worst, err); sum += err; n += 1;
     }
-    n += 1;
+    check(n > 20 && sum / n < 0.12 && worst < 0.45, `T${tier}: from the Sun ${P.n} patches add up to the weighted maps in half-degree cells, ${((sum / n) * 100).toFixed(1)} % off on average (worst ${(worst * 100).toFixed(0)} %, ${n} cells): at arrival the model is the photograph where it covers it`);
+    let bad = 0;
+    for (let i = 0; i < P.n; i++) if (![P.pos[3 * i], P.pos[3 * i + 1], P.pos[3 * i + 2], P.col[4 * i + 3], P.sky[4 * i + 2]].every(Number.isFinite) || P.col[4 * i + 3] < 0) bad += 1;
+    check(bad === 0, `T${tier}: every patch has a place, a radius and a light (${bad} bad)`);
   }
-  check(n > 50 && worst < 0.05, `from the Sun every line's column is the weighted maps within 5 % at 4, 8 and 16 steps (worst ${(worst * 100).toFixed(2)} %, ${n} lines): at arrival the model is the photograph where it covers it`);
-  let bad = 0;
-  for (let k = 0; k < 200; k++) {
-    const th = Math.acos(1 - 2 * ((k * 0.7548777) % 1)), ph = 2 * Math.PI * ((k * 0.5698403) % 1), R = [20, 150, 900][k % 3];
-    const ro = [R * Math.sin(th) * Math.cos(ph), R * Math.sin(th) * Math.sin(ph), R * Math.cos(th)];
-    const tgt = [(k % 7 - 3) * 10, (k % 5 - 2) * 10, 0];
-    const d = tgt.map((t, i) => t - ro[i]); const l = Math.hypot(...d);
-    const c = H.columnJs(g, maps, ro, d.map((t) => t / l), { n: 12, j: 0.5 });
-    if (!Number.isFinite(c.weight) || c.weight < 0) bad += 1;
+  const P = H.patchesOf(g, maps, 1);
+  let rMin = Infinity, rMax = 0, young = 0, deep = 0;
+  for (let i = 0; i < P.n; i++) {
+    rMin = Math.min(rMin, P.sky[4 * i + 2]); rMax = Math.max(rMax, P.sky[4 * i + 2]);
+    if (P.sky[4 * i + 3] === 1) { young += 1; if (Math.abs(P.pos[3 * i + 2]) > 150) deep += 1; }
   }
-  check(bad === 0, `finite from 200 places round it and inside (${bad} bad)`);
-  // turned 90 degrees (seen from the side, east of it) the young light is a long streak along our old line of sight
-  let along = 0, across = 0;
-  for (let k = -20; k <= 20; k++) {
-    const zc = k * 20, yc = k * 20;
-    const a = H.columnJs(g, maps, [800, 0, zc], [-1, 0, 0], { n: 24, j: 0.5 }).weight;
-    const b = H.columnJs(g, maps, [800, yc, 0], [-1, 0, 0], { n: 24, j: 0.5 }).weight;
-    if (a > 0.01) along += 1;
-    if (b > 0.01) across += 1;
-  }
-  // a slanted ray holds the same light whatever its steps (the layer's share over |rd.z|, exact): no dark side views
-  let worstSide = 0;
-  for (const rd0 of [[-1, 0, 0], [-1, 0, -0.002], [-1, 0.05, -0.3], [-0.7, 0.02, -0.7]]) {
-    const l = Math.hypot(...rd0), rd = rd0.map((v) => v / l), ro = [600, 10, 20 + 400 * (rd0[2] === -0.7 ? 1 : 0)];
-    const fine = H.columnJs(g, maps, ro, rd, { n: 400, j: 0.5, adaptive: false }).weight;
-    if (fine > 0.02) for (const n of [8, 16]) worstSide = Math.max(worstSide, Math.abs(H.columnJs(g, maps, ro, rd, { n, j: 0.5 }).weight - fine) / fine);
-  }
-  check(worstSide < 0.25, `a slanted ray's light at 8 and 16 steps is within 25 % of 400 steps' (worst ${(worstSide * 100).toFixed(1)} %): grain, never a dark side`);
-  // the cone: a ray that misses the drawn extent costs nothing; one across it takes a few steps, not the tier's all
-  const miss = H.columnJs(g, maps, [600, 0, 0], [0, 1, 0]);
-  const thru = H.columnJs(g, maps, [600, 0, 0], [-1, 0, 0], { n: 16 });
-  check(miss.weight === 0 && !miss.steps && thru.steps < 16 && thru.steps >= 2, `the march is only inside the cone of the drawn extent (a miss takes ${miss.steps || 0} steps, a ray across it ${thru.steps} of 16)`);
-  check(/uConeK/.test(H.SHADERS.body) && /if \( disc < 0\.0 \) discard;/.test(H.SHADERS.body), 'and the shader does the same (coneSpan)');
-  check(along > across, `seen from the side it is longer along our line (${along * 20 * 100 / 1000} kly lit) than across the sky (${across * 20 * 100 / 1000} kly): deep, not a disc`);
+  check(rMin >= H.SHAPE.patchMin && rMax <= H.SHAPE.patchMax, `a patch is ${rMin.toFixed(1)} to ${rMax.toFixed(1)} hundred ly in radius: soft in the outskirts, fine in the middle, never one blob`);
+  check(young > 0 && deep > 0.2 * young, `seen from the side the young light is long along our line: ${deep} of its ${young} patches stand more than 15 000 ly in front of or behind the middle`);
+  check(/clamp\( ideal, 1\.50, 22\.00 \)/.test(H.SHADERS.bodyVertex) && /min\( 1\.0, \( ideal \* ideal \) \/ \( s \* s \) \)/.test(H.SHADERS.bodyVertex), 'a patch is held no wider than 22 px and then gives up its light: close up the camera is among stars, never in a veil');
+  check(!/for \(|uSteps|texture2D[^;]*;[^]*texture2D[^;]*;[^]*texture2D/.test(H.SHADERS.body), 'the fragment shader marches nothing and reads no texture: the cost is the patches\' fill, not the screen');
 }
 
 // --- 4. the stars: the same summed light at every tier; never grown close up --------------------------------------
@@ -140,11 +124,11 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
 
 // --- 5. shares, tiers, Measured -----------------------------------------------------------------------------------
 {
-  check(H.stepsFor({ tier: 0 }) === 4 && H.stepsFor({ tier: 1 }) === 8 && H.stepsFor({ tier: 2, steps: 96 }) === 16, 'steps: 4 on T0, 8 at level 2, at most 16');
+  check(H.PATCHES.t0 < H.PATCHES.t1 && H.PATCHES.t1 < H.PATCHES.t2 && H.PATCHES.t2 <= 12000, `patches by tier: ${H.PATCHES.t0}, ${H.PATCHES.t1}, ${H.PATCHES.t2}`); // 0077 W3-f
   const out = H.sharesFor({ level: 1, rPx: 300 }), inside = H.sharesFor({ level: 1, rPx: Infinity, inside: 1 });
   check(out.body === 1 && near(inside.body, H.SHAPE.inside, 1e-9) && near(inside.light, H.SHAPE.adapt, 1e-9), 'inside it the unresolved light steps back to a quarter (stars, not a fog), and the light adapts as it fills the view');
-  check(/1\.0 - uPhoto \* cov/.test(H.SHADERS.body) && /1\.0 - uPhoto \* cov/.test(H.SHADERS.starVertex), 'every part gives way to the photograph by its share where the photograph covers it');
-  check(Object.values(H.UNDER_MEASURED).every((r) => r === 'same' || r === 'still') && !/uTime|Date\.now/.test(H.SHADERS.body + H.SHADERS.starVertex), 'under Measured nothing changes and nothing moves');
+  check(/1\.0 - uPhoto \* cov/.test(H.SHADERS.bodyVertex) && /1\.0 - uPhoto \* cov/.test(H.SHADERS.starVertex), 'every part gives way to the photograph by its share where the photograph covers it');
+  check(Object.values(H.UNDER_MEASURED).every((r) => r === 'same' || r === 'still') && !/uTime|Date\.now/.test(H.SHADERS.body + H.SHADERS.bodyVertex + H.SHADERS.starVertex), 'under Measured nothing changes and nothing moves');
   const deep = H.paletteFor(X.exposureLook('deep').milkyWay);
   check(deep.enhanced, 'Deep is declared enhanced');
 }
@@ -206,10 +190,10 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   camera.lookAt(centre); camera.updateMatrixWorld();
   hero.setLevel(2, 1);
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 1, gain: 1 });
-  const body = hero.group.getObjectByName('deep-hero-smc-shells');
+  const body = hero.group.getObjectByName('deep-hero-smc-patches'); // 0077 W3-f
   const cam = body.material.uniforms.uCam.value;
   check(cam.z > 599 && Math.hypot(cam.x, cam.y) < 0.5, `on our line the camera is on the sky frame's +z (${cam.toArray().map((v) => v.toFixed(1))})`);
-  check(hero.stats().points === 40000 && hero.stats().maps === 'ready' && body.material.uniforms.uShare.value === 1, `T1: 40 000 points and the body drawn (${JSON.stringify(hero.stats())})`);
+  check(hero.stats().points === 40000 && hero.stats().patches === H.PATCHES.t1 && hero.stats().maps === 'ready' && body.material.uniforms.uShare.value === 1, `T1: 40 000 points, ${H.PATCHES.t1} patches and the body drawn (${JSON.stringify(hero.stats())})`);
   // every uniform a shader declares is in its material (a missing one reads as 0 and draws nothing: the box, 2026-10-20)
   hero.group.traverse((o) => {
     if (!o.material || !o.material.fragmentShader) return;
@@ -228,7 +212,7 @@ const maps = readMaps(fileBuf('site/data/deep/smc-density.bin'));
   check(lm.from === 'site/images/nebulae/smc.webp' && lm.foreground.some((f) => f[0] === '47 Tucanae') && lm.stars_removed_px > 1000, 'its light is the photograph without its stars and without 47 Tucanae in front (scripts/build_deep_smc.py --light)');
   const bytes = ['site/data/deep/smc-density.bin', 'site/images/deep/smc/smc-light.webp', 'site/images/deep/smc/manifest.json', 'site/images/deep/magellanic/hi-column.webp', 'site/images/deep/magellanic/manifest.json'].reduce((a, p) => a + statSync(join(ROOT, p)).size, 0);
   check(bytes <= 1500000, `its assets are ${bytes} B, within the design's 1.5 MB`);
-  const pts = 66000 * 7 * 4, tex = 128 * 128 * 4 + 512 * 427 * 4 * 4 / 3, layer = 680 * 280 * 4 + M.sheetOf().pos.byteLength * 3;
+  const pts = 66000 * 7 * 4 + H.PATCHES.t2 * 11 * 4, tex = 128 * 128 * 4 + 512 * 427 * 4 * 4 / 3, layer = 680 * 280 * 4 + M.sheetOf().pos.byteLength * 3;
   check(pts + tex < 4e6, `on T2 the hero holds about ${((pts + tex) / 1e6).toFixed(2)} MB on the GPU (the design's +4 MB a hero)`);
   check(layer < 1.5e6, `the Bridge and Stream about ${(layer / 1e6).toFixed(2)} MB`);
   for (const [name, src] of Object.entries({ ...H.SHADERS, ...M.SHADERS })) check(!/bloom|EffectComposer|WebGLRenderTarget/i.test(src), `${name}: no bloom, no pass, no render target`);

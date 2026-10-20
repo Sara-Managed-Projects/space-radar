@@ -232,6 +232,34 @@ function spheroidRadius(n, re) {
 }
 
 /**
+ * (0077 W3-f) A smooth curve through a stream's points (Catmull-Rom, by arc length): `at(u)` for u in 0..1 from its root
+ * to its tip, and its length in kpc. Pure.
+ */
+export function streamPath(pts) {
+  const P = pts.map((p) => [Number(p[0]) || 0, Number(p[1]) || 0, Number(p[2]) || 0]);
+  const seg = (i, t) => {
+    const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[Math.min(P.length - 1, i + 1)], p3 = P[Math.min(P.length - 1, i + 2)];
+    const t2 = t * t, t3 = t2 * t;
+    return [0, 1, 2].map((k) => 0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3));
+  };
+  const S = 24, samples = [], lens = [0];
+  for (let i = 0; i < P.length - 1; i++) for (let k = 0; k < S; k++) samples.push(seg(i, k / S));
+  samples.push(P[P.length - 1].slice());
+  for (let i = 1; i < samples.length; i++) lens.push(lens[i - 1] + Math.hypot(samples[i][0] - samples[i - 1][0], samples[i][1] - samples[i - 1][1], samples[i][2] - samples[i - 1][2]));
+  const L = lens[lens.length - 1] || 1;
+  return {
+    length: L,
+    at(u) {
+      const want = Math.min(1, Math.max(0, u)) * L;
+      let lo = 0, hi = lens.length - 1;
+      while (hi - lo > 1) { const m = (lo + hi) >> 1; if (lens[m] < want) lo = m; else hi = m; }
+      const t = (want - lens[lo]) / Math.max(1e-9, lens[hi] - lens[lo]);
+      return [0, 1, 2].map((k) => samples[lo][k] + (samples[hi][k] - samples[lo][k]) * t);
+    },
+  };
+}
+
+/**
  * Generate a galaxy's points from its params. Pure and seeded: the same params and seed give the same
  * bytes. Positions in the disc's own kiloparsecs (x the line of nodes, z the disc's axis).
  *   light: {pos Float32Array(3n), col Uint8Array(4n) rgb + light, meta Uint8Array(4n) patch, disc-ness,
@@ -250,7 +278,7 @@ export function generateGalaxy(params, { count = 60000, dust = 0.3, seed = 7 } =
   const ringLayer = lightLayers.find((l) => l.kind === 'ring') || null;
   const discLayer = lightLayers.find((l) => l.kind === 'disc') || null;
   let rMax = 0;
-  for (const l of lightLayers) rMax = Math.max(rMax, kpc(l, 'r_max', 0), kpc(l, 'r_to', 0) * 1.1, (kpc(l, 'radius', 0) + 3 * kpc(l, 'width', 0)) || 0, kpc(l, 're', 0) * 6);
+  for (const l of lightLayers) if (l.kind !== 'stream') rMax = Math.max(rMax, kpc(l, 'r_max', 0), kpc(l, 'r_to', 0) * 1.1, (kpc(l, 'radius', 0) + 3 * kpc(l, 'width', 0)) || 0, kpc(l, 're', 0) * 6); // 0077 W3-f: a tidal stream is outside the grid
   rMax = Math.max(rMax, 1);
   const arm = armsLayer ? {
     m: Math.max(1, Math.round(armsLayer.count || 2)),
@@ -377,6 +405,18 @@ export function generateGalaxy(params, { count = 60000, dust = 0.3, seed = 7 } =
       const centres = [];
       for (let c = 0; c < cn; c++) { const R = -rd * Math.log(Math.max(1e-6, rnd() * rnd())) * 0.8; const ph = 2 * Math.PI * rnd(); centres.push([R * Math.cos(ph), R * Math.sin(ph), size * (0.5 + rnd())]); }
       for (let j = 0; j < m; j++) { const c = centres[j % cn]; put(c[0] + gauss() * c[2], c[1] + gauss() * c[2], gauss() * c[2] * 0.4, rgb, flux, mean * 0.7, 1, kind); }
+    } else if (l.kind === 'stream' && Array.isArray(l.path_kpc) && l.path_kpc.length >= 2) {
+      // 0077 W3-f (internal #875): a tidal tail or bridge, stars pulled out along a curve through the profile's points (sky
+      // places and a modelled depth, turned into this galaxy's own kiloparsecs by resolveSky). Its light thins toward the tip.
+      const path = streamPath(l.path_kpc);
+      const w = kpc(l, 'width', 1), tip = Number.isFinite(l.tip_light) ? l.tip_light : 0.3;
+      for (let j = 0; j < m; j++) {
+        let u = rnd();
+        for (let t = 0; t < 16 && rnd() > 1 - (1 - tip) * u; t++) u = rnd(); // thinner toward the tip, linearly to `tip_light`
+        const c = path.at(u);
+        const wide = w * (0.6 + 0.8 * u);
+        put(c[0] + gauss() * wide, c[1] + gauss() * wide, c[2] + gauss() * wide * 0.7, rgb, flux, Math.min(PATCH_MAX_KPC, Math.max(0.05, wide * 1.2)), 0, kind, 2);
+      }
     } else if (KNOT_KINDS.has(l.kind)) {
       // H II regions: in the ring and along the arms (catalogue statistics), or one named landmark
       const size = kpc(l, 'size', 0.05), hz = kpc(l, 'height', 0.05);
@@ -424,7 +464,7 @@ export function generateGalaxy(params, { count = 60000, dust = 0.3, seed = 7 } =
       const dens = c >= 0 && perKpc2[c] > 0 ? perKpc2[c] : 1 / area;
       patchKpc[j] = Math.min(pMax, Math.max(pMin, Math.sqrt(OVERLAP / dens)));
     }
-    const k = c >= 0 && sb[c] > ref ? Math.pow(sb[c] / ref, -STRETCH) : 1;
+    const k = isKnot[j] !== 2 && c >= 0 && sb[c] > ref ? Math.pow(sb[c] / ref, -STRETCH) : 1; // 0077 W3-f: a stream's light is not stretched
     lum[j] = f0[j] * k;
     fl[j] = lum[j] / (patchKpc[j] * patchKpc[j]);
     meta[j * 4] = Math.max(1, Math.min(255, Math.round((patchKpc[j] / PATCH_MAX_KPC) * 255)));
@@ -433,7 +473,7 @@ export function generateGalaxy(params, { count = 60000, dust = 0.3, seed = 7 } =
   }
   // The normalisation: the brightest face-on patch (99.5th percentile of the cells) at PEAK.
   const shown = new Float64Array(G * G);
-  for (let j = 0; j < n; j++) { const c = cellOf(pos[j * 3], pos[j * 3 + 1]); if (c >= 0) shown[c] += SPRITE_AREA * lum[j] / area; }
+  for (let j = 0; j < n; j++) { if (isKnot[j] === 2) continue; const c = cellOf(pos[j * 3], pos[j * 3 + 1]); if (c >= 0) shown[c] += SPRITE_AREA * lum[j] / area; } // 0077 W3-f: the galaxy's own peak sets the gain
   const lit = [...smooth3(shown)].filter((v) => v > 0).sort((x, y) => x - y);
   const top = lit.length ? lit[Math.min(lit.length - 1, Math.floor(lit.length * 0.995))] : 1;
   const gain = PEAK / top;
@@ -558,6 +598,7 @@ uniform float uMaxPx;
 uniform float uOutside;
 uniform float uAlphaCap;
 uniform vec3 uNormalW;
+uniform vec2 uBulge;        // 0077 W3-f: the bulge's kind index (-1: none) and the share of the light its points keep
 varying vec3 vCol;
 varying float vA;
 void main() {
@@ -570,6 +611,8 @@ void main() {
   float s = clamp( ideal, uMinPx, uMaxPx );
   // a patch held bigger than it is keeps its light, spread wider; one held smaller does not grow brighter
   float a = aFlux * uGain * min( 1.0, ( ideal * ideal ) / ( s * s ) );
+  // a bulge drawn round from every side by its billboard keeps only its sparkle in the points (0077 W3-f, the Sombrero)
+  if ( abs( aMeta.w * 255.0 - uBulge.x ) < 0.5 ) a *= uBulge.y;
   // the edge-on path length, kept in part (the head of scene/deep/spiral.js)
   vec3 nV = normalize( ( viewMatrix * vec4( uNormalW, 0.0 ) ).xyz );
   float c = abs( dot( normalize( mv.xyz ), nV ) );
@@ -907,7 +950,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   group.name = name;
   group.matrixAutoUpdate = false;
   const shared = { uViewH: { value: 900 }, uMinPx: { value: 1.5 }, uMaxPx: { value: 40 } };
-  const lightU = { ...shared, uGain: { value: 0 }, uOutside: { value: 1 }, uAlphaCap: { value: 0.9 }, uNormalW: { value: new THREE.Vector3(0, 0, 1) } };
+  const lightU = { ...shared, uGain: { value: 0 }, uOutside: { value: 1 }, uAlphaCap: { value: 0.9 }, uNormalW: { value: new THREE.Vector3(0, 0, 1) }, uBulge: { value: new THREE.Vector2(-1, 1) } };
   const dustU = { ...shared, uDust: { value: 0 } };
   const halves = [];
   const L = g.light;
@@ -997,7 +1040,8 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   const _m = new THREE.Matrix4();
   const _inv = new THREE.Matrix4();
   const _cam = new THREE.Vector3();
-  let share = 0, exposureNow = 1, faceOn = 1, small = false;
+  let share = 0, exposureNow = 1, faceOn = 1, small = false, bulgeAlways = false;
+  const bulgeKind = g.light.kinds.indexOf('bulge');
   function place(posKm, axes, mode = 'rotate', origin = null) {
     const dirs = sceneDirs([axes.major, axes.across, axes.normal]);
     if (!dirs) return false;
@@ -1029,7 +1073,9 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     lightU.uGain.value = g.gain * share * exposureNow * pts;
     dustU.uDust.value = g.dustGain * share * (0.3 + 0.7 * (1 - lay));
     layerU.uGain.value = prof.gain * share * exposureNow;
-    bulgeU.uGain.value = prof.gain * share * exposureNow * lay;
+    bulgeU.uGain.value = prof.gain * share * exposureNow * (bulgeAlways ? 1 : lay);
+    // 0077 W3-f: a bulge that stays round edge on (the Sombrero's) is the billboard's from every side; its points only sparkle
+    lightU.uBulge.value.set(bulgeAlways && bulgeKind >= 0 && bulgeMesh ? bulgeKind : -1, SPARKLE / Math.max(1e-6, pts));
     layerU.uDustK.value = lookNow() === 'measured' ? 0.6 : 1;
     if (spheroid) { lightU.uGain.value = g.gain * share * exposureNow; shared.uMaxPx.value = (small ? 2.2 : 3.2) * dprNow; shared.uMinPx.value = Math.min(1.8 * dprNow, shared.uMaxPx.value); return; }
     // close up the points are small, capped dots (sparkle), never a carpet; edge on they are patches again
@@ -1074,6 +1120,8 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
     group, place, setShare, update, dispose,
     /** A probe's before shot (0076 W4-a): the bulge's old clamp instead of the soft shoulder. */
     setOld: (b) => { bulgeU.uOld.value = b ? 1 : 0; },
+    /** (0077 W3-f) The bulge drawn round by its billboard from every side, edge on too (profile `frame.bulge: always`). */
+    setBulgeAlways: (b) => { bulgeAlways = !!b; apply(); },
     share: () => share,
     generated: g,
     stats: () => ({ points: L.count, dust: D.count, meshes: group.children.length, textures: 0, bytes }),
@@ -1090,7 +1138,7 @@ export function pointsFor(params, tier) {
   return [24000, 60000, 90000][t];
 }
 /** The parts of a profile that need a place on the sky turned into the disc's own kiloparsecs. */
-export function resolveSky(params, posKm, axes) {
+export function resolveSky(params, posKm, axes, refKm = null) {
   const out = { ...params, sense: axes.sense || params.frame.winding || 1 };
   const ring = params.layers.find((l) => l.kind === 'ring');
   if (ring && ring.split_toward && Number.isFinite(ring.split_toward.ra_deg)) {
@@ -1100,7 +1148,21 @@ export function resolveSky(params, posKm, axes) {
     out.ringOffset = [Math.cos(out.ringSplitPhi) * off, Math.sin(out.ringSplitPhi) * off];
   }
   out.landmarks = params.layers.filter((l) => l.kind === 'landmark' && Number.isFinite(l.ra_deg)).map((l) => ({ name: l.name, xy: inDisc(posKm, axes, l.ra_deg, l.dec_deg) }));
+  // 0077 W3-f: a stream's points are sky places and a depth about the hero's catalogue centre (`ref`): in this galaxy's own kpc
+  const ref = refKm || posKm;
+  out.layers = params.layers.map((l) => (l.kind === 'stream' && Array.isArray(l.path) ? { ...l, path_kpc: l.path.map((q) => toDisc(skyPointKm(ref, q[0], q[1], q[2]), posKm, axes)) } : l));
   return out;
+}
+/** (0077 W3-f) A place given as RA and Dec (J2000, degrees) and kpc toward the Sun from the distance of `refKm`: sun-inertial km. Pure. */
+export function skyPointKm(refKm, raDeg, decDeg, towardKpc = 0) {
+  const u = eqUnit(raDeg, decDeg);
+  const r = Math.hypot(refKm.x, refKm.y, refKm.z) - (Number(towardKpc) || 0) * KPC_KM;
+  return { x: u[0] * r, y: u[1] * r, z: u[2] * r };
+}
+/** (0077 W3-f) A sun-inertial place in a galaxy's own kpc (x the line of nodes, z its axis) about its centre. Pure. */
+export function toDisc(km, posKm, axes) {
+  const d = [km.x - posKm.x, km.y - posKm.y, km.z - posKm.z];
+  return [dot(d, axes.major) / KPC_KM, dot(d, axes.across) / KPC_KM, dot(d, axes.normal) / KPC_KM];
 }
 const smoothstepJs = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const lookNow = () => { try { const sr = globalThis.spaceRadar; return sr && typeof sr.look === 'function' ? sr.look() : 'film'; } catch (e) { return 'film'; } };
@@ -1142,11 +1204,14 @@ export function createHero(THREE, env = {}) {
   const params = resolveSky(params0, posKm, axes);
   const seed = (profile.levels && profile.levels.seed) || 7;
   const tier = tierNow();
-  const g = createGalaxyPoints(THREE, params, { count: pointsFor(params, tier), dust: profile.levels && Number.isFinite(profile.levels.dust_share) ? profile.levels.dust_share : 0.3, seed, name: group.name });
-  group.add(g.group);
+  const dustShare = profile.levels && Number.isFinite(profile.levels.dust_share) ? profile.levels.dust_share : 0.3;
+  // 0077 W3-f: a system of galaxies (the Antennae) has no galaxy of its own at the record's place, only its `components`
+  const own = params.layers.some((l) => !String(l.kind).startsWith('dust'));
+  const g = own ? createGalaxyPoints(THREE, params, { count: pointsFor(params, tier), dust: dustShare, seed, name: group.name }) : null;
+  if (g) { g.setBulgeAlways(params.frame && params.frame.bulge === 'always'); group.add(g.group); }
   let placedFor = null;
   let placeCompanionsLater = () => {};
-  const orient = () => { if (placedFor !== stage.worldId && g.place(posKm, axes, 'rotate')) { placedFor = stage.worldId; placeCompanionsLater(); } };
+  const orient = () => { if (placedFor !== stage.worldId && (!g || g.place(posKm, axes, 'rotate'))) { placedFor = stage.worldId; placeCompanionsLater(); } };
   orient();
   // A `gas` layer, as the stub heroes build one (scene/deep/gasmat.js): none in M31's or M33's profile.
   const parts = [];
@@ -1161,18 +1226,35 @@ export function createHero(THREE, env = {}) {
   // `satellites` layer lists them (one `members` row each, with its source); each is ONE Points draw, the same from every
   // side, its shape the catalogue ellipse and its third dimension assumed. They are part of this hero (the profile's
   // `children`): no holder of their own, the point glow steps back by this hero's share (`shares`).
+  // 0077 W3-f: a member with no record of its own (NGC 5195) is placed by its RA and Dec and kpc toward us from the hero's
+  // distance (`toward_kpc`), its ellipse the member's own (`axes_arcmin`, `pa_deg`); it follows the hero's share as the galaxy does.
   const companions = [];
   const satellites = (profile.layers || []).find((l) => l && l.kind === 'satellites');
   for (const m of (satellites && satellites.members) || []) {
-    const rec = env.recordById ? env.recordById(m.record) : null;
+    let rec = m.record && env.recordById ? env.recordById(m.record) : null;
+    if (!rec && Number.isFinite(Number(m.ra_deg)) && Array.isArray(m.axes_arcmin)) {
+      rec = { id: null, pos: skyPointKm(posKm, Number(m.ra_deg), Number(m.dec_deg), Number(m.toward_kpc) || 0), meta: { majAxArcmin: m.axes_arcmin[0], minAxArcmin: m.axes_arcmin[1], posAngDeg: Number(m.pa_deg) || 0 } };
+    }
     if (!rec || !rec.pos || !Number.isFinite(Number(m.re_kpc))) continue;
     const frame = spheroidFrame(rec, Number(m.q) || 0.7);
-    const mp = { id: m.record, frame, sense: 1, layers: [{ kind: 'bulge', sersic_n: Number(m.sersic_n) || 2, re_kpc: Number(m.re_kpc), q: frame.q, light: 1, colour: m.colour || '#ffd9ae' }] };
-    const cg = createGalaxyPoints(THREE, mp, { count: SPHEROID_POINTS[Math.min(2, Math.max(0, tier | 0))], dust: 0, seed: 32 + companions.length, name: `${group.name}:${m.record}`, spheroid: true });
+    const mp = { id: m.record || m.name, frame, sense: 1, layers: [{ kind: 'bulge', sersic_n: Number(m.sersic_n) || 2, re_kpc: Number(m.re_kpc), q: frame.q, light: 1, colour: m.colour || '#ffd9ae' }] };
+    const cg = createGalaxyPoints(THREE, mp, { count: SPHEROID_POINTS[Math.min(2, Math.max(0, tier | 0))], dust: 0, seed: 32 + companions.length, name: `${group.name}:${m.record || m.name}`, spheroid: true });
     group.add(cg.group);
-    companions.push({ id: m.record, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame), rPx: 0 });
+    companions.push({ id: m.record || null, g: cg, posKm: rec.pos, axes: discAxes(rec.pos, frame), rPx: 0, light: Number.isFinite(Number(m.light)) ? Number(m.light) : 1 });
   }
-  const shareMap = new Map(companions.map((c) => [c.id, 0]));
+  // 0077 W3-f (internal #875): the galaxies of an interacting system, each from its own layers in its own frame, at its own
+  // place on the sky and depth (`toward_kpc`, a model where the profile says so); its streams belong to it (resolveSky).
+  for (const c of profile.components || []) {
+    if (!c || !Number.isFinite(Number(c.ra_deg))) continue;
+    const cPos = skyPointKm(posKm, Number(c.ra_deg), Number(c.dec_deg), Number(c.toward_kpc) || 0);
+    const cp0 = paramsFor({ id: `${profile.id}-${c.name}`, layers: c.layers || [], frame: c.frame || {}, levels: { points: c.points } }, null);
+    const cAxes = discAxes(cPos, cp0.frame);
+    const cp = resolveSky(cp0, cPos, cAxes, posKm);
+    const cg = createGalaxyPoints(THREE, cp, { count: pointsFor(cp, tier), dust: dustShare, seed: seed + 1 + companions.length, name: `${group.name}:${c.name}` });
+    group.add(cg.group);
+    companions.push({ id: null, g: cg, posKm: cPos, axes: cAxes, rPx: 0, light: Number.isFinite(Number(c.light)) ? Number(c.light) : 1, component: true });
+  }
+  const shareMap = new Map(companions.filter((c) => c.id).map((c) => [c.id, 0]));
   const _o = new THREE.Vector3();
   const placeCompanions = () => {
     if (!companions.length || !stage.toSceneInto(posKm, 'sun-inertial', _o, stage.tMs)) return;
@@ -1186,10 +1268,14 @@ export function createHero(THREE, env = {}) {
   // (`info.gain`) with each frame; this hero reads nothing else, and tells scene/galaxy.js's far copy only how much it draws.
   const refresh = () => {
     const k = share * (1 - Math.min(1, Math.max(0, photoIn)));
-    g.setShare(k, gainIn);
-    for (const c of companions) c.g.setShare(before ? 0 : companionShare(share, photoIn, c.rPx), gainIn);
-    g.setOld(before);
+    if (g) g.setShare(k, gainIn);
+    // a catalogued companion steps in for its own photograph's frame (companionShare); one with no record, and a component,
+    // is in the hero's photograph: it gives way to it as the galaxy does
+    for (const c of companions) c.g.setShare(before ? 0 : (c.id ? companionShare(share, photoIn, c.rPx) : k) * c.light, gainIn);
+    if (g) g.setOld(before);
   };
+  const meshesNow = () => (g ? g.stats().meshes : 0) + companions.reduce((n, c) => n + c.g.stats().meshes, 0);
+  const pointsNow = () => (g ? g.stats().points : 0) + companions.reduce((n, c) => n + c.g.stats().points, 0);
   return {
     group,
     levels: [2, 3],
@@ -1208,18 +1294,18 @@ export function createHero(THREE, env = {}) {
       if (Number.isFinite(info.photo)) photoIn = info.photo;
       if (Number.isFinite(info.gain) && info.gain > 0) gainIn = info.gain;
       before = !!info.before; // sr.deep.debug({before: true}): the 1.1 look, for a probe
-      for (const c of companions) c.rPx = typeof info.pxOf === 'function' ? info.pxOf(c.id) : 0;
+      for (const c of companions) c.rPx = c.id && typeof info.pxOf === 'function' ? info.pxOf(c.id) : 0;
       refresh();
-      g.update(info.camera, viewHNow(), dprNow(), tier);
+      if (g) g.update(info.camera, viewHNow(), dprNow(), tier);
       for (const c of companions) c.g.update(info.camera, viewHNow(), dprNow(), tier);
       for (const v of parts) { if (info.camera) v.setCamera(info.camera, 1); v.setLook(info.look, info); }
     },
     ready: () => true,
     /** record id -> how much of it this hero draws (the level's share): the point glow of M32 and M110 steps back by it. */
-    shares: () => { for (const c of companions) shareMap.set(c.id, share); return shareMap; },
-    stats: () => ({ level, share: Math.round(g.share() * 100) / 100, ...g.stats(), meshes: g.stats().meshes + companions.reduce((n, c) => n + c.g.stats().meshes, 0), companions: companions.length, points: g.stats().points + companions.reduce((n, c) => n + c.g.stats().points, 0) }),
+    shares: () => { for (const c of companions) if (c.id) shareMap.set(c.id, share); return shareMap; },
+    stats: () => ({ level, share: Math.round((g ? g.share() : (companions[0] ? companions[0].g.share() : 0)) * 100) / 100, ...(g ? g.stats() : { dust: 0, textures: 0, bytes: companions.reduce((n, c) => n + c.g.stats().bytes, 0) }), meshes: meshesNow(), companions: companions.length, points: pointsNow() }),
     dispose() {
-      g.dispose();
+      if (g) g.dispose();
       for (const c of companions) c.g.dispose();
       companions.length = 0;
       for (const v of parts) v.dispose();
