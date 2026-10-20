@@ -40,7 +40,8 @@ request when possible.
    `tests/probes/offline-probe.js` does the same in headless Chrome.
 4. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, tidy it into
    Added / Changed / Fixed, add a fresh empty `## [Unreleased]` above it, and update the compare
-   links at the foot. Merge that pull request.
+   links at the foot. Set `BUILD` in `site/js/ui/urlstate.js` to the same `X.Y.Z`: shared links
+   carry it as `build=`, and `tests/test_access.mjs` checks its shape. Merge that pull request.
 5. Tag the merge commit and push the tag:
 
    ```bash

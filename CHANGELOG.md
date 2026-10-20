@@ -11,10 +11,122 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
-- Without JavaScript, and in a browser that cannot draw WebGL 2, the page now says what Space Radar is and lists its trips and its pages, instead of one line.
-- A shared link carries `v=1` and the release that made it (`build=`).
-- Motion, in What to show: Off makes every flight an instant move and a trip wait for Next, as a device's own reduced-motion setting does.
-- A screen reader hears one line on what is on screen: the world the camera is round, what is selected, a trip's stop.
+## [1.2.0] - 2026-10-20
+
+Deep space, finished, and the reason for every card. Orion and the Ring Nebula are drawn in 3D, the
+Crab, the Veil and four dust clouds are shells and sheets, globular clusters are stars you can fly
+into, and at the horizon the map shows WMAP's picture of the oldest light. Every card now says how we
+know what it shows. The Moon has shadows from its own heights,
+the giants have the rings they really have, three moons have plumes, and two new trips fly across the
+Local Group and out to the edge. A card says where it is and Back walks your own path; typing "galaxies"
+lists them; the map reads without WebGL, has a Motion switch, and a shared link carries its release.
+It is a minor release: everything new is added, and the 1.0.0 promises hold. A shared link (`v=1`; the new
+`build=` beside it is read and nothing acts on it), the saved-data format (`/data/v1/`) and the
+registry row formats all still work, and no registry row that a fork wrote against needs a change.
+
+Counted on release day with `python3 scripts/count_facts.py`: 30 trips and 227 stops, 109 389
+stars, 40 star systems, 30 nebula and galaxy photographs, 21 moons (20 with a map), 20 landing
+sites on the Moon and 12 on Mars, 131 spacecraft models (126 in 1.1.0), 29 layers, 14 sources and
+31 feeds, and 290 test files. 12 deep-sky heroes, 890 records with a class, a source and a credit.
+
+### Added
+- **Orion and the Trapezium in 3D** (internal spec 0076, [#1195]). The photograph on our line of
+  sight, and turned away from it a blister of lit gas on a reconstructed ionisation front, the dark
+  cloud behind it, the Veil's Dark Bay in front, and the Trapezium's stars at SIMBAD's places as
+  sharp points.
+- **The cosmic microwave background at the horizon** ([#1192]). Past 30 billion light-years, and
+  from just outside the horizon, WMAP's nine-year map of the oldest light is painted inside the
+  horizon sphere with a colour scale in microkelvin. It says in words that where the map is put is an
+  illustration, and a screen reader is given the same words. The ladder ends on an Edge rung.
+- **How we know, on every card** ([#1193]). A last row that says what is drawn and how it is known:
+  the photograph's telescope, camera, date and filters, the four position classes, the drawn
+  classes and the two looks, and the glossary terms the card uses (five new). The HUD tag follows
+  what is actually drawing, so a Helix seen on our line says "photograph". The Milky Way's card
+  says what is measured and what is inferred.
+- **The Sun's face of the day** ([#1194]). Close up, the half of the Sun facing the Earth wears
+  SDO's newest 171 Å picture, dated and credited, turned with the Sun since it was taken; the far
+  side is drawn in the picture's own false colour. It is a browse picture and the card says so.
+  Coronal loops are in the code and off for this release.
+- **The Moon at a low Sun** ([#1208]). Shadows are cast by the Moon's own LOLA heights where the Sun
+  is low and the ground is near enough to resolve them (a crater under about two kilometres casts
+  none, and the card says so), and the Apollo 15 and 17 rover traverses are drawn on the ground as
+  Phil Stooke traced them. Only documented paths are drawn.
+- **The ISS at sunrise** ([#1208]): the reddened light on the station at orbital sunrise.
+- **Uranus's dark rings** ([#1202]): the rings keep the radii and widths of the fact sheet and are
+  now as dark as their particles, a thirtieth of the clouds, not pale grey.
+- **Jupiter's faint ring** ([#1202]): the halo and the main ring, from NASA's fact sheet, show from
+  the night side and under the Deep exposure. The gossamer rings are left out.
+- **The Great Red Spot at its dated place** ([#1202]): placed where JUPOS measured it, with the
+  date on Jupiter's card.
+- **Plumes where they were seen** ([#1205]): Pele, Tvashtar, Prometheus and Pillan on Io with five
+  night-side hot spots, the tiger-stripe jets of Enceladus, and Triton's two dark geysers with their
+  clouds carried west. Each is a row that names the craft and the date that saw it; the card says
+  they may not be erupting now.
+- **Two trips** ([#1200]): *Across the Local Group* and *Out to the edge of the universe we can see*, with voice,
+  captions, a share page and an offline copy.
+- **Globular clusters you can fly into** ([#1211]): all 33 are drawn as stars from Harris's core
+  and tidal radii, and 36 open clusters, the Pleiades and the Beehive among them, show 23 685 of their Gaia
+  members.
+- **The Ring Nebula in 3D** ([#1213]): the ring, the gas along its axis and its halo, lit by
+  Hubble's photograph, which is what you see from our side.
+- **Remnants and dust** ([#1215]): the Crab and the Veil as shells, and the Horsehead, the
+  Coalsack, M78 and the Iris as sheets that dim and redden what is behind them and never glow.
+- **Where you are, and the way back** ([#1212]): every card has a line of its parents (*Sun ›
+  Jupiter › Europa*) whose parts fly there, a Back that walks your own last 20 steps in this
+  session only, and a scale rail that marks the rung you are on.
+- **Search by kind** ([#1210]): typing "galaxies", "nebulae" or "moons of Saturn" lists the records
+  of that kind, grouped by class, with a toggle for those drawn in 3D.
+- **Deep space made consistent** ([#1237]): Andromeda's companions M32 and M110 are points drawn by
+  M31's hero, a member of a tilted disc sits in its plane (the Tarantula in the LMC's), the 800
+  local-volume galaxies can be tapped and have cards, and a trip's intro warms the heroes it is
+  about to visit.
+- **Galaxy clusters and quasars** ([#1238]): Virgo, Coma, Fornax and Perseus as swarms of their own
+  3 596 galaxies, and the quasars 3C 273 and 3C 279 as bright points at their distances in the
+  map's one cosmology.
+- **Readable without WebGL** ([#1239]): with no JavaScript, or no WebGL 2, the page says what Space
+  Radar is, why the map cannot run, and lists all 30 trips; it is not a blank screen.
+- **A Motion switch** ([#1239]) in What to show: Off is what `prefers-reduced-motion` is, with flights
+  that arrive at once, trips paced by the reader and the deep sky's gas held still. A polite line
+  tells a screen reader the stage, the selection and the trip.
+- **Full share links** ([#1239]): a link that names a view carries `v=1` and `build=<release>`.
+- **Five more spacecraft models** ([#1236]): Psyche, Lucy, JUICE, Hera and BepiColombo (as its
+  cruise stack), built here from published dimensions and labelled so. 131 in all.
+- **Lab simulators** have canonical addresses, Open Graph and LearningResource markup, written at build
+  time ([#1214]).
+
+### Changed
+- **The four hero models are now twelve**, and every one says on its card that it has not yet been
+  reviewed by an astronomer: the Helix, the LMC, Andromeda and Triangulum of 1.1.0, plus Orion, the
+  Ring, the Crab, the Veil, the Horsehead, the Coalsack, M78 and the Iris.
+- **Every record on the map has a class, a source and a credit, and CI checks all four**
+  ([#1201]). 890 records are sorted into 38 visual classes (and four of the house's); the generated
+  [docs/COVERAGE.md](docs/COVERAGE.md) lists each, and a record drawn as an illustration may not
+  describe itself with the words of a measurement. Asset rows in `registry/asset_sources.yaml` say
+  what a visitor has of each offline.
+- Star-system cards write "AU" the same way everywhere ([#1217]).
+- The Earth's card links to an aurora forecast ([#1218]).
+
+### Fixed
+- **Gaia's licence is stated as ESA states it**, CC BY-NC 3.0 IGO, not CC BY-SA ([#1207]).
+- **Nine places that cited no source now cite one**, and two were in the wrong place: Madrid's
+  DSS-63 dish moves 21 km north (its latitude was 40.2414 and is 40.4312) and Chang'e 4 about 400 m
+  ([#1201]).
+
+### For contributors
+- `BUILD` in `site/js/ui/urlstate.js` is the release a shared link was made by; a release bumps it
+  with the changelog, and `docs/RELEASING.md` now says so.
+- Thanks to @SwatiManjari for a doc comment on `isCompact` ([#1197]), and to @cc0006-coder for
+  removing unused code in eight files ([#1219], [#1220], [#1221], [#1222], [#1223], [#1224],
+  [#1225], [#1226]), a usage message for `tools/serve.py` ([#1227]), a `--help` for
+  `gen_trip_pages.py` ([#1228]), and the AU and aurora-forecast changes above ([#1217], [#1218]).
+- A first outside pull request is thanked by name when it merges, with three good first issues
+  ([#1209]).
+- Catalogue coverage runs in CI: `tests/test_coverage.py` and `scripts/check_registry.py` hold the
+  class, source, credit and honesty words of every record ([#1201]); `tests/test_readme_facts.py`
+  holds CONTRIBUTING and TRANSLATING to `count_facts.py`.
+- Tools: a baseline gallery and per-scene numbers for the heroes (`sr.perf` under `?look=1`)
+  ([#1196]); a look probe for `r12-access` and axe-core in the look job ([#1239]).
+- How the release was assembled: waves 1 to 4 reached `main` as [#1198], [#1235] and [#1241].
 
 ## [1.1.0] - 2026-10-15
 
@@ -415,7 +527,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.0.0
 [#462]: https://github.com/Sara-Managed-Projects/space-radar/pull/462
@@ -516,3 +629,41 @@ The first public map.
 [#1184]: https://github.com/Sara-Managed-Projects/space-radar/pull/1184
 [#1185]: https://github.com/Sara-Managed-Projects/space-radar/pull/1185
 [#1186]: https://github.com/Sara-Managed-Projects/space-radar/pull/1186
+[#1192]: https://github.com/Sara-Managed-Projects/space-radar/pull/1192
+[#1193]: https://github.com/Sara-Managed-Projects/space-radar/pull/1193
+[#1194]: https://github.com/Sara-Managed-Projects/space-radar/pull/1194
+[#1195]: https://github.com/Sara-Managed-Projects/space-radar/pull/1195
+[#1196]: https://github.com/Sara-Managed-Projects/space-radar/pull/1196
+[#1197]: https://github.com/Sara-Managed-Projects/space-radar/pull/1197
+[#1198]: https://github.com/Sara-Managed-Projects/space-radar/pull/1198
+[#1200]: https://github.com/Sara-Managed-Projects/space-radar/pull/1200
+[#1201]: https://github.com/Sara-Managed-Projects/space-radar/pull/1201
+[#1202]: https://github.com/Sara-Managed-Projects/space-radar/pull/1202
+[#1205]: https://github.com/Sara-Managed-Projects/space-radar/pull/1205
+[#1207]: https://github.com/Sara-Managed-Projects/space-radar/pull/1207
+[#1208]: https://github.com/Sara-Managed-Projects/space-radar/pull/1208
+[#1209]: https://github.com/Sara-Managed-Projects/space-radar/pull/1209
+[#1210]: https://github.com/Sara-Managed-Projects/space-radar/pull/1210
+[#1211]: https://github.com/Sara-Managed-Projects/space-radar/pull/1211
+[#1212]: https://github.com/Sara-Managed-Projects/space-radar/pull/1212
+[#1213]: https://github.com/Sara-Managed-Projects/space-radar/pull/1213
+[#1214]: https://github.com/Sara-Managed-Projects/space-radar/pull/1214
+[#1215]: https://github.com/Sara-Managed-Projects/space-radar/pull/1215
+[#1217]: https://github.com/Sara-Managed-Projects/space-radar/pull/1217
+[#1218]: https://github.com/Sara-Managed-Projects/space-radar/pull/1218
+[#1219]: https://github.com/Sara-Managed-Projects/space-radar/pull/1219
+[#1220]: https://github.com/Sara-Managed-Projects/space-radar/pull/1220
+[#1221]: https://github.com/Sara-Managed-Projects/space-radar/pull/1221
+[#1222]: https://github.com/Sara-Managed-Projects/space-radar/pull/1222
+[#1223]: https://github.com/Sara-Managed-Projects/space-radar/pull/1223
+[#1224]: https://github.com/Sara-Managed-Projects/space-radar/pull/1224
+[#1225]: https://github.com/Sara-Managed-Projects/space-radar/pull/1225
+[#1226]: https://github.com/Sara-Managed-Projects/space-radar/pull/1226
+[#1227]: https://github.com/Sara-Managed-Projects/space-radar/pull/1227
+[#1228]: https://github.com/Sara-Managed-Projects/space-radar/pull/1228
+[#1235]: https://github.com/Sara-Managed-Projects/space-radar/pull/1235
+[#1236]: https://github.com/Sara-Managed-Projects/space-radar/pull/1236
+[#1237]: https://github.com/Sara-Managed-Projects/space-radar/pull/1237
+[#1238]: https://github.com/Sara-Managed-Projects/space-radar/pull/1238
+[#1239]: https://github.com/Sara-Managed-Projects/space-radar/pull/1239
+[#1241]: https://github.com/Sara-Managed-Projects/space-radar/pull/1241
