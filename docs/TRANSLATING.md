@@ -80,8 +80,9 @@ Three steps, and the first you already have.
 3. Open the map with `?lang=<code>` at the end of the address (`http://localhost:8000/?lang=es`) and look through it at a
    phone's width and a desktop's. A string you did not translate shows in English: the checker lists them.
 
-Then `node scripts/check-translation.mjs --write-doc` puts your language into the table above (the same command with
-`--check-doc` is run for every pull request, and fails when the table is stale).
+Then `node scripts/check-translation.mjs --write-doc` puts your language into the table above. The same command with
+`--check-doc` runs for every pull request and fails when a language is missing from the table or its review status has
+changed (the counts move whenever the English does, so they are refreshed with `--write-doc`, not held).
 
 How the page chooses (`site/js/copy/lang.js`): `?lang=` first (`es-MX` is read as `es`; `?lang=en` forces English; a
 code nobody has written is English); else the browser's own list of languages, but only for a language marked

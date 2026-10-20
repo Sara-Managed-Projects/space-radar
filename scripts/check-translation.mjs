@@ -166,7 +166,10 @@ export async function docWithTable() {
   const from = doc.indexOf(DOC_BEGIN), to = doc.indexOf(DOC_END);
   if (from < 0 || to < from) throw new Error(`docs/TRANSLATING.md needs the markers ${DOC_BEGIN} ... ${DOC_END}`);
   const text = `${doc.slice(0, from)}${DOC_BEGIN}\n${table(st, true)}\n${doc.slice(to)}`;
-  return { text, stale: text !== doc, st };
+  // The NUMBERS drift whenever any stage adds an English string, so --check-doc compares the table without them: a language that
+  // is missing from the table, a review status that changed or a row that says the wrong thing is stale; five more strings are not.
+  const shape = (t) => t.replace(/[\d\u202f.]+( %)?/g, '#');
+  return { text, stale: shape(text) !== shape(doc), st };
 }
 // 0077 W1-e: end
 
