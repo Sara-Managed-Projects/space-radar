@@ -417,7 +417,9 @@ const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (d
   check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 1\.5 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
     `Mars, which has a map and air, says how it is lit and that its air is drawn thicker than it is: ${marsLine}`);
   check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
-  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit + COPY.punctuation.separator + COPY.drawing.worldLight, 'Jupiter, with no shell, says only how it is lit and what its glow is');
+  // Internal spec 0076 W2-b: and, since its faint ring is drawn, what that ring is (copy/en.later.js r12Giants.rings.jupiter).
+  const jupiterLine = drawingLine(recs.find((x) => x.id === 'jupiter')) || '';
+  check(jupiterLine.startsWith(COPY.drawing.worldLit + COPY.punctuation.separator + COPY.drawing.worldLight + COPY.punctuation.separator + 'its faint ring is at the distances') && !/\{/.test(jupiterLine), `Jupiter, with no shell, says how it is lit, what its glow is and what its faint ring is: ${jupiterLine}`);
   // 2026-10-07: each giant offers Hubble's map of 2025 as a second face, with its day and its credit in the note.
   {
     await import(join(JS, 'copy/en.later.js'));

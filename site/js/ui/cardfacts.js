@@ -631,7 +631,9 @@ export function rightNowRows(record, m, passInfo) {
     const type = pick(md, 'typeText');
     if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
     const sizeLy = pickNumber(md, 'sizeLy');
+    // (0076 W3-b) under a light-year, one decimal (the Ring at Gaia's distance is 0.95 ly): a real value, never a dash.
     if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(roughly(sizeLy)) })]);
+    else if (sizeLy !== null && sizeLy >= 0.05) rows.push([R.across, t(V.lightYears, { n: fmt.num(sizeLy, 1) })]);
     const con = pick(md, 'con');
     if (con) rows.push([R.constellation, String(con)]);
     const desig = pick(md, 'designation');
@@ -1073,7 +1075,7 @@ export function honestyClause(record, m) {
     if (mine) return `${t(F.drawnLine, { drawn: mine.drawn })} ${mine.split}`;
     const words = drawnOf(record).slice(0, 2).map((c) => F.drawnWords[c]).filter(Boolean);
     // A shipped hero names its own source: `card[heroId]` in its stage's words block (copy/en.later.js).
-    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
+    const own = md.heroId && Array.isArray(md.heroDrawn) ? ['deepHelix', 'deepLmc', 'deepGalaxy', 'deepOrion', 'deepRing', 'r12Dust'].map((b) => COPY[b] && COPY[b].card && COPY[b].card[md.heroId]).find(Boolean) : null;
     return words.length ? t(F.drawnLine, { drawn: words.join(F.drawnJoin) }) + (own ? ` ${own}` : '') : null;
   }
 

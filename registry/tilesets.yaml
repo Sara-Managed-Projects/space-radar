@@ -114,6 +114,31 @@ tilesets:
       licence: 'USGS Astrogeology, Moon LRO LOLA DEM 118m: "Access Constraints public domain", "Use Constraints Please cite authors"'
       credit: "The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
       source: "https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m (read 2026-10-06)"
+    # HEIGHTS FOR CAST SHADOWS (release 1.2.0 stage W2-a, internal #864). Trek's LOLA elevation
+    # pyramid: grey PNG with alpha, one byte a texel, levels 0 to 5 (level 6 is a 404), 2x1 at
+    # level 0 like the colour tiles, 9 to 21 KB a tile. scene/tiles.js reads a window of it round
+    # the view into one height texture and marches toward the Sun in it (CAST SHADOWS, there).
+    # THE BYTE IN METRES, MEASURED 2026-10-16, not read: the 44 objects of LROC's 2016 table
+    # (Wagner et al. 2017, the `lroc-2016` reference in registry/sites.yaml), each with its own
+    # surveyed elevation, sampled bilinearly in the level-5 tiles: height = 77.31 m x byte -
+    # 9101.7 m, residual 18.5 m rms and 43.6 m at worst over bytes 70 to 154 (a byte is 77 m,
+    # so the fit is as good as the bytes). The same fit at level 4: 76.75 m and -9050.7 m, 31.9 m
+    # rms. Heights are above the 1737.4 km sphere the table uses, which is the sphere drawn.
+    # NOT used: Trek's LOLA and Kaguya merge (LRO_LOLAKaguya_DEM_60N60S_512ppd, levels 0 to 10)
+    # has no data past 60 degrees, so neither the south pole nor Shackleton would have shadows;
+    # its fit at level 7 is no better (76.31 m, 23.5 m rms).
+    height:
+      title: "Lunar Orbiter Laser Altimeter elevation, 128 pixels per degree"
+      url: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_LOLA_DEM_Global_128ppd_v04/1.0.0/default/default028mm/{z}/{y}/{x}.png"
+      capabilities: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_LOLA_DEM_Global_128ppd_v04/1.0.0/WMTSCapabilities.xml"
+      levels: [0, 5]
+      max_level: 5
+      metres_per_count: 77.31
+      offset_m: -9101.7
+      cors: "Access-Control-Allow-Origin: * (measured 2026-10-16)"
+      licence: 'PDS Geosciences Node, which archives LOLA: "Data sets archived in the PDS are in the public domain"'
+      credit: "The Moon's shadows close up: cast from Lunar Orbiter Laser Altimeter heights, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
+      source: "https://pds-geosciences.wustl.edu/faq.html (read 2026-10-16)"
 
   # Mars's tiles are DETAIL over our own colour map (mode: detail). Viking's MDIM 2.1 colour mosaic
   # (Mars_Viking_MDIM21_ClrMosaic_global_232m, CORS `*`, levels 0-7) was the first choice and was

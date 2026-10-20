@@ -179,5 +179,187 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   check(/loadConstellations\(\);/.test(src) && !/^import[^\n]*constellation-names/m.test(src), 'the two files are fetched when the module lands, not imported');
 }
 
+// --- search by kind (internal spec 0076 W3-e; internal #879, #880) ---------------------------------------
+// "galaxies", "moons of saturn", "nebulae" and "has a model" list records grouped by their visual class
+// (data/visualclasses.js, W2-e's); an exact name still leads; the "3D models" toggle keeps what has one.
+{
+  const { VISUAL_CLASSES } = await import(join(JS, 'data/visualclasses.js'));
+  const { KINDS } = await import(join(JS, 'data/kindwords.js'));
+  const NAME_EXACT_FOR_TESTS = 900;
+  const dso = (id, name, mag) => ({ id, name, klass: 'dso', layer: 'deep-sky', pos: { x: 1, y: 0, z: 0 }, meta: { mag } });
+  const kworld = (id, name) => ({ id, name, klass: 'world', layer: 'worlds', meta: {} });
+  const krecs = [
+    dso('dso-m31', 'Andromeda Galaxy', 3.4), dso('dso-m33', 'Triangulum Galaxy', 5.7), dso('dso-m51', 'Whirlpool Galaxy', 8.4),
+    dso('dso-m87', 'M87', 8.6), dso('dso-lmc', 'Large Magellanic Cloud', 0.9), dso('dso-m82', 'Cigar Galaxy', 8.4),
+    dso('dso-m42', 'Orion Nebula', 4), dso('dso-m57', 'Ring Nebula', 8.8), dso('dso-helix-nebula', 'Helix Nebula', 7.6), dso('dso-m1', 'Crab Nebula', 8.4),
+    kworld('earth', 'Earth'), kworld('moon', 'Moon'), kworld('saturn', 'Saturn'), kworld('mimas', 'Mimas'), kworld('enceladus', 'Enceladus'),
+    kworld('titan', 'Titan'), kworld('jupiter', 'Jupiter'), kworld('io', 'Io'), kworld('europa', 'Europa'),
+    sat('sat-25544', 'ISS (ZARYA)', 'stations', { noradId: 25544, why: 'x' }, 'station'),
+    sat('sat-28884', 'GALAXY 15', 'visual', { noradId: 28884 }),
+    sat('sat-90001', 'NO MODEL SAT', 'stations', { noradId: 90001 }),
+  ];
+  const kindex = buildIndex(krecs, LAYERS);
+  const ask = (q, opts = {}) => {
+    const kind = R.readKind(q, kindex);
+    const res = findMatches(kindex, q, 5000);
+    return { kind, out: R.byKind(kindex, res, kind, { limit: 8, exact: NAME_EXACT_FOR_TESTS, word: 700, ...opts }) };
+  };
+  // The words: singular and plural, any case, a planet's moons three ways; a word half typed is a name.
+  check(R.readKind('galaxies', kindex) && R.readKind('Galaxy', kindex) && R.readKind('NEBULAE', kindex), 'a class is read in the singular, the plural and any case');
+  check(R.readKind('galax', kindex) === null && R.readKind('iss', kindex) === null, 'a word half typed, or a name, is not a kind');
+  for (const q of ['moons of saturn', 'Moons of Saturn', 'saturn moons', "saturn's moons", 'Saturn’s moons', 'moons around saturn']) {
+    const k = R.readKind(q, kindex);
+    check(k && k.of && k.of.id === 'saturn', `"${q}" is the moons whose planet is Saturn (${JSON.stringify(k && k.of)})`);
+  }
+  check(R.readKind('moons of nowhere', kindex) === null, 'the moons of a world the map does not hold are not a kind');
+  check(R.readKind('galaxies of saturn', kindex) === null, 'only a kind that takes a world reads one');
+  check(R.readKind('has a model', kindex) && R.readKind('has a model', kindex).row.model === true && R.readKind('3D models', kindex).row.model, '"has a model" is the 3D question');
+  // Every word belongs to one row, and every row's classes hold records in the registry: a word that can
+  // only ever list nothing is a broken promise.
+  const members = new Map(VISUAL_CLASSES.map((c) => [c.id, Object.values(c.members || {}).flat().length]));
+  for (const row of KINDS) for (const c of row.classes || []) check(members.get(c) > 0, `the kind "${row.say[0]}" lists ${c}, a class the registry gives no records`);
+  // Before the classes arrive, a kind changes nothing: the names as before.
+  {
+    const before = R.byKind(kindex, findMatches(kindex, 'galaxy', 5000), R.readKind('galaxy', kindex), { limit: 8 });
+    check(before.hits.every((h) => !h.group) && R.wantKinds(R.readKind('galaxy', kindex), false) !== null, 'with no classes yet the rows are the names and the classes are asked for');
+  }
+  R.setClasses(VISUAL_CLASSES);
+  check(R.classOf(kindex.record[0]) === 'GALAXY_SPIRAL', 'a deep-sky record takes its class from its own id');
+  // A Magellanic type (de Vaucouleurs "m": Sm, SBm, SB(s)m) is an irregular galaxy, as NASA describes the
+  // LMC and as the registry's photograph and hero rows already said (the lead's decision on #1210); an
+  // ordinary barred spiral, SB(s)b or SB(s)bc, stays a spiral.
+  {
+    const dsoOf = (cls) => new Set((VISUAL_CLASSES.find((c) => c.id === cls).members.dso) || []);
+    const irr = dsoOf('GALAXY_IRREGULAR');
+    const spi = dsoOf('GALAXY_SPIRAL');
+    check(irr.has('dso-lmc') && irr.has('dso-smc') && !spi.has('dso-lmc') && !spi.has('dso-smc'), 'the LMC and the SMC (SB(s)m) are irregular galaxies, not spirals');
+    check(R.classOf({ id: 'dso-lmc', layer: 'deep-sky' }) === 'GALAXY_IRREGULAR', 'and search groups the LMC with the irregulars');
+    const { objects } = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
+    const magellanic = /^(?:\(R'?\))?S(?:A|AB|B)?(?:\([rs]+\))?m(?![a-z])/;
+    let barred = 0;
+    for (const o of objects) {
+      if (o.typeCode !== 'G' || !o.hubble) continue;
+      const id = `dso-${o.id}`;
+      if (magellanic.test(o.hubble)) check(irr.has(id) && !spi.has(id), `${o.name} (${o.hubble}) is irregular`);
+      if (/^(?:\(R'?\))?SB\(s\)bc?\b/.test(o.hubble)) { barred += 1; check(spi.has(id), `${o.name} (${o.hubble}) stays a spiral`); }
+    }
+    check(barred >= 1, 'at least one SB(s)b-type galaxy is in the catalogue to hold the spiral side');
+  }
+  check(R.classOf({ id: 'sat-1', layer: 'stations' }) === 'ARTIFICIAL_SATELLITE' && R.classOf({ id: 'dso-unknown', layer: 'deep-sky' }) === null, 'a satellite takes its layer\'s class, and a layer of several classes gives none');
+  // "galaxies": grouped by class in the row's order, the brighter first, the groups taking turns.
+  {
+    const { out } = ask('galaxies');
+    const groups = [...new Set(out.hits.map((h) => h.group && h.group.id))];
+    check(groups[0] === 'GALAXY_SPIRAL' && groups.includes('GALAXY_ELLIPTICAL') && groups.includes('GALAXY_IRREGULAR'), `"galaxies" lists the spirals, the ellipticals, the irregulars (${groups.join(', ')})`);
+    check(out.hits[0].record.id === 'dso-m31' && out.hits[1].record.id === 'dso-m33', `within a group the brighter first (${out.hits.slice(0, 3).map((h) => h.record.name).join(', ')})`);
+    check(out.hits.find((h) => h.record.id === 'dso-lmc').group.id === 'GALAXY_IRREGULAR', 'the LMC is listed with the irregulars');
+    check(out.hits.length <= 8 && out.total >= out.hits.length, 'eight rows at most, and the total says how many more');
+    check(/^Spiral galaxies · \d+$/.test(out.hits[0].group.text), `a group's microlabel names it and counts it ("${out.hits[0].group.text}")`);
+    check(!out.hits.some((h) => h.record.klass === 'satellite'), '"galaxies" lists no satellite: none is named so');
+    check(out.hits.filter((h) => h.group.id === 'GALAXY_ELLIPTICAL').length >= 1 && out.hits.filter((h) => h.group.id === 'GALAXY_SPIRAL').length < 7, 'the groups take turns at the rows: the spirals do not take all eight');
+  }
+  // "galaxy": the same groups, and the satellite named GALAXY 15 under "By name".
+  {
+    const { out } = ask('galaxy');
+    const last = out.hits[out.hits.length - 1];
+    check(last.record.id === 'sat-28884' && last.group && last.group.id === 'name', `a record merely named after the kind follows, under By name (${last.record.name})`);
+  }
+  // "moons of saturn": only Saturn's, in the registry's order, the microlabel saying whose.
+  {
+    const { out } = ask('moons of saturn');
+    const ids = out.hits.map((h) => h.record.id);
+    check(ids.length === 3 && ids.includes('titan') && ids.includes('mimas') && ids.includes('enceladus') && !ids.includes('io') && !ids.includes('moon'), `the moons of Saturn and nobody else's (${ids.join(', ')})`);
+    check(out.hits.some((h) => /^Saturn’s icy moons · \d/.test(h.group.text)), `the microlabel says whose moons (${out.hits.map((h) => h.group.text).join(' / ')})`);
+  }
+  // "moon": the Moon by name first, then the moons by kind; the first row is what Enter flies to.
+  {
+    const { out } = ask('moon');
+    check(out.hits[0].record.id === 'moon' && !out.hits[0].group, `"moon" still puts the Moon first, alone (${out.hits[0].record.name})`);
+    check(out.hits.filter((h) => h.record.id === 'moon').length === 1, 'and does not list it twice');
+    check(out.hits.some((h) => h.record.id === 'io') && out.hits.some((h) => h.record.id === 'titan'), 'then the moons, grouped');
+  }
+  // "nebulae": emission first, then planetary, then the remnants.
+  {
+    const { out } = ask('nebulae');
+    const groups = [...new Set(out.hits.map((h) => h.group.id))];
+    check(groups.join() === 'EMISSION_NEBULA,PLANETARY_NEBULA,SUPERNOVA_REMNANT', `"nebulae" in the row's order (${groups.join(', ')})`);
+  }
+  // "has a model" and the toggle: what is drawn from a real model file, or a shipped reconstruction.
+  R.setHeroes(['dso-m42', 'dso-m31']);
+  {
+    const { out } = ask('has a model');
+    const ids = out.hits.map((h) => h.record.id);
+    check(ids.includes('sat-25544') && ids.includes('dso-m42') && ids.includes('dso-m31'), `"has a model" lists the station and the two reconstructions (${ids.join(', ')})`);
+    check(!ids.includes('sat-90001') && !ids.includes('dso-m57') && !ids.includes('saturn'), 'and nothing drawn as a mark, a glyph or a globe');
+    const iss = out.hits.find((h) => h.record.id === 'sat-25544');
+    const m42 = out.hits.find((h) => h.record.id === 'dso-m42');
+    check(iss.drawn === COPY.r12Search.real && m42.drawn === COPY.r12Search.rebuilt, 'each row says what it is drawn from');
+    check(R.wantKinds(R.readKind('has a model', kindex), false) === null, 'with classes and heroes here nothing more is fetched');
+  }
+  {
+    const { out } = ask('galaxies', { only: true });
+    check(out.hits.length === 1 && out.hits[0].record.id === 'dso-m31', `"galaxies" with the toggle on keeps Andromeda alone (${out.hits.map((h) => h.record.name).join(', ')})`);
+    const named = ask('iss', { only: true }).out;
+    check(named.hits.length === 1 && named.hits[0].record.id === 'sat-25544' && named.hits[0].drawn, 'the toggle filters a plain name query too, and says what each row is drawn from');
+    const none = R.byKind(kindex, findMatches(kindex, 'no model', 5000), null, { only: true });
+    check(none.none === true && none.hits.length === 0, 'when the toggle leaves nothing of what matched, the answer says so');
+    check(R.byKind(kindex, findMatches(kindex, 'zzz', 5000), null, { only: true }).none === false, 'a query that matched nothing is a miss, not "none has a model"');
+  }
+  // At the size of the map: 17 000 records, a kind and the 3D question inside one frame.
+  {
+    const big = [];
+    for (let i = 0; i < 17000; i += 1) big.push(i % 5 ? sat(`sat-${100000 + i}`, `SAT ${i}`, i % 2 ? 'visual' : 'stations', { noradId: 100000 + i }) : dso(`dso-x${i}`, `NGC ${i}`, 10));
+    big.push(...krecs);
+    const bigIndex = buildIndex(big, LAYERS);
+    const time = (q, only) => {
+      const runs = [];
+      for (let k = 0; k < 5; k += 1) {
+        const t0 = performance.now();
+        R.byKind(bigIndex, findMatches(bigIndex, q, 5000), R.readKind(q, bigIndex), { limit: 8, only });
+        runs.push(performance.now() - t0);
+      }
+      return runs.sort((a, b) => a - b)[2];
+    };
+    // Against the name search itself on the same index and the same machine (this laptop's load moves
+    // both together): a kind costs at most a few name searches of a two-letter query.
+    const base = (() => { const runs = []; for (let k = 0; k < 5; k += 1) { const t0 = performance.now(); findMatches(bigIndex, 'sa', 8); runs.push(performance.now() - t0); } return runs.sort((a, b) => a - b)[2]; })();
+    const worst = Math.max(time('galaxies', false), time('has a model', false), time('sat', true));
+    check(worst <= 4 * base + 5, `a kind over ${bigIndex.n} records takes ${worst.toFixed(1)} ms, more than four name searches (${base.toFixed(1)} ms each)`);
+    console.log(`  search by kind over ${bigIndex.n} records: slowest ${worst.toFixed(1)} ms, a two-letter name search ${base.toFixed(1)} ms (medians of five)`);
+  }
+  // The before picture's switch is the look tool's only: off unless ?look=1 is in the address.
+  check(R.kindsOn() === true, 'search by kind is on wherever there is no look tool');
+  const srcS = readFileSync(join(ROOT, 'site/js/ui/search.js'), 'utf8');
+  check(!/COPY\.r12Search/.test(srcS) && /\.answer\(/.test(srcS) && /result\.note/.test(srcS), 'the boot module asks the search rows (answer) and prints their note, never the later copy itself');
+  {
+    const none = R.answer(kindex, 'no model', true, { find: findMatches });
+    check(none.note === COPY.r12Search.noneWithModel && !none.hits.length, 'answer: the toggle leaving nothing is the foot\'s note, not a miss');
+    const plain = R.answer(kindex, 'iss', false, { find: findMatches });
+    check(plain.hits[0].record.id === 'sat-25544' && !plain.note && !plain.kind, 'answer: a plain name with the toggle off is findMatches as before');
+    const k = R.answer(kindex, 'moons of saturn', false, { find: findMatches });
+    check(k.kind && k.kind.of.id === 'saturn' && k.hits.length === 3, 'answer: a kind with its classes here lists them');
+  }
+  if (typeof globalThis.document === 'undefined') {
+    // The two nodes, on a document that has just enough of one.
+    const node = () => ({ attrs: {}, dataset: {}, listeners: {}, setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return this.attrs[k]; }, addEventListener(k, f) { this.listeners[k] = f; } });
+    globalThis.document = { createElement: (tag) => ({ ...node(), tag }) };
+    const head = R.groupHead({ id: 'GALAXY_SPIRAL', text: 'Spiral galaxies · 42' }, 'opt-g0');
+    check(head.attrs.role === 'presentation' && head.attrs['aria-hidden'] === 'true' && head.textContent === 'Spiral galaxies · 42', 'a group microlabel is not itself an option, and is hidden from a reader (its rows name it)');
+    let pressed = 0;
+    const b = R.onlyToggle(() => { pressed += 1; }, () => {});
+    check(b.tag === 'button' && b.type === 'button' && b.textContent === COPY.r12Search.only && b.title === COPY.r12Search.onlyTitle && b.attrs['aria-pressed'] === 'false', 'the toggle is a real button with its words, a tooltip and aria-pressed');
+    let prevented = false;
+    b.listeners.pointerdown({ preventDefault: () => { prevented = true; } });
+    b.listeners.click();
+    check(prevented && pressed === 1, 'a press keeps the focus in the field and runs the query again');
+    R.paintToggle(b, { only: true, missed: '', hits: [] });
+    check(b.hidden === false && b.attrs['aria-pressed'] === 'true', 'on, it stays shown and says it is pressed, even over no rows');
+    R.paintToggle(b, { only: false, missed: 'x', hits: [{ record: {} }] });
+    check(b.hidden === true, 'off, it is not offered beside a miss');
+    delete globalThis.document;
+  }
+  check(/aria-describedby/.test(srcS) && /groupHead/.test(srcS) && /paintToggle/.test(srcS), 'the field draws the microlabels as its rows\' description and paints the toggle from the search rows');
+}
+
 if (problems.length) { console.error('searchrows FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('searchrows ok: a planet then its moons, one row for a station, the name people use with what it is and where it is now, and trips, missions, events and Near me tonight found by name');
+console.log('searchrows ok: a planet then its moons, one row for a station, the name people use with what it is and where it is now, trips, missions, events and Near me tonight found by name, and a kind of thing listed by class with its 3D toggle');

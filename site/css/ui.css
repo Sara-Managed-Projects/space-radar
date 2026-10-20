@@ -971,6 +971,56 @@ html.sr-compact .sr-status {
 .sr-card__parent svg { width: 16px; height: 16px; flex: none; }
 .sr-card__parent:hover, .sr-card__parent:focus-visible { color: var(--sr-ember-light); }
 
+/* 0076 W3-d: where it is (ui/cards.js whereBlock; internal #883). The chain out to the Sun or the Milky
+   Way as one quiet line under the actions, outermost first; a parent with a card of its own is a text
+   button, the thing itself is marked here. The way out to the parent sits under it. */
+.sr-card__where { display: flex; flex-direction: column; align-items: flex-start; }
+.sr-card__chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+.sr-card__step { display: inline-flex; align-items: center; gap: var(--sp-1); min-width: 0; }
+.sr-card__crumb {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--sr-text-dim);
+}
+button.sr-card__crumb { cursor: pointer; }
+.sr-card__crumb--here { color: var(--sr-text); }
+button.sr-card__crumb:hover, button.sr-card__crumb:focus-visible { color: var(--sr-ember-light); }
+/* The legend's door from a line that is not the card's foot (internal #908): a text button, 44 px high. */
+.sr-card__legendlink {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.sr-card__legendlink:hover, .sr-card__legendlink:focus-visible { color: var(--sr-ember-light); }
+@media (pointer: coarse) {
+  .sr-card__crumb { min-height: 44px; min-width: 44px; justify-content: center; }
+}
+
 /* What goes inside them: today's sections, in the guide's type roles. */
 .sr-card__sentence {
   font-size: var(--sr-fs-body);

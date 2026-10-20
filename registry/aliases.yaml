@@ -28,3 +28,50 @@ aliases:
   - {say: pillars of creation, means: eagle nebula, why: "Hubble's 1995 picture of the columns inside M16; the catalogue row is named for the nebula"}
   - {say: seven sisters, means: pleiades, why: "the Pleiades star cluster M45; the catalogue row is named M45 · Pleiades"}
   - {say: chinese space station, means: css, why: "what most people call Tiangong; CelesTrak lists its modules as CSS (TIANHE), CSS (WENTIAN), CSS (MENGTIAN)"}
+
+# WHAT A KIND IS CALLED (internal spec 0076 W3-e; internal #879, #880). Typing a word below lists the
+# records of those classes (registry/visual-classes.yaml, through site/js/data/visualclasses.js), grouped by
+# class, instead of only the records whose NAME holds the word: "galaxies" used to find nothing at all.
+# Each row is the words a person types, singular and plural, and the classes they mean, in the order the
+# groups are listed. `of: true` also takes a world: "moons of saturn", "saturn moons", "saturn's moons"
+# list the moons whose planet is Saturn (ui/labels.js labelParentId). `model: true` is "has a 3D model":
+# the records the app draws from a real model file or a deep-sky reconstruction, whatever their class.
+# scripts/gen_aliases_js.py mirrors these into site/js/data/kindwords.js, which is fetched with the search
+# rows on the field's first focus and never at boot; it refuses a class id the registry does not have and
+# a word two rows claim. A row is a fact about words: one nobody can justify should go.
+kinds:
+  - {say: [galaxy, galaxies], classes: [GALAXY_SPIRAL, GALAXY_ELLIPTICAL, GALAXY_IRREGULAR, GALAXY_INTERACTION, AGN_QUASAR], why: "every class whose records are galaxies, the active ones last"}
+  - {say: [spiral galaxy, spiral galaxies, spirals], classes: [GALAXY_SPIRAL]}
+  - {say: [elliptical galaxy, elliptical galaxies, ellipticals, lenticular galaxy, lenticular galaxies], classes: [GALAXY_ELLIPTICAL], why: "the class holds the lenticulars too"}
+  - {say: [irregular galaxy, irregular galaxies], classes: [GALAXY_IRREGULAR]}
+  - {say: [interacting galaxies, merging galaxies, colliding galaxies], classes: [GALAXY_INTERACTION]}
+  - {say: [quasar, quasars, active galaxy, active galaxies], classes: [AGN_QUASAR]}
+  - {say: [nebula, nebulae, nebulas], classes: [EMISSION_NEBULA, PLANETARY_NEBULA, SUPERNOVA_REMNANT, REFLECTION_NEBULA, DARK_NEBULA], why: "both plurals are typed; a supernova remnant is a nebula to most people"}
+  - {say: [emission nebula, emission nebulae, h ii region, h ii regions], classes: [EMISSION_NEBULA]}
+  - {say: [planetary nebula, planetary nebulae], classes: [PLANETARY_NEBULA]}
+  - {say: [supernova remnant, supernova remnants], classes: [SUPERNOVA_REMNANT]}
+  - {say: [reflection nebula, reflection nebulae], classes: [REFLECTION_NEBULA]}
+  - {say: [dark nebula, dark nebulae], classes: [DARK_NEBULA]}
+  - {say: [cluster, clusters, star cluster, star clusters], classes: [OPEN_CLUSTER, GLOBULAR_CLUSTER]}
+  - {say: [open cluster, open clusters], classes: [OPEN_CLUSTER]}
+  - {say: [globular cluster, globular clusters, globulars], classes: [GLOBULAR_CLUSTER]}
+  - {say: [black hole, black holes], classes: [BLACK_HOLE]}
+  - {say: [pulsar, pulsars, magnetar, magnetars, neutron star, neutron stars, white dwarf, white dwarfs], classes: [COMPACT_REMNANT], why: "the class holds all three kinds of dead star"}
+  - {say: [stars], classes: [STAR, BINARY_AND_MULTIPLE], why: "plural only: 'star' is how 'starlink' starts"}
+  - {say: [binary star, binary stars, double star, double stars], classes: [BINARY_AND_MULTIPLE]}
+  - {say: [exoplanet, exoplanets, planets of other stars], classes: [EXOPLANET]}
+  - {say: [planet, planets], classes: [ROCKY_PLANET, GAS_GIANT, ICE_GIANT, DWARF_PLANET], why: "the dwarf planets last: people mean them too, and the class name says what they are"}
+  - {say: [rocky planets, terrestrial planets], classes: [ROCKY_PLANET]}
+  - {say: [gas giant, gas giants], classes: [GAS_GIANT]}
+  - {say: [ice giant, ice giants], classes: [ICE_GIANT]}
+  - {say: [dwarf planet, dwarf planets], classes: [DWARF_PLANET]}
+  - {say: [moon, moons], classes: [AIRLESS_MOON, VOLCANIC_MOON, TITAN, ICY_MOON], of: true, why: "'moon' alone still puts the Moon first: an exact name leads (ui/search.js)"}
+  - {say: [icy moon, icy moons], classes: [ICY_MOON], of: true}
+  - {say: [asteroid, asteroids], classes: [ASTEROID]}
+  - {say: [comet, comets], classes: [COMET]}
+  - {say: [space probe, space probes, probes, spacecraft], classes: [SPACE_PROBE]}
+  - {say: [landing site, landing sites, landers], classes: [LANDING_SITE]}
+  - {say: [satellites], classes: [ARTIFICIAL_SATELLITE], why: "plural only, as 'stars'; the moons are 'moons'"}
+  - {say: [ground station, ground stations, observatories], classes: [GROUND_SITE]}
+  - {say: [oddity, oddities], classes: [ODDITY]}
+  - {say: [has a model, has a 3d model, with a model, with a 3d model, 3d model, 3d models, models], model: true, why: "the filter as words; the toggle under the results is the same question"}

@@ -1,0 +1,14 @@
+{
+  "file": "site/images/deep/ring/ring-light.webp",
+  "bytes": 11458,
+  "sha256": "a57725e86ab01b2333e60ffa2009c06b72539ff29a88a6a426b768edcd9880a5",
+  "from": "site/images/nebulae/m57.webp",
+  "from_sha256": "ec522121c255d2b2e0f7b55c48d1660ea1b4aed3c0521117be80b0a288b4fd8a",
+  "stars_removed_px": 19598,
+  "size": [
+    512,
+    512
+  ],
+  "peak_lum_p99": 0.777,
+  "credit": "NASA, ESA, and C. Robert O'Dell (Vanderbilt University) (ESA/Hubble heic1310a), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_ring.py)"
+}

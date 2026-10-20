@@ -5486,5 +5486,309 @@ export const TOURS = [
 }
 ],
 "estimate_ms": 131691
+},
+{
+"id": "across-the-local-group",
+"title": "Across the Local Group",
+"blurb": "Our galaxy, its biggest companion, Andromeda, Triangulum. Then back to Earth.",
+"requires": [
+"stars",
+"deep-sky",
+"galaxy"
+],
+"stage": "stellar",
+"clock": "as-found",
+"group": "beyond",
+"next": "out-to-the-edge",
+"og_stop": 3,
+"hides": [
+"exoplanets",
+"systems",
+"exotics"
+],
+"return": true,
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "milky-way",
+"target": {
+"record": "dso-milky-way"
+},
+"needs_layer": "galaxy",
+"distance_km": 1419109570887120000,
+"drift_deg": 10,
+"drift_rate_deg_s": 1,
+"chapter": "Home",
+"card": {
+"title": "Our galaxy, from outside",
+"body": "Nobody has seen the Milky Way from outside: this shape is a model built from measurements made inside it. It holds between one and four hundred billion stars, and the Sun is one of them, 27 000 light-years from the centre."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 16153
+},
+{
+"id": "lmc",
+"target": {
+"record": "dso-lmc"
+},
+"needs_layer": "deep-sky",
+"distance_km": 946073047258080000,
+"drift_deg": 10,
+"drift_rate_deg_s": 1,
+"key_light_deg": 0,
+"chapter": "Our companions",
+"card": {
+"title": "The Large Magellanic Cloud",
+"body": "This photograph of the Large Magellanic Cloud lines up with our sky. The biggest of our galaxy's companions and the fourth-largest galaxy in the group, it is a hundred and sixty thousand light-years away: pairs of its stars that eclipse each other tell us how far."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17818
+},
+{
+"id": "andromeda",
+"target": {
+"record": "dso-m31"
+},
+"needs_layer": "deep-sky",
+"distance_km": 2365182618145200000,
+"drift_deg": 60,
+"drift_rate_deg_s": 5,
+"key_light_deg": 0,
+"chapter": "Andromeda",
+"card": {
+"title": "Andromeda, the other giant",
+"body": "Andromeda is two and a half million light-years away. With our Milky Way she is one of the group's two largest galaxies, and she is moving towards us. From our side this is a photograph; as we turn, a model takes over. Her tilt and rings are measured; the exact shape of her arms is ours."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 20000
+},
+{
+"id": "triangulum",
+"target": {
+"record": "dso-m33"
+},
+"needs_layer": "deep-sky",
+"distance_km": 1135287656709696000,
+"drift_deg": 10,
+"drift_rate_deg_s": 1,
+"key_light_deg": 0,
+"chapter": "Triangulum",
+"card": {
+"title": "Triangulum, the third spiral",
+"body": "This photograph from Chile lines up with our sky. The Triangulum Galaxy, third largest in the group, is about 2.7 million light-years away, a less certain distance than Andromeda's. On a very dark night some people can see it without a telescope."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 16486
+},
+{
+"id": "neighbours",
+"target": {
+"world": "sun"
+},
+"stage": "local-group",
+"needs_layer": "deep-sky",
+"distance_km": 236518261814520000000,
+"drift_deg": 20,
+"drift_rate_deg_s": 2,
+"chapter": "The galaxies around us",
+"card": {
+"title": "The Local Group among its neighbours",
+"body": "Twenty-five million light-years out, the whole Local Group is the knot in the middle. Around it are eight hundred nearby galaxies from one catalogue. The brighter points have measured distances; the fainter grey-blue ones are only estimates."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14821
+}
+],
+"estimate_ms": 123028
+},
+{
+"id": "out-to-the-edge",
+"title": "Out to the edge of the universe we can see",
+"blurb": "Past the Local Group and a quasar to the oldest light. Then back to Earth.",
+"requires": [
+"stars",
+"deep-sky",
+"galaxy",
+"exotics"
+],
+"stage": "local-group",
+"clock": "as-found",
+"group": "beyond",
+"next": "across-the-local-group",
+"og_stop": 1,
+"hides": [
+"exoplanets",
+"systems"
+],
+"return": true,
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "home",
+"target": {
+"record": "dso-milky-way"
+},
+"stage": "galaxy",
+"needs_layer": "galaxy",
+"distance_km": 1419109570887120000,
+"drift_deg": 10,
+"drift_rate_deg_s": 1,
+"chapter": "Home",
+"card": {
+"title": "We start at home",
+"body": "Our galaxy is about 87 000 light-years across, with between one and four hundred billion stars. Seen from outside, as here, it is a model: nobody has ever left it to look back."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13489
+},
+{
+"id": "local-group",
+"target": {
+"world": "sun"
+},
+"needs_layer": "deep-sky",
+"distance_km": 56764382835484800000,
+"drift_deg": 15,
+"drift_rate_deg_s": 1.5,
+"chapter": "The Local Group",
+"card": {
+"title": "Our group of galaxies",
+"body": "Six million light-years out, our galaxy and Andromeda are the two large members of a group of more than a hundred galaxies, most of them small. Where each one is has been measured; the shapes of the big spirals are models."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 16153
+},
+{
+"id": "local-volume",
+"target": {
+"world": "sun"
+},
+"needs_layer": "deep-sky",
+"distance_km": 378429218903232000000,
+"drift_deg": 15,
+"drift_rate_deg_s": 1.5,
+"chapter": "Our neighbours",
+"card": {
+"title": "The local volume",
+"body": "Forty million light-years out, our group is one knot among eight hundred galaxies. Most of their distances have been measured. The fainter grey-blue points are only estimates: their direction is known, their depth is not."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14155
+},
+{
+"id": "ton-618",
+"target": {
+"record": "exotic-ton-618"
+},
+"needs_layer": "exotics",
+"distance_km": 119205204000000000000000,
+"behind": "sun",
+"drift_deg": 8,
+"drift_rate_deg_s": 1,
+"chapter": "A quasar",
+"card": {
+"title": "TON 618, a quasar",
+"body": "TON 618 is a quasar: gas blazing as it falls into a black hole of about forty billion Suns. Its light left 10.8 billion years ago. Space has stretched since, so the map draws it where our model of the universe puts it now: about 18 billion light-years away."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 18817
+},
+{
+"id": "first-galaxies",
+"target": {
+"world": "sun"
+},
+"distance_km": 302743375122585600000000,
+"drift_deg": 12,
+"drift_rate_deg_s": 1,
+"chapter": "The first galaxies",
+"card": {
+"title": "Where the first galaxies are now",
+"body": "The James Webb telescope has seen galaxies whose light left when the universe was about three hundred million years old. Those galaxies are now about 34 billion light-years away, in a few small patches of our sky. None is drawn on this map."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 16819
+},
+{
+"id": "oldest-light",
+"target": {
+"world": "sun"
+},
+"distance_km": 416272140793555200000000,
+"drift_deg": 12,
+"drift_rate_deg_s": 1,
+"chapter": "The oldest light",
+"card": {
+"title": "The microwave background",
+"body": "This is the oldest light there is, released about 370 000 years after the Big Bang. The map is measured: a NASA spacecraft charted it across our whole sky. Painting it on this sphere, where the light set out, is an illustration; seen from anywhere else, it would differ."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 18817
+},
+{
+"id": "edge",
+"target": {
+"world": "sun"
+},
+"distance_km": 470000000000000000000000,
+"drift": "none",
+"chapter": "The edge",
+"card": {
+"title": "The end of this map",
+"body": "Nearly fifty billion light-years out, this map ends. What we can see ends sooner, about 46 billion light-years away: farther light has not had time to reach us. Nothing measured lies past it, so this band is an illustration. Space goes on; our view of it does not."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 18484
+}
+],
+"estimate_ms": 161184
 }
 ];

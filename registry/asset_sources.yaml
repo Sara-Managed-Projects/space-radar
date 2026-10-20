@@ -263,6 +263,26 @@ sources:
       - {url: "https://lambda.gsfc.nasa.gov/data/map/dr5/dfp/ilc/wmap_ilc_9yr_v5.fits", sha256: 4501090f824f9140e916339f9e8e490333f6ffe4257a6ee6a02526c8640099a9, pinned_in: scripts/build_deep_cmb.py}
   # 0076 W1-d
   # 0076 W2-a
+  # The Apollo 15 and 17 rover traverses (scripts/build_traverses.py -> registry/traverses/): lines the PDS
+  # Geosciences Node serves with its Apollo Analyst's Notebook station finders. LOLA's heights for the Moon's
+  # cast shadows are not an asset: the visitor's browser reads them as it reads the map tiles
+  # (registry/tilesets.yaml, the Moon's `height:`).
+  - id: pds-geo-apollo-notebook
+    name: PDS Geosciences Node, Washington University in St. Louis, Apollo Analyst's Notebook map services
+    match: ["https://anms.rsl.wustl.edu/arcgis/rest/services/Apollo/", "https://an.rsl.wustl.edu/apollo/"]
+    url: https://an.rsl.wustl.edu/apollo/
+    licence: NASA PDS archive data under NASA's open data policy; the Analyst's Notebook layers carry no separate terms
+    licence_read: "Data sets archived in the PDS are in the public domain."
+    licence_url: https://pds-geosciences.wustl.edu/faq.html
+    licence_note: "The traverse lines are the Analyst's Notebook's layers (Apollo 15's traced by Phil Stooke, University of Western Ontario). They carry no separate terms and are distributed by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy. Credited as NASA PDS Geosciences Node, Analyst's Notebook, in CREDITS.md (0076 W2-a) and the Sources panel."
+    account: none
+    cost: none
+    checked: 2026-10-16
+    # The lines are copied into registry/traverses/ and generated into site/js/data/traverses.js: they ship.
+    offline: shipped
+    pins:
+      - {file: registry/traverses/apollo-15.json, sha256: 5dc6123bb46a3ee4b4a6e26d9c399b591ef74569e2595c583643f45af48e4b3a}
+      - {file: registry/traverses/apollo-17.json, sha256: 446a8abf80bad0156a4fbdc015658817cff6c17a794caa742f8c43c15808ac9f}
   # 0076 W2-c
   # 0076 W2-e (asset_sources schema rows)
   # 2026-10-16 (internal spec 0076 W2-e, #891; advances internal #785, the deep inputs' register): the four
@@ -335,5 +355,61 @@ sources:
     pins:
       - {file: site/data/deep/lmc-density.bin, sha256: e18e52449d5a904912d9d60df14fdbac71edc895b3ca35a50312591642c1ad47}
   # 0076 W3-a
+  # Star clusters as stars (internal spec 0076 W3-a): two catalogues asked of VizieR's query service by
+  # scripts/build_deep_clusters.py on 2026-10-16. Its answers carry the date of the query, so the pins are the two
+  # files the script bakes from them (the members are Gaia DR3 data: the esa-gaia row's licence holds for them).
+  - id: cds-vizier-asu
+    name: CDS VizieR query service (asu-tsv), read by scripts/build_deep_clusters.py
+    match: ["https://vizier.cds.unistra.fr/viz-bin/asu-tsv"]
+    url: https://vizier.cds.unistra.fr/
+    licence: Free of usage in a scientific context, with the original authors and publication cited; the open clusters' members are Gaia DR3 data, CC BY-NC 3.0 IGO
+    licence_read: "The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited"
+    licence_url: https://cds.unistra.fr/vizier-org/licences_vizier.html
+    licence_note: "Two catalogues: Harris 1996, AJ 112, 1487 (VII/202), the globulars' radii and light; Hunt & Reffert 2023, A&A 673, A114 (J/A+A/673/A114), the open clusters' Gaia DR3 members. The same page: tables from A&A are free for a scientific usage. The members are measurements of ESA's Gaia (Gaia Collaboration, Vallenari et al. 2023), whose licence page says \"Gaia data are distributed under the CC BY-NC 3.0 IGO license.\" (https://www.cosmos.esa.int/web/gaia-users/license, read 2026-10-16): site/data/deep/clusters.bin keeps that non-commercial term. Space Radar is free and non-commercial."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-16
+    pins:
+      - {file: site/data/deep/clusters.bin, sha256: ec62a3321f5c6773ea0be5b0d3738f49797514adedd1576c39216c07a6f2b0de}
+      - {file: site/data/deep/clusters.json, sha256: 92b874837e1ab7a50afe479f8f69fe46bb243ed44c98408efb3165b21e6ef394}
   # 0076 W3-b
+  # The Ring Nebula hero's light (internal spec 0076 W3-b, #872): scripts/build_deep_ring.py takes the stars out of the
+  # ESA/Hubble photograph already shipped (heic1310a, the esa-hubble row above) and nothing is fetched. A row of its
+  # own so its input and output can be pinned under this stage's anchor without editing the esa-hubble row.
+  - id: esa-hubble-ring-light
+    name: ESA/Hubble heic1310a, its stars removed by scripts/build_deep_ring.py (the Ring Nebula hero's light)
+    match: ["scripts/build_deep_ring.py"]
+    url: https://esahubble.org/images/heic1310a/
+    licence: CC BY 4.0
+    licence_read: "ESA/Hubble images, videos and web texts are released under the Creative Commons Attribution 4.0 International license and may on a non-exclusive basis be reproduced without fee provided they are clearly and visibly credited."
+    licence_url: https://esahubble.org/copyright/
+    licence_note: "Credit NASA, ESA, and C. Robert O'Dell (Vanderbilt University); an adaptation (stars removed), said in CREDITS.md 3l, The Ring (0076 W3-b)"
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-17
+    pins:
+      - {file: site/images/nebulae/m57.webp, sha256: ec522121c255d2b2e0f7b55c48d1660ea1b4aed3c0521117be80b0a288b4fd8a}
+      - {file: site/images/deep/ring/ring-light.webp, sha256: a57725e86ab01b2333e60ffa2009c06b72539ff29a88a6a426b768edcd9880a5}
   # 0076 W3-c
+  # 2026-10-17 (internal spec 0076 stage W3-c, #784, #806): NOIRLab's pictures of M78 and the Iris, the light of two dust
+  # heroes (the app showed neither before), read by scripts/build_deep_sheets.py from their 1280 px renditions (not in
+  # git) and pinned by SHA-256 in the bake's manifest; the maps it writes are under site/images/deep/sheets/. The page
+  # was read again that day and says what the NOIRLab row above quotes. The other heroes' maps are made from pictures
+  # already in the site (registry/nebulae.yaml, the 4k Milky Way), whose rows these are.
+  - id: noirlab-dust-heroes
+    name: NOIRLab pictures of M78 (noao-m78) and the Iris Nebula (noao-ngc7023), the light of two dust heroes
+    match: ["https://noirlab.edu/public/media/archives/images/screen/noao-m78", "https://noirlab.edu/public/media/archives/images/large/noao-m78", "https://noirlab.edu/public/media/archives/images/screen/noao-ngc7023"]
+    url: https://noirlab.edu/public/images/noao-ngc7023/
+    licence: CC BY 4.0
+    licence_read: "Unless specifically noted, the images, and videos distributed on the public NOIRLab website, along with the texts of press releases, announcements, pictures of the week, blog posts and captions, are licensed under a Creative Commons Attribution 4.0 International License, and hence may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible."
+    licence_url: https://noirlab.edu/public/copyright/
+    licence_note: "Both pages give the credit line \"T. A. Rector/University of Alaska Anchorage, H. Schweiker/WIYN and NOIRLab/NSF/AURA\"; CREDITS.md section 3l (Remnants and dust) prints it."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-17
+    pins:
+      - {url: "https://noirlab.edu/public/media/archives/images/large/noao-m78.jpg", sha256: 00c6efa90aeb5e28887305dc970fe81f74580ec0ea943092306217d418935497, pinned_in: site/images/deep/sheets/manifest.json}
+      - {url: "https://noirlab.edu/public/media/archives/images/screen/noao-ngc7023.jpg", sha256: fef5210acf994b76ceeab745b8ebfb74dddc5f29e46cffb31f25a7d6e69d9e63, pinned_in: site/images/deep/sheets/manifest.json}

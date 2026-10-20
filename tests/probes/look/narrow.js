@@ -53,6 +53,107 @@ const fit = (els, name) => {
   return rows;
 };
 
+// --- search by kind (internal spec 0076 W3-e): only with -f subject=search ---------------------------
+// Four queries the stage row names ("galaxies", "moons of Saturn", "nebulae", "has a model"), each typed
+// into the field the visitor has, a before of two of them with the kinds switched off for the shot
+// (window.srSearchBefore, honoured only under ?look=1), the 3D toggle, Enter on the first row (it must
+// still fly there), what each list costs in this page, and the same fit and keyboard checks as above.
+if (new URLSearchParams(location.search).get('lookSubject') === 'search') {
+  out.search = { queries: {} };
+  const field = () => [...document.querySelectorAll('.sr-search__input')].find(shown);
+  const wrapOf = (n) => n && n.closest('.sr-search');
+  const ask = async (text) => {
+    const input = field();
+    if (!input) return null;
+    input.focus();
+    input.value = text;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await sleep(400);
+    const wrap = wrapOf(input);
+    await until(() => !wrap.querySelector('.sr-search__pop').hidden && !/counting/.test(wrap.querySelector('.sr-search__foot').textContent), 8000);
+    await sleep(700);
+    const opts = [...wrap.querySelectorAll('.sr-search__list [role="option"]')];
+    const heads = [...wrap.querySelectorAll('.sr-search__list .sr-search__head')].map((n) => n.textContent);
+    const toggle = wrap.querySelector('.sr-search__only');
+    const minH = innerWidth < 900 ? 44 : 24;
+    const rows = opts.map((n) => ({ name: (n.querySelector('.sr-search__name') || n).textContent, what: (n.querySelector('.sr-search__what') || {}).textContent || '', h: Math.round(n.getBoundingClientRect().height), described: !!n.getAttribute('aria-describedby') }));
+    for (const r of rows) if (r.h < minH) out.problems.push(`search "${text}": the row "${r.name}" is ${r.h} px high, under ${minH}`);
+    const tb = toggle && !toggle.hidden ? box(toggle) : null;
+    if (tb && tb.h < minH) out.problems.push(`search "${text}": the 3D toggle is ${tb.h} px high, under ${minH}`);
+    if (document.documentElement.scrollWidth > innerWidth) out.problems.push(`search "${text}": the page scrolls sideways`);
+    for (const h of heads) if (wrap.querySelector('.sr-search__head') && wrap.querySelector('.sr-search__head').scrollWidth > wrap.querySelector('.sr-search__head').clientWidth + 1) out.problems.push(`search "${text}": the microlabel "${h}" is cut`);
+    return { rows, heads, foot: wrap.querySelector('.sr-search__foot').textContent, toggle: tb, pressed: toggle ? toggle.getAttribute('aria-pressed') : null, active: field().getAttribute('aria-activedescendant') };
+  };
+  // The list's own cost in this page: the modules the field loaded, on the records the map holds now.
+  const S = await import(new URL('js/ui/search.js', document.baseURI).href);
+  const R = await import(new URL('js/ui/searchrows.js', document.baseURI).href);
+  const cost = async (text, only = false) => {
+    await Promise.all([R.loadClasses(), R.wantKinds({ row: { model: true } }, true)]);
+    const layers = Array.isArray(sr.layers) ? sr.layers : (sr.layers && (sr.layers.LAYERS || sr.layers.list)) || [];
+    const index = S.buildIndex(sr.records(), layers);
+    const runs = [];
+    for (let k = 0; k < 7; k++) {
+      const t0 = performance.now();
+      const kind = R.readKind(text, index);
+      R.byKind(index, S.findMatches(index, text, 5000), kind, { limit: 8, only });
+      runs.push(performance.now() - t0);
+    }
+    runs.sort((a, b) => a - b);
+    return { records: index.n, medianMs: +runs[3].toFixed(2), worstMs: +runs[6].toFixed(2) };
+  };
+  // A phone's results hang under the top bar over the scene, as tall as the sheet leaves them: at peek.
+  if (innerWidth < 900) { const sh = sr.shell && sr.shell.sheet && sr.shell.sheet(); if (sh && sh.set) { sh.set('peek'); await sleep(900); } }
+  window.srSearchBefore = true;
+  out.search.before = { galaxies: await ask('galaxies') };
+  await shot('search-0-before-galaxies', innerWidth + ' px, before: "galaxies" with search by kind switched off (what main shows)');
+  out.search.before.moons = await ask('moons of saturn');
+  await shot('search-0-before-moons', innerWidth + ' px, before: "moons of saturn" with search by kind switched off');
+  window.srSearchBefore = false;
+  const queries = [['galaxies', '1'], ['moons of saturn', '2'], ['nebulae', '3'], ['has a model', '4']];
+  for (const [text, n] of queries) {
+    out.search.queries[text] = await ask(text);
+    out.search.queries[text].cost = await cost(text);
+    await shot(`search-${n}-${text.replace(/\s+/g, '-')}`, `${innerWidth} px: "${text}", grouped by class: ${(out.search.queries[text] && out.search.queries[text].heads.join(' / ')) || 'no groups'}`);
+    const got = out.search.queries[text];
+    if (!got || !got.rows.length) out.problems.push(`search "${text}": no rows`);
+    else if (!got.heads.length) out.problems.push(`search "${text}": rows but no group microlabel`);
+  }
+  // The toggle: "galaxies" with 3D models only.
+  await ask('galaxies');
+  { const t = field() && wrapOf(field()).querySelector('.sr-search__only'); if (t && !t.hidden) t.click(); else out.problems.push('search "galaxies": no 3D toggle under the results'); }
+  await sleep(1500);
+  out.search.toggled = await ask('galaxies');
+  out.search.toggled.cost = await cost('galaxies', true);
+  if (out.search.toggled.pressed !== 'true') out.problems.push('search: the 3D toggle does not say it is pressed');
+  await shot('search-5-galaxies-3d', `${innerWidth} px: "galaxies" with 3D models only: ${out.search.toggled.rows.map((r) => r.name).join(', ')}`);
+  { const t = wrapOf(field()).querySelector('.sr-search__only'); if (t) t.click(); await sleep(600); }
+  // The keyboard: the field, Fly to it, the toggle, in the order the screen reads them.
+  // Fly to it is drawn for a screen reader only in the sidebar and the bar (css/ui.css: absolute, 1 px,
+  // clip: rect(0 0 0 0)): a clipped control is not on the screen to read, whatever its box says (its padding
+  // kept it wider than 1 px, so the first version of this check counted it as the first thing read).
+  const srOnly = (n) => { const cs = getComputedStyle(n); const r = n.getBoundingClientRect(); return (cs.clip && cs.clip !== 'auto') || (cs.clipPath && cs.clipPath !== 'none') || r.width <= 1 || r.height <= 1; };
+  {
+    const els = [...wrapOf(field()).querySelectorAll(FOCUSABLE)].filter((n) => shown(n) && !srOnly(n));
+    const read = els.map((n) => ({ n, r: n.getBoundingClientRect() })).sort((a, b) => { const ma = a.r.top + a.r.height / 2; const mb = b.r.top + b.r.height / 2; return Math.abs(ma - mb) < 12 ? a.r.left - b.r.left : ma - mb; });
+    out.search.order = { keyboard: els.map(label), screen: read.map((x) => label(x.n)) };
+    if (out.search.order.keyboard.join(' | ') !== out.search.order.screen.join(' | ')) out.problems.push('search: the keyboard goes ' + out.search.order.keyboard.join(' > ') + ' but the screen reads ' + out.search.order.screen.join(' > '));
+  }
+  // Enter on the first row of "moons of saturn" flies there, as it always did.
+  const moons = await ask('moons of saturn');
+  const firstName = moons && moons.rows[0] && moons.rows[0].name;
+  if (typeof window.cdpInput === 'function') await window.cdpInput('key', 'Enter');
+  else field().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  await sleep(7000);
+  const picked = sr.selected && sr.selected();
+  out.search.flew = { first: firstName, selected: picked ? picked.name : null };
+  if (!picked || !firstName || picked.name.toLowerCase() !== firstName.toLowerCase()) out.problems.push(`search: Enter on "${firstName}" selected ${picked ? picked.name : 'nothing'}`);
+  await shot('search-6-flown', `${innerWidth} px: Enter on the first row of "moons of saturn" (${firstName}): the camera went there`);
+  try { if (sr.perf && sr.perf.stats) out.search.perf = sr.perf.stats(); } catch (e) { out.search.perf = String(e); }
+  out.realKeys = typeof window.cdpInput === 'function';
+  if (out.problems.length) out.fail = out.problems.join(' | ');
+  return finish(out);
+}
+
 // --- the card --------------------------------------------------------------------------------------
 const iss = sr.recordById('sat-25544') || sr.recordsFor('stations')[0];
 if (!iss) return finish({ fail: 'no station to open a card for' });

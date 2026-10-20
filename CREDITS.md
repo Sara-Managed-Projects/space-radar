@@ -1588,15 +1588,158 @@ distance (1 344 ly). Its shape away from the Trapezium is **reconstructed** and 
 
 ### LOLA, LROC traverses (0076 W2-a)
 
+Release 1.2.0 stage W2-a (internal spec 0076, internal #864, #868, #917). Nothing here is stored at boot;
+each piece is fetched or drawn only close to the Moon or beside the station.
+
+**Shadows cast from the Moon's heights.** `site/js/scene/tiles.js` reads Lunar Orbiter Laser Altimeter
+elevations from NASA's Solar System Treks (`LRO_LOLA_DEM_Global_128ppd_v04`, levels 0 to 5, grey PNG,
+one byte a texel, the visitor's browser asking as for the map tiles of §4.16) and marches toward the Sun
+in them: the shadows of crater rims, peaks and massifs at a low Sun are cast from the measured ground,
+true scale. The byte was turned into metres by a fit to the 44 surveyed objects of LROC's 2016 table
+(Wagner et al. 2017), 77.31 m a byte above -9101.7 m, 18.5 m rms (`registry/tilesets.yaml`). LOLA is
+archived at the PDS Geosciences Node, whose FAQ says "Data sets archived in the PDS are in the public
+domain" (https://pds-geosciences.wustl.edu/faq.html, read 2026-10-16). Credit, in the Sources panel while
+the shadows are drawn:
+
+> The Moon's shadows close up: cast from Lunar Orbiter Laser Altimeter heights, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks
+
+**The rover traverses of Apollo 15 and 17.** `site/js/scene/traverse.js` draws the lines the PDS Geosciences
+Node (Washington University in St. Louis) serves with its Apollo Analyst's Notebook station finders, read
+2026-10-16 by `scripts/build_traverses.py` into `registry/traverses/`: Apollo 15's "from Phil Stooke,
+University of Western Ontario ... created by tracing tracks visible in the LROC data as well as using
+surface photos and descriptions", Apollo 17's "created by tracing tracks visible in the LROC data" (the
+finder pages' words). Terms: the Analyst's Notebook layers carry no separate terms; they are distributed
+by the NASA PDS Geosciences Node as NASA PDS archive data, under NASA's open data policy (the Node's FAQ:
+"Data sets archived in the PDS are in the public domain"). Credited as "NASA PDS Geosciences Node,
+Analyst's Notebook". Credits, in the Sources panel while each is drawn:
+
+> Apollo 15's rover traverse: traced by Phil Stooke (University of Western Ontario) from LROC images; NASA PDS Geosciences Node, Analyst's Notebook
+
+> Apollo 17's rover traverse: traced from LROC images; NASA PDS Geosciences Node, Analyst's Notebook
+
+**Huygens on Titan** (`registry/sites.yaml`, a coordinate, not yet drawn): 10.573 S, 192.335 W from the
+Huygens Descent Trajectory Working Group's 2010 trajectory, as Atkinson, Kazeminejad and Lebreton give it
+(EGU General Assembly 2015, abstract EGU2015-162-2, CC Attribution 3.0).
+
+**The red of the station's sunrise** (`site/js/scene/shadow.js` AIR_REDDENING) is modelled, not observed:
+Rayleigh scattering of a single exponential atmosphere along the grazing line to the Sun, with the
+column's optical depths from Hansen and Travis (1974, Space Science Reviews 16, 527). No image is used.
+
 ### Ring and spot data (0076 W2-b)
+
+No picture or file is added: these are numbers, each typed into the code with its source beside it.
+
+- **Uranus's and Jupiter's rings.** Radii, widths, optical depths and albedos from NASA's NSSDCA ring
+  fact sheets (D. R. Williams), <https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html> and
+  <https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupringfact.html>, and the planets' geometric albedos
+  from <https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html> and `jupiterfact.html`, read
+  2026-10-16. A NASA page; NASA's media guidelines: NASA content "generally [is] not subject to copyright
+  in the United States". Drawn by `scene/worlds.js` (`URANUS_RINGS`) and `scene/weather/worldweather.js` (`GIANT_RINGS`).
+- **The Great Red Spot's place and drift.** The British Astronomical Association's Jupiter Section (John
+  Rogers), "Jupiter in 2025/26, Report no.4" (2025 Dec. 31), reporting the JUPOS team's and Shinji
+  Mizumoto's measurements: L2 = 79 on 2025 Dec. 1 and a drift of +0.8 deg/30d from March to November;
+  and "Jupiter in 2024/25, Report no.7" (2026 Jan.): +1.78 deg/30d over that apparition.
+  <https://britastro.org/wp-content/uploads/2025/12/Jup_2025dec_Report-no-4.pdf>, read 2026-10-16. Three
+  measured numbers, cited; two short passages of the reports are quoted, with this attribution, in the
+  row's comment in `registry/weather.yaml`, and none of their figures is reproduced. The ±1° on that
+  L2 is assumed, not the reports'. System II's rotation,
+  W = 43.3 + 870.270 d, is the IAU/IAG working group's (Davies et al. 1980, Celestial Mechanics 22, 205).
+  Row `jupiter-bands` in `registry/weather.yaml`; drawn by `scene/weather/worldweather.js`.
 
 ### Plume observations (0076 W2-c)
 
+The plumes on Io, Enceladus and Triton (`registry/plumes.yaml`, drawn by `site/js/scene/plumes.js`) are
+numbers, not images: each plume's place, its height and who saw it when. No picture is copied.
+
+- **Places**: the IAU/USGS Gazetteer of Planetary Nomenclature (planetarynames.wr.usgs.gov): Prometheus,
+  Pillan Patera, Tvashtar, and Enceladus's Alexandria, Cairo, Baghdad and Damascus sulci. "USGS-authored
+  or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights
+  and Credits). Pele's and Loki Patera's from Wikipedia's articles, which cite the gazetteer.
+- **Heights and dates**: NASA/JPL captions PIA00703 (Galileo, Prometheus 75 km and Pillan 140 km, 28 June
+  1997), PIA09359 (New Horizons, Tvashtar about 330 km, 2007), PIA07762 (Cassini, Enceladus's plume "at least
+  as tall as the moon's diameter", November 2005) and the release of 28 July 2014 (101 geysers, Porco et
+  al. 2014); Pele's 300 km (Voyager 1, March 1979; Strom et al. 1979, Nature); Triton's 8 km columns and
+  clouds carried over 100 km (Voyager 2, August 1989; Soderblom et al. 1990, Science 250, USGS abstract)
+  and their places (Hofgartner et al. 2022, arXiv:2112.04627). Facts and numbers; NASA's captions are
+  "generally not subject to copyright in the United States" (NASA media usage guidelines).
+- **Gravity**: GM and mean radii from JPL Solar System Dynamics, Planetary Satellite Physical Parameters.
+- The grains' arcs, the stripes' straight lines, the jets' places along them, the light's stretch and
+  the hot spots' brightness are ours (modelled, reconstructed or illustrative; the card says which).
+
 ### Clusters (0076 W3-a)
+
+Star clusters drawn as stars (`scene/deep/globular.js`, internal #819 and #871), from two catalogues read through
+VizieR by `scripts/build_deep_clusters.py` on 2026-10-16 into `site/data/deep/clusters.json` and
+`site/data/deep/clusters.bin`. "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg,
+France." The terms, as the VizieR licence page read that day (<https://cds.unistra.fr/vizier-org/licences_vizier.html>):
+"The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in
+scientific publication, the original authors and publication references including the publisher have to be
+explicitely cited", and tables from A&A "are free for a scientific usage". Space Radar is free and non-commercial.
+
+| what | from | licence |
+|---|---|---|
+| The 33 globular clusters' core radii, concentrations (so their tidal radii), integrated V magnitudes, metallicities, horizontal-branch ratios and magnitudes (`clusters.json`, `globulars`) | Harris W.E. 1996, AJ 112, 1487, *A Catalog of Parameters for Globular Clusters in the Milky Way*, VizieR VII/202 | VizieR's terms above; facts, cited |
+| The globulars' stars: placed by King's density in space for that core and tidal radius | King I. 1962, AJ 67, 471 (eq. 27) | a published model, cited; the placing is seeded and is ours |
+| 23 685 members of 36 open clusters, each with its Gaia DR3 direction, parallax, G magnitude, BP−RP colour and membership probability (`clusters.bin`; kept: probability at least 0.5, inside the tidal radius; less the stars the map's own catalogue draws) | Hunt E.L. & Reffert S. 2023, A&A 673, A114, *Improving the open cluster census. II.*, VizieR J/A+A/673/A114; the measurements are ESA/Gaia/DPAC's, Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1 | VizieR's terms above, and Gaia's: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>, read 2026-10-16); the derived file keeps ESA's non-commercial term |
+| The members' absolute magnitudes and colours less the clusters' extinction: A_G = 0.789 A_V, E(BP−RP) = 0.413 A_V | Wang S. & Chen X. 2019, ApJ 877, 116 | facts, cited |
+| Gaia DR3's global parallax offset, −0.017 mas | Lindegren L. et al. 2021, A&A 649, A4 | facts, cited |
+
+What is measured and what is not. A globular's core and tidal radius are Harris's; its stars are a model of its
+kind, not its own stars: their number, brightness and colour follow a luminosity function and an illustrative
+colour scale that are ours (the card says so), and their light is shared with the glow so the two together
+are the cluster's MVt. An open cluster's members are Gaia's: their directions are measured; their depth is their
+own parallax where it is good to a quarter of the cluster's half-member radius (the Hyades' nearly all, the
+Pleiades' brightest), otherwise modelled as a Plummer sphere of the cluster's measured half-member radius; the
+cluster stands at the map's distance for it. The conversion of BP−RP into the app's B−V colours is this map's
+linear fit (B−V = 0.82 (BP−RP)0 − 0.06), not a published relation. A faint open-cluster member is drawn at least 2.2 px wide (a floor for legibility, not
+its brightness), and the cluster's haze steps back only by the light its Gaia members carry. Both kinds are drawn to apparent magnitude 10 from
+the camera, as a camera's exposure shows a cluster (6.5 under the Eye exposure), deeper than the map's other stars.
+Not yet reviewed by an astronomer.
 
 ### The Ring (0076 W3-b)
 
+The Ring Nebula's reconstruction (`site/js/scene/deep/ring.js`, its numbers in
+`registry/deepsky-heroes/m57.yaml`, the shared part in `site/js/scene/deep/shellneb.js`) is computed here from
+facts read in each source on 2026-10-16; no text, figure, image or model file of any of them is shipped. The
+sizes are the papers' arcseconds, turned into light-years at the record's distance (2 569 ly, below).
+
+| what | the numbers | from |
+|---|---|---|
+| the main ring | an irregular, ionisation-bounded disc "lying almost in the plane of the sky", bounded at about 44″ along its apparent major axis (PA 60°) and 30″ along the minor; the major axis tilted 13.5°, its NE end near (the SW tip redshifted); a central cavity. Its thickness (drawn 28″) and the cavity's edge (half its radii, read from the photograph) are illustrations | O'Dell, Ferland, Henney & Peimbert 2013, AJ 145, 92 (arXiv:1301.6636), sections II.1, III.3, IV |
+| the lobes | "a pair of extended Lobes pointed almost at the observer" through the cavity; the paper has "no evidence about the form of the Lobes": drawn as one soft spheroid 59″ long each way (the semi-polar axis of the earlier model), an illustration | O'Dell et al. 2013, section IV; O'Dell, Sabbadin & Henney 2007, AJ 134, 1679 |
+| the interpretation | "shaped like a distorted doughnut", with "a rugby ball slotted into the doughnut's central gap": read, not shipped | ESA/Hubble heic1310 (2013-05-23, read 2026-10-16) |
+| the inner halo | loops "almost all of them within 65″" of the star: drawn as a soft spherical shell from 44″ to 62″ (where the photograph's light ends), an illustration. The outer halo (115″) and the ten arcs Webb found are not drawn | O'Dell et al. 2013, sections I and III.4; Wesson et al. 2024, MNRAS (arXiv:2308.09027) |
+| the knots | dark knots of about 0.2″ (150 au) near the ionisation boundaries; "some 20 000 dense globules". 150 to 1 000 are drawn in the outer part of the ring at that size; their places are seeded, not catalogued, their 300 au tails are an illustration, and under 2.2 px their darkness is exaggerated so they can be seen | O'Dell et al. 2013, section II.2; Wesson et al. 2024, MNRAS, CC BY 4.0 |
+| the white dwarf | about 135 000 K (published fits 101 000 to 162 000 K): its colour is a blackbody's | Sahai et al. 2025, ApJ 985 (arXiv:2504.01188) |
+| the distance | 2 569 ly (2 483 to 2 661): the inverse of the central star's parallax, 1.2696 ± 0.0438 mas, Gaia DR3 source_id 2090486618786534784 (no zero-point correction). It replaces the Messier table's 2 700 ly for the record (`scripts/data/messier-overlay.yaml`) | Gaia DR3, ESA/Gaia/DPAC; Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1; read through VizieR I/355/gaiadr3 (CDS) on 2026-10-17. CC BY-NC 3.0 IGO: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>) |
+| the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_ring.py` -> `site/images/deep/ring/ring-light.webp`, 11.5 kB, an adaptation): each sky point's light is spread along our line through the ring, the lobes and the halo. The ring's projected axis (PA 62°, ratio 0.78) was measured from it too | ESA/Hubble heic1310a, NASA, ESA, and C. Robert O'Dell (Vanderbilt University), CC BY 4.0 (section 3 above); stars removed by Space Radar |
+
+The photograph's colours are NARROWBAND (helium, oxygen, hydrogen, nitrogen and sulphur filters given colours by
+ESA/Hubble), so under every look the light is ENHANCED, and the registry says so; Deep lifts it further. Which
+layer each part of the picture's light belongs to, the layers' soft forms and their self-absorption are
+illustrations shaped to the sources above. The card says its light is the photograph's and its shape the paper's,
+that its thickness and the lobes' form are not measured, and that no astronomer has reviewed it yet.
+
 ### Remnants and dust (0076 W3-c)
+
+The remnants' shells (`site/js/scene/deep/remnant.js`) and the dust sheets (`site/js/scene/deep/dustsheet.js`), their
+numbers in `registry/deepsky-heroes/{crab,veil,horsehead,coalsack,m78,iris}.yaml`, are computed here from facts read in
+each source on 2026-10-17; no text, figure or model file of any of them is shipped. Lengths on the sky are turned into
+light-years at each record's distance. Each shape in depth is **reconstructed** and each card says so; the dust only
+absorbs (a multiply blend in its own material) and reddens by the extinction law below.
+
+| what | the numbers | from |
+|---|---|---|
+| the Crab's shell | the envelope fitted as an ellipsoid along the pulsar's torus axis, no line-emitting gas beyond 2 pc along it and none within 0.5 pc of the centre (310 000 SITELLE spectra, uniform expansion); its true outline is "heart-shaped", not drawn | Martin, Milisavljevic & Drissen 2021, MNRAS 502, 1864 (arXiv:2101.02709) |
+| the Crab's axis | the outer torus at position angle 126.3 degrees, its axis 63.0 degrees from the line of sight; which end is nearer is assumed | Ng & Romani 2004, ApJ 601, 479 (arXiv:astro-ph/0310155) |
+| the Cygnus Loop (the Veil) | 735 +/- 25 pc; a main shell 2.85 degrees (37 pc) across, fairly spherical; its centre SIMBAD's | Fesen, Weil, Cisneros, Blair & Raymond 2018, MNRAS 481, 1786 (arXiv:1809.01713); SIMBAD, CDS |
+| the Horsehead | in silhouette against the glowing gas of IC 434, lit from behind by sigma Ori 3.5 pc away in projection; the edge seen nearly edge on | Abergel et al. 2024, A&A (arXiv:2404.15816); Habart et al. 2005, A&A (arXiv:astro-ph/0501536) |
+| the Coalsack | the near cloud at 100 to 200 pc; a second cloud about 3.1 kpc away in the north-east (drawn here at the near distance); extinction above 6 and up to 10 magnitudes in a few places | Beuther et al. 2011, A&A (arXiv:1107.2298) |
+| M78's and the Iris's stars | HD 38563 (B2II-III, V 10.81) and HD 200775 (B2Ve, V 7.43): places, magnitudes, types; their depths are not measured | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-17, cited as "CDS/SIMBAD" |
+| the Iris's cavity | HD 200775 in a cavity largely devoid of molecular gas | Gerin, Phillips, Keene, Betz et al. 1998 (arXiv:astro-ph/9802116) |
+| the extinction law | A(lambda) / A(V) at 0.61, 0.55 and 0.45 um for R_V = 3.1 (the stars behind the dust reddened) | Cardelli, Clayton & Mathis 1989, ApJ 345, 245 |
+| the phase function | Henyey-Greenstein with g = 0.6 (modelled): a reflection nebula seen from another side | Henyey & Greenstein 1941, ApJ 93, 70; g as Sujatha, Murthy, Shalima & Henry 2007, ApJ 665, 363 measured it near the Coalsack (0.61 +/- 0.07, far ultraviolet) |
+| the light and the darkness | the remnants' light IS the photograph the app already shows, its stars removed; the Horsehead's darkness and the glow behind it are read from its photograph; the Coalsack's darkness from the Milky Way map the app draws, against the Milky Way at the same galactic latitude; M78's and the Iris's light from NOIRLab's photographs (B, V, R and H-alpha; their 1280 px renditions, downloaded for the bake and not shipped; placed by a 2MASS solve, CDS hips2fits, as section 3g's photographs). All by `scripts/build_deep_sheets.py` into `site/images/deep/sheets/` (adaptations). Under Deep the photographs' own stretch is ENHANCED; the Crab's, the Veil's and the Horsehead's colours are FALSE COLOUR (narrow filters) | heic0515a: "NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)", CC BY 4.0; noao1209a: "T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA", CC BY 4.0; noao0126a: "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)", CC BY 4.0; noao-m78 and noao-ngc7023: "T. A. Rector/University of Alaska Anchorage, H. Schweiker/WIYN and NOIRLab/NSF/AURA", CC BY 4.0; the Milky Way map: "NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." (section 2's 4k map); stars removed, darkness read and depth reconstructed by Space Radar |
 
 ## 4. Runtime data sources
 

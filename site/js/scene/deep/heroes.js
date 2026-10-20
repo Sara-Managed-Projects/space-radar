@@ -20,6 +20,17 @@ export const HEROES = [
   { id: 'orion', record: 'dso-m42', stage: 'W1-a', profile: () => import('../../data/hero-orion.js'), build: () => import('./orion.js') },
   { id: 'm57', record: 'dso-m57', stage: 'W3-b', profile: () => import('../../data/hero-m57.js'), build: () => import('./ring.js') },
   // 0076 W3-c (its profiles)
+  // READ LAZILY (the lead, 2026-10-17: the first minute's bytes). These six lines carry a STUB profile, what the
+  // coordinator reads at once (shipped, drawn, children); the full profile (data/hero-<id>.js) is imported with the
+  // module, by `build`, when the record is near enough to fetch. `stub.shipped` must equal the registry's `shipped:`
+  // (tests/test_remnant.mjs and tests/test_dustsheet.mjs hold it); a hero may set it false for good on a device below
+  // its profile's `min_tier` (scene/deep/dustsheet.js), and the coordinator then draws the object as main does.
+  { id: 'crab', record: 'dso-m1', stage: 'W3-c', stub: { shipped: false, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { const stub = this.stub; return Promise.all([import('./remnant.js'), import('../../data/hero-crab.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO, stub }) })); } },
+  { id: 'veil', record: 'dso-veil-nebula', stage: 'W3-c', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { const stub = this.stub; return Promise.all([import('./remnant.js'), import('../../data/hero-veil.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO, stub }) })); } },
+  { id: 'horsehead', record: 'dso-horsehead-nebula', stage: 'W3-c', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { const stub = this.stub; return Promise.all([import('./dustsheet.js'), import('../../data/hero-horsehead.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO, stub }) })); } },
+  { id: 'coalsack', record: 'dso-coalsack', stage: 'W3-c', stub: { shipped: false, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { const stub = this.stub; return Promise.all([import('./dustsheet.js'), import('../../data/hero-coalsack.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO, stub }) })); } },
+  { id: 'm78', record: 'dso-m78', stage: 'W3-c', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { const stub = this.stub; return Promise.all([import('./dustsheet.js'), import('../../data/hero-m78.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO, stub }) })); } },
+  { id: 'iris', record: 'dso-iris-nebula', stage: 'W3-c', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { const stub = this.stub; return Promise.all([import('./dustsheet.js'), import('../../data/hero-iris.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO, stub }) })); } },
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

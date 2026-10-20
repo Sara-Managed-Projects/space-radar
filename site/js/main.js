@@ -468,6 +468,9 @@ export async function boot({ setStatus } = {}) {
   // stage is entered, dropped when it is left, nothing at boot.
   const systems = createSystems(scene, ctx);
   ctx.systems = systems;
+  // 0076 W2-b (exposure to the worlds)
+  worlds.setExposure(exposure.mode());
+  exposure.onChange((mode) => worlds.setExposure(mode));
   window.addEventListener('sr:stage', (e) => {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
@@ -479,6 +482,10 @@ export async function boot({ setStatus } = {}) {
     else systems.leave();
     // 0076 W2-a
     // 0076 W2-c
+    // Plumes where they were seen (scene/plumes.js): fetched when Io, Enceladus or Triton gets its stage.
+    if (!ctx.wantPlumes) ctx.wantPlumes = () => ctx.wantPlumes.p || (ctx.wantPlumes.p = import('./scene/plumes.js').then((m) => (ctx.plumes = m.createPlumes(ctx))).catch((e) => { console.warn('the plumes did not load', e); ctx.wantPlumes.p = null; return null; }));
+    if (ctx.plumes) ctx.plumes.stage(id);
+    else if (id === 'io' || id === 'enceladus' || id === 'triton') ctx.wantPlumes().then((p) => p && p.stage(stage.worldId));
     // The Milky Way is fetched, built and its shaders compiled while the stellar rung is up (internal
     // #549: entering the galaxy rung stalled about three seconds), not on the galaxy rung's first frame.
     // Not on a metered connection, where the 2.2 MB file waits for the rung that draws it.

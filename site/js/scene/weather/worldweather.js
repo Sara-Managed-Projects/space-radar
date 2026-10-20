@@ -15,7 +15,10 @@
 //   zonal flow   Jupiter, Saturn, Venus, Uranus, Neptune: every latitude of the map slides at the
 //                published wind's angular rate (scene/weather/flow.js). MODELLED.
 //   the spot     Jupiter's Great Red Spot: the band's wind is taken round it and the oval turns
-//                within itself. MODELLED (its place is the map's; its drift is not drawn).
+//                within itself. MODELLED. Since internal spec 0076 W2-b it is also WHERE IT IS: the
+//                map is turned so its spot stands at the System II longitude the JUPOS team measured,
+//                carried forward at the measured drift (GRS_PLACE below), and the card says by how
+//                much that may be wrong. The other clouds go round with the map and are not placed.
 //   the hexagon  Saturn's north pole: a six-sided line at the jet's measured latitude.
 //                ILLUSTRATIVE (the map has no pole in it).
 //   the vortex   inside it, from close: a small cyclone whose eye is as wide and whose wall is as
@@ -42,6 +45,12 @@
 //   Titan        three pale streaks in the north, where Webb and Keck saw methane clouds in 2022
 //                and 2023. ILLUSTRATIVE.
 //
+// THE GIANTS' RINGS (internal spec 0076 W2-b), here because this module is what the giants wear from
+// tier 1 and never on tier 0 or a connection that saves data: Jupiter's faint ring (GIANT_RINGS.jupiter),
+// a mesh of its own round Jupiter, which needs the shutter (worlds.onExposure) and goes with the latch.
+// Uranus's dark rings and their Deep lift are scene/worlds.js's own (URANUS_RINGS, setExposure), on every
+// tier; here they are only repainted the same way, and as main drew them for the probes' before.
+//
 // THE CLOCK. Everything is a function of the app's time (update(tMs)), computed in doubles here and
 // handed over as small numbers, so scrubbing forwards or backwards moves the bands the right way at
 // the right speed and a 32-bit float never sees a Unix time.
@@ -57,10 +66,13 @@
 // with its own materials; the seasonal frost is not painted on those. Up close the picture is the
 // mosaic, as photographed; the season is on the globe seen whole.
 
-import { WORLD_FRAG } from '../worlds.js';
+import * as THREE from '../../../vendor/three.module.min.js';
+import { WORLD_FRAG, RING_FRAG, RING_DUST_G, URANUS_RINGS, WORLDS, ringMaterial, oblateRadii } from '../worlds.js';
 import { WEATHER } from '../../data/weather.js';
 import { drawnUnder } from '../exposure.js';
 import { lookHeld } from '../quality.js';
+import { COPY, t, fmt } from '../../copy/en.js';
+import '../../copy/en.later.js';
 import {
   RATE_ROWS, rateTable, splitFlow, flowPhases, rigidTurn, planetocentricDeg, marsLs, marsSeason,
   nextFlash, flashLight, bodyDirection, wavePhase,
@@ -135,6 +147,228 @@ export function cirrusUniforms(c) {
 }
 /** Seconds a close-range effect takes to come in or go out once the disc crosses its size. */
 export const NEAR_FADE_S = 1;
+
+// --- the Great Red Spot where it is (internal spec 0076 W2-b, internal #860) -------------------------
+//
+// A map of Jupiter is one picture: its Great Red Spot is where it was that day. The spot drifts
+// slowly against System II, the rotation astronomers have kept since the 1890s for the bands away
+// from the equator, and its place in System II is measured every few weeks by the JUPOS team (the
+// British Astronomical Association's Jupiter Section with amateur observers' images). The registry
+// row (`jupiter-bands` spot.place) holds one dated measurement and the drift; this turns it into
+// System III, the rotation the globe is drawn with (Astronomy Engine's IAU W = 284.95 + 870.536 d),
+// and into the turn of the map that puts the map's own spot there.
+//
+// SYSTEM II: W = 43.3 + 870.270 d (Davies et al. 1980, the IAU/IAG working group's report, Celestial
+// Mechanics 22, 205; the Explanatory Supplement to the Astronomical Almanac, 1992, sect. 7.42). A
+// feature fixed in System II goes round System III 0.266 degrees a day: L3 = L2 + (W3 - W2), which
+// the BAA's reports give as "DL3 = DL2 + 8.0 deg/30d". Longitudes are west longitudes, as the
+// reports and the IAU use for Jupiter.
+//
+// THE MESH. scene/worlds.js turns the globe with Astronomy Engine; SphereGeometry's u runs east, and
+// a west longitude L sits at u = 0.5 - L / 360 (tests/test_giants.mjs holds it against Hubble's map
+// of 11 December 2025, whose spot is within a degree of where this puts it that day).
+export const SYSTEM_II = { w0: 43.3, perDay: 870.27 };
+export const SYSTEM_III = { w0: 284.95, perDay: 870.536 };
+const J2000_MS = Date.UTC(2000, 0, 1, 12);
+const wrap360 = (x) => ((x % 360) + 360) % 360;
+/** Days from J2000 (the clock's UTC as TDB: 69 s, 0.0002 degrees of the difference). Pure. */
+const daysJ2000 = (tMs) => (tMs - J2000_MS) / 86400000;
+/** A System II west longitude as System III's at `tMs`, degrees 0..360. Pure. */
+export function l2ToL3(l2, tMs) {
+  const d = daysJ2000(tMs);
+  return wrap360(l2 + (SYSTEM_III.w0 - SYSTEM_II.w0) + (SYSTEM_III.perDay - SYSTEM_II.perDay) * d);
+}
+/** Milliseconds of a place's date (`date`, YYYY-MM-DD: its midnight, UTC; or a full ISO instant). Pure. */
+function placeMs(place) {
+  const s = String(place.date);
+  return Date.parse(/T/.test(s) ? s : s + 'T00:00:00Z');
+}
+/**
+ * The spot at `tMs` from the registry's dated place: its System II and System III longitudes, the
+ * days since it was measured, and how far either side it may be (the measurement's own error plus
+ * the spread of the drifts measured that year, carried over the days). Pure.
+ */
+export function grsAt(place, tMs) {
+  const days = (tMs - placeMs(place)) / 86400000;
+  const l2 = wrap360(place.l2_deg + (place.drift_deg_per_30d * days) / 30);
+  const range = place.drift_range || [place.drift_deg_per_30d, place.drift_deg_per_30d];
+  const spread = Math.max(Math.abs(range[1] - place.drift_deg_per_30d), Math.abs(place.drift_deg_per_30d - range[0]));
+  const pm = (place.l2_sd_deg || 0) + (spread * Math.abs(days)) / 30;
+  return { l2, l3: l2ToL3(l2, tMs), days, pm };
+}
+/** Where on the mesh (SphereGeometry's u) a System III west longitude is. Pure. */
+export function meshU(l3) {
+  return (((0.5 - l3 / 360) % 1) + 1) % 1;
+}
+/** The map's turn (fraction of a turn, 0..1) that puts a spot the map has at `mapU` at its place now. Pure. */
+export function spotShift(place, mapU, tMs) {
+  const u = meshU(grsAt(place, tMs).l3);
+  return (((u - mapU) % 1) + 1) % 1;
+}
+
+// --- the giants' rings (internal spec 0076 W2-b) -----------------------------------------------------
+//
+// HOW BRIGHT. A ring with an `albedo` is lit as particles that reflect that share of the light, against
+// the globe's map, which stands for the planet's geometric albedo (`globeAlbedo`; NASA's fact sheets,
+// read 2026-10-16: Uranus 0.488, Jupiter 0.538). `stretch` is how many times brighter than that each
+// exposure (scene/exposure.js) draws it. The card says each number (copy/en.later.js r12Giants.rings).
+//
+// JUPITER'S RING. Two parts from NASA's Jupiter ring fact sheet (read 2026-10-16): the halo, 89 400 to
+// 123 000 km, 3e-6, some 10 000 km thick; the main ring, 123 000 to 128 940 km, 5e-6, albedo about 0.015.
+// `profile` is each part as [inner km, outer km, optical depth at the inner edge, at the outer edge],
+// straight between. The main ring is its 5 940 km at the fact sheet's 5e-6 on average, deeper toward its
+// sharp outer edge (Adrastea's orbit) and fading inward into the halo; the halo is 3e-6 where it meets the
+// main ring and fades to nothing at its inner edge, so it is a wide faint glow (internal spec 0076 W2-b
+// review, 2026-10-16: at Deep the first version was a flat painted annulus). Galileo's pictures show
+// both fades; the straight lines are ILLUSTRATIVE, the radii and the means are the fact sheet's.
+// `ceiling`: the brightest the ring is drawn, in linear light, reached softly (1 - exp), so under Deep
+// the main ring saturates to its own colour only where it is brightest and the stars stay visible
+// through it. The halo is drawn flat, but a line of sight
+// through it is never longer than its width, so its optical depth along the view is at most width /
+// thickness times the normal one (`halo`). The Amalthea and Thebe gossamer rings (to 221 900 km, 1e-7)
+// are left out: fifty times fainter, they would treble the ring's area on the screen for a glow only
+// Deep would show. Millionths are far under a byte, so the strip holds tau / `tauScale` and the shader
+// reads it back as an optical depth, in the thin-slab limit 2 tau / mu on either face (FAINT_FRAG). It
+// is dust and dark grains: from the Sun's side almost nothing; with the Sun behind it the dust throws
+// light forward (Galileo's and New Horizons' pictures from the night side). Half the light is the
+// dust's (Henyey-Greenstein, g = RING_DUST_G) and half the grains' (a Lambert sphere's) -- the papers
+// put about half the main ring's optical depth in dust; the split, the g and the reddish `hue` are
+// ILLUSTRATIVE. Under Eye it is drawn as it is, which is not at all; under Camera 8 000 times
+// brighter, which shows it from the night side and hardly from the day side; under Deep 40 000 times.
+export const GIANT_RINGS = {
+  uranus: { albedo: 0.015, globeAlbedo: 0.488, stretch: { eye: 1, camera: 1, deep: URANUS_RINGS.deep } },
+  jupiter: {
+    innerKm: 89400, outerKm: 129500, tauScale: 7.5e-6, ceiling: 0.3,
+    halo: { innerKm: 89400, outerKm: 123000, thickKm: 10000 },
+    albedo: 0.015, globeAlbedo: 0.538, hue: [1, 0.82, 0.66], dust: 0.5,
+    stretch: { eye: 0, camera: 8000, deep: 40000 },
+    profile: [[89400, 123000, 0, 3e-6], [123000, 128940, 2.5e-6, 7.5e-6]],   // the halo; the main ring
+  },
+};
+/** The texels of the faint ring's strip. */
+export const FAINT_PX = 512;
+/** How many times brighter than it is a ring is drawn under an exposure (1 without a `stretch`). Pure. */
+export function ringStretch(ring, exposure = 'camera') {
+  const s = ring && ring.stretch;
+  return s && Number.isFinite(s[exposure]) ? s[exposure] : 1;
+}
+/** sRGB hex to linear RGB, as three.js's ColorManagement reads one. Pure. */
+export function hexLinear(hex) {
+  return [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+}
+const lumOf = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+/**
+ * A ring's colour in linear light under an exposure: the globe's map mean (`tintHex`) times albedo /
+ * globeAlbedo, in the ring's hue, times the exposure's stretch. Pure.
+ */
+export function ringColour(tintHex, ring, exposure = 'camera') {
+  const k = (lumOf(hexLinear(tintHex)) * ring.albedo) / ring.globeAlbedo * ringStretch(ring, exposure);
+  const hue = ring.hue || [1, 1, 1];
+  const h = lumOf(hue);
+  return hue.map((c) => (c / h) * k);
+}
+/** A faint ring's normal optical depth at a radius, from its `profile`; 0 outside it. Pure. */
+export function faintTau(ring, rKm) {
+  for (const [a, b, ta, tb] of ring.profile) if (rKm >= a && rKm < b) return ta + ((tb - ta) * (rKm - a)) / (b - a);
+  return 0;
+}
+/** The faint ring's strip: FAINT_PX texels, white, alpha its optical depth at each texel's middle over `tauScale`. Pure but for the array. */
+export function faintStrip(ring, px = FAINT_PX) {
+  const data = new Uint8Array(px * 4);
+  const kmPerPx = (ring.outerKm - ring.innerKm) / px;
+  for (let i = 0; i < px; i++) {
+    data[i * 4] = 255; data[i * 4 + 1] = 255; data[i * 4 + 2] = 255;
+    data[i * 4 + 3] = Math.round(Math.min(1, faintTau(ring, ring.innerKm + (i + 0.5) * kmPerPx) / ring.tauScale) * 255);
+  }
+  return data;
+}
+/** The soft ceiling the faint shader puts on its light, per channel: c (1 - exp(-x / c)). JS twin. Pure. */
+export function softCeiling(x, c) {
+  return c * (1 - Math.exp(-x / c));
+}
+function lambertSpherePhase(cosAlpha) {
+  const a = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
+  return (Math.sin(a) + (Math.PI - a) * Math.cos(a)) / Math.PI;
+}
+/**
+ * The faint ring's light for a white strip (FAINT_FRAG): 2 tau / mu, mu held at `muMin` (a thick
+ * halo's thickness over its width), shared between grains (a Lambert sphere) and dust
+ * (Henyey-Greenstein by phase angle, over the isotropic value) by `dust`. JS twin of the shader. Pure.
+ */
+export function ringThinLight(tau, mu, cosAlpha, dust, g, muMin = 0) {
+  const S = (2 * tau) / Math.max(mu, 0.02, muMin);
+  const hg = (1 - g * g) / Math.pow(1 + g * g + 2 * g * cosAlpha, 1.5);
+  return S * ((1 - dust) * lambertSpherePhase(cosAlpha) + dust * hg);
+}
+/**
+ * RING_FRAG made faint (scene/worlds.js keeps one ring shader; this changes five lines of it, as this
+ * module changes one line of WORLD_FRAG): the strip is optical depth (uThin.x per unit), the slab is
+ * its thin limit with the halo's cap (uHalo), the dust's share and g are uThin.y and z, and the dust is
+ * in the ring's own colour. Throws if RING_FRAG no longer has a line it changes. Pure.
+ */
+export function faintFragment(src = RING_FRAG) {
+  let out = src;
+  const swap = (from, to) => {
+    if (!out.includes(from)) throw new Error(`faintFragment: RING_FRAG has no "${from.trim().slice(0, 60)}"`);
+    out = out.replace(from, to);
+  };
+  swap('uniform vec4 uArcBand;\n', 'uniform vec4 uArcBand;\nuniform vec3 uThin;\nuniform vec3 uHalo;\n');
+  swap('  float tau = -log( 1.0 - alpha );\n', '  float tau = tex.a * uThin.x;\n  alpha = tau;\n');
+  const a = out.indexOf('  float S;\n');
+  const end = '( exp( -tau / m ) - exp( -tau / m0 ) );\n  }\n';
+  const b = out.indexOf(end, a);
+  if (a < 0 || b < 0) throw new Error('faintFragment: RING_FRAG has no slab to replace');
+  out = out.slice(0, a) + '  float rl = length( vPosL.xy );\n  float S = 2.0 * tau / ( rl > uHalo.x && rl < uHalo.y ? max( m, uHalo.z ) : m );\n' + out.slice(b + end.length);
+  swap('float dust = RING_DUST * ( 1.0 - alpha );', 'float dust = uThin.y;');
+  swap('dustPhase( cosAlpha, RING_DUST_G )', 'dustPhase( cosAlpha, uThin.z )');
+  swap('RING_DUST_COLOUR * fine', 'fine');
+  swap('  gl_FragColor = vec4( light, cover );', '  light = uCeil * ( 1.0 - exp( -light / uCeil ) );\n  gl_FragColor = vec4( light, cover );');
+  swap('uniform vec3 uHalo;\n', 'uniform vec3 uHalo;\nuniform vec3 uCeil;\n');
+  return out;
+}
+
+/**
+ * Jupiter's faint ring as a mesh: a child of the planet's, in its equator, radii in planet radii,
+ * RING_FRAG made faint (faintFragment). Hidden until paintRings() says otherwise.
+ */
+function faintRing(planet, ring, id = 'jupiter') {
+  const w = WORLDS.find((x) => x.id === id);
+  const inner = ring.innerKm / w.radiusKm;
+  const outer = ring.outerKm / w.radiusKm;
+  const geo = new THREE.RingGeometry(inner, outer, 192, 1);
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (Math.hypot(pos.getX(i), pos.getY(i)) - inner) / (outer - inner), 0.5);
+  uv.needsUpdate = true;
+  const tex = new THREE.DataTexture(faintStrip(ring), FAINT_PX, 1, THREE.RGBAFormat);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.needsUpdate = true;
+  // No warp: the strip is laid on its radii (RING_U_GLSL's three pieces, each where it already is).
+  const material = ringMaterial(tex, inner, outer, [inner + (outer - inner) / 3, inner + (2 * (outer - inner)) / 3, 1 / 3, 2 / 3]);
+  material.fragmentShader = faintFragment();
+  material.uniforms.uThin = { value: new THREE.Vector3(ring.tauScale, ring.dust, RING_DUST_G) };
+  const h = ring.halo;
+  material.uniforms.uHalo = { value: new THREE.Vector3(h ? h.innerKm / w.radiusKm : 0, h ? h.outerKm / w.radiusKm : 0, h ? h.thickKm / (h.outerKm - h.innerKm) : 0) };
+  // The ceiling in the ring's own hue, `ceiling` its luminance.
+  const hue = ring.hue || [1, 1, 1];
+  const hl = lumOf(hue);
+  material.uniforms.uCeil = { value: new THREE.Vector3(...hue.map((c) => (c / hl) * (ring.ceiling || 1e3))) };
+  if (w.look.oblate) { const g = oblateRadii(w.look.oblate); material.uniforms.uGlobe.value.set(g.eq, g.pol); }
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.renderOrder = 1;
+  mesh.name = `${id}-faint-ring`;
+  mesh.visible = false;
+  mesh.userData.tint = w.look.tint;
+  planet.add(mesh);
+  return mesh;
+}
 
 const WX_STORM_PARS = /* glsl */`
 #ifdef WX_STORMS
@@ -305,6 +539,7 @@ uniform float uWxRate[ ${RATE_ROWS} ];  // turns per day toward the east, south 
 uniform vec4  uWxPhase;                 // days each copy has flowed (x, y), the second's weight, the whole map's turn
 uniform vec4  uWxSpot;                  // the pinned oval: centre u, v and half-sizes; half-size 0 = none
 uniform float uWxSpotRate;              // its own turning, turns per day, anticlockwise positive
+uniform float uWxShift;                 // the map's turn that puts its spot where it is today (turns; 0 = where the map has it)
 uniform vec3  uWxHex;                   // the hexagon: its corners' colatitude (rad; 0 = none), its depth, its longitude
 uniform vec3  uWxWave;                  // the dark Y: its depth (0 = none), how far round it has gone (turns), its arms' reach (rad)
 uniform vec4  uWxVortex;                // the polar vortex: its eye's radius (rad), its turn (0..1), how much of it is in (0..1), its reach in eye radii
@@ -429,7 +664,10 @@ vec3 wxSample( vec2 uv, float tau ) {
 #endif
   return texel;
 }
-vec3 wxBase( vec2 uv ) {
+vec3 wxBase( vec2 uvMesh ) {
+  // From the mesh's longitudes to the map's: the map turned so its spot is where it is (uWxShift).
+  // Everything below is in the map's own coordinates, as it was before the turn existed.
+  vec2 uv = vec2( uvMesh.x - uWxShift, uvMesh.y );
   vec3 c = mix( wxSample( uv, uWxPhase.x ), wxSample( uv, uWxPhase.y ), uWxPhase.z );
 #ifdef WX_STORMS
   if ( uWxNear.w > 0.0 ) c = wxDeep( c, uv );
@@ -700,6 +938,9 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       const s = fx.flow.spot;
       u.uWxSpot = { value: s ? { x: s.u, y: s.v, z: s.half_u, w: s.half_v } : { x: 0, y: 0, z: 0, w: 1 } };
       u.uWxSpotRate = { value: s && s.period_days ? 1 / s.period_days : 0 };
+      // The spot where it is (internal spec 0076 W2-b): turned each frame in update(); 0 = the map's place.
+      u.uWxShift = { value: 0 };
+      if (s && s.place) entry.place = s.place;
       u.uWxHex = { value: fx.hexagon ? { x: hexagonCornerRad(fx.hexagon.hexagon), y: HEXAGON.depth, z: 0 } : { x: 0, y: 0, z: 0 } };
       // The dark Y goes round with the wind: the same way the flow's `sense` turns the clouds.
       const wave = fx.wave ? fx.wave.wave : null;
@@ -754,6 +995,29 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
     entry.defines = material.defines;
     worn.push(entry);
   }
+
+  // THE GIANTS' RINGS (internal spec 0076 W2-b; GIANT_RINGS). `before`: the look probes' switch
+  // (?look=1 only, setBeforeGiants): the giants as main drew them, for a before and after in one run.
+  let before = false;
+  let exposure = worlds && worlds.exposure ? worlds.exposure() : 'camera';
+  const jupiterMesh = worlds && worlds.meshFor ? worlds.meshFor('jupiter') : null;
+  const faint = jupiterMesh && typeof jupiterMesh.add === 'function' ? faintRing(jupiterMesh, GIANT_RINGS.jupiter) : null;
+  const uranusRing = (() => { const m = worlds && worlds.meshFor ? worlds.meshFor('uranus') : null; return m && m.userData && m.userData.ring ? m.userData.ring : null; })();
+  /** The rings as the shutter, the latch and the probes' switch want them now. */
+  function paintRings() {
+    if (faint) {
+      faint.visible = !latched && !before && ringStretch(GIANT_RINGS.jupiter, exposure) > 0;
+      const c = ringColour(faint.userData.tint, GIANT_RINGS.jupiter, exposure);
+      faint.material.uniforms.uColour.value.setRGB(c[0], c[1], c[2], THREE.LinearSRGBColorSpace);
+    }
+    if (uranusRing) {
+      const k = ringStretch(GIANT_RINGS.uranus, exposure);   // as worlds.js paints it, latched or not
+      const c = hexLinear(before && !latched ? 0x8f9da3 : URANUS_RINGS.colour);
+      uranusRing.material.uniforms.uColour.value.setRGB(c[0] * k, c[1] * k, c[2] * k, THREE.LinearSRGBColorSpace);
+    }
+  }
+  if (worlds && worlds.onExposure) worlds.onExposure((mode) => { exposure = mode; paintRings(); });
+  paintRings();
 
   /**
    * Measured or Film: each row asked once, and what is `hidden` taken out by the uniform that means none.
@@ -856,6 +1120,20 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       if (ground) { const v = u.uWxPhase.value; v.x = 0; v.y = 0; v.z = 0; v.w = 0; }
       lastMs = NaN;
     }
+    // The Great Red Spot where it is (internal spec 0076 W2-b): asked every frame, before the clock's
+    // own early return, because the face the world wears (and so where its map has the spot) can
+    // change on a held clock. One subtraction and a few multiplications for one world.
+    // Jupiter's faint ring is lit from where Jupiter is (scene/worlds.js has put the Sun's direction in its globe).
+    if (faint && faint.visible) {
+      const sd = jupiterMesh.material && jupiterMesh.material.uniforms && jupiterMesh.material.uniforms.uSunDir;
+      if (sd) faint.material.uniforms.uSunDir.value.copy(sd.value);
+    }
+    for (const e of worn) {
+      if (!e.place || !Number.isFinite(tMs)) continue;
+      const u = e.material.uniforms;
+      u.uWxShift.value = before || e.ground ? 0 : spotShift(e.place, u.uWxSpot.value.x, tMs);
+      e.spotMs = tMs;
+    }
     if (!Number.isFinite(tMs) || tMs === lastMs) return;
     lastMs = tMs;
     for (const e of worn) {
@@ -892,6 +1170,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       e.material.defines = d;
       e.material.needsUpdate = true;
     }
+    paintRings();
   }
 
   /**
@@ -907,9 +1186,27 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
       e.material.defines = { ...(e.material.defines || {}), ...e.defines };
       e.material.needsUpdate = true;
     }
+    paintRings();
+  }
+
+  /** The spot as drawn now, for the probes: its longitudes, the map's turn and where on the mesh it is. */
+  function spotState(e) {
+    const g = grsAt(e.place, e.spotMs);
+    const u = e.material.uniforms;
+    return { l2: g.l2, l3: g.l3, pm: g.pm, days: g.days, shift: u.uWxShift.value, mapU: u.uWxSpot.value.x, meshU: (((u.uWxSpot.value.x + u.uWxShift.value) % 1) + 1) % 1, v: u.uWxSpot.value.y };
   }
 
   return {
+    /** The look probes' before (?look=1 only): the giants as main drew them. True when it took. */
+    setBeforeGiants(on) {
+      if (!lookHeld({ search: typeof location !== 'undefined' ? location.search : '' })) return false;
+      before = !!on;
+      paintRings();
+      return true;
+    },
+    beforeGiants: () => before,
+    /** For the probes: is Jupiter's faint ring drawn, under which exposure? */
+    rings: () => ({ exposure, jupiter: faint ? faint.visible : null, uranus: uranusRing ? uranusRing.material.uniforms.uColour.value.getHex(THREE.LinearSRGBColorSpace) : null }),
     update,
     latch,
     unlatch,
@@ -934,6 +1231,25 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
     detail: (id) => !latched && worn.some((e) => e.id === id && !!e.detail && drawn(e.fx.detail)),
     /** Does this world wear the polar vortex: 'moving', 'still' (less motion asked for), or null? */
     vortex: (id) => { const e = !latched && worn.find((x) => x.id === id && !!x.vortex && drawn(x.fx.vortex)); return e ? (e.vortex.still ? 'still' : 'moving') : null; },
+    /**
+     * The Great Red Spot's line for Jupiter's card (internal spec 0076 W2-b; copy/en.later.js r12Giants):
+     * where it is drawn, from when, and how far either side it may be. Null where it is not placed.
+     */
+    spotLine(id, clockMs) {
+      const e = !latched && worn.find((x) => x.id === id && x.place);
+      if (!e || e.ground || before) return null;
+      const W = COPY.r12Giants;
+      if (!W || !W.spot) return null;
+      const p = e.place;
+      const g = grsAt(p, Number.isFinite(clockMs) ? clockMs : e.spotMs);
+      const range = p.drift_range || [p.drift_deg_per_30d, p.drift_deg_per_30d];
+      const date = new Date(placeMs(p)).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+      return t(W.spot, {
+        l2: fmt.int(Math.round(g.l2)), at: fmt.int(Math.round(p.l2_deg)), date,
+        rate: fmt.num(p.drift_deg_per_30d, 1), lo: fmt.num(range[0], 1), hi: fmt.num(range[1], 1),
+        pm: fmt.int(Math.max(1, Math.round(g.pm))),
+      });
+    },
     /** For the probes and the card: the season on Mars, each flow's cycle, the latch. */
     state: () => ({
       latched,
@@ -951,6 +1267,7 @@ export function createWorldWeather({ worlds, reducedMotion = false, rand = lookR
         ground: !!e.ground,
         vortex: e.vortex ? { near: e.material.uniforms.uWxVortex.value.z, turn: e.material.uniforms.uWxVortex.value.y, periodDays: e.vortex.periodDays, still: e.vortex.still } : null,
         storms: e.storms ? { near: { ...e.material.uniforms.uWxNear.value }, face: e.storms.face, turn: e.material.uniforms.uWxPole.value.y, still: e.storms.still } : null,
+        spot: e.place && Number.isFinite(e.spotMs) ? spotState(e) : null,
       })),
     }),
   };

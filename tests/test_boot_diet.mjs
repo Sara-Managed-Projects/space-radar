@@ -154,11 +154,32 @@ const DEFERRED = {
   // 0076 W1-e (perf.js)
   'js/scene/perf.js': 'sr.perf, for tools only: main.js fetches it under ?look=1 or when a tool calls sr.wantPerf()',
   // 0076 W2-a (traverse.js)
+  'js/scene/traverse.js': 'the Apollo rover traverses: scene/tiles.js fetches it the first time the Moon\'s tiles are on screen (internal spec 0076 W2-a)',
+  'js/data/traverses.js': 'the traverses\' lines, read only by scene/traverse.js (internal spec 0076 W2-a)',
+  'js/scene/airtint.js': 'the red of a craft\'s orbital sunrise: imported by scene/models.js only, which loads when a record wants geometry (internal spec 0076 W2-a)',
   // 0076 W2-c (plumes.js)
+  'js/scene/plumes.js': 'plumes where they were seen: main.js fetches it when Io, Enceladus or Triton gets its own stage (internal spec 0076 W2-c)',
+  'js/data/plumes.js': 'the plumes\' registry: with scene/plumes.js',
   // 0076 W3-a (globular.js)
+  'js/scene/deep/globular.js': 'star clusters as stars: the deep-sky coordinator fetches it on the first rung of the ladder (release 1.2.0, internal #819, #871)',
   // 0076 W3-b (ring.js, shellneb.js)
+  'js/scene/deep/ring.js': 'the Ring Nebula hero: the coordinator fetches it when M57 is near (release 1.2.0, internal #872)',
+  'js/scene/deep/shellneb.js': 'the planetary nebulae\'s shared part: with the Helix or the Ring',
+  'js/data/hero-m57.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-c (remnant.js, dustsheet.js)
+  'js/scene/deep/remnant.js': 'remnants as shells: the coordinator fetches it when the Crab or the Veil is near (release 1.2.0 W3-c, internal #784)',
+  'js/scene/deep/dustsheet.js': 'dust as sheets: the coordinator fetches it when the Horsehead, the Coalsack, M78 or the Iris is near (release 1.2.0 W3-c, internal #784, #806)',
+  'js/data/hero-crab.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-veil.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-horsehead.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-coalsack.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-m78.js': 'a hero\'s profile: with the coordinator',
+  'js/data/hero-iris.js': 'a hero\'s profile: with the coordinator',
   // 0076 W3-d (scalerail.js)
+  'js/ui/scalerail.js': 'where you are and Back: ui/cards.js fetches it with the first card, ui/scalebadge.js on the Sun\'s stage (internal spec 0076 W3-d)',
+  // 0076 W3-e (kindwords.js, visualclasses.js)
+  'js/data/kindwords.js': 'the words for a kind of thing ("galaxies"): with ui/searchrows.js, on the search field\'s first focus',
+  'js/data/visualclasses.js': 'every record\'s visual class: ui/searchrows.js fetches it the first time a kind is typed',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
