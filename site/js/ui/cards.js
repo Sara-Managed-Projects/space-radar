@@ -1230,6 +1230,7 @@ function derivedDrawingLine(record, T, tMs) {
   }
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
+  if (klass === 'site' && pick(meta(record), 'siteKind') === 'feature' && T.feature) return T.feature; // 0077 W3-d: a named place, nothing standing on it
   if (klass === 'earthevent') return COPY.earthEvent.drawn;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }

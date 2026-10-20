@@ -184,6 +184,16 @@ references:
            Titan's pole from Cassini's radar gives 'revised Huygens landing coordinates of 192.335
            degrees West and 10.573 degrees South with longitude and latitude residuals of
            respectively 0.035 degrees and 0.007 degrees'. 192.335 W is 167.665 E."
+  # 0077 W3-d: begin -- the named places on the Moon (the rows `class: feature` below)
+  iau-gazetteer-moon:
+    url: "https://planetarynames.wr.usgs.gov/Feature/1296"
+    read: 2026-10-20
+    says: "IAU Gazetteer of Planetary Nomenclature (USGS Astrogeology), the Moon's craters, 'Planetographic,
+           +East, -180 - 180' (on the Moon's sphere the same as planetocentric): Copernicus (Feature 1296)
+           'Center Latitude 9.62', 'Center Longitude -20.08', 'Diameter 96.07 km'; Tycho (Feature 6163)
+           '-43.30', '-11.22', '85.29 km'; Shackleton (Feature 5450) '-89.67', '129.78', '20.92 km'.
+           -20.08 is 339.92 E and -11.22 is 348.78 E."
+  # 0077 W3-d: end
 
 sites:
   # --- Deep Space Network: three complexes, the big dishes ---------------------------
@@ -510,6 +520,56 @@ sites:
     aliases: ["Huygens probe", "Huygens landing site"]
     source: atkinson-2015
     doing: "ESA's probe came down on Titan in January 2005, the first landing in the outer Solar System, and sent home pictures of rounded pebbles."
+  # 0077 W3-d: end
+
+  # 0077 W3-d: begin
+  # --- Named places on the Moon (release 1.3.0 stage W3-d, internal #864) -------------------------------
+  # PLACES, NOT MACHINES: `class: feature` is a named place on a world's ground that a visitor can search
+  # for and arrive at, with nothing standing on it. No `landed:`, no `shape:`: scene/heroes.js draws no
+  # model for one, main.js meets it from where its width fills the screen (a crater's `diameter_m`; the
+  # pole, which has none, from 60 km), ui/cards.js says nothing is drawn there but its name, and the
+  # ground under it is the map's (scene/tiles.js, with the shadows cast from LOLA's heights at a low Sun).
+  # The four the release 1.2.0 package named for the Moon at sunrise: Copernicus, Tycho, Shackleton and
+  # the south pole. Coordinates are the IAU gazetteer's centres (`iau-gazetteer-moon`); the pole is the pole.
+  - id: copernicus
+    display: "Copernicus crater"
+    class: feature
+    world: moon
+    lat: 9.62
+    lon: 339.92
+    diameter_m: 96070
+    source: iau-gazetteer-moon
+    aliases: ["Copernicus"]
+    doing: "A crater 96 km across and nearly 4 km deep, young for the Moon, its bright rays crossing the plains. Best at sunrise or sunset, when its walls cast shadows."
+  - id: tycho
+    display: "Tycho crater"
+    class: feature
+    world: moon
+    lat: -43.30
+    lon: 348.78
+    diameter_m: 85290
+    source: iau-gazetteer-moon
+    aliases: ["Tycho"]
+    doing: "A crater 85 km across with a central peak, young enough that its rays of bright ejecta still run across much of the near side."
+  - id: shackleton
+    display: "Shackleton crater"
+    class: feature
+    world: moon
+    lat: -89.67
+    lon: 129.78
+    diameter_m: 20920
+    source: iau-gazetteer-moon
+    aliases: ["Shackleton"]
+    doing: "A crater 21 km across beside the Moon's south pole. Sunlight only grazes its rim, and its floor never sees the Sun at all."
+  - id: moon-south-pole
+    display: "The Moon's south pole"
+    class: feature
+    world: moon
+    lat: -90
+    lon: 0
+    source: iau-gazetteer-moon
+    aliases: ["Lunar south pole", "South pole of the Moon"]
+    doing: "Where the Moon's axis comes out. The Sun never climbs more than a degree or two here, so peaks stay lit for most of a month and crater floors stay dark."
   # 0077 W3-d: end
 
 # THE TRAVERSES (release 1.2.0 stage W2-a, internal #868): where the rovers drove, as lines traced

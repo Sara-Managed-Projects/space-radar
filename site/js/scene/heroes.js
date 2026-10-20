@@ -702,6 +702,8 @@ export function createHeroes(scene, ctx) {
       // and the alternative -- a satellite bus drawn on the Moon -- is what it prevented once.
       const own = ctx.layers.find((l) => l.id === record.layer);
       if (own && own.noModel) return;
+      // 0077 W3-d: and a named place on a world's ground (registry/sites.yaml `class: feature`) has nothing standing on it.
+      if (record.meta && record.meta.siteKind === 'feature') return;
       const p = propagate(record, tMs);
       if (!p) return;
       const pos = stage.toScene(p, p.frame, tMs);

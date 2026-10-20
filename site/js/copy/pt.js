@@ -1063,6 +1063,7 @@ export const COPY = {
       "exoticStar": "um anel na distância medida; a estrela em si é um ponto nesta escala"
     },
     "storm": "desenhada como uma marca no centro; a tempestade em si é a nuvem ao redor",
+    "feature": "um lugar com nome: nada é desenhado aqui além de uma marca no centro, segundo o catálogo da UAI; o chão embaixo é o próprio mapa", // 0077 W3-d
     "worldFlat": "desenhado como uma bola lisa: não há aqui um mapa da superfície de {name}, e a única cor foi escolhida a partir de descrições publicadas, não medida",
     "worldFlatIrregular": "desenhado como uma bola lisa do tamanho do raio médio: não há aqui um mapa da superfície de {name}, a única cor foi escolhida a partir de descrições publicadas, não medida, e {name} é na verdade uma rocha irregular cuja forma real não é desenhada",
     "worldFlatShaped": "desenhado na forma medida e em uma só cor: não há aqui um mapa da superfície de {name}, e a cor foi escolhida a partir de descrições publicadas, não medida",

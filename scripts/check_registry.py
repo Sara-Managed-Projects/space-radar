@@ -182,7 +182,7 @@ TIME_RELATIVE = (
 )
 
 # --- registry/sites.yaml -------------------------------------------------------------------
-SITE_CLASSES = {"dish", "surface", "pad"}
+SITE_CLASSES = {"dish", "surface", "pad", "feature"}  # 0077 W3-d: `feature`, a named place on a world's ground (registry/sites.yaml)
 # What a landing site is drawn as. Adding one is three edits and deliberately so: this set,
 # BUILDERS.site in site/js/scene/models.js, and bySiteClass in site/js/scene/realmodels.js (or a
 # `bySite` entry, for a model of the vehicle itself, which is what `lunar-module` is).
