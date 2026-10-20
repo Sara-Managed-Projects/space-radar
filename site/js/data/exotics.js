@@ -210,6 +210,21 @@ export const EXOTICS = [
     "massMsun": 100
   },
   {
+    "id": "wd-j1330-6435",
+    "name": "WD J1330+6435",
+    "kind": "star",
+    "why": "A dying star that would look green to human eyes, the first ever confirmed -- a white dwarf whose atmosphere, enriched with sodium and calcium from a shredded planetary system, absorbs the yellow, orange and red light a normal star that hot would still show as white.",
+    "aliases": [
+      "SDSS J1330+6435",
+      "WD 1328+648"
+    ],
+    "source": "https://en.wikipedia.org/wiki/WD_J1330%2B6435 (infobox: distance 281.6 ly / 86.35 pc from parallax, Gaia G mag 20.64, read 2026-10-19); https://www.space.com/astronomy/stars/astronomers-discover-the-1st-ever-green-star-a-cosmic-zombie-just-in-time-for-halloween (read 2026-10-19)",
+    "vmag": 20.6,
+    "raDeg": 202.503729,
+    "decDeg": 64.589819,
+    "distLy": 281.6
+  },
+  {
     "id": "betelgeuse",
     "name": "Betelgeuse",
     "kind": "star",
