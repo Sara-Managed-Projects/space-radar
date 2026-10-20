@@ -63,3 +63,18 @@ quasars:
   - id: 3c-279
     host: none
     note: "The source read (https://en.wikipedia.org/wiki/3C_279, 2026-10-20) gives no size for its host galaxy, so none is drawn."
+
+# 0077 W3-f: begin
+# A DEEP FIELD (internal #784's last class): the galaxies Webb's JADES survey catalogued in one small patch of sky, each at the
+# distance its redshift gives (scripts/build_deep_field.py says what is measured and what is modelled; scene/deep/galclusters.js
+# draws it, four slices by redshift, one draw call each).
+#   box          the patch on the sky, J2000 degrees: the Hubble Ultra Deep Field's footprint as Rafelski and others 2015 cover it
+#   mag_limit    JADES's F200W Kron magnitude, brighter than which a galaxy is drawn
+fields:
+  - id: hudf
+    name: Hubble Ultra Deep Field
+    box: {ra_min: 53.11707, ra_max: 53.20799, dec_min: -27.83116, dec_max: -27.75184}
+    mag_limit: 28.0
+    catalogue: "JADES, the JWST Advanced Deep Extragalactic Survey (Rieke and others 2023, ApJS 269, 16; VizieR V/159: gssample, gskron, gsprism), the GOODS-South galaxies inside the box; stars left out by the MUSE Hubble Ultra Deep Field survey (Bacon and others 2023, A&A 670, A4; VizieR J/A+A/670/A4/dr2-main)"
+    source: "VizieR V/159 ReadMe ('These HLSP data products are licensed for use under CC BY 4.0', read 2026-10-20); Rafelski and others 2015, AJ 150, 31 (the footprint: RA 53.117 to 53.208, Dec -27.831 to -27.752, VizieR J/AJ/150/31, read 2026-10-20); Bacon and others 2023, A&A 670, A4 (VizieR, read 2026-10-20)"
+# 0077 W3-f: end
