@@ -34,6 +34,11 @@ try {
   await full();
   const host = q('#sr-tonight-place');
   if (host && host.hidden) { const c = q('.sr-tonight-view__change'); if (c) { c.click(); await sleep(800); } }
+  // A place set by the visitor shows the chips (Clear, Remember, Share); a guess does not.
+  const DEG = Math.PI / 180;
+  try { sr.setObserver({ name: 'Madrid', country: 'Spain', latDeg: 40.4, lonDeg: -3.7, latRad: 40.4 * DEG, lonRad: -3.7 * DEG, altKm: 0, source: 'city' }); } catch (e) { look.errors.push('probe: could not set a place: ' + e); }
+  await sleep(1500);
+  { const c0 = q('.sr-tonight-view__change'); if (c0 && c0.getAttribute('aria-expanded') !== 'true') { c0.click(); await sleep(600); } }
   const change = q('.sr-tonight-view__change');
   const input = q('.sr-place__input');
   const mine = q('.sr-place__mine');
@@ -45,20 +50,23 @@ try {
   else {
     const radii = new Set([change, input, mine, ...chips].map((n) => getComputedStyle(n).borderTopLeftRadius));
     if (radii.size !== 1) out.problems.push('tonight: the place controls do not share one corner: ' + [...radii].join(' / '));
-    const fills = new Set([change, input, mine].map((n) => getComputedStyle(n).backgroundColor));
-    if (fills.size !== 1) out.problems.push('tonight: Change place, the city box and Use my location do not share one fill: ' + [...fills].join(' / '));
+    // Open, Change place is the selected state (the wash one step up); the box and its button share the rest.
+    const fills = new Set([input, mine].map((n) => getComputedStyle(n).backgroundColor));
+    if (fills.size !== 1) out.problems.push('tonight: the city box and Use my location do not share one fill: ' + [...fills].join(' / '));
+    if (!chips.length) out.problems.push('tonight: no chips under a place the visitor set');
     for (const n of [change, input, mine, ...chips]) if (phone && n.getBoundingClientRect().height < 43.5) out.problems.push('tonight: ' + (n.textContent || n.placeholder) + ' is under 44 px');
     out.tonight.wide = document.documentElement.scrollWidth > innerWidth;
     if (out.tonight.wide) out.problems.push('tonight: the page scrolls sideways');
   }
-  await shot('1-tonight-place', `${innerWidth} px: Tonight, Change place open: the button, the city box, Use my location and the chips as one family`, 600);
+  await shot('1-tonight-place', `${innerWidth} px: Tonight, Change place open, a place set: the button, the city box, Use my location and the chips as one family`, 600);
+  try { sr.setObserver(null); } catch { /* none */ }
 } catch (e) { look.errors.push('probe: tonight threw: ' + (e && e.stack || e)); }
 
 // --- 2. the station stop ------------------------------------------------------------------------------
 const hiddenFrom = () => {
   // The line from the camera to the trip's target against the Earth as the map draws it.
   try {
-    const c = sr.worlds.drawnPositionOf('earth', { x: 0, y: 0, z: 0 });
+    const c = sr.worlds.drawnPositionOf('earth', sr.camera.position.clone());
     const r = sr.worlds.drawnRadiusUnits('earth');
     const cam = sr.camera.position;
     const t = rig.state.target;
