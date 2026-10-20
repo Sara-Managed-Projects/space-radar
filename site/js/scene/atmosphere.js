@@ -193,9 +193,22 @@ export const ATMO_PARAMS = {
   // depth 1.0 above the drawn ball (chosen: the ball already IS the haze as seen), single-scattering albedo 0.95 red to 0.3 blue (it absorbs blue,
   // which is the orange), forward-scattering (the ring of light a backlit Titan shows). Drawn at its
   // true height (heightGain 1): Titan's air is thick enough to see at any size this map draws it.
+  // 0077 W1-f: begin
+  // THE DETACHED HAZE LAYER (internal #863). Above the main haze Cassini's cameras saw a thin layer
+  // standing apart from it with a dark gap between: near 500 km in 2005 to 2007 (Porco et al. 2005,
+  // Nature 434, 159), sinking to about 380 km by 2010 (West et al. 2011, GRL 38, L06204), and fainter
+  // since. `layer` draws it where it was in 2005 to 2007: a Gaussian sheet of particles `sigmaKm` thick
+  // (a full width of 28 km) of vertical optical depth `tau`, small grains scattering nearly evenly
+  // (`g`) and white-blue (`albedo`). Height and thickness are measured, for those years; its depth,
+  // colour and today's height are not, and the card says so (copy/en.js worldDeparture.titan). It is
+  // integrated on its own fine steps (LAYER_STEPS a crossing): the 12 steps of the main march are
+  // hundreds of km long at the limb and would step over a sheet this thin, in bands. Under a pixel
+  // thick it fades out (the shader measures its own width on screen), so it never shimmers.
+  // The shell now reaches 560 km, so the whole sheet is inside it.
+  // 0077 W1-f: end
   titan: {
     radiusKm: 2574.76,
-    topKm: 520,
+    topKm: 560, // 0077 W1-f: 520 until the detached layer, which reaches 536
     gasHKm: 80,
     gasBeta: [5.8e-6 * 0.006, 13.5e-6 * 0.006, 33.1e-6 * 0.006],
     dustHKm: 45,
@@ -204,8 +217,49 @@ export const ATMO_PARAMS = {
     dustG: [0.62, 0.62, 0.6],
     heightGain: 1.0,
     sun: 12.0,
+    layer: { heightKm: 500, sigmaKm: 12, tau: 0.012, albedo: [0.9, 0.93, 0.97], g: 0.35 }, // 0077 W1-f
   },
 };
+// 0077 W1-f: begin
+/** Steps a crossing of the detached layer is integrated in (each ray crosses it at most twice). */
+export const LAYER_STEPS = 8;
+/**
+ * A row's detached layer in the shader's units, or null: its radius and sigma in ground radii, its
+ * peak extinction per ground radius (a vertical optical depth tau over a Gaussian of sigma s is
+ * tau / (s sqrt(2 pi)) at its peak), its albedo and asymmetry. Pure.
+ */
+export function layerCoefficients(p) {
+  const L = p && p.layer;
+  if (!L) return null;
+  const gain = p.heightGain || 1;
+  const sigma = (L.sigmaKm * gain) / p.radiusKm;
+  return { r: 1 + (L.heightKm * gain) / p.radiusKm, sigma, peak: L.tau / (sigma * Math.sqrt(2 * Math.PI)), albedo: L.albedo.slice(), g: L.g };
+}
+/**
+ * The layer's optical depth along a ray from `ro` along `rd` (unit), in ground radii, stopping at the
+ * ground: the twin of the shader's two crossings, on 400 steps instead of 2 x LAYER_STEPS. Pure.
+ */
+export function layerDepth(p, ro, rd, steps = 400) {
+  const L = layerCoefficients(p);
+  if (!L) return 0;
+  const o = sphere(ro, rd, L.r + 3 * L.sigma);
+  if (!(o[0] < 1e8)) return 0;
+  const g = sphere(ro, rd, 1);
+  const end = g[0] > 0 && g[0] < 1e8 ? g[0] : o[1];
+  const a = Math.max(o[0], 0);
+  const b = Math.min(o[1], end);
+  if (!(b > a)) return 0;
+  const dl = (b - a) / steps;
+  let od = 0;
+  for (let i = 0; i < steps; i++) {
+    const t = a + (i + 0.5) * dl;
+    const r = Math.hypot(ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t);
+    const x = (r - L.r) / L.sigma;
+    od += Math.exp(-0.5 * x * x) * L.peak * dl;
+  }
+  return od;
+}
+// 0077 W1-f: end
 
 /**
  * The shader's numbers from a row: everything per body radius.
@@ -363,6 +417,12 @@ uniform vec3  uKappa;     // how fast it dies with depth, per colour
 uniform vec3  uAlbedo;    // the particles' albedo: diffuse light has met it at least twice
 uniform float uTauUp;     // the particles' optical depth straight up
 uniform float uTwilight;  // how far light is carried into the shadow, in radii (TWILIGHT); 0: a hard shadow
+// 0077 W1-f: the detached layer (ATMO_PARAMS.titan.layer): its radius, sigma, peak extinction, all in
+// ground radii, and 1 where a row has one (0 everywhere else); its albedo; its asymmetry.
+uniform vec4  uLayer;
+uniform vec3  uLayerAlbedo;
+uniform float uLayerG;
+const int LAYER_STEPS = ${LAYER_STEPS};
 varying vec3 vPosW;
 varying vec3 vCentre;
 varying float vShellR;
@@ -440,12 +500,51 @@ void main() {
   float mu = dot( rd, uSunDir );
   float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
   bool hitsGround = ground.x > 0.0 && ground.x < 1e8;
+  // 0077 W1-f: begin -- the detached layer, on its own steps across each of its (at most two) crossings
+  vec3 layerLight = vec3( 0.0 );
+  float layerOd = 0.0;
+  if ( uLayer.w > 0.0 ) {
+    // Its thickness on screen, in pixels: a sigma under about half a pixel is faded out, not aliased.
+    float pxAngle = max( length( dFdx( rd ) ), length( dFdy( rd ) ) );
+    float far = sqrt( max( dot( ro, ro ) - uLayer.x * uLayer.x, 1e-4 ) );
+    float shown = uLayer.w * smoothstep( 0.35, 0.9, uLayer.y / max( far * pxAngle, 1e-9 ) );
+    vec2 o = sphere( ro, rd, uLayer.x + 3.0 * uLayer.y );
+    vec2 inner = sphere( ro, rd, uLayer.x - 3.0 * uLayer.y );
+    bool through = inner.x < 1e8;
+    float tEnd = hitsGround ? ground.x : 1e9;
+    vec3 behind = exp( -( uBetaR * odR + uExtM * odM ) );
+    if ( shown > 0.0 && o.x < 1e8 ) {
+      for ( int c = 0; c < 2; c++ ) {
+        float a = c == 0 ? o.x : ( through ? inner.y : 1e9 );
+        float b = c == 0 ? ( through ? inner.x : o.y ) : o.y;
+        a = max( a, 0.0 );
+        b = min( b, tEnd );
+        if ( b <= a ) continue;
+        float dl = ( b - a ) / float( LAYER_STEPS );
+        // The far crossing is seen through whatever of the main haze the ray crossed on its way there.
+        vec3 seen = c == 0 ? vec3( 1.0 ) : behind;
+        for ( int k = 0; k < LAYER_STEPS; k++ ) {
+          vec3 q = ro + rd * ( a + ( float( k ) + 0.5 ) * dl );
+          float x = ( length( q ) - uLayer.x ) / uLayer.y;
+          float dens = exp( -0.5 * x * x ) * uLayer.z * dl;
+          float sh = sphere( q, uSunDir, 1.0 ).x;
+          float lit = ( sh > 0.0 && sh < 1e8 ) ? 0.0 : 1.0;
+          layerLight += seen * ( dens * lit * exp( -layerOd ) );
+          layerOd += dens;
+        }
+      }
+      layerLight *= shown * uSun * uLayerAlbedo * hg( mu, vec3( uLayerG ) );
+      layerOd *= shown;
+    }
+  }
+  // 0077 W1-f: end
   float slant = hitsGround ? clamp( 1.0 - uTauUp / max( uExtM.x * odM, 1e-6 ), 0.0, 1.0 ) : 1.0;
   vec3 colour = uSun * ( sumR * uBetaR * phaseR + sumM * uBetaM * hg( mu, uG ) ) + uMulti * slant * sumMS * uBetaM * uAlbedo / ( 4.0 * PI );
   // Over the disc only the slant dims (verticalDepth() in scene/atmosphere.js says why): the map was
   // photographed through the straight-down column already.
   vec3 T = exp( -( uBetaR * odR + uExtT * odM ) + ( ground.x > 0.0 && ground.x < 1e8 ? uVertical : vec3( 0.0 ) ) );
-  T = min( T, vec3( 1.0 ) );
+  T = min( T, vec3( 1.0 ) ) * exp( -layerOd ); // 0077 W1-f: and the detached layer
+  colour += layerLight; // 0077 W1-f
 
   // src + dst x T (CustomBlending: One, SrcAlpha): the haze glows and dims what is behind it.
   gl_FragColor = vec4( colour, ( T.r + T.g + T.b ) / 3.0 );
@@ -462,6 +561,7 @@ export function createAirShell(key) {
   const p = ATMO_PARAMS[key];
   if (!p) return null;
   const c = atmosphereCoefficients(p);
+  const lc = layerCoefficients(p); // 0077 W1-f
   const material = new THREE.ShaderMaterial({
     name: `air-${key}`,
     vertexShader: AIR_SHELL_VERT,
@@ -483,6 +583,11 @@ export function createAirShell(key) {
       uTauUp: { value: c.tauUp },
       uTwilight: { value: c.twilight },
       uAlbedo: { value: new THREE.Vector3(...c.albedo) },
+      // 0077 W1-f: begin
+      uLayer: { value: lc ? new THREE.Vector4(lc.r, lc.sigma, lc.peak, 1) : new THREE.Vector4(2, 0.01, 0, 0) },
+      uLayerAlbedo: { value: new THREE.Vector3(...(lc ? lc.albedo : [1, 1, 1])) },
+      uLayerG: { value: lc ? lc.g : 0 },
+      // 0077 W1-f: end
     },
     side: THREE.FrontSide,
     transparent: true,
