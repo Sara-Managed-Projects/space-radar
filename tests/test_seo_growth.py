@@ -97,10 +97,10 @@ tree(rootcopy)
 work = tmp / "work"
 ok(checked(rootcopy, built) == "", "a symlinked copy of the tree passes (the base of the refusals below)")
 
-def spoil(path: Path, old: str, new: str) -> None:
+def spoil(path: Path, old: str, new: str, count: int = 1) -> None:
     t = path.read_text(encoding="utf-8")
     assert old in t, (path, old)
-    path.write_text(t.replace(old, new, 1), encoding="utf-8")
+    path.write_text(t.replace(old, new, count), encoding="utf-8")
 
 obj = sorted((built / "o").glob("*.html"))[0].name
 cases = [
@@ -125,7 +125,7 @@ for name, old, new, expect in (("the home page without the Starlink link", 'href
     if tree2.exists():
         shutil.rmtree(tree2)
     tree(tree2)
-    spoil(tree2 / "site" / "index.html", old, new)
+    spoil(tree2 / "site" / "index.html", old, new, -1)
     out = checked(tree2, built)
     ok(bool(out) and expect in out, f"check_seo.py refuses {name} ({out.strip().splitlines()[:1]})")
 tree3 = tmp / "root3"

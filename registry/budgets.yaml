@@ -39,7 +39,7 @@ budgets:
   # esbuild after the comment stripper, and screens.yml builds the same tree. Measured in CI on that
   # pull request: 2 719 025 B in 141 requests, where main was 3 142 846 B the day before (the head of
   # public #518, same method). Lowered to that with the usual 5 %.
-  - {id: first_visit_bytes, value: 2855000, unit: bytes, since: 2026-10-09, reason: "2 719 025 B + 5 %, measured 2026-10-09 by CI on public #559 (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads: comments stripped and the ES modules through esbuild); 3 052 513 B before the minifier"}
+  - {id: first_visit_bytes, value: 2864000, unit: bytes, since: 2026-10-20, reason: "release-1.2 wave-4 integration (public #1241): 2 861 947 B measured by CI (tests/test_first_visit_bytes.mjs); the no-WebGL page and the Motion row add to index.html and the boot. Cap about 0.07 % above. Before: 2 855 000"}
   # THE BOOT AS A TIMELINE (internal #528, 2026-10-10). scripts/boot-timeline.mjs boots the tree a deploy
   # uploads in Playwright's Chromium (screens.yml), reads every long task from the start of the page and
   # sums the blocking time. It REPORTS by default; `--gate` holds these two rows. MEASURED once, on a Mac
@@ -70,7 +70,7 @@ budgets:
   # last of the 1 661 000 cap and 1 006 B past it.
   # MEASURED 2026-10-16 in CI on public #1202 (screens run 38973617714): 1 670 384 B. The wave-1 cap
   # of 1 670 000 had about 1.5 kB of room over 1 668 539 B; this branch used that room and 384 B past it.
-  - {id: after_first_visit_bytes, value: 1707000, unit: bytes, since: 2026-10-20, reason: "2026-10-20, integration branch release-1.2.0 (public #1235, r12-w23): 1 705 177 B measured by CI (tests/test_first_visit_bytes.mjs --minute), the later-loaded words and data of waves 2 and 3 together; cap 1 823 B above this measurement. Before: internal #527: 1 670 384 B measured 2026-10-16 by CI on public #1202 (tests/test_first_visit_bytes.mjs --minute, screens run 38973617714), 384 B past the 1 670 000 cap set the same day for the wave-1 integration branch (1 668 539 B, public #1198). Cap 1 616 B above this measurement"}
+  - {id: after_first_visit_bytes, value: 1712500, unit: bytes, since: 2026-10-20, reason: "internal #527: 1 710 468 B measured 2026-10-20 by CI on the release-1.2 wave-4 integration branch (public #1241, --minute): galaxy clusters, quasars and the scene summary add later-loaded words. Cap about 0.1 % above. Before: 1 707 000"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
