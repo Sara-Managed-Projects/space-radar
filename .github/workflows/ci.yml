@@ -1049,6 +1049,10 @@ jobs:
         run: node tests/test_calm_sky.mjs
       - name: "model light: the world's phase as the craft sees it, the Sun's rim, the panels' glint, by tier (public #266)"
         run: node tests/test_model_light.mjs
+      # 0077 W2-pbr: begin
+      - name: "real models in their own materials: the look per file, the finishes, the shader's hooks, the tiers, no render target (release 1.3.0, internal #967)"
+        run: node tests/test_pbr.mjs
+      # 0077 W2-pbr: end
       - name: "a reason to come back: Remind me as a calendar file, a Seen it tick in the passport (public #395)"
         run: node tests/test_comeback.mjs
       - name: "this week's story out of the catalogue: four rules, their numbers, nothing typed (public #450)"
@@ -1124,3 +1128,25 @@ jobs:
       - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
         run: node tests/test_outer_worlds.mjs
       # 0077 W1-f: end
+      # 0077 W2-e: begin
+      - name: "the Carina hero: its bipolar cavity behind the clusters, the dust lane in front, the photograph within 5 % on our line (internal spec 0077 W2-e, #782)"
+        run: node tests/test_hero_carina.mjs
+      - name: "the Carina hero's light, sharp light and wall are the bake of the photograph and the profile"
+        run: python3 scripts/build_deep_carina.py --check
+      - name: "the SMC hero and the Magellanic Bridge and Stream: Gaia's counts at the measured depths, the photograph exact on our line, HI4PI's hydrogen at a modelled distance in false colour (internal spec 0077 W2-e, #783)"
+        run: node tests/test_hero_smc.mjs
+      - name: "the SMC's maps and the Stream's map are the bakes the profile names"
+        run: python3 scripts/build_deep_smc.py --check && python3 scripts/build_deep_magellanic.py --check
+      - name: "every deep-space hero's card says what is drawn, where it comes from and that no astronomer has reviewed it yet (#1187)"
+        run: node tests/test_deep_labels.mjs
+      # 0077 W2-e: end
+      # 0077 W2-d: begin
+      - name: "Compare and the comparison lab: eleven worlds from NASA's fact sheets, the picture inside its box for every pair, the lab's order, the panel pressed (internal i#885, i#909)"
+        run: node tests/test_compare.mjs
+      - name: "the Compare view's data is the registry's (internal i#885, i#909)"
+        run: python3 scripts/gen_compare_js.py --check
+      - name: "the passport's kinds and notes: stamped once, never taken back, nothing that keeps score (internal i#911)"
+        run: node tests/test_passport_kinds.mjs
+      - name: "Compare with the photograph: the slider's share on the picture and the hero, put back by any other choice, offered for shipped heroes only (internal i#776)"
+        run: node tests/test_photocompare.mjs
+      # 0077 W2-d: end

@@ -48,6 +48,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W1-c: begin -->
 | The shapes of the Vikram, Odysseus and Blue Ghost landers, and Surveyor | built by us in code from published dimensions | GODL-India, public domain, CC0 or CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-three-modern-moon-landers-and-surveyor-built-from-dimensions--vikram-odysseus-blue-ghost-surveyor-2026-10-20) |
 <!-- 0077 W1-c: end -->
+<!-- 0077 W2-pbr: begin -->
+| The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
+<!-- 0077 W2-pbr: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1315,6 +1318,24 @@ commercial and non-commercial purposes", with attribution, and excludes "names, 
 `3D model: built by Space Radar from NSSDCA's dimensions and NASA's and the Smithsonian's photographs (public domain, CC0)`.
 
 <!-- 0077 W1-c: end -->
+<!-- 0077 W2-pbr: begin -->
+## 3b-15. SLIM built from dimensions (2026-10-20)
+
+Release 1.3.0, stage W2-pbr (internal #967; public #1134). Built by stage W1-c and held back because the toon ramp drew it as
+a yellow box; shipped once the app could draw a file's own materials (`scene/pbr.js`). **JAXA publishes no model of SLIM under
+terms that allow a derivative**, and NASA's 3D Resources and NASA Science have none. So it was built in code, part by part,
+from JAXA's cited numbers, and drawn **as it came to rest**: on its nose, engines up, one nozzle lost. No image-to-3D model was
+used, no picture is in the file, and **no JAXA picture or model is in the file, on a sheet or derived from** (JAXA's figures
+were looked at only). No logo and no lettering is on the mesh. Its card says "shape built from published dimensions and
+pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `slim.glb` (114 KB) | JAXA's SLIM standing on its nose: the cited 2.4 by 1.7 by 2.7 m, the thin-film cells, the cylindrical tank, five legs with ball absorbers, one main nozzle and the broken mount of the other, twelve 22 N thrusters | JAXA's media kit (<https://global.jaxa.jp/countdown/slim/SLIM-mediakit-EN_2310.pdf>) and press conference of 25 January 2024 (<https://www.isas.jaxa.jp/en/outreach/announcements/files/SLIM-pressconf-20240125.pdf>), their figures looked at only; a photograph of JAXA's quarter-scale model at Expo 2025 by Artem.G (<https://commons.wikimedia.org/wiki/File:SLIM_at_Expo2025_02.jpg>, CC BY 4.0) | numbers are facts; the photograph is CC BY 4.0, credit "Artem.G", and is not in the file; the shape is this project's, under this repository's licence (`registry/models.yaml`, row `slim`) |
+
+**Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
+
+<!-- 0077 W2-pbr: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
@@ -1921,6 +1942,40 @@ scatter (Virgo, Fornax) or from the spread of its members across the sky (Coma, 
 that distance, drawn as one round, centrally peaked shape (flattening and tilt are not drawn): an illustration. Its light is its
 catalogue magnitude, an exposure and not photometry. The quasars are bright points at their comoving distance; 3C 273's host is a
 faint round shape at the angular size its source gives; 3C 279 has none because the source gives no size.
+
+<!-- 0077 W2-e: begin -->
+### Carina (0077 W2-e)
+
+The Carina Nebula's reconstruction (`site/js/scene/deep/carina.js`, its numbers in `registry/deepsky-heroes/carina.yaml`)
+is computed here from facts read in each source on 2026-10-20; no text, figure or model file of any of them is shipped.
+Lengths on the sky are turned into light-years at the record's distance (2.35 kpc, 7 665 ly). Its shape is
+**reconstructed** and the card says so.
+
+| what | the numbers | from |
+|---|---|---|
+| the bipolar cavity | on the largest scale one coherent bipolar nebula, its axis perpendicular to the Galactic plane, lobes about 40 pc across; the cavities north and south of Trumpler 14 and 16 its two halves. Drawn as the far walls of two lobes along Galactic north (position angle 27.8 degrees here); the lobes' sizes, centres and depths are read from the photograph and are illustrative | Smith, Egan, Carey, Price, Morse & Price 2000, ApJ 532, L145; Smith & Brooks 2008, Handbook of Star Forming Regions II (arXiv:0809.5081); Rebolledo et al. 2017, MNRAS 472, 1685 (arXiv:1708.02864) |
+| the dust lane and the Keyhole | the V-shaped lane is dust mixed with molecular gas in front of the glowing gas, the nebula's highest column on our line; the Keyhole's dark clumps cool foreground clumps. Drawn 20 ly in front of the clusters (not measured); its optical depth is the photograph's darkness along the lane (reconstructed) | Smith & Brooks 2008 (arXiv:0809.5081), after Brooks et al. 2000 |
+| the distance | 2 350 +/- 50 pc from the Homunculus's expansion parallax; Gaia EDR3's parallaxes of the clusters' OB stars and X-ray selected members agree within about 2 % (2.36 and 2.34 kpc) | Smith 2006, ApJ 644, 1151; Göppl & Preibisch 2022, A&A 660, A11 (arXiv:2201.09097) |
+| Trumpler 14 | a King core radius of 0.17 arcmin and a halo out to about 5 arcmin; 2 000 members drawn as a seeded sample (model), as is Trumpler 16 (its size illustrative) | Ascenso et al. 2007, A&A 476, 199 |
+| Eta Carinae and the O stars | places, V magnitudes and spectral types of Eta Carinae, HD 93129A, HD 93128, HD 93160, HD 93161, HD 93250, WR 25, HD 93205, HD 93204, HD 303308, CPD-59 2600, HD 93130, HD 93403, QZ Car and WR 24; Eta Carinae's V 4.2 is the app's own record (it is variable and brightening: Damineli et al. 2019, MNRAS 484, 1325); their depths are not measured, so they stand in one plane | SIMBAD, CDS (https://simbad.cds.unistra.fr/), read 2026-10-20; the CDS terms ask the data be cited as "CDS/SIMBAD" |
+| the light | the reconstruction's light IS the photograph the app already shows, its stars removed (`scripts/build_deep_carina.py` -> `site/images/deep/carina/carina-light.webp`, an adaptation); round Eta Carinae and Trumpler 14 a sharper map of the same photograph from ESO's publication JPEG (3 727 x 4 000 px, downloaded for the bake and not shipped): a 20 arcmin square, its stars removed and its colours matched to the 640 px map (`carina-detail.webp`, an adaptation); the wall's depth map (`site/data/deep/carina-front.bin`) is computed from the same picture and the numbers above. Under Deep the photograph's own stretch is ENHANCED | ESO eso1250a, credit "ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit", CC BY 4.0 (section 3 above); stars removed and depth reconstructed by Space Radar |
+
+### The SMC and the Magellanic Stream (0077 W2-e)
+
+The Small Magellanic Cloud's model (`site/js/scene/deep/smc.js`) and the Magellanic Bridge and Stream
+(`site/js/scene/deep/magellanic.js`), their numbers in `registry/deepsky-heroes/smc.yaml`, read on 2026-10-20. What is
+measured: where the stars are on the sky, the depth trends below, the hydrogen's column on the sky, the light (the
+photograph). What is a **model**: each drawn star's depth and brightness, the populations' thickness, and the Stream's
+distance beyond its root. The card says so.
+
+| what | from | licence |
+|---|---|---|
+| Two maps of the SMC's stars on the sky (all members; young blue stars), 128 x 128 bins of 0.075 degrees, counted from Gaia DR3 by `scripts/build_deep_smc.py` (`site/data/deep/smc-density.bin`, 65 536 B); the SMC's proper motion from Luri et al. 2021 | Gaia Collaboration, Vallenari et al. 2023, A&A 674, A1; Gaia Collaboration, Luri et al. 2021, A&A 649, A7 | ESA/Gaia/DPAC, CC BY-NC 3.0 IGO (https://www.cosmos.esa.int/web/gaia-users/license: "Gaia data are distributed under the CC BY-NC 3.0 IGO license."); the bin is a derived work and keeps that term |
+| The young stars stretched along our line: the Cepheids "heavily elongated for more than 25-30 kpc approximately in the east/north-east towards south-west direction"; the eastern side up to 20 kpc nearer than the western; an extended ellipsoid, its northern part nearer | Ripepi et al. 2017, MNRAS 472, 808 (arXiv:1707.04500); Scowcroft et al. 2016, ApJ 816, 49 (arXiv:1502.06995); Jacyszyn-Dobrzeniecka et al. 2016, AcA 66, 149 (arXiv:1602.09141) | facts, cited |
+| The old stars near a plane, inclination 35-48 degrees and position angle 170-186 degrees (drawn at 41 and 178), with a second group up to 10 kpc behind on the east (not drawn) | Tatton et al. 2021, MNRAS (arXiv:2012.12288) | facts, cited |
+| The Magellanic Bridge and Stream: the HI4PI survey's high-velocity H I column density in Magellanic coordinates (`hi4pi-hvc-nhi-mag-car.fits.gz`, 7.9 MB, downloaded for the bake and not shipped), cropped and resampled by `scripts/build_deep_magellanic.py` (`site/images/deep/magellanic/hi-column.webp`, an adaptation). Drawn in **false colour**: hydrogen at 21 cm, which no eye or camera sees. Its distance along our line is a **model**: the Bridge between the Clouds' measured distances, the Stream from the SMC's to 100 kpc at its far end ("the only solid distance constraint on the Stream is that one end is anchored to the Magellanic Clouds"; models put the far end 80 to 150 kpc away) | Westmeier 2018, MNRAS 474, 289 (arXiv:1712.00909); HI4PI Collaboration, Ben Bekhti et al. 2016, A&A 594, A116; served by NASA's LAMBDA (https://lambda.gsfc.nasa.gov/product/foreground/fg_hi4pi_hvhi_info.html); Magellanic coordinates: Nidever, Majewski & Butler Burton 2008, ApJ 679, 432; the distance: Fox et al. 2019 (arXiv:1903.04831) | LAMBDA's page states no licence of its own and asks for the paper to be cited; HI4PI's data are distributed by CDS, whose VizieR terms read that day (https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context ; however, ... the original authors and publication references including the publisher have to be explicitely cited". Cited as both ask; Space Radar is free and non-commercial |
+| The light where the SMC's photograph covers it: the photograph with its stars taken out (its pink H II regions kept) and 47 Tucanae and NGC 362, Milky Way globulars in front of it, filled from round them (`scripts/build_deep_smc.py --light` -> `site/images/deep/smc/smc-light.webp`, an adaptation) | NOIRLab noirlab2030b, credit "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University)..." (section 3 above) | CC BY 4.0; stars removed by Space Radar |
+<!-- 0077 W2-e: end -->
 
 ## 4. Runtime data sources
 

@@ -304,12 +304,17 @@ export function createDeepSky(THREE, env = {}) {
       const cls = rec ? classOf(rec) : 'other';
       if (!shipped || !rec) { if (h.hero) dropHero(h); continue; }
       if (h.keepFor) { h.keepUntil = now + h.keepFor; h.keepFor = 0; } // (0076 W4-a) a prefetched hero is kept until its trip arrives
-      if (rp >= (THRESHOLDS[cls] || THRESHOLDS.other).fetch) fetchHero(h);
+      // 0077 W2-d: begin (the photograph slider: while it is set the hero is fetched and drawn at any size, so that 0 is the reconstruction; `null` is not set)
+      const cmpShare = env.compareShare ? env.compareShare(h.def.record) : null;
+      const cmpSet = typeof cmpShare === 'number';
+      if (cmpSet || rp >= (THRESHOLDS[cls] || THRESHOLDS.other).fetch) fetchHero(h);
+      // 0077 W2-d: end
       // (spec 0076 W1-a) a hero whose cheap path costs what a holder does (`latchSafe`) stays drawn under the latch and Low.
       let lv = q.latched && !(h.hero && h.hero.latchSafe) ? Math.min(1, levels.get(h.def.record) || 0) : levels.get(h.def.record) || 0;
       if (lv >= 2 && drawnHeroes >= 2) lv = 1;
       if (lv >= 3 && drawnHeroes >= 1) lv = 2; // one costly hero at a time
-      const share = fader.to(`hero:${h.def.id}`, lv >= 2 ? 1 : 0, now);
+      if (cmpSet) lv = Math.max(lv, 2); // 0077 W2-d
+      const share = fader.to(`hero:${h.def.id}`, lv >= 2 ? 1 - (cmpSet ? Math.min(1, Math.max(0, cmpShare)) : 0) : 0, now); // 0077 W2-d: the slider hides it by the photograph's share
       if (h.hero) {
         const steps = lv >= 3 ? marchSteps({ tier: q.tier, top: q.top, latched: q.latched, scaleStep: q.scaleStep, frameMs: info.frameMs, rPx: rp, selected: selectedId === h.def.record }) : 0;
         h.hero.setLevel(share > 0 ? Math.max(2, lv) : lv, share);

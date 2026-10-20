@@ -164,6 +164,50 @@ const record = (hero, id, name, k = { far: 4, near: 0.35 }) => async () => {
   await scene(hero, 'near-turn25', `${name}, near, turned 25 degrees round it`, 4000);
 };
 
+// 0077 W2-e: begin
+const w2e = {
+  def: async (id) => { try { return (await import(new URL('js/scene/deep/heroes.js', document.baseURI).href)).HEROES.find((h) => h.id === id) || null; } catch (e) { out.problems.push('heroes.js did not import: ' + e); return null; } },
+  /** The camera `deg` off the record's line to the Sun, at `k` times the arrival distance. */
+  pose: (id, deg, k, d0) => {
+    const H = pos(id), S = pos('sun') || { x: 0, y: 0, z: 0 };
+    const b = unit({ x: S.x - H.x, y: S.y - H.y, z: S.z - H.z });
+    let p = cross(b, { x: 0, y: 1, z: 0 });
+    if (Math.hypot(p.x, p.y, p.z) < 1e-3) p = cross(b, { x: 1, y: 0, z: 0 });
+    p = unit(p);
+    const r = deg * deg2rad;
+    rig.flyTo({ offset: unit(mix(b, Math.cos(r), p, Math.sin(r))), distance: d0 * k, ms: 0 });
+  },
+  hero: async (heroId, recId, name, poses) => {
+    const def = await w2e.def(heroId);
+    if (!(await need(recId))) return;
+    const d0 = rig.state.distance;
+    for (const [deg, k] of poses) {
+      for (const on of [false, true]) {
+        if (def && def.stub) def.stub.shipped = on;
+        w2e.pose(recId, deg, k, d0);
+        const st = () => { try { return (sr.deep.stats().heroes || []).find((h) => h.id === heroId) || null; } catch { return null; } };
+        await scene(heroId, `${deg}deg-x${k}-${on ? 'after' : 'before'}`, `${name}, ${deg} degrees off its photograph's line, ${k} of the arrival distance, ${on ? 'AFTER (the hero)' : 'BEFORE (as main draws it)'}; photograph drawn ${sr.nebulae && sr.nebulae.drawn ? Math.round(sr.nebulae.drawn(recId) * 100) / 100 : '?'}; hero ${JSON.stringify(st())}`, on ? 6000 : 4000);
+      }
+    }
+    if (def && def.stub) def.stub.shipped = true;
+  },
+  stream: async () => {
+    // From beside the Clouds and from above the Milky Way's south: the Bridge between them and the Stream behind.
+    for (const [rec, deg, k, label] of [['dso-smc', 60, 6, 'from 6 times the SMC\'s arrival distance, 60 degrees off our line'], ['dso-lmc', 100, 10, 'from 10 times the LMC\'s arrival distance, 100 degrees off our line']]) {
+      if (!(await need(rec))) continue;
+      const d0 = rig.state.distance;
+      for (const on of [false, true]) {
+        try { sr.deep.debug({ before: !on }); } catch { /* older */ }
+        w2e.pose(rec, deg, k, d0);
+        const layer = () => { try { return (sr.deep.stats().layers || []).find((l) => l.id === 'magellanic') || null; } catch { return null; } };
+        await scene('stream', `${rec.slice(4)}-${deg}deg-${on ? 'after' : 'before'}`, `the Magellanic Bridge and Stream ${label}, ${on ? 'AFTER (hydrogen in false colour)' : 'BEFORE'}; layer ${JSON.stringify(layer())}`, 5000);
+      }
+    }
+    try { sr.deep.debug({ before: false }); } catch { /* older */ }
+  },
+};
+const deg2rad = Math.PI / 180;
+// 0077 W2-e: end
 const HEROES = {
   earth: world('earth', { name: 'the Earth', near: 1.6 }),
   iss: async () => {
@@ -236,6 +280,15 @@ const HEROES = {
     turn25();
     await scene('horizon', 'near-turn25', '20 Gly, turned 25 degrees', 4000);
   },
+  // 0077 W2-e: begin
+  // Release 1.3.0 stage W2-e (internal spec 0077; internal #782, #783): Carina, the SMC, the Magellanic Bridge and Stream.
+  // Every pose twice in one run: BEFORE (the hero's stub switched to `shipped: false`, so the coordinator draws the record
+  // as main does: the photograph, the point glow and the holder; for the Stream, `sr.deep.debug({ before: true })`, which
+  // hides the layer) and AFTER. Poses by the angle off the line the photograph was taken along (the Sun's side).
+  carina: async () => { if (!onLadder()) { sr.deselect(); await stage('stellar', 9000); } await w2e.hero('carina', 'dso-carina-nebula', 'the Carina Nebula', [[0, 1], [30, 1], [60, 1], [60, 0.35], [140, 0.6]]); },
+  smc: async () => { if (!onLadder()) { sr.deselect(); await stage('stellar', 9000); } await w2e.hero('smc', 'dso-smc', 'the Small Magellanic Cloud', [[0, 1], [35, 1], [70, 1], [90, 0.5], [70, 0.2]]); },
+  stream: async () => { if (!onLadder()) { sr.deselect(); await stage('stellar', 9000); } await w2e.stream(); },
+  // 0077 W2-e: end
 };
 out.heroes = Object.keys(HEROES);
 

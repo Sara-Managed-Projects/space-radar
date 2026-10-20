@@ -2149,7 +2149,132 @@ Object.assign(COPY, {
   },
 });
 
+// 0077 W2-e: begin
+// The card's source sentence for a record a hero draws as its child (public #1187: ui/cardfacts.js honestyClause reads
+// `card[recordId]`). The words of release 1.3.0's own heroes, Carina and the SMC, are in copy/en.deepheroes.js, which
+// their modules import: they are read only near them, and the first minute's bytes are budgeted (budgets.yaml).
+Object.assign(COPY, {
+  // (public #1187) The source sentence of a record a hero draws as its child: ui/cardfacts.js honestyClause reads it by
+  // the record's id once the hero has drawn it (until then the card says what is drawn for it without a hero).
+  r13Deep: {
+    card: {
+      'dso-tarantula-nebula': 'Its light near our line is Webb’s photograph; its gas is a model of a cavity round the cluster R136 inside a shell of glowing gas confined by molecular clouds, after Pellegrini, Baldwin and Ferland (2011). Not yet reviewed by an astronomer.',
+      'dso-m43': 'Its light is taken from ESO’s photograph, its shape reconstructed as a smaller hollow on the same dark cloud as the Orion Nebula, lit by the star NU Orionis. Not yet reviewed by an astronomer.',
+    },
+  },
+});
+// 0077 W2-e: end
 // 0077 W1-e: begin
 // The sections this file added, in the visitor's language (copy/lang.js says how; public #524).
 if (HOOK.localise) HOOK.localise({ COPY }, Object.keys(COPY).filter((k) => !KEYS_BEFORE.has(k)));
 // 0077 W1-e: end
+
+// 0077 W2-d: begin (Compare and the comparison lab, the passport's kinds and notes, the photograph slider)
+Object.assign(COPY, {
+  // ui/compare.js (internal i#885, i#909). Fetched when a world card's Compare row is opened. The numbers are
+  // NASA's Planetary Fact Sheets (registry/compare.yaml); the words that say how a thing is drawn are here.
+  compare: {
+    row: 'Compare',
+    hint: 'to scale',
+    missing: '—',
+    none: 'None',
+    yes: 'Yes',
+    no: 'No',
+    range: '{a} to {b}',
+    numUnit: '{num} {unit}',
+    modeLabel: 'View',
+    modes: { pair: 'Side by side', lab: 'All worlds' },
+    withLabel: 'Compare with',
+    scaleLabel: 'Scale',
+    scales: { true: 'To scale', same: 'Same width' },
+    propLabel: 'Order all worlds by',
+    props: { across: 'Width', mass: 'Mass', gravity: 'Gravity', temp: 'Temperature', spin: 'Length of a turn', year: 'Length of a year', dist: 'Distance from the Sun', moons: 'Number of moons' },
+    names: {
+      sun: 'The Sun', mercury: 'Mercury', venus: 'Venus', earth: 'Earth', moon: 'The Moon', mars: 'Mars',
+      jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptune', pluto: 'Pluto',
+    },
+    the: { sun: 'the Sun', moon: 'the Moon' },
+    wider: '{big} is {n} times as wide as {small}.',
+    same: '{a} and {b} are about the same width.',
+    figure: '{a} and {b}, drawn {how}.',
+    figureTrue: 'to one scale',
+    figureSame: 'at the same width, not to scale',
+    tableLabel: '{a} beside {b}',
+    rows: {
+      across: 'Across', mass: 'Mass', gravity: 'Gravity', temp: 'Temperature', spin: 'One turn takes',
+      year: 'One year there', dist: 'From the Sun', air: 'Atmosphere', pressure: 'Air pressure', moons: 'Moons', rings: 'Rings',
+    },
+    units: { km: 'km', earthOne: 'Earth', earths: 'Earths', g: 'm/s²', c: '°C', hours: 'hours', days: 'days', years: 'years', au: 'AU', bar: 'bar', microbar: 'µbar' },
+    notes: {
+      average: 'average',
+      flattened: 'on average; it is flattened',
+      range: 'its range',
+      bar1: 'at the 1 bar level',
+      edge: 'at the visible edge',
+      photosphere: 'the visible surface',
+      retro: 'turning backwards',
+      sunSpin: 'at 16° latitude',
+      withEarth: 'with the Earth',
+      exosphere: 'a thin exosphere',
+      photosphereAir: 'in the photosphere',
+    },
+    air: { part: '{share}% {gas}', join: ', ', almostNone: 'Almost none', noSurface: 'No surface' },
+    gas: { hydrogen: 'hydrogen', helium: 'helium', methane: 'methane', nitrogen: 'nitrogen', oxygen: 'oxygen', argon: 'argon', 'carbon dioxide': 'carbon dioxide' },
+    source: 'NASA’s Planetary Fact Sheets, read {date}.',
+    giantNote: 'A giant has no surface: its gravity and temperature are at the 1 bar level.',
+    moonsNote: 'Moon counts grow as new ones are confirmed.',
+    spinNote: 'The Sun’s turn is the sheet’s value at 16° latitude.',
+    drawnTrue: 'Drawn to one scale from each mean radius, not photographs.',
+    drawnSame: 'Same width, so not to scale. Rings keep their share of it.',
+    tiny: '{name} is under a pixel here and is drawn as a dot.',
+    ringsDrawn: 'Rings are tilted for the picture; their radii are NASA’s.',
+    labLog: 'Bars are logarithmic, so small values stay visible.',
+    labLinear: 'Bars are in proportion to the count.',
+    labTitle: 'Compare with {name}',
+    thisCard: 'The world on this card',
+  },
+
+  // ui/passportkinds.js (internal i#911, SR-PLAN-144): the passport's second page. Never a score.
+  passportKinds: {
+    kindsTitle: 'Opened, by kind',
+    noKinds: 'Nothing to count by kind yet.',
+    kinds: {
+      worlds: 'Planets, moons and the Sun',
+      stations: 'Space stations',
+      satellites: 'Satellites and their rockets',
+      spacecraft: 'Probes and space telescopes',
+      small: 'Comets and asteroids',
+      stars: 'Stars',
+      exoplanets: 'Planets of other stars',
+      deep: 'Nebulae, galaxies and the deep sky',
+      earth: 'Places and weather on Earth',
+    },
+    notedTitle: 'Noted',
+    noNoted: 'Nothing noted yet. Open a place on the map.',
+    notedFine: 'The day a note was first seen to hold in this browser. Kept here, never ranked or sent.',
+    noted: {
+      first: { name: 'A first place', said: 'You opened a place on the map.' },
+      planets: { name: 'All eight planets', said: 'You opened every planet, Mercury to Neptune.' },
+      station: { name: 'A space station', said: 'You opened a station in orbit.' },
+      craft: { name: 'A craft out there', said: 'You opened a probe or a space telescope.' },
+      small: { name: 'A comet or an asteroid', said: 'You opened a small body of the Solar System.' },
+      star: { name: 'A star', said: 'You opened a star beyond the Sun.' },
+      exoplanet: { name: 'Another star’s planet', said: 'You opened a planet that circles another star.' },
+      deep: { name: 'The deep sky', said: 'You opened a nebula, a galaxy or a cluster.' },
+      trip: { name: 'A trip to its end', said: 'You finished a guided trip.' },
+      eyes: { name: 'Seen with your own eyes', said: 'You ticked something as seen.' },
+      every: { name: 'One of every kind', said: 'You opened at least one thing of each kind above.' },
+    },
+  },
+
+  // ui/photocompare.js (internal i#776, spec 0075 requirement 14): a row in a deep-sky card's photograph block.
+  photoCompare: {
+    title: 'Compare with the photograph',
+    reconstruction: 'Reconstruction',
+    photograph: 'Photograph',
+    valueText: '{n}% photograph',
+    flying: 'Moving to where the photograph was taken from.',
+    note: 'The photograph is flat and faces the Sun: turn away and it fades.',
+  },
+});
+// 0077 W2-d: end
