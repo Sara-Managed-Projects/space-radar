@@ -6,12 +6,13 @@
 // reconstruction to compare it with; otherwise it adds nothing and resolves null.
 //
 // WHAT IT IS. A control on the card, not a mode (requirement 14: no second state machine beside Measured and
-// Film). A slider: at the left the reconstruction draws; at the right the hero is hidden and the photograph
-// draws at full strength at the same pose; between, each is drawn by its share. Pressing it when the camera is
-// off the line the photograph was taken along (more than 25 degrees off the Sun's line) first flies the camera
-// to the arrival the card's own "Fly to it" uses, which is that line.
+// Film). A slider: at the left the reconstruction draws alone; at the right the hero is hidden and the photograph
+// draws at full strength at the same pose; between, each is drawn by its share. Untouched, the card shows the
+// share the picture is drawn at now; the first touch takes that over. The first touch when the camera is off
+// the line the photograph was taken along (more than 25 degrees off the Sun's line) first flies the camera
+// there: round the object to the Sun's side, at the distance it is at.
 //
-// WHAT IT IS NOT. It is not remembered, it has no URL key, and it is put back to the reconstruction whenever
+// WHAT IT IS NOT. It is not remembered, it has no URL key, and it is put back to the picture's own share whenever
 // another object is selected or the card closes (scene/nebulae.js setCompare/want). The photograph is flat and
 // faces the Sun: turn away from that line and it fades (scene/nebulae.js viewFade), and the hero with it,
 // so the object is never drawn by neither.
@@ -77,7 +78,10 @@ export function mountPhotoCompare(box, record, ctx) {
         fill.style.width = `${v}%`;
         field.setAttribute('aria-valuetext', valueText(v));
       };
-      paint(Math.round(100 * (typeof neb.compareK === 'function' ? neb.compareK(id) : 0)));
+      // Where it stands: the slider's own value if it has been set, else the share the picture is drawn at now.
+      const set = typeof neb.compareK === 'function' ? neb.compareK(id) : null;
+      const natural = typeof neb.drawn === 'function' ? neb.drawn(id) : 0;
+      paint(Math.round(100 * (typeof set === 'number' ? set : natural || 0)));
       let flew = false;
       field.addEventListener('input', () => {
         const v = Math.max(0, Math.min(100, Number(field.value) || 0));
@@ -94,7 +98,6 @@ export function mountPhotoCompare(box, record, ctx) {
           } catch { /* a camera that will not fly is not worth breaking the card over */ }
           setTimeout(() => { if (said.isConnected !== false) said.textContent = ''; }, 2400);
         }
-        if (v === 0) flew = false;
         neb.setCompare(id, v / 100);
       });
       box.appendChild(wrap);

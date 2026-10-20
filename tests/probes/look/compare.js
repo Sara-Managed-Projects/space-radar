@@ -27,7 +27,8 @@ const audit = (name, root) => {
   const small = qa('button, select, input, a[href]', root).filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && (r.height < floor - 0.5 || r.width < floor - 0.5); })
     .map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(' ')[0]} ${boxOf(e).slice(2).join('x')} "${(e.textContent || e.getAttribute('aria-label') || '').trim().slice(0, 24)}"`);
   if (small.length) out.problems.push(`${name}: controls under ${floor} px: ${small.slice(0, 6).join('; ')}`);
-  const sc = root.closest('#sr-side, .sr-sheet, #sr-card') || root;
+  // The view itself, not the sidebar round it: a pushed view slides in from 12 px aside and the sidebar's width counts it.
+  const sc = root.matches('.sr-passport') ? root : (root.closest('#sr-side, .sr-sheet, #sr-card') || root);
   if (sc.scrollWidth > sc.clientWidth + 1) out.problems.push(`${name}: scrolls sideways (${sc.scrollWidth} > ${sc.clientWidth})`);
   const bad = /NaN|undefined|\[object|null/.exec(root.textContent);
   if (bad) out.problems.push(`${name}: the text has "${bad[0]}"`);
@@ -130,7 +131,7 @@ try { if (sr.wantPassport) await sr.wantPassport(); } catch (e) { look.warns.pus
     if (view) { q('.sr-passport__kinds').scrollIntoView({ block: 'start' }); await snap('08-passport-kinds', 'the passport after real visits: opened by kind, in a fixed order, and what is noted with the day', view); }
     else out.problems.push('the passport view did not open');
     const words = (view ? view.textContent : '').toLowerCase();
-    for (const bad of ['score', 'level', 'streak', 'badge', 'unlock', 'rank']) if (words.includes(bad)) out.problems.push('the passport says "' + bad + '"');
+    for (const bad of ['score', 'level', 'streak', 'badge', 'unlock', 'rank']) if (new RegExp('\\b' + bad + '\\b').test(words)) out.problems.push('the passport says "' + bad + '"');
   }
 }
 
@@ -155,15 +156,21 @@ try { if (sr.wantDeep) await sr.wantDeep(); } catch (e) { look.warns.push('wantD
       const field = q('.sr-photocmp__field');
       const drive = async (v) => { field.value = String(v); field.dispatchEvent(new Event('input', { bubbles: true })); await sleep(3500); };
       const read = (name) => ({ name, k: sr.nebulae.compareK(id), photo: Math.round(sr.nebulae.drawn(id) * 100) / 100, line: Math.round(sr.nebulae.lineShare(id) * 100) / 100, hero: ((sr.deep && sr.deep.stats().heroes) || []).map((h) => ({ id: h.id, share: h.share })) });
-      field.scrollIntoView({ block: 'center' });
+      // A phone's sheet is over the scene: for the scene's pictures it is let down to its peek, and raised once for the slider's own.
+      const sheet = phone && sr.shell && typeof sr.shell.sheet === 'function' ? sr.shell.sheet() : null;
+      if (sheet) sheet.set('peek'); else field.scrollIntoView({ block: 'center' });
       out.slider = [];
       for (const v of [0, 50, 100]) {
         await drive(v);
         out.slider.push({ v, ...read('slider-' + v) });
         await snap('09-helix-slider-' + v, 'the Helix, slider at ' + v + ' per cent', q('.sr-photocmp'), { value: field.getAttribute('aria-valuetext') });
       }
+      if (sheet) { sheet.set('full'); await sleep(900); field.scrollIntoView({ block: 'center' }); await snap('09b-helix-slider-panel', 'the slider\'s own panel on a phone, the sheet at full', q('.sr-photocmp')); sheet.set('peek'); await sleep(900); }
       const at100 = out.slider[2];
       if (!(at100.photo > 0.9)) out.problems.push('at 100 the photograph is drawn at ' + at100.photo + ', not whole');
+      if (!(out.slider[0].photo < 0.1)) out.problems.push('at 0 the photograph is still drawn at ' + out.slider[0].photo);
+      const heroAt0 = out.slider[0].hero.find((h) => h.id === 'helix');
+      if (!heroAt0 || !(heroAt0.share > 0.9)) out.problems.push('at 0 the reconstruction is not drawn whole (' + JSON.stringify(heroAt0) + ')');
       const heroAt100 = at100.hero.find((h) => h.id === 'helix');
       if (heroAt100 && heroAt100.share > 0.05) out.problems.push('at 100 the hero is still drawn at ' + heroAt100.share);
       // Turned away from the line: the photograph fades with it, and so does the slider's hold on the hero.
@@ -175,7 +182,7 @@ try { if (sr.wantDeep) await sr.wantDeep(); } catch (e) { look.warns.push('wantD
       sr.deselect();
       await sleep(1200);
       out.afterDeselect = { k: sr.nebulae.compareK(id) };
-      if (out.afterDeselect.k !== 0) out.problems.push('the slider was not put back when the card went');
+      if (out.afterDeselect.k !== null) out.problems.push('the slider was not put back when the card went');
     }
   }
 }

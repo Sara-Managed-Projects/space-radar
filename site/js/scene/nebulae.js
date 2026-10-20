@@ -286,8 +286,9 @@ export function createNebulae(scene, opts = {}) {
   let selected = null;
   let held = new Set(); // ids a trip asked for at its intro (prefetch): kept until the next trip asks
   // 0077 W2-d: begin ("Compare with the photograph", ui/photocompare.js; internal i#776, spec 0075 requirement 14)
-  // One picture at a time is compared with its reconstruction. k is the slider (0 the reconstruction, 1 the
-  // photograph); it is not remembered, and choosing anything else puts it back (want() below).
+  // One picture at a time is compared with its reconstruction. k is the slider (0 the reconstruction alone, 1 the
+  // photograph alone); while it is set the picture's own share is the slider's, and the hero is forced to draw
+  // so that 0 is the reconstruction (scene/deep/deepsky.js). Not remembered: choosing anything else puts it back.
   let cmp = { id: null, k: 0 };
   // 0077 W2-d: end
   let budget = Number.isFinite(opts.maxResident) ? opts.maxResident : TIER_PICTURES[1];
@@ -487,11 +488,11 @@ export function createNebulae(scene, opts = {}) {
           _n.copy(p.centre).sub(sunScene).normalize();
           p.fade = viewFade(_v.dot(_n) / d);
           alpha = (1 - skyOpacity) * viewFade(_v.dot(_n) / d) * nearFade(d / p.widthUnits);
-          // 0077 W2-d: begin (the slider draws the photograph at its own share on the line it was taken along, and
-          // fades it with that line as every placed picture fades: the hero's share is the other way round)
-          if (cmp.id === p.row.id && cmp.k > 0) {
+          // 0077 W2-d: begin (the slider's share, not the natural one, on the line the picture was taken along; it
+          // fades with that line as every placed picture fades, and the hero's share is the other way round)
+          if (cmp.id === p.row.id) {
             p.cmpAlpha = cmp.k * p.fade;
-            alpha = Math.max(alpha, p.cmpAlpha);
+            alpha = p.cmpAlpha;
             if (p.state === 'idle') fetchPicture(p);
           }
           // 0077 W2-d: end
@@ -554,13 +555,15 @@ export function createNebulae(scene, opts = {}) {
     setCompare(recordId, k) {
       const row = typeof recordId === 'string' && recordId.startsWith('dso-') ? byId.get(recordId.slice(4)) : null;
       const v = Math.min(1, Math.max(0, Number(k) || 0));
-      cmp = row && v > 0 ? { id: row.row.id, k: v } : { id: null, k: 0 };
-      if (row && v > 0) fetchPicture(row);
+      cmp = row ? { id: row.row.id, k: v } : { id: null, k: 0 };
+      if (row) fetchPicture(row);
     },
-    /** Where the slider stands for this record, 0..1. */
-    compareK: (recordId) => (cmp.id && recordId === `dso-${cmp.id}` ? cmp.k : 0),
-    /** How much of the picture the slider is drawing now (the hero gives way by this much): 0 without the slider. */
-    compareShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && cmp.id === p.row.id ? p.cmpAlpha || 0 : 0; },
+    /** Take the slider off: the picture and the hero are their own again. */
+    clearCompare() { cmp = { id: null, k: 0 }; },
+    /** Where the slider stands for this record, 0..1, or null while it is not set (the picture is then its natural share). */
+    compareK: (recordId) => (cmp.id && recordId === `dso-${cmp.id}` ? cmp.k : null),
+    /** How much of the picture the slider is drawing now (the hero gives way by this much), or null while the slider is not set. */
+    compareShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && cmp.id === p.row.id ? p.cmpAlpha || 0 : null; },
     /** How whole the picture is from where the camera stands (1 on the line it was taken along, 0 past 50 degrees, 0 out of view). */
     lineShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && p.inView ? p.fade || 0 : 0; },
     /** The line the picture was taken along: where to stand to see it whole. { target, offset (toward the Sun, unit) } in scene units, or null. */

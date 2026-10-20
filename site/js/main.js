@@ -370,7 +370,7 @@ export async function boot({ setStatus } = {}) {
     const reduced = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     ctx.deep = m.createDeepSky(THREE, {
       scene, records: () => ctx.recordsFor('deep-sky') || [], recordById: (id) => ctx.recordById(id),
-      pictureShare: (id) => (ctx.nebulae ? ctx.nebulae.drawn(id) : 0), compareShare: (id) => (ctx.nebulae && ctx.nebulae.compareShare ? ctx.nebulae.compareShare(id) : 0) /* 0077 W2-d */, picturesBusy: () => !!(ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy()),
+      pictureShare: (id) => (ctx.nebulae ? ctx.nebulae.drawn(id) : 0), compareShare: (id) => (ctx.nebulae && ctx.nebulae.compareShare ? ctx.nebulae.compareShare(id) : null) /* 0077 W2-d */, picturesBusy: () => !!(ctx.nebulae && ctx.nebulae.busy && ctx.nebulae.busy()),
       selectedId: () => (ctx.selected() ? ctx.selected().id : null), subjectId: () => (ctx.labels ? ctx.labels.subject() : null),
       quality: () => { const d = ctx.quality ? ctx.quality.describe() : {}; return { tier: Number.isFinite(d.tier) ? d.tier : 1, top: !!(d.plan && d.plan.steps === 'top'), latched: !!(ctx.latch && ctx.latch.latched), scaleStep: ctx.scaler ? ctx.scaler.step : 0 }; },
       look: () => ctx.look(), reduced: () => !!(reduced && reduced.matches) || motionStill(), frozen: () => !!(ctx.latch && ctx.latch.held),

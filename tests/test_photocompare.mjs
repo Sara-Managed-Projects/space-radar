@@ -56,12 +56,12 @@ const place = (from) => { camera.position.copy(from); camera.lookAt(centre); cam
 const onLine = (dist) => centre.clone().add(toSun.clone().multiplyScalar(dist));
 const turned = (deg, dist) => { const axis = new THREE.Vector3().crossVectors(toSun, new THREE.Vector3(0, 1, 0)).normalize(); return centre.clone().add(toSun.clone().applyAxisAngle(axis, deg * Math.PI / 180).multiplyScalar(dist)); };
 
-check(typeof n.setCompare === 'function' && typeof n.compareK === 'function' && typeof n.compareShare === 'function' && typeof n.lineShare === 'function' && typeof n.lineFor === 'function', 'the layer answers the slider\'s five calls');
-// at 0 nothing changes
+check(typeof n.clearCompare === 'function' && typeof n.setCompare === 'function' && typeof n.compareK === 'function' && typeof n.compareShare === 'function' && typeof n.lineShare === 'function' && typeof n.lineFor === 'function', 'the layer answers the slider\'s five calls');
+// untouched, nothing changes
 let st = place(onLine(width * 3));
 eq(st.alpha, 1, 'on the line, at three widths, the picture is whole without the slider');
-eq(n.compareShare('dso-m42'), 0, 'and the slider has no share in it');
-eq(n.compareK('dso-m42'), 0, 'and stands at 0');
+eq(n.compareShare('dso-m42'), null, 'and the slider has no share in it (null: not set, so the hero forces nothing)');
+eq(n.compareK('dso-m42'), null, 'and is not set');
 eq(n.lineShare('dso-m42'), 1, 'the picture is whole on its line');
 // right up against it the placed picture goes (nearFade), as it always did
 st = place(onLine(width * 0.1));
@@ -69,6 +69,13 @@ eq(st.alpha, 0, 'against the picture, closer than a fifth of its width, it is pu
 n.setCompare('dso-m42', 0.5);
 st = place(onLine(width * 0.1));
 check(near(st.alpha, 0.5, 1e-9), `the slider at one half draws it at one half even there (${st.alpha})`);
+n.setCompare('dso-m42', 0);
+st = place(onLine(width * 3));
+eq(st.alpha, 0, 'at 0 the photograph is not drawn, where its natural share is the whole of it: 0 is the reconstruction alone');
+eq(n.compareShare('dso-m42'), 0, 'and the share is a number, which is what makes the hero draw');
+eq(n.compareK('dso-m42'), 0, 'the slider stands at 0');
+n.setCompare('dso-m42', 0.5);
+place(onLine(width * 0.1));
 check(near(n.compareShare('dso-m42'), 0.5, 1e-9) && near(n.drawn('dso-m42'), 0.5, 1e-9), 'and says so to the hero (compareShare) and to the rest (drawn)');
 n.setCompare('dso-m42', 1);
 st = place(onLine(width * 3));
@@ -78,7 +85,7 @@ eq(n.compareK('dso-m42'), 1, 'the slider stands at 1');
 // turned away: the photograph is flat and faces the Sun
 st = place(turned(60, width * 3));
 eq(st.alpha, 0, 'turned 60 degrees off its line the picture is gone, slider or not');
-eq(n.compareShare('dso-m42'), 0, 'and the hero is not hidden for a picture that is not there');
+eq(n.compareShare('dso-m42'), 0, 'and the hero is not hidden for a picture that is not there (a share of 0)');
 eq(n.lineShare('dso-m42'), 0, 'the line share says so, which is what makes the card fly back');
 st = place(turned(35, width * 3));
 check(st.alpha > 0 && st.alpha < 1 && near(n.compareShare('dso-m42'), st.alpha, 1e-9), `at 35 degrees it is part drawn (${st.alpha.toFixed(3)}) and the hero gives way by exactly that`);
@@ -90,27 +97,27 @@ check(line && near(line.target.x, centre.x, 1e-6 * Math.abs(centre.x) + 1e-9), '
 eq(n.lineFor('dso-nothing'), null, 'a record with no picture has no line');
 // not remembered, put back by choosing anything else
 n.want('dso-m31');
-eq(n.compareK('dso-m42'), 0, 'selecting another object puts the slider back to the reconstruction');
+eq(n.compareK('dso-m42'), null, 'selecting another object puts the slider back to the picture\'s own share');
 st = place(onLine(width * 0.1));
 eq(st.alpha, 0, 'and the picture is as it was');
 n.setCompare('dso-m42', 0.7);
 n.want(null);
-eq(n.compareK('dso-m42'), 0, 'deselecting does too');
+eq(n.compareK('dso-m42'), null, 'deselecting does too');
 n.setCompare('dso-m13', 1);
-eq(n.compareK('dso-m13'), 0, 'a record with no photograph takes no slider');
+eq(n.compareK('dso-m13'), null, 'a record with no photograph takes no slider');
 n.setCompare('dso-m42', NaN);
 eq(n.compareK('dso-m42'), 0, 'a value that is not a number is 0');
 n.setCompare('dso-m42', 7);
 eq(n.compareK('dso-m42'), 1, 'and one past the end is 1');
-n.setCompare('dso-m42', 0);
-eq(n.compareK('dso-m42'), 0, 'and 0 is off');
+n.clearCompare();
+eq(n.compareK('dso-m42'), null, 'clearCompare takes it off');
 n.dispose();
 
 // --- the hero gives way (scene/deep/deepsky.js) --------------------------------------------------------------------------
 const deepsky = readFileSync(join(JS, 'scene/deep/deepsky.js'), 'utf8');
-check(/fader\.to\(`hero:\$\{h\.def\.id\}`, lv >= 2 \? 1 - \(env\.compareShare \? Math\.min\(1, Math\.max\(0, env\.compareShare\(h\.def\.record\) \|\| 0\)\) : 0\) : 0, now\)/.test(deepsky), 'a hero\'s share is one less the slider\'s, and the old one without it');
+check(/const cmpSet = typeof cmpShare === 'number';/.test(deepsky) && /if \(cmpSet \|\| rp >= /.test(deepsky) && /if \(cmpSet\) lv = Math\.max\(lv, 2\);/.test(deepsky) && /lv >= 2 \? 1 - \(cmpSet \? Math\.min\(1, Math\.max\(0, cmpShare\)\) : 0\) : 0, now\)/.test(deepsky), 'while the slider is set a hero is fetched and drawn at any size and gives way by the photograph\'s share; unset, nothing changes');
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-check(/compareShare: \(id\) => \(ctx\.nebulae && ctx\.nebulae\.compareShare \? ctx\.nebulae\.compareShare\(id\) : 0\)/.test(main), 'main.js hands the coordinator that one function');
+check(/compareShare: \(id\) => \(ctx\.nebulae && ctx\.nebulae\.compareShare \? ctx\.nebulae\.compareShare\(id\) : null\)/.test(main), 'main.js hands the coordinator that one function');
 
 // --- which records are offered it (scene/deep/heroes.js) ------------------------------------------------------------------
 eq(H.heroForRecord('dso-helix-nebula').id, 'helix', 'the Helix has a hero');
@@ -135,9 +142,10 @@ eq(PC.offTheLine(0.4), true, 'off it, a flight');
 eq(PC.offTheLine(0), true, 'out of view, a flight');
 const calls = { set: [], fly: [], rig: [] };
 const neb = {
-  k: 0, share: 0, line: 0,
+  k: null, share: 0, line: 0,
   setCompare(id, k) { calls.set.push([id, k]); this.k = k; },
   compareK() { return this.k; },
+  drawn() { return 0.8; },
   lineShare() { return this.line; },
   lineFor() { return { target: { x: 1, y: 2, z: 3 }, offset: { x: 0, y: 0, z: 1 } }; },
 };
@@ -149,7 +157,8 @@ check(!!mounted, 'the Helix gets its slider');
 const field = box.querySelector('input');
 check(!!field && field.attrs.type === 'range' && field.attrs.min === '0' && field.attrs.max === '100', 'a range from 0 to 100');
 eq(field.attrs['aria-label'], 'Compare with the photograph', 'it has a name');
-eq(field.attrs['aria-valuetext'], 'Reconstruction', 'and says in words where it stands');
+eq(field.value, '80', 'untouched it stands where the picture is drawn now (0.8)');
+eq(field.attrs['aria-valuetext'], '80% photograph', 'and says in words where it stands');
 check(box.textContent.includes(COPY.photoCompare.title) && box.textContent.includes(COPY.photoCompare.note), 'the title and the line about the photograph being flat are there');
 check(box.querySelector('.sr-photocmp__ends').textContent === 'ReconstructionPhotograph', 'the two ends are named');
 // off the line: the first press flies, the second does not
@@ -164,12 +173,11 @@ check(box.querySelector('[role="status"]').textContent === COPY.photoCompare.fly
 field.value = '80'; fire(field, 'input');
 eq(calls.rig.length, 1, 'a second move does not fly again');
 field.value = '0'; fire(field, 'input');
-field.value = '10'; fire(field, 'input');
-eq(calls.rig.length, 2, 'back at 0 and away again flies again, if the camera is still off');
+eq(calls.set.at(-1).join(), 'dso-helix-nebula,0', '0 is set, not left alone: it is the reconstruction by itself');
+eq(calls.rig.length, 1, 'and does not fly again, one flight to the line is enough');
 neb.line = 1;
-field.value = '0'; fire(field, 'input');
 field.value = '60'; fire(field, 'input');
-eq(calls.rig.length, 2, 'on the line, nothing flies');
+eq(calls.rig.length, 1, 'on the line, nothing flies');
 eq(box.querySelector('.sr-photocmp__fill').style.width, '60%', 'the filled part follows the value');
 // a card repainted while the slider stands at 0.6 comes back at 0.6
 const box2 = document.createElement('div');
