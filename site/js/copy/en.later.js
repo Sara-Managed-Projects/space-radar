@@ -616,10 +616,38 @@ Object.assign(COPY, {
     narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (af_heart), Apache-2.0',
   },
 
+  // 0077 W1-f: begin
+  // A far dwarf planet's drawing (scene/dwarfs.js, ui/cards.js dwarfDrawingLine; internal #865).
+  // {bv}, {vr}: its colour indices; {albedo}: its geometric albedo; {a} {b} {c}: Haumea's axes, km.
+  dwarfLook: {
+    colour: 'Drawn in the colour its light measures (B\u2212V {bv}, V\u2212R {vr}), as bright as its surface reflects (albedo {albedo}) on a scale squeezed so the darkest of these worlds still shows.',
+    colourRed: 'Drawn in the colour its light measures (B\u2212V {bv}, V\u2212R {vr}), one of the reddest things in the Solar System, as bright as its surface reflects (albedo {albedo}) on a scale squeezed so the darkest of these worlds still shows.',
+    shapeEgg: 'Its shape is the egg its light curve and a 2017 stellar occultation measured, {a} \u00d7 {b} \u00d7 {c} km.',
+    shapeMeasured: 'Its shape is the one stellar occultations measured.',
+    shapeUnknown: 'Its shape has never been measured, so it is drawn round.',
+    ring: 'Its ring is at its measured distance, width and opacity; how the ring is tilted on the sky is not drawn.',
+    faintRings: 'Its two rings, found in 2023, are too faint to see at their real opacity, so they are not drawn.',
+    surface: 'No telescope has resolved its surface: nothing on it is drawn, and it is drawn still, not turning.',
+    source: 'Numbers: {src}.',
+  },
+  // 0077 W1-f: end
+
   // A world with a second face on its card (scene/worlds.js `faces`, 2026-10-06, public #417).
   // Venus: NASA's Magellan page, read 2026-10-06, has the radar mapping begin on 15 September 1990
   // and "finished coverage at 98%" in September 1992.
   worldFace: {
+    // 0077 W1-f: begin
+    // Titan (scene/worlds.js TITAN_RADAR; registry/textures.yaml titan-radar). Cassini's RADAR swaths
+    // through flyby T104 (January 2015); the mosaic covers 0.61 of the sphere (scripts/build_titan_maps.py).
+    titan: {
+      title: 'Titan, two ways',
+      modes: { own: 'Infrared', radar: 'Radar' },
+      notes: {
+        own: 'Titan\u2019s ground as Cassini\u2019s camera saw it through the haze in near-infrared light (938 nm), in the haze\u2019s orange. The seas in the north are darkened along the outlines Cassini\u2019s radar drew, and from close, where the Sun is mirrored in them, they glint: where the glint falls is worked out; its size and brightness are illustrative.',
+        radar: 'Strips of Titan\u2019s ground as Cassini\u2019s radar saw it through the haze, 2004 to 2015: bright is rough ground or ground tilted toward the radar, dark is smooth, and the seas of liquid methane and ethane are black. The grey is ours: radar has no colour. The radar saw 61 % of Titan; between its strips the infrared map shows through, dimmed, in orange. USGS Astrogeology and NASA/JPL-Caltech, public domain.',
+      },
+    },
+    // 0077 W1-f: end
     venus: {
       title: 'Venus, two ways',
       modes: { own: 'Clouds', surface: 'Ground' },

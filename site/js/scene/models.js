@@ -30,6 +30,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
+import { dwarfLook, buildDwarf } from './dwarfs.js'; // 0077 W1-f: each far dwarf planet's own look
 // A data TABLE, not a data source: the rows a rocket is composed from, generated from
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
@@ -2839,6 +2840,9 @@ function relaxationOf(diameterKm) {
 
 function buildAsteroid(variant, opts = {}) {
   const record = opts.record || null;
+  // 0077 W1-f: a far dwarf planet with a row in scene/dwarfs.js is drawn in its own measured colour and shape.
+  const dwarf = record && !variant ? dwarfLook(record.id) : null; // 0077 W1-f
+  if (dwarf) return buildDwarf(dwarf, { THREE, mesh, record }); // 0077 W1-f
   const key = variant || (record && record.id) || 0;
   const seed = seedOf(`asteroid:${key}`);
   const g = new THREE.Group();

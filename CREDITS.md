@@ -368,6 +368,10 @@ checked against this list by `scripts/check_registry.py`):
 - Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain
 - Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain
 - Titan map: NASA/JPL-Caltech/Univ. Arizona (Cassini ISS, 938 nm, PIA22770), public domain
+<!-- 0077 W1-f: begin -->
+- Titan radar map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Cassini RADAR, SAR and HiSAR mosaic through flyby T104), public domain
+- Titan seas: outlined from the same Cassini RADAR mosaic (USGS Astrogeology Science Center and NASA/JPL-Caltech), public domain
+<!-- 0077 W1-f: end -->
 - Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain
 - Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, global mosaic by DLR), hosted by USGS Astrogeology Science Center
 - Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center
