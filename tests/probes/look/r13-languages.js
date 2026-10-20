@@ -69,7 +69,7 @@ for (const L of LANGS) {
     await sleep(6000);
     await pic(nm, note);
   }
-  d.dispatchEvent(new w().KeyboardEvent('keydown', { key: 'l', bubbles: true }));
+  d.dispatchEvent(new (w().KeyboardEvent)('keydown', { key: 'l', bubbles: true }));
   await sleep(1200);
   if (!d.getElementById('sr-show') || d.getElementById('sr-show').hidden) fsr.rail.openShow();
   await sleep(1200);
