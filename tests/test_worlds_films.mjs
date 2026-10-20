@@ -160,7 +160,8 @@ const U = (id) => worlds.meshFor(id).material.uniforms;
 // ---- the budget -------------------------------------------------------------------------------------
 {
   const t1 = worstCaseGpu(1, { mapsHeld: 5 });
-  check(t1.faces < 40, `the faces a card can ask for fit (T1 ${t1.faces.toFixed(1)} MiB)`);
+  check(t1.faces < 52, // 40 until release 1.3.0 W1-f: Titan's radar and lake maps are two more faces a card can ask for (50.2 MiB measured); the whole T1 sum is held by tier1_texture_gpu_mib
+   `the faces a card can ask for fit (T1 ${t1.faces.toFixed(1)} MiB)`);
 }
 
 if (problems.length) {

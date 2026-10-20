@@ -18,7 +18,7 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 // css/share.css is linked by the share sheet on its first open (spec 0061 task 8), and held to the
 // same rules as the stylesheets linked at boot.
-const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/exoface.css'];
+const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/autopilot.css', 'site/css/drift.css', 'site/css/onboarding.css', 'site/css/finishers.css', 'site/css/searchkinds.css', 'site/css/exoface.css', 'site/css/compare.css']; // 0077 W2-d
 // Comments out, positions kept, so nothing quoted in a comment counts as a rule.
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 

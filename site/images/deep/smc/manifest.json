@@ -1,0 +1,34 @@
+{
+  "file": "site/images/deep/smc/smc-light.webp",
+  "bytes": 13028,
+  "sha256": "3031dce4cfbe3e9cdf972f53c20e5888b5daf19f476defb2511b0069a1743cdb",
+  "size": [
+    512,
+    427
+  ],
+  "from": "site/images/nebulae/smc.webp",
+  "from_sha256": "7e7817391ecfc514d5f37312bc6f60c28ecc8b073ae1ad9ea494b807a9e924e0",
+  "stars_removed_px": 188200,
+  "foreground_px": 10251,
+  "foreground": [
+    [
+      "47 Tucanae",
+      6.0231,
+      -72.0814,
+      36.0
+    ],
+    [
+      "NGC 362",
+      15.8094,
+      -70.8488,
+      10.0
+    ],
+    [
+      "a foreground star",
+      12.32,
+      -74.94,
+      4.0
+    ]
+  ],
+  "credit": "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (noirlab2030b), CC BY 4.0; stars and two foreground globulars removed by Space Radar (scripts/build_deep_smc.py --light)"
+}

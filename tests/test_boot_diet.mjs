@@ -72,6 +72,13 @@ const DEFERRED = {
   'vendor/meshopt_decoder.module.js': 'the meshopt decoder: with the glTF loader',
   'vendor/BufferGeometryUtils.js': 'the glTF loader\'s helper',
   'js/copy/en.later.js': 'the words of what loads later',
+  'js/copy/index.js': 'puts a language over the English words: copy/en.js fetches it only when copy/lang.js chose another language', // 0077 W1-e
+  'js/copy/es.js': 'Spanish: copy/index.js fetches it for ?lang=es, and for no one else', // 0077 W1-e
+  // 0077 W2-f: begin
+  'js/copy/fr.js': 'French: copy/index.js fetches it for ?lang=fr, and for no one else',
+  'js/copy/de.js': 'German: copy/index.js fetches it for ?lang=de, and for no one else',
+  'js/copy/pt.js': 'Brazilian Portuguese: copy/index.js fetches it for ?lang=pt (or pt-BR), and for no one else',
+  // 0077 W2-f: end
   'js/sky/groundsky.js': 'the sky from the ground: sky/skyview.js fetches it when the sky view opens',
   'js/sky/skyculture.js': 'other peoples\' figures, the borders and the pictures: sky/groundsky.js fetches it when one is asked for',
   'js/sky/meteors.js': 'a shower\'s streaks: sky/groundsky.js fetches it when a shower is active',
@@ -157,6 +164,10 @@ const DEFERRED = {
   'js/scene/traverse.js': 'the Apollo rover traverses: scene/tiles.js fetches it the first time the Moon\'s tiles are on screen (internal spec 0076 W2-a)',
   'js/data/traverses.js': 'the traverses\' lines, read only by scene/traverse.js (internal spec 0076 W2-a)',
   'js/scene/airtint.js': 'the red of a craft\'s orbital sunrise: imported by scene/models.js only, which loads when a record wants geometry (internal spec 0076 W2-a)',
+  // 0077 W2-pbr: begin
+  'js/scene/pbr.js': 'real models in their own materials: scene/realmodels.js fetches it with the glTF loader (release 1.3.0, internal #967)',
+  'js/data/modellooks.js': 'the registry\'s `look:` per model file: with scene/pbr.js',
+  // 0077 W2-pbr: end
   // 0076 W2-c (plumes.js)
   'js/scene/plumes.js': 'plumes where they were seen: main.js fetches it when Io, Enceladus or Triton gets its own stage (internal spec 0076 W2-c)',
   'js/data/plumes.js': 'the plumes\' registry: with scene/plumes.js',

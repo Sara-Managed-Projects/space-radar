@@ -1,0 +1,349 @@
+/* compare.css -- the rules of what arrives with a card's Compare row, the passport's second page and a deep-sky card's
+   photograph slider (internal i#885, i#909, i#911, i#776; release 1.3.0, stage W2-d). Fetched by ui/compare.js,
+   ui/passportkinds.js and ui/photocompare.js through ui/latercss.js, never at boot: a first visit does not carry it. */
+
+
+/* Compare: a world card's disclosure row opens this in place (docs/ui-guide.md §3.10 item 7). Its two choices
+   are the card's quiet row (.sr-card__sky / .sr-card__tool, §3.10 item 5a): the same wash, edge and 44 px. */
+.sr-vs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.sr-vs .sr-card__sky {
+  padding-bottom: 0;
+}
+
+.sr-vs__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.sr-vs__fieldlabel {
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-vs__select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-vs__select:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+html.sr-phone .sr-vs__select {
+  font-size: var(--sr-fs-input);
+}
+
+@media (hover: hover) {
+  .sr-vs__select:hover {
+    background: var(--sr-wash-hover);
+    border-color: var(--sr-line-strong);
+  }
+}
+
+.sr-vs__sentence {
+  margin: 0;
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-vs__figure {
+  margin: 0;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+
+.sr-vs__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Two outlines: the card's own world in the ember of selection, the other in text. Opaque inside, so a
+   ring's far half passes behind the disc and its near half in front of it. */
+.sr-vs__disc {
+  fill: var(--sr-panel-solid);
+  stroke-width: 1.5;
+}
+
+.sr-vs__disc.is-this { stroke: var(--sr-ember); }
+.sr-vs__disc.is-with { stroke: var(--sr-text); }
+.sr-vs__ring { fill: var(--sr-text); }
+.sr-vs__ring--line { fill: none; stroke: var(--sr-text); stroke-width: 1; }
+
+.sr-vs__legend,
+.sr-vs__table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--sp-3);
+}
+
+.sr-vs__table { position: relative; }
+
+.sr-vs__name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-vs__swatch {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--sr-text);
+  border-radius: 50%;
+}
+
+.sr-vs__name.is-this .sr-vs__swatch { border-color: var(--sr-ember); }
+
+.sr-vs__drawn,
+.sr-vs__source {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+/* The table: a row is its label across both columns, then the two values. The column headings are there
+   for a screen reader; the legend above the picture is what a sighted reader has. */
+.sr-vs__head,
+.sr-vs__row {
+  display: contents;
+}
+
+.sr-vs__head > * {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sr-vs__key {
+  grid-column: 1 / -1;
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--sr-line);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-vs__head + .sr-vs__row .sr-vs__key {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sr-vs__cell {
+  min-width: 0;
+  padding-top: var(--sp-1);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.sr-vs__num { font-family: var(--sr-font-mono); }
+.sr-vs__unit { color: var(--sr-text-dim); font-size: var(--sr-fs-sm); }
+.sr-vs__dash { color: var(--sr-text-dim); }
+
+.sr-vs__note {
+  display: block;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+/* The lab: one row a world, a bar under its name. The card's own world is the brightest bar and its name is
+   600; the one it was last set beside is the soft grey (ember is spent on the primary, selection and focus only); the rest are the dim grey (a graphic needs 3:1 and that has 4.56). */
+.sr-vs__lab {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-vs__labbtn {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) 0;
+  font: inherit;
+  color: var(--sr-text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--sr-line);
+  cursor: pointer;
+}
+
+.sr-vs__labbtn[aria-disabled='true'] { cursor: default; }
+
+.sr-vs__labtop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+}
+
+.sr-vs__labval {
+  flex: 0 1 auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-vs__bar {
+  display: block;
+  height: 6px;
+  margin-top: var(--sp-2);
+  background: var(--sr-wash-strong);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-vs__fill {
+  display: block;
+  height: 100%;
+  background: var(--sr-text-dim);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-vs__labbtn.is-this .sr-vs__fill { background: var(--sr-text); }
+.sr-vs__labbtn.is-this .sr-vs__labname { font-weight: 600; }
+.sr-vs__labbtn.is-with .sr-vs__fill { background: var(--sr-text-soft); }
+
+@media (hover: hover) {
+  .sr-vs__labbtn:not([aria-disabled='true']):hover .sr-vs__labname { color: var(--sr-ember-light); }
+}
+
+/* The passport's second page: kinds, and what is noted (ui/passportkinds.js). Quiet rows, the same list. */
+.sr-passport__kinds .sr-list__value { color: var(--sr-text); }
+
+.sr-passport__noted .sr-list__static { align-items: flex-start; }
+
+.sr-passport__notetext {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.sr-passport__noted .sr-list__name {
+  font-size: var(--sr-fs-body);
+  color: var(--sr-text);
+}
+
+.sr-passport__notesaid {
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-passport__fine {
+  margin: 0;
+  font-size: var(--sr-fs-sm);
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+/* The photograph slider on a deep-sky card (ui/photocompare.js): the density row's own panel, a range field
+   under its title. The track is drawn by two spans under a transparent field, so the filled part needs no gradient. The target is 44 px on every pointer. */
+.sr-photocmp__track {
+  position: relative;
+  height: 44px;
+}
+
+.sr-photocmp__track::before,
+.sr-photocmp__fill {
+  position: absolute;
+  top: 19px;
+  left: 0;
+  height: 6px;
+  border-radius: var(--sr-radius-sm);
+  content: '';
+}
+
+.sr-photocmp__track::before {
+  right: 0;
+  background: var(--sr-wash-strong);
+}
+
+.sr-photocmp__fill {
+  background: var(--sr-text-soft);
+}
+
+.sr-photocmp__field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.sr-photocmp__field::-webkit-slider-runnable-track {
+  height: 44px;
+  background: transparent;
+}
+
+.sr-photocmp__field::-moz-range-track {
+  height: 44px;
+  background: transparent;
+}
+
+.sr-photocmp__field::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: 12px;
+  background: var(--sr-text);
+  border: 1px solid var(--sr-panel-solid);
+  border-radius: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.sr-photocmp__field::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--sr-text);
+  border: 1px solid var(--sr-panel-solid);
+  border-radius: 50%;
+}
+
+.sr-photocmp__field:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-photocmp__ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+
+/* Reduced motion: nothing here moves; the one colour change is a 120 ms fade (docs/ui-guide.md section 2.5). */
+@media (prefers-reduced-motion: reduce) {
+  .sr-vs__select {
+    transition: opacity 120ms linear;
+  }
+}

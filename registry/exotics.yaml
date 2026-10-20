@@ -169,12 +169,12 @@ exotics:
     kind: star
     ra: 10h 45m 03.591s
     dec: -59° 41′ 04.26″
-    dist_ly: 7500
+    dist_ly: 7665             # 0077 W2-e: 2.35 kpc, as the Carina Nebula it lights (registry/dso-hand.yaml: Smith 2006; Göppl & Preibisch 2022)
     mass_msun: 100
     vmag: 4.2                 # 2018; it has ranged from -1.0 to about 7.6
     why: "A star of about a hundred Suns that erupted in the 1840s, briefly the second brightest in the sky, and wrapped itself in the Homunculus Nebula. A supernova waiting to happen."
     aliases: [η Carinae, η Car, Eta Car]
-    source: "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: distance 7 500 ly / 2 300 pc, mass ~100 Suns, read 2026-09-08)"
+    source: "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: mass ~100 Suns, read 2026-09-08); the distance, 2 350 +/- 50 pc, is the Homunculus's expansion parallax (Smith 2006, ApJ 644, 1151), with which Gaia agrees (Göppl & Preibisch 2022, A&A 660, A11)"  # 0077 W2-e
 
   - id: betelgeuse
     name: Betelgeuse

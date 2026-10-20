@@ -66,6 +66,8 @@ domains:
       coalsack: {credit: "### Remnants and dust (0076 W3-c)"}
       m78: {credit: "### Remnants and dust (0076 W3-c)"}
       iris: {credit: "### Remnants and dust (0076 W3-c)"}
+      carina: {credit: "### Carina (0077 W2-e)"}  # 0077 W2-e
+      smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -189,13 +191,13 @@ classes:
 
   - id: RINGS
     title: Planetary rings
-    renderer: [site/js/scene/worlds.js]
+    renderer: [site/js/scene/worlds.js, site/js/scene/ringgrains.js] # 0077 W1-f
     honesty: modelled
-    fallback: The ring's alpha map as a lit slab; the fine ringlets and grain only on tier 1 and up, never after the latch.
+    fallback: The ring's alpha map as a lit slab; the fine ringlets, grain and particles only on tier 1 and up, never after the latch. # 0077 W1-f
     note:
       source: "Cassini UVIS stellar occultation of Beta Centauri (Colwell et al. 2010, PDS Ring-Moon Systems Node) for Saturn's 8k ringlets; Solar System Scope's ring alpha map; the Cassini Division at its measured radii."
       dates: "The occultation of 2008 (Cassini orbit 77)."
-      drawn: "Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain."
+      drawn: "Measured: the radii and the optical depth profile. Modelled: the slab lit from both sides, its shadows and grain; within 25 km of Saturn's ring plane the particles of 2 to 5 m as balls, as many and as big as the measured size spread and optical depth say (French and Nicholson 2000). Illustrative and labelled: where each particle is, the A ring's wake clumps, and that they hold still." # 0077 W1-f
       rights: "PDS data public domain; Solar System Scope CC BY 4.0."
     records:
       - {domain: rings}
@@ -234,11 +236,11 @@ classes:
     renderer: [site/js/scene/worlds.js, site/js/scene/atmosphere.js]
     honesty: measured
     fallback: The 938 nm map under its haze shell.
-    issue: "#863 (lakes, radar mode, 1.3+)"
+    issue: "#863 (done in 1.3.0, 0077 W1-f; left: the Huygens site, W2-a)" # 0077 W1-f
     note:
-      source: "Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); clouds after Webb and Keck (NASA, 2023)."
-      dates: "Cassini 2004-2017, released 2018; the cloud reference of 2023."
-      drawn: "Measured: the surface map through the haze, at half its contrast. Modelled: the haze shell. Illustrative and labelled: the methane clouds."
+      source: "Cassini ISS's 938 nm global map (NASA/JPL-Caltech/Univ. Arizona, PIA22770); Cassini RADAR's SAR and HiSAR mosaic through T104 (USGS Astrogeology), which gives the radar face and the seas' outlines; the detached haze layer's height from Porco et al. 2005 and West et al. 2011; clouds after Webb and Keck (NASA, 2023)." # 0077 W1-f
+      dates: "Cassini 2004-2017, released 2018; the radar mosaic of January 2015; the detached layer as seen 2005-2007; the cloud reference of 2023." # 0077 W1-f
+      drawn: "Measured: the surface map through the haze, at half its contrast; the radar face (its grey ours), only where a swath looked; the seas' outlines. Modelled: the haze shell and the detached layer at its 2005-2007 height. Illustrative and labelled: the methane clouds, and the glint's size and brightness." # 0077 W1-f
       rights: "NASA public domain."
     records:
       - {domain: worlds, ids: [titan]}
@@ -260,14 +262,14 @@ classes:
 
   - id: DWARF_PLANET
     title: Dwarf planets
-    renderer: [site/js/scene/worlds.js, site/js/scene/glyphs.js, site/js/scene/models.js]
+    renderer: [site/js/scene/worlds.js, site/js/scene/glyphs.js, site/js/scene/models.js, site/js/scene/dwarfs.js] # 0077 W1-f
     honesty: measured
-    fallback: Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits.
-    issue: "#865 (Eris, Makemake, Haumea, Sedna as more than glyphs)"
+    fallback: Pluto and Ceres as mapped spheres; the far dwarfs as glyphs on their orbits, and close up as smooth bodies in their measured colours. # 0077 W1-f
+    issue: "#865 (done in 1.3.0, 0077 W1-f; left: spins)" # 0077 W1-f
     note:
       source: "New Horizons' global colour map of Pluto (PIA11707); Dawn's Ceres mosaic (DLR, via USGS); JPL Small-Body Database orbits for the far dwarfs; their sizes and moons from the Wikipedia article each row names."
       dates: "New Horizons 2015; Dawn 2015-2018; SBDB solutions dated per row (sample.js `solution`)."
-      drawn: "Measured: Pluto's and Ceres's maps, every orbit and its phase. Illustrative: the far dwarfs' bodies (a glyph and a generic rock, labelled)."
+      drawn: "Measured: Pluto's and Ceres's maps, every orbit and its phase; the far dwarfs' colours (B-V, V-R), albedos, Haumea's, Makemake's and Quaoar's shapes and Haumea's ring (scene/dwarfs.js names whose). Modelled and labelled: their brightness on a squeezed scale, and the three never measured drawn round; no surface is drawn on any of them." # 0077 W1-f
       rights: "NASA works public domain; SBDB data courtesy NASA/JPL-Caltech; facts from Wikipedia, cited, none of its text reproduced."
     records:
       - {domain: worlds, ids: [pluto]}
@@ -482,11 +484,11 @@ classes:
 
   - id: EMISSION_NEBULA
     title: Emission nebulae (H II regions)
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js]
+    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js, site/js/scene/deep/carina.js]  # 0077 W2-e
     honesty: measured
     fallback: The photograph, placed and sized on the sky; the gas is not marched on tier 0 or after the latch.
-    heroes: {orion: registry/deepsky-heroes/orion.yaml}
-    issue: "internal #782 (Orion, W1-a); Carina 1.3+"
+    heroes: {orion: registry/deepsky-heroes/orion.yaml, carina: registry/deepsky-heroes/carina.yaml}  # 0077 W2-e
+    issue: "internal #782 (Orion, W1-a; Carina, 0077 W2-e)"  # 0077 W2-e
     note:
       source: "Photographs from ESO, ESA/Hubble, ESA/Webb and NOIRLab, each plate-solved against its archive's coordinates; the Orion hero from Wen & O'Dell 1995, O'Dell 2001 and O'Dell et al. 2009."
       dates: "Each photograph's release date and filters in registry/nebulae.yaml (M42: VST OmegaCAM, g r i with H-alpha, 2017)."
@@ -495,7 +497,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: [HII, Neb, Cl+N]}}
       - {domain: photographs, ids: [m42, california-nebula, rosette-nebula, m8, m20, m16, m17, cats-paw-nebula, carina-nebula, north-america-nebula, tarantula-nebula]}
-      - {domain: heroes, ids: [orion]}
+      - {domain: heroes, ids: [orion, carina]}  # 0077 W2-e
 
   - id: PLANETARY_NEBULA
     title: Planetary nebulae
@@ -587,10 +589,10 @@ classes:
 
   - id: GALAXY_IRREGULAR
     title: Irregular galaxies
-    renderer: [site/js/scene/deep/lmc.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    renderer: [site/js/scene/deep/lmc.js, site/js/scene/deep/smc.js, site/js/scene/deep/magellanic.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]  # 0077 W2-e
     honesty: illustrative
     fallback: The LMC's photograph and the SMC's; the glow elsewhere.
-    heroes: {lmc: registry/deepsky-heroes/lmc.yaml}
+    heroes: {lmc: registry/deepsky-heroes/lmc.yaml, smc: registry/deepsky-heroes/smc.yaml}  # 0077 W2-e
     issue: "internal #783 (the SMC, the Bridge and the Stream)"
     note:
       source: "The LMC from Gaia DR3 star counts (Gaia Collaboration, Vallenari et al. 2023) with the geometry of van der Marel & Cioni 2001; the SMC's photograph; OpenNGC."
@@ -600,7 +602,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: G, hubble: ["^I", "^dI", "^Im", "^(?:\\(R'?\\))?S(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z])"]}}
       - {domain: photographs, ids: [lmc, smc]}
-      - {domain: heroes, ids: [lmc]}
+      - {domain: heroes, ids: [lmc, smc]}  # 0077 W2-e
 
   - id: GALAXY_ELLIPTICAL
     title: Elliptical and lenticular galaxies

@@ -582,6 +582,21 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     const aa = C.actionButtons(sd, ride, gap);
     check(aa[0].disabled === true && /^Its path ends on 12 March 2011/.test(aa[0].title), `Fly to it is off and says why (${aa[0].title})`);
   }
+  // 0077 W1-d: begin (public #493) before a craft's path begins the card says so too
+  {
+    const cassini = { id: 'deep-cassini', name: 'Cassini', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { launchDate: '1997-10-15', endDate: '2017-09-15' } };
+    const early = { ok: false, frame: 'sun-inertial', tMs: Date.UTC(1990, 0, 1) };
+    check(C.pathBeginsWords(cassini, early) === '15 October 1997', `before launch: the day its path begins (${C.pathBeginsWords(cassini, early)})`);
+    check(C.pathBeginsWords(cassini, { ok: true, tMs: Date.UTC(2005, 0, 1) }) === null && C.pathBeginsWords(cassini, { ok: false, tMs: Date.UTC(2026, 9, 7) }) === null, 'not while it is drawn, and not after the end (that is "Ended")');
+    check(C.pathBeginsWords({ ...cassini, meta: { endDate: '2017-09-15' } }, early) === null && C.pathBeginsWords({ id: 'x', klass: 'probe', meta: {} }, early) === null, 'a record that does not say when it launched, or has no end, is not said to be early');
+    const rows = C.rightNowFor(cassini, { clock: { now: () => early.tMs } });
+    check(rows.length === 1 && rows[0][0] === COPY.card.rows.pathBegins && rows[0][1] === '15 October 1997', `its row is "Its path begins" and the day, not "could not work this out" (${JSON.stringify(rows)})`);
+    const fly = C.actionButtons(cassini, ride, early)[0];
+    check(fly.disabled === true && /^Its path begins on 15 October 1997/.test(fly.title), `Fly to it is off and says why (${fly.title})`);
+    const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+    check(/pathBeginsLine, \{ date: pathBegins \}/.test(cards) && /heroes\.length && !pathBegins/.test(cards), 'and one line stands where its three numbers would be dashes');
+  }
+  // 0077 W1-d: end
   check(a1.every((b) => b.title && b.children[0].getAttribute('aria-hidden') === 'true'), 'every action has its words in a tooltip and an icon hidden from a screen reader');
   // The flood light (internal #272): one quiet switch on the card of anything drawn as a model,
   // its note on screen for as long as the lamp is, remembered for the session.

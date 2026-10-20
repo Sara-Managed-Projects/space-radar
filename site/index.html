@@ -49,6 +49,7 @@
 <link rel="modulepreload" href="js/audio/stings.js">
 <link rel="modulepreload" href="js/clock.js">
 <link rel="modulepreload" href="js/copy/en.js">
+<link rel="modulepreload" href="js/copy/lang.js">
 <link rel="modulepreload" href="js/data/aliases.js">
 <link rel="modulepreload" href="js/data/attached.js">
 <link rel="modulepreload" href="js/data/audio.js">
@@ -303,6 +304,12 @@
   window.addEventListener('unhandledrejection', (e) => fail('Something broke while loading.', e.reason));
   try {
     const setStatus = (t, s) => { line.textContent = t; if (s !== undefined) sub.textContent = s; };
+    // 0077 W1-e: begin
+    // The page's language (public #524, js/copy/lang.js): ?lang=, else a reviewed language of the browser's. English fetches
+    // nothing; another language's words are fetched here, before the app's modules run, so that they are in place when they do.
+    const { LANG } = await import('./js/copy/lang.js');
+    if (LANG !== 'en') await (await import('./js/copy/index.js')).prepare();
+    // 0077 W1-e: end
     // The light embed (js/embedlite.js, internal #396): `?embed=1&at=<a world or a station>` boots
     // only what it draws and never asks for main.js. It answers false for every other link, and
     // then the whole app boots as it always has, with its modules preloaded (the template above).

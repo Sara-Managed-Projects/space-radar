@@ -422,6 +422,7 @@ for (const file of allFiles) {
   // One cap over all of them, so a NEW model cannot be added at 116 517 triangles by writing
   // itself a 116 517 budget. Raising this is a deliberate edit with a reason, which is the point.
   const CAP = 20000;
+  const FLAGSHIP_CAP = 60000; // 0077 W1-a
   let total = 0;
   let worst = { id: null, tris: 0 };
   let counted = 0;
@@ -432,7 +433,13 @@ for (const file of allFiles) {
     const path = join(ROOT, rel);
     if (!existsSync(path)) { problems.push(`MODEL    ${rel} has a registry row and does not ship`); continue; }
     if (!budget) { problems.push(`MODEL    ${id} has no budget_tris; a model nobody measures is a guess`); continue; }
-    if (budget > CAP) { problems.push(`MODEL    ${id} claims budget_tris ${budget}, over the ${CAP} cap for one file`); }
+    // 0077 W1-a: begin
+    // A FLAGSHIP may claim up to 60 000 (release 1.3.0, Ivan 2026-10-20: "the quality of models should be very
+    // high"; ~/space-radar-handoff/AGENT_BRIEF.md "Model quality bar"). The row says `flagship: true`, so the
+    // larger claim is a deliberate word on the row and not a number that crept up.
+    const cap = /flagship: true/.test(row) ? FLAGSHIP_CAP : CAP;
+    if (budget > cap) { problems.push(`MODEL    ${id} claims budget_tris ${budget}, over the ${cap} cap for one ${cap === CAP ? 'file' : 'flagship'}`); }
+    // 0077 W1-a: end
     const tris = trianglesIn(path);
     if (tris === null) { problems.push(`MODEL    ${rel} is not a readable GLB`); continue; }
     counted += 1;

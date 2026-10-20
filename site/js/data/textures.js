@@ -855,6 +855,44 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "titan-radar",
+    "world": "titan",
+    "slot": "surface",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_titan_radar.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 445294,
+        "format": "rgba",
+        "credit": "Titan radar map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Cassini RADAR, SAR and HiSAR mosaic through flyby T104), public domain"
+      }
+    ]
+  },
+  {
+    "id": "titan-lakes",
+    "world": "titan",
+    "slot": "water",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 1,
+        "file": "textures/titan_lakes.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 16626,
+        "format": "mono",
+        "credit": "Titan seas: outlined from the same Cassini RADAR mosaic (USGS Astrogeology Science Center and NASA/JPL-Caltech), public domain"
+      }
+    ]
+  },
+  {
     "id": "ceres",
     "world": "ceres",
     "slot": "map",

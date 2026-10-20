@@ -83,6 +83,40 @@ const ids = (list) => list.map((c) => c.id).join();
   check(S.compose([]) === null && S.compose(null) === null, 'and with no candidate there is no line');
 }
 
+// --- 0077 W1-d: begin (public #503) the line is never blank ------------------------------------------------
+{
+  const { COPY: C } = await import(join(JS, 'copy/en.js'));
+  // Every source out and the Moon's own arithmetic too: the clock's date, which needs no download.
+  check(S.sentenceCandidates({ nowMs: now }).some((c) => c.id === 'moon'), 'the Moon is still the answer while its arithmetic works');
+  const noMoon = () => null;
+  const bare = S.sentenceCandidates({ nowMs: now, moon: noMoon });
+  check(ids(bare) === 'date', `with the Moon failed too, the clock's date is left (${ids(bare)})`);
+  const line = S.compose(bare);
+  check(line && /^Today is \w{3} \d{2} \w{3}\.$/.test(line.text), `and it is a line a visitor reads: "${line && line.text}"`);
+  check(line && line.sources.join() === 'your device’s clock', 'saying where it came from');
+  check(line && [...line.text].length <= S.MAX_CHARS, 'inside 60 characters');
+  check(/^The clock is set to \w{3} \d{2} \w{3}\.$/.test(S.compose(S.sentenceCandidates({ nowMs: now, live: false, moon: noMoon })).text), 'and away from now it does not say "today"');
+  check(!S.sentenceCandidates({ nowMs: now, crew: { ISS: 7 }, moon: noMoon }).some((c) => c.id === 'date'), 'it is the last resort and never beside a true clause');
+  void C;
+}
+// A source that throws is a missing source: the others are still read, and the input is a clock at least.
+{
+  const bad = () => { throw new Error('broken'); };
+  const input = S.sentenceInput({
+    timePill: { anchor: () => now },
+    clock: { mode: 'live' },
+    explore: { next: { items: bad }, crew: bad },
+    recordById: bad,
+    recordsFor: () => [storm('Humberto')],
+  }, bad);
+  check(input.nowMs === now && input.items.length === 0 && input.crew === null && input.station === null && input.launched === null, 'a list, a headcount, a station and a count that throw are each left out');
+  check(input.storms.length === 1, 'and the storms that were read are kept');
+  const lone = S.sentenceInput({ timePill: { anchor: bad } }, null);
+  check(Number.isFinite(lone.nowMs) && lone.live === true, 'even a clock that throws gives the device\'s');
+  check(S.sentenceCandidates(input).some((c) => c.id === 'storms'), 'so the sentence is still made from what did answer');
+}
+// 0077 W1-d: end
+
 // --- the Moon near full and near new -----------------------------------------------------------------
 {
   // New Moon 10 October 2026 about 15:50 UTC; full Moon 26 October about 04:12 UTC.
@@ -118,7 +152,7 @@ const ids = (list) => list.map((c) => c.id).join();
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(!/sentence\.js/.test(main), 'main.js does not import it: it arrives with the dated cards, after the first visit has settled');
   check(/import \{ createSentence \} from '\.\/sentence\.js';/.test(readFileSync(join(JS, 'ui/today.js'), 'utf8')), 'ui/today.js brings it');
-  check(Object.keys(COPY.sentence.sources).sort().join() === 'approach,crew,launch,launched,moon,pass,shower,storms', 'eight kinds of clause, eight sources');
+  check(Object.keys(COPY.sentence.sources).sort().join() === 'approach,clock,crew,launch,launched,moon,pass,shower,storms', 'eight kinds of clause and the clock\'s own date, nine sources'); // 0077 W1-d
   check(/scrollWidth > text\.clientWidth/.test(src) && /for \(const c of candidates\)/.test(src), 'the element measures its own line: two clauses, else the first one that fits alone');
 }
 

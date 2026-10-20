@@ -420,6 +420,15 @@ export function ringGrainGate(radiiPerPx) {
   const x = Math.min(1, Math.max(0, (radiiPerPx - RING_GRAIN.farRadii * 0.5) / (RING_GRAIN.farRadii * 0.5)));
   return 1 - x * x * (3 - 2 * x);
 }
+// 0077 W1-f: begin
+/**
+ * THE RING AS PARTICLES (internal #890): scene/ringgrains.js, fetched the first time the camera is
+ * within `fromM` of Saturn's ring plane over the ring (tier 1 up, never under Measured or the latch).
+ * The sheet gives up the drawn balls' share of its light where they are (RING_FRAG uResolved; the
+ * JS twin and the numbers' sources are ringgrains.js resolvedAt and RING_PARTICLES).
+ */
+export const RING_GRAINS = { fromM: 25000, rMinM: 2, rMaxM: 5, rFloorM: 0.01, pxShare: 0.3 };
+// 0077 W1-f: end
 /** The slab's optical depth with the fine structure in: tau x (1 + fine x (ratio - 1)). JS twin of RING_FRAG. Pure. */
 export function ringFineTau(tau, ratio, fine) {
   return Math.max(0, tau * (1 + Math.min(1, Math.max(0, fine)) * (ratio - 1)));
@@ -517,6 +526,38 @@ export function heightRowOf(r) {
 export const VENUS_GROUND = { tint: [1, 0.419, 0.105], exaggeration: 6, depth: 0.6, rangeM: 3000 };
 /** The relief row worn under the radar face (scene/worlds.js reliefWanted). */
 export const VENUS_GROUND_RELIEF = { map: '2k_venus_relief.webp', px: 2048, rangeM: VENUS_GROUND.rangeM, steep: VENUS_GROUND.exaggeration, mono: true, height: { self: true, depth: VENUS_GROUND.depth } };
+
+// 0077 W1-f: begin
+/**
+ * TITAN BY RADAR, AND ITS SEAS (internal #863, spec 0077 W1-f; registry/textures.yaml `titan-radar`,
+ * `titan-lakes`; scripts/build_titan_maps.py). Titan's ground is hidden in visible light; its own map
+ * is Cassini's camera at 938 nm, through the haze. Cassini's RADAR saw through the haze altogether,
+ * but only in swaths: USGS's mosaic of every swath through flyby T104 covers 0.61 of the sphere.
+ *
+ * THE RADAR FACE is one grey (the echo) and an alpha (how much of the texel a swath covered). Where
+ * the radar looked it is drawn in `grey`, a neutral grey: radar has no colour, and the card says the
+ * grey is ours. Where it never looked the face shows the 938 nm map in Titan's own hue, dimmed and
+ * half desaturated (`fill`: the own face's mean colour at 0.6 of its luminance, half way to grey, over
+ * the map's mean grey, measured on the files 2026-10-20; the first look's full orange was a loud red
+ * beside the grey), so a visitor sees strips of radar laid over the moon they already know, and never a
+ * radar picture of ground the radar did not see. Bright is rough ground, or ground tilted toward the
+ * radar; the seas are black. Linear light, as VENUS_GROUND.
+ *
+ * THE SEAS (`lakes`): the share of each texel that is radar-dark north of 55 N and round Ontario
+ * Lacus, from the same mosaic: 551 000 km2 of it, against the 691 000 km2 Wikipedia gives Kraken,
+ * Ligeia and Punga Mare together (some of their shores were never in a swath). Fetched when Titan is
+ * large on a tier-1 device (`fromShare`). On the own face they are darkened by `darken` of their
+ * share: the 938 nm map shows the big seas dark already, and the radar's outline is sharper. And they
+ * GLINT: Cassini's VIMS saw sunlight mirrored off Jingpo Lacus (8 July 2009, 5 um) and the radar a
+ * mirror echo off Ontario Lacus (21 December 2008). The glint here is the Sun's mirror direction on a
+ * flat sea, the Schlick reflectance of liquid methane (refractive index 1.29: 1.6 % straight down),
+ * spread into a lobe (`lobe`, a Blinn exponent: the Sun's own disc is under a pixel from anywhere
+ * here) at `gain`, in the haze's colour. Where it falls is geometry; how wide and bright it is, is
+ * illustrative, so it is not drawn under the Measured look. The outlines are measured and stay.
+ */
+export const TITAN_RADAR = { grey: [0.18, 0.19, 0.21], fill: [0.22, 0.084, 0.057] };
+export const TITAN_LAKES = { map: 'titan_lakes.webp', fromShare: 0.12, darken: 0.45, gain: 30, lobe: 900, f0: 0.016, colour: [1.0, 0.8, 0.55] };
+// 0077 W1-f: end
 
 /**
  * VENUS'S CLOUD BANDS, IN THE FILM LOOK. To an eye Venus is nearly plain; in ultraviolet (Mariner
@@ -750,7 +791,7 @@ export const WORLDS = [
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0x8f5e26, map: '2k_titan_cassini_2018.webp', mapKind: 'infrared', albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 } },
+    look: { flat: true, tint: 0x8f5e26, map: '2k_titan_cassini_2018.webp', mapKind: 'infrared', albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 }, faces: { radar: '2k_titan_radar.webp' }, faceMono: { radar: TITAN_RADAR.grey }, faceFill: { radar: TITAN_RADAR.fill }, groundFaces: ['radar'], lakes: TITAN_LAKES }, // 0077 W1-f: the radar face and the seas (TITAN_RADAR, TITAN_LAKES)
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
@@ -1151,6 +1192,10 @@ uniform vec4  uMono;        // a one-channel face (Venus's radar ground): its co
 uniform float uCapOn;       // Uranus: Hubble's polar cap on the artist's map (URANUS_CAP); 0 on the Hubble face
 uniform vec3  uCap[ 10 ];   // the map's gain per channel, from the equator to the north pole every 10 degrees
 uniform vec4  uSpotOut;     // Neptune under the Measured look: the 1989 spot's oval (u, v, half-sizes), filled; z 0 is none
+uniform vec4  uMonoFill; // 0077 W1-f: TITAN_RADAR, TITAN_LAKES
+uniform sampler2D uLakeMap; // 0077 W1-f
+uniform vec4  uLake; // 0077 W1-f
+uniform vec4  uLakeGlint; // 0077 W1-f
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
@@ -1203,7 +1248,10 @@ void main() {
   base = spotOut( base, vUv );
 #endif
   // A one-channel face: its echo, decoded from sRGB, in the face's own colour (VENUS_GROUND).
-  if ( uMono.w > 0.0 ) base = uMono.rgb * pow( base.r, 2.2 );
+  if ( uMono.w > 0.0 && uMonoFill.w > 0.0 ) { vec4 face = texture2D( uMap, vUv ); float echo = pow( face.r, 2.2 ); base = mix( uMonoFill.rgb * echo, uMono.rgb * echo, clamp( face.a * 2.0 - 1.0, 0.0, 1.0 ) ); }
+  else if ( uMono.w > 0.0 ) base = uMono.rgb * pow( base.r, 2.2 );
+  float sea = uLake.x > 0.0 ? texture2D( uLakeMap, vUv ).r * uLake.x : 0.0; // 0077 W1-f
+  base *= 1.0 - sea * uLake.w; // 0077 W1-f
   // Uranus's polar cap (URANUS_CAP): the north of the map taken to Hubble's colours of 2025.
   if ( uCapOn > 0.0 && vUv.y > 0.5 ) {
     float cx = ( vUv.y - 0.5 ) * 18.0;
@@ -1281,6 +1329,11 @@ void main() {
   }
 
   vec3 colour = base * direct * uSunIrradiance * ringShade;
+  if ( sea > 0.0 && uLake.y > 0.0 && d > 0.0 ) {
+    vec3 hv = normalize( uSunDir + viewDir );
+    float fres = uLakeGlint.w + ( 1.0 - uLakeGlint.w ) * pow( 1.0 - clamp( dot( hv, viewDir ), 0.0, 1.0 ), 5.0 );
+    colour += uLakeGlint.rgb * ( sea * uLake.y * fres * pow( max( dot( n, hv ), 0.0 ), uLake.z ) * smoothstep( 0.0, 0.08, d ) );
+  }
 
   // Earthshine: Lambert under the Earth's light. Near new Moon, when it is strongest, the Earth is
   // almost behind anyone looking at the Moon from it, where Oren-Nayar and Lambert nearly agree.
@@ -1358,6 +1411,10 @@ export function worldMaterial(map, tint) {
       uCapOn: { value: 0 },
       uCap: { value: new Float32Array(30).fill(1) },
       uSpotOut: { value: new THREE.Vector4(0.5, 0.5, 0, 1) },
+      uMonoFill: { value: new THREE.Vector4(0, 0, 0, 0) }, // 0077 W1-f
+      uLakeMap: { value: null }, // 0077 W1-f
+      uLake: { value: new THREE.Vector4(0, 0, 1, 0) }, // 0077 W1-f
+      uLakeGlint: { value: new THREE.Vector4(1, 1, 1, 0.02) }, // 0077 W1-f
     },
   });
 }
@@ -1498,6 +1555,8 @@ uniform float uGrain;         // how much of the sparkle of unresolved grains is
 // turn now (rad), how much of them is drawn (0 = none: every other ring, and the Measured look).
 uniform vec4 uArcs[ ${ARC_SLOTS} ];
 uniform vec4 uArcBand;
+uniform vec4 uResolved; // 0077 W1-f: RING_GRAINS
+uniform float uResolvedPx; // 0077 W1-f
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1597,11 +1656,19 @@ void main() {
   float dust = RING_DUST * ( 1.0 - alpha );
   float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
   float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
+  float drawn = 0.0;
+  if ( uResolved.x > 0.0 ) {
+    float near = 1.0 - smoothstep( uResolved.w, uResolved.z, length( vCamL.xy ) * uResolved.y );
+    float rc = max( ${RING_GRAINS.pxShare.toFixed(2)} * length( vCamL ) * uResolved.y * uResolvedPx, ${RING_GRAINS.rMinM.toFixed(2)} );
+    drawn = uResolved.x * near * clamp( log( ${RING_GRAINS.rMaxM.toFixed(2)} / rc ) / ${Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rFloorM).toFixed(5)}, 0.0, 1.0 );
+    body *= 1.0 - drawn;
+  }
   // The grains, from very close (RING_GRAIN): no fetch. Cells a few pixels across at this distance,
   // two sizes cross-faded; they scale what the slab sends, so each phase keeps its own sparkle.
   if ( uGrain > 0.0 ) {
     float perPx = max( length( dFdx( vPosL.xy ) ), length( dFdy( vPosL.xy ) ) );
     float gate = uGrain * ( 1.0 - smoothstep( ${(RING_GRAIN.farRadii * 0.5).toExponential(2)}, ${RING_GRAIN.farRadii.toExponential(2)}, perPx ) );
+    gate *= 1.0 - min( drawn * ${(Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rFloorM) / Math.log(RING_GRAINS.rMaxM / RING_GRAINS.rMinM)).toFixed(4)}, 1.0 ); // 0077 W1-f
     if ( gate > 0.0 ) {
       float lg = log2( max( perPx, 1e-9 ) * ${RING_GRAIN.px.toFixed(1)} );
       float lv = floor( lg );
@@ -1652,6 +1719,8 @@ export function ringMaterial(map, inner, outer, warp) {
       uGrain: { value: 0 },
       uArcs: { value: new Float32Array(ARC_SLOTS * 4) },
       uArcBand: { value: new THREE.Vector4(0, 0, 0, 0) },
+      uResolved: { value: new THREE.Vector4(0, 6e7, 1, 0) }, // 0077 W1-f
+      uResolvedPx: { value: 0.0005 }, // 0077 W1-f
     },
   });
 }
@@ -1956,8 +2025,55 @@ export function createWorlds(scene, opts = {}) {
     const u = ring.material.uniforms;
     u.uFine.value = st.fine;
     u.uGrain.value = st.grain;
+    stepRingGrains(w, mesh, ring); // 0077 W1-f
     if (!near && st.asked && st.fine === 0 && st.grain === 0) dropRingDetail(w.id);
   }
+  // 0077 W1-f: begin
+  // TITAN'S SEAS (TITAN_LAKES): the radar's outlines, fetched the first time Titan is large on a device
+  // that may wear the reliefs (tier 1 and up, never under the frame latch), then kept: 17 kB.
+  const lakeState = new Map();   // world id -> { asked, tex }
+  // A look probe's BEFORE (`?look=1` only, main.js): the seas, the detached layer and the ring's
+  // particles held off for one picture, so a before and an after are taken from the same place.
+  let outerBefore = false;
+  function stepLakes(w, mesh) {
+    const row = w.look.lakes;
+    const u = mesh.material && mesh.material.uniforms;
+    if (!row || !u || !u.uLake) return;
+    let st = lakeState.get(w.id);
+    if (!st) { st = { asked: false, tex: null }; lakeState.set(w.id, st); }
+    if (!st.asked && load && reliefAllowed && discShare(w.id) >= row.fromShare) {
+      st.asked = true;
+      load(base + row.map, (tex) => {
+        if (!tex) return;
+        tex.colorSpace = THREE.NoColorSpace;   // shares, not colours
+        tex.format = THREE.RedFormat;
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.needsUpdate = true;
+        st.tex = tex;
+        u.uLakeMap.value = tex;
+        u.uLakeGlint.value.set(row.colour[0], row.colour[1], row.colour[2], row.f0);
+        u.uLake.value.z = row.lobe;
+        dressFace(w.id);
+      });
+    }
+    u.uLake.value.x = st.tex && reliefAllowed && !outerBefore ? 1 : 0;
+  }
+  // THE RING AS PARTICLES (RING_GRAINS): the gate here, the rest in scene/ringgrains.js step().
+  let grains = null;
+  let grainsAsked = false;
+  function stepRingGrains(w, mesh, ring) {
+    const on = reliefAllowed && !lookMeasured && !latched && !outerBefore && !!camera
+      && Math.abs((mesh.scale.x * stage.unitKm) / w.radiusKm - 1) < 0.01
+      && camera.getWorldPosition(_camPosU).distanceTo(mesh.position) < mesh.scale.x * ring.material.uniforms.uRingRadii.value.y * 1.05;
+    if (on && !grains && !grainsAsked) {
+      grainsAsked = true;
+      import('./ringgrains.js')
+        .then((m) => { grains = m.createRingGrains(THREE, { root, ringUniforms: ring.material.uniforms, ringGlsl: RING_U_GLSL, fineMax: RING_FINE.ratioMax }); })
+        .catch((e) => { console.warn('the ring particles did not load', e); });
+    }
+    if (grains) grains.step(on ? { w, mesh, ring, camera, tier: reliefTier, oblate: w.look.oblate ? oblateRadii(w.look.oblate) : null } : null);
+  }
+  // 0077 W1-f: end
   function dropRingDetail(id) {
     const st = ringNear.get(id);
     const mesh = meshes.get(id);
@@ -2214,6 +2330,7 @@ export function createWorlds(scene, opts = {}) {
     if (u && u.uRimGain) u.uRimGain.value = on || !w.look.rim ? 0 : w.look.rim.gain;
     if (!on) return;
     air.material.uniforms.uSunDir.value.copy(sunDir);
+    if (ATMO_PARAMS[w.look.air].layer) air.material.uniforms.uLayer.value.w = outerBefore ? 0 : 1; // 0077 W1-f
     camera.getWorldPosition(_camPosU);
     const inside = _camPosU.distanceTo(mesh.position) < mesh.scale.x * air.userData.top;
     const side = inside ? THREE.BackSide : THREE.FrontSide;
@@ -2414,6 +2531,7 @@ export function createWorlds(scene, opts = {}) {
           ab.w = lookMeasured ? 0 : 1;
         }
         if (mesh.userData.air) updateAir(w, mesh, sunDirHere);
+        if (w.look.lakes) stepLakes(w, mesh); // 0077 W1-f
         if (w.look.earthshine && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEarthshine) {
           // The Sun-Earth-Moon angle and the Earth-Moon distance, from the geocentric vectors step 2a
           // already made, and the Earth's direction from the Moon in scene axes.
@@ -2638,7 +2756,8 @@ export function createWorlds(scene, opts = {}) {
     load(base + name, (tex) => {
       configure(tex);
       // A one-channel face (Venus's radar): R8 on the GPU, decoded by the shader (uMono).
-      if (w.look.faceMono && w.look.faceMono[face]) { tex.colorSpace = THREE.NoColorSpace; tex.format = THREE.RedFormat; tex.needsUpdate = true; }
+      // 0077 W1-f: a face with gaps (`faceFill`, Titan's radar) keeps its alpha, the share a swath saw.
+      if (w.look.faceMono && w.look.faceMono[face]) { tex.colorSpace = THREE.NoColorSpace; if (!(w.look.faceFill && w.look.faceFill[face])) tex.format = THREE.RedFormat; tex.needsUpdate = true; }
       faceTex.set(key, tex);
       if (faceWanted.get(id) === face) setMap(id, tex);
     });
@@ -2695,6 +2814,15 @@ export function createWorlds(scene, opts = {}) {
     if (look.wrap) u.uWrap.value = isFace ? 0 : look.wrap;
     const mono = isFace && look.faceMono && look.faceMono[face];
     if (u.uMono) { if (mono) u.uMono.value.set(mono[0], mono[1], mono[2], 1); else u.uMono.value.w = 0; }
+    // 0077 W1-f: begin
+    const fill = isFace && look.faceFill && look.faceFill[face];
+    if (u.uMonoFill) { if (fill) u.uMonoFill.value.set(fill[0], fill[1], fill[2], 1); else u.uMonoFill.value.w = 0; }
+    if (look.lakes && u.uLake) {
+      // The radar face shows the seas black already; the glint is illustrative, so not under Measured.
+      u.uLake.value.w = isFace ? 0 : look.lakes.darken;
+      u.uLake.value.y = lookMeasured ? 0 : look.lakes.gain;
+    }
+    // 0077 W1-f: end
     if (look.cap && u.uCapOn) u.uCapOn.value = isFace ? 0 : 1;
     if (look.spot && u.uSpotOut) {
       const s = look.spot;
@@ -2915,6 +3043,9 @@ export function createWorlds(scene, opts = {}) {
     onExposure: (f) => { exposureHooks.add(f); return () => exposureHooks.delete(f); },
     /** For the probes and the card: how much of the rings' fine structure and grains is in, and is the strip here? */
     ringDetail: (id) => { const st = ringNear.get(id); return st ? { fine: st.fine, grain: st.grain, strip: !!st.tex } : { fine: 0, grain: 0, strip: false }; },
+    ringGrains: () => (grains ? grains.stats() : { on: false, loaded: false }), // 0077 W1-f
+    setOuterBefore: (on) => { outerBefore = !!on; }, // 0077 W1-f: a look probe's before, from the same place
+    lakes: (id) => { const u = meshes.get(id).material.uniforms.uLake; return { worn: u.value.x > 0, glint: u.value.y }; }, // 0077 W1-f
     /** For the probes: is this world wearing its relief? */
     hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
     setReliefTier,

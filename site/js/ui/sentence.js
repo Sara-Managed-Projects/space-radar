@@ -17,7 +17,14 @@
 // IT NEVER INVENTS. Every clause is filled from data the map has already loaded, and each names
 // where it came from (`source`, shown as the line's tooltip). A clause whose data is missing is
 // not a candidate: no headcount is no crew clause, not "nobody is in orbit"; no place set is no
-// pass. With no candidate the line is absent. Nothing is typed here, so nothing can go stale.
+// pass. Nothing is typed here, so nothing can go stale.
+//
+// 0077 W1-d: begin (public #503)
+// NEVER BLANK. When every source is out (no list read, no headcount, no storms, and the Moon's own
+// arithmetic failed too) the last candidate is the clock's own date: it needs no download, and it
+// is true whatever else failed. And a source that THROWS while the input is read is a missing
+// source, not a missing line: each is read on its own, so one failure leaves the others.
+// 0077 W1-d: end
 //
 // ONE LINE. The lead clause, and a second joined to it only when both fit: `compose` holds the
 // guide's 60 characters, and the element itself falls back to the lead alone when the two are
@@ -26,7 +33,7 @@
 // A press goes to the lead clause's subject, the way a dated card goes to its own (ui/today.js).
 
 import * as Astronomy from '../../vendor/astronomy.js';
-import { COPY, t, fmt } from '../copy/en.js';
+import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 import { whenText } from './next.js';
 import { isJunk } from '../sky/tonightbest.js';
@@ -72,7 +79,7 @@ const sameLocalDay = (a, b) => new Date(a).toDateString() === new Date(b).toDate
  *   not known; `station` is the record a press on the crew clause goes to; `launched` is the
  *   last-30-days layer's count and its newest record.
  */
-export function sentenceCandidates({ nowMs, items = [], crew = null, station = null, storms = [], launched = null } = {}) {
+export function sentenceCandidates({ nowMs, items = [], crew = null, station = null, storms = [], launched = null, live = true, moon: moonOf = moonClause } = {}) {
   const S = COPY.sentence;
   if (!Number.isFinite(nowMs)) return [];
   const out = [];
@@ -99,7 +106,7 @@ export function sentenceCandidates({ nowMs, items = [], crew = null, station = n
     if (today || tomorrow) out.push({ id: 'shower', score: 85, clause: t(today ? S.showerToday : S.showerTomorrow, { name: shower.label }), source: S.sources.shower, act: 'tonight', tMs: shower.tMs, title: shower.label });
   }
 
-  const moon = moonClause(nowMs);
+  const moon = moonOf(nowMs);
   if (moon) out.push(moon);
 
   // How many people are in orbit: the sum of the headcount, only once it has been read.
@@ -123,6 +130,14 @@ export function sentenceCandidates({ nowMs, items = [], crew = null, station = n
     const newest = launched.newest || null;
     out.push({ id: 'launched', score: 40, clause: t(S.launched, { n: fmt.int(launched.count) }), source: S.sources.launched, act: newest ? 'select' : 'none', record: newest, title: newest ? newest.name : '' });
   }
+  // 0077 W1-d: begin (public #503)
+  if (!out.length) {
+    try {
+      const date = timeText.dateNear(nowMs, nowMs);
+      out.push({ id: 'date', score: 1, clause: t(live ? S.dateToday : S.dateClock, { date }), source: S.sources.clock, act: 'none', record: null, title: '' });
+    } catch { /* no date either: then there is no line, and only then */ }
+  }
+  // 0077 W1-d: end
   return out.sort((a, b) => b.score - a.score);
 }
 
@@ -153,19 +168,23 @@ export function compose(candidates, maxChars = MAX_CHARS) {
 
 /** What the sentence is made from, read off the map as it is now. `launched` is ui/today.js's count. */
 export function sentenceInput(ctx, launched = null) {
-  const nowMs = ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now();
+  // 0077 W1-d: begin (public #503) each source is read on its own: one that throws is one missing
+  const read = (fn, none) => { try { const v = fn(); return v === undefined ? none : v; } catch { return none; } };
+  const nowMs = read(() => (ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now()), Date.now());
   const next = ctx.explore && ctx.explore.next;
-  const live = !ctx.clock || !ctx.clock.mode || ctx.clock.mode === 'live';
+  const live = read(() => !ctx.clock || !ctx.clock.mode || ctx.clock.mode === 'live', true);
   // The list is built at the clock's time: away from now it is not the present's, and is left out.
-  const items = live && next && typeof next.items === 'function' ? next.items() : [];
+  const items = read(() => (live && next && typeof next.items === 'function' ? next.items() : []), []);
   return {
     nowMs,
+    live,
     items,
-    crew: ctx.explore && typeof ctx.explore.crew === 'function' ? ctx.explore.crew() : null,
-    station: typeof ctx.recordById === 'function' ? ctx.recordById(STATION_ID) : null,
-    storms: typeof ctx.recordsFor === 'function' ? ctx.recordsFor('storms') || [] : [],
-    launched: typeof launched === 'function' ? launched() : null,
+    crew: read(() => (ctx.explore && typeof ctx.explore.crew === 'function' ? ctx.explore.crew() : null), null),
+    station: read(() => (typeof ctx.recordById === 'function' ? ctx.recordById(STATION_ID) : null), null),
+    storms: read(() => (typeof ctx.recordsFor === 'function' ? ctx.recordsFor('storms') || [] : []), []),
+    launched: read(() => (typeof launched === 'function' ? launched() : null), null),
   };
+  // 0077 W1-d: end
 }
 
 /**
@@ -204,8 +223,15 @@ export function createSentence(ctx, opts = {}) {
   const input = () => sentenceInput(ctx, opts.launched);
 
   function refresh() {
-    seat();
-    const candidates = sentenceCandidates(input());
+    // 0077 W1-d: begin (public #503) a throw while the line is made is a line made from the clock alone
+    let candidates;
+    try {
+      seat();
+      candidates = sentenceCandidates(input());
+    } catch {
+      try { candidates = sentenceCandidates({ nowMs: Date.now() }); } catch { candidates = []; }
+    }
+    // 0077 W1-d: end
     let made = compose(candidates);
     if (!made) { root.hidden = true; lead = null; return; }
     root.hidden = false;

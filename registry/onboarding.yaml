@@ -262,3 +262,13 @@ features:
     name: What is on screen, in words, for a screen reader (internal spec 0076 W4-c)
     files: [site/js/ui/scenesummary.js]
     not: "A line only a screen reader hears; there is nothing to press. The Motion row is one more setting in What to show, which the layers step opens."
+  # 0077 W2-d: begin
+  - id: compare
+    name: Compare two worlds, and the comparison lab (internal i#885, i#909)
+    files: [site/js/ui/compare.js]
+    not: "A row that opens in place on a world's card, which the card step already rings; nothing new to press first."
+  - id: photo-compare
+    name: Compare with the photograph, a slider on a deep-sky card (internal i#776)
+    files: [site/js/ui/photocompare.js]
+    not: "Reached from one kind of card, inside About it, deep in the Stars view."
+  # 0077 W2-d: end
