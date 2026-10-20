@@ -41,6 +41,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of GLONASS-M and GLONASS-K, Fengyun-3 and Himawari-8 and -9 | built by us in code from published dimensions | CC0 or CC BY 2.0 where a picture was used; ours | [3b-12](#3b-12-four-weather-and-navigation-craft-built-from-dimensions--glonass-m-glonass-k-fengyun-3-himawari-2026-10-14) |
 | The shapes of Europa Clipper, SMAP, Jason-3, Curiosity and SORCE | NASA's and JPL's own published models | public domain (NASA media guidelines) | [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15) |
 | The shapes of Psyche, Lucy, JUICE, BepiColombo (cruise stack) and Hera | built by us in code from published dimensions | public domain or CC BY 4.0 where a picture was used; ours | [3b-14](#3b-14-five-deep-space-probes-built-from-dimensions--psyche-lucy-juice-bepicolombo-hera-2026-10-15) |
+| The shapes of Tiangong and its two laboratories, and the Shenzhou orbital module | built by us in code from published dimensions | CC BY 4.0 or CC0 where a picture was used; ours | [3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20) |  <!-- 0077 W1-a -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -589,6 +590,7 @@ than counted by hand.
 | `landsat.glb` | Landsat 7 | NORAD 25682 (Landsat 7) | 69 KB |
 | `landsat8.glb` | Landsat 8 | NORAD 39084, 49260 (Landsat 8, 9) | 177 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (B) | NORAD 40482-40485 (MMS 1 to MMS 4) | 177 KB |
+| `themis.glb` | Time History of Events and Macroscale Interactions During Substorms (THEMIS); its booms drawn shorter ([3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20)) | NORAD 30580, 30797, 30798 (THEMIS A, D, E) | 105 KB |  <!-- 0077 W1-a -->
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A); and 66514 (SENTINEL-6B), its twin of the same design | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
@@ -612,7 +614,7 @@ than counted by hand.
 | `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) | 96 KB |
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | the Space Shuttle on Launch Complex 39B (`shuttle-lc-39b`) | 130 KB |
 | `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
-| `new-horizons.glb` | New Horizons: NASA's printable body, antenna and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-10; the page names no author), assembled by us, colours ours | Horizons -98 (New Horizons) | 64 KB |
+| `new-horizons.glb` | New Horizons: NASA's printable body and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-20; the page names no author), assembled by us; the dish, its tripod and feed rebuilt from NASA's own 1/12 drawings on the same page (readme.pdf), colours ours from NASA's photographs ([3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20)) | Horizons -98 (New Horizons) | 151 KB |  <!-- 0077 W1-a -->
 | `near.glb` | NEAR Shoemaker | Horizons -93 (NEAR Shoemaker, 1996 to 2001) | 88 KB |
 | `stardust.glb` | Stardust (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -29 (Stardust, 1999 to 2011) | 111 KB |
 | `deep-impact.glb` | Deep Impact (EPOXI) (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -140 (Deep Impact, 2005 to 2013) | 73 KB |
@@ -1210,6 +1212,39 @@ details simplified".
 No logo, lettering, flag, insignia or plaque is on any of the five. NASA, JPL, SwRI, ESA, JAXA, the JUICE
 Science Operations Centre and the papers' authors do not endorse Space Radar, and none of them made or
 approved these shapes.
+
+<!-- 0077 W1-a: begin -->
+## 3b-15. Release 1.3.0: crewed craft and NASA flagships — Tiangong, Shenzhou orbital module, THEMIS, New Horizons (2026-10-20)
+
+Stage W1-a of release 1.3.0 (internal spec 0077), to the model quality bar of 2026-10-20 ("the quality of
+models should be very high"): an agency's own model first, otherwise a detailed build from published numbers
+and several photographs. **THEMIS and New Horizons are NASA's own**; **Tiangong, Wentian, Mengtian and the
+Shenzhou orbital module are built here in code**, because CMSA publishes no model and its own pictures on its
+site carry no free licence. The free pictures used are photographs CMSA's office published in an open paper
+(CC BY 4.0 on Commons), China News Service's stills (CC BY 4.0), a photographer's pictures of the full-size
+mock-up (CC0) and NASA's (public domain). No picture is in a file; no image-to-3D model was used. The built
+cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `themis.glb` (105 KB) | THEMIS, the probe NASA flies five of (A, D and E in Earth orbit): NASA's model with its own colours, the booms drawn shorter | NASA 3D Resources (<https://github.com/nasa/NASA-3D-Resources>, "Time History of Events and Macroscale Interactions During Substorms (THEMIS)"; its README, read 2026-10-20: "These assets are free and without copyright.") | public domain (NASA media usage guidelines) |
+| `new-horizons.glb` (151 KB) | New Horizons: NASA's printable body and RTG, its dish, tripod, subreflector and feed rebuilt from NASA's 1/12 drawings, in gold blanket with white radiators | NASA Science (<https://science.nasa.gov/3d-resources/new-horizons/>: the STL parts, assembly.pdf and readme.pdf, read 2026-10-20; the page states no terms of its own and links NASA's Brand & Usage Guidelines); NASA's photographs "KSC-05pd2588" (<https://commons.wikimedia.org/wiki/File:KSC-05pd2588~orig.jpg>) and "New Horizons 1" (<https://commons.wikimedia.org/wiki/File:New_Horizons_1.jpg>), public domain, for the colours | NASA media usage guidelines; the photographs are public domain and are not in the file |
+| `tiangong.glb` (206 KB) | Tiangong in its T: Tianhe with its node, relay dish, stowed arm and its own pair of wings flat in the plane of the T; Wentian to starboard and Mengtian to port with their outer sections, dishes, arms and platforms; the laboratories' four wings of copper-brown cells on lattice masts, 55.6 m tip to tip | Wikipedia's module pages (16.6 m, 17.9 m, 4.2 m, 55.6 m, 110 m2 a wing, read 2026-10-20); "Rear view of Tiangong Space Station", China Manned Space Engineering Office, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Rear_view_of_Tiangong_Space_Station.jpg>); "Tiangong mockup at ZHAL 01" to "06", Shujianyang, CC0 (<https://commons.wikimedia.org/wiki/File:Tiangong_mockup_at_ZHAL_01.jpg>); "Tianhe solar array", China Manned Space Engineering Office, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Tianhe_solar_array.jpg>); "Tiangong expansion", Wang Xiang, Zhang Qiao, Wang Wei, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Tiangong_expansion.jpg>). A CC BY-SA 4.0 configuration drawing by Shujianyang was looked at only | numbers are facts; the photographs are CC BY 4.0 or CC0 and are not in the file |
+| `wentian.glb` (82 KB), `mengtian.glb` (81 KB) | Each laboratory with its two wings, cut from the same build, for a laboratory drawn on its own | as `tiangong.glb` | as `tiangong.glb` |
+| `shenzhou-orbital.glb` (36 KB) | The orbital module each Shenzhou crew leaves in orbit: a 2.25 m drum 2.8 m long with a domed front in quilted grey cloth, the docking mechanism, the rendezvous cameras and antennas, the joint where it held the re-entry module | the cited metres of the row `shenzhou` (Wikipedia); "Shenzhou 21 docking with CSS view from CSS 02" and "... view from docking hatch 01", China News Service, CC BY 4.0 (<https://commons.wikimedia.org/wiki/File:Shenzhou_21_docking_with_CSS_view_from_CSS_02.png>, <https://commons.wikimedia.org/wiki/File:Shenzhou_21_docking_with_CSS_view_from_docking_hatch_01.png>) | numbers are facts; the stills are CC BY 4.0 and are not in the file |
+| the four built files | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital` |
+
+**Credit lines:**
+`3D model: NASA`;
+`3D model: NASA (the page names no author); dish, tripod and colours added by Space Radar from NASA's drawings`;
+`3D model: built by Space Radar from published dimensions and photographs by the China Manned Space Engineering Office (CC BY 4.0) and Shujianyang (CC0)`;
+`3D model: built by Space Radar from published dimensions and stills by China News Service (CC BY 4.0)`
+
+No logo, lettering, flag or insignia is on any of these files: the red panels where Tiangong carries its flag
+and the white plate where a Shenzhou carries its number are plain. NASA, CMSA, the China Manned Space
+Engineering Office, China News Service and the photographers do not endorse Space Radar, and none of them made
+or approved these shapes.
+<!-- 0077 W1-a: end -->
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
