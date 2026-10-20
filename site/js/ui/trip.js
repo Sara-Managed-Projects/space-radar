@@ -1462,8 +1462,9 @@ export function createTrip(ctx) {
    * subject is THEN; the rig's angles are fixed against the stars, and a station goes round the
    * Earth in ninety-three minutes. Held for five to twenty minutes (a paused trip, a card being read,
    * the reader's pace) it passes behind the planet, and the camera, still on its old side, looks
-   * at the Earth. Swept over one orbit of the fixture's station (tests/test_trip_clear.mjs) the
-   * subject was hidden at twenty minutes from 14 of 31 starting points.
+   * at the Earth. Swept over one orbit of the fixture's station, every three minutes (the control
+   * of tests/test_trip_clear.mjs, with this function off), the station was behind the planet at
+   * twenty minutes from 18 of 32 starting points, and at five minutes from 6.
    *
    * So while a stop settles or dwells, or waits paused (but not once the visitor's hand has been on the
    * camera in this stop: it is theirs then), the line from the camera to the subject is tested against the world it
