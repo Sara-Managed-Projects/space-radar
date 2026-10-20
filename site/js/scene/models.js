@@ -328,6 +328,12 @@ export const SURFACE_TERMS = {
   panel: { strength: 0.3, along: 0.07, across: 0.45 },
   foil: { strength: 0.5, roughness: 0.5 },
 };
+// 0077 W2-pbr: begin
+/** The shared light uniforms (the Sun, the world's light and shadow, the lamp), for scene/pbr.js. */
+export function lightUniforms() {
+  return SHARED;
+}
+// 0077 W2-pbr: end
 export function setSurfaceTerms(on) {
   SHARED.uSurface.value = on ? 1 : 0;
   return SHARED.uSurface.value > 0;

@@ -24,6 +24,16 @@
 //    and a procedural one beside it are drawn by the same hand. The class colour is now only what
 //    a file with no colours of its own falls back to (colourRoute, below).
 //
+// 0077 W2-pbr: begin
+//    AND SINCE RELEASE 1.3.0 THE SHADING IS REAL TOO, WHERE THE FILE CARRIES IT (internal #967). A file
+//    whose parts are named for their surfaces and painted in their own colours is drawn in physically
+//    based materials (scene/pbr.js: metal, roughness, crinkled foil, cells under glass) on a device of
+//    tier 1 and up; tier 0 and the frame-rate latch keep the toon ramp above. The flat ramp turned
+//    crinkled gold blanket and white cloth into the same flat tone, and a craft built with every
+//    feature of its photographs (SLIM, public #1134) still read as a yellow box. `look: toon` on a
+//    registry row keeps a file on the ramp; the procedural shapes are drawings and stay on it.
+// 0077 W2-pbr: end
+//
 // 2. NOTHING BLOCKS. A hero appears as procedural geometry immediately and upgrades in place when
 //    its file arrives. A visitor on a slow connection sees a satellite now and a better satellite
 //    a second later, rather than an empty orbit and a spinner. A file that fails to load is simply
@@ -44,8 +54,14 @@ function loadKit() {
       import('../../vendor/GLTFLoader.js'),
       import('../../vendor/meshopt_decoder.module.js'),
       import('./models.js'),
-    ]).then(([g, m, models]) => {
-      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial };
+      // 0077 W2-pbr: begin
+      // The physically based look (scene/pbr.js) and the registry's `look:` per file, with the loader:
+      // nothing of either is wanted until a file is.
+      import('./pbr.js'),
+      import('../data/modellooks.js'),
+    ]).then(([g, m, models, pbr, looks]) => {
+      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial, pbr, looks: looks.MODEL_LOOKS || {} };
+      // 0077 W2-pbr: end
       return kit;
     }).catch((err) => { kitAsked = null; throw err; });
   }
@@ -1347,6 +1363,11 @@ export const REAL_MODELS = {
     'im-1': { build: 'lander', file: 'odysseus.glb', colour: 'site', name: 'Odysseus, as it came to rest on its side', displayName: 'Odysseus (IM-1), near Malapert A', made: 'dimensions' },
     'blue-ghost-1': { build: 'lander', file: 'blue-ghost.glb', colour: 'site', name: 'the Blue Ghost lander', displayName: 'Blue Ghost 1, Mare Crisium', made: 'dimensions' },
     // 0077 W1-c: end
+    // 0077 W2-pbr: begin
+    // SLIM (public #1134), standing on its nose, engines up, one nozzle lost: built by W1-c, held back while the
+    // toon ramp drew its blankets as a flat yellow box, and shipped on the physically based look (scene/pbr.js).
+    slim: { build: 'lander', file: 'slim.glb', colour: 'site', name: 'SLIM, as it came to rest on its nose', displayName: 'SLIM, near Shioli crater', made: 'dimensions' },
+    // 0077 W2-pbr: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the
@@ -1625,10 +1646,26 @@ export function colourRoute(root) {
   return stated.size >= 2 ? 'own' : 'class';
 }
 
-function applyToon(root, colourToken, surface = null) {
+function applyToon(root, colourToken, surface = null, file = null) { // 0077 W2-pbr: `file`, for its stated look
   const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
   // Measured once per model, not per mesh: the question is whether the FILE carries variation.
   const route = colourRoute(root);
+  // 0077 W2-pbr: begin
+  // WHICH LOOK (scene/pbr.js lookOf): the registry's `look:` for this file, else the physically based
+  // one when the file carries real materials -- its own colours on parts named for their surfaces.
+  // Each part then gets both materials and wears the one the device's tier wants (pbr.js pairLooks).
+  let roles = false;
+  root.traverse((n) => { if (n.isMesh && kit.pbr && kit.pbr.roleOf(n.name)) roles = true; });
+  const look = kit.pbr ? kit.pbr.lookOf({ stated: file ? kit.looks[file] : null, route, roles, surface: !!surface }) : 'toon';
+  // The folds and the cell grid are drawn in each part's own coordinates, so their period is worked out
+  // per part from its scale against the model's longest side (pbr.js CRINKLE_PERIODS, GRID_PERIODS).
+  let longest = 1;
+  if (look === 'pbr') {
+    root.updateMatrixWorld(true);
+    const size = new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+    longest = Math.max(size.x, size.y, size.z) || 1;
+  }
+  // 0077 W2-pbr: end
   // A pool PER MODEL, not the shared one. models.js explains why: the hero layer fades a model in
   // by writing material.opacity, and one shared instance would fade every object of that class at
   // once. The compiled shader program is still shared, so this costs a few uniforms and nothing more.
@@ -1678,8 +1715,20 @@ function applyToon(root, colourToken, surface = null) {
         if (m.dispose) m.dispose();
       }
       n.material = replacement;
+      // 0077 W2-pbr: begin
+      if (look === 'pbr' && !palette) {
+        const s = n.matrixWorld.getMaxScaleOnAxis() / (root.matrixWorld.getMaxScaleOnAxis() || 1);
+        const finish = kit.pbr.finishOf(kit.pbr.roleOf(name) || 'body', tint);
+        kit.pbr.pairLooks(n, replacement, () => kit.pbr.pbrMaterial(tint, finish, {
+          foldScale: (kit.pbr.CRINKLE_PERIODS * s) / longest,
+          gridScale: (kit.pbr.GRID_PERIODS * s) / longest,
+          side: replacement.side,
+        }));
+      }
+      // 0077 W2-pbr: end
     }
   });
+  root.userData.look = look; // 0077 W2-pbr
   return root;
 }
 
@@ -1714,7 +1763,7 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           let top = scene;
           if (turn) { top = new THREE.Group(); scene.rotation.set(turn[0], turn[1], turn[2]); top.add(scene); }
           if (keepMaterials) return resolve(normalise(top));
-          if (!entry.map) { applyToon(scene, entry.colour); return resolve(normalise(top)); }
+          if (!entry.map) { applyToon(scene, entry.colour, null, entry.file); const out = normalise(top); out.userData.look = scene.userData.look; return resolve(out); } // 0077 W2-pbr: the file, for its look
           // The map first, then the material: a body shown plain and then repainted would flash.
           // A map that does not arrive leaves the body in its class colour, as it was before.
           const done = (tex) => {

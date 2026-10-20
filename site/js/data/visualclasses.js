@@ -591,7 +591,8 @@ export const VISUAL_CLASSES = [
 "odysseus",
 "blue-ghost",
 "surveyor",
-"surveyor-3"
+"surveyor-3",
+"slim"
 ],
 "model_kinds": [
 "site-surveyor",
