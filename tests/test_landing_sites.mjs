@@ -178,13 +178,14 @@ for (const [shape, id] of [['lander', 'lander-generic'], ['rover', 'rover-generi
   const at = (id) => { const w = positionOf(id, tMs); return w && stage.toScene(w, w.frame, tMs); };
   const moonAt = at('moon');
   const marsDisc = new THREE.Vector3(1234, -56, 789);
-  const centreOf = (id, out) => (id === 'moon' ? out.copy(moonAt) : id === 'mars' ? out.copy(marsDisc) : null);
+  const titanDisc = new THREE.Vector3(-4321, 98, -765); // 0077 W3-d: Huygens stands on Titan's drawn disc, put somewhere else again
+  const centreOf = (id, out) => (id === 'moon' ? out.copy(moonAt) : id === 'mars' ? out.copy(marsDisc) : id === 'titan' ? out.copy(titanDisc) : null); // 0077 W3-d
   let stood = 0;
   for (const r of landings) {
     const p = propagate(r, tMs);
     const pos = stage.toScene(p, p.frame, tMs);
     if (!pos) continue;
-    const centre = r.meta.world === 'moon' ? moonAt : marsDisc;
+    const centre = r.meta.world === 'moon' ? moonAt : r.meta.world === 'titan' ? titanDisc : marsDisc; // 0077 W3-d
     const down = nadirOf(r, pos, centreOf, new THREE.Vector3());
     const want = centre.clone().sub(pos).normalize();
     const off = (Math.acos(Math.min(1, Math.max(-1, down.dot(want)))) * 180) / Math.PI;
@@ -267,7 +268,7 @@ for (const [shape, id] of [['lander', 'lander-generic'], ['rover', 'rover-generi
 
 // ---------------------------------------------------------------------------------- 4. the card
 const ctx = { clock: { now: () => tMs } };
-const WORLD_WORD = { moon: /Moon/, mars: /Mars/ };
+const WORLD_WORD = { moon: /Moon/, mars: /Mars/, titan: /Titan/ }; // 0077 W3-d: Huygens
 for (const r of landings) {
   const sentence = firstSentence(r, ctx, { tMs }, null);
   const doing = String(r.meta.doing).replace(/\.\s*$/, '');

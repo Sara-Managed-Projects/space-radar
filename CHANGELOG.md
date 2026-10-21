@@ -11,6 +11,104 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-21
+
+Craft that look like themselves, and more ways in. Thirty-four new models of spacecraft, landers, rovers
+and small bodies, each the agency's own or built here from cited metres and photographs, and every model
+whose file carries them now keeps its own materials: gold and silver foil, white cloth, bare metal and
+cells under glass. Webb and Hubble are in true materials, the Carina Nebula, M51, M81, M101, the
+Sombrero and the Antennae are drawn from their own numbers, the Hubble Ultra Deep Field is drawn in depth, and the Small Magellanic Cloud ships with the
+Bridge and the Stream. The Moon has its named places and China's landers, Mars has Spirit's and
+Opportunity's tracks, Titan has its radar map, its seas and Huygens. A first visit offers three ways in,
+a card can compare two worlds, What to show can keep only what is measured, and the page can be read in
+four more languages, drafted and marked so. It is a minor release: everything new is added, and the
+1.0.0 promises hold. A shared link (`v=1`, with `build=1.3.0` beside it), the saved-data format
+(`/data/v1/`) and the registry row formats all still work; the new fields (`look:` on a model row,
+`class: feature` on a site row) are optional, and no row a fork wrote against needs a change.
+
+Counted on release day with `python3 scripts/count_facts.py`: 30 trips and 227 stops, 109 389
+stars, 40 star systems, 30 nebula and galaxy photographs, 21 moons (20 with a map), 21 landing
+sites on the Moon (20 in 1.2.0) and 12 on Mars, 165 models of spacecraft and small bodies (131 in
+1.2.0, 34 more), 29 layers, 14 sources and 31 feeds, and 306 test files (290 in 1.2.0, 16 more).
+19 deep-sky heroes (12 in 1.2.0), 936 records with a class, a source and a credit (890 in 1.2.0, 46
+more) in 40 classes (38). The trips, stars, star systems, photographs, moons, layers, sources and feeds
+are as they were in 1.2.0.
+
+### Added
+- **Spacecraft in their own materials** ([#1251]). On tier 1 and up, a model whose file carries real
+  materials is drawn physically based: gold and silver blanket as crinkled foil, white beta cloth matt,
+  cells under glass with their grid, nozzles and struts bare metal, lit by the same Sun. A phone keeps
+  the flat look. `look: pbr | toon` on a model's row says which a file wears.
+- **Webb and Hubble in true materials** ([#1262]): Webb re-baked from NASA's larger file with its
+  mirror segments in gold metal, and Hubble rebuilt here at flagship detail in aluminised foil.
+- **Crewed craft and NASA flagships** ([#1248]): Tiangong (the core and a lab module), the Shenzhou
+  orbital module flying alone, THEMIS (NASA's own model), and New Horizons rebuilt from NASA's parts.
+- **Deep-space craft** ([#1249]): Mars Express, Gaia, Hayabusa2 and Hope, built from published
+  dimensions, where they were the generic probe.
+- **Earth explorers** ([#1261]): EarthCARE, Biomass, Swarm (A, B and C) and MetOp-SG A1.
+- **NASA science craft** ([#1262]): IRIS, TIMED, the two TRACERS, SERT 2 still joined to its Agena
+  stage, and ISIS 1. Booms too long for the frame are drawn short, and the card says so.
+- **The Moon's landers as they came to rest** ([#1246], [#1251], [#1260]): Vikram with its ramp down,
+  Odysseus on its side, Blue Ghost, Surveyor 1 and 3, SLIM on its nose, the Chang'e 3 to 6 landers,
+  Yutu beside its lander (a site of its own), and Lunokhod 1 and 2. **Zhurong** on Mars, wings spread.
+  Every one is built here from cited metres and photographs and its card says "shape built from
+  published dimensions and pictures". Yutu-2 has no site, because nobody publishes where it is now.
+- **Small bodies in their real shapes** ([#1259]): Ryugu, Itokawa, and Didymos with Dimorphos, from
+  their missions' shape models, each turning about its measured pole at its measured rate; Dimorphos
+  orbits at its post-impact period. Ryugu and Itokawa are now always on the asteroids layer.
+- **The Moon's named places** ([#1259]): Copernicus, Tycho, Shackleton and the south pole are places
+  you can fly to, framed by their size. **Spirit's and Opportunity's tracks** (7.07 and 45.10 km) are
+  drawn on Mars from the PDS Analyst's Notebook, and **Huygens** sits on Titan in its locked frame.
+- **Titan by radar** ([#1245]): a Radar face from Cassini's swaths, the northern seas with a sun glint
+  (the glint's shape is illustrative), and the detached haze at 500 km. Close to Saturn's ring plane its
+  particles are drawn as lit balls of ice from the measured size distribution. Eris, Haumea (with its
+  ring), Makemake, Sedna, Gonggong, Quaoar and Orcus each have their measured colour and shape.
+- **Carina in 3D** ([#1252]): the photograph on our line of sight, and turned, a bipolar cavity with
+  the dark lane in front, Eta Carinae and fourteen O and Wolf-Rayet stars at SIMBAD's places.
+- **Galaxies from their own numbers** ([#1258]): M51 with NGC 5195 behind it, M81, M101, the Sombrero
+  and the Antennae with their tidal tails, from published tilt, bulge, disc and pitch. **The Hubble
+  Ultra Deep Field in depth**: 7 607 JADES galaxies, each at the distance of its redshift. **The Small
+  Magellanic Cloud ships**, with the Magellanic Bridge and Stream at a modelled distance, labelled so.
+- **WD J1330+6435, the first star confirmed to look green** ([#1240]): a white dwarf 281.6 light-years
+  away whose sodium- and calcium-rich atmosphere takes out the yellow and red, on the exotics layer.
+- **Three ways in** ([#1257]): a first visit offers Tonight, Explore and Guided trip side by side.
+- **Compare two worlds** ([#1253]): a world's card opens a second world beside it at one scale, and a
+  comparison lab; the passport notes what you have opened by kind (never a score); a deep-sky card with
+  a reconstruction has a slider to the photograph.
+- **How we know, as a filter** ([#1257]): What to show can keep only what is measured, by the four
+  classes every card already uses, each with its count.
+- **Arrival views and photo presets** ([#1257]) in the share sheet: two authored views of each planet,
+  and Science, Cinematic and Telescope frames.
+- **Four more languages, drafted** ([#1247], [#1254]): a language loader (`?lang=`) and Spanish,
+  French, German and Brazilian Portuguese. All four are machine-drafted, say so, and show only with
+  `?lang=` until a native reader has read them.
+- **Radio ping-pong with Mars** ([#1216]), a Lab page: move the Earth–Mars distance and see the
+  one-way and round-trip delay of a radio signal.
+
+### Changed
+- **Every deep-space hero says what it is** ([#1252]): each card names what is drawn in the honesty
+  classes and where it comes from; the Tarantula and M43 had no sentence and now have one.
+- **The Carina Nebula is 7 665 light-years away** ([#1252]), from the Homunculus's expansion
+  parallax and Gaia, not 8 500 from an infobox.
+- Cassini's card says which days JPL's path for it covers, and what is drawn outside them ([#1244]).
+- Tonight's place controls share one look and are 44 px tall on a phone ([#1244]).
+
+### Fixed
+- The home's one true sentence is never blank ([#1244]).
+- The trip camera keeps the station in sight, and the tape's new-Moon mark no longer hides under Now
+  ([#1244]).
+- Search finds a satellite by a legacy five-digit number, an Alpha-5 code or a nine-digit number, and
+  no passing prompt takes a keystroke from it ([#1253]).
+- A link with both `go=` and `at=`, or `imagine=` and `at=`, opens one place, not two ([#1257]).
+
+### For contributors
+- Thanks to @msuneelkrishna2006-blip for the radio ping-pong simulator ([#1216]).
+- `scripts/check.sh` runs every check on macOS and never says PASS after a FAIL ([#1255]);
+  `scripts/verify-deploy.sh` passes on a clean deploy ([#1257]).
+- `docs/TRANSLATING.md` says how a language is drafted, reviewed and shown ([#1247]).
+- The `model` look probe photographs a four-angle close-up sheet ([#1248]).
+- How the release was assembled: waves 1 to 3 reached `main` as [#1250], [#1256] and [#1263].
+
 ## [1.2.0] - 2026-10-20
 
 Deep space, finished, and the reason for every card. Orion and the Ring Nebula are drawn in 3D, the
@@ -527,7 +625,8 @@ The first public map.
 - A registry of YAML files as the architecture, with generated mirrors and a validator in CI.
 - No server, no database, no build step.
 
-[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Sara-Managed-Projects/space-radar/releases/tag/v1.0.0
@@ -649,6 +748,7 @@ The first public map.
 [#1213]: https://github.com/Sara-Managed-Projects/space-radar/pull/1213
 [#1214]: https://github.com/Sara-Managed-Projects/space-radar/pull/1214
 [#1215]: https://github.com/Sara-Managed-Projects/space-radar/pull/1215
+[#1216]: https://github.com/Sara-Managed-Projects/space-radar/pull/1216
 [#1217]: https://github.com/Sara-Managed-Projects/space-radar/pull/1217
 [#1218]: https://github.com/Sara-Managed-Projects/space-radar/pull/1218
 [#1219]: https://github.com/Sara-Managed-Projects/space-radar/pull/1219
@@ -666,4 +766,25 @@ The first public map.
 [#1237]: https://github.com/Sara-Managed-Projects/space-radar/pull/1237
 [#1238]: https://github.com/Sara-Managed-Projects/space-radar/pull/1238
 [#1239]: https://github.com/Sara-Managed-Projects/space-radar/pull/1239
+[#1240]: https://github.com/Sara-Managed-Projects/space-radar/pull/1240
 [#1241]: https://github.com/Sara-Managed-Projects/space-radar/pull/1241
+[#1244]: https://github.com/Sara-Managed-Projects/space-radar/pull/1244
+[#1245]: https://github.com/Sara-Managed-Projects/space-radar/pull/1245
+[#1246]: https://github.com/Sara-Managed-Projects/space-radar/pull/1246
+[#1247]: https://github.com/Sara-Managed-Projects/space-radar/pull/1247
+[#1248]: https://github.com/Sara-Managed-Projects/space-radar/pull/1248
+[#1249]: https://github.com/Sara-Managed-Projects/space-radar/pull/1249
+[#1250]: https://github.com/Sara-Managed-Projects/space-radar/pull/1250
+[#1251]: https://github.com/Sara-Managed-Projects/space-radar/pull/1251
+[#1252]: https://github.com/Sara-Managed-Projects/space-radar/pull/1252
+[#1253]: https://github.com/Sara-Managed-Projects/space-radar/pull/1253
+[#1254]: https://github.com/Sara-Managed-Projects/space-radar/pull/1254
+[#1255]: https://github.com/Sara-Managed-Projects/space-radar/pull/1255
+[#1256]: https://github.com/Sara-Managed-Projects/space-radar/pull/1256
+[#1257]: https://github.com/Sara-Managed-Projects/space-radar/pull/1257
+[#1258]: https://github.com/Sara-Managed-Projects/space-radar/pull/1258
+[#1259]: https://github.com/Sara-Managed-Projects/space-radar/pull/1259
+[#1260]: https://github.com/Sara-Managed-Projects/space-radar/pull/1260
+[#1261]: https://github.com/Sara-Managed-Projects/space-radar/pull/1261
+[#1262]: https://github.com/Sara-Managed-Projects/space-radar/pull/1262
+[#1263]: https://github.com/Sara-Managed-Projects/space-radar/pull/1263

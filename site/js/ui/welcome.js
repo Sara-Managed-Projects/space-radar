@@ -15,10 +15,15 @@
 //
 // One line each at the sidebar's width: a chrome line that wraps is a bug (docs/ui-guide.md 4).
 //
-// "Guided trip" starts the first trip the home offers that can run (the first card, pressed: the
-// card owns the waiting and the refusals). "Look around" puts the lines away and leaves the map.
-// It is the one ember on the home, for as long as it is up, and it is not a modal: the map stays
-// live behind it and any press on the map is "Look around".
+// THREE WAYS IN (0077 W3-e, internal i#878; the buttons above were "Guided trip" and "Look around"):
+//   [ Tonight ]  [ Explore ]  [ Guided trip ]
+// "Tonight" opens the fourth tab, the view of what is overhead from the visitor's place, which was the
+// one way in nobody found. "Explore" puts the lines away and leaves the map (it is what "Look around"
+// was). "Guided trip" starts the first trip the home offers that can run (the first card, pressed: the
+// card owns the waiting and the refusals). Choosing one hides nothing: every tab, the rail and the
+// search are where they were (docs/ui-guide.md 3.24). "Guided trip" is the one ember on the home, for
+// as long as it is up, and it is not a modal: the map stays live behind it and any press on the map is
+// "Explore".
 //
 // ONCE. Remembered in localStorage['sr:welcome'] the moment it shows. A browser that keeps
 // nothing gets no welcome: "once" could not be kept there (the controls hint's rule,
@@ -37,7 +42,9 @@
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
 import { loadCss } from './latercss.js';
-import { icon } from './icons.js';
+import { icon, iconFrom } from './icons.js';
+// 0077 W3-e: Lucide `moon` (ISC), for Tonight; here and not in icons.js, which is at boot and has no room for a first visit's icon.
+const MOON = [['path', { d: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' }]];
 
 export const WELCOME_KEY = 'sr:welcome';
 
@@ -87,10 +94,21 @@ function storageOf(win) {
   try { return win.localStorage; } catch { return null; }
 }
 
+// 0077 W3-e: begin
+/** The words of an entrance, in a span of their own so the icon above them and the label stay two things. */
+function textSpan(doc, text) {
+  const span = doc.createElement('span');
+  span.className = 'sr-welcome__label';
+  span.textContent = text;
+  return span;
+}
+// 0077 W3-e: end
+
 export function createWelcome(ctx, opts = {}) {
   const win = opts.win || window;
   const doc = win.document;
   const C = COPY.welcome;
+  const E = COPY.entrances; // 0077 W3-e
   let root = null;
   let open = false;
 
@@ -113,22 +131,33 @@ export function createWelcome(ctx, opts = {}) {
       list.appendChild(li);
     }
     root.appendChild(list);
+    // 0077 W3-e: begin (internal i#878) THREE WAYS IN, in one row, each a button of its own. Tonight is the fourth tab and a
+    // newcomer would not look there; Explore leaves the map as it is; Guided trip is the one ember, as it was. Choosing
+    // one hides nothing: the four tabs, the rail and the search are all where they were. Explore is what "Look around" was.
     const row = doc.createElement('div');
     row.className = 'sr-welcome__actions';
-    const go = document.createElement('button');
-    go.type = 'button';
-    go.className = 'sr-welcome__btn sr-welcome__go';
-    go.title = C.tripTitle;
-    go.appendChild(icon('play', 16));
-    go.appendChild(doc.createTextNode(C.trip));
-    const look = document.createElement('button');
-    look.type = 'button';
-    look.className = 'sr-welcome__btn sr-welcome__look';
-    look.title = C.lookTitle;
-    look.appendChild(icon('compass', 16));
-    look.appendChild(doc.createTextNode(C.look));
-    row.append(go, look);
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', E.label);
+    // Tonight and Explore share the quiet button's rules (`sr-welcome__look`); only Guided trip is the ember.
+    const entrance = (cls, id, glyph, label, title) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `sr-welcome__btn ${cls}`;
+      b.title = title;
+      b.dataset.entrance = id;
+      b.append(glyph, textSpan(doc, label));
+      row.appendChild(b);
+      return b;
+    };
+    const tonight = entrance('sr-welcome__look', 'tonight', iconFrom('moon', MOON, 20), E.tonight, E.tonightTitle);
+    const look = entrance('sr-welcome__look', 'explore', icon('compass', 20), E.explore, E.exploreTitle);
+    const go = entrance('sr-welcome__go', 'trip', icon('play', 20), E.trip, E.tripTitle);
     root.appendChild(row);
+    tonight.addEventListener('click', () => {
+      hide('tonight');
+      // The Tonight tab is a place like the others: the view that says what is overhead from here.
+      if (ctx.explore && typeof ctx.explore.setTab === 'function') ctx.explore.setTab('tonight');
+    });
     go.addEventListener('click', () => {
       const id = firstTrip(cards().map((c) => ({ id: c.dataset.trip, off: c.classList.contains('is-off') })));
       const card = id ? cards().find((c) => c.dataset.trip === id) : null;
@@ -136,6 +165,7 @@ export function createWelcome(ctx, opts = {}) {
       if (card) card.click();
     });
     look.addEventListener('click', () => hide('look'));
+    // 0077 W3-e: end
   }
 
   // A press on the map is "Look around"; a trip that starts, or a thing chosen, ends it too.

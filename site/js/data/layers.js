@@ -875,7 +875,7 @@ export const LAYERS = [
     moments: { wonder: true, now: true, next: false },
     defaultOn: true,
     select: all,
-    budget: { maxItems: 40 },
+    budget: { maxItems: 60 }, // 0077 W3-d: 43 rows since Huygens and the Moon's named places (registry/layers.yaml)
     colour: C.site,
     glyph: 'site',
     nearKm: 900,

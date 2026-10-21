@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import count_facts  # noqa: E402
 
-WORDS = {20: "Twenty", 26: "Twenty-six", 12: "twelve"}
+WORDS = {20: "Twenty", 21: "Twenty-one", 26: "Twenty-six", 12: "twelve"}  # 0077 W3-c: 21, the Yutu row
 
 
 def claims(readme: str, n: dict) -> list[str]:

@@ -948,6 +948,8 @@ export const COPY = {
       exoticStar: "un anillo a su distancia medida; la estrella en sí es un punto a esta escala"
     },
     storm: "se dibuja como una marca en su centro; la tormenta en sí es la nube que lo rodea",
+    feature: "un lugar con nombre: aquí no se dibuja más que una marca en su centro, según el nomenclátor de la UAI; el suelo bajo ella es el propio mapa", // 0077 W3-d
+    objectSpin: { spin: "gira alrededor de su polo medido, a su ritmo medido; qué cara mira al Sol en este momento no es una predicción", pair: "los dos giran alrededor de su polo medido, a sus ritmos medidos, y Dimorphos da la vuelta a la distancia y en el periodo medidos tras el impacto de DART; dónde está en esa órbita es ilustrativo" }, // 0077 W3-d
     worldFlat: "se dibuja como una bola lisa: aquí no hay un mapa de la superficie de {name}, y su único color está elegido a partir de descripciones publicadas, no medido",
     worldFlatIrregular: "se dibuja como una bola lisa del tamaño de su radio medio: aquí no hay un mapa de la superficie de {name}, su único color está elegido a partir de descripciones publicadas, no medido, y {name} es en realidad una roca irregular cuya forma verdadera no se dibuja",
     worldFlatShaped: "se dibuja con su forma medida y de un solo color: aquí no hay un mapa de la superficie de {name}, y el color está elegido a partir de descripciones publicadas, no medido",

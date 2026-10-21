@@ -16,15 +16,15 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rings | 1 | 1 |
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
-| heroes | 14 | 14 |
-| exotics | 22 | 22 |
+| heroes | 19 | 19 |
+| exotics | 23 | 23 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
 | stars_notable | 41 | 41 |
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
-| sites | 39 | 39 |
-| real_models | 146 | 146 |
+| sites | 44 | 44 |
+| real_models | 165 | 165 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **907** | **111 094** |
+| **all** | **937** | **111 124** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -45,16 +45,16 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [VOLCANIC_MOON](#volcanic_moon) | 1 | `worlds.js` | measured | - |
 | [ICY_MOON](#icy_moon) | 16 | `worlds.js` | measured | - |
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
-| [AIRLESS_MOON](#airless_moon) | 3 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
+| [AIRLESS_MOON](#airless_moon) | 7 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
-| [ASTEROID](#asteroid) | 17 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js` | modelled | - |
+| [ASTEROID](#asteroid) | 20 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
-| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 146 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
+| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 155 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 58 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
-| [LANDING_SITE](#landing_site) | 52 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
+| [LANDING_SITE](#landing_site) | 60 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
-| [STAR](#star) | 45 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
+| [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
 | [COMPACT_REMNANT](#compact_remnant) | 9 | `pulsars.js` | illustrative | - |
 | [BLACK_HOLE](#black_hole) | 8 | `portraits.js`, `glyphs.js` | illustrative | - |
@@ -65,10 +65,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DARK_NEBULA](#dark_nebula) | 5 | `nebulae.js`, `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 5 | `dsoglow.js`, `nebulae.js`, `dustsheet.js` | illustrative | iris, m78 |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
-| [GALAXY_SPIRAL](#galaxy_spiral) | 50 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m31, m33 |
+| [GALAXY_SPIRAL](#galaxy_spiral) | 54 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m101, m104, m31, m33, m51, m81 |
 | [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc, smc |
 | [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 41 | `dsoglow.js`, `nebulae.js` | illustrative | - |
-| [GALAXY_INTERACTION](#galaxy_interaction) | 1 | `dsoglow.js` | illustrative | - |
+| [GALAXY_INTERACTION](#galaxy_interaction) | 2 | `spiral.js`, `dsoglow.js` | illustrative | antennae |
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
 | [GALAXY_CLUSTER](#galaxy_cluster) | 0 | `galclusters.js` | modelled | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
+Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 
 ## The classes
 
@@ -220,8 +220,9 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the maps, the heights and the shapes. Modelled: shading along the light. Deimos has a shape and no map: drawn grey, said on its card.
 - **Rights:** NASA and USGS public domain; Solar System Scope CC BY 4.0.
 - **What is missing is tracked in:** #864 (shadows from LOLA at a low Sun, W2-a); internal #379 (Deimos's map)
-- **Records (3):**
+- **Records (7):**
   - worlds (3): `moon`, `phobos`, `deimos`
+  - sites (4): `copernicus`, `tycho`, `shackleton`, `moon-south-pole`
 
 ### DWARF_PLANET
 
@@ -243,16 +244,16 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 
 **Asteroids**
 
-- **Drawn by:** `site/js/scene/models.js`, `site/js/scene/realmodels.js`, `site/js/scene/glyphs.js`, `site/js/propagate/kepler.js`
+- **Drawn by:** `site/js/scene/models.js`, `site/js/scene/realmodels.js`, `site/js/scene/glyphs.js`, `site/js/propagate/kepler.js`, `site/js/scene/moonshape.js`
 - **Default honesty:** modelled
 - **On a weak device (T0, or after the frame latch):** A glyph on its orbit; the seeded rock or the real shape only when selected and near.
 - **Source:** JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn.
 - **Dates and filters:** Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card).
 - **Measured, modelled or reconstructed:** Measured: orbits, sizes, the real shapes. Modelled: positions propagated from elements. Illustrative: the seeded rock for any asteroid without a shape (labelled generic).
 - **Rights:** NASA/JPL data and PDS products public domain.
-- **What is missing is tracked in:** #866 (measured spin; Ryugu, Itokawa, Didymos)
-- **Records (17):**
-  - real_models (4): `asteroid-bennu`, `asteroid-vesta`, `asteroid-eros`, `dwarf-ceres`
+- **What is missing is tracked in:** #866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)
+- **Records (20):**
+  - real_models (7): `asteroid-bennu`, `asteroid-vesta`, `asteroid-eros`, `dwarf-ceres`, `asteroid-ryugu`, `asteroid-itokawa`, `asteroid-didymos`
   - model_kinds (1): `asteroid-generic`
   - small_bodies (11): `asteroid-99942`, `asteroid-101955`, `asteroid-433`, `asteroid-162173`, `asteroid-4`, `asteroid-65803`, `asteroid-25143`, `asteroid-2`, `asteroid-3200`, `interstellar-1i`, `interstellar-2i`
   - layers (1): `asteroids`
@@ -286,8 +287,8 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one.
 - **Rights:** CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project).
 - **What is missing is tracked in:** public #267 (the art pass)
-- **Records (146):**
-  - real_models (97): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`
+- **Records (155):**
+  - real_models (106): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`
   - model_kinds (36): `satellite-iridium`, `satellite-spacemobile`, `satellite-solarsail`, `satellite-sphere`, `satellite-navigation`, `satellite-cubesat`, `satellite-cubesat-6u`, `satellite-cubesat-1u`, `satellite-cubesat-2u`, `satellite-navigation-gps-iif`, `satellite-navigation-gps-iii`, `satellite-navigation-glonass-m`, `satellite-navigation-glonass-k`, `satellite-navigation-beidou-meo`, `satellite-oneweb`, `satellite-starlink-v1`, `satellite-starlink-v2`, `satellite-radar`, `satellite-radar-mesh`, `satellite-generic`, `satellite-comms`, `station-soyuz`, `station-progress`, `station-cygnus`, `station-tiangong`, `station-tiangong-module`, `station-shenzhou`, `station-tianzhou`, `station-dragon`, `station-dragon-cargo`, `station-generic`, `debris-shard`, `telescope-gaia`, `telescope-generic`, `telescope-jwst`, `satellite-space-telescope`
   - reentries (3): `reentry-tiangong-1`, `reentry-cz-5b-y2`, `reentry-skylab`
   - layers (10): `stations`, `notable`, `starlink-trains`, `just-launched`, `active`, `geo-ring`, `debris-notable`, `debris-field`, `visual`, `reentries`
@@ -340,9 +341,9 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the coordinates, each with its uncertainty in metres where stated. The lander or rover is a procedural stand-in ('the kind of thing, not this exact one'), except NASA's lunar module.
 - **Rights:** NASA, LROC and PDS works public domain; papers cited.
 - **What is missing is tracked in:** #868 (terrain height, the Apollo 15 and 17 traverses, W2-a)
-- **Records (52):**
-  - sites (33): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `surveyor-1`, `surveyor-3`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `lunokhod-2`, `change-3`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
-  - real_models (16): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`
+- **Records (60):**
+  - sites (34): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `surveyor-1`, `surveyor-3`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `lunokhod-2`, `change-3`, `yutu`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
+  - real_models (23): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`, `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2`
   - model_kinds (3): `site-surveyor`, `rover-generic`, `lander-generic`
 
 ### EXOPLANET
@@ -373,8 +374,8 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Dates and filters:** Hipparcos (1997) positions and Gaia DR3 distances through AT-HYG; the line on each card read on the day its row says.
 - **Measured, modelled or reconstructed:** Measured: positions, magnitudes, colours from B-V. Modelled: the limb-darkened disc of a near star. Red stars' radii are estimates where no interferometry exists.
 - **Rights:** HYG and AT-HYG CC BY-SA 4.0; d3-celestial BSD-3-Clause; facts cited.
-- **Records (45  109 433 drawn things):**
-  - exotics (2): `eta-carinae`, `betelgeuse`
+- **Records (46  109 434 drawn things):**
+  - exotics (3): `eta-carinae`, `wd-j1330-6435`, `betelgeuse`
   - stars_notable (41): `hip-70890`, `hip-71683`, `hip-71681`, `hip-87937`, `Wolf 359`, `hip-32349`, `hip-16537`, `hip-104214`, `hip-37279`, `hip-8102`, `hip-24186`, `hip-3829`, `hip-30438`, `hip-69673`, `hip-91262`, `hip-24608`, `hip-24436`, `hip-7588`, `hip-97649`, `hip-21421`, `hip-65474`, `hip-80763`, `hip-37826`, `hip-113368`, `hip-102098`, `hip-49669`, `hip-60718`, `hip-36850`, `hip-11767`, `hip-68756`, `hip-116727`, `hip-10826`, `hip-14576`, `hip-110991`, `hip-23416`, `hip-65378`, `hip-95947`, `hip-79672`, `hip-113357`, `hip-7513`, `hip-27321`
   - catalogues (1): `stars3d` (109 389)
   - layers (1): `stars`
@@ -551,16 +552,16 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 - **Drawn by:** `site/js/scene/galaxy.js`, `site/js/scene/deep/spiral.js`, `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The glow ellipse with its holder; M31 and M33 as photographs until near; the Milky Way's points thinned on tier 0.
-- **Hero overrides:** `m31` (registry/deepsky-heroes/m31.yaml), `m33` (registry/deepsky-heroes/m33.yaml)
+- **Hero overrides:** `m31` (registry/deepsky-heroes/m31.yaml), `m33` (registry/deepsky-heroes/m33.yaml), `m51` (registry/deepsky-heroes/m51.yaml), `m81` (registry/deepsky-heroes/m81.yaml), `m101` (registry/deepsky-heroes/m101.yaml), `m104` (registry/deepsky-heroes/m104.yaml)
 - **Source:** The Milky Way from Reid et al. 2019 (arms) with the bar and disc from Wikipedia; M31 from Courteau et al. 2011, Gordon et al. 2006, Block et al. 2006, Draine et al. 2014; M33 after Zaritsky et al. 1989 and Regan & Vogel 1994; photographs of M51, M81, M83, M101, M104, NGC 1300.
 - **Dates and filters:** Papers at their own epochs; photographs as their rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs, orientations, profiles. Modelled: M31's and M33's arms, knots and thickness (parametric, labelled). Illustrative: the Milky Way's look and every other spiral's glow.
 - **Rights:** Papers cited; photographs CC BY 4.0; OpenNGC CC BY-SA 4.0.
-- **What is missing is tracked in:** #873 (the generator applied to other spirals)
-- **Records (50):**
+- **What is missing is tracked in:** #873 (0077 W3-f: M51, M81, M101 and M104 from their own numbers; NGC 1300, NGC 253, NGC 891, M83 and NGC 2403 still glow and holder)
+- **Records (54):**
   - dso (38): `m31`, `m33`, `m51`, `m58`, `m61`, `m63`, `m64`, `m65`, `m66`, `m74`, `m77`, `m81`, `m82`, `m83`, `m88`, `m90`, `m91`, `m94`, `m95`, `m96`, `m98`, `m99`, `m100`, `m101`, `m104`, `m106`, `m108`, `m109`, `ngc-253`, `ngc-891`, `ngc-7331`, `needle-galaxy`, `whale-galaxy`, `ngc-2403`, `fireworks-galaxy`, `ngc-300`, `ngc-1300`, `hamburger-galaxy`
   - photographs (8): `m31`, `m33`, `m83`, `m104`, `m51`, `m101`, `m81`, `ngc-1300`
-  - heroes (2): `m31`, `m33`
+  - heroes (6): `m101`, `m104`, `m31`, `m33`, `m51`, `m81`
   - model_kinds (1): `galaxy-model`
   - layers (1): `galaxy`
 
@@ -602,16 +603,18 @@ Honesty over the 907 records: 321 measured, 261 modelled, 325 illustrative.
 
 **Interacting galaxies**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`
+- **Drawn by:** `site/js/scene/deep/spiral.js`, `site/js/scene/dsoglow.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** One glow and holder for the pair.
+- **On a weak device (T0, or after the frame latch):** One glow and holder for the pair; the Antennae and M51 with NGC 5195 as models from their own numbers once near (0077 W3-f).
+- **Hero overrides:** `antennae` (registry/deepsky-heroes/antennae.yaml)
 - **Source:** OpenNGC and the Antennae's row in registry/dso-hand.yaml.
 - **Dates and filters:** As the row says.
-- **Measured, modelled or reconstructed:** Measured: place and distance. Illustrative: the glow; the pair is not drawn as two.
+- **Measured, modelled or reconstructed:** Measured: place and distance; the Antennae's two galaxies' places and their tails on the sky. Modelled: the tails' depths after the simulations, the discs' tilts. Illustrative: the glow of the other pairs.
 - **Rights:** OpenNGC CC BY-SA 4.0; facts cited.
-- **What is missing is tracked in:** #875 (no renderer of its own and no task)
-- **Records (1):**
+- **What is missing is tracked in:** #875 (0077 W3-f: the Antennae and M51 with NGC 5195; Arp 220, the Mice, NGC 7252, NGC 2623 and NGC 2207 are not on the map)
+- **Records (2):**
   - dso (1): `antennae-galaxies`
+  - heroes (1): `antennae`
 
 ### AGN_QUASAR
 

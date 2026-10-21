@@ -272,3 +272,21 @@ features:
     files: [site/js/ui/photocompare.js]
     not: "Reached from one kind of card, inside About it, deep in the Stars view."
   # 0077 W2-d: end
+  # 0077 W3-e: begin
+  - id: entrances
+    name: The three ways in on a first visit
+    files: [site/js/ui/welcome.js, site/js/ui/opening.js]
+    not: "Shown once, first; the tour starts where they lead."
+  - id: confidence-filter
+    name: How we know, the dot filter in What to show
+    files: [site/js/ui/confidence.js]
+    not: "A section of What to show, which the layers step opens."
+  - id: arrival-views
+    name: Arrival views in the share sheet
+    files: [site/js/ui/bookmarks.js]
+    not: "A row inside Share, which the share step opens."
+  - id: photo-presets
+    name: Photo presets in the share sheet
+    files: [site/js/ui/photopresets.js]
+    not: "A row inside Share, one press before photo mode."
+  # 0077 W3-e: end

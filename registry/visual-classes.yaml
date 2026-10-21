@@ -68,6 +68,13 @@ domains:
       iris: {credit: "### Remnants and dust (0076 W3-c)"}
       carina: {credit: "### Carina (0077 W2-e)"}  # 0077 W2-e
       smc: {credit: "### The SMC and the Magellanic Stream (0077 W2-e)"}  # 0077 W2-e
+      # 0077 W3-f: begin
+      m51: {credit: "### Galaxies from their structure (0077 W3-f)"}
+      m81: {credit: "### Galaxies from their structure (0077 W3-f)"}
+      m101: {credit: "### Galaxies from their structure (0077 W3-f)"}
+      m104: {credit: "### Galaxies from their structure (0077 W3-f)"}
+      antennae: {credit: "### Galaxies from their structure (0077 W3-f)"}
+      # 0077 W3-f: end
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -259,6 +266,7 @@ classes:
       rights: "NASA and USGS public domain; Solar System Scope CC BY 4.0."
     records:
       - {domain: worlds, ids: [moon, phobos, deimos]}
+      - {domain: sites, where: {class: feature}}  # 0077 W3-d: the Moon's named places (Copernicus, Tycho, Shackleton, the south pole), on its tiles
 
   - id: DWARF_PLANET
     title: Dwarf planets
@@ -277,10 +285,10 @@ classes:
 
   - id: ASTEROID
     title: Asteroids
-    renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js]
+    renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js, site/js/scene/moonshape.js] # 0077 W3-d
     honesty: modelled
     fallback: A glyph on its orbit; the seeded rock or the real shape only when selected and near.
-    issue: "#866 (measured spin; Ryugu, Itokawa, Didymos)"
+    issue: "#866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)" # 0077 W3-d
     note:
       source: "JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn."
       dates: "Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card)."
@@ -573,8 +581,8 @@ classes:
     renderer: [site/js/scene/galaxy.js, site/js/scene/deep/spiral.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
     honesty: illustrative
     fallback: The glow ellipse with its holder; M31 and M33 as photographs until near; the Milky Way's points thinned on tier 0.
-    heroes: {m31: registry/deepsky-heroes/m31.yaml, m33: registry/deepsky-heroes/m33.yaml}
-    issue: "#873 (the generator applied to other spirals)"
+    heroes: {m31: registry/deepsky-heroes/m31.yaml, m33: registry/deepsky-heroes/m33.yaml, m51: registry/deepsky-heroes/m51.yaml, m81: registry/deepsky-heroes/m81.yaml, m101: registry/deepsky-heroes/m101.yaml, m104: registry/deepsky-heroes/m104.yaml}  # 0077 W3-f
+    issue: "#873 (0077 W3-f: M51, M81, M101 and M104 from their own numbers; NGC 1300, NGC 253, NGC 891, M83 and NGC 2403 still glow and holder)"  # 0077 W3-f
     note:
       source: "The Milky Way from Reid et al. 2019 (arms) with the bar and disc from Wikipedia; M31 from Courteau et al. 2011, Gordon et al. 2006, Block et al. 2006, Draine et al. 2014; M33 after Zaritsky et al. 1989 and Regan & Vogel 1994; photographs of M51, M81, M83, M101, M104, NGC 1300."
       dates: "Papers at their own epochs; photographs as their rows."
@@ -583,7 +591,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: G, hubble: ["^S(?!0)(?!(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z]))", "^\\(R'?\\)(?!S(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z]))"]}}
       - {domain: photographs, ids: [m31, m33, m83, m104, m51, m101, m81, ngc-1300]}
-      - {domain: heroes, ids: [m31, m33]}
+      - {domain: heroes, ids: [m31, m33, m51, m81, m101, m104]}  # 0077 W3-f
       - {domain: model_kinds, ids: [galaxy-model]}
       - {domain: layers, ids: [galaxy]}
 
@@ -621,17 +629,19 @@ classes:
 
   - id: GALAXY_INTERACTION
     title: Interacting galaxies
-    renderer: [site/js/scene/dsoglow.js]
+    renderer: [site/js/scene/deep/spiral.js, site/js/scene/dsoglow.js]  # 0077 W3-f
     honesty: illustrative
-    fallback: One glow and holder for the pair.
-    issue: "#875 (no renderer of its own and no task)"
+    fallback: One glow and holder for the pair; the Antennae and M51 with NGC 5195 as models from their own numbers once near (0077 W3-f).
+    heroes: {antennae: registry/deepsky-heroes/antennae.yaml}  # 0077 W3-f
+    issue: "#875 (0077 W3-f: the Antennae and M51 with NGC 5195; Arp 220, the Mice, NGC 7252, NGC 2623 and NGC 2207 are not on the map)"
     note:
       source: "OpenNGC and the Antennae's row in registry/dso-hand.yaml."
       dates: "As the row says."
-      drawn: "Measured: place and distance. Illustrative: the glow; the pair is not drawn as two."
+      drawn: "Measured: place and distance; the Antennae's two galaxies' places and their tails on the sky. Modelled: the tails' depths after the simulations, the discs' tilts. Illustrative: the glow of the other pairs."  # 0077 W3-f
       rights: "OpenNGC CC BY-SA 4.0; facts cited."
     records:
       - {domain: dso, where: {typeCode: [GPair, GTrpl, GGroup]}}
+      - {domain: heroes, ids: [antennae]}  # 0077 W3-f
 
   - id: AGN_QUASAR
     title: Quasars and active nuclei
@@ -665,6 +675,7 @@ classes:
     title: Galaxy clusters
     renderer: [site/js/scene/deep/galclusters.js]
     honesty: modelled
+    # 0077 W3-f: the same layer draws a deep field (the Hubble Ultra Deep Field from JADES, at its redshifts): registry/galaxy-clusters.yaml `fields:`
     fallback: The same instanced galaxies on every tier (one draw call a cluster; 3 596 quads in all); the members the map draws as records keep their glows.
     issue: "internal #784 (clusters as searchable records with a card: 1.3+; they are drawn, not yet records)"
     note:

@@ -700,6 +700,47 @@ export const NAMED_ASTEROIDS = [
     why: "The Geminid meteors of December come from this one. Its path takes it closer to the Sun than Mercury’s does, and nobody is sure whether it is a rock or a dead comet.",
     whySource: "NASA Science, Geminids (science.nasa.gov/solar-system/meteors-meteorites/geminids) and the JPL Small-Body Database (orbit, and the size, Taylor et al. 2019), read 6 October 2026",
   },
+  // 0077 W3-d: begin -- RYUGU AND ITOKAWA (release 1.3.0 stage W3-d, internal #866), the two asteroids Japan
+  // brought pieces of home, rows of the layer like the five above since they are drawn in their measured shapes
+  // (scene/realmodels.js). Until now they were only the stand-ins at the top of this file, never on the live map.
+  // Elements: https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=<number>&phys-par=1&full-prec=1, read 2026-10-20,
+  // ecliptic J2000 at the same epoch as the rows above. Against JPL Horizons on 2026-10-06 00:00 TDB (heliocentric
+  // vectors, ecliptic J2000; tests/test_remaining_trips.mjs holds them).
+  {
+    id: 'asteroid-162173',
+    name: 'Ryugu',
+    designation: '162173 Ryugu',
+    aliases: ['162173 Ryugu', '1999 JU3'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=162173. Orbit 270, solved 2026-08-11, observations to 2025-07-23.
+    aAu: 1.190918933, e: 0.1910730046, iDeg: 5.866442486, nodeDeg: 251.2897124, argpDeg: 211.6089938,
+    maDeg: 62.34067409, epochJd: 2461200.5, tpJd: 2461118.29642,
+    solution: '2026-08-11', lastObs: '2025-07-23',
+    hMag: 19.55,
+    diameterKm: 0.896,
+    moons: null,
+    why: "A dark rock 900 metres across, shaped like a spinning top. JAXA’s Hayabusa2 shot a copper slug into it, touched down twice and brought 5.4 grams of it to Earth in December 2020.",
+    whySource: "JAXA, Hayabusa2 (hayabusa2.jaxa.jp/en) and the JPL Small-Body Database (size, shape and spin: Watanabe et al. 2019; pole: Preusker et al. 2019), read 20 October 2026",
+  },
+  {
+    id: 'asteroid-25143',
+    name: 'Itokawa',
+    designation: '25143 Itokawa',
+    aliases: ['25143 Itokawa', '1998 SF36'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=25143. Orbit 237, solved 2025-05-22, observations to 2024-12-19.
+    aAu: 1.324052284, e: 0.2801776415, iDeg: 1.620940811, nodeDeg: 69.0744975, argpDeg: 162.8409022,
+    maDeg: 170.6539059, epochJd: 2461200.5, tpJd: 2460936.70299,
+    solution: '2025-05-22', lastObs: '2024-12-19',
+    hMag: 19.26,
+    diameterKm: 0.33,
+    moons: null,
+    why: "A rubble pile 535 metres long, two lumps of loose rock touching. JAXA’s Hayabusa landed on it in 2005 and brought about 1 500 grains of its dust home in 2010, the first pieces of an asteroid ever returned.",
+    whySource: "JAXA, Hayabusa (global.jaxa.jp/projects/sas/hayabusa) and the JPL Small-Body Database (size and shape: Fujiwara et al. 2006; pole: Demura et al. 2006), read 20 October 2026",
+  },
+  // 0077 W3-d: end
 ];
 
 // HALLEY, for the same reason: the comets layer is JPL's snapshot or nothing, and the one comet

@@ -994,6 +994,16 @@ jobs:
         run: python3 tests/test_strip_shaders.py
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
         run: node tests/test_precompress.mjs
+      # 0077 W3-e: begin
+      - name: "How we know: the confidence filter, on the app's four honesty classes, in What to show (internal i#886)"
+        run: node tests/test_confidence.mjs
+      - name: "arrival views: authored and saved, as the link keys the app already reads (internal i#882)"
+        run: node tests/test_bookmarks.mjs
+      - name: "photo presets: shape, lens, shutter, look and tag, worn while photo mode is open and never stored (internal i#905)"
+        run: node tests/test_photopresets.mjs
+      - name: "verify-deploy compares the Lab and the worker with what deploy.sh uploads, so a clean deploy reports 0 differ (public #1214)"
+        run: node tests/test_verify_deploy.mjs
+      # 0077 W3-e: end
       - name: "the minifier a deploy runs: pinned by hash, licence headers kept, maps true, and the node tests pass against the tree it writes (internal #515)"
         run: node tests/test_minify_real.mjs
       - name: "the edge keeps the app between deploys and a browser still revalidates: the header, the invalidation that covers it, and the check after (internal #513)"
@@ -1140,6 +1150,12 @@ jobs:
       - name: "every deep-space hero's card says what is drawn, where it comes from and that no astronomer has reviewed it yet (#1187)"
         run: node tests/test_deep_labels.mjs
       # 0077 W2-e: end
+      # 0077 W3-f: begin
+      - name: "galaxy classes in deep space: M51 with NGC 5195, M81, M101 and M104 from their own numbers, the Antennae and their tails, the Hubble Ultra Deep Field from JADES at its redshifts (internal spec 0077 W3-f, #873, #875, #784)"
+        run: node tests/test_r13_galaxies.mjs
+      - name: "the deep field's galaxies are the size and hash their manifest says (internal spec 0077 W3-f)"
+        run: python3 scripts/build_deep_field.py --check
+      # 0077 W3-f: end
       # 0077 W2-d: begin
       - name: "Compare and the comparison lab: eleven worlds from NASA's fact sheets, the picture inside its box for every pair, the lab's order, the panel pressed (internal i#885, i#909)"
         run: node tests/test_compare.mjs

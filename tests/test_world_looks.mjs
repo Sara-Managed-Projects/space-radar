@@ -125,7 +125,7 @@ check(/laser altimeter measured/.test(recs.get('mars').meta.departure || '') && 
   const shipped = sites.split(/^  - id:/m).filter((row) => !/^\s*app:\s*false\b/m.test(row)).join('\n  - id:');
   const bodies = new Set([...shipped.matchAll(/\bworld:\s*([a-z]+)/g)].map((m) => m[1]));
   bodies.delete('earth'); // the Earth's sphere is scene/earth.js's own, cut by its own SEGMENTS
-  check(bodies.has('moon') && bodies.has('mars') && bodies.size === 2, `registry/sites.yaml puts ground sites on the Moon and Mars only (${[...bodies]})`);
+  check(bodies.has('moon') && bodies.has('mars') && bodies.has('titan') && bodies.size === 3, `registry/sites.yaml puts ground sites on the Moon, Mars and Titan only (${[...bodies]})`); // 0077 W3-d: Huygens
   for (const b of bodies) check(SITE_BODIES.has(b), `${b} has ground sites in registry/sites.yaml, so its sphere is cut finely`);
   const moonR = WORLDS.find((w) => w.id === 'moon').radiusKm;
   check(sagKm(moonR, 64) > 2 && sagKm(moonR, 64) < 2.3, `at 64 segments the Moon's facets sag ${sagKm(moonR, 64).toFixed(2)} km (the old shell)`);

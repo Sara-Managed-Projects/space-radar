@@ -16,6 +16,14 @@
 # copy with its ES modules through the pinned esbuild: the same script builds that copy here, in a
 # temp folder, with the same flags, and those folders are checked against it.
 #
+# THE LAB AND THE WORKER ARE BUILT TOO (public #1214; the 1.3.0 fix). deploy.sh uploads lab/ from
+# the BUILD (scripts/seo_lab.py puts a canonical, Open Graph and JSON-LD in each simulator's head)
+# and uploads sw.js stamped with the hashes of the app (scripts/stamp_sw.py). Neither equals the
+# file in site/, so comparing them with site/ reported about 77 pages and the worker as "differs"
+# on every clean deploy. They are built here, in the temp folder, the way deploy.sh builds them,
+# and compared with that. lab/_template/ is the contributor's starter: deploy.sh never builds or
+# uploads it, so it is not asked for. tests/test_verify_deploy.mjs holds this.
+#
 # WHAT IS COMPARED IS THE DECODED BODY (internal #514, 2026-10-09). The code and the bundled data are
 # stored at Brotli 11, so the bytes on the wire are not the file; scripts/fetch_hash.mjs asks with
 # `Accept-Encoding: br, gzip`, decodes, and hashes what a browser would be handed. Three more checks
@@ -53,7 +61,7 @@ for a in "$@"; do
     --strip-only) REAL=() ;;
     --any-encoding) ANY_ENCODING=1 ;;
     --expect=*) EXPECT="${a#--expect=}" ;;
-    -h|--help) sed -n '2,39p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,45p' "$0"; exit 0 ;;
     *) PATHS+=("$a") ;;
   esac
 done
@@ -73,6 +81,19 @@ if [ "$SOURCE" = 0 ]; then
   python3 scripts/minify_site.py --out "$MIN/min" --quiet ${REAL[@]+"${REAL[@]}"}
 fi
 
+# What deploy.sh uploads that is not site/'s file as it stands: the Lab from the build (seo_lab.py, with the
+# host build_seo.py defaults to, as deploy.sh runs it) and the worker stamped over the same js/ and css/ that
+# are compared above (no overlay with --source: that deploy stamps site/ as written).
+python3 - "$WORK/built" <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, "scripts")
+import build_seo, seo_lab
+seo_lab.build(Path(sys.argv[1]), build_seo.DEFAULT_HOST)
+PY
+OVERLAY=(); [ -n "$MIN" ] && OVERLAY=(--overlay "$MIN/min")
+python3 scripts/stamp_sw.py --site site ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$WORK/sw.js" >/dev/null
+
 # Every path at once, six at a time; a cache-busting query would test the origin, not what visitors
 # get, so the path itself is asked for.
 printf '%s\n' "${PATHS[@]}" | node scripts/fetch_hash.mjs --base="$BASE" > "$WORK/got.tsv"
@@ -82,13 +103,18 @@ printf '%s\n' "${PATHS[@]}" | SR_RULE="file://$PWD/scripts/precompress.mjs" node
   for (const p of readFileSync(0, "utf8").split("\n").filter(Boolean)) console.log(precompressed(p) ? "br" : "-");
 ' > "$WORK/want.txt"
 
-ok=0; bad=0; skipped=0; pages=0; sounds=0; br=0
+ok=0; bad=0; skipped=0; notdeployed=0; pages=0; sounds=0; br=0
 while IFS=$'\t' read -r got encoding status p <&3 && IFS= read -r want_encoding <&4; do
   local_file="site/$p"
   [ -f "$local_file" ] || { echo "MISSING LOCALLY  $p"; bad=$((bad + 1)); continue; }
+  case "$p" in lab/_template/*) notdeployed=$((notdeployed + 1)); continue ;; esac
   if [ "$SKIP_LARGE" = 1 ] && [ "$(wc -c < "$local_file")" -gt 1048576 ]; then skipped=$((skipped + 1)); continue; fi
   served_file="$local_file"
-  case "$p" in js/*.js|css/*.css|vendor/*.js) [ -n "$MIN" ] && [ -f "$MIN/min/$p" ] && served_file="$MIN/min/$p" ;; esac
+  case "$p" in
+    js/*.js|css/*.css|vendor/*.js) [ -n "$MIN" ] && [ -f "$MIN/min/$p" ] && served_file="$MIN/min/$p" ;;
+    lab/*) [ -f "$WORK/built/$p" ] && served_file="$WORK/built/$p" ;;
+    sw.js) served_file="$WORK/sw.js" ;;
+  esac
   want=$(hash < "$served_file")
   if [ "$want" != "$got" ]; then
     echo "DIFFERS  $p  (status $status)"; bad=$((bad + 1))
@@ -133,6 +159,6 @@ if [ -n "$EXPECT" ]; then
   esac
 fi
 
-echo "verify-deploy: $ok match ($br of them stored as Brotli, $pages trip pages and $sounds sound files among them), $bad differ, $skipped skipped (over 1 MB) -- $BASE"
+echo "verify-deploy: $ok match ($br of them stored as Brotli, $pages trip pages and $sounds sound files among them), $bad differ, $skipped skipped (over 1 MB), $notdeployed not deployed (the Lab's starter) -- $BASE"
 echo "verify-deploy: $note"
 [ "$bad" = 0 ]

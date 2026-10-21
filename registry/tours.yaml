@@ -1291,10 +1291,13 @@ tours:
           # Soft Landing; 6 of them Crewed Landing. The 19 is registry/sites.yaml's lunar rows
           # that are records -- two of them the rovers Luna 17 and Luna 21 carried, where they
           # stopped -- and tests/test_moon_trip.mjs holds this card to that count.
+          # 0077 W3-c: Yutu has a row of its own since release 1.3.0 (public #1125), beside its lander's, so
+          # the map marks the same 19 landings and one rover more.
           body: >-
             NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings,
             six of them with people aboard. This map marks 19 of them, two by where their rovers
-            stopped. Luna 9, the first of all, is not one: nobody knows exactly where it is.
+            stopped, and Chang'e 3's rover Yutu beside its lander. Luna 9, the first of all, is not
+            one: nobody knows exactly where it is.
 
   # =============================================================================================
   # OUT PAST JUPITER. Ten stops, each on the stage where its subject is drawn where it really is:

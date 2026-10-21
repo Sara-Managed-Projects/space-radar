@@ -35,9 +35,18 @@ export const HEROES = [
   // The Carina Nebula (scene/deep/carina.js, Orion's technique with its own profile) and the Small Magellanic Cloud
   // (scene/deep/smc.js), read lazily as W3-c's lines are: the stub is what the coordinator reads at once.
   { id: 'carina', record: 'dso-carina-nebula', stage: 'W2-e', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./carina.js'), import('../../data/hero-carina.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  // The SMC is not shipped yet (registry/deepsky-heroes/smc.yaml says why): the coordinator draws it as main does.
-  { id: 'smc', record: 'dso-smc', stage: 'W2-e', stub: { shipped: false, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./smc.js'), import('../../data/hero-smc.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // The SMC ships with its light as patches (0077 W3-f, internal #783: within main's frame cost, no haze, no veil).
+  { id: 'smc', record: 'dso-smc', stage: 'W2-e', stub: { shipped: true, drawn: ['model'], children: [] }, /* 0077 W3-f: shipped */ profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./smc.js'), import('../../data/hero-smc.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   // 0077 W2-e: end
+  // 0077 W3-f: begin
+  // Spirals from their own numbers (internal #873) and interacting galaxies (internal #875), all drawn by scene/deep/spiral.js's
+  // generator from their profiles (registry/deepsky-heroes/<id>.yaml), read lazily as W3-c's lines are.
+  { id: 'm51', record: 'dso-m51', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m51.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm81', record: 'dso-m81', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m81.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm101', record: 'dso-m101', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m101.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm104', record: 'dso-m104', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m104.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'antennae', record: 'dso-antennae-galaxies', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-antennae.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // 0077 W3-f: end
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.
@@ -50,6 +59,9 @@ export const DEEP_LAYERS = [
   // The Magellanic Bridge and Stream (scene/deep/magellanic.js: HI4PI's hydrogen at a modelled distance, false colour) ship
   // with the SMC's hero, not before (internal #783, wave 3): MAGELLANIC below is its line, kept out of this list until then.
   // 0077 W2-e: end
+  // 0077 W3-f: begin (the SMC ships, and its Bridge and Stream with it: MAGELLANIC's line, defined below, is read lazily)
+  { id: 'magellanic', stage: 'W2-e', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./magellanic.js') },
+  // 0077 W3-f: end
 ];
 
 // 0077 W2-e: begin

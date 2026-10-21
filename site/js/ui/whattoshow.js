@@ -3,6 +3,7 @@
 //
 // Contract: createWhatToShow(ctx, opts?) -> { root, refresh(), destroy() }
 //   opts.storage: where the open groups are remembered (default: localStorage, if it can be reached)
+// 0077 W3-e: the section "How we know" (ui/confidence.js) sits between the layers and Colour by.
 // Also exported, pure: countText(layer, records, n), layerSwatch(layer) -> {token, hex},
 //   groupLayers(layers, groups), groupTally(rows, isOn), defaultOpen(groups, isOn),
 //   readOpen(storage), writeOpen(storage, ids), matchesFilter(layer, query), setGroupOn(ctx, layers, on)
@@ -53,6 +54,9 @@ import { qualityPanel } from './qualitypanel.js';
 // 0076 W4-c: the Motion row below is built here, in the Quality row's shape.
 import { overlayPanel } from './overlaypanel.js';
 import { otherLightPanel } from './otherlight.js';
+// 0077 W3-e: begin
+import { confidencePanel } from './confidence.js';
+// 0077 W3-e: end
 import { LAYER_GROUPS } from '../data/layers.registry.js';
 
 const REFRESH_MS = 1000;
@@ -519,6 +523,15 @@ export function createWhatToShow(ctx, opts = {}) {
   window.addEventListener('sr:quality', onQuality);
   window.addEventListener('sr:tier', onTier);
 
+  // 0077 W3-e: begin (internal i#886) HOW WE KNOW: show only the dots whose position is Measured, Worked out, Illustrative or Sample.
+  let confidence = null;
+  if (ctx && typeof ctx.setConfidence === 'function') {
+    confidence = confidencePanel(ctx);
+    confidence.classList.add('sr-show__section');
+    root.appendChild(confidence);
+  }
+  // 0077 W3-e: end
+
   // --- colour by (spec 0026 req 11) -------------------------------------------------------------
   const key = createColorKey(ctx);
   key.root.classList.add('sr-show__section');
@@ -658,6 +671,7 @@ export function createWhatToShow(ctx, opts = {}) {
     refresh() {
       paint();
       key.refresh();
+      if (confidence) confidence.refresh(); // 0077 W3-e
       if (!timer) timer = setInterval(() => { if (root.closest('[hidden]')) { clearInterval(timer); timer = 0; } else paint(); }, REFRESH_MS);
     },
     destroy() {
@@ -669,6 +683,7 @@ export function createWhatToShow(ctx, opts = {}) {
       window.removeEventListener('sr:colour-key', onAny);
       document.removeEventListener('sr:layer-toggle', onAny);
       key.destroy();
+      if (confidence) confidence.destroy(); // 0077 W3-e
       if (overlay) overlay.destroy();
       if (otherLight) otherLight.destroy();
       if (look) look.destroy();

@@ -5,7 +5,16 @@
 
 /** The look each file is drawn in, where its row states one (scene/pbr.js lookOf decides the rest). */
 export const MODEL_LOOKS = {
-  "hubble.glb": "toon",
-  "jwst.glb": "toon",
-  "slim.glb": "pbr"
+  "biomass.glb": "pbr",
+  "earthcare.glb": "pbr",
+  "hubble.glb": "pbr",
+  "iris.glb": "pbr",
+  "isis-1.glb": "pbr",
+  "jwst.glb": "pbr",
+  "metop-sg-a.glb": "pbr",
+  "sert-2.glb": "pbr",
+  "slim.glb": "pbr",
+  "swarm.glb": "pbr",
+  "timed.glb": "pbr",
+  "tracers.glb": "pbr"
 };

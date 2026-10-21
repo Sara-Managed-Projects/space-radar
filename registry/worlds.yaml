@@ -329,7 +329,8 @@ worlds:
     radius_km: 2574.76
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: titan}
-    frames: [inertial]
+    # 0077 W3-d: a fixed frame by its tidal lock (propagate/frames.js lockedAxes), for the Huygens site (registry/sites.yaml)
+    frames: [inertial, fixed]
     look: {flat: "#8f5e26", textures: titan}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Titan 606 ... Mean Radius (km) 2574.76"}

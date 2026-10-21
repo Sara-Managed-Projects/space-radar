@@ -40,7 +40,8 @@ check(P.lookOf({ stated: 'toon', route: 'own', roles: true }) === 'toon', 'look:
 check(P.lookOf({ stated: 'pbr', route: 'class', roles: false }) === 'pbr', 'look: pbr is obeyed');
 check(P.lookOf({ stated: 'pbr', route: 'own', roles: true, surface: true }) === 'toon', 'a world with a map of its surface is never physically based');
 check(P.lookOf({ stated: 'shiny', route: 'own', roles: true }) === 'pbr', 'a look that is neither word is ignored (the generator refuses it)');
-for (const [name, role] of [['foil', 'foil'], ['foil_3', 'foil'], ['solar-panel', 'panel'], ['solar-panel_1', 'panel'], ['body_12', 'body'], ['Mesh.016', null], ['Default.008', null]]) {
+for (const [name, role] of [['foil', 'foil'], ['foil_3', 'foil'], ['solar-panel', 'panel'], ['solar-panel_1', 'panel'], ['body_12', 'body'], ['Mesh.016', null], ['Default.008', null],
+  ['mirror', 'mirror'], ['mirror_1', 'mirror']]) { // 0077 W3-a: the mirror role
   check(P.roleOf(name) === role, `the part ${name} has the role ${role} (got ${P.roleOf(name)})`);
 }
 
@@ -69,7 +70,13 @@ const finishes = (file) => {
 const has = (file, finish) => [...finishes(file).values()].includes(finish);
 check(has('iss.glb', 'white-cloth'), 'the ISS has white blanket (its modules\' beta cloth)');
 check(has('iss.glb', 'white-paint') && has('iss.glb', 'bare-metal'), 'the ISS has white paint and bare metal');
-check(has('jwst.glb', 'gold-foil') || has('jwst.glb', 'gold-body'), 'Webb has gold');
+// 0077 W3-a: begin
+// Webb re-baked (release 1.3.0 wave 3): its gold is the mirror now, smooth metal, and the sunshield is silver and purple foil.
+check(has('jwst.glb', 'mirror') && !has('jwst.glb', 'gold-foil'), 'Webb has its gold mirror, and no gold blanket where the mirror is');
+check(has('jwst.glb', 'silver-foil') && has('jwst.glb', 'black-blanket') && has('jwst.glb', 'cells'), 'Webb has its silver shield, its black blanket and its cells');
+check(P.finishOf('mirror', '#e2ba4e') === 'mirror' && P.FINISHES.mirror.metalness === 1 && P.FINISHES.mirror.crinkle === 0, 'a mirror is smooth metal, whatever its colour');
+check(has('hubble.glb', 'silver-foil') && has('hubble.glb', 'cells') && has('hubble.glb', 'white-paint'), 'Hubble has its silver foil, its cells and its white radiator panels');
+// 0077 W3-a: end
 check(has('gaia.glb', 'silver-foil') && has('gaia.glb', 'black-blanket') && has('gaia.glb', 'cells'), 'Gaia has its silver shield, its black blanket and its cells');
 check(has('lunar-module.glb', 'gold-foil'), 'the lunar module has its gold blanket');
 check(has('vikram.glb', 'gold-foil') && has('vikram.glb', 'cells'), 'Vikram has its gold blanket and its cells');

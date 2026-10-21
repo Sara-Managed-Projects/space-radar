@@ -327,6 +327,7 @@ export function createGlyphLayer(scene, layer = {}) {
   let attrLit = null;
   // A colour key (spec 0026 req 11): a function of the record, or null for the class colours.
   let colourFn = null;
+  let filterFn = null; // 0077 W3-e: see setFilter
   let currentRecords = [];
   let attrSize = null;
   let attrOpacity = null;
@@ -542,6 +543,10 @@ export function createGlyphLayer(scene, layer = {}) {
     const ownPaths = ephemerisOf && ephemerisOf.size ? ephemerisOf : null;
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
+      // 0077 W3-e: begin (internal i#886: the confidence filter). A record the filter leaves out is not drawn and not tappable, like
+      // one with no position; the selection stays whatever the filter says, so a card never loses its own dot.
+      if (filterFn !== null && rec.id !== selectedId && !filterFn(rec)) continue;
+      // 0077 W3-e: end
       let p = null;
       if (workerPos && workerMask[i] === 1 && rec.id !== selectedId && !(ownPaths && ownPaths.has(rec.id))) {
         const x = workerPos[i * 3];
@@ -730,6 +735,10 @@ export function createGlyphLayer(scene, layer = {}) {
    * the per-record colour table changes; the next update() copies it into the instance buffer,
    * with the selection's ember still winning.
    */
+  // 0077 W3-e: begin
+  /** fn(record) -> boolean: only the records it says yes to are drawn (ui/confidence.js); null puts them all back. */
+  function setFilter(fn) { filterFn = typeof fn === 'function' ? fn : null; }
+  // 0077 W3-e: end
   function recolour(fn) {
     colourFn = typeof fn === 'function' ? fn : null;
     if (!recColour) return;
@@ -790,6 +799,7 @@ export function createGlyphLayer(scene, layer = {}) {
     pick,
     pickAll,
     recolour,
+    setFilter, // 0077 W3-e
     setVisible(b) {
       if (mesh) mesh.visible = !!b;
     },

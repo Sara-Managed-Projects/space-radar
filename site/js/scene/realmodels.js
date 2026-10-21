@@ -137,6 +137,7 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
 // year will pass this gate, and the row's `generic` is what keeps the card honest until it is drawn.
 // Each answer carries its own `made` and `axes`: the family box has neither.
 const GPS_FILE = { made: 'dimensions', axes: 'app' };
+const W3B = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0077 W3-b
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
@@ -347,7 +348,7 @@ export const REAL_MODELS = {
     37214: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3B', catalogue: 'FENGYUN 3B', made: 'dimensions', axes: 'app' },
     39260: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3C', catalogue: 'FENGYUN 3C', made: 'dimensions', axes: 'app' },
     43010: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3D', catalogue: 'FENGYUN 3D', made: 'dimensions', axes: 'app' },
-    20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
+    20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST', made: 'dimensions' }, // 0077 W3-a: rebuilt in code from cited dimensions (row `hubble`)
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
     // different spacecraft: a boxy 1999 bus, where 8 and 9 are the same Orbital/Northrop bus with
@@ -792,6 +793,48 @@ export const REAL_MODELS = {
     67481: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 20', catalogue: 'SZ-20 MODULE', made: 'dimensions' },
     69328: { file: 'shenzhou-orbital.glb', colour: 'station', name: 'the orbital module of Shenzhou 22', catalogue: 'SZ-22 MODULE', made: 'dimensions' },
     // 0077 W1-a: end
+    // 0077 W3-b: begin
+    // FOUR ESA AND EUMETSAT EARTH EXPLORERS (release 1.3.0 W3-b; public #955, #956, #1101, #993), each BUILT in
+    // code from cited metres and looked-at pictures (registry/models.yaml rows `earthcare`, `biomass`, `swarm`,
+    // `metop-sg-a`): no agency publishes a model of them under terms that allow a derivative. Each had no route and
+    // wore the class shape of a satellite. All four to the app's axes (`axes: 'app'`: +Z the Earth face, the wing
+    // along X with its cells toward +Y), so each flies as its procedural stand-in did, Earth face down.
+    //   earthcare.glb   EarthCARE: the radar's dish out in front (+X), the lidar and the radiometer on the Earth
+    //                   face, five panels trailing along -X. TRUE: the radar and the lidar look straight down, the
+    //                   wing trails. NOT TRUE: the app's +X is square to the Sun and the Earth, not the direction
+    //                   of flight, and the real wing turns about its axis to follow the Sun.
+    //   biomass.glb     Biomass: the 12 m reflector over the bus on its boom, its hollow toward the feed on the
+    //                   bus's wall; the wing along +X. NOT TRUE: the real radar looks to one side (the craft rolls).
+    //   swarm.glb       Swarm A, B and C, one design: the flat floor to the Earth, the arrays as the roof, the
+    //                   boom along -X. The real boom trails along the track; the app's X is not the track.
+    //   metop-sg-a.glb  MetOp-SG A1: the instruments to the Earth, the wing out to the side along -X. Not
+    //                   MetOp-B or -C (metop.glb above), and the B satellites are not this shape.
+    // Each is `W3B` (beside GPS_FILE: a satellite's colour, made from dimensions, the app's axes), so the six
+    // rows cost the boot graph fewer bytes (registry/budgets.yaml deployed_boot_js_bytes); no `catalogue:`
+    // here, which nothing reads.
+    59908: { ...W3B, file: 'earthcare.glb', name: 'EarthCARE' },
+    63772: { ...W3B, file: 'biomass.glb', name: 'Biomass' },
+    39451: { ...W3B, file: 'swarm.glb', name: 'Swarm B' },
+    39452: { ...W3B, file: 'swarm.glb', name: 'Swarm A' },
+    39453: { ...W3B, file: 'swarm.glb', name: 'Swarm C' },
+    65159: { ...W3B, file: 'metop-sg-a.glb', name: 'MetOp-SG A1' },
+    // 0077 W3-b: end
+    // 0077 W3-a: begin
+    // NASA SCIENCE CRAFT (release 1.3.0, stage W3-a; public #1090, #1091, #1092, #1094, #1110). NASA 3D Resources has
+    // none of the five (its 1 583 paths read 2026-10-20), so each is built here from cited dimensions and photographs
+    // (`made: 'dimensions'`; rows `iris`, `timed`, `tracers`, `sert-2`, `isis-1`), by number, only for the numbers that
+    // are that craft (names as the live saved data of 2026-10-20 has them). `axes: 'app'`: each file was built to the
+    // app's axes (+Z the Earth face, the wings along X with their cells to +Y), so it flies as the procedural shape did.
+    39197: { file: 'iris.glb', colour: 'telescope', name: 'IRIS, the Interface Region Imaging Spectrograph', catalogue: 'IRIS', made: 'dimensions', axes: 'app' },
+    26998: { file: 'timed.glb', colour: 'satellite', name: 'TIMED', catalogue: 'TIMED', made: 'dimensions', axes: 'app' },
+    // The two TRACERS craft are one design: one file serves both.
+    64870: { file: 'tracers.glb', colour: 'satellite', name: 'TRACERS 1', catalogue: 'TRACERS 1', made: 'dimensions', axes: 'app' },
+    64873: { file: 'tracers.glb', colour: 'satellite', name: 'TRACERS 2', catalogue: 'TRACERS 2', made: 'dimensions', axes: 'app' },
+    // SERT 2 flew, and is still in orbit, ATTACHED TO ITS AGENA STAGE: the catalogued object is the pair, and so is the file.
+    4327: { file: 'sert-2.glb', colour: 'satellite', name: 'SERT 2 on its Agena stage', catalogue: 'SERT 2', made: 'dimensions', axes: 'app' },
+    // ISIS 1 SPUN, and nobody publishes its attitude now: not turned (no `axes`), it keeps the seeded constant angle.
+    3669: { file: 'isis-1.glb', colour: 'satellite', name: 'ISIS 1', catalogue: 'ISIS 1', made: 'dimensions' },
+    // 0077 W3-a: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -1256,6 +1299,23 @@ export const REAL_MODELS = {
     // half. The klass gate is load-bearing here: EROS A and EROS B are Israeli imaging satellites,
     // and without it they would be drawn as a 33 km asteroid.
     eros: { file: 'asteroid-eros.glb', colour: 'asteroid', name: '433 Eros', klass: ['asteroid'] },
+    // 0077 W3-d: begin -- RYUGU, ITOKAWA, AND DIDYMOS WITH DIMORPHOS (release 1.3.0 stage W3-d, internal #866), each
+    // from its mission's own shape model (registry/models.yaml; scripts/small-body-glb.py), in its body's axes, and
+    // turned by `spin` (scene/moonshape.js applySpin): the pole and the prime meridian in the IAU's form, J2000.
+    // Itokawa waited for a licence reading (tests/test_station_shapes.mjs): the ISAS Data Policy names shape models
+    // as open data, "free of charge, either for commercial or non-commercial purposes", to be credited "ISAS/JAXA".
+    ryugu: { file: 'asteroid-ryugu.glb', colour: 'asteroid', name: '162173 Ryugu', klass: ['asteroid'], spinWords: 'spin',
+      // JAXA's SPICE constants for Ryugu, ryugu_v10.tpc (BODY2162173_POLE_RA, _POLE_DEC, _PM): 7.632624787 h a turn.
+      spin: { poleRaDeg: 96.43112, poleDecDeg: -66.38741, w0Deg: 274.16225, wDegPerDay: 1131.98280286 } },
+    itokawa: { file: 'asteroid-itokawa.glb', colour: 'asteroid', name: '25143 Itokawa', klass: ['asteroid'], spinWords: 'spin',
+      // Gaskell's shape model's own pole and rate (BODY2025143_POLE_RA, _POLE_DEC, _PM in its bundle description): 12.1324 h.
+      spin: { poleRaDeg: 90.02564, poleDecDeg: -67.02704, w0Deg: 129.73, wDegPerDay: 712.1437611 } },
+    didymos: { file: 'asteroid-didymos.glb', colour: 'asteroid', name: '65803 Didymos and its moon Dimorphos', klass: ['asteroid'], spinWords: 'pair',
+      // The DART team's SPICE constants, didymos_system_15.tpc (BODY920065803_POLE_RA, _POLE_DEC, _PM): 2.2600 h a turn.
+      // Dimorphos after DART's impact: 1.152 km from Didymos, 11.3674 h round it (Richardson et al. 2024, PSJ 5:182, Table 2).
+      spin: { poleRaDeg: 69.326861266078069, poleDecDeg: -72.724550395829496, w0Deg: 0, wDegPerDay: 3823.008849557522,
+        moon: { node: 'dimorphos-orbit', aKm: 1.152, periodH: 11.3674 } } },
+    // 0077 W3-d: end
     // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
     // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
     // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.
@@ -1368,6 +1428,21 @@ export const REAL_MODELS = {
     // toon ramp drew its blankets as a flat yellow box, and shipped on the physically based look (scene/pbr.js).
     slim: { build: 'lander', file: 'slim.glb', colour: 'site', name: 'SLIM, as it came to rest on its nose', displayName: 'SLIM, near Shioli crater', made: 'dimensions' },
     // 0077 W2-pbr: end
+    // 0077 W3-c: begin
+    // CHINA'S LANDERS AND ROVERS AND THE LUNOKHODS (public #1124 to #1127), each built in code from cited metres and
+    // photographs (registry/models.yaml rows `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`,
+    // `lunokhod-2`) and drawn as it stands now: the Chang'e 3 and 4 landers with their rover gone and both ramps down,
+    // the Chang'e 5 lander with its ascender gone (Chang'e 6's is the same design), the Lunokhods with their lids open.
+    // Yutu has a site of its own (LROC's 2016 table); Yutu-2 has none, because where it is now is not published.
+    utopia: { build: 'rover', file: 'zhurong.glb', colour: 'site', name: 'Zhurong', displayName: 'Zhurong, Utopia Planitia', made: 'dimensions' },
+    'change-3': { build: 'lander', file: 'change-3.glb', colour: 'site', name: "the Chang'e 3 lander, Yutu gone and its ramps down", displayName: "Chang'e 3, Mare Imbrium", made: 'dimensions' },
+    'change-4': { build: 'lander', file: 'change-4.glb', colour: 'site', name: "the Chang'e 4 lander, Yutu-2 gone and its ramps down", displayName: "Chang'e 4", made: 'dimensions' },
+    yutu: { build: 'rover', file: 'yutu.glb', colour: 'site', name: 'the Yutu rover', displayName: 'Yutu rover, Mare Imbrium', made: 'dimensions' },
+    'change-5': { build: 'lander', file: 'change-5.glb', colour: 'site', name: "the Chang'e 5 lander, its ascender gone", displayName: "Chang'e 5, Oceanus Procellarum", made: 'dimensions' },
+    'change-6': { build: 'lander', file: 'change-5.glb', colour: 'site', name: "the Chang'e 6 lander, of Chang'e 5's design, its ascender gone", displayName: "Chang'e 6, Apollo basin", made: 'dimensions' },
+    'lunokhod-1': { build: 'rover', file: 'lunokhod-1.glb', colour: 'site', name: 'Lunokhod 1, its lid open', displayName: 'Lunokhod 1, Mare Imbrium', made: 'dimensions' },
+    'lunokhod-2': { build: 'rover', file: 'lunokhod-2.glb', colour: 'site', name: 'Lunokhod 2, its lid open', displayName: 'Lunokhod 2, Le Monnier crater', made: 'dimensions' },
+    // 0077 W3-c: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

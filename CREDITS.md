@@ -51,6 +51,15 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: begin -->
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-b: begin -->
+| The shapes of EarthCARE, Biomass, Swarm and MetOp-SG A1 | built by us in code from published dimensions | CC0, CC BY-SA 3.0 IGO or CC BY-SA 4.0 where a picture was compared; ours | [3b-15](#3b-15-four-esa-and-eumetsat-earth-explorers-built-from-dimensions--earthcare-biomass-swarm-metop-sg-a1-2026-10-20) |
+<!-- 0077 W3-b: end -->
+<!-- 0077 W3-c: begin -->
+| The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
+<!-- 0077 W3-c: end -->
+<!-- 0077 W3-a: begin -->
+| The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
+<!-- 0077 W3-a: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -572,7 +581,7 @@ than counted by hand.
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 148 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 142 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 76 KB |
+| `hubble.glb` | rebuilt by us in code in release 1.3.0 (see [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20)); NASA's Hubble Space Telescope (A) used for proportions only | NORAD 20580 | 408 KB | <!-- 0077 W3-a -->
 | `kepler.glb` | Kepler (A) | Horizons -227 (Kepler) | 96 KB |
 | `roman.glb` | Nancy Grace Roman Space Telescope (B) | Horizons -211 (Nancy Grace Roman Space Telescope) | 162 KB |
 | `spitzer.glb` | Spitzer Space Telescope | Horizons -79 (Spitzer) | 166 KB |
@@ -580,7 +589,7 @@ than counted by hand.
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
 | `swift.glb` | Swift | NORAD 28485 (SWIFT) | 147 KB |
 | `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
-| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 (James Webb Space Telescope) | 211 KB |
+| `jwst.glb` | James Webb Space Telescope (A), re-baked with its mirror and sunshield in true materials (release 1.3.0, W3-a) | Horizons -170 (James Webb Space Telescope) | 476 KB | <!-- 0077 W3-a -->
 
 **Satellites**
 
@@ -645,6 +654,11 @@ than counted by hand.
 | `asteroid-vesta.glb` | NOT from NASA 3D Resources since 2026-10-07: DLR's stereo height model of Vesta from Dawn's Framing Camera pictures (`Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd`, hosted by USGS Astrogeology, <https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_HAMO_DTM_DLR_Global_48ppd.lbl>), credit NASA/JPL-Caltech/UCLA/MPS/DLR/IDA; thinned to 3 072 triangles and given texture coordinates by `scripts/shape-to-glb.py`, so that it can wear DLR's mosaic on the same grid of longitudes. Licence as the mosaic's (section 2): NASA's media guidelines; the height model was made at DLR | 4 Vesta | 50 KB |
 | `asteroid-eros.glb` | Gaskell Eros Shape Model V1.1 (NASA PDS, not NASA 3D Resources): Gaskell, R. (2021), doi:10.26033/d0gq-9427. CC0 under NASA's science data policy | 433 Eros | 22 KB |
 | `dwarf-ceres.glb` | Ceres SPC Shape Model Dataset V1.0 (NASA PDS, not NASA 3D Resources): Park, R.S. and Buccino, D.R. (2018), DAWN-A-FC2-5-CERESSHAPESPC-V1.0. CC0 under NASA's science data policy. Since 2026-10-07 with texture coordinates (longitude and latitude of each vertex), for the map in section 2 | 1 Ceres | 50 KB |
+<!-- 0077 W3-d: begin -->
+| `asteroid-ryugu.glb` | Hayabusa2's SPC shape model of Ryugu, `ryugu_shape_spc_49k_v20200323` (JAXA's PDS4 archive DARTS, Hayabusa2 SPICE bundle, doi:10.17597/isas.darts/hyb2-00600; Watanabe et al. 2019, Science 364, 268). ISAS Data Policy: open data "can be used free of charge, either for commercial or non-commercial purposes. They may be copied, forwarded or modified", credit "ISAS/JAXA" | 162173 Ryugu | 58 KB |
+| `asteroid-itokawa.glb` | Gaskell Itokawa Shape Model V1.1 (NASA PDS Small Bodies Node): Gaskell, R. et al. (2021), doi:10.26033/3b2j-yy57, from Hayabusa's AMICA images. ISAS Data Policy (as for Ryugu), credit "ISAS/JAXA" | 25143 Itokawa | 58 KB |
+| `asteroid-didymos.glb` | The DART team's shape models of Didymos (v003) and Dimorphos (v004): Daly, R.T. et al. (2023), DART Shapemodel Archive Bundle, NASA PDS Small Bodies Node, doi:10.26007/96fn-p578. CC0 under NASA's science data policy | 65803 Didymos and its moon Dimorphos | 61 KB |
+<!-- 0077 W3-d: end -->
 
 **The shapes of Phobos and Deimos** are not `.glb` files: `site/js/data/moonshapes.js` holds a radius
 every 5 degrees for each, which `site/js/scene/moonshape.js` bends the moon's sphere to
@@ -1336,6 +1350,98 @@ pictures; details simplified".
 **Credit line:** `3D model: built by Space Radar from JAXA's published dimensions; compared with a photograph of JAXA's model by Artem.G (CC BY 4.0)`.
 
 <!-- 0077 W2-pbr: end -->
+<!-- 0077 W3-b: begin -->
+## 3b-15. Four ESA and EUMETSAT Earth explorers built from dimensions — EarthCARE, Biomass, Swarm, MetOp-SG A1 (2026-10-20)
+
+Release 1.3.0, stage W3-b (public #955, #956, #1101, #993). **No agency publishes a model of any of the four under terms that
+allow a derivative**: NASA's 3D Resources and NASA Science have none of them; ESA's terms for the pictures on its site (the ESA
+Standard Licence) allow use for information and education, not an altered model, and EUMETSAT and JAXA publish none. So each
+file was built in code with the part library from cited numbers. **No ESA, JAXA, EUMETSAT or Airbus picture or model is in a
+file.** The layouts were read off pictures that are free (named below, with credit) and off ESA's own photographs and renders
+under the ESA Standard Licence, which were looked at only and are on no sheet. **Swarm has no free picture**: it was built from
+eoPortal's numbers, its layout read off ESA's pictures and not traced, as its issue asked. No image-to-3D model was used. Their
+cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `earthcare.glb` (75 KB) | EarthCARE: a white body 4.1 by 2.3 by 2.0 m, the cloud radar's 2.5 m dish out in front looking at the Earth on its tower and truss, the lidar's 620 mm telescope, the radiometer's three telescopes and the imager on the Earth face, five panels of 1.68 by 2.5 m trailing on a 1.9 m yoke, 17.4 m in all | ESA's facts and figures (<https://www.esa.int/Applications/Observing_the_Earth/FutureEO/EarthCARE/Facts_and_figures>) and eoPortal (<https://www.eoportal.org/satellite-missions/earthcare>); ESA's photographs "Cleaning EarthCARE" (<https://commons.wikimedia.org/wiki/File:Cleaning_EarthCARE_ESA25462753.jpg>) and "EarthCARE solar wing deployed" (<https://commons.wikimedia.org/wiki/File:EarthCARE_solar_wing_deployed_ESA24376876.jpeg>), CC BY-SA 3.0 IGO; Syced's photograph of JAXA's 1/50 model (<https://commons.wikimedia.org/wiki/File:Inside_JAXA_Space_Dome_5.jpg>, CC0); looked at only, ESA's renders and photographs on esa.int (read 2026-10-20). The body's size, the dish's place and lean and the instruments' sizes are ours | numbers are facts; the photographs are not in the file |
+| `biomass.glb` (94 KB) | Biomass: an orange-gold bus 1.3 by 1.2 by 3.4 m with its black face, the feed's two by two radiators on its wall, one wing of four panels, a three-piece boom of 7.5 m to the 12 m reflector: nine ribs from a hub, the gold mesh in scallops between them, a mast and its cords | eoPortal (<https://www.eoportal.org/satellite-missions/biomass>) and ESA's "The satellite" (<https://www.esa.int/Applications/Observing_the_Earth/FutureEO/Biomass/The_satellite>); ESA's picture "Biomass in orbit" (<https://www.esa.int/ESA_Multimedia/Images/2025/02/Biomass_in_orbit>) and photograph "Rolling Biomass to the cleanroom" (<https://commons.wikimedia.org/wiki/File:Rolling_Biomass_to_the_cleanroom_ESA507406.jpg>), CC BY-SA 3.0 IGO; looked at only, ESA's photographs and renders on esa.int and the satellite's own picture of the opened reflector (read 2026-10-20). The bus's size, the number of ribs and the reflector's tilt are ours | numbers are facts; the pictures are not in the file |
+| `swarm.glb` (32 KB) | Swarm (A, B and C, one design): a body 1.5 m wide and 0.85 m high at its ram face, its roof the two arrays, narrowing to the back; the electric field instrument and the Langmuir probes in front; a 4.3 m boom with the optical bench and its star trackers and the scalar magnetometer at the tip; 9.15 m in all | eoPortal (<https://www.eoportal.org/satellite-missions/swarm>); NO FREE PICTURE; looked at only, ESA's photographs and pictures on esa.int (read 2026-10-20). The taper, the ridge and the instruments' sizes are ours | numbers are facts; nothing of any picture is in the file |
+| `metop-sg-a.glb` (105 KB) | MetOp-SG A1: a gold body 6.5 by 2.6 by 2.15 m over a dark payload module, IASI-NG with its cooler's shield on top at one end, METimage, Sentinel-5, the microwave sounder and 3MI on the Earth face, one wing of four panels 2.4 by 2.5 m out to the side, 11.75 m from the wall | eoPortal (<https://www.eoportal.org/satellite-missions/metop-sg>) and ESA's MetOp-SG facts and figures; ESA's pictures of the A satellite on Commons (<https://commons.wikimedia.org/wiki/File:MetOp_Second_Generation_A-type_satellite_ESA511182.jpg>, <https://commons.wikimedia.org/wiki/File:MetOp-SG-A_instruments_ESA511184.jpg>, CC BY-SA 3.0 IGO); Don-vip's photographs of A1 at Airbus (<https://commons.wikimedia.org/wiki/File:Metop-SG_A1_avec_IASI-NG-09.jpg> and its series, CC BY-SA 4.0) (read 2026-10-20). The instruments' sizes and places are ours | numbers are facts; the pictures are not in the file |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `earthcare`, `biomass`, `swarm`, `metop-sg-a` |
+
+**Credit lines:**
+`3D model: built by Space Radar from ESA's and eoPortal's published dimensions; compared with photographs by ESA (CC BY-SA 3.0 IGO) and Syced (CC0)`;
+`3D model: built by Space Radar from ESA's and eoPortal's published dimensions; compared with ESA's pictures (CC BY-SA 3.0 IGO)`;
+`3D model: built by Space Radar from eoPortal's published dimensions`;
+`3D model: built by Space Radar from eoPortal's and ESA's published dimensions; compared with pictures by ESA (CC BY-SA 3.0 IGO) and Don-vip (CC BY-SA 4.0)`
+
+No logo, lettering, flag or insignia is on any of the four. ESA, JAXA, EUMETSAT, Airbus, the pictures' authors and eoPortal do
+not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0077 W3-b: end -->
+<!-- 0077 W3-c: begin -->
+## 3b-16. China's landers and rovers and the Lunokhods built from dimensions — Zhurong, Chang'e 3 and 4, Yutu, Chang'e 5 and 6, Lunokhod 1 and 2 (2026-10-20)
+
+Release 1.3.0, stage W3-c (public #1124, #1125, #1126, #1127). **No agency publishes a model of any of these craft under terms
+that allow a derivative**: CNSA and Lavochkin publish none, and NASA's 3D Resources and NASA Science's 3D models have none of
+them (read 2026-10-20). So each file was built in code, part by part, from cited numbers, with photographs looked at for what
+the numbers do not say, and each is drawn **as it stands now**: the Chang'e 3 and 4 landers with their rovers gone and both
+ramps down; the Chang'e 5 lander with its ascender gone (Chang'e 6's site wears the same file: the same design); Zhurong with
+its wings spread; the Lunokhods with their lids open. No image-to-3D model was used and no picture is in any file. The flags are
+drawn as plates; no logo and no lettering is on any mesh. Photographs under share-alike licences (the museums' mock-ups) were
+looked at only: nothing was traced from them. Their cards say "shape built from published dimensions and pictures; details
+simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `zhurong.glb` (81 KB) | Zhurong on Mars: the cited 2.6 by 3 by 1.85 m, the gold body under its gold-foil deck with two round windows, dust-tinted wings in gold frames, four swept wings, the mast and camera head, MarSCoDe, the climate station, the dish, the whips, six wheels on the suspension's beams | Wikipedia's "Zhurong (rover)" and zh.wikipedia's "祝融号火星车" (read 2026-10-20); the selfie with the lander (<https://commons.wikimedia.org/wiki/File:Zhurong-with-lander-selfie.png>, CNSA via China News Service, CC BY 4.0); the payload layout of Li et al. 2021 (<https://commons.wikimedia.org/wiki/File:Zhurong_payload.jpg>, CC BY 4.0); Regnart's suspension drawing (<https://commons.wikimedia.org/wiki/File:ZhurongFahrwerk.jpeg>, CC0) | numbers are facts; the pictures are not in the file |
+| `change-3.glb` (122 KB), `change-4.glb` (121 KB) | The Chang'e 3 and Chang'e 4 landers: an octagonal body 0.83 m off the ground, four legs 4.76 m across the pads, two panels, the main engine, eight thruster pods, both ramps down, the deck's camera, dish and whip; Chang'e 3 with its ultraviolet telescope and EUV camera, Chang'e 4 with its three LFS antennas | eoPortal's "Chang'e-3" (<https://eoportal.org/satellite-missions/chang-e-3>) and Wikipedia's "Chang'e 4" (read 2026-10-20); Yutu-2's pictures of the lander (<https://commons.wikimedia.org/wiki/File:ChangE-4_-_PCAM.png>, <https://commons.wikimedia.org/wiki/File:ChangE-4_-_PCAM_(51216550288).png>, CSNA/Siyu Zhang/Kevin M. Gill, CC BY 2.0); the lander's own picture of Yutu-2 leaving (<https://commons.wikimedia.org/wiki/File:Yutu-2_leaving_Chang_e-4-iau1901a.jpg>, CNSA, CC BY 4.0) | numbers are facts; the pictures are not in the files |
+| `yutu.glb` (95 KB) | Yutu (and Yutu-2, the same design, which has no site of its own): the cited 1.5 by 1 by 1.1 m body, two panels, the mast with its cameras 1.5 m up and the dish, the arm, six wheels on rocker and bogie | zh.wikipedia's "玉兔号月球车" and "嫦娥四号", eoPortal's "Chang'e-3" (read 2026-10-20); Yutu on the Moon (<https://commons.wikimedia.org/wiki/File:Yutu_rover.jpg>, IHEP/CAS, CC BY 4.0); Yutu-2 on the far side (<https://commons.wikimedia.org/wiki/File:ChangE-4,_Yutu-2.png>, CSNA/Siyu Zhang/Kevin M. Gill, CC BY 2.0) | numbers are facts; the pictures are not in the file |
+| `change-5.glb` (118 KB) | The Chang'e 5 lander, also drawn for Chang'e 6: the Chang'e 3 structure (cited), the ascender's empty seat, two arrays, the drill's column, the arm raised with its scoop, the flag on its boom | eoPortal's "Chang'e-5" (<https://www.eoportal.org/satellite-missions/chang-e-5>) and zh.wikipedia's "嫦娥五号" (read 2026-10-20); China News Service's pictures of the flight lander in test and its rendering of the flag (<https://commons.wikimedia.org/wiki/File:Chang-e_5_assembly_factory_test_1.png>, <https://commons.wikimedia.org/wiki/File:Chang-e_5_lander_ascender_assembly_test.png>, <https://commons.wikimedia.org/wiki/File:Chang-e-5-Lander-Flag.png>, CC BY 4.0) | numbers are facts; the pictures are not in the file |
+| `lunokhod-1.glb` (164 KB), `lunokhod-2.glb` (165 KB) | Lunokhod 1 and 2: the tub 1.7 by 1.6 m and 1.35 m high (cited), the round lid open with its cells, eight wire wheels, the TV cameras (Lunokhod 2's third high one), the cone and helical antennas, the retroreflector, the telephotometers | Wikipedia's "Lunokhod 1" and "Lunokhod 2" (read 2026-10-20); Lunokhod 2's model in Kaluga (<https://commons.wikimedia.org/wiki/File:Lunokhod_2_in_Kaluga_01.jpg>, <https://commons.wikimedia.org/wiki/File:Lunokhod_2_in_Kaluga_02.jpg>, Stolbovsky, CC BY 4.0); Lunokhod 1's full-size model (<https://commons.wikimedia.org/wiki/File:Lunokhod_1_moon_rover_(MMA_2011)_(1).JPG>, Armael, CC0); the Evergreen replica (<https://commons.wikimedia.org/wiki/File:USSR_Lunokhod_1_(6586684979)_(6).jpg>, Clemens Vasters, CC BY 2.0) | numbers are facts; the pictures are not in the files |
+| all seven | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and pictures (CNSA via China News Service, CC BY 4.0; Li et al. 2021, CC BY 4.0; Regnart, CC0)`;
+`3D model: built by Space Radar from published dimensions and pictures (CNSA/Siyu Zhang/Kevin M. Gill, CC BY 2.0; CNSA, CC BY 4.0)`;
+`3D model: built by Space Radar from published dimensions and pictures (IHEP/CAS, CC BY 4.0; CNSA/Siyu Zhang/Kevin M. Gill, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and pictures (China News Service, CC BY 4.0)`;
+`3D model: built by Space Radar from published dimensions and photographs of museum models (Stolbovsky, CC BY 4.0; Armael, CC0; Clemens Vasters, CC BY 2.0)`.
+
+CNSA, China News Service, the Chinese Academy of Sciences, Lavochkin, the museums and the pictures' authors do not endorse
+Space Radar, and none of them made or approved these shapes.
+
+<!-- 0077 W3-c: end -->
+<!-- 0077 W3-a: begin -->
+## 3b-16. NASA science craft built from dimensions — IRIS, TIMED, TRACERS, SERT 2, ISIS 1 (2026-10-20)
+
+Release 1.3.0, stage W3-a (public #1090, #1091, #1092, #1094, #1110). **NASA 3D Resources (its 1 583 paths) and NASA Science's 3D
+models have none of these five**, so each was built in code, part by part, from cited numbers, and compared side by side with
+the pictures below from four angles and more. No image-to-3D model was used and no picture is in any file. No logo and no lettering
+is on any mesh. Their cards say "shape built from published dimensions and pictures; details simplified". Two of them carry long thin
+parts DRAWN SHORT, because the app scales a model's longest side to one unit: ISIS 1's sounder dipoles (6.0 and 3.0 m tip to tip
+against 73 and 18.7 m) and TRACERS' four electric-field booms (1.25 m of their 3 m). Each row of `registry/models.yaml` cites every
+number and says what is ours.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `iris.glb` (114 KB) | IRIS as it flies: door open, both wings out, silver flight blankets | De Pontieu et al. 2014 (Solar Physics 289:2733, CC BY 4.0, figures 7 and 8); NASA's photographs (<https://commons.wikimedia.org/wiki/File:IRIS_spacecraft_model.png>, KSC-2013-2109) and Goddard's render (<https://commons.wikimedia.org/wiki/File:IRIS_satellite.jpg>) | public domain; CC BY 4.0 (the paper) |
+| `timed.glb` (148 KB) | TIMED: the bus, the optical bench with the four TIDI telescopes, GUVI, two four-panel wings | TIMED QuickFacts and the CDR (spdf.gsfc.nasa.gov); NASA's render (<https://commons.wikimedia.org/wiki/File:TIMED.jpg>); APL's photographs looked at only | public domain |
+| `tracers.glb` (69 KB) | TRACERS (both craft): the black octagon, its cells, brackets and booms (booms drawn short) | Miles et al. 2025 and Bonnell et al. 2025 (Space Sci. Rev.); NASA's turntable (<https://commons.wikimedia.org/wiki/File:TRACERS_spacecraft_turntable_(30fps_4k).webm>); SpaceX's encapsulation photograph (CC0) | public domain; CC0 |
+| `sert-2.glb` (126 KB) | SERT 2 on its Agena D, both wings out, its two ion thrusters | NASA's reports (NTRS 19710002423, 19720019048, 19710013187); NASA's painting C-70-2041 and the Tank 5 photograph (Commons) | public domain |
+| `isis-1.glb` (134 KB) | ISIS 1: the drum of cells and its crossed sounder dipoles (drawn short) | NRC Science Dimension 1969 (looked at only) and NSSDCA; NSSDCA's photograph of the flight craft (<https://nssdc.gsfc.nasa.gov/planetary/image/isis_1.jpg>) | public domain |
+
+**Credit lines:** `3D model: built by Space Radar from ... published dimensions; compared with ...` (each row's `credit:`).
+
+### Hubble rebuilt, and Webb re-baked, for the physically based look
+
+`hubble.glb` was NASA's (A) file, 7 670 triangles of plain cylinders and two flat plates; it is replaced by a build in code at
+flagship detail from cited dimensions and NASA's Servicing Mission 4 photographs (public domain), with (A) used for its proportions
+only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with its gold mirror segments as their own part (row `jwst`).
+
+| `hubble.glb` (408 KB) | Hubble as it has flown since SM4: silver foil, white NOBL and radiator panels, SA3 wings, door open | NASA's SM4 photographs (Commons, e.g. <https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg>); NASA 3D Resources' Hubble (A) for proportions | public domain |
+
+<!-- 0077 W3-a: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
@@ -1793,6 +1899,44 @@ Huygens Descent Trajectory Working Group's 2010 trajectory, as Atkinson, Kazemin
 Rayleigh scattering of a single exponential atmosphere along the grazing line to the Sun, with the
 column's optical depths from Hansen and Travis (1974, Space Science Reviews 16, 527). No image is used.
 
+<!-- 0077 W3-d: begin -->
+### Mars traverses, Titan's Huygens, named lunar places, small-body shapes (0077 W3-d)
+
+Release 1.3.0 stage W3-d (internal spec 0077, internal #864, #866, #868). Nothing here is fetched at boot.
+
+**The traverses of Spirit and Opportunity.** `site/js/scene/traverse.js` draws, on Mars as on the Moon, the
+rover lines the PDS Geosciences Node (Washington University in St. Louis) serves with its Mars Exploration
+Rover Analyst's Notebooks (`MER/merApubmap` layer `merATraverse`, `MER/merBpubmap` layer `merbTraverse`),
+read 2026-10-20 by `scripts/build_traverses.py` into `registry/traverses/`. Spirit's line is 7.07 km, from
+Columbia Memorial Station to Home Plate and Troy; Opportunity's 45.10 km, from Eagle crater to Perseverance
+Valley on the rim of Endeavour. The node does not say on the service how its lines were made, and the app does
+not either. Terms: as for the Apollo lines above (the Node's FAQ: "Data sets archived in the PDS are in the
+public domain"). Credits, in the Sources panel while each is drawn:
+
+> Spirit's traverse in Gusev crater: the rover's path as the Spirit Analyst's Notebook maps it; NASA PDS Geosciences Node
+
+> Opportunity's traverse across Meridiani Planum: the rover's path as the Opportunity Analyst's Notebook maps it; NASA PDS Geosciences Node
+
+**Huygens on Titan** is drawn since this stage, at the coordinate above, on Titan's fixed frame (its tidal
+lock), as the procedural lander the card calls "the kind of thing, not this exact one".
+
+**The Moon's named places** (`registry/sites.yaml`, `class: feature`): Copernicus, Tycho and Shackleton at the
+centres the IAU Gazetteer of Planetary Nomenclature gives (USGS Astrogeology, planetarynames.wr.usgs.gov,
+read 2026-10-20), and the south pole. Numbers, no picture.
+
+**Ryugu, Itokawa, Didymos and Dimorphos** (the small-bodies table above): each simplified by quadric error to
+1 000 to 4 800 triangles by `scripts/small-body-glb.py`, in its body's own axes, and turned by the rotation
+model its mission published: Ryugu by JAXA's SPICE constants (`ryugu_v10.tpc`), Itokawa by the pole and rate
+in Gaskell's bundle, Didymos by the DART team's (`didymos_system_15.tpc`, NASA/NAIF and JHU/APL). Dimorphos goes
+round Didymos at 1.152 km in 11.3674 h, the post-impact values of Richardson et al. 2024 (PSJ 5:182, Table 2);
+where it is on that orbit is illustrative, and so is the phase of every turn. The ISAS Data Policy
+(https://www.isas.jaxa.jp/en/researchers/data-policy/, read 2026-10-20) names shape models among its open data,
+says they "can be used free of charge, either for commercial or non-commercial purposes. They may be copied,
+forwarded or modified", asks that the origin be given as "ISAS/JAXA", and calls its terms "compatible with
+Creative Commons BY 4.0". NASA's science data licence (https://science.data.nasa.gov/about/license): data "from
+a NASA-led mission ... are licensed as Creative Commons Zero" (DART).
+<!-- 0077 W3-d: end -->
+
 ### Ring and spot data (0076 W2-b)
 
 No picture or file is added: these are numbers, each typed into the code with its source beside it.
@@ -1976,6 +2120,45 @@ distance beyond its root. The card says so.
 | The Magellanic Bridge and Stream: the HI4PI survey's high-velocity H I column density in Magellanic coordinates (`hi4pi-hvc-nhi-mag-car.fits.gz`, 7.9 MB, downloaded for the bake and not shipped), cropped and resampled by `scripts/build_deep_magellanic.py` (`site/images/deep/magellanic/hi-column.webp`, an adaptation). Drawn in **false colour**: hydrogen at 21 cm, which no eye or camera sees. Its distance along our line is a **model**: the Bridge between the Clouds' measured distances, the Stream from the SMC's to 100 kpc at its far end ("the only solid distance constraint on the Stream is that one end is anchored to the Magellanic Clouds"; models put the far end 80 to 150 kpc away) | Westmeier 2018, MNRAS 474, 289 (arXiv:1712.00909); HI4PI Collaboration, Ben Bekhti et al. 2016, A&A 594, A116; served by NASA's LAMBDA (https://lambda.gsfc.nasa.gov/product/foreground/fg_hi4pi_hvhi_info.html); Magellanic coordinates: Nidever, Majewski & Butler Burton 2008, ApJ 679, 432; the distance: Fox et al. 2019 (arXiv:1903.04831) | LAMBDA's page states no licence of its own and asks for the paper to be cited; HI4PI's data are distributed by CDS, whose VizieR terms read that day (https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context ; however, ... the original authors and publication references including the publisher have to be explicitely cited". Cited as both ask; Space Radar is free and non-commercial |
 | The light where the SMC's photograph covers it: the photograph with its stars taken out (its pink H II regions kept) and 47 Tucanae and NGC 362, Milky Way globulars in front of it, filled from round them (`scripts/build_deep_smc.py --light` -> `site/images/deep/smc/smc-light.webp`, an adaptation) | NOIRLab noirlab2030b, credit "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University)..." (section 3 above) | CC BY 4.0; stars removed by Space Radar |
 <!-- 0077 W2-e: end -->
+<!-- 0077 W3-f: begin -->
+### Galaxies from their structure (0077 W3-f)
+
+M51 with NGC 5195, M81, M101, M104 and the Antennae as models (`site/js/scene/deep/spiral.js`, internal #873 and #875), their
+numbers in `registry/deepsky-heroes/m51.yaml`, `m81.yaml`, `m101.yaml`, `m104.yaml` and `antennae.yaml`, each with its source.
+Facts read on 2026-10-20 in the papers' abstracts and texts (arXiv) and in VizieR's and SIMBAD's tables; no text, figure,
+image or data file of any of them is shipped. Angular sizes are turned into kiloparsecs at each record's distance. Every
+model is a **model** and the card says so, and that no astronomer has reviewed it yet (internal #785).
+
+| what | the numbers | from |
+|---|---|---|
+| M51's orientation | i = 22 +/- 5, PA = 173 +/- 3 degrees from the gas's velocities; the north half approaching (THINGS's velocity map); the east near (derived from the rotation and trailing arms, not published) | Colombo et al. 2014 (arXiv:1401.3759); Walter et al. 2008, THINGS (arXiv:0810.2125); Shetty et al. 2007 (arXiv:0705.3240) |
+| M51's structure | bulge n 0.995, Re 21.6 arcsec, B/T 0.128; disc scale length 84.2 arcsec; pitch about 19 degrees | Salo et al. 2015, S4G (VizieR J/ApJS/219/4); Puerari et al. 2014 (arXiv:1408.3658); Honig & Reid 2015 (arXiv:1412.1012) |
+| NGC 5195 | its place and 5.89 x 4.68 arcmin outline; behind M51's arm (absorption by the arm in its nucleus's spectrum); 4 kpc behind and its profile illustrative; the arm that reaches it traced on the photograph heic0506a, its depth a model | SIMBAD (CDS, "CDS/SIMBAD"), Paturel et al. 2003; Ritchey et al. 2015 (arXiv:1501.03223); Theis & Spinneker 2003 (arXiv:astro-ph/0306502) |
+| M81 | i = 59.0 degrees; PA 157 (RC3); bulge n 2.62, Re 46.2 arcsec; disc scale length 155.4 arcsec; pitch 13.4 +/- 2.3 degrees; the south-east approaching, the south-west near | de Blok et al. 2008 (arXiv:0810.2100); Kendall et al. 2008 (arXiv:0804.2380); Davis et al. 2017 (arXiv:1707.04001); Schnorr-Müller et al. 2011 (arXiv:1012.3015) |
+| M101 | i = 18, PA = 39 degrees; disc scale length 127.3 arcsec at 3.6 microns; arms' pitches 7 to 29 degrees; the south-west approaching; the near side derived; five giant H II regions (NGC 5447, 5455, 5461, 5462, 5471) at their places | Walter et al. 2008 (after Bosma, Goss & Allen 1981); Salo et al. 2015; Herrera-Endoqui et al. 2015 (VizieR J/A+A/582/A86); Mihos et al. 2013 (arXiv:1211.3095); SIMBAD (CDS) |
+| M104, the Sombrero | PA 89.25 degrees; i = 84 (84.3 +/- 0.2 for the CO ring); bulge n 3.9, Re 71 arcsec; disc scale length 61 and height 18 arcsec; the dust ring's radius 144.7 arcsec and width 22.9 arcsec, an inner dust disc of 48 arcsec; which side is near is not published in what was read, and is assumed | Bendo et al. 2006 (arXiv:astro-ph/0603160); Gadotti 2012 (arXiv:1101.2900), after Emsellem et al. 1996; Sutter et al. 2022 (arXiv:2210.13527); Vlahakis et al. 2008 (arXiv:0805.4791) |
+| The Antennae | NGC 4038's and NGC 4039's places; their RC3 outlines (tilts read from torn outlines: illustrative); 22 +/- 3 Mpc (13.3 +/- 1.0 by another method); the tails' lengths and parents, the southern tip bending away; the tails traced on Robert Gendler's photograph, their depths a model after the simulations | SIMBAD (CDS); RC3 (de Vaucouleurs et al. 1991, VizieR VII/155); Schweizer et al. 2008 (arXiv:0807.3955); Saviane et al. 2008 (arXiv:0802.1045); Hibbard et al. 2001 (arXiv:astro-ph/0110581); Privon et al. 2013 (arXiv:1305.5865); Karl et al. 2010 (arXiv:1003.0685); heic0812c, "Robert Gendler", ESA/Hubble, CC BY 4.0 |
+
+### A deep field (0077 W3-f)
+
+The Hubble Ultra Deep Field as Webb's JADES survey catalogued it (`site/js/scene/deep/galclusters.js`, internal #784), read on
+2026-10-20 by `scripts/build_deep_field.py` into `site/data/deep/deepfield.json` and `site/data/deep/deepfield.bin`; the box on
+the sky, the cut and every page read are in `registry/galaxy-clusters.yaml` (`fields:`). "This research has made use of the
+VizieR catalogue access tool, CDS, Strasbourg, France."
+
+| what | from | licence |
+|---|---|---|
+| 7 607 galaxies brighter than F200W 28 in the Ultra Deep Field's box: position, half-light radius in F090W, Kron fluxes in F090W, F200W and F444W, the photometric redshift, and NIRSpec's spectroscopic redshift where its flag is A or B (441 of them) | JADES, the JWST Advanced Deep Extragalactic Survey: Rieke M.J. and others 2023, ApJS 269, 16; the GOODS-South tables of VizieR V/159 (gssample, gskron, gsprism); MAST DOIs 10.17909/8tdj-8n28, 10.17909/z2gw-mk31, 10.17909/fsc4-dt61 | the catalogue's ReadMe, read that day: "These HLSP data products are licensed for use under CC BY 4.0." |
+| The stars left out: the MUSE survey's stars in the field (redshift under 0.01) | Bacon R. and others 2023, A&A 670, A4, *The MUSE Hubble Ultra Deep Field surveys: Data release II*, VizieR J/A+A/670/A4 | VizieR's terms (<https://cds.unistra.fr/vizier-org/licences_vizier.html>), read that day: "Tabular data, spectra or images coming from A&A (J/A+A) are free for a scientific usage"; the authors cited |
+| The box: RA 53.117 to 53.208, Dec -27.831 to -27.752 | Rafelski M. and others 2015, AJ 150, 31, *UVUDF* (its footprint only; none of its rows is used) | facts, cited |
+| The comoving distance of each redshift | `site/js/data/cosmology.js`, Planck 2018 (Planck Collaboration, A&A 641, A6, 2020) | facts, cited |
+
+What is measured and what is not. Each galaxy's direction is JADES's. Its distance is the comoving distance of its redshift: NIRSpec's
+where it measured one, else the photometric **estimate**, whose error is wide (the catalogue's 68 % range is often a tenth of the
+redshift). As seen from the Sun each galaxy is as wide as Webb measured it (its half-light radius as an angle, times the comoving
+distance; its true width is that over 1 + z). Its light is its F200W magnitude, an exposure and not photometry; its tint is the F090W
+minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
+<!-- 0077 W3-f: end -->
 
 ## 4. Runtime data sources
 

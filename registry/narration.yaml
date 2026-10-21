@@ -204,6 +204,8 @@ listen:
   # Betelgeuse: an American says "BEE-tl-jooss" and the recogniser writes the film's title.
   names: [Betelgeuse]
   accept:
+    # 0077 W3-c
+    moon-landings/whole-moon: "small.en writes 'Chang-3's rover U-2' for 'Chang'e 3's rover Yutu' and 'rover stopped' for 'rovers stopped': two names it has no word for (Yutu is said as the lexicon's 'jˈutu') and a plural s before a stop. Every other word is heard. To be judged by a person."
     black-holes/sun: "small.en and medium.en both write 'if you swap the Sun' for 'if you swapped the Sun': the t of 'swapped' is not released before 'the', as in fluent speech. Every other word is heard. To be judged by a person."
 # trip/stop -> a sentence of this many words or fewer is said in one pass with its neighbour, for
 # this stop only (timing.join.words is 0: the titles). Found by the listening check: "It will
@@ -289,7 +291,7 @@ clips:
   - {trip: "moon-landings", stop: "chandrayaan-3", hash: "4c6538969d2bbf49", seconds: 21.14, words: 56, lufs: -16.4, opus: 85379, m4a: 109160, vtt: 340, wer: 0.0, heard: "dd81cb77e3e11ed5", voice: 0}
   - {trip: "moon-landings", stop: "im-1", hash: "7ce514adab7eed0d", seconds: 21.15, words: 55, lufs: -16.6, opus: 85036, m4a: 109160, vtt: 368, wer: 0.0192, heard: "f4b11ca0062162c1", voice: 0}
   - {trip: "moon-landings", stop: "blue-ghost-1", hash: "03768a6e5f828383", seconds: 20.04, words: 56, lufs: -16.3, opus: 80252, m4a: 103510, vtt: 380, wer: 0.0, heard: "0fe799513ce26e24", voice: 0}
-  - {trip: "moon-landings", stop: "whole-moon", hash: "6b3f63a608b03906", seconds: 21.59, words: 56, lufs: -16.5, opus: 86330, m4a: 111334, vtt: 405, wer: 0.0182, heard: "556aa5ab2c53189f", voice: 0}
+  - {trip: "moon-landings", stop: "whole-moon", hash: "149f7bf5d116cdbf", seconds: 24.86, words: 64, lufs: -16.5, opus: 100043, m4a: 128068, vtt: 451, wer: 0.0794, heard: "e920c978e525ae57", voice: 1}
   - {trip: "outer-solar-system", stop: "io", hash: "3314fdf8fa4c80d3", seconds: 16.85, words: 47, lufs: -16.4, opus: 66954, m4a: 87210, vtt: 326, wer: 0.0213, heard: "c1e087a42d08499f", voice: 0}
   - {trip: "outer-solar-system", stop: "europa", hash: "585f60fa42b8ad0d", seconds: 20.83, words: 56, lufs: -16.5, opus: 85554, m4a: 107639, vtt: 379, wer: 0.0, heard: "5d2ada4d7455abd4", voice: 0}
   - {trip: "outer-solar-system", stop: "saturn", hash: "fff31889c54b6cc5", seconds: 19.05, words: 50, lufs: -16.5, opus: 75534, m4a: 98511, vtt: 386, wer: 0.0, heard: "a30900ba3c89d6aa", voice: 0}

@@ -5,12 +5,12 @@ export const HERO = {
   "id": "smc",
   "record": "dso-smc",
   "stage": "W2-e",
-  "shipped": false,
+  "shipped": true,
   "children": [],
   "levels": {
     "1": "the photograph (scene/nebulae.js), with this model filling what the photograph's frame cuts off",
-    "2": "Gaia-mapped stars in two populations at their measured depths, their unresolved light (the photograph's where it covers them)",
-    "3": "the same with more march steps for the unresolved light"
+    "2": "Gaia-mapped stars in two populations at their measured depths, their unresolved light as patches (the photograph's where it covers them)",
+    "3": "the same (the patches cost what they cost at level 2; there is no march to refine)"
   },
   "frame": {
     "units_ly": 100,

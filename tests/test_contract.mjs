@@ -660,7 +660,9 @@ for (const file of allFiles) {
     const rel = line.match(/file: (site\/models\/[^,]+\.glb)/)[1];
     if (!existsSync(join(ROOT, rel))) continue;
     const n = pieces((await parse(readFileSync(join(ROOT, rel)))).scene);
-    if (n !== 1) {
+    // 0077 W3-d: a binary asteroid is two bodies, and its row says so (`pieces: 2`, Didymos and Dimorphos); every other is one.
+    const want = Number((line.match(/\bpieces: (\d+)/) || [])[1] || 1);
+    if (n !== want) {
       problems.push(`MODEL    ${rel.split('/').pop()} is ${n} separate pieces, not one body -- a model cut up for 3D printing draws as fragments in space`);
     }
   }

@@ -1071,6 +1071,8 @@ export const COPY = {
       "exoticStar": "ein Ring in seiner gemessenen Entfernung; der Stern selbst ist in diesem Maßstab ein Punkt"
     },
     "storm": "gezeichnet als Markierung an seinem Zentrum; der Sturm selbst ist die Wolke darum herum",
+    "feature": "ein benannter Ort: gezeichnet ist hier nur eine Markierung an seinem Zentrum, nach dem Verzeichnis der IAU; der Boden darunter ist die Karte selbst", // 0077 W3-d
+    "objectSpin": { "spin": "er dreht sich um seinen gemessenen Pol mit der gemessenen Geschwindigkeit; welche Seite gerade zur Sonne zeigt, ist keine Vorhersage", "pair": "beide drehen sich um ihren gemessenen Pol mit den gemessenen Geschwindigkeiten, und Dimorphos umkreist ihn in dem Abstand und der Zeit, die nach dem Einschlag von DART gemessen wurden; wo er auf dieser Bahn steht, ist illustrativ" }, // 0077 W3-d
     "worldFlat": "gezeichnet als schlichte Kugel: Eine Oberflächenkarte von {name} gibt es hier nicht, und die eine Farbe ist aus veröffentlichten Beschreibungen gewählt, nicht gemessen",
     "worldFlatIrregular": "gezeichnet als schlichte Kugel von der Größe seines mittleren Radius: Eine Oberflächenkarte von {name} gibt es hier nicht, die eine Farbe ist aus veröffentlichten Beschreibungen gewählt, nicht gemessen, und {name} ist in Wirklichkeit ein klumpiger Felsbrocken, dessen wahre Form nicht gezeichnet wird",
     "worldFlatShaped": "gezeichnet in seiner gemessenen Form und in einer Farbe: Eine Oberflächenkarte von {name} gibt es hier nicht, und die Farbe ist aus veröffentlichten Beschreibungen gewählt, nicht gemessen",

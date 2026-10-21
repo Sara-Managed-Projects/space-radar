@@ -145,6 +145,12 @@ export const VISUAL_CLASSES = [
 "moon",
 "phobos",
 "deimos"
+],
+"sites": [
+"copernicus",
+"tycho",
+"shackleton",
+"moon-south-pole"
 ]
 }
 },
@@ -177,7 +183,10 @@ export const VISUAL_CLASSES = [
 "asteroid-bennu",
 "asteroid-vesta",
 "asteroid-eros",
-"dwarf-ceres"
+"dwarf-ceres",
+"asteroid-ryugu",
+"asteroid-itokawa",
+"asteroid-didymos"
 ],
 "model_kinds": [
 "asteroid-generic"
@@ -318,7 +327,16 @@ export const VISUAL_CLASSES = [
 "wentian",
 "mengtian",
 "shenzhou-orbital",
-"gaia"
+"gaia",
+"earthcare",
+"biomass",
+"swarm",
+"metop-sg-a",
+"iris",
+"timed",
+"sert-2",
+"isis-1",
+"tracers"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -556,6 +574,7 @@ export const VISUAL_CLASSES = [
 "apollo-15",
 "lunokhod-2",
 "change-3",
+"yutu",
 "change-5",
 "chandrayaan-3",
 "slim",
@@ -592,7 +611,14 @@ export const VISUAL_CLASSES = [
 "blue-ghost",
 "surveyor",
 "surveyor-3",
-"slim"
+"slim",
+"zhurong",
+"change-3",
+"change-4",
+"yutu",
+"change-5",
+"lunokhod-1",
+"lunokhod-2"
 ],
 "model_kinds": [
 "site-surveyor",
@@ -767,6 +793,7 @@ export const VISUAL_CLASSES = [
 "members": {
 "exotics": [
 "exotic-eta-carinae",
+"exotic-wd-j1330-6435",
 "exotic-betelgeuse"
 ],
 "stars_notable": [
@@ -1149,8 +1176,12 @@ export const VISUAL_CLASSES = [
 "dso-ngc-1300"
 ],
 "heroes": [
+"dso-m101",
+"dso-m104",
 "dso-m31",
-"dso-m33"
+"dso-m33",
+"dso-m51",
+"dso-m81"
 ],
 "model_kinds": [
 "galaxy-model"
@@ -1250,6 +1281,9 @@ export const VISUAL_CLASSES = [
 "honesty": "illustrative",
 "members": {
 "dso": [
+"dso-antennae-galaxies"
+],
+"heroes": [
 "dso-antennae-galaxies"
 ]
 }

@@ -1,0 +1,124 @@
+// GENERATED from registry/deepsky-heroes/m81.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "m81",
+  "record": "dso-m81",
+  "stage": "W3-f",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "the structure: a smooth integrated-light layer (disc, two arms, dust lanes; the bulge facing the camera), statistical points as sparkle, a dust point set",
+    "3": "the same, larger on screen",
+    "points": [
+      12000,
+      45000,
+      70000
+    ],
+    "dust_share": 0.3,
+    "seed": 81,
+    "layer_power": 0.65
+  },
+  "frame": {
+    "pa_deg": 157,
+    "incl_deg": 59,
+    "near_side": "SW",
+    "approaching": "SE",
+    "units_ly": 100,
+    "source": "inclination: de Blok et al. 2008; position angle: RC3 via Puerari et al. 2014; the approaching side and near side: Schnorr-Müller et al. 2011, confirmed by the THINGS velocity map"
+  },
+  "layers": [
+    {
+      "kind": "bulge",
+      "what": "the bulge, old stars",
+      "sersic_n": 2.62,
+      "re_kpc": 0.81,
+      "q": 0.8,
+      "light": 0.3,
+      "colour": "#f6f2e8",
+      "source": "Kendall et al. 2008 (arXiv:0804.2380, section 3): n = 2.62, Re = 46.2 arcsec (0.81 kpc here); S4G (Salo et al. 2015) finds n 3.56 and Re 103 arcsec; q assumed"
+    },
+    {
+      "kind": "disc",
+      "what": "the stellar disc",
+      "scale_kpc": 2.72,
+      "height_kpc": 0.4,
+      "r_max_kpc": 14,
+      "light": 0.4,
+      "arm_contrast": 0.6,
+      "colour": "#e2dccf",
+      "colour_outer": "#d2d0d0",
+      "source": "Kendall et al. 2008: the disc's scale length 155.4 arcsec (2.72 kpc here; S4G 153.2); height assumed; cut at 14 kpc, past the catalogue's 21.6 arcmin"
+    },
+    {
+      "kind": "arms",
+      "what": "two arms, tightly wound",
+      "count": 2,
+      "pitch_deg": 14,
+      "r_from_kpc": 2.5,
+      "r_to_kpc": 12,
+      "width_kpc": 0.55,
+      "height_kpc": 0.15,
+      "scale_kpc": 5,
+      "segments": 0.85,
+      "light": 0.26,
+      "colour": "#b0c4ec",
+      "source": "pitch: Davis et al. 2017 (arXiv:1707.04001): 13.4 +/- 2.3 degrees; the S4G arm catalogue's segments -11.9 and -13.2; Kendall et al. 2008 give 23 and Puerari et al. 2014 about 18 (the published range 12 to 23 degrees is the real uncertainty); width and the light's share illustrative"
+    },
+    {
+      "kind": "knots",
+      "what": "H II regions along the arms",
+      "count": 500,
+      "in_ring": 0,
+      "size_kpc": 0.04,
+      "height_kpc": 0.05,
+      "light": 0.04,
+      "colour": "#ff94a6",
+      "source": "placed statistically along the arms; not a catalogue of positions"
+    },
+    {
+      "kind": "dust-lanes",
+      "what": "dust on the arms' inner edges",
+      "inset_kpc": 0.3,
+      "width_kpc": 0.18,
+      "height_kpc": 0.07,
+      "weight": 0.35,
+      "source": "illustrative: the thin lanes M81's photographs show along its arms"
+    },
+    {
+      "kind": "dust-disc",
+      "what": "a thin dust disc",
+      "scale_kpc": 3.5,
+      "height_kpc": 0.08,
+      "weight": 0.15,
+      "source": "assumed"
+    }
+  ],
+  "colours": {
+    "mode": true,
+    "note": "Matched to its photograph at the hand-over (heic0710a, B, V, I): mean colours measured 2026-10-20 core #f2f3ec, inner disc #928b7e, outer #2b2724; the model takes them halfway to neutral (bulge #f6f2e8, disc #e2dccf), arms blue-white, pink H II regions. Not enhanced."
+  },
+  "drawn": [
+    "model"
+  ],
+  "sources": [
+    "de Blok et al. 2008, AJ 136, 2648 (arXiv:0810.2100): THINGS rotation curves, NGC 3031 i = 59.0, PA = 330.2 degrees",
+    "Kendall et al. 2008 (arXiv:0804.2380): the bulge (n 2.62, Re 46.2 arcsec), the disc's scale length (155.4 arcsec), the arms",
+    "Salo et al. 2015, ApJS 219, 4 (S4G; VizieR J/ApJS/219/4): a second decomposition",
+    "Davis et al. 2017 (arXiv:1707.04001): pitch 13.4 +/- 2.3 degrees",
+    "Puerari et al. 2014 (arXiv:1408.3658): the RC3 orientation used to de-project",
+    "Schnorr-Müller et al. 2011 (arXiv:1012.3015): the south-east approaching, the south-west near"
+  ],
+  "review": {
+    "data_vs_model": "A parametric model: the orientation, the bulge's and disc's profiles and the pitch are published; the arms' width, the knots' places, the thicknesses and the light shares are ours, labelled in each layer.",
+    "geometry": "pa 157 / incl 59, SE approaching, SW near (Schnorr-Müller et al. 2011); trailing arms.",
+    "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
+    "distance": "The record's: 11.8 Mly (11.4 to 12.2), the Messier table's.",
+    "credits": "CREDITS.md section 3l, galaxies from their structure (0077 W3-f).",
+    "by": "Space Radar maintainers",
+    "date": "2026-10-20"
+  },
+  "credits": [
+    "M81's model: inclination after de Blok et al. 2008 (AJ 136, 2648), bulge and disc after Kendall et al. 2008 (arXiv:0804.2380), pitch after Davis et al. 2017, the near side after Schnorr-Müller et al. 2011. Facts, cited; no image or data file is copied."
+  ]
+};

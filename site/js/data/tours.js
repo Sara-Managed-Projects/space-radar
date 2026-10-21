@@ -1282,16 +1282,16 @@ export const TOURS = [
 "chapter": "Epilogue: the whole Moon",
 "card": {
 "title": "Twenty-eight landings, nineteen on this map",
-"body": "NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings, six of them with people aboard. This map marks 19 of them, two by where their rovers stopped. Luna 9, the first of all, is not one: nobody knows exactly where it is."
+"body": "NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings, six of them with people aboard. This map marks 19 of them, two by where their rovers stopped, and Chang'e 3's rover Yutu beside its lander. Luna 9, the first of all, is not one: nobody knows exactly where it is."
 },
 "drift_rate_deg_s": 6,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 18817
+"dwell_ms": 20000
 }
 ],
-"estimate_ms": 205686
+"estimate_ms": 206869
 },
 {
 "id": "outer-solar-system",

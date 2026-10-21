@@ -104,7 +104,7 @@ export const TOURS_INDEX = [
 "next": "outer-solar-system",
 "min_stops": 3,
 "count": 10,
-"estimate_ms": 205686
+"estimate_ms": 206869
 },
 {
 "id": "outer-solar-system",

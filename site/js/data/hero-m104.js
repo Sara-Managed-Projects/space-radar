@@ -1,0 +1,110 @@
+// GENERATED from registry/deepsky-heroes/m104.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "m104",
+  "record": "dso-m104",
+  "stage": "W3-f",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "the structure: a huge round bulge drawn as round from every side, a thin disc almost edge on with its ring of stars, and the dust ring in front; statistical points as sparkle",
+    "3": "the same, larger on screen",
+    "points": [
+      12000,
+      45000,
+      70000
+    ],
+    "dust_share": 0.45,
+    "seed": 104,
+    "layer_power": 0.6
+  },
+  "frame": {
+    "pa_deg": 89.25,
+    "incl_deg": 84,
+    "near_side": null,
+    "approaching": null,
+    "winding": 1,
+    "bulge": "always",
+    "units_ly": 100,
+    "source": "position angle: Bendo et al. 2006; inclination: Emsellem et al. 1996 via Gadotti 2012, and Sutter et al. 2022"
+  },
+  "layers": [
+    {
+      "kind": "bulge",
+      "what": "the huge bulge of old stars",
+      "sersic_n": 3.9,
+      "re_kpc": 3.15,
+      "q": 0.85,
+      "light": 0.72,
+      "colour": "#f2ece2",
+      "source": "Gadotti 2012 (arXiv:1101.2900, table 1), the bulge-and-disc fit: n = 3.9 +/- 0.4, Re = 71 arcsec (3.15 kpc here); with an outer halo added the bulge is n 1.9, Re 10 arcsec and the halo Re 130 arcsec; S4G gives n 4.66, Re 180 arcsec: the spheroid's profile is uncertain; q assumed"
+    },
+    {
+      "kind": "disc",
+      "what": "the stellar disc",
+      "scale_kpc": 2.7,
+      "height_kpc": 0.8,
+      "r_max_kpc": 12,
+      "light": 0.2,
+      "arm_contrast": 0,
+      "colour": "#e6e0d8",
+      "colour_outer": "#d8d6d4",
+      "source": "Gadotti 2012 (table 1): the disc's scale length 61 arcsec (2.7 kpc here) and height 18 arcsec (0.8 kpc); cut at 12 kpc"
+    },
+    {
+      "kind": "ring",
+      "what": "the ring of stars and gas under the dust",
+      "radius_kpc": 6.41,
+      "width_kpc": 0.7,
+      "height_kpc": 0.12,
+      "light": 0.06,
+      "colour": "#efe4dc",
+      "source": "at the dust ring's radius (Bendo et al. 2006); its light share and width illustrative"
+    },
+    {
+      "kind": "dust-ring",
+      "what": "the dust ring",
+      "radius_kpc": [
+        6.41
+      ],
+      "width_kpc": 1.01,
+      "height_kpc": 0.12,
+      "weight": 0.85,
+      "source": "Bendo et al. 2006 (arXiv:astro-ph/0603160, table 3): radius 144.7 +/- 0.5 arcsec (6.41 kpc here), Gaussian width 22.9 +/- 1.1 arcsec (1.01 kpc); Vlahakis et al. 2008 find 162 and 170 arcsec at 870 microns and 1.2 mm"
+    },
+    {
+      "kind": "dust-disc",
+      "what": "the dust disc inside the ring",
+      "scale_kpc": 2.13,
+      "height_kpc": 0.08,
+      "weight": 0.15,
+      "source": "Bendo et al. 2006: an inner dust disc of scale length 48 +/- 3 arcsec (2.13 kpc here)"
+    }
+  ],
+  "colours": {
+    "mode": true,
+    "note": "Matched to its photograph at the hand-over (opo0328a, B, V, far red): mean colours measured 2026-10-20 core #eeecf8, inner #b2abb4, outer #56514e; the model takes them halfway to neutral and a little warmer, as old stars are (bulge #f2ece2, disc #e6e0d8). Not enhanced."
+  },
+  "drawn": [
+    "model"
+  ],
+  "sources": [
+    "Bendo et al. 2006 (arXiv:astro-ph/0603160): the dust ring's radius, width and position angle, the inner dust disc",
+    "Gadotti 2012 (arXiv:1101.2900): the bulge's and disc's profiles, and Emsellem et al. 1996's inclination as cited there",
+    "Sutter et al. 2022 (arXiv:2210.13527): the CO ring's inclination 84.3 +/- 0.2",
+    "Vlahakis et al. 2008 (arXiv:0805.4791): the cold dust ring"
+  ],
+  "review": {
+    "data_vs_model": "A parametric model: the orientation, the bulge's and disc's profiles and the dust ring are published; the ring of stars' light, the bulge's flattening, the light shares and the near side are ours, labelled.",
+    "geometry": "pa 89.25 / incl 84 (nearly edge on); which side is near is not published in any source read and is assumed.",
+    "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
+    "distance": "The record's: 29.8 Mly (28.7 to 30.9), the Messier table's.",
+    "credits": "CREDITS.md section 3l, galaxies from their structure (0077 W3-f).",
+    "by": "Space Radar maintainers",
+    "date": "2026-10-20"
+  },
+  "credits": [
+    "The Sombrero's model: the dust ring after Bendo et al. 2006 (arXiv:astro-ph/0603160), the bulge and disc after Gadotti 2012, the inclination after Emsellem et al. 1996 and Sutter et al. 2022. Facts, cited; no image or data file is copied."
+  ]
+};

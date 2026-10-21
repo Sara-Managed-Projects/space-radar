@@ -152,6 +152,8 @@ const SOUTH = { name: 'Southville', latDeg: -33.9, lonDeg: 18.4, altKm: 0, sourc
     'asteroid-65803': [123294821, -160951633, -9842376],
     'asteroid-99942': [-25202011, -122866555, 5962281],
     'asteroid-101955': [-94963187, -177814115, -18437145],
+    'asteroid-162173': [-22964115, -208147705, 4625896], // 0077 W3-d
+    'asteroid-25143': [-16817085, 229624677, 2765233], // 0077 W3-d
     'comet-1P': [-2895179698, 4109303394, -1474036901],
   };
   const { kepler } = await import(join(JS, 'propagate/index.js'));
@@ -159,7 +161,7 @@ const SOUTH = { name: 'Southville', latDeg: -33.9, lonDeg: 18.4, altKm: 0, sourc
   const AU = 149597870.7;
   const tMs = (2461319.5 - 2440587.5) * 86400e3 - 69184; // TDB to UTC, 69.184 s in 2026
   const named = [...namedAsteroids(), ...namedComets()];
-  check(named.length === 6 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'six named bodies, each with its phase and classed inferred, never sample');
+  check(named.length === 8 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'eight named bodies, each with its phase and classed inferred, never sample'); // 0077 W3-d: and Ryugu and Itokawa
   for (const r of named) {
     const want = HORIZONS[r.id];
     const p = kepler(r, tMs);

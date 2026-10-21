@@ -1693,6 +1693,14 @@ export const COPY = {
     },
     // A storm is not an object with a shape: the mark is where its centre is, the storm is cloud.
     storm: 'drawn as a mark at its centre; the storm itself is the cloud around it',
+    // 0077 W3-d: a named place on a world's ground (registry/sites.yaml `class: feature`): nothing stands there to draw.
+    feature: 'a named place: nothing is drawn here but a mark at its centre, from the IAU gazetteer; the ground under it is the map itself',  // 0077 W3-d
+    // 0077 W3-d: begin -- a small body drawn from its shape model and turned by its measured spin (ui/cards.js, realmodels.js `spin`).
+    objectSpin: {
+      spin: 'it turns about its measured pole at its measured rate; which side faces the Sun at this moment is not a prediction',
+      pair: 'both turn about their measured pole at their measured rates, and Dimorphos goes round at the distance and period measured after DART struck it; where it is on that orbit is illustrative',
+    },
+    // 0077 W3-d: end
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
     // and so is the size -- a 30 cm record on a 13 m spacecraft is one or two pixels at the size
