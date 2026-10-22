@@ -40,6 +40,13 @@ two minutes": each stop's dwell, a flight and a settle, plus the way home), and 
 "General audience", the one value that is not read from the registry, because it has no field there.
 No FAQPage: Google limits that rich result to government and health sites.
 
+THE BODY CARRIES THE TRIP'S OWN WORDS (2026-10-22, growth SEO W43). A browser is sent on at once,
+but a reader that runs no script and follows no refresh (most AI retrieval fetchers) got 25 words:
+a link and the truth line. Now the body also holds an H1 (the title), the blurb, and every stop's
+card title and body in order, read from the registry as they are, with {exoplanet_count} expanded
+the way scripts/gen_tours_js.py expands it for the app. Nothing is written here that the trip does
+not already say on screen; a visitor in a browser never sees it.
+
 Same rule as the other generators: the page is a mirror of the registry, in HTML, and CI refuses
 a stale one. A stale page is a share that says the wrong thing about the trip it opens.
 
@@ -59,7 +66,7 @@ from pathlib import Path
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gen_tours_js import FLIGHT_ESTIMATE_MS, RETURN_ESTIMATE_MS, SETTLE_MS, dwell_ms  # noqa: E402
+from gen_tours_js import FLIGHT_ESTIMATE_MS, RETURN_ESTIMATE_MS, SETTLE_MS, dwell_ms, expand_card  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "registry" / "tours.yaml"
@@ -101,8 +108,10 @@ PAGE = """<!doctype html>
 </head>
 <body>
 <script>location.replace('../#trip={id}');</script>
+<h1>{title}</h1>
+<p>{blurb}</p>
 <p><a href="../#trip={id}">Open the trip: {title}</a></p>
-<p>{truth}</p>
+{stops}<p>{truth}</p>
 </body>
 </html>
 """
@@ -200,6 +209,20 @@ def teaches_for(trip: dict) -> list[str]:
     return seen[:12]
 
 
+def stops_html_for(trip: dict) -> str:
+    """Every stop's card, in order, as the trip shows it: an H2 for the title, a paragraph for the body."""
+    esc = lambda s: html.escape(s, quote=False)  # noqa: E731
+    out: list[str] = []
+    for s in trip.get("stops") or []:
+        card = expand_card(s.get("card") or {})
+        title = " ".join(str(card.get("title") or "").split())
+        body = " ".join(str(card.get("body") or "").split())
+        if not title and not body:
+            continue
+        out.append(("<h2>" + esc(title) + "</h2>\n" if title else "") + ("<p>" + esc(body) + "</p>\n" if body else ""))
+    return "".join(out)
+
+
 def page_for(trip: dict, host: str) -> str:
     trip_id = str(trip.get("id") or "")
     if not SAFE_ID.match(trip_id):
@@ -222,6 +245,7 @@ def page_for(trip: dict, host: str) -> str:
         page_title=esc(page_title_for(title)),
         blurb=esc(blurb),
         truth=esc(truth_line(trip)),
+        stops=stops_html_for(trip),
         description=esc(description_for(blurb)),
         image=esc(image_for(trip_id, host)),
         image_alt=esc(image_alt_for(trip_id, title)),
