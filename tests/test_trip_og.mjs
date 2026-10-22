@@ -16,7 +16,7 @@
 //   node tests/test_trip_og.mjs
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync, existsSync, readdirSync, mkdtempSync, cpSync, writeFileSync, rmSync, appendFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, mkdtempSync, cpSync, mkdirSync, writeFileSync, rmSync, appendFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 
@@ -73,6 +73,10 @@ if (real.status === 0 && TOURS.length) {
   const work = mkdtempSync(join(tmpdir(), 'trip-og-'));
   try {
     for (const d of ['scripts', 'registry', 'site/og', 'site/t']) cpSync(join(ROOT, d), join(work, d), { recursive: true, filter: (p) => !p.includes('__pycache__') });
+    // The body expands {exoplanet_count} from site/data/exoplanets.csv. Without that file
+    // --check exits before it can name a trip that would show default.png.
+    mkdirSync(join(work, 'site/data'), { recursive: true });
+    cpSync(join(ROOT, 'site/data/exoplanets.csv'), join(work, 'site/data/exoplanets.csv'));
     const victim = TOURS[0].id;
     const tours = join(work, 'registry/tours.yaml');
     const text = readFileSync(tours, 'utf8');
