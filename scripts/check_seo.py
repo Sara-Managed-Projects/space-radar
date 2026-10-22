@@ -266,7 +266,7 @@ def check(root: Path, built: Path, require_share: bool = False) -> list[str]:
         # build_seo.py make; the embed gallery (scripts/seo_embed.py) is judged by the rules above it only.
         growth_page = base == built and f.name != "404.html" and f.parent.name != "embed"
         # The footer is on the home page, the object pages, the 404 page and the pages built beside
-        # them; a trip page is a redirect stub with nothing to read and has none.
+        # them; a trip page is a redirect stub (its body is the trip's own cards) and has none.
         if f.parent.name != "t":
             check_footer(rel, h, say)
 
