@@ -99,6 +99,26 @@ check(e2 && e2.kind === 'none', `London does not (${JSON.stringify(e2)})`);
 const venus = { kind: 'meteor-shower', instant: '2027-01-04T03:30:00Z', shower: { raH: 15.33, decDeg: 49.5 }, also: [{ body: 'venus', instantMs: Date.parse('2027-01-03T17:56:03Z') }] };
 check(L.eventFromPlace(A, R, venus, london).also[0].body === 'venus', 'an event can carry a planet along with it');
 
+// --- the next Starlink launches (the Starlink page), from a Launch Library body shaped like data/v1/ll2-upcoming.json
+const ll = { results: [
+  { name: 'Falcon 9 Block 5 | Starlink Group 15-18', net: '2026-10-28T04:31:00Z', net_precision: { name: 'Minute' }, status: { abbrev: 'Go' }, pad: { location: { name: 'Vandenberg SFB, CA, USA' } } },
+  { name: 'Falcon 9 Block 5 | Starlink Group 15-15', net: '2026-10-21T23:02:41Z', net_precision: { name: 'Second' }, status: { abbrev: 'Go' }, pad: { location: { name: 'Vandenberg SFB, CA, USA' } } },
+  { name: 'Electron | Some Other Payload', net: '2026-10-25T00:00:00Z', status: { abbrev: 'Go' } },
+  { name: 'Falcon 9 Block 5 | Starlink Group 15-21', net: '2026-11-10T00:00:00Z', net_precision: { name: 'Day' }, status: { abbrev: 'TBD' }, pad: { location: { name: 'Vandenberg SFB, CA, USA' } } },
+  { name: 'Falcon 9 Block 5 | Starlink Group 10-9', net: '2026-12-01T00:00:00Z', net_precision: { name: 'Month' }, status: { abbrev: 'TBD' } },
+  { name: 'Falcon 9 Block 5 | Starlink Group 6-1', net: 'not a date' },
+] };
+const nowLl = Date.parse('2026-10-24T03:00:00Z');
+const sl = L.starlinkLaunches(ll, nowLl);
+check(sl.map((r) => r.mission).join(',') === 'Starlink Group 15-18,Starlink Group 15-21,Starlink Group 10-9', `only upcoming Starlink launches, soonest first (${sl.map((r) => r.mission)})`);
+check(L.starlinkLaunches(ll, nowLl, 1).length === 1 && L.starlinkLaunches(null, nowLl).length === 0, 'a limit, and nothing from no schedule');
+const w0 = L.launchRowWords(sl[0], 'UTC');
+check(/^Starlink Group 15-18: .*28.*04:31, from Vandenberg SFB, CA, USA \(go for launch\)$/.test(w0), `a launch timed to the minute says its time (${w0})`);
+const w1 = L.launchRowWords(sl[1], 'UTC');
+check(/10 Nov/.test(w1) && !/\d\d:\d\d/.test(w1) && /date not confirmed/.test(w1), `a launch known to the day says no time (${w1})`);
+const w2 = L.launchRowWords(sl[2], 'UTC');
+check(/December 2026/.test(w2) && !/\d\d:\d\d/.test(w2) && !/from/.test(w2), `a launch known to the month says only the month (${w2})`);
+
 // --- what the page promises about itself
 const src = readFileSync(join(ROOT, 'site/js/pages/live.js'), 'utf8');
 const code = src.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
