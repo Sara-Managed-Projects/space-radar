@@ -17,6 +17,7 @@
 // saved copy (beside the page, on this origin), and the page says how old its elements are. The page
 // asks CelesTrak for nothing: its usage policy allows one download per update and a page that
 // every search result opens would be a client of it from every visitor's address (CREDITS.md 4.1).
+// The Starlink page's next launches come the same way, from data/v1/ll2-upcoming.json, with its day.
 //
 // Pure functions are exported for tests/test_pagelive.mjs; `boot()` is the only code that touches
 // the document, and it does nothing outside a page that carries `data-live`.
@@ -33,6 +34,7 @@ export const STARLINK_SOURCE = 'celestrak-supplemental-starlink';
 export const ACTIVE_SOURCE = 'celestrak-active';
 export const STATIONS_SOURCE = 'celestrak-stations';
 export const LL2_STATIONS_SOURCE = 'll2-stations';
+export const LL2_UPCOMING_SOURCE = 'll2-upcoming';
 
 // --- saved copies --------------------------------------------------------------------------------
 
@@ -135,6 +137,40 @@ export function hhmm(ms, timeZone) {
 export function passWords(pass, timeZone) {
   if (!pass) return '';
   return `${clockWords(pass.startMs, timeZone)}, rising in the ${compass(pass.startAz)}, highest ${Math.round(pass.peakEl * DEG)}° up at ${hhmm(pass.peakMs, timeZone)}, setting in the ${compass(pass.endAz)}.`;
+}
+
+// --- the next Starlink launches -----------------------------------------------------------------------
+
+/** The next `n` Starlink launches out of the saved Launch Library schedule (ll2-upcoming body), soonest first. */
+export function starlinkLaunches(body, nowMs, n = 5) {
+  const rows = body && Array.isArray(body.results) ? body.results : [];
+  const out = [];
+  for (const r of rows) {
+    const name = String((r && r.name) || '');
+    const netMs = Date.parse(r && r.net);
+    if (!/starlink/i.test(name) || !Number.isFinite(netMs) || netMs <= nowMs) continue;
+    out.push({
+      mission: name.includes('|') ? name.split('|').pop().trim() : name,
+      netMs,
+      precision: String((r.net_precision && r.net_precision.name) || ''),
+      status: String((r.status && r.status.abbrev) || ''),
+      pad: String((r.pad && r.pad.location && r.pad.location.name) || ''),
+    });
+  }
+  return out.sort((a, b) => a.netMs - b.netMs).slice(0, n);
+}
+
+/** "Starlink Group 15-16: Sat 24 Oct, 08:29, from Vandenberg SFB, CA, USA (Go)". A time only when the schedule gives one. */
+export function launchRowWords(row, timeZone) {
+  if (!row) return '';
+  const tz = timeZone || undefined;
+  const fmt = (opts) => { try { return new Intl.DateTimeFormat('en-GB', { ...opts, timeZone: tz }).format(new Date(row.netMs)); } catch { return new Date(row.netMs).toISOString().slice(0, 10); } };
+  const timed = ['Second', 'Minute', 'Hour'].includes(row.precision);
+  const when = timed ? clockWords(row.netMs, timeZone)
+    : row.precision === 'Day' ? fmt({ weekday: 'short', day: 'numeric', month: 'short' })
+      : `${row.precision === 'Month' ? '' : 'no earlier than '}${fmt({ month: 'long', year: 'numeric' })}`;
+  const status = { Go: 'go for launch', TBD: 'date not confirmed', TBC: 'date to be confirmed', Hold: 'on hold' }[row.status] || row.status;
+  return `${row.mission}: ${when}${row.pad ? `, from ${row.pad}` : ''}${status ? ` (${status})` : ''}`;
 }
 
 // --- planets and events ------------------------------------------------------------------------------
@@ -303,6 +339,22 @@ async function bootCounts() {
   }
 }
 
+async function bootStarlink() {
+  try {
+    say('tonight-date', new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()));
+  } catch { /* the build's date stands */ }
+  const snap = await getJson(`${SNAPSHOT_BASE}${LL2_UPCOMING_SOURCE}.json`);
+  const rows = starlinkLaunches(snap && snap.body, Date.now());
+  const list = document.querySelector('[data-slot="starlink-launches"]');
+  if (!list) return;
+  list.textContent = '';
+  const li = (text) => { const el = document.createElement('li'); el.textContent = text; list.append(el); };
+  if (rows.length) for (const r of rows) li(launchRowWords(r));
+  else li('No Starlink launch is in the saved schedule.');
+  say('starlink-launches-date', `Times are yours. Schedule saved ${dateWords(snap.fetched_at)}; launch dates move, so the launch's own card on the map has the latest.`);
+  show('starlink-launches-date', true);
+}
+
 async function bootPlanets() {
   const T = await import('../sky/tonightbest.js');
   const draw = (observer) => {
@@ -359,7 +411,7 @@ export function boot() {
   const host = document.querySelector('[data-live]');
   if (!host) return;
   const kind = host.dataset.live;
-  const run = { iss: [bootIss, bootCounts], counts: [bootCounts], planets: [bootPlanets], event: [bootEvent], sources: [bootSources] }[kind] || [];
+  const run = { iss: [bootIss, bootCounts], counts: [bootCounts], starlink: [bootCounts, bootStarlink], planets: [bootPlanets], event: [bootEvent], sources: [bootSources] }[kind] || [];
   for (const fn of run) fn().catch(() => { /* the static answer stands */ });
 }
 

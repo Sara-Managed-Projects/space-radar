@@ -187,7 +187,14 @@ ok(f"{facts['starlink_objects']:,}" in star.plain and "22 September 2026" in sta
 ok("about 17,000" in sat.plain and re.search(r"<title>Live 3D satellite map: about 17,000 objects</title>", sat_html), "the hub says about 17,000, derived from the count")
 ok(all(re.search(r"Source: [^<]+, read \d+ \w+ \d{4}", h) for h in (star_html, sat_html)), "both carry a dated source line")
 ok(in_map("starlink/index.html") and in_map("satellites/index.html"), "both are in the sitemap")
-ok("../#at=starlink" in star.hrefs and "../#trip=tonight-from-your-street" in star.hrefs, "the Starlink layer link and the 'your sky tonight' link")
+ok("../?from=starlink-page-map#at=starlink" in star.hrefs and "../?from=starlink-page-trip#trip=tonight-from-your-street" in star.hrefs,
+   "the Starlink layer link and the 'your sky tonight' link, each with its placement tag")
+ok(all("?from=starlink-page-" in h for h in star.hrefs if h.startswith("../?") or h.startswith("../#")), "every link from the Starlink page into the map carries a ?from= placement tag")
+ok(not any("?from=" in h for h in star.hrefs if h.endswith(".html")), "a link to another crawlable page stays untagged (one address per page)")
+ok(re.search(r"<title>How to see Starlink satellites tonight[^<]*</title>", star_html) and "How can I see Starlink satellites tonight?" in star.plain,
+   "the title and the H1 are the search question")
+ok('data-slot="starlink-launches"' in star_html and 'data-slot="tonight-date"' in star_html and 'data-live="starlink"' in star_html,
+   "the next launches and the date line are slots the browser fills")
 ok({"WebPage"} <= set(ld_types(star_html)) and len(re.findall(r"<title>", star_html)) == 1 and len(re.search(r"<title>(.*?)</title>", star_html).group(1)) <= 60, "JSON-LD and a title under 60")
 import seo_pages  # noqa: E402
 index = {"snapshots": {"celestrak-supplemental-starlink": {"items": 12345, "fetched_at": "2026-10-01T09:00:00Z"},

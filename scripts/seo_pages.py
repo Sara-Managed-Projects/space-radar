@@ -195,22 +195,36 @@ def iss_pages(p: dict, host: str, counts: dict, snapshot_index: dict | None) -> 
 
 # --- Starlink and the hub -------------------------------------------------------------------------------
 
-def starlink_page(host: str, counts: dict, slugs: set) -> Page:
-    short = "Starlink train tonight: where to look, and a live 3D map"
+# Where a link from this page into the map was placed (`?from=`): the CloudFront log can count each
+# placement once logging is on. Only links INTO the app carry one; a link to another crawlable page
+# stays plain, so a crawler never sees two addresses for one page.
+STARLINK_FROM = {"cta": "starlink-page-map", "trip": "starlink-page-trip", "launches": "starlink-page-launches"}
+
+
+def starlink_page(host: str, counts: dict, slugs: set, today: str | None = None) -> Page:
+    short = "How to see Starlink satellites tonight, on a live map"
     n = counts["starlink"]
     day = date_words(counts["date"])
-    desc = "What a Starlink train is, when one can be seen after a launch, and a live 3D map of the Starlink satellites at their real positions."
+    built = date_words(today or dt.date.today().isoformat())
+    f = STARLINK_FROM
+    desc = "How to see Starlink satellites tonight: when a train is visible after a launch, the next Starlink launches, and a live 3D map of every satellite."
     body = (
         '<p class="micro"><span class="dot" style="background:#9ec3ff"></span>Satellites</p>\n'
-        "<h1>Starlink train tonight: where to look, and a live 3D map</h1>\n"
+        "<h1>How can I see Starlink satellites tonight?</h1>\n"
+        f'<p class="micro">Tonight is <span data-slot="tonight-date">{esc(built)}</span>.</p>\n'
         '<p class="lead">A Starlink train is a line of satellites, launched together, that can be seen as a string of bright dots moving across '
         "the sky in the first days after a launch, before they spread out and climb to their working height.</p>\n"
         f'<p>Our saved element sets hold <strong><span data-slot="count-starlink">{groups(n)}</span> Starlink objects</strong> '
         f'(CelesTrak\'s supplemental file, saved <span data-slot="count-starlink-date">{esc(day)}</span>). That is every Starlink satellite they list, '
         "in orbit or on its way up, not the number you can see tonight: from one place on a clear night it is the few dozen in a fresh train, or none.</p>\n"
-        '<div class="cta"><a class="live" href="../#at=starlink">Open the Starlink satellites on the map</a>'
+        f'<div class="cta"><a class="live" href="../?from={f["cta"]}#at=starlink">Open the Starlink satellites on the map</a>'
         '<p>The map flies to a Starlink satellite and turns its layer on.</p></div>\n'
-        '<p><a href="../#trip=tonight-from-your-street">Your sky tonight</a>: the trip that starts from your own street and names what is worth looking for.</p>\n'
+        f'<p><a href="../?from={f["trip"]}#trip=tonight-from-your-street">Your sky tonight</a>: the trip that starts from your own street and names what is worth looking for.</p>\n'
+        "<h2>The next Starlink launches</h2>\n"
+        "<p>A train is brightest in the first nights after its launch. The next Starlink launches, from Launch Library's schedule as saved by this site:</p>\n"
+        '<ul class="links" data-slot="starlink-launches"><li>The list is read from the saved schedule when the page opens; '
+        f'with scripts off, the <a href="../?from={f["launches"]}#at=starlink">map</a> shows every planned launch.</li></ul>\n'
+        '<p data-slot="starlink-launches-date" hidden></p>\n'
         "<h2>How a train forms</h2>\n"
         "<p>A Falcon 9 rocket releases dozens of Starlink satellites at once, in a low orbit, all within a few minutes and a few kilometres of "
         "each other. For days afterwards they keep nearly the same orbit, so they pass over you one after another, like beads on a string. "
@@ -218,7 +232,7 @@ def starlink_page(host: str, counts: dict, slugs: set) -> Page:
         "a few weeks. The map's \"fresh Starlink trains\" layer shows the satellites of launches under ten days old, grouped by launch.</p>\n"
         "<h2>When a train can be seen</h2>\n"
         "<p>Only in the hours after dusk or before dawn, when the sky is dark where you are and the satellites, hundreds of kilometres up, are still lit by the Sun. "
-        "Which night depends on the launch and on where you are, so this page does not print a schedule that would be wrong by tomorrow; "
+        "Which night depends on the launch and on where you are, so this page prints no viewing timetable that would be wrong by tomorrow; "
         "the map computes where each satellite is for the instant on its clock and for your place.</p>\n"
         '<div class="note"><p><strong>Measured or computed?</strong> The orbital elements are SpaceX\'s own, republished by CelesTrak, and are measurements. '
         "The positions are computed from them (SGP4) and get worse the older the elements are; the map says how old they are on every card. "
@@ -226,10 +240,11 @@ def starlink_page(host: str, counts: dict, slugs: set) -> Page:
         '<h2>More</h2>\n<ul class="links"><li><a href="../satellites/index.html">Live satellite map</a></li>'
         '<li><a href="../o/international-space-station.html">Where is the ISS?</a></li>'
         + '<li><a href="../t/satellites-and-junk.html">Trip: satellites and space junk</a></li></ul>\n')
-    foot = (f"<p>Source: {esc(counts['source'])}, read {esc(day)}. The browser replaces this count with the one in the saved copy when the page opens. "
+    foot = (f"<p>Source: {esc(counts['source'])}, read {esc(day)}. Launches: Launch Library (The Space Devs), from this site's saved copy. "
+            "The browser replaces this count with the one in the saved copy when the page opens. "
             "CelesTrak asks for one download of a file per update, so this page never fetches it itself.</p>\n")
-    page = Page(path="starlink/index.html", title=short, description=desc, body=body, foot=foot, live="counts", og_title=short)
-    page.jsonld = [webpage(host, page, [("Starlink train tonight", "")], extra={"about": {"@type": "Thing", "name": "Starlink"}}),
+    page = Page(path="starlink/index.html", title=short, description=desc, body=body, foot=foot, live="starlink", og_title=short)
+    page.jsonld = [webpage(host, page, [("Starlink satellites tonight", "")], extra={"about": {"@type": "Thing", "name": "Starlink"}}),
                    {"@type": "SoftwareApplication", "name": "Space Radar", "applicationCategory": "EducationalApplication",
                     "operatingSystem": "Any, in a web browser", "url": f"{host}/", "isAccessibleForFree": True,
                     "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}]
@@ -761,7 +776,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
     events = sky_events()
     pages: list[Page] = []
     pages += iss_pages(iss, host, counts, snapshot_index)
-    pages += [starlink_page(host, counts, slugs), satellites_page(host, counts, slugs), planets_page(host, today)]
+    pages += [starlink_page(host, counts, slugs, today), satellites_page(host, counts, slugs), planets_page(host, today)]
     pages += [events_index(events, host)] + [event_page(e, host, tours) for e in events]
     pages += [about_page(host), sources_page(host, snapshot_index), accuracy_page(host),
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys())]
