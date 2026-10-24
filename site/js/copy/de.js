@@ -1868,12 +1868,13 @@ export const COPY = {
     "radio": "Funk von der Erde hat {n} Lichtjahre erreicht"
   },
   "subscribe": {
-    "heading": "Starts und Meteorströme per E-Mail",
+    "heading": "Was kommt, per E-Mail",
     "emailLabel": "Deine E-Mail-Adresse",
     "emailPlaceholder": "du@example.com",
-    "pickOne": "Hake mindestens eines der beiden an.",
+    "pickOne": "Hake mindestens eines an.",
     "launchesLabel": "Kommende Starts",
     "showersLabel": "Maxima von Meteorströmen",
+    "approachesLabel": "Nahe Vorbeiflüge",
     "submit": "Abonnieren",
     "sending": "Wird gesendet …",
     "pending": "Prüfe deine E-Mails, um zu bestätigen.",

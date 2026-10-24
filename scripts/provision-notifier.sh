@@ -8,8 +8,8 @@
 #
 # Options:
 #   --bucket NAME         required. The bucket provision.sh made. The Lambda may read/write
-#                         notify/v1/* in it, and may only READ data/v1/launches.json (the
-#                         harvester's own output) -- nothing else in the bucket.
+#                         notify/v1/* in it, and may only READ data/v1/launches.json and
+#                         data/v1/jpl-cad.json (the harvester's own output) -- nothing else.
 #   --from-address ADDR   required. The SES-verified sender. A placeholder until a human verifies
 #                         its sending domain and moves SES out of the sandbox -- see below.
 #   --function NAME       default space-radar-notifier. Also names the role, the rule and the log
@@ -48,8 +48,8 @@
 # LEAST PRIVILEGE, STATED ONCE
 # The role trusts lambda.amazonaws.com -- and only this one function, via aws:SourceArn. Its one
 # inline policy allows s3:PutObject/s3:GetObject on notify/v1/* of the bucket, s3:ListBucket under
-# that prefix, s3:GetObject (read-only, no Put) on data/v1/launches.json -- the harvester's own
-# output and nothing else of it -- ses:SendEmail restricted to the Resource ARN of the one
+# that prefix, s3:GetObject (read-only, no Put) on data/v1/launches.json and data/v1/jpl-cad.json
+# -- the harvester's own output and nothing else of it -- ses:SendEmail restricted to the Resource ARN of the one
 # verified FROM identity, and writing to its own log group. It cannot delete an object, touch any
 # other key, or send mail from any other address.
 
@@ -236,10 +236,13 @@ POLICY=$(cat <<JSON
       "Condition": { "StringLike": { "s3:prefix": ["$PREFIX/*"] } }
     },
     {
-      "Sid": "ReadHarvesterLaunchesOnly",
+      "Sid": "ReadHarvesterSnapshotsOnly",
       "Effect": "Allow",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::$BUCKET/$HARVEST_PREFIX/launches.json"
+      "Resource": [
+        "arn:aws:s3:::$BUCKET/$HARVEST_PREFIX/launches.json",
+        "arn:aws:s3:::$BUCKET/$HARVEST_PREFIX/jpl-cad.json"
+      ]
     },
     {
       "Sid": "SendFromVerifiedAddressOnly",
@@ -262,7 +265,7 @@ if [ "$ROLE_EXISTS" = "1" ]; then
   run "${AWS[@]}" iam update-assume-role-policy --role-name "$ROLE" --policy-document "$TRUST"
 else
   run "${AWS[@]}" iam create-role --role-name "$ROLE" \
-    --description "Space Radar notifier: reads/writes $PREFIX/* in $BUCKET, reads $HARVEST_PREFIX/launches.json, sends from $FROM_ADDRESS" \
+    --description "Space Radar notifier: reads/writes $PREFIX/* in $BUCKET, reads $HARVEST_PREFIX/launches.json and jpl-cad.json, sends from $FROM_ADDRESS" \
     --assume-role-policy-document "$TRUST" \
     --tags Key=project,Value=space-radar
 fi
@@ -340,7 +343,7 @@ cat <<DONE
     function     $FN_ARN
     schedule     $RULE_ARN  ($SCHEDULE, the digest)
     logs         $LOG_GROUP  (14 days)
-    reads/writes s3://$BUCKET/$PREFIX/*  and reads s3://$BUCKET/$HARVEST_PREFIX/launches.json  -- nothing else
+    reads/writes s3://$BUCKET/$PREFIX/*  and reads s3://$BUCKET/$HARVEST_PREFIX/launches.json and jpl-cad.json  -- nothing else
 
     Still manual, by design, before this can mail anyone:
       1. verify $FROM_ADDRESS (or its domain) in SES and move the account out of the sandbox

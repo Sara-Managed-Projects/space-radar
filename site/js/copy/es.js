@@ -1728,12 +1728,13 @@ export const COPY = {
     radio: "La radio desde la Tierra ha llegado a {n} años luz"
   },
   subscribe: {
-    heading: "Lanzamientos y meteoros, por correo",
+    heading: "Lo que viene, por correo",
     emailLabel: "Tu dirección de correo",
     emailPlaceholder: "tu@ejemplo.com",
-    pickOne: "Marca al menos una de las dos.",
+    pickOne: "Marca al menos una.",
     launchesLabel: "Próximos lanzamientos",
     showersLabel: "Máximos de lluvias de meteoros",
+    approachesLabel: "Aproximaciones cercanas",
     submit: "Suscribirme",
     sending: "Enviando…",
     pending: "Revisa tu correo para confirmar.",

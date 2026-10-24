@@ -4,7 +4,7 @@ custom encoder, the same convention harvest/snapshot.py's manifest uses.
 
 Record shape:
     {"email": str, "nonce": str, "status": "pending" | "confirmed" | "unsubscribed",
-     "categories": ["launches", "meteor-showers", ...], "created_at": ISO str}
+     "categories": ["launches", "meteor-showers", "close-approaches", ...], "created_at": ISO str}
 
 A record's current token is tokens.make_token(email, nonce, secret). The nonce changes on every
 subscribe (even re-subscribing an existing email starts a fresh cycle) and on unsubscribe, so a
@@ -20,7 +20,7 @@ from . import tokens
 
 Store = dict[str, dict[str, Any]]  # email -> record
 
-VALID_CATEGORIES = ("launches", "meteor-showers")
+VALID_CATEGORIES = ("launches", "meteor-showers", "close-approaches")
 
 
 def now_iso() -> str:
