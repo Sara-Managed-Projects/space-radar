@@ -193,7 +193,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: The validator actually refuses
+      - name: The validator actually refuses, and every card sentence is held to 160 characters (#915)
         run: python3 tests/test_refusals.py
       # A pull request that changes what is drawn shows a picture (Ivan, 2026-10-12, after five
       # features were merged unseen). The rule is one small script; this holds it and the documents
