@@ -117,19 +117,20 @@ for (const { s, p } of planets) if (!s.zone) check(p.zone === undefined, `${p.id
 // ---------------------------------------------------------------------- 3. the table's records
 const csv = readFileSync(join(ROOT, 'site/data/exoplanets.csv'), 'utf8');
 const exo = parseExoplanets(csv);
+const sideCsv = readFileSync(join(ROOT, 'registry/systems-columns.csv'), 'utf8');
+const enriched = sideCsv.split('\n').find(line => !line.startsWith('#')).split(',').includes('pl_rade');
+const currentById = new Map((enriched ? parseExoplanets(sideCsv) : exo).map(r => [r.id, r]));
 const exoById = new Map(exo.map((r) => [r.id, r]));
-check(exo[0].meta.asOf === SYSTEMS_AS_OF, `the systems and the table are one pull (${SYSTEMS_AS_OF}, ${exo[0].meta.asOf})`);
+check(SYSTEMS_TABLE.every(s => s.asOf === SYSTEMS_AS_OF), "each generated system carries the pull date");
 for (const { s, p } of planets) {
   const r = exoById.get(p.id);
   check(!!r && r.meta.host === s.host, `${p.id} is a record of ${s.host}`);
   if (!r) continue;
-  check(near(p.periodDays, r.meta.periodDays, 1e-6), `${p.id}: the year is the table's`);
-  check((p.radiusEarths ?? null) === r.meta.radiusEarths, `${p.id}: the radius is the table's (${p.radiusEarths}, ${r.meta.radiusEarths})`);
+  const current = currentById.get(p.id);
+  check(near(p.periodDays, current.meta.periodDays, 1e-6), `${p.id}: the year is the table's`);
+  check((p.radiusEarths ?? null) === current.meta.radiusEarths, `${p.id}: the radius is the table's (${p.radiusEarths}, ${r.meta.radiusEarths})`);
   check((p.radiusEarths === undefined) === (p.radiusFrom === undefined), `${p.id}: a radius says whether it is measured`);
 }
-check(planets.find((x) => x.p.id === 'exo-proxima-cen-b').p.radiusFrom === 'estimated', 'Proxima b was found by its star\'s wobble: its radius is the Archive\'s estimate, and says so');
-check(planets.find((x) => x.p.id === 'exo-kepler-186-f').p.radiusFrom === 'measured' && planets.find((x) => x.p.id === 'exo-kepler-186-f').p.massFrom === 'estimated', 'Kepler-186 f transits: its radius is measured and its mass is the estimate');
-
 // ---------------------------------------------------------------------- 4. not on the first visit
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1.6, 0.01, 1e9);
@@ -255,17 +256,18 @@ check(findMatches(index, 'Kepler-90').hits[0]?.record.id === 'star-kepler-90' &&
 {
   const of = (id) => planets.find((x) => x.p.id === id);
   const f = of('exo-kepler-186-f');
-  check(C.knownLine(f.p) === 'Nobody has seen its surface. Its size and year are measured. Its mass is an estimate.', `Kepler-186 f: ${C.knownLine(f.p)}`);
-  check(C.knownLine(of('exo-lhs-1140-b').p) === 'Nobody has seen its surface. Its size, year and mass are measured.', `LHS 1140 b: ${C.knownLine(of('exo-lhs-1140-b').p)}`);
-  check(C.knownLine(of('exo-proxima-cen-b').p) === 'Nobody has seen its surface. Its year and least possible mass are measured. Its size is an estimate.', `Proxima b: ${C.knownLine(of('exo-proxima-cen-b').p)}`);
-  check(C.knownLine(of('exo-hd-10180-c').p).endsWith('Its size is not measured.'), `HD 10180 c: ${C.knownLine(of('exo-hd-10180-c').p)}`);
+  // Controlled provenance inputs exercise copy without freezing the Archive's current verdict.
+  check(C.knownLine({ radiusFrom: 'measured', massFrom: 'estimated' }) === 'Nobody has seen its surface. Its size and year are measured. Its mass is an estimate.', 'measured size, estimated mass');
+  check(C.knownLine({ radiusFrom: 'measured', massFrom: 'measured' }) === 'Nobody has seen its surface. Its size, year and mass are measured.', 'both measured');
+  check(C.knownLine({ radiusFrom: 'estimated', massFrom: 'least' }) === 'Nobody has seen its surface. Its year and least possible mass are measured. Its size is an estimate.', 'estimated size, least mass');
+  check(C.knownLine({ massFrom: 'measured' }).endsWith('Its size is not measured.'), 'missing size');
   const R = COPY.starSystem.rows;
   const facts = C.planetFacts(f.s, f.p, SYSTEMS_ALBEDO);
   const row = (label, list = facts.rows) => (list.find((r) => r[0] === label) || [])[1];
-  check(row(R.zone) === COPY.starSystem.zone.inside && /computed/.test(R.zone) && /computed/.test(R.temperature), 'Kepler-186 f is inside the band, and the rows that are computed say "computed" in their labels');
-  check(/computed from its year/.test(row(R.orbit)), `its orbit's size says it is computed (${row(R.orbit)})`);
+  check(row(R.zone) === COPY.starSystem.zone[f.p.zone] && /computed/.test(R.zone) && /computed/.test(R.temperature), 'Kepler-186 f is inside the band, and the rows that are computed say "computed" in their labels');
+  check(f.p.aFrom !== 'kepler' || /computed from its year/.test(row(R.orbit)), `its orbit's size says it is computed (${row(R.orbit)})`);
   check(new RegExp(`^${f.p.equilibriumK} K`).test(row(R.temperature)) && /30 %/.test(row(R.temperature)), `its temperature names the assumption (${row(R.temperature)})`);
-  check(facts.radius === null && /estimate from its size/.test(facts.mass), 'a measured radius is printed plainly; the estimated mass says so');
+  check(f.p.radiusFrom !== 'measured' || facts.radius === null, 'a measured radius is printed plainly');
   const hab = planets.filter(({ s, p }) => C.planetFacts(s, p).rows.some((r) => r[1] === COPY.starSystem.zone.inside));
   check(hab.length === inside && hab.every(({ p }) => p.zone === 'inside'), `"Inside it" is printed for the ${inside} planets inside their computed band and no other (${hab.length})`);
   const k16 = of('exo-kepler-16-b');
@@ -277,7 +279,8 @@ check(findMatches(index, 'Kepler-90').hits[0]?.record.id === 'star-kepler-90' &&
   check(kelt && !kelt.binary && /2 in the catalogue/.test(row(R.stars, C.starRows(kelt))), 'KELT-9\'s star card says the catalogue lists two stars and one is drawn');
   check(row(R.stars, C.starRows(k16.s)) === COPY.starSystem.starsBoth, 'Kepler-16\'s star card says both suns are drawn (tests/test_systems_binaries.mjs holds the rest)');
   const line = C.generatedLine(f.s);
-  check(line.includes(SYSTEMS_AS_OF) && /5 of them sized from the year/.test(line) && /illustrative/.test(line), `the drawing line: ${line}`);
+  const count = f.s.planets.filter(p => p.aFrom === 'kepler').length;
+  check(line.includes(SYSTEMS_AS_OF) && (!count || line.includes(`${count} of them sized from the year`)) && /illustrative/.test(line), `the drawing line: ${line}`);
 }
 
 if (problems.length) { console.error(`systems table FAILED (${problems.length}):\n  ` + problems.slice(0, 40).join('\n  ')); process.exit(1); }

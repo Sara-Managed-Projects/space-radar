@@ -5,12 +5,9 @@ number from the NASA Exoplanet Archive's table (internal #466, plan 2026-10-08 s
     python3 scripts/build-systems.py            # write it
     python3 scripts/build-systems.py --check    # exit 1 if the checked-in file is stale
 
-NOTHING HERE IS TYPED. The list names hosts; the numbers are joined from two files of ONE pull of
-the Archive's Planetary Systems Composite Parameters table (scripts/build-exoplanets.py):
-site/data/exoplanets.csv (period, radius, mass, the star's temperature and radius, the method, the
-year) and registry/systems-columns.csv (semi-major axis, star mass and luminosity, eccentricity,
-transit time, the circumbinary flag, and which numbers the Archive calculated itself). The two must
-carry the same date or this refuses.
+The side file registry/systems-columns.csv holds the latest listed-host pull. The bundled
+site/data/exoplanets.csv supplies planet membership and legacy numbers until the first refresh
+of an old side file. Its catalogue date is independent of the systems date.
 
 WHAT IS WORKED OUT HERE, and labelled as worked out in every row and on every card:
 
@@ -44,7 +41,7 @@ WHAT IS WORKED OUT HERE, and labelled as worked out in every row and on every ca
   of two stars (Kepler-16 b, Kepler-1647 b) gets no temperature and no verdict: the table describes
   one of its two suns, and half the light is not a number to compute from.
 
-Refusals: a listed host the table lacks; two files of different dates; a system with no planet that
+Refusals: a listed host the table lacks; a planet absent from the bundled catalogue; a system with no planet that
 has a period; a row whose third-law check fails after all this (it cannot, unless this file is
 wrong, which is what the check is for).
 """
@@ -180,21 +177,24 @@ def build() -> dict:
     rows = read_rows(TABLE)
     if rows is None:
         raise SystemExit("build-systems: site/data/exoplanets.csv is missing or empty")
-    table_date = re.search(r"as of (\d{4}-\d{2}-\d{2})", TABLE.read_text(encoding="utf-8").splitlines()[0])
     side, side_date = read_side()
     binaries = read_binaries()
     unused = sorted(set(binaries) - {str(e["host"]) for e in listed})
     if unused:
         raise SystemExit(f"build-systems: registry/systems-binaries.yaml names {unused}, which registry/systems-list.yaml does not list")
-    if not table_date or table_date.group(1) != side_date:
-        raise SystemExit(f"build-systems: site/data/exoplanets.csv is as of {table_date and table_date.group(1)} and "
-                         f"registry/systems-columns.csv as of {side_date}: they must be one pull "
-                         f"(python3 scripts/build-exoplanets.py --pull <today>)")
+    if not side_date:
+        raise SystemExit("build-systems: side file has no date")
+    known = {(r["hostname"].strip(), exo_id(r["pl_name"])) for r in rows}
+    for r in side.values():
+        if (r["hostname"].strip(), exo_id(r["pl_name"])) not in known:
+            raise SystemExit(f"build-systems: {r['pl_name']} is missing from the bundled csv")
     as_of = side_date
     systems = []
     for entry in listed:
         host = str(entry["host"])
-        host_rows = rows_for_host(rows, host)
+        host_rows = rows_for_host(list(side.values()), host)
+        # Old side files remain reproducible until their first scheduled pull.
+        host_rows = [dict(next((r for r in rows if r["pl_name"] == w["pl_name"]), {}), **w) for w in host_rows]
         if not host_rows:
             raise SystemExit(f"build-systems: registry/systems-list.yaml names `{host}`, which is not a hostname in the table")
         sid = str(entry.get("id") or slug(host))

@@ -1,0 +1,82 @@
+name: star-systems
+on:
+  schedule:
+    - cron: "41 6 * * 3"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: star-systems
+  cancel-in-progress: false
+jobs:
+  regenerate:
+    if: github.repository == 'Sara-Managed-Projects/space-radar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pip install PyYAML
+      - name: Pull and regenerate, or keep the previous date
+        id: pull
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATE=$(date -u +%F)
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          if (python3 scripts/build-exoplanets.py --systems-only "$DATE" &&
+              python3 scripts/build-systems.py &&
+              python3 scripts/gen_systems_more_js.py) > /tmp/star-systems.log 2> /tmp/star-systems-error.log; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+          cat /tmp/star-systems.log /tmp/star-systems-error.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Open or update the refresh pull request
+        if: steps.pull.outputs.ok == 'true'
+        env:
+          DATE: ${{ steps.pull.outputs.date }}
+          BRANCH: auto/star-systems
+        run: |
+          set -euo pipefail
+          FILES=(registry/systems-columns.csv registry/systems-generated.yaml site/js/data/systems-index.js site/js/data/systems-table.js)
+          if git diff --quiet -- "${FILES[@]}"; then
+            echo "The successful pull matched the tree." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -- "${FILES[@]}"
+          git commit -m "Star systems: read from the Archive on $DATE"
+          git push --force origin "$BRANCH"
+          { echo "Read the Archive on $DATE. The bundled catalogue and narration are unchanged."; cat /tmp/star-systems.log; } > /tmp/star-systems-pr.md
+          NUMBER=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$NUMBER" ]; then
+            if ! gh pr create --head "$BRANCH" --base main --title "Star systems: read from the Archive on $DATE" --body-file /tmp/star-systems-pr.md; then
+              echo "::warning::Branch pushed, but the token could not open a PR. Enable Settings > Actions > General > Allow GitHub Actions to create and approve pull requests, or open it manually."
+              exit 1
+            fi
+          else
+            gh pr edit "$NUMBER" --title "Star systems: read from the Archive on $DATE" --body-file /tmp/star-systems-pr.md
+          fi
+          gh workflow run ci.yml --ref "$BRANCH"
+          touch /tmp/star-systems-pr-ready
+      - name: Keep one failure issue and close it on recovery
+        if: always() && steps.pull.outputs.ok != ''
+        env:
+          PULL_OK: ${{ steps.pull.outputs.ok }}
+          DATE: ${{ steps.pull.outputs.date }}
+        run: python3 scripts/star_systems_issue.py
