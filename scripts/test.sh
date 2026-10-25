@@ -49,10 +49,10 @@ site/js/copy/|scripts/check_copy.py tests/test_chrome_copy.mjs tests/test_refusa
 site/js/ui/|scripts/check_copy.py tests/test_contract.mjs tests/test_chrome_copy.mjs
 site/js/|tests/test_contract.mjs tests/test_relative_urls.mjs scripts/gen_modulepreload.py
 site/css/|tests/test_tokens.mjs tests/test_relative_urls.mjs
-site/index.html|scripts/gen_modulepreload.py scripts/gen_home_seo.py tests/test_manifest.mjs tests/test_relative_urls.mjs
+site/index.html|scripts/gen_modulepreload.py scripts/gen_home_seo.py tests/test_manifest.mjs tests/test_relative_urls.mjs tests/test_release_zip.py
 site/sw.js|tests/test_sw_routes.mjs tests/test_relative_urls.mjs
 site/manifest.webmanifest|tests/test_manifest.mjs
-site/images/icons/|tests/test_manifest.mjs
+site/images/icons/|tests/test_manifest.mjs tests/test_release_zip.py
 site/textures/|scripts/check_registry.py tests/test_refusals.py
 site/models/|scripts/check_registry.py tests/test_refusals.py
 site/audio/|scripts/check_registry.py scripts/narrate.py tests/test_listen_check.py
