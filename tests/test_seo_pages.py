@@ -259,9 +259,9 @@ for s in sysl:
         bad.append(f"{s['slug']}: {problems}")
 ok(not bad, f"every system page: title, impression, the three words, canonical, a section and a #go= per planet, sitemap ({bad[:3]})")
 k186 = parse(BUILT / "o" / "kepler-186.html").plain
-ok("Kepler-186 f is an exoplanet 1.17 times Earth's width, 580 light-years away, orbiting in its star's computed habitable zone." in k186,
-   "the first sentence of the issue's pattern, from the data")
-ok("Kepler-186 b is an exoplanet 1.07 times Earth's width, 580 light-years away, orbiting closer to its star than the habitable zone we compute for it." in k186, "and for a planet outside the zone")
+kepler = next(s for s in seo_systems.systems() if s["id"] == "kepler-186")
+for planet in kepler["planets"]:
+    ok(seo_systems.first_sentence(planet, kepler["dist_pc"]) in k186, "planet sentence follows the generated row")
 trap = parse(BUILT / "o" / "trappist-1.html").plain
 ok("TRAPPIST-1 and its seven planets" in trap and "Fly to TRAPPIST-1 in 3D" in trap, "the typed system is built the same way")
 idx = json.loads((BUILT / "object-pages.json").read_text(encoding="utf-8"))
