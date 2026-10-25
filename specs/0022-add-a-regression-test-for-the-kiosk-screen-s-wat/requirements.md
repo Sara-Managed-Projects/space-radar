@@ -34,11 +34,11 @@ Measured in this checkout (`2a9e9aff`), 25 Oct 2026. `node tests/test_autopilot.
   decided in section 4 of `tests/test_autopilot.mjs`. Section 4 checks the action the function
   returns. The holds file is where `reload()` runs.
 
-Live site, fetched Sun 25 Oct 2026 05:19 UTC. Both files last-modified Mon 12 Oct 2026 15:41 UTC,
+Live site, fetched Sun 25 Oct 2026 05:28 UTC. Both files last-modified Mon 12 Oct 2026 15:41 UTC,
 gzip, served from CloudFront:
 
-- `https://www.spaceradar.ai/js/ui/autopilotplan.js` contains `contextLost: 5000` and
-  `why: "context-lost"`.
+- `https://www.spaceradar.ai/js/ui/autopilotplan.js` contains `contextLost:5e3` and
+  `why:"context-lost"`. `5e3` is 5000 ms.
 - `https://www.spaceradar.ai/js/ui/autopilot.js` contains `between-stuck`, `context-lost`, and
   the start path that resumes from the link.
 
