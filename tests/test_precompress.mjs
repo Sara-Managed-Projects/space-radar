@@ -109,6 +109,46 @@ check(readdirSync(join(tmp, 'cache')).length === 10, 'the cache holds one Brotli
   // And deploy.sh still hands the built copies to sync (the time is only read there).
   check(/precompress "\$SITE" data/.test(readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8')) && !/--size-only/.test(readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8')), 'deploy.sh syncs the built copies by size and time, never --size-only');
 }
+// A same-size content change is still uploaded (#576). The block above never changes a file.
+// Flipping 174.bin and leaving its time at "now" would pass even with the equal-length exception
+// deleted, because sync uploads a newer source. The old time goes back on after the write.
+{
+  const dir = join(SITE, 'data/startiles/n8');
+  const from = join(tmp, 'same-size');
+  const tileDir = join(from, 'data/startiles/n8');
+  mkdirSync(tileDir, { recursive: true });
+  const original = readFileSync(join(dir, '174.bin'));
+  const stale = await compress(original, 'br', 11);
+  const flipped = Buffer.from(original);
+  flipped[97] ^= 0xff;
+  writeFileSync(join(tileDir, '174.bin'), flipped);
+  cpSync(join(dir, '0.bin'), join(tileDir, '0.bin'));
+  const flippedBr = await compress(flipped, 'br', 11);
+  check(flippedBr.length === 3932 && stale.length === 3932, `174.bin: Brotli 11 of the flip stays 3932 bytes (${flippedBr.length}, was ${stale.length})`);
+  check(!flippedBr.equals(stale), '174.bin: the flipped Brotli bytes differ from the copy already stored');
+  const old = new Date('2026-01-02T03:04:05Z');
+  for (const f of ['174.bin', '0.bin']) utimesSync(join(tileDir, f), old, old);
+  const out = join(tmp, 'br4');
+  await run({ from, dirs: ['data'], out, quality: 11, cache: null });
+  // aws s3 sync help, upload: copy when the size differs, the local file is newer, or there is no object.
+  // Equal times skip. A local time that is not newer skips.
+  const uploads = (local, remote) => {
+    if (!remote) return true;
+    if (local.size !== remote.size) return true;
+    return local.mtimeMs > remote.mtimeMs;
+  };
+  const local174 = statSync(join(out, 'data/startiles/n8/174.bin'));
+  const remote174 = { size: 3932, mtimeMs: old.getTime() };
+  check(local174.size === remote174.size, `174.bin: the new copy is the same size as the object already stored (${local174.size})`);
+  check(uploads(local174, remote174), '174.bin: a same-size content change is uploaded');
+  check(zlib.brotliDecompressSync(readFileSync(join(out, 'data/startiles/n8/174.bin'))).equals(flipped), '174.bin: the uploaded copy decodes to the flipped file');
+  const zero = readFileSync(join(tileDir, '0.bin'));
+  const zeroBr = await compress(zero, 'br', 11);
+  const local0 = statSync(join(out, 'data/startiles/n8/0.bin'));
+  check(zero.length === 2762 && zeroBr.length === 2754, `0.bin: the smaller copy is 2754 bytes of Brotli (${zero.length} -> ${zeroBr.length})`);
+  const remote0 = { size: 2754, mtimeMs: old.getTime() };
+  check(!uploads(local0, remote0), '0.bin: an unchanged smaller file is not sent');
+}
 // --strict: an unknown type in a code folder stops the run; the module contract does not.
 let threw = '';
 writeFileSync(join(src, 'js/shader.glsl'), 'void main(){}');
