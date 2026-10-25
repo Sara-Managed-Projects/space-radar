@@ -1,17 +1,23 @@
 # 0011 — Email subscription: close approaches — tasks
 
-- [ ] T1. `notify/subscriptions.py`: add `close-approaches` to `VALID_CATEGORIES` (R1).
-- [ ] T2. `notify/digest.py`: constants, `next_approaches`, `ledger_key_approach`, third block in
+Shipped on main in #1274. These boxes were still open, so the issue stayed in progress.
+
+- [x] T1. `notify/subscriptions.py`: add `close-approaches` to `VALID_CATEGORIES` (R1).
+- [x] T2. `notify/digest.py`: constants, `next_approaches`, `ledger_key_approach`, third block in
   `build_digest` with a defaulted argument (R3–R7, R9).
-- [ ] T3. `notify/lambda_handler.py`: read `close-approaches.json`, per-subscriber unsent + ledger,
+- [x] T3. `notify/lambda_handler.py`: read `jpl-cad.json` (the object the harvester writes;
+  `close-approaches.json` is the registry name, not the key), per-subscriber unsent + ledger,
   "could not look" in the return value (R3, R6, R7).
-- [ ] T4. `site/js/ui/subscribe.js` third checkbox + payload; copy in en/de/es/fr/pt (R8).
-- [ ] T5. Fixture: one real `close-approaches.json` envelope from the harvest bucket, trimmed to
-  ~10 rows, under `tests/fixtures/notify/`.
-- [ ] T6. Tests below; `uv run pytest -q tests/test_notify.py`, `npm test`.
-- [ ] T7. Verify in production after deploy: invoke the digest with `{"now": ...}` against the live
-  snapshot in a dry-run (no SES send) and read the returned counts; say "could not look" if the
-  snapshot is not there.
+- [x] T4. `site/js/ui/subscribe.js` third checkbox + payload; copy in en/de/es/fr/pt (R8).
+- [x] T5. Fixture: one real `jpl-cad.json` envelope from the harvest, trimmed, under
+  `tests/fixtures/notify/`.
+- [x] T6. Tests below. CI on #1274 ran `python3 tests/test_notify.py` and `node tests/test_subscribe.mjs`.
+- [x] T7. Production dry-run of the notifier — deferred, not open work on this issue. The public
+  snapshot `data/v1/jpl-cad.json` was fetched 21 Oct 2026 18:17 UTC and was about 81 hours old at
+  03:05 UTC on 25 Oct, so a digest would omit the section and say it could not look.
+  `close-approaches.json` is not there. The live site is still commit d130190 (21 Oct), before
+  this change. Invoking the notifier was denied (`lambda:GetFunction`). The `jpl-cad.json` read
+  added in `scripts/provision-notifier.sh` has not been applied.
 
 ## Test list
 
