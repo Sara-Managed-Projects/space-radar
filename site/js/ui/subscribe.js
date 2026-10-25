@@ -1,11 +1,12 @@
-// ui/subscribe.js -- the smallest subscribe form: an email and two checkboxes, posting to the
-// notifier's Function URL (notify/lambda_handler.py's handler_subscribe, issue #251).
+// ui/subscribe.js -- the smallest subscribe form: an email and three checkboxes, posting to the
+// notifier's Function URL (notify/lambda_handler.py's handler_subscribe, issue #251, close
+// approaches in #377).
 //
 // WHERE IT SITS (spec 0061 task 5). It arrived as a form appended to <body> with no styles: a
 // grey browser button over the globe on every visit. The guide's second principle is that nothing
 // new docks: so it is a row that opens in place under Coming up, the list it is about
 // (docs/ui-guide.md section 3.5 and the card's disclosure rows), in the sidebar on a desktop and
-// in the sheet on a phone, never over the scene. Inside: the field as the search's well, the two
+// in the sheet on a phone, never over the scene. Inside: the field as the search's well, the
 // boxes as What to show's, one quiet button, a one-line status. What it does is unchanged: the
 // same payload to the same endpoint, and with no endpoint (the default: a human runs
 // scripts/provision-notifier.sh) pressing Subscribe says it could not reach the service.
@@ -27,10 +28,11 @@ export function notifyEndpoint() {
   return (typeof window !== 'undefined' && window.SPACE_RADAR_NOTIFY_URL) || '';
 }
 
-export function subscribePayload(email, wantLaunches, wantShowers) {
+export function subscribePayload(email, wantLaunches, wantShowers, wantApproaches) {
   const categories = [];
   if (wantLaunches) categories.push('launches');
   if (wantShowers) categories.push('meteor-showers');
+  if (wantApproaches) categories.push('close-approaches');
   return { email: (email || '').trim(), categories };
 }
 
@@ -76,6 +78,7 @@ export function createSubscribe({ parent, fetchImpl } = {}) {
   };
   const launches = check(T.launchesLabel);
   const showers = check(T.showersLabel);
+  const approaches = check(T.approachesLabel);
 
   const submit = el('button', 'sr-btn sr-subscribe__submit', T.submit);
   submit.type = 'submit';
@@ -85,7 +88,7 @@ export function createSubscribe({ parent, fetchImpl } = {}) {
   status.hidden = true;
   const say = (text) => { status.textContent = text; status.hidden = !text; };
 
-  form.append(email, launches.row, showers.row, submit, status);
+  form.append(email, launches.row, showers.row, approaches.row, submit, status);
   root.append(head, form);
   parent.appendChild(root);
 
@@ -97,7 +100,7 @@ export function createSubscribe({ parent, fetchImpl } = {}) {
 
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
-    const payload = subscribePayload(email.value, launches.box.checked, showers.box.checked);
+    const payload = subscribePayload(email.value, launches.box.checked, showers.box.checked, approaches.box.checked);
     if (!payload.email) return;
     if (payload.categories.length === 0) { say(T.pickOne); return; }
     const endpoint = notifyEndpoint();

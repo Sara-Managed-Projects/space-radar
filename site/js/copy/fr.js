@@ -1872,12 +1872,13 @@ export const COPY = {
     "radio": "La radio venue de la Terre a atteint {n} années-lumière"
   },
   "subscribe": {
-    "heading": "Alertes par e-mail",
+    "heading": "Ce qui arrive, par e-mail",
     "emailLabel": "Ton adresse e-mail",
     "emailPlaceholder": "toi@exemple.fr",
-    "pickOne": "Coche au moins l’une des deux.",
+    "pickOne": "Coche au moins une.",
     "launchesLabel": "Prochains lancements",
     "showersLabel": "Maximums des pluies d’étoiles filantes",
+    "approachesLabel": "Passages rapprochés",
     "submit": "S’abonner",
     "sending": "Envoi…",
     "pending": "Vérifie ton e-mail pour confirmer.",

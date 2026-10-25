@@ -1028,6 +1028,8 @@ jobs:
         run: node tests/test_look_tool.mjs
       - name: "the notifier: digests, showers, subscriptions and tokens"
         run: python3 tests/test_notify.py
+      - name: "the signup form offers close approaches and posts that category (public #377)"
+        run: node tests/test_subscribe.mjs
       # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.
       - name: "a launch within a day counts down, in Launch Library's own words for its state (public #289)"
         run: node tests/test_countdown.mjs

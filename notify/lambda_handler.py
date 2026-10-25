@@ -5,7 +5,11 @@ One Lambda, one entry point, dispatching on the event shape it was handed:
     env NOTIFY_BUCKET     the site bucket (required). Reads/writes NOTIFY_PREFIX/* only.
     env NOTIFY_PREFIX     key prefix, default `notify/v1`.
     env HARVEST_PREFIX    key prefix the HARVESTER writes, default `data/v1` -- read-only, for
-                          `launches.json`. Same bucket; see scripts/provision-notifier.sh.
+                          `launches.json` and `jpl-cad.json`. Same bucket; see
+                          scripts/provision-notifier.sh. The harvester names a snapshot
+                          `<source-id>.json` (harvest/snapshot.py). The site serves the close
+                          approaches as `jpl-cad.json`. `close-approaches.json` is the registry
+                          output name, not the object key.
     env NOTIFY_SECRET     the HMAC key for tokens.py. Never hardcoded, never committed.
     env NOTIFY_FROM_ADDRESS  the verified SES sender. A placeholder until a human verifies a
                           real domain in SES and moves it out of the sandbox (see the provisioning
@@ -14,7 +18,8 @@ One Lambda, one entry point, dispatching on the event shape it was handed:
 HTTP (invoked through a Lambda Function URL -- see scripts/provision-notifier.sh for why a
 Function URL and not API Gateway):
 
-    POST /subscribe   body {"email": str, "categories": ["launches", "meteor-showers"]}
+    POST /subscribe   body {"email": str, "categories": ["launches", "meteor-showers",
+                          "close-approaches"]}
                       -> 202 {"status": "pending"}; a confirmation email is sent before this
                          returns, so the response never claims success ahead of the email.
                       -> 400 {"error": str} for a bad email or an empty/unknown category list.
@@ -25,10 +30,12 @@ There is no existing HTTP-handler precedent in this repo to match, so this shape
 routes, JSON in, JSON out, no session, no cookie -- is the one chosen here, documented plainly as
 asked rather than left to be inferred from the code.
 
-Scheduled (EventBridge, no meaningful payload; `event.now` may override "now" for a dry run, the
-same convention harvest/lambda_handler.py uses): builds each confirmed subscriber's digest from
-the harvester's own launches.json and notify/showers.py's mirror, skips anything already on their
-ledger, sends what's left, and writes the ledger back.
+Scheduled (EventBridge, no meaningful payload; `event.now` may override "now", the same
+convention harvest/lambda_handler.py uses; `event.dry_run` builds the digest and writes nothing,
+sends nothing): builds each confirmed subscriber's digest from the harvester's own launches.json,
+jpl-cad.json and notify/showers.py's mirror, skips anything already on their ledger, sends what's
+left, and writes the ledger back. A close-approach snapshot that is missing, unreadable or stale
+omits that section and says "could not look"; the other sections still go.
 
 boto3 is imported inside each handler body and nowhere else, matching harvest/lambda_handler.py,
 so this module imports (and its pure helpers test) without AWS installed.
@@ -50,6 +57,9 @@ DEFAULT_HARVEST_PREFIX = "data/v1"
 SUBSCRIPTIONS_KEY = "subscriptions.json"
 LEDGER_KEY = "ledger.json"
 LAUNCHES_SOURCE_KEY = "launches.json"
+# harvest/snapshot.py writes `<source-id>.json`. Measured on the live site 2026-10-24:
+# /data/v1/jpl-cad.json is the close-approach snapshot; close-approaches.json is not.
+CLOSE_APPROACHES_SOURCE_KEY = "jpl-cad.json"
 
 
 class S3Store:
@@ -188,6 +198,7 @@ def handler_digest(event, context):
     from_addr = os.environ.get("NOTIFY_FROM_ADDRESS", "")
     event = event or {}
     now = dig.parse_dt(event["now"]) if event.get("now") else datetime.now(timezone.utc)
+    dry_run = bool(event.get("dry_run"))
 
     client = boto3.client("s3")
     store = S3Store(client, bucket, prefix)
@@ -199,25 +210,50 @@ def handler_digest(event, context):
     snapshot = harvest_store.read_json(LAUNCHES_SOURCE_KEY, {"body": {"results": []}})
     launches = dig.next_launches(snapshot.get("body") or {"results": []}, now)
     showers = dig.next_shower_peaks(shw.SHOWERS, now)
+    # A failure here must not take the launch and shower mail with it.
+    try:
+        cad_snapshot = harvest_store.read_json(CLOSE_APPROACHES_SOURCE_KEY, None)
+    except Exception:
+        cad_snapshot = None
+    approaches = dig.next_approaches(cad_snapshot, now)
 
-    ses = boto3.client("ses")
+    ses = None if dry_run else boto3.client("ses")
     confirmed = {email: r for email, r in records.items() if r["status"] == "confirmed"}
     sent_count = 0
+    would_send = 0
     for email, record in confirmed.items():
+        categories = record["categories"]
         already = set(ledger.get(email, []))
-        new_launches = dig.unsent(launches if "launches" in record["categories"] else [], dig.ledger_key_launch, already)
-        new_showers = dig.unsent(showers if "meteor-showers" in record["categories"] else [], dig.ledger_key_shower, already)
-        content = dig.build_digest(record["categories"], new_launches, new_showers)
+        new_launches = dig.unsent(launches if "launches" in categories else [], dig.ledger_key_launch, already)
+        new_showers = dig.unsent(showers if "meteor-showers" in categories else [], dig.ledger_key_shower, already)
+        new_approaches = dig.unsent(
+            approaches if approaches is not None and "close-approaches" in categories else [],
+            dig.ledger_key_approach, already,
+        )
+        content = dig.build_digest(categories, new_launches, new_showers, new_approaches)
         if content is None:
+            continue
+        if dry_run:
+            would_send += 1
             continue
         send_email(ses, source=from_addr, to=email, subject=content["subject"], body=content["body"])
         already.update(dig.ledger_key_launch(x) for x in new_launches)
         already.update(dig.ledger_key_shower(x) for x in new_showers)
+        already.update(dig.ledger_key_approach(x) for x in new_approaches)
         ledger[email] = sorted(already)
         sent_count += 1
 
-    store.write_json(LEDGER_KEY, ledger)
-    return {"subscribers_confirmed": len(confirmed), "emails_sent": sent_count}
+    if not dry_run:
+        store.write_json(LEDGER_KEY, ledger)
+    result = {
+        "subscribers_confirmed": len(confirmed),
+        "emails_sent": sent_count,
+        "approaches": "could not look" if approaches is None else len(approaches),
+    }
+    if dry_run:
+        result["dry_run"] = True
+        result["would_send"] = would_send
+    return result
 
 
 def _route_http(event, context):

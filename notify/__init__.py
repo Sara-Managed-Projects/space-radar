@@ -5,8 +5,9 @@ for a "this passes over you" alert, which needs an ongoing per-device lat/lon an
 client-side; email cannot do that without tracking a subscriber's location server-side, which is
 out of scope here and stays #290's job. This package only ever mails events that are the same for
 every subscriber: upcoming launches (read from the harvester's existing `data/v1/launches.json`
-snapshot, never refetched here) and meteor shower peak dates (from `registry/showers.yaml`, mirrored
-in `notify/showers.py`). See #297, the tracking issue, for how the two fit together.
+snapshot, never refetched here), meteor shower peak dates (from `registry/showers.yaml`, mirrored
+in `notify/showers.py`) and close approaches (from `data/v1/jpl-cad.json`, #377). See #297, the
+tracking issue, for how the two fit together.
 
 Modules, mirroring harvest/'s shape:
     tokens.py          HMAC-signed confirm/unsubscribe tokens. No login, no password.

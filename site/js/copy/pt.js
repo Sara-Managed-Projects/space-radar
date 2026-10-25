@@ -1860,12 +1860,13 @@ export const COPY = {
     "radio": "O rádio da Terra já chegou a {n} anos-luz"
   },
   "subscribe": {
-    "heading": "Lançamentos e chuvas por e-mail",
+    "heading": "O que vem aí, por e-mail",
     "emailLabel": "Seu e-mail",
     "emailPlaceholder": "voce@exemplo.com",
-    "pickOne": "Marque pelo menos uma das duas.",
+    "pickOne": "Marque pelo menos uma.",
     "launchesLabel": "Próximos lançamentos",
     "showersLabel": "Picos de chuvas de meteoros",
+    "approachesLabel": "Passagens próximas",
     "submit": "Assinar",
     "sending": "Enviando…",
     "pending": "Confira seu e-mail para confirmar.",
