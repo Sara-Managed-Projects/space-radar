@@ -39,6 +39,7 @@ from pathlib import Path
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import seo_read  # noqa: E402  (the long reads: scripts/seo_read.py)
 import seo_systems  # noqa: E402
 from seo_common import (ACCOUNTS, ACCURACY_FORM, CLASSROOM_FORM, GITHUB, ROOT, Ctx, Page, esc, footer_nav,  # noqa: E402
                         make_ctx, place_picker, render, url_of, webpage)
@@ -542,6 +543,7 @@ def about_page(host: str) -> Page:
         "and every card says which and how old. Space Radar is not part of, and not endorsed by, NASA, ESA, CelesTrak or any space agency or company, and other products use similar words.</p>\n"
         "<h2>How to trust it</h2>\n"
         '<ul class="links"><li><a href="../accuracy/index.html">How accurate it is</a></li><li><a href="../sources/index.html">Where every number comes from</a></li>'
+        '<li><a href="../read/index.html">Long reads: what each release added, and how it is known</a></li>'
         f'<li><a href="{GITHUB}/blob/main/CREDITS.md">Credits and licences</a></li></ul>\n'
         f'<h2>Find us</h2>\n<ul class="links">{me}</ul>\n')
     page = Page(path="about/index.html", title=short, description=desc, body=body, og_title=short)
@@ -782,6 +784,7 @@ def build_pages(host: str, objects: list[dict], today: str, snapshot_index: dict
               teachers_page(host, tours, yml("autopilot.yaml"), url_keys())]
     sysl = seo_systems.pages(host, by_slug, today)
     pages += sysl
+    pages += seo_read.pages(host)
     return pages
 
 

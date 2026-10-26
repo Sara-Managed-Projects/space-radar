@@ -277,6 +277,10 @@ jobs:
       # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
       - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
         run: python3 tests/test_seo_pages.py
+      # The long reads (registry/articles.yaml, registry/articles/*.md): built, in the sitemap, 600 to 1 000 words, a "Measured" heading,
+      # a link into the map, every picture with alt text and a caption and under 300 kB, nothing unused.
+      - name: "The long reads: /read/ and each article built, in the sitemap, every picture with alt text, a caption and under 300 kB"
+        run: python3 tests/test_seo_read.py
       # Mars's height map against the laser altimeter's own grid (spec 0073 requirement 5). Here, in the
       # job that installs Pillow: the map is a WebP and node cannot decode one. Olympus Mons's summit,
       # Hellas's floor, Coprates Chasma's floor and the north polar cap within 400 m of MOLA's numbers;

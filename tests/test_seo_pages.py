@@ -381,7 +381,7 @@ for f in pages + [BUILT / "404.html"]:
         dirty.append(f.name)
 ok(not dirty, f"no bare #NNN, no Facebook, nothing from the plan on any page ({dirty[:3]})")
 ok(not re.search(r"\{\{|\bTODO\b|\blorem\b", "".join(f.read_text(encoding="utf-8") for f in pages)), "no placeholder left")
-ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "iss", "planets-tonight", "satellites", "sources", "starlink", "teachers"}),
+ok((BUILT / "pages-dirs.txt").read_text(encoding="utf-8").split() == sorted({"about", "accuracy", "events", "iss", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"}),
    "pages-dirs.txt lists the directories deploy.sh must ship")
 
 # --- the share pictures ----------------------------------------------------------------------------------
@@ -429,7 +429,7 @@ with tempfile.TemporaryDirectory() as tmp:
     r = run("bash", "scripts/deploy.sh", "--bucket", "example-bucket", "--app-only", "--dry-run", env=env)
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     ok(r.returncode == 0, f"deploy.sh --app-only --dry-run: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
-    for d in ("about", "accuracy", "events", "iss", "planets-tonight", "satellites", "sources", "starlink", "teachers"):
+    for d in ("about", "accuracy", "events", "iss", "planets-tonight", "read", "satellites", "sources", "starlink", "teachers"):
         s = [c for c in calls if c.startswith("s3 sync") and f"s3://example-bucket/{d} " in c + " "]
         ok(len(s) == 1 and "text/html" in s[0] and "max-age=0, must-revalidate" in s[0] and "--content-encoding" not in s[0] and "--delete" in s[0],
            f"{d}/ is synced as written, as HTML a browser revalidates on every load, with --delete")
