@@ -1,0 +1,76 @@
+# registry/articles.yaml -- the long reads: what is new in each release (/read/index.html, /read/<slug>.html).
+# Built by scripts/seo_read.py; each body is registry/articles/<slug>.md and its pictures are site/images/read/<slug>/.
+# A row is data a human edits: adding an article is a row, a body and its pictures, and nothing in code.
+#
+# FIELDS
+#   slug         the file name: /read/<slug>.html
+#   title        the heading (one line)
+#   short        the <title> of the page, 60 characters at most
+#   description  70 to 160 characters, for a result and a link preview
+#   lead         the sentence under the heading
+#   release      the release it is about, "1.2.0"
+#   published    the day it went up
+#   hero         the picture (a file of site/images/read/<slug>/) the share card is made from
+#   hero_alt     what the hero shows, for someone who cannot see it
+#   open         the address in the map the article ends on, and open_label the words of its button
+# THE RULES (tests/test_seo_read.py): 600 to 1 000 words; every picture has alt text and a caption and is under 300 kB;
+# a heading that starts "Measured"; a link into the map. Pictures are screenshots of the live map from the `look`
+# workflow (tools/README.md); the run each one came from is in the commit that added it.
+version: 1
+
+articles:
+  - slug: nebulae-in-three-dimensions
+    title: "Orion, the Ring and the nebulae you can fly into"
+    short: "Orion, the Ring and the nebulae you can fly into"
+    description: "Release 1.2.0 draws the Orion and Ring Nebulae, the Veil and three dust clouds as shapes in depth. What is measured, what is a model."
+    lead: "Release 1.2.0 turned flat photographs of nebulae into shapes you can fly round, and says on every card what is measured and what is a drawing."
+    release: "1.2.0"
+    published: 2026-10-27
+    hero: orion-turned-60.webp
+    hero_alt: "The Orion Nebula turned 60 degrees from our line of sight, a bowl of lit gas."
+    open: "https://www.spaceradar.ai/#go=dso-m42"
+    open_label: "Fly into the Orion Nebula"
+  - slug: clusters-and-the-edge
+    title: "Clusters you can fly into, and the edge of what we can see"
+    short: "Star clusters you can fly into, and the edge of the map"
+    description: "Release 1.2.0: 33 globular and 36 open clusters as stars, four galaxy clusters, two new trips and the oldest light at the horizon."
+    lead: "Clusters became stars you can fly among in release 1.2.0, and two new trips take the same idea out to the edge of the universe we can see."
+    release: "1.2.0"
+    published: 2026-10-27
+    hero: omega-centauri-inside.webp
+    hero_alt: "Inside Omega Centauri: thousands of stars around a bright core."
+    open: "https://www.spaceradar.ai/#trip=across-the-local-group"
+    open_label: "Take the trip across the Local Group"
+  - slug: the-neighbourhood-up-close
+    title: "The Moon at a low Sun, the giants' rings and the plumes"
+    short: "The Moon at a low Sun, the giants' rings and plumes"
+    description: "Release 1.2.0 casts the Moon's shadows from its own heights, draws Uranus's rings as dark as they are, and shows plumes only where seen."
+    lead: "Release 1.2.0 went back to the nearest worlds and drew them more honestly: real shadows, rings as dark as they are, and plumes only where a spacecraft saw them."
+    release: "1.2.0"
+    published: 2026-10-27
+    hero: tycho-low-sun.webp
+    hero_alt: "Tycho crater from 160 km, with long shadows from a low Sun."
+    open: "https://www.spaceradar.ai/#go=moon"
+    open_label: "Fly to the Moon"
+  - slug: spacecraft-in-their-own-materials
+    title: "Spacecraft that look like themselves"
+    short: "Spacecraft that look like themselves: 34 new 3D models"
+    description: "Release 1.3.0 adds 34 spacecraft, landers and rovers and draws them in gold foil, white cloth and cells. What is measured, what is ours."
+    lead: "Release 1.3.0 adds 34 models and changes how a model is lit, so that foil looks like foil and a lander does not look like a yellow box."
+    release: "1.3.0"
+    published: 2026-10-27
+    hero: hubble.webp
+    hero_alt: "The Hubble Space Telescope in orbit, a silver foil body with solar arrays."
+    open: "https://www.spaceradar.ai/#go=sat-20580"
+    open_label: "See the Hubble Space Telescope"
+  - slug: galaxies-from-their-own-numbers
+    title: "Galaxies, Carina and the Magellanic Cloud from their own numbers"
+    short: "Galaxies and nebulae in 3D from their own numbers"
+    description: "Release 1.3.0 draws M51, M81, M101, the Sombrero and the Antennae from published numbers, with Carina and the Small Magellanic Cloud in depth."
+    lead: "Release 1.3.0 draws five galaxies from the numbers astronomers have published about their shape, and puts Carina and the Small Magellanic Cloud into depth."
+    release: "1.3.0"
+    published: 2026-10-27
+    hero: sombrero-model.webp
+    hero_alt: "The Sombrero Galaxy as a model, a round bulge cut by a thin dark lane."
+    open: "https://www.spaceradar.ai/#go=dso-m104"
+    open_label: "Fly to the Sombrero Galaxy"
