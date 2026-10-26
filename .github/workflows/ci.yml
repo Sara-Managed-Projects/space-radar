@@ -1142,6 +1142,12 @@ jobs:
       - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
         run: node tests/test_outer_worlds.mjs
       # 0077 W1-f: end
+      # 0078 r14-neb-a: begin
+      - name: "eight emission nebulae as walls of glowing gas, dust and stars, the photograph's light within 5 % on our line and no photograph drawn flat (release 1.4.0 stage r14-neb-a)"
+        run: node tests/test_hero_emission.mjs
+      - name: "the emission nebulae's light, sharp light and walls are the bakes of their photographs and profiles"
+        run: python3 scripts/build_deep_emission.py --check
+      # 0078 r14-neb-a: end
       # 0077 W2-e: begin
       - name: "the Carina hero: its bipolar cavity behind the clusters, the dust lane in front, the photograph within 5 % on our line (internal spec 0077 W2-e, #782)"
         run: node tests/test_hero_carina.mjs
