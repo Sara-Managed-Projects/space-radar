@@ -7,7 +7,7 @@
 // few; a clock that stops the close places when the run is old (every craft then gets at least its 'as framed' picture).
 // Each picture is named `<id>--<before|pbr|auto>-<n>-<place>`.
 //
-//   gh workflow run look.yml --ref r14-m4 -f probe=r14-m4 -f width=1600 -f height=900 -f subject=sat-40732_sat-43491_...
+//   gh workflow run look.yml --ref r14-m4 -f probe=r14-m4 -f width=1600 -f height=900 -f subject=all   (or some ids joined by an underscore)
 //   gh workflow run look.yml --ref r14-m4 -f probe=r14-m4 -f mobile=true -f subject=...
 //
 // The craft are on "Satellites worth knowing" (the active catalogue's column twin, which the workflow saves when a subject is given).
@@ -21,7 +21,7 @@ const T0 = Date.now();
 const PHONE = innerWidth < 600;
 const age = () => (Date.now() - T0) / 60000; // minutes
 const param = new URLSearchParams(location.search).get('lookSubject');
-const subjects = param ? param.split('_').filter(Boolean) : DEFAULT;
+const subjects = param && param !== 'all' ? param.split('_').filter(Boolean) : DEFAULT; // `-f subject=all`: the ten (the input holds 80 characters, ten ids need 99)
 // Three.js says so when a program does not compile: keep its words, they are the first thing to read.
 const shaderErrors = [];
 try { sr.renderer.debug.onShaderError = (gl, program, vs, fs) => { shaderErrors.push(String(gl.getProgramInfoLog(program) || '') + ' | ' + String(gl.getShaderInfoLog(fs) || '').slice(0, 1500) + ' | ' + String(gl.getShaderInfoLog(vs) || '').slice(0, 500)); }; } catch { /* an older three */ }
@@ -158,7 +158,10 @@ const one = async (id) => {
   // for the picture only, as framed and from the first close place.
   try {
     if (age() > 26) throw new Error('the run is old: no before picture');
-    const built = MM.modelFor(entry.build ? MM.builderKlass(record.klass, entry.build) : record.klass, entry.build || (record.meta && record.meta.modelVariant) || undefined, { record });
+    // What main draws for this record WITHOUT the route this stage adds: the route's own table by number is skipped (a record with another number), so a
+    // geostationary craft gets the geostationary bus and any other the shape of its class.
+    const stand = RM.realModelFor({ ...record, meta: { ...(record.meta || {}), noradId: -1, catalogueNumber: undefined } }) || {};
+    const built = MM.modelFor(stand.build ? MM.builderKlass(record.klass, stand.build) : record.klass, stand.build || (record.meta && record.meta.modelVariant) || undefined, { record });
     const obj = heroOf();
     if (built && obj) {
       const hidden = obj.children.filter((c) => c.visible);
@@ -166,7 +169,7 @@ const one = async (id) => {
       obj.add(built);
       rig.flyTo({ azimuth: a0, polar: p0, distance: dFramed, ms: 0 });
       await sleep(3500);
-      const was = record.name + ' wearing the class shape `' + record.klass + '` that main draws today (put back by the probe for the comparison)';
+      const was = record.name + ' wearing the shape main draws for it today (' + (stand.build ? 'the build `' + stand.build + '`' : 'the class shape `' + record.klass + '`') + '; put back by the probe for the comparison)';
       await shot(id + '--before-1-as-framed', was + ', as the app frames a selected craft');
       out.views.push({ name: id + '--before-1-as-framed', look: 'before', at: onScreen() });
       const off0 = lensOn(k);

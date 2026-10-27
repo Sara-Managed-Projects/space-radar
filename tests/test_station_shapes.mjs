@@ -252,8 +252,10 @@ for (const [id, name, file] of [
   const e = realModelFor({ id: `n-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.file === file && !e.generic, `${name} (${id}) draws ${file} as itself`);
 }
-check(realModelFor({ id: 'n-44387', name: 'METEOR-M2 2', klass: 'satellite', layer: 'active', meta: { noradId: 44387 } }) === null,
-  'METEOR-M2 2 is not ICON: the id task 9f floated maps to nothing');
+// 0078 r14-m4: begin (METEOR-M2 2 has a model of its own since release 1.4.0, public #1119: it must still not be ICON's)
+check(realModelFor({ id: 'n-44387', name: 'METEOR-M2 2', klass: 'satellite', layer: 'active', meta: { noradId: 44387 } })?.file !== 'icon.glb',
+  'METEOR-M2 2 is not ICON: the id task 9f floated is not routed to ICON\'s file');
+// 0078 r14-m4: end
 check(realModelFor({ id: 'n-41889', name: 'CYGFM06', klass: 'satellite', layer: 'active', meta: { noradId: 41889 } }) === null,
   'CYGFM06 is not in the catalogue and is not mapped');
 { const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason-3.glb' && !j.generic && j.axes === 'app', 'Jason-3 draws as JPL\'s own model of Jason-3 (batch eleven), no longer the OSTM/Jason-2 sister ship'); }
