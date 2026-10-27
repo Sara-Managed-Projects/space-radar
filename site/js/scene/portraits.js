@@ -8,7 +8,7 @@
 //
 // WHAT. A trip stop that says `portrait: true` (registry/tours.yaml), and a black hole's own card on a rung
 // of the ladder, draw the hole at its place: scene/blackhole.js's shadow, photon ring and lensed, beamed disc,
-// M87*'s jet, Cygnus X-1's supergiant. Every black hole and quasar in registry/exotics.yaml has one; there is
+// M87*'s jet, Cygnus X-1's supergiant. Every black hole in registry/exotics.yaml has one (the quasars keep the far layer's point and host); there is
 // no photograph in the scene. The card keeps the EHT's photograph of the two that have one, as the
 // photograph beside the model (ui/cards.js).
 //
@@ -38,10 +38,12 @@ export function portraitScale(share, fovDeg) {
   return share * 2 * Math.tan((fovDeg * Math.PI) / 360);
 }
 
-/** A record drawn by this file: a black hole or a quasar of registry/exotics.yaml. */
+/**
+ * A record drawn by this file: a black hole of registry/exotics.yaml. The two quasars stay scene/deep/galclusters.js's
+ * point and host galaxy, which their cards describe.
+ */
 export function isBlackHole(record) {
-  const k = record && record.klass === 'exotic' && record.meta ? record.meta.kind : null;
-  return k === 'blackhole' || k === 'quasar';
+  return !!(record && record.klass === 'exotic' && record.meta && record.meta.kind === 'blackhole');
 }
 
 export function createPortraits(scene, opts = {}) {

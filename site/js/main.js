@@ -690,7 +690,7 @@ export async function boot({ setStatus } = {}) {
   }
   window.addEventListener('sr:select', (e) => {
     const record = e && e.detail;
-    cardPortrait = record && record.klass === 'exotic' && record.meta && (record.meta.kind === 'blackhole' || record.meta.kind === 'quasar') ? record.id : ''; // 0078 r14-mw-bh: every black hole, in 3D
+    cardPortrait = record && record.klass === 'exotic' && record.meta && record.meta.kind === 'blackhole' ? record.id : ''; // 0078 r14-mw-bh: every black hole, in 3D
     syncPortrait();
   });
   // A PULSAR'S PULSE (scene/pulsars.js): asked for the first time the exotics are drawn on a rung

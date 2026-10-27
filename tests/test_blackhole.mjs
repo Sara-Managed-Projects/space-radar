@@ -6,7 +6,7 @@
 //     the approaching side of the disc is shifted blue and the receding red; seen nearly edge-on, a ray that passes
 //     ABOVE the hole meets the disc behind it (the far side lensed over the top) where a straight line would miss.
 //  3. M87* FROM EARTH. Its ring is brightest in the south, as in the 2019 picture (the flow turning clockwise).
-//  4. THE ROSTER. Every black hole and quasar in registry/exotics.yaml has a model; M87* its jet, Cygnus X-1 its
+//  4. THE ROSTER. Every black hole in registry/exotics.yaml has a model (the quasars stay the far layer's); M87* its jet, Cygnus X-1 its
 //     supergiant on an orbit of Kepler's size; a hole far off is drawn larger, a near one at its true size.
 //  5. THE CONTRACT. No render target, no photograph in the scene; the cards keep the two photographs.
 import { fileURLToPath } from 'node:url';
@@ -107,7 +107,7 @@ const UAS = 180 / Math.PI * 3600e6;
 // ------------------------------------------------------------------ 4. the roster
 {
   const holes = records.filter(isBlackHole);
-  check(holes.length >= 11, `${holes.length} black holes and quasars are drawn in 3D`);
+  check(holes.length === records.filter((r) => r.meta.kind === 'blackhole').length && holes.length >= 9 && !holes.some((r) => r.meta.kind === 'quasar'), `${holes.length} black holes are drawn in 3D; the quasars keep the far layer's point and host`);
   for (const r of holes) {
     const p = B.profileFor(r);
     check(p.msun > 0 && p.mKm > 0 && (p.quiet || p.rOut > B.ISCO_M), `${r.id}: a mass (${p.msun}) and a disc or a quiet hole`);
