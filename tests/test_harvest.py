@@ -518,7 +518,7 @@ INDEX_KEYS = {"schema", "generated_at", "run", "snapshots"}
 RUN_KEYS = {"started_at", "duration_ms", "runner"}
 ENTRY_KEYS = {"fetched_at", "valid_until", "items", "bytes", "duration_ms", "status", "last_error", "etag"}
 # Present only on a published row, and only when they apply (harvest/publish.py).
-OPTIONAL_ENTRY_KEYS = {"kept_after", "columns"}
+OPTIONAL_ENTRY_KEYS = {"kept_after", "columns", "note"}
 # The files cut from a bigger one, listed in the manifest beside the registry's rows (harvest/publish.py derived()).
 DERIVED_IDS = {"celestrak-notable", "celestrak-geo", "celestrak-starlink-recent"}
 
