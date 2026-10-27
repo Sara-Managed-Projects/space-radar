@@ -23,12 +23,12 @@ everything new is added, and the 1.0.0 promises hold. A shared link (`v=1`, with
 the saved-data format (`/data/v1/`) and the registry row formats all still work.
 
 Counted on release day with `python3 scripts/count_facts.py`: 30 trips and 227 stops, 109 389 stars, 40
-star systems, 30 nebula and galaxy photographs (the removal of the photographs is not in this list yet, see
-the TODO below), 21 moons (20 with a map), 21 landing sites on the Moon and 12 on Mars, 225 models of
-spacecraft and small bodies (165 in 1.3.0, 60 more), 29 layers, 16 sources (14 in 1.3.0) and 33 feeds (31),
-and 313 test files (306 in 1.3.0, 7 more). 27 deep-sky heroes (19 in 1.3.0, 8 more), 1 005 records with a
-class, a source and a credit (936 in 1.3.0, 69 more) in 40 classes (40). The trips, stars, star systems,
-moons, layers and landing sites are as they were in 1.3.0.
+star systems, 30 nebula and galaxy pictures (kept for the card's comparison slider and for the bakes of
+the heroes; none is drawn in the scene any more), 21 moons (20 with a map), 21 landing sites on the Moon
+and 12 on Mars, 225 models of spacecraft and small bodies (165 in 1.3.0, 60 more), 29 layers, 16 sources
+(14 in 1.3.0) and 33 feeds (31), and 315 test files (306 in 1.3.0, 9 more). 33 deep-sky heroes (19 in
+1.3.0, 14 more), 1 011 records with a class, a source and a credit (936 in 1.3.0, 75 more) in 40
+classes (40). The trips, stars, star systems, moons, layers and landing sites are as they were in 1.3.0.
 
 ### Added
 - **An hourly copy of the data, on our own storage** ([#1289]): a scheduled job saves what the page reads
@@ -60,24 +60,30 @@ moons, layers and landing sites are as they were in 1.3.0.
   labelled so, the relief comes from New Horizons' heights at twice the vertical, a thin blue haze ring
   shows against the Sun, and arrival is framed on the heart when it is lit. Charon has Mordor's red cap
   and its seams are fixed.
-- TODO(1.4.0, galaxies and photographs): the removal of the galaxy and nebula photographs from the scene
-  (`r14-neb-b`), and the new photograph count above.
+- **No photographs of nebulae or galaxies in the scene** ([#1298]): each object is a 3D reconstruction, or a
+  soft glow of its catalogue size until it has one. A card that had a photograph still offers "Compare
+  with the photograph".
+- **Six more 3D heroes** ([#1298]): the Dumbbell (M27), the Southern Ring, the Pleiades' nebulosity, the
+  Southern Pinwheel (M83), NGC 1300 and Centaurus A, each drawn from its own published numbers and
+  labelled as a reconstruction (Centaurus A's jets are an illustration in false colour).
 - **Black holes in 3D** ([#1293]): Sagittarius A*, M87* and Cygnus X-1 are drawn as black holes, with the
   shadow sized to the Event Horizon Telescope measurements, a sharp photon ring, a Doppler-brightened disc,
   the lensed far side of the disc, M87*'s faint jet and counter-jet, and Cygnus X-1's companion star. The
   EHT photographs stay on the cards, and the black-holes trip is narrated again with the new words.
 
 ### Changed
-- TODO(1.4.0): what changed in what a visitor already had (the nebulae's cards, the models that replace
-  stand-ins), to be filled when the last three branches are folded in.
+- **The Sombrero, the Antennae and M81 are revised** ([#1298]) to sit with the new heroes.
+- **The ground sky draws glows instead of photographs** ([#1298]): a deep-sky object seen from the ground
+  is a soft glow of its catalogue size.
+- **"Through a telescope" is narrated again** ([#1298]) with words that no longer speak of photographs.
 
 ### Not yet
 - The Milky Way from inside is still the NASA SVS photo map; the 3D band moves to 1.5.0.
 
 ### For contributors
-- How the release was assembled: stages `r14-data`, `r14-neb-a`, `r14-m1` to `r14-m8`, `r14-pluto` and `r14-mw-bh` reached `main` as
+- How the release was assembled: stages `r14-data`, `r14-neb-a`, `r14-m1` to `r14-m8`, `r14-pluto`, `r14-mw-bh` and `r14-neb-b` reached `main` as
   one integration pull request, with their own pull requests [#1288], [#1289], [#1290], [#1291], [#1292],
-  [#1293], [#1294], [#1295], [#1296], [#1297], [#1300] and [#1301].
+  [#1293], [#1294], [#1295], [#1296], [#1297], [#1298], [#1300] and [#1301].
 
 ## [1.3.0] - 2026-10-21
 
@@ -869,5 +875,6 @@ The first public map.
 [#1295]: https://github.com/Sara-Managed-Projects/space-radar/pull/1295
 [#1296]: https://github.com/Sara-Managed-Projects/space-radar/pull/1296
 [#1297]: https://github.com/Sara-Managed-Projects/space-radar/pull/1297
+[#1298]: https://github.com/Sara-Managed-Projects/space-radar/pull/1298
 [#1300]: https://github.com/Sara-Managed-Projects/space-radar/pull/1300
 [#1301]: https://github.com/Sara-Managed-Projects/space-radar/pull/1301
