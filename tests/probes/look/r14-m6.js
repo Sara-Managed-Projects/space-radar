@@ -9,6 +9,8 @@
 //   gh workflow run look.yml --ref r14-m6 -f probe=r14-m6 -f subject=m6 -f mobile=true
 //
 // 0078 r14-m6: begin
+// (the three edits below, each marked with a trailing 0078 r14-m6, are the only differences from the `model` probe)
+// 0078 r14-m6: end
 // model: ONE CRAFT'S MODEL, IN THE APP, FROM FOUR SIDES. Select a record as a click on its row does,
 // wait for the file its route names to replace the procedural shape (scene/heroes.js announces it
 // with `sr:model-upgraded`), move the clock into sunlight if the craft is in the Earth's shadow, then
@@ -48,7 +50,7 @@
 //
 // What the summary carries besides the pictures: the route (`file`, `build`, `made`), whether the
 // file arrived, the meshes, triangles and colours actually on screen, and the card's "drawn as" line.
-look.probe = 'r14-m6';
+look.probe = 'r14-m6'; // 0078 r14-m6
 const urlOf = (path) => new URL(path, document.baseURI).href;
 const wordIn = (name, word) => new RegExp('(^|[^a-z0-9])' + word + '([^a-z0-9]|$)', 'i').test(String(name || ''));
 const RM = await import(urlOf('./js/scene/realmodels.js'));
@@ -373,7 +375,7 @@ const walk = async (tag, what, opts = {}) => {
   rig.flyTo({ azimuth: a0, polar: p0, distance: dFramed, ms: 0 }); // 0077 W1-a
   await sleep(1500);
 };
-await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''), { places: [] });
+await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''), { places: [] }); // 0078 r14-m6
 // 0077 W1-a: begin
 // THE CLOSE-UP SHEET (2026-10-20, release 1.3.0 stage W1-a; internal spec 0077 task 1, internal #751). Four
 // angles, each with the model filling about nine tenths of the picture's short side (the lens above), for a
@@ -486,7 +488,7 @@ return out;
 // sat-40336 CBERS 4, sat-44883 CBERS 4A, sat-47699 Amazonia 1, sat-38338 KOMPSAT-3, sat-39227 KOMPSAT-5, sat-41599 Cartosat-2C,
 // sat-37387 Resourcesat-2, sat-35931 Oceansat-2, sat-54361 EOS-6, sat-43180 Kanopus-V 3, sat-59371 Resurs-P 4
 const M6 = ['sat-40336', 'sat-44883', 'sat-47699', 'sat-38338', 'sat-39227', 'sat-41599', 'sat-37387', 'sat-35931', 'sat-54361', 'sat-43180', 'sat-59371'];
-const subjects = param && param !== 'm6' ? param.split('_').filter(Boolean) : M6;
+const subjects = param && param !== 'm6' ? param.split('_').filter(Boolean) : M6; // 0078 r14-m6
 const done = [];
 for (const subject of subjects) {
   try { done.push(await one(subject, subjects.length > 1 ? subject + '--' : '')); }
@@ -502,4 +504,3 @@ const failed = done.filter((d) => d.fail).map((d) => d.fail);
 // One subject: its own summary, as this probe has always returned it. Several: one entry each.
 const summary = done.length === 1 ? done[0] : { subjects: done, views: done.flatMap((d) => d.views || []), ...(failed.length ? { fail: failed.join(' | ') } : {}) };
 return finish(summary);
-// 0078 r14-m6: end
