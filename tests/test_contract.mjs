@@ -1303,11 +1303,9 @@ for (const file of allFiles) {
       starsBin: stars,
       linesJson: JSON.parse(readFileSync(join(ROOT, 'site/data/constellations.lines.json'), 'utf8')),
       namesJson: JSON.parse(readFileSync(join(ROOT, 'site/data/constellation-names.json'), 'utf8')),
+      milkyWayTexture: new THREE.Texture(),
     });
     await sky.ready;
-    // 0078 r14-mw-bh: the band from the galaxy's model, handed to the sky as main.js hands it
-    const MW = await import(join(JS, 'scene/milkyway.js'));
-    sky.attachMilkyWay(MW.createMilkyWay({ tier: 1 }));
     // A texture loader that hands back an empty texture at once, so every lazy map is applied and
     // the materials are checked in the state they are drawn in, not just the one they start in.
     const worlds = createWorlds(scene, { textureBase: '', loadTexture: (url, onLoad) => { const t = new THREE.Texture(); if (onLoad) onLoad(t); return t; } });

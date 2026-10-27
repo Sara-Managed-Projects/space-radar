@@ -262,6 +262,7 @@ export async function boot({ setStatus } = {}) {
     starsBin: 'data/stars.bin',
     linesJson: 'data/constellations.lines.json',
     namesJson: 'data/constellation-names.json',
+    milkyWayTexture: 'textures/2k_stars_milky_way.webp',
   });
 
   // Records, keyed by layer id. Layers fill in as their data lands; the loop reads whatever is
@@ -465,7 +466,6 @@ export async function boot({ setStatus } = {}) {
   }
   ctx.updateOtherLight = updateOtherLight;
 
-  let milkyWayInside = 1; // 0078 r14-mw-bh
   const lod = createLod({
     'sky-panorama': (k) => {
       skyStrength = k;
@@ -474,9 +474,6 @@ export async function boot({ setStatus } = {}) {
     },
     'stars-3d': (k) => stars3d.setOpacity(k),
     'galaxy-model': (k) => galaxy.setOpacity(k),
-    // 0078 r14-mw-bh: begin (the band from inside hands the galaxy's light to the outside view)
-    'milky-way-inside': (k) => { milkyWayInside = k; if (ctx.milkyWay) ctx.milkyWay.setOpacity(k); },
-    // 0078 r14-mw-bh: end
   });
   // A star and its planets at the system's own scale (spec 0040, scene/systems.js): built when its
   // stage is entered, dropped when it is left, nothing at boot.
@@ -1315,19 +1312,6 @@ export async function boot({ setStatus } = {}) {
   // only after it: the boot set is the same for every device, and a laptop swaps sharper maps in
   // when the browser is idle (scene/texturetiers.js).
   ctx.quality = createQuality(ctx, renderer, starfield, worlds);
-  // 0078 r14-mw-bh: begin
-  // THE MILKY WAY FROM INSIDE (scene/milkyway.js, release 1.4.0): the band drawn from the galaxy's own model
-  // from wherever the camera is, in place of the panorama photograph. Built once the tier is known (T0 wears
-  // the picture baked from the same model; T1 and T2 march it), by dynamic import: none of it is in the boot
-  // modules, and on T1 and T2 nothing is fetched for it but the module.
-  import('./scene/milkyway.js').then((m) => {
-    const band = m.createMilkyWay({ tier: ctx.quality ? ctx.quality.tier : 1, baked: 'textures/2k_milky_way_model.webp' });
-    ctx.milkyWay = band;
-    band.setOpacity(milkyWayInside);
-    starfield.attachMilkyWay(band);
-    window.addEventListener('sr:tier', (e) => { const d = e && e.detail; if (d && Number.isFinite(d.tier)) band.setTier(d.tier); });
-  }).catch((e) => console.warn('the Milky Way did not load', e));
-  // 0078 r14-mw-bh: end
 
   startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod });
   fadeBoot();
@@ -2370,6 +2354,10 @@ function createQuality(ctx, renderer, starfield, worlds) {
         ready: () => !!earthMesh() && earthMapsSettled(earthMesh()),
         set: (slot, tex, file) => setEarthMap(earthMesh(), slot, tex, { mono: !!(file && file.format === 'mono'), px: file ? file.px : null }),
       },
+      sky: {
+        ready: () => !!(starfield.state && starfield.state.milkyway) && !(ctx.latch && ctx.latch.latched),
+        set: (tex) => starfield.setMilkyWayMap(tex),
+      },
       worlds: {
         ready: (id) => worlds.hasMap(id),
         set: (id, tex) => worlds.setTierMap(id, tex),
@@ -2895,8 +2883,6 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Stars fade near the Sun's disc (scene/starfield.js sunGlare), wherever the camera is.
     if (starfield && starfield.setSun) starfield.setSun(worlds.drawnPositionOf('sun'), worlds.drawnRadiusUnits('sun'), ctx.camera);
     if (starfield && starfield.update) starfield.update(ctx.camera);
-    // 0078 r14-mw-bh: the band from where the camera is (the Sun itself on a world's stage, an au being nothing to it)
-    if (ctx.milkyWay) ctx.milkyWay.setCameraKm(stage.frame === SUN_INERTIAL ? stage.fromScene(ctx.camera.position) : null);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
     // A sky stop's lens (ui/trip.js `zoom`): eased, so a wider figure opens out and never jumps.
     {

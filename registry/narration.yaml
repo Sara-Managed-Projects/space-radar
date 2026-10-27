@@ -387,8 +387,8 @@ clips:
   - {trip: "black-holes", stop: "swan", hash: "7bc06b3cb6ed4a05", seconds: 20.61, words: 61, lufs: -16.3, opus: 82068, m4a: 106552, vtt: 448, wer: 0.0164, heard: "4cd95f7bc58793c4", voice: 0}
   - {trip: "black-holes", stop: "what", hash: "941e113c8feff59c", seconds: 20.22, words: 61, lufs: -16.4, opus: 79184, m4a: 104379, vtt: 466, wer: 0.0, heard: "d4e31852f619dbef", voice: 0}
   - {trip: "black-holes", stop: "from-home", hash: "678492e2284a93d1", seconds: 16.65, words: 48, lufs: -16.4, opus: 65956, m4a: 86340, vtt: 365, wer: 0.0, heard: "8ec5afa2aa44a391", voice: 0}
-  - {trip: "black-holes", stop: "centre", hash: "dafc0d8ae52f936d", seconds: 22.43, words: 59, lufs: -16.5, opus: 89901, m4a: 115680, vtt: 448, wer: 0.0, heard: "09f67183f5d66e74", voice: 0}
-  - {trip: "black-holes", stop: "m87", hash: "4c87a724e8044d2c", seconds: 21.92, words: 64, lufs: -16.4, opus: 87628, m4a: 113072, vtt: 429, wer: 0.0, heard: "ab3a551d9a8c7581", voice: 0}
+  - {trip: "black-holes", stop: "centre", hash: "5b2b924594a62c44", seconds: 23.6, words: 61, lufs: -16.4, opus: 93832, m4a: 121766, vtt: 481, wer: 0.0, heard: "cd521b34070dd1d8", voice: 0}
+  - {trip: "black-holes", stop: "m87", hash: "b2ec7f1425bcb84c", seconds: 21.1, words: 61, lufs: -16.4, opus: 83519, m4a: 108943, vtt: 434, wer: 0.0179, heard: "3a427a2f547ab1dc", voice: 0}
   - {trip: "black-holes", stop: "sun", hash: "d4643686f5e9e3a4", seconds: 19.11, words: 59, lufs: -16.4, opus: 74951, m4a: 98728, vtt: 437, wer: 0.0169, heard: "2a86f05fc0eb00ec", voice: 1}
   - {trip: "through-a-telescope", stop: "eye", hash: "421f8c7f39656a29", seconds: 15.63, words: 50, lufs: -16.4, opus: 61113, m4a: 81124, vtt: 340, wer: 0.0, heard: "48a171061edcfb3b", voice: 0}
   - {trip: "through-a-telescope", stop: "camera", hash: "f716f50fb24e8f7c", seconds: 18.24, words: 55, lufs: -16.4, opus: 71824, m4a: 94382, vtt: 441, wer: 0.0, heard: "f797c455a93929e2", voice: 0}

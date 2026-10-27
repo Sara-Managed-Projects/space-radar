@@ -15,7 +15,7 @@
 // scene/worlds.js draws the planets 0.4 degrees wide so they can be found from orbit. From the
 // ground both are wrong, so while this layer is up sky/skyview.js veils them and this draws:
 //
-//   the Milky Way   the scene's own band from the galaxy's model (scene/milkyway.js), faded by the Moon, twilight,
+//   the Milky Way   the scene's own panorama, turned with the stars, faded by the Moon, twilight,
 //                   the horizon's air and the kind of sky chosen
 //   the stars       ONE draw call: points with a shader. To magnitude 6 at once (data/stars.bin,
 //                   80 kB, already in the cache), then to 7 (data/skystars-1.bin, 82 kB), and the
@@ -59,7 +59,6 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { bvToKelvin, kelvinToRgb } from '../scene/starfield.js';
 import { STAR_LIGHT_GLSL } from '../scene/stretch.js';
-import * as MW from '../scene/milkyway.js'; // 0078 r14-mw-bh
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import {
@@ -83,7 +82,7 @@ const TAG_MS = 9000;
 const LABEL_POOL = 44;
 const BODY_REFRESH_MS = 1000; // of the clock; a tenth of that once the field is narrow
 const LABEL_REFRESH_MS = 250; // of the wall clock: which names are shown, not where
-const MILKY_WAY_GAIN = 1.0; // 0078 r14-mw-bh: the model's band at the scene's own level
+const MILKY_WAY_GAIN = 0.5;
 
 // What a body looks like before (or without) its map: one flat colour, and whether it shines.
 const LOOK = {
@@ -264,6 +263,48 @@ void main() {
 }
 `;
 
+const MW_VERT = /* glsl */ `
+uniform mat3 uRot;
+uniform float uRadius;
+varying vec2 vUv;
+varying float vY;
+void main() {
+  vUv = uv;
+  vec3 d = uRot * position;
+  vY = d.y;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(d * uRadius, 1.0);
+}
+`;
+const MW_FRAG = /* glsl */ `
+uniform sampler2D uMap;
+uniform float uGain;
+uniform vec2 uTexel;
+varying vec2 vUv;
+varying float vY;
+void main() {
+  vec3 c = texture2D(uMap, vUv).rgb;
+  // THE 2k PANORAMA HAS THE STARS BAKED IN (internal #547, 2026-10-10): Sirius, Mirzam and the rest are
+  // two or three texels of light, which at a 14 degree field are soft tilted squares beside the true
+  // stars. A spike is cut to what its four neighbours three texels away say, plus a little (a plain
+  // minimum of the five took the noise of the map with it and the whole faint glow went): what is
+  // narrower than six texels and brighter than its surroundings by more than a hair is not the Milky
+  // Way. uTexel is zero for the 4k map, which NASA made without the stars.
+  if (uTexel.x > 0.0) {
+    vec3 cl = texture2D(uMap, vUv - vec2(3.0 * uTexel.x, 0.0)).rgb;
+    vec3 cr = texture2D(uMap, vUv + vec2(3.0 * uTexel.x, 0.0)).rgb;
+    vec3 cu = texture2D(uMap, vUv + vec2(0.0, 3.0 * uTexel.y)).rgb;
+    vec3 cd = texture2D(uMap, vUv - vec2(0.0, 3.0 * uTexel.y)).rgb;
+    c = min(c, 0.25 * (cl + cr + cu + cd) + 0.015);
+  }
+  // The panorama's floor is a dim brown everywhere; only what stands above it is the Milky Way.
+  c = max(c - 0.012, 0.0);
+  // The air: nothing of it survives the last few degrees above the horizon.
+  float air = smoothstep(0.0, 0.3, vY);
+  gl_FragColor = vec4(c * uGain * air, 1.0);
+  #include <colorspace_fragment>
+}
+`;
+
 // One body as a sphere seen from far away, drawn on a square that faces the visitor. vP is the
 // position on that square in body radii; the sphere's normal, the Sun's direction and the body's
 // own axes are all in the square's frame (x right, y up, z towards the visitor).
@@ -380,6 +421,17 @@ export function groundPictureCaps(tier, width) {
   const row = GROUND_PICTURE_TIERS[Number.isFinite(t) ? Math.min(2, Math.max(0, Math.trunc(t))) : 1];
   const narrow = Number.isFinite(width) && width < 900;
   return { art: narrow ? Math.min(6, row.art) : row.art, pictures: narrow ? Math.min(6, row.pictures) : row.pictures };
+}
+
+/**
+ * The texel size (in uv) the Milky Way shader opens the panorama by, or [0, 0] for none. The 2k panorama of
+ * Solar System Scope has the stars baked in (they show as soft squares in a narrow field); the 4k one
+ * (NASA SVS Deep Star Maps 2020) was made without them. A map at most 2048 wide gets the opening.
+ */
+export function openingTexel(width, height) {
+  const w = Number(width), h = Number(height);
+  if (!(w > 0) || !(h > 0) || w > 2048) return [0, 0];
+  return [1 / w, 1 / h];
 }
 
 export function countBrighter(mags, mag) {
@@ -834,21 +886,30 @@ export function createGroundSky(ctx, env) {
   }
 
   // ---- the Milky Way ----------------------------------------------------------------------------
-  // 0078 r14-mw-bh: begin
-  // The band from the galaxy's own model (scene/milkyway.js), not a picture: the same drawing the scene
-  // wears, at this layer's radius, turned from galactic axes into the ground's, with the air's term.
   let milkyWay = null;
   const galBasis = new THREE.Matrix3();
-  galBasis.set(MW.G2E[0][0], MW.G2E[0][1], MW.G2E[0][2], MW.G2E[1][0], MW.G2E[1][1], MW.G2E[1][2], MW.G2E[2][0], MW.G2E[2][1], MW.G2E[2][2]);
-  const mwRot = new THREE.Matrix3();
-  function buildMilkyWay() {
-    if (milkyWay || disposed) return;
-    const tier = ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 1;
-    milkyWay = MW.createMilkyWay({ tier, ground: true, radius: R * 0.99, baked: 'textures/2k_milky_way_model.webp' });
-    milkyWay.mesh.renderOrder = RO.milkyway;
-    root.add(milkyWay.mesh);
+  {
+    const gc = new THREE.Vector3(...radecDir(266.405, -28.936)); // galactic centre
+    const pole = new THREE.Vector3(...radecDir(192.85948, 27.12825)); // galactic north pole
+    const x = gc.clone().addScaledVector(pole, -gc.dot(pole)).normalize();
+    const south = pole.clone().negate(); // the panorama's top is galactic south (scene/starfield.js)
+    const z = new THREE.Vector3().crossVectors(x, south).normalize();
+    galBasis.set(x.x, south.x, z.x, x.y, south.y, z.y, x.z, south.z, z.z);
   }
-  // 0078 r14-mw-bh: end
+  function buildMilkyWay() {
+    const map = ctx.starfield && ctx.starfield.state && ctx.starfield.state.milkyway && ctx.starfield.state.milkyway.material && ctx.starfield.state.milkyway.material.map;
+    if (!map || milkyWay || disposed) return;
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: MW_VERT, fragmentShader: MW_FRAG,
+      uniforms: { uMap: { value: map }, uGain: { value: 0 }, uTexel: { value: new THREE.Vector2(0, 0) }, uRot: { value: new THREE.Matrix3() }, uRadius: { value: R * 0.99 } },
+      side: THREE.BackSide, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+    });
+    milkyWay = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), mat);
+    milkyWay.name = 'ground-milkyway';
+    milkyWay.frustumCulled = false;
+    milkyWay.renderOrder = RO.milkyway;
+    root.add(milkyWay);
+  }
 
   // ---- the bodies -------------------------------------------------------------------------------
   const bodyUniforms = { ...starUniforms, uTwinkle: { value: 0 }, uEqToLocal: { value: eqToLocal }, uBelow: { value: -0.03 } };
@@ -1450,14 +1511,16 @@ export function createGroundSky(ctx, env) {
     const night = Math.max(0, Math.min(1, (-8 - frame.sunAltDeg) / 8));
     if (!milkyWay) buildMilkyWay();
     if (milkyWay) {
-      // 0078 r14-mw-bh: begin (the model's band: its detail holds in a narrow field, so it stays down to a degree)
-      milkyWay.setRotation(mwRot.copy(eqToLocal).multiply(galBasis));
-      milkyWay.setCameraKm(null);
+      const u = milkyWay.material.uniforms;
+      u.uRot.value.copy(eqToLocal).multiply(galBasis);
+      const img = u.uMap.value && u.uMap.value.image;
+      const tx = openingTexel(img && img.width, img && img.height);
+      u.uTexel.value.set(tx[0], tx[1]);
       const exposure = ctx.exposure && typeof ctx.exposure.look === 'function' ? (ctx.exposure.look().milkyWay || 1) : 1;
-      const wide = Math.max(0, Math.min(1, (frame.fovDeg - 1) / 4));
-      milkyWay.setExposure(exposure);
-      milkyWay.setGain(MILKY_WAY_GAIN * sky.milkyWay * night * (1 - 0.85 * frame.moonBright) * wide);
-      // 0078 r14-mw-bh: end
+      // A 2k panorama is a wash once the field is a few degrees: it leaves as the field closes.
+      const wide = Math.max(0, Math.min(1, (frame.fovDeg - 4) / 16));
+      u.uGain.value = MILKY_WAY_GAIN * exposure * sky.milkyWay * night * (1 - 0.85 * frame.moonBright) * wide;
+      milkyWay.visible = u.uGain.value > 0.004;
     }
 
     // Lines go with the stars they join: faint in twilight, a trace by day.
@@ -1633,12 +1696,12 @@ export function createGroundSky(ctx, env) {
       if (starTiles) { starTiles.dispose(); starTiles = null; }
       if (tag.node) tag.node.remove();
       if (other) { other.dispose(); other = null; }
-      if (milkyWay) { milkyWay.dispose(); milkyWay = null; } // 0078 r14-mw-bh
       root.traverse((o) => {
         if (o.geometry && o.geometry !== quad) o.geometry.dispose();
         if (o.material) {
           const map = o.material.uniforms && o.material.uniforms.uMap && o.material.uniforms.uMap.value;
-          if (map) map.dispose(); // 0078 r14-mw-bh: a body's map is this layer's own (the Milky Way's model has none)
+          // The Milky Way's map is the scene's; a body's map is this layer's own.
+          if (map && o !== milkyWay) map.dispose();
           o.material.dispose();
         }
       });

@@ -173,18 +173,29 @@ export const TEXTURES = [
     "id": "starfield",
     "world": "sky",
     "slot": "map",
-    "when": "boot",
+    "when": "idle",
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_milky_way_model.webp",
+        "file": "textures/2k_stars_milky_way.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 88486,
+        "bytes": 60004,
         "format": "rgb",
-        "credit": "Milky Way: Space Radar's own model (scripts/build-milkyway-sky.mjs)"
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      },
+      {
+        "tier": 1,
+        "file": "textures/4k/milky_way.webp",
+        "px": [
+          4096,
+          2048
+        ],
+        "bytes": 111648,
+        "format": "rgb",
+        "credit": "Milky Way (4k): NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC"
       }
     ]
   },

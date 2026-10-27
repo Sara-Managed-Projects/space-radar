@@ -33,12 +33,3 @@ rules:
     from_km: 4730365236290400   # 500 light-years from the Sun: the nearest stars are behind you
     to_km: 47303652362904000    # 5 000 light-years: the arm you live in is visible as an arm
     why: "The Milky Way model is a shape to fly around, not a sky to look at: it comes in once the camera is far enough out to see a shape."
-
-  # 0078 r14-mw-bh: begin
-  - id: the-band-gives-way
-    what: milky-way-inside
-    fade: out
-    from_km: 4730365236290400   # 500 light-years: the same band as the-galaxy-appears, the other way
-    to_km: 47303652362904000    # 5 000 light-years
-    why: "The Milky Way from inside (scene/milkyway.js) is the galaxy's model seen from where the camera is; it hands the light to the same model seen from outside while that fades in, so the galaxy is never drawn twice or not at all."
-  # 0078 r14-mw-bh: end

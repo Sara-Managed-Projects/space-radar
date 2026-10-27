@@ -1743,7 +1743,7 @@ def system_planet_row(record_id) -> dict | None:
 
 # The hooks scene/lod.js's caller implements. A rule naming anything else is refused: a rule
 # nothing reads is a rule that silently does nothing, which is worse than no rule.
-LOD_HOOKS = {"sky-panorama", "stars-3d", "galaxy-model", "milky-way-inside"}  # 0078 r14-mw-bh: milky-way-inside
+LOD_HOOKS = {"sky-panorama", "stars-3d", "galaxy-model"}
 
 
 # The facts a world with no texture must carry, and what each is for on the card. `albedo` is
