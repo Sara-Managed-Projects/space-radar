@@ -3580,9 +3580,13 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
+      "m27": "A sua luz vem da fotografia do NOIRLab, em falsa cor; a sua forma é uma reconstrução: a cintura brilhante, um anel espesso visto quase de perfil; as «orelhas» mais ténues, os seus lóbulos, segundo as velocidades das suas camadas medidas por Meaburn e outros (2005). Ainda não revisto por um astrónomo.",
+      "southern-ring": "A sua luz vem da fotografia em infravermelho do Webb; a sua forma segue Kastner e outros (2024) e De Marco e outros (2022): um anel visto quase ao longo do seu eixo, uma bolha que o atravessa e um halo molecular à volta de ambos. Ainda não revisto por um astrónomo.",
       "m57": "A luz vem da fotografia do Hubble, a forma de O’Dell, Ferland, Henney e Peimbert (2013): um anel grosso inclinado 13,5°, visto quase ao longo do eixo, com o gás mais azulado do meio desenhado se estendendo em nossa direção e na direção oposta. As cores são as da fotografia, feita com filtros estreitos. Ainda não revisado por um astrônomo."
     },
     "rows": {
+      "dso-m27": [["A sua forma em profundidade", "Reconstruída. O tamanho, o ângulo no céu e as velocidades das camadas são medidos; que a cintura seja um anel quase de perfil, e como as «orelhas» se estendem na nossa direção e na oposta, é a leitura habitual de uma nebulosa com este aspeto, desenhada como ilustração."], ["As suas cores", "Falsa cor: os filtros estreitos da fotografia, associados a cores pelos seus autores."], ["Revisão", "Este modelo ainda não foi revisto por um astrónomo."]],
+      "dso-southern-ring-nebula": [["A sua forma em profundidade", "Reconstruída. Que o seu anel brilhante é visto a 15–30° do seu eixo é medido (Kastner e outros, 2024); que lado está mais perto, a espessura do anel e o comprimento da bolha são ilustrativos."], ["As suas cores", "Luz infravermelha que nenhum olho vê, colorida pelos autores da imagem do Webb."], ["Revisão", "Este modelo ainda não foi revisto por um astrónomo."]],
       "dso-m57": [
         [
           "A distância",
@@ -3602,6 +3606,7 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
+      "m45": "A sua luz é a fotografia do NOIRLab: uma nuvem de poeira que atravessa o enxame, mesmo à frente das suas estrelas, espalha a sua luz azul (Ritchey e outros, 2006). A sua profundidade é reconstruída. Ainda não revisto por um astrónomo.",
       "crab": "A luz vem da fotografia do Hubble, em cor falsa, levada sobre uma casca cuja forma segue Martin, Milisavljevic e Drissen (2021): uma gaiola de filamentos com cerca de 4 parsecs de comprimento ao redor de um meio vazio. Ainda não revisado por um astrônomo.",
       "veil": "A luz vem da fotografia do NOIRLab, em cor falsa, levada sobre uma esfera fina de 37 parsecs de largura (Fesen e outros, 2018): os filamentos são a borda dela vista de perfil. Ainda não revisado por um astrônomo.",
       "horsehead": "A escuridão é lida a partir da fotografia do NOIRLab: poeira diante do gás brilhante de IC 434, que absorve e avermelha o que está atrás e não emite luz. Ainda não revisado por um astrônomo.",
@@ -3610,6 +3615,7 @@ export const COPY = {
       "iris": "A luz é a fotografia do NOIRLab: poeira espalhando a luz da jovem estrela HD 200775 em uma cavidade da nuvem. A profundidade é reconstruída. Ainda não revisado por um astrônomo."
     },
     "rows": {
+      "dso-m45": [["A sua forma em profundidade", "Reconstruída. O gás está à frente das estrelas, como a sua luz mostra; a que distância à frente e qual a espessura da poeira são ilustrativos, e as profundidades das estrelas dentro do enxame são um modelo fixo, não medidas."], ["O que a poeira faz", "Espalha a luz das estrelas, sobretudo a azul, e por isso brilha em azul à volta das mais brilhantes, sobretudo Mérope e Maia. É uma nuvem de passagem, não aquela de onde as estrelas nasceram."], ["Revisão", "Este modelo ainda não foi revisto por um astrónomo."]],
       "dso-m1": [
         [
           "A forma em profundidade",

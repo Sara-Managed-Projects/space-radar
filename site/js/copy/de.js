@@ -3588,9 +3588,13 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
+      "m27": "Sein Licht stammt aus dem Foto von NOIRLab, in Falschfarben; seine Form ist eine Rekonstruktion: die helle Taille ein dicker Ring, fast von der Kante gesehen, die blasseren „Ohren“ seine Keulen, nach den Geschwindigkeiten seiner Schalen, die Meaburn und andere (2005) gemessen haben. Noch nicht von einem Astronomen geprüft.",
+      "southern-ring": "Sein Licht stammt aus dem Infrarotfoto von Webb; seine Form folgt Kastner und anderen (2024) und De Marco und anderen (2022): ein Ring, fast entlang seiner Achse gesehen, eine Blase durch ihn hindurch und ein molekularer Halo um beide. Noch nicht von einem Astronomen geprüft.",
       "m57": "Sein Licht stammt vom Foto von Hubble, seine Form von O’Dell, Ferland, Henney und Peimbert (2013): ein dicker Ring, um 13,5° geneigt, fast entlang seiner Achse gesehen, das bläulichere Gas seiner Mitte so gezeichnet, dass es auf uns zu und von uns weg reicht. Seine Farben sind die des Fotos, durch schmale Filter aufgenommen. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
+      "dso-m27": [["Seine Form in der Tiefe", "Rekonstruiert. Größe, Winkel am Himmel und die Geschwindigkeiten der Schalen sind gemessen; dass die Taille ein Ring fast von der Kante ist und wie die „Ohren“ zu uns hin und von uns weg reichen, ist die übliche Deutung eines Nebels dieses Aussehens, als Illustration gezeichnet."], ["Seine Farben", "Falschfarben: die schmalen Filter des Fotos, von seinen Machern Farben zugeordnet."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
+      "dso-southern-ring-nebula": [["Seine Form in der Tiefe", "Rekonstruiert. Dass sein heller Ring 15–30° von seiner Achse gesehen wird, ist gemessen (Kastner und andere, 2024); welche Seite näher ist, die Dicke des Rings und die Länge der Blase sind illustrativ."], ["Seine Farben", "Infrarotlicht, das kein Auge sieht, von den Bildmachern des Webb-Teleskops eingefärbt."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
       "dso-m57": [
         [
           "Seine Entfernung",
@@ -3610,6 +3614,7 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
+      "m45": "Sein Licht ist das Foto von NOIRLab: eine Staubwolke, die durch den Haufen zieht, knapp vor seinen Sternen, und deren blaues Licht streut (Ritchey und andere, 2006). Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
       "crab": "Sein Licht stammt vom Foto von Hubble, in Falschfarben, getragen von einer Schale, deren Form Martin, Milisavljevic und Drissen (2021) folgt: ein Filamentkäfig von etwa 4 Parsec Länge um eine leere Mitte. Noch nicht von einem Astronomen geprüft.",
       "veil": "Sein Licht stammt vom Foto von NOIRLab, in Falschfarben, getragen von einer dünnen Kugel von 37 Parsec Durchmesser (Fesen und andere, 2018): Die Filamente sind ihr Rand, von der Kante gesehen. Noch nicht von einem Astronomen geprüft.",
       "horsehead": "Seine Dunkelheit ist aus dem Foto von NOIRLab abgelesen: Staub vor dem leuchtenden Gas von IC 434, der schluckt und rötet, was dahinter ist, und kein Licht abgibt. Noch nicht von einem Astronomen geprüft.",
@@ -3618,6 +3623,7 @@ export const COPY = {
       "iris": "Sein Licht ist das Foto von NOIRLab: Staub, der das Licht des jungen Sterns HD 200775 in einer Mulde seiner Wolke streut. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
+      "dso-m45": [["Seine Form in der Tiefe", "Rekonstruiert. Das Gas liegt vor den Sternen, wie ihr Licht zeigt; wie weit davor und wie dick der Staub ist, ist illustrativ, und die Tiefen der Sterne im Haufen sind ein festes Modell, nicht gemessen."], ["Was der Staub tut", "Er streut das Licht der Sterne, das blaue am stärksten, und leuchtet daher blau um die hellsten, vor allem Merope und Maia. Es ist eine durchziehende Wolke, nicht die, aus der die Sterne entstanden sind."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
       "dso-m1": [
         [
           "Seine Form in der Tiefe",

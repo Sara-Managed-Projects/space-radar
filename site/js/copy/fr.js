@@ -3592,9 +3592,13 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
+      "m27": "Sa lumière vient de la photographie de NOIRLab, en fausses couleurs ; sa forme est une reconstruction : la taille brillante, un anneau épais vu presque par la tranche ; les « oreilles » plus pâles, ses lobes, d’après les vitesses de ses coquilles mesurées par Meaburn et d’autres (2005). Pas encore relu par un astronome.",
+      "southern-ring": "Sa lumière vient de la photographie infrarouge de Webb ; sa forme suit Kastner et d’autres (2024) et De Marco et d’autres (2022) : un anneau vu presque selon son axe, une bulle qui le traverse et un halo moléculaire autour des deux. Pas encore relu par un astronome.",
       "m57": "Sa lumière vient de la photographie de Hubble, sa forme d’O’Dell, Ferland, Henney et Peimbert (2013) : un anneau épais incliné de 13,5°, vu presque dans son axe, le gaz plus bleu de son milieu dessiné s’étirant vers nous et loin de nous. Ses couleurs sont celles de la photographie, prise à travers des filtres étroits. Pas encore relu par un astronome."
     },
     "rows": {
+      "dso-m27": [["Sa forme en profondeur", "Reconstruite. Sa taille, son angle sur le ciel et les vitesses de ses coquilles sont mesurés ; que la taille soit un anneau presque par la tranche, et la façon dont ses « oreilles » s’étendent vers nous et à l’opposé, est la lecture habituelle d’une nébuleuse de cet aspect, dessinée comme illustration."], ["Ses couleurs", "Fausses couleurs : les filtres étroits de la photographie, associés à des couleurs par ses auteurs."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
+      "dso-southern-ring-nebula": [["Sa forme en profondeur", "Reconstruite. Que son anneau brillant soit vu à 15–30° de son axe est mesuré (Kastner et d’autres, 2024) ; quel côté est le plus proche, l’épaisseur de l’anneau et la longueur de la bulle sont illustratifs."], ["Ses couleurs", "Une lumière infrarouge qu’aucun œil ne voit, colorée par les auteurs de l’image de Webb."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-m57": [
         [
           "Sa distance",
@@ -3614,6 +3618,7 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
+      "m45": "Sa lumière est la photographie de NOIRLab : un nuage de poussière qui traverse l’amas, juste devant ses étoiles, diffuse leur lumière bleue (Ritchey et d’autres, 2006). Sa profondeur est reconstruite. Pas encore relu par un astronome.",
       "crab": "Sa lumière vient de la photographie de Hubble, en fausses couleurs, portée par une coque dont la forme suit Martin, Milisavljevic et Drissen (2021) : une cage de filaments longue d’environ 4 parsecs autour d’un milieu vide. Pas encore relu par un astronome.",
       "veil": "Sa lumière vient de la photographie de NOIRLab, en fausses couleurs, portée par une fine sphère de 37 parsecs de diamètre (Fesen et autres, 2018) : les filaments sont son bord vu par la tranche. Pas encore relu par un astronome.",
       "horsehead": "Son obscurité se lit dans la photographie de NOIRLab : de la poussière devant le gaz lumineux d’IC 434, qui absorbe et rougit ce qui est derrière elle et n’émet aucune lumière. Pas encore relu par un astronome.",
@@ -3622,6 +3627,7 @@ export const COPY = {
       "iris": "Sa lumière est la photographie de NOIRLab : de la poussière qui diffuse la lumière de la jeune étoile HD 200775 dans un creux de son nuage. Sa profondeur est reconstituée. Pas encore relu par un astronome."
     },
     "rows": {
+      "dso-m45": [["Sa forme en profondeur", "Reconstruite. Le gaz est devant les étoiles, comme le montre leur lumière ; à quelle distance devant, et l’épaisseur de la poussière, sont illustratifs, et les profondeurs des étoiles dans l’amas sont un modèle fixe, non mesurées."], ["Ce que fait la poussière", "Elle diffuse la lumière des étoiles, surtout la bleue, et brille donc en bleu autour des plus brillantes, Mérope et Maïa surtout. C’est un nuage de passage, pas celui dont les étoiles sont nées."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-m1": [
         [
           "Sa forme en profondeur",

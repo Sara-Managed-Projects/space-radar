@@ -3402,9 +3402,13 @@ export const COPY = {
   },
   deepRing: {
     card: {
+      "m27": "Su luz procede de la fotografía de NOIRLab, en falso color; su forma es una reconstrucción: la cintura brillante, un anillo grueso visto casi de canto; las «orejas» más tenues, sus lóbulos, según las velocidades de sus capas medidas por Meaburn y otros (2005). Aún no revisado por un astrónomo.",
+      "southern-ring": "Su luz procede de la fotografía infrarroja del Webb; su forma sigue a Kastner y otros (2024) y De Marco y otros (2022): un anillo visto casi a lo largo de su eje, una burbuja que lo atraviesa y un halo molecular alrededor de ambos. Aún no revisado por un astrónomo.",
       m57: "Su luz procede de la fotografía de Hubble y su forma de O’Dell, Ferland, Henney y Peimbert (2013): un anillo grueso inclinado 13.5°, visto casi a lo largo de su eje, con el gas más azul de su centro dibujado extendiéndose hacia nosotros y alejándose de nosotros. Sus colores son los de la fotografía, tomada con filtros estrechos. Aún no revisado por un astrónomo."
     },
     rows: {
+      "dso-m27": [["Su forma en profundidad", "Reconstruida. Su tamaño, su ángulo en el cielo y las velocidades de sus capas están medidos; que la cintura sea un anillo casi de canto, y cómo sus «orejas» se extienden hacia nosotros y en sentido contrario, es la lectura habitual de una nebulosa de este aspecto, dibujada como ilustración."], ["Sus colores", "Falso color: los filtros estrechos de la fotografía, asignados a colores por sus autores."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
+      "dso-southern-ring-nebula": [["Su forma en profundidad", "Reconstruida. Que su anillo brillante se ve a 15–30° de su eje está medido (Kastner y otros, 2024); qué lado está más cerca, el grosor del anillo y la longitud de la burbuja son ilustrativos."], ["Sus colores", "Luz infrarroja que ningún ojo puede ver, coloreada por los autores de la imagen del Webb."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
       "dso-m57": [
         [
           "Su distancia",
@@ -3421,6 +3425,7 @@ export const COPY = {
   },
   r12Dust: {
     card: {
+      "m45": "Su luz es la fotografía de NOIRLab: una nube de polvo que atraviesa el cúmulo, justo delante de sus estrellas, dispersa su luz azul (Ritchey y otros, 2006). Su profundidad está reconstruida. Aún no revisado por un astrónomo.",
       crab: "Su luz procede de la fotografía de Hubble, en falso color, llevada sobre una cáscara cuya forma sigue a Martin, Milisavljevic y Drissen (2021): una jaula de filamentos de unos 4 pársecs de largo alrededor de un centro vacío. Aún no revisado por un astrónomo.",
       veil: "Su luz procede de la fotografía de NOIRLab, en falso color, llevada sobre una esfera delgada de 37 pársecs de ancho (Fesen y otros, 2018): los filamentos son su borde visto de canto. Aún no revisado por un astrónomo.",
       horsehead: "Su oscuridad se lee en la fotografía de NOIRLab: polvo delante del gas incandescente de IC 434, que absorbe y enrojece lo que hay detrás y no emite luz. Aún no revisado por un astrónomo.",
@@ -3429,6 +3434,7 @@ export const COPY = {
       iris: "Su luz es la fotografía de NOIRLab: polvo que dispersa la luz de la joven estrella HD 200775 en un hueco de su nube. Su profundidad está reconstruida. Aún no revisado por un astrónomo."
     },
     rows: {
+      "dso-m45": [["Su forma en profundidad", "Reconstruida. El gas está delante de las estrellas, como muestra su luz; a qué distancia delante y qué grosor tiene el polvo son ilustrativos, y las profundidades de las estrellas dentro del cúmulo son un modelo fijo, no medidas."], ["Qué hace el polvo", "Dispersa la luz de las estrellas, sobre todo la azul, así que brilla en azul alrededor de las más brillantes, Mérope y Maia sobre todo. Es una nube de paso, no aquella de la que nacieron las estrellas."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
       "dso-m1": [
         [
           "Su forma en profundidad",

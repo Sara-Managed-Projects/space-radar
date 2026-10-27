@@ -522,4 +522,4 @@ if (problems.length) {
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-console.log('remaining trips ok: eight trips of six to nine stops written for the ear, every nebula stop seen from its photograph's side, with no photograph drawn, the Milky Way and the next shower found for a place and a date, the ground wearing a city, a town and a dark sky in turn, counts and credits generated, the portrait a share of the view, and models put away when nobody wants them');
+console.log('remaining trips ok: eight trips of six to nine stops written for the ear, every nebula stop seen from the side its photograph was taken from, with no photograph drawn, the Milky Way and the next shower found for a place and a date, the ground wearing a city, a town and a dark sky in turn, counts and credits generated, the portrait a share of the view, and models put away when nobody wants them');
