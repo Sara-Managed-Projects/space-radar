@@ -1,7 +1,7 @@
 // scene/liveclouds.js -- today's clouds on the Earth, from NASA GIBS, fetched by the browser.
 //
 // Contract:
-//   createLiveClouds({ earth, now?, fetchImpl?, saveData?, onChange? })
+//   createLiveClouds({ earth, now?, fetchImpl?, saveData?, onChange?, composerImpl? })   (composerImpl: tests)
 //     .start()                 schedules the first look START_DELAY_MS after it is called
 //     .tick(clockMs)           once a frame: live or static, by data/gibs.js cloudMode
 //     .state()                 what is held: capture times, satellites, bytes, why not live
@@ -9,6 +9,12 @@
 //     .credit()                the Sources panel's credit lines
 //
 // Built 2026-09-28 (realism study phase 2, option (c): browser-only, no new infrastructure).
+//
+// OUR COPY FIRST (2026-10-26, internal spec 0078; data/readorder.js). The harvester's Lambda saves GIBS's newest
+// real picture of each satellite hourly (harvest/parsers/gibs_clouds.py, data/v1/gibs-clouds.json). A look reads
+// that file first and draws what it holds at once; NASA is asked behind it only when the copy is past its own
+// valid_until (an hour), or when there is no copy, and only for a slot newer than the one held. If NASA then
+// fails, the pictures already held stay. The file is a copy of NASA's pictures, byte for byte.
 //
 // WHAT IT COSTS AND WHEN. Nothing on the boot path: the first request leaves START_DELAY_MS after
 // the first frame and then waits for an idle moment, so the first visit's 2.5 MB budget (spec
@@ -34,8 +40,17 @@ import {
 import { satelliteClouds, composeClouds, isBlank } from './cloudcompose.js';
 import { setLiveClouds, setLiveCloudsShown } from './earth.js';
 import { COPY, t, ageInWords, timeText } from '../copy/en.js';
+import { decide, readSaved, savedUrl } from '../data/readorder.js';
 
 const FETCH_TIMEOUT_MS = 30000;
+
+/** A saved picture's bytes (base64 in the file) as the Blob a live answer would have been. */
+function blobOf(pic) {
+  const bin = atob(pic.base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: pic.content_type || 'image/jpeg' });
+}
 
 /** Main-thread stand-in for scene/cloudworker.js, for a browser without module workers or OffscreenCanvas. */
 function mainThreadComposer() {
@@ -108,7 +123,7 @@ async function fetchWithTimeout(fetchImpl, url) {
   }
 }
 
-export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u, o) => fetch(u, o), saveData = false, onChange = () => {} } = {}) {
+export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u, o) => fetch(u, o), saveData = false, onChange = () => {}, composerImpl = null } = {}) {
   /** Per satellite: the slot held, when it was read, what it cost. */
   const held = new Map();
   const st = {
@@ -176,10 +191,72 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
         r = await composer.picture(sat.id, sat.subLonDeg, blob);
       }
       if (!r || !r.ok) continue;
-      held.set(sat.id, { slotMs, readAt: now(), bytes: blob.size, name: sat.name });
+      held.set(sat.id, { slotMs, readAt: now(), bytes: blob.size, name: sat.name, via: 'live' });
       return true;
     }
     return false;
+  }
+
+  /** Compose what is held and put it on the Earth. Keeps what is on screen on any failure. */
+  async function drawHeld() {
+    try {
+      const c = await composer.compose();
+      st.composeMs = c.ms ?? null;
+      const mesh = earthMesh();
+      if (mesh && c.data) {
+        const tex = new THREE.DataTexture(c.data, IMAGE_W, IMAGE_H, THREE.RGBAFormat, THREE.UnsignedByteType);
+        tex.magFilter = THREE.LinearFilter;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.generateMipmaps = true;
+        tex.anisotropy = 8;
+        tex.needsUpdate = true;
+        setLiveClouds(mesh, tex);
+      }
+    } catch {
+      /* keep what is on screen */
+    }
+  }
+
+  /**
+   * STEP 1: our saved copy. Each satellite's picture is taken when it is newer than the one held. Returns
+   * {read, changed, validUntil}: `read` false when there is no usable copy (so NASA is step 2).
+   */
+  async function lookAtSaved() {
+    const saved = await readSaved(fetchImpl, savedUrl('gibs-clouds'));
+    if (!saved.ok) return { read: false, changed: false, validUntil: null, why: saved.why };
+    const sats = (saved.file.body && saved.file.body.satellites) || {};
+    let changed = false;
+    let any = false;
+    for (const sat of GEO_SATELLITES) {
+      const pic = sats[sat.id];
+      if (!pic || typeof pic.base64 !== 'string') continue;
+      const slotMs = Date.parse(pic.slot);
+      if (!Number.isFinite(slotMs)) continue;
+      any = true;
+      const prev = held.get(sat.id);
+      if (prev && prev.slotMs >= slotMs) continue;
+      try {
+        const blob = blobOf(pic);
+        st.bytes += blob.size;
+        let r;
+        try {
+          r = await composer.picture(sat.id, sat.subLonDeg, blob);
+        } catch (err) {
+          if (composer.kind !== 'worker') throw err;
+          composer = mainThreadComposer();
+          st.composer = composer.kind;
+          held.clear();
+          r = await composer.picture(sat.id, sat.subLonDeg, blob);
+        }
+        if (!r || !r.ok) continue;
+        held.set(sat.id, { slotMs, readAt: now(), bytes: blob.size, name: sat.name, via: 'snapshot' });
+        changed = true;
+      } catch {
+        /* a copy that cannot be read is no copy of that satellite */
+      }
+    }
+    st.requests++;
+    return { read: any, changed, validUntil: saved.validUntil };
   }
 
   async function look() {
@@ -188,36 +265,31 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
     st.skipped = null;
     busy = true;
     const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    if (!composer) { composer = makeComposer(); st.composer = composer.kind; }
+    if (!composer) { composer = composerImpl || makeComposer(); st.composer = composer.kind; }
     if (st.phase !== 'live') st.phase = 'looking';
     let changed = false;
-    // One satellite after another, not all three at once: the pictures come from one NASA host
-    // with no cache in front of it, and three parallel 2-3 s downloads would all arrive late.
-    for (const sat of GEO_SATELLITES) {
-      try {
-        if (await lookAtOne(sat)) changed = true;
-      } catch {
-        // A satellite that failed keeps its last picture; one that never had one covers nothing,
-        // and the static map shows there.
-      }
-    }
+    // 1. Our saved copy, drawn at once.
+    let plan = { use: 'original', askBehind: false };
     try {
-      if (changed) {
-        const c = await composer.compose();
-        st.composeMs = c.ms ?? null;
-        const mesh = earthMesh();
-        if (mesh && c.data) {
-          const tex = new THREE.DataTexture(c.data, IMAGE_W, IMAGE_H, THREE.RGBAFormat, THREE.UnsignedByteType);
-          tex.magFilter = THREE.LinearFilter;
-          tex.minFilter = THREE.LinearMipmapLinearFilter;
-          tex.generateMipmaps = true;
-          tex.anisotropy = 8;
-          tex.needsUpdate = true;
-          setLiveClouds(mesh, tex);
+      const saved = await lookAtSaved();
+      plan = decide({ snapshot: saved.read ? { validUntil: saved.validUntil } : null, now: now(), canAskOriginal: true });
+      if (saved.changed) { await drawHeld(); st.phase = 'live'; onChange(api.state()); }
+    } catch {
+      /* no copy: NASA is the way */
+    }
+    // 2. NASA, only for a missing copy or behind one that is past its valid_until, and only for newer slots.
+    if (plan.use === 'original' || plan.askBehind) {
+      // One satellite after another, not all three at once: the pictures come from one NASA host
+      // with no cache in front of it, and three parallel 2-3 s downloads would all arrive late.
+      for (const sat of GEO_SATELLITES) {
+        try {
+          if (await lookAtOne(sat)) changed = true;
+        } catch {
+          // A satellite that failed keeps its last picture (3: ours or an earlier one of NASA's); one that
+          // never had one covers nothing, and the static map shows there.
         }
       }
-    } catch {
-      /* keep what is on screen */
+      if (changed) await drawHeld();
     }
     st.lookedAt = now();
     st.lastLookMs = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0);
@@ -271,7 +343,7 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
         mode: st.mode,
         capturedMs: capturedMs(),
         newestMs: newestMs(),
-        satellites: GEO_SATELLITES.filter((s) => held.has(s.id)).map((s) => ({ id: s.id, name: s.name, slotMs: held.get(s.id).slotMs, bytes: held.get(s.id).bytes })),
+        satellites: GEO_SATELLITES.filter((s) => held.has(s.id)).map((s) => ({ id: s.id, name: s.name, slotMs: held.get(s.id).slotMs, bytes: held.get(s.id).bytes, via: held.get(s.id).via || 'live' })),
         bytes: st.bytes,
         requests: st.requests,
         lastLookMs: st.lastLookMs,

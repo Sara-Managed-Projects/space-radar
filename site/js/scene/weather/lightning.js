@@ -31,6 +31,7 @@ import {
 } from '../../data/lightning.js';
 import { WGS84_A_KM, WGS84_B_KM } from '../earth.js';
 import { COPY, t, fmt, ageInWords } from '../../copy/en.js';
+import { decide, readSaved, savedUrl } from '../../data/readorder.js';
 
 /** Flashes alive at once. A flash lives FLASH_LIFE_S, so this is 48 a second with room to spare. */
 export const FLASH_SLOTS = 64;
@@ -157,6 +158,7 @@ export function createLightning({
     lastError: null,
     bytes: 0,
     on: true,
+    via: null,      // 'snapshot' | 'live': where the map held now came from, for the probes
     drawn: 0,       // flashes started since boot, for the probes
     visible: false,
     mode: 'none',
@@ -218,6 +220,40 @@ export function createLightning({
     return m;
   }
 
+  /** Build the flash model from a picture (a live answer's, or our saved copy's) of the slot it is of. */
+  async function useBlob(blob, slotMs) {
+    st.bytes = blob.size || 0;
+    const img = await decodeImage(blob);
+    if (img.width !== GRID_W || img.height !== GRID_H) throw new Error(`the picture is ${img.width} x ${img.height}`);
+    const grid = decodeGrid(img.data, img.width, img.height);
+    model = flashModel(grid.cells, slotMs);
+    st.slotMs = slotMs;
+    st.perMin = grid.perMin;
+    st.cells = grid.cells.length;
+    st.unknown = grid.unknown;
+    st.phase = 'live';
+    st.lastError = null;
+    lastSecond = null;
+  }
+
+  /** Step 1 of data/readorder.js: our saved copy of the newest slot, when it is newer than the one held. */
+  async function lookAtSaved() {
+    const saved = await readSaved(fetchImpl, savedUrl('noaa-lightning'));
+    if (!saved.ok) return null;
+    const b = saved.file.body;
+    const slotMs = Date.parse(b && b.slot);
+    if (!b || typeof b.base64 !== 'string' || !Number.isFinite(slotMs)) return null;
+    if (!(model && slotMs <= model.slotMs)) {
+      const bin = atob(b.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      await useBlob(new Blob([bytes], { type: b.content_type || 'image/png' }), slotMs);
+      st.via = 'snapshot';
+      onChange();
+    }
+    return { validUntil: saved.validUntil };
+  }
+
   async function look() {
     if (busy || st.phase === 'off') return;
     if (typeof document !== 'undefined' && document.hidden) return;
@@ -225,27 +261,22 @@ export function createLightning({
     st.looks++;
     if (!model) st.phase = 'looking';
     try {
+      // 1. Our saved copy, drawn at once. 2. NOAA, only when there is none or it is past its valid_until.
+      let saved = null;
+      try { saved = await lookAtSaved(); } catch { saved = null; }
+      const plan = decide({ snapshot: saved, now: now(), canAskOriginal: true });
+      if (plan.use === 'snapshot' && !plan.askBehind) { st.phase = 'live'; return; }
       const caps = await fetchImpl(CAPS_URL);
       if (!caps.ok) throw new Error(`capabilities ${caps.status}`);
       const slotMs = parseNewestSlot(await caps.text());
       if (!Number.isFinite(slotMs)) throw new Error('the capabilities document names no newest time');
-      if (model && slotMs === model.slotMs) { st.phase = 'live'; return; }
+      if (model && slotMs <= model.slotMs) { st.phase = 'live'; return; }
       const res = await fetchImpl(mapUrl(slotMs));
       if (!res.ok) throw new Error(`map ${res.status}`);
-      const blob = await res.blob();
-      st.bytes = blob.size || 0;
-      const img = await decodeImage(blob);
-      if (img.width !== GRID_W || img.height !== GRID_H) throw new Error(`the picture is ${img.width} x ${img.height}`);
-      const grid = decodeGrid(img.data, img.width, img.height);
-      model = flashModel(grid.cells, slotMs);
-      st.slotMs = slotMs;
-      st.perMin = grid.perMin;
-      st.cells = grid.cells.length;
-      st.unknown = grid.unknown;
-      st.phase = 'live';
-      st.lastError = null;
-      lastSecond = null;
+      await useBlob(await res.blob(), slotMs);
+      st.via = 'live';
     } catch (e) {
+      // 3. NOAA failed too: a model already drawn (ours, or an earlier answer of NOAA's) stays.
       st.failures++;
       st.lastError = String((e && e.message) || e);
       if (!model) st.phase = 'failed';

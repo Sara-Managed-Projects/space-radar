@@ -4,10 +4,16 @@ Registry-driven. `registry/sources.yaml` is the list of upstreams; `scripts/gen_
 mirrors it into `harvest/sources.json` (the browser mirrors are JS; this one is JSON, for the same
 reason: the runtime parses no YAML). The job iterates the mirror, fetches each row that is due,
 counts what came back with the row's parser, refuses anything worse than what it already holds,
-and writes two kinds of file:
+and writes these files:
 
-    <prefix>/index.json         the manifest: one entry per source, with timestamps and status
-    <prefix>/<source-id>.json   the snapshot: the upstream body, verbatim, with its stamps
+    <prefix>/<source-id>.json       the snapshot: the upstream body, verbatim, with its stamps
+    <prefix>/<id>.cols.json         beside a big catalogue, the same rows as columns (publish.py)
+    <prefix>/celestrak-notable.json, -geo, -starlink-recent, and jpl-sbdb-neo cut to jpl-cad's rows (publish.py)
+    <prefix>/index.json             the manifest: one entry per source, with timestamps and status. WRITTEN LAST.
+
+A source that fails never overwrites its file: the manifest lists it as the last good copy with its old stamps and
+a `kept_after` note (publish.py). The job runs hourly as an AWS Lambda (lambda_handler.py; the stack is in the
+internal repository) and by hand as `python3 -m harvest --dest DIR`, the same code either way.
 
 Runtime is the Python 3.12 standard library and nothing else. boto3 is imported inside
 `lambda_handler.handler` and nowhere else, so `python3 -m harvest --dest DIR` needs no AWS.
@@ -15,4 +21,4 @@ Runtime is the Python 3.12 standard library and nothing else. boto3 is imported 
 Nothing in this package names a source. A source is a row and a parser module.
 """
 
-__version__ = "1.0"
+__version__ = "1.1"

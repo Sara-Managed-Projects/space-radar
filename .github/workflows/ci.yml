@@ -178,6 +178,13 @@ jobs:
       # download per file per two hours, and a suite that spent it could not be run twice.
       - name: The harvester counts, guards and writes what the contract says
         run: python3 tests/test_harvest.py
+      # 0078 r14-data: begin
+      # Everything the Lambda publishes, and the rule it must not break: a source that fails keeps its
+      # previous file and is published as that copy (old stamps, `kept_after`), the index is written last,
+      # an hourly schedule reads an hourly source, the cut / derived files / column twins, the handler.
+      - name: The harvester never overwrites good data with a failure, and publishes what the old script did
+        run: python3 tests/test_harvest_publish.py
+      # 0078 r14-data: end
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
       # ui/mobile.js (the phone's old bar), which is the argument for it in one line.
@@ -379,6 +386,14 @@ jobs:
       # and "Satellites worth knowing" empty.
       - name: A reload inside CelesTrak's two hours keeps what the first visit loaded
         run: node tests/test_sources_cache.mjs
+      # 0078 r14-data: begin
+      # Our saved copy first (fresh or stale, drawn at once), the publisher only behind a stale one or in
+      # place of a missing one, the browser's own copy last; and the same for clouds, lightning and aurora.
+      - name: The read order is our copy, then the publisher, then the browser's copy
+        run: node tests/test_read_order.mjs
+      - name: The clouds, the lightning and the aurora read our copy first too
+        run: node tests/test_saved_pictures.mjs
+      # 0078 r14-data: end
       - name: Cards say what they are drawn as, and how old their elements are
         run: node tests/test_cards_copy.mjs
       # Eight dwarf planets and the two interstellar visitors: two-body positions against JPL

@@ -121,12 +121,18 @@ def main() -> int:
         if 'BUCKET="sara-site-space-radar"' in text or 'DISTRIBUTION="E1JGFDLBX6HS7B"' in text:
             problems.append("the old bucket or distribution is a default again")
         work_ix = json.loads((work / "index.json").read_text())["snapshots"]
-        if work_ix["celestrak-stations"].get("status") != "error":
-            problems.append("the WORK index keeps `error`, so the harvester still retries on its cadence")
+        # 0078 r14-data: begin
+        # The publish rules now run on the working copy itself (harvest/publish.py), which is what the Lambda
+        # does to the bucket: the row says ok with its old stamps and why, and being past its valid_until it is
+        # still due, so the harvester retries it on its cadence.
+        kept = work_ix["celestrak-stations"]
+        if kept.get("status") != "ok" or "403" not in str(kept.get("kept_after", "")) or kept.get("valid_until") != stamp:
+            problems.append(f"the working copy's row is the kept copy with its old valid_until, so the harvester still retries it ({kept})")
+        # 0078 r14-data: end
     if problems:
         print("refresh keep-good FAILED:\n  " + "\n  ".join(problems))
         return 1
-    print("refresh keep-good ok: a refresh that fails publishes the last good copy with its old stamp and the reason, an empty file stays out, and the work index still says error")
+    print("refresh keep-good ok: a refresh that fails publishes the last good copy with its old stamp and the reason, an empty file stays out, and the working copy keeps the old stamps so the harvester retries it")
     return 0
 
 

@@ -49,8 +49,9 @@ const geo = LAYERS.find((l) => l.id === 'geo-ring');
 check(geo && geo.source === 'celestrak-geo', 'the geostationary ring reads the celestrak-geo cut');
 const { SOURCES } = await import(join(ROOT, 'site/js/data/sources.js'));
 check(SOURCES['celestrak-geo'] && SOURCES['celestrak-geo'].browser === true, 'sources.js knows the cut');
-const refresh = src('scripts/refresh-snapshots.sh');
-check(/derive\("celestrak-active", "celestrak-geo"/.test(refresh), 'refresh-snapshots.sh derives the cut from the active catalogue');
+// 0078 r14-data: the cuts moved from the script into the harvester (harvest/publish.py), so the Lambda makes them too.
+const refresh = src('harvest/publish.py');
+check(/\("celestrak-active", "celestrak-geo"/.test(refresh), 'harvest/publish.py derives the cut from the active catalogue');
 check(/0\.99 <= n <= 1\.01 and e < 0\.02 and i < 15/.test(refresh), 'with the thresholds parsers.js GEO_RING applies');
 const { GEO_RING } = await import(join(ROOT, 'site/js/data/parsers.js'));
 check(GEO_RING.meanMotionMin === 0.99 && GEO_RING.meanMotionMax === 1.01 && GEO_RING.eccBelow === 0.02 && GEO_RING.inclBelowDeg === 15, 'and those thresholds are still what the browser uses');

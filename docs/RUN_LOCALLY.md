@@ -68,8 +68,8 @@ Space Radar keeps two kinds of things:
   nebula photographs, the sky in infrared, microwaves and gamma rays, every 3D model, all 25
   guided trips with their narration and music, landing sites, and the mathematics that moves it all. This needs no network, ever.
 - **What changes daily**: the list of satellites and their orbits, upcoming launches, asteroids
-  passing by, space weather. The app reads a **saved copy** of these from `site/data/v1/` first,
-  and only then asks the publishers for anything newer.
+  passing by, space weather. The app reads a **saved copy** of these from `site/data/v1/` first, and asks
+  the publishers only behind a copy that is older than the time it promised, or when there is none.
 
 A release zip includes that saved copy. For a clone, or to refresh an old copy, run this once
 **while online**:

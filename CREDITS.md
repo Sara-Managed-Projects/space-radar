@@ -2493,8 +2493,15 @@ full and open sharing of data" and asks:
 The app prints that sentence verbatim in the Sources panel (`COPY.clouds.gibsAcknowledgement`), with
 the satellites' operators beside it: GOES imagery is NOAA's (US Government work, see §4.4 for the NWS
 terms), and Himawari imagery is JMA's, credited as a courtesy the realism study (2026-09-28) records
-NOAA and JMA asking for. Nothing from GIBS is stored in this repository or on our site; each visitor's
-browser fetches and composes the pictures itself.
+NOAA and JMA asking for.
+<!-- 0078 r14-data: begin -->
+Since 2026-10-26 (internal spec 0078) the harvester's Lambda also saves GIBS's newest real picture of each of
+the three layers, once an hour, as `data/v1/gibs-clouds.json` on our own site (`harvest/parsers/gibs_clouds.py`:
+the same two requests the browser makes, the pictures kept byte for byte). A visitor's browser draws that copy
+first and asks GIBS only behind a copy older than an hour or when there is none. Nothing from GIBS is stored in
+this repository; the saved pictures are replaced every hour and are not an archive. The acknowledgement above is
+printed with the clouds whichever copy they came from.
+<!-- 0078 r14-data: end -->
 
 No European or Indian Ocean geostationary satellite is in GIBS, so 6.5° E to 60.6° E and the poles
 are the static Solar System Scope cloud map (§2), and the Earth's card says so. EUMETSAT's own
@@ -2645,6 +2652,13 @@ card says where the map reaches. Blitzortung's network covers them, but its data
 without permission and is not used; GOES's own lightning mapper (GLM) is not served by NASA GIBS,
 which has only the LIS and OTD climatologies. Nothing from nowCOAST is stored in this repository
 beyond one saved picture the test decodes (`tests/fixtures/weather/`).
+<!-- 0078 r14-data: begin -->
+Since 2026-10-26 (internal spec 0078) the harvester's Lambda saves the newest slot's picture too, as
+`data/v1/noaa-lightning.json` on our site (`harvest/parsers/nowcoast_lightning.py`: the same two requests, the
+7 kB PNG kept byte for byte, replaced every hour). The browser draws that copy first and asks NOAA behind a copy
+older than fifteen minutes or when there is none. As a US Government work the copy is no different from the
+original; the credit above stays on the card whichever copy was drawn.
+<!-- 0078 r14-data: end -->
 
 The winds the other worlds' bands move at, and Mars's seasonal tables, are numbers from published
 papers, each named with its DOI in `registry/weather.yaml`; no data file of theirs is shipped.
@@ -2667,6 +2681,8 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `jpl-cad` | NASA/JPL Center for Near Earth Object Studies | close approaches to the Earth | as above | Close approaches: NASA/JPL CNEOS | `ssd-api.jpl.nasa.gov` |
 | `horizons-deep-space` | NASA/JPL Solar System Dynamics, Horizons | where each deep-space craft is, as vectors | as above | Ephemerides: JPL Horizons | `ssd.jpl.nasa.gov` |
 | `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | **Switched off on 2026-10-09** (`enabled: false`) and no longer fetched, saved, published or shipped. ESA's terms (read that day at `www.esa.int/Services/Terms_and_conditions`, to which the NEOCC portal defers) say: "ESA does not grant the right to resell or redistribute any information, documents, images or material from its website". The harvester had saved this list and the site had served it as `/data/v1/esa-neocc-close.json` since September 2026, before those terms were read in full; no card ever showed it. The close approaches the app draws are JPL's CNEOS, the row above. The row stays here so the reason does. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
+| `gibs-clouds` | NASA Global Imagery Browse Services (GIBS) | today's clouds: the newest real Band 13 infrared picture of GOES-West, GOES-East and Himawari, saved hourly (internal spec 0078) | §4.13: NASA "promotes full and open sharing of data" and asks for the acknowledgement printed with the clouds (<https://nasa-gibs.github.io/gibs-api-docs/>, read 2026-09-28). The satellites are NOAA's and JMA's (§4.13). | We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS). | `gibs.earthdata.nasa.gov` <!-- 0078 r14-data --> |
+| `noaa-lightning` | NOAA nowCOAST | lightning now: the newest fifteen-minute strike-density picture, saved hourly (internal spec 0078) | §4.17: a US Government work; a "Level 5" product "appropriate for public distribution" (read 2026-10-03) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | `nowcoast.noaa.gov` <!-- 0078 r14-data --> |
 | `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
 | `eonet-fires`, `eonet-volcanoes-ice` | NASA Earth Observatory Natural Event Tracker (EONET) | open fires, volcanoes and sea-ice events, saved hourly (internal #525) | §4.20: no licence beyond EONET's disclaimer; NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09). The events are reported by IRWIN, GDACS, the Smithsonian's Global Volcanism Program and the US National Ice Center; the Smithsonian's terms page answered 403 to our reader on 2026-10-09 and has NOT been read. | Fires, volcanoes and sea ice: NASA EONET | `eonet.gsfc.nasa.gov` |
 | `swpc-solar-regions` | NOAA Space Weather Prediction Center | today's sunspot groups (the solar region summary), saved hourly | US Government work, public domain (§4.4; "may be used without charge for any lawful purpose", <https://www.weather.gov/disclaimer>, read 2026-10-09) | Sunspot groups: NOAA SWPC | `services.swpc.noaa.gov` |
