@@ -55,7 +55,11 @@ moons, layers and landing sites are as they were in 1.3.0.
   PROBA-V, FORMOSAT-7, OAO-2 and OAO-3.
 - **Six spent rocket stages** ([#1292]): the second stages of the Kosmos-3M, Delta II, Atlas V (Centaur),
   Falcon 9 and H-IIA, and the Centaur D, each in its own shape.
-- TODO(1.4.0, Pluto): the Pluto fix, to be written when its branch (`r14-pluto`) is folded in.
+- **Pluto looks like Pluto again** ([#1301]): the map is in natural colour from New Horizons' measured red and
+  blue (strengthened, and the card says so), the south that New Horizons never imaged is modelled and
+  labelled so, the relief comes from New Horizons' heights at twice the vertical, a thin blue haze ring
+  shows against the Sun, and arrival is framed on the heart when it is lit. Charon has Mordor's red cap
+  and its seams are fixed.
 - TODO(1.4.0, galaxies and photographs): the removal of the galaxy and nebula photographs from the scene
   (`r14-neb-b`), and the new photograph count above.
 - TODO(1.4.0, Milky Way and black holes): the Milky Way and the black holes without photographs
@@ -66,9 +70,9 @@ moons, layers and landing sites are as they were in 1.3.0.
   stand-ins), to be filled when the last three branches are folded in.
 
 ### For contributors
-- How the release was assembled: stages `r14-data`, `r14-neb-a` and `r14-m1` to `r14-m8` reached `main` as
+- How the release was assembled: stages `r14-data`, `r14-neb-a`, `r14-m1` to `r14-m8` and `r14-pluto` reached `main` as
   one integration pull request, with their own pull requests [#1288], [#1289], [#1290], [#1291], [#1292],
-  [#1294], [#1295], [#1296], [#1297] and [#1300].
+  [#1294], [#1295], [#1296], [#1297], [#1300] and [#1301].
 
 ## [1.3.0] - 2026-10-21
 
@@ -860,3 +864,4 @@ The first public map.
 [#1296]: https://github.com/Sara-Managed-Projects/space-radar/pull/1296
 [#1297]: https://github.com/Sara-Managed-Projects/space-radar/pull/1297
 [#1300]: https://github.com/Sara-Managed-Projects/space-radar/pull/1300
+[#1301]: https://github.com/Sara-Managed-Projects/space-radar/pull/1301
