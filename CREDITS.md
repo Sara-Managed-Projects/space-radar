@@ -57,6 +57,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W3-c: begin -->
 | The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
 <!-- 0077 W3-c: end -->
+<!-- 0078 r14-m8: begin -->
+| The shapes of Luna 16's descent stage, Mars Pathfinder with Sojourner, Phoenix and the Mars 3 capsule | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 or public domain where a picture was compared; ours | [3b-r14-m8](#3b-r14-m8-four-landers-built-from-dimensions--luna-16-mars-pathfinder-and-sojourner-phoenix-mars-3-2026-10-27) |
+<!-- 0078 r14-m8: end -->
 <!-- 0077 W3-a: begin -->
 | The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
 <!-- 0077 W3-a: end -->
@@ -1412,6 +1415,37 @@ CNSA, China News Service, the Chinese Academy of Sciences, Lavochkin, the museum
 Space Radar, and none of them made or approved these shapes.
 
 <!-- 0077 W3-c: end -->
+<!-- 0078 r14-m8: begin -->
+## 3b-r14-m8. Four landers built from dimensions — Luna 16, Mars Pathfinder and Sojourner, Phoenix, Mars 3 (2026-10-27)
+
+Release 1.4.0, stage r14-m8 (public #1128, #1130, #1131, #1132). **No agency publishes a model of any of these craft that is
+free to use**: NASA's 3D Resources on GitHub (1 583 paths), science.nasa.gov/3d-resources (377 entries) and NASA Science's
+3D-type resources have **no** Phoenix, Mars Pathfinder or Sojourner (they have the Viking lander, InSight, the Mars Exploration
+Rovers, Curiosity, Perseverance, Ingenuity and orbiters; read 2026-10-26), and Lavochkin publishes none of the Soviet ones. So each
+file was built in code, part by part, from cited numbers, with photographs looked at for what the numbers do not say, and each
+is drawn **as it stands now**: Luna 16's descent stage with the ascent stage gone and the drill arm raised; Pathfinder with its
+three petals open, the airbags heaped and Sojourner standing beside it (where is ours: it moved); Phoenix with both fan arrays
+open; the Mars 3 capsule with its four petals open. No image-to-3D model was used and no picture is in any file. No logo and no
+lettering is on any mesh. Photographs under share-alike licences were looked at only: nothing was traced from them. Their cards
+say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `luna-16.glb` (131 KB) | Luna 16's descent stage: two big cream tanks side by side, four silver gas bottles, four legs 3.3 m across with their round pads (cited), the empty cradle, the drill arm raised, the camera and two whip aerials | Orbital Focus's "Luna 16" (<https://orbitalfocus.uk/Diaries/Luna/Luna16.php>) for the 3.3 m, the four legs and the parts; Stolbovsky's photographs of the copy in Kaluga (CC BY 4.0), Krassotkin's (CC0) and Denis Nosov's (CC0), the 1970 stamp and LRO's picture (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+| `pathfinder.glb` (152 KB) | Mars Pathfinder: the tetrahedral lander with three open petals of cells, the ramps, the 0.8 m imager mast, the high-gain disc, three low-gain rods, the windsock pole, the airbags heaped, and Sojourner (0.65 by 0.48 by 0.30 m, six wheels on rocker-bogie) | NSSDCA's and Wikipedia's pages for Pathfinder and Sojourner; NASA's press-kit drawings and PIA04305, PIA04306, PIA04312, PIA04315 (public domain); the Smithsonian's flight-spare rover (CC0); Clemens Vasters' and Stéphane Gallay's photographs of the full-size model (CC BY 2.0) | this project's shape from facts; the pictures looked at, credited in the row |
+| `phoenix.glb` (124 KB) | Phoenix: the 1.5 m cream deck with its copper edge, two ten-sided fan-fold arrays (7.0 m2, cited), three corrugated legs, the 2.35 m arm, the camera mast, the MET mast, TEGA, MECA, the lidar | Wikipedia's "Phoenix (spacecraft)" and NSSDCA's 2007-034A; NASA/JPL's assembly photographs, Phoenix's own pictures of its deck and arm and NASA's drawings (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+| `mars-3.glb` (73 KB) | The Mars 3 landing capsule: a sphere 1.2 m across (cited) with its belt of ports, the black corrugated instrument box, the camera and sensor tubes, four aerials and four riveted petals open | Wikipedia's "Mars 3"; the Museum of Cosmonautics' and Armael's photographs of the 1:1 mock-up (CC0), Stolbovsky's of the copy in Kaluga (CC BY 4.0), NASA's pictures of the models (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `luna-16`, `pathfinder`, `phoenix`, `mars-3` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and photographs of museum models (Stolbovsky, CC BY 4.0; Krassotkin, CC0; Denis Nosov, CC0; NASA/GSFC/Arizona State University, public domain)`;
+`3D model: built by Space Radar from published dimensions and pictures (NASA/JPL, public domain; The National Air and Space Museum, CC0; Clemens Vasters and Stéphane Gallay, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and NASA/JPL photographs (public domain)`;
+`3D model: built by Space Radar from published dimensions and photographs of museum models (Armael, CC0; Museum of Cosmonautics, CC0; Stolbovsky, CC BY 4.0)`.
+
+NASA, JPL, Lavochkin, the museums and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
+
+<!-- 0078 r14-m8: end -->
 <!-- 0077 W3-a: begin -->
 ## 3b-16. NASA science craft built from dimensions — IRIS, TIMED, TRACERS, SERT 2, ISIS 1 (2026-10-20)
 
