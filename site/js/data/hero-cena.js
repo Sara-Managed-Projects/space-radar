@@ -238,8 +238,8 @@ export const HERO = {
       ],
       "width_kpc": 0.3,
       "tip_light": 0.55,
-      "light": 0.0003,
-      "colour": "#7ea8ff",
+      "light": 0.00012,
+      "colour": "#6f96ff",
       "source": "ILLUSTRATION in false colour (the jet is not seen in visible light): its direction PA 55 degrees and its X-ray emission continuous to 4.5 kpc from the nucleus (Kraft et al. 2002, arXiv:astro-ph/0111340; Hardcastle et al. 2007, arXiv:0710.1277), the inner radio jet and lobe (Israel 1998: inner jet 1.35 kpc, inner lobe 5 kpc); toward us at 50 degrees to our line (Tingay et al. 1998: 50 to 80 degrees), the lower bound taken"
     },
     {
@@ -279,15 +279,15 @@ export const HERO = {
       ],
       "width_kpc": 0.3,
       "tip_light": 0.7,
-      "light": 0.0001,
-      "colour": "#7ea8ff",
+      "light": 5e-05,
+      "colour": "#6f96ff",
       "source": "ILLUSTRATION in false colour: the faint counter-jet opposite the jet, its extended X-ray emission out to 2.0 kpc (Hardcastle et al. 2007, arXiv:0710.1277), away from us as the jet is toward us"
     },
     {
       "kind": "dust-disc",
       "what": "the warped dusty disc",
       "scale_kpc": 2.0,
-      "r_min_kpc": 0.3,
+      "r_min_kpc": 0.89,
       "r_max_kpc": 7.5,
       "height_kpc": 0.3,
       "weight": 1,

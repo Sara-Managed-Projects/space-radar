@@ -12,7 +12,7 @@ shipped: true
 children: []
 levels:
   # 0078 r14-neb-b, lead review of #1298: the core warm and unclipped (layer_power 0.72, colour #f0d4ae), the lane broad and dark
-  # (dust 0.3 kpc thick from 0.3 kpc, strength 0.8, dust_peak 0.42, dust_share 0.8), pink H II regions along its edges (420, light 0.03): matched by eye to eso1221a
+  # (dust 0.3 kpc thick, from Quillen's 0.89 kpc hole, strength 0.8, dust_peak 0.42, dust_share 0.8), pink H II regions along its edges (420, light 0.03): matched by eye to eso1221a
   2: "the structure: the elliptical's smooth light (a billboard, elongated as the galaxy is from each side), its dusty disc warped ring by ring as Quillen et al. 2006 model it, young star clusters and H II regions along it, and the two jets in false colour; statistical points"
   3: "the same, larger on screen"
   points: [14000, 42000, 64000]     # by tier T0, T1, T2
@@ -62,8 +62,8 @@ layers:
       - [201.4436, -42.97891, 3.78]
     width_kpc: 0.3
     tip_light: 0.55
-    light: 0.0003
-    colour: "#7ea8ff"
+    light: 0.00012     # 0078 r14-neb-b, lead review: at 0.0003 the jet read as a white column over the core (look run 3)
+    colour: "#6f96ff"
     source: "ILLUSTRATION in false colour (the jet is not seen in visible light): its direction PA 55 degrees and its X-ray emission continuous to 4.5 kpc from the nucleus (Kraft et al. 2002, arXiv:astro-ph/0111340; Hardcastle et al. 2007, arXiv:0710.1277), the inner radio jet and lobe (Israel 1998: inner jet 1.35 kpc, inner lobe 5 kpc); toward us at 50 degrees to our line (Tingay et al. 1998: 50 to 80 degrees), the lower bound taken"
   - kind: stream
     what: "the south-western counter-jet (drawn in false colour)"
@@ -76,10 +76,10 @@ layers:
       - [201.33021, -43.03696, -1.68]
     width_kpc: 0.3
     tip_light: 0.7
-    light: 0.0001
-    colour: "#7ea8ff"
+    light: 0.00005
+    colour: "#6f96ff"
     source: "ILLUSTRATION in false colour: the faint counter-jet opposite the jet, its extended X-ray emission out to 2.0 kpc (Hardcastle et al. 2007, arXiv:0710.1277), away from us as the jet is toward us"
-  - {kind: dust-disc, what: "the warped dusty disc", scale_kpc: 2.0, r_min_kpc: 0.3, r_max_kpc: 7.5, height_kpc: 0.3, weight: 1, strength: 0.8, warp: *warp,
+  - {kind: dust-disc, what: "the warped dusty disc", scale_kpc: 2.0, r_min_kpc: 0.89, r_max_kpc: 7.5, height_kpc: 0.3, weight: 1, strength: 0.8, warp: *warp,
      source: "Quillen et al. 2006 (table 1): a thin disc with an inner gap of 50 arcsec (0.89 kpc here), warped by their precession and tilt; reaching 7 kpc as the H I does (Israel 1998); the dust's radial profile (scale 2 kpc) and thickness illustrative"}
 colours:
   mode: true
