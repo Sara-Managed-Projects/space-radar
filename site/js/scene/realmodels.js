@@ -176,7 +176,7 @@ export const REAL_MODELS = {
     // into orbit -- the first hydrogen engine fired in space -- so the catalogue calls the stage the
     // payload and its name carries no R/B. It was drawn, and its card described it, as "a generic
     // satellite". It is a spent upper stage and is drawn as one.
-    694: { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
+    694: { file: 'centaur-d.glb', build: 'stage', colour: 'rocket', name: 'a Centaur D upper stage', catalogue: 'ATLAS CENTAUR 2', made: 'dimensions', axes: 'app' }, // 0078 r14-m1: was the generic stage; drawn as the Centaur D file
     // SPACE TELESCOPES WITH NO MODEL OF THEIR OWN, drawn as the generic telescope rather than as a
     // communications satellite with a dish, which is what the satellite default is. The card says
     // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
@@ -938,6 +938,23 @@ export const REAL_MODELS = {
    * Keys are lower-cased substrings of the catalogue name.
    */
   named: {
+    // 0078 r14-m1: begin -- SIX SPENT STAGES WITH THEIR OWN SHAPES (release 1.4.0, stage r14-m1; public #1160, #1164 to #1167, #1169).
+    // Built in code from published dimensions and Commons photographs (registry/models.yaml, tools/stage-builder/): the Kosmos-3M
+    // second stage, the Delta II second stage (Delta K), the Common Centaur of Atlas V, the Centaur D of Atlas-Centaur, the Falcon 9
+    // second stage and the H-IIA second stage. They sit ABOVE `r/b` because the first key that matches wins; every one is gated to
+    // klass `rocket`, and `build: 'stage'` is the shape drawn while the file is on its way (and what the card says if it never comes).
+    // `made: 'dimensions'` makes the card say the shape was built from published dimensions; `axes: 'app'` keeps the tumble the
+    // generic stage has: a dead stage has no attitude control. The stages of the same catalogue families that are NOT drawn here keep
+    // the generic stage: DELTA 2 R/B(2) is a Star-48 motor, SL-12 R/B(1) a Blok DM auxiliary motor, and the Zenit-2, Vostok Blok E,
+    // Tsyklon-3, Long March 4, Proton Blok DM, Breeze-M and PSLV fourth stages wait for pictures of flight hardware (the PR says what).
+    'sl-8 r/b': { file: 'kosmos3m-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Kosmos-3M second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'delta 2 r/b(2)': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'delta 2 r/b': { file: 'delta2-stage.glb', build: 'stage', colour: 'rocket', name: 'a Delta II second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'atlas 5 centaur r/b': { file: 'atlas5-centaur.glb', build: 'stage', colour: 'rocket', name: 'an Atlas V Centaur upper stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'atlas centaur r/b': { file: 'centaur-d.glb', build: 'stage', colour: 'rocket', name: 'a Centaur D upper stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'falcon 9 r/b': { file: 'falcon9-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Falcon 9 second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'h-2a r/b': { file: 'h2a-stage2.glb', build: 'stage', colour: 'rocket', name: 'an H-IIA second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    // 0078 r14-m1: end
     // Every spent stage on the visible layer -- SL-16, CZ-2C, Centaur, Delta, H10 -- was drawn as
     // a LAUNCHING rocket: fairing, nose, plume. A spent stage is a tube with a nozzle, tumbling.
     // NASA's Shuttle solid rocket booster stood in for the class until 2026-10-07 (issue #410): a

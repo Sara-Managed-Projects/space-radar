@@ -12,6 +12,9 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
 | `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
 | `pr-pictures.sh` | put pictures into a pull request's description from the command line: `tools/pr-pictures.sh <number> shot.png="caption" ...` (shrunk, kept on the branch `screens`, shown under "Pictures"). A pull request that changes what is drawn owes one: `scripts/pr_pictures.py` |
+<!-- 0078 r14-m1: begin -->
+| `stage-builder/` | the parametric rocket-stage builder of release 1.4.0 (stage r14-m1): `stagelib.py` (tank barrels with weld rings, domes, cones, truss bands, bells with nozzle extensions, bottles, thruster pods, foil), `stages.py` (the thirteen stages, each a few dozen calls with the published dimensions as arguments; `python3 stages.py delta2 falcon9`), `lib.py` (the part library of 1.3.0), `write-glb.mjs` (json to the shipped .glb) and `fastrender.py` (a quick six-view picture of a json) |
+<!-- 0078 r14-m1: end -->
 | `look-playwright.mjs`, `look-summary.mjs` | the look workflow's Firefox and WebKit runner, and its summary and verdict (below) |
 
 ## The regression walk
