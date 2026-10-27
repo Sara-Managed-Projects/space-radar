@@ -952,7 +952,7 @@ uniform float uPow;          // the stretch (0077 W3-f: a profile may set its ow
 uniform float uI0;
 uniform float uRd;
 uniform float uRMax;
-uniform vec2 uInner;         // 0078 r14-neb-b: the disc thinned inside this radius (0: not), to this share at the centre
+uniform vec2 uSwept;         // 0078 r14-neb-b: the disc thinned inside this radius (0: not), to this share at the centre
 uniform float uSense;
 uniform float uArmM;
 uniform float uArmTanP;
@@ -985,7 +985,7 @@ void main() {
   if ( R > uRMax ) discard;
   float phi = atan( vLocal.y, vLocal.x );
   float light = uI0 * exp( -R / uRd ) * clamp( ( uRMax - R ) / ( 0.2 * uRMax ), 0.0, 1.0 );
-  if ( uInner.x > 0.0 ) light *= mix( uInner.y, 1.0, smoothstep( 0.0, uInner.x, R ) );
+  if ( uSwept.x > 0.0 ) light *= mix( uSwept.y, 1.0, smoothstep( 0.0, uSwept.x, R ) );
   float arm = 0.0, lane = 0.0;
   if ( uArmM > 0.0 ) {
     float win = clamp( ( R - uArmR0 * 0.7 ) / ( uArmR0 * 0.3 ), 0.0, 1.0 ) * clamp( ( uArmR1 * 1.1 - R ) / ( uArmR1 * 0.2 ), 0.0, 1.0 );
@@ -1157,7 +1157,7 @@ export function createGalaxyPoints(THREE, params, { count = 60000, dust = 0.3, s
   const ringCol = prof.ring ? prof.ring.colour : prof.colours.outer;
   const armCol = prof.arms ? prof.arms.colour : prof.colours.outer;
   const layerU = {
-    uGain: { value: 0 }, uPow: { value: prof.power }, uI0: { value: prof.i0 }, uRd: { value: prof.rd }, uRMax: { value: prof.rMax }, uInner: { value: new THREE.Vector2(prof.inner[0], prof.inner[1]) }, uSense: { value: prof.sense },
+    uGain: { value: 0 }, uPow: { value: prof.power }, uI0: { value: prof.i0 }, uRd: { value: prof.rd }, uRMax: { value: prof.rMax }, uSwept: { value: new THREE.Vector2(prof.inner[0], prof.inner[1]) }, uSense: { value: prof.sense },
     uArmM: { value: prof.arms ? prof.arms.m : 0 }, uArmTanP: { value: prof.arms ? prof.arms.tanP : 1 }, uArmR0: { value: prof.arms ? prof.arms.r0 : 1 },
     uArmR1: { value: prof.arms ? prof.arms.r1 : 1 }, uArmPhase: { value: prof.arms ? prof.arms.phase : 0 }, uArmC: { value: prof.arms ? prof.arms.contrast : 0 },
     uArmSeg: { value: prof.arms ? prof.arms.segments : 1 }, uSegSeed: { value: prof.segSeed },

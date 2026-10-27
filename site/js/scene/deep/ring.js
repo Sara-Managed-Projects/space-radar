@@ -380,7 +380,7 @@ export function capLight(rgb, peak = SHAPE.peak) {
 // ----------------------------------------------------------------------------- tiers, shares, palette
 
 /** Samples a layer: 4 on T0, 8 at level 2, half the march's steps above. Pure. */
-export const samplesFor = (o = {}) => (Number(o.tier) >= 1 ? samplesOf(o, MAX_N) : 1);
+export const samplesFor = (o = {}) => (Number(o.tier) >= 1 ? samplesOf(o, MAX_N) : 4); // 0078 r14-neb-b: T0 four a layer, jittered (one a layer left dark holes on a phone, look run 40443020998), as the Helix's T0
 /**
  * From inside the nebula the gas round the camera would fill the view. Its light falls off as the camera goes into
  * the lobes' wall (SHAPE.insideFloor deep in the cavity) and, for every sample, as the sample nears the camera

@@ -276,8 +276,9 @@ const lightOf = (x, y) => {
   }
   check(off < 1e-6, `the white dwarf stays at the centre of the frame across a 90° arc (largest offset ${off.toExponential(1)})`);
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  // 0078 r14-neb-b: the photographs are not drawn on the sky any more, so T0 draws the model (one step a layer, at its middle)
-  check(hero.stats().share === 1 && hero.stats().star === 1 && hero.stats().samples === 1, `T0: the model draws, one step a layer (${JSON.stringify(hero.stats())})`);
+  // 0078 r14-neb-b: the photographs are not drawn on the sky any more, so T0 draws the model, four jittered steps a layer
+  // (one at its middle left dark holes on a phone: look run 40443020998)
+  check(hero.stats().share === 1 && hero.stats().star === 1 && hero.stats().samples === 4, `T0: the model draws, four steps a layer (${JSON.stringify(hero.stats())})`);
   check(uGas.uShare.value === 0 && hero.ready(), 'no gas is drawn until its light (the photograph) has landed; with nothing to fetch here it is ready');
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
   check(hero.stats().samples === 16 && hero.stats().knots === 1000, 'T2 at level 3: 16 samples for the disc (32 steps), 1 000 knots');
