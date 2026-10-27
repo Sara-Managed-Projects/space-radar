@@ -1084,7 +1084,7 @@ export const COPY = {
       "enhanced": "seine Farben sind die von der NASA veröffentlichten, zusammengesetzt aus drei Farbfiltern von New Horizons, keiner davon grün: Das sind verstärkte Farben, kräftiger als das, was ein Auge sähe, und nicht dasselbe",
       "balanced": "seine Farben stammen aus Orange-, Grün- und Blaubildern, auf seine veröffentlichte Farbe abgestimmt und abgeschwächt in Richtung dessen, was ein Auge sehen würde",
       "infrared": "seine Oberfläche ist eine Nahinfrarot-Karte, die durch den Dunst hindurch gemacht wurde, getönt und weichgezeichnet; im sichtbaren Licht verbirgt der Dunst den Boden",
-      "natural": "seine Farben sind natürliche Farben, aus dem roten und blauen Licht, das die Farbkamera von New Horizons gemessen hat, mit Grün, für das sie keinen Filter hatte, zwischen beiden geschätzt, etwa doppelt so kräftig wie die der Kamera, so wie die Bilder der NASA in natürlichen Farben ihn zeigen" // 0078 r14-pluto
+      "natural": "seine Farben sind natürliche Farben, aus dem roten und blauen Licht, das die Farbkamera von New Horizons gemessen hat, mit Grün, für das sie keinen Filter hatte, zwischen beiden geschätzt, zweieinhalbmal so kräftig wie die der Kamera, so wie die Bilder der NASA in natürlichen Farben ihn zeigen" // 0078 r14-pluto
     },
     "worldCoverage": {
       "miranda": "nur die südliche Hälfte wurde fotografiert, 1986 von Voyager 2; der Rest bleibt schlicht, nicht geraten",

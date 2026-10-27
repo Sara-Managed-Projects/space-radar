@@ -1734,8 +1734,8 @@ export const COPY = {
       balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
       // 0078 r14-pluto: begin. Pluto and Charon since 2026-10-27 (scripts/build_pluto_map.py): natural colour
-      // from the red (625 nm) and blue (475 nm) reflectances of New Horizons' colour camera, CHROMA_GAIN 2.2.
-      natural: 'its colours are natural colour, from the red and blue light New Horizons’ colour camera measured, with green, for which it had no filter, estimated between them, made about twice as strong as the camera’s own, as NASA’s natural-colour pictures show it',
+      // from the red (625 nm) and blue (475 nm) reflectances of New Horizons' colour camera, CHROMA_GAIN 2.6.
+      natural: 'its colours are natural colour, from the red and blue light New Horizons’ colour camera measured, with green, for which it had no filter, estimated between them, made two and a half times as strong as the camera’s own, as NASA’s natural-colour pictures show it',
       // 0078 r14-pluto: end
     },
     // The side nobody has photographed is left one plain colour, and the card says which side.

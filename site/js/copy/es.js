@@ -961,7 +961,7 @@ export const COPY = {
       enhanced: "sus colores son los que publicó la NASA, compuestos con tres de los filtros de color de New Horizons, ninguno de ellos verde: es color realzado, más intenso que lo que vería un ojo y no igual a ello",
       balanced: "sus colores vienen de imágenes naranja, verde y azul, equilibradas con su color publicado y atenuadas hacia lo que vería un ojo",
       infrared: "su superficie es un mapa en infrarrojo cercano hecho a través de la bruma, teñido y suavizado; en luz visible la bruma oculta el suelo",
-      natural: "sus colores son color natural, de la luz roja y azul que midió la cámara de color de New Horizons, con el verde, para el que no tenía filtro, estimado entre ambas, y reforzados unas dos veces respecto a los de la cámara, como los muestran las imágenes en color natural de la NASA" // 0078 r14-pluto
+      natural: "sus colores son color natural, de la luz roja y azul que midió la cámara de color de New Horizons, con el verde, para el que no tenía filtro, estimado entre ambas, y reforzados unas dos veces y media respecto a los de la cámara, como los muestran las imágenes en color natural de la NASA" // 0078 r14-pluto
     },
     worldCoverage: {
       miranda: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",

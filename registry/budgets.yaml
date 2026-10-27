@@ -138,7 +138,7 @@ budgets:
   # GPU: 129.3 MiB of maps at idle with today's clouds on, 182.6 MiB with Mars at 4k (tests/test_tiers.mjs
   # recomputes the worst case from registry/textures.yaml against this).
   - {id: tier1_idle_bytes, value: 1300000, unit: bytes, since: 2026-09-29, reason: "1 187 244 B worst month, measured 2026-09-29; ~10 % margin"}
-  - {id: tier1_texture_gpu_mib, value: 258, unit: MiB, since: 2026-10-20, reason: "docs/toolkit.md: 150 phone, 400 desktop; T1 between (realism study section 5); raised from 250 to 258 on branch r13-w1: Titan's 2k radar map and 2k lake mask (stage W1-f) take it to 257.5"}
+  - {id: tier1_texture_gpu_mib, value: 260, unit: MiB, since: 2026-10-27, reason: "docs/toolkit.md: 150 phone, 400 desktop; T1 between (realism study section 5); raised from 250 to 258 on branch r13-w1: Titan's 2k radar map and 2k lake mask (stage W1-f) take it to 257.5; raised to 260 on branch r14-pluto: Pluto's relief (1536 x 768, one channel, 1.5 MiB with mipmaps) takes it to 258.9"}  # 0078 r14-pluto
   # Spec 0056 requirement 4 (2026-10-08, internal #157): the same gate for the other two tiers, and
   # what makes all three TRUE. Until that day a world's map loaded once and stayed, so a visitor who
   # flew to every world held 364 MiB of maps on a phone, 471 on T1 and 535 on T2, by the arithmetic

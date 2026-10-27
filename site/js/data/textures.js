@@ -1066,7 +1066,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 94424,
+        "bytes": 94978,
         "format": "rgb",
         "credit": "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707, in natural colour from the New Horizons MVIC colour mosaic, NASA Planetary Data System), public domain"
       }
@@ -1082,10 +1082,10 @@ export const TEXTURES = [
         "tier": 0,
         "file": "textures/2k_pluto_relief.webp",
         "px": [
-          2048,
-          1024
+          1536,
+          768
         ],
-        "bytes": 102118,
+        "bytes": 65906,
         "format": "mono",
         "credit": "Pluto relief: USGS Astrogeology Science Center, New Horizons global digital elevation model (P. Schenk et al.; NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute), public domain, local relief only"
       }
@@ -1105,7 +1105,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 91008,
+        "bytes": 90834,
         "format": "rgb",
         "credit": "Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
       }

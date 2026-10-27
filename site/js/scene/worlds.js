@@ -450,7 +450,7 @@ export const SATURN_CONTRAST = 1.5;
  * pictures, the strength is CHOSEN, and `fwd` times as strong with the Sun behind, because haze
  * scatters forward (uRimFwd). The card says all three (copy/en.js drawing.worldDeparture.pluto).
  */
-export const PLUTO_LOOK = { contrast: 1.25, steep: 2, haze: { colour: 0x8fb4ff, gain: 0.16, fwd: 3 } };
+export const PLUTO_LOOK = { contrast: 1.25, steep: 2, haze: { colour: 0x8fb4ff, gain: 0.16, fwd: 2 } };
 // 0078 r14-pluto: end
 
 /**
@@ -755,7 +755,7 @@ export const WORLDS = [
     // again on 2026-10-27's natural-colour map: 196 E, 15 N, the bright ice where Sputnik Planitia meets
     // Tombaugh Regio's eastern lobe (it was 201 E, 21 N on the enhanced map). An arrival prefers the lit
     // side that shows it (faceDirOf). `relief` and `rim`: PLUTO_LOOK.
-    look: { flat: true, tint: 0xa69584, map: '2k_pluto_nh_colour.webp', mapKind: 'natural', albedo: 0.52, rough: 0.3, face: { lonDeg: 196, latDeg: 15 }, relief: { map: '2k_pluto_relief.webp', px: 2048, rangeM: 2500, steep: PLUTO_LOOK.steep, mono: true }, rim: PLUTO_LOOK.haze },
+    look: { flat: true, tint: 0xa99581, map: '2k_pluto_nh_colour.webp', mapKind: 'natural', albedo: 0.52, rough: 0.3, face: { lonDeg: 196, latDeg: 15 }, relief: { map: '2k_pluto_relief.webp', px: 1536, rangeM: 2500, steep: PLUTO_LOOK.steep, mono: true }, rim: PLUTO_LOOK.haze },
     // 0078 r14-pluto: end
   },
   {
@@ -1376,8 +1376,9 @@ void main() {
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
   float airLit = smoothstep( -0.1, 0.1, d );
   colour += uRimColour * rim * uRimGain * airLit * eclShade * ringShade;
-  // 0078 r14-pluto: begin. Haze scatters forward: seen against the Sun it lights the night side's limb too.
-  if ( uRimFwd > 0.0 ) colour += uRimColour * rim * uRimGain * uRimFwd * pow( max( -dot( viewDir, uSunDir ), 0.0 ), 4.0 ) * eclShade;
+  // 0078 r14-pluto: begin. Haze scatters forward: seen against the Sun it lights the night side's limb too,
+  // as a thin ring (its own, much narrower falloff: the haze is a few per cent of the radius deep).
+  if ( uRimFwd > 0.0 ) { float edge = 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ); colour += uRimColour * pow( edge, 10.0 ) * uRimGain * uRimFwd * pow( max( -dot( viewDir, uSunDir ), 0.0 ), 4.0 ) * eclShade; }
   // 0078 r14-pluto: end
 
   gl_FragColor = vec4( colour, 1.0 );

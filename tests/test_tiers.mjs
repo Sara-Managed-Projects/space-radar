@@ -281,8 +281,9 @@ const boot = bootFiles(TEXTURES);
 // 46 since 2026-10-14: Venus's relief under its radar ground (Magellan's altimeter), fetched when a
 // visitor asks for the ground, on a tier-1 device and up (`when: asked`).
 // 47 since 2026-10-20 (release 1.3.0 W1-f): Titan's radar map, 2k, under its haze.
+// 48 since 2026-10-27 (release 1.4.0 r14-pluto): Pluto's relief, fetched as Mercury's is (`when: asked`). 0078 r14-pluto
 const STRIP = 'textures/8k_saturn_ring_fine.png';
-check(boot.length === 47 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-six 1k and 2k files and the rings' strip (${boot.length})`);
+check(boot.length === 48 && boot.every((f) => f === STRIP || /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-seven 1k and 2k files and the rings' strip (${boot.length})`); // 0078 r14-pluto: 47 -> 48
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);

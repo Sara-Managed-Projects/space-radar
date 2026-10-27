@@ -79,7 +79,7 @@ W, H = 2048, 1024
 PIA11707_SHA256 = "e36f3daa1b3b0e911418ff830ddccf8b63e10a082c6ccc96eb7d8170991962d6"
 BLACK = 14             # PIA11707: no channel above this, of 255, is no data
 GROW_PX = 3            # the no-data mask grown by this at 2048 wide (the JPEG's dark fringe)
-CHROMA_GAIN = 2.2      # log(red / blue) and log(green / luminance) made this many times as strong
+CHROMA_GAIN = 2.6      # log(red / blue) and log(green / luminance) made this many times as strong
 CONTRAST = 1.25        # Pluto: log luminance about its mean made this many times as strong (see LOW-RES)
 SOFT_DEG = 0.6         # Pluto: the blur on the low-resolution hemisphere (see LOW-RES)
 # Pluto's ENCOUNTER CAP: New Horizons' sharp pictures and its stereo heights are of the hemisphere
@@ -95,6 +95,7 @@ GREEN_AT = 0.5         # green, between blue (0) and red (1): the camera has no 
 FEATHER_DEG = 4.0      # the photograph fades into the model across this much of its own edge
 RELIEF_BLUR_DEG = 6.0
 RELIEF_RANGE_M = 2500.0
+RELIEF_PX = (1536, 768)
 RELIEF_EDGE_DEG = 6.0  # the model rings along its own edges (low Sun, far-off pictures): faded over this
 # The flat colours' luminance in linear light (registry/worlds.yaml look.flat, unchanged here):
 # each map's mean is taken to it, so the light-to-dark order of the worlds still follows albedo.
@@ -444,11 +445,14 @@ def build_pluto_relief(orig):
     pole = (np.clip((85.0 - la) / 10.0, 0, 1) * np.clip((la + 58.0) / 13.0, 0, 1))[:, None]
     local = local * k * k * (3 - 2 * k) * encounter_cap() * pole
     clipped = float((np.abs(local[v]) > RELIEF_RANGE_M).mean())
+    rms = float(local[v].std())
+    # 1536 wide, as Mars's: what the GPU budget of a tier-1 device had room for (tier1_texture_gpu_mib).
+    local = np.asarray(Image.fromarray(local.astype(np.float32)).resize(RELIEF_PX, Image.LANCZOS))
     byte = np.clip(np.round(128 + local / RELIEF_RANGE_M * 127), 1, 255).astype(np.uint8)
     out = OUT / "2k_pluto_relief.webp"
     Image.fromarray(byte).save(out, "WEBP", quality=80, method=6)
     cov = float((wv * AREA).sum() / AREA.sum())
-    print(f"  pluto relief: model on {cov:.3f} of the sphere; local relief rms {local[v].std():.0f} m; "
+    print(f"  pluto relief: model on {cov:.3f} of the sphere; local relief rms {rms:.0f} m; "
           f"{clipped * 100:.2f} % beyond +-{RELIEF_RANGE_M:.0f} m; {os.path.getsize(out):,d} bytes -> {out.relative_to(ROOT)}")
 
 
