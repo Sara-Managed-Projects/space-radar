@@ -336,7 +336,13 @@ export const VISUAL_CLASSES = [
 "timed",
 "sert-2",
 "isis-1",
-"tracers"
+"tracers",
+"wgs",
+"aehf",
+"muos",
+"sbirs-geo",
+"ao-7",
+"swas"
 ],
 "model_kinds": [
 "satellite-iridium",
