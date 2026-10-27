@@ -381,6 +381,20 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     check(swot && swot.file === 'swot.glb' && !swot.made && !swot.generic && swot.axes === 'app', `SWOT (54754) wears swot.glb as a published model of itself, turned to the app's axes: ${JSON.stringify(swot)}`);
     for (const n of [65053, 49954, 58928]) check(sat(n, 'X').axes === 'app', `${n} flies in the app's axes`);
   }
+  // 0078 r14-m3: begin
+  // RELEASE 1.4.0, STAGE M3 (public #1096 to #1100, #1111): every catalogue number of the four military families, AMSAT-OSCAR 7 and
+  // SWAS wears its own file as itself (not generic), the built ones `made: 'dimensions'` in the app's axes, SWAS (NASA's own) not made.
+  {
+    const fam = { 'wgs.glb': [32258, 34713, 36108, 38070, 39168, 39222, 40746, 41879, 42075, 44071], 'aehf.glb': [36868, 38254, 39256, 43651, 44481, 45465],
+      'muos.glb': [38093, 39206, 40374, 40887, 41622], 'sbirs-geo.glb': [37481, 39120, 41937, 43162, 48618, 53355], 'ao-7.glb': [7530] };
+    for (const [file, list] of Object.entries(fam)) for (const n of list) {
+      const got = sat(n, 'X');
+      check(got && got.file === file && got.made === 'dimensions' && !got.generic && got.axes === 'app', `${n} wears ${file}, built from dimensions, in the app's axes: ${JSON.stringify(got)}`);
+    }
+    const swas = sat(25560, 'SWAS');
+    check(swas && swas.file === 'swas.glb' && !swas.made && !swas.generic && swas.axes === 'app', `SWAS (25560) wears NASA's own swas.glb as itself: ${JSON.stringify(swas)}`);
+  }
+  // 0078 r14-m3: end
   // THE ELEVENTH BATCH (2026-10-15, public #1075 to #1079): five agencies' own models, none `made`; the
   // ones turned to the app's axes say so, SORCE (a Sun-pointer) is not turned. And the routing-only extras.
   {

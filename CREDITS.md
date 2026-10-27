@@ -51,6 +51,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: begin -->
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
+<!-- 0078 r14-m3: begin -->
+| The shapes of WGS, AEHF, MUOS, SBIRS GEO and AMSAT-OSCAR 7, and SWAS | built by us in code from public US Air Force, Navy and AMSAT pictures and published dimensions; SWAS is NASA's own model | public domain for the pictures read off; AMSAT's looked at only; NASA's model free and without copyright; ours | [3b-16](#3b-16-release-140-stage-m3-five-military-and-amateur-craft-built-from-public-pictures-and-numbers-and-swas-from-nasas-own-model-2026-10-27) |
+<!-- 0078 r14-m3: end -->
 <!-- 0077 W3-b: begin -->
 | The shapes of EarthCARE, Biomass, Swarm and MetOp-SG A1 | built by us in code from published dimensions | CC0, CC BY-SA 3.0 IGO or CC BY-SA 4.0 where a picture was compared; ours | [3b-15](#3b-15-four-esa-and-eumetsat-earth-explorers-built-from-dimensions--earthcare-biomass-swarm-metop-sg-a1-2026-10-20) |
 <!-- 0077 W3-b: end -->
@@ -1357,6 +1360,50 @@ pictures; details simplified".
 
 <!-- 0077 W2-pbr: end -->
 <!-- 0077 W3-b: begin -->
+<!-- 0078 r14-m3: begin -->
+## 3b-16. Release 1.4.0, stage M3: five military and amateur craft built from public pictures and numbers, and SWAS from NASA's own model (2026-10-27)
+
+Release 1.4.0, model stage r14-m3 (public #1096 to #1099, #1100 and #1111). **Five of the six files are built here, in code, part by part**
+(the private tool `model-from-images`, `assemble.py`, then the public `scripts/bake-own-colours.mjs`), and **one is NASA's own**. No
+image-to-3D model was used for any of them and no picture is in any file. No logo and no lettering is on any mesh. Each card says "shape built
+from published dimensions and pictures; details simplified" (SWAS: "drawn from a published model").
+
+**For the four US military craft, ONLY PUBLIC, OFFICIALLY RELEASED pictures and numbers were used**: drawings and renders the US Air Force, Space
+Force, Navy and Strategic Command released (public domain, the Commons API's `LicenseShortName` read 2026-10-27), and dimensions that Lockheed
+Martin's Code One magazine, Air & Space Forces Magazine, Naval Technology, Harris's press release, Gunter's Space Page and Wikipedia print.
+Nothing beyond what is public is drawn: a sensor's inside, a payload's layout or a part whose size no page gives is a plain closed shape or left
+out, and each row in `registry/models.yaml` says which parts are ours. Two Lockheed Martin pictures (the SBIRS product card) were looked at only.
+Milstar (#1120) and DMSP Block 5D-3 (#1095) are NOT built: no clear photograph or detailed art of either is public.
+
+| File | Model | Pictures read off (all public domain unless said) | Used for | Size |
+|---|---|---|---|---|
+| `wgs.glb` | Wideband Global SATCOM, one design for the ten craft | US Air Force: MC-2941 and 3194626; US Strategic Command's drawing | NORAD 32258, 34713, 36108, 38070, 39168, 39222, 40746, 41879, 42075, 44071 | 65 KB |
+| `aehf.glb` | Advanced Extremely High Frequency | US Air Force: "First AEHF" render, AEHF 1; the Operational Test office's drawing | NORAD 36868, 38254, 39256, 43651, 44481, 45465 | 67 KB |
+| `muos.glb` | Mobile User Objective System | US Navy: "MUOS new" and "MUOS" | NORAD 38093, 39206, 40374, 40887, 41622 | 82 KB |
+| `sbirs-geo.glb` | SBIRS GEO | US Air Force: "SBIRS-GEO 2" and "SBIRS-GEO" | NORAD 37481, 39120, 41937, 43162, 48618, 53355 | 41 KB |
+| `ao-7.glb` | AMSAT-OSCAR 7 | AMSAT-Deutschland's photographs of the flight model, LOOKED AT ONLY (not free; nothing is copied); the dimensions are Wikipedia's and AMSAT-DL's | NORAD 7530 | 68 KB |
+| `swas.glb` | "Submillimeter Wave Astronomy Satellite (SWAS)" | NASA's own file, <https://science.nasa.gov/3d-resources/submillimeter-wave-astronomy-satellite-swas/> and <https://github.com/nasa/NASA-3D-Resources> ("Source NASA/Christopher R. Meaney") | NORAD 25560 | 92 KB |
+
+**Licence.** The five built files are this project's own work under this repository's licence, from published numbers (facts) and shapes read off
+public-domain pictures. NASA 3D Resources says "These assets are free and without copyright." (SWAS), and NASA's Images and Media Usage Guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>) say that polygon data of 3-dimensional models "generally are not subject to copyright
+in the United States" and ask that NASA be acknowledged as the source.
+
+**What is illustrative.** WGS's size (no page gives it: the Boeing 702 family's 40.9 m is used); the width and depth of AEHF's and SBIRS's cores; a
+MUOS panel's size and the distance and tilt of its reflectors; the lengths of AO-7's masts. The rows say so, part by part.
+
+**What we changed in SWAS.** Turned as one piece to the app's axes, scaled as one piece to Wikipedia's 1.63 m (the arrays then reach 4.1 m, NASA
+Goddard's paper gives 1.5 m a wing from a 1.0 m body), thinned from 12 908 triangles to 12 000, flat colours baked from NASA's materials. **A colour
+that is ours:** the cell grid lines (which NASA states mid-grey) are drawn in the violet NASA states for the cells.
+
+**Credit lines:** `3D model: built by Space Radar from public US Air Force drawings and published numbers (public domain sources)` (WGS);
+`3D model: built by Space Radar from public US Air Force renders and published numbers (public domain sources)` (AEHF);
+`3D model: built by Space Radar from public US Navy art and published numbers (public domain sources)` (MUOS);
+`3D model: built by Space Radar from public US Air Force art and published numbers (public domain sources)` (SBIRS GEO);
+`3D model: built by Space Radar from published dimensions and AMSAT pictures looked at (nothing copied)` (AMSAT-OSCAR 7);
+`3D model: NASA/Christopher R. Meaney` (SWAS).
+<!-- 0078 r14-m3: end -->
+
 ## 3b-15. Four ESA and EUMETSAT Earth explorers built from dimensions — EarthCARE, Biomass, Swarm, MetOp-SG A1 (2026-10-20)
 
 Release 1.3.0, stage W3-b (public #955, #956, #1101, #993). **No agency publishes a model of any of the four under terms that

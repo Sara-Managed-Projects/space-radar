@@ -155,6 +155,23 @@ const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostat
 // fields: the catalogue name is `cat` + the suffix, as CelesTrak calls the number (the test lists them one by one), and the card says `name` + the suffix.
 const R14M2 = (file, cat, name, rows) => Object.fromEntries(rows.map(([n, s]) => [n, { file, colour: 'satellite', name: name + s, catalogue: cat + s, made: 'dimensions', axes: 'app' }]));
 // 0078 r14-m2: end
+// 0078 r14-m3: begin
+// RELEASE 1.4.0, STAGE M3 (public #1095 to #1100, #1111, #1120): the routes of WGS, AEHF, MUOS, SBIRS GEO, AMSAT-OSCAR 7 and SWAS, BY NUMBER, with
+// the name CelesTrak gives each. The military shapes are drawn ONLY from pictures and numbers the US Air Force, Space Force and Navy and the makers
+// released (the rows `wgs`, `aehf`, `muos`, `sbirs-geo` in registry/models.yaml say so, and what is ours); each is `made: 'dimensions'`, so the card says
+// so, and none is `generic`. `axes: 'app'`: Earth deck or sensor head on +Z, wings along X, cells on +Y. SWAS is NASA's OWN model, so no `made`.
+// NOT BUILT, issues left open: Milstar (#1120) and DMSP Block 5D-3 (#1095), for want of a clear public photograph. Written as data, not as 29 object
+// literals, because this file is in the boot graph and every byte of it is a byte of the first visit.
+const M3_ROUTES = {};
+for (const [file, name, made, pre, rows] of [
+  ['wgs.glb', 'WGS (Wideband Global SATCOM)', 'dimensions', 'WGS ', [[32258, 'F1 (USA 195)'], [34713, 'F2 (USA 204)'], [36108, 'F3 (USA 211)'], [38070, 'F4 (USA 233)'], [39168, 'F5 (USA 243)'], [39222, 'F6 (USA 244)'], [40746, 'F7 (USA 263)'], [41879, 'F8 (USA 272)'], [42075, 'F9 (USA 275)'], [44071, '10 (USA 291)']]],
+  ['aehf.glb', 'AEHF (Advanced Extremely High Frequency)', 'dimensions', 'AEHF-', [[36868, '1 (USA 214)'], [38254, '2 (USA 235)'], [39256, '3 (USA 246)'], [43651, '4 (USA 288)'], [44481, '5 (USA 292)'], [45465, '6 (USA 298)']]],
+  ['muos.glb', 'MUOS (Mobile User Objective System)', 'dimensions', 'MUOS-', [[38093, '1'], [39206, '2'], [40374, '3'], [40887, '4'], [41622, '5']]],
+  ['sbirs-geo.glb', 'SBIRS GEO (Space-Based Infrared System)', 'dimensions', 'SBIRS GEO-', [[37481, '1 (USA 230)'], [39120, '2 (USA 241)'], [41937, '4 (USA 273)'], [43162, '3 (USA 282)'], [48618, '5 (USA 315)'], [53355, '6 (USA 336)']]],
+  ['ao-7.glb', 'AMSAT-OSCAR 7', 'dimensions', 'OSCAR ', [[7530, '7 (AO-7)']]],
+  ['swas.glb', 'SWAS (Submillimeter Wave Astronomy Satellite)', '', '', [[25560, 'SWAS']]],
+]) for (const [n, c] of rows) M3_ROUTES[n] = { file, colour: 'satellite', name, catalogue: pre + c, ...(made && { made }), axes: 'app' };
+// 0078 r14-m3: end
 export const REAL_MODELS = {
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
@@ -253,6 +270,7 @@ export const REAL_MODELS = {
     65053: { file: 'nisar.glb', colour: 'satellite', name: 'NISAR', catalogue: 'NISAR', made: 'dimensions', axes: 'app' },
     49954: { file: 'ixpe.glb', colour: 'telescope', name: 'IXPE', catalogue: 'IXPE', made: 'dimensions', axes: 'app' },
     58928: { file: 'pace.glb', colour: 'satellite', name: 'PACE', catalogue: 'PACE', made: 'dimensions', axes: 'app' },
+    ...M3_ROUTES, // 0078 r14-m3
     // NOAA 21 (JPSS-2), public #994. By NUMBER and only this number: NOAA 20 is a different bus and
     // wears NASA's Suomi model (43013, below); the name route's comment further down says why NOAA 21
     // was left on the generic shape until it had one of its own. noaa21.glb: the body generated from
