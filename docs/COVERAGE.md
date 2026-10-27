@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 44 | 44 |
-| real_models | 165 | 165 |
+| real_models | 225 | 225 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **945** | **111 132** |
+| **all** | **1005** | **111 192** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -49,10 +49,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 20 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
-| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 155 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
-| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 58 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
+| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 205 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
+| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 64 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
-| [LANDING_SITE](#landing_site) | 60 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
+| [LANDING_SITE](#landing_site) | 64 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 945 records: 329 measured, 291 modelled, 325 illustrative.
+Honesty over the 1005 records: 330 measured, 350 modelled, 325 illustrative.
 
 ## The classes
 
@@ -287,8 +287,8 @@ Honesty over the 945 records: 329 measured, 291 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one.
 - **Rights:** CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project).
 - **What is missing is tracked in:** public #267 (the art pass)
-- **Records (155):**
-  - real_models (106): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`
+- **Records (205):**
+  - real_models (156): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `gcom-w`, `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`, `thuraya`, `inmarsat-4`, `viasat-3`, `o3b`, `globalstar-2`, `o3b-mpower`, `wgs`, `aehf`, `muos`, `sbirs-geo`, `ao-7`, `swas`, `meteosat-msg`, `fengyun-2`, `mtg-i`, `mtg-s`, `insat-3d`, `gk2a`, `gk2b`, `meteor-m2`, `midori-2`, `resurs-dk1`, `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`, `cbers-4`, `cbers-4a`, `amazonia-1`, `kompsat-3`, `kompsat-5`, `cartosat-2`, `resourcesat-2`, `eos-06`, `kanopus-v`, `resurs-p`
   - model_kinds (36): `satellite-iridium`, `satellite-spacemobile`, `satellite-solarsail`, `satellite-sphere`, `satellite-navigation`, `satellite-cubesat`, `satellite-cubesat-6u`, `satellite-cubesat-1u`, `satellite-cubesat-2u`, `satellite-navigation-gps-iif`, `satellite-navigation-gps-iii`, `satellite-navigation-glonass-m`, `satellite-navigation-glonass-k`, `satellite-navigation-beidou-meo`, `satellite-oneweb`, `satellite-starlink-v1`, `satellite-starlink-v2`, `satellite-radar`, `satellite-radar-mesh`, `satellite-generic`, `satellite-comms`, `station-soyuz`, `station-progress`, `station-cygnus`, `station-tiangong`, `station-tiangong-module`, `station-shenzhou`, `station-tianzhou`, `station-dragon`, `station-dragon-cargo`, `station-generic`, `debris-shard`, `telescope-gaia`, `telescope-generic`, `telescope-jwst`, `satellite-space-telescope`
   - reentries (3): `reentry-tiangong-1`, `reentry-cz-5b-y2`, `reentry-skylab`
   - layers (10): `stations`, `notable`, `starlink-trains`, `just-launched`, `active`, `geo-ring`, `debris-notable`, `debris-field`, `visual`, `reentries`
@@ -305,9 +305,9 @@ Honesty over the 945 records: 329 measured, 291 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the pad, the time, the vehicle's dimensions. Illustrative: the ascent arc (the real track is not published; the launches layer says so) and the procedural rocket's details.
 - **Rights:** LL2 free to 15 requests an hour, no published licence; NASA models free and without copyright; facts cited.
 - **What is missing is tracked in:** #867 (a real launch replayed on its event clock)
-- **Records (58):**
+- **Records (64):**
   - sites (2): `saturn-v-lc-39a`, `shuttle-lc-39b`
-  - real_models (2): `saturn-v`, `shuttle-stack`
+  - real_models (8): `saturn-v`, `shuttle-stack`, `delta2-stage`, `atlas5-centaur`, `centaur-d`, `falcon9-stage2`, `h2a-stage2`, `kosmos3m-stage2`
   - model_kinds (3): `rocket-upper-stage`, `rocket-spent-stage`, `pad-generic`
   - rockets (49): `falcon-9`, `falcon-heavy`, `ariane-62`, `ariane-64`, `ariane-6`, `electron`, `neutron`, `spectrum`, `starship`, `soyuz-2`, `vulcan`, `vulcan-vc2s`, `vulcan-vc4s`, `vulcan-vc4l`, `vulcan-vc6l`, `vega-c`, `vega`, `atlas-v`, `h3`, `h3-24`, `sls`, `new-glenn`, `firefly-alpha`, `terran-r`, `pslv`, `pslv-ca`, `gslv-mk2`, `lvm3`, `long-march-2d`, `long-march-2f`, `long-march-5`, `long-march-5b`, `long-march-8a`, `long-march-10`, `long-march-12a`, `nuri`, `themis`, `hanbit-nano`, `angara-12`, `minotaur-iv`, `delta-iv-heavy`, `proton-m`, `angara-a5`, `zhuque-2e`, `gravity-1`, `kinetica-1`, `kuaizhou-1a`, `minotaur-i`, `small-commercial-orbital`
   - layers (2): `launches`, `ground-sites`
@@ -341,9 +341,9 @@ Honesty over the 945 records: 329 measured, 291 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the coordinates, each with its uncertainty in metres where stated. The lander or rover is a procedural stand-in ('the kind of thing, not this exact one'), except NASA's lunar module.
 - **Rights:** NASA, LROC and PDS works public domain; papers cited.
 - **What is missing is tracked in:** #868 (terrain height, the Apollo 15 and 17 traverses, W2-a)
-- **Records (60):**
+- **Records (64):**
   - sites (34): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `surveyor-1`, `surveyor-3`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `lunokhod-2`, `change-3`, `yutu`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
-  - real_models (23): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`, `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2`
+  - real_models (27): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`, `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2`, `luna-16`, `mars-3`, `phoenix`, `pathfinder`
   - model_kinds (3): `site-surveyor`, `rover-generic`, `lander-generic`
 
 ### EXOPLANET

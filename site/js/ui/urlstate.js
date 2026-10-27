@@ -51,7 +51,7 @@ export const HASH_KEY = 'm';
 export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
-export const BUILD = '1.3.0';
+export const BUILD = '1.4.0';
 /** The map's centre on a first visit, which an address with no keys at all means. */
 export const DEFAULT_STAGE = 'earth';
 
