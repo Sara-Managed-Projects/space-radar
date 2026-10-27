@@ -69,7 +69,10 @@ const pair = async (id, name, note, others = []) => {
   const sun = lonLatOf(id, sunward(id)); const cam = lonLatOf(id, camDir(id));
   const phase = Math.acos(Math.max(-1, Math.min(1, dot(sunward(id), camDir(id))))) / D2R;
   await shot(name + '-after', note + ' (this branch)', 2500);
-  const row = { name, note, sunLon: +sun.lon.toFixed(1), sunLat: +sun.lat.toFixed(1), camLon: +cam.lon.toFixed(1), camLat: +cam.lat.toFixed(1), phase: +phase.toFixed(1), after: state(id), clock: new Date(sr.clock.now()).toISOString(), distance: rig.state.distance };
+  // Where the world's north points on the screen, degrees clockwise from up: the PR turns its pictures by it.
+  let northDeg = null;
+  try { const m = mesh(id); const a = m.position.clone().project(sr.camera); const nv = north(id); const b = m.position.clone().add(m.position.clone().set(nv.x, nv.y, nv.z).multiplyScalar(m.scale.x)).project(sr.camera); northDeg = +(Math.atan2((b.x - a.x) * innerWidth, (b.y - a.y) * innerHeight) / D2R).toFixed(1); } catch (e) { out.problems.push('north angle: ' + e); }
+  const row = { name, note, northDeg, sunLon: +sun.lon.toFixed(1), sunLat: +sun.lat.toFixed(1), camLon: +cam.lon.toFixed(1), camLat: +cam.lat.toFixed(1), phase: +phase.toFixed(1), after: state(id), clock: new Date(sr.clock.now()).toISOString(), distance: rig.state.distance };
   const kept = [];
   for (const w of [id, ...others]) {
     const u = uni(w); const b = before[w];
@@ -103,7 +106,11 @@ try {
   out.plutoDistance = d;
   await pair('pluto', 'p1-stage', 'Pluto\'s own stage as "Go there" frames it');
   // 2. Four longitudes under the Sun, each from a little off the Sun's line (so the terminator shows).
-  for (const [lon, tag, what] of [[180, 'p2-heart', 'the heart, Sputnik Planitia (180 E) under the Sun'], [0, 'p3-charon-side', 'the side that faces Charon (0 E) under the Sun'], [90, 'p4-90e', '90 E (Cthulhu) under the Sun'], [270, 'p5-270e', '270 E under the Sun']]) {
+  // The heart as NASA's PIA19952 saw it: the Sun over 180 E, the camera over 150 E, 25 N (that picture's view).
+  await sunOver('pluto', 180);
+  look2('pluto', placeDir('pluto', 25, 150), d);
+  await pair('pluto', 'p2-heart', 'the heart at PIA19952\'s view: the camera over 150 E, 25 N, the Sun over 180 E', ['charon']);
+  for (const [lon, tag, what] of [[0, 'p3-charon-side', 'the side that faces Charon (0 E) under the Sun'], [90, 'p4-90e', '90 E (Cthulhu) under the Sun'], [270, 'p5-270e', '270 E under the Sun']]) {
     await sunOver('pluto', lon);
     const s = sunward('pluto');
     look2('pluto', unit(mix(placeDir('pluto', 12, lon), 1, unit(cross(s, north('pluto'))), 0.25)), d);

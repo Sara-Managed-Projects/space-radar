@@ -1076,7 +1076,8 @@ export const COPY = {
       "enhanced": "as cores são as que a NASA publicou, montadas a partir de três dos filtros de cor da New Horizons, nenhum deles verde: é cor realçada, mais forte que o que um olho veria e diferente dele",
       "balanced": "as cores vêm de imagens em laranja, verde e azul, equilibradas até a cor publicada e atenuadas em direção ao que um olho veria",
       "infrared": "a superfície é um mapa em infravermelho próximo feito através da névoa, colorido e suavizado; na luz visível a névoa esconde o solo",
-      "natural": "as cores são cor natural, da luz vermelha e azul que a câmera colorida da New Horizons mediu, com o verde, para o qual não tinha filtro, estimado entre elas, e reforçadas duas vezes e meia em relação às da câmera, como as imagens em cor natural da NASA o mostram" // 0078 r14-pluto
+      "natural": "as cores são cor natural, da luz vermelha e azul que a câmera colorida da New Horizons mediu, com o verde, para o qual não tinha filtro, estimado entre elas, e reforçadas duas vezes e meia em relação às da câmera, como as imagens em cor natural da NASA o mostram", // 0078 r14-pluto
+      "matched": "as cores partem da luz vermelha e azul que a câmera colorida da New Horizons mediu, com o verde, para o qual não tinha filtro, estimado entre elas, e depois são igualadas, tom a tom, à própria imagem colorida da NASA desta face (PIA19952): mais fortes que as da câmera, como a NASA a publicou" // 0078 r14-pluto
     },
     "worldCoverage": {
       "miranda": "só a metade sul foi fotografada, pela Voyager 2 em 1986; o resto fica liso, sem palpite",

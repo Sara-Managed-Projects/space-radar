@@ -735,8 +735,9 @@ export const WORLDS = [
   // covers. `mapKind` is what kind of picture it is, for the card: `tinted` (a black-and-white
   // mosaic in the flat colour), `toned` (Cassini's infrared-to-ultraviolet colours at 35 %),
   // `infrared` (Titan's ground through the haze), `redblue` (no row since 2026-10-27), `enhanced` (Pluto
-  // from 2026-10-12 to 2026-10-27: NASA's own enhanced-colour map), `natural` (Pluto and Charon since
-  // 2026-10-27: New Horizons' measured red and blue, scripts/build_pluto_map.py; 0078 r14-pluto) or `colour`. Every mapped moon is `locked`:
+  // from 2026-10-12 to 2026-10-27: NASA's own enhanced-colour map), `natural` (Charon since 2026-10-27:
+  // New Horizons' measured red and blue, scripts/build_pluto_map.py; 0078 r14-pluto), `matched` (Pluto: the
+  // same, then matched to NASA's PIA19952) or `colour`. Every mapped moon is `locked`:
   // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
   // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
   // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes,
@@ -751,11 +752,11 @@ export const WORLDS = [
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
     body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     // `face` (2026-10-07, internal #426): the heart, the face Pluto is known by, as east longitude and
-    // latitude -- the brightest 12-degree patch of the map we ship (equatorward of 60 degrees), measured
-    // again on 2026-10-27's natural-colour map: 196 E, 15 N, the bright ice where Sputnik Planitia meets
-    // Tombaugh Regio's eastern lobe (it was 201 E, 21 N on the enhanced map). An arrival prefers the lit
-    // side that shows it (faceDirOf). `relief` and `rim`: PLUTO_LOOK.
-    look: { flat: true, tint: 0xa99581, map: '2k_pluto_nh_colour.webp', mapKind: 'natural', albedo: 0.52, rough: 0.3, face: { lonDeg: 196, latDeg: 15 }, relief: { map: '2k_pluto_relief.webp', px: 1536, rangeM: 2500, steep: PLUTO_LOOK.steep, mono: true }, rim: PLUTO_LOOK.haze },
+    // latitude. It was the brightest 12-degree patch of the map (201 E, 21 N on the enhanced map; 196 E,
+    // 15 N on 2026-10-27's), the heart's eastern lobe; since 2026-10-27 it is the heart's middle, 180 E,
+    // 20 N, between Sputnik Planitia (175 E) and the eastern lobe, and `centre` asks the arrival to look
+    // straight at it whenever it is lit (scene/framing.js faceCentredOffset). `relief` and `rim`: PLUTO_LOOK.
+    look: { flat: true, tint: 0x9f9693, map: '2k_pluto_nh_colour.webp', mapKind: 'matched', albedo: 0.52, rough: 0.3, face: { lonDeg: 180, latDeg: 20, centre: true }, relief: { map: '2k_pluto_relief.webp', px: 1536, rangeM: 2500, steep: PLUTO_LOOK.steep, mono: true }, rim: PLUTO_LOOK.haze },
     // 0078 r14-pluto: end
   },
   {
@@ -2722,7 +2723,9 @@ export function createWorlds(scene, opts = {}) {
     const w = BY_ID.get(id);
     const mesh = meshes.get(id);
     if (!w || !w.look.face || !mesh) return null;
-    return faceVector(w.look.face.lonDeg, w.look.face.latDeg).applyQuaternion(mesh.quaternion);
+    const v = faceVector(w.look.face.lonDeg, w.look.face.latDeg).applyQuaternion(mesh.quaternion);
+    if (w.look.face.centre) v.centre = true; // 0078 r14-pluto: met centred on it (scene/framing.js faceCentredOffset)
+    return v;
   }
 
   /** Bend a moon to its measured shape now. A promise of true once it is; null if it has none waiting. */

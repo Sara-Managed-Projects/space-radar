@@ -1736,6 +1736,8 @@ export const COPY = {
       // 0078 r14-pluto: begin. Pluto and Charon since 2026-10-27 (scripts/build_pluto_map.py): natural colour
       // from the red (625 nm) and blue (475 nm) reflectances of New Horizons' colour camera, CHROMA_GAIN 2.6.
       natural: 'its colours are natural colour, from the red and blue light New Horizons’ colour camera measured, with green, for which it had no filter, estimated between them, made two and a half times as strong as the camera’s own, as NASA’s natural-colour pictures show it',
+      // Pluto since 2026-10-27: the same, then matched to PIA19952 (scripts/build_pluto_map.py TUNE_ROWS).
+      matched: 'its colours start from the red and blue light New Horizons’ colour camera measured, with green, for which it had no filter, estimated between them, and are then matched, shade by shade, to NASA’s own colour picture of this face (PIA19952): stronger than the camera’s, as NASA published it',
       // 0078 r14-pluto: end
     },
     // The side nobody has photographed is left one plain colour, and the card says which side.

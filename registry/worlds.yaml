@@ -184,7 +184,7 @@ worlds:
     # `fixed` because astronomy-engine's RotationAxis has Pluto's IAU pole and spin, which
     # propagate/frames.js already turns a body-fixed position by. The plain ball has nothing to turn.
     frames: [inertial, fixed]
-    look: {flat: "#a99581", textures: pluto}  # 0078 r14-pluto: the natural-colour map's mean (was #b4926f)
+    look: {flat: "#9f9693", textures: pluto}  # 0078 r14-pluto: the natural-colour map's mean (was #b4926f)
     facts:
       radius: {source: "https://en.wikipedia.org/wiki/Pluto", read: 2026-09-22, says: "mean radius 1,188.3 km (infobox)"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "geometric albedo 0.52"}

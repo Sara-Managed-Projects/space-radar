@@ -1088,7 +1088,8 @@ export const COPY = {
       "enhanced": "ses couleurs sont celles publiées par la NASA, composées à partir de trois filtres couleur de New Horizons, dont aucun n’est vert : c’est une couleur rehaussée, plus forte que ce qu’un œil verrait, et pas la même",
       "balanced": "ses couleurs viennent d’images orange, vertes et bleues, équilibrées sur sa couleur publiée et adoucies vers ce que verrait un œil",
       "infrared": "sa surface est une carte en proche infrarouge faite à travers la brume, teintée et adoucie ; en lumière visible, la brume cache le sol",
-      "natural": "ses couleurs sont des couleurs naturelles, tirées de la lumière rouge et bleue mesurée par la caméra couleur de New Horizons, le vert, pour lequel elle n’avait pas de filtre, étant estimé entre les deux, et rendues deux fois et demie plus fortes que celles de la caméra, comme les montrent les images en couleurs naturelles de la NASA" // 0078 r14-pluto
+      "natural": "ses couleurs sont des couleurs naturelles, tirées de la lumière rouge et bleue mesurée par la caméra couleur de New Horizons, le vert, pour lequel elle n’avait pas de filtre, étant estimé entre les deux, et rendues deux fois et demie plus fortes que celles de la caméra, comme les montrent les images en couleurs naturelles de la NASA", // 0078 r14-pluto
+      "matched": "ses couleurs partent de la lumière rouge et bleue mesurée par la caméra couleur de New Horizons, le vert, pour lequel elle n’avait pas de filtre, étant estimé entre les deux, puis sont accordées, nuance par nuance, à l’image en couleurs de cette face publiée par la NASA (PIA19952) : plus fortes que celles de la caméra, comme la NASA les a publiées" // 0078 r14-pluto
     },
     "worldCoverage": {
       "miranda": "seule la moitié sud a été photographiée, par Voyager 2 en 1986 ; le reste est laissé uni, pas deviné",

@@ -1066,7 +1066,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 94978,
+        "bytes": 92826,
         "format": "rgb",
         "credit": "Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707, in natural colour from the New Horizons MVIC colour mosaic, NASA Planetary Data System), public domain"
       }

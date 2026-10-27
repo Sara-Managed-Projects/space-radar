@@ -130,6 +130,29 @@ FIT_B = (  # correlation 0.934 with the PDS band
      0.3347, 0.3394, 0.3447, 0.3503, 0.3561, 0.3617, 0.3672, 0.3726, 0.3779, 0.3831, 0.3883, 0.394,
      0.4029, 0.4174, 0.5076],
 )
+# MATCHED TO PIA19952 (2026-10-27, the lead: "next to PIA19952 at the same view, your north reads grey-khaki
+# and a little muddy"). NASA's colour picture of the encounter hemisphere, PIA19952, compared with this
+# map rendered at its view (sub-observer 150 E, 25 N, turned -30 degrees; tools in the PR), the disc's
+# inner 85 % of each: both split into ten bins by brightness (each picture's own quantiles, so no
+# registration is needed and lighting does not enter), and in each bin the mean and spread of
+# log(red / green) and log(blue / green) measured. A texel takes its bin's PIA19952 mean plus its own
+# departure from this map's mean, scaled by the ratio of spreads (held to 0.5 .. 2), interpolated
+# between bins by its brightness; its luminance is kept. The bright plains come out paler and less
+# khaki, Cthulhu a deep red-brown, as PIA19952 shows them. TUNE_L_EDGES are the luminances (linear,
+# after the gain) of the bins' edges on the map the table was measured on.
+TUNE_L_EDGES = [0.02865, 0.05593, 0.12629, 0.2189, 0.31547, 0.37201, 0.41143, 0.45783, 0.50629, 0.53756, 0.81671]
+TUNE_ROWS = [  # this map: log(R/G) mean, sd, log(B/G) mean, sd; then PIA19952's four
+    [0.6421, 0.0548, -0.9199, 0.1023, 1.7356, 0.4307, -0.3799, 0.1570],
+    [0.5393, 0.0854, -0.7234, 0.1480, 0.8553, 0.6433, -0.2051, 0.1692],
+    [0.3701, 0.0403, -0.4436, 0.0570, 0.2486, 0.3077, -0.0923, 0.0838],
+    [0.3003, 0.0309, -0.3524, 0.0408, 0.1494, 0.1888, -0.0808, 0.0768],
+    [0.2608, 0.0301, -0.3023, 0.0386, 0.1059, 0.1286, -0.0832, 0.0763],
+    [0.2487, 0.0367, -0.2897, 0.0455, 0.1040, 0.0914, -0.1016, 0.0756],
+    [0.2655, 0.0567, -0.3104, 0.0704, 0.1015, 0.0726, -0.1244, 0.0885],
+    [0.2711, 0.0483, -0.3094, 0.0598, 0.0526, 0.0720, -0.0741, 0.0990],
+    [0.2910, 0.0488, -0.3269, 0.0594, 0.0150, 0.0658, -0.0605, 0.1103],
+    [0.2653, 0.0411, -0.2996, 0.0474, -0.0095, 0.0778, -0.0782, 0.1114],
+]
 QUALITY_MAX = {"pluto": 80, "charon": 82}
 BYTES_MAX = {"pluto": 100_000, "charon": 90_000}
 
@@ -289,6 +312,23 @@ def finish(name, lin, target_lum, quality, bytes_max, out_path):
     return size
 
 
+def match_pia19952(lin):
+    """TUNE_ROWS applied: each texel's colour ratios moved to PIA19952's at its brightness, luminance kept."""
+    L = np.maximum(luminance(lin), 1e-5)
+    q = np.interp(L, TUNE_L_EDGES, np.linspace(0.0, 1.0, len(TUNE_L_EDGES)))
+    centres = (np.arange(len(TUNE_ROWS)) + 0.5) / len(TUNE_ROWS)
+    rows = np.asarray(TUNE_ROWS)
+    at = lambda k: np.interp(q, centres, rows[:, k])
+    g = np.maximum(lin[..., 1], 1e-5)
+    lrg = np.log(np.maximum(lin[..., 0], 1e-5) / g)
+    lbg = np.log(np.maximum(lin[..., 2], 1e-5) / g)
+    lrg = at(4) + (lrg - at(0)) * np.clip(at(5) / at(1), 0.5, 2.0)
+    lbg = at(6) + (lbg - at(2)) * np.clip(at(7) / at(3), 0.5, 2.0)
+    rg, bg = np.exp(lrg), np.exp(lbg)
+    G = L / (0.2126 * rg + 0.7152 + 0.0722 * bg)
+    return np.stack([G * rg, G, G * bg], axis=2).astype(np.float32)
+
+
 def fit_curves(orig):
     """`--fit`: the two curves from the PDS colour mosaic's RED and BLUE reflectances."""
     lines, samples = 5744, 11487
@@ -384,6 +424,9 @@ def build_pluto(orig):
     covered = float((data * AREA).sum() / AREA.sum())
     out, info = model_south(nat, data, seed=1407, contrast_ref_band=(-35, 10))
     print(f"  pluto: data on {covered:.3f} of the sphere; modelled south: {info}")
+    # The table was measured on the map after its gain: take it there first (the gain below is then 1).
+    out = out * (FLAT_LUMINANCE["pluto"] / float((luminance(out) * AREA).sum() / AREA.sum()))
+    out = match_pia19952(out)
     return finish("pluto", out, FLAT_LUMINANCE["pluto"], QUALITY_MAX["pluto"], BYTES_MAX["pluto"], OUT / "2k_pluto_nh_colour.webp")
 
 
