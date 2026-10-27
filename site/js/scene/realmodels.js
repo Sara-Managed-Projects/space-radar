@@ -150,6 +150,11 @@ function gpsBlock(record) {
 
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
+// 0078 r14-m2: begin
+// Six communications craft by catalogue number (public #1121 to #1123, #1154 to #1156), written compactly because `realmodels.js` is read at boot and every route is the same six
+// fields: the catalogue name is `cat` + the suffix, as CelesTrak calls the number (the test lists them one by one), and the card says `name` + the suffix.
+const R14M2 = (file, cat, name, rows) => Object.fromEntries(rows.map(([n, s]) => [n, { file, colour: 'satellite', name: name + s, catalogue: cat + s, made: 'dimensions', axes: 'app' }]));
+// 0078 r14-m2: end
 export const REAL_MODELS = {
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
@@ -165,77 +170,18 @@ export const REAL_MODELS = {
    */
   norad: {
     // 0078 r14-m2: begin
-    // thuraya (public #1123): 2 craft by number, from the issue's own table of the live saved data of 2026-10-12 (names as CelesTrak calls them)
-    27825: { file: 'thuraya.glb', colour: 'satellite', name: 'Thuraya-2', catalogue: 'THURAYA-2', made: 'dimensions', axes: 'app' },
-    32404: { file: 'thuraya.glb', colour: 'satellite', name: 'Thuraya-3', catalogue: 'THURAYA-3', made: 'dimensions', axes: 'app' },
-    // inmarsat-4 (public #1122): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12 (names as CelesTrak calls them)
-    28628: { file: 'inmarsat-4.glb', colour: 'satellite', name: 'Inmarsat-4 F1', catalogue: 'INMARSAT 4-F1', made: 'dimensions', axes: 'app' },
-    28899: { file: 'inmarsat-4.glb', colour: 'satellite', name: 'Inmarsat-4 F2', catalogue: 'INMARSAT 4-F2', made: 'dimensions', axes: 'app' },
-    33278: { file: 'inmarsat-4.glb', colour: 'satellite', name: 'Inmarsat-4 F3', catalogue: 'INMARSAT 4-F3', made: 'dimensions', axes: 'app' },
-    // viasat-3 (public #1121): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12 (names as CelesTrak calls them)
-    56370: { file: 'viasat-3.glb', colour: 'satellite', name: 'ViaSat-3 F1', catalogue: 'VIASAT-3 F1', made: 'dimensions', axes: 'app' },
-    66454: { file: 'viasat-3.glb', colour: 'satellite', name: 'ViaSat-3 F2', catalogue: 'VIASAT-3 F2', made: 'dimensions', axes: 'app' },
-    68893: { file: 'viasat-3.glb', colour: 'satellite', name: 'ViaSat-3 F3', catalogue: 'VIASAT-3 F3', made: 'dimensions', axes: 'app' },
-    // o3b (public #1155): 20 craft by number, from the issue's own table of the live saved data of 2026-10-12 (names as CelesTrak calls them)
-    39188: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM5', catalogue: 'O3B FM5', made: 'dimensions', axes: 'app' },
-    39189: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM4', catalogue: 'O3B FM4', made: 'dimensions', axes: 'app' },
-    39190: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM2', catalogue: 'O3B FM2', made: 'dimensions', axes: 'app' },
-    39191: { file: 'o3b.glb', colour: 'satellite', name: 'O3b PFM', catalogue: 'O3B PFM', made: 'dimensions', axes: 'app' },
-    40079: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM3', catalogue: 'O3B FM3', made: 'dimensions', axes: 'app' },
-    40080: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM7', catalogue: 'O3B FM7', made: 'dimensions', axes: 'app' },
-    40081: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM6', catalogue: 'O3B FM6', made: 'dimensions', axes: 'app' },
-    40082: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM8', catalogue: 'O3B FM8', made: 'dimensions', axes: 'app' },
-    40348: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM10', catalogue: 'O3B FM10', made: 'dimensions', axes: 'app' },
-    40349: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM11', catalogue: 'O3B FM11', made: 'dimensions', axes: 'app' },
-    40350: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM12', catalogue: 'O3B FM12', made: 'dimensions', axes: 'app' },
-    40351: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM9', catalogue: 'O3B FM9', made: 'dimensions', axes: 'app' },
-    43231: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM15', catalogue: 'O3B FM15', made: 'dimensions', axes: 'app' },
-    43232: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM16', catalogue: 'O3B FM16', made: 'dimensions', axes: 'app' },
-    43233: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM14', catalogue: 'O3B FM14', made: 'dimensions', axes: 'app' },
-    43234: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM13', catalogue: 'O3B FM13', made: 'dimensions', axes: 'app' },
-    44112: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM20', catalogue: 'O3B FM20', made: 'dimensions', axes: 'app' },
-    44113: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM19', catalogue: 'O3B FM19', made: 'dimensions', axes: 'app' },
-    44114: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM17', catalogue: 'O3B FM17', made: 'dimensions', axes: 'app' },
-    44115: { file: 'o3b.glb', colour: 'satellite', name: 'O3b FM18', catalogue: 'O3B FM18', made: 'dimensions', axes: 'app' },
-    // globalstar-2 (public #1154): 25 craft by number, from the issue's own table of the live saved data of 2026-10-12 (names as CelesTrak calls them)
-    37188: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M079', catalogue: 'GLOBALSTAR M079', made: 'dimensions', axes: 'app' },
-    37189: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M074', catalogue: 'GLOBALSTAR M074', made: 'dimensions', axes: 'app' },
-    37190: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M076', catalogue: 'GLOBALSTAR M076', made: 'dimensions', axes: 'app' },
-    37191: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M077', catalogue: 'GLOBALSTAR M077', made: 'dimensions', axes: 'app' },
-    37192: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M075', catalogue: 'GLOBALSTAR M075', made: 'dimensions', axes: 'app' },
-    37193: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M073', catalogue: 'GLOBALSTAR M073', made: 'dimensions', axes: 'app' },
-    37739: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M083', catalogue: 'GLOBALSTAR M083', made: 'dimensions', axes: 'app' },
-    37740: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M088', catalogue: 'GLOBALSTAR M088', made: 'dimensions', axes: 'app' },
-    37741: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M091', catalogue: 'GLOBALSTAR M091', made: 'dimensions', axes: 'app' },
-    37742: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M085', catalogue: 'GLOBALSTAR M085', made: 'dimensions', axes: 'app' },
-    37743: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M081', catalogue: 'GLOBALSTAR M081', made: 'dimensions', axes: 'app' },
-    37744: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M089', catalogue: 'GLOBALSTAR M089', made: 'dimensions', axes: 'app' },
-    38040: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M084', catalogue: 'GLOBALSTAR M084', made: 'dimensions', axes: 'app' },
-    38041: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M080', catalogue: 'GLOBALSTAR M080', made: 'dimensions', axes: 'app' },
-    38042: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M082', catalogue: 'GLOBALSTAR M082', made: 'dimensions', axes: 'app' },
-    38043: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M092', catalogue: 'GLOBALSTAR M092', made: 'dimensions', axes: 'app' },
-    38044: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M090', catalogue: 'GLOBALSTAR M090', made: 'dimensions', axes: 'app' },
-    38045: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M086', catalogue: 'GLOBALSTAR M086', made: 'dimensions', axes: 'app' },
-    39072: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M097', catalogue: 'GLOBALSTAR M097', made: 'dimensions', axes: 'app' },
-    39073: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M093', catalogue: 'GLOBALSTAR M093', made: 'dimensions', axes: 'app' },
-    39074: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M094', catalogue: 'GLOBALSTAR M094', made: 'dimensions', axes: 'app' },
-    39075: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M096', catalogue: 'GLOBALSTAR M096', made: 'dimensions', axes: 'app' },
-    39076: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M078', catalogue: 'GLOBALSTAR M078', made: 'dimensions', axes: 'app' },
-    39077: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M095', catalogue: 'GLOBALSTAR M095', made: 'dimensions', axes: 'app' },
-    52888: { file: 'globalstar-2.glb', colour: 'satellite', name: 'Globalstar M087', catalogue: 'GLOBALSTAR M087', made: 'dimensions', axes: 'app' },
-    // o3b-mpower (public #1156): 12 craft by number, from the issue's own table of the live saved data of 2026-10-12 (names as CelesTrak calls them)
-    54755: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F1', catalogue: 'O3B MPOWER F1', made: 'dimensions', axes: 'app' },
-    54756: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F2', catalogue: 'O3B MPOWER F2', made: 'dimensions', axes: 'app' },
-    56367: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F4', catalogue: 'O3B MPOWER F4', made: 'dimensions', axes: 'app' },
-    56368: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F3', catalogue: 'O3B MPOWER F3', made: 'dimensions', axes: 'app' },
-    58346: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F5', catalogue: 'O3B MPOWER F5', made: 'dimensions', axes: 'app' },
-    58347: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F6', catalogue: 'O3B MPOWER F6', made: 'dimensions', axes: 'app' },
-    62362: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F7', catalogue: 'O3B MPOWER F7', made: 'dimensions', axes: 'app' },
-    62363: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F8', catalogue: 'O3B MPOWER F8', made: 'dimensions', axes: 'app' },
-    64866: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F9', catalogue: 'O3B MPOWER F9', made: 'dimensions', axes: 'app' },
-    64867: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F10', catalogue: 'O3B MPOWER F10', made: 'dimensions', axes: 'app' },
-    100686: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F11', catalogue: 'O3B MPOWER F11', made: 'dimensions', axes: 'app' },
-    100688: { file: 'o3b-mpower.glb', colour: 'satellite', name: 'O3b mPOWER F13', catalogue: 'O3B MPOWER F13', made: 'dimensions', axes: 'app' },
+    // thuraya (public #1123): 2 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('thuraya.glb', 'THURAYA', 'Thuraya', [[27825, '-2'], [32404, '-3']]),
+    // inmarsat-4 (public #1122): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('inmarsat-4.glb', 'INMARSAT 4-F', 'Inmarsat-4 F', [[28628, '1'], [28899, '2'], [33278, '3']]),
+    // viasat-3 (public #1121): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('viasat-3.glb', 'VIASAT-3 F', 'ViaSat-3 F', [[56370, '1'], [66454, '2'], [68893, '3']]),
+    // o3b (public #1155): 20 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('o3b.glb', 'O3B ', 'O3b ', [[39188, 'FM5'], [39189, 'FM4'], [39190, 'FM2'], [39191, 'PFM'], [40079, 'FM3'], [40080, 'FM7'], [40081, 'FM6'], [40082, 'FM8'], [40348, 'FM10'], [40349, 'FM11'], [40350, 'FM12'], [40351, 'FM9'], [43231, 'FM15'], [43232, 'FM16'], [43233, 'FM14'], [43234, 'FM13'], [44112, 'FM20'], [44113, 'FM19'], [44114, 'FM17'], [44115, 'FM18']]),
+    // globalstar-2 (public #1154): 25 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('globalstar-2.glb', 'GLOBALSTAR ', 'Globalstar ', [[37188, 'M079'], [37189, 'M074'], [37190, 'M076'], [37191, 'M077'], [37192, 'M075'], [37193, 'M073'], [37739, 'M083'], [37740, 'M088'], [37741, 'M091'], [37742, 'M085'], [37743, 'M081'], [37744, 'M089'], [38040, 'M084'], [38041, 'M080'], [38042, 'M082'], [38043, 'M092'], [38044, 'M090'], [38045, 'M086'], [39072, 'M097'], [39073, 'M093'], [39074, 'M094'], [39075, 'M096'], [39076, 'M078'], [39077, 'M095'], [52888, 'M087']]),
+    // o3b-mpower (public #1156): 12 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('o3b-mpower.glb', 'O3B MPOWER F', 'O3b mPOWER F', [[54755, '1'], [54756, '2'], [56367, '4'], [56368, '3'], [58346, '5'], [58347, '6'], [62362, '7'], [62363, '8'], [64866, '9'], [64867, '10'], [100686, '11'], [100688, '13']]),
     // 0078 r14-m2: end
     25544: { file: 'iss.glb', colour: 'station', name: 'International Space Station', catalogue: 'ISS (ZARYA)' },
     // NAUKA AND POISK ARE PARTS OF THE ISS, catalogued separately because they were launched
