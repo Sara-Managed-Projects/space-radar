@@ -11,6 +11,12 @@
 //   export function forgetIndex()     — drop the cached snapshot manifest, so a retry re-reads it
 //   export function harvestStatus()   — what the manifest last said: generated_at and the counts
 //
+// THE READ ORDER (internal spec 0078, stage r14-data; data/readorder.js says it once, tests/test_read_order.mjs holds it):
+//   1. OUR SNAPSHOT -- data/v1/<id>.json, filled hourly by the Lambda -- fresh or stale, drawn at once;
+//   2. the ORIGINAL API only when there is no snapshot, or behind a snapshot that is past its own valid_until;
+//   3. the BROWSER'S OWN COPY (below) only when both gave nothing, and never over a newer snapshot: a browser
+//      that holds a copy older than the manifest's row reads the snapshot even inside the source's cadence.
+//
 // Rules this file exists to enforce:
 //
 //  * CelesTrak publishes GP data once every two hours and allows ONE download per file per
@@ -43,6 +49,8 @@
 // an HTTP cache that honoured a scrubbed clock would hammer CelesTrak. Nothing in this file is
 // drawn. Ages shown in the status panel are wall-clock ages, which is what they mean.
 
+import { decide, lastResort, newerThanHeld, snapshotNewerThanHeld } from './readorder.js';
+
 const PREFIX = 'sr.v1.';
 // THE LARGEST PAYLOAD KEPT IN localStorage, in characters. Chrome holds 5 241 856 characters in
 // localStorage for the WHOLE origin (measured 2026-09-18), and two feeds are bigger than that on
@@ -73,6 +81,9 @@ const SNAPSHOT_SCHEMA = 1;
 // It is the shortest cadence any source has (dsn-now, 5 min), so a due source never reads a
 // manifest older than its own cadence; the HTTP cache (max-age=60) does the rest.
 const INDEX_CADENCE_MS = 5 * MINUTE;
+// A copy held inside its cadence is re-read when the manifest names a newer snapshot (see load()), but not
+// more often than this per source, so a snapshot file that cannot be read is not asked for on every call.
+const RECHECK_MS = MINUTE;
 // WHEN THERE IS NOTHING TO SHOW, TRY AGAIN SOON. A source's cadence is how long a GOOD copy is
 // allowed to stand -- three hours for most CelesTrak groups, six for `active`. Applying it to a
 // source that has NO data was the wrong reading of it: a visitor who arrives while CelesTrak's
@@ -905,6 +916,25 @@ export async function load(id, opts = {}) {
     if (row && SNAPSHOT_USABLE.has(row.status) && Number.isFinite(at) && at > (entry.lastAttemptAt || 0)) due = true;
   }
 
+  // OUR SNAPSHOT COMES BEFORE THE BROWSER'S COPY (data/readorder.js). A copy inside its cadence would be served
+  // without looking at the bucket, so an hourly harvest would reach a returning visitor only after the cadence
+  // (three to six hours for CelesTrak) had run out. So: when the manifest names a snapshot newer than the copy
+  // held, read it now (one same-origin file; no publisher is asked), and when the manifest has not been read yet
+  // this page, read it and do the same the moment it lands. A failed read does not repeat inside a minute.
+  if (!due && entry.data != null && sinceAttempt >= RECHECK_MS) {
+    const rid = src.registryId || src.id;
+    const newer = () => {
+      const v = indexView();
+      const held = readEntry(id);
+      return v.ok && snapshotNewerThanHeld(v.data.snapshots[rid], held ? held.fetchedAt : null, SNAPSHOT_USABLE);
+    };
+    if (newer()) {
+      due = true;
+    } else if (!indexState.data) {
+      ensureIndex().then(() => { if (newer()) revalidate(id).catch(() => {}); }).catch(() => {});
+    }
+  }
+
   // Cache is inside the cadence window: serve it and do not touch the network.
   if (!due) {
     return resultFrom(src, readEntry(id) || entry, now, false);
@@ -1124,26 +1154,36 @@ async function doFetch(id) {
 
   // 1. Our snapshot, when the manifest says there is one to read.
   const snap = await readSnapshot(src);
+  const canAskOriginal = src.browser === true;
+  // `cutOf`: a cut's live URL is the whole feed, so a stale cut is not refreshed behind itself (header).
+  const plan = decide({ snapshot: snap.ok ? { validUntil: snap.validUntil } : null, now: attemptAt,
+    canAskOriginal, canAskBehind: canAskOriginal && !src.cutOf });
   let next;
   let behind = false;
-  if (snap.ok) {
-    next = {
-      data: snap.body,
-      // The harvester's read time, not ours: the age the panel shows is the age of the data.
-      fetchedAt: snap.fetchedAt,
-      lastAttemptAt: attemptAt,
-      lastError: null,
-      lastStatus: snap.httpStatus,
-      via: 'snapshot',
-      validUntil: snap.validUntil,
-      readAt: attemptAt,
-      reason: null,
-      snapshot: null,
-    };
+  if (plan.use === 'snapshot') {
+    // Never an older copy over a newer one: a browser that read the publisher itself after the harvester did
+    // keeps what it holds (and the publisher is still asked behind a snapshot that is past its valid_until).
+    const keepHeld = prev.data != null && !newerThanHeld(snap.fetchedAt, prev.fetchedAt);
+    next = keepHeld
+      ? { ...prev, lastAttemptAt: attemptAt, lastError: null, lastStatus: snap.httpStatus, reason: null, snapshot: null }
+      : {
+        data: snap.body,
+        // The harvester's read time, not ours: the age the panel shows is the age of the data.
+        fetchedAt: snap.fetchedAt,
+        lastAttemptAt: attemptAt,
+        lastError: null,
+        lastStatus: snap.httpStatus,
+        via: 'snapshot',
+        validUntil: snap.validUntil,
+        readAt: attemptAt,
+        reason: null,
+        snapshot: null,
+      };
     // Past its own valid_until: draw it now, and ask upstream behind it (see the header).
-    behind = src.browser === true && !src.cutOf && snap.validUntil != null && attemptAt > snap.validUntil;
-  } else if (src.browser === true) {
-    // 2. The direct fetch this file has always made. The safety net, unchanged.
+    behind = plan.askBehind;
+  } else if (plan.use === 'original') {
+    // 2. The direct fetch this file has always made. The safety net, unchanged. When it fails too, the copy
+    //    the browser holds stays (fetchLive keeps `prev.data`): step 3, the last resort.
     next = await fetchLive(src, prev, attemptAt);
     next.snapshot = snap.why;
   } else {
@@ -1248,8 +1288,10 @@ async function fetchLive(src, prev, attemptAt) {
   }
 
   const got = payload != null;
+  // Step 3 of data/readorder.js: when the publisher gave nothing either, what the browser holds stays.
+  const stands = lastResort({ got, hasCache: prev.data != null });
   return {
-    data: got ? payload : prev.data,
+    data: stands === 'none' ? null : got ? payload : prev.data,
     fetchedAt: got ? attemptAt : prev.fetchedAt,
     lastAttemptAt: attemptAt,
     lastError: got ? null : error,

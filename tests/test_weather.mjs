@@ -355,7 +355,12 @@ function decodePng(buf) {
   check(/seasonal and illustrative, not today/.test(weather.line('mars', slot)) && /optical depth near 0\.\d/.test(weather.line('mars', slot)), `Mars's line gives the season's dust and says it is not today's (${weather.line('mars', slot)})`);
   check(weather.line('moon', slot) === null && weather.line('io', slot) === null, 'a world with no weather has no line');
   await weather.lookNow();
-  check(asked.length === 2 && asked[0].includes('GetCapabilities') && asked[1].includes('TIME=2026-10-03T17:45:00.000Z'), 'two requests: the time, then that slot\'s map');
+  // 0078 r14-data: begin
+  // The read order (data/readorder.js): our saved copy is asked for first; with none, NOAA is asked as before.
+  const noaa = () => asked.filter((u) => !u.includes('data/v1/'));
+  check(asked[0].endsWith('data/v1/noaa-lightning.json'), 'our saved copy is asked for before NOAA');
+  check(noaa().length === 2 && noaa()[0].includes('GetCapabilities') && noaa()[1].includes('TIME=2026-10-03T17:45:00.000Z'), 'with no saved copy, NOAA: two requests, the time, then that slot\'s map');
+  // 0078 r14-data: end
   weather.tick(slot + 60000, { on: true });
   const live = weather.line('earth', slot + 60000);
   check(/about 1.450 strikes a minute/.test(live) && /17:45 UTC/.test(live), `the live line (${live})`);
@@ -365,7 +370,7 @@ function decodePng(buf) {
   weather.tick(slot + 60000, { on: false });
   check(weather.line('earth', slot + 60000) === COPY.weather.lightning.switchedOff, 'the box unticked');
   await weather.lookNow();
-  check(asked.length === 3, 'a second look with the same slot fetches the time and not the map again');
+  check(noaa().length === 3, 'a second look with the same slot fetches the time and not the map again');
   // Reduced motion, asked for mid-visit: the flashes stop for good and the line says why.
   weather.tick(slot + 60000, { on: true, reducedMotion: true });
   check(weather.line('earth', slot + 60000) === COPY.weather.lightning.reducedMotion && weather.state().lightning.visible === false, 'reduced motion: no flashes');

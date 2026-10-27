@@ -72,6 +72,8 @@ EXPECTED_COUNTS = {
     "ll2_stations": 7,    # vehicles docked now, over two stations
     "ll2_previous": 6,
     "sdo_aia": 1,          # one picture: the Sun of the day (internal spec 0076 W1-d)
+    "gibs_clouds": 1,      # 0078 r14-data: one satellite's picture in the fixture (a run saves up to three)
+    "nowcoast_lightning": 1,  # 0078 r14-data: the newest 15-minute picture
 }
 
 CELESTRAK_TEXT = "GP data has not updated since your last successful download"
@@ -272,9 +274,9 @@ class Clock(unittest.TestCase):
 
     def test_cache_control_values_from_the_contract(self):
         self.assertEqual(snap.INDEX_CACHE_CONTROL, "public, max-age=60, s-maxage=300, stale-while-revalidate=600")
-        self.assertEqual(snap.snapshot_cache_control(NOW + timedelta(hours=3), NOW), "public, max-age=10800")
-        self.assertEqual(snap.snapshot_cache_control(NOW + timedelta(seconds=5), NOW), "public, max-age=60")
-        self.assertEqual(snap.snapshot_cache_control(NOW - timedelta(hours=1), NOW), "public, max-age=60")
+        self.assertEqual(snap.snapshot_cache_control(NOW + timedelta(hours=3), NOW), "public, max-age=10800, s-maxage=300")
+        self.assertEqual(snap.snapshot_cache_control(NOW + timedelta(seconds=5), NOW), "public, max-age=60, s-maxage=300")
+        self.assertEqual(snap.snapshot_cache_control(NOW - timedelta(hours=1), NOW), "public, max-age=60, s-maxage=300")
 
     def test_iso_shape(self):
         self.assertEqual(snap.iso(NOW), "2026-09-08T00:00:00Z")
@@ -438,7 +440,7 @@ class Quirks(unittest.TestCase):
         self.first_run()
         by_key = {k: (ct, cc) for k, ct, cc, _ in self.store.writes}
         self.assertEqual(by_key["index.json"], ("application/json", snap.INDEX_CACHE_CONTROL))
-        self.assertEqual(by_key["test-source.json"], ("application/json", "public, max-age=10800"))
+        self.assertEqual(by_key["test-source.json"], ("application/json", "public, max-age=10800, s-maxage=300"))
 
     def test_list_row_makes_one_request_per_id_and_maps_them(self):
         good = fixture("horizons")[0]["-170"]
@@ -515,6 +517,10 @@ class Quirks(unittest.TestCase):
 INDEX_KEYS = {"schema", "generated_at", "run", "snapshots"}
 RUN_KEYS = {"started_at", "duration_ms", "runner"}
 ENTRY_KEYS = {"fetched_at", "valid_until", "items", "bytes", "duration_ms", "status", "last_error", "etag"}
+# Present only on a published row, and only when they apply (harvest/publish.py).
+OPTIONAL_ENTRY_KEYS = {"kept_after", "columns"}
+# The files cut from a bigger one, listed in the manifest beside the registry's rows (harvest/publish.py derived()).
+DERIVED_IDS = {"celestrak-notable", "celestrak-geo", "celestrak-starlink-recent"}
 
 
 def assert_valid_index(tc: unittest.TestCase, doc: dict, source_ids: set[str]) -> None:
@@ -524,9 +530,9 @@ def assert_valid_index(tc: unittest.TestCase, doc: dict, source_ids: set[str]) -
     tc.assertIn(doc["run"]["runner"], ("lambda", "local"))
     snap.parse_iso(doc["generated_at"])
     snap.parse_iso(doc["run"]["started_at"])
-    tc.assertEqual(set(doc["snapshots"]), source_ids, "every registry row appears, no more, no fewer")
+    tc.assertEqual(set(doc["snapshots"]) - DERIVED_IDS, source_ids, "every registry row appears, no more, no fewer")
     for sid, e in doc["snapshots"].items():
-        tc.assertEqual(set(e), ENTRY_KEYS, sid)
+        tc.assertTrue(ENTRY_KEYS <= set(e) <= ENTRY_KEYS | OPTIONAL_ENTRY_KEYS, sid)
         tc.assertIn(e["status"], snap.STATUSES, sid)
         for k in ("items", "bytes", "duration_ms"):
             tc.assertIsInstance(e[k], int, f"{sid}.{k}")
@@ -548,6 +554,31 @@ def sdo_answer(url):
     return response(url, text=f'<a href="{b["file"]}">{b["file"]}</a>', content_type="text/html")
 
 
+# 0078 r14-data: begin
+GIBS_JPEG = b"\xff\xd8\xff" + b"\x00" * 50000 + b"\xff\xd9"   # a real-sized stand-in: the blank is 12 572 bytes
+
+
+def gibs_answer(url):
+    """harvest/parsers/gibs_clouds.py reads a layer's slots (DescribeDomains), then a picture of the newest."""
+    if url.endswith(".xml"):
+        # The captured answer, with its interval moved to the window this URL asks for (the run's clock is 2026-09-08).
+        start, end = url.rsplit("/", 1)[1][:-4].split("--")
+        end = (snap.parse_iso(end) - timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        xml = (FIXTURES / "raw-gibs-domains.xml").read_text(encoding="utf-8")
+        xml = xml.replace("2026-10-26T15:00:00Z/2026-10-26T22:00:00Z/PT10M", f"{start}/{end}/PT10M")
+        return response(url, text=xml, content_type="text/xml")
+    return fetch.Response(url=url, status=200, body=GIBS_JPEG, content_type="image/jpeg", etag=None, last_modified=None, duration_ms=1)
+
+
+def lightning_answer(url):
+    """harvest/parsers/nowcoast_lightning.py reads the capabilities, then the newest slot's PNG."""
+    if "GetCapabilities" in url:
+        return response(url, text=(FIXTURES / "raw-nowcoast-caps.xml").read_text(encoding="utf-8"), content_type="text/xml")
+    return fetch.Response(url=url, status=200, body=base64.b64decode(fixture("nowcoast_lightning")[0]["base64"]),
+                          content_type="image/png", etag=None, last_modified=None, duration_ms=1)
+# 0078 r14-data: end
+
+
 class WholeRun(unittest.TestCase):
     def test_a_dest_run_through_the_real_mirror_yields_a_valid_index(self):
         sources = registry.load()
@@ -558,6 +589,10 @@ class WholeRun(unittest.TestCase):
         def answer(url, h, e, s):
             if url.startswith("https://sdo.gsfc.nasa.gov/assets/img/browse/"):  # 0076 W1-d: a folder, then a picture
                 return sdo_answer(url)
+            if url.startswith("https://gibs.earthdata.nasa.gov/"):  # 0078 r14-data: slots, then a picture
+                return gibs_answer(url)
+            if url.startswith("https://nowcoast.noaa.gov/"):  # 0078 r14-data: the capabilities, then a picture
+                return lightning_answer(url)
             base = url.split("?")[0]
             src = by_url.get(url) or next((v for k, v in by_url.items() if k.split("?")[0] == base), None)
             if src is None:

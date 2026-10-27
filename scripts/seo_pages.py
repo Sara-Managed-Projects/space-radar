@@ -604,6 +604,14 @@ def sources_page(host: str, snapshot_index: dict | None) -> Page:
         "(<code>registry/sources.yaml</code>): the licence is the publisher's terms as the project recorded them, and the date is the day they were first written into "
         f'<a href="{GITHUB}/blob/main/CREDITS.md">CREDITS.md</a>.</p>\n'
         f"<p>The sources: {named}.</p>\n"
+        "<h2>Where the data comes from</h2>\n"
+        "<p>A small job of ours (<code>harvest/</code> in the repository) runs every hour. It reads each feed below from its publisher and keeps "
+        "a copy on this site, which is why a visitor whose address a publisher refuses still sees the satellites. "
+        "Your browser reads <strong>our copy first</strong>, and shows it at once. It asks the publisher itself only when our copy is older than the time it promised, "
+        "or when there is none; a newer answer then replaces it. If the job could not reach a publisher, we go on showing the last good copy "
+        "from it, with its age, until a newer one arrives: a failed read never replaces good data with an error. If neither our copy nor the "
+        "publisher can be reached, the browser shows the copy it kept from your last visit. A few publishers do not let a page on another site read them at all, "
+        "or their terms say a visitor's browser must not; for those our copy is the only way, and without it the app says it could not look.</p>\n"
         f'<div class="tablewrap"><table>\n{head}\n'
         f"<tbody>\n{chr(10).join(row_html(r, True) for r in in_use)}\n</tbody></table></div>\n"
         '<p class="dim">"Saved copy last read" is the day this site\'s harvester last fetched the source, taken from the saved copy\'s index when the page opens; '

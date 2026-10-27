@@ -22,7 +22,7 @@ site/models/         3D models; site/textures/ maps; site/audio/ music and the t
 site/vendor/         three.js, satellite.js, astronomy-engine, checked in
 site/sw.js           the service worker: offline after one visit
 tests/               plain node and python scripts, no framework. Each prints what it checked.
-harvest/             the scheduled job that saves each public data source for the site to read
+harvest/             the hourly job that saves each public data source on our own storage for the site to read
 tools/               run by hand: a threaded server, headless Chrome, the trip video renderer
 templates/           the HTML of the crawlable pages that scripts/build_seo.py builds
 docs/                running, embedding, translating, releasing, reviewing
@@ -51,6 +51,27 @@ registry/tours.yaml --(scripts/gen_tours_js.py)--> site/js/data/tours.js --> sit
 
 `scripts/check_registry.py` validates every registry. Each generator has a `--check` that fails
 when the committed mirror does not match its YAML. `scripts/check.sh` runs all of them.
+
+## The data path
+
+Everything the app reads from a public API goes through one order (`site/js/data/readorder.js`, held by
+`tests/test_read_order.mjs` and `tests/test_saved_pictures.mjs`):
+
+1. **Our copy.** `harvest/` runs every hour as an AWS Lambda (its CloudFormation stack is in the project's
+   private infrastructure repository) and writes each source's answer, unchanged, to `/data/v1/<id>.json` with a
+   manifest `index.json` written last. The page reads that copy first, fresh or stale, and draws it at once.
+2. **The publisher**, only when our copy is missing or past the `valid_until` it carries, and then behind the copy,
+   which stays on screen until a newer answer arrives. A publisher that sends no CORS header, or whose terms forbid a
+   visitor's browser calling it (`browser: false` in `registry/sources.yaml`), has no step 2.
+3. **The browser's own copy** (localStorage, Cache Storage, the service worker), only when 1 and 2 both gave nothing,
+   and never over a newer copy of ours.
+
+The Lambda never replaces a good file with a failure: a source that errors or parses to less than half of what it
+had keeps its previous file, and the manifest lists it as that copy with its old time and a `kept_after` note.
+Everything the job publishes (the cut `jpl-sbdb-neo`, `celestrak-notable`, `celestrak-geo` and
+`celestrak-starlink-recent`, the `.cols.json` twins of the big catalogues) is made in `harvest/publish.py`, so
+`python3 -m harvest --dest DIR` on a laptop and the Lambda make the same files. `scripts/refresh-snapshots.sh` is
+that command with the AWS upload around it, for a source the Lambda is refused by or a rehearsal.
 
 ## Where things live
 

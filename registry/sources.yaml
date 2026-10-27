@@ -520,6 +520,54 @@ sources:
     terms_recorded: 2026-10-15
     publisher: NASA SDO
 
+  # 0078 r14-data: begin
+  # The two picture feeds that were fetched by each visitor's browser from NASA and NOAA and so had no saved
+  # copy (internal spec 0078, Ivan 2026-10-26: "have data cached on my s3 bucket, all resources we use today
+  # through the APIs"). Both publishers answer `Access-Control-Allow-Origin: *` (MEASURED 2026-09-28 and
+  # 2026-10-03), so `browser: true`: the page draws our copy at once and asks the publisher behind it when the
+  # copy is past valid_until (site/js/data/readorder.js). Each parser FETCHES for itself (two requests and a
+  # picture, like sdo_aia) and saves the picture's bytes in base64.
+  #
+  # Today's clouds (scene/liveclouds.js, data/gibs.js): GIBS's newest real Band 13 picture of GOES-West,
+  # GOES-East and Himawari, 2048 x 1024, 186 to 246 kB each. The cadence is the Lambda's hour: the app draws
+  # clouds within twelve hours of the picture (data/gibs.js LIVE_WINDOW_MS) and the satellites take one every
+  # ten minutes, so a copy up to an hour old is the clouds of the hour and the page asks NASA for a newer one
+  # behind it. Terms: CREDITS.md 4.13 (read 2026-09-28): NASA "promotes full and open sharing of data", the
+  # acknowledgement it asks for is printed in the Sources panel.
+  - id: gibs-clouds
+    url: https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: gibs_clouds
+    outputs: [gibs-clouds.json]
+    attribution: "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)."
+    licence: "NASA \"promotes full and open sharing of data\"; the acknowledgement it asks for is printed with the clouds (read 2026-09-28)"
+    terms_url: https://nasa-gibs.github.io/gibs-api-docs/
+    terms_recorded: 2026-09-28
+    publisher: NASA GIBS
+
+  # Lightning now (scene/weather/lightning.js, data/lightning.js): NOAA nowCOAST's strike density over the last
+  # fifteen minutes, 25 S to 80 N, 110 E eastward to 0 W, one 1440 x 420 PNG of about 7 kB. The app draws
+  # flashes within an hour of the slot, and a slot is fifteen minutes, so the row promises fifteen minutes and
+  # a copy older than that is refreshed from NOAA behind it. Terms: CREDITS.md 4.17 (read 2026-10-03): a US
+  # Government work; a "Level 5" product "appropriate for public distribution".
+  - id: noaa-lightning
+    url: https://nowcoast.noaa.gov/geoserver/lightning_detection/wms
+    auth: none
+    browser: true
+    cadence: 15m
+    freshness_max: 1h
+    parser: nowcoast_lightning
+    outputs: [noaa-lightning.json]
+    attribution: "Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center"
+    licence: "US Government work, public domain; a \"Level 5\" derived product \"appropriate for public distribution\" (read 2026-10-03)"
+    terms_url: https://nowcoast.noaa.gov
+    terms_recorded: 2026-10-03
+    publisher: NOAA nowCOAST
+  # 0078 r14-data: end
+
   # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
   # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
   # regional association), dataset `ncep_global`: one forecast hour (`{hour3}`, filled by harvest/run.py

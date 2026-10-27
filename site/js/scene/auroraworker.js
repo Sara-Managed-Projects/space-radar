@@ -7,9 +7,10 @@
 // What crosses back is the grid (65 kB) and the texture (260 kB), transferred, not copied.
 // The arithmetic is data/ovation.js, the same module the main-thread fallback and the Node test use.
 //
-// Messages in:  {type:'look', seq, url}
+// Messages in:  {type:'look', seq, url, saved?}   `saved: true`: url is OUR saved copy (data/v1/swpc-ovation.json,
+//                                                 the harvester's file: stamps around NOAA's body), not NOAA's answer
 // Messages out: {type:'look', seq, grid and tex (both transferred), observationMs, forecastMs, cells, summary,
-//                chars, ms}
+//                chars, ms, fetchedAt?, validUntil?}   (the stamps only for a saved copy)
 //
 // The bytes on the wire are not reported: NOAA sends no Timing-Allow-Origin, so Resource Timing gives
 // a cross-origin transferSize of 0. Measured with curl instead: 141 097 bytes gzip (2026-09-30).
@@ -28,17 +29,41 @@ async function fetchOvation(url) {
   return res.text();
 }
 
+/** Our saved copy: the file's body is NOAA's answer verbatim, with the moment the harvester read it. */
+async function fetchSaved(url) {
+  const res = await fetch(url, { credentials: 'omit', cache: 'default' });
+  if (!res.ok) {
+    const err = new Error('the saved copy answered HTTP ' + res.status);
+    err.status = res.status;
+    throw err;
+  }
+  const file = JSON.parse(await res.text());
+  if (!file || file.schema !== 1 || file.body == null) throw new Error('the saved copy is not a snapshot file');
+  const fetchedAt = Date.parse(file.fetched_at);
+  if (!Number.isFinite(fetchedAt)) throw new Error('the saved copy has no read time');
+  const validUntil = Date.parse(file.valid_until);
+  return { body: file.body, fetchedAt, validUntil: Number.isFinite(validUntil) ? validUntil : null };
+}
+
 self.onmessage = async (e) => {
   const m = e.data || {};
   if (m.type !== 'look') return;
   const t0 = performance.now();
   try {
-    const text = await fetchOvation(m.url);
+    let text;
+    let stamps = {};
+    if (m.saved) {
+      const f = await fetchSaved(m.url);
+      text = typeof f.body === 'string' ? f.body : JSON.stringify(f.body);
+      stamps = { fetchedAt: f.fetchedAt, validUntil: f.validUntil };
+    } else {
+      text = await fetchOvation(m.url);
+    }
     const out = parseOvation(text);
     const tex = upsampleGrid(out.grid);
     self.postMessage({
       type: 'look', seq: m.seq, grid: out.grid, tex, observationMs: out.observationMs, forecastMs: out.forecastMs,
-      cells: out.cells, summary: out.summary, chars: text.length,
+      cells: out.cells, summary: out.summary, chars: text.length, ...stamps,
       ms: Math.round(performance.now() - t0),
     }, [out.grid.buffer, tex.buffer]);
   } catch (err) {

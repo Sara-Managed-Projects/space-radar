@@ -10,6 +10,7 @@ import argparse
 import json
 import sys
 
+from . import publish
 from . import registry
 from . import snapshot as snap
 from .run import run
@@ -21,6 +22,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--only", metavar="ID", help="run one source; the others keep their manifest entries")
     ap.add_argument("--dry-run", action="store_true", help="decide what is due; fetch nothing, write nothing")
     ap.add_argument("--now", metavar="ISO", help="pretend it is this UTC time (tests and rehearsals)")
+    ap.add_argument("--slack", metavar="SECONDS", type=int, default=0,
+                    help="a source is due when it will be within this many seconds (the Lambda uses 300)")
+    ap.add_argument("--finish-only", action="store_true",
+                    help="fetch nothing: apply the publish rules (keep last good, cuts, derived files, column twins) "
+                         "to the files already in --dest, for example after merging a GitHub runner's harvest into it")
     ap.add_argument("--sources", metavar="JSON", help=argparse.SUPPRESS)  # an alternative mirror, for tests
     args = ap.parse_args(argv)
 
@@ -41,10 +47,16 @@ def main(argv: list[str] | None = None) -> int:
             return 2
 
     store = snap.DirStore(args.dest)
+    if args.finish_only:
+        doc = publish.finish_only(store, sources, now=now, log=lambda line: print(line, flush=True))
+        print(f"\n{len(doc['snapshots'])} sources published from what is in {args.dest}/index.json")
+        return 0
     # One line per source, flushed as it lands: a run redirected to a file (or CloudWatch) should
     # show a source the moment it is done, not fifteen of them when the last one times out.
     doc = run(store, sources, now=now, only=args.only, dry_run=args.dry_run, runner="local",
-              log=lambda line: print(line, flush=True))
+              log=lambda line: print(line, flush=True), slack_s=args.slack,
+              force_due=publish.force_due(snap.read_index(store), now or snap.utcnow(), args.slack),
+              finish=publish.finish)
 
     statuses = {}
     for e in doc["snapshots"].values():

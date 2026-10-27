@@ -104,7 +104,7 @@ scripts/gen_*.py  turn a registry into the JavaScript the browser reads
 site/             the whole app, served as it is: plain ES modules, three.js, no bundler
 site/js/copy/     every word a visitor reads (en.js)
 tests/            node and python tests; no browser needed for almost all of them
-harvest/          the scheduled job that saves each data source to /data/v1/
+harvest/          the hourly job that saves each data source to /data/v1/ (the page reads that copy first)
 tools/            things run by hand: a local server, headless Chrome, the trip-video renderer
 ```
 
@@ -211,7 +211,7 @@ description, and a maintainer will render the picture and the voice onto your br
 1. The publisher goes in `registry/sources.yaml`: URL, how often to ask, whether a browser may
    call it (CORS), and the credit line. Read the publisher's terms first and put what they say in
    `CREDITS.md` §4; `tests/test_credits.py` fails until the credit line is there.
-2. A parser in `harvest/` (for the saved copy) and in `site/js/data/parsers.js` (for the browser),
+2. A parser in `harvest/parsers/` (for the saved copy) and in `site/js/data/parsers.js` (for the browser),
    with a captured fixture under `tests/fixtures/` so the test never touches the network.
 3. A row in `registry/layers.yaml`: which source, which propagator, which glyph, which card.
    Then `python3 scripts/gen_layers_js.py && python3 scripts/gen_sources_json.py`.

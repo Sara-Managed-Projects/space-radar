@@ -97,7 +97,7 @@ with tempfile.TemporaryDirectory() as tmp_s:
     uploaded = sorted(p.name for p in out.iterdir())
     snaps = json.loads((out / "index.json").read_text())["snapshots"] if (out / "index.json").exists() else {}
     esa_row = snaps.get("esa-neocc-close", {})
-    check("esa-neocc-close.json" not in uploaded and esa_row.get("status") == "skipped" and "fetched_at" not in esa_row and "items" not in esa_row,
+    check("esa-neocc-close.json" not in uploaded and esa_row.get("status") == "skipped" and not esa_row.get("fetched_at") and not esa_row.get("valid_until") and not esa_row.get("items"),  # 0078 r14-data: the harvester writes every key; "no stamps" is null
           f"a file an earlier harvest left in the work folder is NOT published once its source is switched off, and its manifest row says skipped with no stamps (uploaded {uploaded}; row {esa_row})")
     check("jpl-cad.json" in uploaded and "jpl-cad" in snaps and "celestrak-stations.json" in uploaded, "and everything else is published as before")
     check("esa-neocc-close: switched off in registry/sources.yaml; not published" in proc.stdout, "the script says what it left out and why")
@@ -184,9 +184,13 @@ check(len(jpl_js) >= 4 and all(re.search(r"\n\s+browser: false,", body) and not 
 code_only = "\n".join(l for l in copy.split("\n") if not l.lstrip().startswith(("//", "*", "/*")))
 calls = [m.start() for m in re.finditer(r"fetchLive\(", code_only)]
 check(len(calls) == 3, f"fetchLive() is defined once and called from two places ({len(calls)})")
-check(re.search(r"\} else if \(src\.browser === true\) \{\n[^\n]*\n\s+next = await fetchLive\(src, prev, attemptAt\);", copy) is not None,
+# 0078 r14-data: begin
+# The rule moved into data/readorder.js decide() with the read order (tests/test_read_order.mjs holds its table): the
+# publisher can be asked only when `canAskOriginal`, and doFetch sets that from `src.browser === true` alone.
+check("const canAskOriginal = src.browser === true;" in copy and re.search(r"\} else if \(plan\.use === 'original'\) \{\n(?:[^\n]*\n){1,3}\s+next = await fetchLive\(src, prev, attemptAt\);", copy) is not None,
       "the live route is taken only for a `browser: true` source")
-check(re.search(r"behind = src\.browser === true && ", copy) is not None, "and a publisher is asked behind a saved copy only for a `browser: true` source")
+check("canAskBehind: canAskOriginal && !src.cutOf" in copy and "behind = plan.askBehind;" in copy, "and a publisher is asked behind a saved copy only for a `browser: true` source")
+# 0078 r14-data: end
 other = [str(p.relative_to(ROOT)) for p, t in js.items() if p.name != "sources.js"
          and re.search(r"fetch\([^)]*jpl\.nasa\.gov|['\"`]https?://[\w.-]*jpl\.nasa\.gov[^'\"`]*['\"`]", "\n".join(l for l in t.split("\n") if not l.lstrip().startswith(("//", "*", "/*"))))]
 check(not other, f"no other module holds a JPL address as a string it could fetch ({other})")

@@ -146,7 +146,7 @@ site/        the whole app, served as it is: plain ES modules, three.js, no bund
 registry/    YAML files that say what exists: worlds, layers, data sources, trips, models, budgets
 scripts/     generators that turn a registry into the JavaScript the browser reads, and the checks
 tests/       more than 150 node and python test files; no browser needed
-harvest/     a small scheduled job that saves each public data source for the site to read
+harvest/     the hourly job that saves each public data source on our own storage, for the site to read first
 docs/        running it, a first pull request, a map of the code, embedding, releasing
 ```
 

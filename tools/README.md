@@ -193,6 +193,24 @@ node tools/look-summary.mjs --dir=/tmp/look --probe=frametime --browser=chromium
 `shot(name, note)`, `go(id, name)`, `stage(id)`, `until(fn, capMs)`), sets `look.probe = '<name>'`
 and ends with `return finish({...})`. `tests/test_look_tool.mjs` holds the shape.
 
+## Running the harvester by hand (internal spec 0078)
+
+The site's saved copy of every public API (`/data/v1/`) is filled every hour by a Lambda. Everything it publishes is made
+by `harvest/`, so the same files come out on a laptop:
+
+```sh
+python3 -m harvest --dest /tmp/v1                  # what is due, written to a folder (no AWS)
+python3 -m harvest --dest /tmp/v1 --only wind      # one source
+python3 -m harvest --dest /tmp/v1 --finish-only    # fetch nothing; make the cuts, twins and kept-copy rows for what is there
+scripts/refresh-snapshots.sh --profile life-hub    # the same, seeded from the bucket, uploaded, manifest last, edge invalidated
+scripts/refresh-snapshots.sh --dry-run             # says what is due and where it would publish; fetches and publishes nothing
+scripts/package-harvester.sh --out /tmp/h.zip      # the Lambda's zip (the internal repo's infra/harvester/deploy.sh uploads it)
+```
+
+Use `refresh-snapshots.sh` when a publisher refuses the Lambda (CelesTrak answers some clouds with 403), to try a parser
+change against the live files, or if the Lambda is down. A source that fails keeps its previous file whichever way it is
+run. The page reads the saved copy first and the publisher only behind it (`site/js/data/readorder.js`).
+
 ## Rendering trip videos (spec 0070)
 
 `node tools/render-trip.mjs <trip>` plays one trip in a headless Chrome a frame at a time, on a

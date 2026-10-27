@@ -133,8 +133,11 @@ check(same(r.data, verbatim) && JSON.stringify(r.asked) === JSON.stringify(['cel
 // Not at boot: the decoder is fetched only when a manifest names a column file.
 const sources = readFileSync(join(ROOT, 'site/js/data/sources.js'), 'utf8');
 check(/await import\('\.\/columnar\.js'\)/.test(sources) && !/^import[^\n]*columnar/m.test(sources), 'data/sources.js loads the decoder by dynamic import');
-const refresh = readFileSync(join(ROOT, 'scripts/refresh-snapshots.sh'), 'utf8');
-check(/columnar\.publish\(d\)/.test(refresh) && refresh.indexOf('columnar.publish(d)') > refresh.lastIndexOf('derive('), 'scripts/refresh-snapshots.sh publishes the twins, after the cuts');
+// 0078 r14-data: the twins are made by the harvester itself (harvest/publish.py finish), in the Lambda and on a laptop.
+const publish = readFileSync(join(ROOT, 'harvest/publish.py'), 'utf8');
+const fin = publish.slice(publish.indexOf('def finish('), publish.indexOf('def _cut_neo('));
+check(fin.indexOf('_twin(') > fin.lastIndexOf('_derive(') && fin.indexOf('_derive(') > fin.indexOf('_cut_neo('), 'harvest/publish.py makes the twins after the cuts and the derived files');
+check(/--finish-only/.test(readFileSync(join(ROOT, 'scripts/refresh-snapshots.sh'), 'utf8')), 'and scripts/refresh-snapshots.sh applies the same rules, by the harvester');
 
 rmSync(tmp, { recursive: true, force: true });
 if (failed) { console.error(`\ncolumnar: ${failed} check(s) FAILED`); process.exit(1); }

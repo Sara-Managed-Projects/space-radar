@@ -20,6 +20,11 @@
 #                         an object in it, never the distribution. Asks first unless --yes.
 #   --yes                 skip the teardown confirmation.
 #
+# SUPERSEDED 2026-10-26 (internal spec 0078): the harvester is deployed from the internal repository's
+# infra/harvester/harvester-stack.yaml (CloudFormation, hourly, with its alarm and log retention), and
+# infra/harvester/deploy.sh packages this repository's harvest/ with scripts/package-harvester.sh. This script
+# was never run against the life-hub account; it stays for someone who wants the same wiring without CloudFormation.
+#
 # WHO RUNS THIS
 # Creating an IAM role is a permission change, so this is run by the account owner, once, after
 # reading the --dry-run (specs/0003 amendment 1 s.6). The harness that wrote it refused to.
