@@ -977,6 +977,33 @@ export const REAL_MODELS = {
     // ISIS 1 SPUN, and nobody publishes its attitude now: not turned (no `axes`), it keeps the seeded constant angle.
     3669: { file: 'isis-1.glb', colour: 'satellite', name: 'ISIS 1', catalogue: 'ISIS 1', made: 'dimensions' },
     // 0077 W3-a: end
+    // 0078 r14-m6: begin
+    // RELEASE 1.4.0, STAGE M6 (2026-10-27; public #1137 to #1146): ten files for the national Earth-observation craft, each built in code from cited numbers and laid out
+    // after free pictures (INPE's gallery, KARI's KOGL Type 1 photographs, ISRO's GODL-India photographs and renders, VNIIEM's CC0 schematic); share-alike pictures were looked at only.
+    // Rows: registry/models.yaml `cbers-4` ... `resurs-p`. `axes: 'app'`: the Earth face on +Z, the panels along X, the cells to +Y; each row says what is not as the craft flies.
+    // Not mapped: KANOPUS-V-IK (infrared cameras), RESURS-DK 1, CARTOSAT-1 and -3, CBERS 1 to 3 keep the generic shape; OCEANSAT-2 was built and HELD (one CAD view is all there is to draw it from).
+    40336: { file: 'cbers-4.glb', colour: 'satellite', name: 'CBERS-4', catalogue: 'CBERS 4', made: 'dimensions', axes: 'app' },
+    44883: { file: 'cbers-4a.glb', colour: 'satellite', name: 'CBERS-4A', catalogue: 'CBERS 4A', made: 'dimensions', axes: 'app' },
+    47699: { file: 'amazonia-1.glb', colour: 'satellite', name: 'Amazonia-1', catalogue: 'AMAZONIA 1', made: 'dimensions', axes: 'app' },
+    38338: { file: 'kompsat-3.glb', colour: 'satellite', name: 'KOMPSAT-3', catalogue: 'ARIRANG-3 (KOMPSAT-3)', made: 'dimensions', axes: 'app' },
+    40536: { file: 'kompsat-3.glb', colour: 'satellite', name: 'KOMPSAT-3A', catalogue: 'KOMPSAT-3A', made: 'dimensions', axes: 'app' },
+    39227: { file: 'kompsat-5.glb', colour: 'satellite', name: 'KOMPSAT-5', catalogue: 'ARIRANG-5 (KOMPSAT-5)', made: 'dimensions', axes: 'app' },
+    32783: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2A', catalogue: 'CARTOSAT-2A', made: 'dimensions', axes: 'app' },
+    36795: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2B', catalogue: 'CARTOSAT-2B', made: 'dimensions', axes: 'app' },
+    41599: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2C', catalogue: 'CARTOSAT-2C', made: 'dimensions', axes: 'app' },
+    41948: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2D', catalogue: 'CARTOSAT-2D', made: 'dimensions', axes: 'app' },
+    42767: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2E', catalogue: 'CARTOSAT-2E', made: 'dimensions', axes: 'app' },
+    43111: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2F', catalogue: 'CARTOSAT-2F', made: 'dimensions', axes: 'app' },
+    37387: { file: 'resourcesat-2.glb', colour: 'satellite', name: 'Resourcesat-2', catalogue: 'RESOURCESAT-2', made: 'dimensions', axes: 'app' },
+    41877: { file: 'resourcesat-2.glb', colour: 'satellite', name: 'Resourcesat-2A', catalogue: 'RESOURCESAT-2A', made: 'dimensions', axes: 'app' },
+    54361: { file: 'eos-06.glb', colour: 'satellite', name: 'EOS-06', catalogue: 'EOS-6 (OCEANSAT-3)', made: 'dimensions', axes: 'app' },
+    43180: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 3', catalogue: 'KANOPUS-V 3', made: 'dimensions', axes: 'app' },
+    43181: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 4', catalogue: 'KANOPUS-V 4', made: 'dimensions', axes: 'app' },
+    43876: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 5', catalogue: 'KANOPUS-V 5', made: 'dimensions', axes: 'app' },
+    43877: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 6', catalogue: 'KANOPUS-V 6', made: 'dimensions', axes: 'app' },
+    59371: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 4', catalogue: 'RESURS-P 4', made: 'dimensions', axes: 'app' },
+    62430: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 5', catalogue: 'RESURS-P 5', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m6: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
