@@ -242,7 +242,9 @@ satisfies that with:
 | `1k_uranus_opal_2025.webp` | Uranus, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
 | `2k_neptune.webp` | Neptune | CC BY 4.0 | Solar System Scope |
 | `1k_neptune_opal_2025.webp` | Neptune, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 24 August 2025](https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32), adapted: calibrated, the unseen far north filled; 4 766 B |
-| `2k_stars_milky_way.webp` | the Milky Way sky sphere | CC BY 4.0 | Solar System Scope |
+<!-- 0078 r14-mw-bh: begin -->
+| `2k_milky_way_model.webp` | the Milky Way, tier 0 and under the frame latch | MIT (this project) | Milky Way: Space Radar's own model (scripts/build-milkyway-sky.mjs): rendered by `scripts/build-milkyway-sky.mjs` from our own model of the galaxy (`site/js/scene/milkyway.js`, §3m); no photograph in it. Solar System Scope's `2k_stars_milky_way.webp` was removed in release 1.4.0 |
+<!-- 0078 r14-mw-bh: end -->
 
 **What could not be verified, stated plainly.** solarsystemscope.com answers HTTP 403 to scripted
 downloads, so these files could not be byte-compared against the origin. Provenance rests on the
@@ -356,7 +358,7 @@ original by `scripts/build-textures.py --originals DIR`; the originals are not c
 | `4k/earth_night.webp` | Earth's night lights | Black Marble 2016, greyscale, 13500 × 6750 (<https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/>) | NASA Images and Media Usage Guidelines: texture maps "generally are not subject to copyright in the United States" | resampled to 4096 × 2048, levels matched to the 2k map, one grey channel, WebP 80 |
 | `4k/earth_water.webp` | the ocean glint's land/water mask | Solar System Scope `8k_earth_specular_map.tif` | CC BY 4.0, as tier 0 | box-filtered to 4096 × 2048, lossless WebP |
 | `1k_earth_relief.webp`, `2k_earth_relief.webp` | the Earth's relief under a low Sun (tier 1, tier 2) | NOAA National Centers for Environmental Information, ETOPO 2022 15 Arc-Second Global Relief Model, the 60 arc-second ice-surface grid (<https://doi.org/10.25921/fd45-gt74>, read 2026-10-08) | CC0 1.0: "NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication" | heights above the sea only, area-averaged to 1024 × 512 and 2048 × 1024, one grey channel holding sqrt(height / 9000 m), lossless WebP; drawn five times steeper than the ground is |
-| `4k/milky_way.webp` | the Milky Way sky sphere | NASA SVS Deep Star Maps 2020, `milkyway_2020_4k_gal.exr`, the background without the Hipparcos and Tycho stars (<https://svs.gsfc.nasa.gov/4851/>) | "Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." | flipped top to bottom, brightness matched to the 2k map, 60 % saturation, sRGB, WebP 90 |
+<!-- 0078 r14-mw-bh: NASA SVS's `4k/milky_way.webp` was removed in release 1.4.0: the band is our own model (§3m) -->
 | `4k/moon.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon, 84 otherwise) |
 | `4k/mercury.webp` | Mercury, close up | USGS MESSENGER MDIS three-colour mosaic, 665 m (<https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl>) | Public domain (USGS) | 4096 × 2048, 35 % of the saturation kept, WebP 40 |
 
@@ -1447,6 +1449,10 @@ only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
 `registry/exotics.yaml` that anybody has photographed. They are not illustrations and nothing in
 them was redrawn.
+<!-- 0078 r14-mw-bh: begin -->
+Since release 1.4.0 they are shown ONLY on those two cards, as the photograph beside the model: in the scene and at
+the trips' stops every black hole is drawn as a 3D model (`site/js/scene/blackhole.js`, §3m), not as a picture.
+<!-- 0078 r14-mw-bh: end -->
 
 | file | object | credit | licence | source |
 |---|---|---|---|---|
@@ -2159,6 +2165,32 @@ redshift). As seen from the Sun each galaxy is as wide as Webb measured it (its 
 distance; its true width is that over 1 + z). Its light is its F200W magnitude, an exposure and not photometry; its tint is the F090W
 minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
 <!-- 0077 W3-f: end -->
+
+<!-- 0078 r14-mw-bh: begin -->
+## 3m. The Milky Way from inside and the black holes in 3D (release 1.4.0)
+
+No photograph is drawn for either. Both are our own code (MIT); what they are drawn from:
+
+**The Milky Way** (`site/js/scene/milkyway.js`, `scripts/build-milkyway-sky.mjs` → `site/textures/2k_milky_way_model.webp`): the
+same galaxy as `site/data/galaxy.bin` (`scripts/build-galaxy.py`): R0 and the seven spiral arms of Reid et al. 2019, ApJ 885,
+131 (Table 2), the disc's size from Wikipedia "Milky Way", the bar from the middle of the published range. The Sun's height
+above the plane, 20.8 pc: Bennett & Bovy 2019, MNRAS 482, 1417. The dust: a disc 0.134 kpc thick (Drimmel & Spergel 2001,
+ApJ 556, 181), about 0.6 magnitudes of V a kiloparsec near the Sun, the molecular ring (Dame, Hartmann & Thaddeus 2001,
+ApJ 547, 792) and the Central Molecular Zone; the Local Bubble round the Sun (Lallement et al. 2003, A&A 411, 447); the
+extinction's colour from Cardelli, Clayton & Mathis 1989, ApJ 345, 245. The named dark clouds at their measured distances:
+Zucker et al. 2020, A&A 633, A51; the Aquila Rift's front, Straižys, Černis & Bartašiūtė 2003, A&A 405, 585; the Coalsack,
+Seidensticker & Schmidt-Kaler 1989, A&A 225, 192. Their ragged shapes, the lanes, the star clouds and the faint stars' grain
+are illustrative (a seeded noise), and say so.
+
+**The black holes** (`site/js/scene/blackhole.js`): Schwarzschild light bending (Binet's equation), the Shakura-Sunyaev
+disc, relativistic Doppler beaming. Sagittarius A* and M87*: the Event Horizon Telescope Collaboration 2019 (ApJL 875, L1)
+and 2022 (ApJL 930, L12); M87*'s jet: Walker et al. 2018, ApJ 855, 128 (position angle 288°, 17° from our line), its shape
+Asada & Nakamura 2012, ApJL 745, L28, its knots Perlman et al. 2011, ApJ 743, 119. Cygnus X-1: the orbit's period
+(Brocksopp et al. 1999, A&A 343, 861), its inclination (Miller-Jones et al. 2021, Science 371, 1046), the supergiant
+HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikipedia "Cygnus X-1", read 2026-10-27). The
+masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
+the stellar holes), it is chosen and `blackhole.js` says so.
+<!-- 0078 r14-mw-bh: end -->
 
 ## 4. Runtime data sources
 

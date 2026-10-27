@@ -1,7 +1,8 @@
 // scene/starfield.js — the real sky behind everything.
 //
 // Three parts, all built in the equatorial J2000 frame (the module contract's `earth-inertial` axes):
-//   1. the Milky Way on an inside-out sphere,
+//   1. the Milky Way: since release 1.4.0 not a picture but scene/milkyway.js's band, drawn from the galaxy's own
+//      model and handed in by main.js (attachMilkyWay),
 //   2. 5 044 real stars from data/stars.bin as one Points, sized and coloured by magnitude and B-V,
 //   3. the 89 constellation figures as LineSegments at 25 % opacity, plus their names as a list the
 //      label layer can draw.
@@ -25,9 +26,6 @@ import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_
 const DEG = Math.PI / 180;
 const DEFAULT_RADIUS = 1e5; // scene units; update(camera) clamps this under camera.far
 
-// The panorama's tint at the Camera exposure: what the sky has always been drawn at. setExposure()
-// scales it (scene/exposure.js): dimmer for the eye, lifted for a deep exposure.
-const MILKY_WAY_TINT = [0.42, 0.42, 0.46];
 const RENDER_ORDER_MILKYWAY = -3;
 const RENDER_ORDER_SKY = -2;
 
@@ -260,30 +258,11 @@ async function asJson(src) {
   return await r.json();
 }
 
-function asTexture(src) {
-  if (!src) return null;
-  if (src.isTexture) return src;
-  if (typeof src === 'string' || src instanceof URL) {
-    const t = new THREE.TextureLoader().load(String(src));
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.userData.owned = true; // ours to dispose; a texture handed in is not
-    return t;
-  }
-  if (typeof src === 'object' && (src.tagName === 'IMG' || src.tagName === 'CANVAS')) {
-    const t = new THREE.Texture(src);
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.needsUpdate = true;
-    t.userData.owned = true;
-    return t;
-  }
-  return null;
-}
-
 // --------------------------------------------------------------------------------- the layer
 
 /**
  * @param {THREE.Scene} scene
- * @param {{starsBin?, linesJson?, namesJson?, milkyWayTexture?, radius?, pixelRatio?}} [opts]
+ * @param {{starsBin?, linesJson?, namesJson?, radius?, pixelRatio?}} [opts]
  *   Each source may be a URL string, already-loaded data (ArrayBuffer / parsed JSON /
  *   THREE.Texture), or omitted to use the bundled default path. Loading is fault-tolerant: each
  *   piece appears when it lands and a failure leaves the others drawing.
@@ -295,7 +274,6 @@ export function createStarfield(scene, opts = {}) {
     starsBin: opts.starsBin ?? new URL('../../data/stars.bin', here),
     linesJson: opts.linesJson ?? new URL('../../data/constellations.lines.json', here),
     namesJson: opts.namesJson ?? new URL('../../data/constellation-names.json', here),
-    milkyWayTexture: opts.milkyWayTexture ?? new URL('../../textures/2k_stars_milky_way.webp', here),
   };
 
   const group = new THREE.Group();
@@ -369,70 +347,23 @@ export function createStarfield(scene, opts = {}) {
   let sunAlpha = -1;
 
   // ---- Milky Way ----------------------------------------------------------------------------
-  function buildMilkyWay(texture) {
-    if (!texture) return;
-    texture.colorSpace = THREE.SRGBColorSpace;
-    const geo = new THREE.SphereGeometry(1, 48, 24);
-    const mat = new THREE.MeshBasicMaterial({
-      map: texture,
-      side: THREE.BackSide,
-      depthWrite: false,
-      depthTest: false,
-      toneMapped: false,
-      // NOT `transparent: true` -- and that one flag hid EARTH from 2026-09-08 to 2026-09-16.
-      //
-      // It was added so the scale ladder could fade the picture (scene/lod.js, spec 0028 step 2).
-      // But three draws its render lists opaque -> transmissive -> transparent, and renderOrder only
-      // sorts WITHIN a list, so a transparent material draws after every opaque object whatever
-      // its renderOrder of -3 says. With depthTest off, the panorama then painted straight over the
-      // Earth, the Moon, the Sun and every planet: a camera 22 units from a lit Earth read (0,0,0)
-      // at the centre pixel, and the live site showed a ring of satellites around an empty sky
-      // with only the atmosphere's rim left, because the atmosphere is transparent too and draws
-      // after it. The stars and the constellation lines below had already been fixed for exactly
-      // this, with comments saying why; the Milky Way was the piece of the sky that was not.
-      //
-      // So: the opaque list, and the blend factors three's setBlending emits for NormalBlending
-      // spelled out as CustomBlending -- the same pixels, and because the blending is no longer
-      // NormalBlending three does not define OPAQUE, so `opacity` still reaches the shader and
-      // the ladder's fade still works. tests/test_contract.mjs refuses the combination anywhere in
-      // the scene.
-      transparent: false,
-      blending: THREE.CustomBlending,
-      blendEquation: THREE.AddEquation,
-      blendSrc: THREE.SrcAlphaFactor,
-      blendDst: THREE.OneMinusSrcAlphaFactor,
-      blendSrcAlpha: THREE.OneFactor,
-      blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
-      opacity: 1,
-      color: new THREE.Color(MILKY_WAY_TINT[0], MILKY_WAY_TINT[1], MILKY_WAY_TINT[2]).multiplyScalar(milkyWayExposure), // a whisper, not a wallpaper
-    });
-    const m = new THREE.Mesh(geo, mat);
-    m.name = 'milkyway';
+  // The band is no longer a picture on this sphere (release 1.4.0, r14-mw-bh): scene/milkyway.js draws it from
+  // the galaxy's own 3D model, as seen from wherever the camera is, and main.js hands it here once it is built.
+  // It lives in this group for the same reasons the panorama did -- centred on the camera, in the sky's axes,
+  // drawn first in the opaque list -- but it does NOT fade with the sky-from-here (setSkyOpacity): it is not a
+  // picture from here, and registry/lod.yaml's `milky-way-inside` fades it as the outside view comes in.
+  let band = null;
+  function attachMilkyWay(b) {
+    if (!b || !b.mesh || band) return false;
+    band = b;
+    const m = b.mesh;
     m.renderOrder = RENDER_ORDER_MILKYWAY;
     m.frustumCulled = false;
-
-    // ALIGNMENT. The map is an equirectangular sky on the galactic frame, the galactic centre at
-    // the image centre. three's SphereGeometry puts uv.x = 0.5 on local +X, the image top on local
-    // +Y, and (seen from inside) uv.x = 0.75 on local -Z.
-    //
-    // THE IMAGE TOP IS GALACTIC SOUTH. Until 2026-09-28 local +Y was the galactic NORTH pole, and the
-    // sky was drawn turned 180 degrees about the line to the galactic centre: the band in the right
-    // place, everything off it on the wrong side. Found by laying NASA SVS's Deep Star Maps 2020
-    // (galactic frame, north up, longitude increasing to the left) beside the Solar System Scope
-    // map: the same sky flipped top to bottom, the Large Magellanic Cloud above the plane. Through
-    // the old basis the SSS map put the LMC at l = 79, b = +34; it is at l = 280.5, b = -32.9. With
-    // local +Y on the south pole it lands at l = 281, b = -34, and so does the 4k map, which is built
-    // in the same convention (scripts/build-textures.py). Still not an astrometric solution -- the
-    // SSS map is a painting of the sky -- and the stars remain the measured layer.
-    const gc = radecToVec(266.405, -28.936); // galactic centre, l=0 b=0, J2000
-    const pole = radecToVec(192.85948, 27.12825); // galactic north pole, J2000
-    const x = gc.clone().addScaledVector(pole, -gc.dot(pole)).normalize();
-    const south = pole.clone().negate();
-    const z = new THREE.Vector3().crossVectors(x, south).normalize();
-    m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, south, z));
-
     state.milkyway = watch(m);
+    band.setExposure(milkyWayExposure);
+    band.setDetail(detailLow ? 'low' : 'full');
     group.add(m);
+    return true;
   }
 
   // ---- stars --------------------------------------------------------------------------------
@@ -575,12 +506,6 @@ export function createStarfield(scene, opts = {}) {
       asArrayBuffer(src.starsBin).then(buildStars),
       asJson(src.linesJson).then(buildLines),
       asJson(src.namesJson).then(buildNames),
-      // asTexture() is synchronous and CAN throw (THREE.TextureLoader touches `document`).
-      // Called while building this array the throw would escape before Promise.allSettled ever
-      // ran, taking the stars, the lines and the names with it and rejecting `ready`. Deferring
-      // it into a then() is what makes the "one piece failing leaves the others drawing" promise
-      // above actually true.
-      Promise.resolve().then(() => asTexture(src.milkyWayTexture)).then(buildMilkyWay),
     ];
     const settled = await Promise.allSettled(jobs);
     for (const s of settled) {
@@ -641,8 +566,6 @@ export function createStarfield(scene, opts = {}) {
     setSkyOpacity(k) {
       const v = Math.min(1, Math.max(0, Number(k)));
       skyOpacity = v;
-      const mw = state.milkyway;
-      if (mw && mw.material) { mw.material.opacity = v; mw.visible = v > 0 && !detailLow; }
       const ln = state.lines;
       if (ln && ln.material) { ln.material.opacity = 0.25 * v; ln.visible = v > 0 && !detailLow && linesOn; }
       starUniforms.uGain.value = Math.min(1, Math.max(0, gain * v));
@@ -653,19 +576,9 @@ export function createStarfield(scene, opts = {}) {
       linesOn = !!on;
       this.setSkyOpacity(skyOpacity);
     },
-    /**
-     * The texture tiers (scene/texturetiers.js, 2026-09-28): wear `tex` as the Milky Way, or null to
-     * go back to the map it booted with. Returns the texture it was wearing; disposes nothing, since
-     * the boot map is what a latched device goes back to. False while the panorama is not built yet.
-     */
-    setMilkyWayMap(tex) {
-      const mw = state.milkyway;
-      if (!mw || !mw.material) return false;
-      if (!mw.userData.bootMap) mw.userData.bootMap = mw.material.map;
-      const old = mw.material.map;
-      mw.material.map = tex || mw.userData.bootMap;
-      return old;
-    },
+    /** The Milky Way from inside (scene/milkyway.js), built by main.js after the first frame's tier is known. */
+    attachMilkyWay,
+    milkyWay: () => band,
     /**
      * Spec 0067: how long the shutter is open, as a factor on the Milky Way's tint (1 = Camera, the
      * sky as it always was). The stars are left alone: they are the measured layer, and a sixth-
@@ -673,12 +586,15 @@ export function createStarfield(scene, opts = {}) {
      */
     setExposure(k) {
       milkyWayExposure = Math.min(2.2, Math.max(0, Number(k) || 0));
-      const mw = state.milkyway;
-      if (mw && mw.material) mw.material.color.setRGB(MILKY_WAY_TINT[0], MILKY_WAY_TINT[1], MILKY_WAY_TINT[2]).multiplyScalar(milkyWayExposure);
+      if (band) band.setExposure(milkyWayExposure);
     },
-    /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
+    /**
+     * 'low' hides the constellation lines (spec 0026 req 18) and puts the Milky Way on its cheapest drawing (the
+     * picture baked from its model, no march: scene/milkyway.js); the stars stay.
+     */
     setDetail(level) {
       detailLow = level === 'low';
+      if (band) band.setDetail(detailLow ? 'low' : 'full');
       starUniforms.uGlow.value = detailLow ? 0 : 1;
       this.setSkyOpacity(skyOpacity);
     },
@@ -723,11 +639,11 @@ export function createStarfield(scene, opts = {}) {
       group.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {
-          const map = o.material.map;
-          if (map && map.userData && map.userData.owned) map.dispose();
           o.material.dispose();
         }
       });
+      if (band) band.dispose();
+      band = null;
       scene.remove(group);
       names.length = 0;
     },

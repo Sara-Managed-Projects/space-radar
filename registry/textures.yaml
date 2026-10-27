@@ -191,30 +191,24 @@ textures:
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
 
-  # The id is models.yaml's. The 4k map is the real sky; the 2k map is a painting of it.
+  # 0078 r14-mw-bh: begin
+  # The Milky Way is no picture of the sky (release 1.4.0): Solar System Scope's 2k painting and NASA SVS's 4k map are gone.
+  # The band is scene/milkyway.js's model of the galaxy; this one file is that model BAKED from the Sun's place, worn by a
+  # tier-0 device and under the frame latch (the module fetches it itself: no tier target swaps it).
   - id: starfield
     world: sky
     slot: map
-    when: idle
+    when: boot
     files:
       - tier: 0
-        file: site/textures/2k_stars_milky_way.webp
+        file: site/textures/2k_milky_way_model.webp
         px: [2048, 1024]
-        bytes: 60004
+        bytes: 29774
         format: rgb
-        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
-        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
-        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
-      - tier: 1
-        file: site/textures/4k/milky_way.webp
-        px: [4096, 2048]
-        bytes: 111648
-        format: rgb
-        licence: 'Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC.'
-        credit: "Milky Way (4k): NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC"
-        source: "https://svs.gsfc.nasa.gov/4851/ (read 2026-09-28)"
-        original: "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_4k_gal.exr"
-        make: "scripts/build-textures.py milky-way: the background map (no Hipparcos or Tycho stars), flipped to the 2k map convention, levels matched to it, WebP 90"
+        licence: "MIT (this project): rendered from our own model, no photograph in it"
+        credit: "Milky Way: Space Radar's own model (scripts/build-milkyway-sky.mjs)"
+        source: "https://github.com/Sara-Managed-Projects/space-radar/blob/main/scripts/build-milkyway-sky.mjs (read 2026-10-27)"
+  # 0078 r14-mw-bh: end
 
   # THE MOON'S BASE MAP IS STILL SOLAR SYSTEM SCOPE'S, AND WHY (public #406, recorded 2026-10-08).
   # No NASA mosaic of the whole Moon is IN the site: the Lunar Reconnaissance Orbiter WAC mosaic is

@@ -70,11 +70,12 @@ else {
   check(/100 times slower/.test(by.get('exotic-crab-pulsar').meta.departure || ''), `the Crab's card says a hundred times slower (${by.get('exotic-crab-pulsar').meta.departure})`);
   check((by.get('exotic-psr-b1919-21').meta.departure || '') === COPY.drawing.exoticDeparture.pulseTrue, 'the first pulsar\'s card says it blinks at its own rate');
   check(/1[\s,  ]?000 times slower/.test(by.get('exotic-psr-j1748-2446ad').meta.departure || ''), `the fastest one's says a thousand (${by.get('exotic-psr-j1748-2446ad').meta.departure})`);
-  for (const id of ['exotic-sgr-a-star', 'exotic-m87-star']) check((by.get(id).meta.departure || '').includes('far larger'), `${id}: the card says its picture is drawn far larger than life`);
-  for (const id of ['exotic-cygnus-x-1', 'exotic-gaia-bh1', 'exotic-gaia-bh3']) check(!by.get(id).meta.departure, `${id}: no picture, no pulse, no sentence`);
+  // 0078 r14-mw-bh: every black hole is drawn in 3D while its card is open, and every card says so
+  for (const id of ['exotic-sgr-a-star', 'exotic-m87-star', 'exotic-cygnus-x-1', 'exotic-gaia-bh1', 'exotic-gaia-bh3']) check((by.get(id).meta.departure || '').includes('far larger') && /model/.test(by.get(id).meta.departure || ''), `${id}: the card says a model of it is drawn far larger than life`);
+  check(!by.get('exotic-crab-pulsar').meta.departure.includes('model'), 'a pulsar\'s card says nothing of a model');
 }
-check(/cardPortrait = record && record\.klass === 'exotic' && record\.meta && record\.meta\.image/.test(main), 'a black hole with a picture shows it while its card is open');
+check(/cardPortrait = record && record\.klass === 'exotic' && record\.meta && \(record\.meta\.kind === 'blackhole' \|\| record\.meta\.kind === 'quasar'\)/.test(main), 'every black hole is drawn while its card is open'); // 0078 r14-mw-bh
 check(/const want = tripUp \? tripPortrait : cardPortrait;/.test(main), 'and inside a trip the trip decides');
 
 if (problems.length) { console.error(`pulse: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
-console.log(`pulse ok: ${withPeriod.length} rows blink, each slowed by the least power of ten that brings it to ${MIN_SHOWN_S} s, and each card says so; the two photographed black holes are drawn while their cards are open`);
+console.log(`pulse ok: ${withPeriod.length} rows blink, each slowed by the least power of ten that brings it to ${MIN_SHOWN_S} s, and each card says so; every black hole is drawn in 3D while its card is open`);

@@ -1,174 +1,122 @@
-// scene/portraits.js -- the one real picture of a black hole, drawn at the black hole's place.
+// scene/portraits.js -- a black hole drawn where it is, in 3D (release 1.4.0, r14-mw-bh; until then the Event
+// Horizon Telescope's photograph on a sprite).
 //
-// Contract: createPortraits(scene) -> { show(record), clear(), update(camera, tMs, frameMs),
-//   shown(), state(), dispose() }
-// Pure, for tests/test_remaining_trips.mjs: portraitScale(share, fovDeg), PORTRAIT_SHARE,
-//   feather(r), BLACK_POINT
+// Contract: createPortraits(scene, opts) -> { show(record), clear(), update(camera, tMs, frameMs), shown(),
+//   state(), dispose(), root }
+// Pure, for tests/test_remaining_trips.mjs and tests/test_blackhole.mjs: portraitScale(share, fovDeg),
+//   PORTRAIT_SHARE, isBlackHole(record)
 //
-// WHY. Two rows of registry/exotics.yaml carry the Event Horizon Telescope's picture (Sagittarius
-// A* and M87*, CC BY 4.0, credited in CREDITS.md), and until this file it was on the object's card
-// and nowhere in the scene: a trip about black holes flew to a mark in a field of stars (public
-// #426, internal #366). A trip stop that says `portrait: true` (registry/tours.yaml) now has the
-// picture drawn where the hole is, for as long as the stop is up.
+// WHAT. A trip stop that says `portrait: true` (registry/tours.yaml), and a black hole's own card on a rung
+// of the ladder, draw the hole at its place: scene/blackhole.js's shadow, photon ring and lensed, beamed disc,
+// M87*'s jet, Cygnus X-1's supergiant. Every black hole and quasar in registry/exotics.yaml has one; there is
+// no photograph in the scene. The card keeps the EHT's photograph of the two that have one, as the
+// photograph beside the model (ui/cards.js).
 //
-// WHAT IT IS NOT, and the line under the card says each of these (ui/trip.js noteFor,
-// copy/en.js trip.portraitLine):
-//   - NOT TO SCALE. M87*'s ring is 42 millionths of an arcsecond across from Earth, a hundredth of
-//     a light-year at its distance; from the stop's camera, hundreds of thousands of light-years
-//     off, it would be far below a pixel. The picture is drawn at a fixed share of the view's
-//     height instead (PORTRAIT_SHARE), whatever the distance, the way scene/heroes.js draws a
-//     spacecraft at a constant angular size. That is the one exaggeration, and it is size only:
-//     the CENTRE is the registry's measured place.
-//   - NOT A VIEW FROM HERE. It is the picture as taken from Earth, in radio waves, turned to face
-//     whichever way the camera looks.
-//   - NOT LENSING. Nothing here bends the stars behind it; nothing in this app knows how to.
-// And it is pasted on nothing else: check_registry.py refuses `portrait:` on a row with no image.
+// WHAT IT IS NOT, and the line under a trip stop says each (copy/en.js trip.portraitLine):
+//   - NOT TO SCALE, from where a visitor stands. M87*'s shadow is 42 millionths of an arcsecond across from
+//     Earth and Sagittarius A*'s 52; from a trip's camera, thousands of light-years off, either is far below a
+//     pixel. So the hole is drawn at PORTRAIT_SHARE of the view's height when its true size is smaller, and
+//     at its true size when the camera is near enough (scene/blackhole.js `magnification`). The PLACE is the
+//     registry's measured one, and M87*'s long jet is also drawn at its true length, in its galaxy.
+//   - NOT A PHOTOGRAPH: a model (the shadow and the bending are the mass's, the disc is modelled).
+//   - THE STARS BEHIND ARE NOT BENT: that would need the sky drawn into a texture first (a render target).
 //
-// NOTHING AT BOOT. main.js imports this file when a trip that has such a stop reaches its intro,
-// and a picture's file (40 to 63 kB) is fetched when its stop arrives.
+// NOTHING AT BOOT. main.js imports this file when a trip that has such a stop reaches its intro or a black
+// hole's card opens.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
+import { createBlackHole } from './blackhole.js';
 
-/** The picture's height as a share of the view's. */
-export const PORTRAIT_SHARE = 0.4;
-/** Display values at or under this are sky, and are taken to black, so adding the picture adds the ring and not a rectangle. */
-export const BLACK_POINT = 14;
+/** The drawn hole's frame (its inner disc, or Cygnus X-1's orbit) as a share of the view's height. */
+export const PORTRAIT_SHARE = 0.32;
 const FADE_MS = 700;
-const BAKED_PX = 512;
+const SUN_INERTIAL = 'sun-inertial';
 
-/**
- * A sprite with `sizeAttenuation: false` is scaled by its distance in the shader, so `scale` is the
- * tangent of the angle it spans: this is the scale that makes it `share` of a view `fovDeg` tall.
- */
+/** The scale of something `share` of a view `fovDeg` tall, at unit distance (kept for the trip tests). */
 export function portraitScale(share, fovDeg) {
   return share * 2 * Math.tan((fovDeg * Math.PI) / 360);
 }
 
-/** The edge: whole inside 62 % of the half-width, gone at the rim. `r` is 0 at the centre, 1 at the rim. */
-export function feather(r) {
-  const k = Math.min(1, Math.max(0, (1 - r) / 0.38));
-  return k * k * (3 - 2 * k);
+/** A record drawn by this file: a black hole or a quasar of registry/exotics.yaml. */
+export function isBlackHole(record) {
+  const k = record && record.klass === 'exotic' && record.meta ? record.meta.kind : null;
+  return k === 'blackhole' || k === 'quasar';
 }
 
-/** The picture with its sky taken to black and its edge faded, as a canvas (null with no DOM). */
-function bake(image) {
-  if (typeof document === 'undefined') return null;
-  const aspect = image.width / image.height || 1;
-  const w = aspect >= 1 ? BAKED_PX : Math.round(BAKED_PX * aspect);
-  const h = aspect >= 1 ? Math.round(BAKED_PX / aspect) : BAKED_PX;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const g = canvas.getContext('2d', { willReadFrequently: true });
-  if (!g) return null;
-  g.drawImage(image, 0, 0, w, h);
-  const px = g.getImageData(0, 0, w, h);
-  const d = px.data;
-  const half = Math.min(w, h) / 2;
-  for (let y = 0; y < h; y += 1) {
-    for (let x = 0; x < w; x += 1) {
-      const i = (y * w + x) * 4;
-      const edge = feather(Math.hypot(x - w / 2, y - h / 2) / half);
-      for (let c = 0; c < 3; c += 1) d[i + c] = Math.max(0, d[i + c] - BLACK_POINT) * (255 / (255 - BLACK_POINT)) * edge;
-      d[i + 3] = 255;
-    }
-  }
-  g.putImageData(px, 0, 0);
-  return canvas;
-}
-
-export function createPortraits(scene) {
+export function createPortraits(scene, opts = {}) {
   const root = new THREE.Group();
   root.name = 'portraits';
   scene.add(root);
-  const loader = new THREE.ImageLoader();
-  const textures = new Map(); // file -> { texture, aspect } once loaded
-  let record = null;
-  let sprite = null;
-  let opacity = 0;
-  let want = 0;
+  const tier = () => (typeof opts.tier === 'function' ? opts.tier() : Number.isFinite(opts.tier) ? opts.tier : 1);
+  const _out = new THREE.Vector3();
+  const place = {
+    tier: tier(),
+    toScene: (km, out) => stage.toSceneInto(km, SUN_INERTIAL, out || _out),
+    dirToScene: (v, out) => stage.dirToScene({ x: v[0], y: v[1], z: v[2] }, SUN_INERTIAL, out || new THREE.Vector3()),
+    unitKm: () => stage.unitKm,
+  };
+  // The one drawn now and, while it fades out, the one before.
+  let current = null; // { record, hole, opacity, want }
+  const leaving = [];
   let status = 'off';
 
-  function ensureSprite() {
-    if (sprite) return sprite;
-    // Additive, depth test off, like every other light on the sky (scene/nebulae.js THE BLEND).
-    const material = new THREE.SpriteMaterial({
-      transparent: true, opacity: 0, depthTest: false, depthWrite: false,
-      blending: THREE.AdditiveBlending, sizeAttenuation: false,
-    });
-    sprite = new THREE.Sprite(material);
-    sprite.renderOrder = 4;
-    sprite.frustumCulled = false;
-    sprite.visible = false;
-    root.add(sprite);
-    return sprite;
-  }
-
-  function wear(entry) {
-    const s = ensureSprite();
-    s.material.map = entry.texture;
-    s.material.needsUpdate = true;
-    s.userData.aspect = entry.aspect;
-    status = 'shown';
-  }
-
-  /** Draw `rec`'s picture at its place, fading in. A record with no `meta.image` shows nothing. */
+  /** Draw `rec` at its place, fading in. Anything but a black hole or a quasar shows nothing. */
   function show(rec) {
-    const image = rec && rec.meta && rec.meta.image;
-    if (!image || !image.file) { clear(); return false; }
-    record = rec;
-    want = 1;
-    const file = String(image.file).replace(/^site\//, '');
-    const have = textures.get(file);
-    if (have) { wear(have); return true; }
-    status = 'loading';
-    loader.load(file, (img) => {
-      const canvas = bake(img);
-      if (!canvas) { status = 'failed'; return; }
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      const entry = { texture, aspect: canvas.width / canvas.height };
-      textures.set(file, entry);
-      if (record === rec) wear(entry);
-    }, undefined, () => { if (record === rec) status = 'failed'; });
+    if (!isBlackHole(rec) || !rec.pos) { clear(); return false; }
+    if (current && current.record.id === rec.id) { current.want = 1; status = 'shown'; return true; }
+    clear();
+    let hole;
+    try { hole = createBlackHole(rec, { ...place, tier: tier() }); } catch (e) { console.warn('black hole: could not draw', rec.id, e); status = 'failed'; return false; }
+    root.add(hole.group);
+    root.add(hole.trueGroup);
+    current = { record: rec, hole, opacity: 0, want: 1 };
+    status = 'shown';
     return true;
   }
 
-  /** Fade the picture out; it is gone, and its record forgotten, when the fade ends. */
+  /** Fade it out; it is gone, and its record forgotten, when the fade ends. */
   function clear() {
-    want = 0;
+    if (!current) return;
+    current.want = 0;
+    leaving.push(current);
+    current = null;
+  }
+
+  function step(entry, frameMs) {
+    const k = Math.min(1, Math.max(0, Number(frameMs) || 16) / FADE_MS);
+    entry.opacity += Math.sign(entry.want - entry.opacity) * Math.min(Math.abs(entry.want - entry.opacity), k);
+    entry.hole.setOpacity(entry.opacity);
   }
 
   function update(camera, tMs, frameMs) {
-    if (!sprite) return;
-    const step = Math.min(1, Math.max(0, Number(frameMs) || 16) / FADE_MS);
-    opacity += Math.sign(want - opacity) * Math.min(Math.abs(want - opacity), step);
-    const p = record && status === 'shown' ? propagate(record, tMs) : null;
-    const pos = p ? stage.toScene(p, p.frame, tMs) : null;
-    if (!pos || opacity <= 0) {
-      sprite.visible = false;
-      if (want === 0 && opacity <= 0) { record = null; if (status === 'shown') status = 'off'; }
-      return;
+    if (!camera) return;
+    for (let i = leaving.length - 1; i >= 0; i--) {
+      const e = leaving[i];
+      step(e, frameMs);
+      if (e.opacity <= 0) { e.hole.dispose(); leaving.splice(i, 1); continue; }
+      e.hole.update({ camera, share: PORTRAIT_SHARE, tMs });
     }
-    sprite.position.copy(pos);
-    const s = portraitScale(PORTRAIT_SHARE, camera && camera.fov ? camera.fov : 45);
-    sprite.scale.set(s * (sprite.userData.aspect || 1), s, 1);
-    sprite.material.opacity = opacity;
-    sprite.visible = true;
+    if (!current) { if (status === 'shown') status = 'off'; return; }
+    step(current, frameMs);
+    current.hole.update({ camera, share: PORTRAIT_SHARE, tMs });
   }
 
   return {
     show,
     clear,
     update,
-    shown: () => (record && want === 1 ? record.id : null),
-    state: () => ({ id: record ? record.id : null, status, opacity: +opacity.toFixed(3) }),
+    shown: () => (current && current.want === 1 ? current.record.id : null),
+    state: () => ({
+      id: current ? current.record.id : null, status, opacity: current ? +current.opacity.toFixed(3) : 0,
+      drawn: current ? current.hole.stats() : null,
+    }),
+    /** How many times larger than life the shown hole is drawn (1 = its true size). */
+    magnification: () => (current ? current.hole.magnification() : 1),
     dispose() {
-      for (const entry of textures.values()) entry.texture.dispose();
-      textures.clear();
-      if (sprite) { sprite.material.dispose(); root.remove(sprite); sprite = null; }
+      if (current) current.hole.dispose();
+      for (const e of leaving) e.hole.dispose();
+      current = null; leaving.length = 0;
       scene.remove(root);
     },
     root,

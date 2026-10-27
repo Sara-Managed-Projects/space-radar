@@ -132,7 +132,9 @@ textures:
   - {id: saturn-ring,   file: 2k_saturn_ring_alpha.png,   source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: uranus,        file: 2k_uranus.webp,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: neptune,       file: 2k_neptune.webp,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
-  - {id: starfield,     file: 2k_stars_milky_way.webp,     source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  # 0078 r14-mw-bh: begin (the Milky Way from inside: our own model, rendered; no photograph or painting of the sky)
+  - {id: starfield,     file: 2k_milky_way_model.webp,        source: "scripts/build-milkyway-sky.mjs: site/js/scene/milkyway.js's model of the galaxy seen from the Sun", licence: "MIT (this project)", credit: "Milky Way: Space Radar's own model (Reid et al. 2019 arms; named dark clouds at measured distances)", cls: modelled}
+  # 0078 r14-mw-bh: end
   # Issue #262 and 2026-10-05: the moons and small worlds. Public domain; resized, recoloured and gap-filled (CREDITS.md §2).
   - {id: io, file: 2k_io_usgs.webp, source: "https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.lbl", licence: "Public domain (USGS)", credit: "Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain"}
   - {id: europa, file: 2k_europa_usgs.webp, source: "https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.lbl", licence: "Public domain (USGS)", credit: "Europa map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"}

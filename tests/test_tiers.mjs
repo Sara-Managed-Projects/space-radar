@@ -148,7 +148,7 @@ function rig(opts = {}) {
   off = false;
   r.tiers.tick(31000);
   await r.settle();
-  check(r.log.length === 5, `back online, the sharper maps are asked for (${r.log.length})`);
+  check(r.log.length === 4, `back online, the sharper maps are asked for (${r.log.length})`); // 0078 r14-mw-bh: four, the sky has none
 }
 {
   // A phone: nothing, ever.
@@ -168,23 +168,24 @@ function rig(opts = {}) {
   r.idleQ.shift()();
   check(r.log.length === 1 && r.pending.length === 1, `one fetch at a time (${r.log.length} in flight)`);
   await r.settle();
-  const want = ['textures/4k/earth_day_09.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/1k_earth_relief.webp', 'textures/4k/milky_way.webp'];
-  check(JSON.stringify(r.log) === JSON.stringify(want), `T1 fetches the Earth, then the sky, in that order, and nothing else while the planets are small: ${r.log.join(', ')}`);
-  check(r.earth.slots.day && r.earth.slots.day.url === want[0] && r.earth.slots.water && r.sky.map, 'and each landed in its slot');
+  // 0078 r14-mw-bh: the sky has no sharper picture to fetch any more (scene/milkyway.js draws the band from its model)
+  const want = ['textures/4k/earth_day_09.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/1k_earth_relief.webp'];
+  check(JSON.stringify(r.log) === JSON.stringify(want), `T1 fetches the Earth, in that order, and nothing else while the planets are small: ${r.log.join(', ')}`);
+  check(r.earth.slots.day && r.earth.slots.day.url === want[0] && r.earth.slots.water && !r.sky.map, 'and each landed in its slot, and nothing in the sky\'s');
   check(r.tiers.state().fetchedBytes > 0, 'and counts what it fetched');
 
   // The clock moves to December: nothing until the month has held for MONTH_HOLD_MS.
   r.setMonth(12);
   r.tiers.tick(10000);
   await r.settle();
-  check(r.log.length === 5, 'a new month is not fetched at once (a scrub through the year is not twelve downloads)');
+  check(r.log.length === 4, 'a new month is not fetched at once (a scrub through the year is not twelve downloads)'); // 0078 r14-mw-bh
   r.tiers.tick(10000 + MONTH_HOLD_MS - 100);
   await r.settle();
-  check(r.log.length === 5, 'nor just before the hold is up');
+  check(r.log.length === 4, 'nor just before the hold is up'); // 0078 r14-mw-bh
   const sept = r.earth.slots.day;
   r.tiers.tick(10000 + MONTH_HOLD_MS + 100);
   await r.settle();
-  check(r.log[5] === 'textures/4k/earth_day_12.webp' && r.earth.slots.day.url === 'textures/4k/earth_day_12.webp', `December's Earth after the hold (${r.log[5]})`);
+  check(r.log[4] === 'textures/4k/earth_day_12.webp' && r.earth.slots.day.url === 'textures/4k/earth_day_12.webp', `December's Earth after the hold (${r.log[4]})`); // 0078 r14-mw-bh
   check(sept.disposed === 1, 'and September\'s 4k texture is freed');
 
   // Planets: the Moon small, then big. T1 holds ONE planet at 4k (its GPU budget, spec 0056).
@@ -210,7 +211,7 @@ function rig(opts = {}) {
     'a selected world gets 4k whatever its size, and takes the slot from one that has gone small');
 
   // The latch: everything back, for good.
-  const held = [r.earth.slots.day, r.earth.slots.night, r.sky.map, r.worlds.maps.jupiter];
+  const held = [r.earth.slots.day, r.earth.slots.night, r.worlds.maps.jupiter]; // 0078 r14-mw-bh: no sky map to hold
   r.tiers.latch();
   check(r.earth.slots.day === null && r.earth.slots.night === null && r.earth.slots.water === null && r.sky.map === null,
     'the latch puts the Earth and the sky back on their boot maps');
@@ -228,7 +229,7 @@ function rig(opts = {}) {
   let ready = false;
   const r = rig({ tier: 1, earthReady: () => ready });
   r.tiers.start(); await r.settle();
-  check(r.log.join() === 'textures/4k/milky_way.webp', `only the sky while the Earth settles (${r.log.join(', ')})`);
+  check(r.log.join() === '', `nothing while the Earth settles (${r.log.join(', ')})`); // 0078 r14-mw-bh: no sky tier
   ready = true; r.tiers.tick(1000); await r.settle();
   check(r.log.includes('textures/4k/earth_day_09.webp'), 'and the Earth once it has');
 }
@@ -266,8 +267,9 @@ const BOOT_2026_09_28 = {
   // from the source JPEG. It was 575 032 B, the largest request of a first visit. Smaller is the one
   // direction this file may move in.
   'textures/2k_earth_clouds.webp': 282674,
-  'textures/2k_stars_milky_way.webp': 60004,
 };
+// 0078 r14-mw-bh: the Milky Way's 2k painting (60 004 B) left the first visit in release 1.4.0: the band is drawn from
+// its model, and only a tier-0 device fetches the picture baked from it (textures/2k_milky_way_model.webp).
 const boot = bootFiles(TEXTURES);
 // 34 since 2026-10-05: fifteen more moons wear a map. A moon's tier-0 file is fetched when the moon is
 // first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
@@ -290,10 +292,10 @@ for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(real === bytes, `${f} is ${real} bytes, not the ${bytes} it was: the boot set changed`);
   firstVisit += real;
 }
-check(firstVisit === 575580, `the first visit's textures are ${firstVisit} bytes (575 580 since the day map became a WebP on 2026-10-08; 890 355 since the cloud mask's re-encode of 2026-10-07; 1 182 713 before it)`);
+check(firstVisit === 515576, `the first visit's textures are ${firstVisit} bytes (515 576 since the Milky Way's painting left in release 1.4.0; 575 580 since the day map became a WebP on 2026-10-08; 890 355 since the cloud mask's re-encode of 2026-10-07; 1 182 713 before it)`);
 // The code that loads the boot set names the same files the manifest calls tier 0.
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-check(main.includes("milkyWayTexture: 'textures/2k_stars_milky_way.webp'"), 'main.js boots the Milky Way from the tier-0 file');
+check(main.includes("import('./scene/milkyway.js')") && main.includes("baked: 'textures/2k_milky_way_model.webp'") && boot.includes('textures/2k_milky_way_model.webp'), 'main.js builds the Milky Way from its model, with the tier-0 file baked from it'); // 0078 r14-mw-bh
 for (const w of WORLDS) {
   const names = [w.look.map, w.look.day, w.look.night, w.look.clouds, w.look.ring && w.look.ring.map].filter(Boolean);
   for (const n of names) check(boot.includes('textures/' + n), `worlds.js boots ${w.id} from ${n}, which is not a tier-0 file`);

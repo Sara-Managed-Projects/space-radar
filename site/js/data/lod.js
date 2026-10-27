@@ -28,5 +28,12 @@ export const LOD_RULES = [
     "fade": "in",
     "from_km": 4730365236290400,
     "to_km": 47303652362904000
+  },
+  {
+    "id": "the-band-gives-way",
+    "what": "milky-way-inside",
+    "fade": "out",
+    "from_km": 4730365236290400,
+    "to_km": 47303652362904000
   }
 ];

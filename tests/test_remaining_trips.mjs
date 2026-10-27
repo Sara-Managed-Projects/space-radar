@@ -490,13 +490,13 @@ async function walk(m, trip, plan, each) {
   const s = P.portraitScale(P.PORTRAIT_SHARE, 45);
   check(Math.abs(s / (2 * Math.tan((45 * Math.PI) / 360)) - P.PORTRAIT_SHARE) < 1e-12, 'the picture spans its share of a 45 degree view');
   check(P.PORTRAIT_SHARE > 0.2 && P.PORTRAIT_SHARE <= 0.5, `the share is ${P.PORTRAIT_SHARE}: big enough to read, never the whole view`);
-  check(P.feather(0) === 1 && P.feather(0.6) === 1 && P.feather(1) === 0 && P.feather(0.9) > 0 && P.feather(0.9) < 0.5, 'whole in the middle, gone at the rim');
   const portraits = P.createPortraits(new THREE.Scene());
   check(portraits.show({ id: 'x', meta: {} }) === false && portraits.shown() === null, 'a record with no picture shows nothing');
   portraits.update(new THREE.PerspectiveCamera(45, 1.6, 0.1, 10), REAL, 16);
   portraits.dispose();
+  // 0078 r14-mw-bh: a black hole is drawn in 3D (scene/blackhole.js), at the share of the view while its true size is smaller
   const src = readFileSync(join(JS, 'scene/portraits.js'), 'utf8');
-  check(/sizeAttenuation: false/.test(src) && /AdditiveBlending/.test(src), 'a constant share of the view, added to the sky like every other light');
+  check(/createBlackHole\(/.test(src) && /share: PORTRAIT_SHARE/.test(src) && !/SpriteMaterial|ImageLoader/.test(src), 'a 3D black hole at a share of the view, no photograph on a sprite');
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(/import\('\.\/scene\/portraits\.js'\)/.test(main) && !/^import .*portraits\.js/m.test(main), 'the portraits are a dynamic import: nothing of them at boot');
 }
