@@ -1061,7 +1061,9 @@ export const VISUAL_CLASSES = [
 ],
 "heroes": [
 "dso-helix-nebula",
-"dso-m57"
+"dso-m27",
+"dso-m57",
+"dso-southern-ring-nebula"
 ]
 }
 },
@@ -1097,6 +1099,7 @@ export const VISUAL_CLASSES = [
 ],
 "heroes": [
 "dso-iris-nebula",
+"dso-m45",
 "dso-m78"
 ]
 }
@@ -1181,7 +1184,9 @@ export const VISUAL_CLASSES = [
 "dso-m31",
 "dso-m33",
 "dso-m51",
-"dso-m81"
+"dso-m81",
+"dso-m83",
+"dso-ngc-1300"
 ],
 "model_kinds": [
 "galaxy-model"
@@ -1271,6 +1276,9 @@ export const VISUAL_CLASSES = [
 "dso-centaurus-a"
 ],
 "photographs": [
+"dso-centaurus-a"
+],
+"heroes": [
 "dso-centaurus-a"
 ]
 }
