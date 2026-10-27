@@ -138,6 +138,7 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
 // Each answer carries its own `made` and `axes`: the family box has neither.
 const GPS_FILE = { made: 'dimensions', axes: 'app' };
 const W3B = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0077 W3-b
+const R14M4 = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0078 r14-m4
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
@@ -856,6 +857,38 @@ export const REAL_MODELS = {
     39453: { ...W3B, file: 'swarm.glb', name: 'Swarm C' },
     65159: { ...W3B, file: 'metop-sg-a.glb', name: 'MetOp-SG A1' },
     // 0077 W3-b: end
+    // 0078 r14-m4: begin
+    // TEN WEATHER AND EARTH-OBSERVATION DESIGNS (release 1.4.0 stage r14-m4; public #1114, #1115, #1116, #1117, #1118, #1119, #1112,
+    // #1113), each BUILT in code from cited metres and looked-at pictures (registry/models.yaml rows `meteosat-msg`, `fengyun-2`,
+    // `mtg-i`, `mtg-s`, `insat-3d`, `gk2a`, `gk2b`, `meteor-m2`, `midori-2`, `resurs-dk1`): no agency was found to publish a model of
+    // any of them under terms that allow a derivative. They wore the class shape of a satellite or the geostationary bus. All to the
+    // app's axes (`axes: 'app'`: +Z the Earth face, the wings along X, their cells toward +Y); the two spinning drums (Meteosat
+    // Second Generation and Fengyun-2, ONE builder) have their spin axis along X and the radiometer's opening toward +Z.
+    // NOT TRUE of any of them: the wings turn to the Sun, and the drums spin (100 rpm); the app draws one attitude.
+    //   meteosat-msg.glb  METEOSAT-9, -10, -11 (MSG-2, -3, -4). Not METEOSAT-8 (MSG-1, out of use).
+    //   fengyun-2.glb     FENGYUN 2G and 2H.            mtg-i.glb  METEOSAT-12 (MTG-I1); MTG-I2 by name, below.   mtg-s.glb  MTG-S1.
+    //   insat-3d.glb      INSAT-3D, -3DR, -3DS.         gk2a.glb  GEO-KOMPSAT-2A.   gk2b.glb  GEO-KOMPSAT-2B (another payload on the bus).
+    //   meteor-m2.glb     METEOR-M 2, M2 2, M2 3, M2 4 (one bus; the instrument fits differ in details not told apart at the app's close-up).
+    //   midori-2.glb      MIDORI II (ADEOS-II).         resurs-dk1.glb  RESURS-DK 1.
+    28912: { ...R14M4, file: 'meteosat-msg.glb', name: 'Meteosat-9' },
+    38552: { ...R14M4, file: 'meteosat-msg.glb', name: 'Meteosat-10' },
+    40732: { ...R14M4, file: 'meteosat-msg.glb', name: 'Meteosat-11' },
+    40367: { ...R14M4, file: 'fengyun-2.glb', name: 'Fengyun-2G' },
+    43491: { ...R14M4, file: 'fengyun-2.glb', name: 'Fengyun-2H' },
+    54743: { ...R14M4, file: 'mtg-i.glb', name: 'Meteosat-12 (MTG-I1)' },
+    64723: { ...R14M4, file: 'mtg-s.glb', name: 'MTG-S1' },
+    39216: { ...R14M4, file: 'insat-3d.glb', name: 'INSAT-3D' },
+    41752: { ...R14M4, file: 'insat-3d.glb', name: 'INSAT-3DR' },
+    58990: { ...R14M4, file: 'insat-3d.glb', name: 'INSAT-3DS' },
+    43823: { ...R14M4, file: 'gk2a.glb', name: 'GEO-KOMPSAT-2A' },
+    45246: { ...R14M4, file: 'gk2b.glb', name: 'GEO-KOMPSAT-2B' },
+    40069: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2' },
+    44387: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2-2' },
+    57166: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2-3' },
+    59051: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2-4' },
+    27597: { ...R14M4, file: 'midori-2.glb', name: 'Midori II (ADEOS-II)' },
+    29228: { ...R14M4, file: 'resurs-dk1.glb', name: 'Resurs-DK 1' },
+    // 0078 r14-m4: end
     // 0077 W3-a: begin
     // NASA SCIENCE CRAFT (release 1.3.0, stage W3-a; public #1090, #1091, #1092, #1094, #1110). NASA 3D Resources has
     // none of the five (its 1 583 paths read 2026-10-20), so each is built here from cited dimensions and photographs
@@ -1106,6 +1139,11 @@ export const REAL_MODELS = {
     // whole word: `SENTINEL-3C DEB` (debris) and `SENTINEL-3A` do not match it. Not `generic`: the
     // file is this craft. Once its number is known to be its own, add it above and leave this key.
     'sentinel-3c': { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3C', klass: ['satellite'], made: 'dimensions', axes: 'app' },
+    // 0078 r14-m4: begin
+    // MTG-I2 BY NAME (public #1115): launched in 2026, in the live saved data of 2026-10-12 as `MTG-I2` under 100530, a number the parser read as a placeholder
+    // (as SENTINEL-3C's); the imager satellite of its sister's file. Klass-gated and a whole word. Once the number is known to be its own, add it to the numbers above.
+    'mtg-i2': { file: 'mtg-i.glb', colour: 'satellite', name: 'MTG-I2', klass: ['satellite'], made: 'dimensions', axes: 'app' },
+    // 0078 r14-m4: end
     // STRIX HAS A FILE OF ITS OWN since batch seven (2026-10-13; public #984): strix.glb, built in code
     // from Synspective's numbers as eoPortal tabulates them (registry/models.yaml row `strix`): a 5 m
     // by 0.8 m antenna of seven panels with a 0.8 x 1.0 x 0.8 m bus behind the middle one, and solar
