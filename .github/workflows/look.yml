@@ -108,7 +108,7 @@ jobs:
               if not re.fullmatch(r"[a-z0-9-]+", probe): sys.exit(f"probe {probe!r}: a name under tests/probes/look/, lower case")
               if not re.fullmatch(r"[a-z0-9,-]*", harvest): sys.exit(f"harvest {harvest!r}: source ids with commas")
               if not (re.fullmatch(r"\d{3,4}", width) and re.fullmatch(r"\d{3,4}", height)): sys.exit("width and height: three or four digits")
-              if not re.fullmatch(r"[A-Za-z0-9_.-]{0,80}", subject): sys.exit(f"subject {subject!r}: a record id (letters, digits, dot, dash, underscore)")
+              if not re.fullmatch(r"[A-Za-z0-9_.-]{0,200}", subject): sys.exit(f"subject {subject!r}: a record id (letters, digits, dot, dash, underscore)")
               # A phone is 390 x 844 unless a size was asked for with it (a 360 px phone: -f width=360 -f height=780).
               if mobile and (width, height) == ("1440", "900"): width, height = "390", "844"
               return {"probe": probe, "browser": browser, "harvest": harvest, "mobile": mobile, "hold": hold, "width": width, "height": height, "subject": subject}
@@ -123,7 +123,7 @@ jobs:
   look:
     needs: plan
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 170
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
@@ -264,7 +264,7 @@ jobs:
           if [ "$BROWSER" = "chromium" ]; then
             export CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium)"
             echo "chrome: $CHROME $("$CHROME" --version)"
-            CDP_LOGS=1 timeout 2700 node tools/cdp.mjs "$url" look-out/probe.js $flags >look-out/out.json 2>look-out/err.txt
+            CDP_LOGS=1 timeout 9000 node tools/cdp.mjs "$url" look-out/probe.js $flags >look-out/out.json 2>look-out/err.txt
           else
             docker run --rm --network host \
               -u "$(id -u):$(id -g)" -e HOME=/tmp \

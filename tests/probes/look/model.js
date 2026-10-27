@@ -362,7 +362,7 @@ const walk = async (tag, what, opts = {}) => {
   rig.flyTo({ azimuth: a0, polar: p0, distance: dFramed, ms: 0 }); // 0077 W1-a
   await sleep(1500);
 };
-await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''));
+await walk('flat', (out.standIn ? 'the model on a stand-in record' : record.name) + ' wearing ' + (entry.file || entry.build || 'its class shape') + (out.light.flood ? ' under the card\'s lamp' : ''), { places: [] });
 // 0077 W1-a: begin
 // THE CLOSE-UP SHEET (2026-10-20, release 1.3.0 stage W1-a; internal spec 0077 task 1, internal #751). Four
 // angles, each with the model filling about nine tenths of the picture's short side (the lens above), for a
