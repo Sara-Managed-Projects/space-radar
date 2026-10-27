@@ -336,7 +336,14 @@ export const VISUAL_CLASSES = [
 "timed",
 "sert-2",
 "isis-1",
-"tracers"
+"tracers",
+"worldview-3",
+"blacksky-gen2",
+"satellogic-newsat",
+"planet-pelican",
+"hawkeye360-block1",
+"ghgsat-c",
+"gaofen-1"
 ],
 "model_kinds": [
 "satellite-iridium",

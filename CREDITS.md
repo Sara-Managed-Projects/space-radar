@@ -53,7 +53,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: end -->
 <!-- 0077 W3-b: begin -->
 | The shapes of EarthCARE, Biomass, Swarm and MetOp-SG A1 | built by us in code from published dimensions | CC0, CC BY-SA 3.0 IGO or CC BY-SA 4.0 where a picture was compared; ours | [3b-15](#3b-15-four-esa-and-eumetsat-earth-explorers-built-from-dimensions--earthcare-biomass-swarm-metop-sg-a1-2026-10-20) |
-| The shapes of WorldView-3, BlackSky Gen-2, Satellogic NewSat, Planet Pelican, HawkEye 360 Pathfinder and GHGSat-C | built by us in code from published dimensions | CC BY-SA 4.0 where a Satellogic picture was compared; ours | [3b-17](#3b-17-release-140-six-commercial-earth-imagers-built-from-dimensions--worldview-3-blacksky-gen-2-satellogic-newsat-planet-pelican-hawkeye-360-pathfinder-ghgsat-c-2026-10-27) |  <!-- 0078 r14-m5 -->
+| The shapes of WorldView-3, BlackSky Gen-2, Satellogic NewSat, Planet Pelican, HawkEye 360 Pathfinder, GHGSat-C and Gaofen-1 | built by us in code from published dimensions | CC BY-SA 4.0 where a Satellogic picture was compared; ours | [3b-17](#3b-17-release-140-seven-earth-imagers-built-from-dimensions--worldview-3-blacksky-gen-2-satellogic-newsat-planet-pelican-hawkeye-360-pathfinder-ghgsat-c-gaofen-1-2026-10-27) |  <!-- 0078 r14-m5 -->
 <!-- 0077 W3-b: end -->
 <!-- 0077 W3-c: begin -->
 | The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
@@ -1444,32 +1444,33 @@ only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with 
 
 <!-- 0077 W3-a: end -->
 <!-- 0078 r14-m5: begin -->
-## 3b-17. Release 1.4.0: six commercial Earth imagers built from dimensions — WorldView-3, BlackSky Gen-2, Satellogic NewSat, Planet Pelican, HawkEye 360 Pathfinder, GHGSat-C (2026-10-27)
+## 3b-17. Release 1.4.0: seven Earth imagers built from dimensions — WorldView-3, BlackSky Gen-2, Satellogic NewSat, Planet Pelican, HawkEye 360 Pathfinder, GHGSat-C, Gaofen-1 (2026-10-27)
 
 Release 1.4.0, stage r14-m5 (public #976, #1148, #1149, #1150, #1151, #1152). **No agency or operator publishes a model of any of the six
 under a free licence that was found**: NASA's 3D Resources (1 583 paths read 2026-10-27) has none of them, and a search for each operator's
 own model found none. So each file was built in code with the part library from numbers cited on eoPortal. **No operator picture or model is
-in a file.** Layouts were read off the operators' own pictures on eoPortal (Maxar and Ball, BlackSky, Planet, UTIAS/SFL, GHGSat, Satellogic),
+in a file.** Layouts were read off the operators' own pictures on eoPortal (Maxar and Ball, BlackSky, Planet, UTIAS/SFL, GHGSat, Satellogic, CAST),
 which are not free and were **looked at only**: they are on no sheet, and nothing is traced. The only free pictures are Satellogic's three on
 Wikimedia Commons (CC BY-SA 4.0), compared with and credited below. No image-to-3D model was used. Their cards say "shape built from
 published dimensions and pictures; details simplified". WorldView-1, WorldView-2, GeoEye-1, WorldView Legion, the BlackSky Gen-3
-craft, the later HawkEye 360 blocks, GHGSat-C12 and C13 and Gaofen-1 have **no file** (reasons in the registry rows and the pull request).
+craft, the later HawkEye 360 blocks, GHGSat-C12 and C13 and Gaofen-1 02, 03 and 04 have **no file** (reasons in the registry rows and the pull request).
 
 | File | What | What it was drawn from or compared with | Terms |
 |---|---|---|---|
 | `worldview-3.glb` (109 KB) | WorldView-3: a hexagonal telescope barrel with the aperture to the Earth, the bus above it with its star trackers and equipment tower, the two CAVIS cameras, two gimballed dishes, two wings of three panels; 5.7 m tall, 7.1 m across the panels | eoPortal (<https://www.eoportal.org/satellite-missions/worldview-3>); the operator's pictures there, looked at only. The split between bus and barrel, the panels' sizes and every instrument are ours | numbers are facts; nothing of any picture is in the file |
 | `blacksky-gen2.glb` (57 KB) | BlackSky Global, first and second generation: a 0.46 by 0.40 by 0.84 m body in gold foil, the 24 cm telescope's aperture with its vanes, two cell wings on hinge arms, a dish on a stalk | eoPortal (<https://www.eoportal.org/satellite-missions/blacksky-constellation>); the operator's pictures there, looked at only. The wings and the dish are ours | numbers are facts; nothing of any picture is in the file |
 | `satellogic-newsat.glb` (80 KB) | Satellogic NewSat: a cell-covered bus with a horn, gold patches and the auxiliary camera over a bronze-blanket barrel with its baffle and vanes, an 8 by 8 gold patch array; 0.51 by 0.57 by 0.82 m | eoPortal (<https://www.eoportal.org/satellite-missions/newsat>); compared with Satellogic USA INC's "Satellogic Render NewSat.png" (<https://commons.wikimedia.org/wiki/File:Satellogic_Render_NewSat.png>), Gisesate's "Satelite NewSat.png" (<https://commons.wikimedia.org/wiki/File:Satelite_NewSat.png>) and BugWarp's "ÑuSat mockup at Satellogic HQ.jpg" (<https://commons.wikimedia.org/wiki/File:%C3%91uSat_mockup_at_Satellogic_HQ.jpg>), all CC BY-SA 4.0, read 2026-10-27 | numbers are facts; the pictures are CC BY-SA 4.0 and nothing of them is in the file; the shape is this project's |
-| `planet-pelican.glb` (60 KB) | Planet Pelican: a 0.56 by 0.56 by 0.40 m bus with the telescope's baffled opening, a clamp ring on the opposite face and four panels in two hinged pairs, 3 m across | eoPortal (<https://www.eoportal.org/satellite-missions/planet-pelican>), whose two tables disagree on the size (both quoted in the registry row); Planet's pictures there, looked at only | numbers are facts; nothing of any picture is in the file |
+| `planet-pelican.glb` (61 KB) | Planet Pelican: a 0.56 by 0.56 by 0.40 m bus with the telescope's baffled opening, a clamp ring on the opposite face and four panels in two hinged pairs, 3 m across | eoPortal (<https://www.eoportal.org/satellite-missions/planet-pelican>), whose two tables disagree on the size (both quoted in the registry row); Planet's pictures there, looked at only | numbers are facts; nothing of any picture is in the file |
 | `hawkeye360-block1.glb` (39 KB) | HawkEye 360 Pathfinder (Hawk-A, -B, -C): a 0.20 by 0.267 by 0.44 m NEMO-15 body with four launch rails, cells, patch antennas, a horn, a button antenna, four whips and a boom | eoPortal (<https://www.eoportal.org/satellite-missions/hawkeye-360>); UTIAS/SFL's pictures there, looked at only | numbers are facts; nothing of any picture is in the file |
-| `ghgsat-c.glb` (45 KB) | GHGSat-C1 to -C8: a 0.20 by 0.30 by 0.40 m NEMO body with the white payload tube, the auxiliary camera, Darkstar, GPS and S-band antennas, four UHF whips, cells | eoPortal (<https://www.eoportal.org/satellite-missions/ghgsat-con>); UTIAS/SFL's labelled solid model there, looked at only | numbers are facts; nothing of any picture is in the file |
-| all six | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c` |
+| `ghgsat-c.glb` (46 KB) | GHGSat-C1 to -C8: a 0.20 by 0.30 by 0.40 m NEMO body with the white payload tube, the auxiliary camera, Darkstar, GPS and S-band antennas, four UHF whips, cells | eoPortal (<https://www.eoportal.org/satellite-missions/ghgsat-con>); UTIAS/SFL's labelled solid model there, looked at only | numbers are facts; nothing of any picture is in the file |
+| `gaofen-1.glb` (86 KB) | Gaofen-1: a gold-blanket body on an adapter cone, two barrel cameras with baffles and four wide-field cameras on the Earth face, an X-band dish on a mast, whips, two wings of three panels; 7.93 m across | eoPortal (<https://www.eoportal.org/satellite-missions/gaofen-1>) for the bus and the cameras; the size from a Chinese data vendor's parameter page (<https://www.glstkj.com/wzz.asp?x=36>, not the agency: envelope 2.65 by 2.0 m, span 7.93 m, six panels of 1.11 by 0.85 m); CAST's pictures on eoPortal, looked at only. The body's size and every fitting are ours | numbers are facts; nothing of any picture is in the file |
+| all seven | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1` |
 
 **Credit lines:**
 `3D model: built by Space Radar from eoPortal's published dimensions; compared with the operator's pictures, looked at only`;
 `3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by Satellogic USA INC, Gisesate and BugWarp (CC BY-SA 4.0)`
 
-No logo, lettering, flag or insignia is on any of the six. Maxar, Ball, BlackSky, Satellogic, Planet, HawkEye 360, GHGSat, UTIAS/SFL, the
+No logo, lettering, flag or insignia is on any of the seven. Maxar, Ball, CAST, BlackSky, Satellogic, Planet, HawkEye 360, GHGSat, UTIAS/SFL, the
 pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved these shapes.
 <!-- 0078 r14-m5: end -->
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0

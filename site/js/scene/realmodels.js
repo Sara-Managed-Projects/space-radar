@@ -146,6 +146,7 @@ const R14_SAT = { ...W3B, file: 'satellogic-newsat.glb', name: 'Satellogic NewSa
 const R14_PEL = { ...W3B, file: 'planet-pelican.glb', name: 'Planet Pelican' };
 const R14_HAWK = { ...W3B, file: 'hawkeye360-block1.glb', name: 'HawkEye 360 Pathfinder' };
 const R14_GHG = { ...W3B, file: 'ghgsat-c.glb', name: 'GHGSat-C' };
+const R14_GF1 = { ...W3B, file: 'gaofen-1.glb', name: 'Gaofen-1' };
 // 0078 r14-m5: end
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
@@ -829,15 +830,15 @@ export const REAL_MODELS = {
     65159: { ...W3B, file: 'metop-sg-a.glb', name: 'MetOp-SG A1' },
     // 0077 W3-b: end
     // 0078 r14-m5: begin
-    // COMMERCIAL EARTH IMAGERS (release 1.4.0 stage r14-m5; public #976, #1148, #1149, #1150, #1151, #1152), each BUILT in
+    // EARTH IMAGERS (release 1.4.0 stage r14-m5; public #976, #1148, #1149, #1150, #1151, #1152, #1147), each BUILT in
     // code from cited metres and looked-at pictures (registry/models.yaml rows `worldview-3`, `blacksky-gen2`,
-    // `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`), by number and only for the numbers that are
+    // `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`), by number and only for the numbers that are
     // that design (`W3B` above: a satellite's colour, made from dimensions, the app's axes: +Z the Earth face).
     //   WorldView-3 only: WorldView-1 and -2 (same bus, other heights), GeoEye-1 (SA-200HP) and Legion (500 series) are not.
     //   BlackSky Global-2 to -19 (the first two generations, 55 to 60 kg); not the Gen-3 craft (Global-31 and later).
     //   Satellogic NewSat: all 18 (one form factor, 0.51 x 0.57 x 0.82 m). Planet Pelican: all 9 (one platform).
     //   HawkEye 360 Hawk-A, -B, -C (the Pathfinder block); not the later, larger blocks.
-    //   GHGSat-C1 to -C8 (SFL's NEMO bus); not C12 and C13.
+    //   GHGSat-C1 to -C8 (SFL's NEMO bus); not C12 and C13. Gaofen-1 only, not Gaofen-1 02, 03, 04.
     40115: R14_WV3,
     43812: R14_BSK,
     44499: R14_BSK,
@@ -888,6 +889,7 @@ export const REAL_MODELS = {
     56204: R14_GHG,
     56209: R14_GHG,
     56186: R14_GHG,
+    39150: R14_GF1,
     // 0078 r14-m5: end
     // 0077 W3-a: begin
     // NASA SCIENCE CRAFT (release 1.3.0, stage W3-a; public #1090, #1091, #1092, #1094, #1110). NASA 3D Resources has

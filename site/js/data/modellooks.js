@@ -8,6 +8,7 @@ export const MODEL_LOOKS = {
   "biomass.glb": "pbr",
   "blacksky-gen2.glb": "pbr",
   "earthcare.glb": "pbr",
+  "gaofen-1.glb": "pbr",
   "ghgsat-c.glb": "pbr",
   "hawkeye360-block1.glb": "pbr",
   "hubble.glb": "pbr",

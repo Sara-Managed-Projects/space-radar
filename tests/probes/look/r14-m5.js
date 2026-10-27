@@ -1,12 +1,12 @@
-// r14-m5: SIX COMMERCIAL EARTH IMAGERS, BEFORE AND AFTER (release 1.4.0 stage r14-m5, internal spec 0078; public #976 WorldView-3,
-// #1148 BlackSky Gen-2, #1149 Satellogic NewSat, #1150 Planet Pelican, #1151 HawkEye 360 Pathfinder, #1152 GHGSat-C). The
-// r13-w3b walk (W3-b) for one record each, with the cost cut to fit the look job's 45-minute cap with six craft: on a desktop
+// r14-m5: SEVEN EARTH IMAGERS, BEFORE AND AFTER (release 1.4.0 stage r14-m5, internal spec 0078; public #976 WorldView-3,
+// #1148 BlackSky Gen-2, #1149 Satellogic NewSat, #1150 Planet Pelican, #1151 HawkEye 360 Pathfinder, #1152 GHGSat-C, #1147 Gaofen-1). The
+// r13-w3b walk (W3-b) for one record each, with the cost cut to fit the look job's 45-minute cap with seven craft: on a desktop
 // width the physically based look only (the look tier 1 and up draw), on a phone width the toon look (what tier 0 draws) and
 // the physically based one; five close places on desktop, three on a phone. Each picture is named
 // `<id>--<before|pbr|toon>-<n>-<place>`.
 //
-//   gh workflow run look.yml --ref r14-m5 -f probe=r14-m5 -f subject=sat-40115_sat-52196_sat-52184_sat-58296_sat-43765_sat-46278 -f width=1600 -f height=900
-//   gh workflow run look.yml --ref r14-m5 -f probe=r14-m5 -f subject=sat-40115_sat-52196_sat-52184_sat-58296_sat-43765_sat-46278 -f mobile=true
+//   gh workflow run look.yml --ref r14-m5 -f probe=r14-m5 -f subject=sat-40115_sat-52196_sat-52184_sat-58296_sat-43765_sat-46278_sat-39150 -f width=1600 -f height=900
+//   gh workflow run look.yml --ref r14-m5 -f probe=r14-m5 -f subject=sat-40115_sat-52196_sat-52184_sat-58296_sat-43765_sat-46278_sat-39150 -f mobile=true
 //
 // The records are read from the active catalogue's column twin, which the workflow saves when a subject is given (look.yml).
 look.probe = 'r14-m5';
@@ -14,7 +14,7 @@ const urlOf = (path) => new URL(path, document.baseURI).href;
 const RM = await import(urlOf('./js/scene/realmodels.js'));
 const MM = await import(urlOf('./js/scene/models.js'));
 let PB = null;
-const DEFAULT = ['sat-40115', 'sat-52196', 'sat-52184', 'sat-58296', 'sat-43765', 'sat-46278'];
+const DEFAULT = ['sat-40115', 'sat-52196', 'sat-52184', 'sat-58296', 'sat-43765', 'sat-46278', 'sat-39150'];
 const param = new URLSearchParams(location.search).get('lookSubject');
 const subjects = param ? param.split('_').filter(Boolean) : DEFAULT;
 // Three.js says so when a program does not compile: keep its words, they are the first thing to read.
