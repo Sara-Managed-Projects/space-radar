@@ -135,7 +135,8 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
     const rec = worldRecords().find((r) => r.id === w.id);
     const line = drawingLine(rec) || '';
     const part = COPY.drawing.worldCoverage[w.id];
-    if (row.coverage < 0.95) check(part && line.includes(part) && /left plain, not guessed/.test(part), `${w.id}: ${Math.round(row.coverage * 100)} % of it is mapped, and its card says the rest is not a guess: ${line}`);
+    // 0078 r14-pluto: Pluto's and Charon's unseen south is modelled, and the card says so instead.
+    if (row.coverage < 0.95) check(part && line.includes(part) && /left plain, not guessed|is modelled, .*not a photograph/.test(part), `${w.id}: ${Math.round(row.coverage * 100)} % of it is mapped, and its card says the rest is not a guess or says it is modelled: ${line}`); // 0078 r14-pluto
     else check(!part, `${w.id}: mapped all over, so its card says nothing about a missing side`);
     if (w.look.mapKind !== 'colour') check(line.includes(COPY.drawing.worldMap[w.look.mapKind]), `${w.id}: its card says the map is ${w.look.mapKind}: ${line}`);
     check(line.includes(COPY.drawing.worldLit), `${w.id}: and how it is lit`);
