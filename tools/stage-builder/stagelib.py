@@ -316,9 +316,50 @@ class Stage:
         self.m.transform(t=(0, -(lo[1] + hi[1]) / 2, 0))
         return hi[1] - lo[1]
 
+    def reduce_colours(self, limit=14):
+        """At most `limit` colour groups (one draw call each). lib.Model.export folds the SMALLEST group into its nearest
+        colour, which loses a small distinct colour (a gold patch, a white adapter) into a neighbouring grey. Here the two
+        CLOSEST colours of one role are merged instead -- the smaller group takes the larger's colour -- until the limit
+        holds, so panel tints and weld greys collapse and the distinct colours stay. Returns the merges made."""
+        import numpy as np
+        merges = []
+        def groups():
+            g = {}
+            for i, (label, role, colour, m) in enumerate(self.m.parts):
+                g.setdefault((role, colour.upper()), []).append(i)
+            return g
+        while True:
+            g = groups()
+            if len(g) <= limit:
+                return merges
+            size = {k: sum(len(self.m.parts[i][3][1]) for i in v) for k, v in g.items()}
+            best = None
+            keys = list(g)
+            for x in range(len(keys)):
+                for y in range(x + 1, len(keys)):
+                    a_, b_ = keys[x], keys[y]
+                    if a_[0] != b_[0]:
+                        continue
+                    d = float(np.sum((np.array(lib.hexrgb(a_[1])) - np.array(lib.hexrgb(b_[1]))) ** 2))
+                    if best is None or d < best[0]:
+                        best = (d, a_, b_)
+            if best is None:  # no two of one role: fall back to the smallest group
+                best = (0, min(keys, key=lambda k: size[k]), None)
+                others = [k for k in keys if k != best[1]]
+                best = (0, best[1], min(others, key=lambda k: float(np.sum((np.array(lib.hexrgb(k[1])) - np.array(lib.hexrgb(best[1][1]))) ** 2))))
+            _, a_, b_ = best
+            small, big = (a_, b_) if size[a_] <= size[b_] else (b_, a_)
+            for i in g[small]:
+                label, role, colour, m = self.m.parts[i]
+                self.m.parts[i] = (label, role, big[1], m)
+            merges.append("%s %s -> %s" % (small[0], small[1], big[1]))
+
     def export(self, outdir, views=None, size=460):
         os.makedirs(outdir, exist_ok=True)
         length = self.centre()
+        merges = self.reduce_colours(14)
+        if merges:
+            print("  merged colours of %s: %s" % (self.name, "; ".join(merges)), flush=True)
         js = os.path.join(outdir, self.name + ".json")
         tris, ncol = self.m.export(js, crease=40, foil_crease=12)
         return js, None, tris, ncol, length
