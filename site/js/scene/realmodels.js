@@ -234,6 +234,48 @@ export const REAL_MODELS = {
     65053: { file: 'nisar.glb', colour: 'satellite', name: 'NISAR', catalogue: 'NISAR', made: 'dimensions', axes: 'app' },
     49954: { file: 'ixpe.glb', colour: 'telescope', name: 'IXPE', catalogue: 'IXPE', made: 'dimensions', axes: 'app' },
     58928: { file: 'pace.glb', colour: 'satellite', name: 'PACE', catalogue: 'PACE', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m3: begin
+    // RELEASE 1.4.0, STAGE M3 (public #1095 to #1100, #1111, #1120): the US military's communications and warning craft and two
+    // small ones. BY NUMBER, with the name CelesTrak gives each (public issue tables, read in the live saved data of 2026-10-12).
+    // Every military shape is drawn ONLY from pictures and numbers the US Air Force, Space Force or Navy and the makers released
+    // (registry/models.yaml rows `wgs`, `aehf`, `muos`, `sbirs-geo` say so, and what is OURS); each is `made: 'dimensions'`, so the
+    // card says 'built from published dimensions', and none is `generic`: it is this craft. `axes: 'app'`: the Earth deck, dish or
+    // sensor head on +Z, the wings along X, the cells on +Y.
+    //   WGS, AEHF, MUOS, SBIRS GEO   one file each for the whole family (Block I of WGS is not told apart: the art differs in details
+    //                                that are not drawn).
+    //   AMSAT-OSCAR 7                the octagonal drum, 0.42 m; its masts are ILLUSTRATIVE lengths (the row says so).
+    //   SWAS                         NASA'S OWN PUBLISHED MODEL (NASA 3D Resources), so no `made`: the card says 'drawn from a published model'.
+    // NOT BUILT, issues left open with a comment: Milstar (#1120) and DMSP Block 5D-3 (#1095): no clear photograph or detailed art is public.
+    32258: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F1 (USA 195)', made: 'dimensions', axes: 'app' },
+    34713: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F2 (USA 204)', made: 'dimensions', axes: 'app' },
+    36108: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F3 (USA 211)', made: 'dimensions', axes: 'app' },
+    38070: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F4 (USA 233)', made: 'dimensions', axes: 'app' },
+    39168: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F5 (USA 243)', made: 'dimensions', axes: 'app' },
+    39222: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F6 (USA 244)', made: 'dimensions', axes: 'app' },
+    40746: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F7 (USA 263)', made: 'dimensions', axes: 'app' },
+    41879: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F8 (USA 272)', made: 'dimensions', axes: 'app' },
+    42075: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS F9 (USA 275)', made: 'dimensions', axes: 'app' },
+    44071: { file: 'wgs.glb', colour: 'satellite', name: 'WGS (Wideband Global SATCOM)', catalogue: 'WGS 10 (USA 291)', made: 'dimensions', axes: 'app' },
+    36868: { file: 'aehf.glb', colour: 'satellite', name: 'AEHF (Advanced Extremely High Frequency)', catalogue: 'AEHF-1 (USA 214)', made: 'dimensions', axes: 'app' },
+    38254: { file: 'aehf.glb', colour: 'satellite', name: 'AEHF (Advanced Extremely High Frequency)', catalogue: 'AEHF-2 (USA 235)', made: 'dimensions', axes: 'app' },
+    39256: { file: 'aehf.glb', colour: 'satellite', name: 'AEHF (Advanced Extremely High Frequency)', catalogue: 'AEHF-3 (USA 246)', made: 'dimensions', axes: 'app' },
+    43651: { file: 'aehf.glb', colour: 'satellite', name: 'AEHF (Advanced Extremely High Frequency)', catalogue: 'AEHF-4 (USA 288)', made: 'dimensions', axes: 'app' },
+    44481: { file: 'aehf.glb', colour: 'satellite', name: 'AEHF (Advanced Extremely High Frequency)', catalogue: 'AEHF-5 (USA 292)', made: 'dimensions', axes: 'app' },
+    45465: { file: 'aehf.glb', colour: 'satellite', name: 'AEHF (Advanced Extremely High Frequency)', catalogue: 'AEHF-6 (USA 298)', made: 'dimensions', axes: 'app' },
+    38093: { file: 'muos.glb', colour: 'satellite', name: 'MUOS (Mobile User Objective System)', catalogue: 'MUOS-1', made: 'dimensions', axes: 'app' },
+    39206: { file: 'muos.glb', colour: 'satellite', name: 'MUOS (Mobile User Objective System)', catalogue: 'MUOS-2', made: 'dimensions', axes: 'app' },
+    40374: { file: 'muos.glb', colour: 'satellite', name: 'MUOS (Mobile User Objective System)', catalogue: 'MUOS-3', made: 'dimensions', axes: 'app' },
+    40887: { file: 'muos.glb', colour: 'satellite', name: 'MUOS (Mobile User Objective System)', catalogue: 'MUOS-4', made: 'dimensions', axes: 'app' },
+    41622: { file: 'muos.glb', colour: 'satellite', name: 'MUOS (Mobile User Objective System)', catalogue: 'MUOS-5', made: 'dimensions', axes: 'app' },
+    37481: { file: 'sbirs-geo.glb', colour: 'satellite', name: 'SBIRS GEO (Space-Based Infrared System)', catalogue: 'SBIRS GEO-1 (USA 230)', made: 'dimensions', axes: 'app' },
+    39120: { file: 'sbirs-geo.glb', colour: 'satellite', name: 'SBIRS GEO (Space-Based Infrared System)', catalogue: 'SBIRS GEO-2 (USA 241)', made: 'dimensions', axes: 'app' },
+    41937: { file: 'sbirs-geo.glb', colour: 'satellite', name: 'SBIRS GEO (Space-Based Infrared System)', catalogue: 'SBIRS GEO-4 (USA 273)', made: 'dimensions', axes: 'app' },
+    43162: { file: 'sbirs-geo.glb', colour: 'satellite', name: 'SBIRS GEO (Space-Based Infrared System)', catalogue: 'SBIRS GEO-3 (USA 282)', made: 'dimensions', axes: 'app' },
+    48618: { file: 'sbirs-geo.glb', colour: 'satellite', name: 'SBIRS GEO (Space-Based Infrared System)', catalogue: 'SBIRS GEO-5 (USA 315)', made: 'dimensions', axes: 'app' },
+    53355: { file: 'sbirs-geo.glb', colour: 'satellite', name: 'SBIRS GEO (Space-Based Infrared System)', catalogue: 'SBIRS GEO-6 (USA 336)', made: 'dimensions', axes: 'app' },
+    7530: { file: 'ao-7.glb', colour: 'satellite', name: 'AMSAT-OSCAR 7', catalogue: 'OSCAR 7 (AO-7)', made: 'dimensions', axes: 'app' },
+    25560: { file: 'swas.glb', colour: 'satellite', name: 'SWAS (Submillimeter Wave Astronomy Satellite)', catalogue: 'SWAS', axes: 'app' },
+    // 0078 r14-m3: end
     // NOAA 21 (JPSS-2), public #994. By NUMBER and only this number: NOAA 20 is a different bus and
     // wears NASA's Suomi model (43013, below); the name route's comment further down says why NOAA 21
     // was left on the generic shape until it had one of its own. noaa21.glb: the body generated from
