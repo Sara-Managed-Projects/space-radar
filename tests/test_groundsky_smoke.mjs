@@ -182,11 +182,8 @@ ground.dispose();
 check(group.children.length === 0 && labelsHost.children.length === 0 && !wrap.children.some((c) => c.className.includes('sr-skytag')), 'dispose() leaves nothing in the scene or the page');
 void pointed; void pathToFileURL;
 
-// the Milky Way is the model's band, not a picture (release 1.4.0): no panorama to open, nothing baked in it to cut
-{
-  const src = readFileSync(join(JS, 'sky/groundsky.js'), 'utf8');
-  check(/MW\.createMilkyWay\(\{[^}]*ground: true/.test(src) && !/uMap: \{ value: map \}/.test(src), 'the ground sky draws scene/milkyway.js\'s band with its air, not a texture');
-}
+// 0078 r14-mw-bh: the Milky Way is the model's band, not a picture: tests/test_sky_shaders_src.mjs reads that in the source
+// (this file also runs against the minified tree, where source text is not what was written).
 // the pictures' GPU memory by tier (internal #447 / #345)
 {
   const w = 1440;
