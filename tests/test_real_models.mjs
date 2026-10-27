@@ -349,6 +349,36 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = nav(name, year, klass, id);
     check(!got || !tenth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch ten's files: ${JSON.stringify(got)}`);
   }
+  // 0078 r14-m7: begin
+  // STAGE r14-m7 (public #1102 to #1109, #1093): each craft wears its file as itself, by number; no neighbour wears any of them.
+  for (const [norad, cat, name, file] of [
+    [38337, 'GCOM-W1 (SHIZUKU)', 'GCOM-W1 Shizuku', 'gcom-w.glb'],
+    [43065, 'GCOM-C (SHIKISAI)', 'GCOM-C Shikisai', 'gcom-c.glb'],
+    [41173, 'DAMPE', 'DAMPE Wukong', 'dampe.glb'],
+    [43194, 'ZHANGHENG 1-01 (CSES-1)', 'Zhangheng 1-01 (CSES-1)', 'cses.glb'],
+    [64393, 'ZHANGHENG 1-02 (CSES-2)', 'Zhangheng 1-02 (CSES-2)', 'cses.glb'],
+    [27858, 'SCISAT 1', 'SCISAT-1', 'scisat-1.glb'],
+    [62256, 'PROBA-3 CSC', 'PROBA-3 coronagraph spacecraft', 'proba-3-csc.glb'],
+    [62258, 'PROBA-3 OSC', 'PROBA-3 occulter spacecraft', 'proba-3-osc.glb'],
+    [39159, 'PROBA-V', 'PROBA-V', 'proba-v.glb'],
+    [44343, 'FORMOSAT 7-3', 'FORMOSAT-7 / COSMIC-2 (7-3)', 'formosat-7.glb'],
+    [44349, 'FORMOSAT 7-1', 'FORMOSAT-7 / COSMIC-2 (7-1)', 'formosat-7.glb'],
+    [44350, 'FORMOSAT 7-4', 'FORMOSAT-7 / COSMIC-2 (7-4)', 'formosat-7.glb'],
+    [44351, 'FORMOSAT 7-2', 'FORMOSAT-7 / COSMIC-2 (7-2)', 'formosat-7.glb'],
+    [44353, 'FORMOSAT 7-6', 'FORMOSAT-7 / COSMIC-2 (7-6)', 'formosat-7.glb'],
+    [44358, 'FORMOSAT 7-5', 'FORMOSAT-7 / COSMIC-2 (7-5)', 'formosat-7.glb'],
+    [3597, 'OAO 2', 'OAO-2', 'oao-2.glb'],
+    [6153, 'OAO 3 (COPERNICUS)', 'OAO-3 Copernicus', 'oao-3.glb'],
+  ]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && !got.build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  const r14m7 = ['gcom-w.glb', 'gcom-c.glb', 'dampe.glb', 'cses.glb', 'scisat-1.glb', 'proba-3-csc.glb', 'proba-3-osc.glb', 'proba-v.glb', 'formosat-7.glb', 'oao-2.glb', 'oao-3.glb'];
+  for (const [name, norad] of [['GCOM-W2', 99001], ['GCOM-C2', 99002], ['PROBA-1', 26958], ['PROBA-2', 36599], ['SCISAT 2', 99003], ['FORMOSAT 5', 42920], ['FORMOSAT 7R', 99004], ['OAO 1', 2118], ['ZHANGHENG 2', 99005], ['DAMPE DEB', 99006]]) {
+    const got = sat(norad, name);
+    check(!got || !r14m7.includes(got.file), `${name} (${norad}) wears none of stage r14-m7's files: ${JSON.stringify(got)}`);
+  }
+  // 0078 r14-m7: end
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');

@@ -180,8 +180,7 @@ export const REAL_MODELS = {
     // SPACE TELESCOPES WITH NO MODEL OF THEIR OWN, drawn as the generic telescope rather than as a
     // communications satellite with a dish, which is what the satellite default is. The card says
     // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
-    3597: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 2', generic: true },
-    6153: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 3 (COPERNICUS)', generic: true },
+    // 0078 r14-m7: OAO 2 (3597) and OAO 3 (6153) wore the generic space-telescope builder here; they have files of their own below  // 0078 r14-m7
     // HITOMI HAS ITS OWN SHAPE since 2026-10-13 (public #969): hitomi.glb is XRISM's generated body
     // (the same bus: XRISM is Hitomi's recovery mission) with what XRISM does not have built in
     // code from cited metres: the 6.4 m extensible optical bench as a lattice, the HXI plate at its
@@ -344,6 +343,28 @@ export const REAL_MODELS = {
     // FENGYUN 2G and 2H (spinning drums) are other craft and keep what they had.
     40267: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-8', catalogue: 'HIMAWARI-8', made: 'dimensions', axes: 'app' },
     41836: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-9', catalogue: 'HIMAWARI-9', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m7: begin
+    // BATCH r14-m7 (release 1.4.0; public #1102 to #1109 and #1093): science craft built in code from cited metres (registry/models.yaml rows `gcom-w`,
+    // `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`), BY NUMBER from the live saved data of 2026-10-12.
+    // `axes: 'app'` on all of them: the Earth face or side on +Z, the wings or plate along X and Y with the cells to +Y, the Sun's side.
+    38337: { file: 'gcom-w.glb', colour: 'satellite', name: 'GCOM-W1 Shizuku', catalogue: 'GCOM-W1 (SHIZUKU)', made: 'dimensions', axes: 'app' },
+    43065: { file: 'gcom-c.glb', colour: 'satellite', name: 'GCOM-C Shikisai', catalogue: 'GCOM-C (SHIKISAI)', made: 'dimensions', axes: 'app' },
+    41173: { file: 'dampe.glb', colour: 'satellite', name: 'DAMPE Wukong', catalogue: 'DAMPE', made: 'dimensions', axes: 'app' },
+    43194: { file: 'cses.glb', colour: 'satellite', name: 'Zhangheng 1-01 (CSES-1)', catalogue: 'ZHANGHENG 1-01 (CSES-1)', made: 'dimensions', axes: 'app' },
+    64393: { file: 'cses.glb', colour: 'satellite', name: 'Zhangheng 1-02 (CSES-2)', catalogue: 'ZHANGHENG 1-02 (CSES-2)', made: 'dimensions', axes: 'app' },
+    27858: { file: 'scisat-1.glb', colour: 'satellite', name: 'SCISAT-1', catalogue: 'SCISAT 1', made: 'dimensions', axes: 'app' },
+    62256: { file: 'proba-3-csc.glb', colour: 'satellite', name: 'PROBA-3 coronagraph spacecraft', catalogue: 'PROBA-3 CSC', made: 'dimensions', axes: 'app' },
+    62258: { file: 'proba-3-osc.glb', colour: 'satellite', name: 'PROBA-3 occulter spacecraft', catalogue: 'PROBA-3 OSC', made: 'dimensions', axes: 'app' },
+    39159: { file: 'proba-v.glb', colour: 'satellite', name: 'PROBA-V', catalogue: 'PROBA-V', made: 'dimensions', axes: 'app' },
+    44343: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-3)', catalogue: 'FORMOSAT 7-3', made: 'dimensions', axes: 'app' },
+    44349: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-1)', catalogue: 'FORMOSAT 7-1', made: 'dimensions', axes: 'app' },
+    44350: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-4)', catalogue: 'FORMOSAT 7-4', made: 'dimensions', axes: 'app' },
+    44351: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-2)', catalogue: 'FORMOSAT 7-2', made: 'dimensions', axes: 'app' },
+    44353: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-6)', catalogue: 'FORMOSAT 7-6', made: 'dimensions', axes: 'app' },
+    44358: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-5)', catalogue: 'FORMOSAT 7-5', made: 'dimensions', axes: 'app' },
+    3597: { file: 'oao-2.glb', colour: 'telescope', name: 'OAO-2', catalogue: 'OAO 2', made: 'dimensions', axes: 'app' },
+    6153: { file: 'oao-3.glb', colour: 'telescope', name: 'OAO-3 Copernicus', catalogue: 'OAO 3 (COPERNICUS)', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m7: end
     32958: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3A', catalogue: 'FENGYUN 3A', made: 'dimensions', axes: 'app' },
     37214: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3B', catalogue: 'FENGYUN 3B', made: 'dimensions', axes: 'app' },
     39260: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3C', catalogue: 'FENGYUN 3C', made: 'dimensions', axes: 'app' },
