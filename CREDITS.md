@@ -60,6 +60,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W3-a: begin -->
 | The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
 <!-- 0077 W3-a: end -->
+<!-- 0078 r14-m1: begin -->
+| The shapes of six spent rocket stages (Delta II and Falcon 9 second stages, Atlas V Centaur, Centaur D, H-IIA and Kosmos-3M second stages) | built by us in code from published dimensions | public domain, CC0, CC BY 2.0, 3.0 or 4.0 where a picture was used; share-alike pictures looked at only; ours | [3b-rocket-stages](#3b-rocket-stages-spent-rocket-stages-built-in-code-from-published-dimensions-2026-10-27) |
+<!-- 0078 r14-m1: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -1442,6 +1445,29 @@ only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with 
 | `hubble.glb` (408 KB) | Hubble as it has flown since SM4: silver foil, white NOBL and radiator panels, SA3 wings, door open | NASA's SM4 photographs (Commons, e.g. <https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg>); NASA 3D Resources' Hubble (A) for proportions | public domain |
 
 <!-- 0077 W3-a: end -->
+<!-- 0078 r14-m1: begin -->
+## 3b-rocket-stages. Spent rocket stages built in code from published dimensions (2026-10-27)
+
+Release 1.4.0, stage r14-m1 (public #1160, #1164, #1165, #1166, #1167, #1169; tracker #1172). **No free agency or operator model
+of any of these six stages was found**: none of NASA 3D Resources' 1 583 paths (its file listing, read 2026-10-26) is a Delta II
+second stage, a Centaur, a Falcon 9 second stage, an H-IIA second stage or a Kosmos-3M second stage, and a web search for an
+official free model of any of them found none. Each was built in code by the parametric stage builder (`tools/stage-builder/`), from cited metres, and compared side by side
+with the photographs below. No image-to-3D model was used; no picture is in any file; no logo and no lettering is on any mesh. Their
+cards say "shape built from published dimensions and pictures; details simplified". Each row of `registry/models.yaml` cites every
+number and says what is ours. Pictures whose licence is CC BY-SA were looked at only: nothing of them is in a file.
+
+| File | What | What it was compared with | Terms |
+|---|---|---|---|
+| `delta2-stage.glb` (64 KB) | Olive primer-green barrel between two white bands, bare lower dome, red helium spheres, grey bell (#1164) | Delta-K second stage for Delta 294 mission (KSC-02PD-2059) (NASA); Delta-K second stage for Delta 294 mission (KSC-02PD-2058) (NASA); Delta II second stage (KSC-07PD-0126) (NASA/George Shelton); Delta II 7920 second stage (KSC-03PD-2886) (NASA) | ours, from published dimensions; the pictures above only looked at |
+| `atlas5-centaur.glb` (87 KB) | Stainless balloon-tank barrel, gold blanket at the aft bulkhead, RL10 with its black nozzle extension (#1165) | Centaur Upper Stage Installation Recognizes Trailblazing Space Program (8706287) (U.S. Space Force); Centaur 6A Rocket in the Space Power Chambers Shop Area (GRC-1964-C-71099) (NASA Lewis Research Center); Centaur Removal From Transporter into Work Stand at VPF (SDASM Archives) | ours, from published dimensions; the pictures above only looked at |
+| `centaur-d.glb` (118 KB) | Two RL10 bells under a ribbed stainless bulkhead, stainless tank, forward truss with boxes and foil (#1166) | Centaur 6A Rocket in the Space Power Chambers Shop Area (GRC-1964-C-71099) (NASA Lewis Research Center); Centaur 1964 71100L (NASA); Centaur Removal From Transporter into Work Stand at VPF (SDASM Archives); 1965 Typical Atlas Centaur Stages (SDASM Archives) | ours, from published dimensions; the pictures above only looked at |
+| `falcon9-stage2.glb` (84 KB) | White tank, black engine section, the Merlin Vacuum's long dark nozzle extension (#1167) | Falcon 9 second stage fuel tank (Steve Jurvetson, Flickr) (Steve Jurvetson); Merlin nozzle (Steve Jurvetson, Flickr) (Steve Jurvetson); THAICOM 8 (27182484081) (SpaceX); THAICOM 8 (27182485331) (SpaceX) | ours, from published dimensions; the pictures above only looked at |
+| `h2a-stage2.glb` (82 KB) | Cream insulated barrel, metal forward flange with its bolts and vent loop, black open aft skirt, LE-5B (#1169) | H-IIA F34-2ndStage01 (Cabinet Office, Government of Japan); H-IIA F35-2ndStage01 (Cabinet Office, Government of Japan); H-IIA F36-2ndStage02 (Cabinet Office, Government of Japan); H-IIA Family (Ofuku) (Ofuku) | ours, from published dimensions; the pictures above only looked at |
+| `kosmos3m-stage2.glb` (63 KB) | White tank barrel with orange belts, grey instrument section with its two cylinders and checker band, 11D49 with four steering nozzles (#1160) | Cosmos3M.jpg (Trash777) (Trash777); Kosmos rocket.jpg (Dmitry Shipulja) (Dmitry Shipulja); Kosmos-3m infografia.jpg (Julio Perez Suarez) (Julio Perez Suarez) | ours, from published dimensions; the pictures above only looked at |
+
+**Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
+<!-- 0078 r14-m1: end -->
+
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in

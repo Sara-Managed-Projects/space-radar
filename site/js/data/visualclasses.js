@@ -406,7 +406,13 @@ export const VISUAL_CLASSES = [
 ],
 "real_models": [
 "saturn-v",
-"shuttle-stack"
+"shuttle-stack",
+"delta2-stage",
+"atlas5-centaur",
+"centaur-d",
+"falcon9-stage2",
+"h2a-stage2",
+"kosmos3m-stage2"
 ],
 "model_kinds": [
 "rocket-upper-stage",
