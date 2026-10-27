@@ -12,9 +12,9 @@
 //      known neighbours land on the right side (M32 below Andromeda's core, M110 above it).
 //   3. THE SHUTTER. Eye < Camera < Deep on every brightness, Camera is the sky as it was, the
 //      choice survives a storage that throws.
-//   4. NOTHING AT BOOT. No module the first visit loads imports the pictures' module or their
-//      registry, statically; a built layer fetches nothing until a picture is wide enough in view
-//      or its object is selected; and on a data-saving connection only the selected one.
+//   4. NOTHING AT BOOT, AND NO PHOTOGRAPH IN THE SCENE (0078 r14-neb-b). No module the first visit loads
+//      imports the pictures' module or their registry, statically; a built layer fetches and draws
+//      nothing but the one picture the card's slider asks for, by the slider's share.
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
@@ -205,88 +205,66 @@ for (const r of NEBULAE) {
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(/import\('\.\/scene\/nebulae\.js'\)/.test(main), 'main.js imports the pictures dynamically');
 
-  // A built layer, a camera looking at Orion from the Earth's stage, and a loader that counts.
-  stage.setWorld('earth');
+  // 0078 r14-neb-b: NO PHOTOGRAPH IN THE SCENE. A built layer fetches and draws nothing -- not on a world's sky, not at a
+  // place on the ladder, not for a selection, not on any shutter -- until the card's slider asks for one picture.
   const calls = [];
   const load = (url) => { calls.push(url); return Promise.resolve(new THREE.Texture()); };
   const scene = new THREE.Scene();
-  const skyGroup = new THREE.Group();
-  skyGroup.scale.setScalar(1000);
-  scene.add(skyGroup);
-  skyGroup.updateMatrixWorld(true);
   const camera = new THREE.PerspectiveCamera(45, 1.6, 0.1, 1e9);
   const renderer = { domElement: { clientHeight: 900 } };
-  const lookAt = (row) => { const c = pictureBasis(row).centre; camera.position.set(0, 0, 0); camera.lookAt(c[0], c[1], c[2]); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); };
-
-  const n = createNebulae(scene, { skyGroup, load, base: 'https://example.invalid/' });
+  stage.setWorld('earth');
+  const n = createNebulae(scene, { load, base: 'https://example.invalid/' });
   check(calls.length === 0, 'building the layer fetches nothing');
+  check(!('skyGroup' in n) && typeof n.setSkyOpacity !== 'function' && typeof n.prefetch !== 'function', 'no photograph on a world\'s sky and none asked for by a trip: the sky half is gone');
   const m42 = PICTURE_FOR.get('dso-m42');
-  lookAt(m42);
-  n.update(camera, renderer, true, false);
-  check(calls.length === 0, `Orion's picture is 1 degree wide: at a 45 degree view it is not fetched (${calls.length})`);
-  const lmc = PICTURE_FOR.get('dso-lmc');
-  lookAt(lmc);
-  n.update(camera, renderer, true, false);
-  // The Small Cloud is 21 degrees from the Large one and 5 degrees wide: in the same view, and fetched with it.
-  check(calls.some((u) => /images\/nebulae\/lmc\.webp$/.test(u)) && calls.every((u) => /nebulae\/(lmc|smc)\.webp$/.test(u)), `the Large Magellanic Cloud, 9 degrees wide and in view, is (${calls.join(', ')})`);
-  const inView = calls.length;
-  n.update(camera, renderer, true, false);
-  check(calls.length === inView, 'once');
-  n.want('dso-m42');
-  check(calls.length === inView + 1 && /images\/nebulae\/m42\.webp$/.test(calls[inView]), 'a selected object\'s picture is fetched whatever its size');
-  n.want('dso-m13');
-  check(calls.length === inView + 1, 'an object with no picture asks for nothing');
-  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-  n.update(camera, renderer, true, false);
-  check(n.loaded().includes('dso-lmc') && n.state().find((p) => p.id === 'lmc').sky === true, 'a landed picture in view is drawn on the sky');
-  n.update(camera, renderer, false, false);
-  check(n.state().every((p) => !p.sky && !p.place), 'the deep-sky layer\'s switch hides the pictures');
-  n.setSkyOpacity(0);
-  n.update(camera, renderer, true, false);
-  check(n.state().every((p) => !p.sky), 'the sky\'s pictures go when the sky does (registry/lod.yaml sky-panorama)');
-  for (const p of [n.skyGroup, n.group]) p.traverse((o) => {
-    if (!o.material) return;
-    check(o.material.transparent === false && o.material.depthTest === false && o.material.blending === THREE.AdditiveBlending, `${o.name}: additive, depth test off, in the opaque list`);
-  });
-
-  // On a data-saving connection: only what is selected.
-  const saved = [];
-  const n2 = createNebulae(scene, { skyGroup, load: (url) => { saved.push(url); return Promise.resolve(new THREE.Texture()); }, base: 'https://example.invalid/', saveData: true });
-  n2.update(camera, renderer, true, false);
-  check(saved.length === 0, 'saving data: a picture in view is not fetched');
-  n2.want('dso-lmc');
-  check(saved.length === 1, 'saving data: the selected one is');
-
-  // At their places, on the stellar rung: Orion's picture stands 1 344 light-years out, as wide
-  // as its angle makes it there, and is drawn from the Sun's side only.
   stage.setWorld('stellar'); stage.setTime(Date.parse('2026-10-03T12:00:00Z'));
   const o = dsoById.get('m42');
   const LY_KM = 9460730472580.8;
   const rec = { id: 'dso-m42', pos: { x: o.posLy[0] * LY_KM, y: o.posLy[1] * LY_KM, z: o.posLy[2] * LY_KM } };
-  n.setSkyOpacity(0);
   n.setRecords([rec]);
   const st = () => n.state().find((p) => p.id === 'm42');
-  check(st().placed === true && n.state().filter((p) => p.placed).length === 1, 'a picture is placed once its object\'s distance is known, and not before');
+  check(st().placed === true && n.state().filter((p) => p.placed).length === 1, 'the slider\'s picture is placed once its object\'s distance is known, and not before');
   const centreEcl = eqToEcl(pictureBasis(m42).centre);
-  const distLy = Math.hypot(...o.posLy); // the record's own distance: the file rounds posLy to 0.01 ly
+  const distLy = Math.hypot(...o.posLy);
   const at = stage.toScene({ x: centreEcl[0] * distLy * LY_KM, y: centreEcl[1] * distLy * LY_KM, z: centreEcl[2] * distLy * LY_KM }, 'sun-inertial');
   const sun = stage.toScene({ x: 0, y: 0, z: 0 }, 'sun-inertial');
-  const place = n.group.children.find((c) => c.name === 'nebula-m42');
+  const view = (from) => { camera.position.copy(from); camera.lookAt(at); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); n.update(camera, renderer, true); return st(); };
+  n.want('dso-m42');
+  view(sun);
+  check(calls.length === 0 && n.drawn('dso-m42') === 0 && st().place === false, 'selected and seen from the Sun, along the line it was taken on: still no photograph (the 3D model draws it)');
+  check(n.holes().length === 0, 'and no hole in the stars for one');
+  // The slider: one picture, at its place, by the slider's share, flat and facing the Sun.
+  n.setCompare('dso-m42', 0);
+  check(calls.length === 0, 'the slider at the model fetches nothing');
+  n.setCompare('dso-m42', 1);
+  check(calls.length === 1 && /images\/nebulae\/m42\.webp$/.test(calls[0]), 'moved toward the photograph, it fetches that one picture');
+  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  view(sun);
+  check(st().place === true && near(n.drawn('dso-m42'), 1, 1e-9) && n.compareShare('dso-m42') === n.drawn('dso-m42'), 'from the Sun the slider\'s photograph is drawn whole, and the hero gives way by as much');
+  const place = n.group.children.find((c) => c.name === 'nebula-compare-m42');
   const e = place.matrix.elements;
   check(near(Math.hypot(e[12] - at.x, e[13] - at.y, e[14] - at.z), 0, 1e-6), 'it stands on the line to the picture\'s centre, at the object\'s distance');
   const half = pictureHalfExtent(m42);
   check(near(Math.hypot(e[0], e[1], e[2]), distLy * half.x, 1e-6) && near(Math.hypot(e[4], e[5], e[6]), distLy * half.y, 1e-6), `and is ${(2 * distLy * half.x).toFixed(1)} light-years wide there: its angle at its distance`);
-  const view = (from) => { camera.position.copy(from); camera.lookAt(at); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); n.update(camera, renderer, true, true); return st(); };
-  check(view(sun).place === true && st().alpha === 1, 'from the Sun it is drawn whole');
+  check(place.material.transparent === false && place.material.depthTest === false && place.material.blending === THREE.AdditiveBlending, 'additive, depth test off, in the opaque list');
+  check(n.holes().length === 1 && n.holes()[0].id === 'm42', 'our stars step aside inside it while it is drawn');
+  n.setCompare('dso-m42', 0.5);
+  view(sun);
+  check(near(n.drawn('dso-m42'), 0.5, 1e-9), 'half way, half of it');
+  n.setCompare('dso-m42', 1);
   check(view(at.clone().multiplyScalar(2)).place === false, 'from behind it is not drawn: the back of a photograph is a mirror image');
   const side = at.clone().add(new THREE.Vector3().crossVectors(at, new THREE.Vector3(0, 1, 0)).normalize().multiplyScalar(300));
-  check(view(side).place === false, 'nor from the side, where a flat picture of a cloud would be a lie');
-  check(n.drawn('dso-m42') === 0 && view(sun) && n.drawn('dso-m42') === 1 && n.drawn('dso-m31') === 0, 'drawn() says how much of a photograph is on screen, for Andromeda\'s model to step back by');
+  check(view(side).place === false && n.lineShare('dso-m42') === 0, 'nor from the side, where a flat picture of a cloud would be a lie');
+  check(n.drawn('dso-m31') === 0, 'drawn() is 0 for every other record');
+  n.want('dso-m13');
+  view(sun);
+  check(n.compareK('dso-m42') === null && n.drawn('dso-m42') === 0 && st().state === 'idle' && n.loaded().length === 0, 'choosing anything else puts the slider back and gives the picture\'s memory back');
   stage.setWorld('earth');
   n.rebuild();
-  n.update(camera, renderer, true, false);
+  n.setCompare('dso-m42', 1);
+  n.update(camera, renderer, true);
   check(n.state().every((p) => !p.place), 'on a world\'s stage nothing stands at a place');
-  n.dispose(); n2.dispose();
+  n.dispose();
 }
 
 // --------------------------------------------- 5. the shutter moves the other faint light too
@@ -303,13 +281,10 @@ for (const r of NEBULAE) {
   check(exposureLook('eye').milkyWay < 1 && exposureLook('deep').milkyWay > 1, 'and the number they are handed is under 1 for Eye, over 1 for Deep');
 }
 
-// --------------------------------------------- 6. how many pictures the GPU holds (internal #345)
+// --------------------------------------------- 6. how much the GPU holds (internal #345)
+// 0078 r14-neb-b: at most ONE picture, the slider's, and none once the slider is put back.
 {
-  const { TIER_PICTURES, residentPictures, evictions, createNebulae } = await import(join(JS, 'scene/nebulae.js'));
   const { TIER_BUDGET_MB } = await import(join(JS, 'scene/quality.js'));
-  check(TIER_PICTURES.length === 3 && TIER_PICTURES[0] < TIER_PICTURES[1] && TIER_PICTURES[1] < TIER_PICTURES[2], `a tier holds more pictures than the one below (${TIER_PICTURES})`);
-  check(residentPictures(0) === 3 && residentPictures(2) === 14 && residentPictures(NaN) === TIER_PICTURES[1] && residentPictures(9) === 14 && residentPictures(-1) === 3, 'residentPictures(tier) clamps to the table');
-  // The size of each picture on the GPU, from its file header (RGBA8 with mipmaps).
   const webpSize = (file) => {
     const b = readFileSync(join(ROOT, file));
     const kind = b.toString('ascii', 12, 16);
@@ -320,38 +295,21 @@ for (const r of NEBULAE) {
   };
   const mibs = NEBULAE.map((r) => { const wh = webpSize(r.file); return wh ? (wh[0] * wh[1] * 4 * 4) / 3 / 1048576 : null; });
   check(mibs.every((m) => m > 0 && m < 8), `every picture's size can be read from its header, and none is over 8 MiB (${mibs.map((m) => m && m.toFixed(1))})`);
-  const sorted = mibs.slice().sort((a, b) => b - a);
-  for (let t = 0; t < 3; t++) {
-    const worst = sorted.slice(0, TIER_PICTURES[t]).reduce((a, b) => a + b, 0);
-    check(worst <= 0.1 * TIER_BUDGET_MB[t], `tier ${t}: its ${TIER_PICTURES[t]} largest pictures are ${worst.toFixed(1)} MiB of GPU memory, a tenth of ${TIER_BUDGET_MB[t]} MB at most`);
-  }
-  // evictions(): the oldest unseen, never one in view, selected or held, nothing under the budget.
-  const row = (id, seen, extra = {}) => ({ id, ready: true, visible: false, held: false, seen, ...extra });
-  check(evictions([row('a', 1), row('b', 2)], 2).length === 0, 'at the budget nothing goes');
-  check(evictions([row('a', 5), row('b', 1), row('c', 3)], 2).join() === 'b', 'over by one: the one seen longest ago goes');
-  check(evictions([row('a', 5), row('b', 1, { visible: true }), row('c', 3, { held: true }), row('d', 2)], 3).join() === 'd', 'a picture in view, or held by a trip or a selection, stays');
-  check(evictions([row('a', 5, { visible: true }), row('b', 1, { visible: true }), row('c', 3, { visible: true })], 1).length === 0, 'everything in view: over budget for now, nothing is torn out of the frame');
-  check(evictions([row('a', 1, { ready: false }), row('b', 2), row('c', 3)], 2).length === 0, 'a picture still loading is not counted');
-  // In the layer itself: the budget of one lets the Large Cloud go once the camera is on Orion.
-  stage.setWorld('earth');
-  const scene = new THREE.Scene();
-  const skyGroup = new THREE.Group(); skyGroup.scale.setScalar(1000); scene.add(skyGroup); skyGroup.updateMatrixWorld(true);
-  const camera = new THREE.PerspectiveCamera(45, 1.6, 0.1, 1e9);
-  const renderer = { domElement: { clientHeight: 900 } };
-  const lookAt = (id) => { const c = pictureBasis(PICTURE_FOR.get(id)).centre; camera.position.set(0, 0, 0); camera.lookAt(c[0], c[1], c[2]); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); };
+  check(Math.max(...mibs) <= 0.1 * TIER_BUDGET_MB[0], `the largest picture is ${Math.max(...mibs).toFixed(1)} MiB, a tenth of a phone's ${TIER_BUDGET_MB[0]} MB at most`);
+  stage.setWorld('stellar');
   const disposed = [];
   const load = () => { const t = new THREE.Texture(); t.addEventListener('dispose', () => disposed.push(1)); return Promise.resolve(t); };
-  const n = createNebulae(scene, { skyGroup, load, base: 'https://example.invalid/', maxResident: 1 });
-  check(n.budget() === 1, 'the budget is the one asked for');
-  lookAt('dso-lmc'); n.update(camera, renderer, true, false);
+  const n = createNebulae(new THREE.Scene(), { load, base: 'https://example.invalid/' });
+  n.setCompare('dso-lmc', 1);
   await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-  n.update(camera, renderer, true, false);
-  check(n.loaded().length >= 1 && n.loaded().length <= 2, `the Clouds landed (${n.loaded()})`);
-  n.want('dso-m42');
+  check(n.loaded().join() === 'dso-lmc', `the slider's one picture landed (${n.loaded()})`);
+  n.setCompare('dso-m42', 1);
   await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-  lookAt('dso-m42'); n.update(camera, renderer, true, false); n.update(camera, renderer, true, false);
-  check(n.loaded().length === 1 && n.loaded()[0] === 'dso-m42' && disposed.length >= 1, `with a budget of one the selected Orion stays and the Clouds are let go (${n.loaded()}, ${disposed.length} disposed)`);
+  check(n.loaded().join() === 'dso-m42' && disposed.length === 1, `moved to Orion, the Cloud is let go (${n.loaded()}, ${disposed.length} disposed)`);
+  n.clearCompare();
+  check(n.loaded().length === 0 && disposed.length === 2, 'put back, nothing is held');
   n.dispose();
+  stage.setWorld('earth');
 }
 
 // --------------------------------------------- 7. the shutter reaches the 3D stars (internal #343)
@@ -367,4 +325,4 @@ for (const r of NEBULAE) {
 }
 
 if (problems.length) { console.error('nebulae FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`nebulae ok: ${NEBULAE.length} licensed pictures inside their objects' fields, the tangent-plane maths, the shutter's three looks, and nothing fetched at boot`);
+console.log(`nebulae ok: ${NEBULAE.length} licensed pictures inside their objects' fields, the tangent-plane maths, the shutter's three looks, no photograph in the scene but the slider's one, and nothing fetched at boot`);

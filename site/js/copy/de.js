@@ -1202,7 +1202,6 @@ export const COPY = {
     "approachNone": "Die Tabelle des NASA JPL zu nahen Vorbeiflügen wurde nicht geladen, deshalb wird kein nächster Vorbeiflug genannt.",
     "satellitesCount": "{n} arbeitende Satelliten in dem Katalog, den diese Seite von CelesTrak geladen hat, davon {starlink} von Starlink.",
     "satellitesLoading": "Der Katalog lädt noch; die Zahl erscheint, sobald er da ist.",
-    "pictureLine": "Ein echtes Foto, an die Stelle gesetzt, wo es am Himmel steht. Bild: {credit} · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt.",
     "portraitLine": "Der Ring ist das Bild des Event Horizon Telescope, mit Radiowellen aufgenommen. Er ist viel größer gezeichnet, als er von hier aus aussähe; der Ort ist gemessen. Bild: {credit} · {licence}, Himmel von uns abgedunkelt und Ränder ausgeblendet.",
     "tonightUp": "Von {place} aus heute Nacht: oben von {begin} bis {end}, am höchsten um {time}, {alt}, im {az}.",
     "tonightGlare": "Von {place} aus heute Nacht: {name} ist zu nah an der Sonne, um gesehen zu werden.",
@@ -2183,8 +2182,8 @@ export const COPY = {
     "lead": "Wo die Dinge sind und wie sie sich bewegen, ist gemessen oder berechnet. Wie sie aussehen, kommt aus drei Arten von Bildern.",
     "kinds": [
       [
-        "Ein Foto",
-        "Die Nebel und Galaxien sind Teleskopfotos, lang belichtet. Für das Auge am Teleskop ist dasselbe Gas ein schwaches graues Leuchten, und manche Bilder ordnen einzelnen Gasen Farben zu; jeder Steckbrief sagt, welche."
+        "Ein 3D-Modell",
+        "Die Nebel und Galaxien sind 3D-Modelle aus veröffentlichten Messungen, ihr Licht aus Teleskopfotos (lang belichtet); wo es noch kein Modell gibt, ein sanftes Leuchten in seiner Größe. Für das Auge ist dasselbe Gas ein schwaches graues Leuchten. Ein Steckbrief kann das Foto neben dem Modell zeigen."
       ],
       [
         "Eine Karte auf einem Modell",
@@ -2377,8 +2376,6 @@ export const COPY = {
       "unstated": "Sein Archiv sagt nicht, welche Filter benutzt wurden, deshalb sagen wir nicht, ob das die Farben sind, die ein Auge sähe."
     },
     "part": "Es zeigt {part}, nicht das Ganze.",
-    "figureAlt": "Foto von {name}",
-    "figureCaption": "{name}: {w} mal {h} Bogenminuten Himmel.",
     "creditLead": "Bild: ",
     "creditTail": " · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt"
   },

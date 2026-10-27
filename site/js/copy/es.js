@@ -1079,7 +1079,6 @@ export const COPY = {
     approachNone: "La tabla de pasos cercanos del JPL de la NASA no se ha cargado, así que no se nombra ningún paso siguiente.",
     satellitesCount: "{n} satélites en funcionamiento en el catálogo que esta página cargó de CelesTrak, {starlink} de ellos Starlink.",
     satellitesLoading: "El catálogo aún se está cargando; el recuento aparece cuando termine.",
-    pictureLine: "Una fotografía real, colocada donde está en el cielo. Imagen: {credit} · {licence}, con los bordes atenuados y el cielo oscurecido por nosotros.",
     portraitLine: "El anillo es la imagen del Event Horizon Telescope, hecha con ondas de radio. Se dibuja mucho más grande de lo que se vería desde aquí; el lugar es medido. Imagen: {credit} · {licence}, con el cielo oscurecido y los bordes atenuados por nosotros.",
     tonightUp: "Desde {place} esta noche: sobre el horizonte de {begin} a {end}, en su punto más alto a las {time}, {alt}, hacia el {az}.",
     tonightGlare: "Desde {place} esta noche: {name} está demasiado cerca del Sol para verse.",
@@ -2033,8 +2032,8 @@ export const COPY = {
     lead: "Dónde están las cosas y cómo se mueven es algo medido o calculado. Su aspecto viene de tres tipos de imagen.",
     kinds: [
       [
-        "Una fotografía",
-        "Las nebulosas y las galaxias son fotografías de telescopio, de larga exposición. Para el ojo ante un telescopio, el mismo gas es un tenue resplandor gris, y algunas imágenes asignan colores a gases concretos; cada ficha dice cuáles."
+        "Un modelo 3D",
+        "Las nebulosas y las galaxias son modelos 3D hechos con medidas publicadas, con la luz tomada de fotografías de telescopio (de larga exposición); las que aún no tienen modelo son un resplandor suave de su tamaño. Para el ojo, el mismo gas es un tenue resplandor gris. Una ficha puede mostrar la fotografía junto a su modelo."
       ],
       [
         "Un mapa sobre un modelo",
@@ -2227,8 +2226,6 @@ export const COPY = {
       unstated: "Su archivo no dice qué filtros se usaron, así que no decimos si estos son los colores que vería un ojo."
     },
     part: "Muestra {part}, no su totalidad.",
-    figureAlt: "Fotografía de {name}",
-    figureCaption: "{name}: {w} por {h} minutos de arco de cielo.",
     creditLead: "Imagen: ",
     creditTail: " · {licence}, con los bordes atenuados y el cielo oscurecido por nosotros"
   },

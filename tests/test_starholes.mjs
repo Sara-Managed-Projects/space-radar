@@ -41,7 +41,7 @@ for (const [name, src] of [['starfield.js', sf], ['stars3d.js', s3]]) {
   check(/\$\{HOLES_GLSL_HEAD\}/.test(src) && /if \( uHoleCount > 0 \) vAlpha \*= starHole\( normalize\( mv\.xyz \) \);/.test(src), `${name}'s vertex shader steps a star aside inside a picture, and only with a hole`);
   check(/\.\.\.holeUniforms\(\)/.test(src) && /setHoles/.test(src), `${name} exposes setHoles`);
 }
-check(/holes: \(\) =>/.test(nb) && /pushHole\(p, /.test(nb), 'scene/nebulae.js says where its pictures are');
+check(/holes: \(\) =>/.test(nb) && /holeList\.push\(\{ dir:/.test(nb), 'scene/nebulae.js says where the slider\'s picture is (0078 r14-neb-b: the only one)');
 check(/ctx\.starfield\.setHoles\(holes\)/.test(main) && /ctx\.stars3d\.setHoles\(holes\)/.test(main), 'main.js hands them to both star fields each frame');
 check(!/\bhalf\b|\binput\b|\boutput\b|\bsample\b|\bfilter\b/.test(H.HOLES_GLSL_HEAD.replace(/\/\/.*$/gm, '')), 'the GLSL uses no reserved word');
 if (problems.length) { console.error('starholes FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

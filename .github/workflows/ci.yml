@@ -1174,3 +1174,7 @@ jobs:
       - name: "Compare with the photograph: the slider's share on the picture and the hero, put back by any other choice, offered for shipped heroes only (internal i#776)"
         run: node tests/test_photocompare.mjs
       # 0077 W2-d: end
+      # 0078 r14-neb-b: begin
+      - name: "no photographs in the scene: M27, the Southern Ring and the Pleiades' nebulosity as 3D heroes from their sources, their light maps the bakes (release 1.4.0 stage r14-neb-b)"
+        run: node tests/test_hero_r14neb.mjs
+      # 0078 r14-neb-b: end

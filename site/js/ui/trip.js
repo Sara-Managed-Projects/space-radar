@@ -1690,14 +1690,10 @@ export function createTrip(ctx) {
       return () => line;
     }
     const record = subject.record;
-    // A stop at a nebula or a galaxy that has a photograph says whose photograph it is (the
-    // archives' terms ask for the credit beside the picture), and one that draws a portrait says
-    // what the portrait is. main.js answers once the pictures' own rows have loaded.
+    // A stop that draws a portrait says what the portrait is. (0078 r14-neb-b: a nebula or a galaxy is drawn by its
+    // 3D model or its glow, never a photograph, so it has no photograph's credit line.)
     if (record && entry.stop.portrait && typeof ctx.portraitLine === 'function') {
       return () => { try { return ctx.portraitLine(record.id) || ''; } catch { return ''; } };
-    }
-    if (record && record.klass === 'dso' && typeof ctx.pictureLine === 'function') {
-      return () => { try { return ctx.pictureLine(record.id) || ''; } catch { return ''; } };
     }
     if (!record || !run || !run.tour.requires_observer || !/^earth-/.test(String(record.frame || ''))) return null;
     const ev = entry.event;

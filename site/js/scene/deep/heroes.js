@@ -47,6 +47,19 @@ export const HEROES = [
   { id: 'm104', record: 'dso-m104', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m104.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   { id: 'antennae', record: 'dso-antennae-galaxies', stage: 'W3-f', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-antennae.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
   // 0077 W3-f: end
+  // 0078 r14-neb-b: begin
+  // No photographs in the scene (Ivan, 2026-10-26): the objects that were only a photograph get a 3D hero, read lazily as
+  // W3-c's lines are. M27 and the Southern Ring on ring.js (M57's technique, each with its own profile), the Pleiades'
+  // nebulosity on reflection.js (dust in front of the cluster lit by its stars; the stars themselves are stars3d.js's).
+  { id: 'm27', record: 'dso-m27', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./ring.js'), import('../../data/hero-m27.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'southern-ring', record: 'dso-southern-ring-nebula', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./ring.js'), import('../../data/hero-southern-ring.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'm45', record: 'dso-m45', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./reflection.js'), import('../../data/hero-m45.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // The galaxies that were only a photograph, from their own numbers on spiral.js's generator: M83 and NGC 1300 (barred
+  // spirals), Centaurus A (an elliptical crossed by its warped dust disc; its jets drawn in false colour, an illustration).
+  { id: 'm83', record: 'dso-m83', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-m83.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'ngc1300', record: 'dso-ngc-1300', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['model'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-ngc1300.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  { id: 'cena', record: 'dso-centaurus-a', stage: 'r14-neb-b', stub: { shipped: true, drawn: ['model', 'illustration'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./spiral.js'), import('../../data/hero-cena.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
+  // 0078 r14-neb-b: end
 ];
 
 // Deep layers that are not one object: the local volume's galaxies (stage e). Built on the stages named.

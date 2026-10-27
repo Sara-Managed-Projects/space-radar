@@ -330,9 +330,8 @@ export async function boot({ setStatus } = {}) {
     if (ctx.nebulae) ctx.nebulae.setRecords(ctx.recordsFor('deep-sky'));
   });
   // THE SHUTTER (spec 0067, scene/exposure.js): Eye, Camera or Deep, remembered. The Milky Way wears
-  // it from the first frame; the photographs of the nebulae (scene/nebulae.js) wear it when they
-  // exist, which on a first visit they do not: the module and its pictures are fetched on a rung
-  // of the ladder, when a deep-sky object is selected, or when the visitor moves the shutter.
+  // it from the first frame, and so do the deep-sky glows and heroes. 0078 r14-neb-b: no photograph is drawn in
+  // the scene (Ivan, 2026-10-26); scene/nebulae.js is fetched only by the card's "Compare with the photograph".
   // A shared link carries the shutter it was made at (`exp`, public #460): the picture in the post
   // and the sky the link opens are the same exposure. For this page only: a friend's link does not
   // overwrite the visitor's own remembered choice.
@@ -348,17 +347,8 @@ export async function boot({ setStatus } = {}) {
   ctx.wantNebulae = () => {
     if (nebulaeImport) return nebulaeImport;
     nebulaeImport = import('./scene/nebulae.js').then((m) => {
-      const nebulae = m.createNebulae(scene, {
-        skyGroup: starfield.group,
-        look: exposure.look(),
-        saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
-        maxResident: m.residentPictures(ctx.quality ? ctx.quality.bootTier : 1),
-      });
-      nebulae.setSkyOpacity(skyStrength);
-      nebulae.setSkyVisible(!(ctx.latch && ctx.latch.latched));
+      const nebulae = m.createNebulae(scene, { look: exposure.look() }); // 0078 r14-neb-b: the slider's photograph only
       nebulae.setRecords(ctx.recordsFor('deep-sky'));
-      const s = ctx.selected();
-      nebulae.want(s ? s.id : null);
       ctx.nebulae = nebulae;
       return nebulae;
     }).catch((e) => { console.warn('the nebula pictures did not load', e); nebulaeImport = null; return null; });
@@ -383,8 +373,7 @@ export async function boot({ setStatus } = {}) {
   }).catch((e) => { console.warn('the deep sky did not load', e); deepImport = null; return null; }));
   exposure.onChange((mode, look, byVisitor) => {
     starfield.setExposure(look.milkyWay);
-    if (ctx.nebulae) ctx.nebulae.setExposure(look);
-    else if (byVisitor) ctx.wantNebulae();
+    if (ctx.nebulae) ctx.nebulae.setExposure(look); // 0078 r14-neb-b: the shutter no longer fetches photographs
     // The Milky Way model and the deep-sky glows are the same faint light (internal #343).
     galaxy.setExposure(look.milkyWay);
     dsoGlow.setExposure(look.milkyWay);
@@ -417,8 +406,8 @@ export async function boot({ setStatus } = {}) {
   window.addEventListener('sr:select', (e) => {
     const record = e && e.detail;
     if (stageEl) stageEl.setAttribute('aria-label', record && record.name ? fill(COPY.app.sceneSelected, { name: record.name }) : sceneName);
-    if (record && record.klass === 'dso') ctx.wantNebulae().then((n) => { if (n) n.want(record.id); });
-    else if (ctx.nebulae) ctx.nebulae.want(null);
+    // 0078 r14-neb-b: selecting fetches no photograph; another selection only puts the slider back to the model.
+    if (ctx.nebulae) ctx.nebulae.want(record && record.klass === 'dso' ? record.id : null);
   });
   // OTHER LIGHT (public #456, scene/otherlight.js): the sky in infrared, microwaves or gamma rays,
   // faded over the visible one. This is the whole of it at boot: two values and who listens. The
@@ -470,7 +459,6 @@ export async function boot({ setStatus } = {}) {
     'sky-panorama': (k) => {
       skyStrength = k;
       if (starfield.setSkyOpacity) starfield.setSkyOpacity(k);
-      if (ctx.nebulae) ctx.nebulae.setSkyOpacity(k);
     },
     'stars-3d': (k) => stars3d.setOpacity(k),
     'galaxy-model': (k) => galaxy.setOpacity(k),
@@ -486,7 +474,6 @@ export async function boot({ setStatus } = {}) {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if (ctx.nebulae) ctx.nebulae.rebuild();
-    else if (isLadderStage(id)) ctx.wantNebulae();
     if (ctx.deep) ctx.deep.rebuild();
     else if (isLadderStage(id)) ctx.wantDeep();
     if (isSystemStage(id)) systems.enter(id);
@@ -702,30 +689,18 @@ export async function boot({ setStatus } = {}) {
     const image = record && record.meta && record.meta.image;
     return image ? fill(COPY.trip.portraitLine, { credit: String(image.credit), licence: String(image.licence) }) : '';
   };
-  // WHOSE PHOTOGRAPH IT IS, under a trip stop at a nebula or a galaxy that has one on the sky: the
-  // archives' terms ask for the credit beside the picture, and in present mode the object's own
-  // card (which prints it) is not on the screen. The rows are the dynamic import ui/cards.js makes.
-  let pictureRows = null;
-  let pictureRowsImport = null;
-  const wantPictureRows = () => pictureRowsImport || (pictureRowsImport = import('./data/nebulae.js')
-    .then((m) => { pictureRows = new Map((m.NEBULAE || []).map((row) => [`dso-${row.id}`, row])); })
-    .catch((e) => { console.warn('the photographs\u2019 credits did not load', e); pictureRowsImport = null; }));
-  ctx.pictureLine = (id) => {
-    const row = pictureRows && pictureRows.get(id);
-    return row ? fill(COPY.trip.pictureLine, { credit: String(row.credit), licence: String(row.licence) }) : '';
-  };
+  // 0078 r14-neb-b: a trip stop at a nebula or a galaxy shows its 3D model or its glow, never a photograph, so it
+  // has no photograph's credit line under it (ctx.pictureLine is gone; ui/trip.js asks for it only if it is there).
   let skyAsked = '';
   let picturesAsked = null;
   ctx.trip.onChange((st) => {
     const tripping = st && st.phase !== 'idle';
     if (tripping && st.wants && st.wants.portrait) wantPortraits();
     if (tripping && st.wants && st.wants.pictures) {
-      wantPictureRows();
-      // And the pictures themselves, asked for at the intro so each is there when its stop lands.
+      // The deep-sky stops' heroes, asked for at the intro so each is there when its stop lands (no photographs: 0078 r14-neb-b).
       const ids = st.wants.pictures;
       if (ids !== picturesAsked) {
         picturesAsked = ids;
-        ctx.wantNebulae().then((n) => { if (n && typeof n.prefetch === 'function') n.prefetch(ids); });
         // 0076 W4-a (the hero prefetch): and the deep-sky heroes among them, built with their shaders compiled, before the stop lands
         ctx.wantDeep().then((d) => { if (d && typeof d.prefetch === 'function') d.prefetch(ids, { renderer: ctx.renderer, camera: ctx.camera }); });
       }
@@ -2613,7 +2588,6 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     lowChosen = !!plan.stripped;
     if (ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality(lowChosen ? 'low' : 'full');
     if (starfield && starfield.setDetail) starfield.setDetail(lowChosen ? 'low' : 'full');
-    if (ctx.nebulae) ctx.nebulae.setSkyVisible(!lowChosen);
     if (worlds && worlds.setLatched) worlds.setLatched(lowChosen);
     const held = plan.scale === 'held';
     if (held !== scaler.held) {
@@ -2628,7 +2602,6 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     scaler.freeze();
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
     if (starfield && starfield.setDetail) starfield.setDetail('low');
-    if (ctx.nebulae) ctx.nebulae.setSkyVisible(false);
     // Spec 0054: earthshine goes off with the latch (scene/worlds.js setLatched).
     if (worlds && worlds.setLatched) worlds.setLatched(true);
     // The tier falls with the latch and only with it: every world back on its boot map.
@@ -2913,27 +2886,29 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.shells) ctx.shells.update(ctx.camera, t);
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')) && !ctx.deepGlowOff);
     if (ctx.deep) ctx.deep.frame({ camera: ctx.camera, renderer: ctx.renderer, nowMs: nowReal, dtMs: frameMs, frameMs, visible: ctx.isLayerDrawable(layerRec('deep-sky')) });
+    // 0078 r14-neb-b: the only photograph in the scene is the one the card's slider draws (scene/nebulae.js).
     if (ctx.nebulae) {
-      ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(layerRec('deep-sky')));
-      // Our stars step aside inside a drawn photograph, which carries its own (scene/starholes.js, internal #344).
+      ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
+      // Our stars step aside inside it, as it carries its own (scene/starholes.js, internal #344).
       { const holes = ctx.nebulae.holes(); if (ctx.starfield && ctx.starfield.setHoles) ctx.starfield.setHoles(holes); if (ctx.stars3d && ctx.stars3d.setHoles) ctx.stars3d.setHoles(holes); }
-      // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
-      if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
-      // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
-      // 0076 W4-a (spec 0075 task 59): and by what M31's hero draws of them as Sersic points (the two never draw one galaxy twice).
-      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare((1 - ctx.nebulae.drawn('dso-m31')) * (1 - (ctx.deep && ctx.deep.heroShareOf ? ctx.deep.heroShareOf('dso-m32') : 0)));
-      // A glow gives way to a photograph only while the photograph is being drawn (scene/dsoglow.js):
-      // off the line of sight from the Sun the picture fades and the mark of its kind comes back.
-      // Asked four times a second; the glow's buffer is rewritten only when the answer changes.
-      if (ctx.dsoGlow && nowReal - picturedAt > 250) {
-        picturedAt = nowReal;
-        const now = new Map();
-        for (const id of ctx.nebulae.loaded()) { const share = Math.round(ctx.nebulae.drawn(id) * 10) / 10; if (share > 0) now.set(id, share); }
-        // And to a drawn deep-sky hero (spec 0075 stage b): its own structure stands where the glow stood.
-        if (ctx.deep && ctx.deep.heroShares) for (const [id, k] of ctx.deep.heroShares()) { const share = Math.round(k * 10) / 10; if (share > (now.get(id) || 0)) now.set(id, share); }
-        const key = [...now].join(' ');
-        if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
-      }
+    }
+    // Andromeda's slid-in photograph and her stand-in model never draw over each other (scene/galaxy.js); her two
+    // companions' ellipses step back with it and with what M31's hero draws of them (0076 W4-a, spec 0075 task 59).
+    {
+      const m31Photo = ctx.nebulae ? ctx.nebulae.drawn('dso-m31') : 0;
+      if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - m31Photo);
+      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare((1 - m31Photo) * (1 - (ctx.deep && ctx.deep.heroShareOf ? ctx.deep.heroShareOf('dso-m32') : 0)));
+    }
+    // A glow gives way to a drawn deep-sky hero (spec 0075 stage b): its own structure stands where the glow stood; and
+    // to the slider's photograph while it is drawn. Asked four times a second; the glow's buffer is rewritten only when
+    // the answer changes.
+    if (ctx.dsoGlow && nowReal - picturedAt > 250) {
+      picturedAt = nowReal;
+      const now = new Map();
+      if (ctx.nebulae) for (const id of ctx.nebulae.loaded()) { const share = Math.round(ctx.nebulae.drawn(id) * 10) / 10; if (share > 0) now.set(id, share); }
+      if (ctx.deep && ctx.deep.heroShares) for (const [id, k] of ctx.deep.heroShares()) { const share = Math.round(k * 10) / 10; if (share > (now.get(id) || 0)) now.set(id, share); }
+      const key = [...now].join(' ');
+      if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
     }
     if (ctx.otherLight.layer) ctx.updateOtherLight();
     if (ctx.starDisc) {

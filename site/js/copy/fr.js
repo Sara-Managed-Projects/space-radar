@@ -1206,7 +1206,6 @@ export const COPY = {
     "approachNone": "La table des passages rapprochés de NASA JPL n’est pas chargée, donc aucun prochain passage n’est nommé.",
     "satellitesCount": "{n} satellites en service dans le catalogue que cette page a chargé depuis CelesTrak, dont {starlink} Starlink.",
     "satellitesLoading": "Le catalogue est encore en chargement ; le nombre s’affichera quand il sera là.",
-    "pictureLine": "Une vraie photographie, placée là où elle est dans le ciel. Image : {credit} · {licence}, bords estompés et ciel assombri par nos soins.",
     "portraitLine": "L’anneau est l’image de l’Event Horizon Telescope, faite avec des ondes radio. Il est dessiné bien plus grand qu’il ne paraîtrait d’ici ; la position est mesurée. Image : {credit} · {licence}, ciel assombri et bords estompés par nos soins.",
     "tonightUp": "Depuis {place} ce soir : levé de {begin} à {end}, au plus haut à {time}, {alt}, {az}.",
     "tonightGlare": "Depuis {place} ce soir : {name} est trop près du Soleil pour être vu.",
@@ -2187,8 +2186,8 @@ export const COPY = {
     "lead": "Où sont les choses, et comment elles bougent, est mesuré ou calculé. Leur aspect vient de trois sortes d’images.",
     "kinds": [
       [
-        "Une photographie",
-        "Les nébuleuses et les galaxies sont des photographies de télescope, en longue pose. Pour l’œil au télescope, le même gaz est une faible lueur grise, et certaines images associent des couleurs à des gaz isolés ; chaque fiche dit lesquelles."
+        "Un modèle 3D",
+        "Les nébuleuses et les galaxies sont des modèles 3D construits à partir de mesures publiées, leur lumière tirée de photographies de télescope (en longue pose) ; celles qui n’ont pas encore de modèle sont une douce lueur de leur taille. Pour l’œil, le même gaz est une faible lueur grise. Une fiche peut montrer la photographie à côté de son modèle."
       ],
       [
         "Une carte sur un modèle",
@@ -2381,8 +2380,6 @@ export const COPY = {
       "unstated": "Son archive ne dit pas quels filtres ont servi, donc nous ne disons pas si ce sont les couleurs qu’un œil verrait."
     },
     "part": "Elle montre {part}, pas la totalité.",
-    "figureAlt": "Photographie : {name}",
-    "figureCaption": "{name} : {w} sur {h} minutes d’arc de ciel.",
     "creditLead": "Image : ",
     "creditTail": " · {licence}, bords estompés et ciel assombri par nos soins"
   },

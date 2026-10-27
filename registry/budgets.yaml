@@ -106,7 +106,8 @@ budgets:
   - {id: narration_total_kb, value: 40000, unit: kB, since: 2026-10-06, reason: "spec 0069 req 5: everything under site/audio/narration/ (195 stops over twenty-five trips: 35 845 kB with the AAC twins and the captions), measured 2026-10-06 after the nine trips of the remaining planetarium shows, with 11 % for the next two. Was 26 000 for sixteen trips and 18 000 for eleven. Nothing of it is fetched before sound is on, and then a clip at a time (narration_trip_kb, unchanged: the largest trip is still the constellations at 1 153 kB)"}
   - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
   # Spec 0067: the photographs of the nebulae (scene/nebulae.js), each fetched only when its object
-  # is in view on a rung of the ladder or selected, never on a first visit. scripts/build_nebulae.py
+  # is in view on a rung of the ladder or selected, never on a first visit. 0078 r14-neb-b: fetched only by
+  # the card's "Compare with the photograph" slider, one at a time; the rows are unchanged. scripts/build_nebulae.py
   # --check holds both rows.
   - {id: nebula_picture_bytes, value: 90000, unit: bytes, since: 2026-10-03, reason: "spec 0067: one WebP per object, 512 px on its longer side (640 or 768 for the seven widest); a star field is noise to WebP, and the densest (M17 at 89 874 B, the Cygnus Loop at 89 752 B) set this"}
   - {id: nebulae_total_bytes, value: 1700000, unit: bytes, since: 2026-10-03, reason: "spec 0067: 27 pictures; what a visitor who flew to every one of them would have downloaded"}

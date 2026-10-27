@@ -16,6 +16,8 @@ levels:
   points: [9000, 30000, 45000]      # each galaxy's own (their component rows say so too)
   dust_share: 0.3
   seed: 4038
+  layer_power: 0.6           # 0078 r14-neb-b: each galaxy's smooth layer's stretch (its components are layered now)
+  layer_disc_at_rd: 0.6      # 0078 r14-neb-b: each disc's layer at one scale length (LAYER_DISC_AT_RD is 0.2): the photographs' bodies are bright
 frame:
   pa_deg: 0
   incl_deg: 0
@@ -29,15 +31,19 @@ layers:
     dec_deg: -18.867589
     toward_kpc: 0
     points: [9000, 30000, 45000]
+    layered: true   # 0078 r14-neb-b: its starlight as a smooth layer and its nucleus as a billboard, the points as sparkle (they were grainy)
     frame: {pa_deg: 80, incl_deg: 54, near_side: null, approaching: null, winding: 1,
             source: "RC3: PA 80 degrees, log R25 0.23 (an axis ratio of 0.59, read as an inclination of 54 degrees: illustrative, the disc is torn)"}
     layers:
       - {kind: bulge, what: "its nucleus", sersic_n: 2, re_kpc: 0.6, q: 0.8, light: 0.1, colour: "#f4e4d0", source: "illustrative"}
       - {kind: disc, what: "its torn disc", scale_kpc: 2.2, height_kpc: 0.5, r_max_kpc: 9, light: 0.42, arm_contrast: 0, colour: "#e8dccc", colour_outer: "#d6d6e0",
          source: "RC3: D25 5.25 arcmin (34 kpc here, the faint torn outskirts); scale length 2.2 kpc and height assumed, so the bright body is the 3 arcmin the photographs show"}
-      - {kind: clumps, what: "the giant star-forming complexes", count: 16, size_kpc: 0.6, light: 0.24, colour: "#c8d4ff", source: "illustrative: the knots Hubble's pictures show round the disc's rim and in the overlap"}
-      - {kind: knots, what: "young star clusters and H II regions", count: 900, in_ring: 0, size_kpc: 0.08, height_kpc: 0.1, light: 0.1, colour: "#ff8fa6", source: "placed statistically; not a catalogue of positions"}
+      - {kind: ring, what: "the arc of young stars round NGC 4038's torn disc", radius_kpc: 3.2, width_kpc: 0.8, height_kpc: 0.2, light: 0.14, colour: "#c4d2ff",
+         source: "illustrative (0078 r14-neb-b): the bright curved arc of clusters that Hubble's and Gendler's photographs show round NGC 4038 (where Whitmore et al. 2010 catalogue many of the young clusters)"}
+      - {kind: clumps, keep: true, what: "the giant star-forming complexes", count: 16, size_kpc: 0.6, light: 0.24, colour: "#c8d4ff", source: "illustrative: the knots Hubble's pictures show round the disc's rim and in the overlap"}
+      - {kind: knots, keep: true, what: "young star clusters and H II regions", count: 900, in_ring: 0, size_kpc: 0.08, height_kpc: 0.1, light: 0.1, colour: "#ff8fa6", source: "placed statistically; not a catalogue of positions"}
       - kind: stream
+        keep: true   # 0078 r14-neb-b: a tail is not in its galaxy's smooth layer: its points carry all its light
         what: "the southern tail"
         path:   # [RA, Dec (J2000 degrees), kpc toward us from the record's distance]
           - [180.48374, -18.89855, 0]
@@ -51,7 +57,7 @@ layers:
           - [180.33227, -19.00057, -25]
         width_kpc: 2.4
         tip_light: 0.45
-        light: 0.09
+        light: 0.14
         colour: "#c6cce0"
         source: "its places on the sky traced on Robert Gendler's photograph heic0812c (ESA/Hubble, CC BY 4.0): its tip 11.2 arcmin from NGC 4038 (Hibbard et al. 2001, arXiv:astro-ph/0110581: 11.6 arcmin, about 65 kpc projected); its parent NGC 4038, as Hibbard et al. 2001 make NGC 4039 the northern tail's; its depth a MODEL: the tip bends away from us (Hibbard et al. 2001's abstract), the amount illustrative"
       - {kind: dust-disc, what: "its dust", scale_kpc: 3, height_kpc: 0.15, weight: 0.5, source: "illustrative: the dark lanes over both discs and the overlap"}
@@ -61,6 +67,7 @@ layers:
     dec_deg: -18.886194
     toward_kpc: -2
     points: [7000, 24000, 36000]
+    layered: true   # 0078 r14-neb-b
     light: 0.85
     frame: {pa_deg: 130, incl_deg: 59, near_side: null, approaching: null, winding: 1,
             source: "RC3: PA 130 degrees, log R25 0.29 (an axis ratio of 0.51, read as 59 degrees: illustrative); 2 kpc behind NGC 4038 illustrative"}
@@ -68,9 +75,10 @@ layers:
       - {kind: bulge, what: "its nucleus", sersic_n: 2, re_kpc: 0.5, q: 0.8, light: 0.12, colour: "#f4e4d0", source: "illustrative"}
       - {kind: disc, what: "its torn disc", scale_kpc: 1.6, height_kpc: 0.4, r_max_kpc: 7, light: 0.48, arm_contrast: 0, colour: "#e8dccc", colour_outer: "#d6d6e0",
          source: "RC3: D25 3.1 arcmin (20 kpc here); scale length 1.6 kpc and height assumed"}
-      - {kind: clumps, what: "star-forming complexes", count: 10, size_kpc: 0.5, light: 0.16, colour: "#c8d4ff", source: "illustrative"}
-      - {kind: knots, what: "young star clusters and H II regions", count: 500, in_ring: 0, size_kpc: 0.08, height_kpc: 0.1, light: 0.06, colour: "#ff8fa6", source: "placed statistically"}
+      - {kind: clumps, keep: true, what: "star-forming complexes", count: 10, size_kpc: 0.5, light: 0.16, colour: "#c8d4ff", source: "illustrative"}
+      - {kind: knots, keep: true, what: "young star clusters and H II regions", count: 500, in_ring: 0, size_kpc: 0.08, height_kpc: 0.1, light: 0.06, colour: "#ff8fa6", source: "placed statistically"}
       - kind: stream
+        keep: true   # 0078 r14-neb-b: a tail is not in its galaxy's smooth layer: its points carry all its light
         what: "the northern tail"
         path:
           - [180.48888, -18.85871, 0]
@@ -81,7 +89,7 @@ layers:
           - [180.54793, -18.77467, 12]
         width_kpc: 2.2
         tip_light: 0.4
-        light: 0.07
+        light: 0.11
         colour: "#c6cce0"
         source: "its places on the sky traced on heic0812c; Hibbard et al. 2001: NGC 4039 is its parent and its hydrogen reaches 7.3 arcmin (40 kpc); its depth a MODEL (toward us, illustrative: no source read gives its sign)"
       - {kind: dust-disc, what: "its dust", scale_kpc: 2, height_kpc: 0.15, weight: 0.4, source: "illustrative"}

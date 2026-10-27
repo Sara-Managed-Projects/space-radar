@@ -518,7 +518,7 @@ Object.assign(COPY, {
     title: 'Is this what space looks like?',
     lead: 'Where things are, and how they move, is measured or computed. How they look comes from three kinds of picture.',
     kinds: [
-      ['A photograph', 'The nebulae and galaxies are telescope photographs, long exposures. To the eye at a telescope the same gas is a faint grey glow, and some pictures map single gases to colours; each card says which.'],
+      ['A 3D model', 'The nebulae and galaxies are 3D models built from published measurements, their light taken from telescope photographs (long exposures); one without a model yet is a soft glow of its size. To the eye the same gas is a faint grey glow. A card can show the photograph beside its model.'], // 0078 r14-neb-b
       ['A map on a model', 'Planets and moons are globes wearing maps made from spacecraft pictures, some of them smoothed by an artist. Spacecraft are 3D models, most from NASA\u2019s published files. The light on them is computed for the moment shown.'],
       ['An artist\u2019s impression', 'Nobody has seen the surface of a planet of another star. Those faces are imagined from a measured size and temperature, and their cards say so.'],
     ],
@@ -709,7 +709,7 @@ Object.assign(COPY, {
       camera: 'A long exposure: minutes of light, as a camera keeps it.',
       deep: 'An observatory\u2019s stretch: the faintest gas lifted.',
     },
-    real: 'The gas is real, and faint: to the eye at a telescope it is a grey glow, because the night eye sees no colour. The picture on the sky is a long exposure.',
+    real: 'The gas is real, and faint: to the eye at a telescope it is a grey glow, because the night eye sees no colour. The map draws it as a 3D model; the photograph the slider shows is a long exposure.', // 0078 r14-neb-b
     colours: {
       broadband: 'It was taken through broad colour filters ({filters}), so the colours are close to what a far more sensitive eye would see.',
       mixed: 'It was taken through broad colour filters with a narrow one for glowing hydrogen added ({filters}), so the red gas is stronger here than an eye would find it.',
@@ -719,10 +719,7 @@ Object.assign(COPY, {
       unstated: 'Its archive does not say which filters were used, so we do not say whether these are the colours an eye would see.',
     },
     part: 'It shows {part}, not the whole of it.',
-    // The photograph on the object's own card (internal #167): its alt text and its caption. The
-    // numbers are the row's measured width and height (registry/nebulae.yaml).
-    figureAlt: 'Photograph of {name}',
-    figureCaption: '{name}: {w} by {h} arcminutes of sky.',
+    // 0078 r14-neb-b: under "Compare with the photograph", the one place the photograph is shown.
     creditLead: 'Picture: ',
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
   },
@@ -1997,6 +1994,10 @@ Object.assign(COPY, {
     // numbers are registry/deepsky-heroes/m57.yaml's.
     card: {
       m57: 'Its light is taken from Hubble’s photograph, its shape from O’Dell, Ferland, Henney and Peimbert (2013): a thick ring tilted 13.5°, seen almost along its axis, the bluer gas of its middle drawn reaching toward and away from us. Its colours are the photograph’s, taken through narrow filters. Not yet reviewed by an astronomer.',
+      // 0078 r14-neb-b: begin
+      m27: 'Its light is taken from NOIRLab’s photograph, in false colour; its shape is a reconstruction: the bright waist a thick ring seen nearly edge on, the fainter ears its lobes, after the shells’ speeds Meaburn and others (2005) measured. Not yet reviewed by an astronomer.',
+      'southern-ring': 'Its light is taken from Webb’s infrared photograph; its shape follows Kastner and others (2024) and De Marco and others (2022): a ring seen nearly along its axis, a bubble through it and a molecular halo round both. Not yet reviewed by an astronomer.',
+      // 0078 r14-neb-b: end
     },
     // Rows under "Distance found by" on the card (ui/cardfacts.js, the `rows` hook).
     rows: {
@@ -2005,6 +2006,18 @@ Object.assign(COPY, {
         ['Its shape in depth', 'Reconstructed. The ring’s size on the sky, the tilt of its long axis and which end is nearer are measured. Its thickness and the form of the gas through its middle are not: they are drawn as an illustration.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],
+      // 0078 r14-neb-b: begin
+      'dso-m27': [
+        ['Its shape in depth', 'Reconstructed. Its size, its angle on the sky and the speeds of its shells are measured; that the waist is a ring nearly edge on, and how its ears reach toward and away from us, is the usual reading of a nebula of this look, drawn as an illustration.'],
+        ['Its colours', 'False colour: the photograph’s narrow filters, mapped to colours by the picture’s makers.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      'dso-southern-ring-nebula': [
+        ['Its shape in depth', 'Reconstructed. That its bright ring is seen 15 to 30° from its axis is measured (Kastner and others, 2024); which side is nearer, the ring’s thickness and the bubble’s length are illustrative.'],
+        ['Its colours', 'Infrared light no eye can see, given colours by Webb’s image makers.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      // 0078 r14-neb-b: end
     },
     // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
     how: 'Hubble’s pictures in single colours of light, with the gas’s speeds measured across the nebula, show a thick ring nearly face on: its long axis is tilted 13.5°, its north-eastern end nearer to us. Faster gas fills its middle and stretches toward and away from us along our line of sight (O’Dell, Ferland, Henney and Peimbert 2013).',
@@ -2020,6 +2033,7 @@ Object.assign(COPY, {
       coalsack: 'Its darkness is read from the Milky Way around it: a cloud of dust about 590 light-years away that dims and reddens the stars behind it. Not yet reviewed by an astronomer.',
       m78: 'Its light is NOIRLab’s photograph: dust scattering the blue light of the star in front of it, on the face of a dark cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
       iris: 'Its light is NOIRLab’s photograph: dust scattering the light of the young star HD 200775 in a hollow of its cloud. Its depth is reconstructed. Not yet reviewed by an astronomer.',
+      m45: 'Its light is NOIRLab’s photograph: a cloud of dust drifting through the cluster, just in front of its stars, scattering their blue light (Ritchey and others, 2006). Its depth is reconstructed. Not yet reviewed by an astronomer.', // 0078 r14-neb-b
     },
     // Rows under "Distance found by" on the card (ui/cardfacts.js, stage c's `rows` hook), keyed by record.
     rows: {
@@ -2053,6 +2067,13 @@ Object.assign(COPY, {
         ['From another side', 'Modelled: dust scatters more light forward than sideways, so from another side the same dust looks brighter or fainter.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],
+      // 0078 r14-neb-b: begin
+      'dso-m45': [
+        ['Its shape in depth', 'Reconstructed. The gas is in front of the stars, as their light shows; how far in front and how thick the dust is are illustrative, and the stars’ own depths inside the cluster are a fixed model, not measured.'],
+        ['What the dust does', 'It scatters the stars’ light, the blue most, so it glows blue round the brightest of them, Merope and Maia most of all. It is a passing cloud, not what the stars were born from.'],
+        ['Review', 'This model has not yet been reviewed by an astronomer.'],
+      ],
+      // 0078 r14-neb-b: end
     },
     // "How astronomers reconstructed its 3D form": two sentences, sourced, for a card disclosure or a trip.
     how: 'A remnant’s gas flies outward at a steady speed, so its speed toward or away from us says how far in front of or behind the centre it is. Martin, Milisavljevic and Drissen (2021) turned 310 000 spectra of the Crab into its shape that way.',
@@ -2169,6 +2190,11 @@ Object.assign(COPY, {
       'dso-m104': 'Built from its published tilt and structure: a huge round bulge and a thin disc seen almost edge on, its ring of dust in front. Not yet reviewed by an astronomer.',
       'dso-antennae-galaxies': 'Two colliding galaxies where the sky puts them, and their two tidal tails; how far each part is in front or behind is a model after the simulations of the collision. Not yet reviewed by an astronomer.',
       // 0077 W3-f: end
+      // 0078 r14-neb-b: begin
+      'dso-m83': 'Built from its published tilt and structure: a barred spiral seen nearly face on, its arms rich in young stars and glowing hydrogen. Not yet reviewed by an astronomer.',
+      'dso-ngc-1300': 'Built from its published structure: a long bar with dust lanes on its leading edges and two arms from its ends, their shape matched to Hubble’s photograph. Not yet reviewed by an astronomer.',
+      'dso-centaurus-a': 'Built from published numbers: a giant elliptical galaxy crossed by a warped disc of dust and young stars, after a model fitted to Spitzer’s images; its two jets are drawn in false colour, because they shine in X-rays and radio waves, not in visible light. Not yet reviewed by an astronomer.',
+      // 0078 r14-neb-b: end
     },
   },
 });
@@ -2283,7 +2309,7 @@ Object.assign(COPY, {
     photograph: 'Photograph',
     valueText: '{n}% photograph',
     flying: 'Moving to where the photograph was taken from.',
-    note: 'The photograph is flat and faces the Sun: turn away and it fades.',
+    note: 'The map draws a 3D model. The photograph is shown only here: flat and facing the Sun, so turn away and it fades.', // 0078 r14-neb-b
   },
 });
 // 0077 W2-d: end

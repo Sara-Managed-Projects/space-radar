@@ -17,12 +17,14 @@ export const HERO = {
     ],
     "dust_share": 0.45,
     "seed": 104,
-    "layer_power": 0.6
+    "layer_power": 0.6,
+    "bulge_at_re": 0.3,
+    "bulge_sparkle": 0.05
   },
   "frame": {
     "pa_deg": 89.25,
     "incl_deg": 84,
-    "near_side": null,
+    "near_side": "S",
     "approaching": null,
     "winding": 1,
     "bulge": "always",
@@ -36,7 +38,7 @@ export const HERO = {
       "sersic_n": 3.9,
       "re_kpc": 3.15,
       "q": 0.85,
-      "light": 0.72,
+      "light": 0.66,
       "colour": "#f2ece2",
       "source": "Gadotti 2012 (arXiv:1101.2900, table 1), the bulge-and-disc fit: n = 3.9 +/- 0.4, Re = 71 arcsec (3.15 kpc here); with an outer halo added the bulge is n 1.9, Re 10 arcsec and the halo Re 130 arcsec; S4G gives n 4.66, Re 180 arcsec: the spheroid's profile is uncertain; q assumed"
     },
@@ -46,7 +48,7 @@ export const HERO = {
       "scale_kpc": 2.7,
       "height_kpc": 0.8,
       "r_max_kpc": 12,
-      "light": 0.2,
+      "light": 0.22,
       "arm_contrast": 0,
       "colour": "#e6e0d8",
       "colour_outer": "#d8d6d4",
@@ -58,7 +60,7 @@ export const HERO = {
       "radius_kpc": 6.41,
       "width_kpc": 0.7,
       "height_kpc": 0.12,
-      "light": 0.06,
+      "light": 0.12,
       "colour": "#efe4dc",
       "source": "at the dust ring's radius (Bendo et al. 2006); its light share and width illustrative"
     },
@@ -78,7 +80,7 @@ export const HERO = {
       "what": "the dust disc inside the ring",
       "scale_kpc": 2.13,
       "height_kpc": 0.08,
-      "weight": 0.15,
+      "weight": 0.08,
       "source": "Bendo et al. 2006: an inner dust disc of scale length 48 +/- 3 arcsec (2.13 kpc here)"
     }
   ],
@@ -97,7 +99,7 @@ export const HERO = {
   ],
   "review": {
     "data_vs_model": "A parametric model: the orientation, the bulge's and disc's profiles and the dust ring are published; the ring of stars' light, the bulge's flattening, the light shares and the near side are ours, labelled.",
-    "geometry": "pa 89.25 / incl 84 (nearly edge on); which side is near is not published in any source read and is assumed.",
+    "geometry": "pa 89.25 / incl 84 (nearly edge on); which side is near is not published in any source read: the south, as the photographs show the lane south of the bulge's centre.",
     "colours": "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced.",
     "distance": "The record's: 29.8 Mly (28.7 to 30.9), the Messier table's.",
     "credits": "CREDITS.md section 3l, galaxies from their structure (0077 W3-f).",

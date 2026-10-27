@@ -155,22 +155,9 @@ const tour = (id) => TOURS.find((t) => t.id === id);
 {
   const { NEBULAE } = await import(join(JS, 'data/nebulae.js'));
   const cards = src('site/js/ui/cards.js');
-  check(/box\.appendChild\(pictureFigure\(row, name\)\);\s*box\.appendChild\(pictureNote\(row\)\);/.test(cards), 'the card puts the photograph before the note on its colours and its credit');
+  // 0078 r14-neb-b: no photograph in the scene or on the card; the slider is the one place, and its credit follows it.
+  check(!/pictureFigure/.test(cards) && /box\.appendChild\(pictureNote\(row\)\)/.test(cards) && /mountPhotoCompare\(box, record, ctx\)/.test(cards), 'the card shows no photograph of its own: the slider\'s credit follows the slider');
   check(/import\('\.\.\/data\/nebulae\.js'\)/.test(cards) && !/^import[^;]*data\/nebulae\.js/m.test(cards), 'from rows it imports dynamically: nothing of it at boot');
-  // The figure, built with a document that records what it is given.
-  const made = [];
-  const node = (tag) => { const n = { tag, children: [], appendChild(c) { this.children.push(c); return c; } }; made.push(n); return n; };
-  globalThis.document = { createElement: node };
-  const { pictureFigure } = await import(join(JS, 'ui/exposure.js'));
-  const m42 = NEBULAE.find((r) => r.id === 'm42');
-  const fig = pictureFigure(m42, 'Great Orion Nebula');
-  const img = fig.children[0]; const cap = fig.children[1];
-  check(fig.tag === 'figure' && img.tag === 'img' && img.src === 'images/nebulae/m42.webp' && img.loading === 'lazy' && img.alt === 'Photograph of Great Orion Nebula', `the figure's picture: ${JSON.stringify({ src: img.src, loading: img.loading, alt: img.alt })}`);
-  check(img.width === 640 && img.height === Math.round(640 * m42.height_arcmin / m42.width_arcmin), `its size is written on it, from the sky it covers (${img.width} x ${img.height})`);
-  check(cap.tag === 'figcaption' && cap.textContent === 'Great Orion Nebula: 60 by 47 arcminutes of sky.', `its caption is the row's measured field: "${cap.textContent}"`);
-  const tall = pictureFigure({ file: 'site/images/nebulae/x.webp', width_arcmin: 3.2, height_arcmin: 6.41 }, 'X');
-  check(tall.children[0].height === 640 && tall.children[0].width === 320 && /3\.2 by 6\.4 arcminutes/.test(tall.children[1].textContent), 'a picture taller than wide, and a small one to a tenth of an arcminute');
-  delete globalThis.document;
   for (const r of NEBULAE) check(existsSync(join(ROOT, r.file)) && r.credit && r.licence && r.page && r.width_arcmin > 0 && r.height_arcmin > 0, `nebulae[${r.id}] lacks its file, credit, licence, page or field`);
 }
 
@@ -202,7 +189,9 @@ const tour = (id) => TOURS.find((t) => t.id === id);
   // Each sentence against the tree.
   const { NEBULAE } = await import(join(JS, 'data/nebulae.js'));
   check(NEBULAE.length >= 25 && NEBULAE.every((r) => /\.webp$/.test(r.file) && r.licence), '"telescope photographs": every nebula row is a licensed picture file');
-  check(NEBULAE.some((r) => r.colours === 'narrowband') && NEBULAE.some((r) => r.colours === 'broadband'), '"some pictures map single gases to colours": some rows are narrowband and some are not');
+  // 0078 r14-neb-b: "3D models built from published measurements": the heroes' profiles, each citing its sources.
+  const heroYaml = readdirSync(join(ROOT, 'registry/deepsky-heroes')).filter((f) => f.endsWith('.yaml'));
+  check(heroYaml.length >= 20 && heroYaml.every((f) => /\nsources:\n  - /.test(src(`registry/deepsky-heroes/${f}`))), `"3D models built from published measurements": ${heroYaml.length} hero profiles, each with its sources`);
   const models = src('registry/models.yaml');
   const real = [...models.matchAll(/^  - \{id: [\w-]+, file: site\/models\/[^\n]*$/gm)].map((m) => m[0]);
   const nasa = real.filter((r) => /nasa/i.test(r)).length;

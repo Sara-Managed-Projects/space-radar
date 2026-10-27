@@ -951,7 +951,10 @@ export function drawnNow(record, ctx) {
     const shares = deep ? deep.heroShares() : null;
     if (shares) hero = shares.get(record.id) ?? shares.get(parentIdOf(record)) ?? 0;
   } catch { hero = 0; }
-  return drawnByShares(classes, meta(record).heroDrawn, photo, hero);
+  // 0078 r14-neb-b: no record is drawn as a photograph any more (scripts/build-dso.py); the card's slider draws one
+  // anyway when it is moved, and the tag says so while it is.
+  const list = photo > 0 && !classes.includes('photograph') ? ['photograph', ...classes] : classes;
+  return drawnByShares(list, meta(record).heroDrawn, photo, hero);
 }
 
 /** How a record's position is known, as the honesty line's first half says it: measured, inferred, illustrative, sample, unplaced or unknown. */

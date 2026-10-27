@@ -3,8 +3,9 @@
 //
 //   node tests/test_photocompare.mjs
 //
-// WHAT IS HELD. The scene's side (scene/nebulae.js): at 0 nothing changes; the slider draws the photograph at
-// its own share on the line it was taken along, and past the near fade that normally puts it away; turned away
+// WHAT IS HELD. The scene's side (scene/nebulae.js): untouched no photograph is drawn (0078 r14-neb-b: the slider is
+// the one place one appears); the slider draws the photograph at its own share on the line it was taken along,
+// even right up against it; turned away
 // from that line it fades as every placed picture does and the hero's share with it; choosing anything else
 // puts it back; it is remembered nowhere. The hero's side (scene/deep/deepsky.js): it gives way by the slider's
 // share and by nothing when there is none. The card's side (ui/photocompare.js): it is offered only for a
@@ -35,38 +36,31 @@ stage.setTime(Date.parse('2026-10-03T12:00:00Z'));
 const dso = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
 const LY_KM = 9460730472580.8;
 const scene = new THREE.Scene();
-const skyGroup = new THREE.Group();
-skyGroup.scale.setScalar(1000);
-scene.add(skyGroup);
-skyGroup.updateMatrixWorld(true);
 const camera = new THREE.PerspectiveCamera(45, 1.6, 0.1, 1e12);
 const renderer = { domElement: { clientHeight: 900 } };
-const n = createNebulae(scene, { skyGroup, load: () => Promise.resolve(new THREE.Texture()), base: 'https://example.invalid/' });
+const n = createNebulae(scene, { load: () => Promise.resolve(new THREE.Texture()), base: 'https://example.invalid/' });
 const records = ['m42', 'm31'].map((id) => { const o = dso.find((x) => x.id === id); return { id: `dso-${id}`, pos: { x: o.posLy[0] * LY_KM, y: o.posLy[1] * LY_KM, z: o.posLy[2] * LY_KM } }; });
-n.setSkyOpacity(0);
 n.setRecords(records);
 n.want('dso-m42');
-await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-const m42 = n.group.children.find((c) => c.name === 'nebula-m42');
-const centre = new THREE.Vector3().setFromMatrixPosition(m42.matrix);
+const line0 = n.lineFor('dso-m42');
+const centre = new THREE.Vector3(line0.target.x, line0.target.y, line0.target.z);
 const sun = new THREE.Vector3().copy(stage.toScene({ x: 0, y: 0, z: 0 }, 'sun-inertial'));
 const toSun = sun.clone().sub(centre).normalize();
-const width = Math.hypot(m42.matrix.elements[0], m42.matrix.elements[1], m42.matrix.elements[2]) * 2;
-const place = (from) => { camera.position.copy(from); camera.lookAt(centre); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); n.update(camera, renderer, true, true); return n.state().find((p) => p.id === 'm42'); };
+const width = n.state().find((p) => p.id === 'm42').widthUnits;
+const place = (from) => { camera.position.copy(from); camera.lookAt(centre); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); n.update(camera, renderer, true); return n.state().find((p) => p.id === 'm42'); };
 const onLine = (dist) => centre.clone().add(toSun.clone().multiplyScalar(dist));
 const turned = (deg, dist) => { const axis = new THREE.Vector3().crossVectors(toSun, new THREE.Vector3(0, 1, 0)).normalize(); return centre.clone().add(toSun.clone().applyAxisAngle(axis, deg * Math.PI / 180).multiplyScalar(dist)); };
 
-check(typeof n.clearCompare === 'function' && typeof n.setCompare === 'function' && typeof n.compareK === 'function' && typeof n.compareShare === 'function' && typeof n.lineShare === 'function' && typeof n.lineFor === 'function', 'the layer answers the slider\'s five calls');
-// untouched, nothing changes
+check(typeof n.clearCompare === 'function' && typeof n.setCompare === 'function' && typeof n.compareK === 'function' && typeof n.compareShare === 'function' && typeof n.lineShare === 'function' && typeof n.lineFor === 'function', 'the layer answers the slider');
+// untouched, nothing is drawn: 0078 r14-neb-b, no photograph in the scene but the slider's
 let st = place(onLine(width * 3));
-eq(st.alpha, 1, 'on the line, at three widths, the picture is whole without the slider');
+eq(st.alpha, 0, 'on the line, at three widths, no photograph is drawn without the slider (the 3D model is)');
 eq(n.compareShare('dso-m42'), null, 'and the slider has no share in it (null: not set, so the hero forces nothing)');
 eq(n.compareK('dso-m42'), null, 'and is not set');
-eq(n.lineShare('dso-m42'), 1, 'the picture is whole on its line');
-// right up against it the placed picture goes (nearFade), as it always did
-st = place(onLine(width * 0.1));
-eq(st.alpha, 0, 'against the picture, closer than a fifth of its width, it is put away');
+eq(n.lineShare('dso-m42'), 1, 'the camera is on the line the picture was taken along');
+// the slider fetches its picture, and draws it even right up against it
 n.setCompare('dso-m42', 0.5);
+await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
 st = place(onLine(width * 0.1));
 check(near(st.alpha, 0.5, 1e-9), `the slider at one half draws it at one half even there (${st.alpha})`);
 n.setCompare('dso-m42', 0);
@@ -97,9 +91,9 @@ check(line && near(line.target.x, centre.x, 1e-6 * Math.abs(centre.x) + 1e-9), '
 eq(n.lineFor('dso-nothing'), null, 'a record with no picture has no line');
 // not remembered, put back by choosing anything else
 n.want('dso-m31');
-eq(n.compareK('dso-m42'), null, 'selecting another object puts the slider back to the picture\'s own share');
-st = place(onLine(width * 0.1));
-eq(st.alpha, 0, 'and the picture is as it was');
+eq(n.compareK('dso-m42'), null, 'selecting another object puts the slider back to the model');
+st = place(onLine(width * 3));
+eq(st.alpha, 0, 'and no photograph is drawn');
 n.setCompare('dso-m42', 0.7);
 n.want(null);
 eq(n.compareK('dso-m42'), null, 'deselecting does too');

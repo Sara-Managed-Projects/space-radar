@@ -1194,7 +1194,6 @@ export const COPY = {
     "approachNone": "A tabela de passagens próximas do NASA JPL não carregou, então nenhuma próxima passagem é citada.",
     "satellitesCount": "{n} satélites em funcionamento no catálogo que esta página carregou do CelesTrak, {starlink} deles Starlink.",
     "satellitesLoading": "O catálogo ainda está carregando; a contagem aparece quando ele terminar.",
-    "pictureLine": "Uma fotografia real, colocada onde fica no céu. Imagem: {credit} · {licence}, bordas esmaecidas e céu escurecido por nós.",
     "portraitLine": "O anel é a imagem do Event Horizon Telescope, feita com ondas de rádio. É desenhada bem maior do que pareceria daqui; o lugar é medido. Imagem: {credit} · {licence}, céu escurecido e bordas esmaecidas por nós.",
     "tonightUp": "De {place} esta noite: no céu das {begin} às {end}, mais alto às {time}, {alt} no {az}.",
     "tonightGlare": "De {place} esta noite: {name} está perto demais do Sol para ser visto.",
@@ -2175,8 +2174,8 @@ export const COPY = {
     "lead": "Onde as coisas estão, e como se movem, é medido ou calculado. Como elas aparecem vem de três tipos de imagem.",
     "kinds": [
       [
-        "Uma fotografia",
-        "As nebulosas e as galáxias são fotografias de telescópio, de longa exposição. Para o olho num telescópio, o mesmo gás é um brilho cinza e fraco, e algumas imagens associam gases isolados a cores; cada ficha diz qual é o caso."
+        "Um modelo 3D",
+        "As nebulosas e as galáxias são modelos 3D feitos a partir de medidas publicadas, com a luz tirada de fotografias de telescópio (de longa exposição); as que ainda não têm modelo são um brilho suave do seu tamanho. Para o olho, o mesmo gás é um brilho cinza e fraco. Uma ficha pode mostrar a fotografia ao lado do modelo."
       ],
       [
         "Um mapa sobre um modelo",
@@ -2369,8 +2368,6 @@ export const COPY = {
       "unstated": "O arquivo dela não diz quais filtros foram usados, então não dizemos se estas são as cores que um olho veria."
     },
     "part": "Mostra {part}, não o todo.",
-    "figureAlt": "Fotografia de {name}",
-    "figureCaption": "{name}: {w} por {h} minutos de arco de céu.",
     "creditLead": "Imagem: ",
     "creditTail": " · {licence}, bordas esmaecidas e céu escurecido por nós"
   },
