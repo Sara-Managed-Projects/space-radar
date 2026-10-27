@@ -112,7 +112,7 @@ are as they were in 1.2.0.
 ## [1.2.0] - 2026-10-20
 
 Deep space, finished, and the reason for every card. Orion and the Ring Nebula are drawn in 3D, the
-Crab, the Veil and four dust clouds are shells and sheets, globular clusters are stars you can fly
+Veil is a shell and three dust clouds are sheets, globular clusters are stars you can fly
 into, and at the horizon the map shows WMAP's picture of the oldest light. Every card now says how we
 know what it shows. The Moon has shadows from its own heights,
 the giants have the rings they really have, three moons have plumes, and two new trips fly across the
@@ -167,8 +167,10 @@ sites on the Moon and 12 on Mars, 131 spacecraft models (126 in 1.1.0), 29 layer
   members.
 - **The Ring Nebula in 3D** ([#1213]): the ring, the gas along its axis and its halo, lit by
   Hubble's photograph, which is what you see from our side.
-- **Remnants and dust** ([#1215]): the Crab and the Veil as shells, and the Horsehead, the
-  Coalsack, M78 and the Iris as sheets that dim and redden what is behind them and never glow.
+- **Remnants and dust** ([#1215]): the Veil as a shell, and the Horsehead, M78 and the Iris as
+  sheets that dim and redden what is behind them and never glow. The Crab and the Coalsack were
+  built too but held back: the Crab read as a pale egg from inside, and the Coalsack was too faint
+  and too slow on a phone. They return when that is fixed.
 - **Where you are, and the way back** ([#1212]): every card has a line of its parents (*Sun ›
   Jupiter › Europa*) whose parts fly there, a Back that walks your own last 20 steps in this
   session only, and a scale rail that marks the rung you are on.
@@ -193,9 +195,9 @@ sites on the Moon and 12 on Mars, 131 spacecraft models (126 in 1.1.0), 29 layer
   time ([#1214]).
 
 ### Changed
-- **The four hero models are now twelve**, and every one says on its card that it has not yet been
+- **The four hero models are now ten**, and every one says on its card that it has not yet been
   reviewed by an astronomer: the Helix, the LMC, Andromeda and Triangulum of 1.1.0, plus Orion, the
-  Ring, the Crab, the Veil, the Horsehead, the Coalsack, M78 and the Iris.
+  Ring, the Veil, the Horsehead, M78 and the Iris.
 - **Every record on the map has a class, a source and a credit, and CI checks all four**
   ([#1201]). 890 records are sorted into 38 visual classes (and four of the house's); the generated
   [docs/COVERAGE.md](docs/COVERAGE.md) lists each, and a record drawn as an illustration may not
