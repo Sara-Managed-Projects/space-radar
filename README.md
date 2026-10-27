@@ -66,7 +66,7 @@ If Space Radar is useful to you, a star helps other people find it.
 Space Radar is a living 3D map of space. It draws the Earth with today's clouds, about 17 000
 satellites where they are this minute, the space stations and who is aboard, rockets about to
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
-in three dimensions, nebulae as telescopes photographed them, and the Milky Way from outside. Step
+in three dimensions, nebulae and galaxies as 3D models built from published measurements, and the Milky Way from outside. Step
 down to the ground and it is tonight's sky from your own street. Thirty guided trips, read
 aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
@@ -98,8 +98,10 @@ data, and every number on screen says where it came from.
 
 - **Follow anything in orbit.** The ISS, Hubble, Starlink trains, debris: where it is, how fast,
   whether it is in sunlight, and when it passes over you.
-- **See the deep sky.** Real photographs of 30 nebulae and galaxies in their true places, with an
-  exposure control, and the whole sky in other light: infrared, microwaves, gamma rays.
+- **See the deep sky.** Nebulae and galaxies in 3D at their true places, built from published measurements
+  (a soft glow of the right size where there is no model yet), the telescopes' photographs of 30 nebulae
+  and galaxies to compare them with on their cards, an exposure control, and the whole sky in other light:
+  infrared, microwaves, gamma rays.
 - **Go anywhere, at any time.** Fly from a rooftop to the edge of the Milky Way; drag the time
   scrubber to the next eclipse; follow eight missions along their own timelines.
 - **Teach with it.** Present mode sets a trip's words large for a room and waits for your
@@ -146,7 +148,7 @@ site/        the whole app, served as it is: plain ES modules, three.js, no bund
 registry/    YAML files that say what exists: worlds, layers, data sources, trips, models, budgets
 scripts/     generators that turn a registry into the JavaScript the browser reads, and the checks
 tests/       more than 150 node and python test files; no browser needed
-harvest/     a small scheduled job that saves each public data source for the site to read
+harvest/     the hourly job that saves each public data source on our own storage, for the site to read first
 docs/        running it, a first pull request, a map of the code, embedding, releasing
 ```
 

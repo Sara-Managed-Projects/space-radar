@@ -380,7 +380,7 @@ function exoticDeparture(x) {
   const shown = shownPeriod(x.periodS);
   const parts = [];
   if (shown) parts.push(shown.slower > 1 ? t(T.pulseSlowed, { n: fmt.int(shown.slower) }) : T.pulseTrue);
-  if (x.image && x.image.file) parts.push(T.portrait);
+  if (x.kind === 'blackhole') parts.push(T.portrait); // 0078 r14-mw-bh: every black hole is drawn in 3D (the quasars keep the far layer's words)
   return parts.length ? { departure: parts.join(COPY.punctuation.separator) } : {};
 }
 
@@ -413,8 +413,8 @@ export function exoticRecords() {
         massMsunHigh: x.massMsunHigh ?? null,
         periodS: x.periodS ?? null,
         // 2026-10-08 (public #426): what is drawn there that is not the thing as it would look --
-        // a pulsar's blink, slowed by a power of ten (scene/pulse.js), and the Event Horizon
-        // Telescope's picture, far larger than life (scene/portraits.js). The card's "drawn as"
+        // a pulsar's blink, slowed by a power of ten (scene/pulse.js), and (release 1.4.0) the black
+        // hole's 3D model, far larger than life (scene/portraits.js). The card's "drawn as"
         // line gains the sentence (ui/cards.js appends a row's `departure`).
         ...exoticDeparture(x),
         why: x.why,

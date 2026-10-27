@@ -178,6 +178,13 @@ jobs:
       # download per file per two hours, and a suite that spent it could not be run twice.
       - name: The harvester counts, guards and writes what the contract says
         run: python3 tests/test_harvest.py
+      # 0078 r14-data: begin
+      # Everything the Lambda publishes, and the rule it must not break: a source that fails keeps its
+      # previous file and is published as that copy (old stamps, `kept_after`), the index is written last,
+      # an hourly schedule reads an hourly source, the cut / derived files / column twins, the handler.
+      - name: The harvester never overwrites good data with a failure, and publishes what the old script did
+        run: python3 tests/test_harvest_publish.py
+      # 0078 r14-data: end
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
       # ui/mobile.js (the phone's old bar), which is the argument for it in one line.
@@ -216,6 +223,10 @@ jobs:
         run: python3 tests/test_avif_trial.py
       - name: "the Milky Way shader's spike cut takes the baked stars out of the 2k panorama and keeps its glow (internal #547; skips without NumPy)"
         run: python3 tests/test_milkyway_opening.py
+      # 0078 r14-mw-bh: begin
+      - name: "A black hole in 3D: the shadow, the bent light, the beamed disc, M87*'s jet, Cygnus X-1's companion (release 1.4.0)"
+        run: node tests/test_blackhole.mjs
+      # 0078 r14-mw-bh: end
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)
@@ -379,6 +390,14 @@ jobs:
       # and "Satellites worth knowing" empty.
       - name: A reload inside CelesTrak's two hours keeps what the first visit loaded
         run: node tests/test_sources_cache.mjs
+      # 0078 r14-data: begin
+      # Our saved copy first (fresh or stale, drawn at once), the publisher only behind a stale one or in
+      # place of a missing one, the browser's own copy last; and the same for clouds, lightning and aurora.
+      - name: The read order is our copy, then the publisher, then the browser's copy
+        run: node tests/test_read_order.mjs
+      - name: The clouds, the lightning and the aurora read our copy first too
+        run: node tests/test_saved_pictures.mjs
+      # 0078 r14-data: end
       - name: Cards say what they are drawn as, and how old their elements are
         run: node tests/test_cards_copy.mjs
       # Eight dwarf planets and the two interstellar visitors: two-body positions against JPL
@@ -1146,6 +1165,12 @@ jobs:
       - name: "Titan's radar face and seas, its detached haze at 500 km; Saturn's ring as particles from close, the sheet giving up their share; the far dwarf planets' measured colours and shapes (internal spec 0077 W1-f, #863, #890, #865)"
         run: node tests/test_outer_worlds.mjs
       # 0077 W1-f: end
+      # 0078 r14-neb-a: begin
+      - name: "eight emission nebulae as walls of glowing gas, dust and stars, the photograph's light within 5 % on our line and no photograph drawn flat (release 1.4.0 stage r14-neb-a)"
+        run: node tests/test_hero_emission.mjs
+      - name: "the emission nebulae's light, sharp light and walls are the bakes of their photographs and profiles"
+        run: python3 scripts/build_deep_emission.py --check
+      # 0078 r14-neb-a: end
       # 0077 W2-e: begin
       - name: "the Carina hero: its bipolar cavity behind the clusters, the dust lane in front, the photograph within 5 % on our line (internal spec 0077 W2-e, #782)"
         run: node tests/test_hero_carina.mjs
@@ -1174,3 +1199,7 @@ jobs:
       - name: "Compare with the photograph: the slider's share on the picture and the hero, put back by any other choice, offered for shipped heroes only (internal i#776)"
         run: node tests/test_photocompare.mjs
       # 0077 W2-d: end
+      # 0078 r14-neb-b: begin
+      - name: "no photographs in the scene: M27, the Southern Ring and the Pleiades' nebulosity as 3D heroes from their sources, their light maps the bakes (release 1.4.0 stage r14-neb-b)"
+        run: node tests/test_hero_r14neb.mjs
+      # 0078 r14-neb-b: end

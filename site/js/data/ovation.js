@@ -19,11 +19,14 @@
 //    of OVATION Prime as a forecast model for visible aurorae", Space Weather), so it rises with the
 //    flux, which is what makes aurora bright. That is why scene/aurora.js may use it for the
 //    brightness as well as the extent (probabilityToEmission there).
-//  * The harvester's row (registry/sources.yaml swpc-ovation) promises `aurora.png`, but its parser
-//    (harvest/parsers/swpc_ovation.py) passes the 900 kB body through whole, and
-//    www.spaceradar.ai/data/v1/aurora.png answers 403 (no such object). The saved JSON copy exists
-//    and was 2 days old on 2026-09-30: an aurora forecast is stale in an hour, so the browser asks
-//    NOAA directly (the row is `browser: true`) and never draws a saved copy.
+//  * OUR COPY FIRST (2026-10-26, internal spec 0078; data/readorder.js). Until then the browser asked NOAA directly
+//    and never drew a saved copy ("an aurora forecast is stale in an hour"), because the saved JSON was days old.
+//    The harvester's Lambda now saves NOAA's answer hourly (registry/sources.yaml swpc-ovation, a 15-minute
+//    promise; harvest/parsers/swpc_ovation.py passes the 900 kB body through whole, so the file is
+//    data/v1/swpc-ovation.json and `aurora.png` was never written). scene/aurora.js draws that copy at once and
+//    asks NOAA behind it, because a copy older than its fifteen minutes is past its valid_until; a forecast
+//    older than HOLD_MS is not drawn whichever way it arrived (auroraMode), so a copy that is days old, from
+//    a Lambda that has stopped, shows nothing rather than yesterday's sky.
 
 /** The one URL. NOAA's, public domain, CORS open. */
 export const OVATION_URL = 'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json';

@@ -55,12 +55,27 @@ def run(
     fetcher=None,
     sleep=time.sleep,
     log=print,
+    slack_s: int = 0,
+    force_due: set[str] | None = None,
+    finish=None,
+    deadline: float | None = None,
 ) -> dict:
     """Run every source; write the snapshots that pass and then the index. Returns the index doc.
 
     `fetcher` is `fetch.get`'s signature, injectable so tests never touch the network.
     `now` overrides the clock for due/valid_until arithmetic (`--now`); the run's own duration is
     still measured on the wall clock.
+
+    `slack_s`: a source is due when it will be within this many seconds. An hourly schedule fires a few
+    seconds either side of the hour, and a one-hour source whose copy is 59 min 58 s old would otherwise
+    wait for the next run and be two hours old. The Lambda passes 300.
+    `force_due`: source ids fetched this run whatever their cadence (publish.force_due says which).
+    `finish(store, manifest, previous, sources, now, log)`: runs after the last source and BEFORE the index
+    is written (publish.finish: the keep-last-good rule, the cuts and the column twins).
+    `deadline`: a time.monotonic() value. A source not yet started when it has passed is not started: its
+    row says the run ran out of time (and, holding a good copy, is published as that copy), it is the first
+    in line next run, and the index is still written. Without this a slow upstream could use the whole
+    timeout and leave NO index, and every copy would age together.
     """
     env = os.environ if env is None else env
     fetcher = fetcher or _fetch.get
@@ -71,16 +86,33 @@ def run(
     previous = snap.read_index(store)
     manifest = snap.Manifest()
 
-    for source in sources:
+    force_due = force_due or set()
+    # The most overdue source goes first, so that when the deadline cuts a run short it is the freshest
+    # copies that wait, never the same stale ones twice. The manifest keeps the registry's order.
+    def overdue_first(s: Source):
+        v = previous.snapshots.get(s.id, snap.Entry()).valid_until
+        return (v or "")
+    manifest.snapshots = {s.id: None for s in sources}
+    for source in sorted(sources, key=overdue_first):
         prev = previous.snapshots.get(source.id, snap.Entry())
         if only and source.id != only:
             entry = _carry(prev, status=prev.status if prev.status in ("ok", "not-modified") else "skipped",
                            error=prev.last_error if prev.status in ("ok", "not-modified") else "not selected by --only")
             manifest.snapshots[source.id] = entry
             continue
-        outcome = run_source(store, source, prev, now=now, dry_run=dry_run, env=env, fetcher=fetcher, sleep=sleep)
+        if deadline is not None and time.monotonic() >= deadline and source.enabled and not dry_run \
+                and (prev.due(now + timedelta(seconds=slack_s)) or source.id in force_due):
+            manifest.snapshots[source.id] = _carry(prev, status="error",
+                                                   error="the run ran out of time before this source; it goes first next run")
+            log(_line(source, manifest.snapshots[source.id]))
+            continue
+        outcome = run_source(store, source, prev, now=now, dry_run=dry_run, env=env, fetcher=fetcher, sleep=sleep,
+                             slack_s=slack_s, force=source.id in force_due)
         manifest.snapshots[source.id] = outcome.entry
         log(_line(source, outcome.entry))
+
+    if finish is not None and not dry_run:
+        finish(store, manifest, previous, sources, now, log)
 
     duration_ms = int((time.monotonic() - wall_start) * 1000)
     generated_at = now if _overridden(now) else snap.utcnow()
@@ -98,7 +130,7 @@ def _overridden(now: datetime) -> bool:
 
 
 def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_run: bool, env,
-               fetcher, sleep) -> Outcome:
+               fetcher, sleep, slack_s: int = 0, force: bool = False) -> Outcome:
     started = time.monotonic()
 
     def done(entry: snap.Entry, wrote: bool = False) -> Outcome:
@@ -110,7 +142,7 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
     secret = source.secret
     if secret and not env.get(secret):
         return done(_carry(prev, status="skipped", error=f"secret {secret} is not set; the source is skipped, not failed"))
-    if not prev.due(now):
+    if not force and not prev.due(now + timedelta(seconds=slack_s)):
         return done(_carry(prev, status="not-due", error=None))
     if dry_run:
         return done(_carry(prev, status="skipped", error="dry run: due, would fetch"))
@@ -377,6 +409,7 @@ def _carry(prev: snap.Entry, *, status: str, error: str | None) -> snap.Entry:
         status=status,
         last_error=error,
         etag=prev.etag,
+        note=prev.note,     # the file is still the cut it was (harvest/publish.py)
     )
 
 

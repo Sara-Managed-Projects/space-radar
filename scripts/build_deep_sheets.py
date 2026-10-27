@@ -13,6 +13,11 @@ WHAT EACH HERO GETS (registry/deepsky-heroes/<id>.yaml holds every number used h
   horsehead, m78, iris                 <id>-light.webp and <id>-dust.webp on the same picture grid.
   (scene/deep/dustsheet.js)
   coalsack                             <id>-dust.webp only, on a tangent plane resampled from site/textures/4k/milky_way.webp.
+  m45 (0078 r14-neb-b)                 <id>-light.webp only: the Pleiades' reflection nebula from the photograph the card's
+                                       slider shows, each bright star's round halo SUBTRACTED (the profile's `light.halos`:
+                                       per star, the 25th percentile of the picture's light in each ring round it, which a
+                                       one-sided wisp does not lift, taken off that ring) so the nebula round the star stays.
+  --only=m45                           bakes those ids and keeps every other row of the manifest as it is.
 
 THE RULE FOR DUST (the profile's `dust.rule`). The glow a dark cloud is seen against is the picture's upper ENVELOPE: the
 brightest within `envelope_arcmin` (a grey dilation), smoothed over `blur_arcmin`. A point darker than `dark_below` of
@@ -56,7 +61,7 @@ STARS = OUT / "stars.json"
 DSO = ROOT / "site" / "data" / "dso.json"
 STARS3D = ROOT / "site" / "data" / "stars3d.bin"
 MILKY = ROOT / "site" / "textures" / "4k" / "milky_way.webp"
-IDS = ("crab", "veil", "horsehead", "coalsack", "m78", "iris")
+IDS = ("crab", "veil", "horsehead", "coalsack", "m78", "iris", "m45")  # m45: 0078 r14-neb-b
 UA = "space-radar-build (+https://github.com/Sara-Managed-Projects/space-radar)"
 NOIRLAB_SCREEN = "https://noirlab.edu/public/media/archives/images/screen/{image}.jpg"
 NOIRLAB_LARGE = "https://noirlab.edu/public/media/archives/images/large/{image}.jpg"
@@ -151,6 +156,45 @@ def remove_stars(a, above: float, grow: int):
     halo = (np.asarray(Image.fromarray((halo * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))) > 0) & near
     out[halo] = med2[halo]
     return out, mask | halo
+
+
+def subtract_halos(a, centres, r_px: int, pct: float, core_px: int):
+    """0078 r14-neb-b: each bright star's round halo taken off (the Pleiades' stars light the nebula round them, so a
+    median fill would take the nebula too). For each centre (x, y in pixels), the `pct` percentile of the light in each
+    one-pixel ring out to `r_px` is the round part (a wisp on one side does not lift a low percentile); it is subtracted,
+    per channel, falling to nothing at r_px; inside `core_px` the ring at core_px is used (the saturated core is the
+    star). Returns (picture, mask of the cores)."""
+    import numpy as np
+
+    out = a.astype(np.float64).copy()
+    H, W = out.shape[:2]
+    yy, xx = np.mgrid[0:H, 0:W]
+    core = np.zeros((H, W), bool)
+    for cx, cy in centres:
+        rr = np.hypot(xx - cx, yy - cy)
+        ring = np.floor(rr).astype(int)
+        prof = np.zeros((r_px + 1, 3))
+        for r in range(r_px + 1):
+            m = ring == r
+            if m.sum() < 3:
+                continue
+            prof[r] = np.percentile(a[m], pct, axis=0)
+        prof -= prof[r_px]          # what is left at r_px is the nebula and the sky, not the star
+        prof = np.clip(prof, 0, None)
+        k = np.clip(rr, 0, r_px).astype(int)
+        sub = prof[k] * (1 - np.clip((rr - 0.8 * r_px) / (0.2 * r_px), 0, 1))[..., None]
+        out = out - sub
+        # the core and the ring round it, where the star's own light is all there is: the median of the ring from twice
+        # the core's radius out by five pixels, after the subtraction, blended in over the last third
+        ri = 2 * core_px
+        c = rr <= ri
+        core |= rr <= core_px
+        edge = (rr > ri) & (rr <= ri + 5)
+        if edge.any():
+            fill = np.median(out[edge], axis=0)
+            k = np.clip((ri - rr) / (ri / 3), 0, 1)[..., None]
+            out[c] = (out * (1 - k) + fill[None, None, :] * k)[c]
+    return np.clip(out, 0, 255).astype(np.float32), core
 
 
 def sky_to_black(im, levels=None):
@@ -507,7 +551,36 @@ def bake_one(hid: str, files: dict, stars: dict, cat, maps: dict) -> None:
             row["from_sha256"] = sha(src)
         a = np.asarray(im).astype(np.float32)
         st = light.get("stars") or {}
+        core = None
+        if light.get("halos"):
+            # 0078 r14-neb-b: the bright stars' round halos first (subtract_halos), then the faint stars as for the others
+            hl = light["halos"]
+            fr = prof["frame"]
+            to_uv = picture_uv(light["picture"], fr["ra_deg"], fr["dec_deg"])
+            W_, H_ = im.size
+            cs = []
+            for ra, dec in hl["stars"]:
+                uu, vv = to_uv(*tangent_offset(fr["ra_deg"], fr["dec_deg"], ra, dec))
+                cs.append((uu * W_, (1 - vv) * H_))
+            a, core = subtract_halos(a, cs, int(hl.get("r_px", 40)), float(hl.get("pct", 25)), int(hl.get("core_px", 6)))
+            row["halos"] = [[round(x, 1), round(y, 1)] for x, y in cs]
         a, mask = remove_stars(a, float(st.get("above_median", 18)), int(st.get("grow_px", 3)))
+        if core is not None:
+            mask = mask | core
+        if light.get("red_out"):
+            # 0078 r14-neb-b: a reflection nebula is bluer than the stars it scatters; what is left redder than blue (a
+            # field star's remnant) is not nebula: it takes the wide median of the picture round it
+            from PIL import ImageFilter as _F
+            red = (a[..., 0] - a[..., 2]) > float(light["red_out"])
+            red = np.asarray(Image.fromarray((red * 255).astype(np.uint8)).filter(_F.MaxFilter(5))) > 0
+            wide = np.asarray(Image.fromarray(np.clip(np.where(red[..., None], 0, a), 0, 255).astype(np.uint8)).filter(_F.MedianFilter(15))).astype(np.float32)
+            a = np.where(red[..., None], np.minimum(a, wide), a)
+            mask = mask | red
+        if light.get("floor_pct") is not None:
+            # 0078 r14-neb-b: the sky between the wisps to black (the darkest `floor_pct` per cent, per channel)
+            fl = np.percentile(a.reshape(-1, 3), float(light["floor_pct"]), axis=0)
+            a = np.clip(a - fl[None, None, :], 0, None) * (255.0 / (255.0 - fl))[None, None, :]
+            row["floor"] = [round(float(x), 1) for x in fl]
         row["stars_removed_px"] = int(mask.sum())
         row["size"] = list(im.size)
         if dust:
@@ -554,17 +627,28 @@ def bake() -> int:
     stars: dict = {}
     cat = catalogue()
     maps: dict = {}
-    for hid in IDS:
+    only = [x for x in arg("only").split(",") if x]  # 0078 r14-neb-b: bake these, keep every other row as it is
+    for hid in (only or IDS):
         bake_one(hid, files, stars, cat, maps)
+    old = json.loads(MANIFEST.read_text(encoding="utf-8")) if only and MANIFEST.exists() else None
+    if old is not None:
+        # the other heroes' star lists, as they are (a hero without dust has none)
+        doc = json.loads(STARS.read_text(encoding="utf-8"))
+        stars = {**{k: v for k, v in doc.items() if k != "about"}, **stars}
     STARS.write_text(json.dumps({"about": "scripts/build_deep_sheets.py: the catalogue's stars in each dust hero's footprint, "
                                  "[x west, y north, z toward the Sun] in ly from the record's place and the absolute magnitude; "
                                  "twins: the catalogue's place (sun-inertial ly) of a star the hero draws itself", **stars},
                                 separators=(",", ":")) + "\n", encoding="utf-8")
     rows = files.pop("_rows")
     out = {"files": {}, "inputs": rows}
+    if old is not None:
+        mine = {f"{h}-light.webp" for h in only} | {f"{h}-dust.webp" for h in only}
+        out["files"] = {k: v for k, v in old["files"].items() if k not in mine and k != "stars.json"}
+        out["inputs"] = [r for r in old["inputs"] if r["id"] not in only] + rows
     for name in sorted(files):
         p = OUT / name
         out["files"][name] = {"bytes": p.stat().st_size, "sha256": sha(p), **files[name]}
+    out["files"] = dict(sorted(out["files"].items()))
     out["files"]["stars.json"] = {"bytes": STARS.stat().st_size, "sha256": sha(STARS)}
     MANIFEST.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8")
     total = sum(v["bytes"] for v in out["files"].values())

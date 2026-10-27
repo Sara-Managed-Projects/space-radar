@@ -166,14 +166,68 @@ const fileBuf = (p) => { const b = readFileSync(join(ROOT, p)); return b.buffer.
   check(/astro-ph\/0110581/.test(JSON.stringify(P.antennae)) && /bends away|bending away/.test(JSON.stringify(P.antennae)) && comps[0].layers.find((l) => l.kind === 'stream').path.slice(-1)[0][2] < 0, 'the southern tail\'s tip bends away from us (Hibbard et al. 2001), the rest of its depth a model, said so');
   const hA = S.createHero(THREE, { profile: P.antennae, record: ant });
   const nA = []; hA.group.traverse((o) => { if (o.material) nA.push(o.name); });
-  check(hA.stats().companions === 2 && nA.length === 6 && !nA.some((n) => /:layer|:bulge/.test(n)), `two torn galaxies drawn as points only: ${nA.length} draw calls (${nA.join(', ')})`);
+  // 0078 r14-neb-b: each galaxy's starlight is a smooth layer and its nucleus a billboard now (points only, they were grainy): five draws each
+  check(hA.stats().companions === 2 && nA.length === 10 && nA.filter((n) => /:layer$/.test(n)).length === 2 && nA.filter((n) => /:bulge$/.test(n)).length === 2, `two torn galaxies, each a smooth layer, a nucleus and its points: ${nA.length} draw calls (${nA.join(', ')})`);
+  check(comps.every((c) => c.layered === true && c.layers.some((l) => l.kind === 'stream' && l.keep === true)), 'the Antennae: each galaxy layered, its tail kept whole in its points (not cut to sparkle by the layer)');
   // the southern tail's tip, from the Sun, is where it was traced: about 11 arcmin from NGC 4038
   const tip = comps[0].layers.find((l) => l.kind === 'stream').path.slice(-1)[0];
   const sep = Math.acos(dot(S.eqUnit(tip[0], tip[1]), S.eqUnit(comps[0].ra_deg, comps[0].dec_deg))) / D2R * 60;
   check(sep > 10 && sep < 12.5, `the southern tail reaches ${sep.toFixed(1)} arcmin from NGC 4038 (Hibbard et al. 2001: 11.6)`);
   hA.dispose();
+  // 0078 r14-neb-b ------------------------------------------------------------------------------------------------------------
+  // M83, NGC 1300 and Centaurus A from their own numbers (the photographs on the sky are gone: the model is what draws, on our line too)
+  {
+    const NEW = { m83: { incl: 24, pa: 45, cite: 'astro-ph/0404026', calls: 5 }, ngc1300: { incl: 34, pa: 106.1, cite: 'J/ApJS/219/4', calls: 5 }, cena: { incl: 75, pa: 110, cite: 'astro-ph/0601135', calls: 5 } };
+    const sect = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
+    for (const [id, w] of Object.entries(NEW)) {
+      const H = (await import(join(JS, `data/hero-${id}.js`))).HERO;
+      const line = HEROES.find((h) => h.id === id);
+      check(line && line.record === H.record && line.stub && line.stub.shipped === H.shipped && line.stub.drawn.join() === H.drawn.join(), `${id}: a hero line in scene/deep/heroes.js whose stub's shipped and drawn are the registry's`);
+      check(H.stage === 'r14-neb-b' && H.review.by === 'Space Radar maintainers' && H.credits.length && H.drawn[0] === 'model', `${id}: a model, signed by the maintainers, with a credit`);
+      for (const l of H.layers) check(String(l.source || '').length > 5, `${id}: its ${l.kind} layer says where it comes from`);
+      check(sect.includes(H.credits[0].slice(0, 40)), `${id}: CREDITS.md carries its credit line`);
+      const rec = recordOf(H.record);
+      const p0 = S.paramsFor(H, rec), ax = S.discAxes(rec.pos, p0.frame);
+      const u = unitv([rec.pos.x, rec.pos.y, rec.pos.z]);
+      const tilt = Math.acos(Math.abs(dot(ax.normal, u))) / D2R;
+      check(Math.abs(tilt - w.incl) < 1e-6 && Math.abs(H.frame.pa_deg - w.pa) < 1e-9 && JSON.stringify(H).includes(w.cite), `${id}: inclined ${tilt.toFixed(2)} degrees at PA ${H.frame.pa_deg}, as ${w.cite} gives`);
+      const pr = S.resolveSky(p0, rec.pos, ax);
+      const g1 = S.generateGalaxy(pr, { count: 8000, dust: 0.3, seed: 9 }), g2 = S.generateGalaxy(pr, { count: 8000, dust: 0.3, seed: 9 });
+      check(Buffer.from(g1.light.pos.buffer).equals(Buffer.from(g2.light.pos.buffer)) && Buffer.from(g1.dust.pos.buffer).equals(Buffer.from(g2.dust.pos.buffer)), `${id}: the same seed gives the same points`);
+      check(H.levels.points.every((n, t) => n <= [14000, 42000, 64000][t]), `${id}: points by tier within the spirals' budget (${H.levels.points})`);
+      const h = S.createHero(THREE, { profile: H, record: rec });
+      const names = []; h.group.traverse((o) => { if (o.material) names.push(o.name); });
+      check(names.length === w.calls, `${id}: ${names.length} draw calls (${names.join(', ')})`);
+      h.dispose();
+    }
+    const B = (await import(join(JS, 'data/hero-ngc1300.js'))).HERO;
+    const bar = B.layers.find((l) => l.kind === 'bar');
+    check(bar && bar.shape === 'ferrers' && Math.abs(bar.length_kpc - 6.83) < 0.01 && /75 arcsec/.test(bar.source) && B.layers.some((l) => l.kind === 'dust-bar'), 'NGC 1300: S4G\'s Ferrers bar (75 arcsec) with lanes on its leading edges');
+    const prof = S.layerProfile(S.paramsFor(B, recordOf(B.record)));
+    check(prof.bar && S.barAt(prof.bar, 0, 0).light > 0 && S.barAt(prof.bar, 2 * prof.bar.a, 0).light === 0 && /uBar/.test(S.SHADERS_LAYER.layer), 'a Ferrers bar is in the smooth layer (it was sparkle only face on): light inside its ellipse, none outside, mirrored in the GLSL');
+    // the leading-edge lanes: on the side the bar's end turns toward (the sense of trailing arms)
+    for (const sense of [1, -1]) { const q = S.barAt({ ...prof.bar, angle: 0 }, 0.5 * prof.bar.a, sense * prof.bar.off, sense), r = S.barAt({ ...prof.bar, angle: 0 }, 0.5 * prof.bar.a, -sense * prof.bar.off, sense); check(q.dust > 5 * r.dust, `the bar's lane is on its leading side (sense ${sense})`); }
+    const C = (await import(join(JS, 'data/hero-cena.js'))).HERO;
+    const dd = C.layers.find((l) => l.kind === 'dust-disc');
+    check(dd && dd.warp && dd.warp.precession.length === 10 && dd.warp.tilt.length === 4 && Math.abs(dd.r_min_kpc - 0.89) < 0.01, 'Centaurus A: the dusty disc warped by Quillen et al. 2006\'s ten precession and four tilt points, with its 50 arcsec hole');
+    const wf = S.warpOf(dd);
+    const turned = wf(1.784, 0, 0); // a point of the ring at 100 arcsec: its ring's axis leans 20 degrees (Quillen et al. 2006's tilt there)
+    check(Math.abs(Math.hypot(...turned) - 1.784) < 1e-9 && S.warpOf({}) === null, 'a warp turns a ring without stretching it; a layer without one is not turned');
+    const ax0 = [0, 1].map((k) => wf(Math.cos(k * Math.PI / 2) * 1.784, Math.sin(k * Math.PI / 2) * 1.784, 0));
+    const n0 = (() => { const a = ax0[0], b = ax0[1]; const c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; const l = Math.hypot(...c); return c.map((v) => v / l); })();
+    check(Math.abs(Math.acos(n0[2]) / D2R - 20) < 0.5, `the ring at 100 arcsec leans ${(Math.acos(n0[2]) / D2R).toFixed(1)} degrees off the principal axis (Quillen et al. 2006: 20)`);
+    const jets = C.layers.filter((l) => l.kind === 'stream');
+    check(jets.length === 2 && jets.every((j) => /false colour/i.test(j.what) && /ILLUSTRATION/.test(j.source)) && C.drawn.includes('illustration') && /0710\.1277/.test(JSON.stringify(C)), 'Centaurus A: its jet and counter-jet drawn in false colour, said so, from Chandra\'s lengths');
+    check(C.frame.bulge === 'always' && C.layers[0].sersic_n === 4 && Math.abs(C.layers[0].re_kpc - 5.44) < 0.01, 'Centaurus A: the elliptical a de Vaucouleurs spheroid of Re 305 arcsec, drawn from every side');
+    // no layer where there is no disc: the elliptical and its warped disc of points are five draws
+    const cOut = S.layerProfile(S.paramsFor(C, recordOf(C.record)));
+    check(!(cOut.i0 > 0) && !cOut.bar && !cOut.ring && cOut.gain > 1, 'Centaurus A has no disc layer and is exposed by its elliptical (LAYER_BULGE_AT_RE at one Re)');
+    // the generator's 0078 additions in the shaders: kinds the layer does not carry keep their light and patch size; under a drawn layer the
+    // floor's dots thin out (the grain); a bulge's sparkle is a small dot; the bulge billboard is the spheroid's ellipse from where it is seen
+    check(/uniform vec4 uKeep/.test(S.SHADERS.light) && /uFloorP/.test(S.SHADERS.light) && /uSparkPx/.test(S.SHADERS.light) && /uShape/.test(S.SHADERS_LAYER.bulge), 'the light shader keeps the kept kinds whole, thins the floor under a drawn layer, keeps the sparkle small; the bulge billboard is an ellipse');
+  }
   // the hero's points come to the screen only through scene/deep/heroes.js: nothing at boot
-  check(!/hero-m51|hero-antennae|hero-m104/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'nothing at boot: the profiles are imported by the hero lines only');
+  check(!/hero-m51|hero-antennae|hero-m104|hero-m83|hero-ngc1300|hero-cena/.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'nothing at boot: the profiles are imported by the hero lines only');
 }
 
 if (problems.length) {
@@ -181,4 +235,4 @@ if (problems.length) {
   for (const p of problems) console.error('  - ' + p);
   process.exit(1);
 }
-console.log('test_r13_galaxies: ok (the deep field from JADES at its redshifts, true angular size from the Sun, four slices; M51 with NGC 5195, M81, M101, M104 at their published tilts; the Antennae and their tails where the sky puts them)');
+console.log('test_r13_galaxies: ok (the deep field from JADES at its redshifts, true angular size from the Sun, four slices; M51 with NGC 5195, M81, M101, M104 at their published tilts; the Antennae and their tails where the sky puts them; M83, NGC 1300 and Centaurus A from their own numbers)');

@@ -466,6 +466,28 @@
       ]
     },
     {
+      "id": "gibs-clouds",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "gibs_clouds",
+      "outputs": [
+        "gibs-clouds.json"
+      ]
+    },
+    {
+      "id": "noaa-lightning",
+      "url": "https://nowcoast.noaa.gov/geoserver/lightning_detection/wms",
+      "auth": "none",
+      "refresh": "15m",
+      "freshness_max": "1h",
+      "parser": "nowcoast_lightning",
+      "outputs": [
+        "noaa-lightning.json"
+      ]
+    },
+    {
       "id": "wind",
       "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D",
       "auth": "none",

@@ -16,7 +16,9 @@ export const HERO = {
       45000
     ],
     "dust_share": 0.3,
-    "seed": 4038
+    "seed": 4038,
+    "layer_power": 0.6,
+    "layer_disc_at_rd": 0.6
   },
   "frame": {
     "pa_deg": 0,
@@ -37,6 +39,7 @@ export const HERO = {
         30000,
         45000
       ],
+      "layered": true,
       "frame": {
         "pa_deg": 80,
         "incl_deg": 54,
@@ -69,7 +72,18 @@ export const HERO = {
           "source": "RC3: D25 5.25 arcmin (34 kpc here, the faint torn outskirts); scale length 2.2 kpc and height assumed, so the bright body is the 3 arcmin the photographs show"
         },
         {
+          "kind": "ring",
+          "what": "the arc of young stars round NGC 4038's torn disc",
+          "radius_kpc": 3.2,
+          "width_kpc": 0.8,
+          "height_kpc": 0.2,
+          "light": 0.14,
+          "colour": "#c4d2ff",
+          "source": "illustrative (0078 r14-neb-b): the bright curved arc of clusters that Hubble's and Gendler's photographs show round NGC 4038 (where Whitmore et al. 2010 catalogue many of the young clusters)"
+        },
+        {
           "kind": "clumps",
+          "keep": true,
           "what": "the giant star-forming complexes",
           "count": 16,
           "size_kpc": 0.6,
@@ -79,6 +93,7 @@ export const HERO = {
         },
         {
           "kind": "knots",
+          "keep": true,
           "what": "young star clusters and H II regions",
           "count": 900,
           "in_ring": 0,
@@ -90,6 +105,7 @@ export const HERO = {
         },
         {
           "kind": "stream",
+          "keep": true,
           "what": "the southern tail",
           "path": [
             [
@@ -140,7 +156,7 @@ export const HERO = {
           ],
           "width_kpc": 2.4,
           "tip_light": 0.45,
-          "light": 0.09,
+          "light": 0.14,
           "colour": "#c6cce0",
           "source": "its places on the sky traced on Robert Gendler's photograph heic0812c (ESA/Hubble, CC BY 4.0): its tip 11.2 arcmin from NGC 4038 (Hibbard et al. 2001, arXiv:astro-ph/0110581: 11.6 arcmin, about 65 kpc projected); its parent NGC 4038, as Hibbard et al. 2001 make NGC 4039 the northern tail's; its depth a MODEL: the tip bends away from us (Hibbard et al. 2001's abstract), the amount illustrative"
         },
@@ -165,6 +181,7 @@ export const HERO = {
         24000,
         36000
       ],
+      "layered": true,
       "light": 0.85,
       "frame": {
         "pa_deg": 130,
@@ -199,6 +216,7 @@ export const HERO = {
         },
         {
           "kind": "clumps",
+          "keep": true,
           "what": "star-forming complexes",
           "count": 10,
           "size_kpc": 0.5,
@@ -208,6 +226,7 @@ export const HERO = {
         },
         {
           "kind": "knots",
+          "keep": true,
           "what": "young star clusters and H II regions",
           "count": 500,
           "in_ring": 0,
@@ -219,6 +238,7 @@ export const HERO = {
         },
         {
           "kind": "stream",
+          "keep": true,
           "what": "the northern tail",
           "path": [
             [
@@ -254,7 +274,7 @@ export const HERO = {
           ],
           "width_kpc": 2.2,
           "tip_light": 0.4,
-          "light": 0.07,
+          "light": 0.11,
           "colour": "#c6cce0",
           "source": "its places on the sky traced on heic0812c; Hibbard et al. 2001: NGC 4039 is its parent and its hydrogen reaches 7.3 arcmin (40 kpc); its depth a MODEL (toward us, illustrative: no source read gives its sign)"
         },

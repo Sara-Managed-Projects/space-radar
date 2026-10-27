@@ -960,7 +960,9 @@ export const COPY = {
       redblue: "sus colores vienen de las imágenes roja y azul de New Horizons, con el verde tomado a medio camino entre ambas y el color reforzado en otra mitad; las partes fotografiadas solo en blanco y negro reciben el color medio del mapa",
       enhanced: "sus colores son los que publicó la NASA, compuestos con tres de los filtros de color de New Horizons, ninguno de ellos verde: es color realzado, más intenso que lo que vería un ojo y no igual a ello",
       balanced: "sus colores vienen de imágenes naranja, verde y azul, equilibradas con su color publicado y atenuadas hacia lo que vería un ojo",
-      infrared: "su superficie es un mapa en infrarrojo cercano hecho a través de la bruma, teñido y suavizado; en luz visible la bruma oculta el suelo"
+      infrared: "su superficie es un mapa en infrarrojo cercano hecho a través de la bruma, teñido y suavizado; en luz visible la bruma oculta el suelo",
+      natural: "sus colores son color natural, de la luz roja y azul que midió la cámara de color de New Horizons, con el verde, para el que no tenía filtro, estimado entre ambas, y reforzados unas dos veces y media respecto a los de la cámara, como los muestran las imágenes en color natural de la NASA", // 0078 r14-pluto
+      matched: "sus colores parten de la luz roja y azul que midió la cámara de color de New Horizons, con el verde, para el que no tenía filtro, estimado entre ambas, y luego se igualan, tono a tono, a la propia imagen en color de la NASA de esta cara (PIA19952): más intensos que los de la cámara, como los publicó la NASA" // 0078 r14-pluto
     },
     worldCoverage: {
       miranda: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",
@@ -969,20 +971,21 @@ export const COPY = {
       titania: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",
       oberon: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",
       triton: "la Voyager 2 fotografió una parte en 1989; el resto se deja liso, no se adivina",
-      pluto: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015 y se deja liso, no se adivina",
-      charon: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015 y se deja liso, no se adivina"
+      pluto: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015: el suelo que se dibuja allí está modelado, una textura tenue en los colores de la tierra de más arriba, no una fotografía", // 0078 r14-pluto
+      charon: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015: el suelo que se dibuja allí está modelado, una textura tenue en los colores de la tierra de más arriba, no una fotografía" // 0078 r14-pluto
     },
     worldLit: "se ilumina como lo mostraría una cámara expuesta para su propia luz solar",
     worldLight: "visto desde lejos es una luz con su brillo calculado: el resplandor es como una cámara registra un punto demasiado brillante para resolverlo",
     exoticDeparture: {
       pulseSlowed: "su parpadeo se dibuja {n} veces más lento de lo que gira, para que un ojo pueda seguirlo",
       pulseTrue: "su parpadeo se dibuja al ritmo al que gira",
-      portrait: "mientras esta ficha está abierta, su imagen se dibuja en su lugar, mucho más grande de lo que se vería desde aquí"
+      portrait: "mientras esta ficha está abierta, se dibuja en su lugar un modelo, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada como las da su masa, el disco modelado"
     },
     worldDeparture: {
       earth: "en una pantalla más grande, sus montañas salen de las alturas ETOPO 2022 de NOAA, dibujadas {relief} veces más empinadas de lo que son para que un Sol bajo las muestre; el resplandor del aire alrededor de su borde se dibuja {air} veces más alto que el aire; desde una órbita baja y en una pantalla más grande, sus nubes se alzan hacia el horizonte y bajo un Sol bajo, dibujadas {clouds} veces más gruesas de lo que son para que se vean su inclinación, sus largas sombras y la última luz en sus cimas (con su grosor verdadero en el aspecto Medido), con la altura de cada cima tomada de su temperatura medida donde cubre la imagen de hoy y del brillo del mapa de nubes en el resto",
       titan: "justo encima de su bruma, a unos 500 km de altura, se dibuja una capa fina y separada de bruma donde la vio la Cassini entre 2005 y 2007; se hundió y se desvaneció en los años siguientes, y no se sabe dónde está ahora",
       mercury: "en una pantalla más grande, su relieve sale del modelo de elevación de MESSENGER, dibujado {steep} veces más empinado de lo medido para que los bordes de los cráteres atrapen la luz",
+      pluto: "su suelo claro y oscuro se dibuja con {plutoContrast} veces el contraste de la imagen de la cámara, más cerca de los albedos medidos; el lado que New Horizons solo vio de lejos se suaviza a su propia nitidez; en una pantalla más grande, su relieve sale de las alturas estéreo de New Horizons, donde las hay, dibujado {plutoSteep} veces más empinado de lo medido; la fina bruma azul de su borde se dibuja como un brillo, más fuerte a contraluz, cuya intensidad es elegida", // 0078 r14-pluto
       mars: "en una pantalla más grande, su relieve sale de las alturas que midió el altímetro láser de Mars Global Surveyor, dibujadas {mola} veces más empinadas y más altas de lo que son para que un Sol bajo las muestre: las sombras que proyectan el Monte Olimpo y las paredes del cañón son más largas en esa misma proporción.",
       venus: "el resplandor alrededor de su borde y más allá de su lado diurno representa una bruma profunda; su grosor dibujado y hasta dónde llega son ilustrativos; en el aspecto Cine sus bandas de nubes se dibujan con {uv} veces el contraste de su mapa, como las ven las cámaras ultravioleta (a simple vista son casi lisas), y el aspecto Medido muestra el mapa tal cual es; su suelo, visto por radar, está en relieve con el altímetro de Magellan, dibujado {ground} veces más empinado y alto de lo medido",
       neptune: "en el aspecto Cine, los cinco arcos de su anillo exterior se dibujan como los vio la Voyager 2 en 1989, girando a su velocidad medida; no se calcula dónde están hoy a lo largo del anillo, y dos de ellos se han desvanecido o se han movido desde entonces",
@@ -1079,8 +1082,7 @@ export const COPY = {
     approachNone: "La tabla de pasos cercanos del JPL de la NASA no se ha cargado, así que no se nombra ningún paso siguiente.",
     satellitesCount: "{n} satélites en funcionamiento en el catálogo que esta página cargó de CelesTrak, {starlink} de ellos Starlink.",
     satellitesLoading: "El catálogo aún se está cargando; el recuento aparece cuando termine.",
-    pictureLine: "Una fotografía real, colocada donde está en el cielo. Imagen: {credit} · {licence}, con los bordes atenuados y el cielo oscurecido por nosotros.",
-    portraitLine: "El anillo es la imagen del Event Horizon Telescope, hecha con ondas de radio. Se dibuja mucho más grande de lo que se vería desde aquí; el lugar es medido. Imagen: {credit} · {licence}, con el cielo oscurecido y los bordes atenuados por nosotros.",
+    portraitLine: "Un modelo, no la fotografía: la sombra y el anillo de luz curvada a su alrededor son los que da su masa, el disco luminoso está modelado y las estrellas de detrás no se curvan. Se dibuja mucho más grande de lo que se vería desde aquí; el lugar es medido. La fotografía del Event Horizon Telescope está en su ficha: {credit} · {licence}.",
     tonightUp: "Desde {place} esta noche: sobre el horizonte de {begin} a {end}, en su punto más alto a las {time}, {alt}, hacia el {az}.",
     tonightGlare: "Desde {place} esta noche: {name} está demasiado cerca del Sol para verse.",
     tonightDown: "Desde {place} esta noche: {name} no está sobre el horizonte mientras el cielo está oscuro.",
@@ -2033,8 +2035,8 @@ export const COPY = {
     lead: "Dónde están las cosas y cómo se mueven es algo medido o calculado. Su aspecto viene de tres tipos de imagen.",
     kinds: [
       [
-        "Una fotografía",
-        "Las nebulosas y las galaxias son fotografías de telescopio, de larga exposición. Para el ojo ante un telescopio, el mismo gas es un tenue resplandor gris, y algunas imágenes asignan colores a gases concretos; cada ficha dice cuáles."
+        "Un modelo 3D",
+        "Las nebulosas y las galaxias son modelos 3D hechos con medidas publicadas, con la luz tomada de fotografías de telescopio (de larga exposición); las que aún no tienen modelo son un resplandor suave de su tamaño. Para el ojo, el mismo gas es un tenue resplandor gris. Una ficha puede mostrar la fotografía junto a su modelo."
       ],
       [
         "Un mapa sobre un modelo",
@@ -2227,8 +2229,6 @@ export const COPY = {
       unstated: "Su archivo no dice qué filtros se usaron, así que no decimos si estos son los colores que vería un ojo."
     },
     part: "Muestra {part}, no su totalidad.",
-    figureAlt: "Fotografía de {name}",
-    figureCaption: "{name}: {w} por {h} minutos de arco de cielo.",
     creditLead: "Imagen: ",
     creditTail: " · {licence}, con los bordes atenuados y el cielo oscurecido por nosotros"
   },
@@ -3405,9 +3405,13 @@ export const COPY = {
   },
   deepRing: {
     card: {
+      "m27": "Su luz procede de la fotografía de NOIRLab, mostrada en los tonos propios de sus gases; su forma es una reconstrucción: la cintura brillante, un anillo grueso visto casi de canto; las «orejas» más tenues, sus lóbulos, según las velocidades de sus capas medidas por Meaburn y otros (2005). Aún no revisado por un astrónomo.",
+      "southern-ring": "Su luz procede de la fotografía infrarroja del Webb; su forma sigue a Kastner y otros (2024) y De Marco y otros (2022): un anillo visto casi a lo largo de su eje, una burbuja que lo atraviesa y un halo molecular alrededor de ambos. Aún no revisado por un astrónomo.",
       m57: "Su luz procede de la fotografía de Hubble y su forma de O’Dell, Ferland, Henney y Peimbert (2013): un anillo grueso inclinado 13.5°, visto casi a lo largo de su eje, con el gas más azul de su centro dibujado extendiéndose hacia nosotros y alejándose de nosotros. Sus colores son los de la fotografía, tomada con filtros estrechos. Aún no revisado por un astrónomo."
     },
     rows: {
+      "dso-m27": [["Su forma en profundidad", "Reconstruida. Su tamaño, su ángulo en el cielo y las velocidades de sus capas están medidos; que la cintura sea un anillo casi de canto, y cómo sus «orejas» se extienden hacia nosotros y en sentido contrario, es la lectura habitual de una nebulosa de este aspecto, dibujada como ilustración."], ["Sus colores", "Los tonos propios de sus gases, desde los filtros estrechos de la fotografía: oxígeno verde azulado, hidrógeno y azufre rojos. Cuánto se muestra cada uno es elección nuestra."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
+      "dso-southern-ring-nebula": [["Su forma en profundidad", "Reconstruida. Que su anillo brillante se ve a 15–30° de su eje está medido (Kastner y otros, 2024); qué lado está más cerca, el grosor del anillo y la longitud de la burbuja son ilustrativos."], ["Sus colores", "Luz infrarroja que ningún ojo puede ver, coloreada por los autores de la imagen del Webb."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
       "dso-m57": [
         [
           "Su distancia",
@@ -3424,6 +3428,7 @@ export const COPY = {
   },
   r12Dust: {
     card: {
+      "m45": "Su luz es la fotografía de NOIRLab: una nube de polvo que atraviesa el cúmulo, justo delante de sus estrellas, dispersa su luz azul (Ritchey y otros, 2006). Su profundidad está reconstruida. Aún no revisado por un astrónomo.",
       crab: "Su luz procede de la fotografía de Hubble, en falso color, llevada sobre una cáscara cuya forma sigue a Martin, Milisavljevic y Drissen (2021): una jaula de filamentos de unos 4 pársecs de largo alrededor de un centro vacío. Aún no revisado por un astrónomo.",
       veil: "Su luz procede de la fotografía de NOIRLab, en falso color, llevada sobre una esfera delgada de 37 pársecs de ancho (Fesen y otros, 2018): los filamentos son su borde visto de canto. Aún no revisado por un astrónomo.",
       horsehead: "Su oscuridad se lee en la fotografía de NOIRLab: polvo delante del gas incandescente de IC 434, que absorbe y enrojece lo que hay detrás y no emite luz. Aún no revisado por un astrónomo.",
@@ -3432,6 +3437,7 @@ export const COPY = {
       iris: "Su luz es la fotografía de NOIRLab: polvo que dispersa la luz de la joven estrella HD 200775 en un hueco de su nube. Su profundidad está reconstruida. Aún no revisado por un astrónomo."
     },
     rows: {
+      "dso-m45": [["Su forma en profundidad", "Reconstruida. El gas está delante de las estrellas, como muestra su luz; a qué distancia delante y qué grosor tiene el polvo son ilustrativos, y las profundidades de las estrellas dentro del cúmulo son un modelo fijo, no medidas."], ["Qué hace el polvo", "Dispersa la luz de las estrellas, sobre todo la azul, así que brilla en azul alrededor de las más brillantes, Mérope y Maia sobre todo. Es una nube de paso, no aquella de la que nacieron las estrellas."], ["Revisión", "Este modelo aún no ha sido revisado por un astrónomo."]],
       "dso-m1": [
         [
           "Su forma en profundidad",

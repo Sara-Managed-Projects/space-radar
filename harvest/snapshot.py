@@ -9,7 +9,8 @@ The two files the browser reads, as fixed in spec 0003 amendment 1 §3:
        "duration_ms":N,"status":"ok"|"not-modified"|"refused"|"error"|"skipped"|"not-due",
        "last_error":str|null,"etag":str|null}}}
 
-    GET <prefix>/<source-id>.json   Cache-Control: public, max-age=<seconds to valid_until, min 60>
+    GET <prefix>/<source-id>.json   Cache-Control: public, max-age=<seconds to valid_until, min 60>,
+                                                   s-maxage=300
     {"schema":1,"source":id,"fetched_at":ISO,"valid_until":ISO,"upstream_url":str,
      "content_type":str,"items":N,"body":<upstream body VERBATIM: parsed JSON if JSON, else text>}
 
@@ -38,6 +39,11 @@ SCHEMA = 1
 INDEX_KEY = "index.json"
 INDEX_CACHE_CONTROL = "public, max-age=60, s-maxage=300, stale-while-revalidate=600"
 SNAPSHOT_MIN_MAX_AGE_S = 60
+# The EDGE keeps a snapshot file at most this long, whatever its max-age says. The Lambda invalidates
+# index.json after a run and nothing else (its role names one path, and a hundred paths a day would
+# leave the free tier), so a snapshot file the edge fetched at the start of its life must not be kept
+# for the rest of it: a browser keeps its copy to valid_until, the edge for five minutes.
+SNAPSHOT_EDGE_MAX_AGE_S = 300
 NEVER_WORSE_RATIO = 0.5
 
 STATUSES = ("ok", "not-modified", "refused", "error", "skipped", "not-due")
@@ -69,7 +75,7 @@ def valid_until(fetched_at: datetime, refresh_seconds: int) -> datetime:
 
 def snapshot_cache_control(until: datetime, now: datetime) -> str:
     secs = int((until - now).total_seconds())
-    return f"public, max-age={max(SNAPSHOT_MIN_MAX_AGE_S, secs)}"
+    return f"public, max-age={max(SNAPSHOT_MIN_MAX_AGE_S, secs)}, s-maxage={SNAPSHOT_EDGE_MAX_AGE_S}"
 
 
 # --- the guard ---------------------------------------------------------------------------------
@@ -101,12 +107,22 @@ class Entry:
     status: str = "skipped"
     last_error: str | None = None
     etag: str | None = None
+    # Two extras that exist only on a published row (harvest/publish.py), and only when they apply:
+    #   kept_after  this run's refresh failed; the row is the last good copy, and this says why it is old
+    #   columns     {path, bytes, rows, fetched_at, valid_until}: the column twin of the file (harvest/columnar.py)
+    #   note        the file is a CUT of a bigger one, and says of what (the file carries the same sentence)
+    kept_after: str | None = None
+    columns: dict | None = None
+    note: str | None = None
 
     def to_json(self) -> dict:
         d = asdict(self)
         d["items"] = int(d["items"] or 0)
         d["bytes"] = int(d["bytes"] or 0)
         d["duration_ms"] = int(d["duration_ms"] or 0)
+        for k in ("kept_after", "columns", "note"):
+            if not d[k]:
+                del d[k]
         return d
 
     @classmethod
@@ -122,6 +138,9 @@ class Entry:
             status=d.get("status") if d.get("status") in STATUSES else "skipped",
             last_error=d.get("last_error") or None,
             etag=d.get("etag") or None,
+            kept_after=d.get("kept_after") or None,
+            columns=d.get("columns") if isinstance(d.get("columns"), dict) else None,
+            note=d.get("note") or None,
         )
 
     def due(self, now: datetime) -> bool:

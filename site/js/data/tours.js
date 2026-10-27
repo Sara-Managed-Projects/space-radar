@@ -3792,7 +3792,7 @@ export const TOURS = [
 "portrait": true,
 "card": {
 "title": "Sagittarius A star",
-"body": "Nobody can see this black hole itself. Astronomers watched a star go round it, once every sixteen years, at millions of kilometres an hour, and worked out what it must be circling. Then eight radio observatories, working as one telescope the size of the Earth, made this picture: glowing gas, and a shadow in the middle."
+"body": "Nobody can see this black hole itself. Astronomers watched a star go round it every sixteen years, at millions of kilometres an hour, and worked out what it circles. Eight radio observatories, working as one telescope the size of the Earth, then photographed glowing gas and a shadow. Here it is drawn as a model, from its mass."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
@@ -3814,14 +3814,14 @@ export const TOURS = [
 "portrait": true,
 "card": {
 "title": "The first picture of a black hole",
-"body": "Far beyond our own galaxy, in a galaxy called M87, is a black hole with the mass of six and a half billion Suns. This is the first picture ever made of one, taken by eight radio telescopes working together. The dark middle is its shadow, and it is far wider than our whole Solar System."
+"body": "Far beyond our galaxy, in the galaxy M87, is a black hole with the mass of six and a half billion Suns. In 2019 eight radio telescopes working together made the first picture of one. Here it is drawn as a model. Its dark shadow is bigger than our whole Solar System."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 20000
+"dwell_ms": 19816
 },
 {
 "id": "sun",
@@ -3844,12 +3844,12 @@ export const TOURS = [
 "dwell_ms": 20000
 }
 ],
-"estimate_ms": 136069
+"estimate_ms": 135885
 },
 {
 "id": "through-a-telescope",
 "title": "The sky as telescopes see it",
-"blurb": "Real photographs, each where it is in the sky. Leaving goes back to Earth.",
+"blurb": "Clouds and galaxies drawn in 3D from photographs. Leaving goes back to Earth.",
 "requires": [
 "stars",
 "deep-sky"
@@ -3904,14 +3904,14 @@ export const TOURS = [
 "exposure": "camera",
 "card": {
 "title": "With a camera",
-"body": "A camera can keep its shutter open and let the light pile up. Now the colour is there. It was always there. The red is hydrogen gas. This picture was taken through colour filters with an extra one for glowing hydrogen, so the red is stronger than an eye would find it."
+"body": "A camera can keep its shutter open and let the light pile up. Now the colour is there. It was always there. The red is hydrogen gas. Its light here comes from a photograph taken through colour filters with an extra one for glowing hydrogen, so the red is stronger than an eye would find it."
 },
 "frame_radii": 5.0,
 "drift_rate_deg_s": 6,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 19816
+"dwell_ms": 20000
 },
 {
 "id": "deep",
@@ -3927,13 +3927,13 @@ export const TOURS = [
 "exposure": "deep",
 "card": {
 "title": "A long exposure",
-"body": "Stretch a long exposure further and the faintest outer parts appear. Every picture on this trip is a real photograph, placed where it is in the sky. The line below each one says who took it."
+"body": "Stretch a long exposure further and the faintest outer parts appear. Each cloud and galaxy on this trip is drawn in three dimensions, built from measurements of its shape, its light taken from telescope photographs. Its card lets you compare it with the photograph itself."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 14488
+"dwell_ms": 17485
 },
 {
 "id": "horsehead",
@@ -3949,13 +3949,13 @@ export const TOURS = [
 "exposure": "deep",
 "card": {
 "title": "The Horsehead",
-"body": "Just beside Orion's belt, a dark cloud of dust stands in front of glowing gas, in the shape of a horse's head. Here the colours are chosen. The camera took the light of single gases through narrow filters, and each gas was given a colour so the eye can tell them apart."
+"body": "Just beside Orion's belt, a dark cloud of dust stands in front of glowing gas, in the shape of a horse's head. Here the colours are chosen. The photograph it is built from took the light of single gases through narrow filters, and each gas was given a colour so the eye can tell them apart."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 19816
+"dwell_ms": 20000
 },
 {
 "id": "carina",
@@ -3993,7 +3993,7 @@ export const TOURS = [
 "exposure": "camera",
 "card": {
 "title": "What Webb saw in the Tarantula",
-"body": "This picture is the Webb telescope's own. It is made in infrared light, which no eye can see, so every colour in it is chosen. Infrared passes through dust, and here it shows tens of thousands of young stars that no telescope had seen before. The picture is 340 light-years across, in a small galaxy beside ours."
+"body": "Seen from our side, this cloud's light is the Webb telescope's own picture. It is made in infrared light, which no eye can see, so every colour in it is chosen. Infrared passes through dust, and here it shows tens of thousands of young stars that no telescope had seen. The region is 340 light-years across, in a small galaxy beside ours."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
@@ -4015,13 +4015,13 @@ export const TOURS = [
 "exposure": "camera",
 "card": {
 "title": "The Trifid, from the newest telescope",
-"body": "The Trifid Nebula, with the dark lanes that give it its name. This picture is among the very first from the Vera Rubin Observatory in Chile, released in June 2025. For ten years that telescope will photograph the southern sky every few nights."
+"body": "The Trifid Nebula, with the dark lanes of dust that give it its name. It was among the very first pictures from the Vera Rubin Observatory in Chile, released in June 2025. For ten years that telescope will photograph the southern sky every few nights."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 16819
+"dwell_ms": 17485
 },
 {
 "id": "whirlpool",
@@ -4068,7 +4068,7 @@ export const TOURS = [
 "dwell_ms": 16819
 }
 ],
-"estimate_ms": 211030
+"estimate_ms": 215061
 },
 {
 "id": "a-dark-sky",

@@ -39,6 +39,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The shapes of Envisat, ERS-1 and Sentinel-1, -2 and -3 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-10](#3b-10-five-european-earth-observation-craft-built-from-dimensions--envisat-ers-1-sentinel-1-sentinel-2-sentinel-3-2026-10-14) |
 | The shapes of Sentinel-5P, CryoSat-2, SMOS and ALOS-2 | built by us in code from published dimensions | public domain, CC BY 2.0 or CC BY 3.0 where a picture was used; ours | [3b-11](#3b-11-four-earth-observation-craft-built-from-dimensions--sentinel-5p-cryosat-2-smos-alos-2-2026-10-14) |
 | The shapes of GLONASS-M and GLONASS-K, Fengyun-3 and Himawari-8 and -9 | built by us in code from published dimensions | CC0 or CC BY 2.0 where a picture was used; ours | [3b-12](#3b-12-four-weather-and-navigation-craft-built-from-dimensions--glonass-m-glonass-k-fengyun-3-himawari-2026-10-14) |
+| The shapes of GCOM-W, GCOM-C, DAMPE, CSES, SCISAT-1, PROBA-3, PROBA-V, FORMOSAT-7, OAO-2 and OAO-3 | built by us in code from published dimensions | CC0 or public domain where a picture was used; ours | [3b-17](#3b-17-release-140-science-craft-built-from-dimensions--gcom-w-gcom-c-dampe-cses-scisat-1-proba-3-proba-v-formosat-7-oao-2-and-oao-3-2026-10-27) |  <!-- 0078 r14-m7 -->
 | The shapes of Europa Clipper, SMAP, Jason-3, Curiosity and SORCE | NASA's and JPL's own published models | public domain (NASA media guidelines) | [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15) |
 | The shapes of Psyche, Lucy, JUICE, BepiColombo (cruise stack) and Hera | built by us in code from published dimensions | public domain or CC BY 4.0 where a picture was used; ours | [3b-14](#3b-14-five-deep-space-probes-built-from-dimensions--psyche-lucy-juice-bepicolombo-hera-2026-10-15) |
 | The shapes of Tiangong and its two laboratories, and the Shenzhou orbital module | built by us in code from published dimensions | CC BY 4.0 or CC0 where a picture was used; ours | [3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20) |  <!-- 0077 W1-a -->
@@ -51,15 +52,34 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W2-pbr: begin -->
 | The shape of SLIM | built by us in code from published dimensions | CC BY 4.0 where a picture was used; ours | [3b-15](#3b-15-slim-built-from-dimensions-2026-10-20) |
 <!-- 0077 W2-pbr: end -->
+<!-- 0078 r14-m3: begin -->
+| The shapes of WGS, AEHF, MUOS, SBIRS GEO and AMSAT-OSCAR 7, and SWAS | built by us in code from public US Air Force, Navy and AMSAT pictures and published dimensions; SWAS is NASA's own model | public domain for the pictures read off; AMSAT's looked at only; NASA's model free and without copyright; ours | [3b-16](#3b-16-release-140-stage-m3-five-military-and-amateur-craft-built-from-public-pictures-and-numbers-and-swas-from-nasas-own-model-2026-10-27) |
+<!-- 0078 r14-m3: end -->
 <!-- 0077 W3-b: begin -->
 | The shapes of EarthCARE, Biomass, Swarm and MetOp-SG A1 | built by us in code from published dimensions | CC0, CC BY-SA 3.0 IGO or CC BY-SA 4.0 where a picture was compared; ours | [3b-15](#3b-15-four-esa-and-eumetsat-earth-explorers-built-from-dimensions--earthcare-biomass-swarm-metop-sg-a1-2026-10-20) |
+| The shapes of WorldView-3, BlackSky Gen-2, Satellogic NewSat, Planet Pelican, HawkEye 360 Pathfinder, GHGSat-C and Gaofen-1 | built by us in code from published dimensions | CC BY-SA 4.0 where a Satellogic picture was compared; ours | [3b-17](#3b-17-release-140-seven-earth-imagers-built-from-dimensions--worldview-3-blacksky-gen-2-satellogic-newsat-planet-pelican-hawkeye-360-pathfinder-ghgsat-c-gaofen-1-2026-10-27) |  <!-- 0078 r14-m5 -->
 <!-- 0077 W3-b: end -->
 <!-- 0077 W3-c: begin -->
 | The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
 <!-- 0077 W3-c: end -->
+<!-- 0078 r14-m2: begin -->
+| The shapes of Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER | built by us in code from published dimensions | published numbers (McDowell's GCAT, CC BY 4.0, and the makers' and operators' own pages) and artists' renders looked at only; CC0 where a photograph of a model was used; ours | numbers are facts; no picture is in the file; no logo or lettering |
+<!-- 0078 r14-m2: end -->
+
+<!-- 0078 r14-m8: begin -->
+| The shapes of Luna 16's descent stage, Mars Pathfinder with Sojourner, Phoenix and the Mars 3 capsule | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 or public domain where a picture was compared; ours | [3b-r14-m8](#3b-r14-m8-four-landers-built-from-dimensions--luna-16-mars-pathfinder-and-sojourner-phoenix-mars-3-2026-10-27) |
+<!-- 0078 r14-m8: end -->
 <!-- 0077 W3-a: begin -->
 | The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
+| The shapes of ten national Earth-observation craft (CBERS-4 and 4A, Amazonia-1, KOMPSAT-3, 3A and 5, Cartosat-2, Resourcesat-2, EOS-06, Kanopus-V, Resurs-P) | built by us in code from published dimensions | public domain, CC0, KOGL Type 1, GODL-India or INPE's attribution licence where a picture was used; ours | [3b-17](#3b-17-ten-national-earth-observation-craft-built-from-dimensions--cbers-4-and-4a-amazonia-1-kompsat-3-and-3a-kompsat-5-cartosat-2-resourcesat-2-and-2a-eos-06-kanopus-v-resurs-p-2026-10-27) | <!-- 0078 r14-m6 -->
 <!-- 0077 W3-a: end -->
+<!-- 0078 r14-m1: begin -->
+| The shapes of six spent rocket stages (Delta II and Falcon 9 second stages, Atlas V Centaur, Centaur D, H-IIA and Kosmos-3M second stages) | built by us in code from published dimensions | public domain, CC0, CC BY 2.0, 3.0 or 4.0 where a picture was used; share-alike pictures looked at only; ours | [3b-rocket-stages](#3b-rocket-stages-spent-rocket-stages-built-in-code-from-published-dimensions-2026-10-27) |
+<!-- 0078 r14-m1: end -->
+
+<!-- 0078 r14-m4: begin -->
+| The shapes of Meteosat Second Generation, Meteosat Third Generation (imager and sounder), Fengyun-2, INSAT-3D, GEO-KOMPSAT-2A and 2B, Meteor-M No.2, Midori II and Resurs-DK 1 | built by us in code from published dimensions | CC0, public domain, CC BY-SA 2.0 de to 4.0 incl. 3.0 IGO and KOGL Type 1 where a picture was compared; ours | [3b-r14-m4](#3b-r14-m4-ten-weather-and-earth-observation-craft-built-from-dimensions-2026-10-27) |
+<!-- 0078 r14-m4: end -->
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
@@ -223,6 +243,7 @@ satisfies that with:
 | `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
 | `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
+| `2k_pluto_relief.webp` | Pluto (relief) | Public domain | [USGS Astrogeology Science Center, New Horizons global digital elevation model (P. Schenk et al.)](https://astrogeology.usgs.gov/search/map/pluto_new_horizons_lorri_mvic_global_dem_300m), local relief only, one grey channel, on the encounter hemisphere (45 % of the sphere has heights) <!-- 0078 r14-pluto --> |
 | `2k_venus_radar.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), one grey channel (the orange is added when it is drawn) |
 | `2k_venus_relief.webp` | Venus, the relief under the radar ground | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, Venus Magellan Global Topography 4641 m)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.lbl), local relief only, one grey channel |
 | `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
@@ -289,9 +310,10 @@ and information are considered to be in the U.S. Public Domain", usgs.gov, *Copy
 Credits*) and from NASA maps mirrored on Wikimedia Commons, where each file's page says public
 domain. Public-domain works need no credit, but they get one anyway. `scripts/build-textures.py`
 (`--only moons`) remakes every one of them but Triton's and Pluto's from its original, and every map
-was changed. (Pluto's, since 2026-10-12, is NASA's own global colour map, Photojournal PIA11707, made
-by `scripts/build_pluto_map.py`: its colours are enhanced, as NASA published them, and its card says
-so. The list below is about the others.)
+was changed. <!-- 0078 r14-pluto: begin -->(Pluto's and Charon's, since 2026-10-27, are made by
+`scripts/build_pluto_map.py` in natural colour from the red and blue light New Horizons' colour camera
+measured, Pluto's on NASA's own global map, Photojournal PIA11707, and their unphotographed south is
+modelled, not plain: their rows say how, and so do their cards. The list below is about the others.)<!-- 0078 r14-pluto: end -->
 
 - resized (the width is in `registry/textures.yaml`; no file is over 250 kB) and, where the original
   is centred on longitude 180, rolled half a turn so longitude 0, the side that faces the planet,
@@ -309,8 +331,9 @@ so. The list below is about the others.)
   build prints the figure and `registry/textures.yaml` carries it under `make:`);
 - **where nobody has looked, nothing is drawn.** The areas with no data in the original (the last
   column below is the share of the sphere that has data) are filled with the world's flat colour:
-  the northern halves of Uranus's moons, which were in darkness when Voyager 2 passed in 1986, the
-  far south of Pluto and Charon, part of Triton. The card of each says so.
+  the northern halves of Uranus's moons, which were in darkness when Voyager 2 passed in 1986, <!-- 0078 r14-pluto: begin -->and
+  part of Triton. The card of each says so. (Pluto's and Charon's far south, dark in 2015, is modelled
+  since 2026-10-27: a faint texture in the colours of the land above it, and their cards say so.)<!-- 0078 r14-pluto: end -->
 
 | File | Used for | Licence | Source | Mapped |
 |---|---|---|---|---|
@@ -333,8 +356,8 @@ so. The list below is about the others.)
 | `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
 | `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
 | `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
-| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707)](https://science.nasa.gov/image-detail/amf-pia11707): NASA's own map, made from three of the colour camera's filters, none of them green; enhanced colour, not what an eye would see, and the card says so. Resized, rolled, brightness taken to the flat colour's; the unimaged south filled plain and feathered (`scripts/build_pluto_map.py`) | 78 % |
-| `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 74 % |
+| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707)](https://science.nasa.gov/image-detail/amf-pia11707), recoloured with [the New Horizons MVIC colour mosaic (NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl): NASA's map is the picture; its colours are taken to natural colour, red from the camera's red filter and blue from its blue one as the PDS mosaic measured them, green (it had no green filter) halfway between them, made 2.6 times as strong and the contrast 1.25 times, then matched shade by shade to NASA's colour picture of this face, PIA19952; the side photographed only from far off softened; the unimaged south modelled (`scripts/build_pluto_map.py`) | 78 % <!-- 0078 r14-pluto --> |
+| `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): natural colour from the red and blue filters, green (it had no green filter) halfway between them, made 2.6 times as strong (Mordor Macula's red cap); the detail from the black-and-white mosaic, by its ratio to its own blur; the unimaged south modelled (`scripts/build_pluto_map.py`) | 73 % <!-- 0078 r14-pluto --> |
 | `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
 
 **Beyond these twenty, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
@@ -399,7 +422,8 @@ checked against this list by `scripts/check_registry.py`):
 - Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
-- Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain
+- Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707, in natural colour from the New Horizons MVIC colour mosaic, NASA Planetary Data System), public domain <!-- 0078 r14-pluto -->
+- Pluto relief: USGS Astrogeology Science Center, New Horizons global digital elevation model (P. Schenk et al.; NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute), public domain, local relief only <!-- 0078 r14-pluto -->
 - Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
 - Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 
@@ -483,7 +507,7 @@ Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 The sky view (`site/js/sky/groundsky.js`) ships no new source. Its stars are §3's `stars.bin` and
 `skystars-1.bin`, `skystars-2.bin` and `skystars.names.json`, which `scripts/build-skystars.py`
 cuts from §3c's `stars3d.bin` (HYG v4.4, CC BY-SA 4.0: the same stars, as a direction, a magnitude
-and a colour each; the same licence); its nebulae and galaxies are §3g's photographs; its Milky Way, Moon, Mars, Jupiter and Saturn maps are
+and a colour each; the same licence); its nebulae and galaxies are soft glows of their catalogue size (no photographs since 1.4.0) <!-- 0078 r14-neb-b -->; its Milky Way, Moon, Mars, Jupiter and Saturn maps are
 the textures already credited above; the positions, sizes and phases of the Sun, the Moon and the
 planets, the Moon's libration and the tilt of Saturn's rings are computed by Astronomy Engine (MIT).
 Refraction is Sæmundsson's formula (Sky & Telescope 72, 1986); air mass is Kasten and Young (Applied
@@ -1158,6 +1182,38 @@ No logo, lettering, flag or insignia is on any of the four. Roscosmos, ISS Reshe
 information centre, CMA, SAST, JMA, JAXA, Mitsubishi Electric, the IGS and the museums named here do
 not endorse Space Radar, and none of them made or approved these shapes.
 
+
+
+
+
+<!-- 0078 r14-m7: begin -->
+## 3b-17. Release 1.4.0: science craft built from dimensions — GCOM-W, GCOM-C, DAMPE, CSES, SCISAT-1, PROBA-3, PROBA-V, FORMOSAT-7, OAO-2 and OAO-3 (2026-10-27)
+
+Stage r14-m7 of release 1.4.0 (public #1102 to #1109 and #1093). **No agency's or maker's picture or model is in a file, on a sheet or derived from.** NASA's 3D Resources
+and NASA Science's models were searched (2026-10-26) and have none of these craft; JAXA, ESA, the CSA, CAS, SSTL and NSPO publish none under terms that allow a derivative. Their numbers
+were read as numbers (eoPortal, with each agency's own figures looked at only for the layout, and NASA's NSSDC for the OAO series). The layouts of GCOM-W (a visitor's CC0
+photographs of JAXA's 1/50 model) and of OAO-2 and OAO-3 (NASA's own photographs, public domain) were read off pictures that are free; the rest have NO FREE PICTURE: share-alike or
+agency pictures were looked at only and each row in `registry/models.yaml` names them. No image-to-3D model was used. Their cards say "shape built from published dimensions
+and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `gcom-w.glb` (66 KB) | GCOM-W1 Shizuku: a gold box with the 2.0 m AMSR2 dish on a gold truss above it and two paddles of two by two panels, inside the cited 5.1 by 17.5 by 3.4 m | eoPortal (<https://www.eoportal.org/satellite-missions/gcom>) and Wikipedia (<https://en.wikipedia.org/wiki/GCOM-W>); a visitor's CC0 photographs of JAXA's 1/50 model, Syced, Wikimedia Commons (<https://commons.wikimedia.org/wiki/File:Spacecraft_models_at_Tsukuba_Space_Center_11.jpg>, <https://commons.wikimedia.org/wiki/File:Artefacts_at_Tsukuba_Space_Center_exhibition_hall_22.jpg>) (read 2026-10-26); JAXA's figures as shown by eoPortal looked at only | numbers are facts; CC0 photographs looked at, nothing of them is in the file; NO JAXA PICTURE WAS USED |
+| `gcom-c.glb` (41 KB) | GCOM-C Shikisai: a gold bus with the copper SGLI module and its telescopes on the Earth end and a two-panel paddle each side, inside the cited 4.6 by 16.3 by 2.8 m | eoPortal (<https://www.eoportal.org/satellite-missions/gcom-c1>); NO FREE PICTURE; looked at only, JAXA's illustration and photograph as shown by eoPortal (read 2026-10-26). Every size inside the envelope is ours | numbers are facts; nothing of any picture is in the file; NO JAXA PICTURE WAS USED |
+| `dampe.glb` (41 KB) | DAMPE: a gold box with a black detector face on a launch ring between two three-panel wings | eoPortal (<https://www.eoportal.org/satellite-missions/dampe>); NO FREE PICTURE; looked at only, CAS's illustrations and photograph as shown by eoPortal (read 2026-10-26). The body's size is ours (the cited 1.12 by 1.12 by 2.52 m is read as the payload's envelope) | numbers are facts; nothing of any picture is in the file; NO CAS PICTURE WAS USED |
+| `cses.glb` (35 KB) | Zhangheng 1 (CSES-1 and -2): a 1.4 m cube on a yellow launch ring with one three-panel wing, four 4.5 m electric-field booms and a magnetometer boom | eoPortal (<https://www.eoportal.org/satellite-missions/cses>); NO FREE PICTURE; looked at only, the collaboration's labelled illustration and artist's views as shown by eoPortal (read 2026-10-26) | numbers are facts; nothing of any picture is in the file; NO CSES PICTURE WAS USED |
+| `scisat-1.glb` (68 KB) | SCISAT-1: a 1.12 m round plate of cells with the FTS, MAESTRO, a cryo-radiator and an antenna mast on its back, 104 cm tall | eoPortal (<https://www.eoportal.org/satellite-missions/scisat-1>); NO FREE PICTURE; looked at only, the CSA's labelled drawing and artist's views (non-commercial terms) as shown by eoPortal (read 2026-10-26) | numbers are facts; nothing of any picture is in the file; NO CSA PICTURE WAS USED |
+| `proba-3-csc.glb` (42 KB) | PROBA-3 coronagraph spacecraft: a black box 0.985 by 1.44 by 1.238 m with the instrument's flange on its Sun face and one tilted panel | eoPortal (<https://www.eoportal.org/satellite-missions/proba-3>) and Wikipedia (<https://en.wikipedia.org/wiki/PROBA-3>); NO FREE PICTURE; looked at only, Pavel Hrdlicka's photographs of the model (CC BY-SA 4.0, <https://commons.wikimedia.org/wiki/File:PROBA-3_Coronagraph_-_model_II.jpg>) and ESA's fact sheet (CC BY-SA 3.0 IGO, <https://commons.wikimedia.org/wiki/File:Proba-3_fact_sheet.jpg>) (read 2026-10-26) | numbers are facts; share-alike pictures looked at only, nothing of them is in the file; NO ESA PICTURE WAS USED |
+| `proba-3-osc.glb` (85 KB) | PROBA-3 occulter spacecraft: a black box 1.378 by 1.069 by 1.16 m with a 1.4 m disc with a toothed rim on its anti-Sun face | eoPortal (<https://www.eoportal.org/satellite-missions/proba-3>) and Wikipedia (<https://en.wikipedia.org/wiki/PROBA-3>); NO FREE PICTURE; looked at only, Pavel Hrdlicka's photographs of the model (CC BY-SA 4.0, <https://commons.wikimedia.org/wiki/File:PROBA-3_Occulter_-_model_II.jpg>) and ISRO's photograph of the stack (GODL-India) (read 2026-10-26) | numbers are facts; pictures looked at only, nothing of them is in the file; NO ESA PICTURE WAS USED |
+| `proba-v.glb` (56 KB) | PROBA-V: a 0.765 by 0.73 by 0.83 m box with cells on its Sun face and VGT-P's three apertures on its nadir face | eoPortal (<https://www.eoportal.org/satellite-missions/proba-v>); NO FREE PICTURE; looked at only, ESA's artist's view and photographs as shown by eoPortal (read 2026-10-26) | numbers are facts; nothing of any picture is in the file; NO ESA PICTURE WAS USED |
+| `formosat-7.glb` (52 KB) | FORMOSAT-7 / COSMIC-2: a 1.0 by 1.25 by 1.25 m box with two radio-occultation antenna arrays of twelve cups, the POD antennas, the ion velocity meter and one two-panel wing; one file for all six craft | eoPortal (<https://www.eoportal.org/satellite-missions/stp2-formosat-7>); SSTL's figures as shown by eoPortal and a CC BY-SA 2.0 photograph of a model (<https://commons.wikimedia.org/wiki/File:FORMOSAT-7.jpg>) looked at only (read 2026-10-26) | numbers are facts; nothing of any picture is in the file; NO SSTL, NSPO OR NOAA PICTURE WAS USED |
+| `oao-2.glb` (60 KB) | OAO-2: a polished octagonal tower 2.1 m across flats on a dark launch ring, a silver hood and two star-tracker domes on top, two paddles and two balance booms | NASA NSSDC (<https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-065A>, the OAO 3 entry: the series' bus) and NASA's own photograph of OAO-2 (public domain, <https://commons.wikimedia.org/wiki/File:Orbiting_Astronomical_Observatory_2.jpg>) and artist's view (<https://commons.wikimedia.org/wiki/File:Orbiting_Astronomical_Observatory.jpg>) (read 2026-10-26) | public domain pictures looked at, nothing of them is in the file; the shape is ours |
+| `oao-3.glb` (77 KB) | OAO-3 Copernicus: a polished octagonal tower on a dark launch ring under a cluster of four sun-baffle tubes (4.9 m in all), two paddles and two balance booms | NASA NSSDC (<https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-065A>) and NASA's own photograph of OAO-3 (public domain, <https://commons.wikimedia.org/wiki/File:Oao-3.jpg>), the SVS archive picture (<https://commons.wikimedia.org/wiki/File:50th_Anniversary_of_NASA%27s_Copernicus_Mission_(SVS14189_-_72-H-1142_full).jpg>) and the artist's view (read 2026-10-26) | public domain pictures looked at, nothing of them is in the file; the shape is ours |
+| all | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `gcom-w`, `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3` |
+
+**Credit lines:** `3D model: built by Space Radar from JAXA's published dimensions and photographs of JAXA's 1/50 model by Syced (CC0)`; `3D model: built by Space Radar from NASA's published dimensions and photographs (public domain)`; `3D model: built by Space Radar from ESA's published dimensions (no free picture of the craft)`; `3D model: built by Space Radar from published dimensions (no free picture of the craft)`.
+<!-- 0078 r14-m7: end -->
+
 ## 3b-13. Five agencies' own models — Europa Clipper, SMAP, Jason-3, Curiosity, SORCE (2026-10-15)
 
 The eleventh batch, the first of the second hundred (public #1075 to #1079). Every file is an
@@ -1351,6 +1407,50 @@ pictures; details simplified".
 
 <!-- 0077 W2-pbr: end -->
 <!-- 0077 W3-b: begin -->
+<!-- 0078 r14-m3: begin -->
+## 3b-16. Release 1.4.0, stage M3: five military and amateur craft built from public pictures and numbers, and SWAS from NASA's own model (2026-10-27)
+
+Release 1.4.0, model stage r14-m3 (public #1096 to #1099, #1100 and #1111). **Five of the six files are built here, in code, part by part**
+(the private tool `model-from-images`, `assemble.py`, then the public `scripts/bake-own-colours.mjs`), and **one is NASA's own**. No
+image-to-3D model was used for any of them and no picture is in any file. No logo and no lettering is on any mesh. Each card says "shape built
+from published dimensions and pictures; details simplified" (SWAS: "drawn from a published model").
+
+**For the four US military craft, ONLY PUBLIC, OFFICIALLY RELEASED pictures and numbers were used**: drawings and renders the US Air Force, Space
+Force, Navy and Strategic Command released (public domain, the Commons API's `LicenseShortName` read 2026-10-27), and dimensions that Lockheed
+Martin's Code One magazine, Air & Space Forces Magazine, Naval Technology, Harris's press release, Gunter's Space Page and Wikipedia print.
+Nothing beyond what is public is drawn: a sensor's inside, a payload's layout or a part whose size no page gives is a plain closed shape or left
+out, and each row in `registry/models.yaml` says which parts are ours. Two Lockheed Martin pictures (the SBIRS product card) were looked at only.
+Milstar (#1120) and DMSP Block 5D-3 (#1095) are NOT built: no clear photograph or detailed art of either is public.
+
+| File | Model | Pictures read off (all public domain unless said) | Used for | Size |
+|---|---|---|---|---|
+| `wgs.glb` | Wideband Global SATCOM, one design for the ten craft | US Air Force: MC-2941 and 3194626; US Strategic Command's drawing | NORAD 32258, 34713, 36108, 38070, 39168, 39222, 40746, 41879, 42075, 44071 | 65 KB |
+| `aehf.glb` | Advanced Extremely High Frequency | US Air Force: "First AEHF" render, AEHF 1; the Operational Test office's drawing | NORAD 36868, 38254, 39256, 43651, 44481, 45465 | 67 KB |
+| `muos.glb` | Mobile User Objective System | US Navy: "MUOS new" and "MUOS" | NORAD 38093, 39206, 40374, 40887, 41622 | 82 KB |
+| `sbirs-geo.glb` | SBIRS GEO | US Air Force: "SBIRS-GEO 2" and "SBIRS-GEO" | NORAD 37481, 39120, 41937, 43162, 48618, 53355 | 41 KB |
+| `ao-7.glb` | AMSAT-OSCAR 7 | AMSAT-Deutschland's photographs of the flight model, LOOKED AT ONLY (not free; nothing is copied); the dimensions are Wikipedia's and AMSAT-DL's | NORAD 7530 | 68 KB |
+| `swas.glb` | "Submillimeter Wave Astronomy Satellite (SWAS)" | NASA's own file, <https://science.nasa.gov/3d-resources/submillimeter-wave-astronomy-satellite-swas/> and <https://github.com/nasa/NASA-3D-Resources> ("Source NASA/Christopher R. Meaney") | NORAD 25560 | 92 KB |
+
+**Licence.** The five built files are this project's own work under this repository's licence, from published numbers (facts) and shapes read off
+public-domain pictures. NASA 3D Resources says "These assets are free and without copyright." (SWAS), and NASA's Images and Media Usage Guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>) say that polygon data of 3-dimensional models "generally are not subject to copyright
+in the United States" and ask that NASA be acknowledged as the source.
+
+**What is illustrative.** WGS's size (no page gives it: the Boeing 702 family's 40.9 m is used); the width and depth of AEHF's and SBIRS's cores; a
+MUOS panel's size and the distance and tilt of its reflectors; the lengths of AO-7's masts. The rows say so, part by part.
+
+**What we changed in SWAS.** Turned as one piece to the app's axes, scaled as one piece to Wikipedia's 1.63 m (the arrays then reach 4.1 m, NASA
+Goddard's paper gives 1.5 m a wing from a 1.0 m body), thinned from 12 908 triangles to 12 000, flat colours baked from NASA's materials. **A colour
+that is ours:** the cell grid lines (which NASA states mid-grey) are drawn in the violet NASA states for the cells.
+
+**Credit lines:** `3D model: built by Space Radar from public US Air Force drawings and published numbers (public domain sources)` (WGS);
+`3D model: built by Space Radar from public US Air Force renders and published numbers (public domain sources)` (AEHF);
+`3D model: built by Space Radar from public US Navy art and published numbers (public domain sources)` (MUOS);
+`3D model: built by Space Radar from public US Air Force art and published numbers (public domain sources)` (SBIRS GEO);
+`3D model: built by Space Radar from published dimensions and AMSAT pictures looked at (nothing copied)` (AMSAT-OSCAR 7);
+`3D model: NASA/Christopher R. Meaney` (SWAS).
+<!-- 0078 r14-m3: end -->
+
 ## 3b-15. Four ESA and EUMETSAT Earth explorers built from dimensions — EarthCARE, Biomass, Swarm, MetOp-SG A1 (2026-10-20)
 
 Release 1.3.0, stage W3-b (public #955, #956, #1101, #993). **No agency publishes a model of any of the four under terms that
@@ -1412,6 +1512,37 @@ CNSA, China News Service, the Chinese Academy of Sciences, Lavochkin, the museum
 Space Radar, and none of them made or approved these shapes.
 
 <!-- 0077 W3-c: end -->
+<!-- 0078 r14-m8: begin -->
+## 3b-r14-m8. Four landers built from dimensions — Luna 16, Mars Pathfinder and Sojourner, Phoenix, Mars 3 (2026-10-27)
+
+Release 1.4.0, stage r14-m8 (public #1128, #1130, #1131, #1132). **No agency publishes a model of any of these craft that is
+free to use**: NASA's 3D Resources on GitHub (1 583 paths), science.nasa.gov/3d-resources (377 entries) and NASA Science's
+3D-type resources have **no** Phoenix, Mars Pathfinder or Sojourner (they have the Viking lander, InSight, the Mars Exploration
+Rovers, Curiosity, Perseverance, Ingenuity and orbiters; read 2026-10-26), and Lavochkin publishes none of the Soviet ones. So each
+file was built in code, part by part, from cited numbers, with photographs looked at for what the numbers do not say, and each
+is drawn **as it stands now**: Luna 16's descent stage with the ascent stage gone and the drill arm raised; Pathfinder with its
+three petals open, the airbags heaped and Sojourner standing beside it (where is ours: it moved); Phoenix with both fan arrays
+open; the Mars 3 capsule with its four petals open. No image-to-3D model was used and no picture is in any file. No logo and no
+lettering is on any mesh. Photographs under share-alike licences were looked at only: nothing was traced from them. Their cards
+say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `luna-16.glb` (131 KB) | Luna 16's descent stage: two big cream tanks side by side, four silver gas bottles, four legs 3.3 m across with their round pads (cited), the empty cradle, the drill arm raised, the camera and two whip aerials | Orbital Focus's "Luna 16" (<https://orbitalfocus.uk/Diaries/Luna/Luna16.php>) for the 3.3 m, the four legs and the parts; Stolbovsky's photographs of the copy in Kaluga (CC BY 4.0), Krassotkin's (CC0) and Denis Nosov's (CC0), the 1970 stamp and LRO's picture (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+| `pathfinder.glb` (152 KB) | Mars Pathfinder: the tetrahedral lander with three open petals of cells, the ramps, the 0.8 m imager mast, the high-gain disc, three low-gain rods, the windsock pole, the airbags heaped, and Sojourner (0.65 by 0.48 by 0.30 m, six wheels on rocker-bogie) | NSSDCA's and Wikipedia's pages for Pathfinder and Sojourner; NASA's press-kit drawings and PIA04305, PIA04306, PIA04312, PIA04315 (public domain); the Smithsonian's flight-spare rover (CC0); Clemens Vasters' and Stéphane Gallay's photographs of the full-size model (CC BY 2.0) | this project's shape from facts; the pictures looked at, credited in the row |
+| `phoenix.glb` (124 KB) | Phoenix: the 1.5 m cream deck with its copper edge, two ten-sided fan-fold arrays (7.0 m2, cited), three corrugated legs, the 2.35 m arm, the camera mast, the MET mast, TEGA, MECA, the lidar | Wikipedia's "Phoenix (spacecraft)" and NSSDCA's 2007-034A; NASA/JPL's assembly photographs, Phoenix's own pictures of its deck and arm and NASA's drawings (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+| `mars-3.glb` (73 KB) | The Mars 3 landing capsule: a sphere 1.2 m across (cited) with its belt of ports, the black corrugated instrument box, the camera and sensor tubes, four aerials and four riveted petals open | Wikipedia's "Mars 3"; the Museum of Cosmonautics' and Armael's photographs of the 1:1 mock-up (CC0), Stolbovsky's of the copy in Kaluga (CC BY 4.0), NASA's pictures of the models (public domain) | this project's shape from facts; the pictures looked at, credited in the row |
+| all four | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `luna-16`, `pathfinder`, `phoenix`, `mars-3` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and photographs of museum models (Stolbovsky, CC BY 4.0; Krassotkin, CC0; Denis Nosov, CC0; NASA/GSFC/Arizona State University, public domain)`;
+`3D model: built by Space Radar from published dimensions and pictures (NASA/JPL, public domain; The National Air and Space Museum, CC0; Clemens Vasters and Stéphane Gallay, CC BY 2.0)`;
+`3D model: built by Space Radar from published dimensions and NASA/JPL photographs (public domain)`;
+`3D model: built by Space Radar from published dimensions and photographs of museum models (Armael, CC0; Museum of Cosmonautics, CC0; Stolbovsky, CC BY 4.0)`.
+
+NASA, JPL, Lavochkin, the museums and the pictures' authors do not endorse Space Radar, and none of them made or approved these shapes.
+
+<!-- 0078 r14-m8: end -->
 <!-- 0077 W3-a: begin -->
 ## 3b-16. NASA science craft built from dimensions — IRIS, TIMED, TRACERS, SERT 2, ISIS 1 (2026-10-20)
 
@@ -1442,11 +1573,167 @@ only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with 
 | `hubble.glb` (408 KB) | Hubble as it has flown since SM4: silver foil, white NOBL and radiator panels, SA3 wings, door open | NASA's SM4 photographs (Commons, e.g. <https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg>); NASA 3D Resources' Hubble (A) for proportions | public domain |
 
 <!-- 0077 W3-a: end -->
+<!-- 0078 r14-m1: begin -->
+## 3b-rocket-stages. Spent rocket stages built in code from published dimensions (2026-10-27)
+
+Release 1.4.0, stage r14-m1 (public #1160, #1164, #1165, #1166, #1167, #1169; tracker #1172). **No free agency or operator model
+of any of these six stages was found**: none of NASA 3D Resources' 1 583 paths (its file listing, read 2026-10-26) is a Delta II
+second stage, a Centaur, a Falcon 9 second stage, an H-IIA second stage or a Kosmos-3M second stage, and a web search for an
+official free model of any of them found none. Each was built in code by the parametric stage builder (`tools/stage-builder/`), from cited metres, and compared side by side
+with the photographs below. No image-to-3D model was used; no picture is in any file; no logo and no lettering is on any mesh. Their
+cards say "shape built from published dimensions and pictures; details simplified". Each row of `registry/models.yaml` cites every
+number and says what is ours. Pictures whose licence is CC BY-SA were looked at only: nothing of them is in a file.
+
+| File | What | What it was compared with | Terms |
+|---|---|---|---|
+| `delta2-stage.glb` (64 KB) | Olive primer-green barrel between two white bands, bare lower dome, red helium spheres, grey bell (#1164) | Delta-K second stage for Delta 294 mission (KSC-02PD-2059) (NASA); Delta-K second stage for Delta 294 mission (KSC-02PD-2058) (NASA); Delta II second stage (KSC-07PD-0126) (NASA/George Shelton); Delta II 7920 second stage (KSC-03PD-2886) (NASA) | ours, from published dimensions; the pictures above only looked at |
+| `atlas5-centaur.glb` (87 KB) | Stainless balloon-tank barrel, gold blanket at the aft bulkhead, RL10 with its black nozzle extension (#1165) | Centaur Upper Stage Installation Recognizes Trailblazing Space Program (8706287) (U.S. Space Force); Centaur 6A Rocket in the Space Power Chambers Shop Area (GRC-1964-C-71099) (NASA Lewis Research Center); Centaur Removal From Transporter into Work Stand at VPF (SDASM Archives) | ours, from published dimensions; the pictures above only looked at |
+| `centaur-d.glb` (118 KB) | Two RL10 bells under a ribbed stainless bulkhead, stainless tank, forward truss with boxes and foil (#1166) | Centaur 6A Rocket in the Space Power Chambers Shop Area (GRC-1964-C-71099) (NASA Lewis Research Center); Centaur 1964 71100L (NASA); Centaur Removal From Transporter into Work Stand at VPF (SDASM Archives); 1965 Typical Atlas Centaur Stages (SDASM Archives) | ours, from published dimensions; the pictures above only looked at |
+| `falcon9-stage2.glb` (84 KB) | White tank, black engine section, the Merlin Vacuum's long dark nozzle extension (#1167) | Falcon 9 second stage fuel tank (Steve Jurvetson, Flickr) (Steve Jurvetson); Merlin nozzle (Steve Jurvetson, Flickr) (Steve Jurvetson); THAICOM 8 (27182484081) (SpaceX); THAICOM 8 (27182485331) (SpaceX) | ours, from published dimensions; the pictures above only looked at |
+| `h2a-stage2.glb` (82 KB) | Cream insulated barrel, metal forward flange with its bolts and vent loop, black open aft skirt, LE-5B (#1169) | H-IIA F34-2ndStage01 (Cabinet Office, Government of Japan); H-IIA F35-2ndStage01 (Cabinet Office, Government of Japan); H-IIA F36-2ndStage02 (Cabinet Office, Government of Japan); H-IIA Family (Ofuku) (Ofuku) | ours, from published dimensions; the pictures above only looked at |
+| `kosmos3m-stage2.glb` (63 KB) | White tank barrel with orange belts, grey instrument section with its two cylinders and checker band, 11D49 with four steering nozzles (#1160) | Cosmos3M.jpg (Trash777) (Trash777); Kosmos rocket.jpg (Dmitry Shipulja) (Dmitry Shipulja); Kosmos-3m infografia.jpg (Julio Perez Suarez) (Julio Perez Suarez) | ours, from published dimensions; the pictures above only looked at |
+
+**Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
+<!-- 0078 r14-m1: end -->
+
+<!-- 0078 r14-m2: begin -->
+## 3b-17. Six communications craft built from dimensions — Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER (2026-10-27)
+
+Release 1.4.0, stage r14-m2 (public #1121, #1122, #1123, #1154, #1155, #1156). Every file is built in code by this project, from the
+published numbers of each craft and the layout read off artists' renders that were LOOKED AT ONLY; no mesh and no picture of anyone else's
+is in a file. `registry/models.yaml` has a row per file with every number, the sentence it was read from and what is ours. Their cards say
+"shape built from published dimensions and pictures; details simplified". No free picture of any of these craft was found (Commons holds
+launch photographs and logos), which each row says.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `thuraya.glb` (109 KB) | Thuraya-2 and -3: a white box, a 12.25 x 16 m elliptical mesh reflector on a boom with a 128-horn feed array facing it, a 1.27 m C-band dish, two five-panel wings 40.4 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Boeing's launch release of 2003-06-06 (<https://boeing.mediaroom.com/2003-06-06-Launch-Set-for-Boeing-Built-Thuraya-2-Mobile-Communications-Satellite>); Wikipedia, Thuraya; Gunter's Space Page, Thuraya 2 (<https://space.skyrocket.de/doc_sdat/thuraya-2.htm>). The layout: an artist's render on Gunter's page, looked at only. The body, the panels' width and the reflector's place are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `inmarsat-4.glb` (90 KB) | Inmarsat-4: a gold box 2.9 x 2.3 x 7.0 m, a 9 m mesh reflector on a boom with a 120-horn feed array, two five-panel wings 45 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Astrium's press kit of 2005 and Northrop Grumman's page on the Astro Aerospace reflectors, read through a search result (<https://spaceref.com/?p=42959>); Gunter's Space Page, Inmarsat-4 (<https://space.skyrocket.de/doc_sdat/inmarsat-4.htm>). The layout: an artist's render on Gunter's page, looked at only. The panels' width and number, the reflector's place and the feed array are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `viasat-3.glb` (120 KB) | ViaSat-3: a white 702MP+ box, two wings of eight panels (two rows of four) 44 m tip to tip, a reflector on a truss boom. Drawn deployed as designed: F1's reflector did not open fully | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Viasat, 'ViaSat-3 Achieves Flight Configuration' (<https://www.viasat.com/news/latest-news/corporate/2022/viasat-3-achieves-flight-configuration/>), read 2026-10-27; Gunter's Space Page, ViaSat 3 (<https://space.skyrocket.de/doc_sdat/viasat-3.htm>). The layout: an artist's render on Gunter's page, looked at only. The body, the reflector (its diameter, place and boom) and the panels' width are ours: none is published | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `o3b.glb` (50 KB) | O3b (first generation): a gold box 1.7 x 4.0 x 1.3 m, twelve steerable Ka-band dishes on its Earth face, two wings of two panels, 12 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Gunter's Space Page, O3b (<https://space.skyrocket.de/doc_sdat/o3b.htm>); Wikipedia, O3b. The layout: an artist's render on Gunter's page, looked at only. The box's width and depth, the dishes' size and lean and the panels' width are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `globalstar-2.glb` (26 KB) | Globalstar second generation: a flat white and gold body, two round Earth-facing antennas, two wings of three panels, 12 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Gunter's Space Page, Globalstar-2 (<https://space.skyrocket.de/doc_sdat/globalstar-2.htm>); Wikipedia, Globalstar. The layout: an artist's render on Gunter's page, looked at only. The body's size, the antennas' size and the panels' width are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `o3b-mpower.glb` (37 KB) | O3b mPOWER: a white box with a phased-array Earth face and two four-panel wings on yoke arms, 27 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Gunter's Space Page, O3b mPOWER (<https://space.skyrocket.de/doc_sdat/o3b-mpower1.htm>); Wikipedia, O3b mPOWER; "O3b mPower Satellite Model" by Blervis (<https://commons.wikimedia.org/wiki/File:O3b_mPower_Satellite_Model.jpg>), a photograph of a desk model, CC0 (read 2026-10-27). The face's elements and the panels' width are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`
+
+No logo, lettering, flag or insignia is on any of the six. Thuraya, Inmarsat, Viasat, SES, Globalstar, Boeing, Airbus and Thales Alenia Space
+do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0078 r14-m2: end -->
+
+
+<!-- 0078 r14-m4: begin -->
+## 3b-r14-m4. Ten weather and Earth-observation craft built from dimensions (2026-10-27)
+
+Release 1.4.0, stage r14-m4 (public #1114, #1115, #1116, #1117, #1118, #1119, #1112, #1113). **No agency was found to publish a model of any of them under terms that allow a derivative** (a search on 2026-10-27 found none for any of them; NASA's 3D Resources has none; ESA's terms for the pictures on its site, the ESA Standard Licence, allow use for information and education, not an altered model; ISRO's pictures are GODL-India, reproducible with credit and not altered; KARI's photographs are KOGL Type 1). So each file was built in code with the part library from cited numbers. **No agency picture or model is in a file.** The layouts were read off pictures that are free (named below, with credit) and off the pictures the agencies publish under terms that allow looking only (ISRO's, ESA's own), which are on no sheet. The two spinning drums (Meteosat Second Generation and Fengyun-2) are made by ONE builder. No image-to-3D model was used. Their cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `meteosat-msg.glb` (145 KB) | Meteosat Second Generation (Meteosat-9, -10, -11): a solar drum 3.2 m across and 2.4 m high covered in solar-cell modules, SEVIRI's 0.5 by 0.8 m opening in its side, gold-foil end plates, an antenna stack and mast on the north plate, two thruster cones and the engine's bay on the south | eoPortal, Meteosat Second Generation, https://www.eoportal.org/satellite-missions/meteosat-second-generation, OPENED 2026-10-27: 'The S/C body is a cylindrical-shaped solar drum, 3.2 m in diameter and 3.7 m in height (2.4 m body height)'; 'The solar array is composed of 8 body mounted panels' with '7854 Silicon High Eta cells'; SEVIRI's Earth radiation entry 'a 50 cm x 80 cm aperture'; spin 100 rpm about the north-south axis; the communications payload in the upper compartment.. Compared with, credited, on Wikimedia Commons: EUMETSAT – Model of MSG.jpg (<https://commons.wikimedia.org/wiki/File:EUMETSAT_%E2%80%93_Model_of_MSG.jpg>, Neq00, CC BY-SA 4.0); EUMETSAT MSG model.jpg (<https://commons.wikimedia.org/wiki/File:EUMETSAT_MSG_model.jpg>, public domain); Wetterpark-Offenbach-01.jpg (<https://commons.wikimedia.org/wiki/File:Wetterpark-Offenbach-01.jpg>, diba, CC BY-SA 2.0 de); SEVIRI Instrument.png (<https://commons.wikimedia.org/wiki/File:SEVIRI_Instrument.png>, public domain). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `meteosat-msg` |
+| `fengyun-2.glb` (94 KB) | Fengyun-2G and -2H: a solar drum 2.1 m across and 1.6 m high (the same builder as Meteosat Second Generation's), a silver equipment belt, the telescope's window, a cone and a mast to the despun antennas, 4.5 m in all | eoPortal, FY-2, https://www.eoportal.org/satellite-missions/fy-2, OPENED 2026-10-27: 'a diameter of 2.1 m' and the drum 'about 1.6 m (cylinder)'; for FY-2F 'a length of 4.5 m' (FY-2G and -2H 'identical performance parameters as its predecessor'); 'dual spin-stabilized at 100 rpm with a despun antenna platform'; 'Power (280 W) is generated by surface-mounted solar cells'; a 'mechanically despun S-band antenna, and a UHF receive antenna'. Two cited lengths differ (the drum 1.6 m, the whole craft 4.5 m): both are built, the drum 1.6 m and the whole 4.5 m.. Compared with, credited, on Wikimedia Commons: 20090829 Model of Fengyun-2 4002.JPG (<https://commons.wikimedia.org/wiki/File:20090829_Model_of_Fengyun-2_4002.JPG>, Jakubhal, CC BY-SA 4.0). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `fengyun-2` |
+| `mtg-i.glb` (74 KB) | Meteosat Third Generation, the imager satellites (Meteosat-12, MTG-I2): a dark-blanketed box, the FCI's white barrel and the LI's four tubes on the Earth face, the Ka-band dish on its boom, two wings of 1.9 by 2.8 m on Y-shaped yokes | ESA, MTG facts and figures, https://www.esa.int/Applications/Observing_the_Earth/Meteorological_missions/meteosat_third_generation/Facts_and_figures, OPENED 2026-10-27: the imager '2.3 x 2.8 x 5.2 m (stowed for launch)', '3800 kg', '2 kW', three-axis stabilised; eoPortal, Meteosat Third Generation, https://www.eoportal.org/satellite-missions/meteosat-third-generation, OPENED 2026-10-27: 'a solar array of 10.7 m2', 'A two-winged satellite configuration', the FCI '1.57 m x 1.72 m x 2.2 m' with a 300 mm pupil, the LI's four channels, 'two hemispherical TT&C antennas', a Ka-band antenna folded at launch on a two-axis pointing mechanism, 'one 400 N apogee engine', '16 10 N thrusters'.. Compared with, credited, on Wikimedia Commons: Meteosat Third Generation ESA418057 (MTG-I cropped).jpg (<https://commons.wikimedia.org/wiki/File:Meteosat_Third_Generation_ESA418057_(MTG-I_cropped).jpg>, ESA, CC BY-SA 3.0 IGO); MTG-I carries two types of imager ESA24625096.png (<https://commons.wikimedia.org/wiki/File:MTG-I_carries_two_types_of_imager_ESA24625096.png>, ESA/Mlabspace, CC BY-SA 3.0 IGO); MTG-I and MTG-S ESA24426397.jpeg (<https://commons.wikimedia.org/wiki/File:MTG-I_and_MTG-S_ESA24426397.jpeg>, ESA/Mlabspace, CC BY-SA 3.0 IGO); EUMETSAT – Model of MTG-I.jpg (<https://commons.wikimedia.org/wiki/File:EUMETSAT_%E2%80%93_Model_of_MTG-I.jpg>, Neq00, CC BY-SA 4.0). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `mtg-i` |
+| `mtg-s.glb` (70 KB) | Meteosat Third Generation, the sounder satellite (MTG-S1): the imager's bus and wings with the Infrared Sounder's white box and baffle and the UVN (Sentinel-4) box on the Earth end | ESA, MTG facts and figures, https://www.esa.int/Applications/Observing_the_Earth/Meteorological_missions/meteosat_third_generation/Facts_and_figures, OPENED 2026-10-27: the sounder '2.4 x 3 x 5.2 m (stowed for launch)', '3800 kg', 'Up to 2 kW'; eoPortal, Meteosat Third Generation (read 2026-10-27): 'a solar array of 10.7 m2', two-winged, 'two hemispherical TT&C antennas', a Ka-band antenna on a two-axis pointing mechanism, 'one 400 N apogee engine'.. Compared with, credited, on Wikimedia Commons: Meteosat Third Generation ESA418057 (MTG-S cropped).jpg (<https://commons.wikimedia.org/wiki/File:Meteosat_Third_Generation_ESA418057_(MTG-S_cropped).jpg>, ESA, CC BY-SA 3.0 IGO); MTG-I and MTG-S ESA24426397.jpeg (<https://commons.wikimedia.org/wiki/File:MTG-I_and_MTG-S_ESA24426397.jpeg>, ESA/Mlabspace, CC BY-SA 3.0 IGO); Sentinel-4 on MTG-S ESA24700249.jpeg (<https://commons.wikimedia.org/wiki/File:Sentinel-4_on_MTG-S_ESA24700249.jpeg>, ESA/Mlabspace, CC BY-SA 3.0 IGO); EUMETSAT – Model of MTG-S.jpg (<https://commons.wikimedia.org/wiki/File:EUMETSAT_%E2%80%93_Model_of_MTG-S.jpg>, Neq00, CC BY-SA 4.0). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `mtg-s` |
+| `insat-3d.glb` (75 KB) | INSAT-3D, -3DR and -3DS: a gold-blanketed cuboid 1.6 by 2.4 by 1.5 m, the imager and the sounder and two dishes on the Earth face, two white D-shaped cooler scoops on the north face, one wing of two panels of 2.4 by 1.8 m | eoPortal, INSAT-3D, https://www.eoportal.org/satellite-missions/insat-3d, OPENED 2026-10-27: '2060 kg (launch mass), 2.4 m x 1.6 m x 1.5 m'; 'The structure is a cuboid with a central cylinder which accommodates two propellant tanks'; one 'deployable solar panel' producing 1164 W; an imager and a sounder with 310 mm telescopes whose 'EO module is mounted external to the spacecraft'; a passive radiant cooler for each; '0.9 m and 1.0 m body-mounted antennas'; a 440 N apogee motor and twelve 22 N thrusters.. Compared with, credited, on Wikimedia Commons: INSAT 3DR Deployed View.jpg (<https://commons.wikimedia.org/wiki/File:INSAT_3DR_Deployed_View.jpg>, ISRO, GODL-India); INSAT 3DR Stowed View.jpg (<https://commons.wikimedia.org/wiki/File:INSAT_3DR_Stowed_View.jpg>, ISRO, GODL-India); INSAT 3DS in deployed configuration.png (<https://commons.wikimedia.org/wiki/File:INSAT_3DS_in_deployed_configuration.png>, ISRO, GODL-India); INSAT-3DS Satellite.jpg (<https://commons.wikimedia.org/wiki/File:INSAT-3DS_Satellite.jpg>, ISRO, GODL-India). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `insat-3d` |
+| `gk2a.glb` (97 KB) | GEO-KOMPSAT-2A: a gold-blanketed box 2.4 by 2.9 by 4.6 m, the AMI under its hood and three gold horns on the Earth deck, one wing of two panels of 2.8 by 3.25 m | Introduction of the Advanced Meteorological Imager of Geo-Kompsat-2a, Remote Sensing 13(7), 1303, https://www.mdpi.com/2072-4292/13/7/1303, OPENED 2026-10-27: 'Launch: 2.9 x 2.4 x 4.6 (m)', 'Orbit: 3.8 x 8.9 x 4.6 (m)' (we read 8.9 m as the north-south span: the 2.4 m body and one wing of two panels of 3.25 m); eoPortal, GEO-KOMPSAT-2, https://www.eoportal.org/satellite-missions/geo-kompsat-2, OPENED 2026-10-27: AMI aperture 270 mm, 'maximum commonality between GK2A and GK2B'.. Compared with, credited, on Wikimedia Commons: 발사체에 장착된 천리안 2A호(1) (1116).jpeg (<https://commons.wikimedia.org/wiki/File:%EB%B0%9C%EC%82%AC%EC%B2%B4%EC%97%90_%EC%9E%A5%EC%B0%A9%EB%90%9C_%EC%B2%9C%EB%A6%AC%EC%95%88_2A%ED%98%B8(1)_(1116).jpeg>, Korea Aerospace Research Institute, KOGL Type 1); 천리안 2A호 최종 점검(1) (1087).jpeg (<https://commons.wikimedia.org/wiki/File:%EC%B2%9C%EB%A6%AC%EC%95%88_2A%ED%98%B8_%EC%B5%9C%EC%A2%85_%EC%A0%90%EA%B2%80(1)_(1087).jpeg>, Korea Aerospace Research Institute, KOGL Type 1); 천리안 2A호 전자파 시험(1) (1058).jpeg (<https://commons.wikimedia.org/wiki/File:%EC%B2%9C%EB%A6%AC%EC%95%88_2A%ED%98%B8_%EC%A0%84%EC%9E%90%ED%8C%8C_%EC%8B%9C%ED%97%98(1)_(1058).jpeg>, Korea Aerospace Research Institute, KOGL Type 1); 천리안 2A 조립 (976).jpeg (<https://commons.wikimedia.org/wiki/File:%EC%B2%9C%EB%A6%AC%EC%95%88_2A_%EC%A1%B0%EB%A6%BD_(976).jpeg>, Korea Aerospace Research Institute, KOGL Type 1). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `gk2a` |
+| `gk2b.glb` (96 KB) | GEO-KOMPSAT-2B: the same bus with GEMS's large pale box and GOCI-II on the Earth end, two gold horns, two dark gridded panels on the wall | as `gk2a`: the MDPI paper on GK-2A (https://www.mdpi.com/2072-4292/13/7/1303, OPENED 2026-10-27) '2.9 x 2.4 x 4.6 (m)' launch, '3.8 x 8.9 x 4.6 (m)' orbit, for the bus both satellites share ('maximum commonality between GK2A and GK2B', eoPortal, GEO-KOMPSAT-2, https://www.eoportal.org/satellite-missions/geo-kompsat-2, OPENED 2026-10-27); GK-2B '~3500 kg'; GOCI-II '1.5 m x 1.0 m x 0.9 m' with a 200 mm pupil.. Compared with, credited, on Wikimedia Commons: 천리안위성 2B호 (2) (1262).jpeg (<https://commons.wikimedia.org/wiki/File:%EC%B2%9C%EB%A6%AC%EC%95%88%EC%9C%84%EC%84%B1_2B%ED%98%B8_(2)_(1262).jpeg>, Korea Aerospace Research Institute, KOGL Type 1); 천리안위성 2B호 (1) (1261).jpeg (<https://commons.wikimedia.org/wiki/File:%EC%B2%9C%EB%A6%AC%EC%95%88%EC%9C%84%EC%84%B1_2B%ED%98%B8_(1)_(1261).jpeg>, Korea Aerospace Research Institute, KOGL Type 1); 태양전지판을 전개한 천리안위성 2B호 (1269).jpeg (<https://commons.wikimedia.org/wiki/File:%ED%83%9C%EC%96%91%EC%A0%84%EC%A7%80%ED%8C%90%EC%9D%84_%EC%A0%84%EA%B0%9C%ED%95%9C_%EC%B2%9C%EB%A6%AC%EC%95%88%EC%9C%84%EC%84%B1_2B%ED%98%B8_(1269).jpeg>, Korea Aerospace Research Institute, KOGL Type 1). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `gk2b` |
+| `meteor-m2.glb` (54 KB) | Meteor-M No.2, No.2-2, -2-3 and -2-4: a pressurised cylinder 1.4 m across, the instrument deck at the nadir end, two wings of 6.2 by 1.7 m, the radar's bar of seven segments, 7.4 m | eoPortal, Meteor-M No.2, https://www.eoportal.org/satellite-missions/meteor-m-2, OPENED 2026-10-27: 'approximately 5 m in length', '1.4 m in body diameter', '14 m with the two solar arrays deployed', 'a pressurised cylindrical core', 'up to 2 kW'; MTVZA-GY 'mounted on the side of the bus with a 0.65 m rotating antenna'; Severyanin-M's antenna 'comprises seven segments - six of which deploy in orbit'; three KMSS cameras side by side ('210 x 200 x 200 mm').. Compared with, credited, on Wikimedia Commons: Метеор-М №1 Компоновка.jpg (<https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B5%D1%82%D0%B5%D0%BE%D1%80-%D0%9C_%E2%84%961_%D0%9A%D0%BE%D0%BC%D0%BF%D0%BE%D0%BD%D0%BE%D0%B2%D0%BA%D0%B0.jpg>, public domain); Метеор-М №1сложенный.JPG (<https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B5%D1%82%D0%B5%D0%BE%D1%80-%D0%9C_%E2%84%961%D1%81%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9.JPG>, public domain); Meteor-M 2.jpeg (<https://commons.wikimedia.org/wiki/File:Meteor-M_2.jpeg>, CC0); Метеор-М1в полете.JPG (<https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B5%D1%82%D0%B5%D0%BE%D1%80-%D0%9C1%D0%B2_%D0%BF%D0%BE%D0%BB%D0%B5%D1%82%D0%B5.JPG>, public domain). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `meteor-m2` |
+| `midori-2.glb` (153 KB) | Midori II (ADEOS-II): two modules of 6 by 4 by 4 m in orange-gold blankets, AMSR's 2 m dish, GLI's black box, SeaWinds' dish, ILAS-II, and ONE paddle 3 by 24 m on a 2 m joint mast | eoPortal, ADEOS-II, https://www.eoportal.org/satellite-missions/adeos-ii, OPENED 2026-10-27: 'Dimension of main S/C body: approximately 6 m x 4 m x 4 m', a single solar array of '50 flexible blankets with a total of 55,680 solar-battery cells' 'extended on a joint mast'; AMSR's '2.0 m offset parabolic antenna'; GLI's 'Elliptic flat mirror ... (600 mm x 260 mm)'; SeaWinds' '1 m diameter rotating dish'; ILAS-II '950 mm x 1670 mm x 600 mm'; POLDER-2 '800 x 500 x 250 mm'. NSIDC, ADEOS-II Platform Description, https://nsidc.org/sites/default/files/adeos-ii20platform20description.pdf, OPENED 2026-10-27: 'Main body dimensions: approximately 6 x 4 x 4 m', 'Solar array paddle dimensions: approximately 3 x 24 m', 5 350 W.. Compared with, credited, on Wikimedia Commons: Adeos2.jpg (<https://commons.wikimedia.org/wiki/File:Adeos2.jpg>, NASA, public domain); Adeos2-annotated.png (<https://commons.wikimedia.org/wiki/File:Adeos2-annotated.png>, Commons contributors, CC BY-SA 3.0). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `midori-2` |
+| `resurs-dk1.glb` (56 KB) | Resurs-DK 1: a stack 7.4 m high, the Geoton-L1 camera's 1.56 m tube below a 2.72 m instrument compartment, PAMELA's domed container on an arm, two wings of three panels (36 m2) | eoPortal, Resurs-DK1, https://www.eoportal.org/satellite-missions/resurs-dk1, OPENED 2026-10-27: 'its height is 7.4 m', 'launch mass of about 6570 kg', 'two photovoltaic solar arrays mounted on the compartment's outer surface', 'the solar array span is about 14 m (total solar array size = 36 m2)', Geoton's 'aperture diameter of 50 cm' and 'focal length of 400 cm', PAMELA '123 cm x 70 cm x 70 cm'; Wikipedia, Resurs-DK No.1 (read 2026-10-27): '7.93 x 2.72 m' (we built the 7.4 m and the 2.72 m).. Compared with, credited, on Wikimedia Commons: Resurs DK-1 Model at MAKS-2009.jpg (<https://commons.wikimedia.org/wiki/File:Resurs_DK-1_Model_at_MAKS-2009.jpg>, Vlsergey, CC BY-SA 3.0); Resurs-DK.gif (<https://commons.wikimedia.org/wiki/File:Resurs-DK.gif>, CC BY-SA 2.5). The layout and the sizes not cited are ours | numbers are facts; nothing of any picture is in the file; the shape is this repository's licence: `registry/models.yaml`, row `resurs-dk1` |
+
+**Credit lines:**
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by Neq00 (CC BY-SA 4.0) and Diba (CC BY-SA 2.0 de)`;
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with a picture by Jakubhal (CC BY-SA 4.0)`;
+`3D model: built by Space Radar from ESA's and eoPortal's published dimensions; compared with pictures by ESA (CC BY-SA 3.0 IGO) and Neq00 (CC BY-SA 4.0)`;
+`3D model: built by Space Radar from ESA's and eoPortal's published dimensions; compared with pictures by ESA (CC BY-SA 3.0 IGO) and Neq00 (CC BY-SA 4.0)`;
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by ISRO (GODL-India)`;
+`3D model: built by Space Radar from published dimensions; compared with photographs by the Korea Aerospace Research Institute (KOGL Type 1)`;
+`3D model: built by Space Radar from published dimensions; compared with photographs by the Korea Aerospace Research Institute (KOGL Type 1)`;
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures in the public domain and under CC0`;
+`3D model: built by Space Radar from eoPortal's and NSIDC's published dimensions; compared with NASA's picture (public domain)`;
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by Vlsergey (CC BY-SA 3.0) and a line drawing (CC BY-SA 2.5)`
+
+No logo, lettering, flag or insignia is on any of the ten. ESA, EUMETSAT, ISRO, KARI, CMA, JAXA, NASA, Roscosmos, VNIIEM, TsSKB-Progress, the pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0078 r14-m4: end -->
+
+<!-- 0078 r14-m5: begin -->
+## 3b-17. Release 1.4.0: seven Earth imagers built from dimensions — WorldView-3, BlackSky Gen-2, Satellogic NewSat, Planet Pelican, HawkEye 360 Pathfinder, GHGSat-C, Gaofen-1 (2026-10-27)
+
+Release 1.4.0, stage r14-m5 (public #976, #1148, #1149, #1150, #1151, #1152). **No agency or operator publishes a model of any of the six
+under a free licence that was found**: NASA's 3D Resources (1 583 paths read 2026-10-27) has none of them, and a search for each operator's
+own model found none. So each file was built in code with the part library from numbers cited on eoPortal. **No operator picture or model is
+in a file.** Layouts were read off the operators' own pictures on eoPortal (Maxar and Ball, BlackSky, Planet, UTIAS/SFL, GHGSat, Satellogic, CAST),
+which are not free and were **looked at only**: they are on no sheet, and nothing is traced. The only free pictures are Satellogic's three on
+Wikimedia Commons (CC BY-SA 4.0), compared with and credited below. No image-to-3D model was used. Their cards say "shape built from
+published dimensions and pictures; details simplified". WorldView-1, WorldView-2, GeoEye-1, WorldView Legion, the BlackSky Gen-3
+craft, the later HawkEye 360 blocks, GHGSat-C12 and C13 and Gaofen-1 02, 03 and 04 have **no file** (reasons in the registry rows and the pull request).
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `worldview-3.glb` (109 KB) | WorldView-3: a hexagonal telescope barrel with the aperture to the Earth, the bus above it with its star trackers and equipment tower, the two CAVIS cameras, two gimballed dishes, two wings of three panels; 5.7 m tall, 7.1 m across the panels | eoPortal (<https://www.eoportal.org/satellite-missions/worldview-3>); the operator's pictures there, looked at only. The split between bus and barrel, the panels' sizes and every instrument are ours | numbers are facts; nothing of any picture is in the file |
+| `blacksky-gen2.glb` (57 KB) | BlackSky Global, first and second generation: a 0.46 by 0.40 by 0.84 m body in gold foil, the 24 cm telescope's aperture with its vanes, two cell wings on hinge arms, a dish on a stalk | eoPortal (<https://www.eoportal.org/satellite-missions/blacksky-constellation>); the operator's pictures there, looked at only. The wings and the dish are ours | numbers are facts; nothing of any picture is in the file |
+| `satellogic-newsat.glb` (80 KB) | Satellogic NewSat: a cell-covered bus with a horn, gold patches and the auxiliary camera over a bronze-blanket barrel with its baffle and vanes, an 8 by 8 gold patch array; 0.51 by 0.57 by 0.82 m | eoPortal (<https://www.eoportal.org/satellite-missions/newsat>); compared with Satellogic USA INC's "Satellogic Render NewSat.png" (<https://commons.wikimedia.org/wiki/File:Satellogic_Render_NewSat.png>), Gisesate's "Satelite NewSat.png" (<https://commons.wikimedia.org/wiki/File:Satelite_NewSat.png>) and BugWarp's "ÑuSat mockup at Satellogic HQ.jpg" (<https://commons.wikimedia.org/wiki/File:%C3%91uSat_mockup_at_Satellogic_HQ.jpg>), all CC BY-SA 4.0, read 2026-10-27 | numbers are facts; the pictures are CC BY-SA 4.0 and nothing of them is in the file; the shape is this project's |
+| `planet-pelican.glb` (61 KB) | Planet Pelican: a 0.56 by 0.56 by 0.40 m bus with the telescope's baffled opening, a clamp ring on the opposite face and four panels in two hinged pairs, 3 m across | eoPortal (<https://www.eoportal.org/satellite-missions/planet-pelican>), whose two tables disagree on the size (both quoted in the registry row); Planet's pictures there, looked at only | numbers are facts; nothing of any picture is in the file |
+| `hawkeye360-block1.glb` (39 KB) | HawkEye 360 Pathfinder (Hawk-A, -B, -C): a 0.20 by 0.267 by 0.44 m NEMO-15 body with four launch rails, cells, patch antennas, a horn, a button antenna, four whips and a boom | eoPortal (<https://www.eoportal.org/satellite-missions/hawkeye-360>); UTIAS/SFL's pictures there, looked at only | numbers are facts; nothing of any picture is in the file |
+| `ghgsat-c.glb` (46 KB) | GHGSat-C1 to -C8: a 0.20 by 0.30 by 0.40 m NEMO body with the white payload tube, the auxiliary camera, Darkstar, GPS and S-band antennas, four UHF whips, cells | eoPortal (<https://www.eoportal.org/satellite-missions/ghgsat-con>); UTIAS/SFL's labelled solid model there, looked at only | numbers are facts; nothing of any picture is in the file |
+| `gaofen-1.glb` (86 KB) | Gaofen-1: a gold-blanket body on an adapter cone, two barrel cameras with baffles and four wide-field cameras on the Earth face, an X-band dish on a mast, whips, two wings of three panels; 7.93 m across | eoPortal (<https://www.eoportal.org/satellite-missions/gaofen-1>) for the bus and the cameras; the size from a Chinese data vendor's parameter page (<https://www.glstkj.com/wzz.asp?x=36>, not the agency: envelope 2.65 by 2.0 m, span 7.93 m, six panels of 1.11 by 0.85 m); CAST's pictures on eoPortal, looked at only. The body's size and every fitting are ours | numbers are facts; nothing of any picture is in the file |
+| all seven | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1` |
+
+**Credit lines:**
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with the operator's pictures, looked at only`;
+`3D model: built by Space Radar from eoPortal's published dimensions; compared with pictures by Satellogic USA INC, Gisesate and BugWarp (CC BY-SA 4.0)`
+
+No logo, lettering, flag or insignia is on any of the seven. Maxar, Ball, CAST, BlackSky, Satellogic, Planet, HawkEye 360, GHGSat, UTIAS/SFL, the
+pictures' authors and eoPortal do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0078 r14-m5: end -->
+
+<!-- 0078 r14-m6: begin -->
+## 3b-17. Ten national Earth-observation craft built from dimensions — CBERS-4 and 4A, Amazonia-1, KOMPSAT-3 and 3A, KOMPSAT-5, Cartosat-2, Resourcesat-2 and 2A, EOS-06, Kanopus-V, Resurs-P (2026-10-27)
+
+Release 1.4.0, stage m6 (public #1137 to #1146). **No agency publishes a 3D model of any of these craft under terms that allow one**: NASA's 3D Resources (1 583 paths, read 2026-10-27) has none of them, and the Brazilian, Korean, Indian and Russian agencies publish photographs and renders, not meshes. So each file is built in code from cited numbers (eoPortal, FAPESP's magazine, KARI's own board) and laid out after pictures that are free: INPE's gallery ("all images may be reproduced if the source is cited"), KARI's photographs and renders (KOGL Type 1), ISRO's photographs and renders (GODL-India), VNIIEM's schematic (CC0) and a visitor's CC0 photograph of KOMPSAT-5's model. Pictures under share-alike licences (Amazonia-1, a Jeju model of KOMPSAT-5, the Kanopus-V and Resurs-P models) were **looked at only**: not fetched into any file or sheet. Roscosmos's own site answered 403. No image-to-3D model was used. Their cards say "shape built from published dimensions and pictures; details simplified".
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `cbers-4.glb` (48 KB) | CBERS-4: a gold two-module body 3.25 m tall with tiers of white radiators, two X-band antennas and one 6.3 x 2.6 m array | eoPortal and the other pages named in `registry/models.yaml` row `cbers-4`, for words and numbers only; CBERS-4 001, 010, 016 and 017: CBERS-4 being prepared in China (<https://commons.wikimedia.org/wiki/File:CBERS-4_001.jpg>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; INPE's gallery photographs (CBERS-4 in Beijing before launch) were looked at for the layout, with credit; nothing of any picture is in the file |
+| `cbers-4a.glb` (46 KB) | CBERS-4A: one tall gold box 1.8 x 2.0 x 2.6 m, a tall mast on the Earth face and the 6.3 x 2.6 m array standing as tall as the body | eoPortal and the other pages named in `registry/models.yaml` row `cbers-4a`, for words and numbers only; CBERS-4A 002, 004, 007 and 014: CBERS-4A being prepared in Brazil (<https://commons.wikimedia.org/wiki/File:CBERS-4A_002.jpg>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; INPE's gallery photographs (CBERS-4A in Brazil) were looked at for the layout, with credit; nothing of any picture is in the file |
+| `amazonia-1.glb` (35 KB) | Amazonia-1: a copper-gold box 2.5 m long, two AWFI camera tubes, a white X-band dish and two wings of three panels | eoPortal and the other pages named in `registry/models.yaml` row `amazonia-1`, for words and numbers only; Amazonia 1 with MLI installed 001, 002; Amazônia-1 satellite in clean room 001 (<https://commons.wikimedia.org/wiki/File:Amazonia_1_with_MLI_installed_002.jpg>); Amazonia 1 PMM with Payload Module (<https://commons.wikimedia.org/wiki/File:Amazonia_1_PMM_with_Payload_Module.jpg>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; INPE's photographs and render of Amazonia-1 on Commons are CC BY-SA 3.0 (share-alike): LOOKED AT ONLY for the layout, never fetched into a file; nothing of them is in the file |
+| `kompsat-3.glb` (65 KB) | KOMPSAT-3 and 3A: a gold hexagonal body 3.5 m tall under an 80 cm telescope with an open baffle, three white-backed panels folded out | eoPortal and the other pages named in `registry/models.yaml` row `kompsat-3`, for words and numbers only; KOMPSAT-3 flight model integration (KARI, 2012): 290, 292, 293, 295 (<https://commons.wikimedia.org/wiki/File:아리랑_3호_개발_장면_(295).jpeg>); An artist rendering of the KOMPSAT-3 (<https://commons.wikimedia.org/wiki/File:G_SA_KOMPS-3_01.jpg>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; KARI's photographs of KOMPSAT-3 in integration and KARI's render (Commons, KOGL Type 1: attribution, commercial use and derivatives allowed) were looked at for the layout, with credit; nothing of any picture is in the file |
+| `kompsat-5.glb` (43 KB) | KOMPSAT-5: a hexagonal copper-gold body, a 4.6 m SAR antenna slab, two wings of four panels (9.1 m) and gold spiked X-band discs | eoPortal and the other pages named in `registry/models.yaml` row `kompsat-5`, for words and numbers only; An artist rendering of the KOMPSAT-5 (<https://commons.wikimedia.org/wiki/File:G_SA_KOMPS-5_01.jpg>); KOMPSAT-5 STM (<https://commons.wikimedia.org/wiki/File:KOMPSAT-5_STM.jpg>); KOMPSAT-5 Model in Jeju Aerospace Museum (<https://commons.wikimedia.org/wiki/File:KOMPSAT-5_Model_in_Jeju_Aerospace_Museum_Reception_hall_20140606-01.JPG>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; KARI's photographs and render of KOMPSAT-5 (Commons, KOGL Type 1) and a visitor's CC0 photograph of the structural-thermal model and its information board were looked at for the layout and the numbers, with credit; nothing of any picture is in the file |
+| `cartosat-2.glb` (45 KB) | Cartosat-2 series: a gold hexagonal body under a telescope barrel with a white rim, a star-sensor trestle and four fixed panels | eoPortal and the other pages named in `registry/models.yaml` row `cartosat-2`, for words and numbers only; Cartosat-2F satellite in cleanroom at SDSC SHAR Sriharikota (<https://commons.wikimedia.org/wiki/File:PSLV-C40-_Cartosat-2F_satellite_in_cleanroom_at_SDSC_SHAR_Sriharikota.jpg>); Cartosat-2F satellite undergoing solar panel deployment test (<https://commons.wikimedia.org/wiki/File:PSLV-C40-_Cartosat-2F_satellite_undergoing_solar_panel_deployment_test.jpg>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; ISRO's own photographs of Cartosat-2F (Commons, GODL-India: attribution, commercial use and derivatives allowed) were looked at for the layout, with credit; nothing of any picture is in the file |
+| `resourcesat-2.glb` (37 KB) | Resourcesat-2 and 2A: a gold platform 2 x 2 m under the camera deck and the LISS-4 tower, two wings of three panels | eoPortal and the other pages named in `registry/models.yaml` row `resourcesat-2`, for words and numbers only; Render of Resourcesat-2A spacecraft in deployed configuration (<https://commons.wikimedia.org/wiki/File:Render_of_Resourcesat-2A_spacecraft_in_deployed_configuration.png>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; ISRO's render of Resourcesat-2A (Commons, GODL-India: attribution, commercial use and derivatives allowed) was looked at for the layout, with credit; nothing of the picture is in the file |
+| `eos-06.glb` (33 KB) | EOS-06 (Oceansat-3): a gold platform with a dark 1.35 m dish, a louvred radiator and two wings of two panels | eoPortal and the other pages named in `registry/models.yaml` row `eos-06`, for words and numbers only; Render of EOS-06 (aka OceanSat-3) satellite with solar panels deployed (<https://commons.wikimedia.org/wiki/File:Render_of_EOS-06_(aka_OceanSat-3)_satellite_with_solar_panels_deployed.png>); EOS-6 (aka Oceansat-3) on PSLV fourth stage (<https://commons.wikimedia.org/wiki/File:PSLV-C54,_EOS-6_(aka_Oceansat-3)_-_Oceansat-3_on_PSLV_fourth_stage.webp>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; ISRO's render of EOS-06 and ISRO's photograph of the craft on the PSLV fourth stage (Commons, GODL-India: attribution, commercial use and derivatives allowed) were looked at for the layout, with credit; nothing of any picture is in the file |
+| `kanopus-v.glb` (56 KB) | Kanopus-V 3 to 6: a box with a long and a short camera tube, two gold dishes and two wings of six panels | eoPortal and the other pages named in `registry/models.yaml` row `kanopus-v`, for words and numbers only; Kanopus-V КА Канопус-В (a schematic) (<https://commons.wikimedia.org/wiki/File:Kanopus-V_КА_Канопус-В.jpg>); Maquette satellite Canopus-V (<https://commons.wikimedia.org/wiki/File:Maquette_satellite_Canopus-V_DSC_0073.JPG>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; VNIIEM's schematic of Kanopus-V (Commons, CC0) was looked at for the layout, with credit; two photographs of models of the craft (CC BY-SA 4.0, share-alike) were LOOKED AT ONLY |
+| `resurs-p.glb` (86 KB) | Resurs-P 4 and 5: a 7.93 m body of revolution with a corrugated telescope tube and two wings of six 5 m strips | eoPortal and the other pages named in `registry/models.yaml` row `resurs-p`, for words and numbers only; MAKS Airshow 2013 (Ramenskoye Airport, Russia) (525-06) (<https://commons.wikimedia.org/wiki/File:MAKS_Airshow_2013_(Ramenskoye_Airport,_Russia)_(525-06).jpg>) (read 2026-10-27). Sizes and places not cited are ours | numbers are facts; A photograph of TsSKB Progress's model of Resurs-P No |
+| all ten | The shapes | this project | this repository's licence: `registry/models.yaml`, rows `cbers-4`, `cbers-4a`, `amazonia-1`, `kompsat-3`, `kompsat-5`, `cartosat-2`, `resourcesat-2`, `eos-06`, `kanopus-v`, `resurs-p` |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions and INPE's photographs of CBERS-4 (CBERS/INPE – Divulgação)`;
+`3D model: built by Space Radar from published dimensions and INPE's photographs of CBERS-4A (CBERS/INPE – Divulgação)`;
+`3D model: built by Space Radar from published dimensions (INPE's pictures looked at only)`;
+`3D model: built by Space Radar from published dimensions and KARI's photographs and render of KOMPSAT-3 (KARI, KOGL Type 1)`;
+`3D model: built by Space Radar from published dimensions, KARI's pictures of KOMPSAT-5 (KARI, KOGL Type 1) and a photograph of its structural-thermal model by ImpMK (CC0)`;
+`3D model: built by Space Radar from published dimensions and ISRO's photographs of Cartosat-2F (ISRO, GODL-India)`;
+`3D model: built by Space Radar from published dimensions and ISRO's render of Resourcesat-2A (ISRO, GODL-India)`;
+`3D model: built by Space Radar from published dimensions and ISRO's render and photograph of EOS-06 (ISRO, GODL-India)`;
+`3D model: built by Space Radar from published dimensions and VNIIEM's schematic of Kanopus-V (CC0)`;
+`3D model: built by Space Radar from published dimensions (a photograph of TsSKB Progress's model looked at only)`;
+
+No logo, lettering, flag or insignia is on any of the ten. INPE, CRESDA, KARI, ISRO, VNIIEM, TsSKB Progress and Roscosmos are named as sources of numbers and pictures; none of them endorses this work.
+<!-- 0078 r14-m6: end -->
+
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
 `registry/exotics.yaml` that anybody has photographed. They are not illustrations and nothing in
 them was redrawn.
+<!-- 0078 r14-mw-bh: begin -->
+Since release 1.4.0 they are shown ONLY on those two cards, as the photograph beside the model: in the scene and at
+the trips' stops every black hole is drawn as a 3D model (`site/js/scene/blackhole.js`, §3m), not as a picture.
+<!-- 0078 r14-mw-bh: end -->
 
 | file | object | credit | licence | source |
 |---|---|---|---|---|
@@ -1473,8 +1760,15 @@ The line under the stop says all three and carries the credit and the licence
 
 ## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESA/Webb, ESO and NOIRLab, CC BY 4.0
 
-`site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067), laid
-on the sky where its object is by `site/js/scene/nebulae.js`. They come from four outreach
+`site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067).
+<!-- 0078 r14-neb-b: begin -->
+Since release 1.4.0 none is laid on the sky: the map draws each object as a 3D model (§3l) or a soft
+glow. A photograph is shown only when a visitor moves a card's "Compare with the photograph"
+slider, at its object's place (`site/js/scene/nebulae.js`), with its credit under the slider; the
+3D models of §3l take their light and colours from these files, and the LMC's, the Tarantula's and
+the SMC's heroes read them directly.
+<!-- 0078 r14-neb-b: end -->
+They come from four outreach
 archives whose terms release their images under the Creative Commons Attribution 4.0 International
 licence (each terms page, the sentence that grants it and the day it was read are in the registry's
 `archives:`; read 2026-10-03, ESA/Webb's on 2026-10-06):
@@ -1486,7 +1780,7 @@ licence (each terms page, the sentence that grants it and the day it was read ar
 
 The terms ask for the credit "in a clear and readable manner to all users, with the wording
 unaltered" and not "hidden or disassociated from the image". So each object's card prints its
-picture's credit under "About it", linked to the archive's page for that picture, and every credit
+picture's credit under the slider that shows it, linked to the archive's page for that picture, and every credit <!-- 0078 r14-neb-b -->
 is listed here word for word (`scripts/check_registry.py` refuses a row whose credit is not).
 No picture is a Digitized Sky Survey composite or from Mellinger's panorama: neither is ours to
 redistribute, and the same check refuses a credit that names either.
@@ -2120,6 +2414,31 @@ distance beyond its root. The card says so.
 | The Magellanic Bridge and Stream: the HI4PI survey's high-velocity H I column density in Magellanic coordinates (`hi4pi-hvc-nhi-mag-car.fits.gz`, 7.9 MB, downloaded for the bake and not shipped), cropped and resampled by `scripts/build_deep_magellanic.py` (`site/images/deep/magellanic/hi-column.webp`, an adaptation). Drawn in **false colour**: hydrogen at 21 cm, which no eye or camera sees. Its distance along our line is a **model**: the Bridge between the Clouds' measured distances, the Stream from the SMC's to 100 kpc at its far end ("the only solid distance constraint on the Stream is that one end is anchored to the Magellanic Clouds"; models put the far end 80 to 150 kpc away) | Westmeier 2018, MNRAS 474, 289 (arXiv:1712.00909); HI4PI Collaboration, Ben Bekhti et al. 2016, A&A 594, A116; served by NASA's LAMBDA (https://lambda.gsfc.nasa.gov/product/foreground/fg_hi4pi_hvhi_info.html); Magellanic coordinates: Nidever, Majewski & Butler Burton 2008, ApJ 679, 432; the distance: Fox et al. 2019 (arXiv:1903.04831) | LAMBDA's page states no licence of its own and asks for the paper to be cited; HI4PI's data are distributed by CDS, whose VizieR terms read that day (https://cds.unistra.fr/vizier-org/licences_vizier.html): "free of usage in a scientific context ; however, ... the original authors and publication references including the publisher have to be explicitely cited". Cited as both ask; Space Radar is free and non-commercial |
 | The light where the SMC's photograph covers it: the photograph with its stars taken out (its pink H II regions kept) and 47 Tucanae and NGC 362, Milky Way globulars in front of it, filled from round them (`scripts/build_deep_smc.py --light` -> `site/images/deep/smc/smc-light.webp`, an adaptation) | NOIRLab noirlab2030b, credit "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University)..." (section 3 above) | CC BY 4.0; stars removed by Space Radar |
 <!-- 0077 W2-e: end -->
+<!-- 0078 r14-neb-a: begin -->
+### Emission nebulae (0078 r14-neb-a)
+
+Eight emission nebulae drawn as walls of glowing gas, dust in front of them and stars among them, with no photograph
+drawn flat (`site/js/scene/deep/emission.js`, one builder; their numbers in `registry/deepsky-heroes/m8.yaml`, `m20.yaml`,
+`m16.yaml`, `m17.yaml`, `rosette.yaml`, `california.yaml`, `north-america.yaml` and `cats-paw.yaml`, each with its
+source). Facts read on 2026-10-26 in the papers' abstracts (arXiv) and in SIMBAD's tables; no text, figure or data file of
+any of them is shipped. Lengths on the sky are turned into light-years at each record's distance. Each shape is
+**reconstructed** (the California's depth is an illustration: nothing measures it) and the card says so, and that no
+astronomer has reviewed it yet (internal #785).
+
+| what | the numbers | from |
+|---|---|---|
+| the Lagoon (M8) | an H II region about 1.3 kpc away with the cluster NGC 6530; the glowing gas on the near face of its molecular cloud, the cluster in front of the cloud. Drawn as a blister (a bowl behind 9 Sagittarii and Herschel 36, its depth illustrative), the dark lane and the globules as dust 8 ly in front (not measured) | Tothill et al. 2008, Handbook of Star Forming Regions II (arXiv:0809.3380) |
+| the Trifid (M20) | a young H II region round HD 164492 with dense cores just behind its ionisation front and dust lanes in silhouette. Drawn as a bubble, its far half and its near cap (35 % of the light), the blue scattered light on the cloud behind; depths illustrative | Lefloch & Cernicharo 2000, ApJ (arXiv:astro-ph/0007346); Lefloch et al. 2008 (arXiv:0809.2023) |
+| the Eagle (M16) and the Pillars | the Pillars' tips ionised and photo-evaporated by NGC 6611's massive stars, seen against the glow; a sketch of their 3D geometry round the cluster. Drawn as the cavity's far wall behind the cluster and the Pillars as dust in front (their depths not measured) | Hester et al. 1996, AJ 111, 2349; McLeod et al. 2015, MNRAS 450, 1057 (arXiv:1504.03323) |
+| the Omega (M17) | an obscured ionisation front nearly edge-on in its south-western part, against the molecular cloud M17 SW. Drawn as a blister rising into the bright bar; depth illustrative | Pellegrini et al. 2007, ApJ 658, 1119 (arXiv:astro-ph/0611808) |
+| the Rosette | an evacuated central cavity blown by NGC 2244's winds; its structure reproduced by a massive star's wind in a thin sheet-like cloud, at an inclination. Drawn as a shell flattened along our line, its far face and near face (45 % of the light); depths illustrative | Wareing et al. 2018, MNRAS 475, 3598 (arXiv:1802.04828) |
+| the California | ionised by Xi Persei; its depth not measured: a shallow trough, illustrative | SIMBAD |
+| the North America and the Pelican | one H II region ionised by the Bajamar Star near its geometric centre; the dark cloud LDN 935 in front. Drawn as a broad bowl round the star, the dark cloud as dust 14 ly in front (not measured) | Kuhn & Hillenbrand 2020, Research Notes of the AAS (arXiv:2012.05074); Lynds 1962, ApJS 7, 1 |
+| the Cat's Paw | a filamentary molecular cloud about 50 pc long shaped by expanding H II bubbles. Drawn as five bubbles, three with near caps (35 % of the light); depths illustrative | Arzoumanian et al. 2022, A&A 660, A56 (arXiv:2201.04267) |
+| the stars | the places, V magnitudes and spectral types of the ionising O stars (9 Sgr, Herschel 36, HD 165052, HD 164816, HD 164536, HD 164906; HD 164492; HD 168076, HD 168075, HD 168137, BD-13 4930, BD-13 4927, BD-13 4923, BD-13 4929, QR Ser; BD-16 4826, BD-16 4818, NGC 6618 337, 2MASS J18202742-1613309, NGC 6618 637; HD 46150, HD 46223, HD 46149, HD 46106, HD 46056, HD 46202, V578 Mon; Xi Persei; the Bajamar Star, HD 199579; HD 156738, HD 319699, HD 319702, HD 319703) and of the clusters NGC 6530, NGC 6611, NGC 6618 and NGC 2244; each cluster's members a seeded sample (model) | SIMBAD (CDS), read 2026-10-26 |
+| the light | each hero's light IS the photograph the app showed, its stars removed (`scripts/build_deep_emission.py` -> `site/images/deep/nebulae/<id>-light.webp`, an adaptation); round the heart of four of them a sharper map of the same photograph from the archive's large JPEG (`<id>-detail.webp`). ESO eso0936a (M8), eso0926a (M16), eso1119a (M17, credit ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute), eso1003a (the Cat's Paw), credit ESO; NOIRLab noirlab2521ah (M20, credit NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA), noao-rosette (credit KPNO/NOIRLab/NSF/AURA/N. A. Sharp), noao-n1499block and noao-n7000mosblock (credit KPNO/NOIRLab/NSF/AURA/Adam Block) | CC BY 4.0 (https://www.eso.org/public/copyright/, https://noirlab.edu/public/copyright/): "may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible" |
+| Deep | each hero's Deep look is ENHANCED: the photograph's own Deep stretch (gamma 0.7, saturation 1.25), not what an eye or a broadband camera sees | the profiles' `colours.enhanced` |
+<!-- 0078 r14-neb-a: end -->
 <!-- 0077 W3-f: begin -->
 ### Galaxies from their structure (0077 W3-f)
 
@@ -2138,6 +2457,35 @@ model is a **model** and the card says so, and that no astronomer has reviewed i
 | M101 | i = 18, PA = 39 degrees; disc scale length 127.3 arcsec at 3.6 microns; arms' pitches 7 to 29 degrees; the south-west approaching; the near side derived; five giant H II regions (NGC 5447, 5455, 5461, 5462, 5471) at their places | Walter et al. 2008 (after Bosma, Goss & Allen 1981); Salo et al. 2015; Herrera-Endoqui et al. 2015 (VizieR J/A+A/582/A86); Mihos et al. 2013 (arXiv:1211.3095); SIMBAD (CDS) |
 | M104, the Sombrero | PA 89.25 degrees; i = 84 (84.3 +/- 0.2 for the CO ring); bulge n 3.9, Re 71 arcsec; disc scale length 61 and height 18 arcsec; the dust ring's radius 144.7 arcsec and width 22.9 arcsec, an inner dust disc of 48 arcsec; which side is near is not published in what was read, and is assumed | Bendo et al. 2006 (arXiv:astro-ph/0603160); Gadotti 2012 (arXiv:1101.2900), after Emsellem et al. 1996; Sutter et al. 2022 (arXiv:2210.13527); Vlahakis et al. 2008 (arXiv:0805.4791) |
 | The Antennae | NGC 4038's and NGC 4039's places; their RC3 outlines (tilts read from torn outlines: illustrative); 22 +/- 3 Mpc (13.3 +/- 1.0 by another method); the tails' lengths and parents, the southern tip bending away; the tails traced on Robert Gendler's photograph, their depths a model after the simulations | SIMBAD (CDS); RC3 (de Vaucouleurs et al. 1991, VizieR VII/155); Schweizer et al. 2008 (arXiv:0807.3955); Saviane et al. 2008 (arXiv:0802.1045); Hibbard et al. 2001 (arXiv:astro-ph/0110581); Privon et al. 2013 (arXiv:1305.5865); Karl et al. 2010 (arXiv:1003.0685); heic0812c, "Robert Gendler", ESA/Hubble, CC BY 4.0 |
+
+<!-- 0078 r14-neb-b: begin -->
+### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)
+
+Release 1.4.0 lays no photograph on the sky (§3g says where one is still shown). The objects that were only a
+photograph are drawn in 3D from published numbers: M27 and the Southern Ring on `site/js/scene/deep/ring.js` (the Ring's
+technique), the Pleiades' nebulosity on `site/js/scene/deep/reflection.js` (dust in front of the cluster lit by its own
+stars, which stay the star map's), and M83, NGC 1300 and Centaurus A on `site/js/scene/deep/spiral.js` (galaxies from
+their structure). Their numbers are in `registry/deepsky-heroes/m27.yaml`, `southern-ring.yaml`, `m45.yaml`, `m83.yaml`,
+`ngc1300.yaml` and `cena.yaml`, each with its source; facts read on 2026-10-26 in the papers' abstracts and texts (arXiv),
+SIMBAD and VizieR. The nebulae's light maps are adaptations of §3g's CC BY 4.0 photographs (stars removed, spread through
+the reconstructed volume by `scripts/build_deep_ring.py` and `scripts/build_deep_sheets.py`, `site/images/deep/m27/`,
+`site/images/deep/southern-ring/`, `site/images/deep/sheets/m45-light.webp`); their colours are ENHANCED where the
+photograph is narrowband or infrared, and the card says so. The galaxies copy no image: their arms and lanes are matched
+by eye to the photographs named. Centaurus A's jets are an ILLUSTRATION in false colour (they shine in X-rays and radio).
+Every one is a **reconstruction** or a **model** and its card says so, and that no astronomer has reviewed it yet
+(internal #785). The Sombrero, the Antennae and M81 were revised in the same stage (their profiles' sources are unchanged).
+
+- The Dumbbell's 3D shape: a reconstruction by Space Radar (the waist as a ring nearly edge on, the lobes, the outer shell), its sizes measured on the photograph; the shells after Meaburn et al. 2005 (arXiv:astro-ph/0501569)
+- The central star: distance and temperature after Benedict et al. 2009, AJ 138, 1969; the knots after O'Dell et al. 2002, AJ 123, 3329
+- Its light: the photograph noao-m27-kpno-mayall-4-m, T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA) (CC BY 4.0), its stars removed by Space Radar
+- The Southern Ring's 3D shape: a reconstruction by Space Radar after Kastner et al. 2024 (arXiv:2402.11850: a ring seen nearly pole on) and De Marco et al. 2022 (arXiv:2301.02775: the bubble and the molecular halo), its sizes measured on the photograph
+- Its light: the photograph weic2207b, NASA, ESA, CSA, STScI, and the Webb ERO Production Team (CC BY 4.0), its stars removed by Space Radar
+- The Pleiades' reflection nebula as a lit volume of dust: reconstructed by Space Radar; the gas in front of the stars after Ritchey, Martinez & Federman 2006 (arXiv:astro-ph/0606644); the stars' places and magnitudes from SIMBAD (CDS); the phase function of Henyey & Greenstein 1941
+- Its light: the photograph noao-m45, NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN (CC BY 4.0), the stars' halos subtracted by Space Radar
+- M83's model: the bulge, the bar and the disc after the S4G decomposition (Salo et al. 2015, VizieR J/ApJS/219/4), the orientation and distance as Lundgren et al. 2004 give them, the arms and lanes matched by eye to ESO's photograph eso0825a (ESO; CC BY 4.0). Facts, cited; the model copies no image.
+- NGC 1300's model: the bulge, the bar and the disc after the S4G decomposition (Salo et al. 2015, VizieR J/ApJS/219/4), the arms and lanes matched by eye to Hubble's photograph opo0501a (NASA, ESA and The Hubble Heritage Team, STScI/AURA; CC BY 4.0). Facts, cited; the model copies no image.
+- Centaurus A's model: the warped dusty disc after Quillen et al. 2006 (arXiv:astro-ph/0601135), the elliptical after Dufour et al. 1979 as Dumont et al. 2023 adopt it, the jets after Kraft et al. 2002, Hardcastle et al. 2007 and Israel 1998 (drawn in false colour), the colours matched by eye to ESO's photograph eso1221a (ESO; CC BY 4.0). Facts, cited; the model copies no image.
+<!-- 0078 r14-neb-b: end -->
 
 ### A deep field (0077 W3-f)
 
@@ -2159,6 +2507,21 @@ redshift). As seen from the Sun each galaxy is as wide as Webb measured it (its 
 distance; its true width is that over 1 + z). Its light is its F200W magnitude, an exposure and not photometry; its tint is the F090W
 minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
 <!-- 0077 W3-f: end -->
+
+<!-- 0078 r14-mw-bh: begin -->
+## 3m. The black holes in 3D (release 1.4.0)
+
+No photograph is drawn in the scene; the model is our own code (MIT). What it is drawn from:
+
+**The black holes** (`site/js/scene/blackhole.js`): Schwarzschild light bending (Binet's equation), the Shakura-Sunyaev
+disc, relativistic Doppler beaming. Sagittarius A* and M87*: the Event Horizon Telescope Collaboration 2019 (ApJL 875, L1)
+and 2022 (ApJL 930, L12); M87*'s jet: Walker et al. 2018, ApJ 855, 128 (position angle 288°, 17° from our line), its shape
+Asada & Nakamura 2012, ApJL 745, L28, its knots Perlman et al. 2011, ApJ 743, 119. Cygnus X-1: the orbit's period
+(Brocksopp et al. 1999, A&A 343, 861), its inclination (Miller-Jones et al. 2021, Science 371, 1046), the supergiant
+HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikipedia "Cygnus X-1", read 2026-10-27). The
+masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
+the stellar holes), it is chosen and `blackhole.js` says so.
+<!-- 0078 r14-mw-bh: end -->
 
 ## 4. Runtime data sources
 
@@ -2493,8 +2856,15 @@ full and open sharing of data" and asks:
 The app prints that sentence verbatim in the Sources panel (`COPY.clouds.gibsAcknowledgement`), with
 the satellites' operators beside it: GOES imagery is NOAA's (US Government work, see §4.4 for the NWS
 terms), and Himawari imagery is JMA's, credited as a courtesy the realism study (2026-09-28) records
-NOAA and JMA asking for. Nothing from GIBS is stored in this repository or on our site; each visitor's
-browser fetches and composes the pictures itself.
+NOAA and JMA asking for.
+<!-- 0078 r14-data: begin -->
+Since 2026-10-26 (internal spec 0078) the harvester's Lambda also saves GIBS's newest real picture of each of
+the three layers, once an hour, as `data/v1/gibs-clouds.json` on our own site (`harvest/parsers/gibs_clouds.py`:
+the same two requests the browser makes, the pictures kept byte for byte). A visitor's browser draws that copy
+first and asks GIBS only behind a copy older than an hour or when there is none. Nothing from GIBS is stored in
+this repository; the saved pictures are replaced every hour and are not an archive. The acknowledgement above is
+printed with the clouds whichever copy they came from.
+<!-- 0078 r14-data: end -->
 
 No European or Indian Ocean geostationary satellite is in GIBS, so 6.5° E to 60.6° E and the poles
 are the static Solar System Scope cloud map (§2), and the Earth's card says so. EUMETSAT's own
@@ -2645,6 +3015,13 @@ card says where the map reaches. Blitzortung's network covers them, but its data
 without permission and is not used; GOES's own lightning mapper (GLM) is not served by NASA GIBS,
 which has only the LIS and OTD climatologies. Nothing from nowCOAST is stored in this repository
 beyond one saved picture the test decodes (`tests/fixtures/weather/`).
+<!-- 0078 r14-data: begin -->
+Since 2026-10-26 (internal spec 0078) the harvester's Lambda saves the newest slot's picture too, as
+`data/v1/noaa-lightning.json` on our site (`harvest/parsers/nowcoast_lightning.py`: the same two requests, the
+7 kB PNG kept byte for byte, replaced every hour). The browser draws that copy first and asks NOAA behind a copy
+older than fifteen minutes or when there is none. As a US Government work the copy is no different from the
+original; the credit above stays on the card whichever copy was drawn.
+<!-- 0078 r14-data: end -->
 
 The winds the other worlds' bands move at, and Mars's seasonal tables, are numbers from published
 papers, each named with its DOI in `registry/weather.yaml`; no data file of theirs is shipped.
@@ -2667,6 +3044,8 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `jpl-cad` | NASA/JPL Center for Near Earth Object Studies | close approaches to the Earth | as above | Close approaches: NASA/JPL CNEOS | `ssd-api.jpl.nasa.gov` |
 | `horizons-deep-space` | NASA/JPL Solar System Dynamics, Horizons | where each deep-space craft is, as vectors | as above | Ephemerides: JPL Horizons | `ssd.jpl.nasa.gov` |
 | `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | **Switched off on 2026-10-09** (`enabled: false`) and no longer fetched, saved, published or shipped. ESA's terms (read that day at `www.esa.int/Services/Terms_and_conditions`, to which the NEOCC portal defers) say: "ESA does not grant the right to resell or redistribute any information, documents, images or material from its website". The harvester had saved this list and the site had served it as `/data/v1/esa-neocc-close.json` since September 2026, before those terms were read in full; no card ever showed it. The close approaches the app draws are JPL's CNEOS, the row above. The row stays here so the reason does. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
+| `gibs-clouds` | NASA Global Imagery Browse Services (GIBS) | today's clouds: the newest real Band 13 infrared picture of GOES-West, GOES-East and Himawari, saved hourly (internal spec 0078) | §4.13: NASA "promotes full and open sharing of data" and asks for the acknowledgement printed with the clouds (<https://nasa-gibs.github.io/gibs-api-docs/>, read 2026-09-28). The satellites are NOAA's and JMA's (§4.13). | We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS). | `gibs.earthdata.nasa.gov` <!-- 0078 r14-data --> |
+| `noaa-lightning` | NOAA nowCOAST | lightning now: the newest fifteen-minute strike-density picture, saved hourly (internal spec 0078) | §4.17: a US Government work; a "Level 5" product "appropriate for public distribution" (read 2026-10-03) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | `nowcoast.noaa.gov` <!-- 0078 r14-data --> |
 | `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
 | `eonet-fires`, `eonet-volcanoes-ice` | NASA Earth Observatory Natural Event Tracker (EONET) | open fires, volcanoes and sea-ice events, saved hourly (internal #525) | §4.20: no licence beyond EONET's disclaimer; NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09). The events are reported by IRWIN, GDACS, the Smithsonian's Global Volcanism Program and the US National Ice Center; the Smithsonian's terms page answered 403 to our reader on 2026-10-09 and has NOT been read. | Fires, volcanoes and sea ice: NASA EONET | `eonet.gsfc.nasa.gov` |
 | `swpc-solar-regions` | NOAA Space Weather Prediction Center | today's sunspot groups (the solar region summary), saved hourly | US Government work, public domain (§4.4; "may be used without charge for any lawful purpose", <https://www.weather.gov/disclaimer>, read 2026-10-09) | Sunspot groups: NOAA SWPC | `services.swpc.noaa.gov` |

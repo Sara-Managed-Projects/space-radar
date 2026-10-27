@@ -1310,10 +1310,12 @@ for (const file of allFiles) {
     // the materials are checked in the state they are drawn in, not just the one they start in.
     const worlds = createWorlds(scene, { textureBase: '', loadTexture: (url, onLoad) => { const t = new THREE.Texture(); if (onLoad) onLoad(t); return t; } });
     for (const w of worlds.waitingMaps()) worlds.preload(w);
-    // The nebulae's photographs (spec 0067) are a sky layer built the same way -- depth test off,
-    // additive -- on the sky sphere and at their places; both must stay in the opaque list too.
+    // The slider's photograph (spec 0067; 0078 r14-neb-b: the only one in the scene) is built the same way -- depth
+    // test off, additive -- at its place; it must stay in the opaque list too.
     const { createNebulae } = await import(join(JS, 'scene/nebulae.js'));
-    const nebulae = createNebulae(scene, { skyGroup: sky.group, load: () => Promise.resolve(new THREE.Texture()) });
+    const nebulae = createNebulae(scene, { load: () => Promise.resolve(new THREE.Texture()) });
+    nebulae.setCompare('dso-m42', 1);
+    await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
     // The deep sky's gas (spec 0075 task 9): a hero stub with one gas layer, a holder's march and its
     // T0 shells, built as the coordinator builds them; all three must stay in the opaque list.
     const gas = await import(join(JS, 'scene/deep/gasmat.js'));
@@ -1337,7 +1339,7 @@ for (const file of allFiles) {
         }
       }
     });
-    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun', 'nebula-sky-m42', 'nebula-m42', 'deep-hero-stub-shell', 'deep-holder-march', 'deep-holder-shells'];
+    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun', 'nebula-compare-m42', 'deep-hero-stub-shell', 'deep-holder-march', 'deep-holder-shells'];
     const missing = want.filter((n) => ![...named].some((x) => x === n || x.startsWith(n)));
     if (missing.length) problems.push(`DRAWORDER the check never saw ${missing.join(', ')}, so it proves nothing about them`);
     else notes.push(`${checked} materials across the sky and the worlds; none draws after the planets with depthTest off`);

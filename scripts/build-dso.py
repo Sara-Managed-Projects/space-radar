@@ -23,8 +23,9 @@ THE OBJECT MODEL (internal spec 0075 design section 3). Every row may carry
                 and not by two rounded numbers from two pages.
   orientation   {pa_deg, incl_deg, near_side, source} where one is published.
   morphology    one of MORPHOLOGIES, for galaxies; derived from the row's words when not written.
-  drawn         what is drawn for it, each one of DRAWN_CLASSES: `photograph` when registry/nebulae.yaml
-                has a picture, `illustration` for the glow and the mark everything else gets.
+  drawn         what is drawn for it, each one of DRAWN_CLASSES: `illustration` for the glow and the mark
+                (a hero adds its own class when it draws). No row is `photograph` since release 1.4.0
+                (stage r14-neb-b): no photograph is drawn in the scene, only by the card's slider when asked.
 The record's `cls` (measured) stays the class of its POSITION; `drawn` is the class of its PICTURE.
 
 WITHOUT OpenNGC. The CSVs are not in the tree. `--refresh` keeps the OpenNGC columns of the Messier
@@ -165,7 +166,7 @@ def apply_model(out: list, hand_rows: list, overlay: dict, pictured: set) -> Non
         dist = e.get("distance")
         r["distance"] = plain(dist) if isinstance(dist, dict) else None
         drawn = e.get("drawn")
-        r["drawn"] = list(drawn) if drawn else (["photograph"] if r["id"] in pictured else []) + ["illustration"]
+        r["drawn"] = list(drawn) if drawn else ["illustration"]  # 0078 r14-neb-b: no photograph in the scene
     # Own measured distances first, then the children that take their parent's (a chain resolves in order).
     for r in out:
         d = r["distance"]

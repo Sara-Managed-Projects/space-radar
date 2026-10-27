@@ -123,7 +123,7 @@ check(analyst && analyst.meta.provisional === true && analyst.id === 'celestrak-
 // --- 3. a share link round trip -------------------------------------------------------------------
 const byId = new Map(recs.map((r) => [r.id, r]));
 const url = shareUrl({ at: s3c.id }, 'https://www.spaceradar.ai/');
-eq(url, 'https://www.spaceradar.ai/#v=1&build=1.3.0&at=sat-100690', 'the share link names the number');
+eq(url, 'https://www.spaceradar.ai/#v=1&build=1.4.0&at=sat-100690', 'the share link names the number');
 globalThis.location = { hash: new URL(url).hash };
 const back = read();
 check(byId.get(back.at) === s3c, `the link reads back to Sentinel-3C (${back.at})`);

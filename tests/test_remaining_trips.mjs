@@ -443,13 +443,13 @@ async function walk(m, trip, plan, each) {
         check(st.portrait && st.portrait.id === stop.target.record, `black-holes/${stop.id}: the portrait drawn is ${JSON.stringify(st.portrait)}`);
         check(st.stopNote === `PORTRAIT ${stop.target.record}`, `black-holes/${stop.id}: the line under it is "${st.stopNote}"`);
       } else check(st.portrait === null, `black-holes/${stop.id}: a portrait is still up (${JSON.stringify(st.portrait)})`);
-      if (stop.target.record === 'dso-milky-way') check(st.stopNote === 'PICTURE dso-milky-way', `black-holes/${stop.id}: a deep-sky stop asks for its picture's line`);
+      if (stop.target.record === 'dso-milky-way') check(st.stopNote !== 'PICTURE dso-milky-way', `black-holes/${stop.id}: a deep-sky stop has no photograph's line (0078 r14-neb-b)`);
     });
     m.machine.stop('test');
     check(m.machine.state.portrait === null && m.machine.state.names === false, 'leaving takes the portrait down');
   }
   check(/drawn far larger/.test(COPY.trip.portraitLine) && /\{credit\}/.test(COPY.trip.portraitLine) && /\{licence\}/.test(COPY.trip.portraitLine), 'the portrait’s line says it is drawn larger, and whose picture it is');
-  check(/\{credit\}/.test(COPY.trip.pictureLine) && /\{licence\}/.test(COPY.trip.pictureLine), 'a photograph’s line carries its credit and its licence');
+  check(COPY.trip.pictureLine === undefined, 'no photograph is drawn at a stop, so no stop carries a photograph’s line (0078 r14-neb-b)');
 }
 
 // ------------------------------------------------------------------ 5b. a photograph is seen from its own side
@@ -479,7 +479,8 @@ async function walk(m, trip, plan, each) {
       const deg = (Math.acos(Math.min(1, toCam.dot(toSun))) * 180) / Math.PI;
       // scene/nebulae.js viewFade: whole inside 25 degrees of the line, gone by 50. The drift is 4.
       check(deg < 8, `telescope/${stop.id}: the camera is ${deg.toFixed(1)} degrees off the line from ${rec.id} to the Sun, where its photograph fades`);
-      check(st.exposure === stop.exposure && st.stopNote === `PICTURE ${rec.id}`, `telescope/${stop.id}: exposure ${st.exposure}, line "${st.stopNote}"`);
+      // 0078 r14-neb-b: the stop draws its 3D model or its glow, never a photograph, so no photograph's line under it.
+      check(st.exposure === stop.exposure && st.stopNote !== `PICTURE ${rec.id}`, `telescope/${stop.id}: exposure ${st.exposure}, line "${st.stopNote}"`);
     });
     m.machine.stop('test');
   }
@@ -490,13 +491,13 @@ async function walk(m, trip, plan, each) {
   const s = P.portraitScale(P.PORTRAIT_SHARE, 45);
   check(Math.abs(s / (2 * Math.tan((45 * Math.PI) / 360)) - P.PORTRAIT_SHARE) < 1e-12, 'the picture spans its share of a 45 degree view');
   check(P.PORTRAIT_SHARE > 0.2 && P.PORTRAIT_SHARE <= 0.5, `the share is ${P.PORTRAIT_SHARE}: big enough to read, never the whole view`);
-  check(P.feather(0) === 1 && P.feather(0.6) === 1 && P.feather(1) === 0 && P.feather(0.9) > 0 && P.feather(0.9) < 0.5, 'whole in the middle, gone at the rim');
   const portraits = P.createPortraits(new THREE.Scene());
   check(portraits.show({ id: 'x', meta: {} }) === false && portraits.shown() === null, 'a record with no picture shows nothing');
   portraits.update(new THREE.PerspectiveCamera(45, 1.6, 0.1, 10), REAL, 16);
   portraits.dispose();
+  // 0078 r14-mw-bh: a black hole is drawn in 3D (scene/blackhole.js), at the share of the view while its true size is smaller
   const src = readFileSync(join(JS, 'scene/portraits.js'), 'utf8');
-  check(/sizeAttenuation: false/.test(src) && /AdditiveBlending/.test(src), 'a constant share of the view, added to the sky like every other light');
+  check(/createBlackHole\(/.test(src) && /share: PORTRAIT_SHARE/.test(src) && !/SpriteMaterial|ImageLoader/.test(src), 'a 3D black hole at a share of the view, no photograph on a sprite');
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(/import\('\.\/scene\/portraits\.js'\)/.test(main) && !/^import .*portraits\.js/m.test(main), 'the portraits are a dynamic import: nothing of them at boot');
 }
@@ -521,4 +522,4 @@ if (problems.length) {
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-console.log('remaining trips ok: eight trips of six to nine stops written for the ear, every nebula stop at a credited photograph seen from its own side, the Milky Way and the next shower found for a place and a date, the ground wearing a city, a town and a dark sky in turn, counts and credits generated, the portrait a share of the view, and models put away when nobody wants them');
+console.log('remaining trips ok: eight trips of six to nine stops written for the ear, every nebula stop seen from the side its photograph was taken from, with no photograph drawn, the Milky Way and the next shower found for a place and a date, the ground wearing a city, a town and a dark sky in turn, counts and credits generated, the portrait a share of the view, and models put away when nobody wants them');

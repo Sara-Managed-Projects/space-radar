@@ -14,25 +14,27 @@ levels:
   dust_share: 0.45
   seed: 104
   layer_power: 0.6           # the smooth layer's stretch, S^0.6 (LAYER_POWER is 0.45): look run 1 at 0.45 lifted the outskirts into a grey disc twice the photograph's size
+  bulge_at_re: 0.3          # 0078 r14-neb-b: the bulge at one effective radius (LAYER_BULGE_AT_RE is 0.32): close up the core kept no gradient, blown white
+  bulge_sparkle: 0.05        # 0078 r14-neb-b: the bulge's points' share (SPARKLE is 0.2): at 0.2 they read as grain over the smooth bulge
 frame:
   pa_deg: 89.25       # Bendo et al. 2006 (arXiv:astro-ph/0603160, table 3): 89.25 +/- 0.06 degrees for the dust ring
   incl_deg: 84        # Emsellem et al. 1996 as Gadotti 2012 cites it; Sutter et al. 2022 fit the CO ring at 84.3 +/- 0.2
-  near_side: null     # NOT FOUND in any source read: the tilt's sign is assumed (the dust lane is drawn across the bulge's middle either way)
+  near_side: S        # 0078 r14-neb-b: READ FROM THE PHOTOGRAPHS, not a paper: the dust lane crosses the bulge south of its centre, so the south side of the ring is the near one
   approaching: null
   winding: 1
   bulge: always       # the bulge is round from every side: drawn by its billboard edge on too, its points only sparkle (0077 W3-f)
   units_ly: 100
   source: "position angle: Bendo et al. 2006; inclination: Emsellem et al. 1996 via Gadotti 2012, and Sutter et al. 2022"
 layers:
-  - {kind: bulge, what: "the huge bulge of old stars", sersic_n: 3.9, re_kpc: 3.15, q: 0.85, light: 0.72, colour: "#f2ece2",
+  - {kind: bulge, what: "the huge bulge of old stars", sersic_n: 3.9, re_kpc: 3.15, q: 0.85, light: 0.66, colour: "#f2ece2",
      source: "Gadotti 2012 (arXiv:1101.2900, table 1), the bulge-and-disc fit: n = 3.9 +/- 0.4, Re = 71 arcsec (3.15 kpc here); with an outer halo added the bulge is n 1.9, Re 10 arcsec and the halo Re 130 arcsec; S4G gives n 4.66, Re 180 arcsec: the spheroid's profile is uncertain; q assumed"}
-  - {kind: disc, what: "the stellar disc", scale_kpc: 2.7, height_kpc: 0.8, r_max_kpc: 12, light: 0.2, arm_contrast: 0, colour: "#e6e0d8", colour_outer: "#d8d6d4",
+  - {kind: disc, what: "the stellar disc", scale_kpc: 2.7, height_kpc: 0.8, r_max_kpc: 12, light: 0.22, arm_contrast: 0, colour: "#e6e0d8", colour_outer: "#d8d6d4",
      source: "Gadotti 2012 (table 1): the disc's scale length 61 arcsec (2.7 kpc here) and height 18 arcsec (0.8 kpc); cut at 12 kpc"}
-  - {kind: ring, what: "the ring of stars and gas under the dust", radius_kpc: 6.41, width_kpc: 0.7, height_kpc: 0.12, light: 0.06, colour: "#efe4dc",
+  - {kind: ring, what: "the ring of stars and gas under the dust", radius_kpc: 6.41, width_kpc: 0.7, height_kpc: 0.12, light: 0.12, colour: "#efe4dc",
      source: "at the dust ring's radius (Bendo et al. 2006); its light share and width illustrative"}
   - {kind: dust-ring, what: "the dust ring", radius_kpc: [6.41], width_kpc: 1.01, height_kpc: 0.12, weight: 0.85,
      source: "Bendo et al. 2006 (arXiv:astro-ph/0603160, table 3): radius 144.7 +/- 0.5 arcsec (6.41 kpc here), Gaussian width 22.9 +/- 1.1 arcsec (1.01 kpc); Vlahakis et al. 2008 find 162 and 170 arcsec at 870 microns and 1.2 mm"}
-  - {kind: dust-disc, what: "the dust disc inside the ring", scale_kpc: 2.13, height_kpc: 0.08, weight: 0.15,
+  - {kind: dust-disc, what: "the dust disc inside the ring", scale_kpc: 2.13, height_kpc: 0.08, weight: 0.08,
      source: "Bendo et al. 2006: an inner dust disc of scale length 48 +/- 3 arcsec (2.13 kpc here)"}
 colours:
   mode: true
@@ -45,7 +47,7 @@ sources:
   - "Vlahakis et al. 2008 (arXiv:0805.4791): the cold dust ring"
 review:
   data_vs_model: "A parametric model: the orientation, the bulge's and disc's profiles and the dust ring are published; the ring of stars' light, the bulge's flattening, the light shares and the near side are ours, labelled."
-  geometry: "pa 89.25 / incl 84 (nearly edge on); which side is near is not published in any source read and is assumed."
+  geometry: "pa 89.25 / incl 84 (nearly edge on); which side is near is not published in any source read: the south, as the photographs show the lane south of the bulge's centre."
   colours: "Display values matched to the photograph's mean colours, halved toward neutral (colours.note); nothing enhanced."
   distance: "The record's: 29.8 Mly (28.7 to 30.9), the Messier table's."
   credits: "CREDITS.md section 3l, galaxies from their structure (0077 W3-f)."

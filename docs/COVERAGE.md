@@ -16,7 +16,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rings | 1 | 1 |
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
-| heroes | 19 | 19 |
+| heroes | 33 | 33 |
 | exotics | 23 | 23 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
@@ -24,7 +24,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 44 | 44 |
-| real_models | 165 | 165 |
+| real_models | 225 | 225 |
 | model_kinds | 52 | 52 |
 | small_bodies | 20 | 20 |
 | probes | 37 | 37 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **937** | **111 124** |
+| **all** | **1011** | **111 198** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -49,10 +49,10 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
 | [ASTEROID](#asteroid) | 20 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
 | [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
-| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 155 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
-| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 58 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
+| [ARTIFICIAL_SATELLITE](#artificial_satellite) | 205 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
+| [LAUNCH_AND_ROCKET](#launch_and_rocket) | 64 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
-| [LANDING_SITE](#landing_site) | 60 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
+| [LANDING_SITE](#landing_site) | 64 | `models.js`, `realmodels.js`, `shadow.js` | measured | - |
 | [EXOPLANET](#exoplanet) | 146 | `systems.js`, `systemextras.js`, `exoface.js`, `exostage.js` | modelled | - |
 | [STAR](#star) | 46 | `stars3d.js`, `starfield.js`, `stardisc.js` | measured | - |
 | [BINARY_AND_MULTIPLE](#binary_and_multiple) | 2 | `systems.js` | modelled | - |
@@ -60,14 +60,14 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [BLACK_HOLE](#black_hole) | 8 | `portraits.js`, `glyphs.js` | illustrative | - |
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
-| [EMISSION_NEBULA](#emission_nebula) | 36 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
-| [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m57 |
-| [DARK_NEBULA](#dark_nebula) | 5 | `nebulae.js`, `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
-| [REFLECTION_NEBULA](#reflection_nebula) | 5 | `dsoglow.js`, `nebulae.js`, `dustsheet.js` | illustrative | iris, m78 |
+| [EMISSION_NEBULA](#emission_nebula) | 44 | `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
+| [PLANETARY_NEBULA](#planetary_nebula) | 23 | `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m27, m57, southern-ring |
+| [DARK_NEBULA](#dark_nebula) | 5 | `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
+| [REFLECTION_NEBULA](#reflection_nebula) | 6 | `dsoglow.js`, `dustsheet.js`, `reflection.js` | illustrative | iris, m45, m78 |
 | [SUPERNOVA_REMNANT](#supernova_remnant) | 6 | `nebulae.js`, `dsoglow.js`, `remnant.js` | measured | crab, veil |
-| [GALAXY_SPIRAL](#galaxy_spiral) | 54 | `galaxy.js`, `spiral.js`, `dsoglow.js`, `nebulae.js` | illustrative | m101, m104, m31, m33, m51, m81 |
-| [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js`, `nebulae.js` | illustrative | lmc, smc |
-| [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 41 | `dsoglow.js`, `nebulae.js` | illustrative | - |
+| [GALAXY_SPIRAL](#galaxy_spiral) | 56 | `galaxy.js`, `spiral.js`, `dsoglow.js` | illustrative | m101, m104, m31, m33, m51, m81, m83, ngc1300 |
+| [GALAXY_IRREGULAR](#galaxy_irregular) | 19 | `lmc.js`, `smc.js`, `magellanic.js`, `dsoglow.js` | illustrative | lmc, smc |
+| [GALAXY_ELLIPTICAL](#galaxy_elliptical) | 42 | `dsoglow.js`, `spiral.js` | illustrative | cena |
 | [GALAXY_INTERACTION](#galaxy_interaction) | 2 | `spiral.js`, `dsoglow.js` | illustrative | antennae |
 | [AGN_QUASAR](#agn_quasar) | 3 | `glyphs.js`, `stage.js`, `galclusters.js` | illustrative | - |
 | [GALAXY_GROUP](#galaxy_group) | 1 | `localvolume.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
+Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
 
 ## The classes
 
@@ -287,8 +287,8 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: orbits and positions. Models: NASA's own meshes are the craft; built-from-dimensions shapes are simplified and say so; a procedural stand-in says it is the kind of thing, not this one.
 - **Rights:** CelesTrak data with its usage policy; NASA models free and without copyright; built shapes MIT (this project).
 - **What is missing is tracked in:** public #267 (the art pass)
-- **Records (155):**
-  - real_models (106): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`
+- **Records (205):**
+  - real_models (156): `poes`, `sentinel6`, `icesat2`, `jason`, `oco2`, `cloudsat`, `calipso`, `tselina2`, `seastar`, `cygnss`, `icon`, `hinode`, `gpm`, `fermi`, `tdrs`, `soho`, `iss`, `landsat`, `bus-ssl1300`, `dscovr`, `mms`, `sdo`, `suomi`, `tess`, `hubble`, `chandra`, `swift`, `goes`, `terra`, `aqua`, `aura`, `grace`, `jwst`, `landsat8`, `spitzer`, `kepler`, `roman`, `radarsat1`, `cygnus`, `nustar`, `xrism`, `noaa21`, `seasat`, `hitomi`, `lageos`, `ajisai`, `soyuz-ms`, `progress-ms`, `dragon-crew`, `dragon-cargo`, `shenzhou`, `tianzhou`, `starlette`, `lares`, `lares2`, `etalon`, `westpac`, `swot`, `nisar`, `ixpe`, `pace`, `starlink-v1`, `umbra`, `iceye`, `gps-iir`, `gps-iif`, `gps-iii`, `galileo-foc`, `michibiki`, `irnss`, `saocom`, `strix`, `terrasar-x`, `xmm-newton`, `metop`, `envisat`, `ers-1`, `sentinel-1`, `sentinel-2`, `sentinel-3`, `sentinel-5p`, `cryosat-2`, `smos`, `alos-2`, `glonass-m`, `glonass-k`, `fengyun-3`, `himawari`, `gcom-w`, `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`, `smap`, `jason-3`, `sorce`, `themis`, `tiangong`, `wentian`, `mengtian`, `shenzhou-orbital`, `gaia`, `earthcare`, `biomass`, `swarm`, `metop-sg-a`, `iris`, `timed`, `sert-2`, `isis-1`, `tracers`, `thuraya`, `inmarsat-4`, `viasat-3`, `o3b`, `globalstar-2`, `o3b-mpower`, `wgs`, `aehf`, `muos`, `sbirs-geo`, `ao-7`, `swas`, `meteosat-msg`, `fengyun-2`, `mtg-i`, `mtg-s`, `insat-3d`, `gk2a`, `gk2b`, `meteor-m2`, `midori-2`, `resurs-dk1`, `worldview-3`, `blacksky-gen2`, `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`, `cbers-4`, `cbers-4a`, `amazonia-1`, `kompsat-3`, `kompsat-5`, `cartosat-2`, `resourcesat-2`, `eos-06`, `kanopus-v`, `resurs-p`
   - model_kinds (36): `satellite-iridium`, `satellite-spacemobile`, `satellite-solarsail`, `satellite-sphere`, `satellite-navigation`, `satellite-cubesat`, `satellite-cubesat-6u`, `satellite-cubesat-1u`, `satellite-cubesat-2u`, `satellite-navigation-gps-iif`, `satellite-navigation-gps-iii`, `satellite-navigation-glonass-m`, `satellite-navigation-glonass-k`, `satellite-navigation-beidou-meo`, `satellite-oneweb`, `satellite-starlink-v1`, `satellite-starlink-v2`, `satellite-radar`, `satellite-radar-mesh`, `satellite-generic`, `satellite-comms`, `station-soyuz`, `station-progress`, `station-cygnus`, `station-tiangong`, `station-tiangong-module`, `station-shenzhou`, `station-tianzhou`, `station-dragon`, `station-dragon-cargo`, `station-generic`, `debris-shard`, `telescope-gaia`, `telescope-generic`, `telescope-jwst`, `satellite-space-telescope`
   - reentries (3): `reentry-tiangong-1`, `reentry-cz-5b-y2`, `reentry-skylab`
   - layers (10): `stations`, `notable`, `starlink-trains`, `just-launched`, `active`, `geo-ring`, `debris-notable`, `debris-field`, `visual`, `reentries`
@@ -305,9 +305,9 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the pad, the time, the vehicle's dimensions. Illustrative: the ascent arc (the real track is not published; the launches layer says so) and the procedural rocket's details.
 - **Rights:** LL2 free to 15 requests an hour, no published licence; NASA models free and without copyright; facts cited.
 - **What is missing is tracked in:** #867 (a real launch replayed on its event clock)
-- **Records (58):**
+- **Records (64):**
   - sites (2): `saturn-v-lc-39a`, `shuttle-lc-39b`
-  - real_models (2): `saturn-v`, `shuttle-stack`
+  - real_models (8): `saturn-v`, `shuttle-stack`, `delta2-stage`, `atlas5-centaur`, `centaur-d`, `falcon9-stage2`, `h2a-stage2`, `kosmos3m-stage2`
   - model_kinds (3): `rocket-upper-stage`, `rocket-spent-stage`, `pad-generic`
   - rockets (49): `falcon-9`, `falcon-heavy`, `ariane-62`, `ariane-64`, `ariane-6`, `electron`, `neutron`, `spectrum`, `starship`, `soyuz-2`, `vulcan`, `vulcan-vc2s`, `vulcan-vc4s`, `vulcan-vc4l`, `vulcan-vc6l`, `vega-c`, `vega`, `atlas-v`, `h3`, `h3-24`, `sls`, `new-glenn`, `firefly-alpha`, `terran-r`, `pslv`, `pslv-ca`, `gslv-mk2`, `lvm3`, `long-march-2d`, `long-march-2f`, `long-march-5`, `long-march-5b`, `long-march-8a`, `long-march-10`, `long-march-12a`, `nuri`, `themis`, `hanbit-nano`, `angara-12`, `minotaur-iv`, `delta-iv-heavy`, `proton-m`, `angara-a5`, `zhuque-2e`, `gravity-1`, `kinetica-1`, `kuaizhou-1a`, `minotaur-i`, `small-commercial-orbital`
   - layers (2): `launches`, `ground-sites`
@@ -341,9 +341,9 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the coordinates, each with its uncertainty in metres where stated. The lander or rover is a procedural stand-in ('the kind of thing, not this exact one'), except NASA's lunar module.
 - **Rights:** NASA, LROC and PDS works public domain; papers cited.
 - **What is missing is tracked in:** #868 (terrain height, the Apollo 15 and 17 traverses, W2-a)
-- **Records (60):**
+- **Records (64):**
   - sites (34): `apollo-11`, `apollo-14`, `apollo-16`, `apollo-17`, `change-4`, `beresheet`, `surveyor-1`, `surveyor-3`, `apollo-12`, `luna-16`, `lunokhod-1`, `apollo-15`, `lunokhod-2`, `change-3`, `yutu`, `change-5`, `chandrayaan-3`, `slim`, `im-1`, `change-6`, `blue-ghost-1`, `jezero`, `ingenuity`, `gale`, `elysium`, `utopia`, `viking-1`, `viking-2`, `mars-pathfinder`, `spirit`, `opportunity`, `phoenix`, `mars-3`, `huygens`
-  - real_models (23): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`, `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2`
+  - real_models (27): `dsn70`, `lunar-module`, `perseverance`, `pad`, `dsn34`, `mer`, `insight`, `viking-lander`, `ingenuity`, `curiosity`, `vikram`, `odysseus`, `blue-ghost`, `surveyor`, `surveyor-3`, `slim`, `zhurong`, `change-3`, `change-4`, `yutu`, `change-5`, `lunokhod-1`, `lunokhod-2`, `luna-16`, `mars-3`, `phoenix`, `pathfinder`
   - model_kinds (3): `site-surveyor`, `rover-generic`, `lander-generic`
 
 ### EXOPLANET
@@ -459,45 +459,45 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 
 **Emission nebulae (H II regions)**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/gasmat.js`, `site/js/scene/deep/orion.js`, `site/js/scene/deep/carina.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/gasmat.js`, `site/js/scene/deep/orion.js`, `site/js/scene/deep/carina.js`
 - **Default honesty:** measured
-- **On a weak device (T0, or after the frame latch):** The photograph, placed and sized on the sky; the gas is not marched on tier 0 or after the latch.
+- **On a weak device (T0, or after the frame latch):** The soft glow of its size where it has no hero (no photograph since 1.4.0); the gas is not marched on tier 0 or after the latch.
 - **Hero overrides:** `orion` (registry/deepsky-heroes/orion.yaml), `carina` (registry/deepsky-heroes/carina.yaml)
 - **Source:** Photographs from ESO, ESA/Hubble, ESA/Webb and NOIRLab, each plate-solved against its archive's coordinates; the Orion hero from Wen & O'Dell 1995, O'Dell 2001 and O'Dell et al. 2009.
 - **Dates and filters:** Each photograph's release date and filters in registry/nebulae.yaml (M42: VST OmegaCAM, g r i with H-alpha, 2017).
 - **Measured, modelled or reconstructed:** Measured: the photographs (colours declared per picture). Reconstructed: the Orion blister's depth, labelled. Illustrative: the glow of a nebula with no photograph.
 - **Rights:** ESO, ESA/Hubble, ESA/Webb and NOIRLab CC BY 4.0, credited per picture.
 - **What is missing is tracked in:** internal #782 (Orion, W1-a; Carina, 0077 W2-e)
-- **Records (36):**
+- **Records (44):**
   - dso (23): `m8`, `m16`, `m17`, `m20`, `m42`, `m43`, `carina-nebula`, `rosette-nebula`, `north-america-nebula`, `tarantula-nebula`, `bubble-nebula`, `flame-nebula`, `thors-helmet`, `christmas-tree-cluster`, `heart-nebula`, `soul-nebula`, `cocoon-nebula`, `cats-paw-nebula`, `war-and-peace-nebula`, `wizard-nebula`, `pacman-nebula`, `crescent-nebula`, `california-nebula`
   - photographs (11): `m42`, `california-nebula`, `rosette-nebula`, `m8`, `m20`, `m16`, `m17`, `cats-paw-nebula`, `carina-nebula`, `north-america-nebula`, `tarantula-nebula`
-  - heroes (2): `carina`, `orion`
+  - heroes (10): `california`, `carina`, `cats-paw`, `m16`, `m17`, `m20`, `m8`, `north-america`, `orion`, `rosette`
 
 ### PLANETARY_NEBULA
 
 **Planetary nebulae**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/helix.js`, `site/js/scene/deep/ring.js`, `site/js/scene/deep/shellneb.js`, `site/js/scene/deep/gasmat.js`
 - **Default honesty:** measured
-- **On a weak device (T0, or after the frame latch):** The photograph; the Helix's rings and the Ring's layers unmarched after the latch.
-- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml)
+- **On a weak device (T0, or after the frame latch):** The glow; the Helix's rings and the Ring's, the Dumbbell's and the Southern Ring's layers unmarched after the latch.
+- **Hero overrides:** `helix` (registry/deepsky-heroes/helix.yaml), `m57` (registry/deepsky-heroes/m57.yaml), `m27` (registry/deepsky-heroes/m27.yaml), `southern-ring` (registry/deepsky-heroes/southern-ring.yaml)
 - **Source:** Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009.
 - **Dates and filters:** Photographs as registry/nebulae.yaml dates them; the Helix's light from eso0907a.
 - **Measured, modelled or reconstructed:** Measured: the photographs, the rings' sizes and tilts. Reconstructed: which ring each point's light belongs to, the slabs' thickness. Illustrative: the knots' places (seeded).
 - **Rights:** ESO, ESA/Hubble, ESA/Webb CC BY 4.0; papers cited.
 - **What is missing is tracked in:** #872 (M57 as a shell, W3-b)
-- **Records (21):**
+- **Records (23):**
   - dso (15): `m27`, `m57`, `m76`, `m97`, `helix-nebula`, `cats-eye-nebula`, `eskimo-nebula`, `saturn-nebula`, `butterfly-nebula`, `ghost-of-jupiter`, `blue-snowball`, `skull-nebula`, `blinking-planetary`, `southern-ring-nebula`, `ngc-7027`
   - photographs (4): `helix-nebula`, `m27`, `m57`, `southern-ring-nebula`
-  - heroes (2): `helix`, `m57`
+  - heroes (4): `helix`, `m27`, `m57`, `southern-ring`
 
 ### DARK_NEBULA
 
 **Dark nebulae**
 
-- **Drawn by:** `site/js/scene/nebulae.js`, `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`
 - **Default honesty:** measured
-- **On a weak device (T0, or after the frame latch):** The Horsehead's photograph; the others as a holder with no glow.
+- **On a weak device (T0, or after the frame latch):** A holder with no glow, where the sheet is not drawn (tier 0).
 - **Hero overrides:** `horsehead` (registry/deepsky-heroes/horsehead.yaml), `coalsack` (registry/deepsky-heroes/coalsack.yaml)
 - **Source:** The Horsehead's photograph; OpenNGC for the dark clouds' places.
 - **Dates and filters:** As the photograph's row.
@@ -513,19 +513,19 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 
 **Reflection nebulae**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`, `site/js/scene/deep/dustsheet.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/dustsheet.js`, `site/js/scene/deep/reflection.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The reflection glow; the Pleiades' photograph.
-- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml)
+- **On a weak device (T0, or after the frame latch):** The reflection glow.
+- **Hero overrides:** `m78` (registry/deepsky-heroes/m78.yaml), `iris` (registry/deepsky-heroes/iris.yaml), `m45` (registry/deepsky-heroes/m45.yaml)
 - **Source:** OpenNGC; the photograph of M45.
 - **Dates and filters:** As the photograph's row.
 - **Measured, modelled or reconstructed:** Measured: places and the photograph. Illustrative: the glow.
 - **Rights:** OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0.
 - **What is missing is tracked in:** internal #784 (pale-blue sheets lit by their star, W3-c)
-- **Records (5):**
+- **Records (6):**
   - dso (2): `m78`, `iris-nebula`
   - photographs (1): `m45`
-  - heroes (2): `iris`, `m78`
+  - heroes (3): `iris`, `m45`, `m78`
 
 ### SUPERNOVA_REMNANT
 
@@ -549,19 +549,19 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 
 **Spiral galaxies, the Milky Way among them**
 
-- **Drawn by:** `site/js/scene/galaxy.js`, `site/js/scene/deep/spiral.js`, `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`
+- **Drawn by:** `site/js/scene/galaxy.js`, `site/js/scene/deep/spiral.js`, `site/js/scene/dsoglow.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The glow ellipse with its holder; M31 and M33 as photographs until near; the Milky Way's points thinned on tier 0.
-- **Hero overrides:** `m31` (registry/deepsky-heroes/m31.yaml), `m33` (registry/deepsky-heroes/m33.yaml), `m51` (registry/deepsky-heroes/m51.yaml), `m81` (registry/deepsky-heroes/m81.yaml), `m101` (registry/deepsky-heroes/m101.yaml), `m104` (registry/deepsky-heroes/m104.yaml)
+- **On a weak device (T0, or after the frame latch):** The glow ellipse with its holder; M31 and M33 as their far copies until near; the Milky Way's points thinned on tier 0.
+- **Hero overrides:** `m31` (registry/deepsky-heroes/m31.yaml), `m33` (registry/deepsky-heroes/m33.yaml), `m51` (registry/deepsky-heroes/m51.yaml), `m81` (registry/deepsky-heroes/m81.yaml), `m101` (registry/deepsky-heroes/m101.yaml), `m104` (registry/deepsky-heroes/m104.yaml), `m83` (registry/deepsky-heroes/m83.yaml), `ngc1300` (registry/deepsky-heroes/ngc1300.yaml)
 - **Source:** The Milky Way from Reid et al. 2019 (arms) with the bar and disc from Wikipedia; M31 from Courteau et al. 2011, Gordon et al. 2006, Block et al. 2006, Draine et al. 2014; M33 after Zaritsky et al. 1989 and Regan & Vogel 1994; photographs of M51, M81, M83, M101, M104, NGC 1300.
 - **Dates and filters:** Papers at their own epochs; photographs as their rows.
 - **Measured, modelled or reconstructed:** Measured: the photographs, orientations, profiles. Modelled: M31's and M33's arms, knots and thickness (parametric, labelled). Illustrative: the Milky Way's look and every other spiral's glow.
 - **Rights:** Papers cited; photographs CC BY 4.0; OpenNGC CC BY-SA 4.0.
 - **What is missing is tracked in:** #873 (0077 W3-f: M51, M81, M101 and M104 from their own numbers; NGC 1300, NGC 253, NGC 891, M83 and NGC 2403 still glow and holder)
-- **Records (54):**
+- **Records (56):**
   - dso (38): `m31`, `m33`, `m51`, `m58`, `m61`, `m63`, `m64`, `m65`, `m66`, `m74`, `m77`, `m81`, `m82`, `m83`, `m88`, `m90`, `m91`, `m94`, `m95`, `m96`, `m98`, `m99`, `m100`, `m101`, `m104`, `m106`, `m108`, `m109`, `ngc-253`, `ngc-891`, `ngc-7331`, `needle-galaxy`, `whale-galaxy`, `ngc-2403`, `fireworks-galaxy`, `ngc-300`, `ngc-1300`, `hamburger-galaxy`
   - photographs (8): `m31`, `m33`, `m83`, `m104`, `m51`, `m101`, `m81`, `ngc-1300`
-  - heroes (6): `m101`, `m104`, `m31`, `m33`, `m51`, `m81`
+  - heroes (8): `m101`, `m104`, `m31`, `m33`, `m51`, `m81`, `m83`, `ngc1300`
   - model_kinds (1): `galaxy-model`
   - layers (1): `galaxy`
 
@@ -569,9 +569,9 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 
 **Irregular galaxies**
 
-- **Drawn by:** `site/js/scene/deep/lmc.js`, `site/js/scene/deep/smc.js`, `site/js/scene/deep/magellanic.js`, `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`
+- **Drawn by:** `site/js/scene/deep/lmc.js`, `site/js/scene/deep/smc.js`, `site/js/scene/deep/magellanic.js`, `site/js/scene/dsoglow.js`
 - **Default honesty:** illustrative
-- **On a weak device (T0, or after the frame latch):** The LMC's photograph and the SMC's; the glow elsewhere.
+- **On a weak device (T0, or after the frame latch):** The glow and the holder; the heroes' light is their photographs' (no flat photograph since 1.4.0).
 - **Hero overrides:** `lmc` (registry/deepsky-heroes/lmc.yaml), `smc` (registry/deepsky-heroes/smc.yaml)
 - **Source:** The LMC from Gaia DR3 star counts (Gaia Collaboration, Vallenari et al. 2023) with the geometry of van der Marel & Cioni 2001; the SMC's photograph; OpenNGC.
 - **Dates and filters:** Gaia DR3 (2022); the photographs as their rows.
@@ -587,17 +587,19 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 
 **Elliptical and lenticular galaxies**
 
-- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/nebulae.js`
+- **Drawn by:** `site/js/scene/dsoglow.js`, `site/js/scene/deep/spiral.js`
 - **Default honesty:** illustrative
 - **On a weak device (T0, or after the frame latch):** The glow ellipse with its holder.
+- **Hero overrides:** `cena` (registry/deepsky-heroes/cena.yaml)
 - **Source:** OpenNGC's sizes, axes and position angles; the photograph of Centaurus A.
 - **Dates and filters:** OpenNGC master of 2026-09-27.
 - **Measured, modelled or reconstructed:** Measured: place, size, ellipticity, the photograph. Illustrative: the glow.
 - **Rights:** OpenNGC CC BY-SA 4.0; the photograph CC BY 4.0.
 - **What is missing is tracked in:** #874 (M32 and M110 as Sérsic points, W4-a)
-- **Records (41):**
+- **Records (42):**
   - dso (40): `m32`, `m49`, `m59`, `m60`, `m84`, `m85`, `m86`, `m87`, `m89`, `m102`, `m105`, `m110`, `fornax-dwarf`, `sculptor-dwarf`, `carina-dwarf`, `draco-dwarf`, `ursa-minor-dwarf`, `sextans-dwarf`, `leo-i`, `leo-ii`, `sagittarius-dwarf`, `ngc-147`, `ngc-185`, `tucana-dwarf`, `cetus-dwarf`, `antlia-dwarf`, `andromeda-ii`, `andromeda-i`, `andromeda-iii`, `ursa-major-ii`, `segue-1`, `leo-t`, `bootes-i`, `canes-venatici-i`, `ursa-major-i`, `reticulum-ii`, `leo-iv`, `willman-1`, `pisces-ii`, `centaurus-a`
   - photographs (1): `centaurus-a`
+  - heroes (1): `cena`
 
 ### GALAXY_INTERACTION
 

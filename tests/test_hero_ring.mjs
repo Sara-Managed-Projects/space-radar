@@ -231,7 +231,7 @@ const lightOf = (x, y) => {
   check(/vec4 layerSpan\( vec3 ro, vec3 rd, vec3 a, float h, float rIn, float rOut, float t0, float t1 \)/.test(f) && /vec2 quadSpan\( mat3 S/.test(f) && /texture2D\( uCols, xy \* uColScale \+ 0\.5 \)/.test(f) && /float slabIntegral\(/.test(f), 'the fragment has the same spans, integrals and tabulated columns');
   check(/gl_FragColor = vec4\( col \* uGain \* uShare, 1\.0 \)/.test(f), 'additive with alpha 1: the light lands (three\'s AdditiveBlending is SRC_ALPHA, ONE)');
   check(/col = capLight\( col \);/.test(f) && /if \( y > uPeak \) c \*= uPeak \/ y;/.test(f), 'the fragment holds the core to the photograph\'s brightest');
-  check((f.match(/for \( int i = 0; i < MAX_N; i\+\+ \)/g) || []).length === 2 && !/k == 0 \?/.test(f), 'one loop a layer (the disc, the lobes), each computing only its own integral');
+  check((f.match(/for \( int i = 0; i < MAX_N; i\+\+ \)/g) || []).length === 3 && !/k == 0 \?/.test(f) && /if \( uW\.z > 0\.0 \)/.test(f), 'one loop a layer (the disc, the lobes, and the halo only while it carries light: 0078 r14-neb-b), each computing only its own integral');
   check(/int nd = max\( 1, int\( float\( uN \) \* 0\.75 \+ 0\.5 \) \)/.test(f) && /int nl = max\( 1, int\( float\( uN \) \* 0\.4 \+ 0\.5 \) \)/.test(f), 'the disc and the lobes take ring.js layerSamples');
   check(/vec2 bb = quadSpan\( uSb, ro, rd, 0\.0, 1e9 \);\s*if \( bb\.y <= bb\.x \) discard;/.test(f), 'an early exit for every ray that misses the bounding ellipsoid');
   check(/uJit > 0\.5 \? pixelHash\( gl_FragCoord\.xy \) : 0\.5/.test(f) && /uInside \* smoothstep\( 0\.0, uNear, t \)/.test(f), 'T0 steps at the middle; from inside the gas near the camera fades');
@@ -276,7 +276,9 @@ const lightOf = (x, y) => {
   }
   check(off < 1e-6, `the white dwarf stays at the centre of the frame across a 90° arc (largest offset ${off.toExponential(1)})`);
   hero.frame({ camera, rPx: 250, steps: 0, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 0, gain: 1 });
-  check(hero.stats().share === 0 && hero.stats().star === 0, `T0: the model draws nothing, not even for the frame before the coordinator drops it (${JSON.stringify(hero.stats())})`);
+  // 0078 r14-neb-b: the photographs are not drawn on the sky any more, so T0 draws the model, two jittered steps a layer
+  // (one at its middle left dark holes on a phone: look run 40443020998)
+  check(hero.stats().share === 1 && hero.stats().star === 1 && hero.stats().samples === 2, `T0: the model draws, two jittered steps a layer (${JSON.stringify(hero.stats())})`);
   check(uGas.uShare.value === 0 && hero.ready(), 'no gas is drawn until its light (the photograph) has landed; with nothing to fetch here it is ready');
   hero.frame({ camera, rPx: 400, steps: 32, look: 'film', frozen: true, dtMs: 16, photo: 0, tier: 2, gain: 1 });
   check(hero.stats().samples === 16 && hero.stats().knots === 1000, 'T2 at level 3: 16 samples for the disc (32 steps), 1 000 knots');
@@ -334,8 +336,15 @@ const lightOf = (x, y) => {
   stage.setWorld('stellar');
   const rec2 = parseDso(JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'))).find((r) => r.id === 'dso-m57');
   const h2 = R.createHero(THREE, { profile: P2, record: rec2, gas: G, quality: () => ({ tier: 0 }) });
-  check(P2.shipped === false, 'createHero puts the floor on its profile: on T0 the profile reads not shipped');
+  // 0078 r14-neb-b: no floor by default (the photograph is not drawn any more: T0 draws the model); a profile's
+  // `frame.min_tier` still puts one on
+  check(P2.shipped === true, 'createHero puts no floor on a profile without min_tier: on T0 the Ring is drawn');
   h2.dispose();
+  const P3 = JSON.parse(JSON.stringify(HERO));
+  P3.frame = { ...P3.frame, min_tier: 1 };
+  const h3 = R.createHero(THREE, { profile: P3, record: rec2, gas: G, quality: () => ({ tier: 0 }) });
+  check(P3.shipped === false, 'with frame.min_tier 1, createHero puts the floor on its profile: on T0 the profile reads not shipped');
+  h3.dispose();
 }
 
 // --- 5b. the card: a shipped hero names its source after "What is drawn", and its caveats -------------------

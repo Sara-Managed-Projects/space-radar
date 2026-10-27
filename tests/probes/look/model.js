@@ -87,7 +87,10 @@ if (!record) {
 }
 if (wearAs) {
   const key = wearAs.replace(/-/g, ' ');
-  const worn = RM.REAL_MODELS.named[key];
+  // 0078 r14-m1: begin -- a route key with a slash or a hyphen of its own (`atlas 5 centaur r/b`, `breeze-m r/b`) cannot be spelled in a subject (letters, digits, dot, dash, underscore, 80 in all): the first key that STARTS with the subject's letters and digits wears (`sat-26474.as.atlas5`, `sat-22830.as.falcon9`)
+  const alnum = (x) => String(x).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const worn = RM.REAL_MODELS.named[key] || RM.REAL_MODELS.named[Object.keys(RM.REAL_MODELS.named).find((k) => alnum(k).startsWith(alnum(wearAs)))];
+  // 0078 r14-m1: end
   if (!worn) return ({ ...out, fail: 'no named route `' + key + '` to put on ' + record.name });
   const norad = record.meta && (record.meta.noradId ?? record.meta.catalogueNumber);
   RM.REAL_MODELS.norad[norad] = { ...worn };

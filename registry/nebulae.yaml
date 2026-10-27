@@ -1,5 +1,8 @@
 # The photographs of the nebulae and galaxies (spec 0067 task 1): one licensed picture per deep-sky
-# object, and where on the sky it sits. scene/nebulae.js lays each on the sky from these numbers;
+# object, and where on the sky it sits. 0078 r14-neb-b: NONE IS LAID ON THE SKY any more (Ivan,
+# 2026-10-26: "no photos only realistic 3ds"); a row is the photograph the card's "Compare with the
+# photograph" slider shows (scene/nebulae.js, from these numbers), the light the 3D heroes are baked
+# from, and the credit. Before 1.4.0 scene/nebulae.js laid each on the sky from these numbers;
 # scripts/build_nebulae.py fetches and bakes the files; site/js/data/nebulae.js is the mirror the
 # browser reads (scripts/gen_nebulae_js.py).
 #

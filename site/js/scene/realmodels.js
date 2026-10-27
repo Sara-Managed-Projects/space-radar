@@ -138,6 +138,17 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
 // Each answer carries its own `made` and `axes`: the family box has neither.
 const GPS_FILE = { made: 'dimensions', axes: 'app' };
 const W3B = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0077 W3-b
+const R14M4 = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0078 r14-m4
+// 0078 r14-m5: begin
+// One shared entry a file (the routes below are one number each): the commercial Earth imagers, built from dimensions.
+const R14_WV3 = { ...W3B, file: 'worldview-3.glb', name: 'WorldView-3' };
+const R14_BSK = { ...W3B, file: 'blacksky-gen2.glb', name: 'BlackSky Global' };
+const R14_SAT = { ...W3B, file: 'satellogic-newsat.glb', name: 'Satellogic NewSat' };
+const R14_PEL = { ...W3B, file: 'planet-pelican.glb', name: 'Planet Pelican' };
+const R14_HAWK = { ...W3B, file: 'hawkeye360-block1.glb', name: 'HawkEye 360 Pathfinder' };
+const R14_GHG = { ...W3B, file: 'ghgsat-c.glb', name: 'GHGSat-C' };
+const R14_GF1 = { ...W3B, file: 'gaofen-1.glb', name: 'Gaofen-1' };
+// 0078 r14-m5: end
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
@@ -150,6 +161,28 @@ function gpsBlock(record) {
 
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
+// 0078 r14-m2: begin
+// Six communications craft by catalogue number (public #1121 to #1123, #1154 to #1156), written compactly because `realmodels.js` is read at boot and every route is the same six
+// fields: the catalogue name is `cat` + the suffix, as CelesTrak calls the number (the test lists them one by one), and the card says `name` + the suffix.
+const R14M2 = (file, cat, name, rows) => Object.fromEntries(rows.map(([n, s]) => [n, { file, colour: 'satellite', name: name + s, catalogue: cat + s, made: 'dimensions', axes: 'app' }]));
+// 0078 r14-m2: end
+// 0078 r14-m3: begin
+// RELEASE 1.4.0, STAGE M3 (public #1095 to #1100, #1111, #1120): the routes of WGS, AEHF, MUOS, SBIRS GEO, AMSAT-OSCAR 7 and SWAS, BY NUMBER, with
+// the name CelesTrak gives each. The military shapes are drawn ONLY from pictures and numbers the US Air Force, Space Force and Navy and the makers
+// released (the rows `wgs`, `aehf`, `muos`, `sbirs-geo` in registry/models.yaml say so, and what is ours); each is `made: 'dimensions'`, so the card says
+// so, and none is `generic`. `axes: 'app'`: Earth deck or sensor head on +Z, wings along X, cells on +Y. SWAS is NASA's OWN model, so no `made`.
+// NOT BUILT, issues left open: Milstar (#1120) and DMSP Block 5D-3 (#1095), for want of a clear public photograph. Written as data, not as 29 object
+// literals, because this file is in the boot graph and every byte of it is a byte of the first visit.
+const M3_ROUTES = {};
+for (const [file, name, made, pre, rows] of [
+  ['wgs.glb', 'WGS (Wideband Global SATCOM)', 'dimensions', 'WGS ', [[32258, 'F1 (USA 195)'], [34713, 'F2 (USA 204)'], [36108, 'F3 (USA 211)'], [38070, 'F4 (USA 233)'], [39168, 'F5 (USA 243)'], [39222, 'F6 (USA 244)'], [40746, 'F7 (USA 263)'], [41879, 'F8 (USA 272)'], [42075, 'F9 (USA 275)'], [44071, '10 (USA 291)']]],
+  ['aehf.glb', 'AEHF (Advanced Extremely High Frequency)', 'dimensions', 'AEHF-', [[36868, '1 (USA 214)'], [38254, '2 (USA 235)'], [39256, '3 (USA 246)'], [43651, '4 (USA 288)'], [44481, '5 (USA 292)'], [45465, '6 (USA 298)']]],
+  ['muos.glb', 'MUOS (Mobile User Objective System)', 'dimensions', 'MUOS-', [[38093, '1'], [39206, '2'], [40374, '3'], [40887, '4'], [41622, '5']]],
+  ['sbirs-geo.glb', 'SBIRS GEO (Space-Based Infrared System)', 'dimensions', 'SBIRS GEO-', [[37481, '1 (USA 230)'], [39120, '2 (USA 241)'], [41937, '4 (USA 273)'], [43162, '3 (USA 282)'], [48618, '5 (USA 315)'], [53355, '6 (USA 336)']]],
+  ['ao-7.glb', 'AMSAT-OSCAR 7', 'dimensions', 'OSCAR ', [[7530, '7 (AO-7)']]],
+  ['swas.glb', 'SWAS (Submillimeter Wave Astronomy Satellite)', '', '', [[25560, 'SWAS']]],
+]) for (const [n, c] of rows) M3_ROUTES[n] = { file, colour: 'satellite', name, catalogue: pre + c, ...(made && { made }), axes: 'app' };
+// 0078 r14-m3: end
 export const REAL_MODELS = {
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
@@ -164,6 +197,20 @@ export const REAL_MODELS = {
    * assumed not to need one because an id is exact. The id was exact. It was also wrong.
    */
   norad: {
+    // 0078 r14-m2: begin
+    // thuraya (public #1123): 2 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('thuraya.glb', 'THURAYA', 'Thuraya', [[27825, '-2'], [32404, '-3']]),
+    // inmarsat-4 (public #1122): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('inmarsat-4.glb', 'INMARSAT 4-F', 'Inmarsat-4 F', [[28628, '1'], [28899, '2'], [33278, '3']]),
+    // viasat-3 (public #1121): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('viasat-3.glb', 'VIASAT-3 F', 'ViaSat-3 F', [[56370, '1'], [66454, '2'], [68893, '3']]),
+    // o3b (public #1155): 20 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('o3b.glb', 'O3B ', 'O3b ', [[39188, 'FM5'], [39189, 'FM4'], [39190, 'FM2'], [39191, 'PFM'], [40079, 'FM3'], [40080, 'FM7'], [40081, 'FM6'], [40082, 'FM8'], [40348, 'FM10'], [40349, 'FM11'], [40350, 'FM12'], [40351, 'FM9'], [43231, 'FM15'], [43232, 'FM16'], [43233, 'FM14'], [43234, 'FM13'], [44112, 'FM20'], [44113, 'FM19'], [44114, 'FM17'], [44115, 'FM18']]),
+    // globalstar-2 (public #1154): 25 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('globalstar-2.glb', 'GLOBALSTAR ', 'Globalstar ', [[37188, 'M079'], [37189, 'M074'], [37190, 'M076'], [37191, 'M077'], [37192, 'M075'], [37193, 'M073'], [37739, 'M083'], [37740, 'M088'], [37741, 'M091'], [37742, 'M085'], [37743, 'M081'], [37744, 'M089'], [38040, 'M084'], [38041, 'M080'], [38042, 'M082'], [38043, 'M092'], [38044, 'M090'], [38045, 'M086'], [39072, 'M097'], [39073, 'M093'], [39074, 'M094'], [39075, 'M096'], [39076, 'M078'], [39077, 'M095'], [52888, 'M087']]),
+    // o3b-mpower (public #1156): 12 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('o3b-mpower.glb', 'O3B MPOWER F', 'O3b mPOWER F', [[54755, '1'], [54756, '2'], [56367, '4'], [56368, '3'], [58346, '5'], [58347, '6'], [62362, '7'], [62363, '8'], [64866, '9'], [64867, '10'], [100686, '11'], [100688, '13']]),
+    // 0078 r14-m2: end
     25544: { file: 'iss.glb', colour: 'station', name: 'International Space Station', catalogue: 'ISS (ZARYA)' },
     // NAUKA AND POISK ARE PARTS OF THE ISS, catalogued separately because they were launched
     // separately, and their elements track the station they are bolted to. Each used to be drawn as
@@ -176,12 +223,11 @@ export const REAL_MODELS = {
     // into orbit -- the first hydrogen engine fired in space -- so the catalogue calls the stage the
     // payload and its name carries no R/B. It was drawn, and its card described it, as "a generic
     // satellite". It is a spent upper stage and is drawn as one.
-    694: { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
+    694: { file: 'centaur-d.glb', build: 'stage', colour: 'rocket', name: 'a Centaur D upper stage', catalogue: 'ATLAS CENTAUR 2', made: 'dimensions', axes: 'app' }, // 0078 r14-m1: was the generic stage; drawn as the Centaur D file
     // SPACE TELESCOPES WITH NO MODEL OF THEIR OWN, drawn as the generic telescope rather than as a
     // communications satellite with a dish, which is what the satellite default is. The card says
     // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
-    3597: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 2', generic: true },
-    6153: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 3 (COPERNICUS)', generic: true },
+    // 0078 r14-m7: OAO 2 (3597) and OAO 3 (6153) wore the generic space-telescope builder here; they have files of their own below  // 0078 r14-m7
     // HITOMI HAS ITS OWN SHAPE since 2026-10-13 (public #969): hitomi.glb is XRISM's generated body
     // (the same bus: XRISM is Hitomi's recovery mission) with what XRISM does not have built in
     // code from cited metres: the 6.4 m extensible optical bench as a lattice, the HXI plate at its
@@ -234,6 +280,7 @@ export const REAL_MODELS = {
     65053: { file: 'nisar.glb', colour: 'satellite', name: 'NISAR', catalogue: 'NISAR', made: 'dimensions', axes: 'app' },
     49954: { file: 'ixpe.glb', colour: 'telescope', name: 'IXPE', catalogue: 'IXPE', made: 'dimensions', axes: 'app' },
     58928: { file: 'pace.glb', colour: 'satellite', name: 'PACE', catalogue: 'PACE', made: 'dimensions', axes: 'app' },
+    ...M3_ROUTES, // 0078 r14-m3
     // NOAA 21 (JPSS-2), public #994. By NUMBER and only this number: NOAA 20 is a different bus and
     // wears NASA's Suomi model (43013, below); the name route's comment further down says why NOAA 21
     // was left on the generic shape until it had one of its own. noaa21.glb: the body generated from
@@ -344,6 +391,28 @@ export const REAL_MODELS = {
     // FENGYUN 2G and 2H (spinning drums) are other craft and keep what they had.
     40267: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-8', catalogue: 'HIMAWARI-8', made: 'dimensions', axes: 'app' },
     41836: { file: 'himawari.glb', colour: 'satellite', name: 'Himawari-9', catalogue: 'HIMAWARI-9', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m7: begin
+    // BATCH r14-m7 (release 1.4.0; public #1102 to #1109 and #1093): science craft built in code from cited metres (registry/models.yaml rows `gcom-w`,
+    // `gcom-c`, `dampe`, `cses`, `scisat`, `proba-3-csc`, `proba-3-osc`, `proba-v`, `formosat-7`, `oao-2`, `oao-3`), BY NUMBER from the live saved data of 2026-10-12.
+    // `axes: 'app'` on all of them: the Earth face or side on +Z, the wings or plate along X and Y with the cells to +Y, the Sun's side.
+    38337: { file: 'gcom-w.glb', colour: 'satellite', name: 'GCOM-W1 Shizuku', catalogue: 'GCOM-W1 (SHIZUKU)', made: 'dimensions', axes: 'app' },
+    43065: { file: 'gcom-c.glb', colour: 'satellite', name: 'GCOM-C Shikisai', catalogue: 'GCOM-C (SHIKISAI)', made: 'dimensions', axes: 'app' },
+    41173: { file: 'dampe.glb', colour: 'satellite', name: 'DAMPE Wukong', catalogue: 'DAMPE', made: 'dimensions', axes: 'app' },
+    43194: { file: 'cses.glb', colour: 'satellite', name: 'Zhangheng 1-01 (CSES-1)', catalogue: 'ZHANGHENG 1-01 (CSES-1)', made: 'dimensions', axes: 'app' },
+    64393: { file: 'cses.glb', colour: 'satellite', name: 'Zhangheng 1-02 (CSES-2)', catalogue: 'ZHANGHENG 1-02 (CSES-2)', made: 'dimensions', axes: 'app' },
+    27858: { file: 'scisat-1.glb', colour: 'satellite', name: 'SCISAT-1', catalogue: 'SCISAT 1', made: 'dimensions', axes: 'app' },
+    62256: { file: 'proba-3-csc.glb', colour: 'satellite', name: 'PROBA-3 coronagraph spacecraft', catalogue: 'PROBA-3 CSC', made: 'dimensions', axes: 'app' },
+    62258: { file: 'proba-3-osc.glb', colour: 'satellite', name: 'PROBA-3 occulter spacecraft', catalogue: 'PROBA-3 OSC', made: 'dimensions', axes: 'app' },
+    39159: { file: 'proba-v.glb', colour: 'satellite', name: 'PROBA-V', catalogue: 'PROBA-V', made: 'dimensions', axes: 'app' },
+    44343: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-3)', catalogue: 'FORMOSAT 7-3', made: 'dimensions', axes: 'app' },
+    44349: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-1)', catalogue: 'FORMOSAT 7-1', made: 'dimensions', axes: 'app' },
+    44350: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-4)', catalogue: 'FORMOSAT 7-4', made: 'dimensions', axes: 'app' },
+    44351: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-2)', catalogue: 'FORMOSAT 7-2', made: 'dimensions', axes: 'app' },
+    44353: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-6)', catalogue: 'FORMOSAT 7-6', made: 'dimensions', axes: 'app' },
+    44358: { file: 'formosat-7.glb', colour: 'satellite', name: 'FORMOSAT-7 / COSMIC-2 (7-5)', catalogue: 'FORMOSAT 7-5', made: 'dimensions', axes: 'app' },
+    3597: { file: 'oao-2.glb', colour: 'telescope', name: 'OAO-2', catalogue: 'OAO 2', made: 'dimensions', axes: 'app' },
+    6153: { file: 'oao-3.glb', colour: 'telescope', name: 'OAO-3 Copernicus', catalogue: 'OAO 3 (COPERNICUS)', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m7: end
     32958: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3A', catalogue: 'FENGYUN 3A', made: 'dimensions', axes: 'app' },
     37214: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3B', catalogue: 'FENGYUN 3B', made: 'dimensions', axes: 'app' },
     39260: { file: 'fengyun-3.glb', colour: 'satellite', name: 'Fengyun-3C', catalogue: 'FENGYUN 3C', made: 'dimensions', axes: 'app' },
@@ -819,6 +888,100 @@ export const REAL_MODELS = {
     39453: { ...W3B, file: 'swarm.glb', name: 'Swarm C' },
     65159: { ...W3B, file: 'metop-sg-a.glb', name: 'MetOp-SG A1' },
     // 0077 W3-b: end
+    // 0078 r14-m4: begin
+    // TEN WEATHER AND EARTH-OBSERVATION DESIGNS (release 1.4.0 stage r14-m4; public #1114, #1115, #1116, #1117, #1118, #1119, #1112,
+    // #1113), each BUILT in code from cited metres and looked-at pictures (registry/models.yaml rows `meteosat-msg`, `fengyun-2`,
+    // `mtg-i`, `mtg-s`, `insat-3d`, `gk2a`, `gk2b`, `meteor-m2`, `midori-2`, `resurs-dk1`): no agency was found to publish a model of
+    // any of them under terms that allow a derivative. They wore the class shape of a satellite or the geostationary bus. All to the
+    // app's axes (`axes: 'app'`: +Z the Earth face, the wings along X, their cells toward +Y); the two spinning drums (Meteosat
+    // Second Generation and Fengyun-2, ONE builder) have their spin axis along X and the radiometer's opening toward +Z.
+    // NOT TRUE of any of them: the wings turn to the Sun, and the drums spin (100 rpm); the app draws one attitude.
+    //   meteosat-msg.glb  METEOSAT-9, -10, -11 (MSG-2, -3, -4). Not METEOSAT-8 (MSG-1, out of use).
+    //   fengyun-2.glb     FENGYUN 2G and 2H.            mtg-i.glb  METEOSAT-12 (MTG-I1); MTG-I2 by name, below.   mtg-s.glb  MTG-S1.
+    //   insat-3d.glb      INSAT-3D, -3DR, -3DS.         gk2a.glb  GEO-KOMPSAT-2A.   gk2b.glb  GEO-KOMPSAT-2B (another payload on the bus).
+    //   meteor-m2.glb     METEOR-M 2, M2 2, M2 3, M2 4 (one bus; the instrument fits differ in details not told apart at the app's close-up).
+    //   midori-2.glb      MIDORI II (ADEOS-II).         resurs-dk1.glb  RESURS-DK 1.
+    28912: { ...R14M4, file: 'meteosat-msg.glb', name: 'Meteosat-9' },
+    38552: { ...R14M4, file: 'meteosat-msg.glb', name: 'Meteosat-10' },
+    40732: { ...R14M4, file: 'meteosat-msg.glb', name: 'Meteosat-11' },
+    40367: { ...R14M4, file: 'fengyun-2.glb', name: 'Fengyun-2G' },
+    43491: { ...R14M4, file: 'fengyun-2.glb', name: 'Fengyun-2H' },
+    54743: { ...R14M4, file: 'mtg-i.glb', name: 'Meteosat-12 (MTG-I1)' },
+    64723: { ...R14M4, file: 'mtg-s.glb', name: 'MTG-S1' },
+    39216: { ...R14M4, file: 'insat-3d.glb', name: 'INSAT-3D' },
+    41752: { ...R14M4, file: 'insat-3d.glb', name: 'INSAT-3DR' },
+    58990: { ...R14M4, file: 'insat-3d.glb', name: 'INSAT-3DS' },
+    43823: { ...R14M4, file: 'gk2a.glb', name: 'GEO-KOMPSAT-2A' },
+    45246: { ...R14M4, file: 'gk2b.glb', name: 'GEO-KOMPSAT-2B' },
+    40069: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2' },
+    44387: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2-2' },
+    57166: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2-3' },
+    59051: { ...R14M4, file: 'meteor-m2.glb', name: 'Meteor-M No.2-4' },
+    27597: { ...R14M4, file: 'midori-2.glb', name: 'Midori II (ADEOS-II)' },
+    29228: { ...R14M4, file: 'resurs-dk1.glb', name: 'Resurs-DK 1' },
+    // 0078 r14-m4: end
+    // 0078 r14-m5: begin
+    // EARTH IMAGERS (release 1.4.0 stage r14-m5; public #976, #1148, #1149, #1150, #1151, #1152, #1147), each BUILT in
+    // code from cited metres and looked-at pictures (registry/models.yaml rows `worldview-3`, `blacksky-gen2`,
+    // `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`), by number and only for the numbers that are
+    // that design (`W3B` above: a satellite's colour, made from dimensions, the app's axes: +Z the Earth face).
+    //   WorldView-3 only: WorldView-1 and -2 (same bus, other heights), GeoEye-1 (SA-200HP) and Legion (500 series) are not.
+    //   BlackSky Global-2 to -19 (the first two generations, 55 to 60 kg); not the Gen-3 craft (Global-31 and later).
+    //   Satellogic NewSat: all 18 (one form factor, 0.51 x 0.57 x 0.82 m). Planet Pelican: all 9 (one platform).
+    //   HawkEye 360 Hawk-A, -B, -C (the Pathfinder block); not the later, larger blocks.
+    //   GHGSat-C1 to -C8 (SFL's NEMO bus); not C12 and C13. Gaofen-1 only, not Gaofen-1 02, 03, 04.
+    40115: R14_WV3,
+    43812: R14_BSK,
+    44499: R14_BSK,
+    47971: R14_BSK,
+    49469: R14_BSK,
+    49772: R14_BSK,
+    49773: R14_BSK,
+    49949: R14_BSK,
+    49950: R14_BSK,
+    52196: R14_BSK,
+    55982: R14_BSK,
+    55983: R14_BSK,
+    52184: R14_SAT,
+    55047: R14_SAT,
+    55048: R14_SAT,
+    56201: R14_SAT,
+    56202: R14_SAT,
+    56203: R14_SAT,
+    56944: R14_SAT,
+    56966: R14_SAT,
+    59122: R14_SAT,
+    60493: R14_SAT,
+    60498: R14_SAT,
+    60500: R14_SAT,
+    62640: R14_SAT,
+    66692: R14_SAT,
+    66740: R14_SAT,
+    66743: R14_SAT,
+    68432: R14_SAT,
+    68442: R14_SAT,
+    58296: R14_PEL,
+    62631: R14_PEL,
+    65315: R14_PEL,
+    65316: R14_PEL,
+    66667: R14_PEL,
+    66703: R14_PEL,
+    69018: R14_PEL,
+    69019: R14_PEL,
+    69871: R14_PEL,
+    43765: R14_HAWK,
+    43794: R14_HAWK,
+    43799: R14_HAWK,
+    46278: R14_GHG,
+    47509: R14_GHG,
+    52737: R14_GHG,
+    52746: R14_GHG,
+    52744: R14_GHG,
+    56204: R14_GHG,
+    56209: R14_GHG,
+    56186: R14_GHG,
+    39150: R14_GF1,
+    // 0078 r14-m5: end
     // 0077 W3-a: begin
     // NASA SCIENCE CRAFT (release 1.3.0, stage W3-a; public #1090, #1091, #1092, #1094, #1110). NASA 3D Resources has
     // none of the five (its 1 583 paths read 2026-10-20), so each is built here from cited dimensions and photographs
@@ -835,6 +998,33 @@ export const REAL_MODELS = {
     // ISIS 1 SPUN, and nobody publishes its attitude now: not turned (no `axes`), it keeps the seeded constant angle.
     3669: { file: 'isis-1.glb', colour: 'satellite', name: 'ISIS 1', catalogue: 'ISIS 1', made: 'dimensions' },
     // 0077 W3-a: end
+    // 0078 r14-m6: begin
+    // RELEASE 1.4.0, STAGE M6 (2026-10-27; public #1137 to #1146): ten files for the national Earth-observation craft, each built in code from cited numbers and laid out
+    // after free pictures (INPE's gallery, KARI's KOGL Type 1 photographs, ISRO's GODL-India photographs and renders, VNIIEM's CC0 schematic); share-alike pictures were looked at only.
+    // Rows: registry/models.yaml `cbers-4` ... `resurs-p`. `axes: 'app'`: the Earth face on +Z, the panels along X, the cells to +Y; each row says what is not as the craft flies.
+    // Not mapped: KANOPUS-V-IK (infrared cameras), RESURS-DK 1, CARTOSAT-1 and -3, CBERS 1 to 3 keep the generic shape; OCEANSAT-2 was built and HELD (one CAD view is all there is to draw it from).
+    40336: { file: 'cbers-4.glb', colour: 'satellite', name: 'CBERS-4', catalogue: 'CBERS 4', made: 'dimensions', axes: 'app' },
+    44883: { file: 'cbers-4a.glb', colour: 'satellite', name: 'CBERS-4A', catalogue: 'CBERS 4A', made: 'dimensions', axes: 'app' },
+    47699: { file: 'amazonia-1.glb', colour: 'satellite', name: 'Amazonia-1', catalogue: 'AMAZONIA 1', made: 'dimensions', axes: 'app' },
+    38338: { file: 'kompsat-3.glb', colour: 'satellite', name: 'KOMPSAT-3', catalogue: 'ARIRANG-3 (KOMPSAT-3)', made: 'dimensions', axes: 'app' },
+    40536: { file: 'kompsat-3.glb', colour: 'satellite', name: 'KOMPSAT-3A', catalogue: 'KOMPSAT-3A', made: 'dimensions', axes: 'app' },
+    39227: { file: 'kompsat-5.glb', colour: 'satellite', name: 'KOMPSAT-5', catalogue: 'ARIRANG-5 (KOMPSAT-5)', made: 'dimensions', axes: 'app' },
+    32783: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2A', catalogue: 'CARTOSAT-2A', made: 'dimensions', axes: 'app' },
+    36795: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2B', catalogue: 'CARTOSAT-2B', made: 'dimensions', axes: 'app' },
+    41599: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2C', catalogue: 'CARTOSAT-2C', made: 'dimensions', axes: 'app' },
+    41948: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2D', catalogue: 'CARTOSAT-2D', made: 'dimensions', axes: 'app' },
+    42767: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2E', catalogue: 'CARTOSAT-2E', made: 'dimensions', axes: 'app' },
+    43111: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2F', catalogue: 'CARTOSAT-2F', made: 'dimensions', axes: 'app' },
+    37387: { file: 'resourcesat-2.glb', colour: 'satellite', name: 'Resourcesat-2', catalogue: 'RESOURCESAT-2', made: 'dimensions', axes: 'app' },
+    41877: { file: 'resourcesat-2.glb', colour: 'satellite', name: 'Resourcesat-2A', catalogue: 'RESOURCESAT-2A', made: 'dimensions', axes: 'app' },
+    54361: { file: 'eos-06.glb', colour: 'satellite', name: 'EOS-06', catalogue: 'EOS-6 (OCEANSAT-3)', made: 'dimensions', axes: 'app' },
+    43180: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 3', catalogue: 'KANOPUS-V 3', made: 'dimensions', axes: 'app' },
+    43181: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 4', catalogue: 'KANOPUS-V 4', made: 'dimensions', axes: 'app' },
+    43876: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 5', catalogue: 'KANOPUS-V 5', made: 'dimensions', axes: 'app' },
+    43877: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 6', catalogue: 'KANOPUS-V 6', made: 'dimensions', axes: 'app' },
+    59371: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 4', catalogue: 'RESURS-P 4', made: 'dimensions', axes: 'app' },
+    62430: { file: 'resurs-p.glb', colour: 'satellite', name: 'Resurs-P 5', catalogue: 'RESURS-P 5', made: 'dimensions', axes: 'app' },
+    // 0078 r14-m6: end
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -938,6 +1128,23 @@ export const REAL_MODELS = {
    * Keys are lower-cased substrings of the catalogue name.
    */
   named: {
+    // 0078 r14-m1: begin -- SIX SPENT STAGES WITH THEIR OWN SHAPES (release 1.4.0, stage r14-m1; public #1160, #1164 to #1167, #1169).
+    // Built in code from published dimensions and Commons photographs (registry/models.yaml, tools/stage-builder/): the Kosmos-3M
+    // second stage, the Delta II second stage (Delta K), the Common Centaur of Atlas V, the Centaur D of Atlas-Centaur, the Falcon 9
+    // second stage and the H-IIA second stage. They sit ABOVE `r/b` because the first key that matches wins; every one is gated to
+    // klass `rocket`, and `build: 'stage'` is the shape drawn while the file is on its way (and what the card says if it never comes).
+    // `made: 'dimensions'` makes the card say the shape was built from published dimensions; `axes: 'app'` keeps the tumble the
+    // generic stage has: a dead stage has no attitude control. The stages of the same catalogue families that are NOT drawn here keep
+    // the generic stage: DELTA 2 R/B(2) is a Star-48 motor, SL-12 R/B(1) a Blok DM auxiliary motor, and the Zenit-2, Vostok Blok E,
+    // Tsyklon-3, Long March 4, Proton Blok DM, Breeze-M and PSLV fourth stages wait for pictures of flight hardware (the PR says what).
+    'sl-8 r/b': { file: 'kosmos3m-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Kosmos-3M second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'delta 2 r/b(2)': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'delta 2 r/b': { file: 'delta2-stage.glb', build: 'stage', colour: 'rocket', name: 'a Delta II second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'atlas 5 centaur r/b': { file: 'atlas5-centaur.glb', build: 'stage', colour: 'rocket', name: 'an Atlas V Centaur upper stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'atlas centaur r/b': { file: 'centaur-d.glb', build: 'stage', colour: 'rocket', name: 'a Centaur D upper stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'falcon 9 r/b': { file: 'falcon9-stage2.glb', build: 'stage', colour: 'rocket', name: 'a Falcon 9 second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    'h-2a r/b': { file: 'h2a-stage2.glb', build: 'stage', colour: 'rocket', name: 'an H-IIA second stage', klass: ['rocket'], made: 'dimensions', axes: 'app' },
+    // 0078 r14-m1: end
     // Every spent stage on the visible layer -- SL-16, CZ-2C, Centaur, Delta, H10 -- was drawn as
     // a LAUNCHING rocket: fairing, nose, plume. A spent stage is a tube with a nozzle, tumbling.
     // NASA's Shuttle solid rocket booster stood in for the class until 2026-10-07 (issue #410): a
@@ -1052,6 +1259,11 @@ export const REAL_MODELS = {
     // whole word: `SENTINEL-3C DEB` (debris) and `SENTINEL-3A` do not match it. Not `generic`: the
     // file is this craft. Once its number is known to be its own, add it above and leave this key.
     'sentinel-3c': { file: 'sentinel-3.glb', colour: 'satellite', name: 'Sentinel-3C', klass: ['satellite'], made: 'dimensions', axes: 'app' },
+    // 0078 r14-m4: begin
+    // MTG-I2 BY NAME (public #1115): launched in 2026, in the live saved data of 2026-10-12 as `MTG-I2` under 100530, a number the parser read as a placeholder
+    // (as SENTINEL-3C's); the imager satellite of its sister's file. Klass-gated and a whole word. Once the number is known to be its own, add it to the numbers above.
+    'mtg-i2': { file: 'mtg-i.glb', colour: 'satellite', name: 'MTG-I2', klass: ['satellite'], made: 'dimensions', axes: 'app' },
+    // 0078 r14-m4: end
     // STRIX HAS A FILE OF ITS OWN since batch seven (2026-10-13; public #984): strix.glb, built in code
     // from Synspective's numbers as eoPortal tabulates them (registry/models.yaml row `strix`): a 5 m
     // by 0.8 m antenna of seven panels with a 0.8 x 1.0 x 0.8 m bus behind the middle one, and solar
@@ -1443,6 +1655,17 @@ export const REAL_MODELS = {
     'lunokhod-1': { build: 'rover', file: 'lunokhod-1.glb', colour: 'site', name: 'Lunokhod 1, its lid open', displayName: 'Lunokhod 1, Mare Imbrium', made: 'dimensions' },
     'lunokhod-2': { build: 'rover', file: 'lunokhod-2.glb', colour: 'site', name: 'Lunokhod 2, its lid open', displayName: 'Lunokhod 2, Le Monnier crater', made: 'dimensions' },
     // 0077 W3-c: end
+    // 0078 r14-m8: begin
+    // FOUR MORE LANDERS (public #1128, #1130, #1131, #1132), each built in code from cited metres and photographs
+    // (registry/models.yaml rows `luna-16`, `pathfinder`, `phoenix`, `mars-3`) and drawn as it stands now: Luna 16's descent
+    // stage with its ascent stage gone, Mars Pathfinder with its petals open and the airbags heaped and Sojourner beside it,
+    // Phoenix with both arrays open, the Mars 3 capsule with its four petals open. NASA publishes no model of Pathfinder or
+    // Phoenix (read 2026-10-26: its 3D Resources and NASA Science's 3D models have none), so none is official.
+    'luna-16': { build: 'lander', file: 'luna-16.glb', colour: 'site', name: "Luna 16's descent stage, the ascent stage gone", displayName: 'Luna 16, Mare Fecunditatis', made: 'dimensions' },
+    'mars-pathfinder': { build: 'lander', file: 'pathfinder.glb', colour: 'site', name: 'Mars Pathfinder, with Sojourner beside it', displayName: 'Mars Pathfinder, Ares Vallis', made: 'dimensions' },
+    phoenix: { build: 'lander', file: 'phoenix.glb', colour: 'site', name: 'Phoenix, both arrays open', displayName: 'Phoenix, Vastitas Borealis', made: 'dimensions' },
+    'mars-3': { build: 'lander', file: 'mars-3.glb', colour: 'site', name: 'the Mars 3 landing capsule, its petals open', displayName: 'Mars 3, Ptolemaeus crater', made: 'dimensions' },
+    // 0078 r14-m8: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

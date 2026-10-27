@@ -152,10 +152,10 @@ worlds:
     facts:
       seen: {source: "https://en.wikipedia.org/wiki/Neptune", read: 2026-09-22, says: "Neptune is too faint to be visible to the naked eye. The apparent magnitude currently ranges from 7.67 to 7.89 ... A telescope or strong binoculars will resolve Neptune as a small blue disk"}
 
-  # PLUTO AND JUPITER'S FOUR BIG MOONS: worlds with SOURCED FACTS instead of a texture. No map ships
-  # for them and none is fetched, so `look.flat` is the colour they are drawn in -- a hue from the
-  # description quoted under `facts.colour`, lighter or darker in the order of `facts.albedo`. The
-  # card says the colour was chosen, not measured. Every number and every sentence the card prints
+  # PLUTO AND JUPITER'S FOUR BIG MOONS: worlds with SOURCED FACTS. When they were added (2026-09-22)
+  # no map shipped for them and `look.flat` was the colour they were drawn in -- a hue from the
+  # description quoted under `facts.colour`, lighter or darker in the order of `facts.albedo`; all
+  # five wear a map now (below). Every number and every sentence the card prints
   # about them names the page it was read from and the day (check_registry.py refuses a fact
   # without both). Since issue #262 the flat worlds a trip flies to (Pluto, Io, Europa, Enceladus,
   # Triton) also name `textures:`, a public-domain map that replaces the colour once it loads.
@@ -163,6 +163,10 @@ worlds:
   # has each map's source, licence and the share of the sphere it covers, and `look.flat` is still
   # the colour the world is drawn in until the map arrives, the colour a black-and-white mosaic is
   # tinted with, and the colour of the parts nobody has photographed.
+  # 0078 r14-pluto: begin. Pluto's and Charon's `flat` are their natural-colour maps' own mean colours
+  # (2026-10-27, scripts/build_pluto_map.py) at the luminance they had, and their unphotographed
+  # south is modelled ground, not a plain colour (registry/textures.yaml says how).
+  # 0078 r14-pluto: end
   #
   # The moons' positions are astronomy-engine's JupiterMoons() (the L1.2 theory of Lainey, Duriez
   # and Vienne) added to Jupiter's own; there is no astronomy-engine Body for them, which is what
@@ -180,7 +184,7 @@ worlds:
     # `fixed` because astronomy-engine's RotationAxis has Pluto's IAU pole and spin, which
     # propagate/frames.js already turns a body-fixed position by. The plain ball has nothing to turn.
     frames: [inertial, fixed]
-    look: {flat: "#b4926f", textures: pluto}
+    look: {flat: "#9f9693", textures: pluto}  # 0078 r14-pluto: the natural-colour map's mean (was #b4926f)
     facts:
       radius: {source: "https://en.wikipedia.org/wiki/Pluto", read: 2026-09-22, says: "mean radius 1,188.3 km (infobox)"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "geometric albedo 0.52"}
@@ -369,7 +373,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Pluto, moon: charon}
     frames: [inertial]
-    look: {flat: "#8e8a86", textures: charon}
+    look: {flat: "#8a8b8c", textures: charon}  # 0078 r14-pluto: the natural-colour map's mean (was #8e8a86)
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Charon 901 ... Mean Radius (km) 606.0"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "Charon (P1) ... Geometric Albedo 0.42"}

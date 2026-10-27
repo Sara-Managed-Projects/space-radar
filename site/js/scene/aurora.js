@@ -58,6 +58,7 @@ import {
 import { WGS84_A_KM } from './earth.js';
 import { drawnUnder } from './exposure.js';
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
+import { decide, readSaved, savedUrl } from '../data/readorder.js';
 
 // --- tunables: every number the shader uses, named here and passed in -----------------------------
 
@@ -601,10 +602,26 @@ export function auroraLine(s, clockMs, wallMs) {
 
 const wallNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
+/**
+ * Where our saved copy is, as an absolute address: the worker resolves relative addresses against ITS OWN
+ * script (js/scene/), not the page, so it is given the page's.
+ */
+function savedOvationUrl() {
+  const base = typeof document !== 'undefined' && document.baseURI ? document.baseURI : undefined;
+  return savedUrl('swpc-ovation', base);
+}
+
 /** Main-thread stand-in for scene/auroraworker.js, for a browser without module workers. */
 function mainThreadLooker(fetchImpl) {
   return {
-    async look(url) {
+    async look(url, opts = {}) {
+      if (opts.saved) {
+        const saved = await readSaved(fetchImpl, url);
+        if (!saved.ok) throw Object.assign(new Error('no saved copy: ' + saved.why), { status: saved.why.startsWith('http-') ? Number(saved.why.slice(5)) : 0 });
+        const text = typeof saved.file.body === 'string' ? saved.file.body : JSON.stringify(saved.file.body);
+        const out = parseOvation(text);
+        return { ...out, tex: upsampleGrid(out.grid), chars: text.length, fetchedAt: saved.fetchedAt, validUntil: saved.validUntil };
+      }
       const res = await fetchImpl(url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'origin' });
       if (!res.ok) throw new Error('NOAA answered HTTP ' + res.status);
       const text = await res.text();
@@ -632,10 +649,10 @@ function workerLooker() {
     waiting.clear();
   };
   return {
-    look: (url) => new Promise((resolve, reject) => {
+    look: (url, opts = {}) => new Promise((resolve, reject) => {
       const s = ++seq;
       waiting.set(s, { resolve, reject });
-      worker.postMessage({ type: 'look', seq: s, url });
+      worker.postMessage({ type: 'look', seq: s, url, saved: Boolean(opts.saved) });
     }),
     kind: 'worker',
   };
@@ -822,18 +839,34 @@ export function createAurora({
     if (st.phase !== 'live') st.phase = 'looking';
     let ok = false;
     try {
-      let out;
-      try {
-        out = await looker.look(OVATION_URL);
-      } catch (err) {
-        // A module worker a browser cannot start fails here, not at construction; an HTTP error is
-        // NOAA's answer and is not retried on another thread.
-        if (looker.kind !== 'worker' || (err && err.status)) throw err;
-        looker = mainThreadLooker(fetchImpl);
-        st.looker = looker.kind;
-        out = await looker.look(OVATION_URL);
+      // The read order (data/readorder.js): 1. our saved copy, drawn at once; 2. NOAA, only when there is no
+      // copy or it is past its valid_until; 3. what is already drawn stays when NOAA fails too.
+      const ask = async (url, opts) => {
+        try {
+          return await looker.look(url, opts);
+        } catch (err) {
+          // A module worker a browser cannot start fails here, not at construction; an HTTP error is
+          // an answer and is not retried on another thread.
+          if (looker.kind !== 'worker' || (err && err.status)) throw err;
+          looker = mainThreadLooker(fetchImpl);
+          st.looker = looker.kind;
+          return looker.look(url, opts);
+        }
+      };
+      let saved = null;
+      try { saved = await ask(savedOvationUrl(), { saved: true }); } catch { saved = null; }
+      if (saved) { accept(saved); st.via = 'snapshot'; st.fetchedAt = saved.fetchedAt; }
+      const plan = decide({ snapshot: saved ? { validUntil: saved.validUntil } : null, now: now(), canAskOriginal: true });
+      let out = saved;
+      if (plan.use === 'original' || plan.askBehind) {
+        try {
+          const live = await ask(OVATION_URL);
+          // Never an older forecast over a newer one (a saved copy is up to an hour old).
+          if (!saved || !(live.forecastMs < saved.forecastMs)) { accept(live); st.via = 'live'; out = live; }
+        } catch (err) {
+          if (!saved) throw err;      // with a saved copy on screen NOAA failing changes nothing
+        }
       }
-      accept(out);
       st.looks++;
       st.chars = out.chars || 0;
       st.lastError = null;
@@ -952,6 +985,7 @@ export function createAurora({
         looks: st.looks,
         failures: st.failures,
         lastError: st.lastError,
+        via: st.via || null,           // 'snapshot' | 'live': where the forecast held came from (data/readorder.js)
         chars: st.chars,
         lastLookMs: st.lastLookMs,
         looker: st.looker,

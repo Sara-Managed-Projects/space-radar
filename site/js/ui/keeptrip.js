@@ -46,6 +46,9 @@ export const CMB_LOAD_RATIO = 0.2;
 const plain = (file) => typeof file === 'string' && file.length > 0 && !file.includes('{') && !file.startsWith('/') && !file.includes('..');
 
 /** The world a stop's target stands on, or null: a world itself, or a record fixed to one. Pure. */
+/** 0078 r14-neb-b: the heroes whose light is their photograph's file (scene/deep/lmc.js the LMC's and the Tarantula's, smc.js the SMC's). */
+export const HERO_PICTURES = { 'dso-lmc': ['dso-lmc', 'dso-tarantula-nebula'], 'dso-tarantula-nebula': ['dso-lmc', 'dso-tarantula-nebula'], 'dso-smc': ['dso-smc'] };
+
 export function worldOfTarget(target, recordById) {
   if (!target) return null;
   if (target.world) return String(target.world);
@@ -70,7 +73,7 @@ export function worldOfTarget(target, recordById) {
  *   tier        the device's texture tier (0, 1, 2)
  *   isLadder    stage id -> bool, for the music
  *   voice       false when the voice is not wanted (the clips are then left out)
- *   pictures    data/nebulae.js NEBULAE: a deep-sky stop's photograph, the one scene/nebulae.js lays on the sky
+ *   pictures    data/nebulae.js NEBULAE: the photographs' files, read by the heroes HERO_PICTURES names
  *   deepFiles   record id -> the files its deep-sky hero fetches (images/deep/, data/deep/), or [] (spec 0075 stage f)
  *   cmbFromKm   how far from the Sun a stop must stand for scene/shells.js to fetch the microwave
  *               background's map (CMB_LOAD_RATIO x cosmology.js cmbLy, in km); unset: never (spec 0076 W2-d)
@@ -119,14 +122,14 @@ export function tripAssets(tour, env) {
       }
     }
   }
-  // A deep-sky stop draws its photograph (scene/nebulae.js) and, near enough, its hero (scene/deep/):
-  // both are files under images/ and data/ the worker keeps only once fetched (spec 0075 stage f).
+  // A deep-sky stop draws its hero (scene/deep/) near enough, or its glow: the hero's files under images/ and
+  // data/ the worker keeps only once fetched (spec 0075 stage f). No photograph is laid on the sky since 0078
+  // r14-neb-b; the Magellanic Clouds' heroes take their light from their photographs' files (HERO_PICTURES).
   const pictures = new Map((Array.isArray(e.pictures) ? e.pictures : []).map((row) => [`dso-${row.id}`, row.file]));
   for (const stop of stops) {
     const id = stop.target && stop.target.record;
     if (!id) continue;
-    const pic = pictures.get(id);
-    if (pic) add('other', String(pic).replace(/^site\//, ''));
+    for (const rid of HERO_PICTURES[id] || []) { const pic = pictures.get(rid); if (pic) add('other', String(pic).replace(/^site\//, '')); }
     const deep = typeof e.deepFiles === 'function' ? e.deepFiles(id) : null;
     for (const f of Array.isArray(deep) ? deep : []) add('other', String(f).replace(/^site\//, ''));
   }
@@ -309,7 +312,7 @@ export async function keptRowFor(ctx, tour) {
   const deep = new Map();
   await Promise.all(H.HEROES.filter((h) => visits.has(h.record)).map((h) => h.profile().then((m) => {
     deep.set(h.record, deepFilesOf(m.HERO || m.default || m));
-  }).catch(() => { /* no profile, no files: the stop keeps its photograph */ })));
+  }).catch(() => { /* no profile, no files: the stop keeps its glow */ })));
   let probe = null;
   const canPlay = (type) => {
     try {

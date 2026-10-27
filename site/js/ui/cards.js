@@ -61,7 +61,7 @@ import { wantsTrack } from '../scene/groundtrack.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { openShare, savePostcard } from './share.js';
-import { exposurePanel, pictureNote, pictureFigure } from './exposure.js';
+import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
@@ -2502,11 +2502,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       t(COPY.card.photoCredit, { credit: String(photo.credit), licence: String(photo.licence) })));
     aboutNodes.push(figure);
   }
-  // A deep-sky object with a photograph on the sky (spec 0067): how the picture's colours were
-  // made and whose it is, and the shutter, here where the question "is that real?" is asked. The
-  // registry's rows are a dynamic import -- a first visit that never opens such a card never
-  // fetches them -- so the block is an empty box until they land; it sits inside a row that opens
-  // in place, and nothing under it is a control a finger was reaching for.
+  // A deep-sky object with a photograph in the registry (spec 0067): the shutter, here where the question "is that
+  // real?" is asked. 0078 r14-neb-b: the photograph is no longer laid on the sky nor printed on the card; where a 3D
+  // model is shipped, "Compare with the photograph" is the one place it is shown, and whose it is and how its colours
+  // were made follow that slider. The registry's rows are a dynamic import -- a first visit that never opens such a
+  // card never fetches them -- so the block is an empty box until they land.
   if (klass === 'dso' && ctx && ctx.exposure) {
     const box = el('div', 'sr-card__exposure');
     box.dataset.record = rid;
@@ -2514,12 +2514,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     import('../data/nebulae.js').then((m) => {
       const row = (m.NEBULAE || []).find((r) => `dso-${r.id}` === rid);
       if (!row || box.childNodes.length) return;
-      // Its own photograph first (internal #167), then what the picture is and whose.
-      box.appendChild(pictureFigure(row, name));
-      box.appendChild(pictureNote(row));
       box.appendChild(exposurePanel(ctx.exposure));
       // 0077 W2-d: begin ("Compare with the photograph", where there is a shipped reconstruction to compare it with)
-      import('./photocompare.js').then((pc) => pc.mountPhotoCompare(box, record, ctx)).catch(() => { /* the card is whole without it */ });
+      import('./photocompare.js').then((pc) => pc.mountPhotoCompare(box, record, ctx))
+        .then((cmp) => { if (cmp && box.isConnected !== false) box.appendChild(pictureNote(row)); }) // 0078 r14-neb-b: the slider's photograph's credit
+        .catch(() => { /* the card is whole without it */ });
       // 0077 W2-d: end
     }).catch(() => { /* no registry, no block: the card is whole without it */ });
   }

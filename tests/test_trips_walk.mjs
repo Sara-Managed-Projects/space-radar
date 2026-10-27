@@ -9,8 +9,8 @@
 //   2. IT HAS ITS NARRATION: a clip of a real length in data/narration.js and the three files of it
 //      on disc (opus, m4a, captions), or the trip is one the manifest says is spoken as a whole.
 //   3. IT HAS A PICTURE OR A DEFAULT: the trip has its card picture, and a stop at a deep-sky object
-//      either has a picture in data/nebulae.js or is drawn by the glow every deep-sky record has
-//      (it is in the bundled catalogue with a size), never words over black.
+//      either has a 3D hero (scene/deep/heroes.js; no photographs since 0078 r14-neb-b) or is drawn by
+//      the glow every deep-sky record has (it is in the bundled catalogue with a size), never words over black.
 //
 // WHAT THIS CANNOT DO, AND WHO DOES. Records that only exist once a live or saved catalogue has
 // loaded (comets, asteroids, far bodies, some probes) are checked here for the layer that carries
@@ -41,7 +41,7 @@ const { STARS_NOTABLE } = await load('data/starsnotable.js');
 const { SYSTEMS } = await load('data/systems.js');
 const { ODDITIES } = await load('data/oddities.js');
 const { EPHEMERIDES } = await load('data/ephemerides.js');
-const { NEBULAE } = await load('data/nebulae.js');
+const { HEROES } = await load('scene/deep/heroes.js'); // 0078 r14-neb-b: no photographs; a hero or the glow
 const { BUDGETS } = await load('data/budgets.js');
 const { WORLDS } = await load('scene/worlds.js');
 const dso = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
@@ -94,7 +94,7 @@ check(Number.isFinite(BUDGETS.draw_calls_per_stop) && Number.isFinite(BUDGETS.tr
 
 let stops = 0; let live = 0; let clips = 0; let pictured = 0; let glows = 0;
 const spokenWhole = new Set((NARRATION.scripted || []).map((k) => String(k).split('/')[0]));
-const picIds = new Set(NEBULAE.map((n) => `dso-${n.id}`));
+const picIds = new Set(HEROES.map((h) => h.record));
 for (const tour of TOURS) {
   const where = (stop) => `${tour.id}/${stop.id}`;
   const asks = new Set([...(tour.requires || []), ...tour.stops.flatMap((s) => [s.needs_layer, s.target && s.target.layer].filter(Boolean))]);
@@ -129,7 +129,7 @@ for (const tour of TOURS) {
       if (id.startsWith('dso-') && id !== GALAXY) {
         const row = dso.find((o) => `dso-${o.id}` === id);
         if (picIds.has(id)) pictured += 1;
-        else { glows += 1; check(!!row && Number(row.majAxArcmin) > 0, `${where(stop)}: "${id}" has no picture in data/nebulae.js and no size in the catalogue for its glow: words over black`); }
+        else { glows += 1; check(!!row && Number(row.majAxArcmin) > 0, `${where(stop)}: "${id}" has no 3D hero and no size in the catalogue for its glow: words over black`); }
       }
     } else problems.push(`${where(stop)}: a target of no known kind: ${JSON.stringify(t)}`);
     // --- 2. the narration ----------------------------------------------------------------------
@@ -144,4 +144,4 @@ for (const tour of TOURS) {
 }
 
 if (problems.length) { console.error('trips walk FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
-console.log(`trips walk ok: ${stops} stops of ${TOURS.length} trips each have a target that resolves, ${clips} their narration on disc in three files, every trip its picture, ${pictured} deep-sky stops a picture and ${glows} their glow; ${live} stops resolve only with a fetched catalogue, and those and the drawing (${BUDGETS.draw_calls_per_stop} draw calls, ${BUDGETS.triangles_per_stop} triangles a stop) are tools/walk.mjs --only=trips`);
+console.log(`trips walk ok: ${stops} stops of ${TOURS.length} trips each have a target that resolves, ${clips} their narration on disc in three files, every trip its picture, ${pictured} deep-sky stops a 3D hero and ${glows} their glow; ${live} stops resolve only with a fetched catalogue, and those and the drawing (${BUDGETS.draw_calls_per_stop} draw calls, ${BUDGETS.triangles_per_stop} triangles a stop) are tools/walk.mjs --only=trips`);

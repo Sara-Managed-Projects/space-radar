@@ -319,6 +319,17 @@ export const VISUAL_CLASSES = [
 "glonass-k",
 "fengyun-3",
 "himawari",
+"gcom-w",
+"gcom-c",
+"dampe",
+"cses",
+"scisat",
+"proba-3-csc",
+"proba-3-osc",
+"proba-v",
+"formosat-7",
+"oao-2",
+"oao-3",
 "smap",
 "jason-3",
 "sorce",
@@ -336,7 +347,46 @@ export const VISUAL_CLASSES = [
 "timed",
 "sert-2",
 "isis-1",
-"tracers"
+"tracers",
+"thuraya",
+"inmarsat-4",
+"viasat-3",
+"o3b",
+"globalstar-2",
+"o3b-mpower",
+"wgs",
+"aehf",
+"muos",
+"sbirs-geo",
+"ao-7",
+"swas",
+"meteosat-msg",
+"fengyun-2",
+"mtg-i",
+"mtg-s",
+"insat-3d",
+"gk2a",
+"gk2b",
+"meteor-m2",
+"midori-2",
+"resurs-dk1",
+"worldview-3",
+"blacksky-gen2",
+"satellogic-newsat",
+"planet-pelican",
+"hawkeye360-block1",
+"ghgsat-c",
+"gaofen-1",
+"cbers-4",
+"cbers-4a",
+"amazonia-1",
+"kompsat-3",
+"kompsat-5",
+"cartosat-2",
+"resourcesat-2",
+"eos-06",
+"kanopus-v",
+"resurs-p"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -406,7 +456,13 @@ export const VISUAL_CLASSES = [
 ],
 "real_models": [
 "saturn-v",
-"shuttle-stack"
+"shuttle-stack",
+"delta2-stage",
+"atlas5-centaur",
+"centaur-d",
+"falcon9-stage2",
+"h2a-stage2",
+"kosmos3m-stage2"
 ],
 "model_kinds": [
 "rocket-upper-stage",
@@ -618,7 +674,11 @@ export const VISUAL_CLASSES = [
 "yutu",
 "change-5",
 "lunokhod-1",
-"lunokhod-2"
+"lunokhod-2",
+"luna-16",
+"mars-3",
+"phoenix",
+"pathfinder"
 ],
 "model_kinds": [
 "site-surveyor",
@@ -1026,8 +1086,16 @@ export const VISUAL_CLASSES = [
 "dso-tarantula-nebula"
 ],
 "heroes": [
+"dso-california-nebula",
 "dso-carina-nebula",
-"dso-m42"
+"dso-cats-paw-nebula",
+"dso-m16",
+"dso-m17",
+"dso-m20",
+"dso-m8",
+"dso-north-america-nebula",
+"dso-m42",
+"dso-rosette-nebula"
 ]
 }
 },
@@ -1061,7 +1129,9 @@ export const VISUAL_CLASSES = [
 ],
 "heroes": [
 "dso-helix-nebula",
-"dso-m57"
+"dso-m27",
+"dso-m57",
+"dso-southern-ring-nebula"
 ]
 }
 },
@@ -1097,6 +1167,7 @@ export const VISUAL_CLASSES = [
 ],
 "heroes": [
 "dso-iris-nebula",
+"dso-m45",
 "dso-m78"
 ]
 }
@@ -1181,7 +1252,9 @@ export const VISUAL_CLASSES = [
 "dso-m31",
 "dso-m33",
 "dso-m51",
-"dso-m81"
+"dso-m81",
+"dso-m83",
+"dso-ngc-1300"
 ],
 "model_kinds": [
 "galaxy-model"
@@ -1271,6 +1344,9 @@ export const VISUAL_CLASSES = [
 "dso-centaurus-a"
 ],
 "photographs": [
+"dso-centaurus-a"
+],
+"heroes": [
 "dso-centaurus-a"
 ]
 }

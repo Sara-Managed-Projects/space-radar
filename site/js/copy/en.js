@@ -1733,8 +1733,15 @@ export const COPY = {
       // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
       balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
+      // 0078 r14-pluto: begin. Pluto and Charon since 2026-10-27 (scripts/build_pluto_map.py): natural colour
+      // from the red (625 nm) and blue (475 nm) reflectances of New Horizons' colour camera, CHROMA_GAIN 2.6.
+      natural: 'its colours are natural colour, from the red and blue light New Horizons’ colour camera measured, with green, for which it had no filter, estimated between them, made two and a half times as strong as the camera’s own, as NASA’s natural-colour pictures show it',
+      // Pluto since 2026-10-27: the same, then matched to PIA19952 (scripts/build_pluto_map.py TUNE_ROWS).
+      matched: 'its colours start from the red and blue light New Horizons’ colour camera measured, with green, for which it had no filter, estimated between them, and are then matched, shade by shade, to NASA’s own colour picture of this face (PIA19952): stronger than the camera’s, as NASA published it',
+      // 0078 r14-pluto: end
     },
     // The side nobody has photographed is left one plain colour, and the card says which side.
+    // 0078 r14-pluto: Pluto's and Charon's far south is modelled instead since 2026-10-27, and says so.
     worldCoverage: {
       miranda: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
       ariel: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
@@ -1742,8 +1749,8 @@ export const COPY = {
       titania: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
       oberon: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
       triton: 'Voyager 2 photographed part of it in 1989; the rest is left plain, not guessed',
-      pluto: 'the far south was in winter darkness when New Horizons passed in 2015 and is left plain, not guessed',
-      charon: 'the far south was in winter darkness when New Horizons passed in 2015 and is left plain, not guessed',
+      pluto: 'the far south was in winter darkness when New Horizons passed in 2015: the ground drawn there is modelled, a faint texture in the colours of the land above it, not a photograph', // 0078 r14-pluto
+      charon: 'the far south was in winter darkness when New Horizons passed in 2015: the ground drawn there is modelled, a faint texture in the colours of the land above it, not a photograph', // 0078 r14-pluto
     },
     // Spec 0054 requirement 2: every world but the Earth and the Sun is drawn as bright as a
     // photograph of it would be, not dimmed by its distance from the Sun (Saturn gets 1/90 of the
@@ -1758,7 +1765,7 @@ export const COPY = {
     exoticDeparture: {
       pulseSlowed: 'its blink is drawn {n} times slower than it turns, so that an eye can follow it',
       pulseTrue: 'its blink is drawn at the rate it turns',
-      portrait: 'while this card is open its picture is drawn at its place, far larger than it would look from here',
+      portrait: 'while this card is open a model of it is drawn at its place, far larger than it would look from here: the shadow and the light bent round it as its mass makes them, the disc modelled', // 0078 r14-mw-bh
     },
     worldDeparture: {
       // The Earth (2026-10-08, scene/earth.js EARTH_RELIEF, scene/atmosphere.js EARTH_AIR): {relief}
@@ -1766,6 +1773,9 @@ export const COPY = {
       // they are the clouds are drawn from low orbit (scene/earth.js CLOUD_PARALLAX).
       earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is; from low orbit on a larger screen its clouds stand up toward the horizon and under a low Sun, drawn {clouds} times thicker than they are so that their lean, their long shadows and the last light on their tops can be seen (at their true thickness in the Measured look), each top\u2019s height from its measured temperature where today\u2019s picture covers and from the cloud map\u2019s brightness elsewhere',
       mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
+      // 0078 r14-pluto: begin. scene/worlds.js PLUTO_LOOK; scripts/build_pluto_map.py CONTRAST and SOFT_DEG.
+      pluto: 'its light and dark ground are drawn with {plutoContrast} times the contrast of the camera\u2019s picture, nearer the albedos measured; the side New Horizons saw only from far off is softened to its own sharpness; on a larger screen its relief is from New Horizons\u2019 stereo heights, where there are any, drawn {plutoSteep} times steeper than measured; the thin blue haze at its edge is drawn as a glow, brightest against the Sun, whose strength is chosen',
+      // 0078 r14-pluto: end
       // Mars (2026-10-12, scene/worlds.js MARS_RELIEF): {mola} is the exaggeration of slopes and heights alike.
       mars: 'on a larger screen its relief is from the heights Mars Global Surveyor\u2019s laser altimeter measured, drawn {mola} times steeper and taller than they are so that a low Sun shows them: the shadows Olympus Mons and the canyon walls throw are that many times too long.',
       venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative; in the Film look its cloud bands are drawn with {uv} times the contrast its map has, as ultraviolet cameras see them (to an eye they are nearly plain), and the Measured look shows the map as it is; its ground, by radar, is in relief from Magellan\u2019s altimeter, drawn {ground} times steeper and taller than measured',
@@ -1942,8 +1952,7 @@ export const COPY = {
     satellitesCount: '{n} working satellites in the catalogue this page loaded from CelesTrak, {starlink} of them Starlink.',
     satellitesLoading: 'The catalogue is still loading; the count appears when it has.',
     // Under a stop at a nebula or a galaxy with a photograph, and under a black hole's portrait.
-    pictureLine: 'A real photograph, placed where it is in the sky. Picture: {credit} \u00b7 {licence}, edges faded and sky darkened by us.',
-    portraitLine: 'The ring is the Event Horizon Telescope\u2019s picture, made with radio waves. It is drawn far larger than it would look from here; the place is measured. Picture: {credit} \u00b7 {licence}, sky darkened and edges faded by us.',
+    portraitLine: 'A model, not the photograph: the shadow and the ring of light bent round it are what its mass makes them, the glowing disc is modelled, and the stars behind are not bent. It is drawn far larger than it would look from here; the place is measured. The Event Horizon Telescope\u2019s photograph is on its card: {credit} \u00b7 {licence}.', // 0078 r14-mw-bh
     // `live_note: tonight` under a stop about a planet: when and where it is in the visitor's sky
     // in the coming dark, by their device's clock, or why it is not there.
     tonightUp: 'From {place} tonight: up from {begin} to {end}, highest at {time}, {alt} in the {az}.',

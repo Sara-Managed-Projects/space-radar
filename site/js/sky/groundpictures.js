@@ -1,47 +1,43 @@
-// sky/groundpictures.js -- the photographs of the nebulae and galaxies, in the sky from the ground
-// (internal #393 finding 6, #345; row 17 of the Stellarium table in docs/research).
+// sky/groundpictures.js -- the nebulae and galaxies in the sky from the ground, as soft glows of their measured size
+// (internal #393 finding 6, #345; row 17 of the Stellarium table in docs/research; release 1.4.0 stage r14-neb-b).
 //
 // Contract: createGroundPictures(env) -> { update(frame, m9, limit), labels(out, m9, limit, fovDeg),
-//             pickEq(dirEq), state(), dispose() }
+//             pickEq(dirEq), frameOf(id), state(), held(), dispose() }
 //   env: { root, radius, eqToLocal (THREE.Matrix3, shared with the stars), renderOrder,
-//          rows?, base?, load?, nameOf?(id), magOf?(id), exposure?(), cap?, saveData? }
-// Pure, for tests/test_groundpictures.mjs: pictureThreshold(vmag), pictureStrength(o), pictureHit(row, dirEq)
+//          rows?, recordOf?(id), nameOf?(id), magOf?(id), exposure?() }
+// Pure, for tests/test_groundpictures.mjs: pictureThreshold(vmag), pictureStrength(o), pictureHit(row, dirEq), glowShape(row, record)
 //
 // Loaded by sky/groundsky.js when the browser is idle after the sky view has opened: none of this
 // is on a first visit, and none of it is needed for the first sky.
 //
-// WHY ITS OWN FILE. scene/nebulae.js lays the same 27 pictures (registry/nebulae.yaml) on the
-// orbital scene's star sphere and at their places on the ladder. From the ground that sphere is
-// under the sky view's veil, with no air and no horizon, so until this file a visitor who looked
-// up at Orion saw no nebula. Here each picture is a small grid on the ground sky's own sphere, in
-// the catalogue's frame, turned with the stars by the same matrix and lifted by the same air.
+// NO PHOTOGRAPHS (Ivan, 2026-10-26: "no photos only realistic 3ds"). Until release 1.4.0 each of the 30
+// objects of registry/nebulae.yaml was its photograph here, laid on the ground sky's sphere. From the ground
+// a 3D model at hundreds of light-years is a point, so each is now what scene/dsoglow.js draws in space: a
+// soft glow as long and as wide as the catalogue says, turned as it says, coloured by what the thing is
+// (glowFor), at the catalogue's place. No file is fetched. The registry's rows still say where to frame each
+// one (frameOf) and what a tap on it finds (pickEq); the sky view's names are unchanged.
 //
-// HOW FAINT. These are long exposures of faint things; drawn at full strength in a wide field they
-// would be the lie scene/exposure.js exists not to tell. So a picture's strength is a MODEL with
-// three parts, and the sky view's honesty line says so:
+// HOW FAINT. These are faint things; drawn at full strength in a wide field they would be the lie
+// scene/exposure.js exists not to tell. So a glow's strength is a MODEL with three parts:
 //   the sky     the limiting magnitude sky/skymath.js already works out (how dark the place is,
 //               the Moon, twilight, how far the field has closed) against the object's own
 //               magnitude: Andromeda and the Orion Nebula come in a dark wide field, the Crab
 //               needs binoculars' field, and in a city none of them shows until a telescope's.
-//   the size    nothing under about ten pixels wide: a picture appears as you zoom.
+//   the size    nothing under about ten pixels wide: a glow appears as you zoom.
 //   the air     dimmed and reddened by its air mass, gone at the horizon.
-// And the shutter (Eye, Camera, Deep) stretches what is left, exactly as it does in space: with
-// "Eye" the brightest cores are grey smudges, which is what an eye at a telescope sees.
-//
-// GPU MEMORY (#345). A picture is fetched when it is 32 px wide in view, at most two at a time,
-// and at most `cap` are kept: the one seen longest ago is disposed when another arrives.
+// And the shutter (Eye, Camera, Deep) stretches what is left: with "Eye" it is a grey smudge.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { NEBULAE } from '../data/nebulae.js';
-import { pictureBasis, pictureHalfExtent } from '../scene/nebulae.js';
+import { pictureBasis, pictureHalfExtent, ellipseInPicture, eclToEq } from '../scene/nebulae.js';
+import { glowFor } from '../scene/dsoglow.js';
 import { GLSL_AIR, airmass, extinctionTint, refractionDeg } from './skymath.js';
 
 const DEG = Math.PI / 180;
-const WANT_PX = 32;
 const SHOW_FROM_PX = 10;
 const SHOW_FULL_PX = 40;
 const EXT_K = 0.2;
-const PARALLEL = 2;
+const GLOW_COLOUR = [1.0, 0.92, 0.86]; // a record not landed yet, or one dsoglow.js gives no glow of its own
 
 const smooth = (x, a, b) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
 
@@ -80,6 +76,32 @@ export function pictureHit(row, dirEq) {
   return Math.hypot(u, v) <= 0.9 ? { u, v } : null;
 }
 
+/**
+ * The glow's ellipse in the picture's own coordinates (scene/nebulae.js ellipseInPicture) and its colour, from
+ * the deep-sky record: its catalogue axes and angle where it has them, round at its major axis where it has only
+ * that, and a circle of a third of the frame before the record has landed. Pure.
+ */
+export function glowShape(row, record) {
+  const m = record && record.meta ? record.meta : null;
+  const g = record ? glowFor(record) : null;
+  // A dark nebula (the Horsehead) gives off no light, so it gets no glow; Andromeda, which dsoglow.js leaves to her
+  // model in space, glows here as a galaxy does.
+  const dark = !!(m && m.typeCode === 'DrkN');
+  const colour = g && g.colour ? g.colour.slice(0, 3) : dark ? [0, 0, 0] : m && m.kind === 'galaxy' ? [1.0, 0.92, 0.82] : GLOW_COLOUR;
+  const p = record && record.pos ? record.pos : null;
+  const l = p ? Math.hypot(p.x, p.y, p.z) : 0;
+  const maj = m && m.majAxArcmin > 0 ? m.majAxArcmin : 0;
+  if (maj > 0 && l > 0) {
+    const e = eclToEq([p.x / l, p.y / l, p.z / l]);
+    const ra = (Math.atan2(e[1], e[0]) / DEG + 360) % 360, dec = Math.asin(Math.max(-1, Math.min(1, e[2]))) / DEG;
+    const min = m.minAxArcmin > 0 ? Math.min(maj, m.minAxArcmin) : maj;
+    const ell = ellipseInPicture(row, ra, dec, maj, min, Number.isFinite(m.posAngDeg) ? m.posAngDeg : 0);
+    if (ell) return { ell, colour };
+  }
+  const k = 1 / (Math.min(row.width_arcmin, row.height_arcmin) / 3 / 2);
+  return { ell: { u: 0.5, v: 0.5, x: [k * row.width_arcmin, 0], y: [0, k * row.height_arcmin] }, colour };
+}
+
 const VERT = /* glsl */ `
 uniform mat3 uEqToLocal;
 uniform vec3 uCentre, uRight, uUp;
@@ -98,40 +120,40 @@ void main() {
 }
 `;
 
-// The stretch and the feather are scene/nebulae.js's, so one shutter means one thing in both skies.
+// A soft glow on the catalogue's ellipse (r = 1 at its edge): a bright middle, a gentle shoulder, gone by
+// 1.6 times the catalogue's size, and the frame feathered as before so no edge is ever a line. The shutter's
+// stretch and saturation as scene/dsoglow.js and the deep-sky heroes wear them.
 const FRAG = /* glsl */ `
-uniform sampler2D map;
 uniform float uAlpha, uGain, uGamma, uSaturation;
-uniform vec3 uTint;
+uniform vec3 uTint, uColour;
+uniform vec2 uEllC, uEllX, uEllY;
 varying vec2 vUv;
 varying float vY;
 void main() {
   if (uAlpha <= 0.0) discard;
-  vec3 c = pow(texture2D(map, vUv).rgb, vec3(uGamma)) * uGain;
+  vec2 d = vUv - uEllC;
+  float r = length(vec2(dot(uEllX, d), dot(uEllY, d)));
+  float g = (0.55 * exp(-6.0 * r * r) + 0.45 * exp(-1.8 * r * r)) * (1.0 - smoothstep(0.9, 1.6, r));
+  vec3 c = uColour * pow(g, uGamma) * 0.6 * uGain;
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   c = mix(vec3(l) * vec3(0.86, 0.96, 1.0), c, uSaturation);
   vec2 q = abs(vUv * 2.0 - 1.0);
   float e = pow(pow(q.x, 3.0) + pow(q.y, 3.0), 1.0 / 3.0);
-  float f = 1.0 - smoothstep(0.5, 0.98, e);
+  float f = 1.0 - smoothstep(0.7, 0.99, e);
   float air = smoothstep(-0.005, 0.03, vY);
-  gl_FragColor = vec4(c * uTint * (f * f * uAlpha * air), 1.0);
+  gl_FragColor = vec4(c * uTint * (f * uAlpha * air), 1.0);
 }
 `;
 
 export function createGroundPictures(env) {
   const rows = env.rows || NEBULAE;
   const R = env.radius;
-  const base = env.base || new URL('../../', import.meta.url);
-  const loader = env.load || ((url) => new THREE.TextureLoader().loadAsync(url));
-  const cap = Number.isFinite(env.cap) ? env.cap : 8;
   const shared = { uGain: { value: 1 }, uGamma: { value: 1 }, uSaturation: { value: 1 } };
   const geometry = new THREE.PlaneGeometry(2, 2, 4, 4);
   const group = new THREE.Group();
   group.name = 'ground-pictures';
   env.root.add(group);
   let disposed = false;
-  let loading = 0;
-  let tick = 0;
 
   const pictures = rows.map((row) => {
     const basis = pictureBasis(row);
@@ -144,7 +166,8 @@ export function createGroundPictures(env) {
         uRight: { value: new THREE.Vector3(...basis.right).multiplyScalar(half.x) },
         uUp: { value: new THREE.Vector3(...basis.up).multiplyScalar(half.y) },
         uAir: { value: 1 }, uRadius: { value: R },
-        map: { value: null }, uAlpha: { value: 0 }, uTint: { value: new THREE.Vector3(1, 1, 1) },
+        uAlpha: { value: 0 }, uTint: { value: new THREE.Vector3(1, 1, 1) }, uColour: { value: new THREE.Vector3(...GLOW_COLOUR) },
+        uEllC: { value: new THREE.Vector2(0.5, 0.5) }, uEllX: { value: new THREE.Vector2(3, 0) }, uEllY: { value: new THREE.Vector2(0, 3) },
         ...shared,
       },
       transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide,
@@ -158,47 +181,19 @@ export function createGroundPictures(env) {
     return {
       row, basis, mesh, widthDeg: row.width_arcmin / 60, heightDeg: row.height_arcmin / 60,
       radiusDeg: Math.hypot(row.width_arcmin, row.height_arcmin) / 120,
-      tex: null, state: 'idle', seen: 0, strength: 0, widthPx: 0, altDeg: -90, local: null, inView: false,
+      shaped: false, strength: 0, widthPx: 0, altDeg: -90, local: null, inView: false,
     };
   });
 
-  function drop(p) {
-    if (p.tex) p.tex.dispose();
-    p.tex = null;
-    p.mesh.material.uniforms.map.value = null;
-    p.mesh.visible = false;
-    p.state = 'idle';
-  }
-
-  function fetchPicture(p) {
-    if (p.state !== 'idle' || loading >= PARALLEL || disposed) return;
-    p.state = 'loading';
-    loading += 1;
-    const url = String(new URL(String(p.row.file).replace(/^site\//, ''), base));
-    let asked;
-    try { asked = Promise.resolve(loader(url)); } catch (err) { asked = Promise.reject(err); }
-    asked.then((tex) => {
-      loading -= 1;
-      if (disposed) { if (tex && tex.dispose) tex.dispose(); return; }
-      // Display values in, display values out (FRAG), as scene/nebulae.js: no sRGB decode.
-      tex.colorSpace = THREE.NoColorSpace;
-      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-      tex.needsUpdate = true;
-      p.tex = tex;
-      p.mesh.material.uniforms.map.value = tex;
-      p.state = 'ready';
-      p.seen = tick;
-      // Over the cap: the picture seen longest ago goes, never one in view.
-      const held = pictures.filter((q) => q.state === 'ready');
-      if (held.length > cap) {
-        const old = held.filter((q) => !q.inView).sort((a, b) => a.seen - b.seen)[0];
-        if (old) drop(old);
-      }
-    }).catch((err) => {
-      loading -= 1;
-      p.state = 'failed';
-      console.warn('ground pictures:', p.row.id, err && err.message ? err.message : err);
-    });
+  /** The glow's shape and colour from its record, once the record has landed (sky/groundsky.js dsoRecord). */
+  function shape(p) {
+    if (p.shaped) return;
+    const record = typeof env.recordOf === 'function' ? env.recordOf(p.row.id) : null;
+    const { ell, colour } = glowShape(p.row, record);
+    const u = p.mesh.material.uniforms;
+    u.uEllC.value.set(ell.u, ell.v); u.uEllX.value.set(ell.x[0], ell.x[1]); u.uEllY.value.set(ell.y[0], ell.y[1]);
+    u.uColour.value.set(colour[0], colour[1], colour[2]);
+    p.shaped = !!record;
   }
 
   const _fwd = new THREE.Vector3();
@@ -211,10 +206,9 @@ export function createGroundPictures(env) {
    */
   function update(frame, m9, limit, pxPerDeg, viewGroup) {
     if (disposed) return;
-    tick += 1;
     const look = typeof env.exposure === 'function' ? env.exposure() : null;
     if (look) {
-      shared.uGain.value = Number(look.nebulaGain);
+      shared.uGain.value = Number(look.milkyWay);
       shared.uGamma.value = Number(look.nebulaGamma);
       shared.uSaturation.value = Number(look.nebulaSaturation);
     }
@@ -239,20 +233,19 @@ export function createGroundPictures(env) {
       p.inView = off < reachDeg + p.radiusDeg && p.altDeg > -p.radiusDeg;
       p.widthPx = p.widthDeg * pxPerDeg;
       p.strength = p.inView ? pictureStrength({ limit, vmag: env.magOf ? env.magOf(p.row.id) : NaN, widthPx: p.widthPx, altDeg: p.altDeg }) : 0;
-      if (p.inView && p.state === 'ready') p.seen = tick;
-      if (p.inView && p.state === 'idle' && !env.saveData && p.widthPx >= WANT_PX && p.strength > 0.02) fetchPicture(p);
+      if (p.inView && p.strength > 0.004) shape(p);
       const u = p.mesh.material.uniforms;
       u.uAlpha.value = p.strength;
       const tint = extinctionTint(Math.max(0, p.altDeg));
       u.uTint.value.set(tint[0], tint[1], tint[2]);
-      p.mesh.visible = p.strength > 0.004 && p.state === 'ready';
+      p.mesh.visible = p.strength > 0.004;
     }
   }
 
   return {
     update,
     /**
-     * The names worth showing now, as sky/groundsky.js label candidates: a picture that is drawn,
+     * The names worth showing now, as sky/groundsky.js label candidates: a glow that is drawn,
      * or one a field or two away from showing, so a visitor knows where zooming pays.
      */
     labels(out, limit, pxPerDeg) {
@@ -284,11 +277,12 @@ export function createGroundPictures(env) {
       const side = Math.max(p.row.width_arcmin, p.row.height_arcmin) / 60;
       return { raDeg: p.row.ra_deg, decDeg: p.row.dec_deg, fovDeg: Math.max(0.33, Math.min(40, side * 3)) };
     },
-    state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, strength: p.strength, widthPx: Math.round(p.widthPx), altDeg: p.altDeg, inView: p.inView, drawn: p.mesh.visible })),
-    held: () => pictures.filter((p) => p.state === 'ready').length,
+    state: () => pictures.map((p) => ({ id: p.row.id, strength: p.strength, widthPx: Math.round(p.widthPx), altDeg: p.altDeg, inView: p.inView, drawn: p.mesh.visible, shaped: p.shaped })),
+    /** Textures held on the GPU: none, since there are no photographs (0078 r14-neb-b). */
+    held: () => 0,
     dispose() {
       disposed = true;
-      for (const p of pictures) { if (p.tex) p.tex.dispose(); p.mesh.material.dispose(); }
+      for (const p of pictures) p.mesh.material.dispose();
       geometry.dispose();
       env.root.remove(group);
     },

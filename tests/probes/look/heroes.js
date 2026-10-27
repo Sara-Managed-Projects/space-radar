@@ -208,6 +208,50 @@ const w2e = {
 };
 const deg2rad = Math.PI / 180;
 // 0077 W2-e: end
+// 0078 r14-neb-a: begin
+// Release 1.4.0 stage r14-neb-a: the emission nebulae drawn by scene/deep/emission.js, judged as release 1.4.0 shows them,
+// WITH NO PHOTOGRAPH IN THE SCENE (stage r14-neb-b takes them out of scene/nebulae.js): `nebA.photos(false)` hides every
+// picture after scene/nebulae.js's own update each frame, so its drawn() is 0 and every hero is whole. Per nebula: the
+// arrival pose BEFORE (as main draws it: the hero's stub off, the photograph on), then AFTER with no photograph at the
+// arrival pose, 40 degrees off the photograph's line, and near (0.4 of the arrival distance) 25 degrees off it.
+const nebA = {
+  photos(on) {
+    const n = sr.nebulae;
+    if (!n) return;
+    if (!on && !n.__nebA) {
+      n.__nebA = n.update;
+      n.update = function (...a) { const r = n.__nebA.apply(this, a); for (const g of [n.group, n.skyGroup]) if (g) g.traverse((o) => { if (o !== g) o.visible = false; }); return r; };
+    }
+    if (on && n.__nebA) { n.update = n.__nebA; delete n.__nebA; }
+  },
+  hero: async (heroId, recId, name) => {
+    const def = await w2e.def(heroId);
+    if (!(await need(recId))) return;
+    const d0 = rig.state.distance;
+    const st = () => { try { return (sr.deep.stats().heroes || []).find((h) => h.id === heroId) || null; } catch { return null; } };
+    for (const [deg, k, on] of [[0, 1, false], [0, 1, true], [40, 1, true], [25, 0.4, true]]) {
+      if (def && def.stub) def.stub.shipped = on;
+      nebA.photos(!on);
+      w2e.pose(recId, deg, k, d0);
+      await scene(heroId, `${deg}deg-x${k}-${on ? 'after' : 'before'}`, `${name}, ${deg} degrees off its photograph's line, ${k} of the arrival distance, ${on ? 'AFTER (the hero, no photograph in the scene)' : 'BEFORE (as main draws it: the photograph)'}; hero ${JSON.stringify(st())}`, on ? 7000 : 4000);
+    }
+    if (def && def.stub) def.stub.shipped = true;
+    nebA.photos(true);
+  },
+  // The Tarantula is drawn inside the LMC's hero (scene/deep/lmc.js): main's view, then with no photograph in the scene.
+  tarantula: async () => {
+    if (!(await need('dso-tarantula-nebula'))) return;
+    const d0 = rig.state.distance;
+    for (const [deg, k, on] of [[0, 1, false], [0, 1, true], [40, 1, true]]) {
+      nebA.photos(!on);
+      w2e.pose('dso-tarantula-nebula', deg, k, d0);
+      await scene('tarantula14', `${deg}deg-x${k}-${on ? 'nophoto' : 'main'}`, `the Tarantula inside the LMC's hero, ${deg} degrees off its photograph's line, ${on ? 'with NO photograph in the scene (release 1.4.0)' : 'as main draws it (Webb\'s photograph on)'}`, on ? 7000 : 4000);
+    }
+    nebA.photos(true);
+  },
+};
+const onLadderNebA = async () => { if (!onLadder()) { sr.deselect(); await stage('stellar', 9000); } };
+// 0078 r14-neb-a: end
 const HEROES = {
   earth: world('earth', { name: 'the Earth', near: 1.6 }),
   iss: async () => {
@@ -289,6 +333,17 @@ const HEROES = {
   smc: async () => { if (!onLadder()) { sr.deselect(); await stage('stellar', 9000); } await w2e.hero('smc', 'dso-smc', 'the Small Magellanic Cloud', [[0, 1], [35, 1], [70, 1], [90, 0.5], [70, 0.2]]); },
   stream: async () => { if (!onLadder()) { sr.deselect(); await stage('stellar', 9000); } await w2e.stream(); },
   // 0077 W2-e: end
+  // 0078 r14-neb-a: begin
+  m8: async () => { await onLadderNebA(); await nebA.hero('m8', 'dso-m8', 'the Lagoon Nebula (M8)'); },
+  m20: async () => { await onLadderNebA(); await nebA.hero('m20', 'dso-m20', 'the Trifid Nebula (M20)'); },
+  m16: async () => { await onLadderNebA(); await nebA.hero('m16', 'dso-m16', 'the Eagle Nebula (M16) and the Pillars'); },
+  m17: async () => { await onLadderNebA(); await nebA.hero('m17', 'dso-m17', 'the Omega Nebula (M17)'); },
+  rosette: async () => { await onLadderNebA(); await nebA.hero('rosette', 'dso-rosette-nebula', 'the Rosette Nebula'); },
+  california: async () => { await onLadderNebA(); await nebA.hero('california', 'dso-california-nebula', 'the California Nebula'); },
+  'north-america': async () => { await onLadderNebA(); await nebA.hero('north-america', 'dso-north-america-nebula', 'the North America and Pelican Nebulae'); },
+  'cats-paw': async () => { await onLadderNebA(); await nebA.hero('cats-paw', 'dso-cats-paw-nebula', 'the Cat\'s Paw Nebula'); },
+  tarantula14: async () => { await onLadderNebA(); await nebA.tarantula(); },
+  // 0078 r14-neb-a: end
 };
 out.heroes = Object.keys(HEROES);
 

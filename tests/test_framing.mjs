@@ -165,6 +165,25 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   }
 }
 
+// 0078 r14-pluto: begin. A face to be CENTRED (Pluto's heart): straight at it while it is lit and near the
+// Sun's direction; as near it as FACE_MAX_PHASE allows when it is further round; litOffset's rule when it is dark.
+{
+  const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const up = { x: 0, y: 1, z: 0 };
+  const sun = { x: 0, y: Math.sin(1.05), z: Math.cos(1.05) };          // the Sun 60 degrees north, as on Pluto in 2026
+  const heart = { x: 0, y: Math.sin(0.35), z: Math.cos(0.35) };        // the heart at 20 N under the same meridian
+  const at = F.litOffset(sun, up, undefined, Object.assign({ ...heart }, { centre: true }));
+  check(dot(at, heart) > 0.9999, 'a lit face 40 degrees from the Sun is met straight on');
+  const far = { x: Math.sin(1.4), y: 0, z: Math.cos(1.4) };            // lit, 80 degrees round
+  const s2 = { x: 0, y: 0, z: 1 };
+  const o = F.litOffset(s2, up, undefined, Object.assign({ ...far }, { centre: true }));
+  check(Math.abs(Math.acos(dot(o, s2)) - F.FACE_MAX_PHASE) < 1e-9 && dot(o, far) > dot(F.litOffset(s2, up), far), 'further round, from FACE_MAX_PHASE off the Sun toward it');
+  const dark = F.litOffset(s2, up, undefined, { x: 0, y: 0, z: -1, centre: true });
+  const plain = F.litOffset(s2, up);
+  check(Math.abs(dark.x - plain.x) < 1e-12 && Math.abs(dark.z - plain.z) < 1e-12, 'a face in the dark: the lit-side rule');
+}
+// 0078 r14-pluto: end
+
 // AN ARRIVAL ON THE EARTH'S GROUND (internal #420): no nearer than the map can bear, and at night
 // the whole Earth turned so the edge of daylight is in the picture.
 {

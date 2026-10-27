@@ -1,0 +1,126 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Eagle Nebula (M16) and the Pillars of Creation: the cavity the cluster NGC 6611 has blown in its molecular cloud,
+# its glowing far wall, and the dust columns standing in it with their tips toward the cluster (release 1.4.0 stage
+# r14-neb-a, internal spec 0078: no photographs, realistic 3D). Drawn by site/js/scene/deep/emission.js; the light map,
+# the sharp map round the Pillars and the walls' depth are baked by scripts/build_deep_emission.py.
+#
+# WHAT IS MEASURED AND WHAT IS RECONSTRUCTED.
+#   Measured: where the ionising O stars are on the sky and how bright (SIMBAD), the cluster's place, that the Pillars
+#   are dust and gas columns whose tips are ionised and photo-evaporated by NGC 6611's massive stars (Hester et al. 1996;
+#   McLeod et al. 2015), that they are seen in silhouette against the glowing gas behind them, and the LIGHT (the
+#   photograph). Reconstructed: the cavity's far wall (a bowl behind the cluster: its depth is not measured), its relief
+#   by the rule that a front lit by the cluster is brighter where it is nearer (illustrative), the Pillars' and the other
+#   dark columns' absorption from the photograph's darkness, drawn on one plane in front of the wall (their depths are
+#   not measured; McLeod et al. 2015 sketch them at different depths round the cluster). Model: the cloud behind the wall
+#   and every cluster member's place.
+#   Angles are on the sky; lengths in light-years at the record's distance, so the size on the sky stays the measured one.
+id: m16
+record: dso-m16
+stage: r14-neb-a
+# Shipped under the lead's review policy of 2026-10-15 (internal spec 0075 design 14.4): signed by the maintainers, never
+# a person's name or a claim of independent review; the card says no astronomer has reviewed it (internal #785).
+shipped: true
+children: []
+levels:
+  2: "structure: the cavity's far wall as a crisp lit sheet at its reconstructed depth (12 coarse steps and an exact crossing; 8 on T0, or the wall as a mesh), the cloud behind it, the Pillars and the dark columns in front, the O stars and the cluster"
+  3: "close-up: the same with half the coordinator's march steps (12 to 32) and the sharp map round the Pillars; the camera may go into the cavity, to the Pillars and NGC 6611"
+# The record's place at the origin (NGC 6611's catalogue centre, site/data/dso.json); the cluster's O stars are 1-4' west.
+frame: {units_ly: 1, distance_ly: 7000, ra_deg: 274.70071, dec_deg: -13.80722, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
+layers:
+  - part: light
+    kind: photograph
+    what: "the walls' light: the photograph without its stars, and round the Pillars a sharper map of the same photograph"
+    # The photograph's frame, copied from registry/nebulae.yaml's row (the bake checks they agree while the row exists).
+    picture: {id: m16, file: site/images/nebulae/m16.webp, ra_deg: 274.70727, dec_deg: -13.76556, width_arcmin: 32.08, height_arcmin: 32.08, north_deg: 0.01}
+    file: site/images/deep/nebulae/m16-light.webp
+    depth: site/data/deep/m16-front.bin
+    # ESO's publication JPEG of the same photograph (4 000 x 4 000 px, 0.48" a pixel; downloaded for the bake, not in git):
+    # a 10' square round the Pillars and the cluster's heart, 640 px (0.94" a pixel, four times the 512 px map's).
+    detail: {file: site/images/deep/nebulae/m16-detail.webp, centre_west_arcmin: -0.5, centre_north_arcmin: -1.5, size_arcmin: 10.0, px: 640, quality: 88, level_arcmin: 1.0, url: "https://cdn.eso.org/images/publicationjpg/eso0926a.jpg"}
+    made_by: scripts/build_deep_emission.py
+    credit: "ESO (eso0926a), CC BY 4.0"
+    note: "stars removed (they are drawn as stars); nothing else changed but the sharp map's levels, matched to the 512 px map"
+    source: "ESO eso0926a, credit ESO, CC BY 4.0: https://www.eso.org/public/images/eso0926a/ (MPG/ESO 2.2-metre telescope, WFI; B, V and R)"
+  - part: front
+    kind: front
+    what: "the cavity's glowing far wall: ionised gas on the face of the molecular cloud behind NGC 6611"
+    # One bowl behind the cluster (reconstructed): z = -depth cos(pi/2 q), q its elliptical radius on the sky; outside it
+    # the wall is at the cluster's plane. Its size is read from the photograph; its depth is illustrative.
+    lobes:
+      - {name: cavity, centre_west_arcmin: 0.0, centre_north_arcmin: 0.0, along_arcmin: 12.0, across_arcmin: 10.0, pa_deg: 0, depth_ly: 14, shape: cos}
+    blend_ly: 8
+    outside_ly: 0
+    relief: {power: 0.5, max_ln: 0.4, max_ly: 3.0, fine_arcmin: 0.25, wide_arcmin: 2.0}
+    grid: [256, 256]
+    check: "From our line each sky point's light is the photograph's (tests/test_hero_emission.mjs holds the column to 5 %); the wall's slope stays under 1.6"
+    source: "Hester, J. J. et al. 1996, AJ 111, 2349 (the Pillars photo-evaporated by NGC 6611's O stars); McLeod, A. F. et al. 2015, MNRAS 450, 1057 (arXiv:1504.03323: 'the pillar tips are being ionised and photo-evaporated by the massive members of the nearby cluster NGC 6611', a sketch of the Pillars' 3D geometry round the cluster). The cavity's depth here is illustrative"
+  - part: cloud
+    kind: dust
+    what: "the molecular cloud behind the glowing wall: dark from behind"
+    thickness_ly: 10.0
+    sigma_per_ly: 1.5
+    blur_arcmin: 2.0
+    source: "the cloud's thickness and opacity here are illustrative (a model)"
+  - part: dust
+    kind: dust
+    what: "the Pillars of Creation and the other dark columns: dust and gas in front of the glowing wall, seen in silhouette"
+    z_ly: 5.0
+    # Where the photograph's darkness is taken as dust (west, north from the record's place, arcmin): the three Pillars,
+    # the Spire to their south-east and the column east of the cluster. Elsewhere a dark patch is a gap in the glow.
+    blobs:
+      - {name: Pillars of Creation, centre_west_arcmin: -1.8, centre_north_arcmin: -2.8, along_arcmin: 2.6, across_arcmin: 1.8, pa_deg: 150}
+      - {name: the Spire, centre_west_arcmin: -3.6, centre_north_arcmin: -6.0, along_arcmin: 3.4, across_arcmin: 1.2, pa_deg: 160}
+      - {name: the eastern column, centre_west_arcmin: -5.6, centre_north_arcmin: 2.6, along_arcmin: 2.6, across_arcmin: 1.0, pa_deg: 75}
+    tau_max: 1.4
+    source: "Hester et al. 1996; McLeod et al. 2015 (the Pillars are seen against the H II region's glow; their tips face the cluster). How far in front of the wall they stand is not measured: drawn 5 ly in front of the cluster's plane"
+  - part: stars
+    kind: stars
+    what: "NGC 6611's brightest O stars at their catalogued places on the sky; their depths are not measured, so they stand in one plane"
+    stars:
+      - {id: "HD 168076", ra_deg: 274.65175211814, dec_deg: -13.800672476609998, v_mag: 8.25, spectral: "O4III(f)", temp_k: 42000}
+      - {id: "HD 168075", ra_deg: 274.65017430966, dec_deg: -13.793458258760001, v_mag: 8.77, spectral: "O7V(n)((f))z", temp_k: 37000}
+      - {id: "HD 168137", ra_deg: 274.73412283265, dec_deg: -13.808636819329998, v_mag: 8.94, spectral: "O8Vz", temp_k: 35000}
+      - {id: "BD-13 4930", ra_deg: 274.71947877202, dec_deg: -13.82850959893, v_mag: 9.45, spectral: "O9.7V", temp_k: 32000}
+      - {id: "BD-13 4927", ra_deg: 274.6670577257099, dec_deg: -13.755167564360004, v_mag: 9.48, spectral: "O7II(f)", temp_k: 36000}
+      - {id: "BD-13 4923", ra_deg: 274.6363795152399, dec_deg: -13.75329643078, v_mag: 10.08, spectral: "O4V((f+))+O7.5V", temp_k: 43000}
+      - {id: "BD-13 4929", ra_deg: 274.69104350833, dec_deg: -13.77524946726, v_mag: 10.23, spectral: "O7V+B0.5V+B0.5V", temp_k: 37000}
+      - {id: "QR Ser", ra_deg: 274.74454459282, dec_deg: -13.991237950809998, v_mag: 8.28, spectral: "O9.5III+B3-5V/III", temp_k: 31000}
+    note: "V as seen from here, its extinction included; colours a blackbody's at the spectral type's temperature"
+    source: "SIMBAD (CDS), basic and allfluxes tables, read 2026-10-26"
+  - part: clusters
+    kind: points
+    what: "NGC 6611: a seeded sample of its stars"
+    clusters:
+      # Its place: SIMBAD's; its core and radius illustrative.
+      - {name: NGC 6611, ra_deg: 274.688, dec_deg: -13.792, core_arcmin: 1.0, radius_arcmin: 6.0, members: 1500, summed_v: 6.5}
+    count_drawn: [500, 1200, 2200]
+    drawn: "a seeded sample (model): the cluster's place is measured, each star's place and brightness are drawn. Its summed light is the same at every tier; close up they stay pinpoints. Stars behind the wall are dimmed by the cloud"
+    source: "SIMBAD for the cluster's place; its size and summed light are illustrative"
+colours:
+  mode: true
+  lines: {star: "#cfdcff"}
+  note: "The gas's colours are the photograph's own (B, V and R: hydrogen's red, the cluster's light scattered blue-white), shown with each exposure's stretch as the photograph is (scene/exposure.js); the stars a blackbody's at their spectral type's temperature"
+  enhanced:
+    mode: enhanced
+    under: deep
+    lines: {star: "#cfdcff"}
+    note: "Deep: ENHANCED. The photograph's own Deep stretch (gamma 0.7, saturation 1.25, as scene/nebulae.js gives every photograph). Not what an eye or a broadband camera sees"
+drawn: [reconstruction]
+sources:
+  - "Hester, J. J. et al. 1996, Hubble Space Telescope WFPC2 imaging of M16: photoevaporation and emerging young stellar objects, AJ 111, 2349"
+  - "McLeod, A. F. et al. 2015, The Pillars of Creation revisited with MUSE, MNRAS 450, 1057 (https://arxiv.org/abs/1504.03323)"
+  - "SIMBAD (CDS, https://simbad.cds.unistra.fr/), read 2026-10-26: the O stars' places, V magnitudes and spectral types, and NGC 6611's place"
+  - "ESO eso0926a (CC BY 4.0, credit ESO), the photograph the app showed: the hero's LIGHT (its stars removed, site/images/deep/nebulae/) and the relief of its wall"
+review:
+  data_vs_model: "Measured: the stars' places and magnitudes (SIMBAD), that the Pillars are photo-evaporating columns lit by NGC 6611 and seen against the glow, and the light (the photograph). Reconstructed: the cavity's far wall and its relief, the dark columns' absorption from the photograph's darkness. Model: the columns' and the stars' depths, the cloud behind, each cluster star's place and brightness (seeded)"
+  geometry: "One bowl behind the cluster, its size read from the photograph and its depth illustrative, and said so; the Pillars are drawn as dust in front of the wall, not as solid columns"
+  colours: "The photograph's own, with each exposure's stretch as the photograph has it; Deep declared enhanced; stars by spectral type"
+  distance: "The record's 7 000 ly (site/data/dso.json, the Messier list). Gaia-era distances to NGC 6611 are nearer (about 1.7 kpc); the record is not this stage's to change (for spec 0078). Lengths on the sky are scaled to the record's distance"
+  credits: "CREDITS.md section 3l, Emission nebulae (0078 r14-neb-a); the card's rows name the reconstruction and that no astronomer has reviewed it"
+  by: "Space Radar maintainers"
+  date: 2026-10-26
+  astronomer: "not yet: the independent review is internal #785; the card says so"
+credits:
+  - "The Eagle Nebula's Pillars: Hester et al. 1996, AJ 111, 2349; McLeod et al. 2015, MNRAS 450, 1057; its cavity reconstructed by Space Radar"
+  - "Its stars and cluster: SIMBAD, CDS"
+  - "Its light: the photograph eso0926a, ESO (CC BY 4.0), its stars removed by Space Radar"

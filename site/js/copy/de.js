@@ -1083,7 +1083,9 @@ export const COPY = {
       "redblue": "seine Farben stammen aus den Rot- und Blaubildern von New Horizons, mit Grün genau zwischen beiden und der Farbe um die Hälfte verstärkt; die Teile, die nur in Schwarz-Weiß fotografiert wurden, bekommen die Durchschnittsfarbe der Karte",
       "enhanced": "seine Farben sind die von der NASA veröffentlichten, zusammengesetzt aus drei Farbfiltern von New Horizons, keiner davon grün: Das sind verstärkte Farben, kräftiger als das, was ein Auge sähe, und nicht dasselbe",
       "balanced": "seine Farben stammen aus Orange-, Grün- und Blaubildern, auf seine veröffentlichte Farbe abgestimmt und abgeschwächt in Richtung dessen, was ein Auge sehen würde",
-      "infrared": "seine Oberfläche ist eine Nahinfrarot-Karte, die durch den Dunst hindurch gemacht wurde, getönt und weichgezeichnet; im sichtbaren Licht verbirgt der Dunst den Boden"
+      "infrared": "seine Oberfläche ist eine Nahinfrarot-Karte, die durch den Dunst hindurch gemacht wurde, getönt und weichgezeichnet; im sichtbaren Licht verbirgt der Dunst den Boden",
+      "natural": "seine Farben sind natürliche Farben, aus dem roten und blauen Licht, das die Farbkamera von New Horizons gemessen hat, mit Grün, für das sie keinen Filter hatte, zwischen beiden geschätzt, zweieinhalbmal so kräftig wie die der Kamera, so wie die Bilder der NASA in natürlichen Farben ihn zeigen", // 0078 r14-pluto
+      "matched": "seine Farben gehen vom roten und blauen Licht aus, das die Farbkamera von New Horizons gemessen hat, mit Grün, für das sie keinen Filter hatte, zwischen beiden geschätzt, und sind dann Ton für Ton an das eigene Farbbild der NASA von dieser Seite (PIA19952) angeglichen: kräftiger als die der Kamera, so wie die NASA es veröffentlicht hat" // 0078 r14-pluto
     },
     "worldCoverage": {
       "miranda": "nur die südliche Hälfte wurde fotografiert, 1986 von Voyager 2; der Rest bleibt schlicht, nicht geraten",
@@ -1092,19 +1094,20 @@ export const COPY = {
       "titania": "nur die südliche Hälfte wurde fotografiert, 1986 von Voyager 2; der Rest bleibt schlicht, nicht geraten",
       "oberon": "nur die südliche Hälfte wurde fotografiert, 1986 von Voyager 2; der Rest bleibt schlicht, nicht geraten",
       "triton": "Voyager 2 hat 1989 einen Teil fotografiert; der Rest bleibt schlicht, nicht geraten",
-      "pluto": "der ferne Süden lag in Winterdunkelheit, als New Horizons 2015 vorbeiflog, und bleibt schlicht, nicht geraten",
-      "charon": "der ferne Süden lag in Winterdunkelheit, als New Horizons 2015 vorbeiflog, und bleibt schlicht, nicht geraten"
+      "pluto": "der ferne Süden lag in Winterdunkelheit, als New Horizons 2015 vorbeiflog: der Boden dort ist modelliert, eine schwache Textur in den Farben des Landes darüber, kein Foto", // 0078 r14-pluto
+      "charon": "der ferne Süden lag in Winterdunkelheit, als New Horizons 2015 vorbeiflog: der Boden dort ist modelliert, eine schwache Textur in den Farben des Landes darüber, kein Foto" // 0078 r14-pluto
     },
     "worldLit": "beleuchtet, wie eine Kamera es zeigen würde, die auf sein eigenes Sonnenlicht belichtet ist",
     "worldLight": "von weit weg ist es ein Licht in seiner berechneten Helligkeit: Das Leuchten ist die Art, wie eine Kamera einen Punkt aufzeichnet, der zu hell ist, um aufgelöst zu werden",
     "exoticDeparture": {
       "pulseSlowed": "sein Blinken ist {n}-mal langsamer gezeichnet, als es sich dreht, damit ein Auge ihm folgen kann",
       "pulseTrue": "sein Blinken ist so schnell gezeichnet, wie es sich dreht",
-      "portrait": "solange dieser Steckbrief offen ist, wird sein Bild an seinem Ort gezeichnet, viel größer, als es von hier aus aussähe"
+      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert"
     },
     "worldDeparture": {
       "earth": "auf einem größeren Bildschirm stammen seine Berge aus den ETOPO-2022-Höhen der NOAA, {relief}-mal steiler gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt; das Leuchten der Luft um seinen Rand ist {air}-mal höher gezeichnet, als die Luft ist; aus niedriger Umlaufbahn stehen auf einem größeren Bildschirm seine Wolken zum Horizont hin und unter einer tiefstehenden Sonne auf, {clouds}-mal dicker gezeichnet, als sie sind, damit man ihre Neigung, ihre langen Schatten und das letzte Licht auf ihren Spitzen sehen kann (im Aussehen „Gemessen“ in ihrer wahren Dicke), die Höhe jeder Spitze aus ihrer gemessenen Temperatur, wo das heutige Bild sie abdeckt, und sonst aus der Helligkeit der Wolkenkarte",
       "mercury": "auf einem größeren Bildschirm stammt sein Relief aus dem Höhenmodell von MESSENGER, {steep}-mal steiler gezeichnet als gemessen, damit Kraterränder das Licht fangen",
+      "pluto": "sein heller und dunkler Boden ist mit {plutoContrast}-mal dem Kontrast des Kamerabilds gezeichnet, näher an den gemessenen Albedos; die Seite, die New Horizons nur von weitem sah, ist auf ihre eigene Schärfe weichgezeichnet; auf einem größeren Bildschirm stammt sein Relief aus den Stereohöhen von New Horizons, wo es welche gibt, {plutoSteep}-mal steiler gezeichnet als gemessen; der dünne blaue Dunst an seinem Rand ist als Schimmer gezeichnet, am stärksten gegen die Sonne, dessen Stärke gewählt ist", // 0078 r14-pluto
       "mars": "auf einem größeren Bildschirm stammt sein Relief aus den Höhen, die der Laserhöhenmesser von Mars Global Surveyor gemessen hat, {mola}-mal steiler und höher gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt: Die Schatten, die der Olympus Mons und die Canyonwände werfen, sind entsprechend viele Male zu lang.",
       "venus": "das Leuchten um seinen Rand und über seine Tagseite hinaus steht für einen tiefen Dunst; wie dick er gezeichnet ist und wie weit er reicht, ist illustrativ; im Aussehen „Film“ sind seine Wolkenbänder mit dem {uv}-fachen Kontrast seiner Karte gezeichnet, so wie Ultraviolettkameras sie sehen (für ein Auge sind sie fast einfarbig), und das Aussehen „Gemessen“ zeigt die Karte, wie sie ist; sein Boden ist per Radar als Relief aus Magellans Höhenmesser gezeichnet, {ground}-mal steiler und höher als gemessen",
       "neptune": "im Aussehen „Film“ sind die fünf Bögen seines äußeren Rings so gezeichnet, wie Voyager 2 sie 1989 sah, und laufen mit ihrer gemessenen Geschwindigkeit herum; wo sie heute im Ring sind, wird nicht berechnet, und zwei von ihnen sind seither verblasst oder gewandert",
@@ -1202,8 +1205,7 @@ export const COPY = {
     "approachNone": "Die Tabelle des NASA JPL zu nahen Vorbeiflügen wurde nicht geladen, deshalb wird kein nächster Vorbeiflug genannt.",
     "satellitesCount": "{n} arbeitende Satelliten in dem Katalog, den diese Seite von CelesTrak geladen hat, davon {starlink} von Starlink.",
     "satellitesLoading": "Der Katalog lädt noch; die Zahl erscheint, sobald er da ist.",
-    "pictureLine": "Ein echtes Foto, an die Stelle gesetzt, wo es am Himmel steht. Bild: {credit} · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt.",
-    "portraitLine": "Der Ring ist das Bild des Event Horizon Telescope, mit Radiowellen aufgenommen. Er ist viel größer gezeichnet, als er von hier aus aussähe; der Ort ist gemessen. Bild: {credit} · {licence}, Himmel von uns abgedunkelt und Ränder ausgeblendet.",
+    "portraitLine": "Ein Modell, nicht das Foto: Schatten und der um ihn gebogene Lichtring sind so, wie seine Masse sie macht, die leuchtende Scheibe ist modelliert, und die Sterne dahinter werden nicht gebogen. Er ist viel größer gezeichnet, als er von hier aus aussähe; der Ort ist gemessen. Das Foto des Event Horizon Telescope steht auf seinem Steckbrief: {credit} · {licence}.",
     "tonightUp": "Von {place} aus heute Nacht: oben von {begin} bis {end}, am höchsten um {time}, {alt}, im {az}.",
     "tonightGlare": "Von {place} aus heute Nacht: {name} ist zu nah an der Sonne, um gesehen zu werden.",
     "tonightDown": "Von {place} aus heute Nacht: {name} steht nicht über dem Horizont, solange der Himmel dunkel ist.",
@@ -2183,8 +2185,8 @@ export const COPY = {
     "lead": "Wo die Dinge sind und wie sie sich bewegen, ist gemessen oder berechnet. Wie sie aussehen, kommt aus drei Arten von Bildern.",
     "kinds": [
       [
-        "Ein Foto",
-        "Die Nebel und Galaxien sind Teleskopfotos, lang belichtet. Für das Auge am Teleskop ist dasselbe Gas ein schwaches graues Leuchten, und manche Bilder ordnen einzelnen Gasen Farben zu; jeder Steckbrief sagt, welche."
+        "Ein 3D-Modell",
+        "Die Nebel und Galaxien sind 3D-Modelle aus veröffentlichten Messungen, ihr Licht aus Teleskopfotos (lang belichtet); wo es noch kein Modell gibt, ein sanftes Leuchten in seiner Größe. Für das Auge ist dasselbe Gas ein schwaches graues Leuchten. Ein Steckbrief kann das Foto neben dem Modell zeigen."
       ],
       [
         "Eine Karte auf einem Modell",
@@ -2377,8 +2379,6 @@ export const COPY = {
       "unstated": "Sein Archiv sagt nicht, welche Filter benutzt wurden, deshalb sagen wir nicht, ob das die Farben sind, die ein Auge sähe."
     },
     "part": "Es zeigt {part}, nicht das Ganze.",
-    "figureAlt": "Foto von {name}",
-    "figureCaption": "{name}: {w} mal {h} Bogenminuten Himmel.",
     "creditLead": "Bild: ",
     "creditTail": " · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt"
   },
@@ -3591,9 +3591,13 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
+      "m27": "Sein Licht stammt aus dem Foto von NOIRLab, in den eigenen Farbtönen seiner Gase; seine Form ist eine Rekonstruktion: die helle Taille ein dicker Ring, fast von der Kante gesehen, die blasseren „Ohren“ seine Keulen, nach den Geschwindigkeiten seiner Schalen, die Meaburn und andere (2005) gemessen haben. Noch nicht von einem Astronomen geprüft.",
+      "southern-ring": "Sein Licht stammt aus dem Infrarotfoto von Webb; seine Form folgt Kastner und anderen (2024) und De Marco und anderen (2022): ein Ring, fast entlang seiner Achse gesehen, eine Blase durch ihn hindurch und ein molekularer Halo um beide. Noch nicht von einem Astronomen geprüft.",
       "m57": "Sein Licht stammt vom Foto von Hubble, seine Form von O’Dell, Ferland, Henney und Peimbert (2013): ein dicker Ring, um 13,5° geneigt, fast entlang seiner Achse gesehen, das bläulichere Gas seiner Mitte so gezeichnet, dass es auf uns zu und von uns weg reicht. Seine Farben sind die des Fotos, durch schmale Filter aufgenommen. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
+      "dso-m27": [["Seine Form in der Tiefe", "Rekonstruiert. Größe, Winkel am Himmel und die Geschwindigkeiten der Schalen sind gemessen; dass die Taille ein Ring fast von der Kante ist und wie die „Ohren“ zu uns hin und von uns weg reichen, ist die übliche Deutung eines Nebels dieses Aussehens, als Illustration gezeichnet."], ["Seine Farben", "Die eigenen Farbtöne seiner Gase, aus den schmalen Filtern des Fotos: Sauerstoff blaugrün, Wasserstoff und Schwefel rot. Wie stark jedes gezeigt wird, haben wir gewählt."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
+      "dso-southern-ring-nebula": [["Seine Form in der Tiefe", "Rekonstruiert. Dass sein heller Ring 15–30° von seiner Achse gesehen wird, ist gemessen (Kastner und andere, 2024); welche Seite näher ist, die Dicke des Rings und die Länge der Blase sind illustrativ."], ["Seine Farben", "Infrarotlicht, das kein Auge sieht, von den Bildmachern des Webb-Teleskops eingefärbt."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
       "dso-m57": [
         [
           "Seine Entfernung",
@@ -3613,6 +3617,7 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
+      "m45": "Sein Licht ist das Foto von NOIRLab: eine Staubwolke, die durch den Haufen zieht, knapp vor seinen Sternen, und deren blaues Licht streut (Ritchey und andere, 2006). Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
       "crab": "Sein Licht stammt vom Foto von Hubble, in Falschfarben, getragen von einer Schale, deren Form Martin, Milisavljevic und Drissen (2021) folgt: ein Filamentkäfig von etwa 4 Parsec Länge um eine leere Mitte. Noch nicht von einem Astronomen geprüft.",
       "veil": "Sein Licht stammt vom Foto von NOIRLab, in Falschfarben, getragen von einer dünnen Kugel von 37 Parsec Durchmesser (Fesen und andere, 2018): Die Filamente sind ihr Rand, von der Kante gesehen. Noch nicht von einem Astronomen geprüft.",
       "horsehead": "Seine Dunkelheit ist aus dem Foto von NOIRLab abgelesen: Staub vor dem leuchtenden Gas von IC 434, der schluckt und rötet, was dahinter ist, und kein Licht abgibt. Noch nicht von einem Astronomen geprüft.",
@@ -3621,6 +3626,7 @@ export const COPY = {
       "iris": "Sein Licht ist das Foto von NOIRLab: Staub, der das Licht des jungen Sterns HD 200775 in einer Mulde seiner Wolke streut. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
+      "dso-m45": [["Seine Form in der Tiefe", "Rekonstruiert. Das Gas liegt vor den Sternen, wie ihr Licht zeigt; wie weit davor und wie dick der Staub ist, ist illustrativ, und die Tiefen der Sterne im Haufen sind ein festes Modell, nicht gemessen."], ["Was der Staub tut", "Er streut das Licht der Sterne, das blaue am stärksten, und leuchtet daher blau um die hellsten, vor allem Merope und Maia. Es ist eine durchziehende Wolke, nicht die, aus der die Sterne entstanden sind."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
       "dso-m1": [
         [
           "Seine Form in der Tiefe",
