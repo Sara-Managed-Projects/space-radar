@@ -1730,6 +1730,10 @@ No logo, lettering, flag or insignia is on any of the ten. INPE, CRESDA, KARI, I
 `site/images/` holds two pictures, shown on the cards for the only two objects in
 `registry/exotics.yaml` that anybody has photographed. They are not illustrations and nothing in
 them was redrawn.
+<!-- 0078 r14-mw-bh: begin -->
+Since release 1.4.0 they are shown ONLY on those two cards, as the photograph beside the model: in the scene and at
+the trips' stops every black hole is drawn as a 3D model (`site/js/scene/blackhole.js`, §3m), not as a picture.
+<!-- 0078 r14-mw-bh: end -->
 
 | file | object | credit | licence | source |
 |---|---|---|---|---|
@@ -2467,6 +2471,21 @@ redshift). As seen from the Sun each galaxy is as wide as Webb measured it (its 
 distance; its true width is that over 1 + z). Its light is its F200W magnitude, an exposure and not photometry; its tint is the F090W
 minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and each is drawn as one round, centrally peaked shape.
 <!-- 0077 W3-f: end -->
+
+<!-- 0078 r14-mw-bh: begin -->
+## 3m. The black holes in 3D (release 1.4.0)
+
+No photograph is drawn in the scene; the model is our own code (MIT). What it is drawn from:
+
+**The black holes** (`site/js/scene/blackhole.js`): Schwarzschild light bending (Binet's equation), the Shakura-Sunyaev
+disc, relativistic Doppler beaming. Sagittarius A* and M87*: the Event Horizon Telescope Collaboration 2019 (ApJL 875, L1)
+and 2022 (ApJL 930, L12); M87*'s jet: Walker et al. 2018, ApJ 855, 128 (position angle 288°, 17° from our line), its shape
+Asada & Nakamura 2012, ApJL 745, L28, its knots Perlman et al. 2011, ApJ 743, 119. Cygnus X-1: the orbit's period
+(Brocksopp et al. 1999, A&A 343, 861), its inclination (Miller-Jones et al. 2021, Science 371, 1046), the supergiant
+HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikipedia "Cygnus X-1", read 2026-10-27). The
+masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
+the stellar holes), it is chosen and `blackhole.js` says so.
+<!-- 0078 r14-mw-bh: end -->
 
 ## 4. Runtime data sources
 

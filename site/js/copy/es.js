@@ -979,7 +979,7 @@ export const COPY = {
     exoticDeparture: {
       pulseSlowed: "su parpadeo se dibuja {n} veces más lento de lo que gira, para que un ojo pueda seguirlo",
       pulseTrue: "su parpadeo se dibuja al ritmo al que gira",
-      portrait: "mientras esta ficha está abierta, su imagen se dibuja en su lugar, mucho más grande de lo que se vería desde aquí"
+      portrait: "mientras esta ficha está abierta, se dibuja en su lugar un modelo, mucho más grande de lo que se vería desde aquí: la sombra y la luz curvada como las da su masa, el disco modelado"
     },
     worldDeparture: {
       earth: "en una pantalla más grande, sus montañas salen de las alturas ETOPO 2022 de NOAA, dibujadas {relief} veces más empinadas de lo que son para que un Sol bajo las muestre; el resplandor del aire alrededor de su borde se dibuja {air} veces más alto que el aire; desde una órbita baja y en una pantalla más grande, sus nubes se alzan hacia el horizonte y bajo un Sol bajo, dibujadas {clouds} veces más gruesas de lo que son para que se vean su inclinación, sus largas sombras y la última luz en sus cimas (con su grosor verdadero en el aspecto Medido), con la altura de cada cima tomada de su temperatura medida donde cubre la imagen de hoy y del brillo del mapa de nubes en el resto",
@@ -1083,7 +1083,7 @@ export const COPY = {
     satellitesCount: "{n} satélites en funcionamiento en el catálogo que esta página cargó de CelesTrak, {starlink} de ellos Starlink.",
     satellitesLoading: "El catálogo aún se está cargando; el recuento aparece cuando termine.",
     pictureLine: "Una fotografía real, colocada donde está en el cielo. Imagen: {credit} · {licence}, con los bordes atenuados y el cielo oscurecido por nosotros.",
-    portraitLine: "El anillo es la imagen del Event Horizon Telescope, hecha con ondas de radio. Se dibuja mucho más grande de lo que se vería desde aquí; el lugar es medido. Imagen: {credit} · {licence}, con el cielo oscurecido y los bordes atenuados por nosotros.",
+    portraitLine: "Un modelo, no la fotografía: la sombra y el anillo de luz curvada a su alrededor son los que da su masa, el disco luminoso está modelado y las estrellas de detrás no se curvan. Se dibuja mucho más grande de lo que se vería desde aquí; el lugar es medido. La fotografía del Event Horizon Telescope está en su ficha: {credit} · {licence}.",
     tonightUp: "Desde {place} esta noche: sobre el horizonte de {begin} a {end}, en su punto más alto a las {time}, {alt}, hacia el {az}.",
     tonightGlare: "Desde {place} esta noche: {name} está demasiado cerca del Sol para verse.",
     tonightDown: "Desde {place} esta noche: {name} no está sobre el horizonte mientras el cielo está oscuro.",

@@ -3792,7 +3792,7 @@ export const TOURS = [
 "portrait": true,
 "card": {
 "title": "Sagittarius A star",
-"body": "Nobody can see this black hole itself. Astronomers watched a star go round it, once every sixteen years, at millions of kilometres an hour, and worked out what it must be circling. Then eight radio observatories, working as one telescope the size of the Earth, made this picture: glowing gas, and a shadow in the middle."
+"body": "Nobody can see this black hole itself. Astronomers watched a star go round it every sixteen years, at millions of kilometres an hour, and worked out what it circles. Eight radio observatories, working as one telescope the size of the Earth, then photographed glowing gas and a shadow. Here it is drawn as a model, from its mass."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
@@ -3814,14 +3814,14 @@ export const TOURS = [
 "portrait": true,
 "card": {
 "title": "The first picture of a black hole",
-"body": "Far beyond our own galaxy, in a galaxy called M87, is a black hole with the mass of six and a half billion Suns. This is the first picture ever made of one, taken by eight radio telescopes working together. The dark middle is its shadow, and it is far wider than our whole Solar System."
+"body": "Far beyond our galaxy, in the galaxy M87, is a black hole with the mass of six and a half billion Suns. In 2019 eight radio telescopes working together made the first picture of one. Here it is drawn as a model. Its dark shadow is bigger than our whole Solar System."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 20000
+"dwell_ms": 19816
 },
 {
 "id": "sun",
@@ -3844,7 +3844,7 @@ export const TOURS = [
 "dwell_ms": 20000
 }
 ],
-"estimate_ms": 136069
+"estimate_ms": 135885
 },
 {
 "id": "through-a-telescope",

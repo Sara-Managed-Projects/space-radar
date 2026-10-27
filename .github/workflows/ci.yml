@@ -223,6 +223,10 @@ jobs:
         run: python3 tests/test_avif_trial.py
       - name: "the Milky Way shader's spike cut takes the baked stars out of the 2k panorama and keeps its glow (internal #547; skips without NumPy)"
         run: python3 tests/test_milkyway_opening.py
+      # 0078 r14-mw-bh: begin
+      - name: "A black hole in 3D: the shadow, the bent light, the beamed disc, M87*'s jet, Cygnus X-1's companion (release 1.4.0)"
+        run: node tests/test_blackhole.mjs
+      # 0078 r14-mw-bh: end
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)

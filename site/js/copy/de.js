@@ -1102,7 +1102,7 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "sein Blinken ist {n}-mal langsamer gezeichnet, als es sich dreht, damit ein Auge ihm folgen kann",
       "pulseTrue": "sein Blinken ist so schnell gezeichnet, wie es sich dreht",
-      "portrait": "solange dieser Steckbrief offen ist, wird sein Bild an seinem Ort gezeichnet, viel größer, als es von hier aus aussähe"
+      "portrait": "solange dieser Steckbrief offen ist, wird an seinem Ort ein Modell gezeichnet, viel größer, als es von hier aus aussähe: Schatten und gebogenes Licht, wie seine Masse sie macht, die Scheibe modelliert"
     },
     "worldDeparture": {
       "earth": "auf einem größeren Bildschirm stammen seine Berge aus den ETOPO-2022-Höhen der NOAA, {relief}-mal steiler gezeichnet, als sie sind, damit eine tiefstehende Sonne sie zeigt; das Leuchten der Luft um seinen Rand ist {air}-mal höher gezeichnet, als die Luft ist; aus niedriger Umlaufbahn stehen auf einem größeren Bildschirm seine Wolken zum Horizont hin und unter einer tiefstehenden Sonne auf, {clouds}-mal dicker gezeichnet, als sie sind, damit man ihre Neigung, ihre langen Schatten und das letzte Licht auf ihren Spitzen sehen kann (im Aussehen „Gemessen“ in ihrer wahren Dicke), die Höhe jeder Spitze aus ihrer gemessenen Temperatur, wo das heutige Bild sie abdeckt, und sonst aus der Helligkeit der Wolkenkarte",
@@ -1206,7 +1206,7 @@ export const COPY = {
     "satellitesCount": "{n} arbeitende Satelliten in dem Katalog, den diese Seite von CelesTrak geladen hat, davon {starlink} von Starlink.",
     "satellitesLoading": "Der Katalog lädt noch; die Zahl erscheint, sobald er da ist.",
     "pictureLine": "Ein echtes Foto, an die Stelle gesetzt, wo es am Himmel steht. Bild: {credit} · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt.",
-    "portraitLine": "Der Ring ist das Bild des Event Horizon Telescope, mit Radiowellen aufgenommen. Er ist viel größer gezeichnet, als er von hier aus aussähe; der Ort ist gemessen. Bild: {credit} · {licence}, Himmel von uns abgedunkelt und Ränder ausgeblendet.",
+    "portraitLine": "Ein Modell, nicht das Foto: Schatten und der um ihn gebogene Lichtring sind so, wie seine Masse sie macht, die leuchtende Scheibe ist modelliert, und die Sterne dahinter werden nicht gebogen. Er ist viel größer gezeichnet, als er von hier aus aussähe; der Ort ist gemessen. Das Foto des Event Horizon Telescope steht auf seinem Steckbrief: {credit} · {licence}.",
     "tonightUp": "Von {place} aus heute Nacht: oben von {begin} bis {end}, am höchsten um {time}, {alt}, im {az}.",
     "tonightGlare": "Von {place} aus heute Nacht: {name} ist zu nah an der Sonne, um gesehen zu werden.",
     "tonightDown": "Von {place} aus heute Nacht: {name} steht nicht über dem Horizont, solange der Himmel dunkel ist.",

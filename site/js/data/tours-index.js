@@ -229,7 +229,7 @@ export const TOURS_INDEX = [
 "next": "through-a-telescope",
 "min_stops": 3,
 "count": 6,
-"estimate_ms": 136069
+"estimate_ms": 135885
 },
 {
 "id": "through-a-telescope",

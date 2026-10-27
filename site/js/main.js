@@ -662,14 +662,14 @@ export async function boot({ setStatus } = {}) {
         ? m.spaceWeatherLine(ctx.spaceWeather.parsed, ctx.spaceWeather.result, Date.now()) || '' : '');
     }))
     .catch((e) => { console.warn('the space weather did not load', e); spaceWeatherImport = null; }));
-  // A BLACK HOLE'S PICTURE AT ITS PLACE (scene/portraits.js), for a trip stop that says
-  // `portrait: true`, and the sentence under that stop: what the picture is, that it is drawn far
-  // larger than it would look, and whose it is (the row's own credit, registry/exotics.yaml).
+  // A BLACK HOLE AT ITS PLACE, IN 3D (scene/portraits.js, scene/blackhole.js; release 1.4.0), for a trip stop
+  // that says `portrait: true`, and the sentence under that stop: that it is a model, drawn far larger than it
+  // would look, and whose the photograph on its card is (the row's own credit, registry/exotics.yaml).
   ctx.portraits = null;
   let portraitsImport = null;
   let portraitAsked = '';
   const wantPortraits = () => portraitsImport || (portraitsImport = import('./scene/portraits.js')
-    .then((m) => { ctx.portraits = m.createPortraits(scene); return ctx.portraits; })
+    .then((m) => { ctx.portraits = m.createPortraits(scene, { tier: () => (ctx.latch && ctx.latch.latched ? 0 : ctx.quality ? ctx.quality.tier : 1), recordById: (id) => ctx.recordById(id) }); return ctx.portraits; }) // 0078 r14-mw-bh
     .catch((e) => { console.warn('the black hole pictures did not load', e); portraitsImport = null; return null; }));
   // OUTSIDE A TRIP TOO (public #426, 2026-10-08): the picture is drawn while the black hole's own
   // card is open on a rung of the ladder, and the card says it is drawn far larger than life
@@ -687,7 +687,7 @@ export async function boot({ setStatus } = {}) {
   }
   window.addEventListener('sr:select', (e) => {
     const record = e && e.detail;
-    cardPortrait = record && record.klass === 'exotic' && record.meta && record.meta.image && record.meta.image.file ? record.id : '';
+    cardPortrait = record && record.klass === 'exotic' && record.meta && record.meta.kind === 'blackhole' ? record.id : ''; // 0078 r14-mw-bh: every black hole, in 3D
     syncPortrait();
   });
   // A PULSAR'S PULSE (scene/pulsars.js): asked for the first time the exotics are drawn on a rung

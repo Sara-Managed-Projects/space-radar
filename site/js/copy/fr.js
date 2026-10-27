@@ -1106,7 +1106,7 @@ export const COPY = {
     "exoticDeparture": {
       "pulseSlowed": "son clignotement est dessiné {n} fois plus lent que sa rotation, pour que l’œil puisse le suivre",
       "pulseTrue": "son clignotement est dessiné à la vitesse de sa rotation",
-      "portrait": "tant que cette fiche est ouverte, son image est dessinée à sa place, bien plus grande qu’elle ne paraîtrait d’ici"
+      "portrait": "tant que cette fiche est ouverte, un modèle est dessiné à sa place, bien plus grand qu’il ne paraîtrait d’ici : l’ombre et la lumière courbée que donne sa masse, le disque modélisé"
     },
     "worldDeparture": {
       "earth": "sur un grand écran, ses montagnes viennent des altitudes ETOPO 2022 de la NOAA, dessinées {relief} fois plus raides qu’elles ne sont pour qu’un Soleil bas les montre ; la lueur de l’air sur son bord est dessinée {air} fois plus haute que l’air ; depuis l’orbite basse sur un grand écran, ses nuages se dressent vers l’horizon et sous un Soleil bas, dessinés {clouds} fois plus épais qu’ils ne sont pour qu’on voie leur inclinaison, leurs longues ombres et la dernière lumière sur leurs sommets (à leur vraie épaisseur dans l’aspect Mesuré), la hauteur de chaque sommet venant de sa température mesurée là où l’image du jour la couvre, et de l’éclat de la carte des nuages ailleurs",
@@ -1210,7 +1210,7 @@ export const COPY = {
     "satellitesCount": "{n} satellites en service dans le catalogue que cette page a chargé depuis CelesTrak, dont {starlink} Starlink.",
     "satellitesLoading": "Le catalogue est encore en chargement ; le nombre s’affichera quand il sera là.",
     "pictureLine": "Une vraie photographie, placée là où elle est dans le ciel. Image : {credit} · {licence}, bords estompés et ciel assombri par nos soins.",
-    "portraitLine": "L’anneau est l’image de l’Event Horizon Telescope, faite avec des ondes radio. Il est dessiné bien plus grand qu’il ne paraîtrait d’ici ; la position est mesurée. Image : {credit} · {licence}, ciel assombri et bords estompés par nos soins.",
+    "portraitLine": "Un modèle, pas la photographie : l’ombre et l’anneau de lumière courbée autour sont ceux que donne sa masse, le disque lumineux est modélisé, et les étoiles derrière ne sont pas courbées. Il est dessiné bien plus grand qu’il ne paraîtrait d’ici ; le lieu est mesuré. La photographie de l’Event Horizon Telescope est sur sa fiche : {credit} · {licence}.",
     "tonightUp": "Depuis {place} ce soir : levé de {begin} à {end}, au plus haut à {time}, {alt}, {az}.",
     "tonightGlare": "Depuis {place} ce soir : {name} est trop près du Soleil pour être vu.",
     "tonightDown": "Depuis {place} ce soir : {name} n’est pas au-dessus de l’horizon pendant que le ciel est sombre.",
