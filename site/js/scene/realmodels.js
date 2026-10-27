@@ -139,6 +139,16 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
 const GPS_FILE = { made: 'dimensions', axes: 'app' };
 const W3B = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0077 W3-b
 const R14M4 = { colour: 'satellite', made: 'dimensions', axes: 'app' }; // 0078 r14-m4
+// 0078 r14-m5: begin
+// One shared entry a file (the routes below are one number each): the commercial Earth imagers, built from dimensions.
+const R14_WV3 = { ...W3B, file: 'worldview-3.glb', name: 'WorldView-3' };
+const R14_BSK = { ...W3B, file: 'blacksky-gen2.glb', name: 'BlackSky Global' };
+const R14_SAT = { ...W3B, file: 'satellogic-newsat.glb', name: 'Satellogic NewSat' };
+const R14_PEL = { ...W3B, file: 'planet-pelican.glb', name: 'Planet Pelican' };
+const R14_HAWK = { ...W3B, file: 'hawkeye360-block1.glb', name: 'HawkEye 360 Pathfinder' };
+const R14_GHG = { ...W3B, file: 'ghgsat-c.glb', name: 'GHGSat-C' };
+const R14_GF1 = { ...W3B, file: 'gaofen-1.glb', name: 'Gaofen-1' };
+// 0078 r14-m5: end
 function gpsBlock(record) {
   const year = record && record.meta ? record.meta.launchYear : null;
   if (!Number.isFinite(year)) return {};
@@ -889,6 +899,68 @@ export const REAL_MODELS = {
     27597: { ...R14M4, file: 'midori-2.glb', name: 'Midori II (ADEOS-II)' },
     29228: { ...R14M4, file: 'resurs-dk1.glb', name: 'Resurs-DK 1' },
     // 0078 r14-m4: end
+    // 0078 r14-m5: begin
+    // EARTH IMAGERS (release 1.4.0 stage r14-m5; public #976, #1148, #1149, #1150, #1151, #1152, #1147), each BUILT in
+    // code from cited metres and looked-at pictures (registry/models.yaml rows `worldview-3`, `blacksky-gen2`,
+    // `satellogic-newsat`, `planet-pelican`, `hawkeye360-block1`, `ghgsat-c`, `gaofen-1`), by number and only for the numbers that are
+    // that design (`W3B` above: a satellite's colour, made from dimensions, the app's axes: +Z the Earth face).
+    //   WorldView-3 only: WorldView-1 and -2 (same bus, other heights), GeoEye-1 (SA-200HP) and Legion (500 series) are not.
+    //   BlackSky Global-2 to -19 (the first two generations, 55 to 60 kg); not the Gen-3 craft (Global-31 and later).
+    //   Satellogic NewSat: all 18 (one form factor, 0.51 x 0.57 x 0.82 m). Planet Pelican: all 9 (one platform).
+    //   HawkEye 360 Hawk-A, -B, -C (the Pathfinder block); not the later, larger blocks.
+    //   GHGSat-C1 to -C8 (SFL's NEMO bus); not C12 and C13. Gaofen-1 only, not Gaofen-1 02, 03, 04.
+    40115: R14_WV3,
+    43812: R14_BSK,
+    44499: R14_BSK,
+    47971: R14_BSK,
+    49469: R14_BSK,
+    49772: R14_BSK,
+    49773: R14_BSK,
+    49949: R14_BSK,
+    49950: R14_BSK,
+    52196: R14_BSK,
+    55982: R14_BSK,
+    55983: R14_BSK,
+    52184: R14_SAT,
+    55047: R14_SAT,
+    55048: R14_SAT,
+    56201: R14_SAT,
+    56202: R14_SAT,
+    56203: R14_SAT,
+    56944: R14_SAT,
+    56966: R14_SAT,
+    59122: R14_SAT,
+    60493: R14_SAT,
+    60498: R14_SAT,
+    60500: R14_SAT,
+    62640: R14_SAT,
+    66692: R14_SAT,
+    66740: R14_SAT,
+    66743: R14_SAT,
+    68432: R14_SAT,
+    68442: R14_SAT,
+    58296: R14_PEL,
+    62631: R14_PEL,
+    65315: R14_PEL,
+    65316: R14_PEL,
+    66667: R14_PEL,
+    66703: R14_PEL,
+    69018: R14_PEL,
+    69019: R14_PEL,
+    69871: R14_PEL,
+    43765: R14_HAWK,
+    43794: R14_HAWK,
+    43799: R14_HAWK,
+    46278: R14_GHG,
+    47509: R14_GHG,
+    52737: R14_GHG,
+    52746: R14_GHG,
+    52744: R14_GHG,
+    56204: R14_GHG,
+    56209: R14_GHG,
+    56186: R14_GHG,
+    39150: R14_GF1,
+    // 0078 r14-m5: end
     // 0077 W3-a: begin
     // NASA SCIENCE CRAFT (release 1.3.0, stage W3-a; public #1090, #1091, #1092, #1094, #1110). NASA 3D Resources has
     // none of the five (its 1 583 paths read 2026-10-20), so each is built here from cited dimensions and photographs
