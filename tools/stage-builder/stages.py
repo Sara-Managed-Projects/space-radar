@@ -113,30 +113,30 @@ def centaur3():
     s = Stage("atlas5-centaur")
     R = 1.525
     yt = 2.32  # throat plane
-    s.engine_head("rl10", yt, 0.36, 0.34, "#8D939B", line_col="#C0C5CC")
-    s.bell_ext("rl10-bell", yt, 0.15, 0.765, 2.32, 1.05, "#B0B5BC", "#2B2D31", seg=48, n=26, p=1.7,
+    s.engine_head("rl10", yt, 0.36, 0.34, "#70757C", line_col="#999DA3")
+    s.bell_ext("rl10-bell", yt, 0.15, 0.765, 2.32, 1.05, "#8C9096", "#2B2D31", seg=48, n=26, p=1.7,
                ribs_fixed=14, ribs_ext=7, joint_col="#6C727A")
     for a in (60, 180, 300):
         s.body("actuator", STEEL, rod(polar(0.55, a, 2.85), polar(0.28, a, 2.35), 0.035, 8))
     ya = 3.35
-    s.dome("aft-dome", ya, R, 0.95, "#A8ADB4", up=False, seg=64, n=10, welds=3)
+    s.dome("aft-dome", ya, R, 0.95, "#868A90", up=False, seg=64, n=10, welds=3)
     s.cone("engine-foil", 2.5, 2.95, 0.52, 0.34, "#C8CDD4", role="foil", seg=32)
     for k in range(6):
         a = 60 * k + 15
         s.body("dome-tab", STEEL_D, box(polar(1.05, a, ya - 0.45), (0.5, 0.05, 0.14), lib.rot("y", -a)))
-    s.barrel("lh2", ya, 9.5, R, "#B3B8BF", seg=64, welds=6, weld_col="#8F959C", panels=6, tint=0.025, weld_w=0.04)
+    s.barrel("lh2", ya, 9.5, R, "#8F9398", seg=64, welds=6, weld_col="#72777C", panels=6, tint=0.025, weld_w=0.04)
     s.ring("intermediate-bulkhead", 9.5, R, 0.1, "#7F858C", lift=0.025, seg=64)
-    s.barrel("lox", 9.5, 10.9, R, "#B8BDC4", seg=64, welds=1, weld_col="#8F959C", panels=2, tint=0.025, weld_w=0.04)
-    s.dome("fwd-dome", 10.9, R, 0.62, "#A8ADB4", up=True, seg=64, n=8, welds=2)
+    s.barrel("lox", 9.5, 10.9, R, "#93979C", seg=64, welds=1, weld_col="#72777C", panels=2, tint=0.025, weld_w=0.04)
+    s.dome("fwd-dome", 10.9, R, 0.62, "#868A90", up=True, seg=64, n=8, welds=2)
     for a in (80, 235):
-        s.pad("fill-line", 6.8, a, R, (0.09, 6.4, 0.09), "#9AA0A8")
+        s.pad("fill-line", 6.8, a, R, (0.09, 6.4, 0.09), "#7B8086")
     s.pad("cable-duct", 6.2, 150, R, (0.2, 7.4, 0.06), "#C9CDD2")
     for a in (30, 120, 210, 300):
         s.thruster_pod("rcs", ya + 0.1, a, R, "#43474D", BLACK, n=2)
-    s.barrel("fwd-adapter", 11.25, 12.55, 1.42, "#E2E5E8", seg=56, welds=1, weld_col="#BFC4CA")
-    s.cone("fwd-adapter-cone", 11.15, 11.25, R, 1.42, "#BFC4CA", seg=56)
+    s.barrel("fwd-adapter", 11.25, 12.55, 1.42, "#E2E5E8", seg=56, welds=1, weld_col="#989CA1")
+    s.cone("fwd-adapter-cone", 11.15, 11.25, R, 1.42, "#989CA1", seg=56)
     for k, a in enumerate(ang_ring(5, 20)):
-        s.pad("avionics-%d" % k, 11.9, a, 1.42, (0.55, 0.42, 0.18), "#CDD1D6" if k % 2 else "#9CA2AA")
+        s.pad("avionics-%d" % k, 11.9, a, 1.42, (0.55, 0.42, 0.18), "#CDD1D6" if k % 2 else "#7C8188")
     s.ring("payload-ring", 12.6, 1.42, 0.12, "#7B8189", lift=0.03, seg=56)
     s.plate_disc("fwd-plate", 12.66, 1.45, "#6C727A", seg=56)
     s.foil_patches("fwd-foil", 11.35, 12.45, 1.42, GOLD, 5, seed=3, size=(0.55, 0.3))
@@ -157,26 +157,26 @@ def centaur_d():
     # two RL10A-3: fixed bells, 1.5 m long, 1.0 m exit, canted 4 degrees outward, with their pump heads
     for sx, tilt in ((-1, 4.0), (1, -4.0)):
         x = sx * 0.50
-        s.engine_head("rl10", 1.6, 0.25, 0.30, "#8D939B", x=x, line_col="#C0C5CC")
-        s.bell("rl10-bell", 1.6, 0.10, 0.50, 1.55, "#B8BDC3", x=x, seg=40, n=22, p=1.7, ribs=18,
-               rib_col="#98A0A8", tilt=(0, tilt), inner_col="#6A7078")
+        s.engine_head("rl10", 1.6, 0.25, 0.30, "#70757C", x=x, line_col="#999DA3")
+        s.bell("rl10-bell", 1.6, 0.10, 0.50, 1.55, "#93979C", x=x, seg=40, n=22, p=1.7, ribs=18,
+               rib_col="#798086", tilt=(0, tilt), inner_col="#6A7078")
         s.body("actuator", STEEL, rod(V(x + sx * 0.38, 2.4, 0.0), V(x + sx * 0.2, 1.65, 0.0), 0.03, 8))
-        s.body("duct", "#9AA0A8", rod(V(x * 1.6, 2.2, 0.6), V(x, 1.75, 0.18), 0.06, 8))
-        s.body("duct2", "#9AA0A8", rod(V(x * 1.6, 2.2, -0.6), V(x, 1.75, -0.18), 0.06, 8))
+        s.body("duct", "#7B8086", rod(V(x * 1.6, 2.2, 0.6), V(x, 1.75, 0.18), 0.06, 8))
+        s.body("duct2", "#7B8086", rod(V(x * 1.6, 2.2, -0.6), V(x, 1.75, -0.18), 0.06, 8))
     ya = 2.75
-    s.dome("aft-bulkhead", ya, R, 0.95, "#B0B5BC", up=False, seg=64, n=10, welds=4)
+    s.dome("aft-bulkhead", ya, R, 0.95, "#8C9096", up=False, seg=64, n=10, welds=4)
     for k in range(14):  # the rows of doubler tabs on the aft bulkhead
         a = 360 * k / 14 + 8
-        s.body("doubler", "#8B9199", box(polar(1.18, a, ya - 0.5), (0.34, 0.04, 0.10), lib.rot("y", -a)))
-        s.body("doubler", "#8B9199", box(polar(0.82, a + 12, ya - 0.78), (0.26, 0.04, 0.08), lib.rot("y", -a - 12)))
-    s.barrel("lh2", ya, 6.35, R, "#B9BEC5", seg=64, welds=5, weld_col="#8F959C", panels=5, tint=0.03, weld_w=0.045)
+        s.body("doubler", "#6F747A", box(polar(1.18, a, ya - 0.5), (0.34, 0.04, 0.10), lib.rot("y", -a)))
+        s.body("doubler", "#6F747A", box(polar(0.82, a + 12, ya - 0.78), (0.26, 0.04, 0.08), lib.rot("y", -a - 12)))
+    s.barrel("lh2", ya, 6.35, R, "#94989D", seg=64, welds=5, weld_col="#72777C", panels=5, tint=0.03, weld_w=0.045)
     s.ring("intermediate-bulkhead", 6.35, R, 0.12, "#80868D", lift=0.03, seg=64)
-    s.barrel("lox", 6.35, 7.45, R, "#BFC4CB", seg=64, welds=1, weld_col="#8F959C", panels=2, tint=0.03, weld_w=0.045)
-    s.dome("fwd-bulkhead", 7.45, R, 0.62, "#B0B5BC", up=True, seg=64, n=8, welds=2)
+    s.barrel("lox", 6.35, 7.45, R, "#989CA2", seg=64, welds=1, weld_col="#72777C", panels=2, tint=0.03, weld_w=0.045)
+    s.dome("fwd-bulkhead", 7.45, R, 0.62, "#8C9096", up=True, seg=64, n=8, welds=2)
     for a in (90, 250):
-        s.pad("line", 4.8, a, R, (0.08, 4.2, 0.08), "#9AA0A8")
+        s.pad("line", 4.8, a, R, (0.08, 4.2, 0.08), "#7B8086")
     # forward equipment: a ring of boxes on a truss, gold and silver foil over the guidance package
-    s.truss_band("fwd-truss", 8.0, 8.55, R, R, "#9CA2AA", n=12, tube=0.03)
+    s.truss_band("fwd-truss", 8.0, 8.55, R, R, "#7C8188", n=12, tube=0.03)
     for k, a in enumerate(ang_ring(8, 10)):
         s.pad("equip-%d" % k, 8.9, a, 1.42, (0.5, 0.5, 0.22), "#E4E7EA" if k % 3 else "#C9CDD2")
     s.barrel("fwd-skin", 8.55, 9.45, 1.42, "#D8DCE0", seg=56)
@@ -282,9 +282,12 @@ def kosmos3m():
         s.body("steer-pipe", STEEL_D, rod(polar(0.22, a, 1.25), polar(0.62, a, 1.15), 0.03, 6))
     ya = 1.75
     s.dome("aft-dome", ya, R, 0.62, "#B5BAC1", up=False, seg=56, n=8, welds=1)
-    s.barrel("tank", ya, 4.55, R, "#E7E9EB", seg=56, welds=2, weld_col="#C8CBCE", panels=3, tint=0.015)
-    s.barrel("belt-1", 2.25, 2.7, R + 0.012, ORANGE, seg=56)
-    s.barrel("belt-2", 3.55, 4.0, R + 0.012, ORANGE, seg=56)
+    # white skin with two orange belts: the belts are the skin itself, not a layer on it (no z-fighting at close-up)
+    segs = [(ya, 2.25, "#E7E9EB"), (2.25, 2.7, ORANGE), (2.7, 3.55, "#E7E9EB"), (3.55, 4.0, ORANGE), (4.0, 4.55, "#E7E9EB")]
+    for k, (a, b, col) in enumerate(segs):
+        s.barrel("tank-%d" % k, a, b, R, col, seg=56, panels=2 if b - a > 0.6 else 1, tint=0.015 if col != ORANGE else 0.0)
+        if k:
+            s.add("seam", "body", "#B9BCBF", frustum((0, a - 0.015, 0), (0, a + 0.015, 0), R + 0.012, R + 0.012, 56, caps=False))
     s.ring("tank-joint", 4.55, R, 0.1, "#9AA0A8", lift=0.02, seg=56)
     s.barrel("instrument", 4.55, 5.55, R, GREYB, seg=56, welds=1, weld_col="#5F6369")
     checker(s, 5.15, 5.55, R, 28, "#E7E9EB", "#26282C", rows=2)
