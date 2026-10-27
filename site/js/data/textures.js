@@ -182,7 +182,7 @@ export const TEXTURES = [
           2048,
           1024
         ],
-        "bytes": 27592,
+        "bytes": 20634,
         "format": "rgb",
         "credit": "Milky Way: Space Radar's own model (scripts/build-milkyway-sky.mjs)"
       }

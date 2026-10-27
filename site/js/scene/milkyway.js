@@ -103,7 +103,7 @@ export const KIND_RGB = [[0.78, 0.80, 0.92], [1.0, 0.86, 0.66], [1.0, 0.78, 0.52
  * cloud tens of times the band in Cygnus, the poles dark: tests/test_milkyway_inside.mjs holds the order), the way
  * a photograph's stretch is chosen. Illustrative.
  */
-export const EXPOSE = { disc: 3.0, bulge: 9, bar: 2.5, arm: 0.15, gamma: 0.8, gain: 1.8e-3, floor: 160 };
+export const EXPOSE = { disc: 3.0, bulge: 9, bar: 2.5, arm: 0.15, gamma: 0.8, gain: 1.8e-3, floor: 160, white: 0.9 };
 
 /**
  * THE DUST. A dust disc 0.134 kpc thick (Drimmel & Spergel 2001, ApJ 556, 181: 0.0169 R0) and, as in other spirals, longer
@@ -473,8 +473,8 @@ export function skyDetail(cam, dir, opts = {}) {
     const R = Math.hypot(p[0], p[1]);
     const env = tauDisc() * Math.exp(-(R - MODEL.R0) / DUST.length) * Math.exp(-Math.abs(p[2]) / DUST.height) * t * 0.9;
     const s = 0.11 * t + 0.02; // a lane spans about the same angle at every distance, drawn out along the plane
-    const f = nz(p[0] / s, p[1] / s, (p[2] / s) * 3.5);
-    dtau += env * (f - 0.5) * 2.2 * (S >= 4 ? 1 : 2);
+    const f = nz(p[0] / s, p[1] / s, (p[2] / s) * 1.8);
+    dtau += env * (f - 0.5) * 1.6 * (S >= 4 ? 1 : 2);
   }
   if (S > 0) {
     const t = 1.8;
@@ -490,7 +490,9 @@ export function stretch(L, gain = 1) {
   if (!(Y > 0)) return [0, 0, 0];
   // a soft black point: the faint starlight between the stars of a dark sky sinks, the band stands out of it
   const toe = Y / (Y + EXPOSE.floor);
-  const k = (EXPOSE.gain * gain * Math.pow(Y * toe * toe, EXPOSE.gamma)) / Y;
+  // and a shoulder: from above the disc, where the whole floor of the sky is galaxy, it rolls off instead of burning white
+  const ys = EXPOSE.gain * gain * Math.pow(Y * toe * toe, EXPOSE.gamma);
+  const k = ys / (1 + ys / EXPOSE.white) / Y;
   return [Math.min(1, L[0] * k), Math.min(1, L[1] * k), Math.min(1, L[2] * k)];
 }
 
@@ -662,6 +664,7 @@ uniform vec3 uCloudC[ ${CLOUD_N} ];
 uniform vec3 uCloudU[ ${CLOUD_N} ];
 uniform vec3 uCloudV[ ${CLOUD_N} ];
 uniform vec4 uCloudS[ ${CLOUD_N} ];   // sigma u, v, w, rho0
+uniform vec4 uCloudCone[ ${CLOUD_N} ]; // from the camera: the direction to the cloud and the cosine of its 4-sigma reach
 varying vec3 vDir;
 varying vec3 vLight;
 varying float vY;
@@ -707,6 +710,7 @@ void main() {
   if ( uMarch > 0.0 && dot( L, vec3( 1.0 ) ) > 1e-7 ) {
     float tau = 0.0;
     for ( int i = 0; i < ${CLOUD_N}; i++ ) {
+      if ( dot( dir, uCloudCone[ i ].xyz ) < uCloudCone[ i ].w ) continue; // one dot product for a cloud nowhere near
       vec3 o = uCam - uCloudC[ i ];
       vec3 W = cross( uCloudU[ i ], uCloudV[ i ] );
       vec4 S = uCloudS[ i ];
@@ -738,8 +742,8 @@ void main() {
       float R = length( p.xy );
       float env = uDust.x * exp( -( R - ${MODEL.R0.toFixed(2)} ) / ${DUST.length.toFixed(3)} ) * exp( -abs( p.z ) / ${DUST.height.toFixed(3)} ) * t * 0.9;
       float s = 0.11 * t + 0.02;
-      float f = noise3( vec3( p.x / s, p.y / s, p.z / s * 3.5 ) );
-      dtau += env * ( f - 0.5 ) * 2.2 * kk;
+      float f = noise3( vec3( p.x / s, p.y / s, p.z / s * 1.8 ) );
+      dtau += env * ( f - 0.5 ) * 1.6 * kk;
     }
     vec3 pl = uCam + 1.8 * dir;
     float light = 0.72 + 0.56 * noise3( vec3( pl.x / 0.9, pl.y / 0.9, pl.z / 0.45 ) );
@@ -748,7 +752,8 @@ void main() {
   #endif
   float Y = dot( L, vec3( 0.2126, 0.7152, 0.0722 ) );
   float toe = Y / ( Y + uFloor );
-  vec3 c = Y > 0.0 ? L * ( uScale * pow( Y * toe * toe, uGamma ) / Y ) : vec3( 0.0 );
+  float ys = uScale * pow( Y * toe * toe, uGamma );
+  vec3 c = Y > 0.0 ? L * ( ys / ( 1.0 + ys / ${EXPOSE.white.toFixed(3)} ) / Y ) : vec3( 0.0 );
   c = min( c, vec3( 1.0 ) );
   #if MW_DETAIL > 0
   c = min( c * ( 1.0 + grainAt( dir, length( fwidth( dir ) ), c ) ), vec3( 1.0 ) );
@@ -871,7 +876,20 @@ export function createMilkyWay(opts = {}) {
     uCloudU: { value: CLOUD_GEOM.map((g) => new THREE.Vector3(...g.u)) },
     uCloudV: { value: CLOUD_GEOM.map((g) => new THREE.Vector3(...g.v)) },
     uCloudS: { value: CLOUD_GEOM.map((g) => new THREE.Vector4(g.su, g.sv, g.sw, g.rho0)) },
+    uCloudCone: { value: CLOUD_GEOM.map(() => new THREE.Vector4(0, 0, 1, -1)) },
   };
+  /** Each cloud's cone from the camera (galactocentric kpc): outside it its column is under exp(-8) of the middle's. */
+  function cloudCones(cam) {
+    CLOUD_GEOM.forEach((g, i) => {
+      const dx = g.centre[0] - cam[0], dy = g.centre[1] - cam[1], dz = g.centre[2] - cam[2];
+      const d = Math.hypot(dx, dy, dz);
+      const reach = 4.2 * Math.max(g.su, g.sv, g.sw);
+      const v = uniforms.uCloudCone.value[i];
+      if (d <= reach * 1.05) v.set(0, 0, 1, -2); // inside it: every direction
+      else v.set(dx / d, dy / d, dz / d, Math.cos(Math.asin(reach / d)));
+    });
+  }
+  cloudCones([-MODEL.R0, 0, MODEL.Z_SUN]);
   let opacity = 1;
   let exposure = 1;
   let ownGain = 1; // the ground sky's own (Moon, twilight, the kind of sky)
@@ -952,7 +970,9 @@ export function createMilkyWay(opts = {}) {
     setCameraKm(km) {
       const k = km || _km;
       const g = galFromEclKm(k);
-      uniforms.uCam.value.set(g[0], g[1], g[2]);
+      const c = uniforms.uCam.value;
+      if (c.x !== g[0] || c.y !== g[1] || c.z !== g[2]) cloudCones(g);
+      c.set(g[0], g[1], g[2]);
       farFromSunLy = Math.hypot(k.x || 0, k.y || 0, k.z || 0) / 9460730472580.8;
       if (tier === 0 || detailLow) applyMarch();
     },
