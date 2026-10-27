@@ -455,13 +455,12 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
 }
 
 // 0078 r14-m6: begin
-// RELEASE 1.4.0, STAGE M6 (public #1137 to #1146): eleven national Earth-observation files, each worn by its own catalogue numbers and by no other craft.
+// RELEASE 1.4.0, STAGE M6 (public #1137 to #1146): ten national Earth-observation files, each worn by its own catalogue numbers and by no other craft (OCEANSAT-2 was built and held: it wears no file).
 {
   const sat6 = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
   const M6 = [[40336, 'CBERS 4', 'cbers-4.glb'], [44883, 'CBERS 4A', 'cbers-4a.glb'], [47699, 'AMAZONIA 1', 'amazonia-1.glb'], [38338, 'ARIRANG-3 (KOMPSAT-3)', 'kompsat-3.glb'], [40536, 'KOMPSAT-3A', 'kompsat-3.glb'],
     [39227, 'ARIRANG-5 (KOMPSAT-5)', 'kompsat-5.glb'], [32783, 'CARTOSAT-2A', 'cartosat-2.glb'], [36795, 'CARTOSAT-2B', 'cartosat-2.glb'], [41599, 'CARTOSAT-2C', 'cartosat-2.glb'], [41948, 'CARTOSAT-2D', 'cartosat-2.glb'],
-    [42767, 'CARTOSAT-2E', 'cartosat-2.glb'], [43111, 'CARTOSAT-2F', 'cartosat-2.glb'], [37387, 'RESOURCESAT-2', 'resourcesat-2.glb'], [41877, 'RESOURCESAT-2A', 'resourcesat-2.glb'], [35931, 'OCEANSAT-2', 'oceansat-2.glb'],
-    [54361, 'EOS-6 (OCEANSAT-3)', 'eos-06.glb'], [43180, 'KANOPUS-V 3', 'kanopus-v.glb'], [43181, 'KANOPUS-V 4', 'kanopus-v.glb'], [43876, 'KANOPUS-V 5', 'kanopus-v.glb'], [43877, 'KANOPUS-V 6', 'kanopus-v.glb'],
+    [42767, 'CARTOSAT-2E', 'cartosat-2.glb'], [43111, 'CARTOSAT-2F', 'cartosat-2.glb'], [37387, 'RESOURCESAT-2', 'resourcesat-2.glb'], [41877, 'RESOURCESAT-2A', 'resourcesat-2.glb'], [54361, 'EOS-6 (OCEANSAT-3)', 'eos-06.glb'], [43180, 'KANOPUS-V 3', 'kanopus-v.glb'], [43181, 'KANOPUS-V 4', 'kanopus-v.glb'], [43876, 'KANOPUS-V 5', 'kanopus-v.glb'], [43877, 'KANOPUS-V 6', 'kanopus-v.glb'],
     [59371, 'RESURS-P 4', 'resurs-p.glb'], [62430, 'RESURS-P 5', 'resurs-p.glb']];
   for (const [norad, name, file] of M6) {
     const got = sat6(norad, name);
@@ -470,7 +469,7 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   // the craft that share a name or a bus but are not these files
   for (const [norad, name, file, klass] of [[42825, 'KANOPUS-V-IK', 'kanopus-v.glb'], [29228, 'RESURS-DK 1', 'resurs-p.glb'], [28649, 'IRS-P5 (CARTOSAT-1)', 'cartosat-2.glb'], [44804, 'CARTOSAT-3', 'cartosat-2.glb'],
     [29268, 'ARIRANG-2 (KOMPSAT-2)', 'kompsat-3.glb'], [43823, 'GEO-KOMPSAT-2A', 'kompsat-3.glb'], [99010, 'CBERS 4 DEB', 'cbers-4.glb', 'debris'], [99011, 'RESURS-P 4 R/B', 'resurs-p.glb', 'rocket'],
-    [35931, 'OCEANSAT-2', 'resourcesat-2.glb'], [54361, 'EOS-6 (OCEANSAT-3)', 'oceansat-2.glb'], [37387, 'RESOURCESAT-2', 'oceansat-2.glb']]) {
+    [35931, 'OCEANSAT-2', 'resourcesat-2.glb'], [35931, 'OCEANSAT-2', 'eos-06.glb'], [54361, 'EOS-6 (OCEANSAT-3)', 'resourcesat-2.glb'], [37387, 'RESOURCESAT-2', 'eos-06.glb']]) {
     const got = sat6(norad, name, klass || 'satellite');
     check(!got || got.file !== file, `${name} (${norad}) does not wear ${file}`);
   }

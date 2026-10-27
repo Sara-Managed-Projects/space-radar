@@ -1,6 +1,6 @@
-// r14-m6: ELEVEN NATIONAL EARTH-OBSERVATION FILES IN ONE RUN (release 1.4.0 stage m6; public #1137 to #1146). The `model` probe
+// r14-m6: TEN NATIONAL EARTH-OBSERVATION FILES IN ONE RUN (release 1.4.0 stage m6; public #1137 to #1146). The `model` probe
 // below, unchanged but for three things, because its subject list is capped at 80 characters (eight records) and this stage has
-// eleven files: (1) the default list is the eleven records, one per file (`-f subject=m6`, which also makes the workflow save the
+// ten files (and Oceansat-2, built and held, is photographed on its generic shape): (1) the default list is the eleven records, one per file (`-f subject=m6`, which also makes the workflow save the
 // active catalogue's column twin, so every record is on the page); (2) the flat walk is the app's own framing only, the six
 // sunward places are left out (a third of a run, and nobody compares them); (3) the probe name. Each craft is photographed as
 // framed and from the four close places wearing the file, then the shape it replaces as framed and from the four close places.

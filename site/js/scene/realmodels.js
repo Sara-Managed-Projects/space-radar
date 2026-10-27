@@ -836,10 +836,10 @@ export const REAL_MODELS = {
     3669: { file: 'isis-1.glb', colour: 'satellite', name: 'ISIS 1', catalogue: 'ISIS 1', made: 'dimensions' },
     // 0077 W3-a: end
     // 0078 r14-m6: begin
-    // RELEASE 1.4.0, STAGE M6 (2026-10-27; public #1137 to #1146): eleven files for the national Earth-observation craft, each built in code from cited numbers and laid out
+    // RELEASE 1.4.0, STAGE M6 (2026-10-27; public #1137 to #1146): ten files for the national Earth-observation craft, each built in code from cited numbers and laid out
     // after free pictures (INPE's gallery, KARI's KOGL Type 1 photographs, ISRO's GODL-India photographs and renders, VNIIEM's CC0 schematic); share-alike pictures were looked at only.
     // Rows: registry/models.yaml `cbers-4` ... `resurs-p`. `axes: 'app'`: the Earth face on +Z, the panels along X, the cells to +Y; each row says what is not as the craft flies.
-    // Not mapped: KANOPUS-V-IK (infrared cameras), RESURS-DK 1, CARTOSAT-1 and -3, CBERS 1 to 3 keep the generic shape.
+    // Not mapped: KANOPUS-V-IK (infrared cameras), RESURS-DK 1, CARTOSAT-1 and -3, CBERS 1 to 3 keep the generic shape; OCEANSAT-2 was built and HELD (one CAD view is all there is to draw it from).
     40336: { file: 'cbers-4.glb', colour: 'satellite', name: 'CBERS-4', catalogue: 'CBERS 4', made: 'dimensions', axes: 'app' },
     44883: { file: 'cbers-4a.glb', colour: 'satellite', name: 'CBERS-4A', catalogue: 'CBERS 4A', made: 'dimensions', axes: 'app' },
     47699: { file: 'amazonia-1.glb', colour: 'satellite', name: 'Amazonia-1', catalogue: 'AMAZONIA 1', made: 'dimensions', axes: 'app' },
@@ -854,7 +854,6 @@ export const REAL_MODELS = {
     43111: { file: 'cartosat-2.glb', colour: 'satellite', name: 'Cartosat-2F', catalogue: 'CARTOSAT-2F', made: 'dimensions', axes: 'app' },
     37387: { file: 'resourcesat-2.glb', colour: 'satellite', name: 'Resourcesat-2', catalogue: 'RESOURCESAT-2', made: 'dimensions', axes: 'app' },
     41877: { file: 'resourcesat-2.glb', colour: 'satellite', name: 'Resourcesat-2A', catalogue: 'RESOURCESAT-2A', made: 'dimensions', axes: 'app' },
-    35931: { file: 'oceansat-2.glb', colour: 'satellite', name: 'Oceansat-2', catalogue: 'OCEANSAT-2', made: 'dimensions', axes: 'app' },
     54361: { file: 'eos-06.glb', colour: 'satellite', name: 'EOS-06', catalogue: 'EOS-6 (OCEANSAT-3)', made: 'dimensions', axes: 'app' },
     43180: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 3', catalogue: 'KANOPUS-V 3', made: 'dimensions', axes: 'app' },
     43181: { file: 'kanopus-v.glb', colour: 'satellite', name: 'Kanopus-V 4', catalogue: 'KANOPUS-V 4', made: 'dimensions', axes: 'app' },
