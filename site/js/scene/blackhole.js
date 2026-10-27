@@ -52,6 +52,9 @@ const D2R = Math.PI / 180;
 
 export const massKm = (msun) => msun * KM_PER_MSUN;
 
+/** Under the Measured look: the disc's streaks are a fixed pattern (nothing turns), the hole and its light the same. */
+export const UNDER_MEASURED = { hole: 'same', streaks: 'same', jet: 'same' };
+
 /**
  * What each black hole looks like where it is measured, and what is chosen where it is not. Angles on the
  * sky: `incl` the spin axis from our line of sight (0 = face-on), `pa` the position angle of its projection
@@ -60,12 +63,12 @@ export const massKm = (msun) => msun * KM_PER_MSUN;
  */
 export const PROFILES = {
   'sgr-a-star': {
-    incl: 30, pa: 60, turn: -1, rOut: 22, t: 4500, frame: 13,
+    incl: 30, pa: 60, turn: -1, rOut: 18, t: 4500, frame: 13,
     cls: { mass: 'measured', size: 'measured', place: 'measured', disc: 'modelled', orientation: 'modelled' },
     why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across, best fitted seen within 50 degrees of face-on; GRAVITY 2018 saw flares circle clockwise. The axis on the sky is not measured: 60 degrees is chosen.',
   },
   'm87-star': {
-    incl: 17, pa: 288, turn: -1, rOut: 22, t: 4500, frame: 13,
+    incl: 17, pa: 288, turn: -1, rOut: 18, t: 4500, frame: 13,
     // knots: [light-years along the jet, strength]: HST-1, D, F, A, C at 0.86, 2.8, 8.6, 12.4 and 17.5 arcseconds
     // from the core (Perlman et al. 2011), one arcsecond being 81 pc on the sky and 908 ly along a jet 17 degrees off our line
     jet: { lengthLy: 18000, knots: [[780, 0.9], [2540, 0.45], [7810, 0.4], [11260, 0.8], [15890, 0.35]], counter: 0.006 },
@@ -125,7 +128,7 @@ export function discFlux(r, rIn = ISCO_M) {
  */
 export function streaks(r, phi) {
   const L = Math.log(r);
-  return 0.86 + 0.12 * Math.sin(23 * L + 3 * phi) * Math.sin(41 * L - 2 * phi + 1.3) + 0.07 * Math.sin(71 * L + phi);
+  return 0.9 + 0.08 * Math.sin(23 * L + 3 * phi + 2 * Math.sin(5 * L - phi)) * Math.sin(41 * L - 2 * phi + 1.3) + 0.04 * Math.sin(71 * L + phi);
 }
 
 /** The shift of light from a disc patch at r (M) to a far camera, for a photon of angular momentum lz. */
@@ -290,7 +293,7 @@ void shade( vec3 p, float lz, inout vec3 col, inout float A ) {
   float g = sqrt( max( 1e-4, 1.0 - 3.0 / r ) ) / max( 0.05, 1.0 - om * lz );
   float F = discFlux( r );
   float L = log( r ), ph = atan( p.y, p.x );
-  F *= 0.86 + 0.12 * sin( 23.0 * L + 3.0 * ph ) * sin( 41.0 * L - 2.0 * ph + 1.3 ) + 0.07 * sin( 71.0 * L + ph );
+  F *= 0.9 + 0.08 * sin( 23.0 * L + 3.0 * ph + 2.0 * sin( 5.0 * L - ph ) ) * sin( 41.0 * L - 2.0 * ph + 1.3 ) + 0.04 * sin( 71.0 * L + ph );
   float I = pow( F, uStretch ) * pow( g, 4.0 );
   vec3 c = kelvinRgb( uTpeak * pow( max( F, 1e-6 ), 0.25 ) * g ) * ( 1.0 - exp( -I * uBright ) );
   float a = ( 1.0 - smoothstep( uRout * 0.82, uRout, r ) ) * smoothstep( uRin * 0.97, uRin * 1.04, r );
@@ -390,16 +393,18 @@ uniform float uOpacity;
 uniform float uSide;      // 1 the jet towards us, the counter-jet's share otherwise
 uniform vec4 uKnots[ 5 ]; // place (share of the length), strength
 uniform float uFade;      // the near part's own fade (the drawn hole's short jet)
+uniform float uEndOn;     // 1 seen from the side, 0 looking down the jet: from inside its cone it would wash the view
 varying float vZ;
 varying vec3 vN;
 varying vec3 vV;
 void main() {
   float face = abs( dot( normalize( vN ), normalize( vV ) ) );
   float body = pow( face, 1.6 );
-  float I = 0.35 * pow( max( vZ, 1e-6 ), -0.35 ) * ( 1.0 - smoothstep( 0.75, 1.0, vZ ) );
+  // the base rises out of the hole's glare instead of starting as a bright ring round it
+  float I = 0.22 * pow( max( vZ, 1e-6 ), -0.3 ) * smoothstep( 0.0, 0.25, vZ ) * ( 1.0 - smoothstep( 0.75, 1.0, vZ ) );
   for ( int i = 0; i < 5; i++ ) { float k = ( vZ - uKnots[ i ].x ) / 0.018; I += uKnots[ i ].y * exp( -0.5 * k * k ); }
   I *= mix( 1.0, 1.0 - smoothstep( 0.2, 1.0, vZ ), uFade );
-  vec3 c = vec3( 0.55, 0.72, 1.0 ) * I * body * uSide * uOpacity;
+  vec3 c = vec3( 0.55, 0.72, 1.0 ) * I * body * uSide * uOpacity * uEndOn;
   gl_FragColor = vec4( c * 0.6, 0.0 ); // added (one, one), alpha untouched
   #include <colorspace_fragment>
 }
@@ -488,7 +493,7 @@ export function createBlackHole(record, opts = {}) {
     uQuad: { value: new THREE.Matrix4() },
     uCam: { value: new THREE.Vector3() }, uCamDir: { value: new THREE.Vector3(0, 0, 1) }, uCamDist: { value: 1e6 },
     uSize: { value: 1 }, uRin: { value: ISCO_M }, uRout: { value: p.rOut || 26 }, uTurn: { value: p.turn || 1 },
-    uTpeak: { value: p.t || 6000 }, uBright: { value: 1.5 }, uStretch: { value: p.companion ? 0.12 : 0.85 },
+    uTpeak: { value: p.t || 6000 }, uBright: { value: 1.5 }, uStretch: { value: p.companion ? 0.05 : 1.05 },
     uQuiet: { value: p.quiet ? 1 : 0 }, uOpacity: { value: 0 },
   };
   const holeMat = () => new THREE.ShaderMaterial({
@@ -508,7 +513,7 @@ export function createBlackHole(record, opts = {}) {
   // the jets: short ones with the drawn hole, the long one at its true size
   const jets = [];
   const jetUniforms = (side, fade, z0, z1) => ({
-    uOpacity: { value: 0 }, uSide: { value: side }, uFade: { value: fade },
+    uOpacity: { value: 0 }, uSide: { value: side }, uFade: { value: fade }, uEndOn: { value: 1 },
     // each knot where it falls along this mesh, as its share of log z (the mesh's own aZ)
     uKnots: { value: [0, 1, 2, 3, 4].map((i) => {
       const k = p.jet && p.jet.knots[i];
@@ -532,8 +537,8 @@ export function createBlackHole(record, opts = {}) {
   }
   if (p.jet) {
     const L = Math.max(400, jetLengthM(p));
-    addJet(group, 3, 260, 1, 1, false);
-    addJet(group, 3, 260, p.jet.counter, 1, true);
+    addJet(group, 12, 320, 1, 1, false);
+    addJet(group, 12, 320, p.jet.counter, 1, true);
     if (!p.jet.stellar && L > 1e4) {
       addJet(trueGroup, 300, L, 1, 0, false);
       addJet(trueGroup, 300, L, p.jet.counter, 0, true);
@@ -652,9 +657,19 @@ export function createBlackHole(record, opts = {}) {
       starUniforms.uToHole.value.set(hole[0] - star.position.x, hole[1] - star.position.y, 0).normalize()
         .applyQuaternion(group.quaternion).transformDirection(camera.matrixWorldInverse);
     }
+    // The jets. Looking down one (M87* from Earth, 17 degrees off its axis) the drawn hole's short jet would fill the
+    // view with its glow: it steps back inside 25 degrees of the axis. The long one, at its true length, is drawn only
+    // from outside it (farther from the hole than a twentieth of its length): from inside it would be a wall of light.
+    if (jets.length) {
+      const along = Math.abs(huniforms.uCamDir.value.z);
+      const endOn = 1 - smooth01(Math.cos(40 * D2R), Math.cos(25 * D2R), along);
+      const farEnough = p.jet && dist * unitKm > 0.05 * p.jet.lengthLy * LY_KM;
+      for (const j of jets) j.u.uEndOn.value = j.mesh.parent === group ? endOn : 1;
+      trueGroup.visible = opacity > 0 && !!farEnough;
+    } else trueGroup.visible = false;
     group.visible = opacity > 0;
-    trueGroup.visible = opacity > 0;
   }
+  const smooth01 = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
   function setOpacity(k) {
     opacity = Math.min(1, Math.max(0, k));

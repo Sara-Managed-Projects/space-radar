@@ -2171,6 +2171,8 @@ minus F444W colour Webb saw, **illustrative** (observed, not rest frame), and ea
 
 No photograph is drawn for either. Both are our own code (MIT); what they are drawn from:
 
+Milky Way: Space Radar's own model (Reid et al. 2019 arms; named dark clouds at measured distances).
+
 **The Milky Way** (`site/js/scene/milkyway.js`, `scripts/build-milkyway-sky.mjs` → `site/textures/2k_milky_way_model.webp`): the
 same galaxy as `site/data/galaxy.bin` (`scripts/build-galaxy.py`): R0 and the seven spiral arms of Reid et al. 2019, ApJ 885,
 131 (Table 2), the disc's size from Wikipedia "Milky Way", the bar from the middle of the published range. The Sun's height

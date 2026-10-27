@@ -59,8 +59,11 @@ try {
   const gcEq = radec(266.405, -28.936);
   const toGc = sr.stage.dirToScene({ x: gcEq[0], y: gcEq[1], z: gcEq[2] }, 'earth-inertial');
   const earth = sr.worlds.meshFor('earth');
-  rig.flyTo({ targetScene: { x: earth.position.x, y: earth.position.y, z: earth.position.z }, offset: { x: -toGc.x, y: -toGc.y, z: -toGc.z }, distance: 30, ms: 0 });
-  await snap('1-earth-band', 'from orbit, the Earth with the galaxy\'s centre behind it: the band, the Great Rift, Sagittarius', 7000);
+  // stand so the centre is beside the Earth, not behind it: 40 degrees off the line through it
+  const side = norm({ x: -toGc.z, y: 0, z: toGc.x });
+  const k = 40 * Math.PI / 180;
+  rig.flyTo({ targetScene: { x: earth.position.x, y: earth.position.y, z: earth.position.z }, offset: norm({ x: -toGc.x * Math.cos(k) + side.x * Math.sin(k), y: -toGc.y * Math.cos(k), z: -toGc.z * Math.cos(k) + side.z * Math.sin(k) }), distance: 34, ms: 0 });
+  await snap('1-earth-band', 'from orbit, the Earth with the galaxy\'s centre beside it: the band, the Great Rift, Sagittarius', 7000);
   const A = await import(new URL('vendor/astronomy.js', document.baseURI).href);
   const obs = new A.Observer(-24.627, -70.404, 2635);
   const when = A.MakeTime(new Date(Date.UTC(2026, 6, 15, 3, 0, 0)));

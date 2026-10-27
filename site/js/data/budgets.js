@@ -32,7 +32,7 @@ export const BUDGETS = {
   "og_png_min_bytes": 25000,
   "og_png_max_bytes": 400000,
   "tier1_idle_bytes": 1300000,
-  "tier1_texture_gpu_mib": 258,
+  "tier1_texture_gpu_mib": 250,
   "tier0_texture_gpu_mib": 150,
   "tier2_texture_gpu_mib": 400,
   "repo_textures_mb": 80,

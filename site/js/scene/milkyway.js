@@ -58,6 +58,12 @@ import * as THREE from '../../vendor/three.module.min.js';
 // ------------------------------------------------------------------------------------------- the model
 
 /**
+ * Under the Measured look (scene/exposure.js MEASURED_RULES): the band is the same model either way and nothing in
+ * it moves, so its noise (the dust's clumps, the clouds' ragged edges, the lanes) and the grain stay as they are.
+ */
+export const UNDER_MEASURED = { band: 'same', noise: 'same', grain: 'same' };
+
+/**
  * The numbers of scripts/build-galaxy.py (kpc, degrees), the same galaxy as site/data/galaxy.bin. The test
  * reads them out of the Python file and holds them equal. Galactocentric axes: x from the Sun towards the
  * centre (l = 0), y towards l = 90, z to the north galactic pole; the Sun at (-R0, 0, Z_SUN).
@@ -97,7 +103,7 @@ export const KIND_RGB = [[0.78, 0.80, 0.92], [1.0, 0.86, 0.66], [1.0, 0.78, 0.52
  * cloud tens of times the band in Cygnus, the poles dark: tests/test_milkyway_inside.mjs holds the order), the way
  * a photograph's stretch is chosen. Illustrative.
  */
-export const EXPOSE = { disc: 3.0, bulge: 9, bar: 2.5, arm: 0.15, gamma: 0.8, gain: 1.35e-3, floor: 85 };
+export const EXPOSE = { disc: 3.0, bulge: 9, bar: 2.5, arm: 0.15, gamma: 0.8, gain: 1.8e-3, floor: 160 };
 
 /**
  * THE DUST. A dust disc 0.134 kpc thick (Drimmel & Spergel 2001, ApJ 556, 181: 0.0169 R0) and, as in other spirals, longer
@@ -881,7 +887,8 @@ export function createMilkyWay(opts = {}) {
     return new THREE.ShaderMaterial({
       vertexShader: VERT, fragmentShader: FRAG, uniforms,
       defines: { MW_STEPS: lowT ? TIER_STEPS[0] : TIER_STEPS[tier], MW_DETAIL: lowT ? 0 : tier >= 2 ? 4 : 2, MW_BAKED: lowT ? 1 : 0 },
-      side: THREE.BackSide, depthTest: false, depthWrite: false, toneMapped: false,
+      // both faces: the grid's triangles wind inwards, and from inside only one of each pair is ever in view
+      side: THREE.DoubleSide, depthTest: false, depthWrite: false, toneMapped: false,
       // The opaque list, with additive blend factors spelled out (scene/starfield.js says why: a material
       // flagged transparent draws after Earth whatever its renderOrder, and with depthTest off over it). The
       // ground sky's copy goes where its old picture went: after the dome, in that layer's own order.
