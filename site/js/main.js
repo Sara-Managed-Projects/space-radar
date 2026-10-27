@@ -672,7 +672,7 @@ export async function boot({ setStatus } = {}) {
   let portraitsImport = null;
   let portraitAsked = '';
   const wantPortraits = () => portraitsImport || (portraitsImport = import('./scene/portraits.js')
-    .then((m) => { ctx.portraits = m.createPortraits(scene, { tier: () => (ctx.latch && ctx.latch.latched ? 0 : ctx.quality ? ctx.quality.tier : 1) }); return ctx.portraits; }) // 0078 r14-mw-bh
+    .then((m) => { ctx.portraits = m.createPortraits(scene, { tier: () => (ctx.latch && ctx.latch.latched ? 0 : ctx.quality ? ctx.quality.tier : 1), recordById: (id) => ctx.recordById(id) }); return ctx.portraits; }) // 0078 r14-mw-bh
     .catch((e) => { console.warn('the black hole pictures did not load', e); portraitsImport = null; return null; }));
   // OUTSIDE A TRIP TOO (public #426, 2026-10-08): the picture is drawn while the black hole's own
   // card is open on a rung of the ladder, and the card says it is drawn far larger than life

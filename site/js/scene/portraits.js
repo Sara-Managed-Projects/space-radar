@@ -72,7 +72,11 @@ export function createPortraits(scene, opts = {}) {
     try { hole = createBlackHole(rec, { ...place, tier: tier() }); } catch (e) { console.warn('black hole: could not draw', rec.id, e); status = 'failed'; return false; }
     root.add(hole.group);
     root.add(hole.trueGroup);
-    current = { record: rec, hole, opacity: 0, want: 1 };
+    // From inside its host galaxy's core (M87*'s camera is a fraction of a light-year from it) the host's volume
+    // glow would be a grey fog over everything: the coordinator leaves the host's holder out while the hole is drawn.
+    const host = hole.profile.host && opts.recordById ? opts.recordById(hole.profile.host) : null;
+    if (host && host.meta) host.meta.holderOff = true;
+    current = { record: rec, hole, opacity: 0, want: 1, host };
     status = 'shown';
     return true;
   }
@@ -80,6 +84,7 @@ export function createPortraits(scene, opts = {}) {
   /** Fade it out; it is gone, and its record forgotten, when the fade ends. */
   function clear() {
     if (!current) return;
+    if (current.host && current.host.meta) current.host.meta.holderOff = false;
     current.want = 0;
     leaving.push(current);
     current = null;
@@ -116,6 +121,7 @@ export function createPortraits(scene, opts = {}) {
     /** How many times larger than life the shown hole is drawn (1 = its true size). */
     magnification: () => (current ? current.hole.magnification() : 1),
     dispose() {
+      if (current && current.host && current.host.meta) current.host.meta.holderOff = false;
       if (current) current.hole.dispose();
       for (const e of leaving) e.hole.dispose();
       current = null; leaving.length = 0;

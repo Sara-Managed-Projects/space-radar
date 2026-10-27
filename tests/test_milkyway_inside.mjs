@@ -69,12 +69,13 @@ const patch = (cam, l, b, opts = {}) => { let s = [0, 0, 0]; for (const dl of [-
   check(lum(sgr) > 4 * lum(cyg), `the Sagittarius star cloud outshines the band in Cygnus (${(lum(sgr) / lum(cyg)).toFixed(1)} times)`);
   check(lum(pole) < 0.1 * lum(cyg), `the galactic pole is dark beside the band (${(lum(pole) / lum(cyg)).toFixed(3)})`);
   check(sgr[0] / sgr[2] > 1.3 * (anti[0] / anti[2]), `the centre is warmer than the anticentre (R/B ${(sgr[0] / sgr[2]).toFixed(2)} against ${(anti[0] / anti[2]).toFixed(2)})`);
-  check(lum(sgr) < 1 && lum(cyg) > 0.004, `the band is a whisper, not a wallpaper: Cygnus ${lum(cyg).toFixed(4)}, Sagittarius ${lum(sgr).toFixed(3)} (linear)`);
+  check(lum(sgr) < 0.6 && lum(cyg) > 0.001, `the band is a whisper, not a wallpaper: Cygnus ${lum(cyg).toFixed(4)}, Sagittarius ${lum(sgr).toFixed(3)} (linear)`);
   const D = (l, b) => M.skyDetail(SUN, M.galDir(l, b), { ...cpu, samples: 0 }).tau;
   check(D(301.5, -1) > 0.4 && D(301.5, -12) < 0.1, `the Coalsack is dark where it is (tau ${D(301.5, -1).toFixed(2)}) and nowhere near (${D(301.5, -12).toFixed(3)})`);
-  check(D(30, 2.4) > 0.8 && D(30, -20) < 0.05, `the Great Rift crosses Aquila (tau ${D(30, 2.4).toFixed(2)})`);
+  check(D(30, 1.3) > 0.8 && D(30, 8) < 0.1 && D(30, -20) < 0.05, `the Great Rift crosses Aquila as a lane along the band (tau ${D(30, 1.3).toFixed(2)} on it, ${D(30, 8).toFixed(2)} 7 degrees off)`);
   check(D(240, 30) === 0, 'no cloud where none is named');
-  check(M.CLOUDS.length >= 14 && M.CLOUDS.every((c) => c.length === 8 && c[3] > 100 && c[3] < 1000 && c[7] > 0), `${M.CLOUDS.length} named clouds, each with its distance (pc) and extinction`);
+  check(M.CLOUDS.length >= 8 && M.CLOUDS.every((c) => c.length === 8 && c[3] > 100 && c[3] < 1000 && c[7] > 0 && Math.abs(c[2]) < 8), `${M.CLOUDS.length} named clouds, each with its distance (pc) and extinction, all in the band (|b| < 8)`);
+  check(M.SMUDGES.length === 3 && lum(M.skyColour(SUN, M.galDir(280.5, -32.9), { ...cpu, steps: 24, samples: 0 })) > lum(M.skyColour(SUN, M.galDir(280.5, -50), { ...cpu, steps: 24, samples: 0 })) * 3, 'the Large Magellanic Cloud is a smudge where it is');
 }
 
 // ------------------------------------------------------------------ 4. parallax

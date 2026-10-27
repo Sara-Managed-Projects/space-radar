@@ -103,7 +103,7 @@ export const KIND_RGB = [[0.78, 0.80, 0.92], [1.0, 0.86, 0.66], [1.0, 0.78, 0.52
  * cloud tens of times the band in Cygnus, the poles dark: tests/test_milkyway_inside.mjs holds the order), the way
  * a photograph's stretch is chosen. Illustrative.
  */
-export const EXPOSE = { disc: 3.0, bulge: 9, bar: 2.5, arm: 0.15, gamma: 0.8, gain: 1.8e-3, floor: 160, white: 0.9 };
+export const EXPOSE = { disc: 3.0, bulge: 9, bar: 2.5, arm: 0.15, gamma: 0.8, gain: 1.05e-3, floor: 160, white: 0.6 };
 
 /**
  * THE DUST. A dust disc 0.134 kpc thick (Drimmel & Spergel 2001, ApJ 556, 181: 0.0169 R0) and, as in other spirals, longer
@@ -133,25 +133,29 @@ export const DUST = {
  */
 export const CLOUDS = [
   // name,               l,     b,     pc,  dl,  db,  tilt, Av
-  // the Great Rift, from Sagittarius to Cygnus: the Aquila Rift's front at 225 pc, the Cygnus Rift's 600-800 pc
-  ['Great Rift (Ophiuchus)',  6,  3.0,  190,  20,  4.5,   6,  2.2],
-  ['Great Rift (Serpens)',   20,  2.6,  225,  22,  6,     4,  2.6],
-  ['Aquila Rift',            33,  2.4,  250,  22,  7,    -3,  2.6],
-  ['Great Rift (Vulpecula)', 52,  1.4,  450,  24,  5,     2,  2.2],
-  ['Cygnus Rift',            70,  1.6,  650,  24,  6,    -4,  2.4],
-  ['Northern Coalsack',      84,  1.8,  700,  10,  6,     0,  1.8],
-  ['Pipe Nebula',             0.5,  5.5,  163,   8,   2.6,  52,  2.4],
-  ['Ophiuchus',             353,  16.5,   139,   9,   6,   35,  2.2],
-  ['Lupus',                 340,  14,     158,  10,  12,   60,  1.0],
-  ['Coalsack',              301.5, -1.0,  180,   7,   5,    0,  1.6],
-  ['Chamaeleon',            299,  -16,    189,   9,   4,    0,  1.2],
-  ['Corona Australis',        0.5, -18,   151,   6,   1.8, -20,  1.6],
-  ['Taurus',                172,  -15,    141,  16,  10,  -25,  1.4],
-  ['Perseus',               159,  -20,    294,   7,   3,   30,  1.2],
-  ['Orion A',               211,  -19.5,  432,   6,   1.6, -40,  1.8],
-  ['Orion B',               206,  -15,    423,   4,   4,    0,  1.4],
-  ['Cepheus Flare',         110,   15,    360,  12,   8,    0,  1.0],
+  // The Great Rift, from Sagittarius to Cygnus, splitting the band lengthwise: the Aquila Rift's front at 225 pc, the
+  // Cygnus Rift's 600-800 pc. Long and thin, overlapping, just north of the plane where they are.
+  ['Great Rift (Ophiuchus)',  4,  1.6,  190,  22,  3.2,   4,  2.4],
+  ['Great Rift (Serpens)',   20,  1.4,  225,  24,  3.6,   2,  2.8],
+  ['Aquila Rift',            36,  1.2,  250,  24,  4.0,  -2,  2.8],
+  ['Great Rift (Vulpecula)', 54,  0.8,  450,  26,  3.4,   1,  2.4],
+  ['Cygnus Rift',            72,  1.0,  650,  26,  4.0,  -2,  2.6],
+  ['Northern Coalsack',      85,  1.4,  700,  10,  4.5,   0,  1.8],
+  ['Pipe Nebula',             0.5,  4.8,  163,   7,   1.6,  20,  1.8],
+  ['Coalsack',              301.5, -1.0,  180,   6.5, 5,    0,  1.7],
 ];
+
+/**
+ * THE MAGELLANIC CLOUDS as the faint smudges a long exposure shows (160 000 and 200 000 ly off: no parallax over the
+ * few thousand light-years this band is drawn for). Places and extents measured (SIMBAD; de Vaucouleurs's diameters);
+ * the brightness a share of the band's, the bar and the mottling illustrative. [l, b, major deg, minor deg, tilt deg, peak]
+ */
+export const SMUDGES = [
+  [280.47, -32.89, 8.5, 7.0, 20, 210],   // the Large: its disc
+  [280.0, -32.6, 3.6, 1.2, 15, 150],     // and its bar
+  [302.8, -44.3, 4.2, 2.4, -40, 120],    // the Small
+];
+const SMUDGE_GEOM = [];
 
 // ------------------------------------------------------------------------------------------- frames
 
@@ -180,6 +184,26 @@ export function galDir(lDeg, bDeg) {
   const l = lDeg * D2R, b = bDeg * D2R;
   return [Math.cos(b) * Math.cos(l), Math.cos(b) * Math.sin(l), Math.sin(b)];
 }
+
+for (const [l, b, maj, min, tilt, peak] of SMUDGES) {
+  const c = galDir(l, b);
+  const e = [-Math.sin(l * D2R), Math.cos(l * D2R), 0];
+  const n = [-Math.sin(b * D2R) * Math.cos(l * D2R), -Math.sin(b * D2R) * Math.sin(l * D2R), Math.cos(b * D2R)];
+  const ct = Math.cos(tilt * D2R), st = Math.sin(tilt * D2R);
+  SMUDGE_GEOM.push({ c, u: e.map((v, k) => v * ct + n[k] * st), v: n.map((x, k) => x * ct - e[k] * st), su: (maj / 2.4) * D2R, sv: (min / 2.4) * D2R, peak });
+}
+/** The Magellanic smudges' light at `dir` (linear, the model's units), with a mottle from the noise. */
+function smudgeAt(dir, nz) {
+  let y = 0;
+  for (const g of SMUDGE_GEOM) {
+    const cosd = dir[0] * g.c[0] + dir[1] * g.c[1] + dir[2] * g.c[2];
+    if (cosd < 0.94) continue;
+    const a = (dir[0] * g.u[0] + dir[1] * g.u[1] + dir[2] * g.u[2]) / g.su, b = (dir[0] * g.v[0] + dir[1] * g.v[1] + dir[2] * g.v[2]) / g.sv;
+    y += g.peak * Math.exp(-0.5 * (a * a + b * b)) * (0.55 + 0.9 * nz(dir[0] * 40, dir[1] * 40, dir[2] * 40));
+  }
+  return y;
+}
+const SMUDGE_RGB = [0.82, 0.88, 1.0];
 
 /** The baked picture's convention: u = 0.5 at l = 0, longitude increasing to the LEFT (as sky maps); v = 1 north. */
 export function equirectDir(u, v) {
@@ -457,9 +481,9 @@ export function skyDetail(cam, dir, opts = {}) {
     const ts = Math.max(0, -B / A);
     const q = [ou + ts * du, ov + ts * dv, ow + ts * dw];
     // its shape: two octaves of the noise in the cloud's own frame, ridged so it tears into filaments
-    const n1 = nz(q[0] * 0.21 + g.centre[0], q[1] * 0.21, q[2] * 0.21);
-    const n2 = nz(q[0] * 0.63 + 0.37, q[1] * 0.63 + g.centre[1], q[2] * 0.63);
-    const shape = Math.max(0, smooth(0.3, 0.7, n1) * 1.4 + (n2 - 0.5) * 1.3 - 0.15);
+    const n1 = nz(q[0] * 0.3 + g.centre[0], q[1] * 0.3, q[2] * 0.3);
+    const n2 = nz(q[0] * 1.1 + 0.37, q[1] * 1.1 + g.centre[1], q[2] * 1.1);
+    const shape = smooth(0.4, 0.58, n1 + (n2 - 0.5) * 0.55) * 1.7; // ragged, tendrilled edges
     tau += g.rho0 * col * shape;
   }
   // fine dust and star clouds along the band: samples at fixed distances, in the galaxy's own axes
@@ -500,7 +524,7 @@ export function stretch(L, gain = 1) {
 // number in each patch of sky follows the light the model gives that patch; where they are inside it is a
 // hash (illustrative: no catalogue star is among them, those are scene/starfield.js's). Two sizes of cell,
 // in galactic axes. Pure: the same stars in the bake and on the GPU (GRAIN_GLSL).
-export const GRAIN = { cells: [0.0011, 0.0042], rate: [26, 9], flux: [0.06, 0.16] };
+export const GRAIN = { cells: [0.0007, 0.0024], rate: [90, 16], flux: [0.9, 2.4] };
 function hash4(x, y, z) {
   // integer hash of a cell -> four numbers in [0, 1)
   let h = Math.imul((x + 4096) | 0, 73856093) ^ Math.imul((y + 4096) | 0, 19349663) ^ Math.imul((z + 4096) | 0, 83492791);
@@ -534,6 +558,9 @@ export function skyColour(cam, dir, opts = {}) {
   const d = skyDetail(cam, dir, opts);
   const out = [0, 0, 0];
   for (let c = 0; c < 3; c++) out[c] = L[c] * d.light * Math.exp(-(d.tau + d.dtau) * DUST.k[c]);
+  const nzf = (x, y, z) => (opts.noise ? sampleNoise(opts.noise, opts.noiseN, x, y, z) : 0.5);
+  const sm = smudgeAt(dir, nzf);
+  for (let c = 0; c < 3; c++) out[c] += sm * SMUDGE_RGB[c];
   const col = stretch(out, opts.gain ?? 1);
   if (opts.pix) {
     const g = grainAt(dir, opts.pix, col);
@@ -664,7 +691,12 @@ uniform vec3 uCloudC[ ${CLOUD_N} ];
 uniform vec3 uCloudU[ ${CLOUD_N} ];
 uniform vec3 uCloudV[ ${CLOUD_N} ];
 uniform vec4 uCloudS[ ${CLOUD_N} ];   // sigma u, v, w, rho0
-uniform vec4 uCloudCone[ ${CLOUD_N} ]; // from the camera: the direction to the cloud and the cosine of its 4-sigma reach
+uniform vec4 uCloudCone[ ${CLOUD_N} ];
+uniform vec3 uSmC[ ${SMUDGES.length} ];
+uniform vec3 uSmU[ ${SMUDGES.length} ];
+uniform vec3 uSmV[ ${SMUDGES.length} ];
+uniform vec2 uSmS[ ${SMUDGES.length} ];
+uniform float uSmP[ ${SMUDGES.length} ]; // from the camera: the direction to the cloud and the cosine of its 4-sigma reach
 varying vec3 vDir;
 varying vec3 vLight;
 varying float vY;
@@ -721,9 +753,9 @@ void main() {
       if ( m2 > 16.0 ) continue;
       float col = exp( -0.5 * m2 ) * sqrt( PI / ( 2.0 * A ) ) * ( 1.0 - erfA( B / sqrt( 2.0 * A ) ) );
       vec3 q = oq + max( 0.0, -B / A ) * dq;
-      float n1 = noise3( q * 0.21 + vec3( uCloudC[ i ].x, 0.0, 0.0 ) );
-      float n2 = noise3( q * 0.63 + vec3( 0.37, uCloudC[ i ].y, 0.0 ) );
-      float shape = max( 0.0, smooth01( 0.3, 0.7, n1 ) * 1.4 + ( n2 - 0.5 ) * 1.3 - 0.15 );
+      float n1 = noise3( q * 0.3 + vec3( uCloudC[ i ].x, 0.0, 0.0 ) );
+      float n2 = noise3( q * 1.1 + vec3( 0.37, uCloudC[ i ].y, 0.0 ) );
+      float shape = smooth01( 0.4, 0.58, n1 + ( n2 - 0.5 ) * 0.55 ) * 1.7;
       tau += S.w * col * shape;
     }
     float dtau = 0.0;
@@ -750,6 +782,13 @@ void main() {
     L *= light * exp( -( tau + dtau ) * KDUST );
   }
   #endif
+  if ( uMarch > 0.0 ) {
+    for ( int i = 0; i < ${SMUDGES.length}; i++ ) {
+      if ( dot( dir, uSmC[ i ] ) < 0.94 ) continue;
+      float a = dot( dir, uSmU[ i ] ) / uSmS[ i ].x, b = dot( dir, uSmV[ i ] ) / uSmS[ i ].y;
+      L += vec3( ${SMUDGE_RGB.join(', ')} ) * uSmP[ i ] * exp( -0.5 * ( a * a + b * b ) ) * ( 0.55 + 0.9 * noise3( dir * 40.0 ) );
+    }
+  }
   float Y = dot( L, vec3( 0.2126, 0.7152, 0.0722 ) );
   float toe = Y / ( Y + uFloor );
   float ys = uScale * pow( Y * toe * toe, uGamma );
@@ -877,6 +916,11 @@ export function createMilkyWay(opts = {}) {
     uCloudV: { value: CLOUD_GEOM.map((g) => new THREE.Vector3(...g.v)) },
     uCloudS: { value: CLOUD_GEOM.map((g) => new THREE.Vector4(g.su, g.sv, g.sw, g.rho0)) },
     uCloudCone: { value: CLOUD_GEOM.map(() => new THREE.Vector4(0, 0, 1, -1)) },
+    uSmC: { value: SMUDGE_GEOM.map((g) => new THREE.Vector3(...g.c)) },
+    uSmU: { value: SMUDGE_GEOM.map((g) => new THREE.Vector3(...g.u)) },
+    uSmV: { value: SMUDGE_GEOM.map((g) => new THREE.Vector3(...g.v)) },
+    uSmS: { value: SMUDGE_GEOM.map((g) => new THREE.Vector2(g.su, g.sv)) },
+    uSmP: { value: SMUDGE_GEOM.map((g) => g.peak) },
   };
   /** Each cloud's cone from the camera (galactocentric kpc): outside it its column is under exp(-8) of the middle's. */
   function cloudCones(cam) {

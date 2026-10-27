@@ -33,7 +33,8 @@
 //
 // JETS. M87*'s jet is measured: position angle 288 degrees on the sky, 17 degrees from our line of sight
 // (Walker et al. 2018, ApJ 855, 128), seen in visible light for about 1.5 kpc (20 arcseconds at 16.8 Mpc).
-// Near the hole it widens as a parabola (radius ∝ z^0.58, Asada & Nakamura 2012, ApJ 745, L28), then as a
+// Near the hole it widens as a parabola (radius ∝ z^0.58, Asada & Nakamura 2012, ApJ 745, L28; drawn narrower than the
+// measured width, a faint collimated beam, so the hole stays the subject), then as a
 // cone. The jet that comes towards us is thousands of times brighter than the one going away (relativistic
 // beaming), so the counter-jet is a trace. Drawn twice: with the hole at its drawn size, and at its true
 // length in the galaxy M87, where a visitor framing M87 sees it.
@@ -63,15 +64,15 @@ export const UNDER_MEASURED = { hole: 'same', streaks: 'same', jet: 'same' };
  */
 export const PROFILES = {
   'sgr-a-star': {
-    incl: 30, pa: 60, turn: -1, rOut: 18, t: 4500, frame: 13,
+    incl: 48, pa: 60, turn: -1, rOut: 18, t: 5000, frame: 13,
     cls: { mass: 'measured', size: 'measured', place: 'measured', disc: 'modelled', orientation: 'modelled' },
-    why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across, best fitted seen within 50 degrees of face-on; GRAVITY 2018 saw flares circle clockwise. The axis on the sky is not measured: 60 degrees is chosen.',
+    why: 'EHT 2022 (ApJL 930, L12): a ring 51.8 µas across, best fitted seen within 50 degrees of face-on (48 is taken, the most the fit allows, so the far side of the disc shows over the shadow); GRAVITY 2018 saw flares circle clockwise. The axis on the sky is not measured: 60 degrees is chosen.',
   },
   'm87-star': {
-    incl: 17, pa: 288, turn: -1, rOut: 18, t: 4500, frame: 13,
+    incl: 17, pa: 288, turn: -1, rOut: 18, t: 5000, frame: 13, host: 'dso-m87',
     // knots: [light-years along the jet, strength]: HST-1, D, F, A, C at 0.86, 2.8, 8.6, 12.4 and 17.5 arcseconds
     // from the core (Perlman et al. 2011), one arcsecond being 81 pc on the sky and 908 ly along a jet 17 degrees off our line
-    jet: { lengthLy: 18000, knots: [[780, 0.9], [2540, 0.45], [7810, 0.4], [11260, 0.8], [15890, 0.35]], counter: 0.006 },
+    jet: { lengthLy: 18000, knots: [[780, 0.9], [2540, 0.45], [7810, 0.4], [11260, 0.8], [15890, 0.35]], counter: 0.02 },
     cls: { mass: 'measured', size: 'measured', place: 'measured', disc: 'modelled', orientation: 'measured', jet: 'measured' },
     why: 'EHT 2019 (ApJL 875, L1): a ring 42 µas across, brighter in the south, the flow turning clockwise on the sky; the jet at 288 degrees, 17 degrees from our line (Walker et al. 2018).',
   },
@@ -90,7 +91,7 @@ export const PROFILES = {
   '3c-279': { incl: 2, pa: 205, turn: 1, rOut: 22, t: 9000, frame: 13, jet: { lengthLy: 30000, knots: [], counter: 0.003 } },
 };
 const DEFAULT_STELLAR = { incl: 60, pa: 0, turn: 1, rOut: 22, t: 1e7, frame: 13 };
-const DEFAULT_SUPER = { incl: 60, pa: 0, turn: 1, rOut: 22, t: 4500, frame: 13 };
+const DEFAULT_SUPER = { incl: 60, pa: 0, turn: 1, rOut: 18, t: 5000, frame: 13 };
 
 /** The record's own id without the layer's prefix. */
 const bare = (id) => String(id || '').replace(/^exotic-/, '');
@@ -126,7 +127,7 @@ export function discFlux(r, rIn = ISCO_M) {
  * The disc's grain: rings and spiral streaks of brighter and darker gas, sheared by its orbits (illustrative:
  * the measured disc is unresolved). Mean about 1. The GLSL is the same line.
  */
-export function streaks(r, phi) {
+export function streaks(r, phi) { // no longer drawn (it banded the disc); kept for the record of what was tried
   const L = Math.log(r);
   return 0.9 + 0.08 * Math.sin(23 * L + 3 * phi + 2 * Math.sin(5 * L - phi)) * Math.sin(41 * L - 2 * phi + 1.3) + 0.04 * Math.sin(71 * L + phi);
 }
@@ -172,6 +173,7 @@ export function trace(q, d, p = {}) {
   let w = -u * (d[0] * e1[0] + d[1] * e1[1] + d[2] * e1[2]) / (d[0] * e2[0] + d[1] * e2[1] + d[2] * e2[2]);
   let phi = 0;
   let zPrev = p0[2], uPrev = u;
+  let ring = 0; // as the shader gathers it: the path skimming r = 3M (before anything opaque is met)
   const f = (uu) => 3 * uu * uu - uu;
   for (let i = 0; i < steps; i++) {
     const k1u = w, k1w = f(u);
@@ -181,7 +183,8 @@ export function trace(q, d, p = {}) {
     u += (h / 6) * (k1u + 2 * k2u + 2 * k3u + k4u);
     w += (h / 6) * (k1w + 2 * k2w + 2 * k3w + k4w);
     phi += h;
-    if (u > 0.5) return { hit: 'hole', phi };
+    { const x = (1 / Math.max(u, 1e-4) - 3) / 0.12, tw = w / (u * 0.25); ring += h * Math.exp(-x * x - tw * tw); }
+    if (u > 0.5) return { hit: 'hole', phi, ring };
     const cp = Math.cos(phi), sp = Math.sin(phi);
     const z = (cp * e1[2] + sp * e2[2]) / u;
     if (zPrev * z < 0) {
@@ -189,7 +192,7 @@ export function trace(q, d, p = {}) {
       const uc = uPrev + (u - uPrev) * t, ph = phi - h + t * h;
       const pc = [Math.cos(ph) * e1[0] + Math.sin(ph) * e2[0], Math.cos(ph) * e1[1] + Math.sin(ph) * e2[1], 0].map((v) => v / uc);
       const hit = disc(pc);
-      if (hit) return { ...hit, phi };
+      if (hit) return { ...hit, phi, ring };
     }
     if (u < 1 / RLENS && w < 0) {
       const r = 1 / u;
@@ -200,13 +203,13 @@ export function trace(q, d, p = {}) {
       const ol = Math.hypot(...out); out = out.map((v) => v / ol);
       if (Math.abs(out[2]) > 1e-9) {
         const t = -pos[2] / out[2];
-        if (t > 0) { const hit = disc([pos[0] + t * out[0], pos[1] + t * out[1], 0]); if (hit) return { ...hit, phi }; }
+        if (t > 0) { const hit = disc([pos[0] + t * out[0], pos[1] + t * out[1], 0]); if (hit) return { ...hit, phi, ring }; }
       }
-      return { hit: 'sky', phi };
+      return { hit: 'sky', phi, ring };
     }
     zPrev = z; uPrev = u;
   }
-  return { hit: 'hole', phi };
+  return { hit: 'hole', phi, ring };
 }
 
 // ------------------------------------------------------------------------------------------- orientation
@@ -278,9 +281,26 @@ uniform float uTpeak;     // K at the brightest ring
 uniform float uBright;
 uniform float uStretch;
 uniform float uQuiet;
+uniform float uRing;      // how bright the photon ring is
+uniform float uGlow;      // the soft glow round it
 uniform float uOpacity;
 varying vec3 vLocal;
 ${BB_GLSL}
+// The disc's grain: filaments of hotter and cooler gas drawn out along the orbits (the look of the simulations; the real
+// discs are unresolved: illustrative). Value noise in (azimuth, log r), the azimuth wrapping at 48 cells, the cells sheared
+// with radius as differential rotation shears them.
+float h2( vec2 p ) { return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
+float vnoise( vec2 p ) {
+  vec2 i = floor( p ), f = fract( p );
+  f = f * f * ( 3.0 - 2.0 * f );
+  float x0 = mod( i.x, 48.0 ), x1 = mod( i.x + 1.0, 48.0 );
+  return mix( mix( h2( vec2( x0, i.y ) ), h2( vec2( x1, i.y ) ), f.x ), mix( h2( vec2( x0, i.y + 1.0 ) ), h2( vec2( x1, i.y + 1.0 ) ), f.x ), f.y );
+}
+float filaments( float r, float ph ) {
+  float L = log( r );
+  float x = ph / 6.2831853 * 48.0 + 30.0 * L;
+  return 0.55 * vnoise( vec2( x, L * 34.0 ) ) + 0.3 * vnoise( vec2( x * 2.0 + 7.0, L * 80.0 ) ) + 0.15 * vnoise( vec2( x * 4.0, L * 160.0 ) );
+}
 float discFlux( float r ) {
   if ( r <= uRin ) return 0.0;
   float rp = 1.3611111 * uRin;
@@ -292,11 +312,15 @@ void shade( vec3 p, float lz, inout vec3 col, inout float A ) {
   float om = uTurn * pow( r, -1.5 );
   float g = sqrt( max( 1e-4, 1.0 - 3.0 / r ) ) / max( 0.05, 1.0 - om * lz );
   float F = discFlux( r );
-  float L = log( r ), ph = atan( p.y, p.x );
-  F *= 0.9 + 0.08 * sin( 23.0 * L + 3.0 * ph + 2.0 * sin( 5.0 * L - ph ) ) * sin( 41.0 * L - 2.0 * ph + 1.3 ) + 0.04 * sin( 71.0 * L + ph );
-  float I = pow( F, uStretch ) * pow( g, 4.0 );
-  vec3 c = kelvinRgb( uTpeak * pow( max( F, 1e-6 ), 0.25 ) * g ) * ( 1.0 - exp( -I * uBright ) );
-  float a = ( 1.0 - smoothstep( uRout * 0.82, uRout, r ) ) * smoothstep( uRin * 0.97, uRin * 1.04, r );
+  // A smooth emissive gradient: white-yellow at the inner edge, deep orange and red outwards (the colour temperature
+  // goes as F^1/4, shifted by g), its brightness as g^4: the approaching side blazes, the receding one dims.
+  float I = pow( F, uStretch ) * pow( g, 4.0 ) * uBright * ( 1.0 - smoothstep( uRout * 0.35, uRout, r ) ); // the disc thins into the dark
+  I *= 0.35 + 1.3 * filaments( r, atan( p.y, p.x ) );
+  float e = 1.0 - exp( -I );
+  // colour temperature as F^0.4 (steeper than the black body's F^1/4: a display choice, so the outer disc reads deep orange)
+  vec3 c = pow( kelvinRgb( uTpeak * pow( max( F, 1e-6 ), 0.4 ) * g ), vec3( 2.0 ) ) * e * 1.4;
+  // hot gas glows: the faint outer disc lets the light behind through, the bright inner one hardly
+  float a = smoothstep( uRin * 0.97, uRin * 1.06, r ) * clamp( 0.05 + 0.95 * e, 0.0, 0.96 );
   col += ( 1.0 - A ) * a * c;
   A += ( 1.0 - A ) * a;
 }
@@ -316,6 +340,7 @@ void main() {
     if ( t > 0.0 && t < tIn ) shade( vec3( q.xy + t * d.xy, 0.0 ), lz, col, A );
   }
   float swept = 0.0;
+  float ring = 0.0; // light gathered where the ray skims the photon sphere (r = 3M): the thin bright photon ring
   if ( enters && A < 0.995 ) {
     vec3 p0 = q + tIn * d;
     float r0 = length( p0 );
@@ -340,6 +365,7 @@ void main() {
         u += BH_H / 6.0 * ( k1u + 2.0 * k2u + 2.0 * k3u + k4u );
         w += BH_H / 6.0 * ( k1w + 2.0 * k2w + 2.0 * k3w + k4w );
         phi += BH_H;
+        { float x = ( 1.0 / max( u, 1e-4 ) - 3.0 ) / 0.12; float tw = w / ( u * 0.25 ); ring += ( 1.0 - A ) * BH_H * exp( -x * x - tw * tw ); } // only light that circles
         if ( u > 0.5 ) { A = 1.0; done = true; break; }
         float cp = cos( phi ), sp = sin( phi );
         float z = ( cp * e1.z + sp * e2.z ) / u;
@@ -367,8 +393,14 @@ void main() {
       if ( !done ) A = 1.0; // still circling the photon sphere: as good as captured
     }
   }
-  // A quiet hole (nothing falls in) shows only what it bends: the light that went round it, as a thin ring.
-  if ( uQuiet > 0.5 && swept > 3.3 ) { float k = smoothstep( 3.3, 4.4, swept ) * 0.5; col += ( 1.0 - A ) * vec3( 0.55, 0.62, 0.8 ) * k; A += ( 1.0 - A ) * k; }
+  // The photon ring: thin, sharp and bright, hugging the shadow (a quiet hole's is only the bent light of the sky
+  // behind it, faint and white-blue).
+  vec3 ringColour = uQuiet > 0.5 ? vec3( 0.45, 0.52, 0.7 ) : kelvinRgb( uTpeak * 1.1 ) * 1.6;
+  col += ringColour * ( 1.0 - exp( -ring * uRing ) );
+  // A soft glow round the whole (no bloom pass: this square's own light, falling off with the distance from the hole).
+  float bimp = sqrt( b2 );
+  float halo = uGlow * exp( -max( 0.0, bimp - 5.2 ) / 4.0 ) * ( 1.0 - smoothstep( uSize * 0.7, uSize, bimp ) );
+  col += ( 1.0 - A ) * kelvinRgb( uTpeak * 0.7 ) * halo;
   // premultiplied: the shadow and the opaque disc hide what is behind them, the light adds
   gl_FragColor = vec4( col * uOpacity, A * uOpacity );
   #include <colorspace_fragment>
@@ -399,12 +431,12 @@ varying vec3 vN;
 varying vec3 vV;
 void main() {
   float face = abs( dot( normalize( vN ), normalize( vV ) ) );
-  float body = pow( face, 1.6 );
-  // the base rises out of the hole's glare instead of starting as a bright ring round it
-  float I = 0.22 * pow( max( vZ, 1e-6 ), -0.3 ) * smoothstep( 0.0, 0.25, vZ ) * ( 1.0 - smoothstep( 0.75, 1.0, vZ ) );
-  for ( int i = 0; i < 5; i++ ) { float k = ( vZ - uKnots[ i ].x ) / 0.018; I += uKnots[ i ].y * exp( -0.5 * k * k ); }
+  float body = pow( face, 3.0 ); // bright on its axis, gone at its edges: a collimated beam, not a cone
+  // it rises out of the hole's glare and fades with distance
+  float I = 0.07 * pow( max( vZ, 1e-6 ), -0.5 ) * smoothstep( 0.0, 0.15, vZ ) * ( 1.0 - smoothstep( 0.6, 1.0, vZ ) );
+  for ( int i = 0; i < 5; i++ ) { float k = ( vZ - uKnots[ i ].x ) / 0.018; I += 0.25 * uKnots[ i ].y * exp( -0.5 * k * k ); }
   I *= mix( 1.0, 1.0 - smoothstep( 0.2, 1.0, vZ ), uFade );
-  vec3 c = vec3( 0.55, 0.72, 1.0 ) * I * body * uSide * uOpacity * uEndOn;
+  vec3 c = vec3( 0.42, 0.6, 1.0 ) * I * body * uSide * uOpacity * uEndOn;
   gl_FragColor = vec4( c * 0.6, 0.0 ); // added (one, one), alpha untouched
   #include <colorspace_fragment>
 }
@@ -441,7 +473,7 @@ void main() {
 function jetGeometry(z0, z1, rings = 72, sides = 14) {
   const pos = [], nrm = [], az = [], idx = [];
   const zb = Math.min(z1, 2e5); // where the parabola gives way to the cone
-  const rad = (z) => (z <= zb ? 1.2 * Math.pow(z, 0.58) : 1.2 * Math.pow(zb, 0.58) + (z - zb) * 0.025);
+  const rad = (z) => (z <= zb ? 0.28 * Math.pow(z, 0.58) : 0.28 * Math.pow(zb, 0.58) + (z - zb) * 0.012);
   for (let i = 0; i < rings; i++) {
     const z = z0 * Math.pow(z1 / z0, i / (rings - 1));
     const r = rad(z);
@@ -493,8 +525,9 @@ export function createBlackHole(record, opts = {}) {
     uQuad: { value: new THREE.Matrix4() },
     uCam: { value: new THREE.Vector3() }, uCamDir: { value: new THREE.Vector3(0, 0, 1) }, uCamDist: { value: 1e6 },
     uSize: { value: 1 }, uRin: { value: ISCO_M }, uRout: { value: p.rOut || 26 }, uTurn: { value: p.turn || 1 },
-    uTpeak: { value: p.t || 6000 }, uBright: { value: 1.5 }, uStretch: { value: p.companion ? 0.05 : 1.05 },
+    uTpeak: { value: p.t || 6000 }, uBright: { value: p.companion ? 1.5 : 3.0 }, uStretch: { value: p.companion ? 0.05 : 1.5 },
     uQuiet: { value: p.quiet ? 1 : 0 }, uOpacity: { value: 0 },
+    uRing: { value: p.quiet ? 0.8 : 2.2 }, uGlow: { value: p.quiet ? 0 : p.companion ? 0.04 : 0.1 },
   };
   const holeMat = () => new THREE.ShaderMaterial({
     vertexShader: HOLE_VERT, fragmentShader: HOLE_FRAG, uniforms: huniforms,
@@ -644,7 +677,7 @@ export function createBlackHole(record, opts = {}) {
     huniforms.uCamDir.value.copy(cl).divideScalar(cd || 1);
     huniforms.uCam.value.copy(cl);
     // the square: facing the camera, big enough for the disc and the bent light round it
-    const size = Math.min(p.rOut ? p.rOut * 1.05 : RLENS, Math.max(RLENS * 0.6, p.rOut || 0) + 2) + 4;
+    const size = p.rOut && p.rOut > RLENS ? p.rOut * 1.05 + 4 : Math.max(34, (p.rOut || 0) * 1.6);
     huniforms.uSize.value = size;
     camera.getWorldQuaternion(_q);
     _q.premultiply(_qi);

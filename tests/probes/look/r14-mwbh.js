@@ -59,10 +59,13 @@ try {
   const gcEq = radec(266.405, -28.936);
   const toGc = sr.stage.dirToScene({ x: gcEq[0], y: gcEq[1], z: gcEq[2] }, 'earth-inertial');
   const earth = sr.worlds.meshFor('earth');
-  // stand so the centre is beside the Earth, not behind it: 40 degrees off the line through it
+  // stand a little behind and beside the Earth, looking past it at the centre: the Earth low in the frame, the band beyond
   const side = norm({ x: -toGc.z, y: 0, z: toGc.x });
-  const k = 40 * Math.PI / 180;
-  rig.flyTo({ targetScene: { x: earth.position.x, y: earth.position.y, z: earth.position.z }, offset: norm({ x: -toGc.x * Math.cos(k) + side.x * Math.sin(k), y: -toGc.y * Math.cos(k), z: -toGc.z * Math.cos(k) + side.z * Math.sin(k) }), distance: 34, ms: 0 });
+  const E = { x: earth.position.x, y: earth.position.y, z: earth.position.z };
+  const C = add(add(E, toGc, -20), side, 7);
+  const T = add(E, toGc, 200);
+  const off = sub(C, T);
+  rig.flyTo({ targetScene: T, offset: norm(off), distance: Math.hypot(off.x, off.y, off.z), ms: 0 });
   await snap('1-earth-band', 'from orbit, the Earth with the galaxy\'s centre beside it: the band, the Great Rift, Sagittarius', 7000);
   const A = await import(new URL('vendor/astronomy.js', document.baseURI).href);
   const obs = new A.Observer(-24.627, -70.404, 2635);

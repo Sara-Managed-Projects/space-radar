@@ -350,6 +350,7 @@ export function createDeepSky(THREE, env = {}) {
       for (const { r } of big) {
         if (want.size >= MAX_HOLDERS) break;
         if (heroIds.has(r.id)) continue;
+        if (r.meta && r.meta.holderOff) continue; // 0078 r14-mw-bh: a black hole drawn in its host's core (scene/portraits.js) stands in it alone
         want.add(r.id);
       }
     }
