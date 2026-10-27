@@ -1209,7 +1209,6 @@ export const COPY = {
     "approachNone": "La table des passages rapprochés de NASA JPL n’est pas chargée, donc aucun prochain passage n’est nommé.",
     "satellitesCount": "{n} satellites en service dans le catalogue que cette page a chargé depuis CelesTrak, dont {starlink} Starlink.",
     "satellitesLoading": "Le catalogue est encore en chargement ; le nombre s’affichera quand il sera là.",
-    "pictureLine": "Une vraie photographie, placée là où elle est dans le ciel. Image : {credit} · {licence}, bords estompés et ciel assombri par nos soins.",
     "portraitLine": "Un modèle, pas la photographie : l’ombre et l’anneau de lumière courbée autour sont ceux que donne sa masse, le disque lumineux est modélisé, et les étoiles derrière ne sont pas courbées. Il est dessiné bien plus grand qu’il ne paraîtrait d’ici ; le lieu est mesuré. La photographie de l’Event Horizon Telescope est sur sa fiche : {credit} · {licence}.",
     "tonightUp": "Depuis {place} ce soir : levé de {begin} à {end}, au plus haut à {time}, {alt}, {az}.",
     "tonightGlare": "Depuis {place} ce soir : {name} est trop près du Soleil pour être vu.",
@@ -2190,8 +2189,8 @@ export const COPY = {
     "lead": "Où sont les choses, et comment elles bougent, est mesuré ou calculé. Leur aspect vient de trois sortes d’images.",
     "kinds": [
       [
-        "Une photographie",
-        "Les nébuleuses et les galaxies sont des photographies de télescope, en longue pose. Pour l’œil au télescope, le même gaz est une faible lueur grise, et certaines images associent des couleurs à des gaz isolés ; chaque fiche dit lesquelles."
+        "Un modèle 3D",
+        "Les nébuleuses et les galaxies sont des modèles 3D construits à partir de mesures publiées, leur lumière tirée de photographies de télescope (en longue pose) ; celles qui n’ont pas encore de modèle sont une douce lueur de leur taille. Pour l’œil, le même gaz est une faible lueur grise. Une fiche peut montrer la photographie à côté de son modèle."
       ],
       [
         "Une carte sur un modèle",
@@ -2384,8 +2383,6 @@ export const COPY = {
       "unstated": "Son archive ne dit pas quels filtres ont servi, donc nous ne disons pas si ce sont les couleurs qu’un œil verrait."
     },
     "part": "Elle montre {part}, pas la totalité.",
-    "figureAlt": "Photographie : {name}",
-    "figureCaption": "{name} : {w} sur {h} minutes d’arc de ciel.",
     "creditLead": "Image : ",
     "creditTail": " · {licence}, bords estompés et ciel assombri par nos soins"
   },
@@ -3598,9 +3595,13 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
+      "m27": "Sa lumière vient de la photographie de NOIRLab, montrée dans les teintes propres de ses gaz ; sa forme est une reconstruction : la taille brillante, un anneau épais vu presque par la tranche ; les « oreilles » plus pâles, ses lobes, d’après les vitesses de ses coquilles mesurées par Meaburn et d’autres (2005). Pas encore relu par un astronome.",
+      "southern-ring": "Sa lumière vient de la photographie infrarouge de Webb ; sa forme suit Kastner et d’autres (2024) et De Marco et d’autres (2022) : un anneau vu presque selon son axe, une bulle qui le traverse et un halo moléculaire autour des deux. Pas encore relu par un astronome.",
       "m57": "Sa lumière vient de la photographie de Hubble, sa forme d’O’Dell, Ferland, Henney et Peimbert (2013) : un anneau épais incliné de 13,5°, vu presque dans son axe, le gaz plus bleu de son milieu dessiné s’étirant vers nous et loin de nous. Ses couleurs sont celles de la photographie, prise à travers des filtres étroits. Pas encore relu par un astronome."
     },
     "rows": {
+      "dso-m27": [["Sa forme en profondeur", "Reconstruite. Sa taille, son angle sur le ciel et les vitesses de ses coquilles sont mesurés ; que la taille soit un anneau presque par la tranche, et la façon dont ses « oreilles » s’étendent vers nous et à l’opposé, est la lecture habituelle d’une nébuleuse de cet aspect, dessinée comme illustration."], ["Ses couleurs", "Les teintes propres de ses gaz, d’après les filtres étroits de la photographie : l’oxygène bleu-vert, l’hydrogène et le soufre rouges. La force de chacun est notre choix."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
+      "dso-southern-ring-nebula": [["Sa forme en profondeur", "Reconstruite. Que son anneau brillant soit vu à 15–30° de son axe est mesuré (Kastner et d’autres, 2024) ; quel côté est le plus proche, l’épaisseur de l’anneau et la longueur de la bulle sont illustratifs."], ["Ses couleurs", "Une lumière infrarouge qu’aucun œil ne voit, colorée par les auteurs de l’image de Webb."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-m57": [
         [
           "Sa distance",
@@ -3620,6 +3621,7 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
+      "m45": "Sa lumière est la photographie de NOIRLab : un nuage de poussière qui traverse l’amas, juste devant ses étoiles, diffuse leur lumière bleue (Ritchey et d’autres, 2006). Sa profondeur est reconstruite. Pas encore relu par un astronome.",
       "crab": "Sa lumière vient de la photographie de Hubble, en fausses couleurs, portée par une coque dont la forme suit Martin, Milisavljevic et Drissen (2021) : une cage de filaments longue d’environ 4 parsecs autour d’un milieu vide. Pas encore relu par un astronome.",
       "veil": "Sa lumière vient de la photographie de NOIRLab, en fausses couleurs, portée par une fine sphère de 37 parsecs de diamètre (Fesen et autres, 2018) : les filaments sont son bord vu par la tranche. Pas encore relu par un astronome.",
       "horsehead": "Son obscurité se lit dans la photographie de NOIRLab : de la poussière devant le gaz lumineux d’IC 434, qui absorbe et rougit ce qui est derrière elle et n’émet aucune lumière. Pas encore relu par un astronome.",
@@ -3628,6 +3630,7 @@ export const COPY = {
       "iris": "Sa lumière est la photographie de NOIRLab : de la poussière qui diffuse la lumière de la jeune étoile HD 200775 dans un creux de son nuage. Sa profondeur est reconstituée. Pas encore relu par un astronome."
     },
     "rows": {
+      "dso-m45": [["Sa forme en profondeur", "Reconstruite. Le gaz est devant les étoiles, comme le montre leur lumière ; à quelle distance devant, et l’épaisseur de la poussière, sont illustratifs, et les profondeurs des étoiles dans l’amas sont un modèle fixe, non mesurées."], ["Ce que fait la poussière", "Elle diffuse la lumière des étoiles, surtout la bleue, et brille donc en bleu autour des plus brillantes, Mérope et Maïa surtout. C’est un nuage de passage, pas celui dont les étoiles sont nées."], ["Relecture", "Ce modèle n’a pas encore été relu par un astronome."]],
       "dso-m1": [
         [
           "Sa forme en profondeur",

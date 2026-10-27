@@ -146,8 +146,9 @@ const m31 = byId.get('dso-m31'), m32 = byId.get('dso-m32'), m42 = byId.get('dso-
 
 // --- 7. what is drawn, and the tag (task 6) ------------------------------------------------------
 {
-  check(D.drawnOf(lmc).join() === 'photograph,illustration' && D.primaryDrawn(D.drawnOf(lmc)) === 'photograph', 'the LMC is a photograph and an illustrative glow');
-  check(D.drawnOf(lmc, { shipped: true, drawn: ['model'] })[0] === 'model' && D.drawnOf(lmc, { shipped: false, drawn: ['model'] })[0] === 'photograph', 'a shipped hero\'s class leads; an unshipped one adds nothing');
+  // 0078 r14-neb-b: no record is drawn as a photograph; only the card's slider draws one.
+  check(D.drawnOf(lmc).join() === 'illustration' && D.primaryDrawn(D.drawnOf(lmc)) === 'illustration', 'the LMC without its hero is an illustrative glow, never a photograph');
+  check(D.drawnOf(lmc, { shipped: true, drawn: ['model'] })[0] === 'model' && D.drawnOf(lmc, { shipped: false, drawn: ['model'] })[0] === 'illustration', 'a shipped hero\'s class leads; an unshipped one adds nothing');
   const fake = { ...lmc, meta: { ...lmc.meta, heroDrawn: ['reconstruction'] } };
   check(D.primaryDrawn(D.drawnOf(fake)) === 'reconstruction', 'the coordinator\'s stamp is read too');
 }

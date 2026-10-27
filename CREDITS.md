@@ -507,7 +507,7 @@ Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 The sky view (`site/js/sky/groundsky.js`) ships no new source. Its stars are §3's `stars.bin` and
 `skystars-1.bin`, `skystars-2.bin` and `skystars.names.json`, which `scripts/build-skystars.py`
 cuts from §3c's `stars3d.bin` (HYG v4.4, CC BY-SA 4.0: the same stars, as a direction, a magnitude
-and a colour each; the same licence); its nebulae and galaxies are §3g's photographs; its Milky Way, Moon, Mars, Jupiter and Saturn maps are
+and a colour each; the same licence); its nebulae and galaxies are soft glows of their catalogue size (no photographs since 1.4.0) <!-- 0078 r14-neb-b -->; its Milky Way, Moon, Mars, Jupiter and Saturn maps are
 the textures already credited above; the positions, sizes and phases of the Sun, the Moon and the
 planets, the Moon's libration and the tilt of Saturn's rings are computed by Astronomy Engine (MIT).
 Refraction is Sæmundsson's formula (Sky & Telescope 72, 1986); air mass is Kasten and Young (Applied
@@ -1760,8 +1760,15 @@ The line under the stop says all three and carries the credit and the licence
 
 ## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESA/Webb, ESO and NOIRLab, CC BY 4.0
 
-`site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067), laid
-on the sky where its object is by `site/js/scene/nebulae.js`. They come from four outreach
+`site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067).
+<!-- 0078 r14-neb-b: begin -->
+Since release 1.4.0 none is laid on the sky: the map draws each object as a 3D model (§3l) or a soft
+glow. A photograph is shown only when a visitor moves a card's "Compare with the photograph"
+slider, at its object's place (`site/js/scene/nebulae.js`), with its credit under the slider; the
+3D models of §3l take their light and colours from these files, and the LMC's, the Tarantula's and
+the SMC's heroes read them directly.
+<!-- 0078 r14-neb-b: end -->
+They come from four outreach
 archives whose terms release their images under the Creative Commons Attribution 4.0 International
 licence (each terms page, the sentence that grants it and the day it was read are in the registry's
 `archives:`; read 2026-10-03, ESA/Webb's on 2026-10-06):
@@ -1773,7 +1780,7 @@ licence (each terms page, the sentence that grants it and the day it was read ar
 
 The terms ask for the credit "in a clear and readable manner to all users, with the wording
 unaltered" and not "hidden or disassociated from the image". So each object's card prints its
-picture's credit under "About it", linked to the archive's page for that picture, and every credit
+picture's credit under the slider that shows it, linked to the archive's page for that picture, and every credit <!-- 0078 r14-neb-b -->
 is listed here word for word (`scripts/check_registry.py` refuses a row whose credit is not).
 No picture is a Digitized Sky Survey composite or from Mellinger's panorama: neither is ours to
 redistribute, and the same check refuses a credit that names either.
@@ -2450,6 +2457,35 @@ model is a **model** and the card says so, and that no astronomer has reviewed i
 | M101 | i = 18, PA = 39 degrees; disc scale length 127.3 arcsec at 3.6 microns; arms' pitches 7 to 29 degrees; the south-west approaching; the near side derived; five giant H II regions (NGC 5447, 5455, 5461, 5462, 5471) at their places | Walter et al. 2008 (after Bosma, Goss & Allen 1981); Salo et al. 2015; Herrera-Endoqui et al. 2015 (VizieR J/A+A/582/A86); Mihos et al. 2013 (arXiv:1211.3095); SIMBAD (CDS) |
 | M104, the Sombrero | PA 89.25 degrees; i = 84 (84.3 +/- 0.2 for the CO ring); bulge n 3.9, Re 71 arcsec; disc scale length 61 and height 18 arcsec; the dust ring's radius 144.7 arcsec and width 22.9 arcsec, an inner dust disc of 48 arcsec; which side is near is not published in what was read, and is assumed | Bendo et al. 2006 (arXiv:astro-ph/0603160); Gadotti 2012 (arXiv:1101.2900), after Emsellem et al. 1996; Sutter et al. 2022 (arXiv:2210.13527); Vlahakis et al. 2008 (arXiv:0805.4791) |
 | The Antennae | NGC 4038's and NGC 4039's places; their RC3 outlines (tilts read from torn outlines: illustrative); 22 +/- 3 Mpc (13.3 +/- 1.0 by another method); the tails' lengths and parents, the southern tip bending away; the tails traced on Robert Gendler's photograph, their depths a model after the simulations | SIMBAD (CDS); RC3 (de Vaucouleurs et al. 1991, VizieR VII/155); Schweizer et al. 2008 (arXiv:0807.3955); Saviane et al. 2008 (arXiv:0802.1045); Hibbard et al. 2001 (arXiv:astro-ph/0110581); Privon et al. 2013 (arXiv:1305.5865); Karl et al. 2010 (arXiv:1003.0685); heic0812c, "Robert Gendler", ESA/Hubble, CC BY 4.0 |
+
+<!-- 0078 r14-neb-b: begin -->
+### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)
+
+Release 1.4.0 lays no photograph on the sky (§3g says where one is still shown). The objects that were only a
+photograph are drawn in 3D from published numbers: M27 and the Southern Ring on `site/js/scene/deep/ring.js` (the Ring's
+technique), the Pleiades' nebulosity on `site/js/scene/deep/reflection.js` (dust in front of the cluster lit by its own
+stars, which stay the star map's), and M83, NGC 1300 and Centaurus A on `site/js/scene/deep/spiral.js` (galaxies from
+their structure). Their numbers are in `registry/deepsky-heroes/m27.yaml`, `southern-ring.yaml`, `m45.yaml`, `m83.yaml`,
+`ngc1300.yaml` and `cena.yaml`, each with its source; facts read on 2026-10-26 in the papers' abstracts and texts (arXiv),
+SIMBAD and VizieR. The nebulae's light maps are adaptations of §3g's CC BY 4.0 photographs (stars removed, spread through
+the reconstructed volume by `scripts/build_deep_ring.py` and `scripts/build_deep_sheets.py`, `site/images/deep/m27/`,
+`site/images/deep/southern-ring/`, `site/images/deep/sheets/m45-light.webp`); their colours are ENHANCED where the
+photograph is narrowband or infrared, and the card says so. The galaxies copy no image: their arms and lanes are matched
+by eye to the photographs named. Centaurus A's jets are an ILLUSTRATION in false colour (they shine in X-rays and radio).
+Every one is a **reconstruction** or a **model** and its card says so, and that no astronomer has reviewed it yet
+(internal #785). The Sombrero, the Antennae and M81 were revised in the same stage (their profiles' sources are unchanged).
+
+- The Dumbbell's 3D shape: a reconstruction by Space Radar (the waist as a ring nearly edge on, the lobes, the outer shell), its sizes measured on the photograph; the shells after Meaburn et al. 2005 (arXiv:astro-ph/0501569)
+- The central star: distance and temperature after Benedict et al. 2009, AJ 138, 1969; the knots after O'Dell et al. 2002, AJ 123, 3329
+- Its light: the photograph noao-m27-kpno-mayall-4-m, T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA) (CC BY 4.0), its stars removed by Space Radar
+- The Southern Ring's 3D shape: a reconstruction by Space Radar after Kastner et al. 2024 (arXiv:2402.11850: a ring seen nearly pole on) and De Marco et al. 2022 (arXiv:2301.02775: the bubble and the molecular halo), its sizes measured on the photograph
+- Its light: the photograph weic2207b, NASA, ESA, CSA, STScI, and the Webb ERO Production Team (CC BY 4.0), its stars removed by Space Radar
+- The Pleiades' reflection nebula as a lit volume of dust: reconstructed by Space Radar; the gas in front of the stars after Ritchey, Martinez & Federman 2006 (arXiv:astro-ph/0606644); the stars' places and magnitudes from SIMBAD (CDS); the phase function of Henyey & Greenstein 1941
+- Its light: the photograph noao-m45, NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN (CC BY 4.0), the stars' halos subtracted by Space Radar
+- M83's model: the bulge, the bar and the disc after the S4G decomposition (Salo et al. 2015, VizieR J/ApJS/219/4), the orientation and distance as Lundgren et al. 2004 give them, the arms and lanes matched by eye to ESO's photograph eso0825a (ESO; CC BY 4.0). Facts, cited; the model copies no image.
+- NGC 1300's model: the bulge, the bar and the disc after the S4G decomposition (Salo et al. 2015, VizieR J/ApJS/219/4), the arms and lanes matched by eye to Hubble's photograph opo0501a (NASA, ESA and The Hubble Heritage Team, STScI/AURA; CC BY 4.0). Facts, cited; the model copies no image.
+- Centaurus A's model: the warped dusty disc after Quillen et al. 2006 (arXiv:astro-ph/0601135), the elliptical after Dufour et al. 1979 as Dumont et al. 2023 adopt it, the jets after Kraft et al. 2002, Hardcastle et al. 2007 and Israel 1998 (drawn in false colour), the colours matched by eye to ESO's photograph eso1221a (ESO; CC BY 4.0). Facts, cited; the model copies no image.
+<!-- 0078 r14-neb-b: end -->
 
 ### A deep field (0077 W3-f)
 

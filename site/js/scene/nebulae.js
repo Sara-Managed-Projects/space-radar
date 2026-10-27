@@ -1,63 +1,39 @@
-// scene/nebulae.js -- real photographs of the famous nebulae and galaxies, pinned where they are
-// (spec 0067 tasks 1-3).
+// scene/nebulae.js -- THE PHOTOGRAPH, ONLY WHEN ASKED FOR: "Compare with the photograph" (internal i#776) and the
+// sky maths every deep-sky hero shares (spec 0067 tasks 1-3; release 1.4.0 stage r14-neb-b).
 //
-// Contract: createNebulae(scene, opts) -> { setExposure(look), setSkyOpacity(k), drawn(id),
-//   setRecords(records), setSkyVisible(on), rebuild(), update(camera, renderer, skyOn, placeOn), want(id),
-//   prefetch(ids), has(id), loaded(), state(), dispose(), group, skyGroup }
-// Pure, for tests/test_nebulae.mjs: pictureBasis(row), pictureCorners(row), skyToPicture(row, ra, dec),
-//   pictureHalfExtent(row), eqToEcl(v), viewFade(cos), nearFade(distOverWidth), PICTURE_FOR,
+// Contract: createNebulae(scene, opts) -> { setExposure(look), setRecords(records), rebuild(), update(camera, renderer,
+//   layerOn), want(id), setCompare(id, k), clearCompare(), compareK(id), compareShare(id), lineShare(id), lineFor(id),
+//   drawn(id), holes(), has(id), busy(), loaded(), state(), dispose(), group }
+// Pure, for the tests and the heroes: pictureBasis(row), pictureCorners(row), skyToPicture(row, ra, dec),
+//   pictureHalfExtent(row), eqToEcl(v), eclToEq(v), viewFade(cos), nearFade(distOverWidth), PICTURE_FOR,
 //   ellipseInPicture(row, raDeg, decDeg, majArcmin, minArcmin, paDeg)
 //
-// WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
-// is it real or not? If real - lets add this". They are real, and until this file the Orion Nebula
-// was a pink round glow (scene/dsoglow.js): the right place and the right size, and nothing of what
-// it looks like. registry/nebulae.yaml now holds one licensed photograph per object, with where on
-// the sky its centre is, how wide it is and which way is north in it, and this file lays each one
-// on the sky as a flat picture: a GNOMONIC projection, which is what a camera makes and what a
-// plane seen from the centre of a sphere is, so no reprojection of the pixels is needed.
+// NO PHOTOGRAPHS IN THE SCENE (Ivan, 2026-10-26, for release 1.4.0: "remove all photos of clouds and galaxies and
+// replace them with realistic 3ds ... no photos only realistic 3ds"). Until 1.4.0 this file laid 30 licensed
+// photographs (registry/nebulae.yaml) on the sky of every world and stood them at their objects' places on the
+// ladder, drawn whole along our line of sight. That layer is gone: a deep-sky object is drawn by its 3D hero
+// (scene/deep/heroes.js) or, until it has one, by its soft glow (scene/dsoglow.js) and its holder. Nothing here is
+// drawn, and no picture is fetched, unless a visitor drags the card's slider (ui/photocompare.js) toward
+// "Photograph": then THAT ONE photograph is fetched and drawn at its place, flat and facing the Sun, by the share
+// the slider gives it, and the hero gives way by the same share. Choosing anything else puts the slider back to the
+// model, and the picture's memory is given back.
 //
-// TWO PLACES, ONE PICTURE.
-//   the sky   On a world's stage the sky is scene/starfield.js's sphere around the camera. The
-//             picture is a child of that group, on the unit sphere, so it turns, recentres and
-//             precesses with the stars it was photographed among, and fades with them
-//             (`sky-panorama` in registry/lod.yaml).
-//   the place On a rung of the ladder the picture stands at the object's measured distance, as
-//             wide as its angle makes it there, facing the Sun. From anywhere near the line from
-//             the Sun it is the same picture at the same place among scene/stars3d.js's stars; fly
-//             toward it and it grows, as it should.
+// The registry stays: it is the slider's photograph, with its credit and how its colours were made, and its rows'
+// measured centres and north angles are what the heroes built from those photographs place their light maps by
+// (scene/deep/helix.js, ring.js, lmc.js, smc.js, orion.js).
 //
-// WHAT IT IS NOT. It is a photograph taken from here. Seen from the side it would be a lie -- a
-// nebula is a volume and a galaxy a disc -- so the picture fades out as the camera leaves the line
-// of sight (viewFade) and the object's mark is what is left. The volumes of spec 0067 task 2 are
-// not built. Andromeda has a model (scene/galaxy.js): on the line of sight her photograph is drawn
-// and the model waits (drawn('dso-m31') tells main.js how much), off it the model comes back.
-//
-// NOTHING AT BOOT. main.js imports this file only on a rung of the ladder, when a deep-sky object
-// is selected or when the visitor touches the exposure control; and a picture's file is fetched
-// only once it would be 32 px wide in view, or its object is selected. A first
-// visit downloads none of it (tests/test_first_visit_bytes.mjs).
-//
-// THE BLEND. Additive, in the opaque list, depth test off -- the same three choices as the stars,
-// for the reason scene/starfield.js spells out at the Milky Way: a `transparent: true` sky draws
-// after the Earth and paints over it. The files are baked with their sky background taken to
-// black (scripts/build_nebulae.py), so adding one to the sky adds the nebula and not a rectangle;
-// the edge is feathered here, after the exposure's stretch, so "Deep" cannot bring the frame back.
+// THE BLEND. Additive, in the opaque list, depth test off -- the same three choices as the stars, for the reason
+// scene/starfield.js spells out at the Milky Way. The edge is feathered after the exposure's stretch.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
 import { NEBULAE } from '../data/nebulae.js';
-import { PHOTO_FETCH_PX } from './deep/lodsize.js';
 
 const D2R = Math.PI / 180;
 const OBLIQUITY = 23.4392911 * D2R; // J2000 mean obliquity, as scene/galaxy.js
 const SUN_INERTIAL = 'sun-inertial';
-const RENDER_ORDER_SKY = -2.5;   // after the Milky Way (-3), before the stars (-2)
 const RENDER_ORDER_PLACE = -1;   // with the deep-sky glows
-// A picture narrower than this on screen is not fetched for it. At 10 px a sweep of the camera
-// across Orion fetched three pictures nobody could see (measured 2026-10-03); 32 px is the size at
-// which a nebula stops being a dot. A selected object's picture is fetched whatever its size.
-// The threshold is scene/deep/lodsize.js's, in radius (spec 0075 task 7: one size-on-screen rule).
-const WANT_PX = 2 * PHOTO_FETCH_PX;
+
 
 /** record id -> registry row: `dso-m42` -> the M42 picture. */
 export const PICTURE_FOR = new Map(NEBULAE.map((row) => [`dso-${row.id}`, row]));
@@ -238,171 +214,130 @@ void main() {
 
 /**
  * @param {THREE.Scene} scene
- * @param {{ skyGroup?: THREE.Object3D, rows?: object[], base?: string|URL,
- *           load?: (url: string) => Promise<THREE.Texture>, onPicture?: (id: string) => void,
- *           look?: object, saveData?: boolean }} [opts]
- *   `skyGroup` is scene/starfield.js's group (equatorial J2000 on a unit sphere, already scaled,
- *   turned and centred on the camera); without it the pictures are drawn only on the ladder.
+ * @param {{ rows?: object[], base?: string|URL, load?: (url: string) => Promise<THREE.Texture>,
+ *           onPicture?: (id: string) => void, look?: object }} [opts]
  */
-/**
- * How many pictures may sit on the GPU at once, per tier (internal #345): each is 512 to 768 px
- * square with its mipmaps, 1.5 to 3 MiB, and 27 of them are about 40 MiB. A phone holds three
- * (a sky, a place and the one selected), a laptop eight, a desktop fourteen. Pure.
- */
-export const TIER_PICTURES = [3, 8, 14];
-export function residentPictures(tier) {
-  const t = Number(tier);
-  return TIER_PICTURES[Number.isFinite(t) ? Math.min(2, Math.max(0, Math.trunc(t))) : 1];
-}
-
-/**
- * Which pictures to let go of: the ones on the GPU beyond `budget`, least recently seen first, never
- * one in view, selected or asked for by a trip. `rows` are { id, ready, visible, held, seen }. Pure.
- */
-export function evictions(rows, budget) {
-  const ready = rows.filter((r) => r.ready);
-  const over = ready.length - Math.max(1, Math.trunc(budget) || 1);
-  if (over <= 0) return [];
-  return ready.filter((r) => !r.visible && !r.held).sort((a, b) => a.seen - b.seen).slice(0, over).map((r) => r.id);
-}
-
 export function createNebulae(scene, opts = {}) {
   const rows = opts.rows || NEBULAE;
   const base = opts.base || new URL('../../', import.meta.url);
   const loader = opts.load || ((url) => new THREE.TextureLoader().loadAsync(url));
   const group = new THREE.Group();
-  group.name = 'nebulae';
+  group.name = 'nebulae-compare';
   group.renderOrder = RENDER_ORDER_PLACE;
   if (scene) scene.add(group);
-  const skyGroup = new THREE.Group();
-  skyGroup.name = 'nebulae-sky';
-  if (opts.skyGroup) opts.skyGroup.add(skyGroup);
 
-  // One set of exposure uniforms for every picture: a mode change is three writes.
+  // One set of exposure uniforms: a mode change is three writes.
   const shared = { uGain: { value: 1 }, uGamma: { value: 1 }, uSaturation: { value: 1 } };
   const geometry = new THREE.PlaneGeometry(2, 2);
-  let skyOpacity = 1;
-  let skyVisible = true;
-  let selected = null;
-  let held = new Set(); // ids a trip asked for at its intro (prefetch): kept until the next trip asks
-  // 0077 W2-d: begin ("Compare with the photograph", ui/photocompare.js; internal i#776, spec 0075 requirement 14)
-  // One picture at a time is compared with its reconstruction. k is the slider (0 the reconstruction alone, 1 the
-  // photograph alone); while it is set the picture's own share is the slider's, and the hero is forced to draw
-  // so that 0 is the reconstruction (scene/deep/deepsky.js). Not remembered: choosing anything else puts it back.
+  // The slider (0077 W2-d, internal i#776): one picture at a time, k = 0 the reconstruction alone, 1 the photograph alone.
   let cmp = { id: null, k: 0 };
-  // 0077 W2-d: end
-  let budget = Number.isFinite(opts.maxResident) ? opts.maxResident : TIER_PICTURES[1];
-  let frame = 0;
   const sunScene = new THREE.Vector3();
   const _v = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3(), _n = new THREE.Vector3();
   const _frustum = new THREE.Frustum(), _pv = new THREE.Matrix4(), _sphere = new THREE.Sphere();
 
-  function material() {
-    return new THREE.ShaderMaterial({
+  const pictures = rows.map((row) => ({
+    row, basis: pictureBasis(row), half: pictureHalfExtent(row), mesh: null, distKm: null, ellipse: null,
+    placed: false, centre: new THREE.Vector3(), matrix: new THREE.Matrix4(), widthUnits: 0, tex: null, state: 'idle',
+    px: 0, inView: false, fade: 0, cmpAlpha: 0,
+  }));
+  const byId = new Map(pictures.map((p) => [p.row.id, p]));
+  const ofRecord = (recordId) => (typeof recordId === 'string' && recordId.startsWith('dso-') ? byId.get(recordId.slice(4)) || null : null);
+
+  function meshFor(p) {
+    if (p.mesh) return p.mesh;
+    const mat = new THREE.ShaderMaterial({
       vertexShader: VERT, fragmentShader: FRAG,
       uniforms: {
         map: { value: null }, uAlpha: { value: 0 }, ...shared,
-        uFloor: { value: 0 }, uEll: { value: 0 }, uEllC: { value: new THREE.Vector2() }, uEllX: { value: new THREE.Vector2() }, uEllY: { value: new THREE.Vector2() },
+        uFloor: { value: Math.min(0.5, Math.max(0, Number(p.row.sky_floor) || 0)) },
+        uEll: { value: 0 }, uEllC: { value: new THREE.Vector2() }, uEllX: { value: new THREE.Vector2() }, uEllY: { value: new THREE.Vector2() },
       },
       transparent: false, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending,
       toneMapped: false, side: THREE.DoubleSide,
     });
+    const m = new THREE.Mesh(geometry, mat);
+    m.name = `nebula-compare-${p.row.id}`;
+    m.matrixAutoUpdate = false;
+    m.frustumCulled = false;
+    m.renderOrder = RENDER_ORDER_PLACE;
+    m.visible = false;
+    group.add(m);
+    p.mesh = m;
+    applyEllipse(p);
+    if (p.placed) { m.matrix.copy(p.matrix); m.matrixWorldNeedsUpdate = true; }
+    return m;
   }
 
-  const pictures = rows.map((row) => {
-    const basis = pictureBasis(row);
-    const half = pictureHalfExtent(row);
-    // the sky: on the unit sphere, in the starfield's own (equatorial) axes
-    const sky = new THREE.Mesh(geometry, material());
-    const floor = Math.min(0.5, Math.max(0, Number(row.sky_floor) || 0));
-    sky.name = `nebula-sky-${row.id}`;
-    sky.matrixAutoUpdate = false;
-    sky.frustumCulled = false; // update() does the looking, with the camera it is given
-    sky.renderOrder = RENDER_ORDER_SKY;
-    sky.visible = false;
-    const c = new THREE.Vector3(...basis.centre);
-    sky.matrix.makeBasis(
-      new THREE.Vector3(...basis.right).multiplyScalar(half.x),
-      new THREE.Vector3(...basis.up).multiplyScalar(half.y),
-      c.clone().negate(),
-    ).setPosition(c);
-    skyGroup.add(sky);
-    // the place: built by rebuild(), once the stage and the object's distance are known
-    const place = new THREE.Mesh(geometry, material());
-    sky.material.uniforms.uFloor.value = floor;
-    place.material.uniforms.uFloor.value = floor;
-    place.name = `nebula-${row.id}`;
-    place.matrixAutoUpdate = false;
-    place.frustumCulled = false;
-    place.renderOrder = RENDER_ORDER_PLACE;
-    place.visible = false;
-    group.add(place);
-    // The angles the picture spans: its diagonal (is it in view?) and its width (is it worth fetching?).
-    const angle = 2 * Math.atan(Math.hypot(half.x, half.y));
-    const widthAngle = 2 * Math.atan(half.x);
-    return { row, basis, half, sky, place, angle, widthAngle, distKm: null, placed: false, centre: new THREE.Vector3(), widthUnits: 0, tex: null, state: 'idle', seen: 0 };
-  });
-  const byId = new Map(pictures.map((p) => [p.row.id, p]));
+  function applyEllipse(p) {
+    if (!p.mesh) return;
+    const u = p.mesh.material.uniforms, ell = p.ellipse;
+    u.uEll.value = ell ? 1 : 0;
+    if (ell) { u.uEllC.value.set(ell.u, ell.v); u.uEllX.value.set(ell.x[0], ell.x[1]); u.uEllY.value.set(ell.y[0], ell.y[1]); }
+  }
 
+  /** Fetch the one picture the slider asks for. Called from setCompare only: nothing else fetches a photograph. */
   function fetchPicture(p) {
     if (p.state !== 'idle') return;
     p.state = 'loading';
     const url = String(new URL(String(p.row.file).replace(/^site\//, ''), base));
-    // The loader is called NOW (a test counts the calls), and may throw (TextureLoader touches
-    // `document`): either way the answer is a promise.
+    // The loader is called NOW (a test counts the calls), and may throw (TextureLoader touches `document`).
     let asked;
     try { asked = Promise.resolve(loader(url)); } catch (err) { asked = Promise.reject(err); }
     asked.then((tex) => {
+      if (p.state !== 'loading') { tex.dispose(); return; } // let go of while it was on its way
       // Display values in, display values out (FRAG): no sRGB decode on the way.
       tex.colorSpace = THREE.NoColorSpace;
       tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
       tex.needsUpdate = true;
       p.tex = tex;
-      p.sky.material.uniforms.map.value = tex;
-      p.place.material.uniforms.map.value = tex;
+      meshFor(p).material.uniforms.map.value = tex;
       p.state = 'ready';
       if (typeof opts.onPicture === 'function') opts.onPicture(`dso-${p.row.id}`);
     }).catch((err) => {
-      // A picture that will not load leaves the glow and the mark: degrade, never go dark.
+      // A picture that will not load leaves the model: the slider then moves nothing.
       p.state = 'failed';
       console.warn('nebulae:', p.row.id, err && err.message ? err.message : err);
     });
   }
 
+  /** Give a picture's memory back (the slider was put back, or moved to another object). */
+  function release(p) {
+    if (!p) return;
+    if (p.tex) p.tex.dispose();
+    p.tex = null;
+    if (p.mesh) { p.mesh.material.uniforms.map.value = null; p.mesh.material.uniforms.uAlpha.value = 0; p.mesh.visible = false; }
+    if (p.state === 'ready' || p.state === 'loading') p.state = 'idle';
+    p.cmpAlpha = 0;
+  }
+
   /** The deep-sky records, for the distances: |pos| of `dso-<id>` (km, sun-inertial). */
   function setRecords(records) {
     for (const r of records || []) {
-      const p = r && typeof r.id === 'string' && r.id.startsWith('dso-') ? byId.get(r.id.slice(4)) : null;
+      const p = r && ofRecord(r.id);
       if (!p || !r.pos) continue;
       const d = Math.hypot(r.pos.x, r.pos.y, r.pos.z);
       p.distKm = d > 0 ? d : null;
-      // The galaxy's own ellipse, for the fade (spec 0075 task 36): its direction from its position.
+      // The galaxy's own ellipse, for the feather (spec 0075 task 36): its direction from its position.
       const md = r.meta || {};
       if (md.kind === 'galaxy' && d > 0) {
         const e = eclToEq([r.pos.x / d, r.pos.y / d, r.pos.z / d]);
-        const ell = ellipseInPicture(p.row, (Math.atan2(e[1], e[0]) / D2R + 360) % 360, Math.asin(Math.max(-1, Math.min(1, e[2]))) / D2R, md.majAxArcmin, md.minAxArcmin, md.posAngDeg);
-        p.ellipse = ell;
-        for (const mesh of [p.sky, p.place]) {
-          const u = mesh.material.uniforms;
-          u.uEll.value = ell ? 1 : 0;
-          if (ell) { u.uEllC.value.set(ell.u, ell.v); u.uEllX.value.set(ell.x[0], ell.x[1]); u.uEllY.value.set(ell.y[0], ell.y[1]); }
-        }
+        p.ellipse = ellipseInPicture(p.row, (Math.atan2(e[1], e[0]) / D2R + 360) % 360, Math.asin(Math.max(-1, Math.min(1, e[2]))) / D2R, md.majAxArcmin, md.minAxArcmin, md.posAngDeg);
+        applyEllipse(p);
       }
     }
     rebuild();
   }
 
-  /** Stand each picture at its object's distance, on the stage as it is now. */
+  /** Stand each picture at its object's distance, on the stage as it is now (the slider's place and its line). */
   function rebuild() {
     const ladder = isLadderStage(stage.worldId);
     group.visible = ladder;
-    if (!ladder) { for (const p of pictures) { p.placed = false; p.place.visible = false; } return; }
+    if (!ladder) { for (const p of pictures) { p.placed = false; if (p.mesh) p.mesh.visible = false; } return; }
     stage.toSceneInto({ x: 0, y: 0, z: 0 }, SUN_INERTIAL, sunScene, stage.tMs);
     for (const p of pictures) {
       p.placed = false;
       if (!(p.distKm > 0)) continue;
-      // Three points, converted like everything else on the stage, and the picture's axes are
-      // their differences: the stage's own rotation and axis remap, measured and not assumed.
+      // Three points, converted like everything else on the stage, and the picture's axes are their differences.
       const at = (dir, k) => { const e = eqToEcl(dir); return { x: e[0] * k, y: e[1] * k, z: e[2] * k }; };
       const c = p.basis.centre, d = p.distKm;
       const pr = comb(c, 1, p.basis.right, p.half.x), pu = comb(c, 1, p.basis.up, p.half.y);
@@ -413,8 +348,8 @@ export function createNebulae(scene, opts = {}) {
       _r.sub(_v); _u.sub(_v);
       p.widthUnits = 2 * _r.length();
       _n.crossVectors(_r, _u).normalize();
-      p.place.matrix.makeBasis(_r, _u, _n).setPosition(_v);
-      p.place.matrixWorldNeedsUpdate = true;
+      p.matrix.makeBasis(_r, _u, _n).setPosition(_v);
+      if (p.mesh) { p.mesh.matrix.copy(p.matrix); p.mesh.matrixWorldNeedsUpdate = true; }
       p.placed = true;
     }
   }
@@ -426,179 +361,108 @@ export function createNebulae(scene, opts = {}) {
     shared.uSaturation.value = Number(look.nebulaSaturation);
   }
 
-  /**
-   * Per frame. The deep-sky layer's switch hides the pictures too: `layerSky` is whether the layer
-   * is on at all (on a world's stage its marks are not drawn, and the sky's pictures still are),
-   * `layerPlace` whether it draws on this stage (main.js isLayerDrawable).
-   */
-  // The photographs on screen this frame, as holes our stars step aside for (scene/starholes.js): view-space direction
-  // of the picture's centre, the radius of the circle inside its rectangle, how strongly it is drawn.
+  // The photograph on screen this frame, as a hole our stars step aside for (scene/starholes.js): the view-space
+  // direction of its centre, the radius of the circle inside its rectangle, how strongly it is drawn.
   const holeList = [];
-  const _hv = new THREE.Vector3();
-  function pushHole(p, worldPos, radius, k) {
-    if (!(k > 0.003) || !(radius > 0)) return;
-    _hv.copy(worldPos).applyMatrix4(holeCam.matrixWorldInverse);
-    const l = _hv.length();
-    if (!(l > 0)) return;
-    holeList.push({ dir: [_hv.x / l, _hv.y / l, _hv.z / l], radius, k, id: p.row.id });
-  }
-  let holeCam = null;
+  let camLast = null; // the camera's position at the last update(), for lineShare()
 
-  function update(camera, renderer, layerSky = true, layerPlace = layerSky) {
+  /** Per frame. `layerOn` is whether the deep-sky layer draws on this stage (main.js isLayerDrawable). */
+  function update(camera, renderer, layerOn = true) {
     if (!camera || !camera.isCamera) return;
-    holeCam = camera;
+    camLast = camera.position;
     holeList.length = 0;
+    const p = cmp.id ? byId.get(cmp.id) : null;
+    for (const q of pictures) { q.px = 0; q.inView = false; q.fade = 0; q.cmpAlpha = 0; if (q.mesh && q !== p) { q.mesh.visible = false; q.mesh.material.uniforms.uAlpha.value = 0; } }
+    if (!p || layerOn === false || !isLadderStage(stage.worldId) || !p.placed) { if (p && p.mesh) { p.mesh.visible = false; p.mesh.material.uniforms.uAlpha.value = 0; } return; }
     const viewH = renderer && renderer.domElement ? (renderer.domElement.clientHeight || 800) : 800;
     const pxPerRad = camera.projectionMatrix.elements[5] * 0.5 * viewH;
     _pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_pv);
-    const ladder = isLadderStage(stage.worldId);
-    const sg = opts.skyGroup;
-    const skyOn = layerSky !== false && skyVisible && skyOpacity > 0.003 && !!sg && sg.visible !== false;
-    for (const p of pictures) {
-      const isSelected = selected === p.row.id;
-      // --- the sky
-      let skyAlpha = 0;
-      if (skyOn) {
-        _sphere.center.set(...p.basis.centre).applyMatrix4(sg.matrixWorld);
-        _sphere.radius = Math.tan(p.angle / 2) * sg.scale.x;
-        if (_frustum.intersectsSphere(_sphere)) {
-          skyAlpha = skyOpacity;
-          if (p.state === 'idle' && !opts.saveData && p.widthAngle * pxPerRad >= WANT_PX) fetchPicture(p);
-        }
-      }
-      p.sky.material.uniforms.uAlpha.value = skyAlpha;
-      p.sky.visible = skyAlpha > 0 && p.state === 'ready';
-      if (p.sky.visible) {
-        _sphere.center.set(...p.basis.centre).applyMatrix4(sg.matrixWorld);
-        pushHole(p, _sphere.center, Math.atan(Math.min(p.half.x, p.half.y)), skyAlpha);
-      }
-      if (skyAlpha > 0) p.seen = frame;
-      // --- the place
-      let alpha = 0;
-      p.px = 0; p.inView = false; p.fade = 0; p.cmpAlpha = 0; // 0077 W2-d: cmpAlpha
-      if (layerPlace !== false && ladder && p.placed) {
-        _v.copy(p.centre).sub(camera.position);
-        const d = _v.length();
-        _sphere.center.copy(p.centre);
-        _sphere.radius = p.widthUnits;
-        p.px = d > 0 ? (p.widthUnits / d) * pxPerRad : 0;
-        p.inView = _frustum.intersectsSphere(_sphere);
-        if (d > 0 && p.inView) {
-          _n.copy(p.centre).sub(sunScene).normalize();
-          p.fade = viewFade(_v.dot(_n) / d);
-          alpha = (1 - skyOpacity) * viewFade(_v.dot(_n) / d) * nearFade(d / p.widthUnits);
-          // 0077 W2-d: begin (the slider's share, not the natural one, on the line the picture was taken along; it
-          // fades with that line as every placed picture fades, and the hero's share is the other way round)
-          if (cmp.id === p.row.id) {
-            p.cmpAlpha = cmp.k * p.fade;
-            alpha = p.cmpAlpha;
-            if (p.state === 'idle') fetchPicture(p);
-          }
-          // 0077 W2-d: end
-          if (alpha > 0 && p.state === 'idle' && !opts.saveData && (p.widthUnits / d) * pxPerRad >= WANT_PX) fetchPicture(p);
-        }
-      }
-      p.place.material.uniforms.uAlpha.value = alpha;
-      p.place.visible = alpha > 0.003 && p.state === 'ready';
-      if (p.place.visible && p.px > 0) {
-        const dd = _v.length();
-        pushHole(p, p.centre, Math.atan((p.widthUnits / 2) * (Math.min(p.half.x, p.half.y) / p.half.x) / dd), alpha);
-      }
-      if (p.inView) p.seen = frame;
-      // A selected object's picture is fetched whatever its size and whatever the connection.
-      if (isSelected && p.state === 'idle') fetchPicture(p);
+    _v.copy(p.centre).sub(camera.position);
+    const d = _v.length();
+    _sphere.center.copy(p.centre);
+    _sphere.radius = p.widthUnits;
+    p.px = d > 0 ? (p.widthUnits / d) * pxPerRad : 0;
+    p.inView = _frustum.intersectsSphere(_sphere);
+    let alpha = 0;
+    if (d > 0 && p.inView) {
+      _n.copy(p.centre).sub(sunScene).normalize();
+      // Flat and facing the Sun: whole on the line it was taken along, gone 50 degrees off it. The slider draws it even
+      // closer than nearFade would have let the old layer (a visitor who asks for it gets it).
+      p.fade = viewFade(_v.dot(_n) / d);
+      p.cmpAlpha = cmp.k * p.fade;
+      alpha = p.cmpAlpha;
     }
-    frame += 1;
-    // Over the tier's budget: the ones that left the view longest ago give their memory back.
-    for (const id of evictions(pictures.map((p) => ({ id: p.row.id, ready: p.state === 'ready', visible: p.sky.visible || p.place.visible || p.inView === true, held: selected === p.row.id || held.has(p.row.id), seen: p.seen })), budget)) {
-      const p = byId.get(id);
-      if (p.tex) p.tex.dispose();
-      p.tex = null;
-      p.sky.material.uniforms.map.value = null;
-      p.place.material.uniforms.map.value = null;
-      p.sky.visible = false; p.place.visible = false;
-      p.state = 'idle';
+    const m = p.state === 'ready' ? meshFor(p) : p.mesh;
+    if (m) {
+      m.material.uniforms.uAlpha.value = alpha;
+      m.visible = alpha > 0.003 && p.state === 'ready';
+      if (m.visible) {
+        _r.copy(p.centre).applyMatrix4(camera.matrixWorldInverse);
+        const l = _r.length();
+        if (l > 0) holeList.push({ dir: [_r.x / l, _r.y / l, _r.z / l], radius: Math.atan((p.widthUnits / 2) * (Math.min(p.half.x, p.half.y) / p.half.x) / d), k: alpha, id: p.row.id });
+      }
     }
   }
 
   function dispose() {
-    for (const p of pictures) {
-      if (p.tex) p.tex.dispose();
-      p.sky.material.dispose();
-      p.place.material.dispose();
-    }
+    for (const p of pictures) { if (p.tex) p.tex.dispose(); if (p.mesh) p.mesh.material.dispose(); }
     geometry.dispose();
     if (scene) scene.remove(group);
-    if (opts.skyGroup) opts.skyGroup.remove(skyGroup);
   }
 
   if (opts.look) setExposure(opts.look);
   rebuild();
 
   return {
-    setExposure, setRecords, rebuild, update, dispose, group, skyGroup,
-    /** The photographs on screen after the last update(), for scene/starholes.js: [{ dir, radius, k, id }], the strongest first. */
-    holes: () => holeList.slice().sort((a, b) => b.k * b.radius - a.k * a.radius),
-    /** How many pictures may stay on the GPU (residentPictures(tier)); the extra ones are let go when out of view. */
-    setBudget(n) { if (Number.isFinite(n) && n >= 1) budget = Math.trunc(n); },
-    budget: () => budget,
-    /** The sky panorama's strength (registry/lod.yaml `sky-panorama`): the sky pictures follow it, the placed ones take over as it goes. */
-    setSkyOpacity(k) { skyOpacity = Math.min(1, Math.max(0, Number(k) || 0)); },
-    /** How strongly a record's photograph is being drawn at its place, 0..1: 0 until it has landed. */
+    setExposure, setRecords, rebuild, update, dispose, group,
+    /** The photograph on screen after the last update(), for scene/starholes.js: [] unless the slider draws one. */
+    holes: () => holeList.slice(),
+    /** How strongly a record's photograph is drawn at its place, 0..1: the slider's share, 0 whenever it is not set. */
     drawn(recordId) {
-      const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null;
-      return p && p.state === 'ready' && p.place.visible ? p.place.material.uniforms.uAlpha.value : 0;
+      const p = ofRecord(recordId);
+      return p && cmp.id === p.row.id && p.state === 'ready' && p.mesh && p.mesh.visible ? p.mesh.material.uniforms.uAlpha.value : 0;
     },
-    // 0077 W2-d: begin (internal i#776)
     /** The slider: compare `recordId`'s reconstruction (k = 0) with its photograph (k = 1). Not remembered. */
     setCompare(recordId, k) {
-      const row = typeof recordId === 'string' && recordId.startsWith('dso-') ? byId.get(recordId.slice(4)) : null;
+      const p = ofRecord(recordId);
       const v = Math.min(1, Math.max(0, Number(k) || 0));
-      cmp = row ? { id: row.row.id, k: v } : { id: null, k: 0 };
-      if (row) fetchPicture(row);
+      if (cmp.id && (!p || cmp.id !== p.row.id)) release(byId.get(cmp.id));
+      cmp = p ? { id: p.row.id, k: v } : { id: null, k: 0 };
+      if (p && v > 0) fetchPicture(p);
     },
-    /** Take the slider off: the picture and the hero are their own again. */
-    clearCompare() { cmp = { id: null, k: 0 }; },
-    /** Where the slider stands for this record, 0..1, or null while it is not set (the picture is then its natural share). */
+    /** Take the slider off: the model alone again, and the picture's memory given back. */
+    clearCompare() { if (cmp.id) release(byId.get(cmp.id)); cmp = { id: null, k: 0 }; },
+    /** Where the slider stands for this record, 0..1, or null while it is not set. */
     compareK: (recordId) => (cmp.id && recordId === `dso-${cmp.id}` ? cmp.k : null),
-    /** How much of the picture the slider is drawing now (the hero gives way by this much), or null while the slider is not set. */
-    compareShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && cmp.id === p.row.id ? p.cmpAlpha || 0 : null; },
-    /** How whole the picture is from where the camera stands (1 on the line it was taken along, 0 past 50 degrees, 0 out of view). */
-    lineShare: (recordId) => { const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null; return p && p.inView ? p.fade || 0 : 0; },
+    /** How much of the picture the slider is drawing now (the hero gives way by this much), or null while it is not set. */
+    compareShare: (recordId) => { const p = ofRecord(recordId); return p && cmp.id === p.row.id ? p.cmpAlpha || 0 : null; },
+    /** How whole the picture would be from where the camera stands (1 on the line it was taken along); 0 unless compared. */
+    lineShare: (recordId) => {
+      const p = ofRecord(recordId);
+      if (!p || !p.placed || !camLast) return 0;
+      _v.copy(p.centre).sub(camLast);
+      const d = _v.length();
+      _n.copy(p.centre).sub(sunScene).normalize();
+      return d > 0 ? viewFade(_v.dot(_n) / d) : 0;
+    },
     /** The line the picture was taken along: where to stand to see it whole. { target, offset (toward the Sun, unit) } in scene units, or null. */
     lineFor(recordId) {
-      const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null;
+      const p = ofRecord(recordId);
       if (!p || !p.placed) return null;
       const d = _v.copy(sunScene).sub(p.centre).normalize();
       return { target: { x: p.centre.x, y: p.centre.y, z: p.centre.z }, offset: { x: d.x, y: d.y, z: d.z } };
     },
-    // 0077 W2-d: end
-    /** The frame-rate latch hides the Milky Way picture; the sky pictures go with it. */
-    setSkyVisible(on) { skyVisible = on !== false; },
-    /** A record was selected (or null): its picture is fetched now. */
+    /** A record was selected (or null): the slider goes back to the model when it is another one's. Fetches nothing. */
     want(recordId) {
-      selected = typeof recordId === 'string' && recordId.startsWith('dso-') && byId.has(recordId.slice(4)) ? recordId.slice(4) : null;
-      if (cmp.id && cmp.id !== selected) cmp = { id: null, k: 0 }; // 0077 W2-d: choosing anything else puts the slider back
-      if (selected) fetchPicture(byId.get(selected));
-    },
-    /**
-     * A trip that will stop at these objects asks for their pictures at its intro (ui/trip.js
-     * `wants.pictures`), so a stop does not arrive at a mark and wait for its photograph: measured
-     * 2026-10-06, the Crab's file landed after the card had been up six seconds.
-     */
-    prefetch(recordIds) {
-      held = new Set((Array.isArray(recordIds) ? recordIds : []).filter((id) => typeof id === 'string' && id.startsWith('dso-')).map((id) => id.slice(4)));
-      for (const id of Array.isArray(recordIds) ? recordIds : []) {
-        const p = typeof id === 'string' && id.startsWith('dso-') ? byId.get(id.slice(4)) : null;
-        if (p) fetchPicture(p);
-      }
+      const p = ofRecord(recordId);
+      if (cmp.id && (!p || cmp.id !== p.row.id)) { release(byId.get(cmp.id)); cmp = { id: null, k: 0 }; }
     },
     has: (recordId) => PICTURE_FOR.has(recordId),
-    /** Is a picture being fetched now (sr.deep.ready(), spec 0075 task 10)? */
+    /** Is the slider's picture being fetched now (sr.deep.ready(), spec 0075 task 10)? */
     busy: () => pictures.some((p) => p.state === 'loading'),
-    /** The record ids whose pictures are on the GPU's doorstep: scene/dsoglow.js drops their glow. */
+    /** The record ids whose picture is on the GPU: at most the one the slider compares. */
     loaded: () => pictures.filter((p) => p.state === 'ready').map((p) => `dso-${p.row.id}`),
-    state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, sky: p.sky.visible, place: p.place.visible, alpha: p.place.material.uniforms.uAlpha.value, placed: p.placed, px: Math.round(p.px || 0), inView: !!p.inView, fade: p.fade || 0 })),
+    state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, place: !!(p.mesh && p.mesh.visible), alpha: p.mesh ? p.mesh.material.uniforms.uAlpha.value : 0, placed: p.placed, widthUnits: p.widthUnits, px: Math.round(p.px || 0), inView: !!p.inView, fade: p.fade || 0 })),
   };
 }

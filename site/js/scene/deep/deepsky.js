@@ -78,6 +78,8 @@ export function createDeepSky(THREE, env = {}) {
   const levels = new Map();        // id -> level (hysteresis)
   const holders = new Map();       // id -> holder
   const heroes = new Map();        // hero id -> { def, profile, mod, hero, level, pending, idleSince }
+  // 0078 r14-neb-b: record id -> how much wider its hero draws it than its catalogue size (heroes.js `stub.extent`): its level by its drawn size
+  const extentOf = new Map(heroesList.filter((h) => h.stub && Number(h.stub.extent) > 0).map((h) => [h.record, Number(h.stub.extent)]));
   const fader = createFader();
   const pending = new Set();
   const debugState = { gas: true, glow: true, holders: true, stars: true, dust: true, far: true /* 0076 W4-b */, force: !!env.debug, before: false }; // before (0076 W4-a): the changes of that stage off, for a probe's before shot
@@ -278,7 +280,7 @@ export function createDeepSky(THREE, env = {}) {
       const sizeKm = g ? g.sizeKm : (r.meta && r.meta.sizeLy > 0 ? r.meta.sizeLy * 9460730472580.8 : 0);
       if (!(sizeKm > 0) || !centreOf(r, _v)) continue;
       const d = _v.distanceTo(camera.position);
-      const rp = projRadius(sizeKm / 2 / stage.unitKm, d, fovY, viewH);
+      const rp = projRadius(sizeKm * (extentOf.get(r.id) || 1) / 2 / stage.unitKm, d, fovY, viewH); // 0078 r14-neb-b: a hero drawn wider than its catalogue size (heroes.js `stub.extent`)
       px.set(r.id, rp);
       const lv = levelFor(Math.min(rp, 1e6), levels.get(r.id) || 0, classOf(r));
       levels.set(r.id, lv);
@@ -414,6 +416,8 @@ export function createDeepSky(THREE, env = {}) {
     group, frame, rebuild,
     setExposure(k) { gain = Number.isFinite(k) && k > 0 ? k : 1; },
     radiusPx: (id) => (px.has(id) ? px.get(id) : null),
+    /** 0078 r14-neb-b: a hero's arrival framing as a share of the catalogue's (heroes.js `stub.arrive`), 1 when it has none. */
+    arriveScale: (recordId) => { const d = heroesList.find((h) => h.record === recordId); const k = d && d.stub ? Number(d.stub.arrive) : NaN; return Number.isFinite(k) && k > 0 ? k : 1; },
     level: (id) => levels.get(id) || 0,
     nameRule: (record, selectedId, subjectId) => rule(record, { parentPx: px.has(parentIdOf(record)) ? px.get(parentIdOf(record)) : null, selectedId, subjectId }),
     pathFor,

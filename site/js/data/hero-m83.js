@@ -1,0 +1,148 @@
+// GENERATED from registry/deepsky-heroes/m83.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "m83",
+  "record": "dso-m83",
+  "stage": "r14-neb-b",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "the structure: a smooth integrated-light layer (the disc, the short bar with its lanes, the arms from its ends with dust on their inner edges; the small bulge facing the camera), statistical points as sparkle, the many H II regions along the arms",
+    "3": "the same, larger on screen",
+    "points": [
+      12000,
+      40000,
+      60000
+    ],
+    "dust_share": 0.3,
+    "seed": 5236,
+    "layer_power": 0.45,
+    "layer_disc_at_rd": 0.38
+  },
+  "frame": {
+    "pa_deg": 45,
+    "incl_deg": 24,
+    "near_side": null,
+    "approaching": null,
+    "winding": 1,
+    "units_ly": 100,
+    "source": "orientation: Comte 1981 and Talbot et al. 1979 as Lundgren et al. 2004 (table 1) give them; the distance 4.5 Mpc, Thim et al. 2003"
+  },
+  "layers": [
+    {
+      "kind": "bulge",
+      "what": "a small bright bulge",
+      "sersic_n": 0.66,
+      "re_kpc": 0.2,
+      "q": 0.9,
+      "light": 0.08,
+      "colour": "#fbe9cf",
+      "source": "S4G decomposition (Salo et al. 2015, ApJS 219, 4; VizieR J/ApJS/219/4 table7): n = 0.664, Re = 9.35 arcsec (0.20 kpc here), 8 per cent of the light, q 0.897"
+    },
+    {
+      "kind": "bar",
+      "shape": "ferrers",
+      "what": "the short bar",
+      "length_kpc": 2.21,
+      "width_kpc": 0.9,
+      "angle_deg": 0,
+      "light": 0.048,
+      "colour": "#f4dcb8",
+      "source": "S4G table7: a Ferrers bar of semi-major axis 101.25 arcsec (2.21 kpc here), axis ratio 0.373 on the sky (its width deprojected to 0.9 kpc), position angle 45.6 degrees, along the disc's line of nodes; 4.8 per cent of the light"
+    },
+    {
+      "kind": "disc",
+      "what": "the stellar disc",
+      "scale_kpc": 2.33,
+      "height_kpc": 0.3,
+      "r_max_kpc": 10.5,
+      "light": 0.45,
+      "arm_contrast": 1.2,
+      "colour": "#ece2d6",
+      "colour_outer": "#c2cadc",
+      "source": "S4G table7: the 3.6 micron exponential disc, scale length 106.75 arcsec (2.33 kpc here), 87 per cent of the light with the arms (their share below illustrative); height assumed; cut at 10.5 kpc, past the catalogue's 13.6 arcmin"
+    },
+    {
+      "kind": "arms",
+      "what": "arms from the bar's ends and their branches (drawn as three broken arms), blue with young stars",
+      "count": 3,
+      "pitch_deg": 20,
+      "r_from_kpc": 2.0,
+      "r_to_kpc": 10,
+      "phase_deg": 10,
+      "width_kpc": 0.7,
+      "height_kpc": 0.15,
+      "scale_kpc": 4,
+      "segments": 0.6,
+      "layer_contrast": 2.5,
+      "light": 0.32,
+      "colour": "#a6bcf2",
+      "source": "illustrative: matched to ESO's photograph (eso0825a): two arms leave the bar's ends and branch into more, drawn as three broken arms of pitch about 20 degrees; the classification SAB(s)c is de Vaucouleurs et al. 1991 (RC3)"
+    },
+    {
+      "kind": "knots",
+      "keep": true,
+      "what": "H II regions along the arms",
+      "count": 2000,
+      "in_ring": 0,
+      "size_kpc": 0.1,
+      "height_kpc": 0.06,
+      "light": 0.12,
+      "colour": "#ff7aa4",
+      "source": "placed statistically along the arms; not a catalogue of positions (M83 is rich in them: ESO's photograph shows hundreds)"
+    },
+    {
+      "kind": "dust-lanes",
+      "what": "dust on the arms' inner edges",
+      "inset_kpc": 0.25,
+      "width_kpc": 0.16,
+      "height_kpc": 0.06,
+      "weight": 0.35,
+      "source": "illustrative: the lanes every photograph of M83 shows along the arms' inner edges"
+    },
+    {
+      "kind": "dust-bar",
+      "what": "the dust lanes on the bar's leading edges",
+      "offset_kpc": 0.45,
+      "width_kpc": 0.12,
+      "height_kpc": 0.05,
+      "weight": 0.03,
+      "strength": 1,
+      "source": "illustrative: the two lanes along the bar the photographs show, on its leading sides (Athanassoula 1992)"
+    },
+    {
+      "kind": "dust-disc",
+      "what": "a thin dust disc",
+      "scale_kpc": 3,
+      "height_kpc": 0.08,
+      "weight": 0.15,
+      "source": "assumed"
+    }
+  ],
+  "colours": {
+    "mode": true,
+    "note": "Display colours after ESO's photograph (eso0825a, B, V, R and H-alpha): a yellow-white centre, blue-white arms, many pink H II regions, brown dust lanes. Not enhanced."
+  },
+  "drawn": [
+    "model"
+  ],
+  "sources": [
+    "Salo et al. 2015, ApJS 219, 4 (arXiv:1503.06550), the S4G multi-component decompositions: VizieR J/ApJS/219/4 table7, read 2026-10-26",
+    "Lundgren et al. 2004 (arXiv:astro-ph/0404026), table 1: the position angle (Comte 1981), the inclination (Talbot et al. 1979), the distance (Thim et al. 2003)",
+    "de Vaucouleurs et al. 1991 (RC3): the classification SAB(s)c",
+    "ESO eso0825a (ESO; CC BY 4.0): the arms' shape and the lanes, by eye"
+  ],
+  "review": {
+    "data_vs_model": "Measured: the bulge's, bar's and disc's profiles (S4G at 3.6 microns), the orientation, the distance. Model: the arms' pitch and extent, the split of the disc's light into disc and arms, every dust lane, the H II regions' places, the near side.",
+    "geometry": "PA 45, inclined 24 degrees; the bar along the line of nodes (S4G: 45.6 degrees on the sky); the near side assumed.",
+    "colours": "Display values after ESO's photograph; nothing enhanced.",
+    "distance": "The record's: 14.7 Mly (4.5 Mpc, Thim et al. 2003).",
+    "credits": "CREDITS.md section 3l, galaxies from their structure (0078 r14-neb-b).",
+    "by": "Space Radar maintainers",
+    "date": "2026-10-26"
+  },
+  "credits": [
+    "M83's model: the bulge, the bar and the disc after the S4G decomposition (Salo et al. 2015, VizieR J/ApJS/219/4), the orientation and distance as Lundgren et al. 2004 give them, the arms and lanes matched by eye to ESO's photograph eso0825a (ESO; CC BY 4.0). Facts, cited; the model copies no image."
+  ]
+};

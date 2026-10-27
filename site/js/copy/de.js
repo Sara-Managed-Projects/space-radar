@@ -1205,7 +1205,6 @@ export const COPY = {
     "approachNone": "Die Tabelle des NASA JPL zu nahen Vorbeiflügen wurde nicht geladen, deshalb wird kein nächster Vorbeiflug genannt.",
     "satellitesCount": "{n} arbeitende Satelliten in dem Katalog, den diese Seite von CelesTrak geladen hat, davon {starlink} von Starlink.",
     "satellitesLoading": "Der Katalog lädt noch; die Zahl erscheint, sobald er da ist.",
-    "pictureLine": "Ein echtes Foto, an die Stelle gesetzt, wo es am Himmel steht. Bild: {credit} · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt.",
     "portraitLine": "Ein Modell, nicht das Foto: Schatten und der um ihn gebogene Lichtring sind so, wie seine Masse sie macht, die leuchtende Scheibe ist modelliert, und die Sterne dahinter werden nicht gebogen. Er ist viel größer gezeichnet, als er von hier aus aussähe; der Ort ist gemessen. Das Foto des Event Horizon Telescope steht auf seinem Steckbrief: {credit} · {licence}.",
     "tonightUp": "Von {place} aus heute Nacht: oben von {begin} bis {end}, am höchsten um {time}, {alt}, im {az}.",
     "tonightGlare": "Von {place} aus heute Nacht: {name} ist zu nah an der Sonne, um gesehen zu werden.",
@@ -2186,8 +2185,8 @@ export const COPY = {
     "lead": "Wo die Dinge sind und wie sie sich bewegen, ist gemessen oder berechnet. Wie sie aussehen, kommt aus drei Arten von Bildern.",
     "kinds": [
       [
-        "Ein Foto",
-        "Die Nebel und Galaxien sind Teleskopfotos, lang belichtet. Für das Auge am Teleskop ist dasselbe Gas ein schwaches graues Leuchten, und manche Bilder ordnen einzelnen Gasen Farben zu; jeder Steckbrief sagt, welche."
+        "Ein 3D-Modell",
+        "Die Nebel und Galaxien sind 3D-Modelle aus veröffentlichten Messungen, ihr Licht aus Teleskopfotos (lang belichtet); wo es noch kein Modell gibt, ein sanftes Leuchten in seiner Größe. Für das Auge ist dasselbe Gas ein schwaches graues Leuchten. Ein Steckbrief kann das Foto neben dem Modell zeigen."
       ],
       [
         "Eine Karte auf einem Modell",
@@ -2380,8 +2379,6 @@ export const COPY = {
       "unstated": "Sein Archiv sagt nicht, welche Filter benutzt wurden, deshalb sagen wir nicht, ob das die Farben sind, die ein Auge sähe."
     },
     "part": "Es zeigt {part}, nicht das Ganze.",
-    "figureAlt": "Foto von {name}",
-    "figureCaption": "{name}: {w} mal {h} Bogenminuten Himmel.",
     "creditLead": "Bild: ",
     "creditTail": " · {licence}, Ränder von uns ausgeblendet und Himmel abgedunkelt"
   },
@@ -3594,9 +3591,13 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
+      "m27": "Sein Licht stammt aus dem Foto von NOIRLab, in den eigenen Farbtönen seiner Gase; seine Form ist eine Rekonstruktion: die helle Taille ein dicker Ring, fast von der Kante gesehen, die blasseren „Ohren“ seine Keulen, nach den Geschwindigkeiten seiner Schalen, die Meaburn und andere (2005) gemessen haben. Noch nicht von einem Astronomen geprüft.",
+      "southern-ring": "Sein Licht stammt aus dem Infrarotfoto von Webb; seine Form folgt Kastner und anderen (2024) und De Marco und anderen (2022): ein Ring, fast entlang seiner Achse gesehen, eine Blase durch ihn hindurch und ein molekularer Halo um beide. Noch nicht von einem Astronomen geprüft.",
       "m57": "Sein Licht stammt vom Foto von Hubble, seine Form von O’Dell, Ferland, Henney und Peimbert (2013): ein dicker Ring, um 13,5° geneigt, fast entlang seiner Achse gesehen, das bläulichere Gas seiner Mitte so gezeichnet, dass es auf uns zu und von uns weg reicht. Seine Farben sind die des Fotos, durch schmale Filter aufgenommen. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
+      "dso-m27": [["Seine Form in der Tiefe", "Rekonstruiert. Größe, Winkel am Himmel und die Geschwindigkeiten der Schalen sind gemessen; dass die Taille ein Ring fast von der Kante ist und wie die „Ohren“ zu uns hin und von uns weg reichen, ist die übliche Deutung eines Nebels dieses Aussehens, als Illustration gezeichnet."], ["Seine Farben", "Die eigenen Farbtöne seiner Gase, aus den schmalen Filtern des Fotos: Sauerstoff blaugrün, Wasserstoff und Schwefel rot. Wie stark jedes gezeigt wird, haben wir gewählt."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
+      "dso-southern-ring-nebula": [["Seine Form in der Tiefe", "Rekonstruiert. Dass sein heller Ring 15–30° von seiner Achse gesehen wird, ist gemessen (Kastner und andere, 2024); welche Seite näher ist, die Dicke des Rings und die Länge der Blase sind illustrativ."], ["Seine Farben", "Infrarotlicht, das kein Auge sieht, von den Bildmachern des Webb-Teleskops eingefärbt."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
       "dso-m57": [
         [
           "Seine Entfernung",
@@ -3616,6 +3617,7 @@ export const COPY = {
   },
   "r12Dust": {
     "card": {
+      "m45": "Sein Licht ist das Foto von NOIRLab: eine Staubwolke, die durch den Haufen zieht, knapp vor seinen Sternen, und deren blaues Licht streut (Ritchey und andere, 2006). Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft.",
       "crab": "Sein Licht stammt vom Foto von Hubble, in Falschfarben, getragen von einer Schale, deren Form Martin, Milisavljevic und Drissen (2021) folgt: ein Filamentkäfig von etwa 4 Parsec Länge um eine leere Mitte. Noch nicht von einem Astronomen geprüft.",
       "veil": "Sein Licht stammt vom Foto von NOIRLab, in Falschfarben, getragen von einer dünnen Kugel von 37 Parsec Durchmesser (Fesen und andere, 2018): Die Filamente sind ihr Rand, von der Kante gesehen. Noch nicht von einem Astronomen geprüft.",
       "horsehead": "Seine Dunkelheit ist aus dem Foto von NOIRLab abgelesen: Staub vor dem leuchtenden Gas von IC 434, der schluckt und rötet, was dahinter ist, und kein Licht abgibt. Noch nicht von einem Astronomen geprüft.",
@@ -3624,6 +3626,7 @@ export const COPY = {
       "iris": "Sein Licht ist das Foto von NOIRLab: Staub, der das Licht des jungen Sterns HD 200775 in einer Mulde seiner Wolke streut. Seine Tiefe ist rekonstruiert. Noch nicht von einem Astronomen geprüft."
     },
     "rows": {
+      "dso-m45": [["Seine Form in der Tiefe", "Rekonstruiert. Das Gas liegt vor den Sternen, wie ihr Licht zeigt; wie weit davor und wie dick der Staub ist, ist illustrativ, und die Tiefen der Sterne im Haufen sind ein festes Modell, nicht gemessen."], ["Was der Staub tut", "Er streut das Licht der Sterne, das blaue am stärksten, und leuchtet daher blau um die hellsten, vor allem Merope und Maia. Es ist eine durchziehende Wolke, nicht die, aus der die Sterne entstanden sind."], ["Prüfung", "Dieses Modell wurde noch nicht von einem Astronomen geprüft."]],
       "dso-m1": [
         [
           "Seine Form in der Tiefe",

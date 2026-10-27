@@ -40,8 +40,9 @@
 //                   the first time a shower is active): illustrative, and off under reduced motion.
 //   what is that    a tap names the nearest star, planet or deep-sky object in a small tag
 //                   (whatAt, showTag); the tag, or a second tap, opens its card.
-//   the deep sky    the 27 photographs of nebulae and galaxies (sky/groundpictures.js, imported
-//                   when idle): at their true places and sizes, as faint as the sky makes them.
+//   the deep sky    the 30 nebulae and galaxies of registry/nebulae.yaml as soft glows (sky/groundpictures.js,
+//                   imported when idle; no photographs since 0078 r14-neb-b): at their true places and
+//                   catalogue sizes, as faint as the sky makes them.
 //   other light     the sky in infrared, microwaves or gamma rays (scene/otherlight.js, imported
 //                   when a visitor picks a band): over the Milky Way, under the stars.
 //   names           HTML over the canvas: figures, the brightest stars, the bodies, the pictures.
@@ -1059,7 +1060,7 @@ export function createGroundSky(ctx, env) {
     col.needsUpdate = true;
   }
 
-  // ---- the deep sky: photographs (sky/groundpictures.js) ----------------------------------------
+  // ---- the deep sky: soft glows of their measured size (sky/groundpictures.js; no photographs, 0078 r14-neb-b) ----
   const saving = typeof navigator !== 'undefined' && !!(navigator.connection && navigator.connection.saveData);
   let pictures = null;
   let picturesAsked = false;
@@ -1080,10 +1081,9 @@ export function createGroundSky(ctx, env) {
     picturesAsked = true;
     import('./groundpictures.js').then((m) => {
       if (disposed) return;
+      // 0078 r14-neb-b: soft glows of the catalogue's size and colour, no photographs and no files fetched.
       pictures = m.createGroundPictures({
-        root, radius: R * 0.986, eqToLocal, renderOrder: RO.pictures, saveData: saving,
-        // A phone holds fewer: 27 pictures at 512 to 768 px would be 40 MiB of GPU memory (#345).
-        cap: groundPictureCaps(ctx.quality && ctx.quality.tier, typeof innerWidth === 'number' ? innerWidth : NaN).pictures,
+        root, radius: R * 0.986, eqToLocal, renderOrder: RO.pictures, recordOf: dsoRecord,
         exposure: () => (ctx.exposure && typeof ctx.exposure.look === 'function' ? ctx.exposure.look() : null),
         nameOf: (id) => { const r = dsoRecord(id); return (r && r.name) || plainName(id); },
         magOf: (id) => { const r = dsoRecord(id); return r && r.meta && Number.isFinite(r.meta.mag) ? r.meta.mag : NaN; },

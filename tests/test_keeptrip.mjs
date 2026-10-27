@@ -91,11 +91,11 @@ check(biggest.bytes < 40e6, `${biggest.id} keeps ${(biggest.bytes / 1e6).toFixed
   check(!phone.urls.some((u) => u.startsWith('textures/4k/')), 'a tier-0 device is asked for a 4k map');
 }
 
-// --- 2b. a deep-sky trip keeps its photographs and its heroes' files (spec 0075 stage f) ---------
+// --- 2b. a deep-sky trip keeps its heroes' files (spec 0075 stage f), and a photograph only where a hero's light is it (0078) ---
 {
   const helix = TOURS.find((x) => x.id === 'into-the-helix');
   const plan = K.tripAssets(helix, env());
-  check(plan.urls.includes('images/nebulae/helix-nebula.webp'), 'into-the-helix does not keep the Helix\u2019s photograph');
+  check(!plan.urls.some((u) => /images\/nebulae\//.test(u)), 'into-the-helix keeps a photograph, which no stop draws since 0078 r14-neb-b');
   for (const f of heroFiles.get('dso-helix-nebula') || []) check(plan.urls.includes(f), `into-the-helix does not keep its hero's ${f}`);
   const lmc = K.tripAssets(TOURS.find((x) => x.id === 'inside-a-neighbouring-galaxy'), env());
   check(lmc.urls.includes('images/nebulae/lmc.webp'), 'inside-a-neighbouring-galaxy does not keep the LMC\u2019s photograph');
@@ -117,7 +117,7 @@ check(biggest.bytes < 40e6, `${biggest.id} keeps ${(biggest.bytes / 1e6).toFixed
   for (const f of K.STAGE_FILES['local-group']) check(edge.urls.includes(f), `out-to-the-edge does not keep ${f}`);
   const lg = K.tripAssets(TOURS.find((x) => x.id === 'across-the-local-group'), env());
   check(!lg.urls.includes(K.CMB_MAP), 'across-the-local-group keeps the microwave background\u2019s map, which it never goes far enough to fetch');
-  for (const f of ['images/nebulae/m31.webp', 'images/nebulae/m33.webp', 'images/nebulae/lmc.webp', ...K.STAGE_FILES['local-group']]) check(lg.urls.includes(f), `across-the-local-group does not keep ${f}`);
+  for (const f of ['images/nebulae/lmc.webp', ...K.STAGE_FILES['local-group']]) check(lg.urls.includes(f), `across-the-local-group does not keep ${f}`);
   check(!K.tripAssets(TOURS.find((x) => x.id === 'into-the-helix'), env()).urls.some((u) => u.includes('localvolume') || u === K.CMB_MAP), 'into-the-helix keeps files of rungs it never visits');
 }
 

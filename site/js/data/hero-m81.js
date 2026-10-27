@@ -61,6 +61,7 @@ export const HERO = {
       "height_kpc": 0.15,
       "scale_kpc": 5,
       "segments": 0.85,
+      "layer_contrast": 1.2,
       "light": 0.26,
       "colour": "#b0c4ec",
       "source": "pitch: Davis et al. 2017 (arXiv:1707.04001): 13.4 +/- 2.3 degrees; the S4G arm catalogue's segments -11.9 and -13.2; Kendall et al. 2008 give 23 and Puerari et al. 2014 about 18 (the published range 12 to 23 degrees is the real uncertainty); width and the light's share illustrative"
@@ -80,10 +81,10 @@ export const HERO = {
       "kind": "dust-lanes",
       "what": "dust on the arms' inner edges",
       "inset_kpc": 0.3,
-      "width_kpc": 0.18,
+      "width_kpc": 0.12,
       "height_kpc": 0.07,
-      "weight": 0.35,
-      "source": "illustrative: the thin lanes M81's photographs show along its arms"
+      "weight": 0.18,
+      "source": "illustrative: the thin lanes M81's photographs show along its arms (0078 r14-neb-b: thinner and fainter, the arms' layer contrast 1.2: a preview beside heic0710a still read them as dark rings)"
     },
     {
       "kind": "dust-disc",

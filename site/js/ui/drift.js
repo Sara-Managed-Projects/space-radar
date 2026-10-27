@@ -119,9 +119,10 @@ export const LAYERS_FOR = {
 };
 
 /**
- * Is this record drawn as itself? 2: a real model, a mapped world, a photographed nebula, a star
- * somebody has a line about. 1: drawn as its kind. 0: not worth flying to. `deps.pictures` is
- * scene/nebulae.js PICTURE_FOR when it has arrived; `deps.systemOf(record)` a star system's stage.
+ * Is this record drawn as itself? 2: a real model, a mapped world, a nebula or galaxy with a 3D hero, a star
+ * somebody has a line about. 1: drawn as its kind. 0: not worth flying to. `deps.pictures` is the set of
+ * records scene/deep/heroes.js draws (0078 r14-neb-b: no photographs) when it has arrived; `deps.systemOf(record)`
+ * a star system's stage.
  */
 export function lookOf(record, deps = {}) {
   const k = record && record.klass;
@@ -798,9 +799,9 @@ export function createDrift(ctx, env = {}) {
       : null;
     wake();
     writeLink();
-    // The nebula photographs say which deep-sky rows have a face; they are a module of their own.
+    // The deep-sky heroes say which rows have a face of their own; they are a module of their own.
     if (!pictures && options.through.includes('deep')) {
-      import('../scene/nebulae.js').then((m) => { pictures = m.PICTURE_FOR; poolCount = -1; }).catch(() => {});
+      import('../scene/deep/heroes.js').then((m) => { pictures = new Set(m.HEROES.map((h) => h.record)); poolCount = -1; }).catch(() => {}); // 0078 r14-neb-b
     }
     phase = 'waiting';
     waitingSince = now();
@@ -887,7 +888,7 @@ export function createDrift(ctx, env = {}) {
     if (patch && (patch.through !== undefined || patch.realOnly !== undefined || patch.bare !== undefined)) {
       wantLayers();
       if (!pictures && options.through.includes('deep')) {
-        import('../scene/nebulae.js').then((m) => { pictures = m.PICTURE_FOR; poolCount = -1; }).catch(() => {});
+        import('../scene/deep/heroes.js').then((m) => { pictures = new Set(m.HEROES.map((h) => h.record)); poolCount = -1; }).catch(() => {}); // 0078 r14-neb-b
       }
       rebuild(true);
     }

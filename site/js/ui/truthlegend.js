@@ -160,6 +160,10 @@ export async function fillLegend(panel, record, ctx, m) {
   let band = null;
   if (klassOf(record) === 'dso') {
     try {
+      // 0078 r14-neb-b: the photograph is shown only by the card's slider, offered where a 3D model is shipped: its
+      // facts are said only there.
+      const H = await import('../scene/deep/heroes.js');
+      if (!(await H.heroShipped(record.id))) throw new Error('no slider, no photograph');
       const mod = await import('../data/nebulae.js');
       picture = (mod.NEBULAE || []).find((r) => `dso-${r.id}` === record.id) || null;
     } catch { picture = null; }

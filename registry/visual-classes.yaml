@@ -85,6 +85,14 @@ domains:
       north-america: {credit: "### Emission nebulae (0078 r14-neb-a)"}
       cats-paw: {credit: "### Emission nebulae (0078 r14-neb-a)"}
       # 0078 r14-neb-a: end
+      # 0078 r14-neb-b: begin
+      m27: {credit: "### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)"}
+      southern-ring: {credit: "### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)"}
+      m45: {credit: "### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)"}
+      m83: {credit: "### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)"}
+      ngc1300: {credit: "### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)"}
+      cena: {credit: "### No photographs in the scene: six more objects in 3D (0078 r14-neb-b)"}
+      # 0078 r14-neb-b: end
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -502,9 +510,9 @@ classes:
 
   - id: EMISSION_NEBULA
     title: Emission nebulae (H II regions)
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js, site/js/scene/deep/carina.js]  # 0077 W2-e
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/gasmat.js, site/js/scene/deep/orion.js, site/js/scene/deep/carina.js]  # 0077 W2-e; 0078 r14-neb-b: no photograph layer
     honesty: measured
-    fallback: The photograph, placed and sized on the sky; the gas is not marched on tier 0 or after the latch.
+    fallback: The soft glow of its size where it has no hero (no photograph since 1.4.0); the gas is not marched on tier 0 or after the latch.  # 0078 r14-neb-b
     heroes: {orion: registry/deepsky-heroes/orion.yaml, carina: registry/deepsky-heroes/carina.yaml}  # 0077 W2-e
     issue: "internal #782 (Orion, W1-a; Carina, 0077 W2-e)"  # 0077 W2-e
     note:
@@ -520,10 +528,10 @@ classes:
 
   - id: PLANETARY_NEBULA
     title: Planetary nebulae
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/ring.js, site/js/scene/deep/shellneb.js, site/js/scene/deep/gasmat.js]
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/helix.js, site/js/scene/deep/ring.js, site/js/scene/deep/shellneb.js, site/js/scene/deep/gasmat.js]  # 0078 r14-neb-b
     honesty: measured
-    fallback: The photograph; the Helix's rings and the Ring's layers unmarched after the latch.
-    heroes: {helix: registry/deepsky-heroes/helix.yaml, m57: registry/deepsky-heroes/m57.yaml}
+    fallback: The glow; the Helix's rings and the Ring's, the Dumbbell's and the Southern Ring's layers unmarched after the latch.  # 0078 r14-neb-b
+    heroes: {helix: registry/deepsky-heroes/helix.yaml, m57: registry/deepsky-heroes/m57.yaml, m27: registry/deepsky-heroes/m27.yaml, southern-ring: registry/deepsky-heroes/southern-ring.yaml}  # 0078 r14-neb-b
     issue: "#872 (M57 as a shell, W3-b)"
     note:
       source: "Photographs of M27, M57, the Helix and the Southern Ring; the Helix hero from O'Dell, McCullough & Meixner 2004 (two rings) and the knots of Meixner et al. 2005 and Matsuura et al. 2009."
@@ -533,13 +541,13 @@ classes:
     records:
       - {domain: dso, where: {typeCode: PN}}
       - {domain: photographs, ids: [helix-nebula, m27, m57, southern-ring-nebula]}
-      - {domain: heroes, ids: [helix, m57]}
+      - {domain: heroes, ids: [helix, m57, m27, southern-ring]}  # 0078 r14-neb-b
 
   - id: DARK_NEBULA
     title: Dark nebulae
-    renderer: [site/js/scene/nebulae.js, site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js]
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js]  # 0078 r14-neb-b
     honesty: measured
-    fallback: The Horsehead's photograph; the others as a holder with no glow.
+    fallback: A holder with no glow, where the sheet is not drawn (tier 0).  # 0078 r14-neb-b
     heroes: {horsehead: registry/deepsky-heroes/horsehead.yaml, coalsack: registry/deepsky-heroes/coalsack.yaml}
     issue: "internal #784 (absorbing sheets, spec 0075 task 28, W3-c)"
     note:
@@ -554,10 +562,10 @@ classes:
 
   - id: REFLECTION_NEBULA
     title: Reflection nebulae
-    renderer: [site/js/scene/dsoglow.js, site/js/scene/nebulae.js, site/js/scene/deep/dustsheet.js]
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/dustsheet.js, site/js/scene/deep/reflection.js]  # 0078 r14-neb-b
     honesty: illustrative
-    fallback: The reflection glow; the Pleiades' photograph.
-    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml}
+    fallback: The reflection glow.  # 0078 r14-neb-b
+    heroes: {m78: registry/deepsky-heroes/m78.yaml, iris: registry/deepsky-heroes/iris.yaml, m45: registry/deepsky-heroes/m45.yaml}  # 0078 r14-neb-b
     issue: "internal #784 (pale-blue sheets lit by their star, W3-c)"
     note:
       source: "OpenNGC; the photograph of M45."
@@ -567,7 +575,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: RfN}}
       - {domain: photographs, ids: [m45]}
-      - {domain: heroes, ids: [m78, iris]}
+      - {domain: heroes, ids: [m78, iris, m45]}  # 0078 r14-neb-b
 
   - id: SUPERNOVA_REMNANT
     title: Supernova remnants
@@ -589,10 +597,10 @@ classes:
   # --- galaxies and beyond -----------------------------------------------------------------------------
   - id: GALAXY_SPIRAL
     title: Spiral galaxies, the Milky Way among them
-    renderer: [site/js/scene/galaxy.js, site/js/scene/deep/spiral.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    renderer: [site/js/scene/galaxy.js, site/js/scene/deep/spiral.js, site/js/scene/dsoglow.js]  # 0078 r14-neb-b
     honesty: illustrative
-    fallback: The glow ellipse with its holder; M31 and M33 as photographs until near; the Milky Way's points thinned on tier 0.
-    heroes: {m31: registry/deepsky-heroes/m31.yaml, m33: registry/deepsky-heroes/m33.yaml, m51: registry/deepsky-heroes/m51.yaml, m81: registry/deepsky-heroes/m81.yaml, m101: registry/deepsky-heroes/m101.yaml, m104: registry/deepsky-heroes/m104.yaml}  # 0077 W3-f
+    fallback: The glow ellipse with its holder; M31 and M33 as their far copies until near; the Milky Way's points thinned on tier 0.  # 0078 r14-neb-b
+    heroes: {m31: registry/deepsky-heroes/m31.yaml, m33: registry/deepsky-heroes/m33.yaml, m51: registry/deepsky-heroes/m51.yaml, m81: registry/deepsky-heroes/m81.yaml, m101: registry/deepsky-heroes/m101.yaml, m104: registry/deepsky-heroes/m104.yaml, m83: registry/deepsky-heroes/m83.yaml, ngc1300: registry/deepsky-heroes/ngc1300.yaml}  # 0078 r14-neb-b  # 0077 W3-f
     issue: "#873 (0077 W3-f: M51, M81, M101 and M104 from their own numbers; NGC 1300, NGC 253, NGC 891, M83 and NGC 2403 still glow and holder)"  # 0077 W3-f
     note:
       source: "The Milky Way from Reid et al. 2019 (arms) with the bar and disc from Wikipedia; M31 from Courteau et al. 2011, Gordon et al. 2006, Block et al. 2006, Draine et al. 2014; M33 after Zaritsky et al. 1989 and Regan & Vogel 1994; photographs of M51, M81, M83, M101, M104, NGC 1300."
@@ -602,15 +610,15 @@ classes:
     records:
       - {domain: dso, where: {typeCode: G, hubble: ["^S(?!0)(?!(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z]))", "^\\(R'?\\)(?!S(?:A|AB|B)?(?:\\([rs]+\\))?m(?![a-z]))"]}}
       - {domain: photographs, ids: [m31, m33, m83, m104, m51, m101, m81, ngc-1300]}
-      - {domain: heroes, ids: [m31, m33, m51, m81, m101, m104]}  # 0077 W3-f
+      - {domain: heroes, ids: [m31, m33, m51, m81, m101, m104, m83, ngc1300]}  # 0077 W3-f; 0078 r14-neb-b
       - {domain: model_kinds, ids: [galaxy-model]}
       - {domain: layers, ids: [galaxy]}
 
   - id: GALAXY_IRREGULAR
     title: Irregular galaxies
-    renderer: [site/js/scene/deep/lmc.js, site/js/scene/deep/smc.js, site/js/scene/deep/magellanic.js, site/js/scene/dsoglow.js, site/js/scene/nebulae.js]  # 0077 W2-e
+    renderer: [site/js/scene/deep/lmc.js, site/js/scene/deep/smc.js, site/js/scene/deep/magellanic.js, site/js/scene/dsoglow.js]  # 0077 W2-e; 0078 r14-neb-b
     honesty: illustrative
-    fallback: The LMC's photograph and the SMC's; the glow elsewhere.
+    fallback: The glow and the holder; the heroes' light is their photographs' (no flat photograph since 1.4.0).  # 0078 r14-neb-b
     heroes: {lmc: registry/deepsky-heroes/lmc.yaml, smc: registry/deepsky-heroes/smc.yaml}  # 0077 W2-e
     issue: "internal #783 (the SMC, the Bridge and the Stream)"
     note:
@@ -625,9 +633,10 @@ classes:
 
   - id: GALAXY_ELLIPTICAL
     title: Elliptical and lenticular galaxies
-    renderer: [site/js/scene/dsoglow.js, site/js/scene/nebulae.js]
+    renderer: [site/js/scene/dsoglow.js, site/js/scene/deep/spiral.js]  # 0078 r14-neb-b
     honesty: illustrative
     fallback: The glow ellipse with its holder.
+    heroes: {cena: registry/deepsky-heroes/cena.yaml}  # 0078 r14-neb-b
     issue: "#874 (M32 and M110 as Sérsic points, W4-a)"
     note:
       source: "OpenNGC's sizes, axes and position angles; the photograph of Centaurus A."
@@ -637,6 +646,7 @@ classes:
     records:
       - {domain: dso, where: {typeCode: G, hubble: ["^E", "^dE", "^S0", "^dS0", "^dSph", "^$"]}}
       - {domain: photographs, ids: [centaurus-a]}
+      - {domain: heroes, ids: [cena]}  # 0078 r14-neb-b
 
   - id: GALAXY_INTERACTION
     title: Interacting galaxies

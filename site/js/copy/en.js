@@ -1952,7 +1952,6 @@ export const COPY = {
     satellitesCount: '{n} working satellites in the catalogue this page loaded from CelesTrak, {starlink} of them Starlink.',
     satellitesLoading: 'The catalogue is still loading; the count appears when it has.',
     // Under a stop at a nebula or a galaxy with a photograph, and under a black hole's portrait.
-    pictureLine: 'A real photograph, placed where it is in the sky. Picture: {credit} \u00b7 {licence}, edges faded and sky darkened by us.',
     portraitLine: 'A model, not the photograph: the shadow and the ring of light bent round it are what its mass makes them, the glowing disc is modelled, and the stars behind are not bent. It is drawn far larger than it would look from here; the place is measured. The Event Horizon Telescope\u2019s photograph is on its card: {credit} \u00b7 {licence}.', // 0078 r14-mw-bh
     // `live_note: tonight` under a stop about a planet: when and where it is in the visitor's sky
     // in the coming dark, by their device's clock, or why it is not there.
