@@ -1087,7 +1087,8 @@ export const COPY = {
       "redblue": "ses couleurs viennent des images rouges et bleues de New Horizons, le vert étant pris à mi-chemin entre les deux et la couleur renforcée de moitié ; les parties photographiées seulement en noir et blanc reçoivent la couleur moyenne de la carte",
       "enhanced": "ses couleurs sont celles publiées par la NASA, composées à partir de trois filtres couleur de New Horizons, dont aucun n’est vert : c’est une couleur rehaussée, plus forte que ce qu’un œil verrait, et pas la même",
       "balanced": "ses couleurs viennent d’images orange, vertes et bleues, équilibrées sur sa couleur publiée et adoucies vers ce que verrait un œil",
-      "infrared": "sa surface est une carte en proche infrarouge faite à travers la brume, teintée et adoucie ; en lumière visible, la brume cache le sol"
+      "infrared": "sa surface est une carte en proche infrarouge faite à travers la brume, teintée et adoucie ; en lumière visible, la brume cache le sol",
+      "natural": "ses couleurs sont des couleurs naturelles, tirées de la lumière rouge et bleue mesurée par la caméra couleur de New Horizons, le vert, pour lequel elle n’avait pas de filtre, étant estimé entre les deux, et rendues environ deux fois plus fortes que celles de la caméra, comme les montrent les images en couleurs naturelles de la NASA" // 0078 r14-pluto
     },
     "worldCoverage": {
       "miranda": "seule la moitié sud a été photographiée, par Voyager 2 en 1986 ; le reste est laissé uni, pas deviné",
@@ -1096,8 +1097,8 @@ export const COPY = {
       "titania": "seule la moitié sud a été photographiée, par Voyager 2 en 1986 ; le reste est laissé uni, pas deviné",
       "oberon": "seule la moitié sud a été photographiée, par Voyager 2 en 1986 ; le reste est laissé uni, pas deviné",
       "triton": "Voyager 2 en a photographié une partie en 1989 ; le reste est laissé uni, pas deviné",
-      "pluto": "l’extrême sud était plongé dans la nuit d’hiver quand la sonde New Horizons est passée en 2015 ; il est laissé uni, pas deviné",
-      "charon": "l’extrême sud était plongé dans la nuit d’hiver quand la sonde New Horizons est passée en 2015 ; il est laissé uni, pas deviné"
+      "pluto": "l’extrême sud était plongé dans la nuit d’hiver quand la sonde New Horizons est passée en 2015 : le sol dessiné là est modélisé, une texture discrète aux couleurs des terres au-dessus, pas une photographie", // 0078 r14-pluto
+      "charon": "l’extrême sud était plongé dans la nuit d’hiver quand la sonde New Horizons est passée en 2015 : le sol dessiné là est modélisé, une texture discrète aux couleurs des terres au-dessus, pas une photographie" // 0078 r14-pluto
     },
     "worldLit": "éclairé comme le montrerait un appareil photo exposé pour sa propre lumière du Soleil",
     "worldLight": "vu de loin, c’est une lumière à son éclat calculé : la lueur est la façon dont un appareil photo enregistre un point trop brillant pour être résolu",
@@ -1109,6 +1110,7 @@ export const COPY = {
     "worldDeparture": {
       "earth": "sur un grand écran, ses montagnes viennent des altitudes ETOPO 2022 de la NOAA, dessinées {relief} fois plus raides qu’elles ne sont pour qu’un Soleil bas les montre ; la lueur de l’air sur son bord est dessinée {air} fois plus haute que l’air ; depuis l’orbite basse sur un grand écran, ses nuages se dressent vers l’horizon et sous un Soleil bas, dessinés {clouds} fois plus épais qu’ils ne sont pour qu’on voie leur inclinaison, leurs longues ombres et la dernière lumière sur leurs sommets (à leur vraie épaisseur dans l’aspect Mesuré), la hauteur de chaque sommet venant de sa température mesurée là où l’image du jour la couvre, et de l’éclat de la carte des nuages ailleurs",
       "mercury": "sur un grand écran, son relief vient du modèle d’altitude de MESSENGER, dessiné {steep} fois plus raide que mesuré pour que les bords des cratères accrochent la lumière",
+      "pluto": "son sol clair et sombre est dessiné avec {plutoContrast} fois le contraste de l’image de la caméra, plus près des albédos mesurés ; le côté que New Horizons n’a vu que de loin est adouci à sa propre netteté ; sur un grand écran, son relief vient des altitudes stéréo de New Horizons, là où il y en a, dessiné {plutoSteep} fois plus raide que mesuré ; la fine brume bleue de son bord est dessinée comme une lueur, plus forte à contre-jour, dont l’intensité est choisie", // 0078 r14-pluto
       "mars": "sur un grand écran, son relief vient des altitudes mesurées par l’altimètre laser de Mars Global Surveyor, dessiné {mola} fois plus raide et plus haut qu’il n’est pour qu’un Soleil bas le montre : les ombres que projettent Olympus Mons et les parois du canyon sont autant de fois trop longues.",
       "venus": "la lueur autour de son bord et au-delà de sa face éclairée figure une brume épaisse ; son épaisseur dessinée et sa portée sont illustratives ; dans l’aspect Cinéma, ses bandes de nuages sont dessinées avec {uv} fois le contraste de sa carte, comme les voient les caméras ultraviolettes (à l’œil, elles sont presque unies), et l’aspect Mesuré montre la carte telle quelle ; son sol, vu par radar, est en relief d’après l’altimètre de Magellan, dessiné {ground} fois plus raide et plus haut que mesuré",
       "neptune": "dans l’aspect Cinéma, les cinq arcs de son anneau extérieur sont dessinés comme Voyager 2 les a vus en 1989, tournant à leur vitesse mesurée ; où ils se trouvent aujourd’hui autour de l’anneau n’est pas calculé, et deux d’entre eux ont depuis pâli ou bougé",

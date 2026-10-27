@@ -1075,7 +1075,8 @@ export const COPY = {
       "redblue": "as cores vêm das imagens vermelhas e azuis da New Horizons, com o verde tirado a meio caminho entre elas e a cor reforçada em mais da metade; as partes fotografadas só em preto e branco recebem a cor média do mapa",
       "enhanced": "as cores são as que a NASA publicou, montadas a partir de três dos filtros de cor da New Horizons, nenhum deles verde: é cor realçada, mais forte que o que um olho veria e diferente dele",
       "balanced": "as cores vêm de imagens em laranja, verde e azul, equilibradas até a cor publicada e atenuadas em direção ao que um olho veria",
-      "infrared": "a superfície é um mapa em infravermelho próximo feito através da névoa, colorido e suavizado; na luz visível a névoa esconde o solo"
+      "infrared": "a superfície é um mapa em infravermelho próximo feito através da névoa, colorido e suavizado; na luz visível a névoa esconde o solo",
+      "natural": "as cores são cor natural, da luz vermelha e azul que a câmera colorida da New Horizons mediu, com o verde, para o qual não tinha filtro, estimado entre elas, e reforçadas cerca de duas vezes em relação às da câmera, como as imagens em cor natural da NASA o mostram" // 0078 r14-pluto
     },
     "worldCoverage": {
       "miranda": "só a metade sul foi fotografada, pela Voyager 2 em 1986; o resto fica liso, sem palpite",
@@ -1084,8 +1085,8 @@ export const COPY = {
       "titania": "só a metade sul foi fotografada, pela Voyager 2 em 1986; o resto fica liso, sem palpite",
       "oberon": "só a metade sul foi fotografada, pela Voyager 2 em 1986; o resto fica liso, sem palpite",
       "triton": "a Voyager 2 fotografou parte dele em 1989; o resto fica liso, sem palpite",
-      "pluto": "o extremo sul estava na escuridão do inverno quando a New Horizons passou, em 2015, e fica liso, sem palpite",
-      "charon": "o extremo sul estava na escuridão do inverno quando a New Horizons passou, em 2015, e fica liso, sem palpite"
+      "pluto": "o extremo sul estava na escuridão do inverno quando a New Horizons passou, em 2015: o solo desenhado ali é modelado, uma textura tênue nas cores das terras acima, não uma fotografia", // 0078 r14-pluto
+      "charon": "o extremo sul estava na escuridão do inverno quando a New Horizons passou, em 2015: o solo desenhado ali é modelado, uma textura tênue nas cores das terras acima, não uma fotografia" // 0078 r14-pluto
     },
     "worldLit": "iluminado como o mostraria uma câmera exposta para a sua própria luz solar",
     "worldLight": "visto de longe, é uma luz com o brilho calculado: o halo é como uma câmera registra um ponto brilhante demais para ser resolvido",
@@ -1097,6 +1098,7 @@ export const COPY = {
     "worldDeparture": {
       "earth": "em uma tela maior, as montanhas vêm das alturas do ETOPO 2022 da NOAA, desenhadas {relief} vezes mais íngremes do que são para que um Sol baixo as mostre; o brilho do ar ao redor da borda é desenhado {air} vezes mais alto do que o ar é; da órbita baixa, em uma tela maior, as nuvens se erguem em direção ao horizonte e sob um Sol baixo, desenhadas {clouds} vezes mais espessas do que são para que se vejam a inclinação, as sombras longas e a última luz no topo delas (na espessura real no modo Medido), com a altura de cada topo tirada da temperatura medida onde a imagem de hoje cobre e do brilho do mapa de nuvens nos demais lugares",
       "mercury": "em uma tela maior, o relevo vem do modelo de elevação da MESSENGER, desenhado {steep} vezes mais íngreme do que o medido para que as bordas das crateras peguem a luz",
+      "pluto": "o solo claro e escuro é desenhado com {plutoContrast} vezes o contraste da imagem da câmera, mais perto dos albedos medidos; o lado que a New Horizons só viu de longe é suavizado até a sua própria nitidez; em uma tela maior, o relevo vem das alturas estéreo da New Horizons, onde existem, desenhado {plutoSteep} vezes mais íngreme do que o medido; a fina névoa azul na borda é desenhada como um brilho, mais forte contra o Sol, cuja intensidade é escolhida", // 0078 r14-pluto
       "mars": "em uma tela maior, o relevo vem das alturas que o altímetro a laser da Mars Global Surveyor mediu, desenhadas {mola} vezes mais íngremes e altas do que são para que um Sol baixo as mostre: as sombras que o Monte Olimpo e as paredes dos cânions projetam são tantas vezes mais longas.",
       "venus": "o halo ao redor da borda e além do lado do dia representa uma névoa densa; sua espessura desenhada e seu alcance são ilustrativos; no modo Filme, as faixas de nuvens são desenhadas com {uv} vezes o contraste do mapa, como as câmeras de ultravioleta as veem (a olho nu são quase lisas), e o modo Medido mostra o mapa como ele é; o solo, por radar, está em relevo a partir do altímetro da Magellan, desenhado {ground} vezes mais íngreme e alto do que o medido",
       "neptune": "no modo Filme, os cinco arcos do anel externo são desenhados como a Voyager 2 os viu em 1989, girando à velocidade medida; onde estão hoje ao redor do anel não é calculado, e dois deles desde então desbotaram ou mudaram de lugar",

@@ -251,7 +251,7 @@ export function worldRecords() {
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
-      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { uv: String(VENUS_UV.gain), ground: String(VENUS_GROUND.exaggeration), steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker) }) } : {}),
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { uv: String(VENUS_UV.gain), ground: String(VENUS_GROUND.exaggeration), steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), mola: String(MARS_RELIEF.exaggeration), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain), clouds: String(CLOUD_PARALLAX.thicker), plutoContrast: String(PLUTO_LOOK.contrast), plutoSteep: String(PLUTO_LOOK.steep) }) } : {}), // 0078 r14-pluto: plutoContrast, plutoSteep
     },
   }));
 }
@@ -439,6 +439,19 @@ export function ringFineU(rKm, innerKm, outerKm) { return (rKm - innerKm) / (out
 /** How many times steeper than measured Mercury's relief is drawn, and how far Saturn's bands are pushed from the map's mean. */
 export const RELIEF_STEEP = 4;
 export const SATURN_CONTRAST = 1.5;
+// 0078 r14-pluto: begin
+/**
+ * PLUTO'S LOOK (2026-10-27, release 1.4.0 stage r14-pluto). `contrast` restates scripts/build_pluto_map.py
+ * CONTRAST for the card (the map is made with it; nothing here applies it again). `steep`: how many times
+ * steeper than measured its relief is drawn (USGS's New Horizons elevation model, registry/textures.yaml
+ * `pluto-relief`; a quarter of Mercury's RELIEF_STEEP, because Pluto's mountains are steep enough to
+ * show). `haze`: the rim (#318's air rim, the shader's uRimGain) as Pluto's thin blue haze, which New
+ * Horizons photographed against the Sun in July 2015 as a blue ring: the colour is read off those
+ * pictures, the strength is CHOSEN, and `fwd` times as strong with the Sun behind, because haze
+ * scatters forward (uRimFwd). The card says all three (copy/en.js drawing.worldDeparture.pluto).
+ */
+export const PLUTO_LOOK = { contrast: 1.25, steep: 2, haze: { colour: 0x8fb4ff, gain: 0.16, fwd: 3 } };
+// 0078 r14-pluto: end
 
 /**
  * MARS'S RELIEF (2026-10-12, spec 0073 requirement 5): two maps made from the Mars Orbiter Laser
@@ -700,12 +713,12 @@ export const WORLDS = [
     // under the Measured look. The ring's arcs are NEPTUNE_RINGS.arcs.
     look: { map: '2k_neptune.webp', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS, spot: NEPTUNE_SPOT },
   },
-  // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
-  // tint is not a texture's mean like the rows above: it is a HUE from a published description,
-  // made lighter or darker in the order of the measured geometric albedo (`albedo`, from the NASA
-  // fact sheets registry/worlds.yaml cites) -- Europa 0.68, Io 0.62, Pluto 0.52, Ganymede 0.44,
-  // Callisto 0.19. tests/test_worlds_layer.mjs holds the order. The card says the colour was
-  // chosen, not measured. No `rotation`: there is nothing on a plain ball to turn.
+  // THE FLAT ONES. When these five were added (2026-09-22) no map shipped for them (`flat: true`, no
+  // `map`), so the tint was not a texture's mean like the rows above: it was a HUE from a published
+  // description, made lighter or darker in the order of the measured geometric albedo (`albedo`, from
+  // the NASA fact sheets registry/worlds.yaml cites) -- Europa 0.68, Io 0.62, Pluto 0.52, Ganymede
+  // 0.44, Callisto 0.19. tests/test_worlds_layer.mjs holds the order. All five wear a map now (below);
+  // a world still without one (Deimos) says on its card that its colour was chosen, not measured.
   //
   // FIVE OF THEM NOW CARRY A MAP (issue #262), because a trip flies to them: Io, Europa, Enceladus,
   // Triton and Pluto, from public-domain USGS / NASA mosaics (CREDITS.md). The tint stays their
@@ -721,8 +734,9 @@ export const WORLDS = [
   // and says how; registry/textures.yaml has each one's source and how much of the sphere it
   // covers. `mapKind` is what kind of picture it is, for the card: `tinted` (a black-and-white
   // mosaic in the flat colour), `toned` (Cassini's infrared-to-ultraviolet colours at 35 %),
-  // `infrared` (Titan's ground through the haze), `redblue` (Charon), `enhanced` (Pluto: NASA's own
-  // enhanced-colour map, scripts/build_pluto_map.py) or `colour`. Every mapped moon is `locked`:
+  // `infrared` (Titan's ground through the haze), `redblue` (no row since 2026-10-27), `enhanced` (Pluto
+  // from 2026-10-12 to 2026-10-27: NASA's own enhanced-colour map), `natural` (Pluto and Charon since
+  // 2026-10-27: New Horizons' measured red and blue, scripts/build_pluto_map.py; 0078 r14-pluto) or `colour`. Every mapped moon is `locked`:
   // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
   // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
   // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes,
@@ -731,13 +745,18 @@ export const WORLDS = [
   // The moons come AFTER Jupiter on purpose: update() places a moon from its planet's drawn disc,
   // so the planet has to have been placed first in the same frame.
   {
-    // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
+    // "charcoal black, to dark orange and white" (Wikipedia). 0078 r14-pluto: begin. Since 2026-10-27 the
+    // tint is the natural-colour map's own mean, at the luminance the orange-tan it replaces had
+    // (scripts/build_pluto_map.py), so the albedo order holds.
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
     body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     // `face` (2026-10-07, internal #426): the heart, the face Pluto is known by, as east longitude and
-    // latitude -- the brightest 12-degree patch of the map we ship, measured on it that day (201 E,
-    // 21 N: the bright ice of Tombaugh Regio). An arrival prefers the lit side that shows it (faceDirOf).
-    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'enhanced', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
+    // latitude -- the brightest 12-degree patch of the map we ship (equatorward of 60 degrees), measured
+    // again on 2026-10-27's natural-colour map: 196 E, 15 N, the bright ice where Sputnik Planitia meets
+    // Tombaugh Regio's eastern lobe (it was 201 E, 21 N on the enhanced map). An arrival prefers the lit
+    // side that shows it (faceDirOf). `relief` and `rim`: PLUTO_LOOK.
+    look: { flat: true, tint: 0xa69584, map: '2k_pluto_nh_colour.webp', mapKind: 'natural', albedo: 0.52, rough: 0.3, face: { lonDeg: 196, latDeg: 15 }, relief: { map: '2k_pluto_relief.webp', px: 2048, rangeM: 2500, steep: PLUTO_LOOK.steep, mono: true }, rim: PLUTO_LOOK.haze },
+    // 0078 r14-pluto: end
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
@@ -801,10 +820,11 @@ export const WORLDS = [
   },
   {
     // "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north
-    // (top) polar region" (NASA Science): a grey, faintly warm.
+    // (top) polar region" (NASA Science): a grey, faintly warm. 0078 r14-pluto: since 2026-10-27 the
+    // natural-colour map's own mean at the same luminance (scripts/build_pluto_map.py).
     id: 'charon', display: 'Charon', parent: 'pluto', radiusKm: 606.0,
     body: 'Charon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0x8e8a86, map: '2k_charon_nh_colour.webp', mapKind: 'redblue', albedo: 0.42, rough: 0.3 },
+    look: { flat: true, tint: 0x8a8b8c, map: '2k_charon_nh_colour.webp', mapKind: 'natural', albedo: 0.42, rough: 0.3 }, // 0078 r14-pluto
   },
   {
     // "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids" (NASA
@@ -1151,6 +1171,7 @@ uniform vec3 uTint;
 uniform vec3 uSunDir;
 uniform vec3 uRimColour;
 uniform float uRimGain;
+uniform float uRimFwd; // 0078 r14-pluto: the rim lit from behind (Pluto's haze, PLUTO_HAZE); 0 elsewhere
 // Spec 0054: the reflectance law and the light. uLimb > 0 picks Minnaert with k = uLimb; otherwise
 // Oren-Nayar with sigma = uRoughness. uSunIrradiance is 1 on every world (exposed for its own sun).
 uniform float uRoughness;
@@ -1355,6 +1376,9 @@ void main() {
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
   float airLit = smoothstep( -0.1, 0.1, d );
   colour += uRimColour * rim * uRimGain * airLit * eclShade * ringShade;
+  // 0078 r14-pluto: begin. Haze scatters forward: seen against the Sun it lights the night side's limb too.
+  if ( uRimFwd > 0.0 ) colour += uRimColour * rim * uRimGain * uRimFwd * pow( max( -dot( viewDir, uSunDir ), 0.0 ), 4.0 ) * eclShade;
+  // 0078 r14-pluto: end
 
   gl_FragColor = vec4( colour, 1.0 );
   #include <tonemapping_fragment>
@@ -1381,6 +1405,7 @@ export function worldMaterial(map, tint) {
       uSunDir: { value: new THREE.Vector3(1, 0, 0) },
       uRimColour: { value: new THREE.Color(0xdfe9ff) },
       uRimGain: { value: 0 },
+      uRimFwd: { value: 0 }, // 0078 r14-pluto
       uRoughness: { value: DEFAULT_ROUGHNESS },
       uSunIrradiance: { value: 1 },
       uEarthshine: { value: 0 },
@@ -1736,6 +1761,7 @@ export function applyLook(material, look) {
   if (look.rim) {
     u.uRimColour.value.set(look.rim.colour);
     u.uRimGain.value = look.rim.gain;
+    if (u.uRimFwd) u.uRimFwd.value = look.rim.fwd || 0; // 0078 r14-pluto
   }
   if (look.limb) u.uLimb.value = look.limb;
   if (look.rough !== undefined) u.uRoughness.value = look.rough;

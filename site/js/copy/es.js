@@ -960,7 +960,8 @@ export const COPY = {
       redblue: "sus colores vienen de las imágenes roja y azul de New Horizons, con el verde tomado a medio camino entre ambas y el color reforzado en otra mitad; las partes fotografiadas solo en blanco y negro reciben el color medio del mapa",
       enhanced: "sus colores son los que publicó la NASA, compuestos con tres de los filtros de color de New Horizons, ninguno de ellos verde: es color realzado, más intenso que lo que vería un ojo y no igual a ello",
       balanced: "sus colores vienen de imágenes naranja, verde y azul, equilibradas con su color publicado y atenuadas hacia lo que vería un ojo",
-      infrared: "su superficie es un mapa en infrarrojo cercano hecho a través de la bruma, teñido y suavizado; en luz visible la bruma oculta el suelo"
+      infrared: "su superficie es un mapa en infrarrojo cercano hecho a través de la bruma, teñido y suavizado; en luz visible la bruma oculta el suelo",
+      natural: "sus colores son color natural, de la luz roja y azul que midió la cámara de color de New Horizons, con el verde, para el que no tenía filtro, estimado entre ambas, y reforzados unas dos veces respecto a los de la cámara, como los muestran las imágenes en color natural de la NASA" // 0078 r14-pluto
     },
     worldCoverage: {
       miranda: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",
@@ -969,8 +970,8 @@ export const COPY = {
       titania: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",
       oberon: "solo se fotografió la mitad sur, por la Voyager 2 en 1986; el resto se deja liso, no se adivina",
       triton: "la Voyager 2 fotografió una parte en 1989; el resto se deja liso, no se adivina",
-      pluto: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015 y se deja liso, no se adivina",
-      charon: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015 y se deja liso, no se adivina"
+      pluto: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015: el suelo que se dibuja allí está modelado, una textura tenue en los colores de la tierra de más arriba, no una fotografía", // 0078 r14-pluto
+      charon: "el extremo sur estaba en la oscuridad del invierno cuando pasó New Horizons en 2015: el suelo que se dibuja allí está modelado, una textura tenue en los colores de la tierra de más arriba, no una fotografía" // 0078 r14-pluto
     },
     worldLit: "se ilumina como lo mostraría una cámara expuesta para su propia luz solar",
     worldLight: "visto desde lejos es una luz con su brillo calculado: el resplandor es como una cámara registra un punto demasiado brillante para resolverlo",
@@ -983,6 +984,7 @@ export const COPY = {
       earth: "en una pantalla más grande, sus montañas salen de las alturas ETOPO 2022 de NOAA, dibujadas {relief} veces más empinadas de lo que son para que un Sol bajo las muestre; el resplandor del aire alrededor de su borde se dibuja {air} veces más alto que el aire; desde una órbita baja y en una pantalla más grande, sus nubes se alzan hacia el horizonte y bajo un Sol bajo, dibujadas {clouds} veces más gruesas de lo que son para que se vean su inclinación, sus largas sombras y la última luz en sus cimas (con su grosor verdadero en el aspecto Medido), con la altura de cada cima tomada de su temperatura medida donde cubre la imagen de hoy y del brillo del mapa de nubes en el resto",
       titan: "justo encima de su bruma, a unos 500 km de altura, se dibuja una capa fina y separada de bruma donde la vio la Cassini entre 2005 y 2007; se hundió y se desvaneció en los años siguientes, y no se sabe dónde está ahora",
       mercury: "en una pantalla más grande, su relieve sale del modelo de elevación de MESSENGER, dibujado {steep} veces más empinado de lo medido para que los bordes de los cráteres atrapen la luz",
+      pluto: "su suelo claro y oscuro se dibuja con {plutoContrast} veces el contraste de la imagen de la cámara, más cerca de los albedos medidos; el lado que New Horizons solo vio de lejos se suaviza a su propia nitidez; en una pantalla más grande, su relieve sale de las alturas estéreo de New Horizons, donde las hay, dibujado {plutoSteep} veces más empinado de lo medido; la fina bruma azul de su borde se dibuja como un brillo, más fuerte a contraluz, cuya intensidad es elegida", // 0078 r14-pluto
       mars: "en una pantalla más grande, su relieve sale de las alturas que midió el altímetro láser de Mars Global Surveyor, dibujadas {mola} veces más empinadas y más altas de lo que son para que un Sol bajo las muestre: las sombras que proyectan el Monte Olimpo y las paredes del cañón son más largas en esa misma proporción.",
       venus: "el resplandor alrededor de su borde y más allá de su lado diurno representa una bruma profunda; su grosor dibujado y hasta dónde llega son ilustrativos; en el aspecto Cine sus bandas de nubes se dibujan con {uv} veces el contraste de su mapa, como las ven las cámaras ultravioleta (a simple vista son casi lisas), y el aspecto Medido muestra el mapa tal cual es; su suelo, visto por radar, está en relieve con el altímetro de Magellan, dibujado {ground} veces más empinado y alto de lo medido",
       neptune: "en el aspecto Cine, los cinco arcos de su anillo exterior se dibujan como los vio la Voyager 2 en 1989, girando a su velocidad medida; no se calcula dónde están hoy a lo largo del anillo, y dos de ellos se han desvanecido o se han movido desde entonces",
