@@ -1,0 +1,20 @@
+{
+  "file": "site/images/deep/southern-ring/southern-ring-light.webp",
+  "bytes": 16584,
+  "sha256": "2ecf782b73b70bc92b9645fee196f5fa6916ed2d9a62581bb87d79c65b983178",
+  "from": "site/images/nebulae/southern-ring-nebula.webp",
+  "from_sha256": "085dcae3fa020774248f64c5875b8659288a22840f76dd0d21380f87f590037f",
+  "stars_removed_px": 60618,
+  "size": [
+    512,
+    477
+  ],
+  "peak_lum_p99": 0.835,
+  "bright_stars": 37,
+  "floor": [
+    2.0,
+    3.0,
+    2.0
+  ],
+  "credit": "NASA, ESA, CSA, STScI, and the Webb ERO Production Team (ESA/Webb weic2207b), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_ring.py)"
+}

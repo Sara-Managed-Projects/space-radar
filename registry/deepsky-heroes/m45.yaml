@@ -1,0 +1,108 @@
+# A deep-sky hero (internal spec 0075; README.md beside this file says what each field holds).
+# The Pleiades' reflection nebula (M45; NGC 1432 round Maia, NGC 1435 round Merope) as a VOLUME of dust lit by the
+# cluster's own stars (release 1.4.0 stage r14-neb-b). Drawn by site/js/scene/deep/reflection.js; its light map is baked
+# by scripts/build_deep_sheets.py from the photograph the card's "compare with the photograph" slider shows.
+#
+# WHAT IS MEASURED AND WHAT IS RECONSTRUCTED.
+#   Measured: the stars (the catalogue draws them, scene/stars3d.js; this hero draws none), the distance (the record's),
+#   the light (the photograph: broadband B, V and I, close to true colour), and that the gas is IN FRONT of the stars:
+#   it is seen in absorption toward twenty of the members (Ritchey, Martinez & Federman 2006), and it is a cloud passing
+#   through the cluster, not the cluster's own birth cloud (its velocity gradients, the same paper).
+#   Reconstructed: where each sky point's light is in depth. Scattered light is the dust's density times the starlight
+#   falling on it; the dust is drawn as a slab 2 ly thick whose face toward the stars is 0.3 ly in front of the stars
+#   that light it at each place (ILLUSTRATIVE: the cloud's depth is not measured), and the starlight is the nine named
+#   stars' at the places the app DRAWS them (scene/clusters.js gives each member a fixed depth within the cluster, not a
+#   measured one: the card says so). Each sky point's light is spread along our line in proportion to that, so from
+#   our side it is the photograph and from any other the glow gathers round the stars that make it.
+#   Modelled: how the scattered light changes as the view turns (a Henyey-Greenstein phase function, g = 0.6).
+id: m45
+record: dso-m45
+stage: r14-neb-b
+# Shipped under the lead's review policy of 2026-10-15 (internal spec 0075 design 14.4): signed by the maintainers,
+# never a person's name or a claim of independent review; the card says no astronomer has reviewed it (internal #785).
+shipped: true
+children: []
+levels:
+  2: "structure: one box over the photograph's footprint, marched (16 samples; 6 on T0 and under the latch): the photograph's light spread through a slab of dust by the starlight falling on it, added to what is behind"
+  3: "close-up: the same, the march's steps (to 32); the camera may go through it, among the stars (the dust within 1 ly of it fades)"
+frame: {units_ly: 1, distance_ly: 425, ra_deg: 56.86917, dec_deg: 24.10528, axes: "x west, y north, z toward the Sun; the record's place at the origin"}
+layers:
+  - part: light
+    kind: photograph
+    what: "the starlight the cloud scatters: the photograph with each bright star's round halo subtracted and the faint stars taken out, spread through the cloud by the starlight falling on it"
+    file: site/images/deep/sheets/m45-light.webp
+    from: "site/images/nebulae/m45.webp (NOIRLab noao-m45, NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN, CC BY 4.0)"
+    image_row: m45
+    # Where the picture is: registry/nebulae.yaml's row for the same picture (solved against 2MASS by scripts/build_nebulae.py)
+    picture: {ra_deg: 56.58318, dec_deg: 24.0988, width_arcmin: 68.68, height_arcmin: 50.13, north_deg: -90.8}
+    px: 512
+    stars: {above_median: 12, grow_px: 2}
+    # what is left redder than blue by more than this (display values) is a field star's remnant, not the blue nebula
+    red_out: 6
+    # the bright stars' round halos taken off (scripts/build_deep_sheets.py subtract_halos): the nine named below
+    halos:
+      r_px: 34
+      pct: 25
+      core_px: 6
+      stars: [[56.87115, 24.10514], [57.29059, 24.05342], [56.21890, 24.11334], [56.45669, 24.36775], [56.58156, 23.94836], [56.30206, 24.46728], [57.29673, 24.13671], [56.20088, 24.28947], [56.47699, 24.55451]]
+    floor_pct: 20
+    z_ly: 0
+    half_ly: 0.3
+    # the picture's edge feathered from 0.8 to 0.98 of its half-size: the nebula runs on past the picture's frame, which is not its edge
+    feather: [0.8, 0.98]
+    peak: 0.4
+    made_by: scripts/build_deep_sheets.py
+    # the cloud lit by the stars (scene/deep/reflection.js): a slab of dust `thickness_ly` thick, its
+    # face toward the stars `front_ly` in front of the stars that light it at each place; the starlight on it softened
+    # over `soft_ly`; samples within `near_ly` of the camera fade in (no fog round the camera inside the cluster)
+    illuminate:
+      front_ly: 0.3
+      soft_ly: 0.3
+      thickness_ly: 2.0
+      near_ly: 1.0
+      note: "z_ly is each star's depth as the app draws it (scene/clusters.js: the cluster's 425 ly plus 8 ly times a fixed number per star, not measured), from the record's place toward the Sun; tests/test_hero_r14neb.mjs holds them to clusters.js. front_ly and thickness_ly (illustrative): the cloud is in front of the stars (Ritchey et al. 2006); how far and how deep are not measured. Positions and V: SIMBAD"
+      stars:
+        - {id: "Alcyone", ra_deg: 56.87115, dec_deg: 24.10514, v_mag: 2.87, z_ly: -5.459}
+        - {id: "Atlas", ra_deg: 57.29059, dec_deg: 24.05342, v_mag: 3.62, z_ly: -1.707}
+        - {id: "Electra", ra_deg: 56.21890, dec_deg: 24.11334, v_mag: 3.70, z_ly: 1.857}
+        - {id: "Maia", ra_deg: 56.45669, dec_deg: 24.36775, v_mag: 3.87, z_ly: -1.743}
+        - {id: "Merope", ra_deg: 56.58156, dec_deg: 23.94836, v_mag: 4.18, z_ly: -5.997}
+        - {id: "Taygeta", ra_deg: 56.30206, dec_deg: 24.46728, v_mag: 4.30, z_ly: 2.308}
+        - {id: "Pleione", ra_deg: 57.29673, dec_deg: 24.13671, v_mag: 5.05, z_ly: 7.118}
+        - {id: "Celaeno", ra_deg: 56.20088, dec_deg: 24.28947, v_mag: 5.45, z_ly: 4.275}
+        - {id: "Asterope", ra_deg: 56.47699, dec_deg: 24.55451, v_mag: 5.76, z_ly: -6.095}
+    source: "NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN, noao-m45, CC BY 4.0: https://noirlab.edu/public/images/noao-m45/ (B, V and I, WIYN 0.9-metre, Mosaic I, released 2020-06-30)"
+  - part: scatter
+    kind: phase
+    what: "how bright the scattered light is from another side: a Henyey-Greenstein phase function of the angle between the star lighting it, the dust and the eye, against that angle from here"
+    g: 0.6
+    range: [0.3, 1.4]
+    source: "Henyey & Greenstein 1941, ApJ 93, 70; g about 0.6 for interstellar dust (Sujatha et al. 2007, ApJ 665, 363, measured 0.61 +/- 0.07 in the far ultraviolet near the Coalsack: arXiv:0705.1752)"
+colours:
+  mode: true
+  lines: {}
+  note: "The photograph's own colours: broadband B, V and I, close to what a camera sees: the blue is starlight scattered by dust, bluer than the stars because dust scatters blue light more"
+  enhanced:
+    mode: enhanced
+    under: deep
+    lines: {}
+    note: "Deep: the photograph's Deep stretch (as every photograph gets it). Not what an eye sees"
+drawn: [reconstruction]
+sources:
+  - "NOIRLab noao-m45 (CC BY 4.0), NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN: the light"
+  - "Ritchey, A. M., Martinez, M. & Federman, S. R. 2006, The nature of interstellar gas toward the Pleiades revealed in absorption lines, ApJ (https://arxiv.org/abs/astro-ph/0606644): the gas seen in absorption toward twenty members (so in front of them), its velocity gradients from the cloud's interaction with the cluster"
+  - "Gibson, S. J. 2007, Multiscale structure in dust reflection and cold HI (https://arxiv.org/abs/astro-ph/0703055): the reflection nebula traces the cloud's cold hydrogen, structured on every scale from tens of parsecs to tens of au"
+  - "SIMBAD (CDS, https://simbad.cds.unistra.fr/): the nine stars' places and V magnitudes"
+  - "Henyey, L. G. & Greenstein, J. L. 1941, ApJ 93, 70: the phase function"
+review:
+  data_vs_model: "Measured: the distance, the stars' places and magnitudes, the light (the photograph), that the gas is in front of the stars. Reconstructed: the light's depth at each place (from the stars as the app draws them, whose depths within the cluster are a fixed model) and the halo subtraction. Modelled: the change of the scattered light with the view (g = 0.6). Illustrative: how far in front of the stars the dust is and how deep (0.3 ly, a slab 2 ly thick)"
+  geometry: "A slab of dust 2 ly thick just in front of the stars that light it at each place, its light the photograph's spread by the starlight on it; the stars' own depths are scene/clusters.js's fixed numbers within the cluster (not measured), and the card says the depth is a reconstruction"
+  colours: "The photograph's own broadband colours; Deep declared enhanced"
+  distance: "425 ly, the record's (the cluster's); Gaia puts the cluster at about 440 ly. Lengths on the sky are scaled to the record's"
+  credits: "CREDITS.md section 3l (0078 r14-neb-b); the card's rows name the reconstruction and that no astronomer has reviewed it"
+  by: "Space Radar maintainers"
+  date: 2026-10-26
+  astronomer: "not yet: the independent review is internal #785; the card says so"
+credits:
+  - "The Pleiades' reflection nebula as a lit volume of dust: reconstructed by Space Radar; the gas in front of the stars after Ritchey, Martinez & Federman 2006 (arXiv:astro-ph/0606644); the stars' places and magnitudes from SIMBAD (CDS); the phase function of Henyey & Greenstein 1941"
+  - "Its light: the photograph noao-m45, NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN (CC BY 4.0), the stars' halos subtracted by Space Radar"

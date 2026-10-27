@@ -43,6 +43,18 @@
 // The photograph is the truth from our side: the gas and the knots give way to it by its own share (info.photo),
 // so on our line of sight the Hubble picture is drawn, and 25 to 50° off it the reconstruction takes over.
 //
+// 0078 r14-neb-b: begin
+// EVERY RING-LIKE PLANETARY, NOT ONLY M57 (release 1.4.0 stage r14-neb-b). The module reads its hero's own profile
+// (env.profile: registry/deepsky-heroes/<id>.yaml): the light map (`light.file`, its photograph's row `light.row` and
+// its `peak`), the ring, the lobes and the halo, the knots' count and seed, the star's colour. Two options the Dumbbell
+// (M27, a thick equatorial ring seen nearly EDGE ON) needs and M57 does not: `disc.in_plane` (the semi-axes are the
+// ring's own radii in its plane, not the apparent ones) and `disc.window: point` (the ring's window is read at each
+// point's own radius in the disc's plane, not where our line crosses its middle plane: edge on, our line runs along
+// the plane). The halo carries light when its weight is above 0 (the Southern Ring's molecular halo), in a third
+// loop. And since the photographs are no longer drawn on the sky (Ivan, 2026-10-26: "no photos only realistic 3ds"),
+// T0 draws the model too (one step a layer at its middle), unless a profile sets `frame.min_tier`.
+// 0078 r14-neb-b: end
+//
 // LOOKS. The light is shown with the exposure's own stretch, as the photograph is. The photograph's colours are
 // NARROWBAND (helium, oxygen, hydrogen, nitrogen and sulphur filters given colours by ESA/Hubble): not what an
 // eye sees, under every look, and the registry says so. Nothing moves, under any look: the expansion (19 and
@@ -65,6 +77,21 @@ const MAX_N = 24;          // samples a layer at most (48 march steps at Ultra)
 const KNOTS_BY_TIER = [150, 600, 1000];
 const LIGHT_URL = '../../../images/deep/ring/ring-light.webp';
 const LIGHT_SIZE = [512, 512];
+// 0078 r14-neb-b: begin (each profile's own light map and its photograph's row)
+// The light is the profile's `part: light` layer (the generator mirrors `layers`, not a top-level `light:`); M57's
+// profile has none and keeps W3-b's map.
+const lightOf = (P) => (P && Array.isArray(P.layers) && P.layers.find((l) => l && l.part === 'light')) || (P && P.light) || null;
+/** The light map's URL, relative to this module, from the light layer's `file` (M57's when there is none). Pure. */
+export const lightUrlOf = (P) => { const L = lightOf(P); return L && L.file ? `../../../${String(L.file).replace(/^site\//, '')}` : LIGHT_URL; };
+/** The photograph's row (data/nebulae.js) the light map was baked from: its `row`, M57's by default. Pure. */
+export const lightRowOf = (P) => { const L = lightOf(P); return NEBULAE.find((r) => r.id === ((L && L.row) || 'm57')) || null; };
+/** The light map's brightest luminance (its manifest's peak_lum_p99): its `peak`, else SHAPE.peak (M57's). Pure. */
+export const peakOf = (P) => { const L = lightOf(P); return L && Number(L.peak) > 0 ? Number(L.peak) : SHAPE.peak; };
+/** The light map's size in pixels (its `size`), for the GPU estimate. Pure. */
+export const lightSizeOf = (P) => { const L = lightOf(P); return L && Array.isArray(L.size) ? L.size : LIGHT_SIZE; };
+/** The tier below which the model is not drawn (`frame.min_tier`, 0 by default since r14-neb-b). Pure. */
+export const minTierOf = (P) => (P && P.frame && Number.isFinite(Number(P.frame.min_tier)) ? Number(P.frame.min_tier) : 0);
+// 0078 r14-neb-b: end
 // The shape of the light inside the layers. ONE table: the GLSL below is written from it.
 export const SHAPE = {
   slab: 1.6,                // the disc's box reaches 1.6 of its half-thickness: exp(-1.6⁴) is 0.15 % of its middle
@@ -102,13 +129,19 @@ export function geometryOf(profile = PROFILE) {
   const m = skyDir(Number(disc.major_pa_deg) || 0);
   const e1 = norm([m[0] - a[0] * dot(m, a), m[1] - a[1] * dot(m, a), m[2] - a[2] * dot(m, a)]);
   const e2 = cross(a, e1);
-  const A = ly(disc.semi_major_arcsec) / Math.cos(tilt * D2R), B = ly(disc.semi_minor_arcsec), H = ly(disc.thickness_arcsec / 2);
+  // 0078 r14-neb-b: `in_plane` gives the ring's own radii in its plane (an edge-on ring's apparent minor axis is its thickness)
+  const inPlane = !!disc.in_plane;
+  const A = ly(disc.semi_major_arcsec) / (inPlane ? 1 : Math.cos(tilt * D2R)), B = ly(disc.semi_minor_arcsec), H = ly(disc.thickness_arcsec / 2);
   const qIn = Number(disc.inner_q) || 0.5;
   const cq = Number(lobes.equator_q) || qIn, Lp = ly(lobes.polar_semi_axis_arcsec);
   const Ri = ly(halo.inner_arcsec), Ro = ly(halo.outer_arcsec);
-  const row = NEBULAE.find((r) => r.id === 'm57') || { ra_deg: 283.39685, dec_deg: 33.02893, width_arcmin: 2.1, height_arcmin: 2.1, north_deg: 11.2 };
+  const row = lightRowOf(P) || { ra_deg: 283.39685, dec_deg: 33.02893, width_arcmin: 2.1, height_arcmin: 2.1, north_deg: 11.2 };
   const g = {
     distanceLy: dist, axis: a, e1, e2, A, B, H, qIn, tiltDeg: tilt,
+    // 0078 r14-neb-b: an edge-on ring's window is read at the point, over a softer edge of its own (`disc.edge`, in the
+    // ring's radii): its rim runs deep along our line, and a ray a few degrees off it must not cross the rim in one step
+    point: disc.window === 'point', edgeP: Math.max(SHAPE.edge, Number(disc.edge) || SHAPE.edge),
+    lean: disc.window === 'point' ? Math.max(SHAPE.edge, Number(disc.edge) || SHAPE.edge) - SHAPE.edge : SHAPE.lean,
     // the disc in its own scaled frame: (x/A, y/B) round, z in half-thicknesses
     Sd: rows3(scaled(e1, 1 / A), scaled(e2, 1 / B), scaled(a, 1 / H)),
     // the lobes: a spheroid as wide as the cavity (cq of the ring's ellipse) and Lp along the axis
@@ -121,6 +154,7 @@ export function geometryOf(profile = PROFILE) {
       qFrom: Number(knots.q_from) || 0.72, qTo: Number(knots.q_to) || 1.0,
       head: (Number(knots.head_au) || 150) / 2 * AU_LY, tail: (Number(knots.tail_au) || 300) * AU_LY,
       count: knots.count_drawn || KNOTS_BY_TIER, minPx: Number(knots.min_px) || 2.2,
+      seed: Number(knots.seed) || 6720, // 0078 r14-neb-b
     },
     starK: Number(star.temp_k) || 135000,
   };
@@ -129,7 +163,8 @@ export function geometryOf(profile = PROFILE) {
   // second look: the fringe is the disc's window, and the halo's grain and cost went with it).
   const c1 = Math.max(Lp, SHAPE.slab * H) * 1.02;
   const kk = 1 / Math.sqrt(Math.max(0.05, 1 - (SHAPE.slab * H / c1) ** 2));
-  g.bA = SHAPE.boundQ * A * kk; g.bB = SHAPE.boundQ * B * kk; g.bC = c1;
+  const bq = g.point ? Math.max(SHAPE.boundQ, SHAPE.outer + g.edgeP + 0.05) : SHAPE.boundQ; // 0078 r14-neb-b: its softer rim inside
+  g.bA = bq * A * kk; g.bB = bq * B * kk; g.bC = c1;
   if (g.w[2] > 0) { g.bA = Math.max(g.bA, Ro); g.bB = Math.max(g.bB, Ro); g.bC = Math.max(g.bC, Ro); }
   g.Sb = rows3(scaled(e1, 1 / g.bA), scaled(e2, 1 / g.bB), scaled(a, 1 / g.bC));
   g.bound = Math.max(g.bA, g.bB, g.bC);
@@ -160,9 +195,19 @@ function windowAt(g, x, y) {
   return windowOf(g, Math.hypot(q0[0] + qz[0] * z, q0[1] + qz[1] * z));
 }
 
+// 0078 r14-neb-b: begin
+/** `window: point`: the ring's window at the point's own radius in the disc's plane (an edge-on ring). Pure. */
+function windowPoint(g, p) {
+  const q = Math.hypot(...mul(g.Sd, p).slice(0, 2)), e = g.edgeP || SHAPE.edge;
+  return smooth(q, g.qIn - e, g.qIn + e) * (1 - smooth(q, SHAPE.outer - e, SHAPE.outer + e));
+}
+/** The disc's window for a step at point p of a ray: along our line (M57's) or at the point (`window: point`). Pure. */
+const windowFor = (g, p) => (g.point ? windowPoint(g, p) : windowAt(g, p[0], p[1]));
+// 0078 r14-neb-b: end
 /** The disc's span along a ray: in its scaled frame the ellipses are circles (t keeps its meaning). Pure. */
 function discSpan(g, ro, rd, t0, t1) {
-  return layerSpan(mul(g.Sd, ro), mul(g.Sd, rd), Z, SHAPE.slab, Math.max(0, g.qIn - SHAPE.edge - SHAPE.lean), SHAPE.outer + SHAPE.edge + SHAPE.lean, t0, t1);
+  const lean = g.lean === undefined ? SHAPE.lean : g.lean; // 0078 r14-neb-b
+  return layerSpan(mul(g.Sd, ro), mul(g.Sd, rd), Z, SHAPE.slab, Math.max(0, g.qIn - SHAPE.edge - lean), SHAPE.outer + SHAPE.edge + lean, t0, t1);
 }
 /** A quadric's quadratic along a ray, about its point of closest approach: s² = a·τ² + b2, τ = t - tc. Pure. */
 function quadAlong(S, ro, rd) {
@@ -205,7 +250,19 @@ function stepSum(s, a, b, fn) {
 export function columnsAt(g, x, y) {
   const ro = [x, y, 2 * g.bound], rd = [0, 0, -1];
   const qd = mul(g.Sd, rd);
-  const disc = windowAt(g, x, y) * 2 * quarticCdf(SHAPE.slab) / Math.abs(qd[2]);
+  let disc;
+  if (g.point) {
+    // 0078 r14-neb-b: the window changes along our line: the disc's density summed over its span (the midpoint rule
+    // at 160 steps; the GLSL's steps are the same density at their jittered points)
+    const s = discSpan(g, ro, rd, 0, 4 * g.bound);
+    const L = spanLen(s), n = 160;
+    disc = 0;
+    if (L > 0) for (let i = 0; i < n; i++) {
+      const t = spanT(s, (i + 0.5) * L / n);
+      const p = [ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t];
+      disc += windowPoint(g, p) * Math.exp(-(mul(g.Sd, p)[2] ** 4)) * L / n;
+    }
+  } else disc = windowAt(g, x, y) * 2 * quarticCdf(SHAPE.slab) / Math.abs(qd[2]);
   const L = quadAlong(g.Sl, ro, rd);
   const lobes = L.b2 < 1 && L.a > 0 ? 2 * lobeF(L, Math.sqrt((1 - L.b2) / L.a)) : 0;
   const rho2 = x * x + y * y;
@@ -239,10 +296,10 @@ export function columnsFrom(map, x, y) {
 }
 /**
  * Samples a layer from the coordinator's n: the disc 0.75 of it, the lobes 0.4 (their light is smooth along a ray), the
- * halo a quarter (it carries light only while its weight is above 0). On T0 n is 1: one step a layer at its middle. Each step's density is integrated exactly, so fewer steps
+ * halo a half (it carries light only while its weight is above 0). On T0 n is 1: one step a layer at its middle. Each step's density is integrated exactly, so fewer steps
  * mean grain, never a wrong column. GLSL main() takes the same. Pure.
  */
-export const layerSamples = (n) => [Math.max(1, Math.round(n * 0.75)), Math.max(1, Math.round(n * 0.4)), Math.max(1, Math.round(n / 4))];
+export const layerSamples = (n) => [Math.max(1, Math.round(n * 0.75)), Math.max(1, Math.round(n * 0.4)), Math.max(1, Math.round(n / 2))]; // 0078 r14-neb-b: the halo half (it carries light only in the Southern Ring and the Dumbbell, where a quarter was grain)
 export const haloSamples = (n) => layerSamples(n)[2];
 
 /** Each layer's spans along a ray, and the step integral of its density over span coordinates [a, b]. Pure. */
@@ -252,7 +309,9 @@ function layersAlong(g, ro, rd, t0, t1) {
   const tc = -dot(ro, rd), rho2 = Math.max(0, dot(ro, ro) - tc * tc);
   const ls = quadSpan(g.Sl, ro, rd, t0, t1);
   return [
-    { s: discSpan(g, ro, rd, t0, t1), step: (s, a, b, p) => windowAt(g, p[0], p[1]) * slabIntegral(s, a, b, q0[2], qd[2]) },
+    // 0078 r14-neb-b: with the window at the point (`window: point`), the step is the density AT the sample times the step's
+    // length: unbiased under the jitter (the window times the slab's exact integral is not, where both change in one step)
+    { s: discSpan(g, ro, rd, t0, t1), step: (s, a, b, p) => (g.point ? windowPoint(g, p) * Math.exp(-(mul(g.Sd, p)[2] ** 4)) * (b - a) : windowAt(g, p[0], p[1]) * slabIntegral(s, a, b, q0[2], qd[2])) },
     { s: ls ? [ls[0], ls[1], ls[1], ls[1]] : null, step: (s, a, b) => stepSum(s, a, b, (ta, tb) => lobeF(L, tb - L.tc) - lobeF(L, ta - L.tc)) },
     { s: shellSpan(g.So, g.Si, ro, rd, t0, t1), step: (s, a, b) => stepSum(s, a, b, (ta, tb) => haloF(g, rho2, tb - tc) - haloF(g, rho2, ta - tc)) },
   ];
@@ -342,7 +401,7 @@ export function paletteFor(gain = 1, profile = PROFILE) {
 }
 
 /** The knots, seeded, in the outer part of the ring: {pos: Float32Array(3n), knot: Float32Array(4n)}. Pure. */
-export function knotsOf(g, n, seed = 6720) {
+export function knotsOf(g, n, seed = (g.knots && g.knots.seed) || 6720) {
   const { rand, gauss } = seeded(seed);
   const pos = new Float32Array(3 * n), knot = new Float32Array(4 * n);
   const K = g.knots;
@@ -376,7 +435,9 @@ const GAS_FRAG = /* glsl */ `
 uniform vec3 uCam;        // the camera in the sky frame, light-years (CPU, float64, each frame)
 uniform mat3 uSd;         // the disc's scaled frame (rows: major / A, minor / B, axis / H)
 uniform mat3 uSl;         // the lobes' spheroid
-uniform vec4 uDisc;       // its box in half-thicknesses, the cavity's edge in the ring's radii, -, -
+uniform vec4 uDisc;       // its box in half-thicknesses, the cavity's edge in the ring's radii, the window's mode (1: at the point), its lean
+uniform vec2 uHalo;       // 0078 r14-neb-b: the halo's inner and outer radii (ly)
+uniform float uEdgeP;     // 0078 r14-neb-b: an edge-on ring's softer rim (ring.js windowPoint)
 uniform vec3 uW;          // the layers' weights: disc, lobes, halo
 uniform vec4 uUv;         // the light map: u0, v0, 1 / W, 1 / H
 uniform vec2 uRot;        // and its turn: cos r, sin r (the archive's north)
@@ -407,7 +468,7 @@ vec3 lightAt( vec2 xy ) {
   return vec3( y ) + ( c - vec3( y ) ) * uSat;
 }
 vec4 discSpan( vec3 ro, vec3 rd, float t0, float t1 ) {
-  return layerSpan( uSd * ro, uSd * rd, vec3( 0.0, 0.0, 1.0 ), ${f3(SHAPE.slab)}, max( 0.0, uDisc.y - ${f3(SHAPE.edge + SHAPE.lean)} ), ${f3(SHAPE.outer + SHAPE.edge + SHAPE.lean)}, t0, t1 );
+  return layerSpan( uSd * ro, uSd * rd, vec3( 0.0, 0.0, 1.0 ), ${f3(SHAPE.slab)}, max( 0.0, uDisc.y - ${f3(SHAPE.edge)} - uDisc.w ), ${f3(SHAPE.outer + SHAPE.edge)} + uDisc.w, t0, t1 );
 }
 float windowOf( float q ) {
   return smoothstep( uDisc.y - ${f3(SHAPE.edge)}, uDisc.y + ${f3(SHAPE.edge)}, q ) * ( 1.0 - smoothstep( ${f3(SHAPE.outer - SHAPE.edge)}, ${f3(SHAPE.outer + SHAPE.edge)}, q ) );
@@ -418,6 +479,32 @@ float windowAt( vec2 xy ) {
   vec3 qz = uSd * vec3( 0.0, 0.0, 1.0 );
   float z = -q0.z / qz.z;
   return windowOf( length( q0.xy + qz.xy * z ) );
+}
+// 0078 r14-neb-b: an edge-on ring's window, at the point's own radius in the disc's plane (ring.js windowPoint)
+float windowFor( vec3 p ) {
+  if ( uDisc.z < 0.5 ) return windowAt( p.xy );
+  float q = length( ( uSd * p ).xy );
+  return smoothstep( uDisc.y - uEdgeP, uDisc.y + uEdgeP, q ) * ( 1.0 - smoothstep( ${f3(SHAPE.outer)} - uEdgeP, ${f3(SHAPE.outer)} + uEdgeP, q ) );
+}
+// 0078 r14-neb-b: the halo, a shell between two spheres: its span (two pieces) and its density's exact integral (ring.js haloF)
+vec4 haloSpan( vec3 ro, vec3 rd, float t0, float t1 ) {
+  float tc = -dot( ro, rd );
+  float r2 = dot( ro, ro ) - tc * tc;
+  float ro2 = uHalo.y * uHalo.y, ri2 = uHalo.x * uHalo.x;
+  if ( r2 >= ro2 ) return vec4( 0.0 );
+  float ho = sqrt( ro2 - r2 );
+  float a = max( t0, tc - ho ), b = min( t1, tc + ho );
+  if ( b <= a ) return vec4( 0.0 );
+  if ( r2 >= ri2 ) return vec4( a, b, b, b );
+  float hi = sqrt( ri2 - r2 );
+  return vec4( a, max( a, min( b, tc - hi ) ), min( b, max( a, tc + hi ) ), b );
+}
+float haloF( float rho2, float tau ) {
+  float t2 = tau * tau, ri2 = uHalo.x * uHalo.x, ro2 = uHalo.y * uHalo.y;
+  float n0 = ( ro2 - ri2 ) * ( ro2 - ri2 ) / 4.0;
+  float p1 = t2 * tau / 3.0 + rho2 * tau;
+  float p2 = t2 * t2 * tau / 5.0 + 2.0 * rho2 * t2 * tau / 3.0 + rho2 * rho2 * tau;
+  return ( -p2 + ( ri2 + ro2 ) * p1 - ri2 * ro2 * tau ) / n0;
 }
 // a quadric's quadratic along a ray about its closest point: (a, tc, b2), s^2 = a (t - tc)^2 + b2 (ring.js quadAlong)
 vec3 quadAlong( mat3 S, vec3 ro, vec3 rd ) {
@@ -497,7 +584,9 @@ void main() {
       float t = spanT( s, ( float( i ) + j ) * dt );
       vec3 p = ro + rd * t;
       vec3 cols = colsAt( p.xy );
-      float st = windowAt( p.xy ) * slabIntegral( s, float( i ) * dt, float( i + 1 ) * dt, zq, dzq );
+      // 0078 r14-neb-b: an edge-on ring's step is its density at the sample times the step (ring.js layersAlong)
+      float uq = zq + dzq * t;
+      float st = uDisc.z > 0.5 ? windowFor( p ) * exp( -uq * uq * uq * uq ) * dt : windowAt( p.xy ) * slabIntegral( s, float( i ) * dt, float( i + 1 ) * dt, zq, dzq );
       emitStep( col, T, lightAt( p.xy ), cols, uW.x, cols.x, st, uInside * smoothstep( 0.0, uNear, t ) );
     }
   }
@@ -518,7 +607,31 @@ void main() {
       emitStep( col, T, lightAt( p.xy ), cols, uW.y, cols.y, st, uInside * smoothstep( 0.0, uNear, t ) );
     }
   }
-  // (the halo carries no light since its weight is 0: no loop, no cost)
+  // ---- the halo: only while it carries light (M57's weight is 0: no loop, no cost); a quarter of the samples
+  if ( uW.z > 0.0 ) {
+    s = haloSpan( ro, rd, t0, t1 );
+    float Lh = spanLen( s );
+    if ( Lh > 0.0 ) {
+      float tc = -dot( ro, rd );
+      float rho2 = max( 0.0, dot( ro, ro ) - tc * tc );
+      int nh = max( 1, int( float( uN ) * 0.5 + 0.5 ) );
+      float dt = Lh / float( nh );
+      float T = 1.0;
+      for ( int i = 0; i < MAX_N; i++ ) {
+        if ( i >= nh ) break;
+        float ta = float( i ) * dt, tb = float( i + 1 ) * dt;
+        float t = spanT( s, ( float( i ) + j ) * dt );
+        vec3 p = ro + rd * t;
+        vec3 cols = colsAt( p.xy );
+        // the step through the span's pieces (ring.js stepSum)
+        float l1 = max( 0.0, s.y - s.x );
+        float st = 0.0;
+        if ( ta < l1 ) st += haloF( rho2, s.x + min( tb, l1 ) - tc ) - haloF( rho2, s.x + ta - tc );
+        if ( tb > l1 ) st += haloF( rho2, s.z + tb - l1 - tc ) - haloF( rho2, s.z + max( ta, l1 ) - l1 - tc );
+        emitStep( col, T, lightAt( p.xy ), cols, uW.z, cols.z, st, uInside * smoothstep( 0.0, uNear, t ) );
+      }
+    }
+  }
   col = capLight( col );
   // additive (SRC_ALPHA, ONE): alpha 1 adds the light whole
   gl_FragColor = vec4( col * uGain * uShare, 1.0 );
@@ -569,14 +682,19 @@ export function createHero(THREE, env = {}) {
   group.name = `deep-hero-${(env.profile && env.profile.id) || 'm57'}`;
   const profile = env.profile && Array.isArray(env.profile.layers) && env.profile.layers.some((l) => l && l.part === 'disc') ? env.profile : PROFILE;
   // Tier 0: photograph only (the coordinator drops the hero and draws M57 as main does). See tierFloor.
-  if (typeof env.quality === 'function') tierFloor(profile, env.quality, env.record);
+  // 0078 r14-neb-b: only below the profile's `frame.min_tier` (0 by default: the photographs are not drawn any more)
+  const minTier = minTierOf(profile);
+  if (minTier > 0 && typeof env.quality === 'function') tierFloor(profile, env.quality, env.record, minTier);
+  const hid = String(profile.id || 'm57');
+  const peak = peakOf(profile);
   const g = geometryOf(profile);
   const placer = skyPlacer(THREE, group, env);
   const sky = placer.sky;
 
   // --- the light: the photograph without its stars (scripts/build_deep_ring.py). Fetched with the hero.
-  const light = lightTexture(THREE, new URL(LIGHT_URL, import.meta.url).href, 'Ring');
+  const light = lightTexture(THREE, new URL(lightUrlOf(profile), import.meta.url).href, hid); // 0078 r14-neb-b
   const pal0 = paletteFor(1, profile);
+  const lightSize = lightSizeOf(profile); // 0078 r14-neb-b
   // --- the columns along our line, tabulated once (half floats, filtered linearly)
   const cmap = columnMap(g);
   const half = new Uint16Array(cmap.data.length);
@@ -596,20 +714,20 @@ export function createHero(THREE, env = {}) {
     uniforms: {
       uCam: { value: new THREE.Vector3(0, 0, 10) },
       uSd: { value: M3(THREE, g.Sd) }, uSl: { value: M3(THREE, g.Sl) },
-      uDisc: { value: new THREE.Vector4(SHAPE.slab, g.qIn, 0, 0) }, uW: { value: new THREE.Vector3(...g.w) },
+      uDisc: { value: new THREE.Vector4(SHAPE.slab, g.qIn, g.point ? 1 : 0, g.lean) }, uW: { value: new THREE.Vector3(...g.w) }, uHalo: { value: new THREE.Vector2(g.Ri, g.Ro) }, uEdgeP: { value: g.edgeP },
       uUv: { value: new THREE.Vector4(g.uv.u0, g.uv.v0, 1 / g.uv.W, 1 / g.uv.H) }, uRot: { value: new THREE.Vector2(g.uv.cos, g.uv.sin) },
-      uBound: { value: g.bound }, uSb: { value: M3(THREE, g.Sb) }, uJit: { value: 1 }, uInside: { value: 1 }, uNear: { value: SHAPE.nearFade * g.Lp }, uN: { value: 8 }, uLight: { value: light.tex }, uCols: { value: colTex }, uColScale: { value: 1 / (2 * cmap.extent) }, uPeak: { value: SHAPE.peak },
+      uBound: { value: g.bound }, uSb: { value: M3(THREE, g.Sb) }, uJit: { value: 1 }, uInside: { value: 1 }, uNear: { value: SHAPE.nearFade * g.Lp }, uN: { value: 8 }, uLight: { value: light.tex }, uCols: { value: colTex }, uColScale: { value: 1 / (2 * cmap.extent) }, uPeak: { value: peak },
       uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation }, uShare: { value: 0 }, uGain: { value: 1 },
     },
   });
-  gasMat.name = 'deep-m57-gas';
+  gasMat.name = `deep-${hid}-gas`;
   const gas = new THREE.Mesh(gasGeo, gasMat);
   gas.name = `${group.name}-shells`;
   gas.renderOrder = -1;
   sky.add(gas);
 
   // --- the knots (built for the tier; rebuilt if the tier changes)
-  const knotMat = knotMaterial(THREE, { minPx: g.knots.minPx, cusp: pal0.cusp, name: 'deep-m57' });
+  const knotMat = knotMaterial(THREE, { minPx: g.knots.minPx, cusp: pal0.cusp, name: `deep-${hid}` });
   let knots = null, knotTier = -1, knotCount = 0, knotBytes = 0;
   function buildKnots(tier) {
     if (knots && knotTier === tier) return;
@@ -624,7 +742,7 @@ export function createHero(THREE, env = {}) {
   buildKnots(1);
 
   // --- the white dwarf
-  const { mesh: star, mat: starMat, geo: starGeo } = starMesh(THREE, pal0.star, 'deep-m57');
+  const { mesh: star, mat: starMat, geo: starGeo } = starMesh(THREE, pal0.star, `deep-${hid}`);
   star.name = `${group.name}-star`;
   sky.add(star);
 
@@ -647,7 +765,7 @@ export function createHero(THREE, env = {}) {
       const tier = Number.isFinite(info.tier) ? info.tier : 1;
       if (tier !== tierNow || !knots) { tierNow = tier; buildKnots(tier); }
       const { vw, vh } = viewSize();
-      const sh = sharesFor({ level: tier >= 1 ? levelShare : 0, rPx: info.rPx, photo: info.photo, viewH: vh });
+      const sh = sharesFor({ level: tier >= minTier ? levelShare : 0, rPx: info.rPx, photo: info.photo, viewH: vh }); // 0078 r14-neb-b
       last = { ...sh, photo: Number(info.photo) || 0 };
       samples = samplesFor({ tier, steps: info.steps });
       const gain = Number.isFinite(info.gain) ? info.gain : 1;
@@ -655,7 +773,7 @@ export function createHero(THREE, env = {}) {
         palette = { ...paletteFor(gain, profile), gainIn: gain };
         setColour(knotMat.uniforms.uCusp, palette.cusp); setColour(starMat.uniforms.uColour, palette.star);
         gasMat.uniforms.uGamma.value = palette.gamma; gasMat.uniforms.uSat.value = palette.saturation;
-        gasMat.uniforms.uPeak.value = SHAPE.peak ** palette.gamma; // the peak in the same stretch as the light
+        gasMat.uniforms.uPeak.value = peak ** palette.gamma; // the peak in the same stretch as the light
       }
       const look = info.look || 'film';
       const gu = gasMat.uniforms;
@@ -667,7 +785,7 @@ export function createHero(THREE, env = {}) {
       knotMat.uniforms.uShare.value = drawnUnder(look, UNDER_MEASURED.knots) ? sh.knots : 0;
       starMat.uniforms.uShare.value = sh.star;
       gas.visible = gu.uShare.value > 0.002;
-      knots.visible = knotMat.uniforms.uShare.value > 0.002;
+      knots.visible = knotCount > 0 && knotMat.uniforms.uShare.value > 0.002;
       star.visible = sh.star > 0.002;
       knotMat.uniforms.uViewH.value = vh;
       starMat.uniforms.uView.value.set(vw, vh);
@@ -681,7 +799,7 @@ export function createHero(THREE, env = {}) {
     stats: () => ({
       level, share: Math.round(last.gas * 100) / 100, photo: Math.round(last.photo * 100) / 100, star: Math.round(last.star * 100) / 100,
       light: light.state(), samples, tier: tierNow, palette: palette.mode, knots: knotCount, meshes: 3, points: knotCount, textures: light.tex ? 2 : 1, front: 'exact',
-      bytes: knotBytes + gasGeo.getAttribute('position').array.byteLength + QUAD_BYTES * 2 + half.byteLength + (light.tex ? Math.round(LIGHT_SIZE[0] * LIGHT_SIZE[1] * 4 * 4 / 3) : 0),
+      bytes: knotBytes + gasGeo.getAttribute('position').array.byteLength + QUAD_BYTES * 2 + half.byteLength + (light.tex ? Math.round(lightSize[0] * lightSize[1] * 4 * 4 / 3) : 0),
     }),
     dispose() {
       if (knots) knots.geometry.dispose();
