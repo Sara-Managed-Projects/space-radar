@@ -203,7 +203,7 @@ textures:
       - tier: 0
         file: site/textures/2k_milky_way_model.webp
         px: [2048, 1024]
-        bytes: 92956
+        bytes: 88486
         format: rgb
         licence: "MIT (this project): rendered from our own model, no photograph in it"
         credit: "Milky Way: Space Radar's own model (scripts/build-milkyway-sky.mjs)"

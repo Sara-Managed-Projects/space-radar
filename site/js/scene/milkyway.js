@@ -135,11 +135,11 @@ export const CLOUDS = [
   // name,               l,     b,     pc,  dl,  db,  tilt, Av
   // The Great Rift, from Sagittarius to Cygnus, splitting the band lengthwise: the Aquila Rift's front at 225 pc, the
   // Cygnus Rift's 600-800 pc. Long and thin, overlapping, just north of the plane where they are.
-  ['Great Rift (Ophiuchus)',  4,  1.6,  190,  22,  3.2,   4,  2.4],
-  ['Great Rift (Serpens)',   20,  1.4,  225,  24,  3.6,   2,  2.8],
-  ['Aquila Rift',            36,  1.2,  250,  24,  4.0,  -2,  2.8],
-  ['Great Rift (Vulpecula)', 54,  0.8,  450,  26,  3.4,   1,  2.4],
-  ['Cygnus Rift',            72,  1.0,  650,  26,  4.0,  -2,  2.6],
+  ['Great Rift (Ophiuchus)',  4,  1.6,  190,  22,  3.2,   4,  1.7],
+  ['Great Rift (Serpens)',   20,  1.4,  225,  24,  3.6,   2,  1.9],
+  ['Aquila Rift',            36,  1.2,  250,  24,  4.0,  -2,  1.9],
+  ['Great Rift (Vulpecula)', 54,  0.8,  450,  26,  3.4,   1,  1.7],
+  ['Cygnus Rift',            72,  1.0,  650,  26,  4.0,  -2,  1.8],
   ['Northern Coalsack',      85,  1.4,  700,  10,  4.5,   0,  1.8],
   ['Pipe Nebula',             0.5,  4.8,  163,   7,   1.6,  20,  1.8],
   ['Coalsack',              301.5, -1.0,  180,   6.5, 5,    0,  1.7],
@@ -483,7 +483,9 @@ export function skyDetail(cam, dir, opts = {}) {
     // its shape: two octaves of the noise in the cloud's own frame, ridged so it tears into filaments
     const n1 = nz(q[0] * 0.3 + g.centre[0], q[1] * 0.3, q[2] * 0.3);
     const n2 = nz(q[0] * 1.1 + 0.37, q[1] * 1.1 + g.centre[1], q[2] * 1.1);
-    const shape = smooth(0.4, 0.58, n1 + (n2 - 0.5) * 0.55) * 1.7; // ragged, tendrilled edges
+    const n3 = nz(q[0] * 3.1, q[1] * 3.1 + 0.71, q[2] * 3.1);
+    // ragged, feathered edges round a core that is always thick (the noise is nudged up towards the middle)
+    const shape = smooth(0.34, 0.66, n1 + (n2 - 0.5) * 0.5 + (n3 - 0.5) * 0.25 + 0.3 * Math.exp(-0.5 * m2)) * 1.6;
     tau += g.rho0 * col * shape;
   }
   // fine dust and star clouds along the band: samples at fixed distances, in the galaxy's own axes
@@ -524,7 +526,7 @@ export function stretch(L, gain = 1) {
 // number in each patch of sky follows the light the model gives that patch; where they are inside it is a
 // hash (illustrative: no catalogue star is among them, those are scene/starfield.js's). Two sizes of cell,
 // in galactic axes. Pure: the same stars in the bake and on the GPU (GRAIN_GLSL).
-export const GRAIN = { cells: [0.0007, 0.0024], rate: [90, 16], flux: [0.9, 2.4] };
+export const GRAIN = { cells: [0.0007, 0.0024], rate: [22, 10], flux: [1.6, 3.0] };
 function hash4(x, y, z) {
   // integer hash of a cell -> four numbers in [0, 1)
   let h = Math.imul((x + 4096) | 0, 73856093) ^ Math.imul((y + 4096) | 0, 19349663) ^ Math.imul((z + 4096) | 0, 83492791);
@@ -541,12 +543,12 @@ export function grainAt(dir, pix, c) {
     const cell = GRAIN.cells[k];
     const ix = Math.floor(dir[0] / cell), iy = Math.floor(dir[1] / cell), iz = Math.floor(dir[2] / cell);
     const h = hash4(ix, iy, iz);
-    if (h[0] > Math.min(0.9, GRAIN.rate[k] * Y)) continue;
-    const sx = (ix + 0.2 + 0.6 * h[1]) * cell, sy = (iy + 0.2 + 0.6 * h[2]) * cell, sz = (iz + 0.2 + 0.6 * h[3]) * cell;
+    if (h[0] > Math.min(0.6, GRAIN.rate[k] * Y)) continue;
+    const sx = (ix + 0.05 + 0.9 * h[1]) * cell, sy = (iy + 0.05 + 0.9 * h[2]) * cell, sz = (iz + 0.05 + 0.9 * h[3]) * cell;
     const n = Math.hypot(sx, sy, sz);
     const dx = dir[0] - sx / n, dy = dir[1] - sy / n, dz = dir[2] - sz / n;
     const sig = Math.max(pix * 0.55, cell * 0.06);
-    const f = GRAIN.flux[k] * Math.pow(h[0] / Math.min(0.9, GRAIN.rate[k] * Y) + 0.05, -0.6) * Math.pow(pix * 0.55 / sig, 2);
+    const f = GRAIN.flux[k] * Math.pow(h[0] / Math.min(0.6, GRAIN.rate[k] * Y) + 0.05, -0.6) * Math.pow(pix * 0.55 / sig, 2);
     g += f * Math.exp(-(dx * dx + dy * dy + dz * dz) / (2 * sig * sig));
   }
   return g;
@@ -719,9 +721,9 @@ float grainAt( vec3 dir, float pix, vec3 c ) {
     h = hashU( h ); float h1 = float( h ) / 4294967296.0;
     h = hashU( h ); float h2 = float( h ) / 4294967296.0;
     h = hashU( h ); float h3 = float( h ) / 4294967296.0;
-    float rate = min( 0.9, G_RATE[ k ] * Y );
+    float rate = min( 0.6, G_RATE[ k ] * Y );
     if ( h0 > rate ) continue;
-    vec3 s = normalize( ( vec3( i ) + 0.2 + 0.6 * vec3( h1, h2, h3 ) ) * cell );
+    vec3 s = normalize( ( vec3( i ) + 0.05 + 0.9 * vec3( h1, h2, h3 ) ) * cell );
     vec3 dd = dir - s;
     float sig = max( pix * 0.55, cell * 0.06 );
     float f = G_FLUX[ k ] * pow( h0 / rate + 0.05, -0.6 ) * pow( pix * 0.55 / sig, 2.0 );
@@ -755,7 +757,8 @@ void main() {
       vec3 q = oq + max( 0.0, -B / A ) * dq;
       float n1 = noise3( q * 0.3 + vec3( uCloudC[ i ].x, 0.0, 0.0 ) );
       float n2 = noise3( q * 1.1 + vec3( 0.37, uCloudC[ i ].y, 0.0 ) );
-      float shape = smooth01( 0.4, 0.58, n1 + ( n2 - 0.5 ) * 0.55 ) * 1.7;
+      float n3 = noise3( q * 3.1 + vec3( 0.0, 0.71, 0.0 ) );
+      float shape = smooth01( 0.34, 0.66, n1 + ( n2 - 0.5 ) * 0.5 + ( n3 - 0.5 ) * 0.25 + 0.3 * exp( -0.5 * m2 ) ) * 1.6;
       tau += S.w * col * shape;
     }
     float dtau = 0.0;
