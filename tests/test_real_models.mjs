@@ -454,5 +454,32 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
   } else if (made.length) problems.push('ui/cards.js could not be imported in node, so the card line of a generated model was not read');
 }
 
+// 0078 r14-m4: begin
+// TEN WEATHER AND EARTH-OBSERVATION DESIGNS (release 1.4.0 stage r14-m4; public #1114 to #1119, #1112, #1113): each number wears its file as
+// itself, built from dimensions, to the app's axes, not a class's shape; the neighbours that are not these designs do not.
+{
+  const sat = (norad, name, klass = 'satellite') => realModelFor({ id: `sat-${norad}`, name, klass, layer: 'active', meta: { noradId: norad } });
+  const mine = ['meteosat-msg.glb', 'fengyun-2.glb', 'mtg-i.glb', 'mtg-s.glb', 'insat-3d.glb', 'gk2a.glb', 'gk2b.glb', 'meteor-m2.glb', 'midori-2.glb', 'resurs-dk1.glb'];
+  for (const [norad, cat, name, file] of [[28912, 'METEOSAT-9 (MSG-2)', 'Meteosat-9', 'meteosat-msg.glb'], [38552, 'METEOSAT-10 (MSG-3)', 'Meteosat-10', 'meteosat-msg.glb'], [40732, 'METEOSAT-11 (MSG-4)', 'Meteosat-11', 'meteosat-msg.glb'],
+    [40367, 'FENGYUN 2G', 'Fengyun-2G', 'fengyun-2.glb'], [43491, 'FENGYUN 2H', 'Fengyun-2H', 'fengyun-2.glb'], [54743, 'METEOSAT-12 (MTG-I1)', 'Meteosat-12 (MTG-I1)', 'mtg-i.glb'], [64723, 'MTG-S1', 'MTG-S1', 'mtg-s.glb'],
+    [39216, 'INSAT-3D', 'INSAT-3D', 'insat-3d.glb'], [41752, 'INSAT-3DR', 'INSAT-3DR', 'insat-3d.glb'], [58990, 'INSAT-3DS', 'INSAT-3DS', 'insat-3d.glb'], [43823, 'GEO-KOMPSAT-2A', 'GEO-KOMPSAT-2A', 'gk2a.glb'], [45246, 'GEO-KOMPSAT-2B', 'GEO-KOMPSAT-2B', 'gk2b.glb'],
+    [40069, 'METEOR-M 2', 'Meteor-M No.2', 'meteor-m2.glb'], [44387, 'METEOR-M2 2', 'Meteor-M No.2-2', 'meteor-m2.glb'], [57166, 'METEOR-M2 3', 'Meteor-M No.2-3', 'meteor-m2.glb'], [59051, 'METEOR-M2 4', 'Meteor-M No.2-4', 'meteor-m2.glb'],
+    [27597, 'MIDORI II (ADEOS-II)', 'Midori II (ADEOS-II)', 'midori-2.glb'], [29228, 'RESURS-DK 1', 'Resurs-DK 1', 'resurs-dk1.glb']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && !got.build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  // MTG-I2 is in the live data under 100530, a number the parser once read as a placeholder: by name too, klass-gated, a whole word.
+  const i2 = realModelFor({ id: 'sat-100530', name: 'MTG-I2', klass: 'satellite', layer: 'active', meta: {} });
+  check(i2 && i2.file === 'mtg-i.glb' && i2.made === 'dimensions' && !i2.generic, `MTG-I2 wears the imager's file by name: ${JSON.stringify(i2)}`);
+  // None of the ten files reaches another craft: the first generation and MSG-1, the earlier Fengyun-2 numbers, other INSAT and GSAT craft, the Korean and Russian neighbours, debris.
+  for (const [name, klass, id] of [['METEOSAT-8 (MSG-1)', 'satellite', 27509], ['METEOSAT 7', 'satellite', 24932], ['FENGYUN 2F', 'satellite', 38049], ['FENGYUN 4A', 'satellite', 41882], ['INSAT-4A', 'satellite', 28911],
+    ['GSAT-30', 'satellite', 45026], ['GEO-KOMPSAT-1 (COMS 1)', 'satellite', 36744], ['KOMPSAT-5', 'satellite', 39227], ['METEOR 2-21', 'satellite', 12585], ['METEOR-M 1', 'satellite', 35865], ['RESURS-P 1', 'satellite', 39186],
+    ['MTG-I2 DEB', 'debris', 100531], ['METEOSAT-9 DEB', 'debris', 28913], ['MIDORI (ADEOS)', 'satellite', 24277], ['ADEOS-II DEB', 'debris', 27598]]) {
+    const got = sat(id, name, klass);
+    check(!got || !mine.includes(got.file), `${name} (klass ${klass}) wears none of r14-m4's files: ${JSON.stringify(got)}`);
+  }
+}
+// 0078 r14-m4: end
+
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
 console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);
