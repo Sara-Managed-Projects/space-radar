@@ -57,6 +57,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0077 W3-c: begin -->
 | The shapes of Zhurong, the Chang'e 3, 4, 5 and 6 landers, Yutu and Lunokhod 1 and 2 | built by us in code from published dimensions | CC0, CC BY 2.0 or CC BY 4.0 where a picture was used; ours | [3b-16](#3b-16-chinas-landers-and-rovers-and-the-lunokhods-built-from-dimensions--zhurong-change-3-and-4-yutu-change-5-and-6-lunokhod-1-and-2-2026-10-20) |
 <!-- 0077 W3-c: end -->
+<!-- 0078 r14-m2: begin -->
+| The shapes of Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER | built by us in code from published dimensions | published numbers (McDowell's GCAT, CC BY 4.0, and the makers' and operators' own pages) and artists' renders looked at only; CC0 where a photograph of a model was used; ours | numbers are facts; no picture is in the file; no logo or lettering |
+<!-- 0078 r14-m2: end -->
 <!-- 0077 W3-a: begin -->
 | The shapes of IRIS, TIMED, TRACERS, SERT 2 on its Agena and ISIS 1, and Hubble rebuilt | built by us in code from published dimensions | public domain or CC0 where a picture was used, CC BY 4.0 for one paper's figures; ours | [3b-16](#3b-16-nasa-science-craft-built-from-dimensions--iris-timed-tracers-sert-2-isis-1-2026-10-20) |
 <!-- 0077 W3-a: end -->
@@ -1442,6 +1445,36 @@ only (its row says so). `jwst.glb` is re-baked from NASA's larger (A) file with 
 | `hubble.glb` (408 KB) | Hubble as it has flown since SM4: silver foil, white NOBL and radiator panels, SA3 wings, door open | NASA's SM4 photographs (Commons, e.g. <https://commons.wikimedia.org/wiki/File:HST-SM4.jpeg>); NASA 3D Resources' Hubble (A) for proportions | public domain |
 
 <!-- 0077 W3-a: end -->
+<!-- 0078 r14-m2: begin -->
+## 3b-17. Six communications craft built from dimensions — Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER (2026-10-27)
+
+Release 1.4.0, stage r14-m2 (public #1121, #1122, #1123, #1154, #1155, #1156). Every file is built in code by this project, from the
+published numbers of each craft and the layout read off artists' renders that were LOOKED AT ONLY; no mesh and no picture of anyone else's
+is in a file. `registry/models.yaml` has a row per file with every number, the sentence it was read from and what is ours. Their cards say
+"shape built from published dimensions and pictures; details simplified". No free picture of any of these craft was found (Commons holds
+launch photographs and logos), which each row says.
+
+| File | What | What it was drawn from or compared with | Terms |
+|---|---|---|---|
+| `thuraya.glb` (109 KB) | Thuraya-2 and -3: a white box, a 12.25 x 16 m elliptical mesh reflector on a boom with a 128-horn feed array facing it, a 1.27 m C-band dish, two five-panel wings 40.4 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Boeing's launch release of 2003-06-06 (<https://boeing.mediaroom.com/2003-06-06-Launch-Set-for-Boeing-Built-Thuraya-2-Mobile-Communications-Satellite>); Wikipedia, Thuraya; Gunter's Space Page, Thuraya 2 (<https://space.skyrocket.de/doc_sdat/thuraya-2.htm>). The layout: an artist's render on Gunter's page, looked at only. The body, the panels' width and the reflector's place are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `inmarsat-4.glb` (90 KB) | Inmarsat-4: a gold box 2.9 x 2.3 x 7.0 m, a 9 m mesh reflector on a boom with a 120-horn feed array, two five-panel wings 45 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Astrium's press kit of 2005 and Northrop Grumman's page on the Astro Aerospace reflectors, read through a search result (<https://spaceref.com/?p=42959>); Gunter's Space Page, Inmarsat-4 (<https://space.skyrocket.de/doc_sdat/inmarsat-4.htm>). The layout: an artist's render on Gunter's page, looked at only. The panels' width and number, the reflector's place and the feed array are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `viasat-3.glb` (120 KB) | ViaSat-3: a white 702MP+ box, two wings of eight panels (two rows of four) 44 m tip to tip, a reflector on a truss boom. Drawn deployed as designed: F1's reflector did not open fully | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Viasat, 'ViaSat-3 Achieves Flight Configuration' (<https://www.viasat.com/news/latest-news/corporate/2022/viasat-3-achieves-flight-configuration/>), read 2026-10-27; Gunter's Space Page, ViaSat 3 (<https://space.skyrocket.de/doc_sdat/viasat-3.htm>). The layout: an artist's render on Gunter's page, looked at only. The body, the reflector (its diameter, place and boom) and the panels' width are ours: none is published | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `o3b.glb` (50 KB) | O3b (first generation): a gold box 1.7 x 4.0 x 1.3 m, twelve steerable Ka-band dishes on its Earth face, two wings of two panels, 12 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Gunter's Space Page, O3b (<https://space.skyrocket.de/doc_sdat/o3b.htm>); Wikipedia, O3b. The layout: an artist's render on Gunter's page, looked at only. The box's width and depth, the dishes' size and lean and the panels' width are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `globalstar-2.glb` (26 KB) | Globalstar second generation: a flat white and gold body, two round Earth-facing antennas, two wings of three panels, 12 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Gunter's Space Page, Globalstar-2 (<https://space.skyrocket.de/doc_sdat/globalstar-2.htm>); Wikipedia, Globalstar. The layout: an artist's render on Gunter's page, looked at only. The body's size, the antennas' size and the panels' width are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+| `o3b-mpower.glb` (37 KB) | O3b mPOWER: a white box with a phased-array Earth face and two four-panel wings on yoke arms, 27 m tip to tip | J. McDowell, General Catalog of Artificial Space Objects (GCAT), <https://planet4589.org/space/gcat/>, CC BY 4.0, satcat.tsv of 2026-10-26 (read 2026-10-27); Gunter's Space Page, O3b mPOWER (<https://space.skyrocket.de/doc_sdat/o3b-mpower1.htm>); Wikipedia, O3b mPOWER; "O3b mPower Satellite Model" by Blervis (<https://commons.wikimedia.org/wiki/File:O3b_mPower_Satellite_Model.jpg>), a photograph of a desk model, CC0 (read 2026-10-27). The face's elements and the panels' width are ours | numbers are facts (GCAT is CC BY 4.0, credited here); the render is looked at only and is not in the file |
+
+**Credit lines:**
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`;
+`3D model: built by Space Radar from published dimensions (McDowell's GCAT, CC BY 4.0; no free picture of the craft)`
+
+No logo, lettering, flag or insignia is on any of the six. Thuraya, Inmarsat, Viasat, SES, Globalstar, Boeing, Airbus and Thales Alenia Space
+do not endorse Space Radar, and none of them made or approved these shapes.
+<!-- 0078 r14-m2: end -->
+
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
