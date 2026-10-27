@@ -243,6 +243,7 @@ satisfies that with:
 | `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
 | `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
+| `2k_pluto_relief.webp` | Pluto (relief) | Public domain | [USGS Astrogeology Science Center, New Horizons global digital elevation model (P. Schenk et al.)](https://astrogeology.usgs.gov/search/map/pluto_new_horizons_lorri_mvic_global_dem_300m), local relief only, one grey channel, on the encounter hemisphere (45 % of the sphere has heights) <!-- 0078 r14-pluto --> |
 | `2k_venus_radar.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), one grey channel (the orange is added when it is drawn) |
 | `2k_venus_relief.webp` | Venus, the relief under the radar ground | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar altimeter, Venus Magellan Global Topography 4641 m)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_Topography_Global_4641m_v02.lbl), local relief only, one grey channel |
 | `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
@@ -309,9 +310,10 @@ and information are considered to be in the U.S. Public Domain", usgs.gov, *Copy
 Credits*) and from NASA maps mirrored on Wikimedia Commons, where each file's page says public
 domain. Public-domain works need no credit, but they get one anyway. `scripts/build-textures.py`
 (`--only moons`) remakes every one of them but Triton's and Pluto's from its original, and every map
-was changed. (Pluto's, since 2026-10-12, is NASA's own global colour map, Photojournal PIA11707, made
-by `scripts/build_pluto_map.py`: its colours are enhanced, as NASA published them, and its card says
-so. The list below is about the others.)
+was changed. <!-- 0078 r14-pluto: begin -->(Pluto's and Charon's, since 2026-10-27, are made by
+`scripts/build_pluto_map.py` in natural colour from the red and blue light New Horizons' colour camera
+measured, Pluto's on NASA's own global map, Photojournal PIA11707, and their unphotographed south is
+modelled, not plain: their rows say how, and so do their cards. The list below is about the others.)<!-- 0078 r14-pluto: end -->
 
 - resized (the width is in `registry/textures.yaml`; no file is over 250 kB) and, where the original
   is centred on longitude 180, rolled half a turn so longitude 0, the side that faces the planet,
@@ -329,8 +331,9 @@ so. The list below is about the others.)
   build prints the figure and `registry/textures.yaml` carries it under `make:`);
 - **where nobody has looked, nothing is drawn.** The areas with no data in the original (the last
   column below is the share of the sphere that has data) are filled with the world's flat colour:
-  the northern halves of Uranus's moons, which were in darkness when Voyager 2 passed in 1986, the
-  far south of Pluto and Charon, part of Triton. The card of each says so.
+  the northern halves of Uranus's moons, which were in darkness when Voyager 2 passed in 1986, <!-- 0078 r14-pluto: begin -->and
+  part of Triton. The card of each says so. (Pluto's and Charon's far south, dark in 2015, is modelled
+  since 2026-10-27: a faint texture in the colours of the land above it, and their cards say so.)<!-- 0078 r14-pluto: end -->
 
 | File | Used for | Licence | Source | Mapped |
 |---|---|---|---|---|
@@ -353,8 +356,8 @@ so. The list below is about the others.)
 | `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
 | `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
 | `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
-| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707)](https://science.nasa.gov/image-detail/amf-pia11707): NASA's own map, made from three of the colour camera's filters, none of them green; enhanced colour, not what an eye would see, and the card says so. Resized, rolled, brightness taken to the flat colour's; the unimaged south filled plain and feathered (`scripts/build_pluto_map.py`) | 78 % |
-| `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 74 % |
+| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707)](https://science.nasa.gov/image-detail/amf-pia11707), recoloured with [the New Horizons MVIC colour mosaic (NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl): NASA's map is the picture; its colours are taken to natural colour, red from the camera's red filter and blue from its blue one as the PDS mosaic measured them, green (it had no green filter) halfway between them, made 2.6 times as strong and the contrast 1.25 times, then matched shade by shade to NASA's colour picture of this face, PIA19952; the side photographed only from far off softened; the unimaged south modelled (`scripts/build_pluto_map.py`) | 78 % <!-- 0078 r14-pluto --> |
+| `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): natural colour from the red and blue filters, green (it had no green filter) halfway between them, made 2.6 times as strong (Mordor Macula's red cap); the detail from the black-and-white mosaic, by its ratio to its own blur; the unimaged south modelled (`scripts/build_pluto_map.py`) | 73 % <!-- 0078 r14-pluto --> |
 | `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
 
 **Beyond these twenty, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
@@ -419,7 +422,8 @@ checked against this list by `scripts/check_registry.py`):
 - Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
-- Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707), public domain
+- Pluto map: NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute (New Horizons global colour map, Photojournal PIA11707, in natural colour from the New Horizons MVIC colour mosaic, NASA Planetary Data System), public domain <!-- 0078 r14-pluto -->
+- Pluto relief: USGS Astrogeology Science Center, New Horizons global digital elevation model (P. Schenk et al.; NASA/Johns Hopkins University Applied Physics Laboratory/Southwest Research Institute), public domain, local relief only <!-- 0078 r14-pluto -->
 - Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
 - Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 

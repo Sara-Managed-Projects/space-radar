@@ -252,12 +252,51 @@ export function litOffset(sun, up, phase = ARRIVAL_PHASE, prefer = null) {
     side = { x: u.y * s.z - u.z * s.y, y: u.z * s.x - u.x * s.z, z: u.x * s.y - u.y * s.x };
     l = Math.hypot(side.x, side.y, side.z);
   }
+  // 0078 r14-pluto: begin. A world whose face is to be CENTRED (`look.face.centre`, Pluto's heart) is met
+  // looking straight down at that face whenever the face is lit, as NASA's PIA19952 met Pluto.
+  if (prefer && prefer.centre) {
+    const f = faceCentredOffset(s, prefer);
+    if (f) return f;
+  }
+  // 0078 r14-pluto: end
   const c = Math.cos(phase);
   let k = Math.sin(phase) / l;
   if (prefer && prefer.x * s.x + prefer.y * s.y + prefer.z * s.z > 0
     && prefer.x * side.x + prefer.y * side.y + prefer.z * side.z < 0) k = -k;
   return { x: s.x * c + side.x * k, y: s.y * c + side.y * k, z: s.z * c + side.z * k };
 }
+
+// 0078 r14-pluto: begin
+/**
+ * THE FACE A WORLD IS KNOWN BY, CENTRED (release 1.4.0; Ivan, 2026-10-26: "it is disaster what happened
+ * to Pluto", and the lead: the first thing a visitor sees on opening Pluto must be the heart, centred
+ * and lit). litOffset's rule (the Sun's direction turned ARRIVAL_PHASE round the camera's up, the face
+ * only a tie-break) met Pluto in October 2026 with the camera at 50 N, because the Sun stands 60
+ * degrees north there now, and the heart (20 N) sat on the lower limb. For a world whose row asks for
+ * it, the camera looks straight down at the face when the face is within FACE_MAX_PHASE of the Sun;
+ * when it is further round but still lit, from FACE_MAX_PHASE off the Sun toward it, so it is as
+ * near the middle as a lit disc allows; when the face is in the dark (or on the terminator), null,
+ * and litOffset's own rule decides. Pure; tests/test_framing.mjs holds it.
+ *
+ * @param {{x:number,y:number,z:number}} s     from the world toward the Sun, unit
+ * @param {{x:number,y:number,z:number}} face  from the world's centre to the face, any length
+ * @returns {{x:number,y:number,z:number}|null}
+ */
+export const FACE_MAX_PHASE = (50 * Math.PI) / 180;
+export function faceCentredOffset(s, face, maxPhase = FACE_MAX_PHASE) {
+  const fl = Math.hypot(face.x, face.y, face.z);
+  if (!(fl > 0)) return null;
+  const f = { x: face.x / fl, y: face.y / fl, z: face.z / fl };
+  const c = f.x * s.x + f.y * s.y + f.z * s.z;
+  if (c <= 0.1) return null;
+  if (Math.acos(Math.min(1, c)) <= maxPhase) return f;
+  const p = { x: f.x - s.x * c, y: f.y - s.y * c, z: f.z - s.z * c };
+  const pl = Math.hypot(p.x, p.y, p.z);
+  const cm = Math.cos(maxPhase);
+  const sm = Math.sin(maxPhase) / pl;
+  return { x: s.x * cm + p.x * sm, y: s.y * cm + p.y * sm, z: s.z * cm + p.z * sm };
+}
+// 0078 r14-pluto: end
 
 // --- an arrival at a point on the Earth's own ground (internal #420) -----------------------------
 //
