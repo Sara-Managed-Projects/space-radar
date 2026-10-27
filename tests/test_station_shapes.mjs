@@ -655,7 +655,9 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(e?.file === 'iss.glb' && !e.generic, `${name} is part of the ISS and is drawn as it: ${JSON.stringify(e)}`);
   }
   const stage = realModelFor(rec(694, 'ATLAS CENTAUR 2', 'satellite', 'visual'));
-  check(stage?.build === 'stage' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
+  // 0078 r14-m1: begin -- since release 1.4.0 it wears centaur-d.glb (built from published dimensions), the generic stage drawn only while that file is on its way
+  check(stage?.build === 'stage' && stage.file === 'centaur-d.glb' && !stage.generic && stage.made === 'dimensions', `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
+  // 0078 r14-m1: end
   // XRISM left this list on 2026-10-13 (public #968): it wears xrism.glb, its own shape, and the
   // generic telescope is only what is drawn while that file is on its way (tests/test_real_models.mjs).
   // Hitomi left it the same day (public #969): hitomi.glb, XRISM's body with its own optical bench.
