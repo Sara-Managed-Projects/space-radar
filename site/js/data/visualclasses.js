@@ -1026,8 +1026,16 @@ export const VISUAL_CLASSES = [
 "dso-tarantula-nebula"
 ],
 "heroes": [
+"dso-california-nebula",
 "dso-carina-nebula",
-"dso-m42"
+"dso-cats-paw-nebula",
+"dso-m16",
+"dso-m17",
+"dso-m20",
+"dso-m8",
+"dso-north-america-nebula",
+"dso-m42",
+"dso-rosette-nebula"
 ]
 }
 },

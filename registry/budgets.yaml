@@ -214,6 +214,12 @@ budgets:
   # at most three (the dust's multiply, its light, its own star).
   - {id: deep_sheets_bytes, value: 300000, unit: B, since: 2026-10-17, reason: "spec 0076 design section 4: at most 1.5 MB of hero assets; the six heroes' maps, star list and manifest were about 100 kB on 2026-10-17"}
   - {id: deep_sheets_draw_calls, value: 3, unit: calls, since: 2026-10-17, reason: "spec 0076 design section 4: at most +5 for a hero; a dust sheet's absorb, light and star, a remnant's one shell"}
+  # 0078 r14-neb-a: begin
+  # Emission nebulae as heroes (release 1.4.0 stage r14-neb-a; scene/deep/emission.js): each hero's light map, walls' map and
+  # sharp map (scripts/build_deep_emission.py), fetched when that nebula is near, never at boot. tests/test_hero_emission.mjs.
+  - {id: deep_nebula_bytes, value: 600000, unit: B, since: 2026-10-26, reason: "spec 0076 design section 4 allows a hero 1.5 MB; the largest, the Eagle, measured 562 666 B on 2026-10-26 (13 610 of light, 24 752 of sharp map, 524 304 of walls at 256 x 256 cells)"}
+  - {id: deep_nebula_draw_calls, value: 3, unit: calls, since: 2026-10-26, reason: "spec 0076 design section 4: at most +5 for a hero; the march and the stars, or on the cheap path the far wall's mesh, the near cap's and the stars"}
+  # 0078 r14-neb-a: end
   # 0076 W4-b
   # Galaxy clusters and quasars (internal spec 0076 W4-b, #784; scene/deep/galclusters.js): 3 596 member galaxies of four clusters
   # (scripts/build_deep_galclusters.py -> site/data/deep/galclusters.{json,bin}), fetched on the Local Group's stage, never at boot.

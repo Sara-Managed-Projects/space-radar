@@ -75,6 +75,16 @@ domains:
       m104: {credit: "### Galaxies from their structure (0077 W3-f)"}
       antennae: {credit: "### Galaxies from their structure (0077 W3-f)"}
       # 0077 W3-f: end
+      # 0078 r14-neb-a: begin
+      m8: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      m20: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      m16: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      m17: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      rosette: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      california: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      north-america: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      cats-paw: {credit: "### Emission nebulae (0078 r14-neb-a)"}
+      # 0078 r14-neb-a: end
   - id: exotics
     from: "registry/exotics.yaml"
     credit: "each read from the Wikipedia article's infobox"
@@ -506,6 +516,7 @@ classes:
       - {domain: dso, where: {typeCode: [HII, Neb, Cl+N]}}
       - {domain: photographs, ids: [m42, california-nebula, rosette-nebula, m8, m20, m16, m17, cats-paw-nebula, carina-nebula, north-america-nebula, tarantula-nebula]}
       - {domain: heroes, ids: [orion, carina]}  # 0077 W2-e
+      - {domain: heroes, ids: [m8, m20, m16, m17, rosette, california, north-america, cats-paw]}  # 0078 r14-neb-a: scene/deep/emission.js
 
   - id: PLANETARY_NEBULA
     title: Planetary nebulae

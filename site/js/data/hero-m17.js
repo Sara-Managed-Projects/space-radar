@@ -1,0 +1,229 @@
+// GENERATED from registry/deepsky-heroes/m17.yaml by scripts/gen_deepsky_heroes_js.py. Do not edit.
+// A deep-sky hero's authored profile (internal spec 0075, design section 3): read by
+// scene/deep/heroes.js when the hero comes near, never at boot.
+export const HERO = {
+  "id": "m17",
+  "record": "dso-m17",
+  "stage": "r14-neb-a",
+  "shipped": true,
+  "children": [],
+  "levels": {
+    "2": "structure: the glowing wall as a crisp lit sheet at its reconstructed depth, turning up into the bright bar (12 coarse steps and an exact crossing; 8 on T0, or the wall as a mesh), the cloud behind it, the dark cloud at the bar, the O stars and NGC 6618",
+    "3": "close-up: the same with half the coordinator's march steps (12 to 32) and the sharp map round the bar"
+  },
+  "frame": {
+    "units_ly": 1,
+    "distance_ly": 5500,
+    "ra_deg": 275.19629,
+    "dec_deg": -16.17153,
+    "axes": "x west, y north, z toward the Sun; the record's place at the origin"
+  },
+  "layers": [
+    {
+      "part": "light",
+      "kind": "photograph",
+      "what": "the wall's light: the photograph without its stars, and round the bar a sharper map of the same photograph",
+      "picture": {
+        "id": "m17",
+        "file": "site/images/nebulae/m17.webp",
+        "ra_deg": 275.2475,
+        "dec_deg": -16.15069,
+        "width_arcmin": 53.4,
+        "height_arcmin": 53.4,
+        "north_deg": -0.04
+      },
+      "file": "site/images/deep/nebulae/m17-light.webp",
+      "depth": "site/data/deep/m17-front.bin",
+      "detail": {
+        "file": "site/images/deep/nebulae/m17-detail.webp",
+        "centre_west_arcmin": 0.0,
+        "centre_north_arcmin": 0.0,
+        "size_arcmin": 16.0,
+        "px": 640,
+        "quality": 88,
+        "level_arcmin": 1.5,
+        "url": "https://cdn.eso.org/images/publicationjpg/eso1119a.jpg"
+      },
+      "made_by": "scripts/build_deep_emission.py",
+      "credit": "ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute (eso1119a), CC BY 4.0",
+      "note": "stars removed (they are drawn as stars); nothing else changed but the sharp map's levels, matched to the 512 px map",
+      "source": "ESO eso1119a, credit ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute, CC BY 4.0: https://www.eso.org/public/images/eso1119a/ (VLT Survey Telescope, OmegaCAM; g, r and i)"
+    },
+    {
+      "part": "front",
+      "kind": "front",
+      "what": "the glowing wall: a blister on the face of M17 SW, deepest east of the bar and turning up into it",
+      "lobes": [
+        {
+          "name": "blister",
+          "centre_west_arcmin": -5.0,
+          "centre_north_arcmin": 0.0,
+          "along_arcmin": 12.0,
+          "across_arcmin": 8.0,
+          "pa_deg": 90,
+          "depth_ly": 9,
+          "shape": "cos"
+        }
+      ],
+      "blend_ly": 6,
+      "outside_ly": 0,
+      "relief": {
+        "power": 0.5,
+        "max_ln": 0.4,
+        "max_ly": 2.5,
+        "fine_arcmin": 0.4,
+        "wide_arcmin": 3.0
+      },
+      "grid": [
+        224,
+        224
+      ],
+      "source": "Pellegrini, E. W. et al. 2007, ApJ 658, 1119 (arXiv:astro-ph/0611808: 'the southwestern (SW) part of the Galactic H II region M17 contains an obscured ionization front ... nearly edge-on'). The bowl's size is read from the photograph; its depth is illustrative"
+    },
+    {
+      "part": "cloud",
+      "kind": "dust",
+      "what": "the molecular cloud behind the wall: dark from behind",
+      "thickness_ly": 10.0,
+      "sigma_per_ly": 1.5,
+      "blur_arcmin": 3.0,
+      "source": "Pellegrini et al. 2007 (the molecular cloud M17 SW); its thickness and opacity here are illustrative"
+    },
+    {
+      "part": "dust",
+      "kind": "dust",
+      "what": "the dark cloud along the bright bar: dust in front of the glowing gas where the H II region meets M17 SW",
+      "z_ly": 6.0,
+      "blobs": [
+        {
+          "name": "the bar's dark side",
+          "centre_west_arcmin": 6.5,
+          "centre_north_arcmin": -1.0,
+          "along_arcmin": 7.0,
+          "across_arcmin": 3.0,
+          "pa_deg": 10
+        },
+        {
+          "name": "the dark bay to the south",
+          "centre_west_arcmin": -3.0,
+          "centre_north_arcmin": -8.0,
+          "along_arcmin": 8.0,
+          "across_arcmin": 2.5,
+          "pa_deg": 85
+        }
+      ],
+      "tau_max": 1.0,
+      "source": "Pellegrini et al. 2007 (the obscured front at the bar). How far in front the dust is is not measured: drawn 6 ly in front of the stars' plane"
+    },
+    {
+      "part": "stars",
+      "kind": "stars",
+      "what": "NGC 6618's visible O stars at their catalogued places on the sky (most of its stars are hidden by dust); their depths are not measured",
+      "stars": [
+        {
+          "id": "BD-16 4826",
+          "ra_deg": 275.25930541236,
+          "dec_deg": -16.01694646944,
+          "v_mag": 9.98,
+          "spectral": "O5.5V((f))z",
+          "temp_k": 40000
+        },
+        {
+          "id": "BD-16 4818",
+          "ra_deg": 275.14744004571,
+          "dec_deg": -16.18014164562,
+          "v_mag": 10.03,
+          "spectral": "O8.5V",
+          "temp_k": 34000
+        },
+        {
+          "id": "NGC 6618 337",
+          "ra_deg": 275.14371076366,
+          "dec_deg": -16.16995496693,
+          "v_mag": 11.29,
+          "spectral": "O4V(n)((fc))",
+          "temp_k": 42000
+        },
+        {
+          "id": "2MASS J18202742-1613309",
+          "ra_deg": 275.11425275205,
+          "dec_deg": -16.22526919537,
+          "v_mag": 11.28,
+          "spectral": "O6.5V((f))z",
+          "temp_k": 38000
+        },
+        {
+          "id": "NGC 6618 637",
+          "ra_deg": 275.26880643085,
+          "dec_deg": -16.33350121695,
+          "v_mag": 11.7,
+          "spectral": "O2-3.5",
+          "temp_k": 45000
+        }
+      ],
+      "note": "V as seen from here, their heavy extinction included; colours a blackbody's at the spectral type's temperature",
+      "source": "SIMBAD (CDS), basic and allfluxes tables, read 2026-10-26"
+    },
+    {
+      "part": "clusters",
+      "kind": "points",
+      "what": "NGC 6618: a seeded sample of its stars, dimmed by the dust round them",
+      "clusters": [
+        {
+          "name": "NGC 6618",
+          "ra_deg": 275.19583,
+          "dec_deg": -16.17167,
+          "core_arcmin": 1.0,
+          "radius_arcmin": 4.0,
+          "members": 1000,
+          "summed_v": 8.5
+        }
+      ],
+      "count_drawn": [
+        400,
+        900,
+        1600
+      ],
+      "drawn": "a seeded sample (model) round the cluster's catalogued place; its size, membership and summed light are illustrative",
+      "source": "SIMBAD for the cluster's place; everything else illustrative"
+    }
+  ],
+  "colours": {
+    "mode": true,
+    "lines": {
+      "star": "#cfdcff"
+    },
+    "note": "The gas's colours are the photograph's own (g, r and i: OmegaCAM's broad filters, which show hydrogen's glow paler and greener than a hydrogen filter does), with each exposure's stretch; the stars a blackbody's",
+    "enhanced": {
+      "mode": "enhanced",
+      "under": "deep",
+      "lines": {
+        "star": "#cfdcff"
+      },
+      "note": "Deep: ENHANCED. The photograph's own Deep stretch (gamma 0.7, saturation 1.25). Not what an eye or a broadband camera sees"
+    }
+  },
+  "drawn": [
+    "reconstruction"
+  ],
+  "sources": [
+    "Pellegrini, E. W. et al. 2007, A Magnetically-Supported Photodissociation Region in M17, ApJ 658, 1119 (https://arxiv.org/abs/astro-ph/0611808)",
+    "SIMBAD (CDS, https://simbad.cds.unistra.fr/), read 2026-10-26: the O stars' places, V magnitudes and spectral types, and NGC 6618's place",
+    "ESO eso1119a (CC BY 4.0, credit ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute), the photograph the app showed: the hero's LIGHT (its stars removed)"
+  ],
+  "review": {
+    "data_vs_model": "Measured: the stars' places and magnitudes, that the bar is an ionisation front nearly edge-on against the cloud to the west, and the light (the photograph). Reconstructed: the bowl and its rise into the bar, the relief, the dust's absorption from the photograph's darkness. Model: the dust's distance in front, the cloud behind, each cluster star (seeded)",
+    "geometry": "A blister seen obliquely, after Pellegrini et al. 2007: the bowl's size read from the photograph, its depth illustrative, and said so",
+    "colours": "The photograph's own, with each exposure's stretch; Deep declared enhanced; stars by spectral type",
+    "distance": "The record's 5 500 ly (site/data/dso.json, the Messier list); maser parallaxes put M17 farther, about 2 kpc, and the record is not this stage's to change (for spec 0078). Lengths on the sky are scaled to the record's distance",
+    "credits": "CREDITS.md section 3l, Emission nebulae (0078 r14-neb-a); the card's rows name the reconstruction and that no astronomer has reviewed it",
+    "by": "Space Radar maintainers",
+    "date": "2026-10-26",
+    "astronomer": "not yet: the independent review is internal #785; the card says so"
+  },
+  "credits": [
+    "The Omega Nebula's shape: after Pellegrini et al. 2007, ApJ 658, 1119; reconstructed by Space Radar",
+    "Its stars and cluster: SIMBAD, CDS",
+    "Its light: the photograph eso1119a, ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute (CC BY 4.0), its stars removed by Space Radar"
+  ]
+};
