@@ -349,6 +349,32 @@ check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4
     const got = nav(name, year, klass, id);
     check(!got || !tenth.includes(got.file), `${name} (klass ${klass}, launched ${year}) wears none of batch ten's files: ${JSON.stringify(got)}`);
   }
+  // 0078 r14-m2: begin
+  // RELEASE 1.4.0, STAGE r14-m2 (public #1121, #1122, #1123, #1154, #1155, #1156): six communications craft wear a file of their own over the
+  // stand-in they had (the geostationary bus, or a generic satellite), each by NUMBER, as itself (not `generic`), built from dimensions.
+  for (const [norad, cat, name, file] of [[27825, 'THURAYA-2', 'Thuraya-2', 'thuraya.glb'], [32404, 'THURAYA-3', 'Thuraya-3', 'thuraya.glb'],
+    [28628, 'INMARSAT 4-F1', 'Inmarsat-4 F1', 'inmarsat-4.glb'], [33278, 'INMARSAT 4-F3', 'Inmarsat-4 F3', 'inmarsat-4.glb'],
+    [56370, 'VIASAT-3 F1', 'ViaSat-3 F1', 'viasat-3.glb'], [68893, 'VIASAT-3 F3', 'ViaSat-3 F3', 'viasat-3.glb'],
+    [39188, 'O3B FM5', 'O3b FM5', 'o3b.glb'], [44115, 'O3B FM18', 'O3b FM18', 'o3b.glb'],
+    [37188, 'GLOBALSTAR M079', 'Globalstar M079', 'globalstar-2.glb'], [52888, 'GLOBALSTAR M087', 'Globalstar M087', 'globalstar-2.glb'],
+    [54755, 'O3B MPOWER F1', 'O3b mPOWER F1', 'o3b-mpower.glb'], [100688, 'O3B MPOWER F13', 'O3b mPOWER F13', 'o3b-mpower.glb']]) {
+    const got = sat(norad, cat);
+    check(got && got.file === file && !got.build && got.name === name && !got.generic && got.made === 'dimensions' && got.axes === 'app', `${cat} (${norad}) wears ${file} as itself: ${JSON.stringify(got)}`);
+  }
+  // The route table lists every craft of the issues' tables (65 numbers), and none of them is routed twice.
+  {
+    const r14m2 = ['thuraya.glb', 'inmarsat-4.glb', 'viasat-3.glb', 'o3b.glb', 'globalstar-2.glb', 'o3b-mpower.glb'];
+    const counts = Object.fromEntries(r14m2.map((f) => [f, Object.values(REAL_MODELS.norad).filter((e) => e.file === f).length]));
+    check(JSON.stringify(counts) === JSON.stringify({ 'thuraya.glb': 2, 'inmarsat-4.glb': 3, 'viasat-3.glb': 3, 'o3b.glb': 20, 'globalstar-2.glb': 25, 'o3b-mpower.glb': 12 }), `the six files reach 2, 3, 3, 20, 25 and 12 craft: ${JSON.stringify(counts)}`);
+    // Not the shape of anything else: Thuraya-4 (Airbus), Inmarsat-4A F4 and -5, ViaSat-2, the first-generation Globalstar and the OG1 ORBCOMM craft, other geostationary craft.
+    for (const [name, year, klass, id] of [['THURAYA 4-NGS', 2025, 'satellite', 99301], ['INMARSAT 4A-F4', 2013, 'satellite', 99302], ['INMARSAT 5-F1', 2013, 'satellite', 99303], ['VIASAT-2', 2017, 'satellite', 99304],
+      ['GLOBALSTAR M004', 1999, 'satellite', 99305], ['GLOBALSTAR M099', 2026, 'satellite', 99306], ['ORBCOMM FM101', 1999, 'satellite', 99307], ['O3B MPOWER F99', 2030, 'satellite', 99308],
+      ['THURAYA-2 DEB', 2003, 'debris', 99309], ['INMARSAT 4-F1 DEB', 2005, 'debris', 99310]]) {
+      const got = nav(name, year, klass, id);
+      check(!got || !r14m2.includes(got.file), `${name} (klass ${klass}) wears none of the r14-m2 files: ${JSON.stringify(got)}`);
+    }
+  }
+  // 0078 r14-m2: end
   // SWOT is JPL's OWN published model (public #952): its file, as itself, and NOT `made`: nobody here made it.
   {
     const swot = sat(54754, 'SWOT');

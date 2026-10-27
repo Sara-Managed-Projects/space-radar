@@ -336,7 +336,13 @@ export const VISUAL_CLASSES = [
 "timed",
 "sert-2",
 "isis-1",
-"tracers"
+"tracers",
+"thuraya",
+"inmarsat-4",
+"viasat-3",
+"o3b",
+"globalstar-2",
+"o3b-mpower"
 ],
 "model_kinds": [
 "satellite-iridium",

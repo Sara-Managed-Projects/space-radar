@@ -150,6 +150,11 @@ function gpsBlock(record) {
 
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
+// 0078 r14-m2: begin
+// Six communications craft by catalogue number (public #1121 to #1123, #1154 to #1156), written compactly because `realmodels.js` is read at boot and every route is the same six
+// fields: the catalogue name is `cat` + the suffix, as CelesTrak calls the number (the test lists them one by one), and the card says `name` + the suffix.
+const R14M2 = (file, cat, name, rows) => Object.fromEntries(rows.map(([n, s]) => [n, { file, colour: 'satellite', name: name + s, catalogue: cat + s, made: 'dimensions', axes: 'app' }]));
+// 0078 r14-m2: end
 export const REAL_MODELS = {
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
@@ -164,6 +169,20 @@ export const REAL_MODELS = {
    * assumed not to need one because an id is exact. The id was exact. It was also wrong.
    */
   norad: {
+    // 0078 r14-m2: begin
+    // thuraya (public #1123): 2 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('thuraya.glb', 'THURAYA', 'Thuraya', [[27825, '-2'], [32404, '-3']]),
+    // inmarsat-4 (public #1122): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('inmarsat-4.glb', 'INMARSAT 4-F', 'Inmarsat-4 F', [[28628, '1'], [28899, '2'], [33278, '3']]),
+    // viasat-3 (public #1121): 3 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('viasat-3.glb', 'VIASAT-3 F', 'ViaSat-3 F', [[56370, '1'], [66454, '2'], [68893, '3']]),
+    // o3b (public #1155): 20 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('o3b.glb', 'O3B ', 'O3b ', [[39188, 'FM5'], [39189, 'FM4'], [39190, 'FM2'], [39191, 'PFM'], [40079, 'FM3'], [40080, 'FM7'], [40081, 'FM6'], [40082, 'FM8'], [40348, 'FM10'], [40349, 'FM11'], [40350, 'FM12'], [40351, 'FM9'], [43231, 'FM15'], [43232, 'FM16'], [43233, 'FM14'], [43234, 'FM13'], [44112, 'FM20'], [44113, 'FM19'], [44114, 'FM17'], [44115, 'FM18']]),
+    // globalstar-2 (public #1154): 25 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('globalstar-2.glb', 'GLOBALSTAR ', 'Globalstar ', [[37188, 'M079'], [37189, 'M074'], [37190, 'M076'], [37191, 'M077'], [37192, 'M075'], [37193, 'M073'], [37739, 'M083'], [37740, 'M088'], [37741, 'M091'], [37742, 'M085'], [37743, 'M081'], [37744, 'M089'], [38040, 'M084'], [38041, 'M080'], [38042, 'M082'], [38043, 'M092'], [38044, 'M090'], [38045, 'M086'], [39072, 'M097'], [39073, 'M093'], [39074, 'M094'], [39075, 'M096'], [39076, 'M078'], [39077, 'M095'], [52888, 'M087']]),
+    // o3b-mpower (public #1156): 12 craft by number, from the issue's own table of the live saved data of 2026-10-12
+    ...R14M2('o3b-mpower.glb', 'O3B MPOWER F', 'O3b mPOWER F', [[54755, '1'], [54756, '2'], [56367, '4'], [56368, '3'], [58346, '5'], [58347, '6'], [62362, '7'], [62363, '8'], [64866, '9'], [64867, '10'], [100686, '11'], [100688, '13']]),
+    // 0078 r14-m2: end
     25544: { file: 'iss.glb', colour: 'station', name: 'International Space Station', catalogue: 'ISS (ZARYA)' },
     // NAUKA AND POISK ARE PARTS OF THE ISS, catalogued separately because they were launched
     // separately, and their elements track the station they are bolted to. Each used to be drawn as
