@@ -72,9 +72,18 @@ export function assetUrls(profile, base = import.meta.url) {
   return { light: at(L.file), front: at(L.depth), detail: at(L.detail && L.detail.file) };
 }
 
+// A profile that is not an emission nebula's (a test building every hero module from one stub, tests/test_gasmat.mjs) is
+// drawn as this: a 30' field with one shallow bowl and no files, so the materials are built and nothing is fetched.
+const isOurs = (P) => !!(P && Array.isArray(P.layers) && P.layers.some((l) => l && l.part === 'light' && l.picture));
+const EMPTY = {
+  id: 'emission', record: null, drawn: ['reconstruction'], frame: { distance_ly: 4000, ra_deg: 0, dec_deg: 0 },
+  layers: [{ part: 'light', picture: { ra_deg: 0, dec_deg: 0, width_arcmin: 30, height_arcmin: 30, north_deg: 0 } }, { part: 'front', lobes: [{ depth_ly: 5 }] }],
+};
+export const profileOf = (P) => (isOurs(P) ? P : EMPTY);
+
 /** The profile's numbers in light-years, about the record's place, in the sky frame (orion.js geometryOf's shape). Pure. */
-export function geometryOf(P) {
-  if (!P || !Array.isArray(P.layers)) throw new Error('emission.js: a hero needs its profile');
+export function geometryOf(P0) {
+  const P = profileOf(P0);
   const dist = Number(P.frame.distance_ly);
   const lyA = dist * Math.PI / (180 * 60);
   const origin = [Number(P.frame.ra_deg), Number(P.frame.dec_deg)];
@@ -527,7 +536,7 @@ function material(THREE, { vertexShader, fragmentShader, uniforms, absorbing, si
 }
 
 export function createHero(THREE, env = {}) {
-  const profile = env.profile;
+  const profile = profileOf(env.profile);
   const g = geometryOf(profile);
   const urls = assetUrls(profile);
   const DRAWN = { [profile.record]: (profile.drawn || ['reconstruction']).slice() };
@@ -607,7 +616,7 @@ export function createHero(THREE, env = {}) {
   };
   const sheetMats = g.nearK > 0 ? [sheetMat(0), sheetMat(1)] : [sheetMat(0)];
   const lit = [gasMat, ...sheetMats];
-  if (browser && THREE.TextureLoader) {
+  if (browser && THREE.TextureLoader && urls.light) {
     lightState = 'loading';
     lightTex = loadTex(urls.light, true, (st) => { lightState = st; });
     for (const m of lit) m.uniforms.uLight.value = lightTex;
