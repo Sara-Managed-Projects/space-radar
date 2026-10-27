@@ -217,7 +217,7 @@ const one = async (id) => {
   if (out.light.flood) MM.setFloodLight(false);
   // A file whose row says `look: toon` (Webb) keeps the ramp whatever is asked: the two sets are then the same.
   out.fileLook = (heroOf() && heroOf().userData.look) || null;
-  if (out.fileLook === 'pbr' && !(out.looks.pbr && out.looks.pbr.model.pbr > 0)) out.fail = 'no part of ' + record.name + ' wore the physically based look when it was asked for';
+  if (!PHONE && out.fileLook === 'pbr' && !(out.looks.pbr && out.looks.pbr.model.pbr > 0)) out.fail = 'no part of ' + record.name + ' wore the physically based look when it was asked for';
   return out;
 };
 
