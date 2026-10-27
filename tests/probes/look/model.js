@@ -311,7 +311,7 @@ const walk = async (tag, what, opts = {}) => {
     let d = unit(mix(mix(f.x, lx, f.y, ly), 1, f.z, lz));
     // The Sun below the craft's horizon (a craft lit over the night side): lean toward the light.
     let lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z;
-    if (lit < 0.2) { d = unit(mix(d, 1, f.s, 0.6)); lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z; }
+    if (lit < 0.2 && side !== 'dark') { d = unit(mix(d, 1, f.s, 0.6)); lit = d.x * f.s.x + d.y * f.s.y + d.z * f.s.z; } // r14-m7: 'dark' keeps the camera on the side away from the Sun
     const above = -(d.x * f.z.x + d.y * f.z.y + d.z * f.z.z);
     if (side === 'below' && onGround) { look.warns.push('probe: ' + name + ' not taken for ' + record.id + ': a site on the ground has no underside'); continue; }
     if (side === 'below') {
@@ -375,6 +375,7 @@ const CLOSE = [
   ['close-2-sunward-left', [-0.62, 0.66, -0.42], 'close up, from the sunward side, left and above'],
   ['close-3-sun-face', [0.14, 0.93, -0.34], 'close up, square onto the lit face'],
   ['close-4-earth-side', [0.34, 0.5, 0.8], 'close up, from the Earth\'s side, looking up at the Earth face', 'below'],
+  ['close-5-away-from-the-sun', [0.7, -0.7, -0.15], 'close up, from the side AWAY from the Sun, right of the panel axis and a little above (the craft\'s shaded side: the Sun is behind it)', 'dark'], // r14-m7
 ];
 const fill = 0.9 * Math.min(innerWidth, innerHeight);
 const lensK = out.drawnPx > 0 ? Math.max(1, Math.min(4, fill / out.drawnPx)) : 2.5;
