@@ -1710,6 +1710,147 @@ def check_budget_refusals() -> int:
         return run_cases(one, BUDGET_CASES, Path(tmp))
 
 
+# One character past MAX_SENTENCE, and one sitting on it. "A" * 160 + "." has no ". " in it, so a
+# tour split on ". " still sees one sentence of 161, and it has no year, no "--", and none of the
+# TIME_RELATIVE phrases. The tour body is replaced whole: the next sentence would swallow the
+# full stop into the ". " split and leave a first sentence of 160, which the cap allows.
+SENTENCE_OVER = "A" * 160 + "."
+SENTENCE_AT_CAP = "A" * 159 + "."
+
+# (name, file, find, replace) — each find is a real sentence this change did not rewrite.
+SENTENCE_CAP_ROWS: list[tuple[str, str, str, str]] = [
+    ("a tour card's first sentence past 160",
+     "tours.yaml",
+     "          body: >-\n"
+     "            His family signed the back and pressed their thumbprints into it.\n"
+     "            It also says: This is the family of Astronaut Duke from Planet Earth, who landed on the\n"
+     "            Moon on the twentieth of April 1972.",
+     f'          body: "{SENTENCE_OVER}"'),
+    ("a famous star's why past 160",
+     "stars-notable.yaml",
+     'why: "One point of light, six stars in three pairs. It was first recorded as a double star in 1718."',
+     f'why: "{SENTENCE_OVER}"'),
+    ("an oddity fact past 160",
+     "oddities.yaml",
+     '    fact: "You wear the silver astronaut pin until your first spaceflight. Alan Bean had worn his\n'
+     '           for six years, so on the Moon he threw it into a crater."',
+     f'    fact: "{SENTENCE_OVER}"'),
+    ("an oddity cite past 160",
+     "oddities.yaml",
+     '    cite: "Astronomical Returns, The astronaut pin and the lone star on the Moon"',
+     f'    cite: "{SENTENCE_OVER}"'),
+    ("an oddity departure past 160",
+     "oddities.yaml",
+     '      departure: "this is the camera part the prop was built from, not the prop: the hilt\'s\n'
+     '                  design is not ours to draw"',
+     f'      departure: "{SENTENCE_OVER}"'),
+    ("a site doing line past 160",
+     "sites.yaml",
+     'doing: "Driving up a mountain of layered rock since 2012."',
+     f'doing: "{SENTENCE_OVER}"'),
+    ("a glossary say past 160",
+     "glossary.yaml",
+     "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+     "can keep the Earth and Sun behind it and stay cold.",
+     SENTENCE_OVER),
+    ("an overlay what past 160",
+     "overlays.yaml",
+     'what: "The temperature of the sea\'s top layer, from satellites and buoys, gaps filled."',
+     f'what: "{SENTENCE_OVER}"'),
+    ("an exotic why past 160",
+     "exotics.yaml",
+     'why: "The heaviest black hole from a dead star in our galaxy, thirty-three Suns, found in 2024 in the Gaia data."',
+     f'why: "{SENTENCE_OVER}"'),
+    ("a deep-sky why past 160",
+     "dso-hand.yaml",
+     'why: "So diffuse it was only found in 1990, on photographic plates scanned by machine."',
+     f'why: "{SENTENCE_OVER}"'),
+]
+
+
+def check_sentence_caps() -> int:
+    """Every card sentence is held with `> MAX_SENTENCE`, and 160 itself is still accepted."""
+    text = (ROOT / "scripts" / "check_registry.py").read_text(encoding="utf-8")
+    found = len(re.findall(r">\s*MAX_SENTENCE", text))
+    failures = 0
+    if found != len(SENTENCE_CAP_ROWS):
+        print(f"  ** the checker compares with `> MAX_SENTENCE` {found} times, "
+              f"and the sentence loop has {len(SENTENCE_CAP_ROWS)} rows")
+        failures += 1
+    else:
+        print(f"  the checker holds {found} card sentences, one per row")
+
+    def prepare(work: Path, names_not_bytes: bool = False) -> None:
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+        link(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
+        link(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
+        link(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
+        textures_into(work)
+        (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
+        for js in ("worlds.js", "stage.js"):
+            link(ROOT / "site" / "js" / "scene" / js, work / "site" / "js" / "scene" / js)
+        # An accept has to be a tree the checker would pass. The refusal cases only need the
+        # registry; a model row with no file would refuse the tree for a reason that is not the cap.
+        if names_not_bytes:
+            models = work / "site" / "models"
+            models.mkdir(parents=True, exist_ok=True)
+            for f in (ROOT / "site" / "models").glob("*"):
+                if f.is_file():
+                    (models / f.name).touch()
+
+    def one(case, work: Path):
+        name, filename, find, replace = case
+        prepare(work)
+        path = work / "registry" / filename
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}"], 1
+        mutate(path, text.replace(find, replace, 1))
+        result = validator(work)
+        out = result.stdout + result.stderr
+        if result.returncode != 0 and filename in out and "160" in out:
+            return [f"  refused: {name}"], 0
+        if result.returncode == 0:
+            why = "was accepted"
+        elif filename not in out:
+            why = f"refused without naming {filename}"
+        else:
+            why = "refused without 160 in the message"
+        said = [line.strip() for line in out.splitlines() if filename in line][:4]
+        return [f"  ** {name}: {why}"] + [f"     {line}" for line in said], 1
+
+    def accept(case, work: Path):
+        name, filename, find, replace = case
+        prepare(work, names_not_bytes=True)
+        path = work / "registry" / filename
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}"], 1
+        mutate(path, text.replace(find, replace, 1))
+        result = validator(work)
+        if result.returncode == 0:
+            return [f"  accepted: {name}"], 0
+        out = (result.stdout + result.stderr).strip().splitlines()
+        return [f"  ** {name}: a sentence of 160 characters was refused"] + [f"     {line}" for line in out[:8]], 1
+
+    at_cap = ("a glossary say of 160 characters is accepted",
+              "glossary.yaml",
+              "A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope "
+              "can keep the Earth and Sun behind it and stay cold.",
+              SENTENCE_AT_CAP)
+    with tempfile.TemporaryDirectory() as tmp:
+        failures += run_cases(one, SENTENCE_CAP_ROWS, Path(tmp) / "over")
+        failures += run_cases(accept, [at_cap], Path(tmp) / "cap")
+    return failures
+
+
 def check_registry_refusals(tmp: Path) -> int:
     pristine = tmp / "pristine"
     shutil.copytree(ROOT / "registry", pristine, copy_function=link)
@@ -1783,6 +1924,9 @@ def main() -> int:
         failures += check_registry_refusals(Path(tmp))
 
         print("")
+        failures += check_sentence_caps()
+
+        print("")
         failures += check_tour_refusals()
 
         print("")
@@ -1803,7 +1947,9 @@ def main() -> int:
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES) + 4
+    refusals = (len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1
+                + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES) + 4
+                + len(SENTENCE_CAP_ROWS))
     print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
           f"and a site/models that matches the registry are both accepted")
     return 0
