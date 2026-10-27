@@ -6,15 +6,21 @@
 /** The look each file is drawn in, where its row states one (scene/pbr.js lookOf decides the rest). */
 export const MODEL_LOOKS = {
   "biomass.glb": "pbr",
+  "blacksky-gen2.glb": "pbr",
   "earthcare.glb": "pbr",
+  "ghgsat-c.glb": "pbr",
+  "hawkeye360-block1.glb": "pbr",
   "hubble.glb": "pbr",
   "iris.glb": "pbr",
   "isis-1.glb": "pbr",
   "jwst.glb": "pbr",
   "metop-sg-a.glb": "pbr",
+  "planet-pelican.glb": "pbr",
+  "satellogic-newsat.glb": "pbr",
   "sert-2.glb": "pbr",
   "slim.glb": "pbr",
   "swarm.glb": "pbr",
   "timed.glb": "pbr",
-  "tracers.glb": "pbr"
+  "tracers.glb": "pbr",
+  "worldview-3.glb": "pbr"
 };
