@@ -16,7 +16,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | rings | 1 | 1 |
 | dso | 209 | 209 |
 | photographs | 30 | 30 |
-| heroes | 19 | 19 |
+| heroes | 27 | 27 |
 | exotics | 23 | 23 |
 | systems | 40 | 40 |
 | planets | 106 | 106 |
@@ -33,7 +33,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **937** | **111 124** |
+| **all** | **945** | **111 132** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -60,7 +60,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [BLACK_HOLE](#black_hole) | 8 | `portraits.js`, `glyphs.js` | illustrative | - |
 | [OPEN_CLUSTER](#open_cluster) | 38 | `clusters.js`, `dsoglow.js`, `globular.js` | illustrative | - |
 | [GLOBULAR_CLUSTER](#globular_cluster) | 33 | `dsoglow.js`, `globular.js` | illustrative | - |
-| [EMISSION_NEBULA](#emission_nebula) | 36 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
+| [EMISSION_NEBULA](#emission_nebula) | 44 | `nebulae.js`, `dsoglow.js`, `gasmat.js`, `orion.js`, `carina.js` | measured | carina, orion |
 | [PLANETARY_NEBULA](#planetary_nebula) | 21 | `nebulae.js`, `dsoglow.js`, `helix.js`, `ring.js`, `shellneb.js`, `gasmat.js` | measured | helix, m57 |
 | [DARK_NEBULA](#dark_nebula) | 5 | `nebulae.js`, `dsoglow.js`, `dustsheet.js` | measured | coalsack, horsehead |
 | [REFLECTION_NEBULA](#reflection_nebula) | 5 | `dsoglow.js`, `nebulae.js`, `dustsheet.js` | illustrative | iris, m78 |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
+Honesty over the 945 records: 329 measured, 291 modelled, 325 illustrative.
 
 ## The classes
 
@@ -468,10 +468,10 @@ Honesty over the 937 records: 329 measured, 283 modelled, 325 illustrative.
 - **Measured, modelled or reconstructed:** Measured: the photographs (colours declared per picture). Reconstructed: the Orion blister's depth, labelled. Illustrative: the glow of a nebula with no photograph.
 - **Rights:** ESO, ESA/Hubble, ESA/Webb and NOIRLab CC BY 4.0, credited per picture.
 - **What is missing is tracked in:** internal #782 (Orion, W1-a; Carina, 0077 W2-e)
-- **Records (36):**
+- **Records (44):**
   - dso (23): `m8`, `m16`, `m17`, `m20`, `m42`, `m43`, `carina-nebula`, `rosette-nebula`, `north-america-nebula`, `tarantula-nebula`, `bubble-nebula`, `flame-nebula`, `thors-helmet`, `christmas-tree-cluster`, `heart-nebula`, `soul-nebula`, `cocoon-nebula`, `cats-paw-nebula`, `war-and-peace-nebula`, `wizard-nebula`, `pacman-nebula`, `crescent-nebula`, `california-nebula`
   - photographs (11): `m42`, `california-nebula`, `rosette-nebula`, `m8`, `m20`, `m16`, `m17`, `cats-paw-nebula`, `carina-nebula`, `north-america-nebula`, `tarantula-nebula`
-  - heroes (2): `carina`, `orion`
+  - heroes (10): `california`, `carina`, `cats-paw`, `m16`, `m17`, `m20`, `m8`, `north-america`, `orion`, `rosette`
 
 ### PLANETARY_NEBULA
 

@@ -74,18 +74,6 @@ export const DEEP_LAYERS = [
   // 0077 W3-f: begin (the SMC ships, and its Bridge and Stream with it: MAGELLANIC's line, defined below, is read lazily)
   { id: 'magellanic', stage: 'W2-e', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./magellanic.js') },
   // 0077 W3-f: end
-  // 0078 r14-neb-a: begin
-  // Emission nebulae as walls of glowing gas, dust in front and stars among them (release 1.4.0: no photographs, realistic 3D):
-  // one builder, scene/deep/emission.js, for every profile (registry/deepsky-heroes/<id>.yaml), read lazily as W3-c's lines are.
-  { id: 'm8', record: 'dso-m8', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-m8.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'm20', record: 'dso-m20', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-m20.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'm16', record: 'dso-m16', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-m16.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'm17', record: 'dso-m17', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-m17.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'rosette', record: 'dso-rosette-nebula', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-rosette.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'california', record: 'dso-california-nebula', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-california.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'north-america', record: 'dso-north-america-nebula', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-north-america.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  { id: 'cats-paw', record: 'dso-cats-paw-nebula', stage: 'r14-neb-a', stub: { shipped: true, drawn: ['reconstruction'], children: [] }, profile() { return Promise.resolve({ HERO: this.stub }); }, build() { return Promise.all([import('./emission.js'), import('../../data/hero-cats-paw.js')]).then(([m, p]) => ({ createHero: (T, env) => m.createHero(T, { ...env, profile: p.HERO }) })); } },
-  // 0078 r14-neb-a: end
 ];
 
 // 0077 W2-e: begin
