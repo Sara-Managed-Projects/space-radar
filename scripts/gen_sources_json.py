@@ -75,12 +75,16 @@ def render() -> str:
     return json.dumps(mirror, indent=2, ensure_ascii=False, default=str) + "\n"
 
 
-def render_notable() -> str:
+def render_notable() -> str | None:
     """The NORAD ids site/js/data/layers.js NOTABLE names, for harvest/publish.py's `celestrak-notable` cut.
 
     The Lambda carries harvest/ and nothing of site/, so the list the browser keeps by hand is mirrored here
     exactly as the registry is, and CI's --check fails when the two differ.
     """
+    if not LAYERS.exists():
+        # A partial tree (tests/test_growth.py copies the registry and its generators only) has no layers.js:
+        # the satellites list is then not this run's to mirror.
+        return NOTABLE_TARGET.read_text(encoding="utf-8") if NOTABLE_TARGET.exists() else None
     js = LAYERS.read_text(encoding="utf-8")
     start = js.index("export const NOTABLE = [")
     ids = sorted({int(x) for x in re.findall(r"noradId:\s*(\d+)", js[start:js.index("];", start)])})
@@ -94,7 +98,7 @@ def main(argv: list[str]) -> int:
     if "--check" in argv:
         have = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""
         have_notable = NOTABLE_TARGET.read_text(encoding="utf-8") if NOTABLE_TARGET.exists() else ""
-        if have_notable != want_notable:
+        if want_notable is not None and have_notable != want_notable:
             print(
                 "harvest/notable.json is STALE: site/js/data/layers.js NOTABLE has changed and the list the "
                 "harvester cuts `celestrak-notable` by has not.\n  Run: python3 scripts/gen_sources_json.py"
@@ -112,8 +116,9 @@ def main(argv: list[str]) -> int:
         return 1
     TARGET.parent.mkdir(parents=True, exist_ok=True)
     TARGET.write_text(want, encoding="utf-8")
-    NOTABLE_TARGET.write_text(want_notable, encoding="utf-8")
-    print(f"wrote {TARGET.relative_to(ROOT)} and {NOTABLE_TARGET.relative_to(ROOT)}")
+    if want_notable is not None:
+        NOTABLE_TARGET.write_text(want_notable, encoding="utf-8")
+    print(f"wrote {TARGET.relative_to(ROOT)}" + (f" and {NOTABLE_TARGET.relative_to(ROOT)}" if want_notable is not None else ""))
     return 0
 
 
