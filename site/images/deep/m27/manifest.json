@@ -1,7 +1,7 @@
 {
   "file": "site/images/deep/m27/m27-light.webp",
-  "bytes": 6070,
-  "sha256": "0ec9a4cd4758a920b5758fdbf8e0d970c1735d19832e7631661a30c808991f68",
+  "bytes": 3602,
+  "sha256": "402ed8eff14843c921e83238c7e119632723def6afd601a70b72c9811cafd899",
   "from": "site/images/nebulae/m27.webp",
   "from_sha256": "7cdb7d942da85ca587c8c2ed814e4858f69a114864f457b01fd46b36e13b93eb",
   "stars_removed_px": 186785,
@@ -9,12 +9,32 @@
     512,
     430
   ],
-  "peak_lum_p99": 0.852,
+  "peak_lum_p99": 0.638,
   "bright_stars": 40,
   "floor": [
     3.0,
     2.0,
     0.0
   ],
+  "lines": {
+    "r": [
+      "#ff3a2c",
+      0.7
+    ],
+    "g": [
+      "#c81e1a",
+      0.3
+    ],
+    "b": [
+      "#1fe0b8",
+      1.0
+    ]
+  },
+  "exposure": 0.68,
+  "halo": {
+    "from_arcmin": 4.2,
+    "to_arcmin": 5.6,
+    "gain": 0.5
+  },
   "credit": "T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA) (NOIRLab noao-m27-kpno-mayall-4-m), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_ring.py)"
 }

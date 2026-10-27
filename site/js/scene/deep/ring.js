@@ -140,7 +140,7 @@ export function geometryOf(profile = PROFILE) {
     distanceLy: dist, axis: a, e1, e2, A, B, H, qIn, tiltDeg: tilt,
     // 0078 r14-neb-b: an edge-on ring's window is read at the point, over a softer edge of its own (`disc.edge`, in the
     // ring's radii): its rim runs deep along our line, and a ray a few degrees off it must not cross the rim in one step
-    point: disc.window === 'point', edgeP: Math.max(SHAPE.edge, Number(disc.edge) || SHAPE.edge),
+    point: disc.window === 'point', round: disc.window === 'point' && disc.round === true, edgeP: Math.max(SHAPE.edge, Number(disc.edge) || SHAPE.edge),
     lean: disc.window === 'point' ? Math.max(SHAPE.edge, Number(disc.edge) || SHAPE.edge) - SHAPE.edge : SHAPE.lean,
     // the disc in its own scaled frame: (x/A, y/B) round, z in half-thicknesses
     Sd: rows3(scaled(e1, 1 / A), scaled(e2, 1 / B), scaled(a, 1 / H)),
@@ -201,6 +201,23 @@ function windowPoint(g, p) {
   const q = Math.hypot(...mul(g.Sd, p).slice(0, 2)), e = g.edgeP || SHAPE.edge;
   return smooth(q, g.qIn - e, g.qIn + e) * (1 - smooth(q, SHAPE.outer - e, SHAPE.outer + e));
 }
+/**
+ * `round: true` (lead review of #1298, the Southern Ring): the ring's cross-section an ellipse, not a slab with crisp faces:
+ * its half-thickness shrinks toward its inner and outer rims as sqrt(1 - ((q - mid) / half-width)^2), so seen from the side
+ * it is a torus, never a box. 1 for a ring without it. Pure; GLSL tubeOf() is the same.
+ */
+export function tubeAt(g, q) {
+  if (!g.round) return 1;
+  const mid = (g.qIn + SHAPE.outer) / 2, hw = (SHAPE.outer - g.qIn) / 2 + (g.edgeP || SHAPE.edge);
+  const u = (q - mid) / hw;
+  return Math.sqrt(Math.max(0.04, 1 - u * u));
+}
+/** An edge-on (`window: point`) ring's density at point p: its window there, its quartic profile across the tube. Pure. */
+function pointDensity(g, p) {
+  const d = mul(g.Sd, p);
+  const z = d[2] / tubeAt(g, Math.hypot(d[0], d[1]));
+  return windowPoint(g, p) * Math.exp(-(z ** 4));
+}
 /** The disc's window for a step at point p of a ray: along our line (M57's) or at the point (`window: point`). Pure. */
 const windowFor = (g, p) => (g.point ? windowPoint(g, p) : windowAt(g, p[0], p[1]));
 // 0078 r14-neb-b: end
@@ -260,7 +277,7 @@ export function columnsAt(g, x, y) {
     if (L > 0) for (let i = 0; i < n; i++) {
       const t = spanT(s, (i + 0.5) * L / n);
       const p = [ro[0] + rd[0] * t, ro[1] + rd[1] * t, ro[2] + rd[2] * t];
-      disc += windowPoint(g, p) * Math.exp(-(mul(g.Sd, p)[2] ** 4)) * L / n;
+      disc += pointDensity(g, p) * L / n;
     }
   } else disc = windowAt(g, x, y) * 2 * quarticCdf(SHAPE.slab) / Math.abs(qd[2]);
   const L = quadAlong(g.Sl, ro, rd);
@@ -311,7 +328,7 @@ function layersAlong(g, ro, rd, t0, t1) {
   return [
     // 0078 r14-neb-b: with the window at the point (`window: point`), the step is the density AT the sample times the step's
     // length: unbiased under the jitter (the window times the slab's exact integral is not, where both change in one step)
-    { s: discSpan(g, ro, rd, t0, t1), step: (s, a, b, p) => (g.point ? windowPoint(g, p) * Math.exp(-(mul(g.Sd, p)[2] ** 4)) * (b - a) : windowAt(g, p[0], p[1]) * slabIntegral(s, a, b, q0[2], qd[2])) },
+    { s: discSpan(g, ro, rd, t0, t1), step: (s, a, b, p) => (g.point ? pointDensity(g, p) * (b - a) : windowAt(g, p[0], p[1]) * slabIntegral(s, a, b, q0[2], qd[2])) },
     { s: ls ? [ls[0], ls[1], ls[1], ls[1]] : null, step: (s, a, b) => stepSum(s, a, b, (ta, tb) => lobeF(L, tb - L.tc) - lobeF(L, ta - L.tc)) },
     { s: shellSpan(g.So, g.Si, ro, rd, t0, t1), step: (s, a, b) => stepSum(s, a, b, (ta, tb) => haloF(g, rho2, tb - tc) - haloF(g, rho2, ta - tc)) },
   ];
@@ -380,7 +397,7 @@ export function capLight(rgb, peak = SHAPE.peak) {
 // ----------------------------------------------------------------------------- tiers, shares, palette
 
 /** Samples a layer: 4 on T0, 8 at level 2, half the march's steps above. Pure. */
-export const samplesFor = (o = {}) => (Number(o.tier) >= 1 ? samplesOf(o, MAX_N) : 4); // 0078 r14-neb-b: T0 four a layer, jittered (one a layer left dark holes on a phone, look run 40443020998), as the Helix's T0
+export const samplesFor = (o = {}) => (Number(o.tier) >= 1 ? samplesOf(o, MAX_N) : 2); // 0078 r14-neb-b: T0 two a layer, jittered: one at the middle left dark holes on a phone (look run 40443020998), four cost 3x the photograph there (lead review of #1298)
 /**
  * From inside the nebula the gas round the camera would fill the view. Its light falls off as the camera goes into
  * the lobes' wall (SHAPE.insideFloor deep in the cavity) and, for every sample, as the sample nears the camera
@@ -438,6 +455,7 @@ uniform mat3 uSl;         // the lobes' spheroid
 uniform vec4 uDisc;       // its box in half-thicknesses, the cavity's edge in the ring's radii, the window's mode (1: at the point), its lean
 uniform vec2 uHalo;       // 0078 r14-neb-b: the halo's inner and outer radii (ly)
 uniform float uEdgeP;     // 0078 r14-neb-b: an edge-on ring's softer rim (ring.js windowPoint)
+uniform vec3 uRound;      // 0078 r14-neb-b: a round ring's tube (ring.js tubeAt): on, middle, half-width
 uniform vec3 uW;          // the layers' weights: disc, lobes, halo
 uniform vec4 uUv;         // the light map: u0, v0, 1 / W, 1 / H
 uniform vec2 uRot;        // and its turn: cos r, sin r (the archive's north)
@@ -485,6 +503,12 @@ float windowFor( vec3 p ) {
   if ( uDisc.z < 0.5 ) return windowAt( p.xy );
   float q = length( ( uSd * p ).xy );
   return smoothstep( uDisc.y - uEdgeP, uDisc.y + uEdgeP, q ) * ( 1.0 - smoothstep( ${f3(SHAPE.outer)} - uEdgeP, ${f3(SHAPE.outer)} + uEdgeP, q ) );
+}
+// 0078 r14-neb-b: a round ring's half-thickness at radius q (ring.js tubeAt): uRound = (on, middle, half-width)
+float tubeOf( vec3 p ) {
+  if ( uRound.x < 0.5 ) return 1.0;
+  float u = ( length( ( uSd * p ).xy ) - uRound.y ) / uRound.z;
+  return sqrt( max( 0.04, 1.0 - u * u ) );
 }
 // 0078 r14-neb-b: the halo, a shell between two spheres: its span (two pieces) and its density's exact integral (ring.js haloF)
 vec4 haloSpan( vec3 ro, vec3 rd, float t0, float t1 ) {
@@ -585,7 +609,7 @@ void main() {
       vec3 p = ro + rd * t;
       vec3 cols = colsAt( p.xy );
       // 0078 r14-neb-b: an edge-on ring's step is its density at the sample times the step (ring.js layersAlong)
-      float uq = zq + dzq * t;
+      float uq = ( zq + dzq * t ) / tubeOf( p );
       float st = uDisc.z > 0.5 ? windowFor( p ) * exp( -uq * uq * uq * uq ) * dt : windowAt( p.xy ) * slabIntegral( s, float( i ) * dt, float( i + 1 ) * dt, zq, dzq );
       emitStep( col, T, lightAt( p.xy ), cols, uW.x, cols.x, st, uInside * smoothstep( 0.0, uNear, t ) );
     }
@@ -714,7 +738,7 @@ export function createHero(THREE, env = {}) {
     uniforms: {
       uCam: { value: new THREE.Vector3(0, 0, 10) },
       uSd: { value: M3(THREE, g.Sd) }, uSl: { value: M3(THREE, g.Sl) },
-      uDisc: { value: new THREE.Vector4(SHAPE.slab, g.qIn, g.point ? 1 : 0, g.lean) }, uW: { value: new THREE.Vector3(...g.w) }, uHalo: { value: new THREE.Vector2(g.Ri, g.Ro) }, uEdgeP: { value: g.edgeP },
+      uDisc: { value: new THREE.Vector4(SHAPE.slab, g.qIn, g.point ? 1 : 0, g.lean) }, uW: { value: new THREE.Vector3(...g.w) }, uHalo: { value: new THREE.Vector2(g.Ri, g.Ro) }, uEdgeP: { value: g.edgeP }, uRound: { value: new THREE.Vector3(g.round ? 1 : 0, (g.qIn + SHAPE.outer) / 2, (SHAPE.outer - g.qIn) / 2 + g.edgeP) },
       uUv: { value: new THREE.Vector4(g.uv.u0, g.uv.v0, 1 / g.uv.W, 1 / g.uv.H) }, uRot: { value: new THREE.Vector2(g.uv.cos, g.uv.sin) },
       uBound: { value: g.bound }, uSb: { value: M3(THREE, g.Sb) }, uJit: { value: 1 }, uInside: { value: 1 }, uNear: { value: SHAPE.nearFade * g.Lp }, uN: { value: 8 }, uLight: { value: light.tex }, uCols: { value: colTex }, uColScale: { value: 1 / (2 * cmap.extent) }, uPeak: { value: peak },
       uGamma: { value: pal0.gamma }, uSat: { value: pal0.saturation }, uShare: { value: 0 }, uGain: { value: 1 },

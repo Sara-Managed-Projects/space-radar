@@ -1995,7 +1995,7 @@ Object.assign(COPY, {
     card: {
       m57: 'Its light is taken from Hubble’s photograph, its shape from O’Dell, Ferland, Henney and Peimbert (2013): a thick ring tilted 13.5°, seen almost along its axis, the bluer gas of its middle drawn reaching toward and away from us. Its colours are the photograph’s, taken through narrow filters. Not yet reviewed by an astronomer.',
       // 0078 r14-neb-b: begin
-      m27: 'Its light is taken from NOIRLab’s photograph, in false colour; its shape is a reconstruction: the bright waist a thick ring seen nearly edge on, the fainter ears its lobes, after the shells’ speeds Meaburn and others (2005) measured. Not yet reviewed by an astronomer.',
+      m27: 'Its light is taken from NOIRLab’s photograph, shown in its gases’ own hues; its shape is a reconstruction: the bright waist a thick ring seen nearly edge on, the fainter ears its lobes, after the shells’ speeds Meaburn and others (2005) measured. Not yet reviewed by an astronomer.',
       'southern-ring': 'Its light is taken from Webb’s infrared photograph; its shape follows Kastner and others (2024) and De Marco and others (2022): a ring seen nearly along its axis, a bubble through it and a molecular halo round both. Not yet reviewed by an astronomer.',
       // 0078 r14-neb-b: end
     },
@@ -2009,7 +2009,7 @@ Object.assign(COPY, {
       // 0078 r14-neb-b: begin
       'dso-m27': [
         ['Its shape in depth', 'Reconstructed. Its size, its angle on the sky and the speeds of its shells are measured; that the waist is a ring nearly edge on, and how its ears reach toward and away from us, is the usual reading of a nebula of this look, drawn as an illustration.'],
-        ['Its colours', 'False colour: the photograph’s narrow filters, mapped to colours by the picture’s makers.'],
+        ['Its colours', 'Its gases’ own hues, from the photograph’s narrow filters: oxygen teal, hydrogen and sulphur red. How strongly each is shown is our choice.'],
         ['Review', 'This model has not yet been reviewed by an astronomer.'],
       ],
       'dso-southern-ring-nebula': [

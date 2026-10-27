@@ -15,11 +15,11 @@ export const HERO = {
       42000,
       64000
     ],
-    "dust_share": 0.6,
+    "dust_share": 0.8,
     "seed": 5128,
     "bulge_sparkle": 0.05,
-    "dust_peak": 0.22,
-    "layer_power": 0.95
+    "dust_peak": 0.42,
+    "layer_power": 0.72
   },
   "frame": {
     "pa_deg": 110,
@@ -39,7 +39,7 @@ export const HERO = {
       "re_kpc": 5.44,
       "q": 1.32,
       "light": 0.94,
-      "colour": "#f4e8d6",
+      "colour": "#f0d4ae",
       "source": "Dufour et al. 1979 as Dumont et al. 2023 (arXiv:2306.11786) adopt it: a de Vaucouleurs (r^1/4) profile, effective radius 305 arcsec (5.44 kpc here), mean ellipticity 0.23, the major axis at PA 35 degrees (Silge et al., as cited there); its long axis is taken along the disc's principal axis (Israel 1998, arXiv:astro-ph/9811051: the disc lies along the minor axis) and q 1.32 is DERIVED so that, tilted 75 degrees, it shows the measured 0.77"
     },
     {
@@ -51,8 +51,8 @@ export const HERO = {
       "scale_kpc": 2.2,
       "r_min_kpc": 0.89,
       "r_max_kpc": 5,
-      "light": 0.004,
-      "colour": "#cfdcff",
+      "light": 0.002,
+      "colour": "#e8e4ff",
       "warp": {
         "precession": [
           [
@@ -122,15 +122,15 @@ export const HERO = {
       "kind": "knots",
       "keep": true,
       "what": "H II regions along the disc",
-      "count": 260,
+      "count": 420,
       "in_ring": 0,
-      "size_kpc": 0.05,
-      "height_kpc": 0.04,
+      "size_kpc": 0.06,
+      "height_kpc": 0.12,
       "scale_kpc": 2.2,
-      "r_min_kpc": 0.89,
+      "r_min_kpc": 0.6,
       "r_max_kpc": 5,
-      "light": 0.012,
-      "colour": "#ff9a9a",
+      "light": 0.03,
+      "colour": "#ff8fa8",
       "warp": {
         "precession": [
           [
@@ -287,11 +287,11 @@ export const HERO = {
       "kind": "dust-disc",
       "what": "the warped dusty disc",
       "scale_kpc": 2.0,
-      "r_min_kpc": 0.89,
-      "r_max_kpc": 7,
-      "height_kpc": 0.1,
+      "r_min_kpc": 0.3,
+      "r_max_kpc": 7.5,
+      "height_kpc": 0.3,
       "weight": 1,
-      "strength": 0.45,
+      "strength": 0.8,
       "warp": {
         "precession": [
           [

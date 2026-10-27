@@ -36,7 +36,7 @@ layers:
     file: site/images/deep/m27/m27-light.webp
     row: m27
     size: [512, 430]
-    peak: 0.852
+    peak: 0.638   # 0078 r14-neb-b, the lead's review: re-baked in its gases' hues, waist unclipped (exposure 0.68), outer arcs at half
     from: "site/images/nebulae/m27.webp (NOIRLab noao-m27-kpno-mayall-4-m, T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA), CC BY 4.0)"
     made_by: scripts/build_deep_ring.py
     source: "the photograph (its archive's terms: CC BY 4.0, credit as given), its stars removed by scripts/build_deep_ring.py"
@@ -104,7 +104,7 @@ layers:
 colours:
   mode: enhanced
   lines: {Ha: "#e8705a", star: "#cad8ff"}
-  note: "NARROWBAND under every look: the photograph's own colours, its oxygen given blue, its hydrogen red and its sulphur green by NOIRLab (registry/nebulae.yaml `colours: narrowband`), shown with each exposure's stretch. Not what an eye sees. The knots' cusps take the rim's red; the star a 108 600 K blackbody's"
+  note: "ENHANCED under every look: the photograph's three narrowband channels (registry/nebulae.yaml: oxygen in its blue, hydrogen in its red, sulphur in its green) shown in the hues those gases give off (oxygen teal #1fe0b8, hydrogen red #ff3a2c, sulphur deep red #c81e1a; the channels' balance 1 : 0.7 : 0.3 is OURS, chosen so the oxygen-bright waist reads teal and the hydrogen arcs red, as an eye at a large telescope sees its colours), exposed so the waist is not clipped (0.68 of white at its 99.7th percentile) and the outer arcs beyond 4.2 arcminutes at half (scripts/build_deep_ring.py `lines`, `exposure`, `halo`; lead review of #1298). The knots' cusps take the rim's red; the star a 108 600 K white."
   enhanced:
     mode: enhanced
     under: deep

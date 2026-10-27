@@ -51,6 +51,9 @@ export const HERO = {
       "what": "the main ring: an expanding ring of ionised and molecular gas, not a limb-brightened shell, seen 15 to 30 degrees from its axis",
       "semi_major_arcsec": 26,
       "semi_minor_arcsec": 17.5,
+      "window": "point",
+      "round": true,
+      "edge": 0.2,
       "major_pa_deg": 140,
       "tilt_deg": 22.5,
       "near_pa_deg": 140,
@@ -63,7 +66,7 @@ export const HERO = {
       ],
       "light": "the photograph's, shared with the bubble and the halo by density along our line",
       "check": "Measured here on the photograph (north turned -112.1 degrees as its archive says): the light's second moments give a long axis at PA 138 to 152 degrees, axis ratio 0.77 to 0.82; along PA 140 the bright rim peaks about 25 arcseconds from the centre, along PA 50 about 17",
-      "drawn": "26 by 17.5 arcseconds on the sky at PA 140, its axis 22.5 degrees from our line (the middle of Kastner et al.'s 15 to 30) with its SE side near (ASSUMED: not published), 12 arcseconds thick with crisp faces (illustrative), its cavity inside 0.6 of its radius",
+      "drawn": "26 by 17.5 arcseconds on the sky at PA 140, its axis 22.5 degrees from our line (the middle of Kastner et al.'s 15 to 30) with its SE side near (ASSUMED: not published), 12 arcseconds thick at its middle radius and thinning to its rims, a torus (illustrative), its cavity inside 0.6 of its radius",
       "source": "Kastner, J. H. et al. 2024, The molecular exoskeleton of the ring-like planetary nebula NGC 3132 (arXiv:2402.11850): \"an expanding ring, as opposed to a limb-brightened shell\", \"a bipolar nebula viewed more or less pole-on (inclination ~15--30 degrees)\"; the sizes and position angle measured on the photograph"
     },
     {

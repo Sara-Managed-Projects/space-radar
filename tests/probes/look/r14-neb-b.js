@@ -9,7 +9,8 @@
 // Then the Lagoon Nebula (M8), one of the nine stage r14-neb-a builds: BEFORE its photograph, AFTER the soft glow that
 // draws it until its hero lands. Beside each picture: the photograph's share, the hero's `sr.deep.stats()` row, the
 // renderer's counts and sr.perf's p50/p95 (SwiftShader on a runner: relative numbers only).
-// `-f subject=` a hero id or `glow` (joined by `_`) runs those alone. Fails when a hero never drew.
+// Last, from the ground at night: two former photographs as their soft glows (`ground`).
+// `-f subject=` a hero id, `glow` or `ground` (joined by `_`) runs those alone. Fails when a hero never drew.
 // Run it at `-f width=1600 -f height=900` and again with `-f mobile=true`.
 look.probe = 'r14-neb-b';
 const out = { scenes: [], problems: [] };
@@ -117,6 +118,30 @@ if (want('glow')) {
       await scene('m8-0-after-glow', `the Lagoon Nebula on our line at arrival, AFTER: the soft glow and holder until stage r14-neb-a's hero lands; photograph ${photo('dso-m8')}`, 6000);
     }
   } catch (e) { look.errors.push('probe: glow threw: ' + (e && e.stack || e)); }
+}
+
+// ---- from the ground: the former photographs as soft glows (sky/groundpictures.js; lead review of #1298) ----------------------
+if (want('ground')) {
+  try {
+    sr.deselect();
+    if (!(sr.skyView && sr.skyView.active)) { sr.setMoment('now'); await sleep(7000); }
+    sr.clock.goTo(Date.UTC(2026, 9, 16, 3, 0, 0)); // a night in October, Orion and the Pleiades up for the northern sites
+    sr.clock.setPaused(true);
+    await sleep(3000);
+    let shots = 0;
+    for (const [id, fov] of [['dso-m42', 6], ['dso-m45', 8], ['dso-m31', 8], ['dso-lmc', 20], ['dso-m8', 6]]) {
+      if (shots >= 2) break;
+      const r = sr.recordById(id);
+      if (!r || !sr.skyView || !sr.skyView.active) break;
+      const res = sr.skyView.pointAtRecord(r, { fovDeg: fov, instant: true });
+      if (res !== 'shown') { look.warns.push(`ground: ${id} ${res}`); continue; }
+      await sleep(8000);
+      let gp = null; try { gp = (sr.skyView.groundPictures() || []).filter((p) => p.drawn).map((p) => `${p.id} ${p.strength.toFixed(2)}`); } catch { /* older */ }
+      shots += 1;
+      await shot(`ground-${id.slice(4)}`, `from the ground at night, ${id.slice(4)} in a ${fov} degree field: the soft glow of its catalogue size, no photograph; glows drawn ${JSON.stringify(gp)}`);
+    }
+    if (!shots) out.problems.push('ground: nothing was above the horizon to look at');
+  } catch (e) { look.errors.push('probe: ground threw: ' + (e && e.stack || e)); }
 }
 
 try { sr.clock.setPaused(false); sr.clock.live(); } catch { /* left */ }

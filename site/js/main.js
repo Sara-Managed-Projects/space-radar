@@ -1798,7 +1798,7 @@ export async function boot({ setStatus } = {}) {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
       // 0076 W4-a: a galaxy of the local volume with no catalogued diameter is framed by its distance (a thousandth of it), not as a 20 ly nebula
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : record.meta && record.meta.distLy > 1e6 ? record.meta.distLy / 1000 : 20;
-      const framing = Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
+      const framing = Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm) * (ctx.deep && ctx.deep.arriveScale ? ctx.deep.arriveScale(record.id) : 1); // 0078 r14-neb-b: a hero's own framing
       // 0076 W4-a (spec 0075 task 64): the steady stand-off is for any place past the stellar rung's far plane, not only the exotics'
       return farOff(record) && pos ? Math.max(framing, steadyDistance(Math.hypot(pos.x, pos.y, pos.z))) : framing;
     }

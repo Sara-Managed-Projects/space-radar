@@ -413,6 +413,8 @@ export function createDeepSky(THREE, env = {}) {
     group, frame, rebuild,
     setExposure(k) { gain = Number.isFinite(k) && k > 0 ? k : 1; },
     radiusPx: (id) => (px.has(id) ? px.get(id) : null),
+    /** 0078 r14-neb-b: a hero's arrival framing as a share of the catalogue's (heroes.js `stub.arrive`), 1 when it has none. */
+    arriveScale: (recordId) => { const d = heroesList.find((h) => h.record === recordId); const k = d && d.stub ? Number(d.stub.arrive) : NaN; return Number.isFinite(k) && k > 0 ? k : 1; },
     level: (id) => levels.get(id) || 0,
     nameRule: (record, selectedId, subjectId) => rule(record, { parentPx: px.has(parentIdOf(record)) ? px.get(parentIdOf(record)) : null, selectedId, subjectId }),
     pathFor,

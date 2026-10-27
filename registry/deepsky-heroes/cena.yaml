@@ -11,14 +11,16 @@ stage: r14-neb-b
 shipped: true
 children: []
 levels:
+  # 0078 r14-neb-b, lead review of #1298: the core warm and unclipped (layer_power 0.72, colour #f0d4ae), the lane broad and dark
+  # (dust 0.3 kpc thick from 0.3 kpc, strength 0.8, dust_peak 0.42, dust_share 0.8), pink H II regions along its edges (420, light 0.03): matched by eye to eso1221a
   2: "the structure: the elliptical's smooth light (a billboard, elongated as the galaxy is from each side), its dusty disc warped ring by ring as Quillen et al. 2006 model it, young star clusters and H II regions along it, and the two jets in false colour; statistical points"
   3: "the same, larger on screen"
   points: [14000, 42000, 64000]     # by tier T0, T1, T2
-  dust_share: 0.6
+  dust_share: 0.8
   seed: 5128
   bulge_sparkle: 0.05        # the elliptical's points' share (SPARKLE is 0.2): its stars are not resolved at 3.7 Mpc; at 0.2 they read as grain
-  dust_peak: 0.22           # the darkest face-on dust patch (DUST_PEAK is 0.55): a disc seen edge on stacks its dust; at 0.55 the band was black
-  layer_power: 0.95         # the billboard's stretch: the elliptical's core bright and its outskirts falling away as the photographs show
+  dust_peak: 0.42           # the darkest face-on dust patch (DUST_PEAK is 0.55): a disc seen edge on stacks its dust; at 0.55 the band was black
+  layer_power: 0.72         # the billboard's stretch: the elliptical's core bright and its outskirts falling away as the photographs show
 frame:
   pa_deg: 110         # Quillen et al. 2006 (arXiv:astro-ph/0601135, table 1): the galaxy's principal axis at PA 20 degrees on the sky, so the plane it is the axis of has its line of nodes at 110
   incl_deg: 75        # Quillen et al. 2006 (table 1): the principal axis tilted 75 degrees to our line of sight
@@ -29,7 +31,7 @@ frame:
   units_ly: 100
   source: "Quillen et al. 2006 (Spitzer, the warped disc's tilted-ring model, table 1): principal axis PA 20, tilt 75; the near side after Bland et al. 1987 and Nicholson et al. 1992 as Quillen et al. 2006 cite them"
 layers:
-  - {kind: bulge, what: "the giant elliptical's old stars", sersic_n: 4, re_kpc: 5.44, q: 1.32, light: 0.94, colour: "#f4e8d6",
+  - {kind: bulge, what: "the giant elliptical's old stars", sersic_n: 4, re_kpc: 5.44, q: 1.32, light: 0.94, colour: "#f0d4ae",
      source: "Dufour et al. 1979 as Dumont et al. 2023 (arXiv:2306.11786) adopt it: a de Vaucouleurs (r^1/4) profile, effective radius 305 arcsec (5.44 kpc here), mean ellipticity 0.23, the major axis at PA 35 degrees (Silge et al., as cited there); its long axis is taken along the disc's principal axis (Israel 1998, arXiv:astro-ph/9811051: the disc lies along the minor axis) and q 1.32 is DERIVED so that, tilted 75 degrees, it shows the measured 0.77"}
   - kind: clumps
     keep: true
@@ -39,14 +41,14 @@ layers:
     scale_kpc: 2.2
     r_min_kpc: 0.89
     r_max_kpc: 5
-    light: 0.004
-    colour: "#cfdcff"
+    light: 0.002
+    colour: "#e8e4ff"
     warp: &warp
       precession: [[0.004, 180], [0.642, 210], [1.017, 270], [1.427, 345], [1.588, 375], [1.784, 400], [2.409, 380], [2.765, 345], [4.282, 280], [7.136, 240]]
       tilt: [[0.004, 25], [1.784, 20], [4.639, 8], [7.136, 8]]
       alpha0_deg: 0
     source: "Israel 1998 (arXiv:astro-ph/9811051): the disc is rich in young stars, bright clusters at the dark band's north-western and south-eastern edges; placed statistically on the warped disc; the warp is Quillen et al. 2006's (table 1: precession and tilt splines, here linear, their arcseconds in kpc at the record's distance)"
-  - {kind: knots, keep: true, what: "H II regions along the disc", count: 260, in_ring: 0, size_kpc: 0.05, height_kpc: 0.04, scale_kpc: 2.2, r_min_kpc: 0.89, r_max_kpc: 5, light: 0.012, colour: "#ff9a9a", warp: *warp,
+  - {kind: knots, keep: true, what: "H II regions along the disc", count: 420, in_ring: 0, size_kpc: 0.06, height_kpc: 0.12, scale_kpc: 2.2, r_min_kpc: 0.6, r_max_kpc: 5, light: 0.03, colour: "#ff8fa8", warp: *warp,
      source: "placed statistically on the warped disc; not a catalogue of positions"}
   - kind: stream
     what: "the north-eastern jet and its inner lobe (X-rays and radio, drawn in false colour)"
@@ -77,7 +79,7 @@ layers:
     light: 0.0001
     colour: "#7ea8ff"
     source: "ILLUSTRATION in false colour: the faint counter-jet opposite the jet, its extended X-ray emission out to 2.0 kpc (Hardcastle et al. 2007, arXiv:0710.1277), away from us as the jet is toward us"
-  - {kind: dust-disc, what: "the warped dusty disc", scale_kpc: 2.0, r_min_kpc: 0.89, r_max_kpc: 7, height_kpc: 0.1, weight: 1, strength: 0.45, warp: *warp,
+  - {kind: dust-disc, what: "the warped dusty disc", scale_kpc: 2.0, r_min_kpc: 0.3, r_max_kpc: 7.5, height_kpc: 0.3, weight: 1, strength: 0.8, warp: *warp,
      source: "Quillen et al. 2006 (table 1): a thin disc with an inner gap of 50 arcsec (0.89 kpc here), warped by their precession and tilt; reaching 7 kpc as the H I does (Israel 1998); the dust's radial profile (scale 2 kpc) and thickness illustrative"}
 colours:
   mode: true

@@ -234,12 +234,12 @@ export const TOURS_INDEX = [
 {
 "id": "through-a-telescope",
 "title": "The sky as telescopes see it",
-"blurb": "Real photographs, each where it is in the sky. Leaving goes back to Earth.",
+"blurb": "Clouds and galaxies in 3D, built from measurements and telescope photographs. Leaving goes back to Earth.",
 "group": "beyond",
 "next": "a-dark-sky",
 "min_stops": 3,
 "count": 9,
-"estimate_ms": 211030
+"estimate_ms": 214728
 },
 {
 "id": "a-dark-sky",

@@ -3580,12 +3580,12 @@ export const COPY = {
   },
   "deepRing": {
     "card": {
-      "m27": "A sua luz vem da fotografia do NOIRLab, em falsa cor; a sua forma é uma reconstrução: a cintura brilhante, um anel espesso visto quase de perfil; as «orelhas» mais ténues, os seus lóbulos, segundo as velocidades das suas camadas medidas por Meaburn e outros (2005). Ainda não revisto por um astrónomo.",
+      "m27": "A sua luz vem da fotografia do NOIRLab, mostrada nos tons próprios dos seus gases; a sua forma é uma reconstrução: a cintura brilhante, um anel espesso visto quase de perfil; as «orelhas» mais ténues, os seus lóbulos, segundo as velocidades das suas camadas medidas por Meaburn e outros (2005). Ainda não revisto por um astrónomo.",
       "southern-ring": "A sua luz vem da fotografia em infravermelho do Webb; a sua forma segue Kastner e outros (2024) e De Marco e outros (2022): um anel visto quase ao longo do seu eixo, uma bolha que o atravessa e um halo molecular à volta de ambos. Ainda não revisto por um astrónomo.",
       "m57": "A luz vem da fotografia do Hubble, a forma de O’Dell, Ferland, Henney e Peimbert (2013): um anel grosso inclinado 13,5°, visto quase ao longo do eixo, com o gás mais azulado do meio desenhado se estendendo em nossa direção e na direção oposta. As cores são as da fotografia, feita com filtros estreitos. Ainda não revisado por um astrônomo."
     },
     "rows": {
-      "dso-m27": [["A sua forma em profundidade", "Reconstruída. O tamanho, o ângulo no céu e as velocidades das camadas são medidos; que a cintura seja um anel quase de perfil, e como as «orelhas» se estendem na nossa direção e na oposta, é a leitura habitual de uma nebulosa com este aspeto, desenhada como ilustração."], ["As suas cores", "Falsa cor: os filtros estreitos da fotografia, associados a cores pelos seus autores."], ["Revisão", "Este modelo ainda não foi revisto por um astrónomo."]],
+      "dso-m27": [["A sua forma em profundidade", "Reconstruída. O tamanho, o ângulo no céu e as velocidades das camadas são medidos; que a cintura seja um anel quase de perfil, e como as «orelhas» se estendem na nossa direção e na oposta, é a leitura habitual de uma nebulosa com este aspeto, desenhada como ilustração."], ["As suas cores", "Os tons próprios dos seus gases, a partir dos filtros estreitos da fotografia: oxigénio verde-azulado, hidrogénio e enxofre vermelhos. A força de cada um é escolha nossa."], ["Revisão", "Este modelo ainda não foi revisto por um astrónomo."]],
       "dso-southern-ring-nebula": [["A sua forma em profundidade", "Reconstruída. Que o seu anel brilhante é visto a 15–30° do seu eixo é medido (Kastner e outros, 2024); que lado está mais perto, a espessura do anel e o comprimento da bolha são ilustrativos."], ["As suas cores", "Luz infravermelha que nenhum olho vê, colorida pelos autores da imagem do Webb."], ["Revisão", "Este modelo ainda não foi revisto por um astrónomo."]],
       "dso-m57": [
         [

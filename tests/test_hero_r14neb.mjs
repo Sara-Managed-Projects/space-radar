@@ -71,7 +71,7 @@ function dirnameOf(p) { return p.split('/').slice(0, -1).join('/'); }
   check(Math.abs((pa(g.e1) % 180) - 41) < 1e-6, `M27: the waist's long axis at PA 41° (measured on the photograph): ${pa(g.e1).toFixed(2)}`);
   check(Math.abs(Math.hypot(g.e1[0], g.e1[1]) - 1) < 1e-9, 'M27: the line of nodes lies in the plane of the sky (its in-plane radius is its apparent one)');
   const s = R.geometryOf(await hero('southern-ring'));
-  check(!s.point && Math.abs(Math.acos(Math.abs(s.axis[2])) / D2R - 22.5) < 1e-6 && Math.abs((pa(s.axis) % 360) - 140) < 1e-6, 'the Southern Ring: its axis 22.5° from our line (Kastner et al. 2024: 15 to 30), toward PA 140');
+  check(s.point && s.round && R.tubeAt(s, (s.qIn + 1.08) / 2) > 0.999 && R.tubeAt(s, s.qIn) < 0.9 && Math.abs(Math.acos(Math.abs(s.axis[2])) / D2R - 22.5) < 1e-6 && Math.abs((pa(s.axis) % 360) - 140) < 1e-6, 'the Southern Ring: its axis 22.5° from our line (Kastner et al. 2024: 15 to 30), toward PA 140; its tube round, thinning to its rims (lead review of #1298: no box from the side)');
   check(s.w[2] > 0 && s.Ro > s.Ri && s.bound >= s.Ro, 'the Southern Ring: its molecular halo carries light, inside the bounding ellipsoid');
 }
 

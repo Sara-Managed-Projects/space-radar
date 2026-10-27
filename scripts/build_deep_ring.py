@@ -42,6 +42,10 @@ TARGETS = {
     # 0078 r14-neb-b: begin
     "m27": {"src": "m27.webp", "out": "m27/m27-light.webp", "above": 26.0, "row": "m27", "floor": True, "radius_arcmin": 7.2,
             "bright": {"disc_px": 5, "spike_px": 0, "above": 60.0},
+            # lead review of #1298: the light in its gases' own hues (its narrowband channels: R hydrogen, G sulphur, B oxygen,
+            # as registry/nebulae.yaml says) with the waist unclipped and the outer arcs dimmer than the body
+            "lines": {"r": ["#ff3a2c", 0.7], "g": ["#c81e1a", 0.3], "b": ["#1fe0b8", 1.0]}, "exposure": 0.68,
+            "halo": {"from_arcmin": 4.2, "to_arcmin": 5.6, "gain": 0.5},
             "credit": "T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA) (NOIRLab noao-m27-kpno-mayall-4-m), CC BY 4.0; stars removed by Space Radar (scripts/build_deep_ring.py)"},
     "southern-ring": {"src": "southern-ring-nebula.webp", "out": "southern-ring/southern-ring-light.webp", "above": 45.0, "row": "southern-ring-nebula",
                       "floor": True, "radius_arcmin": 1.08, "bright": {"disc_px": 9, "spike_px": 34, "above": 90.0},
@@ -149,6 +153,25 @@ def bake_one(hid: str, t: dict) -> int:
         fade = np.clip((R - rr) / (0.2 * R), 0, 1)
         out_a *= (fade * fade * (3 - 2 * fade))[..., None]
         info["floor"] = [round(float(x), 1) for x in floor]
+    # 0078 r14-neb-b: begin (the lead's review of #1298: M27's light in its gases' own hues, its waist unclipped, its arcs dimmer)
+    if t.get("lines"):
+        hx = lambda h: np.array([int(h[i:i + 2], 16) for i in (1, 3, 5)], dtype=np.float32) / 255.0
+        L = t["lines"]
+        M = np.stack([hx(L[c][0]) * float(L[c][1]) for c in ("r", "g", "b")], 0)
+        out_a = (out_a / 255.0) @ M
+        if t.get("halo"):
+            r = row_of(t["row"])
+            H, W = out_a.shape[:2]
+            yy, xx = np.mgrid[0:H, 0:W]
+            rr = np.hypot((xx + 0.5 - W / 2) * r["width_arcmin"] / W, (yy + 0.5 - H / 2) * r["height_arcmin"] / H)
+            h = t["halo"]
+            k = np.clip((rr - h["from_arcmin"]) / (h["to_arcmin"] - h["from_arcmin"]), 0, 1)
+            out_a *= (1.0 - (1.0 - h["gain"]) * k * k * (3 - 2 * k))[..., None]
+        out_a = out_a / max(1e-6, float(np.percentile(out_a.max(axis=2), 99.7))) * float(t.get("exposure", 1.0)) * 255.0
+        info["lines"] = L
+        info["exposure"] = t.get("exposure", 1.0)
+        info["halo"] = t.get("halo")
+    # 0078 r14-neb-b: end
     out.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(np.clip(out_a, 0, 255).astype(np.uint8)).save(out, "WEBP", quality=86, method=6)
     manifest.write_text(json.dumps({
