@@ -62,17 +62,22 @@ moons, layers and landing sites are as they were in 1.3.0.
   and its seams are fixed.
 - TODO(1.4.0, galaxies and photographs): the removal of the galaxy and nebula photographs from the scene
   (`r14-neb-b`), and the new photograph count above.
-- TODO(1.4.0, Milky Way and black holes): the Milky Way and the black holes without photographs
-  (`r14-mw-bh`).
+- **Black holes in 3D** ([#1293]): Sagittarius A*, M87* and Cygnus X-1 are drawn as black holes, with the
+  shadow sized to the Event Horizon Telescope measurements, a sharp photon ring, a Doppler-brightened disc,
+  the lensed far side of the disc, M87*'s faint jet and counter-jet, and Cygnus X-1's companion star. The
+  EHT photographs stay on the cards, and the black-holes trip is narrated again with the new words.
 
 ### Changed
 - TODO(1.4.0): what changed in what a visitor already had (the nebulae's cards, the models that replace
   stand-ins), to be filled when the last three branches are folded in.
 
+### Not yet
+- The Milky Way from inside is still the NASA SVS photo map; the 3D band moves to 1.5.0.
+
 ### For contributors
-- How the release was assembled: stages `r14-data`, `r14-neb-a`, `r14-m1` to `r14-m8` and `r14-pluto` reached `main` as
+- How the release was assembled: stages `r14-data`, `r14-neb-a`, `r14-m1` to `r14-m8`, `r14-pluto` and `r14-mw-bh` reached `main` as
   one integration pull request, with their own pull requests [#1288], [#1289], [#1290], [#1291], [#1292],
-  [#1294], [#1295], [#1296], [#1297], [#1300] and [#1301].
+  [#1293], [#1294], [#1295], [#1296], [#1297], [#1300] and [#1301].
 
 ## [1.3.0] - 2026-10-21
 
@@ -859,6 +864,7 @@ The first public map.
 [#1290]: https://github.com/Sara-Managed-Projects/space-radar/pull/1290
 [#1291]: https://github.com/Sara-Managed-Projects/space-radar/pull/1291
 [#1292]: https://github.com/Sara-Managed-Projects/space-radar/pull/1292
+[#1293]: https://github.com/Sara-Managed-Projects/space-radar/pull/1293
 [#1294]: https://github.com/Sara-Managed-Projects/space-radar/pull/1294
 [#1295]: https://github.com/Sara-Managed-Projects/space-radar/pull/1295
 [#1296]: https://github.com/Sara-Managed-Projects/space-radar/pull/1296
