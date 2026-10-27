@@ -1655,6 +1655,17 @@ export const REAL_MODELS = {
     'lunokhod-1': { build: 'rover', file: 'lunokhod-1.glb', colour: 'site', name: 'Lunokhod 1, its lid open', displayName: 'Lunokhod 1, Mare Imbrium', made: 'dimensions' },
     'lunokhod-2': { build: 'rover', file: 'lunokhod-2.glb', colour: 'site', name: 'Lunokhod 2, its lid open', displayName: 'Lunokhod 2, Le Monnier crater', made: 'dimensions' },
     // 0077 W3-c: end
+    // 0078 r14-m8: begin
+    // FOUR MORE LANDERS (public #1128, #1130, #1131, #1132), each built in code from cited metres and photographs
+    // (registry/models.yaml rows `luna-16`, `pathfinder`, `phoenix`, `mars-3`) and drawn as it stands now: Luna 16's descent
+    // stage with its ascent stage gone, Mars Pathfinder with its petals open and the airbags heaped and Sojourner beside it,
+    // Phoenix with both arrays open, the Mars 3 capsule with its four petals open. NASA publishes no model of Pathfinder or
+    // Phoenix (read 2026-10-26: its 3D Resources and NASA Science's 3D models have none), so none is official.
+    'luna-16': { build: 'lander', file: 'luna-16.glb', colour: 'site', name: "Luna 16's descent stage, the ascent stage gone", displayName: 'Luna 16, Mare Fecunditatis', made: 'dimensions' },
+    'mars-pathfinder': { build: 'lander', file: 'pathfinder.glb', colour: 'site', name: 'Mars Pathfinder, with Sojourner beside it', displayName: 'Mars Pathfinder, Ares Vallis', made: 'dimensions' },
+    phoenix: { build: 'lander', file: 'phoenix.glb', colour: 'site', name: 'Phoenix, both arrays open', displayName: 'Phoenix, Vastitas Borealis', made: 'dimensions' },
+    'mars-3': { build: 'lander', file: 'mars-3.glb', colour: 'site', name: 'the Mars 3 landing capsule, its petals open', displayName: 'Mars 3, Ptolemaeus crater', made: 'dimensions' },
+    // 0078 r14-m8: end
     // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
     // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the

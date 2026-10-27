@@ -641,7 +641,11 @@ export const VISUAL_CLASSES = [
 "yutu",
 "change-5",
 "lunokhod-1",
-"lunokhod-2"
+"lunokhod-2",
+"luna-16",
+"mars-3",
+"phoenix",
+"pathfinder"
 ],
 "model_kinds": [
 "site-surveyor",
