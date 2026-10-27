@@ -3849,7 +3849,7 @@ export const TOURS = [
 {
 "id": "through-a-telescope",
 "title": "The sky as telescopes see it",
-"blurb": "Clouds and galaxies in 3D, built from measurements and telescope photographs. Leaving goes back to Earth.",
+"blurb": "Clouds and galaxies drawn in 3D from photographs. Leaving goes back to Earth.",
 "requires": [
 "stars",
 "deep-sky"
@@ -3927,13 +3927,13 @@ export const TOURS = [
 "exposure": "deep",
 "card": {
 "title": "A long exposure",
-"body": "Stretch a long exposure further and the faintest outer parts appear. Each cloud and galaxy on this trip is drawn in 3D, built from measurements of its shape, its light taken from telescope photographs. Its card lets you compare it with the photograph itself."
+"body": "Stretch a long exposure further and the faintest outer parts appear. Each cloud and galaxy on this trip is drawn in three dimensions, built from measurements of its shape, its light taken from telescope photographs. Its card lets you compare it with the photograph itself."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 17152
+"dwell_ms": 17485
 },
 {
 "id": "horsehead",
@@ -3993,7 +3993,7 @@ export const TOURS = [
 "exposure": "camera",
 "card": {
 "title": "What Webb saw in the Tarantula",
-"body": "Seen from our side, this cloud's light is the Webb telescope's own picture. It is made in infrared light, which no eye can see, so every colour in it is chosen. Infrared passes through dust, and here it shows tens of thousands of young stars that no telescope had seen before. The region is 340 light-years across, in a small galaxy beside ours."
+"body": "Seen from our side, this cloud's light is the Webb telescope's own picture. It is made in infrared light, which no eye can see, so every colour in it is chosen. Infrared passes through dust, and here it shows tens of thousands of young stars that no telescope had seen. The region is 340 light-years across, in a small galaxy beside ours."
 },
 "frame_radii": 5.0,
 "drift": "toward-light",
@@ -4068,7 +4068,7 @@ export const TOURS = [
 "dwell_ms": 16819
 }
 ],
-"estimate_ms": 214728
+"estimate_ms": 215061
 },
 {
 "id": "a-dark-sky",

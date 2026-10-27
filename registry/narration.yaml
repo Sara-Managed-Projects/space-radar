@@ -391,12 +391,12 @@ clips:
   - {trip: "black-holes", stop: "m87", hash: "4c87a724e8044d2c", seconds: 21.92, words: 64, lufs: -16.4, opus: 87628, m4a: 113072, vtt: 429, wer: 0.0, heard: "ab3a551d9a8c7581", voice: 0}
   - {trip: "black-holes", stop: "sun", hash: "d4643686f5e9e3a4", seconds: 19.11, words: 59, lufs: -16.4, opus: 74951, m4a: 98728, vtt: 437, wer: 0.0169, heard: "2a86f05fc0eb00ec", voice: 1}
   - {trip: "through-a-telescope", stop: "eye", hash: "421f8c7f39656a29", seconds: 15.63, words: 50, lufs: -16.4, opus: 61113, m4a: 81124, vtt: 340, wer: 0.0, heard: "48a171061edcfb3b", voice: 0}
-  - {trip: "through-a-telescope", stop: "camera", hash: "1f14b5ad7f6b8e33", seconds: 19.47, words: 59, lufs: -16.4, opus: 76761, m4a: 100684, vtt: 463}
-  - {trip: "through-a-telescope", stop: "deep", hash: "6e90b12a5c8fa4a1", seconds: 13.76, words: 39, lufs: -16.4, opus: 53575, m4a: 71562, vtt: 315, wer: 0.0, heard: "56016ed2a7c1f4d7", voice: 0}
-  - {trip: "through-a-telescope", stop: "horsehead", hash: "c195f133750a8dbb", seconds: 18.58, words: 54, lufs: -16.4, opus: 73992, m4a: 96120, vtt: 392, wer: 0.0, heard: "107ec13d09ade9f2", voice: 0}
-  - {trip: "through-a-telescope", stop: "carina", hash: "19c13137908fd43d", seconds: 16.57, words: 43, lufs: -16.4, opus: 65301, m4a: 85906, vtt: 356, wer: 0.0233, heard: "0a8720884beac52a", voice: 0}
-  - {trip: "through-a-telescope", stop: "webb", hash: "2fa2a849125b74cc", seconds: 24.71, words: 66, lufs: -16.4, opus: 99733, m4a: 127416, vtt: 477, wer: 0.0156, heard: "cec6034f9f925529", voice: 0}
-  - {trip: "through-a-telescope", stop: "trifid", hash: "9fe3d961ccbe1a40", seconds: 19.6, words: 50, lufs: -16.5, opus: 77842, m4a: 101336, vtt: 390, wer: 0.0, heard: "c2660ba7f273253a", voice: 0}
+  - {trip: "through-a-telescope", stop: "camera", hash: "1f14b5ad7f6b8e33", seconds: 19.47, words: 59, lufs: -16.4, opus: 76855, m4a: 99349, vtt: 463, wer: 0.0, heard: "e50bed2fcb919f38", voice: 0}
+  - {trip: "through-a-telescope", stop: "deep", hash: "bc8e1c2d849786a1", seconds: 18.85, words: 48, lufs: -16.4, opus: 74836, m4a: 98768, vtt: 397, wer: 0.0, heard: "44342a39c58da501", voice: 0}
+  - {trip: "through-a-telescope", stop: "horsehead", hash: "1064c1d019a892d9", seconds: 19.86, words: 58, lufs: -16.4, opus: 79347, m4a: 100665, vtt: 413, wer: 0.0, heard: "84f4cec218628a0f", voice: 0}
+  - {trip: "through-a-telescope", stop: "carina", hash: "19c13137908fd43d", seconds: 16.57, words: 43, lufs: -16.4, opus: 65301, m4a: 85906, vtt: 356, wer: 0.0, heard: "6a50a3055cd889fd", voice: 0}
+  - {trip: "through-a-telescope", stop: "webb", hash: "96b750af82e68d1d", seconds: 26.06, words: 71, lufs: -16.3, opus: 104579, m4a: 132731, vtt: 503, wer: 0.029, heard: "3f3ddf243c3e63a4", voice: 0}
+  - {trip: "through-a-telescope", stop: "trifid", hash: "c9796f924a3a2c56", seconds: 20.03, words: 52, lufs: -16.5, opus: 79699, m4a: 101844, vtt: 398, wer: 0.0, heard: "8195305d9fd5a75a", voice: 0}
   - {trip: "through-a-telescope", stop: "whirlpool", hash: "ecf1bf9a8d016d73", seconds: 19.22, words: 50, lufs: -16.4, opus: 76145, m4a: 99380, vtt: 408, wer: 0.0, heard: "4695a64bebf85066", voice: 0}
   - {trip: "through-a-telescope", stop: "andromeda", hash: "6c0ce87bbf3006fa", seconds: 17.22, words: 50, lufs: -16.4, opus: 68411, m4a: 89166, vtt: 371, wer: 0.0, heard: "d21b8986b9e27528", voice: 0}
   - {trip: "a-dark-sky", stop: "lights", hash: "4cac25ee8ec699de", seconds: 15.82, words: 51, lufs: -16.2, opus: 61835, m4a: 81994, vtt: 379, wer: 0.0, heard: "8f1421a56a08cdbc", voice: 0}

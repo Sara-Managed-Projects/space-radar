@@ -3526,7 +3526,8 @@ tours:
   # ---------------------------------------------------------------------------------------------
   - id: through-a-telescope
     title: "The sky as telescopes see it"
-    blurb: "Clouds and galaxies in 3D, built from measurements and telescope photographs. Leaving goes back to Earth."  # 0078 r14-neb-b
+    # 0078 r14-neb-b: the intro names what is drawn, and it fits the two-line band.
+    blurb: "Clouds and galaxies drawn in 3D from photographs. Leaving goes back to Earth."
     group: beyond
     next: a-dark-sky
     requires: [stars, deep-sky]
@@ -3584,9 +3585,9 @@ tours:
           title: "A long exposure"
           body: >-
             Stretch a long exposure further and the faintest outer parts appear. Each
-            cloud and galaxy on this trip is drawn in 3D, built from measurements of its
-            shape, its light taken from telescope photographs. Its card lets you compare
-            it with the photograph itself.
+            cloud and galaxy on this trip is drawn in three dimensions, built from
+            measurements of its shape, its light taken from telescope photographs. Its
+            card lets you compare it with the photograph itself.
 
       - id: horsehead
         target: {record: dso-horsehead-nebula}
@@ -3640,7 +3641,7 @@ tours:
             Seen from our side, this cloud's light is the Webb telescope's own picture.
             It is made in infrared light, which no eye can see, so every colour in it is
             chosen. Infrared passes through dust, and here it shows tens of thousands of
-            young stars that no telescope had seen before. The region is 340 light-years
+            young stars that no telescope had seen. The region is 340 light-years
             across, in a small galaxy beside ours.
 
       - id: trifid
