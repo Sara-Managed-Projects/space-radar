@@ -1372,7 +1372,7 @@ Milstar (#1120) and DMSP Block 5D-3 (#1095) are NOT built: no clear photograph o
 | File | Model | Pictures read off (all public domain unless said) | Used for | Size |
 |---|---|---|---|---|
 | `wgs.glb` | Wideband Global SATCOM, one design for the ten craft | US Air Force: MC-2941 and 3194626; US Strategic Command's drawing | NORAD 32258, 34713, 36108, 38070, 39168, 39222, 40746, 41879, 42075, 44071 | 65 KB |
-| `aehf.glb` | Advanced Extremely High Frequency | US Air Force: "First AEHF" render, AEHF 1; the Operational Test office's drawing | NORAD 36868, 38254, 39256, 43651, 44481, 45465 | 86 KB |
+| `aehf.glb` | Advanced Extremely High Frequency | US Air Force: "First AEHF" render, AEHF 1; the Operational Test office's drawing | NORAD 36868, 38254, 39256, 43651, 44481, 45465 | 67 KB |
 | `muos.glb` | Mobile User Objective System | US Navy: "MUOS new" and "MUOS" | NORAD 38093, 39206, 40374, 40887, 41622 | 82 KB |
 | `sbirs-geo.glb` | SBIRS GEO | US Air Force: "SBIRS-GEO 2" and "SBIRS-GEO" | NORAD 37481, 39120, 41937, 43162, 48618, 53355 | 41 KB |
 | `ao-7.glb` | AMSAT-OSCAR 7 | AMSAT-Deutschland's photographs of the flight model, LOOKED AT ONLY (not free; nothing is copied); the dimensions are Wikipedia's and AMSAT-DL's | NORAD 7530 | 68 KB |
