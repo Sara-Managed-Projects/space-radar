@@ -300,7 +300,8 @@ export function createExhaustCloud({ from, to, axis = [0, 0, 1], count = 400, wa
       if (scale) mat.uniforms.uScale.value = scale;
       mat.uniforms.uTint.value.setRGB(0.93 * light, 0.93 * light, 0.92 * light);
       points.visible = time >= from - 0.5;
-      for (const f of fires) f.set({ on: fire, altM: 0, time, still });
+      // Under half the brightness of a free plume: it is flame seen through its own smoke, low on the ground.
+      for (const f of fires) f.set({ on: fire * 0.42, altM: 0, time, still });
     },
     dispose() { geo.dispose(); mat.dispose(); for (const f of fires) f.dispose(); },
   };

@@ -41,10 +41,10 @@ Object.assign(COPY, {
       illustrative: 'Illustrative',
     },
     // The honesty line at the foot. `{path}` is the trajectory's own sentence from the story's words.
-    truthLine: '{truth}: {path}',
-    cutNote: 'Stages cut from one model until the split model arrives.',
-    drawnNote: 'Flames, steam and parachutes are drawn, not measured.',
-    groundNote: 'Ground near the pad illustrative; Earth map: Solar System Scope, CC BY 4.0.',
+    truthLine: '{truth}: {path}.',
+    cutNote: 'Stages cut from one model for now.',
+    drawnNote: 'Flames and steam are drawn.',
+    groundNote: 'Ground near the pad illustrative; Earth map Solar System Scope, CC BY 4.0.',
     keys: 'Space plays or pauses, arrows step, Escape closes',
   },
 
@@ -67,7 +67,7 @@ Object.assign(COPY, {
       staging: 'T+161.7 s: the outboard engines cut off. Some 67 km up the S-IC falls away, its retro-rockets firing.',
       sii: 'T+163.0 s: the S-II\'s five J-2 engines light. Hydrogen burns pale and nearly clear.',
       interstage: 'The interstage ring drops away; at T+197.9 s the escape tower goes. Parking orbit is 8.5 minutes on.',
-      pathAscent: 'event times from the Apollo 11 Mission Report; heights and distances between them approximate',
+      pathAscent: 'Apollo 11 Mission Report times, heights between them approximate',
       sources: 'Apollo 11 Mission Report, NASA MSC-00171, 1969 (Table 3-I, sequence of events; section 7.1, launch)',
     },
   },

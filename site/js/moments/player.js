@@ -327,6 +327,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     const v = vehicles.get(lead && lead.id);
     if (v && v.v && v.v.split === 'cuts') parts.push(W().cutNote);
     parts.push(W().drawnNote);
+    // Each piece is a sentence of its own.
     if (m.place && m.place.ground) parts.push(W().groundNote);
     ui.foot.textContent = parts.join(' ');
   }
@@ -563,10 +564,16 @@ export function createMomentPlayer(ctx, opts = {}) {
       pose = freePose(c.pos, c.up, free.az, free.el, free.dist, free.fov || 40);
     } else pose = shot.pose;
     lastPose = pose;
-    if (shot.index !== lastShot) { lastShot = shot.index; if (ui) ui.root.dataset.shot = shot.shot.shot; }
+    // A tall screen: a wider vertical lens (half-way, in tangent, to keeping the shot's 16:9 width), so a rocket on a
+    // phone is still a rocket on its pad. And the subject sits in the middle of what the card and the strip leave free.
     renderer.getSize(size);
+    const aspect = size.x / Math.max(1, size.y);
+    const widen = aspect < 16 / 9 ? Math.sqrt((16 / 9) / aspect) : 1;
+    const lens = { ...pose, fov: (2 * Math.atan(Math.tan((pose.fov * DEG) / 2) * widen)) / DEG };
+    const band = freeBand(size.y);
+    if (shot.index !== lastShot) { lastShot = shot.index; if (ui) ui.root.dataset.shot = shot.shot.shot; }
     const origin = pose.pos;
-    const air = stage.update({ origin, sidereal: g, sunDir, moonPos, placeNow, pose, aspect: size.x / Math.max(1, size.y) });
+    const air = stage.update({ origin, sidereal: g, sunDir, moonPos, placeNow, pose: lens, aspect, shiftPx: band, width: size.x, height: size.y });
     // Parts, flames, separation motors, chutes, plasma.
     for (const [id, entry] of vehicles) {
       const v = entry.v;
@@ -624,7 +631,7 @@ export function createMomentPlayer(ctx, opts = {}) {
     // The steam at the pad, in the place's own axes.
     if (clouds.length) {
       const sunLocal = [sunDir[0] * placeNow.e[0] + sunDir[1] * placeNow.e[1] + sunDir[2] * placeNow.e[2], sunDir[0] * placeNow.u[0] + sunDir[1] * placeNow.u[1] + sunDir[2] * placeNow.u[2], sunDir[0] * placeNow.s[0] + sunDir[1] * placeNow.s[1] + sunDir[2] * placeNow.s[2]];
-      const pxPerM = size.y / (2 * Math.tan((pose.fov * DEG) / 2)) * renderer.getPixelRatio();
+      const pxPerM = size.y / (2 * Math.tan((lens.fov * DEG) / 2)) * renderer.getPixelRatio();
       for (const c of clouds) {
         // The fire along the trench burns while the part that feeds it does, and dies as the stack climbs away.
         let fire = 0;
@@ -643,6 +650,22 @@ export function createMomentPlayer(ctx, opts = {}) {
     const saved = lightU ? swapLight(sunDir, air.capCentre, origin) : null;
     renderer.render(stage.scene, stage.camera);
     if (saved) restoreLight(saved);
+  }
+
+  // Where the chrome leaves the scene free: the shift (CSS px) that puts the frame's centre in the middle of the band
+  // between the card at the top and the strip at the foot. Measured twice a second, not every frame.
+  let bandAt = 0, bandShift = 0;
+  function freeBand(h) {
+    const now = typeof performance !== 'undefined' ? performance.now() : 0;
+    if (ui && now - bandAt > 500) {
+      bandAt = now;
+      try {
+        const top = ui.root.querySelector('.sr-moment__card').getBoundingClientRect().bottom;
+        const bottom = ui.bar.getBoundingClientRect().top;
+        bandShift = bottom > top ? Math.max(-h * 0.25, Math.min(h * 0.25, h / 2 - (top + bottom) / 2)) : 0;
+      } catch { bandShift = 0; }
+    }
+    return bandShift;
   }
 
   function swapLight(sunDir, centre, origin) {

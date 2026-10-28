@@ -315,7 +315,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
    * Pose everything for one frame. `origin` (stage metres) is where the camera is; `placeBasis` the place's east,
    * up and south axes and its position in the stage frame now; `sunDir` unit; `moon` stage metres.
    */
-  function update({ origin, sidereal, sunDir, moonPos, placeNow, pose, aspect }) {
+  function update({ origin, sidereal, sunDir, moonPos, placeNow, pose, aspect, shiftPx = 0, width = 0, height = 0 }) {
     const o = origin;
     earth.position.set(-o[0], -o[1], -o[2]);
     earth.rotation.set(0, sidereal, 0);
@@ -377,6 +377,9 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     camera.near = Math.min(50, Math.max(0.05, d * 0.002));
     camera.far = 1e12;
     camera.aspect = aspect;
+    // The frame's centre moved into the band the chrome leaves free (a view offset: the same lens, its window slid).
+    if (shiftPx && width > 0 && height > 0) camera.setViewOffset(width, height, 0, shiftPx, width, height);
+    else if (camera.view) camera.clearViewOffset();
     camera.updateProjectionMatrix();
     sky.position.set(0, 0, 0);
     stars.position.set(0, 0, 0);
