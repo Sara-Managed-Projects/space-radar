@@ -2174,7 +2174,7 @@ export const COPY = {
     layerCountLoading: 'counting',
     // One sentence under a row that is off on purpose (public #271): how to show it.
     layerHint: {
-      exoplanets: 'Off by default. Tick to show them.',
+      exoplanets: 'Switched off. Tick to show them.', // 0079 a13: on by default since 1.5.0
     },
     // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
     // 390 and at 1440); each one's tooltip is the sentence it stands for.

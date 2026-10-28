@@ -502,7 +502,8 @@ export const LAYERS = [
     parse: 'exoplanets',
     sample: () => [],
     bundledText: 'data/exoplanets.csv',
-    bundledAsOf: '2026-10-08',
+    bundledAsOf: '2026-10-28', // 0079 a13
+    packedUrl: 'data/exoplanets.bin', // 0079 a13: the quantised copy (data/exopack.js) is read before the snapshot or the CSV
     propagator: 'static',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: false },
@@ -1243,12 +1244,28 @@ export async function loadLayerDetailed(layer, nowMs) {
       // with no parser yet (reentries: Space-Track needs a login nobody has registered) is the
       // stand-in always, as before.
       let bodies = null;
-      if (layer.parse && ids.length) {
+      // 0079 a13: begin -- a layer's packed file first (the exoplanets: 133 kB gzipped against the snapshot's 879 kB).
+      // A failure is silent: the snapshot, then the CSV, then the stand-in, as before.
+      if (layer.packedUrl) {
+        try {
+          const r = await fetch(layer.packedUrl, { cache: 'no-cache' });
+          if (r.ok) {
+            const m = await import('./exopack.js');
+            parsed = m.decodeExoplanets(await r.arrayBuffer());
+            if (parsed.length) {
+              layer.lastBodyWasBundled = true;
+              result = { id: 'bundled', data: true, error: null, bundled: true, fetchedAt: layer.bundledAsOf ? Date.parse(layer.bundledAsOf) : null };
+            }
+          }
+        } catch { parsed = []; }
+      }
+      // 0079 a13: end
+      if (!parsed.length && layer.parse && ids.length) {
         const results = await Promise.all(ids.map((id) => load(id)));
         result = results[0];
         if (results.every((r) => r && r.data != null)) bodies = results.map((r) => r.data);
       }
-      if (!bodies && layer.bundledText && (layer.parse)) {
+      if (!parsed.length && !bodies && layer.bundledText && (layer.parse)) { // 0079 a13: !parsed.length
         // A dated copy checked into the repository (spec 0028 step 4): the same columns the
         // snapshot carries, so the same parser reads it, and every record says "as of <date>".
         // Same origin, so it is a plain fetch; a failure falls through to the stand-in.

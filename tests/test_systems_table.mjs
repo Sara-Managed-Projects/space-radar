@@ -2,7 +2,7 @@
 //
 //   node tests/test_systems_table.mjs
 //
-// registry/systems-list.yaml names thirty-nine hosts; scripts/build-systems.py writes every number
+// registry/systems-list.yaml names forty-two hosts (thirty-nine until release 1.5.0); scripts/build-systems.py writes every number
 // from the NASA Exoplanet Archive's table. What this holds, in the browser's own code:
 //
 //   1. KEPLER'S THIRD LAW on every generated row, within 5 % (a planet of two stars: its orbit
@@ -15,7 +15,7 @@
 //      against its band.
 //   3. THE PLANETS ARE THE TABLE'S RECORDS; a number the Archive estimated is marked as one.
 //   4. NOT ON THE FIRST VISIT: the index registers stages of 100 000 km and nothing to draw; the
-//      rows arrive on demand; every one of the thirty-nine then builds.
+//      rows arrive on demand; every one of the forty-two then builds.
 //   5. SEARCH ranks a planet first for its own name, and the star first for the star's.
 //   6. THE DEEP LINK `#go=`: read as `at`, never written back, and every planet and system id
 //      resolves to a record by the two prefixes main.js tries.
@@ -42,7 +42,7 @@ const X = await import(join(JS, 'scene/systemextras.js'));
 const C = await import(join(JS, 'ui/systemcard.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 
-check(SYSTEMS_TABLE.length === 39 && SYSTEM_INDEX.length === 39 && SYSTEMS.length === 1, `thirty-nine generated systems beside TRAPPIST-1 (${SYSTEMS_TABLE.length}, index ${SYSTEM_INDEX.length}, typed ${SYSTEMS.length})`);
+check(SYSTEMS_TABLE.length === 42 && SYSTEM_INDEX.length === 42 && SYSTEMS.length === 1, `forty-two generated systems beside TRAPPIST-1 (${SYSTEMS_TABLE.length}, index ${SYSTEM_INDEX.length}, typed ${SYSTEMS.length})`);
 const planets = SYSTEMS_TABLE.flatMap((s) => s.planets.map((p) => ({ s, p })));
 
 // ---------------------------------------------------------------------- 1. Kepler's third law
@@ -143,7 +143,7 @@ const records = [...exo, ...hosts];
 const byId = new Map(records.map((r) => [r.id, r]));
 const ctx = { camera, recordById: (id) => byId.get(id) || null };
 const systems = S.createSystems(scene, ctx);
-check(rows.length === 39 && hosts.length === 40, `the index adds thirty-nine host stars (${rows.length}, ${hosts.length})`);
+check(rows.length === 42 && hosts.length === 43, `the index adds forty-two host stars (${rows.length}, ${hosts.length})`);
 for (const s of SYSTEM_INDEX) {
   check(isSystemStage(s.stage) && STAGES[s.stage].unitKm === 100000 && SYSTEM_UNIT_KM === 100000, `${s.stage} is a system stage of exactly 100 000 km a unit`);
   check(!!systemOriginOf(s.stage), `${s.stage} has its origin`);
@@ -284,4 +284,4 @@ check(findMatches(index, 'Kepler-90').hits[0]?.record.id === 'star-kepler-90' &&
 }
 
 if (problems.length) { console.error(`systems table FAILED (${problems.length}):\n  ` + problems.slice(0, 40).join('\n  ')); process.exit(1); }
-console.log(`systems table ok: 39 systems, ${planets.length} planets; Kepler's law within ${(worst * 100).toFixed(1)} % (${computed} orbits computed from the year, ${two} of two stars); ${banded} bands, ${inside} planets inside one; ${firsts} planets found first by name; at most ${most} triangles`);
+console.log(`systems table ok: 42 systems, ${planets.length} planets; Kepler's law within ${(worst * 100).toFixed(1)} % (${computed} orbits computed from the year, ${two} of two stars); ${banded} bands, ${inside} planets inside one; ${firsts} planets found first by name; at most ${most} triangles`);

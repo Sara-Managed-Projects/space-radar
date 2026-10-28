@@ -65,7 +65,11 @@ layers:
   - id: exoplanets
     display: Planets around other stars
     group: beyond
-    moments: {wonder: off, now: off, next: off}
+    # 0079 a13: begin -- ON in the opening moment since release 1.5.0 (Ivan's decision 2). Still loaded after the
+    # first screen (main.js LATER_LAYERS) and still drawn only from the ladder's rungs, so the Earth a first
+    # visit shows is the same picture; the planets arrive as site/data/exoplanets.bin, 133 kB gzipped.
+    moments: {wonder: on, now: off, next: off}
+    # 0079 a13: end
     source: nasa-exoplanet-archive
     propagator: static
     frame: sun-inertial
