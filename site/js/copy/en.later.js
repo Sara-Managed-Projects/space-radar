@@ -1499,13 +1499,25 @@ Object.assign(COPY, {
       where: 'in {where}',
       whyDsn: 'talking to {spacecraft} right now',
       whyLaunch: 'with {launch} due {when}',
+      mpc: 'its Minor Planet Center code is {code}', // 0079 a6
+      closed: 'closed in {year}', // 0079 a6
       kinds: {
         pad: 'launch pad',
         dish: 'radio dish',
         observatory: 'observatory',
         tracking: 'tracking station',
+        'launch-site': 'launch site', // 0079 a6
+        'landing-site': 'landing site', // 0079 a6
       },
     },
+    // 0079 a6: begin -- an IAU established meteor shower (ui/cards.js TEMPLATES.shower)
+    shower: {
+      lead: '{name} is a meteor shower',
+      peak: 'peaking around {date}',
+      speed: 'with meteors that hit the air at {n} km a second',
+      parent: 'from the dust of {parent}',
+    },
+    // 0079 a6: end
     world: {
       lead: '{name} is a world in the solar system',
       leadMoon: '{name} is the Earth’s own moon',

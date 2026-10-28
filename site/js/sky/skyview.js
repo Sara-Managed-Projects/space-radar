@@ -359,6 +359,18 @@ export function createSkyView(ctx, options = {}) {
   const _q = new THREE.Quaternion();
   // The showers whose meteors may be drawn now, with where each radiant is (placeRadiants()).
   let showersNow = [];
+  // 0079 a6: begin -- the IAU's other established showers (data/smalllists.js fetchRadiants), marked near their peak. They are
+  // fetched the first time the sky is placed with the Meteor showers box on (ctx.isLayerOn), never at boot, and they are only
+  // marked: no rate is known for them, so none is ever drawn as a meteor and none is handed to the ground sky (showersNow).
+  let extraShowers = [];
+  let extraAsked = false;
+  const extraOn = () => !(ctx && typeof ctx.isLayerOn === 'function') || ctx.isLayerOn('meteor-showers') !== false;
+  function wantExtraShowers() {
+    if (extraAsked || !extraOn()) return;
+    extraAsked = true;
+    import('../data/smalllists.js').then((m) => m.fetchRadiants()).then((rows) => { extraShowers = rows; radiantsFor = null; }).catch(() => { extraAsked = false; });
+  }
+  // 0079 a6: end
   const _upView = new THREE.Vector3();
   const _viewInv = new THREE.Matrix4();
   // sky/groundsky.js, once it has loaded; null before that and in a test with no DOM.
@@ -745,11 +757,12 @@ export function createSkyView(ctx, options = {}) {
   let radiantsAt = -Infinity;
   function placeRadiants(tMs) {
     if (!parts || !parts.radiants || !observer) return;
-    const day = `${new Date(tMs).toDateString()}|${(held && held.radiant) || ''}`;
+    wantExtraShowers(); // 0079 a6
+    const day = `${new Date(tMs).toDateString()}|${(held && held.radiant) || ''}|${extraOn() ? extraShowers.length : 0}`; // 0079 a6: the box and the list
     if (radiantsFor !== day) {
       for (const s of [...parts.radiants.children]) { s.material.map?.dispose?.(); s.material.dispose(); parts.radiants.remove(s); }
       // The showers near their peak, and the one a trip stop is about (hold()) whatever the date.
-      const marked = activeShowers(tMs, SHOWERS);
+      const marked = activeShowers(tMs, SHOWERS).concat(extraOn() ? activeShowers(tMs, extraShowers) : []); // 0079 a6
       const asked = held && held.radiant ? SHOWERS.find((sh) => sh.id === held.radiant) : null;
       if (asked && !marked.includes(asked)) marked.push(asked);
       for (const sh of marked) {
@@ -776,6 +789,7 @@ export function createSkyView(ctx, options = {}) {
       const aa = radiantAltAz(sh, tMs, where);
       sprite.visible = !!aa && aa.altDeg > 0;
       if (!aa) continue;
+      if (sh.catalogue) continue; // 0079 a6: marked, not rated
       showersNow.push({ id: sh.id, display: sh.display, zhr: sh.zhr, vKms: sh.v_kms, altDeg: aa.altDeg, azDeg: aa.azDeg, held: !!held && held.radiant === sh.id });
       localDir(aa.azDeg * DEG2RAD, aa.altDeg * DEG2RAD, _dir).multiplyScalar(parts.R * 0.94);
       sprite.position.copy(_dir);

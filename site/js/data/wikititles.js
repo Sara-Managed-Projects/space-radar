@@ -108,6 +108,7 @@ export const WIKI_TITLES = {
   'dwarf-orcus': 'Orcus_(dwarf_planet)',
   'interstellar-1i': '1I/ʻOumuamua',
   'interstellar-2i': '2I/Borisov',
+  'interstellar-3i': '3I/ATLAS', // 0079 a6
   'asteroid-99942': '99942_Apophis',
   'asteroid-101955': '101955_Bennu',
   'asteroid-433': '433_Eros',

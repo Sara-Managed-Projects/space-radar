@@ -501,11 +501,36 @@ const FAR_BODIES = [
     departure: 'the tails are part of the drawing, not an observation: nobody has seen Borisov since September 2020',
     orbitCaveat: 'where it is now is worked out from JPL’s orbit, not seen',
   },
+  // 0079 a6: begin -- the third visitor. JPL's solution of 2026-10-21 (SBDB sstr=3I, read 2026-10-29), nine significant
+  // figures as for the other two. Hyperbolic like Borisov (e 6.12, the most open orbit of the three), retrograde (i 175 degrees).
+  // Its perihelion, JD 2460977.94, is 29 October 2025; NASA Science says "around Oct. 30, 2025, at a distance of about 1.4 au".
+  {
+    id: 'interstellar-3i',
+    name: '3I/ATLAS',
+    designation: 'C/2025 N1 (ATLAS)',
+    aliases: ['ATLAS', 'C/2025 N1', 'C/2025 N1 (ATLAS)', '3I', 'interstellar object', 'interstellar comet'],
+    // JPL files it as a comet (kind `cu`); the ATLAS survey's telescope in Rio Hurtado, Chile reported it on 1 July 2025.
+    klass: 'comet',
+    farKind: 'interstellar',
+    // sstr=3I. Solved 2026-10-21, observations 2025-10-03 to 2026-10-16 (117 used; JPL's fit includes the non-gravitational terms A1 to A3).
+    aAu: -0.263883522, e: 6.12346739, iDeg: 175.240312, nodeDeg: 323.025178, argpDeg: 128.796943,
+    maDeg: 2636.10924, epochJd: 2461340.5, tpJd: 2460977.9418,
+    solution: '2026-10-21', lastObs: '2026-10-16',
+    hMag: null, // a comet's M1 (11.8) is not an asteroid's H, and nothing here reads it
+    diameterKm: null, // "as small as 440 metres" and "upper limit 5.6 kilometres" are limits, not a size
+    moons: null,
+    why: 'The third object seen passing through the Solar System from another star, reported by the ATLAS survey in Chile on 1 July 2025. ' +
+      'It came closest to the Sun, about 1.4 au, at the end of that October.',
+    whySource: 'Wikipedia, 3I/ATLAS, and NASA Science, 3I/ATLAS, read 29 October 2026',
+    departure: 'its nucleus is hidden in its cloud and nobody has seen it; the tails are part of the drawing, not an observation',
+    orbitCaveat: 'where it is now is worked out from JPL’s orbit, not seen',
+  },
+  // 0079 a6: end
 ];
 
 /**
  * The far-bodies layer's records. Not samples: cls 'inferred', a real phase, and no dashed halo.
- * @returns {Array<Object>} 10 records
+ * @returns {Array<Object>} 11 records
  */
 export function farBodies() {
   return FAR_BODIES.map((b) => sbdbBody(b, 'far-bodies'));
@@ -741,6 +766,26 @@ export const NAMED_ASTEROIDS = [
     whySource: "JAXA, Hayabusa (global.jaxa.jp/projects/sas/hayabusa) and the JPL Small-Body Database (size and shape: Fujiwara et al. 2006; pole: Demura et al. 2006), read 20 October 2026",
   },
   // 0077 W3-d: end
+  // 0079 a6: begin -- Tianwen-2's target. SBDB sstr=469219, read 2026-10-29 through a fetch tool (this laptop's TLS refuses JPL): orbit solved 2026-09-03 from
+  // 335 observations 2004-03-17 to 2025-03-07, at JD 2461200.5; a, e and q agree (q = a(1 - e)), the period is a^1.5 years, and the mean anomaly is the mean motion
+  // times the time to JPL's perihelion, tp, so the nine figures are one coherent solution.
+  {
+    id: 'asteroid-469219',
+    name: 'Kamoʻoalewa',
+    designation: '469219 Kamoʻoalewa',
+    aliases: ['469219 Kamoʻoalewa', '469219', '2016 HO3', 'Kamooalewa', 'Kamo`oalewa', 'Tianwen-2 target'],
+    klass: 'asteroid',
+    neo: true,
+    aAu: 1.000810462, e: 0.1022388435, iDeg: 7.802614369, nodeDeg: 65.59324200, argpDeg: 304.3632128,
+    maDeg: 243.3871442, epochJd: 2461200.5, tpJd: 2461318.9596,
+    solution: '2026-09-03', lastObs: '2025-03-07',
+    hMag: 24.31,
+    diameterKm: null, // no measured size: the H magnitude gives a range, and Wikipedia's figure is an estimate
+    moons: null,
+    why: 'A very small asteroid that goes round the Sun in step with the Earth, so it stays near us: a quasi-satellite. China’s Tianwen-2 reached it in July 2026 and is looking for a place to take a sample.',
+    whySource: 'Wikipedia, 469219 Kamoʻoalewa and Tianwen-2, read 29 October 2026',
+  },
+  // 0079 a6: end
 ];
 
 // HALLEY, for the same reason: the comets layer is JPL's snapshot or nothing, and the one comet

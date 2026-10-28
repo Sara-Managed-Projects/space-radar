@@ -202,7 +202,8 @@ export const VISUAL_CLASSES = [
 "asteroid-2",
 "asteroid-3200",
 "interstellar-1i",
-"interstellar-2i"
+"interstellar-2i",
+"interstellar-3i"
 ],
 "layers": [
 "asteroids"

@@ -33,6 +33,7 @@ Object.assign(COPY, {
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
+    shower: 'Meteor shower', // 0079 a6
     unknown: 'Object',
   },
 
