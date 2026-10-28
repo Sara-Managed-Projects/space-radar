@@ -1557,7 +1557,7 @@ export const REAL_MODELS = {
     '1996 hw1': { file: 'asteroid-1996hw1.glb', colour: 'asteroid', tint: '#716C64', world: true, name: '8567 (1996 HW1)', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
     // Comet 67P, matched by its surname (the comets layer's name is the whole designation); the tails the procedural comet
     // carries are kept on the real nucleus (scene/heroes.js, `keepTails`).
-    churyumov: { file: 'comet-67p.glb', colour: 'asteroid', tint: '#463F38', world: true, relief: true, name: '67P/Churyumov-Gerasimenko', klass: ['comet'], spinWords: 'comet', seen: 'comet', keepTails: { x: 0.5, scale: 2.4 },
+    churyumov: { file: 'comet-67p.glb', colour: 'asteroid', tint: '#49423B', world: true, relief: true, name: '67P/Churyumov-Gerasimenko', klass: ['comet'], spinWords: 'comet', seen: 'comet', keepTails: { x: 0.5, scale: 2.4 },
       // The SHAP5 dataset RO-C-MULTI-5-67P-SHAPE-V2.0: pole RA 69.4, Dec +64.1 (+-0.2), 12.4041 h a turn before perihelion (the rate changed at every pass).
       spin: { poleRaDeg: 69.4, poleDecDeg: 64.1, w0Deg: 0, wDegPerDay: 696.5438847 } },
     // 0079 B1: end

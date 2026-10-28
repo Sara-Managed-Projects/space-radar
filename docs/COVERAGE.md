@@ -24,16 +24,16 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | catalogues | 4 | 110 191 |
 | other_light | 3 | 3 |
 | sites | 44 | 44 |
-| real_models | 225 | 225 |
+| real_models | 236 | 236 |
 | model_kinds | 52 | 52 |
-| small_bodies | 20 | 20 |
+| small_bodies | 21 | 21 |
 | probes | 37 | 37 |
 | reentries | 3 | 3 |
 | rockets | 49 | 49 |
 | oddities | 8 | 8 |
 | weather | 23 | 23 |
 | layers | 29 | 29 |
-| **all** | **1011** | **111 198** |
+| **all** | **1023** | **111 210** |
 
 | class | records | renderer | honesty (default) | heroes |
 |---|---:|---|---|---|
@@ -47,8 +47,8 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 | [TITAN](#titan) | 2 | `worlds.js`, `atmosphere.js` | measured | - |
 | [AIRLESS_MOON](#airless_moon) | 7 | `worlds.js`, `tiles.js`, `moonshape.js` | measured | - |
 | [DWARF_PLANET](#dwarf_planet) | 9 | `worlds.js`, `glyphs.js`, `models.js`, `dwarfs.js` | measured | - |
-| [ASTEROID](#asteroid) | 20 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
-| [COMET](#comet) | 3 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
+| [ASTEROID](#asteroid) | 30 | `models.js`, `realmodels.js`, `glyphs.js`, `kepler.js`, `moonshape.js` | modelled | - |
+| [COMET](#comet) | 5 | `models.js`, `glyphs.js`, `kepler.js` | modelled | - |
 | [ARTIFICIAL_SATELLITE](#artificial_satellite) | 205 | `sgp4.js`, `glyphs.js`, `realmodels.js`, `models.js` | measured | - |
 | [LAUNCH_AND_ROCKET](#launch_and_rocket) | 64 | `models.js`, `ascent.js`, `realmodels.js` | illustrative | - |
 | [SPACE_PROBE](#space_probe) | 69 | `sampled.js`, `realmodels.js`, `models.js`, `glyphs.js` | measured | - |
@@ -82,7 +82,7 @@ One row per record: `python3 scripts/coverage.py --csv`. The classes are the 38 
 
 **Unresolved records: 0.** Every record has one class.
 
-Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
+Honesty over the 1023 records: 311 measured, 357 modelled, 355 illustrative.
 
 ## The classes
 
@@ -251,9 +251,9 @@ Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
 - **Dates and filters:** Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card).
 - **Measured, modelled or reconstructed:** Measured: orbits, sizes, the real shapes. Modelled: positions propagated from elements. Illustrative: the seeded rock for any asteroid without a shape (labelled generic).
 - **Rights:** NASA/JPL data and PDS products public domain.
-- **What is missing is tracked in:** #866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)
-- **Records (20):**
-  - real_models (7): `asteroid-bennu`, `asteroid-vesta`, `asteroid-eros`, `dwarf-ceres`, `asteroid-ryugu`, `asteroid-itokawa`, `asteroid-didymos`
+- **What is missing is tracked in:** #866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative); internal #1065 (1.5.0, 0079 B1: Lutetia, Steins, Donaldjohanson and Arrokoth from their missions' shape models, turning about their measured poles, with the relief of the full model baked on; Toutatis, Geographos, Kleopatra, Mithra, Golevka and 1996 HW1 from radar models, not turned; the phase of every turn illustrative)
+- **Records (30):**
+  - real_models (17): `asteroid-bennu`, `asteroid-vesta`, `asteroid-eros`, `dwarf-ceres`, `asteroid-ryugu`, `asteroid-itokawa`, `asteroid-didymos`, `asteroid-lutetia`, `asteroid-steins`, `asteroid-donaldjohanson`, `asteroid-arrokoth`, `asteroid-toutatis`, `asteroid-geographos`, `asteroid-kleopatra`, `asteroid-mithra`, `asteroid-golevka`, `asteroid-1996hw1`
   - model_kinds (1): `asteroid-generic`
   - small_bodies (11): `asteroid-99942`, `asteroid-101955`, `asteroid-433`, `asteroid-162173`, `asteroid-4`, `asteroid-65803`, `asteroid-25143`, `asteroid-2`, `asteroid-3200`, `interstellar-1i`, `interstellar-2i`
   - layers (1): `asteroids`
@@ -267,12 +267,13 @@ Honesty over the 1011 records: 300 measured, 356 modelled, 355 illustrative.
 - **On a weak device (T0, or after the frame latch):** A glyph on its orbit; the seeded nucleus and its tails only when selected.
 - **Source:** JPL Small-Body Database comet elements (60, read live with a saved copy); JPL Horizons for Halley.
 - **Dates and filters:** Elements at each comet's own epoch.
-- **Measured, modelled or reconstructed:** Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded) and the tails' look.
+- **Measured, modelled or reconstructed:** Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded; 67P's is Rosetta's measured shape model, with its measured relief) and the tails' look.
 - **Rights:** NASA/JPL data courtesy NASA/JPL-Caltech.
 - **What is missing is tracked in:** public #550, #421 (coma; tails that scale with distance from the Sun)
-- **Records (3):**
+- **Records (5):**
+  - real_models (1): `comet-67p`
   - model_kinds (1): `comet-generic`
-  - small_bodies (1): `comet-1P`
+  - small_bodies (2): `comet-1P`, `comet-67P`
   - layers (1): `comets`
 
 ### ARTIFICIAL_SATELLITE
