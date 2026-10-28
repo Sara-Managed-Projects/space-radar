@@ -227,3 +227,11 @@ budgets:
   # tests/test_galclusters.mjs reads both.
   - {id: deep_galclusters_bytes, value: 150000, unit: B, since: 2026-10-20, reason: "spec 0076 design section 4 (1.5 MB at most for a hero's assets): 71 936 B of members (3 596 galaxies at 20 B) and 7 237 B of manifest on 2026-10-20"}
   - {id: deep_galclusters_draw_calls, value: 6, unit: calls, since: 2026-10-20, reason: "spec 0076 design section 4: one call per galaxy cluster (four) and one per quasar (two), each culled whole by the frustum and by its size on the screen; three at most in any ordinary view"}
+  # 0079 a2: begin
+  # Release 1.5.0 stage A2 (internal spec 0079, internal #1060; scene/deep/catalogue.js): every NGC and IC object, Harris's
+  # globulars, Green's remnants and the open clusters, in two files and their manifests (scripts/build_deep_catalogue.py ->
+  # site/data/deep/catalogue{,-oc}.{bin,json}), fetched on the first rung of the ladder entered, never at boot. Raw bytes of the
+  # four; about 490 kB gzipped. One draw call of points, one more while an inferred object's range of distance is shown.
+  - {id: deep_catalogue_bytes, value: 1300000, unit: B, since: 2026-10-28, reason: "spec 0079 A2 (the load line: one 0.5 MB file on demand): 321 472 B + 145 744 B of rows and 485 597 B + 146 333 B of manifests raw on 2026-10-28, 19 466 objects, about 490 kB gzipped"}
+  - {id: deep_catalogue_draw_calls, value: 2, unit: calls, since: 2026-10-28, reason: "spec 0075 requirement 18 (at most five draw calls per visible data class): the catalogue is one call of points, and one more while an inferred object's range of distance is shown"}
+  # 0079 a2: end

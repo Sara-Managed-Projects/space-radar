@@ -120,6 +120,7 @@ export function createDeepSky(THREE, env = {}) {
     layers.set(CLUSTERS, { def: { id: CLUSTERS, stage: 'W3-a', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./globular.js').then((m) => ({ createLayer: (T) => m.createLayer(T, ask) })) }, layer: null, loading: null });
   }
   const volumeLayer = () => { const l = layers.get('localvolume'); return l && l.layer && l.layer.records ? l.layer : null; };
+  const catalogueLayer = () => { const l = layers.get('catalogue'); return l && l.layer && l.layer.recordById ? l.layer : null; }; // 0079 a2
   const classTaken = (id) => { const l = layers.get(CLUSTERS); return l && l.layer && l.layer.taken ? l.layer.taken(id) : 0; };
 
   // ---------------------------------------------------------------------------- placing a record
@@ -429,8 +430,12 @@ export function createDeepSky(THREE, env = {}) {
     /** (0076 W4-a) how much of a record a hero draws with it as its own (M31's companions), 0..1; no allocation, once a frame. */
     heroShareOf: (id) => { let k = 0; for (const h of heroes.values()) if (h.hero && h.level >= 2 && h.hero.shares) { const m = h.hero.shares(); if (m.has(id)) k = Math.max(k, m.get(id)); } return k; },
     // (0076 W4-a, spec 0075 task 63) the local volume's galaxies as selectable records: found by id, and by a tap (main.js pick)
-    volumeRecord: (id) => { const v = volumeLayer(); const row = v && typeof id === 'string' && id.startsWith('dso-lv-') ? v.rowOfId(id) : -1; return row >= 0 ? v.records()[row] : null; },
-    pickAll: (ndcX, ndcY, camera, viewport, limit) => { const v = volumeLayer(); return v ? v.pickAll(ndcX, ndcY, camera, viewport, limit) : []; },
+    // 0079 a2: begin (the catalogue's records are found by id and tapped like the local volume's; `loadCatalogue` is for the search)
+    volumeRecord: (id) => { const v = volumeLayer(); const row = v && typeof id === 'string' && id.startsWith('dso-lv-') ? v.rowOfId(id) : -1; if (row >= 0) return v.records()[row]; const c = catalogueLayer(); return c ? c.recordById(id) : null; },
+    pickAll: (ndcX, ndcY, camera, viewport, limit) => { const v = volumeLayer(); const c = catalogueLayer(); return (v ? v.pickAll(ndcX, ndcY, camera, viewport, limit) : []).concat(c ? c.pickAll(ndcX, ndcY, camera, viewport, limit) : []); },
+    catalogue: () => catalogueLayer(),
+    loadCatalogue() { const l = layers.get('catalogue'); if (!l) return Promise.resolve(null); wantLayer(l); return Promise.resolve(l.loading || null).then(() => (l.layer && l.layer.whenLoaded ? l.layer.whenLoaded().then(() => l.layer) : null)); },
+    // 0079 a2: end
     whenReady(ms = 20000) {
       const until = Date.now() + ms;
       return new Promise((resolve) => { const tick = () => (ready() ? resolve(true) : Date.now() > until ? resolve(false) : setTimeout(tick, 100)); tick(); });

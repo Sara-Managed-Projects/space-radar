@@ -904,7 +904,7 @@ export function createSearch(ctx, host) {
     // A kind of thing ("galaxies", "moons of saturn") or the 3D toggle (spec 0076 W3-e): ui/searchrows.js
     // answer() asks findMatches itself, and asks again (`again`) when the classes it reads have arrived.
     const kinds = state.more && typeof state.more.answer === 'function' ? state.more : null;
-    const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); } })
+    const result = kinds ? kinds.answer(state.index, q, state.only, { find: findMatches, limit: MAX_RESULTS, exact: NAME_EXACT, word: WORD_PREFIX, again: () => { if (state.open && norm(input.value) === q) run(input.value); }, catalogue: () => (ctx.wantDeep ? ctx.wantDeep().then((d) => (d && d.loadCatalogue ? d.loadCatalogue() : null)) : null) /* 0079 a2 */ })
       : findMatches(state.index, q, MAX_RESULTS);
     const kind = result.kind;
     state.hits = result.hits;
