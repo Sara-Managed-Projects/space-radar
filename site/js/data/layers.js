@@ -969,7 +969,7 @@ export const LAYERS = [
     glyph: 'comet',
     nearKm: 2000000,
     card: 'comet',
-    sentence: 'Ice falling towards the Sun, and growing a tail on the way in.',
+    sentence: 'Ice falling towards the Sun, and growing a tail on the way in. Every comet the Small-Body Database has an orbit for is drawn on it (scene/cometfield.js); the brightest sixty are bodies you can fly to.', // 0079 a8
   },
   {
     id: 'asteroids',
