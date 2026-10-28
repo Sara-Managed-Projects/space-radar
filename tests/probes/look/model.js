@@ -58,6 +58,17 @@ const out = { subject: null, standIn: null, views: [], stations: stations.length
 // A ROUTE WITH NO CRAFT UP TODAY (2026-10-13, batch three: no Cargo Dragon is in orbit): the subject
 // `sat-100882.as.dragon-crs` photographs the named route `dragon crs` on that record, FOR THE PICTURE
 // ONLY, as the Cygnus's stand-in below does; the summary says so in `standIn`.
+// 0079 c3: begin -- `<id>.at.<yyyymmddhhmm>` (UTC) moves the clock first (a pad's vehicle is drawn only around its liftoffs, so the Saturn V is drawn on 16 July 1969 and not today); `<id>.file.<name>` wears site/models/<name>.glb on that record, for the picture only, as `.as.` does a named route (the Apollo CSM has no object on the map yet)
+let atClock = null, wearFile = null;
+{
+  let text = String(askedAs || '');
+  const at = text.match(/\.at\.(\d{12})/);
+  if (at) { atClock = Date.UTC(+at[1].slice(0, 4), +at[1].slice(4, 6) - 1, +at[1].slice(6, 8), +at[1].slice(8, 10), +at[1].slice(10, 12)); text = text.replace(at[0], ''); }
+  const wf = text.match(/\.file\.([a-z0-9-]+)/);
+  if (wf) { wearFile = wf[1]; text = text.replace(wf[0], ''); }
+  askedAs = text || askedAs;
+}
+// 0079 c3: end
 const [asked, wearAs] = String(askedAs || '').includes('.as.') ? String(askedAs).split('.as.') : [askedAs, null];
 // A subject is a record id, or failing that the words of a name with dashes for spaces
 // (`crew-dragon`: a visiting vehicle's id changes every flight, and its name does not).
@@ -96,6 +107,13 @@ if (wearAs) {
   RM.REAL_MODELS.norad[norad] = { ...worn };
   out.standIn = 'THE ROUTE `' + key + '` IS DRAWN ON ' + record.name + ' (' + record.id + ') FOR THE PICTURE ONLY: no craft of that name is in the saved data today';
 }
+// 0079 c3: begin
+if (wearFile) {
+  RM.REAL_MODELS.bySite[record.id] = { file: wearFile + '.glb', colour: 'site', name: record.name + ' (the ' + wearFile + ' file, for the picture only)' };
+  out.standIn = 'THE FILE ' + wearFile + '.glb IS DRAWN ON ' + record.name + ' (' + record.id + ') FOR THE PICTURE ONLY: no object on the map wears it';
+}
+if (atClock !== null) { sr.clock.goTo(atClock); await sleep(4000); out.clock = new Date(sr.clock.now()).toISOString(); }
+// 0079 c3: end
 const entry = RM.realModelFor(record) || {};
 out.subject = { id: record.id, name: record.name, klass: record.klass, layer: record.layer };
 out.route = { file: entry.file || null, build: entry.build || null, name: entry.name || null, generic: !!entry.generic, made: entry.made || null };
