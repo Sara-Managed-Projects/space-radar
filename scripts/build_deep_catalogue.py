@@ -39,6 +39,9 @@ DISTANCES, and what each flag means (the card says it in words; no distance is d
              mark is the "inferred" one (fainter, larger) and the range is wide.
   harris     Harris's distance from the Sun; the range is ASSUMED +-10 %.
   gaia       Hunt & Reffert's dist50, dist16 and dist84 (their 68 % interval).
+  parent     inside the outline of a galaxy or nebula the map already draws (the Magellanic Clouds, M33, the Rosette...), with no
+             distance of its own: placed at the parent's distance, with the parent's range; membership is ASSUMED from the
+             position on the sky, and the card says so (the object is `inside` its parent).
   typical    nothing measured it: a point in the 16th to 84th percentile range of the same class's measured distances in
              this build, log-uniform and fixed by the object's name (so they do not stack on one sphere round the
              Sun), to two figures. The direction is measured, the depth is not.
@@ -123,7 +126,7 @@ OPENNGC_CLASS = {
 GROUP = {"G": "galaxy", "GGroup": "galaxy", "OCl": "cluster", "*Ass": "cluster", "GCl": "globular", "PN": "galactic", "HII": "galactic",
          "RfN": "galactic", "DrkN": "galactic", "Neb": "galactic", "Cl+N": "galactic", "SNR": "galactic", "*": "star", "**": "star",
          "Other": "galactic", "Nova": "star"}
-METHODS = ["typical", "parallax", "redshift", "harris", "velocity", "gaia"]  # the 3 bits in the flags
+METHODS = ["typical", "parallax", "redshift", "harris", "velocity", "gaia", "parent"]  # the 3 bits in the flags
 M = {m: i for i, m in enumerate(METHODS)}
 SOURCES = {
     "openngc": {"name": "OpenNGC (Mattia Verga)", "licence": "CC BY-SA 4.0", "url": "https://github.com/mattiaverga/OpenNGC"},
@@ -394,6 +397,15 @@ def bake(cache: Path):
             continue
         cls = OPENNGC_CLASS[x["Type"]]
         ra, dec = hms(x["RA"]), dms(x["Dec"])
+        # the same galaxy under another number (ESO 56-115 and NGC 292 are the Magellanic Clouds; the dwarfs of the Local Group have
+        # an ESO or a PGC number in OpenNGC): a galaxy at the centre of one the map has, of about its size
+        twin = next((o for o in dso if cls in ("G", "GGroup") and o["kind"] == "galaxy" and o.get("raDeg") is not None
+                     and sep_deg(ra, dec, o["raDeg"], o["decDeg"]) * 60 < max(2.0, 0.2 * (o.get("majAxArcmin") or 5.0))
+                     and (num(x["MajAx"]) or 0) >= 0.3 * (o.get("majAxArcmin") or 5.0)), None)
+        if twin is not None:
+            taken.append(k)
+            where.setdefault(k, f"dso-{twin['id']}")
+            continue
         maj, mn, pa = num(x["MajAx"]), num(x["MinAx"]), num(x["PosAng"])
         vmag = num(x["V-Mag"])
         if vmag is None:
@@ -482,6 +494,29 @@ def bake(cache: Path):
                      "maj": g["maj"], "min": g["min"], "pa": None, "vmag": None, "con": None, "sub": 3, "aka": ng, "cald": None, "dist": None,
                      "snr": {"type": g["type"], "flux": g["flux"], "idx": g["idx"]}})
         green_added += 1
+
+    # ---- inside a galaxy or a nebula the map already draws: the parent's distance (assumed membership)
+    parent_ids = {"lmc", "smc", "m31", "m33", "ngc-55"}
+    parents = [o for o in dso if o.get("raDeg") is not None and o["id"] != "milky-way" and (o["id"] in parent_ids or (o["kind"] == "nebula" and (o.get("majAxArcmin") or 0) >= 30 and o.get("typeCode") != "DrkN"))]
+    parent_of = {}
+    for i, r in enumerate(rows):
+        if r["src"] != "openngc":
+            continue
+        measured = r["dist"] is not None and r["dist"][3] in (M["parallax"], M["redshift"], M["harris"])
+        if measured:
+            continue
+        for o in parents:
+            rad = 0.5 * o["majAxArcmin"]
+            if sep_deg(r["ra"], r["dec"], o["raDeg"], o["decDeg"]) * 60 >= rad:
+                continue
+            if r["cls"] in ("G", "GGroup") and o["kind"] != "galaxy":
+                continue
+            d = float(o["distLy"])
+            lo = float(o.get("distLyLow") or d * 0.92)
+            hi = float(o.get("distLyHigh") or d * 1.08)
+            r["dist"] = (d, lo, hi, M["parent"], False, True)
+            parent_of[str(i)] = o["id"]
+            break
 
     # ---- the typical distance of a class group, for the rows nothing measured
     def pct(vals, p):
@@ -638,9 +673,10 @@ def bake(cache: Path):
             cald_table[str(c)] = {"id": ref} if ref else {"unplaced": ks}
     typ_out = {g: {"ly": round(v[0]), "low": round(v[1]), "high": round(v[2]), "of": v[3]} for g, v in typical.items()}
     main_man = manifest_for(rows, "catalogue", {
-        "totals": {"openngc": n_openngc + len(taken), "openngc_taken": len(taken), "harris_added": harris_added, "harris_total": len(harris),
+        "totals": {"openngc": n_openngc + len(taken), "openngc_taken": len(taken), "parent_assumed": len(parent_of), "harris_added": harris_added, "harris_total": len(harris),
                    "green_added": green_added, "green_total": len(green), "caldwell": 0},
-        "caldwellTable": cald_table, "taken": sorted(taken), "green_skipped": [[a, b] for a, b in green_skipped], "snr": snr_info, "typical": typ_out,
+        "caldwellTable": cald_table, "taken": sorted(taken), "green_skipped": [[a, b] for a, b in green_skipped], "snr": snr_info, "typical": typ_out, "parents": parent_of,
+        "parentNames": {pid: next(o["name"] for o in dso if o["id"] == pid) for pid in sorted(set(parent_of.values()))},
         "cosmology": "Planck 2018, data/cosmology.js comovingLy", "hubbleMin": H_MIN,
     })
     oc_man = manifest_for(oc_rows, "catalogue-oc", {

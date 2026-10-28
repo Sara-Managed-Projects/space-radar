@@ -191,6 +191,13 @@ check(st.bytes < 12e6, `its GPU memory is fixed and modest (${(st.bytes / 1e6).t
   const q = field.recordById(quiet.id);
   check(q && /two-body place/.test(q.meta.departure) && !/illustrative/.test(q.meta.departure), 'one without a tail says only that it is a point on its orbit');
 }
+// the renderer's depth is logarithmic: every shader that takes its chunks takes `common` first (isPerspectiveMatrix lives there)
+{
+  const src = readFileSync(join(JS, 'scene/cometfield.js'), 'utf8');
+  const uses = (src.match(/#include <logdepthbuf_pars_(vertex|fragment)>/g) || []).length;
+  const withCommon = (src.match(/#include <common>\n#include <logdepthbuf_pars_(vertex|fragment)>/g) || []).length;
+  check(uses === 6 && withCommon === 6, `all ${uses} shaders include common before the log-depth chunks (${withCommon})`);
+}
 // hidden when the layer is off
 field.update(cam, renderer, false, t, null);
 check(!field.group.visible && field.state().calls === 0, 'off when the layer is off');

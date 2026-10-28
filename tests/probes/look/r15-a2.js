@@ -151,6 +151,7 @@ try {
     if (!input) out.problems.push('no search field');
     else {
       input.focus();
+      await sleep(4000); // the field imports its row module on its first focus
       input.value = query;
       input.dispatchEvent(new Event('input', { bubbles: true }));
       await until(() => !!document.querySelector('.sr-search__list li'), 30000, 300);

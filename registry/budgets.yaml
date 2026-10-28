@@ -232,6 +232,6 @@ budgets:
   # globulars, Green's remnants and the open clusters, in two files and their manifests (scripts/build_deep_catalogue.py ->
   # site/data/deep/catalogue{,-oc}.{bin,json}), fetched on the first rung of the ladder entered, never at boot. Raw bytes of the
   # four; about 490 kB gzipped. One draw call of points, one more while an inferred object's range of distance is shown.
-  - {id: deep_catalogue_bytes, value: 1300000, unit: B, since: 2026-10-28, reason: "spec 0079 A2 (the load line: one 0.5 MB file on demand): 321 472 B + 145 744 B of rows and 485 597 B + 146 333 B of manifests raw on 2026-10-28, 19 466 objects, about 490 kB gzipped"}
+  - {id: deep_catalogue_bytes, value: 1300000, unit: B, since: 2026-10-28, reason: "spec 0079 A2 (the load line: one 0.5 MB file on demand): 321 184 B + 147 784 B of rows and 490 419 B + 140 687 B of manifests raw on 2026-10-28, 19539 objects, about 490 kB gzipped"}
   - {id: deep_catalogue_draw_calls, value: 2, unit: calls, since: 2026-10-28, reason: "spec 0075 requirement 18 (at most five draw calls per visible data class): the catalogue is one call of points, and one more while an inferred object's range of distance is shown"}
   # 0079 a2: end

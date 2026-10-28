@@ -197,6 +197,7 @@ export function tailPoints(head, vel, lengthAu, kind) {
 // ------------------------------------------------------------------------------------------------ the shaders
 // The renderer's depth is logarithmic (scene/renderer.js), so a shader that tests depth takes three.js's chunks for it.
 const VERT_ORBIT = /* glsl */ `
+#include <common>
 #include <logdepthbuf_pars_vertex>
 attribute float aWeight;
 varying float vWeight;
@@ -206,6 +207,7 @@ void main() {
   #include <logdepthbuf_vertex>
 }`;
 const FRAG_ORBIT = /* glsl */ `
+#include <common>
 #include <logdepthbuf_pars_fragment>
 uniform vec3 uColour;
 uniform float uLight;
@@ -215,6 +217,7 @@ void main() {
   gl_FragColor = vec4(uColour * (uLight * vWeight), 1.0);
 }`;
 const VERT_POINT = /* glsl */ `
+#include <common>
 #include <logdepthbuf_pars_vertex>
 attribute float aWeight;
 attribute float aShown;
@@ -231,6 +234,7 @@ void main() {
   #include <logdepthbuf_vertex>
 }`;
 const FRAG_POINT = /* glsl */ `
+#include <common>
 #include <logdepthbuf_pars_fragment>
 uniform vec3 uColour;
 varying float vWeight;
@@ -243,6 +247,7 @@ void main() {
 }`;
 // A tail: a ribbon along its centre line, turned to face the camera, widening and fading to its tip.
 const VERT_TAIL = /* glsl */ `
+#include <common>
 #include <logdepthbuf_pars_vertex>
 attribute vec3 aTangent;   // direction of the centre line here, au
 attribute float aT;        // 0 at the head, 1 at the tip
@@ -264,6 +269,7 @@ void main() {
   #include <logdepthbuf_vertex>
 }`;
 const FRAG_TAIL = /* glsl */ `
+#include <common>
 #include <logdepthbuf_pars_fragment>
 uniform float uLight;
 varying float vT;

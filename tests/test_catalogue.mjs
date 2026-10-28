@@ -123,6 +123,12 @@ const T = C.buildTable({ manifest: MAIN, tile: mainTile }, { manifest: OC, tile:
   const k = [...T.inferred].findIndex((v) => v === 1 && T.cls[0] !== undefined);
   const inf = C.recordOfRow(T, k);
   check(inf.meta.distance === null && /^not measured/.test(inf.meta.distanceSource) && /not its own/.test(inf.meta.departure), 'an inferred object says "not measured" and carries no method');
+  // inside a galaxy the map draws: the parent's distance, the parent a record
+  const pk = Object.keys(MAIN.parents).find((k) => MAIN.parents[k] === 'lmc');
+  const prec = C.recordOfRow(T, Number(pk));
+  check(MAIN.totals.parent_assumed === Object.keys(MAIN.parents).length && MAIN.totals.parent_assumed > 300, `${MAIN.totals.parent_assumed} objects lie inside a galaxy or nebula the map draws and take its distance`);
+  check(prec && prec.meta.parent === 'dso-lmc' && prec.meta.distance && prec.meta.distance.method === 'assumed-member-of-parent' && Math.abs(prec.meta.distLy - 161740) < 20000 && /assumed from the position/.test(prec.meta.distanceSource), 'an object inside the LMC is placed at the LMC\u2019s distance, says it is assumed, and has the LMC as its parent');
+  check(!MAIN.names.includes('NGC 292') && !MAIN.names.includes('ESO 56-115'), 'the Magellanic Clouds are not listed again under their NGC and ESO numbers');
   const sn = C.recordOfRow(T, T.parts[0].manifest.names.indexOf('G1.9+0.3'));
   check(/Green/.test(sn.meta.cite) && /remnant/.test(sn.meta.why || ''), 'a remnant cites Green and says what it is');
   const oc = C.recordOfRow(T, T.nMain);

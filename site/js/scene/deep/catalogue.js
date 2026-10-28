@@ -292,10 +292,11 @@ const METHOD_TEXT = {
   redshift: (T, i) => `its redshift (OpenNGC, from NED), turned into a distance with the map's one cosmology (Planck 2018, comoving); the range is a peculiar velocity of 300 km/s`,
   velocity: () => 'not measured: its redshift is too small to say how far it is (galaxies move as fast as the expansion carries them at this distance), so it is placed where the expansion alone would put it, with a wide range (OpenNGC, from NED)',
   parallax: () => 'its parallax (OpenNGC); the catalogue lists no error, so the range is assumed',
+  parent: (T, i, manifest, j) => { const pid = manifest.parents && manifest.parents[j]; const pn = (pid && manifest.parentNames && manifest.parentNames[pid]) || 'its parent'; return `not measured: it lies inside the outline of ${pn} on the sky and has no distance of its own, so it is placed at ${pn}\u2019s distance, with its range; that it belongs there is assumed from the position, not measured`; },
   harris: () => 'Harris, Catalog of Parameters for Milky Way Globular Clusters (1996, 2010 edition), distance from the Sun; the range is assumed',
   gaia: () => 'Hunt & Reffert 2023 from Gaia DR3 parallaxes, the 16th to 84th percentile of the cluster’s distance',
 };
-const DISTANCE_METHOD = { parallax: 'parallax', redshift: 'redshift', harris: 'standard-candle', gaia: 'parallax' };
+const DISTANCE_METHOD = { parallax: 'parallax', redshift: 'redshift', harris: 'standard-candle', gaia: 'parallax', parent: 'assumed-member-of-parent' };
 
 /** The row of dso.json's shape for table row `i`. Pure; `T` from buildTable. */
 export function rowOf(T, i) {
@@ -315,7 +316,7 @@ export function rowOf(T, i) {
     const t = g && manifest.typical && manifest.typical[g];
     distanceSource = `not measured: the catalogue gives no distance. Its direction is measured and its depth is not: it is drawn at ${Math.round(dLy).toLocaleString('en-US')} light-years, a point in the range ${t ? `in which the ${t.of} measured distances of its kind in this file lie (the middle 68 %, ${Math.round(t.low).toLocaleString('en-US')} to ${Math.round(t.high).toLocaleString('en-US')} light-years)` : 'of its kind'}, chosen by its name so that the unmeasured ones do not stack on one sphere`;
   } else {
-    distanceSource = (METHOD_TEXT[methodName] || METHOD_TEXT.parallax)(T, i);
+    distanceSource = (METHOD_TEXT[methodName] || METHOD_TEXT.parallax)(T, i, manifest, j);
   }
   const distance = !T.inferred[i] && DISTANCE_METHOD[methodName]
     ? { method: DISTANCE_METHOD[methodName], source: distanceSource, read: manifest.read || null } : null;
@@ -355,7 +356,7 @@ export function rowOf(T, i) {
     distanceSource,
     positionSource: src.name,
     why: bits.length ? `${bits.join('; ')}.` : null,
-    parent: null, orientation: null, morphology: null,
+    parent: (manifest.parents && manifest.parents[j]) || null, orientation: null, morphology: null,
     distance,
     drawn: ['catalogue'],
     _aka: [aka, kindWord],

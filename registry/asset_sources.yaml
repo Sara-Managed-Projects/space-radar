@@ -492,7 +492,7 @@ sources:
     offline: shipped
     checked: 2026-10-28
     pins:
-      - {file: site/data/deep/catalogue.bin, sha256: b501d25f53adc9cf5c4363336f55754a08a4b04446548d384d639323d44c409b}
+      - {file: site/data/deep/catalogue.bin, sha256: f2d67f71c23ba9f0f382bf6057f90ef40ad022b762c4889edd132a299ec26f43}
       - {file: site/data/deep/catalogue-oc.bin, sha256: f0f86d58ae1e49fecb2f629748aa6a9047c439eecc531947a9f71ca7b0c77388}
   - id: harris-mwgc
     name: Harris, Catalog of Parameters for Milky Way Globular Clusters (1996, 2010 edition), mwgc.dat
