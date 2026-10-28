@@ -654,6 +654,7 @@ export const VISUAL_CLASSES = [
 "real_models": [
 "dsn70",
 "lunar-module",
+"apollo-csm",
 "perseverance",
 "pad",
 "dsn34",

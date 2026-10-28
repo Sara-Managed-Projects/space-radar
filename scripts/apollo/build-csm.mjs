@@ -43,7 +43,7 @@ const rOf = (t) => Math.max(...[0, 1, 2].map((i) => Math.hypot(t.p[i * 3], t.p[i
 const isCM = (t) => { const y = (t.p[1] + t.p[4] + t.p[7]) / 3; return y > Y_SM_FRONT + 0.03 || (y > Y_SM_FRONT - 0.4 && rOf(t) < R_SM - 0.12); };
 let cm = shell.filter(isCM), sm = shell.filter((t) => !isCM(t)).concat(quads);
 
-const SILVER = col('#b9bbbf'), STEEL = col('#8e9196'), DARKM = col('#2a2b2f'), GLASS = col('#101216'), WHITE = col('#ececea'), SM_GREY = col('#c9c9c5'), PANEL = col('#6f7378'), GOLDF = col('#d6b04a'), DISH = col('#dedede'), DISHB = col('#9d9fa3');
+const SILVER = col('#b9bbbf'), STEEL = col('#8e9196'), DARKM = col('#2a2b2f'), GLASS = col('#1f2227'), WHITE = col('#ececea'), SM_GREY = col('#c9c9c5'), PANEL = col('#6f7378'), GOLDF = col('#d6b04a'), DISH = col('#dedede'), DISHB = col('#9d9fa3');
 const onSurface = (rAt, y, phi) => [rAt * Math.cos(phi), y, rAt * Math.sin(phi)];
 const deg = (d) => (d * Math.PI) / 180;
 
