@@ -296,7 +296,9 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   placeGroup.add(cap);
 
   // The Moon, the Sun.
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 64, 32), new THREE.MeshLambertMaterial({ map: tex('2k_moon.webp') }));
+  // The Moon's map (640 kB) is fetched only once the Moon is more than a few pixels across: a launch never asks.
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1737400, 64, 32), new THREE.MeshLambertMaterial({ color: 0x8a8a86 }));
+  let moonMapped = false;
   moon.frustumCulled = false;
   scene.add(moon);
   const sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xfff8ea, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false }));
@@ -362,7 +364,12 @@ export function createStage(renderer, { tier = 1, place, frame }) {
     hemi.position.set(up[0], up[1], up[2]);
     fill.intensity = 0.35 * (1 - air.sky * 0.5);
     // Moon and Sun.
-    if (moonPos) { moon.visible = true; moon.position.set(moonPos[0] - o[0], moonPos[1] - o[1], moonPos[2] - o[2]); } else moon.visible = false;
+    if (moonPos) {
+      moon.visible = true;
+      moon.position.set(moonPos[0] - o[0], moonPos[1] - o[1], moonPos[2] - o[2]);
+      const px = (1737400 / Math.max(1, moon.position.length())) / Math.tan((pose.fov * Math.PI) / 360) * (height || 900) / 2;
+      if (!moonMapped && px > 4) { moonMapped = true; moon.material.map = tex('2k_moon.webp'); moon.material.color.set(0xffffff); moon.material.needsUpdate = true; }
+    } else moon.visible = false;
     const D = 1e10;
     sunDisc.position.set(sunDir[0] * D, sunDir[1] * D, sunDir[2] * D);
     const k = 0.0093 * D * (1.6 + 2.4 * air.density);
