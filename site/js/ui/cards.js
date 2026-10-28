@@ -549,10 +549,10 @@ const TEMPLATES = {
     const mHi = pickNumber(md, 'massMsunHigh');
     const period = pickNumber(md, 'periodS');
     const name = displayName(record);
-    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */, galaxy: 'leadGalaxy', cluster: 'leadCluster' /* 0079 r15-a45 */ }[kind] || 'leadBlackhole';
+    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */, galaxy: 'leadGalaxy', cluster: 'leadCluster', browndwarf: 'leadBrowndwarf', whitedwarf: 'leadWhitedwarf' /* 0079 r15-a45 */ }[kind] || 'leadBlackhole';
     const lead = lo !== null && hi !== null
       ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
-      : t(T[leadKey], { name, dist: distLy !== null ? fmt.int(distLy) : '?' });
+      : t(T[leadKey], { name, dist: distLy !== null ? (distLy < 100 ? fmt.smart(distLy) : fmt.int(distLy)) : '?' }); // 0079 r15-a45: a brown dwarf at 6.5 light-years is not 7
     let massSay = null;
     if (mLo !== null && mHi !== null) massSay = t(T.massRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) });
     else if (mass !== null && mass >= 1e9) massSay = t(T.massBillions, { n: fmt.smart(mass / 1e9) });
@@ -616,7 +616,7 @@ const TEMPLATES = {
     const lum = pickNumber(md, 'lum');
     const name = displayName(record);
     const dist = distLy !== null ? fmt.smart(distLy) : null;
-    if (distLy === null && pick(md, 'noDistance')) return buildSentence(t(COPY.a45.unplaced.lead, { name }), [colour ? t(COPY.a45.unplaced.colour, { colour }) : null]); // 0079 r15-a45
+    if (distLy === null && pick(md, 'noDistance')) return buildSentence(colour ? t(COPY.a45.unplaced.leadColour, { name, a: article(colour), colour }) : t(COPY.a45.unplaced.lead, { name }), []); // 0079 r15-a45
     const lead = distLy === null ? t(COPY.templates.satellite.lead, { name })
       : colour ? t(T.leadColour, { name, a: article(colour), colour, dist })
         : t(T.lead, { name, dist });
@@ -1271,7 +1271,7 @@ function derivedDrawingLine(record, T, tMs) {
     : klass;
   // 0076 W4-b: a quasar is a bright point with a ring on its place, not a bare ring (copy/en.later.js r12Far.quasar.shape)
   if (klass === 'exotic' && pick(meta(record), 'kind') === 'quasar' && COPY.r12Far && COPY.r12Far.quasar) return t(T.objectFamily, { name: COPY.r12Far.quasar.shape });
-  { const k = klass === 'exotic' ? pick(meta(record), 'kind') : null; if ((k === 'galaxy' || k === 'cluster') && COPY.a45 && COPY.a45.shape) return t(T.objectFamily, { name: COPY.a45.shape[k] }); } // 0079 r15-a45
+  { const k = klass === 'exotic' ? pick(meta(record), 'kind') : null; if ((k === 'galaxy' || k === 'cluster' || k === 'browndwarf' || k === 'whitedwarf') && COPY.a45 && COPY.a45.shape) return t(T.objectFamily, { name: COPY.a45.shape[k] }); } // 0079 r15-a45
   const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }

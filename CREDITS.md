@@ -2546,6 +2546,10 @@ Gaia BH2 are numbers printed on the pages cited below.
 | Galaxy clusters | `beyond.json` | MCXC meta-catalogue of X-ray clusters (Piffaretti et al. 2011, A&A 534, A109) through HEASARC (<https://heasarc.gsfc.nasa.gov/W3Browse/all/mcxc.html>) | public archive; the paper cited | position, redshift, M500 and R500 of 33 named clusters |
 | Quasars | `quasars.json` | Million Quasars Catalog v8 (Flesch 2023, OJAp 6, 49; <https://quasars.org/milliquas.htm>) through HEASARC | its HEASARC page: "If you use this catalog in published research, the author requests that you please cite it." | name, position, redshift, magnitude of the brightest 1 000 type-Q objects and the nine with z > 7 |
 
+Credit lines, as the layers carry them (`registry/visual-classes.yaml`): McGill Online Magnetar Catalog (Olausen and Kaspi 2014);
+BlackCAT (Corral-Santana et al. 2016) · ATNF Pulsar Catalogue v2.9.0 (Manchester, Hobbs, Teoh and Hobbs 2005) · The Local Volume
+Database, A. Pace 2024 (CC0); MCXC (Piffaretti et al. 2011) · Million Quasars Catalog v8 (Flesch 2023).
+
 **What is not drawn from a measurement.** A pulsar whose distance comes from its dispersion measure has a
 *modelled* distance and its card says so. A quasar's, cluster's or far galaxy's distance is how far it is *now* in the
 Planck 2018 cosmology (`site/js/data/cosmology.js`), from the redshift, never a light-travel time read as a distance.

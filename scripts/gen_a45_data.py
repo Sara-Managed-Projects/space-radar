@@ -627,7 +627,7 @@ def part_extremes(exo):
         rows.append({"id": b["id"], "name": b["name"], "kind": "blackhole", "raDeg": round(sexa(b["ra"], True), 5), "decDeg": round(sexa(b["dec"]), 5), "distLy": b["dist_ly"],
                      "massMsun": b["mass_msun"], "why": b["why"], "source": b["source"], "aliases": b.get("aliases", [])})
     for w in h["white_dwarfs"]:
-        row = {"id": w["id"], "name": w["name"], "kind": "star", "raDeg": round(sexa(w["ra"], True), 5), "decDeg": round(sexa(w["dec"]), 5),
+        row = {"id": w["id"], "name": w["name"], "kind": "whitedwarf", "raDeg": round(sexa(w["ra"], True), 5), "decDeg": round(sexa(w["dec"]), 5),
                "distLy": round(1000.0 / w["parallax_mas"] * LY_PER_PC), "why": w["why"], "source": w["source"], "aliases": w.get("aliases", []),
                "distanceNote": f"from Gaia's parallax of {w['parallax_mas']:g} milliarcseconds"}
         if w.get("period_s"):
@@ -639,7 +639,7 @@ def part_extremes(exo):
     for name, dist, ra, dec, spect, mass, jmag, sub in h["brown_dwarfs"]:
         kindword = "A sub-brown dwarf (some call it a rogue planet)" if sub else "A brown dwarf"
         why = f"{kindword} of spectral type {spect}, {dist:g} light-years from the Sun: too light to burn hydrogen as a star does, so it only glows with the heat it was born with."
-        row = {"id": f"bd-{slug(name)}", "name": name, "kind": "star", "raDeg": round(sexa(ra, True), 5), "decDeg": round(sexa(dec), 5), "distLy": round(dist, 3),
+        row = {"id": f"bd-{slug(name)}", "name": name, "kind": "browndwarf", "raDeg": round(sexa(ra, True), 5), "decDeg": round(sexa(dec), 5), "distLy": round(dist, 3),
                "why": why, "source": bdsrc, "aliases": [], "spect": spect}
         if isinstance(mass, list):
             row["massMsunLow"], row["massMsunHigh"] = mass
@@ -721,7 +721,7 @@ def part_beyond(exo):
         row["why"] = why
         sid = next((k for k, v in (("virgo", "Virgo Cluster"), ("fornax", "Fornax Cluster")) if v == pick["name"]), None)
         if sid and sbf.get(sid):
-            row["distLy"] = round(sbf[sid] * 3.2615638e6)
+            row["distLy"] = int(float(f"{sbf[sid] * 3.2615638e6:.3g}"))  # three significant figures: the distance is good to a few per cent
             del row["redshift"]
             row["distanceNote"] = f"the mean of distances found from surface-brightness fluctuations, {sbf[sid]:g} megaparsecs (registry/galaxy-clusters.yaml)"
         far.append(row)

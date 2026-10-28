@@ -147,6 +147,61 @@ const dir = a45.eclipticDirection(0, 0);
 check(Math.abs(dir[0] - 1) < 1e-12 && Math.abs(dir[1]) < 1e-12, 'RA 0, Dec 0 is the ecliptic +X');
 const polar = a45.eclipticDirection(90, 0);
 check(Math.abs(polar[1] - Math.cos(23.4392911 * Math.PI / 180)) < 1e-9, 'the equator turned into the ecliptic by the app\'s obliquity');
+// ---- headless scene: a shell on a world's stage, nothing on a rung, and a tap that finds a star
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const { createUnplaced } = await import(join(JS, 'scene/unplaced.js'));
+  const tMs = Date.parse('2026-10-28T12:00:00Z');
+  const unBuf = unBin.buffer.slice(unBin.byteOffset, unBin.byteOffset + unBin.byteLength);
+  const scene = new THREE.Scene();
+  const u = createUnplaced(scene, { files: [unBuf, unNames] });
+  stage.setWorld('earth'); stage.setTime(tMs);
+  u.setOpacity(1);
+  await u.load();
+  check(u.count() === 10224 && u.mode() === 'shell', `on a world's stage the stars with no distance are a shell (${u.count()}, ${u.mode()})`);
+  const pts = u.group.children[0];
+  check(pts && pts.visible === true, 'the points are visible at opacity 1');
+  const pos = pts.geometry.getAttribute('position').array;
+  check(Math.abs(Math.hypot(pos[0], pos[1], pos[2]) - 1e8) < 50, 'a unit direction times the shell, as the placed stars');
+  check(u.drawn() > 700 && u.drawn() < 1000, `at the shutter's 7.5 about 850 are drawn (${u.drawn()})`);
+  // a camera looking straight at the brightest of them taps it
+  const camera = new THREE.PerspectiveCamera(45, 800 / 600, 1e-5, 1e9);
+  camera.position.set(0, 0, 0);
+  camera.lookAt(pos[0], pos[1], pos[2]);
+  camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+  u.update(camera, null);
+  const hits = u.pickAll(0, 0, camera, { w: 800, h: 600 }, 6);
+  check(hits.length >= 1 && hits[0].record.meta.noDistance === true && hits[0].record.id === `hyg-u${un.id[0]}`, `a tap on the brightest picks it, a star with no distance (${hits[0] && hits[0].record.id})`);
+  check(u.pickAll(0.9, 0.9, camera, { w: 800, h: 600 }, 6).every((h) => h.record.id !== `hyg-u${un.id[0]}`), 'a tap in the corner does not');
+  u.setMagLimit(3); 
+  check(u.pickAll(0, 0, camera, { w: 800, h: 600 }, 6).every((h) => h.record.meta.mag <= 3), 'a star fainter than the shutter shows is not to be tapped');
+  u.setMagLimit(7.5);
+  stage.setWorld('stellar'); stage.setTime(tMs);
+  u.rebuild();
+  check(u.mode() === 'true' && pts.visible === false && u.pickAll(0, 0, camera, { w: 800, h: 600 }, 6).length === 0, 'on a rung of the ladder they are not drawn and not to be tapped: a star there needs a place');
+  stage.setWorld('earth');
+  u.dispose();
+}
+// ---- the layers load through their own module, as main.js asks them to
+{
+  const real = globalThis.fetch;
+  globalThis.fetch = async (u) => {
+    const buf = readFileSync(fileURLToPath(String(u)));
+    return { ok: true, status: 200, json: async () => JSON.parse(buf.toString('utf8')), arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) };
+  };
+  const { loadLayer } = await import(join(JS, 'data/layers.js'));
+  const want = { 'extremes-more': 78, pulsars: 4383, 'beyond-more': 85 + 38, quasars: 1006 };
+  for (const [id, n] of Object.entries(want)) {
+    const layer = LAYERS.find((x) => x.id === id);
+    const recs2 = await loadLayer(layer, Date.now());
+    check(recs2.length === n && recs2.every((r) => r.layer === id && r.pos && Number.isFinite(r.pos.x)), `layer ${id} loads ${n} records through fetchLazy (${recs2.length})`);
+  }
+  const bm = await loadLayer(LAYERS.find((x) => x.id === 'beyond-more'), Date.now());
+  check(bm.filter((r) => r.klass === 'dso').length === 85 && bm.filter((r) => r.klass === 'exotic').length === 38, 'the beyond layer holds 85 Local Group dwarfs (deep-sky records) and 38 far rows (exotic records)');
+  check(bm.find((r) => r.id === 'dso-lg-andromeda_09').meta.parent === 'dso-m31', 'a satellite of Andromeda has Andromeda for its parent');
+  globalThis.fetch = real;
+}
 // the layers
 for (const id of ['extremes-more', 'pulsars', 'beyond-more', 'quasars']) {
   const l = LAYERS.find((x) => x.id === id);

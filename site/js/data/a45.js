@@ -21,6 +21,8 @@ export const KPC_LY = 3261.5637771674333;
 const here = typeof import.meta !== 'undefined' ? import.meta.url : undefined;
 const base = (f) => (here ? new URL(`../../data/a45/${f}`, here) : `data/a45/${f}`);
 const pending = new Map();
+/** Three significant figures: a comoving distance from a redshift is good to a few per cent, and the card must not print ten digits of it. */
+const sig3 = (n) => (n >= 1000 ? Number(n.toPrecision(3)) : Math.round(n));
 
 /** One file, once. `no-cache` = revalidate: the files keep their names when a rebuild changes them. */
 function once(file, kind) {
@@ -124,7 +126,7 @@ export function quasarRows(doc) {
   const z7 = doc.rows.filter((r) => r[5]).length;
   return doc.rows.map(([name, raDeg, decDeg, z, mag, high]) => {
     const row = {
-      id: `qso-${slug(name)}`, name, kind: 'quasar', raDeg, decDeg, redshift: z, distLy: Math.round(comovingLy(z)),
+      id: `qso-${slug(name)}`, name, kind: 'quasar', raDeg, decDeg, redshift: z, distLy: sig3(comovingLy(z)),
       distance_note: note(z, COPY.a45.comoving), source: doc.source, aliases: [], noBlink: true, sizePx: 5,
     };
     if (mag != null) row.vmag = mag;
@@ -138,7 +140,7 @@ export function farRows(rows) {
   return (Array.isArray(rows) ? rows : []).map((r) => {
     const row = { ...r, noBlink: true };
     if (Number.isFinite(r.redshift) && !Number.isFinite(r.distLy)) {
-      row.distLy = Math.round(comovingLy(r.redshift));
+      row.distLy = sig3(comovingLy(r.redshift));
       row.distance_note = note(r.redshift, COPY.a45.comoving);
     } else if (r.distanceNote) {
       row.distance_note = r.distanceNote;
@@ -211,7 +213,7 @@ export function unplacedRecord(row, unnamed) {
       aliases: [bayer, proper, hip ? `HIP ${hip}` : null, hd ? `HD ${hd}` : null].filter((a) => a && a !== name),
       named: !!(proper || bayer),
       iau: approved ? { name, designation: bayer || '', approved: approved === 'IAU' ? '' : approved } : null, // 'IAU': approved, the date not on the list we read
-      why: t(COPY.a45.unplaced.note),
+      // no `why`: a record with one is "notable" and ui/labels.js would name it on a rung of the ladder, where it has no place
       cite: COPY.a45.unplaced.cite,
     },
   };
