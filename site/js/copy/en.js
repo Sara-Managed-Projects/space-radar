@@ -1245,6 +1245,7 @@ export const COPY = {
       luminosity: 'Light output',
       starWidth: 'Width',
       catalogue: 'Catalogue',
+      iauName: 'IAU-approved name', // 0079 r15-a45
       lightTime: 'Radio time each way',
       nextPass: 'Next pass over you',
       crew: 'People aboard',

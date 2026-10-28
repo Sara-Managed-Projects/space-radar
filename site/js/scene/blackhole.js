@@ -87,6 +87,7 @@ export const PROFILES = {
   'grs-1915-105': { incl: 66, pa: 150, turn: 1, rOut: 22, t: 2e7, frame: 13, jet: { lengthLy: 0.05, knots: [], counter: 0.3, stellar: true } },
   'gaia-bh1': { quiet: true, incl: 60, pa: 0, turn: 1, frame: 12 },
   'gaia-bh3': { quiet: true, incl: 60, pa: 0, turn: 1, frame: 12 },
+  'gaia-bh2': { quiet: true, incl: 60, pa: 0, turn: 1, frame: 12 }, // 0079 r15-a45: the third Gaia black hole, as quiet as the other two
   '3c-273': { incl: 10, pa: 222, turn: 1, rOut: 22, t: 9000, frame: 13, jet: { lengthLy: 200000, knots: [], counter: 0.003 } },
   '3c-279': { incl: 2, pa: 205, turn: 1, rOut: 22, t: 9000, frame: 13, jet: { lengthLy: 30000, knots: [], counter: 0.003 } },
 };

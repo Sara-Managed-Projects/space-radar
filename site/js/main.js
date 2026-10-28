@@ -379,6 +379,7 @@ export async function boot({ setStatus } = {}) {
     dsoGlow.setExposure(look.milkyWay);
     if (ctx.deep) ctx.deep.setExposure(look.milkyWay);
     stars3d.setMagLimit(look.starLimit);
+    if (ctx.unplaced) ctx.unplaced.setMagLimit(look.starLimit); // 0079 r15-a45
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
@@ -455,12 +456,30 @@ export async function boot({ setStatus } = {}) {
   }
   ctx.updateOtherLight = updateOtherLight;
 
+  // 0079 r15-a45: begin -- the 10 224 HYG stars with a direction and no distance (scene/unplaced.js), on a world's sky sphere only.
+  // Fetched (123 kB) the first time the 3D stars fade in, never at boot.
+  ctx.unplaced = null;
+  let unplacedImport = null;
+  let unplacedK = 0;
+  let unplacedOn = true;
+  const wantUnplaced = () => unplacedImport || (unplacedImport = import('./scene/unplaced.js')
+    .then((m) => {
+      ctx.unplaced = m.createUnplaced(scene);
+      ctx.unplaced.setMagLimit(exposure.look().starLimit);
+      ctx.unplaced.setVisible(unplacedOn);
+      ctx.unplaced.setOpacity(unplacedK);
+      return ctx.unplaced;
+    })
+    .catch((e) => { console.warn('the stars with no distance did not load', e); return null; }));
+  ctx.wantUnplaced = wantUnplaced;
+  const unplacedOpacity = (k) => { unplacedK = k; if (ctx.unplaced) ctx.unplaced.setOpacity(k); else if (k > 0) wantUnplaced(); };
+  // 0079 r15-a45: end
   const lod = createLod({
     'sky-panorama': (k) => {
       skyStrength = k;
       if (starfield.setSkyOpacity) starfield.setSkyOpacity(k);
     },
-    'stars-3d': (k) => stars3d.setOpacity(k),
+    'stars-3d': (k) => { stars3d.setOpacity(k); unplacedOpacity(k); }, // 0079 r15-a45: the stars with no distance fade in with the others
     'galaxy-model': (k) => galaxy.setOpacity(k),
   });
   // A star and its planets at the system's own scale (spec 0040, scene/systems.js): built when its
@@ -472,6 +491,7 @@ export async function boot({ setStatus } = {}) {
   exposure.onChange((mode) => worlds.setExposure(mode));
   window.addEventListener('sr:stage', (e) => {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
+    if (ctx.unplaced) ctx.unplaced.rebuild(); // 0079 r15-a45
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if (ctx.nebulae) ctx.nebulae.rebuild();
     if (ctx.deep) ctx.deep.rebuild();
@@ -836,6 +856,7 @@ export async function boot({ setStatus } = {}) {
     if (gl) gl.setVisible(on);
     if (id === 'worlds') worlds.setVisible(on);
     if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
+    if (id === 'stars') { unplacedOn = !!on; if (ctx.unplaced) ctx.unplaced.setVisible(on); } // 0079 r15-a45
     if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
     if (id === 'systems' && ctx.systems) ctx.systems.setVisible(on);
   };
@@ -1268,7 +1289,7 @@ export async function boot({ setStatus } = {}) {
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
     // An embed: only what its link names (openAt).
-    if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => ctx.loadAfterFirstVisit());
+    if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => ctx.loadAfterFirstVisit({ idle: true })); // 0079 r15-a45: the idle moment loads the later layers only
   });
   let shellsLoad = null;
   // A rung of the ladder or a star system's stage draws them: no waiting for the idle moment.
@@ -1350,6 +1371,7 @@ export async function boot({ setStatus } = {}) {
     }
     if (isLayerOn('stars') && ctx.stars3d) {
       for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+      if (ctx.unplaced) for (const c of ctx.unplaced.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c); // 0079 r15-a45
     }
     // 0076 W4-a (spec 0075 task 63): the local volume's galaxies (scene/deep/localvolume.js), on the Local Group's rung
     if (ctx.deep && ctx.deep.pickAll) {
@@ -1384,6 +1406,8 @@ export async function boot({ setStatus } = {}) {
    *   selecting from inside one used to look like.
    */
   function select(record, opts = {}) {
+    // 0079 r15-a45: a star with a direction and no distance has no place to fly to, and the map does not make one up: the card opens, the camera stays.
+    if (record && record.meta && record.meta.noDistance && opts.fly !== false) opts = { ...opts, fly: false };
     // From the ground nothing flies: the visitor is standing in a field. The card opens, and the
     // search box turns the sky to what it found (ui/search.js, skyView.pointAtRecord). Without this
     // a star chosen there recentred the whole scene on the stellar rung under the sky view's feet.
@@ -1458,7 +1482,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
     if (ctx.groundTrack) ctx.groundTrack.set(record);
     if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
-    else cameraRig.follow(() => positionOfRecord(record));
+    else if (!(record && record.meta && record.meta.noDistance)) cameraRig.follow(() => positionOfRecord(record)); // 0079 r15-a45: nothing to follow
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
     // A place met on the night side is met from the whole Earth's distance, and the toast says why
     // (flyToRecord): with the way back when the view was moved for the visitor, alone when they
@@ -2857,6 +2881,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (starfield && starfield.setSun) starfield.setSun(worlds.drawnPositionOf('sun'), worlds.drawnRadiusUnits('sun'), ctx.camera);
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
+    if (ctx.unplaced) ctx.unplaced.update(ctx.camera, ctx.renderer); // 0079 r15-a45
     // A sky stop's lens (ui/trip.js `zoom`): eased, so a wider figure opens out and never jumps.
     {
       const st = ctx.trip && ctx.trip.state;
@@ -2890,7 +2915,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.nebulae) {
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
       // Our stars step aside inside it, as it carries its own (scene/starholes.js, internal #344).
-      { const holes = ctx.nebulae.holes(); if (ctx.starfield && ctx.starfield.setHoles) ctx.starfield.setHoles(holes); if (ctx.stars3d && ctx.stars3d.setHoles) ctx.stars3d.setHoles(holes); }
+      { const holes = ctx.nebulae.holes(); if (ctx.starfield && ctx.starfield.setHoles) ctx.starfield.setHoles(holes); if (ctx.stars3d && ctx.stars3d.setHoles) ctx.stars3d.setHoles(holes); if (ctx.unplaced) ctx.unplaced.setHoles(holes); /* 0079 r15-a45 */ }
     }
     // Andromeda's slid-in photograph and her stand-in model never draw over each other (scene/galaxy.js); her two
     // companions' ellipses step back with it and with what M31's hero draws of them (0076 W4-a, spec 0075 task 59).
@@ -3044,7 +3069,26 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   ctx.loadLayerNow = (layer) => { if (layer && layer.deferred) { layer.deferred = false; return one(layer); } return Promise.resolve(); };
   let laterLoad = null;
   ctx.laterLayersLoaded = () => later.length === 0 || (laterLoad !== null && later.every((l) => layerRecords.has(l.id)));
-  ctx.loadAfterFirstVisit = () => {
+  // 0079 r15-a45: begin -- the compact catalogues of stages A4 and A5 (data/a45.js, layers `extremes-more`, `pulsars`, `beyond-more`, `quasars`;
+  // about 140 kB in all). Not at the idle moment: when a visitor does something that needs them (the search box taking focus, a ladder
+  // stage, a link, a trip), or ticks one's box (loadLayerNow). The IAU's names of exoplanet hosts join the planets' aliases with them.
+  const CATALOGUE_LAYERS = ['extremes-more', 'beyond-more', 'pulsars', 'quasars'];
+  let cataloguesLoad = null;
+  ctx.loadMoreCatalogues = () => {
+    if (!cataloguesLoad) {
+      cataloguesLoad = ctx.loadAfterFirstVisit({ idle: true })
+        .then(() => Promise.all(CATALOGUE_LAYERS.map((id) => layerRec(id)).filter(Boolean).map((l) => ctx.loadLayerNow(l))))
+        .then(() => import('./data/a45.js'))
+        .then((m) => m.loadIau().then((doc) => {
+          if (m.iauHostAliases(doc, layerRecords.get('exoplanets')) > 0) window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: 'exoplanets', count: (layerRecords.get('exoplanets') || []).length } }));
+        }))
+        .catch((e) => console.warn('the extra catalogues did not load', e));
+    }
+    return cataloguesLoad;
+  };
+  // 0079 r15-a45: end
+  ctx.loadAfterFirstVisit = (callOpts) => {
+    if (!(callOpts && callOpts.idle) && ctx.loadMoreCatalogues) ctx.loadMoreCatalogues(); // 0079 r15-a45: whoever needs the later layers is likely to need these
     if (!laterLoad) {
       // The star systems' index rides with the exoplanet table it is joined to (internal #466):
       // thirty-nine more host stars for the search box, and a stage for each. Not the systems

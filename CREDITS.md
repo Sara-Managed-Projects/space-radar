@@ -26,6 +26,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Fainter stars, which constellation, meteor activity | AT-HYG v4.0; CDS VI/42; the IMO's 2027 calendar | CC BY-SA 4.0; a catalogue; facts, cited | [3j](#3j-the-sky-from-the-ground-round-three--at-hyg-cds-vi42-the-imos-working-list-and-a-model-of-the-air) |
 | Magnetic declination, for "Point your phone" | World Magnetic Model 2025 (NOAA NCEI, BGS) | public domain (US government) | [3k](#3k-point-your-phone--the-world-magnetic-model-2025-noaa-ncei-and-the-british-geological-survey-public-domain) |
 | Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
+| Stars with names and with no distance, pulsars, magnetars, black holes, white and brown dwarfs, the Local Group, clusters, quasars | IAU WGSN; HYG; ATNF; McGill; BlackCAT; Local Volume Database; MCXC; Million Quasars | CC BY; CC BY-SA 4.0; cited catalogues; CC0 | [3n](#3n-stars-and-beyond-the-milky-way-the-compact-catalogues-of-release-150-stages-a4-and-a5) | <!-- 0079 r15-a45 -->
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
@@ -2522,6 +2523,35 @@ HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikiped
 masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
 the stellar holes), it is chosen and `blackhole.js` says so.
 <!-- 0078 r14-mw-bh: end -->
+
+<!-- 0079 r15-a45: begin -->
+## 3n. Stars and beyond the Milky Way: the compact catalogues of release 1.5.0 (stages A4 and A5)
+
+`site/data/a45/` is written by `scripts/gen_a45_data.py` from the sources below, all downloaded
+2026-10-28 into a cache and never committed. Each file is fetched by `site/js/data/a45.js` the first
+time a visitor needs it and never at boot. Hand-checked rows are in `scripts/data/a45-hand.yaml`, each with the page
+it was read from. No image, figure or text of any paper or page is shipped: the numbers are facts, cited, and the one-line
+descriptions are ours. **Gaia's catalogues are not used here**; the Gaia parallaxes of four white dwarfs and the astrometry of
+Gaia BH2 are numbers printed on the pages cited below.
+
+| Item | File | From | Licence or terms | What was kept |
+|---|---|---|---|---|
+| The IAU's star names | `iau-names.json` | IAU Working Group on Star Names, the IAU-CSN file (<https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt>, 454 names, last updated 2022) and Wikipedia's mirror of the list (<https://en.wikipedia.org/wiki/List_of_proper_names_of_stars>, 633 approved names in its table, October 2026) | The file says: "All IAU-produced products (Images, Videos, Texts) are released under Creative Commons Attribution (i.e. free to use in all perpetuity, world-wide, as long as the source is mentioned)." Wikipedia text: CC BY-SA 4.0 (only the names and designations are used) | each name, its designation, the day it was approved where the file gives one, and the star it was matched to (565 of HYG's placed stars, 6 of its unplaced ones, 40 exoplanet hosts; 22 names are of nebulae, pulsars and stars HYG does not have) |
+| The stars with no distance | `unplaced.bin`, `unplaced.names.json` | HYG Stellar Database v4.4, David Nash (<https://codeberg.org/astronexus/hyg>) | CC BY-SA 4.0, as §3c: these files are derivative works and are offered under CC BY-SA 4.0 | direction (24-bit steps), magnitude, B-V and HYG's id of the 10 224 rows with no parallax; names of the 63 that have one |
+| Pulsars | `pulsars.json` | ATNF Pulsar Catalogue v2.9.0 (Manchester, Hobbs, Teoh and Hobbs 2005, AJ 129, 1993; <https://www.atnf.csiro.au/research/pulsar/psrcat/>), `psrcat.db` | its download page: "we would appreciate acknowledgement by reference to the publication 'The ATNF Pulsar Catalogue', R. N. Manchester ..." | name, position, period, the best distance (parallax where its error is under 20 per cent, else the association's, else the dispersion measure's from the YMW16 model), a few flags |
+| Magnetars | `extremes.json` | McGill Online Magnetar Catalog (Olausen and Kaspi 2014, ApJS 212, 6; <https://www.physics.mcgill.ca/~pulsar/magnetar/main.html>) | its page: "You are free to use the information in this catalog in publications, however, we ask that you please cite the published paper (Olausen & Kaspi, 2014)" | period, magnetic field, distance, position |
+| Black-hole transients | `extremes.json` | BlackCAT (Corral-Santana et al. 2016, A&A 587, A61, arXiv:1510.08869), the paper's tables 2 and 5 | open-access paper; facts, cited | position, distance with its error, the dynamical mass where the paper has one |
+| Gaia BH2, four white dwarfs, 24 brown dwarfs, three galaxies, two clusters | `extremes.json`, `beyond.json` | pages and papers named per row in `scripts/data/a45-hand.yaml` (Wikipedia, RECONS through Wikipedia's nearest-stars table; Naidu et al. 2025; Carniani et al. 2024 and 2025; Oesch et al. 2016; Bunker et al. 2023; Maiolino et al. 2024; Menanteau et al. 2012; McDonald et al. 2012) | facts, cited per row; Wikipedia text CC BY-SA 4.0 (not copied) | positions, distances or parallaxes, redshifts |
+| The rest of the Local Group | `beyond.json` | The Local Volume Database, A. Pace 2024 (<https://github.com/apace7/local_volume_database>), tables `dwarf_mw`, `dwarf_m31`, `dwarf_local_field` | CC0 1.0 Universal | position, distance with error, apparent magnitude, host, for the 85 galaxies the map did not have |
+| Galaxy clusters | `beyond.json` | MCXC meta-catalogue of X-ray clusters (Piffaretti et al. 2011, A&A 534, A109) through HEASARC (<https://heasarc.gsfc.nasa.gov/W3Browse/all/mcxc.html>) | public archive; the paper cited | position, redshift, M500 and R500 of 33 named clusters |
+| Quasars | `quasars.json` | Million Quasars Catalog v8 (Flesch 2023, OJAp 6, 49; <https://quasars.org/milliquas.htm>) through HEASARC | its HEASARC page: "If you use this catalog in published research, the author requests that you please cite it." | name, position, redshift, magnitude of the brightest 1 000 type-Q objects and the nine with z > 7 |
+
+**What is not drawn from a measurement.** A pulsar whose distance comes from its dispersion measure has a
+*modelled* distance and its card says so. A quasar's, cluster's or far galaxy's distance is how far it is *now* in the
+Planck 2018 cosmology (`site/js/data/cosmology.js`), from the redshift, never a light-travel time read as a distance.
+A star with no parallax is drawn as a direction only, on a world's sky sphere, and nowhere on the ladder.
+**Left out on purpose:** WD J1011+2845 (it arrives through `registry/exotics.yaml`).
+<!-- 0079 r15-a45: end -->
 
 ## 4. Runtime data sources
 

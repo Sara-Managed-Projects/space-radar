@@ -301,6 +301,7 @@ Object.assign(COPY, {
       earthevent: 'Event on Earth',
       blackhole: 'Black hole', pulsar: 'Pulsar', magnetar: 'Magnetar',
       quasar: 'Quasar', // 0076 W4-b
+      galaxy: 'Galaxy', cluster: 'Cluster of galaxies', // 0079 r15-a45
     },
     upNow: 'up now, {compass}',
     lowNow: 'low in the {compass} now',
@@ -1336,7 +1337,11 @@ Object.assign(COPY, {
       massBillions: 'weighing {n} billion Suns',
       spins: 'turning {n} times a second',
       spinsSlow: 'turning once every {n} seconds',
-      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star', quasar: 'quasar' }, // 0076 W4-b: quasar
+      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star', quasar: 'quasar', galaxy: 'galaxy', cluster: 'cluster of galaxies' }, // 0076 W4-b: quasar; 0079 r15-a45: galaxy, cluster
+      // 0079 r15-a45: begin
+      leadGalaxy: '{name} is a galaxy {dist} light-years away, where it is now',
+      leadCluster: '{name} is a cluster of galaxies {dist} light-years away, where it is now',
+      // 0079 r15-a45: end
     },
     dso: {
       leadHome: '{name} is the galaxy we live in; its centre is {dist} light-years away',
@@ -1969,6 +1974,33 @@ Object.assign(COPY, {
       review: 'This model has not yet been reviewed by an astronomer.',
     },
   },
+  // 0079 r15-a45: begin
+  // Stage A4 and A5 of release 1.5.0 (data/a45.js, scene/unplaced.js): the words that the catalogues' rows are given when they are made.
+  a45: {
+    farNote: 'how far it is now ({how}), from its redshift of {z} in the Planck 2018 cosmology',
+    comoving: 'comoving distance',
+    // by ATNF's distance method (scripts/gen_a45_data.py: 0 parallax, 1 association, 2 dispersion measure)
+    pulsarDistance: [
+      'from the pulsar\u2019s own parallax',
+      'the distance of the globular cluster, supernova remnant or other object it belongs to',
+      'a model\u2019s estimate from the radio signal (the YMW16 model of the Galaxy\u2019s free electrons), not a measurement: it can be well off',
+    ],
+    // The "drawn as" line of the far things the exotics' card now serves (ui/cards.js).
+    shape: {
+      galaxy: 'a mark at the distance its redshift gives; a galaxy this far is a few pixels across at most, so its shape is not drawn',
+      cluster: 'a mark at the cluster\u2019s X-ray centre; the member galaxies are drawn only for Virgo, Coma, Fornax and Perseus (the Local Group stage)',
+    },
+    quasarZ7: 'A quasar seen as it was about {age} million years after the Big Bang: one of the {n} known beyond redshift 7.',
+    // A star the Hipparcos-based catalogue (HYG) has a direction and a brightness for and no distance (scene/unplaced.js).
+    unplaced: {
+      unnamed: 'HYG star {id}',
+      lead: '{name} is a star in the direction you are looking, whose distance nobody has measured',
+      colour: 'it shines {colour}',
+      note: 'Drawn on the sky and nowhere in space, because a place needs a distance.',
+      cite: 'HYG Stellar Database v4.4 (CC BY-SA 4.0): direction and magnitude only',
+    },
+  },
+  // 0079 r15-a45: end
   // 0076 W4-b (galaxy clusters and quasars; scene/deep/galclusters.js)
   r12Far: {
     // A quasar's card: its "drawn as" line (`shape`, read by ui/cards.js) and what is added to it (a record's `departure`). {size} arcseconds, {ly} light-years.

@@ -688,7 +688,8 @@ export function rightNowRows(record, m, passInfo) {
   } else if (klassOf(record) === 'star') {
     // Light-years, not astronomical units: 268 000 au for Proxima is a number nobody can hold.
     const distLy = pickNumber(md, 'distLy');
-    rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : COPY.card.couldNotLook]);
+    // 0079 r15-a45: a star with a direction and a brightness and no distance says so, in place of "could not work this out"
+    rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : pick(md, 'noDistance') ? COPY.unplaced.noDistanceRow : COPY.card.couldNotLook]);
     if (distLy !== null) {
       rows.push([R.lightLeft, distLy >= 1.5 ? t(V.yearsAgo, { n: fmt.int(distLy) }) : t(V.monthsAgo, { n: fmt.int(distLy * 12) })]);
     }
@@ -706,6 +707,9 @@ export function rightNowRows(record, m, passInfo) {
     if (width !== null && width > 0 && md.widthFrom === 'measured' && widthSource) rows.push([R.widthSource, String(widthSource)]);
     const hip = pick(md, 'hip');
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
+    // 0079 r15-a45: the IAU Working Group on Star Names' name for it, with the day it was approved where the list has one
+    const iau = md.iau;
+    if (iau && iau.name) rows.push([R.iauName, iau.approved ? t(COPY.unplaced.iauApproved, { name: String(iau.name), date: String(iau.approved) }) : String(iau.name)]);
     // The host of a generated system (internal #466): the table's numbers for the star, and the
     // habitable zone this map computed from them, labelled as computed.
     const ofSystem = systemRows ? systemRows.star(record) : null;
