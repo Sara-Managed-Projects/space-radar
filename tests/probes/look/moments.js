@@ -16,15 +16,15 @@ const frames = async (n = 40) => {
 };
 const text = (sel) => { const n = document.querySelector(sel); return n ? n.textContent : null; };
 location.hash = '#moment=demo-saturn&t=-9.5';
-const up = await until(() => sr.moment && sr.moment.state().status === 'ready' && sr.moment.state().vehicles.every((v) => v.loaded), 120000);
-out.opened = sr.moment ? sr.moment.state() : null;
+const up = await until(() => sr.replay && sr.replay.state().status === 'ready' && sr.replay.state().vehicles.every((v) => v.loaded), 120000);
+out.opened = sr.replay ? sr.replay.state() : null;
 if (!up) out.fail = 'the moment never came up with its model: ' + JSON.stringify(out.opened);
 const at = async (t, name, note, settle = 5000) => {
   try {
-    sr.moment.pause();
-    sr.moment.seek(t);
+    sr.replay.pause();
+    sr.replay.seek(t);
     await sleep(settle);
-    const st = sr.moment.state();
+    const st = sr.replay.state();
     out.scenes.push({ name, t, shot: st.shot, chapter: st.chapter, rate: st.rate, altM: st.altM, calls: st.calls, triangles: st.triangles,
       met: text('.sr-moment__met'), shown: text('.sr-moment__rate'), caption: text('.sr-moment__caption'), render: frameCost() });
     await shot(name, `${note} (${text('.sr-moment__met')}, ${text('.sr-moment__rate')}, shot ${st.shot}, camera ${st.altM} m up)`);
@@ -50,34 +50,34 @@ if (up) {
   } catch (err) { look.errors.push('probe: chapters: ' + err); }
   // A visitor's own camera, round the stack at staging.
   try {
-    sr.moment.seek(163.2);
-    sr.moment.setFree(true);
+    sr.replay.seek(163.2);
+    sr.replay.setFree(true);
     const shield = document.querySelector('.sr-moment__shield');
     const r = shield.getBoundingClientRect();
     const ev = (type, x, y) => shield.dispatchEvent(new PointerEvent(type, { pointerId: 7, clientX: x, clientY: y, bubbles: true }));
     ev('pointerdown', r.width / 2, r.height / 2); ev('pointermove', r.width / 2 + 180, r.height / 2 - 60); ev('pointerup', r.width / 2 + 180, r.height / 2 - 60);
     await shot('moments-11-free', 'the visitor\'s camera dragged round the stack at staging; Director hands it back', 5000);
-    out.free = sr.moment.state().free;
-    sr.moment.setFree(false);
+    out.free = sr.replay.state().free;
+    sr.replay.setFree(false);
   } catch (err) { look.errors.push('probe: free camera: ' + err); }
   // Playing: the frame interval, and the clock moving.
   try {
-    sr.moment.seek(-9.5);
-    sr.moment.play();
+    sr.replay.seek(-9.5);
+    sr.replay.play();
     out.playing = await frames(40);
-    out.playedTo = sr.moment.state().t;
-    sr.moment.pause();
+    out.playedTo = sr.replay.state().t;
+    sr.replay.pause();
   } catch (err) { look.errors.push('probe: playing: ' + err); }
   // A share link at a second, pasted over the running page: it must land on that second, paused.
   location.hash = '#moment=demo-saturn&t=162.5';
   await sleep(4000);
-  out.linked = { t: sr.moment.state().t, playing: sr.moment.state().playing, hash: location.hash };
+  out.linked = { t: sr.replay.state().t, playing: sr.replay.state().playing, hash: location.hash };
   if (Math.abs(out.linked.t - 162.5) > 0.05 || out.linked.playing) look.errors.push('the share link did not land on its second, paused: ' + JSON.stringify(out.linked));
   await shot('moments-12-link', 'opened from #moment=demo-saturn&t=162.5: the same second, paused', 1500);
   // Escape: the map is back and the address has no moment.
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await sleep(4000);
-  out.closed = { active: sr.moment.active, hash: location.hash, sceneVisible: sr.scene ? sr.scene.visible : null };
+  out.closed = { active: sr.replay.active, hash: location.hash, sceneVisible: sr.scene ? sr.scene.visible : null };
   if (out.closed.active || /moment=/.test(location.hash)) look.errors.push('Escape did not close the moment: ' + JSON.stringify(out.closed));
   await shot('moments-13-closed', 'Escape: the map again', 1000);
 }
