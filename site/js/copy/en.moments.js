@@ -60,7 +60,7 @@ Object.assign(COPY, {
       chStaging: 'Staging',
       ignition: 'T−8.9 s: the ignition sequence starts the five F-1 engines, centre first, then the outboard pairs.',
       holddown: 'The hold-down arms keep the stack on the pad until all five engines are at full thrust.',
-      liftoff: 'Lift-off, 13:32:00.6 UTC: five F-1s, some 33 800 kN, lifting nearly 3 000 tonnes.',
+      liftoff: 'Lift-off, 13:32:00.6 UTC: five F-1s, some 33 800 kN, lifting nearly 3 000 tonnes.',
       tower: 'Clear of the tower, the stack rolls onto its flight azimuth, 72 degrees east of north.',
       maxq: 'Past the speed of sound a minute in; then max Q, the air pushing hardest: 35 kPa (735 lb/ft²).',
       ceco: 'T+135 s: the centre engine shuts down, to keep the acceleration under 4 g.',
