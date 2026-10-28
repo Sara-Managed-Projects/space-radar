@@ -39,8 +39,9 @@ DISTANCES, and what each flag means (the card says it in words; no distance is d
              mark is the "inferred" one (fainter, larger) and the range is wide.
   harris     Harris's distance from the Sun; the range is ASSUMED +-10 %.
   gaia       Hunt & Reffert's dist50, dist16 and dist84 (their 68 % interval).
-  typical    nothing measured it: the median of the same class's measured distances in this build, the range their
-             16th to 84th percentile. The direction is measured, the depth is not.
+  typical    nothing measured it: a point in the 16th to 84th percentile range of the same class's measured distances in
+             this build, log-uniform and fixed by the object's name (so they do not stack on one sphere round the
+             Sun), to two figures. The direction is measured, the depth is not.
 Positions are the sources' (ICRS or J2000 equatorial), stored as 32-bit fractions of the circle; the page turns them into
 the sun-inertial (ecliptic J2000) axes like data/dso.json.
 """
@@ -74,6 +75,15 @@ URLS = {
     "mwgc.dat": "https://physwww.mcmaster.ca/~harris/mwgc.dat",
     "snrs.html": "https://www.mrao.cam.ac.uk/surveys/snrs/snrs.data.html",
     "caldwell.json": "https://en.wikipedia.org/w/api.php?action=parse&page=Caldwell_catalogue&prop=wikitext&format=json&formatversion=2",
+}
+
+PINNED = {  # sha256 of the files as read on READ_ON; a later download that differs is a decision, not an accident
+    "NGC.csv": "54abea0b57b0a103831bfc7a8e3a99a23acfbf4bb581fcf3d8af539cbb826c84",
+    "addendum.csv": "c93f983dda6780b76b7b2e9271a856a892627710148a982ee98101a54c642fdd",
+    "mwgc.dat": "b457a690adc422fb2e8e05a23e1de50b62d1d5ac10dce99963c956c1b17ca658",
+    "snrs.html": "0dcffa17be68c3f2467d5e80eae40c6dddba68195b5a4765556c6b4e9f966396",
+    "caldwell.json": "73f9ec53d9c611e4dbbd3fcc076d4cae285d7cc35ce84d6170d99f7c1d39fe53",
+    "hr23-clusters.tsv": "88f08add190325005e7b1ade9be364ec076dc3835010b692df6ba4a5d8ade88f",
 }
 
 MAGIC = b"SRNC"
@@ -322,6 +332,17 @@ def read_hr(path):
 
 
 # ------------------------------------------------------------------------------------------------ bake
+def verify_pins(cache: Path, allow_new: bool):
+    for name, want in PINNED.items():
+        path = HR_CACHE if name == "hr23-clusters.tsv" else cache / name
+        got = hashlib.sha256(path.read_bytes()).hexdigest()
+        if got != want:
+            msg = f"catalogue: {name} is not the file read on {READ_ON} (sha256 {got}, pinned {want})"
+            if not allow_new:
+                raise SystemExit(msg + "; pass --accept-new to bake from it and pin the new hash")
+            print("  " + msg, file=sys.stderr)
+
+
 def bake(cache: Path):
     cons = {c["id"]: c["name"] for c in json.loads(CONS.read_text())}
     cons_list = sorted(set(cons.values()))
@@ -484,7 +505,13 @@ def bake(cache: Path):
     for r in rows:
         if r["dist"] is None:
             t = typical[GROUP[r["cls"]]]
-            r["dist"] = (t[0], t[1], t[2], M["typical"], True, True)
+            # Not the median for all of them: that stacks every unmeasured object of a kind on one sphere round the Sun, a
+            # shape nobody measured. A point of the class's own 16th-84th percentile range, log-uniform and fixed by the
+            # object's name (the same on every build); the card says the distance is one point of that range.
+            u = 0.08 + 0.84 * int.from_bytes(hashlib.sha256(r["name"].encode()).digest()[:4], "little") / 2**32
+            d = t[1] * (t[2] / t[1]) ** u
+            d = float(f"{d:.2g}")  # two figures: no precision the range does not have
+            r["dist"] = (d, t[1], t[2], M["typical"], True, True)
             r["typical_of"] = GROUP[r["cls"]]
 
     # ---- Hunt & Reffert's open clusters: an overlay for the OpenNGC ones, new rows for the rest
@@ -658,10 +685,12 @@ if __name__ == "__main__":
     ap.add_argument("--bake", action="store_true")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--cache", type=Path, default=CACHE)
+    ap.add_argument("--accept-new", action="store_true", help="bake from downloads that differ from the pinned ones")
     a = ap.parse_args()
     if a.fetch:
         fetch(a.cache)
     if a.bake:
+        verify_pins(a.cache, a.accept_new)
         write(bake(a.cache))
     if a.check:
         sys.exit(1 if check() else 0)

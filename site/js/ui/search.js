@@ -937,6 +937,8 @@ export function createSearch(ctx, host) {
       const merged = state.hits.length - before;
       const extras = kind ? [] : m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
       if (extras.length && state.missed && !rows.length) state.missed = '';
+      // 0079 a2: a designation only the catalogue knows is an answer, not a miss: the nearest names are not offered beside it
+      if (state.missed && extras.some((x) => x.extra === 'catalogue')) { state.missed = ''; state.total = 0; rows.splice(0, rows.length); }
       state.total = Math.max(0, state.total - merged);
       state.hits = rows.slice(0, MAX_RESULTS - Math.min(extras.length, rows.length ? extras.length : 0)).concat(state.missed ? [] : extras);
       state.total += state.missed ? 0 : extras.length;

@@ -206,6 +206,27 @@ check(layer.stats().culled === 'size' && layer.stats().calls === 0, `from 5 tril
   check((frag.match(/\{/g) || []).length === (frag.match(/\}/g) || []).length, 'its braces balance');
   check(C.GLYPHS.length === MAIN.classes.length && C.CLASS_COLOURS.length === MAIN.classes.length && C.GROUP_OF.length === MAIN.classes.length, 'one glyph, one colour and one group per class');
 }
+// the search field's rows (ui/searchrows.js): a designation fetches the catalogue once and its best rows are offered as extras
+{
+  const SR = await import(join(JS, 'ui/searchrows.js'));
+  check(SR.wantCatalogue('saturn', async () => layer) === null && SR.wantCatalogue('', async () => layer) === null, 'a name that is not a designation fetches nothing');
+  let asked = 0;
+  const wait = SR.wantCatalogue('NGC 6397', async () => { asked += 1; return layer; });
+  check(wait && typeof wait.then === 'function', 'a designation asks for the catalogue');
+  await wait;
+  check(SR.wantCatalogue('NGC 6397', async () => { asked += 1; return layer; }) === null && asked === 1, 'and asks once');
+  const globular = T.parts[0].manifest.names.findIndex((nm, i) => /^NGC \d/.test(nm) && T.cls[i] === 3);
+  const nm = T.parts[0].manifest.names[globular];
+  const ex = SR.findExtras(nm.toLowerCase());
+  check(ex.some((x) => x.extra === 'catalogue' && x.record === `dso-${T.ids[globular]}`), `"${nm.toLowerCase()}" is offered as a catalogue row (${ex.map((x) => x.extra + ':' + x.name).join(', ')})`);
+  check(SR.findExtras('saturn').every((x) => x.extra !== 'catalogue'), 'other queries get no catalogue row');
+  let selected = null;
+  const ctx = { isLayerOn: () => true, setLayerOn() {}, recordById: () => null, wantDeep: async () => ({ loadCatalogue: async () => layer }), select: (r) => { selected = r; } };
+  const hit = ex.find((x) => x.extra === 'catalogue');
+  check(SR.runExtra(ctx, hit) === true, 'pressing the row is handled');
+  await new Promise((r) => setTimeout(r, 20));
+  check(selected && selected.id === hit.record, 'and selects the object once the catalogue is there');
+}
 layer.dispose();
 
 if (problems.length) { console.error(problems.map((p) => `FAIL ${p}`).join('\n')); process.exit(1); }

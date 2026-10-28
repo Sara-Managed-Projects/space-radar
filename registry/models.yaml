@@ -166,6 +166,10 @@ data:
   - {id: constellations, file: site/data/constellations.lines.json,  source: "https://github.com/ofrohn/d3-celestial", licence: "BSD-3-Clause", credit: "Constellation lines: d3-celestial (Olaf Frohn)"}
   - {id: constellation-names, file: site/data/constellation-names.json, source: "https://github.com/ofrohn/d3-celestial (constellations.json, fields extracted)", licence: "BSD-3-Clause", credit: "Constellation names: d3-celestial (Olaf Frohn)"}
   - {id: localvolume, file: site/data/deep/localvolume.bin, source: "https://cdsarc.cds.unistra.fr/ftp/J/AJ/145/101/ (table1.dat, table6.dat; repacked by scripts/build_deep_localvolume.py, internal spec 0075 stage e)", licence: "VizieR terms: free of usage in a scientific context, the authors and publication cited", credit: "Nearby galaxies: the Updated Nearby Galaxy Catalog (Karachentsev, Makarov & Kaisina 2013), via VizieR, CDS"}
+  # 0079 a2: begin
+  - {id: catalogue, file: site/data/deep/catalogue.bin, source: "https://github.com/mattiaverga/OpenNGC (NGC.csv, addendum.csv), https://physwww.mcmaster.ca/~harris/mwgc.dat, https://www.mrao.cam.ac.uk/surveys/snrs/, https://en.wikipedia.org/wiki/Caldwell_catalogue; repacked by scripts/build_deep_catalogue.py, release 1.5.0 stage A2", licence: "CC BY-SA 4.0 (OpenNGC, the Caldwell numbers); Harris's catalogue free of charge with the source named; Green's with a request to cite", credit: "Deep-sky catalogue: OpenNGC (Mattia Verga, CC BY-SA 4.0), Harris (1996, 2010 edition), Green (2024 October version), the Caldwell numbers from Wikipedia (CC BY-SA 4.0)"}
+  - {id: catalogue-oc, file: site/data/deep/catalogue-oc.bin, source: "https://vizier.cds.unistra.fr/viz-bin/asu-tsv (J/A+A/673/A114/clusters, Hunt & Reffert 2023; repacked by scripts/build_deep_catalogue.py, release 1.5.0 stage A2)", licence: "Gaia DR3 derived: CC BY-NC 3.0 IGO (ESA/Gaia/DPAC); VizieR terms", credit: "Open clusters: Hunt & Reffert 2023 from Gaia DR3 (ESA/Gaia/DPAC, CC BY-NC 3.0 IGO), via VizieR, CDS"}
+  # 0079 a2: end
 
 # THIRD-PARTY MARKS DRAWN IN THE UI, as opposed to in the scene.
 #

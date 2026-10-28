@@ -2302,6 +2302,28 @@ its brightness), and the cluster's haze steps back only by the light its Gaia me
 the camera, as a camera's exposure shows a cluster (6.5 under the Eye exposure), deeper than the map's other stars.
 Not yet reviewed by an astronomer.
 
+<!-- 0079 a2: begin -->
+### Every known deep-sky object (0079 A2)
+
+Release 1.5.0 stage A2 (internal #1060; `scene/deep/catalogue.js`). `scripts/build_deep_catalogue.py` reads five open
+catalogues on 2026-10-28, pins each file by SHA-256 and bakes `site/data/deep/catalogue.{bin,json}` and
+`site/data/deep/catalogue-oc.{bin,json}`; the page fetches them the first time a rung of the ladder is entered, never at boot.
+Deep-sky catalogue: OpenNGC (Mattia Verga, CC BY-SA 4.0), Harris (1996, 2010 edition), Green (2024 October version), the Caldwell numbers from Wikipedia (CC BY-SA 4.0).
+Open clusters: Hunt & Reffert 2023 from Gaia DR3 (ESA/Gaia/DPAC, CC BY-NC 3.0 IGO), via VizieR, CDS.
+
+| what | from | licence, as read 2026-10-28 |
+|---|---|---|
+| 13 047 NGC and IC objects (of OpenNGC's 13 372; the rest the map already draws): position, type, size, position angle, magnitude, Hubble type, parallax, redshift, common names (`catalogue.bin`) | OpenNGC, `NGC.csv` and `addendum.csv`, Mattia Verga, <https://github.com/mattiaverga/OpenNGC> | CC BY-SA 4.0: "OpenNGC is released under CC-BY-SA-4.0 license" (README). The two catalogue files are derivatives and are offered under it |
+| The Caldwell 109: which object is Caldwell n | OpenNGC's Identifiers, checked and completed from Wikipedia's *Caldwell catalogue* list, <https://en.wikipedia.org/wiki/Caldwell_catalogue> | CC BY-SA 4.0: "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License"; a numbering is a fact |
+| The 157 globular clusters of the Milky Way: position and distance from the Sun (46 are rows of their own; the others are OpenNGC's with Harris's distance, or records the map has) | Harris W.E. 1996, AJ 112, 1487 (2010 edition), <https://physwww.mcmaster.ca/~harris/mwgc.dat> | "THE DATA IN THIS CATALOG ARE SUPPLIED FREE OF CHARGE TO ALL USERS. ANY THIRD PARTY WHO SUPPLIES THIS CATALOG IN TURN TO OTHER USERS MUST REFER TO THE ORIGINAL SOURCE, WHICH IS THIS WEBSITE, AND MUST DO SO WITHOUT CHARGE OF ANY FEE." Cited as "Harris 1996 (2010 edition)" |
+| 310 supernova remnants: position, size, type, 1 GHz flux and spectral index (299 are rows of their own; 11 are OpenNGC's or the map's) | Green D.A. 2025, J. Astrophys. Astron. 46, 14 (arXiv:2411.03367); the 2024 October version, <https://www.mrao.cam.ac.uk/surveys/snrs/> | Published openly: "Please cite the following paper for the summary data from this catalogue". "Copyright D. A. Green 2024/2025", no licence text; also VizieR VII/297. Facts only, cited on every card |
+| 6 157 open clusters Gaia DR3 found that nothing else lists, and the Gaia distance of 389 that OpenNGC lists (`catalogue-oc.bin`) | Hunt E.L. & Reffert S. 2023, A&A 673, A114, *Improving the open cluster census. II.*, VizieR J/A+A/673/A114, from Gaia DR3 (ESA/Gaia/DPAC) | ESA: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>, read 2026-10-16). VizieR: free of usage in a scientific context, authors cited. This file is a non-commercial derivative; Space Radar is free and non-commercial. The release brief named "CC BY-SA 3.0 IGO"; ESA's page says BY-NC, and the repository follows the page |
+
+**What is not here.** HASH (the Hong Kong / AAO / Strasbourg planetary-nebula database, <https://hashpn.space/>) is not used: its front page says "The access to the database is password protected - please register first" and gives no licence for reuse, so nobody made an account for this build. The planetary nebulae are OpenNGC's 130 (115 rows of the file; the rest are the map's own). A list of about 3 900 would need a catalogue with an open licence (the Strasbourg-ESO and Frew et al. tables on VizieR are the candidates; CDS was not reachable on the build day).
+
+**What is measured, modelled and illustrative.** The position, type, size and magnitude of an object are its catalogue's (measured). A galaxy's distance is its redshift (OpenNGC, from NED) turned into a comoving distance by the map's one cosmology (`data/cosmology.js`, Planck 2018): modelled, with a range for a peculiar velocity of 300 km/s; under 3 000 km/s the velocity says little about the distance and the object is drawn as inferred. A star's, cluster's or nebula's parallax is OpenNGC's, with an assumed range; Harris's and Hunt & Reffert's distances are theirs. An object that no catalogue gave a distance is drawn at a point in the range where the measured distances of its kind in these files lie (their middle 68 %, which is its range), the point fixed by its name so they do not stack on one sphere round the Sun, fainter and larger and grey-blue, and its card says "not measured" and gives the range. The symbol for each class and its colour are illustrative: a mark of the kind, not a picture of the object.
+<!-- 0079 a2: end -->
+
 ### The Ring (0076 W3-b)
 
 The Ring Nebula's reconstruction (`site/js/scene/deep/ring.js`, its numbers in
@@ -3763,6 +3785,11 @@ https://creativecommons.org/licenses/by-sa/4.0/
 Modified: reduced to the 110 Messier objects; coordinates converted to degrees and to positions in
 light-years using distances from the sources each row names; fields reduced to those the card prints.
 ```
+<!-- 0079 a2: begin -->
+Also applies to `site/data/deep/catalogue.bin` and `catalogue.json` (release 1.5.0): the NGC and IC objects other than the
+Messier ones, with coordinates, sizes, magnitudes, parallaxes and redshifts quantised, and distances worked out from them
+(`scripts/build_deep_catalogue.py`); a derivative work offered under the same licence.
+<!-- 0079 a2: end -->
 
 ### Constellation figures by Johan Meuris — Free Art License 1.3
 

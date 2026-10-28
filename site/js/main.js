@@ -291,7 +291,7 @@ export async function boot({ setStatus } = {}) {
     recordsFor: (id) => layerRecords.get(id) || [],
     // The dot layers, for one reader: sky/skyview.js puts them in the same air as the stars.
     glyphLayers,
-    recordById: (id) => ctx.records().find((r) => r.id === id) || (ctx.deep && ctx.deep.volumeRecord ? ctx.deep.volumeRecord(id) : null), // 0076 W4-a: and the local volume's galaxies
+    recordById: (id) => ctx.records().find((r) => r.id === id) || (ctx.deep && ctx.deep.volumeRecord ? ctx.deep.volumeRecord(id) : null) || (ctx.cometField && ctx.cometField.recordById ? ctx.cometField.recordById(id) : null), // 0076 W4-a: and the local volume's galaxies; 0079 a2 and a8: and the catalogue's (volumeRecord asks it), and any comet of the feed
     selected: () => selected,
     select,
     deselect,
@@ -684,6 +684,18 @@ export async function boot({ setStatus } = {}) {
   ctx.wantPulsars = () => pulsarsImport || (pulsarsImport = import('./scene/pulsars.js')
     .then((m) => { ctx.pulsars = m.createPulsars(scene); ctx.pulsars.setRecords(ctx.recordsFor('exotics')); return ctx.pulsars; })
     .catch((e) => { console.warn('the pulsars\u2019 pulses did not load', e); return null; }));
+  // 0079 a8: begin
+  // EVERY COMET'S ORBIT, PLACE AND TAIL (scene/cometfield.js): asked for the first time the comets layer is drawn on a heliocentric
+  // stage, from the frame loop; never at boot. The layer's own 60 keep their glyphs.
+  ctx.cometField = null;
+  let cometFieldImport = null;
+  ctx.wantCometField = () => cometFieldImport || (cometFieldImport = import('./scene/cometfield.js')
+    .then((m) => {
+      ctx.cometField = m.createCometField(THREE, { scene, recordsFor: (id) => ctx.recordsFor(id), tier: () => (ctx.latch && ctx.latch.latched ? 0 : ctx.quality && Number.isFinite(ctx.quality.describe().tier) ? ctx.quality.describe().tier : 1) });
+      return ctx.cometField;
+    })
+    .catch((e) => { console.warn('the comets\u2019 orbits did not load', e); return null; }));
+  // 0079 a8: end
   ctx.portraitLine = (id) => {
     const record = ctx.recordById(id);
     const image = record && record.meta && record.meta.image;
@@ -1355,6 +1367,11 @@ export async function boot({ setStatus } = {}) {
     if (ctx.deep && ctx.deep.pickAll) {
       for (const c of ctx.deep.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
     }
+    // 0079 a8: begin (every other comet of the feed, scene/cometfield.js)
+    if (ctx.cometField && ctx.cometField.pickAll && isLayerDrawable(layerRec('comets'))) {
+      for (const c of ctx.cometField.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+    }
+    // 0079 a8: end
     // A star system's own star and planets, on its stage (spec 0040): the same exo-... records.
     if (ctx.systems && ctx.systems.active) {
       for (const c of ctx.systems.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
@@ -2875,6 +2892,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       if (ctx.pulsars) ctx.pulsars.update(ctx.camera, ctx.renderer, exoticsOn, nowReal);
       else if (exoticsOn) ctx.wantPulsars(); // asks once: the promise is kept
     }
+    // 0079 a8: begin
+    {
+      const cometsOn = !isLadderStage(stage.worldId) && ctx.isLayerDrawable(layerRec('comets'));
+      if (ctx.cometField) ctx.cometField.update(ctx.camera, ctx.renderer, cometsOn, t, ctx.selected() ? ctx.selected().id : null);
+      else if (cometsOn) ctx.wantCometField();
+    }
+    // 0079 a8: end
     if (ctx.earthOverlay) ctx.earthOverlay.update();
     if (ctx.wind) ctx.wind.update();
     if (ctx.currents) ctx.currents.update();

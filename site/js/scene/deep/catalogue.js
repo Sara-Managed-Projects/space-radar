@@ -19,7 +19,7 @@
 // 800 galaxies) is left out of the files, by designation, when they are built.
 //
 // WHAT IS DRAWN. One point per object, in the sun-inertial frame at its distance, in a single draw call (two while the range of
-// one distance is shown). Its mark is a symbol of its CLASS, not a picture of it: a soft ellipse for a galaxy, a ring of dots
+// one distance is shown). Its mark is a symbol of its CLASS, not a picture of it: a soft round glow for a galaxy, a ring of dots
 // for an open cluster, a bright core for a globular, a thin ring for a planetary nebula, a shell for a remnant, and so on
 // (GLYPHS, in the fragment shader). Below GLYPH_FROM_PX across every mark is a soft dot in the class colour; the colour is
 // illustrative. Where the catalogue gives a size the mark is as wide as the object (never under its class's floor); its light
@@ -236,7 +236,7 @@ export function designationKey(text) {
 
 /**
  * Rows of the table that a typed name finds: by designation (exact, then by its start), by common name or another identifier
- * (the start of a word), and a Caldwell number. At most `limit`, best first: [{ row, id|null, name, sub, score }]. `caldwell`
+ * (the start of a word), and a Caldwell number. At most `limit`, best first: [{ row, id (the record's, `dso-...`), name, sub, score }]. `caldwell`
  * numbers of objects the map already has answer with that record's id. Pure.
  */
 export function searchNames(T, query, limit = 5) {
@@ -276,7 +276,7 @@ export function searchNames(T, query, limit = 5) {
   return out.slice(0, Math.max(1, limit)).map((o) => {
     if (o.row < 0) return { row: -1, id: o.id, name: o.name, sub: 'Deep-sky object', score: o.score };
     const { p, j, manifest } = partOf(T, o.row);
-    return { row: o.row, id: T.ids[o.row], name: (manifest.common && manifest.common[j]) || manifest.names[j], sub: manifest.classes[T.cls[o.row]].text, score: o.score };
+    return { row: o.row, id: `dso-${T.ids[o.row]}`, name: (manifest.common && manifest.common[j]) || manifest.names[j], sub: manifest.classes[T.cls[o.row]].text, score: o.score };
   });
 }
 
@@ -313,7 +313,7 @@ export function rowOf(T, i) {
   if (T.inferred[i] && methodName === 'typical') {
     const g = GROUP_OF[T.cls[i]];
     const t = g && manifest.typical && manifest.typical[g];
-    distanceSource = `not measured: the catalogue gives no distance, so it is drawn at ${t ? `${Math.round(t.ly).toLocaleString('en-US')} light-years, the middle of the ${t.of} measured distances of its kind in this file (the range is their 16th to 84th percentile)` : 'the typical distance of its kind'}; its direction is measured, its depth is not`;
+    distanceSource = `not measured: the catalogue gives no distance. Its direction is measured and its depth is not: it is drawn at ${Math.round(dLy).toLocaleString('en-US')} light-years, a point in the range ${t ? `in which the ${t.of} measured distances of its kind in this file lie (the middle 68 %, ${Math.round(t.low).toLocaleString('en-US')} to ${Math.round(t.high).toLocaleString('en-US')} light-years)` : 'of its kind'}, chosen by its name so that the unmeasured ones do not stack on one sphere`;
   } else {
     distanceSource = (METHOD_TEXT[methodName] || METHOD_TEXT.parallax)(T, i);
   }
@@ -445,7 +445,7 @@ float symbol(vec2 p, float cls) {
   float r = length(p);
   float r2 = r * r;
   float a = atan(p.y, p.x);
-  if (cls < 1.5) return disc(r2, 2.6);                                                      // galaxy: a soft ellipse's disc
+  if (cls < 1.5) return disc(r2, 2.6);                                                      // galaxy: a soft disc
   if (cls < 2.5 || (cls > 10.5 && cls < 11.5)) {                                             // open cluster, association: a ring of dots
     float dots = 0.5 + 0.5 * cos(a * 7.0);
     return 0.35 * disc(r2, 5.0) + 0.9 * ring(r, 0.68, 0.16) * (0.25 + 0.75 * dots * dots);
