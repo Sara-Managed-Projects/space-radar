@@ -380,6 +380,46 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "moons",
+    "display": "Every moon",
+    "group": "solar-system",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "per-record",
+    "frame": "per-record",
+    "card": "moon",
+    "glyph": "moon",
+    "colour": "world",
+    "maxItems": 600,
+    "train": null
+  },
+  {
+    "id": "companions",
+    "display": "Moons of asteroids and far worlds",
+    "group": "solar-system",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "per-record",
+    "frame": "per-record",
+    "card": "moon",
+    "glyph": "moon",
+    "colour": "world",
+    "maxItems": 800,
+    "train": null
+  },
+  {
     "id": "comets",
     "display": "Comets",
     "group": "solar-system",

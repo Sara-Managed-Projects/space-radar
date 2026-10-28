@@ -155,7 +155,7 @@ function layerRec(id) {
   }
   return layerIndex.get(id);
 }
-const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky']);
+const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky', 'moons', 'companions']); // 0079 a3: moons, companions (data/moons.js: 25 kB and 42 kB gzipped, off by default, in search from here)
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */

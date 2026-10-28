@@ -405,6 +405,13 @@ jobs:
       # card's first sentence, search, and the whole-orbit line through the dot.
       - name: Dwarf planets and interstellar visitors are where Horizons puts them, and say what they are
         run: node tests/test_far_bodies.mjs
+      # 0079 a3: begin
+      # Every moon: the planets' 439 and the asteroids' and far worlds' companions from JPL's tables, each placed against Horizons' own
+      # vectors on days it was not fitted to, honest about the place when it is far out, with the card's words, search, and the five
+      # dwarf-planet candidates.
+      - name: Every moon is where Horizons puts it within what its card says, and is honest where it is not
+        run: node tests/test_moons.mjs
+      # 0079 a3: end
       - name: The Now moment guesses a place and says so
         run: node tests/test_guessplace.mjs
       # A merge marker in a tool (tools/cdp.mjs on 2026-10-08 carried one and no probe could start) is a

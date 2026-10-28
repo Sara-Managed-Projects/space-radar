@@ -84,6 +84,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
 | Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
+<!-- 0079 a3: begin -->
+| Every moon, the moons of asteroids and far worlds, dwarf-planet candidates | NASA/JPL Solar System Dynamics, Horizons and Small-Body Database; the papers named on each card, read through Wikipedia | JPL: no licence text, NASA content generally not copyrighted in the United States; Wikipedia CC BY-SA 4.0; Johnston's Archive NOT used | [3o](#3o-every-moon--nasajpl-solar-system-dynamics-horizons-and-the-small-body-database-release-150) |
+<!-- 0079 a3: end -->
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
@@ -2522,6 +2525,37 @@ HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikiped
 masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
 the stellar holes), it is chosen and `blackhole.js` says so.
 <!-- 0078 r14-mw-bh: end -->
+
+<!-- 0079 a3: begin -->
+## 3o. Every moon — NASA/JPL Solar System Dynamics, Horizons and the Small-Body Database (release 1.5.0)
+
+`site/data/moons.json` and `site/data/companions.json`, written by `scripts/gen_moons.py` (it downloads to `~/.cache/spaceradar-src/a3/`;
+the raw pages are not committed). Loaded after the first visit, never at boot (`site/js/data/moons.js`). Credit lines kept word for word:
+"Moons: NASA/JPL Solar System Dynamics and Horizons"; "Moons of asteroids and far worlds: NASA/JPL Small-Body Database and the papers named on each card".
+
+| What | Read from | Terms, and how far they were checked | Read |
+|---|---|---|---|
+| the names, JPL ids, mean semi-major axis and eccentricity, and the sidereal period of 460 moons (461 rows; Puck has two ephemerides) | JPL SSD, Planetary Satellite Mean Elements, <https://ssd.jpl.nasa.gov/sats/elem/>: "Mean elements, in this context, are simply the elements of a precessing ellipse which has been fit in a least squares sense to the numerically integrated orbit", and "not intended for ephemeris computation" | the page states no licence; NASA/JPL work, and NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09, §4.20). JPL's own copyright page (`jpl.nasa.gov/copyrights`) answered 403 to our reader on 2026-10-28 and has NOT been read. | 2026-10-28 |
+| the year and discoverer of each moon, the designations | JPL SSD, Planetary Satellite Discovery Circumstances, <https://ssd.jpl.nasa.gov/sats/discovery.html> | as above | 2026-10-28 |
+| the mean radius of 58 moons | JPL SSD, Planetary Satellite Physical Parameters, <https://ssd.jpl.nasa.gov/sats/phys_par/> | as above | 2026-10-28 |
+| each moon's osculating orbit on 1 January 2026, and the check of the model against JPL on 28 October 2026 and 28 October 2027 for 40 moons (`tests/fixtures/moons_horizons.json`) | JPL Horizons API (`EPHEM_TYPE=ELEMENTS` and `VECTORS`, centre the planet, ecliptic J2000, `500@599` and so on), <https://ssd.jpl.nasa.gov/api/horizons.api>, one request each | as above (§4.18 `horizons-deep-space`) | 2026-10-28 |
+| the 486 confirmed companions of 480 asteroids and far worlds (495 with the nine below): names, years, the discovery reference, a period where one is printed, the two complete orbits; the parents' orbits; the satellites' list | JPL Small-Body Database, `sbdb_query.api` (`sb-sat`) and `sbdb.api` (`sat=true`), <https://ssd-api.jpl.nasa.gov/doc/sbdb.html> | as above (§4.18 `jpl-sbdb-neo`) | 2026-10-28 |
+| the orbits (size, shape, lap) and sizes of the nine moons JPL's tables do not hold (Dysnomia, Hiʻiaka, Namaka, Vanth, Weywot, Xiangliu, MK 2, Actaea, Ilmarë), and the sizes of Salacia, Varda, Ixion, 2002 XV93 and 2017 OF201 | the infobox of each Wikipedia article (CC BY-SA 4.0), which cites the paper each card names: Holler et al. 2021; Brown and Butler 2023; Ragozzine and Brown 2009; Proudfoot et al. 2024, 2025, 2026; Fernandez-Valenzuela et al. 2025; Muller et al. 2019; Grundy et al. 2019; Sickafoose et al. 2019; Collyer et al. 2025, 2026; Kiss et al. 2019, 2025; Parker et al. 2016; Bamberger et al. 2025; Kilic et al. 2026; Arimatsu et al. 2026; Cheng et al. 2025 | facts, cited per row; Wikipedia's text is CC BY-SA 4.0 and none of it is reproduced, only the numbers | 2026-10-28 |
+
+**Not used: Johnston's Archive** (<https://www.johnstonsarchive.net/astro/asteroidmoons.html>, last updated 24 October 2026: 654 asteroids and TNOs with
+companions, 677 companions). Its page carries "© 2001-2025, 2026 by Wm. Robert Johnston", and its FAQ (<https://www.johnstonsarchive.net/faqusage.html>, read
+2026-10-28) says: "Material copyrighted by me may be used only with permission from me, with the following exception: for not-for-profit, educational
+use, permission is granted to use print copies of individual documents provided that the document in question is used complete and unedited". A
+web app's data file is neither. The counts are quoted as a total to compare with (the JPL list holds 486 confirmed companions of 480 bodies), and nothing is
+copied; the rest waits for his permission, which is the project owner's to ask for.
+
+What is measured, modelled, illustrative: the planets' moons' orbits are JPL's, osculating on 1 January 2026, carried along by JPL's mean period (modelled).
+For the 392 whose lap is 100 days or more the place is `inferred`: 30 of them were held to Horizons on 28 October 2026 and 28 October 2027 and none was more
+than 23 degrees out. The other 47 (fast regular moons, Pasiphae, Daphnis, S/2025 U 1) are `illustrative` in their place: up to 151 degrees out in the
+checks, or not checkable. The 21 moons already on the map are untouched. Companions JPL holds no orbit for are drawn at their parent's place (inferred); the
+two with a complete orbit are placed by it; the nine moons of dwarf planets have a measured size, shape and lap, and a tilt and place that are not known to us
+(illustrative). No moon has a shape drawn: they are points, and the card says so.
+<!-- 0079 a3: end -->
 
 ## 4. Runtime data sources
 
