@@ -24,16 +24,26 @@ const cardText = () => {
   return card ? card.innerText.replace(/\s+\n/g, '\n').slice(0, 1400) : null;
 };
 
-// 1. Jupiter, the layer off and then on
+// 1. Jupiter, the layer off and then on, seen from far enough out to hold the irregular moons (they are 10 to 25 million km out)
+const wide = async (id, km) => {
+  const c = sr.worlds.meshFor(id).position;
+  const u = sr.stage.unitKm || 1000;
+  rig.flyTo({ targetScene: { x: c.x, y: c.y, z: c.z }, offset: unit({ x: 0.35, y: 0.55, z: 1 }), distance: km / u, ms: 0 });
+  await sleep(3500);
+};
 await stage('jupiter', 7000);
 out.counts.moonsBefore = (sr.recordsFor('moons') || []).length;
-await shot('01-jupiter-moons-off', 'Jupiter on its own stage, the moons layer off: ' + out.counts.moonsBefore + ' records');
+await wide('jupiter', 45e6);
+await shot('01-jupiter-wide-moons-off', 'Jupiter 45 million km out, the moons layer off');
 sr.setLayerOn('moons', true);
 const loaded = await until(() => (sr.recordsFor('moons') || []).length > 100, 90000, 500);
 out.counts.moons = (sr.recordsFor('moons') || []).length;
 if (!loaded) out.problems.push('the moons layer built no records in 90 s');
 await sleep(2500);
-await shot('02-jupiter-moons-on', 'the same frame with the layer on: ' + out.counts.moons + ' records, three seconds after');
+await shot('02-jupiter-wide-moons-on', 'the same frame with the layer on: ' + out.counts.moons + ' records');
+await stage('saturn', 7000);
+await wide('saturn', 60e6);
+await shot('02b-saturn-wide-moons-on', 'Saturn 60 million km out, the moons layer on');
 sr.setLayerOn('companions', true);
 await until(() => (sr.recordsFor('companions') || []).length > 100, 90000, 500);
 out.counts.companions = (sr.recordsFor('companions') || []).length;
@@ -57,6 +67,15 @@ for (const [id, name, note] of WALK) {
   if (!ok) { out.problems.push(id + ' is not a record'); continue; }
   const text = cardText();
   out.cards[id] = text;
+  try {
+    // where the selection's dot is drawn (as the GPU holds it) against where the camera follows it
+    const rec = sr.recordById(id);
+    const gl = sr.glyphLayers.get(rec.layer);
+    const off = gl && gl.selectedOffset ? gl.selectedOffset() : null;
+    const at = sr.positionOfRecord(rec);
+    out.diag = out.diag || {};
+    out.diag[id] = { dot: off, at: at ? [at.x, at.y, at.z] : null, gap: off && at ? Math.hypot(off[0] - at.x, off[1] - at.y, off[2] - at.z) : null, unitKm: sr.stage.unitKm, stage: sr.stage.worldId };
+  } catch (e) { look.warns.push('probe: diagnostics for ' + id + ': ' + e); }
   if (!text) out.problems.push(id + ': no card');
   else if (/undefined|NaN|\{[a-z]+\}/.test(text)) out.problems.push(id + ': a hole in the card');
 }
