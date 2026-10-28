@@ -107,6 +107,10 @@ html.sr-moment-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scen
   gap: var(--sp-2);
 }
 
+.sr-moment__btn[hidden] {
+  display: none;
+}
+
 .sr-moment__close {
   background: var(--sr-glass);
   border-color: var(--sr-line);

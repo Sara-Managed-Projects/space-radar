@@ -21,8 +21,8 @@ const OUT_F = '#include <tonemapping_fragment>\n#include <colorspace_fragment>\n
 
 /** Colour ramps (core, middle, tail), brightness, length in nozzle radii at sea level, and shock diamonds. */
 export const FLAME_KINDS = {
-  kerolox: { core: [1.0, 0.92, 0.66], mid: [1.0, 0.52, 0.14], tail: [0.55, 0.14, 0.03], gain: 1.7, length: 9, diamonds: 0 },
-  hydrolox: { core: [0.9, 0.84, 1.0], mid: [0.55, 0.42, 0.9], tail: [0.22, 0.12, 0.42], gain: 0.55, length: 7, diamonds: 1 },
+  kerolox: { core: [1.0, 0.86, 0.55], mid: [1.0, 0.48, 0.12], tail: [0.5, 0.12, 0.03], gain: 1.5, length: 18, diamonds: 0 },
+  hydrolox: { core: [0.85, 0.8, 1.0], mid: [0.45, 0.36, 0.8], tail: [0.18, 0.1, 0.36], gain: 0.22, length: 7, diamonds: 1 },
   solid: { core: [1.0, 0.97, 0.88], mid: [1.0, 0.78, 0.45], tail: [0.8, 0.42, 0.18], gain: 2.1, length: 12, diamonds: 0 },
   hypergolic: { core: [1.0, 0.78, 0.48], mid: [0.92, 0.46, 0.2], tail: [0.42, 0.15, 0.05], gain: 0.85, length: 6, diamonds: 1 },
 };
@@ -167,16 +167,17 @@ export function createFlames({ points, kind = 'kerolox', exitM = 2, tier = 1, di
       const a = ambient(altM);
       const lenM = R * k.length * (1 + 2.6 * (1 - a));
       const r1 = R * (1.1 + 5.5 * (1 - a));
+      const thin = 0.5 + 0.5 * a;
       for (const m of inner ? [outer, inner] : [outer]) {
         const core = m === inner;
         m.uniforms.uR0.value = R * (core ? 0.55 : 0.92);
         m.uniforms.uR1.value = core ? R * 0.35 + r1 * 0.25 : r1;
         m.uniforms.uL.value = core ? lenM * 0.45 : lenM;
-        m.uniforms.uOn.value = v;
+        m.uniforms.uOn.value = v * thin;
         m.uniforms.uTime.value = time;
         m.uniforms.uStill.value = still ? 1 : 0;
       }
-      if (glow) { const s = R * spread * (2.6 + 2 * (1 - a)); glow.scale.set(s, s, 1); glow.material.opacity = Math.min(1, v * (kind === 'hydrolox' ? 0.25 : 0.7)); }
+      if (glow) { const s = R * spread * (2.6 + 2 * (1 - a)); glow.scale.set(s, s, 1); glow.material.opacity = Math.min(1, v * thin * (kind === 'hydrolox' ? 0.1 : 0.7)); }
     },
     dispose() { outer.dispose(); if (inner) inner.dispose(); if (glow) glow.material.dispose(); },
   };
@@ -219,7 +220,7 @@ void main() {
   gl_Position = projectionMatrix * mv;
   gl_PointSize = alive * size * uScale / max(-mv.z, 1.0);
   vAlpha = alive * smoothstep(0.0, 0.8, age) * (1.0 - smoothstep(uLife * 0.55, uLife, age));
-  vHot = alive * (1.0 - smoothstep(0.0, 2.5, age));
+  vHot = alive * (1.0 - smoothstep(0.0, 4.0, age));
   vLit = 0.62 + 0.38 * clamp(dot(normalize(dir + vec3(0.0, 0.6, 0.0)), uSun) * 0.5 + 0.5, 0.0, 1.0);
   #include <logdepthbuf_vertex>
 }`;
@@ -234,9 +235,9 @@ void main() {
   vec2 q = gl_PointCoord * 2.0 - 1.0;
   float r = dot(q, q);
   if (r > 1.0) discard;
-  float a = vAlpha * (1.0 - r) * (1.0 - r) * 0.55;
+  float a = vAlpha * (1.0 - r) * (1.0 - r) * 0.8;
   vec3 steam = uTint * vLit;
-  vec3 c = mix(steam, vec3(1.0, 0.62, 0.25) * 1.4, vHot * 0.7);
+  vec3 c = mix(steam, vec3(1.0, 0.6, 0.22) * 1.6, vHot * 0.85);
   gl_FragColor = vec4(c, a);
   ${OUT_F}
 }`;
@@ -280,16 +281,28 @@ export function createExhaustCloud({ from, to, axis = [0, 0, 1], count = 400, wa
   const points = new THREE.Points(geo, mat);
   points.frustumCulled = false;
   points.renderOrder = 4;
+  const group = new THREE.Group();
+  group.add(points);
+  // The fire the deflector turns along the trench, both ways, while the engines burn on the pad: emissive cones lying
+  // on the ground (what a camera at the pad saw of the flames, which went down into the trench, not into the air).
+  const fires = [];
+  for (const sign of ways > 1 ? [1, -1] : [1]) {
+    const f = createFlames({ points: [[0, 2.5, 0]], kind: 'kerolox', exitM: 10, tier: 1, dir: [ax.x * sign, 0.12, ax.z * sign] });
+    f.group.scale.set(1, 0.55, 1);
+    group.add(f.group);
+    fires.push(f);
+  }
   return {
-    group: points,
-    set({ time, sunUp, scale, light = 1 }) {
+    group,
+    set({ time, sunUp, scale, light = 1, fire = 0, still = false }) {
       mat.uniforms.uTime.value = time;
       if (sunUp) mat.uniforms.uSun.value.set(sunUp[0], sunUp[1], sunUp[2]);
       if (scale) mat.uniforms.uScale.value = scale;
       mat.uniforms.uTint.value.setRGB(0.93 * light, 0.93 * light, 0.92 * light);
       points.visible = time >= from - 0.5;
+      for (const f of fires) f.set({ on: fire, altM: 0, time, still });
     },
-    dispose() { geo.dispose(); mat.dispose(); },
+    dispose() { geo.dispose(); mat.dispose(); for (const f of fires) f.dispose(); },
   };
 }
 

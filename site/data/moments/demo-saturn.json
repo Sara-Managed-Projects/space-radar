@@ -86,11 +86,11 @@
     ],
     "camera": [
       {"t": -9.5, "shot": "pad", "at": [190, -150, 4], "lookY": 45, "fov": 42},
-      {"t": -2.5, "shot": "pad", "at": [52, -38, 6], "lookY": 10, "fov": 58},
+      {"t": -2.5, "shot": "pad", "at": [95, -60, 5], "lookY": 14, "fov": 56},
       {"t": 3, "shot": "track", "at": [-1300, -900, 12], "lookY": 55, "fill": 0.6, "fovMin": 0.6, "fovMax": 20},
       {"t": 18, "shot": "chase", "offset": [150, -50, -130], "lookY": 50, "fov": 40, "blend": 1.5},
       {"t": 128, "shot": "chase", "offset": [55, -25, -45], "lookY": 18, "fov": 50},
-      {"t": 158, "shot": "orbit", "az": 110, "el": 6, "dist": 300, "lookY": 45, "fov": 40, "spin": 1.5},
+      {"t": 158, "shot": "orbit", "az": 115, "el": 6, "dist": 210, "lookY": 45, "fov": 40, "spin": 1.5},
       {"t": 166, "shot": "chase", "offset": [110, -60, -90], "lookY": 40, "fov": 52, "blend": 1.0},
       {"t": 188, "shot": "orbit", "az": 60, "el": 4, "dist": 190, "lookY": 75, "fov": 44}
     ],
@@ -109,7 +109,7 @@
       {"t": 161.7, "sting": "stage"}
     ],
     "effects": [
-      {"t": -8.9, "effect": "exhaust-cloud", "until": 14, "axis": [0, 1, 0], "count": 420}
+      {"t": -8.9, "effect": "exhaust-cloud", "until": 14, "axis": [0, 1, 0], "count": 600, "fire": "s-ic"}
     ]
   },
   "chapters": [

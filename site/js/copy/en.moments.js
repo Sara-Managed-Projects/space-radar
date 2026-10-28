@@ -65,7 +65,7 @@ Object.assign(COPY, {
       maxq: 'Past the speed of sound a minute in; then max Q, the air pushing hardest: 35 kPa (735 lb/ft²).',
       ceco: 'T+135 s: the centre engine shuts down, to keep the acceleration under 4 g.',
       staging: 'T+161.7 s: the outboard engines cut off. Some 67 km up the S-IC falls away, its retro-rockets firing.',
-      sii: 'T+163.0 s: the S-II\'s five J-2 engines light. Hydrogen burns almost invisibly.',
+      sii: 'T+163.0 s: the S-II\'s five J-2 engines light. Hydrogen burns pale and nearly clear.',
       interstage: 'The interstage ring drops away; at T+197.9 s the escape tower goes. Parking orbit is 8.5 minutes on.',
       pathAscent: 'event times from the Apollo 11 Mission Report; heights and distances between them approximate',
       sources: 'Apollo 11 Mission Report, NASA MSC-00171, 1969 (Table 3-I, sequence of events; section 7.1, launch)',

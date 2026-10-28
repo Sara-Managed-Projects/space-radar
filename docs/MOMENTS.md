@@ -108,7 +108,8 @@ under `site/audio/` (Opus with an AAC twin, as the app's sounds are; an archival
 domain, and credited). Only when the visitor has sound on, and only when the playhead crosses `t` while playing.
 
 **`effects`**: `{t, effect, until, ...}`, `effect` naming the effect. `effect: "exhaust-cloud"`: steam and exhaust out of a flame trench from
-`t` to `until`, along `axis` (east, north, up) both ways, `count` particles (scaled by the device's tier).
+`t` to `until`, along `axis` (east, north, up) both ways, `count` particles (scaled by the device's tier). `fire`
+names the part whose engines feed the flames the deflector throws along the trench while the stack is on the pad.
 `effect: "plasma"`: an entry's shock layer from `t` to `until`, brightest at `peak`, on `vehicle`.
 
 ## Words

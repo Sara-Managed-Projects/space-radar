@@ -37,7 +37,8 @@ export function airAt(altM, sunUp) {
     day,
     // The sky's light: full on the ground in daylight, gone by ~60 km up.
     sky: day * Math.pow(density, 0.45),
-    stars: Math.max(0, 1 - 2.2 * day * Math.pow(density, 0.25)),
+    // Stars only where a camera exposed for a sunlit scene would see them: none by day, all on the night side.
+    stars: Math.max(0, 1 - 1.4 * day) * (1 - density),
     hazeK: density / 22000,
   };
 }
@@ -95,7 +96,7 @@ void main() {
 const GROUND_F = `${LOG_F}
 uniform sampler2D uDay;
 uniform vec3 uSun, uHaze, uShore;
-uniform float uHazeK, uKind, uPad, uLocalR, uLift;
+uniform float uHazeK, uKind, uPad, uLocalR, uLift, uLocalOn;
 varying vec2 vLL;
 varying vec3 vObj;
 varying vec3 vN;
@@ -120,7 +121,7 @@ void main() {
   vec3 albedo = textureGrad(uDay, uv, dx, dy).rgb;
 #ifdef CAP
   vec2 q = vec2(vObj.x, vObj.z);
-  float w = 1.0 - smoothstep(uLocalR * 0.3, uLocalR, length(q));
+  float w = (1.0 - smoothstep(uLocalR * 0.3, uLocalR, length(q))) * uLocalOn;
   if (w > 0.0) {
     float n1 = noise(q * 0.0035), n2 = noise(q * 0.031), n3 = noise(q * 0.21);
     vec3 scrub = mix(vec3(0.19, 0.23, 0.12), vec3(0.40, 0.39, 0.27), n1 * 0.65 + n2 * 0.25 + n3 * 0.1);
@@ -145,7 +146,7 @@ void main() {
   }
 #endif
   float lit = max(dot(normalize(vN), uSun), 0.0);
-  vec3 c = albedo * (lit * 1.2 + 0.025 + uLift);
+  vec3 c = albedo * (lit * 1.05 + 0.02 + uLift);
   float h = 1.0 - exp(-vDist * uHazeK);
   c = mix(c, uHaze, h);
   gl_FragColor = vec4(c, 1.0);
@@ -263,7 +264,7 @@ export function createStage(renderer, { tier = 1, place, frame }) {
   const groundUniforms = () => ({
     uDay: { value: day }, uSun: { value: new THREE.Vector3(0, 1, 0) }, uHaze: { value: new THREE.Color(0.6, 0.7, 0.8) },
     uHazeK: { value: 0 }, uShore: { value: new THREE.Vector3(1, 0, 800) }, uKind: { value: 1 }, uPad: { value: 0 },
-    uLocalR: { value: LOCAL_R }, uLift: { value: 0 },
+    uLocalR: { value: LOCAL_R }, uLift: { value: 0 }, uLocalOn: { value: 1 },
   });
   const globeMat = new THREE.ShaderMaterial({ uniforms: groundUniforms(), vertexShader: GROUND_V, fragmentShader: GROUND_F });
   const seg = tier > 0 ? 160 : 96;
@@ -350,6 +351,8 @@ export function createStage(renderer, { tier = 1, place, frame }) {
       m.uniforms.uHazeK.value = air.hazeK;
       m.uniforms.uLift.value = 0.05 * air.sky;
     }
+    // The drawn ground near the place gives way to the map as the camera climbs (it is a close-up's, not a view's).
+    capMat.uniforms.uLocalOn.value = 1 - Math.min(1, Math.max(0, (altM - 3000) / 12000));
     rimMat.uniforms.uSun.value.set(...sunDir);
     rimMat.uniforms.uOn.value = Math.min(1, Math.max(0, (altM - 20000) / 80000));
     // Lights: the Sun, and the sky's fill while there is air.

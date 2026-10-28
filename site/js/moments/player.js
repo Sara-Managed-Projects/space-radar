@@ -378,7 +378,7 @@ export function createMomentPlayer(ctx, opts = {}) {
       const a = fx.axis || [0, 1, 0];
       const c = createExhaustCloud({ from: fx.t, to: fx.until, axis: [a[0], a[2], -a[1]], count: Math.round((fx.count || 400) * (tier() === 0 ? 0.4 : tier() > 1 ? 1.5 : 1)) });
       stage.placeGroup.add(c.group);
-      clouds.push(c);
+      clouds.push({ fx: c, fire: fx.fire ? { part: fx.fire, vehicle: fx.vehicle } : null });
     }
     title();
     buildChapters();
@@ -625,7 +625,19 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (clouds.length) {
       const sunLocal = [sunDir[0] * placeNow.e[0] + sunDir[1] * placeNow.e[1] + sunDir[2] * placeNow.e[2], sunDir[0] * placeNow.u[0] + sunDir[1] * placeNow.u[1] + sunDir[2] * placeNow.u[2], sunDir[0] * placeNow.s[0] + sunDir[1] * placeNow.s[1] + sunDir[2] * placeNow.s[2]];
       const pxPerM = size.y / (2 * Math.tan((pose.fov * DEG) / 2)) * renderer.getPixelRatio();
-      for (const c of clouds) c.set({ time: t, sunUp: sunLocal, scale: pxPerM, light: 0.35 + 0.65 * air.air.day });
+      for (const c of clouds) {
+        // The fire along the trench burns while the part that feeds it does, and dies as the stack climbs away.
+        let fire = 0;
+        const feed = c.fire && vehicles.get(c.fire.vehicle || (m.vehicles[0] && m.vehicles[0].id));
+        if (feed) {
+          const list = feed.events.get(c.fire.part) || [];
+          const n = (feed.spec.engines && feed.spec.engines[c.fire.part] || [0]).length;
+          for (let i = 0; i < n; i += 1) fire = Math.max(fire, engineLevel(list, i, t));
+          const st = states.get(feed.spec.id);
+          fire *= Math.max(0, 1 - (st ? st.altM : 0) / 150);
+        }
+        c.fx.set({ time: t, sunUp: sunLocal, scale: pxPerM, light: 0.35 + 0.65 * air.air.day, fire, still });
+      }
     }
     // The models' shared light (scene/models.js): the Sun and the Earth of THIS stage while it draws, then the map's back.
     const saved = lightU ? swapLight(sunDir, air.capCentre, origin) : null;
@@ -658,7 +670,8 @@ export function createMomentPlayer(ctx, opts = {}) {
     if (!active || status !== 'ready' || !stage) return;
     const now = typeof performance !== 'undefined' ? performance.now() : Number(nowMs) || 0;
     if (lastNow) { frames.push(now - lastNow); if (frames.length > 120) frames.shift(); }
-    const dt = lastNow ? Math.min(0.1, (now - lastNow) / 1000) : 0;
+    // A slow device plays at its own frame rate, but no single frame jumps more than half a second (a tab put away).
+    const dt = lastNow ? Math.min(0.5, (now - lastNow) / 1000) : 0;
     lastNow = now;
     if (playing) {
       const t0 = t;
@@ -700,7 +713,7 @@ export function createMomentPlayer(ctx, opts = {}) {
   function teardown() {
     for (const entry of vehicles.values()) disposeVehicle(entry.v);
     vehicles = new Map();
-    for (const c of clouds) c.dispose();
+    for (const c of clouds) c.fx.dispose();
     clouds = [];
     if (stage) stage.dispose();
     stage = null;
