@@ -46,10 +46,10 @@ await snap('02-stellar-planets', 'the stellar rung with the planets round other 
 await go('exo-proxima-cen-b', '03-proxima-b', 7000, 'Proxima b: found in the packed file, its card');
 
 // --- A13: the directly imaged planets in 3D round their stars ---------------------------------
-for (const [sid, nm] of [['hr-8799', 'HR 8799 b, c, d, e'], ['beta-pictoris', 'Beta Pictoris b, c'], ['51-eri', '51 Eridani b'], ['pds-70', 'PDS 70 b and c'], ['af-lep', 'AF Leporis b']]) {
-  if (!hasRecord(`star-${sid}`)) { out.problems.push(`no star system ${sid}`); continue; }
-  sr.setStage(`system-${sid}`);
-  await snap(`04-system-${sid}`, `${nm} drawn at their own scale round the star`, 8000);
+for (const [sid, nm] of [['hr-8799', 'HR 8799 b, c, d, e'], ['beta-pictoris', 'Beta Pictoris b, c, d'], ['51-eri', '51 Eridani b'], ['pds-70', 'PDS 70 b and c'], ['af-lep', 'AF Leporis b']]) {
+  // selecting the star is the way in (main.js sets the system's stage and scene/systems.js builds it); the first look run set the stage by hand and the three new systems were not built
+  if (!(await go(`star-${sid}`, null, 12000))) { out.problems.push(`no star system ${sid}`); continue; }
+  await snap(`04-system-${sid}`, `${nm} drawn at their own scale round the star`, 3000);
 }
 
 // --- A6: the Earth, observatories and launch sites --------------------------------------------
@@ -67,7 +67,16 @@ await go('moon-ranger-7', '20-ranger-7', 8000, 'Ranger 7 impact site on the Moon
 await go('moon-luna-25', '21-luna-25', 7000, 'Luna 25 impact site');
 sr.setStage('moon');
 await snap('22-moon-all-sites', 'the Moon with every landing and impact site switched on', 6000);
-await go('venera-9', '23-venera-9', 8000, 'Venera 9 on Venus');
+sr.setStage('venus');
+await sleep(6000);
+try {
+  const R = 6051.8 / sr.stage.unitKm;
+  rig.flyTo({ offset: mix(sunward('venus'), 1, north('venus'), 0.25), distance: R * 3.2, ms: 0 });
+} catch (e) { out.problems.push('venus framing: ' + e); }
+await snap('23-venus-sites', 'Venus from its sunlit side with the seventeen landing and descent sites switched on', 5000);
+await go('venera-9', '23b-venera-9', 8000, 'Venera 9 on Venus');
+sr.setStage('earth');
+await sleep(3000);
 await go('dart-dimorphos', '24-dart', 3000, 'DART: a site with no place to mark; the card says so');
 await go('mmx-phobos', '25-mmx', 3000, 'MMX: a landing to come');
 
@@ -81,8 +90,8 @@ try {
   sr.clock.goTo(Date.UTC(2026, 9, 9, 18, 30));
   await sleep(1500);
   sr.skyView.enter({ latDeg: 50, lonDeg: 10, altKm: 0.2 });
-  sr.skyView.setFov(100, { instant: true });
-  sr.skyView.lookAtDeg(350, 55);
+  sr.skyView.setFov(70, { instant: true });
+  sr.skyView.lookAtDeg(298, 58); // the Draconids' radiant is at azimuth 298, altitude 64 from there and then
   await snap('41-draconids-radiant', 'the sky view from 50 N 10 E at 20:30 CEST on 9 October 2026: the October Draconids\' radiant marked', 9000);
   out.sky = { radiantsOn: sr.isLayerOn('meteor-showers') };
   sr.skyView.exit();
