@@ -1255,6 +1255,8 @@ export const COPY = {
       pathBegins: 'Its path begins', // 0077 W1-d
       period: 'One lap takes',
       location: 'Where it stands',
+      onBody: 'On', // 0079 a6
+      whenSite: 'When', // 0079 a6
       onWorld: 'Standing on',
       // A craft in orbit round another world (data/sample.js construction D).
       orbiting: 'In orbit round',
@@ -1696,6 +1698,7 @@ export const COPY = {
     // 0077 W3-d: a named place on a world's ground (registry/sites.yaml `class: feature`): nothing stands there to draw.
     feature: 'a named place: nothing is drawn here but a mark at its centre, from the IAU gazetteer; the ground under it is the map itself',  // 0077 W3-d
     markOnly: 'a mark at its place; nothing stands there to draw', // 0079 a6
+    noPlace: 'not drawn: there is no place of it to mark', // 0079 a6
     shower: 'a name at the point its meteors seem to come from, in the sky view near its peak; a direction, not a place in space', // 0079 a6
     // 0077 W3-d: begin -- a small body drawn from its shape model and turned by its measured spin (ui/cards.js, realmodels.js `spin`).
     objectSpin: {

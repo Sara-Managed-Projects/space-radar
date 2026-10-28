@@ -1258,6 +1258,7 @@ function derivedDrawingLine(record, T, tMs) {
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
   if (klass === 'site' && pick(meta(record), 'siteKind') === 'feature' && T.feature) return T.feature; // 0077 W3-d: a named place, nothing standing on it
+  if (klass === 'site' && pick(meta(record), 'noPlace') === true && T.noPlace) return T.noPlace; // 0079 a6
   if (klass === 'site' && pick(meta(record), 'markOnly') === true && T.markOnly) return T.markOnly; // 0079 a6: a list's site, a mark and nothing standing there
   if (klass === 'shower' && T.shower) return T.shower; // 0079 a6
   if (klass === 'earthevent') return COPY.earthEvent.drawn;

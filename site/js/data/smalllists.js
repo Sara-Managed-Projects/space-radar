@@ -45,7 +45,7 @@ export function showerRecords(doc) {
         raDeg: r.ra, decDeg: r.dec, vgKms: r.vg,
         peakMd: r.peak, solutions: r.n,
         parent: r.parent || null, activity: r.activity || null,
-        oursId: r.ours || null, zhr: r.zhr ?? null,
+        oursId: r.ours || null, zhr: r.zhr ?? null, clsLine: 'shower',
         asOf: doc.asOf,
         cite: 'IAU Meteor Data Center, established meteor showers, median of the published solutions',
       },
@@ -130,8 +130,9 @@ export function landingRecords(doc) {
     const ref = row.src ? refs[row.src] : null;
     const extra = {
       doing: row.doing, eventKind: row.kind, eventDate: row.date || null, approxDeg: row.approx ?? null,
-      aliases: row.aliases || [], bodyName: row.world, citeUrl: ref ? ref.url : null,
-      cite: ref ? ref.says.split(/[.;]/)[0] : null,
+      aliases: row.aliases || [], bodyLabel: row.body || null, citeUrl: ref ? ref.url : null,
+      clsLine: Number.isFinite(row.lat) && row.approx ? 'approxPlace' : null,
+      cite: ref ? ref.label : null,
     };
     if (Number.isFinite(row.lat) && Number.isFinite(row.lon) && ['moon', 'venus', 'mars'].includes(row.world)) {
       out.push(siteRecord(row, 'landing-sites', 'landing-site', row.world, extra));
@@ -139,7 +140,8 @@ export function landingRecords(doc) {
       // no place we can draw: a small body is not a world here, and some places are not known
       out.push({
         id: row.id, name: row.name, klass: 'site', layer: 'landing-sites', cls: 'measured', epoch: null,
-        meta: { siteKind: 'landing-site', world: row.world, markOnly: true, latDeg: row.lat ?? null, lonDeg: row.lon ?? null, noPlace: true, ...extra },
+        // `unplaceable` (the card's own word for a thing nobody can place) only for a site the source says is not known
+        meta: { siteKind: 'landing-site', world: row.world, markOnly: true, latDeg: row.lat ?? null, lonDeg: row.lon ?? null, noPlace: true, ...extra, ...(row.kind === 'lost' ? { unplaceable: true, whyUnknown: 'NASA’s table of impacts and landings on the Moon gives no place for it', clsLine: null } : { clsLine: 'noPlace' }) },
       });
     }
   }

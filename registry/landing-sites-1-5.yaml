@@ -18,33 +18,44 @@ version: 1
 
 references:
   nssdca-moon:
+    label: "NASA NSSDCA, Table of Anthropogenic Impacts and Spacecraft on the Moon (public domain)"
     url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html"
     read: 2026-10-28
     says: "NASA NSSDCA, 'Table of Anthropogenic Impacts and Spacecraft on the Moon' (D. R. Williams, last updated
            13 August 2025): 96 rows, each with a landing or impact date and a latitude and longitude (N and E positive)
            where one is known. Public domain (NASA). The generator reads the table itself; this key is cited by its rows."
   wikipedia-geodata:
+    label: "Wikipedia (CC BY-SA 4.0): the coordinates each mission's article carries"
     url: "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates&coglobe=venus"
     read: 2026-10-28
     says: "The coordinates Wikipedia's articles carry on a named globe (MediaWiki GeoData, CC BY-SA 4.0), read through the API for the
            article of each mission. Whole degrees where the article gives whole degrees. They are the articles' figures, which cite
            NSSDCA and the papers of Bindschadler, Head and Garvin (1986) and Abdrakhimov and Basilevsky (2002); the mission pages of
            NSSDCA were not used because the Venus sites they name carry no coordinates."
+  wikipedia-missions:
+    label: "Wikipedia (CC BY-SA 4.0): the article on the mission"
+    url: "https://en.wikipedia.org/wiki/Special:Search?search=Venera+9"
+    read: 2026-10-29
+    says: "The lead of each article named, read through Wikipedia's REST summary on 29 October 2026 (CC BY-SA 4.0): the missions' dates and what each did. No coordinate for a small body was found in a source we could read, so none is given except DART's."
   daly-2023:
+    label: "Daly et al. 2023, Nature 616, 443, Table 1"
     url: "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10115643/fullTextXML"
     read: 2026-10-28
     says: "Daly et al. 2023, Nature 616, 443, Table 1: the DART impact site on Dimorphos, 8.84 +/- 0.45 degrees S, 264.30 +/- 0.47 degrees E
            (east longitude, the IAU prime meridian of the asteroid; planetocentric or planetographic latitude is not stated)."
   esa-schiaparelli:
+    label: "Wikipedia (CC BY-SA 4.0): Schiaparelli EDM"
     url: "https://en.wikipedia.org/wiki/Schiaparelli_EDM"
     read: 2026-10-28
     says: "Wikipedia's Schiaparelli EDM carries 2.05 S, 353.79 E, the crash site found in Mars Reconnaissance Orbiter's CTX picture of 20 October 2016."
   wikipedia-tianwen-2:
+    label: "Wikipedia (CC BY-SA 4.0): Tianwen-2"
     url: "https://en.wikipedia.org/wiki/Tianwen-2"
     read: 2026-10-29
     says: "Wikipedia, Tianwen-2 (CC BY-SA 4.0), read 29 October 2026: launched 28 May 2025; 'rendezvoused with Kamoʻoalewa in July 2026' (4 July), approached within 20 km;
            'conducting remote sensing observations in orbit, while scouting for a sampling site'; planned to leave 24 April 2027 and release its return capsule on 29 November 2027."
   esa-mmx:
+    label: "ESA: MMX lifts off to Mars's moon Phobos"
     url: "https://www.esa.int/ESA_Multimedia/Images/2026/10/MMX_lifts_off_to_Mars_s_moon_Phobos"
     read: 2026-10-29
     says: "ESA, 'MMX lifts off to Mars's moon Phobos': launched on a JAXA H3 rocket from Tanegashima at 04:41 JST on 20 October 2026; arrives at Mars 'next summer'; the first spacecraft
@@ -53,40 +64,40 @@ references:
 # kind:  landing | descent | impact | crash | lost | planned (a landing the mission has not made yet)
 sites:
   # --- Venus: seventeen places (Venera 4 to 14, VEGA 1 and 2, the four Pioneer Venus probes) -----------------------------------------
-  - {id: venera-4, display: "Venera 4, end of descent", world: venus, lat: 19, lon: 38, kind: descent, date: 1967-10-18, approx_deg: 1, source: wikipedia-geodata, doing: "The first probe to send data from inside another planet's air. Its signal ended while it was still falling, 25 km above the ground."}
-  - {id: venera-5, display: "Venera 5, end of descent", world: venus, lat: -3, lon: 18, kind: descent, date: 1969-05-16, approx_deg: 1, source: wikipedia-geodata, doing: "Sent data for 53 minutes on the way down, and went silent before it reached the ground."}
-  - {id: venera-6, display: "Venera 6, end of descent", world: venus, lat: -5, lon: 23, kind: descent, date: 1969-05-17, approx_deg: 1, source: wikipedia-geodata, doing: "The twin of Venera 5, a day later: it too stopped sending before it reached the surface."}
-  - {id: venera-7, display: "Venera 7 landing site", world: venus, lat: -5, lon: 351, kind: landing, date: 1970-12-15, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 7"], doing: "The first landing on another planet. It was heard from the ground for 23 minutes, faintly."}
-  - {id: venera-8, display: "Venera 8 landing site", world: venus, lat: -10.7, lon: 335.25, kind: landing, date: 1972-07-22, source: wikipedia-geodata, aliases: ["Venera 8"], doing: "Landed on the sunlit side and sent data from the ground for 50 minutes."}
-  - {id: venera-9, display: "Venera 9 landing site", world: venus, lat: 31.01, lon: 291.64, kind: landing, date: 1975-10-22, source: wikipedia-geodata, aliases: ["Venera 9"], doing: "Took the first picture from the surface of another planet, a slope strewn with rocks."}
-  - {id: venera-10, display: "Venera 10 landing site", world: venus, lat: 15.42, lon: 291.51, kind: landing, date: 1975-10-25, source: wikipedia-geodata, aliases: ["Venera 10"], doing: "Landed three days after its twin and sent a second view of the ground."}
-  - {id: venera-11, display: "Venera 11 landing site", world: venus, lat: -14, lon: 299, kind: landing, date: 1978-12-25, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 11"], doing: "Landed and measured the air and the sky, but its camera caps did not come off, so there is no picture."}
-  - {id: venera-12, display: "Venera 12 landing site", world: venus, lat: -7, lon: 294, kind: landing, date: 1978-12-21, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 12"], doing: "Landed four days before Venera 11 and worked on the ground for 110 minutes; its camera caps stayed on too."}
-  - {id: venera-13, display: "Venera 13 landing site", world: venus, lat: -7.5, lon: 303, kind: landing, date: 1982-03-01, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 13"], doing: "Sent the first colour pictures from another planet's ground and drilled a sample. It lasted 127 minutes in the heat."}
-  - {id: venera-14, display: "Venera 14 landing site", world: venus, lat: -13.25, lon: 310, kind: landing, date: 1982-03-05, source: wikipedia-geodata, aliases: ["Venera 14"], doing: "Landed in a smoother place than its twin and sent pictures for an hour."}
+  - {id: venera-4, display: "Venera 4, end of descent", world: venus, lat: 19, lon: 38, kind: descent, date: 1967-10-18, approx_deg: 1, source: wikipedia-geodata, doing: "Sent the first measurements from inside the air of another planet, and went silent before it reached the ground."}
+  - {id: venera-5, display: "Venera 5, end of descent", world: venus, lat: -3, lon: 18, kind: descent, date: 1969-05-16, approx_deg: 1, source: wikipedia-geodata, doing: "Fell through the air of Venus in May 1969 and went silent before it reached the ground."}
+  - {id: venera-6, display: "Venera 6, end of descent", world: venus, lat: -5, lon: 23, kind: descent, date: 1969-05-17, approx_deg: 1, source: wikipedia-geodata, doing: "The twin of Venera 5, a day later: it too went silent before it reached the surface."}
+  - {id: venera-7, display: "Venera 7 landing site", world: venus, lat: -5, lon: 351, kind: landing, date: 1970-12-15, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 7"], doing: "The first soft landing on another planet, and the first data sent from the ground of one."}
+  - {id: venera-8, display: "Venera 8 landing site", world: venus, lat: -10.7, lon: 335.25, kind: landing, date: 1972-07-22, source: wikipedia-geodata, aliases: ["Venera 8"], doing: "The second probe to land on Venus, and the first to land on its sunlit side."}
+  - {id: venera-9, display: "Venera 9 landing site", world: venus, lat: 31.01, lon: 291.64, kind: landing, date: 1975-10-22, source: wikipedia-geodata, aliases: ["Venera 9"], doing: "Sent the first picture from the ground of another planet, a slope strewn with rocks."}
+  - {id: venera-10, display: "Venera 10 landing site", world: venus, lat: 15.42, lon: 291.51, kind: landing, date: 1975-10-25, source: wikipedia-geodata, aliases: ["Venera 10"], doing: "Landed three days after its twin, Venera 9, and sent a picture of its own."}
+  - {id: venera-11, display: "Venera 11 landing site", world: venus, lat: -14, lon: 299, kind: landing, date: 1978-12-25, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 11"], doing: "Landed and measured the air and the soil, but its camera caps did not come off, so there is no picture."}
+  - {id: venera-12, display: "Venera 12 landing site", world: venus, lat: -7, lon: 294, kind: landing, date: 1978-12-21, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 12"], doing: "Landed four days before Venera 11 and worked on the ground; its camera caps stayed on too."}
+  - {id: venera-13, display: "Venera 13 landing site", world: venus, lat: -7.5, lon: 303, kind: landing, date: 1982-03-01, approx_deg: 1, source: wikipedia-geodata, aliases: ["Venera 13"], doing: "Sent the first colour pictures from the ground of another planet and analysed a sample it drilled."}
+  - {id: venera-14, display: "Venera 14 landing site", world: venus, lat: -13.25, lon: 310, kind: landing, date: 1982-03-05, source: wikipedia-geodata, aliases: ["Venera 14"], doing: "Landed four days after Venera 13 and sent pictures and a soil analysis of its own."}
   - {id: vega-1, display: "VEGA 1 lander", world: venus, lat: 8.05, lon: 176.89, kind: landing, date: 1985-06-11, approx_deg: 1, source: wikipedia-geodata, aliases: ["Vega 1"], doing: "Dropped its lander and a balloon into the air of Venus on the way to Halley's comet."}
   - {id: vega-2, display: "VEGA 2 lander", world: venus, lat: -7.14, lon: 177.67, kind: landing, date: 1985-06-15, approx_deg: 2, source: wikipedia-geodata, aliases: ["Vega 2"], doing: "Landed four days after VEGA 1 and analysed the soil. Two figures for the place, two degrees apart, are in print."}
   - {id: pioneer-venus-large, display: "Pioneer Venus Large Probe, entry", world: venus, lat: 4.4, lon: 304, kind: descent, date: 1978-12-09, approx_deg: 1, source: wikipedia-geodata, doing: "The big probe of Pioneer Venus, 315 kg, sent data all the way down through the air; it was not built to land."}
   - {id: pioneer-venus-north, display: "Pioneer Venus North Probe, entry", world: venus, lat: 59.3, lon: 4.8, kind: descent, date: 1978-12-09, approx_deg: 1, source: wikipedia-geodata, doing: "A small probe sent into the high northern air of Venus, one of four dropped on one day."}
-  - {id: pioneer-venus-day, display: "Pioneer Venus Day Probe, landing", world: venus, lat: -31.3, lon: 317, kind: landing, date: 1978-12-09, approx_deg: 1, source: wikipedia-geodata, doing: "Not built to land, it kept sending for 67 minutes after it hit the ground."}
+  - {id: pioneer-venus-day, display: "Pioneer Venus Day Probe, landing", world: venus, lat: -31.3, lon: 317, kind: landing, date: 1978-12-09, approx_deg: 1, source: wikipedia-geodata, doing: "Not built to land, it kept sending for more than an hour after it hit the ground."}
   - {id: pioneer-venus-night, display: "Pioneer Venus Night Probe, entry", world: venus, lat: -28.7, lon: 56.7, kind: descent, date: 1978-12-09, approx_deg: 1, source: wikipedia-geodata, doing: "A small probe sent into the night side of Venus. Like the others except the Day Probe, it was not built to survive the ground."}
 
   # --- Mars: crashes and lost landers the sites.yaml rows do not have ---------------------------------------------------------------
   - {id: mars-2, display: "Mars 2 crash site", world: mars, lat: -45, lon: 47, kind: crash, date: 1971-11-27, approx_deg: 3, source: wikipedia-geodata, doing: "The first thing from Earth to reach the ground of Mars, and it hit it hard: its landing system failed. Where, is known to a few degrees."}
-  - {id: mars-6, display: "Mars 6, lost at landing", world: mars, lat: -23.9, lon: 340.58, kind: crash, date: 1974-03-12, approx_deg: 3, source: wikipedia-geodata, doing: "Sent data on the way down and went silent as it reached the ground. Where it came down is from its last signal, to a few degrees."}
+  - {id: mars-6, display: "Mars 6, lost at landing", world: mars, lat: -23.9, lon: 340.58, kind: crash, date: 1974-03-12, approx_deg: 3, source: wikipedia-geodata, doing: "Sent data on the way down and went silent as it reached the ground. Where it came down is from tracking, to a few degrees."}
   - {id: beagle-2, display: "Beagle 2", world: mars, lat: 11.52879, lon: 90.43139, kind: landing, date: 2003-12-25, source: wikipedia-geodata, aliases: ["Beagle 2 lander"], doing: "Landed on Christmas Day 2003 and was never heard from. Mars Reconnaissance Orbiter found it in 2015, with its panels not all open."}
   - {id: schiaparelli, display: "Schiaparelli crash site", world: mars, lat: -2.05, lon: 353.79, kind: crash, date: 2016-10-19, source: esa-schiaparelli, aliases: ["ExoMars EDM"], doing: "ESA's test lander fell from about 3.7 km when its thrusters stopped early. The scar is in Meridiani Planum, photographed from orbit the next day."}
 
   # --- Small bodies: the events, and a coordinate only where one is published and read ----------------------------------
   # No small body is drawn as a world in this app, so these rows are cards: found by search, with no mark.
-  - {id: near-shoemaker-eros, display: "NEAR Shoemaker, Eros", world: eros, kind: landing, date: 2001-02-12, approx_deg: null, source: null, aliases: ["NEAR", "433 Eros landing"], doing: "The first landing on an asteroid. NEAR Shoemaker was not built to land, and it sent data for two weeks from the ground."}
-  - {id: hayabusa-itokawa, display: "Hayabusa, Itokawa", world: itokawa, kind: landing, date: 2005-11-20, source: null, aliases: ["Hayabusa touchdown", "25143 Itokawa landing"], doing: "Touched down twice on a small rubble-pile asteroid in November 2005, and brought back its dust in 2010."}
-  - {id: hayabusa2-ryugu, display: "Hayabusa2, Ryugu", world: ryugu, kind: landing, date: 2019-02-22, source: null, aliases: ["Hayabusa2 touchdown", "162173 Ryugu landing"], doing: "Touched down on Ryugu in February and July 2019, the second time beside a crater it had made, and brought the samples home in 2020."}
-  - {id: osiris-rex-bennu, display: "OSIRIS-REx, Bennu", world: bennu, kind: landing, date: 2020-10-20, source: null, aliases: ["OSIRIS-REx TAG", "Nightingale", "101955 Bennu sample"], doing: "Touched Bennu for six seconds at a site called Nightingale and took in so much dust that the sample box would not close."}
-  - {id: philae-67p, display: "Philae, comet 67P", world: 67p, kind: landing, date: 2014-11-12, source: null, aliases: ["Philae landing", "Agilkia", "Abydos"], doing: "The first landing on a comet. Philae bounced twice off Churyumov-Gerasimenko and came to rest in a shadow, where its batteries ran out."}
-  - {id: rosetta-67p, display: "Rosetta, end of mission", world: 67p, kind: impact, date: 2016-09-30, source: null, aliases: ["Rosetta impact", "Ma'at"], doing: "Ended its twelve years by coming down slowly on comet 67P, sending pictures until just before it touched."}
+  - {id: near-shoemaker-eros, display: "NEAR Shoemaker, Eros", world: eros, kind: landing, date: 2001-02-12, approx_deg: null, source: wikipedia-missions, aliases: ["NEAR", "433 Eros landing"], doing: "The first landing on an asteroid. NEAR Shoemaker was not built to land, and it sent data for two weeks from the ground."}
+  - {id: hayabusa-itokawa, display: "Hayabusa, Itokawa", world: itokawa, kind: landing, date: 2005-11-20, source: wikipedia-missions, aliases: ["Hayabusa touchdown", "25143 Itokawa landing"], doing: "Touched down twice on a small rubble-pile asteroid in November 2005, and brought back its dust in 2010."}
+  - {id: hayabusa2-ryugu, display: "Hayabusa2, Ryugu", world: ryugu, kind: landing, date: 2019-02-22, source: wikipedia-missions, aliases: ["Hayabusa2 touchdown", "162173 Ryugu landing"], doing: "Touched down on Ryugu in February and July 2019, the second time beside a crater it had made, and brought the samples home in 2020."}
+  - {id: osiris-rex-bennu, display: "OSIRIS-REx, Bennu", world: bennu, kind: landing, date: 2020-10-20, source: wikipedia-missions, aliases: ["OSIRIS-REx TAG", "Nightingale", "101955 Bennu sample"], doing: "Touched Bennu for six seconds at a site called Nightingale and took in so much dust that the sample box would not close."}
+  - {id: philae-67p, display: "Philae, comet 67P", world: 67p, kind: landing, date: 2014-11-12, source: wikipedia-missions, aliases: ["Philae landing", "Agilkia", "Abydos"], doing: "The first landing on a comet. Philae bounced twice off Churyumov-Gerasimenko and came to rest in a shadow, where its batteries ran out."}
+  - {id: rosetta-67p, display: "Rosetta, end of mission", world: 67p, kind: impact, date: 2016-09-30, source: wikipedia-missions, aliases: ["Rosetta impact", "Ma'at"], doing: "Ended its twelve years by coming down slowly on comet 67P, sending pictures until just before it touched."}
   - {id: dart-dimorphos, display: "DART impact site, Dimorphos", world: dimorphos, lat: -8.84, lon: 264.30, kind: impact, date: 2022-09-26, approx_deg: 0.5, source: daly-2023, aliases: ["DART", "Dimorphos impact"], doing: "NASA's DART spacecraft hit this asteroid moon at 6 km a second and shortened its orbit round Didymos by more than half an hour."}
-  - {id: deep-impact-tempel-1, display: "Deep Impact impactor, comet Tempel 1", world: tempel-1, kind: impact, date: 2005-07-04, source: null, aliases: ["Deep Impact", "9P/Tempel 1 impact"], doing: "A 370 kg copper impactor hit the comet at 10 km a second while the mother ship watched."}
+  - {id: deep-impact-tempel-1, display: "Deep Impact impactor, comet Tempel 1", world: tempel-1, kind: impact, date: 2005-07-04, source: wikipedia-missions, aliases: ["Deep Impact", "9P/Tempel 1 impact"], doing: "A 370 kg copper impactor hit the comet at 10 km a second while the mother ship watched."}
 
   # --- Planned: the two news missions of 2026, as the landings they are meant to make (no coordinate is published for either) -------------
   - {id: tianwen-2-kamooalewa, display: "Tianwen-2, Kamoʻoalewa", world: kamooalewa, kind: planned, date: 2026-07-04, source: wikipedia-tianwen-2, aliases: ["Tianwen 2", "Tianwen-2 sample", "469219 Kamoʻoalewa landing"], doing: "China's Tianwen-2 reached this small asteroid in July 2026 and is looking for a place to take a sample. It is due to leave in April 2027 and send a capsule home that November."}

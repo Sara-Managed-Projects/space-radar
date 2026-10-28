@@ -384,6 +384,12 @@ def words_date(iso: str | None, year: int | None) -> str:
     return ""
 
 
+# The names of the bodies the card writes after "On" (a small body is not a world in this app, so its name is data here).
+BODY = {"eros": "433 Eros", "itokawa": "25143 Itokawa", "ryugu": "162173 Ryugu", "bennu": "101955 Bennu",
+        "67p": "comet 67P/Churyumov\u2013Gerasimenko", "dimorphos": "Dimorphos", "tempel-1": "comet 9P/Tempel 1",
+        "kamooalewa": "469219 Kamo\u02bboalewa", "phobos": "Phobos"}
+
+
 def build_landing_sites(refresh: bool) -> None:
     html_text = fetch(NSSDCA_URL, "nssdca-lunar-impacts.html", refresh).decode("latin-1")
     table = []
@@ -438,9 +444,9 @@ def build_landing_sites(refresh: bool) -> None:
         rows.append(row)
     nmoon = len(rows)
     extra = yaml.safe_load((ROOT / "registry/landing-sites-1-5.yaml").read_text(encoding="utf-8"))
-    refs = {"nssdca-moon": {"url": NSSDCA_URL, "says": "NASA NSSDCA, Table of Anthropogenic Impacts and Spacecraft on the Moon (D. R. Williams, 13 August 2025); public domain"}}
+    refs = {}
     for k, v in extra["references"].items():
-        refs[k] = {"url": v["url"], "says": re.sub(r"\s+", " ", v["says"])}
+        refs[k] = {"label": v["label"], "url": v["url"], "says": re.sub(r"\s+", " ", v["says"])}
     for s in extra["sites"]:
         if s.get("lat") is not None and any(e.get("world") == s["world"] and hav_km(RADIUS_KM.get(s["world"], 3000), s["lat"], s["lon"], e["lat"], e["lon"]) < 2 for e in existing):
             skipped_same += 1
@@ -454,6 +460,8 @@ def build_landing_sites(refresh: bool) -> None:
             row["lat"], row["lon"] = s["lat"], s["lon"]
         if s.get("approx_deg"):
             row["approx"] = s["approx_deg"]
+        if s["world"] in BODY:
+            row["body"] = BODY[s["world"]]
         if s.get("aliases"):
             row["aliases"] = s["aliases"]
         rows.append(row)

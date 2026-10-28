@@ -521,6 +521,19 @@ export function rightNowRows(record, m, passInfo) {
     if (lastKnown) rows.push([R.lastSeen, String(lastKnown)]);
     return rows;
   }
+  // 0079 a6: begin -- a landing or impact the app cannot place on a drawn world (a small body, a mission still to land): the body, the day, and a
+  // coordinate only where a source published one. Not "could not work this out": there is nothing to work out.
+  if (pick(md, 'noPlace') === true) {
+    const body = pick(md, 'bodyLabel');
+    const lat = pickNumber(md, 'latDeg');
+    const lon = pickNumber(md, 'lonDeg');
+    if (body) rows.push([R.onBody, String(body)]);
+    if (lat !== null && lon !== null) rows.push([R.location, t(V.latLonOn, { lat: latText(lat), lon: lonText(lon), world: String(body || '') })]);
+    const when = pick(md, 'eventDate');
+    if (when) rows.push([R.whenSite, /^\d{4}-\d{2}-\d{2}$/.test(String(when)) ? timeText.utcLong(Date.parse(`${when}T00:00:00Z`)).replace(/ \d\d:\d\d.*$/, '') : String(when)]);
+    return rows;
+  }
+  // 0079 a6: end
   if (!m.ok) {
     // A craft whose mission is over (internal #424): the day it ended, not a failed sum.
     const ended = endedWords(record, m);
@@ -1024,6 +1037,9 @@ export function classLine(record, m) {
   // ABOUT, and "position propagated from elements of unknown age" would be a sentence about
   // elements that do not exist.
   if (pick(meta(record), 'unplaceable')) return COPY.cls.unplaced;
+  // 0079 a6: a record of the small lists names the line that is true of it (a shower is a direction; a small body's landing has no place drawn)
+  const own = pick(meta(record), 'clsLine');
+  if (own && Object.prototype.hasOwnProperty.call(COPY.cls, own)) return t(COPY.cls[own], { n: pick(meta(record), 'approxDeg') });
   const cls = m.cls || (record && record.cls) || '';
   switch (cls) {
     case 'measured':
