@@ -1049,6 +1049,17 @@ export async function boot({ setStatus } = {}) {
     .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
     .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
   if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
+  // 0079 C1: begin
+  // A MOMENT (site/js/moments/, internal spec 0079): `#moment=<id>&t=<s>` replays a mission on a stage of its own, one
+  // clock driving the vehicles, the camera and the captions. Fetched for that link, never at boot; while it is up the
+  // map's scene is hidden and the loop below draws the moment's after it. `t` is the moment's mission second, read
+  // raw here because bootLink() keeps the clock keys to itself.
+  let momentP = null;
+  ctx.wantMoment = (id, t) => (momentP || (momentP = import('./moments/player.js').then((m) => (ctx.moment = m.createMomentPlayer(ctx, { scene })))))
+    .then((p) => { if (id && id !== '0') p.open(id, t); else p.close(); return p; })
+    .catch((e) => { momentP = null; document.documentElement.classList.remove('sr-moment-on'); console.warn('the moment did not load', e); return null; });
+  if (!embed && link && link.moment && link.moment !== '0') { document.documentElement.classList.add('sr-moment-on'); ctx.wantMoment(link.moment, readUrlKeys().t); }
+  // 0079 C1: end
   // At sr:layers-ready a reel starts its own trips, and picks up the one a reloaded page's address names.
   const startReel = () => ctx.wantAutopilot(link);
   ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
@@ -2175,6 +2186,11 @@ export async function boot({ setStatus } = {}) {
     // `#drift=…` pasted over a running page starts the drift; taken out of it, stops it.
     const wander = !!(keys.drift && keys.drift !== '0');
     if (wander || (ctx.drift && ctx.drift.active)) { ctx.wantDrift(keys); if (wander) return; }
+    // 0079 C1: begin
+    // `#moment=<id>&t=<s>` pasted over a running page opens that moment at that second; taken out of it, closes it.
+    const replay = !!(keys.moment && keys.moment !== '0');
+    if (replay || (ctx.moment && ctx.moment.active)) { ctx.wantMoment(keys.moment, keys.t); if (replay) return; }
+    // 0079 C1: end
     // `#imagine=N` pasted over a running page opens that world; taken out of it, closes it.
     const world = !!(keys.imagine && keys.imagine !== '0');
     if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }
@@ -2227,6 +2243,7 @@ export async function boot({ setStatus } = {}) {
   const writeClock = () => {
     clockWriteTimer = 0;
     clockWroteAt = performance.now();
+    if (ctx.moment && ctx.moment.active) return; // 0079 C1: `t` is the moment's mission second while one is up
     if (clock.mode === 'live') { clearUrlState(['t', 'rate']); return; }
     const ms = clock.now();
     if (!Number.isFinite(ms)) return;
@@ -2924,6 +2941,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
+    if (ctx.moment && ctx.moment.active) ctx.moment.render(nowReal); // 0079 C1
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).
@@ -2944,7 +2962,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         autopilot: !!(ctx.autopilot && ctx.autopilot.engaged),
         sky: !!(ctx.skyView && ctx.skyView.active),
         stage: stage.worldId,
-        climb: !!((ctx.opening && ctx.opening.live) || (ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) || (ctx.imagine && ctx.imagine.active)),
+        climb: !!((ctx.opening && ctx.opening.live) || (ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) || (ctx.imagine && ctx.imagine.active) || (ctx.moment && ctx.moment.active)), // 0079 C1: a moment
         selected: !!ctx.selected(),
         cameraMoved: (cameraMovedLast = cameraMoved()),
         animatedLayer: layerAnimating(nowReal),

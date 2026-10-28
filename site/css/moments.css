@@ -1,0 +1,323 @@
+/* css/moments.css -- the Moment player (site/js/moments/player.js, `#moment=<id>`; internal spec 0079 C1).
+ *
+ * Linked by moments/player.js the first time a moment opens, never at boot. Tokens only (css/ui.css :root), the
+ * glass is `.sr-float`, the buttons are `.sr-btn`. The scene keeps the whole window: a small card at the top left
+ * (what this is, the mission clock, the time compression, the chapter) and one strip at the foot (play, the
+ * scrubber with its chapter ticks, Chapters, Share) with the honesty line inside it. Every target 44 px on touch.
+ */
+
+html.sr-moment-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card, .sr-tour) {
+  display: none;
+}
+
+.sr-moment {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-trip);
+  color: var(--sr-text);
+  font-family: var(--sr-font);
+  pointer-events: none;
+}
+
+.sr-moment[hidden] {
+  display: none;
+}
+
+.sr-moment__shield {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sr-moment__shield:active {
+  cursor: grabbing;
+}
+
+.sr-moment__head {
+  position: absolute;
+  top: var(--sp-5);
+  left: var(--sp-5);
+  right: var(--sp-5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.sr-moment__card {
+  pointer-events: auto;
+  max-width: 440px;
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.sr-moment__micro {
+  margin: 0 0 var(--sp-1);
+  font: 600 var(--sr-fs-sm)/1.2 var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-moment__title {
+  margin: 0 0 var(--sp-2);
+  font: 600 var(--sr-fs-name-sm)/1.15 var(--sr-font);
+  letter-spacing: -0.01em;
+}
+
+.sr-moment__clock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.sr-moment__met {
+  font: 400 var(--sr-fs-num)/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-moment__rate {
+  padding: 0 var(--sp-2);
+  font: 500 var(--sr-fs-sm)/1.6 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-ember);
+  border: 1px solid var(--sr-ember);
+  border-radius: var(--sr-radius-pill);
+}
+
+.sr-moment__rate.is-real {
+  color: var(--sr-text-dim);
+  border-color: var(--sr-line-strong);
+}
+
+.sr-moment__chapter {
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-moment__btn {
+  pointer-events: auto;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+
+.sr-moment__close {
+  background: var(--sr-glass);
+  border-color: var(--sr-line);
+  border-radius: 50%;
+}
+
+.sr-moment__dock {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-5);
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: min(880px, calc(100% - 2 * var(--sp-5)));
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
+
+.sr-moment__caption {
+  pointer-events: auto;
+  align-self: center;
+  max-width: 64ch;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-4);
+  font: 400 var(--sr-fs-body)/1.4 var(--sr-font);
+  text-align: center;
+}
+
+.sr-moment__caption[hidden],
+.sr-moment__status:empty {
+  display: none;
+}
+
+.sr-moment__status {
+  pointer-events: auto;
+  align-self: center;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-moment__bar {
+  pointer-events: auto;
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.sr-moment__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sr-moment__play {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.sr-moment__track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.sr-moment__scrub {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  accent-color: var(--sr-ember);
+  cursor: pointer;
+}
+
+.sr-moment__ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0;
+  pointer-events: none;
+}
+
+.sr-moment__tick {
+  position: absolute;
+  top: calc(-1 * var(--sp-3));
+  width: 2px;
+  height: var(--sp-3);
+  margin-left: -1px;
+  background: var(--sr-text-dim);
+}
+
+.sr-moment__text {
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-label)/1 var(--sr-font);
+  border-color: var(--sr-line);
+}
+
+.sr-moment__share {
+  padding: 0;
+  border-color: var(--sr-line);
+}
+
+.sr-moment__truth {
+  margin: var(--sp-1) 0 0;
+  font: 400 var(--sr-fs-sm)/1.4 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-moment__chapters {
+  pointer-events: auto;
+  align-self: flex-end;
+  max-height: 46vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  min-width: 260px;
+}
+
+.sr-moment__chapters[hidden] {
+  display: none;
+}
+
+.sr-moment__row {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-body)/1.3 var(--sr-font);
+  color: var(--sr-text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+}
+
+.sr-moment__row:hover,
+.sr-moment__row:focus-visible {
+  background: var(--sr-ember-soft);
+}
+
+.sr-moment__rowtime {
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-moment :focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+/* A phone: the card and the strip take the width; the strip's words wrap under its controls. */
+@media (max-width: 720px) {
+  .sr-moment__head {
+    top: var(--sp-3);
+    left: var(--sp-3);
+    right: var(--sp-3);
+  }
+
+  .sr-moment__card {
+    max-width: none;
+    flex: 1;
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .sr-moment__title {
+    font-size: var(--sr-fs-body);
+    margin-bottom: var(--sp-1);
+  }
+
+  .sr-moment__met {
+    font-size: var(--sr-fs-num-sm);
+  }
+
+  .sr-moment__dock {
+    bottom: var(--sp-3);
+    width: calc(100% - 2 * var(--sp-3));
+  }
+
+  .sr-moment__controls {
+    flex-wrap: wrap;
+  }
+
+  .sr-moment__track {
+    order: 5;
+    flex-basis: 100%;
+  }
+
+  .sr-moment__caption {
+    font-size: var(--sr-fs-sm);
+  }
+
+  .sr-moment__chapters {
+    align-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-moment * {
+    transition: opacity var(--sr-fast) linear !important;
+  }
+}

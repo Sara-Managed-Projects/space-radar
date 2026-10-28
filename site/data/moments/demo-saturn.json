@@ -1,0 +1,124 @@
+{
+  "format": 1,
+  "id": "demo-saturn",
+  "words": "demo-saturn",
+  "epoch": "1969-07-16T13:32:00Z",
+  "span": [-9.5, 200],
+  "pace": [
+    {"from": -9.5, "to": 12, "rate": 1},
+    {"from": 12, "to": 18, "rate": 3},
+    {"from": 18, "to": 128, "rate": 27.5},
+    {"from": 128, "to": 140, "rate": 4},
+    {"from": 140, "to": 158, "rate": 12},
+    {"from": 158, "to": 166, "rate": 2},
+    {"from": 166, "to": 188, "rate": 11},
+    {"from": 188, "to": 200, "rate": 4}
+  ],
+  "place": {
+    "name": "Launch Complex 39A",
+    "lat": 28.60825, "lon": -80.60412, "alt": 0,
+    "azimuth": 72.058,
+    "ground": {"kind": "coast", "shoreBearing": 340, "shoreM": 800, "pad": true}
+  },
+  "trajectories": {
+    "ascent": {
+      "kind": "profile",
+      "truth": "reconstructed",
+      "say": "pathAscent",
+      "source": "Apollo 11 Mission Report (NASA MSC-00171, 1969), Table 3-I and section 7.1; heights and distances between the events approximate",
+      "pitchStart": 13.2,
+      "turnS": 30,
+      "points": [
+        [-9.5, 0, 0],
+        [0.6, 0, 0],
+        [12, 0.13, 0],
+        [30, 1.3, 0.15],
+        [50, 4.0, 1.0],
+        [66, 7.8, 2.9],
+        [83, 13.3, 6.4],
+        [110, 25.0, 20.0],
+        [135.2, 44.0, 47.0],
+        [161.7, 66.8, 93.0],
+        [192.3, 88.0, 158.0],
+        [197.9, 91.5, 171.0],
+        [200, 92.7, 176.0]
+      ]
+    }
+  },
+  "vehicles": [
+    {
+      "id": "saturn",
+      "model": "saturn-v",
+      "lengthM": 110.6,
+      "path": "ascent",
+      "attitude": "ascent",
+      "cuts": {
+        "s-ic": [-1, 42.1],
+        "interstage": [42.1, 47.6],
+        "upper": [47.6, 100.6],
+        "les": [100.6, 112]
+      },
+      "engines": {
+        "s-ic": [[0, 0.3, 0], [3.686, 0.3, 2.581], [-2.581, 0.3, 3.686], [-3.686, 0.3, -2.581], [2.581, 0.3, -3.686]],
+        "upper": [[0, 43, 0], [2.048, 43, 1.434], [-1.434, 43, 2.048], [-2.048, 43, -1.434], [1.434, 43, -2.048]]
+      },
+      "flames": {
+        "s-ic": {"kind": "kerolox", "exitM": 3.7},
+        "upper": {"kind": "hydrolox", "exitM": 1.95}
+      }
+    }
+  ],
+  "tracks": {
+    "parts": [
+      {"t": -8.9, "part": "s-ic", "action": "ignite", "engines": [0], "rampS": 1.4},
+      {"t": -8.6, "part": "s-ic", "action": "ignite", "engines": [1, 3], "rampS": 1.4},
+      {"t": -8.3, "part": "s-ic", "action": "ignite", "engines": [2, 4], "rampS": 1.4},
+      {"t": 135.2, "part": "s-ic", "action": "cutoff", "engines": [0]},
+      {"t": 161.7, "part": "s-ic", "action": "cutoff"},
+      {"t": 162.3, "part": "s-ic", "action": "separate", "dv": [0, -9, 0], "spin": [0.012, 0, 0.02],
+        "puffs": {"at": [[5.2, 5, 3.6], [-3.6, 5, 5.2], [-5.2, 5, -3.6], [3.6, 5, -5.2]], "dir": [0, 1, 0], "exitM": 0.4, "dur": 0.7, "lead": -0.1}},
+      {"t": 162.3, "part": "interstage", "action": "show",
+        "puffs": {"part": "interstage", "at": [[5.0, 44.5, 0], [0, 44.5, 5.0], [-5.0, 44.5, 0], [0, 44.5, -5.0]], "dir": [0, -1, 0], "exitM": 0.3, "dur": 3.5}},
+      {"t": 163.0, "part": "upper", "action": "ignite", "rampS": 2.5},
+      {"t": 192.3, "part": "interstage", "action": "separate", "dv": [0, -4, 0], "spin": [0.01, 0, -0.008]},
+      {"t": 197.9, "part": "les", "action": "separate", "dv": [4, 30, 0], "spin": [0.04, 0, 0.09],
+        "puffs": {"at": [[0.5, 106.5, 0], [-0.5, 106.5, 0]], "dir": [0, -1, 0], "exitM": 0.35, "dur": 1.2}}
+    ],
+    "camera": [
+      {"t": -9.5, "shot": "pad", "at": [190, -150, 4], "lookY": 45, "fov": 42},
+      {"t": -2.5, "shot": "pad", "at": [52, -38, 6], "lookY": 10, "fov": 58},
+      {"t": 3, "shot": "track", "at": [-1300, -900, 12], "lookY": 55, "fill": 0.6, "fovMin": 0.6, "fovMax": 20},
+      {"t": 18, "shot": "chase", "offset": [150, -50, -130], "lookY": 50, "fov": 40, "blend": 1.5},
+      {"t": 128, "shot": "chase", "offset": [55, -25, -45], "lookY": 18, "fov": 50},
+      {"t": 158, "shot": "orbit", "az": 110, "el": 6, "dist": 300, "lookY": 45, "fov": 40, "spin": 1.5},
+      {"t": 166, "shot": "chase", "offset": [110, -60, -90], "lookY": 40, "fov": 52, "blend": 1.0},
+      {"t": 188, "shot": "orbit", "az": 60, "el": 4, "dist": 190, "lookY": 75, "fov": 44}
+    ],
+    "captions": [
+      {"t": -9.5, "say": "ignition"},
+      {"t": -3.5, "say": "holddown"},
+      {"t": 0.6, "say": "liftoff"},
+      {"t": 12, "say": "tower"},
+      {"t": 66, "say": "maxq"},
+      {"t": 135.2, "say": "ceco"},
+      {"t": 158.5, "say": "staging"},
+      {"t": 163.0, "say": "sii"},
+      {"t": 192.3, "say": "interstage"}
+    ],
+    "audio": [
+      {"t": 161.7, "sting": "stage"}
+    ],
+    "effects": [
+      {"t": -8.9, "effect": "exhaust-cloud", "until": 14, "axis": [0, 1, 0], "count": 420}
+    ]
+  },
+  "chapters": [
+    {"t": -9.5, "say": "chIgnition"},
+    {"t": 0.6, "say": "chLiftoff"},
+    {"t": 12, "say": "chClimb"},
+    {"t": 158, "say": "chStaging"}
+  ],
+  "sources": [
+    {"say": "sources", "url": "https://ntrs.nasa.gov/citations/19700008096"}
+  ]
+}

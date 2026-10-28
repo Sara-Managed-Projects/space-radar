@@ -576,6 +576,12 @@ jobs:
         run: node tests/test_exoface.mjs
       - name: "the planet-face label: Measured only of a measured number, every planet of the table walked (internal #538)"
         run: node tests/test_exoface_truth.mjs
+      # 0079 C1: begin
+      # Internal spec 0079 C1 (internal #1050): the Moment engine. Every file under site/data/moments/ is a valid moment
+      # (its pace, paths, parts, tracks and words), and the clock, the paths, the director and the part events hold.
+      - name: "Moments: every replay file valid; its clock, paths, camera and part events hold"
+        run: node tests/test_moments.mjs
+      # 0079 C1: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read

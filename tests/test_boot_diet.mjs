@@ -195,6 +195,16 @@ const DEFERRED = {
   'js/data/visualclasses.js': 'every record\'s visual class: ui/searchrows.js fetches it the first time a kind is typed',
   // 0076 W4-c (scenesummary.js)
   'js/ui/scenesummary.js': 'what is on screen, for a screen reader: main.js fetches it SUMMARY_MS after sr:layers-ready (internal spec 0076 W4-c)',
+  // 0079 C1: begin
+  'js/moments/player.js': 'the Moment player, a mission replayed: main.js fetches it for `#moment=`',
+  'js/moments/format.js': 'a moment\'s clock and its validator: with the player',
+  'js/moments/trajectory.js': 'a moment\'s paths: with the player',
+  'js/moments/director.js': 'a moment\'s camera: with the player',
+  'js/moments/stage.js': 'a moment\'s sky, Earth and ground: with the player',
+  'js/moments/vehicles.js': 'a moment\'s vehicles and their parts: with the player',
+  'js/moments/effects.js': 'flames, steam, parachutes and plasma: with the player',
+  'js/copy/en.moments.js': 'a moment\'s words: with the player',
+  // 0079 C1: end
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {
