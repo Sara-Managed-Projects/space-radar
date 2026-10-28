@@ -306,7 +306,7 @@ classes:
     renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js, site/js/scene/moonshape.js] # 0077 W3-d
     honesty: modelled
     fallback: A glyph on its orbit; the seeded rock or the real shape only when selected and near.
-    issue: "#866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)" # 0077 W3-d
+    issue: "#866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative); internal #1065 (1.5.0, 0079 B1: Lutetia, Steins, Donaldjohanson and Arrokoth from their missions' shape models, turning about their measured poles, with the relief of the full model baked on; Toutatis, Geographos, Kleopatra, Mithra, Golevka and 1996 HW1 from radar models, not turned; the phase of every turn illustrative)" # 0077 W3-d; 0079 B1
     note:
       source: "JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn."
       dates: "Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card)."
@@ -328,11 +328,12 @@ classes:
     note:
       source: "JPL Small-Body Database comet elements (60, read live with a saved copy); JPL Horizons for Halley."
       dates: "Elements at each comet's own epoch."
-      drawn: "Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded) and the tails' look."
+      drawn: "Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded; 67P's is Rosetta's measured shape model, with its measured relief) and the tails' look." # 0079 B1
       rights: "NASA/JPL data courtesy NASA/JPL-Caltech."
     records:
       - {domain: small_bodies, where: {array: NAMED_COMETS}}
       - {domain: model_kinds, ids: [comet-generic]}
+      - {domain: real_models, where: {class: comet}}  # 0079 B1: 67P's nucleus, Rosetta's shape model
       - {domain: layers, ids: [comets]}
 
   # --- what people built -------------------------------------------------------------------------------

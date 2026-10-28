@@ -1258,6 +1258,11 @@ function derivedDrawingLine(record, T, tMs) {
     const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
     // 0077 W3-d: a small body turning as measured (realmodels.js `spin`) says what of the turn is measured and what is not.
     const turning = entry.spinWords && T.objectSpin ? T.objectSpin[entry.spinWords] : null;
+    // 0079 B1: begin -- what of a small body was seen, and the relief baked on its simplified shape (realmodels.js `seen`, `relief`)
+    const seen = entry.seen && T.objectSeen ? T.objectSeen[entry.seen] : null;
+    const relief = entry.relief && T.objectRelief ? T.objectRelief : null;
+    if (seen || relief) return said([line, seen, relief, turning].filter(Boolean).join(COPY.punctuation.separator));
+    // 0079 B1: end
     if (turning) return said([mapped ? line + COPY.punctuation.separator + mapped : line, turning].join(COPY.punctuation.separator)); // 0077 W3-d
     return said(mapped ? line + COPY.punctuation.separator + mapped : line);
   }

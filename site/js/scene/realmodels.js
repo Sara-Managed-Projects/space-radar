@@ -1528,6 +1528,39 @@ export const REAL_MODELS = {
       spin: { poleRaDeg: 69.326861266078069, poleDecDeg: -72.724550395829496, w0Deg: 0, wDegPerDay: 3823.008849557522,
         moon: { node: 'dimorphos-orbit', aKm: 1.152, periodH: 11.3674 } } },
     // 0077 W3-d: end
+    // 0079 B1: begin -- THE SMALL BODIES A SPACECRAFT OR RADAR HAS SHAPED (release 1.5.0 stage B1, internal #1065). Each from its own
+    // published shape model (registry/models.yaml; scripts/gen_smallbody_shapes.py), klass-gated and a whole word like the rows above.
+    // `tint` is the body's own grey: 0.5 * (geometric albedo / 0.21) ^ 0.55 for the lightness, a spectral-type hue of the same
+    // luminance (the albedo and its reference are in each registry row); the file's own relief (`relief`: an object-space normal map
+    // baked from the unsimplified model) and, for Arrokoth, its albedo map ride inside the .glb. `world` draws it on the smooth
+    // ramp the mapped worlds use. `spin` is the pole and the prime meridian in the IAU's form (scene/moonshape.js); a radar
+    // shape has none, because the printing files it comes from carry no stated axes, so it is not turned (`spinWords: 'still'`).
+    // `seen` names the card's sentence on what of the surface was imaged.
+    lutetia: { file: 'asteroid-lutetia.glb', colour: 'asteroid', tint: '#7C7873', world: true, relief: true, name: '21 Lutetia', klass: ['asteroid'], spinWords: 'spin', seen: 'lutetia',
+      // Rosetta shape model's own pole (RA 51.8, Dec +10.8) and period (8.168270 h): the dataset RO-A-OSINAC/OSIWAC-5-LUTETIA-SHAPE-V1.0. Its phase is not in the file the model came in, so w0 is 0.
+      spin: { poleRaDeg: 51.8, poleDecDeg: 10.8, w0Deg: 0, wDegPerDay: 1057.7515189875 } },
+    steins: { file: 'asteroid-steins.glb', colour: 'asteroid', tint: '#9D9B98', world: true, name: '2867 Steins', klass: ['asteroid'], spinWords: 'spin', seen: 'steins',
+      // RO-A-OSINAC/OSIWAC-5-STEINS-SHAPE-V1.0: pole RA 91, Dec -62 (+-5), 6.04681 h; the prime meridian is the crater Spinel.
+      spin: { poleRaDeg: 91, poleDecDeg: -62, w0Deg: 0, wDegPerDay: 1428.8525685 } },
+    donaldjohanson: { file: 'asteroid-donaldjohanson.glb', colour: 'asteroid', tint: '#585653', world: true, relief: true, name: '52246 Donaldjohanson', klass: ['asteroid'], spinWords: 'spin', seen: 'donj',
+      // Lucy's donaldjohanson_v12.tpc (BODY20052246_POLE_RA, _POLE_DEC, _PM): 10.5 days a turn.
+      spin: { poleRaDeg: 324.66115, poleDecDeg: 50.95721, w0Deg: 293.17865, wDegPerDay: 34.409504086 } },
+    arrokoth: { file: 'asteroid-arrokoth.glb', colour: 'asteroid', tint: '#FFFFFF', world: true, name: '486958 Arrokoth', klass: ['asteroid'], spinWords: 'spin', seen: 'arrokoth', albedoMap: true,
+      // Porter et al. 2024, the label of the shape model: pole RA 317.4880752, Dec -24.8876496 (ICRF), the prime meridian 184.4589465 degrees at its epoch, 0.6632553 days a turn.
+      spin: { poleRaDeg: 317.4880752, poleDecDeg: -24.8876496, w0Deg: 184.4589465, wDegPerDay: 542.7774192 } },
+    // The radar shapes, from NASA 3D Resources' printing models. Not turned: see above.
+    toutatis: { file: 'asteroid-toutatis.glb', colour: 'asteroid', tint: '#C3B6A0', world: true, name: '4179 Toutatis', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    geographos: { file: 'asteroid-geographos.glb', colour: 'asteroid', tint: '#A39785', world: true, name: '1620 Geographos', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    kleopatra: { file: 'asteroid-kleopatra.glb', colour: 'asteroid', tint: '#5E5C59', world: true, name: '216 Kleopatra', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    mithra: { file: 'asteroid-mithra.glb', colour: 'asteroid', tint: '#A59987', world: true, name: '4486 Mithra', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    golevka: { file: 'asteroid-golevka.glb', colour: 'asteroid', tint: '#726A5D', world: true, name: '6489 Golevka', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    '1996 hw1': { file: 'asteroid-1996hw1.glb', colour: 'asteroid', tint: '#716C64', world: true, name: '8567 (1996 HW1)', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    // Comet 67P, matched by its surname (the comets layer's name is the whole designation); the tails the procedural comet
+    // carries are kept on the real nucleus (scene/heroes.js, `keepTails`).
+    churyumov: { file: 'comet-67p.glb', colour: 'asteroid', tint: '#463F38', world: true, relief: true, name: '67P/Churyumov-Gerasimenko', klass: ['comet'], spinWords: 'comet', seen: 'comet', keepTails: { x: 0.5, scale: 2.4 },
+      // The SHAP5 dataset RO-C-MULTI-5-67P-SHAPE-V2.0: pole RA 69.4, Dec +64.1 (+-0.2), 12.4041 h a turn before perihelion (the rate changed at every pass).
+      spin: { poleRaDeg: 69.4, poleDecDeg: 64.1, w0Deg: 0, wDegPerDay: 696.5438847 } },
+    // 0079 B1: end
     // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
     // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
     // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.
@@ -1944,8 +1977,9 @@ export function colourRoute(root) {
   return stated.size >= 2 ? 'own' : 'class';
 }
 
-function applyToon(root, colourToken, surface = null, file = null) { // 0077 W2-pbr: `file`, for its stated look
-  const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
+function applyToon(root, colourToken, surface = null, file = null, entry = null) { // 0077 W2-pbr: `file`, for its stated look; 0079 B1: `entry`, for a body's own tint
+  const bodyLook = entry && entry.tint ? entry : null; // 0079 B1
+  const hex = bodyLook ? bodyLook.tint : (CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite); // 0079 B1
   // Measured once per model, not per mesh: the question is whether the FILE carries variation.
   const route = colourRoute(root);
   // 0077 W2-pbr: begin
@@ -1997,9 +2031,24 @@ function applyToon(root, colourToken, surface = null, file = null) { // 0077 W2-
       tint = own === '#ffffff' ? UNPAINTED : own;
     }
     // A body with a map of its surface (Ceres, Vesta): the map is the colour, on the smooth ramp.
+    // 0079 B1: begin -- a small body in its own grey, with the relief and the albedo map its file carries (scripts/gen_smallbody_shapes.py)
+    const skin = bodyLook && bodyLook.albedoMap && !palette && first && first.map ? first.map : null;
+    const relief = bodyLook && first && first.normalMap && first.userData && first.userData.objectSpace ? first.normalMap : null;
+    // 0079 B1: end
     const replacement = surface && n.geometry && n.geometry.attributes.uv
       ? kit.toonMaterial('#ffffff', 'world', pool, surface)
+      : skin ? kit.toonMaterial('#ffffff', 'world', pool, skin) // 0079 B1
+      : bodyLook && bodyLook.world ? kit.toonMaterial(tint, 'world', pool, null) // 0079 B1
       : kit.toonMaterial(tint, kind, pool, palette);
+    // 0079 B1: begin
+    if (replacement && relief) {
+      relief.colorSpace = THREE.NoColorSpace;
+      relief.anisotropy = 4;
+      replacement.normalMap = relief;
+      replacement.normalMapType = THREE.ObjectSpaceNormalMap;
+      replacement.needsUpdate = true;
+    }
+    // 0079 B1: end
     if (replacement) {
       // Dispose what NASA shipped: the textures on these can be several megabytes of GPU memory
       // that nothing will ever sample once the material is replaced.
@@ -2008,6 +2057,7 @@ function applyToon(root, colourToken, surface = null, file = null) { // 0077 W2-
         if (!m) continue;
         for (const key of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap']) {
           if (m[key] === palette) continue; // the one texture that is still in use
+          if (m[key] === relief || m[key] === skin) continue; // 0079 B1: and the two the file carries for the body
           if (m[key] && m[key].dispose) m[key].dispose();
         }
         if (m.dispose) m.dispose();
@@ -2061,7 +2111,7 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           let top = scene;
           if (turn) { top = new THREE.Group(); scene.rotation.set(turn[0], turn[1], turn[2]); top.add(scene); }
           if (keepMaterials) return resolve(normalise(top));
-          if (!entry.map) { applyToon(scene, entry.colour, null, entry.file); const out = normalise(top); out.userData.look = scene.userData.look; return resolve(out); } // 0077 W2-pbr: the file, for its look
+          if (!entry.map) { applyToon(scene, entry.colour, null, entry.file, entry); const out = normalise(top); out.userData.look = scene.userData.look; return resolve(out); } // 0077 W2-pbr: the file, for its look
           // The map first, then the material: a body shown plain and then repainted would flash.
           // A map that does not arrive leaves the body in its class colour, as it was before.
           const done = (tex) => {
