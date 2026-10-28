@@ -282,8 +282,9 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
     'ui/embed.js': 'embeds only: the host page owns the keyboard',
     'ui/autopilot.js': 'a mode, not a prompt: while a reel plays any key hands the screen back, which is its whole contract',
     'scene/exostage.js': 'on its own panel',
+    'moments/player.js': 'guarded inline: while a moment is open, Space, arrows and chapter keys leave an input that is not the player\'s own scrubber',
   };
-  const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/ };
+  const guards = { 'ui/onboarding.js': /INPUT\|TEXTAREA\|SELECT/, 'ui/drift.js': /tag === 'INPUT'/, 'ui/keyhint.js': /tag === 'INPUT'/, 'sky/skyview.js': /tag === 'INPUT'/, 'scene/camera.js': /tag === 'input'/, 'moments/player.js': /tag === 'INPUT'/ };
   const walkJs = (dir) => readdirSync(dir).flatMap((f) => { const full = join(dir, f); return statSync(full).isDirectory() ? walkJs(full) : full.endsWith('.js') ? [full] : []; });
   const found = [];
   for (const file of walkJs(ROOTJS)) {
