@@ -30,7 +30,7 @@ HATCH_AZ, HATCH_EL = 0.0, 32.0     # the entry opening: toward +X, 32 degrees ab
 VZOR_AZ, VZOR_EL = 180.0, -28.0    # the window at the cosmonaut's feet: the other side, below the equator
 
 # colours: ours, read off the full-size copies (Speyer, Le Bourget, the Memorial Museum) and the flown capsules
-COAT = "#8E9296"            # the wrapped, wrinkled grey-silver skin of the sphere (a foil: it is crinkled in the app)
+COAT = "#8E9296"            # the wrapped grey-silver skin of the sphere (drawn as structure, not foil: the app's crinkle on a 2.3 m ball is a cracked egg)
 COAT_REAR = "#6F7378"
 COAT_EDGE = "#C8B58E"       # the cut edge of the coat at the opening: pale ablator
 GOLD_IN = "#B9974F"         # the cabin's lining, seen through the opening in every flown capsule's photograph
@@ -105,7 +105,7 @@ def build_sphere():
     for k in range(8):
         sub = sphere_shell(R_SPH, ths[k], ths[k + 1], n=4, seg=60)
         c = shade(COAT, tint[k])
-        st.add("coat", "foil", c, to_world(sub, R_h))
+        st.add("coat", "body", c, to_world(sub, R_h))
     # the wrapped tape's seams: 18 meridians of the wrap from the opening's flange to the far pole, and four parallels
     seams = []
     for g in range(12):
@@ -219,7 +219,7 @@ def build_hatch():
     prof = prof[::-1]       # from the rim to the centre
     lid = lathe((0, 0, 0), UP, prof, 56)
     lid = orient(lid, V(0, 0, 0), outward=True)
-    st.add("lid", "foil", shade(COAT, 1.04), to_world(lid, R_h))
+    st.add("lid", "body", shade(COAT, 1.04), to_world(lid, R_h))
     # the rim: a steel skirt under the lid's edge and the ring of 36 bolts
     top = math.sqrt((R_SPH + 0.06) ** 2 - 0.58 ** 2)
     st.add("rim", "body", STEEL, to_world(lathe((0, 0, 0), UP, [(top - 0.045, 0.58), (top + 0.004, 0.58)], 56), R_h))

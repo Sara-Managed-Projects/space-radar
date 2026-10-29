@@ -41,9 +41,9 @@ Y_PAYLOAD = 32.0         # the payload's lower interface: vostok-3ka's origin st
 D_BOOST = R_CORE + R_BOOST + 0.03       # the strap-ons' axes at the base, 2.845 m from the core's
 
 # ---- colours (ours, read off the photographs of the museum copies at VDNKh and Kaluga)
-SKIN = "#BCC2C7"          # the silver-grey skin
-SKIN_D = "#A9AFB5"
-SKIN_L = "#CBD0D4"
+SKIN = "#B5BBC0"          # the silver-grey skin (kept under the app's white-paint threshold, so the whole stack is one finish)
+SKIN_D = "#A4AAB0"
+SKIN_L = "#BDC3C8"
 RING = "#9CA2A9"
 HATCH = "#8F959C"
 SEAM = "#7D838A"
@@ -57,7 +57,7 @@ BRACE = "#6B7178"
 COPPER = "#B87B3F"
 
 
-def tint_skin(k, n=2, d=0.02):
+def tint_skin(k, n=2, d=0.012):
     return shade(SKIN, 1 + d * (1 if k % n == 0 else -1))
 
 

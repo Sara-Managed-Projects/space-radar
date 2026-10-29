@@ -3,8 +3,8 @@
 // record for the picture only), with three changes, because these four files are not satellites:
 //   (1) the subject list is built in (`-f subject=c2`; the workflow wants a subject to save the catalogue's column twin): r7-8k72k on the ISS's record, vostok-3ka on Tianhe's, vostok-seat on XRISM's, vostok-chutes on NuSTAR's, one run;
 //   (2) THE ATTITUDE IS HELD while a craft is photographed: the hero layer tumbles a rocket, and a camera that looks from the
-//       Sun's side at a tumbling stack sees it end-on half the time. For the close sheet the model's +Y is turned to stand on the
-//       craft's vertical (away from the Earth), its X along the Sun-crossed-with-Earth axis, as the model probe's frame has it;
+//       Sun's side at a tumbling stack sees it end-on half the time. For the close sheet the model's +Y is turned to the camera's own up
+//       (so a rocket stands upright in the picture), its +Z toward the Sun laid flat across that, its X the third;
 //   (3) THE LENS FITS BY METRES, not by the craft's circle: a view is named by the model-frame point it centres on and how many
 //       metres it spans (`fit`), the lens (the same trick as the model probe's: the camera at 1/k of the framing distance, the
 //       model k times its drawn size, so it is as big in the world as the app draws it) is grown until the model's own two
@@ -280,7 +280,12 @@ const CRAFT = {
     apart: null,
   },
 };
-// THE CLOCK: the job is cut at 45 minutes (look.yml); what is not photographed by minute 36 is left out and said so.
+// THE CLOCK IS HELD for the pictures (the first run, 2026-10-29: the craft's orbit went into the Earth's shadow between two of the 3KA's views and one picture is black). It is let go again
+// at the end of this craft, because a record selected while the clock is paused can come up at opacity 0 (heroes.js).
+const wasPaused = !!sr.clock.paused;
+try { sr.clock.setPaused(true); await sleep(1500); } catch (e) { look.warns.push('probe: the clock could not be held: ' + String((e && e.message) || e)); }
+out.light.heldLit = sunlit();
+// THE TIME: the job is cut at 45 minutes (look.yml); what is not photographed by minute 36 is left out and said so.
 const late = () => Date.now() - lookT0 > 36 * 60e3;
 const key = (wearAs || '').replace(/ /g, '-');
 const spec = CRAFT[key];
@@ -308,19 +313,30 @@ if (missing.length) out.fail = 'part nodes missing from ' + (entry.file || key) 
 
 // THE LENS, WITH THE ATTITUDE HELD. grow() runs once a frame, from the first mesh's onBeforeRender, after heroes.js has written the
 // frame's scale and attitude and before three.js reads the matrix.
+// THE FRAME THE MODEL IS HELD IN (the first run, 2026-10-29, held it on the craft's local vertical, and the camera's own up is not that: a 38 m
+// rocket stood across the picture). Now the model's +Y is the camera's up (the screen's up whichever stage the rig is on), its +Z the Sun's
+// direction laid flat across that (so the lit face is the one toward +Z: a seat's pilot faces the Sun), its X the third.
+const upFrame = () => {
+  const obj = heroOf();
+  const sun = sr.worlds.meshFor('sun');
+  if (!obj || !sun) return null;
+  const p = obj.getWorldPosition(new V3());
+  const s = new V3(sun.position.x - p.x, sun.position.y - p.y, sun.position.z - p.z).normalize();
+  const Y = sr.camera.up.clone().normalize();
+  let Z = s.clone().addScaledVector(Y, -s.dot(Y));
+  if (Z.lengthSq() < 1e-6) Z = new V3(1, 0, 0).addScaledVector(Y, -Y.x);
+  Z.normalize();
+  const X = new V3().crossVectors(Y, Z).normalize();
+  return { X, Y, Z, s };
+};
 const lens = { k: 1, on: false, up: false, ppm: 0, focus: [0, 0, 0] };
 let applied = NaN;
 const hold = () => {
   const obj = heroOf();
   if (!obj) return;
   if (lens.up) {
-    const f = sunFrame();
-    if (f) {
-      const X = new V3(f.x.x, f.x.y, f.x.z);
-      const Y = new V3(-f.z.x, -f.z.y, -f.z.z);
-      const Z = new V3().crossVectors(X, Y);
-      obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z));
-    }
+    const f = upFrame();
+    if (f) obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(f.X, f.Y, f.Z));
   }
   if (obj.scale.x !== applied) {
     obj.scale.multiplyScalar(lens.k);
@@ -348,9 +364,10 @@ const lensOff = () => {
 };
 const setFocus = (at) => { lens.focus = at.slice(); realRoot().position.set(-at[0], -at[1], -at[2]); };
 const camDir = (az, el) => {
-  const f = sunFrame();
-  const h = mix(f.y, Math.cos(rad(az)), f.x, Math.sin(rad(az)));
-  return unit(mix(h, Math.cos(rad(el)), { x: -f.z.x, y: -f.z.y, z: -f.z.z }, Math.sin(rad(el))));
+  const f = upFrame();
+  const h = new V3().addScaledVector(f.Z, Math.cos(rad(az))).addScaledVector(f.X, Math.sin(rad(az)));
+  const d = h.multiplyScalar(Math.cos(rad(el))).addScaledVector(f.Y, Math.sin(rad(el))).normalize();
+  return { x: d.x, y: d.y, z: d.z };
 };
 const dFramed = rig.state.distance, a0 = rig.state.azimuth, p0 = rig.state.polar;
 /** Grow the lens until a metre measures `ppm` pixels, standing at `dir`; returns what was measured. */
@@ -368,7 +385,11 @@ const fitTo = async (dir, ppm) => {
   }
   return { k, ppm: lens.ppm, tries: 5, loose: true };
 };
-const sideOf = (side) => (side === 'w' ? innerWidth : side === 'h' ? innerHeight : Math.min(innerWidth, innerHeight));
+// THE FREE PART OF THE WINDOW: on a desktop the card covers the left 300 px; on a phone the sheet covers the lower 58 % (the first run's phone pictures
+// had the craft cut by it). The rig already centres the craft in what is free.
+const freeW = () => (innerWidth < 600 ? innerWidth : innerWidth - 300);
+const freeH = () => (innerWidth < 600 ? innerHeight * 0.42 : innerHeight);
+const sideOf = (side) => (side === 'w' ? freeW() : side === 'h' ? freeH() : Math.min(freeW(), freeH()));
 const take = async (tag, words, extra = {}) => {
   await sleep(1500);
   const at = onScreen();
@@ -422,6 +443,7 @@ if (spec.apart && !late()) {
 // back as it was
 realRoot().position.copy(rootPos0);
 lensOff();
+try { if (!wasPaused) sr.clock.setPaused(false); } catch { /* it stays held */ }
 rig.flyTo({ azimuth: a0, polar: p0, distance: dFramed, ms: 0 });
 await sleep(1000);
 return out;
