@@ -1064,7 +1064,9 @@ export const COPY = {
     },
     "storm": "desenhada como uma marca no centro; a tempestade em si é a nuvem ao redor",
     "feature": "um lugar com nome: nada é desenhado aqui além de uma marca no centro, segundo o catálogo da UAI; o chão embaixo é o próprio mapa", // 0077 W3-d
-    "objectSpin": { "spin": "ele gira em torno do polo medido, na velocidade medida; o lado voltado para o Sol neste momento não é uma previsão", "pair": "os dois giram em torno do polo medido, nas velocidades medidas, e Dimorphos dá a volta na distância e no período medidos depois do impacto da DART; onde ele está nessa órbita é ilustrativo" }, // 0077 W3-d
+    "objectSpin": { "spin": "ele gira em torno do polo medido, na velocidade medida; o lado voltado para o Sol neste momento não é uma previsão", "pair": "os dois giram em torno do polo medido, nas velocidades medidas, e Dimorphos dá a volta na distância e no período medidos depois do impacto da DART; onde ele está nessa órbita é ilustrativo", "comet": "ele gira em torno do polo medido, na velocidade medida em 2014, que o Sol alterou em alguns minutos a cada passagem desde então; o lado voltado para o Sol neste momento não é uma previsão", "still": "ele é desenhado na orientação do seu modelo de radar e não gira aqui: o modelo não diz para onde aponta o seu eixo de rotação" }, // 0077 W3-d
+    "objectSeen": { "lutetia": "as imagens da Rosetta cobrem mais da metade da sua superfície; o resto da forma é ajustado a partir das variações de brilho, não fotografado", "steins": "as imagens da Rosetta cobrem cerca de 60 por cento da sua superfície; o resto da forma é ajustado a partir das variações de brilho, não fotografado", "donj": "a forma é construída a partir das imagens da Lucy por fotogrametria estéreo e pelo ajuste do seu contorno; o lado que a Lucy não viu é o do ajuste", "arrokoth": "as imagens da New Horizons cobrem o lado junto ao qual ela passou; o outro lado é inferido, não fotografado, e a cor é o seu mapa de albedo num tom vermelho", "radar": "a forma é construída a partir de ecos de radar, não de imagens: o contorno é medido e os detalhes mais finos não", "comet": "a forma é a da Rosetta, a partir de mais de 20 000 imagens ao longo de dois anos, e cobre toda a superfície" }, // 0079 B1
+    "objectRelief": "o modelo é simplificado, e o relevo fino nele é o do modelo completo, gravado na superfície", // 0079 B1
     "worldFlat": "desenhado como uma bola lisa: não há aqui um mapa da superfície de {name}, e a única cor foi escolhida a partir de descrições publicadas, não medida",
     "worldFlatIrregular": "desenhado como uma bola lisa do tamanho do raio médio: não há aqui um mapa da superfície de {name}, a única cor foi escolhida a partir de descrições publicadas, não medida, e {name} é na verdade uma rocha irregular cuja forma real não é desenhada",
     "worldFlatShaped": "desenhado na forma medida e em uma só cor: não há aqui um mapa da superfície de {name}, e a cor foi escolhida a partir de descrições publicadas, não medida",
@@ -3089,6 +3091,7 @@ export const COPY = {
     "asteroid": {
       "lead": "{name} é um objeto próximo da Terra, em órbita própria ao redor do Sol",
       "leadMainBelt": "{name} é um asteroide do cinturão principal, entre Marte e Júpiter",
+      "leadBeyond": "{name} é um corpo pequeno além de Netuno, na sua própria órbita em torno do Sol", // 0079 B1
       "leadDwarf": "{name} é um planeta anão em órbita própria ao redor do Sol",
       "leadDwarfBelt": "{name} é um planeta anão no cinturão de asteroides, entre Marte e Júpiter",
       "leadDwarfBeyond": "{name} é um planeta anão além de Netuno",

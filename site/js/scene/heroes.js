@@ -358,6 +358,7 @@ const _ground = new THREE.Vector3();
 let spinMod = null;
 let spinAsked = false;
 const _spinBasis = new THREE.Matrix4();
+const _qTail = new THREE.Quaternion(); // 0079 B1
 const _spinX = new THREE.Vector3();
 const _spinY = new THREE.Vector3();
 const _spinZ = new THREE.Vector3();
@@ -669,6 +670,20 @@ export function createHeroes(scene, ctx) {
         clone.scale.copy(entry.obj.scale);
         clone.quaternion.copy(entry.obj.quaternion);
         clone.visible = entry.obj.visible;
+        // 0079 B1: begin -- a comet that is drawn from its nucleus's own shape (67P, realmodels.js `keepTails`) keeps the tails the
+        // procedural comet carried, moved out to the edge of the larger nucleus, before the old object is put away with its other parts.
+        if (real.keepTails && entry.obj.userData.tails) {
+          const holder = new THREE.Group();
+          holder.position.x = real.keepTails.x;
+          holder.scale.setScalar(real.keepTails.scale);
+          holder.add(entry.obj.userData.tails);
+          clone.add(holder);
+          clone.userData.tails = holder.children[0];
+          clone.userData.tailHolder = holder;
+          clone.userData.tailX = real.keepTails.x;
+          clone.userData.klass = entry.obj.userData.klass; // the anti-sunward attitude (models.js DEFAULT_ATTITUDE) that points the tails
+        }
+        // 0079 B1: end
         root.remove(entry.obj);
         M.disposeModels(entry.obj);
         root.add(clone);
@@ -937,7 +952,16 @@ export function createHeroes(scene, ctx) {
       // (models.js cometTailVisible): per-frame state on the object, as `burn` is.
       if (obj.userData.tails) { obj.userData.sunAu = M.sunAuOf(c.p); obj.userData.selected = c.record.id === selectedId; }
       M.updateModelAttitude(obj, c.record, sun, _v, tMs);
+      const tailHolder = obj.userData.tailHolder; // 0079 B1: begin -- the nucleus turns, the tails keep pointing away from the Sun
+      if (tailHolder) _qTail.copy(obj.quaternion);
+      // 0079 B1: end
       if (obj.userData.spin && spinMod) spinMod.applySpin(obj, obj.userData.spin, tMs, spinToScene(tMs), _spinBasis, _spinX, _spinY, _spinZ); // 0077 W3-d
+      // 0079 B1: begin
+      if (tailHolder && obj.userData.spin && spinMod) {
+        tailHolder.quaternion.copy(obj.quaternion).invert().multiply(_qTail);
+        tailHolder.position.set(obj.userData.tailX, 0, 0).applyQuaternion(tailHolder.quaternion);
+      }
+      // 0079 B1: end
 
       // The contact shadow leans away from the Sun, in the model's own frame (groundShadowPose).
       const shadow = sun && obj.userData.attitude === 'up' ? obj.getObjectByName(SHADOW_NAME) : null;

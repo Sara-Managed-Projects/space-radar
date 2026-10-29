@@ -186,7 +186,17 @@ export const VISUAL_CLASSES = [
 "dwarf-ceres",
 "asteroid-ryugu",
 "asteroid-itokawa",
-"asteroid-didymos"
+"asteroid-didymos",
+"asteroid-lutetia",
+"asteroid-steins",
+"asteroid-donaldjohanson",
+"asteroid-arrokoth",
+"asteroid-toutatis",
+"asteroid-geographos",
+"asteroid-kleopatra",
+"asteroid-mithra",
+"asteroid-golevka",
+"asteroid-1996hw1"
 ],
 "model_kinds": [
 "asteroid-generic"
@@ -214,11 +224,15 @@ export const VISUAL_CLASSES = [
 "title": "Comets",
 "honesty": "modelled",
 "members": {
+"real_models": [
+"comet-67p"
+],
 "model_kinds": [
 "comet-generic"
 ],
 "small_bodies": [
-"comet-1P"
+"comet-1P",
+"comet-67P"
 ],
 "layers": [
 "comets"

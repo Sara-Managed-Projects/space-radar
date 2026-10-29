@@ -117,6 +117,19 @@ export const WIKI_TITLES = {
   'asteroid-25143': '25143_Itokawa',
   'asteroid-2': '2_Pallas',
   'asteroid-3200': '3200_Phaethon',
+  // 0079 B1: begin -- the small bodies drawn in their measured shapes, each title resolved to a standard article on 2026-10-29
+  'asteroid-21': '21_Lutetia',
+  'asteroid-2867': '2867_Šteins',
+  'asteroid-52246': '52246_Donaldjohanson',
+  'asteroid-4179': '4179_Toutatis',
+  'asteroid-1620': '1620_Geographos',
+  'asteroid-216': '216_Kleopatra',
+  'asteroid-4486': '4486_Mithra',
+  'asteroid-6489': '6489_Golevka',
+  'asteroid-8567': '(8567)_1996_HW1',
+  'asteroid-486958': '486958_Arrokoth',
+  'comet-67P': '67P/Churyumov–Gerasimenko',
+  // 0079 B1: end
   'tesla-roadster': "Elon_Musk's_Tesla_Roadster",
   // the Messier objects whose own source line is the list their distance was read from (internal
   // #202): each title is what en.wikipedia.org's API resolves 'Messier N' to, read 2026-10-08 (41

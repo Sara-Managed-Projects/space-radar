@@ -686,6 +686,19 @@ than counted by hand.
 | `asteroid-itokawa.glb` | Gaskell Itokawa Shape Model V1.1 (NASA PDS Small Bodies Node): Gaskell, R. et al. (2021), doi:10.26033/3b2j-yy57, from Hayabusa's AMICA images. ISAS Data Policy (as for Ryugu), credit "ISAS/JAXA" | 25143 Itokawa | 58 KB |
 | `asteroid-didymos.glb` | The DART team's shape models of Didymos (v003) and Dimorphos (v004): Daly, R.T. et al. (2023), DART Shapemodel Archive Bundle, NASA PDS Small Bodies Node, doi:10.26007/96fn-p578. CC0 under NASA's science data policy | 65803 Didymos and its moon Dimorphos | 61 KB |
 <!-- 0077 W3-d: end -->
+<!-- 0079 B1: begin -->
+| `comet-67p.glb` | Shape model: Gaskell, R., Jorda, L., Capanna, C., Hviid, S. and Gutierrez, P., SPC SHAP5 cartesian plate model for comet 67P/C-G, RO-C-MULTI-5-67P-SHAPE-V2.0, NASA Planetary Data System and ESA Planetary Science Archive, 2017 (from Rosetta OSIRIS images). Source: https://pds-smallbodies.astro.umd.edu/holdings/ro-c-multi-5-67p-shape-v2.0/data/triplate/spc_lam_psi/shap5/cg_spc_shap5_199k_cart.wrl. Licence: No licence is stated. The dataset's AAREADME and catalog name none, and ESA's Planetary Science Archive (https://www.cosmos.esa.int/web/psa/psa-acknowledgement, read 2026-10-29) states acknowledgement terms only: "Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", and for the shape models it points to the product label's CITATION_DESC. NASA's science data licence (https://science.data.nasa.gov/about/license) puts CC0 on data from NASA-led missions and says of all other data that it is "provided as is"; Rosetta was ESA's. Used here with the label's own credit, as the data are published openly by NASA's PDS | 67P/Churyumov-Gerasimenko | 727 KB |
+| `asteroid-lutetia.glb` | Shape model: Jorda, L., Gaskell, R., Kaasalainen, M. and Carry, B.; Farnham, T.L. (2013), Plate shape model of asteroid 21 Lutetia V1.0, RO-A-OSINAC/OSIWAC-5-LUTETIA-SHAPE-V1.0, NASA Planetary Data System; Sierks et al. (2011), Science 334, 487 (Rosetta OSIRIS images). Source: https://pds-smallbodies.astro.umd.edu/holdings/ro-a-osinac_osiwac-5-lutetia-shape-v1.0/data/lutetia_098k_cart.wrl. Licence: No licence is stated. The dataset's AAREADME and catalog name none, and ESA's Planetary Science Archive (https://www.cosmos.esa.int/web/psa/psa-acknowledgement, read 2026-10-29) states acknowledgement terms only: "Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", and for the shape models it points to the product label's CITATION_DESC. NASA's science data licence (https://science.data.nasa.gov/about/license) puts CC0 on data from NASA-led missions and says of all other data that it is "provided as is"; Rosetta was ESA's. Used here with the label's own credit, as the data are published openly by NASA's PDS | 21 Lutetia | 216 KB |
+| `asteroid-steins.glb` | Shape model: Farnham, T.L. and Jorda, L. (2013), Shape model of asteroid 2867 Steins, RO-A-OSINAC/OSIWAC-5-STEINS-SHAPE-V1.0, NASA Planetary Data System; Jorda et al. (2012), Icarus 221, 1089 (Rosetta OSIRIS images). Source: https://pds-smallbodies.astro.umd.edu/holdings/ro-a-osinac_osiwac-5-steins-shape-v1.0/data/steins_cart.wrl. Licence: No licence is stated. The dataset's AAREADME and catalog name none, and ESA's Planetary Science Archive (https://www.cosmos.esa.int/web/psa/psa-acknowledgement, read 2026-10-29) states acknowledgement terms only: "Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", and for the shape models it points to the product label's CITATION_DESC. NASA's science data licence (https://science.data.nasa.gov/about/license) puts CC0 on data from NASA-led missions and says of all other data that it is "provided as is"; Rosetta was ESA's. Used here with the label's own credit, as the data are published openly by NASA's PDS | 2867 Steins | 95 KB |
+| `asteroid-donaldjohanson.glb` | Shape model: Lucy mission, DLR team (Preusker, Mottola et al.), SPICE DSK lcy_donj_k548_iso20m_v10 (stereophotogrammetry and contour fitting), NASA NAIF; Marchi et al. (2025), Science, in the kernel's own reference. Source: https://naif.jpl.nasa.gov/pub/naif/pds/pds4/lucy/lucy_spice/spice_kernels/dsk/lcy_donj_k548_iso20m_v10.bds. Licence: CC0 by NASA policy (https://science.data.nasa.gov/about/license, read 2026-10-29): data from a NASA-led mission "are licensed as Creative Commons Zero" unless marked otherwise, and Lucy was NASA's and the product states no restriction | 52246 Donaldjohanson | 160 KB |
+| `asteroid-arrokoth.glb` | Shape model and albedo map: Porter, S. (2024), Arrokoth shape model (v1.0) with Gobat, C., Enke, B., Crombie, M.K., Keeney, B. and Parker, J.Wm., New Horizons LORRI data, NASA Planetary Data System. Source: https://pds-smallbodies.astro.umd.edu/holdings/pds4-nh_derived:arrokoth_shapemodel_porter2024-v1.0/arrokoth_porter_2024_v01.obj and albedo_arrokoth4_fp36h2_masked1.png. Licence: CC0 by NASA policy (https://science.data.nasa.gov/about/license, read 2026-10-29): data from a NASA-led mission "are licensed as Creative Commons Zero" unless marked otherwise, and New Horizons was NASA's and the product states no restriction | 486958 Arrokoth | 248 KB |
+| `asteroid-toutatis.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the Goldstone radar shape model (Hudson and Ostro). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 4179 Toutatis | 64 KB |
+| `asteroid-geographos.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Hudson and Ostro). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 1620 Geographos | 51 KB |
+| `asteroid-kleopatra.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Ostro et al. 2000). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 216 Kleopatra | 23 KB |
+| `asteroid-mithra.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model. Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 4486 Mithra | 33 KB |
+| `asteroid-golevka.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Hudson et al. 2000). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 6489 Golevka | 24 KB |
+| `asteroid-1996hw1.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Magri et al. 2011). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 8567 1996 HW1 | 16 KB |
+<!-- 0079 B1: end -->
 
 **The shapes of Phobos and Deimos** are not `.glb` files: `site/js/data/moonshapes.js` holds a radius
 every 5 degrees for each, which `site/js/scene/moonshape.js` bends the moon's sphere to
@@ -2284,6 +2297,32 @@ forwarded or modified", asks that the origin be given as "ISAS/JAXA", and calls 
 Creative Commons BY 4.0". NASA's science data licence (https://science.data.nasa.gov/about/license): data "from
 a NASA-led mission ... are licensed as Creative Commons Zero" (DART).
 <!-- 0077 W3-d: end -->
+
+<!-- 0079 B1: begin -->
+### Small-body shapes (0079 B1, internal #1065)
+
+**Lutetia, Steins, 67P, Donaldjohanson, Arrokoth and six radar shapes** (the small-bodies table above), each from the shape model its
+mission or radar team published, in the body's own axes, by `scripts/gen_smallbody_shapes.py` (sources and URLs in
+`scripts/fetch-small-body-sources.sh`; the elements of each orbit from the JPL Small-Body Database and JPL Horizons, `scripts/fetch-sbdb-rows.mjs`).
+
+- **Rosetta's three** (67P from the SHAP5 SPC model of Gaskell and Jorda; Lutetia and Steins from the OSIRIS teams' plate models) come from NASA's
+  Planetary Data System Small Bodies Node. None of the three datasets states a licence, and ESA's Planetary Science Archive states acknowledgement
+  terms only ("Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", read 2026-10-29); NASA's science data
+  licence covers NASA-led missions and says of the rest that it is "provided as is". They are credited with the datasets' own citations.
+- **Donaldjohanson** is DLR's shape from Lucy's pictures, in NASA NAIF's Lucy SPICE bundle (CC0 by NASA policy for a NASA-led mission:
+  https://science.data.nasa.gov/about/license, read 2026-10-29). **Arrokoth** is Porter's New Horizons shape and albedo map (PDS4, the same policy).
+- **The radar shapes** (Toutatis, Geographos, Kleopatra, Mithra, Golevka, 1996 HW1) are NASA 3D Resources' printing models, made from the radar teams'
+  shapes; public domain by NASA's media usage guidelines. Their files state no axes and an arbitrary scale, so they are not turned.
+- **What is baked.** Where a model is simplified (67P, Lutetia, Donaldjohanson, Geographos) the unsimplified model's normals are baked into an
+  object-space normal map inside the .glb: every normal is the source's; nothing is invented. Arrokoth keeps its published topology and its own
+  texture coordinates; its albedo map is read as relative brightness and carried to the published geometric albedo 0.21 in a red hue.
+- **The grey of each body** is its geometric albedo (the JPL Small-Body Database's, with its reference, in each model's registry row;
+  Arrokoth's 0.21, Hofgartner et al. 2021, and 67P's 0.065, Fornasier et al. 2015, each named in its row of `registry/models.yaml`) put through one rule for the lightness, 0.5 x (albedo / 0.21)^0.55, with a hue
+  of the same luminance for its spectral type: modelled, and said so on each card.
+- **What is not here and why.** Halley, Gaspra, Ida with Dactyl and Mathilde (Stooke's and Thomas's PDS shape models), Hudson's and Lawrence's radar shapes
+  and Apophis's are on `sbnarchive.psi.edu`, which answers every request from the build machine with a bot challenge (403, `cf-mitigated: challenge`),
+  and was not worked around. Dinkinesh and Selam have no published shape file (their NAIF constants are placeholders).
+<!-- 0079 B1: end -->
 
 ### Ring and spot data (0076 W2-b)
 
