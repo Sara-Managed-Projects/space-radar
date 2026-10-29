@@ -964,7 +964,7 @@ const NAMED_COMETS = [
     hMag: null, // the SBDB states none for a comet; the app ranks it by the distance it is at
     diameterKm: 4.1,
     moons: null,
-    why: "The comet ESA’s Rosetta orbited for two years, from 2014 to 2016, and set its lander Philae down on 12 November 2014. Two lumps joined at a neck, 4.1 kilometres across the long way. It comes back to the Sun every 6.4 years.",
+    why: "The comet ESA’s Rosetta orbited for two years, from 2014 to 2016, and set its lander Philae down on 12 November 2014. Two lumps joined at a neck, 4.1 kilometres across the long way.",
     whySource: "NASA Planetary Data System and ESA, Rosetta shape model of 67P (SHAP5, Gaskell and Jorda; dataset RO-C-MULTI-5-67P-SHAPE-V2.0) and the JPL Small-Body Database (size and pole: Sierks et al. 2015), read 28 October 2026",
     departure: 'the tail is part of the drawing: this far from the Sun the comet is a dark, frozen lump with no tail at all',
   },

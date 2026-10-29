@@ -464,7 +464,10 @@ const TEMPLATES = {
     }
     // `neo` is the data's own classification; only an explicit false changes the sentence, so a
     // live NEO-feed record that does not carry the field still reads as the near-Earth object it is.
-    const lead = md.neo === false ? T.leadMainBelt : T.lead;
+    // 0079 B1: begin -- an asteroid-layer body whose orbit never comes inside Neptune's (Arrokoth) is not "in the main belt": where it is, from its own orbit (farRegion)
+    const outer = T.leadBeyond && ['beyond', 'farBeyond'].includes(farRegion(record));
+    const lead = outer ? T.leadBeyond : md.neo === false ? T.leadMainBelt : T.lead;
+    // 0079 B1: end
     return buildSentence(t(lead, { name: displayName(record) }), [
       caMs !== null && ld !== null
         ? t(T.whyApproach, { date: timeText.dateNear(caMs, now), ld: fmt.smart(ld) })

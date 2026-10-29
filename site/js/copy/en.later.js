@@ -1454,6 +1454,7 @@ Object.assign(COPY, {
       // Ceres, Vesta and Pallas are in the layer too, and each carries `neo: false`: perihelia of
       // 2.1 to 2.5 au, nowhere near Earth. The card called all of them near-Earth objects.
       leadMainBelt: '{name} is an asteroid in the main belt, between Mars and Jupiter',
+      leadBeyond: '{name} is a small body beyond Neptune, on its own orbit around the Sun', // 0079 B1: Arrokoth, which the main-belt sentence below would put 40 au in
       // The far-bodies layer (2026-09-22). Its first sentence has to be true of a world 95 au out,
       // and "a near-Earth object" or "in the main belt" is true of none of them but Ceres. Which
       // of these a card uses is decided from the record's own perihelion and aphelion

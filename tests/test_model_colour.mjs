@@ -78,11 +78,28 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   };
   const wasted = [];
   let images = 0, files = 0;
+  // 0079 B1: begin -- an image the app DOES sample: a small body's baked relief (a normal texture whose material is marked
+  // `extras.objectSpace`, which scene/realmodels.js hands to the toon material) and, on a route that says `albedoMap`, its base colour map.
+  const { REAL_MODELS } = await import(join(ROOT, 'site/js/scene/realmodels.js'));
+  const albedoFiles = new Set(Object.values(REAL_MODELS.named).filter((r) => r.albedoMap).map((r) => r.file));
+  const sampled = (json, file) => {
+    const used = new Set();
+    const src = (ti) => { const t = (json.textures || [])[ti]; return t ? (t.source ?? (t.extensions && t.extensions.EXT_texture_webp && t.extensions.EXT_texture_webp.source)) : undefined; };
+    for (const m of json.materials || []) {
+      if (m.normalTexture && m.extras && m.extras.objectSpace === true) used.add(src(m.normalTexture.index));
+      const base = m.pbrMetallicRoughness && m.pbrMetallicRoughness.baseColorTexture;
+      if (base && albedoFiles.has(file)) used.add(src(base.index));
+    }
+    return used;
+  };
+  // 0079 B1: end
   for (const f of readdirSync(DIR).filter((n) => n.endsWith('.glb'))) {
     files++;
     const { json, bin } = parts(readFileSync(join(DIR, f)));
-    for (const im of json.images || []) {
+    const used = sampled(json, f); // 0079 B1
+    for (const [imIndex, im] of (json.images || []).entries()) { // 0079 B1: the index, for `used`
       images++;
+      if (used.has(imIndex)) continue; // 0079 B1
       const bv = json.bufferViews[im.bufferView];
       const bytes = bin.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength);
       const d = dims(Buffer.from(bytes));
@@ -94,7 +111,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   }
   assert.deepEqual(wasted, [], 'shipped models carry images the app downloads and discards:\n  ' + wasted.join('\n  ') +
     '\n  bake them with scripts/flatten-textures.mjs');
-  console.log(`  ${files} shipped models, ${images} images, every one a palette strip the app samples`);
+  console.log(`  ${files} shipped models, ${images} images, every one a palette strip, a baked relief or an albedo map the app samples`); // 0079 B1
 }
 
 // A MODEL REBUILT IN ITS OWN COLOURS REACHES THE 'own' ROUTE AND NEEDS NOTHING AT LOAD.
