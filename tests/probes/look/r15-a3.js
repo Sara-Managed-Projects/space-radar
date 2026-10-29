@@ -81,4 +81,5 @@ for (const [id, name, note] of WALK) {
 }
 out.files = fileBytes();
 out.firstSentences = Object.fromEntries(Object.entries(out.cards).map(([k, v]) => [k, (v || '').split('\n').slice(0, 6).join(' / ')]));
-return finish(out.problems.length ? { fail: out.problems.join('; '), out } : { out });
+const result = out.problems.length ? { fail: out.problems.join('; '), out } : { out };
+return finish(result);
