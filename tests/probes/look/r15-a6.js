@@ -98,4 +98,5 @@ try {
 } catch (e) { out.problems.push('sky view: ' + e); }
 try { sr.clock.setPaused(false); sr.clock.live(); } catch { /* left as it was */ }
 
-return finish({ ...out, fail: out.problems.length ? out.problems.join(' | ') : undefined });
+const fail = out.problems.length ? out.problems.join(' | ') : undefined;
+return finish({ ...out, fail });
