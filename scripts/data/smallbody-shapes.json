@@ -1,0 +1,211 @@
+{
+ "67p": {
+  "bytes": 744332,
+  "extent_km": [
+   5.0383,
+   3.7091,
+   3.2738
+  ],
+  "file": "comet-67p.glb",
+  "source_extent_km": [
+   5.0388,
+   3.7079,
+   3.2743
+  ],
+  "source_tris": 199452,
+  "source_volume_km3": 18.75598508054496,
+  "tris": 40000,
+  "verts": 23850,
+  "volume_km3": 18.755489355358318
+ },
+ "arrokoth": {
+  "bytes": 254432,
+  "extent_km": [
+   34.5456,
+   19.8382,
+   13.8223
+  ],
+  "file": "asteroid-arrokoth.glb",
+  "source_extent_km": [
+   34.5456,
+   19.8382,
+   13.8223
+  ],
+  "source_tris": 40960,
+  "source_volume_km3": 4123.808653457831,
+  "tris": 40960,
+  "verts": 20484,
+  "volume_km3": 4123.808653457831
+ },
+ "donaldjohanson": {
+  "bytes": 163468,
+  "extent_km": [
+   8.8268,
+   4.4134,
+   3.0976
+  ],
+  "file": "asteroid-donaldjohanson.glb",
+  "source_extent_km": [
+   8.8216,
+   4.4112,
+   3.0964
+  ],
+  "source_tris": 547996,
+  "source_volume_km3": 58.29210884168587,
+  "tris": 14000,
+  "verts": 7766,
+  "volume_km3": 58.27364293848505
+ },
+ "geographos": {
+  "bytes": 52388,
+  "extent_km": [
+   5.1121,
+   2.4105,
+   1.9998
+  ],
+  "file": "asteroid-geographos.glb",
+  "source_extent_km": [
+   5.1121,
+   2.4105,
+   1.9998
+  ],
+  "source_tris": 16380,
+  "source_volume_km3": 9.177124363165696,
+  "tris": 10000,
+  "verts": 5002,
+  "volume_km3": 9.176656678274883
+ },
+ "golevka": {
+  "bytes": 24132,
+  "extent_km": [
+   1.665,
+   1.9486,
+   2.334
+  ],
+  "file": "asteroid-golevka.glb",
+  "source_extent_km": [
+   1.665,
+   1.9486,
+   2.334
+  ],
+  "source_tris": 4092,
+  "source_volume_km3": 3.0814377373431596,
+  "tris": 4092,
+  "verts": 2048,
+  "volume_km3": 3.0814377373431596
+ },
+ "hw1": {
+  "bytes": 16708,
+  "extent_km": [
+   3.7774,
+   1.4922,
+   1.6391
+  ],
+  "file": "asteroid-1996hw1.glb",
+  "source_extent_km": [
+   3.7774,
+   1.4922,
+   1.6391
+  ],
+  "source_tris": 2780,
+  "source_volume_km3": 4.336111086496562,
+  "tris": 2780,
+  "verts": 1392,
+  "volume_km3": 4.336111086496562
+ },
+ "kleopatra": {
+  "bytes": 23340,
+  "extent_km": [
+   9.7395,
+   3.6577,
+   4.2017
+  ],
+  "file": "asteroid-kleopatra.glb",
+  "source_extent_km": [
+   9.7395,
+   3.6577,
+   4.2017
+  ],
+  "source_tris": 4092,
+  "source_volume_km3": 62.332291337895974,
+  "tris": 4092,
+  "verts": 2048,
+  "volume_km3": 62.332291337895974
+ },
+ "lutetia": {
+  "bytes": 220900,
+  "extent_km": [
+   111.686,
+   120.884,
+   84.815
+  ],
+  "file": "asteroid-lutetia.glb",
+  "source_extent_km": [
+   111.6786,
+   120.8776,
+   84.8184
+  ],
+  "source_tris": 98280,
+  "source_volume_km3": 498870.94572689437,
+  "tris": 24000,
+  "verts": 12796,
+  "volume_km3": 498835.078422314
+ },
+ "mithra": {
+  "bytes": 33444,
+  "extent_km": [
+   3.3391,
+   2.0377,
+   2.3422
+  ],
+  "file": "asteroid-mithra.glb",
+  "source_extent_km": [
+   3.3391,
+   2.0377,
+   2.3422
+  ],
+  "source_tris": 5996,
+  "source_volume_km3": 7.232211554833147,
+  "tris": 5996,
+  "verts": 3000,
+  "volume_km3": 7.232211554833147
+ },
+ "steins": {
+  "bytes": 97644,
+  "extent_km": [
+   6.8065,
+   5.6176,
+   4.2004
+  ],
+  "file": "asteroid-steins.glb",
+  "source_extent_km": [
+   6.8065,
+   5.6176,
+   4.2004
+  ],
+  "source_tris": 20480,
+  "source_volume_km3": 76.28022248813092,
+  "tris": 20480,
+  "verts": 10242,
+  "volume_km3": 76.28022248813092
+ },
+ "toutatis": {
+  "bytes": 65084,
+  "extent_km": [
+   2.2852,
+   4.6028,
+   1.9188
+  ],
+  "file": "asteroid-toutatis.glb",
+  "source_extent_km": [
+   2.2852,
+   4.6028,
+   1.9188
+  ],
+  "source_tris": 12796,
+  "source_volume_km3": 7.6988195037542795,
+  "tris": 12796,
+  "verts": 6400,
+  "volume_km3": 7.6988195037542795
+ }
+}

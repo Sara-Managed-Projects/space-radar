@@ -19,11 +19,12 @@ import { fixed } from './fixed.js';
 import { ascent } from './ascent.js';
 import { staticPos } from './static.js';
 import { orbiter } from './orbiter.js';
+import { companion } from './companion.js'; // 0079 a3
 
-export { sgp4, kepler, sampled, body, fixed, ascent, staticPos, orbiter };
+export { sgp4, kepler, sampled, body, fixed, ascent, staticPos, orbiter, companion }; // 0079 a3: companion
 
 /** The registry. Key = record.propagator. */
-export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent, static: staticPos, orbiter };
+export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent, static: staticPos, orbiter, companion }; // 0079 a3: companion
 
 /**
  * A craft's own path, once its file is here (propagate/ephemeris.js, internal #277): record id ->

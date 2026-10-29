@@ -37,7 +37,7 @@ const { LAYERS } = await import(join(ROOT, 'site/js/data/layers.js'));
 const onDemand = LAYERS.filter((l) => l.load === 'on-demand');
 // ... and a layer the page fetches from another host for itself (`source: 'weather'`, 2026-10-07):
 // a request to somebody else's server waits for the visitor to ask, whatever its size.
-check(onDemand.map((l) => l.id).join(',') === 'active,debris-field,earth-events', `only the two catalogues and the Earth's events load on demand (${onDemand.map((l) => l.id)})`);
+check(onDemand.map((l) => l.id).join(',') === 'active,debris-field,earth-events,observatories', `only the two catalogues, the Earth's events and the 3 850 observatories (0079 a6) load on demand (${onDemand.map((l) => l.id)})`);
 for (const l of onDemand) check((l.budget && l.budget.maxItems >= 5000) || (l.source === 'weather' && typeof l.fetchLazy === 'function'), `${l.id} is catalogue-sized, or fetched by the page for itself`);
 for (const id of ['geo-ring', 'debris-notable', 'reentries']) {
   const l = LAYERS.find((x) => x.id === id);

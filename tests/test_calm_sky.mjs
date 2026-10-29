@@ -1,5 +1,5 @@
 // tests/test_calm_sky.mjs -- a calm deep sky (public #271): the marks of planets round other
-// stars are off until asked for, and a star's colour reads.
+// stars (on in the opening moment since 1.5.0), and a star's colour reads.
 //
 //   node tests/test_calm_sky.mjs
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -20,7 +20,8 @@ const SF = await mod('scene/starfield.js');
 
 // --- off by default, in every moment; everything else in the group as it was -----------------------
 const exo = LAYERS.find((l) => l.id === 'exoplanets');
-check(exo && exo.moments && !exo.moments.wonder && !exo.moments.now && !exo.moments.next, 'the exoplanet marks are off in all three moments');
+// 0079 a13: ON in the opening moment since release 1.5.0 (Ivan's decision 2, 2026-10-28); still after the first screen and ladder-only.
+check(exo && exo.moments && exo.moments.wonder === true && !exo.moments.now && !exo.moments.next, 'the exoplanet marks are on in the opening moment only');
 check(exo && exo.enabled !== false, 'the layer itself is still there: it loads, it is searched, a link opens it');
 for (const id of ['stars', 'deep-sky', 'systems', 'galaxy']) {
   const l = LAYERS.find((x) => x.id === id);
@@ -77,4 +78,4 @@ check(/uPad \* mix\( 1\.0, uSkyScale, uSky \)/.test(read('site/js/scene/glyphs.j
 check(/float corePx = min\(size, 7\.0 \+ 5\.0 \* glare\) \* uPx;/.test(ground), 'and a bright star\'s core is up to 7 px there');
 
 if (problems.length) { console.error(`calm sky: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
-console.log(`calm sky ok: exoplanet marks off in every moment, shown by the layer row ("${hint}"), the Stars tab's switch, a link, a search or a trip; Betelgeuse ${betelgeuse.map((v) => v.toFixed(2)).join(' ')}, Rigel ${rigel.map((v) => v.toFixed(2)).join(' ')}, the Sun ${sun.map((v) => v.toFixed(2)).join(' ')}`);
+console.log(`calm sky ok: exoplanet marks on in the opening moment, shown by the layer row ("${hint}"), the Stars tab's switch, a link, a search or a trip; Betelgeuse ${betelgeuse.map((v) => v.toFixed(2)).join(' ')}, Rigel ${rigel.map((v) => v.toFixed(2)).join(' ')}, the Sun ${sun.map((v) => v.toFixed(2)).join(' ')}`);

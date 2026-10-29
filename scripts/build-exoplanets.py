@@ -26,6 +26,9 @@ browser parser (site/js/data/parsers.js parseExoplanets) reads from the snapshot
 serves both. Numbers are rounded to what a card prints; nothing is invented, and a blank stays a
 blank.
 
+RELEASE 1.5.0 (0079 a13): `--pull` also writes site/data/exoplanets.bin, the same planets packed by scripts/exopack.py, which
+is what the layer now fetches (133 kB gzipped); the CSV stays for the star systems and as the layer's fallback.
+
 Source: NASA Exoplanet Archive, Planetary Systems Composite Parameters table (pscomppars),
 https://exoplanetarchive.ipac.caltech.edu/ -- operated by Caltech under contract with NASA; cite the
 table DOI (CREDITS.md §4.7).
@@ -166,6 +169,13 @@ def main(argv: list[str]) -> int:
             w.writerow(vals)
             kept += 1
     print(f"exoplanets: {kept} written, {skipped} without a position or distance skipped -> {OUT.stat().st_size} B")
+    # 0079 a13: begin -- the packed copy the layer fetches (scripts/exopack.py); tests/test_exopack.mjs holds it to this file
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import exopack
+    packed = exopack.pack(OUT, as_of)
+    (ROOT / "site/data/exoplanets.bin").write_bytes(packed)
+    print(f"exoplanets: packed -> site/data/exoplanets.bin {len(packed)} B")
+    # 0079 a13: end
     write_side(src, as_of)
     return 0
 

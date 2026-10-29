@@ -84,6 +84,9 @@ export const DEEP_LAYERS = [
   { id: 'localvolume', stage: 'e', stages: ['local-group'], build: () => import('./localvolume.js') },
   // 0076 W4-b: Virgo, Coma, Fornax and Perseus as instanced impostors, and two quasars with their host cue. `ask` is what the coordinator
   // hands the layer (scene/deep/deepsky.js); `debug` is the key of `sr.deep.debug({ far: false })`, which takes it off for a probe's BEFORE shot.
+  // 0079 a2: begin (every NGC and IC object, Harris, Green and the open clusters: scene/deep/catalogue.js; two files fetched on the first rung entered)
+  { id: 'catalogue', stage: 'A2', stages: ['stellar', 'galaxy', 'local-group'], build: () => import('./catalogue.js') },
+  // 0079 a2: end
   { id: 'galclusters', stage: 'W4-b', stages: ['local-group'], build: () => import('./galclusters.js'), ask: (env, on) => ({ recordById: env.recordById, on }) },
   // 0077 W2-e: begin
   // The Magellanic Bridge and Stream (scene/deep/magellanic.js: HI4PI's hydrogen at a modelled distance, false colour) ship

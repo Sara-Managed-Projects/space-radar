@@ -26,6 +26,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Fainter stars, which constellation, meteor activity | AT-HYG v4.0; CDS VI/42; the IMO's 2027 calendar | CC BY-SA 4.0; a catalogue; facts, cited | [3j](#3j-the-sky-from-the-ground-round-three--at-hyg-cds-vi42-the-imos-working-list-and-a-model-of-the-air) |
 | Magnetic declination, for "Point your phone" | World Magnetic Model 2025 (NOAA NCEI, BGS) | public domain (US government) | [3k](#3k-point-your-phone--the-world-magnetic-model-2025-noaa-ncei-and-the-british-geological-survey-public-domain) |
 | Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
+| Stars with names and with no distance, pulsars, magnetars, black holes, white and brown dwarfs, the Local Group, clusters, quasars | IAU WGSN; HYG; ATNF; McGill; BlackCAT; Local Volume Database; MCXC; Million Quasars | CC BY; CC BY-SA 4.0; cited catalogues; CC0 | [3n](#3n-stars-and-beyond-the-milky-way-the-compact-catalogues-of-release-150-stages-a4-and-a5) | <!-- 0079 r15-a45 -->
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | The Cygnus cargo ship's shape | generated from a NASA photograph with TRELLIS (Microsoft Research), cleaned by us | public domain; MIT; ours | [3b-2](#3b-2-a-model-made-from-photographs--cygnus-2026-10-12) |
@@ -76,6 +77,9 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 <!-- 0078 r14-m1: begin -->
 | The shapes of six spent rocket stages (Delta II and Falcon 9 second stages, Atlas V Centaur, Centaur D, H-IIA and Kosmos-3M second stages) | built by us in code from published dimensions | public domain, CC0, CC BY 2.0, 3.0 or 4.0 where a picture was used; share-alike pictures looked at only; ours | [3b-rocket-stages](#3b-rocket-stages-spent-rocket-stages-built-in-code-from-published-dimensions-2026-10-27) |
 <!-- 0078 r14-m1: end -->
+<!-- 0079 c2: begin -->
+| The shapes of the R-7 8K72K launcher with its parts, the Vostok 3KA spacecraft, the Vostok ejection seat with its pilot and the Vostok parachutes | built by us in code from published dimensions | public domain, CC0, CC BY 4.0, CC BY 2.0 or CC BY-SA where a picture was looked at; ours | [3b-vostok](#3b-vostok-the-vostok-models-of-the-moments-built-in-code-from-published-dimensions-2026-10-29) |
+<!-- 0079 c2: end -->
 
 <!-- 0078 r14-m4: begin -->
 | The shapes of Meteosat Second Generation, Meteosat Third Generation (imager and sounder), Fengyun-2, INSAT-3D, GEO-KOMPSAT-2A and 2B, Meteor-M No.2, Midori II and Resurs-DK 1 | built by us in code from published dimensions | CC0, public domain, CC BY-SA 2.0 de to 4.0 incl. 3.0 IGO and KOGL Type 1 where a picture was compared; ours | [3b-r14-m4](#3b-r14-m4-ten-weather-and-earth-observation-craft-built-from-dimensions-2026-10-27) |
@@ -84,11 +88,15 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
 | Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
+<!-- 0079 a3: begin -->
+| Every moon, the moons of asteroids and far worlds, dwarf-planet candidates | NASA/JPL Solar System Dynamics, Horizons and Small-Body Database; the papers named on each card, read through Wikipedia | JPL: no licence text, NASA content generally not copyrighted in the United States; Wikipedia CC BY-SA 4.0; Johnston's Archive NOT used | [3o](#3o-every-moon--nasajpl-solar-system-dynamics-horizons-and-the-small-body-database-release-150) |
+<!-- 0079 a3: end -->
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
 | Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
+| Meteor showers, every observatory, launch sites, landing and impact sites | IAU Meteor Data Center; Wikidata; Minor Planet Center; NASA NSSDCA; Wikipedia | cite the MDC; CC0; MPC; public domain; CC BY-SA 4.0 | [4.24](#424-release-150-the-small-complete-lists-0079-a6-internal-1064-and-the-packed-exoplanets-0079-a13-internal-1073) | <!-- 0079 a6 -->
 | Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
 | Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
 | Fires, volcanoes and icebergs | NASA EONET | NASA service; its disclaimer | [4.20](#420-nasa-eonet--fires-volcanoes-and-icebergs-2026-10-07) |
@@ -653,7 +661,7 @@ than counted by hand.
 | `dawn.glb` | Dawn | Horizons -203 (Dawn, 2007 to 2018) | 116 KB |
 | `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | Horizons -202 (MAVEN, on its last tracked orbit of Mars; no contact since 6 December 2025) | 179 KB |
 | `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
-| `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) | 96 KB |
+| `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal), cut into its eleven separable parts, with the J-2 engines and the launch escape tower added by Space Radar (public domain: "These assets are free and without copyright", NASA 3D Resources README, read 2026-10-28) | the Saturn V on Launch Complex 39A (`saturn-v-lc-39a`) and the stack of the Apollo 11 Moment | 182 KB | <!-- 0079 c3 -->
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | the Space Shuttle on Launch Complex 39B (`shuttle-lc-39b`) | 130 KB |
 | `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
 | `new-horizons.glb` | New Horizons: NASA's printable body and RTG parts (science.nasa.gov/3d-resources/new-horizons, read 2026-10-20; the page names no author), assembled by us; the dish, its tripod and feed rebuilt from NASA's own 1/12 drawings on the same page (readme.pdf), colours ours from NASA's photographs ([3b-15](#3b-15-release-130-crewed-craft-and-nasa-flagships--tiangong-shenzhou-orbital-module-themis-new-horizons-2026-10-20)) | Horizons -98 (New Horizons) | 151 KB |  <!-- 0077 W1-a -->
@@ -683,6 +691,19 @@ than counted by hand.
 | `asteroid-itokawa.glb` | Gaskell Itokawa Shape Model V1.1 (NASA PDS Small Bodies Node): Gaskell, R. et al. (2021), doi:10.26033/3b2j-yy57, from Hayabusa's AMICA images. ISAS Data Policy (as for Ryugu), credit "ISAS/JAXA" | 25143 Itokawa | 58 KB |
 | `asteroid-didymos.glb` | The DART team's shape models of Didymos (v003) and Dimorphos (v004): Daly, R.T. et al. (2023), DART Shapemodel Archive Bundle, NASA PDS Small Bodies Node, doi:10.26007/96fn-p578. CC0 under NASA's science data policy | 65803 Didymos and its moon Dimorphos | 61 KB |
 <!-- 0077 W3-d: end -->
+<!-- 0079 B1: begin -->
+| `comet-67p.glb` | Shape model: Gaskell, R., Jorda, L., Capanna, C., Hviid, S. and Gutierrez, P., SPC SHAP5 cartesian plate model for comet 67P/C-G, RO-C-MULTI-5-67P-SHAPE-V2.0, NASA Planetary Data System and ESA Planetary Science Archive, 2017 (from Rosetta OSIRIS images). Source: https://pds-smallbodies.astro.umd.edu/holdings/ro-c-multi-5-67p-shape-v2.0/data/triplate/spc_lam_psi/shap5/cg_spc_shap5_199k_cart.wrl. Licence: No licence is stated. The dataset's AAREADME and catalog name none, and ESA's Planetary Science Archive (https://www.cosmos.esa.int/web/psa/psa-acknowledgement, read 2026-10-29) states acknowledgement terms only: "Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", and for the shape models it points to the product label's CITATION_DESC. NASA's science data licence (https://science.data.nasa.gov/about/license) puts CC0 on data from NASA-led missions and says of all other data that it is "provided as is"; Rosetta was ESA's. Used here with the label's own credit, as the data are published openly by NASA's PDS | 67P/Churyumov-Gerasimenko | 727 KB |
+| `asteroid-lutetia.glb` | Shape model: Jorda, L., Gaskell, R., Kaasalainen, M. and Carry, B.; Farnham, T.L. (2013), Plate shape model of asteroid 21 Lutetia V1.0, RO-A-OSINAC/OSIWAC-5-LUTETIA-SHAPE-V1.0, NASA Planetary Data System; Sierks et al. (2011), Science 334, 487 (Rosetta OSIRIS images). Source: https://pds-smallbodies.astro.umd.edu/holdings/ro-a-osinac_osiwac-5-lutetia-shape-v1.0/data/lutetia_098k_cart.wrl. Licence: No licence is stated. The dataset's AAREADME and catalog name none, and ESA's Planetary Science Archive (https://www.cosmos.esa.int/web/psa/psa-acknowledgement, read 2026-10-29) states acknowledgement terms only: "Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", and for the shape models it points to the product label's CITATION_DESC. NASA's science data licence (https://science.data.nasa.gov/about/license) puts CC0 on data from NASA-led missions and says of all other data that it is "provided as is"; Rosetta was ESA's. Used here with the label's own credit, as the data are published openly by NASA's PDS | 21 Lutetia | 216 KB |
+| `asteroid-steins.glb` | Shape model: Farnham, T.L. and Jorda, L. (2013), Shape model of asteroid 2867 Steins, RO-A-OSINAC/OSIWAC-5-STEINS-SHAPE-V1.0, NASA Planetary Data System; Jorda et al. (2012), Icarus 221, 1089 (Rosetta OSIRIS images). Source: https://pds-smallbodies.astro.umd.edu/holdings/ro-a-osinac_osiwac-5-steins-shape-v1.0/data/steins_cart.wrl. Licence: No licence is stated. The dataset's AAREADME and catalog name none, and ESA's Planetary Science Archive (https://www.cosmos.esa.int/web/psa/psa-acknowledgement, read 2026-10-29) states acknowledgement terms only: "Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", and for the shape models it points to the product label's CITATION_DESC. NASA's science data licence (https://science.data.nasa.gov/about/license) puts CC0 on data from NASA-led missions and says of all other data that it is "provided as is"; Rosetta was ESA's. Used here with the label's own credit, as the data are published openly by NASA's PDS | 2867 Steins | 95 KB |
+| `asteroid-donaldjohanson.glb` | Shape model: Lucy mission, DLR team (Preusker, Mottola et al.), SPICE DSK lcy_donj_k548_iso20m_v10 (stereophotogrammetry and contour fitting), NASA NAIF; Marchi et al. (2025), Science, in the kernel's own reference. Source: https://naif.jpl.nasa.gov/pub/naif/pds/pds4/lucy/lucy_spice/spice_kernels/dsk/lcy_donj_k548_iso20m_v10.bds. Licence: CC0 by NASA policy (https://science.data.nasa.gov/about/license, read 2026-10-29): data from a NASA-led mission "are licensed as Creative Commons Zero" unless marked otherwise, and Lucy was NASA's and the product states no restriction | 52246 Donaldjohanson | 160 KB |
+| `asteroid-arrokoth.glb` | Shape model and albedo map: Porter, S. (2024), Arrokoth shape model (v1.0) with Gobat, C., Enke, B., Crombie, M.K., Keeney, B. and Parker, J.Wm., New Horizons LORRI data, NASA Planetary Data System. Source: https://pds-smallbodies.astro.umd.edu/holdings/pds4-nh_derived:arrokoth_shapemodel_porter2024-v1.0/arrokoth_porter_2024_v01.obj and albedo_arrokoth4_fp36h2_masked1.png. Licence: CC0 by NASA policy (https://science.data.nasa.gov/about/license, read 2026-10-29): data from a NASA-led mission "are licensed as Creative Commons Zero" unless marked otherwise, and New Horizons was NASA's and the product states no restriction | 486958 Arrokoth | 248 KB |
+| `asteroid-toutatis.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the Goldstone radar shape model (Hudson and Ostro). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 4179 Toutatis | 64 KB |
+| `asteroid-geographos.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Hudson and Ostro). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 1620 Geographos | 51 KB |
+| `asteroid-kleopatra.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Ostro et al. 2000). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 216 Kleopatra | 23 KB |
+| `asteroid-mithra.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model. Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 4486 Mithra | 33 KB |
+| `asteroid-golevka.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Hudson et al. 2000). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 6489 Golevka | 24 KB |
+| `asteroid-1996hw1.glb` | 3D model: NASA (NASA 3D Resources, 3D Printing collection), made from the radar shape model (Magri et al. 2011). Source: https://github.com/nasa/NASA-3D-Resources. Licence: Public domain (NASA media usage guidelines) | 8567 1996 HW1 | 16 KB |
+<!-- 0079 B1: end -->
 
 **The shapes of Phobos and Deimos** are not `.glb` files: `site/js/data/moonshapes.js` holds a radius
 every 5 degrees for each, which `site/js/scene/moonshape.js` bends the moon's sphere to
@@ -701,7 +722,8 @@ NASA's science data policy, as for Eros.
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
 | `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
 | `ingenuity.glb` | Ingenuity Mars Helicopter | the Ingenuity site at Valinor Hills | 86 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 203 KB |
+| `lunar-module.glb` | Apollo Lunar Module (NASA), cut into its descent and ascent stages (public domain: "These assets are free and without copyright", NASA 3D Resources README, read 2026-10-28) | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages -- and the Apollo 11 Moment | 240 KB | <!-- 0079 c3 -->
+| `apollo-csm.glb` | Apollo Soyuz (NASA 3D Resources, `3D Models/Apollo Soyuz`; NASA has no other Apollo command and service module): its CSM cut out and rescaled, then the high-gain antenna, the windows, the docking ring and probe, the SM's beams, radiators and fairing drawn by Space Radar from NASA's Apollo 9 and Apollo 17 photographs (public domain). The terms: "All of these assets are free to download and use" (science.nasa.gov/3d-resources, read 2026-10-28) | the Command and Service Module of the Apollo Moments (no object on the map wears it yet) | 98 KB | <!-- 0079 c3 -->
 | `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
 | `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars (until 2026-10-15 also Gale crater, as the kind of thing; Gale now wears NASA's own Curiosity, [3b-13](#3b-13-five-agencies-own-models--europa-clipper-smap-jason-3-curiosity-sorce-2026-10-15)) | 256 KB |
@@ -1596,6 +1618,28 @@ number and says what is ours. Pictures whose licence is CC BY-SA were looked at 
 **Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
 <!-- 0078 r14-m1: end -->
 
+<!-- 0079 c2: begin -->
+## 3b-vostok. The Vostok models of the Moments, built in code from published dimensions (2026-10-29)
+
+Release 1.5.0, stage r15-c2 (internal spec 0079, internal #1051). **No free agency, operator or museum 3D model of the R-7 8K72K, the Vostok 3KA, its
+seat or its parachutes was found**: NASA 3D Resources' file listing (1 583 paths, the GitHub tree of `nasa/NASA-3D-Resources`, read 2026-10-29) has nothing of
+Vostok or the R-7 (its one Soyuz is the Apollo-Soyuz one); the Smithsonian National Air and Space Museum's records show physical models only (its 3D site was
+down on 2026-10-29); Wikimedia Commons has no 3D file of any of them; the downloadable meshes a web search found (CGTrader, MyMiniFactory, RenderHub,
+Unity's store) are sold or for personal use only. Each model was built in code by the parts-aware builder `tools/vostok-builder/` (on the stage builder of
+1.4.0), from cited metres, and compared at close-up, side by side with the photographs below, from four angles. No image-to-3D model was used; no picture is
+in any file; no logo and no lettering is on any mesh. Their parts are named nodes, for the Moments player (moments-contract.md). Each row of
+`registry/models.yaml` cites every number and says what is ours. Pictures whose licence is CC BY-SA were looked at only: nothing of them is in a file.
+
+| File | What | What it was compared with | Terms |
+|---|---|---|---|
+| `r7-8k72k.glb` (292 KB) | The Vostok-K launcher in four parts: strap-ons (B, V, G, D), core with its truss, block E, shroud; every strap-on a long cone with its RD-107 and air rudder | the cutaway drawing of the Vostok launcher with its metres (Commons, public domain); a NASA line drawing of the Vostok rocket; the museum copy at VDNKh (Alan Wilson, CC BY-SA 2.0; Dmitry Ivanov, CC BY-SA 4.0; Gennady Grachev, CC BY 2.0) and at Kaluga (Andrey Baburov, CC BY-SA 3.0; Tatyanakorneeva, CC BY-SA 4.0); Vostok-2M at RKK Energia (Dmitry Ivanov, CC BY-SA 4.0) | ours, from facts; pictures only looked at |
+| `vostok-3ka.glb` (261 KB) | The Vostok 3KA: the 2.3 m sphere with its coat, opening, hatch, Vzor window and straps; the instrument module with its twelve nitrogen spheres, louvred cone and retro engine; the antennas | RKK Energia's full-size copy at Speyer (Stolbovsky, CC BY 4.0), the copies at Le Bourget (Pline, CC BY-SA 3.0; Alan Wilson, CC BY-SA 2.0) and the Memorial Museum of Cosmonautics (Armael, CC0), replicas (CC0), Gagarin's capsule (SiefkinDR, CC BY-SA 3.0; Errabee, CC BY-SA 2.5), the Vostok 5 and 6 capsules (Stolbovsky, CC BY 4.0; Ardfern, CC BY 4.0), a Korabl-Sputnik hatch (CC BY-SA 4.0) | ours, from facts; pictures only looked at |
+| `vostok-seat.glb` (78 KB) | The ejection seat in its silver trough with its two rocket housings, and the cosmonaut in the orange SK-1 suit | the Vostok ejection seat (Stolbovsky, CC BY 4.0), the Vostok 5 capsule exhibit (Stolbovsky, CC BY 4.0), NASA's cutaway of the seating (public domain) | ours; sizes illustrative (no published seat dimension) |
+| `vostok-chutes.glb` (121 KB) | Six inflated canopies: the capsule's pullout, braking and main, the cosmonaut's drogue, main and reserve | areas from RussianSpaceWeb and Rambler (facts); the suit's orange from the seat photograph above | ours; shapes illustrative |
+
+**Credit lines:** `3D model: built by Space Radar from published dimensions; compared with ...` (each row's `credit:`).
+<!-- 0079 c2: end -->
+
 <!-- 0078 r14-m2: begin -->
 ## 3b-17. Six communications craft built from dimensions — Thuraya-2 and -3, Inmarsat-4, ViaSat-3, O3b, Globalstar second generation, O3b mPOWER (2026-10-27)
 
@@ -1724,6 +1768,34 @@ Release 1.4.0, stage m6 (public #1137 to #1146). **No agency publishes a 3D mode
 
 No logo, lettering, flag or insignia is on any of the ten. INPE, CRESDA, KARI, ISRO, VNIIEM, TsSKB Progress and Roscosmos are named as sources of numbers and pictures; none of them endorses this work.
 <!-- 0078 r14-m6: end -->
+
+<!-- 0079 c4: begin -->
+## 3b-r15-c4. Release 1.5.0, stage C4: SLS Block 1 and Orion with its service module, from NASA's own files (2026-10-29)
+
+Internal spec 0079 (Moments), issue Sara-Managed-Projects/space-radar-internal#1053. Two files, each split into named parts for the Moments player.
+
+| File | Parts | From | Size |
+|---|---|---|---|
+| `sls-block1.glb` | the two five-segment boosters, the core stage with its four RS-25s, the launch vehicle stage adapter, the ICPS with its Orion stage adapter | NASA 3D Resources, `3D Models/Space Launch System Block 1` (`Block 1 (GNC markings).7z`, a Blender file), <https://github.com/nasa/NASA-3D-Resources> | 543 KB |
+| `orion-esm.glb` | the launch abort system, three fairing panels, four solar arrays, the European Service Module, the crew module | NASA/JPL Eyes on the Solar System, <https://eyes.nasa.gov/assets/static/models/sc_artemis/artemis_ii.gltf> (crew module, service module, arrays); and the same NASA 3D Resources Blender file (abort system, ogive, fairing panels) | 489 KB |
+
+**Terms, read 2026-10-29.** NASA 3D Resources: "These assets are free and without copyright." NASA Images and Media Usage Guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>): "NASA content - images, audio, video, and media files used in the rendition of
+3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States." NASA is
+acknowledged as the source. The Eyes file is on eyes.nasa.gov and not in the 3D Resources repository, so the guidelines, not the README, are what cover it.
+The NASA insignia and logotype are not in the public domain: none is on either mesh, and neither is the ESA logo or any flag or lettering.
+The service module is ESA's design, built by Airbus; the model is NASA/JPL's.
+
+**What is NASA's and what is ours.** NASA's Blender file holds the hardware but not the large outer skins; the skins are in a 3ds Max file and a DWF that this
+project cannot open. So the core stage's barrel (8.4 m, NASA's figure and the radius of NASA's printable model), each booster's case, aft skirt and nose, and the
+ICPS's barrel are lathe pieces built here (`scripts/artemis-models/lathe/`), and so are two small pieces closing gaps in the abort system. Their joint
+spacing and the skirts' shape are ours. Colours that are ours are listed row by row in `registry/models.yaml`, with the NASA photograph each was read off
+(images.nasa.gov: KSC-01172026-Artemis II_Rollout-3, -8, -10, -11, -16, -19, -21, -23; KSC-20220120-PH-FMX01_0063; KSC-20200318-PH_KLS01_0071;
+KSC-20250303-PH-KLS01_0028; art002e012583; MAF_20230915_CS2_Eng2047Install1).
+
+**Credit lines:** `3D model: NASA (3D Resources), with the skins built by Space Radar` (`sls-block1.glb`);
+`3D model: NASA/JPL-Caltech (Eyes on the Solar System) and NASA (3D Resources)` (`orion-esm.glb`).
+<!-- 0079 c4: end -->
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
@@ -2231,6 +2303,32 @@ Creative Commons BY 4.0". NASA's science data licence (https://science.data.nasa
 a NASA-led mission ... are licensed as Creative Commons Zero" (DART).
 <!-- 0077 W3-d: end -->
 
+<!-- 0079 B1: begin -->
+### Small-body shapes (0079 B1, internal #1065)
+
+**Lutetia, Steins, 67P, Donaldjohanson, Arrokoth and six radar shapes** (the small-bodies table above), each from the shape model its
+mission or radar team published, in the body's own axes, by `scripts/gen_smallbody_shapes.py` (sources and URLs in
+`scripts/fetch-small-body-sources.sh`; the elements of each orbit from the JPL Small-Body Database and JPL Horizons, `scripts/fetch-sbdb-rows.mjs`).
+
+- **Rosetta's three** (67P from the SHAP5 SPC model of Gaskell and Jorda; Lutetia and Steins from the OSIRIS teams' plate models) come from NASA's
+  Planetary Data System Small Bodies Node. None of the three datasets states a licence, and ESA's Planetary Science Archive states acknowledgement
+  terms only ("Please acknowledge the Principal Investigator(s) as well as the ESA Planetary Science Archive", read 2026-10-29); NASA's science data
+  licence covers NASA-led missions and says of the rest that it is "provided as is". They are credited with the datasets' own citations.
+- **Donaldjohanson** is DLR's shape from Lucy's pictures, in NASA NAIF's Lucy SPICE bundle (CC0 by NASA policy for a NASA-led mission:
+  https://science.data.nasa.gov/about/license, read 2026-10-29). **Arrokoth** is Porter's New Horizons shape and albedo map (PDS4, the same policy).
+- **The radar shapes** (Toutatis, Geographos, Kleopatra, Mithra, Golevka, 1996 HW1) are NASA 3D Resources' printing models, made from the radar teams'
+  shapes; public domain by NASA's media usage guidelines. Their files state no axes and an arbitrary scale, so they are not turned.
+- **What is baked.** Where a model is simplified (67P, Lutetia, Donaldjohanson, Geographos) the unsimplified model's normals are baked into an
+  object-space normal map inside the .glb: every normal is the source's; nothing is invented. Arrokoth keeps its published topology and its own
+  texture coordinates; its albedo map is read as relative brightness and carried to the published geometric albedo 0.21 in a red hue.
+- **The grey of each body** is its geometric albedo (the JPL Small-Body Database's, with its reference, in each model's registry row;
+  Arrokoth's 0.21, Hofgartner et al. 2021, and 67P's 0.065, Fornasier et al. 2015, each named in its row of `registry/models.yaml`) put through one rule for the lightness, 0.5 x (albedo / 0.21)^0.55, with a hue
+  of the same luminance for its spectral type: modelled, and said so on each card.
+- **What is not here and why.** Halley, Gaspra, Ida with Dactyl and Mathilde (Stooke's and Thomas's PDS shape models), Hudson's and Lawrence's radar shapes
+  and Apophis's are on `sbnarchive.psi.edu`, which answers every request from the build machine with a bot challenge (403, `cf-mitigated: challenge`),
+  and was not worked around. Dinkinesh and Selam have no published shape file (their NAIF constants are placeholders).
+<!-- 0079 B1: end -->
+
 ### Ring and spot data (0076 W2-b)
 
 No picture or file is added: these are numbers, each typed into the code with its source beside it.
@@ -2301,6 +2399,28 @@ linear fit (B−V = 0.82 (BP−RP)0 − 0.06), not a published relation. A faint
 its brightness), and the cluster's haze steps back only by the light its Gaia members carry. Both kinds are drawn to apparent magnitude 10 from
 the camera, as a camera's exposure shows a cluster (6.5 under the Eye exposure), deeper than the map's other stars.
 Not yet reviewed by an astronomer.
+
+<!-- 0079 a2: begin -->
+### Every known deep-sky object (0079 A2)
+
+Release 1.5.0 stage A2 (internal #1060; `scene/deep/catalogue.js`). `scripts/build_deep_catalogue.py` reads five open
+catalogues on 2026-10-28, pins each file by SHA-256 and bakes `site/data/deep/catalogue.{bin,json}` and
+`site/data/deep/catalogue-oc.{bin,json}`; the page fetches them the first time a rung of the ladder is entered, never at boot.
+Deep-sky catalogue: OpenNGC (Mattia Verga, CC BY-SA 4.0), Harris (1996, 2010 edition), Green (2024 October version), the Caldwell numbers from Wikipedia (CC BY-SA 4.0).
+Open clusters: Hunt & Reffert 2023 from Gaia DR3 (ESA/Gaia/DPAC, CC BY-NC 3.0 IGO), via VizieR, CDS.
+
+| what | from | licence, as read 2026-10-28 |
+|---|---|---|
+| 13 037 NGC and IC objects (of OpenNGC's 13 372; the other 335 the map already draws): position, type, size, position angle, magnitude, Hubble type, parallax, redshift, common names (`catalogue.bin`) | OpenNGC, `NGC.csv` and `addendum.csv`, Mattia Verga, <https://github.com/mattiaverga/OpenNGC> | CC BY-SA 4.0: "OpenNGC is released under CC-BY-SA-4.0 license" (README). The two catalogue files are derivatives and are offered under it |
+| The Caldwell 109: which object is Caldwell n | OpenNGC's Identifiers, checked and completed from Wikipedia's *Caldwell catalogue* list, <https://en.wikipedia.org/wiki/Caldwell_catalogue> | CC BY-SA 4.0: "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License"; a numbering is a fact |
+| The 157 globular clusters of the Milky Way: position and distance from the Sun (46 are rows of their own; the others are OpenNGC's with Harris's distance, or records the map has) | Harris W.E. 1996, AJ 112, 1487 (2010 edition), <https://physwww.mcmaster.ca/~harris/mwgc.dat> | "THE DATA IN THIS CATALOG ARE SUPPLIED FREE OF CHARGE TO ALL USERS. ANY THIRD PARTY WHO SUPPLIES THIS CATALOG IN TURN TO OTHER USERS MUST REFER TO THE ORIGINAL SOURCE, WHICH IS THIS WEBSITE, AND MUST DO SO WITHOUT CHARGE OF ANY FEE." Cited as "Harris 1996 (2010 edition)" |
+| 310 supernova remnants: position, size, type, 1 GHz flux and spectral index (299 are rows of their own; 11 are OpenNGC's or the map's) | Green D.A. 2025, J. Astrophys. Astron. 46, 14 (arXiv:2411.03367); the 2024 October version, <https://www.mrao.cam.ac.uk/surveys/snrs/> | Published openly: "Please cite the following paper for the summary data from this catalogue". "Copyright D. A. Green 2024/2025", no licence text; also VizieR VII/297. Facts only, cited on every card |
+| 6 157 open clusters Gaia DR3 found that nothing else lists, and the Gaia distance of 389 that OpenNGC lists (`catalogue-oc.bin`) | Hunt E.L. & Reffert S. 2023, A&A 673, A114, *Improving the open cluster census. II.*, VizieR J/A+A/673/A114, from Gaia DR3 (ESA/Gaia/DPAC) | ESA: "Gaia data are distributed under the CC BY-NC 3.0 IGO license." (<https://www.cosmos.esa.int/web/gaia-users/license>, read 2026-10-16). VizieR: free of usage in a scientific context, authors cited. This file is a non-commercial derivative; Space Radar is free and non-commercial. The release brief named "CC BY-SA 3.0 IGO"; ESA's page says BY-NC, and the repository follows the page |
+
+**What is not here.** HASH (the Hong Kong / AAO / Strasbourg planetary-nebula database, <https://hashpn.space/>) is not used: its front page says "The access to the database is password protected - please register first" and gives no licence for reuse, so nobody made an account for this build. The planetary nebulae are OpenNGC's 130 (115 rows of the file; the rest are the map's own). A list of about 3 900 would need a catalogue with an open licence (the Strasbourg-ESO and Frew et al. tables on VizieR are the candidates; CDS was not reachable on the build day).
+
+**What is measured, modelled and illustrative.** The position, type, size and magnitude of an object are its catalogue's (measured). An object that lies inside the outline of a galaxy or a nebula the map already draws (389 of them: the Magellanic Clouds' clusters and nebulae, M33's, the Rosette's) and has no distance of its own takes its parent's, with the parent's range: its membership is assumed from the position and its card says so. A galaxy's distance is its redshift (OpenNGC, from NED) turned into a comoving distance by the map's one cosmology (`data/cosmology.js`, Planck 2018): modelled, with a range for a peculiar velocity of 300 km/s; under 3 000 km/s the velocity says little about the distance and the object is drawn as inferred. A star's, cluster's or nebula's parallax is OpenNGC's, with an assumed range; Harris's and Hunt & Reffert's distances are theirs. An object that no catalogue gave a distance is drawn at a point in the range where the measured distances of its kind in these files lie (their middle 68 %, which is its range), the point fixed by its name so they do not stack on one sphere round the Sun, fainter and larger and grey-blue, and its card says "not measured" and gives the range. The symbol for each class and its colour are illustrative: a mark of the kind, not a picture of the object.
+<!-- 0079 a2: end -->
 
 ### The Ring (0076 W3-b)
 
@@ -2522,6 +2642,69 @@ HDE 226868's mass, radius and temperature (Ramachandran et al. 2025, via Wikiped
 masses are `registry/exotics.yaml`'s. Where a profile's angle is not measured (Sagittarius A*'s axis on the sky, most of
 the stellar holes), it is chosen and `blackhole.js` says so.
 <!-- 0078 r14-mw-bh: end -->
+
+<!-- 0079 a3: begin -->
+## 3o. Every moon — NASA/JPL Solar System Dynamics, Horizons and the Small-Body Database (release 1.5.0)
+
+`site/data/moons.json` and `site/data/companions.json`, written by `scripts/gen_moons.py` (it downloads to `~/.cache/spaceradar-src/a3/`;
+the raw pages are not committed). Loaded after the first visit, never at boot (`site/js/data/moons.js`). Credit lines kept word for word:
+"Moons: NASA/JPL Solar System Dynamics and Horizons"; "Moons of asteroids and far worlds: NASA/JPL Small-Body Database and the papers named on each card".
+
+| What | Read from | Terms, and how far they were checked | Read |
+|---|---|---|---|
+| the names, JPL ids, mean semi-major axis and eccentricity, and the sidereal period of 460 moons (461 rows; Puck has two ephemerides) | JPL SSD, Planetary Satellite Mean Elements, <https://ssd.jpl.nasa.gov/sats/elem/>: "Mean elements, in this context, are simply the elements of a precessing ellipse which has been fit in a least squares sense to the numerically integrated orbit", and "not intended for ephemeris computation" | the page states no licence; NASA/JPL work, and NASA content "generally are not subject to copyright in the United States" (<https://www.nasa.gov/nasa-brand-center/images-and-media/>, read 2026-10-09, §4.20). JPL's own copyright page (`jpl.nasa.gov/copyrights`) answered 403 to our reader on 2026-10-28 and has NOT been read. | 2026-10-28 |
+| the year and discoverer of each moon, the designations | JPL SSD, Planetary Satellite Discovery Circumstances, <https://ssd.jpl.nasa.gov/sats/discovery.html> | as above | 2026-10-28 |
+| the mean radius of 58 moons | JPL SSD, Planetary Satellite Physical Parameters, <https://ssd.jpl.nasa.gov/sats/phys_par/> | as above | 2026-10-28 |
+| each moon's osculating orbit on 1 January 2026, and the check of the model against JPL on 28 October 2026 and 28 October 2027 for 84 moons (`tests/fixtures/moons_horizons.json`) | JPL Horizons API (`EPHEM_TYPE=ELEMENTS` and `VECTORS`, centre the planet, ecliptic J2000, `500@599` and so on), <https://ssd.jpl.nasa.gov/api/horizons.api>, one request each | as above (§4.18 `horizons-deep-space`) | 2026-10-28 |
+| the 486 confirmed companions of 480 asteroids and far worlds (495 with the nine below): names, years, the discovery reference, a period where one is printed, the two complete orbits; the parents' orbits; the satellites' list | JPL Small-Body Database, `sbdb_query.api` (`sb-sat`) and `sbdb.api` (`sat=true`), <https://ssd-api.jpl.nasa.gov/doc/sbdb.html> | as above (§4.18 `jpl-sbdb-neo`) | 2026-10-28 |
+| the orbits (size, shape, lap) and sizes of the nine moons JPL's tables do not hold (Dysnomia, Hiʻiaka, Namaka, Vanth, Weywot, Xiangliu, MK 2, Actaea, Ilmarë), and the sizes of Salacia, Varda, Ixion, 2002 XV93 and 2017 OF201 | the infobox of each Wikipedia article (CC BY-SA 4.0), which cites the paper each card names: Holler et al. 2021; Brown and Butler 2023; Ragozzine and Brown 2009; Proudfoot et al. 2024, 2025, 2026; Fernandez-Valenzuela et al. 2025; Muller et al. 2019; Grundy et al. 2019; Sickafoose et al. 2019; Collyer et al. 2025, 2026; Kiss et al. 2019, 2025; Parker et al. 2016; Bamberger et al. 2025; Kilic et al. 2026; Arimatsu et al. 2026; Cheng et al. 2025 | facts, cited per row; Wikipedia's text is CC BY-SA 4.0 and none of it is reproduced, only the numbers | 2026-10-28 |
+
+**Not used: Johnston's Archive** (<https://www.johnstonsarchive.net/astro/asteroidmoons.html>, last updated 24 October 2026: 654 asteroids and TNOs with
+companions, 677 companions). Its page carries "© 2001-2025, 2026 by Wm. Robert Johnston", and its FAQ (<https://www.johnstonsarchive.net/faqusage.html>, read
+2026-10-28) says: "Material copyrighted by me may be used only with permission from me, with the following exception: for not-for-profit, educational
+use, permission is granted to use print copies of individual documents provided that the document in question is used complete and unedited". A
+web app's data file is neither. The counts are quoted as a total to compare with (the JPL list holds 486 confirmed companions of 480 bodies), and nothing is
+copied; the rest waits for his permission, which is the project owner's to ask for.
+
+What is measured, modelled, illustrative: the planets' moons' orbits are JPL's, osculating on 1 January 2026, carried along by JPL's mean period (modelled).
+For the 392 whose lap is 100 days or more the place is `inferred`: 74 of them were held to Horizons on 28 October 2026 and 28 October 2027 and none was more
+than 28 degrees out. The other 47 (fast regular moons, Pasiphae, Daphnis, S/2025 U 1) are `illustrative` in their place: up to 151 degrees out in the
+checks, or not checkable. The 21 moons already on the map are untouched. Companions JPL holds no orbit for are drawn at their parent's place (inferred); the
+two with a complete orbit are placed by it; the nine moons of dwarf planets have a measured size, shape and lap, and a tilt and place that are not known to us
+(illustrative). No moon has a shape drawn: they are points, and the card says so.
+<!-- 0079 a3: end -->
+<!-- 0079 r15-a45: begin -->
+## 3n. Stars and beyond the Milky Way: the compact catalogues of release 1.5.0 (stages A4 and A5)
+
+`site/data/a45/` is written by `scripts/gen_a45_data.py` from the sources below, all downloaded
+2026-10-28 into a cache and never committed. Each file is fetched by `site/js/data/a45.js` the first
+time a visitor needs it and never at boot. Hand-checked rows are in `scripts/data/a45-hand.yaml`, each with the page
+it was read from. No image, figure or text of any paper or page is shipped: the numbers are facts, cited, and the one-line
+descriptions are ours. **Gaia's catalogues are not used here**; the Gaia parallaxes of four white dwarfs and the astrometry of
+Gaia BH2 are numbers printed on the pages cited below.
+
+| Item | File | From | Licence or terms | What was kept |
+|---|---|---|---|---|
+| The IAU's star names | `iau-names.json` | IAU Working Group on Star Names, the IAU-CSN file (<https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt>, 454 names, last updated 2022) and Wikipedia's mirror of the list (<https://en.wikipedia.org/wiki/List_of_proper_names_of_stars>, 633 approved names in its table, October 2026) | The file says: "All IAU-produced products (Images, Videos, Texts) are released under Creative Commons Attribution (i.e. free to use in all perpetuity, world-wide, as long as the source is mentioned)." Wikipedia text: CC BY-SA 4.0 (only the names and designations are used) | each name, its designation, the day it was approved where the file gives one, and the star it was matched to (565 of HYG's placed stars, 6 of its unplaced ones, 40 exoplanet hosts; 22 names are of nebulae, pulsars and stars HYG does not have) |
+| The stars with no distance | `unplaced.bin`, `unplaced.names.json` | HYG Stellar Database v4.4, David Nash (<https://codeberg.org/astronexus/hyg>) | CC BY-SA 4.0, as §3c: these files are derivative works and are offered under CC BY-SA 4.0 | direction (24-bit steps), magnitude, B-V and HYG's id of the 10 224 rows with no parallax; names of the 63 that have one |
+| Pulsars | `pulsars.json` | ATNF Pulsar Catalogue v2.9.0 (Manchester, Hobbs, Teoh and Hobbs 2005, AJ 129, 1993; <https://www.atnf.csiro.au/research/pulsar/psrcat/>), `psrcat.db` | its download page: "we would appreciate acknowledgement by reference to the publication 'The ATNF Pulsar Catalogue', R. N. Manchester ..." | name, position, period, the best distance (parallax where its error is under 20 per cent, else the association's, else the dispersion measure's from the YMW16 model), a few flags |
+| Magnetars | `extremes.json` | McGill Online Magnetar Catalog (Olausen and Kaspi 2014, ApJS 212, 6; <https://www.physics.mcgill.ca/~pulsar/magnetar/main.html>) | its page: "You are free to use the information in this catalog in publications, however, we ask that you please cite the published paper (Olausen & Kaspi, 2014)" | period, magnetic field, distance, position |
+| Black-hole transients | `extremes.json` | BlackCAT (Corral-Santana et al. 2016, A&A 587, A61, arXiv:1510.08869), the paper's tables 2 and 5 | open-access paper; facts, cited | position, distance with its error, the dynamical mass where the paper has one |
+| Gaia BH2, four white dwarfs, 24 brown dwarfs, three galaxies, two clusters | `extremes.json`, `beyond.json` | pages and papers named per row in `scripts/data/a45-hand.yaml` (Wikipedia, RECONS through Wikipedia's nearest-stars table; Naidu et al. 2025; Carniani et al. 2024 and 2025; Oesch et al. 2016; Bunker et al. 2023; Maiolino et al. 2024; Menanteau et al. 2012; McDonald et al. 2012) | facts, cited per row; Wikipedia text CC BY-SA 4.0 (not copied) | positions, distances or parallaxes, redshifts |
+| The rest of the Local Group | `beyond.json` | The Local Volume Database, A. Pace 2024 (<https://github.com/apace7/local_volume_database>), tables `dwarf_mw`, `dwarf_m31`, `dwarf_local_field` | CC0 1.0 Universal | position, distance with error, apparent magnitude, host, for the 85 galaxies the map did not have |
+| Galaxy clusters | `beyond.json` | MCXC meta-catalogue of X-ray clusters (Piffaretti et al. 2011, A&A 534, A109) through HEASARC (<https://heasarc.gsfc.nasa.gov/W3Browse/all/mcxc.html>) | public archive; the paper cited | position, redshift, M500 and R500 of 33 named clusters |
+| Quasars | `quasars.json` | Million Quasars Catalog v8 (Flesch 2023, OJAp 6, 49; <https://quasars.org/milliquas.htm>) through HEASARC | its HEASARC page: "If you use this catalog in published research, the author requests that you please cite it." | name, position, redshift, magnitude of the brightest 1 000 type-Q objects and the nine with z > 7 |
+
+Credit lines, as the layers carry them (`registry/visual-classes.yaml`): McGill Online Magnetar Catalog (Olausen and Kaspi 2014);
+BlackCAT (Corral-Santana et al. 2016) · ATNF Pulsar Catalogue v2.9.0 (Manchester, Hobbs, Teoh and Hobbs 2005) · The Local Volume
+Database, A. Pace 2024 (CC0); MCXC (Piffaretti et al. 2011) · Million Quasars Catalog v8 (Flesch 2023).
+
+**What is not drawn from a measurement.** A pulsar whose distance comes from its dispersion measure has a
+*modelled* distance and its card says so. A quasar's, cluster's or far galaxy's distance is how far it is *now* in the
+Planck 2018 cosmology (`site/js/data/cosmology.js`), from the redshift, never a light-travel time read as a distance.
+A star with no parallax is drawn as a direction only, on a world's sky sphere, and nowhere on the ladder.
+**Left out on purpose:** WD J1011+2845 (it arrives through `registry/exotics.yaml`).
+<!-- 0079 r15-a45: end -->
 
 ## 4. Runtime data sources
 
@@ -3204,6 +3387,37 @@ every record of the map to a line of this file (`docs/COVERAGE.md` lists them by
 - Rockets: the heights, widths and shapes in `registry/rockets.yaml` come from the user's guides, agency pages and Wikipedia articles each row's `source:` names; which rocket is launching when is Launch Library 2's (§4.2).
 - Oddities: each row of `registry/oddities.yaml` cites where it was read: JPL Horizons, LROC and NASA, The Planetary Society, Space.com, collectSPACE, Space Center Houston, Andy Saunders's 2021 work from the Apollo 14 film and Astronomical Returns, each as its row says, with how sure its place is.
 
+<!-- 0079 a6: begin -->
+### 4.24 Release 1.5.0: the small complete lists (0079 a6, internal #1064) and the packed exoplanets (0079 a13, internal #1073)
+
+`scripts/gen_small_lists.py` downloads each source to `~/.cache/spaceradar-src/small-lists/` and writes
+`site/data/lists/*.json`; nothing is hot-linked, and the pages are read only by that script.
+
+- **Meteor showers** (`showers.json`): the IAU Meteor Data Center's file of established meteor showers,
+  `streamestablisheddata2026.txt` ("Last update: Oct 23, 2026"), <http://www.ta3.sk/IAUC22DB/MDC2022/>:
+  172 showers from 776 solutions, one row each, the median of a shower's solutions. The MDC states no licence
+  and asks to be cited as Jenniskens, Jopek, Janches, Hajdukova, Kokhirova and Rudawska (2020, *Planetary and
+  Space Science* 182, 104821) and Jopek and Kanuchova (2017, *Planetary and Space Science* 143, 3-6).
+- **Observatories** (`observatories.json`): Wikidata (CC0 1.0), every item that is an observatory or a kind of
+  one with coordinates on the Earth, read 2026-10-28 (3 526 items); joined by MPC code to the Minor Planet
+  Center's list of observatory codes, <https://www.minorplanetcenter.net/iau/lists/ObsCodes.html> (2 700 stations
+  with a place; the MPC publishes the list for use and asks for no more than a citation, see 4.5).
+- **Launch sites** (`launch-sites.json`): Wikidata (CC0 1.0), the items that are a spaceport or a launch site.
+- **Landing and impact sites** (`landing-sites.json`): the Moon from NASA NSSDCA's *Table of Anthropogenic Impacts
+  and Spacecraft on the Moon* (D. R. Williams, last updated 13 August 2025,
+  <https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html>; NASA, public domain). Venus, Mars and
+  the small bodies from `registry/landing-sites-1-5.yaml`: the coordinates Wikipedia's articles carry
+  (CC BY-SA 4.0; MediaWiki GeoData, read 2026-10-28), DART's from Daly et al. 2023 (*Nature* 616, 443, Table 1),
+  Tianwen-2 from Wikipedia and MMX from ESA's launch page (read 2026-10-29).
+- **3I/ATLAS and Kamoʻoalewa** (`site/js/data/sample.js`): JPL Small-Body Database orbits (solutions of 2026-10-21
+  and 2026-09-03), read 2026-10-29, and checked against JPL Horizons vectors (`tests/test_far_bodies.mjs`,
+  `tests/test_remaining_trips.mjs`); the lines on their cards from NASA Science and Wikipedia.
+- **Exoplanets** (`site/data/exoplanets.bin`, `scripts/exopack.py`): the same pscomppars table as 4.7, 6 451
+  confirmed planets on 2026-10-28 of which 6 423 have a sky position and a distance, packed to 259 kB (133 kB
+  gzipped) with the numbers rounded to what a card prints. The DOI and the citation of 4.7 stand.
+- **Credit lines of the four layers** (`registry/visual-classes.yaml`, word for word): "Observatories: Wikidata (CC0 1.0), joined by code to the Minor Planet Center's list of observatory codes"; "Launch sites: Wikidata (CC0 1.0)"; "Landing and impact sites: NASA NSSDCA (public domain) and Wikipedia coordinates (CC BY-SA 4.0)"; "Meteor showers: IAU Meteor Data Center (Jenniskens et al. 2020; Jopek and Kanuchova 2017)".
+<!-- 0079 a6: end -->
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are
@@ -3763,6 +3977,11 @@ https://creativecommons.org/licenses/by-sa/4.0/
 Modified: reduced to the 110 Messier objects; coordinates converted to degrees and to positions in
 light-years using distances from the sources each row names; fields reduced to those the card prints.
 ```
+<!-- 0079 a2: begin -->
+Also applies to `site/data/deep/catalogue.bin` and `catalogue.json` (release 1.5.0): the NGC and IC objects other than the
+Messier ones, with coordinates, sizes, magnitudes, parallaxes and redshifts quantised, and distances worked out from them
+(`scripts/build_deep_catalogue.py`); a derivative work offered under the same licence.
+<!-- 0079 a2: end -->
 
 ### Constellation figures by Johan Meuris — Free Art License 1.3
 

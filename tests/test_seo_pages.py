@@ -223,7 +223,7 @@ shutil.rmtree(other, ignore_errors=True)
 # --- the 40 systems -----------------------------------------------------------------------------------
 import seo_systems  # noqa: E402
 sysl = seo_systems.systems()
-ok(len(sysl) == 40 and sum(len(s["planets"]) for s in sysl) == 106, f"forty systems and 106 planets: 39 generated systems with 99, TRAPPIST-1 with 7 ({len(sysl)})")
+ok(len(sysl) == 43 and sum(len(s["planets"]) for s in sysl) == 110, f"43 systems and 110 planets: 42 generated systems with 103 (release 1.5.0 added 51 Eri, PDS 70 and AF Lep), TRAPPIST-1 with 7 ({len(sysl)})")
 bad = []
 for s in sysl:
     f = BUILT / "o" / f"{s['slug']}.html"

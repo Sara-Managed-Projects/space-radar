@@ -158,7 +158,7 @@ features:
   - id: layers
     name: What to show (the layers, colour by, sound, density)
     files: [site/js/ui/whattoshow.js]
-    surfaces: ["rail:show", "want:wantNebulae", "want:wantFigures", "want:wantPulsars", "want:wantWeather"]
+    surfaces: ["rail:show", "want:wantNebulae", "want:wantFigures", "want:wantPulsars", "want:wantWeather", "want:wantUnplaced", "want:wantCometField"] # 0079 r15-a45: the Stars layer's stars with no distance; 0079 a2: the Comets layer's tails
     step: layers
   - id: share
     name: Share (the link, the postcard, photo mode, the embed)
@@ -290,3 +290,10 @@ features:
     files: [site/js/ui/photopresets.js]
     not: "A row inside Share, one press before photo mode."
   # 0077 W3-e: end
+  # 0079 C1: begin
+  - id: moments
+    name: A Moment, a mission replayed in 3D on one clock
+    files: [site/js/moments/player.js]
+    surfaces: ["want:wantMoment"]
+    not: "Reached by a link only until stage C8 adds the Moments shelf and the Replay buttons; that stage decides the step."
+  # 0079 C1: end

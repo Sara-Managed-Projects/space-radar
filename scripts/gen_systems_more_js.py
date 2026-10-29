@@ -67,7 +67,7 @@ def render_index(doc: dict) -> list:
     return [("Which stars have a stage of their own, and which records are their planets.", "SYSTEM_INDEX", out)]
 
 
-PLANET_FIELDS = ("period_days", "a_au", "a_from", "a_table_au", "circumbinary", "radius_earths", "radius_from",
+PLANET_FIELDS = ("period_days", "period_from", "a_au", "a_from", "a_table_au", "circumbinary", "radius_earths", "radius_from",
                  "mass_earths", "mass_from", "eccentricity", "transit_mid_jd", "method", "year",
                  "insolation_earths", "equilibrium_k", "zone")
 

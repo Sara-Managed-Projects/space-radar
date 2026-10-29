@@ -65,7 +65,11 @@ layers:
   - id: exoplanets
     display: Planets around other stars
     group: beyond
-    moments: {wonder: off, now: off, next: off}
+    # 0079 a13: begin -- ON in the opening moment since release 1.5.0 (Ivan's decision 2). Still loaded after the
+    # first screen (main.js LATER_LAYERS) and still drawn only from the ladder's rungs, so the Earth a first
+    # visit shows is the same picture; the planets arrive as site/data/exoplanets.bin, 133 kB gzipped.
+    moments: {wonder: on, now: off, next: off}
+    # 0079 a13: end
     source: nasa-exoplanet-archive
     propagator: static
     frame: sun-inertial
@@ -130,6 +134,62 @@ layers:
     card: exotic
     select: {all: true}
     budget: {max_items: 200}
+
+  # 0079 r15-a45: begin
+  # Stage A4 (stars) and A5 (beyond the Milky Way) of release 1.5.0: compact catalogues under site/data/a45/, written by
+  # scripts/gen_a45_data.py (sources and licences in its head and in CREDITS.md section 3m), fetched by data/a45.js the first time a
+  # visitor needs them (the search box, a ladder stage, a link, or the box ticked) and never at boot. Rows have the shape of
+  # exotics.yaml's, so the exotics' card serves them. None says `load: on-demand` (that word is for a catalogue-sized layer, tests/test_layer_boot.mjs);
+  # main.js defers all four (MORE_CATALOGUES) and loads them together. The pulsars and the quasars are thousands of marks and start off, as the
+  # exoplanets do (public #271); the other two are a hundred or so and start on.
+  - id: extremes-more
+    display: Magnetars and dead stars
+    group: beyond
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 400}
+
+  - id: pulsars
+    display: Pulsars
+    group: beyond
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 6000}
+
+  - id: beyond-more
+    display: Local Group and clusters
+    group: beyond
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: dso, colour: dso}
+    card: dso
+    select: {all: true}
+    budget: {max_items: 400}
+
+  - id: quasars
+    display: Quasars
+    group: beyond
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 1200}
+  # 0079 r15-a45: end
 
   - id: stations
     display: Crewed stations
@@ -286,6 +346,44 @@ layers:
     card: asteroid
     select: {all: true}      # the curation IS the record list, as for the oddities
     budget: {max_items: 20}
+
+  # 0079 a3: begin
+  # Every moon the map had no record of (release 1.5.0, internal i#1061): 439 of Jupiter, Saturn, Uranus, Neptune and Pluto, each
+  # on its orbit for 2026-01-01 (JPL Horizons) carried along by JPL's mean period, with its card. `bundled`: site/data/moons.json,
+  # written by scripts/gen_moons.py from NASA/JPL Solar System Dynamics (public domain); data/moons.js builds the records when
+  # the layer loads, which is after the first visit (main.js LATER_LAYERS), never at boot. `kepler` in a frame per moon
+  # (`jupiter-inertial` and so on): propagate/kepler.js takes the element set's own mu in a frame that is neither the Sun's
+  # nor the Earth's. Off by default: a hundred and fifteen dots round Jupiter are a map of their own, and a search or a link
+  # to one switches the layer on. The 21 moons worlds.yaml already holds are not here.
+  - id: moons
+    display: Moons of the planets
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: moon, colour: world}
+    card: moon
+    select: {all: true}
+    budget: {max_items: 600}
+
+  # The companions JPL's Small-Body Database lists for asteroids and far worlds (486 confirmed), the nine moons of the dwarf planets
+  # that its tables do not hold (Dysnomia, Hiʻiaka, Namaka, Vanth, Weywot, Xiangliu, MK 2, Actaea, Ilmarë), and five large objects beyond
+  # Neptune that may be dwarf planets (Salacia, Varda, Ixion, 2002 XV93, 2017 OF201). `bundled`: site/data/companions.json,
+  # written by scripts/gen_moons.py. The records are `kepler` (drawn at the parent's place when JPL holds no orbit round it)
+  # or `companion` (propagate/companion.js: the parent's orbit plus the moon's own), so the layer says `per-record`.
+  - id: companions
+    display: Asteroid and TNO moons
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: moon, colour: world}
+    card: moon
+    select: {all: true}
+    budget: {max_items: 800}
+  # 0079 a3: end
 
   - id: comets
     display: Comets
@@ -477,3 +575,57 @@ layers:
     card: oddity
     select: {all: true}      # the curation IS the record list; a second filter would be theatre
     budget: {max_items: 60}
+
+  # 0079 a6: begin -- the small complete lists of release 1.5.0 (internal #1064). scripts/gen_small_lists.py writes
+  # site/data/lists/*.json; site/js/data/smalllists.js turns each into records. `bundled`: the data lives in this repository.
+  # The observatories (3 850 marks) are on demand: nothing is fetched until the box is ticked. The launch sites, the landing
+  # sites and the showers are small and are fetched after the first screen (main.js LATER_LAYERS), so search finds them at once.
+  - id: observatories
+    display: All observatories
+    group: earth
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: site
+    select: {all: true}
+    budget: {max_items: 6000}
+    load: on-demand
+
+  - id: launch-sites
+    display: All launch sites
+    group: earth
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: site
+    select: {all: true}
+    budget: {max_items: 300}
+
+  - id: landing-sites
+    display: Every landing and impact site
+    group: solar-system
+    moments: {wonder: off, now: off, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: site
+    select: {all: true}
+    budget: {max_items: 400}
+
+  - id: meteor-showers
+    display: Meteor showers
+    group: beyond
+    moments: {wonder: on, now: on, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: comet, colour: comet}
+    card: shower
+    select: {all: true}
+    budget: {max_items: 300}
+  # 0079 a6: end

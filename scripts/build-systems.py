@@ -248,9 +248,14 @@ def build() -> dict:
         planets = []
         for r, w in zip(host_rows, wide):
             per = num(r, "pl_orbper")
+            a_table = num(w, "pl_orbsmax")
+            per_from = None
+            if (per is None or per <= 0) and entry.get("year_from_kepler") and a_table and mass:
+                # 0079 a13: a directly imaged planet whose year nobody has measured (PDS 70 c) but whose distance the table gives: its year
+                # is Kepler's third law with the star's mass (the planet's own is under the table's precision of both), said so on the card
+                per, per_from = round(JULIAN_YEAR_DAYS * math.sqrt(a_table ** 3 / mass), 1), "kepler"
             if per is None or per <= 0:
                 continue  # no year: no orbit to draw, and the planet stays a mark at its star
-            a_table = num(w, "pl_orbsmax")
             circumbinary = (w.get("cb_flag") or "").strip() == "1"
             implied = a_table ** 3 / (per / JULIAN_YEAR_DAYS) ** 2 if a_table else None
             mismatch = (implied / mass - 1) if implied and mass else None
@@ -274,6 +279,8 @@ def build() -> dict:
                 "a_au": a,
                 "a_from": a_from,
             }
+            if per_from:
+                p["period_from"] = per_from  # 0079 a13
             if a_from == "kepler" and a_table:
                 p["a_table_au"] = a_table
                 p["a_table_mismatch_pct"] = round(mismatch * 100, 1)

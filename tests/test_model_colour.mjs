@@ -78,11 +78,28 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   };
   const wasted = [];
   let images = 0, files = 0;
+  // 0079 B1: begin -- an image the app DOES sample: a small body's baked relief (a normal texture whose material is marked
+  // `extras.objectSpace`, which scene/realmodels.js hands to the toon material) and, on a route that says `albedoMap`, its base colour map.
+  const { REAL_MODELS } = await import(join(ROOT, 'site/js/scene/realmodels.js'));
+  const albedoFiles = new Set(Object.values(REAL_MODELS.named).filter((r) => r.albedoMap).map((r) => r.file));
+  const sampled = (json, file) => {
+    const used = new Set();
+    const src = (ti) => { const t = (json.textures || [])[ti]; return t ? (t.source ?? (t.extensions && t.extensions.EXT_texture_webp && t.extensions.EXT_texture_webp.source)) : undefined; };
+    for (const m of json.materials || []) {
+      if (m.normalTexture && m.extras && m.extras.objectSpace === true) used.add(src(m.normalTexture.index));
+      const base = m.pbrMetallicRoughness && m.pbrMetallicRoughness.baseColorTexture;
+      if (base && albedoFiles.has(file)) used.add(src(base.index));
+    }
+    return used;
+  };
+  // 0079 B1: end
   for (const f of readdirSync(DIR).filter((n) => n.endsWith('.glb'))) {
     files++;
     const { json, bin } = parts(readFileSync(join(DIR, f)));
-    for (const im of json.images || []) {
+    const used = sampled(json, f); // 0079 B1
+    for (const [imIndex, im] of (json.images || []).entries()) { // 0079 B1: the index, for `used`
       images++;
+      if (used.has(imIndex)) continue; // 0079 B1
       const bv = json.bufferViews[im.bufferView];
       const bytes = bin.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength);
       const d = dims(Buffer.from(bytes));
@@ -94,7 +111,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   }
   assert.deepEqual(wasted, [], 'shipped models carry images the app downloads and discards:\n  ' + wasted.join('\n  ') +
     '\n  bake them with scripts/flatten-textures.mjs');
-  console.log(`  ${files} shipped models, ${images} images, every one a palette strip the app samples`);
+  console.log(`  ${files} shipped models, ${images} images, every one a palette strip, a baked relief or an albedo map the app samples`); // 0079 B1
 }
 
 // A MODEL REBUILT IN ITS OWN COLOURS REACHES THE 'own' ROUTE AND NEEDS NOTHING AT LOAD.
@@ -264,7 +281,14 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   for (const m of src.matchAll(/file: '([A-Za-z0-9_.-]+\.glb)'/g)) routed.add(m[1]);
   const shipped = readdirSync(join(ROOT, 'site/models')).filter((n) => n.endsWith('.glb'));
   const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
-  const UNROUTED_ON_PURPOSE = {}; // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
+  const UNROUTED_ON_PURPOSE = {
+    // 0079 c3: begin
+    'apollo-csm.glb': /NOTHING YET/, // a vehicle of the Moments, loaded by id by site/js/moments/: no object on the map is the CSM
+    // 0079 c3: end
+    // MAVEN was the one, until 2026-10-08: it has a record now (data/sample.js LOST_ORBITERS)
+    'sls-block1.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
+    'orion-esm.glb': /used_for: "NOTHING YET, waiting for the Artemis II Moments replay and its scene route\./,
+  };
   const unreachable = shipped.filter((f) => !routed.has(f) && !UNROUTED_ON_PURPOSE[f]);
   assert.deepEqual(unreachable, [], 'models that ship and that no record can be drawn with');
   for (const [f, why] of Object.entries(UNROUTED_ON_PURPOSE)) {
@@ -272,7 +296,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
     assert.ok(shipped.includes(f) && !routed.has(f) && why.test(row), `${f} is the stated exception: shipped, not routed, and its row says why`);
   }
   assert.deepEqual([...routed].filter((f) => !shipped.includes(f)), [], 'routes to a model file that does not ship');
-  console.log(`  ${shipped.length} model files: every one reachable by a record; no route to a missing file`);
+  console.log(`  ${shipped.length} model files: each reachable or explicitly waiting for its replay; no route to a missing file`);
 }
 
 console.log('model colour: ok');

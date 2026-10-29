@@ -48,7 +48,9 @@ export const HASH_KEY = 'm';
 // `build` (0076 W4-c, internal #906): the release a shared link was made by, `1.3.0`. ui/share.js shareUrl writes it
 // beside `v=1`; read() hands it back and nothing acts on it (a newer map opens an older link and says nothing
 // of it yet); write() never produces it, as for `go`, so an address bar never carries a stale build.
-export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'cam'];
+// `moment` (0079 C1, site/js/moments/): a mission replayed, `#moment=demo-saturn&t=162`; beside it `t` is the moment's
+// mission second, not the map's clock (bootLink and laterLink below leave the map's clock alone for it).
+export const KEYS = ['m', 'v', 'build', 'drift', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'drawn', 'p', 'imagine', 'moment', 'cam']; // 0079 C1: moment
 export const VERSION = '1';
 /** The release this code is (0076 W4-c). A release bumps it with CHANGELOG.md; tests/test_access.mjs holds its shape. */
 export const BUILD = '1.4.0';
@@ -231,7 +233,8 @@ export function writeMoment(moment) {
 export function bootLink(clock, extra = null) {
   // `extra`: the keys an embed's QUERY carries (ui/embed.js embedLink); the hash wins over them.
   const st = extra ? { ...extra, ...read() } : read();
-  if (clock && !st.unknownVersion) {
+  const replay = st.moment !== undefined && st.moment !== '0'; // 0079 C1: a moment's `t` is its own clock's
+  if (clock && !st.unknownVersion && !replay) { // 0079 C1
     if (st.t && st.t !== 'now') {
       const ms = Date.parse(st.t);
       if (Number.isFinite(ms)) clock.goTo(ms);
@@ -262,6 +265,13 @@ export function laterLink(link, tripRunning) {
   // An imagined world (`imagine=N`) is a stage of its own with no object ids on it: a link that also names a place says two
   // things, and the world wins, as it does for a link pasted over a running tab (main.js hashchange returns once it has opened
   // the world). So nothing that selects or flies applies. `goOnly` is read()'s mark, and is not a key of the link.
+  // 0079 C1: begin
+  // A moment is a stage of its own as well: nothing that selects or flies applies under it.
+  if (link && link.moment !== undefined && link.moment !== '0') {
+    const { at, go, goOnly, stage, cam, trip, stop, event, ...replay } = link;
+    return replay;
+  }
+  // 0079 C1: end
   if (link && link.imagine !== undefined && link.imagine !== '0') {
     const { at, go, goOnly, stage, cam, trip, stop, event, ...world } = link;
     return world;

@@ -133,6 +133,21 @@ sources:
     offline: shipped
     checked: 2026-10-09
 
+  # 0079 B1: begin -- Donaldjohanson's shape, from the Lucy SPICE bundle at NASA's Navigation and Ancillary Information Facility
+  - id: nasa-naif-pds-spice
+    name: NASA Navigation and Ancillary Information Facility (NAIF), PDS4 SPICE bundles (Lucy's DSK shape kernel of Donaldjohanson)
+    match: ["https://naif.jpl.nasa.gov/pub/naif/pds/"]
+    url: https://naif.jpl.nasa.gov/pub/naif/pds/pds4/lucy/lucy_spice/
+    licence: CC0 by NASA policy, for data from a NASA-led mission (Lucy)
+    licence_read: "Unless the data file is marked with a restrictive notice or license ... are licensed as Creative Commons Zero."
+    licence_url: https://science.data.nasa.gov/about/license
+    licence_note: "The kernel's label (lcy_donj_k548_iso20m_v10.xml) states no restriction; the shape was made by the DLR team for the Lucy project, a NASA mission. licence_read quotes the two phrases of the page, read 2026-10-29, between which its sentence about NASA-led missions runs."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-29
+  # 0079 B1: end
+
   - id: noaa-ncei-stsci
     name: NOAA NCEI (ETOPO) and STScI MAST (Hubble OPAL maps)
     match: ["https://doi.org/10.25921/", "https://archive.stsci.edu/"]
@@ -475,3 +490,73 @@ sources:
     cost: none
     offline: shipped
     checked: 2026-10-20
+  # 0079 a2: begin
+  # Every known deep-sky object (release 1.5.0 stage A2, internal #1060): scripts/build_deep_catalogue.py reads five open
+  # catalogues (OpenNGC, Harris, Green, Wikipedia's Caldwell list, and Hunt & Reffert through the cds-vizier-asu row above)
+  # and pins each file it read by SHA-256 in itself (PINNED); the pins here are the two files it bakes.
+  - id: openngc
+    name: OpenNGC (Mattia Verga), NGC.csv and addendum.csv, read by scripts/build_deep_catalogue.py
+    match: ["https://github.com/mattiaverga/OpenNGC"]
+    url: https://github.com/mattiaverga/OpenNGC
+    licence: CC BY-SA 4.0
+    licence_read: "OpenNGC is released under CC-BY-SA-4.0 license"
+    licence_url: https://github.com/mattiaverga/OpenNGC
+    licence_note: "The README's sentence, read 2026-10-28. ShareAlike: site/data/deep/catalogue.{bin,json} are derivatives of it and are offered under CC BY-SA 4.0 (CREDITS.md section 3, Every known deep-sky object). The same file carries Harris's and Green's open numbers; the Gaia-derived clusters are in a file of their own."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-28
+    pins:
+      - {file: site/data/deep/catalogue.bin, sha256: f2d67f71c23ba9f0f382bf6057f90ef40ad022b762c4889edd132a299ec26f43}
+      - {file: site/data/deep/catalogue-oc.bin, sha256: f0f86d58ae1e49fecb2f629748aa6a9047c439eecc531947a9f71ca7b0c77388}
+  - id: harris-mwgc
+    name: Harris, Catalog of Parameters for Milky Way Globular Clusters (1996, 2010 edition), mwgc.dat
+    match: ["https://physwww.mcmaster.ca/~harris/mwgc.dat"]
+    url: https://physwww.mcmaster.ca/~harris/mwgc.dat
+    licence: Supplied free of charge to all users; the source to be named
+    licence_read: "THE DATA IN THIS CATALOG ARE SUPPLIED FREE OF CHARGE TO ALL USERS. ANY THIRD PARTY WHO SUPPLIES THIS CATALOG IN TURN TO OTHER USERS MUST REFER TO THE ORIGINAL SOURCE, WHICH IS THIS WEBSITE, AND MUST DO SO WITHOUT CHARGE OF ANY FEE."
+    licence_url: https://physwww.mcmaster.ca/~harris/mwgc.dat
+    licence_note: "The file's own copyright notice, read 2026-10-28; it asks to be cited as Harris 1996 (2010 edition). Space Radar is free."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-28
+  - id: green-snrs
+    name: Green, A Catalogue of Galactic Supernova Remnants (2024 October version), summary data
+    match: ["https://www.mrao.cam.ac.uk/surveys/snrs/"]
+    url: https://www.mrao.cam.ac.uk/surveys/snrs/
+    licence: Published openly, with a request to cite; no licence text
+    licence_note: "The catalogue's front page (read 2026-10-28) says: Please cite the following paper for the summary data from this catalogue: Green D. A., 2025, Journal of Astrophysics and Astronomy, 46, 14 (also arXiv:2411.03367), and carries 'Copyright D. A. Green 2024/2025' with no licence text. The summary data are also VizieR catalogue VII/297. Only positions, sizes and types (facts) are kept, with the citation on every card; if Dr Green asks for them to go, they go."
+    licence_read: ""
+    licence_url: https://www.mrao.cam.ac.uk/surveys/snrs/
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-28
+  - id: wikipedia-caldwell
+    name: Wikipedia, Caldwell catalogue (the list of the 109), through the MediaWiki API
+    match: ["https://en.wikipedia.org/wiki/Caldwell_catalogue"]
+    url: https://en.wikipedia.org/wiki/Caldwell_catalogue
+    licence: CC BY-SA 4.0
+    licence_read: "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License"
+    licence_url: https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License
+    licence_note: "Read 2026-10-28. Only the numbers (which NGC or IC object is Caldwell n) are kept: a numbering is a fact, and OpenNGC's own Identifiers carry most of them."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-28
+  # 0079 a2: end
+  # 0079 c4: begin
+  - id: nasa-eyes-models
+    name: NASA/JPL Eyes on the Solar System (eyes.nasa.gov), the Artemis II spacecraft model
+    match: ["https://eyes.nasa.gov/assets/static/models/"]
+    url: https://eyes.nasa.gov/apps/solar-system/
+    licence: Public domain (NASA media usage guidelines)
+    licence_read: "NASA content - images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States."
+    licence_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    licence_note: "The file is not in the NASA 3D Resources repository, so that repository's README sentence does not cover it; the media usage guidelines do. The NASA insignia and logotype are not in the public domain: none is on the mesh. Read 2026-10-29."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-29
+  # 0079 c4: end

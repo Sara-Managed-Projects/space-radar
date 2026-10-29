@@ -1,0 +1,12 @@
+{"parts":[
+ {"name":"las","file":["../baked/las.glb","../baked/hatch.glb","../lathe/las-fix.glb"],"shift":[0,-76.8,0]},
+ {"name":"fairing-1","file":"../baked/fairing-a.glb","shift":[0,-76.8,0]},
+ {"name":"fairing-2","file":"../baked/fairing-b.glb","shift":[0,-76.8,0]},
+ {"name":"fairing-3","file":"../baked/fairing-c.glb","shift":[0,-76.8,0]},
+ {"name":"array-1","file":"../baked/array-1.glb","shift":[0,2.55,0]},
+ {"name":"array-2","file":"../baked/array-2.glb","shift":[0,2.55,0]},
+ {"name":"array-3","file":"../baked/array-3.glb","shift":[0,2.55,0]},
+ {"name":"array-4","file":"../baked/array-4.glb","shift":[0,2.55,0]},
+ {"name":"esm","file":"../baked/esm.glb","shift":[0,2.55,0]},
+ {"name":"cm","file":"../baked/cm.glb","shift":[0,2.55,0]}
+]}

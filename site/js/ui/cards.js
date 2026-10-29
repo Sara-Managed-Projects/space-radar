@@ -45,6 +45,7 @@ import {
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
+import { sizeClause, lapClause } from './moonfacts.js'; // 0079 a3
 import { propagate } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
 import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
@@ -276,6 +277,9 @@ function farLead(record, m, T) {
     const now = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
     return t(periMs !== null && now < periMs ? T.leadInterstellarIn : T.leadInterstellarOut, { name });
   }
+  // 0079 a3: begin
+  if (kind === 'candidate' && T.leadCandidate) return t(T.leadCandidate, { name });
+  // 0079 a3: end
   if (kind === 'dwarf' && T.leadDwarf) {
     const region = farRegion(record);
     const lead = region === 'belt' ? T.leadDwarfBelt : region === 'farBeyond' ? T.leadDwarfFarBeyond : region === 'beyond' ? T.leadDwarfBeyond : T.leadDwarf;
@@ -464,7 +468,10 @@ const TEMPLATES = {
     }
     // `neo` is the data's own classification; only an explicit false changes the sentence, so a
     // live NEO-feed record that does not carry the field still reads as the near-Earth object it is.
-    const lead = md.neo === false ? T.leadMainBelt : T.lead;
+    // 0079 B1: begin -- an asteroid-layer body whose orbit never comes inside Neptune's (Arrokoth) is not "in the main belt": where it is, from its own orbit (farRegion)
+    const outer = T.leadBeyond && ['beyond', 'farBeyond'].includes(farRegion(record));
+    const lead = outer ? T.leadBeyond : md.neo === false ? T.leadMainBelt : T.lead;
+    // 0079 B1: end
     return buildSentence(t(lead, { name: displayName(record) }), [
       caMs !== null && ld !== null
         ? t(T.whyApproach, { date: timeText.dateNear(caMs, now), ld: fmt.smart(ld) })
@@ -531,12 +538,39 @@ const TEMPLATES = {
       : kindWord
         ? t(T.leadKind, { name: displayName(record), a: article(kindWord), kind: kindWord })
         : t(T.lead, { name: displayName(record) });
+    const code = pick(md, 'mpc'); // 0079 a6: an observatory's Minor Planet Center code
+    const closed = pickNumber(md, 'closedYear'); // 0079 a6
     return buildSentence(lead, [
       spacecraft ? t(T.whyDsn, { spacecraft: String(spacecraft) }) : null,
       launch && when ? t(T.whyLaunch, { launch: String(launch), when }) : null,
       where ? t(T.where, { where: String(where) }) : null,
+      code && T.mpc ? t(T.mpc, { code: String(code) }) : null, // 0079 a6
+      closed !== null && T.closed ? t(T.closed, { year: String(closed) }) : null, // 0079 a6
     ]);
   },
+
+  // 0079 a6: begin -- an IAU established meteor shower (data/smalllists.js). A radiant is a direction in the sky, so the
+  // sentence says when it peaks, how fast its meteors are and what left them; where to look is the sky view's.
+  shower(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const mm = /^(\d{2})-(\d{2})$/.exec(String(pick(md, 'peakMd') || ''));
+    let when = null;
+    if (mm) {
+      const base = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+      const y = new Date(base).getUTCFullYear();
+      let ms = Date.UTC(y, Number(mm[1]) - 1, Number(mm[2]));
+      if (ms < base - 2 * 86400000) ms = Date.UTC(y + 1, Number(mm[1]) - 1, Number(mm[2]));
+      when = timeText.dateNear(ms, base);
+    }
+    const vg = pickNumber(md, 'vgKms');
+    const parent = pick(md, 'parent');
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      when ? t(T.peak, { date: when }) : null,
+      vg !== null ? t(T.speed, { n: fmt.int(vg) }) : null,
+      parent ? t(T.parent, { parent: String(parent).split(' (')[0].slice(0, 40) }) : null,
+    ]);
+  },
+  // 0079 a6: end
 
   exotic(record, ctx, m, passInfo, T) {
     const md = meta(record);
@@ -549,10 +583,10 @@ const TEMPLATES = {
     const mHi = pickNumber(md, 'massMsunHigh');
     const period = pickNumber(md, 'periodS');
     const name = displayName(record);
-    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */ }[kind] || 'leadBlackhole';
+    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar', quasar: 'leadQuasar' /* 0076 W4-b */, galaxy: 'leadGalaxy', cluster: 'leadCluster', browndwarf: 'leadBrowndwarf', whitedwarf: 'leadWhitedwarf' /* 0079 r15-a45 */ }[kind] || 'leadBlackhole';
     const lead = lo !== null && hi !== null
       ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
-      : t(T[leadKey], { name, dist: distLy !== null ? fmt.int(distLy) : '?' });
+      : t(T[leadKey], { name, dist: distLy !== null ? (distLy < 100 ? fmt.smart(distLy) : fmt.int(distLy)) : '?' }); // 0079 r15-a45: a brown dwarf at 6.5 light-years is not 7
     let massSay = null;
     if (mLo !== null && mHi !== null) massSay = t(T.massRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) });
     else if (mass !== null && mass >= 1e9) massSay = t(T.massBillions, { n: fmt.smart(mass / 1e9) });
@@ -616,6 +650,7 @@ const TEMPLATES = {
     const lum = pickNumber(md, 'lum');
     const name = displayName(record);
     const dist = distLy !== null ? fmt.smart(distLy) : null;
+    if (distLy === null && pick(md, 'noDistance')) return buildSentence(colour ? t(COPY.a45.unplaced.leadColour, { name, a: article(colour), colour }) : t(COPY.a45.unplaced.lead, { name }), []); // 0079 r15-a45
     const lead = distLy === null ? t(COPY.templates.satellite.lead, { name })
       : colour ? t(T.leadColour, { name, a: article(colour), colour, dist })
         : t(T.lead, { name, dist });
@@ -627,6 +662,25 @@ const TEMPLATES = {
       lum !== null && lum > 0 && lum < 0.5 ? t(T.dimmer, { n: `${fmt.smart(lum * 100)}%` }) : null,
     ]);
   },
+
+  // 0079 a3: begin
+  // A moon of the moons and companions layers (data/moons.js): whose it is, then how big, how long its lap, when it was found.
+  moon(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const name = displayName(record);
+    const planet = pick(md, 'planetName');
+    const year = pickNumber(md, 'discYear');
+    let lead;
+    if (planet) {
+      lead = t(pick(md, 'backwards') === true ? T.leadBackwards : T.lead, { name, planet: String(planet) });
+    } else {
+      const parent = String(pick(md, 'parentName') || pick(md, 'parentLabel') || '');
+      const far = pick(md, 'parentKind') === 'far';
+      lead = t(far ? T.leadFarWorld : year !== null ? T.leadAsteroidKnown : T.leadAsteroid, { name, parent, year: year !== null ? String(Math.round(year)) : '' });
+    }
+    return buildSentence(lead, [sizeClause(md), lapClause(md), planet && year !== null ? t(T.found, { year: String(Math.round(year)) }) : null]);
+  },
+  // 0079 a3: end
 
   world(record, ctx, m, passInfo, T) {
     const md = meta(record);
@@ -1230,7 +1284,11 @@ function derivedDrawingLine(record, T, tMs) {
   }
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
+  if (klass === 'moon') return pick(meta(record), 'drawn') || null; // 0079 a3: a point on its orbit, and why
   if (klass === 'site' && pick(meta(record), 'siteKind') === 'feature' && T.feature) return T.feature; // 0077 W3-d: a named place, nothing standing on it
+  if (klass === 'site' && pick(meta(record), 'noPlace') === true && T.noPlace) return T.noPlace; // 0079 a6
+  if (klass === 'site' && pick(meta(record), 'markOnly') === true && T.markOnly) return T.markOnly; // 0079 a6: a list's site, a mark and nothing standing there
+  if (klass === 'shower' && T.shower) return T.shower; // 0079 a6
   if (klass === 'earthevent') return COPY.earthEvent.drawn;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
@@ -1258,6 +1316,11 @@ function derivedDrawingLine(record, T, tMs) {
     const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
     // 0077 W3-d: a small body turning as measured (realmodels.js `spin`) says what of the turn is measured and what is not.
     const turning = entry.spinWords && T.objectSpin ? T.objectSpin[entry.spinWords] : null;
+    // 0079 B1: begin -- what of a small body was seen, and the relief baked on its simplified shape (realmodels.js `seen`, `relief`)
+    const seen = entry.seen && T.objectSeen ? T.objectSeen[entry.seen] : null;
+    const relief = entry.relief && T.objectRelief ? T.objectRelief : null;
+    if (seen || relief) return said([line, seen, relief, turning].filter(Boolean).join(COPY.punctuation.separator));
+    // 0079 B1: end
     if (turning) return said([mapped ? line + COPY.punctuation.separator + mapped : line, turning].join(COPY.punctuation.separator)); // 0077 W3-d
     return said(mapped ? line + COPY.punctuation.separator + mapped : line);
   }
@@ -1270,6 +1333,7 @@ function derivedDrawingLine(record, T, tMs) {
     : klass;
   // 0076 W4-b: a quasar is a bright point with a ring on its place, not a bare ring (copy/en.later.js r12Far.quasar.shape)
   if (klass === 'exotic' && pick(meta(record), 'kind') === 'quasar' && COPY.r12Far && COPY.r12Far.quasar) return t(T.objectFamily, { name: COPY.r12Far.quasar.shape });
+  { const k = klass === 'exotic' ? pick(meta(record), 'kind') : null; if ((k === 'galaxy' || k === 'cluster' || k === 'browndwarf' || k === 'whitedwarf') && COPY.a45 && COPY.a45.shape) return t(T.objectFamily, { name: COPY.a45.shape[k] }); } // 0079 r15-a45
   const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }
@@ -2099,7 +2163,9 @@ export function heroNumbers(record, m, rows) {
     }
     return out;
   }
-  return slots.map((slot) => {
+  // 0079 r15-a45: a star with a direction and no distance (meta.noDistance) has no distance cell: "— light-years away" would say a number is missing that nobody has measured
+  const noDistance = !!(record && record.meta && record.meta.noDistance);
+  return slots.filter((slot) => !(noDistance && slot.rows[0] === 'distanceFromSun')).map((slot) => {
     for (const key of slot.rows) {
       const c = byKey.has(key) ? cell(key, byKey.get(key), slot.cap) : null;
       if (c) return c;

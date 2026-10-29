@@ -149,10 +149,26 @@ domains:
       galaxy: {credit: "Reid, M. J. et al. 2019", source: "scripts/build-galaxy.py (Reid et al. 2019, ApJ 885, 131)"}
       exotics: {credit: "each read from the Wikipedia article's infobox", source: registry/exotics.yaml}
       far-bodies: {credit: "Orbits: NASA/JPL Small-Body Database", source: "https://ssd-api.jpl.nasa.gov/sbdb.api"}
+      # 0079 a3: begin
+      moons: {credit: "Moons: NASA/JPL Solar System Dynamics and Horizons", source: "site/data/moons.json"}
+      companions: {credit: "Moons of asteroids and far worlds: NASA/JPL Small-Body Database and the papers named on each card", source: "site/data/companions.json"}
+      # 0079 a3: end
       hand-kept-sites: {credit: "Landing sites, dishes and pads: each row of `registry/sites.yaml` names its reference", source: registry/sites.yaml}
       lightning: {credit: "NOAA nowCOAST", source: "registry/weather.yaml earth-lightning"}
       earth-events: {credit: "Fires, volcanoes and sea ice: NASA EONET", source: "registry/weather.yaml earth-events"}
       oddities: {credit: "Oddities: each row of `registry/oddities.yaml` cites where it was read", source: registry/oddities.yaml}
+      # 0079 r15-a45: begin (CREDITS.md section 3n carries each credit line word for word)
+      extremes-more: {credit: "McGill Online Magnetar Catalog (Olausen and Kaspi 2014); BlackCAT (Corral-Santana et al. 2016)", source: scripts/data/a45-hand.yaml}
+      pulsars: {credit: "ATNF Pulsar Catalogue v2.9.0 (Manchester, Hobbs, Teoh and Hobbs 2005)", source: "https://www.atnf.csiro.au/research/pulsar/psrcat/"}
+      beyond-more: {credit: "The Local Volume Database, A. Pace 2024 (CC0); MCXC (Piffaretti et al. 2011)", source: scripts/data/a45-hand.yaml}
+      quasars: {credit: "Million Quasars Catalog v8 (Flesch 2023)", source: "https://quasars.org/milliquas.htm"}
+      # 0079 r15-a45: end
+      # 0079 a6: begin (CREDITS.md section 4.24 carries each credit line word for word)
+      observatories: {credit: "Observatories: Wikidata (CC0 1.0), joined by code to the Minor Planet Center's list of observatory codes", source: "site/data/lists/observatories.json"}
+      launch-sites: {credit: "Launch sites: Wikidata (CC0 1.0)", source: "site/data/lists/launch-sites.json"}
+      landing-sites: {credit: "Landing and impact sites: NASA NSSDCA (public domain) and Wikipedia coordinates (CC BY-SA 4.0)", source: "site/data/lists/landing-sites.json"}
+      meteor-showers: {credit: "Meteor showers: IAU Meteor Data Center (Jenniskens et al. 2020; Jopek and Kanuchova 2017)", source: "site/data/lists/showers.json"}
+      # 0079 a6: end
 
 classes:
   # --- the Sun and the planets -------------------------------------------------------------------------
@@ -306,7 +322,7 @@ classes:
     renderer: [site/js/scene/models.js, site/js/scene/realmodels.js, site/js/scene/glyphs.js, site/js/propagate/kepler.js, site/js/scene/moonshape.js] # 0077 W3-d
     honesty: modelled
     fallback: A glyph on its orbit; the seeded rock or the real shape only when selected and near.
-    issue: "#866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative)" # 0077 W3-d
+    issue: "#866 (done in 1.3.0, 0077 W3-d: Ryugu, Itokawa, Didymos and Dimorphos in their shapes, turning about their measured poles; the phase of a turn and Dimorphos's place on its orbit illustrative); internal #1065 (1.5.0, 0079 B1: Lutetia, Steins, Donaldjohanson and Arrokoth from their missions' shape models, turning about their measured poles, with the relief of the full model baked on; Toutatis, Geographos, Kleopatra, Mithra, Golevka and 1996 HW1 from radar models, not turned; the phase of every turn illustrative)" # 0077 W3-d; 0079 B1
     note:
       source: "JPL Small-Body Database and CNEOS for orbits and close approaches; real shapes of Bennu, Eros, Vesta and Ceres from the PDS Small Bodies Node and Dawn."
       dates: "Elements at each record's epoch; the sample asteroids at 2026-01-01, at their own perihelion (a placeholder phase, said on the card)."
@@ -328,11 +344,12 @@ classes:
     note:
       source: "JPL Small-Body Database comet elements (60, read live with a saved copy); JPL Horizons for Halley."
       dates: "Elements at each comet's own epoch."
-      drawn: "Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded) and the tails' look."
+      drawn: "Measured: the orbits. Modelled: positions from the elements; tails pointed away from the Sun. Illustrative: the nucleus's shape (seeded; 67P's is Rosetta's measured shape model, with its measured relief) and the tails' look." # 0079 B1
       rights: "NASA/JPL data courtesy NASA/JPL-Caltech."
     records:
       - {domain: small_bodies, where: {array: NAMED_COMETS}}
       - {domain: model_kinds, ids: [comet-generic]}
+      - {domain: real_models, where: {class: comet}}  # 0079 B1: 67P's nucleus, Rosetta's shape model
       - {domain: layers, ids: [comets]}
 
   # --- what people built -------------------------------------------------------------------------------
@@ -385,6 +402,7 @@ classes:
     records:
       - {domain: probes}
       - {domain: real_models, where: {class: probe}}
+      - {domain: real_models, ids: [orion-esm]}
       - {domain: model_kinds, prefix: [probe-]}
       - {domain: layers, ids: [deep-space]}
 
@@ -805,4 +823,4 @@ classes:
       drawn: "As its members."
       rights: "As its members."
     records:
-      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites]}
+      - {domain: layers, ids: [worlds, deep-sky, exotics, far-bodies, hand-kept-sites, moons, companions, extremes-more, pulsars, beyond-more, quasars, observatories, launch-sites, landing-sites, meteor-showers]} # 0079 a3, r15-a45, a6

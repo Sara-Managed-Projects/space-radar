@@ -186,7 +186,17 @@ export const VISUAL_CLASSES = [
 "dwarf-ceres",
 "asteroid-ryugu",
 "asteroid-itokawa",
-"asteroid-didymos"
+"asteroid-didymos",
+"asteroid-lutetia",
+"asteroid-steins",
+"asteroid-donaldjohanson",
+"asteroid-arrokoth",
+"asteroid-toutatis",
+"asteroid-geographos",
+"asteroid-kleopatra",
+"asteroid-mithra",
+"asteroid-golevka",
+"asteroid-1996hw1"
 ],
 "model_kinds": [
 "asteroid-generic"
@@ -202,7 +212,8 @@ export const VISUAL_CLASSES = [
 "asteroid-2",
 "asteroid-3200",
 "interstellar-1i",
-"interstellar-2i"
+"interstellar-2i",
+"interstellar-3i"
 ],
 "layers": [
 "asteroids"
@@ -214,11 +225,15 @@ export const VISUAL_CLASSES = [
 "title": "Comets",
 "honesty": "modelled",
 "members": {
+"real_models": [
+"comet-67p"
+],
 "model_kinds": [
 "comet-generic"
 ],
 "small_bodies": [
-"comet-1P"
+"comet-1P",
+"comet-67P"
 ],
 "layers": [
 "comets"
@@ -386,7 +401,10 @@ export const VISUAL_CLASSES = [
 "resourcesat-2",
 "eos-06",
 "kanopus-v",
-"resurs-p"
+"resurs-p",
+"vostok-3ka",
+"vostok-seat",
+"vostok-chutes"
 ],
 "model_kinds": [
 "satellite-iridium",
@@ -462,7 +480,9 @@ export const VISUAL_CLASSES = [
 "centaur-d",
 "falcon9-stage2",
 "h2a-stage2",
-"kosmos3m-stage2"
+"kosmos3m-stage2",
+"r7-8k72k",
+"sls-block1"
 ],
 "model_kinds": [
 "rocket-upper-stage",
@@ -558,7 +578,8 @@ export const VISUAL_CLASSES = [
 "lucy",
 "mars-express",
 "hayabusa2",
-"hope"
+"hope",
+"orion-esm"
 ],
 "model_kinds": [
 "probe-generic",
@@ -654,6 +675,7 @@ export const VISUAL_CLASSES = [
 "real_models": [
 "dsn70",
 "lunar-module",
+"apollo-csm",
 "perseverance",
 "pad",
 "dsn34",
@@ -730,7 +752,10 @@ export const VISUAL_CLASSES = [
 "system-hd-10180",
 "system-kepler-1649",
 "system-wasp-17",
-"system-wasp-39"
+"system-wasp-39",
+"system-51-eri",
+"system-pds-70",
+"system-af-lep"
 ],
 "planets": [
 "exo-trappist-1-b",
@@ -838,7 +863,11 @@ export const VISUAL_CLASSES = [
 "exo-kepler-1649-c",
 "exo-kepler-1647-b",
 "exo-wasp-17-b",
-"exo-wasp-39-b"
+"exo-wasp-39-b",
+"exo-51-eri-b",
+"exo-pds-70-b",
+"exo-pds-70-c",
+"exo-af-lep-b"
 ],
 "layers": [
 "exoplanets",
@@ -1491,8 +1520,18 @@ export const VISUAL_CLASSES = [
 "worlds",
 "deep-sky",
 "exotics",
+"extremes-more",
+"pulsars",
+"beyond-more",
+"quasars",
 "far-bodies",
-"hand-kept-sites"
+"moons",
+"companions",
+"hand-kept-sites",
+"observatories",
+"launch-sites",
+"landing-sites",
+"meteor-showers"
 ]
 }
 }

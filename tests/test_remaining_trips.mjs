@@ -155,13 +155,27 @@ const SOUTH = { name: 'Southville', latDeg: -33.9, lonDeg: 18.4, altKm: 0, sourc
     'asteroid-162173': [-22964115, -208147705, 4625896], // 0077 W3-d
     'asteroid-25143': [-16817085, 229624677, 2765233], // 0077 W3-d
     'comet-1P': [-2895179698, 4109303394, -1474036901],
+    // 0079 B1: begin -- JPL Horizons, read 2026-10-28 (scripts/fetch-sbdb-rows.mjs; COMMAND=DES=<spkid>, VECTORS, 500@10, ecliptic ICRF, TDB)
+    'asteroid-21': [101850745, -298575352, -7927956],
+    'asteroid-2867': [-165859455, -282047484, -4241092],
+    'asteroid-52246': [181295875, -382056887, 17636066],
+    'asteroid-4179': [-495280899, -354455873, 4763128],
+    'asteroid-1620': [190284702, 35134835, 25211097],
+    'asteroid-216': [144674243, -380219900, 91773293],
+    'asteroid-4486': [107185348, -99592481, -6338593],
+    'asteroid-6489': [-243625540, -10290583, -4238582],
+    'asteroid-8567': [-96776990, 280985343, -40954234],
+    'asteroid-486958': [2837284664, -5778392904, 187491163],
+    'comet-67P': [-3347440, -671684356, -36454102],
+    // 0079 B1: end
+    'asteroid-469219': [131201680.4593351, 25174187.12414803, -14941751.21656504], // 0079 a6: Horizons, COMMAND='469219;', read 2026-10-29
   };
   const { kepler } = await import(join(JS, 'propagate/index.js'));
   const { namedAsteroids, namedComets, sampleAsteroids } = await import(join(JS, 'data/sample.js'));
   const AU = 149597870.7;
   const tMs = (2461319.5 - 2440587.5) * 86400e3 - 69184; // TDB to UTC, 69.184 s in 2026
   const named = [...namedAsteroids(), ...namedComets()];
-  check(named.length === 8 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'eight named bodies, each with its phase and classed inferred, never sample'); // 0077 W3-d: and Ryugu and Itokawa
+  check(named.length === 20 && named.every((r) => r.cls === 'inferred' && r.propagator === 'kepler' && Number.isFinite(r.elements.maRad)), 'twenty named bodies, each with its phase and classed inferred, never sample'); // 0077 W3-d: and Ryugu and Itokawa; 0079 B1: and eleven more; 0079 a6: and Kamoʻoalewa
   for (const r of named) {
     const want = HORIZONS[r.id];
     const p = kepler(r, tMs);

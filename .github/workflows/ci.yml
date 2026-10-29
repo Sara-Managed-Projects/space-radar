@@ -405,6 +405,13 @@ jobs:
       # card's first sentence, search, and the whole-orbit line through the dot.
       - name: Dwarf planets and interstellar visitors are where Horizons puts them, and say what they are
         run: node tests/test_far_bodies.mjs
+      # 0079 a3: begin
+      # Every moon: the planets' 439 and the asteroids' and far worlds' companions from JPL's tables, each placed against Horizons' own
+      # vectors on days it was not fitted to, honest about the place when it is far out, with the card's words, search, and the five
+      # dwarf-planet candidates.
+      - name: Every moon is where Horizons puts it within what its card says, and is honest where it is not
+        run: node tests/test_moons.mjs
+      # 0079 a3: end
       - name: The Now moment guesses a place and says so
         run: node tests/test_guessplace.mjs
       # A merge marker in a tool (tools/cdp.mjs on 2026-10-08 carried one and no probe could start) is a
@@ -576,6 +583,12 @@ jobs:
         run: node tests/test_exoface.mjs
       - name: "the planet-face label: Measured only of a measured number, every planet of the table walked (internal #538)"
         run: node tests/test_exoface_truth.mjs
+      # 0079 C1: begin
+      # Internal spec 0079 C1 (internal #1050): the Moment engine. Every file under site/data/moments/ is a valid moment
+      # (its pace, paths, parts, tracks and words), and the clock, the paths, the director and the part events hold.
+      - name: "Moments: every replay file valid; its clock, paths, camera and part events hold"
+        run: node tests/test_moments.mjs
+      # 0079 C1: end
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
@@ -659,6 +672,10 @@ jobs:
         run: python3 scripts/build_deep_lmc.py --check
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
+      # 0079 r15-a45: begin
+      - name: the stars and beyond catalogues (IAU names, stars with no distance, pulsars, magnetars, black holes, white and brown dwarfs, the Local Group, clusters, record-redshift galaxies, quasars) are whole, sourced, not doubled and found by search (release 1.5.0 stage A4 and A5)
+        run: node tests/test_a45.mjs
+      # 0079 r15-a45: end
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)
         run: node tests/test_ladder_ui.mjs
       - name: labels name the selection, its train and the nearest notable things, never the catalogue (spec 0026 req 5)
@@ -1007,6 +1024,10 @@ jobs:
         run: node tests/test_regressions.mjs
       - name: "no spacecraft falls back to a placeholder: every model is on disc, worn, and reached by its own route (public #472)"
         run: node tests/test_real_models.mjs
+      # 0079 c2: begin
+      - name: "the Vostok models of the Moments: every part is its own named node at the origin its registry row gives, in a surface role, within its budget (internal spec 0079, #1051)"
+        run: node tests/test_vostok_models.mjs
+      # 0079 c2: end
       - name: "the release zip builds, unpacks and holds what it promises (public #471)"
         run: python3 tests/test_release_zip.py
       - name: "the stripped tree: the scanner on its hard cases, every module through it"
@@ -1096,6 +1117,8 @@ jobs:
         run: node tests/test_story.mjs
       - name: "Return to base: what away is, what coming home does, where the house lives (public #241)"
         run: node tests/test_base.mjs
+      - name: "Artemis models preserve their named parts, attachment points and triangle budgets"
+        run: node tests/test_artemis_models.mjs
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs
       # 0076 W1-a
@@ -1203,3 +1226,23 @@ jobs:
       - name: "no photographs in the scene: M27, the Southern Ring and the Pleiades' nebulosity as 3D heroes from their sources, their light maps the bakes (release 1.4.0 stage r14-neb-b)"
         run: node tests/test_hero_r14neb.mjs
       # 0078 r14-neb-b: end
+      # 0079 a2: begin
+      - name: "every known deep-sky object: the catalogue's files are the hash and size their manifests say, every count adds up, nothing the map draws is drawn twice, rows become records, a tap and a name find them (release 1.5.0 stage A2, internal #1060)"
+        run: node tests/test_catalogue.mjs
+      - name: "the catalogue's files are the size and hash their manifests say (release 1.5.0 stage A2)"
+        run: python3 scripts/build_deep_catalogue.py --check
+      # 0079 a2: end
+      # 0079 a8: begin
+      - name: "every comet's orbit, place and tail: the field agrees with the propagator, orbits lie on their conic, tails point away from the Sun, one indexed mesh for 4 000 comets (release 1.5.0 stage A8, internal #1068)"
+        run: node tests/test_cometfield.mjs
+      # 0079 a8: end
+      # 0079 a6: begin
+      - name: "the small complete lists: the IAU's showers, the observatories with their MPC codes, the launch sites and every landing and impact site become records, and their cards say what is not drawn (release 1.5.0 stage A6, internal #1064)"
+        run: node tests/test_small_lists.mjs
+      - name: "the small lists' cards open, and search finds a shower, an observatory, a probe and an impact site by name (release 1.5.0 stage A6)"
+        run: node tests/test_small_lists_cards.mjs
+      - name: "the other showers' radiants are placed on the dome, each at its altitude, none when the box is off (release 1.5.0 stage A6)"
+        run: node tests/test_radiants_catalogue.mjs
+      - name: "the packed exoplanets (site/data/exoplanets.bin) are the bundled table, to what a card prints, in 133 kB gzipped (release 1.5.0 stage A13, internal #1073)"
+        run: node tests/test_exopack.mjs
+      # 0079 a6: end

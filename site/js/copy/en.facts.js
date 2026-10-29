@@ -33,6 +33,7 @@ Object.assign(COPY, {
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
+    shower: 'Meteor shower', // 0079 a6
     unknown: 'Object',
   },
 
@@ -62,6 +63,11 @@ Object.assign(COPY, {
     // A record with no position at all -- not a failed calculation, an absent fact. It reads
     // where the class line reads for everything else, so the card never has an empty honesty slot.
     unplaced: 'nobody knows where this is, so nothing is drawn for it',
+    // 0079 a6: begin -- the small lists (data/smalllists.js sets meta.clsLine to one of these keys)
+    shower: 'a direction in the sky: the median of the IAU’s published solutions for this shower',
+    noPlace: 'no place is drawn for it: the body it is on is not a world in this app',
+    approxPlace: 'placed from published coordinates, good to about {n} degrees',
+    // 0079 a6: end
     // The ADDITION to the inferred line, for a set of elements whose last observation is much
     // older than the epoch they are integrated from. The Roadster's elements are stated at a 2026
     // epoch and rest on 374 photographs that stopped in March 2018.
@@ -103,6 +109,10 @@ Object.assign(COPY, {
 
   unplaced: {
     why: '{whyUnknown}',
+    // 0079 r15-a45: begin -- a star the catalogue has a direction and a brightness for and no distance (scene/unplaced.js), and the IAU's name for a star
+    noDistanceRow: 'Not measured: the catalogue has no parallax for it',
+    iauApproved: '{name}, approved on {date}',
+    // 0079 r15-a45: end
   },
 
   // ------------------------------------------------------------------------------------

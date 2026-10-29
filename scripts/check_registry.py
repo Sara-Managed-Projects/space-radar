@@ -5234,6 +5234,35 @@ def main() -> int:
         if not m.get("modified"):
             fail(where, "no `modified:` -- say what was changed, or the credit implies it is untouched")
         check_model_kind(m, where)
+        # 0079 c4: begin
+        # The Moments contract (~/space-radar-handoff/release-1.5/moments-contract.md): `parts` names the separable
+        # nodes of the file in flight order, `attach` gives each part's origin in metres from the vehicle origin and
+        # `engines` the nozzle exit points of a part, in metres. tests/test_artemis_models.mjs reads the GLB against them.
+        if m.get("parts") is not None:
+            parts = m.get("parts")
+            if not isinstance(parts, list) or not parts or not all(isinstance(x, str) and x for x in parts) or len(set(parts)) != len(parts):
+                fail(where, "`parts:` must be a list of distinct node names")
+                parts = []
+            # 0079 int: a sub-part (`subparts:`) is a node under a part, so `attach` may name it; `stations:` gives where a
+            # payload model of ANOTHER file stands in the stack (it is not a node of this file) and is checked like `attach`.
+            subs = {s for v in (m.get("subparts") or {}).values() for s in (v or [])}
+            for key in ("attach", "stations", "engines"):
+                table = m.get(key)
+                if table is None:
+                    continue
+                if not isinstance(table, dict):
+                    fail(where, f"`{key}:` must map a part name to metres")
+                    continue
+                for name, val in table.items():
+                    if key == "stations":
+                        pass
+                    elif name not in parts and not (key == "attach" and name in subs):
+                        fail(where, f"`{key}:` names `{name}`, which is not in `parts:`")
+                    pts = [val] if key in ("attach", "stations") else val
+                    ok = isinstance(pts, list) and pts and all(isinstance(q, list) and len(q) == 3 and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in q) for q in pts)
+                    if not ok:
+                        fail(where, f"`{key}.{name}` must be {'[x, y, z]' if key in ('attach', 'stations') else 'a list of [x, y, z]'} in metres")
+        # 0079 c4: end
 
     # ...and CREDITS.md is the document that actually discharges the obligation, so it has to
     # name the same files. It said "Ten spacecraft models ship" while 29 did, and still listed a
@@ -5402,6 +5431,13 @@ def main() -> int:
         seen.add(rid)
         if not r.get("display"):
             fail(where, "no `display:` -- the card names the shape it drew, so the name is data")
+        # 0079 c4: begin
+        # `model:` links a rocket row to the 3D model of the vehicle: a real_models row, which must exist.
+        if r.get("model") is not None:
+            known = {x.get("id") for x in (load("models.yaml").get("real_models") or []) if isinstance(x, dict)}
+            if r["model"] not in known:
+                fail(where, f"`model: {r['model']}` names no real_models row in models.yaml")
+        # 0079 c4: end
 
         # 2. a row nothing can match is a row that never draws
         match = r.get("match")

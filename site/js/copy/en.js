@@ -1245,6 +1245,7 @@ export const COPY = {
       luminosity: 'Light output',
       starWidth: 'Width',
       catalogue: 'Catalogue',
+      iauName: 'IAU-approved name', // 0079 r15-a45
       lightTime: 'Radio time each way',
       nextPass: 'Next pass over you',
       crew: 'People aboard',
@@ -1255,6 +1256,8 @@ export const COPY = {
       pathBegins: 'Its path begins', // 0077 W1-d
       period: 'One lap takes',
       location: 'Where it stands',
+      onBody: 'On', // 0079 a6
+      whenSite: 'When', // 0079 a6
       onWorld: 'Standing on',
       // A craft in orbit round another world (data/sample.js construction D).
       orbiting: 'In orbit round',
@@ -1695,12 +1698,30 @@ export const COPY = {
     storm: 'drawn as a mark at its centre; the storm itself is the cloud around it',
     // 0077 W3-d: a named place on a world's ground (registry/sites.yaml `class: feature`): nothing stands there to draw.
     feature: 'a named place: nothing is drawn here but a mark at its centre, from the IAU gazetteer; the ground under it is the map itself',  // 0077 W3-d
+    markOnly: 'a mark at its place; nothing stands there to draw', // 0079 a6
+    noPlace: 'not drawn: there is no place of it to mark', // 0079 a6
+    shower: 'a name at the point its meteors seem to come from, in the sky view near its peak; a direction, not a place in space', // 0079 a6
     // 0077 W3-d: begin -- a small body drawn from its shape model and turned by its measured spin (ui/cards.js, realmodels.js `spin`).
     objectSpin: {
       spin: 'it turns about its measured pole at its measured rate; which side faces the Sun at this moment is not a prediction',
       pair: 'both turn about their measured pole at their measured rates, and Dimorphos goes round at the distance and period measured after DART struck it; where it is on that orbit is illustrative',
+      // 0079 B1: begin
+      comet: 'it turns about its measured pole at the rate measured in 2014, which the Sun has changed by minutes at each pass since; which side faces the Sun at this moment is not a prediction',
+      still: 'it is drawn in the orientation of its radar model and does not turn here: the model does not state which way its spin axis lies',
+      // 0079 B1: end
     },
     // 0077 W3-d: end
+    // 0079 B1: begin -- what of a small body was seen, said after its shape (ui/cards.js, realmodels.js `seen`), and the relief baked on it (`relief`)
+    objectSeen: {
+      lutetia: 'Rosetta’s pictures covered more than half of its surface; the rest of the shape is fitted from its changes in brightness, not photographed',
+      steins: 'Rosetta’s pictures covered about 60 percent of its surface; the rest of the shape is fitted from its changes in brightness, not photographed',
+      donj: 'the shape is built from Lucy’s pictures by stereo photogrammetry and by fitting its outline; the side Lucy did not see is the fit’s',
+      arrokoth: 'New Horizons’ pictures cover the side it flew past; the other side is inferred, not photographed, and the colour is its albedo map in a red tint',
+      radar: 'the shape is built from radar echoes, not pictures: its outline is measured and its finest detail is not',
+      comet: 'the shape is Rosetta’s, from more than 20 000 pictures over two years, and the whole surface is covered',
+    },
+    objectRelief: 'the model is simplified, and the fine relief on it is the full model’s own, baked into the surface',
+    // 0079 B1: end
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
     // and so is the size -- a 30 cm record on a 13 m spacecraft is one or two pixels at the size
@@ -2174,7 +2195,7 @@ export const COPY = {
     layerCountLoading: 'counting',
     // One sentence under a row that is off on purpose (public #271): how to show it.
     layerHint: {
-      exoplanets: 'Off by default. Tick to show them.',
+      exoplanets: 'Switched off. Tick to show them.', // 0079 a13: on by default since 1.5.0
     },
     // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
     // 390 and at 1440); each one's tooltip is the sentence it stands for.

@@ -949,7 +949,9 @@ export const COPY = {
     },
     storm: "se dibuja como una marca en su centro; la tormenta en sí es la nube que lo rodea",
     feature: "un lugar con nombre: aquí no se dibuja más que una marca en su centro, según el nomenclátor de la UAI; el suelo bajo ella es el propio mapa", // 0077 W3-d
-    objectSpin: { spin: "gira alrededor de su polo medido, a su ritmo medido; qué cara mira al Sol en este momento no es una predicción", pair: "los dos giran alrededor de su polo medido, a sus ritmos medidos, y Dimorphos da la vuelta a la distancia y en el periodo medidos tras el impacto de DART; dónde está en esa órbita es ilustrativo" }, // 0077 W3-d
+    objectSpin: { spin: "gira alrededor de su polo medido, a su ritmo medido; qué cara mira al Sol en este momento no es una predicción", pair: "los dos giran alrededor de su polo medido, a sus ritmos medidos, y Dimorphos da la vuelta a la distancia y en el periodo medidos tras el impacto de DART; dónde está en esa órbita es ilustrativo", comet: "gira alrededor de su polo medido, al ritmo medido en 2014, que el Sol ha cambiado en unos minutos en cada paso desde entonces; qué cara mira al Sol en este momento no es una predicción", still: "está dibujado con la orientación de su modelo de radar y aquí no gira: el modelo no dice hacia dónde apunta su eje de giro" }, // 0077 W3-d
+    objectSeen: { lutetia: "las imágenes de Rosetta cubren más de la mitad de su superficie; el resto de la forma se ajusta a partir de sus cambios de brillo, no está fotografiado", steins: "las imágenes de Rosetta cubren alrededor del 60 por ciento de su superficie; el resto de la forma se ajusta a partir de sus cambios de brillo, no está fotografiado", donj: "la forma está construida con las imágenes de Lucy mediante fotogrametría estéreo y ajustando su contorno; el lado que Lucy no vio es el del ajuste", arrokoth: "las imágenes de New Horizons cubren el lado junto al que pasó; el otro lado está deducido, no fotografiado, y el color es su mapa de albedo con un tinte rojo", radar: "la forma está construida con ecos de radar, no con imágenes: su contorno está medido y sus detalles más finos no", comet: "la forma es la de Rosetta, a partir de más de 20 000 imágenes a lo largo de dos años, y cubre toda la superficie" }, // 0079 B1
+    objectRelief: "el modelo está simplificado, y el relieve fino que lleva es el del modelo completo, integrado en la superficie", // 0079 B1
     worldFlat: "se dibuja como una bola lisa: aquí no hay un mapa de la superficie de {name}, y su único color está elegido a partir de descripciones publicadas, no medido",
     worldFlatIrregular: "se dibuja como una bola lisa del tamaño de su radio medio: aquí no hay un mapa de la superficie de {name}, su único color está elegido a partir de descripciones publicadas, no medido, y {name} es en realidad una roca irregular cuya forma verdadera no se dibuja",
     worldFlatShaped: "se dibuja con su forma medida y de un solo color: aquí no hay un mapa de la superficie de {name}, y el color está elegido a partir de descripciones publicadas, no medido",
@@ -2947,6 +2949,7 @@ export const COPY = {
     asteroid: {
       lead: "{name} es un objeto cercano a la Tierra, con su propia órbita alrededor del Sol",
       leadMainBelt: "{name} es un asteroide del cinturón principal, entre Marte y Júpiter",
+      leadBeyond: "{name} es un cuerpo pequeño más allá de Neptuno, en su propia órbita alrededor del Sol", // 0079 B1
       leadDwarf: "{name} es un planeta enano con su propia órbita alrededor del Sol",
       leadDwarfBelt: "{name} es un planeta enano del cinturón de asteroides, entre Marte y Júpiter",
       leadDwarfBeyond: "{name} es un planeta enano más allá de Neptuno",
@@ -3610,6 +3613,46 @@ export const COPY = {
     }
   }
 };
+
+// 0079 int: begin -- the strings stages A4, A5 and A6 of release 1.5.0 added to the English copy, in Spanish like the rest of this file
+// (machine-drafted until two native speakers have read it). A key this file already has is left as it is.
+{
+  const topUp = (dst, src) => {
+    for (const k of Object.keys(src)) {
+      if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k]) && dst[k] && typeof dst[k] === 'object') topUp(dst[k], src[k]);
+      else if (!(k in dst)) dst[k] = src[k];
+    }
+  };
+  topUp(COPY, {
+    card: { rows: { iauName: "Nombre aprobado por la UAI", onBody: "En", whenSite: "Cuándo" } },
+    drawing: {
+      markOnly: "una marca en su lugar; no hay nada allí que dibujar",
+      noPlace: "no se dibuja: no hay un lugar suyo que marcar",
+      shower: "un nombre en el punto de donde parecen venir sus meteoros, en la vista del cielo cerca de su máximo; una dirección, no un lugar del espacio"
+    },
+    klass: { shower: "Lluvia de meteoros" },
+    cls: {
+      shower: "una dirección en el cielo: la mediana de las soluciones publicadas por la UAI para esta lluvia",
+      noPlace: "no se dibuja ningún lugar para él: el cuerpo en que está no es un mundo de esta aplicación",
+      approxPlace: "situado según coordenadas publicadas, con una precisión de unos {n} grados"
+    },
+    unplaced: { noDistanceRow: "Sin medir: el catálogo no tiene paralaje para ella", iauApproved: "{name}, aprobado el {date}" },
+    starSystem: { auYearComputed: "{n} UA; su año, de unos {y} años, se calcula a partir de eso y de la masa de su estrella" },
+    searchRows: { kinds: { galaxy: "Galaxia", cluster: "Cúmulo de galaxias", browndwarf: "Enana marrón", whitedwarf: "Enana blanca" } },
+    templates: {
+      exotic: {
+        kinds: { galaxy: "galaxia", cluster: "cúmulo de galaxias", browndwarf: "enana marrón", whitedwarf: "enana blanca" },
+        leadGalaxy: "{name} es una galaxia a {dist} años luz, donde está ahora",
+        leadCluster: "{name} es un cúmulo de galaxias a {dist} años luz, donde está ahora",
+        leadBrowndwarf: "{name} es una enana marrón a {dist} años luz",
+        leadWhitedwarf: "{name} es una enana blanca a {dist} años luz"
+      },
+      site: { mpc: "su código del Minor Planet Center es {code}", closed: "cerrado en {year}", kinds: { "launch-site": "base de lanzamiento", "landing-site": "lugar de aterrizaje" } },
+      shower: { lead: "{name} es una lluvia de meteoros", peak: "con su máximo hacia el {date}", speed: "con meteoros que entran en el aire a {n} km por segundo", parent: "del polvo de {parent}" }
+    }
+  });
+}
+// 0079 int: end
 
 export const GLOSSARY = {
   orbit: "Un camino alrededor de algo, sostenido por la gravedad. Si vas lo bastante rápido de lado, sigues cayendo al lado de la Tierra en lugar de caer sobre ella.",

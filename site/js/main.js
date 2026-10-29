@@ -155,7 +155,15 @@ function layerRec(id) {
   }
   return layerIndex.get(id);
 }
-const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky']);
+const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky', 'launch-sites', 'landing-sites', 'meteor-showers']); // 0079 a6: the last three
+// 0079 a3: begin
+// The moons (data/moons.js: 69 kB and 111 kB, off by default) arrive with them, after the first screen and searchable from then on.
+LATER_LAYERS.add('moons');
+LATER_LAYERS.add('companions');
+// 0079 a3: end
+// 0079 r15-a45: the four compact catalogues of release 1.5.0 stages A4 and A5 (data/a45.js): deferred like an on-demand layer, but small, so not `load: 'on-demand'`
+// (tests/test_layer_boot.mjs keeps that word for a catalogue-sized layer). ctx.loadMoreCatalogues fetches them.
+const MORE_CATALOGUES = new Set(['extremes-more', 'pulsars', 'beyond-more', 'quasars']);
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */
@@ -291,7 +299,7 @@ export async function boot({ setStatus } = {}) {
     recordsFor: (id) => layerRecords.get(id) || [],
     // The dot layers, for one reader: sky/skyview.js puts them in the same air as the stars.
     glyphLayers,
-    recordById: (id) => ctx.records().find((r) => r.id === id) || (ctx.deep && ctx.deep.volumeRecord ? ctx.deep.volumeRecord(id) : null), // 0076 W4-a: and the local volume's galaxies
+    recordById: (id) => ctx.records().find((r) => r.id === id) || (ctx.deep && ctx.deep.volumeRecord ? ctx.deep.volumeRecord(id) : null) || (ctx.cometField && ctx.cometField.recordById ? ctx.cometField.recordById(id) : null), // 0076 W4-a: and the local volume's galaxies; 0079 a2 and a8: and the catalogue's (volumeRecord asks it), and any comet of the feed
     selected: () => selected,
     select,
     deselect,
@@ -379,6 +387,7 @@ export async function boot({ setStatus } = {}) {
     dsoGlow.setExposure(look.milkyWay);
     if (ctx.deep) ctx.deep.setExposure(look.milkyWay);
     stars3d.setMagLimit(look.starLimit);
+    if (ctx.unplaced) ctx.unplaced.setMagLimit(look.starLimit); // 0079 r15-a45
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
@@ -455,12 +464,30 @@ export async function boot({ setStatus } = {}) {
   }
   ctx.updateOtherLight = updateOtherLight;
 
+  // 0079 r15-a45: begin -- the 10 224 HYG stars with a direction and no distance (scene/unplaced.js), on a world's sky sphere only.
+  // Fetched (123 kB) the first time the 3D stars fade in, never at boot.
+  ctx.unplaced = null;
+  let unplacedImport = null;
+  let unplacedK = 0;
+  let unplacedOn = true;
+  const wantUnplaced = () => unplacedImport || (unplacedImport = import('./scene/unplaced.js')
+    .then((m) => {
+      ctx.unplaced = m.createUnplaced(scene);
+      ctx.unplaced.setMagLimit(exposure.look().starLimit);
+      ctx.unplaced.setVisible(unplacedOn);
+      ctx.unplaced.setOpacity(unplacedK);
+      return ctx.unplaced;
+    })
+    .catch((e) => { console.warn('the stars with no distance did not load', e); return null; }));
+  ctx.wantUnplaced = wantUnplaced;
+  const unplacedOpacity = (k) => { unplacedK = k; if (ctx.unplaced) ctx.unplaced.setOpacity(k); else if (k > 0) wantUnplaced(); };
+  // 0079 r15-a45: end
   const lod = createLod({
     'sky-panorama': (k) => {
       skyStrength = k;
       if (starfield.setSkyOpacity) starfield.setSkyOpacity(k);
     },
-    'stars-3d': (k) => stars3d.setOpacity(k),
+    'stars-3d': (k) => { stars3d.setOpacity(k); unplacedOpacity(k); }, // 0079 r15-a45: the stars with no distance fade in with the others
     'galaxy-model': (k) => galaxy.setOpacity(k),
   });
   // A star and its planets at the system's own scale (spec 0040, scene/systems.js): built when its
@@ -472,6 +499,7 @@ export async function boot({ setStatus } = {}) {
   exposure.onChange((mode) => worlds.setExposure(mode));
   window.addEventListener('sr:stage', (e) => {
     stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
+    if (ctx.unplaced) ctx.unplaced.rebuild(); // 0079 r15-a45
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if (ctx.nebulae) ctx.nebulae.rebuild();
     if (ctx.deep) ctx.deep.rebuild();
@@ -684,6 +712,18 @@ export async function boot({ setStatus } = {}) {
   ctx.wantPulsars = () => pulsarsImport || (pulsarsImport = import('./scene/pulsars.js')
     .then((m) => { ctx.pulsars = m.createPulsars(scene); ctx.pulsars.setRecords(ctx.recordsFor('exotics')); return ctx.pulsars; })
     .catch((e) => { console.warn('the pulsars\u2019 pulses did not load', e); return null; }));
+  // 0079 a8: begin
+  // EVERY COMET'S ORBIT, PLACE AND TAIL (scene/cometfield.js): asked for the first time the comets layer is drawn on a heliocentric
+  // stage, from the frame loop; never at boot. The layer's own 60 keep their glyphs.
+  ctx.cometField = null;
+  let cometFieldImport = null;
+  ctx.wantCometField = () => cometFieldImport || (cometFieldImport = import('./scene/cometfield.js')
+    .then((m) => {
+      ctx.cometField = m.createCometField(THREE, { scene, recordsFor: (id) => ctx.recordsFor(id), tier: () => (ctx.latch && ctx.latch.latched ? 0 : ctx.quality && Number.isFinite(ctx.quality.describe().tier) ? ctx.quality.describe().tier : 1) });
+      return ctx.cometField;
+    })
+    .catch((e) => { console.warn('the comets\u2019 orbits did not load', e); return null; }));
+  // 0079 a8: end
   ctx.portraitLine = (id) => {
     const record = ctx.recordById(id);
     const image = record && record.meta && record.meta.image;
@@ -836,6 +876,7 @@ export async function boot({ setStatus } = {}) {
     if (gl) gl.setVisible(on);
     if (id === 'worlds') worlds.setVisible(on);
     if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
+    if (id === 'stars') { unplacedOn = !!on; if (ctx.unplaced) ctx.unplaced.setVisible(on); } // 0079 r15-a45
     if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
     if (id === 'systems' && ctx.systems) ctx.systems.setVisible(on);
   };
@@ -1049,6 +1090,17 @@ export async function boot({ setStatus } = {}) {
     .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
     .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
   if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
+  // 0079 C1: begin
+  // A MOMENT (site/js/moments/, internal spec 0079): `#moment=<id>&t=<s>` replays a mission on a stage of its own, one
+  // clock driving the vehicles, the camera and the captions. Fetched for that link, never at boot; while it is up the
+  // map's scene is hidden and the loop below draws the moment's after it. `t` is the moment's mission second, read
+  // raw here because bootLink() keeps the clock keys to itself.
+  let momentP = null;
+  ctx.wantMoment = (id, t) => (momentP || (momentP = import('./moments/player.js').then((m) => (ctx.replay = m.createMomentPlayer(ctx, { scene })))))
+    .then((p) => { if (id && id !== '0') p.open(id, t); else p.close(); return p; })
+    .catch((e) => { momentP = null; document.documentElement.classList.remove('sr-moment-on'); console.warn('the moment did not load', e); return null; });
+  if (!embed && link && link.moment && link.moment !== '0') { document.documentElement.classList.add('sr-moment-on'); ctx.wantMoment(link.moment, readUrlKeys().t); }
+  // 0079 C1: end
   // At sr:layers-ready a reel starts its own trips, and picks up the one a reloaded page's address names.
   const startReel = () => ctx.wantAutopilot(link);
   ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
@@ -1275,6 +1327,7 @@ export async function boot({ setStatus } = {}) {
   window.addEventListener('sr:stage', (e) => {
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if ((isLadderStage(id) || isSystemStage(id)) && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit();
+    if ((isLadderStage(id) || isSystemStage(id)) && ctx.loadMoreCatalogues) ctx.loadMoreCatalogues(); // 0079 r15-a45
     // The radio bubble and the microwave background's surface (scene/shells.js, internal #306):
     // two wire spheres, fetched with the first rung and drawn only on rungs.
     if (isLadderStage(id) && !ctx.shells && !shellsLoad) {
@@ -1350,11 +1403,17 @@ export async function boot({ setStatus } = {}) {
     }
     if (isLayerOn('stars') && ctx.stars3d) {
       for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+      if (ctx.unplaced) for (const c of ctx.unplaced.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c); // 0079 r15-a45
     }
     // 0076 W4-a (spec 0075 task 63): the local volume's galaxies (scene/deep/localvolume.js), on the Local Group's rung
     if (ctx.deep && ctx.deep.pickAll) {
       for (const c of ctx.deep.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
     }
+    // 0079 a8: begin (every other comet of the feed, scene/cometfield.js)
+    if (ctx.cometField && ctx.cometField.pickAll && isLayerDrawable(layerRec('comets'))) {
+      for (const c of ctx.cometField.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+    }
+    // 0079 a8: end
     // A star system's own star and planets, on its stage (spec 0040): the same exo-... records.
     if (ctx.systems && ctx.systems.active) {
       for (const c of ctx.systems.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
@@ -1384,6 +1443,8 @@ export async function boot({ setStatus } = {}) {
    *   selecting from inside one used to look like.
    */
   function select(record, opts = {}) {
+    // 0079 r15-a45: a star with a direction and no distance has no place to fly to, and the map does not make one up: the card opens, the camera stays.
+    if (record && record.meta && record.meta.noDistance && opts.fly !== false) opts = { ...opts, fly: false };
     // From the ground nothing flies: the visitor is standing in a field. The card opens, and the
     // search box turns the sky to what it found (ui/search.js, skyView.pointAtRecord). Without this
     // a star chosen there recentred the whole scene on the stellar rung under the sky view's feet.
@@ -1458,7 +1519,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
     if (ctx.groundTrack) ctx.groundTrack.set(record);
     if (opts.fly !== false) flyToRecord(record, opts.flyMs, opts.flight);
-    else cameraRig.follow(() => positionOfRecord(record));
+    else if (!(record && record.meta && record.meta.noDistance)) cameraRig.follow(() => positionOfRecord(record)); // 0079 r15-a45: nothing to follow
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
     // A place met on the night side is met from the whole Earth's distance, and the toast says why
     // (flyToRecord): with the way back when the view was moved for the visitor, alone when they
@@ -1708,6 +1769,8 @@ export async function boot({ setStatus } = {}) {
   }
 
   function positionOfRecord(record) {
+    // 0079 r15-a45: a star with a direction and no distance has no position to point at: the HUD's chevron would print the made-up distance of its direction
+    if (record && record.meta && record.meta.noDistance) return null;
     // A world is drawn where scene/worlds.js put its DISC -- nearer than it is for the planets
     // (PLANET_VIEW, and the card says so). Flying to the true position would arrive at empty sky.
     if (record && record.klass === 'world') return worlds.drawnPositionOf(record.id);
@@ -2175,6 +2238,11 @@ export async function boot({ setStatus } = {}) {
     // `#drift=…` pasted over a running page starts the drift; taken out of it, stops it.
     const wander = !!(keys.drift && keys.drift !== '0');
     if (wander || (ctx.drift && ctx.drift.active)) { ctx.wantDrift(keys); if (wander) return; }
+    // 0079 C1: begin
+    // `#moment=<id>&t=<s>` pasted over a running page opens that moment at that second; taken out of it, closes it.
+    const replay = !!(keys.moment && keys.moment !== '0');
+    if (replay || (ctx.replay && ctx.replay.active)) { ctx.wantMoment(keys.moment, keys.t); if (replay) return; }
+    // 0079 C1: end
     // `#imagine=N` pasted over a running page opens that world; taken out of it, closes it.
     const world = !!(keys.imagine && keys.imagine !== '0');
     if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }
@@ -2227,6 +2295,7 @@ export async function boot({ setStatus } = {}) {
   const writeClock = () => {
     clockWriteTimer = 0;
     clockWroteAt = performance.now();
+    if (ctx.replay && ctx.replay.active) return; // 0079 C1: `t` is the moment's mission second while one is up
     if (clock.mode === 'live') { clearUrlState(['t', 'rate']); return; }
     const ms = clock.now();
     if (!Number.isFinite(ms)) return;
@@ -2857,6 +2926,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (starfield && starfield.setSun) starfield.setSun(worlds.drawnPositionOf('sun'), worlds.drawnRadiusUnits('sun'), ctx.camera);
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
+    if (ctx.unplaced) ctx.unplaced.update(ctx.camera, ctx.renderer); // 0079 r15-a45
     // A sky stop's lens (ui/trip.js `zoom`): eased, so a wider figure opens out and never jumps.
     {
       const st = ctx.trip && ctx.trip.state;
@@ -2875,6 +2945,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       if (ctx.pulsars) ctx.pulsars.update(ctx.camera, ctx.renderer, exoticsOn, nowReal);
       else if (exoticsOn) ctx.wantPulsars(); // asks once: the promise is kept
     }
+    // 0079 a8: begin
+    {
+      const cometsOn = !isLadderStage(stage.worldId) && ctx.isLayerDrawable(layerRec('comets'));
+      if (ctx.cometField) ctx.cometField.update(ctx.camera, ctx.renderer, cometsOn, t, ctx.selected() ? ctx.selected().id : null);
+      else if (cometsOn) ctx.wantCometField();
+    }
+    // 0079 a8: end
     if (ctx.earthOverlay) ctx.earthOverlay.update();
     if (ctx.wind) ctx.wind.update();
     if (ctx.currents) ctx.currents.update();
@@ -2890,7 +2967,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.nebulae) {
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(layerRec('deep-sky')));
       // Our stars step aside inside it, as it carries its own (scene/starholes.js, internal #344).
-      { const holes = ctx.nebulae.holes(); if (ctx.starfield && ctx.starfield.setHoles) ctx.starfield.setHoles(holes); if (ctx.stars3d && ctx.stars3d.setHoles) ctx.stars3d.setHoles(holes); }
+      { const holes = ctx.nebulae.holes(); if (ctx.starfield && ctx.starfield.setHoles) ctx.starfield.setHoles(holes); if (ctx.stars3d && ctx.stars3d.setHoles) ctx.stars3d.setHoles(holes); if (ctx.unplaced) ctx.unplaced.setHoles(holes); /* 0079 r15-a45 */ }
     }
     // Andromeda's slid-in photograph and her stand-in model never draw over each other (scene/galaxy.js); her two
     // companions' ellipses step back with it and with what M31's hero draws of them (0076 W4-a, spec 0075 task 59).
@@ -2924,6 +3001,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
     // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
+    if (ctx.replay && ctx.replay.active) ctx.replay.render(nowReal); // 0079 C1
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).
@@ -2944,7 +3022,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         autopilot: !!(ctx.autopilot && ctx.autopilot.engaged),
         sky: !!(ctx.skyView && ctx.skyView.active),
         stage: stage.worldId,
-        climb: !!((ctx.opening && ctx.opening.live) || (ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) || (ctx.imagine && ctx.imagine.active)),
+        climb: !!((ctx.opening && ctx.opening.live) || (ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) || (ctx.imagine && ctx.imagine.active) || (ctx.replay && ctx.replay.active)), // 0079 C1: a moment
         selected: !!ctx.selected(),
         cameraMoved: (cameraMovedLast = cameraMoved()),
         animatedLayer: layerAnimating(nowReal),
@@ -2988,7 +3066,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
   // `load: 'on-demand'` (registry/layers.yaml) is the same wait by design: the active catalogue
   // is 7 MB for 16 587 objects, and nobody asked for it until they ticked the box.
-  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand';
+  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand' || MORE_CATALOGUES.has(l.id); // 0079 r15-a45: the stage A4 and A5 catalogues wait for a visitor who needs them
   if (saveData) window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'data-saver' } }));
   const ordered = [...LAYERS].filter((l) => l.enabled !== false).sort((a, b) => (a.priority || 50) - (b.priority || 50));
 
@@ -3044,6 +3122,24 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   ctx.loadLayerNow = (layer) => { if (layer && layer.deferred) { layer.deferred = false; return one(layer); } return Promise.resolve(); };
   let laterLoad = null;
   ctx.laterLayersLoaded = () => later.length === 0 || (laterLoad !== null && later.every((l) => layerRecords.has(l.id)));
+  // 0079 r15-a45: begin -- the compact catalogues of stages A4 and A5 (data/a45.js, layers `extremes-more`, `pulsars`, `beyond-more`, `quasars`;
+  // about 140 kB in all). Not at the idle moment: when a visitor does something that needs them (the search box taking focus, a ladder
+  // stage, a link, a trip), or ticks one's box (loadLayerNow). The IAU's names of exoplanet hosts join the planets' aliases with them.
+  const CATALOGUE_LAYERS = [...MORE_CATALOGUES];
+  let cataloguesLoad = null;
+  ctx.loadMoreCatalogues = () => {
+    if (!cataloguesLoad) {
+      cataloguesLoad = ctx.loadAfterFirstVisit()
+        .then(() => Promise.all(CATALOGUE_LAYERS.map((id) => layerRec(id)).filter(Boolean).map((l) => ctx.loadLayerNow(l))))
+        .then(() => import('./data/a45.js'))
+        .then((m) => m.loadIau().then((doc) => {
+          if (m.iauHostAliases(doc, layerRecords.get('exoplanets')) > 0) window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: 'exoplanets', count: (layerRecords.get('exoplanets') || []).length } }));
+        }))
+        .catch((e) => console.warn('the extra catalogues did not load', e));
+    }
+    return cataloguesLoad;
+  };
+  // 0079 r15-a45: end
   ctx.loadAfterFirstVisit = () => {
     if (!laterLoad) {
       // The star systems' index rides with the exoplanet table it is joined to (internal #466):
@@ -3292,7 +3388,7 @@ function openAt(ctx, id) {
   const record = resolveAt(ctx, id);
   // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
   if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
-    ctx.loadAfterFirstVisit().then(() => openAt(ctx, id), () => openAt(ctx, id));
+    ctx.loadAfterFirstVisit().then(() => ctx.loadMoreCatalogues()).then(() => openAt(ctx, id), () => openAt(ctx, id)); // 0079 r15-a45: a link may name a pulsar or a cluster
     return;
   }
   if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
