@@ -475,3 +475,17 @@ sources:
     cost: none
     offline: shipped
     checked: 2026-10-20
+  # 0079 c4: begin
+  - id: nasa-eyes-models
+    name: NASA/JPL Eyes on the Solar System (eyes.nasa.gov), the Artemis II spacecraft model
+    match: ["https://eyes.nasa.gov/assets/static/models/"]
+    url: https://eyes.nasa.gov/apps/solar-system/
+    licence: Public domain (NASA media usage guidelines)
+    licence_read: "NASA content - images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States."
+    licence_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    licence_note: "The file is not in the NASA 3D Resources repository, so that repository's README sentence does not cover it; the media usage guidelines do. The NASA insignia and logotype are not in the public domain: none is on the mesh. Read 2026-10-29."
+    account: none
+    cost: none
+    offline: shipped
+    checked: 2026-10-29
+  # 0079 c4: end

@@ -1,0 +1,42 @@
+{
+ "shift": [
+  0,
+  -0.8,
+  0
+ ],
+ "parts": [
+  {
+   "name": "srb-left",
+   "file": [
+    "../baked/srb-left.glb",
+    "../lathe/srb-left-case.glb"
+   ]
+  },
+  {
+   "name": "srb-right",
+   "file": [
+    "../baked/srb-right.glb",
+    "../lathe/srb-right-case.glb"
+   ]
+  },
+  {
+   "name": "core-stage",
+   "file": [
+    "../baked/core-stage.glb",
+    "../baked/core-engines.glb",
+    "../lathe/core-skin.glb"
+   ]
+  },
+  {
+   "name": "lvsa",
+   "file": "../baked/lvsa.glb"
+  },
+  {
+   "name": "icps",
+   "file": [
+    "../baked/icps.glb",
+    "../lathe/icps-skin.glb"
+   ]
+  }
+ ]
+}

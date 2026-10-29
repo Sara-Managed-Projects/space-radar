@@ -1725,6 +1725,34 @@ Release 1.4.0, stage m6 (public #1137 to #1146). **No agency publishes a 3D mode
 No logo, lettering, flag or insignia is on any of the ten. INPE, CRESDA, KARI, ISRO, VNIIEM, TsSKB Progress and Roscosmos are named as sources of numbers and pictures; none of them endorses this work.
 <!-- 0078 r14-m6: end -->
 
+<!-- 0079 c4: begin -->
+## 3b-r15-c4. Release 1.5.0, stage C4: SLS Block 1 and Orion with its service module, from NASA's own files (2026-10-29)
+
+Internal spec 0079 (Moments), issue Sara-Managed-Projects/space-radar-internal#1053. Two files, each split into named parts for the Moments player.
+
+| File | Parts | From | Size |
+|---|---|---|---|
+| `sls-block1.glb` | the two five-segment boosters, the core stage with its four RS-25s, the launch vehicle stage adapter, the ICPS with its Orion stage adapter | NASA 3D Resources, `3D Models/Space Launch System Block 1` (`Block 1 (GNC markings).7z`, a Blender file), <https://github.com/nasa/NASA-3D-Resources> | 543 KB |
+| `orion-esm.glb` | the launch abort system, three fairing panels, four solar arrays, the European Service Module, the crew module | NASA/JPL Eyes on the Solar System, <https://eyes.nasa.gov/assets/static/models/sc_artemis/artemis_ii.gltf> (crew module, service module, arrays); and the same NASA 3D Resources Blender file (abort system, ogive, fairing panels) | 489 KB |
+
+**Terms, read 2026-10-29.** NASA 3D Resources: "These assets are free and without copyright." NASA Images and Media Usage Guidelines
+(<https://www.nasa.gov/nasa-brand-center/images-and-media/>): "NASA content - images, audio, video, and media files used in the rendition of
+3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States." NASA is
+acknowledged as the source. The Eyes file is on eyes.nasa.gov and not in the 3D Resources repository, so the guidelines, not the README, are what cover it.
+The NASA insignia and logotype are not in the public domain: none is on either mesh, and neither is the ESA logo or any flag or lettering.
+The service module is ESA's design, built by Airbus; the model is NASA/JPL's.
+
+**What is NASA's and what is ours.** NASA's Blender file holds the hardware but not the large outer skins; the skins are in a 3ds Max file and a DWF that this
+project cannot open. So the core stage's barrel (8.4 m, NASA's figure and the radius of NASA's printable model), each booster's case, aft skirt and nose, and the
+ICPS's barrel are lathe pieces built here (`scripts/artemis-models/lathe/`), and so are two small pieces closing gaps in the abort system. Their joint
+spacing and the skirts' shape are ours. Colours that are ours are listed row by row in `registry/models.yaml`, with the NASA photograph each was read off
+(images.nasa.gov: KSC-01172026-Artemis II_Rollout-3, -8, -10, -11, -16, -19, -21, -23; KSC-20220120-PH-FMX01_0063; KSC-20200318-PH_KLS01_0071;
+KSC-20250303-PH-KLS01_0028; art002e012583; MAF_20230915_CS2_Eng2047Install1).
+
+**Credit lines:** `3D model: NASA (3D Resources), with the skins built by Space Radar` (`sls-block1.glb`);
+`3D model: NASA/JPL-Caltech (Eyes on the Solar System) and NASA (3D Resources)` (`orion-esm.glb`).
+<!-- 0079 c4: end -->
+
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
 `site/images/` holds two pictures, shown on the cards for the only two objects in
