@@ -1007,6 +1007,10 @@ jobs:
         run: node tests/test_regressions.mjs
       - name: "no spacecraft falls back to a placeholder: every model is on disc, worn, and reached by its own route (public #472)"
         run: node tests/test_real_models.mjs
+      # 0079 c2: begin
+      - name: "the Vostok models of the Moments: every part is its own named node at the origin its registry row gives, in a surface role, within its budget (internal spec 0079, #1051)"
+        run: node tests/test_vostok_models.mjs
+      # 0079 c2: end
       - name: "the release zip builds, unpacks and holds what it promises (public #471)"
         run: python3 tests/test_release_zip.py
       - name: "the stripped tree: the scanner on its hard cases, every module through it"
