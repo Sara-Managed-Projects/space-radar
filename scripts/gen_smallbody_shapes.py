@@ -219,7 +219,11 @@ def albedo_map(path: Path, how: dict) -> bytes:
     a = np.asarray(Image.open(path), dtype=np.float64)
     ok = a > 0
     rel = np.where(ok, a / np.median(a[ok]), 1.0)
-    rel = np.clip(rel, 0.4, 2.4)
+    # the photoclinometric map is noisy patch by patch; the whole map is read at 0.7 to 1.6 of its median and softened over 2 texels,
+    # which keeps the brighter neck and the darker patches and not the blotches the first look showed
+    from PIL import ImageFilter
+    rel = np.clip(rel, 0.7, 1.6)
+    rel = np.asarray(Image.fromarray((rel / 2.0 * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2)), dtype=np.float64) / 255 * 2.0
     lin = how["geometric"] * rel
     hue = np.asarray(how["rgb"], dtype=np.float64)
     hue = hue / (hue @ np.array([0.2126, 0.7152, 0.0722]))        # the colour changes the hue and not the albedo
@@ -348,7 +352,7 @@ BODIES = {
     # New Horizons' own texture coordinates and albedo map (Porter et al. 2024); the colour is the map's relative brightness
     # carried to Arrokoth's published geometric albedo and its measured red slope (see albedo_map)
     "arrokoth": dict(out="asteroid-arrokoth", dir="arrokoth", file="arrokoth_porter_2024_v01.obj", tris=None, own_uv=True,
-                     albedo=("arrokoth-albedo", "albedo_arrokoth4_fp36h2_masked1.png", dict(geometric=0.21, rgb=(1.0, 0.72, 0.54)))),
+                     albedo=("arrokoth-albedo", "albedo_arrokoth4_fp36h2_masked1.png", dict(geometric=0.21, rgb=(1.0, 0.64, 0.44)))),
     "toutatis": dict(out="asteroid-toutatis", dir="nasa-asteroid-4179-toutatis", file="Asteroid 4179 Toutatis.stl", tris=None),
     "geographos": dict(out="asteroid-geographos", dir="nasa-asteroid-1620-geographos", file="Asteroid 1620 Geographos.stl", tris=10000),
     "kleopatra": dict(out="asteroid-kleopatra", dir="nasa-asteroid-216-kleopatra", file="Asteroid 216 Kleopatra.stl", tris=None),

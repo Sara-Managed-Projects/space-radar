@@ -10,6 +10,8 @@
 //      normal map is what the picture is of.
 // The summary carries, per record: whether the file arrived and how long it took, the card text, and the model's meshes, triangles
 // and the colour of its material. A record that is not up today (the comets layer without 67P) is named in `problems`.
+//   4. each record's card with "About it" opened (`${name}-card`): the line that says how the shape was made.
+// `-f subject=asteroid-486958_comet-67P` walks only those records (ids joined by an underscore; the workflow's `subject` input).
 // Run it at `-f width=1600 -f height=900` and again with `-f mobile=true`.
 look.probe = 'r15-b1';
 const out = { scenes: [], problems: [] };
@@ -51,7 +53,19 @@ const BODIES = [
   ['asteroid-8567', '10-hw1', false],
   ['comet-67P', '11-67p', true],
 ];
+const asked = (new URLSearchParams(location.search).get('lookSubject') || '').split('_').filter(Boolean);
+/** The card's "About it" row, opened: the line that says how the shape was made is under it. */
+const openAbout = async () => {
+  const row = [...document.querySelectorAll('button, [role="button"], summary, a, div')].filter((e) => e.offsetParent && /^About it$/i.test((e.innerText || '').trim().split('\n')[0]))
+    .sort((a, b) => a.querySelectorAll('*').length - b.querySelectorAll('*').length)[0];
+  if (!row) return false;
+  row.scrollIntoView({ block: 'center' });
+  row.click();
+  await sleep(1500);
+  return true;
+};
 for (const [id, name, relief] of BODIES) {
+  if (asked.length && !asked.includes(id)) continue;
   if (!sr.recordById(id)) { out.problems.push('no record ' + id); look.missing.push(id); continue; }
   const t0 = Date.now();
   await go(id, null, 3000);
@@ -63,6 +77,8 @@ for (const [id, name, relief] of BODIES) {
   const side = unit(cross(sun, { x: 0, y: 1, z: 0 }));
   await shot(`${name}-0-framed`, `${id} as the app frames it, with its card; the file ${arrived ? 'arrived after ' + (upgraded.get(id) - t0) + ' ms' : 'did NOT arrive in two minutes'}`, 2500);
   const entry = { id, arrived, ms: arrived ? upgraded.get(id) - t0 : null, card: cardText(), distance: d };
+  if (await openAbout()) { entry.about = cardText(); await shot(`${name}-card`, `${id}: the card with "About it" opened`, 1500); }
+  else out.problems.push(id + ': no "About it" row to open');
   for (let k = 0; k < 4; k++) {
     const a = (k * 90 - 45) * deg;
     const off = unit(add({ x: sun.x * Math.cos(a), y: sun.y * Math.cos(a), z: sun.z * Math.cos(a) }, side, Math.sin(a)));

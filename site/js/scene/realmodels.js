@@ -1549,7 +1549,7 @@ export const REAL_MODELS = {
       // Porter et al. 2024, the label of the shape model: pole RA 317.4880752, Dec -24.8876496 (ICRF), the prime meridian 184.4589465 degrees at its epoch, 0.6632553 days a turn.
       spin: { poleRaDeg: 317.4880752, poleDecDeg: -24.8876496, w0Deg: 184.4589465, wDegPerDay: 542.7774192 } },
     // The radar shapes, from NASA 3D Resources' printing models. Not turned: see above.
-    toutatis: { file: 'asteroid-toutatis.glb', colour: 'asteroid', tint: '#C3B6A0', world: true, name: '4179 Toutatis', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
+    toutatis: { file: 'asteroid-toutatis.glb', colour: 'asteroid', tint: '#8D8374', world: true, name: '4179 Toutatis', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
     geographos: { file: 'asteroid-geographos.glb', colour: 'asteroid', tint: '#A39785', world: true, name: '1620 Geographos', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
     kleopatra: { file: 'asteroid-kleopatra.glb', colour: 'asteroid', tint: '#5E5C59', world: true, name: '216 Kleopatra', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },
     mithra: { file: 'asteroid-mithra.glb', colour: 'asteroid', tint: '#A59987', world: true, name: '4486 Mithra', klass: ['asteroid'], spinWords: 'still', seen: 'radar' },

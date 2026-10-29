@@ -1712,9 +1712,9 @@ export const COPY = {
       donj: 'the shape is built from Lucy’s pictures by stereo photogrammetry and by fitting its outline; the side Lucy did not see is the fit’s',
       arrokoth: 'New Horizons’ pictures cover the side it flew past; the other side is inferred, not photographed, and the colour is its albedo map in a red tint',
       radar: 'the shape is built from radar echoes, not pictures: its outline is measured and its finest detail is not',
-      comet: 'the shape is Rosetta’s, from more than 20 000 pictures over two years, and the whole surface is covered',
+      comet: 'the shape is Rosetta’s, from more than 20 000 pictures over two years, and the whole surface is covered',
     },
-    objectRelief: 'the model is simplified to a few thousand triangles, and the fine relief on it is the full model’s own, baked into the surface',
+    objectRelief: 'the model is simplified, and the fine relief on it is the full model’s own, baked into the surface',
     // 0079 B1: end
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
