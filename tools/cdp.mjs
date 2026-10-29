@@ -146,12 +146,22 @@ async function version() {
 
 let id = 0;
 const pending = new Map();
+// A socket that has closed answers nothing: WebSocket.send on it is silently dropped, so a call
+// made after Chrome died waited forever (card 406d65bf, 2026-10-29). It is refused instead, and
+// every call still waiting when the socket closes is rejected with the reason (ws.onclose below).
+let closedWhy = '';
 function send(ws, method, params, sessionId) {
+  if (closedWhy) return Promise.reject(new Error(method + ': ' + closedWhy));
   const msgId = ++id;
   const msg = { id: msgId, method, params: params || {} };
   if (sessionId) msg.sessionId = sessionId;
   ws.send(JSON.stringify(msg));
   return new Promise((res, rej) => pending.set(msgId, { res, rej }));
+}
+function rejectPending(why) {
+  closedWhy = closedWhy || why;
+  for (const { rej } of pending.values()) rej(new Error(closedWhy));
+  pending.clear();
 }
 
 try {
@@ -164,6 +174,19 @@ try {
   let shotQueue = Promise.resolve();
   let cast = null;
   const sessionIdRef = { id: null };
+  ws.onclose = (e) => rejectPending('chrome closed the debugging connection (code ' + e.code + ')' + (chrome.exitCode !== null || chrome.signalCode ? ', chrome exited ' + (chrome.signalCode || chrome.exitCode) : ''));
+  chrome.on('exit', (code, signal) => rejectPending('chrome exited ' + (signal || code)));
+  // A binding's step that failed used to be logged and nothing more: `__cdpShotDone` was never
+  // called and the probe's `await cdpShot()` waited until the run's own cap (the Halley story hang,
+  // night 10-26). Now the page is answered with the reason, its promise rejects, and the probe
+  // either catches it or the run ends with PAGE THREW naming the step.
+  const answer = (token, err) => send(ws, 'Runtime.evaluate', {
+    expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)}${err ? ', ' + JSON.stringify(err) : ''})`,
+  }, sessionIdRef.id);
+  const failed = (what, token) => (e) => {
+    logs.push('[cdp] ' + what + ' failed: ' + e.message);
+    return answer(token, what + ' failed: ' + e.message).catch(() => { /* the page is gone; the run's own send fails with the reason */ });
+  };
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
     if (m.id && pending.has(m.id)) {
@@ -192,8 +215,8 @@ try {
           trace('cast ' + (cast && cast.name) + ': ' + (cast && cast.n) + ' frames');
           cast = null;
         }
-        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
-      }).catch((e) => logs.push('[cdp] cast failed: ' + e.message));
+        await answer(token);
+      }).catch(failed('cast ' + cmd, token));
       return;
     }
     // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', or
@@ -213,8 +236,8 @@ try {
           const pressed = type === 'mousePressed' || type === 'mouseReleased';
           await send(ws, 'Input.dispatchMouseEvent', { type, x, y, button: pressed ? 'left' : 'none', buttons: type === 'mousePressed' ? 1 : 0, clickCount: pressed ? 1 : 0 }, sessionIdRef.id);
         }
-        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
-      }).catch((e) => logs.push('[cdp] input failed: ' + e.message));
+        await answer(token);
+      }).catch(failed('input ' + type, token));
       return;
     }
     if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpShotRaw' && SHOT_DIR) {
@@ -223,8 +246,8 @@ try {
         const shot = await send(ws, 'Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionIdRef.id);
         writeFileSync(join(SHOT_DIR, String(name).replace(/[^\w.-]/g, '_') + '.png'), Buffer.from(shot.data, 'base64'));
         trace('shot ' + name);
-        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
-      }).catch((e) => logs.push('[cdp] shot failed: ' + e.message));
+        await answer(token);
+      }).catch(failed('shot ' + name, token));
       return;
     }
     if (BYTES && m.method === 'Network.requestWillBeSent') {
@@ -287,20 +310,20 @@ try {
       (() => {
         const waiting = new Map();
         let n = 0;
-        window.__cdpShotDone = (token) => { const f = waiting.get(token); waiting.delete(token); if (f) f(); };
-        window.cdpShot = (name) => new Promise((resolve) => {
+        window.__cdpShotDone = (token, err) => { const f = waiting.get(token); waiting.delete(token); if (f) f(err); };
+        window.cdpShot = (name) => new Promise((resolve, reject) => {
           const token = 't' + (++n);
-          waiting.set(token, resolve);
+          waiting.set(token, (err) => (err ? reject(new Error(err)) : resolve()));
           window.cdpShotRaw(JSON.stringify({ name, token }));
         });
-        window.cdpInput = (type, x, y) => new Promise((resolve) => {
+        window.cdpInput = (type, x, y) => new Promise((resolve, reject) => {
           const token = 'i' + (++n);
-          waiting.set(token, resolve);
+          waiting.set(token, (err) => (err ? reject(new Error(err)) : resolve()));
           window.cdpInputRaw(JSON.stringify(type === 'key' ? { type, key: x, token } : { type, x, y, token }));
         });
-        window.cdpCast = (cmd, name) => new Promise((resolve) => {
+        window.cdpCast = (cmd, name) => new Promise((resolve, reject) => {
           const token = 'c' + (++n);
-          waiting.set(token, resolve);
+          waiting.set(token, (err) => (err ? reject(new Error(err)) : resolve()));
           window.cdpCastRaw(JSON.stringify({ cmd, name, token }));
         });
       })();` }, sessionId);

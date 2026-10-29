@@ -11,6 +11,12 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+### Fixed
+
+- `tools/cdp.mjs`: a failed `cdpShot` / `cdpCast` / `cdpInput` step now rejects in the page with
+  its reason, and a Chrome that dies mid-run ends the run with the reason, instead of both waiting
+  forever.
+
 ## [1.5.0] - 2026-10-29
 
 The map now holds the deep sky, the comets, the stars, the moons and the sites it lacked, and it can replay a
