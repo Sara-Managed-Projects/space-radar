@@ -233,6 +233,20 @@ check(layer.stats().culled === 'size' && layer.stats().calls === 0, `from 5 tril
   await new Promise((r) => setTimeout(r, 20));
   check(selected && selected.id === hit.record, 'and selects the object once the catalogue is there');
 }
+// 0079 r151: the Milky Way's marks are drawn at the scale where they mean something, and not six thousand rings among the nearby stars
+{
+  const LY = 1e-6; // million light-years
+  // the Nearby stars rung: the camera 40 light-years from the Sun
+  check(C.galacticFade(100 * LY, 40 * LY) === 1, 'a cluster 100 light-years off is drawn in full from 40 light-years out');
+  check(C.galacticFade(900 * LY, 40 * LY) === 0 && C.galacticFade(3000 * LY, 40 * LY) === 0, 'one 900 and one 3 000 light-years off are not drawn there');
+  check(C.galacticFade(900 * LY, 40 * LY) <= C.galacticFade(300 * LY, 40 * LY), 'and it fades with distance');
+  // the galaxy rung: the camera 30 kiloparsecs out, a cluster 5 kpc from the Sun is 30 kpc away from it
+  check(C.galacticFade(0.03, 0.1) > 0.4, 'from the galaxy rung (100 000 light-years out) the Milky Way\'s clusters are drawn');
+  check(C.galacticFade(0.001, 5) === 0 && C.galacticFade(0.03, 1500) === 0, 'from a million light-years out, and on the Local Group rung, the galaxy\'s marks are not drawn');
+  check(C.galacticFade(1, 0) === 0 && C.galacticFade(NaN, 1) === 0, 'no view, no mark');
+  const src = readFileSync(join(JS, 'scene/deep/catalogue.js'), 'utf8');
+  check(/uniform float uView;/.test(src) && /gl_Position = vec4\(2\.0, 2\.0, 2\.0, 1\.0\)/.test(src) && /uView: \{ value:/.test(src), 'the shader does the same sum: uView, and a mark with none of it is clipped away');
+}
 layer.dispose();
 
 if (problems.length) { console.error(problems.map((p) => `FAIL ${p}`).join('\n')); process.exit(1); }

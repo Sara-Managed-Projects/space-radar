@@ -82,13 +82,24 @@ const fileBuf = (p) => { const b = readFileSync(join(ROOT, p)); return b.buffer.
   const drawn = st.field.filter((f) => f.culled === null);
   check(drawn.some((f) => f.id === 'hudf-3') && drawn.every((f) => f.fade >= 0.5 * G.FIELD_LIGHT), `inside the field, looking out along it, its slices are drawn (${JSON.stringify(st.field.map((f) => [f.id, f.culled, f.fade]))})`);
   check(st.calls >= drawn.length, `one draw call a slice (${st.calls} calls, ${drawn.length} slices drawn)`);
-  // from beside it, 12 billion light-years off its line: a needle across the view, drawn
+  // from beside it, 12 billion light-years off its line: a needle across the view, which is a ray out of the Sun (0079 r151): not drawn
   const mid = at(16000), sun = stage.toScene({ x: 0, y: 0, z: 0 }, 'sun-inertial');
   const along = mid.clone().sub(sun).normalize();
   const side = new THREE.Vector3(0, 1, 0).cross(along).normalize();
   cam.position.copy(mid).addScaledVector(side, 12000 * 1e6 * LY_KM / stage.unitKm); cam.lookAt(mid); cam.updateMatrixWorld(true);
   layer.frame({ camera: cam, renderer, stage, gain: 1, visible: true });
-  check(layer.stats().field.filter((f) => f.culled === null).length >= 3, `from 12 billion light-years beside it, the needle is drawn (${JSON.stringify(layer.stats().field.map((f) => f.culled))})`);
+  check(layer.stats().field.every((f) => f.culled !== null), `from 12 billion light-years beside it, the needle is not drawn: from there it is a ray out of the Sun (${JSON.stringify(layer.stats().field.map((f) => f.culled))})`);
+  // from the Sun's side of the Local Group's rung, a few billion light-years out and off its line: the same
+  cam.position.copy(sun).addScaledVector(side, 3000 * 1e6 * LY_KM / stage.unitKm); cam.lookAt(sun); cam.updateMatrixWorld(true);
+  layer.frame({ camera: cam, renderer, stage, gain: 1, visible: true });
+  check(layer.stats().field.every((f) => f.culled !== null), 'from 3 billion light-years off the line, looking at the Sun, there is no ray out of it');
+  // 100 million light-years beside it, in the middle of it: the keyhole's galaxies are drawn
+  cam.position.copy(mid).addScaledVector(side, 100 * 1e6 * LY_KM / stage.unitKm); cam.lookAt(mid); cam.updateMatrixWorld(true);
+  layer.frame({ camera: cam, renderer, stage, gain: 1, visible: true });
+  check(layer.stats().field.filter((f) => f.culled === null).length >= 1, `from 100 million light-years beside it the field is drawn (${JSON.stringify(layer.stats().field.map((f) => f.culled))})`);
+  // the helpers
+  check(G.fieldGain(0) === 1 && G.fieldGain(G.FIELD_NEAR_MLY) === 1 && G.fieldGain(G.FIELD_FAR_MLY) === 0 && G.fieldGain(1e5) === 0 && G.fieldGain(300) > 0 && G.fieldGain(300) < 1, 'fieldGain: full near the line, none far from it, smooth between');
+  check(Math.abs(G.distToSegment([0, 3, 0], [-1, 0, 0], [1, 0, 0]) - 3) < 1e-12 && Math.abs(G.distToSegment([5, 0, 0], [-1, 0, 0], [1, 0, 0]) - 4) < 1e-12, 'distToSegment: perpendicular within the segment, to the end beyond it');
   check(layer.describe('hudf-1') === null && layer.describe('virgo') !== null, 'a slice is not a cluster: describe() names clusters only');
   layer.dispose();
   const src = readFileSync(join(JS, 'scene/deep/galclusters.js'), 'utf8');
