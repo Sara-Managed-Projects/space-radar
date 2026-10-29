@@ -960,14 +960,21 @@ export const WORLD_VERT = /* glsl */`
 uniform vec3 uSunDir;
 varying vec2 vUv;
 varying vec3 vNormalW;
-varying vec3 vPosW;
+varying vec3 vFromCamW; // from the camera to this point, in world axes (computed camera-relative: see main() below)
 varying vec3 vPosL;   // on the body (a unit sphere, or a giant's spheroid), body-fixed: +Y is the pole, the ring plane is y = 0
 varying vec3 vSunL;
 varying vec3 vEastW;  // the direction of east on the ground, in the world: the relief's slopes are east and north
 void main() {
   vUv = uv;
-  vec4 worldPos = modelMatrix * vec4( position, 1.0 );
-  vPosW = worldPos.xyz;
+  // CAMERA-RELATIVE, NOT THROUGH THE WORLD (release 1.5.1, Ivan's Pluto). modelMatrix and viewMatrix
+  // each carry the world's place, thousands of units from the stage's origin on the Sun's stage (Pluto
+  // is 5 300 units of 1 000 000 km out), and a float cannot hold 5 300.0005: one step there is 490 km,
+  // and Pluto is 1 188 km in radius, Charon 606. Multiplied one after the other on the GPU, the
+  // sphere's vertices land on a grid of that step: the stair-stepped slabs of Pluto and Charon.
+  // modelViewMatrix is multiplied in double on the CPU, where the two places cancel, and holds only
+  // the small difference.
+  vec4 mvPos = modelViewMatrix * vec4( position, 1.0 );
+  vFromCamW = transpose( mat3( viewMatrix ) ) * mvPos.xyz;
   vNormalW = normalize( mat3( modelMatrix ) * normal );
   // East is the pole crossed with the way up; at the pole itself there is none, and any will do.
   vec3 eastL = cross( vec3( 0.0, 1.0, 0.0 ), position );
@@ -975,7 +982,7 @@ void main() {
   vPosL = position;
   // The mesh is scaled uniformly, so the transpose is the inverse rotation up to a length.
   vSunL = normalize( transpose( mat3( modelMatrix ) ) * uSunDir );
-  gl_Position = projectionMatrix * viewMatrix * worldPos;
+  gl_Position = projectionMatrix * mvPos;
   #include <logdepthbuf_vertex>
 }
 `;
@@ -1220,7 +1227,7 @@ uniform vec4  uLake; // 0077 W1-f
 uniform vec4  uLakeGlint; // 0077 W1-f
 varying vec2 vUv;
 varying vec3 vNormalW;
-varying vec3 vPosW;
+varying vec3 vFromCamW;
 varying vec3 vPosL;
 varying vec3 vSunL;
 varying vec3 vEastW;
@@ -1264,7 +1271,7 @@ float minnaert( float nl, float nv, float k ) {
 void main() {
   #include <logdepthbuf_fragment>
   vec3 n = normalize( vNormalW );
-  vec3 viewDir = normalize( cameraPosition - vPosW );
+  vec3 viewDir = normalize( -vFromCamW );
   vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );
 #ifndef WX_ZONAL
   base = spotOut( base, vUv );
@@ -1520,9 +1527,9 @@ void main() {
   vPosL = position;
   mat3 toLocal = transpose( mat3( modelMatrix ) );
   vSunL = normalize( toLocal * uSunDir );
-  vec4 worldPos = modelMatrix * vec4( position, 1.0 );
-  vCamL = toLocal * ( cameraPosition - worldPos.xyz );
-  gl_Position = projectionMatrix * viewMatrix * worldPos;
+  vec4 mvPos = modelViewMatrix * vec4( position, 1.0 );   // camera-relative, as WORLD_VERT's
+  vCamL = toLocal * ( -( transpose( mat3( viewMatrix ) ) * mvPos.xyz ) );
+  gl_Position = projectionMatrix * mvPos;
   #include <logdepthbuf_vertex>
 }
 `;

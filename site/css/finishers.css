@@ -445,6 +445,20 @@ html.sr-phone.sr-rail-on.sr-launchday:not([data-sheet='full']) .sr-scalebadge {
   top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2) + var(--sr-rail-h, 0px));
 }
 
+/* THE COLLAPSED SIDEBAR'S HANDLE (release 1.5.1, Ivan 2026-10-29: the rail sat over the round "S" button
+   and hid it). Collapsed, --sr-scene-left is 0 and the rail and the badge both start at the inset, which
+   is where the handle is (ui.css .sr-side.is-collapsed: 64 x 48 at the inset): one over the other, the
+   later in the page winning every click. Both stand to the right of the handle instead, one gap off it,
+   so the handle and the rail are each whole and each 24 px or more to hit (44 on a phone, where there is
+   no handle in the corner and the rail is under the bar). */
+@media (min-width: 900px) {
+  html.sr-side-collapsed:not(.sr-phone) .sr-scalebadge,
+  html.sr-side-collapsed:not(.sr-phone) .sr-scalerail {
+    left: calc(var(--sr-inset) + 64px + var(--sp-2));
+    max-width: calc(100vw - 2 * var(--sr-inset) - 64px - var(--sp-2) - 64px);
+  }
+}
+
 html.sr-clean .sr-scalerail,
 html.sr-trip-mode .sr-scalerail,
 html.sr-ambient .sr-scalerail,

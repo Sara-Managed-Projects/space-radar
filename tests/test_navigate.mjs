@@ -280,6 +280,13 @@ const cardSrc = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
 check(/el\(doc, 'button', 'sr-scalerail__back'\)/.test(railSrc) && /back\.type = 'button'/.test(railSrc), 'Back is a <button>, reachable by Tab, pressed by Enter or Space');
 check(/el\('button', 'sr-card__crumb'/.test(cardSrc) && /aria-current', 'location'/.test(cardSrc), 'a parent in the chain is a <button>; the thing itself is marked aria-current');
 
+// The rail and the badge stand clear of the collapsed sidebar's handle (release 1.5.1: the rail covered the round "S").
+const finCss = readFileSync(join(JS, '../css/finishers.css'), 'utf8');
+{
+  const m = finCss.match(/@media \(min-width: 900px\) \{\s*html\.sr-side-collapsed:not\(\.sr-phone\) \.sr-scalebadge,\s*html\.sr-side-collapsed:not\(\.sr-phone\) \.sr-scalerail \{([^}]*)\}/);
+  check(!!m && /left: calc\(var\(--sr-inset\) \+ 64px \+ var\(--sp-2\)\)/.test(m[1]), 'collapsed on a desktop, the rail and the badge start to the right of the 64 px handle (ui.css .sr-side.is-collapsed)');
+}
+
 if (problems.length) {
   console.error(`navigate: ${problems.length} problem(s)\n  - ${problems.join('\n  - ')}`);
   process.exit(1);
